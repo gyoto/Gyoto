@@ -143,9 +143,10 @@ http://yorick.cvs.sourceforge.net/viewvc/yorick/yorick-yutils/pyk.i?view=markup
 
 \subsection pygtk_sec PyGObject
 
-The graphical interface is actually coded python 3 using the PyGObject
-extension. So you'll need a recent version of python 3 and PyGObject.
-
+The graphical interface is actually coded in Python 3 using the
+PyGObject extension to access the Gtk3 toolkit. So you'll need a
+recent version of Python 3, PyGObject and Gtk3. Check
+yorick/README.gyotoy in the source distribution for more details.
 
 \section building_sec Building
 

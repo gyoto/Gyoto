@@ -30,6 +30,39 @@ require, "gyoto.i";
 require, "gyoto_std.i";
 require, "pl3d.i";
 
+extern GYOTOY_PYTHON3_DEFAULT;
+extern GYOTOY_PYTHON3;
+/* DOCUMENT extern GYOTOY_PYTHON3_DEFAULT;
+
+     Gyotoy tries hard to find a working python3 installation.
+
+     Users can set GYOTOY_PYTHON3 to there preferred version of
+     python3, using either the simple command name or full path. This
+     version of python3 must have PyGObject installed, and the GObject
+     Introspection files for Gtk3 must be installed on the system.
+
+     GYOTOY_PYTHON3 can be set in the environment, for instance in
+     .profile:
+      export GYOTOY_PYTHON3=/usr/local/bin/python3.very.experimental
+     or in Yorick, for instance in a file under Y_USER/i-start/:
+      GYOTOY_PYTHON3 = "/usr/local/bin/python3.very.experimental";
+      
+     Note that Y_USER represents the user's main Yorick
+     directory. Type Y_USER at the Yorick prompt to check it. It's
+     usually one of ~/.yorick, ~/Yorick and ~/yorick. See
+     Y_SITE/i/custom.i for further details.
+     
+     Distributors may set GYOTOY_PYTHON3_DEFAULT to the Right value
+     for their system, for instance /usr/bin/python3.2mu or
+     /opt/local/bin/python3.3. Users will by default use this
+     executable while still being able to customize it using the
+     GYOTOY_PYTHON3 variable. GYOTOY_PYTHON3_DEFAULT can be set only
+     in Yorick, typically by dropping a file in Y_SITE/i-start.
+
+   SEE ALSO: Y_SITE
+
+ */
+
 extern _gyotoy_running;
 extern _gyotoy_reticle;
 extern _gyotoy_wid;
@@ -251,6 +284,11 @@ func gyotoy_quit(void) {
   if (_gyotoy_stand_alone) quit;
 }
 
+func gyotoy_checkvers_cb(msg) {
+  extern _gyotoy_pyvers;
+  _gyotoy_pyvers=msg;
+}
+
 func gyotoy(filename) {
 /* DOCUMENT gyotoy [,filename]
          or gyotoy, star
@@ -266,24 +304,63 @@ func gyotoy(filename) {
   _gyotoy_parent_id=0;
   _gyotoy_inhibit_redraw=1;
   
-  python_exec=find_in_path("gyotoy.py", takefirst=1,
-                           path=pathform(_(get_cwd(),
-                                           _(Y_SITES,
-                                             Y_SITE)+"python/")));
+  python_script=find_in_path("gyotoy.py", takefirst=1,
+                             path=pathform(_(get_cwd(),
+                                             _(Y_SITES,
+                                               Y_SITE)+"python/")));
  
-  if (strpart(python_exec, 1:2)=="~/")
-    python_exec=get_home()+"/"+strpart(python_exec, 3:);
+  if (strpart(python_script, 1:2)=="~/")
+    python_script=get_home()+"/"+strpart(python_exec, 3:);
   
   glade_file= find_in_path("gyotoy.xml", takefirst=1,
                            path=pathform(_(get_cwd(), _(Y_SITES,Y_SITE)+"glade/")));
 
   if (strpart(glade_file, 1:2)=="~/")
     glade_file=get_home()+"/"+strpart(glade_file, 3:);
-  
+
   gyotoytop = dirname(glade_file)+"/";
+
+  //// SETTING GYOTOY_PYTHON3
+  // First check if it has been set by the user
+  if (is_void(GYOTOY_PYTHON3)) GYOTOY_PYTHON3 = get_env("GYOTOY_PYTHON3");
+  // Then use distribution default
+  if (!GYOTOY_PYTHON3) GYOTOY_PYTHON3=GYOTOY_PYTHON3_DEFAULT;
+  // Then look for standard names
+  PATH=pathsplit(get_env("PATH"));
+  for (p=1; p<=numberof(PATH); ++p) {
+    if (strpart(PATH(p), 0:0) != "/") PATH(p)+="/";
+  }
+  PATH=pathform(PATH);
+  // Try python3
+  if (is_void(GYOTOY_PYTHON3))
+    GYOTOY_PYTHON3 = find_in_path("python3", takefirst=1, path=PATH);
+
+  // Try python, check whether it's version 3
+  if (is_void (GYOTOY_PYTHON3)) {
+    GYOTOY_PYTHON3 = find_in_path("python", takefirst=1, path=PATH);
+    if (!is_void(GYOTOY_PYTHON3)) {
+        extern _gyotoy_pyvers;
+        _gyotoy_pyvers="";
+        pyproc=spawn([GYOTOY_PYTHON3, "-V"], noop ,gyotoy_checkvers_cb);
+        count=0;
+        while (_gyotoy_pyvers=="" && count < 50) {
+          pause, 100;
+          ++count;
+        }
+        if (strpart(_gyotoy_pyvers, 1:8) != "Python 3")
+          GYOTOY_PYTHON3 = [];
+    }
+  }
   
+  // Check python3.m for some values of m
+  for (minor=10; minor>=0 && is_void(GYOTOY_PYTHON3); --minor) {
+    GYOTOY_PYTHON3 = find_in_path("python3."+pr1(minor),
+                                  takefirst=1, path=PATH);
+  }
+  if (is_void(GYOTOY_PYTHON3)) error, "Cannot find python3 executable";
+
   // build command to spawn:
-  pyk_cmd=[python_exec,gyotoytop];
+  pyk_cmd=[GYOTOY_PYTHON3, python_script, gyotoytop];
   
   // spawn it and attach to _pyk_callback (see pyk.i):
   // that starts python and pass it the path to the glade file

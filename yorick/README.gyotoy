@@ -21,9 +21,10 @@ Under Mac OS X using macports, try:
    sudo port select python python33
    sudo port install py33-gobject3 gtk3
 
-Macports does not set the python3 alias to python3.3. You can either:
- - sudo ln -s /opt/local/bin/python3.3 /opt/local/bin/python3
- - modify the first line in gyotoy.py to point to python3.3 instead of python3
+Several versions of Python 3 may be installed on your system. If
+gyotoy fails to start, try setting GYOTOY_PYTHON3 to the right version
+(the one in which PyGObject is installed!). See GYOTOY_PYTHON3
+documentation in gyotoy.i.
 
 If you get an error message in the lines of "Glib: no schemas
 installed on the system", set the environment variable XDG_DATA_DIRS
@@ -33,3 +34,5 @@ in your shell (for instance in $HOME/.profile):
 Under Linux, things should be a little smoother. On Debian, this
 worked for me:
    sudo apt-get install python3-gi gir1.2-gtk-3.0
+
+You may also need to the GYOTOY_PYTHON3 and/or XDG_DATA_DIRS.
