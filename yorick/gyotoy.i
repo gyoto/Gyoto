@@ -109,6 +109,7 @@ func gyotoy_reset(void){
   extern _gyotoy_particle_is_massless;
   extern _gyotoy_metric;
   extern _gyotoy_particle;
+  extern _gyotoy_t0;
   extern _gyotoy_t1;
   extern _gyotoy_initcoord;
   extern _gyotoy_mass;
@@ -121,6 +122,7 @@ func gyotoy_reset(void){
   _gyotoy_metric=gyoto_KerrBL(spin=0.995);
   _gyotoy_initcoord=[0.,10.791,pi/2,0.,0.,0.,0.016664];
   _gyotoy_t1=3000.;
+  _gyotoy_t0=0.;
   _gyotoy_particle=gyoto_Star(metric=_gyotoy_metric,
                               initcoord=_gyotoy_initcoord(1:4),
                               _gyotoy_initcoord(5:7),
@@ -140,7 +142,9 @@ func gyotoy_set_unit(unit) {
 
 func gyotoy_set_t1(t1) {
   extern _gyotoy_txyz, _gyotoy_t1;
-  if (t1<_gyotoy_t1) _gyotoy_particle, reset=;
+  /*  if ( (_gyotoy_t1 > _gyotoy_t0 && t1<_gyotoy_t1) ||
+       (_gyotoy_t1 < _gyotoy_t0 && t1>_gyotoy_t1) )
+       _gyotoy_particle, reset=;*/
   _gyotoy_t1=t1;
   if (catch(0x08)) return; // avoid breaking in case of v>c
   //  _gyotoy_txyz=_gyotoy_particle(xfill=t1, get_txyz=1);
@@ -188,6 +192,7 @@ func gyotoy_set_initcoord(t0, r0, theta0, phi0,
   extern _gyotoy_initcoord, _gyotoy_txyz, _gyotoy_inhibit_redraw;
   _gyotoy_initcoord=[t0, r0, theta0, phi0,
                      rprime0, thetaprime0, phiprime0];
+  _gyotoy_t0=t0;
   if (catch(0x08)) return; // avoid breaking in case of v>c
   _gyotoy_particle, initcoord=_gyotoy_initcoord(1:4),_gyotoy_initcoord(5:7);
   if (_gyotoy_inhibit_redraw) return;
@@ -212,11 +217,21 @@ func gyotoy_redraw(void){
 
   extern _gyotoy_txyz, _gyotoy_inhibit_redraw;
   if (_gyotoy_inhibit_redraw) return;
-
   if (numberof(_gyotoy_txyz)>1) {
-    x=_gyotoy_txyz(,2);
-    y=_gyotoy_txyz(,3);
-    z=_gyotoy_txyz(,4);
+    t=_gyotoy_txyz(,1);
+    n0=abs(t-_gyotoy_t0)(mnx);
+    n1=abs(t-_gyotoy_t1)(mnx);
+    if (n1>n0) ++n1; else --n1;
+    if (n1<1) n1=1;
+    if (n1>numberof(t)) n1=numberof(t);
+    if (n1<n0) {
+      n2=n0;
+      n0=n1;
+      n1=n2;
+    }
+    x=_gyotoy_txyz(n0:n1,2);
+    y=_gyotoy_txyz(n0:n1,3);
+    z=_gyotoy_txyz(n0:n1,4);
     gyoto_convert, x, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
     gyoto_convert, y, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
     gyoto_convert, z, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
@@ -461,7 +476,6 @@ func gyotoy_compute_and_draw(rien) {
   if (_gyotoy_inhibit_redraw) return;
   
   if (_gyotoy_redrawing) {
-    "Parameters changing too fast, canceling redraw.";
     _gyotoy_cancel=1;
     return;
   }
@@ -471,10 +485,22 @@ func gyotoy_compute_and_draw(rien) {
   ++_gyotoy_redrawing;
 
   t0 = _gyotoy_particle(initcoord=)(1);
-  t  = _gyotoy_particle(get_coord=)(0,1);
+  _gyotoy_txyz=_gyotoy_particle(get_txyz=1);
+  if (_gyotoy_t1>=t0)
+    t  = _gyotoy_txyz(0,1);
+  else
+    t  = _gyotoy_txyz(1,1);
   dt = (_gyotoy_t1-t0)/_gyotoy_nsteps;
   if (dt==0) {
-    "t0 and t1 too close.";
+    gyotoy_warning, "t0 and t1 too close.";
+    --_gyotoy_redrawing;
+    return;
+  }
+  if ( ((t-t0)/(_gyotoy_t1-t0)) >=1 ){
+    pause, 10;
+    pyk,"set_play_image('gtk-media-play')";
+    pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
+    gyotoy_redraw;
     --_gyotoy_redrawing;
     return;
   }
@@ -500,6 +526,7 @@ func gyotoy_compute_and_draw(rien) {
   pause, 10;
   pyk,"set_play_image('gtk-media-play')";
   pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
+  gyotoy_redraw;
   --_gyotoy_redrawing;
 }
 

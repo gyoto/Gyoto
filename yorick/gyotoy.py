@@ -290,7 +290,8 @@ class gyotoy:
          self.py2yo('gyotoy_set_unit "%s"' % (Gtk.Buildable.get_name(wdg)))
 
    def set_particle_type(self, wdg):
-      self.py2yo('gyotoy_set_particle_type "%s" ' % (Gtk.Buildable.get_name(wdg)))
+      if (wdg.get_active()):
+         self.py2yo('gyotoy_set_particle_type "%s" ' % (Gtk.Buildable.get_name(wdg)))
 
    def set_parameter_text(self, param, value):
       self.builder.get_object(param).set_text(value)
