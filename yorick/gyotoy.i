@@ -188,9 +188,9 @@ func gyotoy_set_initcoord(t0, r0, theta0, phi0,
   extern _gyotoy_initcoord, _gyotoy_txyz, _gyotoy_inhibit_redraw;
   _gyotoy_initcoord=[t0, r0, theta0, phi0,
                      rprime0, thetaprime0, phiprime0];
-  if (_gyotoy_inhibit_redraw) return;
   if (catch(0x08)) return; // avoid breaking in case of v>c
   _gyotoy_particle, initcoord=_gyotoy_initcoord(1:4),_gyotoy_initcoord(5:7);
+  if (_gyotoy_inhibit_redraw) return;
   gyotoy_compute_and_draw;
 }
 
@@ -480,14 +480,32 @@ func gyotoy_compute_and_draw(rien) {
   }
 
   pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
+  pyk,"set_play_image('gtk-media-pause')";
 
-  for ( ; t<=_gyotoy_t1+dt && !_gyotoy_cancel; t+=dt) {
+  dir = sign(_gyotoy_t1-t0);
+  
+  for ( ;
+        ((dir == 1 && t<=_gyotoy_t1+dt) ||
+         (dir ==-1 && t>=_gyotoy_t1+dt) )
+          && !_gyotoy_cancel;
+        t+=dt) {
     _gyotoy_txyz=_gyotoy_particle(xfill=t, get_txyz=1);
+    if ( ( (dir== 1) && _gyotoy_txyz(0,1) < t) ||
+         ( (dir==-1) && _gyotoy_txyz(1,1) > t) )
+      t = _gyotoy_t1+2*dt;
     gyotoy_redraw;
-    pause,1;
+    pause,10;
     pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
   }
+  pause, 10;
+  pyk,"set_play_image('gtk-media-play')";
+  pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
   --_gyotoy_redrawing;
+}
+
+func gyotoy_inhibit_redraw(mode) {
+  extern _gyotoy_inhibit_redraw;
+  _gyotoy_inhibit_redraw=mode;
 }
 
 func gyotoy_export(filename) {

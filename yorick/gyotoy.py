@@ -95,6 +95,21 @@ class gyotoy:
    # drawingarea or move the cursor, etc... Just define a handler (callback) of
    # the same name in the glade UI definition (see signals) and you're done.
 
+   def set_play_image(self, name):
+      size=self.builder.get_object('play_image').get_stock()[1]
+      self.builder.get_object('play_image').set_from_stock(name, size)
+
+   def play_pause(self, wdg):
+      self.builder.get_object('inhibit_button').set_active(False)
+      self.py2yo('gyotoy_compute_and_draw')
+
+   def inhibit_button_toggled_cb(self, wdg):
+      if (wdg.get_active()):
+         mode=1
+      else:
+         mode=0
+      self.py2yo('gyotoy_inhibit_redraw %d' % mode)
+
    def set_spin(self, wdg):
       spin        = self.builder.get_object('spin').get_value()
       self.py2yo('gyotoy_set_KerrBL_metric %14.12f' % (spin))
