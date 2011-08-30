@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright 2011 Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+<glade-interface>
+  <!-- interface-requires gtk+ 2.16 -->
+  <!-- interface-naming-policy toplevel-contextual -->
+  <widget class="GtkAboutDialog" id="aboutdialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">À propos de Glade</property>
+    <property name="resizable">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="type_hint">dialog</property>
+    <property name="program_name">Gyotoy</property>
+    <property name="version">pre-alpha</property>
+    <property name="comments" translatable="yes">A toy interface to Gyoto</property>
+    <child internal-child="vbox">
+      <widget class="GtkVBox" id="dialog-vbox1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <widget class="GtkHButtonBox" id="dialog-action_area1">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkWindow" id="window1">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <signal name="map_event" handler="on_drawingarea_map_event"/>
+    <child>
+      <widget class="GtkVBox" id="vbox1">
+        <property name="visible">True</property>
+        <child>
+          <widget class="GtkMenuBar" id="menubar1">
+            <property name="visible">True</property>
+            <child>
+              <widget class="GtkMenuItem" id="file_menu_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Fichier</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="file_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="open_button">
+                        <property name="label">gtk-open</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_open_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="save_button">
+                        <property name="label">gtk-save</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_save_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="save_as_button">
+                        <property name="label">gtk-save-as</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_save_as_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                        <property name="visible">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="imagemenuitem5">
+                        <property name="label">gtk-quit</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="destroy"/>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="display_menu_buton">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Affichage</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="display_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkMenuItem" id="toggle_gnomon">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Toggle gnomon</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="toggle_gnomon"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="toggle_cage">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Toggle cage</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="toggle_cage"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="toggle_reticle">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Toggle reticle</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="toggle_reticle"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="reset_2D_limits">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Reset 2D limits</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="limits"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="length_unit_menu">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Length unit</property>
+                        <property name="use_underline">True</property>
+                        <child>
+                          <widget class="GtkMenu" id="menu1">
+                            <property name="visible">True</property>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="geometrical">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Geometrical unit</property>
+                                <property name="use_underline">True</property>
+                                <property name="active">True</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="m">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Meter</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="km">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Kilometer</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="sun radius">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Solar radius</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="arcsec">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Arc second</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="mas">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Milliarcsecond</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                            <child>
+                              <widget class="GtkRadioMenuItem" id="uas">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">Microarcsecond</property>
+                                <property name="use_underline">True</property>
+                                <property name="group">geometrical</property>
+                                <signal name="toggled" handler="set_length_unit"/>
+                              </widget>
+                            </child>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="help_menu_button">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Aid_e</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="help_menu">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkImageMenuItem" id="about_button">
+                        <property name="label">gtk-about</property>
+                        <property name="visible">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
+                        <signal name="activate" handler="about_window"/>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkHBox" id="hbox1">
+            <property name="visible">True</property>
+            <child>
+              <widget class="GtkVBox" id="vbox2">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkDrawingArea" id="yorick_window">
+                    <property name="width_request">450</property>
+                    <property name="height_request">471</property>
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkTable" id="table1">
+                <property name="visible">True</property>
+                <property name="n_rows">25</property>
+                <property name="n_columns">2</property>
+                <child>
+                  <widget class="GtkSpinButton" id="t1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Initial integrating step in proper time (geometrical units)</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">3000 0 10000000000 10 100 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_t1"/>
+                    <signal name="change_value" handler="set_t1"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">24</property>
+                    <property name="bottom_attach">25</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="t1_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Integrate orbit from t₀ to t₁</property>
+                    <property name="label" translatable="yes">t₁</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">24</property>
+                    <property name="bottom_attach">25</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="integ_params_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Integration parameters</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">23</property>
+                    <property name="bottom_attach">24</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="incl_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Inclination of equatorial plane (degrees)</property>
+                    <property name="label" translatable="yes">Inclination</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">19</property>
+                    <property name="bottom_attach">20</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="paln_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Position angle of the line of nodes (degrees)</property>
+                    <property name="label" translatable="yes">PALN</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">18</property>
+                    <property name="bottom_attach">19</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="phase_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Orbital phase of line of node (degrees)</property>
+                    <property name="label" translatable="yes">Phase</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">20</property>
+                    <property name="bottom_attach">21</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="incl">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Inclination of equatorial plane (degrees)</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">120 -360 360 1 10 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="orient3"/>
+                    <signal name="change_value" handler="orient3"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">19</property>
+                    <property name="bottom_attach">20</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="paln">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Position angle of the line of nodes (degrees)</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">-180 -360 360 1 10 0</property>
+                    <property name="climb_rate">0.050000000000000003</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="orient3"/>
+                    <signal name="change_value" handler="orient3"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">18</property>
+                    <property name="bottom_attach">19</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="phase">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Orbital phase of line of node (degrees)</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">-120 -360 360 1 10 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="orient3"/>
+                    <signal name="change_value" handler="orient3"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">20</property>
+                    <property name="bottom_attach">21</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="orientation_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Projection</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">17</property>
+                    <property name="bottom_attach">18</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="phiprime0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0.016664000000000002 -10 10 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">15</property>
+                    <property name="bottom_attach">16</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label2">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">dφ/dt</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">15</property>
+                    <property name="bottom_attach">16</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="thetaprime0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0 -10 10 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">14</property>
+                    <property name="bottom_attach">15</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="rprime0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0 -10 10 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">13</property>
+                    <property name="bottom_attach">14</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="t0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0 -10000 10000 1 10 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">12</property>
+                    <property name="bottom_attach">13</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="phi0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0 -4 4 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">11</property>
+                    <property name="bottom_attach">12</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="theta0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">1.5708 0 4 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">10</property>
+                    <property name="bottom_attach">11</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="r0">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">10.789999999999999 0 1000000 1 10 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_initcoord"/>
+                    <signal name="change_value" handler="set_initcoord"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">9</property>
+                    <property name="bottom_attach">10</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label10">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">dθ/dt</property>
+                    <property name="width_chars">10</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">14</property>
+                    <property name="bottom_attach">15</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label9">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">dr/dt</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">13</property>
+                    <property name="bottom_attach">14</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="t0_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">t₀</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">12</property>
+                    <property name="bottom_attach">13</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="phi0_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">φ₀</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">11</property>
+                    <property name="bottom_attach">12</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="theta0_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">θ₀</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">10</property>
+                    <property name="bottom_attach">11</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="r0_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">r₀</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">9</property>
+                    <property name="bottom_attach">10</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="initial_conditions_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Initial conditions</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">8</property>
+                    <property name="bottom_attach">9</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="spin_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Spin parameter (0 ≤ a &lt; 1)</property>
+                    <property name="label" translatable="yes">Spin param.</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">5</property>
+                    <property name="bottom_attach">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="spin">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Spin parameter (0 ≤ a &lt; 1)</property>
+                    <property name="max_length">20</property>
+                    <property name="width_chars">20</property>
+                    <property name="adjustment">0.995 0 0.99999999999900002 0.01 0.10000000000000001 0</property>
+                    <property name="digits">12</property>
+                    <signal name="value_changed" handler="set_metric"/>
+                    <signal name="change_value" handler="set_metric"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">5</property>
+                    <property name="bottom_attach">6</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="type_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Metric type (only Kerr for now)</property>
+                    <property name="label" translatable="yes">Type</property>
+                    <property name="width_chars">12</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">4</property>
+                    <property name="bottom_attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkComboBox" id="metric_type">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Metric type (only Kerr for now)</property>
+                    <property name="items" translatable="yes">Kerr</property>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">4</property>
+                    <property name="bottom_attach">5</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="metric_params_label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Metric parameters</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">3</property>
+                    <property name="bottom_attach">4</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHSeparator" id="hseparator1">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">22</property>
+                    <property name="bottom_attach">23</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHSeparator" id="hseparator2">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">16</property>
+                    <property name="bottom_attach">17</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHSeparator" id="hseparator3">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">7</property>
+                    <property name="bottom_attach">8</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="mass_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Black hole mass (solar masses)</property>
+                    <property name="label" translatable="yes">Mass</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">6</property>
+                    <property name="bottom_attach">7</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="mass">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Black hole mass (solar masses)</property>
+                    <property name="adjustment">4000000 1 1000000000000 1000 100000 0</property>
+                    <signal name="value_changed" handler="set_mass"/>
+                    <signal name="change_value" handler="set_mass"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">6</property>
+                    <property name="bottom_attach">7</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="distance_label">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Distance from observer (kpc)</property>
+                    <property name="label" translatable="yes">Distance</property>
+                  </widget>
+                  <packing>
+                    <property name="top_attach">21</property>
+                    <property name="bottom_attach">22</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSpinButton" id="distance">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Distance from observer (kpc)</property>
+                    <property name="adjustment">8 0.01 1000000 1 10 0</property>
+                    <property name="digits">5</property>
+                    <signal name="value_changed" handler="set_distance"/>
+                    <signal name="change_value" handler="set_distance"/>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">21</property>
+                    <property name="bottom_attach">22</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHSeparator" id="hseparator4"/>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">2</property>
+                    <property name="bottom_attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="particle_type_label">
+                    <property name="label" translatable="yes">Particle type</property>
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkHBox" id="hbox2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="homogeneous">True</property>
+                    <child>
+                      <widget class="GtkRadioButton" id="star">
+                        <property name="label" translatable="yes">Star</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="set_particle_type"/>
+                      </widget>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <widget class="GtkRadioButton" id="photon">
+                        <property name="label" translatable="yes">Photon</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="active">True</property>
+                        <property name="draw_indicator">True</property>
+                        <property name="group">star</property>
+                        <signal name="toggled" handler="set_particle_type"/>
+                      </widget>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">1</property>
+                    <property name="bottom_attach">2</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+</glade-interface>

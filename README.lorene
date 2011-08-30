@@ -1,0 +1,76 @@
+                  *** Activating LORENE in Gyoto ***
+
+                  Building the libgyoto-lorene plugin
+
+3+1 metrics support in Gyoto is implemented in the lorene plugin,
+based on the LORENE library.
+
+I- BUILDING TOGETHER WITH GYOTO
+===============================
+
+To enable it at build time, download LORENE from
+http://www.lorene.obspm.fr/, compile liblorene.a with the -fPIC CFLAG
+(i.e. check that the CFLAG variable defined in LORENE's local_settings
+file contains "-fPIC"), and set the HOME_LORENE variable according to
+the LORENE manual.
+
+If HOME_LORENE is defined when compiling Gyoto, the lorene plugin is
+automatically built and installed.
+
+II- BUILDING AFTER GYOTO
+========================
+
+You don't need to recompile Gyoto to enable lorene if you first built
+it without lorene. Just install LORENE and set HOME_LORENE correctly, then:
+
+1- Under Linux:
+  $ cd lib
+  $ make -f Makefile.lorene
+This will result in the file lib/libgyoto-lorene.so, copy this file
+next to libgyoto.so.
+
+2- Under Mac OS X:
+
+First find where libgyoto.dylib is located, for instance by running:
+  $ locate libgyoto.dylib
+The default location when installing from source is /usr/local/lib/.
+
+Then run: 
+  $ cd lib
+  $ make -f Makefile.lorene LIBGYOTO_PATH=/usr/local/lib/
+  $ cp libgyoto-lorene.dylib /usr/local/lib/
+
+III- TESTING LIBGYOTO-LORENE
+============================
+
+Two example files are provided in doc/examples/:
+example-*-rotstar3_1.xml.
+They allow to ray-trace a moving/motionless star orbiting in the spacetime 
+of a relativistic rotating star.
+To run these examples:
+
+1- Run make in $HOME_LORENE/Codes/Nrotstar:
+   $ cd $HOME_LORENE/Codes/Nrotstar
+   $ make
+
+2- Prepare parameter files par_eos.d and par_rot.d, for instance
+   $ cp Parameters/GR/Kepler/*.d ./
+
+3- Run the executable nrotstar to obtain the result file resu.d
+   $ ./nrotstar
+
+4- Update the file location in example-*-rotstar3_1.xml or copy resu.d
+   to the Gyoto examples directory:
+   $ cd -
+   $ cp $HOME_LORENE/Codes/Nrotstar/resu.d doc/examples/
+
+5- Run GYOTO with example-*-rotstar3_1.xml. Assuming Gyoto is
+   installed:
+   $ gyoto doc/examples/example-fixedstar_rotstar3_1.xml out1.fits
+   $ gyoto doc/examples/example-movingstar_rotstar3_1.xml out2.fits
+
+   If gyoto is not installed replace "gyoto" above by:
+   - under Linux:
+     LD_LIBRARY_PATH=lib:$LD_LIBRARY_PATH bin/gyoto
+   - under Mac OS X:
+     DYLD_LIBRARY_PATH=lib:$DYLD_LIBRARY_PATH bin/gyoto

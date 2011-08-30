@@ -1,0 +1,469 @@
+/*
+    Copyright 2011 Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <float.h>
+#include <GyotoScenery.h>
+#ifdef GYOTO_USE_XERCES
+#include <GyotoFactory.h>
+#endif
+#include <GyotoAstrobj.h>
+#include <GyotoUtils.h>
+#include "yapi.h"
+#include "pstdlib.h"
+#include "ygyoto.h"
+
+#include <iostream>
+#include "ygyoto_idx.h"
+
+using namespace std;
+using namespace Gyoto;
+using namespace YGyoto;
+
+extern "C" {
+
+  void* _ypush_Scenery();
+  void* _yget_Scenery(int iarg);
+  int _yarg_Scenery(int iarg);
+
+  void Y_gyoto_Scenery(int);
+
+  // SCENERY CLASS
+  // Opaque Yorick object
+  typedef struct gyoto_Scenery {
+    SmartPointer<Scenery> scenery;
+    //  char type[YGYOTO_TYPE_LEN];
+  } gyoto_Scenery;
+  void gyoto_Scenery_free(void *obj) {
+    if (((gyoto_Scenery*)obj)->scenery) {
+      ((gyoto_Scenery*)obj)->scenery = NULL;
+    } else printf("Freeing unattached Scenery object\n");
+  }
+  void gyoto_Scenery_print(void *obj) {
+#ifdef GYOTO_USE_XERCES
+    if (debug()) {
+      cerr << "DEBUG: Printing Gyoto Scenery"<<endl;
+      cerr << "DEBUG:          Pointer: ";
+      cerr << ((gyoto_Scenery*)obj)->scenery()<<endl;
+      cerr << "DEBUG:          Creating Factory" << endl;
+    }
+    string rest = Factory(((gyoto_Scenery*)obj)->scenery).format(), sub="";
+    if (debug())
+      cerr << "DEBUG:          Printing" << endl;
+    size_t pos=0, len;
+    while (len=rest.length())  {
+      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
+      rest=rest.substr(pos+1, len-1);
+      y_print( sub.c_str(),1 );
+    }
+#else
+    y_print("GYOTO Scenery object",0);
+    //    y_print(((gyoto_Scenery*)obj)->type,0);
+#endif
+  }
+  void gyoto_Scenery_eval(void *obj, int n) {
+    int rvset[1]={0}, paUsed[1]={0}, builder=0;
+    gyoto_Scenery *s_obj = (gyoto_Scenery*)obj;
+
+    if (!s_obj) {
+      builder=1;
+      s_obj = (gyoto_Scenery*)(obj=_ypush_Scenery());
+    } else {
+      *ypush_Scenery()=s_obj->scenery;
+    }
+
+    // Parse keywords
+    static char *knames[] = {
+      "get_pointer",
+      "metric", "screen", "astrobj", "delta", "quantities",
+      "xmlwrite", "clone",
+      0
+    };
+    static long kglobs[9];
+    int kiargs[8], piargs[]={-1, -1, -1};
+    yarg_kw_init(knames, kglobs, kiargs);
+
+    int iarg=n, parg=0;
+
+    while (iarg>0) {
+      iarg = yarg_kw(iarg, kglobs, kiargs);
+      if (iarg>=1) {
+	if (parg<3) piargs[parg++]=iarg--;
+	else
+	  y_error("gyoto_Scenery::eval takes at most 3 positional arguments");
+      }
+    }
+
+    if (builder) {
+      if (yarg_string(piargs[0])) {
+	if (debug())
+	  cerr << "DEBUG: gyoto_Scenery() creating new Scenery from file\n";
+#ifdef GYOTO_USE_XERCES
+	Factory *factory = new Factory(ygets_q(piargs[0]));
+	string kind="";
+	kind = factory->getKind();
+	if (kind.compare("Scenery"))
+	  y_error("Only Scenery supported when reading XML");
+	s_obj->scenery = factory -> getScenery();
+	delete factory;
+#else
+	y_error("This GYOTO was compiled without XERCES: no xml i/o");
+#endif
+      } else {
+	if (debug())
+	  cerr << "DEBUG: gyoto_Scenery() creating new empty Scenery\n";
+	s_obj->scenery=new Scenery();
+      }
+    }
+    SmartPointer<Scenery> sc=s_obj->scenery;
+    int k=-1;
+
+    // Get one member
+    if (yarg_true(kiargs[++k])) { // get pointer
+      if ((*rvset)++) y_error("Only one return value possible");
+      yarg_drop(1);
+      ypush_long((long)(sc()));
+    }
+
+    ///////// ACCESSORS //////////
+    /* METRIC */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // metric=: Getting
+      if ((*rvset)++) y_error("Only one return value possible");
+      (*ypush_Metric()) = sc->getMetric();
+      } else sc->setMetric(*yget_Metric(iarg));
+    }
+
+    /* SCREEN */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // screen=: Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	*ypush_Screen()=sc->getScreen();
+      } else // Setting
+	sc->setScreen(*yget_Screen(iarg));
+    }
+
+    /* ASTROBJ */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // astrobj=  :   Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	*ypush_Astrobj()=sc->getAstrobj();
+      } else                // astrobj=ao:   Setting
+	sc->setAstrobj(*yget_Astrobj(iarg));
+    }
+
+    /* DELTA */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // delta=      : Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	ypush_double(sc->getDelta());
+      } else                // delta=double: Setting
+         sc->setDelta(ygets_d(iarg));
+    }
+
+    /* QUANTITIES */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // quantities=      : Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	Quantity_t quant = sc->getRequestedQuantities();
+	size_t nk = sc->getScalarQuantitiesCount();
+	long rquant = nk>1?1:0;
+	long dims[2] = { rquant, nk };
+	ystring_t *squant = ypush_q(dims);
+	size_t k = 0;
+	char *tk =
+	  strtok(const_cast<char*>(sc->getRequestedQuantitiesString().c_str()),
+		 " \n\t");
+	while (tk!=NULL) {
+	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
+	  squant[k++] = p_strcpy(tk);
+	  tk = strtok(NULL, " \n\t");
+	}
+      }else {               // quantities=["Q1", "Q2"...]: Setting
+	long k, nk;
+	ystring_t * squant = ygeta_q(iarg, &nk, NULL);
+	string quants = squant[0];
+	for (k=1; k<nk; ++k) {
+	  quants += " ";
+	  quants += squant[k];
+	}
+	sc -> setRequestedQuantities(quants);
+      }
+    }
+
+    // Save to file
+    if ((iarg=kiargs[++k])>=0) { // xmlwrite
+      iarg+=*rvset;
+#ifdef GYOTO_USE_XERCES
+      char *filename=ygets_q(iarg);
+      Factory(sc).write(filename);
+#else
+      y_error("This GYOTO was compiled without XERCES: no xml i/o");
+#endif
+    }
+
+    /* CLONE */
+    if ((iarg=kiargs[++k])>=0) {
+      if ((*rvset)++) y_error("Only one return value possible");
+      *ypush_Scenery() = sc->clone();
+    }
+
+    // Get ray-traced image if there is a supplementary positional argument
+    if (!builder && // don't ray-trace on construction...
+	!*rvset && // has a return value already been set?
+	((n<=3 && piargs[n-1]>=0) || (piargs[1]>=0)) // positional argument?
+	) { 
+      size_t res=sc->getScreen()->getResolution();
+      if ((*rvset)++) y_error("Only one return value possible");
+      if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
+      if (debug()) cout << "DEBUG: gyoto_Scenery: rank: "
+			<< yarg_rank(piargs[0]) << endl;
+
+      SmartPointer<Spectrometer> spr = sc->getScreen()->getSpectrometer();
+      size_t nbnuobs = spr()? spr->getNSamples() : 0;
+
+      Idx i_idx (piargs[0], res);
+      if (i_idx.isNuller()) return;
+      Idx j_idx (piargs[1], res);
+      if (j_idx.isNuller()) return;
+      long ni=i_idx.getNElements();
+      long nj=j_idx.getNElements();
+      long nelem=ni*nj;
+
+      long nk = 0; int rquant = 0; ystring_t * squant = NULL;
+
+      if (piargs[2] < 0 || yarg_nil(piargs[2])) {
+	Quantity_t quant = sc->getRequestedQuantities();
+	nk = sc->getScalarQuantitiesCount();
+	if (quant & GYOTO_QUANTITY_SPECTRUM) nk += 1;
+	if (quant & GYOTO_QUANTITY_BINSPECTRUM) nk += 1;
+	rquant = nk>1?1:0;
+	long dims[2] = { 1, nk };
+	squant = ypush_q(dims);
+	size_t k = 0;
+	char *tk =
+	  strtok(const_cast<char*>(sc->getRequestedQuantitiesString().c_str()),
+		 " \n\t");
+	while (tk!=NULL) {
+	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
+	  squant[k++] = p_strcpy(tk);
+	  tk = strtok(NULL, " \n\t");
+	}
+      } else {
+	if (debug()) cerr << "DEBUG: gyoto_Scenery(): "
+			  << "quantities provided online"<<endl;
+	rquant = yarg_rank(piargs[2]);
+	squant = ygeta_q(piargs[2], &nk, NULL);
+	if (debug()) cerr << "DEBUG: gyoto_Scenery(): nk="<<nk<<endl;
+
+      }
+
+      size_t k; int has_sp=0, has_bsp=0;
+      if (nbnuobs)
+	for (k=0; k<nk; ++k) {
+	  cerr << "k=" << k<<", nk="<<nk;
+	  cerr << ", squant[k]="<<squant[k]<<endl;
+	  if (!strcmp(squant[k], "Spectrum"))
+	    has_sp=1;
+	  if (!strcmp(squant[k], "BinSpectrum"))
+	    has_bsp=1;
+	}
+      if (has_sp) nk+=nbnuobs-1;
+      if (has_bsp) nk+=nbnuobs-1;
+      if (!has_sp && !has_bsp) nbnuobs=0;
+
+      long ndims=i_idx.getNDims()+j_idx.getNDims()
+	+((rquant>=1)||has_sp||has_bsp);
+      long dims[4]={ndims};
+      size_t offset=0;
+      if (i_idx.getNDims()) dims[++offset]=ni;
+      if (j_idx.getNDims()) dims[++offset]=nj;
+      if ((rquant>=1)||has_sp||has_bsp) dims[++offset]=nk;
+      double * data=ypush_d(dims);
+      if (debug()) {
+	cerr << "DEBUG: gyoto_Scenery(): nbnuobs="<<nbnuobs;
+	cerr <<" nk="<<nk<<" dims=["<<dims[0]<<","<<dims[1];
+	cerr <<","<<dims[2]<<","<<dims[3]<<"]"<<endl;
+      }
+
+      AstrobjProperties prop;
+      size_t i, j;
+      for ( k=0; k<nk-nbnuobs+has_sp+has_bsp; ++k ) {
+	if (debug()) cerr << "DEBUG: gyoto_Scenery(i,j,\"quantity\"): "
+			  << "new quantity '"
+			  << squant[k] <<"'"<<endl;
+	if (!strcmp(squant[k], "Intensity")) {
+	  if (prop.intensity) y_error("can retrieve property only once");
+	  prop.intensity=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "EmissionTime")) {
+	  if (prop.time) y_error("can retrieve property only once");
+	  prop.time=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "MinDistance")) {
+	  if (prop.distance) y_error("can retrieve property only once");
+	  prop.distance=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "FirstDistMin")) {
+	  if (prop.first_dmin) y_error("can retrieve property only once");
+	  prop.first_dmin=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "Redshift")) {
+	  if (prop.redshift) y_error("can retrieve property only once");
+	  prop.redshift=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "ImpactR")) {
+	  if (prop.rimpact) y_error("can retrieve property only once");
+	  prop.rimpact=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "ImpactX")) {
+	  if (prop.x) y_error("can retrieve property only once");
+	  prop.x=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "ImpactY")) {
+	  if (prop.y) y_error("can retrieve property only once");
+	  prop.y=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "ImpactZ")) {
+	  if (prop.z) y_error("can retrieve property only once");
+	  prop.z=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "Spectrum")) {
+	  if (prop.spectrum) y_error("can retrieve property only once");
+	  prop.spectrum=data;
+	  prop.offset=nelem;
+	  data+=nelem*nbnuobs;
+	} else if (!strcmp(squant[k], "BinSpectrum")) {
+	  if (prop.binspectrum) y_error("can retrieve property only once");
+	  prop.binspectrum=data;
+	  prop.offset=nelem;
+	  data+=nelem*nbnuobs;
+	} else if (!strcmp(squant[k], "User1")) {
+	  if (prop.user1) y_error("can retrieve property only once");
+	  prop.user1=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "User2")) {
+	  if (prop.user2) y_error("can retrieve property only once");
+	  prop.user2=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "User3")) {
+	  if (prop.user3) y_error("can retrieve property only once");
+	  prop.user3=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "User4")) {
+	  if (prop.user4) y_error("can retrieve property only once");
+	  prop.user4=data;
+	  data+=nelem;
+	} else if (!strcmp(squant[k], "User5")) {
+	  if (prop.user5) y_error("can retrieve property only once");
+	  prop.user5=data;
+	  data+=nelem;
+	} else y_errorq("unknown quantity: %s", squant[k]);
+      }
+
+      if (i_idx.isDouble() ||j_idx.isDouble()) {
+	prop.init();
+	Photon ph(sc->getMetric(), sc->getAstrobj(), sc->getScreen(),
+		  i_idx.getDVal(), j_idx.getDVal());
+	ph.hit(&prop);
+      } else {
+	for (j=j_idx.first() ;
+	     j_idx.valid() ;
+	     j=j_idx.next()  ) {
+	  cout << "\rRay-tracing scenery: j = " << j << flush ;
+	  for (i=i_idx.first();
+	       i_idx.valid();
+	       i=i_idx.next() ) {
+	    prop.init();
+	    (*sc)(i, j, &prop);
+	    ++prop;
+	  }
+	}
+	cout << endl;
+      }
+    }
+  }
+
+  static y_userobj_t gyoto_Scenery_obj = {
+    "gyoto_Scenery",
+    &gyoto_Scenery_free, &gyoto_Scenery_print, &gyoto_Scenery_eval,
+    0, 0
+  };
+
+  int _yarg_Scenery(int iarg) {
+    return yget_obj(iarg, 0)==gyoto_Scenery_obj.type_name;
+  }
+
+  void * _ypush_Scenery() {
+    return ypush_obj(&gyoto_Scenery_obj, sizeof(gyoto_Scenery));
+  }
+
+  void * _yget_Scenery(int iarg) {
+    return yget_obj(iarg, &gyoto_Scenery_obj);
+  }
+
+  // Constructor
+  void Y_gyoto_Scenery(int n) {
+    void* obj = NULL;
+    if (_yarg_Scenery(n-1)) obj = _yget_Scenery(--n);
+    gyoto_Scenery_eval(obj, n);
+  }
+
+  void Y_gyoto_Scenery_rayTrace(int argc) {
+    size_t imin=0, imax=-1, jmin=0, jmax=-1;
+    if (argc<1) y_error("gyoto_Scenery_rayTrace takes at least 1 argument");
+    gyoto_Scenery * s_obj=(gyoto_Scenery*)yget_obj(argc-1, &gyoto_Scenery_obj);
+    if (argc>=2 && !yarg_nil(argc-2)) imin=ygets_l(argc-2);
+    if (argc>=3 && !yarg_nil(argc-3)) imax=ygets_l(argc-3);
+    if (argc>=4 && !yarg_nil(argc-4)) jmin=ygets_l(argc-4);
+    if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
+
+    size_t res;
+    try {res=s_obj->scenery->getScreen()->getResolution();}
+    YGYOTO_STD_CATCH;
+    long dims[4]={3, res, res, 2};
+
+    double * data=ypush_d(dims);
+    AstrobjProperties prop(data,data+res*res);
+
+    try {s_obj->scenery -> rayTrace(imin, imax, jmin, jmax, &prop);}
+    YGYOTO_STD_CATCH;
+
+  }
+
+}
+// PUBLIC API
+
+SmartPointer<Scenery> *yget_Scenery(int iarg) {
+  return &((gyoto_Scenery*)yget_obj(iarg, &gyoto_Scenery_obj))->scenery;
+}
+SmartPointer<Scenery> *ypush_Scenery() {
+  gyoto_Scenery* obj = (gyoto_Scenery*)ypush_obj(&gyoto_Scenery_obj, sizeof(gyoto_Scenery));
+  return &(obj->scenery);
+}
+
+int yarg_Scenery(int iarg) {
+  return yget_obj(iarg,0)==gyoto_Scenery_obj.type_name;
+}
+
+

@@ -1,0 +1,848 @@
+/*
+    Copyright 2011 Frederic Vincent, Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <GyotoWorldline.h>
+#include <GyotoUtils.h>
+//#include <GyotoKerrBL.h>
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <iomanip>
+using namespace std;
+using namespace Gyoto;
+
+
+Worldline::Worldline() : imin_(1), i0_(0), imax_(0),
+			 delta_(0.01), tlim_(0.), cst_(NULL), cst_n_(0)
+{ xAllocate(); }
+
+Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0), 
+					delta_(0.01), tlim_(0.),
+					cst_(NULL), cst_n_(0)
+{ xAllocate(sz); }
+
+Worldline::Worldline(const Worldline& orig) :
+  metric_(NULL),
+  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
+  delta_(orig.delta_), tlim_(orig.tlim_), cst_n_(orig.cst_n_)
+{
+  if (debug())
+    cerr << "DEBUG: in Worldline::Worldline(const Worldline& orig)\n";
+  if (orig.metric_()) {
+    if (debug())
+      cerr << "DEBUG: Worldline::Worldline(): cloning metric\n";
+    metric_=orig.metric_->clone();
+  }
+  xAllocate(x_size_);
+  size_t sz = get_nelements()*sizeof(double);
+  if (debug())
+    cerr << "DEBUG: Worldline::Worldline(): sz="<<sz<<", imin_="<<imin_<<endl;
+  memcpy(x0_+imin_, orig.x0_+imin_, sz);
+  memcpy(x1_+imin_, orig.x1_+imin_, sz);
+  memcpy(x2_+imin_, orig.x2_+imin_, sz);
+  memcpy(x3_+imin_, orig.x3_+imin_, sz);
+  memcpy(x0dot_+imin_, orig.x0dot_+imin_, sz);
+  memcpy(x1dot_+imin_, orig.x1dot_+imin_, sz);
+  memcpy(x2dot_+imin_, orig.x2dot_+imin_, sz);
+  memcpy(x3dot_+imin_, orig.x3dot_+imin_, sz);
+  if (orig.cst_ && cst_n_) {
+   if (debug())
+    cerr << "DEBUG: Worldline::Worldline(): cloning constants of motion\n";
+   cst_ = new double [cst_n_];
+   memcpy(cst_, orig.cst_, cst_n_*sizeof(double));
+  }
+  if (debug())
+    cerr << "DEBUG: out Worldline::Worldline(const Worldline& orig)\n";
+}
+
+Worldline::~Worldline(){
+  if (debug()) cerr << "DEBUG: Worldline::~Worldline()\n";
+  delete[] x0_;
+  delete[] x1_;
+  delete[] x2_;
+  delete[] x3_;
+  delete[] x0dot_;
+  delete[] x1dot_;
+  delete[] x2dot_;
+  delete[] x3dot_;
+  if (cst_) delete [] cst_;
+}
+void Worldline::xAllocate() {xAllocate(GYOTO_DEFAULT_X_SIZE);}
+
+void Worldline::xAllocate(size_t sz)
+{
+  if (debug())
+    cerr << "DEBUG:  Worldline::xAllocate(" << sz << ")\n";
+  x_size_ = sz ;
+  x0_ = new double[x_size_];
+  x1_ = new double[x_size_];
+  x2_ = new double[x_size_];
+  x3_ = new double[x_size_];
+  x0dot_ = new double[x_size_];
+  x1dot_ = new double[x_size_];
+  x2dot_ = new double[x_size_];
+  x3dot_ = new double[x_size_];
+  if (debug())
+    cerr << "DEBUG:  out Worldline::xAllocate()\n";
+}
+
+size_t Worldline::xExpand(int dir) {
+  if (debug()) cerr << "Wl: Expand in dir " << dir ;
+  double * old;
+  size_t offset=(dir==1)?0:x_size_;
+  size_t retval=(dir==1)?(x_size_-1):x_size_;
+  size_t i;
+
+  x_size_*=2;
+
+  old = x0_;
+  //if (debug()) cout << "In Wl x0_[0]= " << x0_[0] << endl;
+  x0_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x0_[i+offset]=old[i];
+  delete[] old;
+  //if (debug()) cout << "In Wl imin= " << imin_ << " " << imax_ << endl;
+  //if (debug()) cout << " In Wl x0_[offset], old[0]= " << x0_[1024] << " " << old[0] << endl;
+  
+  old = x1_;
+  x1_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x1_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x2_;
+  x2_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x2_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x3_;
+  x3_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x3_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x0dot_;
+  x0dot_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x0dot_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x1dot_;
+  x1dot_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x1dot_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x2dot_;
+  x2dot_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x2dot_[i+offset]=old[i];
+  delete[] old;
+  
+  old = x3dot_;
+  x3dot_ = new double[x_size_];
+  for (i=imin_;i<=imax_;++i) x3dot_[i+offset]=old[i];
+  delete[] old;
+  
+  imin_+=offset;
+  i0_+=offset;
+  imax_+=offset;
+
+  if (debug()) cerr << ", xsize_=" << x_size_
+		    << ", imin_=" << imin_
+		    << ", i0_=" << i0_
+		    << ", imax_=" << imax_;
+
+  return retval;
+}
+
+void Worldline::setMetric(SmartPointer<Metric> gg) {
+  // Set the Metric
+  metric_=gg;
+
+  // Forget integration
+  imin_=imax_=i0_;
+
+  double coord[8];
+  getInitialCoord(coord);
+  metric_ -> setParticleProperties(this,coord);
+
+}
+
+SmartPointer<Metric> Worldline::getMetric() const { return metric_; }
+
+string Worldline::className() const { return  string("Worldline"); }
+string Worldline::className_l() const { return  string("worldline"); }
+
+void Worldline::setInitCoord(const double coord[8], const int dir) {
+  imin_=imax_=i0_=(dir==1?0:x_size_-1);
+  imin_=i0_=imax_=(dir==1?0:x_size_-1);
+  x0_[i0_]=coord[0];
+  x1_[i0_]=coord[1];
+  x2_[i0_]=coord[2];
+  x3_[i0_]=coord[3];
+  x0dot_[i0_]=coord[4];
+  x1dot_[i0_]=coord[5];
+  x2dot_[i0_]=coord[6];
+  x3dot_[i0_]=coord[7];
+  if (metric_())   metric_ -> setParticleProperties(this,coord);
+}
+
+void Worldline::setInitialCondition(SmartPointer<Metric> met,
+				    const double coord[8],
+				    const int dir)
+/*void Worldline::setInitialCondition(SmartPointer<Metric> met,
+				    const double coord[8],
+				    const SmartPointer<GetGmunu> orig, const int dir)*/
+{
+  metric_=met;
+
+  imin_=i0_=imax_=(dir==1?0:x_size_-1);
+  x0_[i0_]=coord[0];
+  x1_[i0_]=coord[1];
+  x2_[i0_]=coord[2];
+  x3_[i0_]=coord[3];
+  x0dot_[i0_]=coord[4];
+  x1dot_[i0_]=coord[5];
+  x2dot_[i0_]=coord[6];
+  x3dot_[i0_]=coord[7];
+  metric_ -> setParticleProperties(this,coord);
+
+
+  //if (debug()) if (debug()) cout << "wl.C rdot_i= " << coord[4] << endl;
+}
+
+void Worldline::reset() { imin_=imax_=i0_; }
+
+void Worldline::xFill(double tlim) {
+
+  //if (debug()) cout << "In xFill" << endl;
+  int dir, stopcond=0;
+  size_t ind;
+
+  // Check whether anything needs to be done,
+  // Determine direction,
+  // Allocate memory.
+  if (tlim > x0_[imax_]) {
+    // integrate forward
+    dir = 1;
+    ind = (imax_==x_size_-1)?xExpand(1):imax_;
+  } else if (tlim < x0_[imin_]) {
+    // integrate backward
+    dir = -1;
+    ind = (imin_==0)?xExpand(-1):imin_;
+  } else return ; // nothing to do
+
+  if (debug()) cout << "Worldline.C: Integrating worldline " ;
+  
+  // Set up integration
+  double MassPart=getMass();
+  if (MassPart==1.) {
+    if (debug()) cout << "of massive particule ....." << endl;
+  }else if(MassPart==0.){
+    if (debug()) cout << "of 0-mass particule ....." << endl;
+  }else{
+    throwError("In Worldline.C Unrecognized mass.");
+    //if (debug()) cout << "of unrecognized mass (!!) particule ....." << endl;
+    //equations of geodesics written for a mass=1 star
+  }
+ 
+  double coord[8]={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
+		   x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
+
+  SmartPointer<WorldlineIntegState> state
+    = new WorldlineIntegState(metric_, coord, dir*delta_);
+    //delta_ = initial integration step (defaults to 0.01)
+
+  int mycount=0, mycountmax=100000;// to prevent infinite integration
+
+  while (!stopcond) {
+    mycount++;
+    ind+=dir;
+
+    stopcond= state -> nextStep(this,coord);
+
+    //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
+    if (mycount==mycountmax) {
+      stopcond=1;
+      Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
+    }
+    // store particle's trajectory for later use
+    x0_[ind] = coord[0];
+    x1_[ind] = coord[1];
+    x2_[ind] = coord[2];
+    x3_[ind] = coord[3];
+    x0dot_[ind] = coord[4];
+    x1dot_[ind] = coord[5];
+    x2dot_[ind] = coord[6];
+    x3dot_[ind] = coord[7];
+
+    // Check stop condition and whether we need to expand the arrays
+    if (dir==1) {
+      if (coord[0]>tlim) stopcond=1;
+      if (!stopcond & ind==x_size_-1) {
+	imax_=x_size_-1;
+	ind=xExpand(1);
+      }
+    } else {
+      if (coord[0]<tlim) {
+	stopcond=1;
+      }
+      if (!stopcond & ind==0) {
+	imin_=0;
+	ind=xExpand(-1);
+      }
+    }
+  }
+  if (dir==1) imax_=ind; // tell when we actually stopped integrating
+  else imin_=ind;
+
+}
+
+int Worldline::get_nelements() const { return imax_-imin_+1; }
+
+int Worldline::getImin() const {return imin_;}
+int Worldline::getImax() const {return imax_;}
+int Worldline::getI0() const {return i0_;}
+
+void Worldline::get_t(double *dest) const
+{ memcpy(dest, x0_+imin_, sizeof(double)*(imax_-imin_+1)); }
+
+void Worldline::get_xyz(double *x, double *y, double *z) const {
+  size_t n;
+  int coordkind = metric_ -> getCoordKind();
+  switch(coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL: 
+    for (n=imin_;n<=imax_;++n) {
+      x[n-imin_]=x1_[n]*sin(x2_[n])*cos(x3_[n]);
+      y[n-imin_]=x1_[n]*sin(x2_[n])*sin(x3_[n]);
+      z[n-imin_]=x1_[n]*cos(x2_[n]);
+    }
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    for (n=imin_;n<=imax_;++n) {
+      x[n-imin_]=x1_[n];
+      y[n-imin_]=x2_[n];
+      z[n-imin_]=x3_[n];
+    }
+    break;
+  default: Gyoto::throwError("in Worldline::get_xyz: Incompatible coordinate kind");
+  }
+
+}
+void Worldline::getCartesian(double const * const dates, size_t const n_dates,
+			     double * const x, double * const y,
+			     double * const z, double * const xprime,
+			     double * const yprime,  double * const zprime)
+{
+  double *x1, *x2, *x3, *x0dot, *x1dot, *x2dot, *x3dot, tauprime;
+  int coordkind = metric_ -> getCoordKind();
+  size_t di;
+  double rprime, thetaprime, phiprime, costheta, sintheta, cosphi, sinphi, r;
+
+  x0dot = new double[n_dates];
+  x1dot = new double[n_dates];
+  x2dot = new double[n_dates];
+  x3dot = new double[n_dates];
+
+  switch(coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL: 
+    x1    = new double[n_dates];
+    x2    = new double[n_dates];
+    x3    = new double[n_dates];
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    x1=x; x2=y; x3=z;
+    break;
+  default: Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+  }
+
+  getCoord(dates, n_dates, x1, x2, x3, x0dot, x1dot, x2dot, x3dot);
+  
+  switch(coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL: 
+    for (di=0; di<n_dates; ++di) {
+      r = x1[di];
+      costheta = cos(x2[di]); sintheta = sin(x2[di]); 
+      cosphi   = cos(x3[di]); sinphi   = sin(x3[di]);
+      // x, y, z
+      x[di] = r * sintheta * cosphi;
+      y[di] = r * sintheta * sinphi;
+      z[di] = r * costheta;
+
+      if (xprime || yprime || zprime) {
+	// dx/dt, dy/dt, dz/dt
+	tauprime   = 1./x0dot[di];
+	rprime     = x1dot[di]*tauprime;
+	thetaprime = x2dot[di]*tauprime;
+	phiprime   = x3dot[di]*tauprime;
+	if (xprime)
+	  xprime[di] = rprime * sintheta * cosphi
+	    + r * thetaprime * costheta * cosphi
+	    - r * phiprime * sintheta * sinphi;
+	if (yprime)
+	  yprime[di] = rprime * sintheta * sinphi
+	    + r * thetaprime * costheta * sinphi
+	    + r * phiprime * cosphi;
+	if (zprime)
+	  zprime[di] = rprime * costheta
+	    - r * thetaprime * sintheta
+	    ;
+      }
+    }
+    delete [] x1;
+    delete [] x2;
+    delete [] x3;
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    if (xprime || yprime || zprime) {
+      for (di=0; di<n_dates; ++di) {
+	tauprime = 1./x0dot[di];
+	if (xprime) xprime[di] = x1dot[di]*tauprime;
+	if (yprime) yprime[di] = x2dot[di]*tauprime;
+	if (zprime) zprime[di] = x3dot[di]*tauprime;
+      }
+    }
+    break;
+  default: Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+  }
+
+  delete [] x0dot;
+  delete [] x1dot;
+  delete [] x2dot;
+  delete [] x3dot;
+}
+void Worldline::getCoord(double const * const dates, size_t const n_dates,
+			 double * const x1,
+			 double * const x2,    double * const x3,
+			 double * const x0dot, double * const x1dot,
+			 double * const x2dot, double * const x3dot)
+{
+
+  size_t curl=imin_, curm, curh=imax_;
+       // Current indices for the binary search. 
+       // To avoid overflows, compute curm as curl+(curh-curl)/2
+  size_t di=0; // current date index
+  double date; // current date
+
+  // For the interpolation
+  double bestl[8], besth[8], resl[8], resh[8]; // i/o for myrk4
+  double factl, facth;
+  double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
+  double second, primel, primeh, pos[4], vel[3], tdot;
+  int i;
+
+
+
+  for (di=0; di<n_dates; ++di) {
+    date = dates[di];
+    if (date == x0_[imax_]) {
+      if (x1)       x1[di] =    x1_[imax_];
+      if (x2)       x2[di] =    x2_[imax_];
+      if (x3)       x3[di] =    x3_[imax_];
+      if (x0dot) x0dot[di] = x0dot_[imax_];
+      if (x1dot) x1dot[di] = x1dot_[imax_];
+      if (x2dot) x2dot[di] = x2dot_[imax_];
+      if (x3dot) x3dot[di] = x3dot_[imax_];
+      continue;
+    } else if (date > x0_[imax_]) {
+      curl=imax_;    // current imax_
+      xFill(date);   // integrate, that changes imax_
+      curh=imax_;    // new imax_
+      if (curl == curh || date > x0_[imax_])
+	throwError("Worldline::getCoord: can't get coordinates for that time");
+    } else if (date < x0_[imin_]) {
+      curh=x_size_-imin_; // trick if line is expanded during xFill()
+      xFill(date);   // integrate, that changes imin_
+      curh=x_size_-curh;
+      curl=imin_;    // new imin_
+      if (curl == curh || date < x0_[imin_])
+	throwError("Worldline::getCoord: can't get coordinates for that time");
+    } else if (date >= x0_[curh]) {
+      curl=curh;
+      curh=imax_;
+    } else if (date < x0_[curl]) {
+      curh=curl;
+      curl=imin_;
+    }
+
+    while (curh-curl>1) {
+      curm = curl+(curh-curl)/2;
+      if (date >= x0_[curm]) curl = curm;
+      else curh = curm;
+    }
+
+    if (date == x0_[curl]) {
+      if (x1)       x1[di] =    x1_[curl];
+      if (x2)       x2[di] =    x2_[curl];
+      if (x3)       x3[di] =    x3_[curl];
+      if (x0dot) x0dot[di] = x0dot_[curl];
+      if (x1dot) x1dot[di] = x1dot_[curl];
+      if (x2dot) x2dot[di] = x2dot_[curl];
+      if (x3dot) x3dot[di] = x3dot_[curl];
+      continue;
+    }
+
+    // Attempt to get closer to the specified date using the
+    // integrator.
+    dtl=date-x0_[curl]; dth=date-x0_[curh];
+    Dt=(x0_[curh]-x0_[curl]); Dtm1=1./Dt;
+    tauprimel=1./x0dot_[curl]; tauprimeh=1./x0dot_[curh];
+    tausecond = (tauprimeh-tauprimel)*Dtm1;
+    // tauprime(dt)=tauprime(t0)+tausecond*dt
+    dtaul=tauprimel*dtl+0.5*tausecond*dtl*dtl;
+    dtauh=tauprimeh*dth+0.5*tausecond*dth*dth;
+
+    if (debug())
+      cerr << "DEBUG: Worldline::getCoord(): "
+	   << "curl=" << curl << ", x0_[curl]=" << x0_[curl]
+	   << ", curh=" << curh << ", x0_[curh]=" << x0_[curh]
+	   <<endl;
+
+    // from below...
+    bestl[0] =    x0_[curl];
+    bestl[1] =    x1_[curl];
+    bestl[2] =    x2_[curl];
+    bestl[3] =    x3_[curl];
+    bestl[4] = x0dot_[curl];
+    bestl[5] = x1dot_[curl];
+    bestl[6] = x2dot_[curl];
+    bestl[7] = x3dot_[curl];
+    metric_ -> myrk4(this, bestl, dtaul, resl);
+
+    // from above...
+    besth[0] =    x0_[curh];
+    besth[1] =    x1_[curh];
+    besth[2] =    x2_[curh];
+    besth[3] =    x3_[curh];
+    besth[4] = x0dot_[curh];
+    besth[5] = x1dot_[curh];
+    besth[6] = x2dot_[curh];
+    besth[7] = x3dot_[curh];
+    metric_ -> myrk4(this, besth, dtauh, resh);
+
+    if (debug()) {
+      cerr << "DEBUG: Worldline::getCoord(): bestl=["<<bestl[0];
+      for (int i=1; i<8; ++i) cerr << ", " << bestl[i];
+      cerr << "], dtaul=" << dtaul << endl;
+      cerr << "DEBUG: Worldline::getCoord(): resl=["<<resl[0];
+      for (int i=1; i<8; ++i) cerr << ", " << resl[i];
+      cerr << "]\n";
+      cerr << "DEBUG: Worldline::getCoord(): tl=" << resl[0]
+	   << ", date=" << date << ", th=" << resh[0]
+	   << ", th-tl=" << resh[0]-resl[0] 
+	   << ", Dt=" << Dt << "(th-tl)/Dt=" << (resh[0]-resl[0])*Dtm1 << endl;
+    }
+
+    // Now sometimes we actually got further away. We have 4 dates
+    // well estimated, take the 2 best, 1 above, 1 below.
+    if (resl[0]<=date) {
+      if (resl[0] > bestl[0]) memcpy(bestl, resl, 8*sizeof(double));
+    } else {
+      if (resl[0] < besth[0]) memcpy(besth, resl, 8*sizeof(double));
+    }
+
+    if (resh[0]<=date) {
+      if (resh[0] > bestl[0]) memcpy(bestl, resh, 8*sizeof(double));
+    } else {
+      if (resh[0] < besth[0]) memcpy(besth, resh, 8*sizeof(double));
+    }
+
+    if (debug())
+      cerr << "DEBUG: Worldline::getCoord(): "
+	   << "x0_[curl]=" << x0_[curl]
+	   << ", bestl[0]=" << bestl[0]
+	   << ", date=" << date
+	   << ", besth[0]=" << besth[0]
+	   << ", x0_[curh]=" << x0_[curh]
+	   << ", besth[0]-bestl[0]=" << besth[0]-bestl[0]
+	   << ", Dt=" << Dt
+	   << ", (th-tl)/Dt=" << (besth[0]-bestl[0])*Dtm1 << endl;
+
+    // Now interpolate as best we can
+    if (bestl[0]==date) {
+      if (x1)       x1[di] = bestl[1];
+      if (x2)       x2[di] = bestl[2];
+      if (x3)       x3[di] = bestl[3];
+      if (x0dot) x0dot[di] = bestl[4];
+      if (x1dot) x1dot[di] = bestl[5];
+      if (x2dot) x2dot[di] = bestl[6];
+      if (x3dot) x3dot[di] = bestl[7];
+    }
+    if (besth[0]==date) {
+      if (x1)       x1[di] = besth[1];
+      if (x2)       x2[di] = besth[2];
+      if (x3)       x3[di] = besth[3];
+      if (x0dot) x0dot[di] = besth[4];
+      if (x1dot) x1dot[di] = besth[5];
+      if (x2dot) x2dot[di] = besth[6];
+      if (x3dot) x3dot[di] = besth[7];
+    }
+
+    dtl=date-bestl[0]; Dt=besth[0]-bestl[0]; Dtm1=1./Dt;
+    facth=dtl*Dtm1; factl=1.-facth;
+    if (getMass()) {
+      if (debug()) 
+	cerr << "DEBUG: Worldline::getCoord(): "
+	     << "massive particle, interpolating\n";
+      // Star (massive particle)
+      tauprimel=1./bestl[4]; tauprimeh=1./besth[4];
+
+      pos[0] = date;
+      
+      for (i=1; i<=3; ++i) {
+	primel=bestl[i+4]*tauprimel;
+	primeh=besth[i+4]*tauprimeh;
+	vel[i-1]=primel*factl+primeh*facth;
+	second =(primeh-primel)*Dtm1;
+	pos[i] = resl[i] + primel*dtl + 0.5*second*dtl*dtl;
+      }
+
+      tdot=metric_->SysPrimeToTdot(pos, vel);
+
+      if (x1)       x1[di] = pos[1];
+      if (x2)       x2[di] = pos[2];
+      if (x3)       x3[di] = pos[3];
+      if (x0dot) x0dot[di] = tdot;
+      if (x1dot) x1dot[di] = vel[0]*tdot;
+      if (x2dot) x2dot[di] = vel[1]*tdot;
+      if (x3dot) x3dot[di] = vel[2]*tdot;
+    } else {
+      // Photon: don't be so elaborate, we certainly don't need it... yet
+      if (x1)       x1[di] = bestl[1]*factl + besth[1]*facth;
+      if (x2)       x2[di] = bestl[2]*factl + besth[2]*facth;
+      if (x3)       x3[di] = bestl[3]*factl + besth[3]*facth;
+      if (x0dot) x0dot[di] = bestl[4]*factl + besth[4]*facth;
+      if (x1dot) x1dot[di] = bestl[5]*factl + besth[5]*facth;
+      if (x2dot) x2dot[di] = bestl[6]*factl + besth[6]*facth;
+      if (x3dot) x3dot[di] = bestl[7]*factl + besth[7]*facth;
+    }
+
+  }
+
+}
+void Worldline::getCoord(double *x0dest,
+			  double *x1dest, double *x2dest, double *x3dest)
+			 const {
+  //if (sysco!=sys_)
+  //Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  size_t ncomp=imax_-imin_+1;
+  memcpy(x0dest, x0_+imin_, sizeof(double)*ncomp);
+  memcpy(x1dest, x1_+imin_, sizeof(double)*ncomp);
+  memcpy(x2dest, x2_+imin_, sizeof(double)*ncomp);
+  memcpy(x3dest, x3_+imin_, sizeof(double)*ncomp);
+}
+
+void Worldline::get_dot(double *x0dest, double *x1dest, double *x2dest, double *x3dest) const {
+  //  if (sysco!=sys_)
+  //  Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  size_t ncomp=imax_-imin_+1;
+  memcpy(x0dest, x0dot_+imin_, sizeof(double)*ncomp);
+  memcpy(x1dest, x1dot_+imin_, sizeof(double)*ncomp);
+  memcpy(x2dest, x2dot_+imin_, sizeof(double)*ncomp);
+  memcpy(x3dest, x3dot_+imin_, sizeof(double)*ncomp);
+}
+
+void Worldline::getSkyPos(SmartPointer<Screen> screen, double *dalpha, double *ddelta, double *dD) const {
+  double pos[4], skypos[3];
+  size_t i, ncomp=imax_-imin_+1;
+  for (i=0;i<ncomp;++i) {
+    pos[0]=x0_[i+imin_];
+    pos[1]=x1_[i+imin_];
+    pos[2]=x2_[i+imin_];
+    pos[3]=x3_[i+imin_];
+    screen -> coordToSky(pos, skypos);
+    dalpha[i]=skypos[0];
+    ddelta[i]=skypos[1];
+    dD[i]    =skypos[2];
+  }
+}
+
+void Worldline::get_prime(double *x1dest, double *x2dest, double *x3dest) const {
+  size_t n;
+  double f;
+  //if (sysco!=sys_)
+  //  Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  for (n=imin_;n<=imax_;++n) {
+    x1dest[n-imin_]=x1dot_[n]*(f=1./x0dot_[n]);
+    x2dest[n-imin_]=x2dot_[n]*f;
+    x3dest[n-imin_]=x3dot_[n]*f;
+  }
+}
+
+void Worldline::save_txyz(char * filename) const {
+  size_t n;
+  int width=15;
+  int prec=12;
+  ofstream fichierxyz(filename);
+  int coordkind = metric_ -> getCoordKind();
+  switch(coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    for (n=imin_;n<=imax_;++n) {
+      //      if (debug()) cout << "dans save imin, coord= " << imin_ << " " << x0_[n] << " " << x1_[n] << " "  << x2_[n] << " " << x3_[n] << endl;
+      //fichierxyz << setprecision(prec) << setw(width) << x1_[n] << "  ";
+      //fichierxyz << setprecision(prec) << setw(width) << x0[n] << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x0_[n] << "  ";//saving r distance
+      fichierxyz << setprecision(prec) << setw(width) << x1_[n]*sin(x2_[n])*cos(x3_[n]) << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x1_[n]*sin(x2_[n])*sin(x3_[n]) << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x1_[n]*cos(x2_[n]) << endl;
+    }
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    for (n=imin_;n<=imax_;++n) {
+      //fichierxyz << setprecision(prec) << setw(width) << sqrt(x1[n]*x1[n]+x2_[n]*x2_[n]+x3_[n]*x3_[n]) << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x0_[n] << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x1_[n] << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x2_[n] << "  ";
+      fichierxyz << setprecision(prec) << setw(width) << x3_[n] << endl;
+    }
+    break;
+  default: Gyoto::throwError("in Worldline::save_xyz: Incompatible coordinate kind");
+  }
+  
+  fichierxyz.close();
+}
+
+void Worldline::save_txyz(char * filename, const double t1, const double mass_sun, const double distance_kpc, const string unit, SmartPointer<Screen> sc) {
+  xFill(t1);
+  size_t nelem = get_nelements(), n=0;
+  double * t = new double [nelem];
+  double * x = new double [nelem];
+  double * y = new double [nelem];
+  double * z = new double [nelem];
+  double rad2deg = 180./M_PI;
+  double f=1.;
+  if (getMass()) f /= x0dot_[i0_];
+  int width=GYOTO_WIDTH;
+  int prec=GYOTO_PREC;
+  ofstream fichierxyz(filename);
+
+  get_t(t);
+  get_xyz(x, y, z);
+
+  convert(x, nelem, mass_sun, distance_kpc, unit);
+  convert(y, nelem, mass_sun, distance_kpc, unit);
+  convert(z, nelem, mass_sun, distance_kpc, unit);
+
+  // HEADER
+
+  string metkind = metric_->getKind();
+
+  fichierxyz <<   "# Gyoto save file " << endl
+	     <<   "# Start Gyoto parameters" << endl
+	     <<   "# particle_type = \"" << className_l() << "\"" << endl;
+//   if (!metkind.compare("KerrBL")) {
+//     SmartPointer<KerrBL> kmet = metric_ ;
+//     fichierxyz << "#   metric_type = \"kerr\"" << endl
+// 	       << "#          spin = " << kmet -> getSpin() << endl
+// 	       << "#          mass = " << mass_sun << endl;
+//   } else
+    fichierxyz << "#   metric_type = \"" << metkind << "\"" << endl ;
+  fichierxyz <<   "#            t0 = " << x0_[i0_] << endl
+	     <<   "#            r0 = " << x1_[i0_] << endl
+	     <<   "#        theta0 = " << x2_[i0_] << endl
+	     <<   "#          phi0 = " << x3_[i0_] << endl
+	     <<   "#       rprime0 = " << x1dot_[i0_]*f << endl
+	     <<   "#   thetaprime0 = " << x2dot_[i0_]*f << endl
+	     <<   "#     phiprime0 = " << x3dot_[i0_]*f << endl
+	     <<   "#            t1 = " << t1 << endl;
+
+  if (sc)
+    fichierxyz << "#          incl = " << sc -> getInclination()*rad2deg << endl
+	       << "#          paln = " << sc -> getPALN()*rad2deg << endl
+	       << "#         phase = " << sc -> getArgument()*rad2deg << endl
+	       << "#      distance = " << distance_kpc << endl;
+
+  fichierxyz <<   "#   length_unit = \"" << unit << "\"" << endl
+	     <<   "# End Gyoto parameters" << endl
+	     <<   "# Columns are t, x, y, z" << endl;
+
+
+  // DATA
+
+  for (n=0;n<=nelem;++n) {
+    fichierxyz << setprecision(prec) << setw(width) << t[n] << "  "
+	       << setprecision(prec) << setw(width) << x[n] << "  "
+	       << setprecision(prec) << setw(width) << y[n] << "  "
+	       << setprecision(prec) << setw(width) << z[n] << endl ;
+  }
+
+  delete [] t; 
+  delete [] x; 
+  delete [] y; 
+  delete [] z; 
+}
+
+
+void Worldline::setDelta(const double del) { delta_=del; }
+
+double Worldline::getTlim() { return tlim_; }
+void Worldline::setTlim(double tlim) { tlim_ = tlim; }
+
+double const * const  Worldline::getCst() const {
+  return cst_;
+}
+
+void Worldline::setCst(double const * const cst, const size_t n) {
+  if (cst_) delete [] cst_;
+  cst_ = new double[n];
+  cst_n_ = n;
+  for (size_t ii=0;ii<n;ii++) cst_[ii]=cst[ii];
+}
+
+void Worldline::getInitialCoord(double coord[8]) const {
+  coord[0] = x0_[i0_];
+  coord[1] = x1_[i0_];
+  coord[2] = x2_[i0_];
+  coord[3] = x3_[i0_];
+  coord[4] = x0dot_[i0_];
+  coord[5] = x1dot_[i0_];
+  coord[6] = x2dot_[i0_];
+  coord[7] = x3dot_[i0_];
+}
+void Worldline::getCoord(size_t index, double coord[8]) const {
+  //if (debug()) cout << "index=" << index << endl;
+  //if (debug()) cout << "x0[index]= " << x1dot_[index] << endl;
+  //if (debug()) cout << "index == " << index << endl;
+  if (index<imin_ || index>imax_) {
+    cerr << "Indices min curr max= " << imin_ << " " << index << " " << imax_ << endl;
+    throwError("Worldline::getCoord: bad index");
+  }
+  coord[0] = x0_[index];
+  coord[1] = x1_[index];
+  coord[2] = x2_[index];
+  coord[3] = x3_[index];
+  coord[4] = x0dot_[index];
+  coord[5] = x1dot_[index];
+  coord[6] = x2dot_[index];
+  coord[7] = x3dot_[index];
+}
+
+void Worldline::getCartesianPos(size_t index, double dest[4]) const {
+  dest[0] = x0_[index];
+  int coordkind = metric_ -> getCoordKind();
+  switch (coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    dest[1] = x1_[index]*sin(x2_[index])*cos(x3_[index]);
+    dest[2] = x1_[index]*sin(x2_[index])*sin(x3_[index]);
+    dest[3] = x1_[index]*cos(x2_[index]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    dest[1] = x1_[index];
+    dest[2] = x2_[index];
+    dest[3] = x3_[index];
+    break;
+  default: Gyoto::throwError("Worldline::getCartesianPos: Incompatible coordinate kind");
+  }
+}

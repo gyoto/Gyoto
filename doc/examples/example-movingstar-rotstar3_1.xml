@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <Metric kind = "RotStar3_1">
+    <File>resu.d</File>
+    <IntegKind>1</IntegKind>
+    <!--0: integ 4D ; 1: integ 3+1 D  -->
+  </Metric>
+  <Screen>
+    <Position>
+      1000.
+      21.
+      1.22
+      0.
+    </Position>
+    <Time unit="geometrical">
+      1000.
+    </Time>
+    <FieldOfView>
+      0.78
+    </FieldOfView>
+    <Resolution>
+      32
+    </Resolution>
+  </Screen>
+  <Astrobj kind = "Star">
+    <Radius>
+      1.5
+    </Radius>
+    <Velocity>
+      0.
+      0.
+      0.03
+    </Velocity>
+    <Position>
+      0.
+      6.
+      1.5707999999999999741
+      0
+    </Position>
+  </Astrobj>
+</Scenery>

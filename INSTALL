@@ -1,0 +1,82 @@
+INSTALLING GYOTO
+================
+
+I- INSTALL THE DEPENDENCIES
+===========================
+   - xercesc-3 (recommended, required for the executable):
+       http://xerces.apache.org/xerces-c/
+   - cfitsio   (required for the executable)
+       http://heasarc.gsfc.nasa.gov/fitsio/
+   - LORENE (optional, the libgyoto-lorene plug-in can be built later)
+       http://www.lorene.obspm.fr/
+     On some systems, LORENE must be built with -fPIC (GYOTO as well,
+     but this is the default).
+
+II- CONFIGURE GYOTO
+===================
+Edit local_settings to suite your needs
+
+III- BUILD
+==========
+   $ make
+
+IV- TEST
+========
+
+Several example files are provided in doc/examples. All the files
+withous "rotstar3_1" should work out of the box. The rotstar3_1
+require the lorene plugin and some work to create lorene data
+files. You can ray-trace all these sceneries (may take up to a couple
+of minutes on recent hardware) with:
+
+   $ make check
+
+Don't worry too much for the "severe" warnings.
+
+You can now open the resulting FITS files with ds9
+(http://hea-www.harvard.edu/RD/ds9/) or spydr
+(http://www.maumae.net/yorick/doc/spydr_intro.php) or any other
+FITS-aware image viewer:
+
+   $ spydr example-*.fits
+
+V- INSTALL
+=============
+If installing to a system location (i.e. if you don't
+have right access to PREFIX), you need to gain root privileges using,
+for instance, su or sudo:
+1- using su:
+   $ su -
+    (type root password)
+   # make install
+
+2- using sudo:
+   $ sudo make install
+    (type your password)
+
+Under Linux, if installing to a system location, you may need to also
+run
+   # ldconfig -v
+or
+   $ sudo ldconfig -v
+
+If installing in a non-standard place (e.g. under your home
+directory), you should not run ldconfig but make sure that $PREFIX/lib
+is listed in the LD_LIBRARY_PATH environment variable (Under Mac OS X,
+it is called DYLD_LIBRARY_PATH). It goes beyond the scope of this
+manual to teach you how to set environment variables; if in doubt ask
+the local guru or google...
+
+VI- BUILD AND INSTALL THE YORICK PLUGIN
+=======================================
+If you also want the Yorick plug-in:
+1- install yorick (http://yorick.sourceforge.net/);
+2- Run:
+   $ make yorick
+   $ make check-yorick
+   $ sudo make install-yorick
+
+VII- BUILD THE DOCUMENTATION
+============================
+
+To build the documentaion, "make doc".

@@ -1,0 +1,118 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH GYOTO 1 "AUGUST 2011" Science "User Manuals"
+.SH NAME
+Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
+.SH SYNOPSIS
+gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
+      [\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR]
+      [\fB\-\-time\fR=\fItobs\fR] 
+      [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
+      [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
+      [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
+.SH DESCRIPTION
+Gyoto is a framework for computing geodesics in curved
+space-times. The \fBgyoto\fR utility program uses this framework to
+compute images of astronomical objects in the vicinity of compact
+objects (e.g. black-holes). Such images are distorted by strong
+gravitational lensing.
+
+\fBgyoto\fR takes a scenery description in XML format
+(\fIinput.xml\fR), computes this scenery using relativistic
+ray-tracing, and saves the result in FITS format.
+
+A companion program, \fBgyotoy\fR(1), can be used to interactively
+visualize a single geodesic in Kerr metric (the trajectory of a single
+photon or massive particle.
+
+Ray-tracing can be very time consuming. It is possible to interrupt
+the process at any time by hitting ^C, which will save the
+already-computed part of the image before exiting the program. You can
+then compute the rest of the image later using the \fB\-\-jmin\fR
+option.
+
+.SH OPTIONS
+.IP \fB\-\-
+Ends option processing, in case either \fIinput.xml\fR or
+\fIoutput.fits\fR starts with "\-".
+.SS Setting the verbosity level
+.IP \fB\-\-silent\fR
+No output.
+.IP \fB\-\-quiet\fR
+Minimal output.
+.IP \fB\-\-verbose\fR[=\fIN\fR]
+Verbose mode. Verbosity level \fIN\fR may be specified.
+.IP \fB\-\-debug\fR
+Insanely verbose.
+
+.SS Selecting a region
+It's possible to ray-trace only part of the scenery by providing the
+pixel coordinates of the bottom-left (\fIi0\fR, \fIj0\fR) and
+top-right (\fIi1\fR, \fIj1\fR) corners of the region. The bottom-left
+pixel of the complete image has coordinates i=1 and j=1.
+.IP \fB\-\-imin\fR=\fIi0
+Default value: 1.
+.IP \fB\-\-imax\fR=\fIi1
+Default value: \fInpix\fR (see option \fB\-\-resolution\fR below).
+.IP \fB\-\-jmin\fR=\fIj0
+Default value: 1.
+.IP \fB\-\-jmax\fR=\fIj1
+Default value: \fInpix\fR (see option \fB\-\-resolution\fR below).
+
+.SS Setting the camera position
+The following parameters are normally provided in the Screen section
+of \fIinput.xml\fR but can be overriden on the command line for
+instance to make a movie (by calling \fBgyoto\fB for each movie frame,
+changing only the option \fB\-\-time\fR).
+.IP \fB\-\-time\fR=\fItobs
+The observing time in geometrical units.
+.IP \fB\-\-fov\fR=\fIangle\fR
+The field-of-view of the camera, in radians.
+.IP \fB\-\-resolution\fR=\fInpix\fR
+Number of rows and columns in the output image.
+.IP \fB\-\-distance\fR=\fIdist\fR
+(Coordinate) distance from the observer to the center of the
+coordinate system, in geometrical units.
+.IP \fB\-\-paln\fR=\fIOmega\fR
+Position angle of the line of nodes, in radians, East of North. The is
+the angle between the North direction and the line of nodes (see
+below).
+.IP \fB\-\-inclination\fR=\fIi\fR
+Angle bewteen the plane of the sky and the equator of the coordinate
+system. The intersection of those two planes is the line of nodes.
+.IP \fB\-\-argument\fR=\fItheta\fR
+Angle in the equatorial plane between the line of nodes and one of the
+main axes of the coordinate system.
+
+.SH FILES
+.IP \fIinput.xml
+A gyoto input file in XML format. Several examples are provided in the
+source doc/examples directory. Depending on how you installed
+\fBgyoto\fR, they may be installed on your system in a place such as
+\fI/usr/share/doc/libgyoto/examples/\fR.
+.IP \fIoutput.fits
+The output image in FITS format. \fBgyoto\fR will not overwrite
+\fIoutput.fits\fR unless it is prefixed with an (escaped) "!": "gyoto
+in.xml \\!out.fits". This file may actually consist in a stack of
+images depending on the Gyoto Quantities and on the Spectrometer
+specified in \fIinput.xml\fR. For further information on the FITS
+format, see \fIhttp://fits.gsfc.nasa.gov/\fR.
+.SH ENVIRONMENT
+.IP GYOTO_PLUGINS
+Gyoto astronomical objects and metrics are implemented in plugins. To
+use more (or less!) than the standard plugins, you need to set the
+environment variable GYOTO_PLUGINS to a comma-separated list of
+plugins. \fBgyoto\fR will exit with an error status if unable to load
+a specified plugin, unless it is prefixed with "nofail:" in
+GYOTO_PLUGINS. Default value: "stdplug,nofail:lorene".
+.SH EXIT STATUS
+\fBgyoto\fR returns \fB0\fR upon success, \fB1\fR if unable to parse
+the command line or to interpret \fIinput.xml\fR, and a CFITSIO error
+code if an error occurs when trying to open, write to, or close
+\fIoutput.fits\fR. Refer to the CFITSIO documentation for more
+details.
+.SH AUTHOR
+Thibaut Paumard <thibaut.paumard@obspm.fr> wrote this manual.
+.SH "SEE ALSO"
+.BR gyotoy (1)

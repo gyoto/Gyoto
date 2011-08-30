@@ -1,0 +1,116 @@
+/*
+    Copyright 2011 Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include <GyotoUtils.h>
+#include <GyotoRegister.h>
+#include <yapi.h>
+#include <cstring>
+#include <iostream>
+#include <signal.h>
+
+#include "ygyoto.h"
+
+
+using namespace std;
+
+static YGyotoSupplier_t *YGyotoGlobalSupplier = NULL;
+
+extern "C" {
+
+  void
+  Y_gyoto_dontcatchSIGFPE(int argc)
+  {
+    signal(SIGFPE, SIG_DFL);
+  }
+
+
+  void
+  Y_gyoto_dontcatchSIGSEGV(int argc)
+  {
+    signal(SIGSEGV, SIG_DFL);
+  }
+
+
+  void
+  Y_gyoto_debug(int argc)
+  {
+    ypush_long(Gyoto::debug());
+    if (argc && !yarg_nil(argc)) Gyoto::debug(ygets_l(1));
+  }
+
+  void
+  Y___gyoto_initRegister(int argc)
+  {
+    Gyoto::Register::init();
+  }
+
+  void
+  Y_gyoto_listRegister(int argc)
+  {
+    Gyoto::Register::list();
+  }
+
+  void
+  Y___gyoto_exportSupplier(int argc)
+  {
+    if (!YGyotoGlobalSupplier) {
+      YGyotoGlobalSupplier = new YGyotoSupplier_t();
+
+      //Plug Metric ABI
+      YGyotoGlobalSupplier -> yget_Metric  = &yget_Metric;
+      YGyotoGlobalSupplier -> ypush_Metric = &ypush_Metric;
+      YGyotoGlobalSupplier -> yarg_Metric  = &yarg_Metric;
+      YGyotoGlobalSupplier -> ygyoto_Metric_register = &ygyoto_Metric_register;
+      YGyotoGlobalSupplier -> ygyoto_Metric_generic_eval
+                                   = &ygyoto_Metric_generic_eval;
+      // Plug Astrobj ABI
+      YGyotoGlobalSupplier -> yget_Astrobj  = &yget_Astrobj;
+      YGyotoGlobalSupplier -> ypush_Astrobj = &ypush_Astrobj;
+      YGyotoGlobalSupplier -> yarg_Astrobj  = &yarg_Astrobj;
+      YGyotoGlobalSupplier -> ygyoto_Astrobj_register
+	                           = &ygyoto_Astrobj_register;
+      YGyotoGlobalSupplier -> ygyoto_Astrobj_generic_eval
+                                   = &ygyoto_Astrobj_generic_eval;
+      // Plug Spectrum ABI
+      YGyotoGlobalSupplier -> yget_Spectrum  = &yget_Spectrum;
+      YGyotoGlobalSupplier -> ypush_Spectrum = &ypush_Spectrum;
+      YGyotoGlobalSupplier -> yarg_Spectrum  = &yarg_Spectrum;
+      YGyotoGlobalSupplier -> ygyoto_Spectrum_register
+	                           = &ygyoto_Spectrum_register;
+      YGyotoGlobalSupplier -> ygyoto_Spectrum_generic_eval
+                                   = &ygyoto_Spectrum_generic_eval;
+      // Plug Screen ABI
+      YGyotoGlobalSupplier -> yget_Screen  = &yget_Screen;
+      YGyotoGlobalSupplier -> ypush_Screen = &ypush_Screen;
+      YGyotoGlobalSupplier -> yarg_Screen  = &yarg_Screen;
+
+      // Plug Scenery ABI
+      YGyotoGlobalSupplier -> yget_Scenery  = &yget_Scenery;
+      YGyotoGlobalSupplier -> ypush_Scenery = &ypush_Scenery;
+      YGyotoGlobalSupplier -> yarg_Scenery  = &yarg_Scenery;
+
+    }
+    ypush_long(long(YGyotoGlobalSupplier));
+  }
+
+  void
+  Y___gyoto_setErrorHandler(int argc)
+  { Gyoto::setErrorHandler(&y_error); }
+
+}

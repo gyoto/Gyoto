@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <Metric kind = "KerrKS">
+    <Spin>
+      0.
+    </Spin>
+  </Metric>
+  <Screen>
+    <Position>
+      1000.
+      93.909936
+      0.
+      34.364575
+    </Position>
+    <Time unit="geometrical">
+      1000.
+    </Time>
+    <FieldOfView>
+      0.314159265358979323846264338327950288419716
+    </FieldOfView>
+    <Resolution>
+      32
+    </Resolution>
+  </Screen>
+  <Astrobj kind = "ThinInfiniteDiskKS">
+  </Astrobj>
+</Scenery>

@@ -1,0 +1,36 @@
+SHELL=/bin/sh
+include ../local_settings
+
+# Options for using Lorene:
+# -------------------------
+# LORENE is used for numerically-computed metrics.
+# It is not used e.g. for the Kerr metric.
+#
+# To link with LORENE, simply set HOME_LORENE in your environment.
+# You shouldn't need to change anything below but who knows?
+GYOTO_FLAGS += -DGYOTO_USE_LORENE
+GYOTO_CXX:=$(CXX)
+include $(HOME_LORENE)/local_settings
+CXX=$(GYOTO_CXX)
+LORENE_INC = -I$(HOME_LORENE)/C++/Include
+LORENE_LIB_G = -L$(HOME_LORENE)/Lib -llorene_g -llorenef77_g \
+	     $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT)
+LORENE_LIBLOR = $(HOME_LORENE)/Lib/liblorene_g.a \
+	      $(HOME_LORENE)/Lib/liblorenef77_g.a \
+	      $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT) \
+	      $(LIB_LORENE)
+INC += $(GYOTO_INC) $(LORENE_INC)
+LIB_CXX += $(LORENE_LIB_G)
+
+LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
+LORENEPLUG_OBJ = $(LORENEPLUG_SRC:.C=.o)
+
+all: libgyoto-lorene.$(DYLIB_SFX)
+
+libgyoto-lorene.$(DYLIB_SFX): $(LORENEPLUG_OBJ)
+	g++ -o $@  $(PLUG_FLAGS) $(LORENEPLUG_OBJ) $(LIB_CXX)
+
+.C.o:
+	$(CXX)  -c $(GYOTO_FLAGS) $(CXXFLAGS_G) $(INC) $<
+
+.PHONY: all

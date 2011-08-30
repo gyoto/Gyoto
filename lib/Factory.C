@@ -1,0 +1,879 @@
+/*
+    Copyright 2011 Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifdef GYOTO_USE_XERCES
+
+#include <GyotoFactory.h>
+#include <GyotoUtils.h>
+#include <string>
+#include <libgen.h>
+#include <unistd.h>
+#include <GyotoMetric.h>
+#include <GyotoAstrobj.h>
+#include <GyotoSpectrum.h>
+#include <GyotoSpectrometer.h>
+
+#include <xercesc/sax/ErrorHandler.hpp>
+#include <xercesc/dom/DOMErrorHandler.hpp>
+#include <xercesc/sax/SAXParseException.hpp>
+#include <xercesc/framework/StdOutFormatTarget.hpp>
+#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include <xercesc/framework/MemBufFormatTarget.hpp>
+
+using namespace Gyoto;
+using namespace xercesc;
+using namespace std;
+
+#define dvalLength 21
+#define dfmt " %20.16g "
+#define d2txt(txt, val) sprintf( txt , dfmt, val)
+#define ifmt " %li "
+#define i2txt(txt, val) sprintf( txt, ifmt, val);
+
+class XStr
+{
+public :
+    // -----------------------------------------------------------------------
+    //  Constructors and Destructor
+    // -----------------------------------------------------------------------
+    XStr(const char* const toTranscode) : fASCIIForm(NULL)
+    {
+        // Call the private transcoding method
+        fUnicodeForm = XMLString::transcode(toTranscode);
+    }
+
+    XStr(const XMLCh* const toTranscode) : fUnicodeForm(NULL)
+    {
+        // Call the private transcoding method
+        fASCIIForm = XMLString::transcode(toTranscode);
+    }
+
+    ~XStr()
+    {
+      if (fUnicodeForm) XMLString::release(&fUnicodeForm);
+      if (fASCIIForm)  XMLString::release(&fASCIIForm);
+    }
+
+
+    // -----------------------------------------------------------------------
+    //  Getter methods
+    // -----------------------------------------------------------------------
+    const XMLCh* getXForm() const
+    {
+        return fUnicodeForm;
+    }
+
+    const char* getCForm() const
+    {
+        return fASCIIForm;
+    }
+
+private :
+    // -----------------------------------------------------------------------
+    //  Private data members
+    //
+    //  fUnicodeForm
+    //      This is the Unicode XMLCh format of the string.
+    // -----------------------------------------------------------------------
+    XMLCh*   fUnicodeForm;
+    char*    fASCIIForm;
+};
+
+#define X(str) XStr(str).getXForm()
+
+string Cs (const XMLCh* str) { XStr bidule (str); string truc(bidule.getCForm()); return truc;}
+//#define C(str) string(XStr(str).getCForm()).c_str()
+#define C(str) Cs(str).c_str()
+
+///// First setup the reporter class. It doesn't need to be in the API.
+namespace Gyoto {
+  class DOMErrorReporter;
+}
+
+class Gyoto::DOMErrorReporter : public ErrorHandler
+{
+public:
+    // -----------------------------------------------------------------------
+    //  Constructors and Destructor
+    // -----------------------------------------------------------------------
+    DOMErrorReporter() :
+       fSawErrors(false)
+    {
+    }
+
+    ~DOMErrorReporter()
+    {
+    }
+
+
+    // -----------------------------------------------------------------------
+    //  Implementation of the error handler interface
+    // -----------------------------------------------------------------------
+    void warning(const SAXParseException& toCatch);
+    void error(const SAXParseException& toCatch);
+    void fatalError(const SAXParseException& toCatch);
+    void resetErrors();
+
+    // -----------------------------------------------------------------------
+    //  Getter methods
+    // -----------------------------------------------------------------------
+    bool getSawErrors() const;
+
+    // -----------------------------------------------------------------------
+    //  Private data members
+    //
+    //  fSawErrors
+    //      This is set if we get any errors, and is queryable via a getter
+    //      method. Its used by the main code to suppress output if there are
+    //      errors.
+    // -----------------------------------------------------------------------
+    bool    fSawErrors;
+};
+
+void DOMErrorReporter::warning(const SAXParseException&)
+{
+  //y_print();
+}
+
+void DOMErrorReporter::error(const SAXParseException& toCatch)
+{
+    fSawErrors = true;
+    throwError(C(toCatch.getMessage()));
+}
+
+void DOMErrorReporter::fatalError(const SAXParseException& toCatch)
+{
+    fSawErrors = true;
+    throwError(C(toCatch.getMessage()));
+}
+
+void DOMErrorReporter::resetErrors()
+{
+    fSawErrors = false;
+}
+
+//// Now for the public API
+
+Factory::Factory(char * filename)
+  : reporter_(NULL), gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(NULL), gg_(NULL), screen_(NULL), obj_(NULL), photon_(NULL),
+    spectro_(NULL),
+    filename_(filename)
+{
+  // Initialize Xerces XML parser
+
+  XMLPlatformUtils::Initialize();
+  parser_ = new XercesDOMParser();
+  parser_->setValidationScheme(XercesDOMParser::Val_Never);
+  parser_->setDoNamespaces(true);    // optional
+  
+  DOMErrorReporter *errReporter = new DOMErrorReporter();
+  reporter_=errReporter;
+  parser_->setErrorHandler(errReporter);
+  // Parse file
+  
+  parser_->parse(filename);
+  
+  doc_ = parser_ -> getDocument();
+  root_ = doc_ -> getDocumentElement();
+  if (!root_ ) throw(Error( "empty XML document" ));
+  resolver_=doc_->createNSResolver(root_);
+
+  kind_=(C(root_->getTagName()));
+
+}
+
+Factory::~Factory() {
+  //  XMLString::release(&kind_);
+  if (resolver_) delete resolver_;
+  if (reporter_) delete reporter_;
+  if (parser_) delete parser_;
+  else if (doc_) delete doc_; // parser_ takes care of doc_
+  // if (impl_) delete impl_; // Terminate takes care of that one
+  XMLPlatformUtils::Terminate();
+  gg_=NULL;
+  obj_=NULL;
+  scenery_=NULL;
+  photon_=NULL;
+  spectro_=NULL;
+}
+
+void Factory::setReporter(ErrorHandler* eh) {
+  reporter_=eh;
+  parser_->setErrorHandler(eh);
+}
+
+DOMElement * Factory::getRoot() { return root_; }
+DOMDocument * Factory::getDoc() { return doc_; }
+
+SmartPointer<Gyoto::Metric> Factory::getMetric() {
+  if (!gg_) {
+    DOMElement *MetricDOM;
+
+    if (kind_.compare("Metric")){
+      DOMXPathResult* result;
+      result=doc_->evaluate(
+			  X(("/"+kind_+"/Metric").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+      if (!result->getSnapshotLength())
+	throwError("No Metric found");
+      MetricDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+      delete result;
+    } else MetricDOM = root_;
+
+    string Kind =
+      C(MetricDOM->getAttribute(X("kind")));
+    factoryMessenger fm(this, MetricDOM);
+
+    gg_= (*Metric::getSubcontractor(Kind))(&fm);
+
+  }
+
+  return gg_;
+}
+
+
+SmartPointer<Gyoto::Astrobj> Factory::getAstrobj(){
+    
+  if (!obj_) {
+    DOMXPathResult* result;
+    DOMElement *tmpEl;
+
+    if (kind_=="Astrobj") {
+      obj_el_ = tmpEl = root_;
+    } else {
+      result=doc_->evaluate(
+			  X(("/"+kind_+"/Astrobj").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+      if (!result->getSnapshotLength())
+	throwError("GYOTO error: an Astrobj MUST be specified");
+      tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+      delete result;
+    }
+    string AstrobjKind =
+      Cs(tmpEl->getAttribute(X("kind")));
+    if (debug()) cout << "Astrobj kind : " << AstrobjKind << endl ;
+
+    factoryMessenger fm(this, tmpEl);
+
+    obj_ = (*Astrobj::getSubcontractor(AstrobjKind))(&fm);
+
+  }
+  return obj_;
+}
+
+SmartPointer<Gyoto::Photon> Factory::getPhoton(){
+    
+  if (!photon_) {
+    DOMXPathResult* result;
+    DOMElement *tmpEl;
+
+    if (kind_=="Photon") {
+      ph_el_ = tmpEl = root_;
+    } else {
+      result=doc_->evaluate(
+			  X(("/"+kind_+"/Photon").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+      if (!result->getSnapshotLength())
+	throwError("GYOTO error: an Photon MUST be specified");
+      tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+      delete result;
+    }
+
+    factoryMessenger fm(this, tmpEl);
+    photon_ = PhotonSubcontractor(&fm);
+
+  }
+  return photon_;
+}
+
+SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
+    
+    DOMXPathResult* result;
+    DOMElement *tmpEl;
+
+    if (kind_=="Spectrum") {
+      tmpEl = root_;
+    } else {
+      result=doc_->evaluate(
+			  X(("/"+kind_+"/Spectrum").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+      if (!result->getSnapshotLength())
+	throwError("GYOTO error: an Spectrum MUST be specified");
+      tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+      delete result;
+    }
+    string Kind =
+      Cs(tmpEl->getAttribute(X("kind")));
+    if (debug()) cout << "Spectrum kind : " << Kind << endl ;
+
+    factoryMessenger fm(this, tmpEl);
+    return (*Spectrum::getSubcontractor(Kind))(&fm);
+
+}
+
+/// Scenery
+
+SmartPointer<Scenery> Factory::getScenery () {
+  if (!scenery_) {
+    scenery_ = new Scenery(getMetric(), getScreen(), getAstrobj());
+    DOMXPathResult* result;
+    DOMElement *tmpEl;
+
+    result=doc_->evaluate(
+			    X("/Scenery"),
+			    root_,
+			    resolver_,
+			    DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			    NULL);
+    tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+  
+    factoryMessenger fm(this, tmpEl);
+    scenery_ = ScenerySubcontractor(&fm);
+  
+    delete result;
+  }
+  return scenery_;
+}
+
+SmartPointer<Gyoto::Screen> Factory::getScreen(){
+  if (!screen_) {
+    DOMXPathResult* result;
+    DOMElement *ScreenDOM;
+    result=doc_->evaluate(
+			  X(("/"+kind_+"/Screen").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+    if (!result->getSnapshotLength())
+      throwError("No Screen found");
+    
+    ScreenDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+    
+    factoryMessenger fm ( this, ScreenDOM );
+    screen_ = Screen::Subcontractor(&fm);
+    delete result;
+  }
+  return screen_;
+}
+
+const string Factory::getKind() { return kind_ ; }
+
+Factory::Factory(SmartPointer<Scenery> sc)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL),
+    gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(sc), gg_(sc->getMetric()),
+    screen_(sc->getScreen()), obj_(sc->getAstrobj()),
+    photon_(NULL), spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Scenery"),         // root element name
+                           0);                   // document type object (DTD).
+  root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, root_);
+  scenery_ -> fillElement(&fm);
+
+}
+
+Factory::Factory(SmartPointer<Screen> scr)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL),
+    gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(NULL), gg_(scr->getMetric()), screen_(scr), obj_(),
+    photon_(NULL), spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Screen"),         // root element name
+                           0);                   // document type object (DTD).
+  root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, root_);
+  screen_ -> fillElement(&fm);  
+
+}
+
+Factory::Factory(SmartPointer<Metric> gg)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL),
+    gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(NULL), gg_(gg), screen_(NULL), obj_(NULL),
+    photon_(NULL), spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Metric"),         // root element name
+                           0);                   // document type object (DTD).
+  gg_el_ = root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, gg_el_);
+  gg -> fillElement(&fm);
+
+}
+
+Factory::Factory(SmartPointer<Astrobj> ao)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL), gg_el_(NULL),
+    scenery_(NULL), gg_(NULL), obj_(ao), photon_(NULL),
+    spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Astrobj"),         // root element name
+                           0);                   // document type object (DTD).
+  obj_el_ = root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, obj_el_);
+  ao -> fillElement(&fm);
+
+}
+
+Factory::Factory(SmartPointer<Spectrum::Generic> sp)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL), gg_el_(NULL),
+    scenery_(NULL), gg_(NULL), obj_(NULL), photon_(NULL),
+    spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Spectrum"),         // root element name
+                           0);                   // document type object (DTD).
+  obj_el_ = root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, obj_el_);
+  sp -> fillElement(&fm);
+
+}
+
+Factory::Factory(SmartPointer<Photon> ph)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL), 
+    gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(NULL), gg_(ph->getMetric()), obj_(ph->getAstrobj()),
+    photon_(ph), spectro_(NULL), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Photon"),          // root element name
+                           0);                   // document type object (DTD).
+  ph_el_ = root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, root_);
+  photon_ -> fillElement(&fm);
+
+}
+
+Factory::Factory(SmartPointer<Spectrometer> sp)
+  : reporter_(NULL), parser_(NULL), resolver_(NULL), 
+    gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
+    scenery_(NULL), gg_(NULL), obj_(NULL),
+    photon_(NULL), spectro_(sp), filename_("")
+{
+  XMLPlatformUtils::Initialize();
+  impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
+  if (!impl_) throwError("Problem initializing DOMImplementation");
+  doc_ = impl_->createDocument(
+                           0,                    // root element namespace URI.
+                           X("Spectrometer"),          // root element name
+                           0);                   // document type object (DTD).
+  root_ = doc_->getDocumentElement();
+
+  factoryMessenger fm(this, root_);
+  spectro_ -> fillElement(&fm);
+
+}
+
+void Factory::setMetric(SmartPointer<Metric> gg, DOMElement *el) {
+
+  if (gg_ && gg && gg!= gg_) throwError("Inconsistent use of Metrics");
+  if (gg && !gg_el_) {
+  
+    gg_ = gg;
+
+    gg_el_ = doc_->createElement(X("Metric"));
+    el->appendChild(gg_el_);
+
+    factoryMessenger fm(this, gg_el_);
+    gg -> fillElement(&fm);
+  }
+
+}
+
+void Factory::setAstrobj(SmartPointer<Astrobj> ao, DOMElement *el) {
+
+  if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
+  if (ao && !obj_el_) {
+  
+    obj_ = ao;
+
+    obj_el_ = doc_->createElement(X("Astrobj"));
+    el->appendChild(obj_el_);
+
+    factoryMessenger fm(this, obj_el_);
+    ao -> fillElement(&fm);
+  }
+
+}
+
+void Factory::setScreen(SmartPointer<Screen> scr, DOMElement *el) {
+
+  if (screen_ && scr && scr!= screen_)
+    throwError("Inconsistent use of Screens");
+  
+  screen_ = scr;
+
+  DOMElement * scr_el = doc_->createElement(X("Screen"));
+  el->appendChild(scr_el);
+
+  factoryMessenger fm(this, scr_el);
+  scr -> fillElement(&fm);
+
+}
+
+void Factory::write(const char* const goutputfile) {
+  filename_ = goutputfile;
+  // write file
+  DOMLSSerializer   *theSerializer
+    = (static_cast<DOMImplementationLS*>(impl_))->createLSSerializer();
+  DOMConfiguration  *serializerConfig
+    = theSerializer->getDomConfig();
+  DOMLSOutput       *theOutputDesc
+    = (static_cast<DOMImplementationLS*>(impl_))->createLSOutput();
+  XMLFormatTarget   *myFormTarget;
+
+  if (serializerConfig->canSetParameter(XMLUni::fgDOMWRTFormatPrettyPrint,true))
+    serializerConfig->setParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true);
+  if (goutputfile)
+    myFormTarget=new LocalFileFormatTarget(goutputfile);
+  else
+    myFormTarget=new StdOutFormatTarget();
+  
+  theOutputDesc->setByteStream(myFormTarget);
+  theSerializer->write(doc_, theOutputDesc);
+
+  delete myFormTarget;
+  theOutputDesc->release();
+  theSerializer->release();
+}
+
+string Factory::format() {
+  // write file
+  DOMLSSerializer   *theSerializer
+    = (static_cast<DOMImplementationLS*>(impl_))->createLSSerializer();
+  DOMConfiguration  *serializerConfig
+    = theSerializer->getDomConfig();
+  DOMLSOutput       *theOutputDesc
+    = (static_cast<DOMImplementationLS*>(impl_))->createLSOutput();
+  MemBufFormatTarget   *myFormTarget = new MemBufFormatTarget();
+
+  if (serializerConfig->canSetParameter(XMLUni::fgDOMWRTFormatPrettyPrint,true))
+    serializerConfig->setParameter(XMLUni::fgDOMWRTFormatPrettyPrint, true);
+  
+  theOutputDesc->setByteStream(myFormTarget);
+  theSerializer->write(doc_, theOutputDesc);
+
+  string res=(const char*) myFormTarget->getRawBuffer();
+
+  delete myFormTarget;
+  theOutputDesc->release();
+  theSerializer->release();
+
+  return res;
+}
+
+void Factory::setParameter(std::string name, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+} 
+
+void Factory::setParameter(std::string name, double value, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  char val_string[dvalLength];
+  d2txt(val_string,value);
+  el->appendChild(doc_->createTextNode(X(val_string)));
+} 
+
+void Factory::setParameter(std::string name, int value, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  char val_string[dvalLength];
+  sprintf( val_string, " %i ", value);
+  el->appendChild(doc_->createTextNode(X(val_string)));
+} 
+
+void Factory::setParameter(std::string name, unsigned int value, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  char val_string[dvalLength];
+  sprintf( val_string, " %u ", value);
+  el->appendChild(doc_->createTextNode(X(val_string)));
+} 
+
+void Factory::setParameter(std::string name, long value, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  char val_string[dvalLength];
+  sprintf( val_string, " %li ", value);
+  el->appendChild(doc_->createTextNode(X(val_string)));
+} 
+
+void Factory::setParameter(std::string name, unsigned long int value, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  char val_string[dvalLength];
+  sprintf( val_string, " %lu ", value);
+  el->appendChild(doc_->createTextNode(X(val_string)));
+} 
+
+void Factory::setParameter(std::string name, std::string val, DOMElement *pel) {
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  el->appendChild(doc_->createTextNode(X(val.c_str())));
+} 
+
+void Factory::setParameter(std::string name, double val[],
+			   size_t n, DOMElement *pel, factoryMessenger **child){
+
+  ostringstream ss;
+  ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
+  for (size_t i=1; i<n; ++i) {
+    ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
+  }
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  if (child) *child = new factoryMessenger(this, el);
+
+}
+
+void Factory::setContent(std::string content, DOMElement *el) {
+  el -> appendChild( doc_->createTextNode( X( content.c_str() ) ) );
+}
+
+///////// Factory Messenger Class ///////////
+factoryMessenger::factoryMessenger(Gyoto::Factory* emp,
+				   xercesc::DOMElement* el) :
+  employer_(emp), element_(el), curNodeIndex_(0)
+{
+  children_ = element_->getChildNodes();
+  nodeCount_ = children_->getLength();
+}
+
+factoryMessenger::factoryMessenger(const factoryMessenger& fm,
+				   std::string name) :
+  employer_(fm.employer_), element_(NULL), curNodeIndex_(0)
+{
+  element_ = employer_ -> doc_ -> createElement(X(name.c_str()));
+  fm.element_ -> appendChild (element_) ;
+  children_ = element_->getChildNodes();
+  nodeCount_ = children_->getLength();
+}
+
+void factoryMessenger::reset() {
+  curNodeIndex_=0;
+}
+
+int factoryMessenger::getNextParameter(std::string* namep, std::string* contp)
+{
+
+  if (debug()) {
+    cerr << "DEBUG: factoryMessenger::getNextParameter(" << namep
+	 << ", " << contp << "): " ;
+    cerr << "*namep=" << *namep;
+    cerr << ", *contp=" << *contp << endl;
+  }
+    
+  if (curNodeIndex_ >= nodeCount_) return 0;
+
+  DOMNode *currentNode = children_->item(curNodeIndex_++);
+
+  if( currentNode->getNodeType() &&  // true is not NULL
+      currentNode->getNodeType() == DOMNode::ELEMENT_NODE ) // is element
+    {
+      // Found node which is an Element. Re-cast node as element
+      DOMElement *currentElement
+	= static_cast< xercesc::DOMElement* >( currentNode );
+      *namep = C(currentElement->getTagName());
+      *contp = C(currentElement->getTextContent());
+      return 1;
+    }
+  return getNextParameter(namep, contp);
+}
+
+factoryMessenger* factoryMessenger::makeChild(std::string name) {
+  return new factoryMessenger(*this, name);
+}
+
+void factoryMessenger::setSelfAttribute(std::string attrname,
+					std::string attrvalue) {
+  element_->setAttribute(X(attrname.c_str()), X(attrvalue.c_str()));
+}
+
+void factoryMessenger::setSelfAttribute(std::string attrname,
+					unsigned long attrvalue) {
+  char val_string[dvalLength];
+  sprintf( val_string, "%lu", attrvalue);
+  element_->setAttribute(X(attrname.c_str()), X(val_string));
+}
+
+string factoryMessenger::getAttribute(std::string attrname) const {
+  DOMNode *currentNode = children_->item(curNodeIndex_-1);
+  DOMElement *currentElement
+    = static_cast< xercesc::DOMElement* >( currentNode );
+  return Cs(currentElement->getAttribute(X(attrname.c_str())));
+}
+
+string factoryMessenger::getSelfAttribute(std::string attrname) const {
+  return Cs(element_->getAttribute(X(attrname.c_str())));
+}
+
+string factoryMessenger::getFullContent() const {
+  return Cs(element_->getTextContent());
+}
+
+void factoryMessenger::setFullContent(std::string content) {
+  employer_ -> setContent (content, element_) ;
+}
+
+factoryMessenger* factoryMessenger::getChild() const {
+  DOMNode *currentNode = children_->item(curNodeIndex_-1);
+  DOMElement *currentElement
+    = static_cast< xercesc::DOMElement* >( currentNode );
+  return new factoryMessenger(employer_, currentElement);
+}
+
+void factoryMessenger::setAstrobj(SmartPointer<Astrobj> gg) {
+  employer_ -> setAstrobj (gg, element_);
+}
+
+void factoryMessenger::setScreen(SmartPointer<Screen> gg) {
+  employer_ -> setScreen (gg, element_);
+}
+
+void factoryMessenger::setMetric(SmartPointer<Metric> gg) {
+  employer_ -> setMetric (gg, element_);
+}
+
+SmartPointer<Metric> factoryMessenger::getMetric() {
+  return employer_ -> getMetric ();
+}
+
+SmartPointer<Screen> factoryMessenger::getScreen() {
+  return employer_ -> getScreen ();
+}
+
+SmartPointer<Photon> factoryMessenger::getPhoton() {
+  return employer_ -> getPhoton ();
+}
+
+SmartPointer<Astrobj> factoryMessenger::getAstrobj() {
+  return employer_ -> getAstrobj ();
+}
+
+void factoryMessenger::setParameter(std::string name){
+  employer_ -> setParameter(name, element_);
+}
+void factoryMessenger::setParameter(std::string name, double value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, int value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, long value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, unsigned int value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, unsigned long value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, std::string value){
+  employer_ -> setParameter(name, value, element_);
+}
+void factoryMessenger::setParameter(std::string name, double val[], size_t n,
+				    factoryMessenger **child){
+  employer_ -> setParameter(name, val, n, element_, child);
+}
+
+std::string factoryMessenger::fullPath(std::string fname) {
+  return employer_ -> fullPath(fname);
+}
+
+std::string Factory::fullPath(std::string fname) {
+  if (debug()) cerr << "DEBUG: Factory::fullPath("<< fname << ")" << endl;
+  if (!fname.compare(0, 1, "/")) return fname; // fname is already absolute 
+  string fpath = "";
+
+  string xmlpath="", curwd="";
+
+  {
+    // Make sure we call dirname and getcwd correctly and free memory.
+    // We do this in a block to scope the temporary variables.
+
+    char * xmlfile = strdup(filename_.c_str()); // why strdup? because
+    xmlpath = dirname(xmlfile);	      // dirname may modify xmlfile.
+    free (xmlfile); xmlfile = NULL;
+
+    char * cwd = getcwd(NULL, 0);
+    curwd = cwd;
+    free (cwd); cwd = NULL;
+  }
+
+  if (xmlpath.compare(0, 1, "/")) fpath = curwd + "/" ;
+
+  fpath += xmlpath + "/";
+
+  fpath += fname;
+
+  if (debug()) cerr << "DEBUG: Factory::fullPath() returns " << fpath << endl;
+  return fpath;
+  
+}
+
+#endif

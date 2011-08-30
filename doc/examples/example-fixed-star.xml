@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <Metric kind = "KerrBL">
+    <Spin> 0. </Spin>
+    <Mass unit="sunmass"> 4e6 </Mass>
+  </Metric>
+
+  <Screen>
+    <Distance unit="kpc" dmax="1e6"> 8 </Distance>
+    <Time unit="y"> 30e3 </Time>
+    <FieldOfView unit="uas"> 150 </FieldOfView>
+    <Inclination unit="deg"> 90 </Inclination>
+    <PALN> 0 </PALN>
+    <Argument> 0 </Argument>
+    <Resolution> 32 </Resolution>
+  </Screen>
+
+  <Astrobj kind = "FixedStar">
+    <Radius> 12 </Radius>
+    <Position> 0 0 0 </Position>
+    <UseGenericImpact/>
+    <RMax> 10000. </RMax>
+    <OpticallyThin/>
+  </Astrobj>
+
+  <Delta> 1e0 </Delta>
+
+</Scenery>
