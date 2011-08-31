@@ -84,25 +84,25 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	  } else y_error("VEL should have 3 or 4 elements");
 	}
       } else {
-	SmartPointer<Screen> *sc = NULL;
+	SmartPointer<Screen> sc = NULL;
 	if (yarg_Scenery(iarg)) { // initcoord=scenery,i,j or senery,da,dd
 	  SmartPointer<Scenery> *scenery = yget_Scenery(iarg);
 	  (*ph) -> setMetric((*scenery)->getMetric());
 	  (*ph) -> setAstrobj((*scenery)->getAstrobj());
-	  sc = &(*scenery)->getScreen();
-	} else sc = yget_Screen(iarg); //initcoord=screen,i,j or screen, da, dd
+	  sc = (*scenery)->getScreen();
+	} else sc = *yget_Screen(iarg); //initcoord=screen,i,j or screen, da, dd
 	if (yarg_number(piargs[0]+*rvset)==2) {
 	  double da = ygets_d(piargs[0]+*rvset);
 	  double dd = ygets_d(piargs[1]+*rvset);
 	  if (debug()) cerr << "screen, dalpha="<<da <<", ddelta="<<dd <<endl;
-	  (*sc) -> getRayCoord(da, dd, coord);
+	  sc -> getRayCoord(da, dd, coord);
 	} else {
 	  size_t i = ygets_l(piargs[0]+*rvset);
 	  size_t j = ygets_l(piargs[1]+*rvset);
 	  if (debug()) cerr << "screen, i="<<i <<", j="<<j << endl;
-	  (*sc) -> getRayCoord(i, j, coord);
+	  sc -> getRayCoord(i, j, coord);
 	}
-	(*ph) -> setSpectrometer((*sc)->getSpectrometer());
+	(*ph) -> setSpectrometer(sc->getSpectrometer());
       }
 
       if (debug()) {

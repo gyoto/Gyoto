@@ -145,7 +145,17 @@ int main(int argc, char** argv) {
     usage();
     return 1;
   }
-  
+
+  // State copyright
+  if (verbose() >= GYOTO_QUIET_VERBOSITY)
+    cout << " Copyright (c) 2011 Frederic Vincent & Thibaut Paumard\n"
+	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
+	 << " We request that use of Gyoto in scientific publications be "
+	 << " properly \n acknowledged. Please cite:\n"
+	 << "  GYOTO: a new general relativistic ray-tracing code,\n"
+	 << "  F. H. Vincent, T. Paumard, E. Gourgoulhon & G. Perrin 2011,\n"
+	 << "  Classical and Quantum Gravity, submitted." << endl << endl;
+
   // set-up error reporter
   Gyoto::setErrorHandler ( &gyotoErrorHandler );
 

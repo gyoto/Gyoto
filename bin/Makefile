@@ -27,7 +27,7 @@ all: $(EXE)
 ray: RayTracing.o ../lib/libgyoto.a
 	$(CXX) -o $@ $(CXXFLAGS) $(GYOTO_INC) $^  $(LIB_CXX_Gyoto)
 
-gyoto: gyoto.C ../lib/libgyoto.$(DYLIB_SFX)
+gyoto: gyoto.C ../lib/$(LIBGYOTO_FILE)
 	$(CXX) -o $@ $(GYOTO_FLAGS) $(CXXFLAGS_G) $(GYOTO_INC) $< $(LIB_CXX) $(CFITSIO_LIB) -L../lib -lgyoto -ldl
 
 dbgyoto: debugyoto.C ../lib/libgyoto.a
@@ -53,22 +53,19 @@ clean:
 	rm -f libgyoto.a
 	rm -fr gyoto.dSYM
 
-$(PREFIX)/man/man1:
-	install -d $(PREFIX)/man/man1
-
-$(PREFIX)/bin:
-	install -d $(PREFIX)/bin
+$(DESTDIR)$(PREFIX)/share/man/man1 $(DESTDIR)$(PREFIX)/bin:
+	install -d $@
 
 ifeq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
 install:
 else
-install: $(EXE) $(PREFIX)/bin $(PREFIX)/man/man1 gyoto.1
-	install -m 0755 $(EXE) $(PREFIX)/bin
-	install -m 0644 gyoto.1 $(PREFIX)/man/man1
+install: $(EXE) $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/share/man/man1 gyoto.1
+	install -m 0755 $(EXE) $(DESTDIR)$(PREFIX)/bin
+	install -m 0644 gyoto.1 $(DESTDIR)$(PREFIX)/share/man/man1
 endif
 
 uninstall:
-	rm -f $(PREFIX)/bin/gyoto
-	rm -f $(PREFIX)/man/man1/gyoto.1
+	rm -f $(DESTDIR)$(PREFIX)/bin/gyoto
+	rm -f $(DESTDIR)$(PREFIX)/man/man1/gyoto.1
 
 .PHONY: clean install uninstall

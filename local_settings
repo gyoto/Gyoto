@@ -9,6 +9,13 @@ PREFIX       = /usr/local
 #CXX          = g++
 CXX          = g++
 
+# Version of the library:
+# ----------------------
+# This should normally be changed only be the developpers, but can
+# sometimes be overriden by distributors:
+SOVERS_MAJOR = 0
+SOVERS       = $(SOVERS_MAJOR).0.0
+
 # Options for using Xerces:
 # -------------------------
 # Xerces-c 3 is used to read/write scenery descriptions in XML format.
@@ -57,12 +64,15 @@ SYS=$(shell uname -s)
 ifeq ($(SYS),Darwin)
 DYLIB_SFX=dylib
 DYLIB_CFLAG=-dynamiclib
+LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX)
 STLIB_CMD=libtool -static -o
-PLUG_FLAGS=-flat_namespace -bundle -bundle_loader $(LIBGYOTO_PATH)libgyoto.$(DYLIB_SFX)
+PLUG_FLAGS=-flat_namespace -bundle -bundle_loader $(LIBGYOTO_PATH)$(LIBGYOTO_FILE)
 DYLIB_VAR=DYLD_LIBRARY_PATH
 else
 DYLIB_SFX=so
-DYLIB_CFLAG=-shared
+DYLIB_CFLAG=-shared -Wl,-soname,libgyoto.$(DYLIB_SFX).$(SOVERS_MAJOR)
+LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX).$(SOVERS)
+GYOTO_FLAGS += -rdynamic
 STLIB_CMD=ar qc
 PLUG_FLAGS=-shared
 DYLIB_VAR=LD_LIBRARY_PATH

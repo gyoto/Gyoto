@@ -24,7 +24,7 @@ ifdef HOME_LORENE
 PLUGINS += libgyoto-lorene.$(DYLIB_SFX)
 endif
 
-all: libgyoto.a libgyoto.$(DYLIB_SFX) $(PLUGINS)
+all: libgyoto.a $(LIBGYOTO_FILE) $(PLUGINS)
 
 
 list_src:
@@ -37,42 +37,42 @@ libgyoto.a: $(OBJ)
 	rm -f $@
 	$(STLIB_CMD) $@ $^
 
-libgyoto.$(DYLIB_SFX): $(OBJ)
+$(LIBGYOTO_FILE): $(OBJ)
 	g++ -o $@ $(DYLIB_CFLAG)  $(LIB_CXX) $^
 
-libgyoto-stdplug.$(DYLIB_SFX): $(STDPLUG_OBJ) StdPlug.o libgyoto.$(DYLIB_SFX)
+libgyoto-stdplug.$(DYLIB_SFX): $(STDPLUG_OBJ) StdPlug.o $(LIBGYOTO_FILE) Metric.o
 	g++ -o $@  $(PLUG_FLAGS)  $(LIB_CXX) $(STDPLUG_OBJ) StdPlug.o
 
 $(LORENEPLUG_OBJ): $(LORENEPLUG_SRC)
 	make -f Makefile.lorene $@
 
-libgyoto-lorene.$(DYLIB_SFX): $(LORENEPLUG_OBJ) libgyoto.$(DYLIB_SFX)
+libgyoto-lorene.$(DYLIB_SFX): $(LORENEPLUG_OBJ) $(LIBGYOTO_FILE)
 	make -f Makefile.lorene
 
 doc: doc.C $(SRC)  *.h
 	doxygen doxyfile
 
 clean:
-	rm -f $(OBJ) $(STDPLUG_OBJ) $(LORENEPLUG_OBJ) StdPlug.o *.$(DYLIB_SFX)
+	rm -f $(OBJ) $(STDPLUG_OBJ) $(LORENEPLUG_OBJ) StdPlug.o *.$(DYLIB_SFX)*
 	rm -fr Doc
 	rm -fr *~
 	rm -f libgyoto.a
 	rm -f ../include/*~
 	rm -Rf Gyoto
 
-$(PREFIX)/include $(PREFIX)/lib:
+$(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib:
 	install -d $@
 
-install: libgyoto.a libgyoto.$(DYLIB_SFX) $(PLUGINS) \
-	            $(PREFIX)/include $(PREFIX)/lib
-	install -m 0755 libgyoto.$(DYLIB_SFX) $(PREFIX)/lib
-	install -m 0755 libgyoto-stdplug.$(DYLIB_SFX) $(PREFIX)/lib
-	-install -m 0755 libgyoto-lorene.$(DYLIB_SFX) $(PREFIX)/lib
-	install -m 0644 libgyoto.a $(PREFIX)/lib
-	install -m 0644 ../include/Gyoto*.h $(PREFIX)/include
+install: libgyoto.a $(LIBGYOTO_FILE) $(PLUGINS) \
+	            $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib
+	install -m 0755 $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib
+	install -m 0755 libgyoto-stdplug.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib
+	-install -m 0755 libgyoto-lorene.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib
+	install -m 0644 libgyoto.a $(DESTDIR)$(PREFIX)/lib
+	install -m 0644 ../include/Gyoto*.h $(DESTDIR)$(PREFIX)/include
 
 uninstall:
-	rm -f $(PREFIX)/lib/libgyoto*
-	rm -f $(PREFIX)/include/Gyoto*.h
+	rm -f $(DESTDIR)$(PREFIX)/lib/libgyoto*
+	rm -f $(DESTDIR)$(PREFIX)/include/Gyoto*.h
 
 .PHONY: clean install uninstall

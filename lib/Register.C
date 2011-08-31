@@ -50,8 +50,7 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
   if (!handle && nofail) {
     if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
-      cerr << "WARNING: loading " << dlfile
-	   << " failed but this is not fatal." << endl;
+      cerr << "WARNING: unable to load optional plugin " << dlfile << endl;
     return;
   }
   if ( (err=dlerror()) ) throwError(err);
