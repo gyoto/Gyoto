@@ -170,6 +170,8 @@ int Star::Impact_(Photon *ph, size_t index, AstrobjProperties *data) {
   // Integrate Star's geodesic over same period
   xFill(t1); xFill(t2);// has been called at the previous step
 
+  //save_txyz("StarPos.dat");
+
   int hit=0;
 
   // t1 -> t2 may span several integration steps for the Star

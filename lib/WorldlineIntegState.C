@@ -45,6 +45,7 @@ WorldlineIntegState::WorldlineIntegState(SmartPointer<Metric> gg,
 
 
 int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) {
+
   int j;
   int coutcoord=0;//to display coordinates updated values
   int coutnormdel=0;//to display new norm and integ step
@@ -99,11 +100,11 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
 
   norm_=gg_ -> ScalarProd(coord,coord+4,coord+4);
 
-  double normtol=0.001;
+  double normtol=.001;
   if (fabs(norm_-normref_)>normtol) {
 
     if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-      cout << "***WARNING (severe): WlIntegState.C: Norm pb with norm,x1,x2,x3= " << norm_ << " " << coord[1] << " " << coord[2] << " " << coord[3] << endl;
+      cout << "***WARNING (severe): WlIntegState.C: Norm pb with norm,x1,x2,x3= " << norm_ << " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]) << endl;
   }
 
   if (delta_==delta_+1) return 1; // delta == Infinity : stop condition
@@ -114,7 +115,7 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
     for (int i=1; i<8; ++i) cerr << ", " << coord[i];
     cerr << "], delta="<< del << ", delta_="<<delta_<<endl;
   }
-
+  
   return 0;
 }
 

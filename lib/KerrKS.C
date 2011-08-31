@@ -42,7 +42,11 @@ In particular, don't trust too much the result with spin>0
  */
 
 KerrKS::KerrKS() : Metric(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {setKind("KerrKS");}
+  setKind("KerrKS");
+}
 KerrKS::KerrKS(double a, double m) : Metric(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {setKind("KerrKS");}
+  setKind("KerrKS");
+}
 
 // default copy constructor should be fine
 // KerrKS::KerrKS(const KerrKS& gg) : 
@@ -113,7 +117,7 @@ double KerrKS::gmunu(const double * pos, int mu, int nu) const {
 } 
 
 int KerrKS::diff(const double* coord, const double* cst, double* res) const{
-  
+
   //Important note: coord and res are double[7], not double[8] because
   //there's no Tdotdot equation Here coord MUST BE:
   //(T,x,y,z,xdot,ydot,zdot)
@@ -165,8 +169,10 @@ int KerrKS::diff(const double* coord, const double* cst, double* res) const{
 
   //Horizon test:
   double rsink=1.+sqrt(1.-spin2)+drhor;
-  if (rr<rsink && rdot <0 && Tdot<0) { // see comment in MakeCst; even if KS is okay at the horizon, a geodesic can't escape the horizon, so the eq of geodesic fail there --> must check we're far enough
-    if (debug()) cerr << "Too close to horizon in KerrKS::diff at r= " << rr << endl;
+
+  if (rr<rsink && rdot >0 && Tdot>0) {// even if KS is okay at the horizon, a geodesic can't escape the horizon, so the eq of geodesic fail there --> must check we're far enough
+    if (debug()) 
+      cerr << "Too close to horizon in KerrKS::diff at r= " << rr << endl;
     return 1;
   }
 

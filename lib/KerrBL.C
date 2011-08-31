@@ -520,8 +520,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 			   double , double , double coordout1[8],
 			   double h0, double& h1) const
 {
-  //  cout << "In KerrBL::myrk4 ada" << endl;
-
+  
   /*Switch BL -> principal momenta*/
   double coor[8], coor1[8], cstest[4], coorhalf[8], coor2[8],
     coor1bis[8], mycoor[8], delta1[8];
@@ -545,7 +544,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 
   if (fabs(fmod(coor[2]+M_PI/2, M_PI)-M_PI/2) < GYOTO_MIN_THETA) {
     if (debug())
-      cerr << "***WARNING: Too close to Z axis: stopping integration"<< endl;
+      cerr << "WARNING: Too close to Z axis: stopping integration"<< endl;
     return 1;}
 
   if (diff(coor,cst,dcoor)) return 1 ;
@@ -593,7 +592,8 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       // course)
       
       if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	cerr << " ***WARNING (severe): in KerrBL.C badly treated Z-AXIS PROBLEM ; stopping..."
+	cerr << "WARNING: " << endl
+	     << "in KerrBL.C couldn't solve z-axis problem ; stopping..."
 	     << endl;
       return 1;
     }
@@ -644,14 +644,17 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	normtemp = ScalarProd(mycoor, mycoor+4, mycoor+4);
 	computeCst(mycoor,cstest);
 	QCarter=cst[3];
-	(QCarter>10*cstol)?(div=QCarter):(div=1.);
+	//(QCarter>10*cstol)?(div=QCarter):(div=1.);
+	(QCarter>1e-10)?(div=QCarter):(div=1.);
 	  // defines div, which allow to compute a relative or absolute
 	  // difference between current and true Carter cst below,
 	  // depending on the Carter cst value.
 	if (cst[0]==0.) {
 	  // checks whether norm and Carter cst are close to being conserved
 	  if ( (fabs(normtemp)>cstol) 
-	       || (fabs(cstest[3]-QCarter)/div>cstol) ) makerr=1;
+	       || (fabs(cstest[3]-QCarter)/div>cstol) ) {
+	    makerr=1;
+	  }
 	}else{
 	  if ( (fabs(normtemp+1.)>cstol) 
 	       || (fabs(cstest[3]-QCarter)/div>cstol) ) makerr=1;
@@ -659,21 +662,22 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	
 	if (makerr) {
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	    cerr << "WARNING (severe):" << endl
-		 << "Current norm, current Carter cst= " << normtemp << " "
-		 << cstest[3] << endl
-		 << "Real norm, real Carter cst= " << cst[0] << " " 
-		 << QCarter << endl;
+	    cerr << "WARNING:" << endl
+		 << "Real norm, current norm= " << cst[0] << " " << normtemp << endl
+		 << "Carter cst error= " 
+		 << fabs(QCarter-cstest[3])/fabs(QCarter)*100. << " %"
+		 << endl;
 	  if (coor1[1]<rlimitol) {
-	    if (debug()) cerr << "***WARNING: z-axis problem badly treated in "
+	    if (debug()) cerr << "Probable cause of warning:"
+			      << "z-axis problem badly treated in "
 			      << "KerrBL::myrk4_adaptive" << endl;
 	    // some rare cases can end up with bad cst conservation
 	    // even at r = a few rhor...
 	  }else{
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	    cerr << "At r= " << coor1[1] << endl
-		 << " ***WARNING (severe): Cst of motion are not conserved "
-		 << "far from horizon! Maybe increase parameter cstol" << endl;
+	    cerr << "Previous warning occured at r= " << coor1[1] << endl
+		 << "i.e. far from horizon! Maybe increase parameter cstol " 
+		 << "in KerrBL.C" << endl;
 	  }
 	}
 
@@ -741,7 +745,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[4], double coo
 	if (fabs(argsqrt)>limargbis)
 	  throwError("In KerrBL::CheckCons Impossible to determine thetadot; "
 		     "maybe try to increase parameter limarg");
-	if (debug()) cerr << "***WARNING In KerrBL::CheckCons argsqrt= " << argsqrt << " at theta= " << coor_init[2] << ". Putting it to 0..." << endl;
+	if (debug()) cerr << "WARNING In KerrBL::CheckCons argsqrt= " << argsqrt << " at theta= " << coor_init[2] << ". Putting it to 0..." << endl;
 	argsqrt=0.;
       }
     }
@@ -787,7 +791,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
     if (argrac<0 && fabs(argrac)>arglim) {
       if (rr/rhor < 2.) {//A AFFINER?? //if the quantity is <0 and "big", but we are close to horizon --> put it to zero with Warning message
 	if (debug()) {
-	  cerr << "***WARNING 0-NORM CLOSE TO HORIZON : "
+	  cerr << "WARNING 0-NORM CLOSE TO HORIZON : "
 	       << "in KerrBL::Normalize4v impossible to normalize 0-mass "
 	       << "particule next to horizon. Putting argrac to 0. "
 	       << "Effective value of argrac= " << argrac << endl
@@ -812,7 +816,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
     if (argrac<0 && fabs(argrac)>arglim) {
       if (rr/rhor < 2.) {//A AFFINER??
 	if (debug()) {
-	  cerr << "***WARNING -1 - NORM CLOSE TO HORIZON : "
+	  cerr << "WARNING -1 - NORM CLOSE TO HORIZON : "
 	       << "in KerrBL::Normalize4v impossible to normalize massive "
 	       << "particle next to horizon. Putting argrac to 0. "
 	       << "Effective value of argrac= " << argrac << endl

@@ -161,7 +161,7 @@ void Photon::setInitialCondition(SmartPointer<Metric> met,
 }
 
 int Photon::hit(AstrobjProperties *data) {
-  //cout << "In Photon::hit" << endl;
+
   /*
     Ray-tracing of the photon until the object_ is hit. Radiative
     transfer inside the object_ may then be performed depending on

@@ -139,10 +139,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       cout << "\rj = " << j << " / " << jmax << " " << flush;
 
     for (size_t i=imin;i<=imax;i++) {
-
+      
       if (debug()) 
-	cout << "i = " << i << ", j = " << j << endl;
-
+		cout << "i = " << i << ", j = " << j << endl;
+      
       screen_ -> getRayCoord(i, j, coord);
 
       //1. Init cond :

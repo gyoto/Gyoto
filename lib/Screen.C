@@ -302,14 +302,19 @@ void Screen::getRayCoord(double alpha, double delta,
     break;
   case GYOTO_COORDKIND_SPHERICAL:
     {
+      pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
+      double grr=gg_->gmunu(pos,1,1), gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
       coord[5]=-vel[2];
+      //coord[5]=-vel[2]/sqrt(grr);
       double sp=sin(euler_[0]);
       double cp=cos(euler_[0]);
       coord[6]=(-sp*vel[0]+cp*vel[1])/coord[1];
+      //coord[6]=(-sp*vel[0]+cp*vel[1])/sqrt(gthth);
       coord[7]=( cp*vel[0]+sp*vel[1])/(coord[1]*sin(coord[2]));
-      //Normalization of Boyer-Lindquist projected velocity to 1 (see manual for details). This is a choice of normalization for the photon tangent vector that boils down to taking observed frequency = 1.
-      pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
-      double grr=gg_->gmunu(pos,1,1), gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
+      //coord[7]=( cp*vel[0]+sp*vel[1])/sqrt(gphph);
+
+      //Normalization of Boyer-Lindquist projected velocity to 1 (see manual for details). This is a choice of normalization for the photon tangent vector (i.e. 4-momentum) that boils down to taking observed frequency = 1.
+
       double lambda;
       double nuobs=1.;
 
