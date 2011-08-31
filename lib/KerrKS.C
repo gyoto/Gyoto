@@ -42,11 +42,8 @@ In particular, don't trust too much the result with spin>0
  */
 
 KerrKS::KerrKS() : Metric(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {setKind("KerrKS");}
-  setKind("KerrKS");
-}
+
 KerrKS::KerrKS(double a, double m) : Metric(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {setKind("KerrKS");}
-  setKind("KerrKS");
-}
 
 // default copy constructor should be fine
 // KerrKS::KerrKS(const KerrKS& gg) : 
