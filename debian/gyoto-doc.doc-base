@@ -1,0 +1,11 @@
+Document: gyoto
+Title: Gyoto Reference Manual
+Author: Thibaut Paumard & Frédéric Vincent
+Abstract: This manual documents the internals
+ of the General relativitY Orbit Tracer of
+ Observatoire de Paris.
+Section: Science/Astronomy
+
+Format: HTML
+Index: /usr/share/doc/gyoto-doc/html/index.html
+Files: /usr/share/doc/gyoto-doc/html/*.html

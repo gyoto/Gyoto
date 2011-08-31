@@ -1,0 +1,604 @@
+libgyoto.so.0 libgyoto0 #MINVER#
+ (c++)"Cs(unsigned short const*)@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLDeleter::~XMLDeleter()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLDeleter::~XMLDeleter()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLDeleter::~XMLDeleter()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::PSVIHandler::handlePartialElementPSVI(unsigned short const*, unsigned short const*, xercesc_3_1::PSVIElement*)@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::PSVIHandler::~PSVIHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::PSVIHandler::~PSVIHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::PSVIHandler::~PSVIHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::ErrorHandler::ErrorHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::ErrorHandler::ErrorHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::ErrorHandler::~ErrorHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::ErrorHandler::~ErrorHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::ErrorHandler::~ErrorHandler()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::~DTDEntityDecl()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::~DTDEntityDecl()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::~DTDEntityDecl()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLAttDefList::~XMLAttDefList()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLAttDefList::~XMLAttDefList()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XMLAttDefList::~XMLAttDefList()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XSerializable::~XSerializable()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XSerializable::~XSerializable()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::XSerializable::~XSerializable()@Base" 0.0.0~git20110831
+ (c++)"XStr::XStr(char const*)@Base" 0.0.0~git20110831
+ (c++)"XStr::XStr(unsigned short const*)@Base" 0.0.0~git20110831
+ (c++)"XStr::XStr(char const*)@Base" 0.0.0~git20110831
+ (c++)"XStr::XStr(unsigned short const*)@Base" 0.0.0~git20110831
+ (c++)"XStr::~XStr()@Base" 0.0.0~git20110831
+ (c++)"XStr::~XStr()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::FocalPlane(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double, double, double, double, unsigned int, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::FocalPlane(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double, double, unsigned int, unsigned int, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::FocalPlane(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double, double, double, double, unsigned int, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::FocalPlane(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double, double, unsigned int, unsigned int, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::~FocalPlane()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::~FocalPlane()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::loadPlugin(char const*, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::throwError(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::decRefCount()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::getRefCount()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::incRefCount()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::SmartPointee(Gyoto::SmartPointee const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::SmartPointee()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::SmartPointee(Gyoto::SmartPointee const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointee::SmartPointee()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer(Gyoto::Spectrometer*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer(Gyoto::SmartPointer<Gyoto::Spectrometer> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer<Gyoto::Screen>(Gyoto::SmartPointer<Gyoto::Screen> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer(Gyoto::Spectrometer*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer(Gyoto::SmartPointer<Gyoto::Spectrometer> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::SmartPointer<Gyoto::Screen>(Gyoto::SmartPointer<Gyoto::Screen> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator=(Gyoto::Spectrometer*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator=(Gyoto::SmartPointer<Gyoto::Spectrometer>&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator bool()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::SmartPointer(Gyoto::WorldlineIntegState*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::SmartPointer(Gyoto::WorldlineIntegState*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::WorldlineIntegState>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::SmartPointer(Gyoto::Metric*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::SmartPointer(Gyoto::SmartPointer<Gyoto::Metric> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::SmartPointer(Gyoto::Metric*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::SmartPointer(Gyoto::SmartPointer<Gyoto::Metric> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator=(Gyoto::Metric*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator=(Gyoto::SmartPointer<Gyoto::Metric>&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator Gyoto::Metric*()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator bool()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator!=(Gyoto::SmartPointer<Gyoto::Metric> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::SmartPointer(Gyoto::Photon*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::SmartPointer(Gyoto::SmartPointer<Gyoto::Photon> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::SmartPointer(Gyoto::Photon*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::SmartPointer(Gyoto::SmartPointer<Gyoto::Photon> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::operator=(Gyoto::Photon*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::operator Gyoto::Photon*()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::SmartPointer(Gyoto::Screen*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::SmartPointer(Gyoto::SmartPointer<Gyoto::Screen> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::SmartPointer(Gyoto::Screen*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::SmartPointer(Gyoto::SmartPointer<Gyoto::Screen> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator=(Gyoto::Screen*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator=(Gyoto::SmartPointer<Gyoto::Screen>&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator Gyoto::Screen*()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator bool()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator!=(Gyoto::SmartPointer<Gyoto::Screen> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::SmartPointer(Gyoto::Astrobj*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::SmartPointer(Gyoto::SmartPointer<Gyoto::Astrobj> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::SmartPointer(Gyoto::Astrobj*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::SmartPointer(Gyoto::SmartPointer<Gyoto::Astrobj> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator=(Gyoto::Astrobj*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator=(Gyoto::SmartPointer<Gyoto::Astrobj>&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator Gyoto::Astrobj*()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator bool()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator!=(Gyoto::SmartPointer<Gyoto::Astrobj> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::decRef()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::SmartPointer(Gyoto::Scenery*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::SmartPointer(Gyoto::SmartPointer<Gyoto::Scenery> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::SmartPointer(Gyoto::Scenery*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::SmartPointer(Gyoto::SmartPointer<Gyoto::Scenery> const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::~SmartPointer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::operator=(Gyoto::Scenery*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::operator Gyoto::Scenery*()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrum::Generic>::operator->()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::fillElement(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::setNSamples(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::reset_()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::setBand(double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::setKind(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::setKind(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer(Gyoto::Spectrometer const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer(unsigned int, double, double, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer(Gyoto::Spectrometer const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer(unsigned int, double, double, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::Spectrometer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::~Spectrometer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::~Spectrometer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::~Spectrometer()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::setErrorHandler(void (*)(char const*))@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::fatalError(xercesc_3_1::SAXParseException const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::resetErrors()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::error(xercesc_3_1::SAXParseException const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::warning(xercesc_3_1::SAXParseException const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::DOMErrorReporter()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::DOMErrorReporter()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::~DOMErrorReporter()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::~DOMErrorReporter()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::DOMErrorReporter::~DOMErrorReporter()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getAstrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setAstrobj(Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, double*, unsigned int, Gyoto::factoryMessenger**)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setFullContent(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getNextParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::basic_string<char, std::char_traits<char>, std::allocator<char> >*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setSelfAttribute(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setSelfAttribute(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::reset()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::fullPath(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getMetric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getPhoton()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getScreen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::makeChild(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setMetric(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::setScreen(Gyoto::SmartPointer<Gyoto::Screen>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::factoryMessenger(Gyoto::Factory*, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::factoryMessenger(Gyoto::factoryMessenger const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::factoryMessenger(Gyoto::Factory*, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::factoryMessenger(Gyoto::factoryMessenger const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::init(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties(double*, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties(Gyoto::AstrobjProperties const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties(double*, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties(Gyoto::AstrobjProperties const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::AstrobjProperties()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::AstrobjProperties::operator++()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::PhotonSubcontractor(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::nextStep(Gyoto::Worldline*, double*, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::setCoord(double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::get_delta()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::WorldlineIntegState(Gyoto::SmartPointer<Gyoto::Metric>, double const*, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::WorldlineIntegState()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::WorldlineIntegState(Gyoto::SmartPointer<Gyoto::Metric>, double const*, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::WorldlineIntegState()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::~WorldlineIntegState()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::~WorldlineIntegState()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::WorldlineIntegState::~WorldlineIntegState()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::ScenerySubcontractor(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SpectrometerSubcontractor(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::Error(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::Error(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::~Error()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::~Error()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::debug(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::debug()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::fillElement(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::getRefCount()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::initRegister()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::setCoordKind(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::getSubcontractor(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::processGenericParameters(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::setKind(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::setMass(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::setMass(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Register(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Gyoto::SmartPointer<Gyoto::Metric> (*)(Gyoto::factoryMessenger*))@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Register_@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric(double, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric(double, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Metric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::~Metric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::~Metric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::~Metric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::setAstrobj(Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::fillElement(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::setSpectrometer(Gyoto::SmartPointer<Gyoto::Spectrometer>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::resetTransmission()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::setInitialCondition(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, Gyoto::SmartPointer<Gyoto::Screen>, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::setInitialCondition(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double const*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::_allocateTransmission()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::hit(Gyoto::AstrobjProperties*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::findMin(Gyoto::Astrobj*, double, double, double&, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::transmit(unsigned int, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::findValue(Gyoto::Astrobj*, double, double, double&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, Gyoto::SmartPointer<Gyoto::Screen>, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::Photon const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, Gyoto::SmartPointer<Gyoto::Screen>, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Astrobj>, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon(Gyoto::Photon const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::Photon()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::~Photon()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::~Photon()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::~Photon()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::fillElement(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setArgument(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setArgument(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setDistance(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setDistance(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::Subcontractor(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getResolution()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setProjection(double, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setProjection(double, double, double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setResolution(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getFieldOfView()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setFieldOfView(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setFieldOfView(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setInclination(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setInclination(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setObserverPos(double const*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setSpectrometer(Gyoto::SmartPointer<Gyoto::Spectrometer>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::computeBaseVectors()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getTime()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setDmax(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setPALN(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setPALN(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setTime(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setTime(double, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::setMetric(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::Screen(Gyoto::Screen const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::Screen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::Screen(Gyoto::Screen const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::Screen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::~Screen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::~Screen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::~Screen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getVelocity(double const*, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::initRegister()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getSubcontractor(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::setFlag_radtransf(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::setGenericParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getDefaultQuantities()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Impact(Gyoto::Photon*, unsigned int, Gyoto::AstrobjProperties*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getRmax()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::setRmax(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Register(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Gyoto::SmartPointer<Gyoto::Astrobj> (*)(Gyoto::factoryMessenger*))@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Register_@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::setMetric(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::unsetRmax()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(Gyoto::Astrobj const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(Gyoto::Astrobj const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::Astrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::~Astrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::~Astrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::~Astrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::operator()(double const*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getAstrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getScenery()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setAstrobj(Gyoto::SmartPointer<Gyoto::Astrobj>, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setContent(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getSpectrum()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setReporter(xercesc_3_1::ErrorHandler*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, double*, unsigned int, xercesc_3_1::DOMElement*, Gyoto::factoryMessenger**)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, double, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned int, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, long, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::write(char const*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::format()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getDoc()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getKind()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getRoot()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::fullPath(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getMetric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getPhoton()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::getScreen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setMetric(Gyoto::SmartPointer<Gyoto::Metric>, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::setScreen(Gyoto::SmartPointer<Gyoto::Screen>, xercesc_3_1::DOMElement*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Spectrometer>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Photon>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Screen>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Scenery>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(char*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Spectrometer>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Photon>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Screen>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Scenery>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::Factory(char*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::~Factory()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Factory::~Factory()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getAstrobj()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setAstrobj(Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::fillElement(Gyoto::factoryMessenger*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setRequestedQuantities(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setRequestedQuantities(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::rayTrace(unsigned int, unsigned int, unsigned int, unsigned int, Gyoto::AstrobjProperties*, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setDelta(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getMetric()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getScreen()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setMetric(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::setScreen(Gyoto::SmartPointer<Gyoto::Screen>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Screen>, Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery(Gyoto::Scenery const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery(Gyoto::SmartPointer<Gyoto::Metric>, Gyoto::SmartPointer<Gyoto::Screen>, Gyoto::SmartPointer<Gyoto::Astrobj>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery(Gyoto::Scenery const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::Scenery()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::~Scenery()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::~Scenery()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::operator()(unsigned int, unsigned int, Gyoto::AstrobjProperties*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::convert(double*, unsigned int, double, double, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::verbose(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::verbose()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::init(char*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::list()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::Entry::getSubcontractor(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::Entry::Entry(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, void*, Gyoto::Register::Entry*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::Entry::Entry(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, void*, Gyoto::Register::Entry*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::Entry::~Entry()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Register::Entry::~Entry()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::initRegister()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::getSubcontractor(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::setGenericParameter(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::integrate(double, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::integrate(double, double, Gyoto::Spectrum::Generic const*, double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::Generic(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::Generic(std::basic_string<char, std::char_traits<char>, std::allocator<char> >)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Register(std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Gyoto::SmartPointer<Gyoto::Spectrum::Generic> (*)(Gyoto::factoryMessenger*))@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Register_@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCartesian(double const*, unsigned int, double*, double*, double*, double*, double*, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setInitCoord(double const*, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setInitialCondition(Gyoto::SmartPointer<Gyoto::Metric>, double const*, int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::reset()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::xFill(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setCst(double const*, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getTlim()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setTlim(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::xExpand(int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCoord(double const*, unsigned int, double*, double*, double*, double*, double*, double*, double*)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setDelta(double)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::save_txyz(char*, double, double, double, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Gyoto::SmartPointer<Gyoto::Screen>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::setMetric(Gyoto::SmartPointer<Gyoto::Metric>)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::xAllocate(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::xAllocate()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline(Gyoto::Worldline const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline(Gyoto::Worldline const&)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline(unsigned int)@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::Worldline()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::~Worldline()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::~Worldline()@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::~Worldline()@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::getIsParameter() const@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::getIsSpecialChar() const@Base" 0.0.0~git20110831
+ (c++)"xercesc_3_1::DTDEntityDecl::getDeclaredInIntSubset() const@Base" 0.0.0~git20110831
+ (c++)"XStr::getCForm() const@Base" 0.0.0~git20110831
+ (c++)"XStr::getXForm() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getX(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getY(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getDx() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getDy() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getNx() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getNy() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getXmax() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getXmin() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getYmax() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::FocalPlane::getYmin() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator()() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Spectrometer>::operator->() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator()() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator!() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Metric>::operator->() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Photon>::operator!() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator()() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator!() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Screen>::operator->() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator()() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator!() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Astrobj>::operator->() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::SmartPointer<Gyoto::Scenery>::operator!() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getKindStr() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getChannels() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getNSamples() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getMidpoints() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getBand() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrometer::getWidths() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getAttribute(std::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getFullContent() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getSelfAttribute(std::basic_string<char, std::char_traits<char>, std::allocator<char> >) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::factoryMessenger::getChild() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::getErrcode() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::get_message() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Error::Report() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::ScalarProd(double const*, double const*, double const*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::unitLength() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::getCoordKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::nullifyCoord(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::nullifyCoord(double*, double&) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::SysPrimeToTdot(double const*, double const*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::myrk4_adaptive(Gyoto::Worldline*, double const*, double, double, double*, double, double&) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::isStopCondition(double const*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::circularVelocity(double const*, double*, double) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::setParticleProperties(Gyoto::Worldline*, double const*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::diff(double const*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::myrk4(Gyoto::Worldline*, double const*, double, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::Norm3D(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::getKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Metric::getMass() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getAstrobj() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getFreqObs() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::className_l() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getSpectrometer() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getTransmission(unsigned int) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getTransmission() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::getMass() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Photon::className() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::coordToSky(double const*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::coordToXYZ(double const*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getArgument() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getDistance() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getRayCoord(double, double, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getRayCoord(unsigned int, unsigned int, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getCoordKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getInclination() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getObserverPos(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getSpectrometer() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::printBaseVectors(std::basic_ostream<char, std::char_traits<char> >&) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::print(std::basic_ostream<char, std::char_traits<char> >&) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getDmax() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getPALN() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Screen::getMetric() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::fillElement(Gyoto::factoryMessenger*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::transmission(double, double, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getFlag_radtransf() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::integrateEmission(double, double, double, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::processHitQuantities(Gyoto::Photon*, double*, double*, double, Gyoto::AstrobjProperties*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Astrobj::getMetric() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getRequestedQuantities() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getScalarQuantitiesCount() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getRequestedQuantitiesString() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Scenery::getDelta() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::fillElement(Gyoto::factoryMessenger*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::clone() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::getKind() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Spectrum::Generic::operator()(double, double, double) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::className_l() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::get_nelements() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCartesianPos(unsigned int, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getInitialCoord(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getI0() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::get_t(double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCst() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getImax() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getImin() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::get_dot(double*, double*, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::get_xyz(double*, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCoord(double*, double*, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getCoord(unsigned int, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::className() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getMetric() const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::getSkyPos(Gyoto::SmartPointer<Gyoto::Screen>, double*, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::get_prime(double*, double*, double*) const@Base" 0.0.0~git20110831
+ (c++)"Gyoto::Worldline::save_txyz(char*) const@Base" 0.0.0~git20110831
+ (c++)"std::type_info::name() const@Base" 0.0.0~git20110831
+ (c++)"std::char_traits<char>::length(char const*)@Base" 0.0.0~git20110831
+ (c++)"std::char_traits<char>::compare(char const*, char const*, unsigned int)@Base" 0.0.0~git20110831
+ (c++)"std::setprecision(int)@Base" 0.0.0~git20110831
+ (c++)"std::setw(int)@Base" 0.0.0~git20110831
+ (c++)"__gnu_cxx::__enable_if<std::__is_char<char>::__value, bool>::__type std::operator==<char>(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"bool std::operator==<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)@Base" 0.0.0~git20110831
+ (c++)"bool std::operator!=<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)@Base" 0.0.0~git20110831
+ (c++)"std::operator|(std::_Ios_Openmode, std::_Ios_Openmode)@Base" 0.0.0~git20110831
+ (c++)"std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, char const*)@Base" 0.0.0~git20110831
+ (c++)"std::basic_string<char, std::char_traits<char>, std::allocator<char> > std::operator+<char, std::char_traits<char>, std::allocator<char> >(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::XMLDeleter@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::PSVIHandler@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::ErrorHandler@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::DTDEntityDecl@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::XMLAttDefList@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::XSerializable@Base" 0.0.0~git20110831
+ (c++)"typeinfo for xercesc_3_1::XMemory@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::SmartPointee@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Spectrometer@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::DOMErrorReporter@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::WorldlineIntegState@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Error@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Metric@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Photon@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Screen@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Astrobj@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Scenery@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Spectrum::Generic@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Worldline@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Spectrometer*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::WorldlineIntegState*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Metric*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Photon*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Screen*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Astrobj*@Base" 0.0.0~git20110831
+ (c++)"typeinfo for Gyoto::Scenery*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::XMLDeleter@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::PSVIHandler@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::ErrorHandler@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::DTDEntityDecl@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::XMLAttDefList@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::XSerializable@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for xercesc_3_1::XMemory@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::SmartPointee@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Spectrometer@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::DOMErrorReporter@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::WorldlineIntegState@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Error@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Metric@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Photon@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Screen@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Astrobj@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Scenery@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Spectrum::Generic@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Worldline@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Spectrometer*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::WorldlineIntegState*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Metric*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Photon*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Screen*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Astrobj*@Base" 0.0.0~git20110831
+ (c++)"typeinfo name for Gyoto::Scenery*@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::XMLDeleter@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::PSVIHandler@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::ErrorHandler@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::DTDEntityDecl@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::XMLAttDefList@Base" 0.0.0~git20110831
+ (c++)"vtable for xercesc_3_1::XSerializable@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Spectrometer@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::DOMErrorReporter@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::WorldlineIntegState@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Metric@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Photon@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Screen@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Astrobj@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Spectrum::Generic@Base" 0.0.0~git20110831
+ (c++)"vtable for Gyoto::Worldline@Base" 0.0.0~git20110831

@@ -1,0 +1,3 @@
+yorick-gyoto: script-not-executable usr/share/yorick/i/gyotoy.i
+yorick-gyoto: wrong-path-for-interpreter usr/share/yorick/i/gyotoy.i (#!/usr/local/bin/yorick != /usr/bin/yorick)
+# This "script" is actually called through a wrapper /usr/bin/gyotoy

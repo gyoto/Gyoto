@@ -1,0 +1,13 @@
+debian/tmp/usr/lib/yorick/bin/gyotoy                 bin     usr/bin/gyotoy
+debian/tmp/usr/lib/yorick/glade/gyotoy.glade
+debian/tmp/usr/lib/yorick/i/*.i
+debian/tmp/usr/lib/yorick/i0/*.i                     i0
+debian/tmp/usr/lib/yorick/include/ygyoto.h           include
+debian/tmp/usr/lib/yorick/include/ygyoto_supplier.C  include
+debian/tmp/usr/lib/yorick/lib/*.so
+debian/tmp/usr/lib/yorick/python/gyotoy.py
+debian/lintian-overrides.d/yorick-gyoto         usr/share/lintian/overrides
+yorick/yorick-gyoto.aliases
+yorick/yorick-gyoto.packinfo
+yorick/yorick-gyoto.keywords
+yorick/gyoto.info

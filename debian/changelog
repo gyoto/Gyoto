@@ -1,0 +1,5 @@
+gyoto (0.0.0~git20110831-1) unstable; urgency=low
+
+  * Initial release (Closes: #640809)
+
+ -- Thibaut Paumard <paumard@users.sourceforge.net>  Wed, 31 Aug 2011 14:55:52 +0200

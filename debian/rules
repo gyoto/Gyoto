@@ -1,0 +1,78 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+#
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# Modified to make a template file for a multi-binary package with separated
+# build-arch and build-indep targets  by Bill Allombert 2001
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# This has to be exported to make some magic below work.
+export DH_OPTIONS
+
+install-arch: build-stamp
+	dh_auto_install -- install install-yorick
+	dh_install -a -N yorick-gyoto
+	dh_installyorick --no-make-install -pyorick-gyoto
+	dh_makeshlibs -a
+	dh install-arch
+
+install-indep: doc-stamp
+	dh_testdir -i
+	dh_testroot -i
+	dh_prep -i
+	dh_installdirs -i
+	dh_install -i
+	dh_installdocs -i
+	dh_installchangelogs -i
+	dh_installexamples -i
+	dh_lintian -i
+	dh_link -i
+	dh_compress -i
+	dh_fixperms -i
+
+yorick/Makefile.orig yorick/stdplug/Makefile.orig:
+	cp $(subst .orig,,$@) $@
+
+build-arch build-stamp: yorick/Makefile.orig yorick/stdplug/Makefile.orig
+	dh_testdir -a
+	dh_auto_build -a -- lib bin yorick
+ifeq (,$(filter nocheck, $(DEB_BUILD_OPTIONS)))
+	make check check-yorick
+endif
+	touch build-stamp
+
+build-indep doc-stamp:
+	dh_testdir -i
+	dh_auto_build -i -- doc
+	touch doc-stamp
+
+binary: binary-indep binary-arch
+
+binary-indep: install-indep
+	dh $@
+
+binary-arch: install-arch
+	dh $@
+
+clean: yorick/Makefile.orig yorick/stdplug/Makefile.orig
+	dh_testdir
+	make clean
+	-mv -f yorick/Makefile.orig yorick/Makefile
+	-mv -f yorick/stdplug/Makefile.orig yorick/stdplug/Makefile
+	dh_clean doc-stamp build-stamp
+
+override_dh_auto_test:
+
+override_dh_strip:
+	dh_strip --dbg-package=gyoto-dbg
+
+%:
+	dh $@ 
+
