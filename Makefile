@@ -14,7 +14,7 @@ $(DIR) doc:
 yorick:
 	cd $@; yorick -batch make.i; $(MAKE)
 check-yorick:
-	cd yorick; $(DYLIB_VAR)=../lib:$(DYLIB_VAR) yorick -i check.i
+	cd yorick; $(DYLIB_VAR)=../lib:$$$(DYLIB_VAR) yorick -i check.i
 
 install: $(INSTALL_DIR)
 $(INSTALL_DIR) install-yorick:
@@ -31,7 +31,7 @@ $(CLEAN_DIR) clean-doc:
 clean-yorick:
 	cd yorick; yorick -batch make.i; make clean
 
-CHECK_CMD=$(DYLIB_VAR)=lib:$(DYLIB_VAR) bin/gyoto
+CHECK_CMD:=$(DYLIB_VAR)=lib:$$$(DYLIB_VAR) bin/gyoto
 check:
 	$(CHECK_CMD) doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits

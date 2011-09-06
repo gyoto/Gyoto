@@ -96,13 +96,13 @@ gyoto_std.so: stdplug/gyoto_std.so
 stdplug/gyoto_std.so:
 	cd stdplug; make
 
-../lib/libgyoto.$(DYLIB_SFX):
-	cd ../lib ; make libgyoto.$(DYLIB_SFX)
+../lib/$(LIBGYOTO_FILE):
+	cd ../lib ; make $(LIBGYOTO_FILE)
 
 ../lib/libgyoto.a:
 	cd ../lib ; make libgyoto.a
 
-gyoto.so: gyoto.i $(OBJS) ../lib/libgyoto.a ../lib/libgyoto.$(DYLIB_SFX)
+gyoto.so: gyoto.i $(OBJS) ../lib/libgyoto.a ../lib/$(LIBGYOTO_FILE)
 
 install::
 	cd stdplug; make install
@@ -125,6 +125,6 @@ clean::
 	rm -f gyoto_std.so
 
 .PHONY: standalone test-cppprog test-standalone test test-plugin check \
-	stdplug/gyoto_std.so ../lib/libgyoto.$(DYLIB_SFX) ../lib/libgyoto.a
+	stdplug/gyoto_std.so ../lib/$(LIBGYOTO_FILE) ../lib/libgyoto.a
 
 # -------------------------------------------------------- end of Makefile

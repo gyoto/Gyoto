@@ -105,7 +105,13 @@ use more (or less!) than the standard plugins, you need to set the
 environment variable GYOTO_PLUGINS to a comma-separated list of
 plugins. \fBgyoto\fR will exit with an error status if unable to load
 a specified plugin, unless it is prefixed with "nofail:" in
-GYOTO_PLUGINS. Default value: "stdplug,nofail:lorene".
+GYOTO_PLUGINS. Default value: "stdplug,nofail:lorene". Gyoto attempts
+to find plugins first by relying on the system's dynamic linker (so
+paths in e.g. LD_LIBRARY_PATH and ld.so.conf are searched first). If
+that fails, it looks in PREFIX/lib/gyoto/ and finally in
+PREFIX/lib/gyoto/SOVERS/ where PREFIX and SOVERS are two compile-time
+options. PREFIX usually is /usr/local or /usr. At the time of writing,
+SOVERS is 0.0.0.
 .SH EXIT STATUS
 \fBgyoto\fR returns \fB0\fR upon success, \fB1\fR if unable to parse
 the command line or to interpret \fIinput.xml\fR, and a CFITSIO error

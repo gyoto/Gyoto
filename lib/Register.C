@@ -48,10 +48,23 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   if (debug()) cerr << "DEBUG: loading plugin: " << name
 		    << " from file: " << dlfile << endl;
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-  if (!handle && nofail) {
-    if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
-      cerr << "WARNING: unable to load optional plugin " << dlfile << endl;
-    return;
+  if (!handle) {
+    string dlpath = GYOTO_PREFIX ;
+    dlpath += "/lib/gyoto/" ;
+    string dlfull = dlpath + dlfile;
+    handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+    if (!handle) {
+      dlfull = dlpath ;
+      dlfull += GYOTO_SOVERS ;
+      dlfull += "/" ;
+      dlfull += dlfile ;
+      handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+      if (!handle && nofail) {
+	if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
+	  cerr << "WARNING: unable to load optional plugin " << dlfile << endl;
+	return;
+      }
+    }
   }
   if ( (err=dlerror()) ) throwError(err);
   if (!handle) throwError((string("Failed to load pluging ")+dlfile).c_str());
