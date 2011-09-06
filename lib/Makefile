@@ -65,7 +65,8 @@ $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib \
 	install -d $@
 
 install: libgyoto.a $(LIBGYOTO_FILE) $(PLUGINS) \
-	            $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib
+	            $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib \
+	            $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	install -m 0755 $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib
 	install -m 0755 libgyoto-stdplug.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	-install -m 0755 libgyoto-lorene.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
