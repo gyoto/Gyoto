@@ -66,6 +66,6 @@ endif
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/gyoto
-	rm -f $(DESTDIR)$(PREFIX)/man/man1/gyoto.1
+	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/gyoto.1
 
 .PHONY: clean install uninstall
