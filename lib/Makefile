@@ -38,7 +38,11 @@ libgyoto.a: $(OBJ)
 	$(STLIB_CMD) $@ $^
 
 $(LIBGYOTO_FILE): $(OBJ)
-	g++ -o $@ $(DYLIB_CFLAG)  $(LIB_CXX) $^
+ifeq ($(SYS),Linux)
+	ln -s $(LIBGYOTO_FILE) libgyoto.so.$(SOVERS_MAJOR)
+	ln -s $(LIBGYOTO_FILE) libgyoto.so
+endif
+	g++ -o $(LIBGYOTO_FILE) $(DYLIB_CFLAG)  $(LIB_CXX) $^
 
 libgyoto-stdplug.$(DYLIB_SFX): $(STDPLUG_OBJ) StdPlug.o $(LIBGYOTO_FILE) Metric.o
 	g++ -o $@  $(PLUG_FLAGS)  $(LIB_CXX) $(STDPLUG_OBJ) StdPlug.o
@@ -68,6 +72,10 @@ install: libgyoto.a $(LIBGYOTO_FILE) $(PLUGINS) \
 	            $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib \
 	            $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	install -m 0755 $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib
+ifeq ($(SYS),Linux)
+	ln -sf $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib/libgyoto.so.$(SOVERS_MAJOR)
+	ln -sf $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib/libgyoto.so
+endif
 	install -m 0755 libgyoto-stdplug.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	-install -m 0755 libgyoto-lorene.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	install -m 0644 libgyoto.a $(DESTDIR)$(PREFIX)/lib

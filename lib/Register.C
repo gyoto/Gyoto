@@ -45,7 +45,7 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   GyotoInitFcn* initfcn = NULL;
   char * err = NULL;
 
-  if (debug()) cerr << "DEBUG: loading plugin: " << name
+  if (debug()) cerr << "DEBUG: loading plug-in: " << name
 		    << " from file: " << dlfile << endl;
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
   if (!handle) {
@@ -61,14 +61,14 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
       handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
       if (!handle && nofail) {
 	if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
-	  cerr << "WARNING: unable to load optional plugin " << dlfile << endl;
+	  cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
 	return;
       }
     }
   }
   if ( (err=dlerror()) ) throwError(err);
-  if (!handle) throwError((string("Failed to load pluging ")+dlfile).c_str());
-  if (debug()) cerr << "DEBUG: calling plugin init function " << dlfunc << endl;
+  if (!handle) throwError((string("Failed to load plug-in ")+dlfile).c_str());
+  if (debug()) cerr << "DEBUG: calling plug-in init function " << dlfunc << endl;
   initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
   if ( (err=dlerror()) ) throwError(err);
   (*initfcn)();

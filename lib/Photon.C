@@ -39,7 +39,8 @@ using namespace std;
 using namespace Gyoto;
 
 Photon::Photon() :
-  Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
+  Worldline(), freq_obs_(1.),
+  transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
  {}
 
 Photon::Photon(const Photon& o) :

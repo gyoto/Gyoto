@@ -14,7 +14,10 @@ $(DIR) doc:
 yorick:
 	cd $@; yorick -batch make.i; $(MAKE)
 check-yorick:
-	cd yorick; $(DYLIB_VAR)=../lib:$$$(DYLIB_VAR) yorick -i check.i
+	cd yorick; \
+	$(DYLIB_VAR)=../lib:$$$(DYLIB_VAR) \
+	GYOTO_CHECK_NODISPLAY=true \
+	yorick -i check.i
 
 install: $(INSTALL_DIR)
 $(INSTALL_DIR) install-yorick:

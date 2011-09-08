@@ -17,6 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// NODISPLAY implies batch mode
+if (get_env("GYOTO_CHECK_NODISPLAY")) batch, 1;
+
 #include "gyoto.i"
 #include "gyoto_std.i"
 

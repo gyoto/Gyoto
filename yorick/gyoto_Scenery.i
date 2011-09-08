@@ -143,6 +143,9 @@ func gyoto_Scenery_adaptive_raytrace(sco, respmax, &computed) {
 
    SEE ALSO: gyoto_Scenery
  */
+  write, format="%s\n",
+    "WARNING: gyoto_Scenery_adaptive_raytrace() is under development";
+
   sc = sco(clone=); // don't modify calling object
   
   DBL_MAX=1e100;

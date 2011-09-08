@@ -145,7 +145,7 @@ std::string Spectrometer::getKindStr() const {
   case GYOTO_SPECTRO_KIND_WAVELOG:
     skind = ("wavelog"); break;
   default:
-    ss << "Unkown spectrometer kind: " << kind_;
+    ss << "Unknown spectrometer kind: " << kind_;
     throwError( ss.str() );
   }
   return skind;

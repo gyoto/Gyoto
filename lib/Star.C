@@ -493,11 +493,14 @@ void Star::fillElement(factoryMessenger *fmp) const {
 
   fmp -> setMetric (getMetric()) ;
   fmp -> setParameter ("Radius", getRadius());
-  double coord[8];
-  getInitialCoord(coord);
-  fmp -> setParameter ("Position", coord, 4);
-  double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
-  fmp -> setParameter ("Velocity", vel, 3);
+
+  if (imin_ <= imax_) {
+    double coord[8];
+    getInitialCoord(coord);
+    fmp -> setParameter ("Position", coord, 4);
+    double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
+    fmp -> setParameter ("Velocity", vel, 3);
+  }
 
   childfmp = fmp -> makeChild ( "Spectrum" );
   spectrum_ -> fillElement(childfmp);

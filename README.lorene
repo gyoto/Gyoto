@@ -1,8 +1,8 @@
                   *** Activating LORENE in Gyoto ***
 
-                  Building the libgyoto-lorene plugin
+                 Building the libgyoto-lorene plug-in
 
-3+1 metrics support in Gyoto is implemented in the lorene plugin,
+3+1 metrics support in Gyoto is implemented in the lorene plug-in,
 based on the LORENE library.
 
 I- BUILDING TOGETHER WITH GYOTO
@@ -14,7 +14,7 @@ http://www.lorene.obspm.fr/, compile liblorene.a with the -fPIC CFLAG
 file contains "-fPIC"), and set the HOME_LORENE variable according to
 the LORENE manual.
 
-If HOME_LORENE is defined when compiling Gyoto, the lorene plugin is
+If HOME_LORENE is defined when compiling Gyoto, the lorene plug-in is
 automatically built and installed.
 
 II- BUILDING AFTER GYOTO
@@ -45,7 +45,7 @@ III- TESTING LIBGYOTO-LORENE
 
 Two example files are provided in doc/examples/:
 example-*-rotstar3_1.xml.
-They allow to ray-trace a moving/motionless star orbiting in the spacetime 
+They allow to ray-trace a moving/motionless star orbiting in the space-time 
 of a relativistic rotating star.
 To run these examples:
 

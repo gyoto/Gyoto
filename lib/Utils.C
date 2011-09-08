@@ -69,7 +69,7 @@ void Gyoto::convert(double * const x, const size_t nelem, const double mass_sun,
   else if (!unit.compare("arcsec"))     fact *=  6.48e5  / (distance*M_PI);
   else if (!unit.compare("mas"))        fact *=  6.48e8  / (distance*M_PI);
   else if (!unit.compare("uas"))        fact *=  6.48e11 / (distance*M_PI);
-  else throwError("Unkown unit.");
+  else throwError("Unknown unit.");
 
   for (i=0; i<nelem; ++i) x[i] *= fact ;
 

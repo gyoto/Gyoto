@@ -24,8 +24,8 @@ IV- TEST
 ========
 
 Several example files are provided in doc/examples. All the files
-withous "rotstar3_1" should work out of the box. The rotstar3_1
-require the lorene plugin and some work to create lorene data
+without "rotstar3_1" should work out of the box. The rotstar3_1
+require the lorene plug-in and some work to create lorene data
 files. You can ray-trace all these sceneries (may take up to a couple
 of minutes on recent hardware) with:
 
@@ -41,7 +41,7 @@ FITS-aware image viewer:
    $ spydr example-*.fits
 
 V- INSTALL
-=============
+==========
 If installing to a system location (i.e. if you don't
 have right access to PREFIX), you need to gain root privileges using,
 for instance, su or sudo:
@@ -67,8 +67,8 @@ it is called DYLD_LIBRARY_PATH). It goes beyond the scope of this
 manual to teach you how to set environment variables; if in doubt ask
 the local guru or google...
 
-VI- BUILD AND INSTALL THE YORICK PLUGIN
-=======================================
+VI- BUILD AND INSTALL THE YORICK PLUG-IN
+========================================
 If you also want the Yorick plug-in:
 1- install yorick (http://yorick.sourceforge.net/);
 2- Run:
@@ -79,4 +79,4 @@ If you also want the Yorick plug-in:
 VII- BUILD THE DOCUMENTATION
 ============================
 
-To build the documentaion, "make doc".
+To build the documentation, "make doc".

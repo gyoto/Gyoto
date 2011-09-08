@@ -644,20 +644,16 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	normtemp = ScalarProd(mycoor, mycoor+4, mycoor+4);
 	computeCst(mycoor,cstest);
 	QCarter=cst[3];
-	//(QCarter>10*cstol)?(div=QCarter):(div=1.);
-	(QCarter>1e-10)?(div=QCarter):(div=1.);
-	  // defines div, which allow to compute a relative or absolute
-	  // difference between current and true Carter cst below,
-	  // depending on the Carter cst value.
+	div = cst[4]; // cst[4] = cst[3]==0? 1. : 1./cst[3]
 	if (cst[0]==0.) {
 	  // checks whether norm and Carter cst are close to being conserved
 	  if ( (fabs(normtemp)>cstol) 
-	       || (fabs(cstest[3]-QCarter)/div>cstol) ) {
+	       || (fabs(cstest[3]-QCarter)*div>cstol) ) {
 	    makerr=1;
 	  }
 	}else{
 	  if ( (fabs(normtemp+1.)>cstol) 
-	       || (fabs(cstest[3]-QCarter)/div>cstol) ) makerr=1;
+	       || (fabs(cstest[3]-QCarter)*div>cstol) ) makerr=1;
 	}
 	
 	if (makerr) {
@@ -665,7 +661,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	    cerr << "WARNING:" << endl
 		 << "Real norm, current norm= " << cst[0] << " " << normtemp << endl
 		 << "Carter cst error= " 
-		 << fabs(QCarter-cstest[3])/fabs(QCarter)*100. << " %"
+		 << fabs(QCarter-cstest[3])*div*100. << " %"
 		 << endl;
 	  if (coor1[1]<rlimitol) {
 	    if (debug()) cerr << "Probable cause of warning:"
@@ -732,6 +728,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[4], double coo
 	 << ", Qtest="<<Qtest<< ", fabs(Qtest-QQ)/QQm1="<< fabs(Qtest-QQ)/QQm1
 	 << endl;
   if (fabs(Qtest-QQ)*QQm1 > 1e-6){//Then change thetadot to allow Qtest=QQ
+                                  // Note: if Q==0, QQm1==1.
 
     if (mycoor[6]<0.) thdotpos=0; //to preserve the sign of thetadot
     argsqrt=QQ-costh*costh*(a2*(mu*mu-EE*EE)+LL*LL/(sinth*sinth));//thetadot should be the sqrt of this quantity
@@ -939,13 +936,13 @@ void KerrBL::computeCst(const double coord[8], double cst[4]) const{
                    //different for a 0-mass and a 1-mass particule
   
   cst[0]=mu;cst[1]=EE;cst[2]=LL;cst[3]=QQ;
+  cst[4]= cst[3]==0. ? 1. : 1./cst[3]; // cache 1/Q or 1. if Q==0
 }
 
 void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
 {
   double cst[5];
   computeCst(coord,cst);
-  cst[4]=1./cst[3]; // cache 1/Q
   line -> setCst(cst,5);
 }
 

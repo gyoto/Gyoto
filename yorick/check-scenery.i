@@ -19,7 +19,8 @@
 
 #include "gyoto.i"
 #include "gyoto_std.i"
-//gyoto_debug, 1;
+
+if (get_env("GYOTO_CHECK_NODISPLAY")) fma=winkill=pli = noop;
 
 write, format="%s", "New scenery... ";
 sc=gyoto_Scenery();
@@ -130,7 +131,6 @@ write, format="%s\n", "DONE.";
 write, format="%s\n", "Printing clone:";
 sc4;
 
-gyoto_dontcatchSIGFPE;
 ph = gyoto_Photon(initcoord=sc3, 6, 19);
 ph(is_hit=);
 

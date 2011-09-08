@@ -20,8 +20,12 @@
 #include "gyoto.i"
 #include "gyoto_std.i"
 
+if (get_env("GYOTO_CHECK_NODISPLAY")) nodisplay = 1;
+
 write, format="%s\n", "Attempting star construction:";
 st=gyoto_Star();
+write, format="%s", "Printing star:";
+st;
 
 write, format="%s", "Cloning...";
 st2=st(clone=);

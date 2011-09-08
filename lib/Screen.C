@@ -42,7 +42,7 @@ Screen::Screen() :
 
 Screen::Screen(const Screen& o) :
   SmartPointee(o),
-  tobs_(o.tobs_), fov_(o.fov_), npix_(npix_), distance_(distance_),
+  tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), distance_(o.distance_),
   dmax_(o.dmax_), gg_(NULL), spectro_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();

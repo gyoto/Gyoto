@@ -18,7 +18,7 @@ We also request that Gyoto modifications, extensions or plug-ins
 leading to a scientific publication be made public as free software
 reasonably fast (within one year after publication of the scientific
 paper), for instance by contributing it directly to the Gyoto
-codebase. Contributors will be listed in the relevant source files as
+code base. Contributors will be listed in the relevant source files as
 well as in the AUTHORS file in the package.
 
     Gyoto is Copyright 2011 Thibaut Paumard, Frédéric Vincent (To ease
@@ -43,7 +43,7 @@ Refer to the file INSTALL for building and installing Gyoto.
 Several sample files are provided in doc/examples. You can ray-trace
 those sceneries with:
 
-  gyoto <input-file.xml> <outputfile.fits>
+  gyoto <input-file.xml> <output-file.fits>
 
 FITS files can be read by a variety of free and proprietary
 software. See http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html.
@@ -52,7 +52,7 @@ Custom metrics and astronomical objects can be added fairly easily by
 implementing them as a Gyoto plug-in. This, of course, requires
 knowledge of the C++ language. We don't provide yet a complete guide,
 but look at the standard plug-in lib/StdPlug.C which includes the Kerr
-metric and the sta,dard objects. The Lorene (numerical) metrics are
+metric and the standard objects. The Lorene (numerical) metrics are
 also implemented as a plug-in, see lib/LorenePlug.C and
 lib/Makefile.lorene.
 

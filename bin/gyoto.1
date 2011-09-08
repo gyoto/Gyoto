@@ -62,7 +62,7 @@ Default value: \fInpix\fR (see option \fB\-\-resolution\fR below).
 
 .SS Setting the camera position
 The following parameters are normally provided in the Screen section
-of \fIinput.xml\fR but can be overriden on the command line for
+of \fIinput.xml\fR but can be overridden on the command line for
 instance to make a movie (by calling \fBgyoto\fB for each movie frame,
 changing only the option \fB\-\-time\fR).
 .IP \fB\-\-time\fR=\fItobs
@@ -79,7 +79,7 @@ Position angle of the line of nodes, in radians, East of North. The is
 the angle between the North direction and the line of nodes (see
 below).
 .IP \fB\-\-inclination\fR=\fIi\fR
-Angle bewteen the plane of the sky and the equator of the coordinate
+Angle between the plane of the sky and the equator of the coordinate
 system. The intersection of those two planes is the line of nodes.
 .IP \fB\-\-argument\fR=\fItheta\fR
 Angle in the equatorial plane between the line of nodes and one of the
@@ -100,13 +100,13 @@ specified in \fIinput.xml\fR. For further information on the FITS
 format, see \fIhttp://fits.gsfc.nasa.gov/\fR.
 .SH ENVIRONMENT
 .IP GYOTO_PLUGINS
-Gyoto astronomical objects and metrics are implemented in plugins. To
-use more (or less!) than the standard plugins, you need to set the
+Gyoto astronomical objects and metrics are implemented in plug-ins. To
+use more (or less!) than the standard plug-ins, you need to set the
 environment variable GYOTO_PLUGINS to a comma-separated list of
-plugins. \fBgyoto\fR will exit with an error status if unable to load
-a specified plugin, unless it is prefixed with "nofail:" in
+plug-ins. \fBgyoto\fR will exit with an error status if unable to load
+a specified plug-in, unless it is prefixed with "nofail:" in
 GYOTO_PLUGINS. Default value: "stdplug,nofail:lorene". Gyoto attempts
-to find plugins first by relying on the system's dynamic linker (so
+to find plug-ins first by relying on the system's dynamic linker (so
 paths in e.g. LD_LIBRARY_PATH and ld.so.conf are searched first). If
 that fails, it looks in PREFIX/lib/gyoto/ and finally in
 PREFIX/lib/gyoto/SOVERS/ where PREFIX and SOVERS are two compile-time

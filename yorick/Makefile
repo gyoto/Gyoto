@@ -57,7 +57,7 @@ PKG_I_EXTRA=gyoto_constants.i gyotoy.i
 # set macros Makepkg uses in target and dependency names
 # DLL_TARGETS, LIB_TARGETS, EXE_TARGETS
 # are any additional targets (defined below) prerequisite to
-# the plugin library, archive library, and executable, respectively
+# the plug-in library, archive library, and executable, respectively
 PKG_I_DEPS=$(PKG_I)
 Y_DISTMAKE=distmake
 
@@ -111,6 +111,7 @@ install::
 	$(YNSTALL) gyotoy.py $(DEST_Y_SITE)/python
 	$(YNSTALL) gyotoy $(DEST_Y_SITE)/bin
 	-ln $(DEST_Y_SITE)/bin/gyotoy $(DESTDIR)$(PREFIX)/bin/
+	$(YNSTALL) gyotoy.1 $(DESTDIR)$(PREFIX)/share/man/man1
 
 uninstall::
 	cd stdplug; make uninstall
@@ -119,6 +120,7 @@ uninstall::
 	rm -f $(DEST_Y_SITE)/python/gyotoy.py
 	rm -f $(DEST_Y_SITE)/bin/gyotoy
 	rm -f $(DESTDIR)$(PREFIX)/bin/gyotoy
+	rm -f $(DESTDIR)$(PREFIX)/share/man/man1/gyotoy.1
 
 clean::
 	cd stdplug; yorick -batch make.i; make clean

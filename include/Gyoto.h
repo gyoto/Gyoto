@@ -79,7 +79,7 @@
  *
  * Not provided yet.
  *  
- * \section philo_sec Philospophy and concepts
+ * \section philo_sec Philosophy and concepts
  *
  * todo...
  */
@@ -92,17 +92,15 @@
  * \subsection yo_sec Yorick
  *
  * For direct access to Gyoto, only Yorick is required. Yorick comes
- * precompiled with many distributions of linux and is present in the
+ * precompiled with many distributions of Linux and is present in the
  * Macports. You can also find binaries and source code at
  * http://yorick.sourceforge.net/
  *
  * One line in Yorick's yapi.h file makes the compilation fail, so
- * either use Yorick > 2.1.05 (i.e. from CVS, as of writting), or
+ * either use Yorick > 2.1.05 (i.e. from CVS, as of writing), or
  * change this line: PLUG_API void *ygeta_any(int iarg, long *ntot,
  * long *dims, int *typeid); to something like PLUG_API void
- * *ygeta_any(int iarg, long *ntot, long *dims, int *typeidd); As of
- * writing, a corrected yapi.h (borrowed from yorick 2.1.04) is
- * provided.
+ * *ygeta_any(int iarg, long *ntot, long *dims, int *typeidd).
  *
  * For the graphical user interface Gyotoy, you'll need a few
  * additional pieces. First of all, I seriously doubt it will run
@@ -113,7 +111,7 @@
 
 A collection of utilities for Yorick, distributed as yorick-yutils in
 many Linux distributions. Actually, only pyk.i is used in Gyotoy (so
-far), and as of writting, the CVS version is required.
+far), and as of writing, the CVS version is required.
 
 Either get yutils > 1.4.0 from e.g. http://www.maumae.net/yorick/packages/src/
 or fetch pyk.i from the CVS browser at
