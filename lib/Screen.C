@@ -440,7 +440,7 @@ void Screen::setFieldOfView(double fov, const string &unit) {
   else if (unit=="µas" || unit=="uas") fov *= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::setFieldOfView(): unkown unit: \"" << unit << "\"";
+    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\"";
     throwError(ss.str());
   }
   setFieldOfView(fov);

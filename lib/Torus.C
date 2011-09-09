@@ -105,7 +105,7 @@ double Torus::operator()(double const pos[4]) {
     drproj = sqrt(pos[1]*pos[1]+pos[2]*pos[2]);
     break;
   default:
-    throwError("Torus::distance(): unkown coordinate system kind");
+    throwError("Torus::distance(): unknown coordinate system kind");
   }
   return drproj*drproj + h*h;
 }
