@@ -9,21 +9,3 @@ low level access to the objects and metrics in Gyoto's standard plug-in
 
 :gyotoy
 graphical tool to visualize a single geodesic
-
-:gyoto_constants.i
-a few physical constants useful in Gyoto
-
-:gyoto_Metric.i
-generic access to Metric objects
-
-:gyoto_Photon.i
-access to the Photon object
-
-:gyoto_Scenery.i
-access to the top level Scenery object
-
-:gyoto_Kerr.i
-access to the Kerr metric objects (KerrBL and KerrKS)
-
-:gyoto_Star.i
-access to the Star object
