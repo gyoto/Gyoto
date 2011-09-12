@@ -1,0 +1,26 @@
+Package: gyoto
+Kind: plugin
+Version: 1.0~pre1
+Revision: 1
+Description: the General relativitY Orbit Tracer of Observatoire de Paris
+License: GPL-3+
+Author: Thibaut Paumard
+Maintainer: Thibaut Paumard <paumard@users.sourceforge.net>
+OS: architecture independant
+Depends: yorick(>=2.1.05), yutils(>=1.3.0)
+Source: http://gyoto.obspm.fr/downloads/gyoto-%v.tgz
+Source-MD5: 
+Source-Directory: 
+DocFiles: README AUTHORS COPYING
+Homepage: http://gyoto.obspm.fr/
+DescDetail: <<
+Gyoto aims at providing a framework for computing orbits and
+ray-traced images in General relativity. It consists in a library
+(libgyoto), utility programs, and a plug-in for Yorick.
+<<
+DescUsage: <<
+See check.i for a test suite. Type 
+"yorick -i check.i" in a terminal to run it.
+<<
+DescPort: <<
+<<
