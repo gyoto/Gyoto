@@ -660,7 +660,8 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
 	    cerr << "WARNING:" << endl
 		 << "Real norm, current norm= " << cst[0] << " " << normtemp << endl
-		 << "Carter cst error= " 
+		 << "Carter cst error= (" 
+		 << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
 		 << fabs(QCarter-cstest[3])*div*100. << " %"
 		 << endl;
 	  if (coor1[1]<rlimitol) {
