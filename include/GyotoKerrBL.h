@@ -108,11 +108,11 @@ class Gyoto::KerrBL : public Metric {
 				double dir=1.) const ;
 
  public:
-  void MakeCoord(const double coordin[8], const double cst[4], double coordout[8]) const ;
+  void MakeCoord(const double coordin[8], const double cst[5], double coordout[8]) const ;
   ///< Inverse function of MakeMomentumAndCst
 
    ///< Computes pr, ptheta, E and L from rdot, thetadot, phidot, tdot
-  void MakeMomentum(const double coordin[8], const double cst[4], double coordout[8]) const;
+  void MakeMomentum(const double coordin[8], const double cst[5], double coordout[8]) const;
   ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
  
 
@@ -125,21 +125,21 @@ class Gyoto::KerrBL : public Metric {
  protected:
 
   // outside the API
-  /* RK4 : y=[r,theta,phi,t,pr,ptheta], cst=[a,E,L,Q],dy/dtau=F(y,cst), h=proper time step. For KerrBL geodesic computation.
+  /* RK4 : y=[r,theta,phi,t,pr,ptheta], cst=[a,E,L,Q,1/Q],dy/dtau=F(y,cst), h=proper time step. For KerrBL geodesic computation.
    */
   int myrk4(Worldline * line, const double coordin[8], double h, double res[8]) const; //external-use RK4
-  int myrk4(const double coor[8], const double cst[4], double h, double res[8]) const;//internal-use RK4
+  int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;//internal-use RK4
   int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1) const;
-  int CheckCons(const double coor_init[8], const double cst[4], double coor_fin[8]) const;
+  int CheckCons(const double coor_init[8], const double cst[5], double coor_fin[8]) const;
   void Normalize4v(double coord[8], const double part_mass) const;
 
   /** F function such as dy/dtau=F(y,cst)
    */
   using Metric::diff;
-  int diff(const double y[8], const double cst[4], double res[8]) const ;
+  int diff(const double y[8], const double cst[5], double res[8]) const ;
   /** Integrator. Computes the evolution of y (initcond=y(0)).
    */
-  void computeCst(const double coord[8], double cst[4]) const;
+  void computeCst(const double coord[8], double cst[5]) const;
   void setParticleProperties(Worldline* line, const double* coord) const;
   
 };
