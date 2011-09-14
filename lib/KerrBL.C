@@ -522,7 +522,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 {
   
   /*Switch BL -> principal momenta*/
-  double coor[8], coor1[8], cstest[4], coorhalf[8], coor2[8],
+  double coor[8], coor1[8], cstest[5], coorhalf[8], coor2[8],
     coor1bis[8], mycoor[8], delta1[8];
   double const * const cst = line -> getCst();
   MakeMomentum(coordin,cst,coor);
