@@ -393,7 +393,7 @@ int KerrBL::myrk4(Worldline * line, const double coordin[8],
   return 0;
 }
 
-int KerrBL::myrk4(const double coor[8], const double cst[4],
+int KerrBL::myrk4(const double coor[8], const double cst[5],
 		  double h, double res[8]) const{
   //  cout << "In KerrBL::myrk4 - 2" << endl;
   /*
@@ -643,25 +643,23 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	MakeCoord(coor1,cst,mycoor);
 	normtemp = ScalarProd(mycoor, mycoor+4, mycoor+4);
 	computeCst(mycoor,cstest);
-	QCarter=cst[3];
-	div = cst[4]; // cst[4] = cst[3]==0? 1. : 1./cst[3]
-	if (cst[0]==0.) {
-	  // checks whether norm and Carter cst are close to being conserved
-	  if ( (fabs(normtemp)>cstol) 
-	       || (fabs(cstest[3]-QCarter)*div>cstol) ) {
-	    makerr=1;
-	  }
-	}else{
-	  if ( (fabs(normtemp+1.)>cstol) 
-	       || (fabs(cstest[3]-QCarter)*div>cstol) ) makerr=1;
+	if (cst[3]>cstol) {
+	  QCarter=cst[3];
+	  div = cst[4]; // cst[4] = cst[3]==0? 1. : 1./cst[3]
+	} else {
+	  QCarter=0.;
+	  div=1.;
 	}
+	if ( (fabs(normtemp+cst[0])>cstol) // cst[0] == -real_norm
+	     || (fabs(cstest[3]-QCarter)*div>cstol) ) makerr=1;
 	
 	if (makerr) {
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
 	    cerr << "WARNING:" << endl
-		 << "Real norm, current norm= " << cst[0] << " " << normtemp << endl
-		 << "Carter cst error= " 
-		 << fabs(QCarter-cstest[3])*div*100. << " %"
+		 << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " << normtemp << endl
+		 << "Carter cst error= (" 
+		 << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
+		 << fabs(QCarter-cstest[3])*div*100. << " %, cstol=" << cstol
 		 << endl;
 	  if (coor1[1]<rlimitol) {
 	    if (debug()) cerr << "Probable cause of warning:"
@@ -697,7 +695,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   return 0;
 }
 
-int KerrBL::CheckCons(const double coor_init[8], const double cst[4], double coor_fin[8]) const {
+int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coor_fin[8]) const {
   /*
     Ensures that the cst of motion are conserved.
     E and L always are (see diff). But Q and norm may not be.
@@ -837,7 +835,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
 }
 
 
-void KerrBL::MakeCoord(const double coordin[8], const double cst[4], double coord[8]) const {
+void KerrBL::MakeCoord(const double coordin[8], const double cst[5], double coord[8]) const {
 
   double tt=coordin[0], rr = coordin[1], theta=coordin[2], phi=coordin[3], 
     pr=coordin[5], ptheta=coordin[6];
@@ -861,7 +859,7 @@ void KerrBL::MakeCoord(const double coordin[8], const double cst[4], double coor
  
 }
 
-void KerrBL::MakeMomentum(const double coord[8], const double cst[4], double coordout[8]) const{
+void KerrBL::MakeMomentum(const double coord[8], const double cst[5], double coordout[8]) const{
 
   double EE=cst[1], LL=cst[2];
   
@@ -904,7 +902,7 @@ void KerrBL::nullifyCoord(double coord[4], double & tdot2) const {
   coord[4]=(-b-sqrt(Delta))/a;
 }
 
-void KerrBL::computeCst(const double coord[8], double cst[4]) const{
+void KerrBL::computeCst(const double coord[8], double cst[5]) const{
   
   //double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3], tdot=coord[4],
   //  rdot=coord[5], thetadot=coord[6], phidot=coord[7];
