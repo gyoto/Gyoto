@@ -130,7 +130,7 @@ int ThinInfiniteDiskBL::Impact(Photon *ph, size_t index,
 }
 
 double ThinInfiniteDiskBL::emission(double, double,
-				    double coord_ph[8],
+				    double *,
 				    double coord_obj[8]) const{
   if (flag_radtransf_)
     throwError("Radiative transfer not implemented for DiskFromFile.");

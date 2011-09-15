@@ -113,7 +113,7 @@ int FixedStar::Impact(Photon *ph, size_t index, AstrobjProperties *data) {
     cerr << "DEBUG: FixedStar::Impact(): use_generic_impact_="
 	 << use_generic_impact_ << endl;
   if (use_generic_impact_) return Astrobj::Impact(ph, index, data);
-  Impact_(ph, index, data);
+  return Impact_(ph, index, data);
 }
 
 int FixedStar::Impact_(Photon *ph, size_t index, AstrobjProperties *data) {

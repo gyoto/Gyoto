@@ -177,7 +177,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
 
   //LAPSE
   const Scalar & NNscal=star_ -> get_nn();
-  double NN=NNscal.val_point(rr,th,phi), NN2=NN*NN;
+  double NN=NNscal.val_point(rr,th,phi);//, NN2=NN*NN;
   if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
   double Nr=NNscal.dsdr().val_point(rr,th,phi);
   double Nt=NNscal.dsdt().val_point(rr,th,phi);
@@ -461,7 +461,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8], double la
   double rr=coord[1],th=coord[2],ph=coord[3],tdot=coord[4],rdot=coord[5],thdot=coord[6],phdot=coord[7],rprime=rdot/tdot,thprime=thdot/tdot,phprime=phdot/tdot;
 
   const Scalar & NNscal=star_ -> get_nn();
-  double NN=NNscal.val_point(rr,th,ph), NN2=NN*NN;
+  double NN=NNscal.val_point(rr,th,ph);//, NN2=NN*NN;
   if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
   const Scalar & omega_scal=star_ -> get_nphi();
   double omega=omega_scal.val_point(rr,th,ph);
@@ -511,7 +511,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
   double phdot,phprime;
   //double phprime_init=coordin[5],dphpr=0.01;
   const Scalar & NNscal=star_ -> get_nn();
-  double NN=NNscal.val_point(coordin[0],coordin[1],coordin[2]), NN2=NN*NN;
+  double NN=NNscal.val_point(coordin[0],coordin[1],coordin[2]);//, NN2=NN*NN;
   if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
   const Scalar & omega_scal=star_ -> get_nphi();
   double omega=omega_scal.val_point(coordin[0],coordin[1],coordin[2]);
@@ -745,7 +745,7 @@ Gyoto::SmartPointer<Gyoto::Metric>
 Gyoto::RotStar3_1::Subcontractor(factoryMessenger* fmp) {
 
   //default values
-  double mass=1.;
+  //double mass=1.;
   int integ_kind=1;
   string filename="";
 

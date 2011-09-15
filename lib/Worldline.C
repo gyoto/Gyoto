@@ -547,10 +547,10 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 
     if (debug()) {
       cerr << "DEBUG: Worldline::getCoord(): bestl=["<<bestl[0];
-      for (int i=1; i<8; ++i) cerr << ", " << bestl[i];
+      for (int ii=1; ii<8; ++ii) cerr << ", " << bestl[ii];
       cerr << "], dtaul=" << dtaul << endl;
       cerr << "DEBUG: Worldline::getCoord(): resl=["<<resl[0];
-      for (int i=1; i<8; ++i) cerr << ", " << resl[i];
+      for (int ii=1; ii<8; ++ii) cerr << ", " << resl[ii];
       cerr << "]\n";
       cerr << "DEBUG: Worldline::getCoord(): tl=" << resl[0]
 	   << ", date=" << date << ", th=" << resh[0]
