@@ -57,6 +57,7 @@ doc: doc.C $(SRC)  *.h
 	doxygen doxyfile
 
 clean:
+	rm -fr *.dSYM
 	rm -f $(OBJ) $(STDPLUG_OBJ) $(LORENEPLUG_OBJ) StdPlug.o *.$(DYLIB_SFX)*
 	rm -fr Doc
 	rm -fr *~

@@ -9,6 +9,10 @@ PREFIX       = /usr/local
 #CXX          = g++
 CXX          = g++
 
+# Yorick interpreter:
+# ------------------
+YORICK       = yorick
+
 # Version of the library:
 # ----------------------
 # This should normally be changed only be the developpers, but can

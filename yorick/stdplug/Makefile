@@ -1,9 +1,9 @@
 # these values filled in by    yorick -batch make.i
-Y_MAKEDIR=/opt/local/lib/yorick
-Y_EXE=/opt/local/lib/yorick/bin/yorick
+Y_MAKEDIR=
+Y_EXE=
 Y_EXE_PKGS=
-Y_EXE_HOME=/opt/local/lib/yorick
-Y_EXE_SITE=/opt/local/lib/yorick
+Y_EXE_HOME=
+Y_EXE_SITE=
 
 # ----------------------------------------------------- optimization flags
 
@@ -101,10 +101,9 @@ StdPlug.o: ../ygyoto_supplier.C ../ygyoto.h
 
 gyoto_std.so: $(OBJS) ../../lib/libgyoto-stdplug.$(DYLIB_SFX)
 
-../../lib/libgyoto-stdplug.$(DYLIB_SFX):
+../../lib/libgyoto-stdplug.$(DYLIB_SFX): ../../lib/*.C
 	cd ../../lib/ ; make libgyoto-stdplug.$(DYLIB_SFX)
 
-.PHONY: standalone test-cppprog test-standalone test test-plugin check \
-	../../lib/libgyoto-stdplug.$(DYLIB_SFX)
+.PHONY: standalone test-cppprog test-standalone test test-plugin check
 
 # -------------------------------------------------------- end of Makefile

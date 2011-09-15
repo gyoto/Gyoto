@@ -1,9 +1,9 @@
 # these values filled in by    yorick -batch make.i
-Y_MAKEDIR=/opt/local/lib/yorick
-Y_EXE=/opt/local/lib/yorick/bin/yorick
+Y_MAKEDIR=
+Y_EXE=
 Y_EXE_PKGS=
-Y_EXE_HOME=/opt/local/lib/yorick
-Y_EXE_SITE=/opt/local/lib/yorick
+Y_EXE_HOME=
+Y_EXE_SITE=
 
 # ----------------------------------------------------- optimization flags
 
@@ -93,16 +93,16 @@ all: gyoto_std.so
 gyoto_std.so: stdplug/gyoto_std.so
 	cp stdplug/gyoto_std.so ./
 
-stdplug/gyoto_std.so:
-	cd stdplug; make
+stdplug/gyoto_std.so: stdplug/*.C
+	cd stdplug; yorick -batch make.i; make
 
-../lib/$(LIBGYOTO_FILE):
+../lib/$(LIBGYOTO_FILE): ../lib/*.C
 	cd ../lib ; make $(LIBGYOTO_FILE)
 
 ../lib/libgyoto.a:
 	cd ../lib ; make libgyoto.a
 
-gyoto.so: gyoto.i $(OBJS) ../lib/libgyoto.a ../lib/$(LIBGYOTO_FILE)
+gyoto.so: gyoto.i $(OBJS) ../lib/$(LIBGYOTO_FILE)
 
 install::
 	cd stdplug; make install
@@ -126,7 +126,10 @@ clean::
 	cd stdplug; yorick -batch make.i; make clean
 	rm -f gyoto_std.so
 
-.PHONY: standalone test-cppprog test-standalone test test-plugin check \
-	stdplug/gyoto_std.so ../lib/$(LIBGYOTO_FILE) ../lib/libgyoto.a
+distclean::
+	cd stdplug; yorick -batch make.i; make distclean
+
+
+.PHONY: standalone test-cppprog test-standalone test test-plugin check
 
 # -------------------------------------------------------- end of Makefile
