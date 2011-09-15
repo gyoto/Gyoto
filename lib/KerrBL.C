@@ -530,7 +530,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
     err, h1min=0.01, h1max=coor[1]*0.5, diffr, diffth, difftol=0.01, normtemp,
-    cstol_gen=1e-5, cstol_hor=1e-2, cstol, div, QCarter;
+    cstol_gen=1e-3, cstol_hor=1e-2, cstol, div, QCarter;
   int countbis=0, countbislim=50, zaxis=0; // for z-axis problem in myrk4
   //int norm1=0, normhalf=0, norm2=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0.;
   int norm1=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0;
@@ -650,17 +650,20 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	  QCarter=0.;
 	  div=1.;
 	}
-	if ( (fabs(normtemp+cst[0])>cstol) // cst[0] == -real_norm
-	     || (fabs(cstest[3]-QCarter)*div>cstol) ) makerr=1;
+	if ( fabs(normtemp+cst[0])>cstol ) makerr=1; // cst[0] == -real_norm
+	if ( fabs(cstest[3]-QCarter)*div>cstol ) makerr=2;
 	
 	if (makerr) {
-	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	    cerr << "WARNING:" << endl
-		 << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " << normtemp << endl
-		 << "Carter cst error= (" 
-		 << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
-		 << fabs(QCarter-cstest[3])*div*100. << " %, cstol=" << cstol
-		 << endl;
+	  if (verbose() >= GYOTO_SEVERE_VERBOSITY) {
+	    cerr << "WARNING:" << endl;
+	    if (makerr==1)
+	      cerr << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " << normtemp << endl;
+	    else
+	      cerr << "Carter cst error= (" 
+		   << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
+		   << fabs(QCarter-cstest[3])*div*100. << " %, cstol=" << cstol
+		   << endl;
+	  }
 	  if (coor1[1]<rlimitol) {
 	    if (debug()) cerr << "Probable cause of warning:"
 			      << "z-axis problem badly treated in "
@@ -669,8 +672,9 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	    // even at r = a few rhor...
 	  }else{
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	    cerr << "Previous warning occured at r= " << coor1[1] << endl
-		 << "i.e. far from horizon! Maybe increase parameter cstol " 
+	    cerr << "This warning occured at r= " << coor1[1] << endl
+		 << "i.e. far from horizon --> to be investigated"
+		 << ", or maybe increase parameter cstol" 
 		 << "in KerrBL.C" << endl;
 	  }
 	}
