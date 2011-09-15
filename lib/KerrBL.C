@@ -651,6 +651,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	  div=1.;
 	}
 	if ( fabs(normtemp+cst[0])>cstol ) makerr=1; // cst[0] == -real_norm
+	if ( makerr && (fabs(cstest[3]-QCarter)*div>cstol) ) makerr=3;
 	if ( fabs(cstest[3]-QCarter)*div>cstol ) makerr=2;
 	
 	if (makerr) {
@@ -658,11 +659,19 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	    cerr << "WARNING:" << endl;
 	    if (makerr==1)
 	      cerr << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " << normtemp << endl;
-	    else
+	    else if (makerr==2){
 	      cerr << "Carter cst error= (" 
 		   << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
 		   << fabs(QCarter-cstest[3])*div*100. << " %, cstol=" << cstol
 		   << endl;
+	    }else{
+	      cerr << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " 
+		   << normtemp << endl
+		   << "Carter cst error= (" 
+		   << QCarter << "-" << cstest[3] << ")*" << div << "*100.= "
+		   << fabs(QCarter-cstest[3])*div*100. << " %"
+		   << endl;
+	    }
 	  }
 	  if (coor1[1]<rlimitol) {
 	    if (debug()) cerr << "Probable cause of warning:"
