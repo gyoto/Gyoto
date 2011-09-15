@@ -76,10 +76,11 @@ double KerrKS::getSpin() const { return spin_ ; }
 double KerrKS::christoffel(const double[8],
 		   const int, const int, const int) const{
   throwError( "KerrKS.C : should never come here to find christoffel!!" );
-  
+  return 0.;
 }
 
 double KerrKS::gmunu(const double * pos, int mu, int nu) const {
+  if (mu<0 || nu<0 || mu>3 || nu>3) throwError ("KerrKS::gmunu: incorrect value for mu or nu");
   //double x=pos[0], y=pos[1], z=pos[2];
   double x=pos[1], y=pos[2], z=pos[3];
   double x2=x*x;
@@ -93,24 +94,27 @@ double KerrKS::gmunu(const double * pos, int mu, int nu) const {
   double r4=rr*r3;
   double fact=2.*r3/(r4+a2*z2);
 
+  double res=0.;
   if (mu==nu) {
-    if ((mu==0) && (nu==0)) return fact-1.;
-    if ((mu==1) && (nu==1)) return 1.+fact*pow((rr*x+spin_*y)/(r2+a2),2);
-    if ((mu==2) && (nu==2)) return 1.+fact*pow((rr*y-spin_*x)/(r2+a2),2);
-    if ((mu==3) && (nu==3)) return 1.+fact*z2/r2;
+    if ((mu==0) && (nu==0)) res=fact-1.;
+    if ((mu==1) && (nu==1)) res= 1.+fact*pow((rr*x+spin_*y)/(r2+a2),2);
+    if ((mu==2) && (nu==2)) res= 1.+fact*pow((rr*y-spin_*x)/(r2+a2),2);
+    if ((mu==3) && (nu==3)) res= 1.+fact*z2/r2;
   }
   if (nu<mu) {int vu=nu; nu=mu; mu=vu;}
   if (mu==0) {
-    if (nu==1) return fact/(r2+a2)*(rr*x+spin_*y);
-    if (nu==2) return fact/(r2+a2)*(rr*y-spin_*x);
-    if (nu==3) return fact*z/rr;
+    if (nu==1) res= fact/(r2+a2)*(rr*x+spin_*y);
+    if (nu==2) res= fact/(r2+a2)*(rr*y-spin_*x);
+    if (nu==3) res= fact*z/rr;
   }
   if (mu==1) {
-    if (nu==2) return fact/pow(r2+a2,2)*(x*y*(r2-a2)+spin_*rr*(y2-x2));
-    if (nu==3) return fact/(r2+a2)*(rr*x+spin_*y)*z/rr;
+    if (nu==2) res= fact/pow(r2+a2,2)*(x*y*(r2-a2)+spin_*rr*(y2-x2));
+    if (nu==3) res= fact/(r2+a2)*(rr*x+spin_*y)*z/rr;
   }
-  if ((mu==2) && (nu==3)) return fact/(r2+a2)*(rr*y-spin_*x)*z/rr;
-  throwError ("KerrKS::gmunu: incorrect value for mu or nu");
+  if ((mu==2) && (nu==3)) res= fact/(r2+a2)*(rr*y-spin_*x)*z/rr;
+
+  return res;
+  
 } 
 
 int KerrKS::diff(const double* coord, const double* cst, double* res) const{
@@ -193,8 +197,9 @@ int KerrKS::diff(const double* coord, const double* cst, double* res) const{
 
 int KerrKS::diff(const double*, double*) const{
   throwError("In KerrKS::diff should never get here!");
+  return 0;
 }
-int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm, double normref, double* coord1, double h0, double& h1) const{
+int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , double , double* coord1, double h0, double& h1) const{
 
   double const * const cst = line -> getCst();
 
@@ -214,7 +219,7 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double lastnor
   double h1min=0.001;
   double h1max=1.; //NB : .1 is necessary to obtain nice images! but long...
   //1e6; //low h1max necessary to integrate properly the thin disk
-  double factnorm=2.;
+  //double factnorm=2.;
   //  double newnorm1, newnorm2;
  
   double coordtemp[7]={coord[0],coord[1],coord[2],coord[3],coord[5],coord[6],coord[7]};
@@ -401,7 +406,7 @@ void KerrKS::MakeCst(const double* coord, double cst[4]) const{
   double aa=spin_, a2=aa*aa;
   double temp=xx*xx+yy*yy+zz*zz-a2;
   double rr=sqrt(0.5*(temp+sqrt(temp*temp+4*a2*zz*zz))), r2=rr*rr;
-  double z2=zz*zz;
+  //double z2=zz*zz;
 
   
   double costh=zz/rr, costheta2=costh*costh, sintheta2=1.-costheta2, theta=acos(costh), sinth=sin(theta); //NB: acos gives a value between 0 and pi, which is exactly what we want for theta 

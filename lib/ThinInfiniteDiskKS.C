@@ -105,7 +105,7 @@ int ThinInfiniteDiskKS::Impact(Photon *ph, size_t index,
 }
 
 double ThinInfiniteDiskKS::emission(double, double, double coord_ph[8],
-				    double coord_obj[8]) const{
+				    double *) const{
   if (flag_radtransf_)
     throwError("Radiative transfer not implemented for ThinInfiniteDiskKS.");
 
