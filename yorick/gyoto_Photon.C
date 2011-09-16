@@ -36,8 +36,8 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 				 int *kiargs, int *piargs, int *rvset, int *paUsed) {
   if (debug()) cerr << "\nDEBUG: In ygyoto_Photon_generic_eval: ";
   int k=-1, iarg;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
 
   //// MEMBERS ////
   /* METRIC */
@@ -341,7 +341,7 @@ extern "C" {
 
     SmartPointer<Photon> *ph = &(((gyoto_Photon*)obj)->photon);
 
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_PHOTON_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_PHOTON_GENERIC_KW_N+1];
@@ -349,7 +349,7 @@ extern "C" {
     int piargs[]={-1,-1,-1,-1,-1};
     // push default return value: the photon itsef
     *ypush_Photon() = *ph;
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
    
     int iarg=argc, parg=0;
     while (iarg>=1) {
@@ -366,7 +366,7 @@ extern "C" {
 
   }
   static y_userobj_t gyoto_Photon_obj =
-    {"gyoto_Photon", &gyoto_Photon_free, &gyoto_Photon_print, &gyoto_Photon_eval, 0, 0};
+    {const_cast<char*>("gyoto_Photon"), &gyoto_Photon_free, &gyoto_Photon_print, &gyoto_Photon_eval, 0, 0};
   
   // Generic constructor/accessor
   void
@@ -382,14 +382,14 @@ extern "C" {
       builder=1;
     }
 
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_PHOTON_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_PHOTON_GENERIC_KW_N+1];
     int kiargs[YGYOTO_PHOTON_GENERIC_KW_N];
     int piargs[]={-1,-1,-1,-1};
     // push default return value: need to drop before pushing another one
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
    
     int iarg=argc, parg=0;
     while (iarg>=1) {

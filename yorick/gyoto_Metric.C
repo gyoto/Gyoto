@@ -42,7 +42,7 @@ extern "C" {
   void gyoto_Metric_print(void *obj);
   void gyoto_Metric_eval(void *obj, int n);
   static y_userobj_t gyoto_Metric_obj =
-    {"gyoto_Metric", &gyoto_Metric_free, &gyoto_Metric_print, &gyoto_Metric_eval, 0, 0};
+    {const_cast<char*>("gyoto_Metric"), &gyoto_Metric_free, &gyoto_Metric_print, &gyoto_Metric_eval, 0, 0};
 
   // METRIC CLASS
   void gyoto_Metric_free(void *obj) {
@@ -90,7 +90,7 @@ extern "C" {
     }
 
     // Fall-back to generic worker
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_METRIC_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+1];
@@ -98,7 +98,7 @@ extern "C" {
     int piargs[]={-1,-1,-1,-1};
     // push back metric by default
     *ypush_Metric()=gg;
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     
     int iarg=argc, parg=0;
     while (iarg>=1) {
@@ -129,7 +129,7 @@ int yarg_Metric(int iarg) {
   return yget_obj(iarg,0)==gyoto_Metric_obj.type_name;
 }
 
-void ygyoto_Metric_register(char* name, ygyoto_Metric_eval_worker_t* on_eval){
+void ygyoto_Metric_register(char const*const name, ygyoto_Metric_eval_worker_t* on_eval){
   int n;
   if (ygyoto_Metric_count==YGYOTO_MAX_REGISTERED)
     y_error("Too many Metrics registered");
@@ -147,8 +147,8 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric>*gg,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed) {
   int k=-1, iarg=-1;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
   long  ntot, dims[Y_DIMSIZE];
 
   /* METHODS */  
@@ -275,13 +275,13 @@ extern "C" {
       builder=1;
     }
 
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_METRIC_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+1];
     int kiargs[YGYOTO_METRIC_GENERIC_KW_N];
     int piargs[]={-1,-1,-1,-1};
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     
     int iarg=argc, parg=0;
     while (iarg>=1) {

@@ -88,7 +88,7 @@ extern "C" {
     }
 
     // Parse keywords
-    static char *knames[] = {
+    static char const *knames[] = {
       "get_pointer",
       "metric", "screen", "astrobj", "delta", "quantities",
       "xmlwrite", "clone",
@@ -96,7 +96,7 @@ extern "C" {
     };
     static long kglobs[9];
     int kiargs[8], piargs[]={-1, -1, -1};
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
 
@@ -405,7 +405,7 @@ extern "C" {
   }
 
   static y_userobj_t gyoto_Scenery_obj = {
-    "gyoto_Scenery",
+    const_cast<char*>("gyoto_Scenery"),
     &gyoto_Scenery_free, &gyoto_Scenery_print, &gyoto_Scenery_eval,
     0, 0
   };

@@ -46,7 +46,7 @@ void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
   } else *ypush_Spectrum()=*sp_;
 
   // Parse arguments
-  static char * knames[]={
+  static char const * knames[]={
     "constant", "exponent",
     YGYOTO_SPECTRUM_GENERIC_KW,
     0
@@ -55,7 +55,7 @@ void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
   static long kglobs[YGYOTO_SPECTRUM_GENERIC_KW_N+nkw+1];
   int kiargs[YGYOTO_SPECTRUM_GENERIC_KW_N+nkw];
   int piargs[]={-1,-1,-1,-1};
-  yarg_kw_init(knames, kglobs, kiargs);
+  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   int iarg=argc, parg=0;
   while (iarg>=1) {
     iarg = yarg_kw(iarg, kglobs, kiargs);
@@ -80,8 +80,8 @@ void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
 
   // Process specific keywords
   int k=-1;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
 
   //// MEMBERS ////
   /* CONSTANT */

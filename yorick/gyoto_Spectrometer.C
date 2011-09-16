@@ -34,8 +34,8 @@ using namespace YGyoto;
 
 void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
   int k=-1, rvset[1]={0}, paUsed[1]={0};
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
 
   if (!sp) {
     sp = ypush_Spectrometer();
@@ -44,7 +44,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     *ypush_Spectrometer() = *sp;
   }
 
-  static char * knames[]={
+  static char const * knames[]={
     "kind", "nsamples", "band", 
     "xmlwrite",
     "channels", "midpoints", "widths",
@@ -54,7 +54,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
   static long kglobs[nkw+1];
   int kiargs[nkw];
   int piargs[]={-1,-1,-1,-1};
-  yarg_kw_init(knames, kglobs, kiargs);
+  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   int iarg=argc, parg=0;
   while (iarg>=1) {
     iarg = yarg_kw(iarg, kglobs, kiargs);
@@ -211,7 +211,7 @@ extern "C" {
     YGyoto::SpectroYEval(sp, argc);
   }
   static y_userobj_t gyoto_Spectro_obj =
-    {"gyoto_Spectrometer", &gyoto_Spectro_free, &gyoto_Spectro_print,
+    {const_cast<char*>("gyoto_Spectrometer"), &gyoto_Spectro_free, &gyoto_Spectro_print,
      &gyoto_Spectro_eval, 0, 0};
 
   void

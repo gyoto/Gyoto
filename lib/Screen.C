@@ -485,7 +485,7 @@ void Screen::fillElement(factoryMessenger *fmp) {
   fmp -> setParameter ("Inclination", getInclination());
   fmp -> setParameter ("Argument", getArgument());
   if (spectro_ && spectro_ -> getKind() != GYOTO_SPECTRO_KIND_NONE) {
-    factoryMessenger* child = fmp -> makeChild("Spectrometer");
+    child = fmp -> makeChild("Spectrometer");
     spectro_ -> fillElement(child) ;
     delete child; child = NULL;
   }

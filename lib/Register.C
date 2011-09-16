@@ -74,7 +74,7 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   (*initfcn)();
 }
 
-void Gyoto::Register::init(char*  cpluglist) {
+void Gyoto::Register::init(char const *  cpluglist) {
 
   // Clean registers
   Metric::initRegister();
@@ -98,7 +98,6 @@ void Gyoto::Register::init(char*  cpluglist) {
 
   if (pluglist.length()) {
     size_t first=0, last=0;
-    size_t len = pluglist.length() ;
     string curplug="";
     int nofail=0;
     while (pluglist.length()) {
@@ -138,6 +137,7 @@ void* Register::Entry::getSubcontractor(std::string name) {
   if (name_==name) return subcontractor_;
   if (next_) return next_ -> getSubcontractor(name);
   throwError ("Unregistered Metric kind: "+name);
+  return NULL; // will never get there, avoid compilation warning
 }
 
 void Gyoto::Register::list() {

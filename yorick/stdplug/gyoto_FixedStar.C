@@ -35,7 +35,7 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj>* ao_, int argc) {
   } else *ypush_Astrobj()=*ao_;
 
   SmartPointer<FixedStar> *ao = (SmartPointer<FixedStar> *)ao_;
-  static char * knames[]={
+  static char const * knames[]={
     "radius", "position",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
@@ -44,7 +44,7 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj>* ao_, int argc) {
   int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+2];
   int piargs[]={-1,-1,-1,-1};
   
-  yarg_kw_init(knames, kglobs, kiargs);
+  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   
   int iarg=argc, parg=0;
   while (iarg>=1) {
@@ -56,8 +56,8 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj>* ao_, int argc) {
   }
 
   int k=-1;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
   /* RADIUS */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;

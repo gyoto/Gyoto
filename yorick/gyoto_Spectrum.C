@@ -83,7 +83,7 @@ extern "C" {
     }
 
     // Fall-back to default worker
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_SPECTRUM_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_SPECTRUM_GENERIC_KW_N+1];
@@ -91,7 +91,7 @@ extern "C" {
     int piargs[]={-1,-1,-1,-1};
     // push default return value
     *ypush_Spectrum()=*sp;
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     
     int iarg=argc, parg=0;
     while (iarg>=1) {
@@ -108,7 +108,7 @@ extern "C" {
 
   }
   static y_userobj_t gyoto_Spectrum_obj =
-    {"gyoto_Spectrum", &gyoto_Spectrum_free, &gyoto_Spectrum_print, &gyoto_Spectrum_eval, 0, 0};
+    {const_cast<char*>("gyoto_Spectrum"), &gyoto_Spectrum_free, &gyoto_Spectrum_print, &gyoto_Spectrum_eval, 0, 0};
 
 }
 
@@ -126,7 +126,7 @@ int yarg_Spectrum(int iarg) {
 }
 
 
-void ygyoto_Spectrum_register(char* name, ygyoto_Spectrum_eval_worker_t* on_eval){
+void ygyoto_Spectrum_register(char const*const name, ygyoto_Spectrum_eval_worker_t* on_eval){
   int n;
   if (ygyoto_Spectrum_count==YGYOTO_MAX_REGISTERED)
     y_error("Too many Spectra registered");
@@ -142,8 +142,8 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed) {
   int k=-1, iarg;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
 
   if (debug())
     for (int i=0; i<YGYOTO_SPECTRUM_GENERIC_KW_N; ++i)
@@ -221,7 +221,7 @@ extern "C" {
       *rvset=1;
     }
 
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_SPECTRUM_GENERIC_KW,
       0
     };
@@ -229,7 +229,7 @@ extern "C" {
     int kiargs[YGYOTO_SPECTRUM_GENERIC_KW_N+11];
     int piargs[]={-1,-1,-1,-1};
   
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   
     int iarg=argc, parg=0;
     while (iarg>=1) {

@@ -82,7 +82,7 @@ extern "C" {
     }
 
     // Fall-back to default worker
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_ASTROBJ_GENERIC_KW, 0
     };
     static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+1];
@@ -90,7 +90,7 @@ extern "C" {
     int piargs[]={-1,-1,-1,-1};
     // push default return value: need to drop before pushing another one
     *ypush_Astrobj()=*ao;
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     
     int iarg=argc, parg=0;
     while (iarg>=1) {
@@ -107,7 +107,7 @@ extern "C" {
 
   }
   static y_userobj_t gyoto_Astrobj_obj =
-    {"gyoto_Astrobj", &gyoto_Astrobj_free, &gyoto_Astrobj_print, &gyoto_Astrobj_eval, 0, 0};
+    {const_cast<char*>("gyoto_Astrobj"), &gyoto_Astrobj_free, &gyoto_Astrobj_print, &gyoto_Astrobj_eval, 0, 0};
 
 }
 
@@ -124,7 +124,7 @@ int yarg_Astrobj(int iarg) {
 }
 
 
-void ygyoto_Astrobj_register(char* name, ygyoto_Astrobj_eval_worker_t* on_eval){
+void ygyoto_Astrobj_register(char const*const name, ygyoto_Astrobj_eval_worker_t* on_eval){
   int n;
   if (ygyoto_Astrobj_count==YGYOTO_MAX_REGISTERED)
     y_error("Too many Astrobjs registered");
@@ -140,8 +140,8 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj>*ao,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed) {
   int k=-1, iarg;
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
 
   if (debug())
     for (int i=0; i<YGYOTO_ASTROBJ_GENERIC_KW_N; ++i)
@@ -227,7 +227,7 @@ extern "C" {
       *rvset=1;
     }
 
-    static char * knames[]={
+    static char const * knames[]={
       YGYOTO_ASTROBJ_GENERIC_KW,
       0
     };
@@ -235,7 +235,7 @@ extern "C" {
     int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
     int piargs[]={-1,-1,-1,-1};
   
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   
     int iarg=argc, parg=0;
     while (iarg>=1) {

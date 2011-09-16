@@ -761,6 +761,13 @@ void factoryMessenger::setSelfAttribute(std::string attrname,
   element_->setAttribute(X(attrname.c_str()), X(val_string));
 }
 
+void factoryMessenger::setSelfAttribute(std::string attrname,
+					double attrvalue) {
+  char val_string[dvalLength];
+  sprintf( val_string, dfmt, attrvalue);
+  element_->setAttribute(X(attrname.c_str()), X(val_string));
+}
+
 string factoryMessenger::getAttribute(std::string attrname) const {
   DOMNode *currentNode = children_->item(curNodeIndex_-1);
   DOMElement *currentElement

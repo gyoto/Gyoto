@@ -35,7 +35,7 @@ void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric> *gg_, int argc) {
   } else  *ypush_Metric()=*gg_;
 
   SmartPointer<KerrKS> *gg = (SmartPointer<KerrKS> *)gg_;
-  static char * knames[]={
+  static char const * knames[]={
     "spin",
     YGYOTO_METRIC_GENERIC_KW,
     0
@@ -44,7 +44,7 @@ void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric> *gg_, int argc) {
   int kiargs[YGYOTO_METRIC_GENERIC_KW_N+2];
   int piargs[]={-1,-1,-1,-1};
   
-  yarg_kw_init(knames, kglobs, kiargs);
+  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   
   int iarg=argc, parg=0;
   while (iarg>=1) {
@@ -56,8 +56,8 @@ void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric> *gg_, int argc) {
   }
   
   // Process specific GET keywords
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
   int k=-1;
 
   // SPIN

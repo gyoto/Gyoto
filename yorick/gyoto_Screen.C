@@ -36,7 +36,7 @@ extern "C" {
   void gyoto_Screen_print(void *obj);
   void gyoto_Screen_eval(void *obj, int n);
   static y_userobj_t gyoto_Screen_obj =
-    {"gyoto_Screen", &gyoto_Screen_free, &gyoto_Screen_print, &gyoto_Screen_eval, 0, 0};
+    {const_cast<char*>("gyoto_Screen"), &gyoto_Screen_free, &gyoto_Screen_print, &gyoto_Screen_eval, 0, 0};
 
   // SCREEN CLASS
   void gyoto_Screen_free(void *obj) {
@@ -66,8 +66,8 @@ extern "C" {
   void gyoto_Screen_eval(void *obj, int argc) {
     int rvset[1]={0}, paUsed[1]={0};
     int k=-1;
-    char * rmsg="Cannot set return value more than once";
-    char * pmsg="Cannot use positional argument more than once";
+    char const * rmsg="Cannot set return value more than once";
+    char const * pmsg="Cannot use positional argument more than once";
 
     SmartPointer<Screen> *screen = NULL; //&((gyoto_Screen*)obj)->screen;
 
@@ -83,7 +83,7 @@ extern "C" {
       *ypush_Screen()=*screen;
     }
       
-    static char * knames[]={
+    static char const * knames[]={
       "metric",
       "time","fov","resolution",
       "distance", "dmax", "inclination", "paln", "argument",
@@ -98,7 +98,7 @@ extern "C" {
     int kiargs[nkw];
     int piargs[]={-1,-1,-1,-1};
     // push default return value: need to drop before pushing another one
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
       
     int iarg=argc, parg=0;
     while (iarg>=1) {

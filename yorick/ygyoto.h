@@ -83,19 +83,19 @@ int yarg_Spectrometer(int iarg);
   will try to return the metric coefficients if no other outpur value
   has been pushed.
  */ 
-void ygyoto_Metric_register(char* kind, ygyoto_Metric_eval_worker_t* on_eval);
+void ygyoto_Metric_register(char const * const kind, ygyoto_Metric_eval_worker_t* on_eval);
 void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric>*,
 				int *kiargs, int *piargs, int *rvset,
 				int *paUsed);
 
 
-void ygyoto_Astrobj_register(char* kind, ygyoto_Astrobj_eval_worker_t* on_eval);
+void ygyoto_Astrobj_register(char const * const kind, ygyoto_Astrobj_eval_worker_t* on_eval);
 void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj>*,
 				 int *kiargs, int *piargs, int *rvset,
 				 int *paUsed);
 
 
-void ygyoto_Spectrum_register(char* kind,
+void ygyoto_Spectrum_register(char const * const kind,
 			      ygyoto_Spectrum_eval_worker_t*on_eval);
 void ygyoto_Spectrum_generic_eval
 (Gyoto::SmartPointer<Gyoto::Spectrum::Generic> *,
@@ -142,14 +142,14 @@ void ygyoto_Spectrum_generic_eval
 typedef Gyoto::SmartPointer<Gyoto::Metric> *ygyoto_yget_Metric_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Metric> *ygyoto_ypush_Metric_t();
 typedef int yarg_OBJTYPE_t(int);
-typedef void ygyoto_Metric_register_t(char*, ygyoto_Metric_eval_worker_t*);
+typedef void ygyoto_Metric_register_t(char const * const, ygyoto_Metric_eval_worker_t*);
 typedef void ygyoto_Metric_generic_eval_t(Gyoto::SmartPointer<Gyoto::Metric>*, \
 			       int *, int *, int*, int*);
 
 typedef Gyoto::SmartPointer<Gyoto::Astrobj> *ygyoto_yget_Astrobj_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Astrobj> *ygyoto_ypush_Astrobj_t();
 //typedef int yarg_Astrobj_t(int);
-typedef void ygyoto_Astrobj_register_t(char*, ygyoto_Astrobj_eval_worker_t*);
+typedef void ygyoto_Astrobj_register_t(char const * const, ygyoto_Astrobj_eval_worker_t*);
 typedef void ygyoto_Astrobj_generic_eval_t \
 (Gyoto::SmartPointer<Gyoto::Astrobj>*, int *, int *, int*, int*);
 
@@ -159,7 +159,7 @@ typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic> *\
 ygyoto_ypush_Spectrum_t();
 //typedef int yarg_Spectrum::Generic_t(int);
 typedef void ygyoto_Spectrum_register_t\
-(char*, ygyoto_Spectrum_eval_worker_t*);
+(char const*const, ygyoto_Spectrum_eval_worker_t*);
 typedef void ygyoto_Spectrum_generic_eval_t \
 (Gyoto::SmartPointer<Gyoto::Spectrum::Generic>*, int *, int *, int*, int*);
 
