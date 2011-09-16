@@ -86,6 +86,7 @@ class Gyoto::factoryMessenger {
   factoryMessenger* makeChild(std::string name);
   void setSelfAttribute(std::string attrname, std::string value) ;
   void setSelfAttribute(std::string attrname, unsigned long value) ;
+  void setSelfAttribute(std::string attrname, size_t value) ;
   void setSelfAttribute(std::string attrname, double value) ;
   void setFullContent(std::string value) ; ///< Low level, prefer setParameter
   void setParameter(std::string name);

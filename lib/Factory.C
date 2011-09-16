@@ -762,6 +762,11 @@ void factoryMessenger::setSelfAttribute(std::string attrname,
 }
 
 void factoryMessenger::setSelfAttribute(std::string attrname,
+					size_t attrvalue) {
+  setSelfAttribute(attrname, (unsigned long)(attrvalue));
+}
+
+void factoryMessenger::setSelfAttribute(std::string attrname,
 					double attrvalue) {
   char val_string[dvalLength];
   sprintf( val_string, dfmt, attrvalue);
