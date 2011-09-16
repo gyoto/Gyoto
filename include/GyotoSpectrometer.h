@@ -64,11 +64,11 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
   SpectroKind_t getKind() const ;
   std::string getKindStr() const;
   size_t getNSamples() const ;
-  double const * const getBand() const ;
+  double const * getBand() const ;
 
-  double const * const getMidpoints() const ;
-  double const * const getChannels() const ;
-  double const * const getWidths() const ;
+  double const * getMidpoints() const ;
+  double const * getChannels() const ;
+  double const * getWidths() const ;
 
 #ifdef GYOTO_USE_XERCES
  public:

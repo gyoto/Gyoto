@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
     }
 
     char keyname[FLEN_KEYWORD];
-    char * fmt="QUANT_%lu";
+    char const * fmt="QUANT_%lu";
     char * CNULL=NULL;
 
     if (quantities & GYOTO_QUANTITY_INTENSITY) {

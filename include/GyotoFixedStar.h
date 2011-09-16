@@ -80,7 +80,7 @@ class Gyoto::FixedStar : public Astrobj {
   // ---------
  public:
   double getRadius() const ; ///< Get radius_
-  const double* const getPos() const; ///< Get const pointer to pos_
+  double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
   //  const int getCoordSys() const; ///< Get coordinate system
   

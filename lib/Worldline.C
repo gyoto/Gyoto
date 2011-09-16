@@ -304,7 +304,7 @@ void Worldline::xFill(double tlim) {
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
       if (coord[0]>tlim) stopcond=1;
-      if (!stopcond & ind==x_size_-1) {
+      if ((!stopcond) & (ind==x_size_-1)) {
 	imax_=x_size_-1;
 	ind=xExpand(1);
       }
@@ -312,7 +312,7 @@ void Worldline::xFill(double tlim) {
       if (coord[0]<tlim) {
 	stopcond=1;
       }
-      if (!stopcond & ind==0) {
+      if ((!stopcond) & (ind==0)) {
 	imin_=0;
 	ind=xExpand(-1);
       }
@@ -803,7 +803,7 @@ void Worldline::setDelta(const double del) { delta_=del; }
 double Worldline::getTlim() { return tlim_; }
 void Worldline::setTlim(double tlim) { tlim_ = tlim; }
 
-double const * const  Worldline::getCst() const {
+double const * Worldline::getCst() const {
   return cst_;
 }
 

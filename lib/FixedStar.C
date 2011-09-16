@@ -248,7 +248,7 @@ double FixedStar::emission(double, double dsem, double*, double*) const{
 
 double FixedStar::getRadius() const { return radius_; }
 
-const double* const FixedStar::getPos() const { return pos_; }
+double const * FixedStar::getPos() const { return pos_; }
 
 void FixedStar::getPos(double dst[3]) const
 { for (int i=0; i<3;++i) dst[i]=pos_[i]; }

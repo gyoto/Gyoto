@@ -300,7 +300,7 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	if (debug())
 	  cerr << "DEBUG: Astrobj::processHitQuantities(): "
 	       << "nuobs[" << ii << "]="<< channels[ii]
-	       << ", nuem=" << nuem 
+	       << ", nuem=" << nuem1 
 	       << ", binspectrum[" << ii+data->offset << "]="
 	       << data->binspectrum[ii*data->offset]<< endl;
       }

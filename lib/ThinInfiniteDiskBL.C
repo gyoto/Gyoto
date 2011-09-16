@@ -65,7 +65,7 @@ ThinInfiniteDiskBL::~ThinInfiniteDiskBL() {
 int ThinInfiniteDiskBL::Impact(Photon *ph, size_t index,
 			       AstrobjProperties *data) {
   double coord_ph_hit[8], coord_obj_hit[8];
-  double tmp, frac, rcross;
+  double frac, rcross;
   double coord1[8], coord2[8];
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
@@ -73,7 +73,7 @@ int ThinInfiniteDiskBL::Impact(Photon *ph, size_t index,
   double theta1 = coord1[2];
   double theta2 = coord2[2];
   
-  if ((tmp=theta2-theta1) > M_PI | tmp < -M_PI)
+  if (fabs(theta2-theta1) > M_PI)
     throwError ("ThinInfiniteDiskBL::Impact: fishy heuristic");
   
   theta1 -= M_PI*0.5;

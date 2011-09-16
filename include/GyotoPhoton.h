@@ -193,7 +193,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
     /**
      * For i!=-1: getTansmission()[i] == getTransmission(size_t i)
      */
-    double const * const getTransmission() const ;
+    double const * getTransmission() const ;
          ///< get pointer to transmission array
 
     /**

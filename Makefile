@@ -6,6 +6,8 @@ UNINSTALL_DIR=$(addprefix uninstall-,$(DIR))
 
 include local_settings
 
+GYOTO_VERSION=$(subst gyoto-,,`basename $(CURDIR)`)
+
 all: $(DIR) yorick
 
 $(DIR) doc:
@@ -69,5 +71,12 @@ clean-yorick distclean-yorick:
 
 distclean: clean distclean-yorick
 
-.PHONY: all $(DIR) clean $(CLEAN_DIR) install $(INSTALL_DIR) uninstall $(UNINSTALL_DIR) distclean check yorick check-yorick clean-yorick install-yorick uninstall-yorick doc clean-doc distclean-yorick
+tbz: distclean
+	cd ..; \
+	tar cvf - \
+	--exclude=.git --exclude=.gitignore --exclude=.pc --exclude=debian \
+	`basename $(CURDIR)` | \
+	bzip2 > gyoto_$(GYOTO_VERSION).tbz
+
+.PHONY: all $(DIR) clean $(CLEAN_DIR) install $(INSTALL_DIR) uninstall $(UNINSTALL_DIR) distclean check yorick check-yorick clean-yorick install-yorick uninstall-yorick doc clean-doc distclean-yorick tbz
 

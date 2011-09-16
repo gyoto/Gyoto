@@ -132,11 +132,11 @@ class Gyoto::Worldline {
    * Return pointer to array holding the previously set
    * Metric-specific constants of motion
    */
-  double const * const getCst() const ; ///< Returns the worldline's cst of motion (if any)
+  double const * getCst() const ; ///< Returns the worldline's cst of motion (if any)
   /**
    * Set Metric-specific constants of motion
    */
-  void setCst(double const * const cst, size_t const ncsts) ;
+  void setCst(double const * cst, size_t const ncsts) ;
 
   /**
    * Set initial condition for this Photon :

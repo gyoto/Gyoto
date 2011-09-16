@@ -458,7 +458,7 @@ double Photon::getTransmission(size_t i) const {
     throwError("Photon::getTransmission(): i > nsamples");
   return transmission_[i];
 }
-double const * const Photon::getTransmission() const { return transmission_; }
+double const * Photon::getTransmission() const { return transmission_; }
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }
   if (!spectro_() || i>=spectro_->getNSamples())

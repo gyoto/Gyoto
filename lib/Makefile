@@ -39,8 +39,8 @@ libgyoto.a: $(OBJ)
 
 $(LIBGYOTO_FILE): $(OBJ)
 ifeq ($(SYS),Linux)
-	ln -s $(LIBGYOTO_FILE) libgyoto.so.$(SOVERS_MAJOR)
-	ln -s $(LIBGYOTO_FILE) libgyoto.so
+	ln -fs $(LIBGYOTO_FILE) libgyoto.so.$(SOVERS_MAJOR)
+	ln -fs $(LIBGYOTO_FILE) libgyoto.so
 endif
 	g++ -o $(LIBGYOTO_FILE) $(DYLIB_CFLAG)  $(LIB_CXX) $^
 
