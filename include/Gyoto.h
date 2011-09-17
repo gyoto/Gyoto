@@ -43,8 +43,8 @@
 <B><CENTER> General relativitY Orbit Tracer of Observatoire de Paris</CENTER></B>
  *
  *
- <A HREF=https://github.com/gyoto/Gyoto><B>Download</B></A> | <A
- HREF=http://github.com/gyoto/Gyoto/blob/master/INSTALL><B>Installation
+ <A HREF="https://github.com/gyoto/Gyoto"><B>Download</B></A> | <A
+ HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL"><B>Installation
  instructions</B></A> | \ref conditions_sec
  *
  * Gyoto aims at providing a framework for computing orbits and
@@ -82,7 +82,7 @@
  * code base. Contributors will be listed in the relevant source files as
  * well as in the AUTHORS file in the package.
  *
- *   Gyoto is Copyright 2011 Thibaut Paumard, Frédéric Vincent.
+ *   Gyoto is Copyright 2011 Thibaut Paumard, Frederic Vincent.
  *
  *  Gyoto is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -255,7 +255,7 @@ extern "C" void __GyotostdplugInit() {
  your plug-in in addition to those, alter this variable in your shell
  (if you don't know what this means or how to do this, ask the local
  Unix guru or read the fine <A
- HREF=http://www.gnu.org/s/bash/manual/bash.html>manual</A>):
+ HREF="http://www.gnu.org/s/bash/manual/bash.html">manual</A>):
 \code
 export GYOTO_PLUGINS="stdplug,nofail:lorene,MyPlug"
 \endcode
