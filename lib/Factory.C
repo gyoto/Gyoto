@@ -762,7 +762,7 @@ void factoryMessenger::setSelfAttribute(std::string attrname,
 }
 
 void factoryMessenger::setSelfAttribute(std::string attrname,
-					size_t attrvalue) {
+					unsigned int attrvalue) {
   setSelfAttribute(attrname, (unsigned long)(attrvalue));
 }
 
