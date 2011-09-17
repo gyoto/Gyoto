@@ -411,7 +411,9 @@ void Metric::initRegister() {
 
 void Gyoto::Metric::Register(std::string name, Metric::Subcontractor_t* scp) {
   Register::Entry* ne =
-    new Register::Entry(name, (void*)scp, Gyoto::Metric::Register_);
+    new Register::Entry(name,
+			(Gyoto::SmartPointee::Subcontractor_t*) scp,
+			Gyoto::Metric::Register_);
   Gyoto::Metric::Register_ = ne;
 }
 

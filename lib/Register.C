@@ -125,15 +125,16 @@ void Gyoto::Register::init(char const *  cpluglist) {
 }
 
 Register::Entry::Entry(std::string name,
-			     void* subcontractor,
-			     Register::Entry* next)
-  : name_(name), subcontractor_((void*)subcontractor), next_(next)
+		       Gyoto::SmartPointee::Subcontractor_t* subcontractor,
+		       Register::Entry* next)
+  : name_(name), subcontractor_(subcontractor), next_(next)
 {}
 
 Register::Entry::~Entry() { if (next_) delete next_; }
 
 
-void* Register::Entry::getSubcontractor(std::string name) {
+Gyoto::SmartPointee::Subcontractor_t*
+Register::Entry::getSubcontractor(std::string name) {
   if (name_==name) return subcontractor_;
   if (next_) return next_ -> getSubcontractor(name);
   throwError ("Unregistered Metric kind: "+name);

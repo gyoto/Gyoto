@@ -130,7 +130,9 @@ void Gyoto::Spectrum::Register(std::string name,
 			       Gyoto::Spectrum::Subcontractor_t* scp)
 {
   Register::Entry* ne =
-    new Register::Entry(name, (void*)scp, Gyoto::Spectrum::Register_);
+    new Register::Entry(name,
+			(Gyoto::SmartPointee::Subcontractor_t*)scp,
+			Gyoto::Spectrum::Register_);
   Gyoto::Spectrum::Register_ = ne;
 }
 

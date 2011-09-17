@@ -41,6 +41,7 @@
 
 namespace Gyoto {
   class SmartPointee;
+  class factoryMessenger;
   template <class T> class SmartPointer;
 }
 
@@ -81,6 +82,9 @@ class Gyoto::SmartPointee
   void incRefCount () ; ///< Increment the reference counter. Warning: Don't mess with the counter.
   int decRefCount () ;  ///< Decrement the reference counter and return current value. Warning: Don't mess with the counter.
   int getRefCount () ;  ///< Get the current number of references
+  typedef Gyoto::SmartPointer<Gyoto::SmartPointee>
+    Subcontractor_t(Gyoto::factoryMessenger*);
+
 };
 
 

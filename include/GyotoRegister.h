@@ -50,15 +50,15 @@ class Gyoto::Register::Entry {
   friend void Register::list ();
 protected:
   std::string name_;
-  void* subcontractor_;
+  Gyoto::SmartPointee::Subcontractor_t* subcontractor_;
   int type_;
   Register::Entry* next_;
 public:
   Entry(std::string name,
-		void* subcontractor,
+		Gyoto::SmartPointee::Subcontractor_t* subcontractor,
 		Entry* next);
   ~Entry();
-  void* getSubcontractor(std::string);
+  Gyoto::SmartPointee::Subcontractor_t* getSubcontractor(std::string);
 };
 
 class Gyoto::factoryMessenger {

@@ -388,7 +388,7 @@ void Astrobj::initRegister() {
 
 void Gyoto::Astrobj::Register(std::string name, Subcontractor_t* scp){
   Register::Entry* ne =
-    new Register::Entry(name, (void*)scp, Gyoto::Astrobj::Register_);
+    new Register::Entry(name, (SmartPointee::Subcontractor_t*)scp, Gyoto::Astrobj::Register_);
   Gyoto::Astrobj::Register_ = ne;
 }
 
