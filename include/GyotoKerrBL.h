@@ -117,7 +117,7 @@ class Gyoto::KerrBL : public Metric {
  
 
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(factoryMessenger *fmp); /// < called from Factory
+  virtual void fillElement(FactoryMessenger *fmp); /// < called from Factory
   static Metric::Subcontractor_t Subcontractor;
   static void Init();
 #endif

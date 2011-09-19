@@ -45,13 +45,13 @@
 
 namespace Gyoto {
   class Factory;
-  class factoryMessenger;
+  class FactoryMessenger;
   class Spectrometer;
 }
 
 class Gyoto::Factory
 {
-  friend class Gyoto::factoryMessenger;
+  friend class Gyoto::FactoryMessenger;
 
  protected:
   // XERCES MACHINERY
@@ -132,7 +132,7 @@ class Gyoto::Factory
   void setParameter(std::string name, unsigned long value, xercesc::DOMElement *pel);
   void setParameter(std::string name, std::string sval, xercesc::DOMElement*);
   void setParameter(std::string , double val[], size_t, xercesc::DOMElement*,
-		    factoryMessenger **child = NULL);
+		    FactoryMessenger **child = NULL);
 
   /**
    * Input is path relative to XML file. Output is absolute path to same file.

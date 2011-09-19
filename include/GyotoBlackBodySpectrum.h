@@ -73,7 +73,7 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
    * generic parts.
    */
 
-  virtual void fillElement(factoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
                                              /// < called from Factory
 #endif
 };
@@ -82,7 +82,7 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
 namespace Gyoto {
   namespace Spectrum {
     Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      BlackBodySubcontractor(Gyoto::factoryMessenger* fmp = NULL);
+      BlackBodySubcontractor(Gyoto::FactoryMessenger* fmp = NULL);
     void BlackBodyInit();
   }
 }

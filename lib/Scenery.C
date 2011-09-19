@@ -18,8 +18,10 @@
  */
 
 #include "GyotoUtils.h"
-#include <GyotoScenery.h>
-#include <GyotoPhoton.h>
+#include "GyotoScenery.h"
+#include "GyotoPhoton.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <cmath>
 #include <cfloat>
 #include <cstring>
@@ -274,7 +276,7 @@ size_t Scenery::getScalarQuantitiesCount() const {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Scenery::fillElement(factoryMessenger *fmp) {
+void Scenery::fillElement(FactoryMessenger *fmp) {
   if (gg_)     fmp -> setMetric (gg_) ;
   if (screen_) fmp -> setScreen (screen_) ;
   if (obj_)    fmp -> setAstrobj (obj_) ;
@@ -285,7 +287,7 @@ void Scenery::fillElement(factoryMessenger *fmp) {
   }
 }
 
-SmartPointer<Scenery> Gyoto::ScenerySubcontractor(factoryMessenger* fmp) {
+SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   double delta = GYOTO_DEFAULT_DELTA ;

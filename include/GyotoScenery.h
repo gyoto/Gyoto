@@ -177,14 +177,14 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(factoryMessenger *fmp); /// < called from Factory
+    void fillElement(FactoryMessenger *fmp); /// < called from Factory
 #endif
  
 };
 
 #ifdef GYOTO_USE_XERCES
 namespace Gyoto {
-  SmartPointer<Scenery> ScenerySubcontractor(Gyoto::factoryMessenger*);
+  SmartPointer<Scenery> ScenerySubcontractor(Gyoto::FactoryMessenger*);
 }
 #endif
 

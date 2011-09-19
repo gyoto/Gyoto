@@ -18,10 +18,12 @@
  */
 
 #include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+#include "GyotoKerrKS.h"
+#include "GyotoWorldline.h"
+#include "GyotoError.h"
+
 #include <iostream>
-#include <GyotoKerrKS.h>
-#include <GyotoWorldline.h>
-#include <GyotoError.h>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -475,12 +477,12 @@ int KerrKS::isStopCondition(double const * const coord) const {
 }
 
 #ifdef GYOTO_USE_XERCES
-void KerrKS::fillElement(Gyoto::factoryMessenger *fmp) {
+void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::fillElement(fmp);
 }
 
-SmartPointer<Metric> Gyoto::KerrKS::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Metric> Gyoto::KerrKS::Subcontractor(FactoryMessenger* fmp) {
 
   double spin=0., mass=1.; //default values
   string name="", content="";

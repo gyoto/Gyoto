@@ -70,7 +70,7 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
    * generic parts.
    */
 
-  virtual void fillElement(factoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
                                              /// < called from Factory
 #endif
 };
@@ -79,7 +79,7 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
 namespace Gyoto {
   namespace Spectrum {
     Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      PowerLawSubcontractor(Gyoto::factoryMessenger* fmp = NULL);
+      PowerLawSubcontractor(Gyoto::FactoryMessenger* fmp = NULL);
     void PowerLawInit();
   }
 }

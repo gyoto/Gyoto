@@ -18,11 +18,13 @@
  */
 
 #include "GyotoUtils.h"
-#include <GyotoPhoton.h>
-#include <GyotoScreen.h>
-#include <GyotoWorldlineIntegState.h>
-#include <GyotoDefs.h>
-#include <GyotoError.h>
+#include "GyotoFactoryMessenger.h"
+#include "GyotoPhoton.h"
+#include "GyotoScreen.h"
+#include "GyotoWorldlineIntegState.h"
+#include "GyotoDefs.h"
+#include "GyotoError.h"
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -470,7 +472,7 @@ void Photon::transmit(size_t i, double t) {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Photon::fillElement(factoryMessenger *fmp) {
+void Photon::fillElement(FactoryMessenger *fmp) {
   if (metric_)     fmp -> setMetric (metric_) ;
   if (object_)    fmp -> setAstrobj (object_) ;
 
@@ -482,7 +484,7 @@ void Photon::fillElement(factoryMessenger *fmp) {
     fmp -> setParameter ("Delta", delta_);
 }
 
-SmartPointer<Photon> Gyoto::PhotonSubcontractor(factoryMessenger* fmp) {
+SmartPointer<Photon> Gyoto::PhotonSubcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   SmartPointer<Metric> gg = NULL;

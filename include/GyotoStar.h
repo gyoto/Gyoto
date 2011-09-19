@@ -35,6 +35,7 @@ namespace Gyoto{
 
 #include <GyotoMetric.h>
 #include <GyotoAstrobj.h>
+#include <GyotoSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -116,7 +117,7 @@ class Gyoto::Star : public Gyoto::Astrobj, public Gyoto::Worldline {
 
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(factoryMessenger *fmp) const ; /// < called from Factory
+  virtual void fillElement(FactoryMessenger *fmp) const ; /// < called from Factory
   static Astrobj::Subcontractor_t Subcontractor;
   static void Init();
 #endif

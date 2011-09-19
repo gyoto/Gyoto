@@ -20,6 +20,7 @@
 #ifdef GYOTO_USE_XERCES
 
 #include <GyotoFactory.h>
+#include <GyotoFactoryMessenger.h>
 #include <GyotoUtils.h>
 #include <string>
 #include <libgen.h>
@@ -242,7 +243,7 @@ SmartPointer<Gyoto::Metric> Factory::getMetric() {
 
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
-    factoryMessenger fm(this, MetricDOM);
+    FactoryMessenger fm(this, MetricDOM);
 
     gg_= (*Metric::getSubcontractor(Kind))(&fm);
 
@@ -276,7 +277,7 @@ SmartPointer<Gyoto::Astrobj> Factory::getAstrobj(){
       Cs(tmpEl->getAttribute(X("kind")));
     if (debug()) cout << "Astrobj kind : " << AstrobjKind << endl ;
 
-    factoryMessenger fm(this, tmpEl);
+    FactoryMessenger fm(this, tmpEl);
 
     obj_ = (*Astrobj::getSubcontractor(AstrobjKind))(&fm);
 
@@ -305,7 +306,7 @@ SmartPointer<Gyoto::Photon> Factory::getPhoton(){
       delete result;
     }
 
-    factoryMessenger fm(this, tmpEl);
+    FactoryMessenger fm(this, tmpEl);
     photon_ = PhotonSubcontractor(&fm);
 
   }
@@ -335,7 +336,7 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
       Cs(tmpEl->getAttribute(X("kind")));
     if (debug()) cout << "Spectrum kind : " << Kind << endl ;
 
-    factoryMessenger fm(this, tmpEl);
+    FactoryMessenger fm(this, tmpEl);
     return (*Spectrum::getSubcontractor(Kind))(&fm);
 
 }
@@ -356,7 +357,7 @@ SmartPointer<Scenery> Factory::getScenery () {
 			    NULL);
     tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
   
-    factoryMessenger fm(this, tmpEl);
+    FactoryMessenger fm(this, tmpEl);
     scenery_ = ScenerySubcontractor(&fm);
   
     delete result;
@@ -379,7 +380,7 @@ SmartPointer<Gyoto::Screen> Factory::getScreen(){
     
     ScreenDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
     
-    factoryMessenger fm ( this, ScreenDOM );
+    FactoryMessenger fm ( this, ScreenDOM );
     screen_ = Screen::Subcontractor(&fm);
     delete result;
   }
@@ -404,7 +405,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
                            0);                   // document type object (DTD).
   root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, root_);
+  FactoryMessenger fm(this, root_);
   scenery_ -> fillElement(&fm);
 
 }
@@ -424,7 +425,7 @@ Factory::Factory(SmartPointer<Screen> scr)
                            0);                   // document type object (DTD).
   root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, root_);
+  FactoryMessenger fm(this, root_);
   screen_ -> fillElement(&fm);  
 
 }
@@ -444,7 +445,7 @@ Factory::Factory(SmartPointer<Metric> gg)
                            0);                   // document type object (DTD).
   gg_el_ = root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, gg_el_);
+  FactoryMessenger fm(this, gg_el_);
   gg -> fillElement(&fm);
 
 }
@@ -463,7 +464,7 @@ Factory::Factory(SmartPointer<Astrobj> ao)
                            0);                   // document type object (DTD).
   obj_el_ = root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, obj_el_);
+  FactoryMessenger fm(this, obj_el_);
   ao -> fillElement(&fm);
 
 }
@@ -482,7 +483,7 @@ Factory::Factory(SmartPointer<Spectrum::Generic> sp)
                            0);                   // document type object (DTD).
   obj_el_ = root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, obj_el_);
+  FactoryMessenger fm(this, obj_el_);
   sp -> fillElement(&fm);
 
 }
@@ -502,7 +503,7 @@ Factory::Factory(SmartPointer<Photon> ph)
                            0);                   // document type object (DTD).
   ph_el_ = root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, root_);
+  FactoryMessenger fm(this, root_);
   photon_ -> fillElement(&fm);
 
 }
@@ -522,7 +523,7 @@ Factory::Factory(SmartPointer<Spectrometer> sp)
                            0);                   // document type object (DTD).
   root_ = doc_->getDocumentElement();
 
-  factoryMessenger fm(this, root_);
+  FactoryMessenger fm(this, root_);
   spectro_ -> fillElement(&fm);
 
 }
@@ -537,7 +538,7 @@ void Factory::setMetric(SmartPointer<Metric> gg, DOMElement *el) {
     gg_el_ = doc_->createElement(X("Metric"));
     el->appendChild(gg_el_);
 
-    factoryMessenger fm(this, gg_el_);
+    FactoryMessenger fm(this, gg_el_);
     gg -> fillElement(&fm);
   }
 
@@ -553,7 +554,7 @@ void Factory::setAstrobj(SmartPointer<Astrobj> ao, DOMElement *el) {
     obj_el_ = doc_->createElement(X("Astrobj"));
     el->appendChild(obj_el_);
 
-    factoryMessenger fm(this, obj_el_);
+    FactoryMessenger fm(this, obj_el_);
     ao -> fillElement(&fm);
   }
 
@@ -569,7 +570,7 @@ void Factory::setScreen(SmartPointer<Screen> scr, DOMElement *el) {
   DOMElement * scr_el = doc_->createElement(X("Screen"));
   el->appendChild(scr_el);
 
-  factoryMessenger fm(this, scr_el);
+  FactoryMessenger fm(this, scr_el);
   scr -> fillElement(&fm);
 
 }
@@ -677,7 +678,7 @@ void Factory::setParameter(std::string name, std::string val, DOMElement *pel) {
 } 
 
 void Factory::setParameter(std::string name, double val[],
-			   size_t n, DOMElement *pel, factoryMessenger **child){
+			   size_t n, DOMElement *pel, FactoryMessenger **child){
 
   ostringstream ss;
   ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
@@ -687,7 +688,7 @@ void Factory::setParameter(std::string name, double val[],
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
   el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
-  if (child) *child = new factoryMessenger(this, el);
+  if (child) *child = new FactoryMessenger(this, el);
 
 }
 
@@ -696,7 +697,7 @@ void Factory::setContent(std::string content, DOMElement *el) {
 }
 
 ///////// Factory Messenger Class ///////////
-factoryMessenger::factoryMessenger(Gyoto::Factory* emp,
+FactoryMessenger::FactoryMessenger(Gyoto::Factory* emp,
 				   xercesc::DOMElement* el) :
   employer_(emp), element_(el), curNodeIndex_(0)
 {
@@ -704,7 +705,7 @@ factoryMessenger::factoryMessenger(Gyoto::Factory* emp,
   nodeCount_ = children_->getLength();
 }
 
-factoryMessenger::factoryMessenger(const factoryMessenger& fm,
+FactoryMessenger::FactoryMessenger(const FactoryMessenger& fm,
 				   std::string name) :
   employer_(fm.employer_), element_(NULL), curNodeIndex_(0)
 {
@@ -714,15 +715,15 @@ factoryMessenger::factoryMessenger(const factoryMessenger& fm,
   nodeCount_ = children_->getLength();
 }
 
-void factoryMessenger::reset() {
+void FactoryMessenger::reset() {
   curNodeIndex_=0;
 }
 
-int factoryMessenger::getNextParameter(std::string* namep, std::string* contp)
+int FactoryMessenger::getNextParameter(std::string* namep, std::string* contp)
 {
 
   if (debug()) {
-    cerr << "DEBUG: factoryMessenger::getNextParameter(" << namep
+    cerr << "DEBUG: FactoryMessenger::getNextParameter(" << namep
 	 << ", " << contp << "): " ;
     cerr << "*namep=" << *namep;
     cerr << ", *contp=" << *contp << endl;
@@ -745,115 +746,115 @@ int factoryMessenger::getNextParameter(std::string* namep, std::string* contp)
   return getNextParameter(namep, contp);
 }
 
-factoryMessenger* factoryMessenger::makeChild(std::string name) {
-  return new factoryMessenger(*this, name);
+FactoryMessenger* FactoryMessenger::makeChild(std::string name) {
+  return new FactoryMessenger(*this, name);
 }
 
-void factoryMessenger::setSelfAttribute(std::string attrname,
+void FactoryMessenger::setSelfAttribute(std::string attrname,
 					std::string attrvalue) {
   element_->setAttribute(X(attrname.c_str()), X(attrvalue.c_str()));
 }
 
-void factoryMessenger::setSelfAttribute(std::string attrname,
+void FactoryMessenger::setSelfAttribute(std::string attrname,
 					unsigned long attrvalue) {
   char val_string[dvalLength];
   sprintf( val_string, "%lu", attrvalue);
   element_->setAttribute(X(attrname.c_str()), X(val_string));
 }
 
-void factoryMessenger::setSelfAttribute(std::string attrname,
+void FactoryMessenger::setSelfAttribute(std::string attrname,
 					unsigned int attrvalue) {
   setSelfAttribute(attrname, (unsigned long)(attrvalue));
 }
 
-void factoryMessenger::setSelfAttribute(std::string attrname,
+void FactoryMessenger::setSelfAttribute(std::string attrname,
 					double attrvalue) {
   char val_string[dvalLength];
   sprintf( val_string, dfmt, attrvalue);
   element_->setAttribute(X(attrname.c_str()), X(val_string));
 }
 
-string factoryMessenger::getAttribute(std::string attrname) const {
+string FactoryMessenger::getAttribute(std::string attrname) const {
   DOMNode *currentNode = children_->item(curNodeIndex_-1);
   DOMElement *currentElement
     = static_cast< xercesc::DOMElement* >( currentNode );
   return Cs(currentElement->getAttribute(X(attrname.c_str())));
 }
 
-string factoryMessenger::getSelfAttribute(std::string attrname) const {
+string FactoryMessenger::getSelfAttribute(std::string attrname) const {
   return Cs(element_->getAttribute(X(attrname.c_str())));
 }
 
-string factoryMessenger::getFullContent() const {
+string FactoryMessenger::getFullContent() const {
   return Cs(element_->getTextContent());
 }
 
-void factoryMessenger::setFullContent(std::string content) {
+void FactoryMessenger::setFullContent(std::string content) {
   employer_ -> setContent (content, element_) ;
 }
 
-factoryMessenger* factoryMessenger::getChild() const {
+FactoryMessenger* FactoryMessenger::getChild() const {
   DOMNode *currentNode = children_->item(curNodeIndex_-1);
   DOMElement *currentElement
     = static_cast< xercesc::DOMElement* >( currentNode );
-  return new factoryMessenger(employer_, currentElement);
+  return new FactoryMessenger(employer_, currentElement);
 }
 
-void factoryMessenger::setAstrobj(SmartPointer<Astrobj> gg) {
+void FactoryMessenger::setAstrobj(SmartPointer<Astrobj> gg) {
   employer_ -> setAstrobj (gg, element_);
 }
 
-void factoryMessenger::setScreen(SmartPointer<Screen> gg) {
+void FactoryMessenger::setScreen(SmartPointer<Screen> gg) {
   employer_ -> setScreen (gg, element_);
 }
 
-void factoryMessenger::setMetric(SmartPointer<Metric> gg) {
+void FactoryMessenger::setMetric(SmartPointer<Metric> gg) {
   employer_ -> setMetric (gg, element_);
 }
 
-SmartPointer<Metric> factoryMessenger::getMetric() {
+SmartPointer<Metric> FactoryMessenger::getMetric() {
   return employer_ -> getMetric ();
 }
 
-SmartPointer<Screen> factoryMessenger::getScreen() {
+SmartPointer<Screen> FactoryMessenger::getScreen() {
   return employer_ -> getScreen ();
 }
 
-SmartPointer<Photon> factoryMessenger::getPhoton() {
+SmartPointer<Photon> FactoryMessenger::getPhoton() {
   return employer_ -> getPhoton ();
 }
 
-SmartPointer<Astrobj> factoryMessenger::getAstrobj() {
+SmartPointer<Astrobj> FactoryMessenger::getAstrobj() {
   return employer_ -> getAstrobj ();
 }
 
-void factoryMessenger::setParameter(std::string name){
+void FactoryMessenger::setParameter(std::string name){
   employer_ -> setParameter(name, element_);
 }
-void factoryMessenger::setParameter(std::string name, double value){
+void FactoryMessenger::setParameter(std::string name, double value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, int value){
+void FactoryMessenger::setParameter(std::string name, int value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, long value){
+void FactoryMessenger::setParameter(std::string name, long value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, unsigned int value){
+void FactoryMessenger::setParameter(std::string name, unsigned int value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, unsigned long value){
+void FactoryMessenger::setParameter(std::string name, unsigned long value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, std::string value){
+void FactoryMessenger::setParameter(std::string name, std::string value){
   employer_ -> setParameter(name, value, element_);
 }
-void factoryMessenger::setParameter(std::string name, double val[], size_t n,
-				    factoryMessenger **child){
+void FactoryMessenger::setParameter(std::string name, double val[], size_t n,
+				    FactoryMessenger **child){
   employer_ -> setParameter(name, val, n, element_, child);
 }
 
-std::string factoryMessenger::fullPath(std::string fname) {
+std::string FactoryMessenger::fullPath(std::string fname) {
   return employer_ -> fullPath(fname);
 }
 

@@ -18,6 +18,8 @@
  */
 
 #include "GyotoPowerLawSpectrum.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <cmath>
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
@@ -41,14 +43,14 @@ double Spectrum::PowerLaw::operator()(double nu) const {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Spectrum::PowerLaw::fillElement(factoryMessenger *fmp) const {
+void Spectrum::PowerLaw::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("Exponent", exponent_);
   fmp->setParameter("Constant", constant_);
   Spectrum::Generic::fillElement(fmp);
 }
 
 SmartPointer<Spectrum::Generic>
-Gyoto::Spectrum::PowerLawSubcontractor(factoryMessenger* fmp) {
+Gyoto::Spectrum::PowerLawSubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Spectrum::PowerLaw> sp = new Spectrum::PowerLaw();
   if (!fmp) return sp;
   std::string name="", content=""; char *tc;

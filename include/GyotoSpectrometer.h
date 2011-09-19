@@ -72,7 +72,7 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(factoryMessenger *fmp); /// < called from Factory
+    void fillElement(FactoryMessenger *fmp); /// < called from Factory
 #endif
 
 };
@@ -80,7 +80,7 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
 namespace Gyoto {
-  SmartPointer<Spectrometer> SpectrometerSubcontractor(factoryMessenger* fmp);
+  SmartPointer<Spectrometer> SpectrometerSubcontractor(FactoryMessenger* fmp);
 }
 #endif
 

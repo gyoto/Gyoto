@@ -155,8 +155,8 @@ class Gyoto::Metric : protected Gyoto::SmartPointee {
    * shared properties
    */
 
-  virtual void fillElement(factoryMessenger *fmp) ; /// < called from Factory
-  void processGenericParameters(Gyoto::factoryMessenger *fmp) ;
+  virtual void fillElement(FactoryMessenger *fmp) ; /// < called from Factory
+  void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
 #endif
 
   /// Display
@@ -212,7 +212,7 @@ class Gyoto::Metric : protected Gyoto::SmartPointee {
   
   //// REGISTER STUFF ////
  public:
-  typedef SmartPointer<Metric> Subcontractor_t(factoryMessenger*);
+  typedef SmartPointer<Metric> Subcontractor_t(FactoryMessenger*);
   static Register::Entry * Register_;
   static Subcontractor_t* getSubcontractor(std::string);
   static void Register(std::string, Subcontractor_t*);

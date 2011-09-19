@@ -19,6 +19,8 @@
 
 #include "GyotoSpectrometer.h"
 #include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -161,7 +163,7 @@ double const * Spectrometer::getWidths() const { return widths_; }
 
 #ifdef GYOTO_USE_XERCES
 
-void Spectrometer::fillElement(factoryMessenger *fmp) {
+void Spectrometer::fillElement(FactoryMessenger *fmp) {
   fmp -> setSelfAttribute( "kind", getKindStr() );
   fmp -> setSelfAttribute( "nsamples", nsamples_ );
   ostringstream ss;
@@ -171,7 +173,7 @@ void Spectrometer::fillElement(factoryMessenger *fmp) {
 }
 
 SmartPointer<Spectrometer>
-Gyoto::SpectrometerSubcontractor(factoryMessenger* fmp) {
+Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
 
   string skind = fmp -> getSelfAttribute( "kind" );
   size_t nsamples = atol( fmp -> getSelfAttribute( "nsamples" ) . c_str () );

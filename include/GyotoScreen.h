@@ -303,8 +303,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(factoryMessenger *fmp); /// < called from Factory
-    static   SmartPointer<Screen> Subcontractor(factoryMessenger* fmp);
+    void fillElement(FactoryMessenger *fmp); /// < called from Factory
+    static   SmartPointer<Screen> Subcontractor(FactoryMessenger* fmp);
 #endif
 
 

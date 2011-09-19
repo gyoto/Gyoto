@@ -38,11 +38,12 @@ namespace Gyoto{
   class Astrobj;
   class AstrobjProperties;
   class Metric;
+  class FactoryMessenger;
+  namespace Register { class Entry; }
 }
 
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
-#include <GyotoRegister.h>
 
 /**
  * \class Gyoto::Astrobj
@@ -215,7 +216,7 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
    * generic parts such as Flag_radtrans: Astrobj::fillElement(fmp).
    */
 
-  virtual void fillElement(factoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
                                              /// < called from Factory
   void setGenericParameter(std::string name, std::string content) ;
   ///< To be called by fillElement()
@@ -360,7 +361,7 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
   ///// REGISTER STUFF ///////
   public:
   typedef Gyoto::SmartPointer<Gyoto::Astrobj>
-    Subcontractor_t(Gyoto::factoryMessenger*);
+    Subcontractor_t(Gyoto::FactoryMessenger*);
 
   static Gyoto::Register::Entry * Register_;
   static void initRegister(); 

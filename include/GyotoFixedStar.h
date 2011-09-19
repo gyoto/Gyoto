@@ -92,7 +92,7 @@ class Gyoto::FixedStar : public Astrobj {
   
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(factoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
   static Astrobj::Subcontractor_t Subcontractor;
   static void Init();
   ///< called from Factory

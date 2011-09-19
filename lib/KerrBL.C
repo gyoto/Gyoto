@@ -18,11 +18,12 @@
  */
 
 #include "GyotoUtils.h"
-#include <iostream>
-#include <GyotoKerrBL.h>
-#include <GyotoWorldline.h>
-#include <GyotoError.h>
+#include "GyotoFactoryMessenger.h"
+#include "GyotoKerrBL.h"
+#include "GyotoWorldline.h"
+#include "GyotoError.h"
 
+#include <iostream>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -958,12 +959,12 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
 }
 
 #ifdef GYOTO_USE_XERCES
-void KerrBL::fillElement(Gyoto::factoryMessenger *fmp) {
+void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::fillElement(fmp);
 }
 
-SmartPointer<Metric> KerrBL::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Metric> KerrBL::Subcontractor(FactoryMessenger* fmp) {
 
   double spin=0., mass=1.; //default values
   string name="", content="";

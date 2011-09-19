@@ -735,14 +735,14 @@ double RotStar3_1::ScalarProd(const double pos[4],
 }
 
 #ifdef GYOTO_USE_XERCES
-void RotStar3_1::fillElement(Gyoto::factoryMessenger *fmp) {
+void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("File", filename_);
   fmp -> setParameter("IntegKind", integ_kind_);
   Metric::fillElement(fmp);
 }
 
 Gyoto::SmartPointer<Gyoto::Metric>
-Gyoto::RotStar3_1::Subcontractor(factoryMessenger* fmp) {
+Gyoto::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
 
   //default values
   //double mass=1.;

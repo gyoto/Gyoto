@@ -22,6 +22,7 @@
 #include <cmath>
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
+#include "GyotoFactoryMessenger.h"
 #endif
 using namespace Gyoto;
 
@@ -44,14 +45,14 @@ double Spectrum::BlackBody::operator()(double nu) const {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Spectrum::BlackBody::fillElement(factoryMessenger *fmp) const {
+void Spectrum::BlackBody::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("Temperature", T_);
   fmp->setParameter("Scaling", cst_);
   Spectrum::Generic::fillElement(fmp);
 }
 
 SmartPointer<Spectrum::Generic>
-Gyoto::Spectrum::BlackBodySubcontractor(factoryMessenger* fmp) {
+Gyoto::Spectrum::BlackBodySubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Spectrum::BlackBody> sp = new Spectrum::BlackBody();
   if (!fmp) return sp;
   std::string name="", content=""; char *tc;

@@ -22,6 +22,8 @@
 #include "GyotoPhoton.h"
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
 #include <cmath>
 #include <string>
@@ -488,8 +490,8 @@ void Star::setRadius(double r) {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Star::fillElement(factoryMessenger *fmp) const {
-  factoryMessenger * childfmp=NULL;
+void Star::fillElement(FactoryMessenger *fmp) const {
+  FactoryMessenger * childfmp=NULL;
 
   fmp -> setMetric (getMetric()) ;
   fmp -> setParameter ("Radius", getRadius());
@@ -513,14 +515,14 @@ void Star::fillElement(factoryMessenger *fmp) const {
   Astrobj::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> Gyoto::Star::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Astrobj> Gyoto::Star::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   int pos_found=0, vel_found=0;
   double pos[4], v[3], radius=0.;
   SmartPointer<Metric> gg = NULL;
   SmartPointer<Spectrum::Generic> sp = NULL, op = NULL;
-  factoryMessenger * child = NULL;
+  FactoryMessenger * child = NULL;
 
   gg = fmp->getMetric();
 

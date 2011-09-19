@@ -23,6 +23,7 @@
 #include "GyotoMetric.h"
 #include "GyotoPhoton.h"
 #include "GyotoRegister.h"
+#include "GyotoFactoryMessenger.h"
 
 // SYSTEM HEADERS
 #include <iostream>
@@ -176,7 +177,7 @@ int Astrobj::Impact(Photon* ph, size_t index, AstrobjProperties *data){
 
 }
 
-void Astrobj::fillElement(factoryMessenger *fmp) const {
+void Astrobj::fillElement(FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute("kind", kind_);
   //  fmp -> setParameter ("Flag_radtransf", flag_radtransf_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");

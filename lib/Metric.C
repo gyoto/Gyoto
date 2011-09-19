@@ -20,7 +20,8 @@
 #include "GyotoUtils.h"
 #include <iostream>
 #include <cstdlib>
-#include <GyotoMetric.h>
+#include "GyotoMetric.h"
+#include "GyotoFactoryMessenger.h"
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -390,12 +391,12 @@ void Metric::setParticleProperties(Worldline*, const double*) const {
 int Metric::getRefCount() { return SmartPointee::getRefCount(); }
 
 #ifdef GYOTO_USE_XERCES
-void Metric::fillElement(Gyoto::factoryMessenger *fmp) {
+void Metric::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter("Mass", getMass());
 }
 
-void Metric::processGenericParameters(Gyoto::factoryMessenger *fmp)  {
+void Metric::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="";
   fmp -> reset();
   while (fmp->getNextParameter(&name, &content)) {

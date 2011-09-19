@@ -18,9 +18,11 @@
  */
 
 #include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+#include "GyotoScreen.h"
+
 #include <iostream>
 #include <cstdlib>
-#include <GyotoScreen.h>
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -451,8 +453,8 @@ size_t Screen::getResolution() { return npix_; }
 void Screen::setResolution(size_t n) { npix_ = n; }
 
 #ifdef GYOTO_USE_XERCES
-void Screen::fillElement(factoryMessenger *fmp) {
-  factoryMessenger* child = NULL;
+void Screen::fillElement(FactoryMessenger *fmp) {
+  FactoryMessenger* child = NULL;
   if (gg_) fmp -> setMetric (gg_) ;
   fmp -> setParameter ("Time", tobs_);
   fmp -> setParameter ("FieldOfView", fov_);
@@ -491,7 +493,7 @@ void Screen::fillElement(factoryMessenger *fmp) {
   }
 }
 
-SmartPointer<Screen> Screen::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="", unit="", tunit="";
   SmartPointer<Screen> scr = new Screen();

@@ -18,8 +18,10 @@
  */
 
 #include "GyotoUtils.h"
-#include <GyotoPhoton.h>
-#include <GyotoFixedStar.h>
+#include "GyotoPhoton.h"
+#include "GyotoFixedStar.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -291,14 +293,14 @@ void FixedStar::useGenericImpact(int val) {
 }
 
 #ifdef GYOTO_USE_XERCES
-void FixedStar::fillElement(factoryMessenger *fmp) const {
+void FixedStar::fillElement(FactoryMessenger *fmp) const {
   fmp -> setParameter ("Radius", getRadius());
   fmp -> setParameter ("Position", const_cast<double*>(pos_), 3);
   if (use_generic_impact_) fmp -> setParameter ("UseGenericImpact");
   Astrobj::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> Gyoto::FixedStar::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Astrobj> Gyoto::FixedStar::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
 

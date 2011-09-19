@@ -212,8 +212,8 @@ gyotoy
  subcontractor (for a Gyoto::Astrobj, the subcontractor is a static
  method of the Gyoto::Astrobj::Subcontractor_t type). The
  subcontractor communicates with the Gyoto::Factory by means of a
- Gyoto::factoryMessenger and basically loops calling the
- Gyoto::factoryMessenger::getNextParameter() method (see the
+ Gyoto::FactoryMessenger and basically loops calling the
+ Gyoto::FactoryMessenger::getNextParameter() method (see the
  GyotoRegister.h file, unfortunately undocumented at the moment).
 
  You also need to register your subcontractor, so that the

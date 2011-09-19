@@ -30,11 +30,11 @@
 #include <GyotoRegister.h>
 
 namespace Gyoto{
-  class factoryMessenger;
+  class FactoryMessenger;
   namespace Spectrum {
     class Generic;
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      Subcontractor_t(Gyoto::factoryMessenger* fmp = NULL);
+      Subcontractor_t(Gyoto::FactoryMessenger* fmp = NULL);
     void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
     Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string);
     extern Register::Entry* Register_;
@@ -86,7 +86,7 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
    * generic parts.
    */
 
-  virtual void fillElement(factoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
                                              /// < called from Factory
   void setGenericParameter(std::string name, std::string content) ;
   ///< To be called by fillElement()

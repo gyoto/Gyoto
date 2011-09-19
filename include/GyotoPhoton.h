@@ -172,7 +172,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(factoryMessenger *fmp); /// < called from Factory
+    void fillElement(FactoryMessenger *fmp); /// < called from Factory
 #endif
 
     /* transmission stuff */
@@ -213,7 +213,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
 namespace Gyoto {
-  SmartPointer<Photon> PhotonSubcontractor(Gyoto::factoryMessenger*);
+  SmartPointer<Photon> PhotonSubcontractor(Gyoto::FactoryMessenger*);
 }
 #endif
 

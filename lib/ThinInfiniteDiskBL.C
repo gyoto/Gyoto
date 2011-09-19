@@ -17,9 +17,11 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <GyotoPhoton.h>
-#include <GyotoThinInfiniteDiskBL.h>
+#include "GyotoPhoton.h"
+#include "GyotoThinInfiniteDiskBL.h"
 #include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -161,12 +163,12 @@ double ThinInfiniteDiskBL::emission(double, double,
 }
 
 #ifdef GYOTO_USE_XERCES
-void ThinInfiniteDiskBL::fillElement(factoryMessenger *fmp) const {
+void ThinInfiniteDiskBL::fillElement(FactoryMessenger *fmp) const {
   fmp->setMetric(gg_);
   Astrobj::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> ThinInfiniteDiskBL::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Astrobj> ThinInfiniteDiskBL::Subcontractor(FactoryMessenger* fmp) {
   string name, content;
   SmartPointer<ThinInfiniteDiskBL> ao =
     new ThinInfiniteDiskBL(fmp->getMetric());

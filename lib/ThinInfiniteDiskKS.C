@@ -17,9 +17,11 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <GyotoPhoton.h>
-#include <GyotoThinInfiniteDiskKS.h>
+#include "GyotoPhoton.h"
+#include "GyotoThinInfiniteDiskKS.h"
 #include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -141,12 +143,12 @@ double ThinInfiniteDiskKS::emission(double, double, double coord_ph[8],
 }
 
 #ifdef GYOTO_USE_XERCES
-void ThinInfiniteDiskKS::fillElement(factoryMessenger *fmp) const {
+void ThinInfiniteDiskKS::fillElement(FactoryMessenger *fmp) const {
   fmp->setMetric(gg_);
   Astrobj::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> ThinInfiniteDiskKS::Subcontractor(factoryMessenger* fmp) {
+SmartPointer<Astrobj> ThinInfiniteDiskKS::Subcontractor(FactoryMessenger* fmp) {
   string name, content;
   SmartPointer<ThinInfiniteDiskKS> ao =
     new ThinInfiniteDiskKS(fmp->getMetric());
