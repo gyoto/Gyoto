@@ -26,9 +26,11 @@
 #include "unites.h"
 
 #include "GyotoUtils.h"
+#include "GyotoRotStar3_1.h"
+#include "GyotoError.h"
+#include "GyotoFactoryMessenger.h"
+
 #include <iostream>
-#include <GyotoRotStar3_1.h>
-#include <GyotoError.h>
 #include <cmath>
 #include <fstream>
 #include <iomanip>
