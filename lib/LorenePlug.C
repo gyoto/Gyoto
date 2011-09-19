@@ -26,5 +26,5 @@ namespace Gyoto {
 */
 
 extern "C" void __GyotoloreneInit() {
-  Gyoto::RotStar3_1::Init();
+  Gyoto::Metric::RotStar3_1::Init();
 }

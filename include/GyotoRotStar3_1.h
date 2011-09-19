@@ -34,7 +34,7 @@
 class Star_rot;
 
 namespace Gyoto {
-  class RotStar3_1;
+  namespace Metric { class RotStar3_1; }
 }
 
 #include <GyotoMetric.h>
@@ -48,8 +48,8 @@ namespace Gyoto {
 /**
  * \class Gyoto::RotStar3_1
  */
-class Gyoto::RotStar3_1 : public Gyoto::Metric {
-  friend class Gyoto::SmartPointer<Gyoto::RotStar3_1>;
+class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Metric::RotStar3_1>;
 
  private:
   char* filename_;
@@ -67,7 +67,7 @@ class Gyoto::RotStar3_1 : public Gyoto::Metric {
 
   int getIntegKind() const ;
 
-  using Metric::myrk4;
+  using Metric::Generic::myrk4;
   int myrk4(const double coord[6], double h, double res[6]) const;
 
   //NB: there is no myrk4(const double coord[8], double h, double res[8]), which makes no pb because this same function is defined in class Metric where it is virtual but not pure. This myrk4(const double coord[6], double h, double res[6]) is a purely internal function, only called by RotStar3_1::myrk4_adaptive(const double coor[6],...)

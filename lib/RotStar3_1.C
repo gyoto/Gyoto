@@ -39,9 +39,10 @@
 #include <ctime>
 
 using namespace Gyoto;
+using namespace Gyoto::Metric;
 
 RotStar3_1::RotStar3_1(const char * lorene_res, const int integ_kind) : 
-  Metric(GYOTO_COORDKIND_SPHERICAL),
+  Generic(GYOTO_COORDKIND_SPHERICAL),
   integ_kind_(integ_kind)
 {
   setKind("RotStar3_1");
@@ -95,7 +96,7 @@ int RotStar3_1::getIntegKind() const { return integ_kind_; }
 int RotStar3_1::diff(const double coord[8], double res[8]) const
 {
   //4-DIMENSIONAL INTEGRATION
-  //NB: this diff is only called by Metric::RK4
+  //NB: this diff is only called by Generic::RK4
 
   //if (debug()) cout << "In 4D RotStar diff [8]..." << endl;
   //clock_t time1, time2;
@@ -446,11 +447,11 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8], double la
   if (!integ_kind_) {
     /*
       To use 4D integration
-      Here, the integration is performed by the most general Metric::myrk4 + Metric::diff functions that only call the christoffels (basic geodesic equation).
+      Here, the integration is performed by the most general Generic::myrk4 + Generic::diff functions that only call the christoffels (basic geodesic equation).
       The function christoffel being defined here in RotStar3_1, it is the 4D-christo computed thanks to 3+1 quantities that are used.
     */
 
-    if (Metric::myrk4_adaptive(line,coord,lastnorm,normref,coordnew,h0,h1)) {
+    if (Generic::myrk4_adaptive(line,coord,lastnorm,normref,coordnew,h0,h1)) {
       return 1;
     }else{
       return 0;
@@ -740,11 +741,11 @@ double RotStar3_1::ScalarProd(const double pos[4],
 void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("File", filename_);
   fmp -> setParameter("IntegKind", integ_kind_);
-  Metric::fillElement(fmp);
+  Generic::fillElement(fmp);
 }
 
 Gyoto::SmartPointer<Gyoto::Metric::Generic>
-Gyoto::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
+Gyoto::Metric::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
 
   //default values
   //double mass=1.;
@@ -766,7 +767,7 @@ Gyoto::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
   return gg;
 }
 
-void Gyoto::RotStar3_1::Init() {
-  Gyoto::Metric::Register("RotStar3_1", &Gyoto::RotStar3_1::Subcontractor);
+void Gyoto::Metric::RotStar3_1::Init() {
+  Gyoto::Metric::Register("RotStar3_1", &Gyoto::Metric::RotStar3_1::Subcontractor);
 }
 #endif
