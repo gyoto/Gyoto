@@ -27,7 +27,7 @@
 #define __GyotoKerrBL_H_ 
 
 namespace Gyoto {
-  class KerrBL;
+  namespace Metric { class KerrBL; }
 }
 
 #include <GyotoMetric.h>
@@ -42,8 +42,8 @@ namespace Gyoto {
  * \class Gyoto::KerrBL
  * \brief Gyoto::Metric for KerrBL black hole
  */
-class Gyoto::KerrBL : public Metric {
-  friend class Gyoto::SmartPointer<Gyoto::KerrBL>;
+class Gyoto::Metric::KerrBL : public Metric::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Metric::KerrBL>;
   
   // Data : 
   // -----
@@ -135,7 +135,7 @@ class Gyoto::KerrBL : public Metric {
 
   /** F function such as dy/dtau=F(y,cst)
    */
-  using Metric::diff;
+  using Metric::Generic::diff;
   int diff(const double y[8], const double cst[5], double res[8]) const ;
   /** Integrator. Computes the evolution of y (initcond=y(0)).
    */

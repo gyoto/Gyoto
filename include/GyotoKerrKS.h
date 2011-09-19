@@ -27,7 +27,7 @@
 #define __GyotoKerrKS_H_ 
 
 namespace Gyoto {
-  class KerrKS;
+  namespace Metric { class KerrKS; }
 }
 
 #include <GyotoMetric.h>
@@ -40,8 +40,8 @@ namespace Gyoto {
  * \class Gyoto::KerrKS
  * \brief Gyoto::Metric for KerrKS black hole
  */
-class Gyoto::KerrKS : public Metric {
-  friend class Gyoto::SmartPointer<Gyoto::KerrKS>;
+class Gyoto::Metric::KerrKS : public Metric::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Metric::KerrKS>;
   
   // Data : 
   // -----

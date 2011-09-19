@@ -144,14 +144,14 @@ void Screen::setArgument(double arg)     {
   euler_[2]=arg;  computeBaseVectors();
 }
 
-void Screen::setMetric(SmartPointer<Metric> gg) { gg_ = gg; computeBaseVectors(); }
+void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
 
 int Screen::getCoordKind()      const { return gg_ -> getCoordKind(); }
 double Screen::getDistance()    const { return distance_; }
 double Screen::getPALN()        const { return euler_[0]; }
 double Screen::getInclination() const { return euler_[1]; }
 double Screen::getArgument()    const { return euler_[2]; }
-SmartPointer<Metric> Screen::getMetric() const { return gg_; }
+SmartPointer<Metric::Generic> Screen::getMetric() const { return gg_; }
 
 void Screen::setObserverPos(const double coord[4]) {
   tobs_ = coord[0] * gg_ -> unitLength() / GYOTO_C;

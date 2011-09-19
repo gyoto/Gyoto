@@ -20,7 +20,7 @@
 #include <GyotoFocalPlane.h>
 using namespace Gyoto;
 
-FocalPlane::FocalPlane(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj,
+FocalPlane::FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
 		       double xmin, double ymin,
 		       size_t nx, size_t ny, double dx, double dy):
   gg_(gg), obj_(obj),
@@ -30,7 +30,7 @@ FocalPlane::FocalPlane(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj,
 
 }
 
-FocalPlane::FocalPlane(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj,
+FocalPlane::FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
 		       double xmin, double ymin, double xmax, double ymax,
 		       size_t nx, size_t ny):
   gg_(gg), obj_(obj),

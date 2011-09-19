@@ -89,8 +89,8 @@ Astrobj::~Astrobj() {
   if (debug()) cerr << "Astrobj Destruction" << endl;
 }
 
-SmartPointer<Metric> Astrobj::getMetric() const { return gg_; }
-void Astrobj::setMetric(SmartPointer<Metric> gg) {gg_=gg;}
+SmartPointer<Metric::Generic> Astrobj::getMetric() const { return gg_; }
+void Astrobj::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
 
 double Astrobj::getRmax() {
   return rmax_;

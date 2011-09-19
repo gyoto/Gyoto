@@ -33,6 +33,7 @@
 
 using namespace std ; 
 using namespace Gyoto ; 
+using namespace Gyoto::Metric ; 
 
 #define drhor 0.5
 //stop integration at r_horizon+drhor for outgoing geodesics
@@ -43,9 +44,11 @@ So far (March 2011) KerrKS is just a stub ; to improve it, it's necessary to imp
 In particular, don't trust too much the result with spin>0
  */
 
-KerrKS::KerrKS() : Metric(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {setKind("KerrKS");}
+KerrKS::KerrKS() :
+  Generic(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {setKind("KerrKS");}
 
-KerrKS::KerrKS(double a, double m) : Metric(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {setKind("KerrKS");}
+KerrKS::KerrKS(double a, double m) :
+  Generic(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {setKind("KerrKS");}
 
 // default copy constructor should be fine
 // KerrKS::KerrKS(const KerrKS& gg) : 
@@ -459,7 +462,7 @@ void KerrKS::nullifyCoord(double coord[8]) const {
 }
 
 void KerrKS::nullifyCoord(double coord[4], double& tdot2) const {
-  Metric::nullifyCoord(coord, tdot2);
+  Metric::Generic::nullifyCoord(coord, tdot2);
 }
 
 /*
@@ -479,10 +482,11 @@ int KerrKS::isStopCondition(double const * const coord) const {
 #ifdef GYOTO_USE_XERCES
 void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
-  Metric::fillElement(fmp);
+  Metric::Generic::fillElement(fmp);
 }
 
-SmartPointer<Metric> Gyoto::KerrKS::Subcontractor(FactoryMessenger* fmp) {
+SmartPointer<Metric::Generic>
+Gyoto::Metric::KerrKS::Subcontractor(FactoryMessenger* fmp) {
 
   double spin=0., mass=1.; //default values
   string name="", content="";
@@ -495,7 +499,7 @@ SmartPointer<Metric> Gyoto::KerrKS::Subcontractor(FactoryMessenger* fmp) {
   return gg;
 }
 
-void Gyoto::KerrKS::Init() {
+void Gyoto::Metric::KerrKS::Init() {
   Gyoto::Metric::Register("KerrKS", &Subcontractor);
 }
 #endif

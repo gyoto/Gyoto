@@ -429,7 +429,7 @@ extern "C" {
   Y_gyoto_Photon_setInitialCondition(int n)
   {  //(Metric*, Astrobj*, coord[8], sys);
     gyoto_Photon  *phobj =(gyoto_Photon*) yget_obj(n-1, &gyoto_Photon_obj);
-    SmartPointer<Metric> *gg = yget_Metric(n-2);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(n-2);
     SmartPointer<Astrobj> *astrobj = yget_Astrobj(n-3);
 
     if (n==4) {

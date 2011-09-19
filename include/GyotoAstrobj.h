@@ -37,7 +37,7 @@ namespace Gyoto{
   class Photon;
   class Astrobj;
   class AstrobjProperties;
-  class Metric;
+  namespace Metric { class Generic; }
   class FactoryMessenger;
   namespace Register { class Entry; }
 }
@@ -94,7 +94,7 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
   /**
    * The Metric in this end of the Universe
    */
-  SmartPointer<Gyoto::Metric> gg_;
+  SmartPointer<Gyoto::Metric::Generic> gg_;
 
 
   /**
@@ -161,12 +161,12 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
   /**
    * Get the Metric
    */
-  virtual SmartPointer<Metric> getMetric() const;
+  virtual SmartPointer<Metric::Generic> getMetric() const;
 
   /**
    * Set the Metric
    */
-  virtual void setMetric(SmartPointer<Metric>) ;
+  virtual void setMetric(SmartPointer<Metric::Generic>) ;
 
   /**
    *  Get maximal distance from center of coordinate system at which a

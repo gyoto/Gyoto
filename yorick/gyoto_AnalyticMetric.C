@@ -33,7 +33,7 @@ extern "C" {
     if (n>1) y_error("gyoto_Kerr_new takes at most 1 arguments");
     if (n==1) mm=ygets_d(0);
 
-    SmartPointer<Metric> *gg = ypush_Metric();
+    SmartPointer<Metric::Generic> *gg = ypush_Metric();
     try { *gg = new AnalyticMetric(mm); }
     YGYOTO_STD_CATCH ;
 

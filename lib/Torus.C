@@ -153,7 +153,7 @@ void Torus::fillElement(FactoryMessenger *fmp) const {
 SmartPointer<Astrobj> Gyoto::Torus::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
-  SmartPointer<Metric> gg = NULL;
+  SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Spectrum::Generic> sp = NULL;
   FactoryMessenger * child = NULL;
 

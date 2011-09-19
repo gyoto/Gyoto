@@ -32,8 +32,8 @@
 
 extern "C" void __GyotostdplugInit() {
   // Register Metrics
-  Gyoto::KerrBL::Init();
-  Gyoto::KerrKS::Init();
+  Gyoto::Metric::KerrBL::Init();
+  Gyoto::Metric::KerrKS::Init();
   // Register Astrobjs
   Gyoto::Star::Init();
   Gyoto::FixedStar::Init();

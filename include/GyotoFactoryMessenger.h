@@ -33,7 +33,7 @@
 namespace Gyoto {
   class Factory;
   class FactoryMessenger;
-  class Metric;
+  namespace Metric { class Generic; }
   class Astrobj;
   namespace Spectrum { class Generic ; }
   class Screen;
@@ -84,8 +84,8 @@ class Gyoto::FactoryMessenger {
 		    FactoryMessenger** child= NULL);
   void setAstrobj(SmartPointer<Astrobj>);
   void setScreen(SmartPointer<Screen>);
-  void setMetric(SmartPointer<Metric>);
-  SmartPointer<Metric>  getMetric  () ;
+  void setMetric(SmartPointer<Metric::Generic>);
+  SmartPointer<Metric::Generic>  getMetric  () ;
   SmartPointer<Screen>  getScreen  () ;
   SmartPointer<Photon>  getPhoton  () ;
   SmartPointer<Astrobj> getAstrobj () ;

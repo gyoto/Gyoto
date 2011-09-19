@@ -62,14 +62,14 @@ Photon::Photon(const Photon& o) :
 
 Photon * Photon::clone() const { return new Photon(*this); }
 
-Photon::Photon(SmartPointer<Metric> met, SmartPointer<Astrobj> obj,
+Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj> obj,
 	       double* coord):
   Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
 {
   setInitialCondition(met, obj, coord);
 }
 
-Photon::Photon(SmartPointer<Metric> met, SmartPointer<Astrobj> obj, 
+Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj> obj, 
 	       SmartPointer<Screen> screen, double d_alpha, double d_delta):
   Worldline(), object_(obj), transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
@@ -127,7 +127,7 @@ SmartPointer<Astrobj> Photon::getAstrobj() const { return object_; }
 
 
 
-void Photon::setInitialCondition(SmartPointer<Metric> met,
+void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 SmartPointer<Astrobj> obj,
 				 SmartPointer<Screen> screen,
 				 const double d_alpha,
@@ -140,7 +140,7 @@ void Photon::setInitialCondition(SmartPointer<Metric> met,
 
 }
 
-void Photon::setInitialCondition(SmartPointer<Metric> met,
+void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 SmartPointer<Astrobj> obj,
 				 const double coord[8])
 {
@@ -487,7 +487,7 @@ void Photon::fillElement(FactoryMessenger *fmp) {
 SmartPointer<Photon> Gyoto::PhotonSubcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
-  SmartPointer<Metric> gg = NULL;
+  SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Astrobj> ao = NULL;
 
   SmartPointer<Photon> ph = new Photon();

@@ -47,7 +47,7 @@ FixedStar::FixedStar() : Astrobj("FixedStar"), radius_(0),
     cerr << "DEBUG: out FixedStar::FixedStar(void)" << endl;
 }
 
-FixedStar::FixedStar(SmartPointer<Gyoto::Metric> gg, double StPsn[3],
+FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 		     double rad) :
   Astrobj("FixedStar"), radius_(rad), use_generic_impact_(0)
 {
@@ -255,7 +255,7 @@ double const * FixedStar::getPos() const { return pos_; }
 void FixedStar::getPos(double dst[3]) const
 { for (int i=0; i<3;++i) dst[i]=pos_[i]; }
 
-void FixedStar::setMetric(SmartPointer<Metric> gg) {
+void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
  if (debug())
    cerr << "DEBUG: in FixedStar::setMetric(gg)\n";
  Astrobj::setMetric(gg);

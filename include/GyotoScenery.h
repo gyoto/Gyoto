@@ -100,7 +100,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   /**
    * The Metric, or stage, for this scenery.
    */
-  SmartPointer<Metric> gg_;
+  SmartPointer<Metric::Generic> gg_;
 
   /**
    * Screen, the camera for this scenery.
@@ -134,7 +134,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * To ensure consistency, the Metric will be forcibly attached to
    * the Screen and to the Astrobj.
    */
-  Scenery(SmartPointer<Metric>, SmartPointer<Screen>, SmartPointer<Astrobj>);
+  Scenery(SmartPointer<Metric::Generic>, SmartPointer<Screen>, SmartPointer<Astrobj>);
   
   ~Scenery();
 
@@ -143,11 +143,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
  public:
   // Accessors
   // ---------
-  SmartPointer<Metric> getMetric(); ///< Get Metric
+  SmartPointer<Metric::Generic> getMetric(); ///< Get Metric
   /**
    * The provided Metric will also be atached to the Screen and the Astrobj.
    */
-  void setMetric(SmartPointer<Metric>);  ///< Set Metric
+  void setMetric(SmartPointer<Metric::Generic>);  ///< Set Metric
   SmartPointer<Screen> getScreen(); ///< Get Screen object
 
   /**

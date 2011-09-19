@@ -25,9 +25,10 @@
 using namespace std;
 
 using namespace Gyoto;
+using namespace Gyoto::Metric;
 
 // on_eval worker
-void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric> *gg_, int argc) {
+void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
   if (!gg_) { // Constructor mode
     gg_ = ypush_Metric();
@@ -87,7 +88,7 @@ extern "C" {
   void
   Y_gyoto_KerrKS(int argc)
   {
-    SmartPointer<Metric> *gg = NULL;
+    SmartPointer<Metric::Generic> *gg = NULL;
     try {
       if (yarg_Metric(argc-1)) {
 	gg = yget_Metric(--argc);

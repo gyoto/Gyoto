@@ -49,7 +49,7 @@ class Gyoto::Worldline {
   // Data : 
   // -----
  protected:
-  SmartPointer<Gyoto::Metric> metric_ ; ///< The Gyoto::Metric in this part of the universe
+  SmartPointer<Gyoto::Metric::Generic> metric_ ; ///< The Gyoto::Metric in this part of the universe
   double* x0_;///< t or T
   double* x1_;///< r or x
   double* x2_;///< theta or y
@@ -85,8 +85,8 @@ class Gyoto::Worldline {
   int getI0() const;
 
   virtual double getMass() const = 0; ///< Get mass of particule.
-  void   setMetric(SmartPointer<Metric>); ///< Set metric Smartpointer
-  SmartPointer<Metric> getMetric() const; ///< Get metric
+  void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
+  SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
   void   setInitCoord(const double coord[8], const int dir = 0); ///< Set Initial coordinate
   void reset() ; ///< Forget integration, keeping initial contition
 
@@ -150,7 +150,7 @@ class Gyoto::Worldline {
    * \param sys : an integer stating in which coordinate system coord
    *        is given.
    */
-  void setInitialCondition(SmartPointer<Metric> gg, 
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, 
 			   const double coord[8],
 			   const int dir) ;
   ///<Set or re-set the initial condition prior to integration.

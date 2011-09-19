@@ -49,7 +49,7 @@ class Gyoto::WorldlineIntegState : SmartPointee {
   friend class SmartPointer<WorldlineIntegState>;
 
  private:
-  SmartPointer<Metric> gg_;
+  SmartPointer<Metric::Generic> gg_;
   
  protected:
   double coord_[8];
@@ -62,7 +62,7 @@ class Gyoto::WorldlineIntegState : SmartPointee {
 
  public:
   WorldlineIntegState();
-  WorldlineIntegState(SmartPointer<Metric> gg, const double *coord, const double delta);
+  WorldlineIntegState(SmartPointer<Metric::Generic> gg, const double *coord, const double delta);
   
   /**
    * \param coord[8] on input: old position-velocity, on output: new

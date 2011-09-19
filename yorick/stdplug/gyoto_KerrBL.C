@@ -25,9 +25,10 @@
 using namespace std;
 
 using namespace Gyoto;
+using namespace Gyoto::Metric;
 
 // on_eval worker
-void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric> *gg_, int argc) {
+void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int argc) {
   if (debug()) cerr << "DEBUG: in ygyoto_KerrBL_eval()\n";
   int rvset[1]={0}, paUsed[1]={0};
   if (!gg_) { // Constructor mode
@@ -105,7 +106,7 @@ extern "C" {
   void
   Y_gyoto_KerrBL(int argc)
   {
-      SmartPointer<Metric> *gg = NULL;
+      SmartPointer<Metric::Generic> *gg = NULL;
     try {
       //    char *obj_type=(char*)yget_obj(argc-1,0);
       //    if (obj_type && //!strcmp(obj_type, "gyoto_Metric")) {

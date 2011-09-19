@@ -70,7 +70,7 @@ class Gyoto::FixedStar : public Astrobj {
   FixedStar(const FixedStar& orig);///< Copy constructor
   virtual FixedStar* clone() const;
 
-  FixedStar(SmartPointer<Gyoto::Metric> gg, double StPsn[3], double radius);
+  FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3], double radius);
                    ///< Standard constructor
   
   virtual ~FixedStar() ;                        ///< Destructor
@@ -84,7 +84,7 @@ class Gyoto::FixedStar : public Astrobj {
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
   //  const int getCoordSys() const; ///< Get coordinate system
   
-  virtual void setMetric(SmartPointer<Metric> metric) ;
+  virtual void setMetric(SmartPointer<Metric::Generic> metric) ;
   void setRadius(double); ///< Set radius
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system

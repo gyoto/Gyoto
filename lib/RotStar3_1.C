@@ -743,7 +743,7 @@ void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
   Metric::fillElement(fmp);
 }
 
-Gyoto::SmartPointer<Gyoto::Metric>
+Gyoto::SmartPointer<Gyoto::Metric::Generic>
 Gyoto::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
 
   //default values

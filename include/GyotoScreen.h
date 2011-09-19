@@ -165,7 +165,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double ey_[3]; ///< Sky coordinate of base Y vector
   double ez_[3]; ///< Sky coordinate of base Z vector
 
-  SmartPointer<Metric> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
+  SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
 
   SmartPointer<Spectrometer> spectro_;
 
@@ -239,8 +239,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double getArgument() const;	 ///< Get angle beetwen line of nodes and X axis of object
 
 
-  SmartPointer<Metric> getMetric() const; ///< Get gg_;
-  void setMetric(SmartPointer<Metric> gg);
+  SmartPointer<Metric::Generic> getMetric() const; ///< Get gg_;
+  void setMetric(SmartPointer<Metric::Generic> gg);
 
   double getTime();
   void setTime(double, const std::string &);

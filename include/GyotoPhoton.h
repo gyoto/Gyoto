@@ -73,10 +73,10 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   Photon() ; ///< Default constructor
   Photon(const Photon& ) ;                ///< Copy constructor
   Photon* clone() const ;
-  Photon(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj,
+  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
 	 double* coord) ;
   ///< same as Photon() followed by setInitialCondition()
-  Photon(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj, 
+  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, 
 	 SmartPointer<Screen> screen, double d_alpha, double d_delta);
   ///< same as Photon() followed by setInitialCondition()
 
@@ -112,7 +112,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        the receiving end;
    *
    */
-  void setInitialCondition(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj, const double coord[8]) ;
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, const double coord[8]) ;
   ///<Set or re-set the initial condition prior to integration.
 
   /**
@@ -128,7 +128,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *
    * \param d_delta  Direction of arrival (Dec offset) in radians
    */
-  void setInitialCondition(SmartPointer<Metric> gg, SmartPointer<Astrobj> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta);
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta);
   ///<Set or re-set the initial condition prior to integration.
 
   //  int hit(double tlim, AstrobjProperties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object

@@ -57,7 +57,7 @@ class Gyoto::ThinInfiniteDiskKS : public Astrobj {
   // -----
  protected:
   
-  SmartPointer<Gyoto::KerrKS> gg_ ; 
+  SmartPointer<Gyoto::Metric::KerrKS> gg_ ; 
 
   double Lr_;//luminosity at the position where the disk has been hit (beaming taken into account)
   double rmin_;//ISCO radius
@@ -66,7 +66,7 @@ class Gyoto::ThinInfiniteDiskKS : public Astrobj {
   // -------------------------
  public:
   
-  ThinInfiniteDiskKS(const SmartPointer<KerrKS>& metric);
+  ThinInfiniteDiskKS(const SmartPointer<Metric::KerrKS>& metric);
                    ///< Standard constructor
 
   ThinInfiniteDiskKS(const ThinInfiniteDiskKS& ) ;  ///< Copy constructor

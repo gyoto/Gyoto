@@ -35,7 +35,7 @@
 using namespace std;
 using namespace Gyoto;
 
-ThinInfiniteDiskBL::ThinInfiniteDiskBL(const SmartPointer<KerrBL>& metric) :
+ThinInfiniteDiskBL::ThinInfiniteDiskBL(const SmartPointer<Metric::KerrBL>& metric) :
   Astrobj("ThinInfiniteDiskBL"), gg_(metric), Lr_(0.)
 {
   if (debug()) cout << "ThinInfiniteDiskBL Construction" << endl;

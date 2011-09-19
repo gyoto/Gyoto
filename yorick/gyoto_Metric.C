@@ -37,7 +37,7 @@ static ygyoto_Metric_eval_worker_t *ygyoto_Metric_evals[YGYOTO_MAX_REGISTERED]
 static int ygyoto_Metric_count=0;
 
 extern "C" {
-  typedef struct gyoto_Metric { SmartPointer<Metric> metric; char type[YGYOTO_TYPE_LEN];} gyoto_Metric;
+  typedef struct gyoto_Metric { SmartPointer<Metric::Generic> metric; char type[YGYOTO_TYPE_LEN];} gyoto_Metric;
   void gyoto_Metric_free(void *obj);
   void gyoto_Metric_print(void *obj);
   void gyoto_Metric_eval(void *obj, int n);
@@ -64,13 +64,13 @@ extern "C" {
     }
 #else
     y_print("GYOTO metric of type ",0);
-    SmartPointer<Metric> gg = ((gyoto_Metric*)obj)->metric;
+    SmartPointer<Metric::Generic> gg = ((gyoto_Metric*)obj)->metric;
     y_print(gg->getKind().c_str(),0);
 #endif
   }
 
   void gyoto_Metric_eval(void *obj, int argc) {
-    SmartPointer<Metric> gg = ((gyoto_Metric*)obj)->metric;
+    SmartPointer<Metric::Generic> gg = ((gyoto_Metric*)obj)->metric;
 
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
@@ -116,11 +116,11 @@ extern "C" {
 
 // PUBLIC API
 
-SmartPointer<Metric> *yget_Metric(int iarg) {
+SmartPointer<Metric::Generic> *yget_Metric(int iarg) {
   return &((gyoto_Metric*)yget_obj(iarg, &gyoto_Metric_obj))->metric;
 }
 
-SmartPointer<Metric> *ypush_Metric() {
+SmartPointer<Metric::Generic> *ypush_Metric() {
   gyoto_Metric* obj = (gyoto_Metric*)ypush_obj(&gyoto_Metric_obj, sizeof(gyoto_Metric));
   return &(obj->metric);
 }
@@ -143,7 +143,7 @@ void ygyoto_Metric_register(char const*const name, ygyoto_Metric_eval_worker_t* 
   //  strcpy(ygyoto_Metric_names[ygyoto_Metric_count], "");
 }
 
-void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric>*gg,
+void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed) {
   int k=-1, iarg=-1;
@@ -255,7 +255,7 @@ extern "C" {
 
   void Y_gyoto_Metric(int argc) {
     int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Metric> *gg = NULL;
+    SmartPointer<Metric::Generic> *gg = NULL;
     int builder=0;
     
     if (yarg_Metric(argc-1)) {
@@ -314,7 +314,7 @@ extern "C" {
   {
     if (n!=2) y_error("gyoto_Metric_setMass takes exactly 2 parameters");
     double mass = ygets_d(n-2);
-    SmartPointer<Metric> *gg = yget_Metric(n-1);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
     try { (*gg)->setMass(mass); }
     YGYOTO_STD_CATCH ;
   }
@@ -322,7 +322,7 @@ extern "C" {
   void
   Y_gyoto_Metric_getMass(int n)
   {
-    SmartPointer<Metric> *gg = yget_Metric(0);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(0);
     ypush_double((*gg)->getMass());
   }
 
@@ -330,7 +330,7 @@ extern "C" {
   Y_gyoto_Metric_gmunu(int n)
   {
     if (n!=4) y_error("gyoto_Metric_gmunu takes exactly 4 arguments");
-    SmartPointer<Metric> *gg = yget_Metric(n-1);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
     long  ntot;
     double  *x     = ygeta_d(n-2, &ntot, NULL);
     if (ntot<4) y_error("X must have at least four elements");
@@ -345,7 +345,7 @@ extern "C" {
   Y_gyoto_Metric_SysPrimeToTdot(int n)
   {
     if (n!=3) y_error("gyoto_Metric_SysPrimeToTdot takes exactly 3 arguments");
-    SmartPointer<Metric> *gg = yget_Metric(n-1);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
     long ntot=1;
     double * pos=ygeta_d(n-2,&ntot,0);
     if (ntot!=4) y_error("POS must have 4 elements");

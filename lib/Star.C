@@ -49,7 +49,7 @@ Star::Star() :
   opacity_ = new Spectrum::PowerLaw(0., 1.); 
 }
 
-Star::Star(SmartPointer<Metric> met, double rad,
+Star::Star(SmartPointer<Metric::Generic> met, double rad,
 	   double pos[4],
 	   double v[3]) :
   Astrobj("Star"),
@@ -103,8 +103,8 @@ Star::~Star() {
 string Star::className() const { return  string("Star"); }
 string Star::className_l() const { return  string("star"); }
 
-SmartPointer<Metric> Star::getMetric() const { return gg_; }
-void Star::setMetric(SmartPointer<Metric> gg) {gg_=gg; metric_=gg;}
+SmartPointer<Metric::Generic> Star::getMetric() const { return gg_; }
+void Star::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg; metric_=gg;}
 
 SmartPointer<Spectrum::Generic> Star::getSpectrum() const { return spectrum_; }
 void Star::setSpectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
@@ -520,7 +520,7 @@ SmartPointer<Astrobj> Gyoto::Star::Subcontractor(FactoryMessenger* fmp) {
   string name="", content="";
   int pos_found=0, vel_found=0;
   double pos[4], v[3], radius=0.;
-  SmartPointer<Metric> gg = NULL;
+  SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Spectrum::Generic> sp = NULL, op = NULL;
   FactoryMessenger * child = NULL;
 

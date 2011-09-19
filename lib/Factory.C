@@ -223,7 +223,7 @@ void Factory::setReporter(ErrorHandler* eh) {
 DOMElement * Factory::getRoot() { return root_; }
 DOMDocument * Factory::getDoc() { return doc_; }
 
-SmartPointer<Gyoto::Metric> Factory::getMetric() {
+SmartPointer<Gyoto::Metric::Generic> Factory::getMetric() {
   if (!gg_) {
     DOMElement *MetricDOM;
 
@@ -430,7 +430,7 @@ Factory::Factory(SmartPointer<Screen> scr)
 
 }
 
-Factory::Factory(SmartPointer<Metric> gg)
+Factory::Factory(SmartPointer<Metric::Generic> gg)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(NULL), gg_(gg), screen_(NULL), obj_(NULL),
@@ -528,7 +528,7 @@ Factory::Factory(SmartPointer<Spectrometer> sp)
 
 }
 
-void Factory::setMetric(SmartPointer<Metric> gg, DOMElement *el) {
+void Factory::setMetric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 
   if (gg_ && gg && gg!= gg_) throwError("Inconsistent use of Metrics");
   if (gg && !gg_el_) {
@@ -808,11 +808,11 @@ void FactoryMessenger::setScreen(SmartPointer<Screen> gg) {
   employer_ -> setScreen (gg, element_);
 }
 
-void FactoryMessenger::setMetric(SmartPointer<Metric> gg) {
+void FactoryMessenger::setMetric(SmartPointer<Metric::Generic> gg) {
   employer_ -> setMetric (gg, element_);
 }
 
-SmartPointer<Metric> FactoryMessenger::getMetric() {
+SmartPointer<Metric::Generic> FactoryMessenger::getMetric() {
   return employer_ -> getMetric ();
 }
 

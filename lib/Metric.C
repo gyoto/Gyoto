@@ -32,14 +32,14 @@ using namespace Gyoto;
 Register::Entry* Metric::Register_ = NULL;
 
 // Default constructor
-Metric::Metric() :
+Metric::Generic::Generic() :
   mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED)
 {
   if (debug()) cout << "Metric Construction" << endl ;
   setKind("Unspecified");
 }
 
-Metric::Metric(const double mass, const int coordkind) :
+Metric::Generic::Generic(const double mass, const int coordkind) :
   mass_(mass), coordkind_(coordkind)
 {
   if (debug())
@@ -48,7 +48,7 @@ Metric::Metric(const double mass, const int coordkind) :
   setKind("Unspecified");
 }
 
-Metric::Metric(const int coordkind) :
+Metric::Generic::Generic(const int coordkind) :
   mass_(1.), coordkind_(coordkind)
 {
   if (debug()) cerr << "Metric Construction with coordkind="
@@ -57,26 +57,26 @@ Metric::Metric(const int coordkind) :
 }
 
 // No copy constructor needed, default is fine
-Metric * Metric::clone() const {
-  string msg = "Metric::clone() called: cloning not supported for metric kind ";
+Metric::Generic * Metric::Generic::clone() const {
+  string msg = "Metric::Generic::clone() called: cloning not supported for metric kind ";
   msg += getKind();
   throwError (msg);
-  return const_cast<Metric*>(this); // to avoid warning
+  return const_cast<Metric::Generic*>(this); // to avoid warning
 }
 
-Metric::~Metric(){
+Metric::Generic::~Generic(){
   if (debug()) cout << "Metric Destruction" << endl ;
 }
 
 // Output
 
-const string Metric::getKind() const {return kind_;}
-void Metric::setKind(const string src) { kind_ = src;}
+const string Metric::Generic::getKind() const {return kind_;}
+void Metric::Generic::setKind(const string src) { kind_ = src;}
 
 /***************Definition of the physical scene**************/
 
-void Metric::setMass(const double mass)        { mass_=mass;}
-void Metric::setMass(const double mass, string unit) {
+void Metric::Generic::setMass(const double mass)        { mass_=mass;}
+void Metric::Generic::setMass(const double mass, string unit) {
   mass_ = mass;
   if (unit=="" || unit=="kg") ; // do nothing !
   else if (unit=="g") mass_ *= 1e-3;
@@ -88,22 +88,22 @@ void Metric::setMass(const double mass, string unit) {
     throwError(ss.str());
   }
   if(debug())
-    cerr << "DEBUG: Metric::setMass(mass="<<mass<<", unit=\"" << unit
+    cerr << "DEBUG: Metric::Generic::setMass(mass="<<mass<<", unit=\"" << unit
 	 << "\") : mass_=" << mass_ <<" kg\n";
 }
 
-int Metric::getCoordKind()               const { return coordkind_; }
-void Metric::setCoordKind(int coordkind)       { coordkind_=coordkind; }
+int Metric::Generic::getCoordKind()               const { return coordkind_; }
+void Metric::Generic::setCoordKind(int coordkind)       { coordkind_=coordkind; }
 
-double Metric::getMass()                 const { return mass_; }
+double Metric::Generic::getMass()                 const { return mass_; }
 
 
-double Metric::SysPrimeToTdot(const double pos[4], const double v[3]) const {
+double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
   int i,j;
 
   if (debug()) {
-    cerr << "DEBUG: Metric::SysPrimeToTdot: " << endl
+    cerr << "DEBUG: Metric::Generic::SysPrimeToTdot: " << endl
 	 << "       POS=[" << pos[0];
     for (i=1; i<4; ++i) cerr << ", " << pos[i];
     cerr << "]\n       VEL=[" << v[0] ;
@@ -120,7 +120,7 @@ double Metric::SysPrimeToTdot(const double pos[4], const double v[3]) const {
     }
   }
   if (sum>=0) {
-    cerr << "ERROR: Metric::SysPrimeToTdot: tdot2= " << -1./sum << endl;
+    cerr << "ERROR: Metric::Generic::SysPrimeToTdot: tdot2= " << -1./sum << endl;
     throwError("In Metric.C: Impossible condition (v>c)");
 
   }
@@ -128,17 +128,17 @@ double Metric::SysPrimeToTdot(const double pos[4], const double v[3]) const {
 }
 
 
-void Metric::nullifyCoord(double coord[8]) const {
+void Metric::Generic::nullifyCoord(double coord[8]) const {
   double tdot2;
   nullifyCoord(coord, tdot2);
 }
 
-void Metric::nullifyCoord(double coord[8], double& tdot2) const {
+void Metric::Generic::nullifyCoord(double coord[8], double& tdot2) const {
   //int width=25;//15;
   //int prec=15;//8;
   //cout << "DNAS NUllIFY" << endl;
 
-  // if (debug()) cout << "dans Metric::nullifyCoord coord au debut:  " << coord[0] << " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << coord[4] << " " << coord[5] << " " << coord[6] << " " << coord[7] << " " << endl;
+  // if (debug()) cout << "dans Metric::Generic::nullifyCoord coord au debut:  " << coord[0] << " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << coord[4] << " " << coord[5] << " " << coord[6] << " " << coord[7] << " " << endl;
 
   int i, j;
   double a, b=0., c=0.;
@@ -156,7 +156,7 @@ void Metric::nullifyCoord(double coord[8], double& tdot2) const {
       c+=gmunu(coord, i, j)*coord[4+i]*coord[4+j];
     }
   }
-  //cout << "a b c in Metric::nullify= " << a << " " << b << " " << c << endl;
+  //cout << "a b c in Metric::Generic::nullify= " << a << " " << b << " " << c << endl;
   // a*tdot*tdot + 2*b*tdot + c ==0.
   double Delta=b*b-a*c;
   tdot2=(-b+sqrt(Delta))/a;
@@ -170,7 +170,7 @@ void Metric::nullifyCoord(double coord[8], double& tdot2) const {
    */
 }
 
-double Metric::ScalarProd(const double pos[4],
+double Metric::Generic::ScalarProd(const double pos[4],
 			  const double u1[4], const double u2[4]) const {
   // cout << "a comparer a = " << gmunu(pos,0,0) << " " << gmunu(pos,2,2) << endl;
   double res=0.;
@@ -189,7 +189,7 @@ double Metric::ScalarProd(const double pos[4],
   return res;
 }
 
-double Metric::Norm3D(double* pos) const {
+double Metric::Generic::Norm3D(double* pos) const {
   throwError("Check Norm3D");
   double res=0.;
   for (int i=0;i<3;i++) {
@@ -210,7 +210,7 @@ Let : Y=[x0,x1,x2,x3,x0_dot,x1_dot,x2_dot,x3_dot] (dot=d/dtau, tau=proper time)
 diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
-int Metric::diff(const double coord[8], double res[8]) const{
+int Metric::Generic::diff(const double coord[8], double res[8]) const{
  
   res[0]=coord[4];
   res[1]=coord[5];
@@ -233,9 +233,9 @@ int Metric::diff(const double coord[8], double res[8]) const{
 
  */
 
-//int Metric::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::myrk4(Worldline *, const double coord[8], double h, double res[8]) const{
-  //cout << "In Metric::myrk4" << endl;
+//int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
+int Metric::Generic::myrk4(Worldline *, const double coord[8], double h, double res[8]) const{
+  //cout << "In Metric::Generic::myrk4" << endl;
   double k1[8] ; 
   double k2[8] ; 
   double k3[8] ; 
@@ -284,13 +284,13 @@ int Metric::myrk4(Worldline *, const double coord[8], double h, double res[8]) c
   return 0;
 }
 
-void Metric::circularVelocity(double const * , double*, double) const {
+void Metric::Generic::circularVelocity(double const * , double*, double) const {
   stringstream ss;
   ss << kind_ << "::circularVelocity() is not implemented";
   throwError(ss.str());
 }
 
-int Metric::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm , double normref, double* coordnew , double h0, double& h1) const{ 
+int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm , double normref, double* coordnew , double h0, double& h1) const{ 
   
   double delta0[8];
   double delta0min=1e-15;
@@ -372,31 +372,31 @@ int Metric::myrk4_adaptive(Worldline* line, const double * coord, double lastnor
 
 }
 
-double Metric::unitLength() const { 
+double Metric::Generic::unitLength() const { 
   return mass_ * GYOTO_G_OVER_C_SQUARE; 
 }
 
-int Metric::isStopCondition(double const * const ) const {
+int Metric::Generic::isStopCondition(double const * const ) const {
   return 0;
 }
 
-void Metric::setParticleProperties(Worldline*, const double*) const {
-  if (debug()) cerr << "DEBUG: Metric::setParticleProperties() called, noop";
+void Metric::Generic::setParticleProperties(Worldline*, const double*) const {
+  if (debug()) cerr << "DEBUG: Metric::Generic::setParticleProperties() called, noop";
 }
 
 
 
 /***************For SmartPointers**************/
 
-int Metric::getRefCount() { return SmartPointee::getRefCount(); }
+int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }
 
 #ifdef GYOTO_USE_XERCES
-void Metric::fillElement(Gyoto::FactoryMessenger *fmp) {
+void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter("Mass", getMass());
 }
 
-void Metric::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
+void Metric::Generic::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="";
   fmp -> reset();
   while (fmp->getNextParameter(&name, &content)) {

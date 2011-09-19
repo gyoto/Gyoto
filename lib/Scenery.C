@@ -57,12 +57,12 @@ Scenery::Scenery(const Scenery& o) :
 }
 Scenery * Scenery::clone() const { return new Scenery(*this); }
 
-/*Scenery::Scenery(SmartPointer<Metric> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
+/*Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
   gg_(met), screen_(screen), obj_(obj),
   deltatau_(0.01)
 {}
 */
-Scenery::Scenery(SmartPointer<Metric> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
+Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
   gg_(met), screen_(screen), obj_(obj), delta_(0.01),
   quantities_(0)
 {
@@ -85,9 +85,9 @@ Scenery::~Scenery() {
   obj_ = NULL;
  }
 
-SmartPointer<Metric> Scenery::getMetric() { return gg_; }
+SmartPointer<Metric::Generic> Scenery::getMetric() { return gg_; }
 
-void Scenery::setMetric(SmartPointer<Metric> met) {
+void Scenery::setMetric(SmartPointer<Metric::Generic> met) {
   gg_ = met;
   if (!screen_) screen_ = new Screen ();
   screen_ -> setMetric(gg_);
@@ -291,7 +291,7 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   double delta = GYOTO_DEFAULT_DELTA ;
-  SmartPointer<Metric> gg = NULL;
+  SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Screen> scr = NULL;
   SmartPointer<Astrobj> ao = NULL;
   string squant = "";

@@ -70,7 +70,7 @@ class Gyoto::Factory
 
   // GYOTO elements
   SmartPointer<Scenery> scenery_;
-  SmartPointer<Metric> gg_;
+  SmartPointer<Metric::Generic> gg_;
   SmartPointer<Screen> screen_;
   SmartPointer<Astrobj> obj_;
   SmartPointer<Photon> photon_;
@@ -86,7 +86,7 @@ class Gyoto::Factory
 
   // Constructors for SAVING
   Factory(SmartPointer<Scenery> sc);
-  Factory(SmartPointer<Metric> gg);
+  Factory(SmartPointer<Metric::Generic> gg);
   Factory(SmartPointer<Astrobj> ao);
   Factory(SmartPointer<Spectrum::Generic> sp);
   Factory(SmartPointer<Screen> screen);
@@ -108,7 +108,7 @@ class Gyoto::Factory
 
   // Building and getting SmartPointer<OBJECTS>
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
-  Gyoto::SmartPointer<Gyoto::Metric>  getMetric();
+  Gyoto::SmartPointer<Gyoto::Metric::Generic>  getMetric();
   Gyoto::SmartPointer<Gyoto::Screen>  getScreen();
   Gyoto::SmartPointer<Gyoto::Astrobj> getAstrobj();
   Gyoto::SmartPointer<Gyoto::Photon>  getPhoton();
@@ -120,7 +120,7 @@ class Gyoto::Factory
   std::string format();
 
   // Setting elements
-  void setMetric(SmartPointer<Metric> gg, xercesc::DOMElement *el);
+  void setMetric(SmartPointer<Metric::Generic> gg, xercesc::DOMElement *el);
   void setAstrobj(SmartPointer<Astrobj> ao, xercesc::DOMElement *el);
   void setScreen(SmartPointer<Screen> scr, xercesc::DOMElement *el);
   void setContent(std::string content, xercesc::DOMElement *el);

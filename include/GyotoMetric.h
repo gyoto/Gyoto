@@ -3,7 +3,7 @@
  * \brief Base class for metric description
  * 
  * Classes which represent a metric (e.g. Gyoto::Kerr) should inherit
- * from Gyoto::Metric and implement all of the virtual methods. 
+ * from Gyoto::Metric::Generic and implement all of the virtual methods. 
  *
  */
 
@@ -33,15 +33,21 @@
 #include <fstream>
 #include <string>
 
-namespace Gyoto {
-  //class Photon;
-  class Metric;
-}
-
 #include <GyotoWorldline.h>
 #include <GyotoSmartPointer.h>
 #include <GyotoAstrobj.h>
 #include <GyotoRegister.h>
+
+namespace Gyoto {
+  namespace Metric {
+    class Generic;
+    typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
+    Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string);
+    extern Register::Entry * Register_;
+    void Register(std::string, Gyoto::Metric::Subcontractor_t*);
+    void initRegister();
+  }
+}
 
 /**
  * \class Gyoto::Metric
@@ -49,8 +55,8 @@ namespace Gyoto {
  *
  * Example: class Gyoto::Kerr 
  */
-class Gyoto::Metric : protected Gyoto::SmartPointee {
-  friend class Gyoto::SmartPointer<Gyoto::Metric>;
+class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
 
  private:
   std::string kind_;
@@ -65,15 +71,15 @@ class Gyoto::Metric : protected Gyoto::SmartPointee {
   // Constructors - Destructor
   // -------------------------
   //Metric(const Metric& ) ;                ///< Copy constructor
-  Metric();
-  Metric(const int coordkind);
-  Metric(const double mass, const int coordkind);
+  Generic();
+  Generic(const int coordkind);
+  Generic(const double mass, const int coordkind);
 
-  virtual ~Metric() ;                        ///< Destructor
+  virtual ~Generic() ;                        ///< Destructor
   
   // Mutators / assignment
   // ---------------------
-  virtual Metric * clone() const ; ///< Virtual copy constructor
+  virtual Generic * clone() const ; ///< Virtual copy constructor
 
   void setMass(const double);        ///< Set mass used in unitLength()
   void setMass(const double, std::string unit);        ///< Set mass used in unitLength()
@@ -210,14 +216,6 @@ class Gyoto::Metric : protected Gyoto::SmartPointee {
   virtual void setParticleProperties(Gyoto::Worldline* line,
 				     const double * coord) const;
   
-  //// REGISTER STUFF ////
- public:
-  typedef SmartPointer<Metric> Subcontractor_t(FactoryMessenger*);
-  static Register::Entry * Register_;
-  static Subcontractor_t* getSubcontractor(std::string);
-  static void Register(std::string, Subcontractor_t*);
-  static void initRegister();
-
 
 };
 

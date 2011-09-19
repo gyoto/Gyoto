@@ -70,7 +70,7 @@ class Gyoto::Star : public Gyoto::Astrobj, public Gyoto::Worldline {
   * \param pos[4] initial position
   * \param v[3] initial velocity
   */
-  Star(SmartPointer<Metric> gg, double radius,
+  Star(SmartPointer<Metric::Generic> gg, double radius,
        double pos[4], double v[3]) ;                        ///< Standard constructor
 
  /**
@@ -92,8 +92,8 @@ class Gyoto::Star : public Gyoto::Astrobj, public Gyoto::Worldline {
   virtual std::string className() const ; ///< "Star"
   virtual std::string className_l() const ; ///< "star"
 
-  virtual void setMetric(SmartPointer<Metric>);
-  virtual SmartPointer<Metric> getMetric() const;
+  virtual void setMetric(SmartPointer<Metric::Generic>);
+  virtual SmartPointer<Metric::Generic> getMetric() const;
   virtual void setSpectrum(SmartPointer<Spectrum::Generic>);
   virtual SmartPointer<Spectrum::Generic> getSpectrum() const;
   virtual void setOpacity(SmartPointer<Spectrum::Generic>);

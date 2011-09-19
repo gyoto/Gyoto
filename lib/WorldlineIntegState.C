@@ -31,7 +31,7 @@ using namespace Gyoto;
 
 WorldlineIntegState::WorldlineIntegState(){}//seems necessary for Kerr::IntegInit, I don't see why
 
-WorldlineIntegState::WorldlineIntegState(SmartPointer<Metric> gg,
+WorldlineIntegState::WorldlineIntegState(SmartPointer<Metric::Generic> gg,
 				   const double coord[8], const double delta) :
   gg_(gg),
   delta_(delta),

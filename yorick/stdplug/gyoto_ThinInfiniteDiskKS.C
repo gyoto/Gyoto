@@ -30,7 +30,7 @@ extern "C" {
   Y_gyoto_ThinInfiniteDiskKS(int n)
   {
     if (n!=2) y_error("gyoto_ThinInfiniteDisk_new takes exactly 2 arguments");
-    SmartPointer<Metric> *gg = yget_Metric(1);
+    SmartPointer<Metric::Generic> *gg = yget_Metric(1);
     if ((*gg)->getKind() != "KerrKS") y_error("Metric must be KerrKS");
 
     SmartPointer<Astrobj> *astrobj=ypush_Astrobj();
