@@ -30,7 +30,7 @@
 #define __GyotoStar_H_ 
 
 namespace Gyoto{
-  class Star;
+  namespace Astrobj { class Star; }
 }
 
 #include <GyotoMetric.h>
@@ -50,8 +50,10 @@ namespace Gyoto{
  * Gyoto can compute the Star's orbit in a Gyoto::Metric and to
  * perform ray-tracing on this target.
  */
-class Gyoto::Star : public Gyoto::Astrobj, public Gyoto::Worldline {
-  friend class Gyoto::SmartPointer<Gyoto::Star>;
+class Gyoto::Astrobj::Star :
+  public Gyoto::Astrobj::Generic,
+  public Gyoto::Worldline {
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Star>;
   
   // Data : 
   // -----
@@ -134,7 +136,7 @@ class Gyoto::Star : public Gyoto::Astrobj, public Gyoto::Worldline {
    * integration points. Since the integration happens in spherical
    * coordinates, this is not true.
    */
-  virtual int Impact_(Photon *ph, size_t index, AstrobjProperties* data=NULL);
+  virtual int Impact_(Photon *ph, size_t index, Astrobj::Properties* data=NULL);
  protected:
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 

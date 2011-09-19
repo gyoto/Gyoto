@@ -43,7 +43,7 @@ namespace Gyoto {
 class Gyoto::FocalPlane {
  protected:
   SmartPointer<Metric::Generic> gg_;
-  SmartPointer<Astrobj> obj_;
+  SmartPointer<Astrobj::Generic> obj_;
   size_t nx_;
   size_t ny_;
   double dx_; ///< radians
@@ -51,10 +51,10 @@ class Gyoto::FocalPlane {
   double xmin_; ///< radians
   double ymin_; ///< radians
  public:
-  FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
+  FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj,
 	     double xmin, double ymin,
 	     size_t nx, size_t ny, double dx, double dy);
-  FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
+  FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj,
 	     double xmin, double ymin, double xmax, double ymax,
 	     size_t nx, size_t ny);
   ~FocalPlane();

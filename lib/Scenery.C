@@ -57,12 +57,12 @@ Scenery::Scenery(const Scenery& o) :
 }
 Scenery * Scenery::clone() const { return new Scenery(*this); }
 
-/*Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
+/*Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj::Generic> obj) :
   gg_(met), screen_(screen), obj_(obj),
   deltatau_(0.01)
 {}
 */
-Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj> obj) :
+Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj::Generic> obj) :
   gg_(met), screen_(screen), obj_(obj), delta_(0.01),
   quantities_(0)
 {
@@ -101,8 +101,8 @@ void Scenery::setScreen(SmartPointer<Screen> screen) {
   if (gg_) screen_ -> setMetric (gg_) ;
 }
 
-SmartPointer<Astrobj> Scenery::getAstrobj() { return obj_; }
-void Scenery::setAstrobj(SmartPointer<Astrobj> obj) {
+SmartPointer<Astrobj::Generic> Scenery::getAstrobj() { return obj_; }
+void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
   obj_ = obj;
   if (gg_) obj_ -> setMetric (gg_) ;
 }
@@ -112,7 +112,7 @@ void Scenery::setDelta(double d) { delta_ = d; }
 
 void Scenery::rayTrace(size_t imin, size_t imax,
 		       size_t jmin, size_t jmax,
-		       AstrobjProperties *data, int save) {
+		       Astrobj::Properties *data, int save) {
 
   //  if (debug()) cout << "screen dist beg ray trace= " << screen_ -> getDistance() << endl;
 
@@ -174,7 +174,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   }
 }
 
-void Scenery::operator() (size_t i, size_t j, AstrobjProperties *data) {
+void Scenery::operator() (size_t i, size_t j, Astrobj::Properties *data) {
   Photon ph;
   double coord[8];
   screen_ -> getRayCoord(i,j, coord);
@@ -293,7 +293,7 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
   double delta = GYOTO_DEFAULT_DELTA ;
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Screen> scr = NULL;
-  SmartPointer<Astrobj> ao = NULL;
+  SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
 
   gg = fmp->getMetric();

@@ -31,9 +31,10 @@
 #include <cstdlib>
 
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 using namespace std;
 
-Torus::Torus() : Astrobj("Torus"),
+Torus::Torus() : Generic("Torus"),
 	  c_(3.5)
 {
   critical_value_ = 0.25; // 0.5*0.5
@@ -43,7 +44,7 @@ Torus::Torus() : Astrobj("Torus"),
 }
 
 Torus::Torus(const Torus& o)
-  : Astrobj(o),
+  : Generic(o),
     c_(o.c_),
     spectrum_(o.spectrum_()?o.spectrum_->clone():NULL),
     opacity_(o.opacity_()?o.opacity_->clone():NULL)
@@ -147,10 +148,10 @@ void Torus::fillElement(FactoryMessenger *fmp) const {
   opacity_ -> fillElement(childfmp);
   delete childfmp;
 
-  Astrobj::fillElement(fmp);
+  Generic::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> Gyoto::Torus::Subcontractor(FactoryMessenger* fmp) {
+SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Torus::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   SmartPointer<Metric::Generic> gg = NULL;
@@ -184,7 +185,7 @@ SmartPointer<Astrobj> Gyoto::Torus::Subcontractor(FactoryMessenger* fmp) {
   return st;
 }
 
-void Gyoto::Torus::Init() {
-  Gyoto::Astrobj::Register("Torus", &Gyoto::Torus::Subcontractor);
+void Gyoto::Astrobj::Torus::Init() {
+  Gyoto::Astrobj::Register("Torus", &Gyoto::Astrobj::Torus::Subcontractor);
 }
 #endif

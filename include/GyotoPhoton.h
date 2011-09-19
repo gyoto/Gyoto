@@ -31,7 +31,7 @@
 
 namespace Gyoto{
   class Photon;
-  class Astrobj;
+  namespace Astrobj { class Generic; }
 }
 
 #include <GyotoDefs.h>
@@ -53,7 +53,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   // -----
 
  protected:
-  SmartPointer<Gyoto::Astrobj> object_; ///< The astronomical target
+  SmartPointer<Gyoto::Astrobj::Generic> object_; ///< The astronomical target
   double freq_obs_; ///< Photon's frequency in observer's frame
   double transmission_freqobs_; ///< integrated optical transmission
 
@@ -73,10 +73,10 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   Photon() ; ///< Default constructor
   Photon(const Photon& ) ;                ///< Copy constructor
   Photon* clone() const ;
-  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj,
+  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj,
 	 double* coord) ;
   ///< same as Photon() followed by setInitialCondition()
-  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, 
+  Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
 	 SmartPointer<Screen> screen, double d_alpha, double d_delta);
   ///< same as Photon() followed by setInitialCondition()
 
@@ -87,8 +87,8 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   
   virtual double getMass() const ; ///< Return 0.
 
-  void setAstrobj(SmartPointer<Astrobj>); ///< Set Astrobj
-  SmartPointer<Astrobj> getAstrobj() const ; ///< Get Astrobj
+  void setAstrobj(SmartPointer<Astrobj::Generic>); ///< Set Astrobj
+  SmartPointer<Astrobj::Generic> getAstrobj() const ; ///< Get Astrobj
   void setSpectrometer(SmartPointer<Spectrometer> spr);
   SmartPointer<Spectrometer> getSpectrometer() const ;
   double getFreqObs() const;
@@ -112,7 +112,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        the receiving end;
    *
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, const double coord[8]) ;
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, const double coord[8]) ;
   ///<Set or re-set the initial condition prior to integration.
 
   /**
@@ -128,11 +128,11 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *
    * \param d_delta  Direction of arrival (Dec offset) in radians
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta);
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta);
   ///<Set or re-set the initial condition prior to integration.
 
-  //  int hit(double tlim, AstrobjProperties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
-  int hit(AstrobjProperties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
+  //  int hit(double tlim, Astrobj::Properties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
+  int hit(Astrobj::Properties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
 
   /**
    * \brief Find minimum of photon--object distance
@@ -150,7 +150,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *              a date below the threshold, not the accurate
    *              minimum).
    */
-  double findMin(Astrobj* object, double t1, double t2, double &tmin,
+  double findMin(Astrobj::Generic* object, double t1, double t2, double &tmin,
 		 double threshold = DBL_MIN) ;
 
   /**
@@ -167,7 +167,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        value, very close to value. toutside is closer to tinside
    *        on output than on input.
    */
-  void findValue(Astrobj* object, double value,
+  void findValue(Astrobj::Generic* object, double value,
 		 double tinside, double &toutside) ;
 
 #ifdef GYOTO_USE_XERCES

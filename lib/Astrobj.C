@@ -37,10 +37,11 @@
 // NAMESPACES
 using namespace std;
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-Astrobj::Astrobj(string kind) :
+Generic::Generic(string kind) :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
@@ -49,7 +50,7 @@ Astrobj::Astrobj(string kind) :
   
 }
 
-Astrobj::Astrobj() :
+Generic::Generic() :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
@@ -57,72 +58,72 @@ Astrobj::Astrobj() :
   if (debug()) cerr << "Astrobj Construction" << endl;
 }
 
-Astrobj::Astrobj(double radmax) :
+Generic::Generic(double radmax) :
   gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
   critical_value_(DBL_MIN)
 {
   if (debug()) cerr << "Astrobj Construction" << endl;
 }
-Astrobj::Astrobj(const Astrobj& orig) :
+Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
   flag_radtransf_(orig.flag_radtransf_), critical_value_(orig.critical_value_),
   safety_value_(orig.safety_value_)
 {
-    if (debug()) cerr << "DEBUG: in Astrobj::Astrobj (Copy)" << endl;
+    if (debug()) cerr << "DEBUG: in Astrobj::Generic (Copy)" << endl;
     if (orig.gg_()) {
       if (debug())
 	cerr << "DEBUG: orig had a metric, cloning" << endl;
       gg_=orig.gg_->clone();
     }
-    if (debug()) cerr << "DEBUG: out of Astrobj::Astrobj (Copy)" << endl;
+    if (debug()) cerr << "DEBUG: out of Astrobj::Generic (Copy)" << endl;
 }
-Astrobj * Astrobj::clone() const {
-  string msg = "Astrobj::clone() called: cloning not supported "
+Generic * Generic::clone() const {
+  string msg = "Generic::clone() called: cloning not supported "
     "for astrobj kind ";
   msg += getKind();
   throwError (msg);
-  return const_cast<Astrobj*>(this); // to avoid warning
+  return const_cast<Generic*>(this); // to avoid warning
 }
 
-Astrobj::~Astrobj() {
+Generic::~Generic() {
   if (debug()) cerr << "Astrobj Destruction" << endl;
 }
 
-SmartPointer<Metric::Generic> Astrobj::getMetric() const { return gg_; }
-void Astrobj::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
+SmartPointer<Metric::Generic> Generic::getMetric() const { return gg_; }
+void Generic::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
 
-double Astrobj::getRmax() {
+double Generic::getRmax() {
   return rmax_;
 }
 
-const string Astrobj::getKind() const {
+const string Generic::getKind() const {
   return kind_;
 }
 
-void Astrobj::setRmax(double val) {
+void Generic::setRmax(double val) {
   rmax_set_=1;
   rmax_=val;
 }
 
-void Astrobj::unsetRmax() {
+void Generic::unsetRmax() {
   rmax_set_=0;
 }
 
-double Astrobj::operator()(double const * const) {
+double Generic::operator()(double const * const) {
   stringstream ss;
   ss << getKind() << "::operator()() is unimplemented";
   throwError(ss.str());
   return 0.;
 }
 
-void Astrobj::getVelocity(double const * const, double *) {
+void Generic::getVelocity(double const * const, double *) {
   stringstream ss;
   ss << getKind() << "::getVelocity() is unimplemented";
   throwError(ss.str());
 }
 
-int Astrobj::Impact(Photon* ph, size_t index, AstrobjProperties *data){
+int Generic::Impact(Photon* ph, size_t index, Properties *data){
   double p1[8], p2[8];
   ph->getCoord(index, p1);
   ph->getCoord(index+1, p2);
@@ -177,16 +178,16 @@ int Astrobj::Impact(Photon* ph, size_t index, AstrobjProperties *data){
 
 }
 
-void Astrobj::fillElement(FactoryMessenger *fmp) const {
+void Generic::fillElement(FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute("kind", kind_);
   //  fmp -> setParameter ("Flag_radtransf", flag_radtransf_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
 }
 
-void Astrobj::setFlag_radtransf(int flag) {flag_radtransf_=flag;}
-int Astrobj::getFlag_radtransf() const {return flag_radtransf_;}
+void Generic::setFlag_radtransf(int flag) {flag_radtransf_=flag;}
+int Generic::getFlag_radtransf() const {return flag_radtransf_;}
 
-void Astrobj::setGenericParameter(string name, string content)  {
+void Generic::setGenericParameter(string name, string content)  {
   char* tc = const_cast<char*>(content.c_str());
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
@@ -195,11 +196,11 @@ void Astrobj::setGenericParameter(string name, string content)  {
     rmax_ = atof(tc); rmax_set_=1;
   }
 }
-void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
+void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				     double* coord_obj_hit, double dt,
-				     AstrobjProperties* data) const {
+				     Properties* data) const {
   if (debug())
-    cerr << "DEBUG: in Astrobj::processHitQuantities:" << endl;
+    cerr << "DEBUG: in Generic::processHitQuantities:" << endl;
   /*
       NB: freqObs is the observer's frequency chosen in
       Screen::getRayCoord for the actual computation of the geodesic ;
@@ -220,10 +221,10 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double dsem = dlambda*freqObs*ggredm1;
   if (data) {
     if (debug())
-      cerr << "DEBUG: Astrobj::processHitQuantities: data requested" << endl;
+      cerr << "DEBUG: Generic::processHitQuantities: data requested" << endl;
 
     if (debug())
-      cerr << "DEBUG: Astrobj::processHitQuantities: data requested, "
+      cerr << "DEBUG: Generic::processHitQuantities: data requested, "
 	   << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
 	   << ", ggred=" << ggred
 	   << endl;
@@ -232,17 +233,17 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
     if (data->redshift) {
       *data->redshift=ggred;
       if (debug())
-	cerr << "DEBUG: Astrobj::processHitQuantities(): "
+	cerr << "DEBUG: Generic::processHitQuantities(): "
 	     << "redshift=" << *data->redshift << endl;
     }
     if (data->time) {
       *data->time=coord_ph_hit[0];
       if (debug())
-	cerr << "DEBUG: Astrobj::processHitQuantities(): "
+	cerr << "DEBUG: Generic::processHitQuantities(): "
 	     << "time=" << *data->time << endl;
     }
     if (debug())
-      cerr << "DEBUG: Astrobj::processHitQuantities: "
+      cerr << "DEBUG: Generic::processHitQuantities: "
 	   << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
 	   << ") = " << dlambda << ", dsem=" << dsem << endl;
     if (data->intensity) {
@@ -279,7 +280,7 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	* ggred*ggred*ggred;
 
       if (debug())
-	cerr << "DEBUG: Astrobj::processHitQuantities(): "
+	cerr << "DEBUG: Generic::processHitQuantities(): "
 	     << "intensity +=" << *data->intensity
 	     << "= emission((dsem=" << dsem << "))="
 	     << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
@@ -299,7 +300,7 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	  * ph -> getTransmission(ii)
 	  *ggred*ggred*ggred*ggred;
 	if (debug())
-	  cerr << "DEBUG: Astrobj::processHitQuantities(): "
+	  cerr << "DEBUG: Generic::processHitQuantities(): "
 	       << "nuobs[" << ii << "]="<< channels[ii]
 	       << ", nuem=" << nuem1 
 	       << ", binspectrum[" << ii+data->offset << "]="
@@ -314,7 +315,7 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	  * ph -> getTransmission(ii)
 	  *ggred*ggred*ggred;
 	if (debug())
-	  cerr << "DEBUG: Astrobj::processHitQuantities(): "
+	  cerr << "DEBUG: Generic::processHitQuantities(): "
 	       << "nuobs[" << ii << "]="<< nuobs[ii]
 	       << ", nuem=" << nuem 
 	       << ", dsem=" << dsem
@@ -328,7 +329,7 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
     }
   } else {
     if (debug())
-      cerr << "DEBUG: Astrobj::processHitQuantities: NO data requested!\n";
+      cerr << "DEBUG: Generic::processHitQuantities: NO data requested!\n";
   }
   /* update photon's transmission */
   ph -> transmit(size_t(-1),
@@ -337,14 +338,14 @@ void Astrobj::processHitQuantities(Photon* ph, double* coord_ph_hit,
     ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
 }
 
-double Astrobj::transmission(double, double, double*) const {
+double Generic::transmission(double, double, double*) const {
   if (debug())
-    cerr << "DEBUG: Astrobj::transmission(): flag_radtransf_="
+    cerr << "DEBUG: Generic::transmission(): flag_radtransf_="
 	 << flag_radtransf_ << endl;
   return double(flag_radtransf_);
 }
 
-double Astrobj::integrateEmission (double nu1, double nu2, double dsem,
+double Generic::integrateEmission (double nu1, double nu2, double dsem,
 				   double coord_ph[8], double coord_obj[8])
   const {
   double nu;
@@ -356,7 +357,7 @@ double Astrobj::integrateEmission (double nu1, double nu2, double dsem,
   double Iprev;
 
   if (debug())
-      cerr << "DEBUG: Astrobj::integrateEmission(): "
+      cerr << "DEBUG: Generic::integrateEmission(): "
 	   << "Icur=" << Icur << endl;
 
   do {
@@ -367,19 +368,19 @@ double Astrobj::integrateEmission (double nu1, double nu2, double dsem,
     }
     Icur *= 0.5;
     if (debug())
-      cerr << "DEBUG: Astrobj::integrateEmission(): "
+      cerr << "DEBUG: Generic::integrateEmission(): "
 	   << "Icur=" << Icur << endl;
   } while( fabs(Icur-Iprev) > (1e-2 * Icur) );
 
   if (debug())
-    cerr << "DEBUG: Astrobj::integrateEmission(): "
+    cerr << "DEBUG: Generic::integrateEmission(): "
 	 << "dnu=" << dnux2*0.5
 	 << "=(nu2-nu1)/" << (nu2-nu1)/(dnux2*0.5) << endl;
 
   return Icur;
 }
 
-Quantity_t Astrobj::getDefaultQuantities() { return GYOTO_QUANTITY_INTENSITY; }
+Quantity_t Generic::getDefaultQuantities() { return GYOTO_QUANTITY_INTENSITY; }
 
 
 void Astrobj::initRegister() {
@@ -400,7 +401,7 @@ Gyoto::Astrobj::Subcontractor_t* Astrobj::getSubcontractor(std::string name) {
 }
 
 
-AstrobjProperties::AstrobjProperties() :
+Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
   redshift(NULL), rimpact(NULL),
@@ -408,7 +409,7 @@ AstrobjProperties::AstrobjProperties() :
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 {}
 
-AstrobjProperties::AstrobjProperties( double * I, double * t) :
+Astrobj::Properties::Properties( double * I, double * t) :
   intensity(I), time(t), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
   redshift(NULL), rimpact(NULL),
@@ -416,7 +417,7 @@ AstrobjProperties::AstrobjProperties( double * I, double * t) :
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 {}
 
-void AstrobjProperties::init(size_t nbnuobs) {
+void Astrobj::Properties::init(size_t nbnuobs) {
   if (intensity)  *intensity  = 0.;
   if (time)       *time       = DBL_MAX;
   if (distance)   *distance   = DBL_MAX;
@@ -436,7 +437,7 @@ void AstrobjProperties::init(size_t nbnuobs) {
   if (user5)      *user5=0.;
 }
 
-AstrobjProperties AstrobjProperties::operator++() {
+Astrobj::Properties Astrobj::Properties::operator++() {
   if (intensity)  ++intensity;
   if (time)       ++time;
   if (distance)   ++distance;

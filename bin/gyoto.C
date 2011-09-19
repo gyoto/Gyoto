@@ -33,7 +33,7 @@ static int       status    = 0;
 static long      fpixel[]  = {1,1,1};
 static long      nelements = 0;
 static double*   vect      = NULL;
-static SmartPointer<AstrobjProperties> data = NULL;
+static SmartPointer<Astrobj::Properties> data = NULL;
 
 void usage() {
   cout << "Usage:" << endl <<
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
     curretval = 2;
     SmartPointer<Scenery> scenery = factory -> getScenery();
     SmartPointer<Screen>  screen = scenery->getScreen();
-    SmartPointer<Astrobj> object = scenery->getAstrobj();
+    SmartPointer<Astrobj::Generic> object = scenery->getAstrobj();
 
     if (xtobs) screen -> setTime        ( tobs );
     //      if (xtmin) screen -> setMinimumTime ( tmin );
@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
     if (status) return status;
 
     // Allocate space for the output data
-    data = new AstrobjProperties();
+    data = new Astrobj::Properties();
 
     size_t curquant=0;
     size_t offset=res*res;

@@ -34,7 +34,7 @@ namespace Gyoto {
   class Factory;
   class FactoryMessenger;
   namespace Metric { class Generic; }
-  class Astrobj;
+  namespace Astrobj { class Generic; }
   namespace Spectrum { class Generic ; }
   class Screen;
   class Photon;
@@ -82,13 +82,13 @@ class Gyoto::FactoryMessenger {
    */
   void setParameter(std::string name, double val[], size_t n,
 		    FactoryMessenger** child= NULL);
-  void setAstrobj(SmartPointer<Astrobj>);
+  void setAstrobj(SmartPointer<Astrobj::Generic>);
   void setScreen(SmartPointer<Screen>);
   void setMetric(SmartPointer<Metric::Generic>);
   SmartPointer<Metric::Generic>  getMetric  () ;
   SmartPointer<Screen>  getScreen  () ;
   SmartPointer<Photon>  getPhoton  () ;
-  SmartPointer<Astrobj> getAstrobj () ;
+  SmartPointer<Astrobj::Generic> getAstrobj () ;
   std::string fullPath(std::string) ;
 };
 

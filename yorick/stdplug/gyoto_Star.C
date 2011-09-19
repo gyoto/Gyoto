@@ -28,9 +28,10 @@
 using namespace std;
 
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 // on_eval worker
-void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj>* ao_, int argc) {
+void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   if (debug()) cerr << "in ygyoto_Star_eval" << endl;
   int rvset[1]={0}, paUsed[1]={0}, constructor=0;
 
@@ -283,7 +284,7 @@ extern "C" {
   Y_gyoto_Star(int argc)
   {
     if (debug()) cerr << "In Y_gyoto_Star" << endl;
-    SmartPointer<Astrobj> *ao = NULL;
+    SmartPointer<Astrobj::Generic> *ao = NULL;
     if (yarg_Astrobj(argc-1)) {
       ao = yget_Astrobj(--argc);
       if ((*ao)->getKind().compare("Star"))
@@ -297,7 +298,7 @@ extern "C" {
   Y_gyoto_Star_get_t(int n)
   {
     if (n!=1) y_error("gyoto_Star_get_t takes exactly 1 argument");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(0);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(0);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     SmartPointer<Star> st (*astrobj);
     int nel ;
@@ -313,7 +314,7 @@ extern "C" {
   Y_gyoto_Star_xFill(int n)
   {
     if (n!=2) y_error("gyoto_Star_xFill takes exactly 2 argument");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     double tlim=ygets_d(n-2);
     SmartPointer<Star> st (*astrobj);
@@ -326,7 +327,7 @@ extern "C" {
   {
     if (n<2) y_error("gyoto_Star_get_xyz takes at least 3 argument");
     if (n>4) y_error("gyoto_Star_get_xyz takes at most 5 arguments");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
 
     SmartPointer<Screen> *screen = yget_Screen(n-2);
@@ -360,7 +361,7 @@ extern "C" {
   {
     if (n<2) y_error("gyoto_Star_get_xyz takes at least 2 argument");
     if (n>4) y_error("gyoto_Star_get_xyz takes at most 4 arguments");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     long x_ref=yget_ref(n-2);
     long y_ref=yget_ref(n-3);
@@ -391,7 +392,7 @@ extern "C" {
   {
     if (n<2) y_error("gyoto_Star_get_coord takes at least 2 argument");
     if (n>5) y_error("gyoto_Star_get_coord takes at most 5 arguments");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     long x0_ref=yget_ref(n-2);
     long x1_ref=yget_ref(n-3);
@@ -426,7 +427,7 @@ extern "C" {
   {
     if (n<2) y_error("gyoto_Star_get_dot takes at least 2 argument");
     if (n>5) y_error("gyoto_Star_get_dot takes at most 5 arguments");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     long x0_ref=yget_ref(n-2);
     long x1_ref=yget_ref(n-3);
@@ -460,7 +461,7 @@ extern "C" {
   {
     if (n<2) y_error("gyoto_Star_get_prime takes at least 2 argument");
     if (n>4) y_error("gyoto_Star_get_prime takes at most 4 arguments");
-    SmartPointer<Astrobj> *astrobj=yget_Astrobj(n-1);
+    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
     if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
     long x1_ref=yget_ref(n-2);
     long x2_ref=yget_ref(n-3);
@@ -493,7 +494,7 @@ extern "C" {
       ypush_long(0);
       return;
     }
-    SmartPointer<Astrobj> *ao = yget_Astrobj(0);
+    SmartPointer<Astrobj::Generic> *ao = yget_Astrobj(0);
     ypush_long((*ao)->getKind() == "Star");
   }
 

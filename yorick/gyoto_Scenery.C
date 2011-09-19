@@ -306,7 +306,7 @@ extern "C" {
 	cerr <<","<<dims[2]<<","<<dims[3]<<"]"<<endl;
       }
 
-      AstrobjProperties prop;
+      Astrobj::Properties prop;
       size_t i, j;
       for ( k=0; k<nk-nbnuobs+has_sp+has_bsp; ++k ) {
 	if (debug()) cerr << "DEBUG: gyoto_Scenery(i,j,\"quantity\"): "
@@ -444,7 +444,7 @@ extern "C" {
     long dims[4]={3, res, res, 2};
 
     double * data=ypush_d(dims);
-    AstrobjProperties prop(data,data+res*res);
+    Astrobj::Properties prop(data,data+res*res);
 
     try {s_obj->scenery -> rayTrace(imin, imax, jmin, jmax, &prop);}
     YGYOTO_STD_CATCH;

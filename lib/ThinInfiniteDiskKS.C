@@ -31,14 +31,16 @@
 #include <cstring>
 #include <cmath>
 #include <limits>
+
 using namespace std;
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 ThinInfiniteDiskKS::ThinInfiniteDiskKS(const SmartPointer<Metric::KerrKS>& metric) :
-  Astrobj("ThinInfiniteDiskKS"), gg_(metric), Lr_(0.)
+  Generic("ThinInfiniteDiskKS"), gg_(metric), Lr_(0.)
 {
   if (debug()) cout << "ThinInfiniteDiskKS Construction" << endl;
-  Astrobj::gg_=gg_;
+  Generic::gg_=gg_;
 
   double aa=gg_->getSpin(), aa2=aa*aa;
   //ISCO radius, see Bardeen et al. 72, (2.21)
@@ -50,11 +52,11 @@ ThinInfiniteDiskKS::ThinInfiniteDiskKS(const SmartPointer<Metric::KerrKS>& metri
 }
 
 ThinInfiniteDiskKS::ThinInfiniteDiskKS(const ThinInfiniteDiskKS& o) :
-  Astrobj(o),
+  Generic(o),
   gg_(NULL), Lr_(o.Lr_), rmin_(o.rmin_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
-  Astrobj::gg_=gg_;
+  Generic::gg_=gg_;
 }
 ThinInfiniteDiskKS* ThinInfiniteDiskKS::clone() const
 { return new ThinInfiniteDiskKS(*this); }
@@ -64,7 +66,7 @@ ThinInfiniteDiskKS::~ThinInfiniteDiskKS() {
 }
 
 int ThinInfiniteDiskKS::Impact(Photon *ph, size_t index,
-			       AstrobjProperties *data) {
+			       Astrobj::Properties *data) {
   double coord_ph_hit[8], coord_obj_hit[8];
   double frac, rcross;
   double coord1[8], coord2[8];
@@ -145,10 +147,10 @@ double ThinInfiniteDiskKS::emission(double, double, double coord_ph[8],
 #ifdef GYOTO_USE_XERCES
 void ThinInfiniteDiskKS::fillElement(FactoryMessenger *fmp) const {
   fmp->setMetric(gg_);
-  Astrobj::fillElement(fmp);
+  Generic::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> ThinInfiniteDiskKS::Subcontractor(FactoryMessenger* fmp) {
+SmartPointer<Astrobj::Generic> ThinInfiniteDiskKS::Subcontractor(FactoryMessenger* fmp) {
   string name, content;
   SmartPointer<ThinInfiniteDiskKS> ao =
     new ThinInfiniteDiskKS(fmp->getMetric());
@@ -160,7 +162,7 @@ SmartPointer<Astrobj> ThinInfiniteDiskKS::Subcontractor(FactoryMessenger* fmp) {
   return ao;
 }
 
-void Gyoto::ThinInfiniteDiskKS::Init() {
+void Gyoto::Astrobj::ThinInfiniteDiskKS::Init() {
   Astrobj::Register("ThinInfiniteDiskKS", &Subcontractor);
 }
 #endif

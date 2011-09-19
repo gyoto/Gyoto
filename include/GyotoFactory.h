@@ -72,7 +72,7 @@ class Gyoto::Factory
   SmartPointer<Scenery> scenery_;
   SmartPointer<Metric::Generic> gg_;
   SmartPointer<Screen> screen_;
-  SmartPointer<Astrobj> obj_;
+  SmartPointer<Astrobj::Generic> obj_;
   SmartPointer<Photon> photon_;
   SmartPointer<Spectrometer> spectro_;
 
@@ -87,7 +87,7 @@ class Gyoto::Factory
   // Constructors for SAVING
   Factory(SmartPointer<Scenery> sc);
   Factory(SmartPointer<Metric::Generic> gg);
-  Factory(SmartPointer<Astrobj> ao);
+  Factory(SmartPointer<Astrobj::Generic> ao);
   Factory(SmartPointer<Spectrum::Generic> sp);
   Factory(SmartPointer<Screen> screen);
   Factory(SmartPointer<Photon> photon);
@@ -110,10 +110,10 @@ class Gyoto::Factory
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
   Gyoto::SmartPointer<Gyoto::Metric::Generic>  getMetric();
   Gyoto::SmartPointer<Gyoto::Screen>  getScreen();
-  Gyoto::SmartPointer<Gyoto::Astrobj> getAstrobj();
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> getAstrobj();
   Gyoto::SmartPointer<Gyoto::Photon>  getPhoton();
   Gyoto::SmartPointer<Gyoto::Spectrum::Generic>  getSpectrum();
-  Gyoto::SmartPointer<Gyoto::AstrobjProperties> getAstrobjProperties();
+  Gyoto::SmartPointer<Gyoto::Astrobj::Properties> getAstrobjProperties();
 
   // XML OUTPUT
   void write(const char* const fname=0);
@@ -121,7 +121,7 @@ class Gyoto::Factory
 
   // Setting elements
   void setMetric(SmartPointer<Metric::Generic> gg, xercesc::DOMElement *el);
-  void setAstrobj(SmartPointer<Astrobj> ao, xercesc::DOMElement *el);
+  void setAstrobj(SmartPointer<Astrobj::Generic> ao, xercesc::DOMElement *el);
   void setScreen(SmartPointer<Screen> scr, xercesc::DOMElement *el);
   void setContent(std::string content, xercesc::DOMElement *el);
   void setParameter(std::string name, xercesc::DOMElement *pel);

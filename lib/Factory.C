@@ -253,7 +253,7 @@ SmartPointer<Gyoto::Metric::Generic> Factory::getMetric() {
 }
 
 
-SmartPointer<Gyoto::Astrobj> Factory::getAstrobj(){
+SmartPointer<Gyoto::Astrobj::Generic> Factory::getAstrobj(){
     
   if (!obj_) {
     DOMXPathResult* result;
@@ -450,7 +450,7 @@ Factory::Factory(SmartPointer<Metric::Generic> gg)
 
 }
 
-Factory::Factory(SmartPointer<Astrobj> ao)
+Factory::Factory(SmartPointer<Astrobj::Generic> ao)
   : reporter_(NULL), parser_(NULL), resolver_(NULL), gg_el_(NULL),
     scenery_(NULL), gg_(NULL), obj_(ao), photon_(NULL),
     spectro_(NULL), filename_("")
@@ -544,7 +544,7 @@ void Factory::setMetric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 
 }
 
-void Factory::setAstrobj(SmartPointer<Astrobj> ao, DOMElement *el) {
+void Factory::setAstrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
 
   if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
   if (ao && !obj_el_) {
@@ -800,7 +800,7 @@ FactoryMessenger* FactoryMessenger::getChild() const {
   return new FactoryMessenger(employer_, currentElement);
 }
 
-void FactoryMessenger::setAstrobj(SmartPointer<Astrobj> gg) {
+void FactoryMessenger::setAstrobj(SmartPointer<Astrobj::Generic> gg) {
   employer_ -> setAstrobj (gg, element_);
 }
 
@@ -824,7 +824,7 @@ SmartPointer<Photon> FactoryMessenger::getPhoton() {
   return employer_ -> getPhoton ();
 }
 
-SmartPointer<Astrobj> FactoryMessenger::getAstrobj() {
+SmartPointer<Astrobj::Generic> FactoryMessenger::getAstrobj() {
   return employer_ -> getAstrobj ();
 }
 

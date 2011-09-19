@@ -34,9 +34,10 @@
 
 using namespace std;
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 Star::Star() :
-  Astrobj("Star"),
+  Astrobj::Generic("Star"),
   spectrum_(NULL),
   opacity_(NULL)
 {
@@ -52,7 +53,7 @@ Star::Star() :
 Star::Star(SmartPointer<Metric::Generic> met, double rad,
 	   double pos[4],
 	   double v[3]) :
-  Astrobj("Star"),
+  Astrobj::Generic("Star"),
   radius_(rad),
   spectrum_(NULL), opacity_(NULL)
 {
@@ -85,7 +86,7 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 }
 
 Star::Star(const Star& orig) :
-  Astrobj(orig), Worldline(orig),
+  Astrobj::Generic(orig), Worldline(orig),
   radius_(orig.radius_)
 {
   if (debug()) cerr << "Star copy" << endl;
@@ -148,7 +149,7 @@ double Star::operator()(double const coord[4]) {
   return dx*dx + dy*dy + dz*dz;
 }
 
-int Star::Impact_(Photon *ph, size_t index, AstrobjProperties *data) {
+int Star::Impact_(Photon *ph, size_t index, Astrobj::Properties *data) {
   //xyz coord from BL
   double coord_ph_hit[8], coord_obj_hit[8];
   double p1[8], p2[8];
@@ -512,10 +513,10 @@ void Star::fillElement(FactoryMessenger *fmp) const {
   opacity_ -> fillElement(childfmp);
   delete childfmp;
 
-  Astrobj::fillElement(fmp);
+  Astrobj::Generic::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> Gyoto::Star::Subcontractor(FactoryMessenger* fmp) {
+SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Star::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   int pos_found=0, vel_found=0;
@@ -569,7 +570,7 @@ SmartPointer<Astrobj> Gyoto::Star::Subcontractor(FactoryMessenger* fmp) {
   return st;
 }
 
-void Gyoto::Star::Init() {
-  Gyoto::Astrobj::Register("Star", &Gyoto::Star::Subcontractor);
+void Gyoto::Astrobj::Star::Init() {
+  Gyoto::Astrobj::Register("Star", &Gyoto::Astrobj::Star::Subcontractor);
 }
 #endif

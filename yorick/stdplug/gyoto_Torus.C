@@ -22,12 +22,13 @@
 #include "yapi.h"
 
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 #include <iostream>
 using namespace std;
 
 // on_eval worker
-void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj>* ao_, int argc) {
+void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
   if (!ao_) { // Constructor mode
     ao_ = ypush_Astrobj();
@@ -112,7 +113,7 @@ extern "C" {
   void
   Y_gyoto_Torus(int argc)
   {
-    SmartPointer<Astrobj> *ao = NULL;
+    SmartPointer<Astrobj::Generic> *ao = NULL;
     if (yarg_Astrobj(argc-1)) {
       ao = yget_Astrobj(--argc);
       if ((*ao)->getKind().compare("Torus"))

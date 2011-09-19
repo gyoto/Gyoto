@@ -33,17 +33,25 @@
 #include <iomanip>
 #include <string>
 
-namespace Gyoto{
-  class Photon;
-  class Astrobj;
-  class AstrobjProperties;
-  namespace Metric { class Generic; }
-  class FactoryMessenger;
-  namespace Register { class Entry; }
-}
-
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
+
+namespace Gyoto{
+  class Photon;
+  namespace Register { class Entry; }
+  namespace Metric { class Generic; }
+  class FactoryMessenger;
+  namespace Astrobj {
+    class Generic;
+    class Properties;
+    typedef SmartPointer<Gyoto::Astrobj::Generic>
+      Subcontractor_t(Gyoto::FactoryMessenger*);
+    Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name);
+    extern Gyoto::Register::Entry * Register_;
+    void initRegister(); 
+    void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
+  }
+}
 
 /**
  * \class Gyoto::Astrobj
@@ -84,8 +92,8 @@ namespace Gyoto{
  *    - transmission().
  *
  */
-class Gyoto::Astrobj : protected Gyoto::SmartPointee {
-  friend class Gyoto::SmartPointer<Gyoto::Astrobj>;
+class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
   
   // Data : 
   // -----
@@ -138,22 +146,22 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
   /**
    *  kind_ =  "Default", rmax_ = 0., rmax_set_ = 0.
    */
-  Astrobj(); ///< Default constructor.
+  Generic(); ///< Default constructor.
 
   /**
    *  kind_ =  "Default", rmax_ = radmax, rmax_set_ = 1.
    */
-  Astrobj(double radmax); ///< Set rmax in constructor.
+  Generic(double radmax); ///< Set rmax in constructor.
 
   /**
    *  kind_ =  kind, rmax_ = 0., rmax_set_ = 0.
    */
-  Astrobj(std::string kind); ///< Set kind in constructor.
+  Generic(std::string kind); ///< Set kind in constructor.
 
-  Astrobj(const Astrobj& ) ; ///< Copy constructor.
-  virtual Astrobj* clone() const; ///< "Virtual" copy constructor
+  Generic(const Generic& ) ; ///< Copy constructor.
+  virtual Generic* clone() const; ///< "Virtual" copy constructor
   
-  virtual ~Astrobj() ; ///< Destructor: does nothing.
+  virtual ~Generic() ; ///< Destructor: does nothing.
 
   // Accessors
   // ---------
@@ -248,7 +256,7 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
    * \return 1 if impact, 0 if not.
    */
   virtual int Impact(Gyoto::Photon* ph, size_t index,
-		     AstrobjProperties *data=NULL)  ;
+		     Astrobj::Properties *data=NULL)  ;
   ///< does a photon at these coordinates impact the object?
 
 
@@ -296,7 +304,7 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
    */
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
 				    double* coord_obj_hit, double dt,
-				    AstrobjProperties* data) const;
+				    Astrobj::Properties* data) const;
 
   /**
    * Not part of the API, called by the default implementation for
@@ -358,26 +366,17 @@ class Gyoto::Astrobj : protected Gyoto::SmartPointee {
   // Display
   //friend std::ostream& operator<<(std::ostream& , const Astrobj& ) ;
 
-  ///// REGISTER STUFF ///////
-  public:
-  typedef Gyoto::SmartPointer<Gyoto::Astrobj>
-    Subcontractor_t(Gyoto::FactoryMessenger*);
-
-  static Gyoto::Register::Entry * Register_;
-  static void initRegister(); 
-  static void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
-  static Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name);
 };
 
 /**
- * \class Gyoto::AstrobjProperties
+ * \class Gyoto::Astrobj::Properties
  * \brief Observable properties of an Astronomical object
  *
  *  The sort of properties one wants to measure on a ray-traced Gyoto::Photon which hits a Gyoto::Astrobj. Not all Astrobj are able to fill all of these properties.
  *
  */
-class Gyoto::AstrobjProperties : protected Gyoto::SmartPointee {
-  friend class Gyoto::SmartPointer<Gyoto::AstrobjProperties>;
+class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Properties>;
  public:
   double *intensity; ///< Apparent intensity (takes beaming into account); 
   double *time; ///< Date of impact (= date of emission of the photon);
@@ -392,10 +391,10 @@ class Gyoto::AstrobjProperties : protected Gyoto::SmartPointee {
   double *x, *y, *z; ///< Cartesian coordinates of the Photon at impact;
   double *user1, *user2, *user3, *user4, *user5; ///< Quantities specific to Astrobj
  public:
-  AstrobjProperties(); ///< Default constructor (everything is set to NULL);
-  AstrobjProperties (double*, double*); ///<< set intensity and time pointers.
+  Properties(); ///< Default constructor (everything is set to NULL);
+  Properties (double*, double*); ///<< set intensity and time pointers.
   void init(size_t nbnuobs=0);
-  AstrobjProperties operator++();
+  Properties operator++();
 };
 
 #endif

@@ -35,8 +35,9 @@
 
 using namespace std;
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
-FixedStar::FixedStar() : Astrobj("FixedStar"), radius_(0),
+FixedStar::FixedStar() : Generic("FixedStar"), radius_(0),
 			 use_generic_impact_(0)
 {
   if (debug())
@@ -49,7 +50,7 @@ FixedStar::FixedStar() : Astrobj("FixedStar"), radius_(0),
 
 FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 		     double rad) :
-  Astrobj("FixedStar"), radius_(rad), use_generic_impact_(0)
+  Generic("FixedStar"), radius_(rad), use_generic_impact_(0)
 {
   if (debug())
     cerr << "DEBUG: in FixedStar::FixedStar(metric, pos, rad)" << endl;
@@ -61,7 +62,7 @@ FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 }
 
 FixedStar::FixedStar(const FixedStar& orig) :
-  Astrobj(orig), radius_(orig.radius_),
+  Generic(orig), radius_(orig.radius_),
   use_generic_impact_(orig.use_generic_impact_)
 {
   for (int i=0; i<3; ++i) pos_[i] = orig.pos_[i];
@@ -110,15 +111,15 @@ double FixedStar::operator()(double const coord[4]) {
 
   return dx*dx + dy*dy + dz*dz;
 }
-int FixedStar::Impact(Photon *ph, size_t index, AstrobjProperties *data) {
+int FixedStar::Impact(Photon *ph, size_t index, Astrobj::Properties *data) {
   if (debug())
     cerr << "DEBUG: FixedStar::Impact(): use_generic_impact_="
 	 << use_generic_impact_ << endl;
-  if (use_generic_impact_) return Astrobj::Impact(ph, index, data);
+  if (use_generic_impact_) return Generic::Impact(ph, index, data);
   return Impact_(ph, index, data);
 }
 
-int FixedStar::Impact_(Photon *ph, size_t index, AstrobjProperties *data) {
+int FixedStar::Impact_(Photon *ph, size_t index, Astrobj::Properties *data) {
   // coord2 is the coordinate of the photon at index, coord1 the previous location.
   double coord2[8], coord1[8], coord_ph_hit[8], coord_obj_hit[8];
   ph->getCoord(index, coord1);
@@ -258,7 +259,7 @@ void FixedStar::getPos(double dst[3]) const
 void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
  if (debug())
    cerr << "DEBUG: in FixedStar::setMetric(gg)\n";
- Astrobj::setMetric(gg);
+ Generic::setMetric(gg);
  setRadius(radius_);
 }
 
@@ -297,10 +298,10 @@ void FixedStar::fillElement(FactoryMessenger *fmp) const {
   fmp -> setParameter ("Radius", getRadius());
   fmp -> setParameter ("Position", const_cast<double*>(pos_), 3);
   if (use_generic_impact_) fmp -> setParameter ("UseGenericImpact");
-  Astrobj::fillElement(fmp);
+  Generic::fillElement(fmp);
 }
 
-SmartPointer<Astrobj> Gyoto::FixedStar::Subcontractor(FactoryMessenger* fmp) {
+SmartPointer<Astrobj::Generic> Gyoto::Astrobj::FixedStar::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
 
@@ -325,7 +326,7 @@ SmartPointer<Astrobj> Gyoto::FixedStar::Subcontractor(FactoryMessenger* fmp) {
 
 }
 
-void Gyoto::FixedStar::Init() {
-  Gyoto::Astrobj::Register("FixedStar", &Gyoto::FixedStar::Subcontractor);
+void Gyoto::Astrobj::FixedStar::Init() {
+  Gyoto::Astrobj::Register("FixedStar", &Gyoto::Astrobj::FixedStar::Subcontractor);
 }
 #endif

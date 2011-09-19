@@ -205,7 +205,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   if ((iarg=kiargs[++k])>=0) { // is_hit=whatever
     if (debug()) cerr << "     is_hit=" << endl;
     if ((*rvset)++) y_error(rmsg);
-    AstrobjProperties junk;
+    Astrobj::Properties junk;
     ypush_int((*ph)->hit(&junk));
   }
 
@@ -430,7 +430,7 @@ extern "C" {
   {  //(Metric*, Astrobj*, coord[8], sys);
     gyoto_Photon  *phobj =(gyoto_Photon*) yget_obj(n-1, &gyoto_Photon_obj);
     SmartPointer<Metric::Generic> *gg = yget_Metric(n-2);
-    SmartPointer<Astrobj> *astrobj = yget_Astrobj(n-3);
+    SmartPointer<Astrobj::Generic> *astrobj = yget_Astrobj(n-3);
 
     if (n==4) {
       long ntot=1;

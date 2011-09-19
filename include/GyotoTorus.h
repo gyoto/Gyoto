@@ -1,5 +1,5 @@
 /**
- * \file GyotoCircularTorus.h
+ * \file GyotoTorus.h
  * \brief A simple torus
  *
  */
@@ -32,7 +32,7 @@
 #include <string>
 
 namespace Gyoto{
-  class Torus;
+  namespace Astrobj { class Torus; }
 }
 
 #include <GyotoAstrobj.h>
@@ -42,8 +42,8 @@ namespace Gyoto{
 /**
  * \class Gyoto::Torus
  */
-class Gyoto::Torus : public Gyoto::Astrobj {
-  friend class Gyoto::SmartPointer<Gyoto::Torus>;
+class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Torus>;
   
   
   // Data : 

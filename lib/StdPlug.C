@@ -35,11 +35,11 @@ extern "C" void __GyotostdplugInit() {
   Gyoto::Metric::KerrBL::Init();
   Gyoto::Metric::KerrKS::Init();
   // Register Astrobjs
-  Gyoto::Star::Init();
-  Gyoto::FixedStar::Init();
-  Gyoto::ThinInfiniteDiskBL::Init();
-  Gyoto::ThinInfiniteDiskKS::Init();
-  Gyoto::Torus::Init();
+  Gyoto::Astrobj::Star::Init();
+  Gyoto::Astrobj::FixedStar::Init();
+  Gyoto::Astrobj::ThinInfiniteDiskBL::Init();
+  Gyoto::Astrobj::ThinInfiniteDiskKS::Init();
+  Gyoto::Astrobj::Torus::Init();
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();
   Gyoto::Spectrum::BlackBodyInit();

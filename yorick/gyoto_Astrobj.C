@@ -38,7 +38,7 @@ extern "C" {
   // ASTROBJ CLASS
   // Opaque Yorick object
   typedef struct gyoto_Astrobj {
-    SmartPointer<Astrobj> astrobj;
+    SmartPointer<Astrobj::Generic> astrobj;
     //char type[YGYOTO_TYPE_LEN];
   } gyoto_Astrobj;
   void gyoto_Astrobj_free(void *obj) {
@@ -71,7 +71,7 @@ extern "C" {
 
     // Try calling kind-specific worker
     int n=0;
-    SmartPointer<Astrobj> * ao = &(((gyoto_Astrobj*)obj)->astrobj);
+    SmartPointer<Astrobj::Generic> * ao = &(((gyoto_Astrobj*)obj)->astrobj);
     const string kind = (*ao)->getKind();
 
     while (n<ygyoto_Astrobj_count && kind.compare(ygyoto_Astrobj_names[n])) ++n;
@@ -111,11 +111,11 @@ extern "C" {
 
 }
 
-SmartPointer<Astrobj>* yget_Astrobj(int iarg) {
+SmartPointer<Astrobj::Generic>* yget_Astrobj(int iarg) {
   return &(((gyoto_Astrobj*)yget_obj(iarg, &gyoto_Astrobj_obj))->astrobj);
 }
 
-SmartPointer<Astrobj>* ypush_Astrobj() {
+SmartPointer<Astrobj::Generic>* ypush_Astrobj() {
   return &(((gyoto_Astrobj*)ypush_obj(&gyoto_Astrobj_obj, sizeof(gyoto_Astrobj)))->astrobj);
 }
 
@@ -136,7 +136,7 @@ void ygyoto_Astrobj_register(char const*const name, ygyoto_Astrobj_eval_worker_t
   ygyoto_Astrobj_evals[ygyoto_Astrobj_count++]=on_eval;
 }
 
-void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj>*ao,
+void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed) {
   int k=-1, iarg;
@@ -215,7 +215,7 @@ extern "C" {
   void Y_gyoto_Astrobj(int argc) 
   {
     int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Astrobj> *ao = NULL;
+    SmartPointer<Astrobj::Generic> *ao = NULL;
     //    char *obj_type=(char*)yget_obj(argc-1,0);
     //    if (obj_type && //!strcmp(obj_type, "gyoto_Astrobj")) {
     //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {

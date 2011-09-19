@@ -32,7 +32,7 @@
 #include <iomanip>
 
 namespace Gyoto{
-  class ThinInfiniteDiskKS;
+  namespace Astrobj { class ThinInfiniteDiskKS; }
 }
 
 //#include <GyotoMetric.h>
@@ -47,8 +47,8 @@ namespace Gyoto{
  *   The metric is supposed to be KerrKS.
  * 
  */
-class Gyoto::ThinInfiniteDiskKS : public Astrobj {
-  friend class Gyoto::SmartPointer<Gyoto::ThinInfiniteDiskKS>;
+  class Gyoto::Astrobj::ThinInfiniteDiskKS : public Astrobj::Generic {
+    friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinInfiniteDiskKS>;
 
   /*
    */
@@ -86,7 +86,7 @@ class Gyoto::ThinInfiniteDiskKS : public Astrobj {
   // Accessors
   // ---------
  public:
-  virtual int Impact(Photon *ph, size_t index, AstrobjProperties *data=NULL);
+  virtual int Impact(Photon *ph, size_t index, Astrobj::Properties *data=NULL);
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
   // Outputs
