@@ -289,6 +289,9 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
       if (fabs(h1)<h1min) h1=h0>0?h1min:-h1min;
       if (fabs(h1)>h1max) h1=h0>0?h1max:-h1max;
  
+      /* !!! Don't remove the line below !!!*/
+      /* Although it should be useless, removing it renders the Metric
+	 useless under Linux! Further investigation is needed...*/
       newnorm=ScalarProd(coord1, coord1+4, coord1+4);
 
       //This "norm check" is trash, it's of no use, except to slow down drastically the computation (even with it, the norm can be very bad)
