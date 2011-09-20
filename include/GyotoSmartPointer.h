@@ -82,8 +82,23 @@ class Gyoto::SmartPointee
   void incRefCount () ; ///< Increment the reference counter. Warning: Don't mess with the counter.
   int decRefCount () ;  ///< Decrement the reference counter and return current value. Warning: Don't mess with the counter.
   int getRefCount () ;  ///< Get the current number of references
+  /**
+   * Various classes need to provide a subcontractor to be able to
+   * instanciate themselves upon order from the Factory. A
+   * subcontractor is a function (often a static member function)
+   * which accepts a pointer to a FactoryMessenger as unique
+   * parameter, communicates with the Factory using this messenger to
+   * read an XML description of the object to build, and returns this
+   * objet. SmartPointee::Subcontractor_t* is just generic enough a
+   * typedef to cast to and from other subcontractor types:
+   * Astrobj::Subcontractor_t, Metric::Subcontractor_t,
+   * Spectrum::Subcontractor_t. A subcontractor needs to be registered
+   * using the relevant Register() function: Astrobj::Register(),
+   * Metric::Register(), Spectrum::Register().
+   */
   typedef Gyoto::SmartPointer<Gyoto::SmartPointee>
     Subcontractor_t(Gyoto::FactoryMessenger*);
+  ///< A subcontractor builds an object upon order from the Factory
 
 };
 

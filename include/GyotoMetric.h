@@ -41,19 +41,77 @@
 namespace Gyoto {
   namespace Metric {
     class Generic;
+
+    /**
+     * This is a more specific version of the
+     * SmartPointee::Subcontractor_t type. A Metric::Subcontrator_t is
+     * called by the Gyoto::Factory to build an instance of the kind
+     * of metric specified in an XML file (see Register()). The
+     * Factory and Subcontractor_t function communicate through a
+     * Gyoto::FactoryMessenger.
+     */
     typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
-    Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string);
+    ///< A function to build instances of a specific Metric::Generic sub-class
+
+    /**
+     * Query the Metric register to get the Metric::Subcontractor_t
+     * correspondig to a given kind name. This function is normally
+     * called only from the Factory.
+     *
+     * \param name e.g. "KerrBL"
+     * \return pointer to the corresponding subcontractor.
+     */
+    Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name);
+    ///< Query the Metric register
+
+    /**
+     * Use the Metric::initRegister() once in your program to
+     * initiliaze it, the Metric::Register() function to fill it, and
+     * the Metric::getSubcontractor() function to query it.
+     */
     extern Register::Entry * Register_;
-    void Register(std::string, Gyoto::Metric::Subcontractor_t*);
-    void initRegister();
+    ///< The Metric register
+
+    /**
+     * Register a new Metric::Generic sub-class so that the
+     * Gyoto::Factory knows it.
+     *
+     * \param name The kind name which identifies this object type in
+     * an XML file, as in &lt;Metric kind="name"&gt;
+     *
+     * \param scp A pointer to the subcontractor, which will
+     * communicate whith the Gyoto::Factory to build an instance of
+     * the class from its XML description
+     */
+     void Register(std::string kind, Gyoto::Metric::Subcontractor_t*);
+     ///< Make a Metric kind known to the Factory
+
+     /**
+      *  This must be called once.
+      */
+     void initRegister(); ///< Empty the Metric register.
   }
 }
 
 /**
- * \class Gyoto::Metric
+ * \namespace Gyoto::Metric
+ * \brief Access to metrics
+ * 
+ * Objects which describe space-time geometry must inherit from the
+ * Gyoto::Metric::Generic class.
+ *
+ * To be usable, a Metric::Generic sub-class should register a
+ * Metric::Subcontractor_t function using the Metric::Register()
+ * function. See also \ref writing_plugins_page .
+ */
+/**
+ * \class Gyoto::Metric::Generic
  * \brief Base class for metrics
  *
- * Example: class Gyoto::Kerr 
+ * Example: class Gyoto::Kerr
+ *
+ * See Gyoto::Metric for an introduction.
+ *
  */
 class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;

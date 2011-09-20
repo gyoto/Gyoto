@@ -44,57 +44,113 @@ namespace Gyoto{
   namespace Astrobj {
     class Generic;
     class Properties;
+
+    /**
+     * This is a more specific version of the SmartPointee::Subcontractor_t
+     * type. An Astrobj::Subcontrator_t is called by the
+     * Gyoto::Factory to build an instance of the kind of astronomical
+     * object specified in an XML file (see Register()). The Factory
+     * and Subcontractor_t function communicate through a
+     * Gyoto::FactoryMessenger.
+     */
     typedef SmartPointer<Gyoto::Astrobj::Generic>
       Subcontractor_t(Gyoto::FactoryMessenger*);
+    ///< A function to build instances of a specific Astrobj::Generic sub-class
+ 
+   /**
+     * Query the Astrobj register to get the Astrobj::Subcontractor_t
+     * correspondig to a given kind name. This function is normally
+     * called only from the Factory.
+     *
+     * \param name e.g. "Star"
+     * \return pointer to the corresponding subcontractor.
+     */
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name);
+    ///< Query the Astrobj register
+
+    /**
+     * Use the Astrobj::initRegister() once in your program to
+     * initiliaze it, the Astrobj::Register() function to fill it, and
+     * the Astrobj::getSubcontractor() function to query it.
+     */
     extern Gyoto::Register::Entry * Register_;
+    ///< The Astrobj register
+
+     /**
+      *  This must be called once.
+      */
     void initRegister(); 
+    ///< Empty the Astrobj register
+
+    /**
+     * Register a new Astrobj::Generic sub-class so that the
+     * Gyoto::Factory knows it.
+     *
+     * \param name The kind name which identifies this object type in
+     * an XML file, as in &lt;Astrobj kind="name"&gt;
+     *
+     * \param scp A pointer to the subcontractor, which will
+     * communicate whith the Gyoto::Factory to build an instance of
+     * the class from its XML description
+     */
     void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
+    ///< Make an Astrobj kind known to the Factory
   }
 }
 
 /**
- * \class Gyoto::Astrobj
- * \brief Astronomical object
+ * \namespace Gyoto::Astrobj
+ * \brief Access to astronomical objects 
  *
  *  Objects which are supposed to be the target of the ray-tracing
- *  code should inherit from this class.
+ *  code should inherit from the Gyoto::Astrobj::Generic class.
  *
  *  When implementing a new object, you must:
  *    - make sure the object can be loaded from XML by providing a
- *      subcontractor;
+ *      Subcontractor_t using the Gyoto::Astrobj::Register(std::string
+ *      name, Gyoto::Astrobj::Subcontractor_t* scp) function;
  *    - make sure this subcontractor is registerred in the initialization
  *      routine of your plug-in;
- *    - make sure Impact() works (see below).
+ *    - make sure  Generic::Impact() works (see below).
  *
  *  In addition, you should make sure that your object plays nicely in
  *  the Yorick plug-in, which means:
- *    - implement the copy constructor and the clone() method;
+ *    - implement the copy constructor and the Generic::clone() method;
  *    - implement the fillElement method, used for printing and saving to
  *      XML.
  *
- *  There are basically two ways of making Impact() work: either by
- *  providing your own Impact() function, or by implementing a bunch
+ *  There are basically two ways of making Generic::Impact() work: either by
+ *  providing your own Generic::Impact() function, or by implementing a bunch
  *  of lower level, simpler functions which are used by the generic
- *  Astrobj::Impact(). Those lower functions are not pure virtual, but
+ *  Generic::Impact(). Those lower functions are not pure virtual, but
  *  the default throws a runtime error:
- *    - operator()() yields a distance or potential defining the interior
+ *    - Generic::operator()() yields a distance or potential defining the interior
  *      of the object;
- *    - getVelocity() yields the velocity field of the fluid ;
- *    - processHitQuantities() fills the Spectrum etc. quantities in the
- *      data parameter of Impact().
+ *    - Generic::getVelocity() yields the velocity field of the fluid ;
+ *    - Generic::processHitQuantities() fills the Spectrum etc. quantities in the
+ *      data parameter of Generic::Impact().
  *
- *  processHitQuantities() itself is like Impact() in that you have
+ *  Generic::processHitQuantities() itself is like Generic::Impact() in that you have
  *  two choices: either reimplement it or implement a second lot of
  *  small, low-level functions:
- *    - emission();
- *    - integrateEmission();
- *    - transmission().
+ *    - Generic::emission();
+ *    - Generic::integrateEmission();
+ *    - Generic::transmission().
  *
+ * To be usable, a Astrobj::Generic sub-classes should register an
+ * Astrobj::Subcontractor_t function using the Astrobj::Register()
+ * function. See also \ref writing_plugins_page .
+ */
+/**
+ * \class Gyoto::Astrobj::Generic
+ * \brief Astronomical object
+ *
+ * See introduction in the Gyoto::Astrobj namespace.
  */
 class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
-  
+
+
   // Data : 
   // -----
  protected:

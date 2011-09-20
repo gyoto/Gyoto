@@ -4,8 +4,7 @@
  * \file GyotoFactory.h
  * \brief XML I/O
  *
- * Whenever implementing a new Astrobj or Metric, it's XML equivalent
- * should be implemented here.
+ * The Factory is a place where objects are built
  *
  */
 /*
@@ -49,6 +48,52 @@ namespace Gyoto {
   class Spectrometer;
 }
 
+/**
+ * \class Gyoto::Factory
+ * \brief XML input/output
+ *
+ * The Factory is responsible from building objects from their XML
+ * description, and from saving an XML description of existing
+ * objects. Since the Factory doesn't know how to build the variety of
+ * objects available in Gyoto and in external plug-ins, the Factory
+ * orders Metric, Astrobj and Spectrum objects from registered
+ * subcontractors (see SmartPointee::Subcontractor_t). The factory an the
+ * various subcontractors communicate through a FactoryMessenger.
+ *
+ * To read an XML file, you simply create an instance of the Factory
+ * with a filename, and get whichever object type you are interested
+ * in:
+ * \code
+Gyoto::Factory * factory = new Gyoto::Factory("some/input/file.xml");
+const std::string kind = factory->getKind();
+if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
+Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
+Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->getScreen();
+Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->getAstrobj();
+Gyoto::SmartPointer<Gyoto::Metric::Generic> object = scenery->getMetric();
+delete factory; factory=NULL;
+ * \endcode or, for a single object and without checking the kind
+ * (getKind()) first:
+\code
+Gyoto::SmartPointer<Gyoto::Scenery> scenery = Factory("some/input/file.xml").getScenery();
+\endcode
+ *
+ *
+ * Writing an object to a fie is even easier. Assuming "object" below
+ * is a Gyoto::SmartPointer<class> where "class" is one of Scenery,
+ * Metric::Generic, Astrobj::Generic, Spectrum::Generic, Screen,
+ * Photon or Spectrometer:
+ * \code
+Gyoto::Factory * factory = new Gyoto::Factory(object);
+factory -> write("some/output/file.xml");
+delete factory; factory=NULL;
+ * \endcode
+ *
+ * or, for short:
+ * \code
+Gyoto::Factory(object).write("some/output/file.xml");
+ * \endcode
+ */
 class Gyoto::Factory
 {
   friend class Gyoto::FactoryMessenger;
@@ -71,7 +116,7 @@ class Gyoto::Factory
   // GYOTO elements
   SmartPointer<Scenery> scenery_;
   SmartPointer<Metric::Generic> gg_;
-  SmartPointer<Screen> screen_;
+  SmartPointer<Screen> screen_; 
   SmartPointer<Astrobj::Generic> obj_;
   SmartPointer<Photon> photon_;
   SmartPointer<Spectrometer> spectro_;
@@ -103,8 +148,8 @@ class Gyoto::Factory
   xercesc::DOMDocument* getDoc();
 
  public:
-  // Name of TOP-LEVEL object (Scenery, Metric, Astrobj...)
   const std::string getKind();
+  ///< Name of TOP-LEVEL object (Scenery, Metric, Astrobj...)
 
   // Building and getting SmartPointer<OBJECTS>
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();

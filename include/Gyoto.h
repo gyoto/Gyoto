@@ -55,8 +55,8 @@
  * OS. It should compile and run with moderate effort on most
  * UNIX-like systems.
  *
- * Gyoto can be expanded with plug-ins providing custom Gyoto::Metric,
- * Gyoto::Astrobj and Gyoto::Spectrum::Generic classes, which describe
+ * Gyoto can be expanded with plug-ins providing custom Gyoto::Metric::Generic,
+ * Gyoto::Astrobj::Generic and Gyoto::Spectrum::Generic classes, which describe
  * respectively analytical or numerical metrics, astronomical objects,
  * and spectral shapes for astronomical objects (see \ref
  * writing_plugins_page).
@@ -82,7 +82,7 @@
  * code base. Contributors will be listed in the relevant source files as
  * well as in the AUTHORS file in the package.
  *
- *   Gyoto is Copyright 2011 Thibaut Paumard, Frederic Vincent.
+ *   Gyoto is Copyright 2011 Thibaut Paumard, Fr&eacute;d&eacute;ric Vincent.
  *
  *  Gyoto is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
