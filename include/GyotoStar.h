@@ -1,9 +1,10 @@
 /**
  * \file GyotoStar.h
- * \brief Mass-less, spherical object following time geodesics
+ * \brief Mass-less, spherical object following a timelike geodesic
  *
  *  A Gyoto::Star evolves in a Gyoto::Metric following time-like
- *  geodesics and is a Gyoto::Astrobj suitable for ray-tracing.
+ *  geodesics and is a Gyoto::Astrobj::Generic suitable for
+ *  ray-tracing.
  */
 
 /*
@@ -44,11 +45,46 @@ namespace Gyoto{
 #include <string>
 
 /**
- * \class Gyoto::Star
- * \brief A mass-less, spherical object
+ * \class Gyoto::Astrobj::Star
+ * \brief Mass-less, spherical object following a timelike geodesic
+ *
+ * Gyoto can compute the Star's orbit in a Gyoto::Metric and perform
+ * ray-tracing on this target. The XML description of a Star looks
+ * like:
+\code
+<Astrobj kind = "Star">
+  <Metric kind = "KerrBL">
+    <Spin> 0. </Spin>
+  </Metric>
+  <Radius> 2. </Radius>
+  <Velocity> 0. 0. 0.037037 </Velocity>
+  <Position> 600. 9. 1.5707999999999999741 0 </Position>
+  <Spectrum kind="BlackBody">
+    <Temperature> 6000 </Temperature>
+  </Spectrum>
+  <Opacity kind="PowerLaw">
+    <Exponent> 0 </Exponent>
+    <Constant> 0.1 </Constant>
+  </Opacity>
+  <OpticallyThin/>
+</Astrobj>
+\endcode
  * 
- * Gyoto can compute the Star's orbit in a Gyoto::Metric and to
- * perform ray-tracing on this target.
+ * The Metric element can be of any kind. This Metric sets the
+ * coordinate system.
+ *
+ * The Star is a coordinate sphere of radius Radius in solid motion.
+ *
+ * Position sets the initial 4-coordinate of the centre of the
+ * sphere. Velocity contains its initial 3-velocity (the time
+ * derivatives of the 3 space coordinates).
+ *
+ * Like many Astrobj::Generic impementations, a Star can be
+ * OpticallyThin or OpticallyThick.
+ *
+ * Spectrum and Opacity (if OpticallyThin) are the descriptions of two
+ * Gyoto::Spectrum::Generic sub-classes.
+ *
  */
 class Gyoto::Astrobj::Star :
   public Gyoto::Astrobj::Generic,
@@ -59,8 +95,8 @@ class Gyoto::Astrobj::Star :
   // -----
  protected:
   double radius_ ; ///< star radius
-  SmartPointer<Spectrum::Generic> spectrum_;
-  SmartPointer<Spectrum::Generic> opacity_;
+  SmartPointer<Spectrum::Generic> spectrum_; ///< star emission law
+  SmartPointer<Spectrum::Generic> opacity_; ///< if optically thin, opacity law
 
   // Constructors - Destructor
   // -------------------------

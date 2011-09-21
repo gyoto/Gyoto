@@ -40,7 +40,11 @@ namespace Gyoto{
 #include <GyotoUtils.h>
 
 /**
- * \class Gyoto::Torus
+ * \class Gyoto::Astrobj::Torus
+ * \brief Optically thin or thick torus in circular rotation
+ *
+ * Any Metric::Generic is acceptable as long as it implements
+ * Metric::Generic::circularVelocity().
  */
 class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Torus>;

@@ -40,56 +40,411 @@ namespace Gyoto {
   class Photon;
 }
 
+/**
+ * \class Gyoto::FactoryMessenger
+ * \brief Factory / SmartPointee::Subcontractor_t interface
+ *
+ * A FactoryMessenger instance is like an employee passing messages
+ * between its employer (the Factory) and a subcontractor (a function
+ * of the SmartPointee::Subcontractor_t type).
+ *
+ * The FactoryMessenger also communicate with the fillElement method
+ * of some classes (Astrobj::Generic::fillElement(),
+ * Metric::Generic::fillElement(), Spectrum::Generic::fillElement()).
+ *
+ * A subcontractor function typically loops calling getNextParameter()
+ * to read all the parameters provided for it in an XML file. If BASE
+ * is one of Astrobj, Metric or Spectrum, and MyClass is an
+ * implementation of BASE::Generic, the subcontractor static member
+ * function often looks like this:
+ *
+\code
+SmartPointer<Gyoto::BASE::Generic> MyClass::Subcontractor(Gyoto::FactoryMessenger *messenger) {
+ SmartPointer<Gyoto::BASE::MyClass> deliverable = new MyClass();
+ while (messenger->getNextParameter(name, content) {
+   if (name=="SomeProperty") deliverable -> setSomeProperty(content);
+   else if (name=="AnotherProperty") deliverable -> setAnotherProperty(content);
+ }
+ return deliverable;
+}
+\endcode
+ *
+ * Other get* methods are provided to cope with more complex syntax
+ * (e.g. when XML attributes are used, as in &lt;ParameterName
+ * attribute="attrvalue"&gt;ParameterValue&lt;/ParameterName&gt;
+ *
+ * Conversely, the Factory asks certain Gyoto classes through their
+ * fillElement() method how they should be printed or saved to an XML
+ * file.  Those fillElement() methods use the FactoryMessenger::set*()
+ * methods (in particular setParameter()) as well as, occasionally,
+ * makeChild() to describe themselves to the Factory.
+ */
+
 class Gyoto::FactoryMessenger {
  private:
   Gyoto::Factory* employer_;
+  ///< The Factory that sent this messenger
   xercesc::DOMElement *element_;
+  ///< The XML element concerned by this transaction
   xercesc::DOMNodeList* children_;
+  ///< The children of the XML element concerned by this transaction
   XMLSize_t nodeCount_;
+  ///< The number of children of the XML element concerned by this transaction
   XMLSize_t curNodeIndex_;
+  ///< Current child
  public:
   FactoryMessenger(Gyoto::Factory*, xercesc::DOMElement*);
+  ///< Constructor called before subcontracting
   FactoryMessenger(const FactoryMessenger& parent, std::string) ;
+  ///< Constructor called before fillElement
 
-  void reset(); // get back to first parameter
-  int getNextParameter(std::string* name, std::string* content);
-  std::string getSelfAttribute(std::string attrname) const ;
-  std::string getAttribute(std::string attrname) const ;
-  std::string getFullContent() const ;
-  FactoryMessenger * getChild() const ;
+  void reset();
+  ///< Get back to first parameter
+
+  ///// GET METHODS, CALLED FROM A SUBCONTRACTOR
 
   /**
+   * An Gyoto XML file may contain at most a single Metric section
+   * and it may be present about anywhere in the XML tree. Individual
+   * subcontractors should not try to interpret this section directly,
+   * but should call getMetric() to find and interpret the Metric
+   * section.
+   */
+  SmartPointer<Metric::Generic>  getMetric  () ;
+  ///< Build and get the Metric described in this XML file 
+
+  /**
+   * An Gyoto XML file may contain at most a single Screen section
+   * and it may be present about anywhere in the XML tree. Individual
+   * subcontractors should not try to interpret this section directly,
+   * but should call getScreen() to find and interpret the Screen
+   * section.
+   */
+  SmartPointer<Screen>  getScreen  () ;
+  ///< Build and get the Screen described in this XML file 
+
+  /**
+   * An Gyoto XML file may contain at most a single Photon section
+   * and it may be present about anywhere in the XML tree. Individual
+   * subcontractors should not try to interpret this section directly,
+   * but should call getPhoton() to find and interpret the Photon
+   * section.
+   */
+  SmartPointer<Photon>  getPhoton  () ;
+  ///< Build and get the Photon described in this XML file 
+
+  /**
+   * An Gyoto XML file may contain at most a single Astrobj section
+   * and it may be present about anywhere in the XML tree. Individual
+   * subcontractors should not try to interpret this section directly,
+   * but should call getAstrobj() to find and interpret the Astrobj
+   * section.
+   */
+  SmartPointer<Astrobj::Generic> getAstrobj () ;
+  ///< Build and get the Astrobj described in this XML file 
+
+  /**
+   * On each call, return a pair name-content of one of the
+   * children_. Usually, "name" is the name of a parameter and
+   * "content" is the string representation of the corresponding
+   * value. For instance:
+\code
+<Name>Content</Name>
+\endcode
+   *
+   * \param name upon output, name of the child
+   * \param content content of the child
+   * \return 1 if there remains parameters to retrieve, 0 otherwise.
+   */
+  int getNextParameter(std::string* name, std::string* content);
+  ///< Get name and value of next parameter
+
+  /**
+   * For instance a Spectrometer description looks like this
+\code
+<Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
+\endcode
+   * and the Spectrometer builder uses getSelfAttribute() to retrieve
+   * the attributes "kind" and "nsamples".
+   * 
+   * \param attrname name of the attribute
+   * \return attrvalue
+   */
+  std::string getSelfAttribute(std::string attrname) const ;
+  ///< Get attribute of FactoryMessenger::element_
+
+  /**
+   * For instance
+\code
+<ParameterName attrname="attrvalue">ParameterContent</ParameterName>
+\endcode
+   * 
+   * \param attrname name of the attribute
+   * \return attrvalue
+   */
+  std::string getAttribute(std::string attrname) const ;
+  ///< Get attribute of a last retrieved parameter
+
+  /**
+   * In exceptional circumstances, it may be necessary to get the
+   * entire text content of the topmost element
+   * FactoryMessenger::element_ instead or getting only the individual
+   * FactoryMessenger::children_ .
+   * 
+   * For instance a Spectrometer description looks like this:
+\code
+<Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
+\endcode
+   * and the Spectrometer builder uses getFullContent() to retrieve
+   * the spectral boundaries (2.0e-6 and 2.4e-6 here).
+   */
+  std::string getFullContent() const ;
+  ///< Get full content of element_
+
+  /**
+   * If one of the FactoryMessenger::children_ is complex (for
+   * instance the complete description of a Gyoto::Spectrum), it is
+   * possible to initialize a new FactoryMessenger and call the
+   * correct subcontractor:
+\code
+SmartPointer<Spectrum::Generic> spectrum = NULL;
+while (messenger->getNextParameter(name, content) {
+ if (name=="Spectrum") {
+  content = messenger->getAttribute("kind");
+  FactoryMessenger* child = messenger->getChild();
+  deliverable->setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
+  delete child;
+ }
+}
+\endcode
+   * The child is allocated with new and must be deleted after use.
+   */
+  FactoryMessenger * getChild() const ;
+  ///< Get another FactoryMessenger instance initialized to current child 
+
+
+  /**
+   * This function takes a relative path (e.g. ../foo/bar.data) and
+   * transforms it into a full path (starting with "/"). It is not
+   * guaranteed to be portable (we assume that the path separator is
+   * "/" and that absolute paths start with "/").
+   *
+   * \param relpath path relative to the directory where the XML file
+   * on which the Factory works is located.
+   *
+   * \return fullpath at full path specification to the same point pon
+   * the file-system.
+   */
+  std::string fullPath(std::string relpath) ;
+  ///< Transform path into full path specification
+
+
+  ///////// SET METHODS, CALLED FROM FILLELEMENT
+
+  /**
+   * At most one Metric section may be present in a give Gyoto XML file.
+   *
+   * When an object's fillElement() method is called, if this object
+   * is connected to a Metric, it should call setMetric() with this
+   * Metric. Very often, the Metric will already have been set
+   * previously. The Factory will check that all the objects in the
+   * hierarchy are attached to the same Metric instance, and save this
+   * instance only once. Trying to set the Metric to something else
+   * than the already set Metric instance is an error condition.
+   *
+   * To make things clearer: Assume "scenery" is a fully filled
+   * Scenery. scenery->fillElement(messenger) will call:
+\code
+messenger->setMetric(Scenery::gg_)
+messenger->setScreen(Scenery::screen_)
+messenger->setAstrobj(Scenery::obj_);
+\endcode
+   *
+   * The Factory will then call screen_->fillElement(child_messenger)
+   * and obj_->fillElement(child_messenger), each of which will also
+   * call setMetric(). If the same Metric is connected to the Astrobj,
+   * to the Screen and to the Scenery, all is well. Else, you have a
+   * bug to fix.
+   */
+  void setMetric(SmartPointer<Metric::Generic>);
+  ///< Set the Metric
+
+  /**
+   * Same as setMetric(), but for the Astrobj.
+   */
+  void setAstrobj(SmartPointer<Astrobj::Generic>);
+  ///< Set the Astrobj
+
+  /**
+   * Same as setMetric(), but for the Screen.
+   */
+  void setScreen(SmartPointer<Screen>);
+  ///< Set the Screen
+
+
+  /**
+   * Create child XML element of the form
+\code
+<name/>
+\endcode
+   * for instance when "name" is boolean (present or absent), or only
+   * takes attributes (see FactoryMessenger::setAttribute()). As an
+   * example, Astrobj::Generic::fillElement() uses
+   * setParameter() to set either Opticallythin or OpticallyThick.
+   */
+  void setParameter(std::string name);
+  ///< Output parameter
+
+  /**
+   * Convert value to striing "svalue" and create an XML child element
+   * of the form
+\code
+<name>svalue</name>
+\endcode
+   */
+  void setParameter(std::string name, double value);
+  ///< Output parameter
+
+  /**
+   * Convert value to striing "svalue" and create an XML child element
+   * of the form
+\code
+<name>svalue</name>
+\endcode
+   */
+  void setParameter(std::string name, long int value);
+  ///< Output parameter
+
+  /**
+   * Convert value to striing "svalue" and create an XML child element
+   * of the form
+\code
+<name>svalue</name>
+\endcode
+   */
+  void setParameter(std::string name, unsigned int value);
+  ///< Output parameter
+
+  /**
+   * Convert value to striing "svalue" and create an XML child element
+   * of the form
+\code
+<name>svalue</name>
+\endcode
+   */
+  void setParameter(std::string name, unsigned long value);
+  ///< Output parameter
+
+  /**
+   * Convert value to striing "svalue" and create an XML child element
+   * of the form
+\code
+<name>svalue</name>
+\endcode
+   */
+  void setParameter(std::string name, int value);
+  ///< Output parameter
+
+  /**
+   * Create an XML child element of the form
+\code
+<name>value</name>
+\endcode
+   */
+  void setParameter(std::string name, std::string value);
+  ///< Output parameter
+
+  /**
+   * For instance:
+\code
+double val[4] = {1., 2., 3., 4.};
+messenger->setParameter("MyArray", val, 4);
+\endcode
+   * will result in something like this:
+\code
+<MyArray>1.000000 2.000000 3.000000 4.000000</MyArray>
+\endcode
+   *
+   * The exact format is unspecified, determined at compile time, and
+   * by default, unlike in the example above, outputs a large number
+   * of digits for each double (about 20).
+   *
+   * \param name the name of the parameter
+   * \param val[] an array of doubles
+   * \param n number of cells in val[]
+   * \param child (optional) if not NULL, a new FactoryMessenger is
+   * created to access the new parameter element e.g. to set
+   * attributes in it (using setSelfAttribute()). You then need to
+   * delete the child.
+   */
+  void setParameter(std::string name, double val[], size_t n,
+		    FactoryMessenger** child= NULL);
+  ///< Output an array of parameters
+
+
+  /**
+   * For instance Spectrometer::fillElement() sets its "kind"
+   * attribute somewhat like this:
+\code
+messenger->setSelfAttribute("kind", "wave");
+\endcode
+   * to produce something like this:
+\code
+<Spectrometer kind="wave"/>
+\endcode
+   */
+  void setSelfAttribute(std::string attrname, std::string value) ;
+  ///< Set attribute in FactoryMessenger::element_
+
+  /**
+   * See setSelfAttribute(std::string attrname, std::string value)
+   */
+  void setSelfAttribute(std::string attrname, unsigned long value) ;
+  ///< Set attribute in FactoryMessenger::element_
+
+  /**
+   * See setSelfAttribute(std::string attrname, std::string value)
+   */
+  void setSelfAttribute(std::string attrname, unsigned int value) ;
+  ///< Set attribute in FactoryMessenger::element_
+
+  /**
+   * See setSelfAttribute(std::string attrname, std::string value)
+   */
+  void setSelfAttribute(std::string attrname, double value) ;
+  ///< Set attribute in FactoryMessenger::element_
+
+  /**
+   * Exceptionnaly, a class instance may be best described by setting
+   * the entire content of the correponding element than by setting a
+   * bunch of "parameters". This is the case of the spectrometer,
+   * which sets a couple of attributes and reserves the full content
+   * for the spectral boundaries (see Spectrometer::fillElement()).
+   */
+  void setFullContent(std::string value) ;
+  ///< Low level, prefer setParameter()
+
+  /**
+   * To be used from fillElement() methods. For instance, the
+   * Star::fillElement() method calls makeChild() to save the Star's
+   * Spectrum and Opacity members somewhat like this:
+\code
+FactoryMessenger * child;
+child = messenger-> makeChild("Spectrum");
+spectrum_ -> fillElement(child);
+delete child;
+child = messenger-> makeChild("Opacity");
+opacity_ -> fillElement(child);
+delete child;
+child=NULL;
+\endcode
+   *
    * The child messenger is allocated with new, you need to delete it
    * after use.
    */
   FactoryMessenger* makeChild(std::string name);
-  void setSelfAttribute(std::string attrname, std::string value) ;
-  void setSelfAttribute(std::string attrname, unsigned long value) ;
-  void setSelfAttribute(std::string attrname, unsigned int value) ;
-  void setSelfAttribute(std::string attrname, double value) ;
-  void setFullContent(std::string value) ; ///< Low level, prefer setParameter
-  void setParameter(std::string name);
-  void setParameter(std::string name, double value);
-  void setParameter(std::string name, long int value);
-  void setParameter(std::string name, unsigned int value);
-  void setParameter(std::string name, unsigned long value);
-  void setParameter(std::string name, int value);
-  void setParameter(std::string name, std::string value);
-  /**
-   * If child is not NULL, a new FactoryMessenger is created to access
-   * the new parameter element e.e. to set attributes in it. You then
-   * need to delete the child.
-   */
-  void setParameter(std::string name, double val[], size_t n,
-		    FactoryMessenger** child= NULL);
-  void setAstrobj(SmartPointer<Astrobj::Generic>);
-  void setScreen(SmartPointer<Screen>);
-  void setMetric(SmartPointer<Metric::Generic>);
-  SmartPointer<Metric::Generic>  getMetric  () ;
-  SmartPointer<Screen>  getScreen  () ;
-  SmartPointer<Photon>  getPhoton  () ;
-  SmartPointer<Astrobj::Generic> getAstrobj () ;
-  std::string fullPath(std::string) ;
+  ///< Create child FactoryMessenger
+
 };
 
 #endif

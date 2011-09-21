@@ -40,8 +40,8 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 
 /**
- * \class Gyoto::FixedStar. 
- * \brief Fixed (i.e. non-moving) star
+ * \class Gyoto::Astrobj::FixedStar. 
+ * \brief Fixed (i.e. non-moving) star (or spherical blob)
  *
  *  The target of ray-traced Gyoto::Photon
  */

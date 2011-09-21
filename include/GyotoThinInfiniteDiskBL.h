@@ -40,7 +40,8 @@ namespace Gyoto{
 #include <GyotoAstrobj.h>
 
 /**
- * \class Gyoto::ThinInfiniteDiskBL
+ * \class Gyoto::Astrobj::ThinInfiniteDiskBL
+ * \brief Geometrically thin disk in Metric::KerrBL metric
  * 
  *   This class describes a disk contained in the z=0 (equatorial) plane, extending
  *   from r=r_ISCO to r=infinity.  The flux emitted at radius r is given. 
