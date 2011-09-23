@@ -1,6 +1,6 @@
 /**
  * \file GyotoRotStar3_1.h
- * \brief Base class for metric description in 3+1 formalism
+ * \brief Numerical metric around a rotating star in 3+1 formalism
  * 
  *
  */
@@ -46,7 +46,8 @@ namespace Gyoto {
 #endif
 
 /**
- * \class Gyoto::RotStar3_1
+ * \class Gyoto::Metric::RotStar3_1
+ * \brief Numerical metric around a rotating star in 3+1 formalism
  */
 class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::RotStar3_1>;

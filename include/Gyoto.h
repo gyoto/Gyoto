@@ -73,7 +73,8 @@
  *
  *  GYOTO: a new general relativistic ray-tracing code, F. H. Vincent,
  *  T. Paumard, E. Gourgoulhon & G. Perrin 2011, Classical and Quantum
- *  Gravity, submitted.
+ *  Gravity, accepted.
+ *  [<A HREF="http://arxiv.org/abs/1109.4769">arXiv:1109.4769</A>]
  *
  * We also request that Gyoto modifications, extensions or plug-ins
  * leading to a scientific publication be made public as free software

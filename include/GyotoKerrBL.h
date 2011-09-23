@@ -39,8 +39,8 @@ namespace Gyoto {
 
 
 /**
- * \class Gyoto::KerrBL
- * \brief Gyoto::Metric for KerrBL black hole
+ * \class Gyoto::Metric::KerrBL
+ * \brief Metric around a Kerr black-hole in Boyer-Lindquist coordinates
  */
 class Gyoto::Metric::KerrBL : public Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::KerrBL>;
