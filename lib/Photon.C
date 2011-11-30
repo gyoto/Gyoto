@@ -62,6 +62,16 @@ Photon::Photon(const Photon& o) :
 
 Photon * Photon::clone() const { return new Photon(*this); }
 
+Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
+  Worldline(orig, i0, dir, step_max), SmartPointee(),
+  object_(orig->object_),
+  freq_obs_(orig->freq_obs_),
+  transmission_freqobs_(orig->transmission_freqobs_),
+  spectro_(orig->spectro_), transmission_(orig->transmission_)
+{
+  //  if (spectro_) _allocateTransmission();
+}
+
 Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
   Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
@@ -220,7 +230,7 @@ int Photon::hit(Astrobj::Properties *data) {
   if (rr<rmax)
     hitt = object_ -> Impact(this, ind, data);
   if (hitt) {
-    if (debug()) cout << "Photon.C: Hit for already computed position; "
+    if (debug()) cerr << "DEBUG: Photon.C: Hit for already computed position; "
 		      << "Warning: radiative transfer not implemented "
 		      << "for that case" << endl;
     return hitt;
@@ -344,7 +354,8 @@ int Photon::hit(Astrobj::Properties *data) {
       cerr << "DEBUG: Photon::hit(): rmax="<< rmax <<", rr="<<rr<<endl;
     if (rr<rmax) {
       if (debug()) cerr << "DEBUG: Photon::hit() calling Astrobj::Impact\n";
-      hitt = object_ -> Impact(this, ind, data);
+      hitt |= object_ -> Impact(this, ind, data);
+      if (hitt && !data) stopcond=1;
       if (debug()) cerr << "DEBUG: Photon::hit(): transmission_freqobs_="
 			<< transmission_freqobs_ << endl;
       if ( transmission_freqobs_ < 1e-6 ) {

@@ -10,7 +10,8 @@ SRC = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C \
 STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \
 	ThinInfiniteDiskBL.C ThinInfiniteDiskKS.C \
-	PowerLawSpectrum.C BlackBodySpectrum.C
+	PowerLawSpectrum.C BlackBodySpectrum.C \
+	ComplexAstrobj.C
 
 LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
 

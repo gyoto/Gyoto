@@ -124,6 +124,8 @@ void Generic::getVelocity(double const * const, double *) {
 }
 
 int Generic::Impact(Photon* ph, size_t index, Properties *data){
+  if (debug())
+    cerr << "DEBUG: Generic::Impact called for " << getKind() << endl;
   double p1[8], p2[8];
   ph->getCoord(index, p1);
   ph->getCoord(index+1, p2);
@@ -327,15 +329,15 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	       << ", redshift=" << ggred << ")\n";
       }
     }
+    /* update photon's transmission */
+    ph -> transmit(size_t(-1),
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+    for (size_t ii=0; ii<nbnuobs; ++ii)
+      ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
   } else {
     if (debug())
       cerr << "DEBUG: Generic::processHitQuantities: NO data requested!\n";
   }
-  /* update photon's transmission */
-  ph -> transmit(size_t(-1),
-		 transmission(freqObs*ggredm1, dsem,coord_ph_hit));
-  for (size_t ii=0; ii<nbnuobs; ++ii)
-    ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
 }
 
 double Generic::transmission(double, double, double*) const {
@@ -343,6 +345,11 @@ double Generic::transmission(double, double, double*) const {
     cerr << "DEBUG: Generic::transmission(): flag_radtransf_="
 	 << flag_radtransf_ << endl;
   return double(flag_radtransf_);
+}
+
+double Generic::emission(double , double , double *, double *) const
+{
+  throwError("emission() not implemented for this Astrobj kind");
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,

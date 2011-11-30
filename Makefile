@@ -34,6 +34,8 @@ lib/$(LIBGYOTO_FILE): lib/*.C
 
 CHECK_CMD:=$(DYLIB_VAR)=lib:$$$(DYLIB_VAR) bin/gyoto
 check: lib/$(LIBGYOTO_FILE) bin/gyoto check-yorick
+	$(CHECK_CMD) doc/examples/example-complex-astrobj.xml \
+	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
 	$(CHECK_CMD) --resolution=32 doc/examples/example-moving-star.xml \

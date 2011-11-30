@@ -73,6 +73,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   Photon() ; ///< Default constructor
   Photon(const Photon& ) ;                ///< Copy constructor
   Photon* clone() const ;
+  Photon(Photon* orig, size_t i0, int dir, double step_max);
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj,
 	 double* coord) ;
   ///< same as Photon() followed by setInitialCondition()

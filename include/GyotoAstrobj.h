@@ -399,7 +399,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL)
-    const =0; ///< INVARIANT emission j_{\nu}/\nu^{2}
+    const ; ///< INVARIANT emission j_{\nu}/\nu^{2}
 
   virtual double integrateEmission(double nu1, double nu2, double dsem,
 				   double c_ph[8], double c_obj[8]=NULL) const;

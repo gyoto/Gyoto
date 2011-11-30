@@ -75,6 +75,9 @@ class Gyoto::Worldline {
   
   Worldline(const Worldline& ) ;                ///< Copy constructor
   
+  Worldline(Worldline* orig, size_t i0, int dir, double step_max) ;
+  /// Refine constructor
+
   /// Constructor from a file (see \c sauve(FILE*) )
   //Worldline(FILE *) ;                    
   

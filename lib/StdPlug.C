@@ -21,6 +21,7 @@
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 // include Astrobj headers
+#include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
 #include "GyotoFixedStar.h"
 #include "GyotoThinInfiniteDiskBL.h"
@@ -35,6 +36,7 @@ extern "C" void __GyotostdplugInit() {
   Gyoto::Metric::KerrBL::Init();
   Gyoto::Metric::KerrKS::Init();
   // Register Astrobjs
+  Gyoto::Astrobj::Complex::Init();
   Gyoto::Astrobj::Star::Init();
   Gyoto::Astrobj::FixedStar::Init();
   Gyoto::Astrobj::ThinInfiniteDiskBL::Init();

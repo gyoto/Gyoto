@@ -72,6 +72,47 @@ Worldline::Worldline(const Worldline& orig) :
     cerr << "DEBUG: out Worldline::Worldline(const Worldline& orig)\n";
 }
 
+Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
+  metric_(orig->metric_),
+//  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
+  delta_(orig->delta_), tlim_(orig->tlim_), cst_n_(orig->cst_n_)
+{
+  if (debug())
+    cerr << "DEBUG: in Worldline::Worldline(const Worldline& orig)\n";
+
+  double d1 = orig->x0_[i0], d2 = orig->x0_[i0+dir];
+  x_size_= size_t(fabs(d1-d2)/step_max)+2;
+  double step = (d2-d1)/(x_size_-1);
+  xAllocate(x_size_);
+  imin_=0; imax_=x_size_-1; i0_=(dir==1?imin_:imax_);
+  x0_[i0_]=d1;
+  size_t i=i0_;
+  for (i=i0_+dir; i>imin_ && i<imax_; i+=dir) x0_[i] = x0_[i-dir]+step;
+  x0_[i]=d2;
+
+  orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_);
+
+  if (debug())
+    {
+      cerr << "DEBUG: Worldline::Worldline(Worldline*, "
+	   <<i0<<", "<<dir<<", "<<step_max<<")"<<endl;
+      cerr << "       d1="<<d1<<", d2="<<d2<<endl;
+      for (i=0; i<x_size_; ++i)
+	cerr << "       " << i << " "
+	     << x0_[i] << " " << x1_[i] << " " << x2_[i] << " " << x3_[i] << " "
+	     <<x0dot_[i]<<" "<<x1dot_[i]<<" "<<x2dot_[i]<<" "<<x3dot_[i]<<endl;
+    }
+
+  if (orig->cst_ && cst_n_) {
+   if (debug())
+    cerr << "DEBUG: Worldline::Worldline(): cloning constants of motion\n";
+   cst_ = new double [cst_n_];
+   memcpy(cst_, orig->cst_, cst_n_*sizeof(double));
+  }
+  if (debug())
+    cerr << "DEBUG: out Worldline::Worldline(const Worldline& orig)\n";
+}
+
 Worldline::~Worldline(){
   if (debug()) cerr << "DEBUG: Worldline::~Worldline()\n";
   delete[] x0_;
