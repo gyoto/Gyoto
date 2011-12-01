@@ -73,7 +73,10 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   Photon() ; ///< Default constructor
   Photon(const Photon& ) ;                ///< Copy constructor
   Photon* clone() const ;
+ protected:  
   Photon(Photon* orig, size_t i0, int dir, double step_max);
+  ///< Used by Photon::Refined::Refined
+ public:
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj,
 	 double* coord) ;
   ///< same as Photon() followed by setInitialCondition()
@@ -205,12 +208,43 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
      * \param i channel number. -1 for getFreqObs().
      * \param t transmission of this fluid element.
      */
-    void transmit(size_t i, double t);
+    virtual void transmit(size_t i, double t);
 
  private:
     void _allocateTransmission();
- 
+
+ public:
+    class Refined;
+     ///< Refine last step of integration 
+
 };
+
+/**
+ * \class Gyoto::Photon::Refined
+ * \brief Refine last step of integration in a Photon
+ *
+ * The integration step of a Photon's geodesic is adaptive. This is
+ * computationally efficient, but sometimes it is necessary to get the
+ * position of a Photon with a finer
+ * step. Gyoto::ComplexAstrobj::Impact() is a typical use case.
+ *
+ * A Refined photon is linked to its parent. In particular, care is
+ * taken so that the parent's to update the parent's transmissions
+ * whenever the Refined transmissions are touched.
+ *
+ * Don't use this class blindly: what's guaranteed to work is what is
+ * used in Gyoto::ComplexAstrobj::Impact().
+ */
+class Gyoto::Photon::Refined : public Gyoto::Photon {
+ protected:
+  Photon * parent_; ///< Parent Photon.
+ public:
+  Refined(Photon *parent, size_t i, int dir, double step_max);
+  ///< Constructor
+  virtual void transmit(size_t i, double t);
+  ///< Update transmission both in *this and in *parent_
+};
+
 
 #ifdef GYOTO_USE_XERCES
 namespace Gyoto {

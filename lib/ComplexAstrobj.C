@@ -140,8 +140,7 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
     res = 1;
     if (debug())
       cerr << "DEBUG: Complex::Impact(...): refining Photon" << endl;
-    Photon refine (ph, index, 1, step_max_);
-    double trans_orig = refine . getTransmission(size_t(-1));
+    Photon::Refined refine (ph, index, 1, step_max_);
     size_t n_refine = refine . get_nelements();
     if (debug())
       cerr << "DEBUG: Complex::Impact(...): n_refine=="<<n_refine << endl;
@@ -154,8 +153,6 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
 	  elements_[i]->Impact(&refine, n, data);
 	}
     }
-    ph->transmit(size_t(-1),
-		 trans_orig?refine . getTransmission(size_t(-1))/trans_orig:0.);
   }
 
   delete [] impact;

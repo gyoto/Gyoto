@@ -69,7 +69,12 @@ Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   transmission_freqobs_(orig->transmission_freqobs_),
   spectro_(orig->spectro_), transmission_(orig->transmission_)
 {
-  //  if (spectro_) _allocateTransmission();
+}
+
+Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
+  Photon(orig, i0, dir, step_max),
+  parent_(orig)
+{
 }
 
 Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj::Generic> obj,
@@ -482,6 +487,11 @@ void Photon::transmit(size_t i, double t) {
     cerr << "DEBUG: Photon::transmit(i="<<i<< ", transmission="<<t<<"):"
 	 << "transmission_[i]="<< transmission_[i]<< "\n";
 }
+void Photon::Refined::transmit(size_t i, double t) {
+  parent_->transmit(i, t);
+  if (i==size_t(-1)) transmission_freqobs_ = parent_->transmission_freqobs_;
+}
+
 
 #ifdef GYOTO_USE_XERCES
 void Photon::fillElement(FactoryMessenger *fmp) {
