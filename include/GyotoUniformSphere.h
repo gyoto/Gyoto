@@ -1,10 +1,11 @@
 /**
- * \file GyotoStar.h
- * \brief Mass-less, spherical object following a timelike geodesic
+ * \file GyotoUniformSphere.h
+ * \brief Optically thick or thin, spherical objects
  *
- *  A Gyoto::UniformSphere evolves in a Gyoto::Metric following time-like
- *  geodesics and is a Gyoto::Astrobj::Generic suitable for
- *  ray-tracing.
+ *  Gyoto::Astrobj::UniformSphere is an abstract type from which
+ *  uniform, spherical objects inherit (in particular, the
+ *  Gyoto::Astrobj::Star and Gyoto::Astrobj::FixedStar classes).
+ *
  */
 
 /*
@@ -46,45 +47,38 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::UniformSphere
- * \brief Mass-less, spherical object following a timelike geodesic
+ * \brief Optically thick or thin, spherical objects
  *
- * Gyoto can compute the UniformSphere's orbit in a Gyoto::Metric and perform
- * ray-tracing on this target. The XML description of a UniformSphere looks
- * like:
+ *  Gyoto::Astrobj::UniformSphere is an abstract type from which
+ *  uniform, spherical objects inherit (in particular, the
+ *  Gyoto::Astrobj::Star and Gyoto::Astrobj::FixedStar classes).
+ *
+ *  These objects are coordinate-spherical: they comprise all the
+ *  points within a given radius from a centre. The distance is the
+ *  usual Euclidian distance in a Cartesian coordinate system which is
+ *  trivially determined by the coordinate system in which the Metric
+ *  is expressed.
+ *
+ *  The sphere is in solid motion: all the points have the same
+ *  4-velocity. The centre of the sphere may move. This motion and the
+ *  velocity are provided by the derived classes through the
+ *  getCartesian() and getVelocity() methods.
+ *
+ *  The spheres can be optically thick or optically thin. In the
+ *  optically thin case, the opacity law provided as a Gyoto::Spectrum
+ *  also sets both the emissivity. Another Gyoto::Spectrum provides
+ *  the emission law of the source, which is uniform.
+ *
+ *  Gyoto::Astrobj::UniformSphere::setGenericParameters() take care of
+ *  interpreting the XML elements describing the parameters of the
+ *  sphere:
 \code
-<Astrobj kind = "UniformSphere">
-  <Metric kind = "KerrBL">
-    <Spin> 0. </Spin>
-  </Metric>
-  <Radius> 2. </Radius>
-  <Velocity> 0. 0. 0.037037 </Velocity>
-  <Position> 600. 9. 1.5707999999999999741 0 </Position>
-  <Spectrum kind="BlackBody">
-    <Temperature> 6000 </Temperature>
-  </Spectrum>
-  <Opacity kind="PowerLaw">
-    <Exponent> 0 </Exponent>
-    <Constant> 0.1 </Constant>
-  </Opacity>
-  <OpticallyThin/>
-</Astrobj>
+   <Radius> value </Radius>
+   <Spectrum kind="..."> parameters for this spectrum kind </Spectrum>
+   <Opacity kind="..."> parameters for this spectrum kind </Opacity>
 \endcode
- * 
- * The Metric element can be of any kind. This Metric sets the
- * coordinate system.
- *
- * The UniformSphere is a coordinate sphere of radius Radius in solid motion.
- *
- * Position sets the initial 4-coordinate of the centre of the
- * sphere. Velocity contains its initial 3-velocity (the time
- * derivatives of the 3 space coordinates).
- *
- * Like many Astrobj::Generic impementations, a UniformSphere can be
- * OpticallyThin or OpticallyThick.
- *
- * Spectrum and Opacity (if OpticallyThin) are the descriptions of two
- * Gyoto::Spectrum::Generic sub-classes.
- *
+ * setGenericParameters() also takes care of calling
+ * Generic::setParameters().
  */
 class Gyoto::Astrobj::UniformSphere :
   public Gyoto::Astrobj::Generic {
@@ -93,27 +87,28 @@ class Gyoto::Astrobj::UniformSphere :
   // Data : 
   // -----
  protected:
-  double radius_ ; ///< star radius
-  SmartPointer<Spectrum::Generic> spectrum_; ///< star emission law
+  double radius_ ; ///< sphere radius
+  SmartPointer<Spectrum::Generic> spectrum_; ///< sphere emission law
   SmartPointer<Spectrum::Generic> opacity_; ///< if optically thin, opacity law
 
   // Constructors - Destructor
   // -------------------------
  public:
  /**
-  * Create UniformSphere object and set initial condition.
+  * Create UniformSphere object.
+  * \param kind: specifi kind (e.g. "Star" or "FixedStar")
   * \param gg: Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
-  * \param radius star radius
+  * \param radius: sphere radius
   */
   UniformSphere(std::string kind,
 		SmartPointer<Metric::Generic> gg, double radius) ;
       ///< Standard constructor
 
  /**
-  * Create UniformSphere object with undefined initial conditions. One needs to
-  * set the coordinate system, the metric, and the initial position
-  * and velocity before integrating the orbit. setInititialCondition()
-  * can be used for that.
+  * Create UniformSphere object. Use setMetric(), setRadius(),
+  * setSpectrum() and setOpacity() to set the members.
+  * 
+  * \param kind: specifi kind (e.g. "Star" or "FixedStar")
   */
   UniformSphere(std::string kind); ///< Default constructor
   

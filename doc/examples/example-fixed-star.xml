@@ -21,6 +21,14 @@
     <Position> 0 0 0 </Position>
     <UseGenericImpact/>
     <RMax> 10000. </RMax>
+    <Spectrum kind="PowerLaw">
+      <Exponent> 0 </Exponent>
+      <Constant> 0.001 </Constant>
+    </Spectrum>
+    <Opacity kind="PowerLaw">
+      <Exponent> 0 </Exponent>
+      <Constant> 0.01 </Constant>
+    </Opacity>
     <OpticallyThin/>
   </Astrobj>
 

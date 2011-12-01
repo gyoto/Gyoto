@@ -189,7 +189,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    * The kind should match the name of the class, e.g. "Star" for a
    * Gyoto::Star.
    */
-  std::string kind_; ///< Kind of object (e.g. "Star"...)
+  const std::string kind_; ///< Kind of object (e.g. "Star"...)
 
   int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
