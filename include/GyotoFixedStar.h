@@ -36,7 +36,7 @@ namespace Gyoto{
   namespace Astrobj { class FixedStar; }
 }
 
-#include <GyotoAstrobj.h>
+#include <GyotoUniformSphere.h>
 #include <GyotoMetric.h>
 
 /**
@@ -45,7 +45,7 @@ namespace Gyoto{
  *
  *  The target of ray-traced Gyoto::Photon
  */
-class Gyoto::Astrobj::FixedStar : public Astrobj::Generic {
+class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::FixedStar>;
 
  // Data : 
@@ -54,8 +54,6 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::Generic {
  protected:
   
   double pos_[3];///< x, y, z or r, theta, phi
-  double radius_;///< Star radius
-  int use_generic_impact_; ///<Use Astrobj::Impact() or FixedStar::Impact_()
   
   // Constructors - Destructor
   // -------------------------
@@ -79,16 +77,12 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::Generic {
   // Accessors
   // ---------
  public:
-  double getRadius() const ; ///< Get radius_
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
-  //  const int getCoordSys() const; ///< Get coordinate system
-  
   virtual void setMetric(SmartPointer<Metric::Generic> metric) ;
-  void setRadius(double); ///< Set radius
+  virtual void setRadius(double radius); ///< Set radius
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system
-  void useGenericImpact(int);
   
  public:
 #ifdef GYOTO_USE_XERCES
@@ -100,18 +94,12 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::Generic {
 
   // Outputs
   // -------
- public:
-  virtual double operator()(double const coord[4]) ;
-
-  virtual int Impact(Photon *ph, size_t index, Astrobj::Properties *data=NULL);
-
-
  protected:
-  int Impact_(Photon *ph, size_t index, Astrobj::Properties *data=NULL);
+  virtual void getCartesian(double const * const dates, size_t const n_dates,
+		double * const x, double * const y,
+		double * const z, double * const xprime=NULL,
+		double * const yprime=NULL,  double * const zprime=NULL) ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-
-  double emission(double nu_em, double dsem, double cp[8], double co[8]=NULL)
-    const;
 
 
 };

@@ -11,7 +11,7 @@ STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \
 	ThinInfiniteDiskBL.C ThinInfiniteDiskKS.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
-	ComplexAstrobj.C
+	ComplexAstrobj.C UniformSphere.C
 
 LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
 

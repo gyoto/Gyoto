@@ -9,7 +9,7 @@
     <Position> 1000. 100. 1.22 0. </Position>
     <Time unit="geometrical"> 1000. </Time>
     <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
-    <Resolution> 128 </Resolution>
+    <Resolution> 32 </Resolution>
     <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
   </Screen>
 
@@ -71,6 +71,34 @@
       </Opacity>
       <OpticallyThin/>
     </SubAstrobj>
+  <SubAstrobj kind = "Torus">
+    <LargeRadius> 9 </LargeRadius>
+    <SmallRadius> 1. </SmallRadius>
+    <Spectrum kind="PowerLaw">
+      <Exponent> 0. </Exponent>
+      <Constant> 1e-2 </Constant>
+    </Spectrum>
+    <Opacity kind="PowerLaw">
+      <Exponent> 0. </Exponent>
+      <Constant> 1e-3 </Constant>
+    </Opacity>
+    <OpticallyThin/>
+  </SubAstrobj>
+  <SubAstrobj kind = "FixedStar">
+    <Radius> 12 </Radius>
+    <Position> 0 0 0 </Position>
+      <Spectrum kind="PowerLaw">
+	<Exponent> 0 </Exponent>
+	<Constant> 0.001 </Constant>
+      </Spectrum>
+      <Opacity kind="PowerLaw">
+	<Exponent> 0 </Exponent>
+	<Constant> 0.01 </Constant>
+      </Opacity>
+    <RMax> 10000. </RMax>
+    <OpticallyThin/>
+  </SubAstrobj>
+
   </Astrobj>
 
   <Quantities>Spectrum</Quantities>
