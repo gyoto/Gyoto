@@ -102,7 +102,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Generic {
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             /// < called from Factory
+                                             ///< called from Factory
   static Astrobj::Subcontractor_t Subcontractor;
   static void Init();
 #endif

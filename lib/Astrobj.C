@@ -78,13 +78,6 @@ Generic::Generic(const Generic& orig) :
     }
     if (debug()) cerr << "DEBUG: out of Astrobj::Generic (Copy)" << endl;
 }
-Generic * Generic::clone() const {
-  string msg = "Generic::clone() called: cloning not supported "
-    "for astrobj kind ";
-  msg += getKind();
-  throwError (msg);
-  return const_cast<Generic*>(this); // to avoid warning
-}
 
 Generic::~Generic() {
   if (debug()) cerr << "Astrobj Destruction" << endl;

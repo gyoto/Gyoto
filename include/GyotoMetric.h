@@ -219,7 +219,7 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
    * shared properties
    */
 
-  virtual void fillElement(FactoryMessenger *fmp) ; /// < called from Factory
+  virtual void fillElement(FactoryMessenger *fmp) ; ///< called from Factory
   void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
 #endif
 

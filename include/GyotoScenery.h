@@ -177,7 +177,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(FactoryMessenger *fmp); /// < called from Factory
+    void fillElement(FactoryMessenger *fmp); ///< called from Factory
 #endif
  
 };

@@ -41,38 +41,34 @@ namespace Gyoto{
  * \brief Complex astronomical object
  *
  *  A Gyoto::Astrobj::Generic whic contain several
- *  Gyoto::Astrobj::Generic instances.
+ *  Gyoto::Astrobj::Generic instances. It is essentially a
+ *  SmartPointer<Astrobj::Generic> array, which some methods
+ *  arround. Indeed, the operator[](size_t i) method is implemented to retrived
+ *  the i-th element.
  *
- *  When implementing a new object, you must:
- *    - make sure the object can be loaded from XML by providing a
- *      subcontractor;
- *    - make sure this subcontractor is registerred in the initialization
- *      routine of your plug-in;
- *    - make sure Impact() works (see below).
- *
- *  In addition, you should make sure that your object plays nicely in
- *  the Yorick plug-in, which means:
- *    - implement the copy constructor and the clone() method;
- *    - implement the fillElement method, used for printing and saving to
- *      XML.
- *
- *  There are basically two ways of making Impact() work: either by
- *  providing your own Impact() function, or by implementing a bunch
- *  of lower level, simpler functions which are used by the generic
- *  Astrobj::Impact(). Those lower functions are not pure virtual, but
- *  the default throws a runtime error:
- *    - operator()() yields a distance or potential defining the interior
- *      of the object;
- *    - getVelocity() yields the velocity field of the fluid ;
- *    - processHitQuantities() fills the Spectrum etc. quantities in the
- *      data parameter of Impact().
- *
- *  processHitQuantities() itself is like Impact() in that you have
- *  two choices: either reimplement it or implement a second lot of
- *  small, low-level functions:
- *    - emission();
- *    - integrateEmission();
- *    - transmission().
+ * In an XML description, the
+ *  &lt;Astrobj&gt; section must be unique, its kind is
+ *  "Complex". Each sub-astrobj then appears as a
+ *  &lt;SubAstrobj&gt; subsection:
+\code
+  <Astrobj kind = "Complex">
+    <SubAstrobj kind = "ThinInfiniteDiskBL"/>
+    <SubAstrobj kind = "Star">
+      <Radius> 2. </Radius>
+      <Velocity> 0. 0. 0.037037 </Velocity>
+      <Position> 600. 9. 1.5707999999999999741 0 </Position>
+      <Spectrum kind="PowerLaw">
+	<Exponent> 0 </Exponent>
+	<Constant> 0.001 </Constant>
+      </Spectrum>
+      <Opacity kind="PowerLaw">
+	<Exponent> 0 </Exponent>
+	<Constant> 0.01 </Constant>
+      </Opacity>
+      <OpticallyThin/>
+    </SubAstrobj>
+  </Astrobj>
+\endcode
  *
  */
 class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
@@ -92,28 +88,38 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   double step_max_;
 
  public:
-  /**
-   *  kind_ =  "Default", rmax_ = 0., rmax_set_ = 0.
-   */
   Complex(); ///< Default constructor.
-
   Complex(const Complex& ) ; ///< Copy constructor.
   virtual Complex* clone() const; ///< "Virtual" copy constructor
-  
-  virtual ~Complex() ; ///< Destructor: does nothing.
+
+  /**
+   *  Frees every SmartPointer<Astrobj::Generic> before freed the array itself.
+   */
+  virtual ~Complex() ; ///< Destructor
 
   // Mutators
   // --------
  public:
+  /**
+   * If the Astrobj::Complex itself does not have a metric already
+   * assigned, it takes it from the new element. Else, it sets the
+   * metric in the new element to its own. This ensures that all
+   * elements use the same metric (this heuristic is not entirely
+   * fool-proof, it's safer to set the metric directly in the
+   * Astrobj::Complex).
+   */
   void append(Gyoto::SmartPointer<Gyoto::Astrobj::Generic> element);
+  ///< Add element at the end of the array.
   void remove(size_t i);
+  ///< Remove i-th element from the array.
   size_t getCardinal() const;
+  ///< Get the number of elements in the array.
   void setMetric(SmartPointer<Metric::Generic> gg);
+  ///< Set metric in each element.
 
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             /// < called from Factory
   static Astrobj::Subcontractor_t Subcontractor;
   static void Init();
 
@@ -122,13 +128,42 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   // Outputs
   // -------
  public:
+
+  /**
+   * Astrobj::Complex::Impact(Gyoto::Photon* ph, size_t index,
+   * Astrobj::Properties *data) calls the specific implementation of
+   * Astrobj::Generic::Impact() for each of its
+   * elements twice: the first time, data is set to NULL so that
+   * Astrobj::Complex::Impact() only knows whether each object is hit
+   * by the Photon. If no object is hit, return. If a single object is
+   * hit, call Impact() again only for this object, passing data this
+   * time. If several objects are hit, the Photon's trajectory is
+   * refined so that the step is at most step_max_ and the Impact()
+   * methods for each of the hit objects are called again for each
+   * step, passing data. It is therefore important that the
+   * transmission of the Photon is not touched by Impact() when
+   * data==NULL.
+   * 
+   */
   virtual int Impact(Gyoto::Photon* ph, size_t index,
 		     Astrobj::Properties *data=NULL)  ;
-  ///< does a photon at these coordinates impact the object?
+  ///< Call Impact() for each of the elements.
 
 
+  /**
+   * This should work as expected:
+\code
+  SmartPointer<Astrobj::Complex> cplx;
+  SmartPointer<Astrobj::TypeA> objA;
+  SmartPointer<Astrobj::TypeB> objB;
+  cplx -> append(objA);
+  cplx[0] = objB;
+\endcode
+   */
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> operator[](size_t i) ;
-  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> const operator[](size_t i) const ;
+  ///< Retrieve i-th element.
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> const operator[](size_t i) const;
+  ///< Retrieve a const version of the i-th element.
   
  protected:
 };

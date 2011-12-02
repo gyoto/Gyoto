@@ -78,7 +78,7 @@ namespace Gyoto{
    <Opacity kind="..."> parameters for this spectrum kind </Opacity>
 \endcode
  * setGenericParameters() also takes care of calling
- * Generic::setParameters().
+ * Generic::setGenericParameter().
  */
 class Gyoto::Astrobj::UniformSphere :
   public Gyoto::Astrobj::Generic {
@@ -123,36 +123,63 @@ class Gyoto::Astrobj::UniformSphere :
   virtual std::string className_l() const ; ///< "uniformsphere"
 
   virtual void setSpectrum(SmartPointer<Spectrum::Generic>);
+  ///< Set spectrum_
   virtual SmartPointer<Spectrum::Generic> getSpectrum() const;
+  ///< Get spectrum_
   virtual void setOpacity(SmartPointer<Spectrum::Generic>);
+  ///< Set opacity_
   virtual SmartPointer<Spectrum::Generic> getOpacity() const;
-
- public:
+  ///< Get opacity_
   double getRadius() const ; ///< Get radius_
   void   setRadius(double); ///< Set radius_
 
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; /// < called from Factory
+  /**
+   * The sub-classes implementations of the
+   * Astrobj::Generic::fillElement() method should call
+   * Astrobj::UniformSphere::fillElement() to fill the common bits.
+   */
+  virtual void fillElement(FactoryMessenger *fmp) const ;
+  ///< Fill the generic XML bits
+  /**
+   * The sub-classes subcontractor function (see
+   * Astrobj::Subcontractor_t) should call this after creating the
+   * object to interpret the common bits (Spectrum, Opacity, Radius):
+\code
+  SmartPointer<MyObject> object = new MyObject (.....);
+  fmp -> reset();
+  object -> setGenericParameters(fmp);
+\endcode
+   */
   virtual void setGenericParameters(FactoryMessenger *fmp) ;
-  /// < Interpret common XML sections
+  ///< Interpret common XML sections
 #endif
 
   virtual double operator()(double const coord[4]) ;
+  ///< Square distance to the center of the sphere
 
  protected:
+  /**
+   * If the coordinate system of the Metric object is spherical, use a
+   * trivial conversion.
+   */
   virtual void getCartesian(double const * const dates, size_t const n_dates,
 		double * const x, double * const y,
 		double * const z, double * const xprime=NULL,
 		double * const yprime=NULL,  double * const zprime=NULL) =0;
+  ///< Yield the Cartesian coordinates of the center of the sphere
 
   virtual void getVelocity(double const pos[4], double vel[4]) = 0;
+  ///< Yield velocity of the center of the sphere.
 
   virtual double emission(double nu_em, double dsem,
 			  double cp[8], double co[8]=NULL) const;
+  ///< Emission is determined by spectrum_ and opacity_
   virtual double integrateEmission(double nu1, double nu2, double dsem,
 				   double c_ph[8], double c_obj[8]=NULL) const;
   virtual double transmission(double nuem, double dsem, double*) const ;
+  ///< Transmission is determined by opacity_
 
 };
 

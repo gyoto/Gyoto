@@ -93,7 +93,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
 		    const double u1[4], const double u2[4]) const ;
 
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); /// < called from Factory
+  virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
   static Metric::Subcontractor_t Subcontractor;
   static void Init();
 #endif

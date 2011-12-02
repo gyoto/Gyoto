@@ -145,7 +145,7 @@ class Gyoto::Astrobj::Star :
 
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; /// < called from Factory
+  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
   static Astrobj::Subcontractor_t Subcontractor;
   static void Init();
 #endif

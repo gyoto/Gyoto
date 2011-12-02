@@ -214,8 +214,25 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   Generic(std::string kind); ///< Set kind in constructor.
 
+  /**
+   * Make a deep copy of an Astrobj::Generic instance
+   */
   Generic(const Generic& ) ; ///< Copy constructor.
-  virtual Generic* clone() const; ///< "Virtual" copy constructor
+
+  /**
+   * This method must be implemented by the various Astrobj::Generic
+   * subclasses in order to support cloning:
+\code
+SmartPointer<Astrobj> deep_copy = original->clone();
+\endcode
+   *
+   * Implementing it is very straightforward, as long as the copy
+   * constructor Generic(const Generic& ) has been implemented:
+\code
+MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
+\endcode
+   */
+  virtual Generic* clone() const = 0 ; ///< "Virtual" copy constructor
   
   virtual ~Generic() ; ///< Destructor: does nothing.
 
@@ -260,8 +277,18 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   virtual void unsetRmax() ; ///< Set rmax_set_ to 0.
 
+  /**
+   * Set flag indicating that radiative transfer should be integrated,
+   * i.e. the object is to be considered optically thin.
+   * \param flag: 1 if optically thin, 0 if optically thick.
+   */
   void setFlag_radtransf(int flag);
+  ///< Set whether the object is optically thin.
+  /**
+   * See setFlag_radtransf(int flag).
+   */
   int getFlag_radtransf() const ;
+  ///< Query whether object is optically thin.
 
   /**
    * Return a Gyoto::Quantity_t suitable as input to
@@ -281,7 +308,17 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
 
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             /// < called from Factory
+                                             ///< called from Factory
+
+  /**
+   * The fillElement(FactoryMessenger *fmp) method for each Astrobj
+   * kind should call setGenericParameter(std::string name,
+   * std::string content) on each XML entity it doesn't know of so
+   * that Generic::setGenericParameter(std::string name, std::string
+   * content) can interpret them. The known tags are:
+   * &lt;OpticallyThin/&gt;, &lt;OpticallyThick/&gt; and &lt;RMax&gt;
+   * value &lt;/RMax&gt;.
+   */
   void setGenericParameter(std::string name, std::string content) ;
   ///< To be called by fillElement()
 
@@ -304,6 +341,11 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    * and store at the pointed-to adress. For instance, all objects
    * know the "intensity" property. If data->intensity != NULL, the
    * instensity is computed and stored in *data->intensity.
+   *
+   * If data is non-NULL and only in this case, Impact must also call
+   * ph->transmit() to update the transmissions of the Photon (see
+   * Photon::transmit(size_t, double)). This must not be done if data
+   * is NULL (see Astrobj::Complex::Impact() for an explanation).
    *
    * \param ph   Gyoto::Photon aimed at the object;
    * \param index    Index of the last photon step;
@@ -419,9 +461,6 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   virtual double transmission(double nuem, double dsem, double coord[8]) const ;
      ///< Transmission: exp( \alpha_{\nu} * dsem )
   
-  // Display
-  //friend std::ostream& operator<<(std::ostream& , const Astrobj& ) ;
-
 };
 
 /**

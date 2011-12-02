@@ -71,7 +71,7 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
    */
 
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             /// < called from Factory
+                                             ///< called from Factory
 #endif
 };
 
