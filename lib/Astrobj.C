@@ -43,8 +43,7 @@ Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
 Generic::Generic(string kind) :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0)
 {
   if (debug()) cerr << "Astrobj Construction" << endl;
   
@@ -52,23 +51,21 @@ Generic::Generic(string kind) :
 
 Generic::Generic() :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0)
 {
   if (debug()) cerr << "Astrobj Construction" << endl;
 }
 
 Generic::Generic(double radmax) :
-  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
-  critical_value_(DBL_MIN)
+  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0)
 {
   if (debug()) cerr << "Astrobj Construction" << endl;
 }
+
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
-  flag_radtransf_(orig.flag_radtransf_), critical_value_(orig.critical_value_),
-  safety_value_(orig.safety_value_)
+  flag_radtransf_(orig.flag_radtransf_)
 {
     if (debug()) cerr << "DEBUG: in Astrobj::Generic (Copy)" << endl;
     if (orig.gg_()) {
@@ -103,76 +100,6 @@ void Generic::unsetRmax() {
   rmax_set_=0;
 }
 
-double Generic::operator()(double const * const) {
-  stringstream ss;
-  ss << getKind() << "::operator()() is unimplemented";
-  throwError(ss.str());
-  return 0.;
-}
-
-void Generic::getVelocity(double const * const, double *) {
-  stringstream ss;
-  ss << getKind() << "::getVelocity() is unimplemented";
-  throwError(ss.str());
-}
-
-int Generic::Impact(Photon* ph, size_t index, Properties *data){
-  if (debug())
-    cerr << "DEBUG: Generic::Impact called for " << getKind() << endl;
-  double p1[8], p2[8];
-  ph->getCoord(index, p1);
-  ph->getCoord(index+1, p2);
-  double tmin, minval;
-
-  double t1 = p1[0], t2=p2[0];
-  double val1=(*this)(p1), val2=(*this)(p2);
-
-  if (val1 > critical_value_) {
-    if (val2 > critical_value_) {
-      if ( val1 > safety_value_ && val2 > safety_value_) {
-	if (val1 < val2) {
-	  minval = val1; tmin = t1;
-	} else {
-	  minval = val2; tmin = t2;
-	}
-      } else
-	minval = ph -> findMin(this, p1[0], p2[0], tmin, critical_value_) ;
-      if (minval>critical_value_) {
-	if (data) {
-	  /* EmissionTime */
-	  if (data->time) *data->time=tmin;
-	  /* MinDistance */
-	  if ((data->distance) && (*(data->distance)>minval) )
-	    *data->distance=minval;
-	  /* FirstMinDist */
-	  if (data->first_dmin) { 
-	    if (!data->first_dmin_found) {
-	      if (*(data->first_dmin)>minval) *(data->first_dmin)=minval;
-	      else data->first_dmin_found=1;
-	    }
-	  }
-	}
-	return 0;
-      }
-      ph -> findValue(this, critical_value_, tmin, t2);
-    }
-    ph -> findValue(this, critical_value_, t2, t1);
-  } else if (val2 > critical_value_)
-    ph -> findValue(this, critical_value_, t1, t2);
-
-  double cph[8] = { t2 };
-  ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
-		 cph+4, cph+5, cph+6, cph+7);
-
-  double coh[8] = { t2 , cph[1], cph[2], cph[3] };
-  getVelocity(coh, coh+4);
-
-  processHitQuantities(ph, cph, coh, t2-t1, data);
-
-  return 1;
-
-}
-
 void Generic::fillElement(FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute("kind", kind_);
   //  fmp -> setParameter ("Flag_radtransf", flag_radtransf_);
@@ -191,6 +118,7 @@ void Generic::setGenericParameter(string name, string content)  {
     rmax_ = atof(tc); rmax_set_=1;
   }
 }
+
 void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				     double* coord_obj_hit, double dt,
 				     Properties* data) const {
@@ -340,9 +268,10 @@ double Generic::transmission(double, double, double*) const {
   return double(flag_radtransf_);
 }
 
-double Generic::emission(double , double , double *, double *) const
+double Generic::emission(double , double dsem, double *, double *) const
 {
-  throwError("emission() not implemented for this Astrobj kind");
+  if (flag_radtransf_) return dsem;
+  return 1.;
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,

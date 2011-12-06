@@ -90,6 +90,7 @@ namespace Gyoto{
   virtual int Impact(Photon *ph, size_t index, Astrobj::Properties *data=NULL);
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
+
   // Outputs
   // -------
  public:

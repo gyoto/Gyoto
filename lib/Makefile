@@ -5,7 +5,7 @@ include ../local_settings
 
 SRC = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C \
 	Worldline.C FocalPlane.C Photon.C Scenery.C WorldlineIntegState.C \
-	Error.C Screen.C Spectrum.C Spectrometer.C
+	Error.C Screen.C Spectrum.C Spectrometer.C StandardAstrobj.C
 
 STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \

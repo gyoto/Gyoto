@@ -19,6 +19,7 @@
 
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoStandardAstrobj.h"
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
 #include "GyotoWorldlineIntegState.h"
@@ -416,7 +417,7 @@ int Photon::hit(Astrobj::Properties *data) {
   
 }
 
-double Photon::findMin(Astrobj::Generic* object,
+double Photon::findMin(Astrobj::Standard* object,
 		       double t1, double t2, double &tmin,
 		       double threshold) {
   if (debug())
@@ -457,7 +458,7 @@ double Photon::findMin(Astrobj::Generic* object,
 
 }
 
-void Photon::findValue(Astrobj::Generic* object, double value,
+void Photon::findValue(Astrobj::Standard* object, double value,
 		       double tinside, double &toutside) {
   double pcur[4];
   while (fabs(toutside-tinside) > GYOTO_T_TOL) {

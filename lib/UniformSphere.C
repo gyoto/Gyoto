@@ -37,7 +37,7 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 UniformSphere::UniformSphere(string kind) :
-  Astrobj::Generic(kind),
+  Astrobj::Standard(kind),
   spectrum_(NULL),
   opacity_(NULL)
 {
@@ -51,7 +51,7 @@ UniformSphere::UniformSphere(string kind) :
 
 UniformSphere::UniformSphere(string kind,
 			     SmartPointer<Metric::Generic> met, double rad) :
-  Astrobj::Generic(kind),
+  Astrobj::Standard(kind),
   radius_(rad),
   spectrum_(NULL), opacity_(NULL)
 {
@@ -65,7 +65,7 @@ UniformSphere::UniformSphere(string kind,
 }
 
 UniformSphere::UniformSphere(const UniformSphere& orig) :
-  Astrobj::Generic(orig),
+  Astrobj::Standard(orig),
   radius_(orig.radius_),
   spectrum_(NULL), opacity_(NULL)
 {

@@ -31,7 +31,7 @@
 
 namespace Gyoto{
   class Photon;
-  namespace Astrobj { class Generic; }
+  namespace Astrobj { class Generic; class Standard; }
 }
 
 #include <GyotoDefs.h>
@@ -154,7 +154,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *              a date below the threshold, not the accurate
    *              minimum).
    */
-  double findMin(Astrobj::Generic* object, double t1, double t2, double &tmin,
+  double findMin(Astrobj::Standard* object, double t1, double t2, double &tmin,
 		 double threshold = DBL_MIN) ;
 
   /**
@@ -171,7 +171,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        value, very close to value. toutside is closer to tinside
    *        on output than on input.
    */
-  void findValue(Astrobj::Generic* object, double value,
+  void findValue(Astrobj::Standard* object, double value,
 		 double tinside, double &toutside) ;
 
 #ifdef GYOTO_USE_XERCES

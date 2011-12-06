@@ -18,6 +18,7 @@
  */
 
 #include "GyotoTorus.h"
+#include "GyotoStandardAstrobj.h"
 #include "GyotoUtils.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoPowerLawSpectrum.h"
@@ -34,7 +35,7 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 using namespace std;
 
-Torus::Torus() : Generic("Torus"),
+Torus::Torus() : Standard("Torus"),
 	  c_(3.5)
 {
   critical_value_ = 0.25; // 0.5*0.5
@@ -44,7 +45,7 @@ Torus::Torus() : Generic("Torus"),
 }
 
 Torus::Torus(const Torus& o)
-  : Generic(o),
+  : Standard(o),
     c_(o.c_),
     spectrum_(o.spectrum_()?o.spectrum_->clone():NULL),
     opacity_(o.opacity_()?o.opacity_->clone():NULL)
@@ -148,7 +149,7 @@ void Torus::fillElement(FactoryMessenger *fmp) const {
   opacity_ -> fillElement(childfmp);
   delete childfmp;
 
-  Generic::fillElement(fmp);
+  Standard::fillElement(fmp);
 }
 
 SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Torus::Subcontractor(FactoryMessenger* fmp) {

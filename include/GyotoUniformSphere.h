@@ -36,7 +36,7 @@ namespace Gyoto{
 }
 
 #include <GyotoMetric.h>
-#include <GyotoAstrobj.h>
+#include <GyotoStandardAstrobj.h>
 #include <GyotoSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
@@ -81,7 +81,7 @@ namespace Gyoto{
  * Generic::setGenericParameter().
  */
 class Gyoto::Astrobj::UniformSphere :
-  public Gyoto::Astrobj::Generic {
+  public Gyoto::Astrobj::Standard {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::UniformSphere>;
   
   // Data : 

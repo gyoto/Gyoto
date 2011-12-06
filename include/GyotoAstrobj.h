@@ -119,27 +119,31 @@ namespace Gyoto{
  *    - implement the fillElement method, used for printing and saving to
  *      XML.
  *
- *  There are basically two ways of making Generic::Impact() work: either by
- *  providing your own Generic::Impact() function, or by implementing a bunch
- *  of lower level, simpler functions which are used by the generic
- *  Generic::Impact(). Those lower functions are not pure virtual, but
- *  the default throws a runtime error:
- *    - Generic::operator()() yields a distance or potential defining the interior
- *      of the object;
- *    - Generic::getVelocity() yields the velocity field of the fluid ;
- *    - Generic::processHitQuantities() fills the Spectrum etc. quantities in the
- *      data parameter of Generic::Impact().
+ *  There are basically two ways of making Generic::Impact() work:
+ *  either by making the Astrobj a sub-class of the low-level
+ *  Gyoto::Astrobj::Generic class ans providing your own
+ *  Generic::Impact() function (which, in principle, should rely on
+ *  Generic::processHitQuantities()), or by making the Astrobj a
+ *  sub-class of the higher-level Gyoto::Astrobj::Standard class and
+ *  implementing two lower level, simpler functions which are
+ *  used by the Standard::Impact():
+ *    - Standard::operator()() yields a distance or potential defining
+ *      the interior of the object;
+ *    - Standard::getVelocity() yields the velocity field of the fluid.
  *
- *  Generic::processHitQuantities() itself is like Generic::Impact() in that you have
- *  two choices: either reimplement it or implement a second lot of
- *  small, low-level functions:
+ *  Generic::processHitQuantities() itself is an intermediate-level
+ *  function which you may choose to reimplement. It uses three
+ *  low-level, easy to implement functions:
  *    - Generic::emission();
  *    - Generic::integrateEmission();
  *    - Generic::transmission().
+ *  Default implementations of these three functions exist, they have
+ *  little physical relevance but allow quick 0-th order vizualisation
+ *  of your object.
  *
- * To be usable, a Astrobj::Generic sub-classes should register an
- * Astrobj::Subcontractor_t function using the Astrobj::Register()
- * function. See also \ref writing_plugins_page .
+ * To be usable, a Astrobj::Generic (or Astrobj::Standard) sub-classe
+ * should register an Astrobj::Subcontractor_t function using the
+ * Astrobj::Register() function. See also \ref writing_plugins_page .
  */
 /**
  * \class Gyoto::Astrobj::Generic
@@ -192,9 +196,6 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   const std::string kind_; ///< Kind of object (e.g. "Star"...)
 
   int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
-
-  double critical_value_; ///< see operator()(double const coord[4]) const
-  double safety_value_; ///< see operator()(double const coord[4]) const
 
   // Constructors - Destructor
   // -------------------------
@@ -319,7 +320,7 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    * &lt;OpticallyThin/&gt;, &lt;OpticallyThick/&gt; and &lt;RMax&gt;
    * value &lt;/RMax&gt;.
    */
-  void setGenericParameter(std::string name, std::string content) ;
+  virtual void setGenericParameter(std::string name, std::string content) ;
   ///< To be called by fillElement()
 
 #endif
@@ -332,20 +333,25 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    * integration steps of the photon's trajectory (those two steps are
    * photon->getCoord(index, coord1) and photon->getCoord(index+1,
    * coord2)). Impact returns 1 if the photon impacts the object
-   * between these two steps, else 0.
+   * between these two steps, else 0. In many cases of geometrically
+   * thick obects, the implementation Astrobj::Standard::Impact() will
+   * be fine.
    *
-   * Impact will compute observable properties on demand: if the data
-   * pointer is non-NULL, the object will look in it for pointers to
-   * properties which apply to its kind. If a pointer to a property
-   * known to this object is present, then the property is computed
-   * and store at the pointed-to adress. For instance, all objects
-   * know the "intensity" property. If data->intensity != NULL, the
-   * instensity is computed and stored in *data->intensity.
+   * Impact will call Generic::processHitQuantities() (which is
+   * virtual and may be re-implemented) to compute observable
+   * properties on demand: if the data pointer is non-NULL, the object
+   * will look in it for pointers to properties which apply to its
+   * kind. If a pointer to a property known to this object is present,
+   * then the property is computed and store at the pointed-to
+   * adress. For instance, all objects know the "intensity"
+   * property. If data->intensity != NULL, the instensity is computed
+   * and stored in *data->intensity.
    *
-   * If data is non-NULL and only in this case, Impact must also call
-   * ph->transmit() to update the transmissions of the Photon (see
-   * Photon::transmit(size_t, double)). This must not be done if data
-   * is NULL (see Astrobj::Complex::Impact() for an explanation).
+   * If data is non-NULL and only in this case, processHitQuantities()
+   * will also call ph->transmit() to update the transmissions of the
+   * Photon (see Photon::transmit(size_t, double)). This must not be
+   * done if data is NULL (see Astrobj::Complex::Impact() for an
+   * explanation).
    *
    * \param ph   Gyoto::Photon aimed at the object;
    * \param index    Index of the last photon step;
@@ -354,59 +360,25 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    * \return 1 if impact, 0 if not.
    */
   virtual int Impact(Gyoto::Photon* ph, size_t index,
-		     Astrobj::Properties *data=NULL)  ;
+		     Astrobj::Properties *data=NULL) = 0 ;
   ///< does a photon at these coordinates impact the object?
-
-
-  /**
-   * A potential, distance, or whatever function such that
-   * operator()(double coord[4]) < critical_value_ if and only if
-   * coord is inside the object. This function is used by the default
-   * implmenetation of Impact(). If Impact() is overloaded, it is not
-   * necessary to overload operator()(double coord[4]). The default
-   * implementation throws an error.
-   */
-  virtual double operator()(double const coord[4]) ;
   
- protected:
-  /*
-    THOSE ARE NOT PART OF THE API.
-
-    THEY _MAY_ BE OVERLOADED AND CALLED BY IMPACT OR CALL ONE-ANOTHER
-   */
-
   /**
-   * Not part of the API. This function is not pure virtual since it
-   * doesn't need to be implemented if Impact() is overloaded. The
-   * generic implementation throws a runtime error.
-   *
-   * Used by the generic Impact().
-   *
-   * Fill vel with the 4-vector velocity of the fluid at 4-position pos.
-   *
-   * \param pos input, 4-position at which to compute velocity;
-   * \param vel output, 4-velocity at pos.
-   */
-  virtual void getVelocity(double const pos[4], double vel[4]) ;
-
-  /**
-   * Not part of the API.
-   *
    * processHitQuantities fills the requested data in Impact. To use
-   * it, you need to call it in the Impact() method for you object in
+   * it, you need to call it in the Impact() method for your object in
    * case of hit. It will fill Redshift, Intensity, Spectrum,
-   * BinSpectrum.
+   * BinSpectrum and update the Photon's transmission by calling
+   * Photon::transmi(), only if data==NULL.
    *
    * You can overload it for your Astrobj. The generic implementation
-   * calls emission() below.
+   * calls emission(), integrateEmission() and transmission() below.
    */
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
-				    double* coord_obj_hit, double dt,
-				    Astrobj::Properties* data) const;
+                                   double* coord_obj_hit, double dt,
+                                   Astrobj::Properties* data) const;
 
   /**
-   * Not part of the API, called by the default implementation for
-   * processHitQuantities().
+   * Called by the default implementation for processHitQuantities().
    *
    * emission() computes the intensity I_nu emitted by the small
    * volume of length dsem. It should take self-absorption along dsem
@@ -434,6 +406,10 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *                          dlambda = ds/nu
    *          This shows that Eq. [*] is homogeneous.
    *
+   * The default implementation returns 1. if optically thick and dsem
+   * if optically thin. It allows for a quick implementation of your
+   * object for visualization purposes.
+   *
    * \param nu_em Frequency at emission
    * \param dsem length over which to integrate inside the object
    * \param coord_ph Photon coordinate
@@ -443,16 +419,24 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
 			  double coord_obj[8]=NULL)
     const ; ///< INVARIANT emission j_{\nu}/\nu^{2}
 
+  /**
+   * Compute the integral of emission() from nu1 to nu2. The default
+   * implementation is a numerical integrator which works well enough
+   * and is reasonably fast if emission() is a smooth function
+   * (i.e. no emission or absorption lines). If possible, it is wise
+   * to implement an analytical solution. It is used by
+   * processHitQuantities to compute the "BinSpectrum" quantity which
+   * is the most physical: it is the only quantity that can be
+   * actually measured directly by a real-life instrument.
+   */
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const;
+                                  double c_ph[8], double c_obj[8]=NULL) const;
     ///< \sum_nu1^nu2 I_nu dnu (or j_nu)
 
   /**
-   * Not part of the API, called by the default implementation for
-   * processHitQuantities().
-   *
    * transmission() computes the transmission of this fluid element or
-   * 0 if optically thick.
+   * 0 if optically thick. The default implementation returns 1. (no
+   * attenuation) if optically thin, 0. if optically thick.
    *
    * \param nuem frequency in the fluid's frame
    * \param coord Photon coordinate
@@ -460,7 +444,8 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    */
   virtual double transmission(double nuem, double dsem, double coord[8]) const ;
      ///< Transmission: exp( \alpha_{\nu} * dsem )
-  
+
+
 };
 
 /**
