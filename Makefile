@@ -34,16 +34,18 @@ lib/$(LIBGYOTO_FILE): lib/*.C
 
 CHECK_CMD:=$(DYLIB_VAR)=lib:$$$(DYLIB_VAR) bin/gyoto
 check: lib/$(LIBGYOTO_FILE) bin/gyoto check-yorick
+	$(CHECK_CMD) doc/examples/example-thin-disk.xml \
+	   \!example-thin-disk.fits
 	$(CHECK_CMD) doc/examples/example-complex-astrobj.xml \
 	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
 	$(CHECK_CMD) --resolution=32 doc/examples/example-moving-star.xml \
 	   \!example-moving-star.fits
-	$(CHECK_CMD) doc/examples/example-thin-infinite-disk-BL.xml \
-	   \!example-thin-infinite-disk-BL.fits
-	$(CHECK_CMD) doc/examples/example-thin-infinite-disk-KS.xml \
-	   \!example-thin-infinite-disk-KS.fits
+	$(CHECK_CMD) doc/examples/example-page-thorne-disk-BL.xml \
+	   \!example-page-thorne-disk-BL.fits
+	$(CHECK_CMD) doc/examples/example-page-thorne-disk-KS.xml \
+	   \!example-page-thorne-disk-KS.fits
 	$(CHECK_CMD) doc/examples/example-torus.xml \
 	   \!example-torus.fits
 

@@ -38,7 +38,8 @@
 #include <iomanip>
 #include <string>
 
-#include <GyotoAstrobj.h>
+#include "GyotoAstrobj.h"
+#include "GyotoFunctors.h"
 
 namespace Gyoto{
   namespace Astrobj {
@@ -80,7 +81,10 @@ namespace Gyoto{
  * the Astrobj::Register() function. See also \ref
  * writing_plugins_page .
  */
-class Gyoto::Astrobj::Standard : public Gyoto::Astrobj::Generic {
+class Gyoto::Astrobj::Standard :
+  public Gyoto::Astrobj::Generic,
+  public Gyoto::Functor::Double_constDoubleArray
+{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Standard>;
 
 

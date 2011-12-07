@@ -22,6 +22,5 @@
       32
     </Resolution>
   </Screen>
-  <Astrobj kind = "ThinInfiniteDiskBL">
-  </Astrobj>
+  <Astrobj kind = "PageThorneDisk"/>
 </Scenery>

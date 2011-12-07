@@ -28,18 +28,6 @@ __set_GyotoStdPlugSupplier, __gyoto_exportSupplier();
 #include "gyoto_Kerr.i"
 #include "gyoto_Star.i"
 
-extern gyoto_ThinInfiniteDiskBL;
-extern gyoto_ThinInfiniteDiskKS;
-/* DOCUMENT disk=gyoto_ThinInfiniteDiskBL(metric)
-         or disk=gyoto_ThinInfiniteDiskKS(metric)
-
-   An astronomical object (Astrobj) for GYOTO: geometrically thin,
-   optically thick, infinitely extended disk in Kerr metric.
-         
-   SEE ALSO: gyoto, gyoto_Astrobj, gyoto_KerrBL, gyoto_KerrKS
-   
- */
-
 ///////// FIXEDSTAR
 
 extern _gyoto_FixedStar_register_as_Astrobj;

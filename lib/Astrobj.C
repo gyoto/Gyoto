@@ -270,6 +270,9 @@ double Generic::transmission(double, double, double*) const {
 
 double Generic::emission(double , double dsem, double *, double *) const
 {
+  if (debug())
+    cerr << "DEBUG: Generic::emission(): flag_radtransf_="
+	 << flag_radtransf_ << endl;
   if (flag_radtransf_) return dsem;
   return 1.;
 }

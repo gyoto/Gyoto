@@ -1,3 +1,10 @@
+/**
+ * \file GyotoFunctors.h
+ * \brief Classes which an operator() method
+
+
+ */
+
 /*
     Copyright 2011 Thibaut Paumard
 
@@ -17,27 +24,20 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <GyotoThinInfiniteDiskBL.h>
-#include "ygyoto.h"
-#include "yapi.h"
 
-using namespace Gyoto;
-using namespace Gyoto::Astrobj;
+#ifndef __GyotoFunctors_H_
+#define __GyotoFunctors_H_
 
-extern "C" {
-  // THININFINITEDISK CLASS
-  // Constructor
-  void
-  Y_gyoto_ThinInfiniteDiskBL(int n)
-  {
-    if (n!=2) y_error("gyoto_ThinInfiniteDisk_new takes exactly 2 arguments");
-    SmartPointer<Metric::Generic> *gg = yget_Metric(1);
-    if ((*gg)->getKind() != "KerrBL") y_error("Metric must be KerrBL");
-
-    SmartPointer<Astrobj::Generic> *astrobj=ypush_Astrobj();
-    try {
-      *astrobj=new ThinInfiniteDiskBL(*gg);
-    } YGYOTO_STD_CATCH ;
-    //strcpy(obj->type,"ThinInfiniteDisk");
+namespace Gyoto {
+  namespace Functor {
+    class Double_constDoubleArray;
   }
 }
+
+class Gyoto::Functor::Double_constDoubleArray
+{
+ public:
+  virtual double operator()(double const data[]) = 0;
+};
+
+#endif

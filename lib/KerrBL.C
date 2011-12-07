@@ -284,18 +284,14 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   return 0;
 }
 
-void KerrBL::circularVelocity(double const coord[4], double vel[4],
+void KerrBL::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
-  if (fabs(coord[2]-0.5*M_PI) > 1e-6) {
-    stringstream ss;
-    ss << "KerrBL::circularVelocity(): implemented only in the "
-       << "equatorial plane. theta="<< coord[2]
-       <<", fabs(pi/2-theta)=" << fabs(coord[2]-0.5*M_PI);
-    throwError(ss.str());
-  }
+  double sinth = sin(coor[2]);
+  double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
+
   vel[1] = vel[2] = 0.;
-  vel[3] = 1./(dir*pow(coord[1], 1.5) + spin_);
-  vel[0] = SysPrimeToTdot(coord, vel);
+  vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
+  vel[0] = SysPrimeToTdot(coor, vel+1);
   vel[3] *= vel[0];
 }
 

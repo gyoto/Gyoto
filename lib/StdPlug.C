@@ -24,9 +24,9 @@
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
 #include "GyotoFixedStar.h"
-#include "GyotoThinInfiniteDiskBL.h"
-#include "GyotoThinInfiniteDiskKS.h"
 #include "GyotoTorus.h"
+#include "GyotoThinDisk.h"
+#include "GyotoPageThorneDisk.h"
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
@@ -39,9 +39,9 @@ extern "C" void __GyotostdplugInit() {
   Gyoto::Astrobj::Complex::Init();
   Gyoto::Astrobj::Star::Init();
   Gyoto::Astrobj::FixedStar::Init();
-  Gyoto::Astrobj::ThinInfiniteDiskBL::Init();
-  Gyoto::Astrobj::ThinInfiniteDiskKS::Init();
   Gyoto::Astrobj::Torus::Init();
+  Gyoto::Astrobj::ThinDisk::Init();
+  Gyoto::Astrobj::PageThorneDisk::Init();
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();
   Gyoto::Spectrum::BlackBodyInit();

@@ -147,10 +147,20 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   int getCoordKind() const; ///< Get coordinate kind
   void setCoordKind(int coordkind); ///< Set coordinate kind
 
-  double getMass() const;        ///< Get mass used in unitLength()			      
-  double unitLength() const ; ///< M * G / c^2, M is in kg, unitLength in meters.
+  double getMass() const;        ///< Get mass used in unitLength()
 
- /**
+  /**
+   * Metrics implementations are free to express lengths and distances
+   * in whatever unit they see fit (presumably most often geometrical
+   * units). This function returns this unit in SI (meters).
+   */
+  double unitLength() const ; ///< M * G / c^2, M is in kg, unitLength in meters
+
+
+  virtual void cartesianVelocity(double const coord[8], double vel[3]);
+  ///< Compute xprime, yprime and zprime from 8-coordinates
+
+  /**
    * \param coord[4] 4-position (geometrical units);
    * \param v[3]     3-velocity dx1/dx0, dx2/dx0, dx3/dx0;
    * \return tdot = dx0/dtau.
@@ -159,7 +169,8 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   ///<Compute tdot as a function of dr/dt, dtheta/dt and dphi/dt. Everything is in geometrical units.
 
   /**
-   * \brief Yield circular valocity at a given position
+   * \brief Yield circular valocity at a given position (projected on
+   * equatorial plane.
    *
    * \param pos input: position,
    * \param vel output: velocity,
@@ -205,11 +216,6 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
 
   virtual double Norm3D(double* pos) const; ///< not clear
  
-  /**
-   * Metrics implementations are free to express lengths and distances
-   * in whatever unit they see fit (presumably most often geometrical
-   * units). This function returns this unit in SI (meters).
-   */
 
   // Outputs
 #ifdef GYOTO_USE_XERCES

@@ -394,6 +394,22 @@ int KerrKS::myrk4(const double* coord, const double* cst , double h, double* res
 
 }
 
+void KerrKS::circularVelocity(double const coor[4], double vel[4],
+			      double dir) const {
+
+  double rcross=sqrt ( coor[1]*coor[1] + coor[2]*coor[2] - spin_*spin_);
+  double Omega=dir*sqrt(1./(rcross*rcross*rcross));//angular Keplerian velocity
+  
+  vel[1] = -coor[2]*Omega;
+  vel[2] =  coor[1]*Omega;
+  vel[3] = 0.;
+  vel[0] = SysPrimeToTdot(coor, vel+1);
+  vel[1] *= vel[0];
+  vel[2] *= vel[0];
+
+}
+
+
 
 void KerrKS::MakeCst(const double* coord, double cst[4]) const{
   /*

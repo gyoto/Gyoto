@@ -3,15 +3,16 @@ include ../local_settings
 
 .SUFFIXES : .o .C
 
-SRC = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C \
-	Worldline.C FocalPlane.C Photon.C Scenery.C WorldlineIntegState.C \
-	Error.C Screen.C Spectrum.C Spectrometer.C StandardAstrobj.C
+SRC = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+	Worldline.C FocalPlane.C Photon.C Scenery.C			\
+	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
+	Spectrometer.C
 
 STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \
-	ThinInfiniteDiskBL.C ThinInfiniteDiskKS.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
-	ComplexAstrobj.C UniformSphere.C
+	ComplexAstrobj.C UniformSphere.C \
+	StandardAstrobj.C ThinDisk.C PageThorneDisk.C
 
 LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
 
