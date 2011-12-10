@@ -108,11 +108,11 @@ class Gyoto::Astrobj::ThinDisk :
    */
   virtual double operator()(double const coord[]) ; ///< theta-pi/2 or z
 
-  /**
-   * A function which changes sign on the equatorial plane.
-   */
   virtual double projectedRadius(double const coord[]) const ;
       ///< projected radius of position coord on the equatorial plane
+
+  virtual double sphericalPhi(double const coord[]) const;
+      ///< longitude
 
   /**
    * Used by Standard::Impact().

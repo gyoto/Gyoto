@@ -85,7 +85,19 @@ double ThinDisk::projectedRadius(double const coord[4]) const {
   case GYOTO_COORDKIND_CARTESIAN:
     return sqrt(coord[1]*coord[1]+coord[2]*coord[2]);
   default:
-    throwError("ThinDisk::Impact(): unknown COORDKIND");
+    throwError("ThinDisk::projectedRadius(): unknown COORDKIND");
+    return 0.;
+  }
+}
+
+double ThinDisk::sphericalPhi(double const coord[4]) const {
+  switch (gg_ -> getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    return coord[3];
+  case GYOTO_COORDKIND_CARTESIAN:
+    return atan2(coord[2], coord[1]);
+  default:
+    throwError("ThinDisk::sphericalPhi(): unknown COORDKIND");
     return 0.;
   }
 }

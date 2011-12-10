@@ -35,7 +35,9 @@ XERCES_LIB = -L/opt/local/lib -lxerces-c
 # Options for using cfisio:
 # -------------------------
 # cfitsio is used to save images as fits files.
-# It is required for building the gyoto executable, not used in the library.
+# It is required for building the gyoto executable.
+# Parts of the library will not be built if GYOTO_USE_CFITSIO is not set.
+GYOTO_FLAGS += -DGYOTO_USE_CFITSIO
 CFITSIO_INC = -I/opt/local/include
 CFITSIO_LIB = -L/opt/local/lib -lcfitsio
 
@@ -62,6 +64,9 @@ endif
 LIB_CXX += -lstdc++ -lm
 ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
 LIB_CXX += $(XERCES_LIB)
+endif
+ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
+LIB_CXX += $(CFITSIO_LIB)
 endif
 
 SYS=$(shell uname -s)

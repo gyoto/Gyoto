@@ -27,6 +27,9 @@
 #include "GyotoTorus.h"
 #include "GyotoThinDisk.h"
 #include "GyotoPageThorneDisk.h"
+#ifdef GYOTO_USE_CFITSIO
+#include "GyotoPatternDisk.h"
+#endif
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
@@ -42,6 +45,9 @@ extern "C" void __GyotostdplugInit() {
   Gyoto::Astrobj::Torus::Init();
   Gyoto::Astrobj::ThinDisk::Init();
   Gyoto::Astrobj::PageThorneDisk::Init();
+#ifdef GYOTO_USE_CFITSIO
+  Gyoto::Astrobj::PatternDisk::Init();
+#endif
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();
   Gyoto::Spectrum::BlackBodyInit();

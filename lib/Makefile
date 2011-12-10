@@ -14,6 +14,11 @@ STDPLUG_SRC = KerrBL.C KerrKS.C \
 	ComplexAstrobj.C UniformSphere.C \
 	StandardAstrobj.C ThinDisk.C PageThorneDisk.C
 
+ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
+STDPLUG_SRC += 	PatternDisk.C
+endif
+
+
 LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
 
 OBJ = $(SRC:.C=.o)

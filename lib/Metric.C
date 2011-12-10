@@ -120,8 +120,11 @@ double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) c
     }
   }
   if (sum>=0) {
-    cerr << "ERROR: Metric::Generic::SysPrimeToTdot: tdot2= " << -1./sum << endl;
-    throwError("In Metric.C: Impossible condition (v>c)");
+    stringstream ss;
+    ss << "In Metric.C: Impossible condition (v>c): tdot^2="<< -1/sum
+       << " at pos=["<<pos[0] << ", " << pos[1] <<", "<<pos[2] <<", "<< pos[3]
+       << "], vel=[" << v[0] << ", " << v[1] <<", "<<v[2]<<"]";
+    throwError(ss.str());
 
   }
   return sqrt(-1./sum);
