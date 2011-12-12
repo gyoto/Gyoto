@@ -71,10 +71,11 @@
  * We request that use of Gyoto in scientific publications be properly
  * acknowledged. Please cite:
  *
- *  GYOTO: a new general relativistic ray-tracing code, F. H. Vincent,
- *  T. Paumard, E. Gourgoulhon & G. Perrin 2011, Classical and Quantum
- *  Gravity, accepted.
- *  [<A HREF="http://arxiv.org/abs/1109.4769">arXiv:1109.4769</A>]
+ *  F. H. Vincent, T. Paumard, E. Gourgoulhon & G. Perrin: 
+ *  <EM>GYOTO: a new general relativistic ray-tracing code</EM>, 
+ *  Classical and Quantum Gravity <STRONG>28</STRONG>, 225011 (2011)
+ *  [<A HREF="http://dx.doi.org/10.1088/0264-9381/28/22/225011">published version</A>]
+ *  [<A HREF="http://arxiv.org/abs/1109.4769">preprint: arXiv:1109.4769</A>]
  *
  * We also request that Gyoto modifications, extensions or plug-ins
  * leading to a scientific publication be made public as free software
