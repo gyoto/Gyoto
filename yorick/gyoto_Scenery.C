@@ -79,6 +79,7 @@ extern "C" {
   void gyoto_Scenery_eval(void *obj, int n) {
     int rvset[1]={0}, paUsed[1]={0}, builder=0;
     gyoto_Scenery *s_obj = (gyoto_Scenery*)obj;
+    double * impactcoords = NULL;
 
     if (!s_obj) {
       builder=1;
@@ -92,10 +93,11 @@ extern "C" {
       "get_pointer",
       "metric", "screen", "astrobj", "delta", "quantities",
       "xmlwrite", "clone",
+      "impactcoords",
       0
     };
-    static long kglobs[9];
-    int kiargs[8], piargs[]={-1, -1, -1};
+    static long kglobs[10];
+    int kiargs[9], piargs[]={-1, -1, -1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
@@ -228,6 +230,22 @@ extern "C" {
       *ypush_Scenery() = sc->clone();
     }
 
+    /* IMPACTCOORDS */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // impactcoords=  :   Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	// perform precomputation
+      } else {              // impaccoords=double(16,res,res): Setting
+	long ntot;
+	long dims[Y_DIMSIZE];
+	size_t res=sc->getScreen()->getResolution();
+	impactcoords = ygeta_d(iarg, &ntot, dims);
+	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
+	  y_error("dimsof(impactcoords) != [3,16,res,res]");
+      }
+    }
+
     // Get ray-traced image if there is a supplementary positional argument
     if (!builder && // don't ray-trace on construction...
 	!*rvset && // has a return value already been set?
@@ -236,7 +254,7 @@ extern "C" {
       size_t res=sc->getScreen()->getResolution();
       if ((*rvset)++) y_error("Only one return value possible");
       if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
-      if (debug()) cout << "DEBUG: gyoto_Scenery: rank: "
+      if (debug()) cerr << "DEBUG: gyoto_Scenery: rank: "
 			<< yarg_rank(piargs[0]) << endl;
 
       SmartPointer<Spectrometer> spr = sc->getScreen()->getSpectrometer();
@@ -332,22 +350,6 @@ extern "C" {
 	  if (prop.redshift) y_error("can retrieve property only once");
 	  prop.redshift=data;
 	  data+=nelem;
-	} else if (!strcmp(squant[k], "ImpactR")) {
-	  if (prop.rimpact) y_error("can retrieve property only once");
-	  prop.rimpact=data;
-	  data+=nelem;
-	} else if (!strcmp(squant[k], "ImpactX")) {
-	  if (prop.x) y_error("can retrieve property only once");
-	  prop.x=data;
-	  data+=nelem;
-	} else if (!strcmp(squant[k], "ImpactY")) {
-	  if (prop.y) y_error("can retrieve property only once");
-	  prop.y=data;
-	  data+=nelem;
-	} else if (!strcmp(squant[k], "ImpactZ")) {
-	  if (prop.z) y_error("can retrieve property only once");
-	  prop.z=data;
-	  data+=nelem;
 	} else if (!strcmp(squant[k], "Spectrum")) {
 	  if (prop.spectrum) y_error("can retrieve property only once");
 	  prop.spectrum=data;
@@ -382,7 +384,7 @@ extern "C" {
       }
 
       if (i_idx.isDouble() ||j_idx.isDouble()) {
-	prop.init();
+	prop.init(nbnuobs);
 	Photon ph(sc->getMetric(), sc->getAstrobj(), sc->getScreen(),
 		  i_idx.getDVal(), j_idx.getDVal());
 	ph.hit(&prop);
@@ -390,12 +392,20 @@ extern "C" {
 	for (j=j_idx.first() ;
 	     j_idx.valid() ;
 	     j=j_idx.next()  ) {
-	  cout << "\rRay-tracing scenery: j = " << j << flush ;
+	  if (impactcoords==NULL)
+	    cout << "\rRay-tracing scenery: j = " << j << flush ;
 	  for (i=i_idx.first();
 	       i_idx.valid();
 	       i=i_idx.next() ) {
-	    prop.init();
-	    (*sc)(i, j, &prop);
+	    if(debug()) cerr << "j="<<j<<", i="<<i<<endl;
+	    prop.init(nbnuobs);
+	    if(debug())
+	      cerr << "DEBUG: gyoto_Scenery.C: "
+		"calling (*sc)(i, j, &prop, ((impactcoords=="<<impactcoords<<
+		") ? impactcoords+(j*res+i)*16 : NULL)=="
+		   <<impactcoords+(j*res+i)*16
+		   <<");" << endl;
+	    (*sc)(i, j, &prop, impactcoords ? impactcoords+((j-1)*res+i-1)*16 : NULL);
 	    ++prop;
 	  }
 	}

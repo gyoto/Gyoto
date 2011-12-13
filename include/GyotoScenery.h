@@ -36,6 +36,7 @@ namespace Gyoto{
 #include <GyotoAstrobj.h>
 #include <GyotoMetric.h>
 #include <GyotoScreen.h>
+#include <GyotoPhoton.h>
 
 /**
  * \class Gyoto::Scenery
@@ -62,7 +63,7 @@ namespace Gyoto{
  *        pixel and the Astrobj;
  * - FirstDistMin: last closest approach between Photon and Astrobj;
  * - Redshift;
- * - ImpactR, ImpactX, ImpactY, ImpactZ: R, X, Y, and Z of emission point;
+ * - ImpactCoords: 8-coordinates of the object and photon at impact;
  * - Spectrum: I_{nu} computed at various values frequencies,
  *        corresponding to the Screen's Spectrometer.
  *
@@ -123,6 +124,20 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   Gyoto::Quantity_t quantities_;
 
+  /**
+   * Used internally to not always reallocate memory when operator() is called.
+   */
+  Gyoto::Photon ph_; ///< a Photon.
+
+  /**
+   * Computation does not go back before tlim_. Default is 0. tlim_ is
+   * always expressed in geometrical units, it is essentially a tunig
+   * parameter for the ray-tracing process. tlim should be chosen to
+   * always be longer than the distance between the screen and the
+   * object.
+   */
+  double tlim_; ///< Time limit for the integration (geometrical units)
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -168,12 +183,16 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   std::string getRequestedQuantitiesString() const ;
   size_t getScalarQuantitiesCount() const ;
 
+  void setTlim(double); ///< set tlim_;
+  double getTlim() const ;///< get tlim_
+
   // Worker:
  public:
   void rayTrace(size_t imin, size_t imax, size_t jmin, size_t jmax,
-		Astrobj::Properties* data, int save=0);
+		Astrobj::Properties* data, double * impactcoords = NULL);
 
-  void operator() (size_t i, size_t j, Astrobj::Properties *data);
+  void operator() (size_t i, size_t j, Astrobj::Properties *data,
+		   double * impactcoords = NULL);
 
 #ifdef GYOTO_USE_XERCES
  public:

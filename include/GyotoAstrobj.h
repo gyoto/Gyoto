@@ -464,11 +464,10 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   double * first_dmin; ///< first local minimum in distance from object
   int first_dmin_found; ///< first_dmin will be set to the first local minimum and first_dmin_found will be set to 1 if a local minimum in distance is found. Initialize it to 0.
   double *redshift; ///< redshift factor nuobs/nuem (necessary for emission lines computation)
-  double *rimpact; ///< radial coordinate at impact (necessary for emission lines computation)
   double *spectrum; ///< I_nu (nu) (observed specific intensity)
   double *binspectrum; ///< I_nu1^nu2, the integral of I_nu over each spectral channel (i.e. what a spectrometer would measure)
   int offset; ///< spectra elements are separated by offset doubles in memory. In other words, the ith spectral element is a spectrum[i*offset].
-  double *x, *y, *z; ///< Cartesian coordinates of the Photon at impact;
+  double * impactcoords; ///< Coordinates of the object and photon at impact
   double *user1, *user2, *user3, *user4, *user5; ///< Quantities specific to Astrobj
  public:
   Properties(); ///< Default constructor (everything is set to NULL);

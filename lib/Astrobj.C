@@ -165,6 +165,10 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	cerr << "DEBUG: Generic::processHitQuantities(): "
 	     << "time=" << *data->time << endl;
     }
+    if (data->impactcoords) {
+      memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
+      memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
+    }
     if (debug())
       cerr << "DEBUG: Generic::processHitQuantities: "
 	   << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
@@ -336,16 +340,16 @@ Gyoto::Astrobj::Subcontractor_t* Astrobj::getSubcontractor(std::string name) {
 Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
-  redshift(NULL), rimpact(NULL),
-  spectrum(NULL), binspectrum(NULL), offset(1), x(NULL), y(NULL), z(NULL),
+  redshift(NULL),
+  spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 {}
 
 Astrobj::Properties::Properties( double * I, double * t) :
   intensity(I), time(t), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
-  redshift(NULL), rimpact(NULL),
-  spectrum(NULL), binspectrum(NULL), offset(1), x(NULL), y(NULL), z(NULL),
+  redshift(NULL),
+  spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 {}
 
@@ -355,13 +359,10 @@ void Astrobj::Properties::init(size_t nbnuobs) {
   if (distance)   *distance   = DBL_MAX;
   if (first_dmin){*first_dmin = DBL_MAX; first_dmin_found=0;}
   if (redshift)   *redshift   = 0.;
-  if (rimpact)    *rimpact    = 0.;
   if (spectrum) for (size_t ii=0; ii<nbnuobs; ++ii) spectrum[ii*offset]=0.; 
   if (binspectrum) for (size_t ii=0; ii<nbnuobs; ++ii)
 		     binspectrum[ii*offset]=0.; 
-  if (x)          *x=0.;
-  if (y)          *y=0.;
-  if (z)          *z=0.;
+  if (impactcoords) for (size_t ii=0; ii<16; ++ii) impactcoords[ii]=DBL_MAX;
   if (user1)      *user1=0.;
   if (user2)      *user2=0.;
   if (user3)      *user3=0.;
@@ -375,12 +376,9 @@ Astrobj::Properties Astrobj::Properties::operator++() {
   if (distance)   ++distance;
   if (first_dmin) ++first_dmin;
   if (redshift)   ++redshift;
-  if (rimpact)    ++rimpact;
   if (spectrum)   ++spectrum;
   if (binspectrum)++binspectrum;
-  if (x)          ++x;
-  if (y)          ++y;
-  if (z)          ++z;
+  if (impactcoords) impactcoords += 16;
   if (user1)      ++user1;
   if (user2)      ++user2;
   if (user3)      ++user3;

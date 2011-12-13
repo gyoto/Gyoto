@@ -33,6 +33,7 @@ static int       status    = 0;
 static long      fpixel[]  = {1,1,1};
 static long      nelements = 0;
 static double*   vect      = NULL;
+static double*   impactcoords=NULL;
 static SmartPointer<Astrobj::Properties> data = NULL;
 
 void usage() {
@@ -76,16 +77,18 @@ int main(int argc, char** argv) {
   // verbose(1);
   
   char * parfile=NULL;
+  string ipctfile="";
   string param;
 
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
-  int save=0;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
   double tobs, fov, dist, paln, incl, arg;
   size_t res;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
   bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-
+  bool  ipct=0;
+  long  ipctdims[3]={0, 0, 0};
+  double ipcttime;
 
   int i, stop=0;
   for (i=1;i<argc;++i) {
@@ -101,7 +104,11 @@ int main(int argc, char** argv) {
       else if (param.substr(0,7)=="--imax=") imax=atoi(param.substr(7).c_str());
       else if (param.substr(0,7)=="--jmin=") jmin=atoi(param.substr(7).c_str());
       else if (param.substr(0,7)=="--jmax=") jmax=atoi(param.substr(7).c_str());
-      else if (param.substr(0,6)=="--save")  save=1;
+      else if (param.substr(0,15)=="--impact-coords")  {
+	if (param.size() > 16 && param.substr(15,1)=="=")
+	  ipctfile=param.substr(16);
+	else ipct=1;
+      }
       else if (param.substr(0,7)=="--time=") {
 	tobs=atof(param.substr(7).c_str());
 	xtobs=1;
@@ -181,17 +188,52 @@ int main(int argc, char** argv) {
     SmartPointer<Astrobj::Generic> object = scenery->getAstrobj();
 
     if (xtobs) screen -> setTime        ( tobs );
+    else tobs= screen -> getTime();
     //      if (xtmin) screen -> setMinimumTime ( tmin );
     if (xres)  screen -> setResolution  ( res  );
+    else res = screen -> getResolution();
     if (xfov)  screen -> setFieldOfView ( fov  );
     if (xdist) screen -> setDistance    ( dist );
     if (xincl) screen -> setInclination ( incl );
     if (xpaln) screen -> setPALN        ( paln );
     if (xarg)  screen -> setArgument    ( arg  );
 
-    res = screen -> getResolution();
+    if (ipctfile != "") {
+      //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
+      size_t ipctnelt=0;
+      cout << "Reading precomputed impact coordinates from " << ipctfile <<endl;
+      fits_open_file(&fptr, ipctfile.c_str(), 0, &status);
+      fits_movnam_hdu(fptr, ANY_HDU,
+		      const_cast<char*>("Gyoto Impact Coordinates"),
+		      0, &status);
+      fits_read_key(fptr, TDOUBLE, "Gyoto Observing Date", &ipcttime,
+		    NULL, &status);
+      fits_get_img_size(fptr, 3, ipctdims, &status);
+      fits_report_error(stderr, status);
+      if (status) return status;
 
-    if (debug()) cout << "DEBUG: gyoto.C: Nb of pixels= " << res << endl;
+      if (ipctdims[0]==16 &&
+	  size_t(ipctdims[1]) == res &&
+	  size_t(ipctdims[2]) == res) {
+	impactcoords = new double[(ipctnelt=16*res*res)];
+      } else {
+	cerr<<"ERROR: bad dimensions for precomputed impact coordinates\n";
+	return 1;
+      }
+	  
+      fits_read_subset(fptr, TDOUBLE, fpixel, ipctdims, fpixel,
+		       0, impactcoords, NULL, &status);
+      fits_close_file(fptr, &status);
+      fptr=NULL;
+      fits_report_error(stderr, status);
+      if (status) return status;
+
+      double dt = tobs * GYOTO_C / scenery -> getMetric() -> unitLength()
+	- ipcttime;
+      for (i=0; i < ipctnelt; i+=8)
+	if (impactcoords[i] != DBL_MAX) impactcoords[i] += dt;
+      ipcttime = tobs * GYOTO_C / scenery -> getMetric() -> unitLength();
+    }
 
     Quantity_t quantities = scenery -> getRequestedQuantities();
     if (debug()) cerr << "DEBUG: Gyoto.C: Requested Quantities: "
@@ -275,33 +317,11 @@ int main(int argc, char** argv) {
 		     const_cast<char*>("Redshift"),
 		     CNULL, &status);
     }
-    if (quantities & GYOTO_QUANTITY_IMPACT_R) {
-      data->rimpact=vect+offset*(curquant++);
-      sprintf(keyname, fmt, curquant);
-      fits_write_key(fptr, TSTRING, keyname,
-		     const_cast<char*>("ImpactR"),
-		     CNULL, &status);
-    }
-    if (quantities & GYOTO_QUANTITY_IMPACT_X) {
-      data->x=vect+offset*(curquant++);
-      sprintf(keyname, fmt, curquant);
-      fits_write_key(fptr, TSTRING, keyname,
-		     const_cast<char*>("ImpactX"),
-		     CNULL, &status);
-    }
-    if (quantities & GYOTO_QUANTITY_IMPACT_Y) {
-      data->y=vect+offset*(curquant++);
-      sprintf(keyname, fmt, curquant);
-      fits_write_key(fptr, TSTRING, keyname,
-		     const_cast<char*>("ImpactY"),
-		     CNULL, &status);
-    }
-    if (quantities & GYOTO_QUANTITY_IMPACT_Z) {
-      data->z=vect+offset*(curquant++);
-      sprintf(keyname, fmt, curquant);
-      fits_write_key(fptr, TSTRING, keyname,
-		     const_cast<char*>("ImpactZ"),
-		     CNULL, &status);
+    if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {
+      // Allocate if requested AND not provided
+      cerr << "gyoto.C: allocating data->impactcoords" << endl;
+      data->impactcoords = impactcoords = new double [res*res*16];
+      ipcttime = tobs * GYOTO_C / scenery -> getMetric() -> unitLength();
     }
     if (quantities & GYOTO_QUANTITY_USER1) {
       data->user1=vect+offset*(curquant++);
@@ -357,23 +377,52 @@ int main(int argc, char** argv) {
     
     signal(SIGINT, sigint_handler);
 
-    // scenery -> rayTrace(imin, imax, jmin, jmax, &data, save);
     curmsg = "In gyoto.C: Error during ray-tracing: ";
-    scenery -> rayTrace(imin, imax, jmin, jmax, data, save);
-    scenery = NULL;
+    scenery -> rayTrace(imin, imax, jmin, jmax, data, impactcoords);
 
     curmsg = "In gyoto.C: Error while saving: ";
-    if (verbose() >= GYOTO_QUIET_VERBOSITY) cout << "\nSaving to file: " << pixfile << endl;
+    if (verbose() >= GYOTO_QUIET_VERBOSITY)
+      cout << "\nSaving to file: " << pixfile << endl;
     signal(SIGINT, SIG_DFL);
 
 
     // Save to fits file
     fits_write_pix(fptr, TDOUBLE, fpixel, nelements, vect, &status);
+
+    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) {
+      // Save if requested, copying if provided
+      cout << "Saving precomputed impact coordinates" << endl;
+      long naxes_ipct[] = {16, res, res};
+      fits_create_img(fptr, DOUBLE_IMG, naxis, naxes_ipct, &status);
+      fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
+		     const_cast<char*>("Gyoto Impact Coordinates"),
+		     CNULL, &status);
+      fits_write_key(fptr, TDOUBLE, const_cast<char*>("Gyoto Observing Date"),
+		     &ipcttime, "Geometrical units", &status);
+
+      fits_write_pix(fptr, TDOUBLE, fpixel, res*res*16, impactcoords, &status);
+
+      fits_report_error(stderr, status);
+      if (status) return status;
+    }
+
     fits_close_file(fptr, &status);
     fits_report_error(stderr, status);
+    if (debug()) cerr << "DEBUG: gyoto.C: FITS file closed, cleaning" << endl;
 
     curmsg = "In gyoto.C: Error while cleaning (file saved already): ";
+
+    if (debug()) cerr << "DEBUG: gyoto.C: delete [] vect" << endl;
     delete [] vect;
+
+    if (data->impactcoords) {
+      if (debug()) cerr << "gyoto.C: delete [] data->impact" << endl;
+      delete [] impactcoords;
+    }
+
+    if (debug()) cerr << "DEBUG: gyoto.C: scenery==NULL" << endl;
+    scenery = NULL;
+
 
     if (status) return status;
 

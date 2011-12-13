@@ -27,6 +27,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#define DEFAULT_TLIM 0.
+
 using namespace Gyoto;
 using namespace std;
 
@@ -36,12 +38,12 @@ using namespace std;
 */
 Scenery::Scenery() :
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(0.01),
-  quantities_(0) {}
+  quantities_(0), ph_(), tlim_(DEFAULT_TLIM) {}
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(o.delta_),
-  quantities_(o.quantities_)
+  quantities_(o.quantities_), ph_(o.ph_), tlim_(o.tlim_)
 {
   // We have up to 3 _distinct_ clones of the same Metric.
   // Keep only one.
@@ -112,17 +114,17 @@ void Scenery::setDelta(double d) { delta_ = d; }
 
 void Scenery::rayTrace(size_t imin, size_t imax,
 		       size_t jmin, size_t jmax,
-		       Astrobj::Properties *data, int save) {
+		       Astrobj::Properties *data,
+		       double * impactcoords) {
 
   //  if (debug()) cout << "screen dist beg ray trace= " << screen_ -> getDistance() << endl;
 
   const size_t npix = screen_->getResolution();
   //ofstream pixels(filename);//illuminated pixels on screen
-  Photon ph;
-  ph.setDelta(delta_);
   SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
-  ph.setSpectrometer(spr);
+  ph_.setSpectrometer(spr);
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
+  ph_.setTlim(tlim_);
 
   double coord[8];
 
@@ -137,56 +139,60 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
   for (size_t j=jmin;j<=jmax;j++) {
 
-    if (verbose() >= GYOTO_QUIET_VERBOSITY)
+    if (verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
       cout << "\rj = " << j << " / " << jmax << " " << flush;
 
     for (size_t i=imin;i<=imax;i++) {
-      
+      ph_.setDelta(delta_);
+
       if (debug()) 
-		cout << "i = " << i << ", j = " << j << endl;
+		cerr << "DEBUG: Scenery::rayTrace(): i = " << i
+		     << ", j = " << j << endl;
       
-      screen_ -> getRayCoord(i, j, coord);
-
-      //1. Init cond :
-      ph.setInitialCondition(gg_, obj_, coord);
-
-      //2. delta :
-      //      ph.setDelta(deltatau_);
-      // tlim :
-      //ph.setTlim(screen_->getTobs() - 1.); //If there's a need to change tlim (integration stops when t<tlim)
-      ph.setTlim(0.); //If there's a need to change tlim (integration stops when t<tlim)
-
-      //3. hit :
       data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
-      ph.hit(data) ;
 
-      //4. save :
-      if (save){
-	char chaine[]="xyzBL.dat";
-	char* file_saved=&chaine[0];
-	ph.save_txyz(file_saved);// Ugly trick, should be obsoleted
+      if (impactcoords) {
+	if (impactcoords[0] != DBL_MAX) {
+	  ph_.setInitialCondition(gg_, obj_, impactcoords+8);
+	  ph_.resetTransmission();
+	  obj_ -> processHitQuantities(&ph_,
+				       impactcoords+8,impactcoords,0.,data);
+	}
+      } else {
+	screen_ -> getRayCoord(i,j, coord);
+	ph_.setInitialCondition(gg_, obj_, coord);
+	ph_.hit(data);
       }
 
-      //5. increment pointers
       if (data) ++(*data); // operator++ is overloaded
+      if (impactcoords) impactcoords += 16 ;
 
     }
   }
 }
 
-void Scenery::operator() (size_t i, size_t j, Astrobj::Properties *data) {
-  Photon ph;
+void Scenery::operator() (size_t i, size_t j,
+			  Astrobj::Properties *data, double * impactcoords) {
   double coord[8];
-  screen_ -> getRayCoord(i,j, coord);
-  ph.setInitialCondition(gg_, obj_, coord);
   SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
-  ph.setSpectrometer(spr);
+  ph_.setSpectrometer(spr);
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
-  ph.setDelta(delta_);
-  
+  ph_.setDelta(delta_);
+  ph_.setTlim(tlim_);
+
   if (data) data -> init(nbnuobs);
-  ph.hit(data);
-  //  if (data) ++(*data);
+
+  if (impactcoords) {
+    if(impactcoords[0] != DBL_MAX) {
+      ph_.setInitialCondition(gg_, obj_, impactcoords+8);
+      ph_.resetTransmission();
+      obj_ -> processHitQuantities(&ph_,impactcoords+8,impactcoords,0.,data);
+    }
+  } else {
+    screen_ -> getRayCoord(i,j, coord);
+    ph_.setInitialCondition(gg_, obj_, coord);
+    ph_.hit(data);
+  }
 }
 
 void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant)
@@ -205,18 +211,22 @@ void Scenery::setRequestedQuantities(std::string squant) {
       quantities_ |= GYOTO_QUANTITY_FIRST_DMIN;
     else if (!strcmp(tk, "Redshift"))
       quantities_ |= GYOTO_QUANTITY_REDSHIFT;
-    else if (!strcmp(tk, "ImpactR"))
-      quantities_ |= GYOTO_QUANTITY_IMPACT_R;
-    else if (!strcmp(tk, "ImpactX"))
-      quantities_ |= GYOTO_QUANTITY_IMPACT_X;
-    else if (!strcmp(tk, "ImpactY"))
-      quantities_ |= GYOTO_QUANTITY_IMPACT_Y;
-    else if (!strcmp(tk, "ImpactZ"))
-      quantities_ |= GYOTO_QUANTITY_IMPACT_Z;
+    else if (!strcmp(tk, "ImpactCoords"))
+      quantities_ |= GYOTO_QUANTITY_IMPACTCOORDS;
     else if (!strcmp(tk, "Spectrum"))
       quantities_ |= GYOTO_QUANTITY_SPECTRUM;
     else if (!strcmp(tk, "BinSpectrum"))
       quantities_ |= GYOTO_QUANTITY_BINSPECTRUM;
+    else if (!strcmp(tk, "User1"))
+      quantities_ |= GYOTO_QUANTITY_USER1;
+    else if (!strcmp(tk, "User2"))
+      quantities_ |= GYOTO_QUANTITY_USER2;
+    else if (!strcmp(tk, "User3"))
+      quantities_ |= GYOTO_QUANTITY_USER3;
+    else if (!strcmp(tk, "User4"))
+      quantities_ |= GYOTO_QUANTITY_USER4;
+    else if (!strcmp(tk, "User5"))
+      quantities_ |= GYOTO_QUANTITY_USER5;
     else throwError("ScenerySubcontractor(): unkwon quantity"); 
     tk = strtok(NULL, " \t\n");
   }
@@ -237,10 +247,7 @@ std::string Scenery::getRequestedQuantitiesString() const {
   if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) squant+="MinDistance ";
   if (quantities & GYOTO_QUANTITY_FIRST_DMIN  ) squant+="FirstDistMin ";
   if (quantities & GYOTO_QUANTITY_REDSHIFT    ) squant+="Redshift ";
-  if (quantities & GYOTO_QUANTITY_IMPACT_R    ) squant+="ImpactR ";
-  if (quantities & GYOTO_QUANTITY_IMPACT_X    ) squant+="ImpactX ";
-  if (quantities & GYOTO_QUANTITY_IMPACT_Y    ) squant+="ImpactY ";
-  if (quantities & GYOTO_QUANTITY_IMPACT_Z    ) squant+="ImpactZ ";
+  if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) squant+="ImpactCoords ";
   if (quantities & GYOTO_QUANTITY_SPECTRUM    ) squant+="Spectrum ";
   if (quantities & GYOTO_QUANTITY_BINSPECTRUM ) squant+="BinSpectrum ";
   if (quantities & GYOTO_QUANTITY_USER1       ) squant+="User1 ";
@@ -260,13 +267,11 @@ size_t Scenery::getScalarQuantitiesCount() const {
   if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) ++nquant;
   if (quantities & GYOTO_QUANTITY_FIRST_DMIN  ) ++nquant;
   if (quantities & GYOTO_QUANTITY_REDSHIFT    ) ++nquant;
-  if (quantities & GYOTO_QUANTITY_IMPACT_R    ) ++nquant;
-  if (quantities & GYOTO_QUANTITY_IMPACT_X    ) ++nquant;
-  if (quantities & GYOTO_QUANTITY_IMPACT_Y    ) ++nquant;
-  if (quantities & GYOTO_QUANTITY_IMPACT_Z    ) ++nquant;
   //  SPECTRUM is not a SCALAR, don't add the following:
   //  if (quantities & GYOTO_QUANTITY_SPECTRUM    ) ++nquant;
   //  if (quantities & GYOTO_QUANTITY_BINSPECTRUM ) ++nquant;
+  //  Idem IMPACTCOORDS:
+  //  if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) ++nquant;
   if (quantities & GYOTO_QUANTITY_USER1       ) ++nquant;
   if (quantities & GYOTO_QUANTITY_USER2       ) ++nquant;
   if (quantities & GYOTO_QUANTITY_USER3       ) ++nquant;
@@ -274,6 +279,9 @@ size_t Scenery::getScalarQuantitiesCount() const {
   if (quantities & GYOTO_QUANTITY_USER5       ) ++nquant;
   return nquant;
 }
+
+double Scenery::getTlim() const { return tlim_; }
+void Scenery::setTlim(double tlim) { tlim_ = tlim; }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
@@ -285,6 +293,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   if (getRequestedQuantities()) {
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
+  if (tlim_ != DEFAULT_TLIM) fmp -> setParameter("MinimumTime", tlim_);
 }
 
 SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
@@ -295,6 +304,7 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Screen> scr = NULL;
   SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
+  double tlim = DEFAULT_TLIM;
 
   gg = fmp->getMetric();
   scr= fmp->getScreen();
@@ -303,12 +313,14 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
 
   while (fmp->getNextParameter(&name, &content)) {
     char* tc = const_cast<char*>(content.c_str());
-    if(name=="Delta") delta = atof(tc);
-    if(name=="Quantities") squant = content;
+    if (name=="Delta") delta = atof(tc);
+    if (name=="Quantities") squant = content;
+    if (name=="TLim") tlim = atof(tc);
   }
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
   sc -> setDelta(delta);
+  sc -> setTlim(tlim);
   if (squant!="") sc -> setRequestedQuantities(squant);
   return sc;
 }

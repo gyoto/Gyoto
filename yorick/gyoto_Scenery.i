@@ -128,9 +128,11 @@ extern gyoto_Scenery_rayTrace
 /* DOCUMENT res = gyoto_Scenery_rayTrace(scenery, imin, imax, jmin, jmax)
  */
 
-func gyoto_Scenery_adaptive_raytrace(sco, respmax, &computed) {
-/* DOCUMENT data = gyoto_Scenery_adaptive_raytrace(scenery, pmax, [computed])
+func _gyoto_Scenery_adaptive_raytrace(sco, respmax, &computed) {
+/* xDOCUMENT data = gyoto_Scenery_adaptive_raytrace(scenery, pmax, [computed])
 
+BROKEN
+   
      Ray-trace a GYOTO Scenery on an adaptive grid.
 
      For certain kinds of objects (in particular, Stars), this routine

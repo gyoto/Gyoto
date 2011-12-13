@@ -85,6 +85,56 @@ system. The intersection of those two planes is the line of nodes.
 Angle in the equatorial plane between the line of nodes and one of the
 main axes of the coordinate system.
 
+.SS Miscellaneous
+Unsorted option(s):
+.IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
+In some circumstances, you may want to perform several computations in
+which the computed geodesics end up being exactly identical. This is
+the case for instance if you want to experiment changing the spectrum
+of a star or when making a movie of a rotating, optically thick
+disk. This option provides a mechanism to not recompute the geodesics
+in the most simple case:
+.
+.RS
+.IP \(bu 4
+the Screen is always at the same position;
+.IP \(bu 4
+the Metric is always exactly the same;
+.IP \(bu 4
+the Astrobj is optically thick (no radiative transfer processing is
+necessary);
+.IP \(bu 4
+the location and shape of the Astrobj is always the same.
+.RE
+.
+.IP
+If \fB\-\-impact\-coords\fR is passed without specifying
+\fIimpactcoords.fits\fR, the 8-coordinate vectors of the object and
+photon at impact point are saved for each point of the Screen. Missing
+data (no impact) are set to DBL_MAX. These data are saved as a
+supplementary image HDU in the FITS file which is identified by its
+EXTNAME: "Gyoto Impact Coordinates". The FITS keyword "HIERARCH Gyoto
+Observing Date" of this HDU holds the observing date (in geometrical
+unit).
+.IP
+If \fIimpactcoords.fits\fR is specified, the above mentioned data are
+read back from this file. The ray-tracing is not performed, but the
+Gyoto::Astrobj::Generic::processHitQuantities() method is called
+directy, yielding the same result if the four conditions above are
+met. The observing date stored in the FITS keyword "HIERARCH Gyoto
+Observing Date" is compared to the date specified in the screen or
+using the \fB\-\-time\fR option and the impact coordinates are shifted
+in time accordingly.
+.IP
+It is also possible to set the two versions of this option at the same time:
+.IP
+\fB\-\-impact\-coords\fR=\fIimpactcoords.fits\fR \fB\-\-impact\-coords\fR
+.IP
+In this case, the impact coordinates are read from
+\fIimpactcoords.fits\fR, shifted in time, and save in
+\fIoutput.fits\fR.
+.RE
+
 .SH FILES
 .IP \fIinput.xml
 A gyoto input file in XML format. Several examples are provided in the

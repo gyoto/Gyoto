@@ -128,7 +128,7 @@ class Gyoto::Worldline {
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
   void setDelta(const double delta); ///< Set delta
-  double getTlim(); ///< Get tlim value
+  double getTlim() const ; ///< Get tlim value
   void setTlim(double tlim); ///< Set tlim to a given value
 
   /**

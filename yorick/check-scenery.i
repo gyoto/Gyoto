@@ -118,11 +118,11 @@ pli, sc3(,,"Intensity"); // raytrace
 pause, 1000;
 write, format="%s\n" , "done.";
 
-write, format="%s", "Ray-tracing on adaptive grid... ";
-data = gyoto_Scenery_adaptive_raytrace(sc3, 4);
-fma;
-pli, data(,,3), cmax=100;
-write, format="%s\n" , "done.";
+/* write, format="%s", "Ray-tracing on adaptive grid... ";
+   data = gyoto_Scenery_adaptive_raytrace(sc3, 4);
+   fma;
+   pli, data(,,3), cmax=100;
+   write, format="%s\n" , "done."; */
 
 write, format="%s", "Cloning...";
 sc4=sc3(clone=);

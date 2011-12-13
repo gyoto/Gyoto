@@ -21,6 +21,7 @@
 #include <GyotoUtils.h>
 //#include <GyotoKerrBL.h>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -263,7 +264,10 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
   if ( met -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
        && x2_[i0_]==0. ) {
     if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-      cerr << "SEVERE: Kicking particle off z axis" << endl;
+      cerr << "SEVERE: Worldline::setInitialCondition("<<met->getKind()
+	   <<", ["<<coo[0];
+    for (size_t ii=1; ii<8; ++ii) cerr << ", "<<coo[ii];
+    cerr<<"], "<<dir<<"): Kicking particle off z axis" << endl;
     x2_[i0_]=coo[2]=1e-10;
   }
   x3_[i0_]=coord[3];
@@ -496,7 +500,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
-
+  stringstream ss;
 
 
   for (di=0; di<n_dates; ++di) {
@@ -514,15 +518,19 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       curl=imax_;    // current imax_
       xFill(date);   // integrate, that changes imax_
       curh=imax_;    // new imax_
-      if (curl == curh || date > x0_[imax_])
-	throwError("Worldline::getCoord: can't get coordinates for that time");
+      if (curl == curh || date > x0_[imax_]) {
+	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
+	throwError(ss.str());
+      }
     } else if (date < x0_[imin_]) {
       curh=x_size_-imin_; // trick if line is expanded during xFill()
       xFill(date);   // integrate, that changes imin_
       curh=x_size_-curh;
       curl=imin_;    // new imin_
-      if (curl == curh || date < x0_[imin_])
-	throwError("Worldline::getCoord: can't get coordinates for that time");
+      if (curl == curh || date < x0_[imin_]) {
+	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
+	throwError(ss.str());
+      }
     } else if (date >= x0_[curh]) {
       curl=curh;
       curh=imax_;
@@ -841,7 +849,7 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 
 void Worldline::setDelta(const double del) { delta_=del; }
 
-double Worldline::getTlim() { return tlim_; }
+double Worldline::getTlim() const { return tlim_; }
 void Worldline::setTlim(double tlim) { tlim_ = tlim; }
 
 double const * Worldline::getCst() const {

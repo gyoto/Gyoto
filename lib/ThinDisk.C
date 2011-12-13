@@ -160,9 +160,6 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   }
 
   processHitQuantities(ph, coord_ph_hit, coord_obj_hit, dt, data);
-  if (data) {
-    if (data->rimpact) *data->rimpact=rcross;
-  }
 
   return 1;
 }
