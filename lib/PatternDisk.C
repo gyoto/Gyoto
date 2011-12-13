@@ -31,7 +31,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <fstream>
-#include <string>
+#include <cstring>
 #include <cmath>
 #include <limits>
 
