@@ -137,7 +137,7 @@ Gyoto::SmartPointee::Subcontractor_t*
 Register::Entry::getSubcontractor(std::string name) {
   if (name_==name) return subcontractor_;
   if (next_) return next_ -> getSubcontractor(name);
-  throwError ("Unregistered Metric kind: "+name);
+  throwError ("Unregistered kind: "+name);
   return NULL; // will never get there, avoid compilation warning
 }
 

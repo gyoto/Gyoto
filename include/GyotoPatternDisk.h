@@ -126,6 +126,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual void readFile(std::string filename_);
   ///< Read data from file
 
+  virtual int setParameter(std::string name, std::string content);
 
  private:
   void getIndices(size_t i[3], double const co[4], double nu=0.) const ;
@@ -139,9 +140,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
-  static Astrobj::Subcontractor_t Subcontractor;
-  static void Init();
+  virtual void fillElement(FactoryMessenger *fmp) const ;
+  virtual void setParameters(FactoryMessenger *fmp);
 #endif
 
 };

@@ -58,7 +58,7 @@ Gyoto::Spectrum::PowerLawSubcontractor(FactoryMessenger* fmp) {
     tc=const_cast<char*>(content.c_str());
     if (name=="Exponent") sp->setExponent(atof(tc));
     else if (name=="Constant") sp->setConstant(atof(tc));
-    else sp -> setGenericParameter(name, content);
+    else sp -> setParameter(name, content);
   }
   return sp;
 }

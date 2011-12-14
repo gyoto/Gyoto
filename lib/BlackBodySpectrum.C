@@ -60,7 +60,7 @@ Gyoto::Spectrum::BlackBodySubcontractor(FactoryMessenger* fmp) {
     tc=const_cast<char*>(content.c_str());
     if (name=="Temperature") sp->setTemperature(atof(tc));
     else if (name=="Scaling") sp->setScaling(atof(tc));
-    else sp -> setGenericParameter(name, content);
+    else sp -> setParameter(name, content);
   }
   return sp;
 }

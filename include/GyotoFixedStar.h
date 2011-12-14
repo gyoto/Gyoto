@@ -84,12 +84,11 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system
   
+  virtual int setParameter(std::string name, std::string content);
+
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
-  static Astrobj::Subcontractor_t Subcontractor;
-  static void Init();
-  ///< called from Factory
 #endif
 
   // Outputs

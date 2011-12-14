@@ -132,6 +132,13 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
   gg_ -> circularVelocity(pos2, vel);
 }
 
+int Torus::setParameter(std::string name, std::string content) {
+  if      (name=="LargeRadius") setLargeRadius(atof(content.c_str()));
+  else if (name=="SmallRadius") setSmallRadius(atof(content.c_str()));
+  else return Standard::setParameter(name, content);
+  return 0;
+}
+
 
 #ifdef GYOTO_USE_XERCES
 void Torus::fillElement(FactoryMessenger *fmp) const {
@@ -152,41 +159,29 @@ void Torus::fillElement(FactoryMessenger *fmp) const {
   Standard::fillElement(fmp);
 }
 
-SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Torus::Subcontractor(FactoryMessenger* fmp) {
+void Torus::setParameters(FactoryMessenger* fmp) {
 
   string name="", content="";
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Spectrum::Generic> sp = NULL;
   FactoryMessenger * child = NULL;
 
-  SmartPointer<Torus> st = new Torus();
-
-  st -> setMetric(fmp->getMetric());
+  setMetric(fmp->getMetric());
 
   while (fmp->getNextParameter(&name, &content)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if      (name=="LargeRadius") st -> setLargeRadius(atof(tc));
-    else if (name=="SmallRadius") st -> setSmallRadius(atof(tc));
-    else if (name=="Spectrum") {
+    if (name=="Spectrum") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
-      st -> setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
+      setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
       delete child;
     }
     else if (name=="Opacity") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
-      st -> setOpacity( (*Spectrum::getSubcontractor(content))(child) );
+      setOpacity( (*Spectrum::getSubcontractor(content))(child) );
       delete child;
     }
-    else st -> setGenericParameter(name, content);
-
+    else setParameter(name, content);
   }
-
-  return st;
-}
-
-void Gyoto::Astrobj::Torus::Init() {
-  Gyoto::Astrobj::Register("Torus", &Gyoto::Astrobj::Torus::Subcontractor);
 }
 #endif

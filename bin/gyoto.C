@@ -378,7 +378,8 @@ int main(int argc, char** argv) {
     signal(SIGINT, sigint_handler);
 
     curmsg = "In gyoto.C: Error during ray-tracing: ";
-    scenery -> rayTrace(imin, imax, jmin, jmax, data, impactcoords);
+    scenery -> rayTrace(imin, imax, jmin, jmax, data,
+			ipctdims[0]?impactcoords:NULL);
 
     curmsg = "In gyoto.C: Error while saving: ";
     if (verbose() >= GYOTO_QUIET_VERBOSITY)
@@ -415,7 +416,7 @@ int main(int argc, char** argv) {
     if (debug()) cerr << "DEBUG: gyoto.C: delete [] vect" << endl;
     delete [] vect;
 
-    if (data->impactcoords) {
+    if (impactcoords) {
       if (debug()) cerr << "gyoto.C: delete [] data->impact" << endl;
       delete [] impactcoords;
     }

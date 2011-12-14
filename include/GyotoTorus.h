@@ -100,11 +100,12 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 
   //XML I/O
  public:
+  virtual int setParameter(std::string name, std::string content) ;
+
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
                                              ///< called from Factory
-  static Astrobj::Subcontractor_t Subcontractor;
-  static void Init();
+  virtual void setParameters(FactoryMessenger *fmp) ;
 #endif
   
   // Outputs

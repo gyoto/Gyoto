@@ -69,7 +69,7 @@ namespace Gyoto{
  *  also sets both the emissivity. Another Gyoto::Spectrum provides
  *  the emission law of the source, which is uniform.
  *
- *  Gyoto::Astrobj::UniformSphere::setGenericParameters() take care of
+ *  Gyoto::Astrobj::UniformSphere::setParameters() take care of
  *  interpreting the XML elements describing the parameters of the
  *  sphere:
 \code
@@ -78,7 +78,7 @@ namespace Gyoto{
    <Opacity kind="..."> parameters for this spectrum kind </Opacity>
 \endcode
  * setGenericParameters() also takes care of calling
- * Generic::setGenericParameter().
+ * setParameter().
  */
 class Gyoto::Astrobj::UniformSphere :
   public Gyoto::Astrobj::Standard {
@@ -134,6 +134,8 @@ class Gyoto::Astrobj::UniformSphere :
   void   setRadius(double); ///< Set radius_
 
  public:
+  virtual int setParameter(std::string name, std::string content) ;
+
 #ifdef GYOTO_USE_XERCES
   /**
    * The sub-classes implementations of the
@@ -149,10 +151,10 @@ class Gyoto::Astrobj::UniformSphere :
 \code
   SmartPointer<MyObject> object = new MyObject (.....);
   fmp -> reset();
-  object -> setGenericParameters(fmp);
+  object -> setParameters(fmp);
 \endcode
    */
-  virtual void setGenericParameters(FactoryMessenger *fmp) ;
+  virtual void setParameters(FactoryMessenger *fmp) ;
   ///< Interpret common XML sections
 #endif
 

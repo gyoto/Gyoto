@@ -69,7 +69,7 @@ FixedStar::~FixedStar() {
 
 }
 
-void FixedStar::getCartesian(double const * const dates, size_t const n_dates,
+void FixedStar::getCartesian(double const * const , size_t const n_dates,
 			     double * const x, double * const y,
 			     double * const z, double * const xprime,
 			     double * const yprime, 
@@ -145,36 +145,19 @@ void FixedStar::setRadius(double r) {
 void FixedStar::setPos(const double p[3])
 { for (int i=0; i<3; ++i) pos_[i]=p[i]; setRadius(radius_);}
 
+int FixedStar::setParameter(string name, string content) {
+  if (name=="Position") {
+    char* tc = const_cast<char*>(content.c_str());
+    double pos[3];
+    for (int i=0;i<3;++i) pos[i] = strtod(tc, &tc);
+    setPos(pos);
+  } else return UniformSphere::setParameter(name, content);
+  return 0;
+}
+
 #ifdef GYOTO_USE_XERCES
 void FixedStar::fillElement(FactoryMessenger *fmp) const {
   fmp -> setParameter ("Position", const_cast<double*>(pos_), 3);
   UniformSphere::fillElement(fmp);
-}
-
-SmartPointer<Astrobj::Generic> Gyoto::Astrobj::FixedStar::Subcontractor(FactoryMessenger* fmp) {
-
-  string name="", content="";
-
-  SmartPointer<FixedStar> ao = new FixedStar();
-  ao -> setMetric(fmp->getMetric());
-
-  while (fmp->getNextParameter(&name, &content)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if(name=="Position") {
-      double pos[3];
-      for (int i=0;i<3;++i) pos[i] = strtod(tc, &tc);
-      ao -> setPos(pos);
-    }
-  }
-
-  fmp->reset();
-  ao -> setGenericParameters(fmp);
-
-  return ao;
-
-}
-
-void Gyoto::Astrobj::FixedStar::Init() {
-  Gyoto::Astrobj::Register("FixedStar", &Gyoto::Astrobj::FixedStar::Subcontractor);
 }
 #endif

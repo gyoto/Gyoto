@@ -174,16 +174,14 @@ void Complex::fillElement(FactoryMessenger *fmp) const {
   Astrobj::Generic::fillElement(fmp);
 }
 
-SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Complex::Subcontractor(FactoryMessenger* fmp) {
-
+void Complex::setParameters(FactoryMessenger *fmp) {
   if (debug())
-    cerr << "DEBUG: in Complex::Subcontractor()" << endl;
+    cerr << "DEBUG: in Complex::setParameters()" << endl;
 
   string name="", content="";
   FactoryMessenger * child = NULL;
-  SmartPointer<Complex> cplx = new Complex();
 
-  cplx -> setMetric( fmp->getMetric() );
+  setMetric( fmp->getMetric() );
 
   while (fmp->getNextParameter(&name, &content)) {
     if (debug())
@@ -191,19 +189,12 @@ SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Complex::Subcontractor(FactoryMes
     if (name=="SubAstrobj") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
-      cplx -> append ((*Astrobj::getSubcontractor(content))(child));
+      append ((*Astrobj::getSubcontractor(content))(child));
       delete child;
-    }
-    else
-      cplx -> setGenericParameter(name, content);
+    } else setParameter(name, content);
   }
 
   if (debug())
-    cerr << "DEBUG: out Complex::Subcontractor()" << endl;
-  return cplx;
-}
-
-void Gyoto::Astrobj::Complex::Init() {
-  Gyoto::Astrobj::Register("Complex", &Gyoto::Astrobj::Complex::Subcontractor);
+    cerr << "DEBUG: out Complex::setParameters()" << endl;
 }
 #endif

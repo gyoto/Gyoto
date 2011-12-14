@@ -50,7 +50,7 @@ write, format="%i\n", sc(get_pointer=1);
 
 write, format="%s", "Creating star... ";
 ao=gyoto_Star(metric=sc(metric=), radius=0.5,
-              initcoord=[0,6,0,0], [0,1e-3,0]);
+              initcoord=[0,6,pi/2.,0], [0,1e-3,0]);
 write, format="%s\n", "done.";
 
 write, format="%s", "Attaching astrobj to scenery... ";
@@ -62,7 +62,7 @@ ao2=sc(astrobj=);
 write, format="%s\n", "done.";
 
 write, format="%s", "Setting time... ";
-rien=sc(screen=)(time=10000);
+noop,sc(screen=)(time=10000);
 write, format="%s\n", "done.";
 write, format="%s %e\n", "Checking time:", (time=sc(screen=)(time=));
 if (time!=10000) error, "CHECK FAILED";
@@ -82,20 +82,20 @@ if (time!=10000) error, "CHECK FAILED";
 
 
 write, format="%s", "Setting field-of-view... ";
-rien=sc(screen=)(fov=pi/4.);
+noop,sc(screen=)(fov=pi/4.);
 write, format="%s\n", "done.";
 write, format="%s %e\n", "Checking field-of-view:", (fov=sc(screen=)(fov=));
 if (fov!=pi/4) error, "CHECK FAILED";
 
 write, format="%s", "Setting resolution... ";
-rien=sc(screen=)(resolution=16);
+noop,sc(screen=)(resolution=16);
 write, format="%s\n", "done.";
 write, format="%s %i\n", "Checking resolution:", (res=sc(screen=)(resolution=));
 if (res!=16) error, "CHECK FAILED";
 
 
 write, format="%s", "Setting inclination... ";
-rien=sc(screen=)(inclination=pi/3.);
+noop,sc(screen=)(inclination=pi/3.);
 write, format="%s\n", "done.";
 write, format="%s %e\n", "Checking inclination:",
   (incl=sc(screen=)(inclination=));

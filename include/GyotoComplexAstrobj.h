@@ -120,9 +120,7 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
-  static Astrobj::Subcontractor_t Subcontractor;
-  static void Init();
-
+  virtual void setParameters(FactoryMessenger *fmp);
 #endif
   
   // Outputs

@@ -61,7 +61,7 @@ Standard::Standard(double radmax) :
 }
 
 Standard::Standard(const Standard& orig) :
-  Generic(orig),
+  Generic(orig), Functor::Double_constDoubleArray(orig),
   critical_value_(orig.critical_value_), safety_value_(orig.safety_value_)
 {
     if (debug()) cerr << "DEBUG: Astrobj::Standard (Copy)" << endl;
@@ -131,15 +131,14 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 void Standard::setSafetyValue(double val) {safety_value_ = val; }
 double Standard::getSafetyValue() const { return safety_value_; }
 
-#ifdef GYOTO_USE_XERCES
-
-void Standard::fillElement(FactoryMessenger* fmp) const {
-  fmp -> setParameter("SafetyValue", safety_value_);
+int Standard::setParameter(string name, string content)  {
+  if (name == "SafetyValue") safety_value_ = atof(content.c_str());
+  else return Generic::setParameter(name, content);
+  return 0;
 }
 
-void Standard::setGenericParameter(string name, string content)  {
-  char* tc = const_cast<char*>(content.c_str());
-  if (name == "SafetyValue") safety_value_ = atof(tc);
-  else Generic::setGenericParameter(name, content);
+#ifdef GYOTO_USE_XERCES
+void Standard::fillElement(FactoryMessenger* fmp) const {
+  fmp -> setParameter("SafetyValue", safety_value_);
 }
 #endif

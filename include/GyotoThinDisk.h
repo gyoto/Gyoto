@@ -62,8 +62,8 @@ namespace Gyoto{
    <OuterRadius> rout_ </OuterRadius>
    <CounterRotating/>
 \endcode
- * ThinDisk::setGenericParameter() also takes care of calling
- * Generic::setGenericParameter().
+ * ThinDisk::setParameter() also takes care of calling
+ * Generic::setParameter().
  */
 class Gyoto::Astrobj::ThinDisk :
   public Gyoto::Astrobj::Generic,
@@ -128,6 +128,8 @@ class Gyoto::Astrobj::ThinDisk :
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 
  public:
+  virtual int setParameter(std::string name, std::string content) ;
+
 #ifdef GYOTO_USE_XERCES
   /**
    * The sub-classes implementations of the
@@ -136,16 +138,6 @@ class Gyoto::Astrobj::ThinDisk :
    */
   virtual void fillElement(FactoryMessenger *fmp) const ;
   ///< Fill the generic XML bits
-
-  /**
-   * ThinDisk::setGenericParameter() also takes care of calling
-   * Generic::setGenericParameter().
-   */
-  virtual void setGenericParameter(std::string name, std::string content) ;
-  ///< Interpret common XML sections
-
-  static Astrobj::Subcontractor_t Subcontractor;
-  static void Init();
 #endif
 
   public:

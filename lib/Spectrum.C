@@ -124,7 +124,7 @@ double Spectrum::Generic::operator()(double nu, double opacity, double ds)
 void Spectrum::Generic::fillElement(FactoryMessenger *fmp ) const {
   fmp->setSelfAttribute("kind", kind_);
 }
-void Spectrum::Generic::setGenericParameter(std::string, std::string) {}
+void Spectrum::Generic::setParameter(std::string, std::string) {}
 
 Register::Entry* Gyoto::Spectrum::Register_ = NULL;
 

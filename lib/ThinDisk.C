@@ -43,7 +43,7 @@ ThinDisk::ThinDisk(std::string kind) :
 }
 
 ThinDisk::ThinDisk(const ThinDisk& o) :
-  Generic(o), rin_(o.rin_), rout_(o.rout_)
+  Generic(o), Functor::Double_constDoubleArray(o), rin_(o.rin_), rout_(o.rout_)
 {
   if (debug()) cerr << "DEBUG: ThinDisk Copy" << endl;
 }
@@ -109,7 +109,7 @@ void ThinDisk::getVelocity(double const pos[4], double vel[4]) {
 int ThinDisk::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
   double coord_ph_hit[8], coord_obj_hit[8];
-  double frac, rcross;
+  double rcross;
   double coord1[8], coord2[8];
   double dt=0.;
   ph->getCoord(index, coord1);
@@ -127,11 +127,6 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   if ( h1 == h2 && h2 != 0 ) return 0;
   if ( (h1 > 0.) == (h2 > 0.) && h1 != 0. && h2 != 0. ) return 0;
   
-  /*
-  frac = (h2==0)? 1. : h1 / (h1-h2); // == (0-h1) / (h2-h1)
-  for (int i=0; i<8; ++i)
-    coord_ph_hit[i] = coord1[i] + frac * (coord2[i] - coord1[i]);
-  */
   double tlow, thigh;
   if (h1 < h2) {
     tlow = coord1[0]; thigh = coord2[0];
@@ -153,7 +148,6 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   if (flag_radtransf_) {
     double vel[3];
     gg_->cartesianVelocity(coord_ph_hit, vel);
-    double vhorz2=vel[0]*vel[0]+vel[1]*vel[1];
     dt = (vel[2]==0.)
       ? (coord2[0] - coord1[0]) 
       : sqrt(1.+(vel[0]*vel[0]+vel[1]*vel[1])/(vel[2]*vel[2]));
@@ -164,36 +158,20 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   return 1;
 }
 
+int ThinDisk::setParameter(std::string name, std::string content) {
+    char* tc = const_cast<char*>(content.c_str());
+    if      (name=="InnerRadius")     setInnerRadius(atof(tc)); 
+    else if (name=="OuterRadius")     setOuterRadius(atof(tc)); 
+    else if (name=="CounterRotating") setDir(-1);
+    else return Generic::setParameter(name, content);
+    return 0;
+}
+
 #ifdef GYOTO_USE_XERCES
 void ThinDisk::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("InnerRadius", rin_);
   fmp->setParameter("OuterRadius", rout_);
   if (dir_==-1) fmp -> setParameter("CounterRotating");
   Generic::fillElement(fmp);
-}
-
-void ThinDisk::setGenericParameter(std::string name, std::string content) {
-    char* tc = const_cast<char*>(content.c_str());
-    if      (name=="InnerRadius")     setInnerRadius(atof(tc)); 
-    else if (name=="OuterRadius")     setOuterRadius(atof(tc)); 
-    else if (name=="CounterRotating") setDir(-1);
-    else Generic::setGenericParameter(name, content);
-}
-
-SmartPointer<Astrobj::Generic> ThinDisk::Subcontractor(FactoryMessenger* fmp) {
-  string name, content;
-  SmartPointer<ThinDisk> ao = new ThinDisk();
-
-  ao -> setMetric(fmp->getMetric());
-
-  while (fmp->getNextParameter(&name, &content)) {
-    ao -> setGenericParameter(name, content);
-  }
-
-  return ao;
-}
-
-void ThinDisk::Init() {
-  Astrobj::Register("ThinDisk", &Subcontractor);
 }
 #endif

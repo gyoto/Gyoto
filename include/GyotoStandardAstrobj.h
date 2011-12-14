@@ -151,9 +151,11 @@ class Gyoto::Astrobj::Standard :
    */
   virtual void getVelocity(double const pos[4], double vel[4]) = 0 ;
 
+  virtual int setParameter(std::string name, std::string content) ;
+
+
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
-  virtual void setGenericParameter(std::string name, std::string content) ;
 #endif
 
 };

@@ -90,7 +90,7 @@ class Gyoto::Worldline {
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
   SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
-  void   setInitCoord(const double coord[8], const int dir = 0); ///< Set Initial coordinate
+  void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
   void reset() ; ///< Forget integration, keeping initial contition
 
   virtual std::string className() const ; ///< "Worldline"
@@ -157,7 +157,6 @@ class Gyoto::Worldline {
 			   const double coord[8],
 			   const int dir) ;
   ///<Set or re-set the initial condition prior to integration.
- 
 
   void getInitialCoord(double dest[8]) const; ///< get initial coordinate
   void getCoord(size_t index, double dest[8]) const; ///< get coordinates corresponding to index

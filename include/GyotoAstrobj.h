@@ -46,17 +46,30 @@ namespace Gyoto{
     class Properties;
 
     /**
-     * This is a more specific version of the SmartPointee::Subcontractor_t
-     * type. An Astrobj::Subcontrator_t is called by the
-     * Gyoto::Factory to build an instance of the kind of astronomical
-     * object specified in an XML file (see Register()). The Factory
-     * and Subcontractor_t function communicate through a
-     * Gyoto::FactoryMessenger.
+     * This is a more specific version of the
+     * SmartPointee::Subcontractor_t type. An Astrobj::Subcontrator_t
+     * is called by the Gyoto::Factory to build an instance of the
+     * kind of astronomical object specified in an XML file (see
+     * Register()). The Factory and Subcontractor_t function
+     * communicate through a Gyoto::FactoryMessenger. A template is
+     * provided so that you may not have to code anything.
      */
     typedef SmartPointer<Gyoto::Astrobj::Generic>
       Subcontractor_t(Gyoto::FactoryMessenger*);
     ///< A function to build instances of a specific Astrobj::Generic sub-class
  
+    /**
+     * Instead of reimplementing the wheel, your subcobtractor can simply be
+     * Gyoto::Astrobj::Subcontractor<MyKind>
+     */
+    template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
+      (FactoryMessenger* fmp) {
+      SmartPointer<T> ao = new T();
+      ao -> setParameters(fmp);
+      return ao;
+    }
+    ///< A template for Subcontractor_t functions
+
    /**
      * Query the Astrobj register to get the Astrobj::Subcontractor_t
      * correspondig to a given kind name. This function is normally
@@ -143,7 +156,13 @@ namespace Gyoto{
  *
  * To be usable, a Astrobj::Generic (or Astrobj::Standard) sub-classe
  * should register an Astrobj::Subcontractor_t function using the
- * Astrobj::Register() function. See also \ref writing_plugins_page .
+ * Astrobj::Register() function. See also \ref writing_plugins_page
+ * . If your clas implements setParameter() and/or, if necessary,
+ * setParameters(), registering it is normally done using the provided
+ * template:
+\code
+Astrobj::Register("MyKind", &(Astrobj::Subcontractor<Astrobj::MyKind>));
+\endcode
  */
 /**
  * \class Gyoto::Astrobj::Generic
@@ -301,6 +320,29 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
 
   //XML I/O
  public:
+  /**
+   * Assume MyKind is a sublcass of Astrobj::Generic which has towo
+   * members (a string StringMember and a double DoubleMember):
+\code
+int MyKind::setParameter(std::string name, std::string content) {
+ if      (name=="StringMember") setStringMember(content);
+ else if (name=="DoubleMember") setDoubleMemeber(atof(content.c_str()));
+ else return Generic::setParameter(name, content);
+ return 0;
+}
+\endcode
+   * If MyKind is not a direct subclass of Generic but is a subclass
+   * of e.g. Standard, UniformSphere of ThinDisk, it should call the
+   * corresponding setParameter() implementation instead of
+   * Generic::setParameter().
+   *
+   * \param name XML name of the parameter
+   * \param content string representation of the value
+   * \return 0 if this parameter is known, 1 if it is not.
+   */
+  virtual int setParameter(std::string name, std::string content) ;
+  ///< Called from setParameters()
+
 #ifdef GYOTO_USE_XERCES
   /**
    * Astrobj implementations should impement fillElement to save their
@@ -312,16 +354,26 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
                                              ///< called from Factory
 
   /**
-   * The fillElement(FactoryMessenger *fmp) method for each Astrobj
-   * kind should call setGenericParameter(std::string name,
-   * std::string content) on each XML entity it doesn't know of so
-   * that Generic::setGenericParameter(std::string name, std::string
-   * content) can interpret them. The known tags are:
-   * &lt;OpticallyThin/&gt;, &lt;OpticallyThick/&gt; and &lt;RMax&gt;
-   * value &lt;/RMax&gt;.
+   * The Subcontractor_t function for each Astrobj kind should look
+   * somewhat like this:
+\code
+SmartPointer<Astrobj::Generic>
+Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
+  SmartPointer<MyKind> ao = new MyKind();
+  ao -> setParameters(fmp);
+  return ao;
+}
+\endcode
+   *
+   * Each object kind should implement setParameter(string name,
+   * string content) to interpret the individual XML
+   * elements. setParameters() can be overloaded in case the specific
+   * Astrobj class needs low level access to the FactoryMessenger. See
+   * UniformSphere::setParameters().
    */
-  virtual void setGenericParameter(std::string name, std::string content) ;
-  ///< To be called by fillElement()
+  virtual void setParameters(FactoryMessenger *fmp);
+  ///< Main loop in Subcontractor_t function
+
 
 #endif
   

@@ -334,6 +334,13 @@ void PatternDisk::setOuterRadius(double rout) {
 
 void PatternDisk::setPatternVelocity(double omega) { Omega_ = omega; }
 
+int PatternDisk::setParameter(std::string name, std::string content) {
+  if      (name == "File")          readFile( content );
+  else if (name=="PatternVelocity") setPatternVelocity(atof(content.c_str()));
+  else return ThinDisk::setParameter(name, content);
+  return 0;
+}
+
 #ifdef GYOTO_USE_XERCES
 void PatternDisk::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("File", filename_);
@@ -341,22 +348,12 @@ void PatternDisk::fillElement(FactoryMessenger *fmp) const {
   ThinDisk::fillElement(fmp);
 }
 
-SmartPointer<Astrobj::Generic> PatternDisk::Subcontractor(FactoryMessenger* fmp) {
+void PatternDisk::setParameters(FactoryMessenger* fmp) {
   string name, content;
-  SmartPointer<PatternDisk> ao = new PatternDisk();
-  ao -> setMetric(fmp->getMetric());
-
+  setMetric(fmp->getMetric());
   while (fmp->getNextParameter(&name, &content)) {
-    if      (name == "File") ao -> readFile( fmp -> fullPath(content) );
-    else if (name=="PatternVelocity")
-      ao -> setPatternVelocity(atof(content.c_str()));
-    else ao -> setGenericParameter(name, content);
+    if  (name == "File") setParameter(name, fmp -> fullPath(content));
+    else setParameter(name, content);
   }
-
-  return ao;
-}
-
-void PatternDisk::Init() {
-  Astrobj::Register("PatternDisk", &Subcontractor);
 }
 #endif

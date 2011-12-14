@@ -38,7 +38,8 @@ using namespace Gyoto::Astrobj;
 
 Star::Star() :
   UniformSphere("Star"),
-  Worldline()
+  Worldline(),
+  wait_pos_(0), init_vel_(NULL)
 {
   if (debug())
     cerr << "DEBUG: in Star::Star()" << endl;
@@ -47,8 +48,9 @@ Star::Star() :
 Star::Star(SmartPointer<Metric::Generic> met, double rad,
 	   double pos[4],
 	   double v[3]) :
-  UniformSphere("Star", met, rad),
-  Worldline()
+  UniformSphere("Star"),
+  Worldline(),
+  wait_pos_(0), init_vel_(NULL)
 {
   if (debug()) {
     cerr << "DEBUG: Star Construction " << endl
@@ -60,24 +62,20 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 
   }
 
-  metric_=met;
-  gg_=met;
-
-  double tdot0=metric_->SysPrimeToTdot(pos, v);
-
-  if (debug()) cerr << "       TDOT0=" << tdot0 << endl;
-
-  double coord[8]={pos[0], pos[1], pos[2], pos[3],
-		   tdot0, v[0]*tdot0, v[1]*tdot0, v[2]*tdot0};
-
-  Worldline::setInitialCondition(metric_, coord, 1);
-    //last number : direction of integration + or -1
+  setMetric(met);
+  setInitCoord(pos, v);
+  setRadius(rad);
 }
 
 Star::Star(const Star& orig) :
-  UniformSphere(orig), Worldline(orig)
+  UniformSphere(orig), Worldline(orig),
+  wait_pos_(orig.wait_pos_), init_vel_(NULL)
 {
   if (debug()) cerr << "Star copy" << endl;
+  if (orig.init_vel_) {
+    init_vel_ = new double [3];
+    memcpy(init_vel_, orig.init_vel_, 3*sizeof(double));
+  }
   gg_ = metric_; // we have two distinct clones of the metric, not good...
 }
 
@@ -85,13 +83,26 @@ Star* Star::clone() const { return new Star(*this); }
 
 Star::~Star() {
   if (debug()) cerr << "DEBUG: Star::~Star()\n";
+  if (init_vel_) delete[] init_vel_;
 }
 
 string Star::className() const { return  string("Star"); }
 string Star::className_l() const { return  string("star"); }
 
 SmartPointer<Metric::Generic> Star::getMetric() const { return gg_; }
-void Star::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg; metric_=gg;}
+void Star::setMetric(SmartPointer<Metric::Generic> gg) {
+  UniformSphere::setMetric(gg);
+  Worldline::setMetric(gg);
+}
+
+void Star::setInitCoord(double pos[4], double v[3], int dir) {
+  if (!metric_) throwError("Please set metric before calling Star::setInitCoord(double pos[4], double vel[3])");
+  double tdot0=metric_->SysPrimeToTdot(pos, v);
+  if (debug()) cerr << "DEBUG: Star::setInitCoord(): TDOT0=" << tdot0 << endl;
+  double coord[8]={pos[0], pos[1], pos[2], pos[3],
+		   tdot0, v[0]*tdot0, v[1]*tdot0, v[2]*tdot0};
+  setInitCoord(coord, dir);
+}
 
 void Star::setInitialCondition(double coord[8]) {
   if (!metric_) throwError("Please set metric before calling Star::setInitialCondition(double*)");
@@ -130,6 +141,41 @@ void Star::unsetRmax() {
   rmax_=DBL_MAX;
 }
 
+void Star::setPosition(double pos[4]) {
+  double vel[] = {0., 0., 0.};
+  setInitCoord(pos, vel);
+}
+
+void Star::setVelocity(double vel[3]) {
+  double coord[8];
+  getInitialCoord(coord);
+  setInitCoord(coord, vel);
+}
+
+int Star::setParameter(std::string name, std::string content) {
+  double coord[8];
+  char* tc = const_cast<char*>(content.c_str());
+  if (name=="InitialCoordinate") {
+    for (int i=0;i<8;++i) coord[i] = strtod(tc, &tc);
+    setInitCoord(coord);
+  } else if (name=="Position") {
+    for (int i=0;i<4;++i) coord[i] = strtod(tc, &tc);
+    if (init_vel_) {
+      setInitCoord(coord, init_vel_);
+      delete[] init_vel_; init_vel_=NULL;
+    } else setPosition(coord);
+    wait_pos_ = 0;
+  } else if (name=="Velocity") {
+    for (int i=0;i<3;++i) coord[i] = strtod(tc, &tc);
+    if (wait_pos_) {
+      if (init_vel_) delete [] init_vel_;
+      init_vel_ = new double[3];
+      memcpy(init_vel_, coord, 3*sizeof(double));
+    } else setVelocity(coord);
+  } else return UniformSphere::setParameter(name, content);
+  return 0;
+}
+
 #ifdef GYOTO_USE_XERCES
 void Star::fillElement(FactoryMessenger *fmp) const {
 
@@ -144,40 +190,13 @@ void Star::fillElement(FactoryMessenger *fmp) const {
   Astrobj::UniformSphere::fillElement(fmp);
 }
 
-SmartPointer<Astrobj::Generic> Gyoto::Astrobj::Star::Subcontractor(FactoryMessenger* fmp) {
-
-  string name="", content="";
-  int pos_found=0, vel_found=0;
-  double pos[4], v[3];
-  SmartPointer<Metric::Generic> gg = NULL;
-  SmartPointer<Spectrum::Generic> sp = NULL, op = NULL;
-  FactoryMessenger * child = NULL;
-
-  gg = fmp->getMetric();
-
-  while (fmp->getNextParameter(&name, &content)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if      (name=="Position") {
-      pos_found=1;
-      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
-    }
-    else if (name=="Velocity") {
-      vel_found=1;
-      for (int i=0;i<3;++i) v[i] = strtod(tc, &tc);
-    }
+void Star::setParameters(FactoryMessenger* fmp) {
+  wait_pos_ = 1;
+  UniformSphere::setParameters(fmp);
+  if (init_vel_) {
+    delete[] init_vel_; init_vel_=NULL;
+    throwError("Star::setParameters(): Velocity was found but not Position");
   }
-  if (!pos_found) throwError("Position MUST be set in Star definition");
-  if (!vel_found) throwError("Velocity MUST be set in Star definition");
-
-  SmartPointer<Star> st = new Star(gg, 0., pos, v);
-
-  fmp->reset();
-  st -> setGenericParameters(fmp);
-
-  return st;
-}
-
-void Gyoto::Astrobj::Star::Init() {
-  Gyoto::Astrobj::Register("Star", &Gyoto::Astrobj::Star::Subcontractor);
+  wait_pos_ = 0;
 }
 #endif

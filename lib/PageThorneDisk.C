@@ -130,20 +130,4 @@ void PageThorneDisk::fillElement(FactoryMessenger *fmp) const {
   fmp->setMetric(gg_);
   ThinDisk::fillElement(fmp);
 }
-
-SmartPointer<Astrobj::Generic> PageThorneDisk::Subcontractor(FactoryMessenger* fmp) {
-  string name, content;
-  SmartPointer<PageThorneDisk> ao = new PageThorneDisk();
-  ao -> setMetric(fmp->getMetric());
-
-  while (fmp->getNextParameter(&name, &content)) {
-    ao -> setGenericParameter(name, content);
-  }
-
-  return ao;
-}
-
-void PageThorneDisk::Init() {
-  Astrobj::Register("PageThorneDisk", &Subcontractor);
-}
 #endif

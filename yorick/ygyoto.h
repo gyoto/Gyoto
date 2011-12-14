@@ -124,9 +124,9 @@ void ygyoto_Spectrum_generic_eval
 
 // Keywords processed by ygyoto_Astrobj_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW "metric", "rmax", "opticallythin",	\
-    "xmlwrite", "kind", "clone"
+    "xmlwrite", "kind", "setparameter", "clone"
 // number of those keywords
-#define YGYOTO_ASTROBJ_GENERIC_KW_N 6
+#define YGYOTO_ASTROBJ_GENERIC_KW_N 7
 
 // Keywords processed by ygyoto_Spectrum_generic_eval
 #define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "clone", "integrate"

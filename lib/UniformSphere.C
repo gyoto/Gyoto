@@ -146,6 +146,12 @@ void UniformSphere::setRadius(double r) {
   safety_value_ = critical_value_*1.1+0.1;
 }
 
+int UniformSphere::setParameter(string name, string content) {
+  if (name=="Radius") setRadius(atof(content.c_str()));
+  else return Standard::setParameter(name, content);
+  return 0;
+}
+
 #ifdef GYOTO_USE_XERCES
 void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
@@ -164,32 +170,38 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   Astrobj::Generic::fillElement(fmp);
 }
 
-void Gyoto::Astrobj::UniformSphere::setGenericParameters(FactoryMessenger* fmp){
+void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
 
   string name="", content="";
   FactoryMessenger * child = NULL;
 
+  if (debug()) cerr << "DEBUG: UniformSphere::setParameters(): setMetric()\n";
   setMetric(fmp->getMetric());
   setFlag_radtransf(0);
 
   while (fmp->getNextParameter(&name, &content)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if      (name=="Radius") setRadius(atof(tc));
-    else if (name=="Spectrum") {
+    if (name=="Spectrum") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
+      if (debug())
+	cerr << "DEBUG: UniformSphere::setParameters(): setSpectrum()\n";
       setSpectrum((*Spectrum::getSubcontractor(content))(child));
       delete child;
     }
     else if (name=="Opacity") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
+      if (debug())
+	cerr << "DEBUG: UniformSphere::setParameters(): setOpacity()\n";
       setOpacity((*Spectrum::getSubcontractor(content))(child));
       setFlag_radtransf(1);
       delete child;
+    } else {
+      if (debug())
+	cerr << "DEBUG: UniformSphere::setParameters(): setParameter("
+	     <<name<<", "<<content<<")\n";
+      setParameter(name, content);
     }
-    else
-      setGenericParameter(name, content);
   }
 
 }

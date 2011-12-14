@@ -317,6 +317,19 @@ extern gyoto_Astrobj;
    
      xmlwite="filename.xml" dump a description of the object to an XML
                   file.
+
+     setparameter="name","content" generic method to set a parameter
+                  in an Astrobj object, even if is has not been
+                  explicitely exposed in the Yorick plug-in. For
+                  instance, if st is a gyoto_Star object, the two
+                  following commands yield the same result, although
+                  the former is faster than the latter:
+                     st, radius=1.0;
+                     st, setparameter="Radius","1.0";
+                  The list of values that "name" can take is (or
+                  should be) documented in the doxygen documentation
+                  for the specific class. See
+                  Gyoto::Astrobj::Generic::setParameter().
      
    SEE ALSO: gyoto
     The following implement specific objects:
@@ -324,8 +337,6 @@ extern gyoto_Astrobj;
      gyoto_FixedStar          A spherical object of constant coordinates
      gyoto_Torus              A simple torus (solid, Keplerian rotation)
      gyoto_PolishDoughnut     A toroidal acretion structure
-     gyoto_ThinInfiniteDiskBL An accretion disk
-     gyoto_ThinInfiniteDiskKS An accretion disk
      
  */
 

@@ -223,6 +223,12 @@ void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
 
     double coord[8];
     getInitialCoord(coord);
+    if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
+	 && x2_[i0_]==0. ) {
+      if (verbose() >= GYOTO_SEVERE_VERBOSITY)
+	cerr << "SEVERE: Worldline::setMetric(): Kicking particle off z axis\n";
+      x2_[i0_]=coord[2]=1e-10;
+    }
     metric_ -> setParticleProperties(this,coord);
   }
 
@@ -233,9 +239,9 @@ SmartPointer<Metric::Generic> Worldline::getMetric() const { return metric_; }
 string Worldline::className() const { return  string("Worldline"); }
 string Worldline::className_l() const { return  string("worldline"); }
 
-void Worldline::setInitCoord(const double coord[8], const int dir) {
+void Worldline::setInitCoord(const double coord[8], int dir) {
+  if (dir==0) dir = getMass() ? 1 : -1;
   imin_=imax_=i0_=(dir==1?0:x_size_-1);
-  imin_=i0_=imax_=(dir==1?0:x_size_-1);
   x0_[i0_]=coord[0];
   x1_[i0_]=coord[1];
   x2_[i0_]=coord[2];
@@ -244,41 +250,29 @@ void Worldline::setInitCoord(const double coord[8], const int dir) {
   x1dot_[i0_]=coord[5];
   x2dot_[i0_]=coord[6];
   x3dot_[i0_]=coord[7];
-  if (metric_())   metric_ -> setParticleProperties(this,coord);
+  if (metric_())  {
+    double coo[8];
+    memcpy(coo, coord, 8*sizeof(double));
+    if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
+	 && x2_[i0_]==0. ) {
+      if (verbose() >= GYOTO_SEVERE_VERBOSITY) {
+	cerr << "SEVERE: Worldline::setInitialCondition("<<metric_->getKind()
+	     <<", ["<<coo[0];
+	for (size_t ii=1; ii<8; ++ii) cerr << ", "<<coo[ii];
+	cerr<<"], "<<dir<<"): Kicking particle off z axis" << endl;
+      }
+      x2_[i0_]=coo[2]=1e-10;
+    }
+    metric_ -> setParticleProperties(this,coord);
+  }
 }
 
 void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 				    const double coord[8],
 				    const int dir)
-/*void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
-				    const double coord[8],
-				    const SmartPointer<GetGmunu> orig, const int dir)*/
 {
   metric_=met;
-  double coo[8] ;
-  memcpy(coo, coord, 8*sizeof(double));
-  imin_=i0_=imax_=(dir==1?0:x_size_-1);
-  x0_[i0_]=coord[0];
-  x1_[i0_]=coord[1];
-  x2_[i0_]=coord[2];
-  if ( met -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
-       && x2_[i0_]==0. ) {
-    if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-      cerr << "SEVERE: Worldline::setInitialCondition("<<met->getKind()
-	   <<", ["<<coo[0];
-    for (size_t ii=1; ii<8; ++ii) cerr << ", "<<coo[ii];
-    cerr<<"], "<<dir<<"): Kicking particle off z axis" << endl;
-    x2_[i0_]=coo[2]=1e-10;
-  }
-  x3_[i0_]=coord[3];
-  x0dot_[i0_]=coord[4];
-  x1dot_[i0_]=coord[5];
-  x2dot_[i0_]=coord[6];
-  x3dot_[i0_]=coord[7];
-  metric_ -> setParticleProperties(this,coo);
-
-
-  //if (debug()) if (debug()) cout << "wl.C rdot_i= " << coord[4] << endl;
+  setInitCoord(coord, dir);
 }
 
 void Worldline::reset() { imin_=imax_=i0_; }
@@ -864,6 +858,8 @@ void Worldline::setCst(double const * const cst, const size_t n) {
 }
 
 void Worldline::getInitialCoord(double coord[8]) const {
+  if (imax_<imin_)
+    throwError("Worldline::getInitialCoord(): initial coordinate not set yet");
   coord[0] = x0_[i0_];
   coord[1] = x1_[i0_];
   coord[2] = x2_[i0_];

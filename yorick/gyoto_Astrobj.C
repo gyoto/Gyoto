@@ -201,6 +201,16 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
     *kind = p_strcpy((*ao)->getKind().c_str());
   }
 
+  /* SETPARAMETER */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if ((*rvset)++) y_error("rmsg");
+    if ((*paUsed)++) y_error("pmsg");
+    string name = ygets_q(iarg);
+    string content = ygets_q(*piargs);
+    (*ao)->setParameter(name, content);
+  }
+
   /* CLONE */
   if ((iarg=kiargs[++k])>=0) {
     if ((*rvset)++) y_error(rmsg);
