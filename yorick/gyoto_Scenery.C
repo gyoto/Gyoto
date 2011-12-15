@@ -55,6 +55,7 @@ extern "C" {
     } else printf("Freeing unattached Scenery object\n");
   }
   void gyoto_Scenery_print(void *obj) {
+    GYOTO_DEBUG();
 #ifdef GYOTO_USE_XERCES
     if (debug()) {
       cerr << "DEBUG: Printing Gyoto Scenery"<<endl;

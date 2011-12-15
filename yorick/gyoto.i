@@ -332,11 +332,40 @@ extern gyoto_Astrobj;
                   Gyoto::Astrobj::Generic::setParameter().
      
    SEE ALSO: gyoto
-    The following implement specific objects:
+    The following implement specific objects, most require gyoto_std.i:
      gyoto_Star               A spherical object moving along a geodesic
      gyoto_FixedStar          A spherical object of constant coordinates
      gyoto_Torus              A simple torus (solid, Keplerian rotation)
-     gyoto_PolishDoughnut     A toroidal acretion structure
+     gyoto_ThinDisk           A geometrically thin disk
+     gyoto_PageThorneDisk     As above with Page & Thorne 1974 emission
+     gyoto_PatternDisk        As above, emission numerically provided
+     
+ */
+
+extern gyoto_ThinDisk;
+/* DOCUMENT ao = gyoto_ThinDisk( filename );
+            ao, member1=val1, member2=val2...;
+            val = ao(member=)
+            ao, xmlwrite=filename
+
+     A more specific version of the gyoto_Astrobj function. A very
+     crude Astrobj can be instanciated using gyoto_ThinDisk. More
+     elaborate derived classes also exist. gyoto_ThinDisk accepts a
+     few keywords in addition to those processed by gyoto_Astrobj.
+            
+   MEMBER KEYWORDS
+
+     innerradius:  inner radius of the disk.
+                  
+     outer radius: outer radius of the disk.
+
+     dir:          1 if corotating (relative to the coordinate system),
+                  -1 if coounter rotating.
+
+   SEE ALSO: gyoto, gyoto_Astrobj
+    There are two derived classes in gyoto_std.i:
+     gyoto_PageThorneDisk     As above with Page & Thorne 1974 emission
+     gyoto_PatternDisk        As above, emission numerically provided
      
  */
 

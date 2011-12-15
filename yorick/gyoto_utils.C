@@ -87,6 +87,8 @@ extern "C" {
 	                           = &ygyoto_Astrobj_register;
       YGyotoGlobalSupplier -> ygyoto_Astrobj_generic_eval
                                    = &ygyoto_Astrobj_generic_eval;
+      YGyotoGlobalSupplier -> ygyoto_ThinDisk_generic_eval
+                                   = &ygyoto_ThinDisk_generic_eval;
       // Plug Spectrum ABI
       YGyotoGlobalSupplier -> yget_Spectrum  = &yget_Spectrum;
       YGyotoGlobalSupplier -> ypush_Spectrum = &ypush_Spectrum;

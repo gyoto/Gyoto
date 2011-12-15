@@ -28,7 +28,7 @@ PKG_I=gyoto.i \
 
 OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \
 	gyoto_Scenery.o gyoto_Screen.o gyoto_Idx.o gyoto_Spectrum.o \
-	gyoto_Spectrometer.o
+	gyoto_Spectrometer.o gyoto_ThinDisk.o
 
 # gyoto_KerrBL.o gyoto_KerrKS.o gyoto_Star.o gyoto_FixedStar.o gyoto_PolishDoughnut.o gyoto_ThinInfiniteDiskBL.o gyoto_ThinInfiniteDiskKS.o 
 

@@ -17,7 +17,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 

@@ -6,13 +6,13 @@ include ../local_settings
 SRC = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	Worldline.C FocalPlane.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
-	Spectrometer.C
+	Spectrometer.C ThinDisk.C
 
 STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
-	StandardAstrobj.C ThinDisk.C PageThorneDisk.C
+	StandardAstrobj.C PageThorneDisk.C
 
 ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
 STDPLUG_SRC += 	PatternDisk.C

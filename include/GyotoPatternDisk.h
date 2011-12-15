@@ -123,6 +123,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    * Unit: radians per geometrical unit time.
    */
   virtual void   setPatternVelocity(double); ///< Set pattern angular velocity
+  virtual double getPatternVelocity(); ///< Set pattern angular velocity
   virtual void readFile(std::string filename_);
   ///< Read data from file
 

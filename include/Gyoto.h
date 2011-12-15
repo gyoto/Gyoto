@@ -20,23 +20,29 @@
 /**
  * \file Gyoto.h
  * \brief All of Gyoto
- * Gyoto.h #includes all of the other Gyoto C++ header files.
+ *
+ * Gyoto.h #includes all of the other Gyoto C++ header files. Beware
+ * that some symbols are resolved only in the plugins
+ * (libgyoto-stdplug.so, libgyoto-lorene.so).
  */
 
 #include<GyotoUtils.h>
-#include<GyotoAstrobj.h>
 #include<GyotoError.h>
-#include<GyotoFocalPlane.h>
-#include<GyotoMetric.h>
 #include<GyotoSmartPointer.h>
-#include<GyotoThinInfiniteDisk.h>
-#include<GyotoWorldlineTime.h>
-#include<GyotoCoord.h>
-#include<GyotoFixedStar.h>
-#include<GyotoKerr.h>
-#include<GyotoPhoton.h>
-#include<GyotoStar.h>
+#include<GyotoFocalPlane.h>
 #include<GyotoWorldline.h>
+#include<GyotoPhoton.h>
+
+#include<GyotoMetric.h>
+#include<GyotoKerrBL.h>
+#include<GyotoKerrKS.h>
+
+#include<GyotoAstrobj.h>
+#include<GyotoThinDisk.h>
+#include<GyotoPageThorneDisk.h>
+#include<GyotoPatternDisk.h>
+#include<GyotoFixedStar.h>
+#include<GyotoStar.h>
 
 /**
  * \mainpage Gyoto

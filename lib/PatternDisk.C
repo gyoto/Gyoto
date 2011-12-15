@@ -333,6 +333,7 @@ void PatternDisk::setOuterRadius(double rout) {
 }
 
 void PatternDisk::setPatternVelocity(double omega) { Omega_ = omega; }
+double PatternDisk::getPatternVelocity() { return Omega_; }
 
 int PatternDisk::setParameter(std::string name, std::string content) {
   if      (name == "File")          readFile( content );

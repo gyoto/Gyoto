@@ -27,6 +27,7 @@
 
 using namespace std;
 using namespace Gyoto;
+using namespace Gyoto::Astrobj;
 
 static char ygyoto_Astrobj_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
@@ -63,6 +64,7 @@ extern "C" {
 #endif
   }
   void gyoto_Astrobj_eval(void *obj, int argc) {
+    GYOTO_DEBUG();
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
       ypush_long((long)((gyoto_Astrobj*)obj)->astrobj());
@@ -81,18 +83,40 @@ extern "C" {
       return;
     }
 
-    // Fall-back to default worker
-    static char const * knames[]={
-      YGYOTO_ASTROBJ_GENERIC_KW, 0
-    };
-    static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+1];
-    int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N];
-    int piargs[]={-1,-1,-1,-1};
+    // Possibly call hiegher-level base class worker
+
     // push default return value: need to drop before pushing another one
     *ypush_Astrobj()=*ao;
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
+    int rvset[1]={0}, paUsed[1]={0};
     int iarg=argc, parg=0;
+    int piargs[]={-1,-1,-1,-1};
+
+    enum BASE_NAME { GENERIC, THINDISK };
+    BASE_NAME base = GENERIC;
+    if (dynamic_cast<ThinDisk const * const>((*ao)())) base = THINDISK;
+
+    static char const * knames_thindisk[]={YGYOTO_THINDISK_GENERIC_KW, 0};
+    static char const * knames_generic[]={YGYOTO_ASTROBJ_GENERIC_KW, 0};
+    static long kglobs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+1];
+    static int kiargs[YGYOTO_ASTROBJ_BASE_MAX_KW_N];
+
+    char ** knames=NULL;
+    ygyoto_Astrobj_generic_eval_t * worker;
+    // ThinDisk
+    switch (base) {
+    case GENERIC:
+      knames=const_cast<char**>(knames_generic);
+      worker = &ygyoto_Astrobj_generic_eval;
+      break;
+    case THINDISK:
+      knames = const_cast<char**>(knames_thindisk);
+      worker = &ygyoto_ThinDisk_generic_eval;
+      break;
+    default:
+      y_error("BUG: unkown base type");
+    }
+
+    yarg_kw_init(knames, kglobs, kiargs);
     while (iarg>=1) {
       iarg = yarg_kw(iarg, kglobs, kiargs);
       if (iarg>=1) {
@@ -101,13 +125,12 @@ extern "C" {
       }
     }
 
-    int rvset[1]={0}, paUsed[1]={0};
-    ygyoto_Astrobj_generic_eval(ao, kiargs, piargs, rvset, paUsed);
-
+    (*worker)(ao, kiargs, piargs, rvset, paUsed);
 
   }
   static y_userobj_t gyoto_Astrobj_obj =
-    {const_cast<char*>("gyoto_Astrobj"), &gyoto_Astrobj_free, &gyoto_Astrobj_print, &gyoto_Astrobj_eval, 0, 0};
+    {const_cast<char*>("gyoto_Astrobj"), &gyoto_Astrobj_free,
+     &gyoto_Astrobj_print, &gyoto_Astrobj_eval, 0, 0};
 
 }
 

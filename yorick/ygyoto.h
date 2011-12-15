@@ -22,6 +22,7 @@
 
 #include <GyotoMetric.h>
 #include <GyotoAstrobj.h>
+#include <GyotoThinDisk.h>
 #include <GyotoSpectrum.h>
 #include <GyotoScreen.h>
 #include <GyotoPhoton.h>
@@ -93,6 +94,9 @@ void ygyoto_Astrobj_register(char const * const kind, ygyoto_Astrobj_eval_worker
 void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*,
 				 int *kiargs, int *piargs, int *rvset,
 				 int *paUsed);
+void ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*,
+				 int *kiargs, int *piargs, int *rvset,
+				 int *paUsed);
 
 
 void ygyoto_Spectrum_register(char const * const kind,
@@ -127,6 +131,15 @@ void ygyoto_Spectrum_generic_eval
     "xmlwrite", "kind", "setparameter", "clone"
 // number of those keywords
 #define YGYOTO_ASTROBJ_GENERIC_KW_N 7
+
+// Keywords processed by ygyoto_ThinDisk_generic_eval
+#define YGYOTO_THINDISK_GENERIC_KW "innerradius", "outerradius", "dir",	\
+    YGYOTO_ASTROBJ_GENERIC_KW
+// number of those keywords
+#define YGYOTO_THINDISK_GENERIC_KW_N 3+YGYOTO_ASTROBJ_GENERIC_KW_N
+
+// maximum number of keywords accepted by a base Astrobj class
+#define YGYOTO_ASTROBJ_BASE_MAX_KW_N YGYOTO_THINDISK_GENERIC_KW_N
 
 // Keywords processed by ygyoto_Spectrum_generic_eval
 #define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "clone", "integrate"
@@ -185,6 +198,7 @@ typedef struct YGyotoSupplier {
   yarg_OBJTYPE_t         *yarg_Astrobj;
   ygyoto_Astrobj_register_t *ygyoto_Astrobj_register;
   ygyoto_Astrobj_generic_eval_t* ygyoto_Astrobj_generic_eval;
+  ygyoto_Astrobj_generic_eval_t* ygyoto_ThinDisk_generic_eval;
   // Spectrum
   ygyoto_yget_Spectrum_t  *yget_Spectrum;
   ygyoto_ypush_Spectrum_t *ypush_Spectrum;
@@ -230,6 +244,9 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 #define ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
                           YGYOTO_LOCAL_SUPPLIER -> \
 		  ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed)
+#define ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
+                          YGYOTO_LOCAL_SUPPLIER -> \
+		  ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed)
 
 #define yget_Spectrum(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Spectrum(iarg)
 #define ypush_Spectrum()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Spectrum()

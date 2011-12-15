@@ -86,6 +86,53 @@ extern gyoto_Torus;
     SEE ALSO: gyoto, gyoto_Astrobj, gyoto_Star, gyoto_Spectrum
 */
 
+//// PAGETHORNEDISK
+extern _gyoto_PageThorneDisk_register_as_Astrobj;
+_gyoto_PageThorneDisk_register_as_Astrobj;
+extern gyoto_PageThorneDisk;
+/* DOCUMENT disk = gyotoPageThorneDisk(...)
+            disk, member=value...
+
+    This is a subkind of gyoto_ThinDisk with an emission law based on
+    Page & Thorne 1974. Works only in Kerr metric (KerrBL or
+    KerrKS). The spin is cached when the metric is set: if you later
+    change the spin in the metric, use the UPDATESPIN keyword to
+    update it, i.e.:
+
+      disk, metric=gyoto_KerrBL();
+      noop, disk(metric=)(spin=0.5);
+      disk, updatespin=
+
+   KEYWORDS:
+
+    updatespin= [] updated cached value of spin parameter.
+
+   SEE ALSO:
+    gyoto_Astrobj, gyoto_ThinDisk, gyoto_KerrBL, gyoto_KerrKS
+*/
+
+//// PATTERNDISK
+extern _gyoto_PatternDisk_register_as_Astrobj;
+_gyoto_PatternDisk_register_as_Astrobj;
+extern gyoto_PatternDisk;
+/* DOCUMENT disk = gyotoPatternDisk(...)
+            disk, member=value...
+
+    This is a subkind of gyoto_ThinDisk. The emission law is read from
+    a FITS file using the READFILE keyword. The data read from this
+    file can be rotated at constant angular rate PATTERNVELOCITY.
+
+   KEYWORDS:
+
+    readfile="filename.fits" read pattern from FITS file.
+
+    patternvelocity=double(value) set (or get) pattern angular
+                       velocity.
+
+   SEE ALSO:
+    gyoto_Astrobj, gyoto_ThinDisk, gyotoPageThorneDisk
+*/
+
 /////// SPECTRUM KIND ///////
 
 /* PowerLaw */
