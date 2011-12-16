@@ -203,6 +203,25 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     ypush_double((*gg)->unitLength());
   }
 
+  // circularvelocity
+  if ((iarg=kiargs[++k])>=0) { // unitLength()
+    if ((*rvset)++) y_error(rmsg);
+    if ((*paUsed)++) y_error(pmsg);
+    long ntot=0;
+    long dims[Y_DIMSIZE];
+    double * coords = ygeta_d(iarg, &ntot, dims);
+    if (!dims[0] || dims[1]<4)
+      y_error("syntax: circularvelocity=array(double, 4 ...)");
+    long dir =1;
+    if (piargs[0] >= 0) dir = ygets_l(piargs[0]) >= 0 ? 1 : -1;
+    long d1 = dims[1];
+    long npoints=ntot/d1;
+    dims[1]=4;
+    double * vels = ypush_d(dims);
+    for (long i=0; i<npoints; ++i, coords+=d1, vels+=4)
+      (*gg)->circularVelocity(coords, vels, dir);
+  }
+
   // Save to file
   if ((iarg=kiargs[++k])>=0) { // xmlwrite
     iarg+=*rvset;
@@ -306,66 +325,6 @@ extern "C" {
     }
 
     ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed);
-  }
-
-
-  void
-  Y_gyoto_Metric_setMass(int n)
-  {
-    if (n!=2) y_error("gyoto_Metric_setMass takes exactly 2 parameters");
-    double mass = ygets_d(n-2);
-    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
-    try { (*gg)->setMass(mass); }
-    YGYOTO_STD_CATCH ;
-  }
-
-  void
-  Y_gyoto_Metric_getMass(int n)
-  {
-    SmartPointer<Metric::Generic> *gg = yget_Metric(0);
-    ypush_double((*gg)->getMass());
-  }
-
-  void
-  Y_gyoto_Metric_gmunu(int n)
-  {
-    if (n!=4) y_error("gyoto_Metric_gmunu takes exactly 4 arguments");
-    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
-    long  ntot;
-    double  *x     = ygeta_d(n-2, &ntot, NULL);
-    if (ntot<4) y_error("X must have at least four elements");
-    int     alpha  = ygets_d(n-3);
-    int     beta   = ygets_d(n-4);
-
-    try { ypush_double((*gg)->gmunu(x, alpha-1, beta-1)); }
-    YGYOTO_STD_CATCH
-  }
-
-  void
-  Y_gyoto_Metric_SysPrimeToTdot(int n)
-  {
-    if (n!=3) y_error("gyoto_Metric_SysPrimeToTdot takes exactly 3 arguments");
-    SmartPointer<Metric::Generic> *gg = yget_Metric(n-1);
-    long ntot=1;
-    double * pos=ygeta_d(n-2,&ntot,0);
-    if (ntot!=4) y_error("POS must have 4 elements");
-    double * vel=ygeta_d(n-3,&ntot,0);
-    if (ntot!=3) y_error("VEL must have 3 elements");
-
-    try { ypush_double((*gg)->SysPrimeToTdot(pos, vel)); }
-    YGYOTO_STD_CATCH
-
-  }
-
-  void
-  Y_gyoto_Metric_get_refCount(int n)
-  {
-    gyoto_Metric * obj=(gyoto_Metric*)yget_obj(0, &gyoto_Metric_obj);
-    //if (strcmp(obj->type,"Kerr")) y_error("first argument must be a GYOTO Kerr object ");
-    //SmartPointer<Kerr> kerr ( dynamic_cast<Kerr*>((obj->metric).address()));
-    try {
-      ypush_long(obj->metric->getRefCount());
-    } YGYOTO_STD_CATCH;
   }
 
 }

@@ -81,18 +81,18 @@ posi=[ti,ri,thetai,phii];
 //cout << "ri thi phi " << setprecision(prec) << ri << " " << thetai << " " << phii << endl;
 if (!gen) {
   
-  gtt   = gyoto_Metric_gmunu (gg, posi, 1, 1);
-  grr   = gyoto_Metric_gmunu (gg, posi, 2, 2);
-  gthth = gyoto_Metric_gmunu (gg, posi, 3, 3);
-  gphph = gyoto_Metric_gmunu (gg, posi, 4, 4);
-  gtph  = gyoto_Metric_gmunu (gg, posi, 1, 4);
+  gtt   = gg(posi, 1, 1);
+  grr   = gg(posi, 2, 2);
+  gthth = gg(posi, 3, 3);
+  gphph = gg(posi, 4, 4);
+  gtph  = gg(posi, 1, 4);
   
  }else{
-  gtt   =gyoto_Metric_gmunu (gg_gen, posi, 1, 1);
-  grr   =gyoto_Metric_gmunu (gg_gen, posi, 2, 2);
-  gthth =gyoto_Metric_gmunu (gg_gen, posi, 3, 3);
-  gphph =gyoto_Metric_gmunu (gg_gen, posi, 4, 4);
-  gtph  =gyoto_Metric_gmunu (gg_gen, posi, 1, 4);
+  gtt   =gg_gen(posi, 1, 1);
+  grr   =gg_gen(posi, 2, 2);
+  gthth =gg_gen(posi, 3, 3);
+  gphph =gg_gen(posi, 4, 4);
+  gtph  =gg_gen(posi, 1, 4);
  }
 
 rpoint2=(-1.-gtt*tpointi*tpointi-2.*gtph*tpointi*phipointi-gthth*thetapointi*thetapointi-gphph*phipointi*phipointi)/grr;

@@ -23,7 +23,7 @@ GYOTO_H = $(shell ls ../include/*.h)
 
 PKG_NAME=gyoto
 PKG_I=gyoto.i \
-	gyoto_Metric.i gyoto_Photon.i gyoto_Scenery.i
+	gyoto_Photon.i gyoto_Scenery.i
 #gyoto_Kerr.i gyoto_Star.i gyoto_FixedStar.i gyoto_PolishDoughnut.i
 
 OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \

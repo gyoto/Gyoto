@@ -21,10 +21,8 @@
 #include "gyoto_std.i"
 
 aa=0.;
-refcount=0;
 
 gg=gyoto_KerrBL(spin=aa);
-++refcount;
 
 write, format="%s", "Creating Photon: ";
 ph = gyoto_Photon();
@@ -34,11 +32,6 @@ if (ph())
 write, format="%s", "Attaching metric: ";
 ph,metric=gg;
 if (ph())
-  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
-++refcount;
-
-write, format="%s", "Checking gyoto_Metric_get_RefCount: ";
-if (gyoto_Metric_get_refCount(gg)==refcount)
   write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 // initial conditions :
@@ -65,11 +58,6 @@ v= coord(6:)/coord(5);
 write, format="%s", "Checking gyoto_Star: ";
 st=gyoto_Star(metric=gg, radius=1., initcoord=pos, v);
 write, format="%s\n","done.\n";
-refcount+=2;
-
-write, format="%s", "Checking gyoto_Metric_get_RefCount after Star creation: ";
-if (gyoto_Metric_get_refCount(gg)==refcount)
-  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 write, format="%s\n", "Trying gyoto_Star_xFill";
 st(xfill=770);
@@ -94,9 +82,9 @@ gyoto_Star_get_prime, st, rp, thetap, phip;
 write, format="%s", "Checking gyoto_Metric_SysPrimeToTdot: ";
 tdotbis=array(double,numberof(t));
 for (n=1; n<= numberof(t); ++n)
-  tdotbis(n)=gyoto_Metric_SysPrimeToTdot(gg, [t(n), r(n), theta(n), phi(n)],
-                                         [rp(n), thetap(n), phip(n)]
-                                        );
+  tdotbis(n)=gg(prime2tdot= [t(n), r(n), theta(n), phi(n)],
+                [rp(n), thetap(n), phip(n)]
+                );
 if (max (abs( (tdot-tdotbis)/tdot ) ) < 2e-3)
   write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
@@ -104,7 +92,7 @@ if (max (abs( (tdot-tdotbis)/tdot ) ) < 2e-3)
 write, format="%s", "Checking gyoto_Metric_g: ";
 norm=array(double, numberof(t));
 for (n=1; n<= numberof(t); ++n) {
-  g=gyoto_Metric_g(gg, [t(n), r(n), theta(n), phi(n)]);
+  g=gg([t(n), r(n), theta(n), phi(n)]);
   qvel=[tdot(n), rdot(n), thetadot(n), phidot(n)];
   norm(n)=sum(g*qvel(,-)*qvel(-,));
  }
@@ -171,9 +159,6 @@ ph=[];
 st=[];
 orbit=[];
 screen=[];
-write, format="%s", "Checking gyoto_Metric_get_RefCount after Star deletion: ";
-if (gyoto_Metric_get_refCount(gg)==1)
-  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 gg=[];
 

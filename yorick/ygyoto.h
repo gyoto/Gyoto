@@ -122,9 +122,9 @@ void ygyoto_Spectrum_generic_eval
 // Keywords processed by ygyoto_Metric_generic_eval
 #define YGYOTO_METRIC_GENERIC_KW "prime2tdot", \
     "nullifycoord", "kind", \
-    "mass", "unitlength", "xmlwrite", "clone"
+    "mass", "unitlength", "circularvelocity", "xmlwrite", "clone"
 // Number of those keywords
-#define YGYOTO_METRIC_GENERIC_KW_N 7
+#define YGYOTO_METRIC_GENERIC_KW_N 8
 
 // Keywords processed by ygyoto_Astrobj_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW "metric", "rmax", "opticallythin",	\

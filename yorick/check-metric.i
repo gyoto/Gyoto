@@ -25,10 +25,6 @@ write, format="%s", "Checking gyoto_KerrBL: ";
 gg=gyoto_KerrBL(spin=aa);
 write, format="%s\n","done.\n";
 
-write, format="%s", "Checking gyoto_Metric_get_RefCount: ";
-if (gyoto_Metric_get_refCount(gg)==1)
-  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
-
 // initial conditions :
 ri=10.791;
 thetai=1.5708;
@@ -62,21 +58,6 @@ gg();
 
 write, format="%s\n", "Printing object. \"gg\" yields: ";
 gg;
-
-
-write, format="%s", "Checking gmunu... ";
-for (i=1; i<=4; ++i)
-  for (j=1; j<=4; ++j)
-    if (gg([0, 5, 0, pi/2], i, j) !=
-        gyoto_Metric_gmunu( gg, [0, 5, 0, pi/2], i, j))
-      error, "CHECK FAILED";
-write, format="%s\n", "done.";
-
-write, format="%s", "Checking prime2tdot... ";
-if (gg(prime2tdot=[0, 6, pi/2, pi/2], [0., 0.01, 0.01]) !=
-    gyoto_Metric_SysPrimeToTdot(gg, [0, 6, pi/2, pi/2], [0., 0.01, 0.01]))
-  error, "CHECK FAILED";
-write, format="%s\n", "done.";
 
 // Free memory for testing with valgrind
 gg=[];

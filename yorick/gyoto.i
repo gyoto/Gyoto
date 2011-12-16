@@ -39,7 +39,6 @@ extern __gyoto_exportSupplier;
 
 
 require, "pl3d.i";
-#include "gyoto_Metric.i"
 #include "gyoto_Photon.i"
 #include "gyoto_Scenery.i"
 #include "gyoto_constants.i"
@@ -270,6 +269,96 @@ local gyoto;
             gyoto_plgsky, gyoto_plmksky, gyoto_pltsky, gyoto_reticle,
             gyoto_orient3, gyoto_convert
     
+ */
+
+extern gyoto_Metric;
+/* DOCUMENT gg = gyoto_Metric( filename, [members=values] )
+            gg, members=values
+            retval = gg(member=);
+            retval = gg(function_method=par1, par2...)
+            gg, xmlwrite=filename
+            coef = gg(coordinates, mu, nu)
+
+   PURPOSE:
+     Create and manipulate GYOTO Metric objects
+
+   INTRODUCTION:
+
+     See GYOTO for basic concepts.
+   
+     The GYOTO plug-in for Yorick introduces "Metric" objects (see
+     GYOTO for an introduction). Such objects are created used for
+     instance the gyoto_KerrBL() function. Any kind of metric (even if
+     not explicitely exposed in this plug-in) can be loaded from an
+     XML file using the FILENAME parameter. This XML file can by any
+     GYOTO file containing a Metric section: the top-level can be a
+     Metric, a Scenery, an Astrobj or whatever which contains a
+     reference to a Metric.
+
+     When printed, a Metric displays an XML description of itself,
+     which can be dumped to a file using the XMLWRITE keyword.
+
+     Most GYOTO functions which accept a Metric as a parameter accept
+     any kind of Metric. There are nevertheless specific
+     functionsAstrobjs which make sense only in the framework of a
+     specific kind of Metric, notably gyoto_KerrBL. This is the case
+     for gyoto_PolishDoughnut for instance.
+
+
+   MEMBER KEYWORDS:
+
+     mass=, unitlength=, kind=
+   
+     All the Metric kinds have a mass that can be set and retrieved
+     using the mass keyword:
+        gg, mass=value;
+        value = gg(mass=);
+        
+     Setting the mass gives the scale of the black hole in physical
+     units. The unit length can be retrieve using the unitlength
+     keyword:
+        len = gg(unitlength=)
+     where LEN is in meters if MASS was set in kilograms.
+
+     Finally, the kind of the metric (e.g. "KerrBL") can be queried:
+        kind_string = gg(kind=)
+
+   METHODS
+
+     Without any keywords, the metric can output its coefficient at
+     4-position POSITION:
+        coefs = gg(position, mu, nu);
+     where mu and nu are indices or ranges (1-4, 1 is for time).
+        coefs = gg(position)
+     returns the 16 metric coefficients at position.
+   
+     Additional function-like or subroutine like methods:
+     
+       coord=gg(prime2tdot=pos, vel): COORD is the 8-vector where
+              COORD[1-4]==POS and COORD[5-8] is the 4-velocity
+              corresponding to the 3-velocity VEL;
+       
+       gg, nullifycoord=pos, vel    return nullified (photon) coord tangent
+                                    to vel at pos.
+
+       vels = gg(circularvelocity=coords [, dir])
+               On input, COORDS is an array of doubles yielding
+               4-position vectors: x0=coords(1,..), x1=coords(2, ..),
+               x3=coords(3, ..), x4=coords(4, ..). The return value
+               VELS has the same dimensionality as coords(1:4, ..). It
+               contains the circular velocity (on te equatorial plane,
+               so COORDS is projected) corresponding to each position
+               specified by coords.
+
+               If the optional parameter DIR is -1, VELS corresponds
+               to the counter-rotating circular velocity.
+
+   SET KEYWORDS:
+     List of set-like keywords ("set" is never specified). Specific
+     Metric kinds may recognize more:
+       mass=new_mass                gyoto_Metric_setMass, gg, new_mass
+
+   SEE ALSO: gyoto, gyoto_KerrBL, gyoto_KerrKS
  */
 
 extern gyoto_Astrobj;
