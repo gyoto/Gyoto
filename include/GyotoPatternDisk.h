@@ -150,6 +150,12 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual void repeatPhi(size_t n);
   virtual size_t repeatPhi() const;
 
+  virtual void nu0(double freq);
+  virtual double nu0() const;
+
+  virtual void dnu(double dfreq);
+  virtual double dnu() const;
+
   virtual int setParameter(std::string name, std::string content);
 
  private:

@@ -161,6 +161,12 @@ void PatternDisk::repeatPhi(size_t n) {
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
+void PatternDisk::nu0(double freq) { nu0_ = freq; }
+double PatternDisk::nu0() const { return nu0_; }
+
+void PatternDisk::dnu(double dfreq) { dnu_ = dfreq; }
+double PatternDisk::dnu() const { return dnu_; }
+
 void PatternDisk::fitsRead(string filename) {
   GYOTO_MSG << "PatternDisk reading FITS file: " << filename << endl;
 

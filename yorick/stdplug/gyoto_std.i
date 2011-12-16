@@ -118,16 +118,67 @@ extern gyoto_PatternDisk;
 /* DOCUMENT disk = gyotoPatternDisk(...)
             disk, member=value...
 
-    This is a subkind of gyoto_ThinDisk. The emission law is read from
-    a FITS file using the READFILE keyword. The data read from this
-    file can be rotated at constant angular rate PATTERNVELOCITY.
+    This is a subkind of gyoto_ThinDisk. The disk is "painted" with a
+    pattern, hence the name. The grid for the pattern is set by three
+    numbers: NPHI (number of grid points in the azimuthal direction),
+    REPEATPHI if the pattern must be repeated several times in the
+    azimuthal direction (i.e. if the angular periodicity of the
+    pattern is a fraction of 2*pi), and NR (number of grid points in
+    the radial direction). The disk extends from INNERRADIUS to
+    OUTERRADIUS (see gyoto_ThinDisk) with a regular spacing along the
+    radial direction, unless RADIUS is specified.
+
+    The pattern is specified by the surface brightness EMISSION==Jnu
+    at NNU frequencies going from NU0 to NU0*DNU*(NNU-1). The cube
+    EMISSION is an array(double, NNU, NPHI, NR).
+
+    By default, the fluid is supposed to be corotating at the local
+    circular velocity, but the fluid velocity field can be specified
+    with VELOCITY==array(double, 2, NPHI, NR).
+    VELOCITY(1,..)==dphi/dt; VELOCITY(2,..)==dr/dt.
+
+    The fluid VELOCITY field must not be mistaken by the apparent
+    pattern velocity. The pattern is is solid (apparent) rotation at
+    angular velocity PATTERNVELOCITY.
 
    KEYWORDS:
 
-    readfile="filename.fits" read pattern from FITS file.
+    fitsread="filename.fits"  read pattern from FITS file.
+    
+    fitswrite="filename.fits" write pattern to FITS file.
 
     patternvelocity=double(value) set (or get) pattern angular
                        velocity.
+
+    repeatphi=N the pattern angular periodicity is 2*pi/N.
+
+    nu0=        first frequency (Hz)
+
+    dnu=        frequencty spacing (Hz)
+
+    copyintensity=EMISSION
+                * if EMISSION is nil, retrieve the surface brightness
+                  cube;
+                * if EMISSION==0, free the cube;
+                * if EMISSION is an array of NNU x NPHI x NR doubles,
+                  attach (copy) this array into DISK as the surface
+                  brightness cube. If this cube doesn't have the same
+                  dimensions as the previously set one, the velocity
+                  and radius arrays will also be freed (as they have
+                  inconsistent dimensions).
+
+     copyvelocity=VELOCITY
+                same as COPYINTENSITY but to attach the fluid velocity
+                field, a 2 x NPHI x NR array where
+                VELOCITY(1,..)==dphi/dt and VELOCITY(2,..)==dr/dt.
+
+     copygridradius=RADIUS
+                same as above, but RADIUS is a NR element vector
+                specifying the R coordinate of the grid points. If
+                RADIUS is not attached (if set, it can be detached
+                with copygridradius=0), the grid points are regularly
+                spaced between INNERRADIUS and OUTERRADIUS (see
+                gyoto_ThinDisk).
 
    SEE ALSO:
     gyoto_Astrobj, gyoto_ThinDisk, gyotoPageThorneDisk
