@@ -103,6 +103,7 @@ void Generic::unsetRmax() {
 
 #ifdef GYOTO_USE_XERCES
 void Generic::fillElement(FactoryMessenger *fmp) const {
+  fmp -> setMetric(gg_);
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
 }

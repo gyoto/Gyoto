@@ -64,7 +64,7 @@ extern "C" {
 #endif
   }
   void gyoto_Astrobj_eval(void *obj, int argc) {
-    GYOTO_DEBUG();
+    GYOTO_DEBUG << endl;
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
       ypush_long((long)((gyoto_Astrobj*)obj)->astrobj());

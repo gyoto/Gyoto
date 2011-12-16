@@ -99,11 +99,17 @@ namespace Gyoto {
   typedef unsigned int Verbosity_t;
 #define GYOTO_DEFAULT_DEBUG_MODE 0
 #define GYOTO_QUIET_VERBOSITY   1
-#define GYOTO_DEFAULT_VERBOSITY 5
 #define GYOTO_SEVERE_VERBOSITY  3
+#define GYOTO_DEFAULT_VERBOSITY 5
 #define GYOTO_INFO_VERBOSITY   10
 #define GYOTO_DEBUG_VERBOSITY 3000
 
+#define GYOTO_QUIET  if (Gyoto::verbose() >= GYOTO_QUIET_VERBOSITY) cout 
+#define GYOTO_SEVERE if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY)cerr<<"SEVERE: "
+#define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY)cerr<<"WARNING: "
+#define GYOTO_MSG    if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY) cout 
+#define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) cerr<<"INFO: "
+#define GYOTO_DEBUG  if (Gyoto::debug()) cerr << "DEBUG: " << __PRETTY_FUNCTION__
 
   /**
    * \brief Coordinate system kinds

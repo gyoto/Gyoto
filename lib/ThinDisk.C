@@ -39,19 +39,19 @@ using namespace Gyoto::Astrobj;
 ThinDisk::ThinDisk(std::string kind) :
   Generic(kind), rin_(0.), rout_(DBL_MAX), dir_(1)
 {
-  if (debug()) cerr << "DEBUG: ThinDisk Construction" << endl;
+  GYOTO_DEBUG << "ThinDisk Construction" << endl;
 }
 
 ThinDisk::ThinDisk(const ThinDisk& o) :
   Generic(o), Functor::Double_constDoubleArray(o), rin_(o.rin_), rout_(o.rout_)
 {
-  if (debug()) cerr << "DEBUG: ThinDisk Copy" << endl;
+  GYOTO_DEBUG << "ThinDisk Copy" << endl;
 }
 ThinDisk* ThinDisk::clone() const
 { return new ThinDisk(*this); }
 
 ThinDisk::~ThinDisk() {
-  if (debug()) cerr << "DEBUG: ThinDisk Destruction" << endl;
+  GYOTO_DEBUG << "ThinDisk Destruction" << endl;
 }
 
 double ThinDisk::getInnerRadius() const   { return rin_; }
@@ -169,14 +169,14 @@ int ThinDisk::setParameter(std::string name, std::string content) {
 
 #ifdef GYOTO_USE_XERCES
 void ThinDisk::fillElement(FactoryMessenger *fmp) const {
-  GYOTO_DEBUG(<<"InnerRadius");
+  GYOTO_DEBUG <<"InnerRadius" << endl;
   if (rin_!=0.) fmp->setParameter("InnerRadius", rin_);
-  GYOTO_DEBUG(<<"OuterRadius");
+  GYOTO_DEBUG <<"OuterRadius" << endl;
   if (rout_!=DBL_MAX) fmp->setParameter("OuterRadius", rout_);
-  GYOTO_DEBUG(<<"Dir");
+  GYOTO_DEBUG <<"Dir" << endl;
   if (dir_==-1) fmp -> setParameter("CounterRotating");
-  GYOTO_DEBUG(<<"Generic");
+  GYOTO_DEBUG <<"Generic" << endl;
   Generic::fillElement(fmp);
-  GYOTO_DEBUG(<<"done");
+  GYOTO_DEBUG <<"done" << endl;
 }
 #endif

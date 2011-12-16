@@ -285,19 +285,19 @@ void Scenery::setTlim(double tlim) { tlim_ = tlim; }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
-  GYOTO_DEBUG(<< "fmp -> setMetric (gg_) ;");
+  GYOTO_DEBUG << "fmp -> setMetric (gg_) ;" << endl;
   if (gg_)     fmp -> setMetric (gg_) ;
-  GYOTO_DEBUG(<<"fmp -> setScreen (screen_) ;");
+  GYOTO_DEBUG <<"fmp -> setScreen (screen_) ;" << endl;
   if (screen_) fmp -> setScreen (screen_) ;
-  GYOTO_DEBUG(<<"fmp -> setAstrobj (obj_) ;");
+  GYOTO_DEBUG <<"fmp -> setAstrobj (obj_) ;" << endl;
   if (obj_)    fmp -> setAstrobj (obj_) ;
   if (delta_ != GYOTO_DEFAULT_DELTA) {
-    GYOTO_DEBUG(<<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;");
+    GYOTO_DEBUG <<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;" << endl;
     fmp -> setParameter ("Delta", delta_);
   }
   if (getRequestedQuantities()) {
-    GYOTO_DEBUG(<<"fmp -> setParameter (\"Quantities\", \""
-		<<getRequestedQuantitiesString()<<"\") ;");
+    GYOTO_DEBUG <<"fmp -> setParameter (\"Quantities\", \""
+		<<getRequestedQuantitiesString()<<"\") ;" << endl;
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
   if (tlim_ != DEFAULT_TLIM) fmp -> setParameter("MinimumTime", tlim_);

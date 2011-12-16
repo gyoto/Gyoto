@@ -41,9 +41,4 @@ namespace Gyoto {
 	       const std::string unit); /// Convert lengths
 }
 
-#define GYOTO_DEBUG(more) if (debug()) cerr << "DEBUG: "	   \
-					    << __PRETTY_FUNCTION__ \
-					    << ": " more	   \
-					    << endl
-
 #endif

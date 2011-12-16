@@ -39,12 +39,14 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   SmartPointer<PatternDisk> *ao = (SmartPointer<PatternDisk> *)ao_;
 
   static char const * knames[]={
-    "patternvelocity", "readfile",
+    "fitsread", "patternvelocity", "repeatphi",
+    "copyintensity", "copyvelocity", "copygridradius",
+    "fitswrite",
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+3];
-  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+2];
+  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+8];
+  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+7];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -63,6 +65,12 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   char const * pmsg="Cannot use positional argument more than once";
   // Call generic ThinDisk worker
 
+  /* FITSREAD */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    (*ao)->fitsRead(ygets_q(iarg));
+  }
+
   /* PATTERNVELOCITY */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
@@ -73,10 +81,91 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
       (*ao)->setPatternVelocity(ygets_d(iarg)) ;
   }
 
-  /* READFILE */
+  /* REPEATPHI */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
-    (*ao)->readFile(ygets_q(iarg));
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_long((*ao)->repeatPhi());
+    } else
+      (*ao)->repeatPhi(ygets_l(iarg)) ;
+  }
+
+  /* INTENSITY */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      size_t ddims[3];
+      (*ao) -> getIntensityNaxes(ddims);
+      long dims[] = {3, ddims[0], ddims[1], ddims[2]};
+      double * out = ypush_d(dims);
+      memcpy(out, (*ao)->getIntensity(),
+	     dims[1]*dims[2]*dims[3]*sizeof(double));
+    } else {
+      long ntot;
+      long dims[Y_DIMSIZE];
+      double const * const in = ygeta_d(iarg, &ntot, dims);
+      if (dims[0]==0 && ntot && *in==0) (*ao) -> copyIntensity(NULL, 0);
+      else if (dims[0]==3) {
+	size_t ddims[] = {dims[1], dims[2], dims[3]};
+	(*ao)->copyIntensity(in, ddims);
+      } else
+	y_error("COPYINTENSITY must be nil, 0, or array(double, nnu, nphi, nr");
+    }
+  }
+
+  /* VELOCITY */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      size_t ddims[3];
+      (*ao) -> getIntensityNaxes(ddims);
+      long dims[] = {3, 2, ddims[1], ddims[2]};
+      double * out = ypush_d(dims);
+      memcpy(out, (*ao)->getVelocity(),
+	     2*dims[2]*dims[3]*sizeof(double));
+    } else {
+      long ntot;
+      long dims[Y_DIMSIZE];
+      double const * const in = ygeta_d(iarg, &ntot, dims);
+      if (dims[0]==0 && ntot && *in==0) (*ao) -> copyVelocity(NULL, 0);
+      else if (dims[0]==3 && dims[1]==2) {
+	size_t ddims[] = {dims[2], dims[3]};
+	(*ao)->copyVelocity(in, ddims);
+      } else
+	y_error("COPYVELOCITY must be nil, 0, or array(double, 2, nphi, nr");
+    }
+  }
+
+  /* GRIDRADIUS */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      double const * const radius = (*ao)->getGridRadius();
+      if (radius) {
+	size_t ddims[3];
+	(*ao) -> getIntensityNaxes(ddims);
+	long dims[] = {1, ddims[2]};
+	double * out = ypush_d(dims);
+	memcpy(out, radius, ddims[2]*sizeof(double));
+      } else ypush_long(0);
+    } else {
+      long ntot;
+      long dims[Y_DIMSIZE];
+      double const * const in = ygeta_d(iarg, &ntot, dims);
+      if (dims[0]==0 && ntot && *in==0)  (*ao) -> copyGridRadius(NULL, 0);
+      else if (dims[0]==1) (*ao) -> copyGridRadius(in, ntot);
+      else y_error("COPYGRIDRADIUS must be nil, 0, or array(double, nr");
+    }
+  }
+
+  /* FITSWRITE */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    (*ao)->fitsWrite(ygets_q(iarg));
   }
 
   ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);

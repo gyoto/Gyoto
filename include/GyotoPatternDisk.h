@@ -124,8 +124,31 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   virtual void   setPatternVelocity(double); ///< Set pattern angular velocity
   virtual double getPatternVelocity(); ///< Set pattern angular velocity
-  virtual void readFile(std::string filename_);
+  virtual void fitsRead(std::string filename_);
+  virtual void fitsWrite(std::string filename_);
   ///< Read data from file
+
+
+  /**
+   * \param pattern: new emission_ array.
+   * \param dims[3] = { nnu_, nphi_, nr_ };
+   */
+  virtual void copyIntensity(double const * const pattern = NULL,
+			      size_t const naxes[3] = NULL);
+  ///< attach emission_ array and set its size
+  virtual double const * const getIntensity() const;
+  virtual void getIntensityNaxes( size_t naxes[3] ) const ;
+
+  virtual void copyVelocity(double const * const pattern = NULL,
+			      size_t const naxes[2] = NULL);
+  virtual double const * const getVelocity() const;
+
+  virtual void copyGridRadius(double const * const pattern = NULL,
+			      size_t nr = 0 );
+  virtual double const * const getGridRadius() const;
+
+  virtual void repeatPhi(size_t n);
+  virtual size_t repeatPhi() const;
 
   virtual int setParameter(std::string name, std::string content);
 

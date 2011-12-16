@@ -396,7 +396,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
     screen_(sc->getScreen()), obj_(sc->getAstrobj()),
     photon_(NULL), spectro_(NULL), filename_("")
 {
-  GYOTO_DEBUG(<< "Initializing XML stuff");
+  GYOTO_DEBUG << "Initializing XML stuff" << endl;
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
   if (!impl_) throwError("Problem initializing DOMImplementation");
@@ -406,10 +406,10 @@ Factory::Factory(SmartPointer<Scenery> sc)
                            0);                   // document type object (DTD).
   root_ = doc_->getDocumentElement();
 
-  GYOTO_DEBUG(<< "Creating FactoryMessenger");
+  GYOTO_DEBUG << "Creating FactoryMessenger" << endl;
   FactoryMessenger fm(this, root_);
 
-  GYOTO_DEBUG(<< "scenery_ -> fillElement(&fm);");
+  GYOTO_DEBUG << "scenery_ -> fillElement(&fm);" << endl;
   scenery_ -> fillElement(&fm);
 
 }
@@ -549,20 +549,20 @@ void Factory::setMetric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 }
 
 void Factory::setAstrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
-  GYOTO_DEBUG();
+  GYOTO_DEBUG << endl;
   if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
   if (ao && !obj_el_) {
-    GYOTO_DEBUG(<<"obj_ = ao;");
+    GYOTO_DEBUG <<"obj_ = ao;" << endl;
     obj_ = ao;
 
-    GYOTO_DEBUG(<<"XML stuff");
+    GYOTO_DEBUG <<"XML stuff" << endl;
     obj_el_ = doc_->createElement(X("Astrobj"));
     el->appendChild(obj_el_);
 
-    GYOTO_DEBUG(<<"XML stuffnew FactoryMessenger");
+    GYOTO_DEBUG <<"XML stuffnew FactoryMessenger" << endl;
     FactoryMessenger fm(this, obj_el_);
 
-    GYOTO_DEBUG(<<"ao -> fillElement(&fm);");
+    GYOTO_DEBUG <<"ao -> fillElement(&fm);" << endl;
     ao -> fillElement(&fm);
   }
 
