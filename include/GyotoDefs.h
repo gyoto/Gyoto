@@ -109,7 +109,8 @@ namespace Gyoto {
 #define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY)cerr<<"WARNING: "
 #define GYOTO_MSG    if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY) cout 
 #define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) cerr<<"INFO: "
-#define GYOTO_DEBUG  if (Gyoto::debug()) cerr << "DEBUG: " << __PRETTY_FUNCTION__
+#define GYOTO_DEBUG  if (Gyoto::debug()) cerr << "DEBUG: " \
+					      << __PRETTY_FUNCTION__ << ": "
 
   /**
    * \brief Coordinate system kinds

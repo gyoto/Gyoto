@@ -32,21 +32,24 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 				*ao_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
   if (!ao_) { // Constructor mode
+    GYOTO_DEBUG << "constructing object\n";
     ao_ = ypush_Astrobj();
     *ao_ = new PatternDisk();
   } else *ypush_Astrobj()=*ao_;
 
   SmartPointer<PatternDisk> *ao = (SmartPointer<PatternDisk> *)ao_;
 
+
+  GYOTO_DEBUG << "processing keywords\n";
   static char const * knames[]={
     "fitsread", "patternvelocity", "repeatphi", "nu0", "dnu",
-    "copyintensity", "copyvelocity", "copygridradius",
+    "copyintensity", "copyopacity", "copyvelocity", "copygridradius",
     "fitswrite",
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+10];
-  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+9];
+  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+11];
+  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+10];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -67,6 +70,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* FITSREAD */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "fitsread=\n";
     iarg+=*rvset;
     (*ao)->fitsRead(ygets_q(iarg));
   }
@@ -83,6 +87,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* REPEATPHI */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "repeatphi=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -93,6 +98,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* NU0 */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "nu0=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -103,6 +109,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* DNU */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "dnu=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -113,6 +120,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* INTENSITY */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "copyintensity=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -135,8 +143,33 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
     }
   }
 
-  /* VELOCITY */
+  /* OPACITY */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "copyopacity=\n";
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      size_t ddims[3];
+      (*ao) -> getIntensityNaxes(ddims);
+      long dims[] = {3, ddims[0], ddims[1], ddims[2]};
+      double * out = ypush_d(dims);
+      memcpy(out, (*ao)->getOpacity(),
+	     dims[1]*dims[2]*dims[3]*sizeof(double));
+    } else {
+      long ntot;
+      long dims[Y_DIMSIZE];
+      double const * const in = ygeta_d(iarg, &ntot, dims);
+      if (dims[0]==0 && ntot && *in==0) (*ao) -> copyOpacity(NULL, 0);
+      else if (dims[0]==3) {
+	size_t ddims[] = {dims[1], dims[2], dims[3]};
+	(*ao)->copyOpacity(in, ddims);
+      } else
+	y_error("COPYOPACITY must be nil, 0, or array(double, nnu, nphi, nr");
+    }
+  }
+
+  if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "copyvelocity=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -161,6 +194,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* GRIDRADIUS */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "copygridradius=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -184,11 +218,14 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* FITSWRITE */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "fitswrite=\n";
     iarg+=*rvset;
     (*ao)->fitsWrite(ygets_q(iarg));
   }
 
+  GYOTO_DEBUG << "calling ygyoto_ThinDisk_generic_eval\n";
   ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  GYOTO_DEBUG << "done\n";
 }
 
 extern "C" {

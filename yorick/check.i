@@ -148,6 +148,7 @@ write, format= "%s\n"," ALL TESTS PASSED";
 #include "check-photon-BL.i"
 #include "check-star.i"
 #include "check-scenery.i"
+#include "check-patterndisk.i"
 
 if (anyof(get_argv() == "check.i")) quit;
 //if (batch()) quit;

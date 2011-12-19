@@ -286,6 +286,8 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
 void KerrBL::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
+  GYOTO_DEBUG<<"coor=["<<coor[0]<<", "<<coor[1]<<", "<<coor[2]<<", "<<coor[3]
+	     <<"], dir="<<dir<<endl;
   double sinth = sin(coor[2]);
   double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
 
@@ -293,6 +295,7 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
   vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
   vel[0] = SysPrimeToTdot(coor, vel+1);
   vel[3] *= vel[0];
+  GYOTO_DEBUG<<"vel=["<<vel[0]<<", "<<vel[1]<<", "<<vel[2]<<", "<<vel[3]<<"]\n";
 }
 
 //Runge Kutta to order 4

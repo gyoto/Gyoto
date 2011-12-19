@@ -125,7 +125,7 @@ uninstall::
 
 clean::
 	cd stdplug; yorick -batch make.i; make clean
-	rm -f gyoto_std.so
+	rm -f gyoto_std.so example-patterndisk.fits.gz example-patterndisk.xml
 
 distclean::
 	cd stdplug; yorick -batch make.i; make distclean

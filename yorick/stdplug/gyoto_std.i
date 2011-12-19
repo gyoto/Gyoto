@@ -132,6 +132,11 @@ extern gyoto_PatternDisk;
     at NNU frequencies going from NU0 to NU0*DNU*(NNU-1). The cube
     EMISSION is an array(double, NNU, NPHI, NR).
 
+    An optional OPACITY cube with the same dimensions as EMISSION can
+    be provided. This allows using PatternDisk for any solid object
+    confined in the equatorial plane and orbiting the central object
+    in circular motion.
+
     By default, the fluid is supposed to be corotating at the local
     circular velocity, but the fluid velocity field can be specified
     with VELOCITY==array(double, 2, NPHI, NR).
@@ -166,6 +171,9 @@ extern gyoto_PatternDisk;
                   dimensions as the previously set one, the velocity
                   and radius arrays will also be freed (as they have
                   inconsistent dimensions).
+
+     copyopacity=OPACITY
+                same as above for the opacity cube.
 
      copyvelocity=VELOCITY
                 same as COPYINTENSITY but to attach the fluid velocity

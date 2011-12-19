@@ -43,9 +43,9 @@ using namespace Gyoto::Astrobj;
 
 PatternDisk::PatternDisk() :
   ThinDisk("PatternDisk"), filename_(""),
-  emission_(NULL), velocity_(NULL), radius_(NULL),
+  emission_(NULL), opacity_(NULL), velocity_(NULL), radius_(NULL),
   Omega_(0.), t0_(0.),
-  dnu_(0.), nu0_(0), nnu_(0),
+  dnu_(1.), nu0_(0), nnu_(0),
   dphi_(0.), nphi_(0), repeat_phi_(1),
   dr_(0.), nr_(0)
 {
@@ -54,7 +54,7 @@ PatternDisk::PatternDisk() :
 
 PatternDisk::PatternDisk(const PatternDisk& o) :
   ThinDisk(o), filename_(o.filename_),
-  emission_(NULL), velocity_(NULL), radius_(NULL),
+  emission_(NULL), opacity_(NULL), velocity_(NULL), radius_(NULL),
   Omega_(o.Omega_), t0_(o.t0_),
   dnu_(o.dnu_), nu0_(o.nu0_), nnu_(o.nnu_),
   dphi_(o.dphi_), nphi_(o.nphi_), repeat_phi_(o.repeat_phi_),
@@ -65,6 +65,10 @@ PatternDisk::PatternDisk(const PatternDisk& o) :
   if (o.emission_) {
     emission_ = new double[ncells = nnu_ * nphi_ * nr_];
     memcpy(emission_, o.emission_, ncells * sizeof(double));
+  }
+  if (o.opacity_) {
+    opacity_ = new double[ncells = nnu_ * nphi_ * nr_];
+    memcpy(opacity_, o.opacity_, ncells * sizeof(double));
   }
   if (o.velocity_) {
     velocity_ = new double[ncells = 2 * nphi_ * nr_];
@@ -81,6 +85,7 @@ PatternDisk* PatternDisk::clone() const
 PatternDisk::~PatternDisk() {
   GYOTO_DEBUG << "PatternDisk Destruction" << endl;
   if (emission_) delete [] emission_;
+  if (opacity_) delete [] opacity_;
   if (velocity_) delete [] velocity_;
   if (radius_) delete [] radius_;
 }
@@ -93,12 +98,17 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
   }
   if (pattern) {
     size_t nel;
-    if (nphi_ != naxes[1] && velocity_) {
+    if (nnu_ != naxes[0]) {
+      if (opacity_) delete [] opacity_; opacity_ = NULL;
+    }
+    if (nphi_ != naxes[1]) {
       GYOTO_DEBUG <<"nphi_ changed, freeing velocity_" << endl;
-      delete [] velocity_; velocity_=NULL;
+      if (opacity_) delete [] opacity_; opacity_ = NULL;
+      if (velocity_) delete [] velocity_; velocity_=NULL;
     }
     if (nr_ != naxes[2]) {
       GYOTO_DEBUG <<"nr_ changed, freeing velocity_ and radius_" << endl;
+      if (opacity_) delete [] opacity_; opacity_ = NULL;
       if (velocity_) { delete [] velocity_; velocity_=NULL; }
       if (radius_)   { delete [] radius_;   radius_=NULL; }
     }
@@ -117,10 +127,31 @@ double const * const PatternDisk::getIntensity() const { return emission_; }
 void PatternDisk::getIntensityNaxes( size_t naxes[3] ) const
 { naxes[0] = nnu_; naxes[1] = nphi_; naxes[2] = nr_; }
 
+void PatternDisk::copyOpacity(double const *const opacity, size_t const naxes[3]) {
+  GYOTO_DEBUG << endl;
+  if (opacity_) {
+    GYOTO_DEBUG << "delete [] opacity_;" << endl;
+    delete [] opacity_; opacity_ = NULL;
+    flag_radtransf_=0;
+  }
+  if (opacity) {
+    if (nnu_ != naxes[0] || nphi_ != naxes[1] || nr_ != naxes[2])
+      throwError("Please set intensity before opacity. "
+		 "The two arrays must have the same dimensions.");
+    GYOTO_DEBUG << "allocate opacity_;" << endl;
+    opacity_ = new double[nnu_ * nphi_ * nr_];
+    GYOTO_DEBUG << "opacity >> opacity_" << endl;
+    memcpy(opacity_, opacity, nnu_ * nphi_ * nr_ * sizeof(double));
+    flag_radtransf_=1;
+  }
+}
+
+double const * const PatternDisk::getOpacity() const { return opacity_; }
+
 void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[2]) {
   GYOTO_DEBUG << endl;
   if (velocity_) {
-    GYOTO_DEBUG << "delete [] velocity_;";
+    GYOTO_DEBUG << "delete [] velocity_;\n";
     delete [] velocity_; velocity_ = NULL;
   }
   if (velocity) {
@@ -270,6 +301,32 @@ void PatternDisk::fitsRead(string filename) {
   }
   GYOTO_DEBUG << " done." << endl;
 
+  ////// FIND OPTIONAL OPACITY HDU ///////
+
+  fits_movnam_hdu(fptr, ANY_HDU,
+		  const_cast<char*>("GYOTO PatternDisk opacity"),
+		  0, &status);
+  if (status) {
+    if (status == BAD_HDU_NUM) {
+      // FITS file does not contain opacity information
+      status = 0;
+      if (opacity_) { delete [] opacity_; opacity_ = NULL; }
+    } else throwCfitsioError(status) ;
+  } else {
+    if (fits_get_img_size(fptr, 3, naxes, &status)) throwCfitsioError(status) ;
+    if (   size_t(naxes[0]) != nnu_
+	|| size_t(naxes[1]) != nphi_
+	|| size_t(naxes[2]) != nr_)
+      throwError("PatternDisk::readFile(): opacity array not conformable");
+    if (opacity_) { delete [] opacity_; opacity_ = NULL; }
+    opacity_ = new double[nnu_ * nphi_ * nr_];
+    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
+			 0, opacity_,&anynul,&status)) {
+      delete [] opacity_; opacity_=NULL;
+      throwCfitsioError(status) ;
+    }
+  }
+
   ////// FIND OPTIONAL VELOCITY HDU ///////
 
   fits_movnam_hdu(fptr, ANY_HDU,
@@ -389,6 +446,17 @@ void PatternDisk::fitsWrite(string filename) {
   fits_write_pix(fptr, TDOUBLE, fpixel, nnu_*nphi_*nr_, emission_, &status);
   if (status) throwCfitsioError(status) ;
 
+  ////// SAVE OPTIONAL OPACITY HDU ///////
+  if (opacity_) {
+    GYOTO_DEBUG << "saving opacity_\n";
+    fits_create_img(fptr, DOUBLE_IMG, 3, naxes, &status);
+    fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
+		   const_cast<char*>("GYOTO PatternDisk opacity"),
+		   CNULL, &status);
+    fits_write_pix(fptr, TDOUBLE, fpixel, nnu_*nphi_*nr_, opacity_, &status);
+    if (status) throwCfitsioError(status) ;
+  }
+
   ////// SAVE OPTIONAL VELOCITY HDU ///////
   if (velocity_) {
     GYOTO_DEBUG << "saving velocity_\n";
@@ -419,7 +487,7 @@ void PatternDisk::fitsWrite(string filename) {
 }
 
 void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
-  GYOTO_DEBUG << endl;
+  GYOTO_DEBUG << "dnu_="<<dnu_<<", dphi_="<<dphi_<<", dr_="<<dr_<<endl;
   if (nu <= nu0_) i[0] = 0;
   else {
     i[0] = size_t((nu-nu0_)/dnu_);
@@ -480,7 +548,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
     default:
       throwError("PatternDisk::getVelocity(): unknown COORDKIND");
     } 
-  }else gg_->circularVelocity(pos, vel);
+  }else ThinDisk::getVelocity(pos, vel);
 }
 
 double PatternDisk::emission(double nu, double dsem,
@@ -492,10 +560,23 @@ double PatternDisk::emission(double nu, double dsem,
   getIndices(i, co, nu);
   double Iem = emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
 
-  if (flag_radtransf_) Iem *= dsem;
+  if (!flag_radtransf_) return Iem;
+  double thickness;
+  if (opacity_ && (thickness=opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]]*dsem))
+    return Iem * (1. - exp (-thickness)) ;
+  return 0.;
+}
 
-  return Iem;
-  
+double PatternDisk::transmission(double nu, double dsem, double*co) const {
+  GYOTO_DEBUG << endl;
+  if (!flag_radtransf_) return 0.;
+  if (!opacity_) return 1.;
+  size_t i[3]; // {i_nu, i_phi, i_r}
+  getIndices(i, co, nu);
+  double opacity = opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+  GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opacity <<endl;
+  if (!opacity) return 1.;
+  return exp(-opacity*dsem);
 }
 
 void PatternDisk::setInnerRadius(double rin) {

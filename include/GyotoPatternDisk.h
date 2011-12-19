@@ -59,6 +59,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   double * emission_; ///< Inu(nu, r, phi)
 
+  double * opacity_; ///< same dimenstions as emission, or NULL
+
   /**
    * An array of dimensionality double[nr_][nphi_][2]. In FITS format,
    * the second dimension is phi, and the third r. The first plane in
@@ -139,6 +141,10 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual double const * const getIntensity() const;
   virtual void getIntensityNaxes( size_t naxes[3] ) const ;
 
+  virtual void copyOpacity(double const * const pattern = NULL,
+			      size_t const naxes[3] = NULL);
+  virtual double const * const getOpacity() const;
+
   virtual void copyVelocity(double const * const pattern = NULL,
 			      size_t const naxes[2] = NULL);
   virtual double const * const getVelocity() const;
@@ -165,6 +171,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
  public:
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
+  virtual double transmission(double nu_em, double dsem, double coord[8]) const;
 
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 
