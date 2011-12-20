@@ -668,6 +668,25 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x3dot) x3dot[di] = bestl[7]*factl + besth[7]*facth;
     }
 
+    /* For spherical-like coordinates,
+       transforms theta and phi in coord1,2 so that 
+       theta is in [0,pi] and phi in [0,2pi] 
+       Important for e.g. circular velocity computation for thin disk
+    */
+    if (GYOTO_COORDKIND_SPHERICAL){
+      double thetatmp=x2[di], phitmp=x3[di];
+      while (thetatmp>M_PI) thetatmp-=2.*M_PI;
+      while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
+      if (thetatmp<0.) {
+	thetatmp=-thetatmp;//then theta in [0,pi]
+	phitmp+=M_PI;//thus, same point x,y,z
+      }
+      while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
+      while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
+      x2[di]=thetatmp;
+      x3[di]=phitmp;
+    }
+    
   }
 
 }
