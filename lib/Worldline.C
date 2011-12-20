@@ -673,7 +673,8 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
        theta is in [0,pi] and phi in [0,2pi] 
        Important for e.g. circular velocity computation for thin disk
     */
-    if (GYOTO_COORDKIND_SPHERICAL){
+    if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL
+	&& x2 && x3){
       double thetatmp=x2[di], phitmp=x3[di];
       while (thetatmp>M_PI) thetatmp-=2.*M_PI;
       while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
