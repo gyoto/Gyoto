@@ -140,7 +140,8 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 		 coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
 		 coord_ph_hit+6, coord_ph_hit+7);
 
-  if ((rcross=projectedRadius(coord_ph_hit)) < rin_) return 0;
+  if ((rcross=projectedRadius(coord_ph_hit)) < rin_ ||
+      rcross > rout_) return 0;
 
   for (int i=0;i<4;i++) coord_obj_hit[i]=coord_ph_hit[i];
   getVelocity(coord_obj_hit, coord_obj_hit+4);
