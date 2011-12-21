@@ -76,6 +76,13 @@ class Gyoto::Astrobj::ThinDisk :
  protected:
   double rin_ ; ///< disk inner radius
   double rout_ ; ///< disk outer radius
+
+  /**
+   * Geometrical thickness in geometrical units. Used only in the
+   * optically thin regime (flag_radtransf_==1). Should be <<
+   * rin_. Default: 1e-3.
+   */
+  double thickness_; ///< disk thickness
   int dir_; ///< 1 for corotating (default), -1 for counterrotating.
 
   // Constructors - Destructor
@@ -100,6 +107,8 @@ class Gyoto::Astrobj::ThinDisk :
   virtual void   setInnerRadius(double); ///< Set rin_
   virtual double getOuterRadius() const ; ///< Get rout_
   virtual void   setOuterRadius(double); ///< Set rout_
+  virtual double getThickness() const ; ///< Get thickness_
+  virtual void   setThickness(double); ///< Set thickness_
   virtual int    getDir() const ; ///< Get dir_
   virtual void   setDir(int); ///< Set dir_
 

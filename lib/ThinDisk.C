@@ -37,13 +37,14 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 ThinDisk::ThinDisk(std::string kind) :
-  Generic(kind), rin_(0.), rout_(DBL_MAX), dir_(1)
+  Generic(kind), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1)
 {
   GYOTO_DEBUG << "ThinDisk Construction" << endl;
 }
 
 ThinDisk::ThinDisk(const ThinDisk& o) :
-  Generic(o), Functor::Double_constDoubleArray(o), rin_(o.rin_), rout_(o.rout_)
+  Generic(o), Functor::Double_constDoubleArray(o), rin_(o.rin_), rout_(o.rout_),
+  thickness_(o.thickness_), dir_(o.dir_)
 {
   GYOTO_DEBUG << "ThinDisk Copy" << endl;
 }
@@ -58,6 +59,8 @@ double ThinDisk::getInnerRadius() const   { return rin_; }
 void   ThinDisk::setInnerRadius(double r) { rin_ = r;    }
 double ThinDisk::getOuterRadius() const   { return rout_;}
 void   ThinDisk::setOuterRadius(double r) { rout_ = r;   }
+double ThinDisk::getThickness() const     { return thickness_;}
+void   ThinDisk::setThickness(double h)   { thickness_ = h;   }
 int    ThinDisk::getDir() const           { return dir_; }
 void   ThinDisk::setDir(int dir)          { dir_ = dir;  }
 
@@ -151,7 +154,7 @@ int ThinDisk::Impact(Photon *ph, size_t index,
     gg_->cartesianVelocity(coord_ph_hit, vel);
     dt = (vel[2]==0.)
       ? (coord2[0] - coord1[0]) 
-      : sqrt(1.+(vel[0]*vel[0]+vel[1]*vel[1])/(vel[2]*vel[2]));
+      : sqrt(1.+(vel[0]*vel[0]+vel[1]*vel[1])/(vel[2]*vel[2]))*thickness_;
   }
 
   processHitQuantities(ph, coord_ph_hit, coord_obj_hit, dt, data);
@@ -161,9 +164,10 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
 int ThinDisk::setParameter(std::string name, std::string content) {
     char* tc = const_cast<char*>(content.c_str());
-    if      (name=="InnerRadius")     setInnerRadius(atof(tc)); 
-    else if (name=="OuterRadius")     setOuterRadius(atof(tc)); 
-    else if (name=="CounterRotating") setDir(-1);
+    if      (name=="InnerRadius")     setInnerRadius (atof(tc)); 
+    else if (name=="OuterRadius")     setOuterRadius (atof(tc)); 
+    else if (name=="Thickness")       setThickness   (atof(tc)); 
+    else if (name=="CounterRotating") setDir         (-1);
     else return Generic::setParameter(name, content);
     return 0;
 }
@@ -174,6 +178,8 @@ void ThinDisk::fillElement(FactoryMessenger *fmp) const {
   if (rin_!=0.) fmp->setParameter("InnerRadius", rin_);
   GYOTO_DEBUG <<"OuterRadius" << endl;
   if (rout_!=DBL_MAX) fmp->setParameter("OuterRadius", rout_);
+  GYOTO_DEBUG <<"Thickness" << endl;
+  if (flag_radtransf_) fmp->setParameter("Thickness", thickness_);
   GYOTO_DEBUG <<"Dir" << endl;
   if (dir_==-1) fmp -> setParameter("CounterRotating");
   GYOTO_DEBUG <<"Generic" << endl;
