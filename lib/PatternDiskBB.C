@@ -1,0 +1,173 @@
+/*
+    Copyright 2011 Frederic Vincent, Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#define throwCfitsioError(status) \
+    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+
+#include "GyotoPhoton.h"
+#include "GyotoPatternDiskBB.h"
+#include "GyotoUtils.h"
+#include "GyotoFactoryMessenger.h"
+#include "GyotoKerrBL.h"
+#include "GyotoKerrKS.h"
+
+
+#include <fitsio.h>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <cstdlib>
+#include <fstream>
+#include <cstring>
+#include <cmath>
+#include <limits>
+
+using namespace std;
+using namespace Gyoto;
+using namespace Gyoto::Astrobj;
+
+PatternDiskBB::PatternDiskBB() :
+  PatternDisk(),
+  spectrumBB_(NULL),
+  SpectralEmission_(0),
+  PLSlope_(0.), PLRho_(0.), rPL_(DBL_MAX)
+{
+  GYOTO_DEBUG << "PatternDiskBB Construction" << endl;
+  spectrumBB_ = new Spectrum::BlackBody(); 
+}
+
+PatternDiskBB::PatternDiskBB(const PatternDiskBB& o) :
+  PatternDisk(o),
+  spectrumBB_(NULL),
+  SpectralEmission_(o.SpectralEmission_),
+  PLSlope_(o.PLSlope_),PLRho_(o.PLRho_),rPL_(o.rPL_)
+{
+  GYOTO_DEBUG << "PatternDiskBB Copy" << endl;
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
+}
+PatternDiskBB* PatternDiskBB::clone() const
+{ return new PatternDiskBB(*this); }
+
+PatternDiskBB::~PatternDiskBB() {
+  GYOTO_DEBUG << "PatternDiskBB Destruction" << endl;
+}
+
+double const * const PatternDiskBB::getVelocity() const { return PatternDisk::getVelocity(); }
+
+void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
+  double rcur=projectedRadius(pos);
+  if ((getOuterRadius()==DBL_MAX && rcur>rPL_) || !getVelocity()){
+    //Keplerian circ velocity for power law disk region
+    //as well as if PatternDisk::velocity_ not provided
+    ThinDisk::getVelocity(pos, vel);
+  }else{
+    PatternDisk::getVelocity(pos, vel);
+  }
+}
+
+double PatternDiskBB::emission(double nu, double dsem,
+			       double *,
+			       double co[8]) const{
+  GYOTO_DEBUG << endl;
+  double rcur=projectedRadius(co);
+  //cout << "rcur= " << rcur << endl;
+  size_t i[3]; // {i_nu, i_phi, i_r}
+  if (rcur<rPL_)
+    getIndices(i, co, nu); //search indices only in non-power-law region
+  double Iem;
+  double const * const emission = getIntensity();
+  size_t naxes[3];
+  getIntensityNaxes(naxes);
+  size_t nnu=naxes[0], nphi=naxes[1];
+  if (!SpectralEmission_){
+    if (rPL_<DBL_MAX) 
+      throwError("In PatternDisk.C: no power law region without SpectralEmission -> rPL_ should be DBL_MAX");
+    Iem = emission[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
+  }else{
+    double TT;
+    ///compute temperature at hit point
+    if (rcur<rPL_){
+      //If r<rPL_ just read in emission_
+      TT = emission[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
+      //cout << "TT before rl= " << TT << endl;
+    }else{
+      //If r>rPL_ compute it from first principles
+      double rho_pl = PLRho_*pow(rcur/rPL_,PLSlope_);
+      double kappa=3e10;//pressure coef: p = kappa*rho^gamma, rho=mass density
+      //Its numerical value is chosen so that Tmax~1e7K (1keV) in the disk
+      double M_unit_gyoto=gg_->getMass();//Central BH mass in SI, 
+                                         //this is Gyoto mass unit
+      double L_gyoto_unit=GYOTO_G_OVER_C_SQUARE*M_unit_gyoto;//this is Gyoto 
+                                                             //unit length
+      double rho_si_tmp=rho_pl*M_unit_gyoto/(L_gyoto_unit*L_gyoto_unit*L_gyoto_unit);
+      //The above quantity is proportional to rho_si, but Heloise
+      //values of rho are given up to a prop. factor which I take to be so that
+      //rho at ISCO = typical density near ISCO for 10Msol BH = 1e-2g/cm3=10kg/m3 (cf Peggy thesis)
+      double rho_isco_si=10.;//in kg/m3
+      double risco=6.; //ASSUMES SCHWARZSCHILD !!
+      double rhormax_si=rho_isco_si*pow(rPL_/risco,-3./2.);//SI value of rho(rdiskmax_), assuming a r^-1.5 decrease of rho
+      double rhormax_si_tmp=PLRho_*M_unit_gyoto/(L_gyoto_unit*L_gyoto_unit*L_gyoto_unit);//same SI value without taking into account any proportionality factor
+      double prop_fact=rhormax_si/rhormax_si_tmp;
+      double rho_si=rho_si_tmp*prop_fact;
+      //Assuming: pressure = kappa*(mass density)^gamma, gamma=5/3 (eq of state)
+      // and: pressure = (mass density)*R/Mm*T (Mm = molar mass)
+      double gamma=5./3.;
+      double Mm=6e-4;//disk molar mass in kg/mol (Peggy, private communication ;-))
+      double cs2=kappa*gamma*pow(rho_si,gamma-1.);
+      TT=Mm/GYOTO_GAS_CST*cs2/gamma;//Temperature in SI
+      //cout << "TT after rl= " << TT << endl;
+      //cout << "r,rho,T= " << rcross << " " << rho_si << " " << TT << endl;
+    }
+    spectrumBB_->setTemperature(TT);
+    Iem=(*spectrumBB_)(nu);
+    //cout << "Iem= " << Iem << endl;
+  }
+
+  if (!flag_radtransf_) return Iem;
+
+  double thickness;
+  double const * const opacity = getOpacity();
+  if (rcur>rPL_)
+    throwError("In PatternDiskBB::emission: optically thin integration not supported yet");
+  if (opacity && (thickness=opacity[i[2]*(nphi*nnu)+i[1]*nnu+i[0]]*dsem))
+    return Iem * (1. - exp (-thickness)) ;
+  return 0.;
+}
+
+int PatternDiskBB::setParameter(std::string name, std::string content) {
+  if      (name=="PLSlope"){
+    PLSlope_=atof(content.c_str());
+    rPL_=getOuterRadius();//radius where power law disk begins
+    setOuterRadius(DBL_MAX);//infinite power law disk
+  }
+  else if (name=="PLRho") PLRho_=atof(content.c_str());
+  else if (name=="SpectralEmission") SpectralEmission_=1;
+  else return PatternDisk::setParameter(name, content);
+  return 0;
+}
+
+#ifdef GYOTO_USE_XERCES
+void PatternDiskBB::fillElement(FactoryMessenger *fmp) const {
+  if (PLSlope_) fmp->setParameter("PLSlope", PLSlope_);
+  fmp -> setParameter ( SpectralEmission_? "SpectralEmission" : "BolometricEmission");
+  PatternDisk::fillElement(fmp);
+}
+
+/*A faire : imposer KerrBL metric??*/
+
+#endif

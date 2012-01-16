@@ -29,6 +29,7 @@
 #include "GyotoPageThorneDisk.h"
 #ifdef GYOTO_USE_CFITSIO
 #include "GyotoPatternDisk.h"
+#include "GyotoPatternDiskBB.h"
 #endif
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -51,6 +52,8 @@ extern "C" void __GyotostdplugInit() {
 #ifdef GYOTO_USE_CFITSIO
   Astrobj::Register("PatternDisk",
                             &(Astrobj::Subcontractor<Astrobj::PatternDisk>));
+  Astrobj::Register("PatternDiskBB",
+		    &(Astrobj::Subcontractor<Astrobj::PatternDiskBB>));
 #endif
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();

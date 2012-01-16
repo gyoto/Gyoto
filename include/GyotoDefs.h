@@ -171,6 +171,8 @@ namespace Gyoto {
 #define GYOTO_BOLTZMANN 1.3806504e-23
 /// \brief h/k (K.s = K/Hz)
 #define GYOTO_PLANCK_OVER_BOLTZMANN 4.7992373e-11
+/// \brief ideal gas constant R in SI
+#define GYOTO_GAS_CST 8.3144621
 
 /// \brief Sun mass (kg)
 #define GYOTO_SUN_MASS    1.98843e30
