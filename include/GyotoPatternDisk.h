@@ -164,7 +164,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 
   virtual int setParameter(std::string name, std::string content);
 
- private:
+ protected:
   void getIndices(size_t i[3], double const co[4], double nu=0.) const ;
   ///< get emission_ cell corresponding to position co[4]
 
