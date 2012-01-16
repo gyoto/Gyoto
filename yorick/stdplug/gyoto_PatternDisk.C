@@ -17,6 +17,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstring>
+
 #include <Gyoto.h>
 #include "ygyoto.h"
 #include "yapi.h"

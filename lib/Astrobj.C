@@ -29,8 +29,8 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <string>
-#include <float.h>
+#include <cstring>
+#include <cfloat>
 #include <cmath>
 #include <sstream>
 
