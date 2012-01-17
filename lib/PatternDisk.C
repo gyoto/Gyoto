@@ -99,18 +99,18 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
   if (pattern) {
     size_t nel;
     if (nnu_ != naxes[0]) {
-      if (opacity_) delete [] opacity_; opacity_ = NULL;
+      if (opacity_)  { delete [] opacity_; opacity_  = NULL; }
     }
     if (nphi_ != naxes[1]) {
       GYOTO_DEBUG <<"nphi_ changed, freeing velocity_" << endl;
-      if (opacity_) delete [] opacity_; opacity_ = NULL;
-      if (velocity_) delete [] velocity_; velocity_=NULL;
+      if (opacity_)  { delete [] opacity_; opacity_  = NULL; }
+      if (velocity_) { delete [] velocity_; velocity_= NULL; }
     }
     if (nr_ != naxes[2]) {
       GYOTO_DEBUG <<"nr_ changed, freeing velocity_ and radius_" << endl;
-      if (opacity_) delete [] opacity_; opacity_ = NULL;
-      if (velocity_) { delete [] velocity_; velocity_=NULL; }
-      if (radius_)   { delete [] radius_;   radius_=NULL; }
+      if (opacity_)  { delete [] opacity_;  opacity_ = NULL; }
+      if (velocity_) { delete [] velocity_; velocity_= NULL; }
+      if (radius_)   { delete [] radius_;   radius_  = NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nr_=naxes[2])))
       throwError( "dimensions can't be null");
@@ -288,7 +288,7 @@ void PatternDisk::fitsRead(string filename) {
   // update rin_, rout_, nr_, dr_
   nr_ = naxes[2];
 
-  if (emission_) delete [] emission_; emission_=NULL;
+  if (emission_) { delete [] emission_; emission_ = NULL; }
   emission_ = new double[nnu_ * nphi_ * nr_];
   if (debug())
     cerr << "PatternDisk::readFile(): read emission: "
