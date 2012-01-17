@@ -1,6 +1,7 @@
 /**
  * \file GyotoPatternDiskBB.h
- * \brief A geometrically thin, optically thick disk
+ * \brief A PatternDisk object with black body spectrum and
+ *  a power law extension up to some rmax_
  *
  *  The target of ray-traced Gyoto::Photon
  */
@@ -41,10 +42,11 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::PatternDiskBB
- * \brief Geometrically thin disk read from FITS file
+ * \brief Geometrically thin disk read from FITS file with black body 
+ * spectrum and a power law extension up to some rmax_
  * 
  *   This class describes a disk contained in the z=0 (equatorial)
- *   plane, extending from r=r_ISCO to r=infinity.  The flux emitted
+ *   plane, extending from r=r_ISCO to r=rmax_.  The flux emitted
  *   at radius r and longitude phi at frequency nu is given in a FITS
  *   file.
  *
@@ -52,37 +54,41 @@ namespace Gyoto{
 class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PatternDiskBB>;
  protected:
-  SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body emission law
+  SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
+  ///< emission law
  private:
-  int SpectralEmission_, PLDisk_;
-  double PLSlope_, PLRho_, rPL_;
+  int SpectralEmission_, PLDisk_; ///< Flags, are 1 if the disk emits
+  ///< as a black body or if the disk has a power law extension
+  double PLSlope_, PLRho_, rPL_, rmax_; ///< Power law slope, initial
+  ///< value, intial radius; maximal extension of the disk
   // Constructors - Destructor
   // -------------------------
  public:
   PatternDiskBB(); ///< Standard constructor
   
   PatternDiskBB(const PatternDiskBB& ) ;///< Copy constructor
-  virtual PatternDiskBB* clone () const; ///< Cloner
+  virtual PatternDiskBB* clone () const;///< Cloner
   
-  virtual ~PatternDiskBB() ;                        ///< Destructor
+  virtual ~PatternDiskBB() ;            ///< Destructor
   
   // Accessors
   // ---------
  public:
 
-  virtual int setParameter(std::string name, std::string content);
+  int setParameter(std::string name, std::string content);
 
  public:
-  virtual double emission(double nu_em, double dsem,
+  double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
 
   double const * const getVelocity() const ;
-  virtual void getVelocity(double const pos[4], double vel[4])  ;
+  void getVelocity(double const pos[4], double vel[4])  ;
+
+  void setMetric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL
 
  public:
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  //virtual void setParameters(FactoryMessenger *fmp);
+  void fillElement(FactoryMessenger *fmp) const ;
 #endif
 
 };
