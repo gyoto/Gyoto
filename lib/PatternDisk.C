@@ -90,6 +90,18 @@ PatternDisk::~PatternDisk() {
   if (radius_) delete [] radius_;
 }
 
+void PatternDisk::setEmission(double * pattern) {
+  emission_ = pattern;
+}
+
+void PatternDisk::setVelocity(double * pattern) {
+  velocity_ = pattern;
+}
+
+void PatternDisk::setRadius(double * pattern) {
+  radius_ = pattern;
+}
+
 void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[3]) {
   GYOTO_DEBUG << endl;
   if (emission_) {

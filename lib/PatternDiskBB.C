@@ -85,7 +85,7 @@ double PatternDiskBB::emission(double nu, double dsem,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
   double rcur=projectedRadius(co);
-  //cout << "rcur= " << rcur << endl;
+  if (rcur > rmax_) return 0.; // no emission in any case above rmax_
   size_t i[3]; // {i_nu, i_phi, i_r}
 
   //Search for indices only in non-power-law region

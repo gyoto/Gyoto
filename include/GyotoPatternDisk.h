@@ -130,7 +130,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual void fitsWrite(std::string filename_);
   ///< Read data from file
 
-
+  void setEmission(double * pattern);
+  void setVelocity(double * pattern);
+  void setRadius(double * pattern);
   /**
    * \param pattern: new emission_ array.
    * \param dims[3] = { nnu_, nphi_, nr_ };
