@@ -199,7 +199,6 @@ int DynamicalDisk::setParameter(std::string name, std::string content) {
       }else throwError("In DynmicalDisk::setParameter: Emission must be supplied");
       //save opacity
       if (getOpacity()){
-	cout << "ICI" << endl;
 	double * optemp = const_cast<double*>(getOpacity());
 	opacity_array_[i-1] = new double[nel1];
 	for (int j=0;j<nel1;j++)
