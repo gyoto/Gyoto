@@ -75,6 +75,8 @@ DynamicalDisk::~DynamicalDisk() {
 double const * const DynamicalDisk::getVelocity() const { return PatternDiskBB::getVelocity(); }
 
 void DynamicalDisk::copyQuantities(int iq) {
+  if (iq<1 || iq>nb_times_)
+    throwError("In DynamicalDisk::copyQuantities: incoherent value of iq");
   double * curem = emission_array_[iq-1],
     * curop = NULL, //temporary
     * curvel = velocity_array_[iq-1], 
@@ -93,8 +95,6 @@ void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {
     ifits++;
   }
 
-  //cout << "time stuff= " << time << " " << tinit_ << " " << dt_ << " " << ifits << endl;
-  
   if (ifits==1 || ifits==nb_times_){
     copyQuantities(ifits);
     PatternDiskBB::getVelocity(pos,vel);
@@ -121,7 +121,6 @@ double DynamicalDisk::emission(double nu, double dsem,
     tcomp+=dt_;
     ifits++;
   }
-
   double* fake;
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
@@ -190,24 +189,51 @@ int DynamicalDisk::setParameter(std::string name, std::string content) {
       getIntensityNaxes(naxes);
       size_t nnu,nphi,nr,
 	nel = (nnu=naxes[0])*(nphi=naxes[1])*(nr=naxes[2]);
-      emission_array_[i-1]=const_cast<double*>(getIntensity());
-      opacity_array_[i-1]=const_cast<double*>(getOpacity());
-      velocity_array_[i-1]=const_cast<double*>(getVelocity());
-      radius_array_[i-1]=const_cast<double*>(getGridRadius());
+      size_t nel1=nnu*nphi*nr, nel2=2*nr*nphi;
+      //save emission
+      if (getIntensity()){
+	double * emtemp = const_cast<double*>(getIntensity());
+	emission_array_[i-1] = new double[nel1];
+	for (int j=0;j<nel1;j++)
+	  emission_array_[i-1][j]=emtemp[j];
+      }else throwError("In DynmicalDisk::setParameter: Emission must be supplied");
+      //save opacity
+      if (getOpacity()){
+	cout << "ICI" << endl;
+	double * optemp = const_cast<double*>(getOpacity());
+	opacity_array_[i-1] = new double[nel1];
+	for (int j=0;j<nel1;j++)
+	  opacity_array_[i-1][j]=optemp[j];
+      }
+      //save velocity
+      if (getVelocity()){
+	double * veltemp = const_cast<double*>(getVelocity());
+	velocity_array_[i-1] = new double[nel2];
+	for (int j=0;j<nel2;j++)
+	  velocity_array_[i-1][j]=veltemp[j];
+      }else throwError("In DynmicalDisk::setParameter: Velocity must be supplied");
+      //save radius
+      if (getGridRadius()){
+      double * radtemp = const_cast<double*>(getGridRadius());
+      radius_array_[i-1] = new double[nr];
+      for (int j=0;j<nr;j++)
+	radius_array_[i-1][j]=radtemp[j];
+      }else throwError("In DynmicalDisk::setParameter: Radius must be supplied");
+      //save other quantities
       dnu_array_[i-1]=dnu();
       nu0_array_[i-1]=nu0();
       nnu_array_[i-1]=nnu;
       nphi_array_[i-1]=nphi;
       nr_array_[i-1]=nr;
     }
-
+      
   }
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());
   else return PatternDiskBB::setParameter(name, content);
   return 0;
 }
-
+      
 #ifdef GYOTO_USE_XERCES
 void DynamicalDisk::fillElement(FactoryMessenger *fmp) const {
   if (tinit_) fmp->setParameter("tinit", tinit_);
