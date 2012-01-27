@@ -52,7 +52,7 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
 
   if (coutcoord){
     cout << "previous coord in Wl ada= " ;
-    for (int ii=0;ii<8;ii++) cout << coord_[ii] << " ";
+    for (int ii=0;ii<8;ii++) cout << setprecision(10) << coord_[ii] << " ";
     cout << endl;
   }
 
@@ -60,7 +60,7 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
     if (gg_ -> myrk4_adaptive(line,coord_,norm_,normref_,coordnew_,delta_,h1_)) return 1;
     if (coutcoord){
       cout << "coordnew in Wl ada= " ;
-      for (int ii=0;ii<8;ii++) cout << coordnew_[ii] << " ";
+      for (int ii=0;ii<8;ii++) cout << setprecision(10) << coordnew_[ii] << " ";
       cout << endl;
     }
     if (coutnormdel){

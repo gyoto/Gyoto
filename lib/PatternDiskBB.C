@@ -71,10 +71,24 @@ double const * const PatternDiskBB::getVelocity() const { return PatternDisk::ge
 
 void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
   double rcur=projectedRadius(pos);
+  double risco;
+  switch (gg_->getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+    break;
+  default:
+    throwError("PatternDiskBB::emission: bad COORDKIND");
+  }
+
   if ((getOuterRadius()==DBL_MAX && rcur>rPL_) || !getVelocity()){
     //Keplerian circ velocity for power law disk region
     //as well as if PatternDisk::velocity_ not provided
     ThinDisk::getVelocity(pos, vel);
+  }else if (rcur<risco){
+    //default velocity, emission will be 0 there anyway
+    vel[0]=1.;
+    for (int ii=1;ii<4;ii++)
+      vel[ii]=0.;
   }else{
     PatternDisk::getVelocity(pos, vel);
   }
@@ -84,8 +98,18 @@ double PatternDiskBB::emission(double nu, double dsem,
 			       double *,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
+
+  double risco;
+  switch (gg_->getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+    break;
+  default:
+    throwError("PatternDiskBB::emission: bad COORDKIND");
+  }
+
   double rcur=projectedRadius(co);
-  if (rcur > rmax_) return 0.; // no emission in any case above rmax_
+  if (rcur > rmax_ || rcur < risco) return 0.; // no emission in any case above rmax_
   size_t i[3]; // {i_nu, i_phi, i_r}
 
   //Search for indices only in non-power-law region
