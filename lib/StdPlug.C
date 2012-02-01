@@ -31,6 +31,7 @@
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
 #include "GyotoDynamicalDisk.h"
+#include "GyotoDisk3D.h"
 #endif
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -57,6 +58,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::PatternDiskBB>));
   Astrobj::Register("DynamicalDisk",
 		    &(Astrobj::Subcontractor<Astrobj::DynamicalDisk>));
+  Astrobj::Register("Disk3D",
+		    &(Astrobj::Subcontractor<Astrobj::Disk3D>));
 #endif
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();

@@ -41,6 +41,9 @@
 #include<GyotoThinDisk.h>
 #include<GyotoPageThorneDisk.h>
 #include<GyotoPatternDisk.h>
+#include<GyotoPatternDiskBB.h>
+#include<GyotoDynamicalDisk.h>
+#include<GyotoDisk3D.h>
 #include<GyotoFixedStar.h>
 #include<GyotoStar.h>
 

@@ -192,6 +192,74 @@ extern gyoto_PatternDisk;
     gyoto_Astrobj, gyoto_ThinDisk, gyotoPageThorneDisk
 */
 
+//// DISK3D
+extern _gyoto_Disk3D_register_as_Astrobj;
+_gyoto_Disk3D_register_as_Astrobj;
+extern gyoto_Disk3D;
+/* DOCUMENT disk = gyoto_Disk3D(...)
+            disk, member=value...
+
+    Geometrically thick disk. The grid for the pattern is set by 4
+    numbers: NPHI (number of grid points in the azimuthal direction),
+    REPEATPHI if the pattern must be repeated several times in the
+    azimuthal direction (i.e. if the angular periodicity of the
+    pattern is a fraction of 2*pi), NZ (number of grid points in
+    the vertical direction), and NR (number of grid points in
+    the radial direction). The disk extends from RIN to
+    ROUT with a regular spacing along all directions.
+
+    The pattern is specified by the surface brightness which can be
+    computed from EMISSQUANT which is typically the temperature
+    at NNU frequencies going from NU0 to NU0*DNU*(NNU-1). The cube
+    EMISSQUANT is an array(double, NNU, NPHI, NZ, NR).
+
+    The fluid velocity field must be specified
+    with VELOCITY==array(double, 3, NPHI, NZ, NR).
+    VELOCITY(1,..)==dphi/dt; VELOCITY(2,..)==dz/dt;
+    VELOCITY(3,..)==dr/dt.
+
+   KEYWORDS:
+
+    fitsread="filename.fits"  read pattern from FITS file.
+    
+    fitswrite="filename.fits" write pattern to FITS file.
+
+    repeatphi=N the pattern angular periodicity is 2*pi/N.
+
+    nu0=        first frequency (Hz)
+
+    dnu=        frequencty spacing (Hz)
+
+    rin=        inner radius
+
+    rout=       outer radius
+
+    zmin=       smallest z value (if >=0 then the disk is assumed to be
+                symmetric by z->-z transformation) 
+
+    zmax=       biggest z value
+
+    copyemissquant=EMISSQUANT
+                * if EMISSQUANT is nil, retrieve the
+                  cube;
+                * if EMISSQUANT==0, free the cube;
+                * if EMISSQUANT is an array of NNU x NPHI x NZ x NR doubles,
+                  attach (copy) this array into DISK.
+                  If this cube doesn't have the same
+                  dimensions as the previously set one, the velocity
+                  array will also be freed (as it has
+                  inconsistent dimensions).
+
+     copyvelocity=VELOCITY
+                same as COPYEMISSQUANT but to attach the fluid velocity
+                field, a 3 x NPHI x NZ x NR array where
+                VELOCITY(1,..)==dphi/dt, VELOCITY(2,..)==dz/dt
+                and VELOCITY(3,..)==dr/dt
+
+   SEE ALSO:
+    gyoto_Astrobj, gyoto_PatternDisk
+*/
+
 /////// SPECTRUM KIND ///////
 
 /* PowerLaw */

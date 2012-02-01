@@ -428,6 +428,7 @@ extern gyoto_Astrobj;
      gyoto_ThinDisk           A geometrically thin disk
      gyoto_PageThorneDisk     As above with Page & Thorne 1974 emission
      gyoto_PatternDisk        As above, emission numerically provided
+     gyoto_Disk3D             Thick disk, emission numerically provided
      
  */
 
