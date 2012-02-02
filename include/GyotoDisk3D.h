@@ -39,9 +39,17 @@ namespace Gyoto{
  * \class Gyoto::Astrobj::Disk3D
  * \brief Geometrically thick disk read from FITS file
  * 
- *   This class describes a thick disk.  The flux emitted
- *   at radius r altitude z and longitude phi at frequency nu is given 
- *   in a FITS file.
+ *   This class is the base class for thick disks.  The emitter's
+ *   velocity is given in a FITS file, together with emission 
+ *   related quantity (typically temperature).
+ *   This class mainly implements the Impact() function.
+ *   Emission() function is here left to its default, and should
+ *   be implemented according to specific needs in heir classes.
+ *   Here the disk is supposed not to evolve in time. The dynamical
+ *   treatment is provided in heir classes.
+ *
+ *   The 3D disk is assumed to be described by a regular 
+ *   (non adaptive) grid.
  *
  */
 class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
@@ -51,7 +59,8 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   /**
    * An array of dimensionality double[nr_][nz_][nphi_][nnu_]. In FITS
    * format, the first dimension is nu, the second phi, the third
-   * z and last r.
+   * z and last r. It typically contains temperature and is used only by
+   * subclasses.
    */
   double * emissquant_; ///< Inu(nu, r, z, phi)
 
@@ -134,22 +143,16 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   virtual double dnu() const;
 
   void rin(double rrin);
-  double rin();
-
-  void dr(double dr);
-  double dr();
+  double rin() const;
 
   void rout(double rout);
-  double rout();
+  double rout() const;
 
   void zmin(double zmin);
-  double zmin();
-
-  void dz(double dz);
-  double dz();
+  double zmin() const;
 
   void zmax(double zmax);
-  double zmax();
+  double zmax() const;
 
   virtual int setParameter(std::string name, std::string content);
 
@@ -159,10 +162,6 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 
  public:
   int Impact(Photon *ph, size_t index, Astrobj::Properties *data);
-  virtual double emission(double nu_em, double dsem,
-			  double c_ph[8], double c_obj[8]) const;
-  virtual double transmission(double nu_em, double dsem, double coord[8]) const;
-
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 
  public:

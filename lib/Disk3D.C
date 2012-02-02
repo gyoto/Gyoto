@@ -161,31 +161,25 @@ void Disk3D::rin(double rrin) {
   rin_ = rrin;
   if (nr_) dr_ = (rout_-rin_) / nr_;
 }
-double Disk3D::rin() {return rin_;}
-
-void Disk3D::dr(double ddr) {dr_ = ddr;}
-double Disk3D::dr() {return dr_;}
+double Disk3D::rin() const {return rin_;}
 
 void Disk3D::rout(double rrout) {
   rout_ = rrout;
   if (nr_) dr_ = (rout_-rin_) / nr_;
 }
-double Disk3D::rout() {return rout_;}
+double Disk3D::rout() const {return rout_;}
 
 void Disk3D::zmin(double zzmin) {
   zmin_ = zzmin;
   if (nz_) dz_ = (zmax_-zmin_) / nz_;
 }
-double Disk3D::zmin() {return zmin_;}
-
-void Disk3D::dz(double ddz) {dz_ = ddz;}
-double Disk3D::dz() {return dz_;}
+double Disk3D::zmin() const {return zmin_;}
 
 void Disk3D::zmax(double zzmax) {
   zmax_ = zzmax;
   if (nz_) dz_ = (zmax_-zmin_) / nz_;
 }
-double Disk3D::zmax() {return zmax_;}
+double Disk3D::zmax() const {return zmax_;}
 
 
 void Disk3D::fitsRead(string filename) {
@@ -433,7 +427,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     if (i[0] >= nnu_) i[0] = nnu_-1;
   }
   
-  double rr,zz,phi, tt=co[0]; //cylindrical coord
+  double rr,zz,phi; //cylindrical coord
   switch (gg_ -> getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     double rs=co[1];
@@ -469,10 +463,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
 }
 
 void Disk3D::getVelocity(double const pos[4], double vel[4]) {
-    if (velocity_) {
-      /*if (dir_ != 1)
-      throwError("Disk3D::getVelocity(): "
-      "dir_ should be 1 if velocity_ is provided");*/
+  if (velocity_) {
     size_t i[4]; // {i_nu, i_phi, i_z, i_r}
     getIndices(i, pos);
     double phiprime=velocity_[i[3]*3*nphi_*nz_+i[2]*3*nphi_+i[1]*3+0];
@@ -484,7 +475,7 @@ void Disk3D::getVelocity(double const pos[4], double vel[4]) {
 	//Formula from derivation of rsph^2=rcyl^2+zz^2
 	//and rsph*cos(th)=zz where rsph and rcyl
 	//are spherical and cylindrical radii
-	double rsph=pos[1], th=pos[2], ph=pos[3],
+	double rsph=pos[1], th=pos[2],
 	  zz= rsph*cos(th), rcyl=sqrt(rsph*rsph-zz*zz);
 	vel[1] = (rcyl*rprime+zz*zprime)/rsph;
 	vel[2] = (vel[1]*cos(th)-zprime)/(rsph*sin(th));
@@ -502,192 +493,108 @@ void Disk3D::getVelocity(double const pos[4], double vel[4]) {
     default:
       throwError("Disk3D::getVelocity(): unknown COORDKIND");
     } 
-    }else throwError("In Disk3D::getVelocity(): velocity_==NULL!");
+  }else throwError("In Disk3D::getVelocity(): velocity_==NULL!");
 }
 
 int Disk3D::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
-  /*  size_t indices[4];
-  getIndices()
-  size_t iphi=71, iz=71, ir=191;
-  double phiprime=velocity_[ir*3*nphi_*nz_+iz*3*nphi_+iphi*3+0];
-  double zprime=velocity_[ir*3*nphi_*nz_+iz*3*nphi_+iphi*3+1];
-  double rprime=velocity_[ir*3*nphi_*nz_+iz*3*nphi_+iphi*3+2];
-  cout << "v term= " << phiprime << " " << zprime << " " << rprime << endl;
-  double emiss=emissquant_[ir*nphi_*nz_+iz*nphi_+iphi];
-  cout << "em term= " << emiss << endl;
-  double rr=rin_+ir*dr_;
-  double zz=zmin_+iz*dz_;
-  double phi=iphi*dphi_;
-  cout << "pos= " << phi << " " << zz << " " << rr << endl;
-  return 0;*/
-
-  if (debug()) 
-    cerr << "DEBUG: in DiskFromFile3D::Impact()" << endl;
+  GYOTO_DEBUG << endl;
   double coord_ph_hit[8], coord_obj_hit[8];
-  double rcross, phicross;
-  double tmp, frac;
   double coord1[8], coord2[8];
  
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
 
-  /* Transforms theta and phi in coord1,2 so that 
-     theta is in [0,pi] and phi in [0,2pi] */
-  double thetatmp=coord1[2], phitmp=coord1[3];
-  while (thetatmp>M_PI) thetatmp-=2.*M_PI;
-  while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
-  if (thetatmp<0.) {
-    thetatmp=-thetatmp;//then theta in [0,pi]
-    phitmp+=M_PI;//thus, same point x,y,z
-  }
-  while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
-  while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
-  coord1[2]=thetatmp;
-  coord1[3]=phitmp;
-  thetatmp=coord2[2], phitmp=coord2[3];
-  while (thetatmp>M_PI) thetatmp-=2.*M_PI;
-  while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
-  if (thetatmp<0.) {
-    thetatmp=-thetatmp;//then theta in [0,pi]
-    phitmp+=M_PI;//thus, same point x,y,z
-  }
-  while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
-  while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
-  coord2[2]=thetatmp;
-  coord2[3]=phitmp;
-
-  double theta1=coord1[2], theta2=coord2[2];
+  checkPhiTheta(coord1);
+  checkPhiTheta(coord2);
 
   // HEURISTIC TESTS TO PREVENT TOO MANY INTEGRATION STEPS
   // Speeds up a lot!
   // Idea: no test if r1,r2 > factr*rdiskmax_ AND z1,z2 have same sign
   double r1=coord1[1], r2=coord2[1],
-    z1=r1*cos(theta1), z2=r2*cos(theta2);
+    z1=r1*cos(coord1[2]), z2=r2*cos(coord2[2]);
   double factr=2.;
   double rtol=factr*rout_;
-  if (coord1[1]>rtol && coord2[1]>rtol && z1*z2>0.)
+  if (r1>rtol && r2>rtol && z1*z2>0.)
     return 0;
 
-  int iicross=-1;
-
   double t1=coord1[0], t2=coord2[0];
-
   double deltatmin=0.1, deltat12=fabs(t2-t1)*0.1;
   //Break the worldline in pieces of "size" deltat:
   double deltat= deltat12 < deltatmin ? deltat12 : deltatmin;
-  double tcur=t2, myrcur=coord2[1], thetacur=coord2[2], phicur=coord2[3], 
-    zcur=myrcur*cos(thetacur),rcur=sqrt(myrcur*myrcur-zcur*zcur),
-    tdotcur, rdotcur, thetadotcur, phidotcur;
+  double tcur=t2;
+  double myrcur=coord2[1], thetacur=coord2[2], 
+    zcur=myrcur*cos(thetacur),rcur=sqrt(myrcur*myrcur-zcur*zcur);
   //NB: myrcur is r in spherical coord, rcur is r in cylindrical coord
-  int hit2=0, hit1=0;
-  int i1=0,i1bef,i2,i2bef,i3,i3bef,i4,i5,i6,i7,i8;
-  double phitab, ztab, rtab;
 
-  //Flags that will be 1 if phicur<phimin, phicur>phimax, zcur<zmin:
-  int philittle=0,phibig=0,zlittle=0;
-  
-  double tin, tout;//time of entry, exit from the disk
-  
-  //cout << "t1,t2, r1,r2= " << t1 << " " << t2 << " " << coord1[1] << " " << coord2[1] << endl;
+  /*** FIND GRID ENTRY POINT BETWEEN t1 AND t2  ***/
   
   //Following while loop determines (if any) the entry and out points
   //along the geodesic that goes throw the disk
-  
-  //cout << "-----> Find entry: " << endl;
-  // FIND ENTRY POINT (if any)
   while (tcur>t1+deltat 
 	 && 
 	 (
 	  ((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_)) 
 	  || zcur>zmax_ || rcur>rout_ || rcur<rin_)
 	 ){
+    //Condition: current point stays between t1 and t2, keep going 
+    //until current point gets inside the grid
     //NB: condition on zmin assumes disk is symmetric in z if zmin>=0
-    //NBB: tcur must stay >t1+deltat coz getCoord can be called for:
-    //t1<=tcur<=t2
     
     tcur-=deltat;
-    ph -> getCoord( &tcur, 1, &myrcur, &thetacur, &phicur,
-		    &tdotcur, &rdotcur, &thetadotcur, &phidotcur);
+    coord_ph_hit[0]=tcur;
+    ph -> getCoord( coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
+		    coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
+		    coord_ph_hit+6, coord_ph_hit+7);
     //Cylindrical z and r coordinates
+    myrcur=coord_ph_hit[1];
+    thetacur=coord_ph_hit[2];
     zcur=myrcur*cos(thetacur);
     rcur=sqrt(myrcur*myrcur-zcur*zcur);
-    //cout << "t1,tcur,t2=" << t1 << " " << tcur << " " << t2 << endl;
-    
   }
-  
-  if (tcur>t1+deltat) {
-    //HIT
-    tin=tcur;
-  }else{
-    //NO HIT
+
+  /*** IF NO INTERSECTION WITH GRID, RETURN ***/
+
+  if (tcur<=t1+deltat) {
+    //Then no point inside grid found between t1 and t2
     return 0;
   }
   
-  // INTEGRATION BETWEEN ENTRY AND EXIT
+  // Else: t1<tcur<t2 inside grid, integrate from tcur til 
+  // either exit from grid or reaches t1
+
+  /*** ELSE: COMPUTE EMISSION ALONG PATH INSIDE GRID ***/
+
   int indisk=1;
-  //cout << "-----> Integrate!" << endl;
-  while (indisk && tcur>t1+deltat){//Continue integration until either 
-                                   //we get out of the disk, or time
-                                   //becomes smaller than t1 
+  while (indisk && tcur>t1+deltat){
     tcur-=deltat;
-    //cout << "New point at t1,tcur,t2 -- rcur= " << t1 << " " << tcur << " " << t2 << " -- " << rcur << endl;
-    ph -> getCoord( &tcur, 1, &myrcur, &thetacur, &phicur,
-		    &tdotcur, &rdotcur, &thetadotcur, &phidotcur);
+    coord_ph_hit[0]=tcur;
+    ph -> getCoord( coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
+		    coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
+		    coord_ph_hit+6, coord_ph_hit+7);
     //Cylindrical z and r coordinates
+    myrcur=coord_ph_hit[1];
+    thetacur=coord_ph_hit[2];
     zcur=myrcur*cos(thetacur);
     rcur=sqrt(myrcur*myrcur-zcur*zcur);
     if (
 	((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_))
 	|| zcur>zmax_ || rcur>rout_ || rcur<rin_
-	){
+	){//then out of grid
       indisk=0;
-    }else{ //Compute emission loop
-      //cout << "Still in disk" << endl;
-      //Insure phi is in 0-2pi
-      thetatmp=thetacur, phitmp=phicur;
-      while (thetatmp>M_PI) thetatmp-=2.*M_PI;
-      while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
-      if (thetatmp<0.) {
-      thetatmp=-thetatmp;//then theta in [0,pi]
-      phitmp+=M_PI;//thus, same point x,y,z
-      }
-      while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
-      while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
-      thetacur=thetatmp;
-      phicur=phitmp;
-
-      coord_ph_hit[0]=tcur;
-      coord_ph_hit[1]=myrcur;//spherical radius
-      coord_ph_hit[2]=thetacur;
-      coord_ph_hit[3]=phicur;
-      coord_ph_hit[4]=tdotcur;
-      coord_ph_hit[5]=rdotcur;
-      coord_ph_hit[6]=thetadotcur;
-      coord_ph_hit[7]=phidotcur;
-
+    }else{ //Inside grid: compute emission
+      checkPhiTheta(coord_ph_hit);
       for (int ii=0;ii<4;ii++) coord_obj_hit[ii]=coord_ph_hit[ii];
       getVelocity(coord_obj_hit, coord_obj_hit+4);
       
       processHitQuantities(ph, coord_ph_hit, coord_obj_hit, deltat, data);
-      if (!flag_radtransf_) indisk=0;//not to go on integrating
-      
-    } //end compute emission else loop
+
+      if (!flag_radtransf_) indisk=0;//not to go on integrating 
+    }
   }
 
   return 1;
 
-}
-
-double Disk3D::emission(double nu, double dsem,
-				    double *,
-				    double co[8]) const{
-  return 1.;
-
-}
-
-double Disk3D::transmission(double nu, double dsem, double*co) const {
-  return 0.;
 }
 
 int Disk3D::setParameter(std::string name, std::string content) {

@@ -100,6 +100,32 @@ void Generic::unsetRmax() {
   rmax_set_=0;
 }
 
+void Generic::checkPhiTheta(double coord[8]) const{
+  switch (gg_ -> getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    /* Transforms theta and phi in coord so that 
+       theta is in [0,pi] and phi in [0,2pi] */
+    double thetatmp=coord[2], phitmp=coord[3];
+    while (thetatmp>M_PI) thetatmp-=2.*M_PI;
+    while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
+    if (thetatmp<0.) {
+      thetatmp=-thetatmp;//then theta in [0,pi]
+      phitmp+=M_PI;//thus, same point x,y,z
+    }
+    while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
+    while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
+    coord[2]=thetatmp;
+    coord[3]=phitmp;
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    throwError("Astrobj::checkPhiTheta(): should not be called "
+	       "with cartesian-like coordinates");
+  default:
+    throwError("Astrobj::checkPhiTheta(): unknown COORDKIND");
+  }
+
+}
+
 
 #ifdef GYOTO_USE_XERCES
 void Generic::fillElement(FactoryMessenger *fmp) const {

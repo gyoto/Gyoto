@@ -15,7 +15,8 @@ STDPLUG_SRC = KerrBL.C KerrKS.C \
 	StandardAstrobj.C PageThorneDisk.C
 
 ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
-STDPLUG_SRC += 	PatternDisk.C PatternDiskBB.C DynamicalDisk.C Disk3D.C
+STDPLUG_SRC += 	PatternDisk.C PatternDiskBB.C DynamicalDisk.C Disk3D.C \
+	Disk3D_BB.C
 endif
 
 

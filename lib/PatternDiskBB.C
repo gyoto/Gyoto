@@ -77,7 +77,7 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
   default:
-    throwError("PatternDiskBB::emission: bad COORDKIND");
+    throwError("PatternDiskBB::getVelocity: bad COORDKIND");
   }
 
   if ((getOuterRadius()==DBL_MAX && rcur>rPL_) || !getVelocity()){
