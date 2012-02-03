@@ -103,6 +103,7 @@ void Generic::unsetRmax() {
 void Generic::checkPhiTheta(double coord[8]) const{
   switch (gg_ -> getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
+    {
     /* Transforms theta and phi in coord so that 
        theta is in [0,pi] and phi in [0,2pi] */
     double thetatmp=coord[2], phitmp=coord[3];
@@ -116,6 +117,7 @@ void Generic::checkPhiTheta(double coord[8]) const{
     while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
     coord[2]=thetatmp;
     coord[3]=phitmp;
+    }
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     throwError("Astrobj::checkPhiTheta(): should not be called "
