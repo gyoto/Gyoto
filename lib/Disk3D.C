@@ -110,8 +110,8 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nz_=naxes[2]) * (nr_=naxes[3])))
       throwError( "dimensions can't be null");
-    dr_ = (rout_ - rin_) / nr_;
-    dz_ = (zmax_ - zmin_) / nz_;
+    dr_ = (rout_ - rin_) / double(nr_);
+    dz_ = (zmax_ - zmin_) / double(nz_);
     dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
     GYOTO_DEBUG << "allocate emissquant_;" << endl;
     emissquant_ = new double[nel];
@@ -159,25 +159,25 @@ double Disk3D::dnu() const { return dnu_; }
 
 void Disk3D::rin(double rrin) {
   rin_ = rrin;
-  if (nr_) dr_ = (rout_-rin_) / nr_;
+  if (nr_) dr_ = (rout_-rin_) / double(nr_);
 }
 double Disk3D::rin() const {return rin_;}
 
 void Disk3D::rout(double rrout) {
   rout_ = rrout;
-  if (nr_) dr_ = (rout_-rin_) / nr_;
+  if (nr_) dr_ = (rout_-rin_) / double(nr_);
 }
 double Disk3D::rout() const {return rout_;}
 
 void Disk3D::zmin(double zzmin) {
   zmin_ = zzmin;
-  if (nz_) dz_ = (zmax_-zmin_) / nz_;
+  if (nz_) dz_ = (zmax_-zmin_) / double(nz_);
 }
 double Disk3D::zmin() const {return zmin_;}
 
 void Disk3D::zmax(double zzmax) {
   zmax_ = zzmax;
-  if (nz_) dz_ = (zmax_-zmin_) / nz_;
+  if (nz_) dz_ = (zmax_-zmin_) / double(nz_);
 }
 double Disk3D::zmax() const {return zmax_;}
 
@@ -273,8 +273,8 @@ void Disk3D::fitsRead(string filename) {
   // update nz_, nr_, dz_, dr_
   nz_ = naxes[2];
   nr_ = naxes[3];
-  dr_ = (rout_ - rin_) / nr_;
-  dz_ = (zmax_ - zmin_) / nz_;
+  dr_ = (rout_ - rin_) / double(nr_);
+  dz_ = (zmax_ - zmin_) / double(nz_);
 
   if (emissquant_) { delete [] emissquant_; emissquant_ = NULL; }
   emissquant_ = new double[nnu_ * nphi_ * nz_ * nr_];
@@ -430,16 +430,20 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
   double rr,zz,phi; //cylindrical coord
   switch (gg_ -> getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
+    {
     double rs=co[1];
     zz= rs*cos(co[2]);
     rr= sqrt(rs*rs-zz*zz);
     phi= co[3];
+    }
     break;
   case GYOTO_COORDKIND_CARTESIAN:
+    {
     zz= co[3];
     double xx=co[1], yy=co[2];
     rr= sqrt(xx*xx+yy*yy);
     phi= atan2(yy, xx);
+    }
     break;
   default:
     throwError("Disk3D::getIndices(): unknown COORDKIND");
