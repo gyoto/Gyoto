@@ -53,7 +53,7 @@ endif
 	g++ -o $(LIBGYOTO_FILE) $(DYLIB_CFLAG)  $(LIB_CXX) $^
 
 libgyoto-stdplug.$(DYLIB_SFX): $(STDPLUG_OBJ) StdPlug.o $(LIBGYOTO_FILE) Metric.o
-	g++ -o $@  $(PLUG_FLAGS)  $(LIB_CXX) $(STDPLUG_OBJ) StdPlug.o
+	g++ -o $@  $(PLUG_FLAGS) $(STDPLUG_OBJ) StdPlug.o $(LIB_CXX)
 
 $(LORENEPLUG_OBJ): $(LORENEPLUG_SRC)
 	make -f Makefile.lorene $@

@@ -1,0 +1,91 @@
+# Install path:
+# ------------
+# Header wil go to $(PREFIX)/include, libraries to $(PREFIX)/lib,
+# binaries to $(PREFIX)/tools.
+PREFIX       = /usr/local
+
+# C++ compiler:
+# ------------
+CXX          = g++
+
+# Yorick interpreter:
+# ------------------
+YORICK       = yorick
+
+# Version of the library:
+# ----------------------
+# This should normally be changed only be the developpers, but can
+# sometimes be overriden by distributors:
+SOVERS_MAJOR = 0
+SOVERS       = $(SOVERS_MAJOR).0.0
+
+# Options for using Xerces:
+# -------------------------
+# Xerces-c 3 is used to read/write scenery descriptions in XML format.
+# It is recommended to enable it, required for building the gyoto executable.
+# 
+# Comment next line to disable Xerces:
+GYOTO_FLAGS += -DGYOTO_USE_XERCES
+#           Where are Xerces include files:
+XERCES_INC =
+#           Where is libxercesc.so/.dylib/.a:
+XERCES_LIB = -lxerces-c
+
+# Options for using cfisio:
+# -------------------------
+# cfitsio is used to save images as fits files.
+# It is required for building the gyoto executable.
+# Parts of the library will not be built if GYOTO_USE_CFITSIO is not set.
+GYOTO_FLAGS += -DGYOTO_USE_CFITSIO
+CFITSIO_INC =
+CFITSIO_LIB = -lcfitsio
+
+# ________________________________________________________________
+# It shouldn't be necessary to change anything below this line
+
+
+# Options for the C++ compiler for debugging:
+# -------------------------------------------
+CXXFLAGS_G = -g -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+  -Wcast-align -Wconversion -Winline \
+  -Wabi -Woverloaded-virtual  -Wno-long-long -fPIC
+
+
+# Path for the include files 
+# --------------------------------------------
+GYOTO_INC        = -I../include $(CFITSIO_INC)
+ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
+INC += $(XERCES_INC)
+endif
+
+# C, C++ libarary, mathematical library
+# -------------------------------------
+LIB_CXX += -lstdc++ -lm
+ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
+LIB_CXX += $(XERCES_LIB)
+endif
+ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
+LIB_CXX += $(CFITSIO_LIB)
+endif
+
+SYS=$(shell uname -s)
+ifeq ($(SYS),Darwin)
+DYLIB_SFX=dylib
+DYLIB_CFLAG=-dynamiclib
+LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX)
+STLIB_CMD=libtool -static -o
+PLUG_FLAGS=-flat_namespace -bundle -bundle_loader $(LIBGYOTO_PATH)$(LIBGYOTO_FILE)
+DYLIB_VAR=DYLD_LIBRARY_PATH
+else
+DYLIB_SFX=so
+DYLIB_CFLAG=-shared -Wl,-soname,libgyoto.$(DYLIB_SFX).$(SOVERS_MAJOR)
+LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX).$(SOVERS)
+GYOTO_FLAGS += -rdynamic
+STLIB_CMD=ar qc
+PLUG_FLAGS=-shared
+DYLIB_VAR=LD_LIBRARY_PATH
+endif
+
+GYOTO_FLAGS += -DGYOTO_PLUGIN_SFX=\"$(DYLIB_SFX)\"
+GYOTO_FLAGS += -DGYOTO_PREFIX=\"$(PREFIX)\"
+GYOTO_FLAGS += -DGYOTO_SOVERS=\"$(SOVERS)\"
