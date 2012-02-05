@@ -11,8 +11,8 @@ We request that use of Gyoto in scientific publications be properly
 acknowledged. Please cite:
 
     GYOTO: a new general relativistic ray-tracing code, F. H. Vincent,
-    T. Paumard, E. Gourgoulhon & G. Perrin 2011, Classical and Quantum
-    Gravity, accepted. [arXiv:1109.4769]
+    T. Paumard, E. Gourgoulhon & G. Perrin, Classical and Quantum
+    Gravity 28, 225011 (2011) [arXiv:1109.4769]
 
 We also request that Gyoto modifications, extensions or plug-ins
 leading to a scientific publication be made public as free software
@@ -39,6 +39,7 @@ well as in the AUTHORS file in the package.
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 
 Refer to the file INSTALL for building and installing Gyoto.
+Specific instructions for Linux/Ubuntu are in the file INSTALL.ubuntu. 
 
 Several sample files are provided in doc/examples. You can ray-trace
 those sceneries with:
