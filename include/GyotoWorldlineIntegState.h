@@ -72,6 +72,7 @@ class Gyoto::WorldlineIntegState : SmartPointee {
    */
   virtual int nextStep(Gyoto::Worldline* line, double *coord, double delta=0.);
   double get_delta();
+  void set_delta(double delta);
   void setCoord(double coord[8]);
   virtual ~WorldlineIntegState();
 };

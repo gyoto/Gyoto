@@ -147,6 +147,8 @@ void Generic::setParameters(FactoryMessenger *fmp) {
 void Generic::setFlag_radtransf(int flag) {flag_radtransf_=flag;}
 int Generic::getFlag_radtransf() const {return flag_radtransf_;}
 
+double Generic::giveDelta(double coord[8]) {return 0.1;}
+
 int Generic::setParameter(string name, string content)  {
   char* tc = const_cast<char*>(content.c_str());
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);

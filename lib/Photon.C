@@ -359,7 +359,10 @@ int Photon::hit(Astrobj::Properties *data) {
       cerr << "DEBUG: Photon::hit(): rmax="<< rmax <<", rr="<<rr<<endl;
     if (rr<rmax) {
       if (debug()) cerr << "DEBUG: Photon::hit() calling Astrobj::Impact\n";
-      hitt |= object_ -> Impact(this, ind, data);
+      //hitt |= object_ -> Impact(this, ind, data);
+      hitt = object_ -> Impact(this, ind, data);
+      if (hitt && object_->getFlag_radtransf())
+	state -> set_delta(dir*object_->giveDelta(coord));
       if (hitt && !data) stopcond=1;
       if (debug()) cerr << "DEBUG: Photon::hit(): transmission_freqobs_="
 			<< transmission_freqobs_ << endl;

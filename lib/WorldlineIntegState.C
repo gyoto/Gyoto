@@ -124,6 +124,10 @@ double WorldlineIntegState::get_delta() {
   return delta_;
 }
 
+void WorldlineIntegState::set_delta(double delta) {
+  delta_ = delta;
+}
+
 void WorldlineIntegState::setCoord(double coord[8]){
   for (int indice=0;indice<8;indice++){
     coord_[indice] = coord[indice];
