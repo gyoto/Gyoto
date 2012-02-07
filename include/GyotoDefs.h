@@ -158,8 +158,12 @@ namespace Gyoto {
 
 /// \brief Celerity of light (m/s)
 #define GYOTO_C          299792458.
+/// \brief Celerity of light (cm/s)
+#define GYOTO_C_CGS 2.99792458e10
 /// \Brief Gravitational constant (SI = m^3 * kg^-1 * s-2)
 #define GYOTO_G 6.67428e-11
+/// \Brief Gravitational constant (cgs: cm^3 * g^-1 * s-2)
+#define GYOTO_G_CGS 6.67428e-8
 /// \brief G/c^2=6.67428e-11/299792458.^2
 #define GYOTO_G_OVER_C_SQUARE 7.426138e-28
 /// \brief Planck's constant (h) in SI (J.s=kg.m^2/s) 
@@ -169,13 +173,39 @@ namespace Gyoto {
 #define GYOTO_PLANCK_OVER_C_SQUARE 7.372496e-51
 /// \brief Boltzmann's constant (k) in SI (J/K)
 #define GYOTO_BOLTZMANN 1.3806504e-23
+/// \brief Boltzmann's constant (k) in cgs (erg/K)
+#define GYOTO_BOLTZMANN_CGS 1.3806504e-16
 /// \brief h/k (K.s = K/Hz)
 #define GYOTO_PLANCK_OVER_BOLTZMANN 4.7992373e-11
 /// \brief ideal gas constant R in SI
 #define GYOTO_GAS_CST 8.3144621
+/// \brief ideal gas constant R in erg/(K mol)
+#define GYOTO_GAS_CST_CGS 8.3144621e7
+/// \brief Avogadro constant
+#define GYOTO_AVOGADRO 6.0221413e23
+/// \brief Thomson cross-section in cgs
+#define GYOTO_THOMSON_CGS 6.6524e-25
+/// \brief Fine structure constant (=1/137)
+#define GYOTO_ALPHA_F 0.00729927
+/// \brief proton mass in cgs
+#define GYOTO_PROTON_MASS_CGS 1.67262158e-24
+/// \brief electron mass in cgs
+#define GYOTO_ELECTRON_MASS_CGS 9.10938188e-28
+/// \brief electron classical radius in cgs
+#define GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS 2.8179e-13
+/// \brief elementary charge in cgs (erg^{1/2} cm^{1/2})
+#define GYOTO_ELEMENTARY_CHARGE_CGS 4.80320427e-10
+/// \brief Euler-Mascheroni constant
+#define GYOTO_EULER_MASCHERONI  0.577216
+/// \brief atomic mass unit in cgs
+#define GYOTO_ATOMIC_MASS_UNIT_CGS 1.660537781e-24
+
+
 
 /// \brief Sun mass (kg)
 #define GYOTO_SUN_MASS    1.98843e30
+/// \brief Sun mass (g)
+#define GYOTO_SUN_MASS_CGS    1.98843e33
 /// \brief Sun radius (m)
 #define GYOTO_SUN_RADIUS     6.955e8
 /// \brief Kiloparsec (m)

@@ -310,9 +310,6 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
   int getFlag_radtransf() const ;
   ///< Query whether object is optically thin.
 
-  double giveDelta(double coord[8]);
-  ///< Returns requested integration step inside optically thin object
-
   /**
    * Return a Gyoto::Quantity_t suitable as input to
    * Gyoto::Scenery::setRequestedQuantities() to set de default

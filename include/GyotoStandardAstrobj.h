@@ -151,6 +151,17 @@ class Gyoto::Astrobj::Standard :
    */
   virtual void getVelocity(double const pos[4], double vel[4]) = 0 ;
 
+  /**
+   * Used by Standard::Impact().
+   *
+   * Gives the requested integration step delta_t (in coordinate time t)
+   * between two neighbooring
+   * points along a portion of geodesic inside an astrobj
+   *
+   * \param coord input coordinate at which delta_t is given
+   */
+  virtual double giveDelta(double coord[8]);
+
   virtual int setParameter(std::string name, std::string content) ;
 
 

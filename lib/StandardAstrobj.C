@@ -125,10 +125,18 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
   ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
 		 cph+4, cph+5, cph+6, cph+7);
 
-  double coh[8] = { t2 , cph[1], cph[2], cph[3] };
-  getVelocity(coh, coh+4);
-
-  processHitQuantities(ph, cph, coh, t2-t1, data);
+  double delta=giveDelta(cph);
+  double coh[8];
+  while (cph[0]>t1){
+    ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
+		   cph+4, cph+5, cph+6, cph+7);
+    for (int ii=0;ii<4;ii++) 
+      coh[ii] = cph[ii];
+    
+    getVelocity(coh, coh+4);
+    processHitQuantities(ph, cph, coh, delta, data);
+    cph[0]-=delta;
+    }
 
   return 1;
 
@@ -136,6 +144,8 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 
 void Standard::setSafetyValue(double val) {safety_value_ = val; }
 double Standard::getSafetyValue() const { return safety_value_; }
+
+double Standard::giveDelta(double *) {return 0.05;}
 
 int Standard::setParameter(string name, string content)  {
   if (name == "SafetyValue") safety_value_ = atof(content.c_str());
