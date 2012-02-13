@@ -146,27 +146,14 @@ double PatternDiskBB::emission(double nu, double dsem,
 	throwError("PatternDiskBB::emission: bad COORDKIND");
       }
 
-      double rho_pl = PLRho_*pow(rcur/rPL_,PLSlope_);
-      //cout << "rhormax, rho= " << PLRho_ << " " << rho_pl << endl;
-      double kappa=3e10;//pressure coef: p = kappa*rho^gamma, rho=mass density
-      //Its numerical value is chosen so that Tmax~1e7K (1keV) in the disk
-      double M_unit_gyoto=gg_->getMass();//Central BH mass in SI, 
-                                         //this is Gyoto mass unit
-      double L_gyoto_unit=GYOTO_G_OVER_C_SQUARE*M_unit_gyoto;//this is Gyoto 
-                                                             //unit length
-      double rho_si_tmp=rho_pl*M_unit_gyoto/(L_gyoto_unit*L_gyoto_unit*L_gyoto_unit);
-      //The above quantity is proportional to rho_si, but Heloise
-      //values of rho are given up to a prop. factor which I take to be so that
-      //rho at ISCO = typical density near ISCO for 10Msol BH = 1e-2g/cm3=10kg/m3 (cf Peggy thesis)
-      double rho_isco_si=10.;//in kg/m3
-      double rhormax_si=rho_isco_si*pow(rPL_/risco,-3./2.);//SI value of rho(rdiskmax_), assuming a r^-1.5 decrease of rho
-      double rhormax_si_tmp=PLRho_*M_unit_gyoto/(L_gyoto_unit*L_gyoto_unit*L_gyoto_unit);//same SI value without taking into account any proportionality factor
-      double prop_fact=rhormax_si/rhormax_si_tmp;
-      double rho_si=rho_si_tmp*prop_fact;
+      double rho_si = PLRho_*pow(rcur/risco,PLSlope_);
       //Assuming: pressure = kappa*(mass density)^gamma, gamma=5/3 (eq of state)
       // and: pressure = (mass density)*R/Mm*T (Mm = molar mass)
+
       double gamma=5./3.;
-      double Mm=6e-4;//disk molar mass in kg/mol (Peggy, private communication ;-))
+      double Mm=6e-4;//disk molar mass in kg/mol (Peggy, private com. ;-))
+      double kappa=3e10;//pressure coef: p = kappa*rho^gamma, rho=mass density
+
       double cs2=kappa*gamma*pow(rho_si,gamma-1.);
       TT=Mm/GYOTO_GAS_CST*cs2/gamma;//Temperature in SI
       //cout << "TT after rl= " << TT << endl;
