@@ -117,6 +117,12 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   double dt=0.;
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
+
+  if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+    //Allows theta and phi to be in the correct range
+    checkPhiTheta(coord1);
+    checkPhiTheta(coord2);
+  }
   
 
   if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL &&
