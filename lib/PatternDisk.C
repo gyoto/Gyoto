@@ -127,6 +127,8 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nr_=naxes[2])))
       throwError( "dimensions can't be null");
     dr_ = (rout_ - rin_) / nr_;
+    if (repeat_phi_==0.)
+      throwError("In PatternDisk::copyIntensity: repeat_phi is 0!");
     dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
@@ -200,7 +202,8 @@ double const * const PatternDisk::getGridRadius() const { return radius_; }
 
 void PatternDisk::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  dphi_=2.*M_PI/double(nphi_*repeat_phi_);
+  if (nphi_*repeat_phi_>0) 
+    dphi_=2.*M_PI/double(nphi_*repeat_phi_);
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
@@ -295,6 +298,8 @@ void PatternDisk::fitsRead(string filename) {
 
   // update repeat_phi_, nphi_, dphi_
   nphi_ = naxes[1];
+  if (nphi_==0 || repeat_phi_==0)
+    throwError("In PatternDisk::fitsRead: nphi or repeat_phi is 0!");
   dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
 
   // update rin_, rout_, nr_, dr_
@@ -391,6 +396,8 @@ void PatternDisk::fitsRead(string filename) {
     if (!rout_set) rout_=radius_[nr_-1];
   }
 
+   if (nr_ == 0.)
+     throwError("In PatternDisk::fitsRead: nr_ should not be 0 here!");
   dr_ = (rout_-rin_) / nr_;
 
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
@@ -512,6 +519,8 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
 
   phi -= Omega_*(t-t0_);
   while (phi<0) phi += 2.*M_PI;
+  if (dphi_==0.)
+    throwError("In PatternDisk::getIndices: dphi_ should not be 0 here!");
   i[1] = size_t(phi/dphi_) % nphi_;
 
   if (radius_) {
@@ -525,6 +534,8 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   } else {
     GYOTO_DEBUG <<"radius_ == NULL, dr_==" << dr_ << endl;
     // radius_ is not set: assume linear repartition
+    if (dr_==0.)
+      throwError("In PatternDisk::getIndices: dr_ should not be 0 here!");
     i[2] = size_t((r-rin_)/dr_);
     if (i[2] >= nr_) i[2] = nr_ - 1;
   }

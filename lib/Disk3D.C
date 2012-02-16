@@ -112,6 +112,8 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
       throwError( "dimensions can't be null");
     dr_ = (rout_ - rin_) / double(nr_);
     dz_ = (zmax_ - zmin_) / double(nz_);
+    if (repeat_phi_==0.)
+      throwError("In Disk3D::CopyEmissquant: repeat_phi is 0!");
     dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
     GYOTO_DEBUG << "allocate emissquant_;" << endl;
     emissquant_ = new double[nel];
@@ -147,7 +149,8 @@ double const * const Disk3D::getVelocity() const { return velocity_; }
 
 void Disk3D::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  dphi_=2.*M_PI/double(nphi_*repeat_phi_);
+  if (nphi_*repeat_phi_>0.)
+    dphi_=2.*M_PI/double(nphi_*repeat_phi_);
 }
 size_t Disk3D::repeatPhi() const { return repeat_phi_; }
 
@@ -266,6 +269,8 @@ void Disk3D::fitsRead(string filename) {
   if (status) throwCfitsioError(status) ;
   if (CRPIX1 != 1) nu0_ -= dnu_*(CRPIX1 - 1.);
 
+  if (naxes[1]*naxes[2]*naxes[3]==0.)
+    throwError("In Disk3D::fitsRead: dimensions can't be null!");
   // update nphi_, dphi_
   nphi_ = naxes[1];
   dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
@@ -449,8 +454,11 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     throwError("Disk3D::getIndices(): unknown COORDKIND");
   }
 
+  if (dphi_*dz_*dr_==0.)
+    throwError("In Disk3D::getIndices: dimensions can't be null!");
   //Phi indice
   while (phi<0) phi += 2.*M_PI;
+  
   i[1] = size_t(phi/dphi_) % nphi_;
 
   //z indice
