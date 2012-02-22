@@ -46,13 +46,14 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   static char const * knames[]={
     "fitsread", "repeatphi", "nu0", "dnu",
     "rin", "rout", "zmin", "zmax",
+    "phimin", "phimax",
     "copyemissquant", "copyvelocity",
     "fitswrite",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
+  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+14];
+  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+13];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -152,6 +153,28 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
       ypush_double((*ao)->zmax());
     } else
       (*ao)->zmax(ygets_d(iarg)) ;
+  }
+
+  /* PHIMIN */
+  if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "phimin=\n";
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_double((*ao)->phimin());
+    } else
+      (*ao)->phimin(ygets_d(iarg)) ;
+  }
+
+  /* PHIMAX */
+  if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "phimax=\n";
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_double((*ao)->phimax());
+    } else
+      (*ao)->phimax(ygets_d(iarg)) ;
   }
 
   /* EMISSQUANT */

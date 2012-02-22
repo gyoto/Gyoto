@@ -283,12 +283,16 @@ int Photon::hit(Astrobj::Properties *data) {
   /*
     3- Integration loop: integrate the geodesic until stopcond is 1.
     Possible stopping conditions: 
-    - transmission_freqobs_ low
-    - t < tlim_ (if dir=-1) 
-    - t does not evolve
-    - metric tells it's time to stop
-    - count>count_max (should never be used, just to prevent infinite
-    integration in case of a bug)
+    - transmission_freqobs_ low [see transmission() function 
+       in astrobjs, which defaults to 0 (optically thick) 
+       or 1 (optically thin) in Astrobj.C]
+    - t < tlim_ (if dir=-1), [NB: tlim_ defaults to 0 in Worldline.C]
+    - photon is at r>rmax (defined for each object) and goes even further
+    - metric tells it's time to stop (eg horizon crossing)
+    - t does not evolve [to investigate, metric should have stopped
+       integration before, see above]
+    - count>count_max [should never be used, just to prevent infinite
+    integration in case of a bug]
    */
 
   while (!stopcond) {
@@ -365,8 +369,9 @@ int Photon::hit(Astrobj::Properties *data) {
 			<< transmission_freqobs_ << endl;
       if ( transmission_freqobs_ < 1e-6 ) {
 	stopcond=1;
-	if (debug()) cerr << "DEBUG: Photon::hit(): stopping because we "
-			  << "are optically thick\n";
+	if (debug()) 
+	  cerr << "DEBUG: Photon::hit(): stopping because we "
+	       << "are optically thick\n";
       }
     } else {
       if ( rr > rr_prev ) {
@@ -391,6 +396,9 @@ int Photon::hit(Astrobj::Properties *data) {
     switch (dir) {
     case 1:
       if (coord[0]>tlim_) {
+	if (debug()) 
+	  cerr << "DEBUG: Photon::hit(): stopping because time "
+	       << "goes beyond time limit\n";
 	stopcond=1;
       }
       if ((!stopcond) && (ind==x_size_)) {
@@ -400,6 +408,9 @@ int Photon::hit(Astrobj::Properties *data) {
       break;
     default:
       if (coord[0]<tlim_) {
+	if (debug()) 
+	  cerr << "DEBUG: Photon::hit(): stopping because time "
+	       << "goes beyond time limit\n";
 	stopcond=1;
       }
       if ((!stopcond) && (imin_==0)) {

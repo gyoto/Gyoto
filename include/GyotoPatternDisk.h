@@ -90,7 +90,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   size_t nnu_;
 
   double dphi_;
+  double phimin_;
   size_t nphi_;
+  double phimax_;
 
   /**
    * XML elment: &lt;RepeatPhi&gt;.
@@ -163,6 +165,12 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 
   virtual void dnu(double dfreq);
   virtual double dnu() const;
+
+  void phimin(double phimin);
+  double phimin() const;
+
+  void phimax(double phimax);
+  double phimax() const;
 
   virtual int setParameter(std::string name, std::string content);
 

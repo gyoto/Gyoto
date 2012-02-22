@@ -12,7 +12,8 @@ STDPLUG_SRC = KerrBL.C KerrKS.C \
 	Star.C FixedStar.C Torus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
-	StandardAstrobj.C PageThorneDisk.C
+	StandardAstrobj.C PageThorneDisk.C \
+	ThinDiskPL.C
 
 ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
 STDPLUG_SRC += 	PatternDisk.C PatternDiskBB.C DynamicalDisk.C Disk3D.C \

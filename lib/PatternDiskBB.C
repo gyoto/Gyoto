@@ -130,7 +130,6 @@ double PatternDiskBB::emission(double nu, double dsem,
     if (rcur<rPL_){
       // -> If r<rPL_ just read temperature value in emission_
       TT = emission[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
-      //cout << "TT before rl= " << TT << endl;
       spectrumBB_->setTemperature(TT);
       Iem=(*spectrumBB_)(nu);
     }else if (PLDisk_){

@@ -234,8 +234,9 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	dlambda(nuobs)*nu_em = dlambda(freqObs)*freqObs*ggredm1
 
 	Then, j_nu_em is computed by the emission() function of the
-	Astrobj [NB: so far, with rad. transfer emission() computes
-	j_nu, without rad. transfer it computes I_nu] Finally:
+	Astrobj [NB: with rad. transfer emission() computes
+	j_nu*dsem, without rad. transfer it computes I_nu, thus
+	the result is always homogenous to intensity] Finally:
 	I_nu_obs = I_nu_em*(nu_obs/nu_em)^3
       */
 

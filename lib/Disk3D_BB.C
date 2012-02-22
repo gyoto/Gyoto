@@ -82,7 +82,6 @@ void Disk3D_BB::copyQuantities(int iq) {
 }
 
 void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
-
   double rcur=pos[1];
   double risco;
   switch (gg_->getCoordKind()) {
@@ -105,7 +104,7 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
       tcomp+=dt_;
       ifits++;
     }
-    
+
     if (ifits==1 || ifits==nb_times_){
       copyQuantities(ifits);
       Disk3D::getVelocity(pos,vel);
@@ -148,7 +147,6 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
-  //cout << "TT before rl= " << TT << endl;
   spectrumBB_->setTemperature(TT);
   double Iem=(*spectrumBB_)(nu);
 
@@ -287,7 +285,7 @@ int Disk3D_BB::setParameter(std::string name, std::string content) {
 	  || nphi!=nphib
 	  || zmin()!=zminb || zmax()!=zmaxb || nz!=nzb
 	  || rin()!=rinb || rout()!=routb || nr!=nrb
-	  ) throwError("Disk3D_BB::setParameter Grid is not contant!");
+	  ) throwError("Disk3D_BB::setParameter Grid is not constant!");
     }
       
   }

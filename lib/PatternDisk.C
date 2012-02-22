@@ -46,7 +46,8 @@ PatternDisk::PatternDisk() :
   emission_(NULL), opacity_(NULL), velocity_(NULL), radius_(NULL),
   Omega_(0.), t0_(0.),
   dnu_(1.), nu0_(0), nnu_(0),
-  dphi_(0.), nphi_(0), repeat_phi_(1),
+  dphi_(0.), phimin_(-DBL_MAX), 
+  nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dr_(0.), nr_(0)
 {
   GYOTO_DEBUG << "PatternDisk Construction" << endl;
@@ -57,7 +58,8 @@ PatternDisk::PatternDisk(const PatternDisk& o) :
   emission_(NULL), opacity_(NULL), velocity_(NULL), radius_(NULL),
   Omega_(o.Omega_), t0_(o.t0_),
   dnu_(o.dnu_), nu0_(o.nu0_), nnu_(o.nnu_),
-  dphi_(o.dphi_), nphi_(o.nphi_), repeat_phi_(o.repeat_phi_),
+  dphi_(o.dphi_), phimin_(o.phimin_),
+  nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
   dr_(o.dr_), nr_(o.nr_)
 {
   GYOTO_DEBUG << "PatternDisk Copy" << endl;
@@ -126,10 +128,12 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nr_=naxes[2])))
       throwError( "dimensions can't be null");
-    dr_ = (rout_ - rin_) / nr_;
+    if (nr_==1 || nphi_==1)
+      throwError("In PatternDisk::copyIntensity: dimensions should be >1");
+    dr_ = (rout_ - rin_) / double(nr_-1.);
     if (repeat_phi_==0.)
       throwError("In PatternDisk::copyIntensity: repeat_phi is 0!");
-    dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
+    dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emission_" << endl;
@@ -202,8 +206,8 @@ double const * const PatternDisk::getGridRadius() const { return radius_; }
 
 void PatternDisk::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  if (nphi_*repeat_phi_>0) 
-    dphi_=2.*M_PI/double(nphi_*repeat_phi_);
+  if ((nphi_-1.)*repeat_phi_>0) 
+    dphi_=(phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
@@ -212,6 +216,18 @@ double PatternDisk::nu0() const { return nu0_; }
 
 void PatternDisk::dnu(double dfreq) { dnu_ = dfreq; }
 double PatternDisk::dnu() const { return dnu_; }
+
+void PatternDisk::phimin(double phimin) {
+  phimin_ = phimin;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+}
+double PatternDisk::phimin() const {return phimin_;}
+
+void PatternDisk::phimax(double phimax) {
+  phimax_ = phimax;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+}
+double PatternDisk::phimax() const {return phimax_;}
 
 void PatternDisk::fitsRead(string filename) {
   GYOTO_MSG << "PatternDisk reading FITS file: " << filename << endl;
@@ -276,6 +292,31 @@ void PatternDisk::fitsRead(string filename) {
     rout_set=1;
   }
 
+  GYOTO_DEBUG << "PatternDisk::fitsRead(): read Phimin_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO PatternDisk Phimin", &tmpd,
+		NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) {
+      status = 0; // not fatal
+      phimin_=0.; //phimin defaults to 0
+    }
+    else throwCfitsioError(status) ;
+  } else {
+    phimin_ = tmpd; // Phimin found
+  }
+  GYOTO_DEBUG << "PatternDisk::fitsRead(): read Phimax_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO PatternDisk Phimax", &tmpd,
+		NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) {
+      status = 0; // not fatal
+      phimax_=2.*M_PI; //phimin defaults to 0
+    }
+    else throwCfitsioError(status) ;
+  } else {
+    phimax_ = tmpd; // Phimax found
+  }
+
   ////// FIND MANDATORY EMISSION HDU, READ KWDS & DATA ///////
   GYOTO_DEBUG << "PatternDisk::readFile(): search emission HDU" << endl;
   if (fits_movnam_hdu(fptr, ANY_HDU,
@@ -298,9 +339,9 @@ void PatternDisk::fitsRead(string filename) {
 
   // update repeat_phi_, nphi_, dphi_
   nphi_ = naxes[1];
-  if (nphi_==0 || repeat_phi_==0)
-    throwError("In PatternDisk::fitsRead: nphi or repeat_phi is 0!");
-  dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
+  if (nphi_==1 || repeat_phi_==0)
+    throwError("In PatternDisk::fitsRead: nphi is 1 or repeat_phi is 0!");
+  dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
 
   // update rin_, rout_, nr_, dr_
   nr_ = naxes[2];
@@ -396,9 +437,9 @@ void PatternDisk::fitsRead(string filename) {
     if (!rout_set) rout_=radius_[nr_-1];
   }
 
-   if (nr_ == 0.)
+   if (nr_ == 1.)
      throwError("In PatternDisk::fitsRead: nr_ should not be 0 here!");
-  dr_ = (rout_-rin_) / nr_;
+   dr_ = (rout_-rin_) / double(nr_-1.);
 
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
@@ -445,6 +486,16 @@ void PatternDisk::fitsWrite(string filename) {
     fits_write_key(fptr, TDOUBLE,
 		   const_cast<char*>("GYOTO ThinDisk OuterRadius"),
 		   &rout_, CNULL, &status);
+
+  if (phimin_ > -DBL_MAX)
+    fits_write_key(fptr, TDOUBLE,
+		   const_cast<char*>("GYOTO PatternDisk Phimin"),
+		   &phimin_, CNULL, &status);
+
+  if (phimax_ < DBL_MAX)
+    fits_write_key(fptr, TDOUBLE,
+		   const_cast<char*>("GYOTO PatternDisk Phimax"),
+		   &phimax_, CNULL, &status);
 
   ////// SAVE EMISSION IN PRIMARY HDU ///////
   GYOTO_DEBUG << "saving emission_\n";
@@ -509,10 +560,9 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   GYOTO_DEBUG << "dnu_="<<dnu_<<", dphi_="<<dphi_<<", dr_="<<dr_<<endl;
   if (nu <= nu0_) i[0] = 0;
   else {
-    i[0] = size_t((nu-nu0_)/dnu_);
+    i[0] = size_t(floor((nu-nu0_)/dnu_+0.5));
     if (i[0] >= nnu_) i[0] = nnu_-1;
   }
-
   double r = projectedRadius(co);
   double phi = sphericalPhi(co);
   double t = co[0];
@@ -521,7 +571,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   while (phi<0) phi += 2.*M_PI;
   if (dphi_==0.)
     throwError("In PatternDisk::getIndices: dphi_ should not be 0 here!");
-  i[1] = size_t(phi/dphi_) % nphi_;
+  i[1] = size_t(floor((phi-phimin_)/dphi_+0.5)) % nphi_;
 
   if (radius_) {
     GYOTO_DEBUG <<"radius_ != NULL" << endl;
@@ -536,7 +586,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
     // radius_ is not set: assume linear repartition
     if (dr_==0.)
       throwError("In PatternDisk::getIndices: dr_ should not be 0 here!");
-    i[2] = size_t((r-rin_)/dr_);
+    i[2] = size_t(floor((r-rin_)/dr_+0.5));
     if (i[2] >= nr_) i[2] = nr_ - 1;
   }
 
@@ -604,12 +654,12 @@ double PatternDisk::transmission(double nu, double dsem, double*co) const {
 
 void PatternDisk::setInnerRadius(double rin) {
   ThinDisk::setInnerRadius(rin);
-  if (nr_ && !radius_) dr_ = (rout_-rin_) / nr_;
+  if (nr_>1 && !radius_) dr_ = (rout_-rin_) / double(nr_-1);
 }
 
 void PatternDisk::setOuterRadius(double rout) {
   ThinDisk::setOuterRadius(rout);
-  if (nr_ && !radius_) dr_ = (rout_-rin_) / nr_;
+  if (nr_>1 && !radius_) dr_ = (rout_-rin_) / double(nr_-1);
 }
 
 void PatternDisk::setPatternVelocity(double omega) { Omega_ = omega; }

@@ -36,6 +36,7 @@ pd = gyoto_Disk3D(copyemissquant=emissquant,
                   copyvelocity=velocity,
                   rin=3, rout=28,
                   zmin=1., zmax=10.,
+                  phimin=0., phimax=2.*pi,
                   repeatphi=8,
                   metric=metric);
 write, format="%s\n", " done.";

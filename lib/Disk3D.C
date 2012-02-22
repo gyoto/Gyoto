@@ -45,7 +45,7 @@ Disk3D::Disk3D() :
   Generic("Disk3D"), filename_(""),
   emissquant_(NULL), velocity_(NULL),
   dnu_(1.), nu0_(0), nnu_(0),
-  dphi_(0.), nphi_(0), repeat_phi_(1),
+  dphi_(0.), phimin_(-DBL_MAX), nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dz_(0.), zmin_(-DBL_MAX), nz_(0), zmax_(DBL_MAX),
   dr_(0.), rin_(-DBL_MAX), nr_(0), rout_(DBL_MAX)
 {
@@ -56,7 +56,8 @@ Disk3D::Disk3D(const Disk3D& o) :
   Generic(o), filename_(o.filename_),
   emissquant_(NULL), velocity_(NULL),
   dnu_(o.dnu_), nu0_(o.nu0_), nnu_(o.nnu_),
-  dphi_(o.dphi_), nphi_(o.nphi_), repeat_phi_(o.repeat_phi_),
+  dphi_(o.dphi_), phimin_(o.phimin_),
+  nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
   dz_(o.dz_), zmin_(o.zmin_), nz_(o.nz_), zmax_(o.zmax_),
   dr_(o.dr_), rin_(o.rin_), nr_(o.nr_), rout_(o.rout_)
 {
@@ -110,11 +111,14 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nz_=naxes[2]) * (nr_=naxes[3])))
       throwError( "dimensions can't be null");
-    dr_ = (rout_ - rin_) / double(nr_);
-    dz_ = (zmax_ - zmin_) / double(nz_);
+    if (nr_==1 || nz_==1 || nphi_==1)
+      throwError("In Disk3D::CopyEmissquant: dimensions should be >1");
+    dr_ = (rout_ - rin_) / double(nr_-1.);
+    dz_ = (zmax_ - zmin_) / double(nz_-1.);
     if (repeat_phi_==0.)
       throwError("In Disk3D::CopyEmissquant: repeat_phi is 0!");
-    dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
+    //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
+    dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
     GYOTO_DEBUG << "allocate emissquant_;" << endl;
     emissquant_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emissquant_" << endl;
@@ -149,8 +153,10 @@ double const * const Disk3D::getVelocity() const { return velocity_; }
 
 void Disk3D::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  if (nphi_*repeat_phi_>0.)
-    dphi_=2.*M_PI/double(nphi_*repeat_phi_);
+  if ((nphi_-1.)*repeat_phi_>0.)
+    dphi_=(phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+    //dphi_=2.*M_PI/double((nphi_-1.)*repeat_phi_);
+    
 }
 size_t Disk3D::repeatPhi() const { return repeat_phi_; }
 
@@ -162,27 +168,39 @@ double Disk3D::dnu() const { return dnu_; }
 
 void Disk3D::rin(double rrin) {
   rin_ = rrin;
-  if (nr_) dr_ = (rout_-rin_) / double(nr_);
+  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1.);
 }
 double Disk3D::rin() const {return rin_;}
 
 void Disk3D::rout(double rrout) {
   rout_ = rrout;
-  if (nr_) dr_ = (rout_-rin_) / double(nr_);
+  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1.);
 }
 double Disk3D::rout() const {return rout_;}
 
 void Disk3D::zmin(double zzmin) {
   zmin_ = zzmin;
-  if (nz_) dz_ = (zmax_-zmin_) / double(nz_);
+  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1.);
 }
 double Disk3D::zmin() const {return zmin_;}
 
 void Disk3D::zmax(double zzmax) {
   zmax_ = zzmax;
-  if (nz_) dz_ = (zmax_-zmin_) / double(nz_);
+  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1.);
 }
 double Disk3D::zmax() const {return zmax_;}
+
+void Disk3D::phimin(double phimin) {
+  phimin_ = phimin;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+}
+double Disk3D::phimin() const {return phimin_;}
+
+void Disk3D::phimax(double phimax) {
+  phimax_ = phimax;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+}
+double Disk3D::phimax() const {return phimax_;}
 
 
 void Disk3D::fitsRead(string filename) {
@@ -200,12 +218,12 @@ void Disk3D::fitsRead(string filename) {
   long      inc   []  = {1,1,1,1};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
-  GYOTO_DEBUG << "Disk3D::readFile(): opening file" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): opening file" << endl;
   if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status) ;
 
   ////// READ FITS KEYWORDS COMMON TO ALL TABLES ///////
 
-  GYOTO_DEBUG << "Disk3D::readFile(): read RepeatPhi_" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read RepeatPhi_" << endl;
   fits_read_key(fptr, TLONG, "GYOTO Disk3D RepeatPhi", &tmpl,
 		NULL, &status);
   if (status) {
@@ -213,7 +231,7 @@ void Disk3D::fitsRead(string filename) {
     else throwCfitsioError(status) ;
   } else repeat_phi_ = size_t(tmpl); // RepeatPhi found
 
-  GYOTO_DEBUG << "Disk3D::readFile(): read Rin_" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Rin_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Rin", &tmpd,
 		NULL, &status);
   if (status) {
@@ -222,7 +240,7 @@ void Disk3D::fitsRead(string filename) {
   } else {
     rin_ = tmpd; // InnerRadius found
   }
-  GYOTO_DEBUG << "Disk3D::readFile(): read Rout_" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Rout_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Rout", &tmpd,
 		NULL, &status);
   if (status) {
@@ -232,7 +250,7 @@ void Disk3D::fitsRead(string filename) {
     rout_ = tmpd; // OuterRadius found
   }
 
-  GYOTO_DEBUG << "Disk3D::readFile(): read Zmin_" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Zmin_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Zmin", &tmpd,
 		NULL, &status);
   if (status) {
@@ -240,7 +258,7 @@ void Disk3D::fitsRead(string filename) {
   } else {
     zmin_ = tmpd; // Zmin found
   }
-  GYOTO_DEBUG << "Disk3D::readFile(): read Zmax_" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Zmax_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Zmax", &tmpd,
 		NULL, &status);
   if (status) {
@@ -249,19 +267,36 @@ void Disk3D::fitsRead(string filename) {
     zmax_ = tmpd; // Zmax found
   }
 
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Phimin_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Phimin", &tmpd,
+		NULL, &status);
+  if (status) {
+    throwCfitsioError(status) ;
+  } else {
+    phimin_ = tmpd; // Phimin found
+  }
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read Phimax_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO Disk3D Phimax", &tmpd,
+		NULL, &status);
+  if (status) {
+    throwCfitsioError(status) ;
+  } else {
+    phimax_ = tmpd; // Phimax found
+  }
+
   ////// FIND MANDATORY EMISSION HDU, READ KWDS & DATA ///////
-  GYOTO_DEBUG << "Disk3D::readFile(): search emissquant HDU" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): search emissquant HDU" << endl;
   if (fits_movnam_hdu(fptr, ANY_HDU,
 		      const_cast<char*>("GYOTO Disk3D emissquant"),
 		      0, &status))
     throwCfitsioError(status) ;
-  GYOTO_DEBUG << "Disk3D::readFile(): get image size" << endl;
+  GYOTO_DEBUG << "Disk3D::fitsRead(): get image size" << endl;
   if (fits_get_img_size(fptr, 4, naxes, &status)) throwCfitsioError(status) ;
 
   //update nu0_, nnu_, dnu_;
   nnu_ = naxes[0]; 
   double CRPIX1;
-  GYOTO_DEBUG << "Disk3D::readFile(): read CRPIX1, CRVAL1, CDELT1"
+  GYOTO_DEBUG << "Disk3D::fitsRead(): read CRPIX1, CRVAL1, CDELT1"
 		    << endl;
   fits_read_key(fptr, TDOUBLE, "CRVAL1", &nu0_, NULL, &status);
   fits_read_key(fptr, TDOUBLE, "CDELT1", &dnu_, NULL, &status);
@@ -273,18 +308,23 @@ void Disk3D::fitsRead(string filename) {
     throwError("In Disk3D::fitsRead: dimensions can't be null!");
   // update nphi_, dphi_
   nphi_ = naxes[1];
-  dphi_ = 2.*M_PI/double(nphi_*repeat_phi_);
+  if (nphi_==1)
+    throwError("In Disk3D::fitsRead: dimensions should be >1");
+  //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
+  dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
 
   // update nz_, nr_, dz_, dr_
   nz_ = naxes[2];
   nr_ = naxes[3];
-  dr_ = (rout_ - rin_) / double(nr_);
-  dz_ = (zmax_ - zmin_) / double(nz_);
+  if (nr_==1 || nz_==1)
+    throwError("In Disk3D::fitsRead: dimensions should be >1");
+  dr_ = (rout_ - rin_) / double(nr_-1.);
+  dz_ = (zmax_ - zmin_) / double(nz_-1.);
 
   if (emissquant_) { delete [] emissquant_; emissquant_ = NULL; }
   emissquant_ = new double[nnu_ * nphi_ * nz_ * nr_];
   if (debug())
-    cerr << "Disk3D::readFile(): read emission: "
+    cerr << "Disk3D::fitsRead(): read emission: "
 	 << "nnu_=" << nnu_ << ", nphi_="<<nphi_ << ", nz_="<<nz_ << ", nr_="<<nr_ << "...";
   if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
 		       0, emissquant_,&anynul,&status)) {
@@ -308,7 +348,7 @@ void Disk3D::fitsRead(string filename) {
 	   || size_t(naxes[1]) != nphi_
 	   || size_t(naxes[2]) != nz_
 	   || size_t(naxes[3]) != nr_)
-      throwError("Disk3D::readFile(): velocity array not conformable");
+      throwError("Disk3D::fitsRead(): velocity array not conformable");
     if (velocity_) { delete [] velocity_; velocity_ = NULL; }
     velocity_ = new double[3 * nphi_ * nz_ * nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -351,7 +391,7 @@ void Disk3D::fitsWrite(string filename) {
 		   const_cast<char*>("GYOTO Disk3D Rin"),
 		   &rin_, CNULL, &status);
   }else{
-    cout << "Disk3D::fitsRead Error rin_ not set!" << endl;
+    cout << "Disk3D::fitsWrite Error rin_ not set!" << endl;
     status=1;
     throwCfitsioError(status)
   }
@@ -361,7 +401,7 @@ void Disk3D::fitsWrite(string filename) {
 		   const_cast<char*>("GYOTO Disk3D Rout"),
 		   &rout_, CNULL, &status);
   }else{
-    cout << "Disk3D::fitsRead Error rout_ not set!" << endl;
+    cout << "Disk3D::fitsWrite Error rout_ not set!" << endl;
     status=1;
     throwCfitsioError(status)
   }
@@ -371,7 +411,7 @@ void Disk3D::fitsWrite(string filename) {
 		   const_cast<char*>("GYOTO Disk3D Zmin"),
 		   &zmin_, CNULL, &status);
   }else{
-    cout << "Disk3D::fitsRead Error zmin_ not set!" << endl;
+    cout << "Disk3D::fitsWrite Error zmin_ not set!" << endl;
     status=1;
     throwCfitsioError(status)
   }
@@ -381,7 +421,27 @@ void Disk3D::fitsWrite(string filename) {
 		   const_cast<char*>("GYOTO Disk3D Zmax"),
 		   &zmax_, CNULL, &status);
   }else{
-    cout << "Disk3D::fitsRead Error zmax_ not set!" << endl;
+    cout << "Disk3D::fitsWrite Error zmax_ not set!" << endl;
+    status=1;
+    throwCfitsioError(status)    
+  }
+
+  if (phimin_ > -DBL_MAX){
+    fits_write_key(fptr, TDOUBLE,
+		   const_cast<char*>("GYOTO Disk3D Phimin"),
+		   &phimin_, CNULL, &status);
+  }else{
+    cout << "Disk3D::fitsWrite Error Phimin_ not set!" << endl;
+    status=1;
+    throwCfitsioError(status)
+  }
+
+  if (phimax_ < DBL_MAX){
+    fits_write_key(fptr, TDOUBLE,
+		   const_cast<char*>("GYOTO Disk3D Phimax"),
+		   &phimax_, CNULL, &status);
+  }else{
+    cout << "Disk3D::fitsWrite Error Phimax_ not set!" << endl;
     status=1;
     throwCfitsioError(status)    
   }
@@ -428,7 +488,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
 	      <<", dz_="<<dz_<<", dr_="<<dr_<<endl;
   if (nu <= nu0_) i[0] = 0;
   else {
-    i[0] = size_t((nu-nu0_)/dnu_);
+    i[0] = size_t(floor((nu-nu0_)/dnu_+0.5));
     if (i[0] >= nnu_) i[0] = nnu_-1;
   }
   
@@ -458,17 +518,18 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     throwError("In Disk3D::getIndices: dimensions can't be null!");
   //Phi indice
   while (phi<0) phi += 2.*M_PI;
-  
-  i[1] = size_t(phi/dphi_) % nphi_;
+  i[1] = size_t(floor((phi-phimin_)/dphi_+0.5)) % nphi_;
 
   //z indice
   if (zz<0. && zmin_>=0.) zz*=-1.; //if zmin>=0, assume disk is symmetric
-  i[2] = size_t((zz-zmin_)/dz_);
+  i[2] = size_t(floor((zz-zmin_)/dz_+0.5));
+
   if (i[2] == nz_) i[2] = nz_ - 1;
   else if (i[2] > nz_) throwError("In Disk3D::getIndices() impossible indice value for z");
 
   //r indice
-  i[3] = size_t((rr-rin_)/dr_);
+  i[3] = size_t(floor((rr-rin_)/dr_+0.5));
+
   if (i[3] == nr_) i[3] = nr_ - 1;
   else if (i[3] > nr_) throwError("In Disk3D::getIndices() impossible indice value for r");
 
@@ -504,13 +565,15 @@ void Disk3D::getVelocity(double const pos[4], double vel[4]) {
       break;
     default:
       throwError("Disk3D::getVelocity(): unknown COORDKIND");
-    } 
+    }
   }else throwError("In Disk3D::getVelocity(): velocity_==NULL!");
+
 }
 
 int Disk3D::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
   GYOTO_DEBUG << endl;
+
   double coord_ph_hit[8], coord_obj_hit[8];
   double coord1[8], coord2[8];
  
@@ -578,8 +641,14 @@ int Disk3D::Impact(Photon *ph, size_t index,
   /*** ELSE: COMPUTE EMISSION ALONG PATH INSIDE GRID ***/
 
   int indisk=1;
-  while (indisk && tcur>t1+deltat){
-    tcur-=deltat;
+  while (indisk && tcur>t1){
+    if (tcur>t1+deltat){
+      tcur-=deltat;
+    }else{//this is for last step of this loop
+          //to integrate until t1
+      deltat=tcur-t1;
+      tcur=t1;
+    }
     coord_ph_hit[0]=tcur;
     ph -> getCoord( coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
 		    coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
@@ -598,7 +667,6 @@ int Disk3D::Impact(Photon *ph, size_t index,
       checkPhiTheta(coord_ph_hit);
       for (int ii=0;ii<4;ii++) coord_obj_hit[ii]=coord_ph_hit[ii];
       getVelocity(coord_obj_hit, coord_obj_hit+4);
-      
       processHitQuantities(ph, coord_ph_hit, coord_obj_hit, deltat, data);
 
       if (!flag_radtransf_) indisk=0;//not to go on integrating 

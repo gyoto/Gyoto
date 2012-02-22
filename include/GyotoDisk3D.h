@@ -76,7 +76,9 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   size_t nnu_;
 
   double dphi_;
+  double phimin_;
   size_t nphi_;
+  double phimax_;
 
   /**
    * XML elment: &lt;RepeatPhi&gt;.
@@ -153,6 +155,12 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 
   void zmax(double zmax);
   double zmax() const;
+
+  void phimin(double phimin);
+  double phimin() const;
+
+  void phimax(double phimax);
+  double phimax() const;
 
   virtual int setParameter(std::string name, std::string content);
 
