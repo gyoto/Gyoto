@@ -667,6 +667,10 @@ int Disk3D::Impact(Photon *ph, size_t index,
       checkPhiTheta(coord_ph_hit);
       for (int ii=0;ii<4;ii++) coord_obj_hit[ii]=coord_ph_hit[ii];
       getVelocity(coord_obj_hit, coord_obj_hit+4);
+      if (data) {
+	//Store impact time in user1
+	if (data->user1) *data->user1=tcur;
+      }
       processHitQuantities(ph, coord_ph_hit, coord_obj_hit, deltat, data);
 
       if (!flag_radtransf_) indisk=0;//not to go on integrating 

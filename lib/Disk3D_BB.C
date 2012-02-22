@@ -104,7 +104,6 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
       tcomp+=dt_;
       ifits++;
     }
-
     if (ifits==1 || ifits==nb_times_){
       copyQuantities(ifits);
       Disk3D::getVelocity(pos,vel);
@@ -157,11 +156,16 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     //SI value of r coordinate:
     double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
     double r_si=rcur*dist_unit;
+    double risco_si=risco*dist_unit;
     //Emission coef:
-    double jnu=3.*M_PI/r_si*Iem;
+    //double jnu=3.*M_PI/r_si*Iem;
     //last value obtained by using the same reasoning as in Narayan&Yi
     //1995,  ApJ 452, 710,
     //Eq. (3.13): jnu*4/3Pi*r^3=Pi*Bnu(T)*4Pi*r^2
+    double Vem = 4./3.*M_PI*r_si*r_si*r_si
+      - 4./3.*M_PI*risco_si*risco_si*risco_si;
+    double Sem = 4.*M_PI*r_si*r_si;
+    double jnu = Sem/Vem*Iem;
 
     //Elementary intensity added by current dsem segment of worldline
     //in SI units:

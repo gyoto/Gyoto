@@ -192,7 +192,10 @@ int PatternDiskBB::setParameter(std::string name, std::string content) {
     setOuterRadius(DBL_MAX);//infinite power law disk
   }
   else if (name=="PLRho") PLRho_=atof(content.c_str());
-  else if (name=="Rmax") rmax_=atof(content.c_str());
+  else if (name=="Rmax") {
+    rmax_=atof(content.c_str());
+    setOuterRadius(rmax_);//update outer radius
+  }
   else if (name=="SpectralEmission") SpectralEmission_=1;
   else return PatternDisk::setParameter(name, content);
   return 0;
