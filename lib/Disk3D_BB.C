@@ -165,6 +165,8 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     double Vem = 4./3.*M_PI*r_si*r_si*r_si
       - 4./3.*M_PI*risco_si*risco_si*risco_si;
     double Sem = 4.*M_PI*r_si*r_si;
+    if (Vem<=0.) throwError("In Disk3D_BB::emission1date: bad case"
+			    " for heuristic computation of jnu");
     double jnu = Sem/Vem*Iem;
 
     //Elementary intensity added by current dsem segment of worldline

@@ -518,7 +518,12 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     throwError("In Disk3D::getIndices: dimensions can't be null!");
   //Phi indice
   while (phi<0) phi += 2.*M_PI;
-  i[1] = size_t(floor((phi-phimin_)/dphi_+0.5)) % nphi_;
+  if (phi<phimin_) //Possible: any phi value is in the grid anyway
+    i[1]=0;
+  else if (phi>phimax_)
+    i[1]=nphi_-1;
+  else
+    i[1] = size_t(floor((phi-phimin_)/dphi_+0.5)) % nphi_;
 
   //z indice
   if (zz<0. && zmin_>=0.) zz*=-1.; //if zmin>=0, assume disk is symmetric
