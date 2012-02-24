@@ -146,6 +146,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+  //cout << "r T= "<< rcur << " " << TT << endl;
   spectrumBB_->setTemperature(TT);
   double Iem=(*spectrumBB_)(nu);
 
@@ -162,11 +163,18 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     //last value obtained by using the same reasoning as in Narayan&Yi
     //1995,  ApJ 452, 710,
     //Eq. (3.13): jnu*4/3Pi*r^3=Pi*Bnu(T)*4Pi*r^2
-    double Vem = 4./3.*M_PI*r_si*r_si*r_si
+    /*double Vem = 4./3.*M_PI*r_si*r_si*r_si
       - 4./3.*M_PI*risco_si*risco_si*risco_si;
     double Sem = 4.*M_PI*r_si*r_si;
     if (Vem<=0.) throwError("In Disk3D_BB::emission1date: bad case"
-			    " for heuristic computation of jnu");
+    " for heuristic computation of jnu");*/
+    //Smae calculation, but in cylindrical geometry:
+    double height=2.*0.2*risco_si;//disk height in SI
+    double Vem = M_PI*height*(r_si*r_si-risco_si*risco_si);
+    double Sem = M_PI*(2.*r_si*height+r_si*r_si-risco_si*risco_si);
+    if (Vem<=0. || Sem<0.)
+      throwError("In Disk3D_BB::emission1date: bad case"
+		 " for heuristic computation of jnu");
     double jnu = Sem/Vem*Iem;
 
     //Elementary intensity added by current dsem segment of worldline

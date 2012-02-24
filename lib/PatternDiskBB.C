@@ -150,11 +150,11 @@ double PatternDiskBB::emission(double nu, double dsem,
       // and: pressure = (mass density)*R/Mm*T (Mm = molar mass)
 
       double gamma=5./3.;
-      double Mm=6e-4;//disk molar mass in kg/mol (Peggy, private com. ;-))
+      double Mm=6e-4;//Navogadro*Munit/gamma
       double kappa=3e10;//pressure coef: p = kappa*rho^gamma, rho=mass density
 
       double cs2=kappa*gamma*pow(rho_si,gamma-1.);
-      TT=Mm/GYOTO_GAS_CST*cs2/gamma;//Temperature in SI
+      TT=Mm/GYOTO_GAS_CST*cs2;//Temperature in SI
       //cout << "TT after rl= " << TT << endl;
       //cout << "r,rho,T= " << rcross << " " << rho_si << " " << TT << endl;
       spectrumBB_->setTemperature(TT);
