@@ -154,9 +154,11 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   if (!flag_radtransf_){
     Ires=Iem;
   }else{
-    //SI value of r coordinate:
+    //SI value of cylindrical r coordinate:
     double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
-    double r_si=rcur*dist_unit;
+    double th=co[2];
+    double rcur_cyl=rcur*sin(th);
+    double r_si=rcur_cyl*dist_unit;
     double risco_si=risco*dist_unit;
     //Emission coef:
     //double jnu=3.*M_PI/r_si*Iem;
@@ -171,7 +173,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     //Smae calculation, but in cylindrical geometry:
     double height=2.*0.2*risco_si;//disk height in SI
     double Vem = M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = M_PI*(2.*r_si*height+r_si*r_si-risco_si*risco_si);
+    double Sem = 2.*M_PI*(r_si*height+r_si*r_si-risco_si*risco_si);
     if (Vem<=0. || Sem<0.)
       throwError("In Disk3D_BB::emission1date: bad case"
 		 " for heuristic computation of jnu");
