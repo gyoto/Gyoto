@@ -134,9 +134,13 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
       coh[ii] = cph[ii];
     
     getVelocity(coh, coh+4);
-    processHitQuantities(ph, cph, coh, delta, data);
+    //Next test to insure every point given to process
+    //is inside objetc. Not obvious as the worldline between
+    //t1 and t2 is not necessarily straight (at small r in particular)
+    if ((*this)(coh)<critical_value_)
+      processHitQuantities(ph, cph, coh, delta, data);
     cph[0]-=delta;
-    }
+  }
 
   return 1;
 
