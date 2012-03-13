@@ -184,13 +184,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     double height=zmax()*dist_unit;//disk half-height in SI
     //Volume of napkin ring of (spherical) radius risco to r
     //See wikipedia "Spherical cap"
-    double Vext = 2.*M_PI/3.
-      *(2.*r_si*r_si*r_si
-	-(r_si-height)*(r_si-height)*(2.*r_si+height));
-    double Vin  = 2.*M_PI/3.
-      *(2.*risco_si*risco_si*risco_si
-	-(risco_si-height)*(risco_si-height)*(2.*risco_si+height));
-    double Vem = Vext-Vin;
+    double Vem = 2.*M_PI*height*(r_si*r_si-risco_si*risco_si);
     double Sem = 2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
     if (Vem<=0. || Sem<0. 
 	|| Vem!=Vem 
