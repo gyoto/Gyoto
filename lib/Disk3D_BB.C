@@ -157,10 +157,13 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     //SI value of cylindrical r coordinate:
     double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
     double th=co[2];
-    double rcur_cyl=rcur*sin(th);
-    double r_si=rcur_cyl*dist_unit;
+    //double rcur_cyl=rcur*sin(th);
+    double r_si=rcur*dist_unit;
     double risco_si=risco*dist_unit;
-    //Emission coef:
+
+    /*** Computing emission coef: ***/
+
+    //Over a sphere:
     //double jnu=3.*M_PI/r_si*Iem;
     //last value obtained by using the same reasoning as in Narayan&Yi
     //1995,  ApJ 452, 710,
@@ -170,13 +173,33 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     double Sem = 4.*M_PI*r_si*r_si;
     if (Vem<=0.) throwError("In Disk3D_BB::emission1date: bad case"
     " for heuristic computation of jnu");*/
-    //Smae calculation, but in cylindrical geometry:
-    double height=2.*0.2*risco_si;//disk height in SI
+
+    //Over a cylinder:
+    /*double height=2.*0.2*risco_si;//disk height in SI
     double Vem = M_PI*height*(r_si*r_si-risco_si*risco_si);
     double Sem = 2.*M_PI*(r_si*height+r_si*r_si-risco_si*risco_si);
-    if (Vem<=0. || Sem<0.)
+    */
+
+    //Over a 'napkin ring':
+    double height=zmax()*dist_unit;//disk half-height in SI
+    //Volume of napkin ring of (spherical) radius risco to r
+    //See wikipedia "Spherical cap"
+    double Vext = 2.*M_PI/3.
+      *(2.*r_si*r_si*r_si
+	-(r_si-height)*(r_si-height)*(2.*r_si+height));
+    double Vin  = 2.*M_PI/3.
+      *(2.*risco_si*risco_si*risco_si
+	-(risco_si-height)*(risco_si-height)*(2.*risco_si+height));
+    double Vem = Vext-Vin;
+    double Sem = 2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
+    if (Vem<=0. || Sem<0. 
+	|| Vem!=Vem 
+	|| Sem!=Sem){
+      cout << "At r,th= " << rcur << " " << th << endl;
+      cout << "Sem, Vem= " << Sem << " " << Vem << endl;
       throwError("In Disk3D_BB::emission1date: bad case"
 		 " for heuristic computation of jnu");
+    }
     double jnu = Sem/Vem*Iem;
 
     //Elementary intensity added by current dsem segment of worldline
