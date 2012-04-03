@@ -56,7 +56,7 @@ CXXFLAGS_G = -g -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
 # --------------------------------------------
 GYOTO_INC        = -I../include $(CFITSIO_INC)
 ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
-INC += $(XERCES_INC)
+GYOTO_INC += $(XERCES_INC)
 endif
 
 # C, C++ libarary, mathematical library
