@@ -102,9 +102,11 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
 
   double normtol=.001;
   if (fabs(norm_-normref_)>normtol) {
-
-    if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-      cout << "***WARNING (severe): WlIntegState.C: Norm pb with norm,x1,x2,x3= " << norm_ << " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]) << endl;
+    if (verbose() >= GYOTO_SEVERE_VERBOSITY){
+      cerr << "***WARNING: in WlIntegState.C: norm is drifting"
+	" - with norm,x1,x2,x3= " << norm_ << " " << coord[1] 
+	   << " " << coord[2] << " " << coord[3] << " " << endl;
+    }
   }
 
   if (delta_==delta_+1) return 1; // delta == Infinity : stop condition

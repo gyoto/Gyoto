@@ -166,6 +166,8 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   if (data) {
     //Store impact time in user1
     if (data->user1) *data->user1=coord_ph_hit[0];
+    if (data->user2) *data->user2=coord_ph_hit[1];
+    if (data->user3) *data->user3=coord_ph_hit[3];
   }
 
   processHitQuantities(ph, coord_ph_hit, coord_obj_hit, dt, data);
