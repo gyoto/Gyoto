@@ -1,9 +1,9 @@
 # these values filled in by    yorick -batch make.i
-Y_MAKEDIR=/opt/local/lib/yorick
-Y_EXE=/opt/local/lib/yorick/bin/yorick
+Y_MAKEDIR=
+Y_EXE=
 Y_EXE_PKGS=
-Y_EXE_HOME=/opt/local/lib/yorick
-Y_EXE_SITE=/opt/local/lib/yorick
+Y_EXE_HOME=
+Y_EXE_SITE=
 Y_HOME_PKG=
 
 # ----------------------------------------------------- optimization flags
@@ -42,7 +42,7 @@ PKG_DEPLIBS+=-bundle_loader ../../lib/libgyoto-stdplug.$(DYLIB_SFX) \
 endif
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../../include -I..
+PKG_CFLAGS= -I../../include -I.. $(GYOTO_INC)
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME
