@@ -34,7 +34,7 @@ namespace Gyoto{
   namespace Spectrum {
     class Generic;
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger* fmp = NULL);
+      Subcontractor_t(Gyoto::FactoryMessenger* fmp);
     void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
     Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string);
     extern Register::Entry* Register_;
