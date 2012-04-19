@@ -74,12 +74,12 @@ clean:
 	rm -f ../include/*~
 	rm -Rf Gyoto
 
-$(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib \
+$(DESTDIR)$(PREFIX)/include/Gyoto $(DESTDIR)$(PREFIX)/lib \
  $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS):
 	install -d $@
 
 install: libgyoto.a $(LIBGYOTO_FILE) $(PLUGINS) \
-	            $(DESTDIR)$(PREFIX)/include $(DESTDIR)$(PREFIX)/lib \
+	            $(DESTDIR)$(PREFIX)/include/Gyoto $(DESTDIR)$(PREFIX)/lib \
 	            $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	install -m 0755 $(LIBGYOTO_FILE) $(DESTDIR)$(PREFIX)/lib
 ifeq ($(SYS),Linux)
@@ -89,7 +89,7 @@ endif
 	install -m 0755 libgyoto-stdplug.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	-install -m 0755 libgyoto-lorene.$(DYLIB_SFX) $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
 	install -m 0644 libgyoto.a $(DESTDIR)$(PREFIX)/lib
-	install -m 0644 ../include/Gyoto*.h $(DESTDIR)$(PREFIX)/include
+	install -m 0644 ../include/Gyoto*.h $(DESTDIR)$(PREFIX)/include/Gyoto
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/lib/libgyoto*
