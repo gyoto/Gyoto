@@ -21,9 +21,9 @@ paper), for instance by contributing it directly to the Gyoto
 code base. Contributors will be listed in the relevant source files as
 well as in the AUTHORS file in the package.
 
-    Gyoto is Copyright 2011 Thibaut Paumard, Frédéric Vincent (To ease
-    reading on non-UTF8 systems, French accents are omitted in file
-    headers).
+    Gyoto is Copyright 2011-2012 Thibaut Paumard, Frédéric Vincent (To
+    ease reading on non-UTF8 systems, French accents are omitted in
+    file headers).
 
     Gyoto is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
