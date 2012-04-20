@@ -29,6 +29,17 @@
 
 #define DEFAULT_TLIM 0.
 
+#ifdef HAVE_PTHREADS
+#include <pthread.h>
+// nthreads_ will become a member.
+// number of *child* threads to launch in ::rayTrace
+// rule-of-thumb optimal: #CPUs - 1
+#define nthreads_ 1
+#endif
+
+#include <ctime>    /* for benchmarking */
+
+
 using namespace Gyoto;
 using namespace std;
 
@@ -112,86 +123,205 @@ void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
 double Scenery::getDelta() const { return delta_; }
 void Scenery::setDelta(double d) { delta_ = d; }
 
+typedef struct SceneryThreadWorkerArg {
+#ifdef HAVE_PTHREADS
+  pthread_mutex_t * mutex;
+#endif
+  size_t i, j, imin, imax, jmin, jmax;
+  Scenery *sc;
+  Photon * ph;
+  Astrobj::Properties *data;
+  double * impactcoords;
+} SceneryThreadWorkerArg ;
+
+void * SceneryThreadWorker (void *arg) {
+  /*
+    This is the real ray-tracing loop. It may be called by multiple
+    threads in parallel, launched from ::rayTrace
+   */
+
+  SceneryThreadWorkerArg *larg = static_cast<SceneryThreadWorkerArg*>(arg);
+
+  // Each thread needs its own Photon, clone cached Photon
+  // it is assumed to be already initialized with spectrometer et al.
+  Photon ph(*larg->ph);
+
+  // local variables to store our parameters
+  size_t i, j;
+  Astrobj::Properties data;
+  double * impactcoords = NULL;
+
+  size_t count=0;
+
+  while (1) {
+    /////// 1- get input and output parameters and update them for next access
+    //// i and j are input, data and impactcoords are where to store
+    //// output.  we must get them and increase them so that another
+    //// thread can get the next values while we integrate.
+#ifdef HAVE_PTHREADS
+    // lock mutex so we can safely read and update i, j et al.
+    if (larg->mutex) pthread_mutex_lock(larg->mutex);
+#endif
+    // copy i & j 
+    i = larg->i; j = larg->j;
+    if (j > larg->jmax || (j==larg->jmax && i>larg->imax)) {
+      // terminate, but first...
+#ifdef HAVE_PTHREADS
+      // ...unlock mutex so our siblings can access i & j and terminate too
+      if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+#endif
+      break;
+    }
+    // update i & j
+    ++larg->i;
+    if (larg->i > larg->imax) {
+      ++larg->j; larg->i=larg->imin;
+    }
+
+    // copy output pointers and update them
+    data = *larg->data; ++(*larg->data);
+    if (larg->impactcoords) {
+      impactcoords = larg->impactcoords; larg->impactcoords+=16;
+    }
+
+#ifdef HAVE_PTHREADS
+    // unlock mutex so our siblings can can access i, j et al. and procede
+    if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+#endif
+
+    ////// 2- do the actual work.
+    if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
+      cout << "\rj = " << j << " / " << larg->jmax << " " << flush;
+    GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
+    (*larg->sc)(i, j, &data, impactcoords, &ph);
+    ++count;
+  }
+  std::cerr << "Thread terminating after integrating " << count << " photons\n";
+}
+
 void Scenery::rayTrace(size_t imin, size_t imax,
 		       size_t jmin, size_t jmax,
 		       Astrobj::Properties *data,
 		       double * impactcoords) {
 
-  //  if (debug()) cout << "screen dist beg ray trace= " << screen_ -> getDistance() << endl;
+  /*
+     Ray-trace now is multi-threaded. What it does is
+       - some initialization
+       - launch nthreads_ thread working on of SceneryThreadWorker
+       - call SceneryThreadWorker itself rather than sleeping
+       - wait for the other threads to be terminated
+       - some housekeeping
+   */
 
   const size_t npix = screen_->getResolution();
-  //ofstream pixels(filename);//illuminated pixels on screen
-  SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
-  ph_.setSpectrometer(spr);
-  size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
-  ph_.setTlim(tlim_);
-
-  double coord[8];
-
+  imax=(imax<=(npix)?imax:(npix));
+  jmax=(jmax<=(npix)?jmax:(npix));
   screen_->computeBaseVectors();
          // Necessary for KS integration, computes relation between
          // observer's x,y,z coord and KS X,Y,Z coord. Will be used to
          // compute photon's initial tangent vector.
      // Note : this is a BUG if this is required, should be done automagically.
 
-  imax=(imax<=(npix)?imax:(npix));
-  jmax=(jmax<=(npix)?jmax:(npix));
-
-  for (size_t j=jmin;j<=jmax;j++) {
-
-    if (verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
-      cout << "\rj = " << j << " / " << jmax << " " << flush;
-
-    for (size_t i=imin;i<=imax;i++) {
-      ph_.setDelta(delta_);
-
-      if (debug()) 
-		cerr << "DEBUG: Scenery::rayTrace(): i = " << i
-		     << ", j = " << j << endl;
-      
-      data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
-
-      if (impactcoords) {
-	if (impactcoords[0] != DBL_MAX) {
-	  ph_.setInitialCondition(gg_, obj_, impactcoords+8);
-	  ph_.resetTransmission();
-	  obj_ -> processHitQuantities(&ph_,
-				       impactcoords+8,impactcoords,0.,data);
-	}
-      } else {
-	screen_ -> getRayCoord(i,j, coord);
-	ph_.setInitialCondition(gg_, obj_, coord);
-	ph_.hit(data);
-      }
-
-      if (data) ++(*data); // operator++ is overloaded
-      if (impactcoords) impactcoords += 16 ;
-
-    }
-  }
-}
-
-void Scenery::operator() (size_t i, size_t j,
-			  Astrobj::Properties *data, double * impactcoords) {
-  double coord[8];
+  /// initialize photon once. It will be cloned.
   SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
   ph_.setSpectrometer(spr);
-  size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
-  ph_.setDelta(delta_);
   ph_.setTlim(tlim_);
+  double coord[8];
+  screen_ -> getRayCoord(imin,jmin, coord);
+  ph_ . setInitialCondition(gg_, obj_, coord);
+  // delta is reset in operator()
 
-  if (data) data -> init(nbnuobs);
+
+
+  SceneryThreadWorkerArg larg;
+  larg.sc=this;
+  larg.ph=&ph_;
+  larg.data=data;
+  larg.impactcoords=impactcoords;
+  larg.i=imin;
+  larg.j=jmin;
+  larg.imin=imin;
+  larg.imax=imax;
+  larg.jmin=jmin;
+  larg.jmax=jmax;
+
+  time_t start,end; double dif;
+  time (&start);
+
+#ifdef HAVE_PTHREADS
+  larg.mutex  = NULL;
+  pthread_mutex_t mumu = PTHREAD_MUTEX_INITIALIZER;
+  pthread_t * threads = NULL;
+  if (nthreads_) {
+    threads = new pthread_t[nthreads_];
+    larg.mutex  = &mumu;
+    for (size_t th=0; th < nthreads_; ++th) {
+      if (pthread_create(threads+th, NULL,
+			 SceneryThreadWorker, static_cast<void*>(&larg)) < 0)
+	throwError("Error creating thread");
+    }
+  }
+#endif
+
+  // Call worker on the parent thread
+  (*SceneryThreadWorker)(static_cast<void*>(&larg));
+
+
+#ifdef HAVE_PTHREADS
+  // Wait for the child threads
+  if (nthreads_)
+    for (size_t th=0; th < nthreads_; ++th)
+      pthread_join(threads[th], NULL);
+#endif
+
+  time (&end);
+  dif = difftime (end,start);
+  std::cerr << "Raytraced "<< (jmax-jmin+1) * (imax-imin+1)
+	    << " photons in " << dif << "s\n";
+
+}
+
+void Scenery::operator() (
+			  size_t i, size_t j,
+			  Astrobj::Properties *data, double * impactcoords,
+			  Photon *ph
+			  ) {
+  double coord[8];
+  SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
+  size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
+  SmartPointer<Metric::Generic> gg = NULL;
+  SmartPointer<Astrobj::Generic> obj = NULL;
+  if (!ph) {
+    // if Photon was passed, assume it was initiliazed already. Don't
+    // touch its metric and astrobj. Else, update cached photon. Photon
+    // is passed in particular when called in a multi-threaded
+    // environment: it may really need to work on a given copy of the object.
+    ph = &ph_;
+    ph -> setSpectrometer(spr);
+    ph -> setTlim(tlim_);
+    obj=obj_;
+    gg=gg_;
+  }
+  // Always reset delta
+  GYOTO_DEBUG << "reset delta" << endl;
+  ph -> setDelta(delta_);
+
+
+  GYOTO_DEBUG << "init nbnuobs" << endl;
+  if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
 
   if (impactcoords) {
+    GYOTO_DEBUG << "impactcoords set" << endl;
     if(impactcoords[0] != DBL_MAX) {
-      ph_.setInitialCondition(gg_, obj_, impactcoords+8);
-      ph_.resetTransmission();
-      obj_ -> processHitQuantities(&ph_,impactcoords+8,impactcoords,0.,data);
+      ph -> setInitialCondition(gg, obj, impactcoords+8);
+      ph -> resetTransmission();
+      obj_ -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
   } else {
+    GYOTO_DEBUG << "impactcoords not set" << endl;
     screen_ -> getRayCoord(i,j, coord);
-    ph_.setInitialCondition(gg_, obj_, coord);
-    ph_.hit(data);
+    ph -> setInitialCondition(gg, obj, coord);
+    ph -> hit(data);
   }
 }
 

@@ -42,7 +42,7 @@ Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
 Worldline::Worldline(const Worldline& orig) :
   metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  delta_(orig.delta_), tlim_(orig.tlim_), cst_n_(orig.cst_n_)
+  delta_(orig.delta_), tlim_(orig.tlim_), cst_(NULL), cst_n_(orig.cst_n_)
 {
   GYOTO_DEBUG << endl;
   if (orig.metric_()) {
@@ -258,7 +258,7 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 				    const double coord[8],
 				    const int dir)
 {
-  metric_=met;
+  if (met) metric_=met;
   setInitCoord(coord, dir);
 }
 

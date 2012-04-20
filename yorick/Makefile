@@ -39,7 +39,7 @@ PKG_EXENAME=yorick
 PKG_DEPLIBS=-L../lib -lgyoto $(LIB_CXX)
 # set compiler (or rarely loader) flags specific to this package
 PKG_CFLAGS= -I../include $(GYOTO_INC)
-PKG_LDFLAGS=
+PKG_LDFLAGS=-L../lib
 
 # list of additional package names you want in PKG_EXENAME
 # (typically Y_EXE_PKGS should be first here)

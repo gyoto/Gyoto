@@ -192,7 +192,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 		Astrobj::Properties* data, double * impactcoords = NULL);
 
   void operator() (size_t i, size_t j, Astrobj::Properties *data,
-		   double * impactcoords = NULL);
+		   double * impactcoords = NULL, Photon * ph = NULL);
 
 #ifdef GYOTO_USE_XERCES
  public:

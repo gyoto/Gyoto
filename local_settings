@@ -20,6 +20,14 @@ YORICK       = yorick
 SOVERS_MAJOR = 0
 SOVERS       = $(SOVERS_MAJOR).0.0
 
+# Options for using POSIX threads:
+# -------------------------------
+GYOTO_FLAGS += -DHAVE_PTHREADS
+ifneq (,$(findstring -DHAVE_PTHREADS,$(GYOTO_FLAGS)))
+LIB_CXX += -lpthread
+endif
+
+
 # Options for using Xerces:
 # -------------------------
 # Xerces-c 3 is used to read/write scenery descriptions in XML format.

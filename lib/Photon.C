@@ -151,7 +151,7 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
   double coord[8];
   screen -> getRayCoord(d_alpha, d_delta, coord);
   Worldline::setInitialCondition(met, coord, -1);
-  object_=obj;
+  if (obj) object_=obj;
 
 }
 
@@ -168,6 +168,7 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
        << coord[5] << " "
        << coord[6] << " "
        << coord[7] << endl;*/
+  if (!met) met = metric_;
   double gtt0=met->gmunu(coord,0,0);
   double ObsVel[4]={sqrt(-1./gtt0),0.,0.,0.};
   double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
@@ -175,7 +176,7 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
   //  cout << "ut= " << sqrt(-1./gtt0) << endl;
   //  cout << "In Photon.C: freq obs= " << freq_obs_ << endl;
   Worldline::setInitialCondition(met, coord, -1);
-  object_=obj;
+  if (obj) object_=obj;
 }
 
 int Photon::hit(Astrobj::Properties *data) {
