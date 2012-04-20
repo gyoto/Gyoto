@@ -31,10 +31,6 @@
 
 #ifdef HAVE_PTHREADS
 #include <pthread.h>
-// nthreads_ will become a member.
-// number of *child* threads to launch in ::rayTrace
-// rule-of-thumb optimal: #CPUs - 1
-#define nthreads_ 1
 #endif
 
 #include <ctime>    /* for benchmarking */
@@ -49,12 +45,12 @@ using namespace std;
 */
 Scenery::Scenery() :
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(0.01),
-  quantities_(0), ph_(), tlim_(DEFAULT_TLIM) {}
+  quantities_(0), ph_(), tlim_(DEFAULT_TLIM), nthreads_(0){}
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(o.delta_),
-  quantities_(o.quantities_), ph_(o.ph_), tlim_(o.tlim_)
+  quantities_(o.quantities_), ph_(o.ph_), tlim_(o.tlim_), nthreads_(o.nthreads_)
 {
   // We have up to 3 _distinct_ clones of the same Metric.
   // Keep only one.
@@ -123,9 +119,13 @@ void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
 double Scenery::getDelta() const { return delta_; }
 void Scenery::setDelta(double d) { delta_ = d; }
 
+void  Scenery::setNThreads(size_t n) { nthreads_ = n; }
+size_t Scenery::getNThreads() const { return nthreads_; }
+
 typedef struct SceneryThreadWorkerArg {
 #ifdef HAVE_PTHREADS
   pthread_mutex_t * mutex;
+  pthread_t * parent;
 #endif
   size_t i, j, imin, imax, jmin, jmax;
   Scenery *sc;
@@ -144,7 +144,14 @@ void * SceneryThreadWorker (void *arg) {
 
   // Each thread needs its own Photon, clone cached Photon
   // it is assumed to be already initialized with spectrometer et al.
-  Photon ph(*larg->ph);
+#ifdef HAVE_PTHREADS
+  Photon * ph = NULL;
+  int am_parent = pthread_equal(pthread_self(), *larg->parent);
+  if (am_parent) ph = larg->ph;
+  else ph = larg -> ph -> clone();
+#else
+  Photon * ph = larg->ph;
+#endif
 
   // local variables to store our parameters
   size_t i, j;
@@ -193,9 +200,10 @@ void * SceneryThreadWorker (void *arg) {
     if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
       cout << "\rj = " << j << " / " << larg->jmax << " " << flush;
     GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
-    (*larg->sc)(i, j, &data, impactcoords, &ph);
+    (*larg->sc)(i, j, &data, impactcoords, ph);
     ++count;
   }
+  if (!am_parent) delete ph;
   std::cerr << "Thread terminating after integrating " << count << " photons\n";
 }
 
@@ -207,7 +215,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   /*
      Ray-trace now is multi-threaded. What it does is
        - some initialization
-       - launch nthreads_ thread working on of SceneryThreadWorker
+       - launch nthreads_ - 1  thread working on of SceneryThreadWorker
        - call SceneryThreadWorker itself rather than sleeping
        - wait for the other threads to be terminated
        - some housekeeping
@@ -252,10 +260,12 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   larg.mutex  = NULL;
   pthread_mutex_t mumu = PTHREAD_MUTEX_INITIALIZER;
   pthread_t * threads = NULL;
-  if (nthreads_) {
-    threads = new pthread_t[nthreads_];
+  pthread_t pself = pthread_self();
+  larg.parent = &pself;
+  if (nthreads_ >= 2) {
+    threads = new pthread_t[nthreads_-1];
     larg.mutex  = &mumu;
-    for (size_t th=0; th < nthreads_; ++th) {
+    for (size_t th=0; th < nthreads_-1; ++th) {
       if (pthread_create(threads+th, NULL,
 			 SceneryThreadWorker, static_cast<void*>(&larg)) < 0)
 	throwError("Error creating thread");
@@ -269,8 +279,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
 #ifdef HAVE_PTHREADS
   // Wait for the child threads
-  if (nthreads_)
-    for (size_t th=0; th < nthreads_; ++th)
+  if (nthreads_>=2)
+    for (size_t th=0; th < nthreads_-1; ++th)
       pthread_join(threads[th], NULL);
 #endif
 
@@ -431,6 +441,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
   if (tlim_ != DEFAULT_TLIM) fmp -> setParameter("MinimumTime", tlim_);
+  if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
 }
 
 SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
@@ -442,6 +453,7 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
   double tlim = DEFAULT_TLIM;
+  size_t nthreads = 0;
 
   gg = fmp->getMetric();
   scr= fmp->getScreen();
@@ -453,11 +465,13 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
     if (name=="Delta") delta = atof(tc);
     if (name=="Quantities") squant = content;
     if (name=="TLim") tlim = atof(tc);
+    if (name=="NThreads") nthreads = atoi(tc);
   }
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
   sc -> setDelta(delta);
   sc -> setTlim(tlim);
+  sc -> setNThreads(nthreads);
   if (squant!="") sc -> setRequestedQuantities(squant);
   return sc;
 }

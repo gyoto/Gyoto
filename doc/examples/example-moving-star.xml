@@ -29,4 +29,6 @@
 
   <Quantities>Spectrum</Quantities>
 
+  <NThreads> 2 </NThreads>
+
 </Scenery>

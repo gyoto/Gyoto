@@ -95,7 +95,7 @@ extern "C" {
       "get_pointer",
       "metric", "screen", "astrobj", "delta", "quantities",
       "xmlwrite", "clone",
-      "impactcoords",
+      "impactcoords", "nthreads",
       0
     };
     static long kglobs[10];
@@ -245,6 +245,16 @@ extern "C" {
 	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
 	  y_error("dimsof(impactcoords) != [3,16,res,res]");
       }
+    }
+
+    /* NTHREADS */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // nthreads=      : Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	ypush_long(sc->getNThreads());
+      } else                // nthreads=long  : Setting
+         sc->setNThreads(ygets_l(iarg));
     }
 
     // Get ray-traced image if there is a supplementary positional argument
@@ -443,23 +453,93 @@ extern "C" {
   }
 
   void Y_gyoto_Scenery_rayTrace(int argc) {
-    size_t imin=0, imax=-1, jmin=0, jmax=-1;
+    size_t imin=1, imax=-1, jmin=1, jmax=-1;
     if (argc<1) y_error("gyoto_Scenery_rayTrace takes at least 1 argument");
     gyoto_Scenery * s_obj=(gyoto_Scenery*)yget_obj(argc-1, &gyoto_Scenery_obj);
+    Scenery * scenery = s_obj->scenery;
     if (argc>=2 && !yarg_nil(argc-2)) imin=ygets_l(argc-2);
     if (argc>=3 && !yarg_nil(argc-3)) imax=ygets_l(argc-3);
     if (argc>=4 && !yarg_nil(argc-4)) jmin=ygets_l(argc-4);
     if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
 
     size_t res;
-    try {res=s_obj->scenery->getScreen()->getResolution();}
+    try {res=scenery->getScreen()->getResolution();}
     YGYOTO_STD_CATCH;
-    long dims[4]={3, res, res, 2};
 
-    double * data=ypush_d(dims);
-    Astrobj::Properties prop(data,data+res*res);
+    double * impactcoords = NULL;
+    int ipctout = 0;
+    if (argc>=6) {
+      int iarg = argc-6;
+      long ref = yget_ref(iarg);
+      long dims[Y_DIMSIZE] = {3, 16, res, res};
+      if (ref >= 0 && yarg_nil(iarg)) {
+	impactcoords = ypush_d(dims);
+	yput_global(ref, 0);
+	ipctout = 1;
+      } else {
+	long ntot = 0;
+	impactcoords = ygeta_d(iarg, &ntot, dims);
+	if (dims[0]!=3 || dims[1]!=16 || dims[2]!=res || dims[3]!=res)
+	  y_error("Wrong dims for impactcoords");
+      }
+    }
 
-    try {s_obj->scenery -> rayTrace(imin, imax, jmin, jmax, &prop);}
+    size_t nbnuobs=0, nbdata;
+    Quantity_t quantities;
+    try {
+      quantities = scenery -> getRequestedQuantities();
+      if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
+	SmartPointer<Spectrometer> spr=scenery->getScreen()->getSpectrometer();
+	if (!spr) throwError("Spectral quantity requested but "
+			     "no spectrometer specified!");
+	nbnuobs = spr -> getNSamples();
+      }
+      nbdata= scenery->getScalarQuantitiesCount();
+    } YGYOTO_STD_CATCH;
+
+    long dims[4]={(nbdata+nbnuobs) > 1 ? 3 : 2, res, res, nbdata+nbnuobs};
+    double * vect=ypush_d(dims);
+
+    Astrobj::Properties data;
+
+    size_t curquant=0;
+    size_t offset=res*res;
+
+    if (ipctout) data.impactcoords = impactcoords;
+
+    if (quantities & GYOTO_QUANTITY_INTENSITY)
+      data.intensity=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_EMISSIONTIME)
+      data.time=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_MIN_DISTANCE)
+      data.distance=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_FIRST_DMIN)
+      data.first_dmin=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_REDSHIFT)
+      data.redshift=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_USER1)
+      data.user1=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_USER2)
+      data.user2=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_USER3)
+      data.user3=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_USER4)
+      data.user4=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_USER5)
+      data.user5=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_SPECTRUM) {
+      data.spectrum=vect+offset*(curquant++);
+      data.offset=offset;
+    }
+    if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
+      data.binspectrum=vect+offset*(curquant++);
+      data.offset=offset;
+    }
+
+    data.intensity=vect;
+
+    try {scenery -> rayTrace(imin, imax, jmin, jmax, &data,
+			     ipctout?NULL:impactcoords);}
     YGYOTO_STD_CATCH;
 
   }

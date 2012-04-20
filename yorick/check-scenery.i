@@ -114,9 +114,27 @@ noop, sc3(astrobj=)(radius=2);
 write, format="%s\n" , "done.";
 
 write, format="%s", "Ray-tracing... ";
-pli, sc3(,,"Intensity"); // raytrace
+tic;
+im1 = sc3(,,"Intensity"); // raytrace
+tac();
+pli, im1;
 pause, 1000;
 write, format="%s\n" , "done.";
+
+write, format="%s", "Ray-tracing on 2 threads... \n";
+sc3, nthreads=2, quantities="Intensity";
+//tic;
+im1 = gyoto_Scenery_rayTrace(sc3);
+//tac();
+write, format="%s\n" , "done.";
+
+write, format="%s", "Ray-tracing on 1 thread... \n";
+sc3, nthreads=1;
+tic;
+im1 = gyoto_Scenery_rayTrace(sc3);
+tac();
+write, format="%s\n" , "done.";
+
 
 /* write, format="%s", "Ray-tracing on adaptive grid... ";
    data = gyoto_Scenery_adaptive_raytrace(sc3, 4);

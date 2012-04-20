@@ -67,6 +67,14 @@ namespace Gyoto{
  * - Spectrum: I_{nu} computed at various values frequencies,
  *        corresponding to the Screen's Spectrometer.
  *
+ * In addition, it is possible to ray-trace an image using several
+ * cores on a single machine (if Gyoto has been compiled with POSIX
+ * threads support). The number of threads can be specified using
+ * NThreads entity. Setting NThreads to 0 is equivalent to setting it
+ * to 1. Beware that setting NThreads to a number higher than the
+ * actual number of cores available on the machine usually leads to a
+ * decrease in performance.
+ *
  * Thus a fully populated Scenery XML looks like that:
  * \code
  * <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -87,6 +95,8 @@ namespace Gyoto{
  *  <Quantities> Spectrum Intensity ...</Quantities>
  *
  *  <Delta> 1. </Delta>
+ *
+ *  <NThreads> 2 </NThreads>  
  *
  * </Scenery>
  * \endcode
@@ -138,6 +148,13 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   double tlim_; ///< Time limit for the integration (geometrical units)
 
+  /**
+   * When compiled with libpthread, Scenery::rayTrace() may compute
+   * several points of the image in parallel threads. This is the
+   * number of threads to use.
+   */
+  size_t nthreads_; ///< number of parallel threads to use in ::rayTrace
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -185,6 +202,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void setTlim(double); ///< set tlim_;
   double getTlim() const ;///< get tlim_
+
+  void setNThreads(size_t); ///< set nthreads_;
+  size_t getNThreads() const ; ///< get nthreads_;
 
   // Worker:
  public:

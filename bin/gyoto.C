@@ -83,9 +83,9 @@ int main(int argc, char** argv) {
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
   double tobs, fov, dist, paln, incl, arg;
-  size_t res;
+  size_t res, nthreads;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
+  bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
@@ -133,7 +133,10 @@ int main(int argc, char** argv) {
       } else if (param.substr(0,11)=="--argument=") {
 	arg=atof(param.substr(11).c_str());
 	xarg=1;
-      } 
+      }  else if (param.substr(0,11)=="--nthreads=") {
+	nthreads=atoi(param.substr(11).c_str());
+	xnthreads=1;
+      }
       else {
 	usage();
 	return 1;
@@ -197,6 +200,7 @@ int main(int argc, char** argv) {
     if (xincl) screen -> setInclination ( incl );
     if (xpaln) screen -> setPALN        ( paln );
     if (xarg)  screen -> setArgument    ( arg  );
+    if (xnthreads)  scenery -> setNThreads    ( nthreads  );
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)

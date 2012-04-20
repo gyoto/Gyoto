@@ -10,6 +10,7 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-time\fR=\fItobs\fR] 
       [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
       [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
+      [\fB\-\-nthreads\fR=\fInth\fR] 
       [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
 .SH DESCRIPTION
 Gyoto is a framework for computing geodesics in curved
@@ -87,6 +88,14 @@ main axes of the coordinate system.
 
 .SS Miscellaneous
 Unsorted option(s):
+.IP \fB\-\-nthreads\fR=\fInth\fR
+Number of parallel threads to use. For instance, on a dual-core
+machine, \fB\-\-nthreads\fR=2 should yield the fastest
+computation. This option is silently ignored if Gyoto was compiled
+without POSIX threads support. Note that the metric and object are
+replicated for each thread which can lead to a decrease in performance
+if either is memory-intensive. Setting this option to 0 is equivalent
+to setting it to 1.
 .IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
 In some circumstances, you may want to perform several computations in
 which the computed geodesics end up being exactly identical. This is

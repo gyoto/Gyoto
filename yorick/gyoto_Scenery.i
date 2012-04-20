@@ -96,7 +96,10 @@ extern gyoto_Scenery;
                     Astrobj may be able to compute, refer to the
                     documentation for the Astrobj kind of your choice.
 
-
+    nthreads=number of parallel threads to use in
+             gyoto_Scenery_rayTrace. This has no effect when
+             ray-tracing using the "data = scenery()" syntax below.
+                    
     RAY-TRACING:
     
      Ray-traced data is retrieved calling the object like a function
@@ -121,11 +124,15 @@ extern gyoto_Scenery;
     
    SEE ALSO:
      gyoto_Metric, gyoto_Screen, gyoto_Astrobj, gyoto_Photon,
-     gyoto_Spectrometer
+     gyoto_Spectrometer, gyoto_Scenery_rayTrace
 */
 
 extern gyoto_Scenery_rayTrace
-/* DOCUMENT res = gyoto_Scenery_rayTrace(scenery, imin, imax, jmin, jmax)
+/* DOCUMENT res = gyoto_Scenery_rayTrace(scenery, imin, imax, jmin, jmax,
+                                         impactcoords)
+
+     if IMPACTCOORDS is an unadorned, nil variable it is output. If it
+     is an expression or non-nil, it is input.
  */
 
 func _gyoto_Scenery_adaptive_raytrace(sco, respmax, &computed) {
