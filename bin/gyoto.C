@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
   double tobs, fov, dist, paln, incl, arg;
   size_t res, nthreads;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads;
+  bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;

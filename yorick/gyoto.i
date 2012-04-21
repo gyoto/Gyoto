@@ -585,6 +585,13 @@ extern gyoto_debug;
    SEE ALSO: gyoto
  */
 
+extern gyoto_verbose;
+/* DOCUMENT gyoto_verbose, level
+         or level = gyoto_verbose()
+    Set/get Gyoto verbosity level
+   SEE ALSO: gyoto
+ */
+
 extern gyoto_Spectrometer;
 /* DOCUMENT spectro = gyoto_Spectrometer([members=values])
          or spectro, members=values

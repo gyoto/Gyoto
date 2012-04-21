@@ -55,6 +55,13 @@ extern "C" {
   }
 
   void
+  Y_gyoto_verbose(int argc)
+  {
+    ypush_long(Gyoto::verbose());
+    if (argc && !yarg_nil(argc)) Gyoto::verbose(ygets_l(1));
+  }
+
+  void
   Y___gyoto_initRegister(int argc)
   {
     Gyoto::Register::init();

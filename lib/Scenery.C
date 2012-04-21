@@ -204,7 +204,7 @@ void * SceneryThreadWorker (void *arg) {
     ++count;
   }
   if (!am_parent) delete ph;
-  std::cerr << "Thread terminating after integrating " << count << " photons\n";
+  GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
 }
 
 void Scenery::rayTrace(size_t imin, size_t imax,
@@ -253,8 +253,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   larg.jmin=jmin;
   larg.jmax=jmax;
 
-  time_t start,end; double dif;
-  time (&start);
+  clock_t start,end;
+  start = clock ();
 
 #ifdef HAVE_PTHREADS
   larg.mutex  = NULL;
@@ -284,10 +284,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       pthread_join(threads[th], NULL);
 #endif
 
-  time (&end);
-  dif = difftime (end,start);
-  std::cerr << "Raytraced "<< (jmax-jmin+1) * (imax-imin+1)
-	    << " photons in " << dif << "s\n";
+  end = clock ();
+  GYOTO_MSG << "\nRaytraced "<< (jmax-jmin+1) * (imax-imin+1)
+	    << " photons in " << double(end-start) / double(CLOCKS_PER_SEC)
+	    << "s using " << nthreads_ << " thread(s)\n";
 
 }
 
