@@ -57,7 +57,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   KerrBL(double spin, double mass) ; ///< Constructor with spin and mass specification
 
   // Default is _not_ fine
-  //KerrBL(const KerrBL& ) ;                ///< Copy constructor
+  KerrBL(const KerrBL& ) ;                ///< Copy constructor
   
   
   virtual ~KerrBL() ;                        ///< Destructor

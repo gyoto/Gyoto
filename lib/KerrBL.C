@@ -89,7 +89,8 @@ KerrBL::KerrBL(double a, double m) :
 }
 
 // default copy constructor should be fine 
-//KerrBL::KerrBL(const KerrBL& gg) : Metric(gg), spin_(gg.spin_) {setKind("KerrBL");}
+KerrBL::KerrBL(const KerrBL& gg) : Metric::Generic(gg), spin_(gg.spin_)
+{setKind("KerrBL");}
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
 

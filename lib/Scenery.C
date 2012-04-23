@@ -134,7 +134,7 @@ typedef struct SceneryThreadWorkerArg {
   double * impactcoords;
 } SceneryThreadWorkerArg ;
 
-void * SceneryThreadWorker (void *arg) {
+static void * SceneryThreadWorker (void *arg) {
   /*
     This is the real ray-tracing loop. It may be called by multiple
     threads in parallel, launched from ::rayTrace
@@ -205,6 +205,7 @@ void * SceneryThreadWorker (void *arg) {
   }
   if (!am_parent) delete ph;
   GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
+  return NULL;
 }
 
 void Scenery::rayTrace(size_t imin, size_t imax,
