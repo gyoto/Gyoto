@@ -33,7 +33,7 @@
 #include <pthread.h>
 #endif
 
-#include <ctime>    /* for benchmarking */
+#include <sys/time.h>    /* for benchmarking */
 
 
 using namespace Gyoto;
@@ -144,13 +144,9 @@ static void * SceneryThreadWorker (void *arg) {
 
   // Each thread needs its own Photon, clone cached Photon
   // it is assumed to be already initialized with spectrometer et al.
+  Photon * ph = larg -> ph;
 #ifdef HAVE_PTHREADS
-  Photon * ph = NULL;
-  int am_parent = pthread_equal(pthread_self(), *larg->parent);
-  if (am_parent) ph = larg->ph;
-  else ph = larg -> ph -> clone();
-#else
-  Photon * ph = larg->ph;
+  if (larg->mutex) ph = larg -> ph -> clone();
 #endif
 
   // local variables to store our parameters
@@ -203,7 +199,9 @@ static void * SceneryThreadWorker (void *arg) {
     (*larg->sc)(i, j, &data, impactcoords, ph);
     ++count;
   }
-  if (!am_parent) delete ph;
+#ifdef HAVE_PTHREADS
+  if (larg->mutex) delete ph;
+#endif
   GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
   return NULL;
 }
@@ -254,8 +252,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   larg.jmin=jmin;
   larg.jmax=jmax;
 
-  clock_t start,end;
-  start = clock ();
+  struct timeval tim;
+  double start, end;
+  gettimeofday(&tim, NULL);  
+  start=tim.tv_sec+(tim.tv_usec/1000000.0);  
 
 #ifdef HAVE_PTHREADS
   larg.mutex  = NULL;
@@ -285,9 +285,11 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       pthread_join(threads[th], NULL);
 #endif
 
-  end = clock ();
+  gettimeofday(&tim, NULL);  
+  end=tim.tv_sec+(tim.tv_usec/1000000.0);  
+
   GYOTO_MSG << "\nRaytraced "<< (jmax-jmin+1) * (imax-imin+1)
-	    << " photons in " << double(end-start) / double(CLOCKS_PER_SEC)
+	    << " photons in " << end-start
 	    << "s using " << nthreads_ << " thread(s)\n";
 
 }

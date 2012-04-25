@@ -98,8 +98,8 @@ extern "C" {
       "impactcoords", "nthreads",
       0
     };
-    static long kglobs[10];
-    int kiargs[9], piargs[]={-1, -1, -1};
+    static long kglobs[11];
+    int kiargs[10], piargs[]={-1, -1, -1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
