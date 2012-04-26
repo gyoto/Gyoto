@@ -12,10 +12,10 @@
    subprocesses are multi-threaded.
 
    Required packages:
-    gyoto        (gyoto_Scenery)
-    yorick-av    (av_*)
-    yorick-svipc (ftok, fork, shm_*, sem_*)
-    yutils       (tic, tac)
+    gyoto        (gyoto_Scenery)     https://github.com/gyoto/Gyoto
+    yorick-av    (av_*)              https://github.com/paumard/yorick-av
+    yorick-svipc (ftok, fork, s?m_*) https://github.com/mdcb/yp-svipc
+    yutils       (tic, tac)          https://github.com/frigaut/yorick-yutils
    
  */
 #include "svipc.i"
