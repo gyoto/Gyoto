@@ -22,13 +22,13 @@ endif
 all: $(EXE)
 
 .C.o:
-	$(CXX)  -c $(CXXFLAGS) $(GYOTO_INC) $<
+	$(CXX)  -c $(GYOTO_FLAGS) -I../include $(CPPFLAGS) $(CXXFLAGS) $<
 
 ray: RayTracing.o ../lib/libgyoto.a
 	$(CXX) -o $@ $(CXXFLAGS) $(GYOTO_INC) $^  $(LIB_CXX_Gyoto)
 
-gyoto: gyoto.C ../lib/$(LIBGYOTO_FILE)
-	$(CXX) -o $@ $(GYOTO_FLAGS) $(CXXFLAGS_G) $(GYOTO_INC) $< $(LIB_CXX) $(CFITSIO_LIB) -L../lib -lgyoto -ldl
+gyoto: gyoto.o ../lib/$(LIBGYOTO_FILE)
+	$(CXX) -o $@ $(LDFLAGS) $(LDLIBS) $< -L../lib -lgyoto -ldl
 
 dbgyoto: debugyoto.C ../lib/libgyoto.a
 	$(CXX) -o $@ $(CXXFLAGS) $(GYOTO_INC) $^ $(LIB_CXX_Gyoto) $(LIB_CXX) $(LIB_CFITSIO) $(LIB_LORENE) $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT) -Wno-long-long

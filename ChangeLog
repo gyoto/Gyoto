@@ -1,3 +1,8 @@
+0.0.3 2012/05/01 BUG
+	* fix a tiny bug in PatternDisk (initialization of phimin/max)
+	* rearrange flags in Makefiles/local_settings
+	  for easier downstream packaging
+
 0.0.2 2012/04/19 PKG
 	* install include files in include/Gyoto
 	* add this ChangeLog

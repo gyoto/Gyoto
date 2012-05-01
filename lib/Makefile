@@ -40,7 +40,7 @@ list_src:
 	echo $(SRC)
 
 .C.o:
-	$(CXX)  -c $(GYOTO_FLAGS) $(CXXFLAGS_G) $(GYOTO_INC) $<
+	$(CXX)  -c $(GYOTO_FLAGS) -I../include $(CPPFLAGS) $(CXXFLAGS) $<
 
 libgyoto.a: $(OBJ)
 	rm -f $@
@@ -51,10 +51,10 @@ ifeq ($(SYS),Linux)
 	ln -fs $(LIBGYOTO_FILE) libgyoto.so.$(SOVERS_MAJOR)
 	ln -fs $(LIBGYOTO_FILE) libgyoto.so
 endif
-	g++ -o $(LIBGYOTO_FILE) $(DYLIB_CFLAG)  $(LIB_CXX) $^
+	$(CXX) -o $(LIBGYOTO_FILE) $(DYLIB_FLAG)  $(LDFLAGS) $(LDLIBS) $^
 
 libgyoto-stdplug.$(DYLIB_SFX): $(STDPLUG_OBJ) StdPlug.o $(LIBGYOTO_FILE) Metric.o
-	g++ -o $@  $(PLUG_FLAGS) $(STDPLUG_OBJ) StdPlug.o $(LIB_CXX)
+	$(CXX) -o $@  $(PLUG_FLAGS) $(STDPLUG_OBJ) StdPlug.o $(LDFLAGS) $(LDLIBS)
 
 $(LORENEPLUG_OBJ): $(LORENEPLUG_SRC)
 	make -f Makefile.lorene $@

@@ -46,8 +46,8 @@ PatternDisk::PatternDisk() :
   emission_(NULL), opacity_(NULL), velocity_(NULL), radius_(NULL),
   Omega_(0.), t0_(0.),
   dnu_(1.), nu0_(0), nnu_(0),
-  dphi_(0.), phimin_(-DBL_MAX), 
-  nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
+  dphi_(0.), phimin_(0.), 
+  nphi_(0), phimax_(2*M_PI), repeat_phi_(1),
   dr_(0.), nr_(0)
 {
   GYOTO_DEBUG << "PatternDisk Construction" << endl;

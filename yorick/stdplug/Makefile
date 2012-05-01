@@ -42,7 +42,7 @@ PKG_DEPLIBS+=-bundle_loader ../../lib/libgyoto-stdplug.$(DYLIB_SFX) \
 endif
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../../include -I.. $(GYOTO_INC)
+PKG_CFLAGS= -I../../include -I..
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME
@@ -78,7 +78,7 @@ Y_SITE=$(Y_EXE_SITE)
 # ------------begin C++ source hacks
 # must use C++ to load yorick with this C++ package
 # this assumes make default CXX macro points to C++ compiler
-CXXFLAGS=$(CFLAGS) $(GYOTO_FLAGS) $(INC) -DYGYOTO_LOCAL_SUPPLIER=GyotoStdPlugSupplier
+CXXFLAGS=$(CFLAGS) $(GYOTO_FLAGS) -DYGYOTO_LOCAL_SUPPLIER=GyotoStdPlugSupplier
 LD_DLL=$(CXX) $(LDFLAGS) $(PLUG_SHARED)
 LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 

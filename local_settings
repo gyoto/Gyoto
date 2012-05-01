@@ -30,7 +30,7 @@ GYOTO_FLAGS += -DGYOTO_USE_XERCES
 #           Where are Xerces include files:
 XERCES_INC = -I/opt/local/include
 #           Where is libxercesc.so/.dylib/.a:
-XERCES_LIB = -L/opt/local/lib -lxerces-c
+XERCES_LDFLAGS = -L/opt/local/lib
 
 # Options for using cfisio:
 # -------------------------
@@ -39,47 +39,49 @@ XERCES_LIB = -L/opt/local/lib -lxerces-c
 # Parts of the library will not be built if GYOTO_USE_CFITSIO is not set.
 GYOTO_FLAGS += -DGYOTO_USE_CFITSIO
 CFITSIO_INC = -I/opt/local/include
-CFITSIO_LIB = -L/opt/local/lib -lcfitsio
+CFITSIO_PATH = -L/opt/local/lib
 
 # ________________________________________________________________
 # It shouldn't be necessary to change anything below this line
 
 
-# Options for the C++ compiler for debugging:
-# -------------------------------------------
-CXXFLAGS_G = -g -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+# Options for the C++ compiler
+# ----------------------------
+CXXFLAGS = -g -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
   -Wcast-align -Wconversion -Winline \
   -Wabi -Woverloaded-virtual  -Wno-long-long -fPIC
 
 
 # Path for the include files 
 # --------------------------------------------
-GYOTO_INC        = -I../include $(CFITSIO_INC)
+GYOTO_INC        = $(CFITSIO_INC)
 ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
 GYOTO_INC += $(XERCES_INC)
 endif
 
-# C, C++ libarary, mathematical library
+# C, C++ library, mathematical library
 # -------------------------------------
 LIB_CXX += -lstdc++ -lm
 ifneq (,$(findstring -DGYOTO_USE_XERCES,$(GYOTO_FLAGS)))
-LIB_CXX += $(XERCES_LIB)
+LIB_CXX +=  -lxerces-c
+GYOTO_LDFLAGS += $(XERCES_LDFLAGS)
 endif
 ifneq (,$(findstring -DGYOTO_USE_CFITSIO,$(GYOTO_FLAGS)))
-LIB_CXX += $(CFITSIO_LIB)
+LIB_CXX +=  -lcfitsio
+GYOTO_LDFLAGS += $(CFITSIO_LDFLAGS)
 endif
 
 SYS=$(shell uname -s)
 ifeq ($(SYS),Darwin)
 DYLIB_SFX=dylib
-DYLIB_CFLAG=-dynamiclib
+DYLIB_FLAG=-dynamiclib
 LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX)
 STLIB_CMD=libtool -static -o
 PLUG_FLAGS=-flat_namespace -bundle -bundle_loader $(LIBGYOTO_PATH)$(LIBGYOTO_FILE)
 DYLIB_VAR=DYLD_LIBRARY_PATH
 else
 DYLIB_SFX=so
-DYLIB_CFLAG=-shared -Wl,-soname,libgyoto.$(DYLIB_SFX).$(SOVERS_MAJOR)
+DYLIB_FLAG=-shared -Wl,-soname,libgyoto.$(DYLIB_SFX).$(SOVERS_MAJOR)
 LIBGYOTO_FILE=libgyoto.$(DYLIB_SFX).$(SOVERS)
 GYOTO_FLAGS += -rdynamic
 STLIB_CMD=ar qc
@@ -90,3 +92,7 @@ endif
 GYOTO_FLAGS += -DGYOTO_PLUGIN_SFX=\"$(DYLIB_SFX)\"
 GYOTO_FLAGS += -DGYOTO_PREFIX=\"$(PREFIX)\"
 GYOTO_FLAGS += -DGYOTO_SOVERS=\"$(SOVERS)\"
+
+CPPFLAGS = $(CFITSIO_INC) $(XERCES_INC)
+LDFLAGS  = $(GYOTO_LDFLAGS)
+LDLIBS   = $(LIB_CXX)
