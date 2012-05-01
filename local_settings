@@ -39,7 +39,7 @@ XERCES_LDFLAGS = -L/opt/local/lib
 # Parts of the library will not be built if GYOTO_USE_CFITSIO is not set.
 GYOTO_FLAGS += -DGYOTO_USE_CFITSIO
 CFITSIO_INC = -I/opt/local/include
-CFITSIO_PATH = -L/opt/local/lib
+CFITSIO_LDFLAGS = -L/opt/local/lib
 
 # ________________________________________________________________
 # It shouldn't be necessary to change anything below this line
