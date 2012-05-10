@@ -17,13 +17,22 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Gyoto
 #include "GyotoFactory.h"
 #include "GyotoUtils.h"
 #include "GyotoRegister.h"
 #include "GyotoDefs.h"
+
+// FITS I/O
 #include <fitsio.h>
+
+// signal()
 #include <csignal>
 
+// getpid()
+#include <sys/types.h>
+#include <unistd.h>
+ 
 using namespace std;
 using namespace Gyoto;
 
