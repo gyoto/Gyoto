@@ -36,10 +36,10 @@ OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../lib -lgyoto $(LIB_CXX)
+PKG_DEPLIBS=-L../lib -lgyoto $(LDLIBS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include $(GYOTO_INC)
-PKG_LDFLAGS=-L../lib
+PKG_CFLAGS= -I../include
+PKG_LDFLAGS= -L../lib
 
 # list of additional package names you want in PKG_EXENAME
 # (typically Y_EXE_PKGS should be first here)
@@ -74,7 +74,7 @@ Y_SITE=$(Y_EXE_SITE)
 # ------------begin C++ source hacks
 # must use C++ to load yorick with this C++ package
 # this assumes make default CXX macro points to C++ compiler
-CXXFLAGS=$(CFLAGS) $(GYOTO_FLAGS) $(INC)
+CXXFLAGS=$(CFLAGS) $(GYOTO_FLAGS)
 LD_DLL=$(CXX) $(LDFLAGS) $(PLUG_SHARED)
 LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 
