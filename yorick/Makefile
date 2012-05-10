@@ -9,7 +9,7 @@ Y_HOME_PKG=
 # ----------------------------------------------------- optimization flags
 
 # options for make command line, e.g.-   make COPT=-g TGT=exe
-COPT=$(COPT_DEFAULT)
+COPT=$(COPT_DEFAULT) -L../lib -I../include
 TGT=$(DEFAULT_TGT)
 
 # ------------------------------------------------ macros for this package
