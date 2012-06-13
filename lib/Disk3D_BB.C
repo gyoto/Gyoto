@@ -139,6 +139,8 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   }
 
   double rcur=co[1];
+  double th=co[2];
+
   if (rcur > rout() || rcur < risco) return 0.;
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
@@ -156,9 +158,9 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   }else{
     //SI value of cylindrical r coordinate:
     double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
-    double th=co[2];
-    //double rcur_cyl=rcur*sin(th);
-    double r_si=rcur*dist_unit;
+    double r_si=rcur*dist_unit; //spherical
+    //double r_si=rcur*sin(th)*dist_unit; //cylindrical
+    //cout << "cyl: " << rcur << " " << th << " " << rcur*sin(th) << " " << risco << endl;
     double risco_si=risco*dist_unit;
 
     /*** Computing emission coef: ***/
@@ -175,17 +177,21 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     " for heuristic computation of jnu");*/
 
     //Over a cylinder:
-    /*double height=2.*0.2*risco_si;//disk height in SI
+    /*double height=2.*zmax()*dist_unit;//disk total height in SI
     double Vem = M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = 2.*M_PI*(r_si*height+r_si*r_si-risco_si*risco_si);
-    */
+    double Sem = 2.*M_PI*(r_si*height+risco_si*height+r_si*r_si-risco_si*risco_si);*/
+    //cout << height << " " << 2./height << " " << Sem/Vem << endl;
+    //cout << "zmax= " << zmax() << endl;
 
-    //Over a 'napkin ring':
+    
+    //Over a 'napkin ring' (same formula as for cylinder, but different r!,
+    // better to use these formula as r_cyl can be < risco -> pbs...):
     double height=zmax()*dist_unit;//disk half-height in SI
     //Volume of napkin ring of (spherical) radius risco to r
     //See wikipedia "Spherical cap"
     double Vem = 2.*M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = 2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
+    double Sem = 2.*M_PI*(r_si+risco_si)*(2.*height+r_si-risco_si);
+      //2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
     if (Vem<=0. || Sem<0. 
 	|| Vem!=Vem 
 	|| Sem!=Sem){
@@ -195,11 +201,9 @@ double Disk3D_BB::emission1date(double nu, double dsem,
 		 " for heuristic computation of jnu");
     }
     double jnu = Sem/Vem*Iem;
-
     //Elementary intensity added by current dsem segment of worldline
     //in SI units:
     Ires=jnu*dsem*dist_unit;
-    //    cout << "Thin:  " << Iem << " " << dsem << " " << coord_ph[1] << " " << dsem/coord_ph[1] << endl;
   }
   
   return Ires;
