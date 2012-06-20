@@ -142,15 +142,17 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   double th=co[2];
 
   if (rcur > rout() || rcur < risco) return 0.;
+
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
   size_t naxes[4];
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
-  //cout << "r T= "<< rcur << " " << TT << endl;
+
   spectrumBB_->setTemperature(TT);
   double Iem=(*spectrumBB_)(nu);
+  //cout << "r T Iem= "<< rcur << " " << TT << " " << Iem << endl;
 
   double Ires=0.;
   if (!flag_radtransf_){
@@ -186,11 +188,22 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     
     //Over a 'napkin ring' (same formula as for cylinder, but different r!,
     // better to use these formula as r_cyl can be < risco -> pbs...):
-    double height=zmax()*dist_unit;//disk half-height in SI
+    
+    /*double height=zmax()*dist_unit;//disk half-height in SI
     //Volume of napkin ring of (spherical) radius risco to r
     //See wikipedia "Spherical cap"
     double Vem = 2.*M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = 2.*M_PI*(r_si+risco_si)*(2.*height+r_si-risco_si);
+    double Sem = 2.*M_PI*(r_si+risco_si)*(2.*height+r_si-risco_si);*/
+
+    //Over whole portion of sphere (don't remove ISCO sphere)
+    double height = zmax()*dist_unit;
+    double Vem    = 2.*M_PI/3.*(2*r_si*r_si*r_si
+				-(r_si-height)*(2.*r_si+height));
+    double Sem    = 2.*M_PI*(r_si*r_si+2.*r_si*height-height*height);
+
+    //cout << Sem/Vem*dsem*dist_unit << endl;
+
+    //cout << "S,V= " << r_si << " " << risco_si << " " << Sem << " " << Vem << " " << Sem/Vem << endl;
       //2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
     if (Vem<=0. || Sem<0. 
 	|| Vem!=Vem 
@@ -200,12 +213,16 @@ double Disk3D_BB::emission1date(double nu, double dsem,
       throwError("In Disk3D_BB::emission1date: bad case"
 		 " for heuristic computation of jnu");
     }
+
     double jnu = Sem/Vem*Iem;
     //Elementary intensity added by current dsem segment of worldline
     //in SI units:
     Ires=jnu*dsem*dist_unit;
+    //cout << rcur << " " << TT << endl;
+    //cout << Iem << " " << Sem/Vem << " " << dsem << " " << Ires << endl;
+    //cout << "stuff 3D= " << TT << " " << Iem << " " << Ires << " " << jnu << " " << Sem/Vem << " " << dsem << endl;
   }
-  
+
   return Ires;
 
 }
@@ -233,7 +250,7 @@ double Disk3D_BB::emission(double nu, double dsem,
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }
- 
+
   return 0.;
 }
 
