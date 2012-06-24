@@ -1,4 +1,4 @@
-#!/usr/local/bin/yorick -i
+#!/usr/bin/env yorick -i
 /*
     Copyright 2007 F. Rigaut
     Copyright 2011 Thibaut Paumard

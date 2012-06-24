@@ -37,6 +37,7 @@ Spectrum::Generic * Spectrum::Generic::clone() const
   return const_cast<Spectrum::Generic*>(this);
               // avoid warning, we won't get to that point
 }
+Spectrum::Generic::~Generic() { GYOTO_DEBUG << endl; }
 const string Spectrum::Generic::getKind() const { return kind_; }
 
 double Spectrum::Generic::integrate(double nu1, double nu2) {

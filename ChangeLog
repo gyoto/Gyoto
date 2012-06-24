@@ -1,3 +1,10 @@
+0.x.y soon ABI
+	* add virtual destrcuctor to Spectrum::Generic
+	* fix buffer overflow in lib/Factory.C 
+	* update paper ref in bin/gyoto.C
+	* take environment (CXX|CPP|LD)FLAGS into account in local_settings
+	* harden CXXFLAGS by default, may not work for all arches
+	
 0.0.3 2012/05/01 BUG
 	* fix a tiny bug in PatternDisk (initialization of phimin/max)
 	* rearrange flags in Makefiles/local_settings

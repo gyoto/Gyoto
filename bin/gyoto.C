@@ -173,7 +173,8 @@ int main(int argc, char** argv) {
 	 << " properly \n acknowledged. Please cite:\n"
 	 << "  GYOTO: a new general relativistic ray-tracing code,\n"
 	 << "  F. H. Vincent, T. Paumard, E. Gourgoulhon & G. Perrin 2011,\n"
-	 << "  Classical and Quantum Gravity, accepted. [arXiv:1109.4769]"
+	 << "  Classical and Quantum Gravity 28, 225011 (2011) "
+	 << "[arXiv:1109.4769]"
 	 << endl << endl;
 
   // set-up error reporter
