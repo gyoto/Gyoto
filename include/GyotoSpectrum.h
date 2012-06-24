@@ -61,6 +61,8 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
   //  Spectrum::Generic(const Spectrum::Generic &); ///< Copy constructor. Default is fine.
   virtual Generic * clone() const; ///< Cloner
 
+  virtual ~Generic() ; ///< Destructor: does nothing.
+
   const std::string getKind() const; ///< Get spectrum kind
 
   virtual double operator()(double nu) const =0;
