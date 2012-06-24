@@ -47,9 +47,16 @@ CFITSIO_LDFLAGS = -L/opt/local/lib
 
 # Options for the C++ compiler
 # ----------------------------
-CXXFLAGS = -g -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+ifndef CXXFLAGS
+CXXFLAGS = -g -O2 -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
   -Wcast-align -Wconversion -Winline \
-  -Wabi -Woverloaded-virtual  -Wno-long-long -fPIC
+  -Wabi -Woverloaded-virtual  -Wno-long-long \
+# security hardening, also catches some memory overflows:
+  -Wformat -Wformat-security -Werror=format-security \
+  -D_FORTIFY_SOURCE=2 \
+  -fstack-protector --param ssp-buffer-size=4
+endif
+CXXFLAGS += -fPIC
 
 
 # Path for the include files 
@@ -93,6 +100,6 @@ GYOTO_FLAGS += -DGYOTO_PLUGIN_SFX=\"$(DYLIB_SFX)\"
 GYOTO_FLAGS += -DGYOTO_PREFIX=\"$(PREFIX)\"
 GYOTO_FLAGS += -DGYOTO_SOVERS=\"$(SOVERS)\"
 
-CPPFLAGS = $(CFITSIO_INC) $(XERCES_INC)
-LDFLAGS  = $(GYOTO_LDFLAGS)
+CPPFLAGS += $(CFITSIO_INC) $(XERCES_INC)
+LDFLAGS  += $(GYOTO_LDFLAGS)
 LDLIBS   = $(LIB_CXX)

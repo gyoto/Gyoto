@@ -41,8 +41,8 @@ using namespace Gyoto;
 using namespace xercesc;
 using namespace std;
 
-#define dvalLength 21
-#define dfmt " %20.16g "
+#define dvalLength 25
+#define dfmt " %.16g "
 #define d2txt(txt, val) sprintf( txt , dfmt, val)
 #define ifmt " %li "
 #define i2txt(txt, val) sprintf( txt, ifmt, val);
