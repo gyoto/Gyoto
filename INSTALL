@@ -1,6 +1,22 @@
 INSTALLING GYOTO
 ================
 
+0- DISTRIBUTION PACKAGES
+========================
+
+Gyoto comes prepackaged for some systems.
+
+On Debian GNU/Linux (and derivatives), try:
+ sudo apt-get install gyoto gyoto-doc yorick-gyoto
+Developers may be interested in gyoto-dbg and libgyoto0-dev in addition.
+
+On an Apple Mac, you can install MacPorts (http://www.macports.org/) and run:
+ sudo port install Gyoto
+
+If Gyoto is not packaged for your system or if you prefer to build
+from source, read on.
+
+
 I- INSTALL THE DEPENDENCIES
 ===========================
    - xercesc-3 (recommended, required for the executable):
