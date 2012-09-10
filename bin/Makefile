@@ -24,7 +24,7 @@ all: $(EXE)
 	$(CXX)  -c $(GYOTO_FLAGS) -I../include $(CPPFLAGS) $(CXXFLAGS) $<
 
 gyoto: gyoto.o ../lib/$(LIBGYOTO_FILE)
-	$(CXX) -o $@ -L../lib $(LDFLAGS) $(LDLIBS) $< -L../lib -lgyoto -ldl
+	$(CXX) -o $@ $< -L../lib -lgyoto -ldl $(LDFLAGS) $(LDLIBS)
 
 clean:
 	rm -f $(OBJ)
