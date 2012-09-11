@@ -16,13 +16,9 @@ yorick-dev
 yorick-yutils
 yorick-spydr
 
-2/ Select the proper local_settings file
-   -------------------------------------
- $ cd Gyoto
- $ cp local_settings_ubuntu local_settings
-
-3/ Compilation
+2/ Compilation
    -----------
+ $ cd Gyoto
  $ make
 
 Then follow the instructions from step IV in the INSTALL file.
