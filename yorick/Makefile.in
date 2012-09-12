@@ -14,7 +14,14 @@ TGT=$(DEFAULT_TGT)
 
 # ------------------------------------------------ macros for this package
 
-include ../local_settings
+#include ../local_settings
+
+CPPFLAGS=@CPPFLAGS@
+XERCESLDFLAGS=@XERCESLDFLAGS@
+XERCESCPPFLAGS=@XERCESCPPFLAGS@
+use_xerces=@use_xerces@
+DYLIB_VAR=@DYLIB_VAR@
+SYS=@SYS@
 
 YGYOTO_C = $(shell ls *.C)
 GYOTO_C = $(shell ls ../lib/*.C)
@@ -36,9 +43,9 @@ OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../lib -lgyoto $(LDLIBS)
+PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include
+PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(use_xerces)
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME
@@ -95,15 +102,14 @@ gyoto_std.so: stdplug/gyoto_std.so
 	cp stdplug/gyoto_std.so ./
 
 stdplug/gyoto_std.so: stdplug/*.C
-	cd stdplug; yorick -batch make.i; make
+	cd stdplug; $(MAKE)
 
-../lib/$(LIBGYOTO_FILE): ../lib/*.C
-	cd ../lib ; make $(LIBGYOTO_FILE)
+gyoto.so: gyoto.i $(OBJS)
 
-../lib/libgyoto.a:
-	cd ../lib ; make libgyoto.a
-
-gyoto.so: gyoto.i $(OBJS) ../lib/$(LIBGYOTO_FILE)
+check-dll: $(PKG_DLL) check.i
+	$(DYLIB_VAR)=../lib/.libs:$$$(DYLIB_VAR) \
+	GYOTO_CHECK_NODISPLAY=true \
+	$(Y_EXE) -i check.i
 
 install::
 	cd stdplug; make install
@@ -130,6 +136,7 @@ clean::
 distclean::
 	cd stdplug; yorick -batch make.i; make distclean
 
+%: ;
 
 .PHONY: standalone test-cppprog test-standalone test test-plugin check
 

@@ -14,7 +14,14 @@ TGT=$(DEFAULT_TGT)
 
 # ------------------------------------------------ macros for this package
 
-include ../../local_settings
+CPPFLAGS=@CPPFLAGS@
+XERCESLDFLAGS=@XERCESLDFLAGS@
+XERCESCPPFLAGS=@XERCESCPPFLAGS@ @use_xerces@
+CFITSIOLDFLAGS=@CFITSIOLDFLAGS@
+CFITSIOCPPFLAGS=@CFITSIOCPPFLAGS@ @use_cfitsio@
+DYLIB_VAR=@DYLIB_VAR@
+SYS=@SYS@
+plugin_sfx=@plugin_sfx@
 
 YGYOTO_C = $(shell ls ../*.C)
 GYOTO_C = $(shell ls ../../lib/*.C)
@@ -34,15 +41,15 @@ OBJS = StdPlug.o gyoto_KerrBL.o gyoto_KerrKS.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../../lib -lgyoto
+PKG_DEPLIBS=-L../../lib/.libs -lgyoto $(XERCESLDFLAGS) $(CFITSIOLDFLAGS)
 
 ifeq ($(SYS),Darwin)
-PKG_DEPLIBS+=-bundle_loader ../../lib/libgyoto-stdplug.$(DYLIB_SFX) \
+PKG_DEPLIBS+=-bundle_loader ../../lib/.libs/libgyoto-stdplug.$(plugin_sfx) \
 	-flat_namespace -bundle_loader ../gyoto.so $(LIB_CXX)
 endif
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../../include -I..
+PKG_CFLAGS= -I../../include -I.. $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME
@@ -100,10 +107,7 @@ StdPlug.o: ../ygyoto_supplier.C ../ygyoto.h
 ../../lib/libgyoto.a: $(GYOTO_C) $(GYOTO_H)
 	make -C ../lib
 
-gyoto_std.so: $(OBJS) ../../lib/libgyoto-stdplug.$(DYLIB_SFX)
-
-../../lib/libgyoto-stdplug.$(DYLIB_SFX): ../../lib/*.C
-	cd ../../lib/ ; make libgyoto-stdplug.$(DYLIB_SFX)
+gyoto_std.so: $(OBJS)
 
 .PHONY: standalone test-cppprog test-standalone test test-plugin check
 

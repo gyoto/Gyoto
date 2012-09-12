@@ -80,6 +80,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   /* PATTERNVELOCITY */
   if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "patternvelocity=\n";
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
@@ -95,8 +96,11 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
       ypush_long((*ao)->repeatPhi());
-    } else
+    } else {
+      GYOTO_DEBUG << "calling repeatPhi()\n";
       (*ao)->repeatPhi(ygets_l(iarg)) ;
+      GYOTO_DEBUG << "calling repeatPhi() done\n";
+    }
   }
 
   /* NU0 */

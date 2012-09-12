@@ -1,0 +1,7 @@
+# This file is here to put the following definition (taken from
+# $HOME_LORENE/local_settings) on top. Any editing should go in
+# automakefile.am.
+@LIB_LAPACK_DEF@
+@LIB_GSL_DEF@
+@LIB_PGPLOT_DEF@
+include automakefile

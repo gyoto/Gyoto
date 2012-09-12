@@ -1,0 +1,12 @@
+SHELL=/bin/sh
+
+all: doc
+
+doc: ../include/*.h
+	doxygen doxyfile
+
+distclean clean:
+	rm -fr html latex
+	rm -fr *~
+
+%: ;

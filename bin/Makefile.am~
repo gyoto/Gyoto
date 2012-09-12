@@ -1,0 +1,11 @@
+ACLOCAL_AMFLAGS = -I m4 
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS)
+AM_LDFLAGS  = $(XERCESLDFLAGS)
+AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ -rdynamic \
+	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
+	-DGYOTO_SOVERS=\"@sovers@\" -fPIC
+lib_LTLIBRARIES = libgyoto.la
+libgyoto_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+	Worldline.C FocalPlane.C Photon.C Scenery.C			\
+	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
+	Spectrometer.C ThinDisk.C

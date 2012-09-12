@@ -1,5 +1,8 @@
 SHELL=/bin/sh
-include ../local_settings
+
+HOME_LORENE = @HOME_LORENE@
+use_xerces=@use_xerces@
+#include ../local_settings
 
 # Options for using Lorene:
 # -------------------------
@@ -30,6 +33,6 @@ libgyoto-lorene.$(DYLIB_SFX): $(LORENEPLUG_OBJ)
 	$(CXX) -o $@  $(PLUG_FLAGS) $(LORENEPLUG_OBJ) $(LDFLAGS) $(LDLIBS)
 
 .C.o:
-	$(CXX)  -c $(GYOTO_FLAGS) -I../include $(LORENE_INC) $(CPPFLAGS) $(CXXFLAGS) $<
+	$(CXX)  -c $(GYOTO_FLAGS) -I../include $(LORENE_INC) $(CPPFLAGS) $(CXXFLAGS) $(use_xerces) $<
 
 .PHONY: all
