@@ -14,7 +14,7 @@ VERSINFO=0:0:0
 sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
-AC_SUBST([VERSION], [`cat ${top_srcdir}/VERSION`])
+AC_SUBST([VERSION], [0.0.4])
 
 # Checks for programs.
 AC_PROG_CXX

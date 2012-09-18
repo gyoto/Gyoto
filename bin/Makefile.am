@@ -9,7 +9,7 @@ CLEANFILES=example-*.fits
 bin_PROGRAMS  = gyoto
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
-gyoto_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(CFITSIOLDFLAGS) -export-dynamic
 
 CHECK_CMD=./gyoto

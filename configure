@@ -15258,7 +15258,7 @@ VERSINFO=0:0:0
 sovers=`echo $VERSINFO | tr : .`
 
 
-VERSION=`cat ${top_srcdir}/VERSION`
+VERSION=0.0.4
 
 
 # Checks for programs.
