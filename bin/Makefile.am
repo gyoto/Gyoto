@@ -10,7 +10,7 @@ bin_PROGRAMS  = gyoto
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_LDFLAGS  = $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_LDFLAGS  = $(XERCESLDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 CHECK_CMD=./gyoto
 check: gyoto
