@@ -32,6 +32,9 @@ I- INSTALL THE DEPENDENCIES
    - Yorick    (optional, provides an interface to the Yorick
      interpreted language, allowing to write Gyoto scripts):
        http://yorick.sourceforge.net/
+     Yorick users will also need the yorick-yutils add-on
+     (https://github.com/frigaut/yorick-yutils) and may need to install
+     the yorick-dev package (in particulat Debian/Ubuntu users).
    - LORENE (optional, the libgyoto-lorene plug-in can be built later)
        http://www.lorene.obspm.fr/
      On some systems, LORENE must be built with -fPIC (GYOTO as well,

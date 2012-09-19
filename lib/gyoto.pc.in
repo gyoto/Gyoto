@@ -2,12 +2,14 @@ prefix=@prefix@
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
-sovers=@sovers@
-soverdir=${libdir}/gyoto/${sovers}
-plugin_sfx=@plugin_sfx@
+
+GYOTO_SOVERS=@sovers@
+GYOTO_PLUGDIR=${libdir}/gyoto/${GYOTO_SOVERS}
+GYOTO_PLUGSFX=@plugin_sfx@
+GYOTO_SYS=@SYS@
+
 YORICK=@YORICK@
 HOME_LORENE=@HOME_LORENE@
-SYS=@SYS@
 
 Name: Gyoto
 Description: Relativistic geodesic integration and ray-tracing
