@@ -458,8 +458,9 @@ void PatternDisk::fitsWrite(string filename) {
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
   ////// CREATE FILE
-  GYOTO_DEBUG << "creating file" << endl;
+  GYOTO_DEBUG << "creating file \"" << pixfile << "\"... ";
   fits_create_file(&fptr, pixfile, &status);
+  if (debug()) cerr << "done." << endl;
   fits_create_img(fptr, DOUBLE_IMG, 3, naxes, &status);
   if (status) throwCfitsioError(status) ;
 

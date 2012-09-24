@@ -35,7 +35,7 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 if HAVE_CFITSIO
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
 endif
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS)
 
 # LORENE PLUGIN
 if HAVE_LORENE

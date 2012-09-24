@@ -341,7 +341,7 @@ cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
 	 Disk3D.C Disk3D_BB.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS)
 LORENE_LIB_G = -L$(HOME_LORENE)/Lib -llorene -llorenef77 \
 	     $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT)
 
