@@ -17,11 +17,12 @@ include $(HOME_LORENE)/local_settings
 CXX=$(GYOTO_CXX)
 LORENE_INC = -I$(HOME_LORENE)/C++/Include
 LORENE_LIB_G = -L$(HOME_LORENE)/Lib -llorene_g -llorenef77_g \
-	     $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT)
+	     $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT) \
+	     -lfftw3 -lgfortran -lstdc++ -lm
 LORENE_LIBLOR = $(HOME_LORENE)/Lib/liblorene_g.a \
 	      $(HOME_LORENE)/Lib/liblorenef77_g.a \
 	      $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT) \
-	      $(LIB_LORENE)
+	      $(LIB_LORENE) -lfftw3 -lgfortran -lstdc++ -lm
 LIB_CXX += $(LORENE_LIB_G)
 
 LORENEPLUG_SRC= RotStar3_1.C LorenePlug.C
