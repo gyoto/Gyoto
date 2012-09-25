@@ -129,6 +129,21 @@ Under Mac OS X, LD_LIBRARY_PATH is replaced by DYLD_LIBRARY_PATH.
 It goes beyond the scope of this manual to teach you how to set
 environment variables; if in doubt ask the local guru or google...
 
+By default, the Yorick plug-in is also installed under ${prefix}. If
+Yorick itself is un ${prefix}, then the plug-in will be installed
+directly with the rest of Yorick and hence will be found by Yorick. On
+the other hand, if Yorick is not under ${prefix}, the plug-in may not
+be found immediately by Yorick. Assuming you used the default prefix
+(/usr/local), it should be sufficient to create a file named
+${HOME}/Yorick/custom.i containing the three following lines:
+
+require, "pathfun.i";
+add_y_home,"/usr/local/lib/yorick/";
+command_line= process_argv();
+
+Under Debian and Ubuntu GNU/Linux, /usr/local/lib/yorick/ is by
+default in Yorick search paths.
+
 
 VII- More on GNU ./configure script:
 ====================================

@@ -70,6 +70,44 @@ AC_ARG_WITH([yorick],
   [AC_CHECK_PROGS([YORICK],$yorick_exe)]
 )
 
+# Only if YORICK available, check for install directories
+AS_IF([test "x$YORICK" != "x"],
+  [AC_MSG_CHECKING([install path for Yorick platform-dependent files])
+   Y_EXE_HOME=`echo write,format=\"%s\",Y_HOME\; quit | ${YORICK}| tail -1`
+   Y_EXE_SITE=`echo write,format=\"%s\",Y_SITE\; quit | ${YORICK}| tail -1`
+   Y_INST_HOME=
+   Y_INST_SITE=
+   AC_ARG_WITH([yorick-home],
+     [AC_HELP_STRING([--with-yorick-home=path],
+        [where to install Yorick platform-dpendent files. Default: the
+         yorick directory if it is under ${exec_prefix}, else
+         ${exec_prefix}/lib/yorick.])],
+     [Y_INST_HOME=${with_yorick_home}
+      Y_INST_SITE=${with_yorick_home}
+     ],
+     [AS_IF([echo ${Y_EXE_HOME} | grep ${exec_prefix}],
+        [Y_INST_HOME=Y_EXE_HOME
+	 Y_INST_SITE=Y_EXE_SITE],
+	[Y_INST_HOME='${exec_prefix}/lib/yorick'
+	 Y_INST_SITE='${prefix}/lib/yorick']
+      )])
+   AC_MSG_RESULT([$Y_INST_HOME])
+   AC_SUBST([Y_INST_HOME])
+
+   AC_MSG_CHECKING([install path for Yorick platform-independent files])
+   AC_ARG_WITH([yorick-site],
+     [AC_HELP_STRING([--with-yorick-site=path],
+        [where to install the Yorick platform-independent files.
+	Default: the yorick directory if it is under ${prefix}, else
+	${prefix}/lib/yorick.])
+     ],
+     [Y_INST_SITE=${with_yorick_site}])
+   AC_MSG_RESULT([$Y_INST_SITE])
+   AC_SUBST([Y_INST_SITE])
+
+  ]
+)
+
 # Checks for libraries.
 AC_CHECK_LIB([dl], [dlopen])
 

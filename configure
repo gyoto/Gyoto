@@ -654,6 +654,8 @@ XERCESLDFLAGS
 use_xerces
 POW_LIB
 LIBOBJS
+Y_INST_SITE
+Y_INST_HOME
 YORICK
 DYLIB_VAR
 SYS
@@ -792,6 +794,8 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 with_yorick
+with_yorick_home
+with_yorick_site
 with_xerces
 with_xerces_headers
 with_xerces_libs
@@ -1452,6 +1456,13 @@ Optional Packages:
                           whether to use yorick and optionnally the local name
                           (possibly with path) of the yorick executable.
                           Default: use yorick if it is found in the path.
+  --with-yorick-home=path where to install Yorick platform-dpendent files.
+                          Default: the yorick directory if it is under
+                          ${exec_prefix}, else ${exec_prefix}/lib/yorick.
+  --with-yorick-site=path where to install the Yorick platform-independent
+                          files. Default: the yorick directory if it is under
+                          ${prefix}, else ${prefix}/lib/yorick.
+
   --with-xerces[=xerces-prefix]
                           Force using xerces installed in a given prefix or
                           force disable it.
@@ -16498,6 +16509,51 @@ done
 
 fi
 
+
+# Only if YORICK available, check for install directories
+if test "x$YORICK" != "x"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking install path for Yorick platform-dependent files" >&5
+$as_echo_n "checking install path for Yorick platform-dependent files... " >&6; }
+   Y_EXE_HOME=`echo write,format=\"%s\",Y_HOME\; quit | ${YORICK}| tail -1`
+   Y_EXE_SITE=`echo write,format=\"%s\",Y_SITE\; quit | ${YORICK}| tail -1`
+   Y_INST_HOME=
+   Y_INST_SITE=
+
+# Check whether --with-yorick-home was given.
+if test "${with_yorick_home+set}" = set; then :
+  withval=$with_yorick_home; Y_INST_HOME=${with_yorick_home}
+      Y_INST_SITE=${with_yorick_home}
+
+else
+  if echo ${Y_EXE_HOME} | grep ${exec_prefix}; then :
+  Y_INST_HOME=Y_EXE_HOME
+	 Y_INST_SITE=Y_EXE_SITE
+else
+  Y_INST_HOME='${exec_prefix}/lib/yorick'
+	 Y_INST_SITE='${prefix}/lib/yorick'
+
+fi
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $Y_INST_HOME" >&5
+$as_echo "$Y_INST_HOME" >&6; }
+
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking install path for Yorick platform-independent files" >&5
+$as_echo_n "checking install path for Yorick platform-independent files... " >&6; }
+
+# Check whether --with-yorick-site was given.
+if test "${with_yorick_site+set}" = set; then :
+  withval=$with_yorick_site; Y_INST_SITE=${with_yorick_site}
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $Y_INST_SITE" >&5
+$as_echo "$Y_INST_SITE" >&6; }
+
+
+
+
+fi
 
 # Checks for libraries.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5

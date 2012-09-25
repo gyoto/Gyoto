@@ -82,6 +82,12 @@ include $(Y_MAKEDIR)/Make$(TGT)
 Y_HOME=$(Y_EXE_HOME)
 Y_SITE=$(Y_EXE_SITE)
 
+# Actual install directories set with ./configure --with-yorick-*
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+DEST_Y_HOME=$(DESTDIR)@Y_INST_HOME@
+DEST_Y_SITE=$(DESTDIR)@Y_INST_SITE@
+
 # ------------begin C++ source hacks
 # must use C++ to load yorick with this C++ package
 # this assumes make default CXX macro points to C++ compiler
