@@ -358,14 +358,24 @@ AC_ARG_WITH([lorene],
 AC_SUBST([HOME_LORENE])
 AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
 AS_IF([test "x$HOME_LORENE" != "x"],
-  [AC_SUBST([LIB_LAPACK_DEF],
-     [`grep LIB_LAPACK $HOME_LORENE/local_settings`])
-   AC_SUBST([LIB_GSL_DEF],
-     [`grep LIB_GSL $HOME_LORENE/local_settings`])
-   AC_SUBST([LIB_PGPLOT_DEF],
-     [`grep LIB_PGPLOT $HOME_LORENE/local_settings`])
-   AC_SUBST([LIB_LORENE_DEF],
-     [`grep LIB_LORENE $HOME_LORENE/local_settings`])
+  [
+cat >conftest.make <<_ACEOF
+include \$(HOME_LORENE)/local_settings
+%:
+	@echo \$(\$@)
+_ACEOF
+   LORENELDFLAGS=`make -f conftest.make LIB_LAPACK`
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_GSL`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_PGPLOT`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_LORENE`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_CXX`"
+   LORENECPPFLAGS=`make -f conftest.make INC`
+rm conftest.make
+   AC_SUBST([LORENECPPFLAGS])
+   AC_SUBST([LORENELDFLAGS])
+   pkg_cflags="${pkg_cflags} ${LORENECPPFLAGS}"
+   pkg_libss="${pkg_libss} ${LORENELDFLAGS}"
+
   ]
 )
 
@@ -381,8 +391,6 @@ AC_CONFIG_FILES([Makefile
                  bin/Makefile
                  doc/Makefile
                  lib/Makefile
-                 lib/automakefile
- 		 lib/Makefile.lorene
                  lib/gyoto.pc
                  ])
 AS_IF([test "x$YORICK" != "x"],

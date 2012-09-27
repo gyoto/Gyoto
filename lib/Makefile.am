@@ -40,19 +40,10 @@ libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS)
 # LORENE PLUGIN
 if HAVE_LORENE
 sover_LTLIBRARIES += libgyoto-lorene.la
-@LIB_LAPACK_DEF@
-@LIB_GSL_DEF@
-@LIB_PGPLOT_DEF@
 endif
-LORENE_LIB_G = -L$(HOME_LORENE)/Lib -llorene -llorenef77 \
-	     $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT)
-LORENE_LIBLOR = $(HOME_LORENE)/Lib/liblorene_g.a \
-	      $(HOME_LORENE)/Lib/liblorenef77_g.a \
-	      $(LIB_LAPACK) $(LIB_GSL) $(LIB_PGPLOT) \
-	      $(LIB_LORENE)
 libgyoto_lorene_la_SOURCES = RotStar3_1.C LorenePlug.C
-libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENE_LIB_G)
-libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(HOME_LORENE)/C++/Include
+libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS)
+libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 
 # pkg-config file
 pkgconfigdir=$(libdir)/pkgconfig

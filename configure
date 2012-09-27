@@ -639,10 +639,8 @@ mySUBDIRS
 pkg_libs
 pkg_cflags
 pkg_requires
-LIB_LORENE_DEF
-LIB_PGPLOT_DEF
-LIB_GSL_DEF
-LIB_LAPACK_DEF
+LORENELDFLAGS
+LORENECPPFLAGS
 HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
@@ -17515,13 +17513,23 @@ else
 fi
 
 if test "x$HOME_LORENE" != "x"; then :
-  LIB_LAPACK_DEF=`grep LIB_LAPACK $HOME_LORENE/local_settings`
 
-   LIB_GSL_DEF=`grep LIB_GSL $HOME_LORENE/local_settings`
+cat >conftest.make <<_ACEOF
+include \$(HOME_LORENE)/local_settings
+%:
+	@echo \$(\$@)
+_ACEOF
+   LORENELDFLAGS=`make -f conftest.make LIB_LAPACK`
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_GSL`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_PGPLOT`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_LORENE`"
+   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_CXX`"
+   LORENECPPFLAGS=`make -f conftest.make INC`
+rm conftest.make
 
-   LIB_PGPLOT_DEF=`grep LIB_PGPLOT $HOME_LORENE/local_settings`
 
-   LIB_LORENE_DEF=`grep LIB_LORENE $HOME_LORENE/local_settings`
+   pkg_cflags="${pkg_cflags} ${LORENECPPFLAGS}"
+   pkg_libss="${pkg_libss} ${LORENELDFLAGS}"
 
 
 
@@ -17536,7 +17544,7 @@ mySUBDIRS="lib"
 if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then :
   mySUBDIRS="$mySUBDIRS bin"
 fi
-ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile lib/Makefile lib/automakefile lib/Makefile.lorene lib/gyoto.pc"
+ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile lib/Makefile lib/gyoto.pc"
 
 if test "x$YORICK" != "x"; then :
   mySUBDIRS="$mySUBDIRS yorick"
@@ -18687,8 +18695,6 @@ do
     "bin/Makefile") CONFIG_FILES="$CONFIG_FILES bin/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
-    "lib/automakefile") CONFIG_FILES="$CONFIG_FILES lib/automakefile" ;;
-    "lib/Makefile.lorene") CONFIG_FILES="$CONFIG_FILES lib/Makefile.lorene" ;;
     "lib/gyoto.pc") CONFIG_FILES="$CONFIG_FILES lib/gyoto.pc" ;;
     "yorick/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/Makefile" ;;
     "yorick/stdplug/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/stdplug/Makefile" ;;
