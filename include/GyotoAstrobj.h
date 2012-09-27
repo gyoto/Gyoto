@@ -472,6 +472,29 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
     const ; ///< INVARIANT emission j_{\nu}/\nu^{2}
 
   /**
+   * Called by the default implementation for processHitQuantities().
+   *
+   * emission() computes the intensity I_nu emitted by the small
+   * volume of length dsem. It should take self-absorption along dsem
+   * into account.
+   *
+   * Same as emission(double nu_em, double dsem, double coord_ph[8],
+   *		  double coord_obj[8]=NULL) const
+   * looping on several values of nu_em.
+   *
+   * \param Inu[nbnu] Output (must be set to a previously allocated
+   *        array of doubles)
+   * \param nu_em[nbnu] Frequencies at emission
+   * \param nbnu Size of Inu[] and nu_em[] 
+   * \param dsem Length over which to integrate inside the object
+   * \param coord_ph Photon coordinate
+   * \param coord_obj Emitter coordinate at current photon position
+   */
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ; 
+
+  /**
    * Compute the integral of emission() from nu1 to nu2. The default
    * implementation is a numerical integrator which works well enough
    * and is reasonably fast if emission() is a smooth function
