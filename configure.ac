@@ -22,6 +22,7 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+PKG_PROG_PKG_CONFIG([])
 DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
@@ -124,10 +125,14 @@ AC_FUNC_STRTOD
 AC_CHECK_FUNCS([floor getcwd pow sqrt strdup])
 
 pkg_requires=
+pkg_cflags=
+pkg_libs=
 # Check for Xerces-c
 AC_MSG_CHECKING(whether libxerces should be used)
 xerces_headers=
 xerces_lib=
+XERCESCPPFLAGS=
+XERCESLDFLAGS=
 AC_ARG_WITH(
   [xerces],
   [AS_HELP_STRING( [--with-xerces[[=xerces-prefix]]], 
@@ -160,25 +165,51 @@ AS_IF([test "x$with_xerces" != "xno"],
    AC_ARG_WITH([xerces-libs],
      [AS_HELP_STRING([--with-xerces-libs=path],
         [location of xercesc library files])],
-     [xerces_lib=-I$with_xerces_libs
+     [xerces_lib=-L$with_xerces_libs
       AC_MSG_RESULT([$with_xerces_libs])],
      [AC_MSG_RESULT([no])])
-   AC_MSG_CHECKING(for libxerces)
-   TMPCPPFLAGS=$CPPFLAGS
-   CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
-   TMPLDFLAGS=$LDFLAGS
-   LDFLAGS="$TMPLDFLAGS $xerces_lib"
-   TMPLIBS=$LIBS
-   LIBS=-lxerces-c
-   AC_TRY_LINK(
-     [#include <xercesc/util/PlatformUtils.hpp>],
-     [xercesc::XMLPlatformUtils::Initialize();],
-     [have_xerces=yes
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(no)])
-   CPPFLAGS=$TMPCPPFLAGS
-   LDFLAGS=$TMPLDFLAGS
-   LIBS=$TMPLIBS
+
+   # Now check whether or not to use pkg-config for xerces
+   AS_IF([test "x$xerces_headers" == "x" \
+       && test "x$xerces_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"],
+     [PKG_CHECK_MODULES([XERCES],
+         [xerces-c],
+	 [pkg_requires="${pkg_requires} xerces-c"
+          have_xerces=yes
+	  XERCESCPPFLAGS=${XERCES_CFLAGS}
+	  XERCESLDFLAGS=${XERCES_LIBS}
+         ],
+	 [AC_MSG_NOTICE([xerces-c.pc not found])
+         ]
+      )
+     ],
+     [])
+
+   # Failing that, check without pkg-config
+   AS_IF([test "x$have_xerces" == "xno"],
+     [AC_MSG_CHECKING([for xerces-c (without pkg-config)])
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
+      LDFLAGS="$TMPLDFLAGS $xerces_lib"
+      LIBS=-lxerces-c
+      AC_TRY_LINK(
+        [#include <xercesc/util/PlatformUtils.hpp>],
+        [xercesc::XMLPlatformUtils::Initialize();],
+        [have_xerces=yes
+         AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)])
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      XERCESLDFLAGS="$xerces_lib -lxerces-c"
+      XERCESCPPFLAGS="$xerces_headers"
+      pkg_cflags="${pkg_cflags} ${XERCESCPPFLAGS}"
+      pkg_libs="${pkg_libs} ${XERCESLDFLAGS}"
+     ])
   ],
   []
 )
@@ -188,9 +219,6 @@ AS_IF([test "x$have_xerces" == "xno"],
        AC_SUBST(use_xerces,"")
       ],
       [AC_SUBST(use_xerces,[-DGYOTO_USE_XERCES])
-       XERCESLDFLAGS="$xerces_lib -lxerces-c"
-       XERCESCPPFLAGS="$xerces_headers"
-       pkg_requires="${pkg_requires} xerces-c"
       ]
 )
 AC_SUBST([XERCESLDFLAGS])
@@ -235,24 +263,50 @@ AS_IF([test "x$with_cfitsio" != "xno"],
      [cfitsio_lib=-I$with_cfitsio_libs
       AC_MSG_RESULT([$with_cfitsio_libs])],
      [AC_MSG_RESULT([no])])
-   AC_MSG_CHECKING(for libcfitsio)
-   TMPCPPFLAGS=$CPPFLAGS
-   CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
-   TMPLDFLAGS=$LDFLAGS
-   LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
-   TMPLIBS=$LIBS
-   LIBS=-lcfitsio
-   AC_TRY_LINK(
-     [#include <fitsio.h>
-      #include <string>],
-     [fitsfile* fptr=NULL; std::string file=""; int status=0;
-      fits_open_file(&fptr, file.c_str(), 0, &status);],
-     [have_cfitsio=yes
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(no)])
-   CPPFLAGS=$TMPCPPFLAGS
-   LDFLAGS=$TMPLDFLAGS
-   LIBS=$TMPLIBS
+
+   # Now check whether or not to use pkg-config for cfitsio
+   AS_IF([test "x$cfitsio_headers" == "x" \
+       && test "x$cfitsio_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"],
+     [PKG_CHECK_MODULES([CFITSIO],
+         [cfitsio],
+	 [pkg_requires="${pkg_requires} cfitsio"
+          have_cfitsio=yes
+	  CFITSIOCPPFLAGS=${CFITSIO_CFLAGS}
+	  CFITSIOLDFLAGS=${CFITSIO_LIBS}
+         ],
+	 [AC_MSG_NOTICE([cfitsio.pc not found])
+         ]
+      )
+     ],
+     [])
+
+   # Failing that, check without pkg-config
+   AS_IF([test "x$have_cfitsio" == "xno"],
+     [AC_MSG_CHECKING([for cfitsio (without pkg-config)])
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
+      TMPLDFLAGS=$LDFLAGS
+      LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
+      TMPLIBS=$LIBS
+      LIBS=-lcfitsio
+      AC_TRY_LINK(
+        [#include <fitsio.h>
+         #include <string>],
+        [fitsfile* fptr=NULL; std::string file=""; int status=0;
+         fits_open_file(&fptr, file.c_str(), 0, &status);],
+        [have_cfitsio=yes
+         AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)])
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
+      CFITSIOCPPFLAGS="$cfitsio_headers"
+      pkg_cflags="${pkg_cflags} ${CFITSIOCPPFLAGS}"
+      pkg_libs="${pkg_libs} ${CFITSIOLDFLAGS}"
+     ]
+   )
   ],
   []
 )
@@ -262,9 +316,6 @@ AS_IF([test "x$have_cfitsio" == "xno"],
        AC_SUBST(use_cfitsio,"")
       ],
       [AC_SUBST(use_cfitsio,[-DGYOTO_USE_CFITSIO])
-       CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
-       CFITSIOCPPFLAGS="$cfitsio_headers"
-       pkg_requires="${pkg_requires} cfitsio"
       ]
 )
 AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
@@ -321,6 +372,8 @@ AS_IF([test "x$HOME_LORENE" != "x"],
 
 # Finalization: select output files, subdirs etc.
 AC_SUBST([pkg_requires])
+AC_SUBST([pkg_cflags])
+AC_SUBST([pkg_libs])
 mySUBDIRS="lib"
 AS_IF([test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"],
   [mySUBDIRS="$mySUBDIRS bin"])

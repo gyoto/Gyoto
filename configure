@@ -636,6 +636,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 mySUBDIRS
+pkg_libs
+pkg_cflags
 pkg_requires
 LIB_LORENE_DEF
 LIB_PGPLOT_DEF
@@ -649,9 +651,13 @@ CFITSIOLDFLAGS
 HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 use_cfitsio
+CFITSIO_LIBS
+CFITSIO_CFLAGS
 XERCESCPPFLAGS
 XERCESLDFLAGS
 use_xerces
+XERCES_LIBS
+XERCES_CFLAGS
 POW_LIB
 LIBOBJS
 Y_INST_SITE
@@ -661,6 +667,9 @@ DYLIB_VAR
 SYS
 plugin_sfx
 DOXYGEN
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 sovers
 VERSINFO
 CXXCPP
@@ -816,7 +825,14 @@ CXX
 CXXFLAGS
 CCC
 CPP
-CXXCPP'
+CXXCPP
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
+XERCES_CFLAGS
+XERCES_LIBS
+CFITSIO_CFLAGS
+CFITSIO_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1494,6 +1510,18 @@ Some influential environment variables:
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
   CXXCPP      C++ preprocessor
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
+  XERCES_CFLAGS
+              C compiler flags for XERCES, overriding pkg-config
+  XERCES_LIBS linker flags for XERCES, overriding pkg-config
+  CFITSIO_CFLAGS
+              C compiler flags for CFITSIO, overriding pkg-config
+  CFITSIO_LIBS
+              linker flags for CFITSIO, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -16368,6 +16396,126 @@ $as_echo "no" >&6; }
   SET_MAKE="MAKE=${MAKE-make}"
 fi
 
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
 DOXYGEN=
 for ac_prog in doxygen
 do
@@ -16881,11 +17029,15 @@ done
 
 
 pkg_requires=
+pkg_cflags=
+pkg_libs=
 # Check for Xerces-c
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5
 $as_echo_n "checking whether libxerces should be used... " >&6; }
 xerces_headers=
 xerces_lib=
+XERCESCPPFLAGS=
+XERCESLDFLAGS=
 
 # Check whether --with-xerces was given.
 if test "${with_xerces+set}" = set; then :
@@ -16933,7 +17085,7 @@ $as_echo_n "checking whether xerces library path is provided... " >&6; }
 
 # Check whether --with-xerces-libs was given.
 if test "${with_xerces_libs+set}" = set; then :
-  withval=$with_xerces_libs; xerces_lib=-I$with_xerces_libs
+  withval=$with_xerces_libs; xerces_lib=-L$with_xerces_libs
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xerces_libs" >&5
 $as_echo "$with_xerces_libs" >&6; }
 else
@@ -16941,15 +17093,107 @@ else
 $as_echo "no" >&6; }
 fi
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libxerces" >&5
-$as_echo_n "checking for libxerces... " >&6; }
-   TMPCPPFLAGS=$CPPFLAGS
-   CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
-   TMPLDFLAGS=$LDFLAGS
-   LDFLAGS="$TMPLDFLAGS $xerces_lib"
-   TMPLIBS=$LIBS
-   LIBS=-lxerces-c
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+   # Now check whether or not to use pkg-config for xerces
+   if test "x$xerces_headers" == "x" \
+       && test "x$xerces_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for XERCES" >&5
+$as_echo_n "checking for XERCES... " >&6; }
+
+if test -n "$XERCES_CFLAGS"; then
+    pkg_cv_XERCES_CFLAGS="$XERCES_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"xerces-c\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "xerces-c") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_XERCES_CFLAGS=`$PKG_CONFIG --cflags "xerces-c" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$XERCES_LIBS"; then
+    pkg_cv_XERCES_LIBS="$XERCES_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"xerces-c\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "xerces-c") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_XERCES_LIBS=`$PKG_CONFIG --libs "xerces-c" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        XERCES_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "xerces-c" 2>&1`
+        else
+	        XERCES_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "xerces-c" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$XERCES_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: xerces-c.pc not found" >&5
+$as_echo "$as_me: xerces-c.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: xerces-c.pc not found" >&5
+$as_echo "$as_me: xerces-c.pc not found" >&6;}
+
+
+else
+	XERCES_CFLAGS=$pkg_cv_XERCES_CFLAGS
+	XERCES_LIBS=$pkg_cv_XERCES_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} xerces-c"
+          have_xerces=yes
+	  XERCESCPPFLAGS=${XERCES_CFLAGS}
+	  XERCESLDFLAGS=${XERCES_LIBS}
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$have_xerces" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for xerces-c (without pkg-config)" >&5
+$as_echo_n "checking for xerces-c (without pkg-config)... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
+      LDFLAGS="$TMPLDFLAGS $xerces_lib"
+      LIBS=-lxerces-c
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <xercesc/util/PlatformUtils.hpp>
 int
@@ -16962,7 +17206,7 @@ xercesc::XMLPlatformUtils::Initialize();
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   have_xerces=yes
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -16970,9 +17214,15 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-   CPPFLAGS=$TMPCPPFLAGS
-   LDFLAGS=$TMPLDFLAGS
-   LIBS=$TMPLIBS
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      XERCESLDFLAGS="$xerces_lib -lxerces-c"
+      XERCESCPPFLAGS="$xerces_headers"
+      pkg_cflags="${pkg_cflags} ${XERCESCPPFLAGS}"
+      pkg_libs="${pkg_libs} ${XERCESLDFLAGS}"
+
+fi
 
 fi
 if test "x$have_xerces" == "xno"; then :
@@ -16985,9 +17235,6 @@ fi
 else
   use_xerces=-DGYOTO_USE_XERCES
 
-       XERCESLDFLAGS="$xerces_lib -lxerces-c"
-       XERCESCPPFLAGS="$xerces_headers"
-       pkg_requires="${pkg_requires} xerces-c"
 
 
 fi
@@ -17054,30 +17301,121 @@ else
 $as_echo "no" >&6; }
 fi
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcfitsio" >&5
-$as_echo_n "checking for libcfitsio... " >&6; }
-   TMPCPPFLAGS=$CPPFLAGS
-   CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
-   TMPLDFLAGS=$LDFLAGS
-   LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
-   TMPLIBS=$LIBS
-   LIBS=-lcfitsio
-   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+   # Now check whether or not to use pkg-config for cfitsio
+   if test "x$cfitsio_headers" == "x" \
+       && test "x$cfitsio_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CFITSIO" >&5
+$as_echo_n "checking for CFITSIO... " >&6; }
+
+if test -n "$CFITSIO_CFLAGS"; then
+    pkg_cv_CFITSIO_CFLAGS="$CFITSIO_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"cfitsio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "cfitsio") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CFITSIO_CFLAGS=`$PKG_CONFIG --cflags "cfitsio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$CFITSIO_LIBS"; then
+    pkg_cv_CFITSIO_LIBS="$CFITSIO_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"cfitsio\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "cfitsio") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_CFITSIO_LIBS=`$PKG_CONFIG --libs "cfitsio" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        CFITSIO_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "cfitsio" 2>&1`
+        else
+	        CFITSIO_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "cfitsio" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$CFITSIO_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: cfitsio.pc not found" >&5
+$as_echo "$as_me: cfitsio.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: cfitsio.pc not found" >&5
+$as_echo "$as_me: cfitsio.pc not found" >&6;}
+
+
+else
+	CFITSIO_CFLAGS=$pkg_cv_CFITSIO_CFLAGS
+	CFITSIO_LIBS=$pkg_cv_CFITSIO_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} cfitsio"
+          have_cfitsio=yes
+	  CFITSIOCPPFLAGS=${CFITSIO_CFLAGS}
+	  CFITSIOLDFLAGS=${CFITSIO_LIBS}
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$have_cfitsio" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cfitsio (without pkg-config)" >&5
+$as_echo_n "checking for cfitsio (without pkg-config)... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
+      TMPLDFLAGS=$LDFLAGS
+      LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
+      TMPLIBS=$LIBS
+      LIBS=-lcfitsio
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <fitsio.h>
-      #include <string>
+         #include <string>
 int
 main ()
 {
 fitsfile* fptr=NULL; std::string file=""; int status=0;
-      fits_open_file(&fptr, file.c_str(), 0, &status);
+         fits_open_file(&fptr, file.c_str(), 0, &status);
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   have_cfitsio=yes
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -17085,9 +17423,16 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-   CPPFLAGS=$TMPCPPFLAGS
-   LDFLAGS=$TMPLDFLAGS
-   LIBS=$TMPLIBS
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
+      CFITSIOCPPFLAGS="$cfitsio_headers"
+      pkg_cflags="${pkg_cflags} ${CFITSIOCPPFLAGS}"
+      pkg_libs="${pkg_libs} ${CFITSIOLDFLAGS}"
+
+
+fi
 
 fi
 if test "x$have_cfitsio" == "xno"; then :
@@ -17100,9 +17445,6 @@ fi
 else
   use_cfitsio=-DGYOTO_USE_CFITSIO
 
-       CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
-       CFITSIOCPPFLAGS="$cfitsio_headers"
-       pkg_requires="${pkg_requires} cfitsio"
 
 
 fi
@@ -17187,6 +17529,8 @@ fi
 
 
 # Finalization: select output files, subdirs etc.
+
+
 
 mySUBDIRS="lib"
 if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then :

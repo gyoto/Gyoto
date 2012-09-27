@@ -20,6 +20,6 @@ Version: @VERSION@
 URL: http://gyoto.obspm.fr
 Requires: @pkg_requires@
 Conflicts:
-Libs: -L${libdir} -lgyoto -ldl
+Libs: -L${libdir} -lgyoto -ldl @pkg_libs@
 Libs.private:
-Cflags: @use_xerces@ @use_cfitsio@ -I${includedir}/Gyoto
+Cflags: @use_xerces@ @use_cfitsio@ -I${includedir}/Gyoto @pkg_cflags@

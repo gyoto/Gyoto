@@ -62,7 +62,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -144,6 +144,8 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFITSIOCPPFLAGS = @CFITSIOCPPFLAGS@
 CFITSIOLDFLAGS = @CFITSIOLDFLAGS@
+CFITSIO_CFLAGS = @CFITSIO_CFLAGS@
+CFITSIO_LIBS = @CFITSIO_LIBS@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -201,6 +203,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POW_LIB = @POW_LIB@
 RANLIB = @RANLIB@
 SED = @SED@
@@ -212,6 +217,8 @@ VERSINFO = @VERSINFO@
 VERSION = @VERSION@
 XERCESCPPFLAGS = @XERCESCPPFLAGS@
 XERCESLDFLAGS = @XERCESLDFLAGS@
+XERCES_CFLAGS = @XERCES_CFLAGS@
+XERCES_LIBS = @XERCES_LIBS@
 YORICK = @YORICK@
 Y_INST_HOME = @Y_INST_HOME@
 Y_INST_SITE = @Y_INST_SITE@
@@ -258,6 +265,8 @@ mkdir_p = @mkdir_p@
 mySUBDIRS = @mySUBDIRS@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
+pkg_cflags = @pkg_cflags@
+pkg_libs = @pkg_libs@
 pkg_requires = @pkg_requires@
 plugin_sfx = @plugin_sfx@
 prefix = @prefix@
