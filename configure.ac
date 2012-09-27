@@ -364,12 +364,12 @@ include \$(HOME_LORENE)/local_settings
 %:
 	@echo \$(\$@)
 _ACEOF
-   LORENELDFLAGS=`make -f conftest.make LIB_LAPACK`
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_GSL`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_PGPLOT`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_LORENE`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_CXX`"
-   LORENECPPFLAGS=`make -f conftest.make INC`
+   LORENELDFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK`
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
+   LORENECPPFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make INC`
 rm conftest.make
    AC_SUBST([LORENECPPFLAGS])
    AC_SUBST([LORENELDFLAGS])
@@ -392,6 +392,7 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  lib/Makefile
                  lib/gyoto.pc
+                 lib/gyoto-uninstalled.pc
                  ])
 AS_IF([test "x$YORICK" != "x"],
   [mySUBDIRS="$mySUBDIRS yorick"

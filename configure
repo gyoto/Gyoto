@@ -17519,12 +17519,12 @@ include \$(HOME_LORENE)/local_settings
 %:
 	@echo \$(\$@)
 _ACEOF
-   LORENELDFLAGS=`make -f conftest.make LIB_LAPACK`
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_GSL`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_PGPLOT`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_LORENE`"
-   LORENELDFLAGS="$LORENELDFLAGS `make -f conftest.make LIB_CXX`"
-   LORENECPPFLAGS=`make -f conftest.make INC`
+   LORENELDFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK`
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
+   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
+   LORENECPPFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make INC`
 rm conftest.make
 
 
@@ -17544,7 +17544,7 @@ mySUBDIRS="lib"
 if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then :
   mySUBDIRS="$mySUBDIRS bin"
 fi
-ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile lib/Makefile lib/gyoto.pc"
+ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"
 
 if test "x$YORICK" != "x"; then :
   mySUBDIRS="$mySUBDIRS yorick"
@@ -18696,6 +18696,7 @@ do
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
     "lib/gyoto.pc") CONFIG_FILES="$CONFIG_FILES lib/gyoto.pc" ;;
+    "lib/gyoto-uninstalled.pc") CONFIG_FILES="$CONFIG_FILES lib/gyoto-uninstalled.pc" ;;
     "yorick/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/Makefile" ;;
     "yorick/stdplug/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/stdplug/Makefile" ;;
 

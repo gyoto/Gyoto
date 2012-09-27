@@ -60,7 +60,8 @@ target_triplet = @target@
 @HAVE_LORENE_TRUE@am__append_2 = libgyoto-lorene.la
 subdir = lib
 DIST_COMMON = $(library_include_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/gyoto.pc.in
+	$(srcdir)/Makefile.in $(srcdir)/gyoto-uninstalled.pc.in \
+	$(srcdir)/gyoto.pc.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -69,7 +70,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = gyoto.pc
+CONFIG_CLEAN_FILES = gyoto.pc gyoto-uninstalled.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -392,6 +393,8 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 gyoto.pc: $(top_builddir)/config.status $(srcdir)/gyoto.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+gyoto-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/gyoto-uninstalled.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
