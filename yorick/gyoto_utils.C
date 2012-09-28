@@ -55,6 +55,20 @@ extern "C" {
   }
 
   void
+  Y_gyoto_loadPlugin(int argc)
+  {
+    long ntot=0;
+    long dims[Y_DIMSIZE];
+    ystring_t * plugins = 0;
+    for (int iarg=argc-1; iarg>=0; iarg--) {
+      plugins = ygeta_q(iarg, &ntot, dims);
+      for (long i=0; i<ntot; ++i) Gyoto::loadPlugin(plugins[i]);
+    }
+    ypush_nil();
+    //    Gyoto::Register::init();
+  }
+
+  void
   Y___gyoto_initRegister(int argc)
   {
     Gyoto::Register::init();

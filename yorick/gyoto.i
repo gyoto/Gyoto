@@ -26,6 +26,13 @@ extern __gyoto_setErrorHandler;
 */
 __gyoto_setErrorHandler;
 
+extern gyoto_loadPlugin;
+/* DOCUMENT gyoto_loadPlugin, plugin
+   load plugin PLUGIN. PLUGIN is a scalar string or string array.
+
+  Example: gyoto_loadPlugin, "stdplug"
+ */
+
 extern __gyoto_initRegister;
 /* xDOCUMENT __gyoto_initRegister
    Must be called once to initialize the GYOTO plug-in register
