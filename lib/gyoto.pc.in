@@ -3,6 +3,8 @@ exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
 
+GYOTO=${exec_prefix}/bin/gyoto
+
 GYOTO_SOVERS=@sovers@
 GYOTO_PLUGDIR=${libdir}/gyoto/${GYOTO_SOVERS}
 GYOTO_PLUGSFX=@plugin_sfx@

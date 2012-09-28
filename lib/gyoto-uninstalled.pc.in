@@ -4,6 +4,8 @@ abs_top_srcdir=@abs_top_srcdir@
 libdir=${abs_top_srcdir}/lib/.libs
 includedir=${abs_top_srcdir}/include
 
+GYOTO=${abs_top_srcdir}/bin/gyoto
+
 GYOTO_SOVERS=@sovers@
 GYOTO_PLUGDIR=${exec_prefix}/lib/gyoto/${GYOTO_SOVERS}
 GYOTO_PLUGSFX=@plugin_sfx@
