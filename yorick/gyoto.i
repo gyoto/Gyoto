@@ -27,10 +27,26 @@ extern __gyoto_setErrorHandler;
 __gyoto_setErrorHandler;
 
 extern gyoto_loadPlugin;
-/* DOCUMENT gyoto_loadPlugin, plugin
-   load plugin PLUGIN. PLUGIN is a scalar string or string array.
+/* DOCUMENT gyoto_loadPlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
 
-  Example: gyoto_loadPlugin, "stdplug"
+   Load Gyoto plug-ins.
+
+  INPUTS:
+   gyoto_loadPlugins() accepts an aribtrary number of positional
+   arguments, each a string or string array naming individual Gyoto
+   plugins. For instance, all of the following attempt to load the
+   plug-ins, stdplug, lorene and myplug:
+    gyoto_loadPlugin, "stdplug", "lorene", myplug"
+    gyoto_loadPlugin, ["stdplug", "lorene", myplug"]
+    gyoto_loadPlugin, "stdplug", ["lorene", myplug"]
+
+  KEYWORDS:
+   nofail= if set and true, failure to load a plug-in will not trigger
+           an error. It applies to _all_ plug-ins in the list.
+
+  EXAMPLE:
+   gyoto_loadPlugin, "stdplug"
+   gyoto_loadPlugin, "lorene", nofail=1
  */
 
 extern __gyoto_initRegister;
