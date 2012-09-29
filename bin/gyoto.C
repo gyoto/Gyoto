@@ -99,6 +99,10 @@ int main(int argc, char** argv) {
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
 
+  string pluglist= getenv("GYOTO_PLUGINS")?
+    getenv("GYOTO_PLUGINS"):
+    GYOTO_DEFAULT_PLUGINS;
+
   int i, stop=0;
   for (i=1;i<argc;++i) {
     param=argv[i];
@@ -109,6 +113,10 @@ int main(int argc, char** argv) {
       else if (param.substr(0,7)=="--quiet") verbose(GYOTO_QUIET_VERBOSITY);
       else if (param.substr(0,9)=="--verbose") verbose(10);
       else if (param.substr(0,7)=="--debug") debug(1);
+      else if (param.substr(0,10)=="--plugins="){
+	pluglist=param.substr(10);
+	cout << pluglist << endl;
+      }
       else if (param.substr(0,7)=="--imin=") imin=atoi(param.substr(7).c_str());
       else if (param.substr(0,7)=="--imax=") imax=atoi(param.substr(7).c_str());
       else if (param.substr(0,7)=="--jmin=") jmin=atoi(param.substr(7).c_str());
@@ -179,7 +187,7 @@ int main(int argc, char** argv) {
 
   curmsg = "In gyoto.C: Error initializing libgyoto: ";
   curretval = 1;
-  Gyoto::Register::init();
+  Gyoto::Register::init(pluglist.c_str());
 
   Factory *factory ;
   if (verbose() >= GYOTO_QUIET_VERBOSITY) cout << "Reading parameter file: " << parfile << endl;

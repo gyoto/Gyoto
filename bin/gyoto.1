@@ -46,6 +46,11 @@ Verbose mode. Verbosity level \fIN\fR may be specified.
 .IP \fB\-\-debug\fR
 Insanely verbose.
 
+.SS Chosing plug-ins
+.IP \fB\-\-plugins\fR=\fI[nofail:]plug1[,[nofail:]plug2][...]
+Comma-separated list of Gyoto plugins to load. Overwrites GYOTO_PLUGINS
+environment variable below.
+
 .SS Selecting a region
 It's possible to ray-trace only part of the scenery by providing the
 pixel coordinates of the bottom-left (\fIi0\fR, \fIj0\fR) and
@@ -151,14 +156,16 @@ format, see \fIhttp://fits.gsfc.nasa.gov/\fR.
 .SH ENVIRONMENT
 .IP GYOTO_PLUGINS
 Gyoto astronomical objects and metrics are implemented in plug-ins. To
-use more (or less!) than the standard plug-ins, you need to set the
+use more (or less!) than the standard plug-ins, you may set the
 environment variable GYOTO_PLUGINS to a comma-separated list of
 plug-ins. \fBgyoto\fR will exit with an error status if unable to load
 a specified plug-in, unless it is prefixed with "nofail:" in
-GYOTO_PLUGINS. Default value: "stdplug,nofail:lorene". Gyoto attempts
-to find plug-ins first by relying on the system's dynamic linker (so
-paths in e.g. LD_LIBRARY_PATH and ld.so.conf are searched first). If
-that fails, it looks in PREFIX/lib/gyoto/ and finally in
+GYOTO_PLUGINS. This environment variable is overwritten byt he
+\fB\-\-plugins\fR command-line parameter. Default value:
+"stdplug,nofail:lorene". Gyoto attempts to find plug-ins first by
+relying on the system's dynamic linker (so paths in
+e.g. LD_LIBRARY_PATH and ld.so.conf are searched first). If that
+fails, it looks in PREFIX/lib/gyoto/ and finally in
 PREFIX/lib/gyoto/SOVERS/ where PREFIX and SOVERS are two compile-time
 options. PREFIX usually is /usr/local or /usr. At the time of writing,
 SOVERS is 0.0.0.
