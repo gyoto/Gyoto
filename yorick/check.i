@@ -123,6 +123,7 @@ if(gyoto_Photon_hit(ph, 0.))
 "_________________________";
 
 hitmap=array(0, N, N);
+ph, tmin=0.;
 for (i=1; i<=N; i++) {
   write , format="*** Column %i ***\n", i; 
   xscr=delta*(i-(N+1)/2.);

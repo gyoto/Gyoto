@@ -130,13 +130,13 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   Gyoto::Photon ph_; ///< a Photon.
 
   /**
-   * Computation does not go back before tlim_. Default is 0. tlim_ is
-   * always expressed in geometrical units, it is essentially a tunig
-   * parameter for the ray-tracing process. tlim should be chosen to
+   * Computation does not go back before tmin_. Default is -DBL_MAX. tmin_ is
+   * always expressed in geometrical units, it is essentially a tuning
+   * parameter for the ray-tracing process. tmin should be chosen to
    * always be longer than the distance between the screen and the
    * object.
    */
-  double tlim_; ///< Time limit for the integration (geometrical units)
+  double tmin_; ///< Time limit for the integration (geometrical units)
 
   // Constructors - Destructor
   // -------------------------
@@ -183,8 +183,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   std::string getRequestedQuantitiesString() const ;
   size_t getScalarQuantitiesCount() const ;
 
-  void setTlim(double); ///< set tlim_;
-  double getTlim() const ;///< get tlim_
+  void setTmin(double); ///< set tmin_;
+  double getTmin() const ;///< get tmin_
 
   // Worker:
  public:

@@ -63,7 +63,7 @@ class Gyoto::Worldline {
   size_t i0_;  ///< Index of initial condition in array
   size_t imax_;///< Maximum index for which x0, x1... have been computed
   double delta_;///< Initial integrating step ; defaults to 0.01
-  double tlim_;///< Minimum time for integration, stop integration if t<tlim ; defaults to 0
+  double tmin_;///< Minimum time for integration, stop integration if t<tmin ; defaults to -DBL_MAX
   double * cst_; ///< Worldline's csts of motion (if any)
   size_t cst_n_; ///< Number of constants of motion
 
@@ -128,8 +128,8 @@ class Gyoto::Worldline {
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
   void setDelta(const double delta); ///< Set delta
-  double getTlim() const ; ///< Get tlim value
-  void setTlim(double tlim); ///< Set tlim to a given value
+  double getTmin() const ; ///< Get tmin value
+  void setTmin(double tlim); ///< Set tmin to a given value
 
   /**
    * Return pointer to array holding the previously set

@@ -146,6 +146,7 @@ for (i=1; i<=N; i++) {
   for (j=1; j<=N; j++) {
     yscr=delta*(j-(N+1)/2.);
     gyoto_Photon_setInitialCondition, ph, gg, orbit, screen, -xscr, yscr;
+    ph, tmin=0.;
     ph1, initcoord=screen, -xscr, yscr;
     ph2, initcoord=screen, i, j;
     gyoto_Photon_setDelta, ph, 1.;

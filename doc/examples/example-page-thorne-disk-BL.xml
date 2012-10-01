@@ -23,4 +23,5 @@
     </Resolution>
   </Screen>
   <Astrobj kind = "PageThorneDisk"/>
+  <MinimumTime> -1000. </MinimumTime>
 </Scenery>

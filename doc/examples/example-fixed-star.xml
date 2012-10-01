@@ -30,8 +30,10 @@
       <Constant> 0.01 </Constant>
     </Opacity>
     <OpticallyThin/>
+    <RMax> 24 </RMax>
   </Astrobj>
 
   <Delta> 1e0 </Delta>
+  <MinimumTime> 0. </MinimumTime>
 
 </Scenery>

@@ -187,7 +187,7 @@ int Photon::hit(Astrobj::Properties *data) {
     depending on object_'s Astrobj::Properties) will be stored in data.
    */
 
-  //tlim_=-1000.;//DEBUG //NB: integration stops when t < Worldline::tlim_
+  //tmin_=-1000.;//DEBUG //NB: integration stops when t < Worldline::tmin_
 
   transmission_freqobs_=1.;
   size_t nsamples;
@@ -204,7 +204,7 @@ int Photon::hit(Astrobj::Properties *data) {
   //with small fixed step will be performed to determine more precisely
   //the surface point.
   double coord[8];
-  int dir=(tlim_>x0_[i0_])?1:-1;
+  int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
   int stopcond=0;
   double rr=DBL_MAX, rr_prev=DBL_MAX;
@@ -217,8 +217,8 @@ int Photon::hit(Astrobj::Properties *data) {
    */
   for (ind=i0_+dir;
        ((dir==1)?
-	(ind<=imax_ && x0_[ind]<=tlim_): // conditions if dir== 1
-	(ind>=imin_ && x0_[ind]>=tlim_)) // conditions if dir==-1
+	(ind<=imax_ && x0_[ind]<=tmin_): // conditions if dir== 1
+	(ind>=imin_ && x0_[ind]>=tmin_)) // conditions if dir==-1
 	 && !hitt;                    // condition in all cases
        ind+=dir) {
     switch (coordkind) {
@@ -240,8 +240,8 @@ int Photon::hit(Astrobj::Properties *data) {
 		      << "for that case" << endl;
     return hitt;
   } else if (((dir==1)?
-	(ind==imax_ && x0_[ind]>=tlim_): // conditions if dir== 1
-	(ind>=imin_ && x0_[ind]<=tlim_)) // conditions if dir==-1
+	(ind==imax_ && x0_[ind]>=tmin_): // conditions if dir== 1
+	(ind>=imin_ && x0_[ind]<=tmin_)) // conditions if dir==-1
 	     && !hitt)
     return hitt;
   if (ind!=i0_) ind-=dir;
@@ -286,7 +286,7 @@ int Photon::hit(Astrobj::Properties *data) {
     - transmission_freqobs_ low [see transmission() function 
        in astrobjs, which defaults to 0 (optically thick) 
        or 1 (optically thin) in Astrobj.C]
-    - t < tlim_ (if dir=-1), [NB: tlim_ defaults to 0 in Worldline.C]
+    - t < tmin_ (if dir=-1), [NB: tmin_ defaults to -DBL_MAX in Worldline.C]
     - photon is at r>rmax (defined for each object) and goes even further
     - metric tells it's time to stop (eg horizon crossing)
     - t does not evolve [to investigate, metric should have stopped
@@ -390,12 +390,12 @@ int Photon::hit(Astrobj::Properties *data) {
 
     //************************************
     /* 
-       3-c Checks whether t < tlim_ (with dir=-1) and expands arrays
+       3-c Checks whether t < tmin_ (with dir=-1) and expands arrays
        if necessary to be able to store next step's results
     */
     switch (dir) {
     case 1:
-      if (coord[0]>tlim_) {
+      if (coord[0]>tmin_) {
 	if (debug()) 
 	  cerr << "DEBUG: Photon::hit(): stopping because time "
 	       << "goes beyond time limit\n";
@@ -407,7 +407,7 @@ int Photon::hit(Astrobj::Properties *data) {
       }
       break;
     default:
-      if (coord[0]<tlim_) {
+      if (coord[0]<tmin_) {
 	if (debug()) 
 	  cerr << "DEBUG: Photon::hit(): stopping because time "
 	       << "goes beyond time limit\n";

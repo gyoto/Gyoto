@@ -102,5 +102,6 @@
   </Astrobj>
 
   <Quantities>Spectrum</Quantities>
+  <MinimumTime> 0. </MinimumTime>
 
 </Scenery>

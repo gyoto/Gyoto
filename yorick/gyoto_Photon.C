@@ -27,10 +27,10 @@ using namespace Gyoto;
 using namespace std;
 
 #define YGYOTO_PHOTON_GENERIC_KW "metric", "initcoord", "astrobj",	\
-    "spectro",								\
+    "spectro", "tmin",							\
     "xfill", "save_txyz", "xmlwrite", "is_hit",				\
     "get_txyz", "get_coord", "get_cartesian", "clone"
-#define YGYOTO_PHOTON_GENERIC_KW_N 12
+#define YGYOTO_PHOTON_GENERIC_KW_N 13
 
 void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 				 int *kiargs, int *piargs, int *rvset, int *paUsed) {
@@ -139,7 +139,16 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     }
   }
 
-
+  /* TMIN */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_double((*ph) -> getTmin());
+    } else {
+      (*ph) -> setTmin(ygets_d(iarg));
+    }
+  }
 
   //// METHODS ////
   // SUBROUTINE-LIKE //
