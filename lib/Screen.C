@@ -304,6 +304,8 @@ void Screen::getRayCoord(double alpha, double delta,
     break;
   case GYOTO_COORDKIND_SPHERICAL:
     {
+      if (coord[2]==0. || coord[2]==M_PI)
+	throwError("Please move Screen away from z-axis");
       pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
       double grr=gg_->gmunu(pos,1,1), gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
       coord[5]=-vel[2];
