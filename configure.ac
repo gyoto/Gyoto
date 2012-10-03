@@ -381,6 +381,17 @@ _ACEOF
   ]
 )
 
+# disable doc
+AC_ARG_ENABLE([doc],
+  [AS_HELP_STRING([--disable-doc],
+     [Disable documentation generation])],
+  [AS_IF([test "x$enable_doc" == "xyes"],
+     [mkdoc=yes],
+     [test "x$enable_doc" == "xno"],
+     [mkdoc=no],
+     [AC_MSG_ERROR([Please set --disable-doc or --enable-doc only to ``yes'' or ``no''])])
+  ],
+  [mkdoc=yes])
 
 # Finalization: select output files, subdirs etc.
 AC_SUBST([pkg_requires])
@@ -412,6 +423,6 @@ AS_IF([test "x$YORICK" != "x"],
 		   YORICK=$YORICK)
   ]
 )
-AS_IF([test "x$DOXYGEN" != "x"], [mySUBDIRS="$mySUBDIRS doc"])
+AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
 AC_SUBST([mySUBDIRS])
 AC_OUTPUT

@@ -810,6 +810,7 @@ with_cfitsio
 with_cfitsio_headers
 with_cfitsio_libs
 with_lorene
+enable_doc
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1457,6 +1458,7 @@ Optional Features:
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-doc           Disable documentation generation
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -17537,6 +17539,21 @@ _ACEOF
 
 fi
 
+# disable doc
+# Check whether --enable-doc was given.
+if test "${enable_doc+set}" = set; then :
+  enableval=$enable_doc; if test "x$enable_doc" == "xyes"; then :
+  mkdoc=yes
+elif test "x$enable_doc" == "xno"; then :
+  mkdoc=no
+else
+  as_fn_error $? "Please set --disable-doc or --enable-doc only to \`\`yes'' or \`\`no''" "$LINENO" 5
+fi
+
+else
+  mkdoc=yes
+fi
+
 
 # Finalization: select output files, subdirs etc.
 
@@ -17557,7 +17574,7 @@ if test "x$YORICK" != "x"; then :
 
 
 fi
-if test "x$DOXYGEN" != "x"; then :
+if test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"; then :
   mySUBDIRS="$mySUBDIRS doc"
 fi
 
