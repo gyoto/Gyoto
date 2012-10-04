@@ -33,7 +33,7 @@ metric = gyoto_KerrBL(mass=4e6*GYOTO_SUN_MASS);
 write, format="%s", "Creating PatternDisk...";
 pd = gyoto_PatternDisk(copyintensity=intensity, copyopacity=opacity,
                        innerradius=3, outerradius=28, repeatphi=8,
-                       metric=metric);
+                       metric=metric, rmax=50);
 write, format="%s\n", " done.";
 
 write, format="%s\n", "Printing PatternDisk:";

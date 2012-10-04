@@ -241,6 +241,8 @@ SmartPointer<Gyoto::Metric::Generic> Factory::getMetric() {
       delete result;
     } else MetricDOM = root_;
 
+    string Plugin = C(MetricDOM->getAttribute(X("plugin")));
+    if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
     FactoryMessenger fm(this, MetricDOM);
@@ -273,6 +275,8 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::getAstrobj(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
+    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    if (Plugin != "") loadPlugin(Plugin.c_str());
     string AstrobjKind =
       Cs(tmpEl->getAttribute(X("kind")));
     if (debug()) cout << "Astrobj kind : " << AstrobjKind << endl ;
@@ -332,6 +336,8 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
+    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     if (debug()) cout << "Spectrum kind : " << Kind << endl ;

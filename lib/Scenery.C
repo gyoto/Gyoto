@@ -27,7 +27,7 @@
 #include <cstring>
 #include <cstdlib>
 
-#define DEFAULT_TLIM 0.
+#define DEFAULT_TMIN -DBL_MAX
 
 #ifdef HAVE_PTHREADS
 #include <pthread.h>
@@ -45,12 +45,12 @@ using namespace std;
 */
 Scenery::Scenery() :
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(0.01),
-  quantities_(0), ph_(), tlim_(DEFAULT_TLIM), nthreads_(0){}
+  quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0){}
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(o.delta_),
-  quantities_(o.quantities_), ph_(o.ph_), tlim_(o.tlim_), nthreads_(o.nthreads_)
+  quantities_(o.quantities_), ph_(o.ph_), tmin_(o.tmin_), nthreads_(o.nthreads_)
 {
   // We have up to 3 _distinct_ clones of the same Metric.
   // Keep only one.
@@ -232,7 +232,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   /// initialize photon once. It will be cloned.
   SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
   ph_.setSpectrometer(spr);
-  ph_.setTlim(tlim_);
+  ph_.setTmin(tmin_);
   double coord[8];
   screen_ -> getRayCoord(imin,jmin, coord);
   ph_ . setInitialCondition(gg_, obj_, coord);
@@ -311,14 +311,14 @@ void Scenery::operator() (
     // environment: it may really need to work on a given copy of the object.
     ph = &ph_;
     ph -> setSpectrometer(spr);
-    ph -> setTlim(tlim_);
+    ph -> setTmin(tmin_);
     obj=obj_;
     gg=gg_;
   }
   // Always reset delta
   GYOTO_DEBUG << "reset delta" << endl;
   ph -> setDelta(delta_);
-
+  ph -> setTmin(tmin_);
 
   GYOTO_DEBUG << "init nbnuobs" << endl;
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
@@ -423,8 +423,8 @@ size_t Scenery::getScalarQuantitiesCount() const {
   return nquant;
 }
 
-double Scenery::getTlim() const { return tlim_; }
-void Scenery::setTlim(double tlim) { tlim_ = tlim; }
+double Scenery::getTmin() const { return tmin_; }
+void Scenery::setTmin(double tmin) { tmin_ = tmin; }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
@@ -443,7 +443,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
 		<<getRequestedQuantitiesString()<<"\") ;" << endl;
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
-  if (tlim_ != DEFAULT_TLIM) fmp -> setParameter("MinimumTime", tlim_);
+  if (tmin_ != DEFAULT_TMIN) fmp -> setParameter("MinimumTime", tmin_);
   if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
 }
 
@@ -455,7 +455,7 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Screen> scr = NULL;
   SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
-  double tlim = DEFAULT_TLIM;
+  double tmin = DEFAULT_TMIN;
   size_t nthreads = 0;
 
   gg = fmp->getMetric();
@@ -467,13 +467,13 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
     char* tc = const_cast<char*>(content.c_str());
     if (name=="Delta") delta = atof(tc);
     if (name=="Quantities") squant = content;
-    if (name=="TLim") tlim = atof(tc);
+    if (name=="MinimumTime") tmin = atof(tc);
     if (name=="NThreads") nthreads = atoi(tc);
   }
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
   sc -> setDelta(delta);
-  sc -> setTlim(tlim);
+  sc -> setTmin(tmin);
   sc -> setNThreads(nthreads);
   if (squant!="") sc -> setRequestedQuantities(squant);
   return sc;

@@ -24,6 +24,7 @@
       <Exponent> 0 </Exponent>
       <Constant> 0.1 </Constant>
     </Opacity>
+    <RMax> 50. </RMax>
     <OpticallyThin/>
   </Astrobj>
 

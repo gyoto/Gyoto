@@ -1,10 +1,15 @@
 0.x.y soon ABI
+	* in Worldline, Photon and Scenery: rename tlim to tmin, default
+	  value is -DBL_MAX.
+	* add a mutli-wavelength flavour of Astrobj::emission()
+	* install yorick plug-in under ${prefix}, not necessarily in Y_HOME
+	* add plugin attribute to the Metric, Astrobj and Spectrum entities
+	* reform build system to use the autotools
+	* add --plugins command-line option
 	* add virtual destrcuctor to Spectrum::Generic
-	* fix buffer overflow in lib/Factory.C 
+	* fix buffer overflow in lib/Factory.C
 	* update paper ref in bin/gyoto.C
-	* take environment (CXX|CPP|LD)FLAGS into account in local_settings
-	* harden CXXFLAGS by default, may not work for all arches
-	
+
 0.0.3 2012/05/01 BUG
 	* fix a tiny bug in PatternDisk (initialization of phimin/max)
 	* rearrange flags in Makefiles/local_settings
@@ -13,6 +18,6 @@
 0.0.2 2012/04/19 PKG
 	* install include files in include/Gyoto
 	* add this ChangeLog
-	
+
 0.0.1 2012/04/16 ABI 0
 	* release

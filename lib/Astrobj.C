@@ -275,19 +275,22 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       }
     }
     if (data->spectrum) {
+      double * Inu  = new double[nbnuobs];
+      double * nuem = new double[nbnuobs];
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	nuem=nuobs[ii]*ggredm1;
+	nuem[ii]=nuobs[ii]*ggredm1;
+      }
+      emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
+      for (size_t ii=0; ii<nbnuobs; ++ii) {
 	data->spectrum[ii*data->offset] +=
-	  emission(nuem, dsem, coord_ph_hit, coord_obj_hit)
-	  * ph -> getTransmission(ii)
-	  *ggred*ggred*ggred;
+	  Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
 	if (debug())
 	  cerr << "DEBUG: Generic::processHitQuantities(): "
 	       << "nuobs[" << ii << "]="<< nuobs[ii]
 	       << ", nuem=" << nuem 
 	       << ", dsem=" << dsem
 	       << ", Inu * GM/c2="
-	       << emission(nuem, dsem, coord_ph_hit, coord_obj_hit)
+	       << Inu[ii]
 	       << ", spectrum[" << ii*data->offset << "]="
 	       << data->spectrum[ii*data->offset]
 	       << ", transmission=" << ph -> getTransmission(ii)
@@ -314,11 +317,16 @@ double Generic::transmission(double, double, double*) const {
 
 double Generic::emission(double , double dsem, double *, double *) const
 {
-  if (debug())
-    cerr << "DEBUG: Generic::emission(): flag_radtransf_="
-	 << flag_radtransf_ << endl;
+  GYOTO_DEBUG << "flag_radtransf_=" << flag_radtransf_ << endl;
   if (flag_radtransf_) return dsem;
   return 1.;
+}
+
+void Generic::emission(double * Inu, double * nuem , size_t nbnu,
+			 double dsem, double *cph, double *co) const
+{
+  GYOTO_DEBUG << "flag_radtransf_=" << flag_radtransf_ << endl;
+  for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,

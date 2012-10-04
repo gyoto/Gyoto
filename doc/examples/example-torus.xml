@@ -25,6 +25,7 @@
       <Constant> 1e-10 </Constant>
     </Opacity>
     <OpticallyThin/>
+    <RMax> 20. </RMax>
   </Astrobj>
 
   <Quantities>BinSpectrum</Quantities>

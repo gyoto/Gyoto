@@ -62,6 +62,39 @@ extern "C" {
   }
 
   void
+  Y_gyoto_loadPlugin(int argc)
+  {
+
+    // Step 1: determine whether nofail is set (to true)
+    int nofail=0;
+    static char *knames[2] = { "nofail", 0 };
+    static long kglobs[2];
+    int kiargs[1];
+    yarg_kw_init(knames, kglobs, kiargs);
+    int iarg=argc-1;
+    while (iarg>=0) {
+      iarg = yarg_kw(iarg, kglobs, kiargs);
+      iarg--;
+    }
+    if (kiargs[0]>=0) {// nofail= present
+      nofail=yarg_true(kiargs[0]);
+    }
+
+    // Step 2: load plug-ins
+    long ntot=0;
+    long dims[Y_DIMSIZE];
+    ystring_t * plugins = 0;
+    for (int iarg=argc-1; iarg>=0; iarg--) {
+      if (kiargs[0]<0 ||(iarg!=kiargs[0] && iarg!=kiargs[0]+1)) {
+	plugins = ygeta_q(iarg, &ntot, dims);
+	for (long i=0; i<ntot; ++i) Gyoto::loadPlugin(plugins[i], nofail);
+      }
+    }
+    ypush_nil();
+    //    Gyoto::Register::init();
+  }
+
+  void
   Y___gyoto_initRegister(int argc)
   {
     Gyoto::Register::init();

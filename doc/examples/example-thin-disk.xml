@@ -16,4 +16,5 @@
     <OpticallyThin/>
   </Astrobj>
 
+  <MinimumTime> 0. </MinimumTime>
 </Scenery>

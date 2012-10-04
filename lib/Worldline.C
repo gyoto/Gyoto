@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <cfloat>
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
@@ -31,18 +32,18 @@ using namespace Gyoto;
 
 
 Worldline::Worldline() : imin_(1), i0_(0), imax_(0),
-			 delta_(0.01), tlim_(0.), cst_(NULL), cst_n_(0)
+			 delta_(0.01), tmin_(-DBL_MAX), cst_(NULL), cst_n_(0)
 { xAllocate(); }
 
 Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0), 
-					delta_(0.01), tlim_(0.),
+					delta_(0.01), tmin_(-DBL_MAX),
 					cst_(NULL), cst_n_(0)
 { xAllocate(sz); }
 
 Worldline::Worldline(const Worldline& orig) :
   metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  delta_(orig.delta_), tlim_(orig.tlim_), cst_(NULL), cst_n_(orig.cst_n_)
+  delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_)
 {
   GYOTO_DEBUG << endl;
   if (orig.metric_()) {
@@ -71,7 +72,7 @@ Worldline::Worldline(const Worldline& orig) :
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   metric_(orig->metric_),
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  delta_(orig->delta_), tlim_(orig->tlim_), cst_n_(orig->cst_n_)
+  delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_)
 {
   GYOTO_DEBUG << endl;
 
@@ -846,8 +847,8 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 
 void Worldline::setDelta(const double del) { delta_=del; }
 
-double Worldline::getTlim() const { return tlim_; }
-void Worldline::setTlim(double tlim) { tlim_ = tlim; }
+double Worldline::getTmin() const { return tmin_; }
+void Worldline::setTmin(double tmin) { tmin_ = tmin; }
 
 double const * Worldline::getCst() const {
   return cst_;

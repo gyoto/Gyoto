@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
-  <Metric kind = "KerrBL">
+  <Metric kind = "KerrBL" plugin="stdplug">
     <Spin> 0. </Spin>
   </Metric>
 
@@ -102,5 +102,6 @@
   </Astrobj>
 
   <Quantities>Spectrum</Quantities>
+  <MinimumTime> 0. </MinimumTime>
 
 </Scenery>
