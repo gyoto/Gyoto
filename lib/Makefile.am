@@ -1,9 +1,9 @@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic
+AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS)
 AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ \
 	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
-	-DGYOTO_SOVERS=\"@sovers@\"
+	-DGYOTO_SOVERS=\"@sovers@\" $(PTHREAD_CFLAGS)
 
 # HEADERS: where they are, where to install them
 library_includedir=$(includedir)/Gyoto
@@ -35,14 +35,15 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 if HAVE_CFITSIO
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
 endif
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS)
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS) \
+				$(AM_LDFLAGS)
 
 # LORENE PLUGIN
 if HAVE_LORENE
 sover_LTLIBRARIES += libgyoto-lorene.la
 endif
 libgyoto_lorene_la_SOURCES = RotStar3_1.C LorenePlug.C
-libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS)
+libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS)
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 
 # pkg-config file

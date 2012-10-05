@@ -29,7 +29,7 @@
 
 #define DEFAULT_TMIN -DBL_MAX
 
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
 
@@ -123,7 +123,7 @@ void  Scenery::setNThreads(size_t n) { nthreads_ = n; }
 size_t Scenery::getNThreads() const { return nthreads_; }
 
 typedef struct SceneryThreadWorkerArg {
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
   pthread_mutex_t * mutex;
   pthread_t * parent;
 #endif
@@ -145,7 +145,7 @@ static void * SceneryThreadWorker (void *arg) {
   // Each thread needs its own Photon, clone cached Photon
   // it is assumed to be already initialized with spectrometer et al.
   Photon * ph = larg -> ph;
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
   if (larg->mutex) ph = larg -> ph -> clone();
 #endif
 
@@ -161,7 +161,7 @@ static void * SceneryThreadWorker (void *arg) {
     //// i and j are input, data and impactcoords are where to store
     //// output.  we must get them and increase them so that another
     //// thread can get the next values while we integrate.
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
     // lock mutex so we can safely read and update i, j et al.
     if (larg->mutex) pthread_mutex_lock(larg->mutex);
 #endif
@@ -169,7 +169,7 @@ static void * SceneryThreadWorker (void *arg) {
     i = larg->i; j = larg->j;
     if (j > larg->jmax || (j==larg->jmax && i>larg->imax)) {
       // terminate, but first...
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
       // ...unlock mutex so our siblings can access i & j and terminate too
       if (larg->mutex) pthread_mutex_unlock(larg->mutex);
 #endif
@@ -187,7 +187,7 @@ static void * SceneryThreadWorker (void *arg) {
       impactcoords = larg->impactcoords; larg->impactcoords+=16;
     }
 
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
     // unlock mutex so our siblings can can access i, j et al. and procede
     if (larg->mutex) pthread_mutex_unlock(larg->mutex);
 #endif
@@ -199,7 +199,7 @@ static void * SceneryThreadWorker (void *arg) {
     (*larg->sc)(i, j, &data, impactcoords, ph);
     ++count;
   }
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
   if (larg->mutex) delete ph;
 #endif
   GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
@@ -257,7 +257,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   gettimeofday(&tim, NULL);  
   start=tim.tv_sec+(tim.tv_usec/1000000.0);  
 
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
   larg.mutex  = NULL;
   pthread_mutex_t mumu = PTHREAD_MUTEX_INITIALIZER;
   pthread_t * threads = NULL;
@@ -278,7 +278,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   (*SceneryThreadWorker)(static_cast<void*>(&larg));
 
 
-#ifdef HAVE_PTHREADS
+#ifdef HAVE_PTHREAD
   // Wait for the child threads
   if (nthreads_>=2)
     for (size_t th=0; th < nthreads_-1; ++th)

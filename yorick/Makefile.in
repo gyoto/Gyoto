@@ -22,6 +22,8 @@ XERCESCPPFLAGS=@XERCESCPPFLAGS@
 use_xerces=@use_xerces@
 DYLIB_VAR=@DYLIB_VAR@
 SYS=@SYS@
+PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
+PTHREAD_LIBS= @PTHREAD_LIBS@
 
 YGYOTO_C = $(shell ls *.C)
 GYOTO_C = $(shell ls ../lib/*.C)
@@ -43,10 +45,10 @@ OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS)
+PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(use_xerces)
-PKG_LDFLAGS=
+PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(use_xerces) $(PTHREAD_CFLAGS)
+PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME
 # (typically Y_EXE_PKGS should be first here)

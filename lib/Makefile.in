@@ -63,10 +63,11 @@ DIST_COMMON = $(library_include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/gyoto-uninstalled.pc.in \
 	$(srcdir)/gyoto.pc.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -236,6 +237,9 @@ PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 POW_LIB = @POW_LIB@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -264,6 +268,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -318,10 +323,10 @@ use_cfitsio = @use_cfitsio@
 use_xerces = @use_xerces@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS)
-AM_LDFLAGS = $(XERCESLDFLAGS) -export-dynamic
+AM_LDFLAGS = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS)
 AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ \
 	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
-	-DGYOTO_SOVERS=\"@sovers@\"
+	-DGYOTO_SOVERS=\"@sovers@\" $(PTHREAD_CFLAGS)
 
 
 # HEADERS: where they are, where to install them
@@ -350,9 +355,11 @@ cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
 	 Disk3D.C Disk3D_BB.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS)
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS) \
+				$(AM_LDFLAGS)
+
 libgyoto_lorene_la_SOURCES = RotStar3_1.C LorenePlug.C
-libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS)
+libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS)
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 
 # pkg-config file

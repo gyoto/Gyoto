@@ -1,16 +1,16 @@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS)
+AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ -rdynamic \
 	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
-	-DGYOTO_SOVERS=\"@sovers@\" -fPIC
+	-DGYOTO_SOVERS=\"@sovers@\" $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
 bin_PROGRAMS  = gyoto
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_LDFLAGS  = $(XERCESLDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 CHECK_CMD=./gyoto
 check: gyoto

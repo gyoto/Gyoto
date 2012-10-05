@@ -127,8 +127,15 @@ AC_CHECK_FUNCS([floor getcwd pow sqrt strdup])
 pkg_requires=
 pkg_cflags=
 pkg_libs=
+
+# Check for pthreads
+AC_ARG_ENABLE([pthreads],
+  [AS_HELP_STRING([--enable-pthreads],
+     [Whether to use POSIX threads])],
+  [AX_PTHREAD])
+
 # Check for Xerces-c
-AC_MSG_CHECKING(whether libxerces should be used)
+AC_MSG_CHECKING([whether libxerces should be used])
 xerces_headers=
 xerces_lib=
 XERCESCPPFLAGS=
