@@ -32,4 +32,6 @@
 
   <NThreads> 2 </NThreads>
 
+  <MinimumTime> 0. </MinimumTime>
+
 </Scenery>
