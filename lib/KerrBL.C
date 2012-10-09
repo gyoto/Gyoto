@@ -222,9 +222,19 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
   double r2 = r*r ; 
   double r3 = r2*r ;  
+
+  // compute and store efficiently sin, cos, cotan
   double theta=coordGen[2];
-  double costheta2=pow(cos(theta),2);
-  double tantheta=tan(theta);
+  double costheta, sintheta;
+  sincos(theta, &sintheta, &costheta);
+  double costheta2=costheta*costheta;
+  if (sintheta==0.) throwError("sintheta==0");
+  double cotantheta=costheta/sintheta;
+  double cotantheta2=cotantheta*cotantheta;
+  double cotantheta3=cotantheta2*cotantheta;
+  double sin2theta=2.*sintheta*costheta;
+  double cos2theta=2.*costheta2-1.;
+
   double pr=coordGen[5];
   double ptheta=coordGen[6];
 
@@ -243,8 +253,6 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   if (Delta==0) throwError("In KerrBL::diff(): Delta==0");
   if (Sigma==0) throwError("In KerrBL::diff(): Sigma==0");
   if (tmp1==0)  throwError("In KerrBL::diff(): 2.*Delta*Sigma==0");
-  if (tantheta==0) throwError("In KerrBL::diff(): tantheta==0");
-  double cotantheta=1./tantheta; //caution, may become high if theta close to 0
 
   //NB: equations of motion are independent of Carter constant in this
   //form. However, the dependency of the dynamic on this constant
@@ -257,7 +265,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
   res[2] = 1./Sigma*ptheta; //thetadot
 
-  res[3] = -1./tmp1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))*cotantheta*cotantheta)); //phidot
+  res[3] = -1./tmp1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))*cotantheta2)); //phidot
   
   res[4] = 0.;// ptdot : pt = cst = -E
 
@@ -269,18 +277,18 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 	    +a2*(L2*(1.-r)+2*E2*r2))*costheta2
 	+r*(-r*(a2*a2*E2-2.*a3*E*L+2.*a*E*L*(4.-3.*r)*r
 		+a2*(L2+2.*E2*r*(-2.+r))+r*(E2*r3-L2*pow((-2.+r),2)))
-	    +L2*pow(a2+r*(-2.+r),2)*cotantheta*cotantheta)));// prdot
+	    +L2*pow(a2+r*(-2.+r),2)*cotantheta2)));// prdot
 
 
   res[6]=
-    -0.5*((a2*Delta*sin(2*theta))/(Sigma*Sigma))*pr*pr
-    -0.5*(a2*sin(2*theta)/(Sigma*Sigma))*ptheta*ptheta
+    -0.5*((a2*Delta*sin2theta)/(Sigma*Sigma))*pr*pr
+    -0.5*(a2*sin2theta/(Sigma*Sigma))*ptheta*ptheta
     +(
       1./( Delta*Sigma*Sigma )
       *(
 	L2*r2*Delta*cotantheta
-	+0.5*L2*Delta*(a2+2.*r2+a2*cos(2.*theta))*cotantheta*cotantheta*cotantheta
-	+a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*cos(theta)*sin(theta)
+	+0.5*L2*Delta*(a2+2.*r2+a2*cos2theta)*cotantheta3
+	+a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*costheta*sintheta
 	)
       ); // pthetadot
 
@@ -739,7 +747,8 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
    */
 
   double argsqrt, limarg=1e-5, limargbis=0.1;
-  double costh=cos(mycoor[2]), sinth=sin(mycoor[2]), a2=spin_*spin_;
+  double costh, sinth, a2=spin_*spin_;
+  sincos(mycoor[2], &sinth, &costh);
   double mu=cst[0], EE=cst[1], LL=cst[2], QQ=cst[3], QQm1=cst[4];
   double Sigma=mycoor[1]*mycoor[1]+a2*costh*costh;
   double Qtest=Sigma*mycoor[6]*Sigma*mycoor[6]+costh*costh*(a2*(mu*mu-EE*EE)+LL*LL/(sinth*sinth));//this should be equal to constant QQ
@@ -867,7 +876,9 @@ void KerrBL::MakeCoord(const double coordin[8], const double cst[5], double coor
  
   double r2 = rr*rr ;
  
-  double costheta2=cos(theta)*cos(theta), sintheta2=sin(theta)*sin(theta), 
+  double sinth, costh;
+  sincos(theta, &sinth, &costh);
+  double costheta2=costh*costh, sintheta2=sinth*sinth, 
     aa=spin_, a2=aa*aa;
 
   double Sigma=r2+a2*costheta2, Delta=r2-2*rr+a2, lambda=1.-2*rr/Sigma, 
@@ -893,7 +904,7 @@ void KerrBL::MakeMomentum(const double coord[8], const double cst[5], double coo
   double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3],
     rdot=coord[5], thetadot=coord[6];
 
-  double r2 = rr*rr, costheta2=cos(theta)*cos(theta);
+  double r2 = rr*rr, costheta2=cos(theta); costheta2*=costheta2;
     //    sintheta2=sin(theta)*sin(theta);
   
   double aa=spin_, a2=aa*aa;
@@ -936,8 +947,10 @@ void KerrBL::computeCst(const double coord[8], double cst[5]) const{
   
   double norm=ScalarProd(coord, coord+4, coord+4);
   
-  double r2 = rr*rr, costheta2=cos(theta)*cos(theta), 
-    sintheta2=sin(theta)*sin(theta);
+  double sinth, costh;
+  sincos(theta, &sinth, &costh);
+  double r2 = rr*rr, costheta2=costh*costh, 
+    sintheta2=sinth*sinth;
   
   double aa=spin_, a2=aa*aa;
   
