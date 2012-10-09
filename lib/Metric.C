@@ -35,24 +35,30 @@ Register::Entry* Metric::Register_ = NULL;
 Metric::Generic::Generic() :
   mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED)
 {
-  if (debug()) cout << "Metric Construction" << endl ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
   setKind("Unspecified");
 }
 
 Metric::Generic::Generic(const double mass, const int coordkind) :
   mass_(mass), coordkind_(coordkind)
 {
-  if (debug())
-    cerr << "Metric Construction with mass="<<mass_
-	 << " and coordkind="<<coordkind_ << endl ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG;
+  GYOTO_DEBUG_EXPR(mass_);
+  GYOTO_DEBUG_EXPR(coordkind_);
+  GYOTO_ENDIF_DEBUG;
+# endif
   setKind("Unspecified");
 }
 
 Metric::Generic::Generic(const int coordkind) :
   mass_(1.), coordkind_(coordkind)
 {
-  if (debug()) cerr << "Metric Construction with coordkind="
-		    <<coordkind_ << endl ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(coordkind_);
+# endif
   setKind("Unspecified");
 }
 
@@ -65,7 +71,9 @@ Metric::Generic * Metric::Generic::clone() const {
 }
 
 Metric::Generic::~Generic(){
-  if (debug()) cout << "Metric Destruction" << endl ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 // Output
@@ -87,9 +95,10 @@ void Metric::Generic::setMass(const double mass, string unit) {
        << "\". Supported units: [kg] g sunmass";
     throwError(ss.str());
   }
-  if(debug())
-    cerr << "DEBUG: Metric::Generic::setMass(mass="<<mass<<", unit=\"" << unit
-	 << "\") : mass_=" << mass_ <<" kg\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "(mass="<<mass<<", unit=\"" << unit << "\") : mass_="
+	      << mass_ <<" kg"<< endl;
+# endif
 }
 
 int Metric::Generic::getCoordKind()               const { return coordkind_; }
@@ -101,15 +110,12 @@ double Metric::Generic::getMass()                 const { return mass_; }
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
   int i,j;
-
-  if (debug()) {
-    cerr << "DEBUG: Metric::Generic::SysPrimeToTdot: " << endl
-	 << "       POS=[" << pos[0];
-    for (i=1; i<4; ++i) cerr << ", " << pos[i];
-    cerr << "]\n       VEL=[" << v[0] ;
-    for (i=1; i<3; ++i) cerr << ", " << v[i];
-    cerr << "]\n";
-  }
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG_ARRAY(pos,4);
+    GYOTO_DEBUG_ARRAY(v,3);
+  GYOTO_ENDIF_DEBUG
+# endif
 
 
   xpr[0]=1.; // dt/dt=1;
@@ -214,7 +220,9 @@ diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
 int Metric::Generic::diff(const double coord[8], double res[8]) const{
-  if (debug()) cerr << "DEBUG: Metric::Generic::diff()" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   res[0]=coord[4];
   res[1]=coord[5];
   res[2]=coord[6];
@@ -421,7 +429,9 @@ int Metric::Generic::isStopCondition(double const * const ) const {
 }
 
 void Metric::Generic::setParticleProperties(Worldline*, const double*) const {
-  if (debug()) cerr << "DEBUG: Metric::Generic::setParticleProperties() called, noop";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 

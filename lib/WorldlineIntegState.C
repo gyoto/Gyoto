@@ -102,21 +102,19 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
 
   double normtol=.001;
   if (fabs(norm_-normref_)>normtol) {
-    if (verbose() >= GYOTO_SEVERE_VERBOSITY){
-      cerr << "***WARNING: in WlIntegState.C: norm is drifting"
-	" - with norm,x1,x2,x3= " << norm_ << " " << coord[1] 
-	   << " " << coord[2] << " " << coord[3] << " " << endl;
-    }
+    GYOTO_SEVERE << "***WARNING: in WlIntegState.C: norm is drifting"
+      " - with norm,x1,x2,x3= " << norm_ << " " << coord[1] 
+		 << " " << coord[2] << " " << coord[3] << " " << endl;
   }
 
   if (delta_==delta_+1) return 1; // delta == Infinity : stop condition
 
-  if(debug()) {
-    cerr << "DEBUG: WorldlineIntegState::nextStep(): "
-	 << "coord=[" << coord[0];
-    for (int i=1; i<8; ++i) cerr << ", " << coord[i];
-    cerr << "], delta="<< del << ", delta_="<<delta_<<endl;
-  }
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+  GYOTO_DEBUG_ARRAY(coord,8);
+  GYOTO_DEBUG << "delta="<< del << ", delta_="<<delta_<<endl;
+  GYOTO_ENDIF_DEBUG
+# endif
   
   return 0;
 }

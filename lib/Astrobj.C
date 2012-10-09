@@ -45,21 +45,26 @@ Generic::Generic(string kind) :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0)
 {
-  if (debug()) cerr << "Astrobj Construction" << endl;
-  
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
 }
 
 Generic::Generic() :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0)
 {
-  if (debug()) cerr << "Astrobj Construction" << endl;
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
 }
 
 Generic::Generic(double radmax) :
   gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0)
 {
-  if (debug()) cerr << "Astrobj Construction" << endl;
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
 }
 
 Generic::Generic(const Generic& orig) :
@@ -67,17 +72,24 @@ Generic::Generic(const Generic& orig) :
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
   flag_radtransf_(orig.flag_radtransf_)
 {
-    if (debug()) cerr << "DEBUG: in Astrobj::Generic (Copy)" << endl;
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
     if (orig.gg_()) {
-      if (debug())
-	cerr << "DEBUG: orig had a metric, cloning" << endl;
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "orig had a metric, cloning"<< endl;
+#endif
       gg_=orig.gg_->clone();
     }
-    if (debug()) cerr << "DEBUG: out of Astrobj::Generic (Copy)" << endl;
+#if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "done" << endl;
+#endif
 }
 
 Generic::~Generic() {
-  if (debug()) cerr << "Astrobj Destruction" << endl;
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
 }
 
 SmartPointer<Metric::Generic> Generic::getMetric() const { return gg_; }
@@ -161,8 +173,9 @@ int Generic::setParameter(string name, string content)  {
 void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				     double* coord_obj_hit, double dt,
 				     Properties* data) const {
-  if (debug())
-    cerr << "DEBUG: in Generic::processHitQuantities:" << endl;
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
   /*
       NB: freqObs is the observer's frequency chosen in
       Screen::getRayCoord for the actual computation of the geodesic ;
@@ -182,36 +195,33 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*freqObs*ggredm1;
   if (data) {
-    if (debug())
-      cerr << "DEBUG: Generic::processHitQuantities: data requested" << endl;
-
-    if (debug())
-      cerr << "DEBUG: Generic::processHitQuantities: data requested, "
-	   << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
-	   << ", ggred=" << ggred
-	   << endl;
-
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "data requested" 
+	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
+	      << ", ggred=" << ggred
+	      << endl;
+#endif
 
     if (data->redshift) {
       *data->redshift=ggred;
-      if (debug())
-	cerr << "DEBUG: Generic::processHitQuantities(): "
-	     << "redshift=" << *data->redshift << endl;
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(*data->redshift);
+#endif
     }
     if (data->time) {
       *data->time=coord_ph_hit[0];
-      if (debug())
-	cerr << "DEBUG: Generic::processHitQuantities(): "
-	     << "time=" << *data->time << endl;
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(*data->time);
+#endif
     }
     if (data->impactcoords) {
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
       memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
     }
-    if (debug())
-      cerr << "DEBUG: Generic::processHitQuantities: "
-	   << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
-	   << ") = " << dlambda << ", dsem=" << dsem << endl;
+#if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
+		<< ") = " << dlambda << ", dsem=" << dsem << endl;
+#endif
     if (data->intensity) {
       /*
 	Comment on intensity integration: 
@@ -246,14 +256,15 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	* (ph -> getTransmission(size_t(-1)))
 	* ggred*ggred*ggred;
 
-      if (debug())
-	cerr << "DEBUG: Generic::processHitQuantities(): "
-	     << "intensity +=" << *data->intensity
-	     << "= emission((dsem=" << dsem << "))="
-	     << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
-	     << ")*(ggred=" << ggred << ")^3*(transmission="
-	     << (ph -> getTransmission(size_t(-1))) << ")"
-	     << endl;
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG
+	<< "intensity +=" << *data->intensity
+	<< "= emission((dsem=" << dsem << "))="
+	<< (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
+	<< ")*(ggred=" << ggred << ")^3*(transmission="
+	<< (ph -> getTransmission(size_t(-1))) << ")"
+	<< endl;
+#     endif
     }
     if (data->binspectrum) {
       double const * const channels = spr -> getChannels();
@@ -266,12 +277,13 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 			    coord_ph_hit, coord_obj_hit)
 	  * ph -> getTransmission(ii)
 	  *ggred*ggred*ggred*ggred;
-	if (debug())
-	  cerr << "DEBUG: Generic::processHitQuantities(): "
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG
 	       << "nuobs[" << ii << "]="<< channels[ii]
 	       << ", nuem=" << nuem1 
 	       << ", binspectrum[" << ii+data->offset << "]="
 	       << data->binspectrum[ii*data->offset]<< endl;
+#       endif
       }
     }
     if (data->spectrum) {
@@ -284,8 +296,9 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	data->spectrum[ii*data->offset] +=
 	  Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
-	if (debug())
-	  cerr << "DEBUG: Generic::processHitQuantities(): "
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG
+	       << "DEBUG: Generic::processHitQuantities(): "
 	       << "nuobs[" << ii << "]="<< nuobs[ii]
 	       << ", nuem=" << nuem 
 	       << ", dsem=" << dsem
@@ -295,6 +308,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	       << data->spectrum[ii*data->offset]
 	       << ", transmission=" << ph -> getTransmission(ii)
 	       << ", redshift=" << ggred << ")\n";
+#       endif
       }
     }
     /* update photon's transmission */
@@ -303,21 +317,24 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
     for (size_t ii=0; ii<nbnuobs; ++ii)
       ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
   } else {
-    if (debug())
-      cerr << "DEBUG: Generic::processHitQuantities: NO data requested!\n";
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "NO data requested!" << endl;
+#   endif
   }
 }
 
 double Generic::transmission(double, double, double*) const {
-  if (debug())
-    cerr << "DEBUG: Generic::transmission(): flag_radtransf_="
-	 << flag_radtransf_ << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(flag_radtransf_);
+# endif
   return double(flag_radtransf_);
 }
 
 double Generic::emission(double , double dsem, double *, double *) const
 {
-  GYOTO_DEBUG << "flag_radtransf_=" << flag_radtransf_ << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(flag_radtransf_);
+# endif
   if (flag_radtransf_) return dsem;
   return 1.;
 }
@@ -325,7 +342,9 @@ double Generic::emission(double , double dsem, double *, double *) const
 void Generic::emission(double * Inu, double * nuem , size_t nbnu,
 			 double dsem, double *cph, double *co) const
 {
-  GYOTO_DEBUG << "flag_radtransf_=" << flag_radtransf_ << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(flag_radtransf_);
+# endif
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
 }
 
@@ -340,9 +359,9 @@ double Generic::integrateEmission (double nu1, double nu2, double dsem,
   double Icur = (Inu2+Inu1)*dnux2*0.25;
   double Iprev;
 
-  if (debug())
-      cerr << "DEBUG: Generic::integrateEmission(): "
-	   << "Icur=" << Icur << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(Icur);
+# endif
 
   do {
     Iprev = Icur; 
@@ -351,15 +370,15 @@ double Generic::integrateEmission (double nu1, double nu2, double dsem,
       Icur += emission(nu, dsem, coord_ph, coord_obj) * dnux2;
     }
     Icur *= 0.5;
-    if (debug())
-      cerr << "DEBUG: Generic::integrateEmission(): "
-	   << "Icur=" << Icur << endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(Icur);
+#   endif
   } while( fabs(Icur-Iprev) > (1e-2 * Icur) );
 
-  if (debug())
-    cerr << "DEBUG: Generic::integrateEmission(): "
-	 << "dnu=" << dnux2*0.5
-	 << "=(nu2-nu1)/" << (nu2-nu1)/(dnux2*0.5) << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "dnu=" << dnux2*0.5
+	      << "=(nu2-nu1)/" << (nu2-nu1)/(dnux2*0.5) << endl;
+# endif
 
   return Icur;
 }

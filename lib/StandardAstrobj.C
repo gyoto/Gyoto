@@ -43,37 +43,48 @@ Standard::Standard(string kind) :
   Generic(kind),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
 {
-  if (debug()) cerr << "Standard Astrobj Construction" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 Standard::Standard() :
   Generic(),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
 {
-  if (debug()) cerr << "Standard Astrobj Construction" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 Standard::Standard(double radmax) :
   Generic(radmax),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
 {
-  if (debug()) cerr << "Astrobj Construction" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 Standard::Standard(const Standard& orig) :
   Generic(orig), Functor::Double_constDoubleArray(orig),
   critical_value_(orig.critical_value_), safety_value_(orig.safety_value_)
 {
-    if (debug()) cerr << "DEBUG: Astrobj::Standard (Copy)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 Standard::~Standard() {
-  if (debug()) cerr << "DEBUG: Astrobj::Standard::~Standard()" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 int Standard::Impact(Photon* ph, size_t index, Properties *data){
-  if (debug())
-    cerr << "DEBUG: Standard::Impact called for " << getKind() << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(getKind());
+# endif
   double p1[8], p2[8];
   ph->getCoord(index, p1);
   ph->getCoord(index+1, p2);

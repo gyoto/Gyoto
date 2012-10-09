@@ -39,8 +39,9 @@ using namespace Gyoto::Astrobj;
 
 FixedStar::FixedStar() : UniformSphere("FixedStar")
 {
-  if (debug())
-    cerr << "DEBUG: in FixedStar::FixedStar(void)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   for (int i=0;i<3;++i) pos_[i]=0.;
 }
 
@@ -48,12 +49,14 @@ FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 		     double rad) :
   UniformSphere("FixedStar", gg, rad)
 {
-  if (debug())
-    cerr << "DEBUG: in FixedStar::FixedStar(metric, pos, rad)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "(metric, pos, rad)" << endl;
+# endif
   for (int i=0;i<3;++i) pos_[i] = StPsn[i]; 
   setRadius(rad);
-  if (debug())
-    cerr << "DEBUG: out FixedStar::FixedStar(metric, pos, rad)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "done" << endl;
+# endif
 }
 
 FixedStar::FixedStar(const FixedStar& orig) :
@@ -64,9 +67,9 @@ FixedStar::FixedStar(const FixedStar& orig) :
 FixedStar* FixedStar::clone() const { return new FixedStar(*this); }
 
 FixedStar::~FixedStar() {
-
-  if (debug()) cout << "FixedStar Destruction" << endl;
-
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 void FixedStar::getCartesian(double const * const , size_t const n_dates,
@@ -115,8 +118,9 @@ void FixedStar::getPos(double dst[3]) const
 { for (int i=0; i<3;++i) dst[i]=pos_[i]; }
 
 void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
- if (debug())
-   cerr << "DEBUG: in FixedStar::setMetric(gg)\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
  Generic::setMetric(gg);
  setRadius(radius_);
 }
@@ -126,8 +130,9 @@ void FixedStar::setRadius(double r) {
   critical_value_=r*r;
   safety_value_=1.1*critical_value_;
   if (!gg_()) {
-    if (debug())
-      cerr << "DEBUG: FixedStar::setRadius(radius): metric is not set yet\n";
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "metric is not set yet" << endl;
+#   endif
     return;
   }
   switch (gg_ -> getCoordKind()) {

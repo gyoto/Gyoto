@@ -27,10 +27,10 @@ using namespace std;
 
 static int gyoto_debug=GYOTO_DEFAULT_DEBUG_MODE;
 #if GYOTO_DEFAULT_DEBUG_MODE
-static int gyoto_verbosity=GYOTO_DEFAULT_VERBOSITY;
+static int gyoto_verbosity=GYOTO_DEBUG_VERBOSITY;
 static int gyoto_prev_verbosity=GYOTO_DEBUG_VERBOSITY;
 #else
-static int gyoto_verbosity=GYOTO_DEBUG_VERBOSITY;
+static int gyoto_verbosity=GYOTO_DEFAULT_VERBOSITY;
 static int gyoto_prev_verbosity=GYOTO_DEBUG_VERBOSITY;
 #endif
 

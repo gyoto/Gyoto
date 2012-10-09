@@ -80,17 +80,19 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen,
 }
 
 Scenery::~Scenery() {
-  if (debug())
-    cerr << "DEBUG: in Scenery::~Scenery()\n"
-	 << "DEBUG: Scenery::~Scenery(): freeing metric\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "freeing metric\n";
+# endif
   gg_ = NULL;
 
-  if (debug())
-    cerr << "DEBUG: Scenery::~Scenery(): freeing screen\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "freeing screen\n";
+# endif
   screen_ = NULL;
 
-  if (debug())
-    cerr << "DEBUG: Scenery::~Scenery(): freeing astrobj\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "freeing astrobj\n";
+# endif
   obj_ = NULL;
  }
 
@@ -195,7 +197,9 @@ static void * SceneryThreadWorker (void *arg) {
     ////// 2- do the actual work.
     if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
       cout << "\rj = " << j << " / " << larg->jmax << " " << flush;
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
+#   endif
     (*larg->sc)(i, j, &data, impactcoords, ph);
     ++count;
   }
@@ -316,22 +320,30 @@ void Scenery::operator() (
     gg=gg_;
   }
   // Always reset delta
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "reset delta" << endl;
+# endif
   ph -> setDelta(delta_);
   ph -> setTmin(tmin_);
 
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "init nbnuobs" << endl;
+# endif
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
 
   if (impactcoords) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords set" << endl;
+#   endif
     if(impactcoords[0] != DBL_MAX) {
       ph -> setInitialCondition(gg, obj, impactcoords+8);
       ph -> resetTransmission();
       obj_ -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
   } else {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords not set" << endl;
+#   endif
     screen_ -> getRayCoord(i,j, coord);
     ph -> setInitialCondition(gg, obj, coord);
     ph -> hit(data);
@@ -373,9 +385,9 @@ void Scenery::setRequestedQuantities(std::string squant) {
     else throwError("ScenerySubcontractor(): unkwon quantity"); 
     tk = strtok(NULL, " \t\n");
   }
-  if (debug())
-    cerr << "DEBUG: Scenery::setRequestedQuantities("<<squant<<"): "
-	 << "quantities_=" << quantities_ << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "("<<squant<<"): " << "quantities_=" << quantities_ << endl;
+# endif
 }
 Gyoto::Quantity_t Scenery::getRequestedQuantities() const {
   return quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
@@ -428,21 +440,36 @@ void Scenery::setTmin(double tmin) { tmin_ = tmin; }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "fmp -> setMetric (gg_) ;" << endl;
+# endif
   if (gg_)     fmp -> setMetric (gg_) ;
+
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> setScreen (screen_) ;" << endl;
+# endif
   if (screen_) fmp -> setScreen (screen_) ;
+
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> setAstrobj (obj_) ;" << endl;
+# endif
   if (obj_)    fmp -> setAstrobj (obj_) ;
+
   if (delta_ != GYOTO_DEFAULT_DELTA) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG <<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;" << endl;
+#   endif
     fmp -> setParameter ("Delta", delta_);
   }
+
   if (getRequestedQuantities()) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG <<"fmp -> setParameter (\"Quantities\", \""
 		<<getRequestedQuantitiesString()<<"\") ;" << endl;
+#   endif
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
+
   if (tmin_ != DEFAULT_TMIN) fmp -> setParameter("MinimumTime", tmin_);
   if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
 }

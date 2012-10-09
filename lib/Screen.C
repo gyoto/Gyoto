@@ -36,8 +36,9 @@ Screen::Screen() :
   tobs_(0.), fov_(M_PI*0.1), npix_(1001),
   distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL)
 {
-  if (debug()) cerr << "DEBUG: Screen::Screen()" << endl ;
-  if (debug()) cerr << "DEBUG: Screen::dmax_ = " << dmax_ << endl ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(dmax_);
+# endif
   euler_[0]=euler_[1]=euler_[2]=0.;
   setProjection(0., 0., 0.);
 }
@@ -111,8 +112,10 @@ void Screen::setDistance(double dist)    {
 }
 
 void Screen::setDmax(double dist) {
-  if (debug()) cerr << "DEBUG: Screen::setDmax("<<dist<<")\n";
   dmax_ = dist;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(dmax_);
+# endif
 }
 double Screen::getDmax() const { return dmax_; }
 
@@ -226,8 +229,9 @@ SmartPointer<Spectrometer> Screen::getSpectrometer() const { return spectro_; }
 void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   const double delta= fov_/npix_;
   double xscr, yscr;
-  if (debug()) cerr << "Gyoto::Screen::getRayCoord(i=" << i
-		    << ", j=" << j << ", coord)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
+# endif
   yscr=delta*(j-(npix_+1)/2.);
   xscr=delta*(i-(npix_+1)/2.);
   getRayCoord(-xscr, yscr, coord);
@@ -240,7 +244,9 @@ void Screen::getRayCoord(double alpha, double delta,
   //if (debug()) cout << "alpha,delta= " << alpha << " " << delta << endl;
   int i; // dimension : 0, 1, 2
   double pos[4];
-  if (debug()) cerr << "getRayCoord(alpha="<<alpha<<",delta="<<delta<<",coord)" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "(alpha="<<alpha<<",delta="<<delta<<",coord)" << endl;
+# endif
   getObserverPos(coord);
 
   if (coord[1] > dmax_) {
@@ -527,8 +533,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   if (tobs_found) scr -> setTime ( tobs_tmp, tunit );
 
-  if (debug())
-    cerr << "DEBUG: Screen::Subcontractor(): dmax_ = " << scr->getDmax() <<endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(scr->getDmax());
+# endif
 
   return scr;
 }

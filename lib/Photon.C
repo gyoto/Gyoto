@@ -236,9 +236,11 @@ int Photon::hit(Astrobj::Properties *data) {
   if (rr<rmax)
     hitt = object_ -> Impact(this, ind, data);
   if (hitt) {
-    if (debug()) cerr << "DEBUG: Photon.C: Hit for already computed position; "
-		      << "Warning: radiative transfer not implemented "
-		      << "for that case" << endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "DEBUG: Photon.C: Hit for already computed position; "
+		<< "Warning: radiative transfer not implemented "
+		<< "for that case" << endl;
+#   endif
     return hitt;
   } else if (((dir==1)?
 	(ind==imax_ && x0_[ind]>=tmin_): // conditions if dir== 1
@@ -300,7 +302,9 @@ int Photon::hit(Astrobj::Properties *data) {
     // Next step along photon's worldline
     stopcond  = state -> nextStep(this, coord);
     if (stopcond) {
-      if (debug()) cerr<<"DEBUG: Photon::hit(): stopcond set by integrator\n";
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "stopcond set by integrator\n";
+#     endif
       break;
     }
     if (coord[0] == x0_[ind]) { // here, ind denotes previous step
@@ -310,14 +314,15 @@ int Photon::hit(Astrobj::Properties *data) {
       break;
     }
     if((stopcond=metric_->isStopCondition(coord))) {
-      if (debug()) cerr << "DEBUG: Photo::hit(): stopcond step by metric"<<endl;
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "stopcond step by metric"<<endl;
+#     endif
       break;
     }
 
     if ( ++count > COUNT_MAX ) {
-      if (verbose()>= GYOTO_SEVERE_VERBOSITY)
-	cerr << "***WARNING (severe): Photon::hit: too many iterations, break"
-	     << endl;
+      GYOTO_SEVERE << "***WARNING (severe): Photon::hit: too many iterations, "
+		   <<" break" << endl;
       stopcond = 1;
       break;
     }
@@ -337,9 +342,10 @@ int Photon::hit(Astrobj::Properties *data) {
     if (dir==1) ++imax_; else --imin_;
 
     if (imin_!=ind && imax_!=ind) {
-      if (debug()) cerr << "\nimin_=" << imin_
-			<< ", imax_=" << imax_
-			<< ", ind=" << ind << endl;
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "imin_=" << imin_ << ", imax_=" << imax_
+		  << ", ind=" << ind << endl;
+#     endif
       throwError("BUG: Photon.C: bad index evolution, "
 		 "ind should be equal to imin or imax");
     }
@@ -360,26 +366,43 @@ int Photon::hit(Astrobj::Properties *data) {
       throwError("Incompatible coordinate kind in Photon.C");
     }
 
-    if (debug())
-      cerr << "DEBUG: Photon::hit(): rmax="<< rmax <<", rr="<<rr<<endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+      GYOTO_DEBUG_EXPR(rmax);
+      GYOTO_DEBUG_EXPR(rr);
+    GYOTO_ENDIF_DEBUG
+#   endif
+
     if (rr<rmax) {
-      if (debug()) cerr << "DEBUG: Photon::hit() calling Astrobj::Impact\n";
+
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "calling Astrobj::Impact\n";
+#     endif
+
       hitt |= object_ -> Impact(this, ind, data);
       if (hitt && !data) stopcond=1;
-      if (debug()) cerr << "DEBUG: Photon::hit(): transmission_freqobs_="
-			<< transmission_freqobs_ << endl;
+
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(transmission_freqobs_);
+#     endif
+
       if ( transmission_freqobs_ < 1e-6 ) {
 	stopcond=1;
-	if (debug()) 
-	  cerr << "DEBUG: Photon::hit(): stopping because we "
-	       << "are optically thick\n";
+
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG << "stopping because we are optically thick\n";
+#       endif
+
       }
     } else {
       if ( rr > rr_prev ) {
-	if (debug())
-	  cerr << "DEBUG: Photon::hit(): Stopping because "
-	       << "1) we are far from this object and "
-	       << "2) we are flying away" << endl;
+
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG << "Stopping because "
+		    << "1) we are far from this object and "
+		    << "2) we are flying away" << endl;
+#       endif
+
 	stopcond=1;
 	break;
       }
@@ -397,9 +420,9 @@ int Photon::hit(Astrobj::Properties *data) {
     switch (dir) {
     case 1:
       if (coord[0]>tmin_) {
-	if (debug()) 
-	  cerr << "DEBUG: Photon::hit(): stopping because time "
-	       << "goes beyond time limit\n";
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG << "stopping because time goes beyond time limit\n";
+#       endif
 	stopcond=1;
       }
       if ((!stopcond) && (ind==x_size_)) {
@@ -409,9 +432,9 @@ int Photon::hit(Astrobj::Properties *data) {
       break;
     default:
       if (coord[0]<tmin_) {
-	if (debug()) 
-	  cerr << "DEBUG: Photon::hit(): stopping because time "
-	       << "goes beyond time limit\n";
+#       if GYOTO_DEBUG_ENABLED
+	GYOTO_DEBUG << "stopping because time goes beyond time limit\n";
+#       endif
 	stopcond=1;
       }
       if ((!stopcond) && (imin_==0)) {
@@ -431,8 +454,9 @@ int Photon::hit(Astrobj::Properties *data) {
 double Photon::findMin(Functor::Double_constDoubleArray* object,
 		       double t1, double t2, double &tmin,
 		       double threshold) {
-  if (debug())
-    cerr << "DEBUG: in Photon::findMind()\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   double p1[4] = {t1}, p2[4] = {t2};
   getCoord(p1, 1, p1+1, p1+2, p1+3);
   getCoord(p2, 1, p2+1, p2+2, p2+3);
@@ -496,9 +520,10 @@ void Photon::transmit(size_t i, double t) {
   if (!spectro_() || i>=spectro_->getNSamples())
     throwError("Photon::getTransmission(): i > nsamples");
   transmission_[i] *= t;
-  if (debug())
-    cerr << "DEBUG: Photon::transmit(i="<<i<< ", transmission="<<t<<"):"
-	 << "transmission_[i]="<< transmission_[i]<< "\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "(i="<<i<< ", transmission="<<t<<"):"
+	      << "transmission_[i]="<< transmission_[i]<< "\n";
+# endif
 }
 void Photon::Refined::transmit(size_t i, double t) {
   parent_->transmit(i, t);

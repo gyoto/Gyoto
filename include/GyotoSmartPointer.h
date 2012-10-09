@@ -132,10 +132,9 @@ class Gyoto::SmartPointer
   void decRef ()
   {
     if (obj && obj->decRefCount() == 0) {
-      if (debug())
-	std::cerr << "DEBUG: SmartPointer<"
-		  << typeid(obj).name()
-		  <<">::decRef(): delete " << obj << "\n";
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(obj);
+#     endif
       delete obj;
       obj = NULL;
     }

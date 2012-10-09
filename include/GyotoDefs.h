@@ -100,17 +100,34 @@ namespace Gyoto {
 #define GYOTO_DEFAULT_DEBUG_MODE 0
 #define GYOTO_QUIET_VERBOSITY   1
 #define GYOTO_SEVERE_VERBOSITY  3
+#define GYOTO_WARNING_VERBOSITY  GYOTO_SEVERE_VERBOSITY
 #define GYOTO_DEFAULT_VERBOSITY 5
 #define GYOTO_INFO_VERBOSITY   10
 #define GYOTO_DEBUG_VERBOSITY 3000
 
-#define GYOTO_QUIET  if (Gyoto::verbose() >= GYOTO_QUIET_VERBOSITY) cout 
-#define GYOTO_SEVERE if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY)cerr<<"SEVERE: "
-#define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY)cerr<<"WARNING: "
-#define GYOTO_MSG    if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY) cout 
-#define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) cerr<<"INFO: "
-#define GYOTO_DEBUG  if (Gyoto::debug()) cerr << "DEBUG: " \
+#define GYOTO_QUIET  if (Gyoto::verbose() >= GYOTO_QUIET_VERBOSITY) \
+    std::cout 
+#define GYOTO_SEVERE if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) \
+    std::cerr<<"SEVERE: "
+#define GYOTO_WARNING if(Gyoto::verbose()>=GYOTO_SEVERE_VERBOSITY) \
+    std::cerr<<"WARNING: "
+#define GYOTO_MSG    if (Gyoto::verbose() >= GYOTO_DEFAULT_VERBOSITY) \
+    std::cout 
+#define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) \
+    std::cerr<<"INFO: "
+
+#define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
+#define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \
+    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "         \
+	      << #a << "=[" << a[0] ;				  \
+    for (size_t i=1; i < n; ++i) std::cerr << "," << a[i] ;	  \
+    std::cerr << "]" << std::endl ;}
+#define GYOTO_DEBUG  if (GYOTO_DEBUG_MODE) std::cerr << "DEBUG: "	\
 					      << __PRETTY_FUNCTION__ << ": "
+#define GYOTO_IF_DEBUG if (GYOTO_DEBUG_MODE) {
+#define GYOTO_ENDIF_DEBUG }
+
+# define GYOTO_DEBUG_MODE Gyoto::debug()
 
   /**
    * \brief Coordinate system kinds

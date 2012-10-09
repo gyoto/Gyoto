@@ -45,14 +45,20 @@ Worldline::Worldline(const Worldline& orig) :
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_)
 {
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
+# endif
   if (orig.metric_()) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "cloning metric\n";
+#   endif
     metric_=orig.metric_->clone();
   }
   xAllocate(x_size_);
   size_t sz = get_nelements()*sizeof(double);
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "sz="<<sz<<", imin_="<<imin_<<endl;
+# endif
   memcpy(x0_+imin_, orig.x0_+imin_, sz);
   memcpy(x1_+imin_, orig.x1_+imin_, sz);
   memcpy(x2_+imin_, orig.x2_+imin_, sz);
@@ -62,11 +68,15 @@ Worldline::Worldline(const Worldline& orig) :
   memcpy(x2dot_+imin_, orig.x2dot_+imin_, sz);
   memcpy(x3dot_+imin_, orig.x3dot_+imin_, sz);
   if (orig.cst_ && cst_n_) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "cloning constants of motion\n";
-   cst_ = new double [cst_n_];
-   memcpy(cst_, orig.cst_, cst_n_*sizeof(double));
+#   endif
+    cst_ = new double [cst_n_];
+    memcpy(cst_, orig.cst_, cst_n_*sizeof(double));
   }
-  GYOTO_DEBUG << "out\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "done\n";
+# endif
 }
 
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
@@ -74,7 +84,9 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_)
 {
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
+# endif
 
   double d1 = orig->x0_[i0], d2 = orig->x0_[i0+dir];
   x_size_= size_t(fabs(d1-d2)/step_max)+2;
@@ -88,27 +100,39 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 
   orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_);
 
-  if (debug())
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
     {
-      cerr << "DEBUG: Worldline::Worldline(Worldline*, "
-	   <<i0<<", "<<dir<<", "<<step_max<<")"<<endl;
-      cerr << "       d1="<<d1<<", d2="<<d2<<endl;
-      for (i=0; i<x_size_; ++i)
-	cerr << "       " << i << " "
-	     << x0_[i] << " " << x1_[i] << " " << x2_[i] << " " << x3_[i] << " "
-	     <<x0dot_[i]<<" "<<x1dot_[i]<<" "<<x2dot_[i]<<" "<<x3dot_[i]<<endl;
+      GYOTO_DEBUG << "(Worldline*, "<<i0<<", "<<dir<<", "<<step_max<<")"<<endl;
+      GYOTO_DEBUG << "d1="<<d1<<", d2="<<d2<<endl;
+      GYOTO_DEBUG_ARRAY(x0_, x_size_);
+      GYOTO_DEBUG_ARRAY(x1_, x_size_);
+      GYOTO_DEBUG_ARRAY(x2_, x_size_);
+      GYOTO_DEBUG_ARRAY(x3_, x_size_);
+      GYOTO_DEBUG_ARRAY(x0dot_, x_size_);
+      GYOTO_DEBUG_ARRAY(x1dot_, x_size_);
+      GYOTO_DEBUG_ARRAY(x2dot_, x_size_);
+      GYOTO_DEBUG_ARRAY(x3dot_, x_size_);
     }
+  GYOTO_ENDIF_DEBUG
+# endif
 
   if (orig->cst_ && cst_n_) {
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "cloning constants of motion\n";
+#   endif
     cst_ = new double [cst_n_];
     memcpy(cst_, orig->cst_, cst_n_*sizeof(double));
   }
-  GYOTO_DEBUG << "out\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "done\n";
+# endif
 }
 
 Worldline::~Worldline(){
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
+# endif
   delete[] x0_;
   delete[] x1_;
   delete[] x2_;
@@ -123,7 +147,9 @@ void Worldline::xAllocate() {xAllocate(GYOTO_DEFAULT_X_SIZE);}
 
 void Worldline::xAllocate(size_t sz)
 {
-  GYOTO_DEBUG << "sz=" << sz << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(sz);
+# endif
   x_size_ = sz ;
   x0_ = new double[x_size_];
   x1_ = new double[x_size_];
@@ -136,7 +162,9 @@ void Worldline::xAllocate(size_t sz)
 }
 
 size_t Worldline::xExpand(int dir) {
-  GYOTO_DEBUG<< "Wl: Expand in dir " << dir ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(dir);
+# endif
   double * old;
   size_t offset=(dir==1)?0:x_size_;
   size_t retval=(dir==1)?(x_size_-1):x_size_;
@@ -191,10 +219,12 @@ size_t Worldline::xExpand(int dir) {
   i0_+=offset;
   imax_+=offset;
 
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<< ", xsize_=" << x_size_
 		    << ", imin_=" << imin_
 		    << ", i0_=" << i0_
 		    << ", imax_=" << imax_;
+# endif
 
   return retval;
 }
@@ -202,8 +232,10 @@ size_t Worldline::xExpand(int dir) {
 void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
   // Set the Metric
   metric_=gg;
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "imin_=" << imin_ << ", i0_=" << i0_
 	      << ", imax_=" << imax_ << endl;
+# endif
   if (imin_ <= imax_) {
     // Initial condition has been set previously
     // Forget integration
@@ -284,14 +316,24 @@ void Worldline::xFill(double tlim) {
     ind = (imin_==0)?xExpand(-1):imin_;
   } else return ; // nothing to do
 
-  GYOTO_DEBUG<< "Worldline.C: Integrating worldline " ;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG<< "Integrating worldline " ;
+# endif
   
   // Set up integration
   double MassPart=getMass();
   if (MassPart==1.) {
-    GYOTO_DEBUG<< "of massive particule ....." << endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+    cerr << "of massive particule ....." << endl;
+    GYOTO_ENDIF_DEBUG
+#   endif
   }else if(MassPart==0.){
-    GYOTO_DEBUG<< "of 0-mass particule ....." << endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+    cerr << "of 0-mass particule ....." << endl;
+    GYOTO_ENDIF_DEBUG
+#   endif
   }else{
     throwError("In Worldline.C Unrecognized mass.");
     //GYOTO_DEBUG<< "of unrecognized mass (!!) particule ....." << endl;
@@ -548,10 +590,12 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     dtaul=tauprimel*dtl+0.5*tausecond*dtl*dtl;
     dtauh=tauprimeh*dth+0.5*tausecond*dth*dth;
 
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG
 	   << "curl=" << curl << ", x0_[curl]=" << x0_[curl]
 	   << ", curh=" << curh << ", x0_[curh]=" << x0_[curh]
 	   <<endl;
+#   endif
 
     // from below...
     bestl[0] =    x0_[curl];
@@ -575,18 +619,20 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     besth[7] = x3dot_[curh];
     metric_ -> myrk4(this, besth, dtauh, resh);
 
-    if (debug()) {
-      cerr << "DEBUG: Worldline::getCoord(): bestl=["<<bestl[0];
-      for (int ii=1; ii<8; ++ii) cerr << ", " << bestl[ii];
-      cerr << "], dtaul=" << dtaul << endl;
-      cerr << "DEBUG: Worldline::getCoord(): resl=["<<resl[0];
-      for (int ii=1; ii<8; ++ii) cerr << ", " << resl[ii];
-      cerr << "]\n";
-      cerr << "DEBUG: Worldline::getCoord(): tl=" << resl[0]
-	   << ", date=" << date << ", th=" << resh[0]
-	   << ", th-tl=" << resh[0]-resl[0] 
-	   << ", Dt=" << Dt << "(th-tl)/Dt=" << (resh[0]-resl[0])*Dtm1 << endl;
-    }
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+      GYOTO_DEBUG_ARRAY(bestl, 8);
+      GYOTO_DEBUG_EXPR(dtaul);
+      GYOTO_DEBUG_ARRAY(resl, 8);
+      GYOTO_DEBUG <<   "tl="         << resl[0] 
+		  << ", date="       << date 
+		  << ", th="         << resh[0]
+		  << ", th-tl="      << resh[0]-resl[0] 
+		  << ", Dt="         << Dt 
+		  <<   "(th-tl)/Dt=" << (resh[0]-resl[0])*Dtm1
+		  << endl;
+    GYOTO_ENDIF_DEBUG
+#   endif
 
     // Now sometimes we actually got further away. We have 4 dates
     // well estimated, take the 2 best, 1 above, 1 below.
@@ -602,6 +648,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (resh[0] < besth[0]) memcpy(besth, resh, 8*sizeof(double));
     }
 
+#   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG
 	   << "x0_[curl]=" << x0_[curl]
 	   << ", bestl[0]=" << bestl[0]
@@ -611,6 +658,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 	   << ", besth[0]-bestl[0]=" << besth[0]-bestl[0]
 	   << ", Dt=" << Dt
 	   << ", (th-tl)/Dt=" << (besth[0]-bestl[0])*Dtm1 << endl;
+#   endif
 
     // Now interpolate as best we can
     if (bestl[0]==date) {
@@ -635,7 +683,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     dtl=date-bestl[0]; Dt=besth[0]-bestl[0]; Dtm1=1./Dt;
     facth=dtl*Dtm1; factl=1.-facth;
     if (getMass()) {
+#     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "massive particle, interpolating\n";
+#     endif
       // Star (massive particle)
       tauprimel=1./bestl[4]; tauprimeh=1./besth[4];
 

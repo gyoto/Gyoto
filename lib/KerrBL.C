@@ -96,7 +96,9 @@ KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
 
 KerrBL::~KerrBL() {
-  if (debug()) cerr << "In KerrBL destructor" << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
 }
 
 // Output
@@ -165,21 +167,21 @@ double KerrBL::christoffel(const double[8],
 // Optimized version
 double KerrBL::ScalarProd(const double* pos,
 			const double* u1, const double* u2) const {
-  if (debug()) {
-    cerr << "DEBUG: KerrBL::ScalarProd(pos=[" << pos[0];
-    for (int i=1; i<4; ++i) cerr << ", " << pos[i];
-    cerr << "], u1=[" << u1[0];
-    for (int i=1; i<4; ++i) cerr << ", " << u1[i];
-    cerr << "], u2=[" << u2[0];
-    for (int i=1; i<4; ++i) cerr << ", " << u2[i];
-    cerr << "])=" <<  (gmunu(pos,0,0)*u1[0]*u2[0]
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG_ARRAY(pos, 4);
+    GYOTO_DEBUG_ARRAY(u1, 4);
+    GYOTO_DEBUG_ARRAY(u2, 4);
+    GYOTO_DEBUG   << "ScalarProd(pos, u1, u2)="
+		  <<  (gmunu(pos,0,0)*u1[0]*u2[0]
 		      +gmunu(pos,1,1)*u1[1]*u2[1]
 		      +gmunu(pos,2,2)*u1[2]*u2[2]
 		      +gmunu(pos,3,3)*u1[3]*u2[3]
 		      +gmunu(pos,0,3)*u1[0]*u2[3]
 		      +gmunu(pos,3,0)*u1[3]*u2[0])
 	 << endl;
-  }
+  GYOTO_ENDIF_DEBUG
+# endif
     
   return gmunu(pos,0,0)*u1[0]*u2[0]
     +gmunu(pos,1,1)*u1[1]*u2[1]
@@ -212,7 +214,9 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   }
 
   if (r < rsink) {
-    if (debug()) cerr << "Too close to horizon in KerrBL::diff at r= " << r << endl;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "Too close to horizon in KerrBL::diff at r= " << r << endl;
+#   endif
     return 1;
   }
 
@@ -287,8 +291,10 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
 void KerrBL::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
+# if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<<"coor=["<<coor[0]<<", "<<coor[1]<<", "<<coor[2]<<", "<<coor[3]
 	     <<"], dir="<<dir<<endl;
+# endif
   double sinth = sin(coor[2]);
   double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
 
@@ -296,7 +302,9 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
   vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
   vel[0] = SysPrimeToTdot(coor, vel+1);
   vel[3] *= vel[0];
-  GYOTO_DEBUG<<"vel=["<<vel[0]<<", "<<vel[1]<<", "<<vel[2]<<", "<<vel[3]<<"]\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_ARRAY(vel,4);
+# endif
 }
 
 //Runge Kutta to order 4
@@ -317,9 +325,9 @@ int KerrBL::myrk4(Worldline * line, const double coordin[8],
   /*Switch BL -> principal momenta*/
   double coor[8], res_mom[8] ;
   double const * const cst = line -> getCst();
-  if (debug())
-    cerr << "DEBUG: KerrBL::myrk4(): cst=[" << cst[0]
-	 << ", " << cst[1] << ", " << cst[2] << "]\n";
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_ARRAY(cst,3);
+#endif
   MakeMomentum(coordin,cst,coor);
 
   double k1[8] ; 
@@ -546,9 +554,9 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   else cstol = cstol_gen;
 
   if (fabs(fmod(coor[2]+M_PI/2, M_PI)-M_PI/2) < GYOTO_MIN_THETA) {
-    if (debug())
-      cerr << "WARNING: Too close to Z axis: stopping integration"<< endl;
-    return 1;}
+    GYOTO_WARNING << "Too close to Z axis: stopping integration"<< endl;
+    return 1;
+  }
 
   if (diff(coor,cst,dcoor)) return 1 ;
 
@@ -579,10 +587,10 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	
 	zaxis=1;
 	h0*=1.1; hbis*=1.1;
-	if (debug()) 
-	  cerr << "NOTE: Passing close to z-axis at theta= "
-	       << coor[2] << " and r= " << coor[1]
-	       << ", jumping ahead with h0= " << h0 << endl;
+
+	GYOTO_INFO << "NOTE: Passing close to z-axis at theta= "
+		   << coor[2] << " and r= " << coor[1]
+		   << ", jumping ahead with h0= " << h0 << endl;
 	
 	//throwError("stop");
         
@@ -594,10 +602,9 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       // infinite jumping ahead behavior (should never happen of
       // course)
       
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	cerr << "WARNING: " << endl
-	     << "in KerrBL.C couldn't solve z-axis problem ; stopping..."
-	     << endl;
+      GYOTO_INFO << "WARNING: " << endl
+		 << "in KerrBL.C couldn't solve z-axis problem ; stopping..."
+		 << endl;
       return 1;
     }
 
@@ -677,17 +684,18 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	    }
 	  }
 	  if (coor1[1]<rlimitol) {
-	    if (debug()) cerr << "Probable cause of warning:"
-			      << "z-axis problem badly treated in "
-			      << "KerrBL::myrk4_adaptive" << endl;
+#           if GYOTO_DEBUG_ENABLED
+	    GYOTO_DEBUG << "Probable cause of warning:"
+			<< "z-axis problem badly treated in "
+			<< "KerrBL::myrk4_adaptive" << endl;
+#           endif
 	    // some rare cases can end up with bad cst conservation
 	    // even at r = a few rhor...
 	  }else{
-	  if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	    cerr << "This warning occured at r= " << coor1[1] << endl
-		 << "i.e. far from horizon --> to be investigated"
-		 << ", or maybe increase parameter cstol" 
-		 << "in KerrBL.C" << endl;
+	    GYOTO_SEVERE << "This warning occured at r= " << coor1[1] << endl
+			 << "i.e. far from horizon --> to be investigated"
+			 << ", or maybe increase parameter cstol" 
+			 << "in KerrBL.C" << endl;
 	  }
 	}
 
@@ -736,11 +744,12 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
   double Sigma=mycoor[1]*mycoor[1]+a2*costh*costh;
   double Qtest=Sigma*mycoor[6]*Sigma*mycoor[6]+costh*costh*(a2*(mu*mu-EE*EE)+LL*LL/(sinth*sinth));//this should be equal to constant QQ
   int thdotpos=1;
-  if (debug())
-    cerr << "DEBUG: KerrBL::CheckCons(): "
-	 << "mu="<<mu<<", EE="<<EE<<", LL="<<LL<<", QQ="<<QQ<<", QQm1="<<QQm1
-	 << ", Qtest="<<Qtest<< ", fabs(Qtest-QQ)/QQm1="<< fabs(Qtest-QQ)/QQm1
-	 << endl;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG
+    << "mu="<<mu<<", EE="<<EE<<", LL="<<LL<<", QQ="<<QQ<<", QQm1="<<QQm1
+    << ", Qtest="<<Qtest<< ", fabs(Qtest-QQ)/QQm1="<< fabs(Qtest-QQ)/QQm1
+    << endl;
+# endif
   if (fabs(Qtest-QQ)*QQm1 > 1e-6){//Then change thetadot to allow Qtest=QQ
                                   // Note: if Q==0, QQm1==1.
 
@@ -756,7 +765,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
 	if (fabs(argsqrt)>limargbis)
 	  throwError("In KerrBL::CheckCons Impossible to determine thetadot; "
 		     "maybe try to increase parameter limarg");
-	if (debug()) cerr << "WARNING In KerrBL::CheckCons argsqrt= " << argsqrt << " at theta= " << coor_init[2] << ". Putting it to 0..." << endl;
+	GYOTO_INFO << "KerrBL::CheckCons argsqrt= " << argsqrt << " at theta= " << coor_init[2] << ". Putting it to 0..." << endl;
 	argsqrt=0.;
       }
     }
@@ -801,9 +810,9 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
     }
     if (argrac<0 && fabs(argrac)>arglim) {
       if (rr/rhor < 2.) {//A AFFINER?? //if the quantity is <0 and "big", but we are close to horizon --> put it to zero with Warning message
-	if (debug()) {
-	  cerr << "WARNING 0-NORM CLOSE TO HORIZON : "
-	       << "in KerrBL::Normalize4v impossible to normalize 0-mass "
+	if (verbose() >= GYOTO_WARNING_VERBOSITY) {
+	  GYOTO_WARNING << "0-NORM CLOSE TO HORIZON : "
+               << "in KerrBL::Normalize4v impossible to normalize 0-mass "
 	       << "particule next to horizon. Putting argrac to 0. "
 	       << "Effective value of argrac= " << argrac << endl
 	       << "with coord= ";
@@ -826,7 +835,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
     if (argrac<0 && fabs(argrac)<arglim) argrac=0.;
     if (argrac<0 && fabs(argrac)>arglim) {
       if (rr/rhor < 2.) {//A AFFINER??
-	if (debug()) {
+	if (verbose()>=GYOTO_WARNING_VERBOSITY) {
 	  cerr << "WARNING -1 - NORM CLOSE TO HORIZON : "
 	       << "in KerrBL::Normalize4v impossible to normalize massive "
 	       << "particle next to horizon. Putting argrac to 0. "

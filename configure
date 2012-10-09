@@ -807,6 +807,7 @@ enable_libtool_lock
 with_yorick
 with_yorick_home
 with_yorick_site
+enable_debugging
 enable_pthreads
 with_xerces
 with_xerces_headers
@@ -1463,6 +1464,7 @@ Optional Features:
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-debugging     Remove debugging output for hypothetical speed gain
   --enable-pthreads       Whether to use POSIX threads
   --disable-doc           Disable documentation generation
 
@@ -17037,6 +17039,21 @@ done
 pkg_requires=
 pkg_cflags=
 pkg_libs=
+
+# Enable debugging by default
+GYOTO_DEBUG_ENABLED=1
+# Check whether --enable-debugging was given.
+if test "${enable_debugging+set}" = set; then :
+  enableval=$enable_debugging; if test "x$enable_debugging" == "xno"; then :
+  GYOTO_DEBUG_ENABLED=0
+fi
+
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define GYOTO_DEBUG_ENABLED $GYOTO_DEBUG_ENABLED
+_ACEOF
+
 
 # Check for pthreads
 # Check whether --enable-pthreads was given.

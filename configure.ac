@@ -128,6 +128,16 @@ pkg_requires=
 pkg_cflags=
 pkg_libs=
 
+# Enable debugging by default
+GYOTO_DEBUG_ENABLED=1
+AC_ARG_ENABLE([debugging],
+  [AS_HELP_STRING([--disable-debugging],
+     [Remove debugging output for hypothetical speed gain])],
+  [AS_IF([test "x$enable_debugging" == "xno"],
+     [GYOTO_DEBUG_ENABLED=0])
+  ])
+AC_DEFINE_UNQUOTED([GYOTO_DEBUG_ENABLED], [$GYOTO_DEBUG_ENABLED])
+
 # Check for pthreads
 AC_ARG_ENABLE([pthreads],
   [AS_HELP_STRING([--enable-pthreads],
