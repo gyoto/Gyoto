@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([gyoto], [0.0.4], [gyoto@sympa.obspm.fr])
+gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(gyoto, 0.0.4)
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
@@ -18,13 +19,39 @@ AC_SUBST([VERSION], [0.0.4])
 
 # Checks for programs.
 AC_PROG_CXX
-AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG([])
 DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
+
+# Provide additional defaults for user variables
+AC_MSG_CHECKING([whether to add -march=native flag])
+AS_IF(
+  [test "x$gyoto_test_CXXFLAGS" = "x"],
+  [AC_ARG_ENABLE(
+     [native],
+     [AC_HELP_STRING(
+        [--disable-native],
+        [don't include -march=native in the default CXXFLAGS.]
+      )
+     ],
+     [AS_IF([test "x$enable_native" = "xyes"],
+        [AC_MSG_RESULT([yes (--enable-native set)])
+	 CXXFLAGS="-march=native $CXXFLAGS"],
+        [AC_MSG_RESULT([no (--disable-native set)])]
+      )
+     ],
+     [CXXFLAGS="-march=native $CXXFLAGS"
+      AC_MSG_RESULT([yes (default)])
+     ]
+   )
+  ],
+  [
+   AC_MSG_RESULT([no (CXXFLAGS set on input)])
+  ]
+)
 
 # Check dlopenable library suffix
 AC_MSG_CHECKING([for suffix for dynamic library files])
