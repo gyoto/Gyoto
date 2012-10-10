@@ -4,6 +4,7 @@
 AC_PREREQ([2.69])
 AC_INIT([gyoto], [0.0.4], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
+gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(gyoto, 0.0.4)
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
@@ -50,6 +51,35 @@ AS_IF(
   ],
   [
    AC_MSG_RESULT([no (CXXFLAGS set on input)])
+  ]
+)
+
+AC_MSG_CHECKING([whether to add hardening flags by default])
+harden_by_default=yes
+AC_ARG_ENABLE([hardening],
+  [AS_HELP_STRING([--disable-hardening],
+     [don't many warnings and hardening flags in default CPPFLAGS
+      et al. variable])
+  ],
+  [AS_IF([test "x$enable_hardening" = "xno"],
+     [harden_by_default=no])
+  ]
+)
+AC_MSG_RESULT([$harden_by_default])
+AS_IF([test $harden_by_default = yes],
+  [
+   AS_IF([test "x$gyoto_test_CXXFLAGS" = "x"],
+     [CXXFLAGS="${CXXFLAGS} -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+       -Wcast-align -Wconversion -Winline \
+       -Wabi -Woverloaded-virtual  -Wno-long-long \
+       -Wformat -Wformat-security -Werror=format-security \
+       -fstack-protector --param ssp-buffer-size=4"
+     ]
+   )
+   AS_IF([test "x$gyoto_test_CPPFLAGS" = "x"],
+     [CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+     ]
+   )
   ]
 )
 

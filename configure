@@ -805,6 +805,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 enable_native
+enable_hardening
 with_yorick
 with_yorick_home
 with_yorick_site
@@ -1466,6 +1467,9 @@ Optional Features:
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-native        don't include -march=native in the default CXXFLAGS.
+
+  --disable-hardening     don't many warnings and hardening flags in default
+                          CPPFLAGS et al. variable
 
   --disable-debugging     Remove debugging output for hypothetical speed gain
   --enable-pthreads       Whether to use POSIX threads
@@ -2602,6 +2606,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
+gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   if test -f "$ac_dir/install-sh"; then
@@ -15933,6 +15938,40 @@ else
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (CXXFLAGS set on input)" >&5
 $as_echo "no (CXXFLAGS set on input)" >&6; }
+
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add hardening flags by default" >&5
+$as_echo_n "checking whether to add hardening flags by default... " >&6; }
+harden_by_default=yes
+# Check whether --enable-hardening was given.
+if test "${enable_hardening+set}" = set; then :
+  enableval=$enable_hardening; if test "x$enable_hardening" = "xno"; then :
+  harden_by_default=no
+fi
+
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $harden_by_default" >&5
+$as_echo "$harden_by_default" >&6; }
+if test $harden_by_default = yes; then :
+
+   if test "x$gyoto_test_CXXFLAGS" = "x"; then :
+  CXXFLAGS="${CXXFLAGS} -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+       -Wcast-align -Wconversion -Winline \
+       -Wabi -Woverloaded-virtual  -Wno-long-long \
+       -Wformat -Wformat-security -Werror=format-security \
+       -fstack-protector --param ssp-buffer-size=4"
+
+
+fi
+   if test "x$gyoto_test_CPPFLAGS" = "x"; then :
+  CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+
+
+fi
 
 
 fi
