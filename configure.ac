@@ -9,7 +9,7 @@ AM_INIT_AUTOMAKE(gyoto, 0.0.4)
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
-LT_INIT([dlopen])
+LT_INIT([dlopen disable-static])
 
 VERSINFO=0:0:0
 sovers=`echo $VERSINFO | tr : .`
