@@ -137,10 +137,12 @@ double KerrBL::getRmb() const {
 //Computation of metric coefficients
 double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   double r = pos[1];
-  double theta = pos[2];
+  double sth2, cth2;
+  sincos(pos[2], &sth2, &cth2);
+  sth2*=sth2; cth2*=cth2;
   double r2=r*r;
   double a2=spin_*spin_;
-  double rho2=r2+a2*pow(cos(theta),2);
+  double rho2=r2+a2*cth2;
 //   if (debug()) {
 //     cerr << "DEBUG: KerrBL::gmunu: SPIN="<< spin_ << ", R=" << r << ", THETA=" << theta<< endl;
 //   }
@@ -148,8 +150,6 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   if ((mu==0) && (nu==0)) return -(1.-2.*r/rho2); // 2*r*mass
   if ((mu==1) && (nu==1)) return rho2/(r2-2.*r+a2);
   if ((mu==2) && (nu==2)) return rho2;
-
-  double sth2= sin(theta); sth2*=sth2; // = sin2(theta)
   if ((mu==3) && (nu==3))
     return (r2+a2+2.*r*a2*sth2/rho2)*sth2; // 2*r*mass
   if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
@@ -199,11 +199,12 @@ and y_dot is [rdot,thetadot,phidot,tdot,prdot,pthetadot]
 */
 int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   double a=spin_;
+  double a2=a*a;
 
   //int width=25;//15;
   //int prec=15;//8;
 
-  double rsink=1.+sqrt(1.-a*a)+drhor;
+  double rsink=1.+sqrt(1.-a2)+drhor;
 
   double r = coordGen[1] ; 
 
@@ -238,57 +239,67 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   double pr=coordGen[5];
   double ptheta=coordGen[6];
 
-  double a2=a*a;
   double a3=a2*a;
 
   double Sigma=r2+a2*costheta2;
+  if (Sigma==0) throwError("In KerrBL::diff(): Sigma==0");
+  double Sigmam1=1./Sigma;
+  double Sigmam2=Sigmam1*Sigmam1;
+
   double Delta=r2-2*r+a2;
 
   double E=cst[1];
   double E2=E*E;
   double L=cst[2];
   double L2=L*L;
+
   double tmp1=(2.*Delta*Sigma);
+  if (tmp1==0)  throwError("In KerrBL::diff(): 2.*Delta*Sigma==0");
+  double tmp1m1=1./tmp1;
 
   if (Delta==0) throwError("In KerrBL::diff(): Delta==0");
-  if (Sigma==0) throwError("In KerrBL::diff(): Sigma==0");
-  if (tmp1==0)  throwError("In KerrBL::diff(): 2.*Delta*Sigma==0");
 
   //NB: equations of motion are independent of Carter constant in this
   //form. However, the dependency of the dynamic on this constant
   //appears when transforming from principal momenta to coordinate
   //derivatives (e.g. p_theta -> thetadot)
 
-  res[0] = 1./tmp1*(2.*(r*(-2.*a*L+E*r3+a2*E*(2.+r))+a2*E*(a2+r*(-2.+r))*costheta2));// tdot
+  res[0] = tmp1m1*(2.*(r*(-2.*a*L+E*r3+a2*E*(2.+r))+a2*E*(a2+r*(-2.+r))*costheta2));// tdot
 
-  res[1] = Delta/Sigma*pr; //rdot
+  res[1] = Delta*Sigmam1*pr; //rdot
 
-  res[2] = 1./Sigma*ptheta; //thetadot
+  res[2] = Sigmam1*ptheta; //thetadot
 
-  res[3] = -1./tmp1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))*cotantheta2)); //phidot
+  res[3] = -tmp1m1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))*cotantheta2)); //phidot
   
   res[4] = 0.;// ptdot : pt = cst = -E
 
-  res[5] = -0.5*(2.*(r*(r-a2)-a2*(1.-r)*costheta2)
-		 /pow(r2+a2*costheta2,2))*pr*pr
-    -0.5*(-2.*r/pow(r2+a2*costheta2,2))*ptheta*ptheta
-    +(1./pow((a2+r*(-2.+r))*(r2+a2*costheta2),2)
+  double tmp2=r2+a2*costheta2;
+  if (tmp2==0) throwError("r2+a2*costheta2==0");
+  double tmp2m2=1./(tmp2*tmp2);
+
+  double tmp3=a2+r*(-2.+r);
+  double tmp3_2=tmp3*tmp3;
+
+  res[5] =
+    -0.5*(2.*(r*(r-a2)-a2*(1.-r)*costheta2)*tmp2m2)*pr*pr
+    -0.5*(-2.*r*tmp2m2)*ptheta*ptheta
+    +(tmp2m2/tmp3_2
       *(a2*(a2*a2*E2-2.*a3*E*L+2.*a*E*L*r2+E2*r3*(-4.+r)
 	    +a2*(L2*(1.-r)+2*E2*r2))*costheta2
 	+r*(-r*(a2*a2*E2-2.*a3*E*L+2.*a*E*L*(4.-3.*r)*r
-		+a2*(L2+2.*E2*r*(-2.+r))+r*(E2*r3-L2*pow((-2.+r),2)))
-	    +L2*pow(a2+r*(-2.+r),2)*cotantheta2)));// prdot
-
+		+a2*(L2+2.*E2*r*(-2.+r))+r*(E2*r3-L2*(-2.+r)*(-2.+r)))
+	    +L2*tmp3_2*cotantheta2)));// prdot
 
   res[6]=
-    -0.5*((a2*Delta*sin2theta)/(Sigma*Sigma))*pr*pr
-    -0.5*(a2*sin2theta/(Sigma*Sigma))*ptheta*ptheta
+    -0.5*(a2*Delta*sin2theta*Sigmam2)*pr*pr
+    -0.5*(a2*sin2theta*Sigmam2)*ptheta*ptheta
     +(
-      1./( Delta*Sigma*Sigma )
+      Sigmam2
       *(
-	L2*r2*Delta*cotantheta
-	+0.5*L2*Delta*(a2+2.*r2+a2*cos2theta)*cotantheta3
-	+a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*costheta*sintheta
+	L2*r2*cotantheta
+	+0.5*L2*(a2+2.*r2+a2*cos2theta)*cotantheta3
+	+a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*costheta*sintheta/Delta
 	)
       ); // pthetadot
 
