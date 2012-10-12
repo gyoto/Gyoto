@@ -334,7 +334,7 @@ AS_IF([test "x$with_cfitsio" != "xno"],
    AC_ARG_WITH([cfitsio-libs],
      [AS_HELP_STRING([--with-cfitsio-libs=path],
         [location of cfitsio library files])],
-     [cfitsio_lib=-I$with_cfitsio_libs
+     [cfitsio_lib=-L$with_cfitsio_libs
       AC_MSG_RESULT([$with_cfitsio_libs])],
      [AC_MSG_RESULT([no])])
 

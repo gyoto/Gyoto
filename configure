@@ -17127,7 +17127,7 @@ $as_echo_n "checking whether cfitsio library path is provided... " >&6; }
 
 # Check whether --with-cfitsio-libs was given.
 if test "${with_cfitsio_libs+set}" = set; then :
-  withval=$with_cfitsio_libs; cfitsio_lib=-I$with_cfitsio_libs
+  withval=$with_cfitsio_libs; cfitsio_lib=-L$with_cfitsio_libs
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_cfitsio_libs" >&5
 $as_echo "$with_cfitsio_libs" >&6; }
 else
