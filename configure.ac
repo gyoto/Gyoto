@@ -170,7 +170,8 @@ AS_IF([test "x$YORICK" != "x"],
 AC_CHECK_LIB([dl], [dlopen])
 
 # Checks for header files.
-AC_CHECK_HEADERS([float.h stddef.h string.h unistd.h])
+# We are not using those tests to far
+# AC_CHECK_HEADERS([float.h stddef.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
@@ -179,7 +180,9 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([floor getcwd pow sqrt strdup])
+# other functions we may need to check for according to autoscan:
+# floor getcwd pow sqrt strdup
+AC_CHECK_FUNCS([sincos])
 
 pkg_requires=
 pkg_cflags=

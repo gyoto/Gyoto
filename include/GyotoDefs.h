@@ -24,6 +24,10 @@
 #ifndef __GyotoDefs_H_ 
 #define __GyotoDefs_H_ 
 
+/* Replacement for GNU extension sincos */
+#if !HAVE_SINCOS
+#define sincos(t, s, c) *s=sin(t); *c=cos(t)
+#endif
 
 /* Typedef for various Gyoto data types */
 namespace Gyoto {
