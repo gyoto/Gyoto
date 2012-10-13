@@ -28,14 +28,15 @@ DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 # Provide additional defaults for user variables
-AC_MSG_CHECKING([whether to add -march=native flag])
+AC_MSG_CHECKING([whether to add -march=native flag to default CXXFLAGS])
 AS_IF(
   [test "x$gyoto_test_CXXFLAGS" = "x"],
   [AC_ARG_ENABLE(
      [native],
      [AC_HELP_STRING(
-        [--disable-native],
-        [don't include -march=native in the default CXXFLAGS.]
+        [--enable-native],
+        [include -march=native in the default CXXFLAGS.
+	 (Disabled if CXXFLAGS is passed)]
       )
      ],
      [AS_IF([test "x$enable_native" = "xyes"],
@@ -44,8 +45,7 @@ AS_IF(
         [AC_MSG_RESULT([no (--disable-native set)])]
       )
      ],
-     [CXXFLAGS="-march=native $CXXFLAGS"
-      AC_MSG_RESULT([yes (default)])
+     [AC_MSG_RESULT([no (default)])
      ]
    )
   ],
@@ -55,14 +55,14 @@ AS_IF(
 )
 
 AC_MSG_CHECKING([whether to add hardening flags by default])
-harden_by_default=yes
+harden_by_default=no
 AC_ARG_ENABLE([hardening],
-  [AS_HELP_STRING([--disable-hardening],
-     [don't many warnings and hardening flags in default CPPFLAGS
-      et al. variable])
+  [AS_HELP_STRING([--enable-hardening],
+     [add many warnings and hardening flags in default CPPFLAGS
+      et al. variable. Disabled for a variable if it is set on input.])
   ],
-  [AS_IF([test "x$enable_hardening" = "xno"],
-     [harden_by_default=no])
+  [AS_IF([test "x$enable_hardening" = "xyes"],
+     [harden_by_default=yes])
   ]
 )
 AC_MSG_RESULT([$harden_by_default])

@@ -1466,10 +1466,12 @@ Optional Features:
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --disable-native        don't include -march=native in the default CXXFLAGS.
+  --enable-native         include -march=native in the default CXXFLAGS.
+                          (Disabled if CXXFLAGS is passed)
 
-  --disable-hardening     don't many warnings and hardening flags in default
-                          CPPFLAGS et al. variable
+  --enable-hardening      add many warnings and hardening flags in default
+                          CPPFLAGS et al. variable. Disabled for a variable if
+                          it is set on input.
 
   --disable-debugging     Remove debugging output for hypothetical speed gain
   --enable-pthreads       Whether to use POSIX threads
@@ -15819,8 +15821,8 @@ done
 
 
 # Provide additional defaults for user variables
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add -march=native flag" >&5
-$as_echo_n "checking whether to add -march=native flag... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add -march=native flag to default CXXFLAGS" >&5
+$as_echo_n "checking whether to add -march=native flag to default CXXFLAGS... " >&6; }
 if test "x$gyoto_test_CXXFLAGS" = "x"; then :
   # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
@@ -15835,9 +15837,8 @@ $as_echo "no (--disable-native set)" >&6; }
 fi
 
 else
-  CXXFLAGS="-march=native $CXXFLAGS"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (default)" >&5
-$as_echo "yes (default)" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (default)" >&5
+$as_echo "no (default)" >&6; }
 
 
 fi
@@ -15853,11 +15854,11 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add hardening flags by default" >&5
 $as_echo_n "checking whether to add hardening flags by default... " >&6; }
-harden_by_default=yes
+harden_by_default=no
 # Check whether --enable-hardening was given.
 if test "${enable_hardening+set}" = set; then :
-  enableval=$enable_hardening; if test "x$enable_hardening" = "xno"; then :
-  harden_by_default=no
+  enableval=$enable_hardening; if test "x$enable_hardening" = "xyes"; then :
+  harden_by_default=yes
 fi
 
 
