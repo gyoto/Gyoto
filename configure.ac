@@ -79,16 +79,38 @@ AC_ARG_ENABLE([hardening],
 AC_MSG_RESULT([$harden_by_default])
 AS_IF([test $harden_by_default = yes],
   [
+   AC_MSG_CHECKING([whether configure provides default CXXFLAGS])
    AS_IF([test "x$gyoto_test_CXXFLAGS" = "x"],
-     [CXXFLAGS="${CXXFLAGS} -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
-       -Wcast-align -Wconversion -Winline \
-       -Wabi -Woverloaded-virtual  -Wno-long-long \
-       -Wformat -Wformat-security -Werror=format-security \
-       -fstack-protector --param ssp-buffer-size=4"
-     ]
+     [AC_MSG_RESULT([yes])
+      m4_foreach([myvar], [[-pedantic], [-Wall], [-W], [-Wundef], [-Wshadow], [-Wcast-qual], [-Wcast-align], [-Wconversion], [-Winline], [-Wabi], [-Woverloaded-virtual], [-Wno-long-long], [-Wformat], [-Wformat-security], [-Werror=format-security], [-fstack-protector], [--param ssp-buffer-size=4]],
+         [AC_MSG_CHECKING([whether ${CXX} accepts myvar])
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS myvar"
+          AC_TRY_LINK(
+            [],
+            [],
+            [AC_MSG_RESULT([yes])],
+            [CXXFLAGS=${TMPCXXFLAGS}
+	     AC_MSG_RESULT([no])
+            ]
+          )
+         ]
+      )
+     ],
+     [AC_MSG_RESULT([no])]
    )
    AS_IF([test "x$gyoto_test_CPPFLAGS" = "x"],
-     [CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+     [TMPCPPFLAGS=${CXXFLAGS}
+      CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+      AC_MSG_CHECKING([whether ${CXX} accepts -D_FORTIFY_SOURCE=2])
+      AC_TRY_LINK(
+        [],
+        [],
+        [AC_MSG_RESULT([yes])],
+        [CPPFLAGS=${TMPCPPFLAGS}
+         AC_MSG_RESULT([no])
+        ]
+      )
      ]
    )
   ]

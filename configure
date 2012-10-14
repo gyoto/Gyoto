@@ -15895,17 +15895,522 @@ fi
 $as_echo "$harden_by_default" >&6; }
 if test $harden_by_default = yes; then :
 
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether configure provides default CXXFLAGS" >&5
+$as_echo_n "checking whether configure provides default CXXFLAGS... " >&6; }
    if test "x$gyoto_test_CXXFLAGS" = "x"; then :
-  CXXFLAGS="${CXXFLAGS} -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
-       -Wcast-align -Wconversion -Winline \
-       -Wabi -Woverloaded-virtual  -Wno-long-long \
-       -Wformat -Wformat-security -Werror=format-security \
-       -fstack-protector --param ssp-buffer-size=4"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -pedantic" >&5
+$as_echo_n "checking whether ${CXX} accepts -pedantic... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -pedantic"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 
 
 fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wall" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wall... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wall"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -W" >&5
+$as_echo_n "checking whether ${CXX} accepts -W... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -W"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wundef" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wundef... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wundef"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wshadow" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wshadow... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wshadow"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wcast-qual" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wcast-qual... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wcast-qual"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wcast-align" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wcast-align... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wcast-align"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wconversion" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wconversion... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wconversion"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Winline" >&5
+$as_echo_n "checking whether ${CXX} accepts -Winline... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Winline"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wabi" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wabi... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wabi"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Woverloaded-virtual" >&5
+$as_echo_n "checking whether ${CXX} accepts -Woverloaded-virtual... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Woverloaded-virtual"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wno-long-long" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wno-long-long... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wno-long-long"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wformat" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wformat... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wformat"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Wformat-security" >&5
+$as_echo_n "checking whether ${CXX} accepts -Wformat-security... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Wformat-security"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -Werror=format-security" >&5
+$as_echo_n "checking whether ${CXX} accepts -Werror=format-security... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -Werror=format-security"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -fstack-protector" >&5
+$as_echo_n "checking whether ${CXX} accepts -fstack-protector... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS -fstack-protector"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts --param ssp-buffer-size=4" >&5
+$as_echo_n "checking whether ${CXX} accepts --param ssp-buffer-size=4... " >&6; }
+          TMPCXXFLAGS=${CXXFLAGS}
+          CXXFLAGS="$CXXFLAGS --param ssp-buffer-size=4"
+          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
    if test "x$gyoto_test_CPPFLAGS" = "x"; then :
-  CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+  TMPCPPFLAGS=${CXXFLAGS}
+      CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} accepts -D_FORTIFY_SOURCE=2" >&5
+$as_echo_n "checking whether ${CXX} accepts -D_FORTIFY_SOURCE=2... " >&6; }
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CPPFLAGS=${TMPCPPFLAGS}
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 
 
 fi
