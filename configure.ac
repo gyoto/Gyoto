@@ -28,20 +28,31 @@ DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 # Provide additional defaults for user variables
-AC_MSG_CHECKING([whether to add -march=native flag to default CXXFLAGS])
+myflag="-march=native"
+AC_MSG_CHECKING([whether to add ${myflag} flag to default CXXFLAGS])
 AS_IF(
   [test "x$gyoto_test_CXXFLAGS" = "x"],
   [AC_ARG_ENABLE(
      [native],
      [AC_HELP_STRING(
         [--enable-native],
-        [include -march=native in the default CXXFLAGS.
+        [include "-march=native" in the default CXXFLAGS.
 	 (Disabled if CXXFLAGS is passed)]
       )
      ],
      [AS_IF([test "x$enable_native" = "xyes"],
-        [AC_MSG_RESULT([yes (--enable-native set)])
-	 CXXFLAGS="-march=native $CXXFLAGS"],
+        [AC_MSG_RESULT([yes])
+         AC_MSG_CHECKING([whether ${CXX} supports ${myflag}])
+	 TMPCXXFLAGS=${CXXFLAGS}
+	 CXXFLAGS="${myflag} $CXXFLAGS"
+	 AC_TRY_LINK(
+           [],
+           [],
+           [AC_MSG_RESULT([yes])],
+           [CXXFLAGS=${TMPCXXFLAGS}
+	    AC_MSG_RESULT([no])
+           ])
+	 ],
         [AC_MSG_RESULT([no (--disable-native set)])]
       )
      ],

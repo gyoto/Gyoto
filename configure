@@ -1466,7 +1466,7 @@ Optional Features:
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-native         include -march=native in the default CXXFLAGS.
+  --enable-native         include "-march=native" in the default CXXFLAGS.
                           (Disabled if CXXFLAGS is passed)
 
   --enable-hardening      add many warnings and hardening flags in default
@@ -15821,15 +15821,42 @@ done
 
 
 # Provide additional defaults for user variables
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add -march=native flag to default CXXFLAGS" >&5
-$as_echo_n "checking whether to add -march=native flag to default CXXFLAGS... " >&6; }
+myflag="-march=native"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to add ${myflag} flag to default CXXFLAGS" >&5
+$as_echo_n "checking whether to add ${myflag} flag to default CXXFLAGS... " >&6; }
 if test "x$gyoto_test_CXXFLAGS" = "x"; then :
   # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
   enableval=$enable_native; if test "x$enable_native" = "xyes"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes (--enable-native set)" >&5
-$as_echo "yes (--enable-native set)" >&6; }
-	 CXXFLAGS="-march=native $CXXFLAGS"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+         { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${CXX} supports ${myflag}" >&5
+$as_echo_n "checking whether ${CXX} supports ${myflag}... " >&6; }
+	 TMPCXXFLAGS=${CXXFLAGS}
+	 CXXFLAGS="${myflag} $CXXFLAGS"
+	 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  CXXFLAGS=${TMPCXXFLAGS}
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no (--disable-native set)" >&5
 $as_echo "no (--disable-native set)" >&6; }
