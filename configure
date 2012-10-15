@@ -17337,7 +17337,8 @@ $as_echo_n "checking whether xerces include path is provided... " >&6; }
 
 # Check whether --with-xerces-headers was given.
 if test "${with_xerces_headers+set}" = set; then :
-  withval=$with_xerces_headers; xerces_headers=-I${with_xerces_headers}
+  withval=$with_xerces_headers; with_xerces=yes
+      xerces_headers=-I${with_xerces_headers}
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_xerces_headers}" >&5
 $as_echo "${with_xerces_headers}" >&6; }
 else
@@ -17350,7 +17351,8 @@ $as_echo_n "checking whether xerces library path is provided... " >&6; }
 
 # Check whether --with-xerces-libs was given.
 if test "${with_xerces_libs+set}" = set; then :
-  withval=$with_xerces_libs; xerces_lib=-L$with_xerces_libs
+  withval=$with_xerces_libs; with_xerces=yes
+      xerces_lib=-L$with_xerces_libs
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xerces_libs" >&5
 $as_echo "$with_xerces_libs" >&6; }
 else
@@ -17491,15 +17493,17 @@ fi
 
 fi
 if test "x$have_xerces" == "xno"; then :
-  if test "x$with_xerces" == "xyes"; then :
+
+   if test "x$with_xerces" == "xyes"; then :
   as_fn_error $? "xerces requested but not found" "$LINENO" 5
+
+
 fi
-       use_xerces=""
+   use_xerces=""
 
 
 else
   use_xerces=-DGYOTO_USE_XERCES
-
 
 
 fi
@@ -17545,7 +17549,8 @@ $as_echo_n "checking whether cfitsio include path is provided... " >&6; }
 
 # Check whether --with-cfitsio-headers was given.
 if test "${with_cfitsio_headers+set}" = set; then :
-  withval=$with_cfitsio_headers; cfitsio_headers=-I${with_cfitsio_headers}
+  withval=$with_cfitsio_headers; with_cfitsio=yes
+      cfitsio_headers=-I${with_cfitsio_headers}
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_cfitsio_headers}" >&5
 $as_echo "${with_cfitsio_headers}" >&6; }
 else
@@ -17558,7 +17563,8 @@ $as_echo_n "checking whether cfitsio library path is provided... " >&6; }
 
 # Check whether --with-cfitsio-libs was given.
 if test "${with_cfitsio_libs+set}" = set; then :
-  withval=$with_cfitsio_libs; cfitsio_lib=-L$with_cfitsio_libs
+  withval=$with_cfitsio_libs; with_cfitsio=yes
+      cfitsio_lib=-L$with_cfitsio_libs
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_cfitsio_libs" >&5
 $as_echo "$with_cfitsio_libs" >&6; }
 else
@@ -17703,8 +17709,10 @@ fi
 if test "x$have_cfitsio" == "xno"; then :
   if test "x$with_cfitsio" == "xyes"; then :
   as_fn_error $? "cfitsio requested but not found" "$LINENO" 5
+
+
 fi
-       use_cfitsio=""
+   use_cfitsio=""
 
 
 else

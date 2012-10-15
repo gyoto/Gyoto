@@ -268,14 +268,16 @@ AS_IF([test "x$with_xerces" != "xno"],
    AC_ARG_WITH([xerces-headers],
      [AS_HELP_STRING([--with-xerces-headers=path],
         [location of xercesc include files (without trailing "/xercesc")])],
-     [xerces_headers=-I${with_xerces_headers}
+     [with_xerces=yes
+      xerces_headers=-I${with_xerces_headers}
       AC_MSG_RESULT([${with_xerces_headers}])],
      [AC_MSG_RESULT([no])])
    AC_MSG_CHECKING(whether xerces library path is provided)
    AC_ARG_WITH([xerces-libs],
      [AS_HELP_STRING([--with-xerces-libs=path],
         [location of xercesc library files])],
-     [xerces_lib=-L$with_xerces_libs
+     [with_xerces=yes
+      xerces_lib=-L$with_xerces_libs
       AC_MSG_RESULT([$with_xerces_libs])],
      [AC_MSG_RESULT([no])])
 
@@ -324,12 +326,14 @@ AS_IF([test "x$with_xerces" != "xno"],
   []
 )
 AS_IF([test "x$have_xerces" == "xno"],
-      [AS_IF([test "x$with_xerces" == "xyes"],
-             [AC_MSG_ERROR([xerces requested but not found])])
-       AC_SUBST(use_xerces,"")
-      ],
-      [AC_SUBST(use_xerces,[-DGYOTO_USE_XERCES])
-      ]
+  [
+   AS_IF([test "x$with_xerces" == "xyes"],
+     [AC_MSG_ERROR([xerces requested but not found])
+     ]
+   )
+   AC_SUBST(use_xerces,"")
+  ],
+  [AC_SUBST(use_xerces,[-DGYOTO_USE_XERCES])]
 )
 AC_SUBST([XERCESLDFLAGS])
 AC_SUBST([XERCESCPPFLAGS])
@@ -363,14 +367,16 @@ AS_IF([test "x$with_cfitsio" != "xno"],
    AC_ARG_WITH([cfitsio-headers],
      [AS_HELP_STRING([--with-cfitsio-headers=path],
         [location of cfitsio include files])],
-     [cfitsio_headers=-I${with_cfitsio_headers}
+     [with_cfitsio=yes
+      cfitsio_headers=-I${with_cfitsio_headers}
       AC_MSG_RESULT([${with_cfitsio_headers}])],
      [AC_MSG_RESULT([no])])
    AC_MSG_CHECKING(whether cfitsio library path is provided)
    AC_ARG_WITH([cfitsio-libs],
      [AS_HELP_STRING([--with-cfitsio-libs=path],
         [location of cfitsio library files])],
-     [cfitsio_lib=-L$with_cfitsio_libs
+     [with_cfitsio=yes
+      cfitsio_lib=-L$with_cfitsio_libs
       AC_MSG_RESULT([$with_cfitsio_libs])],
      [AC_MSG_RESULT([no])])
 
@@ -421,12 +427,14 @@ AS_IF([test "x$with_cfitsio" != "xno"],
   []
 )
 AS_IF([test "x$have_cfitsio" == "xno"],
-      [AS_IF([test "x$with_cfitsio" == "xyes"],
-             [AC_MSG_ERROR([cfitsio requested but not found])])
-       AC_SUBST(use_cfitsio,"")
-      ],
-      [AC_SUBST(use_cfitsio,[-DGYOTO_USE_CFITSIO])
-      ]
+  [AS_IF([test "x$with_cfitsio" == "xyes"],
+     [AC_MSG_ERROR([cfitsio requested but not found])
+     ]
+   )
+   AC_SUBST(use_cfitsio,"")
+  ],
+  [AC_SUBST(use_cfitsio,[-DGYOTO_USE_CFITSIO])
+  ]
 )
 AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
 AC_SUBST([CFITSIOLDFLAGS])
