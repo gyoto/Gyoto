@@ -27,4 +27,4 @@ Requires: @pkg_requires@
 Conflicts:
 Libs: -L${libdir} -lgyoto -ldl @pkg_libs@ @PTHREAD_LIBS@
 Libs.private:
-Cflags: @use_xerces@ @use_cfitsio@ -I${includedir} @pkg_cflags@ @PTHREAD_CFLAGS@
+Cflags: @DEFS@ @use_xerces@ @use_cfitsio@ -I${includedir} @pkg_cflags@ @PTHREAD_CFLAGS@
