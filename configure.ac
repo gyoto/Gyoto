@@ -372,13 +372,14 @@ AC_SUBST([CFITSIOCPPFLAGS])
 
 # Check for LORENE
 AC_MSG_CHECKING([for LORENE])
+AC_ARG_VAR([HOME_LORENE],
+  [path to Lorene build directory (see also --with-lorene)])
 # first check whether LORENE is required and get HOME_LORENE
 require_lorene=no
 AC_ARG_WITH([lorene],
-  [AS_HELP_STRING([--with-lorene[[=/path/to/lorene]]],
-     [whether to use the optional LORENE library, and possibly its path.
-      By default, LORENE is used if the HOME_LORENE environment variable
-      is set.])],
+  [AS_HELP_STRING([--with-lorene[[=${HOME_LORENE}]]],
+     [force using the optional LORENE library, possibly specifying HOME_LORENE
+      [default=${HOME_LORENE}]])],
   [AS_IF([test "x$with_lorene" == "xno"],
      [HOME_LORENE=""
       AC_MSG_RESULT([no])
@@ -407,6 +408,8 @@ AC_SUBST([HOME_LORENE])
 AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
 AS_IF([test "x$HOME_LORENE" != "x"],
   [
+   AS_IF([test ! -r ${HOME_LORENE}/local_settings],
+     [AC_MSG_ERROR([${HOME_LORENE}/local_settings not found])])
 cat >conftest.make <<_ACEOF
 include \$(HOME_LORENE)/local_settings
 %:

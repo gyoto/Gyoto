@@ -839,7 +839,8 @@ PKG_CONFIG_LIBDIR
 XERCES_CFLAGS
 XERCES_LIBS
 CFITSIO_CFLAGS
-CFITSIO_LIBS'
+CFITSIO_LIBS
+HOME_LORENE'
 
 
 # Initialize some variables set by options.
@@ -1504,10 +1505,9 @@ Optional Packages:
                           location of cfitsio include files
   --with-cfitsio-libs=path
                           location of cfitsio library files
-  --with-lorene[=/path/to/lorene]
-                          whether to use the optional LORENE library, and
-                          possibly its path. By default, LORENE is used if the
-                          HOME_LORENE environment variable is set.
+  --with-lorene[=${HOME_LORENE}]
+                          force using the optional LORENE library, possibly
+                          specifying HOME_LORENE [default=${HOME_LORENE}]
 
 Some influential environment variables:
   CC          C compiler command
@@ -1533,6 +1533,7 @@ Some influential environment variables:
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
               linker flags for CFITSIO, overriding pkg-config
+  HOME_LORENE path to Lorene build directory (see also --with-lorene)
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -17398,6 +17399,7 @@ fi
 # Check for LORENE
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LORENE" >&5
 $as_echo_n "checking for LORENE... " >&6; }
+
 # first check whether LORENE is required and get HOME_LORENE
 require_lorene=no
 
@@ -17452,6 +17454,9 @@ fi
 
 if test "x$HOME_LORENE" != "x"; then :
 
+   if test ! -r ${HOME_LORENE}/local_settings; then :
+  as_fn_error $? "${HOME_LORENE}/local_settings not found" "$LINENO" 5
+fi
 cat >conftest.make <<_ACEOF
 include \$(HOME_LORENE)/local_settings
 %:
