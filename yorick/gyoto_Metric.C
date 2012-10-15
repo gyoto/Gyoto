@@ -26,6 +26,7 @@
 #endif
 
 #include <iostream>
+#include <cstring>
 using namespace std;
 using namespace Gyoto;
 using namespace YGyoto;

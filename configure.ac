@@ -477,3 +477,16 @@ AS_IF([test "x$YORICK" != "x"],
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
 AC_SUBST([mySUBDIRS])
 AC_OUTPUT
+AS_IF([test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ],
+  [
+   AC_MSG_WARN(
+     [
+
+                   Building without xerces-c and/or cfitsio.
+
+                *** The gyoto executable will not be built! ***
+
+      Gyoto can still be used as a C++ library and through the Yorick plug-in
+        (although without XML support and/or without certain object types).
+     ])
+  ])

@@ -26,6 +26,7 @@
 #include <sstream>
 #include <cmath>
 #include <cstdlib>
+#include <float.h> // DBL_MAX
 using namespace Gyoto;
 using namespace std;
 
@@ -71,12 +72,16 @@ Spectrometer::~Spectrometer() {
 }
 
 void Spectrometer::reset_() {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   if (boundaries_) delete [] boundaries_;
   if (midpoints_)  delete [] midpoints_;
   if (widths_)     delete [] widths_;
   boundaries_ = NULL;
   midpoints_ = NULL;
   widths_ = NULL;
+  GYOTO_DEBUG << endl;
   if (!nsamples_ || !kind_) return;
 
   boundaries_ = new double[nsamples_+1];
@@ -84,21 +89,48 @@ void Spectrometer::reset_() {
   widths_     = new double[nsamples_];
 
   size_t i=0 ;
-
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG;
+  GYOTO_DEBUG_EXPR(band_);
+  if (band_) GYOTO_DEBUG_ARRAY(band_, 2);
+  GYOTO_DEBUG_EXPR(kind_);
+  GYOTO_ENDIF_DEBUG
+# endif
   for (i=0; i<=nsamples_; ++i){
-    if (debug()) cerr << ", " << i ;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "boundaries_[" <<i<<"]=";
+#   endif
     boundaries_[i]=band_[0]+i*(band_[1]-band_[0])/nsamples_;
     if (kind_==GYOTO_SPECTRO_KIND_FREQLOG ||
 	kind_==GYOTO_SPECTRO_KIND_WAVELOG)
       boundaries_[i]=pow(10.,boundaries_[i]);
     if (kind_==GYOTO_SPECTRO_KIND_WAVE ||
 	kind_==GYOTO_SPECTRO_KIND_WAVELOG)
-      boundaries_[i]=GYOTO_C/boundaries_[i];
+      boundaries_[i]=boundaries_[i]?GYOTO_C/boundaries_[i]:DBL_MAX;
+#   if GYOTO_DEBUG_ENABLED
+    if (debug()) cerr << boundaries_[i]<< endl;
+#   endif
   }
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_ARRAY(boundaries_, nsamples_+1);
+# endif
 
   for (i=0; i< nsamples_; ++i){
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "width_[" <<i<<"]=";
+#   endif
     widths_[i] = fabs(boundaries_[i+1] - boundaries_[i]);
-    midpoints_[i] = (boundaries_[i+1] + boundaries_[i]) *0.5;
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG;
+    cerr << widths_[i] << endl;
+    GYOTO_DEBUG << "midpoints_[" <<i<<"]=";
+    GYOTO_ENDIF_DEBUG
+#   endif
+      midpoints_[i] = (boundaries_[i+1]*0.5 + boundaries_[i]*0.5);
+                             // avoid overflow
+#   if GYOTO_DEBUG_ENABLED
+    if (debug()) cerr << midpoints_[i] << endl;
+#   endif
   }
 
 }

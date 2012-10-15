@@ -81,6 +81,7 @@ namespace Gyoto{
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name);
     ///< Query the Astrobj register
 
+#if defined GYOTO_USE_XERCES
     /**
      * Use the Astrobj::initRegister() once in your program to
      * initiliaze it, the Astrobj::Register() function to fill it, and
@@ -108,6 +109,7 @@ namespace Gyoto{
      */
     void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
     ///< Make an Astrobj kind known to the Factory
+#endif
   }
 }
 

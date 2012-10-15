@@ -20022,3 +20022,25 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+if test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+                   Building without xerces-c and/or cfitsio.
+
+                *** The gyoto executable will not be built! ***
+
+      Gyoto can still be used as a C++ library and through the Yorick plug-in
+        (although without XML support and/or without certain object types).
+     " >&5
+$as_echo "$as_me: WARNING:
+
+                   Building without xerces-c and/or cfitsio.
+
+                *** The gyoto executable will not be built! ***
+
+      Gyoto can still be used as a C++ library and through the Yorick plug-in
+        (although without XML support and/or without certain object types).
+     " >&2;}
+
+fi

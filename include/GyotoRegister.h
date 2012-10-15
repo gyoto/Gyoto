@@ -1,4 +1,3 @@
-#ifdef GYOTO_USE_XERCES
 /*
     Copyright 2011 Thibaut Paumard
 
@@ -25,14 +24,17 @@
 #include <GyotoSmartPointer.h>
 
 namespace Gyoto {
+#ifdef GYOTO_USE_XERCES
   namespace Register {
     class Entry;
     void init( char const * pluglist = NULL );
     void list();
   }
+#endif
   void loadPlugin(   char const * const plugname, int nofail = 0);
 }
 
+#ifdef GYOTO_USE_XERCES
 class Gyoto::Register::Entry {
   friend void Register::list ();
 protected:

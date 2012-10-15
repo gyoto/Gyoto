@@ -101,14 +101,30 @@ write, format="%s %e\n", "Checking inclination:",
   (incl=sc(screen=)(inclination=));
 if (incl!=pi/3) error, "CHECK FAILED";
 
+if (gyoto_haveXerces()) {
+  write, format="%s", "Writing XML description... ";
+  sc,xmlwrite="test.xml";
+  write, format="%s\n", "done.";
+  remove, "test.xml";
 
-write, format="%s", "Writing XML description... ";
-sc,xmlwrite="test.xml";
-write, format="%s\n", "done.";
-remove, "test.xml";
-
-write , format="%s", "Reading Scenery from XML description... ";
-sc3=gyoto_Scenery("../doc/examples/example-moving-star.xml");
+  write , format="%s", "Reading Scenery from XML description... ";
+  sc3=gyoto_Scenery("../doc/examples/example-moving-star.xml");
+ } else {
+  write , format="%s", "No Xerces, creating scenery from scratch... ";
+  gg  = gyoto_KerrBL();
+  spectro = gyoto_Spectrometer(kind="wave", nsamples=1, band=[2e-6, 2.4e-6]);
+  scr = gyoto_Screen(metric=gg,
+                     observerpos=[1000., 100., 0.78, 0. ],
+                     time=1000.,
+                     resolution=128,
+                     spectro=spectro);
+  ao = gyoto_Star(metric=gg, radius=2, rmax=50,
+                  initcoord=[600,9,1.5707999999999999741,0],[0., 0., 0.037037])
+  sc3=gyoto_Scenery(metric=gyoto_KerrBL(),
+                    screen=scr,
+                    astrobj=ao,
+                    tmin=0.);
+ }
 noop, sc3(screen=)(resolution=32);
 noop, sc3(astrobj=)(radius=2);
 write, format="%s\n" , "done.";

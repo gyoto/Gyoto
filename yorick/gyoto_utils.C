@@ -61,10 +61,10 @@ extern "C" {
     if (argc && !yarg_nil(argc)) Gyoto::verbose(ygets_l(1));
   }
 
+
   void
   Y_gyoto_loadPlugin(int argc)
   {
-
     // Step 1: determine whether nofail is set (to true)
     int nofail=0;
     static char *knames[2] = { "nofail", 0 };
@@ -97,13 +97,29 @@ extern "C" {
   void
   Y___gyoto_initRegister(int argc)
   {
+#if defined GYOTO_USE_XERCES
     Gyoto::Register::init();
+#endif
   }
 
   void
   Y_gyoto_listRegister(int argc)
   {
+#if defined GYOTO_USE_XERCES
     Gyoto::Register::list();
+#endif
+  }
+
+  void
+  Y_gyoto_haveXerces(int)
+  {
+    ypush_long(
+#if defined GYOTO_USE_XERCES
+	       1
+#else
+	       0
+#endif
+	       );
   }
 
   void

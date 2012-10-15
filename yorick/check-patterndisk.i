@@ -49,23 +49,29 @@ write, format="%s", "Attaching PatternDisk to scenery...";
 sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);
 write, format="%s\n", " done.";
 
-write, format="%s", "Saving data to fits file...";
-pd, fitswrite="!check-patterndisk.fits.gz";
-write, format="%s\n", " done.";
+if (gyoto_haveXerces()) {
+  write, format="%s", "Saving data to fits file...";
+  pd, fitswrite="!check-patterndisk.fits.gz";
+  write, format="%s\n", " done.";
 
-write, format="%s", "Saving scenery to XML file...";
-sc, xmlwrite="check-patterndisk.xml";
-write, format="%s\n", " done.";
+  write, format="%s", "Saving scenery to XML file...";
+  sc, xmlwrite="check-patterndisk.xml";
+  write, format="%s\n", " done.";
 
-write, format="%s", "Reading back scenery...";
-sc2 = gyoto_Scenery("check-patterndisk.xml");
-write, format="%s\n", " done.";
+  write, format="%s", "Reading back scenery...";
+  sc2 = gyoto_Scenery("check-patterndisk.xml");
+  write, format="%s\n", " done.";
 
-write, format="%s", "Removing temporary files...";
-remove, "check-patterndisk.xml";
-remove, "check-patterndisk.fits.gz";
-write, format="%s\n", " done.";
-
+  write, format="%s", "Removing temporary files...";
+  remove, "check-patterndisk.xml";
+  remove, "check-patterndisk.fits.gz";
+  write, format="%s\n", " done.";
+ } else {
+  write, format="%s", "Cloning...";
+  sc2 = sc(clone=);
+  write, format="%s\n", " done.";
+ }
+  
 write, format="%s", "Getting PatternDisk...";
 pd2 = sc2(astrobj=);
 write, format="%s\n", " done.";

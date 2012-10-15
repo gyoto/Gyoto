@@ -16,7 +16,6 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "GyotoRegister.h"
 #include "GyotoUtils.h"
 #include "GyotoAstrobj.h"
@@ -74,6 +73,7 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   (*initfcn)();
 }
 
+#if defined GYOTO_USE_XERCES
 void Gyoto::Register::init(char const *  cpluglist) {
 
   // Clean registers
@@ -162,3 +162,4 @@ void Gyoto::Register::list() {
     cout << "    " << entry -> name_ << endl;
     
 }
+#endif

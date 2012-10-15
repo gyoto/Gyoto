@@ -20,6 +20,13 @@ plug_in, "gyoto";
 
 #include "graphk.i"
 
+extern gyoto_haveXerces;
+/* DOCUMENT have_xerces = gyoto_haveXerces()
+    Tell whether GYOTO was compiled with Xerces support (XML i/o)
+   OUTPUT:
+    HAVE_XERCES=1 if compiled with Xerces, else 0.
+*/
+
 extern __gyoto_setErrorHandler;
 /* xDOCUMENT __gyoto_setErrorHandler
    Must be called once to attach the GYOTO error handler to Yorick's one

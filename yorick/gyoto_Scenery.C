@@ -29,6 +29,7 @@
 #include "ygyoto.h"
 
 #include <iostream>
+#include <cstring>
 #include "ygyoto_idx.h"
 
 using namespace std;
@@ -93,13 +94,13 @@ extern "C" {
     // Parse keywords
     static char const *knames[] = {
       "get_pointer",
-      "metric", "screen", "astrobj", "delta", "quantities",
+      "metric", "screen", "astrobj", "delta", "tmin", "quantities",
       "xmlwrite", "clone",
       "impactcoords", "nthreads",
       0
     };
-    static long kglobs[11];
-    int kiargs[10], piargs[]={-1, -1, -1};
+    static long kglobs[12];
+    int kiargs[11], piargs[]={-1, -1, -1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
@@ -182,6 +183,16 @@ extern "C" {
 	ypush_double(sc->getDelta());
       } else                // delta=double: Setting
          sc->setDelta(ygets_d(iarg));
+    }
+
+    /* TMIN */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // tmin=      : Getting
+	if ((*rvset)++) y_error("Only one return value possible");
+	ypush_double(sc->getTmin());
+      } else                // tmin=double: Setting
+         sc->setTmin(ygets_d(iarg));
     }
 
     /* QUANTITIES */

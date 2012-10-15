@@ -25,6 +25,7 @@
 #include <GyotoFactory.h>
 #endif
 
+#include <cstring>
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;

@@ -42,6 +42,7 @@
 using namespace Gyoto;
 
 extern "C" void __GyotostdplugInit() {
+#if defined GYOTO_USE_XERCES
   // Register Metrics
   Gyoto::Metric::KerrBL::Init();
   Gyoto::Metric::KerrKS::Init();
@@ -70,4 +71,5 @@ extern "C" void __GyotostdplugInit() {
   // Register Spectra
   Gyoto::Spectrum::PowerLawInit();
   Gyoto::Spectrum::BlackBodyInit();
+#endif
 }
