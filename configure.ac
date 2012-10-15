@@ -28,91 +28,22 @@ DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 # Provide additional defaults for user variables
-myflag="-march=native"
-AC_MSG_CHECKING([whether to add ${myflag} flag to default CXXFLAGS])
-AS_IF(
-  [test "x$gyoto_test_CXXFLAGS" = "x"],
-  [AC_ARG_ENABLE(
-     [native],
-     [AC_HELP_STRING(
-        [--enable-native],
-        [include "-march=native" in the default CXXFLAGS.
-	 (Disabled if CXXFLAGS is passed)]
-      )
-     ],
-     [AS_IF([test "x$enable_native" = "xyes"],
-        [AC_MSG_RESULT([yes])
-         AC_MSG_CHECKING([whether ${CXX} supports ${myflag}])
-	 TMPCXXFLAGS=${CXXFLAGS}
-	 CXXFLAGS="${myflag} $CXXFLAGS"
-	 AC_TRY_LINK(
-           [],
-           [],
-           [AC_MSG_RESULT([yes])],
-           [CXXFLAGS=${TMPCXXFLAGS}
-	    AC_MSG_RESULT([no])
-           ])
-	 ],
-        [AC_MSG_RESULT([no (--disable-native set)])]
-      )
-     ],
-     [AC_MSG_RESULT([no (default)])
-     ]
-   )
-  ],
-  [
-   AC_MSG_RESULT([no (CXXFLAGS set on input)])
-  ]
-)
+AC_ARG_ENABLE([native],
+  [AC_HELP_STRING([--enable-native],
+     [append "-march=native" to CXXFLAGS if supported])],
+  [AS_IF([test "x$enable_native" = "xyes"],
+     [AX_APPEND_COMPILE_FLAGS([[-march=native]])])])
 
-AC_MSG_CHECKING([whether to add hardening flags by default])
-harden_by_default=no
 AC_ARG_ENABLE([hardening],
   [AS_HELP_STRING([--enable-hardening],
-     [add many warnings and hardening flags in default CPPFLAGS
-      et al. variable. Disabled for a variable if it is set on input.])
-  ],
+     [add warnings and hardening flags if supported])],
   [AS_IF([test "x$enable_hardening" = "xyes"],
-     [harden_by_default=yes])
-  ]
-)
-AC_MSG_RESULT([$harden_by_default])
-AS_IF([test $harden_by_default = yes],
-  [
-   AC_MSG_CHECKING([whether configure provides default CXXFLAGS])
-   AS_IF([test "x$gyoto_test_CXXFLAGS" = "x"],
-     [AC_MSG_RESULT([yes])
-      m4_foreach([myvar], [[-pedantic], [-Wall], [-W], [-Wundef], [-Wshadow], [-Wcast-qual], [-Wcast-align], [-Wconversion], [-Winline], [-Wabi], [-Woverloaded-virtual], [-Wno-long-long], [-Wformat], [-Wformat-security], [-Werror=format-security], [-fstack-protector], [--param ssp-buffer-size=4]],
-         [AC_MSG_CHECKING([whether ${CXX} accepts myvar])
-          TMPCXXFLAGS=${CXXFLAGS}
-          CXXFLAGS="$CXXFLAGS myvar"
-          AC_TRY_LINK(
-            [],
-            [],
-            [AC_MSG_RESULT([yes])],
-            [CXXFLAGS=${TMPCXXFLAGS}
-	     AC_MSG_RESULT([no])
-            ]
-          )
-         ]
-      )
-     ],
-     [AC_MSG_RESULT([no])]
-   )
-   AS_IF([test "x$gyoto_test_CPPFLAGS" = "x"],
-     [TMPCPPFLAGS=${CXXFLAGS}
-      CPPFLAGS="${CPPFLAGS} -D_FORTIFY_SOURCE=2"
-      AC_MSG_CHECKING([whether ${CXX} accepts -D_FORTIFY_SOURCE=2])
-      AC_TRY_LINK(
-        [],
-        [],
-        [AC_MSG_RESULT([yes])],
-        [CPPFLAGS=${TMPCPPFLAGS}
-         AC_MSG_RESULT([no])
-        ]
-      )
-     ]
-   )
+     [AX_APPEND_COMPILE_FLAGS([-pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
+        -Wcast-align -Wconversion -Winline -Wabi -Woverloaded-virtual \
+        -Wno-long-long -Wformat -Wformat-security -Werror=format-security \
+        -fstack-protector "--param ssp-buffer-size=4"])
+      AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2], [CPPFLAGS])
+     ])
   ]
 )
 
@@ -144,9 +75,8 @@ YORICK=
 AC_MSG_CHECKING([whether to use yorick])
 AC_ARG_WITH([yorick],
   [AC_HELP_STRING([--with-yorick[[=yorick-executable]]],
-     [whether to use yorick and optionnally the local name (possibly with path)
-      of the yorick executable. Default: use yorick if it is found in the
-      path.])],
+     [force using yorick and optionnally specify which one [default=yorick,
+      only if found]])],
   [AS_IF([test "x$with_yorick" == "xno"],
      [AC_MSG_RESULT([no])],
      [AS_IF([test "x$with_yorick" != "xyes"],
@@ -169,10 +99,10 @@ AS_IF([test "x$YORICK" != "x"],
    Y_INST_HOME=
    Y_INST_SITE=
    AC_ARG_WITH([yorick-home],
-     [AC_HELP_STRING([--with-yorick-home=path],
-        [where to install Yorick platform-dpendent files. Default: the
+     [AC_HELP_STRING([--with-yorick-home=DIR],
+        [architecture-dependent Yorick files [default: the
          yorick directory if it is under ${exec_prefix}, else
-         ${exec_prefix}/lib/yorick.])],
+         ${exec_prefix}/lib/yorick]])],
      [Y_INST_HOME=${with_yorick_home}
       Y_INST_SITE=${with_yorick_home}
      ],
@@ -187,10 +117,10 @@ AS_IF([test "x$YORICK" != "x"],
 
    AC_MSG_CHECKING([install path for Yorick platform-independent files])
    AC_ARG_WITH([yorick-site],
-     [AC_HELP_STRING([--with-yorick-site=path],
-        [where to install the Yorick platform-independent files.
-	Default: the yorick directory if it is under ${prefix}, else
-	${prefix}/lib/yorick.])
+     [AC_HELP_STRING([--with-yorick-site=DIR],
+        [architecture-independent Yorick files
+	 [default: the yorick directory if it is under ${prefix}, else
+	  ${prefix}/lib/yorick]])
      ],
      [Y_INST_SITE=${with_yorick_site}])
    AC_MSG_RESULT([$Y_INST_SITE])
@@ -225,7 +155,7 @@ pkg_libs=
 GYOTO_DEBUG_ENABLED=1
 AC_ARG_ENABLE([debugging],
   [AS_HELP_STRING([--disable-debugging],
-     [Remove debugging output for hypothetical speed gain])],
+     [remove debugging code for hypothetical speed gain])],
   [AS_IF([test "x$enable_debugging" == "xno"],
      [GYOTO_DEBUG_ENABLED=0])
   ])
@@ -234,7 +164,7 @@ AC_DEFINE_UNQUOTED([GYOTO_DEBUG_ENABLED], [$GYOTO_DEBUG_ENABLED])
 # Check for pthreads
 AC_ARG_ENABLE([pthreads],
   [AS_HELP_STRING([--enable-pthreads],
-     [Whether to use POSIX threads])],
+     [use POSIX threads])],
   [AX_PTHREAD])
 
 # Check for Xerces-c
@@ -502,7 +432,7 @@ _ACEOF
 # disable doc
 AC_ARG_ENABLE([doc],
   [AS_HELP_STRING([--disable-doc],
-     [Disable documentation generation])],
+     [disable building documentation])],
   [AS_IF([test "x$enable_doc" == "xyes"],
      [mkdoc=yes],
      [test "x$enable_doc" == "xno"],
