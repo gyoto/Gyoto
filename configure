@@ -1466,7 +1466,7 @@ Optional Features:
   --enable-native         append "-march=native" to CXXFLAGS if supported
   --enable-hardening      add warnings and hardening flags if supported
   --disable-debugging     remove debugging code for hypothetical speed gain
-  --enable-pthreads       use POSIX threads
+  --disable-pthreads      disable POSIX threads parallelization
   --disable-doc           disable building documentation
 
 Optional Packages:
@@ -16556,9 +16556,16 @@ $as_echo "#define GYOTO_DEBUG_ENABLED 1" >>confdefs.h
 fi
 
 # Check for pthreads
+use_pthreads=yes
 # Check whether --enable-pthreads was given.
 if test "${enable_pthreads+set}" = set; then :
-  enableval=$enable_pthreads;
+  enableval=$enable_pthreads; if test "x$enable_pthreads" = "xno"; then :
+  use_pthreads=no
+fi
+fi
+
+if test "x$use_pthreads" = "xyes"; then :
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -16955,7 +16962,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 fi
-
 
 # Check for Xerces-c
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5

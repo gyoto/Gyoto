@@ -160,10 +160,12 @@ AS_IF([test "x$GYOTO_DEBUG_ENABLED" == 1],
 )
 
 # Check for pthreads
+use_pthreads=yes
 AC_ARG_ENABLE([pthreads],
-  [AS_HELP_STRING([--enable-pthreads],
-     [use POSIX threads])],
-  [AX_PTHREAD])
+  [AS_HELP_STRING([--disable-pthreads],
+     [disable POSIX threads parallelization])],
+  [AS_IF([test "x$enable_pthreads" = "xno"], [use_pthreads=no])])
+AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
 
 # Check for Xerces-c
 AC_MSG_CHECKING([whether libxerces should be used])
