@@ -28,7 +28,7 @@ nthreads=2;
 tic;
 
 t0=1000.;
-nframes=200;
+nframes=2000;
 dt=1.;
 
 sc=gyoto_Scenery(ifile);

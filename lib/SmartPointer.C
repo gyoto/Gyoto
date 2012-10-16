@@ -23,8 +23,46 @@
 #include <string>
 #include <cstring>
 
-Gyoto::SmartPointee::SmartPointee() : refCount (0) { }
-Gyoto::SmartPointee::SmartPointee(const SmartPointee&) : refCount (0) { }
-void Gyoto::SmartPointee::incRefCount () { refCount++; }
-int Gyoto::SmartPointee::decRefCount () { return --refCount; }
-int Gyoto::SmartPointee::getRefCount() { return refCount; }
+Gyoto::SmartPointee::SmartPointee() :
+  refCount (0)
+{
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&mutex_, NULL);
+#endif
+}
+Gyoto::SmartPointee::SmartPointee(const SmartPointee&) :
+  refCount (0)
+{
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&mutex_, NULL);
+#endif
+}
+void Gyoto::SmartPointee::incRefCount () {
+#ifdef HAVE_PTHREAD
+ pthread_mutex_lock(&mutex_);
+#endif
+ refCount++;
+#ifdef HAVE_PTHREAD
+ pthread_mutex_unlock(&mutex_);
+#endif
+}
+int Gyoto::SmartPointee::decRefCount () {
+#ifdef HAVE_PTHREAD
+ pthread_mutex_lock(&mutex_);
+ int n = --refCount;
+ pthread_mutex_unlock(&mutex_);
+ return n;
+#else
+ return --refCount;
+#endif
+}
+int Gyoto::SmartPointee::getRefCount() {
+#ifdef HAVE_PTHREAD
+ pthread_mutex_lock(&mutex_);
+ int n = refCount;
+ pthread_mutex_unlock(&mutex_);
+ return n;
+#else
+ return refCount;
+#endif
+}

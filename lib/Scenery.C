@@ -148,7 +148,11 @@ static void * SceneryThreadWorker (void *arg) {
   // it is assumed to be already initialized with spectrometer et al.
   Photon * ph = larg -> ph;
 #ifdef HAVE_PTHREAD
-  if (larg->mutex) ph = larg -> ph -> clone();
+  if (larg->mutex) {
+    pthread_mutex_lock(larg->mutex);
+    ph = larg -> ph -> clone();
+    pthread_mutex_unlock(larg->mutex);
+  }
 #endif
 
   // local variables to store our parameters
@@ -195,8 +199,15 @@ static void * SceneryThreadWorker (void *arg) {
 #endif
 
     ////// 2- do the actual work.
-    if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords)
+    if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords) {
+#     ifdef HAVE_PTHREAD
+      if (larg->mutex) pthread_mutex_lock(larg->mutex);
+#     endif
       cout << "\rj = " << j << " / " << larg->jmax << " " << flush;
+#     ifdef HAVE_PTHREAD
+      if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+#     endif
+    }
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
 #   endif
@@ -204,9 +215,13 @@ static void * SceneryThreadWorker (void *arg) {
     ++count;
   }
 #ifdef HAVE_PTHREAD
-  if (larg->mutex) delete ph;
-#endif
+  if (larg->mutex) {
+    delete ph;
+    pthread_mutex_lock(larg->mutex);
+  }
   GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
+  if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+# endif
   return NULL;
 }
 

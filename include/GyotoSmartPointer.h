@@ -40,6 +40,10 @@
 #define __GyotoSmartPointer_H_
 
 #include "GyotoUtils.h"
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
 
 namespace Gyoto {
   class SmartPointee;
@@ -76,6 +80,13 @@ class Gyoto::SmartPointee
 {
  private:
   int refCount; ///< Reference counter.
+
+# ifdef HAVE_PTHREAD
+  /**
+   * When compiled with libpthread
+   */
+  pthread_mutex_t mutex_; ///< a mutex
+#endif
 
  public:
   SmartPointee () ;

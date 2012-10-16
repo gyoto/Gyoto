@@ -85,6 +85,9 @@ void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
     if (ntot!=4) y_error("CST should have 4 elements");
     yarg_drop(1);
     double * coord=ypush_d(dims);
+#   ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(gg);
+#   endif
     (*gg)->MakeCoord(coord_,cst_,coord);
   }
   
