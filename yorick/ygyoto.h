@@ -20,14 +20,15 @@
 #ifndef __YGYOTO_H
 #define __YGYOTO_H
 
-#include <GyotoMetric.h>
-#include <GyotoAstrobj.h>
-#include <GyotoThinDisk.h>
-#include <GyotoSpectrum.h>
-#include <GyotoScreen.h>
-#include <GyotoPhoton.h>
-#include <GyotoScenery.h>
-#include <GyotoScreen.h>
+#include "GyotoConfig.h"
+#include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
+#include "GyotoThinDisk.h"
+#include "GyotoSpectrum.h"
+#include "GyotoScreen.h"
+#include "GyotoPhoton.h"
+#include "GyotoScenery.h"
+#include "GyotoScreen.h"
 
 #define YGYOTO_TYPE_LEN 21
 #define YGYOTO_STD_CATCH catch(Gyoto::Error e) \

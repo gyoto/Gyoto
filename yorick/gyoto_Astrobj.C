@@ -22,7 +22,7 @@
 #include "pstdlib.h"
 
 #ifdef GYOTO_USE_XERCES
-#include <GyotoFactory.h>
+#include "GyotoFactory.h"
 #endif
 
 #include <cstring>
@@ -49,6 +49,9 @@ extern "C" {
     } else printf("null pointer\n");
   }
   void gyoto_Astrobj_print(void *obj) {
+#ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(obj);
+#endif
 #ifdef GYOTO_USE_XERCES
     string rest="", sub="";
     size_t pos=0, len=0;
