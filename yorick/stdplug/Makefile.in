@@ -22,6 +22,8 @@ CFITSIOCPPFLAGS=@CFITSIOCPPFLAGS@
 DYLIB_VAR=@DYLIB_VAR@
 PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
 PTHREAD_LIBS= @PTHREAD_LIBS@
+SYS=@SYS@
+plugin_sfx=@plugin_sfx@
 
 YGYOTO_C = $(shell ls ../*.C)
 GYOTO_C = $(shell ls ../../lib/*.C)

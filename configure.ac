@@ -52,15 +52,21 @@ AC_ARG_ENABLE([hardening],
 
 # Guess *LD_LIBRARY_PATH variable for make check
 AC_SUBST([target_os])
+SYS=other
 DYLIB_VAR=LD_LIBRARY_PATH
 case "x$target_os" in
      xdarwin*|xmacos)
 	DYLIB_VAR=DYLD_LIBRARY_PATH
+	SYS=Darwin
 	;;
      *) ;;
 esac
-AC_DEFINE([GYOTO_PLUGIN_SFX],["so"],[Suffix for Gyoto plug-ins])
+plugin_sfx=so
+AC_DEFINE([GYOTO_PLUGIN_SFX],["${plugin_sfx}"],[Suffix for Gyoto plug-ins])
 AC_SUBST([DYLIB_VAR])
+# Used in yorick/stdplug/Makefile
+AC_SUBST([SYS])
+AC_SUBST([plugin_sfx])
 
 # Check for Yorick
 yorick_exe=yorick

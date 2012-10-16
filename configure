@@ -663,6 +663,8 @@ LIBOBJS
 Y_INST_SITE
 Y_INST_HOME
 YORICK
+plugin_sfx
+SYS
 DYLIB_VAR
 DOXYGEN
 PKG_CONFIG_LIBDIR
@@ -16088,15 +16090,21 @@ fi
 
 # Guess *LD_LIBRARY_PATH variable for make check
 
+SYS=other
 DYLIB_VAR=LD_LIBRARY_PATH
 case "x$target_os" in
      xdarwin*|xmacos)
 	DYLIB_VAR=DYLD_LIBRARY_PATH
+	SYS=Darwin
 	;;
      *) ;;
 esac
+plugin_sfx=so
 
-$as_echo "#define GYOTO_PLUGIN_SFX \"so\"" >>confdefs.h
+$as_echo "#define GYOTO_PLUGIN_SFX \"\${plugin_sfx}\"" >>confdefs.h
+
+
+# Used in yorick/stdplug/Makefile
 
 
 
