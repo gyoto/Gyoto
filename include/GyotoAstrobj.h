@@ -28,6 +28,8 @@
 #ifndef __GyotoAstrobj_H_ 
 #define __GyotoAstrobj_H_ 
 
+#include "GyotoConfig.h"
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>

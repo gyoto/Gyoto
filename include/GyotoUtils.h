@@ -27,8 +27,9 @@
 #ifndef __GyotoUtils_H_ 
 #define __GyotoUtils_H_ 
 
+#include "GyotoDefs.h"
+
 #include <string>
-#include <GyotoDefs.h>
 
 namespace Gyoto {
   class Photon;

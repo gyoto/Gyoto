@@ -29,6 +29,8 @@
 #ifndef __GyotoFactory_H_
 #define __GyotoFactory_H_
 
+#include "GyotoConfig.h"
+
 #ifndef XERCES_INCLUDE_WCHAR_H
 #define XERCES_INCLUDE_WCHAR_H 0
 #endif

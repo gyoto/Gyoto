@@ -19,9 +19,7 @@ TGT=$(DEFAULT_TGT)
 CPPFLAGS=@CPPFLAGS@
 XERCESLDFLAGS=@XERCESLDFLAGS@
 XERCESCPPFLAGS=@XERCESCPPFLAGS@
-use_xerces=@use_xerces@
 DYLIB_VAR=@DYLIB_VAR@
-SYS=@SYS@
 PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
 PTHREAD_LIBS= @PTHREAD_LIBS@
 
@@ -47,7 +45,7 @@ PKG_EXENAME=yorick
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
 PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(use_xerces) $(PTHREAD_CFLAGS)
+PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(PTHREAD_CFLAGS)
 PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME

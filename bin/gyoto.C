@@ -18,10 +18,10 @@
  */
 
 // Gyoto
+#include "GyotoDefs.h"
 #include "GyotoFactory.h"
 #include "GyotoUtils.h"
 #include "GyotoRegister.h"
-#include "GyotoDefs.h"
 
 // FITS I/O
 #include <fitsio.h>

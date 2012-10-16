@@ -11,12 +11,15 @@ AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
 LT_INIT([dlopen disable-static])
+AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
 VERSINFO=0:0:0
 sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 AC_SUBST([VERSION], [0.0.4])
+
+AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -47,26 +50,16 @@ AC_ARG_ENABLE([hardening],
   ]
 )
 
-# Check dlopenable library suffix
-AC_MSG_CHECKING([for suffix for dynamic library files])
+# Guess *LD_LIBRARY_PATH variable for make check
 AC_SUBST([target_os])
+DYLIB_VAR=LD_LIBRARY_PATH
 case "x$target_os" in
-     xlinux-gnu)
-	#plugin_sfx=so
-	DYLIB_VAR=LD_LIBRARY_PATH
-	SYS=Linux
-	;;
      xdarwin*|xmacos)
-	#plugin_sfx=dylib
 	DYLIB_VAR=DYLD_LIBRARY_PATH
-	SYS=Darwin
 	;;
-     *) AC_MSG_ERROR([unknown target os $target_os]) ;;
+     *) ;;
 esac
-plugin_sfx=so
-AC_SUBST([plugin_sfx])
-AC_MSG_RESULT([$plugin_sfx])
-AC_SUBST([SYS])
+AC_DEFINE([GYOTO_PLUGIN_SFX],["so"],[Suffix for Gyoto plug-ins])
 AC_SUBST([DYLIB_VAR])
 
 # Check for Yorick
@@ -159,7 +152,12 @@ AC_ARG_ENABLE([debugging],
   [AS_IF([test "x$enable_debugging" == "xno"],
      [GYOTO_DEBUG_ENABLED=0])
   ])
-AC_DEFINE_UNQUOTED([GYOTO_DEBUG_ENABLED], [$GYOTO_DEBUG_ENABLED])
+AS_IF([test "x$GYOTO_DEBUG_ENABLED" == 1],
+  [AC_DEFINE([GYOTO_DEBUG_ENABLED],
+     [1],
+     [Enable debugging information gathering code for putative speed gain])
+  ]
+)
 
 # Check for pthreads
 AC_ARG_ENABLE([pthreads],
@@ -261,9 +259,9 @@ AS_IF([test "x$have_xerces" == "xno"],
      [AC_MSG_ERROR([xerces requested but not found])
      ]
    )
-   AC_SUBST(use_xerces,"")
   ],
-  [AC_SUBST(use_xerces,[-DGYOTO_USE_XERCES])]
+  [use_xerces=yes
+   AC_DEFINE([GYOTO_USE_XERCES], [1], [Define to 1 if you have Xerces])]
 )
 AC_SUBST([XERCESLDFLAGS])
 AC_SUBST([XERCESCPPFLAGS])
@@ -361,9 +359,11 @@ AS_IF([test "x$have_cfitsio" == "xno"],
      [AC_MSG_ERROR([cfitsio requested but not found])
      ]
    )
-   AC_SUBST(use_cfitsio,"")
   ],
-  [AC_SUBST(use_cfitsio,[-DGYOTO_USE_CFITSIO])
+  [use_cfitsio=yes
+   AC_DEFINE([GYOTO_USE_CFITSIO],
+     [1],
+     [Define to 1 if you have cfitsio])
   ]
 )
 AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
@@ -422,7 +422,10 @@ _ACEOF
    LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
    LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
    LORENECPPFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make INC`
-   LORENECPPFLAGS="-DGYOTO_USE_LORENE $LORENECPPFLAGS"
+   LORENECPPFLAGS="$LORENECPPFLAGS"
+   AC_DEFINE([GYOTO_USE_LORENE],
+     [1],
+     [Define to 1 if you have Lorene])
    rm conftest.make
    AC_SUBST([LORENECPPFLAGS])
    AC_SUBST([LORENELDFLAGS])

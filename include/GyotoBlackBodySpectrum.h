@@ -29,7 +29,7 @@
 
 #ifndef __GyotoBlackBodySpectrum_H_ 
 #define __GyotoBlackBodySpectrum_H_ 
-#include <GyotoSpectrum.h>
+#include "GyotoSpectrum.h"
 
 namespace Gyoto {
   namespace Spectrum {

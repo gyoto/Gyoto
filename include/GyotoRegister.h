@@ -21,7 +21,7 @@
 #define __GyotoRegister_H_
 
 #include <string>
-#include <GyotoSmartPointer.h>
+#include "GyotoSmartPointer.h"
 
 namespace Gyoto {
 #ifdef GYOTO_USE_XERCES

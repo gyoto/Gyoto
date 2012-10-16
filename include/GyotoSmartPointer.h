@@ -39,6 +39,8 @@
 #ifndef __GyotoSmartPointer_H_
 #define __GyotoSmartPointer_H_
 
+#include "GyotoUtils.h"
+
 namespace Gyoto {
   class SmartPointee;
   class FactoryMessenger;
@@ -46,7 +48,6 @@ namespace Gyoto {
 }
 
 #include <GyotoError.h>
-#include <GyotoUtils.h>
 #include <stddef.h>
 #include <iostream>
 #include <typeinfo>

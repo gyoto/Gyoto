@@ -27,7 +27,7 @@
 #ifndef __GyotoSpectrum_H_ 
 #define __GyotoSpectrum_H_ 
 
-#include <GyotoRegister.h>
+#include "GyotoRegister.h"
 
 namespace Gyoto{
   class FactoryMessenger;

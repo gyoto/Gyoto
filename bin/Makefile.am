@@ -1,9 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS)
 AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
-AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ -rdynamic \
-	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
-	-DGYOTO_SOVERS=\"@sovers@\" $(PTHREAD_CFLAGS)
+AM_CXXFLAGS = -rdynamic $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
 bin_PROGRAMS  = gyoto

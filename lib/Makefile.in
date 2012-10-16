@@ -73,6 +73,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
+CONFIG_HEADER = $(top_builddir)/config.h \
+	$(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES = gyoto.pc gyoto-uninstalled.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -139,7 +141,7 @@ libgyoto_la_OBJECTS = $(am_libgyoto_la_OBJECTS)
 libgyoto_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libgyoto_la_LDFLAGS) $(LDFLAGS) -o $@
-DEFAULT_INCLUDES = -I.@am__isrc@
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -247,7 +249,6 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-SYS = @SYS@
 VERSINFO = @VERSINFO@
 VERSION = @VERSION@
 XERCESCPPFLAGS = @XERCESCPPFLAGS@
@@ -304,7 +305,6 @@ pdfdir = @pdfdir@
 pkg_cflags = @pkg_cflags@
 pkg_libs = @pkg_libs@
 pkg_requires = @pkg_requires@
-plugin_sfx = @plugin_sfx@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -321,15 +321,10 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-use_cfitsio = @use_cfitsio@
-use_xerces = @use_xerces@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS)
 AM_LDFLAGS = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS)
-AM_CXXFLAGS = @use_xerces@ @use_cfitsio@ \
-	-DGYOTO_PLUGIN_SFX=\"@plugin_sfx@\" -DGYOTO_PREFIX=\"@prefix@\" \
-	-DGYOTO_SOVERS=\"@sovers@\" $(PTHREAD_CFLAGS)
-
+AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PREFIX=\"${prefix}\"
 
 # HEADERS: where they are, where to install them
 library_includedir = $(includedir)/Gyoto

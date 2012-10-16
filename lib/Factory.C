@@ -17,18 +17,21 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "GyotoConfig.h"
 #ifdef GYOTO_USE_XERCES
 
-#include <GyotoFactory.h>
-#include <GyotoFactoryMessenger.h>
-#include <GyotoUtils.h>
+#include "GyotoFactory.h"
+#include "GyotoFactoryMessenger.h"
+#include "GyotoUtils.h"
+
 #include <string>
 #include <libgen.h>
 #include <unistd.h>
-#include <GyotoMetric.h>
-#include <GyotoAstrobj.h>
-#include <GyotoSpectrum.h>
-#include <GyotoSpectrometer.h>
+
+#include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
+#include "GyotoSpectrum.h"
+#include "GyotoSpectrometer.h"
 
 #include <xercesc/sax/ErrorHandler.hpp>
 #include <xercesc/dom/DOMErrorHandler.hpp>

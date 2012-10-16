@@ -5,10 +5,7 @@ includedir=${prefix}/include
 
 GYOTO=${exec_prefix}/bin/gyoto
 
-GYOTO_SOVERS=@sovers@
-GYOTO_PLUGDIR=${libdir}/gyoto/${GYOTO_SOVERS}
-GYOTO_PLUGSFX=@plugin_sfx@
-GYOTO_SYS=@SYS@
+GYOTO_PLUGDIR=${libdir}/gyoto/@sovers@
 
 YORICK=@YORICK@
 Y_INST_HOME=@Y_INST_HOME@
@@ -26,4 +23,4 @@ Requires: @pkg_requires@
 Conflicts:
 Libs: -L${libdir} -lgyoto -ldl @pkg_libs@ @PTHREAD_LIBS@
 Libs.private:
-Cflags: @DEFS@ @use_xerces@ @use_cfitsio@ -I${includedir}/Gyoto @pkg_cflags@ @PTHREAD_CFLAGS@
+Cflags: -I${includedir}/Gyoto @pkg_cflags@ @PTHREAD_CFLAGS@
