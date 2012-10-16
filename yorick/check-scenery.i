@@ -20,6 +20,9 @@
 #include "gyoto.i"
 #include "gyoto_std.i"
 
+// From yutils, for tic() and tac()
+#include "util_fr.i"
+
 if (get_env("GYOTO_CHECK_NODISPLAY")) fma=winkill=pli = noop;
 
 write, format="%s", "New scenery... ";
