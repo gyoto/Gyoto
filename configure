@@ -16101,7 +16101,9 @@ case "x$target_os" in
 esac
 plugin_sfx=so
 
-$as_echo "#define GYOTO_PLUGIN_SFX \"\${plugin_sfx}\"" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define GYOTO_PLUGIN_SFX "${plugin_sfx}"
+_ACEOF
 
 
 # Used in yorick/stdplug/Makefile

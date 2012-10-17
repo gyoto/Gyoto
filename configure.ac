@@ -62,7 +62,8 @@ case "x$target_os" in
      *) ;;
 esac
 plugin_sfx=so
-AC_DEFINE([GYOTO_PLUGIN_SFX],["${plugin_sfx}"],[Suffix for Gyoto plug-ins])
+AC_DEFINE_UNQUOTED([GYOTO_PLUGIN_SFX],["${plugin_sfx}"],
+  [Suffix for Gyoto plug-ins])
 AC_SUBST([DYLIB_VAR])
 # Used in yorick/stdplug/Makefile
 AC_SUBST([SYS])
