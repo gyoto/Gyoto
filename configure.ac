@@ -152,14 +152,14 @@ pkg_cflags=
 pkg_libs=
 
 # Enable debugging by default
-GYOTO_DEBUG_ENABLED=1
+GYOTO_DEBUG_ENABLED=yes
 AC_ARG_ENABLE([debugging],
   [AS_HELP_STRING([--disable-debugging],
      [remove debugging code for hypothetical speed gain])],
   [AS_IF([test "x$enable_debugging" == "xno"],
      [GYOTO_DEBUG_ENABLED=0])
   ])
-AS_IF([test "x$GYOTO_DEBUG_ENABLED" == 1],
+AS_IF([test "x$GYOTO_DEBUG_ENABLED" == xyes],
   [AC_DEFINE([GYOTO_DEBUG_ENABLED],
      [1],
      [Enable debugging information gathering code for putative speed gain])
@@ -173,6 +173,22 @@ AC_ARG_ENABLE([pthreads],
      [disable POSIX threads parallelization])],
   [AS_IF([test "x$enable_pthreads" = "xno"], [use_pthreads=no])])
 AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
+
+# Check for libudunits
+AC_ARG_WITH([udunits],
+  [AS_HELP_STRING( [--with-udunits[[=yes|no]]], 
+     [Enable use of udunits for unit conversions (experimental) [default=no]])],
+  [AS_IF([test "x$with_udunits" = xyes],
+     [PKG_CHECK_MODULES([UDUNITS],
+         [udunits],
+	 [pkg_requires="${pkg_requires} udunits"
+	  AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])
+         ]
+      )
+     ]
+   )
+  ]
+)
 
 # Check for Xerces-c
 AC_MSG_CHECKING([whether libxerces should be used])

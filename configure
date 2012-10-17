@@ -654,6 +654,8 @@ XERCESCPPFLAGS
 XERCESLDFLAGS
 XERCES_LIBS
 XERCES_CFLAGS
+UDUNITS_LIBS
+UDUNITS_CFLAGS
 PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
@@ -809,6 +811,7 @@ with_yorick_home
 with_yorick_site
 enable_debugging
 enable_pthreads
+with_udunits
 with_xerces
 with_xerces_headers
 with_xerces_libs
@@ -834,6 +837,8 @@ CXXCPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
+UDUNITS_CFLAGS
+UDUNITS_LIBS
 XERCES_CFLAGS
 XERCES_LIBS
 CFITSIO_CFLAGS
@@ -1489,6 +1494,8 @@ Optional Packages:
                           yorick directory if it is under ${prefix}, else
                           ${prefix}/lib/yorick]
 
+  --with-udunits[=yes|no] Enable use of udunits for unit conversions
+                          (experimental) [default=no]
   --with-xerces[=xerces-prefix]
                           Force using xerces installed in a given prefix or
                           force disable it.
@@ -1524,6 +1531,10 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
+  UDUNITS_CFLAGS
+              C compiler flags for UDUNITS, overriding pkg-config
+  UDUNITS_LIBS
+              linker flags for UDUNITS, overriding pkg-config
   XERCES_CFLAGS
               C compiler flags for XERCES, overriding pkg-config
   XERCES_LIBS linker flags for XERCES, overriding pkg-config
@@ -16548,7 +16559,7 @@ pkg_cflags=
 pkg_libs=
 
 # Enable debugging by default
-GYOTO_DEBUG_ENABLED=1
+GYOTO_DEBUG_ENABLED=yes
 # Check whether --enable-debugging was given.
 if test "${enable_debugging+set}" = set; then :
   enableval=$enable_debugging; if test "x$enable_debugging" == "xno"; then :
@@ -16557,7 +16568,7 @@ fi
 
 fi
 
-if test "x$GYOTO_DEBUG_ENABLED" == 1; then :
+if test "x$GYOTO_DEBUG_ENABLED" == xyes; then :
 
 $as_echo "#define GYOTO_DEBUG_ENABLED 1" >>confdefs.h
 
@@ -16972,6 +16983,115 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
 fi
+
+# Check for libudunits
+
+# Check whether --with-udunits was given.
+if test "${with_udunits+set}" = set; then :
+  withval=$with_udunits; if test "x$with_udunits" = xyes; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UDUNITS" >&5
+$as_echo_n "checking for UDUNITS... " >&6; }
+
+if test -n "$UDUNITS_CFLAGS"; then
+    pkg_cv_UDUNITS_CFLAGS="$UDUNITS_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udunits\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udunits") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_UDUNITS_CFLAGS=`$PKG_CONFIG --cflags "udunits" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$UDUNITS_LIBS"; then
+    pkg_cv_UDUNITS_LIBS="$UDUNITS_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"udunits\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "udunits") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_UDUNITS_LIBS=`$PKG_CONFIG --libs "udunits" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        UDUNITS_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "udunits" 2>&1`
+        else
+	        UDUNITS_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "udunits" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$UDUNITS_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (udunits) were not met:
+
+$UDUNITS_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables UDUNITS_CFLAGS
+and UDUNITS_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables UDUNITS_CFLAGS
+and UDUNITS_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	UDUNITS_CFLAGS=$pkg_cv_UDUNITS_CFLAGS
+	UDUNITS_LIBS=$pkg_cv_UDUNITS_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} udunits"
+
+$as_echo "#define HAVE_UDUNITS 1" >>confdefs.h
+
+
+
+fi
+
+
+fi
+
+
+fi
+
 
 # Check for Xerces-c
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5
