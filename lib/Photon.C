@@ -386,7 +386,7 @@ int Photon::hit(Astrobj::Properties *data) {
       GYOTO_DEBUG_EXPR(transmission_freqobs_);
 #     endif
 
-      if ( transmission_freqobs_ < 1e-6 ) {
+      if ( getTransmissionMax() < 1e-6 ) {
 	stopcond=1;
 
 #       if GYOTO_DEBUG_ENABLED
@@ -514,6 +514,21 @@ double Photon::getTransmission(size_t i) const {
     throwError("Photon::getTransmission(): i > nsamples");
   return transmission_[i];
 }
+
+double Photon::getTransmissionMax() const {
+  double transmax=transmission_freqobs_;
+  if (spectro_()) {
+    size_t i=0, imax= spectro_->getNSamples();
+    for (i=0; i < imax; ++i)
+      if (transmission_[i] > transmax)
+	transmax = transmission_[i];
+  }
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(transmax);
+# endif
+  return transmax;
+}
+
 double const * Photon::getTransmission() const { return transmission_; }
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }

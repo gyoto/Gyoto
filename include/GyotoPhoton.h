@@ -198,6 +198,14 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
          ///< get transmission for freqobs
 
     /**
+     * Get maximum of all the transimissions, either the transmission
+     * at freqObs or the transmission at each spectro_->getMidpoints()[i].
+     *
+     */ 
+    double getTransmissionMax() const ;
+         ///< get maximum transmission;
+
+    /**
      * For i!=-1: getTansmission()[i] == getTransmission(size_t i)
      */
     double const * getTransmission() const ;
