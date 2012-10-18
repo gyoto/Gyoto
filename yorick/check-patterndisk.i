@@ -97,4 +97,3 @@ if (!nodisplay) {
   if (batch()) winkill;
  }
 
-if (batch()) quit;

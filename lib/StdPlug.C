@@ -28,6 +28,7 @@
 #include "GyotoThinDisk.h"
 #include "GyotoPageThorneDisk.h"
 #include "GyotoThinDiskPL.h"
+#include "GyotoPolishDoughnut.h"
 #ifdef GYOTO_USE_CFITSIO
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
@@ -56,6 +57,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::PageThorneDisk>));
   Astrobj::Register("ThinDiskPL",  
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskPL>));
+  Astrobj::Register("PolishDoughnut",
+		    &(Astrobj::Subcontractor<Astrobj::PolishDoughnut>));
 #ifdef GYOTO_USE_CFITSIO
   Astrobj::Register("PatternDisk",
 		    &(Astrobj::Subcontractor<Astrobj::PatternDisk>));

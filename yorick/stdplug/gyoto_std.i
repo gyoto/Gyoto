@@ -262,6 +262,38 @@ extern gyoto_Disk3D;
     gyoto_Astrobj, gyoto_PatternDisk
 */
 
+//// POLISHDOUGHNUT
+
+extern _gyoto_PolishDoughnut_register_as_Astrobj;
+_gyoto_PolishDoughnut_register_as_Astrobj;
+/* xDOCUMENT _gyoto_<KIND>_register_as_Astrobj
+      To be called exactly once in gyoto_<KIND>.i
+*/
+   
+extern gyoto_PolishDoughnut;
+/* DOCUMENT pd = gyoto_PolishDoughnut([filename, ][members=values])
+
+         or pd, members=values
+         or value = pd(member=)
+
+   PURPOSE:
+     Create and manipulate GYOTO PolishDoughnut
+     objects. PolishDoughnuts are toroidal accretion structures in
+     KerrBL metric. They can be optically thin or optically thick and
+     the spectrum can be computed.
+
+     For basic syntax, see "help, gyoto" and "help, gyoto_Astrobj".
+
+   MEMBERS:
+     In addition to those listed in "help, gyoto_Astrobj":
+     
+        lambda= (a double) the lambda parameter
+        metric= a gyoto_Metric object (KerrBL only)
+
+   SEE ALSO: gyoto, gyoto_Astrobj, gyoto_KerrBL
+ */
+
+
 /////// SPECTRUM KIND ///////
 
 /* PowerLaw */
@@ -293,3 +325,4 @@ extern gyoto_BlackBodySpectrum;
 
 extern _gyoto_BlackBodySpectrum_register_as_Metric;
 _gyoto_BlackBodySpectrum_register_as_Metric;
+

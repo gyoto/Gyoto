@@ -18,7 +18,11 @@
  */
 
 // NODISPLAY implies batch mode
-if (get_env("GYOTO_CHECK_NODISPLAY")) batch, 1;
+if (get_env("GYOTO_CHECK_NODISPLAY")) {
+  batch, 1;
+  __fma=fma; __winkill=winkill; __pli=pli, __plg=plg;
+  fma = winkill = pli = plg = noop;
+ }
 
 #include "gyoto.i"
 #include "gyoto_std.i"
@@ -150,6 +154,12 @@ write, format= "%s\n"," ALL TESTS PASSED";
 #include "check-star.i"
 #include "check-scenery.i"
 #include "check-patterndisk.i"
+#include "check-polish-doughnut.i"
+
+write, format="\n\n%s\n%s\n%s\n",
+  "  ********************************************",
+  "  *             ALL TESTS PASSED             *",
+  "  ********************************************";
 
 if (anyof(get_argv() == "check.i")) quit;
 //if (batch()) quit;

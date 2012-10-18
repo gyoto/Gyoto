@@ -621,6 +621,8 @@ check: gyoto
 	   \!example-page-thorne-disk-KS.fits
 	$(CHECK_CMD) ../doc/examples/example-torus.xml \
 	   \!example-torus.fits
+	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
+	   \!example-polish-doughnut.fits
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

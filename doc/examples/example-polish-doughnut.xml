@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <Metric kind = "KerrBL">
+    <Mass unit="sunmass">4.31e6</Mass> This is the mass of SgrA*, in solar mass.
+    <Spin>0.</Spin>
+  </Metric>
+
+  <Screen>
+    <Position>1000. 100. 1.39 0.</Position>
+    <Time unit="geometrical">1000.</Time>
+    <FieldOfView>0.31416</FieldOfView>
+    <Resolution>32</Resolution>
+    <!--<Spectrometer kind="freqlog" nsamples="100">5. 25.</Spectrometer>-->
+    <!--<Spectrometer kind="freqlog" nsamples="20">11. 13.</Spectrometer>-->
+    <Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer>
+  </Screen>
+
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "PolishDoughnut" plugin = "stdplug">
+    <Lambda>0.3</Lambda>
+    <TempRatio>0.1</TempRatio>
+    <CentralDensity>1e-17</CentralDensity>
+    <CentralTempOverVirial>0.02</CentralTempOverVirial>
+    <Beta>0.1</Beta>
+    <OpticallyThin/>
+    <Rmax>25.</Rmax>
+    <!--<UseSpecificImpact/>-->
+          Set UseSpecificImpact to use the specific implementation of
+          the Impact() method instead of Standard::Impact().
+    <SafetyValue> 0. </SafetyValue>
+          Increase SafetyValue if you have trouble resolving the
+          surface of the doughnut. Increasing SafetyValue also
+          increases computation time. The default value is slightly
+          more conservative.
+  </Astrobj>
+
+</Scenery>
+

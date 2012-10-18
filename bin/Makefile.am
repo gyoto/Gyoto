@@ -26,3 +26,5 @@ check: gyoto
 	   \!example-page-thorne-disk-KS.fits
 	$(CHECK_CMD) ../doc/examples/example-torus.xml \
 	   \!example-torus.fits
+	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
+	   \!example-polish-doughnut.fits
