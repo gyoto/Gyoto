@@ -149,10 +149,10 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+  //This is local temperature in K
 
   spectrumBB_->setTemperature(TT);
   double Iem=(*spectrumBB_)(nu);
-  //cout << "r T Iem= "<< rcur << " " << TT << " " << Iem << endl;
 
   double Ires=0.;
   if (!flag_radtransf_){
@@ -165,59 +165,43 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     //cout << "cyl: " << rcur << " " << th << " " << rcur*sin(th) << " " << risco << endl;
     double risco_si=risco*dist_unit;
 
+    //Local density in cgs:
+    /*
+      Following fact (in SI units) is defined by:
+      fact=RR/(Mm*kappa*gamma)
+      with:
+       RR=8.3144621; // Perfect gas constant in SI
+       Mm=6e-4; //This is N_avogadro*M_atomicmassunit/gamma in kg/mol
+       kappa=3e10; // p = kappa*density^gamma
+       gamma=1.66667;
+      [see DynaDisk3D.i]
+     */
+    double fact=2.77149e-07;
+    //See DynaDisk3D.i, or paper, for relation between TT and density
+    double density=pow(fact*TT,1.5);// 1.5 is 1/(gamma-1)
+    //density is in SI units, kg/m^3
+    
     /*** Computing emission coef: ***/
 
-    //Over a sphere:
-    //double jnu=3.*M_PI/r_si*Iem;
-    //last value obtained by using the same reasoning as in Narayan&Yi
-    //1995,  ApJ 452, 710,
-    //Eq. (3.13): jnu*4/3Pi*r^3=Pi*Bnu(T)*4Pi*r^2
-    /*double Vem = 4./3.*M_PI*r_si*r_si*r_si
-      - 4./3.*M_PI*risco_si*risco_si*risco_si;
-    double Sem = 4.*M_PI*r_si*r_si;
-    if (Vem<=0.) throwError("In Disk3D_BB::emission1date: bad case"
-    " for heuristic computation of jnu");*/
+    //Emission coef jnu for thermal bremsstrahlung (see RybickiLightman 5.14a)
 
-    //Over a cylinder:
-    /*double height=2.*zmax()*dist_unit;//disk total height in SI
-    double Vem = M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = 2.*M_PI*(r_si*height+risco_si*height+r_si*r_si-risco_si*risco_si);*/
-    //cout << height << " " << 2./height << " " << Sem/Vem << endl;
-    //cout << "zmax= " << zmax() << endl;
+    /* 
+       fact2=1/4pi * 2^5*pi*e^6/(3*me*c^3) * sqrt(2pi/(3*kB*me)) * 1/mu^2 
+       in SI, with: me=electron mass, e=electron charge, kB=boltzman,
+                    mu=atomic mass unit
+       Anyway this factor has no importance, 
+       we are interested in relative values
+    */
+    double fact2=7.83315e-12;
+    double hok=4.79924e-11; //planck cst / boltzman cst
+    double jnu = fact2 * 1./sqrt(TT) * density*density
+      * exp(-hok*nu/TT);
 
-    
-    //Over a 'napkin ring' (same formula as for cylinder, but different r!,
-    // better to use these formula as r_cyl can be < risco -> pbs...):
-    
-    /*double height=zmax()*dist_unit;//disk half-height in SI
-    //Volume of napkin ring of (spherical) radius risco to r
-    //See wikipedia "Spherical cap"
-    double Vem = 2.*M_PI*height*(r_si*r_si-risco_si*risco_si);
-    double Sem = 2.*M_PI*(r_si+risco_si)*(2.*height+r_si-risco_si);*/
-
-    //Over whole portion of sphere (don't remove ISCO sphere)
-    double height = zmax()*dist_unit;
-    double Vem    = 2.*M_PI/3.*(2*r_si*r_si*r_si
-				-(r_si-height)*(2.*r_si+height));
-    double Sem    = 2.*M_PI*(r_si*r_si+2.*r_si*height-height*height);
-
-    //cout << Sem/Vem*dsem*dist_unit << endl;
-
-    //cout << "S,V= " << r_si << " " << risco_si << " " << Sem << " " << Vem << " " << Sem/Vem << endl;
-      //2.*M_PI*(r_si*r_si+2.*r_si*height-risco_si*risco_si);
-    if (Vem<=0. || Sem<0. 
-	|| Vem!=Vem 
-	|| Sem!=Sem){
-      cout << "At r,th= " << rcur << " " << th << endl;
-      cout << "Sem, Vem= " << Sem << " " << Vem << endl;
-      throwError("In Disk3D_BB::emission1date: bad case"
-		 " for heuristic computation of jnu");
-    }
-
-    double jnu = Sem/Vem*Iem;
     //Elementary intensity added by current dsem segment of worldline
     //in SI units:
     Ires=jnu*dsem*dist_unit;
+    //cout << "at end emission1date nu jnu deltaI= " << nu << " "  << jnu << " " << Ires << endl;
+
     //cout << rcur << " " << TT << endl;
     //cout << Iem << " " << Sem/Vem << " " << dsem << " " << Ires << endl;
     //cout << "stuff 3D= " << TT << " " << Iem << " " << Ires << " " << jnu << " " << Sem/Vem << " " << dsem << endl;
@@ -253,6 +237,88 @@ double Disk3D_BB::emission(double nu, double dsem,
 
   return 0.;
 }
+
+double Disk3D_BB::transmission1date(double nu, double dsem,
+			       double* fake,
+			       double co[8]) const{
+  GYOTO_DEBUG << endl;
+  double * temperature = const_cast<double*>(getEmissquant());
+
+  double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
+  
+  double risco;
+  switch (gg_->getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+    break;
+  default:
+    throwError("Disk3D_BB::emission1date(): bad COORDKIND"
+	       ", should be BL corrdinates");
+  }
+
+  double rcur=co[1];
+  double th=co[2];
+
+  //cout << "rcur, risco= " << rcur << " " << risco << endl;
+
+  if (rcur > rout() || rcur < risco) return 0.;
+
+  size_t i[4]; // {i_nu, i_phi, i_z, i_r}
+  getIndices(i,co,nu);
+  size_t naxes[4];
+  getEmissquantNaxes(naxes);
+  size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
+  double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+  //This is local temperature in K
+  
+  spectrumBB_->setTemperature(TT);
+  double BnuT=(*spectrumBB_)(nu); //Planck function
+  double jnu=emission1date(nu,dsem,fake,co); // Emission coef
+  double alphanu=0.; //absorption coef.
+  if (BnuT==0.){
+    /*
+      BnuT can be 0 in the region close to ISCO where density
+      decreases very fast. Then jnu should be 0 too (density~0).
+      If both are 0, then nothing happens (no absorption, no emission,
+      it's free space). Thus leave alphanu=0.
+      If jnu!=0 then alphanu is not defined, this should not happen.
+     */
+    if (jnu!=0.)
+      throwError("In Disk3D_BB::transmission1date absorption coef. undefined!");
+  }else{
+    alphanu=jnu/BnuT;
+  }
+  //cout << "at end transmission1date nu alphanu argexp= " << nu << " " << TT << " " << jnu << " " << BnuT << " " << exp(-alphanu*dsem*dist_unit) << endl;
+  //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
+  return exp(-alphanu*dsem*dist_unit); 
+}
+
+double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
+
+  GYOTO_DEBUG << endl;
+  double time = co[0], tcomp=tinit_;
+  int ifits=1;
+  while(time>tcomp && ifits<nb_times_){
+    tcomp+=dt_;
+    ifits++;
+  }
+  double* fake;
+  if (ifits==1 || ifits==nb_times_){
+    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
+    return transmission1date(nuem,dsem,fake,co);
+  }else{
+    double I1, I2;
+    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits-1);
+    I1=transmission1date(nuem,dsem,fake,co);
+    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits);
+    I2=transmission1date(nuem,dsem,fake,co);
+    double t1 = tinit_+(ifits-2)*dt_;
+    return I1+(I2-I1)/dt_*(time-t1);
+  }
+
+  return double(flag_radtransf_);
+}
+
 
 void Disk3D_BB::setMetric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
