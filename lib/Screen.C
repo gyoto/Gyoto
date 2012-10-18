@@ -20,6 +20,7 @@
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoScreen.h"
+#include "GyotoConverters.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -90,20 +91,14 @@ void Screen::setProjection(const double dist,
 }
 
 void Screen::setDistance(double dist, const string unit)    {
-  if ((unit=="") || (unit=="m"))     ; // default is SI
-  else if (unit=="geometrical") dist *= gg_ -> unitLength();
-  else if (unit=="cm")          dist *= 1e-2;
-  else if (unit=="km")          dist *= 1e3;
-  else if (unit=="sunradius")   dist *= GYOTO_SUN_RADIUS;
-  else if ((unit=="astronomicalunit") ||
-	   (unit=="AU") ||
-	   (unit=="au") ||
-	   (unit=="ua"))
-                                dist *= GYOTO_ASTRONOMICAL_UNIT;
-  else if (unit=="ly")          dist *= GYOTO_LIGHT_YEAR;
-  else if (unit=="pc")          dist *= GYOTO_KPC * 1e-3;
-  else if (unit=="kpc")         dist *= GYOTO_KPC;
-  else if (unit=="Mpc")         dist *= GYOTO_KPC * 1e3;
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+  GYOTO_DEBUG_EXPR(dist);
+  GYOTO_DEBUG_EXPR(unit);
+  GYOTO_ENDIF_DEBUG
+# endif
+  if (unit=="geometrical") dist *= gg_ -> unitLength();
+  else dist = Units::ToMeters(dist, unit);
   setDistance(dist);
 }
 void Screen::setDistance(double dist)    {

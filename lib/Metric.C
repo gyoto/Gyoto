@@ -22,13 +22,10 @@
 #include <cstdlib>
 #include "GyotoMetric.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoConverters.h"
 #include <cmath>
 #include <string>
 #include <sstream>
-
-#ifdef HAVE_UDUNITS
-# include <udunits2.h>
-#endif
 
 using namespace std ; 
 using namespace Gyoto;
@@ -95,43 +92,7 @@ void Metric::Generic::setMass(const double mass, string unit) {
   GYOTO_DEBUG_EXPR(unit);
   GYOTO_ENDIF_DEBUG
 # endif
-# ifdef HAVE_UDUNITS
-  if (unit=="") {
-    mass_=mass;
-    return;
-  }
-  ut_system * utsys = ut_read_xml(NULL);
-  ut_unit * kg = ut_get_unit_by_symbol(utsys, "kg");
-  if (!kg) throwError("BUG");
-  ut_unit * from = NULL;
-  if (unit=="sunmass") {
-    from = ut_scale(GYOTO_SUN_MASS, kg);
-  }
-  if (!from) from = ut_get_unit_by_symbol(utsys, unit.c_str());
-  if (!from) from = ut_get_unit_by_name(utsys, unit.c_str());
-  if (!ut_are_convertible(from, kg)) {
-    stringstream ss;
-    ss << "Unsupported mass unit: \"" << unit;
-    throwError(ss.str());
-  }
-  cv_converter * converter = ut_get_converter(from, kg);
-  mass_ = cv_convert_double(converter, mass);
-  ut_free(kg);
-  ut_free(from);
-  cv_free(converter);
-  ut_free_system(utsys);
-# else
-  mass_ = mass;
-  if (unit=="" || unit=="kg") ; // do nothing !
-  else if (unit=="sunmass") mass_ *= GYOTO_SUN_MASS;
-  else if (unit=="g") mass_ *= 1e-3;
-  else {
-    stringstream ss;
-    ss << "Unsupported mass unit: \"" << unit
-       << "\". Supported units: [kg] g sunmass";
-    throwError(ss.str());
-  }
-# endif
+  mass_ = Units::ToKilograms(mass, unit);
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(mass="<<mass<<", unit=\"" << unit << "\") : mass_="
 	      << mass_ <<" kg"<< endl;
