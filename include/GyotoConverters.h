@@ -27,7 +27,8 @@
 #ifndef __GyotoConverters_H_ 
 #define __GyotoConverters_H_ 
 
-#include "GyotoUtils.h"
+#include <GyotoUtils.h>
+#include <GyotoSmartPointer.h>
 
 #ifdef HAVE_UDUNITS
 #include <udunits2.h>
@@ -39,33 +40,48 @@
 namespace Gyoto {
   namespace Units {
 #ifdef HAVE_UDUNITS
-    class System;
     class Unit;
+    class Converter;
 #endif
+    void Init();
     double ToMeters(double, std::string);
     double ToKilograms(double, std::string);
   }
 }
 
 #ifdef HAVE_UDUNITS
-class Gyoto::Units::System {
-  friend Gyoto::Units::Unit;
- protected:
-  ut_system * sys_;
- public:
-  System(char *);
-  ~System();
-};
-
-class Gyoto::Units::Unit {
+class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Units::Unit>;
+  friend class Gyoto::Units::Converter;
  private:
   ut_unit * unit_;
+  std::string kind_;
  public:
   Unit(std::string);
   ~Unit();
   double To (double val, std::string from_unit);
   double From (double val, std::string to_unit);
+  operator std::string() ;
+  operator ut_unit*();
 };
+
+class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Units::Converter>;
+ private:
+  Gyoto::SmartPointer<Gyoto::Units::Unit> from_;
+  Gyoto::SmartPointer<Gyoto::Units::Unit> to_;
+  cv_converter * converter_;
+  void resetConverter_();
+ public:
+  Converter(std::string, std::string);
+  Converter(Gyoto::SmartPointer<Gyoto::Units::Unit>, std::string);
+  Converter(std::string, Gyoto::SmartPointer<Gyoto::Units::Unit>);
+  Converter(Gyoto::SmartPointer<Gyoto::Units::Unit>,
+	    Gyoto::SmartPointer<Gyoto::Units::Unit>);
+  ~Converter();
+  double operator()(double);
+};
+
 #endif
 
 #endif

@@ -21,6 +21,7 @@
 #include "GyotoAstrobj.h"
 #include "GyotoMetric.h"
 #include "GyotoSpectrum.h"
+#include "GyotoConverters.h"
 
 #include <dlfcn.h>
 #include <cstdlib>
@@ -80,6 +81,9 @@ void Gyoto::Register::init(char const *  cpluglist) {
   Metric::initRegister();
   Astrobj::initRegister();
   Spectrum::initRegister();
+
+  // Init units system
+  Units::Init();
 
   // Init built-in plug-ins
 #ifdef GYOTO_BUILTIN_STDPLUG

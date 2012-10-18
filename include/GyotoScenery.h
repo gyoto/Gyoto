@@ -37,6 +37,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoScreen.h>
 #include <GyotoPhoton.h>
+#include <GyotoConverters.h>
 
 /**
  * \class Gyoto::Scenery
@@ -155,6 +156,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   size_t nthreads_; ///< number of parallel threads to use in ::rayTrace
 
+# ifdef HAVE_UDUNITS
+  Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_;
+  Gyoto::SmartPointer<Gyoto::Units::Converter> spectrum_converter_;
+# endif
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -205,6 +211,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void setNThreads(size_t); ///< set nthreads_;
   size_t getNThreads() const ; ///< get nthreads_;
+
+  void setIntensityConverter(std::string unit);
+  void setSpectrumConverter(std::string unit);
 
   // Worker:
  public:

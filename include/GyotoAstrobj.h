@@ -37,6 +37,7 @@
 
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
+#include <GyotoConverters.h>
 
 namespace Gyoto{
   class Photon;
@@ -556,11 +557,19 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   int offset; ///< spectra elements are separated by offset doubles in memory. In other words, the ith spectral element is a spectrum[i*offset].
   double * impactcoords; ///< Coordinates of the object and photon at impact
   double *user1, *user2, *user3, *user4, *user5; ///< Quantities specific to Astrobj
+# ifdef HAVE_UDUNITS
+  Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_ ;
+  Gyoto::SmartPointer<Gyoto::Units::Converter> spectrum_converter_ ;
+# endif
  public:
   Properties(); ///< Default constructor (everything is set to NULL);
   Properties (double*, double*); ///<< set intensity and time pointers.
   void init(size_t nbnuobs=0);
   Properties operator++();
+# ifdef HAVE_UDUNITS
+  void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void setSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+# endif
 };
 
 #endif

@@ -5,18 +5,26 @@ using namespace Gyoto::Units ;
 using namespace std ;
 
 #ifdef HAVE_UDUNITS
-System::System(char *) : sys_(NULL){
+static ut_system * SI (NULL);
+static Gyoto::SmartPointer<Gyoto::Units::Unit> Meter (NULL);
+static Gyoto::SmartPointer<Gyoto::Units::Unit> Second (NULL);
+static Gyoto::SmartPointer<Gyoto::Units::Unit> KiloGram (NULL);
+#endif
+
+void Gyoto::Units::Init() {
+#ifdef HAVE_UDUNITS
   ut_set_error_message_handler(ut_ignore);
-  sys_ =  ut_read_xml(NULL);
+  SI =  ut_read_xml(NULL);
+
   ut_unit * tmpu = NULL, * tmpu2 = NULL;
 
   /* Map pc for parsec */
-  tmpu = ut_get_unit_by_name(sys_, "parsec");
+  tmpu = ut_get_unit_by_name(SI, "parsec");
   ut_map_symbol_to_unit("pc", UT_ASCII, tmpu);
   ut_free(tmpu); tmpu = NULL;
 
   /* astronomical_unit aliases */
-  tmpu = ut_get_unit_by_name(sys_, "astronomical_unit");
+  tmpu = ut_get_unit_by_name(SI, "astronomical_unit");
   ut_map_symbol_to_unit("au", UT_ASCII, tmpu);
   ut_map_symbol_to_unit("AU", UT_ASCII, tmpu);
   ut_map_symbol_to_unit("ua", UT_ASCII, tmpu);
@@ -24,34 +32,43 @@ System::System(char *) : sys_(NULL){
   ut_free(tmpu); tmpu = NULL;
 
   /* sunradius */
-  tmpu = ut_get_unit_by_name(sys_, "meter");
+  tmpu = ut_get_unit_by_name(SI, "meter");
   tmpu2 = ut_scale(GYOTO_SUN_RADIUS, tmpu);
   ut_map_symbol_to_unit("sunradius", UT_ASCII, tmpu);
   ut_free(tmpu2);
   ut_free(tmpu);
 
   /* ly */
-  tmpu = ut_get_unit_by_name(sys_, "light_year");
+  tmpu = ut_get_unit_by_name(SI, "light_year");
   ut_map_symbol_to_unit("ly", UT_ASCII, tmpu);
   ut_free(tmpu);
 
   /* sunmass */
-  tmpu = ut_get_unit_by_symbol(sys_, "kg");
+  tmpu = ut_get_unit_by_symbol(SI, "kg");
   tmpu2 = ut_scale(GYOTO_SUN_MASS, tmpu);
   ut_map_symbol_to_unit("sunmass", UT_ASCII, tmpu2);
   ut_free(tmpu2);
   ut_free(tmpu);
 
+  /* Jansky */
+  tmpu = ut_parse(SI, "W.m-2.Hz-1", UT_ASCII);
+  if (!tmpu) throwError("Cannot initialize Jansky");
+  tmpu2=ut_scale(1e-26, tmpu);
+  ut_map_name_to_unit("Jansky", UT_ASCII, tmpu2);
+  ut_map_symbol_to_unit("Jy", UT_ASCII, tmpu2);
+  ut_free(tmpu2);
+  ut_free(tmpu);
+
+  Meter = new Unit("meter");
+  Second = new Unit("second");
+  KiloGram = new Unit("kilogram");
+#endif  
 }
 
-System::~System() {
-  ut_free_system(sys_);
-}
-
-static Gyoto::Units::System SI (NULL);
-
-Unit::Unit(string unit) : unit_(NULL) {
-  unit_ = ut_parse(SI.sys_, unit.c_str(), UT_ASCII);
+#ifdef HAVE_UDUNITS
+/* Unit class */
+Unit::Unit(string unit) : unit_(NULL), kind_(unit) {
+  unit_ = ut_parse(SI, unit.c_str(), UT_ASCII);
   if (!unit_) throwError("Error initializing Unit");
 }
 
@@ -60,61 +77,71 @@ Unit::~Unit() {
 }
 
 double Unit::To(double val, std::string from_unit) {
-  ut_unit * from = ut_parse(SI.sys_, from_unit.c_str(), UT_ASCII);
-  if (!from) {
-    ut_free(from);
-    stringstream ss;
-    ss << "Unable to parse unit: \"" << from_unit << "\"";
-    throwError(ss.str());
-  }
-  if (!ut_are_convertible(from, unit_)) {
-    ut_free(from);
-    stringstream ss;
-    ss << "Unsupported conversion: \"" << from_unit << "\"";
-    throwError(ss.str());
-  }
-  cv_converter * conv = ut_get_converter(from, unit_);
-  double res = cv_convert_double(conv, val);
-  cv_free(conv);
-  ut_free(from);
-  return res;
+  return Converter(from_unit, this)(val);
 }
 
 double Unit::From(double val, std::string to_unit) {
-  ut_unit * to = ut_get_unit_by_symbol(SI.sys_, to_unit.c_str());
-  if (!to) ut_get_unit_by_name(SI.sys_, to_unit.c_str());
-  if (!ut_are_convertible(to, unit_)) {
-    ut_free(to);
+  return Converter(this, to_unit)(val);
+}
+
+Unit::operator std::string() { return kind_; }
+Unit::operator ut_unit*() { return unit_; }
+
+/* Converter */
+Converter::Converter(string from, string to) : from_(NULL), to_(NULL), converter_(NULL) {
+  from_ = new Unit(from);
+  to_ = new Unit(to);
+  resetConverter_();
+}
+
+Converter::Converter(Gyoto::SmartPointer<Gyoto::Units::Unit> from, std::string to) :
+  from_(from), to_(NULL), converter_(NULL)
+{
+  to_ = new Unit(to);
+  resetConverter_();
+}
+
+Converter::Converter(std::string from, Gyoto::SmartPointer<Gyoto::Units::Unit> to) :
+  from_(NULL), to_(to), converter_(NULL)
+{
+  from_ = new Unit(from);
+  resetConverter_();
+}
+
+Converter::Converter(Gyoto::SmartPointer<Gyoto::Units::Unit> from,
+		     Gyoto::SmartPointer<Gyoto::Units::Unit> to) :
+  from_(from), to_(to), converter_(NULL)
+{
+  resetConverter_();
+}
+
+Converter::~Converter() {
+  if (converter_) { cv_free(converter_); converter_ = NULL; }
+  from_ = NULL;
+  to_ = NULL;
+}
+
+void Converter::resetConverter_() {
+  if (!ut_are_convertible(*from_, *to_)) {
+    ut_free(*from_);
+    ut_free(*to_);
     stringstream ss;
-    ss << "Unsupported conversion: \"" << to_unit;
+    ss << "Unsupported conversion: from \"" << string(*from_) << "\" to " << string(*to_) << "\"";
     throwError(ss.str());
   }
-  cv_converter * conv = ut_get_converter(unit_, to);
-  double res = cv_convert_double(conv, val);
-  cv_free(conv);
-  ut_free(to);
-  return res;
+  converter_ = ut_get_converter(*from_, *to_);
+}
+double Converter::operator()(double val) {
+  return cv_convert_double(converter_, val);
 }
 
-static Gyoto::Units::Unit Meter("meter");
-static Gyoto::Units::Unit Second("second");
-static Gyoto::Units::Unit KiloGram("kilogram");
-
-double Gyoto::Units::ToMeters(double val, string unit)
-{
-  if ((unit=="") || (unit=="m")) return val ;
-  return Meter.To(val, unit); 
-}
-
-double Gyoto::Units::ToKilograms(double val, string unit)
-{
-  if (unit=="" || unit=="kg") return val;
-  return KiloGram.To(val, unit);
-}
-
-#else
+#endif
 
 double Gyoto::Units::ToMeters(double val, string unit) {
+# ifdef HAVE_UDUNITS
+  if ((unit=="") || (unit=="m")) return val ;
+  return Meter->To(val, unit); 
+# else
   if ((unit=="") || (unit=="m")) return val ;
   if (unit=="cm")          return val * 1e-2;
   if (unit=="km")          return val * 1e3;
@@ -133,10 +160,15 @@ double Gyoto::Units::ToMeters(double val, string unit) {
   ss << "Unsupported conversion: \"" << unit;
   throwError(ss.str());
   return 0;
+# endif
 }
 
 double Gyoto::Units::ToKilograms(double val, string unit)
 {
+# ifdef HAVE_UDUNITS
+  if (unit=="" || unit=="kg") return val;
+  return KiloGram->To(val, unit);
+# else
   if (unit=="" || unit=="kg") ; // do nothing !
   else if (unit=="sunmass") val *= GYOTO_SUN_MASS;
   else if (unit=="g") val*= 1e-3;
@@ -147,7 +179,6 @@ double Gyoto::Units::ToKilograms(double val, string unit)
     throwError(ss.str());
   }
   return val;
+# endif
 }
 
-
-#endif

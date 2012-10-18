@@ -196,6 +196,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
                                        //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*freqObs*ggredm1;
+  double inc =0.;
   if (data) {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "data requested" 
@@ -253,10 +254,14 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       */
 
       //I_nu_obs increment :
-      *data->intensity += 
-	(emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
+      inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
 	* ggred*ggred*ggred;
+#     ifdef HAVE_UDUNITS
+      if (data -> intensity_converter_)
+	inc = (*data -> intensity_converter_)(inc);
+#     endif
+      *data->intensity += inc;
 
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG
@@ -296,8 +301,13 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       }
       emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	data->spectrum[ii*data->offset] +=
-	  Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
+	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
+#       ifdef HAVE_UDUNITS
+	if (data -> spectrum_converter_)
+	  inc = (*data -> spectrum_converter_)(inc);
+#       endif
+	data->spectrum[ii*data->offset] += inc;
+	 
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	       << "DEBUG: Generic::processHitQuantities(): "
@@ -413,6 +423,9 @@ Astrobj::Properties::Properties() :
   redshift(NULL),
   spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
+# ifdef HAVE_UDUNITS
+  , intensity_converter_(NULL), spectrum_converter_(NULL)
+# endif
 {}
 
 Astrobj::Properties::Properties( double * I, double * t) :
@@ -421,6 +434,9 @@ Astrobj::Properties::Properties( double * I, double * t) :
   redshift(NULL),
   spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
+# ifdef HAVE_UDUNITS
+  , intensity_converter_(NULL), spectrum_converter_(NULL)
+# endif
 {}
 
 void Astrobj::Properties::init(size_t nbnuobs) {
@@ -439,6 +455,16 @@ void Astrobj::Properties::init(size_t nbnuobs) {
   if (user4)      *user4=0.;
   if (user5)      *user5=0.;
 }
+
+#ifdef HAVE_UDUNITS
+void Astrobj::Properties::setIntensityConverter(SmartPointer<Units::Converter> conv) {
+  intensity_converter_ = conv ;
+}
+
+void Astrobj::Properties::setSpectrumConverter(SmartPointer<Units::Converter> conv) {
+  spectrum_converter_ = conv;
+}
+#endif
 
 Astrobj::Properties Astrobj::Properties::operator++() {
   if (intensity)  ++intensity;

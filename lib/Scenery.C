@@ -257,7 +257,12 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_ . setInitialCondition(gg_, obj_, coord);
   // delta is reset in operator()
 
-
+# ifdef HAVE_UDUNITS
+  if (data) {
+    data -> setIntensityConverter(intensity_converter_);
+    data -> setSpectrumConverter(spectrum_converter_);
+  }
+# endif
 
   SceneryThreadWorkerArg larg;
   larg.sc=this;
@@ -370,10 +375,28 @@ void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant)
 void Scenery::setRequestedQuantities(std::string squant) {
   quantities_=0;
   char * tk = strtok(const_cast<char*>(squant.c_str()), " \t\n");
+  string tkk="", quant="", unit = "";
+  size_t first = 0, last = 0;
   while (tk != NULL) {
-    if (!strcmp(tk, "Intensity"))
+    tkk = tk;
+    first = tkk.find("[");
+    last = tkk.size() - 1;
+    if (first < last) {
+      unit = tkk.substr(first+1, last-first-1);
+      quant = tkk.substr(0, first);
+    } else {
+      unit="";
+      quant=tkk;
+    }
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "quant=" << quant << ", unit=" << unit << "." << endl;
+#   endif
+    tk=const_cast<char*>(quant.c_str());
+
+    if (!strcmp(tk, "Intensity")) {
       quantities_ |= GYOTO_QUANTITY_INTENSITY;
-    else if (!strcmp(tk, "EmissionTime"))
+      setIntensityConverter(unit);
+    } else if (!strcmp(tk, "EmissionTime"))
       quantities_ |= GYOTO_QUANTITY_EMISSIONTIME;
     else if (!strcmp(tk, "MinDistance"))
       quantities_ |= GYOTO_QUANTITY_MIN_DISTANCE;
@@ -383,9 +406,10 @@ void Scenery::setRequestedQuantities(std::string squant) {
       quantities_ |= GYOTO_QUANTITY_REDSHIFT;
     else if (!strcmp(tk, "ImpactCoords"))
       quantities_ |= GYOTO_QUANTITY_IMPACTCOORDS;
-    else if (!strcmp(tk, "Spectrum"))
+    else if (!strcmp(tk, "Spectrum")) {
       quantities_ |= GYOTO_QUANTITY_SPECTRUM;
-    else if (!strcmp(tk, "BinSpectrum"))
+      setSpectrumConverter(unit);
+    } else if (!strcmp(tk, "BinSpectrum"))
       quantities_ |= GYOTO_QUANTITY_BINSPECTRUM;
     else if (!strcmp(tk, "User1"))
       quantities_ |= GYOTO_QUANTITY_USER1;
@@ -406,6 +430,32 @@ void Scenery::setRequestedQuantities(std::string squant) {
 }
 Gyoto::Quantity_t Scenery::getRequestedQuantities() const {
   return quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
+}
+
+void Scenery::setIntensityConverter(string unit) {
+# ifdef HAVE_UDUNITS
+  // default is SI
+  if (unit=="") unit="J.m-2.s-1.sr-1.Hz-1";
+  intensity_converter_ = new Units::Converter("J.m-2.s-1.sr-1.Hz-1", unit);
+# else
+  if (unit!="")
+    GYOTO_WARNING
+      << "Unit ignored, please recompile gyoto with --with-udunits"
+      << endl;
+# endif
+}
+
+void Scenery::setSpectrumConverter(string unit) {
+# ifdef HAVE_UDUNITS
+  // default is SI
+  if (unit=="") unit="J.m-2.s-1.sr-1.Hz-1";
+  spectrum_converter_ = new Units::Converter("J.m-2.s-1.sr-1.Hz-1", unit);
+# else
+  if (unit!="")
+    GYOTO_WARNING
+      << "Unit ignored, please recompile gyoto with --with-udunits"
+      << endl;
+# endif
 }
 
 std::string Scenery::getRequestedQuantitiesString() const {

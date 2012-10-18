@@ -4,7 +4,8 @@ INSTALLING GYOTO
 0- DISTRIBUTION PACKAGES
 ========================
 
-Gyoto comes prepackaged for some systems.
+Gyoto comes prepackaged for some systems. Of course, the development version
+may be much more advanced at a given time.
 
 On Debian GNU/Linux (and derivatives), try:
  sudo apt-get install gyoto gyoto-doc yorick-gyoto
@@ -29,6 +30,9 @@ I- INSTALL THE DEPENDENCIES
        http://xerces.apache.org/xerces-c/
    - cfitsio   (required for the executable and some of the Astrobj):
        http://heasarc.gsfc.nasa.gov/fitsio/
+   - libudunits2 (experimental support for unit conversions):
+       http://www.unidata.ucar.edu/software/udunits/
+     (Disabled by default, use ./configure --with-udunits).
    - Yorick    (optional, provides an interface to the Yorick
      interpreted language, allowing to write Gyoto scripts):
        http://yorick.sourceforge.net/
@@ -45,7 +49,7 @@ II- CONFIGURE GYOTO
 ===================
 If all the dependencies are installed in standard places (/usr or
 /usr/local) and if the default prefix (/usr/local) is OK for you, this
-shoud do:
+should do:
    $ ./configure
 
 You may need to pass some options or configuration variables. To list
@@ -61,7 +65,6 @@ CFITIO are in /opt/local:
                  --with-lorene=${HOME}/mysoft/Lorene \
                  CPPFLAGS=-I/opt/local/include \
                  LDFLAGS=-L/opt/local/lib
-
 
 III- BUILD
 ==========
