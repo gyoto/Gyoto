@@ -16,7 +16,7 @@
     <Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer>
   </Screen>
 
-  <Quantities>Spectrum</Quantities>
+  <Quantities>Spectrum[erg.s-1.cm-2.sr-1.Hz-1]</Quantities>
 
   <Astrobj kind = "PolishDoughnut" plugin = "stdplug">
     <Lambda>0.3</Lambda>

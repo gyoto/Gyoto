@@ -2,16 +2,28 @@
 * \file GyotoPolishDoughnut.h
 * \brief A toroïdal accretion structure
 *
-*  Beware: the PolishDoughnut currently uses c.g.s. units, it _will_
-*  be converted to use S.I. soon.
+*  Beware: the PolishDoughnut now in SI
 *
 */
 
 /*
-*   Copyright (c) year  your_name
-*
- *
-*/
+    Copyright (c) 2012 Frederic Vincent, Odele Straub, Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef __GyotoPolishDoughnut_H_ 
 #define __GyotoPolishDoughnut_H_ 

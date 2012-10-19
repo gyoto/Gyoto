@@ -257,12 +257,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_ . setInitialCondition(gg_, obj_, coord);
   // delta is reset in operator()
 
-# ifdef HAVE_UDUNITS
-  if (data) {
-    data -> setIntensityConverter(intensity_converter_);
-    data -> setSpectrumConverter(spectrum_converter_);
-  }
-# endif
+  if (data) setPropertyConverters(data);
 
   SceneryThreadWorkerArg larg;
   larg.sc=this;
@@ -409,9 +404,10 @@ void Scenery::setRequestedQuantities(std::string squant) {
     else if (!strcmp(tk, "Spectrum")) {
       quantities_ |= GYOTO_QUANTITY_SPECTRUM;
       setSpectrumConverter(unit);
-    } else if (!strcmp(tk, "BinSpectrum"))
+    } else if (!strcmp(tk, "BinSpectrum")) {
       quantities_ |= GYOTO_QUANTITY_BINSPECTRUM;
-    else if (!strcmp(tk, "User1"))
+      setBinSpectrumConverter(unit);
+    } else if (!strcmp(tk, "User1"))
       quantities_ |= GYOTO_QUANTITY_USER1;
     else if (!strcmp(tk, "User2"))
       quantities_ |= GYOTO_QUANTITY_USER2;
@@ -445,11 +441,32 @@ void Scenery::setIntensityConverter(string unit) {
 # endif
 }
 
+void Scenery::setPropertyConverters(Astrobj::Properties * data) {
+# ifdef HAVE_UDUNITS
+  data -> setIntensityConverter(intensity_converter_);
+  data -> setSpectrumConverter(spectrum_converter_);
+  data -> setBinSpectrumConverter(binspectrum_converter_);
+# endif
+}
+
 void Scenery::setSpectrumConverter(string unit) {
 # ifdef HAVE_UDUNITS
   // default is SI
   if (unit=="") unit="J.m-2.s-1.sr-1.Hz-1";
   spectrum_converter_ = new Units::Converter("J.m-2.s-1.sr-1.Hz-1", unit);
+# else
+  if (unit!="")
+    GYOTO_WARNING
+      << "Unit ignored, please recompile gyoto with --with-udunits"
+      << endl;
+# endif
+}
+
+void Scenery::setBinSpectrumConverter(string unit) {
+# ifdef HAVE_UDUNITS
+  // default is SI
+  if (unit=="") unit="J.m-2.s-1.sr-1";
+  binspectrum_converter_ = new Units::Converter("J.m-2.s-1.sr-1", unit);
 # else
   if (unit!="")
     GYOTO_WARNING

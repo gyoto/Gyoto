@@ -177,15 +177,22 @@ AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
 # Check for libudunits
 AC_ARG_WITH([udunits],
   [AS_HELP_STRING( [--with-udunits[[=yes|no]]], 
-     [Enable use of udunits for unit conversions (experimental) [default=no]])],
-  [AS_IF([test "x$with_udunits" = xyes],
-     [PKG_CHECK_MODULES([UDUNITS],
-         [udunits],
-	 [pkg_requires="${pkg_requires} udunits"
-	  AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])
-         ]
-      )
-     ]
+     [Enable use of udunits for unit conversions (experimental) [default=no]])])
+
+have_udunits=no
+AS_IF([test "x$with_udunits" != xno],
+  [PKG_CHECK_MODULES([UDUNITS],
+      [udunits],
+      [pkg_requires="${pkg_requires} udunits"
+       AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])
+       have_udunits=yes
+      ],
+      [AS_IF([test "x$with_udunits" = xyes],
+         [AC_MSG_ERROR([
+ ****************************************
+ *** UDUNITS requested but not found! ***
+ ****************************************])])
+      ]
    )
   ]
 )
@@ -516,5 +523,16 @@ AS_IF([test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ],
 
       Gyoto can still be used as a C++ library and through the Yorick plug-in
         (although without XML support and/or without certain object types).
+     ])
+  ])
+AS_IF([test "x$have_udunits" == "xno"],
+  [
+   AC_MSG_WARN(
+     [
+
+                         Building without udunits
+
+                     *** Unit conversions disabled ***
+
      ])
   ])

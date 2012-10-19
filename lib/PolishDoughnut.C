@@ -1,3 +1,22 @@
+/*
+    Copyright (c) 2012 Frederic Vincent, Odele Straub, Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "GyotoUtils.h"
 #include "GyotoPolishDoughnut.h"
 #include "GyotoPhoton.h"
@@ -487,6 +506,9 @@ void PolishDoughnut::emission(double Inu[], // output
 			      double dsem,
 			      double coord_ph[8],
 			      double coord_obj[8]) const {
+
+  // Beware: all computations are done in cgs, output must be in SI
+
   GYOTO_DEBUG << "entering emission()\n";
 
   if (!flag_radtransf_) {//NON RADIATIVE TRANSFER CASE
@@ -789,8 +811,9 @@ void PolishDoughnut::emission(double Inu[], // output
     cerr << "DEBUG: PD::emission(" << nu_em
 		    <<"): return " << emisstot <<endl;
 
-  Inu[i]=emisstot*dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1;
+  Inu[i]=emisstot*dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1 * GYOTO_INU_CGS_TO_SI;
   // returned is j_nu*dsem, homogeneous to I_nu
+  // Remember PolishDoughnut thinks in c.g.s., output *must* be SI
   }
 }
 

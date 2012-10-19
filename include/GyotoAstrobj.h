@@ -560,6 +560,7 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
 # ifdef HAVE_UDUNITS
   Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_ ;
   Gyoto::SmartPointer<Gyoto::Units::Converter> spectrum_converter_ ;
+  Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_ ;
 # endif
  public:
   Properties(); ///< Default constructor (everything is set to NULL);
@@ -569,6 +570,7 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
 # ifdef HAVE_UDUNITS
   void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   void setSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void setBinSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
 # endif
 };
 

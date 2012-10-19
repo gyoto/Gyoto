@@ -159,6 +159,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 # ifdef HAVE_UDUNITS
   Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_;
   Gyoto::SmartPointer<Gyoto::Units::Converter> spectrum_converter_;
+  Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_;
 # endif
 
   // Constructors - Destructor
@@ -214,6 +215,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void setIntensityConverter(std::string unit);
   void setSpectrumConverter(std::string unit);
+  void setBinSpectrumConverter(std::string unit);
+  void setPropertyConverters(Gyoto::Astrobj::Properties *);
 
   // Worker:
  public:

@@ -222,8 +222,7 @@ namespace Gyoto {
 #define GYOTO_EULER_MASCHERONI  0.577216
 /// \brief atomic mass unit in cgs
 #define GYOTO_ATOMIC_MASS_UNIT_CGS 1.660537781e-24
-
-
+#define GYOTO_INU_CGS_TO_SI 0.001
 
 /// \brief Sun mass (kg)
 #define GYOTO_SUN_MASS    1.98843e30

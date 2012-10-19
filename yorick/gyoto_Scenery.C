@@ -350,6 +350,8 @@ extern "C" {
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
+      if (data) sc->setPropertyConverters(&prop);
+
       size_t i, j;
       if (precompute) prop.impactcoords=data;
       else {

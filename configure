@@ -16988,7 +16988,12 @@ fi
 
 # Check whether --with-udunits was given.
 if test "${with_udunits+set}" = set; then :
-  withval=$with_udunits; if test "x$with_udunits" = xyes; then :
+  withval=$with_udunits;
+fi
+
+
+have_udunits=no
+if test "x$with_udunits" != xno; then :
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UDUNITS" >&5
@@ -17048,31 +17053,25 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$UDUNITS_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (udunits) were not met:
+	if test "x$with_udunits" = xyes; then :
+  as_fn_error $? "
+ ****************************************
+ *** UDUNITS requested but not found! ***
+ ****************************************" "$LINENO" 5
+fi
 
-$UDUNITS_PKG_ERRORS
 
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables UDUNITS_CFLAGS
-and UDUNITS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
+	if test "x$with_udunits" = xyes; then :
+  as_fn_error $? "
+ ****************************************
+ *** UDUNITS requested but not found! ***
+ ****************************************" "$LINENO" 5
+fi
 
-Alternatively, you may set the environment variables UDUNITS_CFLAGS
-and UDUNITS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
 
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
 else
 	UDUNITS_CFLAGS=$pkg_cv_UDUNITS_CFLAGS
 	UDUNITS_LIBS=$pkg_cv_UDUNITS_LIBS
@@ -17082,16 +17081,12 @@ $as_echo "yes" >&6; }
 
 $as_echo "#define HAVE_UDUNITS 1" >>confdefs.h
 
-
-
-fi
-
+       have_udunits=yes
 
 fi
 
 
 fi
-
 
 # Check for Xerces-c
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5
@@ -20329,6 +20324,24 @@ $as_echo "$as_me: WARNING:
 
       Gyoto can still be used as a C++ library and through the Yorick plug-in
         (although without XML support and/or without certain object types).
+     " >&2;}
+
+fi
+if test "x$have_udunits" == "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+                         Building without udunits
+
+                     *** Unit conversions disabled ***
+
+     " >&5
+$as_echo "$as_me: WARNING:
+
+                         Building without udunits
+
+                     *** Unit conversions disabled ***
+
      " >&2;}
 
 fi

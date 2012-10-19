@@ -279,11 +279,15 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	nuem1=channels[ii]*ggredm1;
 	nuem2=channels[ii+1]*ggredm1;
-	data->binspectrum[ii*data->offset] +=
-	  integrateEmission(nuem1, nuem2, dsem,
-			    coord_ph_hit, coord_obj_hit)
+        inc = integrateEmission(nuem1, nuem2, dsem,
+				coord_ph_hit, coord_obj_hit)
 	  * ph -> getTransmission(ii)
-	  *ggred*ggred*ggred*ggred;
+	  * ggred*ggred*ggred*ggred;
+#       ifdef HAVE_UDUNITS
+	if (data -> binspectrum_converter_)
+	  inc = (*data -> binspectrum_converter_)(inc);
+#       endif
+	data->binspectrum[ii*data->offset] += inc ;
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	       << "nuobs[" << ii << "]="<< channels[ii]
@@ -424,7 +428,8 @@ Astrobj::Properties::Properties() :
   spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 # ifdef HAVE_UDUNITS
-  , intensity_converter_(NULL), spectrum_converter_(NULL)
+  , intensity_converter_(NULL), spectrum_converter_(NULL),
+  binspectrum_converter_(NULL)
 # endif
 {}
 
@@ -435,7 +440,8 @@ Astrobj::Properties::Properties( double * I, double * t) :
   spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 # ifdef HAVE_UDUNITS
-  , intensity_converter_(NULL), spectrum_converter_(NULL)
+  , intensity_converter_(NULL), spectrum_converter_(NULL),
+  binspectrum_converter_(NULL)
 # endif
 {}
 
@@ -463,6 +469,10 @@ void Astrobj::Properties::setIntensityConverter(SmartPointer<Units::Converter> c
 
 void Astrobj::Properties::setSpectrumConverter(SmartPointer<Units::Converter> conv) {
   spectrum_converter_ = conv;
+}
+
+void Astrobj::Properties::setBinSpectrumConverter(SmartPointer<Units::Converter> conv) {
+  binspectrum_converter_ = conv;
 }
 #endif
 
