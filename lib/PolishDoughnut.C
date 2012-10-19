@@ -133,7 +133,16 @@ double PolishDoughnut::getTemperatureRatio() const {return temperature_ratio_;}
 void   PolishDoughnut::setTemperatureRatio(double t){temperature_ratio_=t;}
 
 double PolishDoughnut::getCentralDensity() const {return central_density_;}
-void   PolishDoughnut::setCentralDensity(double dens) {central_density_=dens;}
+void   PolishDoughnut::setCentralDensity(double dens, string unit) {
+# ifdef HAVE_UDUNITS
+  if (unit != "") dens = Units::Converter(unit, "kg/L")(dens);
+# else
+  if (unit != "")
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  central_density_=dens;
+}
 
 double PolishDoughnut::getCentralTempOverVirial() const
 {return centraltemp_over_virial_;}
@@ -1323,16 +1332,17 @@ void PolishDoughnut::useSpecificImpact(int yes) {
   cout << "use_specific_impact_==" << use_specific_impact_ << endl;
 }
 
-int PolishDoughnut::setParameter(string name, string content) {
+int PolishDoughnut::setParameter(string name, string content, string unit) {
   if      (name=="Lambda") setLambda(atof(content.c_str()));
   else if (name=="TempRatio") temperature_ratio_=atof(content.c_str());
-  else if (name=="CentralDensity") central_density_=atof(content.c_str());
+  else if (name=="CentralDensity")
+    setCentralDensity(atof(content.c_str()), unit);
   else if (name=="CentralTempOverVirial") {
     centraltemp_over_virial_=atof(content.c_str());
   } else if (name=="Beta") beta_=atof(content.c_str());
   else if (name=="UseSpecificImpact") useSpecificImpact();
   else if (name=="Rmax") rmax_=atof(content.c_str());
-  else return Standard::setParameter(name, content);
+  else return Standard::setParameter(name, content, unit);
   return 0;
 }
 

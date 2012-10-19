@@ -162,9 +162,9 @@ double Standard::getSafetyValue() const { return safety_value_; }
 
 double Standard::giveDelta(double *) {return 0.05;}
 
-int Standard::setParameter(string name, string content)  {
+int Standard::setParameter(string name, string content, string unit)  {
   if (name == "SafetyValue") safety_value_ = atof(content.c_str());
-  else return Generic::setParameter(name, content);
+  else return Generic::setParameter(name, content, unit);
   return 0;
 }
 

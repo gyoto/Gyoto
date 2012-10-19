@@ -138,7 +138,9 @@ double DynamicalDisk::emission(double nu, double dsem,
   return 0.;
 }
 
-int DynamicalDisk::setParameter(std::string name, std::string content) {
+int DynamicalDisk::setParameter(std::string name,
+				std::string content,
+				std::string unit) {
   if (name == "File") {
     dirname_ = new char[strlen(content.c_str())+1];
     strcpy(dirname_,content.c_str());
@@ -229,7 +231,7 @@ int DynamicalDisk::setParameter(std::string name, std::string content) {
   }
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());
-  else return PatternDiskBB::setParameter(name, content);
+  else return PatternDiskBB::setParameter(name, content, unit);
   return 0;
 }
       

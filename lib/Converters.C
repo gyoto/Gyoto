@@ -1,5 +1,6 @@
 #include "GyotoConverters.h"
 #include "GyotoError.h"
+#include "GyotoMetric.h"
 
 using namespace Gyoto::Units ;
 using namespace std ;
@@ -180,5 +181,12 @@ double Gyoto::Units::ToKilograms(double val, string unit)
   }
   return val;
 # endif
+}
+
+double Gyoto::Units::ToGeometrical(double val, string unit,
+				   SmartPointer<Metric::Generic> gg) {
+  if (unit == "" || unit == "geometrical") return val;
+  if (!gg) throwError("Need Metric to convert to geometrical units");
+  return ToMeters(val, unit) / gg->unitLength();
 }
 

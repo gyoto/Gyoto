@@ -94,7 +94,7 @@ public:
  void   setTemperatureRatio(double temp);
 
  double getCentralDensity() const;
- void   setCentralDensity(double density);
+ void   setCentralDensity(double density, std::string unit="");
 
  double getCentralTempOverVirial() const;
  void   setCentralTempOverVirial(double val);
@@ -133,7 +133,9 @@ public:
  virtual double operator()(double const coord[4]) ;
  ///< Called by Astrobj::Generic::Impact()
 
- virtual int setParameter(std::string name, std::string content) ;
+ virtual int setParameter(std::string name,
+			  std::string content,
+			  std::string unit) ;
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
 #endif

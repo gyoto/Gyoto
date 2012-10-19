@@ -671,10 +671,12 @@ void PatternDisk::setOuterRadius(double rout) {
 void PatternDisk::setPatternVelocity(double omega) { Omega_ = omega; }
 double PatternDisk::getPatternVelocity() { return Omega_; }
 
-int PatternDisk::setParameter(std::string name, std::string content) {
+int PatternDisk::setParameter(std::string name,
+			      std::string content,
+			      std::string unit) {
   if      (name == "File")          fitsRead( content );
   else if (name=="PatternVelocity") setPatternVelocity(atof(content.c_str()));
-  else return ThinDisk::setParameter(name, content);
+  else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }
 
@@ -688,11 +690,11 @@ void PatternDisk::fillElement(FactoryMessenger *fmp) const {
 }
 
 void PatternDisk::setParameters(FactoryMessenger* fmp) {
-  string name, content;
+  string name, content, unit;
   setMetric(fmp->getMetric());
-  while (fmp->getNextParameter(&name, &content)) {
-    if  (name == "File") setParameter(name, fmp -> fullPath(content));
-    else setParameter(name, content);
+  while (fmp->getNextParameter(&name, &content, &unit)) {
+    if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
+    else setParameter(name, content, unit);
   }
 }
 #endif

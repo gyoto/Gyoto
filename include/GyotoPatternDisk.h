@@ -172,7 +172,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   void phimax(double phimax);
   double phimax() const;
 
-  virtual int setParameter(std::string name, std::string content);
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 
  protected:
   void getIndices(size_t i[3], double const co[4], double nu=0.) const ;

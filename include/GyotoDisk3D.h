@@ -162,7 +162,9 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   void phimax(double phimax);
   double phimax() const;
 
-  virtual int setParameter(std::string name, std::string content);
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 
  protected:
   void getIndices(size_t i[4], double const co[4], double nu=0.) const ;

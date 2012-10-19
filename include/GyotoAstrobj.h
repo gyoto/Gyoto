@@ -345,7 +345,9 @@ int MyKind::setParameter(std::string name, std::string content) {
    * \param content string representation of the value
    * \return 0 if this parameter is known, 1 if it is not.
    */
-  virtual int setParameter(std::string name, std::string content) ;
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit) ;
   ///< Called from setParameters()
 
 #ifdef GYOTO_USE_XERCES
@@ -442,9 +444,9 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * into account.
    *
    * Reminder :
-   *  - intensity = I_nu [erg cm^-2 s^-1 ster^-1 Hz^-1];
+   *  - intensity = I_nu [J m^-2 s^-1 ster^-1 Hz^-1];
    *  - invariant intensity = I_nu/nu^3, which has the same value in any frame;
-   *  - emission coefficient = j_nu [erg cm^-3 s^-1 ster^-1 Hz^-1] ,
+   *  - emission coefficient = j_nu [J m^-3 s^-1 ster^-1 Hz^-1] ,
    *            defined by dI_nu = j_nu*ds, where ds is the distance
    *            travelled by the photon inside the object;
    *  - invariant emission coef = j_nu/nu^2, which has the same value
@@ -467,8 +469,9 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * if optically thin. It allows for a quick implementation of your
    * object for visualization purposes.
    *
-   * \param nu_em Frequency at emission
+   * \param nu_em Frequency at emission [Hz]
    * \param dsem length over which to integrate inside the object
+   *        [geometrical units]
    * \param coord_ph Photon coordinate
    * \param coord_obj Emitter coordinate at current photon position
    */
@@ -494,6 +497,7 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * \param dsem Length over which to integrate inside the object
    * \param coord_ph Photon coordinate
    * \param coord_obj Emitter coordinate at current photon position
+   * \return Inu or dInu [W m-2 sr-2]
    */
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],

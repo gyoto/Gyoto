@@ -101,7 +101,9 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   // ---------
  public:
 
-  virtual int setParameter(std::string name, std::string content);
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;

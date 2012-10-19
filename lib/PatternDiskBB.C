@@ -184,7 +184,9 @@ void PatternDiskBB::setMetric(SmartPointer<Metric::Generic> gg) {
   ThinDisk::setMetric(gg);
 }
 
-int PatternDiskBB::setParameter(std::string name, std::string content) {
+int PatternDiskBB::setParameter(std::string name,
+				std::string content,
+				std::string unit) {
   if      (name=="PLSlope"){
     PLDisk_=1;
     PLSlope_=atof(content.c_str());
@@ -197,7 +199,7 @@ int PatternDiskBB::setParameter(std::string name, std::string content) {
     setOuterRadius(rmax_);//update outer radius
   }
   else if (name=="SpectralEmission") SpectralEmission_=1;
-  else return PatternDisk::setParameter(name, content);
+  else return PatternDisk::setParameter(name, content, unit);
   return 0;
 }
 

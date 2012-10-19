@@ -38,6 +38,9 @@
 #include <sstream>
 
 namespace Gyoto {
+  namespace Metric {
+    class Generic;
+  }
   namespace Units {
 #ifdef HAVE_UDUNITS
     class Unit;
@@ -46,6 +49,8 @@ namespace Gyoto {
     void Init();
     double ToMeters(double, std::string);
     double ToKilograms(double, std::string);
+    double ToGeometrical(double, std::string,
+			 Gyoto::SmartPointer<Gyoto::Metric::Generic>);
   }
 }
 

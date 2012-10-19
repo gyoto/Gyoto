@@ -75,7 +75,7 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   // ---------
  public:
 
-  int setParameter(std::string name, std::string content);
+  int setParameter(std::string name, std::string content, std::string unit);
 
  public:
   double emission(double nu_em, double dsem,

@@ -162,7 +162,9 @@ class Gyoto::Astrobj::Standard :
    */
   virtual double giveDelta(double coord[8]);
 
-  virtual int setParameter(std::string name, std::string content) ;
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit = "") ;
 
 
 #ifdef GYOTO_USE_XERCES

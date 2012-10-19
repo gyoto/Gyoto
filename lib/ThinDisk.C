@@ -175,13 +175,17 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   return 1;
 }
 
-int ThinDisk::setParameter(std::string name, std::string content) {
+int ThinDisk::setParameter(std::string name,
+			   std::string content,
+			   std::string unit) {
     char* tc = const_cast<char*>(content.c_str());
-    if      (name=="InnerRadius")     setInnerRadius (atof(tc)); 
-    else if (name=="OuterRadius")     setOuterRadius (atof(tc)); 
+    if      (name=="InnerRadius")
+      setInnerRadius (Units::ToGeometrical(atof(tc), unit, gg_)); 
+    else if (name=="OuterRadius")
+      setOuterRadius (Units::ToGeometrical(atof(tc), unit, gg_)); 
     else if (name=="Thickness")       setThickness   (atof(tc)); 
     else if (name=="CounterRotating") setDir         (-1);
-    else return Generic::setParameter(name, content);
+    else return Generic::setParameter(name, content, unit);
     return 0;
 }
 

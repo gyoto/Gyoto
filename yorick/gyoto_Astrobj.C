@@ -235,7 +235,7 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
     if ((*paUsed)++) y_error("pmsg");
     string name = ygets_q(iarg);
     string content = ygets_q(*piargs);
-    (*ao)->setParameter(name, content);
+    (*ao)->setParameter(name, content, "");
   }
 
   /* CLONE */

@@ -84,7 +84,7 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   double emissionBB(double nu, 
 		    double co[8]) const;
 
-  int setParameter(std::string name, std::string content);
+  int setParameter(std::string name, std::string content, std::string unit);
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory

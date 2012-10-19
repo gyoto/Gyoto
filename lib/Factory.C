@@ -736,7 +736,9 @@ void FactoryMessenger::reset() {
   curNodeIndex_=0;
 }
 
-int FactoryMessenger::getNextParameter(std::string* namep, std::string* contp)
+int FactoryMessenger::getNextParameter(std::string* namep,
+				       std::string* contp,
+				       std::string* unitp)
 {
 
   if (debug()) {
@@ -758,9 +760,10 @@ int FactoryMessenger::getNextParameter(std::string* namep, std::string* contp)
 	= static_cast< xercesc::DOMElement* >( currentNode );
       *namep = C(currentElement->getTagName());
       *contp = C(currentElement->getTextContent());
+      if (unitp) *unitp = C(currentElement->getAttribute(X("unit")));
       return 1;
     }
-  return getNextParameter(namep, contp);
+  return getNextParameter(namep, contp, unitp);
 }
 
 FactoryMessenger* FactoryMessenger::makeChild(std::string name) {

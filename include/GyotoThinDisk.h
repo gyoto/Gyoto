@@ -137,7 +137,9 @@ class Gyoto::Astrobj::ThinDisk :
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 
  public:
-  virtual int setParameter(std::string name, std::string content) ;
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit) ;
 
 #ifdef GYOTO_USE_XERCES
   /**

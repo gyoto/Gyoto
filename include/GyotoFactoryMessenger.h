@@ -153,10 +153,13 @@ class Gyoto::FactoryMessenger {
 \endcode
    *
    * \param name upon output, name of the child
-   * \param content content of the child
+   * \param content of the child
+   * \param unit= propertty of the child
    * \return 1 if there remains parameters to retrieve, 0 otherwise.
    */
-  int getNextParameter(std::string* name, std::string* content);
+  int getNextParameter(std::string* name,
+		       std::string* content,
+		       std::string* unit=NULL);
   ///< Get name and value of next parameter
 
   /**

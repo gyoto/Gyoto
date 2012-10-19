@@ -329,7 +329,9 @@ void Disk3D_BB::setMetric(SmartPointer<Metric::Generic> gg) {
   Disk3D::setMetric(gg);
 }
 
-int Disk3D_BB::setParameter(std::string name, std::string content) {
+int Disk3D_BB::setParameter(std::string name,
+			    std::string content,
+			    std::string unit) {
   if (name == "File") {
     dirname_ = new char[strlen(content.c_str())+1];
     strcpy(dirname_,content.c_str());
@@ -411,7 +413,7 @@ int Disk3D_BB::setParameter(std::string name, std::string content) {
   }
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());
-  else return Disk3D::setParameter(name, content);
+  else return Disk3D::setParameter(name, content, unit);
   return 0;
 }
       

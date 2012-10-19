@@ -686,9 +686,11 @@ int Disk3D::Impact(Photon *ph, size_t index,
 
 }
 
-int Disk3D::setParameter(std::string name, std::string content) {
+int Disk3D::setParameter(std::string name,
+			 std::string content,
+			 std::string unit) {
   if      (name == "File")          fitsRead( content );
-  else return Generic::setParameter(name, content);
+  else return Generic::setParameter(name, content, unit);
   return 0;
 }
 
@@ -701,11 +703,11 @@ void Disk3D::fillElement(FactoryMessenger *fmp) const {
 }
 
 void Disk3D::setParameters(FactoryMessenger* fmp) {
-  string name, content;
+  string name, content, unit;
   setMetric(fmp->getMetric());
-  while (fmp->getNextParameter(&name, &content)) {
-    if  (name == "File") setParameter(name, fmp -> fullPath(content));
-    else setParameter(name, content);
+  while (fmp->getNextParameter(&name, &content, &unit)) {
+    if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
+    else setParameter(name, content, unit);
   }
 }
 #endif

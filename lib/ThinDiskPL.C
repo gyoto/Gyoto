@@ -103,13 +103,15 @@ double ThinDiskPL::emissionBB(double nu,
   return (*spectrumBB_)(nu);
 }
 
-int ThinDiskPL::setParameter(std::string name, std::string content) {
+int ThinDiskPL::setParameter(std::string name,
+			     std::string content,
+			     std::string unit) {
   if      (name=="PLSlope") PLSlope_=atof(content.c_str());
   else if (name=="PLRho") PLRho_=atof(content.c_str());
   else if (name=="PLRadRef") PLRadRef_=atof(content.c_str());
   else if (name=="Rmin") setInnerRadius(atof(content.c_str()));
   else if (name=="Rmax") setOuterRadius(atof(content.c_str()));
-  else return ThinDisk::setParameter(name, content);
+  else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }
 

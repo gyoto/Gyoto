@@ -151,9 +151,10 @@ void Generic::fillElement(FactoryMessenger *fmp) const {
 }
 
 void Generic::setParameters(FactoryMessenger *fmp) {
-  string name="", content="";
+  string name="", content="", unit="";
   setMetric(fmp->getMetric());
-  while (fmp->getNextParameter(&name, &content)) setParameter(name, content);
+  while (fmp->getNextParameter(&name, &content, &unit))
+    setParameter(name, content, unit);
 }
 #endif
 
@@ -161,13 +162,13 @@ void Generic::setParameters(FactoryMessenger *fmp) {
 void Generic::setFlag_radtransf(int flag) {flag_radtransf_=flag;}
 int Generic::getFlag_radtransf() const {return flag_radtransf_;}
 
-int Generic::setParameter(string name, string content)  {
+int Generic::setParameter(string name, string content, string unit)  {
   char* tc = const_cast<char*>(content.c_str());
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
   else if (name=="RMax")  {
-    rmax_ = atof(tc); rmax_set_=1;
+    rmax_ = Units::ToGeometrical(atof(tc), unit, gg_); rmax_set_=1;
   } else return 1;
   return 0;
 }
