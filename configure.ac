@@ -213,8 +213,8 @@ AS_IF([test "x$with_udunits" != "xno"],
    AC_ARG_WITH([udunits-lib],
      [AS_HELP_STRING([--with-udunits-lib=LDFLAGS],
         [linker flags for udunits])],
-     [with_udunitss=yes
-      udunits_ldflags="${withval} -ludunits2"
+     [with_udunits=yes
+      udunits_ldflags="${withval}"
       AC_MSG_RESULT([$withval])],
      [AC_MSG_RESULT([no])])
 
@@ -254,7 +254,7 @@ AS_IF([test "x$with_udunits" != "xno"],
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LDFLAGS=$udunits_ldflags
+      UDUNITS_LDFLAGS="$udunits_ldflags -ludunits2"
       UDUNITS_CPPFLAGS="$udunits_cppflags"
       pkg_cflags="${pkg_cflags} ${UDUNITS_CPPFLAGS}"
       pkg_libs="${pkg_libs} ${UDUNITS_LDFLAGS}"
