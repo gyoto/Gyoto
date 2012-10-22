@@ -424,7 +424,7 @@ void Screen::setTime(double tobs, const string &unit) {
   else if (unit=="y") tobs *= 3.15576e+07;
   else {
     stringstream ss;
-    ss << "Screen::setTime(): unkwon unit \"" << unit << "\". Accepted units: "
+    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
        << "[s] geometrical min h d y";
     throwError (ss.str());
   }
@@ -436,18 +436,50 @@ void Screen::setTime(double tobs) { tobs_ = tobs; }
 //void Screen::setMinimumTime(double tmin) { tmin_ = tmin; }
 double Screen::getFieldOfView() { return fov_; }
 
+double Screen::getFieldOfView(string unit) {
+  double fov = getFieldOfView();
+  if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
+# if HAVE_UDUNITS
+  else if (Units::areConvertible(unit, "m"))
+    fov = Units::FromMeters(fov*distance_, unit) ;
+  else fov = Units::Converter("rad", unit)(fov);
+# else
+  else if (unit=="deg") fov /= GYOTO_DEGRAD;
+  else if (unit=="arcmin") fov /= GYOTO_MINRAD;
+  else if (unit=="arcsec") fov /= GYOTO_SECRAD;
+  else if (unit=="milliarcsec") fov /= GYOTO_MASRAD;
+  else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
+  else {
+    stringstream ss;
+    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
+    throwError(ss.str());
+  }
+# endif
+  return fov;
+}
+
 void Screen::setFieldOfView(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
+# if HAVE_UDUNITS
+  else if (Units::areConvertible(unit, "m"))
+    fov = Units::ToMeters(fov, unit) / distance_;
+  else fov = Units::Converter(unit, "rad")(fov);
+# else
   else if (unit=="deg") fov *= GYOTO_DEGRAD;
   else if (unit=="arcmin") fov *= GYOTO_MINRAD;
   else if (unit=="arcsec") fov *= GYOTO_SECRAD;
-  else if (unit=="mas") fov *= GYOTO_MASRAD;
-  else if (unit=="µas" || unit=="uas") fov *= GYOTO_MUASRAD;
+  else if (unit=="milliarcsec") fov *= GYOTO_MASRAD;
+  else if (unit=="microarcsec") fov *= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\"";
+    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
     throwError(ss.str());
   }
+# endif
   setFieldOfView(fov);
 }
 void Screen::setFieldOfView(double fov) { fov_ = fov; }
@@ -505,6 +537,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   double tobs_tmp, pos[4] ;
   char * tc;
 
+  // Deal with fov later as we need Inclination
+  double fov; string fov_unit; int fov_found=0;
+
   while (fmp->getNextParameter(&name, &content)) {
     tc = const_cast<char*>(content.c_str());
     unit = fmp -> getAttribute("unit");
@@ -520,13 +555,17 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="PALN")        scr -> setPALN        ( atof(tc), unit );
     else if (name=="Inclination") scr -> setInclination ( atof(tc), unit );
     else if (name=="Argument")    scr -> setArgument    ( atof(tc), unit );
-    else if (name=="FieldOfView") scr -> setFieldOfView ( atof(tc), unit );
+    else if (name=="FieldOfView") {
+      fov = atof(tc); fov_unit=unit; fov_found=1;
+    }
     else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
     else if (name=="Spectrometer")
       scr -> setSpectrometer (SpectrometerSubcontractor(fmp->getChild()));
   }
 
   if (tobs_found) scr -> setTime ( tobs_tmp, tunit );
+
+  if (fov_found) scr -> setFieldOfView ( fov, fov_unit );
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(scr->getDmax());

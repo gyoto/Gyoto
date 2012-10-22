@@ -223,3 +223,6 @@ double Gyoto::Units::FromGeometrical(double val, string unit,
   return FromMeters(val * gg->unitLength(), unit);
 }
 
+bool Gyoto::Units::areConvertible(std::string unit1, std::string unit2) {
+  return ut_are_convertible(Unit(unit1), Unit(unit2));
+}

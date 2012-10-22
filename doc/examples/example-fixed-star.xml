@@ -9,7 +9,7 @@
   <Screen>
     <Distance unit="kpc" dmax="1e6"> 8 </Distance>
     <Time unit="y"> 30e3 </Time>
-    <FieldOfView unit="uas"> 150 </FieldOfView>
+    <FieldOfView unit="microarcsec"> 150 </FieldOfView>
     <Inclination unit="deg"> 90 </Inclination>
     <PALN> 0 </PALN>
     <Argument> 0 </Argument>
@@ -20,7 +20,6 @@
     <Radius> 12 </Radius>
     <Position> 0 0 0 </Position>
     <UseGenericImpact/>
-    <RMax> 10000. </RMax>
     <Spectrum kind="PowerLaw">
       <Exponent> 0 </Exponent>
       <Constant> 0.001 </Constant>
@@ -30,7 +29,6 @@
       <Constant> 0.01 </Constant>
     </Opacity>
     <OpticallyThin/>
-    <RMax> 24 </RMax>
   </Astrobj>
 
   <Delta> 1e0 </Delta>

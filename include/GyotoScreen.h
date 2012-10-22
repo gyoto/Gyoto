@@ -248,6 +248,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   //  double getMinimumTime();
   //  void setMinimumTime(double);
   double getFieldOfView();
+  double getFieldOfView(std::string unit);
   void setFieldOfView(double);
   void setFieldOfView(double, const std::string &unit);
   size_t getResolution();

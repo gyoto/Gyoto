@@ -54,6 +54,7 @@ namespace Gyoto {
 			 Gyoto::SmartPointer<Gyoto::Metric::Generic>);
     double FromGeometrical(double, std::string,
 			   Gyoto::SmartPointer<Gyoto::Metric::Generic>);
+    bool areConvertible(std::string, std::string);
   }
 }
 

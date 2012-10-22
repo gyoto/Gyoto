@@ -126,6 +126,9 @@ void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
 }
 
 void FixedStar::setRadius(double r) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(r) ;
+# endif
   radius_ = r;
   critical_value_=r*r;
   safety_value_=1.1*critical_value_;
