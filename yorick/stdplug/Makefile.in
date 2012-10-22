@@ -19,6 +19,8 @@ XERCESLDFLAGS=@XERCESLDFLAGS@
 XERCESCPPFLAGS=@XERCESCPPFLAGS@
 CFITSIOLDFLAGS=@CFITSIOLDFLAGS@
 CFITSIOCPPFLAGS=@CFITSIOCPPFLAGS@
+UDUNITS_CPPFLAGS=@UDUNITS_CPPFLAGS@
+UDUNITS_LDFLAGS=@UDUNITS_LDFLAGS@
 DYLIB_VAR=@DYLIB_VAR@
 PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
 PTHREAD_LIBS= @PTHREAD_LIBS@
@@ -43,7 +45,7 @@ OBJS = StdPlug.o gyoto_KerrBL.o gyoto_KerrKS.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../../lib/.libs -lgyoto $(XERCESLDFLAGS) $(CFITSIOLDFLAGS) $(PTHREADS_LIBS)
+PKG_DEPLIBS=-L../../lib/.libs -lgyoto $(XERCESLDFLAGS) $(CFITSIOLDFLAGS) $(UDUNITS_LDFLAGS) $(PTHREADS_LIBS)
 
 ifeq ($(SYS),Darwin)
 PKG_DEPLIBS+=-bundle_loader ../../lib/.libs/libgyoto-stdplug.$(plugin_sfx) \
@@ -51,7 +53,7 @@ PKG_DEPLIBS+=-bundle_loader ../../lib/.libs/libgyoto-stdplug.$(plugin_sfx) \
 endif
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../../include -I.. $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS) $(PTHREAD_CFLAGS)
+PKG_CFLAGS= -I../../include -I.. $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS) $(UDUNITS_CPPFLAGS) $(PTHREAD_CFLAGS)
 PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME

@@ -174,28 +174,110 @@ AC_ARG_ENABLE([pthreads],
   [AS_IF([test "x$enable_pthreads" = "xno"], [use_pthreads=no])])
 AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
 
-# Check for libudunits
-AC_ARG_WITH([udunits],
-  [AS_HELP_STRING( [--with-udunits[[=yes|no]]], 
-     [Enable use of udunits for unit conversions (experimental) [default=no]])])
-
-have_udunits=no
-AS_IF([test "x$with_udunits" != xno],
-  [PKG_CHECK_MODULES([UDUNITS],
-      [udunits],
-      [pkg_requires="${pkg_requires} udunits"
-       AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])
-       have_udunits=yes
-      ],
-      [AS_IF([test "x$with_udunits" = xyes],
-         [AC_MSG_ERROR([
- ****************************************
- *** UDUNITS requested but not found! ***
- ****************************************])])
-      ]
-   )
+# Check for UDUNITS
+AC_MSG_CHECKING([whether libudunits2 should be used])
+udunits_cppflags=
+udunits_ldflags=
+UDUNITS_CPPFLAGS=
+UDUNITS_LDFLAGS=
+AC_ARG_WITH(
+  [udunits],
+  [AS_HELP_STRING( [--with-udunits[[=DIR]]], 
+     [Force using udunits2 installed in a given prefix or force disable it.])],
+  [
+   AS_IF([test "x$withval" == "xno"],
+     [AC_MSG_RESULT(no)],
+     [test "x$withval" != "xyes"],
+     [udunits_cppflags=-I$withval/include
+      udunits_ldflags="-L$withval/lib -ludunits2"
+      with_udunits=yes
+      AC_MSG_RESULT(yes)],
+     [AC_MSG_RESULT(yes)])
+  ],
+  [with_udunits=check
+   AC_MSG_RESULT(probe)
   ]
 )
+have_udunits=no
+AS_IF([test "x$with_udunits" != "xno"],
+  [
+   AC_MSG_CHECKING(whether udunits2 include path is provided)
+   AC_ARG_WITH([udunits-inc],
+     [AS_HELP_STRING([--with-udunits-inc=DIR],
+        [path to base directory with UDUNITS headers])],
+     [with_udunits=yes
+      udunits_cppflags=-I${withval}
+      AC_MSG_RESULT([${withval}])],
+     [AC_MSG_RESULT([no])])
+   AC_MSG_CHECKING(whether udunits linker flags are provided)
+   AC_ARG_WITH([udunits-lib],
+     [AS_HELP_STRING([--with-udunits-lib=LDFLAGS],
+        [linker flags for udunits])],
+     [with_udunitss=yes
+      udunits_ldflags="${withval} -ludunits2"
+      AC_MSG_RESULT([$withval])],
+     [AC_MSG_RESULT([no])])
+
+   # Now check whether or not to use pkg-config for udunits
+   AS_IF([test "x$udunits_cppflags" == "x" \
+       && test "x$udunits_ldflags" == "x" \
+       && test "x$PKG_CONFIG"  != "x"],
+     [PKG_CHECK_MODULES([UDUNITS],
+         [udunits],
+	 [pkg_requires="${pkg_requires} udunits"
+          have_udunits=yes
+	  UDUNITS_CPPFLAGS=${UDUNITS_CFLAGS}
+	  UDUNITS_LDFLAGS=${UDUNITS_LIBS}
+         ],
+	 [AC_MSG_NOTICE([udunits.pc not found])
+         ]
+      )
+     ],
+     [])
+
+   # Failing that, check without pkg-config
+   AS_IF([test "x$have_udunits" == "xno"],
+     [AC_MSG_CHECKING([for udunits (without pkg-config)])
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $udunits_cppflags"
+      LDFLAGS="$TMPLDFLAGS $udunits_ldflags"
+      LIBS=-ludunits2
+      AC_TRY_LINK(
+        [#include <udunits2.h>],
+        [ut_set_error_message_handler(ut_ignore);],
+        [have_udunits=yes
+         AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)])
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      UDUNITS_LDFLAGS=$udunits_ldflags
+      UDUNITS_CPPFLAGS="$udunits_cppflags"
+      pkg_cflags="${pkg_cflags} ${UDUNITS_CPPFLAGS}"
+      pkg_libs="${pkg_libs} ${UDUNITS_LDFLAGS}"
+     ])
+  ],
+  []
+)
+AS_IF([test "x$have_udunits" == "xno"],
+  [
+   AS_IF([test "x$with_udunits" == "xyes"],
+     [AC_MSG_ERROR([
+ ****************************************
+ *** UDUNITS requested but not found! ***
+ ****************************************])
+     ]
+   )
+  ],
+  [use_udunits=yes
+   AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])]
+)
+AC_SUBST([UDUNITS_LDFLAGS])
+AC_SUBST([UDUNITS_CPPFLAGS])
+
 
 # Check for Xerces-c
 AC_MSG_CHECKING([whether libxerces should be used])

@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS) $(UDUNITS_LIBS)
-AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PREFIX=\"${prefix}\" $(UDUNITS_CFLAGS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS)
+AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS) \
+	      $(UDUNITS_LDFLAGS)
+AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PREFIX=\"${prefix}\"
 
 # HEADERS: where they are, where to install them
 library_includedir=$(includedir)/Gyoto

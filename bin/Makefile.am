@@ -1,13 +1,13 @@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
+AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS)
+AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS) $(UDUNITS_LDFLAGS)
 AM_CXXFLAGS = -rdynamic $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
 bin_PROGRAMS  = gyoto
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
-gyoto_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 CHECK_CMD=./gyoto
