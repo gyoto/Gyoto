@@ -19,6 +19,8 @@ TGT=$(DEFAULT_TGT)
 CPPFLAGS=@CPPFLAGS@
 XERCESLDFLAGS=@XERCESLDFLAGS@
 XERCESCPPFLAGS=@XERCESCPPFLAGS@
+UDUNITS_CPPFLAGS=@UDUNITS_CPPFLAGS@
+UDUNITS_LDFLAGS=@UDUNITS_LDFLAGS@
 DYLIB_VAR=@DYLIB_VAR@
 PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
 PTHREAD_LIBS= @PTHREAD_LIBS@
@@ -43,9 +45,10 @@ OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Astrobj.o gyoto_Photon.o \
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS) $(PTHREAD_LIBS)
+PKG_DEPLIBS=-L../lib/.libs -lgyoto $(XERCESLDFLAGS) $(UDUNITS_LDFLAGS) \
+	$(PTHREAD_LIBS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(PTHREAD_CFLAGS)
+PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(PTHREAD_CFLAGS)
 PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME
