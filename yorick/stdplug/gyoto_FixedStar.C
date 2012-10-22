@@ -73,9 +73,9 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, in
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getRadius());
+      ypush_double((*ao)->getRadius(unit?unit:""));
     } else
-      (*ao)->setRadius(ygets_d(iarg)) ;
+      (*ao)->setRadius(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* POSITION */

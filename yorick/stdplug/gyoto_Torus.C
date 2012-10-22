@@ -73,9 +73,9 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getLargeRadius());
+      ypush_double((*ao)->getLargeRadius(unit?unit:""));
     } else
-      (*ao)->setLargeRadius(ygets_d(iarg)) ;
+      (*ao)->setLargeRadius(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* RADIUS */
@@ -83,9 +83,9 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getSmallRadius());
+      ypush_double((*ao)->getSmallRadius(unit?unit:""));
     } else
-      (*ao)->setSmallRadius(ygets_d(iarg)) ;
+      (*ao)->setSmallRadius(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* SPECTRUM */

@@ -200,8 +200,9 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    * constructor. In this case, getRmax() must always return this
    * value, not recompute it.
    *
+   * rmax_ is in geometrical units.
    */                                         
-  double rmax_; ///< Maximum distance to the center of the coordinate system.
+  double rmax_; ///< Maximum distance to the center of the coordinate system [geometrical units]
 
   /**
    * rmax_set_==1 means that rmax_ was set using setRmax() or the

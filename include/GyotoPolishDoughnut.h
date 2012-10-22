@@ -58,7 +58,7 @@ private:
  double r_centre_; ///< torus central radius in geometrical units. Tied to lambda.
  double DeltaWm1_; ///< 1./(W_centre_ - W_surface_);
  double temperature_ratio_; ///< central ion/elec temperature ratio
- double central_density_; ///< central density in g cm^-3
+ double central_density_; ///< central density in kg/L (same as g cm^-3)
  double centraltemp_over_virial_; ///< T_center/Tvirial
  double beta_; ///< Pmagn/Pgas
  int use_specific_impact_ ;///< PolishDoughnut::Impact_() or Standard::Impact()
@@ -94,7 +94,9 @@ public:
  void   setTemperatureRatio(double temp);
 
  double getCentralDensity() const;
- void   setCentralDensity(double density, std::string unit="");
+ double getCentralDensity(std::string unit) const;
+ void   setCentralDensity(double density);
+ void   setCentralDensity(double density, std::string unit);
 
  double getCentralTempOverVirial() const;
  void   setCentralTempOverVirial(double val);

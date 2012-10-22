@@ -133,15 +133,31 @@ double PolishDoughnut::getTemperatureRatio() const {return temperature_ratio_;}
 void   PolishDoughnut::setTemperatureRatio(double t){temperature_ratio_=t;}
 
 double PolishDoughnut::getCentralDensity() const {return central_density_;}
-void   PolishDoughnut::setCentralDensity(double dens, string unit) {
-# ifdef HAVE_UDUNITS
-  if (unit != "") dens = Units::Converter(unit, "kg/L")(dens);
-# else
-  if (unit != "")
+double PolishDoughnut::getCentralDensity(string unit) const {
+  double dens = getCentralDensity();
+  if (unit != "") {
+#   ifdef HAVE_UDUNITS
+    dens = Units::Converter("kg/L", unit)(dens);
+#   else
     GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		  << endl ;
 # endif
+  }
+  return dens;
+}
+void   PolishDoughnut::setCentralDensity(double dens) {
   central_density_=dens;
+}
+void   PolishDoughnut::setCentralDensity(double dens, string unit) {
+  if (unit != "") {
+# ifdef HAVE_UDUNITS
+    dens = Units::Converter(unit, "kg/L")(dens);
+# else
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  }
+  setCentralDensity(dens);
 }
 
 double PolishDoughnut::getCentralTempOverVirial() const

@@ -134,10 +134,11 @@ void ygyoto_Spectrum_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW_N 7
 
 // Keywords processed by ygyoto_ThinDisk_generic_eval
-#define YGYOTO_THINDISK_GENERIC_KW "innerradius", "outerradius", "dir",	\
+#define YGYOTO_THINDISK_GENERIC_KW \
+  "innerradius", "outerradius", "thickness", "dir",	\
     YGYOTO_ASTROBJ_GENERIC_KW
 // number of those keywords
-#define YGYOTO_THINDISK_GENERIC_KW_N 3+YGYOTO_ASTROBJ_GENERIC_KW_N
+#define YGYOTO_THINDISK_GENERIC_KW_N 4+YGYOTO_ASTROBJ_GENERIC_KW_N
 
 // maximum number of keywords accepted by a base Astrobj class
 #define YGYOTO_ASTROBJ_BASE_MAX_KW_N YGYOTO_THINDISK_GENERIC_KW_N

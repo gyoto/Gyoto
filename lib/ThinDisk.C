@@ -56,11 +56,33 @@ ThinDisk::~ThinDisk() {
 }
 
 double ThinDisk::getInnerRadius() const   { return rin_; }
+double ThinDisk::getInnerRadius(string unit) const   {
+  return Units::FromGeometrical(getInnerRadius(), unit, gg_);
+}
 void   ThinDisk::setInnerRadius(double r) { rin_ = r;    }
+void   ThinDisk::setInnerRadius(double r, string unit) {
+  setInnerRadius(Units::ToGeometrical(r, unit, gg_));
+}
+
+
 double ThinDisk::getOuterRadius() const   { return rout_;}
+double ThinDisk::getOuterRadius(string unit) const   {
+  return Units::FromGeometrical(getOuterRadius(), unit, gg_);
+}
 void   ThinDisk::setOuterRadius(double r) { rout_ = r;   }
+void   ThinDisk::setOuterRadius(double r, string unit) {
+  setOuterRadius(Units::ToGeometrical(r, unit, gg_));
+}
+
 double ThinDisk::getThickness() const     { return thickness_;}
+double ThinDisk::getThickness(string unit) const   {
+  return Units::FromGeometrical(getThickness(), unit, gg_);
+}
 void   ThinDisk::setThickness(double h)   { thickness_ = h;   }
+void   ThinDisk::setThickness(double h, string unit)   {
+  setThickness(Units::ToGeometrical(h, unit, gg_));
+}
+
 int    ThinDisk::getDir() const           { return dir_; }
 void   ThinDisk::setDir(int dir)          { dir_ = dir;  }
 
@@ -179,11 +201,9 @@ int ThinDisk::setParameter(std::string name,
 			   std::string content,
 			   std::string unit) {
     char* tc = const_cast<char*>(content.c_str());
-    if      (name=="InnerRadius")
-      setInnerRadius (Units::ToGeometrical(atof(tc), unit, gg_)); 
-    else if (name=="OuterRadius")
-      setOuterRadius (Units::ToGeometrical(atof(tc), unit, gg_)); 
-    else if (name=="Thickness")       setThickness   (atof(tc)); 
+    if      (name=="InnerRadius")     setInnerRadius (atof(tc), unit); 
+    else if (name=="OuterRadius")     setOuterRadius (atof(tc), unit); 
+    else if (name=="Thickness")       setThickness   (atof(tc), unit); 
     else if (name=="CounterRotating") setDir         (-1);
     else return Generic::setParameter(name, content, unit);
     return 0;

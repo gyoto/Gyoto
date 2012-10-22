@@ -23,6 +23,7 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoConverters.h"
 
 #include <iostream>
 #include <cmath>
@@ -156,9 +157,17 @@ void UniformSphere::setRadius(double r) {
   safety_value_ = critical_value_*1.1+0.1;
 }
 
-int UniformSphere::setParameter(string name, string content) {
-  if (name=="Radius") setRadius(atof(content.c_str()));
-  else return Standard::setParameter(name, content);
+double UniformSphere::getRadius(std::string unit) const {
+  return Units::FromGeometrical(getRadius(), unit, gg_);
+}
+
+void UniformSphere::setRadius(double r, std::string unit) {
+  setRadius(Units::ToGeometrical(r, unit, gg_));
+}
+
+int UniformSphere::setParameter(string name, string content, string unit) {
+  if (name=="Radius") setRadius(atof(content.c_str()), unit);
+  else return Standard::setParameter(name, content, unit);
   return 0;
 }
 
@@ -182,7 +191,7 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
 
 void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
 
-  string name="", content="";
+  string name="", content="", unit="";
   FactoryMessenger * child = NULL;
 
 # if GYOTO_DEBUG_ENABLED
@@ -191,7 +200,7 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
   setMetric(fmp->getMetric());
   setFlag_radtransf(0);
 
-  while (fmp->getNextParameter(&name, &content)) {
+  while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Spectrum") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
@@ -214,7 +223,7 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "setParameter("<<name<<", "<<content<<")\n";
 #     endif
-      setParameter(name, content);
+      setParameter(name, content, unit);
     }
   }
 

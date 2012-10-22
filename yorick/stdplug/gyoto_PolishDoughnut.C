@@ -114,8 +114,8 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getCentralDensity());
-    } else (*ao)->setCentralDensity(ygets_d(iarg));
+      ypush_double((*ao)->getCentralDensity(unit?unit:""));
+    } else (*ao)->setCentralDensity(ygets_d(iarg), unit?unit:"");
   }
 
   if ((iarg=kiargs[++k])>=0) { // centraltempovervirial

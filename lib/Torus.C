@@ -56,11 +56,25 @@ Torus::~Torus() {}
 Torus* Torus::clone() const { return new Torus(*this); }
 
 double Torus::getLargeRadius() const { return c_; }
+double Torus::getLargeRadius(string unit) const {
+  return Units::FromGeometrical(getLargeRadius(), unit, gg_);
+}
 double Torus::getSmallRadius() const { return sqrt(critical_value_); }
+double Torus::getSmallRadius(string unit) const {
+  return Units::FromGeometrical(getSmallRadius(), unit, gg_);
+}
+
 void Torus::setLargeRadius(double c) { c_ = c; }
+void Torus::setLargeRadius(double c, string unit) {
+  setLargeRadius(Units::ToGeometrical(c, unit, gg_));
+}
+
 void Torus::setSmallRadius(double a) {
   critical_value_ = a*a;
   safety_value_ = critical_value_ * 1.1;
+}
+void Torus::setSmallRadius(double c, string unit) {
+  setSmallRadius(Units::ToGeometrical(c, unit, gg_));
 }
 
 SmartPointer<Spectrum::Generic> Torus::getSpectrum() const { return spectrum_; }
@@ -132,10 +146,12 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
   gg_ -> circularVelocity(pos2, vel);
 }
 
-int Torus::setParameter(std::string name, std::string content) {
-  if      (name=="LargeRadius") setLargeRadius(atof(content.c_str()));
-  else if (name=="SmallRadius") setSmallRadius(atof(content.c_str()));
-  else return Standard::setParameter(name, content);
+int Torus::setParameter(std::string name,
+			std::string content,
+			std::string unit) {
+  if      (name=="LargeRadius") setLargeRadius(atof(content.c_str()), unit);
+  else if (name=="SmallRadius") setSmallRadius(atof(content.c_str()), unit);
+  else return Standard::setParameter(name, content, unit);
   return 0;
 }
 
@@ -161,14 +177,14 @@ void Torus::fillElement(FactoryMessenger *fmp) const {
 
 void Torus::setParameters(FactoryMessenger* fmp) {
 
-  string name="", content="";
+  string name="", content="", unit="";
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Spectrum::Generic> sp = NULL;
   FactoryMessenger * child = NULL;
 
   setMetric(fmp->getMetric());
 
-  while (fmp->getNextParameter(&name, &content)) {
+  while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Spectrum") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
@@ -181,7 +197,7 @@ void Torus::setParameters(FactoryMessenger* fmp) {
       setOpacity( (*Spectrum::getSubcontractor(content))(child) );
       delete child;
     }
-    else setParameter(name, content);
+    else setParameter(name, content, unit);
   }
 }
 #endif

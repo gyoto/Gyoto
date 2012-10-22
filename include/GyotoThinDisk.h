@@ -74,8 +74,8 @@ class Gyoto::Astrobj::ThinDisk :
   // Data : 
   // -----
  protected:
-  double rin_ ; ///< disk inner radius
-  double rout_ ; ///< disk outer radius
+  double rin_ ; ///< disk inner radius in geometrical units
+  double rout_ ; ///< disk outer radius in geometrical units
 
   /**
    * Geometrical thickness in geometrical units. Used only in the
@@ -104,11 +104,17 @@ class Gyoto::Astrobj::ThinDisk :
   // ---------
  public:
   virtual double getInnerRadius() const ; ///< Get rin_
+  virtual double getInnerRadius(std::string unit) const ; ///< Get rin_
   virtual void   setInnerRadius(double); ///< Set rin_
+  virtual void   setInnerRadius(double, std::string unit); ///< Set rin_
   virtual double getOuterRadius() const ; ///< Get rout_
+  virtual double getOuterRadius(std::string unit) const ; ///< Get rout_
   virtual void   setOuterRadius(double); ///< Set rout_
+  virtual void   setOuterRadius(double, std::string unit); ///< Set rout_
   virtual double getThickness() const ; ///< Get thickness_
+  virtual double getThickness(std::string unit) const ; ///< Get thickness_
   virtual void   setThickness(double); ///< Set thickness_
+  virtual void   setThickness(double, std::string unit); ///< Set thickness_
   virtual int    getDir() const ; ///< Get dir_
   virtual void   setDir(int); ///< Set dir_
 

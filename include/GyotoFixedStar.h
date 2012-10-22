@@ -80,11 +80,14 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
   virtual void setMetric(SmartPointer<Metric::Generic> metric) ;
+  using UniformSphere::setRadius;
   virtual void setRadius(double radius); ///< Set radius
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system
   
-  virtual int setParameter(std::string name, std::string content);
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 
  public:
 #ifdef GYOTO_USE_XERCES

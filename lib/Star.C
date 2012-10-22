@@ -152,7 +152,7 @@ void Star::setVelocity(double vel[3]) {
   setInitCoord(coord, vel);
 }
 
-int Star::setParameter(std::string name, std::string content) {
+int Star::setParameter(string name, string content, string unit) {
   double coord[8];
   char* tc = const_cast<char*>(content.c_str());
   if (name=="InitialCoordinate") {
@@ -172,7 +172,7 @@ int Star::setParameter(std::string name, std::string content) {
       init_vel_ = new double[3];
       memcpy(init_vel_, coord, 3*sizeof(double));
     } else setVelocity(coord);
-  } else return UniformSphere::setParameter(name, content);
+  } else return UniformSphere::setParameter(name, content, unit);
   return 0;
 }
 

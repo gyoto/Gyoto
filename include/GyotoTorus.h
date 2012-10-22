@@ -80,17 +80,29 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   // ---------
  public:
   /**
-   * Get large radius c_
+   * Get large radius c_ in geometrical units
    */
   double getLargeRadius() const;
 
   /**
-   * Get small radius a_
+   * Get large radius c_ in specified unit
+   */
+  double getLargeRadius(std::string unit) const;
+
+  /**
+   * Get small radius in geometrical units
    */
   double getSmallRadius() const;
 
+  /**
+   * Get small radius in specified unit
+   */
+  double getSmallRadius(std::string unit) const;
+
   void setLargeRadius(double c);
   void setSmallRadius(double a);
+  void setLargeRadius(double c, std::string unit);
+  void setSmallRadius(double a, std::string unit);
   virtual void setSpectrum(SmartPointer<Spectrum::Generic>);
   virtual SmartPointer<Spectrum::Generic> getSpectrum() const;
   virtual void setOpacity(SmartPointer<Spectrum::Generic>);
@@ -100,7 +112,9 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 
   //XML I/O
  public:
-  virtual int setParameter(std::string name, std::string content) ;
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit) ;
 
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;

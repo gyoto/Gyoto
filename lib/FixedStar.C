@@ -150,13 +150,13 @@ void FixedStar::setRadius(double r) {
 void FixedStar::setPos(const double p[3])
 { for (int i=0; i<3; ++i) pos_[i]=p[i]; setRadius(radius_);}
 
-int FixedStar::setParameter(string name, string content) {
+int FixedStar::setParameter(string name, string content, string unit) {
   if (name=="Position") {
     char* tc = const_cast<char*>(content.c_str());
     double pos[3];
     for (int i=0;i<3;++i) pos[i] = strtod(tc, &tc);
     setPos(pos);
-  } else return UniformSphere::setParameter(name, content);
+  } else return UniformSphere::setParameter(name, content, unit);
   return 0;
 }
 

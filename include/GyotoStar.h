@@ -151,7 +151,9 @@ class Gyoto::Astrobj::Star :
   virtual void setPosition(double pos[4]);
   virtual void setVelocity(double vel[3]);
 
-  virtual int setParameter(std::string name, std::string content);
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 
  public:
 #ifdef GYOTO_USE_XERCES
