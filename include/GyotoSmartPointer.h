@@ -308,21 +308,23 @@ class Gyoto::SmartPointer
    * \brief Cast SmartPointer to normal pointer
    */
   //  template<class U> operator U() { return obj; }
-  operator T*() { return obj; }
+  operator T*() const { return obj; }
 
+#if 0
   operator const T*() { return obj; }
 
   /**
    * \brief Check whether SmartPointer is valid
    * \return 0 if SmartPointer is NULL, 1 if valid.
    */
-  operator bool () { return obj != NULL; }
+  operator bool () const { return obj != NULL; }
 
   /**
    * \brief Check whether SmartPointer is valid
    * \return 1 if SmartPointer is NULL, 0 if valid.
    */
   bool operator! () const { return obj == NULL; }
+#endif
 
   ~SmartPointer< T > () { decRef(); }
 

@@ -138,12 +138,16 @@ double Converter::operator()(double val) {
 
 #endif
 
-double Gyoto::Units::ToMeters(double val, string unit) {
-# ifdef HAVE_UDUNITS
+double Gyoto::Units::ToMeters(double val, string unit,
+			       const SmartPointer<Metric::Generic> &gg) {
   if ((unit=="") || (unit=="m")) return val ;
+  if (unit=="geometrical") {
+    if (gg) return val * gg -> unitLength();
+    else throwError("Metric required for geometrical -> meter conversion");
+  }
+# ifdef HAVE_UDUNITS
   return Meter->To(val, unit); 
 # else
-  if ((unit=="") || (unit=="m")) return val ;
   if (unit=="cm")          return val * 1e-2;
   if (unit=="km")          return val * 1e3;
   if (unit=="sunradius")   return val * GYOTO_SUN_RADIUS;
@@ -164,12 +168,16 @@ double Gyoto::Units::ToMeters(double val, string unit) {
 # endif
 }
 
-double Gyoto::Units::FromMeters(double val, string unit) {
-# ifdef HAVE_UDUNITS
+double Gyoto::Units::FromMeters(double val, string unit,
+			       const SmartPointer<Metric::Generic> &gg) {
   if ((unit=="") || (unit=="m")) return val ;
+  if (unit=="geometrical") {
+    if (gg) return val / gg -> unitLength();
+    else throwError("Metric required for meter -> geometrical conversion");
+  }
+# ifdef HAVE_UDUNITS
   return Meter->From(val, unit); 
 # else
-  if ((unit=="") || (unit=="m")) return val ;
   if (unit=="cm")          return val * 1e2;
   if (unit=="km")          return val * 1e-3;
   if (unit=="sunradius")   return val / GYOTO_SUN_RADIUS;
@@ -188,6 +196,64 @@ double Gyoto::Units::FromMeters(double val, string unit) {
   throwError(ss.str());
   return 0;
 # endif
+}
+
+double Gyoto::Units::ToSeconds(double val, const string &unit,
+			       const SmartPointer<Metric::Generic> &gg) {
+  if (unit=="" || unit=="s") ;
+  else if (unit=="geometrical_time" || unit=="geometrical") {
+    if (unit=="geometrical")
+      GYOTO_WARNING << "Please use \"geometrical_time\" instead of "
+	"\"geometrical\" for time unit, \"geometrical\" in this context "
+	"is deprecated and will be removed soon";
+    if (gg) val *= gg -> unitLength() / GYOTO_C ;
+    else
+      throwError("Metric required for geometrical_time -> second conversion");
+  }
+# ifdef HAVE_UDUNITS
+  else val = Converter(unit, "s")(val);
+# else
+  else if (unit=="min") val *= 60. ;
+  else if (unit=="h") val *= 3600. ;
+  else if (unit=="d") val *= 86400. ;
+  else if (unit=="yr") val *= 3.15576e+07;
+  else {
+    stringstream ss;
+    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
+       << "[s] geometrical min h d y";
+    throwError (ss.str());
+  }
+# endif
+  return val;
+}
+
+double Gyoto::Units::FromSeconds(double val, const string &unit,
+				 const SmartPointer<Metric::Generic> &gg) {
+  if (unit=="" || unit=="s") ;
+  else if (unit=="geometrical_time" || unit=="geometrical") {
+    if (unit=="geometrical")
+      GYOTO_WARNING << "Please use \"geometrical_time\" instead of "
+	"\"geometrical\" for time unit, \"geometrical\" in this context "
+	"is deprecated and will be removed soon";
+    if (gg) val *= GYOTO_C / gg -> unitLength() ;
+    else
+      throwError("Metric required for second -> geometrical_time conversion");
+  }
+# ifdef HAVE_UDUNITS
+  else val = Converter("s", unit)(val);
+# else
+  else if (unit=="min") val /= 60. ;
+  else if (unit=="h") val /= 3600. ;
+  else if (unit=="d") val /= 86400. ;
+  else if (unit=="yr") val /= 3.15576e+07;
+  else {
+    stringstream ss;
+    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
+       << "[s] geometrical min h d y";
+    throwError (ss.str());
+  }
+# endif
+  return val;
 }
 
 double Gyoto::Units::ToKilograms(double val, string unit)
@@ -224,5 +290,10 @@ double Gyoto::Units::FromGeometrical(double val, string unit,
 }
 
 bool Gyoto::Units::areConvertible(std::string unit1, std::string unit2) {
+# ifdef HAVE_UDUNITS
   return ut_are_convertible(Unit(unit1), Unit(unit2));
+# else
+  throwError("Gyoto::Units::areConvertible unimplemented without udunits");
+  return 0;
+# endif
 }

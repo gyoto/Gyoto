@@ -14,7 +14,7 @@
       1.57
       0.
     </Position>
-    <Time unit="geometrical">
+    <Time unit="geometrical_time">
       100.
     </Time>
     <FieldOfView>

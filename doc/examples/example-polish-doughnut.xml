@@ -8,7 +8,7 @@
 
   <Screen>
     <Position>1000. 100. 1.39 0.</Position>
-    <Time unit="geometrical">1000.</Time>
+    <Time unit="geometrical_time">1000.</Time>
     <FieldOfView>0.31416</FieldOfView>
     <Resolution>32</Resolution>
     <!--<Spectrometer kind="freqlog" nsamples="100">5. 25.</Spectrometer>-->

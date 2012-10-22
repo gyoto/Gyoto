@@ -84,6 +84,7 @@ extern "C" {
     }
       
     static char const * knames[]={
+      "unit",
       "metric",
       "time","fov","resolution",
       "distance", "dmax", "inclination", "paln", "argument",
@@ -93,12 +94,13 @@ extern "C" {
       "xmlwrite", "clone",
       0
     };
-#define nkw 16
+#define nkw 17
     static long kglobs[nkw+1];
     int kiargs[nkw];
     int piargs[]={-1,-1,-1,-1};
     // push default return value: need to drop before pushing another one
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
+    char * unit=NULL;
       
     int iarg=argc, parg=0;
     while (iarg>=1) {
@@ -107,6 +109,13 @@ extern "C" {
 	if (parg<4) piargs[parg++]=iarg--;
 	else y_error("gyoto_Metric takes at most 4 positional arguments");
       }
+    }
+
+    /* UNIT */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
     }
 
     /* METRIC */
@@ -124,9 +133,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // get 
 	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_double((*screen)->getTime());
+	ypush_double((*screen)->getTime(unit?unit:""));
       } else
-	(*screen) -> setTime(ygets_d(iarg));
+	(*screen) -> setTime(ygets_d(iarg), unit?unit:"");
     }
 
     /* FIELD OF VIEW (fov) */
@@ -154,9 +163,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // get 
 	if ((*rvset)++) y_error(rmsg);
-	ypush_double((*screen)->getDistance());
+	ypush_double((*screen)->getDistance(unit?unit:""));
       } else
-	(*screen) -> setDistance    (ygets_d(iarg)) ;
+	(*screen) -> setDistance    (ygets_d(iarg), unit?unit:"") ;
     }
 
     /* DMAX */ 
@@ -169,14 +178,14 @@ extern "C" {
 	(*screen) -> setDmax (ygets_d(iarg)) ;
     }
 
-    /* INCLINAITION */ 
+    /* INCLINATION */ 
     if ((iarg=kiargs[++k])>=0) {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // get 
 	if ((*rvset)++) y_error(rmsg);
-	ypush_double((*screen)->getInclination());
+	ypush_double((*screen)->getInclination(unit?unit:""));
       } else
-	(*screen) -> setInclination (ygets_d(iarg)) ;
+	(*screen) -> setInclination (ygets_d(iarg), unit?unit:"") ;
     }
 
     /* POSITION ANGLE OF THE LINE OF NODES (paln) */
@@ -184,9 +193,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // get 
 	if ((*rvset)++) y_error(rmsg);
-	ypush_double((*screen)->getPALN());
+	ypush_double((*screen)->getPALN(unit?unit:""));
       } else
-	(*screen) -> setPALN        (ygets_d(iarg)) ;
+	(*screen) -> setPALN        (ygets_d(iarg), unit?unit:"") ;
     }
 
     /* ARGUMENT */
@@ -194,9 +203,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // get 
 	if ((*rvset)++) y_error(rmsg);
-	ypush_double((*screen)->getArgument());
+	ypush_double((*screen)->getArgument(unit?unit:""));
       } else
-	(*screen) -> setArgument    (ygets_d(iarg)) ;
+	(*screen) -> setArgument    (ygets_d(iarg), unit?unit:"") ;
     }
       
     /* PROJECTION */

@@ -47,8 +47,14 @@ namespace Gyoto {
     class Converter;
 #endif
     void Init();
-    double ToMeters(double, std::string);
-    double FromMeters(double, std::string);
+    double ToMeters(double, std::string,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
+    double FromMeters(double, std::string,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
+    double ToSeconds(double, const std::string &unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
+    double FromSeconds(double, const std::string &unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
     double ToKilograms(double, std::string);
     double ToGeometrical(double, std::string,
 			 Gyoto::SmartPointer<Gyoto::Metric::Generic>);

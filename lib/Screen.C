@@ -91,15 +91,7 @@ void Screen::setProjection(const double dist,
 }
 
 void Screen::setDistance(double dist, const string unit)    {
-# ifdef GYOTO_DEBUG_ENABLED
-  GYOTO_IF_DEBUG
-  GYOTO_DEBUG_EXPR(dist);
-  GYOTO_DEBUG_EXPR(unit);
-  GYOTO_ENDIF_DEBUG
-# endif
-  if (unit=="geometrical") dist *= gg_ -> unitLength();
-  else dist = Units::ToMeters(dist, unit);
-  setDistance(dist);
+  setDistance(Units::ToMeters(dist, unit, gg_));
 }
 void Screen::setDistance(double dist)    {
   distance_=dist;
@@ -117,7 +109,11 @@ double Screen::getDmax() const { return dmax_; }
 
 void Screen::setPALN(double paln, const string &unit)        {
   if ((unit=="") || (unit=="rad"));
-  else if (unit=="deg") paln *= GYOTO_DEGRAD;
+# ifdef HAVE_UDUNITS
+  else paln = Units::Converter(unit, "rad")(paln);
+# else
+  else if (unit=="degree") paln *= GYOTO_DEGRAD;
+# endif
   setPALN(paln);
 }
 void Screen::setPALN(double paln)        {
@@ -126,7 +122,11 @@ void Screen::setPALN(double paln)        {
 
 void Screen::setInclination(double incl, const string &unit) { 
   if ((unit=="") || (unit=="rad"));
-  else if (unit=="deg") incl *= GYOTO_DEGRAD;
+# ifdef HAVE_UDUNITS
+  else incl = Units::Converter(unit, "rad")(incl);
+# else
+  else if (unit=="degree") incl *= GYOTO_DEGRAD;
+# endif
   setInclination(incl);
 }
 void Screen::setInclination(double incl) {
@@ -135,7 +135,11 @@ void Screen::setInclination(double incl) {
 
 void Screen::setArgument(double arg, const string &unit) { 
   if (unit=="" || unit=="rad");
-  else if (unit=="deg") arg *= GYOTO_DEGRAD;
+# ifdef HAVE_UDUNITS
+  else arg = Units::Converter(unit, "rad")(arg);
+# else
+  else if (unit=="degree") arg *= GYOTO_DEGRAD;
+# endif
   setArgument(arg);
 }
 void Screen::setArgument(double arg)     {
@@ -146,9 +150,48 @@ void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBase
 
 int Screen::getCoordKind()      const { return gg_ -> getCoordKind(); }
 double Screen::getDistance()    const { return distance_; }
+double Screen::getDistance(const std::string& unit)    const {
+  return Units::FromMeters(getDistance(), unit, gg_); 
+}
 double Screen::getPALN()        const { return euler_[0]; }
+double Screen::getPALN(const string &unit) const {
+  double paln = getPALN();
+  if (unit != "" && unit != "rad" ) {
+# ifdef HAVE_UDUNITS
+    paln = Units::Converter(unit, "rad")(paln);
+#else
+    GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
+#endif
+  }
+  return paln;
+}
+
 double Screen::getInclination() const { return euler_[1]; }
+double Screen::getInclination(const string &unit) const {
+  double incl = getInclination();
+  if (unit != "" && unit != "rad" ) {
+# ifdef HAVE_UDUNITS
+    incl = Units::Converter(unit, "rad")(incl);
+#else
+    GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
+#endif
+  }
+  return incl;
+}
+
 double Screen::getArgument()    const { return euler_[2]; }
+double Screen::getArgument(const string &unit) const {
+  double arg = getArgument();
+  if (unit != "" && unit != "rad" ) {
+# ifdef HAVE_UDUNITS
+    arg = Units::Converter(unit, "rad")(arg);
+#else
+    GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
+#endif
+  }
+  return arg;
+}
+
 SmartPointer<Metric::Generic> Screen::getMetric() const { return gg_; }
 
 void Screen::setObserverPos(const double coord[4]) {
@@ -414,21 +457,14 @@ void Screen::coordToXYZ(const double pos[4], double xyz[3]) const {
 }
 
 double Screen::getTime() { return tobs_ ; }
+double Screen::getTime(const string &unit) {
+  return Units::FromSeconds(getTime(), unit, gg_) ;
+}
 
 void Screen::setTime(double tobs, const string &unit) {
-  if (unit=="" || unit=="s") ;
-  else if (unit=="geometrical") tobs *= gg_ -> unitLength() / GYOTO_C ;
-  else if (unit=="min") tobs *= 60. ;
-  else if (unit=="h") tobs *= 3600. ;
-  else if (unit=="d") tobs *= 86400. ;
-  else if (unit=="y") tobs *= 3.15576e+07;
-  else {
-    stringstream ss;
-    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
-       << "[s] geometrical min h d y";
-    throwError (ss.str());
-  }
-  setTime(tobs);
+  GYOTO_DEBUG_EXPR(tobs);
+  GYOTO_DEBUG_EXPR(unit);
+  setTime(Units::ToSeconds(tobs, unit, gg_));
 }
 void Screen::setTime(double tobs) { tobs_ = tobs; }
 
@@ -445,7 +481,7 @@ double Screen::getFieldOfView(string unit) {
     fov = Units::FromMeters(fov*distance_, unit) ;
   else fov = Units::Converter("rad", unit)(fov);
 # else
-  else if (unit=="deg") fov /= GYOTO_DEGRAD;
+  else if (unit=="degree") fov /= GYOTO_DEGRAD;
   else if (unit=="arcmin") fov /= GYOTO_MINRAD;
   else if (unit=="arcsec") fov /= GYOTO_SECRAD;
   else if (unit=="milliarcsec") fov /= GYOTO_MASRAD;
@@ -468,7 +504,7 @@ void Screen::setFieldOfView(double fov, const string &unit) {
     fov = Units::ToMeters(fov, unit) / distance_;
   else fov = Units::Converter(unit, "rad")(fov);
 # else
-  else if (unit=="deg") fov *= GYOTO_DEGRAD;
+  else if (unit=="degree") fov *= GYOTO_DEGRAD;
   else if (unit=="arcmin") fov *= GYOTO_MINRAD;
   else if (unit=="arcsec") fov *= GYOTO_SECRAD;
   else if (unit=="milliarcsec") fov *= GYOTO_MASRAD;
@@ -540,9 +576,15 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   // Deal with fov later as we need Inclination
   double fov; string fov_unit; int fov_found=0;
 
-  while (fmp->getNextParameter(&name, &content)) {
+  while (fmp->getNextParameter(&name, &content, &unit)) {
     tc = const_cast<char*>(content.c_str());
-    unit = fmp -> getAttribute("unit");
+#   ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+    GYOTO_DEBUG_EXPR(name);
+    GYOTO_DEBUG_EXPR(content);
+    GYOTO_DEBUG_EXPR(unit);
+    GYOTO_ENDIF_DEBUG
+#   endif
     if      (name=="Time")     {tobs_tmp = atof(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
                                   scr -> setObserverPos (pos); }

@@ -8,9 +8,9 @@
 
   <Screen>
     <Distance unit="kpc" dmax="1e6"> 8 </Distance>
-    <Time unit="y"> 30e3 </Time>
+    <Time unit="yr"> 30e3 </Time>
     <FieldOfView unit="microarcsec"> 150 </FieldOfView>
-    <Inclination unit="deg"> 90 </Inclination>
+    <Inclination unit="degree"> 90 </Inclination>
     <PALN> 0 </PALN>
     <Argument> 0 </Argument>
     <Resolution> 32 </Resolution>

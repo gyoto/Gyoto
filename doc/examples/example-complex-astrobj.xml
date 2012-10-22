@@ -7,7 +7,7 @@
 
   <Screen>
     <Position> 1000. 100. 1.22 0. </Position>
-    <Time unit="geometrical"> 1000. </Time>
+    <Time unit="geometrical_time"> 1000. </Time>
     <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
     <Resolution> 32 </Resolution>
     <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>

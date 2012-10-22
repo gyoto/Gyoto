@@ -233,18 +233,23 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 
   int getCoordKind() const;      ///< Get coordinate kind
   double getDistance() const;	 ///< Get distance from observer
+  double getDistance(const std::string&) const;	 ///< Get distance from observer
   double getDmax() const;	 ///< Get maximum ray-tracing distance
   double getInclination() const; ///< Get inclination relative to line-of-sight
+  double getInclination(const std::string&) const; ///< Get inclination relative to line-of-sight
   double getPALN() const;	 ///< Get position angle of the line of nodes
+  double getPALN(const std::string&) const;	 ///< Get position angle of the line of nodes
   double getArgument() const;	 ///< Get angle beetwen line of nodes and X axis of object
+  double getArgument(const std::string&) const;	 ///< Get angle beetwen line of nodes and X axis of object
 
 
   SmartPointer<Metric::Generic> getMetric() const; ///< Get gg_;
   void setMetric(SmartPointer<Metric::Generic> gg);
 
-  double getTime();
-  void setTime(double, const std::string &);
-  void setTime(double);
+  double getTime(); ///< get observing time in seconds
+  double getTime(const std::string &); ///< get observing time in seconds
+  void setTime(double, const std::string &); ///< set observing time in specified unit
+  void setTime(double); ///< set observing time in seconds
   //  double getMinimumTime();
   //  void setMinimumTime(double);
   double getFieldOfView();
