@@ -171,5 +171,6 @@ int Standard::setParameter(string name, string content, string unit)  {
 #ifdef GYOTO_USE_XERCES
 void Standard::fillElement(FactoryMessenger* fmp) const {
   fmp -> setParameter("SafetyValue", safety_value_);
+  Generic::fillElement(fmp);
 }
 #endif

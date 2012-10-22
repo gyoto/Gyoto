@@ -1341,7 +1341,6 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
     centraltemp_over_virial_=atof(content.c_str());
   } else if (name=="Beta") beta_=atof(content.c_str());
   else if (name=="UseSpecificImpact") useSpecificImpact();
-  else if (name=="Rmax") rmax_=atof(content.c_str());
   else return Standard::setParameter(name, content, unit);
   return 0;
 }
@@ -1355,7 +1354,6 @@ void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);
   fmp->setParameter("Beta", beta_);
   if (use_specific_impact_) fmp->setParameter("UseSpecificImpact");
-  fmp->setParameter("Rmax", rmax_);
   Standard::fillElement(fmp);
 }
 #endif

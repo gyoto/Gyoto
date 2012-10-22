@@ -48,9 +48,12 @@ namespace Gyoto {
 #endif
     void Init();
     double ToMeters(double, std::string);
+    double FromMeters(double, std::string);
     double ToKilograms(double, std::string);
     double ToGeometrical(double, std::string,
 			 Gyoto::SmartPointer<Gyoto::Metric::Generic>);
+    double FromGeometrical(double, std::string,
+			   Gyoto::SmartPointer<Gyoto::Metric::Generic>);
   }
 }
 

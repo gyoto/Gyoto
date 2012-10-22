@@ -99,10 +99,11 @@ extern "C" {
     BASE_NAME base = GENERIC;
     if (dynamic_cast<ThinDisk const * const>((*ao)())) base = THINDISK;
 
-    static char const * knames_thindisk[]={YGYOTO_THINDISK_GENERIC_KW, 0};
-    static char const * knames_generic[]={YGYOTO_ASTROBJ_GENERIC_KW, 0};
-    static long kglobs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+1];
-    static int kiargs[YGYOTO_ASTROBJ_BASE_MAX_KW_N];
+    static char const * knames_thindisk[]={"unit", YGYOTO_THINDISK_GENERIC_KW, 0};
+    static char const * knames_generic[]={"unit", YGYOTO_ASTROBJ_GENERIC_KW, 0};
+    static long kglobs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+2];
+    static int kiargs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+1];
+    int * truc = kiargs;
 
     char ** knames=NULL;
     ygyoto_Astrobj_generic_eval_t * worker;
@@ -129,7 +130,17 @@ extern "C" {
       }
     }
 
-    (*worker)(ao, kiargs, piargs, rvset, paUsed);
+    char * unit=NULL;
+
+    /* UNIT */
+    if ((iarg=*(truc++))>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
+    }
+
+
+    (*worker)(ao, truc, piargs, rvset, paUsed, unit);
 
   }
   static y_userobj_t gyoto_Astrobj_obj =
@@ -165,7 +176,7 @@ void ygyoto_Astrobj_register(char const*const name, ygyoto_Astrobj_eval_worker_t
 
 void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao,
 				int *kiargs, int *piargs,
-				int *rvset, int *paUsed) {
+				 int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
@@ -192,9 +203,9 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error("rmsg");
-      ypush_double((*ao)->getRmax());
+      ypush_double((*ao)->getRmax(unit?unit:""));
     } else
-      (*ao)->setRmax(ygets_d(iarg));
+      (*ao)->setRmax(ygets_d(iarg), unit?unit:"");
   }
 
   /* FLAG_RADTRANSF */
@@ -296,7 +307,17 @@ extern "C" {
       } else y_error("Cannot allocate object of virtual class Astrobj");
     }
 
-    ygyoto_Astrobj_generic_eval(ao, kiargs, piargs, rvset, paUsed);
+    char * unit=NULL;
+    int * truc=kiargs;
+
+    /* UNIT */
+    if ((iarg=*(truc++))>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
+    }
+
+    ygyoto_Astrobj_generic_eval(ao, truc, piargs, rvset, paUsed, unit);
 
   }
 

@@ -17,7 +17,7 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 #include <GyotoPolishDoughnut.h>
 #ifdef GYOTO_USE_XERCES
@@ -38,13 +38,14 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
     builder=1;
   } else *ypush_Astrobj()=*ao_;
   static char * knames[]={
+    "unit",
     "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
     "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+10];
+  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
+  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(knames, kglobs, kiargs);
@@ -84,6 +85,15 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   // "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
   char * rmsg="Cannot set return value more than once";
   char * pmsg="Cannot use positional argument more than once";
+  char * unit=NULL;
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
+
   if ((iarg=kiargs[++k])>=0) { // lambda
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
@@ -166,7 +176,7 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   }
 
   // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 }
 
 

@@ -18,7 +18,7 @@
  */
 
 #include <GyotoTorus.h>
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 
 using namespace Gyoto;
@@ -37,12 +37,12 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
 
   SmartPointer<Torus> *ao = (SmartPointer<Torus> *)ao_;
   static char const * knames[]={
-    "largeradius", "smallradius", "spectrum", "opacity",
+    "unit", "largeradius", "smallradius", "spectrum", "opacity",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+5];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+4];
+  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+6];
+  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+5];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -59,6 +59,15 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
   int k=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=NULL;
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
+
   /* LARGERADIUS */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
@@ -100,7 +109,7 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
   }
 
   // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 }
 
 

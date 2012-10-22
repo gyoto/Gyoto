@@ -282,8 +282,18 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *
    *  It can also be set using setRmax(). If setRmax has been used
    *  to set rmax_, getRmax() must not recompute it.
+   *
+   *  \return rmax_ in geometrical units
    */
   virtual double getRmax(); ///< Get maximal distance from center of coordinate system
+
+  /**
+   *  Call setRmax() and convert result to unit.
+   *
+   *  \param string unit
+   *  \return double rmax converted to unit
+   */
+  virtual double getRmax(std::string unit); ///< Get rmax_ is specified unit
 
   const std::string getKind() const; ///< Get the kind of the Astrobj (e.g. "Star")
 
@@ -292,8 +302,18 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *  Photon may hit the object.
    *  
    *  Side effect: set rmax_set_ to 1.
+   *  \param double val rmax_ in geometrical units.
    */
   virtual void setRmax(double val); ///< Set maximal distance from center of coordinate system
+
+  /**
+   *  Call Generic::setRmax(double val) after converting val from unit
+   *  to geometrical units.
+   *
+   *  \param double val rmax_ expressed in unit "unit";
+   *  \param string unit unit...
+   */
+  virtual void setRmax(double val, std::string unit); ///< Set maximal distance from center of coordinate system
 
   /**
    * getRmax() will then be free to recompute rmax_. Astrobjs

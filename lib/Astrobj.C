@@ -101,6 +101,10 @@ double Generic::getRmax() {
   return rmax_;
 }
 
+double Generic::getRmax(string unit) {
+  return Units::FromGeometrical(getRmax(), unit, gg_);
+}
+
 const string Generic::getKind() const {
   return kind_;
 }
@@ -108,6 +112,10 @@ const string Generic::getKind() const {
 void Generic::setRmax(double val) {
   rmax_set_=1;
   rmax_=val;
+}
+
+void Generic::setRmax(double val, string unit) {
+  setRmax(Units::ToGeometrical(val, unit, gg_));
 }
 
 void Generic::unsetRmax() {
@@ -145,6 +153,7 @@ void Generic::checkPhiTheta(double coord[8]) const{
 
 #ifdef GYOTO_USE_XERCES
 void Generic::fillElement(FactoryMessenger *fmp) const {
+  if (rmax_set_) fmp -> setParameter ( "RMax", rmax_ ) ;
   fmp -> setMetric(gg_);
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
@@ -167,9 +176,8 @@ int Generic::setParameter(string name, string content, string unit)  {
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
-  else if (name=="RMax")  {
-    rmax_ = Units::ToGeometrical(atof(tc), unit, gg_); rmax_set_=1;
-  } else return 1;
+  else if (name=="RMax") setRmax(atof(tc), unit);
+  else return 1;
   return 0;
 }
 

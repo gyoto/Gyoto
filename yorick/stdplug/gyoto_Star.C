@@ -17,7 +17,7 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 #include <GyotoStar.h>
 #ifdef GYOTO_USE_XERCES
@@ -44,12 +44,13 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
 
   // Parse arguments
   static char const * knames[]={
+    "unit",
     "radius", "metric", "initcoord", "spectrum", "opacity", "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_coord", "get_cartesian",
     0
   };
-#define nkw 11
+#define nkw 12
   static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw+1];
   int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw];
   int piargs[]={-1,-1,-1,-1};
@@ -92,7 +93,16 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
 
+  char * unit=NULL;
+
   //// MEMBERS ////
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
+
   /* RADIUS */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
@@ -178,7 +188,7 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
   if ((iarg=kiargs[++k])>=0) (*ao)->xFill(ygets_d(iarg+*rvset));
  
   // GENERIC WORKER
-    ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 
   k += YGYOTO_ASTROBJ_GENERIC_KW_N;
 

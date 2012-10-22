@@ -94,10 +94,10 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*,
 void ygyoto_Astrobj_register(char const * const kind, ygyoto_Astrobj_eval_worker_t* on_eval);
 void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*,
 				 int *kiargs, int *piargs, int *rvset,
-				 int *paUsed);
+				 int *paUsed, char * unit);
 void ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*,
 				 int *kiargs, int *piargs, int *rvset,
-				 int *paUsed);
+				  int *paUsed, char * unit);
 
 
 void ygyoto_Spectrum_register(char const * const kind,
@@ -165,7 +165,7 @@ typedef Gyoto::SmartPointer<Gyoto::Astrobj::Generic> *ygyoto_ypush_Astrobj_t();
 //typedef int yarg_Astrobj_t(int);
 typedef void ygyoto_Astrobj_register_t(char const * const, ygyoto_Astrobj_eval_worker_t*);
 typedef void ygyoto_Astrobj_generic_eval_t \
-(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*, int *, int *, int*, int*);
+(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*, int *, int *, int*, int*, char *);
 
 typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic> *\
 ygyoto_yget_Spectrum_t(int);
@@ -242,12 +242,12 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 #define ygyoto_Astrobj_register(kind, on_eval) \
                           YGYOTO_LOCAL_SUPPLIER -> \
 		  ygyoto_Astrobj_register(kind, on_eval)
-#define ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
+#define ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit) \
                           YGYOTO_LOCAL_SUPPLIER -> \
-		  ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed)
-#define ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
+			  ygyoto_Astrobj_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit)
+#define ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit) \
                           YGYOTO_LOCAL_SUPPLIER -> \
-		  ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed)
+			  ygyoto_ThinDisk_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit)
 
 #define yget_Spectrum(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Spectrum(iarg)
 #define ypush_Spectrum()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Spectrum()

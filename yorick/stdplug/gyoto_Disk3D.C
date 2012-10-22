@@ -20,7 +20,7 @@
 #include <cstring>
 
 #include <Gyoto.h>
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 
 using namespace Gyoto;
@@ -44,6 +44,7 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   GYOTO_DEBUG << "processing keywords\n";
   static char const * knames[]={
+    "unit",
     "fitsread", "repeatphi", "nu0", "dnu",
     "rin", "rout", "zmin", "zmax",
     "phimin", "phimax",
@@ -70,6 +71,14 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   int k=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=NULL;
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
 
   /* FITSREAD */
   if ((iarg=kiargs[++k])>=0) {
@@ -236,7 +245,7 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   }
 
   GYOTO_DEBUG << "calling ygyoto_Astrobj_generic_eval\n";
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
   GYOTO_DEBUG << "done\n";
 }
 

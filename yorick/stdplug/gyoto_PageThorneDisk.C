@@ -18,7 +18,7 @@
  */
 
 #include <Gyoto.h>
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 
 using namespace Gyoto;
@@ -39,12 +39,12 @@ void ygyoto_PageThorneDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   SmartPointer<PageThorneDisk> *ao = (SmartPointer<PageThorneDisk> *)ao_;
 
   static char const * knames[]={
-    "updatespin",
+    "unit", "updatespin",
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+2];
-  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+1];
+  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+3];
+  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+2];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -61,12 +61,21 @@ void ygyoto_PageThorneDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   int k=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=NULL;
+
   // Call generic ThinDisk worker
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
 
   /* UPDATESPIN */
   if ((iarg=kiargs[++k])>=0) (*ao) -> updateSpin();
 
-  ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 }
 
 extern "C" {

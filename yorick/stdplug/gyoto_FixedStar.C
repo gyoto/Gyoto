@@ -18,7 +18,7 @@
  */
 
 #include <GyotoFixedStar.h>
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 
 using namespace Gyoto;
@@ -37,12 +37,12 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, in
 
   SmartPointer<FixedStar> *ao = (SmartPointer<FixedStar> *)ao_;
   static char const * knames[]={
-    "radius", "position",
+    "unit", "radius", "position",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+3];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+2];
+  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+4];
+  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+3];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -59,6 +59,15 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, in
   int k=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=0;
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
+
   /* RADIUS */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
@@ -86,7 +95,7 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, in
   }
 
   // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 }
 
 

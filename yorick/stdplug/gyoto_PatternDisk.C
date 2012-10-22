@@ -20,7 +20,7 @@
 #include <cstring>
 
 #include <Gyoto.h>
-#include "ygyoto.h"
+#include "../ygyoto.h"
 #include "yapi.h"
 
 using namespace Gyoto;
@@ -44,6 +44,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 
   GYOTO_DEBUG << "processing keywords\n";
   static char const * knames[]={
+    "unit",
     "fitsread", "patternvelocity", "repeatphi", "nu0", "dnu",
     "phimin", "phimax",
     "copyintensity", "copyopacity", "copyvelocity", "copygridradius",
@@ -51,8 +52,8 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+13];
-  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+12];
+  static long kglobs[YGYOTO_THINDISK_GENERIC_KW_N+14];
+  int kiargs[YGYOTO_THINDISK_GENERIC_KW_N+13];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -69,7 +70,15 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   int k=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit = NULL;
   // Call generic ThinDisk worker
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
 
   /* FITSREAD */
   if ((iarg=kiargs[++k])>=0) {
@@ -253,7 +262,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   }
 
   GYOTO_DEBUG << "calling ygyoto_ThinDisk_generic_eval\n";
-  ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
   GYOTO_DEBUG << "done\n";
 }
 

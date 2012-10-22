@@ -164,6 +164,32 @@ double Gyoto::Units::ToMeters(double val, string unit) {
 # endif
 }
 
+double Gyoto::Units::FromMeters(double val, string unit) {
+# ifdef HAVE_UDUNITS
+  if ((unit=="") || (unit=="m")) return val ;
+  return Meter->From(val, unit); 
+# else
+  if ((unit=="") || (unit=="m")) return val ;
+  if (unit=="cm")          return val * 1e2;
+  if (unit=="km")          return val * 1e-3;
+  if (unit=="sunradius")   return val / GYOTO_SUN_RADIUS;
+  if ((unit=="astronomicalunit") ||
+  	   (unit=="astronomical_unit") ||
+  	   (unit=="AU") ||
+  	   (unit=="au") ||
+  	   (unit=="ua"))
+                           return val / GYOTO_ASTRONOMICAL_UNIT;
+  if (unit=="ly")          return val / GYOTO_LIGHT_YEAR;
+  if (unit=="pc")          return val / GYOTO_KPC * 1e3;
+  if (unit=="kpc")         return val / GYOTO_KPC;
+  if (unit=="Mpc")         return val / GYOTO_KPC * 1e-3;
+  stringstream ss;
+  ss << "Unsupported conversion: \"" << unit;
+  throwError(ss.str());
+  return 0;
+# endif
+}
+
 double Gyoto::Units::ToKilograms(double val, string unit)
 {
 # ifdef HAVE_UDUNITS
@@ -188,5 +214,12 @@ double Gyoto::Units::ToGeometrical(double val, string unit,
   if (unit == "" || unit == "geometrical") return val;
   if (!gg) throwError("Need Metric to convert to geometrical units");
   return ToMeters(val, unit) / gg->unitLength();
+}
+
+double Gyoto::Units::FromGeometrical(double val, string unit,
+				     SmartPointer<Metric::Generic> gg) {
+  if (unit == "" || unit == "geometrical") return val;
+  if (!gg) throwError("Need Metric to convert from geometrical units");
+  return FromMeters(val * gg->unitLength(), unit);
 }
 
