@@ -47,6 +47,16 @@ Scenery::Scenery() :
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(0.01),
   quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0){}
 
+Scenery::Scenery(SmartPointer<Metric::Generic> met,
+		 SmartPointer<Screen> screen,
+		 SmartPointer<Astrobj::Generic> obj) :
+  gg_(met), screen_(screen), obj_(obj), delta_(0.01),
+  quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0)
+{
+  if (screen_) screen_->setMetric(gg_);
+  if (obj_) obj_->setMetric(gg_);
+}
+
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   gg_(NULL), screen_(NULL), obj_(NULL), delta_(o.delta_),
@@ -71,13 +81,6 @@ Scenery * Scenery::clone() const { return new Scenery(*this); }
   deltatau_(0.01)
 {}
 */
-Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj::Generic> obj) :
-  gg_(met), screen_(screen), obj_(obj), delta_(0.01),
-  quantities_(0)
-{
-  if (screen_) screen_->setMetric(gg_);
-  if (obj_) obj_->setMetric(gg_);
-}
 
 Scenery::~Scenery() {
 # if GYOTO_DEBUG_ENABLED
