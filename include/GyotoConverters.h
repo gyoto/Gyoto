@@ -48,20 +48,21 @@ namespace Gyoto {
     ut_system * getSystem();
 #endif
     void Init();
-    double ToMeters(double, std::string,
+    double ToMeters(double, const std::string &,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
-    double FromMeters(double, std::string,
+    double FromMeters(double, const std::string &,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
     double ToSeconds(double, const std::string &unit,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
     double FromSeconds(double, const std::string &unit,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
-    double ToKilograms(double, std::string);
-    double ToGeometrical(double, std::string,
-			 Gyoto::SmartPointer<Gyoto::Metric::Generic>);
-    double FromGeometrical(double, std::string,
-			   Gyoto::SmartPointer<Gyoto::Metric::Generic>);
-    bool areConvertible(std::string, std::string);
+    double ToKilograms(double, const std::string &);
+    double FromKilograms(double, const std::string &);
+    double ToGeometrical(double, const std::string &,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    double FromGeometrical(double, const std::string &,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    bool areConvertible(const std::string &, const std::string&);
   }
 }
 
@@ -73,12 +74,12 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
   ut_unit * unit_;
   std::string kind_;
  public:
-  Unit(std::string);
+  Unit(const std::string &);
   ~Unit();
-  double To (double val, std::string from_unit);
-  double From (double val, std::string to_unit);
-  operator std::string() ;
-  operator ut_unit*();
+  double To (double val, const std::string &from_unit);
+  double From (double val, const std::string &to_unit);
+  operator std::string() const ;
+  operator ut_unit*() const ;
 };
 
 class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
@@ -89,13 +90,16 @@ class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
   cv_converter * converter_;
   void resetConverter_();
  public:
-  Converter(std::string, std::string);
-  Converter(Gyoto::SmartPointer<Gyoto::Units::Unit>, std::string);
-  Converter(std::string, Gyoto::SmartPointer<Gyoto::Units::Unit>);
-  Converter(Gyoto::SmartPointer<Gyoto::Units::Unit>,
-	    Gyoto::SmartPointer<Gyoto::Units::Unit>);
+  Converter(const std::string &,
+	    const std::string &);
+  Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit>&,
+	    const std::string&);
+  Converter(const std::string &,
+	    const Gyoto::SmartPointer<Gyoto::Units::Unit>&);
+  Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit>&,
+	    const Gyoto::SmartPointer<Gyoto::Units::Unit>&);
   ~Converter();
-  double operator()(double);
+  double operator()(double) const ;
 };
 
 #endif

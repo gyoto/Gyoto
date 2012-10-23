@@ -140,7 +140,7 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   virtual Generic * clone() const ; ///< Virtual copy constructor
 
   void setMass(const double);        ///< Set mass used in unitLength()
-  void setMass(const double, std::string unit);        ///< Set mass used in unitLength()
+  void setMass(const double, const std::string &unit);        ///< Set mass used in unitLength()
 
   // Accessors
 
@@ -148,6 +148,7 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   void setCoordKind(int coordkind); ///< Set coordinate kind
 
   double getMass() const;        ///< Get mass used in unitLength()
+  double getMass(const std::string &unit) const; ///< Get mass used in unitLength()
 
   /**
    * Metrics implementations are free to express lengths and distances
@@ -155,6 +156,7 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
    * units). This function returns this unit in SI (meters).
    */
   double unitLength() const ; ///< M * G / c^2, M is in kg, unitLength in meters
+  double unitLength(const std::string &unit) const ; ///< unitLength expressed in specified unit
 
 
   virtual void cartesianVelocity(double const coord[8], double vel[3]);

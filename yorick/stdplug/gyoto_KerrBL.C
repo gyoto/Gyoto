@@ -38,12 +38,13 @@ void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
 
   SmartPointer<KerrBL> *gg = (SmartPointer<KerrBL> *)gg_;
   static char const * knames[]={
+    "unit",
     "spin", "makecoord",		\
     YGYOTO_METRIC_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+4];
-  int kiargs[YGYOTO_METRIC_GENERIC_KW_N+3];
+  static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+5];
+  int kiargs[YGYOTO_METRIC_GENERIC_KW_N+4];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -60,7 +61,15 @@ void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
   // Process specific keywords
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=NULL;
   int k=-1;
+
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
+  }
 
   // spin
   if ((iarg=kiargs[++k])>=0) {
@@ -92,7 +101,7 @@ void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
   }
   
 
-  ygyoto_Metric_generic_eval(gg_, kiargs+k+1, piargs, rvset, paUsed);
+  ygyoto_Metric_generic_eval(gg_, kiargs+k+1, piargs, rvset, paUsed, unit);
   
   if (debug()) cerr << "DEBUG: ygyoto_KerrBL_eval() done\n";
 }

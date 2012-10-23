@@ -68,7 +68,7 @@ void Gyoto::Units::Init() {
 
 #ifdef HAVE_UDUNITS
 /* Unit class */
-Unit::Unit(string unit) : unit_(NULL), kind_(unit) {
+Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
   unit_ = ut_parse(SI, unit.c_str(), UT_ASCII);
   if (!unit_) throwError("Error initializing Unit");
 }
@@ -77,40 +77,44 @@ Unit::~Unit() {
   ut_free(unit_);
 }
 
-double Unit::To(double val, std::string from_unit) {
+double Unit::To(double val, const std::string &from_unit) {
   return Converter(from_unit, this)(val);
 }
 
-double Unit::From(double val, std::string to_unit) {
+double Unit::From(double val, const std::string &to_unit) {
   return Converter(this, to_unit)(val);
 }
 
-Unit::operator std::string() { return kind_; }
-Unit::operator ut_unit*() { return unit_; }
+Unit::operator std::string() const { return kind_; }
+Unit::operator ut_unit*() const { return unit_; }
 
 /* Converter */
-Converter::Converter(string from, string to) : from_(NULL), to_(NULL), converter_(NULL) {
+Converter::Converter(const string &from, const string &to) :
+  from_(NULL), to_(NULL), converter_(NULL)
+{
   from_ = new Unit(from);
   to_ = new Unit(to);
   resetConverter_();
 }
 
-Converter::Converter(Gyoto::SmartPointer<Gyoto::Units::Unit> from, std::string to) :
+Converter::Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit> &from,
+		     const std::string &to) :
   from_(from), to_(NULL), converter_(NULL)
 {
   to_ = new Unit(to);
   resetConverter_();
 }
 
-Converter::Converter(std::string from, Gyoto::SmartPointer<Gyoto::Units::Unit> to) :
+Converter::Converter(const std::string &from,
+		     const Gyoto::SmartPointer<Gyoto::Units::Unit> &to) :
   from_(NULL), to_(to), converter_(NULL)
 {
   from_ = new Unit(from);
   resetConverter_();
 }
 
-Converter::Converter(Gyoto::SmartPointer<Gyoto::Units::Unit> from,
-		     Gyoto::SmartPointer<Gyoto::Units::Unit> to) :
+Converter::Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit> &from,
+		     const Gyoto::SmartPointer<Gyoto::Units::Unit> &to) :
   from_(from), to_(to), converter_(NULL)
 {
   resetConverter_();
@@ -132,7 +136,7 @@ void Converter::resetConverter_() {
   }
   converter_ = ut_get_converter(*from_, *to_);
 }
-double Converter::operator()(double val) {
+double Converter::operator()(double val) const {
   return cv_convert_double(converter_, val);
 }
 
@@ -140,8 +144,8 @@ ut_system * Gyoto::Units::getSystem() { return SI; }
 
 #endif
 
-double Gyoto::Units::ToMeters(double val, string unit,
-			       const SmartPointer<Metric::Generic> &gg) {
+double Gyoto::Units::ToMeters(double val, const string &unit,
+			      const SmartPointer<Metric::Generic> &gg) {
   if ((unit=="") || (unit=="m")) return val ;
   if (unit=="geometrical") {
     if (gg) return val * gg -> unitLength();
@@ -170,7 +174,7 @@ double Gyoto::Units::ToMeters(double val, string unit,
 # endif
 }
 
-double Gyoto::Units::FromMeters(double val, string unit,
+double Gyoto::Units::FromMeters(double val, const string &unit,
 			       const SmartPointer<Metric::Generic> &gg) {
   if ((unit=="") || (unit=="m")) return val ;
   if (unit=="geometrical") {
@@ -258,7 +262,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
   return val;
 }
 
-double Gyoto::Units::ToKilograms(double val, string unit)
+double Gyoto::Units::ToKilograms(double val, const string &unit)
 {
 # ifdef HAVE_UDUNITS
   if (unit=="" || unit=="kg") return val;
@@ -277,21 +281,40 @@ double Gyoto::Units::ToKilograms(double val, string unit)
 # endif
 }
 
-double Gyoto::Units::ToGeometrical(double val, string unit,
-				   SmartPointer<Metric::Generic> gg) {
+double Gyoto::Units::FromKilograms(double val, const string &unit)
+{
+  if (unit=="" || unit=="kg") return val;
+# ifdef HAVE_UDUNITS
+  return KiloGram->From(val, unit);
+# else
+  else if (unit=="sunmass") val /= GYOTO_SUN_MASS;
+  else if (unit=="g") val*= 1e3;
+  else {
+    stringstream ss;
+    ss << "Unsupported mass unit: \"" << unit
+       << "\". Supported units: [kg] g sunmass";
+    throwError(ss.str());
+  }
+  return val;
+# endif
+}
+
+double Gyoto::Units::ToGeometrical(double val, const string &unit,
+				   const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical") return val;
   if (!gg) throwError("Need Metric to convert to geometrical units");
   return ToMeters(val, unit) / gg->unitLength();
 }
 
-double Gyoto::Units::FromGeometrical(double val, string unit,
-				     SmartPointer<Metric::Generic> gg) {
+double Gyoto::Units::FromGeometrical(double val, const string &unit,
+				     const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical") return val;
   if (!gg) throwError("Need Metric to convert from geometrical units");
   return FromMeters(val * gg->unitLength(), unit);
 }
 
-bool Gyoto::Units::areConvertible(std::string unit1, std::string unit2) {
+bool Gyoto::Units::areConvertible(const std::string &unit1,
+				  const std::string &unit2) {
 # ifdef HAVE_UDUNITS
   return ut_are_convertible(Unit(unit1), Unit(unit2));
 # else

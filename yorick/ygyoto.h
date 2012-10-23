@@ -88,7 +88,7 @@ int yarg_Spectrometer(int iarg);
 void ygyoto_Metric_register(char const * const kind, ygyoto_Metric_eval_worker_t* on_eval);
 void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*,
 				int *kiargs, int *piargs, int *rvset,
-				int *paUsed);
+				int *paUsed, char * unit);
 
 
 void ygyoto_Astrobj_register(char const * const kind, ygyoto_Astrobj_eval_worker_t* on_eval);
@@ -159,7 +159,7 @@ typedef Gyoto::SmartPointer<Gyoto::Metric::Generic> *ygyoto_ypush_Metric_t();
 typedef int yarg_OBJTYPE_t(int);
 typedef void ygyoto_Metric_register_t(char const * const, ygyoto_Metric_eval_worker_t*);
 typedef void ygyoto_Metric_generic_eval_t(Gyoto::SmartPointer<Gyoto::Metric::Generic>*, \
-			       int *, int *, int*, int*);
+					  int *, int *, int*, int*, char *);
 
 typedef Gyoto::SmartPointer<Gyoto::Astrobj::Generic> *ygyoto_yget_Astrobj_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Astrobj::Generic> *ygyoto_ypush_Astrobj_t();
@@ -233,9 +233,9 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 #define ygyoto_Metric_register(kind, on_eval) \
                           YGYOTO_LOCAL_SUPPLIER -> \
 		  ygyoto_Metric_register(kind, on_eval)
-#define ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
-                          YGYOTO_LOCAL_SUPPLIER -> \
-		  ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed)
+#define ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit) \
+        YGYOTO_LOCAL_SUPPLIER -> \
+        ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit)
 
 #define yget_Astrobj(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Astrobj(iarg)
 #define ypush_Astrobj()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Astrobj()

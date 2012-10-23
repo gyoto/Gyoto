@@ -85,14 +85,14 @@ void Metric::Generic::setKind(const string src) { kind_ = src;}
 /***************Definition of the physical scene**************/
 
 void Metric::Generic::setMass(const double mass)        { mass_=mass;}
-void Metric::Generic::setMass(const double mass, string unit) {
+void Metric::Generic::setMass(const double mass, const string &unit) {
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
   GYOTO_DEBUG_EXPR(mass);
   GYOTO_DEBUG_EXPR(unit);
   GYOTO_ENDIF_DEBUG
 # endif
-  mass_ = Units::ToKilograms(mass, unit);
+  setMass(Units::ToKilograms(mass, unit));
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(mass="<<mass<<", unit=\"" << unit << "\") : mass_="
 	      << mass_ <<" kg"<< endl;
@@ -103,7 +103,9 @@ int Metric::Generic::getCoordKind()               const { return coordkind_; }
 void Metric::Generic::setCoordKind(int coordkind)       { coordkind_=coordkind; }
 
 double Metric::Generic::getMass()                 const { return mass_; }
-
+double Metric::Generic::getMass(const string &unit) const {
+  return Units::FromKilograms(getMass(), unit);
+}
 
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
@@ -420,6 +422,10 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
 
 double Metric::Generic::unitLength() const { 
   return mass_ * GYOTO_G_OVER_C_SQUARE; 
+}
+
+double Metric::Generic::unitLength(const string &unit) const { 
+  return Units::FromMeters(unitLength(), unit);
 }
 
 int Metric::Generic::isStopCondition(double const * const ) const {

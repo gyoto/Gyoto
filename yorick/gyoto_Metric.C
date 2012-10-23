@@ -92,10 +92,11 @@ extern "C" {
 
     // Fall-back to generic worker
     static char const * knames[]={
+      "unit",
       YGYOTO_METRIC_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+1];
-    int kiargs[YGYOTO_METRIC_GENERIC_KW_N];
+    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+2];
+    int kiargs[YGYOTO_METRIC_GENERIC_KW_N+1];
     int piargs[]={-1,-1,-1,-1};
     // push back metric by default
     *ypush_Metric()=gg;
@@ -111,7 +112,17 @@ extern "C" {
     }
 
     int rvset[1]={0}, paUsed[1]={0};
-    ygyoto_Metric_generic_eval(&gg, kiargs, piargs, rvset, paUsed);
+    char * unit=NULL;
+    int k=-1;
+
+    /* UNIT */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
+    }
+  
+    ygyoto_Metric_generic_eval(&gg, kiargs+k+1, piargs, rvset, paUsed, unit);
   }
 }
 
@@ -146,7 +157,7 @@ void ygyoto_Metric_register(char const*const name, ygyoto_Metric_eval_worker_t* 
 
 void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
 				int *kiargs, int *piargs,
-				int *rvset, int *paUsed) {
+				int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg=-1;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
@@ -192,20 +203,20 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     iarg+=*rvset;
     if (yarg_nil(iarg)) { // mass= : get mass
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*gg)->getMass());
+      ypush_double((*gg)->getMass(unit?unit:""));
     } else                // mass=m: set mass        
-      (*gg)->setMass(ygets_d(iarg)) ;
+      (*gg)->setMass(ygets_d(iarg), unit?unit:"") ;
   }
 
   // Unit length
   if ((iarg=kiargs[++k])>=0) { // unitLength()
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("UNITLENGTH is readonly");
-    ypush_double((*gg)->unitLength());
+    ypush_double((*gg)->unitLength(unit?unit:""));
   }
 
   // circularvelocity
-  if ((iarg=kiargs[++k])>=0) { // unitLength()
+  if ((iarg=kiargs[++k])>=0) {
     if ((*rvset)++) y_error(rmsg);
     if ((*paUsed)++) y_error(pmsg);
     long ntot=0;
@@ -296,10 +307,11 @@ extern "C" {
     }
 
     static char const * knames[]={
+      "unit",
       YGYOTO_METRIC_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+1];
-    int kiargs[YGYOTO_METRIC_GENERIC_KW_N];
+    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+2];
+    int kiargs[YGYOTO_METRIC_GENERIC_KW_N+1];
     int piargs[]={-1,-1,-1,-1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     
@@ -325,7 +337,17 @@ extern "C" {
       } else y_error("Cannot allocate object of virtual class Metric");
     }
 
-    ygyoto_Metric_generic_eval(gg, kiargs, piargs, rvset, paUsed);
+    char * unit=NULL;
+    int k=-1;
+
+    /* UNIT */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
+    }
+
+    ygyoto_Metric_generic_eval(gg, kiargs+k+1, piargs, rvset, paUsed, unit);
   }
 
 }
