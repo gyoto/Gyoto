@@ -136,6 +136,8 @@ double Converter::operator()(double val) {
   return cv_convert_double(converter_, val);
 }
 
+ut_system * Gyoto::Units::getSystem() { return SI; }
+
 #endif
 
 double Gyoto::Units::ToMeters(double val, string unit,

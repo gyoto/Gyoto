@@ -307,6 +307,14 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   std::ostream& print(std::ostream&) const ;
   std::ostream& printBaseVectors(std::ostream&) const ;
 
+
+  /// UDUNITS
+# ifdef HAVE_UDUNITS
+  void mapPixUnit();
+  void unmapPixUnit();
+# endif
+
+
 #ifdef GYOTO_USE_XERCES
  public:
     void fillElement(FactoryMessenger *fmp); ///< called from Factory

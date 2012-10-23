@@ -45,6 +45,7 @@ namespace Gyoto {
 #ifdef HAVE_UDUNITS
     class Unit;
     class Converter;
+    ut_system * getSystem();
 #endif
     void Init();
     double ToMeters(double, std::string,

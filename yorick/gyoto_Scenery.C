@@ -94,13 +94,14 @@ extern "C" {
     // Parse keywords
     static char const *knames[] = {
       "get_pointer",
+      "unit",
       "metric", "screen", "astrobj", "delta", "tmin", "quantities",
       "xmlwrite", "clone",
       "impactcoords", "nthreads",
       0
     };
-    static long kglobs[12];
-    int kiargs[11], piargs[]={-1, -1, -1};
+    static long kglobs[13];
+    int kiargs[12], piargs[]={-1, -1, -1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
@@ -145,7 +146,16 @@ extern "C" {
       ypush_long((long)(sc()));
     }
 
+    char * unit=NULL;
+
     ///////// ACCESSORS //////////
+    /* UNIT */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      GYOTO_DEBUG << "get unit" << endl;
+      unit = ygets_q(iarg);
+    }
+
     /* METRIC */
     if ((iarg=kiargs[++k])>=0) {
       iarg+=*rvset;
@@ -180,9 +190,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // delta=      : Getting
 	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_double(sc->getDelta());
+	ypush_double(sc->getDelta(unit?unit:""));
       } else                // delta=double: Setting
-         sc->setDelta(ygets_d(iarg));
+	sc->setDelta(ygets_d(iarg), unit?unit:"");
     }
 
     /* TMIN */
@@ -190,9 +200,9 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // tmin=      : Getting
 	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_double(sc->getTmin());
+	ypush_double(sc->getTmin(unit?unit:""));
       } else                // tmin=double: Setting
-         sc->setTmin(ygets_d(iarg));
+	sc->setTmin(ygets_d(iarg), unit?unit:"");
     }
 
     /* QUANTITIES */

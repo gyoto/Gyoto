@@ -523,6 +523,42 @@ void Screen::setFieldOfView(double fov) { fov_ = fov; }
 size_t Screen::getResolution() { return npix_; }
 void Screen::setResolution(size_t n) { npix_ = n; }
 
+#ifdef HAVE_UDUNITS
+void Gyoto::Screen::mapPixUnit() {
+  Units::Unit radian ("radian");
+  double delta = fov_/npix_;
+  ut_unit * pix = ut_scale(delta, radian);
+  ut_status status = UT_BAD_ARG;
+  status = ut_map_name_to_unit("pixel", UT_ASCII, pix);
+  switch (status) {
+  case UT_SUCCESS:
+    break;
+  case UT_EXISTS:
+    throwError("name \"pixel\" already registered");
+    break;
+  default:
+    throwError("error initializing \"pixel\" unit");
+  }
+  status = ut_map_symbol_to_unit("pix", UT_ASCII, pix);
+  switch (status) {
+  case UT_SUCCESS:
+    break;
+  case UT_EXISTS:
+    throwError("symbol \"pix\" already registered");
+    break;
+  default:
+    throwError("error initializing \"pixel\" unit");
+  }
+  ut_free(pix);
+}
+void Gyoto::Screen::unmapPixUnit() {
+  ut_system * sys = Units::getSystem();
+  if ((ut_unmap_name_to_unit(sys, "pixel", UT_ASCII) != UT_SUCCESS) ||
+      (ut_unmap_symbol_to_unit(sys, "pix", UT_ASCII) != UT_SUCCESS))
+    throwError("Error unmapping \"pixel\" unit");
+}
+#endif
+
 #ifdef GYOTO_USE_XERCES
 void Screen::fillElement(FactoryMessenger *fmp) {
   FactoryMessenger* child = NULL;

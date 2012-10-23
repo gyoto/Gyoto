@@ -119,7 +119,14 @@ void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
 }
 
 double Scenery::getDelta() const { return delta_; }
+double Scenery::getDelta(const string &unit) const {
+  return Units::FromGeometrical(getDelta(), unit, gg_);
+}
+
 void Scenery::setDelta(double d) { delta_ = d; }
+void Scenery::setDelta(double d, const string &unit) {
+  setDelta(Units::ToGeometrical(d, unit, gg_));
+}
 
 void  Scenery::setNThreads(size_t n) { nthreads_ = n; }
 size_t Scenery::getNThreads() const { return nthreads_; }
@@ -372,6 +379,11 @@ void Scenery::setRequestedQuantities(std::string squant) {
   char * tk = strtok(const_cast<char*>(squant.c_str()), " \t\n");
   string tkk="", quant="", unit = "";
   size_t first = 0, last = 0;
+
+# ifdef HAVE_UDUNITS
+  if (screen_) screen_ -> mapPixUnit();
+# endif
+
   while (tk != NULL) {
     tkk = tk;
     first = tkk.find("[");
@@ -420,6 +432,11 @@ void Scenery::setRequestedQuantities(std::string squant) {
     else throwError("ScenerySubcontractor(): unkwon quantity"); 
     tk = strtok(NULL, " \t\n");
   }
+
+# ifdef HAVE_UDUNITS
+  if (screen_) screen_ -> unmapPixUnit();
+# endif
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "("<<squant<<"): " << "quantities_=" << quantities_ << endl;
 # endif
@@ -518,7 +535,14 @@ size_t Scenery::getScalarQuantitiesCount() const {
 }
 
 double Scenery::getTmin() const { return tmin_; }
+double Scenery::getTmin(const string &unit) const {
+  return Units::FromGeometrical(getTmin(), unit, gg_);
+}
+
 void Scenery::setTmin(double tmin) { tmin_ = tmin; }
+void Scenery::setTmin(double tmin, const string &unit) {
+  setTmin(Units::ToGeometrical(tmin, unit, gg_));
+}
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
@@ -558,7 +582,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
 
 SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
 
-  string name="", content="";
+  string name="", content="", unit="";
   double delta = GYOTO_DEFAULT_DELTA ;
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Screen> scr = NULL;
@@ -571,20 +595,16 @@ SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
   scr= fmp->getScreen();
   ao = fmp->getAstrobj();
 
+  SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
 
-  while (fmp->getNextParameter(&name, &content)) {
+  while (fmp->getNextParameter(&name, &content, &unit)) {
     char* tc = const_cast<char*>(content.c_str());
-    if (name=="Delta") delta = atof(tc);
-    if (name=="Quantities") squant = content;
-    if (name=="MinimumTime") tmin = atof(tc);
-    if (name=="NThreads") nthreads = atoi(tc);
+    if (name=="Delta")       sc -> setDelta(atof(tc), unit);;
+    if (name=="Quantities")  sc -> setRequestedQuantities(tc);
+    if (name=="MinimumTime") sc -> setTmin(atof(tc), unit);
+    if (name=="NThreads")    sc -> setNThreads(atoi(tc));
   }
 
-  SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
-  sc -> setDelta(delta);
-  sc -> setTmin(tmin);
-  sc -> setNThreads(nthreads);
-  if (squant!="") sc -> setRequestedQuantities(squant);
   return sc;
 }
 #endif
