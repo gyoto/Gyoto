@@ -330,6 +330,8 @@ namespace Gyoto {
     double FromGeometricalTime(double, const std::string &,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
 
+    double ToHerz(double value, const std::string &unit);
+    double FromHerz(double value, const std::string &unit);
     /**
      * \brief Is it possible to convert between unit1 and unit2?
      *

@@ -45,12 +45,13 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
   }
 
   static char const * knames[]={
+    "unit",
     "kind", "nsamples", "band", 
     "xmlwrite",
     "channels", "midpoints", "widths",
     0
   };
-#define nkw 7
+#define nkw 8
   static long kglobs[nkw+1];
   int kiargs[nkw];
   int piargs[]={-1,-1,-1,-1};
@@ -62,6 +63,14 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
       if (parg<4) piargs[parg++]=iarg--;
       else y_error("gyoto_Astrobj takes at most 4 positional arguments");
     }
+  }
+
+  char *unit = NULL;
+  /* UNIT */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    GYOTO_DEBUG << "get unit" << endl;
+    unit = ygets_q(iarg);
   }
 
   /* SPECTRO_KIND */
@@ -97,7 +106,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
       boundaries = ygeta_d(iarg, &ntot, NULL);
       if (ntot != 2)
 	  y_error("BAND must have 2 elements");
-      (*sp) -> setBand(boundaries);
+      (*sp) -> setBand(boundaries, unit?unit:"");
     }
   }
 

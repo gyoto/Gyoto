@@ -23,7 +23,10 @@
     <Resolution> 32 </Resolution>
     <!--<Spectrometer kind="freqlog" nsamples="100">5. 25.</Spectrometer>-->
     <!--<Spectrometer kind="freqlog" nsamples="20">11. 13.</Spectrometer>-->
-    <Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer>
+    <!--Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer-->
+    <Spectrometer kind="freq" nsamples="1" unit="eV">
+      4.135667516 4.135667516
+    </Spectrometer>
   </Screen>
 
   <Quantities>Spectrum[mJy/pix²]</Quantities>

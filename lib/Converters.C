@@ -158,7 +158,9 @@ double Gyoto::Units::ToMeters(double val, const string &unit,
     else throwError("Metric required for geometrical -> meter conversion");
   }
 # ifdef HAVE_UDUNITS
-  return Meter->To(val, unit); 
+  if (areConvertible(unit, "m")) return Meter->To(val, unit);
+  if (areConvertible(unit, "s")) return Second->To(val, unit)*GYOTO_C;
+  return GYOTO_C/ToHerz(val, unit);
 # else
   if (unit=="cm")          return val * 1e-2;
   if (unit=="km")          return val * 1e3;
@@ -188,7 +190,9 @@ double Gyoto::Units::FromMeters(double val, const string &unit,
     else throwError("Metric required for meter -> geometrical conversion");
   }
 # ifdef HAVE_UDUNITS
-  return Meter->From(val, unit); 
+  if (areConvertible(unit, "m")) return Meter->From(val, unit);
+  if (areConvertible(unit, "s")) return Second->From(val*GYOTO_C, unit);
+  return FromHerz(GYOTO_C/val, unit);
 # else
   if (unit=="cm")          return val * 1e2;
   if (unit=="km")          return val * 1e-3;
@@ -333,6 +337,50 @@ double Gyoto::Units::FromGeometricalTime(double val, const string &unit,
   if (unit == "" || unit == "geometrical_time") return val;
   if (!gg) throwError("Need Metric to convert from geometrical units");
   return FromSeconds(val * gg->unitLength() / GYOTO_C, unit);
+}
+
+double Gyoto::Units::ToHerz(double value, const string &unit) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "converting " << value << string(unit) << "to Herz" << endl;
+# endif
+# ifdef HAVE_UDUNITS
+  if (unit == "" || unit == "Hz") return value;
+  if (areConvertible(unit, "Hz"))
+    return Converter(unit, "Hz")(value);
+  if (areConvertible(unit, "m"))
+    return GYOTO_C/Meter->To(value, unit);
+  if (areConvertible(unit, "eV"))
+    return Converter(unit, "eV")(value) * GYOTO_eV2Hz;
+  stringstream ss;
+  ss << "Units::ToHerz(): unknown unit \""
+     << unit << "\".";
+  throwError (ss.str());
+# else
+  GYOTO_WARNING_CONV(unit, "Hz");
+# endif
+  return 0.;
+}
+
+double Gyoto::Units::FromHerz(double value, const string &unit) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "converting " << value << "Hz to " << string(unit) << endl;
+# endif
+# ifdef HAVE_UDUNITS
+  if (unit == "" || unit == "Hz") return value;
+  if (areConvertible(unit, "Hz"))
+    return Converter("Hz", unit)(value);
+  if (areConvertible(unit, "m"))
+    return Meter->From(GYOTO_C/value, unit);
+  if (areConvertible(unit, "eV"))
+    return Converter("eV", unit)(value / GYOTO_eV2Hz);
+  stringstream ss;
+  ss << "Units::ToHerz(): unknown unit \""
+     << unit << "\".";
+  throwError (ss.str());
+# else
+  GYOTO_WARNING_UDUNITS(unit, "Hz");
+# endif
+  return 0.;
 }
 
 bool Gyoto::Units::areConvertible(const std::string &unit1,

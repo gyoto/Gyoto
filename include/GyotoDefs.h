@@ -122,6 +122,10 @@ namespace Gyoto {
 #define GYOTO_INFO   if (Gyoto::verbose() >= GYOTO_INFO_VERBOSITY) \
     std::cerr<<"INFO: "
 
+#define GYOTO_WARNING_UDUNITS(from, to) \
+  GYOTO_WARNING << "unit ignored (trying to convert from \"" from "\" to \"" \
+    to "\"), you may have more chance recompiling Gyoto with --with-udunits"
+
 #define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
 #define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \
     std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "         \
@@ -170,11 +174,7 @@ namespace Gyoto {
 #endif
 
 #ifndef GYOTO_PLUGIN_SFX
-#ifdef __APPLE__
-#define GYOTO_PLUGIN_SFX "dylib"
-#else
 #define GYOTO_PLUGIN_SFX "so"
-#endif
 #endif
 
 /* Physical constants */
@@ -244,6 +244,9 @@ namespace Gyoto {
 #define GYOTO_SECRAD 4.848136811095360e-06
 #define GYOTO_MASRAD 4.848136811095360e-09
 #define GYOTO_MUASRAD 4.848136811095360e-12
+
+/// \brief Convert from eV to Hz
+#define GYOTO_eV2Hz 2.417989348e+14
 
 /// \brief Default value for Screen::dmax_
 #define GYOTO_SCREEN_DMAX 1e7

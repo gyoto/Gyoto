@@ -20,6 +20,8 @@
 #include "GyotoSpectrometer.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoConverters.h"
+#include "GyotoMetric.h"
 
 #include <iostream>
 #include <iomanip>
@@ -160,6 +162,39 @@ void Spectrometer::setBand(double nu[2]) {
   reset_();
 }
 
+void Spectrometer::setBand(double nu[2], string unit, string kind) {
+  if (kind != "") setKind(kind);
+  double band[2] = {nu[0], nu[1]};
+
+  switch (kind_) {
+  case GYOTO_SPECTRO_KIND_FREQ: 
+    if (unit != "" && unit != "Hz")
+      for (size_t i=0; i<1; ++i)
+	band[i] = Units::ToHerz(nu[i], unit);
+    break;
+  case GYOTO_SPECTRO_KIND_FREQLOG:
+    if (unit != "" && unit != "Hz")
+      for (size_t i=0; i<1; ++i)
+	band[i] = log10(Units::ToHerz(pow(10., nu[i]), unit));
+    break;
+  case GYOTO_SPECTRO_KIND_WAVE:
+    if (unit != "" && unit != "m")
+      for (size_t i=0; i<1; ++i)
+	band[i] = Units::ToMeters(nu[i], unit);
+    break;
+  case GYOTO_SPECTRO_KIND_WAVELOG:
+    if (unit != "" && unit != "m")
+      for (size_t i=0; i<1; ++i)
+	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
+    break;
+  default:
+    throwError("Spectrometer::setBand(double, string, string) at loss: "
+	       "please specify Spectrometer kind");
+  }
+
+  setBand(band);
+}
+
 SpectroKind_t Spectrometer::getKind() const {
   return kind_;
 }
@@ -209,6 +244,7 @@ Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
 
   string skind = fmp -> getSelfAttribute( "kind" );
   size_t nsamples = atol( fmp -> getSelfAttribute( "nsamples" ) . c_str () );
+  string unit = fmp -> getSelfAttribute( "unit" );
   string content = fmp -> getFullContent();
   char * tc = const_cast<char*>(content.c_str());
   double band[2];
@@ -216,9 +252,8 @@ Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
   band[1]=strtod(tc, &tc);
 
   Spectrometer* spr =new Spectrometer();
-  spr -> setBand(band);
+  spr -> setBand(band, unit, skind);
   spr -> setNSamples(nsamples);
-  spr -> setKind(skind);
 
   return spr;
 

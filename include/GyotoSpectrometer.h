@@ -61,6 +61,20 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
   void setNSamples(size_t n);
   void setBand(double nu[2]);
 
+  /**
+   * \brief Set the spectral band boundaries in specified unit
+   *
+   * If kind is not specified, member kind_ is used. Else kind_ is updated.
+   *
+   * unit is actually the unit for 10^nu for freqlog and wavelog. Defaults:
+   *  - kind==freq: nu in Hz
+   *  - kind==freqlog: 10^nu in Hz
+   *  - kind==wave: nu in meters
+   *  - kind==wavelog: 10^nu in meters
+   * 
+   */
+  void setBand(double nu[2], std::string unit, std::string kind="");
+
   SpectroKind_t getKind() const ;
   std::string getKindStr() const;
   size_t getNSamples() const ;
