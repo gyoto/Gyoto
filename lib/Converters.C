@@ -75,73 +75,51 @@ void Gyoto::Units::Init() {
 #ifdef HAVE_UDUNITS
 /* Unit class */
 Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
-  unit_ = ut_parse(SI, unit.c_str(), UT_UTF8);
-  if (!unit_) throwError("Error initializing Unit");
+  if (kind_!="") {
+    unit_ = ut_parse(SI, unit.c_str(), UT_UTF8);
+    if (!unit_) throwError("Error initializing Unit");
+  }
+}
+
+Unit::Unit(char const * const unit) : unit_(NULL), kind_(unit) {
+  if (kind_!="") {
+    unit_ = ut_parse(SI, unit, UT_UTF8);
+    if (!unit_) throwError("Error initializing Unit");
+  }
 }
 
 Unit::~Unit() {
   ut_free(unit_);
 }
 
-double Unit::To(double val, const std::string &from_unit) {
-  return Converter(from_unit, this)(val);
+double Unit::To(double val, const Unit &from_unit) {
+  return Converter(from_unit, *this)(val);
 }
 
-double Unit::From(double val, const std::string &to_unit) {
-  return Converter(this, to_unit)(val);
+double Unit::From(double val, const Unit &to_unit) {
+  return Converter(*this, to_unit)(val);
 }
 
 Unit::operator std::string() const { return kind_; }
 Unit::operator ut_unit*() const { return unit_; }
 
 /* Converter */
-Converter::Converter(const string &from, const string &to) :
-  from_(NULL), to_(NULL), converter_(NULL)
+Converter::Converter(const Gyoto::Units::Unit &from,
+		     const Gyoto::Units::Unit &to) :
+  converter_(NULL)
 {
-  from_ = new Unit(from);
-  to_ = new Unit(to);
-  resetConverter_();
-}
-
-Converter::Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit> &from,
-		     const std::string &to) :
-  from_(from), to_(NULL), converter_(NULL)
-{
-  to_ = new Unit(to);
-  resetConverter_();
-}
-
-Converter::Converter(const std::string &from,
-		     const Gyoto::SmartPointer<Gyoto::Units::Unit> &to) :
-  from_(NULL), to_(to), converter_(NULL)
-{
-  from_ = new Unit(from);
-  resetConverter_();
-}
-
-Converter::Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit> &from,
-		     const Gyoto::SmartPointer<Gyoto::Units::Unit> &to) :
-  from_(from), to_(to), converter_(NULL)
-{
-  resetConverter_();
+  if (!ut_are_convertible(from, to)) {
+    stringstream ss;
+    ss << "Unsupported conversion: from \"" << string(from) << "\" to " << string(to) << "\"";
+    throwError(ss.str());
+  }
+  converter_ = ut_get_converter(from, to);
 }
 
 Converter::~Converter() {
   if (converter_) { cv_free(converter_); converter_ = NULL; }
-  from_ = NULL;
-  to_ = NULL;
 }
 
-void Converter::resetConverter_() {
-  if (!ut_are_convertible(*from_, *to_)) {
-    ut_free(*from_);
-    ut_free(*to_);
-    stringstream ss;
-    ss << "Unsupported conversion: from \"" << string(*from_) << "\" to " << string(*to_) << "\"";
-    throwError(ss.str());
-  }
-  converter_ = ut_get_converter(*from_, *to_);
-}
 double Converter::operator()(double val) const {
   return cv_convert_double(converter_, val);
 }
@@ -152,14 +130,15 @@ ut_system * Gyoto::Units::getSystem() { return SI; }
 
 double Gyoto::Units::ToMeters(double val, const string &unit,
 			      const SmartPointer<Metric::Generic> &gg) {
-  if ((unit=="") || (unit=="m")) return val ;
+  if (unit=="" || unit=="m") return val ;
   if (unit=="geometrical") {
     if (gg) return val * gg -> unitLength();
     else throwError("Metric required for geometrical -> meter conversion");
   }
 # ifdef HAVE_UDUNITS
-  if (areConvertible(unit, "m")) return Meter->To(val, unit);
-  if (areConvertible(unit, "s")) return Second->To(val, unit)*GYOTO_C;
+  Unit from(unit);
+  if (areConvertible(from, *Meter)) return Meter->To(val, from);
+  if (areConvertible(from, *Second)) return Second->To(val, from)*GYOTO_C;
   return GYOTO_C/ToHerz(val, unit);
 # else
   if (unit=="cm")          return val * 1e-2;
@@ -190,8 +169,9 @@ double Gyoto::Units::FromMeters(double val, const string &unit,
     else throwError("Metric required for meter -> geometrical conversion");
   }
 # ifdef HAVE_UDUNITS
-  if (areConvertible(unit, "m")) return Meter->From(val, unit);
-  if (areConvertible(unit, "s")) return Second->From(val*GYOTO_C, unit);
+  Unit to (unit);
+  if (areConvertible(to, *Meter)) return Meter->From(val, to);
+  if (areConvertible(to, *Second)) return Second->From(val*GYOTO_C, to);
   return FromHerz(GYOTO_C/val, unit);
 # else
   if (unit=="cm")          return val * 1e2;
@@ -227,7 +207,7 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
       throwError("Metric required for geometrical_time -> second conversion");
   }
 # ifdef HAVE_UDUNITS
-  else val = Converter(unit, "s")(val);
+  else val = Second->To(val, unit);
 # else
   else if (unit=="min") val *= 60. ;
   else if (unit=="h") val *= 3600. ;
@@ -257,7 +237,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
       throwError("Metric required for second -> geometrical_time conversion");
   }
 # ifdef HAVE_UDUNITS
-  else val = Converter("s", unit)(val);
+  else val = Second->From(val, unit);
 # else
   else if (unit=="min") val /= 60. ;
   else if (unit=="h") val /= 3600. ;
@@ -345,34 +325,14 @@ double Gyoto::Units::ToHerz(double value, const string &unit) {
 # endif
 # ifdef HAVE_UDUNITS
   if (unit == "" || unit == "Hz") return value;
-  if (areConvertible(unit, "Hz"))
-    return Converter(unit, "Hz")(value);
-  if (areConvertible(unit, "m"))
-    return GYOTO_C/Meter->To(value, unit);
-  if (areConvertible(unit, "eV"))
-    return Converter(unit, "eV")(value) * GYOTO_eV2Hz;
-  stringstream ss;
-  ss << "Units::ToHerz(): unknown unit \""
-     << unit << "\".";
-  throwError (ss.str());
-# else
-  GYOTO_WARNING_CONV(unit, "Hz");
-# endif
-  return 0.;
-}
-
-double Gyoto::Units::FromHerz(double value, const string &unit) {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "converting " << value << "Hz to " << string(unit) << endl;
-# endif
-# ifdef HAVE_UDUNITS
-  if (unit == "" || unit == "Hz") return value;
-  if (areConvertible(unit, "Hz"))
-    return Converter("Hz", unit)(value);
-  if (areConvertible(unit, "m"))
-    return Meter->From(GYOTO_C/value, unit);
-  if (areConvertible(unit, "eV"))
-    return Converter("eV", unit)(value / GYOTO_eV2Hz);
+  Unit from (unit), Hz("Hz");
+  if (areConvertible(from, Hz))
+    return Hz.To(value, from);
+  if (areConvertible(from, *Meter))
+    return GYOTO_C/Meter->To(value, from);
+  Unit eV("eV");
+  if (areConvertible(from, eV))
+    return eV.To(value, from) * GYOTO_eV2Hz;
   stringstream ss;
   ss << "Units::ToHerz(): unknown unit \""
      << unit << "\".";
@@ -383,12 +343,33 @@ double Gyoto::Units::FromHerz(double value, const string &unit) {
   return 0.;
 }
 
-bool Gyoto::Units::areConvertible(const std::string &unit1,
-				  const std::string &unit2) {
-# ifdef HAVE_UDUNITS
-  return ut_are_convertible(Unit(unit1), Unit(unit2));
-# else
-  throwError("Gyoto::Units::areConvertible unimplemented without udunits");
-  return 0;
+double Gyoto::Units::FromHerz(double value, const string &unit) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "converting " << value << "Hz to " << string(unit) << endl;
 # endif
+# ifdef HAVE_UDUNITS
+  if (unit == "" || unit == "Hz") return value;
+  Unit to(unit), Hz("Hz");
+  if (areConvertible(to, Hz))
+    return Hz.From(value, to);
+  if (areConvertible(to, *Meter))
+    return Meter->From(GYOTO_C/value, to);
+  Unit eV("eV");
+  if (areConvertible(to, eV))
+    return eV.From(value / GYOTO_eV2Hz, to);
+  stringstream ss;
+  ss << "Units::ToHerz(): unknown unit \""
+     << unit << "\".";
+  throwError (ss.str());
+# else
+  GYOTO_WARNING_UDUNITS(unit, "Hz");
+# endif
+  return 0.;
 }
+
+# ifdef HAVE_UDUNITS
+bool Gyoto::Units::areConvertible(const Unit &unit1,
+				  const Unit &unit2) {
+  return ut_are_convertible(unit1, unit2);
+}
+# endif

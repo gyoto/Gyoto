@@ -644,6 +644,7 @@ LORENECPPFLAGS
 HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
+MAKE_S
 CFITSIOCPPFLAGS
 CFITSIOLDFLAGS
 HAVE_CFITSIO_FALSE
@@ -847,6 +848,7 @@ XERCES_CFLAGS
 XERCES_LIBS
 CFITSIO_CFLAGS
 CFITSIO_LIBS
+MAKE_S
 HOME_LORENE'
 
 
@@ -1549,6 +1551,7 @@ Some influential environment variables:
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
               linker flags for CFITSIO, overriding pkg-config
+  MAKE_S      make command which does not print directories [[make -w]]
   HOME_LORENE path to Lorene build directory (see also --with-lorene)
 
 Use these variables to override the choices made by `configure' or to help
@@ -17649,6 +17652,10 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LORENE" >&5
 $as_echo_n "checking for LORENE... " >&6; }
 
+if test "x$MAKE_S" = "x"; then :
+  MAKE_S="make -s"
+fi
+
 # first check whether LORENE is required and get HOME_LORENE
 require_lorene=no
 
@@ -17712,12 +17719,12 @@ include \$(HOME_LORENE)/local_settings
 	@echo \$(\$@)
 _ACEOF
    LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene -llorenef77"
-   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK`"
-   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL`"
-   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT`"
-   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
-   LORENELDFLAGS="$LORENELDFLAGS `make HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
-   LORENECPPFLAGS=`make HOME_LORENE=$HOME_LORENE -f conftest.make INC`
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
+   LORENECPPFLAGS=`$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make INC`
    LORENECPPFLAGS="$LORENECPPFLAGS"
 
 $as_echo "#define GYOTO_USE_LORENE 1" >>confdefs.h

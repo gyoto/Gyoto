@@ -123,8 +123,10 @@ namespace Gyoto {
     std::cerr<<"INFO: "
 
 #define GYOTO_WARNING_UDUNITS(from, to) \
-  GYOTO_WARNING << "unit ignored (trying to convert from \"" from "\" to \"" \
-    to "\"), you may have more chance recompiling Gyoto with --with-udunits"
+  GYOTO_WARNING << "unit ignored (trying to convert from \"" << from \
+		<< "\" to "					     \
+		<< to \
+		<< "\"), you may have more chance recompiling Gyoto with --with-udunits"
 
 #define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
 #define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \

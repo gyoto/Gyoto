@@ -104,6 +104,9 @@ namespace Gyoto {
     /**
      * \class Gyoto::Units::Unit
      * \brief Wrapper around ut_unit from udunits
+     *
+     * Gyoto::Units::Unit objects usually cast seamlessly to and from
+     * udunits2 ut_unit* and std::string.
      */
     class Unit;
 
@@ -116,17 +119,25 @@ namespace Gyoto {
      * instantiation time:
      *
      * \code
-     * string from_unit="erg.s-1.cm-2.sr-1.Hz-1", to_unit="mJy/microarcsec2";
+     * Gyoto::Units::Unit from_unit ("erg.s-1.cm-2.sr-1.Hz-1"),
+     *                    to_unit   ("mJy/µas²");
      * double data_in[1000], data_out[1000];
      * Converter conv(from_unit, to_unit);
      * for (size_t i=0; i<1000; ++i) data_out[i] = conv(data_in[i]);
      * \endcode
      *
+     * Since std::string cast automatically to Gyoto::Units::Unit
+     * object, this is equivalent:
+     *
+     * \code
+     * Converter conv("erg.s-1.cm-2.sr-1.Hz-1", "mJy/µas²");
+     * for (size_t i=0; i<1000; ++i) data_out[i] = conv(data_in[i]);
+     * \endcode
      */
     class Converter;
 
     /**
-     * \brief The unit system used in all of Gyoto
+     * \brief Retrieve the unit system used in all of Gyoto
      */
     ut_system * getSystem();
 #endif
@@ -148,6 +159,9 @@ namespace Gyoto {
      * If gg is provided (and not NULL), use it to interpret the
      * string "geometrical" as representing
      * gg->Gyoto::Metric::Generic::unitLength().
+     *
+     * ToMeters() will also convert time, frequency and energy units
+     * to meters (as in frequency -> wavelength).
      *
      * \param value
      *   (double) the value to convert, expressed according to "unit"
@@ -171,6 +185,9 @@ namespace Gyoto {
      * If gg is provided (and not NULL), use it to interpret the
      * string "geometrical" as representing
      * gg->Gyoto::Metric::Generic::unitLength().
+     *
+     * ToMeters() will also convert to time, frequency and energy
+     * units (as in wavelength -> frequency).
      *
      * \param value
      *   (double) the value to convert, expressed in meters.
@@ -330,8 +347,38 @@ namespace Gyoto {
     double FromGeometricalTime(double, const std::string &,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
 
+
+    /**
+     * \brief Convert from arbitrary frequency unit to Herz
+     *
+     * ToHerz will also convert from length and energy units (such as
+     * "eV").
+     *
+     * \param value
+     *   (double) the value to convert, expressed according to "unit".
+     * \param unit (std::string) the "unit" from which to convert,
+     *   e.g. "MHz", "keV"
+     *
+     * \return value, expressed in "Hz".
+     */
     double ToHerz(double value, const std::string &unit);
+
+    /**
+     * \brief Convert to arbitrary frequency unit from Herz
+     *
+     * FromHerz will also convert to length and energy units (such as
+     * "eV").
+     *
+     * \param value
+     *   (double) the value to convert, expressed according in "Hz".
+     * \param unit (std::string) the "unit" from which to convert,
+     *   e.g. "MHz", "keV"
+     *
+     * \return value, expressed in "units".
+     */
     double FromHerz(double value, const std::string &unit);
+
+#   ifdef HAVE_UDUNITS
     /**
      * \brief Is it possible to convert between unit1 and unit2?
      *
@@ -341,13 +388,14 @@ namespace Gyoto {
      * areConvertible("Jy", "Jy/microacsec2")==1. Numerically, "Jy" is
      * the same as "Jy/sr2".
      *
-     * \param unit1 (string) first unit
-     * \param unit2 (string) second unit
+     * \param unit1 (Gyoto::Units::Unit) first unit
+     * \param unit2 (Gyoto::Units::Unit) second unit
      *
      * \return bool, True if it is possible to convert between the two
      * units, 0 otherwise.
      */
-    bool areConvertible(const std::string &unit1, const std::string &unit2);
+    bool areConvertible(const Unit &unit1, const Unit &unit2);
+#   endif
   }
 }
 
@@ -370,6 +418,16 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
   Unit(const std::string &unit);
 
   /**
+   * \brief Build Unit described by C string
+   *
+   * Throws a Gyoto::Error if anything goes wrong.
+   *
+   * \param unit char const * const description of the unit,
+   *        e.g. "mJy/sr2" or "sunmass".
+   */
+  Unit(char const * const unit);
+
+  /**
    * \brief Destructor
    *
    * Frees unit_.
@@ -380,21 +438,21 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
    * \brief Convert to Unit
    *
    * \param value double to convert
-   * \param from_unit string from which to convert
+   * \param from_unit Unit from which to convert
    * 
    * \return value converted to unit_.
    */
-  double To (double val, const std::string &from_unit);
+  double To (double val, const Unit &from_unit);
 
   /**
    * \brief Convert from Unit
    *
    * \param value double to convert
-   * \param to_unit string to which to convert
+   * \param to_unit Unit to which to convert
    * 
    * \return value converted to "to_unit".
    */
-  double From (double val, const std::string &to_unit);
+  double From (double val, const Unit &to_unit);
 
   /**
    * \brief Cast to string
@@ -414,22 +472,11 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
 class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Units::Converter>;
  private:
-  Gyoto::SmartPointer<Gyoto::Units::Unit> from_; ///< From Unit
-  Gyoto::SmartPointer<Gyoto::Units::Unit> to_; ///< To Unit
   cv_converter * converter_; ///< Underlying ut_converter object from udunits
-  void resetConverter_(); ///< Initialize converter_ from from_ and to_
+
  public:
-  Converter(const std::string &,
-	    const std::string &);
-  ///< Construct Converter from two strings
-  Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit>&,
-	    const std::string&);
-  ///< Construct Converter from Unit and string
-  Converter(const std::string &,
-	    const Gyoto::SmartPointer<Gyoto::Units::Unit>&);
-  ///< Construct Converter from string and Unit
-  Converter(const Gyoto::SmartPointer<Gyoto::Units::Unit>&,
-	    const Gyoto::SmartPointer<Gyoto::Units::Unit>&);
+  Converter(const Gyoto::Units::Unit& from,
+	    const Gyoto::Units::Unit& to);
   ///< Construct Converter from two Unit
   ~Converter();
   ///< Destruct converter, freeing converter_
@@ -438,11 +485,14 @@ class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
    * \brief Actually convert data
    *
    * The entire Gyoto::Units::Converter class is there just for this
-   * operator, which converts value from unit from_ to unit to_.
+   * operator, which converts value from unit "from" to unit "to"
+   * where "from" and "to" are the two Units passed to the constructor
+   * Gyoto::Units::Converter::Converter(const Gyoto::Units::Unit&
+   * from, const Gyoto::Units::Unit& to).
    *
-   * \param value double expressed in unit from_
+   * \param value double expressed in Unit from
    *
-   * \return converted value expressed in unit to_
+   * \return converted value expressed in Unit to
    */
   double operator()(double value) const ;
 };
