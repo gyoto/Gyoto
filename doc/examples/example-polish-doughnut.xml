@@ -2,26 +2,39 @@
 <Scenery>
 
   <Metric kind = "KerrBL">
-    <Mass unit="sunmass">4.31e6</Mass> This is the mass of SgrA*, in solar mass.
+    <Mass unit="sunmass">4.31e6</Mass>
+          This is the mass of SgrA*, in solar mass.
     <Spin>0.</Spin>
   </Metric>
 
   <Screen>
-    <Position>1000. 100. 1.39 0.</Position>
-    <Time unit="geometrical_time">1000.</Time>
-    <FieldOfView>0.31416</FieldOfView>
-    <Resolution>32</Resolution>
+    <Distance unit="kpc" dmax="1e6"> 8 </Distance>
+          The distance to SgrA*.
+	  "dmax" is a tuning parameter and is always expressed in
+	  geometrical units.
+    <Time unit="yr"> 30e3 </Time>
+    <FieldOfView unit="µas"> 150 </FieldOfView>
+          A reasonable field-of-view, about 15 Schwarzschild radii.
+    <Inclination unit="°"> 90 </Inclination>
+          90° is edge-on
+    <PALN unit="°"> 180 </PALN>
+          Put top on top...
+    <Argument> 0 </Argument>
+    <Resolution> 32 </Resolution>
     <!--<Spectrometer kind="freqlog" nsamples="100">5. 25.</Spectrometer>-->
     <!--<Spectrometer kind="freqlog" nsamples="20">11. 13.</Spectrometer>-->
     <Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer>
   </Screen>
 
-  <Quantities>Spectrum[erg.s-1.cm-2.sr-1.Hz-1]</Quantities>
+  <Quantities>Spectrum[mJy/pix²]</Quantities>
+          This unit can easily be confronted to observations.
 
   <Astrobj kind = "PolishDoughnut" plugin = "stdplug">
+          We can specify the plug-in in which this Astrobj is implemented.
     <Lambda>0.3</Lambda>
     <TempRatio>0.1</TempRatio>
-    <CentralDensity>1e-17</CentralDensity>
+    <CentralDensity unit="g/cm³">1e-17</CentralDensity>
+          g/cm³ is actually the same as kg/L, the default.
     <CentralTempOverVirial>0.02</CentralTempOverVirial>
     <Beta>0.1</Beta>
     <OpticallyThin/>
@@ -35,6 +48,12 @@
           increases computation time. The default value is slightly
           more conservative.
   </Astrobj>
+
+  Those two are numerical tuning parameters:
+  <Delta> 1e0 </Delta>
+          Default (initial) step for geodesic integration
+  <MinimumTime> 0. </MinimumTime>
+          No light-ray will be integrated further in the past.
 
 </Scenery>
 

@@ -21,42 +21,48 @@ void Gyoto::Units::Init() {
 
   /* Map pc for parsec */
   tmpu = ut_get_unit_by_name(SI, "parsec");
-  ut_map_symbol_to_unit("pc", UT_ASCII, tmpu);
+  ut_map_symbol_to_unit("pc", UT_UTF8, tmpu);
   ut_free(tmpu); tmpu = NULL;
 
   /* astronomical_unit aliases */
   tmpu = ut_get_unit_by_name(SI, "astronomical_unit");
-  ut_map_symbol_to_unit("au", UT_ASCII, tmpu);
-  ut_map_symbol_to_unit("AU", UT_ASCII, tmpu);
-  ut_map_symbol_to_unit("ua", UT_ASCII, tmpu);
-  ut_map_symbol_to_unit("astronomicalunit", UT_ASCII, tmpu);
+  ut_map_symbol_to_unit("au", UT_UTF8, tmpu);
+  ut_map_symbol_to_unit("AU", UT_UTF8, tmpu);
+  ut_map_symbol_to_unit("ua", UT_UTF8, tmpu);
+  ut_map_symbol_to_unit("astronomicalunit", UT_UTF8, tmpu);
+  ut_free(tmpu); tmpu = NULL;
+
+  /* as symbol for arcsec */
+  tmpu = ut_get_unit_by_name(SI, "arcsec");
+  if (!tmpu) throwError("error initializing arcsec unit");
+  ut_map_symbol_to_unit("as", UT_UTF8, tmpu);
   ut_free(tmpu); tmpu = NULL;
 
   /* sunradius */
   tmpu = ut_get_unit_by_name(SI, "meter");
   tmpu2 = ut_scale(GYOTO_SUN_RADIUS, tmpu);
-  ut_map_symbol_to_unit("sunradius", UT_ASCII, tmpu);
+  ut_map_symbol_to_unit("sunradius", UT_UTF8, tmpu);
   ut_free(tmpu2);
   ut_free(tmpu);
 
   /* ly */
   tmpu = ut_get_unit_by_name(SI, "light_year");
-  ut_map_symbol_to_unit("ly", UT_ASCII, tmpu);
+  ut_map_symbol_to_unit("ly", UT_UTF8, tmpu);
   ut_free(tmpu);
 
   /* sunmass */
   tmpu = ut_get_unit_by_symbol(SI, "kg");
   tmpu2 = ut_scale(GYOTO_SUN_MASS, tmpu);
-  ut_map_symbol_to_unit("sunmass", UT_ASCII, tmpu2);
+  ut_map_symbol_to_unit("sunmass", UT_UTF8, tmpu2);
   ut_free(tmpu2);
   ut_free(tmpu);
 
   /* Jansky */
-  tmpu = ut_parse(SI, "W.m-2.Hz-1", UT_ASCII);
+  tmpu = ut_parse(SI, "W.m-2.Hz-1", UT_UTF8);
   if (!tmpu) throwError("Cannot initialize Jansky");
   tmpu2=ut_scale(1e-26, tmpu);
-  ut_map_name_to_unit("Jansky", UT_ASCII, tmpu2);
-  ut_map_symbol_to_unit("Jy", UT_ASCII, tmpu2);
+  ut_map_name_to_unit("Jansky", UT_UTF8, tmpu2);
+  ut_map_symbol_to_unit("Jy", UT_UTF8, tmpu2);
   ut_free(tmpu2);
   ut_free(tmpu);
 
@@ -69,7 +75,7 @@ void Gyoto::Units::Init() {
 #ifdef HAVE_UDUNITS
 /* Unit class */
 Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
-  unit_ = ut_parse(SI, unit.c_str(), UT_ASCII);
+  unit_ = ut_parse(SI, unit.c_str(), UT_UTF8);
   if (!unit_) throwError("Error initializing Unit");
 }
 
@@ -223,6 +229,7 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
   else if (unit=="h") val *= 3600. ;
   else if (unit=="d") val *= 86400. ;
   else if (unit=="yr") val *= 3.15576e+07;
+  else if (unit=="kyr") val *= 3.15576e+10;
   else {
     stringstream ss;
     ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
@@ -252,6 +259,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
   else if (unit=="h") val /= 3600. ;
   else if (unit=="d") val /= 86400. ;
   else if (unit=="yr") val /= 3.15576e+07;
+  else if (unit=="kyr") val /= 3.15576e+10;
   else {
     stringstream ss;
     ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
@@ -311,6 +319,20 @@ double Gyoto::Units::FromGeometrical(double val, const string &unit,
   if (unit == "" || unit == "geometrical") return val;
   if (!gg) throwError("Need Metric to convert from geometrical units");
   return FromMeters(val * gg->unitLength(), unit);
+}
+
+double Gyoto::Units::ToGeometricalTime(double val, const string &unit,
+				   const SmartPointer<Metric::Generic> &gg) {
+  if (unit == "" || unit == "geometrical_time") return val;
+  if (!gg) throwError("Need Metric to convert to geometrical units");
+  return ToSeconds(val, unit) / gg->unitLength() * GYOTO_C;
+}
+
+double Gyoto::Units::FromGeometricalTime(double val, const string &unit,
+				     const SmartPointer<Metric::Generic> &gg) {
+  if (unit == "" || unit == "geometrical_time") return val;
+  if (!gg) throwError("Need Metric to convert from geometrical units");
+  return FromSeconds(val * gg->unitLength() / GYOTO_C, unit);
 }
 
 bool Gyoto::Units::areConvertible(const std::string &unit1,

@@ -7,11 +7,15 @@
  *  (http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html)
  *  to perform conversions to and from various units. Since udunits
  *  parses units, the following are equivalent for instance:
- *  "mJy.sr-1", "mJy/sr", "1e-3Jy/sr".
+ *  "mJy.sr-1", "mJy/sr", "1e-3Jy/sr". Gyoto considers every string as
+ *  UTF-8: either use UTF-8 or stay with ASCII. This means "µ" can be
+ *  used for "micro" and powers can be noted as superscripts: m³,
+ *  pix².
  *
  *  In addition to the stock units known by udunits2, Gyoto registers
  *  the following (which may be used in any context): Jansky (symbol
- *  Jy), symbol "pc" for parsec, "sunradius", "sunmass".
+ *  Jy), symbol "pc" for parsec, "sunradius", "sunmass", symbol "as"
+ *  for "arcsec".
  *  
  *  Other units are context-sensitive: "geometrical" allows converting
  *  between geometrical units and other legnth units, but only when a
@@ -30,6 +34,14 @@
  *       4e6
  *    </Mass>
  * </Metric>
+ * <Screen>
+ *    <Distance unit="kpc">
+ *       8
+ *    </Distance>
+ *    <FieldOfView unit="µas">
+ *       150
+ *    </FieldOfView>
+ * </Metric>
  * \endcode
  *
  * Units for output quantities are specified after the name of the
@@ -42,7 +54,7 @@
  * or
  * \code
  *   <Quantities>
- *     Spectrum[mJy/pix2]
+ *     Spectrum[mJy/pix²]
  *   </Quantities>
  * \endcode
  */
@@ -281,9 +293,41 @@ namespace Gyoto {
      * \param gg (const Gyoto::SmartPointer<Gyoto::Metric::Generic> &)
      *   metric to interpret "geometrical".
      *
-     * \return value, expressed in geometrical units.
+     * \return value, expressed in "unit".
      */
     double FromGeometrical(double, const std::string &,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+
+    /**
+     * \brief Convert from arbitrary time unit to geometrical units
+     *
+     * \param value
+     *   (double) the value to convert, expressed according to "unit".
+     * \param unit (std::string) the "unit" from which to convert,
+     *   e.g. "s", "kyr" or "geometrical_time". More units are
+     *   supported if Gyoto was compiled with udunits support.
+     * \param gg (const Gyoto::SmartPointer<Gyoto::Metric::Generic> &)
+     *   metric to interpret "geometrical_time".
+     *
+     * \return value, expressed in geometrical (time) units.
+     */
+    double ToGeometricalTime(double, const std::string &,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+
+    /**
+     * \brief Convert to arbitrary time unit from geometrical units
+     *
+     * \param value
+     *   (double) the value to convert, expressed in geometrical units.
+     * \param unit (std::string) the "unit" to which to convert,
+     *   e.g. "yr", "s" or "geometrical_time". More units are
+     *   supported if Gyoto was compiled with udunits support.
+     * \param gg (const Gyoto::SmartPointer<Gyoto::Metric::Generic> &)
+     *   metric to interpret "geometrical_time".
+     *
+     * \return value, expressed in "unit".
+     */
+    double FromGeometricalTime(double, const std::string &,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
 
     /**

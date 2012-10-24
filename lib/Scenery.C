@@ -539,12 +539,12 @@ size_t Scenery::getScalarQuantitiesCount() const {
 
 double Scenery::getTmin() const { return tmin_; }
 double Scenery::getTmin(const string &unit) const {
-  return Units::FromGeometrical(getTmin(), unit, gg_);
+  return Units::FromGeometricalTime(getTmin(), unit, gg_);
 }
 
 void Scenery::setTmin(double tmin) { tmin_ = tmin; }
 void Scenery::setTmin(double tmin, const string &unit) {
-  setTmin(Units::ToGeometrical(tmin, unit, gg_));
+  setTmin(Units::ToGeometricalTime(tmin, unit, gg_));
 }
 
 #ifdef GYOTO_USE_XERCES

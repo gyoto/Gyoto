@@ -112,7 +112,7 @@ void Screen::setPALN(double paln, const string &unit)        {
 # ifdef HAVE_UDUNITS
   else paln = Units::Converter(unit, "rad")(paln);
 # else
-  else if (unit=="degree") paln *= GYOTO_DEGRAD;
+  else if (unit=="degree" || unit=="°") paln *= GYOTO_DEGRAD;
 # endif
   setPALN(paln);
 }
@@ -125,7 +125,7 @@ void Screen::setInclination(double incl, const string &unit) {
 # ifdef HAVE_UDUNITS
   else incl = Units::Converter(unit, "rad")(incl);
 # else
-  else if (unit=="degree") incl *= GYOTO_DEGRAD;
+  else if (unit=="degree" || unit=="°") incl *= GYOTO_DEGRAD;
 # endif
   setInclination(incl);
 }
@@ -138,7 +138,7 @@ void Screen::setArgument(double arg, const string &unit) {
 # ifdef HAVE_UDUNITS
   else arg = Units::Converter(unit, "rad")(arg);
 # else
-  else if (unit=="degree") arg *= GYOTO_DEGRAD;
+  else if (unit=="degree" || unit=="°") arg *= GYOTO_DEGRAD;
 # endif
   setArgument(arg);
 }
@@ -504,11 +504,12 @@ void Screen::setFieldOfView(double fov, const string &unit) {
     fov = Units::ToMeters(fov, unit) / distance_;
   else fov = Units::Converter(unit, "rad")(fov);
 # else
-  else if (unit=="degree") fov *= GYOTO_DEGRAD;
-  else if (unit=="arcmin") fov *= GYOTO_MINRAD;
-  else if (unit=="arcsec") fov *= GYOTO_SECRAD;
-  else if (unit=="milliarcsec") fov *= GYOTO_MASRAD;
-  else if (unit=="microarcsec") fov *= GYOTO_MUASRAD;
+  else if (unit=="degree" || unit=="°")        fov *= GYOTO_DEGRAD;
+  else if (unit=="arcmin")                     fov *= GYOTO_MINRAD;
+  else if (unit=="arcsec" || unit=="as")       fov *= GYOTO_SECRAD;
+  else if (unit=="milliarcsec" || unit=="mas") fov *= GYOTO_MASRAD;
+  else if (unit=="microarcsec" || unit=="µas" || unit=="uas")
+                                               fov *= GYOTO_MUASRAD;
   else {
     stringstream ss;
     ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\""

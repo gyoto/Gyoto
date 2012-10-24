@@ -9,8 +9,8 @@
   <Screen>
     <Distance unit="kpc" dmax="1e6"> 8 </Distance>
     <Time unit="yr"> 30e3 </Time>
-    <FieldOfView unit="microarcsec"> 150 </FieldOfView>
-    <Inclination unit="degree"> 90 </Inclination>
+    <FieldOfView unit="µas"> 150 </FieldOfView>
+    <Inclination unit="°"> 90 </Inclination>
     <PALN> 0 </PALN>
     <Argument> 0 </Argument>
     <Resolution> 32 </Resolution>
@@ -37,6 +37,8 @@
     Intensity
   </Quantities>
   One can also specify a unit (if Gyoto was compiled with --with-udunits):
+    Intensity[mJy/pix²]
+    Intensity[mJy/µas²]
     Intensity[J.m-2.s-1.sr-1.Hz-1]
     Intensity[erg.cm-2.s-1.sr-1.Hz-1]
     Intensity[mJy.sr-1]
