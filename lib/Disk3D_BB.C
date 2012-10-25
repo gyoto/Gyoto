@@ -363,8 +363,8 @@ int Disk3D_BB::setParameter(std::string name,
     temperature_array_ = new double*[nb_times_] ;
     velocity_array_ = new double*[nb_times_] ;
 
-    double nu0b, zminb, zmaxb, rinb, routb;
-    size_t nnub, nphib, nzb, nrb;
+    double nu0b=0., zminb=0., zmaxb=0., rinb=0., routb=0.;
+    size_t nnub=0, nphib=0, nzb=0, nrb=0;
     
     for (int i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
