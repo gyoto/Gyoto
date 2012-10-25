@@ -269,7 +269,7 @@ gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
-CHECK_CMD = ./gyoto
+CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto
 all: all-am
 
 .SUFFIXES:

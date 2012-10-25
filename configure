@@ -17713,10 +17713,12 @@ if test "x$HOME_LORENE" != "x"; then :
    if test ! -r ${HOME_LORENE}/local_settings; then :
   as_fn_error $? "${HOME_LORENE}/local_settings not found" "$LINENO" 5
 fi
-touch conftest.timestamp
 cat >conftest.make <<_ACEOF
 include \$(HOME_LORENE)/local_settings
-%: conftest.timestamp
+conftest.make:
+	touch conftest.make
+
+%: conftest.make
 	@echo \$(\$@)
 _ACEOF
    LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene -llorenef77"
@@ -17730,7 +17732,7 @@ _ACEOF
 
 $as_echo "#define GYOTO_USE_LORENE 1" >>confdefs.h
 
-   rm conftest.make conftest.timestamp
+   rm conftest.make
 
 
    pkg_cflags="${pkg_cflags} ${LORENECPPFLAGS}"

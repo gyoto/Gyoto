@@ -528,10 +528,12 @@ AS_IF([test "x$HOME_LORENE" != "x"],
   [
    AS_IF([test ! -r ${HOME_LORENE}/local_settings],
      [AC_MSG_ERROR([${HOME_LORENE}/local_settings not found])])
-touch conftest.timestamp
 cat >conftest.make <<_ACEOF
 include \$(HOME_LORENE)/local_settings
-%: conftest.timestamp
+conftest.make:
+	touch conftest.make
+
+%: conftest.make
 	@echo \$(\$@)
 _ACEOF
    LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene -llorenef77"
@@ -545,7 +547,7 @@ _ACEOF
    AC_DEFINE([GYOTO_USE_LORENE],
      [1],
      [Define to 1 if you have Lorene])
-   rm conftest.make conftest.timestamp
+   rm conftest.make
    AC_SUBST([LORENECPPFLAGS])
    AC_SUBST([LORENELDFLAGS])
    pkg_cflags="${pkg_cflags} ${LORENECPPFLAGS}"

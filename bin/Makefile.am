@@ -10,7 +10,7 @@ gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
-CHECK_CMD=./gyoto
+CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto
 check: gyoto
 	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
 	   \!example-thin-disk.fits
