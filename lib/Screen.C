@@ -265,13 +265,13 @@ void Screen::setSpectrometer(SmartPointer<Spectrometer> spr) { spectro_=spr; }
 SmartPointer<Spectrometer> Screen::getSpectrometer() const { return spectro_; }
 
 void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
-  const double delta= fov_/npix_;
+  const double delta= fov_/double(npix_);
   double xscr, yscr;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
 # endif
-  yscr=delta*(j-(npix_+1)/2.);
-  xscr=delta*(i-(npix_+1)/2.);
+  yscr=delta*(double(j)-double(npix_+1)/2.);
+  xscr=delta*(double(i)-double(npix_+1)/2.);
   getRayCoord(-xscr, yscr, coord);
 }
 
@@ -363,14 +363,15 @@ void Screen::getRayCoord(double alpha, double delta,
 
       //Normalization of Boyer-Lindquist projected velocity to 1 (see manual for details). This is a choice of normalization for the photon tangent vector (i.e. 4-momentum) that boils down to taking observed frequency = 1.
 
-      double lambda;
-      double nuobs=1.;
-
-      if (grr*coord[5]*coord[5] + gthth*coord[6]*coord[6] + gphph*coord[7]*coord[7] < 0.){
+      if (grr*coord[5]*coord[5] + gthth*coord[6]*coord[6] + gphph*coord[7]*coord[7] < 0.)
 	throwError("In Screen.C: impossible normalization!");
-      }else{
-	lambda=nuobs/sqrt(grr*coord[5]*coord[5] + gthth*coord[6]*coord[6] + gphph*coord[7]*coord[7]);
-      }
+
+      double nuobs=1.;
+      double lambda =
+	nuobs/sqrt(grr*coord[5]*coord[5] +
+		   gthth*coord[6]*coord[6] +
+		   gphph*coord[7]*coord[7]);
+
       coord[5]*=lambda;coord[6]*=lambda;coord[7]*=lambda;
     }
     break;
@@ -462,11 +463,18 @@ double Screen::getTime(const string &unit) {
 }
 
 void Screen::setTime(double tobs, const string &unit) {
+# ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(tobs);
   GYOTO_DEBUG_EXPR(unit);
+# endif
   setTime(Units::ToSeconds(tobs, unit, gg_));
 }
-void Screen::setTime(double tobs) { tobs_ = tobs; }
+void Screen::setTime(double tobs) {
+  tobs_ = tobs;
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(tobs_);
+# endif
+}
 
 //double Screen::getMinimumTime() { return tmin_; }
 //void Screen::setMinimumTime(double tmin) { tmin_ = tmin; }
@@ -500,9 +508,12 @@ void Screen::setFieldOfView(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
 # if HAVE_UDUNITS
-  else if (Units::areConvertible(unit, "m"))
-    fov = Units::ToMeters(fov, unit) / distance_;
-  else fov = Units::Converter(unit, "rad")(fov);
+  else {
+    Units::Unit from (unit);
+    if (Units::areConvertible(from, "m"))
+      fov = Units::ToMeters(fov, from) / distance_;
+    else fov = Units::Converter(from, "rad")(fov);
+  }
 # else
   else if (unit=="degree" || unit=="°")        fov *= GYOTO_DEGRAD;
   else if (unit=="arcmin")                     fov *= GYOTO_MINRAD;
@@ -527,7 +538,7 @@ void Screen::setResolution(size_t n) { npix_ = n; }
 #ifdef HAVE_UDUNITS
 void Gyoto::Screen::mapPixUnit() {
   Units::Unit radian ("radian");
-  double delta = fov_/npix_;
+  double delta = fov_/double(npix_);
   ut_unit * pix = ut_scale(delta, radian);
   ut_status status = UT_BAD_ARG;
   status = ut_map_name_to_unit("pixel", UT_ASCII, pix);
@@ -551,12 +562,18 @@ void Gyoto::Screen::mapPixUnit() {
     throwError("error initializing \"pixel\" unit");
   }
   ut_free(pix);
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "\"pix\" unit mapped\n";
+# endif
 }
 void Gyoto::Screen::unmapPixUnit() {
   ut_system * sys = Units::getSystem();
   if ((ut_unmap_name_to_unit(sys, "pixel", UT_ASCII) != UT_SUCCESS) ||
       (ut_unmap_symbol_to_unit(sys, "pix", UT_ASCII) != UT_SUCCESS))
     throwError("Error unmapping \"pixel\" unit");
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "\"pix\" unit unmapped\n";
+# endif
 }
 #endif
 

@@ -75,15 +75,27 @@ void Gyoto::Units::Init() {
 #ifdef HAVE_UDUNITS
 /* Unit class */
 Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(kind_);
+# endif
   if (kind_!="") {
     unit_ = ut_parse(SI, unit.c_str(), UT_UTF8);
+#   ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(unit_);
+#   endif
     if (!unit_) throwError("Error initializing Unit");
   }
 }
 
 Unit::Unit(char const * const unit) : unit_(NULL), kind_(unit) {
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(kind_);
+# endif
   if (kind_!="") {
     unit_ = ut_parse(SI, unit, UT_UTF8);
+#   ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(unit_);
+#   endif
     if (!unit_) throwError("Error initializing Unit");
   }
 }
@@ -104,16 +116,34 @@ Unit::operator std::string() const { return kind_; }
 Unit::operator ut_unit*() const { return unit_; }
 
 /* Converter */
+Converter::Converter() : converter_(cv_get_trivial()) {}
+
 Converter::Converter(const Gyoto::Units::Unit &from,
 		     const Gyoto::Units::Unit &to) :
   converter_(NULL)
 {
-  if (!ut_are_convertible(from, to)) {
-    stringstream ss;
-    ss << "Unsupported conversion: from \"" << string(from) << "\" to " << string(to) << "\"";
-    throwError(ss.str());
-  }
-  converter_ = ut_get_converter(from, to);
+  reset(from, to);
+}
+
+void Converter::reset()
+{
+  if (converter_) cv_free(converter_);
+  converter_ = cv_get_trivial();
+}
+
+void Converter::reset(const Gyoto::Units::Unit &from,
+		      const Gyoto::Units::Unit &to)
+{
+  if (converter_) { cv_free(converter_); converter_=NULL; }
+  if ((ut_unit*)(from) && (ut_unit*)(to)) {
+    if (areConvertible(from, to)) converter_ = ut_get_converter(from, to);
+    else {
+      stringstream ss;
+      ss << "Unsupported conversion: from \"" << string(from)
+	 << "\" to " << string(to) << "\"";
+      throwError(ss.str());
+    }
+  } else reset();
 }
 
 Converter::~Converter() {
@@ -196,6 +226,13 @@ double Gyoto::Units::FromMeters(double val, const string &unit,
 
 double Gyoto::Units::ToSeconds(double val, const string &unit,
 			       const SmartPointer<Metric::Generic> &gg) {
+# ifdef GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+  GYOTO_DEBUG_EXPR(val);
+  GYOTO_DEBUG_EXPR(unit);
+  GYOTO_DEBUG_EXPR(gg);
+  GYOTO_ENDIF_DEBUG
+# endif
   if (unit=="" || unit=="s") ;
   else if (unit=="geometrical_time" || unit=="geometrical") {
     if (unit=="geometrical")

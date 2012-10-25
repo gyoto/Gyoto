@@ -475,11 +475,17 @@ class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
   cv_converter * converter_; ///< Underlying ut_converter object from udunits
 
  public:
+  Converter(); ///< Construct trivial Converter (Converter()(x)==x)
   Converter(const Gyoto::Units::Unit& from,
 	    const Gyoto::Units::Unit& to);
   ///< Construct Converter from two Unit
   ~Converter();
   ///< Destruct converter, freeing converter_
+
+  void reset(); ///< Reset to trivial Converter (Converter()(x)==x)
+  void reset(const Gyoto::Units::Unit& from,
+	const Gyoto::Units::Unit& to);
+  ///< Reset to converter from "from" to "to"
 
   /**
    * \brief Actually convert data
