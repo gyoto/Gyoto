@@ -90,7 +90,7 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 
   double d1 = orig->x0_[i0], d2 = orig->x0_[i0+dir];
   x_size_= size_t(fabs(d1-d2)/step_max)+2;
-  double step = (d2-d1)/(x_size_-1);
+  double step = (d2-d1)/double(x_size_-1);
   xAllocate(x_size_);
   imin_=0; imax_=x_size_-1; i0_=(dir==1?imin_:imax_);
   x0_[i0_]=d1;
@@ -392,11 +392,11 @@ void Worldline::xFill(double tlim) {
 
 }
 
-int Worldline::get_nelements() const { return imax_-imin_+1; }
+size_t Worldline::get_nelements() const { return imax_-imin_+1; }
 
-int Worldline::getImin() const {return imin_;}
-int Worldline::getImax() const {return imax_;}
-int Worldline::getI0() const {return i0_;}
+size_t Worldline::getImin() const {return imin_;}
+size_t Worldline::getImax() const {return imax_;}
+size_t Worldline::getI0() const {return i0_;}
 
 void Worldline::get_t(double *dest) const
 { memcpy(dest, x0_+imin_, sizeof(double)*(imax_-imin_+1)); }
@@ -447,7 +447,9 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
   case GYOTO_COORDKIND_CARTESIAN:
     x1=x; x2=y; x3=z;
     break;
-  default: Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+  default: 
+    Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+    x1=x2=x3=NULL; // fix warning
   }
 
   getCoord(dates, n_dates, x1, x2, x3, x0dot, x1dot, x2dot, x3dot);

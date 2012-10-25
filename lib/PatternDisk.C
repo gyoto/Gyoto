@@ -130,10 +130,10 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
       throwError( "dimensions can't be null");
     if (nr_==1 || nphi_==1)
       throwError("In PatternDisk::copyIntensity: dimensions should be >1");
-    dr_ = (rout_ - rin_) / double(nr_-1.);
+    dr_ = (rout_ - rin_) / double(nr_-1);
     if (repeat_phi_==0.)
       throwError("In PatternDisk::copyIntensity: repeat_phi is 0!");
-    dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+    dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emission_" << endl;
@@ -141,7 +141,7 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
   }
 }
 
-double const * const PatternDisk::getIntensity() const { return emission_; }
+double const * PatternDisk::getIntensity() const { return emission_; }
 void PatternDisk::getIntensityNaxes( size_t naxes[3] ) const
 { naxes[0] = nnu_; naxes[1] = nphi_; naxes[2] = nr_; }
 
@@ -164,7 +164,7 @@ void PatternDisk::copyOpacity(double const *const opacity, size_t const naxes[3]
   }
 }
 
-double const * const PatternDisk::getOpacity() const { return opacity_; }
+double const * PatternDisk::getOpacity() const { return opacity_; }
 
 void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[2]) {
   GYOTO_DEBUG << endl;
@@ -182,7 +182,7 @@ void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[
     memcpy(velocity_, velocity, 2*nphi_*nr_*sizeof(double));
   }
 }
-double const * const PatternDisk::getVelocity() const { return velocity_; }
+double const * PatternDisk::getVelocity() const { return velocity_; }
 
 void PatternDisk::copyGridRadius(double const *const radius, size_t nr) {
   GYOTO_DEBUG << endl;
@@ -202,12 +202,12 @@ void PatternDisk::copyGridRadius(double const *const radius, size_t nr) {
     rout_=radius_[nr_-1];
   }
 }
-double const * const PatternDisk::getGridRadius() const { return radius_; }
+double const * PatternDisk::getGridRadius() const { return radius_; }
 
 void PatternDisk::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  if ((nphi_-1.)*repeat_phi_>0) 
-    dphi_=(phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+  if ((nphi_-1)*repeat_phi_>0) 
+    dphi_=(phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
@@ -217,15 +217,15 @@ double PatternDisk::nu0() const { return nu0_; }
 void PatternDisk::dnu(double dfreq) { dnu_ = dfreq; }
 double PatternDisk::dnu() const { return dnu_; }
 
-void PatternDisk::phimin(double phimin) {
-  phimin_ = phimin;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+void PatternDisk::phimin(double phimn) {
+  phimin_ = phimn;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
 double PatternDisk::phimin() const {return phimin_;}
 
-void PatternDisk::phimax(double phimax) {
-  phimax_ = phimax;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+void PatternDisk::phimax(double phimx) {
+  phimax_ = phimx;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
 double PatternDisk::phimax() const {return phimax_;}
 
@@ -341,7 +341,7 @@ void PatternDisk::fitsRead(string filename) {
   nphi_ = naxes[1];
   if (nphi_==1 || repeat_phi_==0)
     throwError("In PatternDisk::fitsRead: nphi is 1 or repeat_phi is 0!");
-  dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+  dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 
   // update rin_, rout_, nr_, dr_
   nr_ = naxes[2];
@@ -439,7 +439,7 @@ void PatternDisk::fitsRead(string filename) {
 
    if (nr_ == 1.)
      throwError("In PatternDisk::fitsRead: nr_ should not be 0 here!");
-   dr_ = (rout_-rin_) / double(nr_-1.);
+   dr_ = (rout_-rin_) / double(nr_-1);
 
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
@@ -451,7 +451,7 @@ void PatternDisk::fitsWrite(string filename) {
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
   int       status    = 0;
-  long      naxes []  = {nnu_, nphi_, nr_};
+  long      naxes []  = {long(nnu_), long(nphi_), long(nr_)};
   long      fpixel[]  = {1,1,1};
   char * CNULL=NULL;
 
@@ -611,7 +611,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
 	double pos2[4] = {pos[0], pos[1], pos[2], pos[3]};
-	pos2[1] = radius_ ? radius_[i[2]] : rin_+i[2]*dr_;
+	pos2[1] = radius_ ? radius_[i[2]] : rin_+double(i[2])*dr_;
 	vel[1] = rprime;
 	vel[2] = 0.;
 	vel[3] = phiprime;

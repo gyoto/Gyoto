@@ -195,7 +195,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       (see below) ; this freqObs is used to transform the null
       worldline parameter dlambda (see below)
   */
-  double freqObs=ph->getFreqObs(), nuem; 
+  double freqObs=ph->getFreqObs(); 
   SmartPointer<Spectrometer> spr = ph -> getSpectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;

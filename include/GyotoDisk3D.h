@@ -128,12 +128,12 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   virtual void copyEmissquant(double const * const pattern = NULL,
 			      size_t const naxes[4] = NULL);
   ///< attach emissquant_ array and set its size
-  virtual double const * const getEmissquant() const;
+  virtual double const * getEmissquant() const;
   virtual void getEmissquantNaxes( size_t naxes[4] ) const ;
 
   virtual void copyVelocity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
-  virtual double const * const getVelocity() const;
+  virtual double const * getVelocity() const;
 
   virtual void repeatPhi(size_t n);
   virtual size_t repeatPhi() const;

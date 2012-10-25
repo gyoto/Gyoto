@@ -557,7 +557,7 @@ void PolishDoughnut::emission(double Inu[], // output
   /* ***DOUGHNUT PHYSICAL QUANTITIES COMPUTATION*** */
 
   double vel[4];
-  const_cast<PolishDoughnut*>(this)->getVelocity(coord_ph, vel);
+  const_cast<PolishDoughnut*>(this)->getVelocity(coord_obj, vel);
   //double Omega=vel[3]/vel[0];
 
   double Msgr = gg_->getMass()*1e3; // Gyoto speaks in SI --> here we
@@ -996,8 +996,8 @@ double PolishDoughnut::emissionSynch(double nu_em, double nu_crit,
   
 }
 
-double PolishDoughnut::transmission(double nuem, double dsem, 
-				    double coord_ph[8]) const {
+double PolishDoughnut::transmission(double , double , 
+				    double *) const {
 
   if (!flag_radtransf_) return 0.; //Complete absorption for optically thick
 

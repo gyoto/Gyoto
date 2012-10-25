@@ -45,7 +45,7 @@ PatternDiskBB::PatternDiskBB() :
   PatternDisk(),
   spectrumBB_(NULL),
   SpectralEmission_(0), PLDisk_(0),
-  PLSlope_(0.), PLRho_(0.), rmax_(DBL_MAX), rPL_(DBL_MAX)
+  PLSlope_(0.), PLRho_(0.), rPL_(DBL_MAX)
 {
   GYOTO_DEBUG << "PatternDiskBB Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -55,7 +55,7 @@ PatternDiskBB::PatternDiskBB(const PatternDiskBB& o) :
   PatternDisk(o),
   spectrumBB_(NULL),
   SpectralEmission_(o.SpectralEmission_), PLDisk_(o.PLDisk_),
-  PLSlope_(o.PLSlope_),PLRho_(o.PLRho_),rmax_(o.rmax_),rPL_(o.rPL_)
+  PLSlope_(o.PLSlope_),PLRho_(o.PLRho_),rPL_(o.rPL_)
 {
   GYOTO_DEBUG << "PatternDiskBB Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -67,7 +67,7 @@ PatternDiskBB::~PatternDiskBB() {
   GYOTO_DEBUG << "PatternDiskBB Destruction" << endl;
 }
 
-double const * const PatternDiskBB::getVelocity() const { return PatternDisk::getVelocity(); }
+double const * PatternDiskBB::getVelocity() const { return PatternDisk::getVelocity(); }
 
 void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
   double rcur=projectedRadius(pos);
@@ -78,6 +78,7 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
     break;
   default:
     throwError("PatternDiskBB::getVelocity: bad COORDKIND");
+    risco=0.;
   }
 
   if ((getOuterRadius()==DBL_MAX && rcur>rPL_) || !getVelocity()){
@@ -106,10 +107,11 @@ double PatternDiskBB::emission(double nu, double dsem,
     break;
   default:
     throwError("PatternDiskBB::emission: bad COORDKIND");
+    risco=0.;
   }
 
   double rcur=projectedRadius(co);
-  if (rcur > rmax_ || rcur < risco) return 0.; // no emission in any case above rmax_
+  if (rcur > rout_ || rcur < risco) return 0.; // no emission in any case above rmax_
   size_t i[3]; // {i_nu, i_phi, i_r}
 
   //Search for indices only in non-power-law region
@@ -117,33 +119,23 @@ double PatternDiskBB::emission(double nu, double dsem,
     getIndices(i, co, nu);
 
   double Iem=0.;
-  double const * const emission = getIntensity();
+  double const * const emiss = getIntensity();
   size_t naxes[3];
   getIntensityNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1];
   if (!SpectralEmission_){
     if (rPL_<DBL_MAX) 
       throwError("In PatternDisk.C: no power law region without SpectralEmission -> rPL_ should be DBL_MAX");
-    Iem = emission[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
+    Iem = emiss[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
   }else{ //Spectral emission    
     double TT;
     if (rcur<rPL_){
       // -> If r<rPL_ just read temperature value in emission_
-      TT = emission[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
+      TT = emiss[i[2]*(nphi*nnu)+i[1]*nnu+i[0]];
       spectrumBB_->setTemperature(TT);
       Iem=(*spectrumBB_)(nu);
     }else if (PLDisk_){
       // -> If r>rPL_ compute temperature from first principles
-
-      //Get ISCO value (here metric is KerrBL, see setMetric)
-      double risco;
-      switch (gg_->getCoordKind()) {
-      case GYOTO_COORDKIND_SPHERICAL:
-	risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-	break;
-      default:
-	throwError("PatternDiskBB::emission: bad COORDKIND");
-      }
 
       double rho_si = PLRho_*pow(rcur/risco,PLSlope_);
       //Assuming: pressure = kappa*(mass density)^gamma, gamma=5/3 (eq of state)
@@ -194,10 +186,6 @@ int PatternDiskBB::setParameter(std::string name,
     setOuterRadius(DBL_MAX);//infinite power law disk
   }
   else if (name=="PLRho") PLRho_=atof(content.c_str());
-  else if (name=="Rmax") {
-    rmax_=atof(content.c_str());
-    setOuterRadius(rmax_);//update outer radius
-  }
   else if (name=="SpectralEmission") SpectralEmission_=1;
   else return PatternDisk::setParameter(name, content, unit);
   return 0;
@@ -206,7 +194,6 @@ int PatternDiskBB::setParameter(std::string name,
 #ifdef GYOTO_USE_XERCES
 void PatternDiskBB::fillElement(FactoryMessenger *fmp) const {
   if (PLSlope_) fmp->setParameter("PLSlope", PLSlope_);
-  if (rmax_) fmp->setParameter("Rmax", rmax_);
   fmp -> setParameter ( SpectralEmission_? "SpectralEmission" : "BolometricEmission");
   PatternDisk::fillElement(fmp);
 }

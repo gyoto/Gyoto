@@ -90,7 +90,7 @@ RotStar3_1::~RotStar3_1()
   if (debug()) cout << "RotStar3_1 Destruction" << endl;
 }
 
-char const * const RotStar3_1::getFileName() const { return filename_; }
+char const * RotStar3_1::getFileName() const { return filename_; }
 int RotStar3_1::getIntegKind() const { return integ_kind_; }
 
 int RotStar3_1::diff(const double coord[8], double res[8]) const
@@ -569,7 +569,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
     
     double fact=.001;//allows changes of order 0.1% of original value (don't put it too big!! or the corrected rprime and thprime will depend a lot on the chosen nstep -- no convergence towards a given value when nstep grows...)
     int nstep=100;//nstep search steps on both sides of initial rdot (or thdot) value ; search interval between 2 trials = fact*[init value]/nstep = dr/nstep (or dth/nstep)
-    double dth=fabs(fact*thprime), dr=fabs(fact*rprime), newnorm, lastnorm=norminit, norm_new=norminit, rp, thp, intth=dth/double(nstep), intr=dr/double(nstep);
+    double dth=fabs(fact*thprime), dr=fabs(fact*rprime), newnorm, lastnorm=norminit, rp, thp, intth=dth/double(nstep), intr=dr/double(nstep);
     
     // cout << "Norm init= "<<norminit<<endl;
     
@@ -580,7 +580,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
 	newnorm=aa+bb*rp*rp+cc*thp*thp;
 	//  cout << "New norm= " << newnorm << endl;
 	if (fabs(newnorm-normref)<fabs(lastnorm-normref)){
-	  rprime_new=rp;thprime_new=thp;norm_new=newnorm;lastnorm=newnorm;
+	  rprime_new=rp;thprime_new=thp;lastnorm=newnorm;
 	}
       }
     }

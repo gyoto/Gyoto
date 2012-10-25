@@ -105,11 +105,12 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
 			   std::string content,
 			   std::string unit);
 
+  using PatternDiskBB::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
 
   void getVelocity(double const pos[4], double vel[4]);
-  double const * const getVelocity() const;
+  double const * getVelocity() const;
   
  protected:
 

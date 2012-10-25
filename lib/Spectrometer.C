@@ -102,7 +102,7 @@ void Spectrometer::reset_() {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "boundaries_[" <<i<<"]=";
 #   endif
-    boundaries_[i]=band_[0]+i*(band_[1]-band_[0])/nsamples_;
+    boundaries_[i]=band_[0]+double(i)*(band_[1]-band_[0])/double(nsamples_);
     if (kind_==GYOTO_SPECTRO_KIND_FREQLOG ||
 	kind_==GYOTO_SPECTRO_KIND_WAVELOG)
       boundaries_[i]=pow(10.,boundaries_[i]);
@@ -150,6 +150,9 @@ void Spectrometer::setKind(std::string str) {
   else if (str == "freqlog") s = GYOTO_SPECTRO_KIND_FREQLOG;
   else if (str == "wave"   ) s = GYOTO_SPECTRO_KIND_WAVE;
   else if (str == "wavelog") s = GYOTO_SPECTRO_KIND_WAVELOG;
+  else {
+    throwError("unknow Spectrometer kind"); s=GYOTO_SPECTRO_KIND_NONE;
+  }
 
   kind_ = s;
   reset_();

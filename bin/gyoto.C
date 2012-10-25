@@ -91,8 +91,8 @@ int main(int argc, char** argv) {
 
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
-  double tobs, fov, dist, paln, incl, arg;
-  size_t res, nthreads;
+  double tobs=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
+  size_t res=0, nthreads=0;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
   bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0;
   bool  ipct=0;
@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
 
-  int i, stop=0;
-  for (i=1;i<argc;++i) {
+  int stop=0;
+  for (int i=1;i<argc;++i) {
     param=argv[i];
     if (param.substr(0,1)=="-" && !stop) {
       if (param=="--") stop=1;
@@ -252,7 +252,7 @@ int main(int argc, char** argv) {
 
       double dt = tobs * GYOTO_C / scenery -> getMetric() -> unitLength()
 	- ipcttime;
-      for (i=0; i < ipctnelt; i+=8)
+      for (size_t i=0; i < ipctnelt; i+=8)
 	if (impactcoords[i] != DBL_MAX) impactcoords[i] += dt;
       ipcttime = tobs * GYOTO_C / scenery -> getMetric() -> unitLength();
     }
@@ -276,8 +276,8 @@ int main(int argc, char** argv) {
     vect = new double[nelt];
 
     // First check whether we can open file
-    long naxis=3; 
-    long naxes[] = {res, res, nbdata+nbnuobs};
+    int naxis=3; 
+    long naxes[] = {long(res), long(res), long(nbdata+nbnuobs)};
     nelements=nelt; 
 
     fits_create_file(&fptr, pixfile, &status);
@@ -382,7 +382,7 @@ int main(int argc, char** argv) {
     }
     if (quantities & GYOTO_QUANTITY_SPECTRUM) {
       data->spectrum=vect+offset*(curquant++);
-      data->offset=offset;
+      data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Spectrum"),
@@ -390,7 +390,7 @@ int main(int argc, char** argv) {
     }
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
       data->binspectrum=vect+offset*(curquant++);
-      data->offset=offset;
+      data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("BinSpectrum"),
@@ -415,7 +415,7 @@ int main(int argc, char** argv) {
     if (quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) {
       // Save if requested, copying if provided
       cout << "Saving precomputed impact coordinates" << endl;
-      long naxes_ipct[] = {16, res, res};
+      long naxes_ipct[] = {16, long(res), long(res)};
       fits_create_img(fptr, DOUBLE_IMG, naxis, naxes_ipct, &status);
       fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
 		     const_cast<char*>("Gyoto Impact Coordinates"),

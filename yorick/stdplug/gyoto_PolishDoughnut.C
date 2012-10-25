@@ -37,7 +37,7 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
     ao_ = ypush_Astrobj();
     builder=1;
   } else *ypush_Astrobj()=*ao_;
-  static char * knames[]={
+  static char const * knames[]={
     "unit",
     "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
     "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",
@@ -48,7 +48,7 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
   int piargs[]={-1,-1,-1,-1};
   
-  yarg_kw_init(knames, kglobs, kiargs);
+  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
   
   int iarg=argc, parg=0;
   while (iarg>=1) {
@@ -83,8 +83,8 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   int k=-1;
   //// MEMBERS ////
   // "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
-  char * rmsg="Cannot set return value more than once";
-  char * pmsg="Cannot use positional argument more than once";
+  char const * rmsg="Cannot set return value more than once";
+  char const * pmsg="Cannot use positional argument more than once";
   char * unit=NULL;
 
   /* UNIT */

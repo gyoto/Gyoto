@@ -64,7 +64,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   virtual RotStar3_1* clone() const ;
            ///< Cloner (uses RotStar3_1(file, integ_kind))
 
-  char const * const getFileName() const;
+  char const * getFileName() const;
 
   int getIntegKind() const ;
 

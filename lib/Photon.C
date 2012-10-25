@@ -159,22 +159,11 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 SmartPointer<Astrobj::Generic> obj,
 				 const double coord[8])
 {
-  
-  /*if(debug()) cout << coord[0] << " "
-       << coord[1] << " "
-       << coord[2] << " "
-       << coord[3] << " "
-       << coord[4] << " "
-       << coord[5] << " "
-       << coord[6] << " "
-       << coord[7] << endl;*/
   if (!met) met = metric_;
   double gtt0=met->gmunu(coord,0,0);
-  double ObsVel[4]={sqrt(-1./gtt0),0.,0.,0.};
+  double ObsVel[4]={pow(-gtt0, -0.5),0.,0.,0.};
   double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
   freq_obs_ = -sp_rec;
-  //  cout << "ut= " << sqrt(-1./gtt0) << endl;
-  //  cout << "In Photon.C: freq obs= " << freq_obs_ << endl;
   Worldline::setInitialCondition(met, coord, -1);
   if (obj) object_=obj;
 }

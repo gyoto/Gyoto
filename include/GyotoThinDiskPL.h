@@ -78,6 +78,7 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
+  using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8],double c_obj[8]) const;
 

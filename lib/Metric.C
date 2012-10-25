@@ -133,7 +133,7 @@ double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) c
     throwError(ss.str());
 
   }
-  return sqrt(-1./sum);
+  return pow(-sum, -0.5);
 }
 
 
@@ -143,58 +143,28 @@ void Metric::Generic::nullifyCoord(double coord[8]) const {
 }
 
 void Metric::Generic::nullifyCoord(double coord[8], double& tdot2) const {
-  //int width=25;//15;
-  //int prec=15;//8;
-  //cout << "DNAS NUllIFY" << endl;
-
-  // if (debug()) cout << "dans Metric::Generic::nullifyCoord coord au debut:  " << coord[0] << " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << coord[4] << " " << coord[5] << " " << coord[6] << " " << coord[7] << " " << endl;
-
   int i, j;
   double a, b=0., c=0.;
   a=gmunu(coord, 0, 0);
-  //cout << "gtt = " << gmunu(coord, 0, 0) << endl;
-  //cout << "coord' dans nullify:" << endl;
-  //for (int myi=4;myi<8;myi++) cout << coord[myi] << " ";
-  //cout << endl;
   for (i=1;i<=3;++i) {
     b+=gmunu(coord, 0, i)*coord[4+i];
-    //cout << "i g0i= " << i << " " << gmunu(coord, 0, i) << endl;
     for (j=1;j<=3;++j) {
-      //cout << "add to c: " << gmunu(coord, i, j)*coord[4+i]*coord[4+j] << endl;
-      //cout << "i j gij= " << i << " " << j << " " << gmunu(coord, i, j) << endl;
       c+=gmunu(coord, i, j)*coord[4+i]*coord[4+j];
     }
   }
-  //cout << "a b c in Metric::Generic::nullify= " << a << " " << b << " " << c << endl;
-  // a*tdot*tdot + 2*b*tdot + c ==0.
-  double Delta=b*b-a*c;
-  tdot2=(-b+sqrt(Delta))/a;
-  //  cout << "Delta a b c= " << setprecision(prec) << setw(width) << Delta << " " << setprecision(prec) << setw(width) << a << " " << setprecision(prec) << setw(width) << b << " " << setprecision(prec) << setw(width) << c << endl;
-  coord[4]=(-b-sqrt(Delta))/a;
-  // cout << "Tdot= " << coord[4] << endl;
-  /*
-    A creuser : en un point x0,x1,x2,x3 je spécifie la 3vitesse. Il existe deux géodésiques vérifiant ces conditions : celle qui pointe vers le futur (x0dot > 0) et celle qui pointe vers le passé (x0dot < 0).
-    La solution (-b-sqrt(Delta))/a semble être tjrs positive. C'est celle qu'on veut.
-
-   */
+  double sDelta=sqrt(b*b-a*c), am1=1./a;
+  tdot2=(-b+sDelta)*am1;
+  coord[4]=(-b-sDelta)*am1;
 }
 
 double Metric::Generic::ScalarProd(const double pos[4],
 			  const double u1[4], const double u2[4]) const {
-  // cout << "a comparer a = " << gmunu(pos,0,0) << " " << gmunu(pos,2,2) << endl;
   double res=0.;
   for (int i=0;i<4;i++) {
     for (int j=0;j<4;j++) {
-      
       res+=gmunu(pos, i, j)*u1[i]*u2[j];
-      //cout << "dans ScalarP: " << i << " " << j << " " << gmunu(pos, i, j) << " " << u1[i] <<  " " << u2[j] << " " << gmunu(pos, i, j)*u1[i]*u2[j] << endl;
-
     }
   }
-
-  /*for (int kk=0;kk<4;kk++) cout << "Metric: In Scalar: " << setprecision(10) << gmunu(pos, kk, kk) << " " << u1[kk] << " " << u2[kk] << endl;
-    cout << "** pour comp!" << gmunu(pos, 0, 0)*u1[0]*u2[0]+gmunu(pos, 1, 1)*u1[1]*u2[1]+gmunu(pos, 2, 2)*u1[2]*u2[2]+gmunu(pos, 3, 3)*u1[3]*u2[3] << endl;*/
-  
   return res;
 }
 
@@ -203,9 +173,7 @@ double Metric::Generic::Norm3D(double* pos) const {
   double res=0.;
   for (int i=0;i<3;i++) {
     for (int j=0;j<3;j++) {
-      
       res+=gmunu(pos,i+1, j+1)*pos[i]*pos[j];
-      // if (debug()) cout << "i,j,res= " << i << " " << j << " " << res << endl;
     }
   }
   return sqrt(res);

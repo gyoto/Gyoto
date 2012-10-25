@@ -140,6 +140,7 @@ class Gyoto::Astrobj::Star :
   virtual double getMass() const ; ///< Return 1.
 
  public:
+  using UniformSphere::getRmax;
   virtual double getRmax();
   virtual void unsetRmax();
   //  void setCoordSys(int); ///< Get coordinate system for integration

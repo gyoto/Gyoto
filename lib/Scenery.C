@@ -44,13 +44,13 @@ using namespace std;
   deltatau_(0.01) {}
 */
 Scenery::Scenery() :
-  gg_(NULL), screen_(NULL), obj_(NULL), delta_(0.01),
+  gg_(NULL), screen_(NULL), obj_(NULL), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0){}
 
 Scenery::Scenery(SmartPointer<Metric::Generic> met,
 		 SmartPointer<Screen> screen,
 		 SmartPointer<Astrobj::Generic> obj) :
-  gg_(met), screen_(screen), obj_(obj), delta_(0.01),
+  gg_(met), screen_(screen), obj_(obj), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0)
 {
   if (screen_) screen_->setMetric(gg_);
@@ -284,7 +284,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   struct timeval tim;
   double start, end;
   gettimeofday(&tim, NULL);  
-  start=tim.tv_sec+(tim.tv_usec/1000000.0);  
+  start=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);  
 
 #ifdef HAVE_PTHREAD
   larg.mutex  = NULL;
@@ -315,7 +315,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 #endif
 
   gettimeofday(&tim, NULL);  
-  end=tim.tv_sec+(tim.tv_usec/1000000.0);  
+  end=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);  
 
   GYOTO_MSG << "\nRaytraced "<< (jmax-jmin+1) * (imax-imin+1)
 	    << " photons in " << end-start
@@ -586,13 +586,10 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
 SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
 
   string name="", content="", unit="";
-  double delta = GYOTO_DEFAULT_DELTA ;
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Screen> scr = NULL;
   SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
-  double tmin = DEFAULT_TMIN;
-  size_t nthreads = 0;
 
   gg = fmp->getMetric();
   scr= fmp->getScreen();

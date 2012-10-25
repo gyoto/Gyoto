@@ -760,9 +760,14 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
   double argsqrt, limarg=1e-5, limargbis=0.1;
   double costh, sinth, a2=spin_*spin_;
   sincos(mycoor[2], &sinth, &costh);
+  double sinthm2=1./(sinth*sinth), costh2=costh*costh;
   double mu=cst[0], EE=cst[1], LL=cst[2], QQ=cst[3], QQm1=cst[4];
-  double Sigma=mycoor[1]*mycoor[1]+a2*costh*costh;
-  double Qtest=Sigma*mycoor[6]*Sigma*mycoor[6]+costh*costh*(a2*(mu*mu-EE*EE)+LL*LL/(sinth*sinth));//this should be equal to constant QQ
+  double mu2=mu*mu, EE2=EE*EE, LL2=LL*LL;
+  double Sigma=mycoor[1]*mycoor[1]+a2*costh2;
+  double Sigma2=Sigma*Sigma;
+  double Qtest=
+    Sigma2*mycoor[6]*mycoor[6]+costh2*(a2*(mu2-EE2)+LL2*sinthm2);
+  //this should be equal to constant QQ
   int thdotpos=1;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG
@@ -774,7 +779,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
                                   // Note: if Q==0, QQm1==1.
 
     if (mycoor[6]<0.) thdotpos=0; //to preserve the sign of thetadot
-    argsqrt=QQ-costh*costh*(a2*(mu*mu-EE*EE)+LL*LL/(sinth*sinth));//thetadot should be the sqrt of this quantity
+    argsqrt=QQ-costh2*(a2*(mu2-EE2)+LL2*sinthm2);//thetadot should be the sqrt of this quantity
 
     if (argsqrt<0 && fabs(argsqrt)<=limarg) {//if argsqrt is <0, but "small enough", put it to zero
       argsqrt=0.;
@@ -944,9 +949,9 @@ void KerrBL::nullifyCoord(double coord[4], double & tdot2) const {
     c+=gmunu(coord, i, i)*coord[4+i]*coord[4+i];
   }
   
-  double Delta=b*b-a*c;
-  tdot2=(-b+sqrt(Delta))/a;
-  coord[4]=(-b-sqrt(Delta))/a;
+  double sDelta=sqrt(b*b-a*c), am1=1./a;
+  tdot2=(-b+sDelta)*am1;
+  coord[4]=(-b-sDelta)*am1;
 }
 
 void KerrBL::computeCst(const double coord[8], double cst[5]) const{
@@ -963,9 +968,9 @@ void KerrBL::computeCst(const double coord[8], double cst[5]) const{
   double r2 = rr*rr, costheta2=costh*costh, 
     sintheta2=sinth*sinth;
   
-  double aa=spin_, a2=aa*aa;
+  double a2=spin_*spin_;
   
-  double Sigma=r2+a2*costheta2, fact=2.*aa*rr*sintheta2/Sigma;
+  double Sigma=r2+a2*costheta2, fact=2.*spin_*rr*sintheta2/Sigma;
   
   double mu;//Particule mass: 0 or 1
   if (fabs(norm)<fabs(norm+1.)){
@@ -976,7 +981,7 @@ void KerrBL::computeCst(const double coord[8], double cst[5]) const{
   //See e.g. Levin&PerezGiz 07 and MTW
   double EE=(1-2*rr/Sigma)*tdot+fact*phidot, 
                    //OK for particule mass = 0 or 1 
-    LL=sintheta2*(r2+a2+aa*fact)*phidot-fact*tdot, 
+    LL=sintheta2*(r2+a2+spin_*fact)*phidot-fact*tdot, 
                    //OK for particule mass = 0 or 1
     QQ=Sigma*thetadot*Sigma*thetadot+costheta2
                            *(a2*(mu*mu-EE*EE)+LL*LL/sintheta2); 

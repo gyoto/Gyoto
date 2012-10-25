@@ -113,12 +113,12 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
       throwError( "dimensions can't be null");
     if (nr_==1 || nz_==1 || nphi_==1)
       throwError("In Disk3D::CopyEmissquant: dimensions should be >1");
-    dr_ = (rout_ - rin_) / double(nr_-1.);
-    dz_ = (zmax_ - zmin_) / double(nz_-1.);
+    dr_ = (rout_ - rin_) / double(nr_-1);
+    dz_ = (zmax_ - zmin_) / double(nz_-1);
     if (repeat_phi_==0.)
       throwError("In Disk3D::CopyEmissquant: repeat_phi is 0!");
     //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
-    dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+    dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     GYOTO_DEBUG << "allocate emissquant_;" << endl;
     emissquant_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emissquant_" << endl;
@@ -126,7 +126,7 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
   }
 }
 
-double const * const Disk3D::getEmissquant() const { return emissquant_; }
+double const * Disk3D::getEmissquant() const { return emissquant_; }
 void Disk3D::getEmissquantNaxes( size_t naxes[3] ) const
 { 
   naxes[0] = nnu_; naxes[1] = nphi_; naxes[2] = nz_; 
@@ -149,12 +149,12 @@ void Disk3D::copyVelocity(double const *const velocity, size_t const naxes[3]) {
     memcpy(velocity_, velocity, 3*nphi_*nz_*nr_*sizeof(double));
   }
 }
-double const * const Disk3D::getVelocity() const { return velocity_; }
+double const * Disk3D::getVelocity() const { return velocity_; }
 
 void Disk3D::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  if ((nphi_-1.)*repeat_phi_>0.)
-    dphi_=(phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+  if ((nphi_-1)*repeat_phi_>0.)
+    dphi_=(phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     //dphi_=2.*M_PI/double((nphi_-1.)*repeat_phi_);
     
 }
@@ -168,37 +168,37 @@ double Disk3D::dnu() const { return dnu_; }
 
 void Disk3D::rin(double rrin) {
   rin_ = rrin;
-  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1.);
+  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1);
 }
 double Disk3D::rin() const {return rin_;}
 
 void Disk3D::rout(double rrout) {
   rout_ = rrout;
-  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1.);
+  if (nr_>1) dr_ = (rout_-rin_) / double(nr_-1);
 }
 double Disk3D::rout() const {return rout_;}
 
 void Disk3D::zmin(double zzmin) {
   zmin_ = zzmin;
-  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1.);
+  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1);
 }
 double Disk3D::zmin() const {return zmin_;}
 
 void Disk3D::zmax(double zzmax) {
   zmax_ = zzmax;
-  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1.);
+  if (nz_>1) dz_ = (zmax_-zmin_) / double(nz_-1);
 }
 double Disk3D::zmax() const {return zmax_;}
 
-void Disk3D::phimin(double phimin) {
-  phimin_ = phimin;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+void Disk3D::phimin(double phimn) {
+  phimin_ = phimn;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
 double Disk3D::phimin() const {return phimin_;}
 
-void Disk3D::phimax(double phimax) {
-  phimax_ = phimax;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1.);
+void Disk3D::phimax(double phimx) {
+  phimax_ = phimx;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
 }
 double Disk3D::phimax() const {return phimax_;}
 
@@ -311,15 +311,15 @@ void Disk3D::fitsRead(string filename) {
   if (nphi_==1)
     throwError("In Disk3D::fitsRead: dimensions should be >1");
   //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
-  dphi_ = (phimax_-phimin_)/double((nphi_-1.)*repeat_phi_);
+  dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 
   // update nz_, nr_, dz_, dr_
   nz_ = naxes[2];
   nr_ = naxes[3];
   if (nr_==1 || nz_==1)
     throwError("In Disk3D::fitsRead: dimensions should be >1");
-  dr_ = (rout_ - rin_) / double(nr_-1.);
-  dz_ = (zmax_ - zmin_) / double(nz_-1.);
+  dr_ = (rout_ - rin_) / double(nr_-1);
+  dz_ = (zmax_ - zmin_) / double(nz_-1);
 
   if (emissquant_) { delete [] emissquant_; emissquant_ = NULL; }
   emissquant_ = new double[nnu_ * nphi_ * nz_ * nr_];
@@ -368,7 +368,7 @@ void Disk3D::fitsWrite(string filename) {
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
   int       status    = 0;
-  long      naxes []  = {nnu_, nphi_, nz_, nr_};
+  long      naxes []  = {long(nnu_), long(nphi_), long(nz_), long(nr_)};
   long      fpixel[]  = {1,1,1,1};
   char * CNULL=NULL;
 
@@ -512,6 +512,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     break;
   default:
     throwError("Disk3D::getIndices(): unknown COORDKIND");
+    phi=zz=rr=0.;
   }
 
   if (dphi_*dz_*dr_==0.)

@@ -245,7 +245,7 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
   double err;
   int count=0;
 
-  double newnorm;
+  //  double newnorm;
   
   while (1){
     count++;
@@ -292,7 +292,7 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
       /* !!! Don't remove the line below !!!*/
       /* Although it should be useless, removing it renders the Metric
 	 useless under Linux! Further investigation is needed...*/
-      newnorm=ScalarProd(coord1, coord1+4, coord1+4);
+      //      newnorm=ScalarProd(coord1, coord1+4, coord1+4);
 
       //This "norm check" is trash, it's of no use, except to slow down drastically the computation (even with it, the norm can be very bad)
       /*if (fabs(newnorm-normref) > factnorm*fabs(lastnorm-normref)) {      
@@ -398,7 +398,7 @@ void KerrKS::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
 
   double rcross=sqrt ( coor[1]*coor[1] + coor[2]*coor[2] - spin_*spin_);
-  double Omega=dir*sqrt(1./(rcross*rcross*rcross));//angular Keplerian velocity
+  double Omega=dir*pow(rcross*rcross*rcross, -0.5);//angular Keplerian velocity
   
   vel[1] = -coor[2]*Omega;
   vel[2] =  coor[1]*Omega;

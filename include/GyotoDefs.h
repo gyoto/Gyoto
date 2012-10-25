@@ -132,7 +132,8 @@ namespace Gyoto {
 #define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \
     std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "         \
 	      << #a << "=[" << a[0] ;				  \
-    for (size_t i=1; i < n; ++i) std::cerr << "," << a[i] ;	  \
+    for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n; ++_gyoto_debug_array_i) \
+      std::cerr << "," << a[_gyoto_debug_array_i] ;			\
     std::cerr << "]" << std::endl ;}
 #define GYOTO_DEBUG  if (GYOTO_DEBUG_MODE) std::cerr << "DEBUG: "	\
 					      << __PRETTY_FUNCTION__ << ": "

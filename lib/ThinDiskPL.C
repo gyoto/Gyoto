@@ -41,8 +41,8 @@ using namespace Gyoto::Astrobj;
 
 ThinDiskPL::ThinDiskPL() :
   ThinDisk("ThinDiskPL"),
-  spectrumBB_(NULL),
-  PLSlope_(0.), PLRho_(1.), PLRadRef_(1.)
+  PLSlope_(0.), PLRho_(1.), PLRadRef_(1.),
+  spectrumBB_(NULL)
 {
   if (debug()) cerr << "DEBUG: ThinDiskPL Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -50,8 +50,8 @@ ThinDiskPL::ThinDiskPL() :
 
 ThinDiskPL::ThinDiskPL(const ThinDiskPL& o) :
   ThinDisk(o),
-  spectrumBB_(NULL),
-  PLSlope_(o.PLSlope_), PLRho_(o.PLRho_), PLRadRef_(o.PLRadRef_)
+  PLSlope_(o.PLSlope_), PLRho_(o.PLRho_), PLRadRef_(o.PLRadRef_),
+  spectrumBB_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();

@@ -120,7 +120,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
+  using ThinDisk::setInnerRadius;
   virtual void   setInnerRadius(double); ///< Set rin_
+  using ThinDisk::setOuterRadius;
   virtual void   setOuterRadius(double); ///< Set rout_
 
   /**
@@ -142,20 +144,20 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual void copyIntensity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
   ///< attach emission_ array and set its size
-  virtual double const * const getIntensity() const;
+  virtual double const * getIntensity() const;
   virtual void getIntensityNaxes( size_t naxes[3] ) const ;
 
   virtual void copyOpacity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
-  virtual double const * const getOpacity() const;
+  virtual double const * getOpacity() const;
 
   virtual void copyVelocity(double const * const pattern = NULL,
 			      size_t const naxes[2] = NULL);
-  virtual double const * const getVelocity() const;
+  virtual double const * getVelocity() const;
 
   virtual void copyGridRadius(double const * const pattern = NULL,
 			      size_t nr = 0 );
-  virtual double const * const getGridRadius() const;
+  virtual double const * getGridRadius() const;
 
   virtual void repeatPhi(size_t n);
   virtual size_t repeatPhi() const;
@@ -181,6 +183,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   ///< get emission_ cell corresponding to position co[4]
 
  public:
+  using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
   virtual double transmission(double nu_em, double dsem, double coord[8]) const;

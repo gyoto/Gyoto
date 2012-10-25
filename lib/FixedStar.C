@@ -89,13 +89,17 @@ void FixedStar::getCartesian(double const * const , size_t const n_dates,
       double rs=pos_[0];
       double ths=pos_[1];
       double phs=pos_[2];
-      xs= rs*sin(ths)*cos(phs);
-      ys= rs*sin(ths)*sin(phs);
-      zs= rs*cos(ths);
+      double st, ct, sp, cp;
+      sincos(ths, &st, &ct);
+      sincos(phs, &sp, &cp);
+      xs= rs*st*cp;
+      ys= rs*st*sp;
+      zs= rs*ct;
     }
     break;
   default:
     throwError("unsupported coordkind");
+    xs=ys=zs=0.;
   }
   for (size_t i=0; i<n_dates; ++i) {
     if (x) x[i] = xs;

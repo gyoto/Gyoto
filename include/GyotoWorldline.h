@@ -83,9 +83,9 @@ class Gyoto::Worldline {
   
   virtual ~Worldline() ;                        ///< Destructor
 
-  int getImin() const;
-  int getImax() const;
-  int getI0() const;
+  size_t getImin() const;
+  size_t getImax() const;
+  size_t getI0() const;
 
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
@@ -168,7 +168,7 @@ class Gyoto::Worldline {
   // ---------
  public:
   //virtual void position(double t, double* res) = 0 ;
-  int get_nelements() const;
+  size_t get_nelements() const;
   void get_t(double *dest) const;
 
   /**

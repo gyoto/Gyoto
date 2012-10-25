@@ -179,6 +179,7 @@ class Gyoto::Astrobj::UniformSphere :
   virtual void getVelocity(double const pos[4], double vel[4]) = 0;
   ///< Yield velocity of the center of the sphere.
 
+  using Standard::emission;
   virtual double emission(double nu_em, double dsem,
 			  double cp[8], double co[8]=NULL) const;
   ///< Emission is determined by spectrum_ and opacity_

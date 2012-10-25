@@ -106,6 +106,9 @@ double PageThorneDisk::emission(double, double dsem,
   case GYOTO_COORDKIND_CARTESIAN:
     xx=pow(coord_obj[1]*coord_obj[1]+coord_obj[2]*coord_obj[2]-aa2_, 0.25);
     break;
+  default:
+    throwError("Unknown coordinate system kind");
+    xx=0;
   }
   double ff=
     3./(2.)*1./(xx*xx*(xx*xx*xx-3.*xx+2.*aa_))

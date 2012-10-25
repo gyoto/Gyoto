@@ -78,10 +78,11 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   int setParameter(std::string name, std::string content, std::string unit);
 
  public:
+  using PatternDisk::emission;
   double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
 
-  double const * const getVelocity() const ;
+  double const * getVelocity() const ;
   void getVelocity(double const pos[4], double vel[4])  ;
 
   void setMetric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL

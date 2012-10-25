@@ -34,7 +34,7 @@ FocalPlane::FocalPlane(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::G
 		       double xmin, double ymin, double xmax, double ymax,
 		       size_t nx, size_t ny):
   gg_(gg), obj_(obj),
-  nx_(nx), ny_(ny), dx_((xmax-xmin)/nx), dy_((ymax-ymin)/ny),
+  nx_(nx), ny_(ny), dx_((xmax-xmin)/double(nx)), dy_((ymax-ymin)/double(ny)),
   xmin_(xmin), ymin_(ymin)
 {
 
@@ -48,13 +48,13 @@ double FocalPlane::getDx() const { return dx_; }
 double FocalPlane::getDy() const { return dy_; }
 double FocalPlane::getXmin() const { return xmin_; }
 double FocalPlane::getYmin() const { return ymin_; }
-double FocalPlane::getXmax() const { return xmin_+(nx_-1)*dx_; }
-double FocalPlane::getYmax() const { return ymin_+(ny_-1)*dy_; }
+double FocalPlane::getXmax() const { return xmin_+double(nx_-1)*dx_; }
+double FocalPlane::getYmax() const { return ymin_+double(ny_-1)*dy_; }
 void FocalPlane::getX(double * dest) const {
-  size_t i; for (i=0; i<nx_; ++i) dest[i]=xmin_+i*dx_;
+  size_t i; for (i=0; i<nx_; ++i) dest[i]=xmin_+double(i)*dx_;
 }
 void FocalPlane::getY(double * dest) const {
-  size_t i; for (i=0; i<ny_; ++i) dest[i]=ymin_+i*dy_;
+  size_t i; for (i=0; i<ny_; ++i) dest[i]=ymin_+double(i)*dy_;
 }
 
 // void FocalPlane::hitMap(double tobs, double *dest, double deltatau) {

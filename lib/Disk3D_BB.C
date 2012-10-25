@@ -69,7 +69,7 @@ Disk3D_BB::~Disk3D_BB() {
   delete [] velocity_array_;
 }
 
-double const * const Disk3D_BB::getVelocity() const { return Disk3D::getVelocity(); }
+double const * Disk3D_BB::getVelocity() const { return Disk3D::getVelocity(); }
 
 void Disk3D_BB::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
@@ -90,6 +90,7 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
     break;
   default:
     throwError("Disk3D_BB::getVelocity: bad COORDKIND");
+    risco=0.;
   }
 
   if (rcur<risco){
@@ -136,10 +137,11 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   default:
     throwError("Disk3D_BB::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
+    risco=0.;
   }
 
   double rcur=co[1];
-  double th=co[2];
+  //double th=co[2];
 
   if (rcur > rout() || rcur < risco) return 0.;
 
@@ -160,10 +162,10 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   }else{
     //SI value of cylindrical r coordinate:
     double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
-    double r_si=rcur*dist_unit; //spherical
+    //double r_si=rcur*dist_unit; //spherical
     //double r_si=rcur*sin(th)*dist_unit; //cylindrical
     //cout << "cyl: " << rcur << " " << th << " " << rcur*sin(th) << " " << risco << endl;
-    double risco_si=risco*dist_unit;
+    //double risco_si=risco*dist_unit;
 
     //Local density in cgs:
     /*
@@ -221,16 +223,15 @@ double Disk3D_BB::emission(double nu, double dsem,
     tcomp+=dt_;
     ifits++;
   }
-  double* fake;
   if (ifits==1 || ifits==nb_times_){
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
-    return emission1date(nu,dsem,fake,co);
+    return emission1date(nu,dsem,NULL,co);
   }else{
     double I1, I2;
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits-1);
-    I1=emission1date(nu,dsem,fake,co);
+    I1=emission1date(nu,dsem,NULL,co);
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits);
-    I2=emission1date(nu,dsem,fake,co);
+    I2=emission1date(nu,dsem,NULL,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }
@@ -239,7 +240,7 @@ double Disk3D_BB::emission(double nu, double dsem,
 }
 
 double Disk3D_BB::transmission1date(double nu, double dsem,
-			       double* fake,
+			       double*,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
   double * temperature = const_cast<double*>(getEmissquant());
@@ -254,10 +255,11 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
   default:
     throwError("Disk3D_BB::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
+    risco=0.;
   }
 
   double rcur=co[1];
-  double th=co[2];
+  //double th=co[2];
 
   //cout << "rcur, risco= " << rcur << " " << risco << endl;
 
@@ -273,7 +275,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
   
   spectrumBB_->setTemperature(TT);
   double BnuT=(*spectrumBB_)(nu); //Planck function
-  double jnu=emission1date(nu,dsem,fake,co); // Emission coef
+  double jnu=emission1date(nu,dsem,NULL,co); // Emission coef
   double alphanu=0.; //absorption coef.
   if (BnuT==0.){
     /*
@@ -302,16 +304,15 @@ double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
     tcomp+=dt_;
     ifits++;
   }
-  double* fake;
   if (ifits==1 || ifits==nb_times_){
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
-    return transmission1date(nuem,dsem,fake,co);
+    return transmission1date(nuem,dsem,NULL,co);
   }else{
     double I1, I2;
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits-1);
-    I1=transmission1date(nuem,dsem,fake,co);
+    I1=transmission1date(nuem,dsem,NULL,co);
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits);
-    I2=transmission1date(nuem,dsem,fake,co);
+    I2=transmission1date(nuem,dsem,NULL,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }

@@ -103,6 +103,7 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
   double emission1date(double nu_em, double dsem,
 		  double c_ph[8], double c_obj[8]) const;
 
+  using Disk3D::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
 
@@ -113,7 +114,7 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
 			  double c_obj[8]) const;
 
   void getVelocity(double const pos[4], double vel[4]);
-  double const * const getVelocity() const;
+  double const * getVelocity() const;
   
  protected:
 

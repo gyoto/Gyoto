@@ -108,6 +108,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   virtual void setOpacity(SmartPointer<Spectrum::Generic>);
   virtual SmartPointer<Spectrum::Generic> getOpacity() const;
 
+  using Standard::getRmax;
   virtual double getRmax();
 
   //XML I/O
@@ -130,6 +131,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
  protected:
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
+  using Standard::emission;
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const ;
 

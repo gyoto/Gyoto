@@ -336,13 +336,9 @@ void Screen::getRayCoord(double alpha, double delta,
 
       double vx=coord[5], vy=coord[6], vz=coord[7];
       double denom=gxx*vx*vx+gyy*vy*vy+gzz*vz*vz+2.*gxy*vx*vy+2.*gxz*vx*vz+2.*gyz*vy*vz;
-      double lambda;
+      if (denom < 0.) throwError("In Screen.C: impossible to normalize in KS case!");
       double nuobs=1.;
-      if (denom < 0.){
-	throwError("In Screen.C: impossible to normalize in KS case!");
-      }else{
-	lambda=nuobs/sqrt(denom);
-      }
+      double lambda=nuobs*pow(denom, -0.5);
       coord[5]*=lambda;coord[6]*=lambda;coord[7]*=lambda;
     }
     break;
@@ -368,9 +364,10 @@ void Screen::getRayCoord(double alpha, double delta,
 
       double nuobs=1.;
       double lambda =
-	nuobs/sqrt(grr*coord[5]*coord[5] +
-		   gthth*coord[6]*coord[6] +
-		   gphph*coord[7]*coord[7]);
+	nuobs*pow(grr*coord[5]*coord[5] +
+		  gthth*coord[6]*coord[6] +
+		  gphph*coord[7]*coord[7],
+		  -0.5);
 
       coord[5]*=lambda;coord[6]*=lambda;coord[7]*=lambda;
     }
@@ -388,12 +385,9 @@ void Screen::computeBaseVectors() {
   // See http://en.wikipedia.org/wiki/Euler_angles
 
   //  if (debug()) cout << "In compute base vectore" << endl;
-  double ca = cos(euler_[0]); // paln
-  double sa = sin(euler_[0]);
-  double cb = cos(euler_[1]); // inclination
-  double sb = sin(euler_[1]);
-  double cc = cos(euler_[2]); // argument
-  double sc = sin(euler_[2]);
+  double ca, sa; sincos(euler_[0], &sa, &ca); // paln
+  double cb, sb; sincos(euler_[1], &sb, &cb); // inclination
+  double cc, sc; sincos(euler_[2], &sc, &cc); // argument
   double unit  = 1.;//1./distance_;
 
   //NB: here x,y,z are KS coordinates

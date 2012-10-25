@@ -67,10 +67,10 @@ extern "C" {
   {
     // Step 1: determine whether nofail is set (to true)
     int nofail=0;
-    static char *knames[2] = { "nofail", 0 };
+    static char const * knames[2] = { "nofail", 0 };
     static long kglobs[2];
     int kiargs[1];
-    yarg_kw_init(knames, kglobs, kiargs);
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
     int iarg=argc-1;
     while (iarg>=0) {
       iarg = yarg_kw(iarg, kglobs, kiargs);
