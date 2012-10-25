@@ -528,23 +528,24 @@ AS_IF([test "x$HOME_LORENE" != "x"],
   [
    AS_IF([test ! -r ${HOME_LORENE}/local_settings],
      [AC_MSG_ERROR([${HOME_LORENE}/local_settings not found])])
+touch conftest.timestamp
 cat >conftest.make <<_ACEOF
 include \$(HOME_LORENE)/local_settings
-%:
+%: conftest.timestamp
 	@echo \$(\$@)
 _ACEOF
    LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene -llorenef77"
-   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK`"
-   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL`"
-   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT`"
-   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE`"
-   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX`"
-   LORENECPPFLAGS=`$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make INC`
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK | tr -d '\n\r'`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL | tr -d '\n\r'`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT | tr -d '\n\r'`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LORENE | tr -d '\n\r'`"
+   LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX | tr -d '\n\r'`"
+   LORENECPPFLAGS=`$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make INC | tr -d '\n\r'`
    LORENECPPFLAGS="$LORENECPPFLAGS"
    AC_DEFINE([GYOTO_USE_LORENE],
      [1],
      [Define to 1 if you have Lorene])
-   rm conftest.make
+   rm conftest.make conftest.timestamp
    AC_SUBST([LORENECPPFLAGS])
    AC_SUBST([LORENELDFLAGS])
    pkg_cflags="${pkg_cflags} ${LORENECPPFLAGS}"
