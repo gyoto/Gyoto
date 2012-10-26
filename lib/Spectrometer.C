@@ -172,22 +172,22 @@ void Spectrometer::setBand(double nu[2], string unit, string kind) {
   switch (kind_) {
   case GYOTO_SPECTRO_KIND_FREQ: 
     if (unit != "" && unit != "Hz")
-      for (size_t i=0; i<1; ++i)
+      for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToHerz(nu[i], unit);
     break;
   case GYOTO_SPECTRO_KIND_FREQLOG:
     if (unit != "" && unit != "Hz")
-      for (size_t i=0; i<1; ++i)
+      for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToHerz(pow(10., nu[i]), unit));
     break;
   case GYOTO_SPECTRO_KIND_WAVE:
     if (unit != "" && unit != "m")
-      for (size_t i=0; i<1; ++i)
+      for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToMeters(nu[i], unit);
     break;
   case GYOTO_SPECTRO_KIND_WAVELOG:
     if (unit != "" && unit != "m")
-      for (size_t i=0; i<1; ++i)
+      for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
     break;
   default:
