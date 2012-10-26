@@ -478,7 +478,7 @@ double Screen::getFieldOfView(string unit) {
   double fov = getFieldOfView();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
-# if HAVE_UDUNITS
+# ifdef HAVE_UDUNITS
   else if (Units::areConvertible(unit, "m"))
     fov = Units::FromMeters(fov*distance_, unit) ;
   else fov = Units::Converter("rad", unit)(fov);
@@ -501,7 +501,7 @@ double Screen::getFieldOfView(string unit) {
 void Screen::setFieldOfView(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
-# if HAVE_UDUNITS
+# ifdef HAVE_UDUNITS
   else {
     Units::Unit from (unit);
     if (Units::areConvertible(from, "m"))

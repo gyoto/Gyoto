@@ -133,7 +133,7 @@ noop, sc3(screen=)(resolution=32);
 noop, sc3(astrobj=)(radius=2);
 write, format="%s\n" , "done.";
 
-write, format="%s", "Ray-tracing on 1 thread (sc())... ";
+write, format="%s", "Ray-tracing on 1 thread (sc())... \n";
 sc3, nthreads=1;
 tic;
 im1 = sc3(,,"Intensity"); // raytrace
@@ -142,7 +142,7 @@ pli, im1;
 pause, 1000;
 write, format="%s\n" , "done.";
 
-write, format="%s", "Ray-tracing on 2 thread (sc())... ";
+write, format="%s", "Ray-tracing on 2 threads (sc())... \n";
 sc3, nthreads=2;
 tic;
 im1 = sc3(,,"Intensity"); // raytrace

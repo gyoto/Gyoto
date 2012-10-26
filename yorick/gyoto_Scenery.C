@@ -437,14 +437,39 @@ extern "C" {
       }
 
       size_t k; int has_sp=0, has_bsp=0;
+      string tkk="", qunit="", quantity="", intu, spu, bspu;
+      size_t first = 0, last = 0;
       if (nbnuobs)
 	for (k=0; k<nk; ++k) {
 	  GYOTO_DEBUG << "k=" << k<<", nk="<<nk
 		      << ", squant[k]="<<squant[k]<<endl;
-	  if (!strcmp(squant[k], "Spectrum"))
+	  tkk = squant[k];
+	  first = tkk.find("[");
+	  last = tkk.size() - 1;
+	  if (first < last) {
+	    qunit = tkk.substr(first+1, last-first-1);
+	    quantity = tkk.substr(0, first);
+	    squant[k][first]=0;
+	  } else {
+	    qunit="";
+	    quantity=tkk;
+	  }
+	  GYOTO_DEBUG << "quantity=" << quantity << ", qunit=" << qunit << endl;
+#	  ifndef HAVE_UDUNITS
+	  if (qunit != "")
+	    GYOTO_WARNING << "gyoto_Scenery(): unit \""<< qunit
+			  << "\" ignored, try recompiling Gyoto --with-udunits"
+			  << endl;
+#         endif
+	  if (quantity=="Spectrum") {
 	    has_sp=1;
-	  if (!strcmp(squant[k], "BinSpectrum"))
+	    spu=qunit;
+	  } else if (quantity=="BinSpectrum") {
 	    has_bsp=1;
+	    bspu=qunit;
+	  } else if (quantity=="Intensity") {
+	    intu=qunit;
+	  }
 	}
       if (has_sp) nk+=nbnuobs-1;
       if (has_bsp) nk+=nbnuobs-1;
@@ -469,7 +494,15 @@ extern "C" {
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
+      SmartPointer<Screen> screen = sc -> getScreen();
+#     ifdef HAVE_UDUNITS
       if (data) sc->setPropertyConverters(&prop);
+      screen->mapPixUnit();
+      if (intu != "") prop.setIntensityConverter(intu);
+      if (spu  != "") prop.setSpectrumConverter(spu);
+      if (bspu != "") prop.setBinSpectrumConverter(bspu);
+      screen->unmapPixUnit();
+#     endif
 
       size_t i, j;
       if (precompute) prop.impactcoords=data;
@@ -531,11 +564,10 @@ extern "C" {
       }
       if (i_idx.isDouble() ||j_idx.isDouble()) {
 	prop.init(nbnuobs);
-	Photon ph(sc->getMetric(), sc->getAstrobj(), sc->getScreen(),
+	Photon ph(sc->getMetric(), sc->getAstrobj(), screen,
 		  i_idx.getDVal(), j_idx.getDVal());
 	ph.hit(&prop);
       } else {
-	SmartPointer<Screen> screen = sc -> getScreen();
 	screen -> computeBaseVectors();
 	double coord[8];
 	screen -> getRayCoord(size_t(i_idx.first()),
@@ -581,7 +613,7 @@ extern "C" {
 	  for (size_t th=0; th < nthreads-1; ++th)
 	    pthread_join(threads[th], NULL);
 #       endif
-	if (impactcoords==NULL) cout << endl;
+	if (impactcoords==NULL) GYOTO_MSG << endl;
       }
     }
   }

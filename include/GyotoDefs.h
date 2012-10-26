@@ -126,7 +126,7 @@ namespace Gyoto {
   GYOTO_WARNING << "unit ignored (trying to convert from \"" << from \
 		<< "\" to "					     \
 		<< to \
-		<< "\"), you may have more chance recompiling Gyoto with --with-udunits"
+		<< "\"), you may have more chance recompiling Gyoto with --with-udunits\n"
 
 #define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
 #define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \

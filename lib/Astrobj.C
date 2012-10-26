@@ -476,13 +476,31 @@ void Astrobj::Properties::setIntensityConverter(SmartPointer<Units::Converter> c
   intensity_converter_ = conv ;
 }
 
+void Astrobj::Properties::setIntensityConverter(string unit) {
+  intensity_converter_ =
+    new Units::Converter("J.m-2.s-1.sr-1.Hz-1",
+			 unit!=""?unit:"J.m-2.s-1.sr-1.Hz-1");
+}
+
 void Astrobj::Properties::setSpectrumConverter(SmartPointer<Units::Converter> conv) {
   spectrum_converter_ = conv;
+}
+
+void Astrobj::Properties::setSpectrumConverter(string unit) {
+  spectrum_converter_ =
+    new Units::Converter("J.m-2.s-1.sr-1.Hz-1",
+			 unit!=""?unit:"J.m-2.s-1.sr-1.Hz-1");
 }
 
 void Astrobj::Properties::setBinSpectrumConverter(SmartPointer<Units::Converter> conv) {
   binspectrum_converter_ = conv;
 }
+void Astrobj::Properties::setBinSpectrumConverter(string unit) {
+  binspectrum_converter_ =
+    new Units::Converter("J.m-2.s-1.sr-1",
+			 unit!=""?unit:"J.m-2.s-1.sr-1");
+}
+
 #endif
 
 Astrobj::Properties Astrobj::Properties::operator++() {

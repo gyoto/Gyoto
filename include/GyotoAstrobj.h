@@ -594,8 +594,11 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   Properties operator++();
 # ifdef HAVE_UDUNITS
   void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void setIntensityConverter(std::string);
   void setSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void setSpectrumConverter(std::string);
   void setBinSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void setBinSpectrumConverter(std::string);
 # endif
 };
 
