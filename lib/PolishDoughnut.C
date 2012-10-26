@@ -66,15 +66,22 @@ PolishDoughnut::PolishDoughnut() :
 }
 
 PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
-  Standard(orig), gg_(NULL),
-  l0_(orig.l0_), lambda_(orig.lambda_), W_surface_(orig.W_surface_),
+  Standard(orig),
+  gg_(NULL),
+  l0_(orig.l0_),
+  lambda_(orig.lambda_),
+  W_surface_(orig.W_surface_),
   W_centre_(orig.W_centre_),
-  r_cusp_(orig.r_cusp_), r_centre_(orig.r_centre_),
+  r_cusp_(orig.r_cusp_),
+  r_centre_(orig.r_centre_),
+  DeltaWm1_(orig.DeltaWm1_),
   temperature_ratio_(orig.temperature_ratio_),
   central_density_(orig.central_density_),
   centraltemp_over_virial_(orig.centraltemp_over_virial_),
   beta_(orig.beta_),
-  use_specific_impact_(orig.use_specific_impact_)
+  use_specific_impact_(orig.use_specific_impact_),
+  aa_(orig.aa_),
+  aa2_(orig.aa2_)
 {
   if (orig.gg_()) {
     gg_=orig.gg_->clone();
@@ -832,7 +839,7 @@ void PolishDoughnut::emission(double Inu[], // output
   if (emisstot==emisstot+1.) throwError("In PolishDoughnut.C: "
 					"emissivity is infinite");
 
-  if (debug()) 
+  if (debug())
     cerr << "DEBUG: PD::emission(" << nu_em
 		    <<"): return " << emisstot <<endl;
 

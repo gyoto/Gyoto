@@ -23,7 +23,8 @@
 // From yutils, for tic() and tac()
 #include "util_fr.i"
 
-if (get_env("GYOTO_CHECK_NODISPLAY")) fma = winkill = pli = plg = noop;
+if (get_env("GYOTO_CHECK_NODISPLAY"))
+  window = pause = fma = winkill = pli = plg = noop;
 
 write, format="%s", "New scenery... ";
 sc=gyoto_Scenery();
@@ -132,7 +133,8 @@ noop, sc3(screen=)(resolution=32);
 noop, sc3(astrobj=)(radius=2);
 write, format="%s\n" , "done.";
 
-write, format="%s", "Ray-tracing... ";
+write, format="%s", "Ray-tracing on 1 thread (sc())... ";
+sc3, nthreads=1;
 tic;
 im1 = sc3(,,"Intensity"); // raytrace
 tac();
@@ -140,10 +142,21 @@ pli, im1;
 pause, 1000;
 write, format="%s\n" , "done.";
 
-write, format="%s", "Ray-tracing on 2 threads... \n";
+write, format="%s", "Ray-tracing on 2 thread (sc())... ";
+sc3, nthreads=2;
+tic;
+im1 = sc3(,,"Intensity"); // raytrace
+tac();
+window,1; pli, im1;
+pause, 1000;
+write, format="%s\n" , "done.";
+
+write, format="%s", "Ray-tracing on 2 threads (gyoto_Scenery_rayTrace())... \n";
 sc3, nthreads=2, quantities="Intensity";
 //tic;
 im1 = gyoto_Scenery_rayTrace(sc3);
+window,2; pli, im1;
+pause, 1000;
 //tac();
 write, format="%s\n" , "done.";
 

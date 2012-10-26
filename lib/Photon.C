@@ -41,8 +41,10 @@ using namespace std;
 using namespace Gyoto;
 
 Photon::Photon() :
-  Worldline(), freq_obs_(1.),
-  transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
+  Worldline(),
+  object_(NULL),
+  freq_obs_(1.), transmission_freqobs_(1.),
+  spectro_(NULL), transmission_(NULL)
  {}
 
 Photon::Photon(const Photon& o) :
@@ -77,7 +79,8 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 {
 }
 
-Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj::Generic> obj,
+Photon::Photon(SmartPointer<Metric::Generic> met,
+	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
   Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
 {

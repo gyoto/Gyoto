@@ -32,9 +32,118 @@
 #include <cstring>
 #include "ygyoto_idx.h"
 
+#ifdef HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
 using namespace std;
 using namespace Gyoto;
 using namespace YGyoto;
+
+typedef struct ySceneryThreadWorkerArg {
+#ifdef HAVE_PTHREAD
+  pthread_mutex_t * mutex;
+  pthread_t * parent;
+#endif
+  Idx *i_idx, *j_idx;
+  Scenery *sc;
+  Photon * ph;
+  Astrobj::Properties *data;
+  double * impactcoords;
+  size_t res;
+} ySceneryThreadWorkerArg ;
+
+static void * ySceneryThreadWorker (void *arg) {
+  /*
+    This is the real ray-tracing loop. It may be called by multiple
+    threads in parallel, launched from ::rayTrace
+   */
+
+  ySceneryThreadWorkerArg *larg = static_cast<ySceneryThreadWorkerArg*>(arg);
+
+  // Each thread needs its own Photon, clone cached Photon
+  // it is assumed to be already initialized with spectrometer et al.
+  Photon * ph = larg -> ph;
+#ifdef HAVE_PTHREAD
+  if (larg->mutex) {
+    GYOTO_DEBUG << "locking mutex\n";
+    pthread_mutex_lock(larg->mutex);
+    GYOTO_DEBUG << "mutex locked\n";
+    ph = larg -> ph -> clone();
+    GYOTO_DEBUG << "unlocking mutex\n";
+    pthread_mutex_unlock(larg->mutex);
+    GYOTO_DEBUG << "mutex unlocked\n";
+  }
+#endif
+
+  // local variables to store our parameters
+  size_t i, j;
+  Astrobj::Properties data;
+  double * impactcoords = NULL;
+
+  size_t count=0;
+
+  while (1) {
+    /////// 1- get input and output parameters and update them for next access
+    //// i and j are input, data and impactcoords are where to store
+    //// output.  we must get them and increase them so that another
+    //// thread can get the next values while we integrate.
+#ifdef HAVE_PTHREAD
+    // lock mutex so we can safely read and update i, j et al.
+    if (larg->mutex) pthread_mutex_lock(larg->mutex);
+#endif
+    // copy i & j 
+    i = larg->i_idx->current(); j = larg->j_idx->current();
+
+    // check whether there remains something to compute
+    if (!larg->j_idx->valid()
+	|| (larg->j_idx->isLast() && !larg->i_idx->valid())) {
+      // terminate, but first...
+#ifdef HAVE_PTHREAD
+      // ...unlock mutex so our siblings can access i & j and terminate too
+      if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+#endif
+      break;
+    }
+
+    // print some info
+    if (larg->i_idx->isFirst() &&
+	verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords) {
+      cout << "\rRay-tracing scenery: j = " << j << flush ;
+    }
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
+#   endif
+
+    // update i & j
+    larg->i_idx->next();
+    if (!larg->i_idx->valid()) {
+      larg->j_idx->next(); larg->i_idx->first();
+    }
+
+    // copy output pointers and update them
+    data = *larg->data; ++(*larg->data);
+    if (larg->impactcoords) impactcoords=larg->impactcoords+((j-1)*larg->res+i-1)*16;
+
+#ifdef HAVE_PTHREAD
+    // unlock mutex so our siblings can can access i, j et al. and procede
+    if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+#endif
+
+    ////// 2- do the actual work.
+    (*larg->sc)(i, j, &data, impactcoords, ph);
+    ++count;
+  }
+#ifdef HAVE_PTHREAD
+  if (larg->mutex) {
+    delete ph;
+    pthread_mutex_lock(larg->mutex);
+  }
+  GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
+  if (larg->mutex) pthread_mutex_unlock(larg->mutex);
+# endif
+  return NULL;
+}
 
 extern "C" {
 
@@ -426,25 +535,52 @@ extern "C" {
 		  i_idx.getDVal(), j_idx.getDVal());
 	ph.hit(&prop);
       } else {
-	for (j=j_idx.first() ;
-	     j_idx.valid() ;
-	     j=j_idx.next()  ) {
-	  if (impactcoords==NULL)
-	    cout << "\rRay-tracing scenery: j = " << j << flush ;
-	  for (i=i_idx.first();
-	       i_idx.valid();
-	       i=i_idx.next() ) {
-	    GYOTO_DEBUG << "j="<<j<<", i="<<i<<endl;
-	    prop.init(nbnuobs);
-	    GYOTO_DEBUG << "DEBUG: gyoto_Scenery.C: "
-		"calling (*sc)(i, j, &prop, ((impactcoords=="<<impactcoords<<
-		") ? impactcoords+(j*res+i)*16 : NULL)=="
-		   <<impactcoords+(j*res+i)*16
-		   <<");" << endl;
-	    (*sc)(i, j, &prop, impactcoords ? impactcoords+((j-1)*res+i-1)*16 : NULL);
-	    ++prop;
+	SmartPointer<Screen> screen = sc -> getScreen();
+	screen -> computeBaseVectors();
+	double coord[8];
+	screen -> getRayCoord(size_t(i_idx.first()),
+			      size_t(j_idx.first()),
+			      coord);
+	Photon ph(sc->getMetric(), sc->getAstrobj(), coord);
+	ph.setSpectrometer(screen->getSpectrometer());
+
+	ySceneryThreadWorkerArg larg;
+	larg.sc=sc;
+	larg.ph=&ph;
+	larg.data=&prop;
+	larg.impactcoords=impactcoords;
+	larg.i_idx=&i_idx;
+	larg.j_idx=&j_idx;
+	larg.res=res;
+
+#       ifdef HAVE_PTHREAD
+	larg.mutex  = NULL;
+	pthread_mutex_t mumu = PTHREAD_MUTEX_INITIALIZER;
+	pthread_t * threads = NULL;
+	pthread_t pself = pthread_self();
+	larg.parent = &pself;
+	size_t nthreads = sc -> getNThreads();
+	if (nthreads >= 2) {
+	  threads = new pthread_t[nthreads-1];
+	  larg.mutex  = &mumu;
+	  for (size_t th=0; th < nthreads-1; ++th) {
+	    if (pthread_create(threads+th, NULL,
+			       ySceneryThreadWorker,
+			       static_cast<void*>(&larg)) < 0)
+	      y_error("Error creating thread");
 	  }
 	}
+#       endif
+
+	// Call worker on the parent thread
+	(*ySceneryThreadWorker)(static_cast<void*>(&larg));
+
+#       ifdef HAVE_PTHREAD
+	// Wait for the child threads
+	if (nthreads>=2)
+	  for (size_t th=0; th < nthreads-1; ++th)
+	    pthread_join(threads[th], NULL);
+#       endif
 	if (impactcoords==NULL) cout << endl;
       }
     }

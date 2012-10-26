@@ -29,6 +29,7 @@ private:
   int _is_list;
   int _is_scalar;
   int _is_double;
+  int _is_first;
 
   long _range[3];
   double _dval;
@@ -48,6 +49,8 @@ public:
   long current();
   double getDVal();
   int isDouble();
+  int isFirst();
+  int isLast();
 };
 
 

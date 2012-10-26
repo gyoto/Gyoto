@@ -58,5 +58,8 @@
   <MinimumTime> 0. </MinimumTime>
           No light-ray will be integrated further in the past.
 
+  Do we want to use multi-threading?
+  <NThreads> 2 </NThreads>
+
 </Scenery>
 

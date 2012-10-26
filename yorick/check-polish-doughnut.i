@@ -48,8 +48,18 @@ write, format="%s", "Reading PolishDoughnut scenery... ";
 sc = gyoto_Scenery("../doc/examples/example-polish-doughnut.xml") ;
 write, format="%s\n", "done.";
 
+write, format="%s", "Setting spectro... ";
+noop, sc(screen=)(spectro=
+                  gyoto_Spectrometer(kind="freq",
+                                     nsamples=10,
+                                     band=[1e0, 1e6],
+                                     unit="eV")
+                  );
+noop, sc(astrobj=)(opticallythin=1);
+write, format="%s\n", "done.";
+
 write, format="%s", "Ray-tracing scenery... ";
-img = sc(,,"Intensity");
+img = sc(,,"Spectrum")(,,1);
 write, format="%s\n", "done.";
 
 write, format="%s", "Displaying image... ";
@@ -58,21 +68,13 @@ write, format="%s\n", "done.";
 
 pause, 1000;
 
-write, format="%s", "Setting spectro... ";
-noop, sc(screen=)(spectro=
-                  gyoto_Spectrometer(kind="freq",
-                                     nsamples=10,
-                                     band=[1e21, 2e21])
-                  );
-noop, sc(astrobj=)(opticallythin=1);
-write, format="%s\n", "done.";
-
 write, format="%s", "Integrating one spectrum with radiative transfer...\n";
 s1 = sc(10, 15, "Spectrum");
 write, format="%s\n", "done.";
 midpoints = sc(screen=)(spectro=)(midpoints=);
 fma; plg, s1, midpoints;
 
+/* This takes too long
 write, format="%s", "Integrating one bin spectrum with radiative transfer...\n";
 s2 = sc(10, 15, "BinSpectrum");
 write, format="%s\n", "done.";
@@ -84,6 +86,7 @@ s22(::2)=s2; s22(2::2)=s2;
 chan2=array(double,numberof(s2)*2);
 chan2(::2)=channels(:-1); chan2(2::2)=channels(2:);
 plg, s22, chan2;
+*/
 
 if (batch()) {
   pause, 1000;

@@ -24,11 +24,23 @@ using namespace YGyoto;
 
 int YGyoto::Idx::isNuller() {return _is_nuller;}
 long YGyoto::Idx::getNElements() {return _nel;}
-long YGyoto::Idx::current() {return _cur;}
+long YGyoto::Idx::current() {
+  if (_is_list) return _idx[_cur];
+  return _cur;
+}
 double YGyoto::Idx::getDVal() {return _is_double?_dval:_range[0];}
 int YGyoto::Idx::isDouble() {return _is_double;}
+int YGyoto::Idx::isFirst() {return _is_first;}
+
+int YGyoto::Idx::isLast() {
+  if (_is_range) return _cur+_range[2] > _range[1];
+  if (_is_scalar) return 1;
+  if (_is_list) return _cur >= _nel;
+  return 0;
+}
 
 long YGyoto::Idx::first() {
+  _is_first=1;
   if (_is_range) return _cur=_range[0];
   if (_is_scalar) return _cur=_range[0];
   if (_is_list) return _idx[_cur=0];
@@ -44,6 +56,7 @@ int YGyoto::Idx::valid() {
 }
 
 long YGyoto::Idx::next() {
+  _is_first=0;
   if (_is_range) return _cur+=_range[2];
   if (_is_scalar) return ++_cur;
   if (_is_list && (++_cur)<_nel) return _idx[_cur];
