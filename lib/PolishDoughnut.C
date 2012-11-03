@@ -81,7 +81,8 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   beta_(orig.beta_),
   use_specific_impact_(orig.use_specific_impact_),
   aa_(orig.aa_),
-  aa2_(orig.aa2_)
+  aa2_(orig.aa2_),
+  intersection(orig.intersection)
 {
   if (orig.gg_()) {
     gg_=orig.gg_->clone();
@@ -104,7 +105,7 @@ void   PolishDoughnut::setLambda(double lambda) {
  //Computing marginally stable and marginally bound radii:
  lambda_=lambda;  
  aa_=gg_->getSpin(), aa2_=aa_*aa_;
- 
+
  double  rms = gg_->getRms();//(3. + z2 - pow((3. - z1)*(3. + z1 +
 			     //                          2.*z2),1./2.));
  double  rmb = gg_->getRmb();//pow(1. + sqrt(1. - aa),2);
@@ -126,9 +127,13 @@ void   PolishDoughnut::setLambda(double lambda) {
  double r2_min = rms ; 
  double r2_max = 1000. ;
  
- r_cusp_   = bisection_intersection_neg(r1_min, r1_max) ;
- 
- r_centre_ = bisection_intersection_pos(r2_min, r2_max) ;
+ // update intersection functor:
+ intersection.aa_=aa_;
+ intersection.aa2_=aa2_;
+ intersection.l0_=l0_;
+
+ r_cusp_   = intersection.ridders(r1_min, r1_max) ;
+ r_centre_ = intersection.ridders(r2_min, r2_max) ;
  
  W_surface_ = potential(r_cusp_, M_PI/2.) ;
  W_centre_  = potential(r_centre_, M_PI/2.) ;
@@ -721,7 +726,8 @@ void PolishDoughnut::emission(double Inu[], // output
     xmax*=10.;
   }
   
-  double xM_crit = bisection_transcendental_neg(param, xmin, xmax) ;
+  //  double xM_crit = bisection_transcendental_neg(param, xmin, xmax) ;
+  double xM_crit = ridders_transcendental(param, xmin, xmax) ;
   double nu_crit = 3./2. * nu_0 * temp_e * temp_e * xM_crit ;
   
   if (usecompton){
@@ -1088,6 +1094,43 @@ double PolishDoughnut::funcxM(double alpha1, double alpha2,
 	  *exp(-1.8899*pow(xM,1./3.));
 }
 
+double PolishDoughnut::ridders_intersection(  double r1,
+					      double r2) const
+{
+  // Ridders' root-finding method applied to intersection()
+#define dr_tol 1e-5
+#define f_tol 1e-9
+#define sign(a) (a>=0?1:-1)
+  double val1 = intersection(r1);
+  double val2 = intersection(r2);
+  double r3, r4, val3, val4;
+
+  do {
+    r3 = 0.5*(r1+r2);
+    val3 = intersection(r3);
+
+    r4 = r3+(r3-r1) * sign(val1-val2)*val3/sqrt(val3*val3-val1*val2);
+    val4 = intersection(r4);
+
+    if (sign(val3)!=sign(val4)) {
+      // use r3 and r4 for next iteration
+      r1=r3; val1=val3;
+      r2=r4; val2=val4;
+    } else if (sign(val1) != sign(val4)) {
+      // use r1 and r4 for next iteration
+      r2=r4; val2=val4;
+    } else {
+      // use r4 and r2 for next iteration
+      r1=r4; val1=val4;
+    }
+
+  } while (fabs(r1-r2) >= dr_tol && fabs(val4) > f_tol) ;
+
+  return r4;
+#undef dr_tol
+#undef f_tol
+}
+
 // Bisection method on function PolishDoughnut::intersection 
 // for a negative slope:
 double PolishDoughnut::bisection_intersection_neg(double r_min, double r_max)
@@ -1133,7 +1176,8 @@ double PolishDoughnut::bisection_intersection_pos(double r_min, double r_max)
 
 
 // Intersection of the constant angular momentum l0 with the Keplerian one
-double PolishDoughnut::intersection(double rr) 
+//double PolishDoughnut::intersection(double rr) const
+double PolishDoughnut::intersection_t::operator()(double rr) const
   
 {
   double y = ((rr*rr - 2.*aa_*sqrt(rr) + aa2_)/(pow(rr,3./2.) 
@@ -1141,6 +1185,44 @@ double PolishDoughnut::intersection(double rr)
   
   return y ;   // y = 0 gives 2 intersections, 
              //the cusp and the central radius of the torus
+}
+
+double PolishDoughnut::ridders_transcendental(double param[7],
+					      double r1,
+					      double r2) const
+{
+  // Ridders' root-finding method applied to transcendental()
+#define dr_tol 1e-5
+#define f_tol 1e-9
+#define sign(a) (a>=0?1:-1)
+  double val1 = transcendental(r1, param);
+  double val2 = transcendental(r2, param);
+  double r3, r4, val3, val4;
+
+  do {
+    r3 = 0.5*(r1+r2);
+    val3 = transcendental(r3, param);
+
+    r4 = r3+(r3-r1) * sign(val1-val2)*val3/sqrt(val3*val3-val1*val2);
+    val4 = transcendental(r4, param);
+
+    if (sign(val3)!=sign(val4)) {
+      // use r3 and r4 for next iteration
+      r1=r3; val1=val3;
+      r2=r4; val2=val4;
+    } else if (sign(val1) != sign(val4)) {
+      // use r1 and r4 for next iteration
+      r2=r4; val2=val4;
+    } else {
+      // use r4 and r2 for next iteration
+      r1=r4; val1=val4;
+    }
+
+  } while (fabs(r1-r2) >= dr_tol && fabs(val4) > f_tol) ;
+
+  return r4;
+#undef dr_tol
+#undef f_tol
 }
 
 // Bisection method on function PolishDoughnut::intersection 

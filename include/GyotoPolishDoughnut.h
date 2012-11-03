@@ -36,6 +36,7 @@ namespace Gyoto{
 //#include <GyotoMetric.h>
 #include <GyotoKerrBL.h>
 #include <GyotoStandardAstrobj.h>
+#include <GyotoFunctors.h>
 //#include <GyotoPolishDoughnutCst.h>
 
 /**
@@ -49,6 +50,13 @@ class Gyoto::Astrobj::PolishDoughnut : public Astrobj::Standard {
  // Data : 
  // -----
 private:
+  class intersection_t : public Gyoto::Functor::Double_Double_const {
+  public:
+    double aa_;
+    double aa2_;
+    double l0_;
+    virtual double operator() (double) const;
+  };
  SmartPointer<Gyoto::Metric::KerrBL> gg_;
  double l0_; ///< torus angular momentum. Tied to lambda.
  double lambda_; ///< torus adimentionned angular momentum
@@ -175,12 +183,15 @@ protected:
 private:
  double potential(double r, double theata) const;
 
- double intersection(double r) ;
+ //double intersection(double r) const ;
+ intersection_t intersection;
 
  double transcendental(double xM, double par[4]) const ;
 
  double bisection_transcendental_neg(double param[4], double r_min, double r_max) const ;
+ double ridders_transcendental(double param[4], double r_min, double r_max) const ;
 
+ double ridders_intersection(double r1_min, double r1_max) const ;
  double bisection_intersection_neg(double r1_min, double r1_max) ;
 
  double bisection_intersection_pos(double r2_min, double r2_max) ;
