@@ -50,13 +50,6 @@ class Gyoto::Astrobj::PolishDoughnut : public Astrobj::Standard {
  // Data : 
  // -----
 private:
-  class intersection_t : public Gyoto::Functor::Double_Double_const {
-  public:
-    double aa_;
-    double aa2_;
-    double l0_;
-    virtual double operator() (double) const;
-  };
  SmartPointer<Gyoto::Metric::KerrBL> gg_;
  double l0_; ///< torus angular momentum. Tied to lambda.
  double lambda_; ///< torus adimentionned angular momentum
@@ -176,31 +169,54 @@ protected:
 		       int comptonorder) const;
   double transmission(double nuem, double dsem, double coord_ph[8]) const ;
   double BBapprox(double nuem, double Te) const;
-  double funcxM(double alpha1, double alpha2, double alpha3, double xM) const;
+  static double funcxM(double alpha1, double alpha2, double alpha3, double xM);
 
  // PURELY INTERNAL TO ASTROBJ
  // --------------------------
 private:
- double potential(double r, double theata) const;
+ double potential(double r, double theta) const;
 
- //double intersection(double r) const ;
- intersection_t intersection;
+ /**
+  * \class Gyoto::Astrobj::PolishDoughnut::intersection_t
+  * \brief double intersection(double) Functor class
+  *
+  * Implement former double intersection(double) function as a
+  * Gyoto::Functor::Double_Double_const subclass to access generic
+  * root-finding methods.
+  *
+  * This class is instanciated in a single
+  * PolishDoughnut::intersection member.
+  */
+  class intersection_t : public Gyoto::Functor::Double_Double_const {
+  public:
+    double aa_;
+    double aa2_;
+    double l0_;
+    virtual double operator() (double) const;
+  };
+ /**
+  * \class Gyoto::Astrobj::PolishDoughnut::transcendental_t
+  * \brief double transcendental(double) Functor class
+  *
+  * Implement former double transcendental(double, double*) function
+  * as a Gyoto::Functor::Double_Double_const subclass to access
+  * generic root-finding methods.
+  *
+  * This class is as a local variable in PolishDoughnut::emission()
+  */
+  class transcendental_t : public Gyoto::Functor::Double_Double_const {
+  public:
+    double const * par;
+    virtual double operator() (double) const;
+  };
+ intersection_t intersection; ///< double intersection(double) Functor
 
- double transcendental(double xM, double par[4]) const ;
-
- double bisection_transcendental_neg(double param[4], double r_min, double r_max) const ;
- double ridders_transcendental(double param[4], double r_min, double r_max) const ;
-
- double ridders_intersection(double r1_min, double r1_max) const ;
- double bisection_intersection_neg(double r1_min, double r1_max) ;
-
- double bisection_intersection_pos(double r2_min, double r2_max) ;
-
- double bessi0(double xx) const;
- double bessi1(double xx) const;
- double bessk0(double xx) const;
- double bessk1(double xx) const;
- double bessk(int nn, double xx) const;
+ public:
+ static double bessi0(double xx);
+ static double bessi1(double xx);
+ static double bessk0(double xx);
+ static double bessk1(double xx);
+ static double bessk(int nn, double xx);
 
  // Outputs
  // -------

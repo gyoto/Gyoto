@@ -717,17 +717,22 @@ void PolishDoughnut::emission(double Inu[], // output
   double param[7]={rcgs,n_e,BB,T_electron,alpha1,alpha2,alpha3};
   double nu_test = 1e17;
   //NB: see mma Transcendental.nb, nu_crit is well below 1e17
-  double xmin = 2./3.*nu_test/(nu_0*temp_e*temp_e), xmax;
-  while (transcendental(xmin,param)<0.){
-    xmin*=0.1;
+  transcendental_t transcendental;
+  transcendental.par = param;
+  double xM_crit = transcendental.secant(50, 5000) ;
+  if (transcendental.status) { // maxiter reached in secant method
+    double xmin = 2./3.*nu_test/(nu_0*temp_e*temp_e), xmax;
+    while (transcendental(xmin)<0.){
+      xmin*=0.1;
+    }
+    xmax=10.*xmin;
+    while (transcendental(xmax)>0.){
+      xmax*=10.;
+    }
+    xM_crit = transcendental.ridders(xmin, xmax) ;
   }
-  xmax=10.*xmin;
-  while (transcendental(xmax,param)>0.){
-    xmax*=10.;
-  }
-  
-  //  double xM_crit = bisection_transcendental_neg(param, xmin, xmax) ;
-  double xM_crit = ridders_transcendental(param, xmin, xmax) ;
+  //  cout << "xmin="<<xmin<<", xmax="<<xmax<<", xM_crit="<<xM_crit<<endl;
+  //  cout << "secant: xM_crit="<<xM_crit<<endl;
   double nu_crit = 3./2. * nu_0 * temp_e * temp_e * xM_crit ;
   
   if (usecompton){
@@ -1087,93 +1092,12 @@ double PolishDoughnut::BBapprox(double nuem, double Te) const{
 }
 
 double PolishDoughnut::funcxM(double alpha1, double alpha2, 
-			      double alpha3, double xM) const{
+			      double alpha3, double xM) {
   //Mahadevan 96 fit function
   return 4.0505*alpha1/pow(xM,1./6.)
 	  *(1.+0.4*alpha2/pow(xM,1./4.)+0.5316*alpha3/sqrt(xM))
 	  *exp(-1.8899*pow(xM,1./3.));
 }
-
-double PolishDoughnut::ridders_intersection(  double r1,
-					      double r2) const
-{
-  // Ridders' root-finding method applied to intersection()
-#define dr_tol 1e-5
-#define f_tol 1e-9
-#define sign(a) (a>=0?1:-1)
-  double val1 = intersection(r1);
-  double val2 = intersection(r2);
-  double r3, r4, val3, val4;
-
-  do {
-    r3 = 0.5*(r1+r2);
-    val3 = intersection(r3);
-
-    r4 = r3+(r3-r1) * sign(val1-val2)*val3/sqrt(val3*val3-val1*val2);
-    val4 = intersection(r4);
-
-    if (sign(val3)!=sign(val4)) {
-      // use r3 and r4 for next iteration
-      r1=r3; val1=val3;
-      r2=r4; val2=val4;
-    } else if (sign(val1) != sign(val4)) {
-      // use r1 and r4 for next iteration
-      r2=r4; val2=val4;
-    } else {
-      // use r4 and r2 for next iteration
-      r1=r4; val1=val4;
-    }
-
-  } while (fabs(r1-r2) >= dr_tol && fabs(val4) > f_tol) ;
-
-  return r4;
-#undef dr_tol
-#undef f_tol
-}
-
-// Bisection method on function PolishDoughnut::intersection 
-// for a negative slope:
-double PolishDoughnut::bisection_intersection_neg(double r_min, double r_max)
-  
-{
-  double val, r_mid;
-  
-  do
-    {
-      r_mid = (r_max + r_min)/2. ;
-      
-      val = intersection(r_mid) ;  
-      
-      if (val > 0) r_min = r_mid ;
-      else         r_max = r_mid ;
-    } 
-  while(fabs(val) > 1.e-9);
-  
-  return r_mid ;
-}
-
-
-
-// Bisection method for a positive slope:
-double PolishDoughnut::bisection_intersection_pos(double r_min, double r_max)
-  
-{
-  double val, r_mid ;
-  
-  do
-    {
-      r_mid = (r_max + r_min)/2. ;
-      
-      val = intersection(r_mid) ;  
-      
-      if (val < 0) r_min = r_mid ;
-      else         r_max = r_mid ;
-    } 
-  while(fabs(val) > 1.e-9);
-  
-  return r_mid ;
-}
-
 
 // Intersection of the constant angular momentum l0 with the Keplerian one
 //double PolishDoughnut::intersection(double rr) const
@@ -1187,74 +1111,8 @@ double PolishDoughnut::intersection_t::operator()(double rr) const
              //the cusp and the central radius of the torus
 }
 
-double PolishDoughnut::ridders_transcendental(double param[7],
-					      double r1,
-					      double r2) const
-{
-  // Ridders' root-finding method applied to transcendental()
-#define dr_tol 1e-5
-#define f_tol 1e-9
-#define sign(a) (a>=0?1:-1)
-  double val1 = transcendental(r1, param);
-  double val2 = transcendental(r2, param);
-  double r3, r4, val3, val4;
-
-  do {
-    r3 = 0.5*(r1+r2);
-    val3 = transcendental(r3, param);
-
-    r4 = r3+(r3-r1) * sign(val1-val2)*val3/sqrt(val3*val3-val1*val2);
-    val4 = transcendental(r4, param);
-
-    if (sign(val3)!=sign(val4)) {
-      // use r3 and r4 for next iteration
-      r1=r3; val1=val3;
-      r2=r4; val2=val4;
-    } else if (sign(val1) != sign(val4)) {
-      // use r1 and r4 for next iteration
-      r2=r4; val2=val4;
-    } else {
-      // use r4 and r2 for next iteration
-      r1=r4; val1=val4;
-    }
-
-  } while (fabs(r1-r2) >= dr_tol && fabs(val4) > f_tol) ;
-
-  return r4;
-#undef dr_tol
-#undef f_tol
-}
-
-// Bisection method on function PolishDoughnut::intersection 
-// for a negative slope:
-double PolishDoughnut::bisection_transcendental_neg(double param[7], 
-						    double r_min, 
-						    double r_max) const
-{
-  double val, r_mid;
-  double dr_tol=1e-5,r_bef=-1000.,dr;
-
-  do
-    {
-      r_mid = (r_max + r_min)/2. ;
-      dr = fabs(r_mid-r_bef);
-      
-      val = transcendental(r_mid, param) ; 
-      
-      if (val > 0) r_min = r_mid ;
-      else         r_max = r_mid ;
-
-      r_bef=r_mid;
-    } 
-  while((fabs(val) > 1.e-9) && (dr>dr_tol)); 
-  //dr_tol condition necessary coz the function can be VERY steep,
-  //passing from 10^30 to -10^30 between r and r+1 ...
-
-  return r_mid ;
-}
-
 // Solving the transcendental equation for "xM" numerically at each r
-double PolishDoughnut::transcendental(double xM, double par[7]) const
+double PolishDoughnut::transcendental_t::operator()(double xM) const
 {
   double       rr = par[0] ;
   double      n_e = par[1] ;
@@ -1269,7 +1127,7 @@ double PolishDoughnut::transcendental(double xM, double par[7]) const
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS);
   double  nu_0 = GYOTO_ELEMENTARY_CHARGE_CGS* BB 
     / (2. * M_PI * GYOTO_ELECTRON_MASS_CGS * GYOTO_C_CGS);
-  double func_xM = funcxM(alpha1,alpha2,alpha3,xM);
+  double func_xM = PolishDoughnut::funcxM(alpha1,alpha2,alpha3,xM);
   double BesselK2 = bessk(2,1./temp_e);
   double nuem = 3./2.*xM*nu_0*temp_e*temp_e;
 
@@ -1317,7 +1175,7 @@ double PolishDoughnut::potential(double rr, double theta) const
   return  W ;
 }
 
-double PolishDoughnut::bessi0(double xx) const{
+double PolishDoughnut::bessi0(double xx) {
   double ax,ans,y;
   if((ax=fabs(xx))< 3.75){ 
     y=xx/3.75;
@@ -1344,7 +1202,7 @@ double PolishDoughnut::bessi0(double xx) const{
 
 }
 
-double PolishDoughnut::bessk0(double xx) const{
+double PolishDoughnut::bessk0(double xx) {
   double ans,y;
   if(xx<=2.0){
     y=xx*xx/4.0;
@@ -1369,7 +1227,7 @@ double PolishDoughnut::bessk0(double xx) const{
 
 }
 
-double PolishDoughnut::bessi1(double xx) const{
+double PolishDoughnut::bessi1(double xx) {
   double ax,ans,y;
   if((ax=fabs(xx))< 3.75){ 
     y=xx/3.75;
@@ -1394,7 +1252,7 @@ double PolishDoughnut::bessi1(double xx) const{
 
 }
 
-double PolishDoughnut::bessk1(double xx) const{
+double PolishDoughnut::bessk1(double xx) {
   double yy,ans;
   if(xx<=2.0){
     yy=xx*xx/4.0;
@@ -1418,7 +1276,7 @@ double PolishDoughnut::bessk1(double xx) const{
   return ans;
 }
 
-double PolishDoughnut::bessk(int nn,double xx) const{
+double PolishDoughnut::bessk(int nn,double xx) {
   double bk,bkm,bkp,tox;
   if(nn< 2) throwError("PolishDoughnut::besselk n>2!");
   tox=2.0/xx;
