@@ -138,7 +138,8 @@ libgyoto_la_LIBADD =
 am_libgyoto_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
 	SmartPointer.lo Utils.lo Metric.lo Worldline.lo FocalPlane.lo \
 	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
-	Spectrum.lo Spectrometer.lo ThinDisk.lo Converters.lo
+	Spectrum.lo Spectrometer.lo ThinDisk.lo Converters.lo \
+	Functors.lo
 libgyoto_la_OBJECTS = $(am_libgyoto_la_OBJECTS)
 libgyoto_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -346,7 +347,7 @@ lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	Worldline.C FocalPlane.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
-	Spectrometer.C ThinDisk.C Converters.C
+	Spectrometer.C ThinDisk.C Converters.C Functors.C
 
 libgyoto_la_LIBS = $(XERCESLDFLAGS)
 libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
@@ -500,6 +501,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Factory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FixedStar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FocalPlane.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Functors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrBL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrKS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Metric.Plo@am__quote@

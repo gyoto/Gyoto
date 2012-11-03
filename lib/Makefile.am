@@ -13,7 +13,7 @@ lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	Worldline.C FocalPlane.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
-	Spectrometer.C ThinDisk.C Converters.C
+	Spectrometer.C ThinDisk.C Converters.C Functors.C
 libgyoto_la_LIBS = $(XERCESLDFLAGS)
 libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 

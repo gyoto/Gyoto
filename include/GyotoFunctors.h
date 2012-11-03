@@ -31,6 +31,8 @@
 namespace Gyoto {
   namespace Functor {
     class Double_constDoubleArray;
+    class Double_Double_const;
+    
   }
 }
 
@@ -38,6 +40,13 @@ class Gyoto::Functor::Double_constDoubleArray
 {
  public:
   virtual double operator()(double const data[]) = 0;
+};
+
+class Gyoto::Functor::Double_Double_const
+{
+ public:
+  virtual double operator()(double) const = 0;
+  double ridders(double, double) const;
 };
 
 #endif
