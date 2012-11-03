@@ -18,7 +18,10 @@
  */
 
 #include "GyotoFunctors.h"
+#include "GyotoError.h"
 #include <cmath>
+#include <cfloat>
+#include <iostream>
 
 #define dr_tol 1e-5
 #define f_tol 1e-9
@@ -26,7 +29,7 @@
 
 double Gyoto::Functor::Double_Double_const::ridders(double r1, double r2) const
 {
-  // Ridders' root-finding method applied to intersection()
+  // Ridders' root-finding method applied to operator()
   double val1 = operator()(r1);
   double val2 = operator()(r2);
   double r3, r4, val3, val4;
@@ -55,3 +58,36 @@ double Gyoto::Functor::Double_Double_const::ridders(double r1, double r2) const
   return r4;
 }
 
+double Gyoto::Functor::Double_Double_const::secant(double r1, double r2)
+{
+  // Secant root-finding method applied to operator()
+  double val1 = operator()(r1);
+  double val2 = operator()(r2);
+  double r3, val3=DBL_MAX;
+  unsigned int maxiter=20, iter;
+
+  for (iter = 0; iter < maxiter; ++iter) {
+    r3=r1-val1*(r2-r1)/(val2-val1);
+    val3 = operator()(r3);
+    
+    if (fabs(r2-r3) <= fabs(r1-r3)) {
+      r1=r3; val1=val3;
+    } else {
+      r2=r3; val2=val3;
+    }
+    
+    if ( (fabs(r1-r2) < dr_tol) || (fabs(val3) < f_tol) ) break;
+    if (val2==val1) {
+      status=1;
+      return r3;
+    }
+  }
+  
+  if (iter==maxiter) {
+    status=2;
+    return r3;
+  }
+
+  status=0;
+  return r3;
+}

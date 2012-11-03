@@ -45,8 +45,10 @@ class Gyoto::Functor::Double_constDoubleArray
 class Gyoto::Functor::Double_Double_const
 {
  public:
+  int status;
   virtual double operator()(double) const = 0;
   double ridders(double, double) const;
+  double secant(double, double);
 };
 
 #endif
