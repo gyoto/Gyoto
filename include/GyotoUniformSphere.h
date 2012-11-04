@@ -183,6 +183,7 @@ class Gyoto::Astrobj::UniformSphere :
   virtual double emission(double nu_em, double dsem,
 			  double cp[8], double co[8]=NULL) const;
   ///< Emission is determined by spectrum_ and opacity_
+  using Standard::integrateEmission;
   virtual double integrateEmission(double nu1, double nu2, double dsem,
 				   double c_ph[8], double c_obj[8]=NULL) const;
   virtual double transmission(double nuem, double dsem, double*) const ;

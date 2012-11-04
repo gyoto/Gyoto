@@ -147,7 +147,9 @@ public:
   // --------------------------------
 protected:
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-
+  using Standard::integrateEmission;
+  virtual void integrateEmission(double * I, double * boundaries, size_t nbnu,
+				 double dsem, double *cph, double *co) const;
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]) const;

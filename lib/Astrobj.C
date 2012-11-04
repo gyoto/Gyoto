@@ -284,14 +284,14 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
     }
     if (data->binspectrum) {
       double const * const channels = spr -> getChannels();
-      double nuem1, nuem2;
+      double * I  = new double[nbnuobs];
+      double * boundaries = new double[nbnuobs+1];
+      for (size_t ii=0; ii<=nbnuobs; ++ii)
+	boundaries[ii]=channels[ii]*ggredm1;
+      integrateEmission(I, boundaries, nbnuobs,
+			dsem, coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	nuem1=channels[ii]*ggredm1;
-	nuem2=channels[ii+1]*ggredm1;
-        inc = integrateEmission(nuem1, nuem2, dsem,
-				coord_ph_hit, coord_obj_hit)
-	  * ph -> getTransmission(ii)
-	  * ggred*ggred*ggred*ggred;
+	inc = I[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred*ggred;
 #       ifdef HAVE_UDUNITS
 	if (data -> binspectrum_converter_)
 	  inc = (*data -> binspectrum_converter_)(inc);
@@ -300,11 +300,13 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	       << "nuobs[" << ii << "]="<< channels[ii]
-	       << ", nuem=" << nuem1 
+	       << ", nuem=" << boundaries[ii] 
 	       << ", binspectrum[" << ii+data->offset << "]="
 	       << data->binspectrum[ii*data->offset]<< endl;
 #       endif
       }
+      delete [] I;
+      delete [] boundaries;
     }
     if (data->spectrum) {
       double * Inu  = new double[nbnuobs];
@@ -335,6 +337,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	       << ", redshift=" << ggred << ")\n";
 #       endif
       }
+      delete [] Inu;
+      delete [] nuem;
     }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
@@ -371,6 +375,13 @@ void Generic::emission(double * Inu, double * nuem , size_t nbnu,
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
+}
+
+void Generic::integrateEmission(double * I, double * boundaries, size_t nbnu,
+				double dsem, double *cph, double *co) const
+{
+  for (size_t i=0; i<nbnu; ++i)
+    I[i] = integrateEmission(boundaries[i], boundaries[i+1], dsem, cph, co);
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,

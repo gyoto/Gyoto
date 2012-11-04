@@ -529,6 +529,37 @@ void PolishDoughnut::getVelocity(double const pos[4], double vel[4])
     vel[3] = Omega*sqrt(ut2);
 }
 
+void PolishDoughnut::integrateEmission
+                                (double * I, double * boundaries, size_t nbnu,
+				 double dsem, double *cph, double *co) const
+{
+  size_t spectral_oversampling_=10; // sould be set in XML
+  double som1=1./double(spectral_oversampling_);
+  size_t onbnu=nbnu*spectral_oversampling_;
+  double * Inu = new double[onbnu+1];
+  double * bo = new double[onbnu+1];
+  double dnu;
+  size_t k;
+  for (size_t i=0; i<nbnu; ++i) {
+    dnu=(boundaries[i+1]-boundaries[i])*som1;
+    for (size_t j=0; j<spectral_oversampling_; ++j) {
+      k=i*spectral_oversampling_+j;
+      bo[k]=boundaries[i]+double(j)*dnu;
+    }
+  }
+  bo[onbnu]=boundaries[nbnu];
+  emission(Inu, bo, onbnu+1, dsem, cph, co);
+  for (size_t i=0; i<nbnu; ++i) {
+    I[i]=0.;
+    for (size_t j=0; j<spectral_oversampling_; ++j) {
+      k=i*spectral_oversampling_+j;
+      I[i]+=(Inu[k+1]+Inu[k])*0.5*fabs(bo[k+1]-bo[k]);
+    }
+  }
+  delete [] Inu;
+  delete [] bo;
+}
+
 double PolishDoughnut::emission(double nu_em, double dsem,
 			 double *cph, double *co) const
 {

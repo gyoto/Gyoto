@@ -134,7 +134,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   using Standard::emission;
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const ;
-
+  using Standard::integrateEmission;
   virtual double integrateEmission(double nu1, double nu2, double dsem,
 				   double c_ph[8], double c_obj[8]=NULL) const;
     ///< \sum_nu1^nu2 I_nu dnu (or j_nu)

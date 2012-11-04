@@ -538,6 +538,10 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
                                   double c_ph[8], double c_obj[8]=NULL) const;
     ///< \sum_nu1^nu2 I_nu dnu (or j_nu)
 
+  virtual void integrateEmission(double * I, double * boundaries, size_t nbnu,
+				 double dsem, double *cph, double *co) const;
+
+
   /**
    * transmission() computes the transmission of this fluid element or
    * 0 if optically thick. The default implementation returns 1. (no
