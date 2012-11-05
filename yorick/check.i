@@ -20,8 +20,8 @@
 // NODISPLAY implies batch mode
 if (get_env("GYOTO_CHECK_NODISPLAY")) {
   batch, 1;
-  __fma=fma; __winkill=winkill; __pli=pli; __plg=plg;
-  fma = winkill = pli = plg = noop;
+  __xytitles=xytitles; __fma=fma; __winkill=winkill; __pli=pli; __plg=plg;
+  xytitles = fma = winkill = pli = plg = noop;
  }
 
 #include "gyoto.i"

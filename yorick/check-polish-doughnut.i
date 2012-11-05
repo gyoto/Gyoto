@@ -50,16 +50,16 @@ write, format="%s\n", "done.";
 
 write, format="%s", "Setting spectro... ";
 noop, sc(screen=)(spectro=
-                  gyoto_Spectrometer(kind="freq",
-                                     nsamples=10,
-                                     band=[1e0, 1e6],
+                  gyoto_Spectrometer(kind="freqlog",
+                                     nsamples=20,
+                                     band=[-6, 8],
                                      unit="eV")
                   );
 noop, sc(astrobj=)(opticallythin=1);
 write, format="%s\n", "done.";
 
 write, format="%s", "Ray-tracing scenery... ";
-img = sc(,,"Spectrum")(,,1);
+img = sc(,,"Spectrum")(,,avg);
 write, format="%s\n", "done.";
 
 write, format="%s", "Displaying image... ";
@@ -73,7 +73,10 @@ s1 = sc(10, 15, "Spectrum[J.m-2.s-1.sr-1.Hz-1]");
 write, format="%s\n", "done.";
 midpoints = sc(screen=)(spectro=)(midpoints=);
 widths = sc(screen=)(spectro=)(widths=);
-fma; plg, (s1*widths)(2:), midpoints(2:);
+fma;
+logxy, 1, 1;
+plg, (s1*widths), 10^midpoints;
+xytitles, "Frequency [Hz]";
 
 write, format="%s", "Integrating one bin spectrum with radiative transfer...\n";
 s2 = sc(10, 15, "BinSpectrum[J.m-2.s-1.sr-1]");
@@ -84,7 +87,7 @@ s22=array(double,numberof(s2)*2);
 s22(::2)=s2; s22(2::2)=s2;
 chan2=array(double,numberof(s2)*2);
 chan2(::2)=channels(:-1); chan2(2::2)=channels(2:);
-plg, s22(3:), chan2(3:);
+plg, s22, 10^chan2;
 
 if (batch()) {
   pause, 1000;

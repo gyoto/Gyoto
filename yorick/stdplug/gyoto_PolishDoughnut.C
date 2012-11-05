@@ -40,12 +40,13 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   static char const * knames[]={
     "unit",
     "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
+    "spectraloversampling",
     "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
+  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+13];
+  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
   int piargs[]={-1,-1,-1,-1};
   
   yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -132,6 +133,14 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
       if ((*rvset)++) y_error(rmsg);
       ypush_double((*ao)->getBeta());
     } else (*ao)->setBeta(ygets_d(iarg));
+  }
+
+  if ((iarg=kiargs[++k])>=0) { // spectraloversampling
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_long((*ao)->getSpectralOversampling());
+    } else (*ao)->setSpectralOversampling(ygets_l(iarg));
   }
 
   //    "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",

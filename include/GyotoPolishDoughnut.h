@@ -65,6 +65,7 @@ private:
  int use_specific_impact_ ;///< PolishDoughnut::Impact_() or Standard::Impact()
  double aa_; ///< Metric spin, cached when setting lambda_
  double aa2_; ///< aa_^2
+ size_t spectral_oversampling_;///< oversampling used in integrateEmission()
 
  // Constructors - Destructor
  // -------------------------
@@ -104,6 +105,9 @@ public:
 
  double getBeta() const;
  void   setBeta(double beta);
+
+ void   setSpectralOversampling(size_t); ///< set spectral_oversampling_
+ size_t getSpectralOversampling() const ; ///< get spectral_oversampling_
 
  // Read only members, depend on lambda
  double getWsurface() const;

@@ -59,9 +59,14 @@ PolishDoughnut::PolishDoughnut() :
  central_density_(1.),
  centraltemp_over_virial_(1.),
  beta_(0.),
- use_specific_impact_(0)
+ use_specific_impact_(0),
+ //aa_ and aa2_ are set by setLambda()
+ spectral_oversampling_(10)
+ //intersection doesn't need initilizing
 {  
- if (debug()) cerr << "DEBUG: PolishDoughnut Construction " << endl;
+#ifdef GYOTO_DEBUG_ENABLED
+ GYOTO_DEBUG << endl;
+#endif
  critical_value_=0.; safety_value_=.1; //rmax_=25.;
 }
 
@@ -82,6 +87,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   use_specific_impact_(orig.use_specific_impact_),
   aa_(orig.aa_),
   aa2_(orig.aa2_),
+  spectral_oversampling_(orig.spectral_oversampling_),
   intersection(orig.intersection)
 {
   if (orig.gg_()) {
@@ -179,6 +185,11 @@ void   PolishDoughnut::setCentralTempOverVirial(double val)
 
 double PolishDoughnut::getBeta() const { return beta_; }
 void   PolishDoughnut::setBeta(double beta)   { beta_ = beta; }
+
+size_t PolishDoughnut::getSpectralOversampling() const
+{ return spectral_oversampling_; }
+void   PolishDoughnut::setSpectralOversampling(size_t val)
+{ spectral_oversampling_ = val; }
 
 PolishDoughnut::~PolishDoughnut() {
  if (debug()) cout << "PolishDoughnut Destruction" << endl;
@@ -533,7 +544,6 @@ void PolishDoughnut::integrateEmission
                                 (double * I, double * boundaries, size_t nbnu,
 				 double dsem, double *cph, double *co) const
 {
-  size_t spectral_oversampling_=10; // sould be set in XML
   double som1=1./double(spectral_oversampling_);
   size_t onbnu=nbnu*spectral_oversampling_;
   double * Inu = new double[onbnu+1];
@@ -1331,10 +1341,12 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
   else if (name=="TempRatio") temperature_ratio_=atof(content.c_str());
   else if (name=="CentralDensity")
     setCentralDensity(atof(content.c_str()), unit);
-  else if (name=="CentralTempOverVirial") {
+  else if (name=="CentralTempOverVirial")
     centraltemp_over_virial_=atof(content.c_str());
-  } else if (name=="Beta") beta_=atof(content.c_str());
+  else if (name=="Beta") beta_=atof(content.c_str());
   else if (name=="UseSpecificImpact") useSpecificImpact();
+  else if (name=="SpectralOversampling")
+    spectral_oversampling_=atoi(content.c_str());
   else return Standard::setParameter(name, content, unit);
   return 0;
 }
@@ -1348,6 +1360,7 @@ void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);
   fmp->setParameter("Beta", beta_);
   if (use_specific_impact_) fmp->setParameter("UseSpecificImpact");
+  fmp->setParameter("SpectralOversampling", spectral_oversampling_);
   Standard::fillElement(fmp);
 }
 #endif

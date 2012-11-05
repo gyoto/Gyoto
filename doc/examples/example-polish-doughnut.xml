@@ -25,10 +25,12 @@
     <!--<Spectrometer kind="freqlog" nsamples="20">11. 13.</Spectrometer>-->
     <!--Spectrometer kind="freqlog" nsamples="1">15. 15.</Spectrometer-->
     <Spectrometer kind="freq" nsamples="1" unit="eV">
-      4.135667516 4.135667516
+      4 5
     </Spectrometer>
   </Screen>
 
+  <!--Quantities>BinSpectrum[W/m²/pix²]</Quantities-->
+          This is what a real-life detector measures.
   <Quantities>Spectrum[mJy/pix²]</Quantities>
           This unit can easily be confronted to observations.
 
@@ -50,6 +52,9 @@
           surface of the doughnut. Increasing SafetyValue also
           increases computation time. The default value is slightly
           more conservative.
+    <!--SpectralOversampling> 1 </SpectralOversampling-->
+          Number of subsamples to use when computing BinSpectrum.
+          More subsamples is more accurate but slower.
   </Astrobj>
 
   Those two are numerical tuning parameters:
