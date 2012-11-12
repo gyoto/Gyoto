@@ -64,6 +64,10 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
                           ///< I_nu = mySpectrum(nu), nu in Hz
 
 #ifdef GYOTO_USE_XERCES
+  virtual void setParameter(std::string name,
+			    std::string content,
+			    std::string unit);
+
   /**
    * Spectrum implementations should impement fillElement to save their
    * parameters to XML and call the generic implementation to save
@@ -75,13 +79,4 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
 #endif
 };
 
-#ifdef GYOTO_USE_XERCES
-namespace Gyoto {
-  namespace Spectrum {
-    Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      PowerLawSubcontractor(Gyoto::FactoryMessenger* fmp = NULL);
-    void PowerLawInit();
-  }
-}
-#endif
 #endif

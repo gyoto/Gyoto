@@ -34,8 +34,30 @@ namespace Gyoto{
   namespace Spectrum {
     class Generic;
 #if defined GYOTO_USE_XERCES
+    /**
+     * This is a more specific version of the
+     * SmartPointee::Subcontractor_t type. A Spectrum::Subcontrator_t
+     * is called by the Gyoto::Factory to build an instance of the
+     * kind of spectrum specified in an XML file (see
+     * Register()). The Factory and Subcontractor_t function
+     * communicate through a Gyoto::FactoryMessenger. A template is
+     * provided so that you may not have to code anything.
+     */
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
       Subcontractor_t(Gyoto::FactoryMessenger* fmp);
+
+    /**
+     * Instead of reimplementing the wheel, your subcontractor can simply be
+     * Gyoto::Astrobj::Subcontractor<MyKind>
+     */
+    template<typename T> SmartPointer<Spectrum::Generic> Subcontractor
+      (FactoryMessenger* fmp) {
+      SmartPointer<T> sp = new T();
+      sp -> setParameters(fmp);
+      return sp;
+    }
+    ///< A template for Subcontractor_t functions
+
     void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
     Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string);
     extern Register::Entry* Register_;
@@ -92,8 +114,31 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
 
   virtual void fillElement(FactoryMessenger *fmp) const ;
                                              ///< called from Factory
-  virtual void setParameter(std::string name, std::string content) ;
+  virtual void setParameter(std::string name,
+			    std::string content,
+			    std::string unit) ;
   ///< To be called by fillElement()
+
+  /**
+   * The Subcontractor_t function for each Spectrum kind should look
+   * somewhat like this:
+\code
+SmartPointer<Astrobj::Generic>
+Gyoto::Spectrum::MyKind::Subcontractor(FactoryMessenger* fmp) {
+  SmartPointer<MyKind> ao = new MyKind();
+  ao -> setParameters(fmp);
+  return ao;
+}
+\endcode
+   *
+   * Each object kind should implement setParameter(string name,
+   * string content) to interpret the individual XML
+   * elements. setParameters() can be overloaded in case the specific
+   * Astrobj class needs low level access to the FactoryMessenger. See
+   * UniformSphere::setParameters().
+   */
+  virtual void setParameters(FactoryMessenger *fmp);
+  ///< Main loop in Subcontractor_t function
 
 #endif
 };

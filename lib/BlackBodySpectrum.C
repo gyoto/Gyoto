@@ -44,6 +44,15 @@ double Spectrum::BlackBody::operator()(double nu) const {
     /(exp(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)-1.);
 }
 
+void Spectrum::BlackBody::setParameter(std::string name,
+				       std::string content,
+				       std::string unit) {
+  char * tc=const_cast<char*>(content.c_str());
+  if (name=="Temperature") setTemperature(atof(tc));
+  else if (name=="Scaling") setScaling(atof(tc));
+  else Spectrum::Generic::setParameter(name, content, unit);
+}
+
 #ifdef GYOTO_USE_XERCES
 void Spectrum::BlackBody::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("Temperature", T_);
@@ -51,23 +60,4 @@ void Spectrum::BlackBody::fillElement(FactoryMessenger *fmp) const {
   Spectrum::Generic::fillElement(fmp);
 }
 
-SmartPointer<Spectrum::Generic>
-Gyoto::Spectrum::BlackBodySubcontractor(FactoryMessenger* fmp) {
-  SmartPointer<Spectrum::BlackBody> sp = new Spectrum::BlackBody();
-  if (!fmp) return sp;
-  std::string name="", content=""; char *tc;
-  while (fmp->getNextParameter(&name, &content)) {
-    tc=const_cast<char*>(content.c_str());
-    if (name=="Temperature") sp->setTemperature(atof(tc));
-    else if (name=="Scaling") sp->setScaling(atof(tc));
-    else sp -> setParameter(name, content);
-  }
-  return sp;
-}
-
-void Gyoto::Spectrum::BlackBodyInit() {
-  Gyoto::Spectrum::Register("BlackBody",
-			    &Gyoto::Spectrum::BlackBodySubcontractor);
-}
 #endif
-

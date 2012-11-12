@@ -67,6 +67,11 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
     ///< I_nu = mySpectrum(nu), nu in Hz. Assumes infinite optical thickness
 
 #ifdef GYOTO_USE_XERCES
+
+  virtual void setParameter(std::string name,
+			    std::string content,
+			    std::string unit);
+
   /**
    * Spectrum implementations should impement fillElement to save their
    * parameters to XML and call the generic implementation to save
@@ -77,15 +82,5 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
                                              ///< called from Factory
 #endif
 };
-
-#ifdef GYOTO_USE_XERCES
-namespace Gyoto {
-  namespace Spectrum {
-    Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      BlackBodySubcontractor(Gyoto::FactoryMessenger* fmp = NULL);
-    void BlackBodyInit();
-  }
-}
-#endif
 
 #endif

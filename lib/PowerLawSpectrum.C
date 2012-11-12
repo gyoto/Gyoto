@@ -49,23 +49,14 @@ void Spectrum::PowerLaw::fillElement(FactoryMessenger *fmp) const {
   Spectrum::Generic::fillElement(fmp);
 }
 
-SmartPointer<Spectrum::Generic>
-Gyoto::Spectrum::PowerLawSubcontractor(FactoryMessenger* fmp) {
-  SmartPointer<Spectrum::PowerLaw> sp = new Spectrum::PowerLaw();
-  if (!fmp) return sp;
-  std::string name="", content=""; char *tc;
-  while (fmp->getNextParameter(&name, &content)) {
-    tc=const_cast<char*>(content.c_str());
-    if (name=="Exponent") sp->setExponent(atof(tc));
-    else if (name=="Constant") sp->setConstant(atof(tc));
-    else sp -> setParameter(name, content);
-  }
-  return sp;
+void Gyoto::Spectrum::PowerLaw::setParameter(std::string name,
+			      std::string content,
+			      std::string unit) {
+  char * tc=const_cast<char*>(content.c_str());
+  if (name=="Exponent") setExponent(atof(tc));
+  else if (name=="Constant") setConstant(atof(tc));
+  else Spectrum::Generic::setParameter(name, content, unit);
 }
 
-void Gyoto::Spectrum::PowerLawInit() {
-  Gyoto::Spectrum::Register("PowerLaw",
-			    &Gyoto::Spectrum::PowerLawSubcontractor);
-}
 #endif
 

@@ -144,9 +144,9 @@ void ygyoto_Spectrum_generic_eval
 #define YGYOTO_ASTROBJ_BASE_MAX_KW_N YGYOTO_THINDISK_GENERIC_KW_N
 
 // Keywords processed by ygyoto_Spectrum_generic_eval
-#define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "clone", "integrate"
+#define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "setparameter", "clone", "integrate"
 // number of those keywords
-#define YGYOTO_SPECTRUM_GENERIC_KW_N 4
+#define YGYOTO_SPECTRUM_GENERIC_KW_N 5
 
 /*
 

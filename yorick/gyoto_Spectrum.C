@@ -172,6 +172,15 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
     *kind = p_strcpy((*sp)->getKind().c_str());
   }
 
+  /* SETPARAMETER */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if ((*paUsed)++) y_error("pmsg");
+    string name = ygets_q(iarg);
+    string content = ygets_q(*piargs);
+    (*sp)->setParameter(name, content, "");
+  }
+
   /* CLONE */
   if ((iarg=kiargs[++k])>=0) {
     if ((*rvset)++) y_error(rmsg);
@@ -242,14 +251,28 @@ extern "C" {
     }
 
     // if rvset==1, constructor mode:
-    if (rvset[1]) {
+    if (*rvset) {
       if (yarg_string(piargs[0])) {
+	 char * fname = ygets_q(piargs[0]);
+	try {
+	  GYOTO_DEBUG
+	    << "Getting subcontractor for hypothetical Spectrum kind \""
+	    << fname << "\"\n";
+	  *sp = (*Spectrum::getSubcontractor(fname))(NULL);
+	  GYOTO_DEBUG
+	    << "Found subcontractor for Spectrum kind \"" << fname << "\"\n";
+	} catch (Gyoto::Error e) {
 #ifdef GYOTO_USE_XERCES
-	*sp = Factory(ygets_q(piargs[0])).getSpectrum(); 
-	paUsed[1]=1;
+	  GYOTO_DEBUG
+	    << "Did not find subcontractor for Spectrum kind \""
+	    << fname << "\", calling Factory for file named\""
+	    << fname << "\"\n";
+	  *sp = Factory(fname).getSpectrum(); 
 #else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
+	  y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
+	}
+	paUsed[1]=1;
       } else y_error("Cannot allocate object of virtual class Spectrum");
     }
 

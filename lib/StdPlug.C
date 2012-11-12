@@ -72,7 +72,9 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::Disk3D_BB>));
 #endif
   // Register Spectra
-  Gyoto::Spectrum::PowerLawInit();
-  Gyoto::Spectrum::BlackBodyInit();
+  Spectrum::Register("PowerLaw", 
+		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
+  Spectrum::Register("BlackBody", 
+		     &(Spectrum::Subcontractor<Spectrum::BlackBody>));
 #endif
 }

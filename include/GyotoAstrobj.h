@@ -62,7 +62,7 @@ namespace Gyoto{
     ///< A function to build instances of a specific Astrobj::Generic sub-class
  
     /**
-     * Instead of reimplementing the wheel, your subcobtractor can simply be
+     * Instead of reimplementing the wheel, your subcontractor can simply be
      * Gyoto::Astrobj::Subcontractor<MyKind>
      */
     template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
