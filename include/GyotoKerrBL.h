@@ -116,10 +116,9 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
  
 
+  virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-  static Metric::Subcontractor_t Subcontractor;
-  static void Init();
 #endif
 
  protected:

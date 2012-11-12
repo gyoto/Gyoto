@@ -97,10 +97,9 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
 
   //  friend std::ostream& operator<<(std::ostream& , const KerrKS& ) ;
   //  std::ostream& print(std::ostream&) const ;
+  virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-  static Metric::Subcontractor_t Subcontractor;
-  static void Init();
 #endif
 
  public:

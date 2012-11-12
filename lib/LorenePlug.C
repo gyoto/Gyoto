@@ -26,5 +26,7 @@ namespace Gyoto {
 */
 
 extern "C" void __GyotoloreneInit() {
-  Gyoto::Metric::RotStar3_1::Init();
+  Gyoto::Metric::Register("RotStar3_1",
+			  &(Gyoto::Metric::Subcontractor
+			    <Gyoto::Metric::RotStar3_1>));
 }

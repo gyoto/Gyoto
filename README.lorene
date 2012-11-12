@@ -17,30 +17,7 @@ the LORENE manual.
 If HOME_LORENE is defined when compiling Gyoto, the lorene plug-in is
 automatically built and installed.
 
-II- BUILDING AFTER GYOTO
-========================
-
-You don't need to recompile Gyoto to enable lorene if you first built
-it without lorene. Just install LORENE and set HOME_LORENE correctly, then:
-
-1- Under Linux:
-  $ cd lib
-  $ make -f Makefile.lorene
-This will result in the file lib/libgyoto-lorene.so, copy this file
-next to libgyoto.so.
-
-2- Under Mac OS X:
-
-First find where libgyoto.dylib is located, for instance by running:
-  $ locate libgyoto.dylib
-The default location when installing from source is /usr/local/lib/.
-
-Then run: 
-  $ cd lib
-  $ make -f Makefile.lorene LIBGYOTO_PATH=/usr/local/lib/
-  $ cp libgyoto-lorene.dylib /usr/local/lib/
-
-III- TESTING LIBGYOTO-LORENE
+II- TESTING LIBGYOTO-LORENE
 ============================
 
 Two example files are provided in doc/examples/:

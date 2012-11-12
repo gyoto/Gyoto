@@ -418,7 +418,19 @@ void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Mass", getMass());
 }
 
+void Metric::Generic::setParameter(string name, string content, string unit) {
+  if(name=="Mass") setMass(atof(content.c_str()), unit);
+}
+
+void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {
+  string name="", content="", unit="";
+  if (fmp)
+    while (fmp->getNextParameter(&name, &content, &unit))
+      setParameter(name, content, unit);
+}
+
 void Metric::Generic::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
+  if (!fmp) return;
   string name="", content="";
   fmp -> reset();
   while (fmp->getNextParameter(&name, &content)) {
@@ -440,10 +452,11 @@ void Gyoto::Metric::Register(std::string name, Metric::Subcontractor_t* scp) {
   Gyoto::Metric::Register_ = ne;
 }
 
-Metric::Subcontractor_t* Metric::getSubcontractor(std::string name) {
+Metric::Subcontractor_t*
+Metric::getSubcontractor(std::string name, int errmode) {
   if (!Gyoto::Metric::Register_) throwError("No Metric kind registered!");
   return (Metric::Subcontractor_t*)Gyoto::Metric::Register_
-    -> getSubcontractor(name);
+    -> getSubcontractor(name, errmode);
 }
 
 #endif

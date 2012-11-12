@@ -45,8 +45,8 @@ using namespace Gyoto;
 extern "C" void __GyotostdplugInit() {
 #if defined GYOTO_USE_XERCES
   // Register Metrics
-  Gyoto::Metric::KerrBL::Init();
-  Gyoto::Metric::KerrKS::Init();
+  Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
+  Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));

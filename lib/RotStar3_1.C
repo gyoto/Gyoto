@@ -41,39 +41,27 @@
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
-RotStar3_1::RotStar3_1(const char * lorene_res, const int integ_kind) : 
+RotStar3_1::RotStar3_1() : 
   Generic(GYOTO_COORDKIND_SPHERICAL),
-  integ_kind_(integ_kind)
+  filename_(NULL),
+  star_(NULL),
+  integ_kind_(1)
 {
   setKind("RotStar3_1");
-  if (debug()) {
-    cout << "RotStar3_1 Construction" << endl;
-    cout << "Using integration kind: " ;
-    if (integ_kind_) {
-      cout << "3+1 specific" << endl;
-    }else{
-      cout << "4D general" << endl;
-    }
-    cout << "Filename=" << lorene_res << endl;
-  }
-  filename_ = new char[strlen(lorene_res)+1];
-  strcpy(filename_,lorene_res);
-  FILE* resfile=fopen(lorene_res,"r");
-  if (!resfile) throwError(string("No such file or directory: ")+lorene_res);
-  Mg3d* mg = new Mg3d(resfile);
-  Map_et* mps = new Map_et(*mg,resfile);
-  Eos* p_eos = Eos::eos_from_file(resfile);
-  star_ = new Star_rot(*mps,*p_eos,resfile);
-  star_ -> equation_of_state();
-  star_ -> update_metric();
-  star_ -> hydro_euler();
+}
 
-  //if (debug()) cout << "Map_et= " << *mps << endl;
-
+RotStar3_1::RotStar3_1(const RotStar3_1& o) : 
+  Generic(GYOTO_COORDKIND_SPHERICAL),
+  filename_(NULL),
+  star_(NULL),
+  integ_kind_(o.integ_kind_)
+{
+  setKind("RotStar3_1");
+  setFileName(o.getFileName());
 }
 
 RotStar3_1* RotStar3_1::clone() const {
-  return new RotStar3_1(filename_, integ_kind_);
+  return new RotStar3_1(*this);
 }
 
 RotStar3_1::~RotStar3_1() 
@@ -90,7 +78,34 @@ RotStar3_1::~RotStar3_1()
   if (debug()) cout << "RotStar3_1 Destruction" << endl;
 }
 
+
+void RotStar3_1::setFileName(char const * lorene_res) {
+  if (filename_) { delete[] filename_; filename_=NULL; }
+  if (star_) {
+    const Map& mp=star_ -> get_mp();
+    const Mg3d* mg=mp.get_mg();
+    const Map* mpp=&mp;
+    delete star_; star_=NULL;
+    delete mpp;
+    delete mg;
+  }
+
+  filename_ = new char[strlen(lorene_res)+1];
+  strcpy(filename_,lorene_res);
+  FILE* resfile=fopen(lorene_res,"r");
+  if (!resfile) throwError(string("No such file or directory: ")+lorene_res);
+  Mg3d* mg = new Mg3d(resfile);
+  Map_et* mps = new Map_et(*mg,resfile);
+  Eos* p_eos = Eos::eos_from_file(resfile);
+  star_ = new Star_rot(*mps,*p_eos,resfile);
+  star_ -> equation_of_state();
+  star_ -> update_metric();
+  star_ -> hydro_euler();
+}
+
 char const * RotStar3_1::getFileName() const { return filename_; }
+
+void RotStar3_1::setIntegKind(int ik) { integ_kind_ = ik; }
 int RotStar3_1::getIntegKind() const { return integ_kind_; }
 
 int RotStar3_1::diff(const double coord[8], double res[8]) const
@@ -739,35 +754,26 @@ double RotStar3_1::ScalarProd(const double pos[4],
 
 #ifdef GYOTO_USE_XERCES
 void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
-  fmp -> setParameter("File", filename_);
+  if (filename_) fmp -> setParameter("File", filename_);
   fmp -> setParameter("IntegKind", integ_kind_);
   Generic::fillElement(fmp);
 }
 
-Gyoto::SmartPointer<Gyoto::Metric::Generic>
-Gyoto::Metric::RotStar3_1::Subcontractor(FactoryMessenger* fmp) {
-
-  //default values
-  //double mass=1.;
-  int integ_kind=1;
-  string filename="";
-
-  //tmp vars
-  string name="", content="";
-
-  while (fmp->getNextParameter(&name, &content)) {
-    if (name == "IntegKind") integ_kind = atoi(content.c_str());
-    else if (name == "File") filename   = fmp -> fullPath( content );
- }
-
-  if (filename=="") throwError("File MUST be defined in RotStar3_1");
-
-  RotStar3_1* gg = new RotStar3_1(filename.c_str(),integ_kind);
-  gg -> processGenericParameters(fmp);
-  return gg;
+void RotStar3_1::setParameter(string name, string content, string unit){
+  if (name=="IntegKind") setIntegKind(atoi(content.c_str()));
+  else if (name == "File") setFileName(content.c_str());
+  else Generic::setParameter(name, content, unit);
 }
 
-void Gyoto::Metric::RotStar3_1::Init() {
-  Gyoto::Metric::Register("RotStar3_1", &Gyoto::Metric::RotStar3_1::Subcontractor);
+void RotStar3_1::setParameters(FactoryMessenger* fmp) {
+  string name="", content="", unit="";
+  if (fmp) {
+    while (fmp->getNextParameter(&name, &content, &unit)) {
+      if (name == "File") content = fmp -> fullPath( content );
+      GYOTO_DEBUG << "Setting \"" << name << "\" to \"" << content
+		  << "\" (in unit \"" << unit << "\")\n";
+      setParameter(name, content, unit);
+    }
+  }
 }
 #endif

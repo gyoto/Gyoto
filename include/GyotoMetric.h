@@ -53,15 +53,26 @@ namespace Gyoto {
     typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
     ///< A function to build instances of a specific Metric::Generic sub-class
 
+    template<typename T> SmartPointer<Metric::Generic> Subcontractor
+      (FactoryMessenger* fmp) {
+      SmartPointer<T> gg = new T();
+      gg -> setParameters(fmp);
+      return gg;
+    }
+
     /**
      * Query the Metric register to get the Metric::Subcontractor_t
      * correspondig to a given kind name. This function is normally
      * called only from the Factory.
      *
      * \param name e.g. "KerrBL"
+     * \param errmode int=0. If errmode==0, failure to find a
+     *        registered Metric by that name is an error. Else, simply
+     *        return NULL pointer in that case.
      * \return pointer to the corresponding subcontractor.
      */
-    Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name);
+    Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name,
+						     int errmode=0);
     ///< Query the Metric register
 
     /**
@@ -219,8 +230,15 @@ class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
   virtual double Norm3D(double* pos) const; ///< not clear
  
 
+  virtual void setParameter(std::string name,
+			    std::string content,
+			    std::string unit);
+
   // Outputs
 #ifdef GYOTO_USE_XERCES
+
+  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
+
   /**
    * Metrics implementations should impement fillElement to save their
    * parameters to XML and call the Metric::fillElement(fmp) for the

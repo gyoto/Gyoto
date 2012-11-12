@@ -59,13 +59,16 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
  
  public:
 
-  RotStar3_1(const char * lorene_res, const int integ_kind); ///< Constructor
+  RotStar3_1(); ///< Constructor
+  RotStar3_1(const RotStar3_1& ) ;                ///< Copy constructor
   virtual ~RotStar3_1() ;        ///< Destructor
   virtual RotStar3_1* clone() const ;
            ///< Cloner (uses RotStar3_1(file, integ_kind))
 
+  void setFileName(char const *);
   char const * getFileName() const;
 
+  void setIntegKind(int);
   int getIntegKind() const ;
 
   using Metric::Generic::myrk4;
@@ -92,10 +95,10 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;
 
+  virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-  static Metric::Subcontractor_t Subcontractor;
-  static void Init();
+  virtual void setParameters(FactoryMessenger*);
 #endif
 
 };

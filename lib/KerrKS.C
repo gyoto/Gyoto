@@ -498,27 +498,14 @@ int KerrKS::isStopCondition(double const * const coord) const {
   return 0;
 }
 
+void KerrKS::setParameter(string name, string content, string unit) {
+  if (name=="Spin") setSpin(atof(content.c_str()));
+  else Generic::setParameter(name, content, unit);
+}
+
 #ifdef GYOTO_USE_XERCES
 void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::Generic::fillElement(fmp);
-}
-
-SmartPointer<Metric::Generic>
-Gyoto::Metric::KerrKS::Subcontractor(FactoryMessenger* fmp) {
-
-  double spin=0., mass=1.; //default values
-  string name="", content="";
-
-  while (fmp->getNextParameter(&name, &content)) {
-    if(name=="Spin") spin=atof(content.c_str());
-  }
-  SmartPointer<KerrKS> gg = new KerrKS(spin, mass);
-  gg -> processGenericParameters(fmp);
-  return gg;
-}
-
-void Gyoto::Metric::KerrKS::Init() {
-  Gyoto::Metric::Register("KerrKS", &Subcontractor);
 }
 #endif

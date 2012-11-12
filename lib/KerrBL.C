@@ -1004,20 +1004,9 @@ void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   Metric::Generic::fillElement(fmp);
 }
 
-SmartPointer<Metric::Generic> KerrBL::Subcontractor(FactoryMessenger* fmp) {
-
-  double spin=0., mass=1.; //default values
-  string name="", content="";
-
-  while (fmp->getNextParameter(&name, &content)) {
-    if(name=="Spin") spin=atof(content.c_str());
-  }
-  SmartPointer<KerrBL> gg = new KerrBL(spin, mass);
-  gg -> processGenericParameters(fmp);
-  return gg;
+void KerrBL::setParameter(string name, string content, string unit) {
+  if(name=="Spin") setSpin(atof(content.c_str()));
+  else Generic::setParameter(name, content, unit);
 }
 
-void Gyoto::Metric::KerrBL::Init() {
-  Gyoto::Metric::Register("KerrBL", &KerrBL::Subcontractor);
-}
 #endif

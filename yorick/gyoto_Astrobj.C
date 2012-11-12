@@ -297,22 +297,22 @@ extern "C" {
     // if rvset==1, constructor mode:
     if (*rvset) {
       if (yarg_string(piargs[0])) {
+#ifdef GYOTO_USE_XERCES
 	char * fname = ygets_q(piargs[0]);
 	Astrobj::Subcontractor_t * sub = Astrobj::getSubcontractor(fname, 1);
+	paUsed[0]=1;
 	if (sub) {
 	  GYOTO_DEBUG << "found a subcontractor for \"" << fname
 		      << "\", calling it now\n";
 	  *ao = (*sub)(NULL);
 	} else {
-#ifdef GYOTO_USE_XERCES
 	  GYOTO_DEBUG << "found no subcontractor for \"" << fname
 		      << "\", calling Factory now\n";
 	  *ao = Factory(fname).getAstrobj();
-	  paUsed[1]=1;
-#else
-	  y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
 	}
+#else
+	y_error("This GYOTO was compiled without XERCES: no xml i/o");
+#endif
       } else y_error("Cannot allocate object of virtual class Astrobj");
     }
 

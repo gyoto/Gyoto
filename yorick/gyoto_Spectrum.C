@@ -253,18 +253,16 @@ extern "C" {
     // if rvset==1, constructor mode:
     if (*rvset) {
       if (yarg_string(piargs[0])) {
-	 char * fname = ygets_q(piargs[0]);
-	 Gyoto::Spectrum::Subcontractor_t * sub =
-	   Spectrum::getSubcontractor(fname, 1);
-	 if (sub) *sp = (*Spectrum::getSubcontractor(fname, 1))(NULL);
-	 else {
 #ifdef GYOTO_USE_XERCES
-	  *sp = Factory(fname).getSpectrum(); 
+	char * fname = ygets_q(piargs[0]);
+	Gyoto::Spectrum::Subcontractor_t * sub =
+	  Spectrum::getSubcontractor(fname, 1);
+	if (sub) *sp = (*Spectrum::getSubcontractor(fname, 1))(NULL);
+	else     *sp = Factory(fname).getSpectrum(); 
+	paUsed[0]=1;
 #else
-	  y_error("This GYOTO was compiled without XERCES: no xml i/o");
+	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
-	}
-	paUsed[1]=1;
       } else y_error("Cannot allocate object of virtual class Spectrum");
     }
 

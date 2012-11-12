@@ -198,6 +198,15 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     *kind = p_strcpy((*gg)->getKind().c_str());
   }
 
+  /* SETPARAMETER */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if ((*paUsed)++) y_error("pmsg");
+    string name = ygets_q(iarg);
+    string content = ygets_q(*piargs);
+    (*gg)->setParameter(name, content,  unit?unit:"");
+  }
+
   // Process SET keywords
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
@@ -328,11 +337,13 @@ extern "C" {
     if (builder) {
       if (yarg_string(piargs[0])) {
 #ifdef GYOTO_USE_XERCES
-	try { *gg = Factory(ygets_q(piargs[0])).getMetric(); } 
-	YGYOTO_STD_CATCH;
-	paUsed[1]=1;
+	char * fname = ygets_q(piargs[0]);
+	Metric::Subcontractor_t *sub = Metric::getSubcontractor(fname, 1);
+	paUsed[0]=1;
+	if (sub) *gg=(*sub)(NULL);
+	else *gg = Factory(fname).getMetric();
 #else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
+	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
       } else y_error("Cannot allocate object of virtual class Metric");
     }
