@@ -146,10 +146,11 @@ void Gyoto::Spectrum::Register(std::string name,
   Gyoto::Spectrum::Register_ = ne;
 }
 
-Spectrum::Subcontractor_t* Spectrum::getSubcontractor(std::string name) {
+Spectrum::Subcontractor_t*
+Spectrum::getSubcontractor(std::string name, int errmode) {
   if (!Gyoto::Spectrum::Register_) throwError("No Spectrum kind registered!");
   return (Spectrum::Subcontractor_t*)Gyoto::Spectrum::Register_
-    -> getSubcontractor(name);
+    -> getSubcontractor(name, errmode);
 }
 
 void Gyoto::Spectrum::initRegister() {

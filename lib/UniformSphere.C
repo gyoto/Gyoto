@@ -190,6 +190,8 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
 }
 
 void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
+  setFlag_radtransf(0);
+  if (!fmp) return;
 
   string name="", content="", unit="";
   FactoryMessenger * child = NULL;
@@ -198,7 +200,6 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
   GYOTO_DEBUG << "setMetric()" << endl;
 # endif
   setMetric(fmp->getMetric());
-  setFlag_radtransf(0);
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Spectrum") {

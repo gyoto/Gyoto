@@ -138,9 +138,16 @@ Register::Entry::~Entry() { if (next_) delete next_; }
 
 
 Gyoto::SmartPointee::Subcontractor_t*
-Register::Entry::getSubcontractor(std::string name) {
+Register::Entry::getSubcontractor(std::string name, int errmode) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG_EXPR(name);
+    GYOTO_DEBUG_EXPR(errmode);
+  GYOTO_ENDIF_DEBUG
+# endif
   if (name_==name) return subcontractor_;
-  if (next_) return next_ -> getSubcontractor(name);
+  if (next_) return next_ -> getSubcontractor(name, errmode);
+  if (errmode) return NULL;
   throwError ("Unregistered kind: "+name);
   return NULL; // will never get there, avoid compilation warning
 }

@@ -59,7 +59,8 @@ namespace Gyoto{
     ///< A template for Subcontractor_t functions
 
     void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
-    Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string);
+    Gyoto::Spectrum::Subcontractor_t*
+      getSubcontractor(std::string, int errmode=0);
     extern Register::Entry* Register_;
     void initRegister();
 #endif

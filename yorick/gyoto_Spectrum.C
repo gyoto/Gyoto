@@ -254,19 +254,11 @@ extern "C" {
     if (*rvset) {
       if (yarg_string(piargs[0])) {
 	 char * fname = ygets_q(piargs[0]);
-	try {
-	  GYOTO_DEBUG
-	    << "Getting subcontractor for hypothetical Spectrum kind \""
-	    << fname << "\"\n";
-	  *sp = (*Spectrum::getSubcontractor(fname))(NULL);
-	  GYOTO_DEBUG
-	    << "Found subcontractor for Spectrum kind \"" << fname << "\"\n";
-	} catch (Gyoto::Error e) {
+	 Gyoto::Spectrum::Subcontractor_t * sub =
+	   Spectrum::getSubcontractor(fname, 1);
+	 if (sub) *sp = (*Spectrum::getSubcontractor(fname, 1))(NULL);
+	 else {
 #ifdef GYOTO_USE_XERCES
-	  GYOTO_DEBUG
-	    << "Did not find subcontractor for Spectrum kind \""
-	    << fname << "\", calling Factory for file named\""
-	    << fname << "\"\n";
 	  *sp = Factory(fname).getSpectrum(); 
 #else
 	  y_error("This GYOTO was compiled without XERCES: no xml i/o");

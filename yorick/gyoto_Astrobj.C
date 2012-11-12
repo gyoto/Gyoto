@@ -242,11 +242,10 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
   /* SETPARAMETER */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
-    if ((*rvset)++) y_error("rmsg");
     if ((*paUsed)++) y_error("pmsg");
     string name = ygets_q(iarg);
     string content = ygets_q(*piargs);
-    (*ao)->setParameter(name, content, "");
+    (*ao)->setParameter(name, content,  unit?unit:"");
   }
 
   /* CLONE */
@@ -276,11 +275,12 @@ extern "C" {
     }
 
     static char const * knames[]={
+      "unit",
       YGYOTO_ASTROBJ_GENERIC_KW,
       0
     };
-    static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
-    int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+11];
+    static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+2];
+    int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+1];
     int piargs[]={-1,-1,-1,-1};
   
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
@@ -295,15 +295,24 @@ extern "C" {
     }
 
     // if rvset==1, constructor mode:
-    if (rvset[1]) {
+    if (*rvset) {
       if (yarg_string(piargs[0])) {
+	char * fname = ygets_q(piargs[0]);
+	Astrobj::Subcontractor_t * sub = Astrobj::getSubcontractor(fname, 1);
+	if (sub) {
+	  GYOTO_DEBUG << "found a subcontractor for \"" << fname
+		      << "\", calling it now\n";
+	  *ao = (*sub)(NULL);
+	} else {
 #ifdef GYOTO_USE_XERCES
-	try { *ao = Factory(ygets_q(piargs[0])).getAstrobj(); } 
-	YGYOTO_STD_CATCH;
-	paUsed[1]=1;
+	  GYOTO_DEBUG << "found no subcontractor for \"" << fname
+		      << "\", calling Factory now\n";
+	  *ao = Factory(fname).getAstrobj();
+	  paUsed[1]=1;
 #else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
+	  y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
+	}
       } else y_error("Cannot allocate object of virtual class Astrobj");
     }
 

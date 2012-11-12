@@ -47,7 +47,8 @@ public:
 		Gyoto::SmartPointee::Subcontractor_t* subcontractor,
 		Entry* next);
   ~Entry();
-  Gyoto::SmartPointee::Subcontractor_t* getSubcontractor(std::string);
+  Gyoto::SmartPointee::Subcontractor_t*
+    getSubcontractor(std::string, int errmode=0);
 };
 
 #endif

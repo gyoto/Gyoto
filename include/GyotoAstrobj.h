@@ -81,7 +81,8 @@ namespace Gyoto{
      * \param name e.g. "Star"
      * \return pointer to the corresponding subcontractor.
      */
-    Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name);
+    Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name,
+						      int errmode = 1);
     ///< Query the Astrobj register
 
 #if defined GYOTO_USE_XERCES

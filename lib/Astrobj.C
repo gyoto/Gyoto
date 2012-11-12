@@ -161,9 +161,11 @@ void Generic::fillElement(FactoryMessenger *fmp) const {
 
 void Generic::setParameters(FactoryMessenger *fmp) {
   string name="", content="", unit="";
-  setMetric(fmp->getMetric());
-  while (fmp->getNextParameter(&name, &content, &unit))
-    setParameter(name, content, unit);
+  if (fmp) {
+    setMetric(fmp->getMetric());
+    while (fmp->getNextParameter(&name, &content, &unit))
+      setParameter(name, content, unit);
+  }
 }
 #endif
 
@@ -433,10 +435,11 @@ void Gyoto::Astrobj::Register(std::string name, Subcontractor_t* scp){
   Gyoto::Astrobj::Register_ = ne;
 }
 
-Gyoto::Astrobj::Subcontractor_t* Astrobj::getSubcontractor(std::string name) {
+Gyoto::Astrobj::Subcontractor_t*
+Astrobj::getSubcontractor(std::string name, int errmode) {
   if (!Gyoto::Astrobj::Register_) throwError("No Astrobj kind registered!");
   return (Subcontractor_t*)Gyoto::Astrobj::Register_
-    -> getSubcontractor(name);
+    -> getSubcontractor(name, errmode);
 }
 #endif
 
