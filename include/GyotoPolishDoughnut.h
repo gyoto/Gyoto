@@ -37,6 +37,7 @@ namespace Gyoto{
 #include <GyotoKerrBL.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoFunctors.h>
+#include <GyotoHooks.h>
 //#include <GyotoPolishDoughnutCst.h>
 
 /**
@@ -44,7 +45,10 @@ namespace Gyoto{
 * \brief 
 * 
  */
-class Gyoto::Astrobj::PolishDoughnut : public Astrobj::Standard {
+class Gyoto::Astrobj::PolishDoughnut
+: public Astrobj::Standard,
+  protected Gyoto::Hook::Listener
+{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PolishDoughnut>;
 
  // Data : 
@@ -150,6 +154,7 @@ public:
   // ASTROBJ processHitQuantities API
   // --------------------------------
 protected:
+  virtual void tell(Gyoto::Hook::Teller * msg);
   virtual void getVelocity(double const pos[4], double vel[4]) ;
   using Standard::integrateEmission;
   virtual void integrateEmission(double * I, double * boundaries, size_t nbnu,

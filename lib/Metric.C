@@ -84,7 +84,10 @@ void Metric::Generic::setKind(const string src) { kind_ = src;}
 
 /***************Definition of the physical scene**************/
 
-void Metric::Generic::setMass(const double mass)        { mass_=mass;}
+void Metric::Generic::setMass(const double mass)        {
+  mass_=mass;
+  if (listeners) listeners -> tell(this);
+}
 void Metric::Generic::setMass(const double mass, const string &unit) {
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG

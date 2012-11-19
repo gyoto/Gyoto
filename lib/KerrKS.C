@@ -73,7 +73,10 @@ std::ostream& KerrKS::print( std::ostream& o) const {
 */
 
 // Mutators
-void KerrKS::setSpin(const double spin) { spin_=spin; }
+void KerrKS::setSpin(const double spin) {
+  spin_=spin;
+  if (listeners) listeners -> tell(this);
+}
 
 // Accessors
 double KerrKS::getSpin() const { return spin_ ; }

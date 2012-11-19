@@ -115,7 +115,10 @@ std::ostream& KerrBL::print( std::ostream& o) const {
 */
 
 // Mutators
-void KerrBL::setSpin(const double spin) { spin_=spin; }
+void KerrBL::setSpin(const double spin) {
+  spin_=spin;
+  if (listeners) listeners -> tell(this);
+}
 
 // Accessors
 double KerrBL::getSpin() const { return spin_ ; }

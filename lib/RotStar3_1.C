@@ -101,6 +101,8 @@ void RotStar3_1::setFileName(char const * lorene_res) {
   star_ -> equation_of_state();
   star_ -> update_metric();
   star_ -> hydro_euler();
+
+  if (listeners) listeners -> tell(this);
 }
 
 char const * RotStar3_1::getFileName() const { return filename_; }

@@ -50,7 +50,7 @@ PolishDoughnut::PolishDoughnut() :
  Standard("PolishDoughnut"),
  gg_(NULL),
  l0_(0.),
- lambda_(0.),
+ lambda_(0.5),
  W_surface_(0.),
  W_centre_(0.),
  r_cusp_(0.),
@@ -127,7 +127,6 @@ void   PolishDoughnut::setLambda(double lambda) {
  l0_ = lambda_*(l_mb-l_ms)+l_ms ;//torus angular momentum
 
  //Computing the potential at the photon position:
- 
  double r1_min = rmb ; 
  double r1_max = rms ;
  double r2_min = rms ; 
@@ -140,9 +139,19 @@ void   PolishDoughnut::setLambda(double lambda) {
 
  r_cusp_   = intersection.ridders(r1_min, r1_max) ;
  r_centre_ = intersection.ridders(r2_min, r2_max) ;
- 
  W_surface_ = potential(r_cusp_, M_PI/2.) ;
  W_centre_  = potential(r_centre_, M_PI/2.) ;
+
+ GYOTO_IF_DEBUG
+   GYOTO_DEBUG_EXPR(lambda_);
+   GYOTO_DEBUG_EXPR(l0_);
+   GYOTO_DEBUG_EXPR(aa_);
+   GYOTO_DEBUG_EXPR(r_cusp_);
+   GYOTO_DEBUG_EXPR(r_centre_);
+   GYOTO_DEBUG_EXPR(W_surface_);
+   GYOTO_DEBUG_EXPR(W_centre_);
+ GYOTO_ENDIF_DEBUG
+
  DeltaWm1_= 1./(W_centre_ - W_surface_);
 
 }
@@ -204,9 +213,18 @@ void PolishDoughnut::setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
   if (met->getKind() != "KerrBL")
     throwError("PolishDoughnut::setMetric(): only KerrBL, please");
+  if (gg_) gg_ -> unhook(this);
   gg_ = SmartPointer<Metric::KerrBL>(met);
   Generic::gg_ = gg_;
+  if (gg_) gg_ -> hook(this);
+  GYOTO_DEBUG << "Metric set, calling setLambda\n";
   setLambda(lambda_); // setLambda_ initializes other members
+}
+
+void PolishDoughnut::tell(Hook::Teller * met) {
+  if (met == gg_) setLambda(lambda_);
+  else throwError("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
+		  "wrong metric");
 }
 
 int PolishDoughnut::Impact(Photon *ph, size_t index,

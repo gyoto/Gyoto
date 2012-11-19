@@ -37,6 +37,7 @@
 #include <GyotoSmartPointer.h>
 #include <GyotoAstrobj.h>
 #include <GyotoRegister.h>
+#include <GyotoHooks.h>
 
 namespace Gyoto {
   namespace Metric {
@@ -124,7 +125,10 @@ namespace Gyoto {
  * See Gyoto::Metric for an introduction.
  *
  */
-class Gyoto::Metric::Generic : protected Gyoto::SmartPointee {
+class Gyoto::Metric::Generic
+: protected Gyoto::SmartPointee,
+  public Gyoto::Hook::Teller
+{
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
 
  private:
