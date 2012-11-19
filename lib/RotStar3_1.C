@@ -51,7 +51,7 @@ RotStar3_1::RotStar3_1() :
 }
 
 RotStar3_1::RotStar3_1(const RotStar3_1& o) : 
-  Generic(GYOTO_COORDKIND_SPHERICAL),
+  Generic(o),
   filename_(NULL),
   star_(NULL),
   integ_kind_(o.integ_kind_)
