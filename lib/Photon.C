@@ -53,7 +53,10 @@ Photon::Photon(const Photon& o) :
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
   spectro_(NULL), transmission_(NULL)
 {
-  if (o.object_())  object_  = o.object_  -> clone();
+  if (o.object_()) {
+    object_  = o.object_  -> clone();
+    object_ -> setMetric(metric_);
+  }
   if (o.spectro_()) {
     spectro_ = o.spectro_ -> clone();
     _allocateTransmission();
