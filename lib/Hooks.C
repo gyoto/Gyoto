@@ -21,6 +21,7 @@
 #include "GyotoDefs.h"
 #include "GyotoUtils.h"
 #include <iostream>
+#include <cstddef>
 
 using namespace Gyoto;
 using namespace Gyoto::Hook;
