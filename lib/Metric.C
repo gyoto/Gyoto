@@ -86,7 +86,7 @@ void Metric::Generic::setKind(const string src) { kind_ = src;}
 
 void Metric::Generic::setMass(const double mass)        {
   mass_=mass;
-  if (listeners) listeners -> tell(this);
+  tellListeners();
 }
 void Metric::Generic::setMass(const double mass, const string &unit) {
 # ifdef GYOTO_DEBUG_ENABLED

@@ -7,7 +7,6 @@ namespace Gyoto {
   namespace Hook {
     class Teller;
     class Listener;
-    class ListenerItem;
   };
 };
 
@@ -21,27 +20,17 @@ class Gyoto::Hook::Listener {
 
 class Gyoto::Hook::Teller {
   friend class Gyoto::Hook::Listener;
- protected:
-  ListenerItem *listeners;
+ private:
+  class ListenerItem;
+  ListenerItem *listeners_;
  public:
   Teller();
   Teller(const Teller &);
   ~Teller();
   virtual void hook (Listener *);
   virtual void unhook (Listener *);
-};
-
-class Gyoto::Hook::ListenerItem {
-  friend  class Gyoto::Hook::Teller;
-  friend class Gyoto::Hook::Listener;
  protected:
-  Listener * listener;
-  ListenerItem * next;
- public:
-  ListenerItem(Listener*, ListenerItem*);
-  ~ListenerItem();
-  virtual void tell(Gyoto::Hook::Teller *);
-  size_t len() const;
+  virtual void tellListeners();
 };
 
 #endif
