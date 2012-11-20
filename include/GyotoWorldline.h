@@ -38,13 +38,16 @@ namespace Gyoto {
 #include <GyotoMetric.h>
 #include <GyotoWorldlineIntegState.h>
 #include <GyotoScreen.h>
+#include <GyotoHooks.h>
 
 /**
  * \class Gyoto::Worldline
  * \brief geodesic?
  * 
  */
-class Gyoto::Worldline {
+class Gyoto::Worldline
+:  protected Gyoto::Hook::Listener
+{
 
   // Data : 
   // -----
@@ -238,7 +241,8 @@ class Gyoto::Worldline {
   /// Display
   friend std::ostream& operator<<(std::ostream& , const Worldline& ) ;
   
-  
+ protected:
+  virtual void tell(Gyoto::Hook::Teller*);
 };
 
 #endif

@@ -230,16 +230,24 @@ size_t Worldline::xExpand(int dir) {
 }
 
 void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
+  // Unhook from previous metric
+  if (metric_) metric_ -> unhook(this);
+
   // Set the Metric
   metric_=gg;
+
+  // Hook to new metric
+  if (metric_) metric_ -> hook(this);
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "imin_=" << imin_ << ", i0_=" << i0_
 	      << ", imax_=" << imax_ << endl;
 # endif
+
   if (imin_ <= imax_) {
     // Initial condition has been set previously
     // Forget integration
-    imin_=imax_=i0_;
+    reset();
 
     double coord[8];
     getInitialCoord(coord);
@@ -960,3 +968,5 @@ void Worldline::getCartesianPos(size_t index, double dest[4]) const {
   default: Gyoto::throwError("Worldline::getCartesianPos: Incompatible coordinate kind");
   }
 }
+
+void Worldline::tell(Gyoto::Hook::Teller*) { reset(); }
