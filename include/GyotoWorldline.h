@@ -95,6 +95,7 @@ class Gyoto::Worldline
   SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
   void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
   void reset() ; ///< Forget integration, keeping initial contition
+  void reInit() ; ///< Reset and recompute particle properties
 
   virtual std::string className() const ; ///< "Worldline"
   virtual std::string className_l() const ; ///< "worldline"

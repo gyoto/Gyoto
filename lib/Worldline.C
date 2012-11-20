@@ -239,27 +239,13 @@ void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
   // Hook to new metric
   if (metric_) metric_ -> hook(this);
 
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "imin_=" << imin_ << ", i0_=" << i0_
-	      << ", imax_=" << imax_ << endl;
-# endif
+  // Reset integration
+  reInit();
+}
 
-  if (imin_ <= imax_) {
-    // Initial condition has been set previously
-    // Forget integration
-    reset();
-
-    double coord[8];
-    getInitialCoord(coord);
-    if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
-	 && x2_[i0_]==0. ) {
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	cerr << "SEVERE: Worldline::setMetric(): Kicking particle off z axis\n";
-      x2_[i0_]=coord[2]=1e-10;
-    }
-    metric_ -> setParticleProperties(this,coord);
-  }
-
+void Worldline::tell(Gyoto::Hook::Teller* msg) {
+  if (msg != metric_) throwError("Worldline::tell(): wrong Teller");
+  reInit();
 }
 
 SmartPointer<Metric::Generic> Worldline::getMetric() const { return metric_; }
@@ -278,21 +264,7 @@ void Worldline::setInitCoord(const double coord[8], int dir) {
   x1dot_[i0_]=coord[5];
   x2dot_[i0_]=coord[6];
   x3dot_[i0_]=coord[7];
-  if (metric_())  {
-    double coo[8];
-    memcpy(coo, coord, 8*sizeof(double));
-    if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
-	 && x2_[i0_]==0. ) {
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY) {
-	cerr << "SEVERE: Worldline::setInitialCondition("<<metric_->getKind()
-	     <<", ["<<coo[0];
-	for (size_t ii=1; ii<8; ++ii) cerr << ", "<<coo[ii];
-	cerr<<"], "<<dir<<"): Kicking particle off z axis" << endl;
-      }
-      x2_[i0_]=coo[2]=1e-10;
-    }
-    metric_ -> setParticleProperties(this,coord);
-  }
+  reInit();
 }
 
 void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
@@ -304,6 +276,22 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 }
 
 void Worldline::reset() { imin_=imax_=i0_; }
+void Worldline::reInit() {
+  if (imin_ <= imax_) {
+    reset();
+    double coord[8];
+    getInitialCoord(coord);
+    if (metric_) {
+      if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
+	   && x2_[i0_]==0. ) {
+	if (verbose() >= GYOTO_SEVERE_VERBOSITY)
+	  cerr << "SEVERE: Worldline::setMetric(): Kicking particle off z axis\n";
+	x2_[i0_]=coord[2]=1e-10;
+      }
+      metric_ -> setParticleProperties(this,coord);
+    }
+  }
+}
 
 void Worldline::xFill(double tlim) {
 
@@ -968,5 +956,3 @@ void Worldline::getCartesianPos(size_t index, double dest[4]) const {
   default: Gyoto::throwError("Worldline::getCartesianPos: Incompatible coordinate kind");
   }
 }
-
-void Worldline::tell(Gyoto::Hook::Teller*) { reset(); }
