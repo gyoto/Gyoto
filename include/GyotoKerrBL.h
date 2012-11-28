@@ -80,12 +80,19 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 
   double getRmb() const; ///< Returns prograde marginally bound orbit
   
-  /** Value of metric coefficient $g_{\alpha\beta}$ at point $(x_{1},x_{2},x_{3})$
+  /** Value of metric coefficient $g_{\alpha\beta}$ 
+      at point $(x_{1},x_{2},x_{3})$
       in Boyer-Lindquist coordinates
    */
   double gmunu(const double * const x,
 		       int alpha, int beta) const ;
 
+  /** Value of metric coefficient $g^{\alpha\beta}$ 
+      at point $(x_{1},x_{2},x_{3})$
+      in Boyer-Lindquist coordinates
+   */
+  double gmunu_up(const double * const x,
+		       int alpha, int beta) const ;
  
   /*
    it's necessary to define christoffel even if it's not used. KerrBL derives from Metric where christoffel is virtual pure. If the function is not defined in KerrBL,  it's considered virtual pure here too. Then KerrBL is considered an abstract class, and it's forbidden to declare any object of type KerrBL....

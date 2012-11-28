@@ -161,6 +161,33 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   return 0.;
 } 
 
+//Computation of metric coefficients in contravariant form
+double KerrBL::gmunu_up(const double * pos, int mu, int nu) const {
+  double r = pos[1];
+  double sth2, cth2, cscth; //sin, cos, cosec theta
+  sincos(pos[2], &sth2, &cth2);
+  cscth=1/sth2; sth2*=sth2; cth2*=cth2;
+  double c2th=2.*cth2-1.; //cos 2*theta
+  double r2=r*r;
+  double a2=spin_*spin_;
+  double rho2=r2+a2*cth2;
+  double delta=r2-2.*r+a2;
+
+  if ((mu==0) && (nu==0)) return 
+			    -(a2*a2+2.*r2*r2+a2*r*(2.+3.*r)
+			      +a2*delta*c2th)
+			    / (delta*(a2+2.*r2+a2*c2th));
+  if ((mu==1) && (nu==1)) return (r2-2.*r+a2)/rho2;
+  if ((mu==2) && (nu==2)) return 1./rho2;
+  if ((mu==3) && (nu==3))
+    return 
+      2.*(r2-2.*r+a2*cth2)*cscth*cscth/(delta*(a2+2.*r2+a2*c2th));
+  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
+    return -4*spin_*r/(delta*(a2+2.*r2+a2*c2th)); //2*r*mass
+
+  return 0.;
+} 
+
 double KerrBL::christoffel(const double[8],
 		   const int, const int, const int) const{
   throwError( "KerrBL.C : should never come here to find christoffel!!" );
