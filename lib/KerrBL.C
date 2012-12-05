@@ -137,7 +137,7 @@ double KerrBL::getRmb() const {
   return 2.-spin_+2.*sqrt(1.-spin_);
 }
 
-//Computation of metric coefficients
+//Computation of metric coefficients in covariant form
 double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   double r = pos[1];
   double sth2, cth2;
@@ -145,18 +145,16 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   sth2*=sth2; cth2*=cth2;
   double r2=r*r;
   double a2=spin_*spin_;
-  double rho2=r2+a2*cth2;
-//   if (debug()) {
-//     cerr << "DEBUG: KerrBL::gmunu: SPIN="<< spin_ << ", R=" << r << ", THETA=" << theta<< endl;
-//   }
+  double sigma=r2+a2*cth2;
+  double delta=r2-2.*r+a2;
 
-  if ((mu==0) && (nu==0)) return -(1.-2.*r/rho2); // 2*r*mass
-  if ((mu==1) && (nu==1)) return rho2/(r2-2.*r+a2);
-  if ((mu==2) && (nu==2)) return rho2;
+  if ((mu==0) && (nu==0)) return -(1.-2.*r/sigma);
+  if ((mu==1) && (nu==1)) return sigma/delta;
+  if ((mu==2) && (nu==2)) return sigma;
   if ((mu==3) && (nu==3))
-    return (r2+a2+2.*r*a2*sth2/rho2)*sth2; // 2*r*mass
+    return (r2+a2+2.*r*a2*sth2/sigma)*sth2;
   if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
-    return -2*spin_*r*sth2/rho2; //2*r*mass
+    return -2*spin_*r*sth2/sigma;
 
   return 0.;
 } 
@@ -164,26 +162,22 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
 //Computation of metric coefficients in contravariant form
 double KerrBL::gmunu_up(const double * pos, int mu, int nu) const {
   double r = pos[1];
-  double sth2, cth2, cscth; //sin, cos, cosec theta
+  double sth2, cth2;
   sincos(pos[2], &sth2, &cth2);
-  cscth=1/sth2; sth2*=sth2; cth2*=cth2;
-  double c2th=2.*cth2-1.; //cos 2*theta
+  sth2*=sth2; cth2*=cth2;
   double r2=r*r;
   double a2=spin_*spin_;
-  double rho2=r2+a2*cth2;
+  double sigma=r2+a2*cth2;
   double delta=r2-2.*r+a2;
+  double xi=(r2+a2)*(r2+a2)-a2*delta*sth2;
 
-  if ((mu==0) && (nu==0)) return 
-			    -(a2*a2+2.*r2*r2+a2*r*(2.+3.*r)
-			      +a2*delta*c2th)
-			    / (delta*(a2+2.*r2+a2*c2th));
-  if ((mu==1) && (nu==1)) return (r2-2.*r+a2)/rho2;
-  if ((mu==2) && (nu==2)) return 1./rho2;
-  if ((mu==3) && (nu==3))
-    return 
-      2.*(r2-2.*r+a2*cth2)*cscth*cscth/(delta*(a2+2.*r2+a2*c2th));
+  if ((mu==0) && (nu==0)) return -xi/(delta*sigma);    
+  if ((mu==1) && (nu==1)) return delta/sigma;
+  if ((mu==2) && (nu==2)) return 1./sigma;
+  if ((mu==3) && (nu==3)) 
+    return (delta-a2*sth2)/(sigma*delta*sth2);
   if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
-    return -4*spin_*r/(delta*(a2+2.*r2+a2*c2th)); //2*r*mass
+    return -2*spin_*r/(sigma*delta);
 
   return 0.;
 } 
