@@ -92,8 +92,8 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 
   if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
     //Allows theta and phi to be in the correct range
-    checkPhiTheta(p1);
-    checkPhiTheta(p2);
+    ph->checkPhiTheta(p1);
+    ph->checkPhiTheta(p2);
   }
 
   double t1 = p1[0], t2=p2[0];

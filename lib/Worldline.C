@@ -535,6 +535,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[imax_];
       if (x2dot) x2dot[di] = x2dot_[imax_];
       if (x3dot) x3dot[di] = x3dot_[imax_];
+      double pos[4]={0.,0.,x2[di],x3[di]};
+      checkPhiTheta(pos);
+      x2[di]=pos[2];x3[di]=pos[3];
       continue;
     } else if (date > x0_[imax_]) {
       curl=imax_;    // current imax_
@@ -574,7 +577,10 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x0dot) x0dot[di] = x0dot_[curl];
       if (x1dot) x1dot[di] = x1dot_[curl];
       if (x2dot) x2dot[di] = x2dot_[curl];
-      if (x3dot) x3dot[di] = x3dot_[curl];
+      if (x3dot) x3dot[di] = x3dot_[curl];      
+      double pos[4]={0.,0.,x2[di],x3[di]};
+      checkPhiTheta(pos);
+      x2[di]=pos[2];x3[di]=pos[3];
       continue;
     }
 
@@ -750,6 +756,34 @@ void Worldline::getCoord(double *x0dest,
   memcpy(x1dest, x1_+imin_, sizeof(double)*ncomp);
   memcpy(x2dest, x2_+imin_, sizeof(double)*ncomp);
   memcpy(x3dest, x3_+imin_, sizeof(double)*ncomp);
+}
+
+void Worldline::checkPhiTheta(double coord[8]) const{
+  switch (metric_ -> getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    {
+    /* Transforms theta and phi in coord so that 
+       theta is in [0,pi] and phi in [0,2pi] */
+    double thetatmp=coord[2], phitmp=coord[3];
+    while (thetatmp>M_PI) thetatmp-=2.*M_PI;
+    while (thetatmp<-M_PI) thetatmp+=2.*M_PI;//then theta in [-pi,pi]
+    if (thetatmp<0.) {
+      thetatmp=-thetatmp;//then theta in [0,pi]
+      phitmp+=M_PI;//thus, same point x,y,z
+    }
+    while (phitmp>2.*M_PI) phitmp-=2.*M_PI;
+    while (phitmp<0.) phitmp+=2.*M_PI;//then phi in [0,2pi]
+    coord[2]=thetatmp;
+    coord[3]=phitmp;
+    }
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    throwError("Worldline::checkPhiTheta(): should not be called "
+	       "with cartesian-like coordinates");
+  default:
+    throwError("Worldline::checkPhiTheta(): unknown COORDKIND");
+  }
+
 }
 
 void Worldline::get_dot(double *x0dest, double *x1dest, double *x2dest, double *x3dest) const {

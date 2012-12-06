@@ -586,8 +586,8 @@ int Disk3D::Impact(Photon *ph, size_t index,
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
 
-  checkPhiTheta(coord1);
-  checkPhiTheta(coord2);
+  ph->checkPhiTheta(coord1);
+  ph->checkPhiTheta(coord2);
 
   // HEURISTIC TESTS TO PREVENT TOO MANY INTEGRATION STEPS
   // Speeds up a lot!
@@ -670,7 +670,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
 	){//then out of grid
       indisk=0;
     }else{ //Inside grid: compute emission
-      checkPhiTheta(coord_ph_hit);
+      ph->checkPhiTheta(coord_ph_hit);
       for (int ii=0;ii<4;ii++) coord_obj_hit[ii]=coord_ph_hit[ii];
       getVelocity(coord_obj_hit, coord_obj_hit+4);
       if (data) {

@@ -227,6 +227,13 @@ class Gyoto::Worldline
    *  call to xFill()) of this worldline.
    */
   void getCoord(double *x0, double *x1, double *x2, double *x3) const ;
+  /**
+   * checkPhiTheta() Modifies coord if the corrdinates are spherical-like
+   * so that coord[2]=theta is in [0,pi] and coord[3]=phi is in [0,2pi].
+   * Important to use in all astrobj in spherical coordinates
+   * to prevent "z-axis problems".
+   */
+  void checkPhiTheta(double coord[8]) const;
   void getSkyPos(SmartPointer<Screen> screen, double *dalpha, double *ddellta, double *dD) const;
   void get_dot(double *x0dot, double *x1dot, double *x2dot, double *x3dot) const ;
   void get_prime(double *x1prime, double *x2prime, double *x3prime) const ;

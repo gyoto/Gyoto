@@ -555,15 +555,6 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
   virtual double transmission(double nuem, double dsem, double coord[8]) const ;
      ///< Transmission: exp( \alpha_{\nu} * dsem )
 
-  /**
-   * checkPhiTheta() Modifies coord if the corrdinates are spherical-like
-   * so that coord[2]=theta is in [0,pi] and coord[3]=phi is in [0,2pi].
-   * Important to use in all astrobj in spherical coordinates
-   * to prevent "z-axis problems".
-   */
-  void checkPhiTheta(double coord[8]) const;
-
-
 };
 
 /**
