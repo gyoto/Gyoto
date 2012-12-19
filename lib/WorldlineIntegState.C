@@ -101,9 +101,17 @@ int WorldlineIntegState::nextStep(Worldline* line, double coord[8], double del) 
   norm_=gg_ -> ScalarProd(coord,coord+4,coord+4);
 
   double normtol=.001;
-  if (fabs(norm_-normref_)>normtol) {
-    GYOTO_SEVERE << "***WARNING: in WlIntegState.C: norm is drifting"
-      " - with norm,x1,x2,x3= " << norm_ << " " << coord[1] 
+  /* 
+     NB: following test done for norm/tdot
+     as tdot can diverge close to horizon (it's the case for
+     NS integration eg where geodesic can come close to horizon)
+     Then just check that norm/tdot does not diverge.
+   */ 
+  if (fabs(norm_-normref_)/(coord[4]*coord[4])>normtol) {
+    GYOTO_SEVERE << 
+      "***WARNING: in WorldlineIntegState.C: "
+      "norm is drifting"
+      " - with norm/x0dot**2,x1,x2,x3= " << norm_ << " " << coord[1] 
 		 << " " << coord[2] << " " << coord[3] << " " << endl;
   }
 
