@@ -165,6 +165,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double ey_[3]; ///< Sky coordinate of base Y vector
   double ez_[3]; ///< Sky coordinate of base Z vector
 
+  double alpha0_, delta0_; ///< Screen orientation (0,0) is 
+                           ///< right towards the BH
   SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
 
   SmartPointer<Spectrometer> spectro_;
@@ -256,6 +258,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double getFieldOfView(std::string unit);
   void setFieldOfView(double);
   void setFieldOfView(double, const std::string &unit);
+  void setAlpha0(double);
+  void setDelta0(double);
   size_t getResolution();
   void setResolution(size_t);
 

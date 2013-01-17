@@ -35,6 +35,7 @@ using namespace Gyoto;
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
   tobs_(0.), fov_(M_PI*0.1), npix_(1001),
+  alpha0_(0.), delta0_(0.),
   distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
@@ -47,6 +48,7 @@ Screen::Screen() :
 Screen::Screen(const Screen& o) :
   SmartPointee(o),
   tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), distance_(o.distance_),
+  alpha0_(o.alpha0_), delta0_(o.delta0_),
   dmax_(o.dmax_), gg_(NULL), spectro_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
@@ -279,7 +281,8 @@ void Screen::getRayCoord(double alpha, double delta,
 		      double coord[]) const
 
 {
-  //if (debug()) cout << "alpha,delta= " << alpha << " " << delta << endl;
+  alpha+=alpha0_; delta+=delta0_; // Screen orientation
+
   int i; // dimension : 0, 1, 2
   double pos[4];
 # if GYOTO_DEBUG_ENABLED
@@ -298,34 +301,60 @@ void Screen::getRayCoord(double alpha, double delta,
 
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
 
-  //3-vector of norm unity directing the photon trajectory
+  /*
+    NB: spherical_angles = spherical angles associated to the
+    cartesian frame centered on the observer's screen,
+    x=East,y=North,z=line-of-sight ; number 1 is from z-axis to
+    vector, number 2 from x axis to projection on x-y plane. See notes
+    for details.
+  */
   
-  //NB: spherical_angles = spherical angles associated to the
-  //cartesian frame centered on the observer's screen,
-  //x=East,y=North,z=line-of-sight ; number 1 is from z-axis to
-  //vector, number 2 from x axis to projection on x-y plane. See notes
-  //for details.
+  /*
+    NBB: for spherical_angle_1, the relation comes from the spherical
+    law of cosines of spherical trigonometry, the arcs
+    spherical_angle_1, alpha and delta forming a spherical triangle,
+    with alpha othogonal to delta.
+    NBBB: for spherical_angle_2, the relation also comes from the spherical
+    law of cosine. 
+    --> Following transformations are OK even for non-small alpha, delta
+  */
 
-  //NBB: for spherical_angle_1, the relation comes from the spherical
-  //law of cosines of spherical trigonometry, the arcs
-  //spherical_angle_1, alpha and delta forming a spherical triangle,
-  //with alpha othogonal to delta.
   double spherical_angle_1 = acos(cos(alpha)*cos(delta));
-  double spherical_angle_2 = (alpha==0. && delta==0.) ? 0. : atan2(delta,alpha);
-                 // C++ atan2 seems to behave badly if the two arguments are 0
+  double spherical_angle_2 = (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+  
+  // Move these two angles to [0,pi], [0,2pi]
+  double s1tmp=spherical_angle_1, s2tmp=spherical_angle_2;
+  while (s1tmp>M_PI) s1tmp-=2.*M_PI;
+  while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
+  if (s1tmp<0.) {
+    s1tmp=-s1tmp;//then s1 in [0,pi]
+    s2tmp+=M_PI;//thus, same direction
+  }
+  while (s2tmp>2.*M_PI) s2tmp-=2.*M_PI;
+  while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi]
+  spherical_angle_1=s1tmp;
+  spherical_angle_2=s2tmp;
 
-  //NB: minus signs because the photon doesn't leave the screen, but
+  // 3-velocity in observer's frame
+
+  //NB: following minus signs because the photon doesn't leave the screen, but
   //is heading towards it!
   double vel[3]={-sin(spherical_angle_1)*cos(spherical_angle_2),
 		 -sin(spherical_angle_1)*sin(spherical_angle_2),
 		 -cos(spherical_angle_1)};
 
+  // 4-vector tangent to photon geodesic
+
   switch (gg_ -> getCoordKind()) {
   case GYOTO_COORDKIND_CARTESIAN:
     {
+      //NB: the following normalization stuff is probably useless
       //3 velocity normalization (see manual for details)
       pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
-      double gxx=gg_->gmunu(pos,1,1), gyy=gg_->gmunu(pos,2,2), gzz=gg_->gmunu(pos,3,3), gxy=gg_->gmunu(pos,1,2), gxz=gg_->gmunu(pos,1,3), gyz=gg_->gmunu(pos,2,3);
+      double gxx=gg_->gmunu(pos,1,1), 
+	gyy=gg_->gmunu(pos,2,2), gzz=gg_->gmunu(pos,3,3), 
+	gxy=gg_->gmunu(pos,1,2), gxz=gg_->gmunu(pos,1,3), 
+	gyz=gg_->gmunu(pos,2,3);
 
       //Transforming to KS:
       for (i=0;i<3;++i) {
@@ -335,7 +364,8 @@ void Screen::getRayCoord(double alpha, double delta,
       }
 
       double vx=coord[5], vy=coord[6], vz=coord[7];
-      double denom=gxx*vx*vx+gyy*vy*vy+gzz*vz*vz+2.*gxy*vx*vy+2.*gxz*vx*vz+2.*gyz*vy*vz;
+      double denom=gxx*vx*vx+gyy*vy*vy
+	+gzz*vz*vz+2.*gxy*vx*vy+2.*gxz*vx*vz+2.*gyz*vy*vz;
       if (denom < 0.) throwError("In Screen.C: impossible to normalize in KS case!");
       double nuobs=1.;
       double lambda=nuobs*pow(denom, -0.5);
@@ -347,29 +377,13 @@ void Screen::getRayCoord(double alpha, double delta,
       if (coord[2]==0. || coord[2]==M_PI)
 	throwError("Please move Screen away from z-axis");
       pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
-      double grr=gg_->gmunu(pos,1,1), gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
-      coord[5]=-vel[2];
-      //coord[5]=-vel[2]/sqrt(grr);
+      double grr=gg_->gmunu(pos,1,1), 
+	gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
+      coord[5]=-vel[2]/sqrt(grr);
       double sp=sin(euler_[0]);
       double cp=cos(euler_[0]);
-      coord[6]=(-sp*vel[0]+cp*vel[1])/coord[1];
-      //coord[6]=(-sp*vel[0]+cp*vel[1])/sqrt(gthth);
-      coord[7]=( cp*vel[0]+sp*vel[1])/(coord[1]*sin(coord[2]));
-      //coord[7]=( cp*vel[0]+sp*vel[1])/sqrt(gphph);
-
-      //Normalization of Boyer-Lindquist projected velocity to 1 (see manual for details). This is a choice of normalization for the photon tangent vector (i.e. 4-momentum) that boils down to taking observed frequency = 1.
-
-      if (grr*coord[5]*coord[5] + gthth*coord[6]*coord[6] + gphph*coord[7]*coord[7] < 0.)
-	throwError("In Screen.C: impossible normalization!");
-
-      double nuobs=1.;
-      double lambda =
-	nuobs*pow(grr*coord[5]*coord[5] +
-		  gthth*coord[6]*coord[6] +
-		  gphph*coord[7]*coord[7],
-		  -0.5);
-
-      coord[5]*=lambda;coord[6]*=lambda;coord[7]*=lambda;
+      coord[6]=(-sp*vel[0]+cp*vel[1])/sqrt(gthth);
+      coord[7]=( cp*vel[0]+sp*vel[1])/sqrt(gphph);
     }
     break;
   default:
@@ -377,7 +391,7 @@ void Screen::getRayCoord(double alpha, double delta,
     break;
   }
 
-  // 3-vel [dx1/dlambda,dx2/dlambda,dx3/dlambda] -> 4-vel
+  // 0-component of 4-vector found by normalizing
   gg_ -> nullifyCoord(coord);
 }
 
@@ -526,6 +540,9 @@ void Screen::setFieldOfView(double fov, const string &unit) {
 }
 void Screen::setFieldOfView(double fov) { fov_ = fov; }
 
+void Screen::setAlpha0(double alpha) { alpha0_ = alpha; }
+void Screen::setDelta0(double delta) { delta0_ = delta; }
+
 size_t Screen::getResolution() { return npix_; }
 void Screen::setResolution(size_t n) { npix_ = n; }
 
@@ -577,6 +594,8 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   if (gg_) fmp -> setMetric (gg_) ;
   fmp -> setParameter ("Time", tobs_);
   fmp -> setParameter ("FieldOfView", fov_);
+  fmp -> setParameter ("Alpha0", alpha0_);
+  fmp -> setParameter ("Delta0", delta0_);
   fmp -> setParameter ("Resolution", npix_);
   double d = getDistance();
   if (gg_() && (gg_->getMass() == 1.)) {
@@ -613,7 +632,6 @@ void Screen::fillElement(FactoryMessenger *fmp) {
 }
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
-
   string name="", content="", unit="", tunit="";
   SmartPointer<Screen> scr = new Screen();
   scr -> setMetric(fmp->getMetric());
@@ -623,6 +641,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   // Deal with fov later as we need Inclination
   double fov; string fov_unit; int fov_found=0;
+  double alpha0; int alpha0_found=0; 
+  double delta0; int delta0_found=0;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     tc = const_cast<char*>(content.c_str());
@@ -651,11 +671,21 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
     else if (name=="Spectrometer")
       scr -> setSpectrometer (SpectrometerSubcontractor(fmp->getChild()));
+    else if (name=="Alpha0"){
+      alpha0 = atof(tc); alpha0_found=1;
+    }
+    else if (name=="Delta0"){
+      delta0 = atof(tc); delta0_found=1;
+    }
   }
 
   if (tobs_found) scr -> setTime ( tobs_tmp, tunit );
 
   if (fov_found) scr -> setFieldOfView ( fov, fov_unit );
+
+  if (alpha0_found) scr -> setAlpha0(alpha0);
+
+  if (delta0_found) scr -> setDelta0(delta0);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(scr->getDmax());

@@ -167,7 +167,7 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 {
   if (!met) met = metric_;
   double gtt0=met->gmunu(coord,0,0);
-  double ObsVel[4]={pow(-gtt0, -0.5),0.,0.,0.};
+  double ObsVel[4]={pow(-gtt0, -0.5),0.,0.,0.}; //static
   double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
   freq_obs_ = -sp_rec;
   Worldline::setInitialCondition(met, coord, -1);
