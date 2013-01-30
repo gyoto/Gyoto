@@ -264,7 +264,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_.setTmin(tmin_);
   double coord[8];
   screen_ -> getRayCoord(imin,jmin, coord);
-  ph_ . setInitialCondition(gg_, obj_, coord);
+  ph_ . setInitialCondition(gg_, obj_, screen_, coord);
   // delta is reset in operator()
 
   if (data) setPropertyConverters(data);
@@ -361,7 +361,7 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
-      ph -> setInitialCondition(gg, obj, impactcoords+8);
+      ph -> setInitialCondition(gg, obj, screen_, impactcoords+8);
       ph -> resetTransmission();
       obj_ -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
@@ -370,7 +370,7 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
     screen_ -> getRayCoord(i,j, coord);
-    ph -> setInitialCondition(gg, obj, coord);
+    ph -> setInitialCondition(gg, obj, screen_, coord);
     ph -> hit(data);
   }
 }

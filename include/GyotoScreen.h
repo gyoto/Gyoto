@@ -165,6 +165,11 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double ey_[3]; ///< Sky coordinate of base Y vector
   double ez_[3]; ///< Sky coordinate of base Z vector
 
+  double fourvel_[4]; ///< Observer's 4-velocity
+  double screen1_[4]; ///< Screen e1 vector
+  double screen2_[4]; ///< Screen e2 vector
+  double screen3_[4]; ///< Screen e3 vector (normal)
+
   double alpha0_, delta0_; ///< Screen orientation (0,0) is 
                            ///< right towards the BH
   SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
@@ -229,6 +234,14 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    */
   void setObserverPos(const double pos[4]);
   ///< Sets the orientation of Screen relative to observer
+  void setFourVel(const double coord[4]);
+  ///< Sets the observer's 4-velocity
+  void setScreen1(const double coord[4]);
+  ///< Sets the screen vector e1
+  void setScreen2(const double coord[4]);
+  ///< Sets the screen vector e2
+  void setScreen3(const double coord[4]);
+  ///< Sets the screen vector e3 (normal)
 
   // Accessors
   // ---------
@@ -279,6 +292,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    */
   void getObserverPos(double coord[]) const;
   ///< 4-Position of the observer relative to the Screen
+
+  void getFourvel(double fourvel[]) const;
 
   
   /**

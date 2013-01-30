@@ -43,6 +43,12 @@ Screen::Screen() :
 # endif
   euler_[0]=euler_[1]=euler_[2]=0.;
   setProjection(0., 0., 0.);
+  for (int ii=0;ii<4;ii++) {
+    fourvel_[ii]=0.;
+    screen1_[ii]=0.;
+    screen2_[ii]=0.;
+    screen3_[ii]=0.;
+  }
 }
 
 Screen::Screen(const Screen& o) :
@@ -60,6 +66,12 @@ Screen::Screen(const Screen& o) :
     ey_[i]=o.ey_[i];
     ez_[i]=o.ez_[i];
   }
+  for (int ii=0;ii<4;ii++) {
+    fourvel_[ii]=o.fourvel_[ii];
+    screen1_[ii]=o.screen1_[ii];
+    screen2_[ii]=o.screen2_[ii];
+    screen3_[ii]=o.screen3_[ii];
+  }
 }
 Screen * Screen::clone() const { return new Screen(*this); }
 
@@ -69,7 +81,7 @@ std::ostream& Screen::print( std::ostream& o) const {
   o << "distance="    << distance_ << ", " ;
   o << "paln="        << euler_[0] << ", " ;
   o << "inclination=" << euler_[1] << ", " ;
-  o << "argument="    << euler_[2] ;
+  o << "argument="    << euler_[2] << "." << endl;
   return o;
 }
 
@@ -227,6 +239,26 @@ void Screen::setObserverPos(const double coord[4]) {
   computeBaseVectors();
 }
 
+void Screen::setFourVel(const double coord[4]) {
+  for (int ii=0;ii<4;ii++)
+    fourvel_[ii]=coord[ii];
+}
+
+void Screen::setScreen1(const double coord[4]) {
+  for (int ii=0;ii<4;ii++)
+    screen1_[ii]=coord[ii];
+}
+
+void Screen::setScreen2(const double coord[4]) {
+  for (int ii=0;ii<4;ii++)
+    screen2_[ii]=coord[ii];
+}
+
+void Screen::setScreen3(const double coord[4]) {
+  for (int ii=0;ii<4;ii++)
+    screen3_[ii]=coord[ii];
+}
+
 void Screen::getObserverPos(double coord[]) const
 {
   double r0     = distance_ / gg_ -> unitLength();
@@ -261,6 +293,10 @@ void Screen::getObserverPos(double coord[]) const
   }
 }
 
+void Screen::getFourvel(double fourvel[]) const{
+  for (int ii=0;ii<4;ii++) fourvel[ii]=fourvel_[ii];
+}
+
 /* SPECTROMETER */
 
 void Screen::setSpectrometer(SmartPointer<Spectrometer> spr) { spectro_=spr; }
@@ -282,7 +318,7 @@ void Screen::getRayCoord(double alpha, double delta,
 
 {
   alpha+=alpha0_; delta+=delta0_; // Screen orientation
-
+  
   int i; // dimension : 0, 1, 2
   double pos[4];
 # if GYOTO_DEBUG_ENABLED
@@ -302,11 +338,8 @@ void Screen::getRayCoord(double alpha, double delta,
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
 
   /*
-    NB: spherical_angles = spherical angles associated to the
-    cartesian frame centered on the observer's screen,
-    x=East,y=North,z=line-of-sight ; number 1 is from z-axis to
-    vector, number 2 from x axis to projection on x-y plane. See notes
-    for details.
+    NB: spherical_angles = spherical angles associated with the
+    orthonormal 3-frame of the observer's local rest space
   */
   
   /*
@@ -335,64 +368,145 @@ void Screen::getRayCoord(double alpha, double delta,
   spherical_angle_1=s1tmp;
   spherical_angle_2=s2tmp;
 
-  // 3-velocity in observer's frame
+  /* 
+     Tangent vector of incident photon in observer's local frame
+     vel is thus orthogonal to observer's 4-velocity
+     vel = vel[0]*screen1_+vel[1]*screen2_+vel[2]*screen3_
+     where screen1,2,3_ is a triad in observer's rest space
+  */
 
   //NB: following minus signs because the photon doesn't leave the screen, but
   //is heading towards it!
   double vel[3]={-sin(spherical_angle_1)*cos(spherical_angle_2),
 		 -sin(spherical_angle_1)*sin(spherical_angle_2),
 		 -cos(spherical_angle_1)};
-
+  
   // 4-vector tangent to photon geodesic
+  
+  if (fourvel_[0]==0.){
+    /* 
+       ---> Observer local frame not given in XML <---
+       Assume observer static at infinity ("standard Gyoto")
+       Treatment depending on coordinate system
+    */
+    switch (gg_ -> getCoordKind()) {
+    case GYOTO_COORDKIND_CARTESIAN:
+      {
+	double rr=coord[1]*coord[1]+
+	  coord[2]*coord[2]+
+	  coord[3]*coord[3],
+	  rinf=20.; // this rinf is just a very crude test
+               	    // I take rinf=10*rhor in Sch metric
+	if (rr<rinf)
+	  throwError("In Screen::getRayCoord: "
+		     "observer is not at spatial infinity "
+		     "and should be");
 
-  switch (gg_ -> getCoordKind()) {
-  case GYOTO_COORDKIND_CARTESIAN:
-    {
-      //NB: the following normalization stuff is probably useless
-      //3 velocity normalization (see manual for details)
-      pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
-      double gxx=gg_->gmunu(pos,1,1), 
-	gyy=gg_->gmunu(pos,2,2), gzz=gg_->gmunu(pos,3,3), 
-	gxy=gg_->gmunu(pos,1,2), gxz=gg_->gmunu(pos,1,3), 
-	gyz=gg_->gmunu(pos,2,3);
-
-      //Transforming to KS:
-      for (i=0;i<3;++i) {
-	coord[5]+=vel[i]*ex_[i];//xdot0
-	coord[6]+=vel[i]*ey_[i];//ydot0
-	coord[7]+=vel[i]*ez_[i];//zdot0
+	//Transforming to KS:
+	for (i=0;i<3;++i) {
+	  coord[5]+=vel[i]*ex_[i];//xdot0
+	  coord[6]+=vel[i]*ey_[i];//ydot0
+	  coord[7]+=vel[i]*ez_[i];//zdot0
+	}
+	
       }
+      break;
+    case GYOTO_COORDKIND_SPHERICAL:
+      {
+	if (coord[2]==0. || coord[2]==M_PI)
+	  throwError("Please move Screen away from z-axis");
 
-      double vx=coord[5], vy=coord[6], vz=coord[7];
-      double denom=gxx*vx*vx+gyy*vy*vy
-	+gzz*vz*vz+2.*gxy*vx*vy+2.*gxz*vx*vz+2.*gyz*vy*vz;
-      if (denom < 0.) throwError("In Screen.C: impossible to normalize in KS case!");
-      double nuobs=1.;
-      double lambda=nuobs*pow(denom, -0.5);
-      coord[5]*=lambda;coord[6]*=lambda;coord[7]*=lambda;
+	double rr=coord[1],
+	  rinf=20.; // this rinf is just a very crude test
+               	    // I take rinf=10*rhor in Sch metric
+	if (rr<rinf)
+	  throwError("In Screen::getRayCoord: "
+		     "observer is not at spatial infinity "
+		     "and should be");
+
+	pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
+	double grr=gg_->gmunu(pos,1,1), 
+	  gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
+	coord[5]=-vel[2]/sqrt(grr);
+	double sp=sin(euler_[0]);
+	double cp=cos(euler_[0]);
+	coord[6]=(-sp*vel[0]+cp*vel[1])/sqrt(gthth);
+	coord[7]=( cp*vel[0]+sp*vel[1])/sqrt(gphph);
+      }
+      break;
+    default:
+      throwError("Incompatible coordinate kind in Screen::getRayCoord()");
+      break;
     }
-    break;
-  case GYOTO_COORDKIND_SPHERICAL:
-    {
+
+    // 0-component of photon tangent 4-vector found by normalizing
+    gg_ -> nullifyCoord(coord);
+    
+  }else{
+    /* 
+       ---> Observer local frame given in XML <---
+       Express photon tangent 4-vector in the observer basis
+       Treatment is coordinate independent 
+       (except for z-axis check right below)
+    */
+
+    if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
       if (coord[2]==0. || coord[2]==M_PI)
 	throwError("Please move Screen away from z-axis");
-      pos[0]=coord[0];pos[1]=coord[1];pos[2]=coord[2];pos[3]=coord[3];
-      double grr=gg_->gmunu(pos,1,1), 
-	gthth=gg_->gmunu(pos,2,2), gphph=gg_->gmunu(pos,3,3);
-      coord[5]=-vel[2]/sqrt(grr);
-      double sp=sin(euler_[0]);
-      double cp=cos(euler_[0]);
-      coord[6]=(-sp*vel[0]+cp*vel[1])/sqrt(gthth);
-      coord[7]=( cp*vel[0]+sp*vel[1])/sqrt(gphph);
     }
-    break;
-  default:
-    throwError("Incompatible coordinate kind in Screen::getRayCoord()");
-    break;
+    
+    //Check orthonormal basis
+    double normtol=1e-10;
+    if (fabs(gg_->ScalarProd(coord,fourvel_,fourvel_)+1.)>normtol ||
+	fabs(gg_->ScalarProd(coord,screen1_,screen1_)-1.)>normtol ||
+	fabs(gg_->ScalarProd(coord,screen2_,screen2_)-1.)>normtol ||
+	fabs(gg_->ScalarProd(coord,screen3_,screen3_)-1.)>normtol){
+      throwError("In Screen:getRayCoord: observer's local"
+		 " basis is not properly normalized");
+    }
+    
+    if (fabs(gg_->ScalarProd(coord,fourvel_,screen1_))>normtol ||
+	fabs(gg_->ScalarProd(coord,fourvel_,screen2_))>normtol ||
+	fabs(gg_->ScalarProd(coord,fourvel_,screen3_))>normtol ||
+	fabs(gg_->ScalarProd(coord,screen1_,screen2_))>normtol ||
+	fabs(gg_->ScalarProd(coord,screen1_,screen3_))>normtol ||
+	fabs(gg_->ScalarProd(coord,screen2_,screen3_))>normtol)
+      throwError("In Screen:getRayCoord: observer's local"
+		 " basis is not orthogonal");
+    
+    /* Photon tagent 4-vector l defined by: l = p + fourvel_
+       where p gives the direction of the photon
+       in the observer's rest space (orthogonal to fourvel).
+       Here we choose the particular tangent 4-vector l
+       that satisfies l.fourvel_=-1
+       Then l = fourvel_ + (orthogonal proj of l onto rest space)
+       = fourvel_ + p
+       and p = vel[0]*screen1_ + vel[1]*screen2_ + vel[2]*screen3_ 
+       with p.p = 1, thus l.l = 0 as it should
+    */
+    coord[4]=vel[0]*screen1_[0]
+      +vel[1]*screen2_[0]
+      +vel[2]*screen3_[0]
+      +fourvel_[0];
+    coord[5]=vel[0]*screen1_[1]
+      +vel[1]*screen2_[1]
+      +vel[2]*screen3_[1]
+      +fourvel_[1];
+    coord[6]=vel[0]*screen1_[2]
+      +vel[1]*screen2_[2]
+      +vel[2]*screen3_[2]
+      +fourvel_[2];
+    coord[7]=vel[0]*screen1_[3]
+      +vel[1]*screen2_[3]
+      +vel[2]*screen3_[3]
+      +fourvel_[3];
+    if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
+      throwError("In Screen::getRayCoord: "
+		 " tangent 4-vector to photon not properly normalized");
+    }
+    
   }
-
-  // 0-component of 4-vector found by normalizing
-  gg_ -> nullifyCoord(coord);
+  
 }
 
 void Screen::computeBaseVectors() {
@@ -644,6 +758,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   double alpha0; int alpha0_found=0; 
   double delta0; int delta0_found=0;
 
+  int fourvel_found=0, screen1_found=0,
+    screen2_found=0, screen3_found=0;
+
   while (fmp->getNextParameter(&name, &content, &unit)) {
     tc = const_cast<char*>(content.c_str());
 #   ifdef GYOTO_DEBUG_ENABLED
@@ -656,6 +773,26 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     if      (name=="Time")     {tobs_tmp = atof(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
                                   scr -> setObserverPos (pos); }
+    else if (name=="FourVelocity") {
+      fourvel_found=1;
+      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      scr -> setFourVel (pos); 
+    }
+    else if (name=="ScreenVector1") {
+      screen1_found=1;
+      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      scr -> setScreen1 (pos); 
+    }
+    else if (name=="ScreenVector2") {
+      screen2_found=1;
+      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      scr -> setScreen2 (pos); 
+    }
+    else if (name=="ScreenVector3") {
+      screen3_found=1;
+      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      scr -> setScreen3 (pos); 
+    }
     else if (name=="Distance")    
       {
 	scr -> setDistance    ( atof(tc), unit );
@@ -686,6 +823,14 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   if (alpha0_found) scr -> setAlpha0(alpha0);
 
   if (delta0_found) scr -> setDelta0(delta0);
+
+  int sum_found=fourvel_found+screen1_found
+    +screen2_found+screen3_found;
+
+  if (sum_found>0 && sum_found<4)
+    throwError("In Screen::subContractor: either all four, or no "
+	       "basis vectors should be given");
+
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(scr->getDmax());

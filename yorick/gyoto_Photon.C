@@ -440,16 +440,16 @@ extern "C" {
     gyoto_Photon  *phobj =(gyoto_Photon*) yget_obj(n-1, &gyoto_Photon_obj);
     SmartPointer<Metric::Generic> *gg = yget_Metric(n-2);
     SmartPointer<Astrobj::Generic> *astrobj = yget_Astrobj(n-3);
+    SmartPointer<Screen> *screen = yget_Screen(n-4);
 
-    if (n==4) {
+    if (n==5) {
       long ntot=1;
       double * coord = ygeta_d(n-4, &ntot, NULL);
       if (ntot < 4) y_error("coord must have at least 4 elements");
       try {
-	(phobj->photon)->setInitialCondition(*gg, *astrobj, coord);
+	(phobj->photon)->setInitialCondition(*gg, *astrobj, *screen, coord);
       } YGYOTO_STD_CATCH ;
     } else if (n==6) {
-      SmartPointer<Screen> *screen = yget_Screen(n-4);
       double d_alpha = ygets_d(n-5);
       double d_delta = ygets_d(n-6);
       try {

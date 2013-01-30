@@ -535,9 +535,11 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[imax_];
       if (x2dot) x2dot[di] = x2dot_[imax_];
       if (x3dot) x3dot[di] = x3dot_[imax_];
-      double pos[4]={0.,0.,x2[di],x3[di]};
-      checkPhiTheta(pos);
-      x2[di]=pos[2];x3[di]=pos[3];
+      if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+	double pos[4]={0.,0.,x2[di],x3[di]};
+	checkPhiTheta(pos);
+	x2[di]=pos[2];x3[di]=pos[3];
+      }
       continue;
     } else if (date > x0_[imax_]) {
       curl=imax_;    // current imax_
@@ -578,9 +580,11 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[curl];
       if (x2dot) x2dot[di] = x2dot_[curl];
       if (x3dot) x3dot[di] = x3dot_[curl];      
-      double pos[4]={0.,0.,x2[di],x3[di]};
-      checkPhiTheta(pos);
-      x2[di]=pos[2];x3[di]=pos[3];
+      if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+	double pos[4]={0.,0.,x2[di],x3[di]};
+	checkPhiTheta(pos);
+	x2[di]=pos[2];x3[di]=pos[3];
+      }
       continue;
     }
 
