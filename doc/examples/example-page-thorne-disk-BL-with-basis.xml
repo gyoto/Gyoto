@@ -18,18 +18,18 @@
     <Position>
       1000. 100. 0.785 0.
     </Position>
-    <FourVel>
+    <FourVelocity>
       1.010152544552210596151553545496426522731781005859375 0. 0. 0.
-    </FourVel>
-    <screen1>
+    </FourVelocity>
+    <ScreenVector1>
       0. 0. 0. -0.0141477698691514323925400020698361913673579692840576171875
-    </screen1>
-    <screen2>
+    </ScreenVector1>
+    <ScreenVector2>
       0. 0. -0.01000000000000000020816681711721685132943093776702880859375 0.
-    </screen2>
-    <screen3>
+    </ScreenVector2>
+    <ScreenVector3>
       0. -0.98994949366116646860547234609839506447315216064453125 0. 0.
-    </screen3>
+    </ScreenVector3>
     <Time unit="geometrical_time">
       1000.
     </Time>
