@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <Metric kind = "KerrBL">
+    <Spin>
+      0.
+    </Spin>
+  </Metric>
+  <Screen>
+    <!-- 
+	 Screen is at 4-position given in field
+	 Position. The observer is defined by its
+	 4-velocity u given in field FourVel and the 
+	 3 orthonormal vectors describing the screen
+	 (screen's surface is screen1,screen2 and screen normal is screen3).
+	 Mind that (u,screen1,screen2,screen3) must be an orthonormal basis
+	 of spacetime.
+    -->
+    <Position>
+      1000. 100. 0.785 0.
+    </Position>
+    <FourVel>
+      1.010152544552210596151553545496426522731781005859375 0. 0. 0.
+    </FourVel>
+    <screen1>
+      0. 0. 0. -0.0141477698691514323925400020698361913673579692840576171875
+    </screen1>
+    <screen2>
+      0. 0. -0.01000000000000000020816681711721685132943093776702880859375 0.
+    </screen2>
+    <screen3>
+      0. -0.98994949366116646860547234609839506447315216064453125 0. 0.
+    </screen3>
+    <Time unit="geometrical_time">
+      1000.
+    </Time>
+    <FieldOfView>
+      1.570796327
+    </FieldOfView>
+    <!-- Use non-0 value for alpha0 to rotate the screen -->
+    <Alpha0>
+      0.
+    </Alpha0>
+    <Resolution>
+      201
+    </Resolution>
+  </Screen>
+  <Astrobj kind = "PageThorneDisk"/>
+  <MinimumTime> -1000. </MinimumTime>
+</Scenery>
