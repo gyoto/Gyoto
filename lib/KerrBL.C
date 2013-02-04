@@ -443,6 +443,8 @@ int KerrBL::myrk4(Worldline * line, const double coordin[8],
   
   /*Switch principal momenta -> BL  */
   MakeCoord(res_mom,cst,res);
+
+  //  line -> checkPhiTheta(res);
  
   return 0;
 }
@@ -592,14 +594,18 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
     rtol=factrtol*(1.+sqrt(1.-a*a)), rlimitol=10.;
 
   if (coor[1] < rtol) cstol = cstol_hor;
-        // for tests of cst of motion conservation; don't ask too much
-        // if near horizon...
+  // for tests of cst of motion conservation; don't ask too much
+  // if near horizon...
   else cstol = cstol_gen;
 
-  if (fabs(fmod(coor[2]+M_PI/2, M_PI)-M_PI/2) < GYOTO_MIN_THETA) {
+  //NB: following test ok only if theta is 0-pi
+  //    coz -pi/2[pi]=-pi/2 ...
+  /*if (fabs(fmod(coor[2]+M_PI/2, M_PI)-M_PI/2) < GYOTO_MIN_THETA) {
+    cout << "in kerr th= " << coor[2] << endl;
     GYOTO_WARNING << "Too close to Z axis: stopping integration"<< endl;
     return 1;
-  }
+    }*/
+  //Fred: Test removed Feb 2013, seems not necessary
 
   if (diff(coor,cst,dcoor)) return 1 ;
 
@@ -758,7 +764,10 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
     
     
   } // while loop end
-  
+
+  //line -> checkPhiTheta(coordout1);
+  //for some reason the above line leads to infinite iteration with fixed star
+
   return 0;
 }
 

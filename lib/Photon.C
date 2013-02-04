@@ -465,22 +465,22 @@ double Photon::findMin(Functor::Double_constDoubleArray* object,
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
-  double p1[4] = {t1}, p2[4] = {t2};
-  getCoord(p1, 1, p1+1, p1+2, p1+3);
-  getCoord(p2, 1, p2+1, p2+2, p2+3);
-  double curval = DBL_MAX, pcur[4], val1, val2;
+  double p1[8] = {t1}, p2[8] = {t2};
+  getCoord(p1, 1, p1+1, p1+2, p1+3, p1+4, p1+5, p1+6, p1+7);
+  getCoord(p2, 1, p2+1, p2+2, p2+3, p2+4, p2+5, p2+6, p2+7);
+  double curval = DBL_MAX, pcur[8], val1, val2;
 
   pcur[0]=t1;
-  getCoord(pcur, 1, pcur+1, pcur+2, pcur+3);
+  getCoord(pcur, 1, pcur+1, pcur+2, pcur+3, pcur+4, pcur+5, pcur+6, pcur+7);
   val1=(*object)(pcur);
 
   pcur[0]=t2;
-  getCoord(pcur, 1, pcur+1, pcur+2, pcur+3);
+  getCoord(pcur, 1, pcur+1, pcur+2, pcur+3, pcur+4, pcur+5, pcur+6, pcur+7);
   val2=(*object)(pcur);
 
   while ( (fabs(t2-t1)>GYOTO_T_TOL) && (curval>threshold) ) {
     pcur[0] = 0.5*(t1+t2);
-    getCoord(pcur, 1, pcur+1, pcur+2, pcur+3);
+    getCoord(pcur, 1, pcur+1, pcur+2, pcur+3, pcur+4, pcur+5, pcur+6, pcur+7);
     curval=(*object)(pcur);
     if (val1<val2) {
       t2=pcur[0];
@@ -504,10 +504,10 @@ double Photon::findMin(Functor::Double_constDoubleArray* object,
 void Photon::findValue(Functor::Double_constDoubleArray* object,
 		       double value,
 		       double tinside, double &toutside) {
-  double pcur[4];
+  double pcur[8];
   while (fabs(toutside-tinside) > GYOTO_T_TOL) {
     pcur[0] = 0.5*(tinside+toutside);
-    getCoord(pcur, 1, pcur+1, pcur+2, pcur+3);
+    getCoord(pcur, 1, pcur+1, pcur+2, pcur+3, pcur+4, pcur+5, pcur+6, pcur+7);
     if ( (*object)(pcur) < value ) tinside = pcur[0];
     else toutside = pcur[0];
   }
