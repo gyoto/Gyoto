@@ -316,7 +316,7 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
       angles a and b (see Fig. in user guide)
      */
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
-    yscr = double(j-1)*2.*M_PI/double(npix_);
+    yscr = double(j-1)*2.*M_PI/double(npix_-1);
     getRayCoord(xscr, yscr, coord);
   }else{
     /*
