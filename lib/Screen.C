@@ -36,6 +36,7 @@ Screen::Screen() :
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
   tobs_(0.), fov_(M_PI*0.1), npix_(1001),
   alpha0_(0.), delta0_(0.),
+  anglekind_(0),
   distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
@@ -55,6 +56,7 @@ Screen::Screen(const Screen& o) :
   SmartPointee(o),
   tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), distance_(o.distance_),
   alpha0_(o.alpha0_), delta0_(o.delta0_),
+  anglekind_(o.anglekind_),
   dmax_(o.dmax_), gg_(NULL), spectro_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
@@ -308,9 +310,23 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
 # endif
-  yscr=delta*(double(j)-double(npix_+1)/2.);
-  xscr=delta*(double(i)-double(npix_+1)/2.);
-  getRayCoord(-xscr, yscr, coord);
+  if (anglekind_){
+    /*
+      GYOTO screen labelled by spherical
+      angles a and b (see Fig. in user guide)
+     */
+    xscr = double(i-1)*fov_/(2.*double(npix_-1));
+    yscr = double(j-1)*2.*M_PI/double(npix_);
+    getRayCoord(xscr, yscr, coord);
+  }else{
+    /*
+      GYOTO screen labelled by equatorial
+      angles alpha and delta (see Fig. in user guide)
+     */
+    yscr=delta*(double(j)-double(npix_+1)/2.);
+    xscr=delta*(double(i)-double(npix_+1)/2.);
+    getRayCoord(-xscr, yscr, coord); // -xscr to have East on the left
+  }
 }
 
 void Screen::getRayCoord(double alpha, double delta,
@@ -337,36 +353,57 @@ void Screen::getRayCoord(double alpha, double delta,
 
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
 
-  /*
-    NB: spherical_angles = spherical angles associated with the
-    orthonormal 3-frame of the observer's local rest space
-  */
+  double spherical_angle_a,
+    spherical_angle_b;
   
-  /*
-    NBB: for spherical_angle_1, the relation comes from the spherical
-    law of cosines of spherical trigonometry, the arcs
-    spherical_angle_1, alpha and delta forming a spherical triangle,
-    with alpha othogonal to delta.
-    NBBB: for spherical_angle_2, the relation also comes from the spherical
-    law of cosine. 
-    --> Following transformations are OK even for non-small alpha, delta
-  */
+  if (anglekind_){
+    /*
+      GYOTO screen labelled by spherical
+      angles a and b (see Fig. in user guide)
+     */
 
-  double spherical_angle_1 = acos(cos(alpha)*cos(delta));
-  double spherical_angle_2 = (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
-  
-  // Move these two angles to [0,pi], [0,2pi]
-  double s1tmp=spherical_angle_1, s2tmp=spherical_angle_2;
-  while (s1tmp>M_PI) s1tmp-=2.*M_PI;
-  while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
-  if (s1tmp<0.) {
-    s1tmp=-s1tmp;//then s1 in [0,pi]
-    s2tmp+=M_PI;//thus, same direction
+    spherical_angle_a = alpha;
+    spherical_angle_b = delta;
+  }else{
+    /*
+      GYOTO screen labelled by equatorial
+      angles alpha and delta (see Fig. in user guide)
+      Must compute spherical angles a and b
+      from these.
+     */
+    
+    /*
+      NB: spherical_angles = spherical angles associated with the
+      orthonormal 3-frame of the observer's local rest space
+    */
+    
+    /*
+      NBB: for spherical_angle_a, the relation comes from the spherical
+      law of cosines of spherical trigonometry, the arcs
+      spherical_angle_a, alpha and delta forming a spherical triangle,
+      with alpha othogonal to delta.
+      NBBB: for spherical_angle_b, the relation also comes from the spherical
+      law of cosine. 
+      --> Following transformations are OK even for non-small alpha, delta
+    */
+    
+    spherical_angle_a = acos(cos(alpha)*cos(delta));
+    spherical_angle_b = 
+      (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+    
+    // Move these two angles to [0,pi], [0,2pi]
+    double s1tmp=spherical_angle_a, s2tmp=spherical_angle_b;
+    while (s1tmp>M_PI) s1tmp-=2.*M_PI;
+    while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
+    if (s1tmp<0.) {
+      s1tmp=-s1tmp;//then s1 in [0,pi]
+      s2tmp+=M_PI;//thus, same direction
+    }
+    while (s2tmp>2.*M_PI) s2tmp-=2.*M_PI;
+    while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi]
+    spherical_angle_a=s1tmp;
+    spherical_angle_b=s2tmp;
   }
-  while (s2tmp>2.*M_PI) s2tmp-=2.*M_PI;
-  while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi]
-  spherical_angle_1=s1tmp;
-  spherical_angle_2=s2tmp;
 
   /* 
      Tangent vector of incident photon in observer's local frame
@@ -377,9 +414,9 @@ void Screen::getRayCoord(double alpha, double delta,
 
   //NB: following minus signs because the photon doesn't leave the screen, but
   //is heading towards it!
-  double vel[3]={-sin(spherical_angle_1)*cos(spherical_angle_2),
-		 -sin(spherical_angle_1)*sin(spherical_angle_2),
-		 -cos(spherical_angle_1)};
+  double vel[3]={-sin(spherical_angle_a)*cos(spherical_angle_b),
+		 -sin(spherical_angle_a)*sin(spherical_angle_b),
+		 -cos(spherical_angle_a)};
   
   // 4-vector tangent to photon geodesic
   
@@ -657,6 +694,8 @@ void Screen::setFieldOfView(double fov) { fov_ = fov; }
 void Screen::setAlpha0(double alpha) { alpha0_ = alpha; }
 void Screen::setDelta0(double delta) { delta0_ = delta; }
 
+void Screen::setAnglekind(int kind) { anglekind_ = kind; }
+
 size_t Screen::getResolution() { return npix_; }
 void Screen::setResolution(size_t n) { npix_ = n; }
 
@@ -743,6 +782,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
     spectro_ -> fillElement(child) ;
     delete child; child = NULL;
   }
+  fmp -> setParameter ( anglekind_? "SphericalAngles" : "EquatorialAngles");
 }
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
@@ -814,6 +854,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="Delta0"){
       delta0 = atof(tc); delta0_found=1;
     }
+    else if (name=="SphericalAngles")  scr -> setAnglekind(1);
+    else if (name=="EquatorialAngles") scr -> setAnglekind(0);
   }
 
   if (tobs_found) scr -> setTime ( tobs_tmp, tunit );

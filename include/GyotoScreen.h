@@ -154,6 +154,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 
   double distance_; ///< Distance to the observer in m
   double dmax_; ///< Maximum distance from which the photons are launched (geometrical units) 
+
+  int anglekind_; ///< Screen angles kind (0: equatorial, 1: spherical)
   
   /**
    * The angles are position angle of the line of nodes (North of
@@ -273,6 +275,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setFieldOfView(double, const std::string &unit);
   void setAlpha0(double);
   void setDelta0(double);
+  void setAnglekind(int);
   size_t getResolution();
   void setResolution(size_t);
 
