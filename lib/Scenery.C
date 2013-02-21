@@ -263,8 +263,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_.setSpectrometer(spr);
   ph_.setTmin(tmin_);
   double coord[8];
-  screen_ -> getRayCoord(imin,jmin, coord);
-  ph_ . setInitialCondition(gg_, obj_, screen_, coord);
+  double doppler = screen_ -> getRayCoord(imin, jmin, coord);
+  ph_ . setInitialCondition(gg_, obj_, coord, doppler);
   // delta is reset in operator()
 
   if (data) setPropertyConverters(data);
@@ -329,6 +329,7 @@ void Scenery::operator() (
 			  Photon *ph
 			  ) {
   double coord[8];
+  double doppler=1.;
   SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
   SmartPointer<Metric::Generic> gg = NULL;
@@ -356,12 +357,13 @@ void Scenery::operator() (
 # endif
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
 
+  doppler = screen_ -> getRayCoord(i,j, coord);
   if (impactcoords) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
-      ph -> setInitialCondition(gg, obj, screen_, impactcoords+8);
+      ph -> setInitialCondition(gg, obj, impactcoords+8, doppler);
       ph -> resetTransmission();
       obj_ -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
@@ -369,8 +371,7 @@ void Scenery::operator() (
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
-    screen_ -> getRayCoord(i,j, coord);
-    ph -> setInitialCondition(gg, obj, screen_, coord);
+    ph -> setInitialCondition(gg, obj, coord, doppler);
     ph -> hit(data);
   }
 }

@@ -304,7 +304,7 @@ void Screen::getFourvel(double fourvel[]) const{
 void Screen::setSpectrometer(SmartPointer<Spectrometer> spr) { spectro_=spr; }
 SmartPointer<Spectrometer> Screen::getSpectrometer() const { return spectro_; }
 
-void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
+double Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   const double delta= fov_/double(npix_);
   double xscr, yscr;
 # if GYOTO_DEBUG_ENABLED
@@ -317,7 +317,7 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
      */
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
     yscr = double(j-1)*2.*M_PI/double(npix_-1);
-    getRayCoord(xscr, yscr, coord);
+    return getRayCoord(xscr, yscr, coord);
   }else{
     /*
       GYOTO screen labelled by equatorial
@@ -325,14 +325,15 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
      */
     yscr=delta*(double(j)-double(npix_+1)/2.);
     xscr=delta*(double(i)-double(npix_+1)/2.);
-    getRayCoord(-xscr, yscr, coord); // -xscr to have East on the left
+    return getRayCoord(-xscr, yscr, coord); // -xscr to have East on the left
   }
 }
 
-void Screen::getRayCoord(double alpha, double delta,
+double Screen::getRayCoord(double alpha, double delta,
 		      double coord[]) const
 
 {
+  double doppler=1.;
   alpha+=alpha0_; delta+=delta0_; // Screen orientation
   
   int i; // dimension : 0, 1, 2
@@ -478,7 +479,7 @@ void Screen::getRayCoord(double alpha, double delta,
 
     // 0-component of photon tangent 4-vector found by normalizing
     gg_ -> nullifyCoord(coord);
-    
+
   }else{
     /* 
        ---> Observer local frame given in XML <---
@@ -541,8 +542,12 @@ void Screen::getRayCoord(double alpha, double delta,
       throwError("In Screen::getRayCoord: "
 		 " tangent 4-vector to photon not properly normalized");
     }
-    
+
+    doppler = - gg_->ScalarProd(coord,coord+4,fourvel_);
+
   }
+
+  return doppler;
   
 }
 

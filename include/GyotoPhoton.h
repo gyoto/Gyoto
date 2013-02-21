@@ -56,6 +56,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
  protected:
   SmartPointer<Gyoto::Astrobj::Generic> object_; ///< The astronomical target
   double freq_obs_; ///< Photon's frequency in observer's frame
+  double doppler_obs_m1_; ///< Observer's Doppler factor (inverse)
   double transmission_freqobs_; ///< integrated optical transmission
 
   SmartPointer<Spectrometer> spectro_;
@@ -79,8 +80,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   ///< Used by Photon::Refined::Refined
  public:
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
-	 SmartPointer<Screen> screen, 
-	 double* coord) ;
+	 double* coord, double doppler=1.) ;
   ///< same as Photon() followed by setInitialCondition()
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
 	 SmartPointer<Screen> screen, double d_alpha, double d_delta);
@@ -98,6 +98,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   void setSpectrometer(SmartPointer<Spectrometer> spr);
   SmartPointer<Spectrometer> getSpectrometer() const ;
   double getFreqObs() const;
+  double getDopplerObsm1() const;
 
 
   // Mutators / assignment
@@ -117,8 +118,10 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        i.e. the 4-position and the 4-velocity of the Photon at
    *        the receiving end;
    *
+   * \param doppler : double, Doppler factor at observer's end
+   *
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, SmartPointer<Screen> screen, const double coord[8]) ;
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, const double coord[8], double doppler=1) ;
   ///<Set or re-set the initial condition prior to integration.
 
   /**
@@ -128,7 +131,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *
    * \param obj      Gyoto::SmartPointer to the target Gyoto::Astrobj;
    *
-   * \param t0       Arrival date at observer's position
+   * \param screen   Observer's screen
    *
    * \param d_alpha  Direction of arrival (RA offset) in radians
    *
