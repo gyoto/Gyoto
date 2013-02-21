@@ -46,6 +46,7 @@ Teller::ListenerItem::ListenerItem(Listener*hear, ListenerItem * nxt)
 Teller::ListenerItem::~ListenerItem() {if (next) delete next;}
 
 void Teller::ListenerItem::tell(Teller * teller) {
+  GYOTO_DEBUG<<teller<<" telling to " <<listener<< std::endl;
   listener->tell(teller);
   if (next) next->tell(teller);
 }
@@ -68,9 +69,13 @@ Teller::Teller() : listeners_(0) {}
 Teller::Teller(const Teller &o) : listeners_(0) {}
 Teller::~Teller() {if (listeners_) delete listeners_;}
 void Teller::hook(Listener * hear)
-{listeners_ = new ListenerItem(hear, listeners_);}
+{
+  GYOTO_DEBUG <<"new hook: "<< hear <<" for Teller " << this << std::endl;
+  listeners_ = new ListenerItem(hear, listeners_);
+}
 
 void Teller::unhook(Listener * hear) {
+  GYOTO_DEBUG <<"removing hook: "<< hear <<" from Teller " << this << std::endl;
   ListenerItem * item = listeners_;
   ListenerItem ** parent = &listeners_;
   while (item) {

@@ -23,6 +23,7 @@
 aa=0.;
 
 gg=gyoto_KerrBL(spin=aa);
+gg2=gg(clone=);
 
 write, format="%s", "Creating Photon: ";
 ph = gyoto_Photon();
@@ -106,6 +107,7 @@ screen=gyoto_Screen(metric=gg, observerpos=[1000., 100., 0.05, 0.]);
 write, format="%s\n","done.\n";
 write, format="%s", "Checking gyoto_Metric_setSpin: ";
 gg,spin=0.;
+
 write, format="%s\n","done.\n";
 write, format="%s", "Checking gyoto_Star(): ";
 orbit=gyoto_Star(metric=gg, radius=2,
@@ -153,7 +155,27 @@ for (i=1; i<=N; i++) {
     hitmap(i,j)=gyoto_Photon_hit(ph, 0.);
   }
  }
+ph2=[];
+
+
+// Check that changing spin can be done on attached metric
+ph1, metric=ph1(metric=);
+ph1, xfill=0.;
+txyz=ph1(get_txyz=);
+  plg, txyz(2,), txyz(1,);
+ph2=ph1(clone=);
+gg2=gg(clone=);
+write, format="%s", "Mutating metric spin... ";
+gg, spin=0.5;
+write, format="%s\n", "done.";
+gg2, spin=0.5;
+ph2, metric=gg2;
+
+
 ph1=ph2=[];
+
+// CLONES AND HOOKS
+
 "_________________________";
 
 ph=[];
@@ -162,5 +184,7 @@ orbit=[];
 screen=[];
 
 gg=[];
+
+
 
 write, format= "%s\n"," ALL TESTS PASSED";

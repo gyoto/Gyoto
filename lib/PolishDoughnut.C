@@ -201,9 +201,8 @@ void   PolishDoughnut::setSpectralOversampling(size_t val)
 { spectral_oversampling_ = val; }
 
 PolishDoughnut::~PolishDoughnut() {
- if (debug()) cout << "PolishDoughnut Destruction" << endl;
-
-
+ GYOTO_DEBUG << "PolishDoughnut Destruction" << endl;
+ if (gg_) gg_ -> unhook(this);
 }
 
 Gyoto::SmartPointer<Gyoto::Metric::Generic> PolishDoughnut::getMetric() const {

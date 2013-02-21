@@ -133,6 +133,7 @@ Worldline::~Worldline(){
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
+  if (metric_) metric_ -> unhook(this);
   delete[] x0_;
   delete[] x1_;
   delete[] x2_;
@@ -244,7 +245,9 @@ void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
 }
 
 void Worldline::tell(Gyoto::Hook::Teller* msg) {
-  if (msg != metric_) throwError("Worldline::tell(): wrong Teller");
+  if (msg != metric_) {
+    throwError("Worldline::tell(): wrong Teller");
+  }
   reInit();
 }
 
