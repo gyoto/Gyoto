@@ -79,7 +79,6 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   ///< Used by Photon::Refined::Refined
  public:
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
-	 SmartPointer<Screen> screen, 
 	 double* coord) ;
   ///< same as Photon() followed by setInitialCondition()
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
@@ -118,7 +117,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    *        the receiving end;
    *
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, SmartPointer<Screen> screen, const double coord[8]) ;
+  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, const double coord[8]) ;
   ///<Set or re-set the initial condition prior to integration.
 
   /**

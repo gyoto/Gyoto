@@ -84,11 +84,10 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
-	       SmartPointer<Screen> screen,
 	       double* coord):
   Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
 {
-  setInitialCondition(met, obj, screen, coord);
+  setInitialCondition(met, obj, coord);
 }
 
 Photon::Photon(SmartPointer<Metric::Generic> met, 
@@ -166,23 +165,10 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 
 void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 SmartPointer<Astrobj::Generic> obj,
-				 SmartPointer<Screen> screen,
 				 const double coord[8])
 {
   if (!met) met = metric_;
-  double ObsVel[4]={0.,0.,0.,0.};
-  screen->getFourvel(ObsVel);
-  if (ObsVel[0]==0.){
-    // No observer frame given in XML, assume static observer
-    double gtt0=met->gmunu(coord,0,0);
-    ObsVel[0]=pow(-gtt0, -0.5); //static
-    double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
-    freq_obs_ = -sp_rec;
-  }else{
-    // Observer frame given in XML, 4-velocity specified
-    double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
-    freq_obs_ = -sp_rec;
-  }
+  freq_obs_=1.; // Temporary, freq_obs_ is a useless quantity
   Worldline::setInitialCondition(met, coord, -1);
   if (obj) object_=obj;
 }
