@@ -43,7 +43,7 @@ using namespace Gyoto;
 Photon::Photon() :
   Worldline(),
   object_(NULL),
-  freq_obs_(1.), transmission_freqobs_(1.), doppler_obs_m1_(1.),
+  freq_obs_(1.), transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
  {}
 
@@ -51,7 +51,6 @@ Photon::Photon(const Photon& o) :
   Worldline(o), SmartPointee(o),
   object_(NULL),
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
-  doppler_obs_m1_(1.),
   spectro_(NULL), transmission_(NULL)
 {
   if (o.object_()) {
@@ -72,7 +71,6 @@ Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   Worldline(orig, i0, dir, step_max), SmartPointee(),
   object_(orig->object_),
   freq_obs_(orig->freq_obs_),
-  doppler_obs_m1_(orig->doppler_obs_m1_),
   transmission_freqobs_(orig->transmission_freqobs_),
   spectro_(orig->spectro_), transmission_(orig->transmission_)
 {
@@ -86,19 +84,24 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
-	       double* coord,
-	       double doppler):
-  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
+	       SmartPointer<Screen> screen,
+	       double* coord):
+  Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
 {
-  setInitialCondition(met, obj, coord, doppler);
+  setInitialCondition(met, obj, screen, coord);
 }
 
-Photon::Photon(SmartPointer<Metric::Generic> met, SmartPointer<Astrobj::Generic> obj, 
-	       SmartPointer<Screen> screen, double d_alpha, double d_delta):
+Photon::Photon(SmartPointer<Metric::Generic> met, 
+	       SmartPointer<Astrobj::Generic> obj, 
+	       SmartPointer<Screen> screen, 
+	       double d_alpha, double d_delta):
   Worldline(), object_(obj), transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
 {
-  setInitialCondition(met, NULL, screen, d_alpha, d_delta);
+  double coord[8];
+  screen -> getRayCoord(d_alpha, d_delta, coord);
+  Worldline::setInitialCondition(met, coord, -1);
+  setSpectrometer(screen);
 }
 
 Photon::~Photon() {}
@@ -155,18 +158,31 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 const double d_delta)
 {
   double coord[8];
-  doppler_obs_m1_ = 1. / screen -> getRayCoord(d_alpha, d_delta, coord);
+  screen -> getRayCoord(d_alpha, d_delta, coord);
   Worldline::setInitialCondition(met, coord, -1);
-  setSpectrometer(screen);
   if (obj) object_=obj;
+
 }
 
 void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 SmartPointer<Astrobj::Generic> obj,
-				 const double coord[8], double doppler)
+				 SmartPointer<Screen> screen,
+				 const double coord[8])
 {
   if (!met) met = metric_;
-  doppler_obs_m1_=1./doppler;
+  double ObsVel[4]={0.,0.,0.,0.};
+  screen->getFourvel(ObsVel);
+  if (ObsVel[0]==0.){
+    // No observer frame given in XML, assume static observer
+    double gtt0=met->gmunu(coord,0,0);
+    ObsVel[0]=pow(-gtt0, -0.5); //static
+    double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
+    freq_obs_ = -sp_rec;
+  }else{
+    // Observer frame given in XML, 4-velocity specified
+    double sp_rec=met->ScalarProd(coord,coord+4,ObsVel);
+    freq_obs_ = -sp_rec;
+  }
   Worldline::setInitialCondition(met, coord, -1);
   if (obj) object_=obj;
 }
@@ -499,7 +515,6 @@ void Photon::findValue(Functor::Double_constDoubleArray* object,
 }
 
 double Photon::getFreqObs() const { return freq_obs_; }
-double Photon::getDopplerObsm1() const { return doppler_obs_m1_; }
 
 double Photon::getTransmission(size_t i) const {
   if (i==size_t(-1)) return transmission_freqobs_;

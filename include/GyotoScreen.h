@@ -308,10 +308,9 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * \param y    Dec offset (d_delta) in radians; 
    * \param coord[8] output: position-velocity of the observer in system sys;
    * 
-   * \return Doppler factor
    */
-  double getRayCoord(double x, double y, double coord[]) const;
-  double getRayCoord(const size_t i, const size_t j, double coord[]) const;
+  void getRayCoord(double x, double y, double coord[]) const;
+  void getRayCoord(const size_t i, const size_t j, double coord[]) const;
   
   void coordToSky(const double pos[4], double skypos[3]) const;
   ///< Convert 4-position to 3-sky position

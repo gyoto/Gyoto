@@ -440,25 +440,22 @@ extern "C" {
     gyoto_Photon  *phobj =(gyoto_Photon*) yget_obj(n-1, &gyoto_Photon_obj);
     SmartPointer<Metric::Generic> *gg = yget_Metric(n-2);
     SmartPointer<Astrobj::Generic> *astrobj = yget_Astrobj(n-3);
+    SmartPointer<Screen> *screen = yget_Screen(n-4);
 
-    if (n==4 || n==5) {
+    if (n==5) {
       long ntot=1;
       double * coord = ygeta_d(n-4, &ntot, NULL);
       if (ntot < 4) y_error("coord must have at least 4 elements");
-      double doppler=1.;
-      if (n==5) doppler=ygets_d(n-5);
-      if (doppler <= 0.) y_error("Doppler factor must be > 0.");
       try {
-	(phobj->photon)->setInitialCondition(*gg, *astrobj, coord, doppler);
+	(phobj->photon)->setInitialCondition(*gg, *astrobj, *screen, coord);
       } YGYOTO_STD_CATCH ;
     } else if (n==6) {
-      SmartPointer<Screen> *screen = yget_Screen(n-4);
       double d_alpha = ygets_d(n-5);
       double d_delta = ygets_d(n-6);
       try {
 	(phobj->photon)->setInitialCondition(*gg, *astrobj, *screen, d_alpha, d_delta);
       } YGYOTO_STD_CATCH ;
-    } else y_error("gyoto_Photon_setInitialCondition takes 3, 4 or 6 arguments");
+    } else y_error("gyoto_Photon_setInitialCondition takes either 4 or 7 arguments");
   }
 
   void
