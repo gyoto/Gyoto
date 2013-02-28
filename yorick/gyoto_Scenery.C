@@ -573,7 +573,7 @@ extern "C" {
 	screen -> getRayCoord(size_t(i_idx.first()),
 			      size_t(j_idx.first()),
 			      coord);
-	Photon ph(sc->getMetric(), sc->getAstrobj(), screen, coord);
+	Photon ph(sc->getMetric(), sc->getAstrobj(), coord);
 	ph.setSpectrometer(screen->getSpectrometer());
 
 	ySceneryThreadWorkerArg larg;

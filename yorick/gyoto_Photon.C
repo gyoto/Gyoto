@@ -447,7 +447,7 @@ extern "C" {
       double * coord = ygeta_d(n-4, &ntot, NULL);
       if (ntot < 4) y_error("coord must have at least 4 elements");
       try {
-	(phobj->photon)->setInitialCondition(*gg, *astrobj, *screen, coord);
+	(phobj->photon)->setInitialCondition(*gg, *astrobj, coord);
       } YGYOTO_STD_CATCH ;
     } else if (n==6) {
       double d_alpha = ygets_d(n-5);
