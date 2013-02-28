@@ -24,6 +24,8 @@ check: gyoto
 	   \!example-page-thorne-disk-BL.fits
 	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-KS.xml \
 	   \!example-page-thorne-disk-KS.fits
+	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL-with-basis.xml \
+	   \!example-page-thorne-disk-BL-with-basis.fits
 	$(CHECK_CMD) ../doc/examples/example-torus.xml \
 	   \!example-torus.fits
 	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \

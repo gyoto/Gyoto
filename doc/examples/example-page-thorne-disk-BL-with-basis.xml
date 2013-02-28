@@ -41,9 +41,11 @@
       0.
     </Alpha0>
     <Resolution>
-      201
+      101
     </Resolution>
   </Screen>
-  <Astrobj kind = "PageThorneDisk"/>
+  <Astrobj kind = "PageThorneDisk">
+    <Bolometric/>
+  </Astrobj>
   <MinimumTime> -1000. </MinimumTime>
 </Scenery>

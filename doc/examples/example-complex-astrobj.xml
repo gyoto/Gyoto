@@ -14,7 +14,9 @@
   </Screen>
 
   <Astrobj kind = "Complex">
-    <SubAstrobj kind = "PageThorneDisk"/>
+    <SubAstrobj kind = "PageThorneDisk">
+      <Bolometric/>
+    </SubAstrobj>
     <SubAstrobj kind = "Star">
       <Radius> 2. </Radius>
       <Velocity> 0. 0. 0.037037 </Velocity>

@@ -93,11 +93,16 @@ void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
   updateSpin();
 }
 
-double PageThorneDisk::emission(double, double dsem,
+double PageThorneDisk::emission(double nu_em, double dsem,
 				    double *,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
+  // Important remark: this emision function gives I(r),
+  // not I_nu(r). And I(r)/nu^4 is conserved.
 
+  if (!bolometric_)
+    throwError("In PageThorneDisk::emission: "
+	       "only bolometric intensity given");
   double xx;
   switch (gg_->getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -116,11 +121,12 @@ double PageThorneDisk::emission(double, double dsem,
     -3.*(x1_-aa_)*(x1_-aa_)/(x1_*(x1_-x2_)*(x1_-x3_))*log((xx-x1_)/(x0_-x1_)) 
     -3.*(x2_-aa_)*(x2_-aa_)/(x2_*(x2_-x1_)*(x2_-x3_))*log((xx-x2_)/(x0_-x2_)) 
     -3.*(x3_-aa_)*(x3_-aa_)/(x3_*(x3_-x1_)*(x3_-x2_))*log((xx-x3_)/(x0_-x3_)));
-           // f of Page&Thorne
+           // f of Page&Thorne, in units M=1
 
   double Iem=ff/((4.*M_PI)*(xx*xx)); //with Mdot=1
-  Iem*=M_PI;//assume isotropic emission --> flux is then equal to
-  //"pi * specific intensity" (cf Ribicki Lightman)
+  //assume isotropic emission --> flux at r = (I at r)* int dOmega = cst*I
+  //and we don't care with cst
+  //NB: this is frequency integrated (bolometric) intensity, not I_nu
 
   if (flag_radtransf_) Iem *= dsem;
 
