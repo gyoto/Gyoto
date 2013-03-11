@@ -179,7 +179,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       worldline parameter dlambda (see below)
   */
   double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
-  SmartPointer<Spectrometer> spr = ph -> getSpectrometer();
+  SmartPointer<Spectrometer::Generic> spr = ph -> getSpectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot

@@ -47,7 +47,10 @@
 namespace Gyoto {
   class Factory;
   class FactoryMessenger;
-  class Spectrometer;
+  namespace Spectrometer {
+    class Generic;
+    class Uniform;
+  }
 }
 
 /**
@@ -121,7 +124,7 @@ class Gyoto::Factory
   SmartPointer<Screen> screen_; 
   SmartPointer<Astrobj::Generic> obj_;
   SmartPointer<Photon> photon_;
-  SmartPointer<Spectrometer> spectro_;
+  SmartPointer<Spectrometer::Generic> spectro_;
 
   // Factory stuff
   std::string filename_;
@@ -138,7 +141,7 @@ class Gyoto::Factory
   Factory(SmartPointer<Spectrum::Generic> sp);
   Factory(SmartPointer<Screen> screen);
   Factory(SmartPointer<Photon> photon);
-  Factory(SmartPointer<Spectrometer> Spectrometer);
+  Factory(SmartPointer<Spectrometer::Generic> Spectrometer);
 
   // Destructor
   ~Factory();

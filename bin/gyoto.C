@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
 
     size_t nbnuobs=0;
     if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
-      SmartPointer<Spectrometer> spr = screen -> getSpectrometer();
+      SmartPointer<Spectrometer::Generic> spr = screen -> getSpectrometer();
       if (!spr) throwError("Spectral quantity requested but "
 			   "no spectrometer specified!");
       nbnuobs = spr -> getNSamples();

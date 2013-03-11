@@ -398,7 +398,7 @@ extern "C" {
       if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
       GYOTO_DEBUG << "rank: " << yarg_rank(piargs[0]) << endl;
 
-      SmartPointer<Spectrometer> spr = sc->getScreen()->getSpectrometer();
+      SmartPointer<Spectrometer::Generic> spr = sc->getScreen()->getSpectrometer();
       size_t nbnuobs = spr()? spr->getNSamples() : 0;
 
       Idx i_idx (piargs[0], res);
@@ -680,7 +680,7 @@ extern "C" {
     try {
       quantities = scenery -> getRequestedQuantities();
       if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
-	SmartPointer<Spectrometer> spr=scenery->getScreen()->getSpectrometer();
+	SmartPointer<Spectrometer::Generic> spr=scenery->getScreen()->getSpectrometer();
 	if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
 	nbnuobs = spr -> getNSamples();

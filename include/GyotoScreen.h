@@ -176,7 +176,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
                            ///< right towards the BH
   SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
 
-  SmartPointer<Spectrometer> spectro_;
+  SmartPointer<Spectrometer::Generic> spectro_;
 
  public:
    
@@ -222,8 +222,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setArgument(double);
            ///< Set angle beetwen line of nodes and X axis of object
   void setArgument(double, const std::string &unit);
-  void setSpectrometer(SmartPointer<Spectrometer> spectro);
-  SmartPointer<Spectrometer> getSpectrometer() const ;
+  void setSpectrometer(SmartPointer<Spectrometer::Generic> spectro);
+  SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
 
   /// Alternative way to set projection
   /**

@@ -259,7 +259,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
      // Note : this is a BUG if this is required, should be done automagically.
 
   /// initialize photon once. It will be cloned.
-  SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
+  SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
   ph_.setSpectrometer(spr);
   ph_.setTmin(tmin_);
   double coord[8];
@@ -329,7 +329,7 @@ void Scenery::operator() (
 			  Photon *ph
 			  ) {
   double coord[8];
-  SmartPointer<Spectrometer> spr = screen_->getSpectrometer();
+  SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Astrobj::Generic> obj = NULL;

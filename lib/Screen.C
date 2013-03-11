@@ -301,8 +301,8 @@ void Screen::getFourvel(double fourvel[]) const{
 
 /* SPECTROMETER */
 
-void Screen::setSpectrometer(SmartPointer<Spectrometer> spr) { spectro_=spr; }
-SmartPointer<Spectrometer> Screen::getSpectrometer() const { return spectro_; }
+void Screen::setSpectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=spr; }
+SmartPointer<Spectrometer::Generic> Screen::getSpectrometer() const { return spectro_; }
 
 void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   const double delta= fov_/double(npix_);
@@ -777,7 +777,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   fmp -> setParameter ("PALN", getPALN());
   fmp -> setParameter ("Inclination", getInclination());
   fmp -> setParameter ("Argument", getArgument());
-  if (spectro_ && spectro_ -> getKind() != GYOTO_SPECTRO_KIND_NONE) {
+  if (spectro_) {
     child = fmp -> makeChild("Spectrometer");
     spectro_ -> fillElement(child) ;
     delete child; child = NULL;

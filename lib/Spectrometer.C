@@ -30,9 +30,18 @@
 #include <cstdlib>
 #include <float.h> // DBL_MAX
 using namespace Gyoto;
+using namespace Gyoto::Spectrometer;
 using namespace std;
 
-Spectrometer::Spectrometer() :
+Generic::Generic() {}
+Generic::Generic(const Generic& o) :
+  SmartPointee(o)
+{
+}
+Generic::~Generic() {}
+
+
+Uniform::Uniform() :
   kind_(GYOTO_SPECTRO_KIND_NONE),
   nsamples_(0),
   boundaries_(NULL),
@@ -42,7 +51,7 @@ Spectrometer::Spectrometer() :
 {
   band_[0]=0.; band_[1]=0.;
 }
-Spectrometer::Spectrometer(size_t nsamples, double band_min, double band_max,
+Uniform::Uniform(size_t nsamples, double band_min, double band_max,
 			   SpectroKind_t kind) :
   kind_(kind),
   nsamples_(nsamples),
@@ -55,8 +64,8 @@ Spectrometer::Spectrometer(size_t nsamples, double band_min, double band_max,
   if (nsamples && kind) reset_();
 }
 
-Spectrometer::Spectrometer(const Spectrometer& o) :
-  SmartPointee(o),
+Uniform::Uniform(const Uniform& o) :
+  Generic(o),
   kind_(o.kind_),
   nsamples_(o.nsamples_),
   boundaries_(NULL),
@@ -68,16 +77,16 @@ Spectrometer::Spectrometer(const Spectrometer& o) :
   reset_();
 }
 
-Spectrometer* Spectrometer::clone() const { return new Spectrometer(*this); }
+Generic* Uniform::clone() const { return new Uniform(*this); }
 
-Spectrometer::~Spectrometer() {
+Uniform::~Uniform() {
   if (boundaries_) delete [] boundaries_;
   if (chanind_)    delete [] chanind_;
   if (midpoints_)  delete [] midpoints_;
   if (widths_)     delete [] widths_;
 }
 
-void Spectrometer::reset_() {
+void Uniform::reset_() {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -149,12 +158,12 @@ void Spectrometer::reset_() {
 
 }
 
-void Spectrometer::setKind(SpectroKind_t k) {
+void Uniform::setKind(SpectroKind_t k) {
   kind_ = k;
   reset_();
 }
 
-void Spectrometer::setKind(std::string str) {
+void Uniform::setKind(std::string str) {
   SpectroKind_t s;
 
   if      (str == "none"   ) s = GYOTO_SPECTRO_KIND_NONE;
@@ -163,21 +172,21 @@ void Spectrometer::setKind(std::string str) {
   else if (str == "wave"   ) s = GYOTO_SPECTRO_KIND_WAVE;
   else if (str == "wavelog") s = GYOTO_SPECTRO_KIND_WAVELOG;
   else {
-    throwError("unknow Spectrometer kind"); s=GYOTO_SPECTRO_KIND_NONE;
+    throwError("unknow Uniform kind"); s=GYOTO_SPECTRO_KIND_NONE;
   }
 
   kind_ = s;
   reset_();
 }
 
-void Spectrometer::setNSamples(size_t n) { nsamples_ = n; reset_(); }
-void Spectrometer::setBand(double nu[2]) {
+void Uniform::setNSamples(size_t n) { nsamples_ = n; reset_(); }
+void Uniform::setBand(double nu[2]) {
   band_[0] = nu[0];
   band_[1] = nu[1];
   reset_();
 }
 
-void Spectrometer::setBand(double nu[2], string unit, string kind) {
+void Uniform::setBand(double nu[2], string unit, string kind) {
   if (kind != "") setKind(kind);
   double band[2] = {nu[0], nu[1]};
 
@@ -203,18 +212,18 @@ void Spectrometer::setBand(double nu[2], string unit, string kind) {
 	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
     break;
   default:
-    throwError("Spectrometer::setBand(double, string, string) at loss: "
+    throwError("Uniform::setBand(double, string, string) at loss: "
 	       "please specify Spectrometer kind");
   }
 
   setBand(band);
 }
 
-SpectroKind_t Spectrometer::getKind() const {
+SpectroKind_t Uniform::getKind() const {
   return kind_;
 }
 
-std::string Spectrometer::getKindStr() const {
+std::string Uniform::getKindStr() const {
   std::string skind = "";
   stringstream ss;
   switch (kind_) {
@@ -235,19 +244,19 @@ std::string Spectrometer::getKindStr() const {
   return skind;
 }
 
-size_t Spectrometer::getNSamples() const { return nsamples_; }
-size_t Spectrometer::getNBoundaries() const { return nsamples_+1; }
+size_t Uniform::getNSamples() const { return nsamples_; }
+size_t Uniform::getNBoundaries() const { return nsamples_+1; }
 
-double const * Spectrometer::getBand() const { return band_; }
+double const * Uniform::getBand() const { return band_; }
 
-double const * Spectrometer::getMidpoints() const { return midpoints_; }
-double const * Spectrometer::getChannelBoundaries() const { return boundaries_;}
-size_t const * Spectrometer::getChannelIndices() const { return chanind_; }
-double const * Spectrometer::getWidths() const { return widths_; }
+double const * Uniform::getMidpoints() const { return midpoints_; }
+double const * Uniform::getChannelBoundaries() const { return boundaries_;}
+size_t const * Uniform::getChannelIndices() const { return chanind_; }
+double const * Uniform::getWidths() const { return widths_; }
 
 #ifdef GYOTO_USE_XERCES
 
-void Spectrometer::fillElement(FactoryMessenger *fmp) {
+void Uniform::fillElement(FactoryMessenger *fmp) {
   fmp -> setSelfAttribute( "kind", getKindStr() );
   fmp -> setSelfAttribute( "nsamples", nsamples_ );
   ostringstream ss;
@@ -256,7 +265,7 @@ void Spectrometer::fillElement(FactoryMessenger *fmp) {
   fmp -> setFullContent(ss.str()); 
 }
 
-SmartPointer<Spectrometer>
+SmartPointer<Generic>
 Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
 
   string skind = fmp -> getSelfAttribute( "kind" );
@@ -268,7 +277,7 @@ Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
   band[0]=strtod(tc, &tc);
   band[1]=strtod(tc, &tc);
 
-  Spectrometer* spr =new Spectrometer();
+  Uniform* spr =new Uniform();
   spr -> setBand(band, unit, skind);
   spr -> setNSamples(nsamples);
 

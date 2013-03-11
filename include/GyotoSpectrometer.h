@@ -33,11 +33,42 @@
 #include <string>
 
 namespace Gyoto{
-  class Spectrometer;
+  namespace Spectrometer {
+    class Generic;
+    class Uniform;
+  }
 }
 
-class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
-  friend class Gyoto::SmartPointer<Gyoto::Spectrometer>;
+class Gyoto::Spectrometer::Generic : protected Gyoto::SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+ public:
+  Generic();
+  Generic(const Generic& ) ;                ///< Copy constructor
+  virtual ~Generic();
+  virtual size_t getNSamples() const =0;
+  virtual size_t getNBoundaries() const =0;
+  virtual double const * getMidpoints() const =0 ;
+  virtual double const * getChannelBoundaries() const =0;
+  virtual size_t const * getChannelIndices() const =0;
+  virtual double const * getWidths() const =0;
+  virtual Generic * clone() const =0;
+#ifdef GYOTO_USE_XERCES
+
+  //virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
+
+  /**
+   * Metrics implementations should impement fillElement to save their
+   * parameters to XML and call the Metric::fillElement(fmp) for the
+   * shared properties
+   */
+
+  virtual void fillElement(FactoryMessenger *fmp) =0; ///< called from Factory
+  //void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
+#endif
+};
+
+class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Uniform>;
  protected:
   SpectroKind_t kind_; ///< none, freqlog, freq, wavelog or wave.
   size_t nsamples_; ///< number of spectral elements
@@ -61,12 +92,12 @@ Channels may or may not be contiguous or ordered.
   void reset_(); ///< Computes boundaries_, midpoints_ and widths_
 
  public:
-  Spectrometer() ; ///< Default constructor
-  Spectrometer(size_t nsamples, double band_min, double band_max,
+  Uniform() ; ///< Default constructor
+  Uniform(size_t nsamples, double band_min, double band_max,
 	       SpectroKind_t kind); ///< Constructor setting everything
-  Spectrometer(const Spectrometer& ) ;                ///< Copy constructor
-  Spectrometer * clone() const; ///< Cloner
-  virtual ~Spectrometer() ; ///< Destructor
+  Uniform(const Uniform& ) ;                ///< Copy constructor
+  Generic * clone() const; ///< Cloner
+  virtual ~Uniform() ; ///< Destructor
 
   void setKind(SpectroKind_t);
   void setKind(std::string);
@@ -108,7 +139,7 @@ Channels may or may not be contiguous or ordered.
 
 #ifdef GYOTO_USE_XERCES
 namespace Gyoto {
-  SmartPointer<Spectrometer> SpectrometerSubcontractor(FactoryMessenger* fmp);
+  SmartPointer<Spectrometer::Generic> SpectrometerSubcontractor(FactoryMessenger* fmp);
 }
 #endif
 

@@ -28,21 +28,23 @@ using namespace std;
 using namespace Gyoto;
 
 namespace YGyoto {
-  void SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc);
+  void SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int argc);
 }
 using namespace YGyoto;
 
-void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
+void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int argc) {
   int k=-1, rvset[1]={0}, paUsed[1]={0};
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
 
   if (!sp) {
     sp = ypush_Spectrometer();
-    *sp = new Spectrometer();
+    *sp = new Spectrometer::Uniform();
   } else {
     *ypush_Spectrometer() = *sp;
   }
+
+  Spectrometer::Uniform *pspu = dynamic_cast<Spectrometer::Uniform*>((Spectrometer::Generic*)(*sp));
 
   static char const * knames[]={
     "unit",
@@ -78,9 +80,9 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     iarg+=*rvset;
     if (yarg_nil(iarg)) { // get spectro kind
       if ((*rvset)++) y_error(rmsg);
-      *ypush_q(0) = p_strcpy((*sp) -> getKindStr() . c_str());
+      *ypush_q(0) = p_strcpy(pspu -> getKindStr() . c_str());
     } else { // set spectro kind
-      (*sp) -> setKind(ygets_q(iarg));
+      pspu -> setKind(ygets_q(iarg));
     }
   }
 
@@ -88,7 +90,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
   if ((iarg=kiargs[++k])>=0) {
       iarg+=*rvset;
       if (yarg_nil(iarg)) ypush_long((*sp)->getNSamples());
-      else (*sp) -> setNSamples( ygets_l(iarg) );
+      else pspu -> setNSamples( ygets_l(iarg) );
   }
 
   /* BAND */
@@ -99,14 +101,14 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
       if ((*rvset)++) y_error(rmsg);
       long dims[Y_DIMSIZE] = {1, 2};
       boundaries=ypush_d(dims);
-      boundaries[0] = (*sp) -> getBand()[0];
-      boundaries[1] = (*sp) -> getBand()[1];
+      boundaries[0] = pspu -> getBand()[0];
+      boundaries[1] = pspu -> getBand()[1];
     } else { // set spectro band
       long ntot;
       boundaries = ygeta_d(iarg, &ntot, NULL);
       if (ntot != 2)
 	  y_error("BAND must have 2 elements");
-      (*sp) -> setBand(boundaries, unit?unit:"");
+      pspu -> setBand(boundaries, unit?unit:"");
     }
   }
 
@@ -128,7 +130,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     if (nsamples) {
       long dims[] = {1, nsamples+1};
       double const * const nuchannels = (*sp) -> getChannelBoundaries();
-      SpectroKind_t kind= (*sp) -> getKind();
+      SpectroKind_t kind= pspu -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<=nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
@@ -150,7 +152,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuchannels = (*sp) -> getMidpoints();
-      SpectroKind_t kind= (*sp) -> getKind();
+      SpectroKind_t kind= pspu -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
@@ -172,7 +174,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuwidths = (*sp) -> getWidths();
-      SpectroKind_t kind= (*sp) -> getKind();
+      SpectroKind_t kind= pspu -> getKind();
       double * ywidths = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ywidths[i] = nuwidths[i];
@@ -185,7 +187,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
 
 extern "C" {
   typedef struct gyoto_Spectro {
-    SmartPointer<Spectrometer> spectro;
+    SmartPointer<Spectrometer::Generic> spectro;
   } gyoto_Spectro;
 
   
@@ -216,7 +218,7 @@ extern "C" {
       ypush_long((long)((gyoto_Spectro*)obj)->spectro());
       return;
     }
-    SmartPointer<Spectrometer> * sp = &(((gyoto_Spectro*)obj)->spectro);
+    SmartPointer<Spectrometer::Generic> * sp = &(((gyoto_Spectro*)obj)->spectro);
     YGyoto::SpectroYEval(sp, argc);
   }
   static y_userobj_t gyoto_Spectro_obj =
@@ -227,7 +229,7 @@ extern "C" {
   Y_gyoto_Spectrometer(int argc)
   {
     if (debug()) cerr << "In Y_gyoto_Spectrometer" << endl;
-    SmartPointer<Spectrometer> *sp = NULL;
+    SmartPointer<Spectrometer::Generic> *sp = NULL;
     if (yarg_Spectrometer(argc-1)) {
       sp = yget_Spectrometer(--argc);
     }
@@ -240,11 +242,11 @@ yarg_Spectrometer(int iarg) {
   return yget_obj(iarg,0)==gyoto_Spectro_obj.type_name;
 }
 
-SmartPointer<Spectrometer>* yget_Spectrometer(int iarg) {
+SmartPointer<Spectrometer::Generic>* yget_Spectrometer(int iarg) {
   return &(((gyoto_Spectro*)yget_obj(iarg, &gyoto_Spectro_obj))->spectro);
 }
 
-SmartPointer<Spectrometer>* ypush_Spectrometer() {
+SmartPointer<Spectrometer::Generic>* ypush_Spectrometer() {
   return &(((gyoto_Spectro*)(ypush_obj(&gyoto_Spectro_obj,
 					sizeof(gyoto_Spectro))))->spectro);
 }

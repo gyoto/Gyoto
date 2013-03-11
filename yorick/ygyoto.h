@@ -71,8 +71,8 @@ int yarg_Screen(int iarg);
 Gyoto::SmartPointer<Gyoto::Spectrum::Generic>* yget_Spectrum(int iarg);
 Gyoto::SmartPointer<Gyoto::Spectrum::Generic>* ypush_Spectrum();
 int yarg_Spectrum(int iarg);
-Gyoto::SmartPointer<Gyoto::Spectrometer>* yget_Spectrometer(int iarg);
-Gyoto::SmartPointer<Gyoto::Spectrometer>* ypush_Spectrometer();
+Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>* yget_Spectrometer(int iarg);
+Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>* ypush_Spectrometer();
 int yarg_Spectrometer(int iarg);
 
 /*

@@ -521,7 +521,7 @@ Factory::Factory(SmartPointer<Photon> ph)
 
 }
 
-Factory::Factory(SmartPointer<Spectrometer> sp)
+Factory::Factory(SmartPointer<Spectrometer::Generic> sp)
   : reporter_(NULL), parser_(NULL), resolver_(NULL), 
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(NULL), gg_(NULL), obj_(NULL),

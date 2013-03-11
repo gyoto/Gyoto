@@ -136,11 +136,11 @@ void Photon::setAstrobj(SmartPointer<Astrobj::Generic> ao) {
   object_=ao;
 }
 
-void Photon::setSpectrometer(SmartPointer<Spectrometer> spr) {
+void Photon::setSpectrometer(SmartPointer<Spectrometer::Generic> spr) {
   spectro_=spr;
   _allocateTransmission();
 }
-SmartPointer<Spectrometer> Photon::getSpectrometer() const { return spectro_; }
+SmartPointer<Spectrometer::Generic> Photon::getSpectrometer() const { return spectro_; }
 
 
 string Photon::className() const { return  string("Photon"); }

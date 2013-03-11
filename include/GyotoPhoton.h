@@ -58,7 +58,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   double freq_obs_; ///< Photon's frequency in observer's frame
   double transmission_freqobs_; ///< integrated optical transmission
 
-  SmartPointer<Spectrometer> spectro_;
+  SmartPointer<Spectrometer::Generic> spectro_;
   double * transmission_;
 
   // Constructors - Destructor
@@ -94,8 +94,8 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 
   void setAstrobj(SmartPointer<Astrobj::Generic>); ///< Set Astrobj
   SmartPointer<Astrobj::Generic> getAstrobj() const ; ///< Get Astrobj
-  void setSpectrometer(SmartPointer<Spectrometer> spr);
-  SmartPointer<Spectrometer> getSpectrometer() const ;
+  void setSpectrometer(SmartPointer<Spectrometer::Generic> spr);
+  SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
   double getFreqObs() const;
 
 
