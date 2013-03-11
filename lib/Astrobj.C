@@ -283,12 +283,14 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       
     }
     if (data->binspectrum) {
-      double const * const channels = spr -> getChannels();
+      size_t nbounds = spr-> getNBoundaries();
+      double const * const channels = spr -> getChannelBoundaries();
+      size_t const * const chaninds = spr -> getChannelIndices();
       double * I  = new double[nbnuobs];
-      double * boundaries = new double[nbnuobs+1];
-      for (size_t ii=0; ii<=nbnuobs; ++ii)
+      double * boundaries = new double[nbounds];
+      for (size_t ii=0; ii<nbounds; ++ii)
 	boundaries[ii]=channels[ii]*ggredm1;
-      integrateEmission(I, boundaries, nbnuobs,
+      integrateEmission(I, boundaries, chaninds, nbnuobs,
 			dsem, coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	inc = I[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred*ggred;
@@ -377,11 +379,14 @@ void Generic::emission(double * Inu, double * nuem , size_t nbnu,
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
 }
 
-void Generic::integrateEmission(double * I, double * boundaries, size_t nbnu,
+void Generic::integrateEmission(double * I, double const * boundaries,
+				size_t const * chaninds, size_t nbnu,
 				double dsem, double *cph, double *co) const
 {
   for (size_t i=0; i<nbnu; ++i)
-    I[i] = integrateEmission(boundaries[i], boundaries[i+1], dsem, cph, co);
+    I[i] = integrateEmission(boundaries[chaninds[2*i]],
+			     boundaries[chaninds[2*i+1]],
+			     dsem, cph, co);
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,

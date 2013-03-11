@@ -42,7 +42,19 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
   SpectroKind_t kind_; ///< none, freqlog, freq, wavelog or wave.
   size_t nsamples_; ///< number of spectral elements
   double band_[2]; ///< boundaries of the spectro 
-  double* boundaries_;
+  /**
+   * Spectral channel i extends from
+\code
+boundaries_[chanind_[2*i]]
+\endcode
+to
+\code
+boundaries_[chanind_[2*i+1]]
+\endcode.
+Channels may or may not be contiguous or ordered.
+   */
+  double* boundaries_; ///< Frequency at the boundaries of the spectral channels
+  size_t* chanind_; ///< Indices in boundaries_
   double* midpoints_;
   double* widths_;
 
@@ -78,10 +90,12 @@ class Gyoto::Spectrometer : protected Gyoto::SmartPointee {
   SpectroKind_t getKind() const ;
   std::string getKindStr() const;
   size_t getNSamples() const ;
+  size_t getNBoundaries() const ;
   double const * getBand() const ;
 
   double const * getMidpoints() const ;
-  double const * getChannels() const ;
+  double const * getChannelBoundaries() const ;
+  size_t const * getChannelIndices() const ;
   double const * getWidths() const ;
 
 #ifdef GYOTO_USE_XERCES

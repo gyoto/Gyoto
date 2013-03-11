@@ -127,7 +127,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer>*sp, int argc) {
     size_t nsamples = (*sp) -> getNSamples();
     if (nsamples) {
       long dims[] = {1, nsamples+1};
-      double const * const nuchannels = (*sp) -> getChannels();
+      double const * const nuchannels = (*sp) -> getChannelBoundaries();
       SpectroKind_t kind= (*sp) -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<=nsamples; ++i) {

@@ -544,8 +544,12 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
   virtual double integrateEmission(double nu1, double nu2, double dsem,
                                   double c_ph[8], double c_obj[8]=NULL) const;
     ///< \sum_nu1^nu2 I_nu dnu (or j_nu)
-
-  virtual void integrateEmission(double * I, double * boundaries, size_t nbnu,
+  /**
+   * Like integrateEmission(double nu1, double nu2, double dsem,
+   * double c_ph[8], double c_obj[8]) for each Spectrometer channel.
+   */
+  virtual void integrateEmission(double * I, double const * boundaries,
+				 size_t const * chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
 
 

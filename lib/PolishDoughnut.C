@@ -558,33 +558,47 @@ void PolishDoughnut::getVelocity(double const pos[4], double vel[4])
 }
 
 void PolishDoughnut::integrateEmission
-                                (double * I, double * boundaries, size_t nbnu,
+                                (double * I, double * boundaries,
+				 size_t * chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const
 {
+  // The original channels may or may not be contiguous.  We split
+  // each original channels into spectral_oversampling_ subchannels.
+  // All we know is that each chunk of spectral_oversampling_
+  // subchannels are contiguous. Don't try to recover contiguousness
+  // in the original channels, it's too hard for now.
   double som1=1./double(spectral_oversampling_);
-  size_t onbnu=nbnu*spectral_oversampling_;
+  size_t onbnu=nbnu*spectral_oversampling_; // number of subchannels
+  size_t onbb = onbnu+nbnu; // number of subchannel boundaries : most
+			    // are used twice as subchannels are
+			    // contiguous in each channel.
   double * Inu = new double[onbnu+1];
-  double * bo = new double[onbnu+1];
+  double * bo = new double[onbb];
+  size_t * ii = new size_t[2*onbnu]; // two indices for each subchannel
   double dnu;
-  size_t k;
+  size_t k=0;
   for (size_t i=0; i<nbnu; ++i) {
-    dnu=(boundaries[i+1]-boundaries[i])*som1;
+    dnu=(boundaries[chaninds[2*i+1]]-boundaries[chaninds[2*i]])*som1;
     for (size_t j=0; j<spectral_oversampling_; ++j) {
       k=i*spectral_oversampling_+j;
-      bo[k]=boundaries[i]+double(j)*dnu;
+      ii[2*k]=k+i;
+      ii[2*k+1]=k+i+1;
+      bo[ii[2*k]]=boundaries[chaninds[2*i]]+double(j)*dnu;
     }
+    bo[ii[2*(i*spectral_oversampling_+spectral_oversampling_-1)+1]]
+      =boundaries[chaninds[2*i+1]];
   }
-  bo[onbnu]=boundaries[nbnu];
-  emission(Inu, bo, onbnu+1, dsem, cph, co);
+  emission(Inu, bo, onbb, dsem, cph, co);
   for (size_t i=0; i<nbnu; ++i) {
     I[i]=0.;
     for (size_t j=0; j<spectral_oversampling_; ++j) {
       k=i*spectral_oversampling_+j;
-      I[i]+=(Inu[k+1]+Inu[k])*0.5*fabs(bo[k+1]-bo[k]);
+      I[i]+=(Inu[ii[2*k+1]]+Inu[ii[2*k]])*0.5*fabs(bo[ii[2*k+1]]-bo[ii[2*k]]);
     }
   }
   delete [] Inu;
   delete [] bo;
+  delete [] ii;
 }
 
 double PolishDoughnut::emission(double nu_em, double dsem,

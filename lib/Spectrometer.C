@@ -36,6 +36,7 @@ Spectrometer::Spectrometer() :
   kind_(GYOTO_SPECTRO_KIND_NONE),
   nsamples_(0),
   boundaries_(NULL),
+  chanind_(NULL),
   midpoints_(NULL),
   widths_(NULL)
 {
@@ -46,6 +47,7 @@ Spectrometer::Spectrometer(size_t nsamples, double band_min, double band_max,
   kind_(kind),
   nsamples_(nsamples),
   boundaries_(NULL),
+  chanind_(NULL),
   midpoints_(NULL),
   widths_(NULL)
 {
@@ -58,6 +60,7 @@ Spectrometer::Spectrometer(const Spectrometer& o) :
   kind_(o.kind_),
   nsamples_(o.nsamples_),
   boundaries_(NULL),
+  chanind_(NULL),
   midpoints_(NULL),
   widths_(NULL)
 {
@@ -69,6 +72,7 @@ Spectrometer* Spectrometer::clone() const { return new Spectrometer(*this); }
 
 Spectrometer::~Spectrometer() {
   if (boundaries_) delete [] boundaries_;
+  if (chanind_)    delete [] chanind_;
   if (midpoints_)  delete [] midpoints_;
   if (widths_)     delete [] widths_;
 }
@@ -78,15 +82,18 @@ void Spectrometer::reset_() {
   GYOTO_DEBUG << endl;
 # endif
   if (boundaries_) delete [] boundaries_;
+  if (chanind_)    delete [] chanind_;
   if (midpoints_)  delete [] midpoints_;
   if (widths_)     delete [] widths_;
   boundaries_ = NULL;
+  chanind_ = NULL;
   midpoints_ = NULL;
   widths_ = NULL;
   GYOTO_DEBUG << endl;
   if (!nsamples_ || !kind_) return;
 
   boundaries_ = new double[nsamples_+1];
+  chanind_    = new size_t[nsamples_*2];
   midpoints_  = new double[nsamples_];
   widths_     = new double[nsamples_];
 
@@ -112,9 +119,14 @@ void Spectrometer::reset_() {
 #   if GYOTO_DEBUG_ENABLED
     if (debug()) cerr << boundaries_[i]<< endl;
 #   endif
+    if (i<nsamples_) {
+      chanind_[2*i]=i;
+      chanind_[2*i+1]=i+1;
+    }
   }
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_ARRAY(boundaries_, nsamples_+1);
+  GYOTO_DEBUG_ARRAY(chanind_, nsamples_*2);
 # endif
 
   for (i=0; i< nsamples_; ++i){
@@ -224,11 +236,13 @@ std::string Spectrometer::getKindStr() const {
 }
 
 size_t Spectrometer::getNSamples() const { return nsamples_; }
+size_t Spectrometer::getNBoundaries() const { return nsamples_+1; }
 
 double const * Spectrometer::getBand() const { return band_; }
 
 double const * Spectrometer::getMidpoints() const { return midpoints_; }
-double const * Spectrometer::getChannels() const { return boundaries_; }
+double const * Spectrometer::getChannelBoundaries() const { return boundaries_;}
+size_t const * Spectrometer::getChannelIndices() const { return chanind_; }
 double const * Spectrometer::getWidths() const { return widths_; }
 
 #ifdef GYOTO_USE_XERCES
