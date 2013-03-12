@@ -623,6 +623,7 @@ extern gyoto_verbose;
  */
 
 extern gyoto_Spectrometer;
+extern gyoto_SpectroUniform;
 /* DOCUMENT spectro = gyoto_Spectrometer([members=values])
          or spectro, members=values
          or table = spectro( channels= | midpoints= | widths= )
@@ -670,6 +671,8 @@ extern gyoto_Spectrometer;
        
    SEE ALSO: gyoto, gyoto_Screen, gyoto_Scenery
  */
+extern _gyoto_SpectroUniform_register_as_Spectro;
+_gyoto_SpectroUniform_register_as_Spectro;
 
 
 func gyoto_plg3(x,y,z, keywords=) {

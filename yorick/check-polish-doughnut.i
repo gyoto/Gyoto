@@ -50,7 +50,7 @@ write, format="%s\n", "done.";
 
 write, format="%s", "Setting spectro... ";
 noop, sc(screen=)(spectro=
-                  gyoto_Spectrometer(kind="freqlog",
+                  gyoto_SpectroUniform(kind="freqlog",
                                      nsamples=20,
                                      band=[-6, 8],
                                      unit="eV")

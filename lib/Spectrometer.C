@@ -128,7 +128,7 @@ double const * Generic::getWidths() const { return widths_; }
 
 
 Uniform::Uniform() :
-  Generic()
+  Generic(GYOTO_SPECTRO_KIND_WAVE)
 {
   band_[0]=0.; band_[1]=0.;
 }

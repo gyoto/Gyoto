@@ -42,6 +42,8 @@ ygyoto_Astrobj_eval_worker_t(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*, int)
 typedef void
 ygyoto_Spectrum_eval_worker_t(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>*,\
 			      int);
+typedef void
+ygyoto_Spectrometer_eval_worker_t(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>*, int);
 
 #ifndef YGYOTO_LOCAL_SUPPLIER
 /*
@@ -106,6 +108,12 @@ void ygyoto_Spectrum_generic_eval
 (Gyoto::SmartPointer<Gyoto::Spectrum::Generic> *,
  int *kiargs, int *piargs, int *rvset, int *paUsed);
 
+void ygyoto_Spectrometer_register(char const * const kind,
+			      ygyoto_Spectrometer_eval_worker_t*on_eval);
+void ygyoto_Spectrometer_generic_eval
+(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *,
+ int *kiargs, int *piargs, int *rvset, int *paUsed, char * unit);
+
 
 #endif
 
@@ -147,6 +155,12 @@ void ygyoto_Spectrum_generic_eval
 #define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "setparameter", "clone", "integrate"
 // number of those keywords
 #define YGYOTO_SPECTRUM_GENERIC_KW_N 5
+
+// Keywords processed by ygyoto_Spectrometer_generic_eval
+#define YGYOTO_SPECTROMETER_GENERIC_KW "kind", "xmlwrite", "clone", "nsamples",\
+    "channels", "midpoints", "widths"
+// number of those keywords
+#define YGYOTO_SPECTROMETER_GENERIC_KW_N 7
 
 /*
 
