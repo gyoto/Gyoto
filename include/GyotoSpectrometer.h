@@ -30,12 +30,15 @@
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
 #include <GyotoRegister.h>
+#include <GyotoHooks.h>
 #include <string>
 
 namespace Gyoto{
   namespace Spectrometer {
     class Generic;
     class Uniform;
+
+#if defined GYOTO_USE_XERCES
     /**
      * This is a more specific version of the
      * SmartPointee::Subcontractor_t type. A Spectrometer::Subcontrator_t
@@ -60,7 +63,18 @@ namespace Gyoto{
 						      int errmode = 1);
     ///< Query the Spectrometer register
 
-#if defined GYOTO_USE_XERCES
+    /**
+     * Instead of reimplementing the wheel, your subcontractor can simply be
+     * Gyoto::Spectrometer::Subcontractor<MyKind>
+     */
+    template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
+      (FactoryMessenger* fmp) {
+      SmartPointer<T> ao = new T();
+      ao -> setParameters(fmp);
+      return ao;
+    }
+    ///< A template for Subcontractor_t functions
+
     /**
      * Use the Spectrometer::initRegister() once in your program to
      * initiliaze it, the Spectrometer::Register() function to fill it, and
@@ -93,44 +107,16 @@ namespace Gyoto{
   }
 }
 
-class Gyoto::Spectrometer::Generic : protected Gyoto::SmartPointee {
+class Gyoto::Spectrometer::Generic
+: protected Gyoto::SmartPointee,
+  public Gyoto::Hook::Teller
+{
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
  protected:
   char const * kind_;
  public:
-  Generic();
-  Generic(SpectroKind_t kind);
-  Generic(const Generic& ) ;                ///< Copy constructor
-  virtual ~Generic();
-  virtual char const * getKind() const;
-  virtual void  setKind(char const *) ;
-  virtual size_t getNSamples() const =0;
-  virtual size_t getNBoundaries() const =0;
-  virtual double const * getMidpoints() const =0 ;
-  virtual double const * getChannelBoundaries() const =0;
-  virtual size_t const * getChannelIndices() const =0;
-  virtual double const * getWidths() const =0;
-  virtual Generic * clone() const =0;
-#ifdef GYOTO_USE_XERCES
-
-  //virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
-
-  /**
-   * Metrics implementations should impement fillElement to save their
-   * parameters to XML and call the Metric::fillElement(fmp) for the
-   * shared properties
-   */
-
-  virtual void fillElement(FactoryMessenger *fmp) =0; ///< called from Factory
-  //void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
-#endif
-};
-
-class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
-  friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Uniform>;
- protected:
   size_t nsamples_; ///< number of spectral elements
-  double band_[2]; ///< boundaries of the spectro 
+  size_t nboundaries_;
   /**
    * Spectral channel i extends from
 \code
@@ -146,6 +132,39 @@ Channels may or may not be contiguous or ordered.
   size_t* chanind_; ///< Indices in boundaries_
   double* midpoints_;
   double* widths_;
+ public:
+  Generic();
+  Generic(SpectroKind_t kind);
+  Generic(const Generic& ) ;                ///< Copy constructor
+  virtual ~Generic();
+  virtual char const * getKind() const ;
+  virtual void  setKind(char const *) ;
+  virtual size_t getNSamples() const ;
+  virtual size_t getNBoundaries() const ;
+  virtual double const * getMidpoints() const  ;
+  virtual double const * getChannelBoundaries() const ;
+  virtual size_t const * getChannelIndices() const ;
+  virtual double const * getWidths() const ;
+  virtual Generic * clone() const =0;
+#ifdef GYOTO_USE_XERCES
+
+  //virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
+
+  /**
+   * Metrics implementations should impement fillElement to save their
+   * parameters to XML and call the Metric::fillElement(fmp) for the
+   * shared properties
+   */
+
+  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
+  //void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
+#endif
+};
+
+class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Uniform>;
+ protected:
+  double band_[2]; ///< boundaries of the spectro 
 
   void reset_(); ///< Computes boundaries_, midpoints_ and widths_
 
@@ -177,18 +196,11 @@ Channels may or may not be contiguous or ordered.
   void setBand(double nu[2], std::string unit, std::string kind="");
 
   std::string getKindStr() const;
-  size_t getNSamples() const ;
-  size_t getNBoundaries() const ;
   double const * getBand() const ;
-
-  double const * getMidpoints() const ;
-  double const * getChannelBoundaries() const ;
-  size_t const * getChannelIndices() const ;
-  double const * getWidths() const ;
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(FactoryMessenger *fmp); ///< called from Factory
+    void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
     static Spectrometer::Subcontractor_t Subcontractor;
 #endif
 

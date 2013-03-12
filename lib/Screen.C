@@ -847,7 +847,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
     else if (name=="Spectrometer") {
-      scr -> setSpectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
+      string kind = fmp->getAttribute("kind");
+      cout << "kind: " << kind << endl;
+      scr -> setSpectrometer ((Spectrometer::getSubcontractor(kind))(fmp->getChild()));
     }
     else if (name=="Alpha0"){
       alpha0 = atof(tc); alpha0_found=1;

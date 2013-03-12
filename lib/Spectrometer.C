@@ -18,6 +18,7 @@
  */
 
 #include "GyotoSpectrometer.h"
+#include "GyotoComplexSpectrometer.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoConverters.h"
@@ -27,6 +28,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+#include <cstring>
 #include <cstdlib>
 #include <float.h> // DBL_MAX
 using namespace Gyoto;
@@ -43,6 +45,7 @@ void Spectrometer::initRegister() {
   Register("wavelog", &(Uniform::Subcontractor));
   Register("freq", &(Uniform::Subcontractor));
   Register("freqlog", &(Uniform::Subcontractor));
+  Register("Complex", &(Subcontractor<Complex>));
 }
 
 void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
@@ -63,51 +66,83 @@ Spectrometer::getSubcontractor(std::string name, int errmode) {
 
 Generic::Generic() :
   SmartPointee(),
-  kind_(GYOTO_SPECTRO_KIND_NONE)
-{}
-Generic::Generic(SpectroKind_t kind) :
-  SmartPointee(),
-  kind_(kind)
-{}
-Generic::Generic(const Generic& o) :
-  SmartPointee(o),
-  kind_(o.kind_)
-{}
-Generic::~Generic() {}
-
-char const * Generic::getKind() const {return kind_;}
-void Generic::setKind(char const * k) {kind_=k;}
-
-
-Uniform::Uniform() :
+  Teller(),
+  kind_(GYOTO_SPECTRO_KIND_NONE),
   nsamples_(0),
+  nboundaries_(0),
   boundaries_(NULL),
   chanind_(NULL),
   midpoints_(NULL),
   widths_(NULL)
+{}
+Generic::Generic(SpectroKind_t kind) :
+  SmartPointee(),
+  Teller(),
+  kind_(kind),
+  nsamples_(0),
+  nboundaries_(0),
+  boundaries_(NULL),
+  chanind_(NULL),
+  midpoints_(NULL),
+  widths_(NULL)
+{}
+Generic::Generic(const Generic& o) :
+  SmartPointee(o),
+  Teller(o),
+  kind_(o.kind_),
+  nsamples_(o.nsamples_),
+  nboundaries_(o.nboundaries_),
+  boundaries_(NULL),
+  chanind_(NULL),
+  midpoints_(NULL),
+  widths_(NULL)
+{
+  if (o.boundaries_) boundaries_=new double[nboundaries_];
+  memcpy(boundaries_, o.boundaries_, nboundaries_*sizeof(double));
+  if (o.widths_) widths_=new double[nsamples_];
+  memcpy(widths_, o.widths_, nsamples_*sizeof(double));
+  if (o.midpoints_) midpoints_=new double[nsamples_];
+  memcpy(midpoints_, o.midpoints_, nsamples_*sizeof(double));
+  if (o.chanind_) chanind_=new size_t[2*nsamples_];
+  memcpy(chanind_, o.chanind_, 2*nsamples_*sizeof(size_t));
+}
+Generic::~Generic() {
+  if (boundaries_) delete [] boundaries_;
+  if (widths_) delete [] widths_;
+  if (midpoints_) delete [] midpoints_;
+  if (chanind_) delete [] chanind_;
+}
+
+char const * Generic::getKind() const {return kind_;}
+void Generic::setKind(char const * k) {kind_=k;}
+
+size_t Generic::getNSamples() const { return nsamples_; }
+size_t Generic::getNBoundaries() const { return nboundaries_; }
+
+double const * Generic::getMidpoints() const { return midpoints_; }
+double const * Generic::getChannelBoundaries() const { return boundaries_;}
+size_t const * Generic::getChannelIndices() const { return chanind_; }
+double const * Generic::getWidths() const { return widths_; }
+
+///////////// UNIFORM /////////////////
+
+
+Uniform::Uniform() :
+  Generic()
 {
   band_[0]=0.; band_[1]=0.;
 }
 Uniform::Uniform(size_t nsamples, double band_min, double band_max,
 			   SpectroKind_t kind) :
-  Generic(kind),
-  nsamples_(nsamples),
-  boundaries_(NULL),
-  chanind_(NULL),
-  midpoints_(NULL),
-  widths_(NULL)
+  Generic(kind)
 {
+  nsamples_=nsamples;
   band_[0]=band_min; band_[1]=band_max;
   if (nsamples && kind) reset_();
 }
 
 Uniform::Uniform(const Uniform& o) :
-  Generic(o),
-  nsamples_(o.nsamples_),
-  boundaries_(NULL),
-  chanind_(NULL),
-  midpoints_(NULL),
-  widths_(NULL)
+  Generic(o)
 {
   band_[0]=o.band_[0]; band_[1]=o.band_[1];
   reset_();
@@ -116,10 +151,6 @@ Uniform::Uniform(const Uniform& o) :
 Generic* Uniform::clone() const { return new Uniform(*this); }
 
 Uniform::~Uniform() {
-  if (boundaries_) delete [] boundaries_;
-  if (chanind_)    delete [] chanind_;
-  if (midpoints_)  delete [] midpoints_;
-  if (widths_)     delete [] widths_;
 }
 
 void Uniform::reset_() {
@@ -191,7 +222,7 @@ void Uniform::reset_() {
     if (debug()) cerr << midpoints_[i] << endl;
 #   endif
   }
-
+  tellListeners();
 }
 
 void Uniform::setKind(SpectroKind_t k) {
@@ -215,7 +246,11 @@ void Uniform::setKind(std::string str) {
   reset_();
 }
 
-void Uniform::setNSamples(size_t n) { nsamples_ = n; reset_(); }
+void Uniform::setNSamples(size_t n) {
+  nsamples_ = n;
+  nboundaries_=nsamples_+1;
+  reset_();
+}
 void Uniform::setBand(double nu[2]) {
   band_[0] = nu[0];
   band_[1] = nu[1];
@@ -250,27 +285,23 @@ void Uniform::setBand(double nu[2], string unit, string kind) {
   setBand(band);
 }
 
-size_t Uniform::getNSamples() const { return nsamples_; }
-size_t Uniform::getNBoundaries() const { return nsamples_+1; }
-
 double const * Uniform::getBand() const { return band_; }
-
-double const * Uniform::getMidpoints() const { return midpoints_; }
-double const * Uniform::getChannelBoundaries() const { return boundaries_;}
-size_t const * Uniform::getChannelIndices() const { return chanind_; }
-double const * Uniform::getWidths() const { return widths_; }
 
 std::string Gyoto::Spectrometer::Uniform::getKindStr() const { return kind_; }
 
 #ifdef GYOTO_USE_XERCES
 
-void Uniform::fillElement(FactoryMessenger *fmp) {
-  fmp -> setSelfAttribute( "kind", getKindStr() );
+void Generic::fillElement(FactoryMessenger *fmp) const {
+  fmp -> setSelfAttribute( "kind", getKind() );
+}
+
+void Uniform::fillElement(FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute( "nsamples", nsamples_ );
   ostringstream ss;
   ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[0] << " "
      << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[1];
   fmp -> setFullContent(ss.str()); 
+  Generic::fillElement(fmp);
 }
 
 SmartPointer<Generic>
