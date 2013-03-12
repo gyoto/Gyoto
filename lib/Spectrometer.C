@@ -33,16 +33,53 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 using namespace std;
 
-Generic::Generic() {}
-Generic::Generic(const Generic& o) :
-  SmartPointee(o)
-{
+#if defined GYOTO_USE_XERCES
+Register::Entry* Gyoto::Spectrometer::Register_ = NULL;
+void Spectrometer::initRegister() {
+  if (Gyoto::Spectrometer::Register_) delete Gyoto::Spectrometer::Register_;
+  Gyoto::Spectrometer::Register_ = NULL;
+  // statically fill the register
+  Register("wave", &(Uniform::Subcontractor));
+  Register("wavelog", &(Uniform::Subcontractor));
+  Register("freq", &(Uniform::Subcontractor));
+  Register("freqlog", &(Uniform::Subcontractor));
 }
+
+void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
+  Register::Entry* ne =
+    new Register::Entry(name, (SmartPointee::Subcontractor_t*)scp, Gyoto::Spectrometer::Register_);
+  Gyoto::Spectrometer::Register_ = ne;
+}
+
+Gyoto::Spectrometer::Subcontractor_t*
+Spectrometer::getSubcontractor(std::string name, int errmode) {
+  if (!Gyoto::Spectrometer::Register_) throwError("No Spectrometer kind registered!");
+  return (Subcontractor_t*)Gyoto::Spectrometer::Register_
+    -> getSubcontractor(name, errmode);
+}
+#endif
+
+
+
+Generic::Generic() :
+  SmartPointee(),
+  kind_(GYOTO_SPECTRO_KIND_NONE)
+{}
+Generic::Generic(SpectroKind_t kind) :
+  SmartPointee(),
+  kind_(kind)
+{}
+Generic::Generic(const Generic& o) :
+  SmartPointee(o),
+  kind_(o.kind_)
+{}
 Generic::~Generic() {}
+
+char const * Generic::getKind() const {return kind_;}
+void Generic::setKind(char const * k) {kind_=k;}
 
 
 Uniform::Uniform() :
-  kind_(GYOTO_SPECTRO_KIND_NONE),
   nsamples_(0),
   boundaries_(NULL),
   chanind_(NULL),
@@ -53,7 +90,7 @@ Uniform::Uniform() :
 }
 Uniform::Uniform(size_t nsamples, double band_min, double band_max,
 			   SpectroKind_t kind) :
-  kind_(kind),
+  Generic(kind),
   nsamples_(nsamples),
   boundaries_(NULL),
   chanind_(NULL),
@@ -66,7 +103,6 @@ Uniform::Uniform(size_t nsamples, double band_min, double band_max,
 
 Uniform::Uniform(const Uniform& o) :
   Generic(o),
-  kind_(o.kind_),
   nsamples_(o.nsamples_),
   boundaries_(NULL),
   chanind_(NULL),
@@ -172,7 +208,7 @@ void Uniform::setKind(std::string str) {
   else if (str == "wave"   ) s = GYOTO_SPECTRO_KIND_WAVE;
   else if (str == "wavelog") s = GYOTO_SPECTRO_KIND_WAVELOG;
   else {
-    throwError("unknow Uniform kind"); s=GYOTO_SPECTRO_KIND_NONE;
+    throwError("unknown Spectrometer::Uniform kind"); s=GYOTO_SPECTRO_KIND_NONE;
   }
 
   kind_ = s;
@@ -190,58 +226,28 @@ void Uniform::setBand(double nu[2], string unit, string kind) {
   if (kind != "") setKind(kind);
   double band[2] = {nu[0], nu[1]};
 
-  switch (kind_) {
-  case GYOTO_SPECTRO_KIND_FREQ: 
+  if (kind_==GYOTO_SPECTRO_KIND_FREQ) {
     if (unit != "" && unit != "Hz")
       for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToHerz(nu[i], unit);
-    break;
-  case GYOTO_SPECTRO_KIND_FREQLOG:
+  } else if (kind_== GYOTO_SPECTRO_KIND_FREQLOG) {
     if (unit != "" && unit != "Hz")
       for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToHerz(pow(10., nu[i]), unit));
-    break;
-  case GYOTO_SPECTRO_KIND_WAVE:
+  } else if (kind_== GYOTO_SPECTRO_KIND_WAVE) {
     if (unit != "" && unit != "m")
       for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToMeters(nu[i], unit);
-    break;
-  case GYOTO_SPECTRO_KIND_WAVELOG:
+  } else if (kind_ == GYOTO_SPECTRO_KIND_WAVELOG) {
     if (unit != "" && unit != "m")
       for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
-    break;
-  default:
+  } else {
     throwError("Uniform::setBand(double, string, string) at loss: "
 	       "please specify Spectrometer kind");
   }
 
   setBand(band);
-}
-
-SpectroKind_t Uniform::getKind() const {
-  return kind_;
-}
-
-std::string Uniform::getKindStr() const {
-  std::string skind = "";
-  stringstream ss;
-  switch (kind_) {
-  case GYOTO_SPECTRO_KIND_NONE:
-    skind = ("none"); break;
-  case GYOTO_SPECTRO_KIND_FREQ:
-    skind = ("freq"); break;
-  case GYOTO_SPECTRO_KIND_FREQLOG:
-    skind = ("freqlog"); break;
-  case GYOTO_SPECTRO_KIND_WAVE:
-    skind = ("wave"); break;
-  case GYOTO_SPECTRO_KIND_WAVELOG:
-    skind = ("wavelog"); break;
-  default:
-    ss << "Unknown spectrometer kind: " << kind_;
-    throwError( ss.str() );
-  }
-  return skind;
 }
 
 size_t Uniform::getNSamples() const { return nsamples_; }
@@ -253,6 +259,8 @@ double const * Uniform::getMidpoints() const { return midpoints_; }
 double const * Uniform::getChannelBoundaries() const { return boundaries_;}
 size_t const * Uniform::getChannelIndices() const { return chanind_; }
 double const * Uniform::getWidths() const { return widths_; }
+
+std::string Gyoto::Spectrometer::Uniform::getKindStr() const { return kind_; }
 
 #ifdef GYOTO_USE_XERCES
 
@@ -266,7 +274,7 @@ void Uniform::fillElement(FactoryMessenger *fmp) {
 }
 
 SmartPointer<Generic>
-Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
+Gyoto::Spectrometer::Uniform::Subcontractor(FactoryMessenger* fmp) {
 
   string skind = fmp -> getSelfAttribute( "kind" );
   size_t nsamples = atol( fmp -> getSelfAttribute( "nsamples" ) . c_str () );
@@ -287,3 +295,8 @@ Gyoto::SpectrometerSubcontractor(FactoryMessenger* fmp) {
 
 
 #endif
+
+char const * const Uniform::WaveKind = "wave";
+char const * const Uniform::WaveLogKind = "wavelog";
+char const * const Uniform::FreqKind = "freq";
+char const * const Uniform::FreqLogKind = "freqlog";

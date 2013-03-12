@@ -846,8 +846,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
-    else if (name=="Spectrometer")
-      scr -> setSpectrometer (SpectrometerSubcontractor(fmp->getChild()));
+    else if (name=="Spectrometer") {
+      scr -> setSpectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
+    }
     else if (name=="Alpha0"){
       alpha0 = atof(tc); alpha0_found=1;
     }

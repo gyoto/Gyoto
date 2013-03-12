@@ -82,7 +82,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
       if ((*rvset)++) y_error(rmsg);
       *ypush_q(0) = p_strcpy(pspu -> getKindStr() . c_str());
     } else { // set spectro kind
-      pspu -> setKind(ygets_q(iarg));
+      pspu -> setKind(std::string(ygets_q(iarg)));
     }
   }
 

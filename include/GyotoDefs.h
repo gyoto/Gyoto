@@ -41,12 +41,12 @@ namespace Gyoto {
    * GYOTO_SPECTRO_KIND_WAVELOG
    *  
    */
-  typedef unsigned int SpectroKind_t;
-#define GYOTO_SPECTRO_KIND_NONE    0
-#define GYOTO_SPECTRO_KIND_FREQ    1 ///< Spectrometer kind="freq"
-#define GYOTO_SPECTRO_KIND_FREQLOG 2 ///< Spectrometer kind="freqlog"
-#define GYOTO_SPECTRO_KIND_WAVE    3 ///< Spectrometer kind="wave"
-#define GYOTO_SPECTRO_KIND_WAVELOG 4 ///< Spectrometer kind="wavelog"
+  typedef char const * SpectroKind_t;
+#define GYOTO_SPECTRO_KIND_NONE    (char const *) 0
+#define GYOTO_SPECTRO_KIND_FREQ    Gyoto::Spectrometer::Uniform::FreqKind ///< Spectrometer kind="freq"
+#define GYOTO_SPECTRO_KIND_FREQLOG Gyoto::Spectrometer::Uniform::FreqLogKind ///< Spectrometer kind="freqlog"
+#define GYOTO_SPECTRO_KIND_WAVE    Gyoto::Spectrometer::Uniform::WaveKind ///< Spectrometer kind="wave"
+#define GYOTO_SPECTRO_KIND_WAVELOG Gyoto::Spectrometer::Uniform::WaveLogKind ///< Spectrometer kind="wavelog"
 
   /**
    * \brief Observable quantities

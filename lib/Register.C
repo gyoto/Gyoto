@@ -81,6 +81,8 @@ void Gyoto::Register::init(char const *  cpluglist) {
   Metric::initRegister();
   Astrobj::initRegister();
   Spectrum::initRegister();
+  // This cleans and fills Spectometer::Register_
+  Spectrometer::initRegister();
 
   // Init units system
   Units::Init();

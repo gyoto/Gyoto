@@ -36,15 +36,74 @@ namespace Gyoto{
   namespace Spectrometer {
     class Generic;
     class Uniform;
+    /**
+     * This is a more specific version of the
+     * SmartPointee::Subcontractor_t type. A Spectrometer::Subcontrator_t
+     * is called by the Gyoto::Factory to build an instance of the
+     * kind of spectrometer specified in an XML file (see
+     * Register()). The Factory and Subcontractor_t function
+     * communicate through a Gyoto::FactoryMessenger.
+     */
+    typedef SmartPointer<Gyoto::Spectrometer::Generic>
+      Subcontractor_t(Gyoto::FactoryMessenger*);
+    ///< A function to build instances of a specific Astrobj::Generic sub-class
+
+    /**
+     * Query the Spectrometer register to get the Spectrometer::Subcontractor_t
+     * correspondig to a given kind name. This function is normally
+     * called only from the Factory.
+     *
+     * \param name e.g. "Star"
+     * \return pointer to the corresponding subcontractor.
+     */
+    Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
+						      int errmode = 1);
+    ///< Query the Spectrometer register
+
+#if defined GYOTO_USE_XERCES
+    /**
+     * Use the Spectrometer::initRegister() once in your program to
+     * initiliaze it, the Spectrometer::Register() function to fill it, and
+     * the Spectrometer::getSubcontractor() function to query it.
+     */
+    extern Gyoto::Register::Entry * Register_;
+    ///< The Spectrometer register
+
+     /**
+      *  This must be called once.
+      */
+    void initRegister(); 
+    ///< Empty the Spectrometer register
+
+    /**
+     * Register a new Spectrometer::Generic sub-class so that the
+     * Gyoto::Factory knows it.
+     *
+     * \param name The kind name which identifies this object type in
+     * an XML file, as in &lt;Spectrometer kind="name"&gt;
+     *
+     * \param scp A pointer to the subcontractor, which will
+     * communicate whith the Gyoto::Factory to build an instance of
+     * the class from its XML description
+     */
+    void Register(std::string name, Gyoto::Spectrometer::Subcontractor_t* scp);
+    ///< Make an Spectrometer kind known to the Factory
+#endif
+
   }
 }
 
 class Gyoto::Spectrometer::Generic : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+ protected:
+  char const * kind_;
  public:
   Generic();
+  Generic(SpectroKind_t kind);
   Generic(const Generic& ) ;                ///< Copy constructor
   virtual ~Generic();
+  virtual char const * getKind() const;
+  virtual void  setKind(char const *) ;
   virtual size_t getNSamples() const =0;
   virtual size_t getNBoundaries() const =0;
   virtual double const * getMidpoints() const =0 ;
@@ -70,7 +129,6 @@ class Gyoto::Spectrometer::Generic : protected Gyoto::SmartPointee {
 class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Uniform>;
  protected:
-  SpectroKind_t kind_; ///< none, freqlog, freq, wavelog or wave.
   size_t nsamples_; ///< number of spectral elements
   double band_[2]; ///< boundaries of the spectro 
   /**
@@ -118,7 +176,6 @@ Channels may or may not be contiguous or ordered.
    */
   void setBand(double nu[2], std::string unit, std::string kind="");
 
-  SpectroKind_t getKind() const ;
   std::string getKindStr() const;
   size_t getNSamples() const ;
   size_t getNBoundaries() const ;
@@ -132,16 +189,16 @@ Channels may or may not be contiguous or ordered.
 #ifdef GYOTO_USE_XERCES
  public:
     void fillElement(FactoryMessenger *fmp); ///< called from Factory
+    static Spectrometer::Subcontractor_t Subcontractor;
 #endif
+
+    static SpectroKind_t const WaveKind;
+    static SpectroKind_t const WaveLogKind;
+    static SpectroKind_t const FreqKind;
+    static SpectroKind_t const FreqLogKind;
+
 
 };
-
-
-#ifdef GYOTO_USE_XERCES
-namespace Gyoto {
-  SmartPointer<Spectrometer::Generic> SpectrometerSubcontractor(FactoryMessenger* fmp);
-}
-#endif
 
 
 #endif
