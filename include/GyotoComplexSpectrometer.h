@@ -145,6 +145,9 @@ class Gyoto::Spectrometer::Complex
   Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> const operator[](size_t i) const;
   ///< Retrieve a const version of the i-th element.
   
+  static SpectroKind_t const Kind;
+
+
  protected:
 };
 

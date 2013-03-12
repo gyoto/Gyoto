@@ -28,8 +28,10 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
+SpectroKind_t const Complex::Kind = "Complex";
+
 Complex::Complex() :
-  Generic("Complex"),
+  Generic(Complex::Kind),
   cardinal_(0),
   elements_(NULL)
 {

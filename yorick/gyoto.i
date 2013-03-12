@@ -674,6 +674,9 @@ extern gyoto_SpectroUniform;
 extern _gyoto_SpectroUniform_register_as_Spectro;
 _gyoto_SpectroUniform_register_as_Spectro;
 
+extern gyoto_SpectroComplex;
+extern _gyoto_SpCplx_register_as_Spectrometer;
+_gyoto_SpCplx_register_as_Spectrometer;
 
 func gyoto_plg3(x,y,z, keywords=) {
 /* DOCUMENT gyoto_plg3, x, y, z
