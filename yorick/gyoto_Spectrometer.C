@@ -44,8 +44,6 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
     *ypush_Spectrometer() = *sp;
   }
 
-  Spectrometer::Uniform *pspu = dynamic_cast<Spectrometer::Uniform*>((Spectrometer::Generic*)(*sp));
-
   static char const * knames[]={
     "unit",
     "kind", "nsamples", "band", 
@@ -80,8 +78,9 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
     iarg+=*rvset;
     if (yarg_nil(iarg)) { // get spectro kind
       if ((*rvset)++) y_error(rmsg);
-      *ypush_q(0) = p_strcpy(pspu -> getKindStr() . c_str());
+      *ypush_q(0) = p_strcpy((*sp) -> getKind() );
     } else { // set spectro kind
+      Spectrometer::Uniform *pspu = dynamic_cast<Spectrometer::Uniform*>((Spectrometer::Generic*)(*sp));
       pspu -> setKind(std::string(ygets_q(iarg)));
     }
   }
@@ -90,11 +89,15 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
   if ((iarg=kiargs[++k])>=0) {
       iarg+=*rvset;
       if (yarg_nil(iarg)) ypush_long((*sp)->getNSamples());
-      else pspu -> setNSamples( ygets_l(iarg) );
+      else {
+	Spectrometer::Uniform *pspu = dynamic_cast<Spectrometer::Uniform*>((Spectrometer::Generic*)(*sp));
+	pspu -> setNSamples( ygets_l(iarg) );
+      }
   }
 
   /* BAND */
   if ((iarg=kiargs[++k])>=0) {
+    Spectrometer::Uniform *pspu = dynamic_cast<Spectrometer::Uniform*>((Spectrometer::Generic*)(*sp));
     iarg+=*rvset;
     double * boundaries = NULL;
     if (yarg_nil(iarg)) { // get spectro band
@@ -130,7 +133,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
     if (nsamples) {
       long dims[] = {1, nsamples+1};
       double const * const nuchannels = (*sp) -> getChannelBoundaries();
-      SpectroKind_t kind= pspu -> getKind();
+      SpectroKind_t kind= (*sp) -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<=nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
@@ -152,7 +155,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuchannels = (*sp) -> getMidpoints();
-      SpectroKind_t kind= pspu -> getKind();
+      SpectroKind_t kind= (*sp) -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
@@ -174,7 +177,7 @@ void YGyoto::SpectroYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int arg
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuwidths = (*sp) -> getWidths();
-      SpectroKind_t kind= pspu -> getKind();
+      SpectroKind_t kind= (*sp) -> getKind();
       double * ywidths = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ywidths[i] = nuwidths[i];

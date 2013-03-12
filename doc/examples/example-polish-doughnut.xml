@@ -21,14 +21,17 @@
           Put top on top...
     <Argument> 0 </Argument>
     <Resolution> 32 </Resolution>
-<Spectrometer kind="Complex">
-    <SubSpectrometer kind="freqlog" nsamples="100">5. 25.</SubSpectrometer>
-    <SubSpectrometer kind="freqlog" nsamples="20">11. 13.</SubSpectrometer>
-    <SubSpectrometer kind="freqlog" nsamples="1">15. 15.</SubSpectrometer>
-    <SubSpectrometer kind="freq" nsamples="1" unit="eV">
-      4 5
-    </SubSpectrometer>
-  </Spectrometer>
+    <Spectrometer kind="Complex">
+      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+	0.9 1.1      
+      </SubSpectrometer>
+      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+	2.1 2.3      
+      </SubSpectrometer>
+      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+	2.9 3.1      
+      </SubSpectrometer>
+    </Spectrometer>
   </Screen>
 
   <!--Quantities>BinSpectrum[W/m²/pix²]</Quantities-->
