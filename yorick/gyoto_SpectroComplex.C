@@ -99,7 +99,7 @@ void YGyoto::SpCplxEval(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *sp_, 
   
   ygyoto_Spectrometer_generic_eval(sp_, kiargs+k+1, piargs, rvset, paUsed, unit);
   
-  if (!(*paUsed) && (iarg=piargs[0])>=0) {
+  if (!(*paUsed) && (iarg=piargs[0])>=0 && !yarg_nil(iarg)) {
     iarg+=*rvset;
     if ((*rvset)++) y_error(rmsg);
     ++(*paUsed);
