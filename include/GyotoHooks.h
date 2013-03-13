@@ -1,10 +1,16 @@
 /**
  * \file GyotoHooks.h 
- * \brief Tellers tell Listeneres when they mutate
+ * \brief Tellers tell Listeners when they mutate
+   *
+   * A Listener can hook() to a Teller. The Teller will tell it when
+   * it mutates using Listener::tell(), usually through the highter
+   * lever Teller::tellListeners(). The Listener can later
+   * unhook(). The Listener must therefore implement Listener::tell()
+   * to react when it is told.
  */
 
 /*
-    Copyright 2012 Thibaut Paumard
+    Copyright 2012-2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -25,21 +31,31 @@
 #ifndef __GyotoHooks_h
 #define __GyotoHooks_h
 
+/**
+ * \namespace Gyoto::Hook
+ * \brief Listeners attach to Tellers
+ *
+ * A Listener can hook() to a Teller. The Teller will tell it when
+ * it mutates using Listener::tell(), usually through the highter
+ * lever Teller::tellListeners(). The Listener can later
+ * unhook(). The Listener must therefore implement Listener::tell()
+ * to react when it is told.
+ */
 namespace Gyoto {
-  /**
-   * \namespace Hook
-   * \brief Listeners attach to Tellers
-   */
   namespace Hook {
     /**
      * \class Teller
      * \brief Listen to me and I'll warn you when I change
+     *
+     * Listen to me by calling my hook() method.
      */
     class Teller;
 
     /**
      * \class Listener
      * \brief I might listen to a Teller
+     *
+     * Whisper to my ear by using my tell() method.
      */
     class Listener;
   };
@@ -48,24 +64,28 @@ namespace Gyoto {
 class Gyoto::Hook::Listener {
   friend class Gyoto::Hook::Teller;
  public:
-  Listener();
-  ~Listener();
+  Listener(); ///< Constructor
+  ~Listener(); ///< Destructor
 
  protected:
   /**
    * \brief This is how a Teller tells
    *
-   * A teller will basically call listener->tell(this)
+   * A teller will basically call listener->tell(this).
    *
    * \param msg Teller* the Teller who is telling... Useful if the
    * Listener listens to several Tellers.
    */
-  virtual void tell(Gyoto::Hook::Teller *msg); ///< Called by Teller
+  virtual void tell(Gyoto::Hook::Teller *msg);
 };
 
 class Gyoto::Hook::Teller {
   friend class Gyoto::Hook::Listener;
  private:
+  /**
+   * \class ListenerItem
+   * \brief Private (undocumented) class to hold listeners_
+   */
   class ListenerItem;
 
   /**
@@ -74,14 +94,20 @@ class Gyoto::Hook::Teller {
   ListenerItem *listeners_;
 
  public:
-  Teller();
-  Teller(const Teller &);
-  ~Teller();
+  Teller(); ///< Default constructor
+  Teller(const Teller &); ///< Copy constructor
+  ~Teller(); ///< Destructor
 
   /**
    * \brief Start listening
    *
-   * Use as teller->hook(this)
+   * Use from a Hook::Listener object method:
+   * \code
+   * teller->hook(this)
+   * \endcode
+   * where "this" is a Listener and "teller" is a Teller.
+   *
+   * Use unhook() later to stop listening to a given Teller. 
    *
    * \param listener pointer to the new listener
    */
@@ -90,15 +116,24 @@ class Gyoto::Hook::Teller {
   /**
    * \brief Stop listening
    *
-   * Use as teller->hook(this)
+   * Use from a Hook::Listener object method:
+   * \code
+   * teller->unhook(this)
+   * \endcode
+
+   * where "this" is a Listener, "teller" is a Teller, and "this" has
+   * called teller->hook(this) previously.
    *
-   * \param listener pointer to the new listener
+   * \param listener pointer to the listener
    */
   virtual void unhook (Listener *);
 
  protected:
   /**
-   * \brief Call tell() on each hooked Listener 
+   * \brief Call tell() on each hooked Listener
+   *
+   * Whenever a Teller mutates, it should warn any Listener hooked to
+   * it using tellListeners().
    */
   virtual void tellListeners();
 };

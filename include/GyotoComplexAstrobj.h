@@ -43,8 +43,8 @@ namespace Gyoto{
  *  A Gyoto::Astrobj::Generic whic contain several
  *  Gyoto::Astrobj::Generic instances. It is essentially a
  *  SmartPointer<Astrobj::Generic> array, which some methods
- *  arround. Indeed, the operator[](size_t i) method is implemented to retrived
- *  the i-th element.
+ *  arround. Indeed, the operator[](size_t i) method is implemented to
+ *  retrieve the i-th element.
  *
  * In an XML description, the
  *  &lt;Astrobj&gt; section must be unique, its kind is

@@ -138,8 +138,9 @@ libgyoto_la_LIBADD =
 am_libgyoto_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
 	SmartPointer.lo Utils.lo Metric.lo Worldline.lo FocalPlane.lo \
 	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
-	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo ThinDisk.lo \
-	Converters.lo Functors.lo Hooks.lo
+	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
+	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
+	Hooks.lo
 libgyoto_la_OBJECTS = $(am_libgyoto_la_OBJECTS)
 libgyoto_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
@@ -347,7 +348,7 @@ lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	Worldline.C FocalPlane.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
-	Spectrometer.C ComplexSpectrometer.C \
+	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
 
 libgyoto_la_LIBS = $(XERCESLDFLAGS)
@@ -526,6 +527,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ThinDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ThinDiskPL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Torus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSpectrometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Worldline.Plo@am__quote@

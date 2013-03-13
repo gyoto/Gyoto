@@ -1,12 +1,12 @@
 /**
  * \file GyotoComplexSpectrometer.h
- * \brief Combine astronomical objects
+ * \brief Combine spectrometer objects
  *
- *  An astrobj made of several astrobjs
+ *  A spectrometer made of several spectrometers
  */
 
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -38,37 +38,29 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Spectrometer::Complex
- * \brief Complex astronomical object
+ * \brief Complex spectrometer object
  *
  *  A Gyoto::Spectrometer::Generic whic contain several
  *  Gyoto::Spectrometer::Generic instances. It is essentially a
  *  SmartPointer<Spectrometer::Generic> array, which some methods
- *  arround. Indeed, the operator[](size_t i) method is implemented to retrived
- *  the i-th element.
+ *  arround. Indeed, the operator[](size_t i) method is implemented to
+ *  retrieve the i-th element.
  *
- * In an XML description, the
- *  &lt;Spectrometer&gt; section must be unique, its kind is
- *  "Complex". Each sub-astrobj then appears as a
- *  &lt;SubSpectrometer&gt; subsection:
-\code
-  <Spectrometer kind = "Complex">
-    <SubSpectrometer kind = "ThinInfiniteDiskBL"/>
-    <SubSpectrometer kind = "Star">
-      <Radius> 2. </Radius>
-      <Velocity> 0. 0. 0.037037 </Velocity>
-      <Position> 600. 9. 1.5707999999999999741 0 </Position>
-      <Spectrum kind="PowerLaw">
-	<Exponent> 0 </Exponent>
-	<Constant> 0.001 </Constant>
-      </Spectrum>
-      <Opacity kind="PowerLaw">
-	<Exponent> 0 </Exponent>
-	<Constant> 0.01 </Constant>
-      </Opacity>
-      <OpticallyThin/>
-    </SubSpectrometer>
-  </Spectrometer>
-\endcode
+ * In an XML description, the &lt;Spectrometer&gt; section is unique,
+ *  its kind is "Complex". Each sub-spectrometer then appears as a
+ *  &lt;SubSpectrometer&gt; subsection. For instance, to compute 10
+ *  channels ovr the K infrared band plus 10 channels in the high
+ *  energy domain:
+ * \code
+ * <Spectrometer kind = "Complex">
+ *   <SubSpectrometer kind = "wave" nsamples=10 unit="µm">
+ *     2.0 2.4
+ *   </SubSpectrometer>
+ *   <SubSpectrometer kind = "freqlog" nsamples=10 unit="eV">
+ *     14 22
+ *   </SubSpectrometer>
+ * </Spectrometer>
+ * \endcode
  *
  */
 class Gyoto::Spectrometer::Complex
@@ -82,20 +74,40 @@ class Gyoto::Spectrometer::Complex
  protected:
 
   /**
-   * Number of objects
+   * \brief Number of subspectrometers
+   *
+   * Size of elements_.
    */
   size_t cardinal_;
 
+  /**
+   * \brief Actual array of SmartPointer<Spectrometer::Generic> objects
+   */
   Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> * elements_;
 
 
  public:
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.
-  virtual Complex* clone() const; ///< "Virtual" copy constructor
 
   /**
-   *  Frees every SmartPointer<Spectrometer::Generic> before freed the array itself.
+   * \brief Clone an instance
+   * 
+   * Use this to get a deep copy of an instance;
+   * \code
+   * SmartPointer<Generic> myclone = orig->clone();
+   * \endcode
+   *
+   * Most implementations will use the copy constructor:
+   * \code
+   * Generic* Uniform::clone() const { return new Uniform(*this); }
+   * \endcode
+   */
+  virtual Complex* clone() const;
+
+  /**
+   *  Frees every SmartPointer<Spectrometer::Generic> before freed the
+   *  array itself.
    */
   virtual ~Complex() ; ///< Destructor
 
@@ -117,18 +129,30 @@ class Gyoto::Spectrometer::Complex
   size_t getCardinal() const;
   ///< Get the number of elements in the array.
 
-  virtual void tell(Gyoto::Hook::Teller *msg); ///< Called by Teller
+  virtual void tell(Gyoto::Hook::Teller *msg);
 
  public:
 #ifdef GYOTO_USE_XERCES
+  /**
+   * \brief Fill in the XML entity
+   *
+   * Loops on elements_[i]->fillElement();
+   */ 
   virtual void fillElement(FactoryMessenger *fmp) const ;
+
+  /**
+   * \brief Main loop in the (templated) subcontractor
+   *
+   * In the case of Spectrometer::Complex, the setParameter() API is
+   * not sufficient: setParameters() needs acces to the
+   * factoryMessenger to instanciate childs for the SubSpectrometers.
+   */
   virtual void setParameters(FactoryMessenger *fmp);
 #endif
   
   // Outputs
   // -------
  public:
-
 
   /**
    * This should work as expected:
@@ -145,7 +169,17 @@ class Gyoto::Spectrometer::Complex
   Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> const operator[](size_t i) const;
   ///< Retrieve a const version of the i-th element.
   
-  static SpectroKind_t const Kind;
+  /**
+   * \brief "Complex"
+   *
+   * Use this static member attribute to check whether a Spectrometer
+   * object spectro is of kind Complex:
+   * \code
+   * if (spectro->getKind() == Complex::Kind) ... ;
+   * \endcode
+   *
+   */
+  static kind_t const Kind;
 
 
  protected:

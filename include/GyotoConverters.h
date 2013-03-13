@@ -437,7 +437,7 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
   /**
    * \brief Convert to Unit
    *
-   * \param value double to convert
+   * \param val double to convert
    * \param from_unit Unit from which to convert
    * 
    * \return value converted to unit_.
@@ -447,7 +447,7 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
   /**
    * \brief Convert from Unit
    *
-   * \param value double to convert
+   * \param val double to convert
    * \param to_unit Unit to which to convert
    * 
    * \return value converted to "to_unit".

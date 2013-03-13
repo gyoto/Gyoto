@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -354,13 +354,15 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
   //XML I/O
  public:
   /**
-   * Assume MyKind is a sublcass of Astrobj::Generic which has towo
+   * \brief Set parameter by name
+   *
+   * Assume MyKind is a subclass of Astrobj::Generic which has two
    * members (a string StringMember and a double DoubleMember):
 \code
-int MyKind::setParameter(std::string name, std::string content) {
+int MyKind::setParameter(std::string name, std::string content, std::string unit) {
  if      (name=="StringMember") setStringMember(content);
- else if (name=="DoubleMember") setDoubleMemeber(atof(content.c_str()));
- else return Generic::setParameter(name, content);
+ else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()), unit);
+ else return Generic::setParameter(name, content, unit);
  return 0;
 }
 \endcode
@@ -371,12 +373,12 @@ int MyKind::setParameter(std::string name, std::string content) {
    *
    * \param name XML name of the parameter
    * \param content string representation of the value
+   * \param unit string representation of the unit
    * \return 0 if this parameter is known, 1 if it is not.
    */
   virtual int setParameter(std::string name,
 			   std::string content,
 			   std::string unit) ;
-  ///< Called from setParameters()
 
 #ifdef GYOTO_USE_XERCES
   /**
@@ -389,8 +391,11 @@ int MyKind::setParameter(std::string name, std::string content) {
                                              ///< called from Factory
 
   /**
+   * \brief Main loop in Subcontractor_t function
+   *
    * The Subcontractor_t function for each Astrobj kind should look
-   * somewhat like this:
+   * somewhat like this (templated as
+   * Gyoto::Astrobj::Subcontractor<MyKind>):
 \code
 SmartPointer<Astrobj::Generic>
 Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
@@ -401,13 +406,12 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
 \endcode
    *
    * Each object kind should implement setParameter(string name,
-   * string content) to interpret the individual XML
+   * string content, string unit) to interpret the individual XML
    * elements. setParameters() can be overloaded in case the specific
    * Astrobj class needs low level access to the FactoryMessenger. See
    * UniformSphere::setParameters().
    */
   virtual void setParameters(FactoryMessenger *fmp);
-  ///< Main loop in Subcontractor_t function
 
 
 #endif

@@ -120,7 +120,7 @@ namespace Gyoto {
  * \class Gyoto::Metric::Generic
  * \brief Base class for metrics
  *
- * Example: class Gyoto::Kerr
+ * Example: class Gyoto::Metric::KerrBL
  *
  * See Gyoto::Metric for an introduction.
  *
@@ -234,6 +234,28 @@ class Gyoto::Metric::Generic
   virtual double Norm3D(double* pos) const; ///< not clear
  
 
+  /**
+   * \brief Set parameter by name
+   *
+   * Assume MyKind is a subclass of Metric::Generic which has two
+   * members (a string StringMember and a double DoubleMember):
+\code
+int MyKind::setParameter(std::string name, std::string content, std::string unit) {
+ if      (name=="StringMember") setStringMember(content);
+ else if (name=="DoubleMember") setDoubleMemeber(atof(content.c_str()), unit);
+ else return Generic::setParameter(name, content, unit);
+ return 0;
+}
+\endcode
+   * If MyKind is not a direct subclass of Generic, it should call the
+   * corresponding setParameter() implementation instead of
+   * Generic::setParameter().
+   *
+   * \param name XML name of the parameter
+   * \param content string representation of the value
+   * \param unit string representation of the unit
+   * \return 0 if this parameter is known, 1 if it is not.
+   */
   virtual void setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
@@ -241,6 +263,27 @@ class Gyoto::Metric::Generic
   // Outputs
 #ifdef GYOTO_USE_XERCES
 
+  /**
+   * \brief Main loop in Subcontractor_t function
+   *
+   * The Subcontractor_t function for each Metric kind should look
+   * somewhat like this (templated as
+   * Gyoto::Metric::Subcontractor<MyKind>):
+\code
+SmartPointer<Metric::Generic>
+Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
+  SmartPointer<MyKind> gg = new MyKind();
+  gg -> setParameters(fmp);
+  return gg;
+}
+\endcode
+   *
+   * Each metric kind should implement setParameter(string name,
+   * string content, string unit) to interpret the individual XML
+   * elements. setParameters() can be overloaded in case the specific
+   * Metric class needs low level access to the FactoryMessenger. See
+   * Gyoto::Astrobj::UniformSphere::setParameters().
+   */
   virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
 
   /**

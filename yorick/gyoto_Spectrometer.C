@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include "ygyoto.h"
+#include "GyotoUniformSpectrometer.h"
 #include "yapi.h"
 #include "pstdlib.h"
 #ifdef GYOTO_USE_XERCES
@@ -141,15 +142,15 @@ void YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     if (nsamples) {
       long dims[] = {1, nsamples+1};
       double const * const nuchannels = (*sp) -> getChannelBoundaries();
-      SpectroKind_t kind= (*sp) -> getKind();
+      kind_t kind= (*sp) -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<=nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
-	if (kind==GYOTO_SPECTRO_KIND_WAVE ||
-	    kind==GYOTO_SPECTRO_KIND_WAVELOG)
+	if (kind==Uniform::WaveKind ||
+	    kind==Uniform::WaveLogKind)
 	  ychannels[i]=GYOTO_C/ychannels[i];
-	if (kind==GYOTO_SPECTRO_KIND_FREQLOG ||
-	    kind==GYOTO_SPECTRO_KIND_WAVELOG)
+	if (kind==Uniform::FreqLogKind ||
+	    kind==Uniform::WaveLogKind)
 	  ychannels[i]=log10(ychannels[i]);
       }
 
@@ -163,15 +164,15 @@ void YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuchannels = (*sp) -> getMidpoints();
-      SpectroKind_t kind= (*sp) -> getKind();
+      kind_t kind= (*sp) -> getKind();
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ychannels[i] = nuchannels[i];
-	if (kind==GYOTO_SPECTRO_KIND_WAVE ||
-	    kind==GYOTO_SPECTRO_KIND_WAVELOG)
+	if (kind==Uniform::WaveKind ||
+	    kind==Uniform::WaveLogKind)
 	  ychannels[i]=GYOTO_C/ychannels[i];
-	if (kind==GYOTO_SPECTRO_KIND_FREQLOG ||
-	    kind==GYOTO_SPECTRO_KIND_WAVELOG)
+	if (kind==Uniform::FreqLogKind ||
+	    kind==Uniform::WaveLogKind)
 	  ychannels[i]=log10(ychannels[i]);
       }
 
@@ -185,7 +186,7 @@ void YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     if (nsamples) {
       long dims[] = {1, nsamples};
       double const * const nuwidths = (*sp) -> getWidths();
-      SpectroKind_t kind= (*sp) -> getKind();
+      kind_t kind= (*sp) -> getKind();
       double * ywidths = ypush_d(dims);
       for (size_t i=0; i<nsamples; ++i) {
 	ywidths[i] = nuwidths[i];
@@ -220,7 +221,7 @@ extern "C" {
     }
 #else
     y_print("GYOTO Spectrum object of type ",0);
-    y_print(((gyoto_Spectro*)obj)->spectro->getKindStr().c_str(),0);
+    y_print(((gyoto_Spectro*)obj)->spectro->getKind(),0);
 #endif
   }
   void gyoto_Spectro_eval(void *obj, int argc) {
@@ -359,13 +360,13 @@ extern "C" {
   }
 
   void Y__gyoto_SpectroUniform_register_as_Spectro(int argc){
-    ygyoto_Spectrometer_register(GYOTO_SPECTRO_KIND_WAVE,
+    ygyoto_Spectrometer_register(Uniform::WaveKind,
 				 &YGyoto::SpectroUniformYEval);
-    ygyoto_Spectrometer_register(GYOTO_SPECTRO_KIND_WAVELOG,
+    ygyoto_Spectrometer_register(Uniform::WaveLogKind,
 				 &YGyoto::SpectroUniformYEval);
-    ygyoto_Spectrometer_register(GYOTO_SPECTRO_KIND_FREQ,
+    ygyoto_Spectrometer_register(Uniform::FreqKind,
 				 &YGyoto::SpectroUniformYEval);
-    ygyoto_Spectrometer_register(GYOTO_SPECTRO_KIND_FREQLOG,
+    ygyoto_Spectrometer_register(Uniform::FreqLogKind,
 				 &YGyoto::SpectroUniformYEval);
   }
 
@@ -382,11 +383,11 @@ extern "C" {
       //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {
       if (yarg_Spectrometer(argc-1)) {
 	sp = yget_Spectrometer(--argc);
-	SpectroKind_t kind=(*sp)->getKind();
-	if (kind != GYOTO_SPECTRO_KIND_WAVE &&
-	    kind != GYOTO_SPECTRO_KIND_WAVELOG &&
-	    kind != GYOTO_SPECTRO_KIND_FREQ &&
-	    kind != GYOTO_SPECTRO_KIND_FREQLOG)
+	kind_t kind=(*sp)->getKind();
+	if (kind != Uniform::WaveKind &&
+	    kind != Uniform::WaveLogKind &&
+	    kind != Uniform::FreqKind &&
+	    kind != Uniform::FreqLogKind)
 	  y_error("Expecting Spectrometer of kind Uniform");
       }
     } YGYOTO_STD_CATCH;

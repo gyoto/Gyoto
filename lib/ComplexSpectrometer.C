@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -28,7 +28,7 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
-SpectroKind_t const Complex::Kind = "Complex";
+kind_t const Complex::Kind = "Complex";
 
 Complex::Complex() :
   Generic(Complex::Kind),
@@ -136,7 +136,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       child = fmp -> getChild();
       append ((*Spectrometer::getSubcontractor(content))(child));
       delete child;
-    }// else setParameter(name, content, unit);
+    } else setParameter(name, content, unit);
   }
 
   if (debug())

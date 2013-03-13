@@ -1,6 +1,6 @@
 /**
  * \file GyotoDefs.h
- * \brief #defines and typedefs for Gyoto
+ * \brief &#35;defines and typedefs for Gyoto
  */
 /*
     Copyright 2011 Thibaut Paumard
@@ -33,21 +33,6 @@
 
 /* Typedef for various Gyoto data types */
 namespace Gyoto {
-  /**
-   * \brief Spectrometer kind
-   * 
-   * One of: GYOTO_SPECTRO_KIND_NONE, GYOTO_SPECTRO_KIND_FREQ,
-   * GYOTO_SPECTRO_KIND_FREQLOG, GYOTO_SPECTRO_KIND_WAVE,
-   * GYOTO_SPECTRO_KIND_WAVELOG
-   *  
-   */
-  typedef char const * SpectroKind_t;
-#define GYOTO_SPECTRO_KIND_NONE    (char const *) 0
-#define GYOTO_SPECTRO_KIND_FREQ    Gyoto::Spectrometer::Uniform::FreqKind ///< Spectrometer kind="freq"
-#define GYOTO_SPECTRO_KIND_FREQLOG Gyoto::Spectrometer::Uniform::FreqLogKind ///< Spectrometer kind="freqlog"
-#define GYOTO_SPECTRO_KIND_WAVE    Gyoto::Spectrometer::Uniform::WaveKind ///< Spectrometer kind="wave"
-#define GYOTO_SPECTRO_KIND_WAVELOG Gyoto::Spectrometer::Uniform::WaveLogKind ///< Spectrometer kind="wavelog"
-
   /**
    * \brief Observable quantities
    *
