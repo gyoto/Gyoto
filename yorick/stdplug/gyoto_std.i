@@ -288,11 +288,16 @@ extern gyoto_PolishDoughnut;
      In addition to those listed in "help, gyoto_Astrobj":
      
         lambda= (a double) the lambda parameter
+        tempratio, centraldensity, centraltempovervirial, beta
         metric= a gyoto_Metric object (KerrBL only)
+
+   METHODS:
+     Some characteristic values can be retrieved with
+     value=pd(keyword=):
+        l0, Wsurface, Wcentre, rcusp, rcentre
 
    SEE ALSO: gyoto, gyoto_Astrobj, gyoto_KerrBL
  */
-
 
 /////// SPECTRUM KIND ///////
 
