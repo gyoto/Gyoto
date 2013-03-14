@@ -162,6 +162,7 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   chanind_    = new size_t [2*nsamples_];
   
   size_t boffset=0, offset=0;
+  size_t const * chanind=0;
   for (size_t i=0; i<cardinal_; ++i) {
     double enb = elements_[i]->getNBoundaries();
     double ens = elements_[i]->getNSamples();
@@ -174,9 +175,9 @@ void Complex::tell(Gyoto::Hook::Teller *) {
     memcpy(midpoints_+offset,
 	   elements_[i]->getMidpoints(),
 	   ens*sizeof(double));
-    memcpy(chanind_+2*offset,
-	   elements_[i]->getChannelIndices(),
-	   2*ens*sizeof(size_t));
+    chanind=elements_[i]->getChannelIndices();
+    for (size_t j=0; j<2*ens; ++j)
+      chanind_[2*offset+j]=chanind[j]+boffset;
     boffset += enb;
     offset  += ens ;
   }

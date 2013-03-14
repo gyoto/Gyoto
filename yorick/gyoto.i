@@ -1,6 +1,6 @@
 plug_in, "gyoto";
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -623,10 +623,10 @@ extern gyoto_verbose;
  */
 
 extern gyoto_Spectrometer;
-extern gyoto_SpectroUniform;
-/* DOCUMENT spectro = gyoto_Spectrometer([members=values])
-         or spectro, members=values
-         or table = spectro( channels= | midpoints= | widths= )
+/* DOCUMENT spectro = gyoto_Spectrometer([filename],[members=values])
+         or spectro, xmlwrite=filename
+         or var = spectro( channels= | midpoints= | widths= |
+                           nsamples= | kind= | clone= )
          
      The spectrometric capabilities of a GYOTO Screen or Photon.
 
@@ -636,46 +636,127 @@ extern gyoto_SpectroUniform;
 
      For basics, see GYOTO.
 
+     In the first form, if FILENAME is specified, a new Spectrometer
+     is instanciated from XML file FILENAME. FILENAME can also name a
+     Spectrometer Kind, such as "Complex" or "wave".
+
+   KEYWORDS:
+       unit=     a string, affects methods called together:
+                 channels_in_microns=spectro(channels=, unit="microm")
+
+   METHODS:
+       xmlwrite=filename, write XML desription of this spectrometer
+                  to hard drive. E.g. spectro, wmlwrite="file.xml"
+   
+     The following keywords allow retrieving information on the
+     spectrometer. They don't take a value but return one with this
+     syntax:  retval=spectro(keyword=)
+
+       kind=      returns the Spectrometer kind name, e.g. "wave",
+                  "freq" or "Complex".
+       nsamples=  returns the number of spectral channels.
+       channels=  return an array(double, NSAMPLES, 2) yielding the
+                  edges of each spectral channel in UNIT (default: Hz)
+       midpoints= returns an array(double, NSAMPLES) yielding the central
+                  frequency of each spectral channel in UNIT (default: Hz).
+       widths=    returns the width of each spectral channel in UNIT
+                  (default: Hz).
+       clone=     returns a deep copy of this Spectrometer.
+       
+   SEE ALSO: gyoto, gyoto_Screen, gyoto_Scenery,
+             gyoto_SpectroUniform, gyoto_SpetroComplex
+ */
+
+extern gyoto_SpectroUniform;
+extern _gyoto_SpectroUniform_register_as_Spectro;
+/* DOCUMENT spectro = gyoto_SpectroUniform([members=values])
+         or spectro, keywords=values
+         or retval = spectro( keyword= )
+         
+     gyoto_SpectroUniform() is a more specific implementation of
+     gyoto_Spectrometer(). It allows creating an Spectrometer::Uniform
+     object which models a spectrometer where NSAMPLES spectral
+     channels are unifromly spaced in wavelength, frequency, or log10
+     thereof.
+
+     gyoto_SpectroUniform has a superset of the functionalities of
+     gyoto_Spectrometer.
+
    MEMBERS:
      Members can be set with "spectro, member=value" and retrieved
      with "value = spectro(member=)".
      
        kind=     a string, one of "none", "wave", "freq", "wavelog",
                  "freqlog". KIND affects how BAND below is interpreted
-                 and how CHANNELS and MIDPOINTS are returned.
+                 and how CHANNELS and MIDPOINTS are returned. Since
+                 these four "kinds" are actually based on the same
+                 code, it is possible to convert a Spetrcometer
+                 between them.
 
        nsamples= a long, the number of spectral channels in this
                  spectrometer;
 
        band=     a pair of doubles, the lower and upper boundaries
                  of the spectral band covered by this spectrometer.
-                 The unit in which BAND is expressed depends on KIND:
+                 The default unit in which BAND is expressed depends
+                 on KIND:
                        KIND             UNIT
                        freq              Hz
-                      freqlog          Log(Hz)
+                      freqlog         log10(Hz)
                        wave              m
-                      wavelog          Log(m)
+                      wavelog         log10(m)
+                 Keyword UNIT can be set to use a different unit than
+                 the default. For kinds freqlog and wavelog,
+                 log10(unit) is used.
 
    METHODS:
-     The following keywords allow retrieving the spectral band for
-     each of the spectral channel in one of two forms:
-       channels=  an array(double, NSAMPLES+1) yielding the edges
-                  of each spectral channel, in the same unit as
-                  BAND depending on KIND.
-       midpoints= an array(double, NSAMPLES) yielding the central
-                  _frequency_ of each spectral channel expressed in
-                  the same unit as BAND depending on KIND.
-       widths=    the width of each spectral channel in Hz.
+     The following methods from gyoto_Spectrometer are implemented:
+     xmlwrite, clone, channels, midpoints, widths.
        
-       clone=     get a clone of this Spectrometer
-       
-   SEE ALSO: gyoto, gyoto_Screen, gyoto_Scenery
+   SEE ALSO: gyoto_Spectrometer, gyoto_SpectroComplex
  */
-extern _gyoto_SpectroUniform_register_as_Spectro;
 _gyoto_SpectroUniform_register_as_Spectro;
 
 extern gyoto_SpectroComplex;
 extern _gyoto_SpCplx_register_as_Spectrometer;
+/* DOCUMENT spectro = gyoto_SpectroComplex([members=values])
+         or spectro, keywords=values
+         or retval = spectro( keyword= )
+         or subspectro = spectro(index)
+         
+     gyoto_SpectroComplex() is a more specific implementation of
+     gyoto_Spectrometer(). It allows creating an Spectrometer::Complex
+     object which models a spectrometer made of several simpler
+     Spectrometer objects (sub-spectrometers).
+
+     gyoto_SpectroComplex has a superset of the functionalities of
+     gyoto_Spectrometer.
+
+     A single sub-spectrometer can be retrieved by its INDEX. INDEX is
+     1-based, as is customary in Yorick.
+
+   EXAMPLE:
+     sp1 = gyoto_SpectroUniform(kind="wave",
+                                nsamples=10,
+                                unit="microm",
+                                band=[1, 2]);
+     sp2 = gyoto_SpectroUniform(kind="freqlog",
+                                nsamples=10,
+                                unit="eV",
+                                band=[10, 20]);
+     sp = gyoto_SpectroComplex(append=sp1)(append=sp2);
+     sp1bis = sp(1);
+     sp2bis = sp(2);
+     
+   METHODS:
+     The following methods from gyoto_Spectrometer are implemented:
+     xmlwrite, clone, channels, midpoints, widths. In addition,
+     gyoto_SpectroComplex accepts the following methods:
+       append=subspectro add new sub-spectrometer
+       remove=index      remove sub-spectrometer INDEX
+       
+   SEE ALSO: gyoto_Spectrometer, gyoto_SpectroUniform
+ */
 _gyoto_SpCplx_register_as_Spectrometer;
 
 func gyoto_plg3(x,y,z, keywords=) {
@@ -897,9 +978,7 @@ func gyoto_warning(msg) {
 
 extern is_gyoto_Astrobj;
 /* DOCUMENT ret = is_gyoto_Astrobj( obj )
-
-   Return 1 if OBJ is a GYOTO Astrobj
-
+     Return 1 if OBJ is a GYOTO Astrobj
    SEE ALSO: gyoto gyoto_Astrobj
 */
 
@@ -909,5 +988,7 @@ extern gyoto_dontcatchSIGSEGV;
 
 extern gyoto_listRegister;
 /* DOCUMENT gyoto_listRegister
-     list the register of known Astrobj, Metric and Spectrum kinds.
+     List the register of known Astrobj, Metric, Spectrum and
+     Spectrometer kinds.
+   SEE ALSO: gyoto
 */

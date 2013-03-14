@@ -115,9 +115,9 @@ namespace Gyoto{
      */
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
       (FactoryMessenger* fmp) {
-      SmartPointer<T> ao = new T();
-      ao -> setParameters(fmp);
-      return ao;
+      SmartPointer<T> spectro = new T();
+      if (fmp) spectro -> setParameters(fmp);
+      return spectro;
     }
 
     /**
@@ -317,9 +317,32 @@ class Gyoto::Spectrometer::Generic
   virtual size_t getNSamples() const ; ///< Get Generic::nsamples_.
   virtual size_t getNBoundaries() const ; ///< Get Generic::nboundaries_
   virtual double const * getMidpoints() const  ; ///< Get Generic::midpoints_.
+  /**
+   * \brief Copy Generic::midpoints_, converting to unit
+   * \param data an array of Generic::nsamples_ doubles to fill with result
+   * \param unit a string 
+   */
+  virtual void getMidpoints( double data[], std::string unit);
+  /**
+   * \brief Copy Generic::boundaries_, converting to unit
+   * \param data an array of Generic::nboundaries_ doubles to fill with result
+   * \param unit a string 
+   */
+  virtual void getChannelBoundaries( double data[], std::string unit);
   virtual double const * getChannelBoundaries() const ; ///< Get Generic::boundaries_.
   virtual size_t const * getChannelIndices() const ; ///< Get Generic::chanind_.
   virtual double const * getWidths() const ; ///< Get Generic::widths_.
+  /**
+   * \brief Copy Generic::widths_, converting to unit
+   *
+   * Think carefully before using: widths are often used to convert
+   * spectral flux density to flux. If flux density is per Herz, you
+   * don't need to convert widths.
+   *
+   * \param data an array of Generic::nboundaries_ doubles to fill with result
+   * \param unit a string 
+   */
+  virtual void getWidths( double data[], std::string unit);
 
   /**
    * \brief Set parameter by name

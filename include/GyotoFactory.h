@@ -163,6 +163,7 @@ class Gyoto::Factory
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> getAstrobj();
   Gyoto::SmartPointer<Gyoto::Photon>  getPhoton();
   Gyoto::SmartPointer<Gyoto::Spectrum::Generic>  getSpectrum();
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>  getSpectrometer();
   Gyoto::SmartPointer<Gyoto::Astrobj::Properties> getAstrobjProperties();
 
   // XML OUTPUT

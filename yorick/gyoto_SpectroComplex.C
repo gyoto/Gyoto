@@ -103,7 +103,14 @@ void YGyoto::SpCplxEval(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *sp_, 
     iarg+=*rvset;
     if ((*rvset)++) y_error(rmsg);
     ++(*paUsed);
-    *ypush_Spectrometer() = &(*sp)[ygets_l(iarg)];
+    size_t cardinal=(*sp) -> getCardinal();
+    long item = ygets_l(iarg);
+    if (item > cardinal) y_error("index overreach array bounds");
+    if (item <= 0) {
+      item += cardinal;
+      if (item <= 0) y_error("index overreach array bounds");
+    }
+    *ypush_Spectrometer() = (*(*sp))[item-1];
   }
 
   GYOTO_DEBUG << "done\n";

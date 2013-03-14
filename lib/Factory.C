@@ -350,6 +350,36 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
 
 }
 
+SmartPointer<Gyoto::Spectrometer::Generic> Factory::getSpectrometer(){
+    
+    DOMXPathResult* result;
+    DOMElement *tmpEl;
+
+    if (kind_=="Spectrometer") {
+      tmpEl = root_;
+    } else {
+      result=doc_->evaluate(
+			  X(("/"+kind_+"/Spectrometer").c_str()),
+			  root_,
+			  resolver_,
+			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+			  NULL);
+      if (!result->getSnapshotLength())
+	throwError("GYOTO error: an Spectrometer MUST be specified");
+      tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
+      delete result;
+    }
+    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    if (Plugin != "") loadPlugin(Plugin.c_str());
+    string Kind =
+      Cs(tmpEl->getAttribute(X("kind")));
+    if (debug()) cout << "Spectrometer kind : " << Kind << endl ;
+
+    FactoryMessenger fm(this, tmpEl);
+    return (*Spectrometer::getSubcontractor(Kind))(&fm);
+
+}
+
 /// Scenery
 
 SmartPointer<Scenery> Factory::getScenery () {

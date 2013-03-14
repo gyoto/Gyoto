@@ -156,22 +156,22 @@ Register::Entry::getSubcontractor(std::string name, int errmode) {
 
 void Gyoto::Register::list() {
   Register::Entry* entry = NULL;
+
   cout << "List of available Metrics:" << endl;
-  entry = Metric::Register_;
-  while (entry) {
+  for (entry = Metric::Register_; entry; entry = entry -> next_)
     cout << "    " << entry -> name_ << endl;
-    entry = entry -> next_ ;
-  }
   
   cout << "List of available Astrobjs:" << endl;
-  entry = Astrobj::Register_;
-  while (entry) {
+  for (entry = Astrobj::Register_; entry; entry = entry -> next_)
     cout << "    " << entry -> name_ << endl;
-    entry = entry -> next_ ;
-  }
   
   cout << "List of available Spectra:" << endl;
   for (entry = Spectrum::Register_; entry; entry = entry -> next_)
+    cout << "    " << entry -> name_ << endl;
+    
+  
+  cout << "List of available Spectrometers:" << endl;
+  for (entry = Spectrometer::Register_; entry; entry = entry -> next_)
     cout << "    " << entry -> name_ << endl;
     
 }

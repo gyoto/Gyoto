@@ -75,7 +75,7 @@ midpoints = sc(screen=)(spectro=)(midpoints=);
 widths = sc(screen=)(spectro=)(widths=);
 fma;
 logxy, 1, 1;
-plg, (s1*widths), 10^midpoints;
+plg, (s1*widths), midpoints;
 xytitles, "Frequency [Hz]";
 
 write, format="%s", "Integrating one bin spectrum with radiative transfer...\n";
@@ -86,8 +86,8 @@ widths = sc(screen=)(spectro=)(widths=);
 s22=array(double,numberof(s2)*2);
 s22(::2)=s2; s22(2::2)=s2;
 chan2=array(double,numberof(s2)*2);
-chan2(::2)=channels(:-1); chan2(2::2)=channels(2:);
-plg, s22, 10^chan2;
+chan2(::2)=channels(1,); chan2(2::2)=channels(2,);
+plg, s22, chan2;
 
 if (batch()) {
   pause, 1000;

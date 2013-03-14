@@ -128,9 +128,23 @@ size_t Generic::getNSamples() const { return nsamples_; }
 size_t Generic::getNBoundaries() const { return nboundaries_; }
 
 double const * Generic::getMidpoints() const { return midpoints_; }
+void Generic::getMidpoints( double data[], std::string unit) {
+  for (size_t i=0; i<nsamples_; ++i)
+    data[i]=Units::FromHerz(midpoints_[i], unit);
+}
 double const * Generic::getChannelBoundaries() const { return boundaries_;}
+void Generic::getChannelBoundaries( double data[], std::string unit) {
+  for (size_t i=0; i<nboundaries_; ++i)
+    data[i]=Units::FromHerz(boundaries_[i], unit);
+}
 size_t const * Generic::getChannelIndices() const { return chanind_; }
 double const * Generic::getWidths() const { return widths_; }
+void Generic::getWidths( double data[], std::string unit) {
+  double cbound[nboundaries_];
+  getChannelBoundaries(cbound, unit);
+  for(size_t i=0; i<nsamples_; ++i)
+    data[i]=fabs(cbound[chanind_[2*i+1]]-cbound[chanind_[2*i]]);
+}
 
 void Spectrometer::Generic::setParameter(string name,
 					 string content,
