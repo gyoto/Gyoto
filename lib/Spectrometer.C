@@ -42,11 +42,11 @@ void Spectrometer::initRegister() {
   if (Gyoto::Spectrometer::Register_) delete Gyoto::Spectrometer::Register_;
   Gyoto::Spectrometer::Register_ = NULL;
   // statically fill the register
-  Register("wave",    &(Subcontractor<Uniform>));
-  Register("wavelog", &(Subcontractor<Uniform>));
-  Register("freq",    &(Subcontractor<Uniform>));
-  Register("freqlog", &(Subcontractor<Uniform>));
-  Register("Complex", &(Subcontractor<Complex>));
+  Gyoto::Spectrometer::Register("wave",    &(Subcontractor<Uniform>));
+  Gyoto::Spectrometer::Register("wavelog", &(Subcontractor<Uniform>));
+  Gyoto::Spectrometer::Register("freq",    &(Subcontractor<Uniform>));
+  Gyoto::Spectrometer::Register("freqlog", &(Subcontractor<Uniform>));
+  Gyoto::Spectrometer::Register("Complex", &(Subcontractor<Complex>));
 }
 
 void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
