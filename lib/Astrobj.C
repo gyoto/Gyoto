@@ -45,8 +45,7 @@ Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
 Generic::Generic(string kind) :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0),
-  bolometric_(0)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -55,8 +54,7 @@ Generic::Generic(string kind) :
 
 Generic::Generic() :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
-  bolometric_(0)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -64,8 +62,7 @@ Generic::Generic() :
 }
 
 Generic::Generic(double radmax) :
-  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
-  bolometric_(0)
+  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -75,8 +72,7 @@ Generic::Generic(double radmax) :
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
-  flag_radtransf_(orig.flag_radtransf_),
-  bolometric_(orig.bolometric_)
+  flag_radtransf_(orig.flag_radtransf_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -132,7 +128,6 @@ void Generic::fillElement(FactoryMessenger *fmp) const {
   fmp -> setMetric(gg_);
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
-  fmp -> setParameter ( bolometric_? "Bolometric" : "Specific");
 }
 
 void Generic::setParameters(FactoryMessenger *fmp) {
@@ -149,16 +144,11 @@ void Generic::setParameters(FactoryMessenger *fmp) {
 void Generic::setFlag_radtransf(int flag) {flag_radtransf_=flag;}
 int Generic::getFlag_radtransf() const {return flag_radtransf_;}
 
-void Generic::setBolometric(int bolo) {bolometric_=bolo;}
-int Generic::getBolometric() const {return bolometric_;}
-
 int Generic::setParameter(string name, string content, string unit)  {
   char* tc = const_cast<char*>(content.c_str());
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
-  else if (name=="Specific")  bolometric_= 0;
-  else if (name=="Bolometric")  bolometric_= 1;
   else if (name=="RMax") setRmax(atof(tc), unit);
   else return 1;
   return 0;
@@ -246,37 +236,21 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       */
 
       //Intensity increment :
-      if (!bolometric_) // Specific intensity given by emission (I_nu)
 	inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
 	  * (ph -> getTransmission(size_t(-1)))
 	  * ggred*ggred*ggred; // I_nu/nu^3 invariant
-      else // Bolometric intensity given by emission (I)
-	inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
-	  * (ph -> getTransmission(size_t(-1)))
-	  * ggred*ggred*ggred*ggred; // I/nu^4 invariant
 #     ifdef HAVE_UDUNITS
       if (data -> intensity_converter_)
 	inc = (*data -> intensity_converter_)(inc);
 #     endif
       *data->intensity += inc;
 
-      if (!bolometric_)
 #     if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	  << "intensity +=" << *data->intensity
 	  << "= emission((dsem=" << dsem << "))="
 	  << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
 	  << ")*(ggred=" << ggred << ")^3*(transmission="
-	  << (ph -> getTransmission(size_t(-1))) << ")"
-	  << endl;
-#     endif
-      else
-#     if GYOTO_DEBUG_ENABLED
-	GYOTO_DEBUG
-	  << "intensity +=" << *data->intensity
-	  << "= emission((dsem=" << dsem << "))="
-	  << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
-	  << ")*(ggred=" << ggred << ")^4*(transmission="
 	  << (ph -> getTransmission(size_t(-1))) << ")"
 	  << endl;
 #     endif

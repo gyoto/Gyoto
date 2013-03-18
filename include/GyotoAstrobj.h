@@ -222,7 +222,6 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   const std::string kind_; ///< Kind of object (e.g. "Star"...)
 
   int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
-  int bolometric_; ///< 1 if bolometric intensity given by emission instead of specific intensity, else 0
 
   // Constructors - Destructor
   // -------------------------
@@ -337,11 +336,6 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    */
   int getFlag_radtransf() const ;
   ///< Query whether object is optically thin.
-
-  void setBolometric(int bolo);
-  ///< Set whether the intensity is bolometric
-  int getBolometric() const ;
-  ///< Query whether the intensity is bolometric
 
   /**
    * Return a Gyoto::Quantity_t suitable as input to

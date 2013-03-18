@@ -1,8 +1,14 @@
 /**
- * \file GyotoThinInfiniteDiskBL.h
+ * \file GyotoPageThorneDiskBL.h
  * \brief A geometrically thin, optically thick disk
  *
- *  The target of ray-traced Gyoto::Photon
+ *  This class describes a disk contained in the z=0 (equatorial)
+ *  plane, extending from r=r_ISCO to r=infinity.  The flux emitted
+ *  at radius r is given by Page & Thorne (1974, ApJ 191:499,
+ *  Eqs. 11b, 14, 15).
+ *
+ *  Only bolometric flux is implemented (as quantity User4), no
+ *  spectral resolution.
  */
 
 /*
@@ -47,14 +53,20 @@ namespace Gyoto{
  *   at radius r is given by Page & Thorne (1974, ApJ 191:499,
  *   Eqs. 11b, 14, 15).
  *
- *   The metric must be either KerrBL or KerrKS.
- *
- *   Warning: The spin value and the inner radius are cached when the
- *   metric is assigned using setMetric(). If the spin is later
- *   changed in the metric, updateSpin() must be called.
+ *   The metric must be either KerrBL or KerrKS. Only bolometric
+ *   intensity is provided, as quantity User4. You must set the
+ *   following in the XML:
+ *   \code
+ *   <Scenery>
+ *   ...
+ *   <Quantity> User4 </Quantity>
+ *   \endocde>
  *
  */
-class Gyoto::Astrobj::PageThorneDisk : public Astrobj::ThinDisk {
+class Gyoto::Astrobj::PageThorneDisk
+: public Astrobj::ThinDisk,
+  public Hook::Listener
+{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PageThorneDisk>;
  private:
   double aa_; ///< Spin
@@ -88,6 +100,26 @@ class Gyoto::Astrobj::PageThorneDisk : public Astrobj::ThinDisk {
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
+  virtual double bolometricEmission(double nu_em, double dsem,
+				    double c_ph[8], double c_obj[8]) const;
+
+  /**
+   * processHitQuantities fills the requested data in Impact. For
+   * PageThorneDisk, only fill User1, which corresponds to bolometric
+   * intensity.
+   */
+  virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
+                                   double* coord_obj_hit, double dt,
+                                   Astrobj::Properties* data) const;
+
+  // Hook::Listener API //
+ public:
+  /**
+   * See Hook::Listener::tell()
+   * Calls updateSpin()
+   */
+  virtual void tell(Gyoto::Hook::Teller *msg);
+
  public:
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory

@@ -34,6 +34,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <cstring>
 
 using namespace std;
 using namespace Gyoto;
@@ -52,12 +53,14 @@ PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
+  gg_->hook(this);
 }
 PageThorneDisk* PageThorneDisk::clone() const
 { return new PageThorneDisk(*this); }
 
 PageThorneDisk::~PageThorneDisk() {
-  if (debug()) cerr << "DEBUG: PageThorneDisk Destruction" << endl;
+  GYOTO_DEBUG<<endl;
+  gg_->unhook(this);
 }
 
 void PageThorneDisk::updateSpin() {
@@ -85,24 +88,29 @@ void PageThorneDisk::updateSpin() {
 }
 
 void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
+  if (gg_) gg_->unhook(this);
   string kind = gg->getKind();
   if (kind != "KerrBL" && kind != "KerrKS")
     throwError
       ("PageThorneDisk::setMetric(): metric must be KerrBL or KerrKS");
   ThinDisk::setMetric(gg);
   updateSpin();
+  gg->hook(this);
 }
 
 double PageThorneDisk::emission(double nu_em, double dsem,
+				    double *,
+				    double coord_obj[8]) const{
+  throwError("not implemented");
+}
+
+double PageThorneDisk::bolometricEmission(double nu_em, double dsem,
 				    double *,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
   // not I_nu(r). And I(r)/nu^4 is conserved.
 
-  if (!bolometric_)
-    throwError("In PageThorneDisk::emission: "
-	       "only bolometric intensity given");
   double xx;
   switch (gg_->getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -129,9 +137,86 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   //NB: this is frequency integrated (bolometric) intensity, not I_nu
 
   if (flag_radtransf_) Iem *= dsem;
-
+  GYOTO_DEBUG_EXPR(Iem);
   return Iem;
 
+}
+
+void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
+				     double* coord_obj_hit, double dt,
+				     Properties* data) const {
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+#endif
+  /*
+      NB: freqObs is the observer's frequency chosen in
+      Screen::getRayCoord for the actual computation of the geodesic ;
+      the physical value of nuobs will be used in spectrum
+      computations by resorting to the xml specifications of the user
+      (see below) ; this freqObs is used to transform the null
+      worldline parameter dlambda (see below)
+  */
+  double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
+  double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
+  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
+				    coord_ph_hit+4) / freqObs; 
+                                       //this is nu_em/nu_obs
+  double ggred = 1./ggredm1;           //this is nu_obs/nu_em
+  double dsem = dlambda*freqObs*ggredm1;
+  double inc =0.;
+  if (data) {
+#if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "data requested. " 
+	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
+	      << ", ggred=" << ggred
+	      << endl;
+#endif
+
+    if (data->redshift) {
+      *data->redshift=ggred;
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(*data->redshift);
+#endif
+    }
+    if (data->time) {
+      *data->time=coord_ph_hit[0];
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(*data->time);
+#endif
+    }
+    if (data->impactcoords) {
+      memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
+      memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
+    }
+#if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
+		<< ") = " << dlambda << ", dsem=" << dsem << endl;
+#endif
+    if (data->intensity) throwError("unimplemented");
+    else if (data->user4) {
+      inc = (bolometricEmission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
+	* (ph -> getTransmission(size_t(-1)))
+	* ggred*ggred*ggred*ggred; // I/nu^4 invariant
+      *data->user4 += inc;
+#if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG_EXPR(*data->user4);
+#endif
+
+    }
+    if (data->binspectrum) throwError("unimplemented");
+    if (data->spectrum)  throwError("unimplemented");
+    /* update photon's transmission */
+    ph -> transmit(size_t(-1),
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+  } else {
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "NO data requested!" << endl;
+#   endif
+  }
+}
+
+void PageThorneDisk::tell(Hook::Teller* msg) {
+  updateSpin();
 }
 
 #ifdef GYOTO_USE_XERCES

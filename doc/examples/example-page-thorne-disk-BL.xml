@@ -22,8 +22,7 @@
       32
     </Resolution>
   </Screen>
-  <Astrobj kind = "PageThorneDisk">
-    <Bolometric/>
-  </Astrobj>
+  <Astrobj kind = "PageThorneDisk"/>
   <MinimumTime> -1000. </MinimumTime>
+  <Quantities> User4 </Quantities>
 </Scenery>
