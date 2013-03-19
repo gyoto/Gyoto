@@ -132,6 +132,7 @@ class Gyoto::Worldline
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
   void setDelta(const double delta); ///< Set delta
+  double getDelta() const ; ///< Get delta
   double getTmin() const ; ///< Get tmin value
   void setTmin(double tlim); ///< Set tmin to a given value
 

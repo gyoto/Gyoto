@@ -929,6 +929,7 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 
 
 void Worldline::setDelta(const double del) { delta_=del; }
+double Worldline::getDelta() const { return delta_; }
 
 double Worldline::getTmin() const { return tmin_; }
 void Worldline::setTmin(double tmin) { tmin_ = tmin; }

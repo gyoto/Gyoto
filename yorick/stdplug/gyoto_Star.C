@@ -45,12 +45,12 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
   // Parse arguments
   static char const * knames[]={
     "unit",
-    "radius", "metric", "initcoord", "spectrum", "opacity", "reset", "xfill",
+    "radius", "metric", "initcoord", "spectrum", "opacity", "delta", "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_coord", "get_cartesian",
     0
   };
-#define nkw 12
+#define nkw 13
   static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw+1];
   int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw];
   int piargs[]={-1,-1,-1,-1};
@@ -181,6 +181,16 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
     } else {
       (*ao) -> setOpacity ( *yget_Spectrum(iarg) );
     }
+  }
+
+  /* DELTA */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      ypush_double((*ao)->getDelta());
+    } else
+      (*ao)->setDelta(ygets_d(iarg)) ;
   }
 
   //// METHODS ////
