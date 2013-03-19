@@ -163,6 +163,14 @@ extern "C" {
       YGyotoGlobalSupplier -> ypush_Scenery = &ypush_Scenery;
       YGyotoGlobalSupplier -> yarg_Scenery  = &yarg_Scenery;
 
+      // Plug Spectrometer ABI
+      YGyotoGlobalSupplier -> yget_Spectrometer  = &yget_Spectrometer;
+      YGyotoGlobalSupplier -> ypush_Spectrometer = &ypush_Spectrometer;
+      YGyotoGlobalSupplier -> yarg_Spectrometer  = &yarg_Spectrometer;
+      YGyotoGlobalSupplier -> ygyoto_Spectrometer_register
+	                           = &ygyoto_Spectrometer_register;
+      YGyotoGlobalSupplier -> ygyoto_Spectrometer_generic_eval
+                                   = &ygyoto_Spectrometer_generic_eval;
     }
     ypush_long(long(YGyotoGlobalSupplier));
   }

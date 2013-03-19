@@ -277,6 +277,15 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
       else y_error("NSAMPLES is readonly");
   }
 
+  /* SETPARAMETER */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if ((*paUsed)++) y_error("pmsg");
+    string name = ygets_q(iarg);
+    string content = ygets_q(*piargs);
+    (*sp)->setParameter(name, content,  unit?unit:"");
+  }
+
     /* GET SPECTRO CHANNELS */
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");

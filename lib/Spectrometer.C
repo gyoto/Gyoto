@@ -146,11 +146,12 @@ void Generic::getWidths( double data[], std::string unit) {
     data[i]=fabs(cbound[chanind_[2*i+1]]-cbound[chanind_[2*i]]);
 }
 
-void Spectrometer::Generic::setParameter(string name,
+int Spectrometer::Generic::setParameter(string name,
 					 string content,
 					 string unit)
 {
   // nothing to do... yet
+  return 1;
 }
 
 #ifdef GYOTO_USE_XERCES

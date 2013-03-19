@@ -141,6 +141,9 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   virtual void setParameters(FactoryMessenger *fmp);
 #endif
 
+  virtual int setParameter(std::string name,
+			    std::string content,
+			    std::string unit);
   /**
    * \brief "wave"
    *

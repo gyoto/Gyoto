@@ -158,9 +158,9 @@ void ygyoto_Spectrometer_generic_eval
 
 // Keywords processed by ygyoto_Spectrometer_generic_eval
 #define YGYOTO_SPECTROMETER_GENERIC_KW "kind", "xmlwrite", "clone", "nsamples",\
-    "channels", "midpoints", "widths"
+    "setparameter", "channels", "midpoints", "widths"
 // number of those keywords
-#define YGYOTO_SPECTROMETER_GENERIC_KW_N 7
+#define YGYOTO_SPECTROMETER_GENERIC_KW_N 8
 
 /*
 
@@ -201,6 +201,16 @@ typedef Gyoto::SmartPointer<Gyoto::Scenery> *ygyoto_ypush_Scenery_t();
 typedef Gyoto::SmartPointer<Gyoto::Photon> *ygyoto_yget_Photon_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Photon> *ygyoto_ypush_Photon_t();
 
+typedef Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *\
+ygyoto_yget_Spectrometer_t(int);
+typedef Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *\
+ygyoto_ypush_Spectrometer_t();
+//typedef int yarg_Spectrometer::Generic_t(int);
+typedef void ygyoto_Spectrometer_register_t\
+(char const*const, ygyoto_Spectrometer_eval_worker_t*);
+typedef void ygyoto_Spectrometer_generic_eval_t \
+(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>*, int *, int *, int*, int*, char*);
+
 typedef struct YGyotoSupplier {
   // Metric
   ygyoto_yget_Metric_t  *yget_Metric;
@@ -233,6 +243,12 @@ typedef struct YGyotoSupplier {
   ygyoto_yget_Photon_t  *yget_Photon;
   ygyoto_ypush_Photon_t *ypush_Photon;
   yarg_OBJTYPE_t        *yarg_Photon;
+  // Spectrometer
+  ygyoto_yget_Spectrometer_t  *yget_Spectrometer;
+  ygyoto_ypush_Spectrometer_t *ypush_Spectrometer;
+  yarg_OBJTYPE_t        *yarg_Spectrometer;
+  ygyoto_Spectrometer_register_t *ygyoto_Spectrometer_register;
+  ygyoto_Spectrometer_generic_eval_t* ygyoto_Spectrometer_generic_eval;
 } YGyotoSupplier_t;
 
 
@@ -285,6 +301,16 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 #define yget_Photon(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Photon(iarg)
 #define ypush_Photon()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Photon()
 #define yarg_Photon(iarg) YGYOTO_LOCAL_SUPPLIER -> yarg_Photon(iarg)
+
+#define yget_Spectrometer(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Spectrometer(iarg)
+#define ypush_Spectrometer()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Spectrometer()
+#define yarg_Spectrometer(iarg) YGYOTO_LOCAL_SUPPLIER -> yarg_Spectrometer(iarg)
+#define ygyoto_Spectrometer_register(kind, on_eval) \
+                          YGYOTO_LOCAL_SUPPLIER -> \
+		  ygyoto_Spectrometer_register(kind, on_eval)
+#define ygyoto_Spectrometer_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
+                          YGYOTO_LOCAL_SUPPLIER -> \
+		  ygyoto_Spectrometer_generic_eval(gg, kiargs, piargs, rvset,paUsed)
 
 #endif
 

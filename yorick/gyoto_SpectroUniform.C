@@ -53,11 +53,12 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
   static char const * knames[]={
     "unit",
     "kind", "nsamples", "band", 
+    "setparameter",
     "xmlwrite",
     "channels", "midpoints", "widths",
     0
   };
-#define nkw 8
+#define nkw 9
   static long kglobs[nkw+1];
   int kiargs[nkw];
   int piargs[]={-1,-1,-1,-1};
@@ -116,6 +117,15 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
 	  y_error("BAND must have 2 elements");
       (*sp) -> setBand(boundaries, unit?unit:"");
     }
+  }
+
+  /* SETPARAMETER */
+  if ((iarg=kiargs[++k])>=0) {
+    iarg+=*rvset;
+    if ((*paUsed)++) y_error("pmsg");
+    string name = ygets_q(iarg);
+    string content = ygets_q(*piargs);
+    (*sp)->setParameter(name, content,  unit?unit:"");
   }
 
   // Save to file

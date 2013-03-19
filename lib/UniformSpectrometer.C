@@ -219,6 +219,23 @@ void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
 }
 #endif
 
+int Spectrometer::Uniform::setParameter(string name,
+					 string content,
+					 string unit)
+{
+  double band[2];
+  char* tc = const_cast<char*>(content.c_str());
+  if (name=="Band") {
+    for (int i=0;i<2;++i) band[i] = strtod(tc, &tc);
+    setBand(band, unit);
+  } else if (name=="Kind") {
+    setKind(content);
+  } else if (name=="NSamples") {
+    setNSamples(atof(tc));
+  } else return Generic::setParameter(name, content, unit);
+  return 0;
+}
+
 char const * const Uniform::WaveKind = "wave";
 char const * const Uniform::WaveLogKind = "wavelog";
 char const * const Uniform::FreqKind = "freq";

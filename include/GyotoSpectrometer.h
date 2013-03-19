@@ -111,7 +111,7 @@ namespace Gyoto{
      *
      * Instead of reimplementing the wheel, your subcontractor can
      * simply be Gyoto::Spectrometer::Subcontractor<MyKind>. It must
-     * however implement setParameter().
+     * however implement setParameters().
      */
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
       (FactoryMessenger* fmp) {
@@ -369,7 +369,7 @@ class Gyoto::Spectrometer::Generic
    * \param unit string representation of the unit
    * \return 0 if this parameter is known, 1 if it is not.
    */
-  virtual void setParameter(std::string name,
+  virtual int setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 #ifdef GYOTO_USE_XERCES
