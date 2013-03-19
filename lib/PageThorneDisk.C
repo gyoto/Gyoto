@@ -159,15 +159,15 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4) / freqObs; 
+				    coord_ph_hit+4);// / 1.; 
                                        //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
-  double dsem = dlambda*freqObs*ggredm1;
+  double dsem = dlambda*ggredm1; // *1.
   double inc =0.;
   if (data) {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "data requested. " 
-	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
+	      << ", ggredm1=" << ggredm1
 	      << ", ggred=" << ggred
 	      << endl;
 #endif
