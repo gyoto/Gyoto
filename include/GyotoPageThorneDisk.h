@@ -100,8 +100,8 @@ class Gyoto::Astrobj::PageThorneDisk
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
-  virtual double bolometricEmission(double nu_em, double dsem,
-				    double c_ph[8], double c_obj[8]) const;
+  virtual double bolometricEmission(double dsem,
+				    double c_obj[8]) const;
 
   /**
    * processHitQuantities fills the requested data in Impact. For

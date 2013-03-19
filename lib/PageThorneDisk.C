@@ -60,10 +60,11 @@ PageThorneDisk* PageThorneDisk::clone() const
 
 PageThorneDisk::~PageThorneDisk() {
   GYOTO_DEBUG<<endl;
-  gg_->unhook(this);
+  if (gg_) gg_->unhook(this);
 }
 
 void PageThorneDisk::updateSpin() {
+  if (!gg_) return;
   switch (gg_->getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getSpin();
@@ -104,8 +105,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   throwError("not implemented");
 }
 
-double PageThorneDisk::bolometricEmission(double nu_em, double dsem,
-				    double *,
+double PageThorneDisk::bolometricEmission(double dsem,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
@@ -194,7 +194,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #endif
     if (data->intensity) throwError("unimplemented");
     else if (data->user4) {
-      inc = (bolometricEmission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
+      inc = (bolometricEmission(dsem, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
 	* ggred*ggred*ggred*ggred; // I/nu^4 invariant
       *data->user4 += inc;

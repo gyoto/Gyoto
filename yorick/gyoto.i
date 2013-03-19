@@ -450,15 +450,22 @@ extern gyoto_Astrobj;
                   for the specific class. See
                   Gyoto::Astrobj::Generic::setParameter().
      
-   SEE ALSO: gyoto
+   EXAMPLES:
     The following implement specific objects, most require gyoto_std.i:
      gyoto_Star               A spherical object moving along a geodesic
      gyoto_FixedStar          A spherical object of constant coordinates
      gyoto_Torus              A simple torus (solid, Keplerian rotation)
      gyoto_ThinDisk           A geometrically thin disk
-     gyoto_PageThorneDisk     As above with Page & Thorne 1974 emission
      gyoto_PatternDisk        As above, emission numerically provided
      gyoto_Disk3D             Thick disk, emission numerically provided
+
+    It is also possible to instanciate an astrobj by kind name even if
+    this kind is not explicitly implemented in the yorick plug-in:
+     gyoto_Astrobj("PageThorneDisk")
+                              A geometrically thin, optically thick disk
+                              with Page & Thorne 1974 emission
+
+   SEE ALSO: gyoto
      
  */
 
@@ -483,9 +490,9 @@ extern gyoto_ThinDisk;
                   -1 if coounter rotating.
 
    SEE ALSO: gyoto, gyoto_Astrobj
-    There are two derived classes in gyoto_std.i:
-     gyoto_PageThorneDisk     As above with Page & Thorne 1974 emission
+    There is one derived classe in gyoto_std.i:
      gyoto_PatternDisk        As above, emission numerically provided
+    try also gyoto_Astrobj("PageThorneDisk")
      
  */
 
