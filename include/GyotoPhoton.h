@@ -96,6 +96,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   SmartPointer<Astrobj::Generic> getAstrobj() const ; ///< Get Astrobj
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spr);
   SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
+  void setFreqObs(double);
   double getFreqObs() const;
 
 

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -60,24 +60,14 @@ namespace Gyoto {
  *   - the field-of-view of the image;
  *   - the resolution of the camera: number of pixels on each side
  *     (the camera is square);
- *   - a description of the Spectrometer.
+ *   - the observing frequency.
  *
- * The Spectrometer defines for which frequencies spectra are computed
- * (when the Quantity Spectrum is requested in the Scenery). The
- * frequency axis can be linear in frequency or in wavelength, or
- * logarithmic in frequency or in wavelength. The spectrometr is thus
- * defines by:
- *   - a kind: one of "none", "freqlog", "freq", "wavelog" or "wave";
- *   - a number of spectral channels;
- *   - the boundaries of the spectral band.
+ * The scalar FreqObs defines the observing frequency for Scenery
+ * quantity Intensity.
  *
- * Each spectral channel will be of equal width in the space specified
- * by the kind of the Spectrometer. The boundaries are specified in Hz
- * for a "freq" Spectrometer, in Log(Hz) for freqlog, in meters for wave
- * and Log(meter) for wavelog. The boundaries correspond to the extremum
- * boundaries of the outermost spectral channels. When computing the
- * Quantity "Spectrum", the frequency considered is the midpoint of
- * each spectral channel.
+ * Likewise, a Gyoto::Spectrometer defines for which frequencies
+ * spectra are computed (when the Quantity Spectrum is requested in
+ * the Scenery).
  * 
  * For the sake of theoreticians, there is an alternate way of
  * specifying the relative position of the Screen and Metric, by
@@ -88,14 +78,15 @@ namespace Gyoto {
  * So an XML stanza for a Screen may look like that:
  * \code
  *  <Screen>
- *    <Time>       1000. </Time>
+ *    <Time>       1000.      </Time>
  *    <FieldOfView>   0.3141592653589793 </FieldOfView>
- *    <Resolution>  128 </Resolution>
- *    <Distance>      1e30 </Distance>
+ *    <Resolution>  128       </Resolution>
+ *    <Distance>      1e30    </Distance>
  *    <PALN>          3.14159 </PALN>
- *    <Inclination>   2.0944 </Inclination>
- *    <Argument>     -2.0944 </Argument>
+ *    <Inclination>   2.0944  </Inclination>
+ *    <Argument>     -2.0944  </Argument>
  *    <Spectrometer kind="freqlog" nsamples="10"> 17. 23. </Spectrometer> 
+ *    <FreqObs>       1e20    </FreqObs>
  *  </Screen>
  * \endcode
  *
@@ -107,6 +98,7 @@ namespace Gyoto {
  *    <FieldOfView>   0.3141592653589793 </FieldOfView>
  *    <Resolution>  128 </Resolution>
  *    <Spectrometer kind="freqlog" nsamples="10"> 17. 23. </Spectrometer> 
+ *    <FreqObs>       1e20    </FreqObs>
  *  </Screen>
  * \endcode
  *
@@ -121,6 +113,7 @@ namespace Gyoto {
  * The possible units are (with [] noting the default):
  *  - distance: [m], geometrical, cm, km, AU, ly, pc, kpc, Mpc;
  *  - PALN, inclination, argument: [rad], deg.
+ *  - frequency: [Hz], µm, GeV...
  *
  * When the distance is really large and most of the ray-tracing would
  * happen de facto in flat space, the camera is transported to a
@@ -132,7 +125,7 @@ namespace Gyoto {
  *
  * \code
  *    <Distance unit="kpc" dmax="1e7"> 8 </Distance>
- * \encode
+ * \endcode
  *
  * Symptoms when dmax is too large include pixelization of the image
  * (neighbouring photons are numerically identical) and other
@@ -176,7 +169,17 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
                            ///< right towards the BH
   SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
 
+  /**
+   * \brief Gyoto::Spectrometer used for quantities Spectrum and BinSpectrum
+   */
   SmartPointer<Spectrometer::Generic> spectro_;
+
+  /**
+   * \brief Frequency at which the observer observes
+   *
+   * For the quantity Intensity
+   */
+  double freq_obs_;
 
  public:
    
@@ -216,14 +219,46 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setInclination(double);
            ///< Set inclination relative to line-of-sight
   void setInclination(double, const std::string &unit);
+           ///< Set inclination relative to line-of-sight
   void setPALN(double);
            ///< Set position angle of the line of nodes
   void setPALN(double, const std::string &unit);
+           ///< Set position angle of the line of nodes
   void setArgument(double);
            ///< Set angle beetwen line of nodes and X axis of object
   void setArgument(double, const std::string &unit);
+           ///< Set angle beetwen line of nodes and X axis of object
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spectro);
+           ///< Set Spectrometer
   SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
+           ///< Get Spectrometer.
+
+  /**
+   * \brief Set freq_obs_
+   * \param fo double: observing frequency in Hz
+   */
+  void setFreqObs(double fo);
+
+
+  /**
+   * \brief Set freq_obs_
+   * \param fo double: observing frequency (or wavelength) in "unit"
+   * \param unit string: unit in which fo is expressed, convertable to
+   * Herz or meters or energy.
+   */
+  void setFreqObs(double fo, const std::string &unit);
+
+  /**
+   * \brief Get freq_obs_.
+   */
+  double getFreqObs() const ;
+
+  /**
+   * \brief Get freq_obs_.
+   * \param unit string: unit in which freq_obs_ should be returned is
+   * expressed, convertable to Herz or meters or energy.
+   */
+  double getFreqObs(const std::string &unit) const;
 
   /// Alternative way to set projection
   /**
@@ -260,8 +295,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double getArgument(const std::string&) const;	 ///< Get angle beetwen line of nodes and X axis of object
 
 
-  SmartPointer<Metric::Generic> getMetric() const; ///< Get gg_;
-  void setMetric(SmartPointer<Metric::Generic> gg);
+  SmartPointer<Metric::Generic> getMetric() const; ///< Get gg_
+  void setMetric(SmartPointer<Metric::Generic> gg); ///< Set gg_
 
   double getTime(); ///< get observing time in seconds
   double getTime(const std::string &); ///< get observing time in seconds
@@ -281,7 +316,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 
 
   /**
-   *A Screen is positioned relative to the observer with four elements:
+   * A Screen is positioned relative to the observer with four elements:
    * Screen::distance, Screen::inclination, Screen::paln and
    * Screen::argument.
    *

@@ -37,7 +37,8 @@ Screen::Screen() :
   tobs_(0.), fov_(M_PI*0.1), npix_(1001),
   alpha0_(0.), delta0_(0.),
   anglekind_(0),
-  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL)
+  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL),
+  freq_obs_(1.)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(dmax_);
@@ -57,7 +58,7 @@ Screen::Screen(const Screen& o) :
   tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), distance_(o.distance_),
   alpha0_(o.alpha0_), delta0_(o.delta0_),
   anglekind_(o.anglekind_),
-  dmax_(o.dmax_), gg_(NULL), spectro_(NULL)
+  dmax_(o.dmax_), gg_(NULL), spectro_(NULL), freq_obs_(o.freq_obs_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   if (o.spectro_()) spectro_ = o.spectro_ -> clone();
@@ -161,6 +162,21 @@ void Screen::setArgument(double arg, const string &unit) {
 void Screen::setArgument(double arg)     {
   euler_[2]=arg;  computeBaseVectors();
 }
+
+void Screen::setFreqObs(double fo, const string &unit) { 
+  setFreqObs(Units::ToHerz(fo, unit));
+}
+void Screen::setFreqObs(double fo)     {
+  freq_obs_=fo;
+  GYOTO_DEBUG_EXPR(freq_obs_);
+}
+double Screen::getFreqObs() const {
+  return freq_obs_;
+}
+double Screen::getFreqObs(const string &unit) const {
+  return Units::FromHerz(freq_obs_, unit);
+}
+
 
 void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
 
@@ -782,6 +798,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
     spectro_ -> fillElement(child) ;
     delete child; child = NULL;
   }
+  fmp -> setParameter ("FreqObs", freq_obs_);
   fmp -> setParameter ( anglekind_? "SphericalAngles" : "EquatorialAngles");
 }
 
@@ -855,6 +872,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="Delta0"){
       delta0 = atof(tc); delta0_found=1;
     }
+    else if (name=="FreqObs") scr -> setFreqObs(atof(tc), unit);
     else if (name=="SphericalAngles")  scr -> setAnglekind(1);
     else if (name=="EquatorialAngles") scr -> setAnglekind(0);
   }

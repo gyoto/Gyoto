@@ -2,7 +2,7 @@
  * \file GyotoScenery.h
  * \brief Ray-tracing framework
  *
- *  A Metric, an Astrobj and a screen.
+ *  A Metric, an Astrobj and a Screen.
  */
 
 /*

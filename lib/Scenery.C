@@ -262,6 +262,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
   ph_.setSpectrometer(spr);
   ph_.setTmin(tmin_);
+  ph_.setFreqObs(screen_->getFreqObs());
   double coord[8];
   screen_ -> getRayCoord(imin,jmin, coord);
   ph_ . setInitialCondition(gg_, obj_, coord);
@@ -341,6 +342,7 @@ void Scenery::operator() (
     ph = &ph_;
     ph -> setSpectrometer(spr);
     ph -> setTmin(tmin_);
+    ph -> setFreqObs(screen_->getFreqObs());
     obj=obj_;
     gg=gg_;
   }
@@ -432,7 +434,7 @@ void Scenery::setRequestedQuantities(std::string squant) {
       quantities_ |= GYOTO_QUANTITY_USER4;
     else if (!strcmp(tk, "User5"))
       quantities_ |= GYOTO_QUANTITY_USER5;
-    else throwError("ScenerySubcontractor(): unkwon quantity"); 
+    else throwError("ScenerySubcontractor(): unknown quantity"); 
     tk = strtok(NULL, " \t\n");
   }
 

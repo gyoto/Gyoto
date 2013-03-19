@@ -88,13 +88,14 @@ extern "C" {
       "metric",
       "time","fov","resolution",
       "distance", "dmax", "inclination", "paln", "argument",
+      "freqobs",
       "projection", "observerpos",
       "spectro",
       "skycoord",  "raycoord",
       "xmlwrite", "clone",
       0
     };
-#define nkw 17
+#define nkw 18
     static long kglobs[nkw+1];
     int kiargs[nkw];
     int piargs[]={-1,-1,-1,-1};
@@ -206,6 +207,16 @@ extern "C" {
 	ypush_double((*screen)->getArgument(unit?unit:""));
       } else
 	(*screen) -> setArgument    (ygets_d(iarg), unit?unit:"") ;
+    }
+      
+    /* FREQOBS */
+    if ((iarg=kiargs[++k])>=0) {
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) { // get 
+	if ((*rvset)++) y_error(rmsg);
+	ypush_double((*screen)->getFreqObs(unit?unit:""));
+      } else
+	(*screen) -> setFreqObs    (ygets_d(iarg), unit?unit:"") ;
     }
       
     /* PROJECTION */

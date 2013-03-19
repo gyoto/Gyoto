@@ -229,9 +229,7 @@ void PolishDoughnut::tell(Hook::Teller * met) {
 int PolishDoughnut::Impact(Photon *ph, size_t index,
 			   Astrobj::Properties *data) {
   if (beta_==1.) throwError("Please set beta to != 1.");
-  if (debug())
-    cerr << "DEBUG: PolishDoughnut::Impact(): "
-	 << "use_specific_impact_==" << use_specific_impact_ << endl;
+  GYOTO_DEBUG_EXPR(use_specific_impact_);
   if (use_specific_impact_)
     return Impact_(ph, index, data);
   return Standard::Impact(ph, index, data);
@@ -242,8 +240,7 @@ int PolishDoughnut::Impact_(Photon *ph, size_t index,
   /*
     Should not be used anymore, use Standard::Impact
    */
-  if (debug()) 
-    cerr << "DEBUG: in PolishDoughnut::Impact_()" << endl;
+  GYOTO_DEBUG << endl;
 
   //  int width=15, prec=12;
   double coord_ph_hit[8], coord_obj_hit[8];
@@ -342,7 +339,7 @@ int PolishDoughnut::Impact_(Photon *ph, size_t index,
 
     if (rcur*fabs(sin(thetacur))<r_cusp_) {
       if (debug()) 
-	cout << "DEBUG: PD::Impact():"
+	cerr << "DEBUG: PD::Impact():"
 	     << "Earliest end of geodesic in funnel: " 
 	     << "tcur= " << tcur 
 	     << " ,rcur= " << rcur << endl;
@@ -922,13 +919,14 @@ void PolishDoughnut::emission(double Inu[], // output
   if (emisstot==emisstot+1.) throwError("In PolishDoughnut.C: "
 					"emissivity is infinite");
 
-  if (debug())
-    cerr << "DEBUG: PD::emission(" << nu_em
-		    <<"): return " << emisstot <<endl;
-
   Inu[i]=emisstot*dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1 * GYOTO_INU_CGS_TO_SI;
   // returned is j_nu*dsem, homogeneous to I_nu
   // Remember PolishDoughnut thinks in c.g.s., output *must* be SI
+
+  GYOTO_DEBUG << "i="<< i
+	      << ", nu_em[i]=" << nu_em
+	      << ", Inu[i]=" << Inu[i]
+	      << endl;
   }
 }
 

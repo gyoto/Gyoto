@@ -575,6 +575,7 @@ extern "C" {
 			      coord);
 	Photon ph(sc->getMetric(), sc->getAstrobj(), coord);
 	ph.setSpectrometer(screen->getSpectrometer());
+	ph.setFreqObs(screen->getFreqObs());
 
 	ySceneryThreadWorkerArg larg;
 	larg.sc=sc;

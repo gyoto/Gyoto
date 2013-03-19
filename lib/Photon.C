@@ -80,12 +80,13 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
   Photon(orig, i0, dir, step_max),
   parent_(orig)
 {
+  setFreqObs(orig->getFreqObs());
 }
 
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
-  Worldline(), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
+  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
 {
   setInitialCondition(met, obj, coord);
 }
@@ -94,7 +95,8 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj, 
 	       SmartPointer<Screen> screen, 
 	       double d_alpha, double d_delta):
-  Worldline(), object_(obj), transmission_freqobs_(1.),
+  Worldline(), object_(obj), freq_obs_(screen->getFreqObs()),
+  transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
 {
   double coord[8];
@@ -168,7 +170,6 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 const double coord[8])
 {
   if (!met) met = metric_;
-  freq_obs_=1.; // Temporary, freq_obs_ is a useless quantity
   Worldline::setInitialCondition(met, coord, -1);
   if (obj) object_=obj;
 }
@@ -500,7 +501,14 @@ void Photon::findValue(Functor::Double_constDoubleArray* object,
   toutside = tinside;
 }
 
-double Photon::getFreqObs() const { return freq_obs_; }
+void Photon::setFreqObs(double fo) {
+  freq_obs_=fo; 
+  GYOTO_DEBUG_EXPR(freq_obs_);
+}
+double Photon::getFreqObs() const {
+  GYOTO_DEBUG_EXPR(freq_obs_);
+  return freq_obs_;
+}
 
 double Photon::getTransmission(size_t i) const {
   if (i==size_t(-1)) return transmission_freqobs_;

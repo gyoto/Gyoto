@@ -173,15 +173,17 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
+  //  cout << "freqObs="<<freqObs<<endl;
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4) / freqObs; 
+				    coord_ph_hit+4);// / 1.;  
                                        //this is nu_em/nu_obs
+                                       // for nuobs=1. Hz
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
-  double dsem = dlambda*freqObs*ggredm1;
+  double dsem = dlambda*ggredm1; // * 1Hz ?
   double inc =0.;
   if (data) {
 #if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "data requested" 
+  GYOTO_DEBUG << "data requested. " 
 	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
 	      << ", ggred=" << ggred
 	      << endl;
@@ -236,6 +238,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       */
 
       //Intensity increment :
+      GYOTO_DEBUG_EXPR(freqObs);
+      GYOTO_DEBUG_EXPR(freqObs*ggredm1);
 	inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
 	  * (ph -> getTransmission(size_t(-1)))
 	  * ggred*ggred*ggred; // I_nu/nu^3 invariant
@@ -290,6 +294,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	nuem[ii]=nuobs[ii]*ggredm1;
       }
+      GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
+      GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
       emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
