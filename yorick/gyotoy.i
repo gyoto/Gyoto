@@ -274,7 +274,7 @@ func gyotoy(filename) {
   
   glade_file= find_in_path("gyotoy.xml", takefirst=1,
                            path=pathform(_(get_cwd(), _(Y_SITES,Y_SITE)+"glade/")));
-  glade_file;
+
   if (strpart(glade_file, 1:2)=="~/")
     glade_file=get_home()+"/"+strpart(glade_file, 3:);
   
