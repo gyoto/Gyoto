@@ -146,9 +146,7 @@ func gyotoy_set_metric( fname ) {
                    initcoord=_gyotoy_initcoord(1:4), _gyotoy_initcoord(5:7),
                    xfill=_gyotoy_t1,
                    get_txyz=1);
-  _gyotoy_metric;
   gyotoy_redraw;
-  _gyotoy_metric;
 }
 
 func gyotoy_set_initcoord(t0, r0, theta0, phi0,
@@ -219,7 +217,6 @@ func gyotoy_window_init(parent_id)
   _gyotoy_parent_id=parent_id;
   ok=pyk("sleep(0.1)")
   _gyotoy_wstyle="nobox.gs";
-  write, format="Paren WID: %d\n", parent_id;
   window,_gyotoy_wid,wait=1,parent=parent_id,style="nobox.gs",dpi=90;
   limits, square=1;
   gnomon,1;

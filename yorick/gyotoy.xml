@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAboutDialog" id="aboutdialog">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -12,12 +13,12 @@
     <property name="version">pre-alpha</property>
     <property name="comments" translatable="yes">A toy interface to Gyoto</property>
     <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox1">
+      <object class="GtkVBox" id="dialog-vbox1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area1">
+          <object class="GtkHButtonBox" id="dialog-action_area1">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="layout_style">end</property>
@@ -145,7 +146,6 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkMenuItem" id="file_menu_button">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Fichier</property>
@@ -157,7 +157,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="open_button">
                         <property name="label">gtk-open</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -168,7 +167,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="save_button">
                         <property name="label">gtk-save</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
@@ -180,7 +178,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="save_as_button">
                         <property name="label">gtk-save-as</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -197,7 +194,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem5">
                         <property name="label">gtk-quit</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -211,7 +207,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="display_menu_buton">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Affichage</property>
@@ -222,7 +217,6 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkMenuItem" id="toggle_gnomon">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Toggle gnomon</property>
@@ -232,7 +226,6 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="toggle_cage">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Toggle cage</property>
@@ -242,7 +235,6 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="toggle_reticle">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Toggle reticle</property>
@@ -252,7 +244,6 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="reset_2D_limits">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Reset 2D limits</property>
@@ -262,7 +253,6 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="length_unit_menu">
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Length unit</property>
@@ -273,7 +263,6 @@
                             <property name="can_focus">False</property>
                             <child>
                               <object class="GtkRadioMenuItem" id="geometrical">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Geometrical unit</property>
@@ -284,7 +273,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="m">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Meter</property>
@@ -295,7 +283,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="km">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Kilometer</property>
@@ -306,7 +293,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="sun radius">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Solar radius</property>
@@ -317,7 +303,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="arcsec">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Arc second</property>
@@ -328,7 +313,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="mas">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Milliarcsecond</property>
@@ -339,7 +323,6 @@
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="uas">
-                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="label" translatable="yes">Microarcsecond</property>
@@ -358,7 +341,6 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="help_menu_button">
-                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Aid_e</property>
@@ -370,7 +352,6 @@
                     <child>
                       <object class="GtkImageMenuItem" id="about_button">
                         <property name="label">gtk-about</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -399,8 +380,8 @@
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkDrawingArea" id="yorick_window">
-                    <property name="width_request">550</property>
-                    <property name="height_request">480</property>
+                    <property name="width_request">545</property>
+                    <property name="height_request">567</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="events">GDK_VISIBILITY_NOTIFY_MASK</property>
@@ -431,6 +412,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">t1_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_t1" swapped="no"/>
@@ -505,6 +490,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">phaseincl_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="orient3" swapped="no"/>
@@ -523,6 +512,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">paln_adjustment</property>
                     <property name="climb_rate">0.050000000000000003</property>
                     <property name="digits">12</property>
@@ -542,6 +535,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">phaseincl_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="orient3" swapped="no"/>
@@ -572,6 +569,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">phiprime0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -601,6 +602,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">rthetaprime0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -619,6 +624,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">rthetaprime0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -637,6 +646,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">t0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -655,6 +668,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">phi0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -673,6 +690,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">theta0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -691,6 +712,10 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">r0_adjustment</property>
                     <property name="digits">12</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
@@ -800,6 +825,10 @@
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="progress_pulse_step">0.14000000059604645</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">spin_adjustment</property>
                     <property name="digits">12</property>
                     <property name="numeric">True</property>
@@ -831,7 +860,6 @@
                     <property name="can_focus">False</property>
                     <property name="model">metric_type_liststore</property>
                     <property name="active">0</property>
-                    <property name="id_column">0</property>
                     <signal name="changed" handler="metric_type_changed_cb" swapped="no"/>
                     <child>
                       <object class="GtkCellRendererText" id="renderer"/>
@@ -907,6 +935,10 @@
                   <object class="GtkSpinButton" id="mass">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">mass_adjustment</property>
                     <signal name="change-value" handler="set_mass" swapped="no"/>
                     <signal name="value-changed" handler="set_mass" swapped="no"/>
@@ -933,6 +965,10 @@
                   <object class="GtkSpinButton" id="distance">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="primary_icon_activatable">False</property>
+                    <property name="secondary_icon_activatable">False</property>
+                    <property name="primary_icon_sensitive">True</property>
+                    <property name="secondary_icon_sensitive">True</property>
                     <property name="adjustment">distance_adjustment</property>
                     <property name="digits">5</property>
                     <signal name="change-value" handler="set_distance" swapped="no"/>
@@ -973,12 +1009,9 @@
                     <child>
                       <object class="GtkRadioButton" id="star">
                         <property name="label" translatable="yes">Star</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="set_particle_type" swapped="no"/>
@@ -992,12 +1025,9 @@
                     <child>
                       <object class="GtkRadioButton" id="photon">
                         <property name="label" translatable="yes">Photon</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">star</property>

@@ -1,0 +1,35 @@
+Running gyotoy
+______________
+
+Gyotoy is a small graphical user interface (a.k.a. "a toy", or GUI) to
+vizualize a single geodesic (a star orbit or a photon trajectory) in a
+metric. It currently supports any metric with a spherical-like
+coordinate system: KerrBL spin can be set directly, and any GYOTO
+Metric can be loaded from an XML description file.
+
+The hard work is done by the Yorick GYOTO plug-in. However, the neat
+GUI uses python 3 and PyGObject.
+
+Therefore, you need:
+ - python3;
+ - PyGObject;
+ - Gtk3.
+
+Under Mac OS X using macports, try:
+
+   sudo port install python33
+   sudo port select python python33
+   sudo port install py33-gobject3 gtk3
+
+Macports does not set the python3 alias to python3.3. You can either:
+ - sudo ln -s /opt/local/bin/python3.3 /opt/local/bin/python3
+ - modify the first line in gyotoy.py to point to python3.3 instead of python3
+
+If you get an error message in the lines of "Glib: no schemas
+installed on the system", set the environment variable XDG_DATA_DIRS
+in your shell (for instance in $HOME/.profile):
+   export XDG_DATA_DIRS=/opt/local/share
+
+Under Linux, things should be a little smoother. On Debian, this
+worked for me:
+   sudo apt-get install python3-gi gir1.2-gtk-3.0
