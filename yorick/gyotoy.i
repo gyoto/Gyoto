@@ -48,6 +48,7 @@ extern _gyotoy_txyz;
 extern _gyotoy_particle_to_load;
 extern _gyotoy_parent_id;
 extern _gyotoy_inhibit_redraw;
+extern _gyotoy_metric_file;
  /* DOCUMENT extern _gyotoy_*;
      Some variable holding state information for use inside gyotoy.
      _running: true if GTK interface is running;
@@ -128,7 +129,7 @@ func gyotoy_set_KerrBL_metric( spin ) {
 }
 
 func gyotoy_set_metric( fname ) {
-  extern _gyotoy_metric, _gyotoy_particle, _gyotoy_txyz;
+  extern _gyotoy_metric, _gyotoy_particle, _gyotoy_txyz, _gyotoy_metric_file;
   if (catch(0x08)) {
     // avoid breaking in case bad file
     gyotoy_warning, "Unable to load metric. Is this a GYOTO XML description file?";
@@ -137,6 +138,7 @@ func gyotoy_set_metric( fname ) {
   if (is_string(fname)) metric=gyoto_Metric(fname);
   if (typeof(metric)!="gyoto_Metric") gyotoy_warning, "Failed to set metric";
   _gyotoy_metric=metric;
+  _gyotoy_metric_file=fname;
   if (catch(0x08)) {
     // avoid breaking in case of v>c or other problem
     gyotoy_warning, "metric loaded but orbit computation failed";
@@ -292,14 +294,17 @@ func gyotoy(filename) {
   _pyk_proc = spawn(pyk_cmd, _pyk_callback);
   if (is_void(_pyk_proc)) error, "Failed to launch python";
   if (_gyotoy_filename &&
-      (strglob("*.dat",_gyotoy_filename,case=0) |
-       strglob("*.txt",_gyotoy_filename,case=0)))
+      (strglob("*.dat",_gyotoy_filename,case=0) ||
+       strglob("*.txt",_gyotoy_filename,case=0) ||
+       strglob("*.xml",_gyotoy_filename,case=0) ))
     pyk,"set_filename('"+_gyotoy_filename+"')";
 }
 
 func gyotoy_set_particle(part) {
-  extern _gyotoy_particle, _gyotoy_metric, _gyotoy_initcoord, _gyotoy_txyz;
-  //  _gyotoy_particle=part;
+  extern _gyotoy_particle, _gyotoy_metric, _gyotoy_initcoord, _gyotoy_txyz,
+    _gyotoy_metric_file, _gyotoy_filename;
+  
+  _gyotoy_particle=part;
 
   if (is_gyoto_Star(part)) {
     part_type="star";
@@ -314,13 +319,22 @@ func gyotoy_set_particle(part) {
 
   // Metric & projection
   _gyotoy_metric = part(metric=);
-  if (_gyotoy_metric(kind=)=="KerrBL")
+  if (_gyotoy_metric(kind=)=="KerrBL") {
+    ok=pyk("set_parameter('metric_type', 'kerrbl')");
     ok=pyk("set_parameter('spin',"+swrite(format="%.12f",_gyotoy_metric(spin=))+")");
+  } else {
+    ok=pyk("set_parameter('metric_type', 'file')");
+    if (_gyotoy_filename)
+      ok=pyk("set_parameter('metric_file', '"+_gyotoy_filename+"')");
+    _gyotoy_metric_file=_gyotoy_filename;
+  }
+  
   //ok=pyk("set_parameter('incl',"+swrite(format="%.12f",metric(get_inclination=1)*rad2deg)+")");
   //ok=pyk("set_parameter('paln',"+swrite(format="%.12f",metric(get_paln=1)*rad2deg)+")");
   //ok=pyk("set_parameter('phase',"+swrite(format="%.12f",metric(get_argument=1)*rad2deg)+")");
   //ok=pyk("set_parameter('distance',"+swrite(format="%.12f",metric(get_distance=1))+")");
-  //ok=pyk("set_parameter('mass',"+swrite(format="%.12f",metric(get_mass=1))+")");
+  //  m_sun = 1.98843e30;     // kg
+  //  ok=pyk("set_parameter('mass',"+swrite(format="%.12f",_gyotoy_metric(mass=)/m_sun)+")");
 
   // Initial condition
   coord = part(initcoord=);
@@ -377,10 +391,12 @@ func gyotoy_warning(msg) {
 }
 
 func gyotoy_import(filename) {
+  extern _gyotoy_filename;
   // XML file:
   if (strpart(filename,-3:0)==".xml") {
     local rad2deg;
     rad2deg=180./pi;
+    _gyotoy_filename=filename;
     gyotoy_set_particle, gyoto_Astrobj(filename);
     return;
   }
@@ -403,9 +419,10 @@ func gyotoy_import(filename) {
     key="";
     value="";
     sread,line, format="# %s = %s", key, value;
+    if (key=="metric_file") gyotoy_set_metric, strpart(value, 2:-1);
     ok=pyk("set_parameter('"+key+"',"+value+")");
   }
-  pyk,"compute_orbit('rien')";
+  //pyk,"compute_orbit('rien')";
 }
 
 func gyotoy_print(truc) {print,truc;}
@@ -452,19 +469,23 @@ func gyotoy_save_data(filename) {
   gyoto_convert, y, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
   gyoto_convert, z, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
   ptype = (_gyotoy_particle_is_massless?"photon":"star");
+  mtype = (_gyotoy_metric(kind=)=="KerrBL")?"kerrbl":"file";
   spin=(_gyotoy_metric(kind=)=="KerrBL")?_gyotoy_metric(spin=):2;
   if (f=open(filename,"w",1)) {
     write, f, format="# %s\n", "Gyoto save file";
     write, f, format="# %s\n", "Start Gyoto parameters";
     write, f, format="# %13s = \"%s\"\n", "particle_type", ptype;
-    write, f, format="# %13s = \"%s\"\n", "metric_type", "kerr";
+    write, f, format="# %13s = \"%s\"\n", "metric_type", mtype;
+    if (mtype=="kerrbl")
+      write, f, format="# %13s = %14.12f\n", "spin", spin;
+    else
+      write, f, format="# %13s = \"%s\"\n", "metric_file", _gyotoy_metric_file;
     write, f, format="# %13s = %14.12f\n",
-      ["spin", "mass",
+      ["mass",
        "t0", "r0", "theta0", "phi0",
        "rprime0", "thetaprime0", "phiprime0",
        "t1"],
-      _([spin,
-         _gyotoy_mass],
+      _([_gyotoy_mass],
         _gyotoy_initcoord,
         _gyotoy_t1);
     write, f, format="# %13s = \"%s\"\n", "length_unit", _gyotoy_unit;

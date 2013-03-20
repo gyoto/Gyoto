@@ -124,7 +124,7 @@ check-dll: $(PKG_DLL) check.i
 install::
 	cd stdplug; make install
 	$(YNSTALL) ygyoto.h ygyoto_supplier.C $(DEST_Y_SITE)/include
-	$(YNSTALL) gyotoy.glade $(DEST_Y_SITE)/glade
+	$(YNSTALL) gyotoy.xml $(DEST_Y_SITE)/glade
 	$(YNSTALL) gyotoy.py $(DEST_Y_SITE)/python
 	$(YNSTALL) gyotoy $(DEST_Y_SITE)/bin
 	-ln $(DEST_Y_SITE)/bin/gyotoy $(DESTDIR)$(prefix)/bin/
@@ -133,7 +133,7 @@ install::
 uninstall::
 	cd stdplug; make uninstall
 	rm -f $(DEST_Y_SITE)/include/ygyoto*
-	rm -f $(DEST_Y_SITE)/glade/gyotoy.glade
+	rm -f $(DEST_Y_SITE)/glade/gyotoy.xml
 	rm -f $(DEST_Y_SITE)/python/gyotoy.py
 	rm -f $(DEST_Y_HOME)/bin/gyotoy
 	rm -f $(DESTDIR)$(exec_prefix)/bin/gyotoy

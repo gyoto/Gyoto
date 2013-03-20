@@ -273,7 +273,12 @@ class gyotoy:
 
    def set_parameter(self, param, value):
       if (param=='metric_type'):
-         self.builder.get_object('metric_type').set_active(0)         
+         if (value=="kerr" or value=="kerrbl"):
+            self.builder.get_object('metric_type').set_active(0)
+         else:
+            self.builder.get_object('metric_type').set_active(1)
+      elif (param=='metric_file'):
+         self.builder.get_object('metric_file').set_filename(value)
       elif (param=='length_unit' or param=='particle_type'):
          self.builder.get_object(value).set_active(1)
       else:
