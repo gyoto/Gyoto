@@ -46,7 +46,9 @@ extern _gyotoy_distance;
 extern _gyotoy_unit;
 extern _gyotoy_txyz;
 extern _gyotoy_particle_to_load;
-/* DOCUMENT extern _gyotoy_*;
+extern _gyotoy_parent_id;
+extern _gyotoy_inhibit_redraw;
+ /* DOCUMENT extern _gyotoy_*;
      Some variable holding state information for use inside gyotoy.
      _running: true if GTK interface is running;
      _reticle: true if reticle should be displayed;
@@ -125,6 +127,30 @@ func gyotoy_set_KerrBL_metric( spin ) {
   gyotoy_redraw;
 }
 
+func gyotoy_set_metric( fname ) {
+  extern _gyotoy_metric, _gyotoy_particle, _gyotoy_txyz;
+  if (catch(0x08)) {
+    // avoid breaking in case bad file
+    gyotoy_warning, "Unable to load metric. Is this a GYOTO XML description file?";
+    return;
+  }
+  if (is_string(fname)) metric=gyoto_Metric(fname);
+  if (typeof(metric)!="gyoto_Metric") gyotoy_warning, "Failed to set metric";
+  _gyotoy_metric=metric;
+  if (catch(0x08)) {
+    // avoid breaking in case of v>c or other problem
+    gyotoy_warning, "metric loaded but orbit computation failed";
+    return;
+  }
+  _gyotoy_txyz=_gyotoy_particle(metric=_gyotoy_metric,
+                   initcoord=_gyotoy_initcoord(1:4), _gyotoy_initcoord(5:7),
+                   xfill=_gyotoy_t1,
+                   get_txyz=1);
+  _gyotoy_metric;
+  gyotoy_redraw;
+  _gyotoy_metric;
+}
+
 func gyotoy_set_initcoord(t0, r0, theta0, phi0,
                           rprime0, thetaprime0, phiprime0) {
   extern _gyotoy_initcoord, _gyotoy_txyz;
@@ -154,7 +180,8 @@ func gyotoy_redraw(void){
   //  delta; long(niter);
   // Purpose of the "if": gyoto_Kerr_orbit will return 0 if v>c
 
-  extern _gyotoy_txyz;
+  extern _gyotoy_txyz, _gyotoy_inhibit_redraw;
+  if (_gyotoy_inhibit_redraw) return;
 
   if (numberof(_gyotoy_txyz)>1) {
     x=_gyotoy_txyz(,2);
@@ -187,20 +214,24 @@ func gyotoy_toggle_reticle(void) {
 func gyotoy_window_init(parent_id)
 // initialize window in GTK frontend
 {
-  extern _gyotoy_wid, _gyotoy_wstyle, _gyotoy_filename, _gyotoy_particle;
+  extern _gyotoy_wid, _gyotoy_wstyle, _gyotoy_filename, _gyotoy_particle, _gyotoy_parent_id, _gyotoy_inhibit_redraw;
+  if (_gyotoy_parent_id==parent_id) return;
+  _gyotoy_parent_id=parent_id;
   ok=pyk("sleep(0.1)")
   _gyotoy_wstyle="nobox.gs";
-  window,_gyotoy_wid,wait=1,parent=parent_id,style="nobox.gs";
+  write, format="Paren WID: %d\n", parent_id;
+  window,_gyotoy_wid,wait=1,parent=parent_id,style="nobox.gs",dpi=90;
   limits, square=1;
   gnomon,1;
   cage3,1;
   //orient3,pi,-pi/2;
   pldefault, marks=0;
+  _gyotoy_inhibit_redraw=0;
   if (!is_void(_gyotoy_particle_to_load)) gyotoy_set_particle,_gyotoy_particle_to_load;
   else if (_gyotoy_filename) gyotoy_import,_gyotoy_filename;
   else pyk,"compute_orbit('rien')";
   pyk,"orient3('rien')";
-  pyk,"glade.get_widget('metric_type').set_active(0)";
+  pyk,"builder.get_object('metric_type').set_active(0)";
 }
 
 func gyotoy_toggle_window_style(parent_id) {
@@ -217,6 +248,7 @@ func gyotoy_quit(void) {
 // called when GTK window is closed
   extern _gyotoy_running;
   _gyotoy_running=0;
+  _gyotoy_parent_id=0;
   if (_gyotoy_stand_alone) quit;
 }
 
@@ -228,10 +260,12 @@ func gyotoy(filename) {
    SEE ALSO:
  */
   extern _pyk_proc, _gyotoy_filename, _gyotoy_running, _gyotoy_particle;
-  extern _gyotoy_particle_to_load;
+  extern _gyotoy_particle_to_load, _gyotoy_parent_id, _gyotoy_inhibit_redraw;
   _gyotoy_running=1;
   _gyotoy_filename=[];
   _gyotoy_particle_to_load=[];
+  _gyotoy_parent_id=0;
+  _gyotoy_inhibit_redraw=1;
   
   python_exec=find_in_path("gyotoy.py", takefirst=1,
                            path=pathform(_(get_cwd(),
@@ -382,6 +416,7 @@ func gyotoy_print(truc) {print,truc;}
 func gyotoy_set_mass(mass) {
   extern _gyotoy_mass;
   _gyotoy_mass=mass;
+  gyotoy_redraw;
 }
 
 func gyotoy_set_particle_type(type) {
