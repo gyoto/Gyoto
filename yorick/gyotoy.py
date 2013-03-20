@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # authors: Thibaut Paumard
 # gyotoy.py
 # Default parameters:
@@ -21,7 +21,7 @@
 
 
 #  Copyright 2007 F. Rigaut
-#  Copyright 2011 Thibaut Paumard
+#  Copyright 2011, 2013 Thibaut Paumard
 #
 #  This file is part of Gyoto.
 #
@@ -344,7 +344,7 @@ class gyotoy:
    
    def yo2py(self,cb_condition,*args):
       if cb_condition == GObject.IO_HUP:
-         raise SystemExit, "lost pipe to yorick"
+         raise SystemExit("lost pipe to yorick")
       # handles string command from yorick
       # note: inidividual message needs to end with \n for proper ungarbling
       while 1:
@@ -352,17 +352,17 @@ class gyotoy:
             msg = sys.stdin.readline()
             msg = "self."+msg
             exec(msg)
-         except IOError, e:
+         except IOError as e:
             if e.errno == errno.EAGAIN:
                # the pipe's empty, good
                break
             # else bomb out
             self.yerror(str(e))
-            raise SystemExit, "yo2py unexpected IOError:" + str(e)
-         except Exception, e:
+            raise SystemExit("yo2py unexpected IOError:" + str(e))
+         except Exception as e:
 #            raise SystemExit, "yo2py unexpected Exception:" + str(ee)
             self.yerror(str(e))
-            raise SystemExit, "yo2py unexpected Exception:" + str(e) +msg
+            raise SystemExit("yo2py unexpected Exception:" + str(e) +msg)
          return True
 
    def yerror(self, msg):
@@ -374,7 +374,7 @@ class gyotoy:
 # from yorick
       
 if len(sys.argv) != 2:
-   print 'Usage: gyotoy.py path_to_glade'
+   print('Usage: gyotoy.py path_to_glade')
    raise SystemExit
 
 # get path to glade file

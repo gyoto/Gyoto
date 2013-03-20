@@ -134,7 +134,7 @@
   <object class="GtkWindow" id="window1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="events"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>
@@ -403,7 +403,8 @@
                     <property name="height_request">480</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <signal name="draw" handler="on_drawingarea_map_event" swapped="no"/>
+                    <property name="events">GDK_VISIBILITY_NOTIFY_MASK</property>
+                    <signal name="event" handler="on_drawingarea_map_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -829,7 +830,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="model">metric_type_liststore</property>
-                    <property name="active">1</property>
+                    <property name="active">0</property>
                     <property name="id_column">0</property>
                     <signal name="changed" handler="metric_type_changed_cb" swapped="no"/>
                     <child>

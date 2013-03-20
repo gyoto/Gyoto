@@ -1,7 +1,7 @@
 #!/usr/bin/env yorick -i
 /*
     Copyright 2007 F. Rigaut
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -275,9 +275,9 @@ func gyotoy(filename) {
   if (strpart(python_exec, 1:2)=="~/")
     python_exec=get_home()+"/"+strpart(python_exec, 3:);
   
-  glade_file= find_in_path("gyotoy.glade", takefirst=1,
-                           path=pathform(_("./", _(Y_SITES,Y_SITE)+"glade/")));
-
+  glade_file= find_in_path("gyotoy.xml", takefirst=1,
+                           path=pathform(_(get_cwd(), _(Y_SITES,Y_SITE)+"glade/")));
+  glade_file;
   if (strpart(glade_file, 1:2)=="~/")
     glade_file=get_home()+"/"+strpart(glade_file, 3:);
   
