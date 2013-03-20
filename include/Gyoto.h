@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -141,11 +141,10 @@ or fetch pyk.i from the CVS browser at
 http://yorick.cvs.sourceforge.net/viewvc/yorick/yorick-yutils/pyk.i?view=markup
 
 
-\subsection pygtk_sec PyGTK
+\subsection pygtk_sec PyGObject
 
-The graphical interface is actually coded python using the pygtk
-extension. So you'll need a recent version of python, PyGTK, and the
-Glade library, on which PyGTK depends.
+The graphical interface is actually coded python 3 using the PyGObject
+extension. So you'll need a recent version of python 3 and PyGObject.
 
 
 \section building_sec Building

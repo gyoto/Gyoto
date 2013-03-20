@@ -29,20 +29,20 @@ ______
 
 A collection of utilities for Yorick, distributed as yorick-yutils in
 many Linux distributions. Actually, only pyk.i is used in Gyotoy (so
-far), and as of writting, the CVS version is required.
+far).
 
 Either get yutils > 1.4.0 from e.g. http://www.maumae.net/yorick/packages/src/
 or fetch pyk.i from the CVS browser at
 http://yorick.cvs.sourceforge.net/viewvc/*checkout*/yorick/yorick-yutils/pyk.i
 
 
-PyGTK
-_____
+PyGObject
+_________
 
-The graphical interface is actually coded python using the pygtk
-extension. So you'll need a recent version of python, PyGTK, and the
-Glade library, on which PyGTK depends.
-NB: the "devel" version of PyGTK is required. 
+The graphical interface is actually coded in python 3 using the PyGObject
+extension. So you'll need a recent version of python (>=3), PyGObject, and the
+Gtk 3+ library, on which PyGObject depends.
+NB: the "devel" version of PyGObject is required. 
 
 2- Building
 ___________
@@ -76,4 +76,4 @@ If everything goes well,
 should do, too.
 
 
-6 Apr 2009, Thibaut Paumard.
+20 March 2013, Thibaut Paumard.
