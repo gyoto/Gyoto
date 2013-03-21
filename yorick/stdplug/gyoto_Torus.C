@@ -27,6 +27,8 @@ using namespace Gyoto::Astrobj;
 #include <iostream>
 using namespace std;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
@@ -61,53 +63,15 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
   char const * pmsg="Cannot use positional argument more than once";
   char * unit=NULL;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  /* LARGERADIUS */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getLargeRadius(unit?unit:""));
-    } else
-      (*ao)->setLargeRadius(ygets_d(iarg), unit?unit:"") ;
-  }
-
-  /* RADIUS */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getSmallRadius(unit?unit:""));
-    } else
-      (*ao)->setSmallRadius(ygets_d(iarg), unit?unit:"") ;
-  }
-
-  /* SPECTRUM */
-  if ((iarg=kiargs[++k])>=0) {
-    if (yarg_nil(iarg)) {
-      SmartPointer<Spectrum::Generic> * sp = ypush_Spectrum();
-      *sp = (*ao) -> getSpectrum();
-    } else {
-      (*ao) -> setSpectrum ( *yget_Spectrum(iarg) );
-    }
-  }
-
-  /* OPACITY */
-  if ((iarg=kiargs[++k])>=0) {
-    if (yarg_nil(iarg)) {
-      SmartPointer<Spectrum::Generic> * sp = ypush_Spectrum();
-      *sp = (*ao) -> getOpacity();
-    } else {
-      (*ao) -> setOpacity ( *yget_Spectrum(iarg) );
-    }
-  }
-
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(LargeRadius);
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(SmallRadius);
+  YGYOTO_WORKER_GETSET_OBJECT(Spectrum);
+# define ypush_Opacity ypush_Spectrum
+# define yget_Opacity yget_Spectrum
+  YGYOTO_WORKER_GETSET_OBJECT(Opacity);
+# undef ypush_Opacity
+# undef yget_Opacity
   // Call generic Astrobj worker
   ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
 }

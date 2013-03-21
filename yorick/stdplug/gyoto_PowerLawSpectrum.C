@@ -35,6 +35,8 @@ using namespace Gyoto::Spectrum;
 using namespace YGyoto::Spectrum;
 using namespace std;
 
+#define OBJ sp
+
 void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
   if (debug()) cerr << "in PowerLawYEval()" << endl;
   int rvset[1]={0}, paUsed[1]={0}, constructor=0;
@@ -83,29 +85,9 @@ void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
 
-  //// MEMBERS ////
-  /* CONSTANT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*sp)->getConstant());
-    } else
-      (*sp)->setConstant(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_GETSET_DOUBLE(Constant);
+  YGYOTO_WORKER_GETSET_DOUBLE(Exponent);
   
-  /* EXPONENT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*sp)->getExponent());
-    } else
-      (*sp)->setExponent(ygets_d(iarg)) ;
-  }
-  
-  
-  // GENERIC WORKER
   ygyoto_Spectrum_generic_eval(sp_, kiargs+k+1, piargs, rvset, paUsed);
 
 }

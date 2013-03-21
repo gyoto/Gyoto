@@ -30,6 +30,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   int rvset[1]={0}, paUsed[1]={0}, builder=0;
@@ -82,107 +84,22 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   SmartPointer<PolishDoughnut> *ao = (SmartPointer<PolishDoughnut> *)ao_;
 
   int k=-1;
-  //// MEMBERS ////
-  // "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
   char * unit=NULL;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // lambda
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getLambda());
-    } else (*ao)->setLambda(ygets_d(iarg));
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // tempratio
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getTemperatureRatio());
-    } else (*ao)->setTemperatureRatio(ygets_d(iarg));
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // centraldensity
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getCentralDensity(unit?unit:""));
-    } else (*ao)->setCentralDensity(ygets_d(iarg), unit?unit:"");
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // centraltempovervirial
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getCentralTempOverVirial());
-    } else (*ao)->setCentralTempOverVirial(ygets_d(iarg));
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // beta
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getBeta());
-    } else (*ao)->setBeta(ygets_d(iarg));
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // spectraloversampling
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_long((*ao)->getSpectralOversampling());
-    } else (*ao)->setSpectralOversampling(ygets_l(iarg));
-  }
-
-  //    "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",
-  if ((iarg=kiargs[++k])>=0) { // l0
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getL0());
-    } else y_error("l0 is read only");
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // Wsurface
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getWsurface());
-    } else y_error("Wsurface is read only");
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // Wcentre
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getWcentre());
-    } else y_error("Wcentre is read only");
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // rcusp
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getRcusp());
-    } else y_error("rcusp is read only");
-  }
-
-  if ((iarg=kiargs[++k])>=0) { // rcentre
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getRcentre());
-    } else y_error("rcentre is read only");
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE(Lambda);
+  YGYOTO_WORKER_GETSET_DOUBLE(TemperatureRatio);
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(CentralDensity);
+  YGYOTO_WORKER_GETSET_DOUBLE(CentralTempOverVirial);
+  YGYOTO_WORKER_GETSET_DOUBLE(Beta);
+  YGYOTO_WORKER_GETSET_LONG(SpectralOversampling);
+  YGYOTO_WORKER_GET_DOUBLE(getL0);
+  YGYOTO_WORKER_GET_DOUBLE(getWsurface);
+  YGYOTO_WORKER_GET_DOUBLE(getWcentre);
+  YGYOTO_WORKER_GET_DOUBLE(getRcusp);
+  YGYOTO_WORKER_GET_DOUBLE(getRcentre);
 
   // Call generic Astrobj worker
   ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);

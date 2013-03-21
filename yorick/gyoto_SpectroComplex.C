@@ -68,12 +68,7 @@ void YGyoto::SpCplxEval(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *sp_, 
   char * unit=NULL;
   int k=-1;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
+  YGYOTO_WORKER_SET_UNIT;
 
   /* append */
   if ((iarg=kiargs[++k])>=0) {
@@ -85,7 +80,7 @@ void YGyoto::SpCplxEval(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> *sp_, 
   /* remove */
   if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
-    GYOTO_DEBUG << "reomve subspectro" << endl;
+    GYOTO_DEBUG << "remove subspectro" << endl;
     (*sp)->remove(ygets_l(iarg));
   }
 
@@ -121,9 +116,6 @@ extern "C" {
   void Y__gyoto_SpCplx_register_as_Spectrometer(int argc){
     ygyoto_Spectrometer_register(Complex::Kind,&YGyoto::SpCplxEval);
   }
-
-  // KERR CLASS
-  // Constructor
 
   void
   Y_gyoto_SpectroComplex(int argc)

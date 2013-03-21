@@ -35,6 +35,8 @@ using namespace Gyoto::Spectrum;
 using namespace YGyoto::Spectrum;
 using namespace std;
 
+#define OBJ sp
+
 void YGyoto::Spectrum::BlackBodyYEval(SmartPointer<Generic> * sp_, int argc) {
   if (debug()) cerr << "in BlackBodyYEval()" << endl;
   int rvset[1]={0}, paUsed[1]={0}, constructor=0;
@@ -83,27 +85,8 @@ void YGyoto::Spectrum::BlackBodyYEval(SmartPointer<Generic> * sp_, int argc) {
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
 
-  //// MEMBERS ////
-  /* TEMPERATURE */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*sp)->getTemperature());
-    } else
-      (*sp)->setTemperature(ygets_d(iarg)) ;
-  }
-  
-  /* SCALING */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*sp)->getScaling());
-    } else
-      (*sp)->setScaling(ygets_d(iarg)) ;
-  }
-  
+  YGYOTO_WORKER_GETSET_DOUBLE(Temperature);
+  YGYOTO_WORKER_GETSET_DOUBLE(Scaling);
   
   // GENERIC WORKER
   ygyoto_Spectrum_generic_eval(sp_, kiargs+k+1, piargs, rvset, paUsed);

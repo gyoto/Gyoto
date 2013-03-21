@@ -31,6 +31,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   if (debug()) cerr << "in ygyoto_Star_eval" << endl;
@@ -96,32 +98,9 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
   char * unit=NULL;
 
   //// MEMBERS ////
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  /* RADIUS */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getRadius(unit?unit:""));
-    } else
-      (*ao)->setRadius(ygets_d(iarg), unit?unit:"") ;
-  }
-
-  /* METRIC */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      *ypush_Metric() = (*ao)->getMetric();
-    } else
-      (*ao)->setMetric(*yget_Metric(iarg)) ;
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
+  YGYOTO_WORKER_GETSET_OBJECT(Metric);
 
   /* INITCOORD */
   if ((iarg=kiargs[++k])>=0) { //initcoord
@@ -163,35 +142,13 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
     }
   }
  
-  /* SPECTRUM */
-  if ((iarg=kiargs[++k])>=0) {
-    if (yarg_nil(iarg)) {
-      SmartPointer<Spectrum::Generic> * sp = ypush_Spectrum();
-      *sp = (*ao) -> getSpectrum();
-    } else {
-      (*ao) -> setSpectrum ( *yget_Spectrum(iarg) );
-    }
-  }
-
-  /* OPACITY */
-  if ((iarg=kiargs[++k])>=0) {
-    if (yarg_nil(iarg)) {
-      SmartPointer<Spectrum::Generic> * sp = ypush_Spectrum();
-      *sp = (*ao) -> getOpacity();
-    } else {
-      (*ao) -> setOpacity ( *yget_Spectrum(iarg) );
-    }
-  }
-
-  /* DELTA */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getDelta());
-    } else
-      (*ao)->setDelta(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_GETSET_OBJECT(Spectrum);
+#define ypush_Opacity ypush_Spectrum
+#define yget_Opacity yget_Spectrum
+  YGYOTO_WORKER_GETSET_OBJECT(Opacity);
+#undef ypush_Opacity
+#undef yget_Opacity
+  YGYOTO_WORKER_GETSET_DOUBLE(Delta);
 
   //// METHODS ////
   if ((iarg=kiargs[++k])>=0) (*ao)->reset();

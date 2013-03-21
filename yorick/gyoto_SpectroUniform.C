@@ -29,6 +29,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
+#define OBJ sp
+
 namespace YGyoto {
   void SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int argc);
 }
@@ -54,11 +56,11 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     "unit",
     "kind", "nsamples", "band", 
     "setparameter",
-    "xmlwrite",
+    "xmlwrite", "clone",
     "channels", "midpoints", "widths",
     0
   };
-#define nkw 9
+#define nkw 10
   static long kglobs[nkw+1];
   int kiargs[nkw];
   int piargs[]={-1,-1,-1,-1};
@@ -73,12 +75,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
   }
 
   char *unit = NULL;
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
+  YGYOTO_WORKER_SET_UNIT;
 
   /* SPECTRO_KIND */
   if ((iarg=kiargs[++k])>=0) {
@@ -91,14 +88,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     }
   }
 
-  /* NSAMPLES */
-  if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) ypush_long((*sp)->getNSamples());
-      else {
-	(*sp) -> setNSamples( ygets_l(iarg) );
-      }
-  }
+  YGYOTO_WORKER_GETSET_LONG(NSamples);
 
   /* BAND */
   if ((iarg=kiargs[++k])>=0) {
@@ -119,27 +109,15 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     }
   }
 
-  /* SETPARAMETER */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if ((*paUsed)++) y_error("pmsg");
-    string name = ygets_q(iarg);
-    string content = ygets_q(*piargs);
-    (*sp)->setParameter(name, content,  unit?unit:"");
-  }
+  YGYOTO_WORKER_SETPARAMETER;
+#undef OBJ
+#define OBJ sp_
+  YGYOTO_WORKER_XMLWRITE;
+#undef OBJ
+#define OBJ sp
+  YGYOTO_WORKER_CLONE(Spectrometer);
 
-  // Save to file
-  if ((iarg=kiargs[++k])>=0) { // xmlwrite
-    iarg+=*rvset;
-#ifdef GYOTO_USE_XERCES
-    char *filename=ygets_q(iarg);
-    Factory(*sp_).write(filename);
-#else
-    y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-  }
-
-    /* GET SPECTRO CHANNELS */
+  /* GET SPECTRO CHANNELS */
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");
     if ((*rvset)++) y_error(rmsg);

@@ -30,6 +30,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrum;
 
+#define OBJ sp
+
 static char ygyoto_Spectrum_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Spectrum_eval_worker_t *ygyoto_Spectrum_evals[YGYOTO_MAX_REGISTERED]
@@ -145,25 +147,17 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit=0;
 
   if (debug())
     for (int i=0; i<YGYOTO_SPECTRUM_GENERIC_KW_N; ++i)
       cerr << "DEBUG: Spectrum_generic_eval: kiargs[" << i << "]="
 	   << kiargs[i] << endl;
 
-  // Save to file
-  if ((iarg=*(kiargs++))>=0) { // xmlwrite
-    iarg+=*rvset;
-#ifdef GYOTO_USE_XERCES
-    char *filename=ygets_q(iarg);
-    Factory(*sp).write(filename);
-#else
-    y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-  }
-    
-    // kind
-  if ((iarg=*(kiargs++))>=0) {
+  YGYOTO_WORKER_XMLWRITE;
+
+  // kind
+  if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     if (debug()) cerr << "kiargs=" << kiargs << endl;
@@ -172,20 +166,8 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
     *kind = p_strcpy((*sp)->getKind().c_str());
   }
 
-  /* SETPARAMETER */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if ((*paUsed)++) y_error("pmsg");
-    string name = ygets_q(iarg);
-    string content = ygets_q(*piargs);
-    (*sp)->setParameter(name, content, "");
-  }
-
-  /* CLONE */
-  if ((iarg=kiargs[++k])>=0) {
-    if ((*rvset)++) y_error(rmsg);
-    *ypush_Spectrum() = (*sp)->clone();
-  }
+  YGYOTO_WORKER_SETPARAMETER;
+  YGYOTO_WORKER_CLONE(Spectrum);
 
   /* INTEGRATE */
   if ((iarg=kiargs[++k])>=0) {

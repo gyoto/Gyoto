@@ -27,6 +27,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
+#define OBJ gg
+
 // on_eval worker
 void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int argc) {
   if (debug()) cerr << "DEBUG: in ygyoto_KerrBL_eval()\n";

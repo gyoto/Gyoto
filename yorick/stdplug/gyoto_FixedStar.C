@@ -27,6 +27,8 @@ using namespace Gyoto;
 using namespace std;
 using namespace Gyoto::Astrobj;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
@@ -61,38 +63,9 @@ void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, in
   char const * pmsg="Cannot use positional argument more than once";
   char * unit=0;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  /* RADIUS */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getRadius(unit?unit:""));
-    } else
-      (*ao)->setRadius(ygets_d(iarg), unit?unit:"") ;
-  }
-
-  /* POSITION */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      long dims[] = {1, 3};
-      double * data=ypush_d(dims);
-      (*ao)->getPos(data);
-    } else {
-      long ptot=1;
-      double *pos=ygeta_d(iarg, &ptot, 0);
-      if (ptot!=3) y_error("POS should have exactly elements");
-      (*ao)->setPos(pos);
-    }
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius);
+  YGYOTO_WORKER_GETSET_VECTOR(Pos, 3);
 
   // Call generic Astrobj worker
   ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);

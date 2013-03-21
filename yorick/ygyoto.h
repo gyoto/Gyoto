@@ -164,6 +164,144 @@ void ygyoto_Spectrometer_generic_eval
 
 /*
 
+  The following are neat for writing workers. The worker needs to
+  abide by my unwritten coding style.
+
+ */
+#define YGYOTO_WORKER_GETSET_VECTOR(MEMBER, N)			  \
+  if ((iarg=kiargs[++k])>=0) {					  \
+    iarg+=*rvset;						  \
+    if (yarg_nil(iarg)) {					  \
+      if ((*rvset)++) y_error(rmsg);				  \
+      long dims[] = {1,N};					  \
+      double * coord=ypush_d(dims);				  \
+      (*OBJ)-> get##MEMBER (coord);				  \
+    } else {							  \
+      long ntot;						  \
+      double * pos = ygeta_d(iarg, &ntot, NULL);		  \
+      if (ntot<N) y_error("POS must have at least " #N " elements");	  \
+      (*OBJ) -> set##MEMBER (pos);				  \
+    }								  \
+  }
+
+#define YGYOTO_WORKER_GETSET4(MEMBER)				  \
+  YGYOTO_WORKER_GETSET_VECTOR(MEMBER, 4)
+
+#define YGYOTO_WORKER_GETSET_DOUBLE_UNIT(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_double((*OBJ) -> get##MEMBER (unit?unit:""));	   \
+      } else							   \
+	(*OBJ) -> set##MEMBER (ygets_d(iarg), unit?unit:"");	   \
+    }
+
+#define YGYOTO_WORKER_GETSET_DOUBLE(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_double((*OBJ) -> get##MEMBER ());		   \
+      } else							   \
+	(*OBJ) -> set##MEMBER (ygets_d(iarg));		   \
+    }
+
+#define YGYOTO_WORKER_GET_DOUBLE(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_double((*OBJ) -> MEMBER ());		   \
+      } else							   \
+	y_error( #MEMBER " is read only"); \
+    }
+
+#define YGYOTO_WORKER_GETSET_DOUBLE2(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_double((*OBJ) -> MEMBER ());			   \
+      } else							   \
+	(*OBJ) -> MEMBER (ygets_d(iarg));			   \
+    }
+
+#define YGYOTO_WORKER_GETSET_LONG(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_long((*OBJ) -> get##MEMBER ());		   \
+      } else							   \
+	(*OBJ) -> set##MEMBER (ygets_l(iarg));		   \
+    }
+
+#define YGYOTO_WORKER_GETSET_LONG2(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_long((*OBJ) -> MEMBER ());		   \
+      } else							   \
+	(*OBJ) -> MEMBER (ygets_l(iarg));		   \
+    }
+
+#define YGYOTO_WORKER_GETSET_OBJECT(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+    iarg+=*rvset;						   \
+    if (yarg_nil(iarg)) {					   \
+      if ((*rvset)++) y_error("Only one return value possible");   \
+      *ypush_##MEMBER () = (*OBJ) -> get##MEMBER ();		   \
+    } else							   \
+      (*OBJ) -> set##MEMBER (*yget_##MEMBER (kiargs[k]));	   \
+    }
+
+#define YGYOTO_WORKER_SET_UNIT		 \
+  if ((iarg=kiargs[++k])>=0) {		 \
+    iarg+=*rvset;			 \
+    GYOTO_DEBUG << "set unit" << endl;	 \
+    unit = ygets_q(iarg);		 \
+  }
+
+#define YGYOTO_WORKER_SETPARAMETER			\
+  if ((iarg=kiargs[++k])>=0) {				\
+    iarg+=*rvset; 					\
+    if ((*paUsed)++) y_error("pmsg");			\
+    string name = ygets_q(iarg);			\
+    string content = ygets_q(*piargs);			\
+    (*OBJ)->setParameter(name, content,  unit?unit:"");	\
+  }
+
+#ifdef GYOTO_USE_XERCES
+# define YGYOTO_WORKER_XMLWRITE			\
+  if ((iarg=kiargs[++k])>=0) {			\
+    iarg+=*rvset;				\
+    char *filename=ygets_q(iarg);		\
+    Factory(*OBJ).write(filename);		\
+  }
+#else
+# define YGYOTO_WORKER_XMLWRITE						\
+  if ((iarg=kiargs[++k])>=0) {						\
+    y_error("This GYOTO was compiled without xerces: no xml i/o");	\
+  }
+#endif
+
+#define YGYOTO_WORKER_CLONE(TYPE)		\
+  if ((iarg=kiargs[++k])>=0) {			\
+    if ((*rvset)++) y_error(rmsg);		\
+    *ypush_##TYPE () = (*OBJ)->clone();		\
+  }
+
+#define YGYOTO_WORKER_RUN(METHOD, ARG)			\
+  if ((iarg=kiargs[++k])>=0) {				\
+    GYOTO_DEBUG << #METHOD << std::endl ;		\
+    iarg+=*rvset;					\
+    (*ao)-> METHOD ( ARG );			\
+  }
+
+/*
+
   The following are needed to export the ABI to other plug-ins.
 
  */

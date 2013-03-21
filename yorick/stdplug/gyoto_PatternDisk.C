@@ -29,6 +29,8 @@ using namespace Gyoto::Astrobj;
 #include <iostream>
 using namespace std;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 				*ao_, int argc) {
@@ -73,88 +75,14 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   char * unit = NULL;
   // Call generic ThinDisk worker
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  /* FITSREAD */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "fitsread=\n";
-    iarg+=*rvset;
-    (*ao)->fitsRead(ygets_q(iarg));
-  }
-
-  /* PATTERNVELOCITY */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "patternvelocity=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getPatternVelocity());
-    } else
-      (*ao)->setPatternVelocity(ygets_d(iarg)) ;
-  }
-
-  /* REPEATPHI */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "repeatphi=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_long((*ao)->repeatPhi());
-    } else {
-      GYOTO_DEBUG << "calling repeatPhi()\n";
-      (*ao)->repeatPhi(ygets_l(iarg)) ;
-      GYOTO_DEBUG << "calling repeatPhi() done\n";
-    }
-  }
-
-  /* NU0 */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "nu0=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->nu0());
-    } else
-      (*ao)->nu0(ygets_d(iarg)) ;
-  }
-
-  /* DNU */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "dnu=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->dnu());
-    } else
-      (*ao)->dnu(ygets_d(iarg)) ;
-  }
-
-  /* PHIMIN */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "phimin=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->phimin());
-    } else
-      (*ao)->phimin(ygets_d(iarg)) ;
-  }
-
-  /* PHIMAX */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "phimax=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->phimax());
-    } else
-      (*ao)->phimax(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_RUN(fitsRead, ygets_q(iarg));
+  YGYOTO_WORKER_GETSET_DOUBLE(PatternVelocity);
+  YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
+  YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
+  YGYOTO_WORKER_GETSET_DOUBLE2(dnu);
+  YGYOTO_WORKER_GETSET_DOUBLE2(phimin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(phimax);
 
   /* INTENSITY */
   if ((iarg=kiargs[++k])>=0) {
@@ -254,12 +182,7 @@ void ygyoto_PatternDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
     }
   }
 
-  /* FITSWRITE */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "fitswrite=\n";
-    iarg+=*rvset;
-    (*ao)->fitsWrite(ygets_q(iarg));
-  }
+  YGYOTO_WORKER_RUN(fitsWrite, ygets_q(iarg));
 
   GYOTO_DEBUG << "calling ygyoto_ThinDisk_generic_eval\n";
   ygyoto_ThinDisk_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);

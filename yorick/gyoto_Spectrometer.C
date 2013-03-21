@@ -28,6 +28,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
+#define OBJ sp
+
 static char const * ygyoto_Spectrometer_names[YGYOTO_MAX_REGISTERED]
 ={0};
 static ygyoto_Spectrometer_eval_worker_t *ygyoto_Spectrometer_evals[YGYOTO_MAX_REGISTERED]
@@ -203,11 +205,7 @@ extern "C" {
     int k=-1;
 
     /* UNIT */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
+    YGYOTO_WORKER_SET_UNIT;
 
     ygyoto_Spectrometer_generic_eval(sp, kiargs+k+1, piargs, rvset, paUsed, unit);
   }
@@ -252,22 +250,10 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
 
   // Process SET keywords
   // Save to file
-  if ((iarg=kiargs[++k])>=0) { // xmlwrite
-    iarg+=*rvset;
-    char *filename=ygets_q(iarg);
-#ifdef GYOTO_USE_XERCES
-    Factory(*sp).write(filename);
-#else
-    y_error("This GYOTO was compiled without xerces: no xml i/o");
-#endif
-  }
+  YGYOTO_WORKER_XMLWRITE;
 
   /* CLONE */
-  if ((iarg=kiargs[++k])>=0) {
-    if (!yarg_nil(iarg)) y_error("CLONE is readonly");
-    if ((*rvset)++) y_error(rmsg);
-    *ypush_Spectrometer() = (*sp)->clone();
-  }
+  YGYOTO_WORKER_CLONE(Spectrometer);
 
   // get members //
   /* NSAMPLES */
@@ -278,15 +264,9 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
   }
 
   /* SETPARAMETER */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if ((*paUsed)++) y_error("pmsg");
-    string name = ygets_q(iarg);
-    string content = ygets_q(*piargs);
-    (*sp)->setParameter(name, content,  unit?unit:"");
-  }
+  YGYOTO_WORKER_SETPARAMETER;
 
-    /* GET SPECTRO CHANNELS */
+  /* GET SPECTRO CHANNELS */
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");
     if ((*rvset)++) y_error(rmsg);

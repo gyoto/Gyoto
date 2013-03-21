@@ -29,6 +29,8 @@ using namespace Gyoto::Astrobj;
 #include <iostream>
 using namespace std;
 
+#define OBJ ao
+
 // on_eval worker
 void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
 				*ao_, int argc) {
@@ -73,118 +75,17 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   char const * pmsg="Cannot use positional argument more than once";
   char * unit=NULL;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  /* FITSREAD */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "fitsread=\n";
-    iarg+=*rvset;
-    (*ao)->fitsRead(ygets_q(iarg));
-  }
-
-  /* REPEATPHI */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "repeatphi=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_long((*ao)->repeatPhi());
-    } else
-      (*ao)->repeatPhi(ygets_l(iarg)) ;
-  }
-
-  /* NU0 */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "nu0=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->nu0());
-    } else
-      (*ao)->nu0(ygets_d(iarg)) ;
-  }
-
-  /* DNU */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "dnu=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->dnu());
-    } else
-      (*ao)->dnu(ygets_d(iarg)) ;
-  }
-
-  /* RIN */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "rin=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->rin());
-    } else
-      (*ao)->rin(ygets_d(iarg)) ;
-  }
-
-  /* ROUT */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "rout=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->rout());
-    } else
-      (*ao)->rout(ygets_d(iarg)) ;
-  }
-
-  /* ZMIN */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "zmin=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->zmin());
-    } else
-      (*ao)->zmin(ygets_d(iarg)) ;
-  }
-
-  /* ZMAX */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "zmax=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->zmax());
-    } else
-      (*ao)->zmax(ygets_d(iarg)) ;
-  }
-
-  /* PHIMIN */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "phimin=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->phimin());
-    } else
-      (*ao)->phimin(ygets_d(iarg)) ;
-  }
-
-  /* PHIMAX */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "phimax=\n";
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->phimax());
-    } else
-      (*ao)->phimax(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_RUN(fitsRead, ygets_q(iarg));
+  YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
+  YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
+  YGYOTO_WORKER_GETSET_DOUBLE2(dnu);
+  YGYOTO_WORKER_GETSET_DOUBLE2(rin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(rout);
+  YGYOTO_WORKER_GETSET_DOUBLE2(zmin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(zmax);
+  YGYOTO_WORKER_GETSET_DOUBLE2(phimin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(phimax);
 
   /* EMISSQUANT */
   if ((iarg=kiargs[++k])>=0) {
@@ -238,11 +139,7 @@ void ygyoto_Disk3D_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
   }
 
   /* FITSWRITE */
-  if ((iarg=kiargs[++k])>=0) {
-    GYOTO_DEBUG << "fitswrite=\n";
-    iarg+=*rvset;
-    (*ao)->fitsWrite(ygets_q(iarg));
-  }
+  YGYOTO_WORKER_RUN(fitsWrite, ygets_q(iarg));
 
   GYOTO_DEBUG << "calling ygyoto_Astrobj_generic_eval\n";
   ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);

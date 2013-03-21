@@ -31,6 +31,10 @@ using namespace std;
 using namespace Gyoto;
 using namespace YGyoto;
 
+
+// Needed by the YGYOTO_WORKER_* macros
+#define OBJ gg
+
 static char ygyoto_Metric_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Metric_eval_worker_t *ygyoto_Metric_evals[YGYOTO_MAX_REGISTERED]
@@ -115,13 +119,8 @@ extern "C" {
     char * unit=NULL;
     int k=-1;
 
-    /* UNIT */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
-  
+    YGYOTO_WORKER_SET_UNIT;
+
     ygyoto_Metric_generic_eval(&gg, kiargs+k+1, piargs, rvset, paUsed, unit);
   }
 }
@@ -198,24 +197,8 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     *kind = p_strcpy((*gg)->getKind().c_str());
   }
 
-  /* SETPARAMETER */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if ((*paUsed)++) y_error("pmsg");
-    string name = ygets_q(iarg);
-    string content = ygets_q(*piargs);
-    (*gg)->setParameter(name, content,  unit?unit:"");
-  }
-
-  // Process SET keywords
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) { // mass= : get mass
-      if ((*rvset)++) y_error(rmsg);
-      ypush_double((*gg)->getMass(unit?unit:""));
-    } else                // mass=m: set mass        
-      (*gg)->setMass(ygets_d(iarg), unit?unit:"") ;
-  }
+  YGYOTO_WORKER_SETPARAMETER;
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Mass);
 
   // Unit length
   if ((iarg=kiargs[++k])>=0) { // unitLength()
@@ -243,22 +226,8 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
       (*gg)->circularVelocity(coords, vels, dir);
   }
 
-  // Save to file
-  if ((iarg=kiargs[++k])>=0) { // xmlwrite
-    iarg+=*rvset;
-    char *filename=ygets_q(iarg);
-#ifdef GYOTO_USE_XERCES
-    Factory(*gg).write(filename);
-#else
-    y_error("This GYOTO was compiled without xerces: no xml i/o");
-#endif
-  }
-
-  /* CLONE */
-  if ((iarg=kiargs[++k])>=0) {
-    if ((*rvset)++) y_error(rmsg);
-    *ypush_Metric() = (*gg)->clone();
-  }
+  YGYOTO_WORKER_XMLWRITE;
+  YGYOTO_WORKER_CLONE(Metric);
 
   if (*rvset || *paUsed || piargs[0]<0 || !yarg_number(piargs[0])) return;
   //else     /* GET G MU NU */

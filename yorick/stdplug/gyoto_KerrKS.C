@@ -27,6 +27,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
+#define OBJ gg
+
 // on_eval worker
 void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int argc) {
   int rvset[1]={0}, paUsed[1]={0};
@@ -56,29 +58,13 @@ void ygyoto_KerrKS_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
     }
   }
   
-  // Process specific GET keywords
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
   char * unit=NULL;
   int k=-1;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
-
-  // SPIN
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      yarg_drop(1);
-      ypush_double((*gg)->getSpin());
-    } else
-      (*gg)->setSpin(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE(Spin);
 
   ygyoto_Metric_generic_eval(gg_, kiargs+k+1, piargs, rvset, paUsed, unit);
   

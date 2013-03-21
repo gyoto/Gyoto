@@ -30,6 +30,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+#define OBJ ao
+
 static char ygyoto_Astrobj_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Astrobj_eval_worker_t *ygyoto_Astrobj_evals[YGYOTO_MAX_REGISTERED]
@@ -187,50 +189,13 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
 	   << kiargs[i] << endl;
 
   /* METRIC */
-  if ((iarg=*(kiargs++))>=0) {
-    iarg+=*rvset;
-    if (debug()) cerr << "in";
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      *ypush_Metric() = (*ao)->getMetric();
-    } else
-      (*ao)->setMetric(*yget_Metric(iarg)) ;
-    if (debug()) cerr << "out";
-  }
+  YGYOTO_WORKER_GETSET_OBJECT(Metric);
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Rmax);
+  YGYOTO_WORKER_GETSET_LONG(Flag_radtransf);
+  YGYOTO_WORKER_XMLWRITE;
 
-  /* RMAX */
-  if ((iarg=*(kiargs++))>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error("rmsg");
-      ypush_double((*ao)->getRmax(unit?unit:""));
-    } else
-      (*ao)->setRmax(ygets_d(iarg), unit?unit:"");
-  }
-
-  /* FLAG_RADTRANSF */
-  if ((iarg=*(kiargs++))>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error("rmsg");
-      ypush_long((*ao)->getFlag_radtransf());
-    } else
-      (*ao)->setFlag_radtransf(ygets_l(iarg));
-  }
-
-  // Save to file
-  if ((iarg=*(kiargs++))>=0) { // xmlwrite
-    iarg+=*rvset;
-#ifdef GYOTO_USE_XERCES
-    char *filename=ygets_q(iarg);
-    Factory(*ao).write(filename);
-#else
-    y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-  }
-    
-    // kind
-  if ((iarg=*(kiargs++))>=0) {
+  // kind
+  if ((iarg=kiargs[++k])>=0) {
     iarg+=*rvset;
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     if (debug()) cerr << "kiargs=" << kiargs << endl;
@@ -240,19 +205,8 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
   }
 
   /* SETPARAMETER */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if ((*paUsed)++) y_error("pmsg");
-    string name = ygets_q(iarg);
-    string content = ygets_q(*piargs);
-    (*ao)->setParameter(name, content,  unit?unit:"");
-  }
-
-  /* CLONE */
-  if ((iarg=kiargs[++k])>=0) {
-    if ((*rvset)++) y_error(rmsg);
-    *ypush_Astrobj() = (*ao)->clone();
-  }
+  YGYOTO_WORKER_SETPARAMETER;
+  YGYOTO_WORKER_CLONE(Astrobj);
 
   if (debug()) cerr << "DEBUG: out of Astrobj_generic_eval"<< endl;
 
