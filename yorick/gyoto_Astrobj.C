@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -89,7 +89,7 @@ extern "C" {
       return;
     }
 
-    // Possibly call hiegher-level base class worker
+    // Possibly call higher-level base class worker
 
     // push default return value: need to drop before pushing another one
     *ypush_Astrobj()=*ao;
@@ -105,7 +105,6 @@ extern "C" {
     static char const * knames_generic[]={"unit", YGYOTO_ASTROBJ_GENERIC_KW, 0};
     static long kglobs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+2];
     static int kiargs[YGYOTO_ASTROBJ_BASE_MAX_KW_N+1];
-    int * truc = kiargs;
 
     char ** knames=NULL;
     ygyoto_Astrobj_generic_eval_t * worker;
@@ -133,16 +132,12 @@ extern "C" {
     }
 
     char * unit=NULL;
+    int k =-1;
 
     /* UNIT */
-    if ((iarg=*(truc++))>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
+    YGYOTO_WORKER_SET_UNIT;
 
-
-    (*worker)(ao, truc, piargs, rvset, paUsed, unit);
+    (*worker)(ao, kiargs+k+1, piargs, rvset, paUsed, unit);
 
   }
   static y_userobj_t gyoto_Astrobj_obj =
@@ -217,71 +212,37 @@ extern "C" {
   {
     int rvset[1]={0}, paUsed[1]={0};
     SmartPointer<Astrobj::Generic> *ao = NULL;
-    //    char *obj_type=(char*)yget_obj(argc-1,0);
-    //    if (obj_type && //!strcmp(obj_type, "gyoto_Astrobj")) {
-    //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(--argc);
-      *ypush_Astrobj() = *ao; // push back astrobj
+
+    if (yarg_Astrobj(argc)) {
+      ao = yget_Astrobj(argc);
     } else { // Constructor mode
-      ao = ypush_Astrobj();
-      *rvset=1;
-    }
-
-    static char const * knames[]={
-      "unit",
-      YGYOTO_ASTROBJ_GENERIC_KW,
-      0
-    };
-    static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+2];
-    int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+1];
-    int piargs[]={-1,-1,-1,-1};
-  
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-      }
-    }
-
-    // if rvset==1, constructor mode:
-    if (*rvset) {
-      if (yarg_string(piargs[0])) {
 #ifdef GYOTO_USE_XERCES
-	char * fname = ygets_q(piargs[0]);
-	Astrobj::Subcontractor_t * sub = Astrobj::getSubcontractor(fname, 1);
-	paUsed[0]=1;
-	if (sub) {
-	  GYOTO_DEBUG << "found a subcontractor for \"" << fname
-		      << "\", calling it now\n";
-	  *ao = (*sub)(NULL);
-	} else {
-	  GYOTO_DEBUG << "found no subcontractor for \"" << fname
-		      << "\", calling Factory now\n";
-	  *ao = Factory(fname).getAstrobj();
-	}
+      if (!yarg_string(argc-1))
+	y_error("Cannot allocate object of virtual class Astrobj");
+
+      char * fname = ygets_q(argc-1);
+      ao = ypush_Astrobj();
+
+      Astrobj::Subcontractor_t * sub = Astrobj::getSubcontractor(fname, 1);
+      if (sub) {
+	GYOTO_DEBUG << "found a subcontractor for \"" << fname
+		    << "\", calling it now\n";
+	*ao = (*sub)(NULL);
+      } else {
+	GYOTO_DEBUG << "found no subcontractor for \"" << fname
+		    << "\", calling Factory now\n";
+	*ao = Factory(fname).getAstrobj();
+      }
+      // Replace fname with Astrobj in the stack, and drop fname
+      yarg_swap(0, argc);
+      yarg_drop(1);
 #else
 	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
-      } else y_error("Cannot allocate object of virtual class Astrobj");
     }
+    --argc;
 
-    char * unit=NULL;
-    int * truc=kiargs;
-
-    /* UNIT */
-    if ((iarg=*(truc++))>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
-
-    ygyoto_Astrobj_generic_eval(ao, truc, piargs, rvset, paUsed, unit);
-
+    gyoto_Astrobj_eval(ao, argc);
   }
 
   void
