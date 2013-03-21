@@ -30,6 +30,22 @@ using namespace std;
 
 using namespace Gyoto;
 
+#define YGYOTO_WORKER_GETSET4(MEMBER)				  \
+  if ((iarg=kiargs[++k])>=0) {					  \
+    iarg+=*rvset;						  \
+    if (yarg_nil(iarg)) {					  \
+      if ((*rvset)++) y_error(rmsg);				  \
+      long dims[] = {1,4};					  \
+      double * coord=ypush_d(dims);				  \
+      (*screen)-> get##MEMBER (coord);				  \
+    } else {							  \
+      long ntot;						  \
+      double * pos = ygeta_d(iarg, &ntot, NULL);		  \
+      if (ntot<4) y_error("POS must have at least 4 elements");	  \
+      (*screen) -> set##MEMBER (pos);				  \
+    }								  \
+  }
+
 extern "C" {
   typedef struct gyoto_Screen { SmartPointer<Screen> screen; } gyoto_Screen;
   void gyoto_Screen_free(void *obj);
@@ -90,12 +106,13 @@ extern "C" {
       "distance", "dmax", "inclination", "paln", "argument",
       "freqobs",
       "projection", "observerpos",
+      "fourvel", "screen1", "screen2", "screen3",
       "spectro",
       "skycoord",  "raycoord",
       "xmlwrite", "clone",
       0
     };
-#define nkw 18
+#define nkw 22
     static long kglobs[nkw+1];
     int kiargs[nkw];
     int piargs[]={-1,-1,-1,-1};
@@ -234,21 +251,12 @@ extern "C" {
       }
     }
 
-    /* OBSERVERPOS */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // get_observerpos
-	if ((*rvset)++) y_error(rmsg);
-	long dims[] = {1,4};
-	double * coord=ypush_d(dims);
-	(*screen)->getObserverPos(coord);
-      } else { // Set ObserverPos
-	long ntot;
-	double * pos = ygeta_d(iarg, &ntot, NULL);
-	if (ntot<4) y_error("POS must have at least 4 elements");
-	(*screen) -> setObserverPos(pos);
-      }
-    }
+    /* OBSERVERPOS, FOURVEL, SCREEN1, SCREEN2, SCREEN3 */
+    YGYOTO_WORKER_GETSET4(ObserverPos);
+    YGYOTO_WORKER_GETSET4(FourVel);
+    YGYOTO_WORKER_GETSET4(Screen1);
+    YGYOTO_WORKER_GETSET4(Screen2);
+    YGYOTO_WORKER_GETSET4(Screen3);
 
     /* SPECTRO */
     if ((iarg=kiargs[++k])>=0) {

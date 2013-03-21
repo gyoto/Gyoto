@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -311,8 +311,20 @@ void Screen::getObserverPos(double coord[]) const
   }
 }
 
-void Screen::getFourvel(double fourvel[]) const{
+void Screen::getFourVel(double fourvel[]) const{
   for (int ii=0;ii<4;ii++) fourvel[ii]=fourvel_[ii];
+}
+
+void Screen::getScreen1(double output[]) const{
+  for (int ii=0;ii<4;ii++) output[ii]=screen1_[ii];
+}
+
+void Screen::getScreen2(double output[]) const{
+  for (int ii=0;ii<4;ii++) output[ii]=screen2_[ii];
+}
+
+void Screen::getScreen3(double output[]) const{
+  for (int ii=0;ii<4;ii++) output[ii]=screen3_[ii];
 }
 
 /* SPECTROMETER */

@@ -331,7 +331,10 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void getObserverPos(double coord[]) const;
   ///< 4-Position of the observer relative to the Screen
 
-  void getFourvel(double fourvel[]) const;
+  void getFourVel(double fourvel[]) const;
+  void getScreen1(double output[]) const;
+  void getScreen2(double output[]) const;
+  void getScreen3(double output[]) const;
 
   
   /**
