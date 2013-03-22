@@ -1,6 +1,6 @@
 plug_in, "gyoto";
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -76,7 +76,7 @@ extern gyoto_Photon;
         spectro= a gyoto_Spectrometer
 
      
-   SUBROUTNIE-LIKE METHODS:
+   SUBROUTINE-LIKE METHODS:
 
      Several of these keywords can by specified whenever creating or
      accessing the object.
@@ -117,30 +117,5 @@ extern gyoto_Photon;
      
    SEE ALSO: gyoto, gyoto_Metric, gyoto_Screen, gyoto_Scenery,
             gyoto_Astrobj
- */
-
-
-extern gyoto_Photon_new;
-/* DOCUMENT photon = gyoto_Photon_new()
-     
-   SEE ALSO:
- */
-
-extern gyoto_Photon_setInitialCondition;
-/* DOCUMENT gyoto_Photon_setInitialCondition, photon, metric, astrobj, coord
-         or gyoto_Photon_setInitialCondition, photon, metric, astrobj, t0, dalpha, ddelta
-   SEE ALSO:
- */
-
-extern gyoto_Photon_setDelta;
-/* DOCUMENT gyoto_Photon_setDelta, photon, deltatau
-     
-   SEE ALSO:
- */
-
-extern gyoto_Photon_hit;
-/* DOCUMENT hit = gyoto_Photon_hit(photon, tlim)
-     
-   SEE ALSO:
  */
 

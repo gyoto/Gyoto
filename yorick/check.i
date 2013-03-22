@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -105,8 +105,8 @@ write, format="%s\n","done.\n";
 
 N=51;
 delta=pi/(10.*N);
-write, format="%s", "Checking gyoto_Photon_new: ";
-ph=gyoto_Photon_new();
+write, format="%s", "Checking gyoto_Photon(): ";
+ph=gyoto_Photon();
 write, format="%s\n","done.\n";
 
 i=35; j=19;
@@ -114,14 +114,14 @@ xscr=delta*(i-(N+1)/2.);
 yscr=delta*(j-(N+1)/2.);
 
 write, format="%s", "Checking gyoto_Photon_setInitialCondition: ";
-gyoto_Photon_setInitialCondition, ph, gg, orbit, screen, -xscr, yscr;
+ph, metric=gg, astrobj=orbit, initcoord=screen, -xscr, yscr;
 write, format="%s\n","done.\n";
 
 write, format="%s", "Checking gyoto_Photon_setDelta: ";
-gyoto_Photon_setDelta, ph, 1.;
+ph, delta=1.;
 write, format="%s\n","done.\n";
 write, format="%s", "Checking gyoto_Photon_hit: ";
-if(gyoto_Photon_hit(ph, 0.))
+if(ph(is_hit=1))
   write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 "_________________________";
@@ -133,9 +133,9 @@ for (i=1; i<=N; i++) {
   xscr=delta*(i-(N+1)/2.);
   for (j=1; j<=N; j++) {
     yscr=delta*(j-(N+1)/2.);
-    gyoto_Photon_setInitialCondition, ph, gg, orbit, screen, -xscr, yscr;
+    ph, metric=gg, astrobj=orbit, initcoord=screen, -xscr, yscr;
     // gyoto_Photon_setDelta, ph, 1.;
-    hitmap(i,j)=gyoto_Photon_hit(ph, 0.);
+    hitmap(i,j)=ph(is_hit=1);
   }
  }
 "_________________________";
