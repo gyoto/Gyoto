@@ -165,9 +165,80 @@ void ygyoto_Spectrometer_generic_eval
 /*
 
   The following are neat for writing workers. The worker needs to
-  abide by my unwritten coding style.
+  abide by my unwritten coding style. Assume MyKind is a subclass of
+  MyBase. MyBase is one of Metric, Astrobj, Spectrum, Spectrometer.
 
+  void ygyoto_MyKind_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) {
+    // Define keywords
+    static char const * knames[]={
+      "keyword1", "keyword2", ..., "keywordN",
+      YGYOTO_MYBASE_GENERIC_KW,
+      0
+    };
+
+    // Parse arguments
+    YGYOTO_WORKER_INIT(MyBase, MyKind, knames, YGYOTO_MYBASE_GENERIC_KW_N+N);
+
+    // Read unit keyword
+    YGYOTO_WORKER_SET_UNIT;
+
+    // process individual keywords
+    YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Keyword1);
+    ...
+    YGYOTO_WORKER_GETSET...(KeywordN);
+
+    // Call generic worker
+    YGYOTO_WORKER_CALL_GENERIC(MyBase);
+  }
  */
+
+#define YGYOTO_STR1(X) #X
+#define YGYOTO_STR(X) YGYOTO_STR1(X)
+#define YGYOTO_CAT1(X, Y) X##Y
+#define YGYOTO_CAT(X, Y) YGYOTO_CAT1(X,Y)
+
+#define YGYOTO_CONSTRUCTOR_INIT(BASE, KIND)			\
+  Gyoto::SmartPointer<Gyoto::BASE::Generic> *OBJ = NULL;	\
+  if (yarg_##BASE(argc-1)) {						\
+    OBJ = yget_##BASE(--argc);						\
+  } else if (yarg_string(argc-1)) {					\
+    char * fname = ygets_q(--argc);					\
+    OBJ = ypush_##BASE();						\
+    * OBJ = Gyoto::Factory(fname).get##BASE();				\
+    yarg_swap(0, argc);				\
+    yarg_drop(1);				\
+  } else {						\
+    OBJ = ypush_##BASE();					\
+    *OBJ = new Gyoto::BASE::KIND();				\
+    for (int arg=0; arg<argc; ++arg)				\
+      yarg_swap(arg, arg+1);					\
+  }
+
+#define YGYOTO_WORKER_INIT(BASE, KIND, KNAMES, NKW)			\
+  int rvset[1]={0}, paUsed[1]={0};					\
+  *ypush_##BASE()=*YGYOTO_CAT(OBJ, _);					\
+  Gyoto::SmartPointer<Gyoto::BASE::KIND> *OBJ =				\
+    (Gyoto::SmartPointer<Gyoto::BASE::KIND> *)YGYOTO_CAT(OBJ, _);	\
+  static long kglobs[NKW+1];						\
+  int kiargs[NKW];							\
+  int piargs[]={-1,-1,-1,-1};						\
+  yarg_kw_init(const_cast<char**>(KNAMES), kglobs, kiargs);		\
+  int iarg=argc, parg=0;						\
+  while (iarg>=1) {							\
+    iarg = yarg_kw(iarg, kglobs, kiargs);				\
+    if (iarg>=1) {							\
+      if (parg<4) piargs[parg++]=iarg--;				\
+      else y_error("gyoto_" #KIND " takes at most 4 positional arguments"); \
+    }									\
+  }									\
+  GYOTO_DEBUG_ARRAY(piargs, 4);						\
+  GYOTO_DEBUG_ARRAY(kiargs, NKW);					\
+  int k=-1;								\
+  char const * rmsg="Cannot set return value more than once";		\
+  char const * pmsg="Cannot use positional argument more than once";	\
+  char * unit=NULL;
+
+
 #define YGYOTO_WORKER_GETSET_VECTOR(MEMBER, N)			  \
   if ((iarg=kiargs[++k])>=0) {					  \
     iarg+=*rvset;						  \
@@ -260,7 +331,7 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_WORKER_SET_UNIT		 \
   if ((iarg=kiargs[++k])>=0) {		 \
     iarg+=*rvset;			 \
-    GYOTO_DEBUG << "set unit" << endl;	 \
+    GYOTO_DEBUG << "set unit" << std::endl;	\
     unit = ygets_q(iarg);		 \
   }
 
@@ -278,7 +349,7 @@ void ygyoto_Spectrometer_generic_eval
   if ((iarg=kiargs[++k])>=0) {			\
     iarg+=*rvset;				\
     char *filename=ygets_q(iarg);		\
-    Factory(*OBJ).write(filename);		\
+    Gyoto::Factory(*OBJ).write(filename);	\
   }
 #else
 # define YGYOTO_WORKER_XMLWRITE						\
@@ -297,12 +368,18 @@ void ygyoto_Spectrometer_generic_eval
   if ((iarg=kiargs[++k])>=0) {				\
     GYOTO_DEBUG << #METHOD << std::endl ;		\
     iarg+=*rvset;					\
-    (*ao)-> METHOD ( ARG );			\
+    (*OBJ)-> METHOD ( ARG );			\
   }
+
+#define YGYOTO_WORKER_CALL_GENERIC(BASE) \
+  ygyoto_##BASE##_generic_eval(YGYOTO_CAT(OBJ,_), \
+			       kiargs+k+1, piargs, rvset, paUsed, unit);
 
 /*
 
   The following are needed to export the ABI to other plug-ins.
+
+  You usually don't need to read below this line.
 
  */
 

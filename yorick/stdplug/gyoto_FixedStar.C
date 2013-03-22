@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -18,6 +18,7 @@
  */
 
 #include <GyotoFixedStar.h>
+#include <GyotoFactory.h>
 #include "../ygyoto.h"
 #include "yapi.h"
 
@@ -30,45 +31,21 @@ using namespace Gyoto::Astrobj;
 #define OBJ ao
 
 // on_eval worker
-void ygyoto_FixedStar_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
-  int rvset[1]={0}, paUsed[1]={0};
-  if (!ao_) { // Constructor mode
-    ao_ = ypush_Astrobj();
-    *ao_ = new FixedStar();
-  } else *ypush_Astrobj()=*ao_;
+void ygyoto_FixedStar_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 
-  SmartPointer<FixedStar> *ao = (SmartPointer<FixedStar> *)ao_;
   static char const * knames[]={
     "unit", "radius", "position",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+4];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+3];
-  int piargs[]={-1,-1,-1,-1};
-  
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-    }
-  }
 
-  int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-  char * unit=0;
+  YGYOTO_WORKER_INIT(Astrobj, FixedStar, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+3);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius);
   YGYOTO_WORKER_GETSET_VECTOR(Pos, 3);
 
-  // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
+  YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 }
 
 
@@ -81,12 +58,9 @@ extern "C" {
   void
   Y_gyoto_FixedStar(int argc)
   {
-    SmartPointer<Astrobj::Generic> *ao = NULL;
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(--argc);
-      if ((*ao)->getKind().compare("FixedStar"))
-	y_error("Expecting Astrobj of kind Star");
-    }
+    YGYOTO_CONSTRUCTOR_INIT(Astrobj, FixedStar);
+    if ((*ao)->getKind().compare("FixedStar"))
+      y_error("Expecting Astrobj of kind Star");
     ygyoto_FixedStar_eval(ao, argc);
   }
 

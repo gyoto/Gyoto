@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2012 Thibaut Paumard
+    Copyright (c) 2012-2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -30,15 +30,9 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-#define OBJ ao
-
 // on_eval worker
-void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
-  int rvset[1]={0}, paUsed[1]={0}, builder=0;
-  if (!ao_) { // Constructor mode
-    ao_ = ypush_Astrobj();
-    builder=1;
-  } else *ypush_Astrobj()=*ao_;
+void ygyoto_PolishDoughnut_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) {
+
   static char const * knames[]={
     "unit",
     "lambda", "tempratio", "centraldensity", "centraltempovervirial", "beta",
@@ -47,46 +41,9 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+13];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+12];
-  int piargs[]={-1,-1,-1,-1};
-  
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_PolishDoughnut takes at most 4 positional arguments");
-    }
-  }
 
-  if (debug())
-    for (int i=0; i<YGYOTO_ASTROBJ_GENERIC_KW_N+1; ++i)
-      cerr << "DEBUG gyoto_PolishDoughnut_eval: kiargs[" << i << "]="
-	   << kiargs[i] << endl;
-
-
-  // if rvset==1, constructor mode:
-  if (builder) {
-    if (yarg_string(piargs[0])) {
-#ifdef GYOTO_USE_XERCES
-      try { *ao_ = Factory(ygets_q(piargs[0])).getAstrobj(); } 
-      YGYOTO_STD_CATCH;
-      *paUsed=1;
-#else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    } else *ao_ = new PolishDoughnut();
-
-  }
-  SmartPointer<PolishDoughnut> *ao = (SmartPointer<PolishDoughnut> *)ao_;
-
-  int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-  char * unit=NULL;
+  YGYOTO_WORKER_INIT(Astrobj, PolishDoughnut, knames,
+		     YGYOTO_ASTROBJ_GENERIC_KW_N+12);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE(Lambda);
@@ -101,8 +58,7 @@ void ygyoto_PolishDoughnut_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao
   YGYOTO_WORKER_GET_DOUBLE(getRcusp);
   YGYOTO_WORKER_GET_DOUBLE(getRcentre);
 
-  // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
+  YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 }
 
 
@@ -115,17 +71,10 @@ extern "C" {
   void
   Y_gyoto_PolishDoughnut(int argc)
   {
-    SmartPointer<Astrobj::Generic> *ao = NULL;
-    //    char *obj_type=(char*)yget_obj(argc-1,0);
-    //    if (obj_type && //!strcmp(obj_type, "gyoto_Astrobj")) {
-    //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(--argc);
-      if ((*ao)->getKind()!="PolishDoughnut")
-	y_error("Expecting Astrobj of kind PolishDoughnut");
-      
-    }
-    ygyoto_PolishDoughnut_eval(ao, argc);
+    YGYOTO_CONSTRUCTOR_INIT(Astrobj, PolishDoughnut);
+    if ((*OBJ)->getKind()!="PolishDoughnut")
+      y_error("Expecting Astrobj of kind PolishDoughnut");
+    ygyoto_PolishDoughnut_eval(OBJ, argc);
   }
 
 }

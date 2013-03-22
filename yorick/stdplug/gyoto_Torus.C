@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -18,6 +18,7 @@
  */
 
 #include <GyotoTorus.h>
+#include <GyotoFactory.h>
 #include "../ygyoto.h"
 #include "yapi.h"
 
@@ -27,41 +28,16 @@ using namespace Gyoto::Astrobj;
 #include <iostream>
 using namespace std;
 
-#define OBJ ao
-
 // on_eval worker
-void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
-  int rvset[1]={0}, paUsed[1]={0};
-  if (!ao_) { // Constructor mode
-    ao_ = ypush_Astrobj();
-    *ao_ = new Torus();
-  } else *ypush_Astrobj()=*ao_;
+void ygyoto_Torus_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) {
 
-  SmartPointer<Torus> *ao = (SmartPointer<Torus> *)ao_;
   static char const * knames[]={
     "unit", "largeradius", "smallradius", "spectrum", "opacity",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+6];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+5];
-  int piargs[]={-1,-1,-1,-1};
-  
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-    }
-  }
 
-  int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-  char * unit=NULL;
+  YGYOTO_WORKER_INIT(Astrobj, Torus, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+5);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(LargeRadius);
@@ -72,8 +48,8 @@ void ygyoto_Torus_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int ar
   YGYOTO_WORKER_GETSET_OBJECT(Opacity);
 # undef ypush_Opacity
 # undef yget_Opacity
-  // Call generic Astrobj worker
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
+
+  YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 }
 
 
@@ -86,13 +62,10 @@ extern "C" {
   void
   Y_gyoto_Torus(int argc)
   {
-    SmartPointer<Astrobj::Generic> *ao = NULL;
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(--argc);
-      if ((*ao)->getKind().compare("Torus"))
-	y_error("Expecting Astrobj of kind Star");
-    }
-    ygyoto_Torus_eval(ao, argc);
+    YGYOTO_CONSTRUCTOR_INIT(Astrobj, Torus);
+    if ((*OBJ)->getKind().compare("Torus"))
+      y_error("Expecting Astrobj of kind Torus");
+    ygyoto_Torus_eval(OBJ, argc);
   }
 
 }

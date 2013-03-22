@@ -34,70 +34,21 @@ using namespace Gyoto::Astrobj;
 #define OBJ ao
 
 // on_eval worker
-void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int argc) {
-  if (debug()) cerr << "in ygyoto_Star_eval" << endl;
-  int rvset[1]={0}, paUsed[1]={0}, constructor=0;
+void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
+  GYOTO_DEBUG << endl;
 
-  // If needed, create the object.
-  if (!ao_) { // Constructor mode
-    constructor=1;
-    ao_ = ypush_Astrobj();
-  } else *ypush_Astrobj()=*ao_;
-
-  // Parse arguments
+  // Define keywords
   static char const * knames[]={
     "unit",
-    "radius", "metric", "initcoord", "spectrum", "opacity", "delta", "reset", "xfill",
+    "radius", "metric", "initcoord", "spectrum", "opacity", "delta",
+    "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_coord", "get_cartesian",
     0
   };
-#define nkw 13
-  static long kglobs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw+1];
-  int kiargs[YGYOTO_ASTROBJ_GENERIC_KW_N+nkw];
-  int piargs[]={-1,-1,-1,-1};
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-    }
-  }
-  if (debug()) {
-    cerr <<   "DEBUG: gyoto_Star parameters:" << endl;
-    for (int i=0; i<4; ++i)
-      cerr << "DEBUG:         piargs[" << i << "]="
-	   << piargs[i] << endl;
-    for (int i=0; i<YGYOTO_ASTROBJ_GENERIC_KW_N+nkw; ++i)
-      cerr << "DEBUG:         kiargs[" << i << "]="
-	   << kiargs[i] 
-	   << " (" << knames[i] << ")" << endl;
-  }
 
-  // Constructor mode from XML file
-  if (constructor) {
-    if (yarg_string(piargs[0])) {
-#ifdef GYOTO_USE_XERCES
-      try { *ao_ = Factory(ygets_q(piargs[0])).getAstrobj(); } 
-      YGYOTO_STD_CATCH;
-      *paUsed=1;
-#else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    } else *ao_ = new Star();
-  }
-  SmartPointer<Star> *ao = (SmartPointer<Star> *)ao_;
+  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+13);
 
-  // Process specific keywords
-  int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-
-  char * unit=NULL;
-
-  //// MEMBERS ////
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
   YGYOTO_WORKER_GETSET_OBJECT(Metric);
@@ -149,11 +100,10 @@ void ygyoto_Star_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int arg
 #undef ypush_Opacity
 #undef yget_Opacity
   YGYOTO_WORKER_GETSET_DOUBLE(Delta);
-  YGYOTO_WORKER_RUN(reset, )
-  YGYOTO_WORKER_RUN(xFill, ygets_d(iarg+*rvset))
+  YGYOTO_WORKER_RUN(reset, );
+  YGYOTO_WORKER_RUN(xFill, ygets_d(iarg+*rvset));
  
-  // GENERIC WORKER
-  ygyoto_Astrobj_generic_eval(ao_, kiargs+k+1, piargs, rvset, paUsed, unit);
+  YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 
   k += YGYOTO_ASTROBJ_GENERIC_KW_N;
 
@@ -259,13 +209,10 @@ extern "C" {
   void
   Y_gyoto_Star(int argc)
   {
-    if (debug()) cerr << "In Y_gyoto_Star" << endl;
-    SmartPointer<Astrobj::Generic> *ao = NULL;
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(--argc);
-      if ((*ao)->getKind().compare("Star"))
-	y_error("Expecting Astrobj of kind Star");
-    }
+    GYOTO_DEBUG << endl;
+    YGYOTO_CONSTRUCTOR_INIT(Astrobj, Star);
+    if ((*ao)->getKind().compare("Star"))
+      y_error("Expecting Astrobj of kind Star");
     ygyoto_Star_eval(ao, argc);
   }
 
