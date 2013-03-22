@@ -171,13 +171,14 @@ void ygyoto_Spectrometer_generic_eval
   void ygyoto_MyKind_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) {
     // Define keywords
     static char const * knames[]={
+      "unit",
       "keyword1", "keyword2", ..., "keywordN",
       YGYOTO_MYBASE_GENERIC_KW,
       0
     };
 
     // Parse arguments
-    YGYOTO_WORKER_INIT(MyBase, MyKind, knames, YGYOTO_MYBASE_GENERIC_KW_N+N);
+    YGYOTO_WORKER_INIT(MyBase, MyKind, knames, YGYOTO_MYBASE_GENERIC_KW_N+N+1);
 
     // Read unit keyword
     YGYOTO_WORKER_SET_UNIT;
@@ -364,11 +365,11 @@ void ygyoto_Spectrometer_generic_eval
     *ypush_##TYPE () = (*OBJ)->clone();		\
   }
 
-#define YGYOTO_WORKER_RUN(METHOD, ARG)			\
+#define YGYOTO_WORKER_RUN(METHOD)			\
   if ((iarg=kiargs[++k])>=0) {				\
     GYOTO_DEBUG << #METHOD << std::endl ;		\
     iarg+=*rvset;					\
-    (*OBJ)-> METHOD ( ARG );			\
+    (*OBJ)-> METHOD ;			\
   }
 
 #define YGYOTO_WORKER_CALL_GENERIC(BASE) \

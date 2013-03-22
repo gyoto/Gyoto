@@ -18,6 +18,7 @@
  */
 
 #include <GyotoKerrBL.h>
+#include <GyotoFactory.h>
 #include "ygyoto.h"
 #include "yapi.h"
 
@@ -27,62 +28,19 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
-#define OBJ gg
+void ygyoto_KerrBL_eval(SmartPointer<Metric::Generic> *OBJ_, int argc) {
 
-// on_eval worker
-void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int argc) {
-  if (debug()) cerr << "DEBUG: in ygyoto_KerrBL_eval()\n";
-  int rvset[1]={0}, paUsed[1]={0};
-  if (!gg_) { // Constructor mode
-    gg_ = ypush_Metric();
-    *gg_ = new KerrBL();
-  } else *ypush_Metric()=*gg_;
-
-  SmartPointer<KerrBL> *gg = (SmartPointer<KerrBL> *)gg_;
   static char const * knames[]={
     "unit",
     "spin", "makecoord",		\
     YGYOTO_METRIC_GENERIC_KW,
     0
   };
-  static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+5];
-  int kiargs[YGYOTO_METRIC_GENERIC_KW_N+4];
-  int piargs[]={-1,-1,-1,-1};
-  
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Metric takes at most 4 positional arguments");
-    }
-  }
-  
-  // Process specific keywords
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-  char * unit=NULL;
-  int k=-1;
 
-  /* UNIT */
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    GYOTO_DEBUG << "get unit" << endl;
-    unit = ygets_q(iarg);
-  }
+  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+3);
 
-  // spin
-  if ((iarg=kiargs[++k])>=0) {
-    iarg+=*rvset;
-    if (yarg_nil(iarg)) {
-      if ((*rvset)++) y_error(rmsg);
-      yarg_drop(1);
-      ypush_double((*gg)->getSpin());
-    } else
-      (*gg)->setSpin(ygets_d(iarg)) ;
-  }
+  YGYOTO_WORKER_SET_UNIT;
+  YGYOTO_WORKER_GETSET_DOUBLE(Spin);
 
   if (kiargs[++k]>=0) { // makecoord
     if (debug()) cerr << "DEBUG: In ygyoto_KerrBL_eval(): get_coord" << endl;
@@ -97,15 +55,12 @@ void ygyoto_KerrBL_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic> *gg_, int ar
     yarg_drop(1);
     double * coord=ypush_d(dims);
 #   ifdef GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG_EXPR(gg);
+    GYOTO_DEBUG_EXPR(OBJ);
 #   endif
-    (*gg)->MakeCoord(coord_,cst_,coord);
+    (*OBJ)->MakeCoord(coord_,cst_,coord);
   }
   
-
-  ygyoto_Metric_generic_eval(gg_, kiargs+k+1, piargs, rvset, paUsed, unit);
-  
-  if (debug()) cerr << "DEBUG: ygyoto_KerrBL_eval() done\n";
+  YGYOTO_WORKER_CALL_GENERIC(Metric);
 }
 
 
@@ -114,24 +69,13 @@ extern "C" {
     ygyoto_Metric_register("KerrBL",&ygyoto_KerrBL_eval);
   }
 
-  // KERR CLASS
-  // Constructor
-
   void
   Y_gyoto_KerrBL(int argc)
   {
-      SmartPointer<Metric::Generic> *gg = NULL;
-    try {
-      //    char *obj_type=(char*)yget_obj(argc-1,0);
-      //    if (obj_type && //!strcmp(obj_type, "gyoto_Metric")) {
-      //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {
-      if (yarg_Metric(argc-1)) {
-	gg = yget_Metric(--argc);
-	if ((*gg)->getKind() != "KerrBL")
-	  y_error("Expecting Metric of kind KerrBL");
-      }
-    } YGYOTO_STD_CATCH;
-    ygyoto_KerrBL_eval(gg, argc);
+    YGYOTO_CONSTRUCTOR_INIT(Metric, KerrBL);
+    if ((*OBJ)->getKind() != "KerrBL")
+      y_error("Expecting Metric of kind KerrBL");
+    ygyoto_KerrBL_eval(OBJ, argc);
   }
 
 }

@@ -100,8 +100,8 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 #undef ypush_Opacity
 #undef yget_Opacity
   YGYOTO_WORKER_GETSET_DOUBLE(Delta);
-  YGYOTO_WORKER_RUN(reset, );
-  YGYOTO_WORKER_RUN(xFill, ygets_d(iarg+*rvset));
+  YGYOTO_WORKER_RUN( reset() );
+  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );
  
   YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 

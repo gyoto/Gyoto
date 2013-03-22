@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -33,7 +33,6 @@ using namespace YGyoto;
 
 
 // Needed by the YGYOTO_WORKER_* macros
-#define OBJ gg
 
 static char ygyoto_Metric_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
@@ -75,22 +74,22 @@ extern "C" {
   }
 
   void gyoto_Metric_eval(void *obj, int argc) {
-    SmartPointer<Metric::Generic> gg = ((gyoto_Metric*)obj)->metric;
+    SmartPointer<Metric::Generic> *OBJ_ = &((gyoto_Metric*)obj)->metric;
 
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long( (long) gg() );
+      ypush_long( (long) (*OBJ_)() );
       return;
     }
 
     // Try calling kind-specific worker
     int n=0;
-    const string kind = gg->getKind();
+    const string kind = (*OBJ_)->getKind();
 
     while (n<ygyoto_Metric_count && kind.compare(ygyoto_Metric_names[n])) ++n;
 
     if (n<ygyoto_Metric_count && ygyoto_Metric_evals[n]) {
-      (*ygyoto_Metric_evals[n])(&gg, argc);
+      (*ygyoto_Metric_evals[n])(OBJ_, argc);
       return;
     }
 
@@ -99,29 +98,13 @@ extern "C" {
       "unit",
       YGYOTO_METRIC_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+2];
-    int kiargs[YGYOTO_METRIC_GENERIC_KW_N+1];
-    int piargs[]={-1,-1,-1,-1};
-    // push back metric by default
-    *ypush_Metric()=gg;
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Metric takes at most 4 positional arguments");
-      }
-    }
 
-    int rvset[1]={0}, paUsed[1]={0};
-    char * unit=NULL;
-    int k=-1;
+    YGYOTO_WORKER_INIT(Metric, Generic, knames, YGYOTO_METRIC_GENERIC_KW_N+1);
 
     YGYOTO_WORKER_SET_UNIT;
 
-    ygyoto_Metric_generic_eval(&gg, kiargs+k+1, piargs, rvset, paUsed, unit);
+    YGYOTO_WORKER_CALL_GENERIC(Metric);
+
   }
 }
 
@@ -154,7 +137,7 @@ void ygyoto_Metric_register(char const*const name, ygyoto_Metric_eval_worker_t* 
   //  strcpy(ygyoto_Metric_names[ygyoto_Metric_count], "");
 }
 
-void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
+void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg=-1;
@@ -171,7 +154,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     if (ntot!=4) y_error("POS must have 4 elements");
     double * vel=ygeta_d(piargs[0],&ntot,0);
     if (ntot!=3) y_error("VEL must have 3 elements");
-    ypush_double((*gg)->SysPrimeToTdot(pos, vel));
+    ypush_double((*OBJ)->SysPrimeToTdot(pos, vel));
   }
 
   if ((iarg=kiargs[++k])>=0) { // nullifycoord
@@ -186,7 +169,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     double *coord = ypush_d(dims);
     for (int i=0; i<4; ++i) coord[i]=pos[i];
     for (int i=0; i<3; ++i) coord[i+5]=vel[i];
-    (*gg)->nullifyCoord(coord);
+    (*OBJ)->nullifyCoord(coord);
   }
 
   // kind
@@ -194,7 +177,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*gg)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->getKind().c_str());
   }
 
   YGYOTO_WORKER_SETPARAMETER;
@@ -204,7 +187,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
   if ((iarg=kiargs[++k])>=0) { // unitLength()
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("UNITLENGTH is readonly");
-    ypush_double((*gg)->unitLength(unit?unit:""));
+    ypush_double((*OBJ)->unitLength(unit?unit:""));
   }
 
   // circularvelocity
@@ -223,7 +206,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
     dims[1]=4;
     double * vels = ypush_d(dims);
     for (long i=0; i<npoints; ++i, coords+=d1, vels+=4)
-      (*gg)->circularVelocity(coords, vels, dir);
+      (*OBJ)->circularVelocity(coords, vels, dir);
   }
 
   YGYOTO_WORKER_XMLWRITE;
@@ -253,7 +236,7 @@ void ygyoto_Metric_generic_eval(Gyoto::SmartPointer<Gyoto::Metric::Generic>*gg,
   size_t i, j;
   for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )
     for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
-      *(data++) = (*gg)->gmunu(x, i-1, j-1);
+      *(data++) = (*OBJ)->gmunu(x, i-1, j-1);
 
 }
 
@@ -264,70 +247,37 @@ extern "C" {
 
   void Y_gyoto_Metric(int argc) {
     int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Metric::Generic> *gg = NULL;
-    int builder=0;
+    SmartPointer<Metric::Generic> *OBJ = NULL;
     
     if (yarg_Metric(argc-1)) {
-      gg = yget_Metric(--argc);
-      // Try calling kind-specific worker
-      int n=0;
-      const string kind = (*gg)->getKind();
-      while (n<ygyoto_Metric_count && kind.compare(ygyoto_Metric_names[n])) ++n;
-      if (n<ygyoto_Metric_count && ygyoto_Metric_evals[n]) {
-	(*ygyoto_Metric_evals[n])(gg, argc);
-	return;
-      }
-      // push back metric
-      *ypush_Metric()=*gg;
+      OBJ = yget_Metric(--argc);
     } else { // Constructor mode
-      gg = ypush_Metric();
-      builder=1;
-    }
-
-    static char const * knames[]={
-      "unit",
-      YGYOTO_METRIC_GENERIC_KW, 0
-    };
-    static long kglobs[YGYOTO_METRIC_GENERIC_KW_N+2];
-    int kiargs[YGYOTO_METRIC_GENERIC_KW_N+1];
-    int piargs[]={-1,-1,-1,-1};
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Metric takes at most 4 positional arguments");
-      }
-    }
-
-    // if builder==1, constructor mode:
-    if (builder) {
-      if (yarg_string(piargs[0])) {
 #ifdef GYOTO_USE_XERCES
-	char * fname = ygets_q(piargs[0]);
-	Metric::Subcontractor_t *sub = Metric::getSubcontractor(fname, 1);
-	paUsed[0]=1;
-	if (sub) *gg=(*sub)(NULL);
-	else *gg = Factory(fname).getMetric();
+      if (!yarg_string(argc-1))
+	y_error("Cannot allocate object of virtual class Astrobj");
+
+      char * fname = ygets_q(argc-1);
+      OBJ = ypush_Metric();
+
+      Metric::Subcontractor_t * sub = Metric::getSubcontractor(fname, 1);
+      if (sub) {
+	GYOTO_DEBUG << "found a subcontractor for \"" << fname
+		    << "\", calling it now\n";
+	*OBJ = (*sub)(NULL);
+      } else {
+	GYOTO_DEBUG << "found no subcontractor for \"" << fname
+		    << "\", calling Factory now\n";
+	*OBJ = Factory(fname).getMetric();
+      }
+      // Replace fname with Metric in the stack, and drop fname
+      yarg_swap(0, argc);
+      yarg_drop(1);
 #else
 	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
-      } else y_error("Cannot allocate object of virtual class Metric");
     }
+    --argc;
 
-    char * unit=NULL;
-    int k=-1;
-
-    /* UNIT */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
-
-    ygyoto_Metric_generic_eval(gg, kiargs+k+1, piargs, rvset, paUsed, unit);
+    gyoto_Metric_eval(OBJ, argc);
   }
-
 }

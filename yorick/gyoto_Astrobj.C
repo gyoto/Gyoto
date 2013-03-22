@@ -213,7 +213,7 @@ extern "C" {
     int rvset[1]={0}, paUsed[1]={0};
     SmartPointer<Astrobj::Generic> *ao = NULL;
 
-    if (yarg_Astrobj(argc)) {
+    if (yarg_Astrobj(argc-1)) {
       ao = yget_Astrobj(argc);
     } else { // Constructor mode
 #ifdef GYOTO_USE_XERCES

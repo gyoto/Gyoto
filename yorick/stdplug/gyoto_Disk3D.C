@@ -49,7 +49,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
   YGYOTO_WORKER_INIT(Astrobj, Disk3D, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+14);
 
   YGYOTO_WORKER_SET_UNIT;
-  YGYOTO_WORKER_RUN(fitsRead, ygets_q(iarg));
+  YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
   YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
   YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
   YGYOTO_WORKER_GETSET_DOUBLE2(dnu);
@@ -111,7 +111,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
     }
   }
 
-  YGYOTO_WORKER_RUN(fitsWrite, ygets_q(iarg));
+  YGYOTO_WORKER_RUN( fitsWrite(ygets_q(iarg)) );
 
   YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 }
