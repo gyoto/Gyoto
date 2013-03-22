@@ -18,6 +18,7 @@
  */
 
 #include <GyotoKerrKS.h>
+#include <GyotoFactory.h>
 #include "ygyoto.h"
 #include "yapi.h"
 
@@ -37,7 +38,7 @@ void ygyoto_KerrKS_eval(SmartPointer<Metric::Generic> *gg_, int argc) {
     0
   };
 
-  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+2);
+  YGYOTO_WORKER_INIT(Metric, KerrKS, knames, YGYOTO_METRIC_GENERIC_KW_N+2);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE(Spin);

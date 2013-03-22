@@ -63,23 +63,24 @@ extern "C" {
     y_print(((gyoto_Spectro*)obj)->spectro->getKind(),0);
 #endif
   }
-  void gyoto_Spectro_eval(void *obj, int argc) {
-    SmartPointer<Spectrometer::Generic> sp = (((gyoto_Spectro*)obj)->spectro);
+  void gyoto_Spectrometer_eval(void *obj, int argc) {
+    SmartPointer<Spectrometer::Generic> *sp_ =
+      &(((gyoto_Spectro*)obj)->spectro);
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long( (long) sp() );
+      ypush_long( (long) (*sp_)() );
       return;
     }
 
     // Try calling kind-specific worker
     int n=0;
-    char const * const  kind = sp->getKind();
+    char const * const  kind = (*sp_)->getKind();
 
     while (n<ygyoto_Spectrometer_count &&
 	   kind != ygyoto_Spectrometer_names[n]) ++n;
 
     if (n<ygyoto_Spectrometer_count && ygyoto_Spectrometer_evals[n]) {
-      (*ygyoto_Spectrometer_evals[n])(&sp, argc);
+      (*ygyoto_Spectrometer_evals[n])(sp_, argc);
       return;
     }
 
@@ -88,126 +89,54 @@ extern "C" {
       "unit",
       YGYOTO_SPECTROMETER_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_SPECTROMETER_GENERIC_KW_N+2];
-    int kiargs[YGYOTO_SPECTROMETER_GENERIC_KW_N+1];
-    int piargs[]={-1,-1,-1,-1};
-    // push back spectrometer by default
-    *ypush_Spectrometer()=sp;
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Spectrometer takes at most 4 positional arguments");
-      }
-    }
 
-    int rvset[1]={0}, paUsed[1]={0};
-    char * unit=NULL;
-    int k=-1;
+    YGYOTO_WORKER_INIT(Spectrometer,
+		       Generic, knames, YGYOTO_METRIC_GENERIC_KW_N+1);
 
-    /* UNIT */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
-  
-    ygyoto_Spectrometer_generic_eval(&sp, kiargs+k+1, piargs, rvset, paUsed, unit);
+    YGYOTO_WORKER_SET_UNIT;
 
+    YGYOTO_WORKER_CALL_GENERIC(Spectrometer);
   }
   static y_userobj_t gyoto_Spectro_obj =
     {const_cast<char*>("gyoto_Spectrometer"), &gyoto_Spectro_free, &gyoto_Spectro_print,
-     &gyoto_Spectro_eval, 0, 0};
+     &gyoto_Spectrometer_eval, 0, 0};
 
   void
   Y_gyoto_Spectrometer(int argc)
   {
-    GYOTO_DEBUG << endl;
     int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Spectrometer::Generic> *sp = NULL;
-    int builder=0;
+    SmartPointer<Spectrometer::Generic> *OBJ = NULL;
 
     if (yarg_Spectrometer(argc-1)) {
-      sp = yget_Spectrometer(--argc);
-      // Try calling kind-specific worker
-      int n=0;
-      char const * const kind = (*sp)->getKind();
-      while (n<ygyoto_Spectrometer_count &&
-	     kind != ygyoto_Spectrometer_names[n])
-	++n;
-      if (n<ygyoto_Spectrometer_count &&
-	  ygyoto_Spectrometer_evals[n]) {
-	(*ygyoto_Spectrometer_evals[n])(sp, argc);
-	return;
-      }
-    
-      // push back Spectrometer
-      *ypush_Spectrometer()=*sp;
+      OBJ = yget_Spectrometer(argc);
     } else { // Constructor mode
-      sp = ypush_Spectrometer();
-      *rvset=1;
-      builder=1;
-    }
-
-    static char const * knames[]={
-      "unit",
-      YGYOTO_SPECTROMETER_GENERIC_KW, 0
-    };
-    static long kglobs[YGYOTO_SPECTROMETER_GENERIC_KW_N+2];
-    int kiargs[YGYOTO_SPECTROMETER_GENERIC_KW_N+1];
-    int piargs[]={-1,-1,-1,-1};
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Spectrometer takes at most 4 positional arguments");
-      }
-    }
-
-    // if builder==1, constructor mode:
-    if (builder) {
-      if (yarg_string(piargs[0])) {
 #ifdef GYOTO_USE_XERCES
-	char * fname = ygets_q(piargs[0]);
-	GYOTO_DEBUG << "trying to build Spectrometer from string \""
-		    << fname << "\"\n";
-	Spectrometer::Subcontractor_t *sub = Spectrometer::getSubcontractor(fname, 1);
-	paUsed[0]=1;
-	if (sub) {
-	  GYOTO_DEBUG << "subcontrator found\n";
-	  *sp=(*sub)(NULL);
-	}
-	else {
-	  Factory fct (fname);
-	  string kind = fct.getKind();
-	  if (kind=="Scenery")
-	    *sp = fct.getScenery()->getScreen()->getSpectrometer();
-	  else if (kind=="Screen")
-	    *sp = fct.getScreen()->getSpectrometer();
-	  else *sp = fct.getSpectrometer();
-	}
-	GYOTO_DEBUG << "built subcontractor of kind \""
-		    << (*sp)->getKind() << endl;
+      if (!yarg_string(argc-1))
+	y_error("Cannot allocate object of virtual class Spectrometer");
 
+      char * fname = ygets_q(argc-1);
+      OBJ = ypush_Spectrometer();
+
+      Spectrometer::Subcontractor_t * sub = Spectrometer::getSubcontractor(fname, 1);
+      if (sub) {
+	GYOTO_DEBUG << "found a subcontractor for \"" << fname
+		    << "\", calling it now\n";
+	*OBJ = (*sub)(NULL);
+      } else {
+	GYOTO_DEBUG << "found no subcontractor for \"" << fname
+		    << "\", calling Factory now\n";
+	*OBJ = Factory(fname).getSpectrometer();
+      }
+      // Replace fname with Spectrometer in the stack, and drop fname
+      yarg_swap(0, argc);
+      yarg_drop(1);
 #else
 	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
-      } else y_error("Cannot allocate object of virtual class Spectrometer");
     }
+    --argc;
 
-    char * unit=NULL;
-    int k=-1;
-
-    /* UNIT */
-    YGYOTO_WORKER_SET_UNIT;
-
-    ygyoto_Spectrometer_generic_eval(sp, kiargs+k+1, piargs, rvset, paUsed, unit);
+    gyoto_Spectrometer_eval(OBJ, argc);
   }
 
 }

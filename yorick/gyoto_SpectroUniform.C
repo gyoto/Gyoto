@@ -32,7 +32,7 @@ using namespace Gyoto::Spectrometer;
 #define OBJ sp
 
 namespace YGyoto {
-  void SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp, int argc);
+  void SpectroUniformYEval(SmartPointer<Spectrometer::Generic>*sp, int argc);
 }
 using namespace YGyoto;
 
@@ -40,18 +40,7 @@ void
 YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
 			    int argc)
 {
-  int k=-1, rvset[1]={0}, paUsed[1]={0};
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
 
-  if (!sp_) {
-    sp_ = ypush_Spectrometer();
-    *sp_ = new Spectrometer::Uniform();
-  } else {
-    *ypush_Spectrometer() = *sp_;
-  }
-
-  SmartPointer<Uniform> *sp = (SmartPointer<Uniform> *)sp_;
   static char const * knames[]={
     "unit",
     "kind", "nsamples", "band", 
@@ -60,21 +49,9 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     "channels", "midpoints", "widths",
     0
   };
-#define nkw 10
-  static long kglobs[nkw+1];
-  int kiargs[nkw];
-  int piargs[]={-1,-1,-1,-1};
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-    }
-  }
+  YGYOTO_WORKER_INIT(Spectrometer, Uniform,
+		     knames, 10);
 
-  char *unit = NULL;
   YGYOTO_WORKER_SET_UNIT;
 
   /* SPECTRO_KIND */
@@ -181,22 +158,14 @@ extern "C" {
   void
   Y_gyoto_SpectroUniform(int argc)
   {
-    SmartPointer<Spectrometer::Generic> *sp = NULL;
-    try {
-      //    char *obj_type=(char*)yget_obj(argc-1,0);
-      //    if (obj_type && //!strcmp(obj_type, "gyoto_Metric")) {
-      //    if (yget_obj(argc-1,0) && yarg_typeid(argc-1)==Y_OPAQUE) {
-      if (yarg_Spectrometer(argc-1)) {
-	sp = yget_Spectrometer(--argc);
-	kind_t kind=(*sp)->getKind();
-	if (kind != Uniform::WaveKind &&
-	    kind != Uniform::WaveLogKind &&
-	    kind != Uniform::FreqKind &&
-	    kind != Uniform::FreqLogKind)
-	  y_error("Expecting Spectrometer of kind Uniform");
-      }
-    } YGYOTO_STD_CATCH;
-    YGyoto::SpectroUniformYEval(sp, argc);
+    YGYOTO_CONSTRUCTOR_INIT(Spectrometer, Uniform);
+    kind_t kind=(*sp)->getKind();
+    if (kind != Uniform::WaveKind &&
+	kind != Uniform::WaveLogKind &&
+	kind != Uniform::FreqKind &&
+	kind != Uniform::FreqLogKind)
+      y_error("Expecting Spectrometer of kind Uniform");
+    YGyoto::SpectroUniformYEval(OBJ, argc);
   }
 
 }
