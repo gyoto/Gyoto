@@ -30,8 +30,6 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrum;
 
-#define OBJ sp
-
 static char ygyoto_Spectrum_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Spectrum_eval_worker_t *ygyoto_Spectrum_evals[YGYOTO_MAX_REGISTERED]
@@ -74,40 +72,26 @@ extern "C" {
 
     // Try calling kind-specific worker
     int n=0;
-    SmartPointer<Spectrum::Generic> * sp = &(((gyoto_Spectrum*)obj)->spectrum);
-    const string kind = (*sp)->getKind();
+    SmartPointer<Spectrum::Generic> * OBJ_ = &(((gyoto_Spectrum*)obj)->spectrum);
+    const string kind = (*OBJ_)->getKind();
 
     while (n<ygyoto_Spectrum_count && kind.compare(ygyoto_Spectrum_names[n]))
       ++n;
 
     if (n<ygyoto_Spectrum_count && ygyoto_Spectrum_evals[n]) {
-      (*ygyoto_Spectrum_evals[n])(sp, argc);
+      (*ygyoto_Spectrum_evals[n])(OBJ_, argc);
       return;
     }
 
     // Fall-back to default worker
     static char const * knames[]={
+      "unit",
       YGYOTO_SPECTRUM_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_SPECTRUM_GENERIC_KW_N+1];
-    int kiargs[YGYOTO_SPECTRUM_GENERIC_KW_N];
-    int piargs[]={-1,-1,-1,-1};
-    // push default return value
-    *ypush_Spectrum()=*sp;
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Spectrum takes at most 4 positional arguments");
-      }
-    }
-
-    int rvset[1]={0}, paUsed[1]={0};
-    ygyoto_Spectrum_generic_eval(sp, kiargs, piargs, rvset, paUsed);
-
+    YGYOTO_WORKER_INIT(Spectrum, Generic,
+		       knames, YGYOTO_SPECTRUM_GENERIC_KW_N+1);
+    YGYOTO_WORKER_SET_UNIT;
+    YGYOTO_WORKER_CALL_GENERIC(Spectrum);
 
   }
   static y_userobj_t gyoto_Spectrum_obj =
@@ -141,13 +125,12 @@ void ygyoto_Spectrum_register(char const*const name, ygyoto_Spectrum_eval_worker
   ygyoto_Spectrum_evals[ygyoto_Spectrum_count++]=on_eval;
 }
 
-void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
+void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*OBJ,
 				int *kiargs, int *piargs,
-				int *rvset, int *paUsed) {
+				  int *rvset, int *paUsed, char* unit) {
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
-  char * unit=0;
 
   if (debug())
     for (int i=0; i<YGYOTO_SPECTRUM_GENERIC_KW_N; ++i)
@@ -163,7 +146,7 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
     if (debug()) cerr << "kiargs=" << kiargs << endl;
     if ((*rvset)++) y_error(rmsg);
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*sp)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->getKind().c_str());
   }
 
   YGYOTO_WORKER_SETPARAMETER;
@@ -181,7 +164,7 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
     --dims[1]; --ntot;
     double * Inu1nu2 = ypush_d(dims);
     for (long i=0; i < ntot; ++i)
-      Inu1nu2[i] = (*sp)->integrate(freqs[i], freqs[i+1]);
+      Inu1nu2[i] = (*OBJ)->integrate(freqs[i], freqs[i+1]);
   }
 
   // GET SPECTRUM VALUE FOR WAVELENGTHS
@@ -193,7 +176,7 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*sp,
   long ntot, dims[Y_DIMSIZE];
   double * freqs = ygeta_d(iarg, &ntot, dims);
   double * Inu = ypush_d(dims);
-  for (long i=0; i < ntot; ++i) Inu[i] = (**sp)(freqs[i]);
+  for (long i=0; i < ntot; ++i) Inu[i] = (**OBJ)(freqs[i]);
 
   if (debug()) cerr << "DEBUG: out of Spectrum_generic_eval"<< endl;
 
@@ -203,53 +186,38 @@ extern "C" {
   void Y_gyoto_Spectrum(int argc) 
   {
     int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Spectrum::Generic> *sp = NULL;
+    SmartPointer<Spectrum::Generic> *OBJ = NULL;
 
     if (yarg_Spectrum(argc-1)) {
-      sp = yget_Spectrum(--argc);
-      *ypush_Spectrum() = *sp; // push back spectrum
+      OBJ = yget_Spectrum(argc);
     } else { // Constructor mode
-      sp = ypush_Spectrum();
-      *rvset=1;
-    }
-
-    static char const * knames[]={
-      YGYOTO_SPECTRUM_GENERIC_KW,
-      0
-    };
-    static long kglobs[YGYOTO_SPECTRUM_GENERIC_KW_N+12];
-    int kiargs[YGYOTO_SPECTRUM_GENERIC_KW_N+11];
-    int piargs[]={-1,-1,-1,-1};
-  
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Spectrum takes at most 4 positional arguments");
-      }
-    }
-
-    // if rvset==1, constructor mode:
-    if (*rvset) {
-      if (yarg_string(piargs[0])) {
 #ifdef GYOTO_USE_XERCES
-	char * fname = ygets_q(piargs[0]);
-	Gyoto::Spectrum::Subcontractor_t * sub =
-	  Spectrum::getSubcontractor(fname, 1);
-	if (sub) *sp = (*Spectrum::getSubcontractor(fname, 1))(NULL);
-	else     *sp = Factory(fname).getSpectrum(); 
-	paUsed[0]=1;
+      if (!yarg_string(argc-1))
+	y_error("Cannot allocate object of virtual class Spectrum");
+
+      char * fname = ygets_q(argc-1);
+      OBJ = ypush_Spectrum();
+
+      Spectrum::Subcontractor_t * sub = Spectrum::getSubcontractor(fname, 1);
+      if (sub) {
+	GYOTO_DEBUG << "found a subcontractor for \"" << fname
+		    << "\", calling it now\n";
+	*OBJ = (*sub)(NULL);
+      } else {
+	GYOTO_DEBUG << "found no subcontractor for \"" << fname
+		    << "\", calling Factory now\n";
+	*OBJ = Factory(fname).getSpectrum();
+      }
+      // Replace fname with Spectrum in the stack, and drop fname
+      yarg_swap(0, argc);
+      yarg_drop(1);
 #else
 	y_error("This GYOTO was compiled without XERCES: no xml i/o");
 #endif
-      } else y_error("Cannot allocate object of virtual class Spectrum");
     }
+    --argc;
 
-    ygyoto_Spectrum_generic_eval(sp, kiargs, piargs, rvset, paUsed);
-
+    gyoto_Spectrum_eval(OBJ, argc);
   }
 
   void

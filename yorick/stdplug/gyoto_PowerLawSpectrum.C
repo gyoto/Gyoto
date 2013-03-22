@@ -35,60 +35,24 @@ using namespace Gyoto::Spectrum;
 using namespace YGyoto::Spectrum;
 using namespace std;
 
-#define OBJ sp
+void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * OBJ_, int argc) {
 
-void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * sp_, int argc) {
-  if (debug()) cerr << "in PowerLawYEval()" << endl;
-  int rvset[1]={0}, paUsed[1]={0}, constructor=0;
-
-  // If needed, create the object.
-  if (!sp_) { // Constructor mode
-    constructor=1;
-    sp_ = ypush_Spectrum();
-  } else *ypush_Spectrum()=*sp_;
-
-  // Parse arguments
   static char const * knames[]={
+    "unit",
     "constant", "exponent",
     YGYOTO_SPECTRUM_GENERIC_KW,
     0
   };
-#define nkw 2
-  static long kglobs[YGYOTO_SPECTRUM_GENERIC_KW_N+nkw+1];
-  int kiargs[YGYOTO_SPECTRUM_GENERIC_KW_N+nkw];
-  int piargs[]={-1,-1,-1,-1};
-  yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-  int iarg=argc, parg=0;
-  while (iarg>=1) {
-    iarg = yarg_kw(iarg, kglobs, kiargs);
-    if (iarg>=1) {
-      if (parg<4) piargs[parg++]=iarg--;
-      else y_error("gyoto_Astrobj takes at most 4 positional arguments");
-    }
-  }
 
-  // Constructor mode from XML file
-  if (constructor) {
-    if (yarg_string(piargs[0])) {
-#ifdef GYOTO_USE_XERCES
-      *sp_ = Factory(ygets_q(piargs[0])).getSpectrum();
-      *paUsed=1;
-#else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    } else *sp_ = new PowerLaw();
-  }
-  SmartPointer<PowerLaw> *sp = (SmartPointer<PowerLaw> *)sp_;
+  YGYOTO_WORKER_INIT(Spectrum, PowerLaw,
+		     knames, YGYOTO_SPECTRUM_GENERIC_KW_N+3);
 
-  // Process specific keywords
-  int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
+  YGYOTO_WORKER_SET_UNIT;
 
   YGYOTO_WORKER_GETSET_DOUBLE(Constant);
   YGYOTO_WORKER_GETSET_DOUBLE(Exponent);
   
-  ygyoto_Spectrum_generic_eval(sp_, kiargs+k+1, piargs, rvset, paUsed);
+  YGYOTO_WORKER_CALL_GENERIC(Spectrum);
 
 }
 
@@ -96,14 +60,10 @@ extern "C" {
   void
   Y_gyoto_PowerLawSpectrum(int argc)
   {
-    if (debug()) cerr << "In Y_gyoto_PowerLawSpectrum" << endl;
-    SmartPointer<Generic> *sp = NULL;
-    if (yarg_Spectrum(argc-1)) {
-      sp = yget_Spectrum(--argc);
-      if ((*sp)->getKind().compare("PowerLaw"))
-	y_error("Expecting Spectrum of kind PowerLaw");
-    }
-    PowerLawYEval(sp, argc);
+    YGYOTO_CONSTRUCTOR_INIT(Spectrum, PowerLaw);
+    if ((*OBJ)->getKind().compare("PowerLaw"))
+      y_error("Expecting Spectrum of kind PowerLaw");
+    PowerLawYEval(OBJ, argc);
   }
 
   void Y__gyoto_PowerLawSpectrum_register_as_Metric(){

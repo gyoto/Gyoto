@@ -106,7 +106,7 @@ void ygyoto_Spectrum_register(char const * const kind,
 			      ygyoto_Spectrum_eval_worker_t*on_eval);
 void ygyoto_Spectrum_generic_eval
 (Gyoto::SmartPointer<Gyoto::Spectrum::Generic> *,
- int *kiargs, int *piargs, int *rvset, int *paUsed);
+ int *kiargs, int *piargs, int *rvset, int *paUsed, char *unit);
 
 void ygyoto_Spectrometer_register(char const * const kind,
 			      ygyoto_Spectrometer_eval_worker_t*on_eval);
@@ -406,7 +406,7 @@ ygyoto_ypush_Spectrum_t();
 typedef void ygyoto_Spectrum_register_t\
 (char const*const, ygyoto_Spectrum_eval_worker_t*);
 typedef void ygyoto_Spectrum_generic_eval_t \
-(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>*, int *, int *, int*, int*);
+(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>*, int *, int *, int*, int*, char*);
 
 typedef Gyoto::SmartPointer<Gyoto::Screen> *ygyoto_yget_Screen_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Screen> *ygyoto_ypush_Screen_t();
@@ -502,9 +502,9 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 #define ygyoto_Spectrum_register(kind, on_eval) \
                           YGYOTO_LOCAL_SUPPLIER -> \
 		  ygyoto_Spectrum_register(kind, on_eval)
-#define ygyoto_Spectrum_generic_eval(gg, kiargs, piargs, rvset, paUsed) \
+#define ygyoto_Spectrum_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit) \
                           YGYOTO_LOCAL_SUPPLIER -> \
-		  ygyoto_Spectrum_generic_eval(gg, kiargs, piargs, rvset,paUsed)
+			  ygyoto_Spectrum_generic_eval(gg, kiargs, piargs, rvset, paUsed, unit)
 
 #define yget_Screen(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Screen(iarg)
 #define ypush_Screen()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Screen()
