@@ -38,48 +38,20 @@ static ygyoto_Astrobj_eval_worker_t *ygyoto_Astrobj_evals[YGYOTO_MAX_REGISTERED]
 ={0};
 static int ygyoto_Astrobj_count=0;
 
+YGYOTO_YUSEROBJ(Astrobj, Astrobj::Generic)
+
 extern "C" {
-  // ASTROBJ CLASS
-  // Opaque Yorick object
-  typedef struct gyoto_Astrobj {
-    SmartPointer<Astrobj::Generic> astrobj;
-    //char type[YGYOTO_TYPE_LEN];
-  } gyoto_Astrobj;
-  void gyoto_Astrobj_free(void *obj) {
-    if (((gyoto_Astrobj*)obj)->astrobj) {
-      ((gyoto_Astrobj*)obj)->astrobj = NULL;
-    } else printf("null pointer\n");
-  }
-  void gyoto_Astrobj_print(void *obj) {
-#ifdef GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG_EXPR(obj);
-#endif
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    size_t pos=0, len=0;
-    try {rest = Factory(((gyoto_Astrobj*)obj)->astrobj).format();}
-    YGYOTO_STD_CATCH;
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO Astrobj object of type ",0);
-    y_print(((gyoto_Astrobj*)obj)->astrobj->getKind().c_str(),0);
-#endif
-  }
   void gyoto_Astrobj_eval(void *obj, int argc) {
     GYOTO_DEBUG << endl;
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long((long)((gyoto_Astrobj*)obj)->astrobj());
+      ypush_long((long)((gyoto_Astrobj*)obj)->smptr());
       return;
     }
 
     // Try calling kind-specific worker
     int n=0;
-    SmartPointer<Astrobj::Generic> * ao = &(((gyoto_Astrobj*)obj)->astrobj);
+    SmartPointer<Astrobj::Generic> * ao = &(((gyoto_Astrobj*)obj)->smptr);
     const string kind = (*ao)->getKind();
 
     while (n<ygyoto_Astrobj_count && kind.compare(ygyoto_Astrobj_names[n])) ++n;
@@ -140,22 +112,7 @@ extern "C" {
     (*worker)(ao, kiargs+k+1, piargs, rvset, paUsed, unit);
 
   }
-  static y_userobj_t gyoto_Astrobj_obj =
-    {const_cast<char*>("gyoto_Astrobj"), &gyoto_Astrobj_free,
-     &gyoto_Astrobj_print, &gyoto_Astrobj_eval, 0, 0};
 
-}
-
-SmartPointer<Astrobj::Generic>* yget_Astrobj(int iarg) {
-  return &(((gyoto_Astrobj*)yget_obj(iarg, &gyoto_Astrobj_obj))->astrobj);
-}
-
-SmartPointer<Astrobj::Generic>* ypush_Astrobj() {
-  return &(((gyoto_Astrobj*)ypush_obj(&gyoto_Astrobj_obj, sizeof(gyoto_Astrobj)))->astrobj);
-}
-
-int yarg_Astrobj(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Astrobj_obj.type_name;
 }
 
 
@@ -243,12 +200,6 @@ extern "C" {
     --argc;
 
     gyoto_Astrobj_eval(ao, argc);
-  }
-
-  void
-  Y_is_gyoto_Astrobj(int argc)
-  {
-    ypush_long(yarg_Astrobj(0));
   }
 
 }

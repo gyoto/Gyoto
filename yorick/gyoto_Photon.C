@@ -251,44 +251,17 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   if (debug()) cerr << endl;
 }
 
+YGYOTO_YUSEROBJ(Photon, Photon)
 
 extern "C" {
-
-// PHOTON CLASS
-
-// Photon()
-// setInitialCondition(Metric*, Astrobj*, coord[8], sys);
-// setDelta(double)
-// hit(double)
-  typedef struct gyoto_Photon { SmartPointer<Photon> photon; } gyoto_Photon;
-  void gyoto_Photon_free(void *obj) {
-    if (((gyoto_Photon*)obj)->photon) {
-      ((gyoto_Photon*)obj)->photon=NULL;
-    } else printf("null pointer\n");
-  }
-  void gyoto_Photon_print(void *obj) {
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    size_t pos=0, len=0;
-    try {rest = Factory(((gyoto_Photon*)obj)->photon).format();}
-    YGYOTO_STD_CATCH;
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO photon",0);
-#endif
-  }
   void gyoto_Photon_eval(void *obj, int argc) {
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long((long)((gyoto_Photon*)obj)->photon());
+      ypush_long((long)((gyoto_Photon*)obj)->smptr());
       return;
     }
 
-    SmartPointer<Photon> *ph = &(((gyoto_Photon*)obj)->photon);
+    SmartPointer<Photon> *ph = &(((gyoto_Photon*)obj)->smptr);
 
     static char const * knames[]={
       YGYOTO_PHOTON_GENERIC_KW, 0
@@ -312,53 +285,16 @@ extern "C" {
     int rvset[1]={0}, paUsed[1]={0};
     ygyoto_Photon_generic_eval(ph, kiargs, piargs, rvset, paUsed);
 
-
   }
-  static y_userobj_t gyoto_Photon_obj =
-    {const_cast<char*>("gyoto_Photon"), &gyoto_Photon_free, &gyoto_Photon_print, &gyoto_Photon_eval, 0, 0};
-  
+
   // Generic constructor/accessor
   void
   Y_gyoto_Photon(int argc)
   {
-    int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Photon> *OBJ = NULL;
-
-    if (yarg_Photon(argc-1)) {
-      OBJ = yget_Photon(--argc);
-    } else if (yarg_string(argc-1)) { // Constructor mode
-	char * fname = ygets_q(--argc);
-	OBJ = ypush_Photon();						
-	* OBJ = Gyoto::Factory(fname).getPhoton();		       
-	yarg_swap(0, argc);						
-	yarg_drop(1);							
-    } else {						
-      OBJ = ypush_Photon();					
-      *OBJ = new Gyoto::Photon();				
-      for (int arg=0; arg<argc; ++arg)				
-	yarg_swap(arg, arg+1);				       
-    }
-
-    if (argc==1 && yarg_nil(0)) {
-      yarg_drop(1);
-      --argc;
-    }
-
+    YGYOTO_CONSTRUCTOR_INIT1(Photon, Photon, Photon);
     gyoto_Photon_eval(OBJ, argc);
   }
 
-}
-
-SmartPointer<Photon>* yget_Photon(int iarg) {
-  return &(((gyoto_Photon*)yget_obj(iarg, &gyoto_Photon_obj))->photon);
-}
-
-SmartPointer<Photon>* ypush_Photon() {
-  return &(((gyoto_Photon*)ypush_obj(&gyoto_Photon_obj, sizeof(gyoto_Photon)))->photon);
-}
-
-int yarg_Photon(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Photon_obj.type_name;
 }
 
 

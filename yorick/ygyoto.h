@@ -198,22 +198,32 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_CAT1(X, Y) X##Y
 #define YGYOTO_CAT(X, Y) YGYOTO_CAT1(X,Y)
 
-#define YGYOTO_CONSTRUCTOR_INIT(BASE, KIND)			\
-  Gyoto::SmartPointer<Gyoto::BASE::Generic> *OBJ = NULL;	\
-  if (yarg_##BASE(argc-1)) {						\
-    OBJ = yget_##BASE(--argc);						\
+#define YGYOTO_CONSTRUCTOR_INIT1(BASENAME, BASECLASS, DERIVEDCLASS)	\
+  Gyoto::SmartPointer<BASECLASS> *OBJ = NULL;				\
+  if (yarg_##BASENAME(argc-1)) {					\
+    OBJ = yget_##BASENAME(--argc);					\
+    GYOTO_DEBUG_EXPR(OBJ);						\
   } else if (yarg_string(argc-1)) {					\
     char * fname = ygets_q(--argc);					\
-    OBJ = ypush_##BASE();						\
-    * OBJ = Gyoto::Factory(fname).get##BASE();				\
-    yarg_swap(0, argc);				\
-    yarg_drop(1);				\
-  } else {						\
-    OBJ = ypush_##BASE();					\
-    *OBJ = new Gyoto::BASE::KIND();				\
-    for (int arg=0; arg<argc; ++arg)				\
-      yarg_swap(arg, arg+1);					\
+    OBJ = ypush_##BASENAME();						\
+    GYOTO_DEBUG_EXPR(OBJ);						\
+    * OBJ = Gyoto::Factory(fname).get##BASENAME();			\
+    yarg_swap(0, argc);							\
+    yarg_drop(1);							\
+  } else {								\
+    OBJ = ypush_##BASENAME();						\
+    GYOTO_DEBUG_EXPR(OBJ);						\
+    *OBJ = new DERIVEDCLASS();						\
+    for (int arg=0; arg<argc; ++arg)					\
+      yarg_swap(arg, arg+1);						\
+  }									\
+  if (argc==1 && yarg_nil(0)) {						\
+    yarg_drop(1);							\
+    --argc;								\
   }
+
+#define YGYOTO_CONSTRUCTOR_INIT(BASE, KIND) \
+  YGYOTO_CONSTRUCTOR_INIT1(BASE, Gyoto::BASE::Generic, Gyoto::BASE::KIND)
 
 #define YGYOTO_WORKER_INIT(BASE, KIND, KNAMES, NKW)			\
   int rvset[1]={0}, paUsed[1]={0};					\
@@ -375,6 +385,66 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_WORKER_CALL_GENERIC(BASE) \
   ygyoto_##BASE##_generic_eval(YGYOTO_CAT(OBJ,_), \
 			       kiargs+k+1, piargs, rvset, paUsed, unit);
+
+
+/*
+  The following are to declare a new base (such as Metric or Astrobj)
+  or independent (such as Photon) class. Seldom used in a Gyoto
+  extension.
+ */
+#ifdef GYOTO_USE_XERCES
+# define YGYOTO_PRINT_YUSEROBJ(NAME)				\
+  void gyoto_##NAME##_print(void *obj) {				\
+    string rest="", sub="";					\
+    size_t pos=0, len=0;					\
+    try {rest = Factory(((gyoto_##NAME*)obj)->smptr).format();}	\
+    YGYOTO_STD_CATCH;						\
+    while (len=rest.length())  {				\
+      sub=rest.substr(0, pos=rest.find_first_of("\n",0));	\
+      rest=rest.substr(pos+1, len-1);				\
+      y_print( sub.c_str(),1 );					\
+    }								\
+  }
+#else
+# define YGYOTO_PRINT_YUSEROBJ(NAME)    \
+  void gyoto_##NAME##_print(void *obj) { \
+    y_print("GYOTO " #NAME,0);	       \
+  }
+#endif 
+#define YGYOTO_YUSEROBJ(NAME, CLASS)					\
+  extern "C" {								\
+    typedef struct gyoto_##NAME {					\
+      Gyoto::SmartPointer<CLASS> smptr;					\
+    } gyoto_##NAME;							\
+    void gyoto_##NAME##_free(void *obj) {				\
+      if (((gyoto_##NAME*)obj)->smptr) {				\
+	((gyoto_##NAME*)obj)->smptr=NULL;				\
+      } else printf("null pointer\n");					\
+    }									\
+    YGYOTO_PRINT_YUSEROBJ(NAME)						\
+    void gyoto_##NAME##_eval(void *obj, int argc);			\
+    static y_userobj_t gyoto_##NAME##_obj =				\
+    {const_cast<char*>("gyoto_" #NAME),					\
+     &gyoto_##NAME##_free,						\
+     &gyoto_##NAME##_print,						\
+     &gyoto_##NAME##_eval, 0, 0};					\
+  }									\
+  Gyoto::SmartPointer<CLASS>* yget_##NAME(int iarg) {			\
+    return &(((gyoto_##NAME*)yget_obj(iarg, &gyoto_##NAME##_obj))->smptr); \
+  }									\
+  Gyoto::SmartPointer<CLASS>* ypush_##NAME() {				\
+  return &(((gyoto_##NAME*)ypush_obj(&gyoto_##NAME##_obj,		\
+				     sizeof(gyoto_##NAME)))->smptr);	\
+  }									\
+  int yarg_##NAME(int iarg) {						\
+    return yget_obj(iarg,0)==gyoto_##NAME##_obj.type_name;		\
+  }									\
+  extern "C" {								\
+    void Y_is_gyoto_##NAME(int argc)					\
+    {									\
+      ypush_long(yarg_##NAME(0));					\
+    }									\
+  }
 
 /*
 

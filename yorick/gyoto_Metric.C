@@ -34,6 +34,8 @@ using namespace YGyoto;
 
 // Needed by the YGYOTO_WORKER_* macros
 
+YGYOTO_YUSEROBJ(Metric, Metric::Generic)
+
 static char ygyoto_Metric_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Metric_eval_worker_t *ygyoto_Metric_evals[YGYOTO_MAX_REGISTERED]
@@ -41,40 +43,8 @@ static ygyoto_Metric_eval_worker_t *ygyoto_Metric_evals[YGYOTO_MAX_REGISTERED]
 static int ygyoto_Metric_count=0;
 
 extern "C" {
-  typedef struct gyoto_Metric { SmartPointer<Metric::Generic> metric; char type[YGYOTO_TYPE_LEN];} gyoto_Metric;
-  void gyoto_Metric_free(void *obj);
-  void gyoto_Metric_print(void *obj);
-  void gyoto_Metric_eval(void *obj, int n);
-  static y_userobj_t gyoto_Metric_obj =
-    {const_cast<char*>("gyoto_Metric"), &gyoto_Metric_free, &gyoto_Metric_print, &gyoto_Metric_eval, 0, 0};
-
-  // METRIC CLASS
-  void gyoto_Metric_free(void *obj) {
-    if (((gyoto_Metric*)obj)->metric) {
-      ((gyoto_Metric*)obj)->metric=NULL;
-    } else printf("null pointer\n");
-  }
-
-  void gyoto_Metric_print(void *obj) {
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    try { rest = Factory(((gyoto_Metric*)obj)->metric).format(); }
-    YGYOTO_STD_CATCH;
-    size_t pos=0, len=0;
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO metric of type ",0);
-    SmartPointer<Metric::Generic> gg = ((gyoto_Metric*)obj)->metric;
-    y_print(gg->getKind().c_str(),0);
-#endif
-  }
-
   void gyoto_Metric_eval(void *obj, int argc) {
-    SmartPointer<Metric::Generic> *OBJ_ = &((gyoto_Metric*)obj)->metric;
+    SmartPointer<Metric::Generic> *OBJ_ = &((gyoto_Metric*)obj)->smptr;
 
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
@@ -106,21 +76,6 @@ extern "C" {
     YGYOTO_WORKER_CALL_GENERIC(Metric);
 
   }
-}
-
-// PUBLIC API
-
-SmartPointer<Metric::Generic> *yget_Metric(int iarg) {
-  return &((gyoto_Metric*)yget_obj(iarg, &gyoto_Metric_obj))->metric;
-}
-
-SmartPointer<Metric::Generic> *ypush_Metric() {
-  gyoto_Metric* obj = (gyoto_Metric*)ypush_obj(&gyoto_Metric_obj, sizeof(gyoto_Metric));
-  return &(obj->metric);
-}
-
-int yarg_Metric(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Metric_obj.type_name;
 }
 
 void ygyoto_Metric_register(char const*const name, ygyoto_Metric_eval_worker_t* on_eval){

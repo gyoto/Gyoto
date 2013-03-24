@@ -202,9 +202,8 @@ int yarg_Screen(int iarg) {
 extern "C" {
 
   void Y_gyoto_Screen(int argc) {
-    void *obj = NULL;
-    if (yarg_Screen(argc)) obj = yget_obj(--argc, &gyoto_Screen_obj) ;
-    gyoto_Screen_eval(obj, argc);
+    YGYOTO_CONSTRUCTOR_INIT1(Screen, Screen, Screen);
+    gyoto_Screen_eval(OBJ, argc);
   }
 
 
