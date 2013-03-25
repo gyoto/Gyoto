@@ -204,12 +204,16 @@ void ygyoto_Spectrometer_generic_eval
     OBJ = yget_##BASENAME(--argc);					\
     GYOTO_DEBUG_EXPR(OBJ);						\
   } else if (yarg_string(argc-1)) {					\
-    char * fname = ygets_q(--argc);					\
+    char * fname = ygets_q(argc-1);					\
     OBJ = ypush_##BASENAME();						\
     GYOTO_DEBUG_EXPR(OBJ);						\
     * OBJ = Gyoto::Factory(fname).get##BASENAME();			\
+    GYOTO_DEBUG << "Swapping object for filename\n";			\
     yarg_swap(0, argc);							\
+    GYOTO_DEBUG << "Dropping filename from stack\n";			\
     yarg_drop(1);							\
+    GYOTO_DEBUG << "Dropped filename from stack\n";			\
+    --argc;								\
   } else {								\
     OBJ = ypush_##BASENAME();						\
     GYOTO_DEBUG_EXPR(OBJ);						\
@@ -333,11 +337,14 @@ void ygyoto_Spectrometer_generic_eval
   if ((iarg=kiargs[++k])>=0) {					   \
     iarg+=*rvset;						   \
     if (yarg_nil(iarg)) {					   \
+      GYOTO_DEBUG << "pushing " #MEMBER << std::endl;		   \
       if ((*rvset)++) y_error("Only one return value possible");   \
       *ypush_##MEMBER () = (*OBJ) -> get##MEMBER ();		   \
-    } else							   \
+    } else {							   \
+      GYOTO_DEBUG << "setting " #MEMBER << std::endl;		   \
       (*OBJ) -> set##MEMBER (*yget_##MEMBER (kiargs[k]));	   \
-    }
+    }								   \
+  }
 
 #define YGYOTO_WORKER_SET_UNIT		 \
   if ((iarg=kiargs[++k])>=0) {		 \

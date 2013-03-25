@@ -145,60 +145,23 @@ static void * ySceneryThreadWorker (void *arg) {
   return NULL;
 }
 
-extern "C" {
+YGYOTO_YUSEROBJ(Scenery, Scenery)
 
-  void* _ypush_Scenery();
-  void* _yget_Scenery(int iarg);
-  int _yarg_Scenery(int iarg);
+extern "C" {
 
   void Y_gyoto_Scenery(int);
 
-  // SCENERY CLASS
-  // Opaque Yorick object
-  typedef struct gyoto_Scenery {
-    SmartPointer<Scenery> scenery;
-    //  char type[YGYOTO_TYPE_LEN];
-  } gyoto_Scenery;
-  void gyoto_Scenery_free(void *obj) {
-    if (((gyoto_Scenery*)obj)->scenery) {
-      ((gyoto_Scenery*)obj)->scenery = NULL;
-    } else printf("Freeing unattached Scenery object\n");
-  }
-  void gyoto_Scenery_print(void *obj) {
-    GYOTO_DEBUG << endl;
-#ifdef GYOTO_USE_XERCES
-    if (debug()) {
-      cerr << "DEBUG: Printing Gyoto Scenery"<<endl;
-      cerr << "DEBUG:          Pointer: ";
-      cerr << ((gyoto_Scenery*)obj)->scenery()<<endl;
-      cerr << "DEBUG:          Creating Factory" << endl;
-    }
-    string rest = Factory(((gyoto_Scenery*)obj)->scenery).format(), sub="";
-    if (debug())
-      cerr << "DEBUG:          Printing" << endl;
-    size_t pos=0, len;
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO Scenery object",0);
-    //    y_print(((gyoto_Scenery*)obj)->type,0);
-#endif
-  }
   void gyoto_Scenery_eval(void *obj, int n) {
-    int rvset[1]={0}, paUsed[1]={0}, builder=0;
+    SmartPointer<Scenery> *OBJ = &(((gyoto_Scenery*)obj)->smptr);
+
+    int rvset[1]={0}, paUsed[1]={0};
+    char const * rmsg="Cannot set return value more than once";
+    char const * pmsg="Cannot use positional argument more than once";
     gyoto_Scenery *s_obj = (gyoto_Scenery*)obj;
     double * impactcoords = NULL;
     bool precompute = 0;
 
-    if (!s_obj) {
-      builder=1;
-      s_obj = (gyoto_Scenery*)(obj=_ypush_Scenery());
-    } else {
-      *ypush_Scenery()=s_obj->scenery;
-    }
+    *ypush_Scenery()=*OBJ;
 
     // Parse keywords
     static char const *knames[] = {
@@ -209,13 +172,14 @@ extern "C" {
       "impactcoords", "nthreads",
       0
     };
+
     static long kglobs[13];
     int kiargs[12], piargs[]={-1, -1, -1};
     yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
 
     int iarg=n, parg=0;
 
-    while (iarg>0) {
+    while (iarg>=1) {
       iarg = yarg_kw(iarg, kglobs, kiargs);
       if (iarg>=1) {
 	if (parg<3) piargs[parg++]=iarg--;
@@ -224,95 +188,22 @@ extern "C" {
       }
     }
 
-    if (builder) {
-      if (yarg_string(piargs[0])) {
-	if (debug())
-	  cerr << "DEBUG: gyoto_Scenery() creating new Scenery from file\n";
-#ifdef GYOTO_USE_XERCES
-	Factory *factory = new Factory(ygets_q(piargs[0]));
-	string kind="";
-	kind = factory->getKind();
-	if (kind.compare("Scenery"))
-	  y_error("Only Scenery supported when reading XML");
-	s_obj->scenery = factory -> getScenery();
-	delete factory;
-#else
-	y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-      } else {
-	if (debug())
-	  cerr << "DEBUG: gyoto_Scenery() creating new empty Scenery\n";
-	s_obj->scenery=new Scenery();
-      }
-    }
-    SmartPointer<Scenery> sc=s_obj->scenery;
+    SmartPointer<Scenery> sc=s_obj->smptr;
     int k=-1;
+    char * unit=NULL;
 
-    // Get one member
-    if (yarg_true(kiargs[++k])) { // get pointer
+    // Get pointer
+    if (yarg_true(kiargs[++k])) {
       if ((*rvset)++) y_error("Only one return value possible");
-      yarg_drop(1);
       ypush_long((long)(sc()));
     }
 
-    char * unit=NULL;
-
-    ///////// ACCESSORS //////////
-    /* UNIT */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      GYOTO_DEBUG << "get unit" << endl;
-      unit = ygets_q(iarg);
-    }
-
-    /* METRIC */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // metric=: Getting
-      if ((*rvset)++) y_error("Only one return value possible");
-      (*ypush_Metric()) = sc->getMetric();
-      } else sc->setMetric(*yget_Metric(iarg));
-    }
-
-    /* SCREEN */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // screen=: Getting
-	if ((*rvset)++) y_error("Only one return value possible");
-	*ypush_Screen()=sc->getScreen();
-      } else // Setting
-	sc->setScreen(*yget_Screen(iarg));
-    }
-
-    /* ASTROBJ */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // astrobj=  :   Getting
-	if ((*rvset)++) y_error("Only one return value possible");
-	*ypush_Astrobj()=sc->getAstrobj();
-      } else                // astrobj=ao:   Setting
-	sc->setAstrobj(*yget_Astrobj(iarg));
-    }
-
-    /* DELTA */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // delta=      : Getting
-	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_double(sc->getDelta(unit?unit:""));
-      } else                // delta=double: Setting
-	sc->setDelta(ygets_d(iarg), unit?unit:"");
-    }
-
-    /* TMIN */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // tmin=      : Getting
-	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_double(sc->getTmin(unit?unit:""));
-      } else                // tmin=double: Setting
-	sc->setTmin(ygets_d(iarg), unit?unit:"");
-    }
+    YGYOTO_WORKER_SET_UNIT;
+    YGYOTO_WORKER_GETSET_OBJECT(Metric);
+    YGYOTO_WORKER_GETSET_OBJECT(Screen);
+    YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
+    YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
+    YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Tmin);
 
     /* QUANTITIES */
     if ((iarg=kiargs[++k])>=0) {
@@ -345,22 +236,8 @@ extern "C" {
       }
     }
 
-    // Save to file
-    if ((iarg=kiargs[++k])>=0) { // xmlwrite
-      iarg+=*rvset;
-#ifdef GYOTO_USE_XERCES
-      char *filename=ygets_q(iarg);
-      Factory(sc).write(filename);
-#else
-      y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    }
-
-    /* CLONE */
-    if ((iarg=kiargs[++k])>=0) {
-      if ((*rvset)++) y_error("Only one return value possible");
-      *ypush_Scenery() = sc->clone();
-    }
+    YGYOTO_WORKER_XMLWRITE;
+    YGYOTO_WORKER_CLONE(Scenery);
 
     /* IMPACTCOORDS */
     if ((iarg=kiargs[++k])>=0) {
@@ -377,20 +254,12 @@ extern "C" {
       }
     }
 
-    /* NTHREADS */
-    if ((iarg=kiargs[++k])>=0) {
-      iarg+=*rvset;
-      if (yarg_nil(iarg)) { // nthreads=      : Getting
-	if ((*rvset)++) y_error("Only one return value possible");
-	ypush_long(sc->getNThreads());
-      } else                // nthreads=long  : Setting
-         sc->setNThreads(ygets_l(iarg));
-    }
+    YGYOTO_WORKER_GETSET_LONG(NThreads);
 
     // Get ray-traced image if there is a supplementary positional argument
-    if (!builder && // don't ray-trace on construction...
+    if (
 	!*rvset && // has a return value already been set?
-	(((n<=3 && piargs[n-1]>=0) || (piargs[1]>=0)) // positional argument?
+	(((n>0 && n<=3 && piargs[n-1]>=0) || (piargs[1]>=0)) // positional argument?
 	 || precompute || impactcoords)
 	) { 
       size_t res=sc->getScreen()->getResolution();
@@ -619,36 +488,17 @@ extern "C" {
     }
   }
 
-  static y_userobj_t gyoto_Scenery_obj = {
-    const_cast<char*>("gyoto_Scenery"),
-    &gyoto_Scenery_free, &gyoto_Scenery_print, &gyoto_Scenery_eval,
-    0, 0
-  };
-
-  int _yarg_Scenery(int iarg) {
-    return yget_obj(iarg, 0)==gyoto_Scenery_obj.type_name;
-  }
-
-  void * _ypush_Scenery() {
-    return ypush_obj(&gyoto_Scenery_obj, sizeof(gyoto_Scenery));
-  }
-
-  void * _yget_Scenery(int iarg) {
-    return yget_obj(iarg, &gyoto_Scenery_obj);
-  }
-
   // Constructor
-  void Y_gyoto_Scenery(int n) {
-    void* obj = NULL;
-    if (_yarg_Scenery(n-1)) obj = _yget_Scenery(--n);
-    gyoto_Scenery_eval(obj, n);
+  void Y_gyoto_Scenery(int argc) {
+    YGYOTO_CONSTRUCTOR_INIT1(Scenery, Scenery, Scenery);
+    gyoto_Scenery_eval(OBJ, argc);
   }
 
   void Y_gyoto_Scenery_rayTrace(int argc) {
     size_t imin=1, imax=-1, jmin=1, jmax=-1;
     if (argc<1) y_error("gyoto_Scenery_rayTrace takes at least 1 argument");
     gyoto_Scenery * s_obj=(gyoto_Scenery*)yget_obj(argc-1, &gyoto_Scenery_obj);
-    Scenery * scenery = s_obj->scenery;
+    Scenery * scenery = s_obj->smptr;
     if (argc>=2 && !yarg_nil(argc-2)) imin=ygets_l(argc-2);
     if (argc>=3 && !yarg_nil(argc-3)) imax=ygets_l(argc-3);
     if (argc>=4 && !yarg_nil(argc-4)) jmin=ygets_l(argc-4);
@@ -736,19 +586,6 @@ extern "C" {
 
   }
 
-}
-// PUBLIC API
-
-SmartPointer<Scenery> *yget_Scenery(int iarg) {
-  return &((gyoto_Scenery*)yget_obj(iarg, &gyoto_Scenery_obj))->scenery;
-}
-SmartPointer<Scenery> *ypush_Scenery() {
-  gyoto_Scenery* obj = (gyoto_Scenery*)ypush_obj(&gyoto_Scenery_obj, sizeof(gyoto_Scenery));
-  return &(obj->scenery);
-}
-
-int yarg_Scenery(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Scenery_obj.type_name;
 }
 
 
