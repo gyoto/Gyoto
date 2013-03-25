@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -36,43 +36,20 @@ static ygyoto_Spectrum_eval_worker_t *ygyoto_Spectrum_evals[YGYOTO_MAX_REGISTERE
 ={0};
 static int ygyoto_Spectrum_count=0;
 
+YGYOTO_YUSEROBJ(Spectrum, Spectrum::Generic)
+YGYOTO_BASE_CONSTRUCTOR(Spectrum)
+
 extern "C" {
-  // SPECTRUM CLASS
-  // Opaque Yorick object
-  typedef struct gyoto_Spectrum {
-    SmartPointer<Spectrum::Generic> spectrum;
-    //char type[YGYOTO_TYPE_LEN];
-  } gyoto_Spectrum;
-  void gyoto_Spectrum_free(void *obj) {
-    if (((gyoto_Spectrum*)obj)->spectrum) {
-      ((gyoto_Spectrum*)obj)->spectrum = NULL;
-    } else printf("null pointer\n");
-  }
-  void gyoto_Spectrum_print(void *obj) {
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    size_t pos=0, len=0;
-    rest = Factory(((gyoto_Spectrum*)obj)->spectrum).format();
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO Spectrum object of type ",0);
-    y_print(((gyoto_Spectrum*)obj)->spectrum->getKind().c_str(),0);
-#endif
-  }
   void gyoto_Spectrum_eval(void *obj, int argc) {
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long((long)((gyoto_Spectrum*)obj)->spectrum());
+      ypush_long((long)((gyoto_Spectrum*)obj)->smptr());
       return;
     }
 
     // Try calling kind-specific worker
     int n=0;
-    SmartPointer<Spectrum::Generic> * OBJ_ = &(((gyoto_Spectrum*)obj)->spectrum);
+    SmartPointer<Spectrum::Generic> * OBJ_ = &(((gyoto_Spectrum*)obj)->smptr);
     const string kind = (*OBJ_)->getKind();
 
     while (n<ygyoto_Spectrum_count && kind.compare(ygyoto_Spectrum_names[n]))
@@ -94,24 +71,7 @@ extern "C" {
     YGYOTO_WORKER_CALL_GENERIC(Spectrum);
 
   }
-  static y_userobj_t gyoto_Spectrum_obj =
-    {const_cast<char*>("gyoto_Spectrum"), &gyoto_Spectrum_free, &gyoto_Spectrum_print, &gyoto_Spectrum_eval, 0, 0};
-
 }
-
-SmartPointer<Spectrum::Generic>* yget_Spectrum(int iarg) {
-  return &(((gyoto_Spectrum*)yget_obj(iarg, &gyoto_Spectrum_obj))->spectrum);
-}
-
-SmartPointer<Spectrum::Generic>* ypush_Spectrum() {
-  return &(((gyoto_Spectrum*)(ypush_obj(&gyoto_Spectrum_obj,
-					sizeof(gyoto_Spectrum))))->spectrum);
-}
-
-int yarg_Spectrum(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Spectrum_obj.type_name;
-}
-
 
 void ygyoto_Spectrum_register(char const*const name, ygyoto_Spectrum_eval_worker_t* on_eval){
   int n;
@@ -182,48 +142,3 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*OBJ,
 
 }
 
-extern "C" {
-  void Y_gyoto_Spectrum(int argc) 
-  {
-    int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Spectrum::Generic> *OBJ = NULL;
-
-    if (yarg_Spectrum(argc-1)) {
-      OBJ = yget_Spectrum(argc);
-    } else { // Constructor mode
-#ifdef GYOTO_USE_XERCES
-      if (!yarg_string(argc-1))
-	y_error("Cannot allocate object of virtual class Spectrum");
-
-      char * fname = ygets_q(argc-1);
-      OBJ = ypush_Spectrum();
-
-      Spectrum::Subcontractor_t * sub = Spectrum::getSubcontractor(fname, 1);
-      if (sub) {
-	GYOTO_DEBUG << "found a subcontractor for \"" << fname
-		    << "\", calling it now\n";
-	*OBJ = (*sub)(NULL);
-      } else {
-	GYOTO_DEBUG << "found no subcontractor for \"" << fname
-		    << "\", calling Factory now\n";
-	*OBJ = Factory(fname).getSpectrum();
-      }
-      // Replace fname with Spectrum in the stack, and drop fname
-      yarg_swap(0, argc);
-      yarg_drop(1);
-#else
-	y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    }
-    --argc;
-
-    gyoto_Spectrum_eval(OBJ, argc);
-  }
-
-  void
-  Y_is_gyoto_Spectrum(int argc)
-  {
-    ypush_long(yarg_Spectrum(0));
-  }
-
-}

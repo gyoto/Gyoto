@@ -230,10 +230,12 @@ void ygyoto_Spectrometer_generic_eval
   YGYOTO_CONSTRUCTOR_INIT1(BASE, Gyoto::BASE::Generic, Gyoto::BASE::KIND)
 
 #define YGYOTO_WORKER_INIT(BASE, KIND, KNAMES, NKW)			\
+  YGYOTO_WORKER_INIT1(BASE, Gyoto::BASE::KIND, KNAMES, NKW)
+#define YGYOTO_WORKER_INIT1(BASE, CLASS, KNAMES, NKW)			\
   int rvset[1]={0}, paUsed[1]={0};					\
   *ypush_##BASE()=*YGYOTO_CAT(OBJ, _);					\
-  Gyoto::SmartPointer<Gyoto::BASE::KIND> *OBJ =				\
-    (Gyoto::SmartPointer<Gyoto::BASE::KIND> *)YGYOTO_CAT(OBJ, _);	\
+  Gyoto::SmartPointer<CLASS> *OBJ =				\
+    (Gyoto::SmartPointer<CLASS> *)YGYOTO_CAT(OBJ, _);	\
   static long kglobs[NKW+1];						\
   int kiargs[NKW];							\
   int piargs[]={-1,-1,-1,-1};						\
@@ -243,7 +245,7 @@ void ygyoto_Spectrometer_generic_eval
     iarg = yarg_kw(iarg, kglobs, kiargs);				\
     if (iarg>=1) {							\
       if (parg<4) piargs[parg++]=iarg--;				\
-      else y_error("gyoto_" #KIND " takes at most 4 positional arguments"); \
+      else y_error( #CLASS " worker takes at most 4 positional arguments"); \
     }									\
   }									\
   GYOTO_DEBUG_ARRAY(piargs, 4);						\
@@ -452,6 +454,36 @@ void ygyoto_Spectrometer_generic_eval
       ypush_long(yarg_##NAME(0));					\
     }									\
   }
+#define YGYOTO_BASE_CONSTRUCTOR(BASE)					\
+  extern "C" {								\
+  void Y_gyoto_##BASE(int argc)	{					\
+    Gyoto::SmartPointer<Gyoto::BASE::Generic> *OBJ = NULL;		\
+    if (yarg_##BASE(argc-1)) {						\
+      OBJ = yget_##BASE(argc);						\
+    } else {								\
+      if (!yarg_string(argc-1))						\
+        y_error("Cannot allocate object of virtual class " #BASE);	\
+      char * fname = ygets_q(argc-1);					\
+      OBJ = ypush_##BASE();						\
+      Gyoto::BASE::Subcontractor_t * sub =				\
+	Gyoto::BASE::getSubcontractor(fname, 1);			\
+      if (sub) {							\
+	GYOTO_DEBUG << "found a subcontractor for \"" << fname		\
+		    << "\", calling it now\n";				\
+	*OBJ = (*sub)(NULL);						\
+      } else {								\
+	GYOTO_DEBUG << "found no subcontractor for \"" << fname		\
+		    << "\", calling Factory now\n";			\
+	*OBJ = Factory(fname).get##BASE();				\
+      }									\
+      yarg_swap(0, argc);						\
+      yarg_drop(1);							\
+    }									\
+    --argc;								\
+    gyoto_##BASE##_eval(OBJ, argc);					\
+  }									\
+}
+
 
 /*
 

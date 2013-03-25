@@ -151,19 +151,12 @@ extern "C" {
 
   void Y_gyoto_Scenery(int);
 
-  void gyoto_Scenery_eval(void *obj, int n) {
-    SmartPointer<Scenery> *OBJ = &(((gyoto_Scenery*)obj)->smptr);
+  void gyoto_Scenery_eval(void *obj, int argc) {
+    SmartPointer<Scenery> *OBJ_ = &(((gyoto_Scenery*)obj)->smptr);
 
-    int rvset[1]={0}, paUsed[1]={0};
-    char const * rmsg="Cannot set return value more than once";
-    char const * pmsg="Cannot use positional argument more than once";
-    gyoto_Scenery *s_obj = (gyoto_Scenery*)obj;
     double * impactcoords = NULL;
     bool precompute = 0;
 
-    *ypush_Scenery()=*OBJ;
-
-    // Parse keywords
     static char const *knames[] = {
       "get_pointer",
       "unit",
@@ -173,29 +166,12 @@ extern "C" {
       0
     };
 
-    static long kglobs[13];
-    int kiargs[12], piargs[]={-1, -1, -1};
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-
-    int iarg=n, parg=0;
-
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<3) piargs[parg++]=iarg--;
-	else
-	  y_error("gyoto_Scenery::eval takes at most 3 positional arguments");
-      }
-    }
-
-    SmartPointer<Scenery> sc=s_obj->smptr;
-    int k=-1;
-    char * unit=NULL;
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 12)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
       if ((*rvset)++) y_error("Only one return value possible");
-      ypush_long((long)(sc()));
+      ypush_long((long)((*OBJ)()));
     }
 
     YGYOTO_WORKER_SET_UNIT;
@@ -210,14 +186,14 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // quantities=      : Getting
 	if ((*rvset)++) y_error("Only one return value possible");
-	Quantity_t quant = sc->getRequestedQuantities();
-	size_t nk = sc->getScalarQuantitiesCount();
+	Quantity_t quant = (*OBJ)->getRequestedQuantities();
+	size_t nk = (*OBJ)->getScalarQuantitiesCount();
 	long rquant = nk>1?1:0;
 	long dims[2] = { rquant, nk };
 	ystring_t *squant = ypush_q(dims);
 	size_t k = 0;
 	char *tk =
-	  strtok(const_cast<char*>(sc->getRequestedQuantitiesString().c_str()),
+	  strtok(const_cast<char*>((*OBJ)->getRequestedQuantitiesString().c_str()),
 		 " \n\t");
 	while (tk!=NULL) {
 	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
@@ -232,7 +208,7 @@ extern "C" {
 	  quants += " ";
 	  quants += squant[k];
 	}
-	sc -> setRequestedQuantities(quants);
+	(*OBJ) -> setRequestedQuantities(quants);
       }
     }
 
@@ -247,7 +223,7 @@ extern "C" {
       } else {              // impaccoords=double(16,res,res): Setting
 	long ntot;
 	long dims[Y_DIMSIZE];
-	size_t res=sc->getScreen()->getResolution();
+	size_t res=(*OBJ)->getScreen()->getResolution();
 	impactcoords = ygeta_d(iarg, &ntot, dims);
 	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
 	  y_error("dimsof(impactcoords) != [3,16,res,res]");
@@ -259,15 +235,15 @@ extern "C" {
     // Get ray-traced image if there is a supplementary positional argument
     if (
 	!*rvset && // has a return value already been set?
-	(((n>0 && n<=3 && piargs[n-1]>=0) || (piargs[1]>=0)) // positional argument?
+	(((argc>0 && argc<=3 && piargs[argc-1]>=0) || (piargs[1]>=0)) // positional argument?
 	 || precompute || impactcoords)
 	) { 
-      size_t res=sc->getScreen()->getResolution();
+      size_t res=(*OBJ)->getScreen()->getResolution();
       if ((*rvset)++) y_error("Only one return value possible");
       if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
       GYOTO_DEBUG << "rank: " << yarg_rank(piargs[0]) << endl;
 
-      SmartPointer<Spectrometer::Generic> spr = sc->getScreen()->getSpectrometer();
+      SmartPointer<Spectrometer::Generic> spr = (*OBJ)->getScreen()->getSpectrometer();
       size_t nbnuobs = spr()? spr->getNSamples() : 0;
 
       Idx i_idx (piargs[0], res);
@@ -281,8 +257,8 @@ extern "C" {
       long nk = 0; int rquant = 0; ystring_t * squant = NULL;
 
       if (piargs[2] < 0 || yarg_nil(piargs[2])) {
-	Quantity_t quant = sc->getRequestedQuantities();
-	nk = sc->getScalarQuantitiesCount();
+	Quantity_t quant = (*OBJ)->getRequestedQuantities();
+	nk = (*OBJ)->getScalarQuantitiesCount();
 	if (quant & GYOTO_QUANTITY_SPECTRUM) nk += 1;
 	if (quant & GYOTO_QUANTITY_BINSPECTRUM) nk += 1;
 	rquant = nk>1?1:0;
@@ -290,7 +266,7 @@ extern "C" {
 	squant = ypush_q(dims);
 	size_t k = 0;
 	char *tk =
-	  strtok(const_cast<char*>(sc->getRequestedQuantitiesString().c_str()),
+	  strtok(const_cast<char*>((*OBJ)->getRequestedQuantitiesString().c_str()),
 		 " \n\t");
 	while (tk!=NULL) {
 	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
@@ -363,9 +339,9 @@ extern "C" {
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
-      SmartPointer<Screen> screen = sc -> getScreen();
+      SmartPointer<Screen> screen = (*OBJ) -> getScreen();
 #     ifdef HAVE_UDUNITS
-      if (data) sc->setPropertyConverters(&prop);
+      if (data) (*OBJ)->setPropertyConverters(&prop);
       screen->mapPixUnit();
       if (intu != "") prop.setIntensityConverter(intu);
       if (spu  != "") prop.setSpectrumConverter(spu);
@@ -433,7 +409,7 @@ extern "C" {
       }
       if (i_idx.isDouble() ||j_idx.isDouble()) {
 	prop.init(nbnuobs);
-	Photon ph(sc->getMetric(), sc->getAstrobj(), screen,
+	Photon ph((*OBJ)->getMetric(), (*OBJ)->getAstrobj(), screen,
 		  i_idx.getDVal(), j_idx.getDVal());
 	ph.hit(&prop);
       } else {
@@ -442,12 +418,12 @@ extern "C" {
 	screen -> getRayCoord(size_t(i_idx.first()),
 			      size_t(j_idx.first()),
 			      coord);
-	Photon ph(sc->getMetric(), sc->getAstrobj(), coord);
+	Photon ph((*OBJ)->getMetric(), (*OBJ)->getAstrobj(), coord);
 	ph.setSpectrometer(screen->getSpectrometer());
 	ph.setFreqObs(screen->getFreqObs());
 
 	ySceneryThreadWorkerArg larg;
-	larg.sc=sc;
+	larg.sc=(*OBJ);
 	larg.ph=&ph;
 	larg.data=&prop;
 	larg.impactcoords=impactcoords;
@@ -461,7 +437,7 @@ extern "C" {
 	pthread_t * threads = NULL;
 	pthread_t pself = pthread_self();
 	larg.parent = &pself;
-	size_t nthreads = sc -> getNThreads();
+	size_t nthreads = (*OBJ) -> getNThreads();
 	if (nthreads >= 2) {
 	  threads = new pthread_t[nthreads-1];
 	  larg.mutex  = &mumu;

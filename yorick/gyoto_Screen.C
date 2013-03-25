@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -26,63 +26,13 @@
 
 #include <iostream>
 using namespace std;
-
-
 using namespace Gyoto;
 
+YGYOTO_YUSEROBJ(Screen, Screen)
+
 extern "C" {
-  typedef struct gyoto_Screen { SmartPointer<Screen> screen; } gyoto_Screen;
-  void gyoto_Screen_free(void *obj);
-  void gyoto_Screen_print(void *obj);
-  void gyoto_Screen_eval(void *obj, int n);
-  static y_userobj_t gyoto_Screen_obj =
-    {const_cast<char*>("gyoto_Screen"), &gyoto_Screen_free, &gyoto_Screen_print, &gyoto_Screen_eval, 0, 0};
-
-  // SCREEN CLASS
-  void gyoto_Screen_free(void *obj) {
-    if (((gyoto_Screen*)obj)->screen) {
-      ((gyoto_Screen*)obj)->screen=NULL;
-    } else printf("null pointer\n");
-  }
-
-  void gyoto_Screen_print(void *obj) {
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    try { rest = Factory(((gyoto_Screen*)obj)->screen).format(); }
-    YGYOTO_STD_CATCH;
-    size_t pos=0, len;
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO screen ",0);
-    //    SmartPointer<Screen> gg = ((gyoto_Screen*)obj)->screen;
-    //    y_print(gg->getKind().c_str(),0);
-#endif
-  }
-
   void gyoto_Screen_eval(void *obj, int argc) {
-    int rvset[1]={0}, paUsed[1]={0};
-    int k=-1;
-    char const * rmsg="Cannot set return value more than once";
-    char const * pmsg="Cannot use positional argument more than once";
-
-    SmartPointer<Screen> *OBJ = NULL; //&((gyoto_Screen*)obj)->screen;
-
-    if (!obj) {
-      obj = ypush_obj(&gyoto_Screen_obj, sizeof(gyoto_Screen));
-      OBJ = &(((gyoto_Screen*)obj)->screen);
-      *OBJ = new Screen();
-    } else if (argc==1 && yarg_nil(0)) { // If no parameters, return pointer
-      ypush_long( (long) ((gyoto_Screen*)obj)->screen() );
-      return;
-    } else {
-      OBJ = &(((gyoto_Screen*)obj)->screen);
-      *ypush_Screen()=*OBJ;
-    }
-      
+    SmartPointer<Screen> *OBJ_ = &((gyoto_Screen*)obj)->smptr;
     static char const * knames[]={
       "unit",
       "metric",
@@ -96,22 +46,7 @@ extern "C" {
       "xmlwrite", "clone",
       0
     };
-#define nkw 22
-    static long kglobs[nkw+1];
-    int kiargs[nkw];
-    int piargs[]={-1,-1,-1,-1};
-    // push default return value: need to drop before pushing another one
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-    char * unit=NULL;
-      
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<4) piargs[parg++]=iarg--;
-	else y_error("gyoto_Screen takes at most 4 positional arguments");
-      }
-    }
+    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 22)
 
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT(Metric);
@@ -181,23 +116,6 @@ extern "C" {
 
   }
 }
-
-// PUBLIC API
-
-SmartPointer<Screen> *yget_Screen(int iarg) {
-  return &((gyoto_Screen*)yget_obj(iarg, &gyoto_Screen_obj))->screen;
-}
-SmartPointer<Screen> *ypush_Screen() {
-  gyoto_Screen* obj = (gyoto_Screen*)ypush_obj(&gyoto_Screen_obj, sizeof(gyoto_Screen));
-  return &(obj->screen);
-}
-
-int yarg_Screen(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Screen_obj.type_name;
-}
-
-
-// YAPI FUNCTIONS
 
 extern "C" {
 

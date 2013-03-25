@@ -35,6 +35,7 @@ using namespace YGyoto;
 // Needed by the YGYOTO_WORKER_* macros
 
 YGYOTO_YUSEROBJ(Metric, Metric::Generic)
+YGYOTO_BASE_CONSTRUCTOR(Metric)
 
 static char ygyoto_Metric_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
@@ -193,46 +194,4 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
       *(data++) = (*OBJ)->gmunu(x, i-1, j-1);
 
-}
-
-
-// YAPI FUNCTIONS
-
-extern "C" {
-
-  void Y_gyoto_Metric(int argc) {
-    int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Metric::Generic> *OBJ = NULL;
-    
-    if (yarg_Metric(argc-1)) {
-      OBJ = yget_Metric(--argc);
-    } else { // Constructor mode
-#ifdef GYOTO_USE_XERCES
-      if (!yarg_string(argc-1))
-	y_error("Cannot allocate object of virtual class Astrobj");
-
-      char * fname = ygets_q(argc-1);
-      OBJ = ypush_Metric();
-
-      Metric::Subcontractor_t * sub = Metric::getSubcontractor(fname, 1);
-      if (sub) {
-	GYOTO_DEBUG << "found a subcontractor for \"" << fname
-		    << "\", calling it now\n";
-	*OBJ = (*sub)(NULL);
-      } else {
-	GYOTO_DEBUG << "found no subcontractor for \"" << fname
-		    << "\", calling Factory now\n";
-	*OBJ = Factory(fname).getMetric();
-      }
-      // Replace fname with Metric in the stack, and drop fname
-      yarg_swap(0, argc);
-      yarg_drop(1);
-#else
-	y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    }
-    --argc;
-
-    gyoto_Metric_eval(OBJ, argc);
-  }
 }

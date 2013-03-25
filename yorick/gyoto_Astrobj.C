@@ -30,8 +30,6 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-#define OBJ ao
-
 static char ygyoto_Astrobj_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};
 static ygyoto_Astrobj_eval_worker_t *ygyoto_Astrobj_evals[YGYOTO_MAX_REGISTERED]
@@ -39,6 +37,7 @@ static ygyoto_Astrobj_eval_worker_t *ygyoto_Astrobj_evals[YGYOTO_MAX_REGISTERED]
 static int ygyoto_Astrobj_count=0;
 
 YGYOTO_YUSEROBJ(Astrobj, Astrobj::Generic)
+YGYOTO_BASE_CONSTRUCTOR(Astrobj)
 
 extern "C" {
   void gyoto_Astrobj_eval(void *obj, int argc) {
@@ -51,27 +50,27 @@ extern "C" {
 
     // Try calling kind-specific worker
     int n=0;
-    SmartPointer<Astrobj::Generic> * ao = &(((gyoto_Astrobj*)obj)->smptr);
-    const string kind = (*ao)->getKind();
+    SmartPointer<Astrobj::Generic> * OBJ = &(((gyoto_Astrobj*)obj)->smptr);
+    const string kind = (*OBJ)->getKind();
 
     while (n<ygyoto_Astrobj_count && kind.compare(ygyoto_Astrobj_names[n])) ++n;
 
     if (n<ygyoto_Astrobj_count && ygyoto_Astrobj_evals[n]) {
-      (*ygyoto_Astrobj_evals[n])(ao, argc);
+      (*ygyoto_Astrobj_evals[n])(OBJ, argc);
       return;
     }
 
     // Possibly call higher-level base class worker
 
     // push default return value: need to drop before pushing another one
-    *ypush_Astrobj()=*ao;
+    *ypush_Astrobj()=*OBJ;
     int rvset[1]={0}, paUsed[1]={0};
     int iarg=argc, parg=0;
     int piargs[]={-1,-1,-1,-1};
 
     enum BASE_NAME { GENERIC, THINDISK };
     BASE_NAME base = GENERIC;
-    if (dynamic_cast<ThinDisk const * const>((*ao)())) base = THINDISK;
+    if (dynamic_cast<ThinDisk const * const>((*OBJ)())) base = THINDISK;
 
     static char const * knames_thindisk[]={"unit", YGYOTO_THINDISK_GENERIC_KW, 0};
     static char const * knames_generic[]={"unit", YGYOTO_ASTROBJ_GENERIC_KW, 0};
@@ -109,7 +108,7 @@ extern "C" {
     /* UNIT */
     YGYOTO_WORKER_SET_UNIT;
 
-    (*worker)(ao, kiargs+k+1, piargs, rvset, paUsed, unit);
+    (*worker)(OBJ, kiargs+k+1, piargs, rvset, paUsed, unit);
 
   }
 
@@ -128,7 +127,7 @@ void ygyoto_Astrobj_register(char const*const name, ygyoto_Astrobj_eval_worker_t
   ygyoto_Astrobj_evals[ygyoto_Astrobj_count++]=on_eval;
 }
 
-void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao,
+void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*OBJ,
 				int *kiargs, int *piargs,
 				 int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg;
@@ -153,7 +152,7 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
     if (debug()) cerr << "kiargs=" << kiargs << endl;
     if ((*rvset)++) y_error(rmsg);
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*ao)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->getKind().c_str());
   }
 
   /* SETPARAMETER */
@@ -161,45 +160,5 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao
   YGYOTO_WORKER_CLONE(Astrobj);
 
   if (debug()) cerr << "DEBUG: out of Astrobj_generic_eval"<< endl;
-
-}
-
-extern "C" {
-  void Y_gyoto_Astrobj(int argc) 
-  {
-    int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Astrobj::Generic> *ao = NULL;
-
-    if (yarg_Astrobj(argc-1)) {
-      ao = yget_Astrobj(argc);
-    } else { // Constructor mode
-#ifdef GYOTO_USE_XERCES
-      if (!yarg_string(argc-1))
-	y_error("Cannot allocate object of virtual class Astrobj");
-
-      char * fname = ygets_q(argc-1);
-      ao = ypush_Astrobj();
-
-      Astrobj::Subcontractor_t * sub = Astrobj::getSubcontractor(fname, 1);
-      if (sub) {
-	GYOTO_DEBUG << "found a subcontractor for \"" << fname
-		    << "\", calling it now\n";
-	*ao = (*sub)(NULL);
-      } else {
-	GYOTO_DEBUG << "found no subcontractor for \"" << fname
-		    << "\", calling Factory now\n";
-	*ao = Factory(fname).getAstrobj();
-      }
-      // Replace fname with Astrobj in the stack, and drop fname
-      yarg_swap(0, argc);
-      yarg_drop(1);
-#else
-	y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    }
-    --argc;
-
-    gyoto_Astrobj_eval(ao, argc);
-  }
 
 }

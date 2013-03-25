@@ -609,13 +609,6 @@ extern gyoto_Spectrum;
    SEE ALSO:  gyoto, gyoto_Star
  */
 
-extern is_gyoto_Spectrum;
-
-/* DOCUMENT bool = is_gyoto_Spectrum(arg)
-     BOOL is 1 if arg is a gyoto_Spectrum
-   SEE ALSO: gyoto, gyoto_Spectrum
- */
-
 extern gyoto_debug;
 /* DOCUMENT gyoto_debug, 1/0
     Turn GYOTO debug output on/off.
@@ -984,10 +977,19 @@ func gyoto_warning(msg) {
 
 
 extern is_gyoto_Astrobj;
-/* DOCUMENT ret = is_gyoto_Astrobj( obj )
-     Return 1 if OBJ is a GYOTO Astrobj
-   SEE ALSO: gyoto gyoto_Astrobj
-*/
+extern is_gyoto_Metric;
+extern is_gyoto_Spectrometer;
+extern is_gyoto_Spectrum;
+extern is_gyoto_Screen;
+extern is_gyoto_Scenery;
+/* DOCUMENT bool = is_gyoto_BASE(arg)
+   
+     BOOL is 1 if arg is a gyoto_BASE where base is Metric, Astrobj,
+     Spectrum, Spectrometer, Scenery, Screen...
+
+   SEE ALSO: gyoto, gyoto_Spectrum
+ */
+
 
 
 extern gyoto_dontcatchSIGFPE;
@@ -999,3 +1001,28 @@ extern gyoto_listRegister;
      Spectrometer kinds.
    SEE ALSO: gyoto
 */
+
+if (is_func(use)) {
+  gyoto=save(loadPlugin=gyoto_loadPlugin,
+             Metric=gyoto_Metric,
+             Astrobj=gyoto_Astrobj,
+             ThinDisk=gyoto_ThinDisk,
+             debug=gyoto_debug,
+             haveXerces=gyoto_haveXerces,
+             Screen=gyoto_Screen,
+             Spectrum=gyoto_Spectrum,
+             verbose=gyoto_verbose,
+             Spectrometer=gyoto_Spectrometer,
+             SpectroUniform=gyoto_SpectroUniform,
+             SpectroComplex=gyoto_SpectroComplex,
+             dontcatchSIGFPE=gyoto_dontcatchSIGFPE,
+             dontcatchSIGSEGV=gyoto_dontcatchSIGSEGV,
+             listRegister=gyoto_listRegister,
+             is_Astrobj=is_gyoto_Astrobj,
+             is_Metric=is_gyoto_Metric,
+             is_Spectrometer=is_gyoto_Spectrometer,
+             is_Spectrum=is_gyoto_Spectrum,
+             is_Screen=is_gyoto_Screen,
+             is_Scenery=is_gyoto_Scenery
+             );
+ }

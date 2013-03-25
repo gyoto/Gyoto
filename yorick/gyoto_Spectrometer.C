@@ -28,59 +28,34 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 
-#define OBJ sp
-
 static char const * ygyoto_Spectrometer_names[YGYOTO_MAX_REGISTERED]
 ={0};
 static ygyoto_Spectrometer_eval_worker_t *ygyoto_Spectrometer_evals[YGYOTO_MAX_REGISTERED]
 ={0};
 static int ygyoto_Spectrometer_count=0;
 
+YGYOTO_YUSEROBJ(Spectrometer, Spectrometer::Generic)
+YGYOTO_BASE_CONSTRUCTOR(Spectrometer)
+
 extern "C" {
-  typedef struct gyoto_Spectro {
-    SmartPointer<Spectrometer::Generic> spectro;
-  } gyoto_Spectro;
-
-  
-  void gyoto_Spectro_free(void *obj) {
-    if (((gyoto_Spectro*)obj)->spectro) {
-      ((gyoto_Spectro*)obj)->spectro = NULL;
-    } else printf("null pointer\n");
-  }
-
-  void gyoto_Spectro_print(void *obj) {
-#ifdef GYOTO_USE_XERCES
-    string rest="", sub="";
-    size_t pos=0, len=0;
-    rest = Factory(((gyoto_Spectro*)obj)->spectro).format();
-    while (len=rest.length())  {
-      sub=rest.substr(0, pos=rest.find_first_of("\n",0));
-      rest=rest.substr(pos+1, len-1);
-      y_print( sub.c_str(),1 );
-    }
-#else
-    y_print("GYOTO Spectrum object of type ",0);
-    y_print(((gyoto_Spectro*)obj)->spectro->getKind(),0);
-#endif
-  }
   void gyoto_Spectrometer_eval(void *obj, int argc) {
-    SmartPointer<Spectrometer::Generic> *sp_ =
-      &(((gyoto_Spectro*)obj)->spectro);
+    SmartPointer<Spectrometer::Generic> *OBJ_ =
+      &(((gyoto_Spectrometer*)obj)->smptr);
     // If no parameters, return pointer
     if (argc==1 && yarg_nil(0)) {
-      ypush_long( (long) (*sp_)() );
+      ypush_long( (long) (*OBJ_)() );
       return;
     }
 
     // Try calling kind-specific worker
     int n=0;
-    char const * const  kind = (*sp_)->getKind();
+    char const * const  kind = (*OBJ_)->getKind();
 
     while (n<ygyoto_Spectrometer_count &&
 	   kind != ygyoto_Spectrometer_names[n]) ++n;
 
     if (n<ygyoto_Spectrometer_count && ygyoto_Spectrometer_evals[n]) {
-      (*ygyoto_Spectrometer_evals[n])(sp_, argc);
+      (*ygyoto_Spectrometer_evals[n])(OBJ_, argc);
       return;
     }
 
@@ -97,54 +72,9 @@ extern "C" {
 
     YGYOTO_WORKER_CALL_GENERIC(Spectrometer);
   }
-  static y_userobj_t gyoto_Spectro_obj =
-    {const_cast<char*>("gyoto_Spectrometer"), &gyoto_Spectro_free, &gyoto_Spectro_print,
-     &gyoto_Spectrometer_eval, 0, 0};
-
-  void
-  Y_gyoto_Spectrometer(int argc)
-  {
-    int rvset[1]={0}, paUsed[1]={0};
-    SmartPointer<Spectrometer::Generic> *OBJ = NULL;
-
-    if (yarg_Spectrometer(argc-1)) {
-      OBJ = yget_Spectrometer(argc);
-    } else { // Constructor mode
-#ifdef GYOTO_USE_XERCES
-      if (!yarg_string(argc-1))
-	y_error("Cannot allocate object of virtual class Spectrometer");
-
-      char * fname = ygets_q(argc-1);
-      OBJ = ypush_Spectrometer();
-
-      Spectrometer::Subcontractor_t * sub = Spectrometer::getSubcontractor(fname, 1);
-      if (sub) {
-	GYOTO_DEBUG << "found a subcontractor for \"" << fname
-		    << "\", calling it now\n";
-	*OBJ = (*sub)(NULL);
-      } else {
-	GYOTO_DEBUG << "found no subcontractor for \"" << fname
-		    << "\", calling Factory now\n";
-	*OBJ = Factory(fname).getSpectrometer();
-      }
-      // Replace fname with Spectrometer in the stack, and drop fname
-      yarg_swap(0, argc);
-      yarg_drop(1);
-#else
-	y_error("This GYOTO was compiled without XERCES: no xml i/o");
-#endif
-    }
-    --argc;
-
-    gyoto_Spectrometer_eval(OBJ, argc);
-  }
 
 }
 
-int
-yarg_Spectrometer(int iarg) {
-  return yget_obj(iarg,0)==gyoto_Spectro_obj.type_name;
-}
 
 void ygyoto_Spectrometer_register(char const*const name, ygyoto_Spectrometer_eval_worker_t* on_eval){
   int n;
@@ -159,7 +89,7 @@ void ygyoto_Spectrometer_register(char const*const name, ygyoto_Spectrometer_eva
   //  strcpy(ygyoto_Spectrometer_names[ygyoto_Spectrometer_count], "");
 }
 
-void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
+void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
 				int *kiargs, int *piargs,
 				int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg=-1;
@@ -174,7 +104,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*sp)->getKind());
+    *kind = p_strcpy((*OBJ)->getKind());
   }
 
   // Process SET keywords
@@ -188,7 +118,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
   /* NSAMPLES */
   if ((iarg=kiargs[++k])>=0) {
       iarg+=*rvset;
-      if (yarg_nil(iarg)) ypush_long((*sp)->getNSamples());
+      if (yarg_nil(iarg)) ypush_long((*OBJ)->getNSamples());
       else y_error("NSAMPLES is readonly");
   }
 
@@ -199,13 +129,13 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> getNSamples();
+    size_t nsamples = (*OBJ) -> getNSamples();
     if (nsamples) {
       long dims[] = {2, 2, nsamples};
-      double converted[(*sp)->getNBoundaries()];
-      (*sp) -> getChannelBoundaries(converted, unit?unit:"");
-      GYOTO_DEBUG_ARRAY(converted, (*sp)->getNBoundaries());
-      size_t const * const chanind = (*sp) -> getChannelIndices();
+      double converted[(*OBJ)->getNBoundaries()];
+      (*OBJ) -> getChannelBoundaries(converted, unit?unit:"");
+      GYOTO_DEBUG_ARRAY(converted, (*OBJ)->getNBoundaries());
+      size_t const * const chanind = (*OBJ) -> getChannelIndices();
       GYOTO_DEBUG_ARRAY(chanind, 2*nsamples);
       double * ychannels = ypush_d(dims);
       for (size_t i=0; i<2*nsamples; ++i) {
@@ -220,11 +150,11 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("MIDPOINTS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> getNSamples();
+    size_t nsamples = (*OBJ) -> getNSamples();
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ychannels = ypush_d(dims);
-      (*sp)->getMidpoints(ychannels, unit?unit:"");
+      (*OBJ)->getMidpoints(ychannels, unit?unit:"");
     } else ypush_nil();
   }
 
@@ -232,21 +162,13 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*sp,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("WIDTHS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> getNSamples();
+    size_t nsamples = (*OBJ) -> getNSamples();
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ywidths = ypush_d(dims);
-      (*sp)->getWidths(ywidths, unit?unit:"");
+      (*OBJ)->getWidths(ywidths, unit?unit:"");
     } else ypush_nil();
   } 
 
 }
 
-SmartPointer<Spectrometer::Generic>* yget_Spectrometer(int iarg) {
-  return &(((gyoto_Spectro*)yget_obj(iarg, &gyoto_Spectro_obj))->spectro);
-}
-
-SmartPointer<Spectrometer::Generic>* ypush_Spectrometer() {
-  return &(((gyoto_Spectro*)(ypush_obj(&gyoto_Spectro_obj,
-					sizeof(gyoto_Spectro))))->spectro);
-}
