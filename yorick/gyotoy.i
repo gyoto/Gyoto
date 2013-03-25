@@ -380,9 +380,14 @@ func gyotoy(filename) {
 func gyotoy_set_particle(part) {
   extern _gyotoy_particle, _gyotoy_metric, _gyotoy_initcoord, _gyotoy_txyz,
     _gyotoy_metric_file, _gyotoy_filename;
+
+  omtype=_gyotoy_metric(kind=);
+  oldmass=_gyotoy_particle_is_massless;
   
   _gyotoy_particle=part;
-
+  _gyotoy_metric = part(metric=);
+  _gyotoy_initcoord=part(initcoord=);
+  
   if (is_gyoto_Star(part)) {
     part_type="star";
     _gyotoy_particle_is_massless=0;
@@ -391,16 +396,18 @@ func gyotoy_set_particle(part) {
     part_type="photon";
     _gyotoy_particle_is_massless=1;
   }
-
-  ok=pyk("set_parameter('particle_type','"+part_type+"')");
+  if (oldmass != _gyotoy_particle_is_massless)
+    ok=pyk("set_parameter('particle_type','"+part_type+"')");
 
   // Metric & projection
-  _gyotoy_metric = part(metric=);
-  if (_gyotoy_metric(kind=)=="KerrBL") {
-    ok=pyk("set_parameter('metric_type', 'kerrbl')");
-    ok=pyk("set_parameter('spin',"+swrite(format="%.12f",_gyotoy_metric(spin=))+")");
+  if ((mtype=_gyotoy_metric(kind=))=="KerrBL") {
+    if (omtype != "KerrBL")
+      ok=pyk("set_parameter('metric_type', 'kerrbl')");
+    ok=pyk("set_parameter('spin',"+
+           swrite(format="%.12f",_gyotoy_metric(spin=))+")");
   } else {
-    ok=pyk("set_parameter('metric_type', 'file')");
+    if (otype == "KerrBL")
+      ok=pyk("set_parameter('metric_type', 'file')");
     if (_gyotoy_filename)
       ok=pyk("set_parameter('metric_file', '"+_gyotoy_filename+"')");
     _gyotoy_metric_file=_gyotoy_filename;
@@ -427,6 +434,10 @@ func gyotoy_set_particle(part) {
 
   // Wait for parameters to have reached glade
   //    pyk,"compute_orbit('rien')";
+
+  // bug ?
+  if (mtype != "KerrBL")
+    ok=pyk("set_parameter('metric_type', 'file')");
   
 }
 

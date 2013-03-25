@@ -209,6 +209,7 @@ class gyotoy:
    def metric_type_changed_cb(self, wdg):
       type=wdg.get_model()[wdg.get_active()][1]
       if (type=="file"):
+         self.builder.get_object('spin').set_sensitive(0)
          self.builder.get_object('spin').set_visible(0)
          self.builder.get_object('spin_label').set_visible(0)
          self.builder.get_object('metric_file_label').set_visible(1)
@@ -216,6 +217,7 @@ class gyotoy:
          self.metric_file_set_cb(self.builder.get_object('metric_file'))
       elif (type=="kerrbl"):
          self.builder.get_object('spin').set_visible(1)
+         self.builder.get_object('spin').set_sensitive(1)
          self.builder.get_object('spin_label').set_visible(1)
          self.builder.get_object('metric_file_label').set_visible(0)
          self.builder.get_object('metric_file').set_visible(0)
@@ -290,8 +292,6 @@ class gyotoy:
             if (count==5):
                self.py2yo('print "%s" %.20f %.20f' % (param, value, self.builder.get_object(param).get_value()))
                self.yerror('Unable to set value')
-      if (param=='spin'):
-         self.set_spin(self.builder.get_object(param))
       self.pyk_resume('1')
 
    def toggle_gnomon(self,wdg):
