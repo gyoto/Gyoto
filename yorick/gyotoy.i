@@ -225,6 +225,7 @@ func gyotoy_redraw(void){
     gyoto_convert, z, _gyotoy_mass, _gyotoy_distance, _gyotoy_unit;
     rmax=sqrt(max(x^2+y^2+z^2));
 
+    window, _gyotoy_wid;
     clear3;
     if (_gyotoy_reticle) gyoto_reticle, rmax*1.41421;
     if (gyotoy_origin) gyoto_plmksky,0,0;
@@ -365,7 +366,8 @@ func gyotoy(filename) {
   // spawn it and attach to _pyk_callback (see pyk.i):
   // that starts python and pass it the path to the glade file
   if (is_string(filename)) _gyotoy_filename=filename;
-  else if (is_gyoto_Star(filename)||typeof(filename)=="gyoto_Photon")
+  else if ((is_gyoto_Astrobj(filename) && filename(kind=)=="Star")
+           ||typeof(filename)=="gyoto_Photon")
     _gyotoy_particle_to_load=filename;
   else _gyotoy_particle_to_load=_gyotoy_particle;
   _pyk_proc = spawn(pyk_cmd, _pyk_callback);
@@ -388,7 +390,7 @@ func gyotoy_set_particle(part) {
   _gyotoy_metric = part(metric=);
   _gyotoy_initcoord=part(initcoord=);
   
-  if (is_gyoto_Star(part)) {
+  if (is_gyoto_Astrobj(part)) {
     part_type="star";
     _gyotoy_particle_is_massless=0;
   }
