@@ -137,6 +137,25 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   }
 
   YGYOTO_WORKER_SETPARAMETER;
+
+  // ScalarProd
+  if ((iarg=kiargs[++k])>=0) {
+    if ((*rvset)++) y_error(rmsg);
+    if ((*paUsed)++) y_error(pmsg);
+    long ntot=0;
+    long dims[Y_DIMSIZE];
+    double * pos = ygeta_d(iarg, &ntot, dims);
+    if (!dims[0] || dims[1]<4)
+      y_error("scalarprod: pos must be at least 4 elements long");
+    double * u1 = ygeta_d(piargs[0], &ntot, dims);
+    if (!dims[0] || dims[1]<4)
+      y_error("scalarprod: u1 must be at least 4 elements long");
+    double * u2 = ygeta_d(piargs[1], &ntot, dims);
+    if (!dims[0] || dims[1]<4)
+      y_error("scalarprod: u2 must be at least 4 elements long");
+    ypush_double((*OBJ)->ScalarProd(pos, u1, u2));
+  }
+
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Mass);
 
   // Unit length

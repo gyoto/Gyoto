@@ -686,11 +686,14 @@ extern gyoto_Metric;
      Additional function-like or subroutine like methods:
      
        coord=gg(prime2tdot=pos, vel): COORD is the 8-vector where
-              COORD[1-4]==POS and COORD[5-8] is the 4-velocity
-              corresponding to the 3-velocity VEL;
+               COORD[1-4]==POS and COORD[5-8] is the 4-velocity
+               corresponding to the 3-velocity VEL;
        
-       gg, nullifycoord=pos, vel    return nullified (photon) coord tangent
-                                    to vel at pos.
+       vel4 =gg(nullifycoord=pos, vel)
+               Return nullified (photon) coord tangent to vel at pos.
+
+       prod = gg(scalarprod=pos, u1, u2)
+               Return (4-dimensional) scalar product.
 
        vels = gg(circularvelocity=coords [, dir])
                On input, COORDS is an array of doubles yielding

@@ -890,6 +890,11 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
  
     double argrac=-(1.+gtt*tdot*tdot+2.*gtph*phdot*tdot+gthth*thdot*thdot+gphph*phdot*phdot)/grr;
     double arglim=1e-7;
+
+    GYOTO_DEBUG_ARRAY(coord, 8);
+    GYOTO_DEBUG_EXPR(argrac);
+    GYOTO_DEBUG_EXPR(rr/rhor);
+
     if (argrac<0 && fabs(argrac)<arglim) argrac=0.;
     if (argrac<0 && fabs(argrac)>arglim) {
       if (rr/rhor < 2.) {//A AFFINER??
