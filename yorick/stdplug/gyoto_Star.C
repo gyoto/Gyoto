@@ -43,11 +43,11 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     "radius", "metric", "initcoord", "spectrum", "opacity", "delta",
     "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
-    "get_skypos", "get_txyz", "get_coord", "get_cartesian",
+    "get_skypos", "get_txyz", "get_prime", "get_coord", "get_cartesian",
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+13);
+  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+14);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
@@ -122,7 +122,7 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     (*ao)->getSkyPos(*screen, data, data+nel, data+2*nel);
   }
 
-  if (yarg_true(kiargs[++k])) { // get_txyz
+  if ((iarg=kiargs[++k])>=0) { // get_txyz
     if ((*rvset)++) y_error(rmsg);
     int nel =(*ao)->get_nelements();
       
@@ -131,6 +131,16 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 
     (*ao)->get_t(data);
     (*ao)->get_xyz(data+nel, data+2*nel, data+3*nel);
+  }
+
+  if ((iarg=kiargs[++k])>=0) { // get_prime
+    if ((*rvset)++) y_error(rmsg);
+    int nel =(*ao)->get_nelements();
+      
+    long dims[] = {2, nel, 3};
+    double * data=ypush_d(dims);
+
+    (*ao)->get_prime(data, data+nel, data+2*nel);
   }
 
   if ((iarg=kiargs[++k])>=0) { // get_coord
@@ -142,11 +152,19 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     int argt = yarg_number(iarg);
     long ntot[1] = {1};
     long dims[Y_DIMSIZE];
-    double* dates = ygeta_d(iarg, ntot, dims);
+    double* dates = NULL;
+    double dummy[]= {1.};
+    if (yarg_nil(iarg)) {
+      // void is same as 1 in this context
+      argt=1;
+      *ntot=1;
+      dims[0]=0;
+      dates=dummy;
+    } else dates = ygeta_d(iarg, ntot, dims);
 
     if (debug())
       cerr << "DEBUG: gyoto_Star(get_coord=array("
-	   << (yarg_number(iarg)==1?"long":"double")
+	   << (argt==1?"long":"double")
 	   << ", " << *ntot 
 	   << ") (rank=" << dims[0]
 	   << ", dates[0]=" << dates[0] << ")" << endl;
@@ -215,212 +233,5 @@ extern "C" {
       y_error("Expecting Astrobj of kind Star");
     ygyoto_Star_eval(ao, argc);
   }
-
-  // STAR CLASS
-  void
-  Y_gyoto_Star_get_t(int n)
-  {
-    if (n!=1) y_error("gyoto_Star_get_t takes exactly 1 argument");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(0);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * t=ypush_d(dims);
-    try { st->get_t(t); }
-    YGYOTO_STD_CATCH ;
-  }
-
-  void
-  Y_gyoto_Star_xFill(int n)
-  {
-    if (n!=2) y_error("gyoto_Star_xFill takes exactly 2 argument");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    double tlim=ygets_d(n-2);
-    SmartPointer<Star> st (*astrobj);
-    try { st->xFill(tlim); }
-    YGYOTO_STD_CATCH ;
-  }
-
-  void
-  Y_gyoto_Star_getSkyPos(int n)
-  {
-    if (n<2) y_error("gyoto_Star_get_xyz takes at least 3 argument");
-    if (n>4) y_error("gyoto_Star_get_xyz takes at most 5 arguments");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-
-    SmartPointer<Screen> *screen = yget_Screen(n-2);
-
-    long da_ref=yget_ref(n-3);
-    long dd_ref=yget_ref(n-4);
-    long dD_ref=yget_ref(n-5);
-
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * da=ypush_d(dims);
-    double * dd=ypush_d(dims);
-    double * dD=ypush_d(dims);
-
-    try { st->getSkyPos(*screen, da, dd, dD); }
-    YGYOTO_STD_CATCH ;
-
-    yput_global(dD_ref,0);
-    yarg_drop(1);
-    yput_global(dd_ref,0);
-    yarg_drop(1);
-    yput_global(da_ref,0);
-
-  }
-
-  void
-  Y_gyoto_Star_get_xyz(int n)
-  {
-    if (n<2) y_error("gyoto_Star_get_xyz takes at least 2 argument");
-    if (n>4) y_error("gyoto_Star_get_xyz takes at most 4 arguments");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    long x_ref=yget_ref(n-2);
-    long y_ref=yget_ref(n-3);
-    long z_ref=yget_ref(n-4);
-
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * x=ypush_d(dims);
-    double * y=ypush_d(dims);
-    double * z=ypush_d(dims);
-
-    try { st->get_xyz(x,y,z); }
-    YGYOTO_STD_CATCH ;
-
-    yput_global(z_ref,0);
-    yarg_drop(1);
-    yput_global(y_ref,0);
-    yarg_drop(1);
-    yput_global(x_ref,0);
-
-  }
-
-  void
-  Y_gyoto_Star_get_coord(int n)
-  {
-    if (n<2) y_error("gyoto_Star_get_coord takes at least 2 argument");
-    if (n>5) y_error("gyoto_Star_get_coord takes at most 5 arguments");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    long x0_ref=yget_ref(n-2);
-    long x1_ref=yget_ref(n-3);
-    long x2_ref=yget_ref(n-4);
-    long x3_ref=yget_ref(n-5);
-
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * x0=ypush_d(dims);
-    double * x1=ypush_d(dims);
-    double * x2=ypush_d(dims);
-    double * x3=ypush_d(dims);
-
-    try { st->getCoord(x0, x1, x2, x3); }
-    YGYOTO_STD_CATCH ;
-
-    yput_global(x3_ref,0);
-    yarg_drop(1);
-    yput_global(x2_ref,0);
-    yarg_drop(1);
-    yput_global(x1_ref,0);
-    yarg_drop(1);
-    yput_global(x0_ref,0);
-
-  }
-
-  void
-  Y_gyoto_Star_get_dot(int n)
-  {
-    if (n<2) y_error("gyoto_Star_get_dot takes at least 2 argument");
-    if (n>5) y_error("gyoto_Star_get_dot takes at most 5 arguments");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    long x0_ref=yget_ref(n-2);
-    long x1_ref=yget_ref(n-3);
-    long x2_ref=yget_ref(n-4);
-    long x3_ref=yget_ref(n-5);
-
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * x0=ypush_d(dims);
-    double * x1=ypush_d(dims);
-    double * x2=ypush_d(dims);
-    double * x3=ypush_d(dims);
-
-    try { st->get_dot(x0, x1, x2, x3); }
-    YGYOTO_STD_CATCH ;
-
-    yput_global(x3_ref,0);
-    yarg_drop(1);
-    yput_global(x2_ref,0);
-    yarg_drop(1);
-    yput_global(x1_ref,0);
-    yarg_drop(1);
-    yput_global(x0_ref,0);
-  }
-
-  void
-  Y_gyoto_Star_get_prime(int n)
-  {
-    if (n<2) y_error("gyoto_Star_get_prime takes at least 2 argument");
-    if (n>4) y_error("gyoto_Star_get_prime takes at most 4 arguments");
-    SmartPointer<Astrobj::Generic> *astrobj=yget_Astrobj(n-1);
-    if (strcmp((*astrobj)->getKind().c_str(),"Star")) y_error("first argument must be a GYOTO Star object ");
-    long x1_ref=yget_ref(n-2);
-    long x2_ref=yget_ref(n-3);
-    long x3_ref=yget_ref(n-4);
-
-    SmartPointer<Star> st (*astrobj);
-    int nel ;
-    try { nel = st->get_nelements(); }
-    YGYOTO_STD_CATCH ;
-    long dims[] = {1, nel};
-    double * x1=ypush_d(dims);
-    double * x2=ypush_d(dims);
-    double * x3=ypush_d(dims);
-
-    try { st->get_prime(x1, x2, x3); }
-    YGYOTO_STD_CATCH ;
-
-    yput_global(x3_ref,0);
-    yarg_drop(1);
-    yput_global(x2_ref,0);
-    yarg_drop(1);
-    yput_global(x1_ref,0);
-
-  }
-
-  void
-  Y_is_gyoto_Star(int argc)
-  {
-    if (!yarg_Astrobj(0)) {
-      ypush_long(0);
-      return;
-    }
-    SmartPointer<Astrobj::Generic> *ao = yget_Astrobj(0);
-    ypush_long((*ao)->getKind() == "Star");
-  }
-
-
 
 }

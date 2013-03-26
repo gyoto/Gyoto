@@ -54,7 +54,7 @@ st=gyoto_Star(metric=gg, radius=1., initcoord=pos, v);
 write, format="%s\n","done.\n";
 
 write, format="%s\n", "Trying gyoto_Star_xFill";
-gyoto_Star_xFill(st,770.);
+st,xfill=770.;
 
 //Computing position of star at a given proper time :
 //time=212.4034;//proper time
@@ -64,27 +64,25 @@ gyoto_Star_xFill(st,770.);
 //if (abs(pos-[10.5718661339679, 1.57079398752261, 59.5795847453848])(max)<1e-5)
 //  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
-gyoto_Star_get_xyz,st,x,y;
-
-
-gyoto_Star_get_coord, st, t, r, theta, phi;
-gyoto_Star_get_dot, st, tdot, rdot, thetadot, phidot;
-gyoto_Star_get_prime, st, rp, thetap, phip;
+txyz=st(get_txyz=); dates=txyz(,1); x=txyz(,2); y=txyz(,3);
+coords=st(get_coord=);
+primes=st(get_prime=);
 
 write, format="%s", "Checking gg(prime2tdot= pos, vel): ";
-tdotbis=array(double,numberof(t));
-for (n=1; n<= numberof(t); ++n)
-  tdotbis(n)=gg (prime2tdot=[t(n), r(n), theta(n), phi(n)],
-                 [rp(n), thetap(n), phip(n)]);
+N=dimsof(coords)(2);
+tdotbis=array(double,N);
+for (n=1; n<= N; ++n)
+  tdotbis(n)=gg (prime2tdot=coords(n,1:4), primes(n,));
+tdot=coords(,5);
 if (max (abs( (tdot-tdotbis)/tdot ) ) < 1e-4)
   write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 
 write, format="%s", "Checking gg(position): ";
-norm=array(double, numberof(t));
-for (n=1; n<= numberof(t); ++n) {
-  g = gg ([t(n), r(n), theta(n), phi(n)]);
-  qvel=[tdot(n), rdot(n), thetadot(n), phidot(n)];
+norm=array(double, N);
+for (n=1; n<= N; ++n) {
+  g = gg (coords(n,));
+  qvel=coords(n,5:);
   norm(n)=sum(g*qvel(,-)*qvel(-,));
  }
 if (max(abs(norm+1)) < 1e-4)

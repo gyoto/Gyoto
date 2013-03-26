@@ -31,9 +31,7 @@ GYOTO_OBJ = $(GYOTO_C:.C=.o)
 GYOTO_H = $(shell ls ../include/*.h)
 
 PKG_NAME=gyoto
-PKG_I=gyoto.i \
-	gyoto_Photon.i gyoto_Scenery.i
-#gyoto_Kerr.i gyoto_Star.i gyoto_FixedStar.i gyoto_PolishDoughnut.i
+PKG_I=gyoto.i
 
 OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Photon.o \
 	gyoto_Scenery.o gyoto_Screen.o gyoto_Idx.o gyoto_Spectrum.o \
@@ -61,7 +59,7 @@ PKG_CLEAN=
 # autoload file for this package, if any
 PKG_I_START=
 # non-pkg.i include files for this package, if any
-PKG_I_EXTRA=gyoto_constants.i gyotoy.i
+PKG_I_EXTRA=gyoto_constants.i gyotoy.i gyoto_namespace.i
 
 # -------------------------------- standard targets and rules (in Makepkg)
 
