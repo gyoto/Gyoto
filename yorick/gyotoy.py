@@ -103,6 +103,13 @@ class gyotoy:
       mass        = self.builder.get_object('mass').get_value()
       self.py2yo('gyotoy_set_mass %14.12f' % (mass))
 
+   def set_fraction(self, frac):
+      self.builder.get_object('progressbar').set_fraction(frac)
+
+   def nsteps_change_value_cb(self, wdg):
+      nsteps=self.builder.get_object('nsteps').get_value()
+      self.py2yo('gyotoy_set_nsteps %12.d' % nsteps)
+
    def set_initcoord(self, wdg):
       r0          = self.builder.get_object('r0').get_value()
       theta0      = self.builder.get_object('theta0').get_value()
