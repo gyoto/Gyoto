@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -91,10 +91,10 @@ int main(int argc, char** argv) {
 
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
-  double tobs=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
+  double tobs=0., tmin=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
   size_t res=0, nthreads=0;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0;
+  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
@@ -129,9 +129,9 @@ int main(int argc, char** argv) {
       else if (param.substr(0,7)=="--time=") {
 	tobs=atof(param.substr(7).c_str());
 	xtobs=1;
-	/*} else if (param.substr(0,7)=="--tmin=") {
+      } else if (param.substr(0,7)=="--tmin=") {
 	tmin=atof(param.substr(7).c_str());
-	xtmin=1;*/
+	xtmin=1;
       } else if (param.substr(0,6)=="--fov=") {
 	fov=atof(param.substr(6).c_str());
 	xfov=1;
@@ -210,7 +210,7 @@ int main(int argc, char** argv) {
 
     if (xtobs) screen -> setTime        ( tobs );
     else tobs= screen -> getTime();
-    //      if (xtmin) screen -> setMinimumTime ( tmin );
+    if (xtmin) scenery -> setTmin ( tmin );
     if (xres)  screen -> setResolution  ( res  );
     else res = screen -> getResolution();
     if (xfov)  screen -> setFieldOfView ( fov  );

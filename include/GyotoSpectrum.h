@@ -96,13 +96,33 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
    * Generic implementation assumes emissivity = opacity.
    *
    * \param nu frequency in Hz
-   * \param opacity, such that opacity*ds=optical thickness.
-   * \param ds, in geometrical units
+   * \param opacity such that opacity*ds=optical thickness.
+   * \param ds in geometrical units
    */
   virtual double operator()(double nu, double opacity, double ds) const;
           ///< I_nu in optically thin regime.
 
+  /**
+   * \brief Integrate optically thick I_nu
+   *
+   * See operator()(double nu) const
+   *
+   * \param nu1, nu2 boundaries for the integration
+   * \result I, the integral of I_nu between nu1 and nu2
+   */
   virtual double integrate(double nu1, double nu2) ;
+
+  /**
+   * \brief Integrate optically thin I_nu
+   *
+   * See operator()(double nu, double opacity, double ds) const
+   *
+   * \param nu1, nu2 boundaries for the integration
+   * \param opacity the frequency-dependent opacity law given as a
+   *        pointer to a Gyoto::Spectrum::Generic sub-class instance
+   * \param ds the element length for spatial integration
+   * \result I, the integral of I_nu between nu1 and nu2
+   */
   virtual double integrate(double nu1, double nu2,
 			   const Spectrum::Generic * opacity, double ds) ;
 
@@ -123,20 +143,20 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
   /**
    * The Subcontractor_t function for each Spectrum kind should look
    * somewhat like this:
-\code
-SmartPointer<Astrobj::Generic>
-Gyoto::Spectrum::MyKind::Subcontractor(FactoryMessenger* fmp) {
-  SmartPointer<MyKind> ao = new MyKind();
-  ao -> setParameters(fmp);
-  return ao;
-}
-\endcode
+   * \code
+   * SmartPointer<Astrobj::Generic>
+   * Gyoto::Spectrum::MyKind::Subcontractor(FactoryMessenger* fmp) {
+   *   SmartPointer<MyKind> ao = new MyKind();
+   *   ao -> setParameters(fmp);
+   *   return ao;
+   * }
+   * \endcode
    *
    * Each object kind should implement setParameter(string name,
    * string content) to interpret the individual XML
    * elements. setParameters() can be overloaded in case the specific
    * Astrobj class needs low level access to the FactoryMessenger. See
-   * UniformSphere::setParameters().
+   * Astrobj::UniformSphere::setParameters().
    */
   virtual void setParameters(FactoryMessenger *fmp);
   ///< Main loop in Subcontractor_t function

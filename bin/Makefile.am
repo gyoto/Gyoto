@@ -5,6 +5,7 @@ AM_CXXFLAGS = -rdynamic $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
 bin_PROGRAMS  = gyoto
+dist_man_MANS = gyoto.1
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)

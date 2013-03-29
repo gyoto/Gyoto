@@ -200,7 +200,7 @@ namespace Gyoto {
      *
      * \return value, expressed in "unit".
      */
-    double FromMeters(double, const std::string &,
+    double FromMeters(double value, const std::string &unit,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
 
     /**
@@ -223,7 +223,7 @@ namespace Gyoto {
      *
      * \return value, expressed in seconds.
      */
-    double ToSeconds(double, const std::string &unit,
+    double ToSeconds(double value, const std::string &unit,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
 
     /**
@@ -246,7 +246,7 @@ namespace Gyoto {
      *
      * \return value, expressed in "unit".
      */
-    double FromSeconds(double, const std::string &unit,
+    double FromSeconds(double value, const std::string &unit,
 		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg=NULL);
 
     /**
@@ -262,7 +262,7 @@ namespace Gyoto {
      *
      * \return value, expressed in kilograms.
      */
-    double ToKilograms(double, const std::string &);
+    double ToKilograms(double value, const std::string & unit);
 
     /**
      * \brief Convert to arbitrary mass unit from kilograms
@@ -277,7 +277,7 @@ namespace Gyoto {
      *
      * \return value, expressed in "unit".
      */
-    double FromKilograms(double, const std::string &);
+    double FromKilograms(double value, const std::string & unit);
 
     /**
      * \brief Convert from arbitrary length unit to geometrical units
@@ -294,8 +294,8 @@ namespace Gyoto {
      *
      * \return value, expressed in geometrical units.
      */
-    double ToGeometrical(double, const std::string &,
-		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    double ToGeometrical(double value, const std::string & unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> & gg);
 
     /**
      * \brief Convert to arbitrary length unit from geometrical units
@@ -312,8 +312,8 @@ namespace Gyoto {
      *
      * \return value, expressed in "unit".
      */
-    double FromGeometrical(double, const std::string &,
-		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    double FromGeometrical(double value, const std::string & unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> & gg);
 
     /**
      * \brief Convert from arbitrary time unit to geometrical units
@@ -328,8 +328,8 @@ namespace Gyoto {
      *
      * \return value, expressed in geometrical (time) units.
      */
-    double ToGeometricalTime(double, const std::string &,
-		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    double ToGeometricalTime(double value, const std::string & unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> & gg);
 
     /**
      * \brief Convert to arbitrary time unit from geometrical units
@@ -344,8 +344,8 @@ namespace Gyoto {
      *
      * \return value, expressed in "unit".
      */
-    double FromGeometricalTime(double, const std::string &,
-		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &);
+    double FromGeometricalTime(double value, const std::string & unit,
+		  const Gyoto::SmartPointer<Gyoto::Metric::Generic> &gg);
 
 
     /**
