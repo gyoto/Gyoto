@@ -546,12 +546,13 @@ func gyotoy_compute_and_draw(rien) {
   pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
   gyotoy_redraw;
   --_gyotoy_redrawing;
+  if (_gyotoy_cancel==2) gyotoy_rewind;
 }
 
 func gyotoy_rewind(void) {
   extern _gyotoy_cancel;
   if (_gyotoy_redrawing) {
-    _gyotoy_cancel=1;
+    _gyotoy_cancel=2;
     return;
   }
   _gyotoy_particle, reset=;

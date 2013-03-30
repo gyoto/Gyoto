@@ -98,10 +98,6 @@ class gyotoy:
    def set_play_image(self, name):
       size=self.builder.get_object('play_image').get_stock()[1]
       self.builder.get_object('play_image').set_from_stock(name, size)
-      if (name=='gtk-media-play'):
-         self.builder.get_object('reset_image').set_from_stock('gtk-goto-first', size)
-      else:
-         self.builder.get_object('reset_image').set_from_stock(name, size)
 
    def play_pause(self, wdg):
       self.builder.get_object('inhibit_button').set_active(False)

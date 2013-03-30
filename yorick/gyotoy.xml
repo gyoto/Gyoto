@@ -1262,7 +1262,8 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_text" translatable="yes">Toggles whether changing parameters should trigger orbit integration</property>
+                <property name="tooltip_text" translatable="yes">Push-in to inhibit redraw
+upon parameter changes</property>
                 <property name="use_action_appearance">False</property>
                 <property name="relief">none</property>
                 <signal name="toggled" handler="inhibit_button_toggled_cb" swapped="no"/>
