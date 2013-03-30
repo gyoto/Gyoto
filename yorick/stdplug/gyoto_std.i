@@ -119,6 +119,8 @@ extern gyoto_Star;
      or initcoord=[x0, x1, x2, x3, x0dot, x1dot, x2dot, x3dot]
               initial position of velocity, requires metric to have
               been set previously;
+        delta=  integration step (initial if adaptive)
+        adaptive= whether the integration uses adaptive step.
         
    METHODS
 
@@ -146,7 +148,8 @@ extern gyoto_Star;
                    st, metric=new_metric;
                    st, initcoord=conditions;
                    st, reset=;
-               
+                   
+        setparameter=name,string_value       
 
      Function-like (retval=st(function_method=parameters)):
 

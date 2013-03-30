@@ -144,19 +144,19 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
    * The Subcontractor_t function for each Spectrum kind should look
    * somewhat like this:
    * \code
-   * SmartPointer<Astrobj::Generic>
+   * SmartPointer<Spectrum::Generic>
    * Gyoto::Spectrum::MyKind::Subcontractor(FactoryMessenger* fmp) {
-   *   SmartPointer<MyKind> ao = new MyKind();
-   *   ao -> setParameters(fmp);
-   *   return ao;
+   *   SmartPointer<MyKind> sp = new MyKind();
+   *   sp -> setParameters(fmp);
+   *   return sp;
    * }
    * \endcode
    *
-   * Each object kind should implement setParameter(string name,
+   * Each spectrum kind should implement setParameter(string name,
    * string content) to interpret the individual XML
    * elements. setParameters() can be overloaded in case the specific
-   * Astrobj class needs low level access to the FactoryMessenger. See
-   * Astrobj::UniformSphere::setParameters().
+   * Spectrum class needs low level access to the FactoryMessenger (see
+   * Astrobj::UniformSphere::setParameters()).
    */
   virtual void setParameters(FactoryMessenger *fmp);
   ///< Main loop in Subcontractor_t function

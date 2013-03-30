@@ -360,8 +360,11 @@ void ygyoto_Spectrometer_generic_eval
     iarg+=*rvset; 					\
     if ((*paUsed)++) y_error("pmsg");			\
     string name = ygets_q(iarg);			\
-    string content = ygets_q(*piargs);			\
-    (*OBJ)->setParameter(name, content,  unit?unit:"");	\
+    string content = "";				\
+    if (piargs[0] >= 0) content = ygets_q(*piargs);		\
+    try	{							\
+      (*OBJ)->setParameter(name, content,  unit?unit:"");	\
+    } YGYOTO_STD_CATCH;						\
   }
 
 #ifdef GYOTO_USE_XERCES

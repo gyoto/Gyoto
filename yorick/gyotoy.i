@@ -73,6 +73,8 @@ extern _gyotoy_particle_is_massless;
 extern _gyotoy_metric;
 extern _gyotoy_particle;
 extern _gyotoy_t1;
+extern _gyotoy_delta;
+extern _gyotoy_adaptive;
 extern _gyotoy_initcoord;
 extern _gyotoy_mass;
 extern _gyotoy_distance;
@@ -99,6 +101,13 @@ extern _gyotoy_nsteps;
  */
 if (is_void(_gyotoy_nsteps)) _gyotoy_nsteps=100 ;
 
+func gyotoy_adaptive(mode) {
+  extern _gyotoy_adaptive;
+  _gyotoy_adaptive=mode;
+  if (mode) _gyotoy_particle, setparameter="Adaptive";
+  else  _gyotoy_particle, setparameter="NonAdaptive";
+}
+
 func gyotoy_reset(void){
   extern _gyotoy_running;
   extern _gyotoy_reticle;
@@ -123,10 +132,13 @@ func gyotoy_reset(void){
   _gyotoy_initcoord=[0.,10.791,pi/2,0.,0.,0.,0.016664];
   _gyotoy_t1=3000.;
   _gyotoy_t0=0.;
+  _gyotoy_delta=0.01;
   _gyotoy_particle=gyoto_Star(metric=_gyotoy_metric,
                               initcoord=_gyotoy_initcoord(1:4),
                               _gyotoy_initcoord(5:7),
-                              xfill=_gyotoy_t1);
+                              delta=_gyotoy_delta);
+  gyotoy_adaptive,1;
+  _gyotoy_particle, xfill=_gyotoy_t1;
   _gyotoy_txyz=_gyotoy_particle(get_txyz=1);
   _gyotoy_mass=4e6;
   _gyotoy_distance=8.;
@@ -394,7 +406,8 @@ func gyotoy(filename) {
 
 func gyotoy_set_particle(part) {
   extern _gyotoy_particle, _gyotoy_metric, _gyotoy_initcoord, _gyotoy_txyz,
-    _gyotoy_metric_file, _gyotoy_filename, _gyotoy_inhibit_redraw;
+    _gyotoy_metric_file, _gyotoy_filename, _gyotoy_inhibit_redraw,
+    _gyotoy_delta, _gyotoy_adaptive;
 
   rdr=_gyotoy_inhibit_redraw;
   _gyotoy_inhibit_redraw=1;
@@ -405,6 +418,8 @@ func gyotoy_set_particle(part) {
   _gyotoy_particle=part;
   _gyotoy_metric = part(metric=);
   _gyotoy_initcoord=part(initcoord=);
+  _gyotoy_delta=part(delta=);
+  _gyotoy_adaptive=part(adaptive=);
   
   if (is_gyoto_Astrobj(part)) {
     part_type="star";
@@ -417,6 +432,9 @@ func gyotoy_set_particle(part) {
   if (oldmass != _gyotoy_particle_is_massless)
     ok=pyk("set_parameter('particle_type','"+part_type+"')");
 
+  ok=pyk("set_parameter('delta', "+swrite(format="%.12f",_gyotoy_delta)+")");
+  ok=pyk("set_parameter('adaptive', "+pr1(_gyotoy_adaptive)+")");
+  
   // Metric & projection
   if ((mtype=_gyotoy_metric(kind=))=="KerrBL") {
     if (omtype != "KerrBL")
@@ -530,9 +548,26 @@ func gyotoy_compute_and_draw(rien) {
   --_gyotoy_redrawing;
 }
 
+func gyotoy_rewind(void) {
+  extern _gyotoy_cancel;
+  if (_gyotoy_redrawing) {
+    _gyotoy_cancel=1;
+    return;
+  }
+  _gyotoy_particle, reset=;
+  pyk, "set_fraction(0)";
+}
+
+func gyotoy_set_delta(delta) {
+  extern _gyotoy_delta;
+  _gyotoy_delta=delta;
+  _gyotoy_particle, delta=delta;
+}
+
 func gyotoy_inhibit_redraw(mode) {
-  extern _gyotoy_inhibit_redraw;
+  extern _gyotoy_inhibit_redraw, _gyotoy_cancel;
   _gyotoy_inhibit_redraw=mode;
+  if (mode &&_gyotoy_redrawing) _gyotoy_cancel=1;
 }
 
 func gyotoy_export(filename) {
@@ -634,6 +669,8 @@ func gyotoy_set_particle_type(type) {
   if (catch(0x08)) return; // avoid breaking in case of v>c
   _gyotoy_particle,metric=_gyotoy_metric,
     initcoord=_gyotoy_initcoord(1:4),_gyotoy_initcoord(5:7);
+  _gyotoy_particle, delta=_gyotoy_delta;
+  gyotoy_adaptive(_gyotoy_adaptive);
   gyotoy_compute_and_draw;
 }
 

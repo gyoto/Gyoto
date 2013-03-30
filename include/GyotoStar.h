@@ -93,9 +93,6 @@ class Gyoto::Astrobj::Star :
   
   // Data : 
   // -----
-  private:
-  int wait_pos_; ///< Hack in setParameters()
-  double * init_vel_; ///< Hack in setParameters()
 
   // Constructors - Destructor
   // -------------------------
@@ -146,11 +143,6 @@ class Gyoto::Astrobj::Star :
   //  void setCoordSys(int); ///< Get coordinate system for integration
   //  int  getCoordSys(); ///< Set coordinate system for integration
   void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
-
-  using Worldline::setInitCoord;
-  virtual void setInitCoord(double pos[4], double vel[3], int dir=1);
-  virtual void setPosition(double pos[4]);
-  virtual void setVelocity(double vel[3]);
 
   virtual int setParameter(std::string name,
 			   std::string content,

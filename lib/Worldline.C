@@ -20,6 +20,7 @@
 #include <GyotoWorldline.h>
 #include <GyotoUtils.h>
 //#include <GyotoKerrBL.h>
+#include <GyotoFactoryMessenger.h>
 #include <iostream>
 #include <sstream>
 #include <cmath>
@@ -31,19 +32,26 @@ using namespace std;
 using namespace Gyoto;
 
 
-Worldline::Worldline() : imin_(1), i0_(0), imax_(0),
-			 delta_(0.01), tmin_(-DBL_MAX), cst_(NULL), cst_n_(0)
+Worldline::Worldline() : imin_(1), i0_(0), imax_(0), adaptive_(1),
+			 delta_(GYOTO_DEFAULT_DELTA),
+			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
+			 wait_pos_(0), init_vel_(NULL)
 { xAllocate(); }
 
-Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0), 
-					delta_(0.01), tmin_(-DBL_MAX),
-					cst_(NULL), cst_n_(0)
+Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
+					adaptive_(1),
+					delta_(GYOTO_DEFAULT_DELTA),
+					tmin_(-DBL_MAX),
+					cst_(NULL), cst_n_(0),
+					wait_pos_(0), init_vel_(NULL)
 { xAllocate(sz); }
 
 Worldline::Worldline(const Worldline& orig) :
   metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_)
+  adaptive_(orig.adaptive_),
+  delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
+  wait_pos_(orig.wait_pos_), init_vel_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -74,6 +82,10 @@ Worldline::Worldline(const Worldline& orig) :
     cst_ = new double [cst_n_];
     memcpy(cst_, orig.cst_, cst_n_*sizeof(double));
   }
+  if (orig.init_vel_) {
+    init_vel_ = new double [3];
+    memcpy(init_vel_, orig.init_vel_, 3*sizeof(double));
+  }
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif
@@ -82,7 +94,9 @@ Worldline::Worldline(const Worldline& orig) :
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   metric_(orig->metric_),
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_)
+  adaptive_(orig->adaptive_),
+  delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
+  wait_pos_(orig->wait_pos_), init_vel_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -124,6 +138,10 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
     cst_ = new double [cst_n_];
     memcpy(cst_, orig->cst_, cst_n_*sizeof(double));
   }
+  if (orig->init_vel_) {
+    init_vel_ = new double [3];
+    memcpy(init_vel_, orig->init_vel_, 3*sizeof(double));
+  }
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif
@@ -143,6 +161,7 @@ Worldline::~Worldline(){
   delete[] x2dot_;
   delete[] x3dot_;
   if (cst_) delete [] cst_;
+  if (init_vel_) delete[] init_vel_;
 }
 void Worldline::xAllocate() {xAllocate(GYOTO_DEFAULT_X_SIZE);}
 
@@ -251,6 +270,79 @@ void Worldline::tell(Gyoto::Hook::Teller* msg) {
   reInit();
 }
 
+#ifdef GYOTO_USE_XERCES
+void Worldline::fillElement(FactoryMessenger *fmp) const {
+  if (metric_)     fmp -> setMetric (metric_) ;
+
+  if (imin_ <= imax_) {
+    double coord[8];
+    getInitialCoord(coord);
+    if (getMass()) {
+      // For massive particule, express initial condition with 3-velocity
+      double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
+      fmp -> setParameter ("Position", coord, 4);
+      fmp -> setParameter ("Velocity", vel, 3);
+    } else {
+      // For massless particle, only 4-velocity is meaningfull
+      fmp -> setParameter("InitCoord", coord, 8);
+    }
+  }
+
+  if (delta_ != GYOTO_DEFAULT_DELTA) {
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG <<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;" << endl;
+#   endif
+    fmp -> setParameter ("Delta", delta_);
+  }
+
+  if (!adaptive_) fmp->setParameter("NonAdaptive");
+}
+
+void Worldline::setParameters(FactoryMessenger* fmp) {
+  if (!fmp) return;
+  string name="", content="", unit="";
+  wait_pos_ = 1;
+  setMetric(fmp->getMetric());
+  while (fmp->getNextParameter(&name, &content, &unit))
+    setParameter(name, content, unit);
+  wait_pos_ = 0;
+  if (init_vel_) {
+    delete[] init_vel_; init_vel_=NULL;
+    throwError("Worldline::setParameters(): "
+	       "Velocity was found but not Position");
+  }
+}
+#endif
+
+int Worldline::setParameter(std::string name,
+			    std::string content,
+			    std::string unit) {
+  double coord[8];
+  char* tc = const_cast<char*>(content.c_str());
+  if (name=="InitialCoordinate" || name=="InitCoord") {
+    for (int i=0;i<8;++i) coord[i] = strtod(tc, &tc);
+    setInitCoord(coord);
+  } else if (name=="Position") {
+    for (int i=0;i<4;++i) coord[i] = strtod(tc, &tc);
+    if (init_vel_) {
+      setInitCoord(coord, init_vel_);
+      delete[] init_vel_; init_vel_=NULL;
+    } else setPosition(coord);
+    wait_pos_ = 0;
+  } else if (name=="Velocity") {
+    for (int i=0;i<3;++i) coord[i] = strtod(tc, &tc);
+    if (wait_pos_) {
+      if (init_vel_) delete [] init_vel_;
+      init_vel_ = new double[3];
+      memcpy(init_vel_, coord, 3*sizeof(double));
+    } else setVelocity(coord);
+  } else   if (name=="Delta")            setDelta(atof(content.c_str()), unit);
+  else if (name=="NonAdaptive") adaptive_ = false;
+  else if (name=="Adaptive")    adaptive_ = true;
+  else return 1;
+  return 0;
+}
+
 SmartPointer<Metric::Generic> Worldline::getMetric() const { return metric_; }
 
 string Worldline::className() const { return  string("Worldline"); }
@@ -270,6 +362,21 @@ void Worldline::setInitCoord(const double coord[8], int dir) {
   reInit();
 }
 
+void Worldline::setInitCoord(double pos[4], double v[3], int dir) {
+  if (!getMass())
+    throwError("Worldline::setInitCoord(pos, vel) "
+	       "only makes sense for massive particles");
+  if (!metric_)
+    throwError("Please set metric before calling "
+	       "Worldline::setInitCoord(double pos[4], double vel[3])");
+  double tdot0=metric_->SysPrimeToTdot(pos, v);
+  GYOTO_DEBUG_EXPR(tdot0);
+  double coord[8]={pos[0], pos[1], pos[2], pos[3],
+		   tdot0, v[0]*tdot0, v[1]*tdot0, v[2]*tdot0};
+  GYOTO_DEBUG_ARRAY(coord, 8);
+  setInitCoord(coord, dir);
+}
+
 void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 				    const double coord[8],
 				    const int dir)
@@ -277,6 +384,19 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
   if (met) metric_=met;
   setInitCoord(coord, dir);
 }
+
+void Worldline::setPosition(double pos[4]) {
+  double vel[] = {0., 0., 0.};
+  setInitCoord(pos, vel);
+}
+
+void Worldline::setVelocity(double vel[3]) {
+  double coord[8];
+  getInitialCoord(coord);
+  setInitCoord(coord, vel);
+}
+
+
 
 void Worldline::reset() { imin_=imax_=i0_; }
 void Worldline::reInit() {
@@ -352,7 +472,10 @@ void Worldline::xFill(double tlim) {
     mycount++;
     ind+=dir;
 
-    stopcond= state -> nextStep(this,coord);
+    if (adaptive_)
+      stopcond= state -> nextStep(this,coord);
+    else
+      stopcond= state -> nextStep(this,coord,delta_);
 
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==mycountmax) {
@@ -506,6 +629,7 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
   delete [] x2dot;
   delete [] x3dot;
 }
+
 void Worldline::getCoord(double const * const dates, size_t const n_dates,
 			 double * const x1,
 			 double * const x2,    double * const x3,
@@ -929,10 +1053,20 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 
 
 void Worldline::setDelta(const double del) { delta_=del; }
+void Worldline::setDelta(double d, const string &unit) {
+  setDelta(Units::ToGeometrical(d, unit, metric_));
+}
+
 double Worldline::getDelta() const { return delta_; }
+double Worldline::getDelta(const string &unit) const {
+  return Units::FromGeometrical(getDelta(), unit, metric_);
+}
 
 double Worldline::getTmin() const { return tmin_; }
 void Worldline::setTmin(double tmin) { tmin_ = tmin; }
+
+void Worldline::adaptive(bool mode) { adaptive_ = mode; }
+bool Worldline::adaptive() const { return adaptive_; }
 
 double const * Worldline::getCst() const {
   return cst_;

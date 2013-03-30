@@ -28,11 +28,11 @@
 using namespace Gyoto;
 using namespace std;
 
-#define YGYOTO_PHOTON_GENERIC_KW "metric", "initcoord", "astrobj",	\
-    "spectro", "tmin",	"delta",					\
-    "xfill", "save_txyz", "xmlwrite", "is_hit",				\
+#define YGYOTO_PHOTON_GENERIC_KW "unit", "metric", "initcoord", "astrobj", \
+    "spectro", "tmin",	"delta", "adaptive", "setparameter",		\
+    "reset", "xfill", "save_txyz", "xmlwrite", "is_hit",		\
     "get_txyz", "get_coord", "get_cartesian", "clone"
-#define YGYOTO_PHOTON_GENERIC_KW_N 14
+#define YGYOTO_PHOTON_GENERIC_KW_N 18
 
 void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 				 int *kiargs, int *piargs, int *rvset, int *paUsed) {
@@ -40,9 +40,9 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
+  char * unit = NULL;
 
-  //// MEMBERS ////
-  /* METRIC */
+  YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_OBJECT(Metric);
 
   /* INITCOORD */
@@ -109,11 +109,13 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     if (debug()) cerr << "... " << endl;
   }
 
-  /* ASTROBJ */
   YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
-  YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
+  YGYOTO_WORKER_GETSET_OBJECT(Spectrometer);
   YGYOTO_WORKER_GETSET_DOUBLE(Tmin);
-  YGYOTO_WORKER_GETSET_DOUBLE(Delta);
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
+  YGYOTO_WORKER_GETSET_LONG2(adaptive);
+  YGYOTO_WORKER_SETPARAMETER;
+  YGYOTO_WORKER_RUN( reset() );
   YGYOTO_WORKER_RUN( xFill(ygets_d(iarg)) );
 
   // save_txyz=filename, t1, mass_sun, distance_kpc, unit, screen

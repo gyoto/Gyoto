@@ -56,9 +56,9 @@ class Gyoto::WorldlineIntegState : SmartPointee {
   double coordnew_[8];
   double norm_;
   double normref_;
-  double delta_;
+  double delta_; ///< Integration step (current in case of adaptive)
   double h1_;
-  double deltainit_;
+  double deltainit_; ///< Integration step (initial in case of adaptive)
 
  public:
   WorldlineIntegState();

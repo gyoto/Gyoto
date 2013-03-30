@@ -41,7 +41,15 @@ namespace Gyoto {
  * \class Gyoto::Spectrum::BlackBody
  * \brief Black Body
  *
- *  Light emitted by e.g. a Star
+ *  Light emitted by e.g. a Star.
+ *
+ *  Example XML entity:
+ *  \code
+ *   <Spectrum kind="BlackBody">
+ *     <Temperature> 6000 </Temperature>
+ *     <Scaling> 1. </Scaling>
+ *   </Spectrum>
+ *  \endcode
  *
  */
 class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
@@ -53,33 +61,27 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
 
  public:
   BlackBody();
+
+  /**
+   * \brief Constructor setting T_ and cst_
+   */
   BlackBody(double T, double scaling=1.);
-  //  BlackBody(const Spectrum &);
   virtual BlackBody * clone() const; ///< Cloner
 
   double getTemperature() const; ///< Get constant
-  void setTemperature(double);
+  void setTemperature(double); ///< Set constant
   double getScaling() const; ///< Get exponent
-  void setScaling(double);
+  void setScaling(double); ///< Set exponent
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
-    ///< I_nu = mySpectrum(nu), nu in Hz. Assumes infinite optical thickness
 
 #ifdef GYOTO_USE_XERCES
-
   virtual void setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 
-  /**
-   * Spectrum implementations should impement fillElement to save their
-   * parameters to XML and call the generic implementation to save
-   * generic parts.
-   */
-
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             ///< called from Factory
 #endif
 };
 

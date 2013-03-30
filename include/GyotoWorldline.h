@@ -32,6 +32,7 @@
 
 namespace Gyoto {
   class Worldline;
+  class FactoryMessenger;
 }
 
 #include <GyotoSmartPointer.h>
@@ -65,10 +66,13 @@ class Gyoto::Worldline
   size_t imin_;///< Minimum index for which x0, x1... have been computed
   size_t i0_;  ///< Index of initial condition in array
   size_t imax_;///< Maximum index for which x0, x1... have been computed
+  bool   adaptive_; ///< Whether integration should use adaptive delta
   double delta_;///< Initial integrating step ; defaults to 0.01
   double tmin_;///< Minimum time for integration, stop integration if t<tmin ; defaults to -DBL_MAX
   double * cst_; ///< Worldline's csts of motion (if any)
   size_t cst_n_; ///< Number of constants of motion
+  int wait_pos_; ///< Hack in setParameters()
+  double * init_vel_; ///< Hack in setParameters()
 
   // Constructors - Destructor
   // -------------------------
@@ -93,7 +97,11 @@ class Gyoto::Worldline
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
   SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
-  void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
+  virtual void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
+  virtual void setInitCoord(double pos[4], double vel[3], int dir=1);
+  virtual void setPosition(double pos[4]);
+  virtual void setVelocity(double vel[3]);
+
   void reset() ; ///< Forget integration, keeping initial contition
   void reInit() ; ///< Reset and recompute particle properties
 
@@ -132,9 +140,13 @@ class Gyoto::Worldline
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
   void setDelta(const double delta); ///< Set delta
+  void setDelta(double, const std::string &unit);   ///< set default step in specified units
   double getDelta() const ; ///< Get delta
+  double getDelta(const std::string &unit) const ;  ///< get default step in specified units
   double getTmin() const ; ///< Get tmin value
   void setTmin(double tlim); ///< Set tmin to a given value
+  void adaptive (bool mode) ; ///< Set adaptive_
+  bool adaptive () const ; ///< Get adaptive_
 
   /**
    * Return pointer to array holding the previously set
@@ -168,6 +180,48 @@ class Gyoto::Worldline
   void getCartesianPos(size_t index, double dest[4]) const; ///< get Cartesian expression of 4-position at index.
 
   void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
+
+  /**
+   * \brief Set parameter by name
+   *
+   * Assume MyKind is a subclass of Worldline which has two
+   * members (a string StringMember and a double DoubleMember):
+   * \code
+   * int MyKind::setParameter(std::string name,
+   *                          std::string content,
+   *                          std::string unit) {
+   *   if      (name=="StringMember") setStringMember(content);
+   *   else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()),
+   *                                                  unit);
+   *   else return Worldline::setParameter(name, content, unit);
+   *   return 0;
+   * }
+   * \endcode
+   *
+   * \param name XML name of the parameter
+   * \param content string representation of the value
+   * \param unit string representation of the unit
+   * \return 0 if this parameter is known, 1 if it is not.
+   */
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit) ;
+
+#ifdef GYOTO_USE_XERCES
+  /**
+   * \brief Process XML entity
+   * Uses wait_pos_ and init_vel_ to make sure setVelocity() is called
+   * after setPosition().
+   */
+  virtual void setParameters(FactoryMessenger *fmp) ;
+  /**
+   * Derived classes implementations should implement fillElement to save their
+   * parameters to XML and call the generic implementation to save
+   * generic parts such as adaptive_: Worldline::fillElement(fmp).
+   */
+  virtual void fillElement(FactoryMessenger *fmp) const ;
+                                             ///< XML output
+#endif
 
   // Accessors
   // ---------

@@ -352,14 +352,17 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *
    * Assume MyKind is a subclass of Astrobj::Generic which has two
    * members (a string StringMember and a double DoubleMember):
-\code
-int MyKind::setParameter(std::string name, std::string content, std::string unit) {
- if      (name=="StringMember") setStringMember(content);
- else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()), unit);
- else return Generic::setParameter(name, content, unit);
- return 0;
-}
-\endcode
+   * \code
+   * int MyKind::setParameter(std::string name,
+   *                          std::string content,
+   *                          std::string unit) {
+   *   if      (name=="StringMember") setStringMember(content);
+   *   else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()),
+   *                                                  unit);
+   *   else return Generic::setParameter(name, content, unit);
+   *   return 0;
+   * }
+   * \endcode
    * If MyKind is not a direct subclass of Generic but is a subclass
    * of e.g. Standard, UniformSphere of ThinDisk, it should call the
    * corresponding setParameter() implementation instead of

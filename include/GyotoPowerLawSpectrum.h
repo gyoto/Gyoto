@@ -1,12 +1,12 @@
 /**
  * \file GyotoPowerLawSpectrum.h
- * \brief A constant spectrum : I_nu=cst
+ * \brief A power law spectrum : I_nu=constant_*nu^exponent_
  *
  *  Light emitted by an astronomical object
  */
 
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -37,45 +37,48 @@ namespace Gyoto {
 
 /**
  * \class Gyoto::Spectrum::PowerLaw
- * \brief I_nu=cst
+ * \brief I_nu=constant_*nu^exponent_
  *
- *  Light emitted by e.g. a Star
+ *  Light emitted by e.g. a Star.
  *
+ *  XML stanza:
+ *  \code
+ *    <Spectrum kind="PowerLaw">
+ *      <Exponent> 0. </Exponent>
+ *      <Constant> 1. </Constant>
+ *    </Spectrum>
+ *  \endcode
  */
 class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::PowerLaw>;
  protected:
-  double constant_;
-  double exponent_;
+  double constant_; ///< I_nu=constant_*nu^exponent_
+  double exponent_; ///< I_nu=constant_*nu^exponent_
 
  public:
   PowerLaw();
+
+  /**
+   * \brief Constructor setting exponent_ and optionally constant_
+   */
   PowerLaw(double exponent, double constant=1.);
   //  PowerLaw(const Spectrum &);
   virtual PowerLaw * clone() const; ///< Cloner
 
-  double getConstant() const; ///< Get constant
-  void setConstant(double);
-  double getExponent() const; ///< Get exponent
-  void setExponent(double);
+  double getConstant() const; ///< Get constant_
+  void setConstant(double); ///< Set constant_
+  double getExponent() const; ///< Get exponent_
+  void setExponent(double); ///< Set exponent_
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
-                          ///< I_nu = mySpectrum(nu), nu in Hz
 
 #ifdef GYOTO_USE_XERCES
   virtual void setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 
-  /**
-   * Spectrum implementations should impement fillElement to save their
-   * parameters to XML and call the generic implementation to save
-   * generic parts.
-   */
-
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             ///< called from Factory
 #endif
 };
 

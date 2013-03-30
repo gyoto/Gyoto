@@ -98,10 +98,17 @@ class gyotoy:
    def set_play_image(self, name):
       size=self.builder.get_object('play_image').get_stock()[1]
       self.builder.get_object('play_image').set_from_stock(name, size)
+      if (name=='gtk-media-play'):
+         self.builder.get_object('reset_image').set_from_stock('gtk-goto-first', size)
+      else:
+         self.builder.get_object('reset_image').set_from_stock(name, size)
 
    def play_pause(self, wdg):
       self.builder.get_object('inhibit_button').set_active(False)
       self.py2yo('gyotoy_compute_and_draw')
+
+   def reset(self, wdg):
+      self.py2yo('gyotoy_rewind')
 
    def inhibit_button_toggled_cb(self, wdg):
       if (wdg.get_active()):
@@ -109,6 +116,13 @@ class gyotoy:
       else:
          mode=0
       self.py2yo('gyotoy_inhibit_redraw %d' % mode)
+
+   def adaptive_button_toggled_cb(self, wdg):
+      if (wdg.get_active()):
+         mode=1
+      else:
+         mode=0
+      self.py2yo('gyotoy_adaptive %d' % (1-mode))
 
    def set_spin(self, wdg):
       spin        = self.builder.get_object('spin').get_value()
@@ -142,6 +156,9 @@ class gyotoy:
    def set_t1(self,wdg):
       t1          = self.builder.get_object('t1').get_value()
       self.py2yo('gyotoy_set_t1 %14.12f' % (t1))
+
+   def set_delta(self, wdg):
+      self.py2yo('gyotoy_set_delta %14.12f' % (wdg.get_value()))
       
    def orient3(self, wdg):
       incl = self.builder.get_object('incl').get_value()
@@ -306,6 +323,8 @@ class gyotoy:
          self.builder.get_object('metric_file').set_filename(value)
       elif (param=='length_unit' or param=='particle_type'):
          self.builder.get_object(value).set_active(1)
+      elif (param=='adaptive'):
+         self.builder.get_object('adaptive_button').set_active(1-value)
       else:
          self.builder.get_object(param).set_value(value)
          count=0

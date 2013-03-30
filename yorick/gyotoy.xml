@@ -35,6 +35,12 @@
       </object>
     </child>
   </object>
+  <object class="GtkAdjustment" id="delta_adjustment">
+    <property name="upper">99</property>
+    <property name="value">0.01</property>
+    <property name="step_increment">0.01</property>
+    <property name="page_increment">1</property>
+  </object>
   <object class="GtkAdjustment" id="distance_adjustment">
     <property name="lower">0.01</property>
     <property name="upper">1000000</property>
@@ -1116,11 +1122,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="nsteps_label">
+              <object class="GtkLabel" id="delta_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xpad">13</property>
-                <property name="label" translatable="yes">Number of steps</property>
+                <property name="xpad">5</property>
+                <property name="label" translatable="yes">δ</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1129,9 +1135,66 @@
               </packing>
             </child>
             <child>
+              <object class="GtkSpinButton" id="delta">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="invisible_char">●</property>
+                <property name="width_chars">6</property>
+                <property name="adjustment">delta_adjustment</property>
+                <property name="digits">4</property>
+                <property name="numeric">True</property>
+                <signal name="change-value" handler="set_delta" swapped="no"/>
+                <signal name="value-changed" handler="set_delta" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="adaptive_button">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_markup" translatable="yes">Push-in for non-adaptive δ</property>
+                <property name="use_action_appearance">False</property>
+                <property name="relief">none</property>
+                <signal name="toggled" handler="adaptive_button_toggled_cb" swapped="no"/>
+                <child>
+                  <object class="GtkImage" id="adaptive_image">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-zoom-100</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="nsteps_label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_markup" translatable="yes">Split t0 to t1 integration in N steps</property>
+                <property name="xpad">5</property>
+                <property name="label" translatable="yes">N steps.</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSpinButton" id="nsteps">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="tooltip_markup" translatable="yes">Split t0 to t1 integration in N steps</property>
                 <property name="invisible_char">●</property>
                 <property name="width_chars">4</property>
                 <property name="adjustment">nsteps_adjustment</property>
@@ -1142,7 +1205,31 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="reset_button">
+                <property name="use_action_appearance">False</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_markup" translatable="yes">Reset integration</property>
+                <property name="use_action_appearance">False</property>
+                <property name="relief">none</property>
+                <signal name="clicked" handler="reset" swapped="no"/>
+                <child>
+                  <object class="GtkImage" id="reset_image">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="stock">gtk-goto-first</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">6</property>
               </packing>
             </child>
             <child>
@@ -1166,7 +1253,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">7</property>
               </packing>
             </child>
             <child>
@@ -1190,7 +1277,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">8</property>
               </packing>
             </child>
           </object>

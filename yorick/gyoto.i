@@ -576,6 +576,10 @@ extern gyoto_Photon;
 
         spectro= a gyoto_Spectrometer
 
+        delta= integration step (initial in case of adaptive, the
+               default)
+
+        adaptive= whether integration uses adaptive step
      
    SUBROUTINE-LIKE METHODS:
 
@@ -591,6 +595,9 @@ extern gyoto_Photon;
 
      xmlwrite=filename as usual, save an XML description of this
             photon;
+
+     setparameter=name[,value] set any low-level parameter. Name and
+            value are strings.
 
    FUNCTION-LIKE METHODS:
 

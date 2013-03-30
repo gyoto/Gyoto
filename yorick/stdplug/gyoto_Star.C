@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -40,14 +40,14 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   // Define keywords
   static char const * knames[]={
     "unit",
-    "radius", "metric", "initcoord", "spectrum", "opacity", "delta",
+    "radius", "metric", "initcoord", "spectrum", "opacity", "delta", "adaptive",
     "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_prime", "get_coord", "get_cartesian",
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+14);
+  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+15);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
@@ -99,7 +99,8 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   YGYOTO_WORKER_GETSET_OBJECT(Opacity);
 #undef ypush_Opacity
 #undef yget_Opacity
-  YGYOTO_WORKER_GETSET_DOUBLE(Delta);
+  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
+  YGYOTO_WORKER_GETSET_LONG2(adaptive);
   YGYOTO_WORKER_RUN( reset() );
   YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );
  

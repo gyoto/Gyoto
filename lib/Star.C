@@ -38,8 +38,7 @@ using namespace Gyoto::Astrobj;
 
 Star::Star() :
   UniformSphere("Star"),
-  Worldline(),
-  wait_pos_(0), init_vel_(NULL)
+  Worldline()
 {
   if (debug())
     cerr << "DEBUG: in Star::Star()" << endl;
@@ -49,8 +48,7 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 	   double pos[4],
 	   double v[3]) :
   UniformSphere("Star"),
-  Worldline(),
-  wait_pos_(0), init_vel_(NULL)
+  Worldline()
 {
   if (debug()) {
     cerr << "DEBUG: Star Construction " << endl
@@ -68,14 +66,9 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 }
 
 Star::Star(const Star& orig) :
-  UniformSphere(orig), Worldline(orig),
-  wait_pos_(orig.wait_pos_), init_vel_(NULL)
+  UniformSphere(orig), Worldline(orig)
 {
-  if (debug()) cerr << "Star copy" << endl;
-  if (orig.init_vel_) {
-    init_vel_ = new double [3];
-    memcpy(init_vel_, orig.init_vel_, 3*sizeof(double));
-  }
+  GYOTO_DEBUG << endl;
   gg_ = metric_; // we have two distinct clones of the metric, not good...
 }
 
@@ -83,7 +76,6 @@ Star* Star::clone() const { return new Star(*this); }
 
 Star::~Star() {
   if (debug()) cerr << "DEBUG: Star::~Star()\n";
-  if (init_vel_) delete[] init_vel_;
 }
 
 string Star::className() const { return  string("Star"); }
@@ -93,15 +85,6 @@ SmartPointer<Metric::Generic> Star::getMetric() const { return gg_; }
 void Star::setMetric(SmartPointer<Metric::Generic> gg) {
   UniformSphere::setMetric(gg);
   Worldline::setMetric(gg);
-}
-
-void Star::setInitCoord(double pos[4], double v[3], int dir) {
-  if (!metric_) throwError("Please set metric before calling Star::setInitCoord(double pos[4], double vel[3])");
-  double tdot0=metric_->SysPrimeToTdot(pos, v);
-  if (debug()) cerr << "DEBUG: Star::setInitCoord(): TDOT0=" << tdot0 << endl;
-  double coord[8]={pos[0], pos[1], pos[2], pos[3],
-		   tdot0, v[0]*tdot0, v[1]*tdot0, v[2]*tdot0};
-  setInitCoord(coord, dir);
 }
 
 void Star::setInitialCondition(double coord[8]) {
@@ -141,62 +124,27 @@ void Star::unsetRmax() {
   rmax_=DBL_MAX;
 }
 
-void Star::setPosition(double pos[4]) {
-  double vel[] = {0., 0., 0.};
-  setInitCoord(pos, vel);
-}
-
-void Star::setVelocity(double vel[3]) {
-  double coord[8];
-  getInitialCoord(coord);
-  setInitCoord(coord, vel);
-}
-
 int Star::setParameter(string name, string content, string unit) {
-  double coord[8];
-  char* tc = const_cast<char*>(content.c_str());
-  if (name=="InitialCoordinate") {
-    for (int i=0;i<8;++i) coord[i] = strtod(tc, &tc);
-    setInitCoord(coord);
-  } else if (name=="Position") {
-    for (int i=0;i<4;++i) coord[i] = strtod(tc, &tc);
-    if (init_vel_) {
-      setInitCoord(coord, init_vel_);
-      delete[] init_vel_; init_vel_=NULL;
-    } else setPosition(coord);
-    wait_pos_ = 0;
-  } else if (name=="Velocity") {
-    for (int i=0;i<3;++i) coord[i] = strtod(tc, &tc);
-    if (wait_pos_) {
-      if (init_vel_) delete [] init_vel_;
-      init_vel_ = new double[3];
-      memcpy(init_vel_, coord, 3*sizeof(double));
-    } else setVelocity(coord);
-  } else return UniformSphere::setParameter(name, content, unit);
+  if        (!UniformSphere::setParameter(name, content, unit)) ; // if found
+  else if   (!Worldline    ::setParameter(name, content, unit)) ; // do nothing
+  else return 1;
   return 0;
 }
 
 #ifdef GYOTO_USE_XERCES
 void Star::fillElement(FactoryMessenger *fmp) const {
-
-  if (imin_ <= imax_) {
-    double coord[8];
-    getInitialCoord(coord);
-    fmp -> setParameter ("Position", coord, 4);
-    double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
-    fmp -> setParameter ("Velocity", vel, 3);
-  }
-
+  Worldline::fillElement(fmp);
   Astrobj::UniformSphere::fillElement(fmp);
 }
 
 void Star::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;
   UniformSphere::setParameters(fmp);
+  wait_pos_ = 0;
   if (init_vel_) {
     delete[] init_vel_; init_vel_=NULL;
-    throwError("Star::setParameters(): Velocity was found but not Position");
+    throwError("Worldline::setParameters(): "
+	       "Velocity was found but not Position");
   }
-  wait_pos_ = 0;
 }
 #endif

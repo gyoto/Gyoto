@@ -550,15 +550,8 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 #ifdef GYOTO_USE_XERCES
 void Photon::fillElement(FactoryMessenger *fmp) {
-  if (metric_)     fmp -> setMetric (metric_) ;
   if (object_)    fmp -> setAstrobj (object_) ;
-
-  double coord[8];
-  getInitialCoord(coord);
-  fmp -> setParameter("InitCoord", coord, 8);
-
-  if (delta_ != GYOTO_DEFAULT_DELTA)
-    fmp -> setParameter ("Delta", delta_);
+  Worldline::fillElement(fmp);
 }
 
 SmartPointer<Photon> Gyoto::PhotonSubcontractor(FactoryMessenger* fmp) {
@@ -568,19 +561,8 @@ SmartPointer<Photon> Gyoto::PhotonSubcontractor(FactoryMessenger* fmp) {
   SmartPointer<Astrobj::Generic> ao = NULL;
 
   SmartPointer<Photon> ph = new Photon();
-  ph -> setMetric(  fmp->getMetric() );
   ph -> setAstrobj( fmp->getAstrobj() );
-
-
-  while (fmp->getNextParameter(&name, &content)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if(name=="Delta") ph -> setDelta( atof(tc) );
-    if(name=="InitCoord") {
-      double coord[8];
-      for (int i=0;i<8;++i) coord[i] = strtod(tc, &tc);
-      ph -> setInitCoord(coord, -1);
-    }
-  }
+  ph -> setParameters(fmp);
 
   return ph;
 }
