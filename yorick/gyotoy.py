@@ -130,6 +130,7 @@ class gyotoy:
 
    def set_fraction(self, frac):
       self.builder.get_object('progressbar').set_fraction(frac)
+      self.builder.get_object('progressbar').set_text('%3.5f %%' % (frac*100.))
 
    def nsteps_change_value_cb(self, wdg):
       nsteps=self.builder.get_object('nsteps').get_value()
