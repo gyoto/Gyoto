@@ -295,7 +295,8 @@ int Photon::hit(Astrobj::Properties *data) {
 
   while (!stopcond) {
     // Next step along photon's worldline
-    stopcond  = state -> nextStep(this, coord);
+    if (adaptive_) stopcond  = state -> nextStep(this, coord);
+    else stopcond  = state -> nextStep(this, coord, dir*delta_);
     if (stopcond) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by integrator\n";

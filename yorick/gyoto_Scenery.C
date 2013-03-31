@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -160,13 +160,13 @@ extern "C" {
     static char const *knames[] = {
       "get_pointer",
       "unit",
-      "metric", "screen", "astrobj", "delta", "tmin", "quantities",
+      "metric", "screen", "astrobj", "delta", "tmin", "quantities", "adaptive",
       "xmlwrite", "clone",
       "impactcoords", "nthreads",
       0
     };
 
-    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 12)
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 13)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
@@ -212,6 +212,7 @@ extern "C" {
       }
     }
 
+    YGYOTO_WORKER_GETSET_LONG2( adaptive );
     YGYOTO_WORKER_XMLWRITE;
     YGYOTO_WORKER_CLONE(Scenery);
 
@@ -411,6 +412,7 @@ extern "C" {
 	prop.init(nbnuobs);
 	Photon ph((*OBJ)->getMetric(), (*OBJ)->getAstrobj(), screen,
 		  i_idx.getDVal(), j_idx.getDVal());
+	ph.adaptive((*OBJ)->adaptive());
 	ph.hit(&prop);
       } else {
 	screen -> computeBaseVectors();
@@ -421,6 +423,7 @@ extern "C" {
 	Photon ph((*OBJ)->getMetric(), (*OBJ)->getAstrobj(), coord);
 	ph.setSpectrometer(screen->getSpectrometer());
 	ph.setFreqObs(screen->getFreqObs());
+	ph.adaptive((*OBJ)->adaptive());
 
 	ySceneryThreadWorkerArg larg;
 	larg.sc=(*OBJ);

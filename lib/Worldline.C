@@ -475,7 +475,7 @@ void Worldline::xFill(double tlim) {
     if (adaptive_)
       stopcond= state -> nextStep(this,coord);
     else
-      stopcond= state -> nextStep(this,coord,delta_);
+      stopcond= state -> nextStep(this,coord,dir*delta_);
 
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==mycountmax) {

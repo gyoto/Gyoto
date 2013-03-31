@@ -124,6 +124,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   SmartPointer<Astrobj::Generic> obj_;
 
+  bool   adaptive_; ///< Whether integration should use adaptive delta
+
   /**
    * Default integration step for the photons
    */
@@ -213,6 +215,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   double getTmin(const std::string &unit) const ;///< get tmin_
   void setTmin(double); ///< set tmin_;
   void setTmin(double, const std::string &unit); ///< set tmin_;
+  void adaptive (bool mode) ; ///< Set adaptive_
+  bool adaptive () const ; ///< Get adaptive_
 
   void setNThreads(size_t); ///< set nthreads_;
   size_t getNThreads() const ; ///< get nthreads_;
