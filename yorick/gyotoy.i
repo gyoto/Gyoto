@@ -539,11 +539,15 @@ func gyotoy_compute_and_draw(rien) {
       t = _gyotoy_t1+2*dt;
     gyotoy_redraw;
     pause,10;
-    pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
+    frac=(t-t0)/(_gyotoy_t1-t0);
+    if (frac>1.) frac=1;
+    pyk,"set_fraction("+pr1(frac)+")";
   }
   pause, 10;
   pyk,"set_play_image('gtk-media-play')";
-  pyk,"set_fraction("+pr1((t-t0)/(_gyotoy_t1-t0))+")";
+  frac=(t-t0)/(_gyotoy_t1-t0);
+  if (frac>1.) frac=1;
+  pyk,"set_fraction("+pr1(frac)+")";
   gyotoy_redraw;
   --_gyotoy_redrawing;
   if (_gyotoy_cancel==2) gyotoy_rewind;
