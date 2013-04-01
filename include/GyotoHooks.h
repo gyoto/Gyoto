@@ -111,7 +111,7 @@ class Gyoto::Hook::Teller {
    *
    * \param listener pointer to the new listener
    */
-  virtual void hook (Listener *);
+  virtual void hook (Listener * listener);
 
   /**
    * \brief Stop listening
@@ -126,7 +126,7 @@ class Gyoto::Hook::Teller {
    *
    * \param listener pointer to the listener
    */
-  virtual void unhook (Listener *);
+  virtual void unhook (Listener * listener);
 
  protected:
   /**

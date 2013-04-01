@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2013 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -54,6 +54,12 @@ namespace Gyoto {
     typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
     ///< A function to build instances of a specific Metric::Generic sub-class
 
+
+    /** 
+     * \brief Subcontractor template
+     *
+     * \tparam T Sub-class of Generic::Metric 
+     */
     template<typename T> SmartPointer<Metric::Generic> Subcontractor
       (FactoryMessenger* fmp) {
       SmartPointer<T> gg = new T();
@@ -85,18 +91,20 @@ namespace Gyoto {
     ///< The Metric register
 
     /**
+     * \brief Make a Metric kind known to the Factory
+     *
      * Register a new Metric::Generic sub-class so that the
      * Gyoto::Factory knows it.
      *
-     * \param name The kind name which identifies this object type in
+     * \param kind The kind name which identifies this object type in
      * an XML file, as in &lt;Metric kind="name"&gt;
      *
      * \param scp A pointer to the subcontractor, which will
      * communicate whith the Gyoto::Factory to build an instance of
      * the class from its XML description
      */
-     void Register(std::string kind, Gyoto::Metric::Subcontractor_t*);
-     ///< Make a Metric kind known to the Factory
+     void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
+
 
      /**
       *  This must be called once.
@@ -132,21 +140,22 @@ class Gyoto::Metric::Generic
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
 
  private:
-  std::string kind_;
+  std::string kind_; ///< Metric kind name (e.g. "KerrBL")
   double mass_;     ///< Mass yielding geometrical unit (in kg).
   int coordkind_; ///< Kind of coordinates (cartesian-like, spherical-like, unspecified)
 
  public:
-  const std::string getKind() const;
-  void setKind(const std::string);
+  const std::string getKind() const; ///< Get kind_
+  void setKind(const std::string); ///< Set kind_
   int getRefCount();
   
   // Constructors - Destructor
   // -------------------------
   //Metric(const Metric& ) ;                ///< Copy constructor
   Generic();
-  Generic(const int coordkind);
+  Generic(const int coordkind); ///< Constructor setting Generic::coordkind_
   Generic(const double mass, const int coordkind);
+      ///<  Constructor setting Generic::mass_ and Generic::coordkind_
 
   virtual ~Generic() ;                        ///< Destructor
   
@@ -178,8 +187,8 @@ class Gyoto::Metric::Generic
   ///< Compute xprime, yprime and zprime from 8-coordinates
 
   /**
-   * \param coord[4] 4-position (geometrical units);
-   * \param v[3]     3-velocity dx1/dx0, dx2/dx0, dx3/dx0;
+   * \param coord 4-position (geometrical units);
+   * \param v     3-velocity dx1/dx0, dx2/dx0, dx3/dx0;
    * \return tdot = dx0/dtau.
    */
   virtual double SysPrimeToTdot(const double coord[4], const double v[3]) const;
@@ -187,7 +196,7 @@ class Gyoto::Metric::Generic
 
   /**
    * \brief Yield circular valocity at a given position (projected on
-   * equatorial plane.
+   * equatorial plane).
    *
    * \param pos input: position,
    * \param vel output: velocity,
@@ -199,10 +208,12 @@ class Gyoto::Metric::Generic
   /**
    * Set coord[4] so that the 4-velocity coord[4:7] is lightlike,
    * i.e. of norm 0. There may be up to two solutions. coord[4] is set
-   * to the hightest. The lowest can be retrieved in tdot2. Everything
-   * is expressed in geometrical units.
+   * to the hightest. The lowest can be retrieved using
+   * nullifyCoord(double coord[8], double& tdot2) const. Everything is
+   * expressed in geometrical units.
    *
-   * \param coord[4] 8-position, coord[4] will be set according to the other elements;
+   * \param[in,out] coord 8-position, coord[4] will be set according
+   * to the other elements;
    */
   virtual void nullifyCoord(double coord[8]) const;
   ///< Set tdot (coord[4]) such that coord is light-like. Everything is in geometrical units.
@@ -213,8 +224,9 @@ class Gyoto::Metric::Generic
    * to the hightest. The lowest can be retrieved in tdot2. Everything
    * is expressed in geometrical units.
    *
-   * \param coord[4] 8-position, coord[4] will be set according to the other elements;
-   * \param tdot2    will be set to the smallest solution
+   * \param[in,out] coord 8-position, coord[4] will be set according
+   * to the other elements;
+   * \param[out] tdot2    will be set to the smallest solution
    */
   virtual void nullifyCoord(double coord[8], double& tdot2) const;
   ///< Set tdot (coord[4]) such that coord is light-like and return other possible tdot
@@ -223,9 +235,9 @@ class Gyoto::Metric::Generic
   /**
    * Compute the scalarproduct of the two quadrivectors u1 and u2 in
    * this Metric, at point pos expressed in coordinate system sys.
-   * \param pos[4] 4-position;
-   * \param u1[4] 1st quadrivector;
-   * \param u2[4] 2nd quadrivector;
+   * \param pos 4-position;
+   * \param u1 1st quadrivector;
+   * \param u2 2nd quadrivector;
    * \return u1*u2
    */
   virtual double ScalarProd(const double pos[4],
@@ -293,56 +305,66 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
 
   virtual void fillElement(FactoryMessenger *fmp) ; ///< called from Factory
+
+  /**
+   * \brief Process generic XML parameters 
+   */
   void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
 #endif
 
-  /// Display
-  //  friend std::ostream& operator<<(std::ostream& , const Metric& ) ;
-  //  std::ostream& print(std::ostream&) const ;
- 
   /**
-   * 
-   * \param x[4]     4-position at which to compute the coefficient;
-   * \param 0<=mu<=3 1st index of coefficient;
-   * \param 0<=nu<=3 2nd index of coefficient;
-   * \param sys      coordinate systemp in which x is expressed (see
-   *                  GyotoMetric.h)
-   * \return Metric coefficient $g_{mu, nu}$ at point x 
+   * \brief Metric coefficients
+   *
+   * \param x  4-position at which to compute the coefficient;
+   * \param mu 1st index of coefficient, 0&le;&mu;&le;3;
+   * \param nu 2nd index of coefficient, 0&le;&nu;&le;3;
+   * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
    */
   virtual double gmunu(const double * x,
 		       int mu, int nu) const
-    = 0 ; ///< Metric coefficients
+    = 0 ;
 
   /**
-   * Value of Christoffel symbol $\Gamma^{\alpha}_{\mu\nu}$ at point 
-   * $(x_{1},x_{2},x_{3})$
+   * \brief Chistoffel symbol
+   *
+   * Value of Christoffel symbol
+   * &Gamma;<SUP>&alpha;</SUP><SUB>&mu;&nu;</SUB> at point
+   * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
    */  
   virtual double christoffel(const double coord[8],
 			     const int alpha, const int mu, const int nu) const = 0;
 
+  /**
+   * \brief RK4 integrator
+   */
   virtual int myrk4(Worldline * line, const double coord[8], double h, double res[8]) const;
   
+  /**
+   * \brief RK4 integrator with adaptive step
+   */
   virtual int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8],
 			     double lastnorm, double normref,
 			     double coordnew[8], double h0, double& h1) const;
 
   /**
+   * \brief Check whether integration should stop
+   *
    * The integrating loop will ask this the Metric through this method
    * whether or not it is happy to conitnue the integration.
    * Typically, the Metric should answer 0 when everything is fine, 1
    * when too close to the event horizon, inside the BH...
    *
-   * \param coord[8] coordinates to check.
+   * \param coord 8-coordinate vector to check.
    */
   virtual int isStopCondition(double const * const coord) const;
 
   /**
-   * F function such as dy/dtau=F(y,cst)
+   * \brief F function such as dy/dtau=F(y,cst)
    */
   virtual int diff(const double y[8], double res[8]) const ;
 
   /**
-   * Set Metric-specific constants of motion. Used e.g. in KerrBL.
+   * \brief Set Metric-specific constants of motion. Used e.g. in KerrBL.
    */
   virtual void setParticleProperties(Gyoto::Worldline* line,
 				     const double * coord) const;

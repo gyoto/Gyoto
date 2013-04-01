@@ -53,9 +53,9 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::RotStar3_1>;
 
  private:
-  char* filename_;
-  Star_rot * star_;
-  int integ_kind_;//1 if RotStar3_1::myrk4, 0 if Metric::myrk4
+  char* filename_; ///< Lorene output file name
+  Star_rot * star_; ///< Pointer to underlying Lorene Star_rot instance 
+  int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
  
  public:
 
@@ -65,27 +65,57 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   virtual RotStar3_1* clone() const ;
            ///< Cloner (uses RotStar3_1(file, integ_kind))
 
-  void setFileName(char const *);
-  char const * getFileName() const;
+  void setFileName(char const *); ///< Set filename_
+  char const * getFileName() const; ///< Get filename_
 
-  void setIntegKind(int);
-  int getIntegKind() const ;
+  void setIntegKind(int); ///< Set integ_kind_
+  int getIntegKind() const ; ///< Get integ_kind_
 
   using Metric::Generic::myrk4;
+
+
+  /**
+   * \brief RK4 integrator
+   *
+   * NB: we use the 6-coordinates, here, unlike the inherited function.
+   */
+
   int myrk4(const double coord[6], double h, double res[6]) const;
 
-  //NB: there is no myrk4(const double coord[8], double h, double res[8]), which makes no pb because this same function is defined in class Metric where it is virtual but not pure. This myrk4(const double coord[6], double h, double res[6]) is a purely internal function, only called by RotStar3_1::myrk4_adaptive(const double coor[6],...)
   
+  /**
+   * \brief Adaptive RK4 integrator
+   *
+   * Dispatches between Generic::myrk4_adaptive() and  myrk4_adaptive(const double coor[6], double lastnorm, double normref, double coornew[6], double cst[2], double& tdot_used, double h0, double& h1, double& hused) const depending on RotStar3_1::integ_kind_
+   */
   int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8], double lastnorm, double normref, double coordnew[8], double h0, double& h1) const;
 
+  /**
+   * \brief RK4 integrator (3+1)
+   *
+   * NB: we use the 6-coordinates, here, unlike the inherited function.
+   */
   int myrk4_adaptive(const double coor[6], double lastnorm, double normref, double coornew[6], double cst[2], double& tdot_used, double h0, double& h1, double& hused) const;
-  /** F function such as dy/dtau=F(y,cst)
+
+  /**
+   * \brief F function such as dy/dtau=F(y,cst)
    */
   int diff(const double coord[8], double res[8]) const ;
-  int diff(const double y[6], double res[6], int) const ;
-  // NB: last int is just to distinguish with the other diff ; it doesn't seem to be possible to redefine diff with [8]->[6]
 
-  void Normalize4v(const double coordin[8], double coordout[8], const double cst[2], double& tdot_used) const;
+  /**
+   * \brief Alternate version of diff(const double coord[8], double res[8]) const
+   *
+   * Using only 6 parameters. Last int is not used: it is only here to
+   * distinguish the signature of the two methods. Could have been
+   * done choosing another name, too, but hey...
+   */
+  int diff(const double y[6], double res[6], int) const ;
+
+
+  /**
+   * \brief Tweak coordinates to insure conservation of cst
+   */
+  void Normalize4v(const double coordin[6], double coordout[6], const double cst[2], double& tdot_used) const;
 
   double gmunu(const double * x, int mu, int nu) const ;
 

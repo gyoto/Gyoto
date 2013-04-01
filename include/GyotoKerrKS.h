@@ -74,9 +74,6 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
  public:
   double getSpin() const ; ///< Returns spin
   
-  /** Value of metric coefficient $g_{\alpha\beta}$ at point $(x_{1},x_{2},x_{3})$
-      in Kerr-Schild coordinates
-   */
   double gmunu(const double * x,
 		       int alpha, int beta) const ;
 
@@ -95,11 +92,9 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
-  //  friend std::ostream& operator<<(std::ostream& , const KerrKS& ) ;
-  //  std::ostream& print(std::ostream&) const ;
   virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
+  virtual void fillElement(FactoryMessenger *fmp);
 #endif
 
  public:
@@ -108,11 +103,29 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
   ///< In Kerr-Schild coordinates [T,x,y,z,Tdot,xdot,ydot,zdot], computes the four constants of the movement : particule mass, energy, angular momentum and Carter's constant.
  protected:
 
-  // outside the API
-  /* RK4 : y=[r,theta,phi,t,pr,ptheta], cst=[a,E,L,Q],dy/dtau=F(y,cst), h=proper time step. For KerrKS geodesic computation.
+  /**
+   * \brief RK4 integrator
+   *
+   * Wrapper around myrk4(const double * coord, const double* cst , double h, double* res) const
+   *
+   *
    */
   int myrk4(Worldline * line, const double coord[8], double h, double res[8]) const;//NB non adaptive integration doesn't work for KS ; this function is not implemented
+
+  /**
+   * \brief RK4 integrator
+   * \param coord [r,theta,phi,t,pr,ptheta]
+   * \param cst   [a,E,L,Q],dy/dtau=F(y,cst)
+   * \param h     proper time step.
+   * \param res   result
+   */
   int myrk4(const double * coord, const double* cst , double h, double* res) const;
+
+  /**
+   * \brief ?
+   *
+   * Is it ever called?
+   */
   int myrk4_adaptive(Gyoto::Worldline* line, const double * coord, double lastnorm, double normref, double* coord1, double h0, double& h1) const;
 
   /** F function such as dy/dtau=F(y,cst)

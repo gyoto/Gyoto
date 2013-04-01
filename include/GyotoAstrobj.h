@@ -468,33 +468,37 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
   /**
    * Called by the default implementation for processHitQuantities().
    *
-   * emission() computes the intensity I_nu emitted by the small
+   * emission() computes the intensity I<SUB>&nu;</SUB> emitted by the small
    * volume of length dsem. It should take self-absorption along dsem
    * into account.
    *
    * Reminder :
-   *  - intensity = I_nu [J m^-2 s^-1 ster^-1 Hz^-1];
-   *  - invariant intensity = I_nu/nu^3, which has the same value in any frame;
-   *  - emission coefficient = j_nu [J m^-3 s^-1 ster^-1 Hz^-1] ,
-   *            defined by dI_nu = j_nu*ds, where ds is the distance
-   *            travelled by the photon inside the object;
-   *  - invariant emission coef = j_nu/nu^2, which has the same value
-   *            in any frame.
+   *  - intensity = I<SUB>&nu;</SUB> [J m^-2 s^-1 ster^-1 Hz^-1];
+   *
+   *  - invariant intensity = I<SUB>&nu;</SUB>/&nu;<SUP>3</SUP>, which
+   *    has the same value in any frame;
+   *
+   *  - emission coefficient = j<SUB>&nu;</SUB> [J m^-3 s^-1 ster^-1
+   *    Hz^-1] , defined by dI<SUB>&nu;</SUB> = j<SUB>&nu;</SUB>*ds,
+   *    where ds is the distance travelled by the photon inside the
+   *    object;
+   *  - invariant emission coef = j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>,
+   *    which has the same value in any frame.
    *
    * The equation used for radiative transfer (without absorption) is:
-   *                      d(I_nu/nu^3)/dlambda = (j_nu/nu^2)  [*]
-   *  where lambda is the integration parameter along the null geodesic.
+   *   d(I<SUB>&nu;</SUB>/&nu;<SUP>3</SUP>)/d&lambda; = (j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>)  [*]
+   *  where &lambda; is the integration parameter along the null geodesic.
    *
    *      NB: Let us consider a particular observer, 
-   *          with nu being the frequency measured by this observer,
+   *          with &nu; being the frequency measured by this observer,
    *          and ds being the proper distance (as measured by the observer) 
    *          that the photon travels as it moves
-   *          from lambda to lambda+dlambda along its geodesic.
+   *          from &lambda; to &lambda;+d&lambda; along its geodesic.
    *          Then it can be shown that :
-   *                          dlambda = ds/nu
+   *                          d&lambda; = ds/&nu;
    *          This shows that Eq. [*] is homogeneous.
    *
-   * The default implementation returns 1. if optically thick and dsem
+   * The default implementation returns 1. if optically thick and ds<SUB>em</SUB>
    * if optically thin. It allows for a quick implementation of your
    * object for visualization purposes.
    *
@@ -506,12 +510,12 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL)
-    const ; ///< INVARIANT emission j_{\nu}/\nu^{2}
+    const ; ///< INVARIANT emission j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>
 
   /**
    * Called by the default implementation for processHitQuantities().
    *
-   * emission() computes the intensity I_nu emitted by the small
+   * emission() computes the intensity I<SUB>&nu;</SUB> emitted by the small
    * volume of length dsem. It should take self-absorption along dsem
    * into account.
    *
@@ -526,14 +530,14 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * \param dsem Length over which to integrate inside the object
    * \param coord_ph Photon coordinate
    * \param coord_obj Emitter coordinate at current photon position
-   * \return Inu or dInu [W m-2 sr-2]
+   * \return I<SUB>&nu;</SUB> or dI<SUB>&nu;</SUB> [W m-2 sr-2]
    */
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ; 
 
   /**
-   * Compute the integral of emission() from nu1 to nu2. The default
+   * Compute the integral of emission() from &nu;<SUB>1</SUB> to &nu;<SUB>2</SUB>. The default
    * implementation is a numerical integrator which works well enough
    * and is reasonably fast if emission() is a smooth function
    * (i.e. no emission or absorption lines). If possible, it is wise
@@ -544,7 +548,7 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
   virtual double integrateEmission(double nu1, double nu2, double dsem,
                                   double c_ph[8], double c_obj[8]=NULL) const;
-    ///< \sum_nu1^nu2 I_nu dnu (or j_nu)
+    ///< &int;<SUB>nu<SUB>1</SUB></SUB><SUP>nu<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> dnu (or j<SUB>&nu;</SUB>)
   /**
    * Like integrateEmission(double nu1, double nu2, double dsem,
    * double c_ph[8], double c_obj[8]) for each Spectrometer channel.
@@ -564,7 +568,7 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * \param dsem geometrical length in geometrical units
    */
   virtual double transmission(double nuem, double dsem, double coord[8]) const ;
-     ///< Transmission: exp( \alpha_{\nu} * dsem )
+     ///< Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
 
 };
 
@@ -583,9 +587,9 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   double *distance; ///< Behaves like the square of the closest distance between Photon and Astrobj (but not exactly that). Initialize it to DBL_MAX from float.h.;
   double * first_dmin; ///< first local minimum in distance from object
   int first_dmin_found; ///< first_dmin will be set to the first local minimum and first_dmin_found will be set to 1 if a local minimum in distance is found. Initialize it to 0.
-  double *redshift; ///< redshift factor nuobs/nuem (necessary for emission lines computation)
-  double *spectrum; ///< I_nu (nu) (observed specific intensity)
-  double *binspectrum; ///< I_nu1^nu2, the integral of I_nu over each spectral channel (i.e. what a spectrometer would measure)
+  double *redshift; ///< redshift factor &nu;<SUB>obs</SUB>/&nu;<SUB>em</SUB> (necessary for emission lines computation)
+  double *spectrum; ///< I<SUB>&nu;</SUB> (&nu;) (observed specific intensity)
+  double *binspectrum; ///< I<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>, the integral of I<SUB>&nu;</SUB> over each spectral channel (i.e. what a spectrometer would measure)
   int offset; ///< spectra elements are separated by offset doubles in memory. In other words, the ith spectral element is a spectrum[i*offset].
   double * impactcoords; ///< Coordinates of the object and photon at impact
   double *user1, *user2, *user3, *user4, *user5; ///< Quantities specific to Astrobj

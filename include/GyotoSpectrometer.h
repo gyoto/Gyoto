@@ -6,7 +6,7 @@
  *
  */
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -51,7 +51,7 @@ namespace Gyoto{
     /**
      * \class Gyoto::Spectrometer::Generic
      *
-     * \brief Base class for * spectrometers
+     * \brief Base class for spectrometers
      *
      * Example: class Gyoto::Spectrometer::Uniform
      *
@@ -95,16 +95,19 @@ namespace Gyoto{
     ///< A function to build instances of a specific Astrobj::Generic sub-class
 
     /**
-     * Query the Spectrometer register to get the Spectrometer::Subcontractor_t
-     * correspondig to a given kind name. This function is normally
-     * called only from the Factory.
+     * \brief Query the Spectrometer register
      *
-     * \param name e.g. "Star"
+     * Get the Spectrometer::Subcontractor_t correspondig to a given
+     * kind name. This function is normally called only from the
+     * Gyoto::Factory.
+     *
+     * \param name     Name of the subclass to build, e.g. "Complex" or "wave".
+     * \param errmode  If name is not registered, getSubcontractor() return NULL
+     *                 errmode==1, throws a Gyoto::Error if errmode==0.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
 						      int errmode = 1);
-    ///< Query the Spectrometer register
 
     /**
      * \brief A template for Subcontractor_t functions
@@ -112,6 +115,8 @@ namespace Gyoto{
      * Instead of reimplementing the wheel, your subcontractor can
      * simply be Gyoto::Spectrometer::Subcontractor<MyKind>. It must
      * however implement setParameters().
+     *
+     * \tparam T A Spectrometer::Generic sub-class.
      */
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
       (FactoryMessenger* fmp) {
@@ -152,7 +157,7 @@ namespace Gyoto{
      * the class from its XML description. If all parameters can be
      * set using setParameter(), this can be:
      * \code
-     * &(Gyoto::Spectrometer::Subcontractor<Myind>
+     * &(Gyoto::Spectrometer::Subcontractor<Myind>)
      * \endcode
      */
     void Register(std::string name, Gyoto::Spectrometer::Subcontractor_t* scp);
@@ -243,6 +248,7 @@ class Gyoto::Spectrometer::Generic
    *   static kind_t Kind;
    * };
    * kind_t MyKind::Kind = "MyKind";
+   * \endcode
    *
    */
   Generic(kind_t kind);
@@ -272,7 +278,7 @@ class Gyoto::Spectrometer::Generic
   /**
    * \brief Destructor
    *
-   * Takes care of deleting the arrays (if the pointer are not NULL).
+   * Takes care of deleting the arrays (if the pointers are not NULL).
    */
   virtual ~Generic();
 
