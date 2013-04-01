@@ -490,7 +490,7 @@ func gyotoy_set_nsteps(nsteps) {
 func gyotoy_compute_and_draw(rien) {
   
   extern _gyotoy_particle, _gyotoy_redrawing, _gyotoy_cancel, _gyotoy_nsteps;
-  extern _gyotoy_t1, _gyotoy_inhibit_redraw;
+  extern _gyotoy_t1, _gyotoy_inhibit_redraw, _gyotoy_txyz;
   if (_gyotoy_inhibit_redraw) return;
   
   if (_gyotoy_redrawing) {
@@ -711,10 +711,12 @@ func gyotoy_save_data(filename) {
       ["mass",
        "t0", "r0", "theta0", "phi0",
        "rprime0", "thetaprime0", "phiprime0",
-       "t1"],
+       "t1", "delta"],
       _([_gyotoy_mass],
         _gyotoy_initcoord,
-        _gyotoy_t1);
+        _gyotoy_t1, _gyotoy_delta);
+    write, f, format="# %13s = %d\n",
+      ["adaptive", "nsteps"], [_gyotoy_adaptive, _gyotoy_nsteps];
     write, f, format="# %13s = \"%s\"\n", "length_unit", _gyotoy_unit;
     write, f, format="# %s\n", "End Gyoto parameters";
     write, f, format= "# %s\n", "Columns are t, x, y, z";
