@@ -44,6 +44,18 @@ namespace Gyoto {
 /**
  * \class Gyoto::Worldline
  * \brief geodesic?
+ *
+ * Supported XML parameters:
+ *  - InitialCoordinate or InitCoord: 8-element vector yielding the initial
+ *    4-position and 4-velocity;
+ *  - only for massive particle (Gyoto::Astrobj::Star): Position
+ *    (yielding initial 4-position) and Velocity (yielding initial
+ *    3-velocity);
+ *  - Delta: integration step, initial in case or adaptive step;
+ *  - Adaptive or NonAdaptive: sets whether integration step should be
+ *    adaptive; default: Adaptive.;
+ *  - MaxIter: maximum number of iterations for the integration;
+ *    default: 100000.
  * 
  */
 class Gyoto::Worldline

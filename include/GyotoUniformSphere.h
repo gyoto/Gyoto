@@ -72,11 +72,11 @@ namespace Gyoto{
  *  Gyoto::Astrobj::UniformSphere::setParameters() take care of
  *  interpreting the XML elements describing the parameters of the
  *  sphere:
-\code
-   <Radius> value </Radius>
-   <Spectrum kind="..."> parameters for this spectrum kind </Spectrum>
-   <Opacity kind="..."> parameters for this spectrum kind </Opacity>
-\endcode
+ *  \code
+ *     <Radius> value </Radius>
+ *     <Spectrum kind="..."> parameters for this spectrum kind </Spectrum>
+ *     <Opacity kind="..."> parameters for this spectrum kind </Opacity>
+ *  \endcode
  * setGenericParameters() also takes care of calling
  * setParameter().
  */

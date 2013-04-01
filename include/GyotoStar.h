@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2013 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -51,24 +51,27 @@ namespace Gyoto{
  * Gyoto can compute the Star's orbit in a Gyoto::Metric and perform
  * ray-tracing on this target. The XML description of a Star looks
  * like:
-\code
-<Astrobj kind = "Star">
-  <Metric kind = "KerrBL">
-    <Spin> 0. </Spin>
-  </Metric>
-  <Radius> 2. </Radius>
-  <Velocity> 0. 0. 0.037037 </Velocity>
-  <Position> 600. 9. 1.5707999999999999741 0 </Position>
-  <Spectrum kind="BlackBody">
-    <Temperature> 6000 </Temperature>
-  </Spectrum>
-  <Opacity kind="PowerLaw">
-    <Exponent> 0 </Exponent>
-    <Constant> 0.1 </Constant>
-  </Opacity>
-  <OpticallyThin/>
-</Astrobj>
-\endcode
+ * \code
+ * <Astrobj kind = "Star">
+ *   <Metric kind = "KerrBL">
+ *     <Spin> 0. </Spin>
+ *   </Metric>
+ *   <Radius> 2. </Radius>
+ *   <Velocity> 0. 0. 0.037037 </Velocity>
+ *   <Position> 600. 9. 1.5707999999999999741 0 </Position>
+ *   <Spectrum kind="BlackBody">
+ *     <Temperature> 6000 </Temperature>
+ *   </Spectrum>
+ *   <Opacity kind="PowerLaw">
+ *     <Exponent> 0 </Exponent>
+ *     <Constant> 0.1 </Constant>
+ *   </Opacity>
+ *   <OpticallyThin/>
+ * </Astrobj>
+ * \endcode
+ *
+ * Star supports exactly the union of the parameters supported by
+ * Gyoto::Astrobj::UniformSphere and Gyoto::Worldline.
  * 
  * The Metric element can be of any kind. This Metric sets the
  * coordinate system.

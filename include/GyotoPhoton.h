@@ -246,6 +246,11 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
  *
  * Don't use this class blindly: what's guaranteed to work is what is
  * used in Gyoto::ComplexAstrobj::Impact().
+ *
+ * XML description corresponding to this class is <Photon/>. It
+ * supports all the parameters supported by the Gyoto::Worldline class
+ * plus an optional <Astrobj/> section to attach a instance of a
+ * Gyoto::Astrobj::Generic sub-class.
  */
 class Gyoto::Photon::Refined : public Gyoto::Photon {
  protected:
