@@ -103,17 +103,26 @@ class Gyoto::Worldline
   
   virtual ~Worldline() ;                        ///< Destructor
 
-  size_t getImin() const;
-  size_t getImax() const;
-  size_t getI0() const;
+  size_t getImin() const; ///< Get index of computed date furthest in the past
+  size_t getImax() const; ///< Get index of computed date furthest in the future
+  size_t getI0() const; ///< Get index of initial condition
 
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
   SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
   virtual void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
+
+  /**
+   * \brief Set initial coordinate
+   *
+   * \param pos initial 4-position
+   * \param vel initial 3-velocity
+   * \param dir direction of integration
+   */
   virtual void setInitCoord(double pos[4], double vel[3], int dir=1);
-  virtual void setPosition(double pos[4]);
-  virtual void setVelocity(double vel[3]);
+
+  virtual void setPosition(double pos[4]); ///< Set initial 4-position
+  virtual void setVelocity(double vel[3]); ///< Set initial 3-velocity
 
   void reset() ; ///< Forget integration, keeping initial contition
   void reInit() ; ///< Reset and recompute particle properties
@@ -174,16 +183,12 @@ class Gyoto::Worldline
   void setCst(double const * cst, size_t const ncsts) ;
 
   /**
-   * Set initial condition for this Photon :
    *
-   * \param gg : Gyoto::SmartPointer to the Gyoto::Metric in this universe;
-   *
-   * \param coord : 8 element array containing the initial condition,
+   * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
+   * \param coord 8 element array containing the initial condition,
    *        i.e. the 4-position and the 4-velocity of the Photon at
    *        the receiving end;
-   *
-   * \param sys : an integer stating in which coordinate system coord
-   *        is given.
+   * \param dir direction: 1 for future, -1 for past.
    */
   void setInitialCondition(SmartPointer<Metric::Generic> gg, 
 			   const double coord[8],
@@ -241,8 +246,14 @@ class Gyoto::Worldline
   // Accessors
   // ---------
  public:
-  //virtual void position(double t, double* res) = 0 ;
+  /**
+   * \brief Get number of computed dates
+   */
   size_t get_nelements() const;
+
+  /**
+   * \brief Get computed dates
+   */
   void get_t(double *dest) const;
 
   /**
@@ -266,23 +277,27 @@ class Gyoto::Worldline
 		double * const z, double * const xprime=NULL,
 		double * const yprime=NULL,  double * const zprime=NULL) ;
 
+  /**
+   * \brief Get 3-position in cartesian coordinates for computed dates
+   */
   void get_xyz(double* x, double *y, double *z) const;
 
   /**
-   * Get 8-coordinates for spcific dates. The coordinates will be
+   * \brief Get 8-coordinates for specific dates.
+   *
+   * The coordinates will be
    * computed using the integrator, so they will be as accurate as
    * possible. Some heuristics are used to speed up the process and it
    * is presumably faster to call this routine with a sorted list of
    * dates. The line will be integrated further as required. An error
    * will be thrown if it is not possible to reach a certain date.
    *
-   * \param dates: the list of dates for which the coordinates are to
+   * \param dates the list of dates for which the coordinates are to
    *                be computed;
-   *
-   * \param n_dates: the number of dates to compute ;
-   *
-   * \param x*: arrays in which to store the result. These pointer may
-   *               be set to NULL to retrieve only part of the
+   * \param n_dates the number of dates to compute ;
+   * \param x1dest, x2dest, x3dest, x0dot, x1dot, x2dot, x3dot arrays
+   *               in which to store the result. These pointer may be
+   *               set to NULL to retrieve only part of the
    *               information. They must be pre-allocated.
    *
    */
@@ -293,19 +308,36 @@ class Gyoto::Worldline
 		double * const x2dot=NULL,  double * const x3dot=NULL) ;
 
   /**
+   * \brief Get all computed positions
+   *
    *  Get all the pre-computed 8 coordinates (e.g. thanks to a prior
    *  call to xFill()) of this worldline.
    */
   void getCoord(double *x0, double *x1, double *x2, double *x3) const ;
+
   /**
+   * \brief Bring &theta; in [0,&Pi;] and &phi; in [0,2&Pi;]
+   *
    * checkPhiTheta() Modifies coord if the corrdinates are spherical-like
    * so that coord[2]=theta is in [0,pi] and coord[3]=phi is in [0,2pi].
    * Important to use in all astrobj in spherical coordinates
    * to prevent "z-axis problems".
    */
   void checkPhiTheta(double coord[8]) const;
+
+  /**
+   * \brief Get computed positions in sky coordinates
+   */
   void getSkyPos(SmartPointer<Screen> screen, double *dalpha, double *ddellta, double *dD) const;
+
+  /**
+   * \brief Get computed 4-velocities
+   */
   void get_dot(double *x0dot, double *x1dot, double *x2dot, double *x3dot) const ;
+
+  /**
+   * \brief Get computed 3-velocities
+   */
   void get_prime(double *x1prime, double *x2prime, double *x3prime) const ;
   
   // Outputs

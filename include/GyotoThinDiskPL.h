@@ -41,26 +41,23 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::ThinDiskPL
- * \brief Geometrically thin disk in Kerr metric
+ * \brief Geometrically thin disk with black-body emission
  * 
- *   This class describes a disk contained in the z=0 (equatorial)
- *   plane, extending from r=r_ISCO to r=infinity.  The flux emitted
- *   at radius r is given by Page & Thorne (1974, ApJ 191:499,
- *   Eqs. 11b, 14, 15).
+ * Mass density varies with a power-law, temperature depends on density.
  *
- *   The metric must be either KerrBL or KerrKS.
+ * &rho; = &rho;<SUB>0</SUB> (r<SUB>cur</SUB>/r<SUB>0</SUB>)<SUP>&alpha;</SUP>
  *
- *   Warning: The spin value and the inner radius are cached when the
- *   metric is assigned using setMetric(). If the spin is later
- *   changed in the metric, updateSpin() must be called.
- *
+ * XML entities:
+ *  - PLSlope: ThinDiskPL::PLSlope_
+ *  - PLRho: ThinDiskPL::PLRho_
+ *  - PLRadRef: ThinDiskPL::PLRadRef_
  */
 class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinDiskPL>;
  private:
-  double PLSlope_;
-  double PLRho_;
-  double PLRadRef_;
+  double PLSlope_; ///< Power law index
+  double PLRho_; ///< Reference density
+  double PLRadRef_; ///< Reference radius
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
 
@@ -82,11 +79,14 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8],double c_obj[8]) const;
 
-  double emissionBB(double nu, 
-		    double co[8]) const;
+ private:
+  /**
+   * \brief emission() helper
+   */
+  double emissionBB(double nu, double co[8]) const;
 
-  int setParameter(std::string name, std::string content, std::string unit);
  public:
+  int setParameter(std::string name, std::string content, std::string unit);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
 #endif

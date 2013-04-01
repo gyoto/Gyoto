@@ -91,8 +91,8 @@ class Gyoto::Astrobj::Standard :
   // Data : 
   // -----
  protected:
-  double critical_value_; ///< see operator()(double const coord[4]) const
-  double safety_value_; ///< see operator()(double const coord[4]) const
+  double critical_value_; ///< See operator()(double const coord[4])
+  double safety_value_; ///< See operator()(double const coord[4])
 
   // Constructors - Destructor
   // -------------------------
@@ -122,8 +122,8 @@ class Gyoto::Astrobj::Standard :
   // Accessors
   // ---------
  public:
-  virtual void setSafetyValue(double val) ;
-  virtual double getSafetyValue() const ;
+  virtual void setSafetyValue(double val) ; ///< Set Standard::safety_value_
+  virtual double getSafetyValue() const ; ///< Get Standard::safety_value_
 
   // Outputs
   // -------
@@ -132,33 +132,35 @@ class Gyoto::Astrobj::Standard :
 		     Astrobj::Properties *data=NULL)  ;
 
   /**
+   * \brief Function defining the object interior
+   *
    * A potential, distance, or whatever function such that
-   * operator()(double coord[4]) < critical_value_ if and only if
-   * coord is inside the object. This function is used by the default
-   * implmenetation of Impact(). If Impact() is overloaded, it is not
-   * necessary to overload operator()(double coord[4]). The default
-   * implementation throws an error.
+   * operator()(double const coord[4]) < Standard::critical_value_ if
+   * and only if coord is inside the object. This function is used by
+   * the default implmenetation of Impact(). If Impact() is
+   * overloaded, it is not necessary to overload operator()(double
+   * coord[4]). The default implementation throws an error.
    */
   virtual double operator()(double const coord[4]) = 0;
   
   /**
-   * Used by Standard::Impact().
+   * \brief Fluid velocity field.
    *
    * Fill vel with the 4-vector velocity of the fluid at 4-position pos.
    *
-   * \param pos input, 4-position at which to compute velocity;
-   * \param vel output, 4-velocity at pos.
+   * \param[in] pos 4-position at which to compute velocity;
+   * \param[out] vel 4-velocity at pos.
    */
   virtual void getVelocity(double const pos[4], double vel[4]) = 0 ;
 
   /**
-   * Used by Standard::Impact().
+   * \brief Maximum &delta; inside object
    *
-   * Gives the requested integration step delta_t (in coordinate time t)
-   * between two neighbooring
-   * points along a portion of geodesic inside an astrobj
+   * Gives the requested integration step &delta;<SUB>t</SUB> (in
+   * coordinate time t) between two neighbooring points along a
+   * portion of geodesic inside an astrobj
    *
-   * \param coord input coordinate at which delta_t is given
+   * \param coord input coordinate at which &delta;<SUB>t</SUB> is given
    */
   virtual double giveDelta(double coord[8]);
 

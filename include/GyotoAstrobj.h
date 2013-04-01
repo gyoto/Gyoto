@@ -166,9 +166,9 @@ namespace Gyoto{
  * . If your clas implements setParameter() and/or, if necessary,
  * setParameters(), registering it is normally done using the provided
  * template:
-\code
-Astrobj::Register("MyKind", &(Astrobj::Subcontractor<Astrobj::MyKind>));
-\endcode
+ * \code
+ * Astrobj::Register("MyKind", &(Astrobj::Subcontractor<Astrobj::MyKind>));
+ * \endcode
  */
 /**
  * \class Gyoto::Astrobj::Generic
@@ -185,7 +185,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
  protected:
 
   /**
-   * The Metric in this end of the Universe
+   * \brief The Metric in this end of the Universe
    */
   SmartPointer<Gyoto::Metric::Generic> gg_;
 
@@ -249,17 +249,20 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   /**
    * This method must be implemented by the various Astrobj::Generic
    * subclasses in order to support cloning:
-\code
-SmartPointer<Astrobj> deep_copy = original->clone();
-\endcode
+   * \code
+   * SmartPointer<Astrobj> deep_copy = original->clone();
+   * \endcode
+   *
+   * Cloning is necessary for multi-threading, recommended for
+   * interaction with the Yorick plug-in etc.
    *
    * Implementing it is very straightforward, as long as the copy
    * constructor Generic(const Generic& ) has been implemented:
-\code
-MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
-\endcode
+   * \code
+   * MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
+   * \endcode
    */
-  virtual Generic* clone() const = 0 ; ///< "Virtual" copy constructor
+  virtual Generic* clone() const = 0 ; ///< Cloner
   
   virtual ~Generic() ; ///< Destructor: does nothing.
 
@@ -267,12 +270,12 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
   // ---------
  public:
   /**
-   * Get the Metric
+   * \brief Get the Metric Generic::gg_
    */
   virtual SmartPointer<Metric::Generic> getMetric() const;
 
   /**
-   * Set the Metric
+   * \brief Set the Metric Generic::gg_
    */
   virtual void setMetric(SmartPointer<Metric::Generic>) ;
 
@@ -290,9 +293,9 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
   virtual double getRmax(); ///< Get maximal distance from center of coordinate system
 
   /**
-   *  Call setRmax() and convert result to unit.
+   *  Call getRmax() and convert result to unit.
    *
-   *  \param string unit
+   *  \param unit string
    *  \return double rmax converted to unit
    */
   virtual double getRmax(std::string unit); ///< Get rmax_ is specified unit
@@ -304,7 +307,7 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *  Photon may hit the object.
    *  
    *  Side effect: set rmax_set_ to 1.
-   *  \param double val rmax_ in geometrical units.
+   *  \param val new rmax_ in geometrical units.
    */
   virtual void setRmax(double val); ///< Set maximal distance from center of coordinate system
 
@@ -312,8 +315,8 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    *  Call Generic::setRmax(double val) after converting val from unit
    *  to geometrical units.
    *
-   *  \param double val rmax_ expressed in unit "unit";
-   *  \param string unit unit...
+   *  \param val rmax_ expressed in unit "unit";
+   *  \param unit string...
    */
   virtual void setRmax(double val, std::string unit); ///< Set maximal distance from center of coordinate system
 
@@ -344,6 +347,7 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    * defaults GYOTO_QUANTITY_INTENSITY.
    */
   virtual Quantity_t getDefaultQuantities();
+  ///< Which quantities to compute if know was requested
 
   //XML I/O
  public:
@@ -379,13 +383,13 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
 
 #ifdef GYOTO_USE_XERCES
   /**
+   * \brief Fill XML section
+   *
    * Astrobj implementations should impement fillElement to save their
    * parameters to XML and call the generic implementation to save
    * generic parts such as Flag_radtrans: Generic::fillElement(fmp).
    */
-
   virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             ///< called from Factory
 
   /**
    * \brief Main loop in Subcontractor_t function
@@ -393,14 +397,14 @@ MyAstrobj* MyAstrobj::clone() const { return new MyAstrobj(*this); }
    * The Subcontractor_t function for each Astrobj kind should look
    * somewhat like this (templated as
    * Gyoto::Astrobj::Subcontractor<MyKind>):
-\code
-SmartPointer<Astrobj::Generic>
-Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
-  SmartPointer<MyKind> ao = new MyKind();
-  ao -> setParameters(fmp);
-  return ao;
-}
-\endcode
+   * \code
+   * SmartPointer<Astrobj::Generic>
+   * Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
+   *   SmartPointer<MyKind> ao = new MyKind();
+   *   ao -> setParameters(fmp);
+   *   return ao;
+   * }
+   * \endcode
    *
    * Each object kind should implement setParameter(string name,
    * string content, string unit) to interpret the individual XML
@@ -449,14 +453,16 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
   virtual int Impact(Gyoto::Photon* ph, size_t index,
 		     Astrobj::Properties *data=NULL) = 0 ;
-  ///< does a photon at these coordinates impact the object?
+  ///< Does a photon at these coordinates impact the object?
   
   /**
+   * \brief Fills Astrobj::Properties
+   *
    * processHitQuantities fills the requested data in Impact. To use
    * it, you need to call it in the Impact() method for your object in
    * case of hit. It will fill Redshift, Intensity, Spectrum,
    * BinSpectrum and update the Photon's transmission by calling
-   * Photon::transmi(), only if data==NULL.
+   * Photon::transmit(), only if data==NULL.
    *
    * You can overload it for your Astrobj. The generic implementation
    * calls emission(), integrateEmission() and transmission() below.
@@ -466,11 +472,14 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
                                    Astrobj::Properties* data) const;
 
   /**
+   * \brief Specific intensity I<SUB>&nu;</SUB>
+   *
    * Called by the default implementation for processHitQuantities().
    *
-   * emission() computes the intensity I<SUB>&nu;</SUB> emitted by the small
-   * volume of length dsem. It should take self-absorption along dsem
-   * into account.
+   * emission() computes the intensity I<SUB>&nu;</SUB> emitted by the
+   * small volume of length ds<SUB>em</SUB>, in the emitter's
+   * frame. It should take self-absorption along ds<SUB>em</SUB> into
+   * account.
    *
    * Reminder :
    *  - intensity = I<SUB>&nu;</SUB> [J m^-2 s^-1 ster^-1 Hz^-1];
@@ -486,17 +495,20 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    *    which has the same value in any frame.
    *
    * The equation used for radiative transfer (without absorption) is:
-   *   d(I<SUB>&nu;</SUB>/&nu;<SUP>3</SUP>)/d&lambda; = (j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>)  [*]
-   *  where &lambda; is the integration parameter along the null geodesic.
    *
-   *      NB: Let us consider a particular observer, 
-   *          with &nu; being the frequency measured by this observer,
-   *          and ds being the proper distance (as measured by the observer) 
-   *          that the photon travels as it moves
-   *          from &lambda; to &lambda;+d&lambda; along its geodesic.
-   *          Then it can be shown that :
-   *                          d&lambda; = ds/&nu;
-   *          This shows that Eq. [*] is homogeneous.
+   *    d(I<SUB>&nu;</SUB>/&nu;<SUP>3</SUP>)/d&lambda; = (j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>)  [*]
+   *
+   * where &lambda; is the integration parameter along the null geodesic.
+   *
+   * NB: Let us consider a particular observer, with &nu; being the
+   * frequency measured by this observer, and ds being the proper
+   * distance (as measured by the observer) that the photon travels
+   * as it moves from &lambda; to &lambda;+d&lambda; along its
+   * geodesic.  Then it can be shown that:
+   *
+   *    d&lambda; = ds/&nu;
+   *
+   * This shows that Eq. [*] is homogeneous.
    *
    * The default implementation returns 1. if optically thick and ds<SUB>em</SUB>
    * if optically thin. It allows for a quick implementation of your
@@ -510,7 +522,7 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL)
-    const ; ///< INVARIANT emission j<SUB>&nu;</SUB>/&nu;<SUP>2</SUP>
+    const ;
 
   /**
    * Called by the default implementation for processHitQuantities().
@@ -537,26 +549,29 @@ Gyoto::Astrobj::MyKind::Subcontractor(FactoryMessenger* fmp) {
 			double coord_obj[8]=NULL) const ; 
 
   /**
-   * Compute the integral of emission() from &nu;<SUB>1</SUB> to &nu;<SUB>2</SUB>. The default
-   * implementation is a numerical integrator which works well enough
-   * and is reasonably fast if emission() is a smooth function
-   * (i.e. no emission or absorption lines). If possible, it is wise
-   * to implement an analytical solution. It is used by
-   * processHitQuantities to compute the "BinSpectrum" quantity which
-   * is the most physical: it is the only quantity that can be
-   * actually measured directly by a real-life instrument.
+   * Compute the integral of emission() from &nu;<SUB>1</SUB> to
+   * &nu;<SUB>2</SUB>. The default implementation is a numerical
+   * integrator which works well enough and is reasonably fast if
+   * emission() is a smooth function (i.e. no emission or absorption
+   * lines). If possible, it is wise to implement an analytical
+   * solution. It is used by processHitQuantities to compute the
+   * "BinSpectrum" quantity which is the most physical: it is the only
+   * quantity that can be actually measured directly by a real-life
+   * instrument.
    */
   virtual double integrateEmission(double nu1, double nu2, double dsem,
                                   double c_ph[8], double c_obj[8]=NULL) const;
     ///< &int;<SUB>nu<SUB>1</SUB></SUB><SUP>nu<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> dnu (or j<SUB>&nu;</SUB>)
+
   /**
-   * Like integrateEmission(double nu1, double nu2, double dsem,
-   * double c_ph[8], double c_obj[8]) for each Spectrometer channel.
+   * Like double integrateEmission(double nu1, double nu2, double
+   * dsem, double c_ph[8], double c_obj[8]) const for each
+   * Spectrometer channel.
    */
   virtual void integrateEmission(double * I, double const * boundaries,
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
-
+    ///< &int;<SUB>nu<SUB>1</SUB></SUB><SUP>nu<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> dnu (or j<SUB>&nu;</SUB>)
 
   /**
    * transmission() computes the transmission of this fluid element or

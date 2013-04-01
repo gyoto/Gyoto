@@ -102,10 +102,10 @@ class Gyoto::Astrobj::Star :
  public:
  /**
   * Create Star object and set initial condition.
-  * \param gg: Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
+  * \param gg Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
   * \param radius star radius
-  * \param pos[4] initial position
-  * \param v[3] initial velocity
+  * \param pos initial 4-position
+  * \param v   initial 3-velocity
   */
   Star(SmartPointer<Metric::Generic> gg, double radius,
        double pos[4], double v[3]) ;                        ///< Standard constructor
