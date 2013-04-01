@@ -455,6 +455,8 @@
                   <object class="GtkSpinButton" id="t1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_markup" translatable="yes">Integrate from t0 to t1
+Geometrical units</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -475,6 +477,8 @@
                   <object class="GtkLabel" id="t1_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Integrate from t0 to t1
+Geometrical units</property>
                     <property name="label" translatable="yes">t₁</property>
                   </object>
                   <packing>
@@ -498,6 +502,8 @@
                   <object class="GtkLabel" id="incl_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Incination of the equatorial plane
+Degrees</property>
                     <property name="label" translatable="yes">Inclination</property>
                   </object>
                   <packing>
@@ -509,6 +515,8 @@
                   <object class="GtkLabel" id="paln_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Position angle of the line of nodes
+Degrees</property>
                     <property name="label" translatable="yes">PALN</property>
                   </object>
                   <packing>
@@ -520,6 +528,8 @@
                   <object class="GtkLabel" id="phase_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Argument of the x axis
+Degrees</property>
                     <property name="label" translatable="yes">Phase</property>
                   </object>
                   <packing>
@@ -531,6 +541,8 @@
                   <object class="GtkSpinButton" id="incl">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Incination of the equatorial plane
+Degrees</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -551,6 +563,8 @@
                   <object class="GtkSpinButton" id="paln">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Position angle of the line of nodes
+Degrees</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -572,6 +586,8 @@
                   <object class="GtkSpinButton" id="phase">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Argument of the x axis
+Degrees</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -604,6 +620,7 @@
                   <object class="GtkSpinButton" id="phiprime0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Radians per geometrical units</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -624,6 +641,7 @@
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Radians per geometrical units</property>
                     <property name="label" translatable="yes">dφ/dt</property>
                   </object>
                   <packing>
@@ -635,6 +653,7 @@
                   <object class="GtkSpinButton" id="thetaprime0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Radians per geometrical units</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -655,6 +674,7 @@
                   <object class="GtkSpinButton" id="rprime0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Relative to light speed</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -675,6 +695,8 @@
                   <object class="GtkSpinButton" id="t0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Date for initial condition
+Geometrical units</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -695,6 +717,7 @@
                   <object class="GtkSpinButton" id="phi0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Radians</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -715,6 +738,7 @@
                   <object class="GtkSpinButton" id="theta0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Radians</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -735,6 +759,8 @@
                   <object class="GtkSpinButton" id="r0">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Initial distance from center
+Geometrical units</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="primary_icon_activatable">False</property>
@@ -755,6 +781,7 @@
                   <object class="GtkLabel" id="label10">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Radians per geometrical units</property>
                     <property name="label" translatable="yes">dθ/dt</property>
                     <property name="width_chars">10</property>
                   </object>
@@ -767,6 +794,7 @@
                   <object class="GtkLabel" id="label9">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Relative to light speed</property>
                     <property name="label" translatable="yes">dr/dt</property>
                   </object>
                   <packing>
@@ -778,6 +806,8 @@
                   <object class="GtkLabel" id="t0_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Date for initial condition
+Geometrical units</property>
                     <property name="label" translatable="yes">t₀</property>
                   </object>
                   <packing>
@@ -789,6 +819,7 @@
                   <object class="GtkLabel" id="phi0_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Radians</property>
                     <property name="label" translatable="yes">φ₀</property>
                   </object>
                   <packing>
@@ -800,6 +831,7 @@
                   <object class="GtkLabel" id="theta0_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Radians</property>
                     <property name="label" translatable="yes">θ₀</property>
                   </object>
                   <packing>
@@ -811,6 +843,8 @@
                   <object class="GtkLabel" id="r0_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Initial distance from center
+Geometrical units</property>
                     <property name="label" translatable="yes">r₀</property>
                   </object>
                   <packing>
@@ -834,6 +868,8 @@
                   <object class="GtkLabel" id="spin_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Spin parameter
+For Kerr metric only</property>
                     <property name="label" translatable="yes">Spin param.</property>
                   </object>
                   <packing>
@@ -845,6 +881,8 @@
                   <object class="GtkSpinButton" id="spin">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Spin parameter
+For Kerr metric only</property>
                     <property name="max_length">20</property>
                     <property name="width_chars">20</property>
                     <property name="progress_pulse_step">0.14000000059604645</property>
@@ -867,6 +905,7 @@
                   <object class="GtkLabel" id="type_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Type of metric</property>
                     <property name="label" translatable="yes">Type</property>
                     <property name="width_chars">12</property>
                   </object>
@@ -879,6 +918,7 @@
                   <object class="GtkComboBox" id="metric_type">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Type of metric</property>
                     <property name="model">metric_type_liststore</property>
                     <property name="active">0</property>
                     <signal name="changed" handler="metric_type_changed_cb" swapped="no"/>
@@ -945,6 +985,8 @@
                   <object class="GtkLabel" id="mass_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Compact object mass for scaling geometrical unit
+Solar masses</property>
                     <property name="label" translatable="yes">Mass</property>
                   </object>
                   <packing>
@@ -956,6 +998,8 @@
                   <object class="GtkSpinButton" id="mass">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Compact object mass for scaling geometrical unit
+Solar masses</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">mass_adjustment</property>
@@ -973,6 +1017,8 @@
                   <object class="GtkLabel" id="distance_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Distance from observer
+Kiloparsecs</property>
                     <property name="label" translatable="yes">Distance</property>
                   </object>
                   <packing>
@@ -984,6 +1030,8 @@
                   <object class="GtkSpinButton" id="distance">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">Distance from observer
+Kiloparsecs</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">distance_adjustment</property>
@@ -1030,6 +1078,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Compute massive-particle orbit
+(Timelike geodesic)</property>
                         <property name="use_action_appearance">False</property>
                         <property name="xalign">0.5</property>
                         <property name="active">True</property>
@@ -1049,6 +1099,8 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Compute massless particle trajectory
+(Null geodesic)</property>
                         <property name="use_action_appearance">False</property>
                         <property name="xalign">0.5</property>
                         <property name="active">True</property>
@@ -1072,6 +1124,8 @@
                 <child>
                   <object class="GtkFileChooserButton" id="metric_file">
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Gyoto XML file containing metric
+Any kind of Gyoto XML as long as a metric is included</property>
                     <property name="orientation">vertical</property>
                     <signal name="file-set" handler="metric_file_set_cb" swapped="no"/>
                   </object>
@@ -1085,6 +1139,8 @@
                 <child>
                   <object class="GtkLabel" id="metric_file_label">
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Gyoto XML file containing metric
+Any kind of Gyoto XML as long as a metric is included</property>
                     <property name="label" translatable="yes">File</property>
                   </object>
                   <packing>
@@ -1126,6 +1182,9 @@
               <object class="GtkLabel" id="delta_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Integration step in proper time
+Geometrical units
+Initial if step is adaptive</property>
                 <property name="xpad">5</property>
                 <property name="label" translatable="yes">δ</property>
               </object>
@@ -1139,6 +1198,9 @@
               <object class="GtkSpinButton" id="delta">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="tooltip_text" translatable="yes">Integration step in proper time
+Geometrical units
+Initial if step is adaptive</property>
                 <property name="invisible_char">●</property>
                 <property name="width_chars">6</property>
                 <property name="adjustment">delta_adjustment</property>
@@ -1181,9 +1243,9 @@
               <object class="GtkLabel" id="nsteps_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="tooltip_markup" translatable="yes">Split t0 to t1 integration in N steps</property>
+                <property name="tooltip_text" translatable="yes">Split t0 to t1 integration in N frames</property>
                 <property name="xpad">5</property>
-                <property name="label" translatable="yes">N steps.</property>
+                <property name="label" translatable="yes">N. frames</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1195,7 +1257,7 @@
               <object class="GtkSpinButton" id="nsteps">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="tooltip_markup" translatable="yes">Split t0 to t1 integration in N steps</property>
+                <property name="tooltip_text" translatable="yes">Split t0 to t1 integration in N frames</property>
                 <property name="invisible_char">●</property>
                 <property name="width_chars">4</property>
                 <property name="adjustment">nsteps_adjustment</property>
@@ -1215,7 +1277,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <property name="tooltip_markup" translatable="yes">Reset integration</property>
+                <property name="tooltip_text" translatable="yes">Pause and reset integration</property>
                 <property name="use_action_appearance">False</property>
                 <property name="relief">none</property>
                 <signal name="clicked" handler="reset" swapped="no"/>
@@ -1223,6 +1285,7 @@
                   <object class="GtkImage" id="reset_image">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">Pause and reset integration</property>
                     <property name="stock">gtk-goto-first</property>
                   </object>
                 </child>
