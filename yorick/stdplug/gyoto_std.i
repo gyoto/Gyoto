@@ -119,9 +119,10 @@ extern gyoto_Star;
      or initcoord=[x0, x1, x2, x3, x0dot, x1dot, x2dot, x3dot]
               initial position of velocity, requires metric to have
               been set previously;
-        delta=  integration step (initial if adaptive)
+        delta=  integration step (initial if adaptive).
         adaptive= whether the integration uses adaptive step.
-        
+        maxiter= maximum number of iterations in integration.
+
    METHODS
 
      In addition to the generic Astrobj methods, stars provide the

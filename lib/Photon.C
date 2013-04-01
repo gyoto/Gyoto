@@ -34,8 +34,6 @@
 #include <cstdlib>
 #include <cfloat>
 
-#define COUNT_MAX 100000
-
 
 using namespace std;
 using namespace Gyoto;
@@ -316,7 +314,7 @@ int Photon::hit(Astrobj::Properties *data) {
       break;
     }
 
-    if ( ++count > COUNT_MAX ) {
+    if ( ++count > maxiter_ ) {
       GYOTO_SEVERE << "***WARNING (severe): Photon::hit: too many iterations, "
 		   <<" break" << endl;
       stopcond = 1;

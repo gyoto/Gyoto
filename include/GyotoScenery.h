@@ -164,6 +164,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_;
 # endif
 
+  size_t maxiter_ ; ///< Maximum number of iterations when integrating
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -217,6 +219,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   void setTmin(double, const std::string &unit); ///< set tmin_;
   void adaptive (bool mode) ; ///< Set adaptive_
   bool adaptive () const ; ///< Get adaptive_
+  void maxiter (size_t miter) ; ///< Set maxiter_
+  size_t maxiter () const ; ///< Get maxiter_
 
   void setNThreads(size_t); ///< set nthreads_;
   size_t getNThreads() const ; ///< get nthreads_;

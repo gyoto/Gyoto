@@ -151,6 +151,11 @@ namespace Gyoto {
 #define GYOTO_DEFAULT_DELTA 0.01
 
 /**
+ * \brief Default value for Gyoto::Worldline::maxiter_
+ */
+#define GYOTO_DEFAULT_MAXITER 100000
+
+/**
  * Precision on the determination of a date (e.g. in
  * Photon::findMin(), Photon::findValue()).
  */

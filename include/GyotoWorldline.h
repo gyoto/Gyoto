@@ -73,6 +73,7 @@ class Gyoto::Worldline
   size_t cst_n_; ///< Number of constants of motion
   int wait_pos_; ///< Hack in setParameters()
   double * init_vel_; ///< Hack in setParameters()
+  size_t maxiter_ ; ///< Maximum number of iterations when integrating
 
   // Constructors - Destructor
   // -------------------------
@@ -147,6 +148,8 @@ class Gyoto::Worldline
   void setTmin(double tlim); ///< Set tmin to a given value
   void adaptive (bool mode) ; ///< Set adaptive_
   bool adaptive () const ; ///< Get adaptive_
+  void maxiter (size_t miter) ; ///< Set maxiter_
+  size_t maxiter () const ; ///< Get maxiter_
 
   /**
    * Return pointer to array holding the previously set

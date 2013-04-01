@@ -35,7 +35,8 @@ using namespace Gyoto;
 Worldline::Worldline() : imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
-			 wait_pos_(0), init_vel_(NULL)
+			 wait_pos_(0), init_vel_(NULL),
+			 maxiter_(GYOTO_DEFAULT_MAXITER)
 { xAllocate(); }
 
 Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
@@ -43,7 +44,8 @@ Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
 					delta_(GYOTO_DEFAULT_DELTA),
 					tmin_(-DBL_MAX),
 					cst_(NULL), cst_n_(0),
-					wait_pos_(0), init_vel_(NULL)
+					wait_pos_(0), init_vel_(NULL),
+					maxiter_(GYOTO_DEFAULT_MAXITER)
 { xAllocate(sz); }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -51,7 +53,8 @@ Worldline::Worldline(const Worldline& orig) :
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig.adaptive_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
-  wait_pos_(orig.wait_pos_), init_vel_(NULL)
+  wait_pos_(orig.wait_pos_), init_vel_(NULL),
+  maxiter_(orig.maxiter_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -96,7 +99,8 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig->adaptive_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
-  wait_pos_(orig->wait_pos_), init_vel_(NULL)
+  wait_pos_(orig->wait_pos_), init_vel_(NULL),
+  maxiter_(orig->maxiter_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -296,6 +300,9 @@ void Worldline::fillElement(FactoryMessenger *fmp) const {
   }
 
   if (!adaptive_) fmp->setParameter("NonAdaptive");
+
+  if (maxiter_ != GYOTO_DEFAULT_MAXITER)
+    fmp -> setParameter("MaxIter", maxiter_);
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {
@@ -336,7 +343,8 @@ int Worldline::setParameter(std::string name,
       init_vel_ = new double[3];
       memcpy(init_vel_, coord, 3*sizeof(double));
     } else setVelocity(coord);
-  } else   if (name=="Delta")            setDelta(atof(content.c_str()), unit);
+  } else   if (name=="Delta")   setDelta(atof(content.c_str()), unit);
+  else if (name=="MaxIter")     maxiter_  = atoi(content.c_str());
   else if (name=="NonAdaptive") adaptive_ = false;
   else if (name=="Adaptive")    adaptive_ = true;
   else return 1;
@@ -466,7 +474,7 @@ void Worldline::xFill(double tlim) {
     = new WorldlineIntegState(metric_, coord, dir*delta_);
     //delta_ = initial integration step (defaults to 0.01)
 
-  int mycount=0, mycountmax=100000;// to prevent infinite integration
+  int mycount=0;// to prevent infinite integration
 
   while (!stopcond) {
     mycount++;
@@ -478,7 +486,7 @@ void Worldline::xFill(double tlim) {
       stopcond= state -> nextStep(this,coord,dir*delta_);
 
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
-    if (mycount==mycountmax) {
+    if (mycount==maxiter_) {
       stopcond=1;
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
@@ -1067,6 +1075,9 @@ void Worldline::setTmin(double tmin) { tmin_ = tmin; }
 
 void Worldline::adaptive(bool mode) { adaptive_ = mode; }
 bool Worldline::adaptive() const { return adaptive_; }
+
+void Worldline::maxiter(size_t miter) { maxiter_ = miter; }
+size_t Worldline::maxiter() const { return maxiter_; }
 
 double const * Worldline::getCst() const {
   return cst_;

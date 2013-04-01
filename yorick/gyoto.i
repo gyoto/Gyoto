@@ -335,6 +335,10 @@ extern gyoto_Scenery;
     delta=   a double scalar, the initial integration step for the
              Photons laucnched during ray-tracing;
              
+    adaptive= whether integration uses adaptive step
+
+    maxiter= maximum number of iterations in integration (per Photon)
+             
     quantities= an array of strings giving the names of physical
              quantities that should be retrieved during
              ray-tracing. Beware that not all Astrobj kinds support
@@ -580,6 +584,8 @@ extern gyoto_Photon;
                default)
 
         adaptive= whether integration uses adaptive step
+
+        maxiter= maximum number of iterations in integration
      
    SUBROUTINE-LIKE METHODS:
 
