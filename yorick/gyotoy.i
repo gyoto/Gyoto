@@ -274,8 +274,14 @@ func gyotoy_window_init(parent_id)
 {
   extern _gyotoy_wid, _gyotoy_wstyle, _gyotoy_filename, _gyotoy_particle, _gyotoy_parent_id, _gyotoy_inhibit_redraw;
   if (_gyotoy_parent_id==parent_id) return;
+
+  iconfile = find_in_path("gyotoy.png", takefirst=1,
+                          path=pathform(_(get_cwd(),
+                                          _(Y_SITES,
+                                            Y_SITE)+"data/")));
   _gyotoy_parent_id=parent_id;
-  ok=pyk("sleep(0.1)")
+  ok=pyk("sleep(0.1)");
+  if (iconfile) pyk,"set_icon_from_file('"+iconfile+"')";
   _gyotoy_wstyle="nobox.gs";
   window,_gyotoy_wid,wait=1,parent=parent_id,style="nobox.gs",dpi=90;
   limits, square=1;

@@ -95,6 +95,10 @@ class gyotoy:
    # drawingarea or move the cursor, etc... Just define a handler (callback) of
    # the same name in the glade UI definition (see signals) and you're done.
 
+   def set_icon_from_file(self, name):
+      self.window.set_icon_from_file(name)
+      Gtk.Window.set_default_icon_from_file(name)
+
    def set_play_image(self, name):
       size=self.builder.get_object('play_image').get_stock()[1]
       self.builder.get_object('play_image').set_from_stock(name, size)
