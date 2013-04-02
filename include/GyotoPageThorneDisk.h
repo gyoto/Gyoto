@@ -60,7 +60,7 @@ namespace Gyoto{
  *   <Scenery>
  *   ...
  *   <Quantity> User4 </Quantity>
- *   \endocde>
+ *   \endcode>
  *
  */
 class Gyoto::Astrobj::PageThorneDisk

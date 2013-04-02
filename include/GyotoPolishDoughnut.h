@@ -54,22 +54,30 @@ class Gyoto::Astrobj::PolishDoughnut
  // Data : 
  // -----
 private:
- SmartPointer<Gyoto::Metric::KerrBL> gg_;
- double l0_; ///< torus angular momentum. Tied to lambda.
- double lambda_; ///< torus adimentionned angular momentum
- double W_surface_; ///< torus potential surface value. Tied to lambda.
- double W_centre_; ///< torus potential central value. Tied to lambda.
- double r_cusp_; ///< torus cusp radius in geometrical units. Tied to lambda.
- double r_centre_; ///< torus central radius in geometrical units. Tied to lambda.
+  /**
+   * \brief KerrBL metric
+   *
+   * This Astrobj::Generic subclass only works (so far?) in KerrBL
+   * metric.  We store a copy of the Astrobj::Generic::gg_
+   * SmartPointer appropriately cast. The two pointers point to the
+   * same instance.
+   */
+ SmartPointer<Gyoto::Metric::KerrBL> gg_; 
+ double l0_; ///< Angular momentum. Tied to PolishDoughnut::lambda_.
+ double lambda_; ///< Adimentionned angular momentum
+ double W_surface_; ///< Potential surface value. Tied to PolishDoughnut::lambda_.
+ double W_centre_; ///< Potential central value. Tied to PolishDoughnut::lambda_.
+ double r_cusp_; ///< Cusp radius in geometrical units. Tied to PolishDoughnut::lambda_.
+ double r_centre_; ///< Central radius in geometrical units. Tied to PolishDoughnut::lambda_.
  double DeltaWm1_; ///< 1./(W_centre_ - W_surface_);
- double temperature_ratio_; ///< central ion/elec temperature ratio
- double central_density_; ///< central density in kg/L (same as g cm^-3)
- double centraltemp_over_virial_; ///< T_center/Tvirial
- double beta_; ///< Pmagn/Pgas
- int use_specific_impact_ ;///< PolishDoughnut::Impact_() or Standard::Impact()
- double aa_; ///< Metric spin, cached when setting lambda_
- double aa2_; ///< aa_^2
- size_t spectral_oversampling_;///< oversampling used in integrateEmission()
+ double temperature_ratio_; ///< Central ion/electron temperature ratio
+ double central_density_; ///< Central density in kg/L (same as g cm^-3)
+ double centraltemp_over_virial_; ///< T<SUB>center</SUB>/T<SUB>virial</SUB>
+ double beta_; ///< P<SUB>magn</SUB>/P<SUB>gas</SUB>
+ int use_specific_impact_ ;///< Use PolishDoughnut::Impact_() or Standard::Impact()
+ double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
+ double aa2_; ///< aa_<SUP>2</SUP>
+ size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
 
  // Constructors - Destructor
  // -------------------------
@@ -90,44 +98,44 @@ public:
  // Accessors
  // ---------
 public:
- double getL0() const;
+ double getL0() const; ///< Get PolishDoughnut::l0_
  // void   setL0(double l0); set by lambda_
 
- double getLambda() const;
- void   setLambda(double lambda);
+ double getLambda() const; ///< Get PolishDoughnut::lambda_
+ void   setLambda(double lambda); ///< Set PolishDoughnut::lambda_
 
- double getTemperatureRatio() const;
- void   setTemperatureRatio(double temp);
+ double getTemperatureRatio() const; ///< Get PolishDoughnut::temperature_ratio_
+ void   setTemperatureRatio(double temp); ///< Set PolishDoughnut::temperature_ratio_
 
- double getCentralDensity() const;
- double getCentralDensity(std::string unit) const;
- void   setCentralDensity(double density);
- void   setCentralDensity(double density, std::string unit);
+ double getCentralDensity() const; ///< Get PolishDoughnut::central_density_
+ double getCentralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
+ void   setCentralDensity(double density); ///< Set PolishDoughnut::central_density_
+ void   setCentralDensity(double density, std::string unit); ///< Set PolishDoughnut::central_density_ in specified unit
 
- double getCentralTempOverVirial() const;
- void   setCentralTempOverVirial(double val);
+ double getCentralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
+ void   setCentralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
 
- double getBeta() const;
- void   setBeta(double beta);
+ double getBeta() const; ///< Get PolishDoughnut::beta_
+ void   setBeta(double beta);///< Set PolishDoughnut::beta_
 
- void   setSpectralOversampling(size_t); ///< set spectral_oversampling_
- size_t getSpectralOversampling() const ; ///< get spectral_oversampling_
+ void   setSpectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
+ size_t getSpectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
 
  // Read only members, depend on lambda
- double getWsurface() const;
- double getWcentre() const;
- double getRcusp() const;
- double getRcentre() const;
+ double getWsurface() const; ///< Get PolishDoughnut::W_surface_
+ double getWcentre() const; ///< Get PolishDoughnut::W_centre_
+ double getRcusp() const; ///< Get PolishDoughnut::r_cusp_
+ double getRcentre() const; ///< Get PolishDoughnut::r_centre_
 
 
  virtual Gyoto::SmartPointer<Gyoto::Metric::Generic> getMetric() const;
  virtual void setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
- void useSpecificImpact(int yes=1);
+ void useSpecificImpact(int yes=1); ///< Set PolishDoughnut::use_specific_impact_
 
  // ASTROBJ API
  // -----------
  /**
-  * Depending on use_specific_impact_. See useSpecificImpact().
+  * Depending on PolishDoughnut::use_specific_impact_. See useSpecificImpact().
   */
  int Impact(Photon *ph, size_t index,
 			    Astrobj::Properties *data);
@@ -142,7 +150,6 @@ public:
 			    Astrobj::Properties *data);
  ///< A specific implementation of Generic::Impact()
  virtual double operator()(double const coord[4]) ;
- ///< Called by Astrobj::Generic::Impact()
 
  virtual int setParameter(std::string name,
 			  std::string content,
@@ -154,23 +161,41 @@ public:
   // ASTROBJ processHitQuantities API
   // --------------------------------
 protected:
+  /**
+   * \brief Update PolishDoughnut::aa_
+   *
+   * See Hook::Listener::tell().
+   */
   virtual void tell(Gyoto::Hook::Teller * msg);
   virtual void getVelocity(double const pos[4], double vel[4]) ;
   using Standard::integrateEmission;
+
+  /**
+   * \brief &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
+   *
+   * PolishDought::emission() is slow. Integrating it is very
+   * slow. This implementation simply oversamples the spectrum by
+   * PolishDoughnut::spectral_oversampling_ and sums the trapezoids.
+   *
+   * For general documentation, see Astrobj::Generic::integrateEmission(double * I, double const * boundaries, size_t const * chaninds, size_t nbnu, double dsem, double *cph, double *co) const .
+   */
   virtual void integrateEmission(double * I, double * boundaries,
 				 size_t* chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			  double dsem, double coord_ph[8],
-			  double coord_obj[8]) const;
+
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]) const;
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
   double emissionBrems(double nu_em, double nu_crit, 
 		       double numax, double T_electron,
 		       double n_e, double n_j,
 		       double amplification,
 		       double Cbrems,
 		       int comptonorder) const;
+  ///< Bremsstrahlung proxy for emission()
   double emissionSynch(double nu_em, double nu_crit,
 		       double numax, double nu_0,
 		       double T_electron,
@@ -179,14 +204,16 @@ protected:
 		       double alpha1, double alpha2,
 		       double alpha3, double preff,
 		       int comptonorder) const;
+  ///< Synchrotron proxy for emission()
   double transmission(double nuem, double dsem, double coord_ph[8]) const ;
-  double BBapprox(double nuem, double Te) const;
+  double BBapprox(double nuem, double Te) const; ///< Approximated Black-Body function
   static double funcxM(double alpha1, double alpha2, double alpha3, double xM);
-
+  ///< Mahadevan 96 fit function
  // PURELY INTERNAL TO ASTROBJ
  // --------------------------
 private:
  double potential(double r, double theta) const;
+ ///< Potential defining shape, used by operator()()
 
  /**
   * \class Gyoto::Astrobj::PolishDoughnut::intersection_t
@@ -201,9 +228,9 @@ private:
   */
   class intersection_t : public Gyoto::Functor::Double_Double_const {
   public:
-    double aa_;
-    double aa2_;
-    double l0_;
+    double aa_; ///< Metric spin
+    double aa2_;///< aa_<SUP>2</SUP>
+    double l0_; ///< Torus angular momentum
     virtual double operator() (double) const;
   };
  /**
@@ -218,17 +245,30 @@ private:
   */
   class transcendental_t : public Gyoto::Functor::Double_Double_const {
   public:
+   /**
+    * \brief Parameter array
+    *
+    * \code
+    *   double       rr = par[0] ;
+    *   double      n_e = par[1] ;
+    *   double       BB = par[2] ;
+    *   double       Te = par[3] ;
+    *   double   alpha1 = par[4] ;
+    *   double   alpha2 = par[5] ;
+    *   double   alpha3 = par[6] ;
+    * \endcode
+    */
     double const * par;
     virtual double operator() (double) const;
   };
  intersection_t intersection; ///< double intersection(double) Functor
 
  public:
- static double bessi0(double xx);
- static double bessi1(double xx);
- static double bessk0(double xx);
- static double bessk1(double xx);
- static double bessk(int nn, double xx);
+ static double bessi0(double xx);///< Modified Bessel function I<SUB>0</SUB>
+ static double bessi1(double xx);///< Modified Bessel function I<SUB>1</SUB>
+ static double bessk0(double xx);///< Modified Bessel function K<SUB>0</SUB>
+ static double bessk1(double xx);///< Modified Bessel function K<SUB>1</SUB>
+ static double bessk(int nn, double xx);///< Modified Bessel function
 
  // Outputs
  // -------

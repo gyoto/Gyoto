@@ -525,6 +525,8 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
     const ;
 
   /**
+   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
+   *
    * Called by the default implementation for processHitQuantities().
    *
    * emission() computes the intensity I<SUB>&nu;</SUB> emitted by the small
@@ -561,7 +563,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   virtual double integrateEmission(double nu1, double nu2, double dsem,
                                   double c_ph[8], double c_obj[8]=NULL) const;
-    ///< &int;<SUB>nu<SUB>1</SUB></SUB><SUP>nu<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> dnu (or j<SUB>&nu;</SUB>)
+    ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
 
   /**
    * Like double integrateEmission(double nu1, double nu2, double
@@ -571,7 +573,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   virtual void integrateEmission(double * I, double const * boundaries,
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
-    ///< &int;<SUB>nu<SUB>1</SUB></SUB><SUP>nu<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> dnu (or j<SUB>&nu;</SUB>)
+    ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
 
   /**
    * transmission() computes the transmission of this fluid element or

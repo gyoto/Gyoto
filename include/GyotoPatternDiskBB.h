@@ -3,7 +3,11 @@
  * \brief A PatternDisk object with black body spectrum and
  *  a power law extension up to some rmax_
  *
- *  The target of ray-traced Gyoto::Photon
+ *  A sort of composite of Astrobj::PatternDisk and
+ *  Astrobj::ThinDiskPL. Behaves like the latter for r >
+ *  PatternDiskBB::rPL_) and mostly like the former for r <
+ *  PatternDiskBB::rPL_ except PatternDiskBB::emission_ does not yield
+ *  directly I<SUB>&nu;</SUB> but temperature.
  */
 
 /*
@@ -50,6 +54,11 @@ namespace Gyoto{
  *   at radius r and longitude phi at frequency nu is given in a FITS
  *   file.
  *
+ *  A sort of composite of Astrobj::PatternDisk and
+ *  Astrobj::ThinDiskPL. Behaves like the latter for r >
+ *  PatternDiskBB::rPL_) and mostly like the former for r <
+ *  PatternDiskBB::rPL_ except PatternDiskBB::emission_ does not yield
+ *  directly I<SUB>&nu;</SUB> but temperature.
  */
 class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PatternDiskBB>;
@@ -57,10 +66,18 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
   ///< emission law
  private:
-  int SpectralEmission_, PLDisk_; ///< Flags, are 1 if the disk emits
-  ///< as a black body or if the disk has a power law extension
-  double PLSlope_, PLRho_, rPL_, rmax_; ///< Power law slope, initial
-  ///< value, intial radius; maximal extension of the disk
+  /**
+   * \brief 1 if spectral emission.
+   *
+   * XML: SpectralEmission
+   *
+   */
+  int SpectralEmission_;
+  int PLDisk_; ///< Whether the disk has a power law extension
+  double PLSlope_; ///< Mass density power-law slope
+  double PLRho_; ///< Mass density reference value
+  double rPL_; ///< Mass density reference radius
+  double rmax_; ///< Maximal extension of the disk
   // Constructors - Destructor
   // -------------------------
  public:

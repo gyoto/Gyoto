@@ -51,27 +51,27 @@ namespace Gyoto{
 class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PatternDisk>;
  private:
-  std::string filename_;
+  std::string filename_; ///< Optional FITS file name containing the arrays
   /**
    * An array of dimensionality double[nr_][nphi_][nnu_]. In FITS
    * format, the first dimension is nu, the second phi, and the third
    * r.
    */
-  double * emission_; ///< Inu(nu, r, phi)
+  double * emission_; ///< I<SUB>&nu;</SUB>(&nu;, r, &phi;)
 
-  double * opacity_; ///< same dimenstions as emission, or NULL
+  double * opacity_; ///< Same dimenstions as emission, or NULL
 
   /**
    * An array of dimensionality double[nr_][nphi_][2]. In FITS format,
    * the second dimension is phi, and the third r. The first plane in
-   * the first FITS dimention is dphi/dt, the second dr/dt.
+   * the first FITS dimention is d&phi;/dt, the second dr/dt.
    */
-  double * velocity_; ///< velocity(, r, phi)
+  double * velocity_; ///< velocity(r, &phi;)
 
   /**
    * In case of adaptive grid.
    */
-  double * radius_; ///< radius vector
+  double * radius_; ///< Radius vector
 
   /**
    * XML element: &lt;Omega&gt;.
@@ -85,26 +85,23 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   double t0_;     ///< Date for which i=0 corresponds to phi=0
 
-  double dnu_;
-  double nu0_;
-  size_t nnu_;
+  double dnu_; ///< Frequency scale of PatternDisk::emission_ in Hz
+  double nu0_; ///< Lowest frequency provided in PatternDisk::emission_ in Hz
+  size_t nnu_; ///< Number of frequencies provided in PatternDisk::emission_
 
-  double dphi_;
-  double phimin_;
-  size_t nphi_;
-  double phimax_;
+  double dphi_; ///< &delta;&phi; between two grid columns
+  double phimin_;///< Minimum &phi; in grid
+  size_t nphi_; ///< Grid size in the &phi; direction
+  double phimax_; ///< Maximum &phi; in grid
 
   /**
    * XML elment: &lt;RepeatPhi&gt;.
    * FITS keyword: HIERARCH GYOTO PatternDisk RepeatPhi
    */
-  size_t repeat_phi_;
-  //double phi0_==0, phi max is always 2*M_PI
+  size_t repeat_phi_; ///< Number of times the pattern should be repeated to cover [0, 2&Pi;]
 
-  double dr_;
-  size_t nr_;
-  //  double r0_; // this is rin_
-
+  double dr_; ///< Radius step
+  size_t nr_; ///< Number of rows in the patternGrid size in the r direction
 
 
   // Constructors - Destructor
@@ -121,58 +118,139 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   // ---------
  public:
   using ThinDisk::setInnerRadius;
-  virtual void   setInnerRadius(double); ///< Set rin_
+  virtual void   setInnerRadius(double);
   using ThinDisk::setOuterRadius;
-  virtual void   setOuterRadius(double); ///< Set rout_
+  virtual void   setOuterRadius(double);
 
   /**
    * Unit: radians per geometrical unit time.
    */
-  virtual void   setPatternVelocity(double); ///< Set pattern angular velocity
-  virtual double getPatternVelocity(); ///< Set pattern angular velocity
+  virtual void   setPatternVelocity(double); ///< Set PatternDisk::Omega_
+  virtual double getPatternVelocity(); ///< Get PatternDisk::Omega_
   virtual void fitsRead(std::string filename_);
+  ///< Read parameters and arrays from FITS file
   virtual void fitsWrite(std::string filename_);
-  ///< Read data from file
+  ///< Write parameters and arrays to FITS file
 
-  void setEmission(double * pattern);
-  void setVelocity(double * pattern);
-  void setRadius(double * pattern);
   /**
-   * \param pattern: new emission_ array.
-   * \param dims[3] = { nnu_, nphi_, nr_ };
+   * \brief Set PatternDisk::emission_
+   *
+   * This is a low-level function. Beware that:
+   *  - previously allocated array will not be freed automatically;
+   *  - array attached when the destructor is called will be freed.
+   */
+  void setEmission(double * pattern);
+
+  /**
+   * \brief Set PatternDisk::velocity__
+   *
+   * This is a low-level function. Beware that:
+   *  - previously allocated array will not be freed automatically;
+   *  - array attached when the destructor is called will be freed.
+   */
+  void setVelocity(double * pattern);
+
+  /**
+   * \brief Set PatternDisk::radius_
+   *
+   * This is a low-level function. Beware that:
+   *  - previously allocated array will not be freed automatically;
+   *  - array attached when the destructor is called will be freed.
+   */
+  void setRadius(double * pattern);
+
+  /**
+   * \brief Set PatternDisk::emission_
+   *
+   * PatternDisk::emission_ is freed if not NULL, reallocated, and
+   * pattern is copied into emission_.
+   *
+   * If PatternDisk::opacity_, PatternDisk::velocity_ or
+   * PatternDisk::radius_ have been set previously with mismatching
+   * sizes, they are deallocated too.
+   *
+   * Finally, PatternDisk::nnu_, PatternDisk::nphi_, and
+   * PatternDisk::nr_ are set according to naxes.
+   *
+   * \param pattern Array to copy as emission_. May be NULL in which
+   * case emission_ is simply deallocated and set to NULL.
+   *
+   * \param naxes { nnu_, nphi_, nr_ }.
    */
   virtual void copyIntensity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
-  ///< attach emission_ array and set its size
-  virtual double const * getIntensity() const;
-  virtual void getIntensityNaxes( size_t naxes[3] ) const ;
 
+  virtual double const * getIntensity() const;///< Get PatternDisk::emission_
+  virtual void getIntensityNaxes( size_t naxes[3] ) const ; ///< Get PatternDisk::nnu_, PatternDisk::nphi_, and PatternDisk::nr_
+
+  /**
+   * \brief Set PatternDisk::opacity_
+   *
+   * PatternDisk::opacity_ is first freed if not NULL and set to NULL.
+   *
+   * If pattern is not NULL, PatternDisk::emission_ must have been set
+   * previously with matching dimensions. PatternDisk::opacity_ is
+   * then reallocated, and pattern is copied into opacity_.
+   *
+   * \param pattern Array to copy as opacity_. May be NULL in which
+   * case opacity_ is simply deallocated and set to NULL.
+   *
+   * \param naxes { nnu_, nphi_, nr_ }.
+   */
   virtual void copyOpacity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
-  virtual double const * getOpacity() const;
+  virtual double const * getOpacity() const; ///< Get PatternDisk::opacity_
 
+  /**
+   * \brief Set PatternDisk::velocity_
+   *
+   * PatternDisk::velocity_ is first freed if not NULL and set to NULL.
+   *
+   * If pattern is not NULL, PatternDisk::emission_ must have been set
+   * previously with matching dimensions. PatternDisk::velocity_ is
+   * then reallocated, and pattern is copied into velocity_.
+   *
+   * \param pattern Array to copy as velocity_. May be NULL in which
+   * case velocity_ is simply deallocated and set to NULL.
+   *
+   * \param naxes { nphi_, nr_ }.
+   */
   virtual void copyVelocity(double const * const pattern = NULL,
 			      size_t const naxes[2] = NULL);
-  virtual double const * getVelocity() const;
+  virtual double const * getVelocity() const;///< Get PatternDisk::velocity_
 
+  /**
+   * \brief Set PatternDisk::radius_
+   *
+   * PatternDisk::radius_ is first freed if not NULL and set to NULL.
+   *
+   * If pattern is not NULL, PatternDisk::emission_ must have been set
+   * previously with matching dimensions. PatternDisk::radius_ is
+   * then reallocated, and pattern is copied into radius_.
+   *
+   * \param pattern Array to copy as radius_. May be NULL in which
+   * case radius_ is simply deallocated and set to NULL.
+   *
+   * \param nr size of radius array.
+   */
   virtual void copyGridRadius(double const * const pattern = NULL,
 			      size_t nr = 0 );
-  virtual double const * getGridRadius() const;
+  virtual double const * getGridRadius() const; ///< Get PatternDisk::radius_
 
-  virtual void repeatPhi(size_t n);
-  virtual size_t repeatPhi() const;
+  virtual void repeatPhi(size_t n); ///< Set PatternDisk::repeat_phi_
+  virtual size_t repeatPhi() const; ///< Get PatternDisk::repeat_phi_
 
-  virtual void nu0(double freq);
-  virtual double nu0() const;
+  virtual void nu0(double freq); ///< Set PatternDisk::nu0_
+  virtual double nu0() const; ///< Get PatternDisk::nu0_
 
-  virtual void dnu(double dfreq);
-  virtual double dnu() const;
+  virtual void dnu(double dfreq); ///< Set PatternDisk::dnu_
+  virtual double dnu() const; ///< Get PatternDisk::dnu_
 
-  void phimin(double phimin);
-  double phimin() const;
+  void phimin(double phimin); ///< Set PatternDisk::phimin_
+  double phimin() const; ///< Get PatternDisk::phimin_
 
-  void phimax(double phimax);
-  double phimax() const;
+  void phimax(double phimax); ///< Set PatternDisk::phimax_
+  double phimax() const; ///< Get PatternDisk::phimax_
 
   virtual int setParameter(std::string name,
 			   std::string content,
@@ -180,7 +258,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 
  protected:
   void getIndices(size_t i[3], double const co[4], double nu=0.) const ;
-  ///< get emission_ cell corresponding to position co[4]
+  ///< Get emission_ cell corresponding to position co[4]
 
  public:
   using ThinDisk::emission;
