@@ -163,6 +163,14 @@ class Gyoto::Astrobj::Star :
 #endif
 
  public:
+  
+  /// Get the 6 Cartesian coordinates for specific dates.
+  /**
+   * This method is present in both the API of UniformSphere and
+   * Worldline. It is pure virtual in UniformSphere. The Star
+   * reimplementation is a trivial wrapper around
+   * Worldline::getCartesian().
+   */
   virtual void getCartesian(double const * const dates, size_t const n_dates,
 		double * const x, double * const y,
 		double * const z, double * const xprime=NULL,

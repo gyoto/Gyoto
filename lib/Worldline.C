@@ -142,10 +142,12 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
     cst_ = new double [cst_n_];
     memcpy(cst_, orig->cst_, cst_n_*sizeof(double));
   }
+  /*
   if (orig->init_vel_) {
     init_vel_ = new double [3];
     memcpy(init_vel_, orig->init_vel_, 3*sizeof(double));
   }
+  */
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif

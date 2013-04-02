@@ -53,14 +53,11 @@ namespace Gyoto{
  *   at radius r is given by Page & Thorne (1974, ApJ 191:499,
  *   Eqs. 11b, 14, 15).
  *
- *   The metric must be either KerrBL or KerrKS. Only bolometric
- *   intensity is provided, as quantity User4. You must set the
- *   following in the XML:
- *   \code
- *   <Scenery>
- *   ...
- *   <Quantity> User4 </Quantity>
- *   \endcode>
+ *   The metric must be either KerrBL or KerrKS. Emission, Spectrum
+ *   and BinSpectrum are <STRONG>not</STRONG> provide, the only
+ *   intensity provided is provided, as quantity User4 and it is the
+ *   default quantity returned if nothing is requested. The other
+ *   quantities implemented in ThinDisk are also provided.
  *
  */
 class Gyoto::Astrobj::PageThorneDisk
@@ -122,6 +119,8 @@ class Gyoto::Astrobj::PageThorneDisk
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
                                    double* coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
+
+  Quantity_t getDefaultQuantities();
 
   // Hook::Listener API //
  public:

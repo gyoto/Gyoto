@@ -9,8 +9,8 @@
   referenced to only by SmartPointers.
 
   @code
-  class Gyoto::Metric : public Gyoto::SmartPointee {...}
-  SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...))
+  class Gyoto::Metric : public Gyoto::SmartPointee {...};
+  SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...));
   @endcode
 
 
@@ -72,8 +72,8 @@ namespace Gyoto {
  * {
  *    friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
  *    ...
- *  }
- *  @endcode
+ * };
+ * @endcode
  *
  */
 class Gyoto::SmartPointee
@@ -85,12 +85,12 @@ class Gyoto::SmartPointee
   /**
    * When compiled with libpthread
    */
-  pthread_mutex_t mutex_; ///< a mutex
+  pthread_mutex_t mutex_; ///< A mutex
 #endif
 
  public:
   SmartPointee () ;
-  SmartPointee (const   SmartPointee&) ;
+  SmartPointee (const   SmartPointee&) ; ///< Copy constructor
   void incRefCount () ; ///< Increment the reference counter. Warning: Don't mess with the counter.
   int decRefCount () ;  ///< Decrement the reference counter and return current value. Warning: Don't mess with the counter.
   int getRefCount () ;  ///< Get the current number of references
@@ -124,7 +124,7 @@ class Gyoto::SmartPointee
  * To create an object and a SmartPointer pointing to it:
  *
  * \code
- * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...))
+ * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...));
  * \endcode
  */
 template< class T >
@@ -156,11 +156,11 @@ class Gyoto::SmartPointer
   /**
    * \brief Constructor from a standard pointer-to-class
    *
-   * \param obj : a pointer to an instance of class T, created using new T().
+   * \param orig : a pointer to an instance of class T, created using new T().
    *
    * Example:
    * \code 
-   * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...)) // create SmartPointer ObjPtr
+   * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...)); // create SmartPointer ObjPtr
    * \endcode
    */
   SmartPointer (T *orig = NULL) : obj(orig)
@@ -176,8 +176,8 @@ class Gyoto::SmartPointer
    *
    * Example:
    * \code 
-   * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...)) // create SmartPointer ObjPtr
-   * SmartPointer<Gyoto::Metric::Generic> ObjPtr2 = ObjPtr // create SmartPointer ObjPtr2
+   * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...)); // create SmartPointer ObjPtr
+   * SmartPointer<Gyoto::Metric::Generic> ObjPtr2 = ObjPtr; // create SmartPointer ObjPtr2
    * \endcode
    *
    * ObjPtr and ObjPtr2 point to the same instance of class T. Copying
@@ -199,7 +199,7 @@ class Gyoto::SmartPointer
    * an instance of the child class Gyoto::Kerr:
    *
    * \code 
-   * SmartPointer<Gyoto::Kerr> KerrPtr (MetricPtr)
+   * SmartPointer<Gyoto::Kerr> KerrPtr (MetricPtr);
    * \endcode
    *
    * MetricPtr and KerrPtr point to the same instance of class
@@ -250,6 +250,11 @@ class Gyoto::SmartPointer
       return obj;
     }
 
+  /**
+   * \brief Dereference operator "->" (const)
+   *
+   * Access to the pointed-to-object's members.
+   */
   T* operator-> () const
     {
       if (!obj)

@@ -553,7 +553,7 @@ void Photon::fillElement(FactoryMessenger *fmp) {
   Worldline::fillElement(fmp);
 }
 
-SmartPointer<Photon> Gyoto::PhotonSubcontractor(FactoryMessenger* fmp) {
+SmartPointer<Photon> Gyoto::Photon::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="";
   SmartPointer<Metric::Generic> gg = NULL;

@@ -612,7 +612,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
 }
 
-SmartPointer<Scenery> Gyoto::ScenerySubcontractor(FactoryMessenger* fmp) {
+SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   string name="", content="", unit="";
   SmartPointer<Metric::Generic> gg = NULL;

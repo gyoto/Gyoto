@@ -180,7 +180,10 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
  public:
-    void fillElement(FactoryMessenger *fmp); ///< called from Factory
+  /// Write XML description
+  void fillElement(FactoryMessenger *fmp);
+  /// Instanciate Photon from XML description
+  static SmartPointer<Photon> Subcontractor(Gyoto::FactoryMessenger*);
 #endif
 
     /* transmission stuff */
@@ -262,11 +265,5 @@ class Gyoto::Photon::Refined : public Gyoto::Photon {
   ///< Update transmission both in *this and in *parent_
 };
 
-
-#ifdef GYOTO_USE_XERCES
-namespace Gyoto {
-  SmartPointer<Photon> PhotonSubcontractor(Gyoto::FactoryMessenger*);
-}
-#endif
 
 #endif

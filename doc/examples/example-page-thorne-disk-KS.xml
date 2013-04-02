@@ -26,5 +26,7 @@
     <Bolometric/>
   </Astrobj>
   <MinimumTime> -1000. </MinimumTime>
-  <Quantities> User4 </Quantities>
+  <!--Quantities> User4 </Quantities-->
+  Bolometric emission, this is the default (and only intensity) for
+  PageThorneDisk.
 </Scenery>

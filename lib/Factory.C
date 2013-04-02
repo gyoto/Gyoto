@@ -314,7 +314,7 @@ SmartPointer<Gyoto::Photon> Factory::getPhoton(){
     }
 
     FactoryMessenger fm(this, tmpEl);
-    photon_ = PhotonSubcontractor(&fm);
+    photon_ = Photon::Subcontractor(&fm);
 
   }
   return photon_;
@@ -397,7 +397,7 @@ SmartPointer<Scenery> Factory::getScenery () {
     tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
   
     FactoryMessenger fm(this, tmpEl);
-    scenery_ = ScenerySubcontractor(&fm);
+    scenery_ = Scenery::Subcontractor(&fm);
   
     delete result;
   }

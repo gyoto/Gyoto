@@ -105,6 +105,10 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   throwError("not implemented");
 }
 
+Quantity_t PageThorneDisk::getDefaultQuantities() {
+  return GYOTO_QUANTITY_USER4;
+}
+
 double PageThorneDisk::bolometricEmission(double dsem,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).

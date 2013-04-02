@@ -1,6 +1,6 @@
 /**
  * \file GyotoWorldline.h 
- * \brief geodesics ?
+ * \brief Timelike or null geodesics
  */
 
 /*
@@ -43,12 +43,12 @@ namespace Gyoto {
 
 /**
  * \class Gyoto::Worldline
- * \brief geodesic?
+ * \brief  Timelike or null geodesics
  *
  * Supported XML parameters:
  *  - InitialCoordinate or InitCoord: 8-element vector yielding the initial
  *    4-position and 4-velocity;
- *  - only for massive particle (Gyoto::Astrobj::Star): Position
+ *  - Only for massive particle (Gyoto::Astrobj::Star): Position
  *    (yielding initial 4-position) and Velocity (yielding initial
  *    3-velocity);
  *  - Delta: integration step, initial in case or adaptive step;
@@ -95,12 +95,22 @@ class Gyoto::Worldline
   
   Worldline(const Worldline& ) ;                ///< Copy constructor
   
-  Worldline(Worldline* orig, size_t i0, int dir, double step_max) ;
   /// Refine constructor
+  /**
+   * Meant to instanciate a copy of orig with a smaller step to refine
+   * integration, for instance for more accurate radiative transfer
+   * integration.
+   *
+   * See Photon::Photon(Photon* orig, size_t i0, int dir, double
+   * step_max) and Photon::Refined.
+   *
+   * \param orig Worldline to refine
+   * \param i0 Index of coordinate in orig to take as initial condition
+   * \param dir Direction of integration
+   * \param step_max Maximum integration step
+   */
+  Worldline(Worldline* orig, size_t i0, int dir, double step_max) ;
 
-  /// Constructor from a file (see \c sauve(FILE*) )
-  //Worldline(FILE *) ;                    
-  
   virtual ~Worldline() ;                        ///< Destructor
 
   size_t getImin() const; ///< Get index of computed date furthest in the past
@@ -162,9 +172,9 @@ class Gyoto::Worldline
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
   void setDelta(const double delta); ///< Set delta
-  void setDelta(double, const std::string &unit);   ///< set default step in specified units
+  void setDelta(double, const std::string &unit);   ///< Set default step in specified units
   double getDelta() const ; ///< Get delta
-  double getDelta(const std::string &unit) const ;  ///< get default step in specified units
+  double getDelta(const std::string &unit) const ;  ///< Get default step in specified units
   double getTmin() const ; ///< Get tmin value
   void setTmin(double tlim); ///< Set tmin to a given value
   void adaptive (bool mode) ; ///< Set adaptive_
@@ -177,13 +187,16 @@ class Gyoto::Worldline
    * Metric-specific constants of motion
    */
   double const * getCst() const ; ///< Returns the worldline's cst of motion (if any)
+
+  /// Set Metric-specific constants of motion
   /**
-   * Set Metric-specific constants of motion
+   * The will (re)allocate Worldline::cst_, copy cst into it, and set
+   * Worldline::cst_n_.
    */
   void setCst(double const * cst, size_t const ncsts) ;
 
+  /// Set or re-set the initial condition prior to integration.
   /**
-   *
    * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
    * \param coord 8 element array containing the initial condition,
    *        i.e. the 4-position and the 4-velocity of the Photon at
@@ -193,11 +206,10 @@ class Gyoto::Worldline
   void setInitialCondition(SmartPointer<Metric::Generic> gg, 
 			   const double coord[8],
 			   const int dir) ;
-  ///<Set or re-set the initial condition prior to integration.
 
-  void getInitialCoord(double dest[8]) const; ///< get initial coordinate
-  void getCoord(size_t index, double dest[8]) const; ///< get coordinates corresponding to index
-  void getCartesianPos(size_t index, double dest[4]) const; ///< get Cartesian expression of 4-position at index.
+  void getInitialCoord(double dest[8]) const; ///< Get initial coordinate
+  void getCoord(size_t index, double dest[8]) const; ///< Get coordinates corresponding to index
+  void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
   void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
@@ -256,20 +268,22 @@ class Gyoto::Worldline
    */
   void get_t(double *dest) const;
 
+  
+  /// Get the 6 Cartesian coordinates for specific dates.
   /**
-   * Get the 6 Cartesian coordinates (x, y, z, dx/dt, dy/dt, dz/dt)
-   * for specific dates. The coordinates will be computed using the
-   * integrator, so they will be as accurate as possible. Transforming
-   * to Cartesian coordinates is not necessarily meaningful.
+   * The 6 coordinates (x, y, z, dx/dt, dy/dt, dz/dt) will be computed
+   * using the integrator and interpolated if necessary, so they will
+   * be as accurate as possible. Transforming to Cartesian coordinates
+   * is not necessarily meaningful.
    *
-   * \param dates: the list of dates for which the coordinates are to
+   * \param[in] dates List of dates for which the coordinates are to
    *                be computed;
    *
-   * \param n_dates: the number of dates to compute ;
+   * \param[in] n_dates Number of dates to compute ;
    *
-   * \param x*: arrays in which to store the result. These pointer may
-   *               be set to NULL to retrieve only part of the
-   *               information. They must be pre-allocated.
+   * \param[out] x, y, z, xprime, yprime, zprime Arrays in which to
+   * store the result. These pointer may be set to NULL to retrieve
+   * only part of the information. Else, they must be pre-allocated.
    *
    */
   void getCartesian(double const * const dates, size_t const n_dates,
