@@ -108,9 +108,9 @@ namespace Gyoto {
  * 
  * \code
  *   <Distance unit="kpc"> 8 </Distance>
- * \endcode.
+ * \endcode
  *
- * The possible units are (with [] noting the default):
+ * Possible units are (with [] noting the default):
  *  - distance: [m], geometrical, cm, km, AU, ly, pc, kpc, Mpc;
  *  - PALN, inclination, argument: [rad], deg.
  *  - frequency: [Hz], µm, GeV...
@@ -143,7 +143,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double tobs_; ///< Observing date in s
   double fov_;  ///< Field-of-view in rad
   //  double tmin_;
-  size_t npix_; ///< resolution in pixels
+  size_t npix_; ///< Resolution in pixels
 
   double distance_; ///< Distance to the observer in m
   double dmax_; ///< Maximum distance from which the photons are launched (geometrical units) 
@@ -165,12 +165,12 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double screen2_[4]; ///< Screen e2 vector
   double screen3_[4]; ///< Screen e3 vector (normal)
 
-  double alpha0_, delta0_; ///< Screen orientation (0,0) is 
-                           ///< right towards the BH
-  SmartPointer<Metric::Generic> gg_; ///< Metric in which the screen is placed ; necessary for unitLength
+  double alpha0_; ///< Screen orientation (0,0) is right towards the BH
+  double delta0_; ///< Screen orientation (0,0) is right towards the BH
+  SmartPointer<Metric::Generic> gg_; ///< The Metric in this end of the Universe
 
   /**
-   * \brief Gyoto::Spectrometer used for quantities Spectrum and BinSpectrum
+   * \brief Gyoto::Spectrometer::Generic subclass instance used for quantities Spectrum and BinSpectrum
    */
   SmartPointer<Spectrometer::Generic> spectro_;
 
@@ -204,22 +204,39 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 		     const double inclination,
 		     const double argument);
 
+  /// Set distance from observer
   /**
-   * \param dist the distance in meters.
+   * \param dist Distance in meters.
    */
-  void setDistance(double dist);    ///< Set distance from observer
-  void setDmax(double dist);    ///< Set ray-tracing maximum distance
+  void setDistance(double dist);
+
+  /// Set ray-tracing maximum distance
+  /**
+   * \param dist Distance in geometrical units.
+   */
+  void setDmax(double dist);
+
+  /// Set distance from observer
   /**
    * \param dist the distance expressed in the specified unit;
-   * \param unit one of: [m], geometrical, cm, km, sunradius, AU, ly,
-   *             pc, kpc, Mpc.
+   * \param unit convertible to meters
    */
   void setDistance(double dist, const std::string unit);
-           ///< Set distance from observer
+
+  /// Set inclination relative to line-of-sight
+  /**
+   * Inclination of z-axis relative to line-of-sight, or inclination
+   * of equatorial plane relative to plane of the sky, in radians
+   */
   void setInclination(double);
-           ///< Set inclination relative to line-of-sight
+
+  /// Set inclination relative to line-of-sight
+  /**
+   * Inclination of z-axis relative to line-of-sight, or inclination
+   * of equatorial plane relative to plane of the sky, in specified unit.
+   */
   void setInclination(double, const std::string &unit);
-           ///< Set inclination relative to line-of-sight
+
   void setPALN(double);
            ///< Set position angle of the line of nodes
   void setPALN(double, const std::string &unit);
@@ -229,9 +246,9 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setArgument(double, const std::string &unit);
            ///< Set angle beetwen line of nodes and X axis of object
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spectro);
-           ///< Set Spectrometer
+           ///< Set Screen::spectro_
   SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
-           ///< Get Spectrometer.
+           ///< Get Screen::spectro_
 
   /**
    * \brief Set freq_obs_
@@ -266,11 +283,11 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * parameters change the observer's coordinates. For observationnal
    * ray-tracing purposes, prefer setProjection().
    *
-   * \param pos[4] position of observer in Screen's coordinate system
-   * \param sys    coordinate system used for pos
+   * \param[in] pos position of observer in Screen's coordinate
+   * system. Content is copied.
    */
   void setObserverPos(const double pos[4]);
-  ///< Sets the orientation of Screen relative to observer
+
   void setFourVel(const double coord[4]);
   ///< Sets the observer's 4-velocity
   void setScreen1(const double coord[4]);
@@ -283,71 +300,148 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   // Accessors
   // ---------
 
-  int getCoordKind() const;      ///< Get coordinate kind
-  double getDistance() const;	 ///< Get distance from observer
+  /// Get coordinate kind
+  /**
+   * From Screen::gg_.
+   */
+  int getCoordKind() const;
+
+  /// Get distance from observer
+  /**
+   * In meters.
+   */
+  double getDistance() const;
+
+  /// Get distance from observer
+  /**
+   * In specified unit.
+   */
   double getDistance(const std::string&) const;	 ///< Get distance from observer
-  double getDmax() const;	 ///< Get maximum ray-tracing distance
-  double getInclination() const; ///< Get inclination relative to line-of-sight
-  double getInclination(const std::string&) const; ///< Get inclination relative to line-of-sight
+
+  /// Get maximum ray-tracing distance
+  /**
+   * In geometrical units.
+   */
+  double getDmax() const;
+
+  /// Get inclination relative to line-of-sight
+  /**
+   * Inclination of z-axis relative to line-of-sight, or inclination
+   * of equatorial plane relative to plane of the sky, in radians.
+   */
+  double getInclination() const;
+
+  /// Get inclination relative to line-of-sight
+  /**
+   * Inclination of z-axis relative to line-of-sight, or inclination
+   * of equatorial plane relative to plane of the sky, in specified unit.
+   */
+  double getInclination(const std::string&) const;
+
   double getPALN() const;	 ///< Get position angle of the line of nodes
   double getPALN(const std::string&) const;	 ///< Get position angle of the line of nodes
-  double getArgument() const;	 ///< Get angle beetwen line of nodes and X axis of object
-  double getArgument(const std::string&) const;	 ///< Get angle beetwen line of nodes and X axis of object
+  double getArgument() const;	 ///< Get angle between line of nodes and X axis of object
+  double getArgument(const std::string&) const;	 ///< Get angle between line of nodes and X axis of object
 
+  SmartPointer<Metric::Generic> getMetric() const; ///< Get Screen::gg_
+  void setMetric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_
 
-  SmartPointer<Metric::Generic> getMetric() const; ///< Get gg_
-  void setMetric(SmartPointer<Metric::Generic> gg); ///< Set gg_
+  /// Get observing date in seconds
+  double getTime();
 
-  double getTime(); ///< get observing time in seconds
-  double getTime(const std::string &); ///< get observing time in seconds
-  void setTime(double, const std::string &); ///< set observing time in specified unit
-  void setTime(double); ///< set observing time in seconds
-  //  double getMinimumTime();
-  //  void setMinimumTime(double);
+  /// Get observing date in seconds
+  double getTime(const std::string &);
+
+  /// Set observing date in specified unit
+  void setTime(double, const std::string &);
+
+  /// Set observing date in seconds
+  void setTime(double);
+
+  /// Get Screen::fov_ in radians
   double getFieldOfView();
+
+  /// Get Screen::fov_ in specified unit
   double getFieldOfView(std::string unit);
+
+  /// Set Screen::fov_ in radians
   void setFieldOfView(double);
+
+  /// Set Screen::fov_ in specified unit
   void setFieldOfView(double, const std::string &unit);
+
+  /// Set direction of the line-of-view
   void setAlpha0(double);
+  /// Set direction of the line-of-view
   void setDelta0(double);
+
+  /// Set Screen::anglekind_
   void setAnglekind(int);
+
+  /// Get Screen::npix_
   size_t getResolution();
+  /// Set Screen::npix_
   void setResolution(size_t);
 
-
+  /// 4-Position of the observer relative to the metric
   /**
    * A Screen is positioned relative to the observer with four elements:
    * Screen::distance, Screen::inclination, Screen::paln and
    * Screen::argument.
    *
    * This function returns the position of the observer relative to
-   * the Screen, using these parameters. The output parameter is
-   * coord.
+   * the metric system in Screen::gg_, using these parameters. The
+   * output parameter is coord.
    *
-   * \param tobs observing time;
-   * \param coord[4] output: position of the observer;
-   *
+   * \param[out] coord position of the observer. Must be preallocated.
    */
   void getObserverPos(double coord[]) const;
-  ///< 4-Position of the observer relative to the Screen
 
+  /// Get copy of Screen::fourvel_
+  /**
+   * \param[out] fourvel preallocated 4-element array
+   */
   void getFourVel(double fourvel[]) const;
+
+  /// Get copy of Screen::screen1_
+  /**
+   * \param[out] output preallocated 4-element array
+   */
   void getScreen1(double output[]) const;
+
+  /// Get copy of Screen::screen2_
+  /**
+   * \param[out] output preallocated 4-element array
+   */
   void getScreen2(double output[]) const;
+
+  /// Get copy of Screen::screen3_
+  /**
+   * \param[out] output preallocated 4-element array
+   */
   void getScreen3(double output[]) const;
 
-  
+  /// Get 8-coordinate of Photon hitting screen from a given direction
   /**
    * Similar to Screen::getObserverPos() but will return in addition
    * the 4-velocity of a photon corresponding to the sky direction
    * given by x and y.
-   * \param tobs observing time;
-   * \param x    RA (d_alpha*cos(delta)) offset in radians;
-   * \param y    Dec offset (d_delta) in radians; 
-   * \param coord[8] output: position-velocity of the observer in system sys;
+   * \param[in] x    RA (d_alpha*cos(delta)) offset in radians;
+   * \param[in] y    Dec offset (d_delta) in radians; 
+   * \param[out] coord position-velocity of the observer Photon. Preallocated.
    * 
    */
   void getRayCoord(double x, double y, double coord[]) const;
+
+  /// Get 8-coordinate of Photon hitting screen pixel
+  /**
+   * Similar to Screen::getObserverPos() but will return in addition
+   * the 4-velocity of a photon corresponding to the sky direction
+   * given by x and y.
+   * \param[in] i, j pixel coordinates   
+   * \param[out] coord position-velocity of the Photon. Preallocated.
+   * 
+   */
   void getRayCoord(const size_t i, const size_t j, double coord[]) const;
   
   void coordToSky(const double pos[4], double skypos[3]) const;
@@ -359,18 +453,28 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void computeBaseVectors() ;
   ///< Compute base vectors according to projection parameters
 
-
-
-
   /// Display
-  friend std::ostream& operator<<(std::ostream& , const Screen& ) ;
-  std::ostream& print(std::ostream&) const ;
-  std::ostream& printBaseVectors(std::ostream&) const ;
+  //  friend std::ostream& operator<<(std::ostream& , const Screen& ) ;
+  std::ostream& print(std::ostream&) const ; ///< Debug helper
+  std::ostream& printBaseVectors(std::ostream&) const ; ///< Debug helper
 
-
-  /// UDUNITS
+  // UDUNITS
 # ifdef HAVE_UDUNITS
+  /// Map "pix" and "pixel" to angular pixel width in unit system
+  /**
+   * "pix" or "pixel" can then be used in units.
+   *
+   * There is only one unit system in Gyoto: "pix" can therefore be
+   * registered only for one Screen at a time. See Gyoto::Units.
+   * 
+   * The unit must later be unmapped with unmapPixUnit().
+   */
   void mapPixUnit();
+
+  /// Unmap "pix" and "pixel" from unit system
+  /**
+   * See also mapPixUnit().
+   */
   void unmapPixUnit();
 # endif
 
@@ -378,6 +482,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
 #ifdef GYOTO_USE_XERCES
  public:
     void fillElement(FactoryMessenger *fmp); ///< called from Factory
+    /// Instanciate a Screen from XML entity 
     static   SmartPointer<Screen> Subcontractor(FactoryMessenger* fmp);
 #endif
 

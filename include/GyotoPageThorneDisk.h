@@ -69,12 +69,12 @@ class Gyoto::Astrobj::PageThorneDisk
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PageThorneDisk>;
  private:
-  double aa_; ///< Spin
-  double aa2_;
-  double x0_;
-  double x1_;
-  double x2_;
-  double x3_;
+  double aa_; ///< Generic::gg_ spin parameter, monitored by tell()
+  double aa2_; ///< aa_<SUP>2</SUP>
+  double x0_; ///< Value cached for bolometricEmission()
+  double x1_; ///< Value cached for bolometricEmission()
+  double x2_; ///< Value cached for bolometricEmission()
+  double x3_; ///< Value cached for bolometricEmission()
 
   // Constructors - Destructor
   // -------------------------
@@ -98,14 +98,25 @@ class Gyoto::Astrobj::PageThorneDisk
 
  public:
   using ThinDisk::emission;
+  /**
+   * \brief Not implemented
+   * Throws a Gyoto::Error
+   */
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
+
+  /**
+   * \brief Bolometric emission
+   *
+   * Similar to Generic::emission(), but bolometric.
+   */
   virtual double bolometricEmission(double dsem,
 				    double c_obj[8]) const;
 
   /**
+   * \brief 
    * processHitQuantities fills the requested data in Impact. For
-   * PageThorneDisk, only fill User1, which corresponds to bolometric
+   * PageThorneDisk, only fill User4, which corresponds to bolometric
    * intensity.
    */
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
@@ -115,8 +126,11 @@ class Gyoto::Astrobj::PageThorneDisk
   // Hook::Listener API //
  public:
   /**
+   * \brief Update PageThorneDisk::aa_
+   *
+   * Calls updateSpin().
+   *
    * See Hook::Listener::tell()
-   * Calls updateSpin()
    */
   virtual void tell(Gyoto::Hook::Teller *msg);
 

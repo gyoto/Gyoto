@@ -40,35 +40,34 @@ namespace Gyoto{
  * \class Gyoto::Astrobj::Complex
  * \brief Complex astronomical object
  *
- *  A Gyoto::Astrobj::Generic whic contain several
- *  Gyoto::Astrobj::Generic instances. It is essentially a
- *  SmartPointer<Astrobj::Generic> array, which some methods
- *  arround. Indeed, the operator[](size_t i) method is implemented to
- *  retrieve the i-th element.
+ * A Gyoto::Astrobj::Generic whic contain several
+ * Gyoto::Astrobj::Generic instances. It is essentially a
+ * SmartPointer<Astrobj::Generic> array, which some methods
+ * around. Indeed, the operator[](size_t i) method is implemented to
+ * retrieve the i-th element.
  *
- * In an XML description, the
- *  &lt;Astrobj&gt; section must be unique, its kind is
- *  "Complex". Each sub-astrobj then appears as a
- *  &lt;SubAstrobj&gt; subsection:
-\code
-  <Astrobj kind = "Complex">
-    <SubAstrobj kind = "ThinInfiniteDiskBL"/>
-    <SubAstrobj kind = "Star">
-      <Radius> 2. </Radius>
-      <Velocity> 0. 0. 0.037037 </Velocity>
-      <Position> 600. 9. 1.5707999999999999741 0 </Position>
-      <Spectrum kind="PowerLaw">
-	<Exponent> 0 </Exponent>
-	<Constant> 0.001 </Constant>
-      </Spectrum>
-      <Opacity kind="PowerLaw">
-	<Exponent> 0 </Exponent>
-	<Constant> 0.01 </Constant>
-      </Opacity>
-      <OpticallyThin/>
-    </SubAstrobj>
-  </Astrobj>
-\endcode
+ * In an XML description, the &lt;Astrobj&gt; section must be unique,
+ * its kind is "Complex". Each sub-astrobj then appears as a
+ * &lt;SubAstrobj&gt; subsection:
+ * \code
+ *   <Astrobj kind = "Complex">
+ *     <SubAstrobj kind = "ThinInfiniteDiskBL"/>
+ *     <SubAstrobj kind = "Star">
+ *       <Radius> 2. </Radius>
+ *       <Velocity> 0. 0. 0.037037 </Velocity>
+ *       <Position> 600. 9. 1.5707999999999999741 0 </Position>
+ *       <Spectrum kind="PowerLaw">
+ * 	<Exponent> 0 </Exponent>
+ * 	<Constant> 0.001 </Constant>
+ *       </Spectrum>
+ *       <Opacity kind="PowerLaw">
+ * 	<Exponent> 0 </Exponent>
+ * 	<Constant> 0.01 </Constant>
+ *       </Opacity>
+ *       <OpticallyThin/>
+ *     </SubAstrobj>
+ *   </Astrobj>
+ * \endcode
  *
  */
 class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
@@ -79,13 +78,19 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
  protected:
 
   /**
-   * Number of objects
+   * \brief Number of objects
    */
   size_t cardinal_;
 
+  /**
+   * \brief Array of Astrobj::Generic
+   */
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> * elements_;
 
-  double step_max_;
+  /**
+   * Currently not settable, always equal to GYOTO_DEFAULT_DELTA
+   */
+  double step_max_; ///< Maximum &delta; step inside the Astrobj
 
  public:
   Complex(); ///< Default constructor.
@@ -150,20 +155,19 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
 
   /**
    * This should work as expected:
-\code
-  SmartPointer<Astrobj::Complex> cplx;
-  SmartPointer<Astrobj::TypeA> objA;
-  SmartPointer<Astrobj::TypeB> objB;
-  cplx -> append(objA);
-  cplx[0] = objB;
-\endcode
+   * \code
+   *   SmartPointer<Astrobj::Complex> cplx;
+   *   SmartPointer<Astrobj::TypeA> objA;
+   *   SmartPointer<Astrobj::TypeB> objB;
+   *   cplx -> append(objA);
+   *   cplx[0] = objB;
+   * \endcode
    */
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> operator[](size_t i) ;
   ///< Retrieve i-th element.
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> const operator[](size_t i) const;
   ///< Retrieve a const version of the i-th element.
   
- protected:
 };
 
 #endif

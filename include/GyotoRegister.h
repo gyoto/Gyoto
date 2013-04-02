@@ -120,6 +120,7 @@ public:
    * \param name Name of the kind to look for.
    * \param errmode 1 if getSubContractor() should return NULL upon
    * failure. Else a Gyoto::Error is thrown.
+   * \return Pointer to subcontractor function.
    */
   Gyoto::SmartPointee::Subcontractor_t*
     getSubcontractor(std::string name, int errmode=0);

@@ -63,7 +63,13 @@ namespace Gyoto{
  
     /**
      * Instead of reimplementing the wheel, your subcontractor can simply be
-     * Gyoto::Astrobj::Subcontractor<MyKind>
+     * Gyoto::Astrobj::Subcontractor<MyKind>.
+     *
+     * If MyKind accepts any XML parameters, it should re-implement
+     * Astrobj::Generic::setParameter() or, if low-level access to the
+     * FactoryMessenger is needed, Generic::setParameters().
+     *
+     * \tparam T Gyoto::Astrobj::Generic sub-class
      */
     template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
       (FactoryMessenger* fmp) {
@@ -79,6 +85,8 @@ namespace Gyoto{
      * called only from the Factory.
      *
      * \param name e.g. "Star"
+     * \param errmode 1 to return NULL in case of failure instead of
+     * throwing an Error.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name,
@@ -593,40 +601,164 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
  * \class Gyoto::Astrobj::Properties
  * \brief Observable properties of an Astronomical object
  *
- *  The sort of properties one wants to measure on a ray-traced Gyoto::Photon which hits a Gyoto::Astrobj. Not all Astrobj are able to fill all of these properties.
+ *  The sort of properties one wants to measure on a ray-traced
+ *  Gyoto::Photon which hits a Gyoto::Astrobj. Not all Astrobj are
+ *  able to fill all of these properties.
  *
+ *  An instance of Properties essentially contains a bunch of pointers
+ *  to memory areas where the observable quantities (see Quantity_t)
+ *  should be stored.
+ *
+ *  Astrobj::Generic::processHitQuantities() fills the various arrays
+ *  upon request.  A quantity is ignored if the corresponding pointer
+ *  is NULL.
+ *
+ *  Scenery::operator()() increments the Properties between each
+ *  Photon using Properties::operator++().
+ *
+ *  The main application (gyoto, the yorick plug-in, or your user
+ *  application) is responsible for allocating the various arrays,
+ *  filling the various members of Properties, and doing whatever
+ *  meaninful with the arrays after they have been filled with values
+ *  by the ray-tracing code (e.g. saving them to disk or displaying
+ *  them).
+ *
+ *  Also see Gyoto::Scenery and Gyoto::Quantity_t.
  */
 class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Properties>;
  public:
-  double *intensity; ///< Apparent intensity (takes beaming into account); 
-  double *time; ///< Date of impact (= date of emission of the photon);
-  double *distance; ///< Behaves like the square of the closest distance between Photon and Astrobj (but not exactly that). Initialize it to DBL_MAX from float.h.;
-  double * first_dmin; ///< first local minimum in distance from object
-  int first_dmin_found; ///< first_dmin will be set to the first local minimum and first_dmin_found will be set to 1 if a local minimum in distance is found. Initialize it to 0.
-  double *redshift; ///< redshift factor &nu;<SUB>obs</SUB>/&nu;<SUB>em</SUB> (necessary for emission lines computation)
-  double *spectrum; ///< I<SUB>&nu;</SUB> (&nu;) (observed specific intensity)
-  double *binspectrum; ///< I<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>, the integral of I<SUB>&nu;</SUB> over each spectral channel (i.e. what a spectrometer would measure)
-  int offset; ///< spectra elements are separated by offset doubles in memory. In other words, the ith spectral element is a spectrum[i*offset].
-  double * impactcoords; ///< Coordinates of the object and photon at impact
-  double *user1, *user2, *user3, *user4, *user5; ///< Quantities specific to Astrobj
+  double *intensity; ///< GYOTO_QUANTITY_INTENSITY   : Intensity
+  double *time; ///< GYOTO_QUANTITY_EMISSIONTIME: EmissionTime
+
+  /**
+   * Behaves like the square of the closest distance between Photon
+   * and Astrobj (but not exactly that). Initialize it to DBL_MAX from
+   * float.h.;
+   */
+  double *distance; ///< GYOTO_QUANTITY_MIN_DISTANCE: MinDistance
+
+  /**
+   * First local minimum in distance from object
+   */
+  double * first_dmin; ///< GYOTO_QUANTITY_FIRST_DMIN  : FirstDmin
+
+  /**
+   * Properties::first_dmin will be set to the first local minimum and
+   * Properties::first_dmin_found will be set to 1 if a local minimum
+   * in distance is found. Initialize it to 0.
+   */
+  int first_dmin_found; ///< Whether Properties::first_dmin was found
+
+  /**
+   * Redshift factor &nu;<SUB>obs</SUB>/&nu;<SUB>em</SUB> (necessary
+   * for emission lines computation)
+   */
+  double *redshift; ///< GYOTO_QUANTITY_REDSHIFT    : RedShift
+
+  /**
+   * I<SUB>&nu;</SUB> (&nu;) (observed specific intensity)
+   */
+  double *spectrum; ///< GYOTO_QUANTITY_SPECTRUM    : Spectrum
+
+  /**
+   *  I<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>, the
+   *  integral of I<SUB>&nu;</SUB> over each spectral channel
+   *  (i.e. what a spectrometer would measure)
+   */
+  double *binspectrum; ///< GYOTO_QUANTITY_BINSPECTRUM : BinSpectrum
+
+  /**
+   *  Spectra elements are separated by offset doubles in memory. In
+   *  other words, the ith spectral element is spectrum[i*offset].
+   */
+  int offset; ///< How to jump from one spectral element to the next
+
+  /**
+   * Coordinates of the object and photon at impact
+   */
+  double * impactcoords; ///< GYOTO_QUANTITY_IMPACTCOORDS: ImpactCoords
+
+  /**
+   * \brief GYOTO_QUANTITY_USER1       : User1
+   * Astrobj-specific quantity
+   */
+  double *user1;
+
+  /**
+   * \brief GYOTO_QUANTITY_USER2       : User2
+   * Astrobj-specific quantity
+   */
+  double *user2;
+
+  /**
+   * \brief GYOTO_QUANTITY_USER3       : User3
+   * Astrobj-specific quantity
+   */
+  double *user3;
+
+  /**
+   * \brief GYOTO_QUANTITY_USER4       : User4
+   * Astrobj-specific quantity
+   */
+  double *user4;
+
+  /**
+   * \brief GYOTO_QUANTITY_USER5       : User5
+   * Astrobj-specific quantity
+   */
+  double *user5;
 # ifdef HAVE_UDUNITS
+  /**
+   * \brief Converter between SI (J.m <SUP> -2</SUP>.s<SUP>-1</SUP>.sr<SUP>-1</SUP>.Hz<SUP>-1</SUP>) and requested Intensity unit
+   */
   Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_ ;
+  /**
+   * \brief Converter between SI (J.m <SUP> -2</SUP>.s<SUP>-1</SUP>.sr<SUP>-1</SUP>.Hz<SUP>-1</SUP>) and requested Spectrum unit
+   */
   Gyoto::SmartPointer<Gyoto::Units::Converter> spectrum_converter_ ;
+  /**
+   * \brief Converter between SI (J.m <SUP> -2</SUP>.s<SUP>-1</SUP>.sr<SUP>-1</SUP>) and requested BinSpectrum unit
+   */
   Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_ ;
 # endif
  public:
   Properties(); ///< Default constructor (everything is set to NULL);
-  Properties (double*, double*); ///<< set intensity and time pointers.
+  Properties (double*, double*); ///<< Set intensity and time pointers.
+
+  /**
+   * \brief Initialize observable quantities
+   *
+   * The pointed-to values are initialized as follows (if the
+   * corresponding pointer is not NULL):
+   *
+   * - intensity, firt_dmin_found, redshift, userN: 0
+   * - time, distance, first_dmin: DBL_MAX
+   * - for spectrum and binspectrum, nbnuobs values separated by offset in memory are initialized to 0
+   * - for impactcoords, 16 contiguous values are initialized to DBL_MAX
+   */
   void init(size_t nbnuobs=0);
+
+  /**
+   * \brief Increment pointers
+   *
+   * All valid pointers are incremented by 1 (sizeof(double)), excepted
+   * impactcoords which is incremented by 16.
+   */
   Properties operator++();
 # ifdef HAVE_UDUNITS
   void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  ///< Set Properties::intentity_converter_
   void setIntensityConverter(std::string);
+  ///< Set Properties::intentity_converter_
   void setSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  ///< Set Properties::spectrum_converter_
   void setSpectrumConverter(std::string);
+  ///< Set Properties::spectrum_converter_
   void setBinSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  ///< Set Properties::binspectrum_converter_
   void setBinSpectrumConverter(std::string);
+  ///< Set Properties::binspectrum_converter_
 # endif
 };
 
