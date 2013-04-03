@@ -54,11 +54,36 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   // -----
 
  protected:
-  SmartPointer<Gyoto::Astrobj::Generic> object_; ///< The astronomical target
-  double freq_obs_; ///< Photon's frequency in observer's frame
-  double transmission_freqobs_; ///< integrated optical transmission
+  /// The astronomical target
+  /**
+   * The (only) possible origin for this Photon.
+   */
+  SmartPointer<Gyoto::Astrobj::Generic> object_;
 
+  /// Photon's frequency in observer's frame
+  /**
+   * In Hz, for quantity Emission
+   */
+  double freq_obs_;
+
+  /// Integrated optical transmission
+  /**
+   * At Photon::freq_obs_, between current position and observer.
+   */
+  double transmission_freqobs_;
+
+  /// Observer's spectrometer
+  /**
+   * Conveying observation frequencies for quantities Spectrum and
+   * BinSpectrum.
+   */
   SmartPointer<Spectrometer::Generic> spectro_;
+
+  /// Integrated optical transmissions
+  /**
+   * For each frequency in Photon::spectro_->getMidpoints(), between
+   * current position and observer.
+   */
   double * transmission_;
 
   // Constructors - Destructor
@@ -73,30 +98,36 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
    */
   Photon() ; ///< Default constructor
   Photon(const Photon& ) ;                ///< Copy constructor
-  Photon* clone() const ;
+  Photon* clone() const ; ///< Cloner
  protected:  
   Photon(Photon* orig, size_t i0, int dir, double step_max);
-  ///< Used by Photon::Refined::Refined
+  ///< Used by Photon::Refined::Refined()
  public:
+  /// Same as Photon() followed by setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, const double coord[8])
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
 	 double* coord) ;
-  ///< same as Photon() followed by setInitialCondition()
+
+  /// Same as Photon() followed by setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta)
   Photon(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, 
 	 SmartPointer<Screen> screen, double d_alpha, double d_delta);
-  ///< same as Photon() followed by setInitialCondition()
 
-  // Constructor from a file (see \c sauve(FILE*) )
-  //Photon(FILE* ) ;                    
-  
   virtual ~Photon() ;                        ///< Destructor
   
   virtual double getMass() const ; ///< Return 0.
 
-  void setAstrobj(SmartPointer<Astrobj::Generic>); ///< Set Astrobj
-  SmartPointer<Astrobj::Generic> getAstrobj() const ; ///< Get Astrobj
+  /// Set Photon::object_
+  void setAstrobj(SmartPointer<Astrobj::Generic>);
+  /// Get Photon::object_
+  SmartPointer<Astrobj::Generic> getAstrobj() const ;
+
+  /// Set Photon::spectro_
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spr);
+  /// Get Photon::spectro_
   SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
+
+  /// Set Photon::freq_obs__
   void setFreqObs(double);
+  /// Get Photon::freq_obs__
   double getFreqObs() const;
 
 
@@ -106,69 +137,75 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   /// Assignment to another Photon
   void operator=(const Photon&) ; 
 
+  /// Set or re-set the initial condition prior to integration.
   /**
    * Set initial condition for this Photon :
    *
-   * \param gg : Gyoto::SmartPointer to the Gyoto::Metric in this universe;
-   *
-   * \param obj :  Gyoto::SmartPointer to the target Gyoto::Astrobj;
-   *
-   * \param coord : 8 element array containing the initial condition,
+   * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
+   * \param obj   Gyoto::SmartPointer to the target Gyoto::Astrobj;
+   * \param coord 8-element array containing the initial condition,
    *        i.e. the 4-position and the 4-velocity of the Photon at
    *        the receiving end;
    *
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, const double coord[8]) ;
-  ///<Set or re-set the initial condition prior to integration.
+  void setInitialCondition(SmartPointer<Metric::Generic> gg,
+			   SmartPointer<Astrobj::Generic> obj,
+			   const double coord[8]) ;
 
+  /// Set or re-set the initial condition prior to integration.
   /**
    * Set initial condition for this Photon :
    *
    * \param gg       Gyoto::SmartPointer to the Gyoto::Metric in this universe;
-   *
    * \param obj      Gyoto::SmartPointer to the target Gyoto::Astrobj;
-   *
-   * \param t0       Arrival date at observer's position
-   *
-   * \param d_alpha  Direction of arrival (RA offset) in radians
-   *
-   * \param d_delta  Direction of arrival (Dec offset) in radians
+   * \param screen   Observer's screen;
+   * \param d_alpha  Direction of arrival (RA offset) in radians;
+   * \param d_delta  Direction of arrival (Dec offset) in radians.
    */
-  void setInitialCondition(SmartPointer<Metric::Generic> gg, SmartPointer<Astrobj::Generic> obj, SmartPointer<Screen> screen, double d_alpha, double d_delta);
-  ///<Set or re-set the initial condition prior to integration.
+  void setInitialCondition(SmartPointer<Metric::Generic> gg,
+			   SmartPointer<Astrobj::Generic> obj,
+			   SmartPointer<Screen> screen,
+			   double d_alpha,
+			   double d_delta);
 
-  //  int hit(double tlim, Astrobj::Properties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
-  int hit(Astrobj::Properties *data=NULL); ///< Integrate the geodesic and tell whether this photon hits the object
+  /// Integrate the geodesic
+  /**
+   * \param[in,out] data Optional Astrobj::Properties to fill with
+   * observational quantities.
+   * \return 1 if object was hit, else 0.
+   */
+  int hit(Astrobj::Properties *data=NULL);
 
   /**
    * \brief Find minimum of photon--object distance
    *
-   * Return the minimum of object->Astrobj::operator()(this->getCoord())
+   * Return the minimum of (*object)(this->getCoord())
    * between t1 and t2. The date of this minimum is returned in tmin.
    *
-   * \param object the distance to minimize is given by
-   *               object->Astrobj::operator()()
-   * \param t1   date
-   * \param t2   date
-   * \param tmin on output, date correspondig to the minimum
-   * \param threshold stop searching for a minimum if a value <
-   *              threshold is found (very often, we just want to find
-   *              a date below the threshold, not the accurate
-   *              minimum).
+   * \param[in] object
+   *             the distance to minimize is given by
+   *             object->operator()(). This method is in particular
+   *             implemented by the subclasses of Astrobj::Standard.
+   * \param[in]  t1   date
+   * \param[in]  t2   date
+   * \param[out] tmin on output, date correspondig to the minimum
+   * \param[in]  threshold stop searching for a minimum if a value <
+   *             threshold is found (very often, we just want to find
+   *             a date below the threshold, not the accurate
+   *             minimum).
    */
   double findMin(Functor::Double_constDoubleArray* object,
 		 double t1, double t2, double &tmin,
 		 double threshold = DBL_MIN) ;
 
+  /// Find date for which the photon is at a given distance from the object
   /**
-   * \brief Find date for which the photon is at a given distance from
-   * the object
-   *
-   * \param object the object
-   * \param value the value to find
-   * \param a date for which
+   * \param[in] object Object, must implement operator()
+   *        (e.g. Astrobj::Standard, ThinDisk::Standard)
+   * \param[in] value The value to find
+   * \param[in] tinside A date for which
    *        object->Astrobj::operator()(Photon::getCoord()) is < value
-   * \param on input: a date for which
+   * \param[in,out] toutside On input: a date for which
    *        object->Astrobj::operator()(Photon::getCoord()) is >
    *        value.  on output, (*object)(getCoord(toutside)) is <
    *        value, very close to value. toutside is closer to tinside
@@ -188,49 +225,49 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 
     /* transmission stuff */
  public:
-    /**
-     * Set transmission to 1 for each channel as well as scalar transmission
-     */
-    void resetTransmission() ;
-    /**
-     * Get either the transmission at freqObs (with i=-1) or the
-     * transmission at spectro_->getMidpoints()[i].
-     *
-     * \param i channel number of the requested frequency, -1 for getFreqObs().
-     */ 
-    double getTransmission(size_t i) const ;
-         ///< get transmission for freqobs
+  /// Set transmission to 1 for each channel as well as scalar transmission
+  void resetTransmission() ;
 
-    /**
-     * Get maximum of all the transimissions, either the transmission
-     * at freqObs or the transmission at each spectro_->getMidpoints()[i].
-     *
-     */ 
-    double getTransmissionMax() const ;
-         ///< get maximum transmission;
+  /// Get transmission
+  /**
+   * Get either Photon::transmission_freqobs_ (with i=-1) or
+   * Photon::transmission_[i].
+   *
+   * \param i channel number of the requested frequency, -1 for
+   * Photon::freq_obs_.
+   */ 
+  double getTransmission(size_t i) const ;
 
-    /**
-     * For i!=-1: getTansmission()[i] == getTransmission(size_t i)
-     */
-    double const * getTransmission() const ;
-         ///< get pointer to transmission array
+  /// Get maximum transmission;
+  /**
+   * Get current maximum of all the transmissions,
+   * Photon::transmission_freqobs_ or one elements of the
+   * Photon::transmission_ array.
+   *
+   */ 
+  double getTransmissionMax() const ;
 
-    /**
-     * Update transmission in a given channel:
-     *
-     * getTransmission(size_t i) *= t.
-     *
-     * \param i channel number. -1 for getFreqObs().
-     * \param t transmission of this fluid element.
-     */
-    virtual void transmit(size_t i, double t);
+  /// Get Photon::transmission_
+  /**
+   * getTansmission()[i] == getTransmission(size_t i)
+   */
+  double const * getTransmission() const ;
+
+  /// Update transmission in a given channel
+  /**
+   * getTransmission(size_t i) *= t.
+   *
+   * \param i channel number. -1 for scalar Photon::transmission_freqobs_.
+   * \param t transmission of this fluid element.
+   */
+  virtual void transmit(size_t i, double t);
 
  private:
-    void _allocateTransmission();
+  /// Allocate Photon::transmission_
+  void _allocateTransmission();
 
  public:
-    class Refined;
-     ///< Refine last step of integration 
+  class Refined;
 
 };
 
@@ -250,9 +287,9 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
  * Don't use this class blindly: what's guaranteed to work is what is
  * used in Gyoto::ComplexAstrobj::Impact().
  *
- * XML description corresponding to this class is <Photon/>. It
+ * XML description corresponding to this class is &lt;Photon/&gt;. It
  * supports all the parameters supported by the Gyoto::Worldline class
- * plus an optional <Astrobj/> section to attach a instance of a
+ * plus an optional &lt;Astrobj/&gt; section to attach a instance of a
  * Gyoto::Astrobj::Generic sub-class.
  */
 class Gyoto::Photon::Refined : public Gyoto::Photon {
