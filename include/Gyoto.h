@@ -29,7 +29,6 @@
 #include<GyotoUtils.h>
 #include<GyotoError.h>
 #include<GyotoSmartPointer.h>
-#include<GyotoFocalPlane.h>
 #include<GyotoWorldline.h>
 #include<GyotoPhoton.h>
 

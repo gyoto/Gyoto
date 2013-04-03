@@ -136,8 +136,8 @@ libgyoto_stdplug_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(CXXFLAGS) $(libgyoto_stdplug_la_LDFLAGS) $(LDFLAGS) -o $@
 libgyoto_la_LIBADD =
 am_libgyoto_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
-	SmartPointer.lo Utils.lo Metric.lo Worldline.lo FocalPlane.lo \
-	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
+	SmartPointer.lo Utils.lo Metric.lo Worldline.lo Photon.lo \
+	Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
 	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
 	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
 	Hooks.lo
@@ -346,7 +346,7 @@ library_include_HEADERS = $(top_srcdir)/include/*.h
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	Worldline.C FocalPlane.C Photon.C Scenery.C			\
+	Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
@@ -503,7 +503,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Factory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FixedStar.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FocalPlane.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Functors.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hooks.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrBL.Plo@am__quote@
