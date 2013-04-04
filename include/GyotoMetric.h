@@ -43,6 +43,7 @@ namespace Gyoto {
   namespace Metric {
     class Generic;
 
+    /// A function to build instances of a specific Metric::Generic sub-class
     /**
      * This is a more specific version of the
      * SmartPointee::Subcontractor_t type. A Metric::Subcontrator_t is
@@ -52,13 +53,15 @@ namespace Gyoto {
      * Gyoto::FactoryMessenger.
      */
     typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
-    ///< A function to build instances of a specific Metric::Generic sub-class
 
 
     /** 
      * \brief Subcontractor template
      *
-     * \tparam T Sub-class of Generic::Metric 
+     * Instead of reimplementing the wheel, your subcontractor can simply be
+     * Gyoto::Metric::Subcontractor<MyKind>
+     *
+     * \tparam T Sub-class of Metric::Generic 
      */
     template<typename T> SmartPointer<Metric::Generic> Subcontractor
       (FactoryMessenger* fmp) {
@@ -67,6 +70,7 @@ namespace Gyoto {
       return gg;
     }
 
+    /// Query the Metric register
     /**
      * Query the Metric register to get the Metric::Subcontractor_t
      * correspondig to a given kind name. This function is normally
@@ -80,19 +84,17 @@ namespace Gyoto {
      */
     Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name,
 						     int errmode=0);
-    ///< Query the Metric register
 
+    /// The Metric register
     /**
      * Use the Metric::initRegister() once in your program to
      * initiliaze it, the Metric::Register() function to fill it, and
      * the Metric::getSubcontractor() function to query it.
      */
     extern Register::Entry * Register_;
-    ///< The Metric register
 
+    /// Make a Metric kind known to the Factory
     /**
-     * \brief Make a Metric kind known to the Factory
-     *
      * Register a new Metric::Generic sub-class so that the
      * Gyoto::Factory knows it.
      *
@@ -105,11 +107,12 @@ namespace Gyoto {
      */
      void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
 
-
+     /// Empty the Metric register.
      /**
-      *  This must be called once.
+      *  This must be called once. It is called by
+      *  Gyoto::Register::init().
       */
-     void initRegister(); ///< Empty the Metric register.
+     void initRegister();
   }
 }
 

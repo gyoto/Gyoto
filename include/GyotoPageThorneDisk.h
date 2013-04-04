@@ -1,5 +1,5 @@
 /**
- * \file GyotoPageThorneDiskBL.h
+ * \file GyotoPageThorneDisk.h
  * \brief A geometrically thin, optically thick disk
  *
  *  This class describes a disk contained in the z=0 (equatorial)

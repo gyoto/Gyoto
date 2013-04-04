@@ -116,7 +116,6 @@ class Gyoto::SmartPointee
 
 
 /**
- * \class Gyoto::SmartPointer<T>
  * \brief Pointers performing reference counting
  *
  * Pointee must inherit from class SmartPointee.
@@ -126,6 +125,8 @@ class Gyoto::SmartPointee
  * \code
  * SmartPointer<Gyoto::Metric::Generic> ObjPtr (new Gyoto::Metric(...));
  * \endcode
+ *
+ * \tparam T Sub-class of Gyoto::SmartPointee.
  */
 template< class T >
 class Gyoto::SmartPointer

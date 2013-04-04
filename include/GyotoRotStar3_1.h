@@ -128,7 +128,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-  virtual void setParameters(FactoryMessenger*);
+  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
 #endif
 
 };

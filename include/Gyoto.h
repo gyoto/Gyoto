@@ -21,7 +21,7 @@
  * \file Gyoto.h
  * \brief All of Gyoto
  *
- * Gyoto.h #includes all of the other Gyoto C++ header files. Beware
+ * Gyoto.h includes all of the other Gyoto C++ header files. Beware
  * that some symbols are resolved only in the plugins
  * (libgyoto-stdplug.so, libgyoto-lorene.so).
  */
@@ -102,31 +102,31 @@
  */
 
 /**
- * \page yorick_plugin_page Gyoto for Yorick
- *
- * \section yoprerec_sec Prerequisites
- *
- * \subsection yo_sec Yorick
- *
- * For direct access to Gyoto, only Yorick is required. Yorick comes
- * precompiled with many distributions of Linux and is present in the
- * Macports. You can also find binaries and source code at
- * http://yorick.sourceforge.net/
- *
- * One line in Yorick's yapi.h file used to make the compilation fail, so
- * either use Yorick >= 2.1.06 or
- * change this line:
+\page yorick_plugin_page Gyoto for Yorick
+
+\section yoprerec_sec Prerequisites
+
+\subsection yo_sec Yorick
+
+For direct access to Gyoto, only Yorick is required. Yorick comes
+precompiled with many distributions of Linux and is present in the
+Macports. You can also find binaries and source code at
+http://yorick.sourceforge.net/
+
+One line in Yorick's yapi.h file used to make the compilation fail, so
+either use Yorick >= 2.1.06 or
+change this line:
 \code
 PLUG_API void *ygeta_any(int iarg, long *ntot, * long *dims, int *typeid);
 \endcode
-* to something like
+to something like
 \code
 PLUG_API void *ygeta_any(int iarg, long *ntot, long *dims, int *typeidd)
 \endcode
- *
- * For the graphical user interface Gyotoy, you'll need a few
- * additional pieces. First of all, I seriously doubt it will run
- * under MS Windows, but please report any news on that front.
+
+For the graphical user interface Gyotoy, you'll need a few additional
+pieces. First of all, I seriously doubt it will run under MS Windows,
+but please report any news on that front.
 
 
 \subsection yutils_sec Yutils
@@ -232,9 +232,9 @@ gyotoy
  description. This is typically done by providing an static Init
  method in your class:
  \code
-void Gyoto::FixedStar::Init() {
-  Gyoto::Astrobj::Register("FixedStar", &Gyoto::FixedStar::Subcontractor);
-}
+ void Gyoto::FixedStar::Init() {
+   Gyoto::Astrobj::Register("FixedStar", &Gyoto::FixedStar::Subcontractor);
+ }
  \endcode
 
  You need to make sure this Init() method is called when your plug-in
@@ -247,11 +247,11 @@ void Gyoto::FixedStar::Init() {
  should also be fine). In addition to the implementation of the
  Gyoto::MyObj class, you will need to provide a function called
  __GyotoMyPlugInit() which will be exactly this:
-\code
-extern "C" void __GyotostdplugInit() {
-  Gyoto::MyObj::Init();
-}
-\endcode
+ \code
+ extern "C" void __GyotostdplugInit() {
+   Gyoto::MyObj::Init();
+ }
+ \endcode
  This function is typically provided in a separate source file (such
  as lib/StdPlug.C in the Gyoto source) and can initialize several
  custom classes at once.
@@ -266,14 +266,14 @@ extern "C" void __GyotostdplugInit() {
  (if you don't know what this means or how to do this, ask the local
  Unix guru or read the fine <A
  HREF="http://www.gnu.org/s/bash/manual/bash.html">manual</A>):
-\code
-export GYOTO_PLUGINS="stdplug,nofail:lorene,MyPlug"
-\endcode
+ \code
+ export GYOTO_PLUGINS="stdplug,nofail:lorene,MyPlug"
+ \endcode
  but if your lug-in is self-contained and your don't need the objects
  in the standard plug-ins, this will do it for you:
-\code
-export GYOTO_PLUGINS="MyPlug"
-\endcode
+ \code
+ export GYOTO_PLUGINS="MyPlug"
+ \endcode
  This will instruct Gyoto to locate and load the file named
  libgyoto-MyPlug.(so|dylib) and to run the function named
  __GyotostdplugInit() from this library file.

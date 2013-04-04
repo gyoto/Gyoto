@@ -85,11 +85,11 @@ namespace Gyoto {
 #define GYOTO_QUANTITY_FIRST_DMIN     8
   /// Redshift: &nu;<SUB>obs</SUB>/&nu;<SUB>em</SUB>.
 #define GYOTO_QUANTITY_REDSHIFT      16
-  /// Astrobj and Photon 8-coordinates at emission.
+  /// ImpactCoords: Astrobj and Photon 8-coordinates at emission.
   /**
    * A 16-element vector. See Gyoto::Quantity_t.
    */ 
-#define ImpactCoords: GYOTO_QUANTITY_IMPACTCOORDS  32
+#define GYOTO_QUANTITY_IMPACTCOORDS  32
   /// Spectrum: I<SUB>&nu;</SUB> at each frequency in Scenery::screen_->getMidpoints().
 #define GYOTO_QUANTITY_SPECTRUM     512
   /// Spectrum: &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>I<SUB>&nu;</SUB> d&nu; in each frequency channel in Scenery::screen_.
@@ -392,9 +392,9 @@ namespace Gyoto {
 #define GYOTO_C          299792458.
 /// \brief Celerity of light (cm/s)
 #define GYOTO_C_CGS 2.99792458e10
-/// \Brief Gravitational constant (SI = m^3 * kg^-1 * s-2)
+/// \brief Gravitational constant (SI = m^3 * kg^-1 * s-2)
 #define GYOTO_G 6.67428e-11
-/// \Brief Gravitational constant (cgs: cm^3 * g^-1 * s-2)
+/// \brief Gravitational constant (cgs: cm^3 * g^-1 * s-2)
 #define GYOTO_G_CGS 6.67428e-8
 /// \brief G/c^2=6.67428e-11/299792458.^2
 #define GYOTO_G_OVER_C_SQUARE 7.426138e-28

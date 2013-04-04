@@ -34,6 +34,8 @@ namespace Gyoto{
   namespace Spectrum {
     class Generic;
 #if defined GYOTO_USE_XERCES
+
+    /// A function to build instances of a specific Spectrum::Generic sub-class
     /**
      * This is a more specific version of the
      * SmartPointee::Subcontractor_t type. A Spectrum::Subcontrator_t
@@ -47,8 +49,12 @@ namespace Gyoto{
       Subcontractor_t(Gyoto::FactoryMessenger* fmp);
 
     /**
+     * \brief Subcontractor template
+     *
      * Instead of reimplementing the wheel, your subcontractor can simply be
-     * Gyoto::Astrobj::Subcontractor<MyKind>
+     * Gyoto::Spectrum::Subcontractor<MyKind>
+     *
+     * \tparam T Sub-class of Spectrum::Generic 
      */
     template<typename T> SmartPointer<Spectrum::Generic> Subcontractor
       (FactoryMessenger* fmp) {
@@ -56,12 +62,49 @@ namespace Gyoto{
       sp -> setParameters(fmp);
       return sp;
     }
-    ///< A template for Subcontractor_t functions
 
+    /// Make a Spectrum kind known to the Factory
+    /**
+     * Register a new Spectrum::Generic sub-class so that the
+     * Gyoto::Factory knows it.
+     *
+     * \param kind The kind name which identifies this object type in
+     * an XML file, as in &lt;Spectrum kind="name"&gt;
+     *
+     * \param scp A pointer to the subcontractor, which will
+     * communicate whith the Gyoto::Factory to build an instance of
+     * the class from its XML description
+     */
     void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
+
+    /// Query the Spectrum register
+    /**
+     * Query the Spectrum register to get the Metric::Subcontractor_t
+     * correspondig to a given kind name. This function is normally
+     * called only from the Factory.
+     *
+     * \param name e.g. "PowerLaw"
+     * \param errmode int=0. If errmode==0, failure to find a
+     *        registered Spectrum by that name is an error. Else, simply
+     *        return NULL pointer in that case.
+     * \return pointer to the corresponding subcontractor.
+     */
     Gyoto::Spectrum::Subcontractor_t*
       getSubcontractor(std::string, int errmode=0);
+
+    /// The Spectrum register
+    /**
+     * Use the Spectrum::initRegister() once in your program to
+     * initiliaze it, the Spectrum::Register() function to fill it, and
+     * the Spectrum::getSubcontractor() function to query it.
+     */
     extern Register::Entry* Register_;
+
+    /// Empty the Spectrum register.
+    /**
+     *  This must be called once. It is called by
+     *  Gyoto::Register::init().
+     */
     void initRegister();
 #endif
   }
