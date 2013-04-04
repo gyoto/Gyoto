@@ -7,8 +7,12 @@
  * configure script and holds influential variables such as
  * HAVE_SINCOS.
  *
+ * The values determined by configure when this documentation was
+ * built are documented, replaced by "(undefined)" if the macro was
+ * undefined.
  */
-/*
+/** \def
+    \brief
     Copyright 2012 Thibaut Paumard
 
     This file is part of Gyoto.
@@ -30,83 +34,265 @@
 #ifndef __GyotoConfig_H_ 
 #define __GyotoConfig_H_ 
 
-/* Define to 1 to enable debugging information gathering code */
+/** \def GYOTO_DEBUG_ENABLED
+    \brief Whether debugging information gathering code was enabled. */
 #undef GYOTO_DEBUG_ENABLED
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_DEBUG_ENABLED
+#  define GYOTO_DEBUG_ENABLED (undefined)
+# endif
+#endif
 
-/* Suffix for Gyoto plug-ins */
+/** \def GYOTO_PLUGIN_SFX
+    \brief Suffix for Gyoto plug-ins. */
 #undef GYOTO_PLUGIN_SFX
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_PLUGIN_SFX
+#  define GYOTO_PLUGIN_SFX (undefined)
+# endif
+#endif
 
-/* Gyoto prefix */
+/** \def GYOTO_PREFIX
+    \brief Gyoto prefix. */
 #undef GYOTO_PREFIX
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_PREFIX
+#  define GYOTO_PREFIX (undefined)
+# endif
+#endif
 
-/* Gyoto ABI version */
+/** \def GYOTO_SOVERS
+    \brief Gyoto ABI version.
+
+    Updated in stable releases, not during dev. cycle. */
 #undef GYOTO_SOVERS
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_SOVERS
+#  define GYOTO_SOVERS (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have cfitsio */
+/** \def GYOTO_USE_CFITSIO
+ *  \brief Whether cfitsio support is compiled-in.
+ *
+ *  Necessary for FITS file format i/o, used in the Gyoto tool and
+ *  optional in Gtyoto::PatternDisk.
+ */
 #undef GYOTO_USE_CFITSIO
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_USE_CFITSIO
+#  define GYOTO_USE_CFITSIO (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have Lorene */
+/** \def GYOTO_USE_LORENE
+    \brief Whether Lorene support is compiled-in.
+
+    Used only in the lorene plug-in.
+ */
 #undef GYOTO_USE_LORENE
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_USE_LORENE
+#  define GYOTO_USE_LORENE (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have Xerces */
+/** \def GYOTO_USE_XERCES
+    \brief Whether Xerces support (XML i/o) is compiled-in.
+
+    Used only in the Gyoto::Factory but Gyoto build is not often
+    tested without it.
+ */
 #undef GYOTO_USE_XERCES
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_USE_XERCES
+#  define GYOTO_USE_XERCES (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
+/** \def HAVE_DLFCN_H
+    \brief Whether <dlfcn.h> header file was found. */
 #undef HAVE_DLFCN_H
+#ifdef DOXYGEN_RUN
+# ifndef 
+#  define  (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <inttypes.h> header file. */
+/** \def HAVE_INTTYPES_H
+    \brief Whether <inttypes.h> header file was found. */
 #undef HAVE_INTTYPES_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_INTTYPES_H
+#  define HAVE_INTTYPES_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the `dl' library (-ldl). */
+/** \def HAVE_LIBDL
+    \brief Whether the `dl' library (-ldl) was found.
+
+    Plug-in support.
+ */
 #undef HAVE_LIBDL
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_LIBDL
+#  define HAVE_LIBDL (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <memory.h> header file. */
+/** \def HAVE_MEMORY_H
+    \brief Whether the <memory.h> header file was found. */
 #undef HAVE_MEMORY_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_MEMORY_H
+#  define HAVE_MEMORY_H (undefined)
+# endif
+#endif
 
-/* Define if you have POSIX threads libraries and header files. */
+/** \def HAVE_PTHREAD
+ *  \brief Whether POSIX threads support is compiled-in.
+ *
+ *  Multi-threading support, see Gyoto::Scenery::nthreads_.
+ */
 #undef HAVE_PTHREAD
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_PTHREAD
+#  define HAVE_PTHREAD (undefined)
+# endif
+#endif
 
-/* Have PTHREAD_PRIO_INHERIT. */
+/** \def HAVE_PTHREAD_PRIO_INHERIT
+    \brief Have PTHREAD_PRIO_INHERIT. */
 #undef HAVE_PTHREAD_PRIO_INHERIT
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_PTHREAD_PRIO_INHERIT
+#  define HAVE_PTHREAD_PRIO_INHERIT (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the `sincos' function. */
+/** \def HAVE_SINCOS
+ *  \brief Whether the `sincos' function is available.
+ *
+ *  Else Gyoto provides it as a macro in GyotoDefs.h.
+ */
 #undef HAVE_SINCOS
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_SINCOS
+#  define HAVE_SINCOS (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <stdint.h> header file. */
+/** \def HAVE_STDINT_H
+    \brief Whether the <stdint.h> header file was found. */
 #undef HAVE_STDINT_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_STDINT_H
+#  define HAVE_STDINT_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <stdlib.h> header file. */
+/** \def HAVE_STDLIB_H
+    \brief Whether the <stdlib.h> header file was found. */
 #undef HAVE_STDLIB_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_STDLIB_H
+#  define HAVE_STDLIB_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <strings.h> header file. */
+/** \def HAVE_STRINGS_H
+    \brief Whether the <strings.h> header file was found. */
 #undef HAVE_STRINGS_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_STRINGS_H
+#  define HAVE_STRINGS_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <string.h> header file. */
+/** \def HAVE_STRING_H
+    \brief Whether the <string.h> header file was found. */
 #undef HAVE_STRING_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_STRING_H
+#  define HAVE_STRING_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <sys/stat.h> header file. */
+/** \def HAVE_SYS_STAT_H
+    \brief Whether the <sys/stat.h> header file was found. */
 #undef HAVE_SYS_STAT_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_SYS_STAT_H
+#  define HAVE_SYS_STAT_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <sys/types.h> header file. */
+/** \def HAVE_SYS_TYPES_H
+    \brief Whether the <sys/types.h> header file was found. */
 #undef HAVE_SYS_TYPES_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_SYS_TYPES_H
+#  define HAVE_SYS_TYPES_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have libudunits2 */
+/** \def HAVE_UDUNITS
+ *  \brief Whether libudunits2 support is compiled in.
+ *
+ *  Foundation for the Gyoto::Units framework. Gyoto ought to build
+ *  and work without it, but with restricted unit conversion
+ *  capabilities.
+ */
 #undef HAVE_UDUNITS
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_UDUNITS
+#  define HAVE_UDUNITS (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the <unistd.h> header file. */
+/** \def HAVE_UNISTD_H
+    \brief Whether the <unistd.h> header file was found. */
 #undef HAVE_UNISTD_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_UNISTD_H
+#  define HAVE_UNISTD_H (undefined)
+# endif
+#endif
 
-/* Define to 1 if the system has the type `_Bool'. */
+/** \def HAVE__BOOL
+    \brief Whether the system has the type `_Bool'. */
 #undef HAVE__BOOL
+#ifdef DOXYGEN_RUN
+# ifndef HAVE__BOOL
+#  define HAVE__BOOL (undefined)
+# endif
+#endif
 
-/* Define to necessary symbol if this constant uses a non-standard name on
-   your system. */
+/** \def PTHREAD_CREATE_JOINABLE
+    \brief Define to necessary symbol if this constant uses a non-standard name on your system. */
 #undef PTHREAD_CREATE_JOINABLE
+#ifdef DOXYGEN_RUN
+# ifndef PTHREAD_CREATE_JOINABLE
+#  define PTHREAD_CREATE_JOINABLE (undefined)
+# endif
+#endif
 
-/* Define to 1 if you have the ANSI C header files. */
+/** \def STDC_HEADERS
+    \brief Whether the ANSI C header files were found. */
 #undef STDC_HEADERS
+#ifdef DOXYGEN_RUN
+# ifndef STDC_HEADERS
+#  define STDC_HEADERS (undefined)
+# endif
+#endif
 
-/* Define to `unsigned int' if <sys/types.h> does not define. */
+/** \def size_t
+    \brief If not defined in <sys/types.h>. */
 #undef size_t
+#ifdef DOXYGEN_RUN
+# ifndef size_t
+#  define size_t (undefined)
+# endif
+#endif
 
 #endif

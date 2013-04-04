@@ -32,14 +32,54 @@
 #include <string>
 
 namespace Gyoto {
-  class Photon;
-  void debug(int mode); ///< mode=1 for debug output, 0 for no output
-  int debug(); ///< return >=1 if in debug mode, else 0
-  void verbose(int mode); ///< mode=1 for debug output, 0 for no output
-  int verbose(); ///< return >=1 if in debug mode, else 0
+  /// Set debug mode
+  /**
+   * \param mode 1 to turn on debug mode, 0 to turn it off.
+   */
+  void debug(int mode);
+
+  /// Get debug mode
+  /**
+   * \return >=1 if debug mode is on, else 0.
+   */
+  int debug();
+
+  /// Set verbosity level
+  /**
+   * See standard verbosity levels defined in GyotoDefs.h:
+   * 
+   * - GYOTO_DEFAULT_DEBUG_MODE
+   * - GYOTO_QUIET_VERBOSITY
+   * - GYOTO_SEVERE_VERBOSITY
+   * - GYOTO_WARNING_VERBOSITY
+   * - GYOTO_DEFAULT_VERBOSITY
+   * - GYOTO_INFO_VERBOSITY
+   * - GYOTO_DEBUG_VERBOSITY
+   */
+  void verbose(int mode);
+
+  /// Get verbosity level
+  /**
+   * See verbose(int mode).
+   */
+  int verbose();
+
+  /// Convert lengths (deprecated)
+  /**
+   * \deprecated{Will be removed once it is not used anymore in Gyoto
+   * per se. Prefer Gyoto::Units framework.}
+   *
+   * \param[in,out] x Lengths to convert, in geometrical units on
+   * input, in specified unit on output.
+   * \param[in] nelem Size of x array.
+   * \param[in] mass_sun Black-hole mass in Solar masses.
+   * \param[in] distance_kpc Distance from observer in kiloparsecs.
+   * \param[in] unit One of "geometrical", "m", "km", "sun radius",
+   * "rad", "degree", "arcmin", "arcsec", "mas", "uas".
+   */
   void convert(double * const x, const std::size_t nelem,
 	       const double mass_sun, const double distance_kpc,
-	       const std::string unit); /// Convert lengths
+	       const std::string unit);
 }
 
 #endif
