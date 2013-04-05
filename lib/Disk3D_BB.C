@@ -74,11 +74,8 @@ double const * Disk3D_BB::getVelocity() const { return Disk3D::getVelocity(); }
 void Disk3D_BB::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
     throwError("In Disk3D_BB::copyQuantities: incoherent value of iq");
-  double * curem = temperature_array_[iq-1],
-    * curvel = velocity_array_[iq-1];
-
-  setEmissquant(curem);
-  setVelocity(curvel);
+  setEmissquant(temperature_array_[iq-1]);
+  setVelocity(velocity_array_[iq-1]);
 }
 
 void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
@@ -161,7 +158,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     Ires=Iem;
   }else{
     //SI value of cylindrical r coordinate:
-    double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
+    double dist_unit = gg_->unitLength();
     //double r_si=rcur*dist_unit; //spherical
     //double r_si=rcur*sin(th)*dist_unit; //cylindrical
     //cout << "cyl: " << rcur << " " << th << " " << rcur*sin(th) << " " << risco << endl;

@@ -31,6 +31,7 @@
 
 namespace Gyoto{
   class FactoryMessenger;
+  /// Spectrum of a simple object (e.g. a Gyoto::Astrobj::Star)
   namespace Spectrum {
     class Generic;
 #if defined GYOTO_USE_XERCES
@@ -75,7 +76,7 @@ namespace Gyoto{
      * communicate whith the Gyoto::Factory to build an instance of
      * the class from its XML description
      */
-    void Register(std::string, Gyoto::Spectrum::Subcontractor_t*);
+    void Register(std::string kind, Gyoto::Spectrum::Subcontractor_t* scp);
 
     /// Query the Spectrum register
     /**
@@ -90,7 +91,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrum::Subcontractor_t*
-      getSubcontractor(std::string, int errmode=0);
+      getSubcontractor(std::string name, int errmode=0);
 
     /// The Spectrum register
     /**

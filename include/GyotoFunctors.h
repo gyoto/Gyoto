@@ -1,8 +1,6 @@
 /**
  * \file GyotoFunctors.h
- * \brief Classes which an operator() method
-
-
+ * \brief Classes with an operator() method
  */
 
 /*
@@ -29,10 +27,13 @@
 #define __GyotoFunctors_H_
 
 namespace Gyoto {
+  /**
+   * \namespace Gyoto::Functor
+   * \brief Classes with an operator() method
+   */
   namespace Functor {
     class Double_constDoubleArray;
     class Double_Double_const;
-    
   }
 }
 

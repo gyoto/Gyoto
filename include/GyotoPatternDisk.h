@@ -127,13 +127,17 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   virtual void   setPatternVelocity(double); ///< Set PatternDisk::Omega_
   virtual double getPatternVelocity(); ///< Get PatternDisk::Omega_
-  virtual void fitsRead(std::string filename_);
-  ///< Read parameters and arrays from FITS file
-  virtual void fitsWrite(std::string filename_);
-  ///< Write parameters and arrays to FITS file
 
+  /// Read parameters and arrays from FITS file
+  virtual void fitsRead(std::string filename_);
+
+  /// Write parameters and arrays to FITS file
+  virtual void fitsWrite(std::string filename_);
+
+
+  /// Set PatternDisk::emission_
   /**
-   * \brief Set PatternDisk::emission_
+   * The pointer is copied directly, not the array content.
    *
    * This is a low-level function. Beware that:
    *  - previously allocated array will not be freed automatically;
@@ -141,8 +145,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   void setEmission(double * pattern);
 
+  /// Set PatternDisk::velocity__
   /**
-   * \brief Set PatternDisk::velocity__
+   * The pointer is copied directly, not the array content.
    *
    * This is a low-level function. Beware that:
    *  - previously allocated array will not be freed automatically;
@@ -150,8 +155,9 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   void setVelocity(double * pattern);
 
+  /// Set PatternDisk::radius_
   /**
-   * \brief Set PatternDisk::radius_
+   * The pointer is copied directly, not the array content.
    *
    * This is a low-level function. Beware that:
    *  - previously allocated array will not be freed automatically;
@@ -159,9 +165,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   void setRadius(double * pattern);
 
+  /// Set PatternDisk::emission_
   /**
-   * \brief Set PatternDisk::emission_
-   *
    * PatternDisk::emission_ is freed if not NULL, reallocated, and
    * pattern is copied into emission_.
    *
@@ -201,9 +206,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 			      size_t const naxes[3] = NULL);
   virtual double const * getOpacity() const; ///< Get PatternDisk::opacity_
 
+  /// Set PatternDisk::velocity_
   /**
-   * \brief Set PatternDisk::velocity_
-   *
    * PatternDisk::velocity_ is first freed if not NULL and set to NULL.
    *
    * If pattern is not NULL, PatternDisk::emission_ must have been set
@@ -219,9 +223,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
 			      size_t const naxes[2] = NULL);
   virtual double const * getVelocity() const;///< Get PatternDisk::velocity_
 
+  /// Set PatternDisk::radius_
   /**
-   * \brief Set PatternDisk::radius_
-   *
    * PatternDisk::radius_ is first freed if not NULL and set to NULL.
    *
    * If pattern is not NULL, PatternDisk::emission_ must have been set

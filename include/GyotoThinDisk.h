@@ -129,16 +129,15 @@ class Gyoto::Astrobj::ThinDisk :
   virtual double sphericalPhi(double const coord[]) const;
       ///< Longitude
 
+  /// Get fluid 4-velocity at point.
   /**
-   * Used by Standard::Impact().
-   *
    * Fill vel with the 4-vector velocity of the fluid at 4-position
    * pos. getVelocity() should work at some distance from the
    * equatorial plane. The default implementation calls
    * Metric::Generic::circularVelocity().
    *
-   * \param pos input, 4-position at which to compute velocity;
-   * \param vel output, 4-velocity at pos.
+   * \param[in] pos 4-position at which to compute velocity;
+   * \param[out] vel 4-velocity at pos.
    */
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 

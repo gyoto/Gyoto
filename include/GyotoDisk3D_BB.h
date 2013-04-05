@@ -100,16 +100,20 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
 			   std::string content,
 			   std::string unit);
 
+  /// Compute emission at one grid date.
   double emission1date(double nu_em, double dsem,
 		  double c_ph[8], double c_obj[8]) const;
 
   using Disk3D::emission;
+  /// Interpolate emission between grid dates.
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
 
+  /// Compute transmission at one grid date.
   double transmission1date(double nu_em, double dsem,
 		  double c_ph[8], double c_obj[8]) const;
 
+  /// Interpolate transmission between grid dates.
   double transmission(double nu_em, double dsem,
 			  double c_obj[8]) const;
 
@@ -118,6 +122,10 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
   
  protected:
 
+  /// Set underlying Disk3D pointers to a specific date slice.
+  /**
+   * \param iq Index of the date slice.
+   */
   void copyQuantities(int iq) ;
 
  public:

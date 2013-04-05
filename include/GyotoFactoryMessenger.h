@@ -1,3 +1,7 @@
+/**
+ * \file GyotoFactoryMessenger.h
+ * \brief Factory / SmartPointee::Subcontractor_t interface
+ */
 #ifdef GYOTO_USE_XERCES
 /*
     Copyright 2011 Thibaut Paumard
@@ -21,7 +25,11 @@
 #ifndef __GyotoFactoryMessenger_H_
 #define __GyotoFactoryMessenger_H_
 
-
+/// Internal to Xerces
+/**
+ * For obscure reasons, this needs to be set to 0 instead of just
+ * undefined.
+ */
 #ifndef XERCES_INCLUDE_WCHAR_H
 #define XERCES_INCLUDE_WCHAR_H 0
 #endif
@@ -58,16 +66,16 @@ namespace Gyoto {
  * implementation of BASE::Generic, the subcontractor static member
  * function often looks like this:
  *
-\code
-SmartPointer<Gyoto::BASE::Generic> MyClass::Subcontractor(Gyoto::FactoryMessenger *messenger) {
- SmartPointer<Gyoto::BASE::MyClass> deliverable = new MyClass();
- while (messenger->getNextParameter(name, content) {
-   if (name=="SomeProperty") deliverable -> setSomeProperty(content);
-   else if (name=="AnotherProperty") deliverable -> setAnotherProperty(content);
- }
- return deliverable;
-}
-\endcode
+ * \code
+ *  SmartPointer<Gyoto::BASE::Generic> MyClass::Subcontractor(Gyoto::FactoryMessenger *messenger) {
+ *  SmartPointer<Gyoto::BASE::MyClass> deliverable = new MyClass();
+ *  while (messenger->getNextParameter(name, content) {
+ *   if (name=="SomeProperty") deliverable -> setSomeProperty(content);
+ *   else if (name=="AnotherProperty") deliverable -> setAnotherProperty(content);
+ *  }
+ *  return deliverable;
+ * }
+ * \endcode
  *
  * Other get* methods are provided to cope with more complex syntax
  * (e.g. when XML attributes are used, as in &lt;ParameterName
@@ -148,9 +156,9 @@ class Gyoto::FactoryMessenger {
    * children_. Usually, "name" is the name of a parameter and
    * "content" is the string representation of the corresponding
    * value. For instance:
-\code
-<Name>Content</Name>
-\endcode
+   * \code
+   * <Name>Content</Name>
+   * \endcode
    *
    * \param name upon output, name of the child
    * \param content of the child
@@ -164,9 +172,9 @@ class Gyoto::FactoryMessenger {
 
   /**
    * For instance a Spectrometer description looks like this
-\code
-<Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
-\endcode
+   * \code
+   * <Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
+   * \endcode
    * and the Spectrometer builder uses getSelfAttribute() to retrieve
    * the attributes "kind" and "nsamples".
    * 
@@ -178,9 +186,9 @@ class Gyoto::FactoryMessenger {
 
   /**
    * For instance
-\code
-<ParameterName attrname="attrvalue">ParameterContent</ParameterName>
-\endcode
+   * \code
+   * <ParameterName attrname="attrvalue">ParameterContent</ParameterName>
+   * \endcode
    * 
    * \param attrname name of the attribute
    * \return attrvalue
@@ -195,9 +203,9 @@ class Gyoto::FactoryMessenger {
    * FactoryMessenger::children_ .
    * 
    * For instance a Spectrometer description looks like this:
-\code
-<Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
-\endcode
+   * \code
+   * <Spectrometer kind="wave" nsamples="10"> 2.0e-6 2.4e-6</Astrobj>
+   * \endcode
    * and the Spectrometer builder uses getFullContent() to retrieve
    * the spectral boundaries (2.0e-6 and 2.4e-6 here).
    */
@@ -209,17 +217,17 @@ class Gyoto::FactoryMessenger {
    * instance the complete description of a Gyoto::Spectrum), it is
    * possible to initialize a new FactoryMessenger and call the
    * correct subcontractor:
-\code
-SmartPointer<Spectrum::Generic> spectrum = NULL;
-while (messenger->getNextParameter(name, content) {
- if (name=="Spectrum") {
-  content = messenger->getAttribute("kind");
-  FactoryMessenger* child = messenger->getChild();
-  deliverable->setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
-  delete child;
- }
-}
-\endcode
+   * \code
+   * SmartPointer<Spectrum::Generic> spectrum = NULL;
+   * while (messenger->getNextParameter(name, content) {
+   *  if (name=="Spectrum") {
+   *   content = messenger->getAttribute("kind");
+   *   FactoryMessenger* child = messenger->getChild();
+   *   deliverable->setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
+   *   delete child;
+   *  }
+   * }
+   * \endcode
    * The child is allocated with new and must be deleted after use.
    */
   FactoryMessenger * getChild() const ;
@@ -257,11 +265,11 @@ while (messenger->getNextParameter(name, content) {
    *
    * To make things clearer: Assume "scenery" is a fully filled
    * Scenery. scenery->fillElement(messenger) will call:
-\code
-messenger->setMetric(Scenery::gg_)
-messenger->setScreen(Scenery::screen_)
-messenger->setAstrobj(Scenery::obj_);
-\endcode
+   * \code
+   * messenger->setMetric(Scenery::gg_)
+   * messenger->setScreen(Scenery::screen_)
+   * messenger->setAstrobj(Scenery::obj_);
+   * \endcode
    *
    * The Factory will then call screen_->fillElement(child_messenger)
    * and obj_->fillElement(child_messenger), each of which will also
@@ -287,9 +295,9 @@ messenger->setAstrobj(Scenery::obj_);
 
   /**
    * Create child XML element of the form
-\code
-<name/>
-\endcode
+   * \code
+   * <name/>
+   * \endcode
    * for instance when "name" is boolean (present or absent), or only
    * takes attributes (see FactoryMessenger::setAttribute()). As an
    * example, Astrobj::Generic::fillElement() uses
@@ -301,9 +309,9 @@ messenger->setAstrobj(Scenery::obj_);
   /**
    * Convert value to striing "svalue" and create an XML child element
    * of the form
-\code
-<name>svalue</name>
-\endcode
+   * \code
+   * <name>svalue</name>
+   * \endcode
    */
   void setParameter(std::string name, double value);
   ///< Output parameter
@@ -311,9 +319,9 @@ messenger->setAstrobj(Scenery::obj_);
   /**
    * Convert value to striing "svalue" and create an XML child element
    * of the form
-\code
-<name>svalue</name>
-\endcode
+   * \code
+   * <name>svalue</name>
+   * \endcode
    */
   void setParameter(std::string name, long int value);
   ///< Output parameter
@@ -321,9 +329,9 @@ messenger->setAstrobj(Scenery::obj_);
   /**
    * Convert value to striing "svalue" and create an XML child element
    * of the form
-\code
-<name>svalue</name>
-\endcode
+   * \code
+   * <name>svalue</name>
+   * \endcode
    */
   void setParameter(std::string name, unsigned int value);
   ///< Output parameter
@@ -331,42 +339,42 @@ messenger->setAstrobj(Scenery::obj_);
   /**
    * Convert value to striing "svalue" and create an XML child element
    * of the form
-\code
-<name>svalue</name>
-\endcode
+   * \code
+   * <name>svalue</name>
+   * \endcode
    */
   void setParameter(std::string name, unsigned long value);
   ///< Output parameter
 
   /**
-   * Convert value to striing "svalue" and create an XML child element
+   * Convert value to string "svalue" and create an XML child element
    * of the form
-\code
-<name>svalue</name>
-\endcode
+   * \code
+   * <name>svalue</name>
+   * \endcode
    */
   void setParameter(std::string name, int value);
   ///< Output parameter
 
   /**
    * Create an XML child element of the form
-\code
-<name>value</name>
-\endcode
+   * \code
+   * <name>value</name>
+   * \endcode
    */
   void setParameter(std::string name, std::string value);
   ///< Output parameter
 
   /**
    * For instance:
-\code
-double val[4] = {1., 2., 3., 4.};
-messenger->setParameter("MyArray", val, 4);
-\endcode
+   * \code
+   * double val[4] = {1., 2., 3., 4.};
+   * messenger->setParameter("MyArray", val, 4);
+   * \endcode
    * will result in something like this:
-\code
-<MyArray>1.000000 2.000000 3.000000 4.000000</MyArray>
-\endcode
+   * \code
+   * <MyArray>1.000000 2.000000 3.000000 4.000000</MyArray>
+   * \endcode
    *
    * The exact format is unspecified, determined at compile time, and
    * by default, unlike in the example above, outputs a large number
@@ -388,13 +396,13 @@ messenger->setParameter("MyArray", val, 4);
   /**
    * For instance Spectrometer::fillElement() sets its "kind"
    * attribute somewhat like this:
-\code
-messenger->setSelfAttribute("kind", "wave");
-\endcode
+   * \code
+   * messenger->setSelfAttribute("kind", "wave");
+   * \endcode
    * to produce something like this:
-\code
-<Spectrometer kind="wave"/>
-\endcode
+   * \code
+   * <Spectrometer kind="wave"/>
+   * \endcode
    */
   void setSelfAttribute(std::string attrname, std::string value) ;
   ///< Set attribute in FactoryMessenger::element_
@@ -431,16 +439,16 @@ messenger->setSelfAttribute("kind", "wave");
    * To be used from fillElement() methods. For instance, the
    * Star::fillElement() method calls makeChild() to save the Star's
    * Spectrum and Opacity members somewhat like this:
-\code
-FactoryMessenger * child;
-child = messenger-> makeChild("Spectrum");
-spectrum_ -> fillElement(child);
-delete child;
-child = messenger-> makeChild("Opacity");
-opacity_ -> fillElement(child);
-delete child;
-child=NULL;
-\endcode
+   * \code
+   * FactoryMessenger * child;
+   * child = messenger-> makeChild("Spectrum");
+   * spectrum_ -> fillElement(child);
+   * delete child;
+   * child = messenger-> makeChild("Opacity");
+   * opacity_ -> fillElement(child);
+   * delete child;
+   * child=NULL;
+   * \endcode
    *
    * The child messenger is allocated with new, you need to delete it
    * after use.

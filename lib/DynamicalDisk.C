@@ -77,13 +77,10 @@ double const * DynamicalDisk::getVelocity() const { return PatternDiskBB::getVel
 void DynamicalDisk::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
     throwError("In DynamicalDisk::copyQuantities: incoherent value of iq");
-  double * curem = emission_array_[iq-1],
-    * curvel = velocity_array_[iq-1], 
-    * curr = radius_array_[iq-1];
 
-  setEmission(curem);
-  setVelocity(curvel);
-  setRadius(curr);
+  setEmission(emission_array_[iq-1]);
+  setVelocity(velocity_array_[iq-1]);
+  setRadius(radius_array_[iq-1]);
 }
 
 void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {

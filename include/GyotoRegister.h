@@ -36,6 +36,7 @@ namespace Gyoto {
 #ifdef GYOTO_USE_XERCES
   /**
    * \namespace Gyoto::Register
+   * \brief Gyoto registers
    * 
    * Gyoto::Register::Entry instances are used to map kind names to
    * Gyoto::SmartPointee::Subcontractor_t functions used to

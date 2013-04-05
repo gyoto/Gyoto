@@ -1,5 +1,6 @@
 /**
  * \file GyotoDefs.h
+ * \brief Gyoto ubiquitous macros and typedefs
  */
 /*
     Copyright 2011 Thibaut Paumard
