@@ -21,7 +21,6 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
-#include "GyotoWorldlineIntegState.h"
 #include "GyotoDefs.h"
 #include "GyotoError.h"
 
@@ -267,8 +266,8 @@ int Photon::hit(Astrobj::Properties *data) {
     throwError("Incompatible coordinate kind in Photon.C");
   }
 
-  SmartPointer<WorldlineIntegState> state
-    = new WorldlineIntegState(metric_, coord, delta_* dir);
+  SmartPointer<Worldline::IntegState> state
+    = new Worldline::IntegState(this, coord, delta_* dir);
   //delta_ = initial integration step (defaults to 0.01)
 
   size_t count=0;// Must remain below count_max (prevents infinite integration)
@@ -293,8 +292,7 @@ int Photon::hit(Astrobj::Properties *data) {
 
   while (!stopcond) {
     // Next step along photon's worldline
-    if (adaptive_) stopcond  = state -> nextStep(this, coord);
-    else stopcond  = state -> nextStep(this, coord, dir*delta_);
+    stopcond  = state -> nextStep(coord);
     if (stopcond) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by integrator\n";

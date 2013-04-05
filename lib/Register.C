@@ -21,6 +21,7 @@
 #include "GyotoAstrobj.h"
 #include "GyotoMetric.h"
 #include "GyotoSpectrum.h"
+#include "GyotoSpectrometer.h"
 #include "GyotoConverters.h"
 
 #include <dlfcn.h>

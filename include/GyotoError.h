@@ -2,11 +2,22 @@
  * \file GyotoError.h
  * \brief Error handling
  *
- *  Every Gyoto method should check for possible error conditions and
- *  throw adequate Gyoto::Error exceptions. For instance:
+ *  Gyoto dlopens its plug-ins. The throw/catch C++ mechanism cannot
+ *  pass the dlopen boundary. The Gyoto::Error mechanism alleviates
+ *  this C++ language limitation.
+ *
+ *  Every Gyoto method (either in the main Gyoto library or in a Gyoto
+ *  plug-in) should check for possible error conditions and throw
+ *  adequate Gyoto::Error exceptions through the
+ *  Gyoto::Error::throw() function. For instance:
  *  \code
- *  if (error_condition) throw Gyoto::Error("Useful error message");
+ *  if (error_condition) Gyoto::Error::throw("Useful error message");
  *  \endcode
+ *
+ *  If the main code has set Gyoto::Error::handler_t error handler
+ *  using Gyoto::Error::setHandler(), these errors will then be passed
+ *  to it. Else, the Error is C++-thrown at the main Gyoto library
+ *  level, above the dlopen boundary.
  *
  *  The main code can then catch these exceptions and act appropriately,
  *  for instance:
@@ -21,7 +32,7 @@
  *
  */
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -57,64 +68,121 @@ namespace Gyoto {
  *  \class Gyoto::Error
  *  \brief Class for thowing exceptions.
  *
- *  Every Gyoto method should check for possible error conditions and
- *  throw adequate Gyoto::Error exceptions. For instance:
+ *  Gyoto dlopens its plug-ins. The throw/catch C++ mechanism cannot
+ *  pass the dlopen boundary. The Gyoto::Error mechanism alleviates
+ *  this C++ language limitation.
+ *
+ *  Every Gyoto method (either in the main Gyoto library or in a Gyoto
+ *  plug-in) should check for possible error conditions and throw
+ *  adequate Gyoto::Error exceptions through the
+ *  Gyoto::throwError() function. For instance:
  *  \code
- *  if (error_condition) throw Gyoto::Error("Useful error message");
+ *  if (error_condition) Gyoto::throwError("Useful error message");
  *  \endcode
+ *
+ *  If the main code has set Gyoto::Error::handler_t error handler
+ *  using Gyoto::Error::setHandler(), these errors will then be passed
+ *  to it. Else, the Error is C++-thrown at the main Gyoto library
+ *  level, above the dlopen boundary.
+ *
+ *  The main code can then catch these exceptions and act appropriately,
+ *  for instance:
+ *  \code
+ *  try { gyoto_code ; }
+ *  catch (Gyoto::Error err)
+ *  {
+ *     err.Report();
+ *     abort();
+ *  }
+ * \endcode
  */
 class Gyoto::Error
 {
  private:
-  //const char* message; /*!< error message */
-  const std::string message; /*!< error message */
+  /// Error message.
+  const std::string message;
+
+  /// Error code.
+  /**
+   * Default value is EXIT_FAILURE from cstdlib. Currently not used in
+   * practice.
+   */
   const int errcode;
+
  public:
 
-  /**
-   * \brief Constructor with an error message
-   * \param m : pointer (char*) to the error message
-   */
-  //Error( const char* m );
+  /// Constructor with an error message.
   Error( const std::string m );
 
-  /**
-   * \brief Constructor with an error code
-   * \param int errcode : error code
-   */
+  /// Constructor with an error code.
   Error( const int errcode );
 
+  /// Constructor with both an error message and an error code.
+  Error( const std::string m, const int errcode );
 
-  /**
-   * \brief Constructor with both an error message and an error code
-   * \param m : pointer (char*) to the error message
-   * \param int errcode : error code
-   */
-  Error( const char* m , const int errcode );
+  /// Print-out error message on standard error.
+  void Report() const ;
 
+  /// Retrieve error code.
   /**
-   * \brief Print-out error message on standard error
-   */
-  void Report() const ;  /*!<  */
-
-  /**
-   * \brief Retrieve error code
+   * See also operator const char * () const and get_message().
    * \return Error code
    */
   int getErrcode() const ;
 
+  /// Cast to const char *.
   /**
-   * \brief Retrieve error message for custom handling of the exception
+   * Retrieve error message as a C string. See also get_message() and
+   * gerErrcode().
+   */
+  operator const char * () const;
+
+  /// Retrieve error message for custom handling of the exception.
+  /**
+   * See also operator const char * () const and getErrCode().
    * \return char* message : pointer to the error message
    */
-  //char const * const get_message() const ;
   std::string get_message() const ;
+
+  /// Error handler type.
+  /**
+   * Instead of catching Gyoto errors directly (for instance if gyoto
+   * itself is dlopened), you can set a Handler_t error handler using
+   * setHandler().
+   *
+   * A very simple handler could be:
+   * \code
+   * void applicationErrorHandler(const Gyoto::Error e) {
+   *   e.Report();
+   *   exit ( e.getErrCode() );
+   * }
+   * \endcode
+   */
+  typedef void Handler_t (const Error);
+
+  /// Set application error handler.
+  /**
+   * Instead of catching Gyoto errors directly (for instance if gyoto
+   * itself is dlopened), you can set an Error::Handler_t error
+   * handler using setHandler().
+   *
+   * \code
+   * void applicationErrorHandler(const Gyoto::Error e) {
+   *   e.Report();
+   *   exit ( e.getErrCode() );
+   * }
+   * int main() {
+   *   Gyoto::Error::setHandler(&applicationErrorHandler);
+   * }
+   * \endcode
+   * \param phandler Function pointer to the handler.
+   */
+  static void setHandler( Gyoto::Error::Handler_t* phandler);
+
 };
 
-typedef void GyotoErrorHandler_t (const char*);
-
 namespace Gyoto {
-  void setErrorHandler( GyotoErrorHandler_t* );
+  /// Throw a Gyoto::Error
   void throwError( std::string );
 }
 

@@ -1,10 +1,13 @@
 /**
-* \file GyotoPolishDoughnut.h
-* \brief A toroïdal accretion structure
-*
-*  Beware: the PolishDoughnut now in SI
-*
-*/
+ * \file GyotoPolishDoughnut.h
+ * \brief A toroïdal accretion structure
+ *
+ *  Reference: Straub, O.; Vincent, F. H.; Abramowicz, M. A.;
+ *  Gourgoulhon, E.; &amp; Paumard, T. 2012, <STRONG>Modelling the
+ *  black hole silhouette in Sagittarius A* with ion tori</STRONG>,
+ *  A&amp;A 543:83.
+ *
+ */
 
 /*
     Copyright (c) 2012 Frederic Vincent, Odele Straub, Thibaut Paumard
@@ -41,9 +44,13 @@ namespace Gyoto{
 //#include <GyotoPolishDoughnutCst.h>
 
 /**
-* \class Gyoto::PolishDoughnut
-* \brief 
-* 
+ * \brief A toroïdal accretion structure
+ *
+ *  Reference: Straub, O.; Vincent, F. H.; Abramowicz, M. A.;
+ *  Gourgoulhon, E.; &amp; Paumard, T. 2012, <STRONG>Modelling the
+ *  black hole silhouette in Sagittarius A* with ion tori</STRONG>,
+ *  A&amp;A 543:83.
+ * 
  */
 class Gyoto::Astrobj::PolishDoughnut
 : public Astrobj::Standard,

@@ -37,6 +37,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoUniformSphere.h>
 #include <GyotoSpectrum.h>
+#include <GyotoWorldline.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>

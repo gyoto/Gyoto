@@ -37,7 +37,6 @@ namespace Gyoto {
 
 #include <GyotoSmartPointer.h>
 #include <GyotoMetric.h>
-#include <GyotoWorldlineIntegState.h>
 #include <GyotoScreen.h>
 #include <GyotoHooks.h>
 
@@ -367,6 +366,60 @@ class Gyoto::Worldline
   
  protected:
   virtual void tell(Gyoto::Hook::Teller*);
+  class IntegState;
+};
+
+
+/**
+ * \class Gyoto::Worldline::IntegState
+ * \brief Current state of a geodesic integration
+ */
+
+class Gyoto::Worldline::IntegState : SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState>;
+
+ private:
+  /// Worldline that we are integrating.
+  /**
+   * Beware this is not a SmartPointer. Make sure line_ still exists
+   * when calling nestStep().
+   */
+  Worldline * line_;
+
+  /// The Metric in this end of the Universe.
+  /**
+   * Taken from Worldline::line_, never updated.
+   */
+  Gyoto::SmartPointer<Gyoto::Metric::Generic> gg_;
+  
+  double coord_[8]; ///< Previously determined coordinate.
+  double norm_; ///< Current norm of the 4-velocity.
+  double normref_; ///< Initial norm of the 4-velocity.
+  double delta_; ///< Integration step (current in case of adaptive).
+
+  /// Whether Worldline::delta_ is adaptive.
+  /**
+   * Taken from Worldline::line_, never updated.
+   */
+  bool adaptive_;
+
+ public:
+  /// Constructor
+  /**
+   * \param line The Worldline that we are integrating. Sets:
+   * Worldline::line_, Worldline::gg_, Worldline::adaptive_.
+   * \param coord Initial coordinate.
+   * \param delta Integration step. Sign determines direction.
+   */
+  IntegState(Worldline * line, const double *coord, const double delta);
+  
+  /// Make one step.
+  /**
+   * \param[out] coord Next position-velocity;
+   */
+  virtual int nextStep(double *coord);
+
+  virtual ~IntegState();
 };
 
 #endif

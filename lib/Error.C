@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -19,11 +19,11 @@
 
 #include <GyotoError.h>
 #include <iostream>
+#include <cstdlib>
 using namespace Gyoto;
 using namespace std;
 
-//Error::Error( const char* m ) : message(m), errcode(0) { }
-Error::Error( const std::string m ) : message(m), errcode(0) { }
+Error::Error( const std::string m ) : message(m), errcode(EXIT_FAILURE) { }
 
 void Error::Report() const { cerr << message << endl; }
 
@@ -32,12 +32,14 @@ int Error::getErrcode() const { return errcode ; }
 //char const * const Error::get_message() const { return message; }
 std::string Error::get_message() const { return message; }
 
-static GyotoErrorHandler_t * GyotoErrorHandler = NULL;
+static Gyoto::Error::Handler_t * GyotoErrorHandler = NULL;
 
-void Gyoto::setErrorHandler( GyotoErrorHandler_t* handler )
+void Gyoto::Error::setHandler( Gyoto::Error::Handler_t* handler )
 { GyotoErrorHandler = handler ; }
 
 void Gyoto::throwError( const std::string m ) {
-  if (GyotoErrorHandler) (*GyotoErrorHandler)(m.c_str());
+  if (GyotoErrorHandler) (*GyotoErrorHandler)(Error(m));
   else throw Error(m);
 }
+
+Gyoto::Error::operator const char * () const { return message.c_str(); }

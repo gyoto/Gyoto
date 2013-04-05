@@ -67,8 +67,8 @@ void sigint_handler(int sig)
 static std::string curmsg = "";
 static int curretval = 1;
 
-void gyotoErrorHandler( const char *msg ) {
-  cerr << curmsg << msg << endl;
+void gyotoErrorHandler( const Gyoto::Error e ) {
+  cerr << curmsg << e << endl;
   if (debug()) abort(); // to keep stack for debugger
   exit (curretval);
 }
@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
 	 << endl << endl;
 
   // set-up error reporter
-  Gyoto::setErrorHandler ( &gyotoErrorHandler );
+  Gyoto::Error::setHandler ( &gyotoErrorHandler );
 
   curmsg = "In gyoto.C: Error initializing libgyoto: ";
   curretval = 1;

@@ -43,12 +43,7 @@ namespace Gyoto {
    */
   namespace Register {
 
-    /**
-     * \brief Entry in a register (or a full register)
-     *
-     * A register is actually a chained list of Register::Entry
-     * instances.
-     */
+    /* Documented below */
     class Entry;
 
     /**
@@ -75,8 +70,8 @@ namespace Gyoto {
   /**
    * \brief Load a plugin by name
    *
-   * Uses dlopen to load the file libgyoto-<plugname>.so, looks for
-   * the function __Gyoto<plugname>Init inside it and run it.
+   * Uses dlopen to load the file libgyoto-&lt;plugname&gt;.so, looks for
+   * the function __Gyoto&lt;plugname&gt;Init inside it and run it.
    * Plug-ins must be located in the runtime link search path, or in
    * GYOTO_PREFIX/lib/gyoto/, or in
    * GYOTO_PREFIX/lib/gyoto/GYOTO_SOVERS/.
@@ -90,6 +85,12 @@ namespace Gyoto {
 }
 
 #ifdef GYOTO_USE_XERCES
+/**
+ * \brief Entry in a register (or a full register)
+ *
+ * A register is actually a chained list of Register::Entry
+ * instances.
+ */
 class Gyoto::Register::Entry {
   /**
    * \brief List the various registers

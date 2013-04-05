@@ -31,6 +31,8 @@ using namespace std;
 
 static YGyotoSupplier_t *YGyotoGlobalSupplier = NULL;
 
+void ygyotoErrorHandler (const Gyoto::Error e) { y_error(e); }
+
 extern "C" {
 
   void
@@ -177,6 +179,6 @@ extern "C" {
 
   void
   Y___gyoto_setErrorHandler(int argc)
-  { Gyoto::setErrorHandler(&y_error); }
+  { Gyoto::Error::setHandler(&ygyotoErrorHandler); }
 
 }

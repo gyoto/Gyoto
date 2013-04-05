@@ -11,8 +11,7 @@
  * built are documented, replaced by "(undefined)" if the macro was
  * undefined.
  */
-/** \def
-    \brief
+/*
     Copyright 2012 Thibaut Paumard
 
     This file is part of Gyoto.

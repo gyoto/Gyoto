@@ -33,7 +33,6 @@
 #include <fstream>
 #include <string>
 
-#include <GyotoWorldline.h>
 #include <GyotoSmartPointer.h>
 #include <GyotoAstrobj.h>
 #include <GyotoRegister.h>
@@ -113,7 +112,11 @@ namespace Gyoto {
       *  Gyoto::Register::init().
       */
      void initRegister();
+
   }
+
+  /* Documented elswhere */
+  class Worldline;
 }
 
 /**

@@ -472,8 +472,8 @@ void Worldline::xFill(double tlim) {
   double coord[8]={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
 		   x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
 
-  SmartPointer<WorldlineIntegState> state
-    = new WorldlineIntegState(metric_, coord, dir*delta_);
+  SmartPointer<IntegState> state
+    = new IntegState(this, coord, dir*delta_);
     //delta_ = initial integration step (defaults to 0.01)
 
   int mycount=0;// to prevent infinite integration
@@ -482,10 +482,7 @@ void Worldline::xFill(double tlim) {
     mycount++;
     ind+=dir;
 
-    if (adaptive_)
-      stopcond= state -> nextStep(this,coord);
-    else
-      stopcond= state -> nextStep(this,coord,dir*delta_);
+    stopcond= state -> nextStep(coord);
 
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==maxiter_) {

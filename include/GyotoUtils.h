@@ -66,8 +66,8 @@ namespace Gyoto {
 
   /// Convert lengths (deprecated)
   /**
-   * \deprecated{Will be removed once it is not used anymore in Gyoto
-   * per se. Prefer Gyoto::Units framework.}
+   * \deprecated Will be removed once it is not used anymore in Gyoto
+   * per se. Prefer Gyoto::Units framework.
    *
    * \param[in,out] x Lengths to convert, in geometrical units on
    * input, in specified unit on output.
