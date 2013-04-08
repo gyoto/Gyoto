@@ -45,14 +45,13 @@ Worldline::IntegState::IntegState(Worldline * line,
 
 int Worldline::IntegState::nextStep(double coord[8]) {
   int j;
-  double coordnew[8];
   double h1;
 
   if (adaptive_){
     if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1)) return 1;
     delta_ = h1;
   }else{
-    if (gg_ -> myrk4(line_,coord_,delta_,coordnew)) return 1; 
+    if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1; 
   }
   for (j=0;j<8;j++) coord_[j] = coord[j];
 
