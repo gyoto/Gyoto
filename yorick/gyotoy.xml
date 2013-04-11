@@ -462,7 +462,7 @@ Geometrical units</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">t1_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_t1" swapped="no"/>
                     <signal name="value-changed" handler="set_t1" swapped="no"/>
                   </object>
@@ -548,7 +548,7 @@ Degrees</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">incl_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="orient3" swapped="no"/>
                     <signal name="value-changed" handler="orient3" swapped="no"/>
                   </object>
@@ -571,7 +571,7 @@ Degrees</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">paln_adjustment</property>
                     <property name="climb_rate">0.050000000000000003</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="orient3" swapped="no"/>
                     <signal name="value-changed" handler="orient3" swapped="no"/>
                   </object>
@@ -593,7 +593,7 @@ Degrees</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">phase_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="orient3" swapped="no"/>
                     <signal name="value-changed" handler="orient3" swapped="no"/>
                   </object>
@@ -626,7 +626,7 @@ Degrees</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">phiprime0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -659,7 +659,7 @@ Degrees</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">thetaprime0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -680,7 +680,7 @@ Degrees</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">rprime0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -702,7 +702,7 @@ Geometrical units</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">t0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -723,7 +723,7 @@ Geometrical units</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">phi0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -744,7 +744,7 @@ Geometrical units</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">theta0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -766,7 +766,7 @@ Geometrical units</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">r0_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_initcoord" swapped="no"/>
                     <signal name="value-changed" handler="set_initcoord" swapped="no"/>
                   </object>
@@ -889,7 +889,7 @@ For Kerr metric only</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">spin_adjustment</property>
-                    <property name="digits">12</property>
+                    <property name="digits">17</property>
                     <property name="numeric">True</property>
                     <signal name="change-value" handler="set_spin" swapped="no"/>
                     <signal name="value-changed" handler="set_spin" swapped="no"/>
@@ -1003,6 +1003,7 @@ Solar masses</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">mass_adjustment</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_mass" swapped="no"/>
                     <signal name="value-changed" handler="set_mass" swapped="no"/>
                   </object>
@@ -1035,7 +1036,7 @@ Kiloparsecs</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
                     <property name="adjustment">distance_adjustment</property>
-                    <property name="digits">5</property>
+                    <property name="digits">17</property>
                     <signal name="change-value" handler="set_distance" swapped="no"/>
                     <signal name="value-changed" handler="set_distance" swapped="no"/>
                   </object>
