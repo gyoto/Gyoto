@@ -50,7 +50,7 @@ gg, spin=0.9;
 write, format="%s\n", "done.";
   
 write, format="%s", "Getting spin... ";
-if (gg(spin=)!=0.9) error, "CHECK FAILED";
+if (gg.spin!=0.9) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 //write, format="%s", "Pointer to this Metric object: gg()==";

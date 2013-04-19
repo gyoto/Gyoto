@@ -129,21 +129,26 @@ local gyoto;
     later point in time:
        gg = gyoto_KerrBL( spin=0.995, mass=4e6 ) ;
        gg, spin=0.5;
-       spin_param = gg(spin=);
+       spin_param = gg(spin=); // or spin_param = gg.spin
        
     Note how giving a member keyword without any value, as in the last
-    example above, allows _retrieving_ the previously set value. When
-    setting member, it is also possible to call the object as a
+    example above, allows _retrieving_ the previously set value. The
+    alternative dot notation is semantically equivalent but slightly
+    slower.
+
+    When setting member, it is also possible to call the object as a
     function. In that case, the return value will be the object
     itself, allowing to call it again as a function:
-       spin_val = gg(spin=0.5)(spin=);
+       spin_val = gg(spin=0.5)(spin=)
+       or spin_val = gg(spin=0.5).spin
     Although the above example is trivial, this is useful in some
     complex situations:
-       Setting the resolution in a Screen attached to a Scenery:
+       Getting the resolution in a Screen attached to a Scenery:
          res_val = scenery(screen=)(resolution=);
+         res_val = scenery.screen.resolution; // more elegant but slower
        Setting resolution:
-         noop, scenery(screen=)(resolution=res_val);
-       (The noop above is not mandatory.) 
+         noop, scenery.screen(resolution=res_val);
+       (The noop above is not mandatory but avoid spurious display). 
 
     Some member keywords accept more than one parameter, separated by
     comas. This is the first exception GYOTO makes to the Yorick
@@ -181,12 +186,12 @@ local gyoto;
                        // object
        
        gg_clone = gg(clone=);  // This is cloning: gg3 is a detached
-                               // copy
+       gg_clone = gg.clone     // copy
 
        gg_copy, spin=0.2;
        gg_clone, spin=0.7;
 
-       gg(spin=);  // the spin in gg is the same as in gg_copy, not
+       gg.spin;    // the spin in gg is the same as in gg_copy, not
                    // gg_clone.
 
     
@@ -283,7 +288,7 @@ local gyoto;
 
      Trace the trajectory of a photon in the secondary image of the above:
        ph = gyoto_Photon(initcoord=sc,77,45, xfill=870.623);
-       txyz = ph(get_txyz=1);
+       txyz = ph.get_txyz;
        plg, txyz(,3), txyz(,2);
        limits, square=1;
 
@@ -303,7 +308,7 @@ extern gyoto_Scenery;
              Create GYOTO Scenery object
          or scenery, [members=values]
              Set GYOTO Scenery member
-         or res = scenery(member=)
+         or res = scenery(member=) or res = scenery.member
              Get GYOTO Scenery member
          or scenery, xmlwrite=filename
              Save Scenery description to XML
@@ -528,7 +533,7 @@ BROKEN
 extern gyoto_Photon;
 /* DOCUMENT photon = gyoto_Photon([filename], [members=values])
             photon, member=values
-            value = photon(member=)
+            value = photon(member=) or value = photon.member
             value = photon(function_method=params)
             photon, subroutine_method=params
 
@@ -543,7 +548,8 @@ extern gyoto_Photon;
    MEMBERS:
 
      Members can be set with the syntax "photon, member=value" and
-     retrieved with the syntax "value=photon(member=)":
+     retrieved with the syntax "value=photon(member=)" or
+     "value=photon.member":
      
         metric= a GYOTO Metric (see gyoto_Metric),
             initcoord=scenery,x,y also sets the metric.
@@ -638,7 +644,7 @@ extern gyoto_Photon;
 extern gyoto_Metric;
 /* DOCUMENT gg = gyoto_Metric( filename, [members=values] )
             gg, members=values
-            retval = gg(member=);
+            retval = gg(member=) or retval = gg.member;
             retval = gg(function_method=par1, par2...)
             gg, xmlwrite=filename
             coef = gg(coordinates, mu, nu)
@@ -731,7 +737,7 @@ extern gyoto_Metric;
 extern gyoto_Astrobj;
 /* DOCUMENT ao = gyoto_Astrobj( filename );
             ao, member1=val1, member2=val2...;
-            val = ao(member=)
+            val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
 
      Generic class for describing an astronomical object (a star, an
@@ -753,7 +759,7 @@ extern gyoto_Astrobj;
      All the kinds of Astrobjs share a few members that can be
      accessed with the following keywords. To set the member, use "ao,
      member=value". To retrieve the current value of the member, use
-     "retval = ao(member=)".
+     "retval = ao(member=)" or "retval = ao.member".
 
      rmax:        for optimization, tell the Scenery that this object
                   does not extend over RMAX from the center of the
@@ -809,7 +815,7 @@ extern gyoto_Astrobj;
 extern gyoto_ThinDisk;
 /* DOCUMENT ao = gyoto_ThinDisk( filename );
             ao, member1=val1, member2=val2...;
-            val = ao(member=)
+            val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
 
      A more specific version of the gyoto_Astrobj function. A very
@@ -878,7 +884,7 @@ extern gyoto_Screen;
 
      Member keywords are used to set the value of a member (screen,
      member=value) or to retrieve the value of a memeber
-     (value=screen(member=)):
+     (value=screen(member=) or value=screen.member):
        metric, time, tmin, fov (field-of-view), resolution (N pixels
        on each side), distance (meters), inclination, paln (position
        angle of the line of nodes), argument, pojection (=[incl, paln,
@@ -1021,7 +1027,7 @@ extern _gyoto_SpectroUniform_register_as_Spectro;
 
    MEMBERS:
      Members can be set with "spectro, member=value" and retrieved
-     with "value = spectro(member=)".
+     with "value = spectro(member=)" or "value=spectro.member".
      
        kind=     a string, one of "none", "wave", "freq", "wavelog",
                  "freqlog". KIND affects how BAND below is interpreted

@@ -64,9 +64,9 @@ st,xfill=770.;
 //if (abs(pos-[10.5718661339679, 1.57079398752261, 59.5795847453848])(max)<1e-5)
 //  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
-txyz=st(get_txyz=); dates=txyz(,1); x=txyz(,2); y=txyz(,3);
-coords=st(get_coord=);
-primes=st(get_prime=);
+txyz=st.get_txyz; dates=txyz(,1); x=txyz(,2); y=txyz(,3);
+coords=st.get_coord;
+primes=st.get_prime;
 
 write, format="%s", "Checking gg(prime2tdot= pos, vel): ";
 N=dimsof(coords)(2);

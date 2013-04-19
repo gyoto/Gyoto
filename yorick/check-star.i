@@ -28,7 +28,7 @@ write, format="%s", "Printing star:";
 st;
 
 write, format="%s", "Cloning...";
-st2=st(clone=);
+st2=st.clone;
 write, format="%s\n", "DONE.";
 
 write, format="%s", "Printing clone:";
@@ -41,7 +41,7 @@ st, radius=0.5;
 write, format= "%s\n", "done.";
 
 write, format="%s", "Getting radius... ";
-if (st(radius=)!=0.5) error, "CHECK FAILED";
+if (st.radius!=0.5) error, "CHECK FAILED";
 write, format= "%s\n", "done.";
 
 write, format="%s", "Setting metric... ";
@@ -49,10 +49,10 @@ st, metric=gyoto_KerrBL(spin=0.);
 write, format= "%s\n", "done.";
 
 write, format="%s", "Changing metric spin... ";
-rien=st(metric=)(spin=0.7);
-if (st(metric=)(spin=)!=0.7) error, "CHECK FAILED";
-gg=st(metric=); gg, spin=0.995;
-if (st(metric=)(spin=)!=0.995) error, "CHECK FAILED";
+noop, st.metric(spin=0.7);
+if (st.metric.spin!=0.7) error, "CHECK FAILED";
+gg=st.metric; gg, spin=0.995;
+if (st.metric.spin!=0.995) error, "CHECK FAILED";
 write, format= "%s\n", "done.";
 
 write, format="%s", "Setting initial condition... ";
@@ -64,7 +64,7 @@ st, xfill=800;
 write, format="%s\n", "done.";
 
 write, format="%s", "Instanciating Screen... ";
-screen=gyoto_Screen(metric=st(metric=));
+screen=gyoto_Screen(metric=st.metric);
 write, format="%s\n", "done.";
 
 

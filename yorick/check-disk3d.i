@@ -46,8 +46,8 @@ pd;
 write, format="%s\n", " done.";
 
 screen = gyoto_Screen(metric=metric, resolution=64,
-                      time=1000.*metric(unitlength=)/GYOTO_C,
-                      distance=100.*metric(unitlength=), fov=30./100.,
+                      time=1000.*metric.unitlength/GYOTO_C,
+                      distance=100.*metric.unitlength, fov=30./100.,
                       inclination=110./180.*pi, paln=pi);
 
 write, format="%s", "Attaching Disk3D to scenery...";
@@ -72,15 +72,15 @@ remove, "check-disk3d.fits.gz";
 write, format="%s\n", " done.";
 
 write, format="%s", "Getting Disk3D...";
-pd2 = sc2(astrobj=);
+pd2 = sc2.astrobj;
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing emissquant array...";
-if (anyof(emissquant != pd2(copyemissquant=))) error, "CHECK FAILED";
+if (anyof(emissquant != pd2.copyemissquant)) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing velocity array...";
-if (anyof(velocity != pd2(copyvelocity=))) error, "CHECK FAILED";
+if (anyof(velocity != pd2.copyvelocity)) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 /*write, format="%s", "Performing raytracing...\n";
