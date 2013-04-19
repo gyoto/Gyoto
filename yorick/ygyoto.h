@@ -435,11 +435,27 @@ void ygyoto_Spectrometer_generic_eval
     }									\
     YGYOTO_PRINT_YUSEROBJ(NAME)						\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
+    void gyoto_##NAME##_extract(void *obj, char *member) {		\
+      long idxo = yget_global("__gyoto_obj", 0);			\
+      long idxr = yget_global("__gyoto_res", 0);			\
+      *ypush_##NAME()= ((gyoto_##NAME*)obj)->smptr;			\
+      yput_global(idxo, 0);						\
+      yarg_drop(1);							\
+      long dims[Y_DIMSIZE]={1,1};					\
+      string stmt = "eq_nocopy, __gyoto_res, __gyoto_obj(";		\
+      stmt.append(member).append("=);");				\
+      *ypush_q(dims)=p_strcpy(stmt.c_str());				\
+      yexec_include(0, 1);						\
+      yarg_drop(1);							\
+      ypush_global(idxr);						\
+    }									\
     static y_userobj_t gyoto_##NAME##_obj =				\
     {const_cast<char*>("gyoto_" #NAME),					\
      &gyoto_##NAME##_free,						\
      &gyoto_##NAME##_print,						\
-     &gyoto_##NAME##_eval, 0, 0};					\
+     &gyoto_##NAME##_eval,						\
+     &gyoto_##NAME##_extract,						\
+     0};								\
   }									\
   Gyoto::SmartPointer<CLASS>* yget_##NAME(int iarg) {			\
     return &(((gyoto_##NAME*)yget_obj(iarg, &gyoto_##NAME##_obj))->smptr); \

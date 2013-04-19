@@ -22,6 +22,7 @@
 #include "GyotoDefs.h"
 #include "ygyoto.h"
 #include "yapi.h"
+#include "pstdlib.h"
 
 #define OBJ ph
 
