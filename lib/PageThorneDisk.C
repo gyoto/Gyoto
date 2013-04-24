@@ -35,6 +35,7 @@
 #include <limits>
 #include <string>
 #include <cstring>
+#include <time.h> 
 
 using namespace std;
 using namespace Gyoto;
@@ -42,14 +43,15 @@ using namespace Gyoto::Astrobj;
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
-  x0_(0.), x1_(0.), x2_(0.), x3_(0.)
+  x0_(0.), x1_(0.), x2_(0.), x3_(0.), rednoise_(0)
 {
   if (debug()) cerr << "DEBUG: PageThorneDisk Construction" << endl;
 }
 
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
-  x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_)
+  x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
+  rednoise_(o.rednoise_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
@@ -127,23 +129,52 @@ double PageThorneDisk::bolometricEmission(double dsem,
     throwError("Unknown coordinate system kind");
     xx=0;
   }
+  
+  // the above formula assume M=1 (x=sqrt(r/M)=sqrt(r))
+  double x2=xx*xx;
+  
   double ff=
     3./(2.)*1./(xx*xx*(xx*xx*xx-3.*xx+2.*aa_))
-    *( xx-x0_-3./2.*aa_*log(xx/x0_)
-    -3.*(x1_-aa_)*(x1_-aa_)/(x1_*(x1_-x2_)*(x1_-x3_))*log((xx-x1_)/(x0_-x1_)) 
-    -3.*(x2_-aa_)*(x2_-aa_)/(x2_*(x2_-x1_)*(x2_-x3_))*log((xx-x2_)/(x0_-x2_)) 
-    -3.*(x3_-aa_)*(x3_-aa_)/(x3_*(x3_-x1_)*(x3_-x2_))*log((xx-x3_)/(x0_-x3_)));
-           // f of Page&Thorne, in units M=1
-
-  double Iem=ff/((4.*M_PI)*(xx*xx)); //with Mdot=1
-  //assume isotropic emission --> flux at r = (I at r)* int dOmega = cst*I
-  //and we don't care with cst
-  //NB: this is frequency integrated (bolometric) intensity, not I_nu
-
+    *( 
+      xx-x0_-3./2.*aa_*log(xx/x0_)
+      -3.*(x1_-aa_)*(x1_-aa_)/(x1_*(x1_-x2_)*(x1_-x3_))*log((xx-x1_)
+							    /(x0_-x1_)) 
+      -3.*(x2_-aa_)*(x2_-aa_)/(x2_*(x2_-x1_)*(x2_-x3_))*log((xx-x2_)
+							    /(x0_-x2_)) 
+      -3.*(x3_-aa_)*(x3_-aa_)/(x3_*(x3_-x1_)*(x3_-x2_))*log((xx-x3_)
+							    /(x0_-x3_))
+       );
+  // f of Page&Thorne, in units M=1
+  
+  double Iem=ff/(4.*M_PI*M_PI*x2);
+  /*
+    with Mdot=1 (NB: Mdot is a constant)
+    Assuming isotropic emission: 
+    flux at r = (I at r)* \int cos\theta dOmega = pi*I
+    thus intensity is only: 1/pi * flux
+    NB: this is frequency integrated (bolometric) intensity, not I_nu
+    NBB: the cgs value of I is c^6/G^2*Mdot/M^2 * Iem, it can be
+    recovered from the dimensionless Iem a posteriori if needed
+  */
+  
   if (flag_radtransf_) Iem *= dsem;
   GYOTO_DEBUG_EXPR(Iem);
+  
+  if (rednoise_) {
+    double rr=coord_obj[1], 
+      r32 = pow(rr,1.5),
+      tt=coord_obj[0], 
+      cst_aa=0.1*sqrt(6), // amplitude cst
+      cst_tt=1.;  // period cst
+    srand (time(NULL));
+    double random = double(rand() % 100)/100. ;
+    Iem*=1.+cst_aa*random*pow(rr,-0.5)*sin(cst_tt*1./r32*tt);
+    if (Iem < 0.) throwError("In PageThorneDisk::bolometricEmission"
+			     " rednoised emission is negative!");
+  }
+  
   return Iem;
-
+  
 }
 
 void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
@@ -221,6 +252,15 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 
 void PageThorneDisk::tell(Hook::Teller* msg) {
   updateSpin();
+}
+
+int PageThorneDisk::setParameter(std::string name,
+				 std::string content,
+				 std::string unit) {
+  char* tc = const_cast<char*>(content.c_str());
+  if (name=="RedNoise") rednoise_=1;
+  else return ThinDisk::setParameter(name, content, unit);
+  return 0;
 }
 
 #ifdef GYOTO_USE_XERCES

@@ -72,6 +72,7 @@ class Gyoto::Astrobj::PageThorneDisk
   double x1_; ///< Value cached for bolometricEmission()
   double x2_; ///< Value cached for bolometricEmission()
   double x3_; ///< Value cached for bolometricEmission()
+  int rednoise_; ///< Flag for rednoise-like flux
 
   // Constructors - Destructor
   // -------------------------
@@ -119,6 +120,10 @@ class Gyoto::Astrobj::PageThorneDisk
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
                                    double* coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
+
+  int setParameter(std::string name,
+		   std::string content,
+		   std::string unit);
 
   Quantity_t getDefaultQuantities();
 
