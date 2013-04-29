@@ -43,7 +43,8 @@ using namespace Gyoto::Astrobj;
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
-  x0_(0.), x1_(0.), x2_(0.), x3_(0.), rednoise_(0)
+  x0_(0.), x1_(0.), x2_(0.), x3_(0.), rednoise_(0),
+  uniflux_(0)
 {
   if (debug()) cerr << "DEBUG: PageThorneDisk Construction" << endl;
 }
@@ -51,7 +52,7 @@ PageThorneDisk::PageThorneDisk() :
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
   x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
-  rednoise_(o.rednoise_)
+  rednoise_(o.rednoise_), uniflux_(o.uniflux_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
@@ -116,6 +117,8 @@ double PageThorneDisk::bolometricEmission(double dsem,
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
   // not I_nu(r). And I(r)/nu^4 is conserved.
+
+  if (uniflux_) return 1;
 
   double xx;
   switch (gg_->getCoordKind()) {
@@ -259,6 +262,7 @@ int PageThorneDisk::setParameter(std::string name,
 				 std::string unit) {
   char* tc = const_cast<char*>(content.c_str());
   if (name=="RedNoise") rednoise_=1;
+  if (name=="UniFlux") uniflux_=1;
   else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }

@@ -73,6 +73,7 @@ class Gyoto::Astrobj::PageThorneDisk
   double x2_; ///< Value cached for bolometricEmission()
   double x3_; ///< Value cached for bolometricEmission()
   int rednoise_; ///< Flag for rednoise-like flux
+  int uniflux_; ///< Flag for uniform flux = 1
 
   // Constructors - Destructor
   // -------------------------
