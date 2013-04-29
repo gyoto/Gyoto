@@ -49,6 +49,8 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // -----
  protected:
   double spin_ ;  ///< Angular momentum parameter
+  int modifkerr_CS_; ///< Chern-Simons modification
+  double dzeta_; ///< Chern-Simons coupling constant
   
   // Constructors - Destructor
   // -------------------------
@@ -68,6 +70,8 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  public:
   // default operator= is fine
   void setSpin(const double spin); ///< Set spin
+  void setCoupling(const double couple);
+  ///< Set coupling constant if mdified Kerr
   virtual KerrBL * clone () const ;
 
 

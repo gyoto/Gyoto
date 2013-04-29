@@ -72,13 +72,15 @@ militari stop.
   //OK for a<0.999)
 					       
 KerrBL::KerrBL() :
-  Generic(GYOTO_COORDKIND_SPHERICAL), spin_(0.)
+  Generic(GYOTO_COORDKIND_SPHERICAL), spin_(0.),
+  modifkerr_CS_(0)
 {
   setKind("KerrBL");
 }
 
 KerrBL::KerrBL(double a, double m) :
-  Generic(m, GYOTO_COORDKIND_SPHERICAL), spin_(a) 
+  Generic(m, GYOTO_COORDKIND_SPHERICAL), spin_(a),
+  modifkerr_CS_(0)
 {
   //DEBUG!!!
   //spin_=0.;
@@ -89,7 +91,8 @@ KerrBL::KerrBL(double a, double m) :
 }
 
 // default copy constructor should be fine 
-KerrBL::KerrBL(const KerrBL& gg) : Metric::Generic(gg), spin_(gg.spin_)
+KerrBL::KerrBL(const KerrBL& gg) : Metric::Generic(gg), spin_(gg.spin_),
+				   modifkerr_CS_(gg.modifkerr_CS_)
 {setKind("KerrBL");}
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
@@ -118,6 +121,10 @@ std::ostream& KerrBL::print( std::ostream& o) const {
 void KerrBL::setSpin(const double spin) {
   spin_=spin;
   tellListeners();
+}
+
+void KerrBL::setCoupling(const double couple) {
+  dzeta_=couple;
 }
 
 // Accessors
@@ -153,8 +160,13 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   if ((mu==2) && (nu==2)) return sigma;
   if ((mu==3) && (nu==3))
     return (r2+a2+2.*r*a2*sth2/sigma)*sth2;
-  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
-    return -2*spin_*r*sth2/sigma;
+  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0))){
+    if (!modifkerr_CS_) // Kerr metric
+      return -2*spin_*r*sth2/sigma;
+    else // CS modified metric
+      return -2*spin_*r*sth2/sigma+
+	5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
+  }
 
   return 0.;
 } 
@@ -171,13 +183,44 @@ double KerrBL::gmunu_up(const double * pos, int mu, int nu) const {
   double delta=r2-2.*r+a2;
   double xi=(r2+a2)*(r2+a2)-a2*delta*sth2;
 
-  if ((mu==0) && (nu==0)) return -xi/(delta*sigma);    
+  if ((mu==0) && (nu==0)) {
+    if (!modifkerr_CS_){
+      return -xi/(delta*sigma);    
+    }else{
+      double gtt=-(1.-2.*r/sigma);
+      double gtp=-2*spin_*r*sth2/sigma+
+	5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
+      double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
+      double det=gtp*gtp-gtt*gpp;
+      return -gpp/det;    
+    }
+  }
   if ((mu==1) && (nu==1)) return delta/sigma;
   if ((mu==2) && (nu==2)) return 1./sigma;
-  if ((mu==3) && (nu==3)) 
-    return (delta-a2*sth2)/(sigma*delta*sth2);
-  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)))
-    return -2*spin_*r/(sigma*delta);
+  if ((mu==3) && (nu==3)) {
+    if (!modifkerr_CS_)
+      return (delta-a2*sth2)/(sigma*delta*sth2);
+    else{
+      double gtt=-(1.-2.*r/sigma);
+      double gtp=-2*spin_*r*sth2/sigma+
+	5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
+      double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
+      double det=gtp*gtp-gtt*gpp;
+      return -gtt/det;    
+    }
+  }
+  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0))){
+    if (!modifkerr_CS_)
+      return -2*spin_*r/(sigma*delta);
+    else{
+      double gtt=-(1.-2.*r/sigma);
+      double gtp=-2*spin_*r*sth2/sigma+
+	5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
+      double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
+      double det=gtp*gtp-gtt*gpp;
+      return gtp/det;    
+    }
+  }
 
   return 0.;
 } 
@@ -288,23 +331,29 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   //appears when transforming from principal momenta to coordinate
   //derivatives (e.g. p_theta -> thetadot)
 
-  res[0] = tmp1m1*(2.*(r*(-2.*a*L+E*r3+a2*E*(2.+r))+a2*E*(a2+r*(-2.+r))*costheta2));// tdot
 
+  /*
+    ---> Standard Kerr equations of geodesics
+  */
+  res[0] = tmp1m1*(2.*(r*(-2.*a*L+E*r3+a2*E*(2.+r))+a2*E*(a2+r*(-2.+r))
+		       *costheta2));// tdot
+  
   res[1] = Delta*Sigmam1*pr; //rdot
-
+  
   res[2] = Sigmam1*ptheta; //thetadot
-
-  res[3] = -tmp1m1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))*cotantheta2)); //phidot
+  
+  res[3] = -tmp1m1*(-2.*(r*(2.*a*E+L*(-2.+r))+L*(a2+r*(-2.+r))
+			 *cotantheta2)); //phidot
   
   res[4] = 0.;// ptdot : pt = cst = -E
-
+  
   double tmp2=r2+a2*costheta2;
   if (tmp2==0) throwError("r2+a2*costheta2==0");
   double tmp2m2=1./(tmp2*tmp2);
-
+  
   double tmp3=a2+r*(-2.+r);
   double tmp3_2=tmp3*tmp3;
-
+  
   res[5] =
     -0.5*(2.*(r*(r-a2)-a2*(1.-r)*costheta2)*tmp2m2)*pr*pr
     -0.5*(-2.*r*tmp2m2)*ptheta*ptheta
@@ -313,22 +362,38 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 	    +a2*(L2*(1.-r)+2*E2*r2))*costheta2
 	+r*(-r*(a2*a2*E2-2.*a3*E*L+2.*a*E*L*(4.-3.*r)*r
 		+a2*(L2+2.*E2*r*(-2.+r))+r*(E2*r3-L2*(-2.+r)*(-2.+r)))
-	    +L2*tmp3_2*cotantheta2)));// prdot
-
+	      +L2*tmp3_2*cotantheta2)));// prdot
+  
   res[6]=
     -0.5*(a2*Delta*sin2theta*Sigmam2)*pr*pr
     -0.5*(a2*sin2theta*Sigmam2)*ptheta*ptheta
     +(
-      Sigmam2
-      *(
-	L2*r2*cotantheta
-	+0.5*L2*(a2+2.*r2+a2*cos2theta)*cotantheta3
-	+a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*costheta*sintheta/Delta
-	)
+	Sigmam2
+	*(
+	  L2*r2*cotantheta
+	  +0.5*L2*(a2+2.*r2+a2*cos2theta)*cotantheta3
+	  +a2*r*(2.*a2*E2-4.*a*E*L+L2*(2.-r)+2.*E2*r2)*costheta*sintheta/Delta
+	  )
       ); // pthetadot
-
+  
   res[7] = 0.;//pphi = cst = L
-
+  
+  if (modifkerr_CS_){
+    /*
+      ---> Chern-Simons modifications to 1st order
+    */
+    res[0]+=tmp1m1*(a*L*(r-2.)*(189.+120.*r+70.*r2)*dzeta_*Sigma)
+      /(56.*(2.-r)*r3*r3*r2);
+    res[3]+=-tmp1m1*(a*E*(r-2.)*(189.+120.*r+70.*r2)*dzeta_*Sigma)
+      /(56.*(2.-r)*r3*r3*r2);
+    res[5]+=a*E*L*dzeta_*
+      (
+       r*(r-2.)*(r-2.)*(1701.+15*r-50.*r2-280.*r3)
+       +a2*(-189.*(16.-7.*r)+3.*(7.-12.*r)*r
+	    +10.*(12.-7.*r)*r2+70.*(7.-3.*r)*r3)
+       )
+      /(56.*r3*r3*r3*(r-2.)*(r-2.)*Delta*Delta);
+  }
   return 0;
 }
 
@@ -342,7 +407,33 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
   double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
 
   vel[1] = vel[2] = 0.;
-  vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
+  if (!modifkerr_CS_)
+    vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
+  else{ // Chern-Simons rotation velocity
+    double rr=coord[1], r2=rr*rr, r5=r2*r2*rr,
+      a2=spin_*spin_;
+    vel[3] = 
+      (
+       spin_*(-112.*r5+567.*dzeta_+300.*rr*dzeta_+140.*r2*dzeta_)
+       +r5*r2*
+       sqrt(1./(r5*r5*r2*r2)
+	    *(12544.*r5*r5*r2*rr
+	      -127008.*a2*r5*dzeta_
+	      -67200.*a2*r5*rr*dzeta_
+	      -31360.*a2*r5*r2*dzeta_
+	      +321489.*a2*dzeta_*dzeta_
+	      +340200.*a2*rr*dzeta_*dzeta_
+	      +248760.*a2*r2*dzeta_*dzeta_
+	      +84000.*a2*r2*rr*dzeta_*dzeta_
+	      +19600.*a2*r2*r2*dzeta_*dzeta_
+	      )
+	    )
+       )
+      /
+      (
+       112.*r5*(r2*rr-a2)
+       );
+  }
   vel[0] = SysPrimeToTdot(coor, vel+1);
   vel[3] *= vel[0];
 # if GYOTO_DEBUG_ENABLED
@@ -935,17 +1026,22 @@ void KerrBL::MakeCoord(const double coordin[8], const double cst[5], double coor
   double costheta2=costh*costh, sintheta2=sinth*sinth, 
     aa=spin_, a2=aa*aa;
 
-  double Sigma=r2+a2*costheta2, Delta=r2-2*rr+a2, lambda=1.-2*rr/Sigma, 
-    xi=2.*aa*rr*sintheta2/Sigma, xi2=xi*xi, 
-    gamma = sintheta2*(r2+a2+2.*a2*rr*sintheta2/Sigma), 
-    fact=1./(gamma*lambda+xi2);
+  double Sigma=r2+a2*costheta2, Delta=r2-2*rr+a2, gtt=-(1.-2*rr/Sigma), 
+    gtp=-2.*aa*rr*sintheta2/Sigma, 
+    gpp = sintheta2*(r2+a2+2.*a2*rr*sintheta2/Sigma), 
+    det=gtp*gtp-gtt*gpp, detm1=1./det;
+
+  if (modifkerr_CS_){
+    gtp+=5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*1./rr+27./10.*1./r2)*sintheta2;
+  }
 
   double EE=cst[1], LL=cst[2];
     
   double rdot=Delta/Sigma*pr, thetadot=1./Sigma*ptheta, 
-    phidot=lambda*fact*LL+xi*fact*EE, tdot=-xi*fact*LL+gamma*fact*EE;
+    phidot=-(gtt*LL+gtp*EE)*detm1, tdot=(gtp*LL+gpp*EE)*detm1;
 
-  coord[0]=tt;coord[1]=rr;coord[2]=theta;coord[3]=phi;coord[4]=tdot;coord[5]=rdot;coord[6]=thetadot;coord[7]=phidot;
+  coord[0]=tt;coord[1]=rr;coord[2]=theta;coord[3]=phi;coord[4]=tdot;
+  coord[5]=rdot;coord[6]=thetadot;coord[7]=phidot;
  
 }
 
@@ -953,8 +1049,6 @@ void KerrBL::MakeMomentum(const double coord[8], const double cst[5], double coo
 
   double EE=cst[1], LL=cst[2];
   
-  // double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3], tdot=coord[4],
-  //  rdot=coord[5], thetadot=coord[6], phidot=coord[7];
   double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3],
     rdot=coord[5], thetadot=coord[6];
 
@@ -967,7 +1061,9 @@ void KerrBL::MakeMomentum(const double coord[8], const double cst[5], double coo
 
   double pr=Sigma/Delta*rdot, ptheta=Sigma*thetadot;
 
-  coordout[0]=tt;coordout[1]=rr;coordout[2]=theta;coordout[3]=phi;coordout[4]=-EE;coordout[5]=pr;coordout[6]=ptheta;coordout[7]=LL;
+  coordout[0]=tt;coordout[1]=rr;coordout[2]=theta;
+  coordout[3]=phi;coordout[4]=-EE;coordout[5]=pr;
+  coordout[6]=ptheta;coordout[7]=LL;
 }
 
 void KerrBL::nullifyCoord(double coord[8]) const {
@@ -992,7 +1088,7 @@ void KerrBL::nullifyCoord(double coord[4], double & tdot2) const {
   coord[4]=(-b-sDelta)*am1;
 }
 
-void KerrBL::computeCst(const double coord[8], double cst[5]) const{
+void KerrBL::computeCst(const double coord[8], double cst[5]) const{ 
   
   //double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3], tdot=coord[4],
   //  rdot=coord[5], thetadot=coord[6], phidot=coord[7];
@@ -1003,12 +1099,17 @@ void KerrBL::computeCst(const double coord[8], double cst[5]) const{
   
   double sinth, costh;
   sincos(theta, &sinth, &costh);
-  double r2 = rr*rr, costheta2=costh*costh, 
+  double r2 = rr*rr, rm1=1./rr, costheta2=costh*costh, 
     sintheta2=sinth*sinth;
   
   double a2=spin_*spin_;
   
   double Sigma=r2+a2*costheta2, fact=2.*spin_*rr*sintheta2/Sigma;
+  //fact is -g_tphi
+
+  if (modifkerr_CS_){
+    fact+=-5./8.*dzeta_*spin_/(r2*r2)*(1.+12./7.*rm1+27./10.*rm1*rm1)*sintheta2;
+  }  
   
   double mu;//Particule mass: 0 or 1
   if (fabs(norm)<fabs(norm+1.)){
@@ -1044,6 +1145,10 @@ void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
 
 void KerrBL::setParameter(string name, string content, string unit) {
   if(name=="Spin") setSpin(atof(content.c_str()));
+  if(name=="ModifCS") {
+    modifkerr_CS_=1;
+    setCoupling(atof(content.c_str()));
+  }
   else Generic::setParameter(name, content, unit);
 }
 
