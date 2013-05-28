@@ -17,7 +17,7 @@ precompiled with many distributions of linux and is present in the
 Macports. You can also find binaries and source code at
 http://yorick.sourceforge.net/
 
-Yorick >= 2.1.06 is needed.
+Yorick >= 2.2 is needed.
 
 For the graphical user interface Gyotoy, you'll need a few additional
 pieces. First of all, I seriously doubt it will run under MS Windows,

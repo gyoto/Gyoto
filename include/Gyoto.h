@@ -108,26 +108,13 @@
 
 \subsection yo_sec Yorick
 
-For direct access to Gyoto, only Yorick is required. Yorick comes
+For direct access to Gyoto, only Yorick (>=2.2) is required. Yorick comes
 precompiled with many distributions of Linux and is present in the
-Macports. You can also find binaries and source code at
-http://yorick.sourceforge.net/
-
-One line in Yorick's yapi.h file used to make the compilation fail, so
-either use Yorick >= 2.1.06 or
-change this line:
-\code
-PLUG_API void *ygeta_any(int iarg, long *ntot, * long *dims, int *typeid);
-\endcode
-to something like
-\code
-PLUG_API void *ygeta_any(int iarg, long *ntot, long *dims, int *typeidd)
-\endcode
+Macports. You can also find source code at https://github.com/dhmunro/yorick
 
 For the graphical user interface Gyotoy, you'll need a few additional
 pieces. First of all, I seriously doubt it will run under MS Windows,
 but please report any news on that front.
-
 
 \subsection yutils_sec Yutils
 
