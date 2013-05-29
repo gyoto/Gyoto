@@ -57,7 +57,7 @@
   </object>
   <object class="GtkAdjustment" id="mass_adjustment">
     <property name="lower">1</property>
-    <property name="upper">1000000000000</property>
+    <property name="upper">1e+20</property>
     <property name="value">4000000</property>
     <property name="step_increment">1000</property>
     <property name="page_increment">100000</property>
