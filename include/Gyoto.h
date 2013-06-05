@@ -129,9 +129,12 @@ http://yorick.cvs.sourceforge.net/viewvc/yorick/yorick-yutils/pyk.i?view=markup
 
 \subsection pygtk_sec PyGObject
 
-The graphical interface is actually coded in Python 3 using the
-PyGObject extension to access the Gtk3 toolkit. So you'll need a
-recent version of Python 3, PyGObject and Gtk3. Check
+The graphical interface gyotoy needs yorick-gy and the Gtk 3 GObject
+Introspection files. Get yorick-gy from:
+https://github.com/paumard/yorick-gy
+
+Under Mac OS X (using macports), install the gtk3 package. Under a
+Debian derivative GNU/Linux system, install gir1.2-gtk-3.0.  Check
 yorick/README.gyotoy in the source distribution for more details.
 
 \section building_sec Building

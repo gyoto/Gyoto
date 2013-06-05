@@ -36,13 +36,11 @@ or fetch pyk.i from the CVS browser at
 http://yorick.cvs.sourceforge.net/viewvc/*checkout*/yorick/yorick-yutils/pyk.i
 
 
-PyGObject
+Yorick-GY
 _________
 
-The graphical interface is actually coded in python 3 using the PyGObject
-extension. So you'll need a recent version of python (>=3), PyGObject, and the
-Gtk 3+ library, on which PyGObject depends.
-NB: the "devel" version of PyGObject is required. 
+The graphical interface gyotoy needs an additional Yorick plug-in,
+plus the Gtk 3 library. Check README.gyotoy.
 
 2- Building
 ___________
@@ -76,4 +74,4 @@ If everything goes well,
 should do, too.
 
 
-20 March 2013, Thibaut Paumard.
+5 June 2013, Thibaut Paumard.

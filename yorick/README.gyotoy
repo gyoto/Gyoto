@@ -7,32 +7,26 @@ metric. It currently supports any metric with a spherical-like
 coordinate system: KerrBL spin can be set directly, and any GYOTO
 Metric can be loaded from an XML description file.
 
-The hard work is done by the Yorick GYOTO plug-in. However, the neat
-GUI uses python 3 and PyGObject.
+The hard work is done by the Yorick GYOTO plug-in. In addition, the
+Yorick gy plug-in is needed, as well as the Gtk 3 GObject
+Instrospection files. For now, you will need to compile gy from
+source:
+ git clone git://github.com/paumard/yorick-gy.git
+ cd yorick-gy
+ yorick -batch make.i
+ make
+ make install
 
-Therefore, you need:
- - python3;
- - PyGObject;
- - Gtk3.
+The GObject Introspection files for Gtk 3 may have been packaged for
+your platform.
 
 Under Mac OS X using macports, try:
+   sudo port install gtk3
 
-   sudo port install python33
-   sudo port select python python33
-   sudo port install py33-gobject3 gtk3
-
-Several versions of Python 3 may be installed on your system. If
-gyotoy fails to start, try setting GYOTOY_PYTHON3 to the right version
-(the one in which PyGObject is installed!). See GYOTOY_PYTHON3
-documentation in gyotoy.i.
+Under a Debian or derivative GNU/Linux system:
+   sudo apt-get install gir1.2-gtk-3.0
 
 If you get an error message in the lines of "Glib: no schemas
 installed on the system", set the environment variable XDG_DATA_DIRS
 in your shell (for instance in $HOME/.profile):
    export XDG_DATA_DIRS=/opt/local/share
-
-Under Linux, things should be a little smoother. On Debian, this
-worked for me:
-   sudo apt-get install python3-gi gir1.2-gtk-3.0
-
-You may also need to the GYOTOY_PYTHON3 and/or XDG_DATA_DIRS.
