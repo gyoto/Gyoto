@@ -28,7 +28,14 @@
 require, "gyoto.i";
 require, "gyoto_std.i";
 require, "pl3d.i";
-require, "gy_gtk.i";
+// gy_gtk needs to be included after defining gy_gtk_before_init
+// require, "gy_gtk.i";
+
+func __gyotoy_before_init
+{
+  noop, gy.GLib.set_prgname("Gyotoy");
+  noop, gy.GLib.set_application_name("Gyotoy");
+}
 
 GYOTOY_VERSION = "0.2";
 
@@ -312,6 +319,7 @@ func gyotoy(filename) {
      Launch Gyotoy GTK interface
    SEE ALSO:
  */
+  require, "gy_gtk.i";
   extern _gyotoy, _gyotoy_running, _gyotoy_particle;
   extern _gyotoy_particle_to_load, _gyotoy_inhibit_redraw;
   local yid;
@@ -323,7 +331,6 @@ func gyotoy(filename) {
   _gyotoy_particle_to_load=[];
   _gyotoy_inhibit_redraw=1;
 
-  Gtk = gy_gtk_init();
   _gyotoy, builder = gy_gtk_builder("gyotoy.xml");
 
   if (is_string(filename)) _gyotoy, filename=filename;
@@ -929,8 +936,7 @@ if (is_void(GYOTOY_NO_AUTO) & numberof(gyotoy_args)>=3 && anyof(basename(gyotoy_
   
   if (_gyotoy_stand_alone) {
     batch,1;
-    noop, gy.GLib.set_prgname("Gyotoy");
-    noop, gy.GLib.set_application_name("Gyotoy");
+    gy_gtk_before_init = __gyotoy_before_init;
   }
   
   if (!is_void(_gyotoy.filename)) gyotoy,_gyotoy.filename;
