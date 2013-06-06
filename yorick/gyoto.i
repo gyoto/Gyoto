@@ -1313,11 +1313,6 @@ func gyoto_convert(&x, mass, distance, unit) {
   else return x_unit;
 }
 
-func gyoto_warning(msg) {
-  if (_gyoto_running) gyotoy_warning,msg;
-  else error, msg;
-}
-
 extern is_gyoto_Photon;
 extern is_gyoto_Astrobj;
 extern is_gyoto_Metric;

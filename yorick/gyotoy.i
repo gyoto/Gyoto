@@ -285,7 +285,7 @@ func gyotoy_window_init
   else if (_gyotoy.filename) gyotoy_import,_gyotoy.filename;
   //else pyk,"compute_orbit('rien')";
   _gyotoy_orient3;
-  _gyotoy.builder.get_object("metric_type").set_active(0);
+  noop, _gyotoy.builder.get_object("metric_type").set_active(0);
   _gyotoy_inhibit_redraw=0;
   gyotoy_compute_and_draw;
 }
@@ -361,6 +361,13 @@ func _gyotoy_on_realize
 }
 
 func gyotoy_set_particle(part) {
+  tp = typeof(part);
+  if (!((tp == "gyoto_Astrobj" && part.kind == "Star") ||
+        (tp == "gyoto_Photon"))) {
+    error, "Particle must be Star or Photon";
+    return;
+  }
+  
   extern _gyotoy_particle, _gyotoy_metric, _gyotoy_initcoord, _gyotoy_txyz,
     _gyotoy_metric_file, _gyotoy_inhibit_redraw,
     _gyotoy_delta, _gyotoy_adaptive;
@@ -663,8 +670,6 @@ func gyotoy_export(filename, data)
   else pyk,"warning('Unknown file type for "+filename+"')";
 }
 
-gyotoy_warning = gyerror;
-
 func gyotoy_import(filename, data) {
   extern _gyotoy, _gyotoy_inhibit_redraw;
 
@@ -779,7 +784,7 @@ func gyotoy_set_particle_type(type, void)
   _gyotoy_particle,metric=_gyotoy_metric,
     initcoord=_gyotoy_initcoord(1:4),_gyotoy_initcoord(5:7);
   _gyotoy_particle, delta=_gyotoy_delta;
-  gyotoy_adaptive(_gyotoy_adaptive);
+  gyotoy_adaptive, _gyotoy_adaptive;
   gyotoy_compute_and_draw;
 }
 
@@ -826,7 +831,7 @@ func gyotoy_save_data(filename) {
     write, f, format= "# %s\n", "Columns are t, x, y, z";
     write, f, format="%14.12f %14.12f %14.12f %14.12f\n", t, x, y, z;
     close,f;
-  } else gyoto_warning, "Could not create file "+filename;
+  } else error, "Could not create file "+filename;
 }
 
 
@@ -877,7 +882,7 @@ func _gyotoy_metric_type(wdg, data)
     noop, _gyotoy.builder.get_object("metric_file").set_visible(0);
     gyotoy_set_KerrBL_metric, _gyotoy.builder.get_object("spin");
   } else {
-    gyerror,"Unknown metric type";
+    error, "Unknown metric type";
   }
 }
 

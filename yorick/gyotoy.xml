@@ -28,6 +28,31 @@
     <property name="step_increment">1000</property>
     <property name="page_increment">100000</property>
   </object>
+  <object class="GtkListStore" id="metric_type_liststore">
+    <columns>
+      <!-- column-name label -->
+      <column type="gchararray"/>
+      <!-- column-name shortname -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">KerrBL</col>
+        <col id="1" translatable="yes">kerrbl</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">From XML file</col>
+        <col id="1" translatable="yes">file</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkAdjustment" id="nsteps_adjustment">
+    <property name="lower">1</property>
+    <property name="upper">10000000</property>
+    <property name="value">100</property>
+    <property name="step_increment">10</property>
+    <property name="page_increment">100</property>
+  </object>
   <object class="GtkAdjustment" id="paln_adjustment">
     <property name="lower">-360</property>
     <property name="upper">360</property>
@@ -600,7 +625,6 @@ Degrees</property>
 Geometrical units</property>
                             <property name="tooltip_text" translatable="yes">Date for initial condition
 Geometrical units</property>
-                            <property name="editable">False</property>
                             <property name="max_length">40</property>
                             <property name="invisible_char">●</property>
                             <property name="width_chars">20</property>
@@ -1317,31 +1341,6 @@ upon parameter changes</property>
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="metric_type_liststore">
-    <columns>
-      <!-- column-name label -->
-      <column type="gchararray"/>
-      <!-- column-name shortname -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">KerrBL</col>
-        <col id="1" translatable="yes">kerrbl</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">From XML file</col>
-        <col id="1" translatable="yes">file</col>
-      </row>
-    </data>
-  </object>
-  <object class="GtkAdjustment" id="nsteps_adjustment">
-    <property name="lower">1</property>
-    <property name="upper">10000000</property>
-    <property name="value">100</property>
-    <property name="step_increment">10</property>
-    <property name="page_increment">100</property>
   </object>
   <object class="GtkAdjustment" id="phase_adjustment">
     <property name="lower">-360</property>
