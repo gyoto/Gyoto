@@ -300,9 +300,10 @@ func gyotoy_window_init
 func gyotoy_quit(wdg, void1, void2) {
 // called when GTK window is closed
   extern _gyotoy_running;
+  if (_gyotoy_stand_alone) quit;
   noop, _gyotoy.toplevel.hide();
   _gyotoy_running=0;
-  if (_gyotoy_stand_alone) quit;
+  gy_gtk_idler_maybe_stop;
 }
 
 func gyotoy_checkvers_cb(msg) {
@@ -348,8 +349,7 @@ func gyotoy(filename) {
   gy_signal_connect, _gyotoy.builder;
   gy_signal_connect, _gyotoy.toplevel, "delete-event", gyotoy_quit;
 
-  noop, _gyotoy.toplevel.show_all();
-  //gy_gtk_main, _gyotoy.toplevel;
+  gy_gtk_main, _gyotoy.toplevel;
   
   /*
   if (_gyotoy.filename &&
