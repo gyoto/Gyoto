@@ -349,7 +349,9 @@ func gyotoy(filename) {
   gy_signal_connect, _gyotoy.builder;
   gy_signal_connect, _gyotoy.toplevel, "delete-event", gyotoy_quit;
 
-  gy_gtk_main, _gyotoy.toplevel;
+  // git has gy_gtk_main, but it's not yet in the stable release
+  if (is_func(gy_gtk_main)) gy_gtk_main, _gyotoy.toplevel;
+  else noop, _gyotoy.toplevel.show_all();
   
   /*
   if (_gyotoy.filename &&
