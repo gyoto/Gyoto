@@ -49,7 +49,8 @@ namespace Gyoto{
  *   treatment is provided in heir classes.
  *
  *   The 3D disk is assumed to be described by a regular 
- *   (non adaptive) grid.
+ *   (non adaptive) grid of cylindrical geometry. The disk
+ *   is a slab from rin_ to rout_ and zmin_ (typically = -zmax_) to zmax_.
  *
  */
 class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
