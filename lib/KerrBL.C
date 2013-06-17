@@ -714,6 +714,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       (coordinate singularity in BL) and whether we are outside
       horizon.
     */
+    double h0comp=h0;
     while
       ( (( (rk1   =myrk4(coor,cst,h0,coor1)      ) == 1) || (rk1    == 2)) ||
         (( (rkhalf=myrk4(coor,cst,hbis,coorhalf) ) == 1) || (rkhalf == 2)) ||
@@ -723,6 +724,12 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	if (rk1==2 || rkhalf==2 || rk2==2){
 	  //if any of rks is 2, stop integration, we're inside horizon
 	  return 1;
+	}
+
+	if (h0/h0comp > 2.){
+	  GYOTO_INFO << "NOTE: stopping integration because"
+	    " unsolved z-axis problem" << endl;
+	  return 1.;
 	}
 	
 	zaxis=1;
