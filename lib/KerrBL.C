@@ -715,6 +715,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       horizon.
     */
 
+    double hinit=h0, steptol=1e3;
     while
       ( (( (rk1   =myrk4(coor,cst,h0,coor1)      ) == 1) || (rk1    == 2)) ||
         (( (rkhalf=myrk4(coor,cst,hbis,coorhalf) ) == 1) || (rkhalf == 2)) ||
@@ -732,6 +733,13 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	GYOTO_INFO << "NOTE: Passing close to z-axis at theta= "
 		   << coor[2] << " and r= " << coor[1]
 		   << ", jumping ahead with h0= " << h0 << endl;
+
+	if (h0/hinit>steptol){
+	  GYOTO_SEVERE << "In KerrBL::myrk4_adaptive: "
+	    "stop integration because unsolved z-axis problem" << endl;
+	  return 1;
+	}
+	  
 	
       }
 
