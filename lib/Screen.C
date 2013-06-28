@@ -433,8 +433,8 @@ void Screen::getRayCoord(double alpha, double delta,
     s1tmp=-s1tmp;//then s1 in [0,pi]
     s2tmp+=M_PI;//thus, same direction
   }
-  while (s2tmp>2.*M_PI) s2tmp-=2.*M_PI;
-  while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi]
+  while (s2tmp>=2.*M_PI) s2tmp-=2.*M_PI;
+  while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi[
   spherical_angle_a=s1tmp;
   spherical_angle_b=s2tmp;
 
