@@ -77,7 +77,7 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   double PLSlope_; ///< Mass density power-law slope
   double PLRho_; ///< Mass density reference value
   double rPL_; ///< Mass density reference radius
-  double rmax_; ///< Maximal extension of the disk
+  //  double rmax_; ///< Maximal extension of the disk !!! see Astrobj::rmax_
   // Constructors - Destructor
   // -------------------------
  public:
