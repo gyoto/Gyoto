@@ -94,7 +94,7 @@ void PageThorneDisk::updateSpin() {
 void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kind = gg->getKind();
-  if (kind != "KerrBL" && kind != "KerrKS")
+  if (kind != "KerrBL" && kind != "KerrKS" && kind != "ChernSimons")
     throwError
       ("PageThorneDisk::setMetric(): metric must be KerrBL or KerrKS");
   ThinDisk::setMetric(gg);
@@ -117,7 +117,7 @@ double PageThorneDisk::bolometricEmission(double dsem,
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
   // not I_nu(r). And I(r)/nu^4 is conserved.
-
+  //  cout << "r hit= " << coord_obj[1] << endl;
   if (uniflux_) return 1;
 
   double xx;
@@ -200,6 +200,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				    coord_ph_hit+4);// / 1.; 
                                        //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
+  if (uniflux_) ggred=1.;
   double dsem = dlambda*ggredm1; // *1.
   double inc =0.;
   if (data) {

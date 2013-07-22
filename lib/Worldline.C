@@ -838,7 +838,8 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 	primeh=besth[i+4]*tauprimeh;
 	vel[i-1]=primel*factl+primeh*facth;
 	second =(primeh-primel)*Dtm1;
-	pos[i] = resl[i] + primel*dtl + 0.5*second*dtl*dtl;
+	//	pos[i] = resl[i] + primel*dtl + 0.5*second*dtl*dtl;
+	pos[i] = bestl[i] + primel*dtl + 0.5*second*dtl*dtl;
       }
 
       tdot=metric_->SysPrimeToTdot(pos, vel);
