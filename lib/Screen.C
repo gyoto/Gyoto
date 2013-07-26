@@ -346,6 +346,8 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
     yscr = double(j-1)*2.*M_PI/double(npix_-1);
     getRayCoord(xscr, yscr, coord);
+    // NB: there will be also a X->-X transformation needed,
+    // that must be done when plotting the image
   }else{
     /*
       GYOTO screen labelled by equatorial
@@ -353,7 +355,10 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
      */
     yscr=delta*(double(j)-double(npix_+1)/2.);
     xscr=delta*(double(i)-double(npix_+1)/2.);
-    getRayCoord(-xscr, yscr, coord); // -xscr to have East on the left
+    getRayCoord(-xscr, yscr, coord); 
+    // transforming X->-X (X being coord along e_1 observer vector)
+    // this is due to the orientation convention of the screen 
+    // (cf InitialConditions.pdf)
   }
 }
 
@@ -418,20 +423,20 @@ void Screen::getRayCoord(double alpha, double delta,
     spherical_angle_a = acos(cos(alpha)*cos(delta));
     spherical_angle_b = 
       (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
-    
-    // Move these two angles to [0,pi], [0,2pi]
-    double s1tmp=spherical_angle_a, s2tmp=spherical_angle_b;
-    while (s1tmp>M_PI) s1tmp-=2.*M_PI;
-    while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
-    if (s1tmp<0.) {
-      s1tmp=-s1tmp;//then s1 in [0,pi]
-      s2tmp+=M_PI;//thus, same direction
-    }
-    while (s2tmp>2.*M_PI) s2tmp-=2.*M_PI;
-    while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi]
-    spherical_angle_a=s1tmp;
-    spherical_angle_b=s2tmp;
   }
+
+  // Move these two angles to [0,pi], [0,2pi]
+  double s1tmp=spherical_angle_a, s2tmp=spherical_angle_b;
+  while (s1tmp>M_PI) s1tmp-=2.*M_PI;
+  while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
+  if (s1tmp<0.) {
+    s1tmp=-s1tmp;//then s1 in [0,pi]
+    s2tmp+=M_PI;//thus, same direction
+  }
+  while (s2tmp>=2.*M_PI) s2tmp-=2.*M_PI;
+  while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi[
+  spherical_angle_a=s1tmp;
+  spherical_angle_b=s2tmp;
 
   /* 
      Tangent vector of incident photon in observer's local frame

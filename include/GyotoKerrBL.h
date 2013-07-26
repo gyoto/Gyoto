@@ -50,7 +50,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  protected:
   double spin_ ;  ///< Angular momentum parameter
   int modifkerr_CS_; ///< Chern-Simons modification
-  double dzeta_; ///< Chern-Simons coupling constant
   
   // Constructors - Destructor
   // -------------------------
@@ -70,8 +69,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  public:
   // default operator= is fine
   void setSpin(const double spin); ///< Set spin
-  void setCoupling(const double couple);
-  ///< Set coupling constant if mdified Kerr
   virtual KerrBL * clone () const ;
 
 
@@ -112,7 +109,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 				double dir=1.) const ;
 
  public:
-  void MakeCoord(const double coordin[8], const double cst[5], double coordout[8]) const ;
+  virtual void MakeCoord(const double coordin[8], const double cst[5], double coordout[8]) const ;
   ///< Inverse function of MakeMomentumAndCst
 
    ///< Computes pr, ptheta, E and L from rdot, thetadot, phidot, tdot
@@ -154,10 +151,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   /** 
    * \brief Used in RK4 proxies.
    */
-  int diff(const double y[8], const double cst[5], double res[8]) const ;
+  virtual int diff(const double y[8], const double cst[5], 
+		   double res[8]) const ;
   /** Integrator. Computes the evolution of y (initcond=y(0)).
    */
-  void computeCst(const double coord[8], double cst[5]) const;
+  virtual void computeCst(const double coord[8], double cst[5]) const;
  public:
   void setParticleProperties(Worldline* line, const double* coord) const;
   

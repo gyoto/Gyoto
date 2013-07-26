@@ -74,7 +74,6 @@ void gyotoErrorHandler( const Gyoto::Error e ) {
 }
 
 int main(int argc, char** argv) {
-
   /*
     This program aims at computing the null geodesics of photons from
     an observation screen to an astrophysical object (star orbit,
@@ -117,10 +116,38 @@ int main(int argc, char** argv) {
 	pluglist=param.substr(10);
 	cout << pluglist << endl;
       }
-      else if (param.substr(0,7)=="--imin=") imin=atoi(param.substr(7).c_str());
-      else if (param.substr(0,7)=="--imax=") imax=atoi(param.substr(7).c_str());
-      else if (param.substr(0,7)=="--jmin=") jmin=atoi(param.substr(7).c_str());
-      else if (param.substr(0,7)=="--jmax=") jmax=atoi(param.substr(7).c_str());
+      else if (param.substr(0,7)=="--imin=") {
+	imin=atoi(param.substr(7).c_str());
+	double imintest=atof(param.substr(7).c_str());
+	if (imintest<=0){
+	  cerr << "In gyoto.C: screen indices should be >0" << endl;
+	  return 1;
+	}
+      }
+      else if (param.substr(0,7)=="--imax=") {
+	imax=atoi(param.substr(7).c_str());
+	double imaxtest=atof(param.substr(7).c_str());
+	if (imaxtest<=0){
+	  cerr << "In gyoto.C: screen indices should be >0" << endl;
+	  return 1;
+	}
+      }
+      else if (param.substr(0,7)=="--jmin=") {
+	jmin=atoi(param.substr(7).c_str());
+	double jmintest=atof(param.substr(7).c_str());
+	if (jmintest<=0){
+	  cerr << "In gyoto.C: screen indices should be >0" << endl;
+	  return 1;
+	}
+      }
+      else if (param.substr(0,7)=="--jmax=") {
+	jmax=atoi(param.substr(7).c_str());
+	double jmaxtest=atof(param.substr(7).c_str());
+	if (jmaxtest<=0){
+	  cerr << "In gyoto.C: screen indices should be >0" << endl;
+	  return 1;
+	}
+      }
       else if (param.substr(0,15)=="--impact-coords")  {
 	if (param.size() > 16 && param.substr(15,1)=="=")
 	  ipctfile=param.substr(16);

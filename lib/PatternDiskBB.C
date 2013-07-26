@@ -80,12 +80,20 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
     throwError("PatternDiskBB::getVelocity: bad COORDKIND");
     risco=0.;
   }
-
+  
+  double const * const radius=getGridRadius();
+  size_t i[3]; // {i_nu, i_phi, i_r}
+  //Search for indices only in non-power-law region
+  if (rcur<rPL_)
+    getIndices(i, pos, 0.); //NB: last arg should be nu, don't care here
+  
+  double rgrid=radius[i[2]];
+  
   if ((getOuterRadius()==DBL_MAX && rcur>rPL_) || !getVelocity()){
     //Keplerian circ velocity for power law disk region
     //as well as if PatternDisk::velocity_ not provided
     ThinDisk::getVelocity(pos, vel);
-  }else if (rcur<risco){
+  }else if (rgrid<risco){
     //default velocity, emission will be 0 there anyway
     vel[0]=1.;
     for (int ii=1;ii<4;ii++)
@@ -111,12 +119,16 @@ double PatternDiskBB::emission(double nu, double dsem,
   }
 
   double rcur=projectedRadius(co);
-  if (rcur > rout_ || rcur < risco) return 0.; // no emission in any case above rmax_
+  //  if (rcur > rout_ || rcur < risco) return 0.; // no emission in any case above rmax_
   size_t i[3]; // {i_nu, i_phi, i_r}
 
   //Search for indices only in non-power-law region
   if (rcur<rPL_)
     getIndices(i, co, nu);
+
+  double const * const radius=getGridRadius();
+  double rgrid=radius[i[2]];
+  if (rgrid > rmax_ || rgrid < risco) return 0.; // no emission in any case above rmax_
 
   double Iem=0.;
   double const * const emiss = getIntensity();
