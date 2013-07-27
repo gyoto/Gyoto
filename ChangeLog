@@ -1,4 +1,8 @@
-0.x.y soon ABI
+0.1.0 2013/07/27 ABI 1
+	* add units system
+	* add PolishDoughnut astrobj
+	* use pkg-config
+	* gyotoy ported to yorick-gy instead of python
 	* in Worldline, Photon and Scenery: rename tlim to tmin, default
 	  value is -DBL_MAX.
 	* add a mutli-wavelength flavour of Astrobj::emission()

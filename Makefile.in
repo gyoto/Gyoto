@@ -57,6 +57,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(top_srcdir)/doc/Makefile.in \
 	$(top_srcdir)/include/GyotoConfig.h.in \
 	$(top_srcdir)/yorick/Makefile.in \
+	$(top_srcdir)/yorick/gyoto.info.in \
 	$(top_srcdir)/yorick/stdplug/Makefile.in AUTHORS COPYING \
 	ChangeLog INSTALL NEWS config.guess config.sub depcomp \
 	install-sh ltmain.sh missing
@@ -75,7 +76,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h $(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES = doc/Makefile yorick/Makefile \
-	yorick/stdplug/Makefile
+	yorick/stdplug/Makefile yorick/gyoto.info
 CONFIG_CLEAN_VPATH_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -366,6 +367,8 @@ doc/Makefile: $(top_builddir)/config.status $(top_srcdir)/doc/Makefile.in
 yorick/Makefile: $(top_builddir)/config.status $(top_srcdir)/yorick/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 yorick/stdplug/Makefile: $(top_builddir)/config.status $(top_srcdir)/yorick/stdplug/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+yorick/gyoto.info: $(top_builddir)/config.status $(top_srcdir)/yorick/gyoto.info.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:

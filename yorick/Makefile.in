@@ -103,6 +103,8 @@ LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 #myfunc.o: myapi.h myfunc.c
 #	$(CC) $(CPPFLAGS) $(CFLAGS) -DMY_SWITCH -o $@ -c myfunc.c
 
+DEST_PKG_INSTALLED_DIR=$(DEST_Y_SITE)/packages/installed
+
 all: gyoto_std.so
 
 gyoto_std.so: stdplug/gyoto_std.so
@@ -127,6 +129,7 @@ install::
 	$(YNSTALL) gyotoy $(DEST_Y_SITE)/bin
 	-ln $(DEST_Y_SITE)/bin/gyotoy $(DESTDIR)$(prefix)/bin/
 	$(YNSTALL) gyotoy.1 $(DESTDIR)$(prefix)/share/man/man1
+	$(YNSTALL) gyoto.info $(DEST_PKG_INSTALLED_DIR)
 
 uninstall::
 	cd stdplug; make uninstall
@@ -135,6 +138,7 @@ uninstall::
 	rm -f $(DEST_Y_HOME)/bin/gyotoy
 	rm -f $(DESTDIR)$(exec_prefix)/bin/gyotoy
 	rm -f $(DESTDIR)$(prefix)/share/man/man1/gyotoy.1
+	-rm -f $(DEST_PKG_INSTALLED_DIR)/gyoto.info
 
 clean::
 	cd stdplug; yorick -batch make.i; make clean

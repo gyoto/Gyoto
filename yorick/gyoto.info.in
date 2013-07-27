@@ -1,14 +1,14 @@
 Package: gyoto
 Kind: plugin
-Version: 1.0~pre1
+Version: @VERSION@
 Revision: 1
 Description: the General relativitY Orbit Tracer of Observatoire de Paris
 License: GPL-3+
 Author: Thibaut Paumard
 Maintainer: Thibaut Paumard <paumard@users.sourceforge.net>
 OS: architecture independant
-Depends: yorick(>=2.1.05), yutils(>=1.3.0)
-Source: http://gyoto.obspm.fr/downloads/gyoto-%v.tgz
+Depends: yorick(>=2.2), yutils(>=1.3.0)
+Source: https://github.com/gyoto/Gyoto/archive/%v.tar.gz
 Source-MD5: 
 Source-Directory: 
 DocFiles: README AUTHORS COPYING

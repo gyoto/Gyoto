@@ -2,22 +2,21 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([gyoto], [0.0.4], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [0.1.0], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gyoto, 0.0.4)
+AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
 LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
-VERSINFO=0:0:0
+VERSINFO=1:0:0
 sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
-AC_SUBST([VERSION], [0.0.4])
 
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
@@ -596,6 +595,7 @@ AS_IF([test "x$YORICK" != "x"],
 		    $YORICK -batch make.i
 		    cd $oldpwd],
 		   YORICK=$YORICK)
+   AC_CONFIG_FILES([yorick/gyoto.info])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
