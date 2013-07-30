@@ -12,23 +12,23 @@
  */
 
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
-
-    This file is part of Gyoto.
-
-    Gyoto is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Gyoto is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
- */
+  Copyright 2011 Frederic Vincent, Thibaut Paumard
+  
+  This file is part of Gyoto.
+  
+  Gyoto is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Gyoto is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef __GyotoPageThorneDisk_H_ 
 #define __GyotoPageThorneDisk_H_ 
@@ -43,6 +43,7 @@ namespace Gyoto{
 
 //#include <GyotoMetric.h>
 #include <GyotoThinDisk.h>
+#include <GyotoBlackBodySpectrum.h>
 
 /**
  * \class Gyoto::Astrobj::PageThorneDisk
@@ -72,9 +73,12 @@ class Gyoto::Astrobj::PageThorneDisk
   double x1_; ///< Value cached for bolometricEmission()
   double x2_; ///< Value cached for bolometricEmission()
   double x3_; ///< Value cached for bolometricEmission()
-  int rednoise_; ///< Flag for rednoise-like flux
+  int blackbody_; ///< Flag for computing BB flux (for spectra)
+  double mdot_; ///< accretion rate (for BB spectrum computation)
   int uniflux_; ///< Flag for uniform flux = 1
-
+  SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
+  ///< emission law
+  
   // Constructors - Destructor
   // -------------------------
  public:
@@ -109,7 +113,7 @@ class Gyoto::Astrobj::PageThorneDisk
    *
    * Similar to Generic::emission(), but bolometric.
    */
-  virtual double bolometricEmission(double dsem,
+virtual double bolometricEmission(double nuem, double dsem,
 				    double c_obj[8]) const;
 
   /**

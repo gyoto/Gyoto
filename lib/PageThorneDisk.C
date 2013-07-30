@@ -43,17 +43,20 @@ using namespace Gyoto::Astrobj;
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
-  x0_(0.), x1_(0.), x2_(0.), x3_(0.), rednoise_(0),
-  uniflux_(0)
+  x0_(0.), x1_(0.), x2_(0.), x3_(0.), blackbody_(0), mdot_(0),
+  uniflux_(0), spectrumBB_(NULL)
 {
   if (debug()) cerr << "DEBUG: PageThorneDisk Construction" << endl;
+  spectrumBB_ = new Spectrum::BlackBody(); 
 }
 
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
   x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
-  rednoise_(o.rednoise_), uniflux_(o.uniflux_)
+  blackbody_(o.blackbody_), uniflux_(o.uniflux_), 
+  mdot_(0), spectrumBB_(NULL)
 {
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
   gg_->hook(this);
@@ -88,7 +91,7 @@ void PageThorneDisk::updateSpin() {
   x2_ = 2.*cos(acosaao3 + M_PI/3.); 
   x3_ = -2.*cos(acosaao3);
 
-  rin_=(3.+z2-sqrt((3.-z1)*(3.+z1+2.*z2)));
+  if (rin_==0.) rin_=(3.+z2-sqrt((3.-z1)*(3.+z1+2.*z2)));
 }
 
 void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
@@ -105,21 +108,42 @@ void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
 double PageThorneDisk::emission(double nu_em, double dsem,
 				    double *,
 				    double coord_obj[8]) const{
-  throwError("not implemented");
+  if (!blackbody_) {
+    throwError("In PageThorneDisk::emission: "
+	       "blackbody is necessary to compute emission, "
+	       "else, use bolometricEmission");
+  }
+
+  double Ibolo=bolometricEmission(nu_em,dsem,coord_obj);
+  /*
+    From Ibolo, find T, then Bnu(T)
+   */
+  double mass=gg_->getMass()*1e3; // in cgs
+  double c6=GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS
+    *GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS;
+  double g2m2=GYOTO_G_CGS*GYOTO_G_CGS*mass*mass;
+  Ibolo*=mdot_*c6/g2m2; // Ibolo in cgs
+  //F = sigma * T^4 (and F=pi*I)
+  double TT=pow(Ibolo*M_PI/GYOTO_STEFANBOLTZMANN_CGS,0.25);
+  spectrumBB_->setTemperature(TT);
+  double Iem=(*spectrumBB_)(nu_em);
+  //cout << "r T nu Iem = " << coord_obj[1] << " " << TT << " " << nu_em << " " << Iem << endl;
+  if (Iem < 0.) throwError("In PageThorneDisk::emission"
+			   " blackbody emission is negative!");
+  return Iem;
 }
 
 Quantity_t PageThorneDisk::getDefaultQuantities() {
   return GYOTO_QUANTITY_USER4;
 }
 
-double PageThorneDisk::bolometricEmission(double dsem,
+double PageThorneDisk::bolometricEmission(double nuem, double dsem,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
   // not I_nu(r). And I(r)/nu^4 is conserved.
   //  cout << "r hit= " << coord_obj[1] << endl;
   if (uniflux_) return 1;
-
   double xx;
   switch (gg_->getCoordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -163,19 +187,6 @@ double PageThorneDisk::bolometricEmission(double dsem,
   if (flag_radtransf_) Iem *= dsem;
   GYOTO_DEBUG_EXPR(Iem);
   
-  if (rednoise_) {
-    double rr=coord_obj[1], 
-      r32 = pow(rr,1.5),
-      tt=coord_obj[0], 
-      cst_aa=0.1*sqrt(6), // amplitude cst
-      cst_tt=1.;  // period cst
-    srand (time(NULL));
-    double random = double(rand() % 100)/100. ;
-    Iem*=1.+cst_aa*random*pow(rr,-0.5)*sin(cst_tt*1./r32*tt);
-    if (Iem < 0.) throwError("In PageThorneDisk::bolometricEmission"
-			     " rednoised emission is negative!");
-  }
-  
   return Iem;
   
 }
@@ -195,6 +206,9 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
       worldline parameter dlambda (see below)
   */
   double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
+  SmartPointer<Spectrometer::Generic> spr = ph -> getSpectrometer();
+  size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
+  double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
 				    coord_ph_hit+4);// / 1.; 
@@ -232,8 +246,8 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 		<< ") = " << dlambda << ", dsem=" << dsem << endl;
 #endif
     if (data->intensity) throwError("unimplemented");
-    else if (data->user4) {
-      inc = (bolometricEmission(dsem, coord_obj_hit))
+    if (data->user4) {
+      inc = (bolometricEmission(freqObs*ggredm1, dsem, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
 	* ggred*ggred*ggred*ggred; // I/nu^4 invariant
       *data->user4 += inc;
@@ -243,7 +257,21 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 
     }
     if (data->binspectrum) throwError("unimplemented");
-    if (data->spectrum)  throwError("unimplemented");
+    if (data->spectrum)  {
+      if (!blackbody_) {
+	throwError("In PageThorneDisk::process: "
+		   "blackbody is necessary to compute spectrum");
+      }
+      for (size_t ii=0; ii<nbnuobs; ++ii) {
+	double nuem=nuobs[ii]*ggredm1;
+	double * tmp;
+	inc = (emission(nuem, dsem, tmp, coord_obj_hit))
+	  * (ph -> getTransmission(size_t(-1)))
+	  * ggred*ggred*ggred; // Inu/nu^3 invariant
+	data->spectrum[ii*data->offset] += inc;
+	//cout << "in spec stored= " << ggred << " " << inc << endl;
+      }
+    }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
 		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
@@ -262,7 +290,10 @@ int PageThorneDisk::setParameter(std::string name,
 				 std::string content,
 				 std::string unit) {
   char* tc = const_cast<char*>(content.c_str());
-  if (name=="RedNoise") rednoise_=1;
+  if (name=="BlackbodyMdot") {
+    blackbody_=1;
+    mdot_=atof(tc);
+  }
   if (name=="UniFlux") uniflux_=1;
   else return ThinDisk::setParameter(name, content, unit);
   return 0;

@@ -409,6 +409,8 @@ namespace Gyoto {
 #define GYOTO_BOLTZMANN 1.3806504e-23
 /// \brief Boltzmann's constant (k) in cgs (erg/K)
 #define GYOTO_BOLTZMANN_CGS 1.3806504e-16
+/// \brief Stefan-Boltzmann's constant (sigma) in cgs (erg/cm2/s/K4)
+#define GYOTO_STEFANBOLTZMANN_CGS 5.670373e-5
 /// \brief h/k (K.s = K/Hz)
 #define GYOTO_PLANCK_OVER_BOLTZMANN 4.7992373e-11
 /// \brief ideal gas constant R in SI
