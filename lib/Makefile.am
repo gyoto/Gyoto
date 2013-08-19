@@ -26,7 +26,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	StandardAstrobj.C PageThorneDisk.C \
-	ThinDiskPL.C PolishDoughnut.C \
+	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
 	StdPlug.C
 # those files are used only if cfitsio is available
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
