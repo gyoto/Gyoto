@@ -569,6 +569,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   double t = co[0];
 
   phi -= Omega_*(t-t0_);
+
   while (phi<0) phi += 2.*M_PI;
   if (dphi_==0.)
     throwError("In PatternDisk::getIndices: dphi_ should not be 0 here!");
@@ -577,15 +578,28 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   else if (phi>phimax_)
     i[1]=nphi_-1;
   else
-    i[1] = size_t(floor((phi-phimin_)/dphi_+0.5)) % nphi_;
+    i[1] = size_t(floor((phi-phimin_)/dphi_)+1) % nphi_;
 
+  /*
+    With this definition:
+    phimin_+(i[1]-1)*dphi_ <= phi < phimin_+i[1]*dphi_ 
+    provided phi is not bigger than phimax_ nor smaller
+    than phimin_
+   */
   if (radius_) {
     GYOTO_DEBUG <<"radius_ != NULL" << endl;
     // if the radius_ vector is set, find closest value
     if (r >= radius_[nr_-1]) i[2] = nr_-1;
     else {
       for(i[2]=0; r > radius_[i[2]]; ++i[2]){}
-      if (i[2]>0 && r-radius_[i[2]-1] < radius_[i[2]]) --i[2];
+      /*
+	With this definition:
+	radius_[i[2]-1] <= r < radius_[i[2]]
+	provided r<rmax (i[2] is always at least 1)
+       */
+      /*if (i[2]>0 && r-radius_[i[2]-1] < radius_[i[2]]) {
+	--i[2];
+	}*/
     }
   } else {
     GYOTO_DEBUG <<"radius_ == NULL, dr_==" << dr_ << endl;
@@ -605,8 +619,49 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 		 "dir_ should be 1 if velocity_ is provided");
     size_t i[3]; // {i_nu, i_phi, i_r}
     getIndices(i, pos);
-    double phiprime=velocity_[i[2]*(nphi_*2)+i[1]*2+0];
-    double rprime=velocity_[i[2]*(nphi_*2)+i[1]*2+1];
+
+    double rr = projectedRadius(pos);
+    double phi = sphericalPhi(pos);
+
+    double phiprime=0., rprime=0.;
+    if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
+      // Extreme cases no interpolation
+      phiprime=velocity_[i[2]*(nphi_*2)+i[1]*2+0];
+      rprime=velocity_[i[2]*(nphi_*2)+i[1]*2+1];
+    }else{
+      // Bilinear interpolation
+      double phip0=velocity_[(i[2]-1)*(nphi_*2)+(i[1]-1)*2+0];
+      double phip1=velocity_[(i[2]-1)*(nphi_*2)+i[1]*2+0];
+      double phip2=velocity_[i[2]*(nphi_*2)+i[1]*2+0];
+      double phip3=velocity_[i[2]*(nphi_*2)+(i[1]-1)*2+0];
+      
+      double rp0=velocity_[(i[2]-1)*(nphi_*2)+(i[1]-1)*2+1];
+      double rp1=velocity_[(i[2]-1)*(nphi_*2)+i[1]*2+1];
+      double rp2=velocity_[i[2]*(nphi_*2)+i[1]*2+1];
+      double rp3=velocity_[i[2]*(nphi_*2)+(i[1]-1)*2+1];
+
+      double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
+	phiinf=phimin_+(i[1]-1)*dphi_, phisup=phiinf+dphi_;
+
+      if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
+	throwError("In PatternDisk::getVelocity: "
+		   "bad interpolation");
+      }
+
+      double cr = (rr-rinf)/(rsup-rinf),
+	cp = (phi-phiinf)/(phisup-phiinf);
+
+      rprime=(1-cr)*(1-cp)*rp0
+	+cr*(1-cp)*rp1
+	+cr*cp*rp2
+	+(1-cr)*cp*rp3;
+
+      phiprime=(1-cr)*(1-cp)*phip0
+	+cr*(1-cp)*phip1
+	+cr*cp*phip2
+	+(1-cr)*cp*phip3;
+    }
+	
     switch (gg_->getCoordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
@@ -637,10 +692,41 @@ double PatternDisk::emission(double nu, double dsem,
   GYOTO_DEBUG << endl;
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
-  double Iem = emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+
+    double rr = projectedRadius(co);
+    double phi = sphericalPhi(co);
+
+    double Iem=0.;
+    if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
+      // Extreme cases no interpolation
+      Iem=emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+    }else{
+      // Bilinear interpolation
+      double Iem0=emission_[(i[2]-1)*(nphi_*nnu_)+(i[1]-1)*nnu_+i[0]];
+      double Iem1=emission_[(i[2]-1)*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+      double Iem2=emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+      double Iem3=emission_[i[2]*(nphi_*nnu_)+(i[1]-1)*nnu_+i[0]];
+
+      double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
+	phiinf=phimin_+(i[1]-1)*dphi_, phisup=phiinf+dphi_;
+      
+      if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
+	throwError("In PatternDisk::emission: "
+		   "bad interpolation");
+      }
+
+      double cr = (rr-rinf)/(rsup-rinf),
+	cp = (phi-phiinf)/(phisup-phiinf);
+
+      Iem = (1-cr)*(1-cp)*Iem0
+	+cr*(1-cp)*Iem1
+	+cr*cp*Iem2
+	+(1-cr)*cp*Iem3;
+    }
 
   if (!flag_radtransf_) return Iem;
   double thickness;
+  // NB: thickness is not interpolated so far
   if (opacity_ && (thickness=opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]]*dsem))
     return Iem * (1. - exp (-thickness)) ;
   return 0.;
@@ -652,6 +738,7 @@ double PatternDisk::transmission(double nu, double dsem, double*co) const {
   if (!opacity_) return 1.;
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
+  // NB: opacity is not interpolated so far
   double opacity = opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
   GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opacity <<endl;
   if (!opacity) return 1.;
