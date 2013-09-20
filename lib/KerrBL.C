@@ -489,7 +489,7 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
      // throw a "z-axis problem" (return 1) if prdot or pthdot becomes higher
   double aa=spin_;
   double rhor=1.+sqrt(1.-aa*aa), factrtol=5.;
-  double thetatol_hor=1e-1, thetatol_gen=1e-3, thetatol;
+  double thetatol_hor=1e-1, thetatol_gen=2e-3, thetatol;
   /*
     If theta is closer to 0 than thetatol and if the derivatives
     returned by diff are higher than derlim, a z-axis problem is
@@ -503,7 +503,8 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
     in diff (typically r<0 error).
 
     These factrtol, thetatol_* and derlim_* parameters are to be
-    played with to smooth the integration.
+    played with to smooth the integration. In particular going to
+    higher spin may impose using higher thetatol_gen
    */
 
   if (coor[1] < factrtol*rhor) {
@@ -733,7 +734,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	
 	if (makerr) {
 	  if (verbose() >= GYOTO_SEVERE_VERBOSITY) {
-	    cerr << "WARNING:" << endl;
+	    cerr << "WARNING: at r=" << coordin[1] << endl;
 	    if (makerr==1)
 	      cerr << "Real norm, current norm= " << (cst[0]?-1.:0.) << " " << normtemp << endl;
 	    else if (makerr==2){
