@@ -131,6 +131,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   bool   adaptive_; ///< Whether integration should use adaptive delta
 
+  bool   secondary_; ///< Choose 0 for computing only primary image
+
   /**
    * Default integration step for the photons
    */
@@ -255,6 +257,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void adaptive (bool mode) ; ///< Set Scenery::adaptive_
   bool adaptive () const ; ///< Get Scenery::adaptive_
+
+  void secondary (bool sec) ; ///< Set Scenery::secondary_
+  bool secondary () const ; ///< Get Scenery::secondary_
 
   void maxiter (size_t miter) ; ///< Set Scenery::maxiter_
   size_t maxiter () const ; ///< Get Scenery::maxiter_

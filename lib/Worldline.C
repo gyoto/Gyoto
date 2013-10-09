@@ -33,6 +33,7 @@ using namespace Gyoto;
 
 
 Worldline::Worldline() : imin_(1), i0_(0), imax_(0), adaptive_(1),
+			 secondary_(1),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
@@ -40,7 +41,7 @@ Worldline::Worldline() : imin_(1), i0_(0), imax_(0), adaptive_(1),
 { xAllocate(); }
 
 Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
-					adaptive_(1),
+					adaptive_(1), secondary_(1),
 					delta_(GYOTO_DEFAULT_DELTA),
 					tmin_(-DBL_MAX),
 					cst_(NULL), cst_n_(0),
@@ -51,7 +52,7 @@ Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
 Worldline::Worldline(const Worldline& orig) :
   metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  adaptive_(orig.adaptive_),
+  adaptive_(orig.adaptive_), secondary_(orig.secondary_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
   wait_pos_(orig.wait_pos_), init_vel_(NULL),
   maxiter_(orig.maxiter_)
@@ -97,7 +98,7 @@ Worldline::Worldline(const Worldline& orig) :
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   metric_(orig->metric_),
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
-  adaptive_(orig->adaptive_),
+  adaptive_(orig->adaptive_), secondary_(orig->secondary_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
   wait_pos_(orig->wait_pos_), init_vel_(NULL),
   maxiter_(orig->maxiter_)
@@ -349,6 +350,7 @@ int Worldline::setParameter(std::string name,
   else if (name=="MaxIter")     maxiter_  = atoi(content.c_str());
   else if (name=="NonAdaptive") adaptive_ = false;
   else if (name=="Adaptive")    adaptive_ = true;
+  else if (name=="PrimaryOnly") secondary_= false;
   else return 1;
   return 0;
 }
@@ -1075,6 +1077,9 @@ void Worldline::setTmin(double tmin) { tmin_ = tmin; }
 
 void Worldline::adaptive(bool mode) { adaptive_ = mode; }
 bool Worldline::adaptive() const { return adaptive_; }
+
+void Worldline::secondary(bool sec) { secondary_ = sec; }
+bool Worldline::secondary() const { return secondary_; }
 
 void Worldline::maxiter(size_t miter) { maxiter_ = miter; }
 size_t Worldline::maxiter() const { return maxiter_; }

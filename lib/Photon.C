@@ -293,6 +293,11 @@ int Photon::hit(Astrobj::Properties *data) {
   while (!stopcond) {
     // Next step along photon's worldline
     stopcond  = state -> nextStep(coord);
+    if (!secondary_){ // to compute only primary image
+      double sign = x1_[i0_]*cos(x2_[i0_]);
+      if (coord[1]*cos(coord[2])*sign<0. && x1_[ind]*cos(x2_[ind])*sign<0.)
+	return 0;
+    }
     if (stopcond) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by integrator\n";

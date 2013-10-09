@@ -78,6 +78,7 @@ class Gyoto::Worldline
   size_t i0_;  ///< Index of initial condition in array
   size_t imax_;///< Maximum index for which x0, x1... have been computed
   bool   adaptive_; ///< Whether integration should use adaptive delta
+  bool secondary_; ///< choose 0 to compute only primary image
   double delta_;///< Initial integrating step ; defaults to 0.01
   double tmin_;///< Minimum time for integration, stop integration if t<tmin ; defaults to -DBL_MAX
   double * cst_; ///< Worldline's csts of motion (if any)
@@ -178,6 +179,8 @@ class Gyoto::Worldline
   void setTmin(double tlim); ///< Set tmin to a given value
   void adaptive (bool mode) ; ///< Set adaptive_
   bool adaptive () const ; ///< Get adaptive_
+  void secondary (bool sec) ; ///< Set secondary_
+  bool secondary () const ; ///< Get secondary_
   void maxiter (size_t miter) ; ///< Set maxiter_
   size_t maxiter () const ; ///< Get maxiter_
 
