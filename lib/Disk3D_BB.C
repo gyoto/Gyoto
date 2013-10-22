@@ -46,7 +46,9 @@ using namespace Gyoto::Astrobj;
 Disk3D_BB::Disk3D_BB() :
   Disk3D(),
   spectrumBB_(NULL),
-  tinit_(0.), dt_(1.)
+  dirname_(NULL),
+  tinit_(0.), dt_(1.), nb_times_(1),
+  temperature_(1)
 {
   GYOTO_DEBUG << "Disk3D_BB Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -55,10 +57,41 @@ Disk3D_BB::Disk3D_BB() :
 Disk3D_BB::Disk3D_BB(const Disk3D_BB& o) :
   Disk3D(o),
   spectrumBB_(NULL),
-  tinit_(o.tinit_), dt_(o.dt_)
+  tinit_(o.tinit_), dt_(o.dt_), nb_times_(o.nb_times_),
+  temperature_(o.temperature_)
 {
   GYOTO_DEBUG << "Disk3D_BB Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
+
+  if (o.dirname_){
+    //dirname_ copy
+    size_t length = strlen(o.dirname_)+1;
+    dirname_ = new char[length];
+    memcpy(dirname_, o.dirname_, length);
+  }
+  if (o.temperature_array_ && o.velocity_array_){
+    // temperature_array_ and velocity_array_ copy
+    size_t naxes[4];
+    getEmissquantNaxes(naxes);
+    size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2], nr=naxes[3];
+    // Allocate
+    temperature_array_   = new double*[nb_times_];
+    velocity_array_      = new double*[nb_times_];
+    
+    // Copy
+    size_t nel1=nnu*nphi*nz*nr,
+      nel2=3*nphi*nz*nr,
+      szt=nel1*sizeof(double),
+      szv=nel2*sizeof(double);
+    for (int i=1; i<=nb_times_; i++) {
+      temperature_array_[i-1] = new double[nel1];
+      velocity_array_[i-1] = new double[nel2];
+      memcpy(temperature_array_[i-1], o.temperature_array_[i-1], szt);
+      memcpy(velocity_array_[i-1], o.velocity_array_[i-1], szv);
+    }
+  }
+  
+  
 }
 Disk3D_BB* Disk3D_BB::clone() const
 { return new Disk3D_BB(*this); }
@@ -138,9 +171,9 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   }
 
   double rcur=co[1];
-  //double th=co[2];
+  double th=co[2];
 
-  if (rcur > rout() || rcur < risco) return 0.;
+  if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
@@ -148,64 +181,63 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
-  //This is local temperature in K
+  //This is local temperature in K if temperature_=1
+  //and intensity if temperature_=0
+  double Iem=-1.;
+  if (temperature_){
+    spectrumBB_->setTemperature(TT);
+    Iem=(*spectrumBB_)(nu);
+  }else{
+    Iem=TT;
+  }
 
-  spectrumBB_->setTemperature(TT);
-  double Iem=(*spectrumBB_)(nu);
-
-  double Ires=0.;
+  double Ires=-1.;
   if (!flag_radtransf_){
     Ires=Iem;
   }else{
-    //SI value of cylindrical r coordinate:
-    double dist_unit = gg_->unitLength();
-    //double r_si=rcur*dist_unit; //spherical
-    //double r_si=rcur*sin(th)*dist_unit; //cylindrical
-    //cout << "cyl: " << rcur << " " << th << " " << rcur*sin(th) << " " << risco << endl;
-    //double risco_si=risco*dist_unit;
-
-    //Local density in cgs:
-    /*
-      Following fact (in SI units) is defined by:
-      fact=RR/(Mm*kappa*gamma)
-      with:
-       RR=8.3144621; // Perfect gas constant in SI
-       Mm=6e-4; //This is N_avogadro*M_atomicmassunit/gamma in kg/mol
-       kappa=3e10; // p = kappa*density^gamma
-       gamma=1.66667;
-      [see DynaDisk3D.i]
-     */
-    double fact=2.77149e-07;
-    //See DynaDisk3D.i, or paper, for relation between TT and density
-    double density=pow(fact*TT,1.5);// 1.5 is 1/(gamma-1)
-    //density is in SI units, kg/m^3
-    
-    /*** Computing emission coef: ***/
-
-    //Emission coef jnu for thermal bremsstrahlung (see RybickiLightman 5.14a)
-
-    /* 
-       fact2=1/4pi * 2^5*pi*e^6/(3*me*c^3) * sqrt(2pi/(3*kB*me)) * 1/mu^2 
-       in SI, with: me=electron mass, e=electron charge, kB=boltzman,
-                    mu=atomic mass unit
-       Anyway this factor has no importance, 
-       we are interested in relative values
-    */
-    double fact2=7.83315e-12;
-    double hok=4.79924e-11; //planck cst / boltzman cst
-    double jnu = fact2 * 1./sqrt(TT) * density*density
-      * exp(-hok*nu/TT);
-
-    //Elementary intensity added by current dsem segment of worldline
-    //in SI units:
-    Ires=jnu*dsem*dist_unit;
-    //cout << "at end emission1date nu jnu deltaI= " << nu << " "  << jnu << " " << Ires << endl;
-
-    //cout << rcur << " " << TT << endl;
-    //cout << Iem << " " << Sem/Vem << " " << dsem << " " << Ires << endl;
-    //cout << "stuff 3D= " << TT << " " << Iem << " " << Ires << " " << jnu << " " << Sem/Vem << " " << dsem << endl;
+    if (temperature_){
+      //SI value of cylindrical r coordinate:
+      double dist_unit = gg_->unitLength();
+      
+      /*
+	Following fact (in SI units) is defined by:
+	fact=RR/(Mm*kappa*gamma)
+	with:
+	RR=8.3144621; // Perfect gas constant in SI
+	Mm=6e-4; //This is N_avogadro*M_atomicmassunit/gamma in kg/mol
+	kappa=3e10; // p = kappa*density^gamma
+	gamma=1.66667;
+	[see DynaDisk3D.i]
+      */
+      double fact=2.77149e-07;
+      //See DynaDisk3D.i, or paper, for relation between TT and density
+      double density=pow(fact*TT,1.5);// 1.5 is 1/(gamma-1)
+      //density is in SI units, kg/m^3
+      
+      /*** Computing emission coef: ***/
+      
+      //Emission coef jnu for thermal bremsstrahlung 
+      // (see RybickiLightman 5.14a)
+      
+      /* 
+	 fact2=1/4pi * 2^5*pi*e^6/(3*me*c^3) * sqrt(2pi/(3*kB*me)) * 1/mu^2 
+	 in SI, with: me=electron mass, e=electron charge, kB=boltzman,
+	 mu=atomic mass unit
+	 Anyway this factor has no importance, 
+	 we are interested in relative values
+      */
+      double fact2=7.83315e-12;
+      double hok=4.79924e-11; //planck cst / boltzman cst
+      double jnu = fact2 * 1./sqrt(TT) * density*density
+	* exp(-hok*nu/TT);
+      
+      //Elementary intensity added by current dsem segment of worldline
+      //in SI units:
+      Ires=jnu*dsem*dist_unit; // usd e.g. for 3D RWI computation
+    }else{
+      Ires=Iem; // used e.g. for GC blob computation
+    }
   }
-
   return Ires;
 
 }
@@ -220,6 +252,7 @@ double Disk3D_BB::emission(double nu, double dsem,
     tcomp+=dt_;
     ifits++;
   }
+
   if (ifits==1 || ifits==nb_times_){
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
     return emission1date(nu,dsem,NULL,co);
@@ -240,6 +273,8 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
 			       double*,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
+  if (!flag_radtransf_) return 0.;
+
   double * temperature = const_cast<double*>(getEmissquant());
 
   double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
@@ -256,11 +291,9 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
   }
 
   double rcur=co[1];
-  //double th=co[2];
+  double th=co[2];
 
-  //cout << "rcur, risco= " << rcur << " " << risco << endl;
-
-  if (rcur > rout() || rcur < risco) return 0.;
+  if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
@@ -268,28 +301,33 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
-  //This is local temperature in K
-  
-  spectrumBB_->setTemperature(TT);
-  double BnuT=(*spectrumBB_)(nu); //Planck function
-  double jnu=emission1date(nu,dsem,NULL,co); // Emission coef
-  double alphanu=0.; //absorption coef.
-  if (BnuT==0.){
-    /*
-      BnuT can be 0 in the region close to ISCO where density
-      decreases very fast. Then jnu should be 0 too (density~0).
-      If both are 0, then nothing happens (no absorption, no emission,
-      it's free space). Thus leave alphanu=0.
-      If jnu!=0 then alphanu is not defined, this should not happen.
-     */
-    if (jnu!=0.)
-      throwError("In Disk3D_BB::transmission1date absorption coef. undefined!");
+  if (temperature_){
+    //TT is local temperature in K
+    spectrumBB_->setTemperature(TT);
+    double BnuT=(*spectrumBB_)(nu); //Planck function
+    double jnu=emission1date(nu,dsem,NULL,co); // Emission coef
+    double alphanu=0.; //absorption coef.
+    if (BnuT==0.){
+      /*
+	BnuT can be 0 in the region close to ISCO where density
+	decreases very fast. Then jnu should be 0 too (density~0).
+	If both are 0, then nothing happens (no absorption, no emission,
+	it's free space). Thus leave alphanu=0.
+	If jnu!=0 then alphanu is not defined, this should not happen.
+      */
+      if (jnu!=0.)
+	throwError("In Disk3D_BB::"
+		   "transmission1date absorption coef. undefined!");
+    }else{
+      alphanu=jnu/BnuT;
+    }
+    //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
+    return exp(-alphanu*dsem*dist_unit); 
   }else{
-    alphanu=jnu/BnuT;
+    // TT is emitted intensity
+    if (TT>0.) return 0.;
+    else return 1.;
   }
-  //cout << "at end transmission1date nu alphanu argexp= " << nu << " " << TT << " " << jnu << " " << BnuT << " " << exp(-alphanu*dsem*dist_unit) << endl;
-  //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
-  return exp(-alphanu*dsem*dist_unit); 
 }
 
 double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
@@ -411,6 +449,7 @@ int Disk3D_BB::setParameter(std::string name,
   }
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());
+  else if (name=="IntensityGrid") temperature_=0;
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }

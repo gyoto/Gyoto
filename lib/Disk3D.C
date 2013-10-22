@@ -47,7 +47,8 @@ Disk3D::Disk3D() :
   dnu_(1.), nu0_(0), nnu_(0),
   dphi_(0.), phimin_(-DBL_MAX), nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dz_(0.), zmin_(-DBL_MAX), nz_(0), zmax_(DBL_MAX),
-  dr_(0.), rin_(-DBL_MAX), nr_(0), rout_(DBL_MAX)
+  dr_(0.), rin_(-DBL_MAX), nr_(0), rout_(DBL_MAX),
+  zsym_(1)
 {
   GYOTO_DEBUG << "Disk3D Construction" << endl;
 }
@@ -59,7 +60,8 @@ Disk3D::Disk3D(const Disk3D& o) :
   dphi_(o.dphi_), phimin_(o.phimin_),
   nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
   dz_(o.dz_), zmin_(o.zmin_), nz_(o.nz_), zmax_(o.zmax_),
-  dr_(o.dr_), rin_(o.rin_), nr_(o.nr_), rout_(o.rout_)
+  dr_(o.dr_), rin_(o.rin_), nr_(o.nr_), rout_(o.rout_),
+  zsym_(o.zsym_)
 {
   GYOTO_DEBUG << "Disk3D Copy" << endl;
   size_t ncells = 0;
@@ -615,8 +617,11 @@ int Disk3D::Impact(Photon *ph, size_t index,
   while (tcur>t1+deltat 
 	 && 
 	 (
-	  ((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_)) 
-	  || zcur>zmax_ || rcur>rout_ || rcur<rin_)
+	  (zsym_ && ((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_)) )
+	  ||
+	  (!zsym_ && zcur<zmin_ )
+	  || 
+	  zcur>zmax_ || rcur>rout_ || rcur<rin_)
 	 ){
     //Condition: current point stays between t1 and t2, keep going 
     //until current point gets inside the grid
@@ -665,8 +670,11 @@ int Disk3D::Impact(Photon *ph, size_t index,
     zcur=myrcur*cos(thetacur);
     rcur=sqrt(myrcur*myrcur-zcur*zcur);
     if (
-	((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_))
-	|| zcur>zmax_ || rcur>rout_ || rcur<rin_
+	(zsym_ && ((zmin_<0. && zcur<zmin_) || (zmin_>=0. && zcur<-zmax_)) )
+	||
+	(!zsym_ && zcur<zmin_ )
+	|| 
+	zcur>zmax_ || rcur>rout_ || rcur<rin_
 	){//then out of grid
       indisk=0;
     }else{ //Inside grid: compute emission
@@ -690,7 +698,8 @@ int Disk3D::Impact(Photon *ph, size_t index,
 int Disk3D::setParameter(std::string name,
 			 std::string content,
 			 std::string unit) {
-  if      (name == "File")          fitsRead( content );
+  if      (name == "File")              fitsRead( content );
+  if      (name == "NoZsymmetrizeGrid") zsym_ = 0;
   else return Generic::setParameter(name, content, unit);
   return 0;
 }

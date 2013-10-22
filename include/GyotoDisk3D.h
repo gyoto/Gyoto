@@ -98,7 +98,7 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   size_t nr_; ///< Number of rows in the patternGrid size in the r direction
   double rout_; ///< Outer radius of the grid
 
-
+  int zsym_; ///< 1 to symmetrize the grid z -> -z (default case)
 
   // Constructors - Destructor
   // -------------------------
