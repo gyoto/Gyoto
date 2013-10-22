@@ -71,7 +71,8 @@ void ThinDiskIronLine::getVelocity(double const pos[4], double vel[4]) {
   if (pos[1]<cutradius_){
     //any velocity, emission=0 anyway
     for (int ii=1;ii<4;ii++) vel[ii]=0;
-    vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
+    vel[0] = 1.;
+    //vel[0] = gg_->SysPrimeToTdot(pos, vel+1); // leads to v>c if a>0...
   }else{
     ThinDisk::getVelocity(pos,vel);
   }
