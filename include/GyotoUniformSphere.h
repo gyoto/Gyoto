@@ -88,6 +88,7 @@ class Gyoto::Astrobj::UniformSphere :
   // -----
  protected:
   double radius_ ; ///< sphere radius [geometrical units]
+  int isotropic_; ///< if 1, then emission just returns 1
   SmartPointer<Spectrum::Generic> spectrum_; ///< sphere emission law
   SmartPointer<Spectrum::Generic> opacity_; ///< if optically thin, opacity law
 

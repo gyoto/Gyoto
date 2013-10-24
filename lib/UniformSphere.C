@@ -40,7 +40,8 @@ using namespace Gyoto::Astrobj;
 UniformSphere::UniformSphere(string kind) :
   Astrobj::Standard(kind),
   spectrum_(NULL),
-  opacity_(NULL)
+  opacity_(NULL),
+  isotropic_(0)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -56,7 +57,8 @@ UniformSphere::UniformSphere(string kind,
 			     SmartPointer<Metric::Generic> met, double rad) :
   Astrobj::Standard(kind),
   radius_(rad),
-  spectrum_(NULL), opacity_(NULL)
+  spectrum_(NULL), opacity_(NULL),
+  isotropic_(0)
 {
   critical_value_ = radius_*radius_;
   safety_value_ = critical_value_*1.1 + 0.1;
@@ -70,7 +72,8 @@ UniformSphere::UniformSphere(string kind,
 UniformSphere::UniformSphere(const UniformSphere& orig) :
   Astrobj::Standard(orig),
   radius_(orig.radius_),
-  spectrum_(NULL), opacity_(NULL)
+  spectrum_(NULL), opacity_(NULL),
+  isotropic_(orig.isotropic_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -121,6 +124,12 @@ double UniformSphere::operator()(double const coord[4]) {
 
 
 double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
+  if (isotropic_){
+    if (flag_radtransf_)
+      throwError("In UniformSphere::emission: "
+		 "isotropic_ keyword implies optically thick trivial emission");
+    return 1.;
+  }
   if (flag_radtransf_) return (*spectrum_)(nu_em, (*opacity_)(nu_em), dsem);
   return (*spectrum_)(nu_em);
 }
@@ -167,6 +176,7 @@ void UniformSphere::setRadius(double r, std::string unit) {
 
 int UniformSphere::setParameter(string name, string content, string unit) {
   if (name=="Radius") setRadius(atof(content.c_str()), unit);
+  if (name=="IsotropicEmittedIntensity") isotropic_=1;
   else return Standard::setParameter(name, content, unit);
   return 0;
 }
