@@ -61,7 +61,7 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
   ///< emission law
  private:
-  int temperature_; ///< 1 if temperature is given in fits data file, 0 if intensity
+  int temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
   char* dirname_; ///< FITS files directory
   double tinit_; ///< Time of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)

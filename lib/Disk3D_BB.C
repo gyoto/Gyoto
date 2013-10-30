@@ -135,6 +135,7 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
       tcomp+=dt_;
       ifits++;
     }
+
     if (ifits==1 || ifits==nb_times_){
       copyQuantities(ifits);
       Disk3D::getVelocity(pos,vel);
@@ -182,7 +183,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
   double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
   //This is local temperature in K if temperature_=1
-  //and intensity if temperature_=0
+  //or j_nu if temperature_=0
   double Iem=-1.;
   if (temperature_){
     spectrumBB_->setTemperature(TT);
@@ -235,7 +236,15 @@ double Disk3D_BB::emission1date(double nu, double dsem,
       //in SI units:
       Ires=jnu*dsem*dist_unit; // usd e.g. for 3D RWI computation
     }else{
-      Ires=Iem; // used e.g. for GC blob computation
+      //Ires=Iem; // used e.g. for GC blob computation
+      double dist_unit = gg_->unitLength()*100.; // unit length in cgs
+      double factem = 3.0953e-14; // See mma computations
+      double jnu = factem*TT*pow(nu,-1.5);
+
+      Ires=jnu*dsem*dist_unit;
+      /*cout << "nu in emiss= " << nu << endl;
+      cout << "ds in emiss= " << dsem << " " << dist_unit << " " << dsem*dist_unit << endl;
+      cout << "emiss stuff= " << TT << " " << jnu << " " << Ires << endl;*/
     }
   }
   return Ires;
@@ -277,7 +286,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
 
   double * temperature = const_cast<double*>(getEmissquant());
 
-  double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
+  //double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
   
   double risco;
   switch (gg_->getCoordKind()) {
@@ -305,7 +314,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
     //TT is local temperature in K
     spectrumBB_->setTemperature(TT);
     double BnuT=(*spectrumBB_)(nu); //Planck function
-    double jnu=emission1date(nu,dsem,NULL,co); // Emission coef
+    double jnu=emission1date(nu,dsem,NULL,co); // Emission coef * ds
     double alphanu=0.; //absorption coef.
     if (BnuT==0.){
       /*
@@ -322,11 +331,18 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
       alphanu=jnu/BnuT;
     }
     //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
-    return exp(-alphanu*dsem*dist_unit); 
+    //return exp(-alphanu*dsem*dist_unit); 
+    return exp(-alphanu); // the dsem factor is already included
+    //in alphanu via jnu=emission1date(...,dsem,...)
   }else{
-    // TT is emitted intensity
-    if (TT>0.) return 0.;
-    else return 1.;
+    double factabs=2.2425e35; // See mma computations
+    double dist_unit = gg_->unitLength()*100.; //dist unit in cgs
+    double alphanu=factabs*TT*pow(nu,-4.)*dsem*dist_unit; // this is *ds_em
+    /*cout << "nu in trans= " << nu << endl;
+    cout << "ds in trans= " << dsem << " " << dist_unit << " " << dsem*dist_unit << endl;
+    cout << "trans stuff= " << TT << " " << alphanu << " " << exp(-alphanu) << endl;*/
+    return exp(-alphanu);
+    
   }
 }
 
@@ -339,6 +355,7 @@ double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
     tcomp+=dt_;
     ifits++;
   }
+  //  cout << "ifits= " << ifits << endl
   if (ifits==1 || ifits==nb_times_){
     const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
     return transmission1date(nuem,dsem,NULL,co);
