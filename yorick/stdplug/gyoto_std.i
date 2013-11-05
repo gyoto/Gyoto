@@ -382,6 +382,9 @@ extern gyoto_Disk3D;
     at NNU frequencies going from NU0 to NU0*DNU*(NNU-1). The cube
     EMISSQUANT is an array(double, NNU, NPHI, NZ, NR).
 
+    Optional opacity field may be provided, with same dimensions as
+    emissquant.
+
     The fluid velocity field must be specified
     with VELOCITY==array(double, 3, NPHI, NZ, NR).
     VELOCITY(1,..)==dphi/dt; VELOCITY(2,..)==dz/dt;
@@ -419,7 +422,10 @@ extern gyoto_Disk3D;
                   array will also be freed (as it has
                   inconsistent dimensions).
 
-     copyvelocity=VELOCITY
+    copyopacity=OPACITY
+                same as COPYEMISSQUANT for opacity field.
+    
+    copyvelocity=VELOCITY
                 same as COPYEMISSQUANT but to attach the fluid velocity
                 field, a 3 x NPHI x NZ x NR array where
                 VELOCITY(1,..)==dphi/dt, VELOCITY(2,..)==dz/dt

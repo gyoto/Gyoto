@@ -40,13 +40,13 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
     "fitsread", "repeatphi", "nu0", "dnu",
     "rin", "rout", "zmin", "zmax",
     "phimin", "phimax",
-    "copyemissquant", "copyvelocity",
+    "copyemissquant", "copyopacity", "copyvelocity",
     "fitswrite",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Disk3D, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+14);
+  YGYOTO_WORKER_INIT(Astrobj, Disk3D, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+15);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
@@ -85,8 +85,32 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
     }
   }
 
-  /* VELOCITY */
+  /* OPACITY */
+  if ((iarg=kiargs[++k])>=0) {
+    GYOTO_DEBUG << "copyopacity=\n";
+    iarg+=*rvset;
+    if (yarg_nil(iarg)) {
+      if ((*rvset)++) y_error(rmsg);
+      size_t ddims[4];
+      (*ao) -> getEmissquantNaxes(ddims);
+      long dims[] = {4, ddims[0], ddims[1], ddims[2], ddims[3]};
+      double * out = ypush_d(dims);
+      memcpy(out, (*ao)->getOpacity(),
+	     dims[1]*dims[2]*dims[3]*dims[4]*sizeof(double));
+    } else {
+      long ntot;
+      long dims[Y_DIMSIZE];
+      double const * const in = ygeta_d(iarg, &ntot, dims);
+      if (dims[0]==0 && ntot && *in==0) (*ao) -> copyOpacity(NULL, 0);
+      else if (dims[0]==4) {
+	size_t ddims[] = {dims[1], dims[2], dims[3], dims[4]};
+	(*ao)->copyOpacity(in, ddims);
+      } else
+	y_error("COPYOPACITY must be nil, 0, or array(double, nnu, nphi, nz, nr");
+    }
+  }
 
+  /* VELOCITY */
   if ((iarg=kiargs[++k])>=0) {
     GYOTO_DEBUG << "copyvelocity=\n";
     iarg+=*rvset;
