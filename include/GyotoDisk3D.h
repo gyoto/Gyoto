@@ -65,6 +65,8 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
    */
   double * emissquant_; ///< Physical quantity yielding emission.
 
+  double * opacity_; ///< Opacity, same dimensions as emissquant_
+
   /**
    * An array of dimensionality double[nr_][nz_][nphi_][3]. In FITS format,
    * the second dimension is phi, the third z and last r. The first plane in
@@ -130,6 +132,8 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
    */
   void setEmissquant(double * pattern);
 
+  void setOpacity(double * pattern);
+
   /// Set Disk3D::velocity__.
   /**
    * The pointer is copied directly, not the array content.
@@ -164,6 +168,12 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 
   /// Get { Disk3D::nnu_, Disk3D::nphi_, Disk3D::nz_, Disk3D::nr_ }.
   virtual void getEmissquantNaxes( size_t naxes[4] ) const ;
+
+  virtual void copyOpacity(double const * const pattern = NULL,
+			      size_t const naxes[4] = NULL);
+
+  /// Get Disk3D::opacity_.
+  virtual double const * getOpacity() const;
 
   /// Set Disk3D::velocity_.
   /**

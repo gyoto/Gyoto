@@ -87,6 +87,10 @@ void Disk3D::setEmissquant(double * pattern) {
   emissquant_ = pattern;
 }
 
+void Disk3D::setOpacity(double * pattern) {
+  opacity_ = pattern;
+}
+
 void Disk3D::setVelocity(double * pattern) {
   velocity_ = pattern;
 }
@@ -134,6 +138,27 @@ void Disk3D::getEmissquantNaxes( size_t naxes[3] ) const
   naxes[0] = nnu_; naxes[1] = nphi_; naxes[2] = nz_; 
   naxes[3] = nr_;
 }
+
+void Disk3D::copyOpacity(double const *const opacity, size_t const naxes[4]) {
+  GYOTO_DEBUG << endl;
+  if (opacity_) {
+    GYOTO_DEBUG << "delete [] opacity_;" << endl;
+    delete [] opacity_; opacity_ = NULL;
+    flag_radtransf_=0;
+  }
+  if (opacity) {
+    if (nnu_ != naxes[0] || nphi_ != naxes[1] || nz_ != naxes[2] || nr_ != naxes[3])
+      throwError("Please set intensity before opacity. "
+		 "The two arrays must have the same dimensions.");
+    GYOTO_DEBUG << "allocate opacity_;" << endl;
+    opacity_ = new double[nnu_ * nphi_ * nz_ * nr_];
+    GYOTO_DEBUG << "opacity >> opacity_" << endl;
+    memcpy(opacity_, opacity, nnu_ * nphi_ * nz_ * nr_ * sizeof(double));
+    flag_radtransf_=1;
+  }
+}
+
+double const * Disk3D::getOpacity() const { return opacity_; }
 
 void Disk3D::copyVelocity(double const *const velocity, size_t const naxes[3]) {
   GYOTO_DEBUG << endl;
@@ -336,6 +361,35 @@ void Disk3D::fitsRead(string filename) {
   }
   GYOTO_DEBUG << " done." << endl;
 
+  ////// FIND OPTIONAL OPACITY HDU ///////
+
+  fits_movnam_hdu(fptr, ANY_HDU,
+		  const_cast<char*>("GYOTO Disk3D opacity"),
+		  0, &status);
+  if (status) {
+    if (status == BAD_HDU_NUM) {
+      GYOTO_INFO << "FITS file does not contain opacity extension" << endl;
+      // FITS file does not contain opacity information
+      status = 0;
+      if (opacity_) { delete [] opacity_; opacity_ = NULL; }
+    } else throwCfitsioError(status) ;
+  } else {
+    GYOTO_INFO << "FITS file contains opacity extension" << endl;
+    if (fits_get_img_size(fptr, 4, naxes, &status)) throwCfitsioError(status) ;
+    if (   size_t(naxes[0]) != nnu_
+	|| size_t(naxes[1]) != nphi_
+	|| size_t(naxes[2]) != nz_
+	|| size_t(naxes[3]) != nr_ )
+      throwError("Disk3D::readFile(): opacity array not conformable");
+    if (opacity_) { delete [] opacity_; opacity_ = NULL; }
+    opacity_ = new double[nnu_ * nphi_ * nz_ * nr_];
+    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
+			 0, opacity_,&anynul,&status)) {
+      delete [] opacity_; opacity_=NULL;
+      throwCfitsioError(status) ;
+    }
+  }
+
   ////// FIND MANDATORY VELOCITY HDU ///////
 
   fits_movnam_hdu(fptr, ANY_HDU,
@@ -466,6 +520,17 @@ void Disk3D::fitsWrite(string filename) {
 		 &CRPIX1, CNULL, &status);
   fits_write_pix(fptr, TDOUBLE, fpixel, nnu_*nphi_*nz_*nr_, emissquant_, &status);
   if (status) throwCfitsioError(status) ;
+
+  ////// SAVE OPTIONAL OPACITY HDU ///////
+  if (opacity_) {
+    GYOTO_DEBUG << "saving opacity_\n";
+    fits_create_img(fptr, DOUBLE_IMG, 4, naxes, &status);
+    fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
+		   const_cast<char*>("GYOTO Disk3D opacity"),
+		   CNULL, &status);
+    fits_write_pix(fptr, TDOUBLE, fpixel, nnu_*nphi_*nz_*nr_, opacity_, &status);
+    if (status) throwCfitsioError(status) ;
+  }
 
   ////// SAVE MANDATORY VELOCITY HDU ///////
   if (velocity_) {
