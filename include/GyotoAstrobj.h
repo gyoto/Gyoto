@@ -90,7 +90,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name,
-						      int errmode = 1);
+						      int errmode = 0);
     ///< Query the Astrobj register
 
 #if defined GYOTO_USE_XERCES
