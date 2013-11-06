@@ -48,6 +48,7 @@ DynamicalDisk3D::DynamicalDisk3D() :
   spectrumBB_(NULL),
   dirname_(NULL),
   tinit_(0.), dt_(1.), nb_times_(1),
+  PLindex_(3),
   temperature_(1)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
@@ -58,6 +59,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   Disk3D(o),
   spectrumBB_(NULL),
   tinit_(o.tinit_), dt_(o.dt_), nb_times_(o.nb_times_),
+  PLindex_(o.PLindex_),
   temperature_(o.temperature_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
@@ -69,13 +71,13 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
     dirname_ = new char[length];
     memcpy(dirname_, o.dirname_, length);
   }
-  if (o.temperature_array_ && o.velocity_array_){
-    // temperature_array_ and velocity_array_ copy
+  if (o.emission_array_ && o.velocity_array_){
+    // emission_array_ and velocity_array_ copy
     size_t naxes[4];
     getEmissquantNaxes(naxes);
     size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2], nr=naxes[3];
     // Allocate
-    temperature_array_   = new double*[nb_times_];
+    emission_array_   = new double*[nb_times_];
     velocity_array_      = new double*[nb_times_];
     
     // Copy
@@ -84,10 +86,19 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
       szt=nel1*sizeof(double),
       szv=nel2*sizeof(double);
     for (int i=1; i<=nb_times_; i++) {
-      temperature_array_[i-1] = new double[nel1];
+      emission_array_[i-1] = new double[nel1];
       velocity_array_[i-1] = new double[nel2];
-      memcpy(temperature_array_[i-1], o.temperature_array_[i-1], szt);
+      memcpy(emission_array_[i-1], o.emission_array_[i-1], szt);
       memcpy(velocity_array_[i-1], o.velocity_array_[i-1], szv);
+    }
+
+    // If absorption is given, copy
+    if (o.absorption_array_){
+      absorption_array_   = new double*[nb_times_];
+      for (int i=1; i<=nb_times_; i++) {
+	absorption_array_[i-1] = new double[nel1];
+	memcpy(absorption_array_[i-1], o.absorption_array_[i-1], szt);
+      }
     }
   }
   
@@ -98,7 +109,8 @@ DynamicalDisk3D* DynamicalDisk3D::clone() const
 
 DynamicalDisk3D::~DynamicalDisk3D() {
   GYOTO_DEBUG << "DynamicalDisk3D Destruction" << endl;
-  delete [] temperature_array_;
+  delete [] emission_array_;
+  if (absorption_array_) delete [] absorption_array_;
   delete [] velocity_array_;
 }
 
@@ -107,7 +119,8 @@ double const * DynamicalDisk3D::getVelocity() const { return Disk3D::getVelocity
 void DynamicalDisk3D::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
     throwError("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
-  setEmissquant(temperature_array_[iq-1]);
+  setEmissquant(emission_array_[iq-1]);
+  if (absorption_array_) setOpacity(absorption_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
 }
 
@@ -158,7 +171,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
   
-  double * temperature = const_cast<double*>(getEmissquant());
+  double * emiss = const_cast<double*>(getEmissquant());
 
   double risco;
   switch (gg_->getCoordKind()) {
@@ -181,21 +194,24 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   size_t naxes[4];
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
-  double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
-  //This is local temperature in K if temperature_=1
-  //or j_nu if temperature_=0
-  double Iem=-1.;
-  if (temperature_){
-    spectrumBB_->setTemperature(TT);
-    Iem=(*spectrumBB_)(nu);
-  }else{
-    Iem=TT;
-  }
+  double emissq = emiss[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+  //This is a quantity from which emiss. coef. j_nu is known
+  //this is temperature in K if temperature_=1
+  //or directly j_nu, up to the nu dependence, if temperature_=0
 
-  double Ires=-1.;
-  if (!flag_radtransf_){
-    Ires=Iem;
-  }else{
+  double Ires=-1.; // emitted specific intensity
+
+  if (!flag_radtransf_){ // optically thick case
+    
+    if (temperature_){
+      spectrumBB_->setTemperature(emissq);
+      Ires=(*spectrumBB_)(nu);
+    }else{
+      Ires=emissq;
+    }
+
+  }else{//                 // optically thin case
+
     if (temperature_){
       //SI value of cylindrical r coordinate:
       double dist_unit = gg_->unitLength();
@@ -211,8 +227,8 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 	[see DynaDisk3D.i]
       */
       double fact=2.77149e-07;
-      //See DynaDisk3D.i, or paper, for relation between TT and density
-      double density=pow(fact*TT,1.5);// 1.5 is 1/(gamma-1)
+      //See DynaDisk3D.i, or paper, for relation between emissq and density
+      double density=pow(fact*emissq,1.5);// 1.5 is 1/(gamma-1)
       //density is in SI units, kg/m^3
       
       /*** Computing emission coef: ***/
@@ -229,8 +245,8 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
       */
       double fact2=7.83315e-12;
       double hok=4.79924e-11; //planck cst / boltzman cst
-      double jnu = fact2 * 1./sqrt(TT) * density*density
-	* exp(-hok*nu/TT);
+      double jnu = fact2 * 1./sqrt(emissq) * density*density
+	* exp(-hok*nu/emissq);
       
       //Elementary intensity added by current dsem segment of worldline
       //in SI units:
@@ -238,15 +254,10 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
     }else{
       //Ires=Iem; // used e.g. for GC blob computation
       double dist_unit = gg_->unitLength()*100.; // unit length in cgs
-      double factem = 3.0953e-14; // See mma computations
-      double jnu = factem*TT*pow(nu,-1.5);
-
+      double jnu = emissq*pow(nu,-(PLindex_-1.)/2.);
       Ires=jnu*dsem*dist_unit;
-
-      /*cout << "nu in emiss= " << nu << endl;
-      cout << "ds in emiss= " << dsem << " " << dist_unit << " " << dsem*dist_unit << endl;
-      cout << "emiss stuff= " << TT << " " << jnu << " " << Ires << endl;*/
     }
+
   }
   return Ires;
 
@@ -284,10 +295,6 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
   if (!flag_radtransf_) return 0.;
-
-  double * temperature = const_cast<double*>(getEmissquant());
-
-  //double dist_unit = GYOTO_G_OVER_C_SQUARE*gg_->getMass();
   
   double risco;
   switch (gg_->getCoordKind()) {
@@ -310,10 +317,12 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
   size_t naxes[4];
   getEmissquantNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1], nz=naxes[2];
-  double TT = temperature[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+
   if (temperature_){
-    //TT is local temperature in K
-    spectrumBB_->setTemperature(TT);
+    double * emiss = const_cast<double*>(getEmissquant());
+    double emissq = emiss[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+    //emissq is local temperature in K
+    spectrumBB_->setTemperature(emissq);
     double BnuT=(*spectrumBB_)(nu); //Planck function
     double jnu=emission1date(nu,dsem,NULL,co); // Emission coef * ds
     double alphanu=0.; //absorption coef.
@@ -332,18 +341,19 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
       alphanu=jnu/BnuT;
     }
     //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
-    //return exp(-alphanu*dsem*dist_unit); 
     return exp(-alphanu); // the dsem factor is already included
-    //in alphanu via jnu=emission1date(...,dsem,...)
+                          //in alphanu via jnu=emission1date(...,dsem,...)
   }else{
-    double factabs=2.2425e35; // See mma computations
-    double dist_unit = gg_->unitLength()*100.; //dist unit in cgs
-    double alphanu=factabs*TT*pow(nu,-4.)*dsem*dist_unit; // this is *ds_em
-    /*cout << "nu in trans= " << nu << endl;
-    cout << "ds in trans= " << dsem << " " << dist_unit << " " << dsem*dist_unit << endl;
-    cout << "trans stuff= " << TT << " " << alphanu << " " << exp(-alphanu) << endl;*/
-    return exp(-alphanu);
-    
+    if (absorption_array_){
+      double * abs = const_cast<double*>(getOpacity());
+      double absq = abs[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
+      double dist_unit = gg_->unitLength()*100.; //dist unit in cgs
+      double alphanu=absq*pow(nu,-(PLindex_+4.)/2.);
+      return exp(-alphanu*dsem*dist_unit);
+    }else{
+      throwError("In DynamicalDisk3D: in non-BB optically thin case, "
+		 "opacity should be provided");
+    }
   }
 }
 
@@ -356,7 +366,7 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
     tcomp+=dt_;
     ifits++;
   }
-  //  cout << "ifits= " << ifits << endl
+
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
     return transmission1date(nuem,dsem,NULL,co);
@@ -387,6 +397,8 @@ int DynamicalDisk3D::setParameter(std::string name,
 			    std::string content,
 			    std::string unit) {
   if (name == "File") {
+    int withopacity=0;
+
     dirname_ = new char[strlen(content.c_str())+1];
     strcpy(dirname_,content.c_str());
     DIR *dp;
@@ -412,13 +424,24 @@ int DynamicalDisk3D::setParameter(std::string name,
     
     if (nb_times_<1) 
       throwError("In DynamicalDisk3D.C: bad nb_times_ value");
-    
-    temperature_array_ = new double*[nb_times_] ;
+
+    //check whether absorption is provided
+    ostringstream stream_name ;
+    stream_name << dirname_ << "data3D0001.fits.gz"; 
+    string filename = stream_name.str();
+    fitsRead(filename);
+    if (getOpacity()) withopacity=1;
+
+    //initialize emission, absorption, velocity arrays
+    emission_array_ = new double*[nb_times_] ;
+    if (withopacity) absorption_array_ = new double*[nb_times_] ;
+    else absorption_array_=NULL;
     velocity_array_ = new double*[nb_times_] ;
 
     double nu0b=0., zminb=0., zmaxb=0., rinb=0., routb=0.;
     size_t nnub=0, nphib=0, nzb=0, nrb=0;
     
+    //fill in the arrays
     for (int i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
       stream_name << dirname_ << "data3D" 
@@ -433,20 +456,41 @@ int DynamicalDisk3D::setParameter(std::string name,
       size_t nnu=naxes[0], nphi=naxes[1], 
 	nz=naxes[2], nr=naxes[3];
       size_t nel1=nnu*nphi*nz*nr, nel2=3*nr*nz*nphi;
-      //save temperature
+
+      //save emission
       if (getEmissquant()){
 	double * emtemp = const_cast<double*>(getEmissquant());
-	temperature_array_[i-1] = new double[nel1];
+	emission_array_[i-1] = new double[nel1];
 	for (size_t j=0;j<nel1;j++)
-	  temperature_array_[i-1][j]=emtemp[j];
-      }else throwError("In DynamicalDisk3D::setParameter: Temperature must be supplied");
+	  emission_array_[i-1][j]=emtemp[j];
+      }else {
+	throwError("In DynamicalDisk3D::setParameter: "
+		   "Emission must be supplied");
+      }
+
+      //save absorption (if any)
+      if (withopacity){
+	if (getOpacity()){
+	  double * abstemp = const_cast<double*>(getOpacity());
+	  absorption_array_[i-1] = new double[nel1];
+	  for (size_t j=0;j<nel1;j++)
+	    absorption_array_[i-1][j]=abstemp[j];
+	}else{
+	  throwError("In DynamicalDisk3D::setParameter: "
+		     "Absorption should be supplied here");
+	}
+      }
+
       //save velocity
       if (getVelocity()){
 	double * veltemp = const_cast<double*>(getVelocity());
 	velocity_array_[i-1] = new double[nel2];
 	for (size_t j=0;j<nel2;j++)
 	  velocity_array_[i-1][j]=veltemp[j];
-      }else throwError("In DynmicalDisk::setParameter: Velocity must be supplied");
+      }else{
+	throwError("In DynmicalDisk::setParameter: "
+		   "Velocity must be supplied");
+      }
       
       //check grid is constant
       if (i==1){
@@ -468,6 +512,7 @@ int DynamicalDisk3D::setParameter(std::string name,
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());
   else if (name=="IntensityGrid") temperature_=0;
+  else if (name=="PLindex") PLindex_=atof(content.c_str());
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }

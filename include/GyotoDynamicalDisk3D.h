@@ -66,13 +66,21 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   double tinit_; ///< Time of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
   int nb_times_; ///< Number of times
+  double PLindex_; ///< power law index such that density_elec(E) \propto E^{-p}
 
   /**
    * An array of arrays of dimensionality double[nr_][nz_][nphi_][nnu_]. 
    * In FITS format, the first dimension is nu, the second phi, the third
-   * z, the last r. It contains temperature.
+   * z, the last r. It contains emission coef, or a closely related quantity.
    */
-  double ** temperature_array_;
+  double ** emission_array_;
+
+  /**
+   * An array of arrays of dimensionality double[nr_][nz_][nphi_][nnu_]. 
+   * In FITS format, the first dimension is nu, the second phi, the third
+   * z, the last r. It contains absorption coef, or a closely related quantity.
+   */
+  double ** absorption_array_;
 
   /**
    * An array of arrays of dimensionality double[nr_][nz_][nphi_][3].
