@@ -107,7 +107,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
-						      int errmode = 1);
+						      int errmode = 0);
 
     /**
      * \brief A template for Subcontractor_t functions
