@@ -1,5 +1,5 @@
 /**
- * \file GyotoDisk3D_BB.h
+ * \file GyotoDynamicalDisk3D.h
  * \brief A geometrically thick, optically thin disk, evolving dynamically,
  *  with black body emission. 
  *
@@ -25,8 +25,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoDisk3D_BB_H_ 
-#define __GyotoDisk3D_BB_H_ 
+#ifndef __GyotoDynamicalDisk3D_H_ 
+#define __GyotoDynamicalDisk3D_H_ 
 
 #include <iostream>
 #include <fstream>
@@ -34,14 +34,14 @@
 #include <cstring>
 
 namespace Gyoto{
-  namespace Astrobj { class Disk3D_BB; }
+  namespace Astrobj { class DynamicalDisk3D; }
 }
 
 #include <GyotoDisk3D.h>
 #include <GyotoBlackBodySpectrum.h>
 
 /**
- * \class Gyoto::Astrobj::Disk3D_BB
+ * \class Gyoto::Astrobj::DynamicalDisk3D
  * \brief Geometrically thick optically thin disk 
  *  read from a set of FITS files. 
  * 
@@ -55,8 +55,8 @@ namespace Gyoto{
  *   The metric must be Kerr in BL coordinates.
  *
  */
-class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
-  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Disk3D_BB>;
+class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::DynamicalDisk3D>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
   ///< emission law
@@ -85,12 +85,12 @@ class Gyoto::Astrobj::Disk3D_BB : public Astrobj::Disk3D {
   // Constructors - Destructor
   // -------------------------
  public:
-  Disk3D_BB(); ///< Standard constructor
+  DynamicalDisk3D(); ///< Standard constructor
   
-  Disk3D_BB(const Disk3D_BB& ) ;///< Copy constructor
-  virtual Disk3D_BB* clone () const; ///< Cloner
+  DynamicalDisk3D(const DynamicalDisk3D& ) ;///< Copy constructor
+  virtual DynamicalDisk3D* clone () const; ///< Cloner
   
-  virtual ~Disk3D_BB() ;                        ///< Destructor
+  virtual ~DynamicalDisk3D() ;                        ///< Destructor
   
   // Accessors
   // ---------

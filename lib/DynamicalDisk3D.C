@@ -20,7 +20,7 @@
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
 
 #include "GyotoPhoton.h"
-#include "GyotoDisk3D_BB.h"
+#include "GyotoDynamicalDisk3D.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -43,24 +43,24 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-Disk3D_BB::Disk3D_BB() :
+DynamicalDisk3D::DynamicalDisk3D() :
   Disk3D(),
   spectrumBB_(NULL),
   dirname_(NULL),
   tinit_(0.), dt_(1.), nb_times_(1),
   temperature_(1)
 {
-  GYOTO_DEBUG << "Disk3D_BB Construction" << endl;
+  GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
 }
 
-Disk3D_BB::Disk3D_BB(const Disk3D_BB& o) :
+DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   Disk3D(o),
   spectrumBB_(NULL),
   tinit_(o.tinit_), dt_(o.dt_), nb_times_(o.nb_times_),
   temperature_(o.temperature_)
 {
-  GYOTO_DEBUG << "Disk3D_BB Copy" << endl;
+  GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 
   if (o.dirname_){
@@ -93,25 +93,25 @@ Disk3D_BB::Disk3D_BB(const Disk3D_BB& o) :
   
   
 }
-Disk3D_BB* Disk3D_BB::clone() const
-{ return new Disk3D_BB(*this); }
+DynamicalDisk3D* DynamicalDisk3D::clone() const
+{ return new DynamicalDisk3D(*this); }
 
-Disk3D_BB::~Disk3D_BB() {
-  GYOTO_DEBUG << "Disk3D_BB Destruction" << endl;
+DynamicalDisk3D::~DynamicalDisk3D() {
+  GYOTO_DEBUG << "DynamicalDisk3D Destruction" << endl;
   delete [] temperature_array_;
   delete [] velocity_array_;
 }
 
-double const * Disk3D_BB::getVelocity() const { return Disk3D::getVelocity(); }
+double const * DynamicalDisk3D::getVelocity() const { return Disk3D::getVelocity(); }
 
-void Disk3D_BB::copyQuantities(int iq) {
+void DynamicalDisk3D::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
-    throwError("In Disk3D_BB::copyQuantities: incoherent value of iq");
+    throwError("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
   setEmissquant(temperature_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
 }
 
-void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
+void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
   double rcur=pos[1];
   double risco;
   switch (gg_->getCoordKind()) {
@@ -119,7 +119,7 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
   default:
-    throwError("Disk3D_BB::getVelocity: bad COORDKIND");
+    throwError("DynamicalDisk3D::getVelocity: bad COORDKIND");
     risco=0.;
   }
 
@@ -153,11 +153,11 @@ void Disk3D_BB::getVelocity(double const pos[4], double vel[4]) {
   }
 }
 
-double Disk3D_BB::emission1date(double nu, double dsem,
+double DynamicalDisk3D::emission1date(double nu, double dsem,
 			       double *,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
-
+  
   double * temperature = const_cast<double*>(getEmissquant());
 
   double risco;
@@ -166,7 +166,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
   default:
-    throwError("Disk3D_BB::emission1date(): bad COORDKIND"
+    throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
     risco=0.;
   }
@@ -242,6 +242,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
       double jnu = factem*TT*pow(nu,-1.5);
 
       Ires=jnu*dsem*dist_unit;
+
       /*cout << "nu in emiss= " << nu << endl;
       cout << "ds in emiss= " << dsem << " " << dist_unit << " " << dsem*dist_unit << endl;
       cout << "emiss stuff= " << TT << " " << jnu << " " << Ires << endl;*/
@@ -251,7 +252,7 @@ double Disk3D_BB::emission1date(double nu, double dsem,
 
 }
 
-double Disk3D_BB::emission(double nu, double dsem,
+double DynamicalDisk3D::emission(double nu, double dsem,
 			       double *,
 			       double co[8]) const {
   GYOTO_DEBUG << endl;
@@ -263,13 +264,13 @@ double Disk3D_BB::emission(double nu, double dsem,
   }
 
   if (ifits==1 || ifits==nb_times_){
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
     return emission1date(nu,dsem,NULL,co);
   }else{
     double I1, I2;
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits-1);
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits-1);
     I1=emission1date(nu,dsem,NULL,co);
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits);
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits);
     I2=emission1date(nu,dsem,NULL,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
@@ -278,7 +279,7 @@ double Disk3D_BB::emission(double nu, double dsem,
   return 0.;
 }
 
-double Disk3D_BB::transmission1date(double nu, double dsem,
+double DynamicalDisk3D::transmission1date(double nu, double dsem,
 			       double*,
 			       double co[8]) const{
   GYOTO_DEBUG << endl;
@@ -294,7 +295,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
   default:
-    throwError("Disk3D_BB::emission1date(): bad COORDKIND"
+    throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
     risco=0.;
   }
@@ -325,7 +326,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
 	If jnu!=0 then alphanu is not defined, this should not happen.
       */
       if (jnu!=0.)
-	throwError("In Disk3D_BB::"
+	throwError("In DynamicalDisk3D::"
 		   "transmission1date absorption coef. undefined!");
     }else{
       alphanu=jnu/BnuT;
@@ -346,7 +347,7 @@ double Disk3D_BB::transmission1date(double nu, double dsem,
   }
 }
 
-double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
+double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const {
 
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
@@ -357,13 +358,13 @@ double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
   }
   //  cout << "ifits= " << ifits << endl
   if (ifits==1 || ifits==nb_times_){
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
     return transmission1date(nuem,dsem,NULL,co);
   }else{
     double I1, I2;
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits-1);
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits-1);
     I1=transmission1date(nuem,dsem,NULL,co);
-    const_cast<Disk3D_BB*>(this)->copyQuantities(ifits);
+    const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits);
     I2=transmission1date(nuem,dsem,NULL,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
@@ -373,16 +374,16 @@ double Disk3D_BB::transmission(double nuem, double dsem, double* co) const {
 }
 
 
-void Disk3D_BB::setMetric(SmartPointer<Metric::Generic> gg) {
+void DynamicalDisk3D::setMetric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
   string kind = gg->getKind();
   if (kind != "KerrBL")
     throwError
-      ("Disk3D_BB::setMetric(): metric must be KerrBL");
+      ("DynamicalDisk3D::setMetric(): metric must be KerrBL");
   Disk3D::setMetric(gg);
 }
 
-int Disk3D_BB::setParameter(std::string name,
+int DynamicalDisk3D::setParameter(std::string name,
 			    std::string content,
 			    std::string unit) {
   if (name == "File") {
@@ -391,7 +392,7 @@ int Disk3D_BB::setParameter(std::string name,
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(dirname_)) == NULL) {
-      throwError("In Disk3D_BB.C constructor : bad dirname_");
+      throwError("In DynamicalDisk3D.C constructor : bad dirname_");
     }
     
     nb_times_=0;
@@ -410,7 +411,7 @@ int Disk3D_BB::setParameter(std::string name,
       dirname_ << " " << nb_times_ << endl;
     
     if (nb_times_<1) 
-      throwError("In Disk3D_BB.C: bad nb_times_ value");
+      throwError("In DynamicalDisk3D.C: bad nb_times_ value");
     
     temperature_array_ = new double*[nb_times_] ;
     velocity_array_ = new double*[nb_times_] ;
@@ -438,7 +439,7 @@ int Disk3D_BB::setParameter(std::string name,
 	temperature_array_[i-1] = new double[nel1];
 	for (size_t j=0;j<nel1;j++)
 	  temperature_array_[i-1][j]=emtemp[j];
-      }else throwError("In Disk3D_BB::setParameter: Temperature must be supplied");
+      }else throwError("In DynamicalDisk3D::setParameter: Temperature must be supplied");
       //save velocity
       if (getVelocity()){
 	double * veltemp = const_cast<double*>(getVelocity());
@@ -460,7 +461,7 @@ int Disk3D_BB::setParameter(std::string name,
 	  || nphi!=nphib
 	  || zmin()!=zminb || zmax()!=zmaxb || nz!=nzb
 	  || rin()!=rinb || rout()!=routb || nr!=nrb
-	  ) throwError("Disk3D_BB::setParameter Grid is not constant!");
+	  ) throwError("DynamicalDisk3D::setParameter Grid is not constant!");
     }
       
   }
@@ -472,7 +473,7 @@ int Disk3D_BB::setParameter(std::string name,
 }
       
 #ifdef GYOTO_USE_XERCES
-void Disk3D_BB::fillElement(FactoryMessenger *fmp) const {
+void DynamicalDisk3D::fillElement(FactoryMessenger *fmp) const {
   if (tinit_) fmp->setParameter("tinit", tinit_);
   if (dt_) fmp->setParameter("dt", dt_);
   Disk3D::fillElement(fmp);
