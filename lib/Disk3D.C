@@ -43,7 +43,7 @@ using namespace Gyoto::Astrobj;
 
 Disk3D::Disk3D() :
   Generic("Disk3D"), filename_(""),
-  emissquant_(NULL), velocity_(NULL),
+  emissquant_(NULL), velocity_(NULL), opacity_(NULL),
   dnu_(1.), nu0_(0), nnu_(0),
   dphi_(0.), phimin_(-DBL_MAX), nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dz_(0.), zmin_(-DBL_MAX), nz_(0), zmax_(DBL_MAX),
@@ -55,7 +55,7 @@ Disk3D::Disk3D() :
 
 Disk3D::Disk3D(const Disk3D& o) :
   Generic(o), filename_(o.filename_),
-  emissquant_(NULL), velocity_(NULL),
+  emissquant_(NULL), velocity_(NULL), opacity_(NULL),
   dnu_(o.dnu_), nu0_(o.nu0_), nnu_(o.nnu_),
   dphi_(o.dphi_), phimin_(o.phimin_),
   nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
@@ -68,6 +68,10 @@ Disk3D::Disk3D(const Disk3D& o) :
   if (o.emissquant_) {
     emissquant_ = new double[ncells = nnu_ * nphi_ * nz_ * nr_];
     memcpy(emissquant_, o.emissquant_, ncells * sizeof(double));
+  }
+  if (o.opacity_) {
+    opacity_ = new double[ncells = nnu_ * nphi_ * nz_ * nr_];
+    memcpy(opacity_, o.opacity_, ncells * sizeof(double));
   }
   if (o.velocity_) {
     velocity_ = new double[ncells = 3 * nphi_ * nz_ * nr_];

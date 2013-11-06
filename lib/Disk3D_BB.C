@@ -420,7 +420,7 @@ int Disk3D_BB::setParameter(std::string name,
     
     for (int i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
-      stream_name << dirname_ << "pseudoN3D" 
+      stream_name << dirname_ << "data3D" 
 		  << setw(4) << setfill('0') 
 		  << i << ".fits.gz" ;
       
