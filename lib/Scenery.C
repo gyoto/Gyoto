@@ -342,6 +342,10 @@ void Scenery::operator() (
   double coord[8];
   SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
+
+  if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
+  if (!(*screen_)(i,j)) return; // return if pixel is masked out
+
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Astrobj::Generic> obj = NULL;
   if (!ph) {
@@ -372,7 +376,6 @@ void Scenery::operator() (
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "init nbnuobs" << endl;
 # endif
-  if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
 
   if (impactcoords) {
 #   if GYOTO_DEBUG_ENABLED
@@ -644,7 +647,6 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="Adaptive")    sc -> adaptive(true);
     if (name=="NonAdaptive") sc -> adaptive(false);
     if (name=="PrimaryOnly") sc -> secondary(false);
-
   }
 
   return sc;

@@ -25,8 +25,15 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <sstream>
+
+#ifdef GYOTO_USE_CFITSIO
+#include <fitsio.h>
+#define throwCfitsioError(status) \
+    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+#endif
 
 using namespace std ; 
 using namespace Gyoto;
@@ -34,7 +41,7 @@ using namespace Gyoto;
 // Default constructor
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
-  tobs_(0.), fov_(M_PI*0.1), npix_(1001),
+  tobs_(0.), fov_(M_PI*0.1), npix_(1001), mask_(NULL), mask_filename_(""),
   alpha0_(0.), delta0_(0.),
   anglekind_(0),
   distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL),
@@ -55,7 +62,9 @@ Screen::Screen() :
 
 Screen::Screen(const Screen& o) :
   SmartPointee(o),
-  tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), distance_(o.distance_),
+  tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), mask_(NULL),
+  mask_filename_(o.mask_filename_),
+  distance_(o.distance_),
   alpha0_(o.alpha0_), delta0_(o.delta0_),
   anglekind_(o.anglekind_),
   dmax_(o.dmax_), gg_(NULL), spectro_(NULL), freq_obs_(o.freq_obs_)
@@ -75,10 +84,15 @@ Screen::Screen(const Screen& o) :
     screen2_[ii]=o.screen2_[ii];
     screen3_[ii]=o.screen3_[ii];
   }
+  if (o.mask_) {
+    mask_=new double[npix_*npix_];
+    memcpy(mask_, o.mask_, npix_*npix_*sizeof(double));
+  } 
+
 }
 Screen * Screen::clone() const { return new Screen(*this); }
 
-Screen::~Screen(){}
+Screen::~Screen(){if (mask_) delete [] mask_;}
 
 std::ostream& Screen::print( std::ostream& o) const {
   o << "distance="    << distance_ << ", " ;
@@ -579,6 +593,89 @@ void Screen::getRayCoord(double alpha, double delta,
   
 }
 
+/************** MASK ******************/
+
+void Screen::mask(double const * const mm, size_t res) {
+  if (res) npix_=res;
+  if (mask_) { delete[] mask_; mask_=NULL; mask_filename_=""; }
+  if (mm) {
+    mask_ = new double[npix_*npix_];
+    memcpy(mask_, mm, npix_*npix_*sizeof(double));
+  }
+}
+
+double const * Screen::mask() const { return mask_; }
+
+#ifdef GYOTO_USE_CFITSIO
+void Screen::fitsReadMask(std::string filename) {
+  GYOTO_DEBUG << "Screen::fitsReadMask(\"" << filename << "\")"<<endl;
+  char*     pixfile   = const_cast<char*>(filename.c_str());
+  fitsfile* fptr      = NULL;
+  int       status    = 0;
+  int       anynul    = 0;
+  long      tmpl;
+  double    tmpd;
+  long      naxes []  = {1, 1};
+  long      fpixel[]  = {1,1};
+  long      inc   []  = {1,1};
+  char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
+  if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status) ;
+  if (fits_get_img_size(fptr, 3, naxes, &status)) throwCfitsioError(status) ;
+  if (naxes[0] != naxes[1])
+    throwError("Screen::fitsReadMask(): mask must be square");
+  npix_=naxes[0];
+  if (mask_) { delete[] mask_; mask_=NULL; mask_filename_="";}
+  mask_ = new double[npix_*npix_];
+  if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
+		       0, mask_,&anynul,&status)) {
+    GYOTO_DEBUG << " error, trying to free pointer" << endl;
+    delete [] mask_; mask_=NULL;
+    throwCfitsioError(status) ;
+  }
+  if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
+  mask_filename_=filename;
+  fptr = NULL;
+}
+
+void Screen::fitsWriteMask(string filename) {
+  if (filename=="") filename=mask_filename_;
+  if (filename=="") throwError("no filename specified");
+  if (!mask_) throwError("Screen::fitsWriteMask(filename): nothing to save!");
+  char*     pixfile   = const_cast<char*>(filename.c_str());
+  fitsfile* fptr      = NULL;
+  int       status    = 0;
+  long      naxes []  = {npix_, npix_};
+  long      fpixel[]  = {1,1};
+  char * CNULL=NULL;
+
+  char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
+
+  ////// CREATE FILE
+  GYOTO_DEBUG << "creating file \"" << pixfile << "\"... ";
+  fits_create_file(&fptr, pixfile, &status);
+  if (debug()) cerr << "done." << endl;
+  fits_create_img(fptr, DOUBLE_IMG, 2, naxes, &status);
+  if (status) throwCfitsioError(status) ;
+
+  ////// SAVE EMISSION IN PRIMARY HDU ///////
+  GYOTO_DEBUG << "saving emission_\n";
+  fits_write_pix(fptr, TDOUBLE, fpixel, npix_*npix_, mask_, &status);
+  if (status) throwCfitsioError(status) ;
+
+  ////// CLOSING FILE ///////
+  GYOTO_DEBUG << "close FITS file\n";
+  if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
+  mask_filename_=filename;
+  fptr = NULL;
+}
+#endif
+
+bool Screen::operator()(size_t i, size_t j) {
+  if ( i<=0 || i> npix_ || j>npix_ || j<=0) throwError("wrong index");
+  if (!mask_) return true;
+  return mask_[i-1+npix_*(j-1)];
+}
+
 void Screen::computeBaseVectors() {
   // See http://en.wikipedia.org/wiki/Euler_angles
 
@@ -730,7 +827,13 @@ void Screen::setDelta0(double delta) { delta0_ = delta; }
 void Screen::setAnglekind(int kind) { anglekind_ = kind; }
 
 size_t Screen::getResolution() { return npix_; }
-void Screen::setResolution(size_t n) { npix_ = n; }
+void Screen::setResolution(size_t n) {
+  if (mask_ && n != npix_) {
+    GYOTO_INFO << "Changing resolution: deleting mask" << endl;
+    delete[] mask_; mask_=NULL;
+  }
+  npix_ = n;
+}
 
 #ifdef HAVE_UDUNITS
 void Gyoto::Screen::mapPixUnit() {
@@ -817,6 +920,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   }
   fmp -> setParameter ("FreqObs", freq_obs_);
   fmp -> setParameter ( anglekind_? "SphericalAngles" : "EquatorialAngles");
+  if (mask_filename_!="") fmp -> setParameter ("Mask", mask_filename_);
 }
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
@@ -892,6 +996,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="FreqObs") scr -> setFreqObs(atof(tc), unit);
     else if (name=="SphericalAngles")  scr -> setAnglekind(1);
     else if (name=="EquatorialAngles") scr -> setAnglekind(0);
+#   ifdef GYOTO_USE_CFITSIO
+    else if (name=="Mask")        scr -> fitsReadMask(content);
+#   endif
   }
 
   if (tobs_found) scr -> setTime ( tobs_tmp, tunit );

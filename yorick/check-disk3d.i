@@ -21,8 +21,6 @@
 gyoto_debug, 0;
 #include "gyoto_std.i"
 
-if (get_env("GYOTO_CHECK_NODISPLAY")) nodisplay = 1;
-
 emissquant=array(double, 1, 2, 10 ,10);
 emissquant(,1,,1:3)=100.;
 emissquant(,2,,4:10)=100.;
@@ -83,17 +81,3 @@ write, format="%s", "Comparing velocity array...";
 if (anyof(velocity != pd2.copyvelocity)) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
-/*write, format="%s", "Performing raytracing...\n";
-im = sc();
-write, format="%s\n", "done.";
-
-if (!nodisplay) {
-  write, format="%s", "Displaying image...";
-  window, style="nobox.gs";
-  pli, im;
-  write, format="%s\n", " done.";
-  pause, 1000;
-  if (batch()) winkill;
- }
-*/
-if (batch()) quit;

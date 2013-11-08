@@ -21,8 +21,11 @@
 if (get_env("GYOTO_CHECK_NODISPLAY")) {
   batch, 1;
   __xytitles=xytitles; __fma=fma; __winkill=winkill; __pli=pli; __plg=plg;
-  xytitles = fma = winkill = pli = plg = noop;
+  __pause=pause; __window=window;
+  xytitles = fma = winkill = pli = plg = pause = window = noop;
  }
+
+batch, 0;
 
 #include "gyoto.i"
 #include "gyoto_std.i"
@@ -152,6 +155,7 @@ write, format= "%s\n"," ALL TESTS PASSED";
 #include "check-star.i"
 #include "check-scenery.i"
 #include "check-patterndisk.i"
+//#include "check-disk3d.i"
 #include "check-polish-doughnut.i"
 
 write, format="\n\n%s\n%s\n%s\n",

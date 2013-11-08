@@ -23,9 +23,6 @@
 // From yutils, for tic() and tac()
 #include "util_fr.i"
 
-if (get_env("GYOTO_CHECK_NODISPLAY"))
-  window = pause = fma = winkill = pli = plg = noop;
-
 write, format="%s", "New scenery... ";
 sc=gyoto_Scenery();
 write, format="%s\n", "done.";
@@ -163,10 +160,39 @@ write, format="%s\n" , "done.";
 write, format="%s", "Ray-tracing on 1 thread... \n";
 sc3, nthreads=1;
 tic;
-im1 = gyoto_Scenery_rayTrace(sc3);
+mask = gyoto_Scenery_rayTrace(sc3);
 tac();
 write, format="%s\n" , "done.";
 
+write, format="%s", "Setting mask... ";
+noop, sc3.screen(mask=mask);
+write, format="%s\n" , "done.";
+
+write, format="%s", "Checking mask... ";
+mask2 = sc3.screen(mask=);
+if (!allof(mask2==mask)) error, "CHECK FAILED!";
+write, format="%s\n" , "done.";
+
+write, format="%s", "Ray-tracing on 1 thread with mask... \n";
+sc3, nthreads=1;
+tic;
+im1 = gyoto_Scenery_rayTrace(sc3);
+tac();
+if (!allof(im1==mask)) error, "CHECK FAILED!";
+write, format="%s\n" , "done.";
+
+write, format="%s", "Ray-tracing with mask (sc())... \n";
+sc3, nthreads=1;
+tic;
+im1 = sc3(,,"Intensity"); // raytrace
+if (!allof(im1==mask)) error, "CHECK FAILED!";
+tac();
+pli, im1;
+pause, 1000;
+write, format="%s\n" , "done.";
+
+//noop,sc3.screen(maskwrite="toto.fits");
+//noop,sc3.screen(xmlwrite="toto.xml");
 
 /* write, format="%s", "Ray-tracing on adaptive grid... ";
    data = gyoto_Scenery_adaptive_raytrace(sc3, 4);

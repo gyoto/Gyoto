@@ -36,7 +36,7 @@ extern "C" {
     static char const * knames[]={
       "unit",
       "metric",
-      "time","fov","resolution",
+      "time","fov","resolution", "mask", "maskwrite",
       "distance", "dmax", "inclination", "paln", "argument",
       "freqobs",
       "projection", "observerpos",
@@ -46,13 +46,47 @@ extern "C" {
       "xmlwrite", "clone",
       0
     };
-    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 22)
+    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 24)
 
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT(Metric);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Time);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(FieldOfView);
     YGYOTO_WORKER_GETSET_LONG(Resolution);
+
+    /* MASK */
+    if ((iarg=kiargs[++k])>=0) { // mask
+      GYOTO_DEBUG << "mask=\n";
+      iarg+=*rvset;
+      if (yarg_nil(iarg)) {
+	if ((*rvset)++) y_error(rmsg);
+	size_t npix = (*OBJ) -> getResolution();
+	long dims[] = {2, npix, npix};
+	double * out = ypush_d(dims);
+	memcpy(out, (*OBJ)->mask(), npix*npix*sizeof(double));
+      } else if (yarg_string(iarg)) {
+	(*OBJ)->fitsReadMask(ygets_q(iarg));
+      } else {
+	long ntot;
+	long dims[Y_DIMSIZE];
+	double const * const in = ygeta_d(iarg, &ntot, dims);
+	if (dims[0]==0 && ntot && *in==0) (*OBJ) -> mask(NULL, 0);
+	else if (dims[0]==2 && dims[1]==dims[2]) {
+	  (*OBJ)->mask(in, dims[1]);
+	} else
+	  y_error("MASK must be square image");
+      }
+    }
+
+    /* MASKWRITE */
+    if ((iarg=kiargs[++k])>=0) {
+      char * fname="";
+      iarg+=*rvset;
+      if (!yarg_nil(iarg)) fname=ygets_q(iarg);
+      (*OBJ)->fitsWriteMask(ygets_q(iarg));
+    }
+
+
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Distance);
     YGYOTO_WORKER_GETSET_DOUBLE(Dmax);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Inclination);

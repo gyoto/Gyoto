@@ -135,6 +135,17 @@ namespace Gyoto {
  * magnitude should not yield significant changes in the ray-traced
  * image.
  *
+ * A mask may be used to limit ray-tracing to only some portions of
+ * the field. The Scenery checks whether a mask is to be used using
+ * Screen::operator()(size_t i, size_t j). The mask can be loaded from
+ * a FITS file as a square image of doubles:
+ * \code
+ *    <Mask>maskfile.fits</Mask>
+ * \endcode
+ * The mask needs to be have the same size as the Screen itself, so
+ * loading a mask also sets the resolution, and changing the
+ * resolution after setting a mask also removes the mask.
+ *
  */
 class Gyoto::Screen : protected Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Screen>;
@@ -144,6 +155,19 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double fov_;  ///< Field-of-view in rad
   //  double tmin_;
   size_t npix_; ///< Resolution in pixels
+
+  /**
+   * \brief Mask with 0 where the ray-tracing should not be performed
+   */
+  double * mask_;
+
+  /**
+   * \brief Last read or written FITS file
+   *
+   * Used when saving to XML: if the mask was saved or loaded from
+   * FITS file, output this file name in the XML.
+   */
+  std::string mask_filename_;
 
   double distance_; ///< Distance to the observer in m
   double dmax_; ///< Maximum distance from which the photons are launched (geometrical units) 
@@ -382,6 +406,32 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   size_t getResolution();
   /// Set Screen::npix_
   void setResolution(size_t);
+
+  /// Set mask_ from array
+  /**
+   * mm will be copied. mm must be a square resolution x resolution
+   * array. If mm==NULL, just deallocate mask_.
+   */
+  void mask(double const * const mm, size_t resolution=0);
+
+  /// Retrieve const pointer to mask_
+  double const * mask() const ;
+# ifdef GYOTO_USE_CFITSIO
+
+  /// Read mask_ from FITS file
+  void fitsReadMask(std::string fname);
+
+  /// Save mask_ from FITS file
+  void fitsWriteMask(std::string fname);
+# endif
+
+  /// Whether this pixel should be ray-traced
+  /**
+   * If mask_ is not set, always true. Else, true for non-zero cells
+   * in mask_.
+   */
+  bool operator()(size_t, size_t);
+
 
   /// 4-Position of the observer relative to the metric
   /**
