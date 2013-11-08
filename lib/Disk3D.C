@@ -673,7 +673,17 @@ int Disk3D::Impact(Photon *ph, size_t index,
   double t1=coord1[0], t2=coord2[0];
   double deltatmin=0.1, deltat12=fabs(t2-t1)*0.1;
   //Break the worldline in pieces of "size" deltat:
-  double deltat= deltat12 < deltatmin ? deltat12 : deltatmin;
+  //double deltat= deltat12 < deltatmin ? deltat12 : deltatmin;
+  double deltat= deltatmin;
+  /*
+    IMPORTANT REMARK: putting deltat to either deltatmin or deltat12
+    leads to changing significantly the intensity of two nearby pixels
+    for a very optically thick object as then the final intensity
+    is typically 'some quantity'*deltat. Thus the value of deltat
+    should be the same for all pixels.
+    The value of deltatmin is thus a tricky point if one is interested
+    in a very precise radiative transfer.
+   */
   double tcur=t2;
   double myrcur=coord2[1], thetacur=coord2[2], 
     zcur=myrcur*cos(thetacur),rcur=sqrt(myrcur*myrcur-zcur*zcur);
@@ -726,7 +736,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
       tcur-=deltat;
     }else{//this is for last step of this loop
           //to integrate until t1
-      deltat=tcur-t1;
+      //deltat=tcur-t1; //No: see important remark above, don't change deltat
       tcur=t1;
     }
     coord_ph_hit[0]=tcur;
