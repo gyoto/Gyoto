@@ -174,6 +174,8 @@ static void * SceneryThreadWorker (void *arg) {
 
   // local variables to store our parameters
   size_t i, j;
+  size_t eol_offset =
+    larg->sc->getScreen()->getResolution() - larg->imax + larg->imin -1;
   Astrobj::Properties data;
   double * impactcoords = NULL;
 
@@ -198,16 +200,18 @@ static void * SceneryThreadWorker (void *arg) {
 #endif
       break;
     }
-    // update i & j
-    ++larg->i;
-    if (larg->i > larg->imax) {
-      ++larg->j; larg->i=larg->imin;
-    }
 
-    // copy output pointers and update them
-    data = *larg->data; ++(*larg->data);
+    data = *larg->data; 
+    // update i, j and pointer
+    ++larg->i;
+    ++(*larg->data);
     if (larg->impactcoords) {
       impactcoords = larg->impactcoords; larg->impactcoords+=16;
+    }
+    if (larg->i > larg->imax) {
+      ++larg->j; larg->i=larg->imin;
+      (*larg->data) += eol_offset;
+      if (larg->impactcoords) larg->impactcoords+=16*eol_offset;
     }
 
 #ifdef HAVE_PTHREAD
@@ -278,7 +282,12 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_ . maxiter(maxiter_);
   // delta is reset in operator()
 
-  if (data) setPropertyConverters(data);
+  if (data) {
+    setPropertyConverters(data);
+    size_t first_index=(jmin-1)*npix + imin -1;
+    (*data) += first_index;
+    if (impactcoords) impactcoords += first_index * 16;
+  }
 
   SceneryThreadWorkerArg larg;
   larg.sc=this;

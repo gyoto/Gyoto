@@ -746,6 +746,15 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    * impactcoords which is incremented by 16.
    */
   Properties operator++();
+
+  /**
+   * \brief Increment pointers by offset
+   *
+   * All valid pointers are incremented by offset (sizeof(double)), excepted
+   * impactcoords which is incremented by 16*offset.
+   */
+  Properties operator+=(ptrdiff_t offset);
+
 # ifdef HAVE_UDUNITS
   void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   ///< Set Properties::intentity_converter_

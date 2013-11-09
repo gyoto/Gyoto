@@ -25,8 +25,6 @@ if (get_env("GYOTO_CHECK_NODISPLAY")) {
   xytitles = fma = winkill = pli = plg = pause = window = noop;
  }
 
-batch, 0;
-
 #include "gyoto.i"
 #include "gyoto_std.i"
 

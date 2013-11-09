@@ -500,19 +500,24 @@ void Astrobj::Properties::setBinSpectrumConverter(string unit) {
 
 #endif
 
+Astrobj::Properties Astrobj::Properties::operator+=(ptrdiff_t offset) {
+  if (intensity)    intensity    += offset;
+  if (time)         time         += offset;
+  if (distance)     distance     += offset;
+  if (first_dmin)   first_dmin   += offset;
+  if (redshift)     redshift     += offset;
+  if (spectrum)     spectrum     += offset;
+  if (binspectrum)  binspectrum  += offset;
+  if (impactcoords) impactcoords += 16*offset;
+  if (user1)        user1        += offset;
+  if (user2)        user2        += offset;
+  if (user3)        user3        += offset;
+  if (user4)        user4        += offset;
+  if (user5)        user5        += offset;
+  return *this;
+}
+
 Astrobj::Properties Astrobj::Properties::operator++() {
-  if (intensity)  ++intensity;
-  if (time)       ++time;
-  if (distance)   ++distance;
-  if (first_dmin) ++first_dmin;
-  if (redshift)   ++redshift;
-  if (spectrum)   ++spectrum;
-  if (binspectrum)++binspectrum;
-  if (impactcoords) impactcoords += 16;
-  if (user1)      ++user1;
-  if (user2)      ++user2;
-  if (user3)      ++user3;
-  if (user4)      ++user4;
-  if (user5)      ++user5;
+  (*this) += 1;
   return *this;
 }
