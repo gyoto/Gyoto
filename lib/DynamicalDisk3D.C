@@ -48,7 +48,7 @@ DynamicalDisk3D::DynamicalDisk3D() :
   spectrumBB_(NULL),
   dirname_(NULL),
   tinit_(0.), dt_(1.), nb_times_(1),
-  PLindex_(3),
+  PLindex_(3), novel_(0),
   temperature_(1)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
@@ -59,7 +59,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   Disk3D(o),
   spectrumBB_(NULL),
   tinit_(o.tinit_), dt_(o.dt_), nb_times_(o.nb_times_),
-  PLindex_(o.PLindex_),
+  PLindex_(o.PLindex_), novel_(o.novel_),
   temperature_(o.temperature_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
@@ -125,42 +125,49 @@ void DynamicalDisk3D::copyQuantities(int iq) {
 }
 
 void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
-  double rcur=pos[1];
-  double risco;
-  switch (gg_->getCoordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-    break;
-  default:
-    throwError("DynamicalDisk3D::getVelocity: bad COORDKIND");
-    risco=0.;
-  }
-
-  if (rcur<risco){
-    //default velocity, emission will be 0 there anyway
-    vel[0]=1.;
-    for (int ii=1;ii<4;ii++)
-      vel[ii]=0.;
-  }else{ 
-    double time = pos[0], tcomp=tinit_;
-    int ifits=1;
-    while(time>tcomp && ifits<nb_times_){
-      tcomp+=dt_;
-      ifits++;
+  if (novel_){
+    // Velocity of emitted particle is not provided (only bulk velocity
+    // is known). Then put velocity to default, redshift factor will
+    // be constant.
+    vel[0]=1.;vel[1]=0.;vel[2]=0.;vel[3]=0.;
+  }else{
+    double rcur=pos[1];
+    double risco;
+    switch (gg_->getCoordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+      break;
+    default:
+      throwError("DynamicalDisk3D::getVelocity: bad COORDKIND");
+      risco=0.;
     }
-
-    if (ifits==1 || ifits==nb_times_){
-      copyQuantities(ifits);
-      Disk3D::getVelocity(pos,vel);
-    }else{
-      double vel1[4], vel2[4];
-      copyQuantities(ifits-1);
-      Disk3D::getVelocity(pos,vel1);
-      copyQuantities(ifits);
-      Disk3D::getVelocity(pos,vel2);
-      for (int ii=0;ii<4;ii++){ // 1st order interpol
-	double t1 = tinit_+(ifits-2)*dt_;
-	vel[ii]=vel1[ii]+(vel2[ii]-vel1[ii])/dt_*(time-t1);
+    
+    if (rcur<risco){
+      //default velocity, emission will be 0 there anyway
+      vel[0]=1.;
+      for (int ii=1;ii<4;ii++)
+	vel[ii]=0.;
+    }else{ 
+      double time = pos[0], tcomp=tinit_;
+      int ifits=1;
+      while(time>tcomp && ifits<nb_times_){
+	tcomp+=dt_;
+	ifits++;
+      }
+      
+      if (ifits==1 || ifits==nb_times_){
+	copyQuantities(ifits);
+	Disk3D::getVelocity(pos,vel);
+      }else{
+	double vel1[4], vel2[4];
+	copyQuantities(ifits-1);
+	Disk3D::getVelocity(pos,vel1);
+	copyQuantities(ifits);
+	Disk3D::getVelocity(pos,vel2);
+	for (int ii=0;ii<4;ii++){ // 1st order interpol
+	  double t1 = tinit_+(ifits-2)*dt_;
+	  vel[ii]=vel1[ii]+(vel2[ii]-vel1[ii])/dt_*(time-t1);
+	}
       }
     }
   }
@@ -513,6 +520,7 @@ int DynamicalDisk3D::setParameter(std::string name,
   else if (name=="dt") dt_=atof(content.c_str());
   else if (name=="IntensityGrid") temperature_=0;
   else if (name=="PLindex") PLindex_=atof(content.c_str());
+  else if (name=="NoVelocity") novel_=1;
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }
