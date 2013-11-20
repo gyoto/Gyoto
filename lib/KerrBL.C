@@ -485,7 +485,7 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
   double coor_plus_k3[8] ; 
   double third_k3[8] ; 
   double sixth_k4[8] ; 
-  double derlim_hor=1e5, derlim_gen=1e6, derlim;
+  double derlim_hor=1e4, derlim_gen=1e6, derlim;
      // throw a "z-axis problem" (return 1) if prdot or pthdot becomes higher
   double aa=spin_;
   double rhor=1.+sqrt(1.-aa*aa), factrtol=5.;
