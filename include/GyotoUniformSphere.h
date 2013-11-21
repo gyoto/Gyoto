@@ -166,6 +166,8 @@ class Gyoto::Astrobj::UniformSphere :
   virtual double operator()(double const coord[4]) ;
   ///< Square distance to the center of the sphere
 
+  virtual double deltaMax(double*);
+
  protected:
   /**
    * If the coordinate system of the Metric object is spherical, use a

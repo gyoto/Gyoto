@@ -123,6 +123,10 @@ double UniformSphere::operator()(double const coord[4]) {
 }
 
 
+double UniformSphere::deltaMax(double * coord) {
+  return 0.1*max(sqrt((*this)(coord)), radius_);
+}
+
 double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
   if (isotropic_){
     if (flag_radtransf_)

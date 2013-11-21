@@ -157,7 +157,8 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   // -------
  public:
   virtual double operator()(double const coord[4]) ;
-  
+  virtual double deltaMax(double*);
+
  protected:
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 

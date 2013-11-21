@@ -121,10 +121,6 @@ double const * FixedStar::getPos() const { return pos_; }
 void FixedStar::getPos(double dst[3]) const
 { for (int i=0; i<3;++i) dst[i]=pos_[i]; }
 
-double FixedStar::deltaMax(double * coord) {
-  return 0.1*max(sqrt((*this)(coord)), radius_);
-}
-
 void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;

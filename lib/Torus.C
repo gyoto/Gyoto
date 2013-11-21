@@ -128,6 +128,12 @@ double Torus::operator()(double const pos[4]) {
   return drproj*drproj + h*h;
 }
 
+double Torus::deltaMax(double * coord) {
+  long d2 = (*this)(coord);
+  if (d2<critical_value_) d2 = critical_value_;
+  return 0.1 * sqrt(d2);
+}
+
 void Torus::getVelocity(double const pos[4], double vel[4]) {
   double pos2[4] = {pos[0]};
   switch (gg_ -> getCoordKind()) {
