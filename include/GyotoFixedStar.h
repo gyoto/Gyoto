@@ -68,6 +68,8 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   FixedStar(const FixedStar& orig);///< Copy constructor
   virtual FixedStar* clone() const;
 
+  virtual double deltaMax(double*);
+
   FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3], double radius);
                    ///< Standard constructor
   

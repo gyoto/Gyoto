@@ -305,7 +305,7 @@ void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
   }
 }
 
-int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm , double normref, double* coordnew , double h0, double& h1) const{ 
+int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm , double normref, double* coordnew , double h0, double& h1, double h1max) const{ 
   
   double delta0[8];
   double delta0min=1e-15;
@@ -314,7 +314,6 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   double S=0.9;
   double errmin=1e-6;
   double h1min=0.001;
-  double h1max=1e6;
   double factnorm=2.;
  
   //cout << "1st diff" << endl;
@@ -355,7 +354,8 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
     
     for (int i = 0;i<8;i++){
       delta1[i]=coord2[i]-coordnew[i];
-      if (err<fabs(delta1[i]/delta0[i])) err=fabs(delta1[i]/delta0[i]);
+      double err_i=fabs(delta1[i]/delta0[i]);
+      if (err<err_i) err=err_i;
     }
 
     if (err>1) {
@@ -376,7 +376,7 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
       	//myrk4(coord,h0/10.,coordnew);
       	//h1/=10.;
       }
-      //cout << "Metric.C: step used= " << h0 << endl;
+      GYOTO_DEBUG << "step used= " << h0 << endl;
       break;
     
 

@@ -412,6 +412,27 @@ void Astrobj::initRegister() {
   Gyoto::Astrobj::Register_ = NULL;
 }
 
+double Generic::deltaMax(double coord[8]) {
+  double rr,h1max;
+
+  if (!gg_)
+    throwError("Please set metric before calling Astrobj::Generic::deltaMax()");
+
+  switch (gg_ -> getCoordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr=coord[1];
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rr=sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]);
+    break;
+  default:
+    throwError("Incompatible coordinate kind in Astrobj.C");
+  }
+
+  if (rr<getRmax()) h1max=1.; else h1max=1e6;
+  return h1max;
+}
+
 void Gyoto::Astrobj::Register(std::string name, Subcontractor_t* scp){
   Register::Entry* ne =
     new Register::Entry(name, (SmartPointee::Subcontractor_t*)scp, Gyoto::Astrobj::Register_);

@@ -350,7 +350,8 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
    */
   virtual int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8],
 			     double lastnorm, double normref,
-			     double coordnew[8], double h0, double& h1) const;
+			     double coordnew[8], double h0, double& h1,
+			     double h1max=1e6) const;
 
   /**
    * \brief Check whether integration should stop

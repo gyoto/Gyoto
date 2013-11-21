@@ -308,6 +308,13 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   virtual double getRmax(std::string unit); ///< Get rmax_ is specified unit
 
+  /// Get max step constraint for adaptive integration
+  /**
+   * \param[in] coord position
+   * \return max step to find this object reliably
+   */
+  virtual double deltaMax(double coord[8]);
+
   const std::string getKind() const; ///< Get the kind of the Astrobj (e.g. "Star")
 
   /**

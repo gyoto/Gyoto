@@ -130,7 +130,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   int myrk4(Worldline * line, const double coordin[8], double h, double res[8]) const; //external-use RK4
  private:
   int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;///< Internal-use RK4 proxy
-  int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1) const; ///< Interal-use adaptive RK4 proxy
+  int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1, double h1max) const; ///< Interal-use adaptive RK4 proxy
   /**
    * \brief Ensure conservation of the constants of motion
    *

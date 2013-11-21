@@ -207,7 +207,7 @@ int KerrKS::diff(const double*, double*) const{
   throwError("In KerrKS::diff should never get here!");
   return 0;
 }
-int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , double , double* coord1, double h0, double& h1) const{
+int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , double , double* coord1, double h0, double& h1, double h1max) const{
 
   double const * const cst = line -> getCst();
 
@@ -225,10 +225,6 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
   double S=0.9;
   double errmin=1e-6;
   double h1min=0.001;
-  double h1max=1.; //NB : .1 is necessary to obtain nice images! but long...
-  //1e6; //low h1max necessary to integrate properly the thin disk
-  //double factnorm=2.;
-  //  double newnorm1, newnorm2;
  
   double coordtemp[7]={coord[0],coord[1],coord[2],coord[3],coord[5],coord[6],coord[7]};
   //Caution!! diff must be fed with 7-sized vectors! see comment in diff

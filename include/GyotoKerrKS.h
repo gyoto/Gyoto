@@ -126,7 +126,7 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
    *
    * Is it ever called?
    */
-  int myrk4_adaptive(Gyoto::Worldline* line, const double * coord, double lastnorm, double normref, double* coord1, double h0, double& h1) const;
+  int myrk4_adaptive(Gyoto::Worldline* line, const double * coord, double lastnorm, double normref, double* coord1, double h0, double& h1, double h1max) const;
 
   /** F function such as dy/dtau=F(y,cst)
    */

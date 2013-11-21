@@ -419,8 +419,9 @@ class Gyoto::Worldline::IntegState : SmartPointee {
   /// Make one step.
   /**
    * \param[out] coord Next position-velocity;
+   * \param[in] h1max maximum step in case of adaptive integration
    */
-  virtual int nextStep(double *coord);
+  virtual int nextStep(double *coord, double h1max=1e6);
 
   virtual ~IntegState();
 };

@@ -43,12 +43,12 @@ Worldline::IntegState::IntegState(Worldline * line,
 }
 
 
-int Worldline::IntegState::nextStep(double coord[8]) {
+int Worldline::IntegState::nextStep(double coord[8], double h1max) {
   int j;
   double h1;
 
   if (adaptive_){
-    if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1)) return 1;
+    if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1, h1max)) return 1;
     delta_ = h1;
   }else{
     if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1; 

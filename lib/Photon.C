@@ -290,9 +290,11 @@ int Photon::hit(Astrobj::Properties *data) {
     integration in case of a bug]
    */
 
+  double h1max=1e6;
   while (!stopcond) {
     // Next step along photon's worldline
-    stopcond  = state -> nextStep(coord);
+    h1max=object_ -> deltaMax(coord);
+    stopcond  = state -> nextStep(coord, h1max);
     if (!secondary_){ // to compute only primary image
       double sign = x1_[i0_]*cos(x2_[i0_]);
       if (coord[1]*cos(coord[2])*sign<0. && x1_[ind]*cos(x2_[ind])*sign<0.)

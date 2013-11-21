@@ -587,7 +587,7 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
 
 int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 			   double , double , double coordout1[8],
-			   double h0, double& h1) const
+			   double h0, double& h1, double h1max) const
 {
   /*Switch BL -> principal momenta*/
 
@@ -597,8 +597,9 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   MakeMomentum(coordin,cst,coor);
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
-    err, h1min=0.01, h1max=coor[1]*0.5, diffr, diffth, difftol=0.01, normtemp,
+    err, h1min=0.01, h1max_default=coor[1]*0.5, diffr, diffth, difftol=0.01, normtemp,
     cstol_gen=1e-3, cstol_hor=1e-2, cstol, div, QCarter;
+  if (h1max>h1max_default) h1max=h1max_default;
   int countbis=0, countbislim=50, zaxis=0; // for z-axis problem in myrk4
   //int norm1=0, normhalf=0, norm2=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0.;
   int norm1=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0;
