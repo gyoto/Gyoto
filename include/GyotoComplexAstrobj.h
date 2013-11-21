@@ -97,6 +97,8 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   Complex(const Complex& ) ; ///< Copy constructor.
   virtual Complex* clone() const; ///< "Virtual" copy constructor
 
+  virtual double deltaMax(double coord[8]);
+
   /**
    *  Frees every SmartPointer<Astrobj::Generic> before freed the array itself.
    */

@@ -121,6 +121,13 @@ void Complex::remove(size_t i) {
 
 size_t Complex::getCardinal() const {return cardinal_; }
 
+double Complex::deltaMax(double coord[8]) {
+  double h1max=DBL_MAX, tmp;
+  for (size_t i=0; i<cardinal_; ++i)
+    if (h1max> (tmp=elements_[i]->deltaMax(coord))) h1max=tmp;
+  return h1max;
+}
+
 int Complex::Impact(Photon* ph, size_t index, Properties *data)
 {
   int res=0, *impact = new int[cardinal_];
