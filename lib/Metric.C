@@ -315,6 +315,8 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   double errmin=1e-6;
   double h1min=0.001;
   double factnorm=2.;
+
+  if (h1max<h1min) h1max=h1min;
  
   //cout << "1st diff" << endl;
   diff(coord,dcoord) ;

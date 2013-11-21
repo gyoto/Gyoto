@@ -226,6 +226,8 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
   double errmin=1e-6;
   double h1min=0.001;
  
+  if (h1max<h1min) h1max=h1min;
+ 
   double coordtemp[7]={coord[0],coord[1],coord[2],coord[3],coord[5],coord[6],coord[7]};
   //Caution!! diff must be fed with 7-sized vectors! see comment in diff
   if (diff(coordtemp,cst,dcoord)) return 1;
