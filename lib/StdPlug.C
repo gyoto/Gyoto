@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2013 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -23,6 +23,7 @@
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
+#include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
 #include "GyotoTorus.h"
 #include "GyotoThinDisk.h"
@@ -51,6 +52,7 @@ extern "C" void __GyotostdplugInit() {
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
+  Astrobj::Register("StarTrace", &(Astrobj::Subcontractor<Astrobj::StarTrace>));
   Astrobj::Register("FixedStar", &(Astrobj::Subcontractor<Astrobj::FixedStar>));
   Astrobj::Register("Torus",     &(Astrobj::Subcontractor<Astrobj::Torus>));
   Astrobj::Register("ThinDisk",  &(Astrobj::Subcontractor<Astrobj::ThinDisk>));
