@@ -29,7 +29,7 @@
     <TMax> 800 </TMax>
     <OpticallyThin/>
     <NonAdaptive/>
-    <Delta>1</Delta>
+    <Delta>5</Delta>
   </Astrobj>
 
   <Quantities>Spectrum</Quantities>

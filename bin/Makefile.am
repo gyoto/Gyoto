@@ -11,7 +11,7 @@ gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
-CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto
+CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 check: gyoto
 	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
 	   \!example-thin-disk.fits
@@ -19,8 +19,10 @@ check: gyoto
 	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
-	$(CHECK_CMD) --resolution=32 ../doc/examples/example-moving-star.xml \
+	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \
 	   \!example-moving-star.fits
+	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
+	   \!example-startrace.fits
 	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL.xml \
 	   \!example-page-thorne-disk-BL.fits
 	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-KS.xml \
