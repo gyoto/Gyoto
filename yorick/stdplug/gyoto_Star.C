@@ -41,13 +41,14 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   static char const * knames[]={
     "unit",
     "radius", "metric", "initcoord", "spectrum", "opacity", "delta", "adaptive",
+    "deltamaxoverradius", "deltamaxoverdistance",
     "maxiter", "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_prime", "get_coord", "get_cartesian",
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+16);
+  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+18);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
@@ -101,6 +102,8 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 #undef yget_Opacity
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
   YGYOTO_WORKER_GETSET_LONG2(adaptive);
+  YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverRadius);
+  YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverDistance);
   YGYOTO_WORKER_GETSET_LONG2( maxiter );
   YGYOTO_WORKER_RUN( reset() );
   YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );

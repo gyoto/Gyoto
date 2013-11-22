@@ -122,6 +122,7 @@ extern gyoto_Star;
         delta=  integration step (initial if adaptive).
         adaptive= whether the integration uses adaptive step.
         maxiter= maximum number of iterations in integration.
+        deltamaxoverradius, deltamaxoverdistance: numerical parameters
 
    METHODS
 
@@ -245,6 +246,7 @@ extern gyoto_FixedStar;
       metric=    any GYOTO Metric object
       position=  3D position of the star
       radius=    radius of the star, in geometrical units
+      deltamaxoverradius, deltamaxoverdistance: numerical parameters
      
     In addition, the standard gyoto_Astrobj members and methods are
     supported.

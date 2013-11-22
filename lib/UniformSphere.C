@@ -37,11 +37,16 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+#define GYOTO_USPH_DELTAMAX_OVER_RAD 0.1
+#define GYOTO_USPH_DELTAMAX_OVER_DST 0.1
+
 UniformSphere::UniformSphere(string kind) :
   Astrobj::Standard(kind),
   spectrum_(NULL),
   opacity_(NULL),
-  isotropic_(0)
+  isotropic_(0),
+  dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
+  dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -58,7 +63,9 @@ UniformSphere::UniformSphere(string kind,
   Astrobj::Standard(kind),
   radius_(rad),
   spectrum_(NULL), opacity_(NULL),
-  isotropic_(0)
+  isotropic_(0),
+  dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
+  dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
   critical_value_ = radius_*radius_;
   safety_value_ = critical_value_*1.1 + 0.1;
@@ -73,7 +80,10 @@ UniformSphere::UniformSphere(const UniformSphere& orig) :
   Astrobj::Standard(orig),
   radius_(orig.radius_),
   spectrum_(NULL), opacity_(NULL),
-  isotropic_(orig.isotropic_)
+  isotropic_(orig.isotropic_),
+  dltmor_(orig.dltmor_),
+  dltmod_(orig.dltmod_)
+
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -122,9 +132,8 @@ double UniformSphere::operator()(double const coord[4]) {
   return dx*dx + dy*dy + dz*dz;
 }
 
-
 double UniformSphere::deltaMax(double * coord) {
-  return 0.1*max(sqrt((*this)(coord)), radius_);
+  return max(dltmod_*sqrt((*this)(coord)), dltmor_*radius_);
 }
 
 double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
@@ -178,9 +187,17 @@ void UniformSphere::setRadius(double r, std::string unit) {
   setRadius(Units::ToGeometrical(r, unit, gg_));
 }
 
+double UniformSphere::deltaMaxOverRadius() {return dltmor_;}
+void UniformSphere::deltaMaxOverRadius(double f) {dltmor_=f;}
+
+double UniformSphere::deltaMaxOverDistance() {return dltmod_;}
+void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
+
 int UniformSphere::setParameter(string name, string content, string unit) {
   if (name=="Radius") setRadius(atof(content.c_str()), unit);
-  if (name=="IsotropicEmittedIntensity") isotropic_=1;
+  else if (name=="IsotropicEmittedIntensity") isotropic_=1;
+  else if (name=="DeltaMaxOverRadius") deltaMaxOverRadius(atof(content.c_str()));
+  else if (name=="DeltaMaxOverDistance") deltaMaxOverDistance(atof(content.c_str()));
   else return Standard::setParameter(name, content, unit);
   return 0;
 }
@@ -199,6 +216,11 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   childfmp = fmp -> makeChild ( "Opacity" );
   opacity_ -> fillElement(childfmp);
   delete childfmp;
+
+  if (dltmor_ != GYOTO_USPH_DELTAMAX_OVER_RAD)
+    fmp -> setParameter ("DeltaMaxOverRadius", dltmor_);
+  if (dltmod_ != GYOTO_USPH_DELTAMAX_OVER_DST)
+    fmp -> setParameter ("DeltaMaxOverDistance", dltmod_);
 
   Astrobj::Generic::fillElement(fmp);
 }
