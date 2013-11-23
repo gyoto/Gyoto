@@ -151,6 +151,7 @@ write, format= "%s\n"," ALL TESTS PASSED";
 #include "check-metric.i"
 #include "check-photon-BL.i"
 #include "check-star.i"
+#include "check-startrace.i"
 #include "check-scenery.i"
 #include "check-patterndisk.i"
 //#include "check-disk3d.i"
