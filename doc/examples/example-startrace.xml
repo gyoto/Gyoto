@@ -27,12 +27,12 @@
     <RMax> 50. </RMax>
     <TMin> 600 </TMin>
     <TMax> 800 </TMax>
-    <OpticallyThin/>
+    <OpticallyThick/>
     <NonAdaptive/>
     <Delta>5</Delta>
   </Astrobj>
 
-  <Quantities>Spectrum</Quantities>
+  <Quantities>Intensity</Quantities>
 
   <NThreads> 2 </NThreads>
 

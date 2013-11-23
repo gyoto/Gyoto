@@ -188,59 +188,35 @@ void Worldline::xAllocate(size_t sz)
   x3dot_ = new double[x_size_];
 }
 
+void Worldline::xExpand(double* &x, int dir) {
+  double * old;
+  size_t offset=(dir==1)?0:x_size_;
+  size_t i;
+  size_t nsize=2*x_size_;
+
+  old=x;
+  x=new double[nsize];
+  for (i=imin_;i<=imax_;++i) x[i+offset]=old[i];
+  delete [] old;
+}
+
 size_t Worldline::xExpand(int dir) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(dir);
 # endif
-  double * old;
-  size_t offset=(dir==1)?0:x_size_;
+
+  xExpand(x0_, dir);
+  xExpand(x1_, dir);
+  xExpand(x2_, dir);
+  xExpand(x3_, dir);
+  xExpand(x0dot_, dir);
+  xExpand(x1dot_, dir);
+  xExpand(x2dot_, dir);
+  xExpand(x3dot_, dir);
+
   size_t retval=(dir==1)?(x_size_-1):x_size_;
-  size_t i;
-
+  size_t offset=(dir==1)?0:x_size_;
   x_size_*=2;
-
-  old = x0_;
-  //GYOTO_DEBUG<< "In Wl x0_[0]= " << x0_[0] << endl;
-  x0_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x0_[i+offset]=old[i];
-  delete[] old;
-  //GYOTO_DEBUG<< "In Wl imin= " << imin_ << " " << imax_ << endl;
-  //GYOTO_DEBUG<< " In Wl x0_[offset], old[0]= " << x0_[1024] << " " << old[0] << endl;
-  
-  old = x1_;
-  x1_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x1_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x2_;
-  x2_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x2_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x3_;
-  x3_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x3_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x0dot_;
-  x0dot_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x0dot_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x1dot_;
-  x1dot_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x1dot_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x2dot_;
-  x2dot_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x2dot_[i+offset]=old[i];
-  delete[] old;
-  
-  old = x3dot_;
-  x3dot_ = new double[x_size_];
-  for (i=imin_;i<=imax_;++i) x3dot_[i+offset]=old[i];
-  delete[] old;
   
   imin_+=offset;
   i0_+=offset;
@@ -428,6 +404,19 @@ void Worldline::reInit() {
   }
 }
 
+
+void Worldline::xStore(size_t ind, double coord[8])
+{
+  x0_[ind] = coord[0];
+  x1_[ind] = coord[1];
+  x2_[ind] = coord[2];
+  x3_[ind] = coord[3];
+  x0dot_[ind] = coord[4];
+  x1dot_[ind] = coord[5];
+  x2dot_[ind] = coord[6];
+  x3dot_[ind] = coord[7];
+}
+
 void Worldline::xFill(double tlim) {
 
   //GYOTO_DEBUG<< "In xFill" << endl;
@@ -492,14 +481,7 @@ void Worldline::xFill(double tlim) {
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
     // store particle's trajectory for later use
-    x0_[ind] = coord[0];
-    x1_[ind] = coord[1];
-    x2_[ind] = coord[2];
-    x3_[ind] = coord[3];
-    x0dot_[ind] = coord[4];
-    x1dot_[ind] = coord[5];
-    x2dot_[ind] = coord[6];
-    x3dot_[ind] = coord[7];
+    xStore(ind, coord);
 
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {

@@ -146,12 +146,12 @@ class Gyoto::Worldline
   /**
    * The default size is GYOTO_DEFAULT_X_SIZE
    */
-  void xAllocate(); ///< Allocate x0, x1 etc. with default size
+  virtual void xAllocate(); ///< Allocate x0, x1 etc. with default size
 
   /**
    * \param size : number of cells in each array x0, x1 etc.
    */
-  void xAllocate(size_t size); ///< Allocate x0, x1 etc. with a specified size.
+  virtual void xAllocate(size_t size); ///< Allocate x0, x1 etc. with a specified size.
 
   /**
    * Double the size of arrays x0, x1 etc. and copy old version of the
@@ -164,8 +164,18 @@ class Gyoto::Worldline
    * \return ind : if dir=1, new index of old last element, if dir=-1,
    * new index of old first element
    */
-  size_t xExpand(int dir); ///< Expand x0, x1 etc... to hold more elements
+  virtual size_t xExpand(int dir); ///< Expand x0, x1 etc... to hold more elements
  
+
+  /**
+   * If you need to expand more arrays than x0_ ... x3_ and the dots,
+   * call this on your array before calling xExpand(int dir).
+   *
+   * \param[inout] x array to expand
+   * \param[in] dir
+   */
+  virtual void xExpand(double * &x, int dir); ///< Expand one array to hold more elements
+
   // Mutators / assignment
   // ---------------------
  public:
@@ -213,7 +223,9 @@ class Gyoto::Worldline
   void getCoord(size_t index, double dest[8]) const; ///< Get coordinates corresponding to index
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
-  void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
+
+  virtual void xStore(size_t ind, double coord[8]) ; ///< Store coord at index ind
+  virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
   /**
    * \brief Set parameter by name

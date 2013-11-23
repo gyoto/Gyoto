@@ -47,6 +47,9 @@ class Gyoto::Astrobj::StarTrace :
   protected:
   double tmin_;
   double tmax_;
+  double * x_; ///< Cartesian x
+  double * y_; ///< Cartesian y
+  double * z_; ///< Cartesian z
 
   // Constructors - Destructor
   // -------------------------
@@ -74,6 +77,22 @@ class Gyoto::Astrobj::StarTrace :
 
   virtual ~StarTrace() ;                        ///< Destructor
   
+  using Star::xAllocate;
+  void xAllocate(size_t);
+  void xAllocateXYZ(); ///< Allocate x_, y_, z_
+  using Star::xExpand;
+  size_t xExpand(int);
+
+  void computeXYZ(size_t i);
+  void computeXYZ();
+
+  using Star::setInitCoord;
+  virtual void setInitCoord(const double coord[8], int dir);
+
+  virtual void setMetric(SmartPointer<Metric::Generic> gg);
+
+  virtual void xStore(size_t ind, double coord[8]) ;
+
   // Accessors
   // ---------
  public:
