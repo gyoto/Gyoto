@@ -59,6 +59,13 @@ StarTrace::StarTrace(const StarTrace& o) : Star(o), tmin_(o.tmin_), tmax_(o.tmax
   memcpy(z_+imin_, o.z_+imin_, sz);
 }
 
+StarTrace::StarTrace(const Star& o, double tmin, double tmax) :
+  Star(o), tmin_(tmin), tmax_(tmax)
+{
+  xAllocateXYZ();
+  computeXYZ();
+}
+
 StarTrace* StarTrace::clone() const { return new StarTrace(*this); }
 
 StarTrace::~StarTrace()

@@ -219,6 +219,19 @@ extern gyoto_Star;
  */
 gyoto_namespace, Star=gyoto_Star;
 
+/////////// STARTRACE
+extern _gyoto_StarTrace_register_as_Astrobj;
+_gyoto_StarTrace_register_as_Astrobj
+/* xDOCUMENT _gyoto_StarTrace_register_as_Astrobj
+      To be called exactly once ins gyoto_std.i
+*/
+   
+extern gyoto_StarTrace;
+/* DOCUMENT st = gyoto_StarTrace([filename, ][members=values])
+   See gyoto_Star;
+ */
+gyoto_namespace, StarTrace=gyoto_StarTrace;
+
 ///////// FIXEDSTAR
 
 extern _gyoto_FixedStar_register_as_Astrobj;

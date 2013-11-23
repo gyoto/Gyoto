@@ -73,6 +73,9 @@ class Gyoto::Astrobj::StarTrace :
   StarTrace(); ///< Default constructor
   
   StarTrace(const StarTrace& orig); ///< Copy constructor
+
+  StarTrace(const Star& o, double tmin, double tmax);
+
   virtual StarTrace * clone() const ;
 
   virtual ~StarTrace() ;                        ///< Destructor
