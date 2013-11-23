@@ -2,6 +2,11 @@
  * \file GyotoStarTrace.h
  * \brief Like a Star that would be on all points of its orbit at all time
  *
+ * A StarTrace is a Star that is considerred to be simultaneously on
+ * all the points of its orbit at all time. The purpose is to
+ * precompute quickly an integrated image that can later be used as a
+ * mask to efficiently compute many images of the underlying Star at
+ * varying observing dates.
  */
 
 /*
@@ -37,6 +42,29 @@ namespace Gyoto{
  * \class Gyoto::Astrobj::StarTrace
  * \brief Like a Star that would be on all points of its orbit at all time
  *
+ * StarTrace inherits all the members and methods from Star. It has
+ * two additional members, tmin_ and tmax_, which specify the time
+ * interval of the Star's orbit that is to be considerred illuminated.
+ *
+ * A StarTrace is not (necessarily) continuous: the Star is
+ * considerred to be present at all the locations computed by xFill(),
+ * meaning that if the integration step is large compared to radius_,
+ * the object will be a collection of discrete blobs. To ensure
+ * continuity, one should use a non-adaptive step and specify a
+ * reasonable step. Computation is also faster in optically thick
+ * mode.
+ *
+ * \code
+ * <Astrobj kind="StarTrace">
+ *   ...
+ *   <TMin> 600 </TMin>
+ *   <TMax> 600 </TMax>
+ *   <NonAdaptive/>
+ *   <Radius> 1 </Radius>
+ *   <Delta> 1 </Delta>
+ * </Astrobj>
+ * \endcode
+ *
  */
 class Gyoto::Astrobj::StarTrace :
   public Gyoto::Astrobj::Star {
@@ -45,8 +73,8 @@ class Gyoto::Astrobj::StarTrace :
   // Data : 
   // -----
   protected:
-  double tmin_;
-  double tmax_;
+  double tmin_; ///< Minimum date to consider on the underlying Star orbit
+  double tmax_; ///< Maximum date to consider on the underlying Star orbit
   double * x_; ///< Cartesian x
   double * y_; ///< Cartesian y
   double * z_; ///< Cartesian z
@@ -74,6 +102,8 @@ class Gyoto::Astrobj::StarTrace :
   
   StarTrace(const StarTrace& orig); ///< Copy constructor
 
+
+  /// Build StarTrace from Star
   StarTrace(const Star& o, double tmin, double tmax);
 
   virtual StarTrace * clone() const ;
@@ -86,8 +116,8 @@ class Gyoto::Astrobj::StarTrace :
   using Star::xExpand;
   size_t xExpand(int);
 
-  void computeXYZ(size_t i);
-  void computeXYZ();
+  void computeXYZ(size_t i); ///< Compute (and cache) x_, y_ and z_ for one date
+  void computeXYZ(); ///< Compute (and cache) x_, y_ and z_
 
   using Star::setInitCoord;
   virtual void setInitCoord(const double coord[8], int dir);
@@ -102,10 +132,10 @@ class Gyoto::Astrobj::StarTrace :
   virtual std::string className() const ; ///< "StarTrace"
   virtual std::string className_l() const ; ///< "startrace"
 
-  double TMin();
-  void TMin(double);
-  double TMax();
-  void TMax(double);
+  double TMin(); ///< Get tmin_
+  void TMin(double); ///< Set tmin_
+  double TMax(); ///< Get tmax_
+  void TMax(double); ///< Set tmax_
 
   virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
