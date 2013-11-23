@@ -45,10 +45,11 @@ void ygyoto_StarTrace_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     "maxiter", "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_prime", "get_coord", "get_cartesian",
+    "star",
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, StarTrace, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+20);
+  YGYOTO_WORKER_INIT(Astrobj, StarTrace, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+21);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
@@ -219,7 +220,11 @@ void ygyoto_StarTrace_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 			  data + 3*nel, data + 4*nel, data + 5*nel);
     
   }
-  
+
+  if ((iarg=kiargs[++k])>=0) { // star
+    if ((*rvset)++) y_error(rmsg);
+    *ypush_Astrobj() = new Star (**ao);
+  }
   
 }
 

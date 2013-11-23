@@ -35,6 +35,7 @@ using namespace Gyoto::Astrobj;
 
 StarTrace::StarTrace() : Star()
 {
+  kind_="StarTrace";
   xAllocateXYZ();
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done." << endl;
@@ -46,12 +47,14 @@ StarTrace::StarTrace(SmartPointer<Metric::Generic> met, double rad,
 		double v[3]) :
   Star(met, rad, pos, v)
 {
+  kind_="StarTrace";
   xAllocateXYZ();
   computeXYZ(i0_);
 }
 
 StarTrace::StarTrace(const StarTrace& o) : Star(o), tmin_(o.tmin_), tmax_(o.tmax_)
 {
+  kind_="StarTrace";
   xAllocateXYZ();
   size_t sz = get_nelements()*sizeof(double);
   memcpy(x_+imin_, o.x_+imin_, sz);
@@ -62,6 +65,7 @@ StarTrace::StarTrace(const StarTrace& o) : Star(o), tmin_(o.tmin_), tmax_(o.tmax
 StarTrace::StarTrace(const Star& o, double tmin, double tmax) :
   Star(o), tmin_(tmin), tmax_(tmax)
 {
+  kind_="StarTrace";
   xAllocateXYZ();
   computeXYZ();
 }
