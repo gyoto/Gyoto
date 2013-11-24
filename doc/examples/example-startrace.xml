@@ -32,7 +32,7 @@
     <Delta>5</Delta>
   </Astrobj>
 
-  <Quantities>Intensity</Quantities>
+  <Quantities>Intensity MinDistance</Quantities>
 
   <NThreads> 2 </NThreads>
 

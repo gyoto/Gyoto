@@ -615,17 +615,20 @@ void Screen::fitsReadMask(std::string filename) {
   int       anynul    = 0;
   long      tmpl;
   double    tmpd;
-  long      naxes []  = {1, 1};
-  long      fpixel[]  = {1,1};
-  long      inc   []  = {1,1};
+  long      naxes []  = {1, 1, 1};
+  long      fpixel[]  = {1, 1, 1};
+  long      inc   []  = {1, 1, 1};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
   if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status) ;
   if (fits_get_img_size(fptr, 3, naxes, &status)) throwCfitsioError(status) ;
   if (naxes[0] != naxes[1])
     throwError("Screen::fitsReadMask(): mask must be square");
+  //  if (naxes[2] > 1)
+  //    throwError("Screen::fitsReadMask(): mask must have only one plane");
   npix_=naxes[0];
   if (mask_) { delete[] mask_; mask_=NULL; mask_filename_="";}
   mask_ = new double[npix_*npix_];
+  inc[2]=naxes[2]; // read only first plane!
   if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
 		       0, mask_,&anynul,&status)) {
     GYOTO_DEBUG << " error, trying to free pointer" << endl;
@@ -920,7 +923,10 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   }
   fmp -> setParameter ("FreqObs", freq_obs_);
   fmp -> setParameter ( anglekind_? "SphericalAngles" : "EquatorialAngles");
-  if (mask_filename_!="") fmp -> setParameter ("Mask", mask_filename_);
+  if (mask_filename_!="") fmp->setParameter("Mask",
+					    (mask_filename_.compare(0,1,"!") ?
+					     mask_filename_ :
+					     mask_filename_.substr(1)));
 }
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
@@ -997,7 +1003,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="SphericalAngles")  scr -> setAnglekind(1);
     else if (name=="EquatorialAngles") scr -> setAnglekind(0);
 #   ifdef GYOTO_USE_CFITSIO
-    else if (name=="Mask")        scr -> fitsReadMask(content);
+    else if (name=="Mask")        scr -> fitsReadMask(fmp->fullPath(content));
 #   endif
   }
 

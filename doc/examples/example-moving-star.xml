@@ -11,6 +11,7 @@
     <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
     <Resolution> 128 </Resolution>
     <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
+    <Mask>../../bin/example-startrace.fits</Mask>
   </Screen>
 
   <Astrobj kind = "Star">

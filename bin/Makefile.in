@@ -707,10 +707,10 @@ check: gyoto
 	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
-	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \
-	   \!example-moving-star.fits
 	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
 	   \!example-startrace.fits
+	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \
+	   \!example-moving-star.fits
 	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL.xml \
 	   \!example-page-thorne-disk-BL.fits
 	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-KS.xml \
