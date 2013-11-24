@@ -20,6 +20,7 @@
 #include "gyoto_std.i"
 
 sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
+noop, sc.screen(mask=0); // make sure no mask is set yet
 st = sc.astrobj;
 
 write, format="%s", "Instanciating StarTrace from Star... ";

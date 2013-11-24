@@ -151,10 +151,13 @@ extern gyoto_Star;
                    st, initcoord=conditions;
                    st, reset=;
                    
-        setparameter=name,string_value       
+        setparameter=name,string_value
 
      Function-like (retval=st(function_method=parameters)):
 
+        startrace=tmin, tmax : make a StarTrace object. See
+              gyoto_StarTrace.
+     
       The following return the position of the star for all the dates
       that where evaluated by the integrated when XFILL, above, was
       called, in various coordinate systems:
@@ -215,7 +218,7 @@ extern gyoto_Star;
        data = gyoto_Star(get_txyz=1, initialpos=pos, v, xfill=tlim,
                          metric=gyoto_KerrBL(spin=a));
                 
-   SEE ALSO: gyoto_Metric, gyoto_Kerr
+   SEE ALSO: gyoto_Metric, gyoto_Kerr, gyoto_StarTrace
  */
 gyoto_namespace, Star=gyoto_Star;
 
@@ -228,7 +231,28 @@ _gyoto_StarTrace_register_as_Astrobj
    
 extern gyoto_StarTrace;
 /* DOCUMENT st = gyoto_StarTrace([filename, ][members=values])
-   See gyoto_Star;
+
+     A StarTrace is like a Star that is at all time ubiquitous on its
+     orbit. This allows efficiently precomputing a mask for
+     ray-tracing many images of the star on its orbit. A StarTrace
+     accepts all the same keywords as a Star, except the STARTRACE
+     keyword itself. StarTrace accepts the STAR keyword instead to
+     retrieve the underlying Star object.
+
+   EXAMPLE:
+
+     sc = gyoto_Scenery("file.xml");
+     star = sc.astrobj;
+     startrace = star(startrace=0, 100);
+     startrace, adaptive=0, opticallythin=0, delta=1;
+     sc, astrobj=startrace;
+     mask = sc(,,"Intensity");
+     noop, sc.screen(mask=mask);
+     sc, astrobj=star;
+     image = sc(,,);
+
+   SEE ALSO: gyoto, gyoto_Star
+   
  */
 gyoto_namespace, StarTrace=gyoto_StarTrace;
 
