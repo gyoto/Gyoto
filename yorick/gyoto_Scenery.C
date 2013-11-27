@@ -161,7 +161,7 @@ extern "C" {
       "get_pointer",
       "unit",
       "metric", "screen", "astrobj", "delta", "tmin", "quantities", "adaptive",
-      "maxiter=",
+      "maxiter",
       "xmlwrite", "clone",
       "impactcoords", "nthreads",
       0
