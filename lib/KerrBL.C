@@ -813,11 +813,11 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
     As the equations of motion (cf diff) are independent of Q, it is necessary to check whether this constant is conserved.
    */
 
-  double argsqrt, limarg=1e-5, limargbis=0.1;
   double costh, sinth, a2=spin_*spin_;
   sincos(mycoor[2], &sinth, &costh);
   double sinthm2=1./(sinth*sinth), costh2=costh*costh;
   double mu=cst[0], EE=cst[1], LL=cst[2], QQ=cst[3], QQm1=cst[4];
+  double argsqrt, limarg=1e-6*QQ, limargbis=0.1*QQ;
   double mu2=mu*mu, EE2=EE*EE, LL2=LL*LL;
   double Sigma=mycoor[1]*mycoor[1]+a2*costh2;
   double Sigma2=Sigma*Sigma;
@@ -828,7 +828,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG
     << "mu="<<mu<<", EE="<<EE<<", LL="<<LL<<", QQ="<<QQ<<", QQm1="<<QQm1
-    << ", Qtest="<<Qtest<< ", fabs(Qtest-QQ)/QQm1="<< fabs(Qtest-QQ)/QQm1
+    << ", Qtest="<<Qtest<< ", fabs(Qtest-QQ)/QQm1="<< fabs(Qtest-QQ)*QQm1
     << endl;
 # endif
   if (fabs(Qtest-QQ)*QQm1 > 1e-6){//Then change thetadot to allow Qtest=QQ
