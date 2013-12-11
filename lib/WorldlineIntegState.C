@@ -68,7 +68,7 @@ int Worldline::IntegState::nextStep(double coord[8], double h1max) {
     GYOTO_SEVERE << 
       "in Worldline::IntegState.C: "
       "norm is drifting"
-      " - with norm/x0dot**2,normref= " << norm_ << " " 
+      " - with norm,normref= " << norm_ << " " 
 		 << normref_ << " -- x1,x2,x3= " << coord[1] 
 		 << " " << coord[2] << " " << coord[3] << " " << endl;
   }
