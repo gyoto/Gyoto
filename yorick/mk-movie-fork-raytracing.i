@@ -28,6 +28,10 @@ ifile="../doc/examples/example-moving-star.xml";
 ofile="test.ogg";
 vcodec="libtheora";
 resolution=64;
+// use jmin and jmax to fix aspect ratio
+jcrop = resolution/8; // aspect ratio 4:3
+jmin=1+jcrop;
+jmax=resolution-jcrop
 t0=1000.;
 nframes=1000;
 dt=1.;
@@ -61,16 +65,30 @@ winkill;
 sc=gyoto_Scenery(ifile);
 ut = sc(metric=)(unitlength=)/GYOTO_C;
 sc,quantities="Intensity";
-sc,nthreads=2;
+sc,nthreads=8;
 noop, sc(screen=)(time=t0*ut);
 noop, sc(screen=)(resolution=resolution);
+
 // Specific to star astrobj: precompute orbit
 ao = sc(astrobj=);
 if (ao(kind=)=="Star") noop, ao(xfill=0.);
 
+// Change star size to something reasonably physical, yet nice
+ao, radius=1, opticallythin=0;
+
+// Precompute mask, if possible for this astrobj
+stt = ao(startrace= t0, t0+nframes*dt)(opticallythin=0, radius=2.*ao(radius=), delta=0.5*ao(radius=));
+sc, astrobj=stt;
+mask=sc(,,"Intensity");
+sc, astrobj=ao;
+noop, sc.screen(mask=mask);
+// Check the mask at least once!
+//pli, mask(,jmin:jmax); limits, square=1; pause, 10000; winkill;
+
 sem_give, semid, 1; // Give 1: Gyoto may write to shared memory.
 encoder=av_create(ofile, vcodec=vcodec);
 
+gyoto_verbose, 0;
 for (n=1, t=t0; n<=nframes; ++n, t+=dt) {
   if (fork()) {
     sem_take, semid, 0; // Is there something to read now?
@@ -78,12 +96,12 @@ for (n=1, t=t0; n<=nframes; ++n, t+=dt) {
     if (n==1) cmax=max(im);
     frame = rgb(,bytscl(im(,0:1:-1), cmax=cmax, top=top)+1);
     sem_give, semid, 1; // Reading done, Gyoto may write again.
-    write, format="Writting frame nr %d to movie file\n", n;
+    write, format="Writting frame nr %d of %d to movie file\n", n, nframes;
     av_write, encoder, frame;
   } else {
-    write, format="Ray-tracing frame nr %d, time=%e\n", n, t;
+    write, format="Ray-tracing frame nr %d of %d, time=%e\n", n, nframes, t;
     noop, sc(screen=)(time=t*ut);
-    im = gyoto_Scenery_rayTrace(sc);
+    im = sc(,jmin:jmax,"Intensity");
     sem_take, semid, 1; // May we write now?
     shm_write, shmid, "image", &im;
     sem_give, semid, 0; // Image ready to be read.
