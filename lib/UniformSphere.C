@@ -45,6 +45,7 @@ UniformSphere::UniformSphere(string kind) :
   spectrum_(NULL),
   opacity_(NULL),
   isotropic_(0),
+  alpha_(1),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
@@ -64,6 +65,7 @@ UniformSphere::UniformSphere(string kind,
   radius_(rad),
   spectrum_(NULL), opacity_(NULL),
   isotropic_(0),
+  alpha_(1),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
@@ -81,6 +83,7 @@ UniformSphere::UniformSphere(const UniformSphere& orig) :
   radius_(orig.radius_),
   spectrum_(NULL), opacity_(NULL),
   isotropic_(orig.isotropic_),
+  alpha_(orig.alpha_),
   dltmor_(orig.dltmor_),
   dltmod_(orig.dltmod_)
 
@@ -148,10 +151,59 @@ double UniformSphere::emission(double nu_em, double dsem, double *, double *) co
   return (*spectrum_)(nu_em);
 }
 
+void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
+					 double* coord_obj_hit, double dt,
+					 Properties* data) const {
+  if (alpha_==1) {
+    // then I_nu \propto nu^0, standard case
+    Generic::processHitQuantities(ph,coord_ph_hit,coord_obj_hit,dt,data);
+    return;
+  }
+
+  // Here nu*I_nu \propto nu^alpha, alpha!=1
+  // Emission is assumed to deliver
+  // then I_nu integrated over a band is \propto g^(4-alpha_)
+  // not simply g^3 as in the standard case 
+  double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
+  SmartPointer<Spectrometer::Generic> spr = ph -> getSpectrometer();
+  size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
+  double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
+  double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
+  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
+				    coord_ph_hit+4);// / 1.; 
+  //this is nu_em/nu_obs
+  double ggred = 1./ggredm1;           //this is nu_obs/nu_em
+  double dsem = dlambda*ggredm1; // *1.
+  double inc =0.;
+  if (data) {
+    if (data->redshift) throwError("unimplemented");
+    if (data->time) throwError("unimplemented");
+    if (data->impactcoords) throwError("unimplemented");
+    if (data->user4) throwError("unimplemented");
+    if (data->binspectrum) throwError("unimplemented");
+    if (data->spectrum) throwError("unimplemented");
+    if (data->intensity) {
+      //Intensity increment :
+      inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
+	* (ph -> getTransmission(size_t(-1)))
+	* pow(ggred,4-alpha_);
+      *data->intensity += inc;
+    }
+    
+    /* update photon's transmission */
+    ph -> transmit(size_t(-1),
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+  } else {
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG << "NO data requested!" << endl;
+#   endif
+  }
+}  
+      
 double UniformSphere::transmission(double nuem, double dsem, double*) const {
   if (!flag_radtransf_) return 0.;
   double opacity = (*opacity_)(nuem);
-
+  
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<  "(nuem="    << nuem
 	      << ", dsem="    << dsem
@@ -197,6 +249,7 @@ void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
 int UniformSphere::setParameter(string name, string content, string unit) {
   if (name=="Radius") setRadius(atof(content.c_str()), unit);
   else if (name=="IsotropicEmittedIntensity") isotropic_=1;
+  else if (name=="Alpha") alpha_=atof(content.c_str());
   else if (name=="DeltaMaxOverRadius") deltaMaxOverRadius(atof(content.c_str()));
   else if (name=="DeltaMaxOverDistance") deltaMaxOverDistance(atof(content.c_str()));
   else return Standard::setParameter(name, content, unit);
