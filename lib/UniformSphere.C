@@ -138,10 +138,11 @@ double UniformSphere::deltaMax(double * coord) {
 
 double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
   if (isotropic_){
-    if (flag_radtransf_)
-      throwError("In UniformSphere::emission: "
-		 "isotropic_ keyword implies optically thick trivial emission");
-    return 1.;
+    if (flag_radtransf_){
+      return dsem;
+    }else{
+      return 1.;
+    }
   }
   if (flag_radtransf_) return (*spectrum_)(nu_em, (*opacity_)(nu_em), dsem);
   return (*spectrum_)(nu_em);
