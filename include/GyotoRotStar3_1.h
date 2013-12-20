@@ -88,7 +88,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
    *
    * Dispatches between Generic::myrk4_adaptive() and  myrk4_adaptive(const double coor[6], double lastnorm, double normref, double coornew[6], double cst[2], double& tdot_used, double h0, double& h1, double& hused) const depending on RotStar3_1::integ_kind_
    */
-  int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8], double lastnorm, double normref, double coordnew[8], double h0, double& h1) const;
+  int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8], double lastnorm, double normref, double coordnew[8], double h0, double& h1, double h1max) const;
 
   /**
    * \brief RK4 integrator (3+1)

@@ -453,7 +453,10 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
   return 0;
 }
 
-int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8], double lastnorm, double normref, double coordnew[8], double h0, double& h1) const
+int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8], 
+			       double lastnorm, double normref, 
+			       double coordnew[8], double h0, 
+			       double& h1, double h1max) const
 {
   //  if (debug()) cout << "In Rotstar::adaptive [8]" << endl;
   if (coord[1] < 2.5) {//inside rotating star -> a ameliorer
