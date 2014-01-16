@@ -72,7 +72,8 @@
  * A graphical user interface for tracing stellar orbits is provided
  * with the Yorick plug-in (see \ref yorick_plugin_page).
  *
- * The user manual is available [<A HREF="GyotoManual.pdf">here</A>].
+ * The <B>user manual</B> 
+ * is available <A HREF="GyotoManual.pdf"><B>here</B></A>.
  *
  * \image html gyotoy_screenshot.png
  *
