@@ -82,8 +82,9 @@
  *
  * <I><B>git clone git://github.com/gyoto/Gyoto.git</B></I> 
  *
- * More information on installing Gyoto are available 
- * <A HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL"><B>here</B></A>.
+ * More information on installing Gyoto is available 
+ * <A HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL"><B>here</B></A>
+ * as well as in the user manual below.
  *
  * \section manual_sec User manual
  *
