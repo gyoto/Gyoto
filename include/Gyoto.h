@@ -51,7 +51,7 @@
 <B><CENTER> General relativitY Orbit Tracer of Observatoire de Paris</CENTER></B>
  *
  *
- \ref download_sec | \ref conditions_sec
+ \ref download_sec | \ref manual_sec | \ref conditions_sec
  *
  * Gyoto aims at providing a framework for computing orbits and
  * ray-traced images in General relativity. It consists of a library
@@ -70,8 +70,6 @@
  * A graphical user interface for tracing stellar orbits is provided
  * with the Yorick plug-in (see \ref yorick_plugin_page).
  *
- * The <B>user manual</B> 
- * is available <A HREF="GyotoManual.pdf"><B>here</B></A>.
  *
  * \image html gyotoy_screenshot.png
  *
@@ -79,11 +77,17 @@
  *
  * Gyoto is version-controlled by the 
  * <A HREF="https://github.com/gyoto/Gyoto"><B>git</B></A> software.
- * The easiest way to acces it is by typing 
- * <I>git clone git://github.com/gyoto/Gyoto.git</I> on a command line.
+ * 
+ * The easiest way to acces it is by typing on a command line:
+ *
+ * <I><B>git clone git://github.com/gyoto/Gyoto.git</B></I> 
  *
  * More information on installing Gyoto are available 
  * <A HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL"><B>here</B></A>.
+ *
+ * \section manual_sec User manual
+ *
+ * The user manual is available <A HREF="GyotoManual.pdf"><B>here</B></A>.
  *
  * \section conditions_sec Conditions for use
  * 
