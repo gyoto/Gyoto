@@ -433,10 +433,13 @@ void Screen::getRayCoord(double alpha, double delta,
       law of cosine. 
       --> Following transformations are OK even for non-small alpha, delta
     */
-    
-    spherical_angle_a = acos(cos(alpha)*cos(delta));
-    spherical_angle_b = 
-      (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+    if (alpha<1e-6 && delta < 1e-6) {
+      spherical_angle_a = sqrt(alpha*alpha+delta*delta);
+    } else {
+      spherical_angle_a = acos(cos(alpha)*cos(delta));
+    }
+      spherical_angle_b = 
+	(alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
   }
 
   // Move these two angles to [0,pi], [0,2pi]
