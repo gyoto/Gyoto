@@ -429,7 +429,7 @@ double Generic::deltaMax(double coord[8]) {
     throwError("Incompatible coordinate kind in Astrobj.C");
   }
 
-  if (rr<getRmax()) h1max=1.; else h1max=1e10;
+  if (rr<getRmax()) h1max=1.; else h1max=DBL_MAX;
   return h1max;
 }
 

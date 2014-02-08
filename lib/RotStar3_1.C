@@ -350,7 +350,7 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
   double S=0.9;
   double errmin=1e-6;
   double h1min=0.001;
-  double h1max=1e6;
+  double h1max=coord[1]*0.5;
   // double factnorm=2.;
   double sigh1=1.;
  

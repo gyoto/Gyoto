@@ -25,6 +25,7 @@
 #define __GyotoDefs_H_ 
 
 #include "GyotoConfig.h"
+#include <float.h>
 
 /**
  * \brief Replacement for GNU extension sincos
@@ -365,7 +366,7 @@ namespace Gyoto {
 
 
 /// \brief Default value for Screen::dmax_
-#define GYOTO_SCREEN_DMAX 1e7
+#define GYOTO_SCREEN_DMAX DBL_MAX
 
 //For displays with setw and setprecision
 /// Precision when outputting double values

@@ -8,10 +8,8 @@
   </Metric>
 
   <Screen>
-    <Distance unit="kpc" dmax="1e6"> 8 </Distance>
+    <Distance unit="kpc"> 8 </Distance>
           The distance to SgrA*.
-	  "dmax" is a tuning parameter and is always expressed in
-	  geometrical units.
     <Time unit="yr"> 30e3 </Time>
     <FieldOfView unit="µas"> 150 </FieldOfView>
           A reasonable field-of-view, about 15 Schwarzschild radii.

@@ -290,7 +290,7 @@ int Photon::hit(Astrobj::Properties *data) {
     integration in case of a bug]
    */
 
-  double h1max=1e10;
+  double h1max=DBL_MAX;
   while (!stopcond) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(coord);
