@@ -40,10 +40,9 @@
   <Astrobj kind = "PolishDoughnut" plugin = "stdplug">
           We can specify the plug-in in which this Astrobj is implemented.
     <Lambda>0.3</Lambda>
-    <TempRatio>0.1</TempRatio>
     <CentralDensity unit="g/cm³">1e-17</CentralDensity>
           g/cm³ is actually the same as kg/L, the default.
-    <CentralTempOverVirial>0.02</CentralTempOverVirial>
+    <CentralTempOverVirial>0.04</CentralTempOverVirial>
     <Beta>0.1</Beta>
     <OpticallyThin/>
     <RMax>25.</RMax>

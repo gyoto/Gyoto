@@ -77,14 +77,19 @@ private:
  double r_cusp_; ///< Cusp radius in geometrical units. Tied to PolishDoughnut::lambda_.
  double r_centre_; ///< Central radius in geometrical units. Tied to PolishDoughnut::lambda_.
  double DeltaWm1_; ///< 1./(W_centre_ - W_surface_);
- double temperature_ratio_; ///< Central ion/electron temperature ratio
  double central_density_; ///< Central density in kg/L (same as g cm^-3)
+ /*
+   WARNING! so far (jan. 2014) central_density_ is density_central
+   in standard Polish doughnut model, but it is
+   density_central*c2+pressure_central in Komissarov model
+  */
  double centraltemp_over_virial_; ///< T<SUB>center</SUB>/T<SUB>virial</SUB>
  double beta_; ///< P<SUB>magn</SUB>/P<SUB>gas</SUB>
  int use_specific_impact_ ;///< Use PolishDoughnut::Impact_() or Standard::Impact()
  double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
  double aa2_; ///< aa_<SUP>2</SUP>
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
+ bool komissarov_; ///< 1 if Komissarov model is integrated
 
  // Constructors - Destructor
  // -------------------------
@@ -111,9 +116,6 @@ public:
  double getLambda() const; ///< Get PolishDoughnut::lambda_
  void   setLambda(double lambda); ///< Set PolishDoughnut::lambda_
 
- double getTemperatureRatio() const; ///< Get PolishDoughnut::temperature_ratio_
- void   setTemperatureRatio(double temp); ///< Set PolishDoughnut::temperature_ratio_
-
  double getCentralDensity() const; ///< Get PolishDoughnut::central_density_
  double getCentralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
  void   setCentralDensity(double density); ///< Set PolishDoughnut::central_density_
@@ -127,6 +129,9 @@ public:
 
  void   setSpectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
  size_t getSpectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
+
+ bool komissarov() const; ///< Get PolishDoughnut::komissarov_
+ void komissarov(bool komis); ///< Set PolishDoughnut::komissarov_
 
  // Read only members, depend on lambda
  double getWsurface() const; ///< Get PolishDoughnut::W_surface_
@@ -193,6 +198,10 @@ protected:
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]) const;
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
+  void emission_komissarov(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ;
 
