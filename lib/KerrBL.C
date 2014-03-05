@@ -47,8 +47,9 @@ using namespace Gyoto::Metric ;
 
 /*
 Comment on z-axis problem:
-z-axis pb is never launched by the condition theta<Gyoto_min_theta, it is always launched by the derlim, thetaaol tests in diff() (see comments there) 
-
+z-axis pb is never launched by the condition theta<Gyoto_min_theta, 
+it is always launched by the derlim, thetaaol tests in diff() 
+(see comments there) 
 
 To prevent any infinite loop, a test is done (see: if (countbis > 50
 && zaxis)....)  which should never be read : the integration is
@@ -597,8 +598,16 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   MakeMomentum(coordin,cst,coor);
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
-    err, h1min=0.01, h1max_default=coor[1]*0.5, diffr, diffth, difftol=1e-6, normtemp,
+    err, h1min=0.01, h1max_default=coor[1]*0.5, diffr, diffth, normtemp,
     cstol_gen=1e-3, cstol_hor=1e-2, cstol, div, QCarter;
+  double difftol;
+  if (getKind()=="KerrBL"){
+    // high precision far integration in Kerr
+    difftol=1e-6;
+  }else{
+    // low precision in non-Kerr metrics (to be tuned)
+    difftol=0.01;
+  }
   int countbis=0, countbislim=50, zaxis=0; // for z-axis problem in myrk4
   //int norm1=0, normhalf=0, norm2=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0.;
   int norm1=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0;
@@ -807,10 +816,10 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
   
   MakeCoord(coor_init,cst,mycoor); //Computes mycoor=[t,r,theta,phi,tdot,rdot,thetadot,phidot] from coor_init=[t,r,theta,phi,pt=-E,pr,ptheta,pphi=L] and cst
 
-
   /*
     *** Carter constant's check ***
-    As the equations of motion (cf diff) are independent of Q, it is necessary to check whether this constant is conserved.
+    As the equations of motion (cf diff) are independent of Q, 
+    it is necessary to check whether this constant is conserved.
    */
 
   double costh, sinth, a2=spin_*spin_;
@@ -949,23 +958,20 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
 void KerrBL::MakeCoord(const double coordin[8], const double cst[5], double coord[8]) const {
   double tt=coordin[0], rr = coordin[1], theta=coordin[2], phi=coordin[3], 
     pr=coordin[5], ptheta=coordin[6];
- 
-  double r2 = rr*rr ;
- 
-  double sinth, costh;
-  sincos(theta, &sinth, &costh);
-  double costheta2=costh*costh, sintheta2=sinth*sinth, 
-    aa=spin_, a2=aa*aa;
 
-  double Sigma=r2+a2*costheta2, Delta=r2-2*rr+a2, gtt=-(1.-2*rr/Sigma), 
-    gtp=-2.*aa*rr*sintheta2/Sigma, 
-    gpp = sintheta2*(r2+a2+2.*a2*rr*sintheta2/Sigma), 
-    det=gtp*gtp-gtt*gpp, detm1=1./det;
+  double gtt=gmunu(coordin,0,0),
+    gtp=gmunu(coordin,0,3),
+    gpp =gmunu(coordin,3,3),
+    det=gtp*gtp-gtt*gpp, detm1=1./det,
+    guprr=gmunu_up(coordin,1,1),
+    gupthth=gmunu_up(coordin,2,2);
 
   double EE=cst[1], LL=cst[2];
     
-  double rdot=Delta/Sigma*pr, thetadot=1./Sigma*ptheta, 
-    phidot=-(gtt*LL+gtp*EE)*detm1, tdot=(gtp*LL+gpp*EE)*detm1;
+  double rdot=guprr*pr,
+    thetadot = gupthth*ptheta,
+    phidot=-(gtt*LL+gtp*EE)*detm1, 
+    tdot=(gtp*LL+gpp*EE)*detm1;
 
   coord[0]=tt;coord[1]=rr;coord[2]=theta;coord[3]=phi;coord[4]=tdot;
   coord[5]=rdot;coord[6]=thetadot;coord[7]=phidot;
@@ -977,14 +983,8 @@ void KerrBL::MakeMomentum(const double coord[8], const double cst[5], double coo
   
   double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3],
     rdot=coord[5], thetadot=coord[6];
-  double r2 = rr*rr, costheta2=cos(theta); costheta2*=costheta2;
-    //    sintheta2=sin(theta)*sin(theta);
-  
-  double aa=spin_, a2=aa*aa;
 
-  double Sigma=r2+a2*costheta2, Delta=r2-2*rr+a2;
-
-  double pr=Sigma/Delta*rdot, ptheta=Sigma*thetadot;
+  double pr=gmunu(coord,1,1)*rdot, ptheta=gmunu(coord,2,2)*thetadot;
 
   coordout[0]=tt;coordout[1]=rr;coordout[2]=theta;
   coordout[3]=phi;coordout[4]=-EE;coordout[5]=pr;
@@ -1014,38 +1014,27 @@ void KerrBL::nullifyCoord(double coord[4], double & tdot2) const {
 }
 
 void KerrBL::computeCst(const double coord[8], double cst[5]) const{ 
-  
-  //double tt=coord[0], rr = coord[1], theta=coord[2], phi=coord[3], tdot=coord[4],
-  //  rdot=coord[5], thetadot=coord[6], phidot=coord[7];
-  double rr = coord[1], theta=coord[2], tdot=coord[4],
-    thetadot=coord[6], phidot=coord[7];
-  
   double norm=ScalarProd(coord, coord+4, coord+4);
-  
-  double sinth, costh;
-  sincos(theta, &sinth, &costh);
-  double r2 = rr*rr, rm1=1./rr, costheta2=costh*costh, 
-    sintheta2=sinth*sinth;
-  
-  double a2=spin_*spin_;
-  
-  double Sigma=r2+a2*costheta2, fact=2.*spin_*rr*sintheta2/Sigma;
-  //fact is -g_tphi
-
   double mu;//Particule mass: 0 or 1
   if (fabs(norm)<fabs(norm+1.)){
     mu=0.;
   }else{
     mu=1.;
   }
-  //See e.g. Levin&PerezGiz 07 and MTW
-  double EE=(1-2*rr/Sigma)*tdot+fact*phidot, 
-                   //OK for particule mass = 0 or 1 
-    LL=sintheta2*(r2+a2+spin_*fact)*phidot-fact*tdot, 
-                   //OK for particule mass = 0 or 1
-    QQ=Sigma*thetadot*Sigma*thetadot+costheta2
-                           *(a2*(mu*mu-EE*EE)+LL*LL/sintheta2); 
-                   //different for a 0-mass and a 1-mass particule
+  // EE and LL are generic for any axisymmetric spacetime
+  double tdot=coord[4], phidot=coord[7];
+  double EE=-gmunu(coord,0,0)*tdot-gmunu(coord,0,3)*phidot, 
+    LL=gmunu(coord,3,3)*phidot+gmunu(coord,0,3)*tdot; 
+  
+  // Carter constant is Kerr-specific:
+  double sinth, costh;
+  double theta=coord[2], thetadot=coord[6];
+  sincos(theta, &sinth, &costh);
+  double costheta2=costh*costh, sintheta2=sinth*sinth;
+  double a2=spin_*spin_;
+  double gthth = gmunu(coord,2,2);
+  double QQ=gthth*thetadot*gthth*thetadot
+    +costheta2*(a2*(mu*mu-EE*EE)+LL*LL/sintheta2); 
   
   cst[0]=mu;cst[1]=EE;cst[2]=LL;cst[3]=QQ;
   cst[4]= cst[3]==0. ? 1. : 1./cst[3]; // cache 1/Q or 1. if Q==0

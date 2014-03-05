@@ -49,7 +49,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // -----
  protected:
   double spin_ ;  ///< Angular momentum parameter
-  int modifkerr_CS_; ///< Chern-Simons modification
   
   // Constructors - Destructor
   // -------------------------
@@ -58,11 +57,9 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   KerrBL(double spin, double mass) ; ///< Constructor with spin and mass specification
 
   // Default is _not_ fine
-  KerrBL(const KerrBL& ) ;                ///< Copy constructor
+  KerrBL(const KerrBL& ) ;           ///< Copy constructor
   
-  
-  virtual ~KerrBL() ;                        ///< Destructor
-  
+  virtual ~KerrBL() ;                ///< Destructor
   
   // Mutators / assignment
   // ---------------------
@@ -70,7 +67,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // default operator= is fine
   void setSpin(const double spin); ///< Set spin
   virtual KerrBL * clone () const ;
-
 
   // Accessors
   // ---------
@@ -89,9 +85,14 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   double gmunu_up(const double * const x, int mu, int nu) const ;
  
   /*
-   it's necessary to define christoffel even if it's not used. KerrBL derives from Metric where christoffel is virtual pure. If the function is not defined in KerrBL,  it's considered virtual pure here too. Then KerrBL is considered an abstract class, and it's forbidden to declare any object of type KerrBL....
+   it's necessary to define christoffel even if it's not used. 
+   KerrBL derives from Metric where christoffel is virtual pure. 
+   If the function is not defined in KerrBL,  it's considered virtual 
+   pure here too. Then KerrBL is considered an abstract class, 
+   and it's forbidden to declare any object of type KerrBL....
    See Delannoy C++ p.317-318
-   NB : and it's not necessary to declare "virtual" a function in a derived class if it has been declared "virtual" in the basis class.
+   NB : and it's not necessary to declare "virtual" a function 
+   in a derived class if it has been declared "virtual" in the basis class.
   */
   double christoffel(const double[8],
 		     const int, const int, const int) const;
@@ -101,7 +102,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 
   void nullifyCoord(double coord[8], double & tdot2) const;
   void nullifyCoord(double coord[8]) const;
-
 
   //  friend std::ostream& operator<<(std::ostream& , const KerrBL& ) ;
   //  std::ostream& print(std::ostream&) const ;
@@ -115,7 +115,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    ///< Computes pr, ptheta, E and L from rdot, thetadot, phidot, tdot
   void MakeMomentum(const double coordin[8], const double cst[5], double coordout[8]) const;
   ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
- 
 
   virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
@@ -125,9 +124,12 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  protected:
 
   // outside the API
-  /* RK4 : y=[r,theta,phi,t,pr,ptheta], cst=[a,E,L,Q,1/Q],dy/dtau=F(y,cst), h=proper time step. For KerrBL geodesic computation.
+  /* RK4 : y=[r,theta,phi,t,pr,ptheta], 
+     cst=[a,E,L,Q,1/Q],dy/dtau=F(y,cst), h=proper time step. 
+     For KerrBL geodesic computation.
    */
   int myrk4(Worldline * line, const double coordin[8], double h, double res[8]) const; //external-use RK4
+  
  private:
   int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;///< Internal-use RK4 proxy
   int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1, double h1max) const; ///< Interal-use adaptive RK4 proxy
