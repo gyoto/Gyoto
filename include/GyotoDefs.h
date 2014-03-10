@@ -353,6 +353,17 @@ namespace Gyoto {
 #define GYOTO_DEFAULT_DELTA 0.01
 
 /**
+ * \brief Default value for the maximum step in the integration loop.
+ */
+#define GYOTO_DEFAULT_DELTA_MAX DBL_MAX
+
+/**
+ * \brief Default value for the minimum step in the integration loop.
+ */
+#define GYOTO_DEFAULT_DELTA_MIN 1e-2
+
+
+/**
  * \brief Default value for Gyoto::Worldline::maxiter_
  */
 #define GYOTO_DEFAULT_MAXITER 100000

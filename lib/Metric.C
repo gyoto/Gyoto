@@ -34,7 +34,9 @@ Register::Entry* Metric::Register_ = NULL;
 
 // Default constructor
 Metric::Generic::Generic() :
-  mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED)
+  mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED),
+  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -43,7 +45,9 @@ Metric::Generic::Generic() :
 }
 
 Metric::Generic::Generic(const double mass, const int coordkind) :
-  mass_(mass), coordkind_(coordkind)
+  mass_(mass), coordkind_(coordkind),
+  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG;
@@ -55,7 +59,9 @@ Metric::Generic::Generic(const double mass, const int coordkind) :
 }
 
 Metric::Generic::Generic(const int coordkind) :
-  mass_(1.), coordkind_(coordkind)
+  mass_(1.), coordkind_(coordkind),
+  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(coordkind_);
@@ -109,6 +115,11 @@ double Metric::Generic::getMass()                 const { return mass_; }
 double Metric::Generic::getMass(const string &unit) const {
   return Units::FromKilograms(getMass(), unit);
 }
+
+double Metric::Generic::deltaMin() const {return delta_min_;}
+double Metric::Generic::deltaMax() const {return delta_max_;}
+void  Metric::Generic::deltaMin(double h1) {delta_min_=h1;}
+void  Metric::Generic::deltaMax(double h1) {delta_max_=h1;}
 
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
@@ -313,10 +324,11 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   double eps=0.0001;
   double S=0.9;
   double errmin=1e-6;
-  double h1min=0.001;
   double factnorm=2.;
 
-  if (h1max<h1min) h1max=h1min;
+  if (h1max>delta_max_) h1max=delta_max_;
+
+  if (h1max<delta_min_) h1max=delta_min_;
  
   //cout << "1st diff" << endl;
   diff(coord,dcoord) ;
@@ -365,7 +377,7 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
       hbis=0.5*h0;
     }else{
       h1=(err > errmin ? S*h0*pow(err,-0.2) : 4.*h0);//pour éviter les explosions
-      if (fabs(h1)<h1min) h1=(h0>0.)?h1min:-h1min;
+      if (fabs(h1)<delta_min_) h1=(h0>0.)?delta_min_:-delta_min_;
       if (fabs(h1)>h1max) h1=(h0>0.)?h1max:-h1max;
       
       //Testing tangent vector norm stays next to 0 :
@@ -417,10 +429,16 @@ int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }
 void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter("Mass", getMass());
+  if (delta_min_!=GYOTO_DEFAULT_DELTA_MIN)
+    fmp -> setParameter("DeltaMin", delta_min_);
+  if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
+    fmp -> setParameter("DeltaMax", delta_max_);
 }
 
 void Metric::Generic::setParameter(string name, string content, string unit) {
-  if(name=="Mass") setMass(atof(content.c_str()), unit);
+  if      (name=="Mass")     setMass(atof(content.c_str()), unit);
+  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
+  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
 }
 
 void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {

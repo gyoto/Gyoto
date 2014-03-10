@@ -677,7 +677,7 @@ extern gyoto_Metric;
 
    MEMBER KEYWORDS:
 
-     mass=, unitlength=, kind=
+     mass=, unitlength=, kind=, deltamin=, deltamax=
    
      All the Metric kinds have a mass that can be set and retrieved
      using the mass keyword:
@@ -690,8 +690,12 @@ extern gyoto_Metric;
         len = gg(unitlength=)
      where LEN is in meters if MASS was set in kilograms.
 
-     Finally, the kind of the metric (e.g. "KerrBL") can be queried:
+     The kind of the metric (e.g. "KerrBL") can be queried:
         kind_string = gg(kind=)
+
+     Finally, the minimum and maximum value of the adaptive step in
+     the integrator can be set using respectively deltamin and
+     deltamax.
 
    METHODS
 
@@ -725,11 +729,6 @@ extern gyoto_Metric;
 
                If the optional parameter DIR is -1, VELS corresponds
                to the counter-rotating circular velocity.
-
-   SET KEYWORDS:
-     List of set-like keywords ("set" is never specified). Specific
-     Metric kinds may recognize more:
-       mass=new_mass                gyoto_Metric_setMass, gg, new_mass
 
    SEE ALSO: gyoto, gyoto_KerrBL, gyoto_KerrKS
  */

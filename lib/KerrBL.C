@@ -598,7 +598,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   MakeMomentum(coordin,cst,coor);
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
-    err, h1min=0.01, h1max_default=coor[1]*0.5, diffr, diffth, normtemp,
+    err, h1max_default=coor[1]*0.5, diffr, diffth, normtemp,
     cstol_gen=1e-3, cstol_hor=1e-2, cstol, div, QCarter;
   double difftol;
   if (getKind()=="KerrBL"){
@@ -615,8 +615,8 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
     rtol=factrtol*(1.+sqrt(1.-a*a)), rlimitol=10.;
 
   if (h1max>h1max_default) h1max=h1max_default;
-  if (h1max<h1min) h1max=h1min;
- 
+  if (h1max>delta_max_) h1max=delta_max_;
+  if (h1max<delta_min_) h1max=delta_min_;
 
   if (coor[1] < rtol) cstol = cstol_hor;
   // for tests of cst of motion conservation; don't ask too much
@@ -705,8 +705,8 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       hbis=0.5*h0;
     }else{
       h1=(err > errmin ? S*h0*pow(err,-0.2) : 4.*h0);//pour éviter les explosions
-      if (fabs(h1)<h1min) {
-	h1= (h1>0)?h1min:-h1min;
+      if (fabs(h1)<delta_min_) {
+	h1= (h1>0)?delta_min_:-delta_min_;
       }
       if (fabs(h1)>h1max) h1=(h1>0.)?h1max:-h1max;
 

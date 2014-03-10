@@ -37,6 +37,7 @@
 #include <GyotoAstrobj.h>
 #include <GyotoRegister.h>
 #include <GyotoHooks.h>
+#include <GyotoDefs.h>
 
 namespace Gyoto {
   namespace Metric {
@@ -150,6 +151,10 @@ class Gyoto::Metric::Generic
   double mass_;     ///< Mass yielding geometrical unit (in kg).
   int coordkind_; ///< Kind of coordinates (cartesian-like, spherical-like, unspecified)
 
+ protected:
+  double delta_min_; ///< Minimum integration step for the adaptive integrator
+  double delta_max_; ///< Maximum integration step for the adaptive integrator
+
  public:
   const std::string getKind() const; ///< Get kind_
   void setKind(const std::string); ///< Set kind_
@@ -188,6 +193,25 @@ class Gyoto::Metric::Generic
   double unitLength() const ; ///< M * G / c^2, M is in kg, unitLength in meters
   double unitLength(const std::string &unit) const ; ///< unitLength expressed in specified unit
 
+  /**
+   * Get delta_min_
+   */
+  double deltaMin() const;
+
+  /**
+   * Set delta_min_
+   */
+  void deltaMin(double h1);
+
+  /**
+   * Get delta_max_
+   */
+  double deltaMax() const;
+
+  /**
+   * Set delta_max_
+   */
+  void deltaMax(double h1);
 
   virtual void cartesianVelocity(double const coord[8], double vel[3]);
   ///< Compute xprime, yprime and zprime from 8-coordinates
@@ -351,7 +375,7 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
   virtual int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8],
 			     double lastnorm, double normref,
 			     double coordnew[8], double h0, double& h1,
-			     double h1max=1e6) const;
+			     double deltamax=GYOTO_DEFAULT_DELTA_MAX) const;
 
   /**
    * \brief Check whether integration should stop

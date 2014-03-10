@@ -59,7 +59,23 @@ gg();
 write, format="%s\n", "Printing object. \"gg\" yields: ";
 gg;
 
+write, format="%s", "Setting deltamin... ";
+gg, deltamin=40;
+if (gg.deltamin!=40) error, "CHECK FAILED";
+write, format="%s\n", "done.";
+
+write, format="%s", "Setting deltamax... ";
+gg, deltamax=400;
+if (gg.deltamax!=400) error, "CHECK FAILED";
+write, format="%s\n", "done.";
+
+write, format="%s", "Cloning... ";
+gg2=gg(clone=);
+if (gg2.deltamax!=400 || gg2.deltamin!=40) error, "CHECK FAILED";
+write, format="%s\n", "done.";
+
 // Free memory for testing with valgrind
+gg2=[];
 gg=[];
 aa=[];
 ri=[];

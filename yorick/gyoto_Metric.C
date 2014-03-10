@@ -158,6 +158,9 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
 
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Mass);
 
+  YGYOTO_WORKER_GETSET_DOUBLE2(deltaMin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(deltaMax);
+
   // Unit length
   if ((iarg=kiargs[++k])>=0) { // unitLength()
     if ((*rvset)++) y_error(rmsg);
