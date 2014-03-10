@@ -32,15 +32,17 @@ void ygyoto_KerrBL_eval(SmartPointer<Metric::Generic> *OBJ_, int argc) {
 
   static char const * knames[]={
     "unit",
-    "spin", "makecoord",		\
+    "spin", "difftol", "deltamaxoverr", "makecoord",	\
     YGYOTO_METRIC_GENERIC_KW,
     0
   };
 
-  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+3);
+  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+5);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE(Spin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(difftol);
+  YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverR);
 
   if (kiargs[++k]>=0) { // makecoord
     if (debug()) cerr << "DEBUG: In ygyoto_KerrBL_eval(): get_coord" << endl;

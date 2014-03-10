@@ -60,6 +60,13 @@ extern gyoto_KerrKS;
      metrics have a spin that can be set and retrieved as follows:
        gg, spin=value;
        value = gg(spin=)
+
+     Furthermore, KerrBL has two numerical tuning parameters: difftol=
+     and deltamaxoverr=. Low values yield more accurate results at the
+     expanse of computing time. Investigating the MinDistance map of a
+     FixedStar helps finding the right hyper parameter set for
+     investingating an object at a given location and a given
+     resolution.
        
    SPECIFIC METHOD
 

@@ -224,9 +224,9 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
   double eps=1e-4;//0.0001;
   double S=0.9;
   double errmin=1e-6;
-  double h1min=0.001;
- 
-  if (h1max<h1min) h1max=h1min;
+  
+  if (h1max>delta_max_) h1max=delta_max_;
+  if (h1max<delta_min_) h1max=delta_min_;
  
   double coordtemp[7]={coord[0],coord[1],coord[2],coord[3],coord[5],coord[6],coord[7]};
   //Caution!! diff must be fed with 7-sized vectors! see comment in diff
@@ -287,7 +287,7 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
     }else{
       h1=(err > errmin ? S*h0*pow(err,-0.2) : 4.*h0);//pour éviter les explosions
       //      cout << "h0,h1= " << h0 << " " << h1 << endl;
-      if (fabs(h1)<h1min) h1=h0>0?h1min:-h1min;
+      if (fabs(h1)<delta_min_) h1=h0>0?delta_min_:-delta_min_;
       if (fabs(h1)>h1max) h1=h0>0?h1max:-h1max;
  
       /* !!! Don't remove the line below !!!*/

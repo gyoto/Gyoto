@@ -38,6 +38,19 @@ namespace Gyoto {
 #endif
 
 
+/// Default value for difftol_
+#define GYOTO_KERRBL_DEFAULT_DIFFTOL 1e-2
+
+/// Default value for delta_max_over_r_
+/**
+ * For invastigations close to the event horizon, 0.5 is usually
+ * fine. If high accuracy is needed long after deflection (weak
+ * lensing), then this must be smaller. A good test is to look at a
+ * MinDistance map for a FixedStar: it must be smooth.
+ */
+#define GYOTO_KERRBL_DEFAULT_DELTA_MAX_OVER_R 0.5
+
+
 /**
  * \class Gyoto::Metric::KerrBL
  * \brief Metric around a Kerr black-hole in Boyer-Lindquist coordinates
@@ -49,6 +62,26 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // -----
  protected:
   double spin_ ;  ///< Angular momentum parameter
+
+  /// Numerical tuning parameter
+  /**
+   * Small values yield more accurate integration at the expanse of
+   * computing time.
+   */
+  double difftol_;
+
+  /// Numerical tuning parameter
+  /**
+   * Ensure that delta (the numerical integration step) is never
+   * larger than a fraction of the distance between the current
+   * location and the center of the coordinate system.
+   *
+   * For invastigations close to the event horizon, 0.5 is usually
+   * fine. If high accuracy is needed long after deflection (weak
+   * lensing), then this must be smaller. A good test is to look at a
+   * MinDistance map for a FixedStar: it must be smooth.
+   */
+  double delta_max_over_r_;
   
   // Constructors - Destructor
   // -------------------------
@@ -65,13 +98,18 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // ---------------------
  public:
   // default operator= is fine
-  void setSpin(const double spin); ///< Set spin
   virtual KerrBL * clone () const ;
 
   // Accessors
   // ---------
  public:
+  void setSpin(const double spin); ///< Set spin
   double getSpin() const ; ///< Returns spin
+
+  double difftol() const; ///< Get difftol_
+  void difftol(double t); ///< Set difftol_
+  double deltaMaxOverR() const; ///< Get delta_max_over_r_
+  void deltaMaxOverR(double t); ///< Set delta_max_over_r_
 
   double getRms() const; ///< Returns prograde marginally stable orbit
 

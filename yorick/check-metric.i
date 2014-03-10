@@ -69,9 +69,20 @@ gg, deltamax=400;
 if (gg.deltamax!=400) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
+write, format="%s", "Setting difftol... ";
+gg, difftol=1e-3;
+if (gg.difftol!=1e-3) error, "CHECK FAILED";
+write, format="%s\n", "done.";
+
+write, format="%s", "Setting deltamaxoverr... ";
+gg, deltamaxoverr=2e-3;
+if (gg.deltamaxoverr!=2e-3) error, "CHECK FAILED";
+write, format="%s\n", "done.";
+
 write, format="%s", "Cloning... ";
 gg2=gg(clone=);
-if (gg2.deltamax!=400 || gg2.deltamin!=40) error, "CHECK FAILED";
+if (gg2.deltamax!=400 || gg2.deltamin!=40 || gg2.difftol!=1e-3)
+  error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 // Free memory for testing with valgrind

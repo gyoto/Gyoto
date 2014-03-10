@@ -327,7 +327,6 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   double factnorm=2.;
 
   if (h1max>delta_max_) h1max=delta_max_;
-
   if (h1max<delta_min_) h1max=delta_min_;
  
   //cout << "1st diff" << endl;

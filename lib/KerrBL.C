@@ -73,13 +73,17 @@ militari stop.
   //OK for a<0.999)
 					       
 KerrBL::KerrBL() :
-  Generic(GYOTO_COORDKIND_SPHERICAL), spin_(0.)
+  Generic(GYOTO_COORDKIND_SPHERICAL), spin_(0.),
+  difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL),
+  delta_max_over_r_(GYOTO_KERRBL_DEFAULT_DELTA_MAX_OVER_R)
 {
   setKind("KerrBL");
 }
 
 KerrBL::KerrBL(double a, double m) :
-  Generic(m, GYOTO_COORDKIND_SPHERICAL), spin_(a)
+  Generic(m, GYOTO_COORDKIND_SPHERICAL), spin_(a),
+  difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL),
+  delta_max_over_r_(GYOTO_KERRBL_DEFAULT_DELTA_MAX_OVER_R)
 {
   //DEBUG!!!
   //spin_=0.;
@@ -90,7 +94,9 @@ KerrBL::KerrBL(double a, double m) :
 }
 
 // default copy constructor should be fine 
-KerrBL::KerrBL(const KerrBL& gg) : Metric::Generic(gg), spin_(gg.spin_)
+KerrBL::KerrBL(const KerrBL& gg) :
+  Metric::Generic(gg), spin_(gg.spin_), difftol_(gg.difftol_),
+  delta_max_over_r_(gg.delta_max_over_r_)
 {setKind("KerrBL");}
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
@@ -123,6 +129,11 @@ void KerrBL::setSpin(const double spin) {
 
 // Accessors
 double KerrBL::getSpin() const { return spin_ ; }
+
+double KerrBL::difftol() const { return difftol_;}
+void KerrBL::difftol(double t) {difftol_=t;}
+double KerrBL::deltaMaxOverR() const { return delta_max_over_r_;}
+void KerrBL::deltaMaxOverR(double t) {delta_max_over_r_=t;}
 
 //Prograde marginally stable orbit
 double KerrBL::getRms() const {
@@ -598,16 +609,8 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   MakeMomentum(coordin,cst,coor);
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
-    err, h1max_default=coor[1]*0.5, diffr, diffth, normtemp,
+    err, h1max_default=coor[1]*delta_max_over_r_, diffr, diffth, normtemp,
     cstol_gen=1e-3, cstol_hor=1e-2, cstol, div, QCarter;
-  double difftol;
-  if (getKind()=="KerrBL"){
-    // high precision far integration in Kerr
-    difftol=1e-6;
-  }else{
-    // low precision in non-Kerr metrics (to be tuned)
-    difftol=0.01;
-  }
   int countbis=0, countbislim=50, zaxis=0; // for z-axis problem in myrk4
   //int norm1=0, normhalf=0, norm2=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0.;
   int norm1=0, rk1=0, rkhalf=0, rk2=0, update, makerr=0;
@@ -722,7 +725,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       else if (coor1bis[6]) diffth = fabs(coor1[6]-coor1bis[6])/fabs(coor1[6]);
       else diffth = 0.;
 
-      if ((diffr > difftol || diffth > difftol)) {
+      if ((diffr > difftol_ || diffth > difftol_)) {
 	// don't update coordinates if the relative differences are
 	//	more than 1% --> consequence = norm and Carter cst
 	//	won't be exactly the same for this step --> below,
@@ -1051,10 +1054,16 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
 void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::Generic::fillElement(fmp);
+  if (difftol_ != GYOTO_KERRBL_DEFAULT_DIFFTOL)
+    fmp -> setParameter("DiffTol", difftol_);
+  if (delta_max_over_r_ != GYOTO_KERRBL_DEFAULT_DELTA_MAX_OVER_R)
+    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
 }
 
 void KerrBL::setParameter(string name, string content, string unit) {
-  if(name=="Spin") setSpin(atof(content.c_str()));
+  if      (name=="Spin")          setSpin       (atof(content.c_str()));
+  else if (name=="DiffTol")       difftol       (atof(content.c_str()));
+  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
   else Generic::setParameter(name, content, unit);
 }
 
