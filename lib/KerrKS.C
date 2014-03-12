@@ -45,10 +45,10 @@ In particular, don't trust too much the result with spin>0
  */
 
 KerrKS::KerrKS() :
-  Generic(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {setKind("KerrKS");}
+  Generic(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {kind("KerrKS");}
 
 KerrKS::KerrKS(double a, double m) :
-  Generic(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {setKind("KerrKS");}
+  Generic(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {kind("KerrKS");}
 
 // default copy constructor should be fine
 // KerrKS::KerrKS(const KerrKS& gg) : 
@@ -73,13 +73,13 @@ std::ostream& KerrKS::print( std::ostream& o) const {
 */
 
 // Mutators
-void KerrKS::setSpin(const double spin) {
+void KerrKS::spin(const double spin) {
   spin_=spin;
   tellListeners();
 }
 
 // Accessors
-double KerrKS::getSpin() const { return spin_ ; }
+double KerrKS::spin() const { return spin_ ; }
 
 double KerrKS::christoffel(const double[8],
 		   const int, const int, const int) const{
@@ -500,7 +500,7 @@ int KerrKS::isStopCondition(double const * const coord) const {
 }
 
 void KerrKS::setParameter(string name, string content, string unit) {
-  if (name=="Spin") setSpin(atof(content.c_str()));
+  if (name=="Spin") spin(atof(content.c_str()));
   else Generic::setParameter(name, content, unit);
 }
 

@@ -393,7 +393,7 @@ void Worldline::reInit() {
     double coord[8];
     getInitialCoord(coord);
     if (metric_) {
-      if ( metric_() -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL 
+      if ( metric_() -> coordKind() == GYOTO_COORDKIND_SPHERICAL 
 	   && x2_[i0_]==0. ) {
 	if (verbose() >= GYOTO_SEVERE_VERBOSITY)
 	  cerr << "SEVERE: Worldline::setMetric(): Kicking particle off z axis\n";
@@ -516,7 +516,7 @@ void Worldline::get_t(double *dest) const
 
 void Worldline::get_xyz(double *x, double *y, double *z) const {
   size_t n;
-  int coordkind = metric_ -> getCoordKind();
+  int coordkind = metric_ -> coordKind();
   switch(coordkind) {
   case GYOTO_COORDKIND_SPHERICAL: 
     for (n=imin_;n<=imax_;++n) {
@@ -542,7 +542,7 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
 			     double * const yprime,  double * const zprime)
 {
   double *x1, *x2, *x3, *x0dot, *x1dot, *x2dot, *x3dot, tauprime;
-  int coordkind = metric_ -> getCoordKind();
+  int coordkind = metric_ -> coordKind();
   size_t di;
   double rprime, thetaprime, phiprime, costheta, sintheta, cosphi, sinphi, r;
 
@@ -653,7 +653,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[imax_];
       if (x2dot) x2dot[di] = x2dot_[imax_];
       if (x3dot) x3dot[di] = x3dot_[imax_];
-      if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
 	double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
 	checkPhiTheta(pos);
 	x2[di]=pos[2];x3[di]=pos[3];x2dot[di]=pos[6];
@@ -698,7 +698,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[curl];
       if (x2dot) x2dot[di] = x2dot_[curl];
       if (x3dot) x3dot[di] = x3dot_[curl];      
-      if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
 	double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
 	checkPhiTheta(pos);
 	x2[di]=pos[2];x3[di]=pos[3];x2dot[di]=pos[6];
@@ -853,7 +853,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
        that could lead theta,phi out of their
        correct ranges.
     */
-    if (metric_->getCoordKind() == GYOTO_COORDKIND_SPHERICAL
+    if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL
 	&& x2 && x3 && x2dot){
       double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
       checkPhiTheta(pos);
@@ -876,7 +876,7 @@ void Worldline::getCoord(double *x0dest,
 }
 
 void Worldline::checkPhiTheta(double coord[8]) const{
-  switch (metric_ -> getCoordKind()) {
+  switch (metric_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     {
     /* Transforms theta and phi in coord so that 
@@ -945,7 +945,7 @@ void Worldline::save_txyz(char * filename) const {
   int width=15;
   int prec=12;
   ofstream fichierxyz(filename);
-  int coordkind = metric_ -> getCoordKind();
+  int coordkind = metric_ -> coordKind();
   switch(coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     for (n=imin_;n<=imax_;++n) {
@@ -996,7 +996,7 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 
   // HEADER
 
-  string metkind = metric_->getKind();
+  string metkind = metric_->kind();
 
   fichierxyz <<   "# Gyoto save file " << endl
 	     <<   "# Start Gyoto parameters" << endl
@@ -1109,7 +1109,7 @@ void Worldline::getCoord(size_t index, double coord[8]) const {
 
 void Worldline::getCartesianPos(size_t index, double dest[4]) const {
   dest[0] = x0_[index];
-  int coordkind = metric_ -> getCoordKind();
+  int coordkind = metric_ -> coordKind();
   switch (coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     dest[1] = x1_[index]*sin(x2_[index])*cos(x3_[index]);

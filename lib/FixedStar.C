@@ -78,7 +78,7 @@ void FixedStar::getCartesian(double const * const , size_t const n_dates,
 			     double * const yprime, 
 			     double * const zprime) {
   double xs, ys, zs;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_CARTESIAN:
     xs= pos_[0];
     ys= pos_[1];
@@ -142,7 +142,7 @@ void FixedStar::setRadius(double r) {
 #   endif
     return;
   }
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rmax_=3.*(pos_[0]+radius_);
     break;

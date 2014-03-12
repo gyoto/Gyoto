@@ -194,7 +194,7 @@ double Screen::getFreqObs(const string &unit) const {
 
 void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
 
-int Screen::getCoordKind()      const { return gg_ -> getCoordKind(); }
+int Screen::coordKind()      const { return gg_ -> coordKind(); }
 double Screen::getDistance()    const { return distance_; }
 double Screen::getDistance(const std::string& unit)    const {
   return Units::FromMeters(getDistance(), unit, gg_); 
@@ -247,7 +247,7 @@ void Screen::setObserverPos(const double coord[4]) {
   //NB: c'est -pi dans mes notes, donc OK [2pi]
   //NB : ne décrit que la rotation de la caméra dans le plan x,y
 
-  int coordkind=gg_ -> getCoordKind();
+  int coordkind=gg_ -> coordKind();
   switch (coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     distance_=coord[1]* gg_ -> unitLength();
@@ -301,7 +301,7 @@ void Screen::getObserverPos(double coord[]) const
   double theta0 = M_PI-euler_[1];
   double phi0 = -M_PI/2-euler_[2];
     
-  int coordkind = gg_ -> getCoordKind();
+  int coordkind = gg_ -> coordKind();
 
   stringstream ss;
 
@@ -476,7 +476,7 @@ void Screen::getRayCoord(double alpha, double delta,
        Assume observer static at infinity ("standard Gyoto")
        Treatment depending on coordinate system
     */
-    switch (gg_ -> getCoordKind()) {
+    switch (gg_ -> coordKind()) {
     case GYOTO_COORDKIND_CARTESIAN:
       {
 	double rr=coord[1]*coord[1]+
@@ -537,7 +537,7 @@ void Screen::getRayCoord(double alpha, double delta,
        (except for z-axis check right below)
     */
 
-    if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+    if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
       if (coord[2]==0. || coord[2]==M_PI)
 	throwError("Please move Screen away from z-axis");
     }
@@ -734,7 +734,7 @@ std::ostream & Screen::printBaseVectors(std::ostream &o) const {
 
 
 void Screen::coordToXYZ(const double pos[4], double xyz[3]) const {
-  int coordkind = gg_ -> getCoordKind();
+  int coordkind = gg_ -> coordKind();
   switch(coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     xyz[0] = pos[1]*sin(pos[2])*cos(pos[3]);
@@ -893,7 +893,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   fmp -> setParameter ("Delta0", delta0_);
   fmp -> setParameter ("Resolution", npix_);
   double d = getDistance();
-  if (gg_() && (gg_->getMass() == 1.)) {
+  if (gg_() && (gg_->mass() == 1.)) {
     d /=  gg_->unitLength();
     fmp -> setParameter ("Distance", &d, 1, &child);
     child -> setSelfAttribute("unit", "geometrical");

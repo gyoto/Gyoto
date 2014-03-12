@@ -328,7 +328,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /**
    * From Screen::gg_.
    */
-  int getCoordKind() const;
+  int coordKind() const;
 
   /// Get distance from observer
   /**

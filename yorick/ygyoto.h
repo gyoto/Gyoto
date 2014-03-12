@@ -286,6 +286,16 @@ void ygyoto_Spectrometer_generic_eval
 	(*OBJ) -> set##MEMBER (ygets_d(iarg), unit?unit:"");	   \
     }
 
+#define YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	ypush_double((*OBJ) -> MEMBER (unit?unit:""));	   \
+      } else							   \
+	(*OBJ) -> MEMBER (ygets_d(iarg), unit?unit:"");	   \
+    }
+
 #define YGYOTO_WORKER_GETSET_DOUBLE(MEMBER)			   \
   if ((iarg=kiargs[++k])>=0) {					   \
       iarg+=*rvset;						   \

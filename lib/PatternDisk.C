@@ -662,7 +662,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 	+(1-cr)*cp*phip3;
     }
 	
-    switch (gg_->getCoordKind()) {
+    switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
 	double pos2[4] = {pos[0], pos[1], pos[2], pos[3]};

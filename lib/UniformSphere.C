@@ -116,7 +116,7 @@ double UniformSphere::operator()(double const coord[4]) {
   double coord_ph[4] = {coord[0]};
   double sintheta;
   getCartesian(coord_st, 1, coord_st+1, coord_st+2, coord_st+3);
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_CARTESIAN:
     memcpy(coord_ph+1, coord+1, 3*sizeof(double));
     break;

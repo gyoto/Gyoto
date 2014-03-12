@@ -71,12 +71,12 @@ PageThorneDisk::~PageThorneDisk() {
 
 void PageThorneDisk::updateSpin() {
   if (!gg_) return;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
-    aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getSpin();
+    aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> getSpin();
+    aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
     break;
   default:
     throwError("PageThorneDisk::getSpin(): unknown COORDKIND");
@@ -96,7 +96,7 @@ void PageThorneDisk::updateSpin() {
 
 void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kind = gg->getKind();
+  string kind = gg->kind();
   if (kind != "KerrBL" && kind != "KerrKS" && kind != "ChernSimons")
     throwError
       ("PageThorneDisk::setMetric(): metric must be KerrBL or KerrKS");
@@ -118,7 +118,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   /*
     From Ibolo, find T, then Bnu(T)
    */
-  double mass=gg_->getMass()*1e3; // in cgs
+  double mass=gg_->mass()*1e3; // in cgs
   double c6=GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS
     *GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS;
   double g2m2=GYOTO_G_CGS*GYOTO_G_CGS*mass*mass;
@@ -145,7 +145,7 @@ double PageThorneDisk::bolometricEmission(double nuem, double dsem,
   //  cout << "r hit= " << coord_obj[1] << endl;
   if (uniflux_) return 1;
   double xx;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     xx=sqrt(coord_obj[1]);
     break;

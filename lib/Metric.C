@@ -41,11 +41,11 @@ Metric::Generic::Generic() :
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 #endif
-  setKind("Unspecified");
+  kind("Unspecified");
 }
 
-Metric::Generic::Generic(const double mass, const int coordkind) :
-  mass_(mass), coordkind_(coordkind),
+Metric::Generic::Generic(const double mas, const int coordkind) :
+  mass_(mas), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX)
 {
@@ -55,7 +55,7 @@ Metric::Generic::Generic(const double mass, const int coordkind) :
   GYOTO_DEBUG_EXPR(coordkind_);
   GYOTO_ENDIF_DEBUG;
 # endif
-  setKind("Unspecified");
+  kind("Unspecified");
 }
 
 Metric::Generic::Generic(const int coordkind) :
@@ -66,13 +66,13 @@ Metric::Generic::Generic(const int coordkind) :
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(coordkind_);
 # endif
-  setKind("Unspecified");
+  kind("Unspecified");
 }
 
 // No copy constructor needed, default is fine
 Metric::Generic * Metric::Generic::clone() const {
   string msg = "Metric::Generic::clone() called: cloning not supported for metric kind ";
-  msg += getKind();
+  msg += kind();
   throwError (msg);
   return const_cast<Metric::Generic*>(this); // to avoid warning
 }
@@ -85,35 +85,35 @@ Metric::Generic::~Generic(){
 
 // Output
 
-const string Metric::Generic::getKind() const {return kind_;}
-void Metric::Generic::setKind(const string src) { kind_ = src;}
+const string Metric::Generic::kind() const {return kind_;}
+void Metric::Generic::kind(const string src) { kind_ = src;}
 
 /***************Definition of the physical scene**************/
 
-void Metric::Generic::setMass(const double mass)        {
-  mass_=mass;
+void Metric::Generic::mass(const double mas)        {
+  mass_=mas;
   tellListeners();
 }
-void Metric::Generic::setMass(const double mass, const string &unit) {
+void Metric::Generic::mass(const double mas, const string &unit) {
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
-  GYOTO_DEBUG_EXPR(mass);
+  GYOTO_DEBUG_EXPR(mas);
   GYOTO_DEBUG_EXPR(unit);
   GYOTO_ENDIF_DEBUG
 # endif
-  setMass(Units::ToKilograms(mass, unit));
+  mass(Units::ToKilograms(mas, unit));
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "(mass="<<mass<<", unit=\"" << unit << "\") : mass_="
+  GYOTO_DEBUG << "(mass="<<mas<<", unit=\"" << unit << "\") : mass_="
 	      << mass_ <<" kg"<< endl;
 # endif
 }
 
-int Metric::Generic::getCoordKind()               const { return coordkind_; }
-void Metric::Generic::setCoordKind(int coordkind)       { coordkind_=coordkind; }
+int Metric::Generic::coordKind()               const { return coordkind_; }
+void Metric::Generic::coordKind(int coordkind)       { coordkind_=coordkind; }
 
-double Metric::Generic::getMass()                 const { return mass_; }
-double Metric::Generic::getMass(const string &unit) const {
-  return Units::FromKilograms(getMass(), unit);
+double Metric::Generic::mass()                 const { return mass_; }
+double Metric::Generic::mass(const string &unit) const {
+  return Units::FromKilograms(mass(), unit);
 }
 
 double Metric::Generic::deltaMin() const {return delta_min_;}
@@ -427,7 +427,7 @@ int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }
 #ifdef GYOTO_USE_XERCES
 void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
-  fmp -> setParameter("Mass", getMass());
+  fmp -> setParameter("Mass", mass());
   if (delta_min_!=GYOTO_DEFAULT_DELTA_MIN)
     fmp -> setParameter("DeltaMin", delta_min_);
   if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
@@ -435,7 +435,7 @@ void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
 }
 
 void Metric::Generic::setParameter(string name, string content, string unit) {
-  if      (name=="Mass")     setMass(atof(content.c_str()), unit);
+  if      (name=="Mass")     mass(atof(content.c_str()), unit);
   else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
   else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
 }
@@ -453,7 +453,7 @@ void Metric::Generic::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
   fmp -> reset();
   while (fmp->getNextParameter(&name, &content)) {
     if(name=="Mass")
-      setMass(atof(content.c_str()), fmp -> getAttribute("unit"));
+      mass(atof(content.c_str()), fmp -> getAttribute("unit"));
   }
 }
 

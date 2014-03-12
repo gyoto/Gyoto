@@ -103,8 +103,8 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // Accessors
   // ---------
  public:
-  void setSpin(const double spin); ///< Set spin
-  double getSpin() const ; ///< Returns spin
+  void spin(const double spin); ///< Set spin
+  double spin() const ; ///< Returns spin
 
   double difftol() const; ///< Get difftol_
   void difftol(double t); ///< Set difftol_

@@ -564,7 +564,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
   }
   
   double rr,zz,phi; //cylindrical coord
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     {
     double rs=co[1];
@@ -619,7 +619,7 @@ void Disk3D::getVelocity(double const pos[4], double vel[4]) {
     double phiprime=velocity_[i[3]*3*nphi_*nz_+i[2]*3*nphi_+i[1]*3+0];
     double zprime=velocity_[i[3]*3*nphi_*nz_+i[2]*3*nphi_+i[1]*3+1];
     double rprime=velocity_[i[3]*3*nphi_*nz_+i[2]*3*nphi_+i[1]*3+2];
-    switch (gg_->getCoordKind()) {
+    switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
 	//Formula from derivation of rsph^2=rcyl^2+zz^2

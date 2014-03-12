@@ -67,12 +67,12 @@ class Gyoto::Metric::KerrKS : public Metric::Generic {
   // ---------------------
  public:
   // default operator= is fine
-  void setSpin(const double spin); ///< Set spin
+  void spin(const double spin); ///< Set spin
 
   // Accessors
   // ---------
  public:
-  double getSpin() const ; ///< Returns spin
+  double spin() const ; ///< Returns spin
   
   double gmunu(const double * x,
 		       int alpha, int beta) const ;

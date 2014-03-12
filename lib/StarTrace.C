@@ -109,7 +109,7 @@ size_t StarTrace::xExpand(int dir) {
 void StarTrace::computeXYZ(size_t i)
 {
   if (!gg_) throwError("Please set metric before calling computeXYZ");
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL: 
     x_[i]=x1_[i]*sin(x2_[i])*cos(x3_[i]);
     y_[i]=x1_[i]*sin(x2_[i])*sin(x3_[i]);
@@ -127,7 +127,7 @@ void StarTrace::computeXYZ(size_t i)
 void StarTrace::computeXYZ()
 {
   size_t n;
-  int coordkind = gg_ -> getCoordKind();
+  int coordkind = gg_ -> coordKind();
   switch(coordkind) {
  case GYOTO_COORDKIND_SPHERICAL: 
     for (n=imin_;n<=imax_;++n) {
@@ -217,7 +217,7 @@ double StarTrace::operator()(double const coord[]) {
   xFill(tmax_);
 
   double x, y, z;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL: 
     x=coord[1]*sin(coord[2])*cos(coord[3]);
     y=coord[1]*sin(coord[2])*sin(coord[3]);

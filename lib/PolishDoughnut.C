@@ -109,7 +109,7 @@ void   PolishDoughnut::setLambda(double lambda) {
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
   lambda_=lambda;  
-  aa_=gg_->getSpin(), aa2_=aa_*aa_;
+  aa_=gg_->spin(), aa2_=aa_*aa_;
 
   double  rms = gg_->getRms();//(3. + z2 - pow((3. - z1)*(3. + z1 +
   //                          2.*z2),1./2.));
@@ -211,7 +211,7 @@ Gyoto::SmartPointer<Gyoto::Metric::Generic> PolishDoughnut::getMetric() const {
 }
 void PolishDoughnut::setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
-  if (met->getKind() != "KerrBL")
+  if (met->kind() != "KerrBL")
     throwError("PolishDoughnut::setMetric(): only KerrBL, please");
   if (gg_) gg_ -> unhook(this);
   gg_ = SmartPointer<Metric::KerrBL>(met);
@@ -637,7 +637,7 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     }
   }
 
-  double Msgr = gg_->getMass()*1e3; // Gyoto speaks in SI --> here cgs
+  double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here cgs
 
   double enthalpy_c=central_density_; // Warning: central_density_ is here
   // p+rho*c2 (enthalpy), not rho; model is different from std doughnut
@@ -810,7 +810,7 @@ void PolishDoughnut::emission(double Inu[], // output
   const_cast<PolishDoughnut*>(this)->getVelocity(coord_obj, vel);
   //double Omega=vel[3]/vel[0];
 
-  double Msgr = gg_->getMass()*1e3; // Gyoto speaks in SI --> here we
+  double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here we
   // switch to cgs units
   double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
 
@@ -1264,7 +1264,7 @@ double PolishDoughnut::transmission(double , double ,
   //Following function returns abs=jnu/Bnu
   //To check: is it always 0?
 
-  /* double Msgr = gg_->getMass()*1e3; // Gyoto speaks in SI --> here we */
+  /* double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here we */
   /* 			             // switch to cgs units */
   /* double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2 */
   /* //  double rcgs = rr * gg_ -> unitLength() * 100.;//rr in cgs */

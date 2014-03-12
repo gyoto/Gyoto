@@ -418,7 +418,7 @@ double Generic::deltaMax(double coord[8]) {
   if (!gg_)
     throwError("Please set metric before calling Astrobj::Generic::deltaMax()");
 
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr=coord[1];
     break;

@@ -77,7 +77,7 @@ KerrBL::KerrBL() :
   difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL),
   delta_max_over_r_(GYOTO_KERRBL_DEFAULT_DELTA_MAX_OVER_R)
 {
-  setKind("KerrBL");
+  kind("KerrBL");
 }
 
 KerrBL::KerrBL(double a, double m) :
@@ -89,7 +89,7 @@ KerrBL::KerrBL(double a, double m) :
   //spin_=0.;
   //setMass(0.);
   //******************
-  setKind("KerrBL");
+  kind("KerrBL");
 
 }
 
@@ -97,7 +97,7 @@ KerrBL::KerrBL(double a, double m) :
 KerrBL::KerrBL(const KerrBL& gg) :
   Metric::Generic(gg), spin_(gg.spin_), difftol_(gg.difftol_),
   delta_max_over_r_(gg.delta_max_over_r_)
-{setKind("KerrBL");}
+{kind("KerrBL");}
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
 
@@ -122,13 +122,13 @@ std::ostream& KerrBL::print( std::ostream& o) const {
 */
 
 // Mutators
-void KerrBL::setSpin(const double spin) {
+void KerrBL::spin(const double spin) {
   spin_=spin;
   tellListeners();
 }
 
 // Accessors
-double KerrBL::getSpin() const { return spin_ ; }
+double KerrBL::spin() const { return spin_ ; }
 
 double KerrBL::difftol() const { return difftol_;}
 void KerrBL::difftol(double t) {difftol_=t;}
@@ -1061,7 +1061,7 @@ void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
 }
 
 void KerrBL::setParameter(string name, string content, string unit) {
-  if      (name=="Spin")          setSpin       (atof(content.c_str()));
+  if      (name=="Spin")          spin          (atof(content.c_str()));
   else if (name=="DiffTol")       difftol       (atof(content.c_str()));
   else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
   else Generic::setParameter(name, content, unit);

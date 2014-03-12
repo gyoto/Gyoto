@@ -133,7 +133,7 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
   }else{
     double rcur=pos[1];
     double risco;
-    switch (gg_->getCoordKind()) {
+    switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
       break;
@@ -181,7 +181,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   double * emiss = const_cast<double*>(getEmissquant());
 
   double risco;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
@@ -304,7 +304,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
   if (!flag_radtransf_) return 0.;
   
   double risco;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
     break;
@@ -393,7 +393,7 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
 
 void DynamicalDisk3D::setMetric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
-  string kind = gg->getKind();
+  string kind = gg->kind();
   if (kind != "KerrBL")
     throwError
       ("DynamicalDisk3D::setMetric(): metric must be KerrBL");

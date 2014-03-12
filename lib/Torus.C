@@ -112,7 +112,7 @@ double Torus::integrateEmission(double nu1, double nu2, double dsem,
 
 double Torus::operator()(double const pos[4]) {
   double drproj, h;
-  switch (gg_->getCoordKind()) {
+  switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     drproj = pos[1]*sin(pos[2])-c_;
     h = pos[1]*cos(pos[2]);
@@ -136,7 +136,7 @@ double Torus::deltaMax(double * coord) {
 
 void Torus::getVelocity(double const pos[4], double vel[4]) {
   double pos2[4] = {pos[0]};
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_CARTESIAN:
     pos2[1] = pos[1];
     pos2[2] = pos[2];

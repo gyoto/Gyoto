@@ -55,7 +55,7 @@ extern "C" {
 
     // Try calling kind-specific worker
     int n=0;
-    const string kind = (*OBJ_)->getKind();
+    const string kind = (*OBJ_)->kind();
 
     while (n<ygyoto_Metric_count && kind.compare(ygyoto_Metric_names[n])) ++n;
 
@@ -133,7 +133,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*OBJ)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->kind().c_str());
   }
 
   YGYOTO_WORKER_SETPARAMETER;
@@ -156,7 +156,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     ypush_double((*OBJ)->ScalarProd(pos, u1, u2));
   }
 
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Mass);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(mass);
 
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMin);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMax);

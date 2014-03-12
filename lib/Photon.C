@@ -188,7 +188,7 @@ int Photon::hit(Astrobj::Properties *data) {
     for (size_t ii=0; ii<nsamples; ++ii) transmission_[ii]=1.;
 
   double rmax=object_ -> getRmax();
-  int coordkind = metric_ -> getCoordKind();
+  int coordkind = metric_ -> coordKind();
 
   int hitt=0;
   //hitted=1 if object is hitted at least one time (hitt can be 0 even

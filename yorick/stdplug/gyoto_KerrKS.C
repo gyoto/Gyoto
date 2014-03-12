@@ -41,7 +41,7 @@ void ygyoto_KerrKS_eval(SmartPointer<Metric::Generic> *gg_, int argc) {
   YGYOTO_WORKER_INIT(Metric, KerrKS, knames, YGYOTO_METRIC_GENERIC_KW_N+2);
 
   YGYOTO_WORKER_SET_UNIT;
-  YGYOTO_WORKER_GETSET_DOUBLE(Spin);
+  YGYOTO_WORKER_GETSET_DOUBLE2(spin);
 
   YGYOTO_WORKER_CALL_GENERIC(Metric);
   
@@ -57,7 +57,7 @@ extern "C" {
   Y_gyoto_KerrKS(int argc)
   {
     YGYOTO_CONSTRUCTOR_INIT(Metric, KerrKS);
-    if ((*OBJ)->getKind() != "KerrKS")
+    if ((*OBJ)->kind() != "KerrKS")
       y_error("Expecting Metric of kind KerrKS");
     ygyoto_KerrKS_eval(gg, argc);
   }

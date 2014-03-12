@@ -88,7 +88,7 @@ void   ThinDisk::setDir(int dir)          { dir_ = dir;  }
 
 double ThinDisk::operator()(double const coord[4])  {
   double theta;
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     theta = coord[2];
     theta -= M_PI*0.5;
@@ -104,7 +104,7 @@ double ThinDisk::operator()(double const coord[4])  {
 }
 
 double ThinDisk::projectedRadius(double const coord[4]) const {
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     return coord[1];
   case GYOTO_COORDKIND_CARTESIAN:
@@ -116,7 +116,7 @@ double ThinDisk::projectedRadius(double const coord[4]) const {
 }
 
 double ThinDisk::sphericalPhi(double const coord[4]) const {
-  switch (gg_ -> getCoordKind()) {
+  switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     return coord[3];
   case GYOTO_COORDKIND_CARTESIAN:
@@ -140,14 +140,14 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
 
-  if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL){
+  if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
     //Allows theta and phi to be in the correct range
     ph->checkPhiTheta(coord1);
     ph->checkPhiTheta(coord2);
   }
   
 
-  if (gg_ -> getCoordKind() == GYOTO_COORDKIND_SPHERICAL &&
+  if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL &&
       fabs(coord2[2]-coord1[2]) > M_PI)
     throwError ("ThinDisk::Impact: fishy heuristic");
 

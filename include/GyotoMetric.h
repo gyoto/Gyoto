@@ -156,8 +156,8 @@ class Gyoto::Metric::Generic
   double delta_max_; ///< Maximum integration step for the adaptive integrator
 
  public:
-  const std::string getKind() const; ///< Get kind_
-  void setKind(const std::string); ///< Set kind_
+  const std::string kind() const; ///< Get kind_
+  void kind(const std::string); ///< Set kind_
   int getRefCount();
   
   // Constructors - Destructor
@@ -165,7 +165,7 @@ class Gyoto::Metric::Generic
   //Metric(const Metric& ) ;                ///< Copy constructor
   Generic();
   Generic(const int coordkind); ///< Constructor setting Generic::coordkind_
-  Generic(const double mass, const int coordkind);
+  Generic(const double m, const int coordkind);
       ///<  Constructor setting Generic::mass_ and Generic::coordkind_
 
   virtual ~Generic() ;                        ///< Destructor
@@ -174,16 +174,16 @@ class Gyoto::Metric::Generic
   // ---------------------
   virtual Generic * clone() const ; ///< Virtual copy constructor
 
-  void setMass(const double);        ///< Set mass used in unitLength()
-  void setMass(const double, const std::string &unit);        ///< Set mass used in unitLength()
+  void mass(const double);        ///< Set mass used in unitLength()
+  void mass(const double, const std::string &unit);        ///< Set mass used in unitLength()
 
   // Accessors
 
-  int getCoordKind() const; ///< Get coordinate kind
-  void setCoordKind(int coordkind); ///< Set coordinate kind
+  int coordKind() const; ///< Get coordinate kind
+  void coordKind(int coordkind); ///< Set coordinate kind
 
-  double getMass() const;        ///< Get mass used in unitLength()
-  double getMass(const std::string &unit) const; ///< Get mass used in unitLength()
+  double mass() const;        ///< Get mass used in unitLength()
+  double mass(const std::string &unit) const; ///< Get mass used in unitLength()
 
   /**
    * Metrics implementations are free to express lengths and distances

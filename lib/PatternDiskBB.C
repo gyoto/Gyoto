@@ -73,7 +73,7 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
   double risco;
   if (risco_>0.) risco=risco_;
   else {
-    switch (gg_->getCoordKind()) {
+    switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
       break;
@@ -111,7 +111,7 @@ double PatternDiskBB::emission(double nu, double dsem,
   double risco;
   if (risco_>0.) risco=risco_;
   else {
-    switch (gg_->getCoordKind()) {
+    switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
       break;
@@ -162,7 +162,7 @@ double PatternDiskBB::emission(double nu, double dsem,
 
 void PatternDiskBB::setMetric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL or alike
-  string kind = gg->getKind();
+  string kind = gg->kind();
   if ((kind != "KerrBL") && (kind != "ChernSimons"))
     throwError
       ("PatternDiskBB::setMetric(): metric must be KerrBL or CS");
