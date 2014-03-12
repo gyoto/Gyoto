@@ -3,7 +3,8 @@ next 2014/03/12
 	* rename functions from setMass/getMass style to mass()/mass() style.
 	  Are concerned the following (new names):
 	  Metric::mass, Metric::coordKind, Metric::kind, Screen::coordKind,
-	  KerrBL::spin, KerrKS::spin
+	  KerrBL::spin, KerrKS::spin, RotStar3_1::integKind,
+	  RotStar3_1::fileName
 
 0.1.0 2013/07/27 ABI 1
 	* add units system

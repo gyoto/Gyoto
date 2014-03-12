@@ -87,11 +87,11 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   virtual RotStar3_1* clone() const ;
            ///< Cloner (uses RotStar3_1(file, integ_kind))
 
-  void setFileName(char const *); ///< Set filename_
-  char const * getFileName() const; ///< Get filename_
+  void fileName(char const *); ///< Set filename_
+  char const * fileName() const; ///< Get filename_
 
-  void setIntegKind(int); ///< Set integ_kind_
-  int getIntegKind() const ; ///< Get integ_kind_
+  void integKind(int); ///< Set integ_kind_
+  int integKind() const ; ///< Get integ_kind_
 
   double deltaMaxOverR() const; ///< Get delta_max_over_r_
   void deltaMaxOverR(double t); ///< Set delta_max_over_r_

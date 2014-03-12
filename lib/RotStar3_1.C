@@ -48,7 +48,7 @@ RotStar3_1::RotStar3_1() :
   integ_kind_(1),
   delta_max_over_r_(GYOTO_ROTSTAR31_DEFAULT_DELTA_MAX_OVER_R)
 {
-  setKind("RotStar3_1");
+  kind("RotStar3_1");
 }
 
 RotStar3_1::RotStar3_1(const RotStar3_1& o) : 
@@ -58,8 +58,8 @@ RotStar3_1::RotStar3_1(const RotStar3_1& o) :
   integ_kind_(o.integ_kind_),
   delta_max_over_r_(o.delta_max_over_r_)
 {
-  setKind("RotStar3_1");
-  setFileName(o.getFileName());
+  kind("RotStar3_1");
+  fileName(o.fileName());
 }
 
 RotStar3_1* RotStar3_1::clone() const {
@@ -81,7 +81,7 @@ RotStar3_1::~RotStar3_1()
 }
 
 
-void RotStar3_1::setFileName(char const * lorene_res) {
+void RotStar3_1::fileName(char const * lorene_res) {
   if (filename_) { delete[] filename_; filename_=NULL; }
   if (star_) {
     const Map& mp=star_ -> get_mp();
@@ -107,10 +107,10 @@ void RotStar3_1::setFileName(char const * lorene_res) {
   tellListeners();
 }
 
-char const * RotStar3_1::getFileName() const { return filename_; }
+char const * RotStar3_1::fileName() const { return filename_; }
 
-void RotStar3_1::setIntegKind(int ik) { integ_kind_ = ik; }
-int RotStar3_1::getIntegKind() const { return integ_kind_; }
+void RotStar3_1::integKind(int ik) { integ_kind_ = ik; }
+int RotStar3_1::integKind() const { return integ_kind_; }
 
 double RotStar3_1::deltaMaxOverR() const { return delta_max_over_r_;}
 void RotStar3_1::deltaMaxOverR(double t) {delta_max_over_r_=t;}
@@ -775,8 +775,8 @@ void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
 }
 
 void RotStar3_1::setParameter(string name, string content, string unit){
-  if      (name=="IntegKind")     setIntegKind(atoi(content.c_str()));
-  else if (name=="File")          setFileName(content.c_str());
+  if      (name=="IntegKind")     integKind(atoi(content.c_str()));
+  else if (name=="File")          fileName(content.c_str());
   else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
   else Generic::setParameter(name, content, unit);
 }
