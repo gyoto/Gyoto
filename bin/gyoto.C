@@ -241,10 +241,10 @@ int main(int argc, char** argv) {
     if (xres)  screen -> setResolution  ( res  );
     else res = screen -> getResolution();
     if (xfov)  screen -> setFieldOfView ( fov  );
-    if (xdist) screen -> setDistance    ( dist );
-    if (xincl) screen -> setInclination ( incl );
-    if (xpaln) screen -> setPALN        ( paln );
-    if (xarg)  screen -> setArgument    ( arg  );
+    if (xdist) screen -> distance       ( dist );
+    if (xincl) screen -> inclination    ( incl );
+    if (xpaln) screen -> PALN           ( paln );
+    if (xarg)  screen -> argument       ( arg  );
     if (xnthreads)  scenery -> setNThreads    ( nthreads  );
 
     if (ipctfile != "") {

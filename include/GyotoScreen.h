@@ -232,7 +232,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /**
    * \param dist Distance in meters.
    */
-  void setDistance(double dist);
+  void distance(double dist);
 
   /// Set ray-tracing maximum distance
   /**
@@ -245,29 +245,29 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * \param dist the distance expressed in the specified unit;
    * \param unit convertible to meters
    */
-  void setDistance(double dist, const std::string unit);
+  void distance(double dist, const std::string unit);
 
   /// Set inclination relative to line-of-sight
   /**
    * Inclination of z-axis relative to line-of-sight, or inclination
    * of equatorial plane relative to plane of the sky, in radians
    */
-  void setInclination(double);
+  void inclination(double);
 
   /// Set inclination relative to line-of-sight
   /**
    * Inclination of z-axis relative to line-of-sight, or inclination
    * of equatorial plane relative to plane of the sky, in specified unit.
    */
-  void setInclination(double, const std::string &unit);
+  void inclination(double, const std::string &unit);
 
-  void setPALN(double);
+  void PALN(double);
            ///< Set position angle of the line of nodes
-  void setPALN(double, const std::string &unit);
+  void PALN(double, const std::string &unit);
            ///< Set position angle of the line of nodes
-  void setArgument(double);
+  void argument(double);
            ///< Set angle beetwen line of nodes and X axis of object
-  void setArgument(double, const std::string &unit);
+  void argument(double, const std::string &unit);
            ///< Set angle beetwen line of nodes and X axis of object
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spectro);
            ///< Set Screen::spectro_
@@ -334,13 +334,13 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /**
    * In meters.
    */
-  double getDistance() const;
+  double distance() const;
 
   /// Get distance from observer
   /**
    * In specified unit.
    */
-  double getDistance(const std::string&) const;	 ///< Get distance from observer
+  double distance(const std::string&) const;	 ///< Get distance from observer
 
   /// Get maximum ray-tracing distance
   /**
@@ -353,19 +353,19 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * Inclination of z-axis relative to line-of-sight, or inclination
    * of equatorial plane relative to plane of the sky, in radians.
    */
-  double getInclination() const;
+  double inclination() const;
 
   /// Get inclination relative to line-of-sight
   /**
    * Inclination of z-axis relative to line-of-sight, or inclination
    * of equatorial plane relative to plane of the sky, in specified unit.
    */
-  double getInclination(const std::string&) const;
+  double inclination(const std::string&) const;
 
-  double getPALN() const;	 ///< Get position angle of the line of nodes
-  double getPALN(const std::string&) const;	 ///< Get position angle of the line of nodes
-  double getArgument() const;	 ///< Get angle between line of nodes and X axis of object
-  double getArgument(const std::string&) const;	 ///< Get angle between line of nodes and X axis of object
+  double PALN() const;	 ///< Get position angle of the line of nodes
+  double PALN(const std::string&) const;	 ///< Get position angle of the line of nodes
+  double argument() const;	 ///< Get angle between line of nodes and X axis of object
+  double argument(const std::string&) const;	 ///< Get angle between line of nodes and X axis of object
 
   SmartPointer<Metric::Generic> getMetric() const; ///< Get Screen::gg_
   void setMetric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_

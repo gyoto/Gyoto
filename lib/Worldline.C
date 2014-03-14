@@ -1018,9 +1018,9 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 	     <<   "#            t1 = " << t1 << endl;
 
   if (sc)
-    fichierxyz << "#          incl = " << sc -> getInclination()*rad2deg << endl
-	       << "#          paln = " << sc -> getPALN()*rad2deg << endl
-	       << "#         phase = " << sc -> getArgument()*rad2deg << endl
+    fichierxyz << "#          incl = " << sc -> inclination()*rad2deg << endl
+	       << "#          paln = " << sc -> PALN()*rad2deg << endl
+	       << "#         phase = " << sc -> argument()*rad2deg << endl
 	       << "#      distance = " << distance_kpc << endl;
 
   fichierxyz <<   "#   length_unit = \"" << unit << "\"" << endl

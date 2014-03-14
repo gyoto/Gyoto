@@ -121,10 +121,10 @@ void Screen::setProjection(const double dist,
   setProjection(paln, incl, arg);
 }
 
-void Screen::setDistance(double dist, const string unit)    {
-  setDistance(Units::ToMeters(dist, unit, gg_));
+void Screen::distance(double dist, const string unit)    {
+  distance(Units::ToMeters(dist, unit, gg_));
 }
-void Screen::setDistance(double dist)    {
+void Screen::distance(double dist)    {
   distance_=dist;
   computeBaseVectors();
 }
@@ -138,42 +138,42 @@ void Screen::setDmax(double dist) {
 double Screen::getDmax() const { return dmax_; }
 
 
-void Screen::setPALN(double paln, const string &unit)        {
+void Screen::PALN(double paln, const string &unit)        {
   if ((unit=="") || (unit=="rad"));
 # ifdef HAVE_UDUNITS
   else paln = Units::Converter(unit, "rad")(paln);
 # else
   else if (unit=="degree" || unit=="°") paln *= GYOTO_DEGRAD;
 # endif
-  setPALN(paln);
+  PALN(paln);
 }
-void Screen::setPALN(double paln)        {
+void Screen::PALN(double paln)        {
   euler_[0]=paln; computeBaseVectors();
 }
 
-void Screen::setInclination(double incl, const string &unit) { 
+void Screen::inclination(double incl, const string &unit) { 
   if ((unit=="") || (unit=="rad"));
 # ifdef HAVE_UDUNITS
   else incl = Units::Converter(unit, "rad")(incl);
 # else
   else if (unit=="degree" || unit=="°") incl *= GYOTO_DEGRAD;
 # endif
-  setInclination(incl);
+  inclination(incl);
 }
-void Screen::setInclination(double incl) {
+void Screen::inclination(double incl) {
   euler_[1]=incl; computeBaseVectors();
 }
 
-void Screen::setArgument(double arg, const string &unit) { 
+void Screen::argument(double arg, const string &unit) { 
   if (unit=="" || unit=="rad");
 # ifdef HAVE_UDUNITS
   else arg = Units::Converter(unit, "rad")(arg);
 # else
   else if (unit=="degree" || unit=="°") arg *= GYOTO_DEGRAD;
 # endif
-  setArgument(arg);
+  argument(arg);
 }
-void Screen::setArgument(double arg)     {
+void Screen::argument(double arg)     {
   euler_[2]=arg;  computeBaseVectors();
 }
 
@@ -195,13 +195,13 @@ double Screen::getFreqObs(const string &unit) const {
 void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
 
 int Screen::coordKind()      const { return gg_ -> coordKind(); }
-double Screen::getDistance()    const { return distance_; }
-double Screen::getDistance(const std::string& unit)    const {
-  return Units::FromMeters(getDistance(), unit, gg_); 
+double Screen::distance()    const { return distance_; }
+double Screen::distance(const std::string& unit)    const {
+  return Units::FromMeters(distance(), unit, gg_); 
 }
-double Screen::getPALN()        const { return euler_[0]; }
-double Screen::getPALN(const string &unit) const {
-  double paln = getPALN();
+double Screen::PALN()        const { return euler_[0]; }
+double Screen::PALN(const string &unit) const {
+  double paln = PALN();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
     paln = Units::Converter(unit, "rad")(paln);
@@ -212,9 +212,9 @@ double Screen::getPALN(const string &unit) const {
   return paln;
 }
 
-double Screen::getInclination() const { return euler_[1]; }
-double Screen::getInclination(const string &unit) const {
-  double incl = getInclination();
+double Screen::inclination() const { return euler_[1]; }
+double Screen::inclination(const string &unit) const {
+  double incl = inclination();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
     incl = Units::Converter(unit, "rad")(incl);
@@ -225,9 +225,9 @@ double Screen::getInclination(const string &unit) const {
   return incl;
 }
 
-double Screen::getArgument()    const { return euler_[2]; }
-double Screen::getArgument(const string &unit) const {
-  double arg = getArgument();
+double Screen::argument()    const { return euler_[2]; }
+double Screen::argument(const string &unit) const {
+  double arg = argument();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
     arg = Units::Converter(unit, "rad")(arg);
@@ -892,7 +892,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   fmp -> setParameter ("Alpha0", alpha0_);
   fmp -> setParameter ("Delta0", delta0_);
   fmp -> setParameter ("Resolution", npix_);
-  double d = getDistance();
+  double d = distance();
   if (gg_() && (gg_->mass() == 1.)) {
     d /=  gg_->unitLength();
     fmp -> setParameter ("Distance", &d, 1, &child);
@@ -916,9 +916,9 @@ void Screen::fillElement(FactoryMessenger *fmp) {
   }
   if (dmax_ != GYOTO_SCREEN_DMAX) child -> setSelfAttribute("dmax", dmax_);
   delete child; child = NULL;
-  fmp -> setParameter ("PALN", getPALN());
-  fmp -> setParameter ("Inclination", getInclination());
-  fmp -> setParameter ("Argument", getArgument());
+  fmp -> setParameter ("PALN", PALN());
+  fmp -> setParameter ("Inclination", inclination());
+  fmp -> setParameter ("Argument", argument());
   if (spectro_) {
     child = fmp -> makeChild("Spectrometer");
     spectro_ -> fillElement(child) ;
@@ -982,13 +982,13 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Distance")    
       {
-	scr -> setDistance    ( atof(tc), unit );
+	scr -> distance    ( atof(tc), unit );
 	string dmax = fmp -> getAttribute("dmax");
 	if (dmax != "") scr -> setDmax(atof(dmax.c_str()));
       }
-    else if (name=="PALN")        scr -> setPALN        ( atof(tc), unit );
-    else if (name=="Inclination") scr -> setInclination ( atof(tc), unit );
-    else if (name=="Argument")    scr -> setArgument    ( atof(tc), unit );
+    else if (name=="PALN")        scr -> PALN        ( atof(tc), unit );
+    else if (name=="Inclination") scr -> inclination ( atof(tc), unit );
+    else if (name=="Argument")    scr -> argument    ( atof(tc), unit );
     else if (name=="FieldOfView") {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
