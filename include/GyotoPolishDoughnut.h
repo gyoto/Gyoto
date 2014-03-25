@@ -60,7 +60,7 @@ class Gyoto::Astrobj::PolishDoughnut
 
  // Data : 
  // -----
-private:
+protected:
   /**
    * \brief KerrBL metric
    *
@@ -227,9 +227,9 @@ protected:
   ///< Mahadevan 96 fit function
  // PURELY INTERNAL TO ASTROBJ
  // --------------------------
-private:
- double potential(double r, double theta) const;
- ///< Potential defining shape, used by operator()()
+ private:
+  double potential(double r, double theta) const;
+  ///< Potential defining shape, used by operator()()
 
  /**
   * \class Gyoto::Astrobj::PolishDoughnut::intersection_t
@@ -244,11 +244,12 @@ private:
   */
   class intersection_t : public Gyoto::Functor::Double_Double_const {
   public:
-    double aa_; ///< Metric spin
-    double aa2_;///< aa_<SUP>2</SUP>
-    double l0_; ///< Torus angular momentum
+    intersection_t(PolishDoughnut* parent);
+    PolishDoughnut * papa;
     virtual double operator() (double) const;
   };
+  friend intersection_t;
+
  /**
   * \class Gyoto::Astrobj::PolishDoughnut::transcendental_t
   * \brief double transcendental(double) Functor class

@@ -60,7 +60,7 @@ PolishDoughnut::PolishDoughnut() :
   use_specific_impact_(0),
   //aa_ and aa2_ are set by setLambda()
   spectral_oversampling_(10),
-//intersection doesn't need initilizing
+  intersection(this),
   komissarov_(0)
 {  
 #ifdef GYOTO_DEBUG_ENABLED
@@ -85,10 +85,11 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   use_specific_impact_(orig.use_specific_impact_),
   aa_(orig.aa_),
   aa2_(orig.aa2_),
-		 spectral_oversampling_(orig.spectral_oversampling_),
-		 intersection(orig.intersection),
-		 komissarov_(orig.komissarov_)
+  spectral_oversampling_(orig.spectral_oversampling_),
+  intersection(orig.intersection),
+  komissarov_(orig.komissarov_)
 {
+  intersection.papa=this;
   if (orig.gg_()) {
     gg_=orig.gg_->clone();
     Standard::gg_ = gg_;
@@ -131,11 +132,6 @@ void   PolishDoughnut::setLambda(double lambda) {
   double r2_min = rms ; 
   double r2_max = 1000. ;
  
-  // update intersection functor:
-  intersection.aa_=aa_;
-  intersection.aa2_=aa2_;
-  intersection.l0_=l0_;
-
   r_cusp_   = intersection.ridders(r1_min, r1_max) ;
   r_centre_ = intersection.ridders(r2_min, r2_max) ;
   W_surface_ = potential(r_cusp_, M_PI/2.) ;
@@ -1341,11 +1337,17 @@ double PolishDoughnut::funcxM(double alpha1, double alpha2,
 
 // Intersection of the constant angular momentum l0 with the Keplerian one
 //double PolishDoughnut::intersection(double rr) const
+PolishDoughnut::intersection_t::intersection_t(PolishDoughnut*parent)
+  : papa(parent)
+{
+}
+
 double PolishDoughnut::intersection_t::operator()(double rr) const
   
 {
-  double y = ((rr*rr - 2.*aa_*sqrt(rr) + aa2_)/(pow(rr,3./2.) 
-						- 2.*sqrt(rr) + aa_)) - l0_ ;
+  double y = ((rr*rr - 2.*papa->aa_*sqrt(rr) +
+	       papa->aa2_)/(pow(rr,3./2.) 
+			    - 2.*sqrt(rr) + papa->aa_)) - papa->l0_ ;
   
   return y ;   // y = 0 gives 2 intersections, 
   //the cusp and the central radius of the torus
