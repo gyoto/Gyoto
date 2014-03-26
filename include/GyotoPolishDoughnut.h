@@ -248,7 +248,7 @@ protected:
     PolishDoughnut * papa;
     virtual double operator() (double) const;
   };
-  friend intersection_t;
+  friend class intersection_t;
 
  /**
   * \class Gyoto::Astrobj::PolishDoughnut::transcendental_t
