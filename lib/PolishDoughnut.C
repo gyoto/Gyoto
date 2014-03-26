@@ -637,7 +637,6 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 
   double enthalpy_c=central_density_; // Warning: central_density_ is here
   // p+rho*c2 (enthalpy), not rho; model is different from std doughnut
-  double beta = beta_; // magnetic pressure parameter at torus center
 
   double g_tt=gg_->gmunu(coord_ph,0,0),
     g_pp=gg_->gmunu(coord_ph,3,3),
@@ -649,10 +648,7 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     g_tpc=gg_->gmunu(posc,0,3),
     LLc=g_tpc*g_tpc-g_ttc*g_ppc;
 
-  double pc = enthalpy_c*(W_centre_-W_surface_)
-    /((CST_POLY_INDEX+1.)*(1+1./beta_)),
-    pmc = pc/beta_,
-    kappa = pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
+  double kappa = pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
     /((CST_POLY_INDEX+1)*(1+1./beta_)),
     kappam = pow(LLc,-CST_POLY_INDEX_M1)/beta_*kappa;
 
@@ -671,25 +667,26 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 
   double magnetic_pressure = kappam*pow(LL,CST_POLY_INDEX_M1)*pow(enthalpy,1.+CST_POLY_INDEX_M1);
 
-  double bphi = sqrt(2*magnetic_pressure/(g_pp+2*l0_*g_tp+l0_*l0_*g_tt));
+  double bphi = sqrt(24.*M_PI*magnetic_pressure/(g_pp+2*l0_*g_tp+l0_*l0_*g_tt));
+  //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
+  // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
 
-  double b4vec[4]={bphi*l0_,0,0,bphi}; // B 4-vector in BL frame
+  double b4vec[4]={bphi*l0_,0,0,bphi};            // B 4-vector in BL frame
+             // this vector is orthogonal to the fluid 4-vel, so it already
+             // leaves in the comoving rest space, no need ot project
 
   double vel[4]; // 4-velocity of emitter
   const_cast<PolishDoughnut*>(this)->getVelocity(coord_obj, vel);
 
-  double photon_emframe[4]; // photon tgt vector projected in emitter frame
-  double b_emframe[4]; // mag. field vector projected in emitter frame
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
   for (int ii=0;ii<4;ii++){
     photon_emframe[ii]=coord_ph[ii+4]
       +vel[ii]*gg_->ScalarProd(coord_ph,coord_ph+4,vel);
-    b_emframe[ii]=b4vec[ii]
-      +vel[ii]*gg_->ScalarProd(coord_ph,b4vec,vel);
   }
 
-  double bnorm = gg_->ScalarProd(coord_ph,b_emframe,b_emframe);
+  double bnorm = gg_->ScalarProd(coord_ph,b4vec,b4vec);
   if (bnorm<=0.) throwError("In PolishDoughnut::emission_komissarov"
-			   " b_emframe should be spacelike");
+			   " b should be spacelike");
   bnorm=sqrt(bnorm);
 
   double lnorm = gg_->ScalarProd(coord_ph,photon_emframe,photon_emframe);
@@ -697,7 +694,7 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 			   " photon_emframe should be spacelike");
   lnorm=sqrt(lnorm);
 
-  double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b_emframe);
+  double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b4vec);
   double theta_mag = acos(lscalb/(lnorm*bnorm)),
     sth = sin(theta_mag), cth = cos(theta_mag);
   
