@@ -85,11 +85,11 @@ protected:
   */
  double centraltemp_over_virial_; ///< T<SUB>center</SUB>/T<SUB>virial</SUB>
  double beta_; ///< P<SUB>magn</SUB>/P<SUB>gas</SUB>
- int use_specific_impact_ ;///< Use PolishDoughnut::Impact_() or Standard::Impact()
  double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
  double aa2_; ///< aa_<SUP>2</SUP>
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
  bool komissarov_; ///< 1 if Komissarov model is integrated
+ bool angle_averaged_; ///< 1 if Komissarov model should be angle averaged
 
  // Constructors - Destructor
  // -------------------------
@@ -142,25 +142,12 @@ public:
 
  virtual Gyoto::SmartPointer<Gyoto::Metric::Generic> getMetric() const;
  virtual void setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
- void useSpecificImpact(int yes=1); ///< Set PolishDoughnut::use_specific_impact_
 
  // ASTROBJ API
  // -----------
- /**
-  * Depending on PolishDoughnut::use_specific_impact_. See useSpecificImpact().
-  */
  int Impact(Photon *ph, size_t index,
 			    Astrobj::Properties *data);
- ///< Call either PolishDoughnut::Impact() or Standard::Impact()
 
- /**
-  * This should not be better than Standard::Impact(). Call
-  * useSpecificImpact() or Set &lt;UseSpecifictImpact/&gt; in the XML
-  * file to use it.
-  */
- int Impact_(Photon *ph, size_t index,
-			    Astrobj::Properties *data);
- ///< A specific implementation of Generic::Impact()
  virtual double operator()(double const coord[4]) ;
 
  virtual int setParameter(std::string name,
@@ -220,6 +207,18 @@ protected:
 		       double alpha1, double alpha2,
 		       double alpha3, double preff,
 		       int comptonorder) const;
+
+  double emissionSynchro_komissarov_direction(double Theta_elec, 
+					      double number_density,
+					      double nuem,
+					      double nuc, 
+					      double theta
+					      ) const;
+  double emissionSynchro_komissarov_averaged(double Theta_elec, 
+					     double number_density,
+					     double nuem,
+					     double nuc 
+					     ) const;
   ///< Synchrotron proxy for emission()
   double transmission(double nuem, double dsem, double coord_ph[8]) const ;
   double BBapprox(double nuem, double Te) const; ///< Approximated Black-Body function
