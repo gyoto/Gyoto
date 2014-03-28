@@ -1,10 +1,12 @@
-next 2014/03/12
+next 2014/03/28
 	* Give access to some numerical parameters of the RK4 integrator
 	* rename functions from setMass/getMass style to mass()/mass() style.
 	  Are concerned the following (new names):
+	  all::metric,
 	  Metric::mass, coordKind, kind,
 	  KerrBL::spin, KerrKS::spin, RotStar3_1::integKind, fileName
 	  Screen::coordKind, distance, PALN, argument, inclination,
+	  Astrobj::rMax,
 
 0.1.0 2013/07/27 ABI 1
 	* add units system

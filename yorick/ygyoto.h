@@ -199,7 +199,7 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_CAT1(X, Y) X##Y
 #define YGYOTO_CAT(X, Y) YGYOTO_CAT1(X,Y)
 
-#define YGYOTO_CONSTRUCTOR_INIT1(BASENAME, BASECLASS, DERIVEDCLASS)	\
+#define YGYOTO_CONSTRUCTOR_INIT2(BASENAME, BASECLASS, DERIVEDCLASS, GETTER)\
   Gyoto::SmartPointer<BASECLASS> *OBJ = NULL;				\
   if (yarg_##BASENAME(argc-1)) {					\
     OBJ = yget_##BASENAME(--argc);					\
@@ -208,7 +208,7 @@ void ygyoto_Spectrometer_generic_eval
     char * fname = ygets_q(argc-1);					\
     OBJ = ypush_##BASENAME();						\
     GYOTO_DEBUG_EXPR(OBJ);						\
-    * OBJ = Gyoto::Factory(fname).get##BASENAME();			\
+    * OBJ = Gyoto::Factory(fname).GETTER();			\
     GYOTO_DEBUG << "Swapping object for filename\n";			\
     yarg_swap(0, argc);							\
     GYOTO_DEBUG << "Dropping filename from stack\n";			\
@@ -226,7 +226,8 @@ void ygyoto_Spectrometer_generic_eval
     yarg_drop(1);							\
     --argc;								\
   }
-
+#define YGYOTO_CONSTRUCTOR_INIT1(BASENAME, BASECLASS, DERIVEDCLASS)    \
+  YGYOTO_CONSTRUCTOR_INIT2(BASENAME, BASECLASS, DERIVEDCLASS, get##BASENAME)
 #define YGYOTO_CONSTRUCTOR_INIT(BASE, KIND) \
   YGYOTO_CONSTRUCTOR_INIT1(BASE, Gyoto::BASE::Generic, Gyoto::BASE::KIND)
 
@@ -359,6 +360,19 @@ void ygyoto_Spectrometer_generic_eval
     }								   \
   }
 
+#define YGYOTO_WORKER_GETSET_OBJECT2(MEMBER,YMEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+    iarg+=*rvset;						   \
+    if (yarg_nil(iarg)) {					   \
+      GYOTO_DEBUG << "pushing " #MEMBER << std::endl;		   \
+      if ((*rvset)++) y_error("Only one return value possible");   \
+      *ypush_##YMEMBER () = (*OBJ) -> MEMBER ();		   \
+    } else {							   \
+      GYOTO_DEBUG << "setting " #MEMBER << std::endl;		   \
+      (*OBJ) -> MEMBER (*yget_##YMEMBER (kiargs[k]));	   \
+    }								   \
+  }
+
 #define YGYOTO_WORKER_SET_UNIT		 \
   if ((iarg=kiargs[++k])>=0) {		 \
     iarg+=*rvset;			 \
@@ -484,7 +498,7 @@ void ygyoto_Spectrometer_generic_eval
       ypush_long(yarg_##NAME(0));					\
     }									\
   }
-#define YGYOTO_BASE_CONSTRUCTOR(BASE)					\
+#define YGYOTO_BASE_CONSTRUCTOR1(BASE,GETBASE)					\
   extern "C" {								\
   void Y_gyoto_##BASE(int argc)	{					\
     Gyoto::SmartPointer<Gyoto::BASE::Generic> *OBJ = NULL;		\
@@ -504,7 +518,7 @@ void ygyoto_Spectrometer_generic_eval
       } else {								\
 	GYOTO_DEBUG << "found no subcontractor for \"" << fname		\
 		    << "\", calling Factory now\n";			\
-	*OBJ = Factory(fname).get##BASE();				\
+	*OBJ = Factory(fname).GETBASE();				\
       }									\
       yarg_swap(0, argc);						\
       yarg_drop(1);							\
@@ -513,7 +527,8 @@ void ygyoto_Spectrometer_generic_eval
     gyoto_##BASE##_eval(OBJ, argc);					\
   }									\
 }
-
+#define YGYOTO_BASE_CONSTRUCTOR(BASE)					\
+  YGYOTO_BASE_CONSTRUCTOR1(BASE,get##BASE)
 
 /*
 

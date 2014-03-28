@@ -74,7 +74,7 @@ extern "C" {
   void
   Y_gyoto_KerrBL(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Metric, KerrBL);
+    YGYOTO_CONSTRUCTOR_INIT2(Metric, Metric::Generic, KerrBL, metric);
     if ((*OBJ)->kind() != "KerrBL")
       y_error("Expecting Metric of kind KerrBL");
     ygyoto_KerrBL_eval(OBJ, argc);

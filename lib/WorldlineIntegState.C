@@ -32,7 +32,7 @@ using namespace Gyoto;
 Worldline::IntegState::IntegState(Worldline * line,
 				   const double coord[8], const double delta) :
   line_(line),
-  gg_(line->getMetric()),
+  gg_(line->metric()),
   delta_(delta),
   adaptive_(line->adaptive())
 {

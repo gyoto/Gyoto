@@ -121,7 +121,8 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   ///< Remove i-th element from the array.
   size_t getCardinal() const;
   ///< Get the number of elements in the array.
-  void setMetric(SmartPointer<Metric::Generic> gg);
+  using Generic::metric;
+  void metric(SmartPointer<Metric::Generic> gg);
   ///< Set metric in each element.
 
  public:

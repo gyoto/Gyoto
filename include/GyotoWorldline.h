@@ -118,8 +118,8 @@ class Gyoto::Worldline
   size_t getI0() const; ///< Get index of initial condition
 
   virtual double getMass() const = 0; ///< Get mass of particule.
-  void   setMetric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
-  SmartPointer<Metric::Generic> getMetric() const; ///< Get metric
+  void   metric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
+  SmartPointer<Metric::Generic> metric() const; ///< Get metric
   virtual void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
 
   /**

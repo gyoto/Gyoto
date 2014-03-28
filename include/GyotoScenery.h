@@ -200,11 +200,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
  public:
   // Accessors
   // ---------
-  SmartPointer<Metric::Generic> getMetric(); ///< Get Scenery::gg_
+  SmartPointer<Metric::Generic> metric(); ///< Get Scenery::gg_
   /**
    * The provided Metric will also be atached to the Screen and the Astrobj.
    */
-  void setMetric(SmartPointer<Metric::Generic>);  ///< Set Scenery::gg_
+  void metric(SmartPointer<Metric::Generic>);  ///< Set Scenery::gg_
   SmartPointer<Screen> getScreen(); ///< Get Scenery::screen_
 
   /**

@@ -35,7 +35,7 @@ using namespace YGyoto;
 // Needed by the YGYOTO_WORKER_* macros
 
 YGYOTO_YUSEROBJ(Metric, Metric::Generic)
-YGYOTO_BASE_CONSTRUCTOR(Metric)
+YGYOTO_BASE_CONSTRUCTOR1(Metric,metric)
 
 static char ygyoto_Metric_names[YGYOTO_TYPE_LEN][YGYOTO_MAX_REGISTERED]
 ={{0}};

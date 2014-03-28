@@ -105,7 +105,8 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   // ---------
  public:
 
-  void setMetric(SmartPointer<Metric::Generic> gg);
+  using Generic::metric;
+  void metric(SmartPointer<Metric::Generic> gg);
   virtual int setParameter(std::string name,
 			   std::string content,
 			   std::string unit);

@@ -44,7 +44,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   char * unit = NULL;
 
   YGYOTO_WORKER_SET_UNIT;
-  YGYOTO_WORKER_GETSET_OBJECT(Metric);
+  YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
 
   /* INITCOORD */
   if ((iarg=kiargs[++k])>=0) {
@@ -72,16 +72,16 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	  if (vtot==4) for (int ii=0; ii<4; ++ii) coord[ii+4]=vel[ii];
 	  else if (vtot==3) {
 	    for (int ii=0; ii<3; ++ii) coord[ii+5]=vel[ii];
-	    if (!(*ph)->getMetric())
+	    if (!(*ph)->metric())
 	      y_error("METRIC should have been set already");
-	    (*ph)->getMetric()->nullifyCoord(coord);
+	    (*ph)->metric()->nullifyCoord(coord);
 	  } else y_error("VEL should have 3 or 4 elements");
 	}
       } else {
 	SmartPointer<Screen> sc = NULL;
 	if (yarg_Scenery(iarg)) { // initcoord=scenery,i,j or senery,da,dd
 	  SmartPointer<Scenery> *scenery = yget_Scenery(iarg);
-	  (*ph) -> setMetric((*scenery)->getMetric());
+	  (*ph) -> metric((*scenery)->metric());
 	  (*ph) -> setAstrobj((*scenery)->getAstrobj());
 	  sc = (*scenery)->getScreen();
 	} else sc = *yget_Screen(iarg); //initcoord=screen,i,j or screen, da, dd

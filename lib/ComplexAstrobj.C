@@ -47,7 +47,7 @@ Complex::Complex(const Complex& o) :
       elements_[i] = o[i]->clone();
     }
   }
-  setMetric(gg_); // to set the same metric in all elements
+  metric(gg_); // to set the same metric in all elements
 }
 Complex *Complex::clone() const {return new Complex(*this); }
 
@@ -57,17 +57,17 @@ Complex::~Complex()
   if (cardinal_) for (size_t i=0; i< cardinal_; ++i) elements_[i] = NULL;
 }
 
-void Complex::setMetric(SmartPointer<Metric::Generic> gg)
+void Complex::metric(SmartPointer<Metric::Generic> gg)
 {
-  Generic::setMetric(gg);
+  Generic::metric(gg);
   for (size_t i=0; i<cardinal_; ++i) {
     if (debug()) {
-      cerr << "DEBUG: Complex::setMetric(gg): ";
+      cerr << "DEBUG: Complex::metric(gg): ";
       cerr << "elements_["<<i<<"] is a ";
       cerr << elements_[i]->getKind();
       cerr << ". Setting metric." << endl;
     }
-    elements_[i]->setMetric(gg_);
+    elements_[i]->metric(gg_);
   }
 }
 
@@ -85,8 +85,8 @@ void Complex::append(SmartPointer<Generic> e)
   delete [] orig; orig = NULL;
   elements_[cardinal_] = e;
   ++cardinal_;
-  if (gg_) e->setMetric(gg_);
-  else gg_ = e->getMetric();
+  if (gg_) e->metric(gg_);
+  else gg_ = e->metric();
   if (debug())
     cerr << "DEBUG: out Complex::append(SmartPointer<Generic> e)" << endl;
 }
@@ -170,7 +170,7 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
 void Complex::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
-  fmp -> setMetric (getMetric()) ;
+  fmp -> metric (metric()) ;
 
   for (size_t i=0; i<cardinal_; ++i) {
     childfmp = fmp -> makeChild ( "SubAstrobj" );
@@ -188,7 +188,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   string name="", content="", unit="";
   FactoryMessenger * child = NULL;
 
-  setMetric( fmp->getMetric() );
+  metric( fmp->metric() );
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (debug())

@@ -61,7 +61,7 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 
   }
 
-  setMetric(met);
+  metric(met);
   setInitCoord(pos, v);
   setRadius(rad);
 }
@@ -82,10 +82,10 @@ Star::~Star() {
 string Star::className() const { return  string("Star"); }
 string Star::className_l() const { return  string("star"); }
 
-SmartPointer<Metric::Generic> Star::getMetric() const { return gg_; }
-void Star::setMetric(SmartPointer<Metric::Generic> gg) {
-  UniformSphere::setMetric(gg);
-  Worldline::setMetric(gg);
+SmartPointer<Metric::Generic> Star::metric() const { return gg_; }
+void Star::metric(SmartPointer<Metric::Generic> gg) {
+  UniformSphere::metric(gg);
+  Worldline::metric(gg);
 }
 
 void Star::setInitialCondition(double coord[8]) {
@@ -107,10 +107,10 @@ void Star::getCartesian(double const * const t,
 }
 
 
-double Star::getRmax() {
+double Star::rMax() {
   // rmax may not be up to date. Assume it's OK if it's non-0 warning:
   // if line is extended, need to either update rmax or reset it to 0
-  // if (debug()) cerr << "DEBUG: Star::getRmax(): rmax_set_==" 
+  // if (debug()) cerr << "DEBUG: Star::rMax(): rmax_set_==" 
   //                   << rmax_set_ << endl;
   if (!rmax_set_ && !rmax_) {
     size_t i;

@@ -367,8 +367,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   double argument() const;	 ///< Get angle between line of nodes and X axis of object
   double argument(const std::string&) const;	 ///< Get angle between line of nodes and X axis of object
 
-  SmartPointer<Metric::Generic> getMetric() const; ///< Get Screen::gg_
-  void setMetric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_
+  SmartPointer<Metric::Generic> metric() const; ///< Get Screen::gg_
+  void metric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_
 
   /// Get observing date in seconds
   double getTime();

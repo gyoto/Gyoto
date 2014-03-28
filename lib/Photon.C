@@ -52,7 +52,7 @@ Photon::Photon(const Photon& o) :
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
-    object_ -> setMetric(metric_);
+    object_ -> metric(metric_);
   }
   if (o.spectro_()) {
     spectro_ = o.spectro_ -> clone();
@@ -187,7 +187,7 @@ int Photon::hit(Astrobj::Properties *data) {
   if (spectro_() && (nsamples = spectro_->getNSamples()))
     for (size_t ii=0; ii<nsamples; ++ii) transmission_[ii]=1.;
 
-  double rmax=object_ -> getRmax();
+  double rmax=object_ -> rMax();
   int coordkind = metric_ -> coordKind();
 
   int hitt=0;

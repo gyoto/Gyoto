@@ -192,7 +192,7 @@ double Screen::getFreqObs(const string &unit) const {
 }
 
 
-void Screen::setMetric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
+void Screen::metric(SmartPointer<Metric::Generic> gg) { gg_ = gg; computeBaseVectors(); }
 
 int Screen::coordKind()      const { return gg_ -> coordKind(); }
 double Screen::distance()    const { return distance_; }
@@ -238,7 +238,7 @@ double Screen::argument(const string &unit) const {
   return arg;
 }
 
-SmartPointer<Metric::Generic> Screen::getMetric() const { return gg_; }
+SmartPointer<Metric::Generic> Screen::metric() const { return gg_; }
 
 void Screen::setObserverPos(const double coord[4]) {
   tobs_ = coord[0] * gg_ -> unitLength() / GYOTO_C;
@@ -886,7 +886,7 @@ void Gyoto::Screen::unmapPixUnit() {
 #ifdef GYOTO_USE_XERCES
 void Screen::fillElement(FactoryMessenger *fmp) {
   FactoryMessenger* child = NULL;
-  if (gg_) fmp -> setMetric (gg_) ;
+  if (gg_) fmp -> metric (gg_) ;
   fmp -> setParameter ("Time", tobs_);
   fmp -> setParameter ("FieldOfView", fov_);
   fmp -> setParameter ("Alpha0", alpha0_);
@@ -935,7 +935,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   string name="", content="", unit="", tunit="";
   SmartPointer<Screen> scr = new Screen();
-  scr -> setMetric(fmp->getMetric());
+  scr -> metric(fmp->metric());
   int tobs_found=0;
   double tobs_tmp, pos[4] ;
   char * tc;

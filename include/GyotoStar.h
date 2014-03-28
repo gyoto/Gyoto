@@ -130,8 +130,8 @@ class Gyoto::Astrobj::Star :
   virtual std::string className() const ; ///< "Star"
   virtual std::string className_l() const ; ///< "star"
 
-  virtual void setMetric(SmartPointer<Metric::Generic>);
-  virtual SmartPointer<Metric::Generic> getMetric() const;
+  virtual void metric(SmartPointer<Metric::Generic>);
+  virtual SmartPointer<Metric::Generic> metric() const;
 
   /**
    * The mass of a Star is always 1. Stars do not perturb the
@@ -141,8 +141,8 @@ class Gyoto::Astrobj::Star :
   virtual double getMass() const ; ///< Return 1.
 
  public:
-  using UniformSphere::getRmax;
-  virtual double getRmax();
+  using UniformSphere::rMax;
+  virtual double rMax();
   virtual void unsetRmax();
   //  void setCoordSys(int); ///< Get coordinate system for integration
   //  int  getCoordSys(); ///< Set coordinate system for integration

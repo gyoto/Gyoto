@@ -391,13 +391,13 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
 }
 
 
-void DynamicalDisk3D::setMetric(SmartPointer<Metric::Generic> gg) {
+void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
   string kind = gg->kind();
   if (kind != "KerrBL")
     throwError
-      ("DynamicalDisk3D::setMetric(): metric must be KerrBL");
-  Disk3D::setMetric(gg);
+      ("DynamicalDisk3D::metric(): metric must be KerrBL");
+  Disk3D::metric(gg);
 }
 
 int DynamicalDisk3D::setParameter(std::string name,

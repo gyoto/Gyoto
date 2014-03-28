@@ -159,9 +159,9 @@ void StarTrace::setInitCoord(const double coord[8], int dir)
   computeXYZ();
 }
 
-void StarTrace::setMetric(SmartPointer<Metric::Generic> gg)
+void StarTrace::metric(SmartPointer<Metric::Generic> gg)
 {
-  Star::setMetric(gg);
+  Star::metric(gg);
   computeXYZ();
 }
 

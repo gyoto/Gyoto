@@ -115,10 +115,10 @@ class Gyoto::FactoryMessenger {
    * An Gyoto XML file may contain at most a single Metric section
    * and it may be present about anywhere in the XML tree. Individual
    * subcontractors should not try to interpret this section directly,
-   * but should call getMetric() to find and interpret the Metric
+   * but should call metric() to find and interpret the Metric
    * section.
    */
-  SmartPointer<Metric::Generic>  getMetric  () ;
+  SmartPointer<Metric::Generic>  metric  () ;
   ///< Build and get the Metric described in this XML file 
 
   /**
@@ -256,7 +256,7 @@ class Gyoto::FactoryMessenger {
    * At most one Metric section may be present in a give Gyoto XML file.
    *
    * When an object's fillElement() method is called, if this object
-   * is connected to a Metric, it should call setMetric() with this
+   * is connected to a Metric, it should call metric() with this
    * Metric. Very often, the Metric will already have been set
    * previously. The Factory will check that all the objects in the
    * hierarchy are attached to the same Metric instance, and save this
@@ -266,28 +266,28 @@ class Gyoto::FactoryMessenger {
    * To make things clearer: Assume "scenery" is a fully filled
    * Scenery. scenery->fillElement(messenger) will call:
    * \code
-   * messenger->setMetric(Scenery::gg_)
+   * messenger->metric(Scenery::gg_)
    * messenger->setScreen(Scenery::screen_)
    * messenger->setAstrobj(Scenery::obj_);
    * \endcode
    *
    * The Factory will then call screen_->fillElement(child_messenger)
    * and obj_->fillElement(child_messenger), each of which will also
-   * call setMetric(). If the same Metric is connected to the Astrobj,
+   * call metric(). If the same Metric is connected to the Astrobj,
    * to the Screen and to the Scenery, all is well. Else, you have a
    * bug to fix.
    */
-  void setMetric(SmartPointer<Metric::Generic>);
+  void metric(SmartPointer<Metric::Generic>);
   ///< Set the Metric
 
   /**
-   * Same as setMetric(), but for the Astrobj.
+   * Same as metric(), but for the Astrobj.
    */
   void setAstrobj(SmartPointer<Astrobj::Generic>);
   ///< Set the Astrobj
 
   /**
-   * Same as setMetric(), but for the Screen.
+   * Same as metric(), but for the Screen.
    */
   void setScreen(SmartPointer<Screen>);
   ///< Set the Screen

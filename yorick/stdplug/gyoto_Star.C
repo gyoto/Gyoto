@@ -54,7 +54,7 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
-  YGYOTO_WORKER_GETSET_OBJECT(Metric);
+  YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
 
   /* INITCOORD */
   if ((iarg=kiargs[++k])>=0) { //initcoord
@@ -78,16 +78,16 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 	if ((*paUsed)++) y_error(pmsg);
 	v=ygeta_d(piargs[0]+*rvset, &vtot, 0);
 	if (vtot!=3) y_error("V should have 3 elements");
-	if (!(*ao)->getMetric())
+	if (!(*ao)->metric())
 	  y_error("Please set metric before setting initial condition");
-	tdot0=(*ao)->getMetric()->SysPrimeToTdot(pos, v);
+	tdot0=(*ao)->metric()->SysPrimeToTdot(pos, v);
 	coord[4]=tdot0;
 	for (n=0; n<3; ++n) coord[5+n]=v[n]*tdot0;
       } else if (ptot==8) {
 	for (n=4; n<8; ++n) coord[n]=pos[n];
       } else if (ptot==7) {
 	v=pos+4;
-	tdot0=(*ao)->getMetric()->SysPrimeToTdot(pos, v);
+	tdot0=(*ao)->metric()->SysPrimeToTdot(pos, v);
 	coord[4]=tdot0;
 	for (n=0; n<3; ++n) coord[5+n]=v[n]*tdot0;
       } else y_error("Not enough information to set initial condition");

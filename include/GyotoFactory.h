@@ -80,7 +80,7 @@ namespace Gyoto {
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
  *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->getScreen();
  *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->getAstrobj();
- *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->getMetric();
+ *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
  *  delete factory; factory=NULL;
  * \endcode or, for a single object and without checking the kind
  * (getKind()) first:
@@ -194,7 +194,7 @@ class Gyoto::Factory
   /// Find Scenery element, instanciate it and get it.
   /**
    * Scenery must be the root element. getScenery() will call
-   * getMetric(), getAstrobj() and getScreen().
+   * metric(), getAstrobj() and getScreen().
    */
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
 
@@ -203,7 +203,7 @@ class Gyoto::Factory
    * Metric may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Metric::Generic>  getMetric();
+  Gyoto::SmartPointer<Gyoto::Metric::Generic>  metric();
 
   /// Find Screen element, instanciate it and get it.
   /**
@@ -254,7 +254,7 @@ class Gyoto::Factory
    * SmartPointers must point to the same instance or an error will be
    * thrown using Gyoto::throwError().
    */
-  void setMetric(SmartPointer<Metric::Generic> gg, xercesc::DOMElement *el);
+  void metric(SmartPointer<Metric::Generic> gg, xercesc::DOMElement *el);
 
   /// Set Astrobj for this document.
   /**

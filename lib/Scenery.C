@@ -57,8 +57,8 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
   quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0),
   maxiter_(GYOTO_DEFAULT_MAXITER)
 {
-  if (screen_) screen_->setMetric(gg_);
-  if (obj_) obj_->setMetric(gg_);
+  if (screen_) screen_->metric(gg_);
+  if (obj_) obj_->metric(gg_);
 }
 
 Scenery::Scenery(const Scenery& o) :
@@ -74,11 +74,11 @@ Scenery::Scenery(const Scenery& o) :
   if (o.gg_()) gg_=o.gg_->clone();
   if (o.screen_()) {
     screen_=o.screen_->clone();
-    screen_->setMetric(gg_);
+    screen_->metric(gg_);
   }
   if (o.obj_()) {
     obj_=o.obj_->clone();
-    obj_->setMetric(gg_);
+    obj_->metric(gg_);
   }
 }
 Scenery * Scenery::clone() const { return new Scenery(*this); }
@@ -106,26 +106,26 @@ Scenery::~Scenery() {
   obj_ = NULL;
  }
 
-SmartPointer<Metric::Generic> Scenery::getMetric() { return gg_; }
+SmartPointer<Metric::Generic> Scenery::metric() { return gg_; }
 
-void Scenery::setMetric(SmartPointer<Metric::Generic> met) {
+void Scenery::metric(SmartPointer<Metric::Generic> met) {
   gg_ = met;
   if (!screen_) screen_ = new Screen ();
-  screen_ -> setMetric(gg_);
-  if (obj_) obj_ -> setMetric(gg_);
+  screen_ -> metric(gg_);
+  if (obj_) obj_ -> metric(gg_);
 }
 
 SmartPointer<Screen> Scenery::getScreen() { return screen_; }
 
 void Scenery::setScreen(SmartPointer<Screen> screen) {
   screen_ = screen;
-  if (gg_) screen_ -> setMetric (gg_) ;
+  if (gg_) screen_ -> metric (gg_) ;
 }
 
 SmartPointer<Astrobj::Generic> Scenery::getAstrobj() { return obj_; }
 void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
   obj_ = obj;
-  if (gg_) obj_ -> setMetric (gg_) ;
+  if (gg_) obj_ -> metric (gg_) ;
 }
 
 double Scenery::getDelta() const { return delta_; }
@@ -589,9 +589,9 @@ size_t Scenery::maxiter() const { return maxiter_; }
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "fmp -> setMetric (gg_) ;" << endl;
+  GYOTO_DEBUG << "fmp -> metric (gg_) ;" << endl;
 # endif
-  if (gg_)     fmp -> setMetric (gg_) ;
+  if (gg_)     fmp -> metric (gg_) ;
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> setScreen (screen_) ;" << endl;
@@ -640,7 +640,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
   SmartPointer<Astrobj::Generic> ao = NULL;
   string squant = "";
 
-  gg = fmp->getMetric();
+  gg = fmp->metric();
   scr= fmp->getScreen();
   ao = fmp->getAstrobj();
 

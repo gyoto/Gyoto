@@ -277,11 +277,11 @@ int main(int argc, char** argv) {
       fits_report_error(stderr, status);
       if (status) return status;
 
-      double dt = tobs * GYOTO_C / scenery -> getMetric() -> unitLength()
+      double dt = tobs * GYOTO_C / scenery -> metric() -> unitLength()
 	- ipcttime;
       for (size_t i=0; i < ipctnelt; i+=8)
 	if (impactcoords[i] != DBL_MAX) impactcoords[i] += dt;
-      ipcttime = tobs * GYOTO_C / scenery -> getMetric() -> unitLength();
+      ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
     }
 
     Quantity_t quantities = scenery -> getRequestedQuantities();
@@ -370,7 +370,7 @@ int main(int argc, char** argv) {
       // Allocate if requested AND not provided
       cerr << "gyoto.C: allocating data->impactcoords" << endl;
       data->impactcoords = impactcoords = new double [res*res*16];
-      ipcttime = tobs * GYOTO_C / scenery -> getMetric() -> unitLength();
+      ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
     }
     if (quantities & GYOTO_QUANTITY_USER1) {
       data->user1=vect+offset*(curquant++);

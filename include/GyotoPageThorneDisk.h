@@ -93,9 +93,10 @@ class Gyoto::Astrobj::PageThorneDisk
   // Accessors
   // ---------
  public:
-  virtual void setMetric(SmartPointer<Metric::Generic>);
+  virtual void metric(SmartPointer<Metric::Generic>);
   ///< Set metric, checking that it is either KerrBL or KerrKS
 
+ private:
   virtual void updateSpin() ;
   ///< Get spin from metric, which must be KerrBL or KerrKS
 

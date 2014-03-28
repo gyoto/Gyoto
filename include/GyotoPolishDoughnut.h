@@ -140,8 +140,8 @@ public:
  double getRcentre() const; ///< Get PolishDoughnut::r_centre_
 
 
- virtual Gyoto::SmartPointer<Gyoto::Metric::Generic> getMetric() const;
- virtual void setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
+ virtual Gyoto::SmartPointer<Gyoto::Metric::Generic> metric() const;
+ virtual void metric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
  void useSpecificImpact(int yes=1); ///< Set PolishDoughnut::use_specific_impact_
 
  // ASTROBJ API

@@ -201,12 +201,12 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   /**
    * Maximum distance from the center of the coordinate system at
    * which a photon may hit the object.  Child classes may choose to
-   * update rmax at all time or to use it to cache the value, for
-   * instance when getRmax() is called. External classes (Photons in
-   * particular) must use getRmax() to access this information.
+   * update rMax at all time or to use it to cache the value, for
+   * instance when rMax() is called. External classes (Photons in
+   * particular) must use rMax() to access this information.
    *
-   * rmax_set_==1 means that rmax_ was set using setRmax() or the
-   * constructor. In this case, getRmax() must always return this
+   * rMax_set_==1 means that rMax_ was set using rMax() or the
+   * constructor. In this case, rMax() must always return this
    * value, not recompute it.
    *
    * rmax_ is in geometrical units.
@@ -214,8 +214,8 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   double rmax_; ///< Maximum distance to the center of the coordinate system [geometrical units]
 
   /**
-   * rmax_set_==1 means that rmax_ was set using setRmax() or the
-   * constructor. In this case, getRmax() must always return this
+   * rmax_set_==1 means that rmax_ was set using rMax(double r) or the
+   * constructor. In this case, rMax() must always return this
    * value, not recompute it.
    *
    * Use unsetRmax() to reset rmax_set_ to 0.
@@ -280,12 +280,12 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   /**
    * \brief Get the Metric Generic::gg_
    */
-  virtual SmartPointer<Metric::Generic> getMetric() const;
+  virtual SmartPointer<Metric::Generic> metric() const;
 
   /**
    * \brief Set the Metric Generic::gg_
    */
-  virtual void setMetric(SmartPointer<Metric::Generic>) ;
+  virtual void metric(SmartPointer<Metric::Generic>) ;
 
   /**
    *  Get maximal distance from center of coordinate system at which a
@@ -293,20 +293,20 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *  
    *  Child classes may use the rmax_ member to cache this value.
    *
-   *  It can also be set using setRmax(). If setRmax has been used
-   *  to set rmax_, getRmax() must not recompute it.
+   *  It can also be set using rmax(). If rmax has been used
+   *  to set rmax_, rMax() must not recompute it.
    *
    *  \return rmax_ in geometrical units
    */
-  virtual double getRmax(); ///< Get maximal distance from center of coordinate system
+  virtual double rMax(); ///< Get maximal distance from center of coordinate system
 
   /**
-   *  Call getRmax() and convert result to unit.
+   *  Call rMax() and convert result to unit.
    *
    *  \param unit string
    *  \return double rmax converted to unit
    */
-  virtual double getRmax(std::string unit); ///< Get rmax_ is specified unit
+  virtual double rMax(std::string unit); ///< Get rmax_ is specified unit
 
   /// Get max step constraint for adaptive integration
   /**
@@ -324,20 +324,20 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *  Side effect: set rmax_set_ to 1.
    *  \param val new rmax_ in geometrical units.
    */
-  virtual void setRmax(double val); ///< Set maximal distance from center of coordinate system
+  virtual void rMax(double val); ///< Set maximal distance from center of coordinate system
 
   /**
-   *  Call Generic::setRmax(double val) after converting val from unit
+   *  Call Generic::rMax(double val) after converting val from unit
    *  to geometrical units.
    *
    *  \param val rmax_ expressed in unit "unit";
    *  \param unit string...
    */
-  virtual void setRmax(double val, std::string unit); ///< Set maximal distance from center of coordinate system
+  virtual void rMax(double val, std::string unit); ///< Set maximal distance from center of coordinate system
 
   /**
-   * getRmax() will then be free to recompute rmax_. Astrobjs
-   * which cache rmax_ may need to update it when unsetRmax() is
+   * rmax() will then be free to recompute rmax_. Astrobjs
+   * which cache rmax_ may need to update it when unrmax() is
    * called.
    */
   virtual void unsetRmax() ; ///< Set rmax_set_ to 0.

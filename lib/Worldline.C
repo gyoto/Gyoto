@@ -232,7 +232,7 @@ size_t Worldline::xExpand(int dir) {
   return retval;
 }
 
-void Worldline::setMetric(SmartPointer<Metric::Generic> gg) {
+void Worldline::metric(SmartPointer<Metric::Generic> gg) {
   // Unhook from previous metric
   if (metric_) metric_ -> unhook(this);
 
@@ -255,7 +255,7 @@ void Worldline::tell(Gyoto::Hook::Teller* msg) {
 
 #ifdef GYOTO_USE_XERCES
 void Worldline::fillElement(FactoryMessenger *fmp) const {
-  if (metric_)     fmp -> setMetric (metric_) ;
+  if (metric_)     fmp -> metric (metric_) ;
 
   if (imin_ <= imax_) {
     double coord[8];
@@ -288,7 +288,7 @@ void Worldline::setParameters(FactoryMessenger* fmp) {
   if (!fmp) return;
   string name="", content="", unit="";
   wait_pos_ = 1;
-  setMetric(fmp->getMetric());
+  metric(fmp->metric());
   while (fmp->getNextParameter(&name, &content, &unit))
     setParameter(name, content, unit);
   wait_pos_ = 0;
@@ -331,7 +331,7 @@ int Worldline::setParameter(std::string name,
   return 0;
 }
 
-SmartPointer<Metric::Generic> Worldline::getMetric() const { return metric_; }
+SmartPointer<Metric::Generic> Worldline::metric() const { return metric_; }
 
 string Worldline::className() const { return  string("Worldline"); }
 string Worldline::className_l() const { return  string("worldline"); }
@@ -396,7 +396,7 @@ void Worldline::reInit() {
       if ( metric_() -> coordKind() == GYOTO_COORDKIND_SPHERICAL 
 	   && x2_[i0_]==0. ) {
 	if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	  cerr << "SEVERE: Worldline::setMetric(): Kicking particle off z axis\n";
+	  cerr << "SEVERE: Worldline::metric(): Kicking particle off z axis\n";
 	x2_[i0_]=coord[2]=1e-10;
       }
       metric_ -> setParticleProperties(this,coord);

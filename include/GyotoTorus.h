@@ -139,8 +139,8 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
    */
   virtual SmartPointer<Spectrum::Generic> getOpacity() const;
 
-  using Standard::getRmax;
-  virtual double getRmax();
+  using Standard::rMax;
+  virtual double rMax();
 
   //XML I/O
  public:

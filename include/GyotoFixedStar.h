@@ -79,7 +79,8 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
  public:
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
-  virtual void setMetric(SmartPointer<Metric::Generic> metric) ;
+  using Generic::metric;
+  virtual void metric(SmartPointer<Metric::Generic> metric) ;
   using UniformSphere::setRadius;
   virtual void setRadius(double radius); ///< Set radius
   void setPos(const double[3]); ///< Set pos_ array

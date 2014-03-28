@@ -94,13 +94,13 @@ void PageThorneDisk::updateSpin() {
   if (rin_==0.) rin_=(3.+z2-sqrt((3.-z1)*(3.+z1+2.*z2)));
 }
 
-void PageThorneDisk::setMetric(SmartPointer<Metric::Generic> gg) {
+void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kind = gg->kind();
   if (kind != "KerrBL" && kind != "KerrKS" && kind != "ChernSimons")
     throwError
-      ("PageThorneDisk::setMetric(): metric must be KerrBL or KerrKS");
-  ThinDisk::setMetric(gg);
+      ("PageThorneDisk::metric(): metric must be KerrBL or KerrKS");
+  ThinDisk::metric(gg);
   updateSpin();
   gg->hook(this);
 }
@@ -301,7 +301,7 @@ int PageThorneDisk::setParameter(std::string name,
 
 #ifdef GYOTO_USE_XERCES
 void PageThorneDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->setMetric(gg_);
+  fmp->metric(gg_);
   ThinDisk::fillElement(fmp);
 }
 #endif

@@ -160,13 +160,13 @@ double PatternDiskBB::emission(double nu, double dsem,
   return 0.;
 }
 
-void PatternDiskBB::setMetric(SmartPointer<Metric::Generic> gg) {
+void PatternDiskBB::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL or alike
   string kind = gg->kind();
   if ((kind != "KerrBL") && (kind != "ChernSimons"))
     throwError
-      ("PatternDiskBB::setMetric(): metric must be KerrBL or CS");
-  ThinDisk::setMetric(gg);
+      ("PatternDiskBB::metric(): metric must be KerrBL or CS");
+  ThinDisk::metric(gg);
 }
 
 int PatternDiskBB::setParameter(std::string name,

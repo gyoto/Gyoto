@@ -89,8 +89,9 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   
   double const * getVelocity() const ;
   void getVelocity(double const pos[4], double vel[4])  ;
-  
-  void setMetric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL or alike
+
+  using Generic::metric;
+  void metric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL or alike
 
  public:
 #ifdef GYOTO_USE_XERCES

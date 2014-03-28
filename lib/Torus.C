@@ -83,7 +83,7 @@ void Torus::setSpectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 SmartPointer<Spectrum::Generic> Torus::getOpacity() const { return opacity_; }
 void Torus::setOpacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
 
-double Torus::getRmax() {
+double Torus::rMax() {
   if (!rmax_set_ && rmax_==DBL_MAX) { rmax_ = 3.*(c_+sqrt(critical_value_)); }
   return rmax_ ;
 }
@@ -167,7 +167,7 @@ int Torus::setParameter(std::string name,
 void Torus::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
-  fmp -> setMetric (gg_) ;
+  fmp -> metric (gg_) ;
   fmp -> setParameter ("LargeRadius", c_);
   fmp -> setParameter ("SmallRadius", sqrt(critical_value_));
 
@@ -189,7 +189,7 @@ void Torus::setParameters(FactoryMessenger* fmp) {
   SmartPointer<Spectrum::Generic> sp = NULL;
   FactoryMessenger * child = NULL;
 
-  setMetric(fmp->getMetric());
+  metric(fmp->metric());
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Spectrum") {

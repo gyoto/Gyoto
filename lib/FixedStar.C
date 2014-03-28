@@ -121,11 +121,11 @@ double const * FixedStar::getPos() const { return pos_; }
 void FixedStar::getPos(double dst[3]) const
 { for (int i=0; i<3;++i) dst[i]=pos_[i]; }
 
-void FixedStar::setMetric(SmartPointer<Metric::Generic> gg) {
+void FixedStar::metric(SmartPointer<Metric::Generic> gg) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
- Generic::setMetric(gg);
+ Generic::metric(gg);
  setRadius(radius_);
 }
 

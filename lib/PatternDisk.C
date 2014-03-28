@@ -778,7 +778,7 @@ void PatternDisk::fillElement(FactoryMessenger *fmp) const {
 
 void PatternDisk::setParameters(FactoryMessenger* fmp) {
   string name, content, unit;
-  setMetric(fmp->getMetric());
+  metric(fmp->metric());
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
     else setParameter(name, content, unit);

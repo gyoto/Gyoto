@@ -260,7 +260,7 @@ int UniformSphere::setParameter(string name, string content, string unit) {
 void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
-  fmp -> setMetric (getMetric()) ;
+  fmp -> metric (metric()) ;
   fmp -> setParameter ("Radius", getRadius());
 
   childfmp = fmp -> makeChild ( "Spectrum" );
@@ -287,9 +287,9 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
   FactoryMessenger * child = NULL;
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "setMetric()" << endl;
+  GYOTO_DEBUG << "metric()" << endl;
 # endif
-  setMetric(fmp->getMetric());
+  metric(fmp->metric());
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Spectrum") {

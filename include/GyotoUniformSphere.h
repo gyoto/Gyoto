@@ -116,10 +116,10 @@ class Gyoto::Astrobj::UniformSphere :
       ///< Standard constructor
 
  /**
-  * Create UniformSphere object. Use setMetric(), setRadius(),
+  * Create UniformSphere object. Use metric(), setRadius(),
   * setSpectrum() and setOpacity() to set the members.
   * 
-  * \param kind: specifi kind (e.g. "Star" or "FixedStar")
+  * \param kind: specify kind (e.g. "Star" or "FixedStar")
   */
   UniformSphere(std::string kind); ///< Default constructor
   

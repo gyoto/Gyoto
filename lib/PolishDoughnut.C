@@ -202,13 +202,13 @@ PolishDoughnut::~PolishDoughnut() {
   if (gg_) gg_ -> unhook(this);
 }
 
-Gyoto::SmartPointer<Gyoto::Metric::Generic> PolishDoughnut::getMetric() const {
+Gyoto::SmartPointer<Gyoto::Metric::Generic> PolishDoughnut::metric() const {
   return SmartPointer<Metric::Generic>(gg_);
 }
-void PolishDoughnut::setMetric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
+void PolishDoughnut::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
   if (met->kind() != "KerrBL")
-    throwError("PolishDoughnut::setMetric(): only KerrBL, please");
+    throwError("PolishDoughnut::metric(): only KerrBL, please");
   if (gg_) gg_ -> unhook(this);
   gg_ = SmartPointer<Metric::KerrBL>(met);
   Generic::gg_ = gg_;
@@ -1554,7 +1554,7 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
 
 #ifdef GYOTO_USE_XERCES
 void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
-  fmp->setMetric(gg_);
+  fmp->metric(gg_);
   fmp->setParameter("Lambda", lambda_);
   fmp->setParameter("CentralDensity", central_density_);
   fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);

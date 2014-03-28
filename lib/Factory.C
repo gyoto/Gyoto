@@ -226,7 +226,7 @@ void Factory::setReporter(ErrorHandler* eh) {
 DOMElement * Factory::getRoot() { return root_; }
 DOMDocument * Factory::getDoc() { return doc_; }
 
-SmartPointer<Gyoto::Metric::Generic> Factory::getMetric() {
+SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
   if (!gg_) {
     DOMElement *MetricDOM;
 
@@ -384,7 +384,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::getSpectrometer(){
 
 SmartPointer<Scenery> Factory::getScenery () {
   if (!scenery_) {
-    scenery_ = new Scenery(getMetric(), getScreen(), getAstrobj());
+    scenery_ = new Scenery(metric(), getScreen(), getAstrobj());
     DOMXPathResult* result;
     DOMElement *tmpEl;
 
@@ -431,7 +431,7 @@ const string Factory::getKind() { return kind_ ; }
 Factory::Factory(SmartPointer<Scenery> sc)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
-    scenery_(sc), gg_(sc->getMetric()),
+    scenery_(sc), gg_(sc->metric()),
     screen_(sc->getScreen()), obj_(sc->getAstrobj()),
     photon_(NULL), spectro_(NULL), filename_("")
 {
@@ -456,7 +456,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
 Factory::Factory(SmartPointer<Screen> scr)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
-    scenery_(NULL), gg_(scr->getMetric()), screen_(scr), obj_(),
+    scenery_(NULL), gg_(scr->metric()), screen_(scr), obj_(),
     photon_(NULL), spectro_(NULL), filename_("")
 {
   XMLPlatformUtils::Initialize();
@@ -534,7 +534,7 @@ Factory::Factory(SmartPointer<Spectrum::Generic> sp)
 Factory::Factory(SmartPointer<Photon> ph)
   : reporter_(NULL), parser_(NULL), resolver_(NULL), 
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
-    scenery_(NULL), gg_(ph->getMetric()), obj_(ph->getAstrobj()),
+    scenery_(NULL), gg_(ph->metric()), obj_(ph->getAstrobj()),
     photon_(ph), spectro_(NULL), filename_("")
 {
   XMLPlatformUtils::Initialize();
@@ -571,7 +571,7 @@ Factory::Factory(SmartPointer<Spectrometer::Generic> sp)
 
 }
 
-void Factory::setMetric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
+void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 
   if (gg_ && gg && gg!= gg_) throwError("Inconsistent use of Metrics");
   if (gg && !gg_el_) {
@@ -858,12 +858,12 @@ void FactoryMessenger::setScreen(SmartPointer<Screen> gg) {
   employer_ -> setScreen (gg, element_);
 }
 
-void FactoryMessenger::setMetric(SmartPointer<Metric::Generic> gg) {
-  employer_ -> setMetric (gg, element_);
+void FactoryMessenger::metric(SmartPointer<Metric::Generic> gg) {
+  employer_ -> metric (gg, element_);
 }
 
-SmartPointer<Metric::Generic> FactoryMessenger::getMetric() {
-  return employer_ -> getMetric ();
+SmartPointer<Metric::Generic> FactoryMessenger::metric() {
+  return employer_ -> metric ();
 }
 
 SmartPointer<Screen> FactoryMessenger::getScreen() {

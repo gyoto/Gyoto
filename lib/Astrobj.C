@@ -94,28 +94,28 @@ Generic::~Generic() {
 #endif
 }
 
-SmartPointer<Metric::Generic> Generic::getMetric() const { return gg_; }
-void Generic::setMetric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
+SmartPointer<Metric::Generic> Generic::metric() const { return gg_; }
+void Generic::metric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
 
-double Generic::getRmax() {
+double Generic::rMax() {
   return rmax_;
 }
 
-double Generic::getRmax(string unit) {
-  return Units::FromGeometrical(getRmax(), unit, gg_);
+double Generic::rMax(string unit) {
+  return Units::FromGeometrical(rMax(), unit, gg_);
 }
 
 const string Generic::getKind() const {
   return kind_;
 }
 
-void Generic::setRmax(double val) {
+void Generic::rMax(double val) {
   rmax_set_=1;
   rmax_=val;
 }
 
-void Generic::setRmax(double val, string unit) {
-  setRmax(Units::ToGeometrical(val, unit, gg_));
+void Generic::rMax(double val, string unit) {
+  rMax(Units::ToGeometrical(val, unit, gg_));
 }
 
 void Generic::unsetRmax() {
@@ -125,7 +125,7 @@ void Generic::unsetRmax() {
 #ifdef GYOTO_USE_XERCES
 void Generic::fillElement(FactoryMessenger *fmp) const {
   if (rmax_set_) fmp -> setParameter ( "RMax", rmax_ ) ;
-  fmp -> setMetric(gg_);
+  fmp -> metric(gg_);
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
 }
@@ -133,7 +133,7 @@ void Generic::fillElement(FactoryMessenger *fmp) const {
 void Generic::setParameters(FactoryMessenger *fmp) {
   string name="", content="", unit="";
   if (fmp) {
-    setMetric(fmp->getMetric());
+    metric(fmp->metric());
     while (fmp->getNextParameter(&name, &content, &unit))
       setParameter(name, content, unit);
   }
@@ -149,7 +149,7 @@ int Generic::setParameter(string name, string content, string unit)  {
   if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
-  else if (name=="RMax") setRmax(atof(tc), unit);
+  else if (name=="RMax") rMax(atof(tc), unit);
   else return 1;
   return 0;
 }
@@ -429,7 +429,7 @@ double Generic::deltaMax(double coord[8]) {
     throwError("Incompatible coordinate kind in Astrobj.C");
   }
 
-  if (rr<getRmax()) h1max=1.; else h1max=DBL_MAX;
+  if (rr<rMax()) h1max=1.; else h1max=DBL_MAX;
   return h1max;
 }
 
