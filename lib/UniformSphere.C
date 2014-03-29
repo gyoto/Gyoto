@@ -165,7 +165,7 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   // then I_nu integrated over a band is \propto g^(4-alpha_)
   // not simply g^3 as in the standard case 
   double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
-  SmartPointer<Spectrometer::Generic> spr = ph -> getSpectrometer();
+  SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot

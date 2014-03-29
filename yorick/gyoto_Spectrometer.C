@@ -35,7 +35,7 @@ static ygyoto_Spectrometer_eval_worker_t *ygyoto_Spectrometer_evals[YGYOTO_MAX_R
 static int ygyoto_Spectrometer_count=0;
 
 YGYOTO_YUSEROBJ(Spectrometer, Spectrometer::Generic)
-YGYOTO_BASE_CONSTRUCTOR(Spectrometer)
+YGYOTO_BASE_CONSTRUCTOR1(Spectrometer,spectrometer)
 
 extern "C" {
   void gyoto_Spectrometer_eval(void *obj, int argc) {

@@ -343,8 +343,8 @@ void Screen::getScreen3(double output[]) const{
 
 /* SPECTROMETER */
 
-void Screen::setSpectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=spr; }
-SmartPointer<Spectrometer::Generic> Screen::getSpectrometer() const { return spectro_; }
+void Screen::spectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=spr; }
+SmartPointer<Spectrometer::Generic> Screen::spectrometer() const { return spectro_; }
 
 void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   const double delta= fov_/double(npix_);
@@ -994,7 +994,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
     else if (name=="Spectrometer") {
-      scr -> setSpectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
+      scr -> spectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
     }
     else if (name=="Alpha0"){
       alpha0 = atof(tc); alpha0_found=1;

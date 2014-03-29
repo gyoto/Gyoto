@@ -238,7 +238,7 @@ class Gyoto::Factory
    * Spectrometer may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>  getSpectrometer();
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>  spectrometer();
 
   // XML OUTPUT
   /// Write constructed XML representation to file

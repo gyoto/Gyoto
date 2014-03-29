@@ -99,7 +99,7 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
   double coord[8];
   screen -> getRayCoord(d_alpha, d_delta, coord);
   Worldline::setInitialCondition(met, coord, -1);
-  setSpectrometer(screen);
+  spectrometer(screen);
 }
 
 Photon::~Photon() {}
@@ -135,11 +135,11 @@ void Photon::astrobj(SmartPointer<Astrobj::Generic> ao) {
   object_=ao;
 }
 
-void Photon::setSpectrometer(SmartPointer<Spectrometer::Generic> spr) {
+void Photon::spectrometer(SmartPointer<Spectrometer::Generic> spr) {
   spectro_=spr;
   _allocateTransmission();
 }
-SmartPointer<Spectrometer::Generic> Photon::getSpectrometer() const { return spectro_; }
+SmartPointer<Spectrometer::Generic> Photon::spectrometer() const { return spectro_; }
 
 
 string Photon::className() const { return  string("Photon"); }

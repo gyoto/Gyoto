@@ -158,7 +158,8 @@ extern "C" {
   void
   Y_gyoto_SpectroUniform(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Spectrometer, Uniform);
+    YGYOTO_CONSTRUCTOR_INIT2(Spectrometer, Spectrometer::Generic,
+			     Uniform, spectrometer);
     kind_t kind=(*sp)->kind();
     if (kind != Uniform::WaveKind &&
 	kind != Uniform::WaveLogKind &&

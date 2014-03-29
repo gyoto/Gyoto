@@ -350,7 +350,7 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
 
 }
 
-SmartPointer<Gyoto::Spectrometer::Generic> Factory::getSpectrometer(){
+SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
     
     DOMXPathResult* result;
     DOMElement *tmpEl;

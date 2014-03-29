@@ -493,34 +493,36 @@ namespace Gyoto {
  * make CPPFLAGS=-DGYOTO_NO_DEPRECATED
  * \endcode
  */
-# define getMetric      metric
-# define setMetric      metric 
-# define setScreen      screen
-# define getScreen      screen
-# define getRmax        rMax
-# define setRmax        rMax
-# define getMass        mass
-# define setMass        mass
-# define getCoordKind   coordKind
-# define setCoordKind   coordKind
-# define getKind        kind
-# define setKind        kind
-# define getSpin        spin
-# define setSpin        spin
-# define getIntegKind   integKind
-# define setIntegKind   integKind
-# define getFileName    fileName
-# define setFileName    fileName
-# define getDistance    distance
-# define setDistance    distance
-# define getPALN        PALN
-# define setPALN        PALN
-# define getArgument    argument
-# define setArgument    argument
-# define getInclination inclination
-# define setInclination inclination
-# define getAstrobj     astrobj
-# define setAstrobj     astrobj
+# define getMetric       metric
+# define setMetric       metric 
+# define setScreen       screen
+# define getScreen       screen
+# define getRmax         rMax
+# define setRmax         rMax
+# define getMass         mass
+# define setMass         mass
+# define getCoordKind    coordKind
+# define setCoordKind    coordKind
+# define getKind         kind
+# define setKind         kind
+# define getSpin         spin
+# define setSpin         spin
+# define getIntegKind    integKind
+# define setIntegKind    integKind
+# define getFileName     fileName
+# define setFileName     fileName
+# define getDistance     distance
+# define setDistance     distance
+# define getPALN         PALN
+# define setPALN         PALN
+# define getArgument     argument
+# define setArgument     argument
+# define getInclination  inclination
+# define setInclination  inclination
+# define getAstrobj      astrobj
+# define setAstrobj      astrobj
+# define getSpectrometer spectrometer
+# define setSpectrometer spectrometer
 
 //\}
 #endif

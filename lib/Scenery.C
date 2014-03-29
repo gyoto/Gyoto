@@ -270,8 +270,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
      // Note : this is a BUG if this is required, should be done automagically.
 
   /// initialize photon once. It will be cloned.
-  SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
-  ph_.setSpectrometer(spr);
+  SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
+  ph_.spectrometer(spr);
   ph_.setTmin(tmin_);
   ph_.setFreqObs(screen_->getFreqObs());
   double coord[8];
@@ -349,7 +349,7 @@ void Scenery::operator() (
 			  Photon *ph
 			  ) {
   double coord[8];
-  SmartPointer<Spectrometer::Generic> spr = screen_->getSpectrometer();
+  SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
 
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
@@ -363,7 +363,7 @@ void Scenery::operator() (
     // is passed in particular when called in a multi-threaded
     // environment: it may really need to work on a given copy of the object.
     ph = &ph_;
-    ph -> setSpectrometer(spr);
+    ph -> spectrometer(spr);
     ph -> setTmin(tmin_);
     ph -> setFreqObs(screen_->getFreqObs());
     ph -> adaptive(adaptive_);

@@ -269,9 +269,9 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
            ///< Set angle beetwen line of nodes and X axis of object
   void argument(double, const std::string &unit);
            ///< Set angle beetwen line of nodes and X axis of object
-  void setSpectrometer(SmartPointer<Spectrometer::Generic> spectro);
+  void spectrometer(SmartPointer<Spectrometer::Generic> spectro);
            ///< Set Screen::spectro_
-  SmartPointer<Spectrometer::Generic> getSpectrometer() const ;
+  SmartPointer<Spectrometer::Generic> spectrometer() const ;
            ///< Get Screen::spectro_
 
   /**

@@ -96,7 +96,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	  if (debug()) cerr << "screen, i="<<i <<", j="<<j << endl;
 	  sc -> getRayCoord(i, j, coord);
 	}
-	(*ph) -> setSpectrometer(sc->getSpectrometer());
+	(*ph) -> spectrometer(sc->spectrometer());
       }
 
       if (debug()) {
@@ -111,7 +111,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   }
 
   YGYOTO_WORKER_GETSET_OBJECT2(astrobj,Astrobj);
-  YGYOTO_WORKER_GETSET_OBJECT(Spectrometer);
+  YGYOTO_WORKER_GETSET_OBJECT2(spectrometer,Spectrometer);
   YGYOTO_WORKER_GETSET_DOUBLE(Tmin);
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
   YGYOTO_WORKER_GETSET_LONG2(adaptive);

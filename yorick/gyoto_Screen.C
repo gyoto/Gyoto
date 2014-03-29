@@ -114,7 +114,7 @@ extern "C" {
     YGYOTO_WORKER_GETSET4(Screen1);
     YGYOTO_WORKER_GETSET4(Screen2);
     YGYOTO_WORKER_GETSET4(Screen3);
-    YGYOTO_WORKER_GETSET_OBJECT(Spectrometer);
+    YGYOTO_WORKER_GETSET_OBJECT2(spectrometer,Spectrometer);
 
     ///// METHODS //////
     /* SKYCOORD METHOD */
