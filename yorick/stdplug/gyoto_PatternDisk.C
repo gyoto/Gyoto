@@ -90,7 +90,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       (*OBJ) -> getIntensityNaxes(ddims);
       long dims[] = {3, ddims[0], ddims[1], ddims[2]};
       double * out = ypush_d(dims);
-      memcpy(out, (*OBJ)->getOpacity(),
+      memcpy(out, (*OBJ)->opacity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
     } else {
       long ntot;

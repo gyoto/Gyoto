@@ -77,11 +77,11 @@ void Torus::setSmallRadius(double c, string unit) {
   setSmallRadius(Units::ToGeometrical(c, unit, gg_));
 }
 
-SmartPointer<Spectrum::Generic> Torus::getSpectrum() const { return spectrum_; }
-void Torus::setSpectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
+SmartPointer<Spectrum::Generic> Torus::spectrum() const { return spectrum_; }
+void Torus::spectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 
-SmartPointer<Spectrum::Generic> Torus::getOpacity() const { return opacity_; }
-void Torus::setOpacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
+SmartPointer<Spectrum::Generic> Torus::opacity() const { return opacity_; }
+void Torus::opacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
 
 double Torus::rMax() {
   if (!rmax_set_ && rmax_==DBL_MAX) { rmax_ = 3.*(c_+sqrt(critical_value_)); }
@@ -195,13 +195,13 @@ void Torus::setParameters(FactoryMessenger* fmp) {
     if (name=="Spectrum") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
-      setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
+      spectrum( (*Spectrum::getSubcontractor(content))(child) );
       delete child;
     }
     else if (name=="Opacity") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
-      setOpacity( (*Spectrum::getSubcontractor(content))(child) );
+      opacity( (*Spectrum::getSubcontractor(content))(child) );
       delete child;
     }
     else setParameter(name, content, unit);

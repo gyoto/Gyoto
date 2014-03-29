@@ -104,11 +104,11 @@ UniformSphere::~UniformSphere() {
 string UniformSphere::className() const { return  string("UniformSphere"); }
 string UniformSphere::className_l() const { return  string("uniformsphere"); }
 
-SmartPointer<Spectrum::Generic> UniformSphere::getSpectrum() const { return spectrum_; }
-void UniformSphere::setSpectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
+SmartPointer<Spectrum::Generic> UniformSphere::spectrum() const { return spectrum_; }
+void UniformSphere::spectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 
-SmartPointer<Spectrum::Generic> UniformSphere::getOpacity() const { return opacity_; }
-void UniformSphere::setOpacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
+SmartPointer<Spectrum::Generic> UniformSphere::opacity() const { return opacity_; }
+void UniformSphere::opacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
 
 
 double UniformSphere::operator()(double const coord[4]) {
@@ -296,18 +296,18 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
 #     if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << "setSpectrum()" << endl;
+      GYOTO_DEBUG << "spectrum()" << endl;
 #     endif
-      setSpectrum((*Spectrum::getSubcontractor(content))(child));
+      spectrum((*Spectrum::getSubcontractor(content))(child));
       delete child;
     }
     else if (name=="Opacity") {
       content = fmp -> getAttribute("kind");
       child = fmp -> getChild();
 #     if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << "setOpacity()" << endl;
+      GYOTO_DEBUG << "opacity()" << endl;
 #     endif
-      setOpacity((*Spectrum::getSubcontractor(content))(child));
+      opacity((*Spectrum::getSubcontractor(content))(child));
       setFlag_radtransf(1);
       delete child;
     } else {

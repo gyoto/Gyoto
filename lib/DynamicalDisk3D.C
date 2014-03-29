@@ -120,7 +120,7 @@ void DynamicalDisk3D::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
     throwError("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
   setEmissquant(emission_array_[iq-1]);
-  if (absorption_array_) setOpacity(absorption_array_[iq-1]);
+  if (absorption_array_) opacity(absorption_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
 }
 
@@ -352,7 +352,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
                           //in alphanu via jnu=emission1date(...,dsem,...)
   }else{
     if (absorption_array_){
-      double * abs = const_cast<double*>(getOpacity());
+      double * abs = const_cast<double*>(opacity());
       double absq = abs[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
       double dist_unit = gg_->unitLength()*100.; //dist unit in cgs
       double alphanu=absq*pow(nu,-(PLindex_+4.)/2.);
@@ -437,7 +437,7 @@ int DynamicalDisk3D::setParameter(std::string name,
     stream_name << dirname_ << "data3D0001.fits.gz"; 
     string filename = stream_name.str();
     fitsRead(filename);
-    if (getOpacity()) withopacity=1;
+    if (opacity()) withopacity=1;
 
     //initialize emission, absorption, velocity arrays
     emission_array_ = new double*[nb_times_] ;
@@ -477,8 +477,8 @@ int DynamicalDisk3D::setParameter(std::string name,
 
       //save absorption (if any)
       if (withopacity){
-	if (getOpacity()){
-	  double * abstemp = const_cast<double*>(getOpacity());
+	if (opacity()){
+	  double * abstemp = const_cast<double*>(opacity());
 	  absorption_array_[i-1] = new double[nel1];
 	  for (size_t j=0;j<nel1;j++)
 	    absorption_array_[i-1][j]=abstemp[j];

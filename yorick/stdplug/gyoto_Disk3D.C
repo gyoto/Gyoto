@@ -95,7 +95,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       (*ao) -> getEmissquantNaxes(ddims);
       long dims[] = {4, ddims[0], ddims[1], ddims[2], ddims[3]};
       double * out = ypush_d(dims);
-      memcpy(out, (*ao)->getOpacity(),
+      memcpy(out, (*ao)->opacity(),
 	     dims[1]*dims[2]*dims[3]*dims[4]*sizeof(double));
     } else {
       long ntot;

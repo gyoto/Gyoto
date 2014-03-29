@@ -91,7 +91,7 @@ void Disk3D::setEmissquant(double * pattern) {
   emissquant_ = pattern;
 }
 
-void Disk3D::setOpacity(double * pattern) {
+void Disk3D::opacity(double * pattern) {
   opacity_ = pattern;
 }
 
@@ -162,7 +162,7 @@ void Disk3D::copyOpacity(double const *const opacity, size_t const naxes[4]) {
   }
 }
 
-double const * Disk3D::getOpacity() const { return opacity_; }
+double const * Disk3D::opacity() const { return opacity_; }
 
 void Disk3D::copyVelocity(double const *const velocity, size_t const naxes[3]) {
   GYOTO_DEBUG << endl;

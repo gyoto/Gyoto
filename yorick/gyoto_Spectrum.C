@@ -37,7 +37,7 @@ static ygyoto_Spectrum_eval_worker_t *ygyoto_Spectrum_evals[YGYOTO_MAX_REGISTERE
 static int ygyoto_Spectrum_count=0;
 
 YGYOTO_YUSEROBJ(Spectrum, Spectrum::Generic)
-YGYOTO_BASE_CONSTRUCTOR(Spectrum)
+YGYOTO_BASE_CONSTRUCTOR1(Spectrum,spectrum)
 
 extern "C" {
   void gyoto_Spectrum_eval(void *obj, int argc) {

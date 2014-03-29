@@ -132,7 +132,7 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
    */
   void setEmissquant(double * pattern);
 
-  void setOpacity(double * pattern);
+  void opacity(double * pattern);
 
   /// Set Disk3D::velocity__.
   /**
@@ -173,7 +173,7 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 			      size_t const naxes[4] = NULL);
 
   /// Get Disk3D::opacity_.
-  virtual double const * getOpacity() const;
+  virtual double const * opacity() const;
 
   /// Set Disk3D::velocity_.
   /**

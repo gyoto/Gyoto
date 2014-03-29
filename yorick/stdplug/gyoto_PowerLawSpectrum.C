@@ -60,7 +60,7 @@ extern "C" {
   void
   Y_gyoto_PowerLawSpectrum(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Spectrum, PowerLaw);
+    YGYOTO_CONSTRUCTOR_INIT2(Spectrum, Gyoto::Spectrum::Generic, PowerLaw, spectrum);
     if ((*OBJ)->kind().compare("PowerLaw"))
       y_error("Expecting Spectrum of kind PowerLaw");
     PowerLawYEval(OBJ, argc);

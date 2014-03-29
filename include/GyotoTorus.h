@@ -122,22 +122,22 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   /**
    * \brief Set Torus::spectrum_
    */
-  virtual void setSpectrum(SmartPointer<Spectrum::Generic>);
+  virtual void spectrum(SmartPointer<Spectrum::Generic>);
 
   /**
    * \brief Get Torus::spectrum_
    */
-  virtual SmartPointer<Spectrum::Generic> getSpectrum() const;
+  virtual SmartPointer<Spectrum::Generic> spectrum() const;
 
   /**
    * \brief Set Torus::opacity_
    */
-  virtual void setOpacity(SmartPointer<Spectrum::Generic>);
+  virtual void opacity(SmartPointer<Spectrum::Generic>);
 
   /**
    * \brief Get Torus::opacity_
    */
-  virtual SmartPointer<Spectrum::Generic> getOpacity() const;
+  virtual SmartPointer<Spectrum::Generic> opacity() const;
 
   using Standard::rMax;
   virtual double rMax();

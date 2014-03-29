@@ -154,8 +154,8 @@ double PatternDiskBB::emission(double nu, double dsem,
   if (!flag_radtransf_) return Iem;
 
   double thickness;
-  double const * const opacity = getOpacity();
-  if (opacity && (thickness=opacity[i[2]*(nphi*nnu)+i[1]*nnu+i[0]]*dsem))
+  double const * const op = opacity();
+  if (op && (thickness=op[i[2]*(nphi*nnu)+i[1]*nnu+i[0]]*dsem))
     return Iem * (1. - exp (-thickness)) ;
   return 0.;
 }

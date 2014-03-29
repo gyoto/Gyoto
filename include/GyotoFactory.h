@@ -231,7 +231,7 @@ class Gyoto::Factory
    * Photon may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Spectrum::Generic>  getSpectrum();
+  Gyoto::SmartPointer<Gyoto::Spectrum::Generic>  spectrum();
 
   /// Find Spectrometer element, instanciate it and get it.
   /**

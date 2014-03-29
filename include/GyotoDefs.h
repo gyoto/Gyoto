@@ -523,6 +523,10 @@ namespace Gyoto {
 # define setAstrobj      astrobj
 # define getSpectrometer spectrometer
 # define setSpectrometer spectrometer
+# define getSpectrum     spectrum
+# define setSpectrum     spectrum
+# define getOpacity      opacity
+# define setOpacity      opacity
 
 //\}
 #endif

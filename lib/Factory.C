@@ -320,7 +320,7 @@ SmartPointer<Gyoto::Photon> Factory::getPhoton(){
   return photon_;
 }
 
-SmartPointer<Gyoto::Spectrum::Generic> Factory::getSpectrum(){
+SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
     
     DOMXPathResult* result;
     DOMElement *tmpEl;

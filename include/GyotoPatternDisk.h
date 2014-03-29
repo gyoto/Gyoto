@@ -204,7 +204,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    */
   virtual void copyOpacity(double const * const pattern = NULL,
 			      size_t const naxes[3] = NULL);
-  virtual double const * getOpacity() const; ///< Get PatternDisk::opacity_
+  virtual double const * opacity() const; ///< Get PatternDisk::opacity_
 
   /// Set PatternDisk::velocity_
   /**

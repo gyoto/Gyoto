@@ -164,7 +164,7 @@ void PatternDisk::copyOpacity(double const *const opacity, size_t const naxes[3]
   }
 }
 
-double const * PatternDisk::getOpacity() const { return opacity_; }
+double const * PatternDisk::opacity() const { return opacity_; }
 
 void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[2]) {
   GYOTO_DEBUG << endl;

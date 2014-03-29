@@ -223,7 +223,7 @@ class Gyoto::FactoryMessenger {
    *  if (name=="Spectrum") {
    *   content = messenger->getAttribute("kind");
    *   FactoryMessenger* child = messenger->getChild();
-   *   deliverable->setSpectrum( (*Spectrum::getSubcontractor(content))(child) );
+   *   deliverable->spectrum( (*Spectrum::getSubcontractor(content))(child) );
    *   delete child;
    *  }
    * }

@@ -59,7 +59,7 @@ extern "C" {
   void
   Y_gyoto_BlackBodySpectrum(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Spectrum, BlackBody);
+    YGYOTO_CONSTRUCTOR_INIT2(Spectrum, Gyoto::Spectrum::Generic, BlackBody, spectrum);
     if ((*OBJ)->kind().compare("BlackBody"))
       y_error("Expecting Spectrum of kind BlackBody");
     BlackBodyYEval(OBJ, argc);
