@@ -827,8 +827,8 @@ void Screen::setFieldOfView(double fov, const string &unit) {
 }
 void Screen::setFieldOfView(double fov) { fov_ = fov; }
 
-void Screen::setAlpha0(double alpha) { alpha0_ = alpha; }
-void Screen::setDelta0(double delta) { delta0_ = delta; }
+void Screen::alpha0(double alpha) { alpha0_ = alpha; }
+void Screen::delta0(double delta) { delta0_ = delta; }
 
 void Screen::setAnglekind(int kind) { anglekind_ = kind; }
 
@@ -1014,9 +1014,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   if (fov_found) scr -> setFieldOfView ( fov, fov_unit );
 
-  if (alpha0_found) scr -> setAlpha0(alpha0);
+  if (alpha0_found) scr -> alpha0(alpha0);
 
-  if (delta0_found) scr -> setDelta0(delta0);
+  if (delta0_found) scr -> delta0(delta0);
 
   int sum_found=fourvel_found+screen1_found
     +screen2_found+screen3_found;

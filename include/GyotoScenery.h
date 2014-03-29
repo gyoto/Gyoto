@@ -216,10 +216,10 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * The Metric attached to the Scenery will be attached to the Astrobj
    */
   void astrobj(SmartPointer<Astrobj::Generic>); ///< Set Scenery::obj_
-  double getDelta() const ; ///< Get default step in geometrical units
-  double getDelta(const std::string &unit) const ;  ///< Get default step in specified units
-  void setDelta(double); ///< set default step in geometrical units
-  void setDelta(double, const std::string &unit);   ///< set default step in specified units
+  double delta() const ; ///< Get default step in geometrical units
+  double delta(const std::string &unit) const ;  ///< Get default step in specified units
+  void delta(double); ///< set default step in geometrical units
+  void delta(double, const std::string &unit);   ///< set default step in specified units
 
   /// Set Scenery::quantities_
   /**

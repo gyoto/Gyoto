@@ -98,7 +98,7 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
  
   YGYOTO_WORKER_GETSET_OBJECT2(spectrum,Spectrum);
   YGYOTO_WORKER_GETSET_OBJECT2(opacity,Spectrum);
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(delta);
   YGYOTO_WORKER_GETSET_LONG2(adaptive);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverRadius);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverDistance);

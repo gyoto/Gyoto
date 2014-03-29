@@ -181,10 +181,10 @@ class Gyoto::Worldline
  public:
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
-  void setDelta(const double delta); ///< Set delta
-  void setDelta(double, const std::string &unit);   ///< Set default step in specified units
-  double getDelta() const ; ///< Get delta
-  double getDelta(const std::string &unit) const ;  ///< Get default step in specified units
+  void delta(const double delta); ///< Set delta
+  void delta(double, const std::string &unit);   ///< Set default step in specified units
+  double delta() const ; ///< Get delta
+  double delta(const std::string &unit) const ;  ///< Get default step in specified units
   double getTmin() const ; ///< Get tmin value
   void setTmin(double tlim); ///< Set tmin to a given value
   void adaptive (bool mode) ; ///< Set adaptive_

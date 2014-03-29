@@ -322,7 +322,7 @@ int Worldline::setParameter(std::string name,
       init_vel_ = new double[3];
       memcpy(init_vel_, coord, 3*sizeof(double));
     } else setVelocity(coord);
-  } else   if (name=="Delta")   setDelta(atof(content.c_str()), unit);
+  } else   if (name=="Delta")   delta(atof(content.c_str()), unit);
   else if (name=="MaxIter")     maxiter_  = atoi(content.c_str());
   else if (name=="NonAdaptive") adaptive_ = false;
   else if (name=="Adaptive")    adaptive_ = true;
@@ -1044,14 +1044,14 @@ void Worldline::save_txyz(char * filename, const double t1, const double mass_su
 }
 
 
-void Worldline::setDelta(const double del) { delta_=del; }
-void Worldline::setDelta(double d, const string &unit) {
-  setDelta(Units::ToGeometrical(d, unit, metric_));
+void Worldline::delta(const double del) { delta_=del; }
+void Worldline::delta(double d, const string &unit) {
+  delta(Units::ToGeometrical(d, unit, metric_));
 }
 
-double Worldline::getDelta() const { return delta_; }
-double Worldline::getDelta(const string &unit) const {
-  return Units::FromGeometrical(getDelta(), unit, metric_);
+double Worldline::delta() const { return delta_; }
+double Worldline::delta(const string &unit) const {
+  return Units::FromGeometrical(delta(), unit, metric_);
 }
 
 double Worldline::getTmin() const { return tmin_; }

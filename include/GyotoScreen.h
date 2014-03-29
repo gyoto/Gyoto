@@ -395,9 +395,9 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setFieldOfView(double, const std::string &unit);
 
   /// Set direction of the line-of-view
-  void setAlpha0(double);
+  void alpha0(double);
   /// Set direction of the line-of-view
-  void setDelta0(double);
+  void delta0(double);
 
   /// Set Screen::anglekind_
   void setAnglekind(int);

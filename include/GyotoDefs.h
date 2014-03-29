@@ -527,7 +527,14 @@ namespace Gyoto {
 # define setSpectrum     spectrum
 # define getOpacity      opacity
 # define setOpacity      opacity
-
+# define setDelta        delta
+# define getDelta        delta
+# define setDelta        delta
+# define getDelta        delta
+# define setDelta0       delta0
+# define getDelta0       delta0
+# define setAlpha0       alpha0
+# define getAlpha0       alpha0
 //\}
 #endif
 

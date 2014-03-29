@@ -128,14 +128,14 @@ void Scenery::astrobj(SmartPointer<Astrobj::Generic> obj) {
   if (gg_) obj_ -> metric (gg_) ;
 }
 
-double Scenery::getDelta() const { return delta_; }
-double Scenery::getDelta(const string &unit) const {
-  return Units::FromGeometrical(getDelta(), unit, gg_);
+double Scenery::delta() const { return delta_; }
+double Scenery::delta(const string &unit) const {
+  return Units::FromGeometrical(delta(), unit, gg_);
 }
 
-void Scenery::setDelta(double d) { delta_ = d; }
-void Scenery::setDelta(double d, const string &unit) {
-  setDelta(Units::ToGeometrical(d, unit, gg_));
+void Scenery::delta(double d) { delta_ = d; }
+void Scenery::delta(double d, const string &unit) {
+  delta(Units::ToGeometrical(d, unit, gg_));
 }
 
 void  Scenery::setNThreads(size_t n) { nthreads_ = n; }
@@ -376,7 +376,7 @@ void Scenery::operator() (
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "reset delta" << endl;
 # endif
-  ph -> setDelta(delta_);
+  ph -> delta(delta_);
   ph -> adaptive(adaptive_);
   ph -> secondary(secondary_);
   ph -> maxiter(maxiter_);
@@ -648,7 +648,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     char* tc = const_cast<char*>(content.c_str());
-    if (name=="Delta")       sc -> setDelta(atof(tc), unit);;
+    if (name=="Delta")       sc -> delta(atof(tc), unit);;
     if (name=="Quantities")  sc -> setRequestedQuantities(tc);
     if (name=="MinimumTime") sc -> setTmin(atof(tc), unit);
     if (name=="NThreads")    sc -> setNThreads(atoi(tc));
