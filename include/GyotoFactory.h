@@ -78,7 +78,7 @@ namespace Gyoto {
  *  const std::string kind = factory->getKind();
  *  if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
- *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->getScreen();
+ *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->screen();
  *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->getAstrobj();
  *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
  *  delete factory; factory=NULL;
@@ -194,7 +194,7 @@ class Gyoto::Factory
   /// Find Scenery element, instanciate it and get it.
   /**
    * Scenery must be the root element. getScenery() will call
-   * metric(), getAstrobj() and getScreen().
+   * metric(), getAstrobj() and screen().
    */
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
 
@@ -210,7 +210,7 @@ class Gyoto::Factory
    * Screen may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Screen>  getScreen();
+  Gyoto::SmartPointer<Gyoto::Screen>  screen();
 
   /// Find Astrobj element, instanciate it and get it.
   /**
@@ -270,7 +270,7 @@ class Gyoto::Factory
    * SmartPointers must point to the same instance or an error will be
    * thrown using Gyoto::throwError().
    */
-  void setScreen(SmartPointer<Screen> scr, xercesc::DOMElement *el);
+  void screen(SmartPointer<Screen> scr, xercesc::DOMElement *el);
 
   /// Set text content of XML element
   void setContent(std::string content, xercesc::DOMElement *el);

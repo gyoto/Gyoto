@@ -177,7 +177,7 @@ extern "C" {
 
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
-    YGYOTO_WORKER_GETSET_OBJECT(Screen);
+    YGYOTO_WORKER_GETSET_OBJECT2(screen,Screen);
     YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Tmin);
@@ -226,7 +226,7 @@ extern "C" {
       } else {              // impaccoords=double(16,res,res): Setting
 	long ntot;
 	long dims[Y_DIMSIZE];
-	size_t res=(*OBJ)->getScreen()->getResolution();
+	size_t res=(*OBJ)->screen()->getResolution();
 	impactcoords = ygeta_d(iarg, &ntot, dims);
 	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
 	  y_error("dimsof(impactcoords) != [3,16,res,res]");
@@ -241,12 +241,12 @@ extern "C" {
 	(((argc>0 && argc<=3 && piargs[argc-1]>=0) || (piargs[1]>=0)) // positional argument?
 	 || precompute || impactcoords)
 	) { 
-      size_t res=(*OBJ)->getScreen()->getResolution();
+      size_t res=(*OBJ)->screen()->getResolution();
       if ((*rvset)++) y_error("Only one return value possible");
       if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
       GYOTO_DEBUG << "rank: " << yarg_rank(piargs[0]) << endl;
 
-      SmartPointer<Spectrometer::Generic> spr = (*OBJ)->getScreen()->getSpectrometer();
+      SmartPointer<Spectrometer::Generic> spr = (*OBJ)->screen()->getSpectrometer();
       size_t nbnuobs = spr()? spr->getNSamples() : 0;
 
       Idx i_idx (piargs[0], res);
@@ -342,7 +342,7 @@ extern "C" {
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
-      SmartPointer<Screen> screen = (*OBJ) -> getScreen();
+      SmartPointer<Screen> screen = (*OBJ) -> screen();
 #     ifdef HAVE_UDUNITS
       if (data) (*OBJ)->setPropertyConverters(&prop);
       screen->mapPixUnit();
@@ -486,7 +486,7 @@ extern "C" {
     if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
 
     size_t res;
-    try {res=scenery->getScreen()->getResolution();}
+    try {res=scenery->screen()->getResolution();}
     YGYOTO_STD_CATCH;
 
     double * impactcoords = NULL;
@@ -512,7 +512,7 @@ extern "C" {
     try {
       quantities = scenery -> getRequestedQuantities();
       if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
-	SmartPointer<Spectrometer::Generic> spr=scenery->getScreen()->getSpectrometer();
+	SmartPointer<Spectrometer::Generic> spr=scenery->screen()->getSpectrometer();
 	if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
 	nbnuobs = spr -> getNSamples();

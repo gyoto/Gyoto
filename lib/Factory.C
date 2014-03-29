@@ -384,7 +384,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::getSpectrometer(){
 
 SmartPointer<Scenery> Factory::getScenery () {
   if (!scenery_) {
-    scenery_ = new Scenery(metric(), getScreen(), getAstrobj());
+    scenery_ = new Scenery(metric(), screen(), getAstrobj());
     DOMXPathResult* result;
     DOMElement *tmpEl;
 
@@ -404,7 +404,7 @@ SmartPointer<Scenery> Factory::getScenery () {
   return scenery_;
 }
 
-SmartPointer<Gyoto::Screen> Factory::getScreen(){
+SmartPointer<Gyoto::Screen> Factory::screen(){
   if (!screen_) {
     DOMXPathResult* result;
     DOMElement *ScreenDOM;
@@ -432,7 +432,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(sc), gg_(sc->metric()),
-    screen_(sc->getScreen()), obj_(sc->getAstrobj()),
+    screen_(sc->screen()), obj_(sc->getAstrobj()),
     photon_(NULL), spectro_(NULL), filename_("")
 {
   GYOTO_DEBUG << "Initializing XML stuff" << endl;
@@ -607,7 +607,7 @@ void Factory::setAstrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
 
 }
 
-void Factory::setScreen(SmartPointer<Screen> scr, DOMElement *el) {
+void Factory::screen(SmartPointer<Screen> scr, DOMElement *el) {
 
   if (screen_ && scr && scr!= screen_)
     throwError("Inconsistent use of Screens");
@@ -854,8 +854,8 @@ void FactoryMessenger::setAstrobj(SmartPointer<Astrobj::Generic> gg) {
   employer_ -> setAstrobj (gg, element_);
 }
 
-void FactoryMessenger::setScreen(SmartPointer<Screen> gg) {
-  employer_ -> setScreen (gg, element_);
+void FactoryMessenger::screen(SmartPointer<Screen> gg) {
+  employer_ -> screen (gg, element_);
 }
 
 void FactoryMessenger::metric(SmartPointer<Metric::Generic> gg) {
@@ -866,8 +866,8 @@ SmartPointer<Metric::Generic> FactoryMessenger::metric() {
   return employer_ -> metric ();
 }
 
-SmartPointer<Screen> FactoryMessenger::getScreen() {
-  return employer_ -> getScreen ();
+SmartPointer<Screen> FactoryMessenger::screen() {
+  return employer_ -> screen ();
 }
 
 SmartPointer<Photon> FactoryMessenger::getPhoton() {

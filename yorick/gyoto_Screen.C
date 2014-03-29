@@ -80,7 +80,7 @@ extern "C" {
 
     /* MASKWRITE */
     if ((iarg=kiargs[++k])>=0) {
-      char * fname="";
+      char * fname=const_cast<char*>("");
       iarg+=*rvset;
       if (!yarg_nil(iarg)) fname=ygets_q(iarg);
       (*OBJ)->fitsWriteMask(ygets_q(iarg));
@@ -154,7 +154,7 @@ extern "C" {
 extern "C" {
 
   void Y_gyoto_Screen(int argc) {
-    YGYOTO_CONSTRUCTOR_INIT1(Screen, Screen, Screen);
+    YGYOTO_CONSTRUCTOR_INIT2(Screen, Screen, Screen, screen);
     gyoto_Screen_eval(OBJ, argc);
   }
 

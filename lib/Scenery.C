@@ -115,9 +115,9 @@ void Scenery::metric(SmartPointer<Metric::Generic> met) {
   if (obj_) obj_ -> metric(gg_);
 }
 
-SmartPointer<Screen> Scenery::getScreen() { return screen_; }
+SmartPointer<Screen> Scenery::screen() { return screen_; }
 
-void Scenery::setScreen(SmartPointer<Screen> screen) {
+void Scenery::screen(SmartPointer<Screen> screen) {
   screen_ = screen;
   if (gg_) screen_ -> metric (gg_) ;
 }
@@ -175,7 +175,7 @@ static void * SceneryThreadWorker (void *arg) {
   // local variables to store our parameters
   size_t i, j;
   size_t eol_offset =
-    larg->sc->getScreen()->getResolution() - larg->imax + larg->imin -1;
+    larg->sc->screen()->getResolution() - larg->imax + larg->imin -1;
   Astrobj::Properties data;
   double * impactcoords = NULL;
 
@@ -594,9 +594,9 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   if (gg_)     fmp -> metric (gg_) ;
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG <<"fmp -> setScreen (screen_) ;" << endl;
+  GYOTO_DEBUG <<"fmp -> screen (screen_) ;" << endl;
 # endif
-  if (screen_) fmp -> setScreen (screen_) ;
+  if (screen_) fmp -> screen (screen_) ;
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> setAstrobj (obj_) ;" << endl;
@@ -641,7 +641,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
   string squant = "";
 
   gg = fmp->metric();
-  scr= fmp->getScreen();
+  scr= fmp->screen();
   ao = fmp->getAstrobj();
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);

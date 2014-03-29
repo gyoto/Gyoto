@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
     curmsg = "In gyoto.C: Error initializing ray-tracing: ";
     curretval = 2;
     SmartPointer<Scenery> scenery = factory -> getScenery();
-    SmartPointer<Screen>  screen = scenery->getScreen();
+    SmartPointer<Screen>  screen = scenery->screen();
     SmartPointer<Astrobj::Generic> object = scenery->getAstrobj();
 
     if (xtobs) screen -> setTime        ( tobs );

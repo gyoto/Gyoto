@@ -125,10 +125,10 @@ class Gyoto::FactoryMessenger {
    * An Gyoto XML file may contain at most a single Screen section
    * and it may be present about anywhere in the XML tree. Individual
    * subcontractors should not try to interpret this section directly,
-   * but should call getScreen() to find and interpret the Screen
+   * but should call screen() to find and interpret the Screen
    * section.
    */
-  SmartPointer<Screen>  getScreen  () ;
+  SmartPointer<Screen>  screen  () ;
   ///< Build and get the Screen described in this XML file 
 
   /**
@@ -267,7 +267,7 @@ class Gyoto::FactoryMessenger {
    * Scenery. scenery->fillElement(messenger) will call:
    * \code
    * messenger->metric(Scenery::gg_)
-   * messenger->setScreen(Scenery::screen_)
+   * messenger->screen(Scenery::screen_)
    * messenger->setAstrobj(Scenery::obj_);
    * \endcode
    *
@@ -289,7 +289,7 @@ class Gyoto::FactoryMessenger {
   /**
    * Same as metric(), but for the Screen.
    */
-  void setScreen(SmartPointer<Screen>);
+  void screen(SmartPointer<Screen>);
   ///< Set the Screen
 
 

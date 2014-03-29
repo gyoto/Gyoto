@@ -83,7 +83,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	  SmartPointer<Scenery> *scenery = yget_Scenery(iarg);
 	  (*ph) -> metric((*scenery)->metric());
 	  (*ph) -> setAstrobj((*scenery)->getAstrobj());
-	  sc = (*scenery)->getScreen();
+	  sc = (*scenery)->screen();
 	} else sc = *yget_Screen(iarg); //initcoord=screen,i,j or screen, da, dd
 	if (yarg_number(piargs[0]+*rvset)==2) {
 	  double da = ygets_d(piargs[0]+*rvset);
