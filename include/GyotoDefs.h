@@ -481,4 +481,47 @@ namespace Gyoto {
 
 //\}
 
+#ifndef GYOTO_NO_DEPRECATED
+#warning Using deprecated method names.\
+  Define GYOTO_NO_DEPRECATED to disable.
+//\{
+/**
+ *\name Renamed methods
+ *
+ * Define GYOTO_NO_DEPRECATED to disable these macros and the warning. For instance:
+ * \code
+ * make CPPFLAGS=-DGYOTO_NO_DEPRECATED
+ * \endcode
+ */
+# define getMetric      metric
+# define setMetric      metric 
+# define setScreen      screen
+# define getScreen      screen
+# define getRmax        rMax
+# define setRmax        rMax
+# define getMass        mass
+# define setMass        mass
+# define getGoordKind   coordKind
+# define setGoordKind   coordKind
+# define getKind        kind
+# define setKind        kind
+# define getSpin        spin
+# define setSpin        spin
+# define getIntegKind   integKind
+# define setIntegKind   integKind
+# define getFileName    fileName
+# define setFileName    fileName
+# define getDistance    distance
+# define setDistance    distance
+# define getPALN        PALN
+# define setPALN        PALN
+# define getArgument    argument
+# define setArgument    argument
+# define getInclination inclination
+# define setInclination inclination
+
+
+//\}
+#endif
+
 #endif

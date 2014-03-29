@@ -1,12 +1,16 @@
 next 2014/03/28
 	* Give access to some numerical parameters of the RK4 integrator
-	* rename functions from setMass/getMass style to mass()/mass() style.
-	  Are concerned the following (new names):
-	  all::metric, all:screen,
-	  Metric::mass, coordKind, kind,
-	  KerrBL::spin, KerrKS::spin, RotStar3_1::integKind, fileName
-	  Screen::coordKind, distance, PALN, argument, inclination,
-	  Astrobj::rMax,
+	* rename methods from from setMass()/getMass() style to mass()/mass() style.
+	  Macro with the old names are provided in GyotoDefs.h, triggering a
+	  deprecation warning. Code may break nevertheless, typically in two cases:
+	    + if the new name was used as a variable name in your code:
+	      please change the variable name;
+	    + if your derived class overloaded only one of the two accessors
+	      (e.g. only setMetric, not getMetric): in this example add
+	        using Generic::metric;
+	      in your derived class definition.
+	  To get rid of the deprecation warning, define the GYOTO_NO_DEPRECATED,
+	  macro for instance "make CPPFLAGS=-DGYOTO_NO_DEPRECATED"
 
 0.1.0 2013/07/27 ABI 1
 	* add units system

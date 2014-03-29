@@ -162,8 +162,8 @@ void Uniform::setBand(double nu[2]) {
   reset_();
 }
 
-void Uniform::setBand(double nu[2], string unit, string kind) {
-  if (kind != "") setKind(kind);
+void Uniform::setBand(double nu[2], string unit, string skind) {
+  if (skind != "") setKind(skind);
   double band[2] = {nu[0], nu[1]};
 
   if (kind_== FreqKind) {

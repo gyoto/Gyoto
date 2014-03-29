@@ -85,6 +85,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   Generic * clone() const; ///< Cloner
   virtual ~Uniform() ; ///< Destructor
 
+  using Generic::kind;
   void setKind(kind_t);
 
   /**
