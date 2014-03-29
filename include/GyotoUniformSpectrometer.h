@@ -86,7 +86,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   virtual ~Uniform() ; ///< Destructor
 
   using Generic::kind;
-  void setKind(kind_t);
+  void kind(kind_t);
 
   /**
    * \brief Set Generic::kind_ from a std::string
@@ -97,7 +97,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * \param name std::string, one of "wave", "wavelog", "freq" or
    * "freqlog"
    */
-  void setKind(std::string name);
+  void kind(std::string name);
  
  /**
    * \brief Set Generic::nsamples_
@@ -151,7 +151,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * Use this static member attribute to check whether a Spectrometer
    * object spectro is of this kind:
    * \code
-   * if (spectro->getKind() == Uniform::WaveKind) ... ;
+   * if (spectro->kind() == Uniform::WaveKind) ... ;
    * \endcode
    *
    */
@@ -163,7 +163,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * Use this static member attribute to check whether a Spectrometer
    * object spectro is of this kind:
    * \code
-   * if (spectro->getKind() == Uniform::WaveLogKind) ... ;
+   * if (spectro->kind() == Uniform::WaveLogKind) ... ;
    * \endcode
    *
    */
@@ -175,7 +175,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * Use this static member attribute to check whether a Spectrometer
    * object spectro is of this kind:
    * \code
-   * if (spectro->getKind() == Uniform::FreqKind) ... ;
+   * if (spectro->kind() == Uniform::FreqKind) ... ;
    * \endcode
    *
    */
@@ -187,7 +187,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * Use this static member attribute to check whether a Spectrometer
    * object spectro is of this kind:
    * \code
-   * if (spectro->getKind() == Uniform::FreqLogKind) ... ;
+   * if (spectro->kind() == Uniform::FreqLogKind) ... ;
    * \endcode
    *
    */

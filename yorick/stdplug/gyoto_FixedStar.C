@@ -62,7 +62,7 @@ extern "C" {
   Y_gyoto_FixedStar(int argc)
   {
     YGYOTO_CONSTRUCTOR_INIT(Astrobj, FixedStar);
-    if ((*ao)->getKind().compare("FixedStar"))
+    if ((*ao)->kind().compare("FixedStar"))
       y_error("Expecting Astrobj of kind Star");
     ygyoto_FixedStar_eval(ao, argc);
   }

@@ -121,8 +121,8 @@ Generic::~Generic() {
   if (chanind_) delete [] chanind_;
 }
 
-char const * Generic::getKind() const {return kind_;}
-void Generic::setKind(char const * k) {kind_=k; tellListeners();}
+char const * Generic::kind() const {return kind_;}
+void Generic::kind(char const * k) {kind_=k; tellListeners();}
 
 size_t Generic::getNSamples() const { return nsamples_; }
 size_t Generic::getNBoundaries() const { return nboundaries_; }
@@ -157,6 +157,6 @@ int Spectrometer::Generic::setParameter(string name,
 #ifdef GYOTO_USE_XERCES
 
 void Generic::fillElement(FactoryMessenger *fmp) const {
-  fmp -> setSelfAttribute( "kind", getKind() );
+  fmp -> setSelfAttribute( "kind", kind() );
 }
 #endif

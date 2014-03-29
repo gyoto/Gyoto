@@ -144,7 +144,7 @@ extern "C" {
     SmartPointer<Astrobj::Generic> *ao = NULL;
     if (yarg_Astrobj(argc-1)) {
       ao = yget_Astrobj(--argc);
-      if ((*ao)->getKind().compare("ThinDisk"))
+      if ((*ao)->kind().compare("ThinDisk"))
 	y_error("Expecting Astrobj of kind Star");
     }
     ygyoto_ThinDisk_eval(ao, argc);

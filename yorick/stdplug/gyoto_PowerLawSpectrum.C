@@ -61,7 +61,7 @@ extern "C" {
   Y_gyoto_PowerLawSpectrum(int argc)
   {
     YGYOTO_CONSTRUCTOR_INIT(Spectrum, PowerLaw);
-    if ((*OBJ)->getKind().compare("PowerLaw"))
+    if ((*OBJ)->kind().compare("PowerLaw"))
       y_error("Expecting Spectrum of kind PowerLaw");
     PowerLawYEval(OBJ, argc);
   }

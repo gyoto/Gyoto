@@ -176,7 +176,7 @@ class Gyoto::Spectrometer::Generic
    * \brief Spectrometer kind name
    *
    * The content is not copied. kind_ should be set (as a parameter to
-   * the Generic() constructor or using setKind()) to the adress of a
+   * the Generic() constructor or using kind()) to the adress of a
    * static variable holding the name. This allows checking the kind
    * using pointer comparison rather than string comparison.
    */
@@ -289,14 +289,14 @@ class Gyoto::Spectrometer::Generic
    * MyKind with something like:
    *
    * \code
-   * if (sp->getKind()) == MyKind::Kind;
+   * if (sp->kind()) == MyKind::Kind;
    * \endcode
    *
    * See Uniform::WaveKind, Uniform::WaveLogKind, Uniform::FreqKind,
    * Uniform::FreqLogKind and Complex::Kind.
    *
    */
-  virtual kind_t getKind() const ;
+  virtual kind_t kind() const ;
 
   /**
    * \brief Set Generic::kind_
@@ -314,11 +314,11 @@ class Gyoto::Spectrometer::Generic
    * kind_t MyKind::Kind = "MyKind";
    * ...
    * SmartPointer<MyKind> sp();
-   * sp->setKind(MyKind::Kind)
+   * sp->kind(MyKind::Kind)
    * \endcode
    * 
    */
-  virtual void  setKind(kind_t) ;
+  virtual void  kind(kind_t) ;
 
   virtual size_t getNSamples() const ; ///< Get Generic::nsamples_.
   virtual size_t getNBoundaries() const ; ///< Get Generic::nboundaries_

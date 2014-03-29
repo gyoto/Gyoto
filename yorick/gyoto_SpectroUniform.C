@@ -59,9 +59,9 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) { // get spectro kind
       if ((*rvset)++) y_error(rmsg);
-      *ypush_q(0) = p_strcpy((*sp) -> getKind() );
+      *ypush_q(0) = p_strcpy((*sp) -> kind() );
     } else { // set spectro kind
-      (*sp) -> setKind(std::string(ygets_q(iarg)));
+      (*sp) -> kind(std::string(ygets_q(iarg)));
     }
   }
 
@@ -159,7 +159,7 @@ extern "C" {
   Y_gyoto_SpectroUniform(int argc)
   {
     YGYOTO_CONSTRUCTOR_INIT(Spectrometer, Uniform);
-    kind_t kind=(*sp)->getKind();
+    kind_t kind=(*sp)->kind();
     if (kind != Uniform::WaveKind &&
 	kind != Uniform::WaveLogKind &&
 	kind != Uniform::FreqKind &&

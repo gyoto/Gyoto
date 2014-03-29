@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
   factory = new Factory(parfile);
 
   curmsg = "In gyoto.C: Error getting Kind: ";
-  const string kind = factory->getKind();
+  const string kind = factory->kind();
 
   if (!kind.compare("Scenery")) {
     curmsg = "In gyoto.C: Error initializing ray-tracing: ";

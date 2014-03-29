@@ -49,7 +49,7 @@ extern "C" {
 
     // Try calling kind-specific worker
     int n=0;
-    char const * const  kind = (*OBJ_)->getKind();
+    char const * const  kind = (*OBJ_)->kind();
 
     while (n<ygyoto_Spectrometer_count &&
 	   kind != ygyoto_Spectrometer_names[n]) ++n;
@@ -104,7 +104,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
     if ((*rvset)++) y_error(rmsg);
     if (!yarg_nil(iarg)) y_error("KIND is readonly");
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*OBJ)->getKind());
+    *kind = p_strcpy((*OBJ)->kind());
   }
 
   // Process SET keywords

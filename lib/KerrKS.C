@@ -52,7 +52,7 @@ KerrKS::KerrKS(double a, double m) :
 
 // default copy constructor should be fine
 // KerrKS::KerrKS(const KerrKS& gg) : 
-//          Metric(gg), spin_(gg.spin_) {setKind("KerrKS");}
+//          Metric(gg), spin_(gg.spin_) {kind("KerrKS");}
 // "virtual" copy constructor:
 KerrKS * KerrKS::clone () const { return new KerrKS(*this); }
 

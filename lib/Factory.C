@@ -426,7 +426,7 @@ SmartPointer<Gyoto::Screen> Factory::screen(){
   return screen_;
 }
 
-const string Factory::getKind() { return kind_ ; }
+const string Factory::kind() { return kind_ ; }
 
 Factory::Factory(SmartPointer<Scenery> sc)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),

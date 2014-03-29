@@ -75,7 +75,7 @@ namespace Gyoto {
  * in:
  * \code
  *  Gyoto::Factory * factory = new Gyoto::Factory("some/input/file.xml");
- *  const std::string kind = factory->getKind();
+ *  const std::string kind = factory->kind();
  *  if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
  *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->screen();
@@ -83,7 +83,7 @@ namespace Gyoto {
  *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
  *  delete factory; factory=NULL;
  * \endcode or, for a single object and without checking the kind
- * (getKind()) first:
+ * (kind()) first:
  * \code
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = Factory("some/input/file.xml").getScenery();
  * \endcode
@@ -189,7 +189,7 @@ class Gyoto::Factory
 
  public:
   /// Get Factory::kind_
-  const std::string getKind();
+  const std::string kind();
 
   /// Find Scenery element, instanciate it and get it.
   /**

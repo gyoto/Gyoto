@@ -315,7 +315,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    */
   virtual double deltaMax(double coord[8]);
 
-  const std::string getKind() const; ///< Get the kind of the Astrobj (e.g. "Star")
+  const std::string kind() const; ///< Get the kind of the Astrobj (e.g. "Star")
 
   /**
    *  Set maximal distance from center of coordinate system at which a

@@ -175,7 +175,7 @@ class Gyoto::Spectrometer::Complex
    * Use this static member attribute to check whether a Spectrometer
    * object spectro is of kind Complex:
    * \code
-   * if (spectro->getKind() == Complex::Kind) ... ;
+   * if (spectro->kind() == Complex::Kind) ... ;
    * \endcode
    *
    */

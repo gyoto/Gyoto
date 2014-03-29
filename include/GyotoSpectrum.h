@@ -132,7 +132,7 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
 
   virtual ~Generic() ; ///< Destructor: does nothing.
 
-  const std::string getKind() const; ///< Get spectrum kind
+  const std::string kind() const; ///< Get spectrum kind
 
   virtual double operator()(double nu) const =0;
           ///< I_nu = mySpectrum(nu), nu in Hz. Assumes optically thick regime.

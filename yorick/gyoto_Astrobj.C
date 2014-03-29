@@ -51,7 +51,7 @@ extern "C" {
     // Try calling kind-specific worker
     int n=0;
     SmartPointer<Astrobj::Generic> * OBJ = &(((gyoto_Astrobj*)obj)->smptr);
-    const string kind = (*OBJ)->getKind();
+    const string kind = (*OBJ)->kind();
 
     while (n<ygyoto_Astrobj_count && kind.compare(ygyoto_Astrobj_names[n])) ++n;
 
@@ -152,7 +152,7 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*OB
     if (debug()) cerr << "kiargs=" << kiargs << endl;
     if ((*rvset)++) y_error(rmsg);
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*OBJ)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->kind().c_str());
   }
 
   /* SETPARAMETER */

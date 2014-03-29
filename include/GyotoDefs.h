@@ -501,8 +501,8 @@ namespace Gyoto {
 # define setRmax        rMax
 # define getMass        mass
 # define setMass        mass
-# define getGoordKind   coordKind
-# define setGoordKind   coordKind
+# define getCoordKind   coordKind
+# define setCoordKind   coordKind
 # define getKind        kind
 # define setKind        kind
 # define getSpin        spin

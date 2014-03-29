@@ -64,7 +64,7 @@ void Complex::metric(SmartPointer<Metric::Generic> gg)
     if (debug()) {
       cerr << "DEBUG: Complex::metric(gg): ";
       cerr << "elements_["<<i<<"] is a ";
-      cerr << elements_[i]->getKind();
+      cerr << elements_[i]->kind();
       cerr << ". Setting metric." << endl;
     }
     elements_[i]->metric(gg_);
@@ -156,7 +156,7 @@ int Complex::Impact(Photon* ph, size_t index, Properties *data)
 	if (impact[i]) {
 	  if (debug())
 	    cerr << "DEBUG: Complex::Impact(...): calling Impact for elements_["
-		 << i << "] (" << elements_[i]->getKind() << ")" << endl;
+		 << i << "] (" << elements_[i]->kind() << ")" << endl;
 	  elements_[i]->Impact(&refine, n, data);
 	}
     }

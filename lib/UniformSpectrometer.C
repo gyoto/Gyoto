@@ -131,12 +131,12 @@ void Uniform::reset_() {
   tellListeners();
 }
 
-void Uniform::setKind(kind_t k) {
+void Uniform::kind(kind_t k) {
   kind_ = k;
   reset_();
 }
 
-void Uniform::setKind(std::string str) {
+void Uniform::kind(std::string str) {
   kind_t s;
 
   if (str == "freq"   ) s = FreqKind;
@@ -163,7 +163,7 @@ void Uniform::setBand(double nu[2]) {
 }
 
 void Uniform::setBand(double nu[2], string unit, string skind) {
-  if (skind != "") setKind(skind);
+  if (skind != "") kind(skind);
   double band[2] = {nu[0], nu[1]};
 
   if (kind_== FreqKind) {
@@ -229,7 +229,7 @@ int Spectrometer::Uniform::setParameter(string name,
     for (int i=0;i<2;++i) band[i] = strtod(tc, &tc);
     setBand(band, unit);
   } else if (name=="Kind") {
-    setKind(content);
+    kind(content);
   } else if (name=="NSamples") {
     setNSamples(atof(tc));
   } else return Generic::setParameter(name, content, unit);

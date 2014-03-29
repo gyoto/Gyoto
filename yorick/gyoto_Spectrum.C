@@ -50,7 +50,7 @@ extern "C" {
     // Try calling kind-specific worker
     int n=0;
     SmartPointer<Spectrum::Generic> * OBJ_ = &(((gyoto_Spectrum*)obj)->smptr);
-    const string kind = (*OBJ_)->getKind();
+    const string kind = (*OBJ_)->kind();
 
     while (n<ygyoto_Spectrum_count && kind.compare(ygyoto_Spectrum_names[n]))
       ++n;
@@ -106,7 +106,7 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*OBJ,
     if (debug()) cerr << "kiargs=" << kiargs << endl;
     if ((*rvset)++) y_error(rmsg);
     char ** kind = ypush_q(0);
-    *kind = p_strcpy((*OBJ)->getKind().c_str());
+    *kind = p_strcpy((*OBJ)->kind().c_str());
   }
 
   YGYOTO_WORKER_SETPARAMETER;

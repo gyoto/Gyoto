@@ -105,7 +105,7 @@ double Generic::rMax(string unit) {
   return Units::FromGeometrical(rMax(), unit, gg_);
 }
 
-const string Generic::getKind() const {
+const string Generic::kind() const {
   return kind_;
 }
 

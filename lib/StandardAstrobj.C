@@ -83,7 +83,7 @@ Standard::~Standard() {
 
 int Standard::Impact(Photon* ph, size_t index, Properties *data){
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(getKind());
+  GYOTO_DEBUG_EXPR(kind());
 # endif
   double p1[8], p2[8];
   ph->getCoord(index, p1);
