@@ -122,8 +122,8 @@ void Scenery::screen(SmartPointer<Screen> screen) {
   if (gg_) screen_ -> metric (gg_) ;
 }
 
-SmartPointer<Astrobj::Generic> Scenery::getAstrobj() { return obj_; }
-void Scenery::setAstrobj(SmartPointer<Astrobj::Generic> obj) {
+SmartPointer<Astrobj::Generic> Scenery::astrobj() { return obj_; }
+void Scenery::astrobj(SmartPointer<Astrobj::Generic> obj) {
   obj_ = obj;
   if (gg_) obj_ -> metric (gg_) ;
 }
@@ -599,9 +599,9 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   if (screen_) fmp -> screen (screen_) ;
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG <<"fmp -> setAstrobj (obj_) ;" << endl;
+  GYOTO_DEBUG <<"fmp -> astrobj (obj_) ;" << endl;
 # endif
-  if (obj_)    fmp -> setAstrobj (obj_) ;
+  if (obj_)    fmp -> astrobj (obj_) ;
 
   if (delta_ != GYOTO_DEFAULT_DELTA) {
 #   if GYOTO_DEBUG_ENABLED
@@ -642,7 +642,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   gg = fmp->metric();
   scr= fmp->screen();
-  ao = fmp->getAstrobj();
+  ao = fmp->astrobj();
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
 

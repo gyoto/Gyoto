@@ -37,7 +37,7 @@ static ygyoto_Astrobj_eval_worker_t *ygyoto_Astrobj_evals[YGYOTO_MAX_REGISTERED]
 static int ygyoto_Astrobj_count=0;
 
 YGYOTO_YUSEROBJ(Astrobj, Astrobj::Generic)
-YGYOTO_BASE_CONSTRUCTOR(Astrobj)
+YGYOTO_BASE_CONSTRUCTOR1(Astrobj,astrobj)
 
 extern "C" {
   void gyoto_Astrobj_eval(void *obj, int argc) {

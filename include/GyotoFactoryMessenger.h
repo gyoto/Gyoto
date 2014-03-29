@@ -145,10 +145,10 @@ class Gyoto::FactoryMessenger {
    * An Gyoto XML file may contain at most a single Astrobj section
    * and it may be present about anywhere in the XML tree. Individual
    * subcontractors should not try to interpret this section directly,
-   * but should call getAstrobj() to find and interpret the Astrobj
+   * but should call astrobj() to find and interpret the Astrobj
    * section.
    */
-  SmartPointer<Astrobj::Generic> getAstrobj () ;
+  SmartPointer<Astrobj::Generic> astrobj () ;
   ///< Build and get the Astrobj described in this XML file 
 
   /**
@@ -268,7 +268,7 @@ class Gyoto::FactoryMessenger {
    * \code
    * messenger->metric(Scenery::gg_)
    * messenger->screen(Scenery::screen_)
-   * messenger->setAstrobj(Scenery::obj_);
+   * messenger->astrobj(Scenery::obj_);
    * \endcode
    *
    * The Factory will then call screen_->fillElement(child_messenger)
@@ -283,7 +283,7 @@ class Gyoto::FactoryMessenger {
   /**
    * Same as metric(), but for the Astrobj.
    */
-  void setAstrobj(SmartPointer<Astrobj::Generic>);
+  void astrobj(SmartPointer<Astrobj::Generic>);
   ///< Set the Astrobj
 
   /**

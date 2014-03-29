@@ -71,7 +71,7 @@ extern "C" {
   void
   Y_gyoto_PolishDoughnut(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Astrobj, PolishDoughnut);
+    YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, PolishDoughnut, astrobj);
     if ((*OBJ)->kind()!="PolishDoughnut")
       y_error("Expecting Astrobj of kind PolishDoughnut");
     ygyoto_PolishDoughnut_eval(OBJ, argc);

@@ -62,7 +62,7 @@ extern "C" {
   void
   Y_gyoto_Torus(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Astrobj, Torus);
+    YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, Torus, astrobj);
     if ((*OBJ)->kind().compare("Torus"))
       y_error("Expecting Astrobj of kind Torus");
     ygyoto_Torus_eval(OBJ, argc);

@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
     curretval = 2;
     SmartPointer<Scenery> scenery = factory -> getScenery();
     SmartPointer<Screen>  screen = scenery->screen();
-    SmartPointer<Astrobj::Generic> object = scenery->getAstrobj();
+    SmartPointer<Astrobj::Generic> object = scenery->astrobj();
 
     if (xtobs) screen -> setTime        ( tobs );
     else tobs= screen -> getTime();
@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
 
     if (debug()) {
       cerr << "DEBUG: gyoto.C: flag_radtransf = ";
-      cerr << scenery -> getAstrobj() -> getFlag_radtransf() << endl;
+      cerr << scenery -> astrobj() -> getFlag_radtransf() << endl;
       cerr << "DEBUG: gyoto.C: Requested quantities: ";
       cerr << scenery -> getRequestedQuantitiesString() << endl;
     }

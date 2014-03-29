@@ -82,7 +82,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	if (yarg_Scenery(iarg)) { // initcoord=scenery,i,j or senery,da,dd
 	  SmartPointer<Scenery> *scenery = yget_Scenery(iarg);
 	  (*ph) -> metric((*scenery)->metric());
-	  (*ph) -> setAstrobj((*scenery)->getAstrobj());
+	  (*ph) -> astrobj((*scenery)->astrobj());
 	  sc = (*scenery)->screen();
 	} else sc = *yget_Screen(iarg); //initcoord=screen,i,j or screen, da, dd
 	if (yarg_number(piargs[0]+*rvset)==2) {
@@ -110,7 +110,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     if (debug()) cerr << "... " << endl;
   }
 
-  YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
+  YGYOTO_WORKER_GETSET_OBJECT2(astrobj,Astrobj);
   YGYOTO_WORKER_GETSET_OBJECT(Spectrometer);
   YGYOTO_WORKER_GETSET_DOUBLE(Tmin);
   YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);

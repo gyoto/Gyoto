@@ -258,7 +258,7 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
 }
 
 
-SmartPointer<Gyoto::Astrobj::Generic> Factory::getAstrobj(){
+SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
     
   if (!obj_) {
     DOMXPathResult* result;
@@ -384,7 +384,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::getSpectrometer(){
 
 SmartPointer<Scenery> Factory::getScenery () {
   if (!scenery_) {
-    scenery_ = new Scenery(metric(), screen(), getAstrobj());
+    scenery_ = new Scenery(metric(), screen(), astrobj());
     DOMXPathResult* result;
     DOMElement *tmpEl;
 
@@ -432,7 +432,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(sc), gg_(sc->metric()),
-    screen_(sc->screen()), obj_(sc->getAstrobj()),
+    screen_(sc->screen()), obj_(sc->astrobj()),
     photon_(NULL), spectro_(NULL), filename_("")
 {
   GYOTO_DEBUG << "Initializing XML stuff" << endl;
@@ -534,7 +534,7 @@ Factory::Factory(SmartPointer<Spectrum::Generic> sp)
 Factory::Factory(SmartPointer<Photon> ph)
   : reporter_(NULL), parser_(NULL), resolver_(NULL), 
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
-    scenery_(NULL), gg_(ph->metric()), obj_(ph->getAstrobj()),
+    scenery_(NULL), gg_(ph->metric()), obj_(ph->astrobj()),
     photon_(ph), spectro_(NULL), filename_("")
 {
   XMLPlatformUtils::Initialize();
@@ -587,7 +587,7 @@ void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 
 }
 
-void Factory::setAstrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
+void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
   GYOTO_DEBUG << endl;
   if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
   if (ao && !obj_el_) {
@@ -850,8 +850,8 @@ FactoryMessenger* FactoryMessenger::getChild() const {
   return new FactoryMessenger(employer_, currentElement);
 }
 
-void FactoryMessenger::setAstrobj(SmartPointer<Astrobj::Generic> gg) {
-  employer_ -> setAstrobj (gg, element_);
+void FactoryMessenger::astrobj(SmartPointer<Astrobj::Generic> gg) {
+  employer_ -> astrobj (gg, element_);
 }
 
 void FactoryMessenger::screen(SmartPointer<Screen> gg) {
@@ -874,8 +874,8 @@ SmartPointer<Photon> FactoryMessenger::getPhoton() {
   return employer_ -> getPhoton ();
 }
 
-SmartPointer<Astrobj::Generic> FactoryMessenger::getAstrobj() {
-  return employer_ -> getAstrobj ();
+SmartPointer<Astrobj::Generic> FactoryMessenger::astrobj() {
+  return employer_ -> astrobj ();
 }
 
 void FactoryMessenger::setParameter(std::string name){

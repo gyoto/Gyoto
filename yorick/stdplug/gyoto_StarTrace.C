@@ -240,7 +240,7 @@ extern "C" {
   Y_gyoto_StarTrace(int argc)
   {
     GYOTO_DEBUG << endl;
-    YGYOTO_CONSTRUCTOR_INIT(Astrobj, StarTrace);
+    YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, StarTrace, astrobj);
     if ((*ao)->kind().compare("StarTrace"))
       y_error("Expecting Astrobj of kind StarTrace");
     ygyoto_StarTrace_eval(ao, argc);

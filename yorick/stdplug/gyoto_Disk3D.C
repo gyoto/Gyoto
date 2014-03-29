@@ -149,7 +149,7 @@ extern "C" {
   void
   Y_gyoto_Disk3D(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Astrobj, Disk3D);
+    YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, Disk3D, astrobj);
     if ((*ao)->kind().compare("Disk3D"))
 	y_error("Expecting Astrobj of kind Disk3D");
     ygyoto_Disk3D_eval(ao, argc);

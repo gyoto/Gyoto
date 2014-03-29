@@ -211,11 +211,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * The Metric attached to the Scenery will be attached to the Screen
    */
   void screen(SmartPointer<Screen>);///< Set Scenery::screen_
-  SmartPointer<Astrobj::Generic> getAstrobj(); ///< Get Scenery::obj_
+  SmartPointer<Astrobj::Generic> astrobj(); ///< Get Scenery::obj_
   /**
    * The Metric attached to the Scenery will be attached to the Astrobj
    */
-  void setAstrobj(SmartPointer<Astrobj::Generic>); ///< Set Scenery::obj_
+  void astrobj(SmartPointer<Astrobj::Generic>); ///< Set Scenery::obj_
   double getDelta() const ; ///< Get default step in geometrical units
   double getDelta(const std::string &unit) const ;  ///< Get default step in specified units
   void setDelta(double); ///< set default step in geometrical units

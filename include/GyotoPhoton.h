@@ -116,9 +116,9 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   virtual double getMass() const ; ///< Return 0.
 
   /// Set Photon::object_
-  void setAstrobj(SmartPointer<Astrobj::Generic>);
+  void astrobj(SmartPointer<Astrobj::Generic>);
   /// Get Photon::object_
-  SmartPointer<Astrobj::Generic> getAstrobj() const ;
+  SmartPointer<Astrobj::Generic> astrobj() const ;
 
   /// Set Photon::spectro_
   void setSpectrometer(SmartPointer<Spectrometer::Generic> spr);

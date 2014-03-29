@@ -167,7 +167,7 @@ extern "C" {
   void
   Y_gyoto_PatternDisk(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT(Astrobj, PatternDisk);
+    YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, PatternDisk, astrobj);
     if ((*OBJ)->kind().compare("PatternDisk"))
       y_error("Expecting Astrobj of kind PatternDisk");
     ygyoto_PatternDisk_eval(OBJ, argc);

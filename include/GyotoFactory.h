@@ -79,7 +79,7 @@ namespace Gyoto {
  *  if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
  *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
  *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->screen();
- *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->getAstrobj();
+ *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->astrobj();
  *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
  *  delete factory; factory=NULL;
  * \endcode or, for a single object and without checking the kind
@@ -194,7 +194,7 @@ class Gyoto::Factory
   /// Find Scenery element, instanciate it and get it.
   /**
    * Scenery must be the root element. getScenery() will call
-   * metric(), getAstrobj() and screen().
+   * metric(), astrobj() and screen().
    */
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
 
@@ -217,7 +217,7 @@ class Gyoto::Factory
    * Astrobj may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> getAstrobj();
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> astrobj();
 
   /// Find Photon element, instanciate it and get it.
   /**
@@ -262,7 +262,7 @@ class Gyoto::Factory
    * SmartPointers must point to the same instance or an error will be
    * thrown using Gyoto::throwError().
    */
-  void setAstrobj(SmartPointer<Astrobj::Generic> ao, xercesc::DOMElement *el);
+  void astrobj(SmartPointer<Astrobj::Generic> ao, xercesc::DOMElement *el);
 
   /// Set Screen for this document.
   /**

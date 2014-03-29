@@ -178,7 +178,7 @@ extern "C" {
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
     YGYOTO_WORKER_GETSET_OBJECT2(screen,Screen);
-    YGYOTO_WORKER_GETSET_OBJECT(Astrobj);
+    YGYOTO_WORKER_GETSET_OBJECT2(astrobj,Astrobj);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Delta);
     YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Tmin);
 
@@ -412,7 +412,7 @@ extern "C" {
       }
       if (i_idx.isDouble() ||j_idx.isDouble()) {
 	prop.init(nbnuobs);
-	Photon ph((*OBJ)->metric(), (*OBJ)->getAstrobj(), screen,
+	Photon ph((*OBJ)->metric(), (*OBJ)->astrobj(), screen,
 		  i_idx.getDVal(), j_idx.getDVal());
 	ph.adaptive((*OBJ)->adaptive());
 	ph.hit(&prop);
@@ -422,7 +422,7 @@ extern "C" {
 	screen -> getRayCoord(size_t(i_idx.first()),
 			      size_t(j_idx.first()),
 			      coord);
-	Photon ph((*OBJ)->metric(), (*OBJ)->getAstrobj(), coord);
+	Photon ph((*OBJ)->metric(), (*OBJ)->astrobj(), coord);
 	ph.setSpectrometer(screen->getSpectrometer());
 	ph.setFreqObs(screen->getFreqObs());
 	ph.adaptive((*OBJ)->adaptive());

@@ -130,7 +130,7 @@ void Photon::resetTransmission() {
 
 double Photon::getMass() const { return 0.; }
 
-void Photon::setAstrobj(SmartPointer<Astrobj::Generic> ao) {
+void Photon::astrobj(SmartPointer<Astrobj::Generic> ao) {
   imin_=imax_=i0_;
   object_=ao;
 }
@@ -145,7 +145,7 @@ SmartPointer<Spectrometer::Generic> Photon::getSpectrometer() const { return spe
 string Photon::className() const { return  string("Photon"); }
 string Photon::className_l() const { return  string("photon"); }
 
-SmartPointer<Astrobj::Generic> Photon::getAstrobj() const { return object_; }
+SmartPointer<Astrobj::Generic> Photon::astrobj() const { return object_; }
 
 
 
@@ -554,7 +554,7 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 #ifdef GYOTO_USE_XERCES
 void Photon::fillElement(FactoryMessenger *fmp) {
-  if (object_)    fmp -> setAstrobj (object_) ;
+  if (object_)    fmp -> astrobj (object_) ;
   Worldline::fillElement(fmp);
 }
 
@@ -565,7 +565,7 @@ SmartPointer<Photon> Gyoto::Photon::Subcontractor(FactoryMessenger* fmp) {
   SmartPointer<Astrobj::Generic> ao = NULL;
 
   SmartPointer<Photon> ph = new Photon();
-  ph -> setAstrobj( fmp->getAstrobj() );
+  ph -> astrobj( fmp->astrobj() );
   ph -> setParameters(fmp);
 
   return ph;

@@ -519,7 +519,8 @@ namespace Gyoto {
 # define setArgument    argument
 # define getInclination inclination
 # define setInclination inclination
-
+# define getAstrobj     astrobj
+# define setAstrobj     astrobj
 
 //\}
 #endif
