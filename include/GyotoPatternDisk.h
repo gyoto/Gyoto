@@ -163,7 +163,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
    *  - previously allocated array will not be freed automatically;
    *  - array attached when the destructor is called will be freed.
    */
-  void setRadius(double * pattern);
+  void radius(double * pattern);
 
   /// Set PatternDisk::emission_
   /**

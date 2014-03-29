@@ -52,7 +52,7 @@ void ygyoto_StarTrace_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   YGYOTO_WORKER_INIT(Astrobj, StarTrace, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+21);
 
   YGYOTO_WORKER_SET_UNIT;
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Radius); 
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(radius); 
   YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
 
   /* INITCOORD */

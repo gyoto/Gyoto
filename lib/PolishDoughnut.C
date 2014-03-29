@@ -151,9 +151,9 @@ void   PolishDoughnut::setLambda(double lambda) {
 
 }
 
-double PolishDoughnut::getCentralDensity() const {return central_density_;}
-double PolishDoughnut::getCentralDensity(string unit) const {
-  double dens = getCentralDensity();
+double PolishDoughnut::centralDensity() const {return central_density_;}
+double PolishDoughnut::centralDensity(string unit) const {
+  double dens = centralDensity();
   if (unit != "") {
 #   ifdef HAVE_UDUNITS
     dens = Units::Converter("kg/L", unit)(dens);
@@ -164,10 +164,10 @@ double PolishDoughnut::getCentralDensity(string unit) const {
   }
   return dens;
 }
-void   PolishDoughnut::setCentralDensity(double dens) {
+void   PolishDoughnut::centralDensity(double dens) {
   central_density_=dens;
 }
-void   PolishDoughnut::setCentralDensity(double dens, string unit) {
+void   PolishDoughnut::centralDensity(double dens, string unit) {
   if (unit != "") {
 # ifdef HAVE_UDUNITS
     dens = Units::Converter(unit, "kg/L")(dens);
@@ -176,7 +176,7 @@ void   PolishDoughnut::setCentralDensity(double dens, string unit) {
 		  << endl ;
 # endif
   }
-  setCentralDensity(dens);
+  centralDensity(dens);
 }
 
 double PolishDoughnut::getCentralTempOverVirial() const
@@ -1288,7 +1288,7 @@ double PolishDoughnut::bessk(int nn,double xx) {
 int PolishDoughnut::setParameter(string name, string content, string unit) {
   if      (name=="Lambda") setLambda(atof(content.c_str()));
   else if (name=="CentralDensity")
-    setCentralDensity(atof(content.c_str()), unit);
+    centralDensity(atof(content.c_str()), unit);
   else if (name=="CentralTempOverVirial")
     centraltemp_over_virial_=atof(content.c_str());
   else if (name=="Beta") beta_=atof(content.c_str());

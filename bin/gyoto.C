@@ -235,12 +235,12 @@ int main(int argc, char** argv) {
     SmartPointer<Screen>  screen = scenery->screen();
     SmartPointer<Astrobj::Generic> object = scenery->astrobj();
 
-    if (xtobs) screen -> setTime        ( tobs );
-    else tobs= screen -> getTime();
-    if (xtmin) scenery -> setTmin ( tmin );
+    if (xtobs) screen -> time        ( tobs );
+    else tobs= screen -> time();
+    if (xtmin) scenery -> tMin ( tmin );
     if (xres)  screen -> setResolution  ( res  );
     else res = screen -> getResolution();
-    if (xfov)  screen -> setFieldOfView ( fov  );
+    if (xfov)  screen -> fieldOfView ( fov  );
     if (xdist) screen -> distance       ( dist );
     if (xincl) screen -> inclination    ( incl );
     if (xpaln) screen -> PALN           ( paln );

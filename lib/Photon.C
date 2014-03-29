@@ -77,7 +77,7 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
   Photon(orig, i0, dir, step_max),
   parent_(orig)
 {
-  setFreqObs(orig->getFreqObs());
+  freqObs(orig->freqObs());
 }
 
 Photon::Photon(SmartPointer<Metric::Generic> met,
@@ -92,7 +92,7 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj, 
 	       SmartPointer<Screen> screen, 
 	       double d_alpha, double d_delta):
-  Worldline(), object_(obj), freq_obs_(screen->getFreqObs()),
+  Worldline(), object_(obj), freq_obs_(screen->freqObs()),
   transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
 {
@@ -505,11 +505,11 @@ void Photon::findValue(Functor::Double_constDoubleArray* object,
   toutside = tinside;
 }
 
-void Photon::setFreqObs(double fo) {
+void Photon::freqObs(double fo) {
   freq_obs_=fo; 
   GYOTO_DEBUG_EXPR(freq_obs_);
 }
-double Photon::getFreqObs() const {
+double Photon::freqObs() const {
   GYOTO_DEBUG_EXPR(freq_obs_);
   return freq_obs_;
 }

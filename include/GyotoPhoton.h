@@ -126,9 +126,9 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   SmartPointer<Spectrometer::Generic> spectrometer() const ;
 
   /// Set Photon::freq_obs__
-  void setFreqObs(double);
+  void freqObs(double);
   /// Get Photon::freq_obs__
-  double getFreqObs() const;
+  double freqObs() const;
 
 
   // Mutators / assignment

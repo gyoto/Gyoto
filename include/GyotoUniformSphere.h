@@ -116,7 +116,7 @@ class Gyoto::Astrobj::UniformSphere :
       ///< Standard constructor
 
  /**
-  * Create UniformSphere object. Use metric(), setRadius(),
+  * Create UniformSphere object. Use metric(), radius(),
   * spectrum() and opacity() to set the members.
   * 
   * \param kind: specify kind (e.g. "Star" or "FixedStar")
@@ -141,10 +141,10 @@ class Gyoto::Astrobj::UniformSphere :
   ///< Set opacity_
   virtual SmartPointer<Spectrum::Generic> opacity() const;
   ///< Get opacity_
-  double getRadius() const ; ///< Get radius_ in geometrical units
-  void   setRadius(double); ///< Set radius_ in geometrical units
-  double getRadius(std::string) const ; ///< Get radius_ in specified unit
-  void   setRadius(double, std::string); ///< Set radius_ in specified unit
+  double radius() const ; ///< Get radius_ in geometrical units
+  void   radius(double); ///< Set radius_ in geometrical units
+  double radius(std::string) const ; ///< Get radius_ in specified unit
+  void   radius(double, std::string); ///< Set radius_ in specified unit
 
   double deltaMaxOverRadius(); ///< Get dltmor_
   void   deltaMaxOverRadius(double f); ///< Set dltmor_

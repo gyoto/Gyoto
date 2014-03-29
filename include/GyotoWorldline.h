@@ -185,8 +185,8 @@ class Gyoto::Worldline
   void delta(double, const std::string &unit);   ///< Set default step in specified units
   double delta() const ; ///< Get delta
   double delta(const std::string &unit) const ;  ///< Get default step in specified units
-  double getTmin() const ; ///< Get tmin value
-  void setTmin(double tlim); ///< Set tmin to a given value
+  double tMin() const ; ///< Get tmin value
+  void tMin(double tlim); ///< Set tmin to a given value
   void adaptive (bool mode) ; ///< Set adaptive_
   bool adaptive () const ; ///< Get adaptive_
   void secondary (bool sec) ; ///< Set secondary_

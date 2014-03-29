@@ -278,7 +278,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * \brief Set freq_obs_
    * \param fo double: observing frequency in Hz
    */
-  void setFreqObs(double fo);
+  void freqObs(double fo);
 
 
   /**
@@ -287,19 +287,19 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * \param unit string: unit in which fo is expressed, convertable to
    * Herz or meters or energy.
    */
-  void setFreqObs(double fo, const std::string &unit);
+  void freqObs(double fo, const std::string &unit);
 
   /**
    * \brief Get freq_obs_.
    */
-  double getFreqObs() const ;
+  double freqObs() const ;
 
   /**
    * \brief Get freq_obs_.
    * \param unit string: unit in which freq_obs_ should be returned is
    * expressed, convertable to Herz or meters or energy.
    */
-  double getFreqObs(const std::string &unit) const;
+  double freqObs(const std::string &unit) const;
 
   /// Alternative way to set projection
   /**
@@ -371,28 +371,28 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void metric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_
 
   /// Get observing date in seconds
-  double getTime();
+  double time();
 
   /// Get observing date in seconds
-  double getTime(const std::string &);
+  double time(const std::string &);
 
   /// Set observing date in specified unit
-  void setTime(double, const std::string &);
+  void time(double, const std::string &);
 
   /// Set observing date in seconds
-  void setTime(double);
+  void time(double);
 
   /// Get Screen::fov_ in radians
-  double getFieldOfView();
+  double fieldOfView();
 
   /// Get Screen::fov_ in specified unit
-  double getFieldOfView(std::string unit);
+  double fieldOfView(std::string unit);
 
   /// Set Screen::fov_ in radians
-  void setFieldOfView(double);
+  void fieldOfView(double);
 
   /// Set Screen::fov_ in specified unit
-  void setFieldOfView(double, const std::string &unit);
+  void fieldOfView(double, const std::string &unit);
 
   /// Set direction of the line-of-view
   void alpha0(double);

@@ -61,7 +61,7 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   
   /**
    * Everything is undefined, call setCoordSys(), setPos() and
-   * setRadius().
+   * radius().
    */
   FixedStar();///< Default constructor
 
@@ -81,8 +81,8 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> metric) ;
-  using UniformSphere::setRadius;
-  virtual void setRadius(double radius); ///< Set radius
+  using UniformSphere::radius;
+  virtual void radius(double radius); ///< Set radius
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system
   

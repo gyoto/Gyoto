@@ -1054,8 +1054,8 @@ double Worldline::delta(const string &unit) const {
   return Units::FromGeometrical(delta(), unit, metric_);
 }
 
-double Worldline::getTmin() const { return tmin_; }
-void Worldline::setTmin(double tmin) { tmin_ = tmin; }
+double Worldline::tMin() const { return tmin_; }
+void Worldline::tMin(double tmin) { tmin_ = tmin; }
 
 void Worldline::adaptive(bool mode) { adaptive_ = mode; }
 bool Worldline::adaptive() const { return adaptive_; }

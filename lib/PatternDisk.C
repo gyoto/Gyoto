@@ -100,7 +100,7 @@ void PatternDisk::setVelocity(double * pattern) {
   velocity_ = pattern;
 }
 
-void PatternDisk::setRadius(double * pattern) {
+void PatternDisk::radius(double * pattern) {
   radius_ = pattern;
 }
 

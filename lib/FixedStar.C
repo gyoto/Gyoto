@@ -53,7 +53,7 @@ FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
   GYOTO_DEBUG << "(metric, pos, rad)" << endl;
 # endif
   for (int i=0;i<3;++i) pos_[i] = StPsn[i]; 
-  setRadius(rad);
+  radius(rad);
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done" << endl;
 # endif
@@ -126,10 +126,10 @@ void FixedStar::metric(SmartPointer<Metric::Generic> gg) {
   GYOTO_DEBUG << endl;
 # endif
  Generic::metric(gg);
- setRadius(radius_);
+ radius(radius_);
 }
 
-void FixedStar::setRadius(double r) {
+void FixedStar::radius(double r) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(r) ;
 # endif
@@ -155,7 +155,7 @@ void FixedStar::setRadius(double r) {
 }
 
 void FixedStar::setPos(const double p[3])
-{ for (int i=0; i<3; ++i) pos_[i]=p[i]; setRadius(radius_);}
+{ for (int i=0; i<3; ++i) pos_[i]=p[i]; radius(radius_);}
 
 int FixedStar::setParameter(string name, string content, string unit) {
   if (name=="Position") {

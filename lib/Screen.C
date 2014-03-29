@@ -177,17 +177,17 @@ void Screen::argument(double arg)     {
   euler_[2]=arg;  computeBaseVectors();
 }
 
-void Screen::setFreqObs(double fo, const string &unit) { 
-  setFreqObs(Units::ToHerz(fo, unit));
+void Screen::freqObs(double fo, const string &unit) { 
+  freqObs(Units::ToHerz(fo, unit));
 }
-void Screen::setFreqObs(double fo)     {
+void Screen::freqObs(double fo)     {
   freq_obs_=fo;
   GYOTO_DEBUG_EXPR(freq_obs_);
 }
-double Screen::getFreqObs() const {
+double Screen::freqObs() const {
   return freq_obs_;
 }
-double Screen::getFreqObs(const string &unit) const {
+double Screen::freqObs(const string &unit) const {
   return Units::FromHerz(freq_obs_, unit);
 }
 
@@ -752,19 +752,19 @@ void Screen::coordToXYZ(const double pos[4], double xyz[3]) const {
   }
 }
 
-double Screen::getTime() { return tobs_ ; }
-double Screen::getTime(const string &unit) {
-  return Units::FromSeconds(getTime(), unit, gg_) ;
+double Screen::time() { return tobs_ ; }
+double Screen::time(const string &unit) {
+  return Units::FromSeconds(time(), unit, gg_) ;
 }
 
-void Screen::setTime(double tobs, const string &unit) {
+void Screen::time(double tobs, const string &unit) {
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(tobs);
   GYOTO_DEBUG_EXPR(unit);
 # endif
-  setTime(Units::ToSeconds(tobs, unit, gg_));
+  time(Units::ToSeconds(tobs, unit, gg_));
 }
-void Screen::setTime(double tobs) {
+void Screen::time(double tobs) {
   tobs_ = tobs;
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(tobs_);
@@ -773,10 +773,10 @@ void Screen::setTime(double tobs) {
 
 //double Screen::getMinimumTime() { return tmin_; }
 //void Screen::setMinimumTime(double tmin) { tmin_ = tmin; }
-double Screen::getFieldOfView() { return fov_; }
+double Screen::fieldOfView() { return fov_; }
 
-double Screen::getFieldOfView(string unit) {
-  double fov = getFieldOfView();
+double Screen::fieldOfView(string unit) {
+  double fov = fieldOfView();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
 # ifdef HAVE_UDUNITS
@@ -791,7 +791,7 @@ double Screen::getFieldOfView(string unit) {
   else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\""
+    ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
     throwError(ss.str());
   }
@@ -799,7 +799,7 @@ double Screen::getFieldOfView(string unit) {
   return fov;
 }
 
-void Screen::setFieldOfView(double fov, const string &unit) {
+void Screen::fieldOfView(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
 # ifdef HAVE_UDUNITS
@@ -818,14 +818,14 @@ void Screen::setFieldOfView(double fov, const string &unit) {
                                                fov *= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::setFieldOfView(): unknown unit: \"" << unit << "\""
+    ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
     throwError(ss.str());
   }
 # endif
-  setFieldOfView(fov);
+  fieldOfView(fov);
 }
-void Screen::setFieldOfView(double fov) { fov_ = fov; }
+void Screen::fieldOfView(double fov) { fov_ = fov; }
 
 void Screen::alpha0(double alpha) { alpha0_ = alpha; }
 void Screen::delta0(double delta) { delta0_ = delta; }
@@ -1002,7 +1002,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="Delta0"){
       delta0 = atof(tc); delta0_found=1;
     }
-    else if (name=="FreqObs") scr -> setFreqObs(atof(tc), unit);
+    else if (name=="FreqObs") scr -> freqObs(atof(tc), unit);
     else if (name=="SphericalAngles")  scr -> setAnglekind(1);
     else if (name=="EquatorialAngles") scr -> setAnglekind(0);
 #   ifdef GYOTO_USE_CFITSIO
@@ -1010,9 +1010,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 #   endif
   }
 
-  if (tobs_found) scr -> setTime ( tobs_tmp, tunit );
+  if (tobs_found) scr -> time ( tobs_tmp, tunit );
 
-  if (fov_found) scr -> setFieldOfView ( fov, fov_unit );
+  if (fov_found) scr -> fieldOfView ( fov, fov_unit );
 
   if (alpha0_found) scr -> alpha0(alpha0);
 

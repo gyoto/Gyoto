@@ -48,7 +48,7 @@ void ygyoto_PolishDoughnut_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE(Lambda);
   YGYOTO_WORKER_GETSET_LONG2(komissarov);
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(CentralDensity);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(centralDensity);
   YGYOTO_WORKER_GETSET_DOUBLE(CentralTempOverVirial);
   YGYOTO_WORKER_GETSET_DOUBLE(Beta);
   YGYOTO_WORKER_GETSET_LONG(SpectralOversampling);

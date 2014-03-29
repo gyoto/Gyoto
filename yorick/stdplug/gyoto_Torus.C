@@ -40,8 +40,8 @@ void ygyoto_Torus_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) {
   YGYOTO_WORKER_INIT(Astrobj, Torus, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+5);
 
   YGYOTO_WORKER_SET_UNIT;
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(LargeRadius);
-  YGYOTO_WORKER_GETSET_DOUBLE_UNIT(SmallRadius);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(largeRadius);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(smallRadius);
   YGYOTO_WORKER_GETSET_OBJECT2(spectrum,Spectrum);
   YGYOTO_WORKER_GETSET_OBJECT2(opacity,Spectrum);
 

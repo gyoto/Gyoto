@@ -63,7 +63,7 @@ Star::Star(SmartPointer<Metric::Generic> met, double rad,
 
   metric(met);
   setInitCoord(pos, v);
-  setRadius(rad);
+  radius(rad);
 }
 
 Star::Star(const Star& orig) :

@@ -272,8 +272,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   /// initialize photon once. It will be cloned.
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   ph_.spectrometer(spr);
-  ph_.setTmin(tmin_);
-  ph_.setFreqObs(screen_->getFreqObs());
+  ph_.tMin(tmin_);
+  ph_.freqObs(screen_->freqObs());
   double coord[8];
   screen_ -> getRayCoord(imin,jmin, coord);
   ph_ . setInitialCondition(gg_, obj_, coord);
@@ -364,8 +364,8 @@ void Scenery::operator() (
     // environment: it may really need to work on a given copy of the object.
     ph = &ph_;
     ph -> spectrometer(spr);
-    ph -> setTmin(tmin_);
-    ph -> setFreqObs(screen_->getFreqObs());
+    ph -> tMin(tmin_);
+    ph -> freqObs(screen_->freqObs());
     ph -> adaptive(adaptive_);
     ph -> secondary(secondary_);
     ph -> maxiter(maxiter_);
@@ -380,7 +380,7 @@ void Scenery::operator() (
   ph -> adaptive(adaptive_);
   ph -> secondary(secondary_);
   ph -> maxiter(maxiter_);
-  ph -> setTmin(tmin_);
+  ph -> tMin(tmin_);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "init nbnuobs" << endl;
@@ -567,14 +567,14 @@ size_t Scenery::getScalarQuantitiesCount() const {
   return nquant;
 }
 
-double Scenery::getTmin() const { return tmin_; }
-double Scenery::getTmin(const string &unit) const {
-  return Units::FromGeometricalTime(getTmin(), unit, gg_);
+double Scenery::tMin() const { return tmin_; }
+double Scenery::tMin(const string &unit) const {
+  return Units::FromGeometricalTime(tMin(), unit, gg_);
 }
 
-void Scenery::setTmin(double tmin) { tmin_ = tmin; }
-void Scenery::setTmin(double tmin, const string &unit) {
-  setTmin(Units::ToGeometricalTime(tmin, unit, gg_));
+void Scenery::tMin(double tmin) { tmin_ = tmin; }
+void Scenery::tMin(double tmin, const string &unit) {
+  tMin(Units::ToGeometricalTime(tmin, unit, gg_));
 }
 
 void Scenery::adaptive(bool mode) { adaptive_ = mode; }
@@ -650,7 +650,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     char* tc = const_cast<char*>(content.c_str());
     if (name=="Delta")       sc -> delta(atof(tc), unit);;
     if (name=="Quantities")  sc -> setRequestedQuantities(tc);
-    if (name=="MinimumTime") sc -> setTmin(atof(tc), unit);
+    if (name=="MinimumTime") sc -> tMin(atof(tc), unit);
     if (name=="NThreads")    sc -> setNThreads(atoi(tc));
     if (name=="MaxIter")     sc -> maxiter(atoi(tc));
     if (name=="Adaptive")    sc -> adaptive(true);

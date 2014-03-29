@@ -53,7 +53,7 @@ UniformSphere::UniformSphere(string kind) :
   GYOTO_DEBUG << endl;
 # endif
 
-  setRadius(0.);
+  radius(0.);
 
   spectrum_ = new Spectrum::BlackBody(); 
   opacity_ = new Spectrum::PowerLaw(0., 1.); 
@@ -164,7 +164,7 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   // Emission is assumed to deliver
   // then I_nu integrated over a band is \propto g^(4-alpha_)
   // not simply g^3 as in the standard case 
-  double freqObs=ph->getFreqObs(); // this is a useless quantity, always 1
+  double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
   size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
@@ -222,22 +222,22 @@ double UniformSphere::integrateEmission(double nu1, double nu2, double dsem,
 }
 
 
-double UniformSphere::getRadius() const {
+double UniformSphere::radius() const {
   return radius_;
 }
 
-void UniformSphere::setRadius(double r) {
+void UniformSphere::radius(double r) {
   radius_=r;
   critical_value_ = r*r;
   safety_value_ = critical_value_*1.1+0.1;
 }
 
-double UniformSphere::getRadius(std::string unit) const {
-  return Units::FromGeometrical(getRadius(), unit, gg_);
+double UniformSphere::radius(std::string unit) const {
+  return Units::FromGeometrical(radius(), unit, gg_);
 }
 
-void UniformSphere::setRadius(double r, std::string unit) {
-  setRadius(Units::ToGeometrical(r, unit, gg_));
+void UniformSphere::radius(double r, std::string unit) {
+  radius(Units::ToGeometrical(r, unit, gg_));
 }
 
 double UniformSphere::deltaMaxOverRadius() {return dltmor_;}
@@ -247,7 +247,7 @@ double UniformSphere::deltaMaxOverDistance() {return dltmod_;}
 void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
 
 int UniformSphere::setParameter(string name, string content, string unit) {
-  if (name=="Radius") setRadius(atof(content.c_str()), unit);
+  if (name=="Radius") radius(atof(content.c_str()), unit);
   else if (name=="IsotropicEmittedIntensity") isotropic_=1;
   else if (name=="Alpha") alpha_=atof(content.c_str());
   else if (name=="DeltaMaxOverRadius") deltaMaxOverRadius(atof(content.c_str()));
@@ -261,7 +261,7 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   FactoryMessenger * childfmp=NULL;
 
   fmp -> metric (metric()) ;
-  fmp -> setParameter ("Radius", getRadius());
+  fmp -> setParameter ("Radius", radius());
 
   childfmp = fmp -> makeChild ( "Spectrum" );
   spectrum_ -> fillElement(childfmp);

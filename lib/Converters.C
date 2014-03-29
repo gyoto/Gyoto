@@ -253,7 +253,7 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
   else if (unit=="kyr") val *= 3.15576e+10;
   else {
     stringstream ss;
-    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
+    ss << "Screen::time(): unknown unit \"" << unit << "\". Accepted units: "
        << "[s] geometrical min h d y";
     throwError (ss.str());
   }
@@ -283,7 +283,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
   else if (unit=="kyr") val /= 3.15576e+10;
   else {
     stringstream ss;
-    ss << "Screen::setTime(): unknown unit \"" << unit << "\". Accepted units: "
+    ss << "Screen::time(): unknown unit \"" << unit << "\". Accepted units: "
        << "[s] geometrical min h d y";
     throwError (ss.str());
   }

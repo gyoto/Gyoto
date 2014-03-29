@@ -116,10 +116,10 @@ public:
  double getLambda() const; ///< Get PolishDoughnut::lambda_
  void   setLambda(double lambda); ///< Set PolishDoughnut::lambda_
 
- double getCentralDensity() const; ///< Get PolishDoughnut::central_density_
- double getCentralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
- void   setCentralDensity(double density); ///< Set PolishDoughnut::central_density_
- void   setCentralDensity(double density, std::string unit); ///< Set PolishDoughnut::central_density_ in specified unit
+ double centralDensity() const; ///< Get PolishDoughnut::central_density_
+ double centralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
+ void   centralDensity(double density); ///< Set PolishDoughnut::central_density_
+ void   centralDensity(double density, std::string unit); ///< Set PolishDoughnut::central_density_ in specified unit
 
  double getCentralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
  void   setCentralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_

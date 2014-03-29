@@ -82,42 +82,42 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   /**
    * Get large radius Torus::c_ in geometrical units
    */
-  double getLargeRadius() const;
+  double largeRadius() const;
 
   /**
    * Get large radius Torus::c_ in specified unit
    */
-  double getLargeRadius(std::string unit) const;
+  double largeRadius(std::string unit) const;
 
   /**
    * Get small radius in geometrical units
    */
-  double getSmallRadius() const;
+  double smallRadius() const;
 
   /**
    * Get small radius in specified unit
    */
-  double getSmallRadius(std::string unit) const;
+  double smallRadius(std::string unit) const;
 
   /**
    * \brief Set large radius Torus::c_
    */
-  void setLargeRadius(double c);
+  void largeRadius(double c);
 
   /**
    * \brief Set small radius
    */
-  void setSmallRadius(double a);
+  void smallRadius(double a);
 
   /**
    * \brief Set large radius Torus::c_ in specified unit
    */
-  void setLargeRadius(double c, std::string unit);
+  void largeRadius(double c, std::string unit);
 
   /**
    * \brief Set small radius in specified unit
    */
-  void setSmallRadius(double a, std::string unit);
+  void smallRadius(double a, std::string unit);
 
   /**
    * \brief Set Torus::spectrum_

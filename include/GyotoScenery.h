@@ -247,13 +247,13 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   size_t getScalarQuantitiesCount() const ;
 
   /// Get Scenery::tmin_
-  double getTmin() const ;
+  double tMin() const ;
   /// Get Scenery::tmin_ in specified unit
-  double getTmin(const std::string &unit) const ;
+  double tMin(const std::string &unit) const ;
   /// Set Scenery::tmin_
-  void setTmin(double);
+  void tMin(double);
   /// Set Scenery::tmin_ in specified unit
-  void setTmin(double, const std::string &unit);
+  void tMin(double, const std::string &unit);
 
   void adaptive (bool mode) ; ///< Set Scenery::adaptive_
   bool adaptive () const ; ///< Get Scenery::adaptive_

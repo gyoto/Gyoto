@@ -80,7 +80,7 @@ void DynamicalDisk::copyQuantities(int iq) {
 
   setEmission(emission_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
-  setRadius(radius_array_[iq-1]);
+  radius(radius_array_[iq-1]);
 }
 
 void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {

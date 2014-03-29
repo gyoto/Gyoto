@@ -55,26 +55,26 @@ Torus::~Torus() {}
 
 Torus* Torus::clone() const { return new Torus(*this); }
 
-double Torus::getLargeRadius() const { return c_; }
-double Torus::getLargeRadius(string unit) const {
-  return Units::FromGeometrical(getLargeRadius(), unit, gg_);
+double Torus::largeRadius() const { return c_; }
+double Torus::largeRadius(string unit) const {
+  return Units::FromGeometrical(largeRadius(), unit, gg_);
 }
-double Torus::getSmallRadius() const { return sqrt(critical_value_); }
-double Torus::getSmallRadius(string unit) const {
-  return Units::FromGeometrical(getSmallRadius(), unit, gg_);
-}
-
-void Torus::setLargeRadius(double c) { c_ = c; }
-void Torus::setLargeRadius(double c, string unit) {
-  setLargeRadius(Units::ToGeometrical(c, unit, gg_));
+double Torus::smallRadius() const { return sqrt(critical_value_); }
+double Torus::smallRadius(string unit) const {
+  return Units::FromGeometrical(smallRadius(), unit, gg_);
 }
 
-void Torus::setSmallRadius(double a) {
+void Torus::largeRadius(double c) { c_ = c; }
+void Torus::largeRadius(double c, string unit) {
+  largeRadius(Units::ToGeometrical(c, unit, gg_));
+}
+
+void Torus::smallRadius(double a) {
   critical_value_ = a*a;
   safety_value_ = critical_value_ * 1.1;
 }
-void Torus::setSmallRadius(double c, string unit) {
-  setSmallRadius(Units::ToGeometrical(c, unit, gg_));
+void Torus::smallRadius(double c, string unit) {
+  smallRadius(Units::ToGeometrical(c, unit, gg_));
 }
 
 SmartPointer<Spectrum::Generic> Torus::spectrum() const { return spectrum_; }
@@ -156,8 +156,8 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
 int Torus::setParameter(std::string name,
 			std::string content,
 			std::string unit) {
-  if      (name=="LargeRadius") setLargeRadius(atof(content.c_str()), unit);
-  else if (name=="SmallRadius") setSmallRadius(atof(content.c_str()), unit);
+  if      (name=="LargeRadius") largeRadius(atof(content.c_str()), unit);
+  else if (name=="SmallRadius") smallRadius(atof(content.c_str()), unit);
   else return Standard::setParameter(name, content, unit);
   return 0;
 }

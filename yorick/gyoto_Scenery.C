@@ -180,7 +180,7 @@ extern "C" {
     YGYOTO_WORKER_GETSET_OBJECT2(screen,Screen);
     YGYOTO_WORKER_GETSET_OBJECT2(astrobj,Astrobj);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(delta);
-    YGYOTO_WORKER_GETSET_DOUBLE_UNIT(Tmin);
+    YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(tMin);
 
     /* QUANTITIES */
     if ((iarg=kiargs[++k])>=0) {
@@ -424,7 +424,7 @@ extern "C" {
 			      coord);
 	Photon ph((*OBJ)->metric(), (*OBJ)->astrobj(), coord);
 	ph.spectrometer(screen->spectrometer());
-	ph.setFreqObs(screen->getFreqObs());
+	ph.freqObs(screen->freqObs());
 	ph.adaptive((*OBJ)->adaptive());
 
 	ySceneryThreadWorkerArg larg;
