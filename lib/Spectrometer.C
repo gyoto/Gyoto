@@ -124,7 +124,7 @@ Generic::~Generic() {
 char const * Generic::kind() const {return kind_;}
 void Generic::kind(char const * k) {kind_=k; tellListeners();}
 
-size_t Generic::getNSamples() const { return nsamples_; }
+size_t Generic::nSamples() const { return nsamples_; }
 size_t Generic::getNBoundaries() const { return nboundaries_; }
 
 double const * Generic::getMidpoints() const { return midpoints_; }

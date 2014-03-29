@@ -403,9 +403,9 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   void setAnglekind(int);
 
   /// Get Screen::npix_
-  size_t getResolution();
+  size_t resolution();
   /// Set Screen::npix_
-  void setResolution(size_t);
+  void resolution(size_t);
 
   /// Set mask_ from array
   /**

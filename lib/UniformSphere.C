@@ -166,7 +166,7 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   // not simply g^3 as in the standard case 
   double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
-  size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
+  size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
@@ -280,7 +280,7 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
 }
 
 void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
-  setFlag_radtransf(0);
+  opticallyThin(0);
   if (!fmp) return;
 
   string name="", content="", unit="";
@@ -308,7 +308,7 @@ void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
       GYOTO_DEBUG << "opacity()" << endl;
 #     endif
       opacity((*Spectrum::getSubcontractor(content))(child));
-      setFlag_radtransf(1);
+      opticallyThin(1);
       delete child;
     } else {
 #     if GYOTO_DEBUG_ENABLED

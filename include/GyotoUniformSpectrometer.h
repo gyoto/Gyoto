@@ -99,10 +99,11 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    */
   void kind(std::string name);
  
+  using Generic::nSamples;
  /**
    * \brief Set Generic::nsamples_
    */
-  void setNSamples(size_t n);
+  void nSamples(size_t n);
  
  /**
    * \brief Set Uniform::band_

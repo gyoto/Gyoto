@@ -207,7 +207,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
   */
   double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
-  size_t nbnuobs = spr() ? spr -> getNSamples() : 0 ;
+  size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,

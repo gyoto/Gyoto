@@ -52,7 +52,7 @@ extern "C" {
     YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(time);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(fieldOfView);
-    YGYOTO_WORKER_GETSET_LONG(Resolution);
+    YGYOTO_WORKER_GETSET_LONG2(resolution);
 
     /* MASK */
     if ((iarg=kiargs[++k])>=0) { // mask
@@ -60,7 +60,7 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) {
 	if ((*rvset)++) y_error(rmsg);
-	size_t npix = (*OBJ) -> getResolution();
+	size_t npix = (*OBJ) -> resolution();
 	long dims[] = {2, npix, npix};
 	double * out = ypush_d(dims);
 	memcpy(out, (*OBJ)->mask(), npix*npix*sizeof(double));

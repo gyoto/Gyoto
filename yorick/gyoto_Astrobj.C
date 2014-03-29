@@ -142,7 +142,7 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*OB
   /* METRIC */
   YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
   YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(rMax);
-  YGYOTO_WORKER_GETSET_LONG(Flag_radtransf);
+  YGYOTO_WORKER_GETSET_LONG2(opticallyThin);
   YGYOTO_WORKER_XMLWRITE;
 
   // kind

@@ -149,7 +149,7 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   // This is suboptimal, but most straightforward
   nboundaries_=nsamples_=0;
   for (size_t i=0; i<cardinal_; ++i) {
-    nsamples_ += elements_[i]->getNSamples();
+    nsamples_ += elements_[i]->nSamples();
     nboundaries_ += elements_[i]->getNBoundaries();
   }
   if (boundaries_) delete [] boundaries_;
@@ -165,7 +165,7 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   size_t const * chanind=0;
   for (size_t i=0; i<cardinal_; ++i) {
     double enb = elements_[i]->getNBoundaries();
-    double ens = elements_[i]->getNSamples();
+    double ens = elements_[i]->nSamples();
     memcpy(boundaries_+boffset,
 	   elements_[i]->getChannelBoundaries(),
 	   enb*sizeof(double));

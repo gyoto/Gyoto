@@ -127,8 +127,8 @@ public:
  double beta() const; ///< Get PolishDoughnut::beta_
  void   beta(double beta);///< Set PolishDoughnut::beta_
 
- void   setSpectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
- size_t getSpectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
+ void   spectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
+ size_t spectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
 
  bool komissarov() const; ///< Get PolishDoughnut::komissarov_
  void komissarov(bool komis); ///< Set PolishDoughnut::komissarov_

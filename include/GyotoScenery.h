@@ -264,8 +264,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   void maxiter (size_t miter) ; ///< Set Scenery::maxiter_
   size_t maxiter () const ; ///< Get Scenery::maxiter_
 
-  void setNThreads(size_t); ///< Set nthreads_;
-  size_t getNThreads() const ; ///< Get nthreads_;
+  void nThreads(size_t); ///< Set nthreads_;
+  size_t nThreads() const ; ///< Get nthreads_;
 
   /// Set Scenery::intensity_converter_
   void setIntensityConverter(std::string unit);

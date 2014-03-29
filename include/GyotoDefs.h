@@ -569,6 +569,17 @@ namespace Gyoto {
 # define setConstant              constant
 # define getExponent              exponent
 # define setExponent              exponent
+# define getFlag_radtransf        opticallyThin
+# define setFlag_radtransf        opticallyThin
+# define getNThreads              nThreads
+# define setNThreads              nThreads
+# define getResolution            resolution
+# define setResolution            resolution
+# define getNSamples              nSamples
+# define setNSamples              nSamples
+# define getSpectralOverSampling  spectralOversampling
+# define setSpectralOverSampling  spectralOversampling
+
 //\}
 #endif
 

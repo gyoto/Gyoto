@@ -226,14 +226,14 @@ extern "C" {
       } else {              // impaccoords=double(16,res,res): Setting
 	long ntot;
 	long dims[Y_DIMSIZE];
-	size_t res=(*OBJ)->screen()->getResolution();
+	size_t res=(*OBJ)->screen()->resolution();
 	impactcoords = ygeta_d(iarg, &ntot, dims);
 	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
 	  y_error("dimsof(impactcoords) != [3,16,res,res]");
       }
     }
 
-    YGYOTO_WORKER_GETSET_LONG(NThreads);
+    YGYOTO_WORKER_GETSET_LONG2(nThreads);
 
     // Get ray-traced image if there is a supplementary positional argument
     if (
@@ -241,13 +241,13 @@ extern "C" {
 	(((argc>0 && argc<=3 && piargs[argc-1]>=0) || (piargs[1]>=0)) // positional argument?
 	 || precompute || impactcoords)
 	) { 
-      size_t res=(*OBJ)->screen()->getResolution();
+      size_t res=(*OBJ)->screen()->resolution();
       if ((*rvset)++) y_error("Only one return value possible");
       if ((*paUsed)++) y_error("Only one keyword may use positional arguments");
       GYOTO_DEBUG << "rank: " << yarg_rank(piargs[0]) << endl;
 
       SmartPointer<Spectrometer::Generic> spr = (*OBJ)->screen()->spectrometer();
-      size_t nbnuobs = spr()? spr->getNSamples() : 0;
+      size_t nbnuobs = spr()? spr->nSamples() : 0;
 
       Idx i_idx (piargs[0], res);
       if (i_idx.isNuller()) return;
@@ -442,7 +442,7 @@ extern "C" {
 	pthread_t * threads = NULL;
 	pthread_t pself = pthread_self();
 	larg.parent = &pself;
-	size_t nthreads = (*OBJ) -> getNThreads();
+	size_t nthreads = (*OBJ) -> nThreads();
 	if (nthreads >= 2) {
 	  threads = new pthread_t[nthreads-1];
 	  larg.mutex  = &mumu;
@@ -486,7 +486,7 @@ extern "C" {
     if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
 
     size_t res;
-    try {res=scenery->screen()->getResolution();}
+    try {res=scenery->screen()->resolution();}
     YGYOTO_STD_CATCH;
 
     double * impactcoords = NULL;
@@ -515,7 +515,7 @@ extern "C" {
 	SmartPointer<Spectrometer::Generic> spr=scenery->screen()->spectrometer();
 	if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
-	nbnuobs = spr -> getNSamples();
+	nbnuobs = spr -> nSamples();
       }
       nbdata= scenery->getScalarQuantitiesCount();
     } YGYOTO_STD_CATCH;

@@ -57,7 +57,7 @@ Photon::Photon(const Photon& o) :
   if (o.spectro_()) {
     spectro_ = o.spectro_ -> clone();
     _allocateTransmission();
-    if (size_t nsamples = spectro_->getNSamples())
+    if (size_t nsamples = spectro_->nSamples())
       memcpy(transmission_, o.getTransmission(), nsamples*sizeof(double));
   }
 }
@@ -111,7 +111,7 @@ void Photon::_allocateTransmission() {
     transmission_ = NULL;
   }
   if (spectro_()) {
-    size_t nsamples = spectro_->getNSamples();
+    size_t nsamples = spectro_->nSamples();
     if (nsamples) {
       transmission_ = new double[nsamples];
       resetTransmission();
@@ -122,7 +122,7 @@ void Photon::_allocateTransmission() {
 void Photon::resetTransmission() {
   transmission_freqobs_ = 1.;
   if (spectro_() && transmission_) {
-    size_t nsamples = spectro_->getNSamples();
+    size_t nsamples = spectro_->nSamples();
     for (size_t i = 0; i < nsamples; ++i) transmission_[i] = 1.;
   }
 }
@@ -184,7 +184,7 @@ int Photon::hit(Astrobj::Properties *data) {
 
   transmission_freqobs_=1.;
   size_t nsamples;
-  if (spectro_() && (nsamples = spectro_->getNSamples()))
+  if (spectro_() && (nsamples = spectro_->nSamples()))
     for (size_t ii=0; ii<nsamples; ++ii) transmission_[ii]=1.;
 
   double rmax=object_ -> rMax();
@@ -516,7 +516,7 @@ double Photon::freqObs() const {
 
 double Photon::getTransmission(size_t i) const {
   if (i==size_t(-1)) return transmission_freqobs_;
-  if (!spectro_() || i>=spectro_->getNSamples())
+  if (!spectro_() || i>=spectro_->nSamples())
     throwError("Photon::getTransmission(): i > nsamples");
   return transmission_[i];
 }
@@ -524,7 +524,7 @@ double Photon::getTransmission(size_t i) const {
 double Photon::getTransmissionMax() const {
   double transmax=transmission_freqobs_;
   if (spectro_()) {
-    size_t i=0, imax= spectro_->getNSamples();
+    size_t i=0, imax= spectro_->nSamples();
     for (i=0; i < imax; ++i)
       if (transmission_[i] > transmax)
 	transmax = transmission_[i];
@@ -538,7 +538,7 @@ double Photon::getTransmissionMax() const {
 double const * Photon::getTransmission() const { return transmission_; }
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }
-  if (!spectro_() || i>=spectro_->getNSamples())
+  if (!spectro_() || i>=spectro_->nSamples())
     throwError("Photon::getTransmission(): i > nsamples");
   transmission_[i] *= t;
 # if GYOTO_DEBUG_ENABLED

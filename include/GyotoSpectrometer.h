@@ -320,7 +320,7 @@ class Gyoto::Spectrometer::Generic
    */
   virtual void  kind(kind_t) ;
 
-  virtual size_t getNSamples() const ; ///< Get Generic::nsamples_.
+  virtual size_t nSamples() const ; ///< Get Generic::nsamples_.
   virtual size_t getNBoundaries() const ; ///< Get Generic::nboundaries_
   virtual double const * getMidpoints() const  ; ///< Get Generic::midpoints_.
   /**

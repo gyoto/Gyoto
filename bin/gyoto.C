@@ -238,14 +238,14 @@ int main(int argc, char** argv) {
     if (xtobs) screen -> time        ( tobs );
     else tobs= screen -> time();
     if (xtmin) scenery -> tMin ( tmin );
-    if (xres)  screen -> setResolution  ( res  );
-    else res = screen -> getResolution();
+    if (xres)  screen -> resolution  ( res  );
+    else res = screen -> resolution();
     if (xfov)  screen -> fieldOfView ( fov  );
     if (xdist) screen -> distance       ( dist );
     if (xincl) screen -> inclination    ( incl );
     if (xpaln) screen -> PALN           ( paln );
     if (xarg)  screen -> argument       ( arg  );
-    if (xnthreads)  scenery -> setNThreads    ( nthreads  );
+    if (xnthreads)  scenery -> nThreads    ( nthreads  );
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
       SmartPointer<Spectrometer::Generic> spr = screen -> spectrometer();
       if (!spr) throwError("Spectral quantity requested but "
 			   "no spectrometer specified!");
-      nbnuobs = spr -> getNSamples();
+      nbnuobs = spr -> nSamples();
     }
                //nb of frames that will be used for spectral cube
     size_t nbdata= scenery->getScalarQuantitiesCount();
@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
 
     if (debug()) {
       cerr << "DEBUG: gyoto.C: flag_radtransf = ";
-      cerr << scenery -> astrobj() -> getFlag_radtransf() << endl;
+      cerr << scenery -> astrobj() -> opticallyThin() << endl;
       cerr << "DEBUG: gyoto.C: Requested quantities: ";
       cerr << scenery -> getRequestedQuantitiesString() << endl;
     }

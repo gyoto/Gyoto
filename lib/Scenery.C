@@ -138,8 +138,8 @@ void Scenery::delta(double d, const string &unit) {
   delta(Units::ToGeometrical(d, unit, gg_));
 }
 
-void  Scenery::setNThreads(size_t n) { nthreads_ = n; }
-size_t Scenery::getNThreads() const { return nthreads_; }
+void  Scenery::nThreads(size_t n) { nthreads_ = n; }
+size_t Scenery::nThreads() const { return nthreads_; }
 
 typedef struct SceneryThreadWorkerArg {
 #ifdef HAVE_PTHREAD
@@ -175,7 +175,7 @@ static void * SceneryThreadWorker (void *arg) {
   // local variables to store our parameters
   size_t i, j;
   size_t eol_offset =
-    larg->sc->screen()->getResolution() - larg->imax + larg->imin -1;
+    larg->sc->screen()->resolution() - larg->imax + larg->imin -1;
   Astrobj::Properties data;
   double * impactcoords = NULL;
 
@@ -260,7 +260,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
        - some housekeeping
    */
 
-  const size_t npix = screen_->getResolution();
+  const size_t npix = screen_->resolution();
   imax=(imax<=(npix)?imax:(npix));
   jmax=(jmax<=(npix)?jmax:(npix));
   screen_->computeBaseVectors();
@@ -350,7 +350,7 @@ void Scenery::operator() (
 			  ) {
   double coord[8];
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
-  size_t nbnuobs = spr() ? spr -> getNSamples() : 0;
+  size_t nbnuobs = spr() ? spr -> nSamples() : 0;
 
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
   if (!(*screen_)(i,j)) return; // return if pixel is masked out
@@ -651,7 +651,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="Delta")       sc -> delta(atof(tc), unit);;
     if (name=="Quantities")  sc -> setRequestedQuantities(tc);
     if (name=="MinimumTime") sc -> tMin(atof(tc), unit);
-    if (name=="NThreads")    sc -> setNThreads(atoi(tc));
+    if (name=="NThreads")    sc -> nThreads(atoi(tc));
     if (name=="MaxIter")     sc -> maxiter(atoi(tc));
     if (name=="Adaptive")    sc -> adaptive(true);
     if (name=="NonAdaptive") sc -> adaptive(false);

@@ -187,9 +187,9 @@ void   PolishDoughnut::centralTempOverVirial(double val)
 double PolishDoughnut::beta() const { return beta_; }
 void   PolishDoughnut::beta(double beta)   { beta_ = beta; }
 
-size_t PolishDoughnut::getSpectralOversampling() const
+size_t PolishDoughnut::spectralOversampling() const
 { return spectral_oversampling_; }
-void   PolishDoughnut::setSpectralOversampling(size_t val)
+void   PolishDoughnut::spectralOversampling(size_t val)
 { spectral_oversampling_ = val; }
 
 bool PolishDoughnut::komissarov() const

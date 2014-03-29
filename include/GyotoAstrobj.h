@@ -347,12 +347,12 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    * i.e. the object is to be considered optically thin.
    * \param flag: 1 if optically thin, 0 if optically thick.
    */
-  void setFlag_radtransf(int flag);
+  void opticallyThin(int flag);
   ///< Set whether the object is optically thin.
   /**
-   * See setFlag_radtransf(int flag).
+   * See opticallyThin(int flag).
    */
-  int getFlag_radtransf() const ;
+  int opticallyThin() const ;
   ///< Query whether object is optically thin.
 
   /**

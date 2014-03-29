@@ -832,8 +832,8 @@ void Screen::delta0(double delta) { delta0_ = delta; }
 
 void Screen::setAnglekind(int kind) { anglekind_ = kind; }
 
-size_t Screen::getResolution() { return npix_; }
-void Screen::setResolution(size_t n) {
+size_t Screen::resolution() { return npix_; }
+void Screen::resolution(size_t n) {
   if (mask_ && n != npix_) {
     GYOTO_INFO << "Changing resolution: deleting mask" << endl;
     delete[] mask_; mask_=NULL;
@@ -992,7 +992,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="FieldOfView") {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
-    else if (name=="Resolution")  scr -> setResolution  ( atoi(tc) );
+    else if (name=="Resolution")  scr -> resolution  ( atoi(tc) );
     else if (name=="Spectrometer") {
       scr -> spectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
     }

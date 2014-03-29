@@ -151,7 +151,7 @@ void Uniform::kind(std::string str) {
   reset_();
 }
 
-void Uniform::setNSamples(size_t n) {
+void Uniform::nSamples(size_t n) {
   nsamples_ = n;
   nboundaries_=nsamples_+1;
   reset_();
@@ -215,7 +215,7 @@ void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
   band[1]=strtod(tc, &tc);
 
   setBand(band, unit, skind);
-  setNSamples(nsamples);
+  nSamples(nsamples);
 }
 #endif
 
@@ -231,7 +231,7 @@ int Spectrometer::Uniform::setParameter(string name,
   } else if (name=="Kind") {
     kind(content);
   } else if (name=="NSamples") {
-    setNSamples(atof(tc));
+    nSamples(atof(tc));
   } else return Generic::setParameter(name, content, unit);
   return 0;
 }
