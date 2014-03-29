@@ -883,13 +883,15 @@ extern gyoto_Screen;
 
      Member keywords are used to set the value of a member (screen,
      member=value) or to retrieve the value of a member
-     (value=screen(member=) or value=screen.member):
+     (value=screen(member=) or value=screen.member). Many support
+     "unit".:
        metric, time, tmin, fov (field-of-view), resolution (N pixels
-       on each side), distance (meters), inclination, paln (position
-       angle of the line of nodes), argument, pojection (=[incl, paln,
-       arg]), observerpos (alternative way to set time, dist, incl,
-       and arg by giving the position of the camera. Here, dist is in
-       geometrical units), spectro (see gyoto_Spectrometer);
+       on each side), alpha0, delta0, distance (meters), inclination,
+       paln (position angle of the line of nodes), argument, freqobs,
+       pojection (=[incl, paln, arg]), observerpos (alternative way to
+       set time, dist, incl, and arg by giving the position of the
+       camera. Here, dist is in geometrical units), fourvel, screen1,
+       screen2, screen3, spectro (see gyoto_Spectrometer);
 
     Screens provide two function-like methods and the usual
     subroutine-like method xmlwrite plus two methods for specifying
