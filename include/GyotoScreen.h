@@ -394,10 +394,22 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /// Set Screen::fov_ in specified unit
   void fieldOfView(double, const std::string &unit);
 
-  /// Set direction of the line-of-view
+  /// Set direction of the center of the field
   void alpha0(double);
-  /// Set direction of the line-of-view
+  /// Set direction of the center of the field in specified unit
+  void alpha0(double, const std::string &unit);
+  /// Get direction of the center of the field
+  double alpha0() const;
+  /// Get direction of the center of the field in specified unit
+  double alpha0(std::string unit);
+  /// Set direction of the center of the field
   void delta0(double);
+  /// Set direction of the center of the field in specified unit
+  void delta0(double, const std::string &unit);
+  /// Get direction of the center of the field
+  double delta0() const;
+  /// Get direction of the center of the field in specified unit
+  double delta0(std::string unit);
 
   /// Set Screen::anglekind_
   void setAnglekind(int);

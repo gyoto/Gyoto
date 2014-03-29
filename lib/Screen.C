@@ -828,7 +828,111 @@ void Screen::fieldOfView(double fov, const string &unit) {
 void Screen::fieldOfView(double fov) { fov_ = fov; }
 
 void Screen::alpha0(double alpha) { alpha0_ = alpha; }
+double Screen::alpha0() const { return alpha0_; }
 void Screen::delta0(double delta) { delta0_ = delta; }
+double Screen::delta0() const { return delta0_; }
+
+double Screen::alpha0(string unit) {
+  double fov = alpha0();
+  if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
+# ifdef HAVE_UDUNITS
+  else if (Units::areConvertible(unit, "m"))
+    fov = Units::FromMeters(fov*distance_, unit) ;
+  else fov = Units::Converter("rad", unit)(fov);
+# else
+  else if (unit=="degree") fov /= GYOTO_DEGRAD;
+  else if (unit=="arcmin") fov /= GYOTO_MINRAD;
+  else if (unit=="arcsec") fov /= GYOTO_SECRAD;
+  else if (unit=="milliarcsec") fov /= GYOTO_MASRAD;
+  else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
+  else {
+    stringstream ss;
+    ss << "Screen::alpha0(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
+    throwError(ss.str());
+  }
+# endif
+  return fov;
+}
+
+double Screen::delta0(string unit) {
+  double fov = delta0();
+  if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
+# ifdef HAVE_UDUNITS
+  else if (Units::areConvertible(unit, "m"))
+    fov = Units::FromMeters(fov*distance_, unit) ;
+  else fov = Units::Converter("rad", unit)(fov);
+# else
+  else if (unit=="degree") fov /= GYOTO_DEGRAD;
+  else if (unit=="arcmin") fov /= GYOTO_MINRAD;
+  else if (unit=="arcsec") fov /= GYOTO_SECRAD;
+  else if (unit=="milliarcsec") fov /= GYOTO_MASRAD;
+  else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
+  else {
+    stringstream ss;
+    ss << "Screen::delta0(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
+    throwError(ss.str());
+  }
+# endif
+  return fov;
+}
+
+void Screen::alpha0(double fov, const string &unit) {
+  if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
+# ifdef HAVE_UDUNITS
+  else {
+    Units::Unit from (unit);
+    if (Units::areConvertible(from, "m"))
+      fov = Units::ToMeters(fov, from) / distance_;
+    else fov = Units::Converter(from, "rad")(fov);
+  }
+# else
+  else if (unit=="degree" || unit=="°")        fov *= GYOTO_DEGRAD;
+  else if (unit=="arcmin")                     fov *= GYOTO_MINRAD;
+  else if (unit=="arcsec" || unit=="as")       fov *= GYOTO_SECRAD;
+  else if (unit=="milliarcsec" || unit=="mas") fov *= GYOTO_MASRAD;
+  else if (unit=="microarcsec" || unit=="µas" || unit=="uas")
+                                               fov *= GYOTO_MUASRAD;
+  else {
+    stringstream ss;
+    ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
+    throwError(ss.str());
+  }
+# endif
+  alpha0(fov);
+}
+
+void Screen::delta0(double fov, const string &unit) {
+  if (unit=="" || unit=="rad") ;
+  else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
+# ifdef HAVE_UDUNITS
+  else {
+    Units::Unit from (unit);
+    if (Units::areConvertible(from, "m"))
+      fov = Units::ToMeters(fov, from) / distance_;
+    else fov = Units::Converter(from, "rad")(fov);
+  }
+# else
+  else if (unit=="degree" || unit=="°")        fov *= GYOTO_DEGRAD;
+  else if (unit=="arcmin")                     fov *= GYOTO_MINRAD;
+  else if (unit=="arcsec" || unit=="as")       fov *= GYOTO_SECRAD;
+  else if (unit=="milliarcsec" || unit=="mas") fov *= GYOTO_MASRAD;
+  else if (unit=="microarcsec" || unit=="µas" || unit=="uas")
+                                               fov *= GYOTO_MUASRAD;
+  else {
+    stringstream ss;
+    ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
+       << " (you may have more chance compiling gyoto with --with-udunits)";
+    throwError(ss.str());
+  }
+# endif
+  delta0(fov);
+}
 
 void Screen::setAnglekind(int kind) { anglekind_ = kind; }
 
