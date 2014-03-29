@@ -48,7 +48,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
-  YGYOTO_WORKER_GETSET_DOUBLE(PatternVelocity);
+  YGYOTO_WORKER_GETSET_DOUBLE2(patternVelocity);
   YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
   YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
   YGYOTO_WORKER_GETSET_DOUBLE2(dnu);

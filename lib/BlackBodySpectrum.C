@@ -34,10 +34,10 @@ Spectrum::BlackBody::BlackBody(double T, double c) :
 Spectrum::BlackBody * Spectrum::BlackBody::clone() const
 { return new Spectrum::BlackBody(*this); }
 
-double Spectrum::BlackBody::getTemperature() const { return T_; }
-void Spectrum::BlackBody::setTemperature(double c) { T_ = c; Tm1_=1./T_; }
-double Spectrum::BlackBody::getScaling() const { return cst_; }
-void Spectrum::BlackBody::setScaling(double c) { cst_ = c; }
+double Spectrum::BlackBody::temperature() const { return T_; }
+void Spectrum::BlackBody::temperature(double c) { T_ = c; Tm1_=1./T_; }
+double Spectrum::BlackBody::scaling() const { return cst_; }
+void Spectrum::BlackBody::scaling(double c) { cst_ = c; }
 
 double Spectrum::BlackBody::operator()(double nu) const {
   return  cst_*nu*nu*nu
@@ -48,8 +48,8 @@ void Spectrum::BlackBody::setParameter(std::string name,
 				       std::string content,
 				       std::string unit) {
   char * tc=const_cast<char*>(content.c_str());
-  if (name=="Temperature") setTemperature(atof(tc));
-  else if (name=="Scaling") setScaling(atof(tc));
+  if (name=="Temperature") temperature(atof(tc));
+  else if (name=="Scaling") scaling(atof(tc));
   else Spectrum::Generic::setParameter(name, content, unit);
 }
 

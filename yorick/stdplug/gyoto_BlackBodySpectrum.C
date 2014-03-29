@@ -49,8 +49,8 @@ void YGyoto::Spectrum::BlackBodyYEval(SmartPointer<Generic> * OBJ_, int argc) {
 
   YGYOTO_WORKER_SET_UNIT;
 
-  YGYOTO_WORKER_GETSET_DOUBLE(Temperature);
-  YGYOTO_WORKER_GETSET_DOUBLE(Scaling);
+  YGYOTO_WORKER_GETSET_DOUBLE2(temperature);
+  YGYOTO_WORKER_GETSET_DOUBLE2(scaling);
   YGYOTO_WORKER_CALL_GENERIC(Spectrum);
 
 }

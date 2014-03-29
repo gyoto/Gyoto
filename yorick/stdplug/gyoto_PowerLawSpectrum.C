@@ -49,8 +49,8 @@ void YGyoto::Spectrum::PowerLawYEval(SmartPointer<Generic> * OBJ_, int argc) {
 
   YGYOTO_WORKER_SET_UNIT;
 
-  YGYOTO_WORKER_GETSET_DOUBLE(Constant);
-  YGYOTO_WORKER_GETSET_DOUBLE(Exponent);
+  YGYOTO_WORKER_GETSET_DOUBLE2(constant);
+  YGYOTO_WORKER_GETSET_DOUBLE2(exponent);
   
   YGYOTO_WORKER_CALL_GENERIC(Spectrum);
 

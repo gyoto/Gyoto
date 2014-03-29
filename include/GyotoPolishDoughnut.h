@@ -113,19 +113,19 @@ public:
  double getL0() const; ///< Get PolishDoughnut::l0_
  // void   setL0(double l0); set by lambda_
 
- double getLambda() const; ///< Get PolishDoughnut::lambda_
- void   setLambda(double lambda); ///< Set PolishDoughnut::lambda_
+ double lambda() const; ///< Get PolishDoughnut::lambda_
+ void   lambda(double lambda); ///< Set PolishDoughnut::lambda_
 
  double centralDensity() const; ///< Get PolishDoughnut::central_density_
  double centralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
  void   centralDensity(double density); ///< Set PolishDoughnut::central_density_
  void   centralDensity(double density, std::string unit); ///< Set PolishDoughnut::central_density_ in specified unit
 
- double getCentralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
- void   setCentralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
+ double centralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
+ void   centralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
 
- double getBeta() const; ///< Get PolishDoughnut::beta_
- void   setBeta(double beta);///< Set PolishDoughnut::beta_
+ double beta() const; ///< Get PolishDoughnut::beta_
+ void   beta(double beta);///< Set PolishDoughnut::beta_
 
  void   setSpectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
  size_t getSpectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_

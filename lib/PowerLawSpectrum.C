@@ -33,10 +33,10 @@ Spectrum::PowerLaw::PowerLaw(double p, double c) :
 Spectrum::PowerLaw * Spectrum::PowerLaw::clone() const
 { return new Spectrum::PowerLaw(*this); }
 
-double Spectrum::PowerLaw::getConstant() const { return constant_; }
-void Spectrum::PowerLaw::setConstant(double c) { constant_ = c; }
-double Spectrum::PowerLaw::getExponent() const { return exponent_; }
-void Spectrum::PowerLaw::setExponent(double c) { exponent_ = c; }
+double Spectrum::PowerLaw::constant() const { return constant_; }
+void Spectrum::PowerLaw::constant(double c) { constant_ = c; }
+double Spectrum::PowerLaw::exponent() const { return exponent_; }
+void Spectrum::PowerLaw::exponent(double c) { exponent_ = c; }
 
 double Spectrum::PowerLaw::operator()(double nu) const {
   return constant_ * pow(nu, exponent_);
@@ -53,8 +53,8 @@ void Gyoto::Spectrum::PowerLaw::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
   char * tc=const_cast<char*>(content.c_str());
-  if (name=="Exponent") setExponent(atof(tc));
-  else if (name=="Constant") setConstant(atof(tc));
+  if (name=="Exponent") exponent(atof(tc));
+  else if (name=="Constant") constant(atof(tc));
   else Spectrum::Generic::setParameter(name, content, unit);
 }
 

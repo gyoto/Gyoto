@@ -129,13 +129,13 @@ void Screen::distance(double dist)    {
   computeBaseVectors();
 }
 
-void Screen::setDmax(double dist) {
+void Screen::dMax(double dist) {
   dmax_ = dist;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(dmax_);
 # endif
 }
-double Screen::getDmax() const { return dmax_; }
+double Screen::dMax() const { return dmax_; }
 
 
 void Screen::PALN(double paln, const string &unit)        {
@@ -984,7 +984,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       {
 	scr -> distance    ( atof(tc), unit );
 	string dmax = fmp -> getAttribute("dmax");
-	if (dmax != "") scr -> setDmax(atof(dmax.c_str()));
+	if (dmax != "") scr -> dMax(atof(dmax.c_str()));
       }
     else if (name=="PALN")        scr -> PALN        ( atof(tc), unit );
     else if (name=="Inclination") scr -> inclination ( atof(tc), unit );
@@ -1027,7 +1027,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(scr->getDmax());
+  GYOTO_DEBUG_EXPR(scr->dMax());
 # endif
 
   return scr;

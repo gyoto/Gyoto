@@ -147,7 +147,7 @@ double PatternDiskBB::emission(double nu, double dsem,
      */
     double TT;
     TT = PatternDisk::emission(nu,dsem,co,co);
-    spectrumBB_->setTemperature(TT);
+    spectrumBB_->temperature(TT);
     Iem=(*spectrumBB_)(nu);
   }
 

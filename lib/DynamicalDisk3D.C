@@ -211,7 +211,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   if (!flag_radtransf_){ // optically thick case
     
     if (temperature_){
-      spectrumBB_->setTemperature(emissq);
+      spectrumBB_->temperature(emissq);
       Ires=(*spectrumBB_)(nu);
     }else{
       Ires=emissq;
@@ -329,7 +329,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
     double * emiss = const_cast<double*>(getEmissquant());
     double emissq = emiss[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
     //emissq is local temperature in K
-    spectrumBB_->setTemperature(emissq);
+    spectrumBB_->temperature(emissq);
     double BnuT=(*spectrumBB_)(nu); //Planck function
     double jnu=emission1date(nu,dsem,NULL,co); // Emission coef * ds
     double alphanu=0.; //absorption coef.

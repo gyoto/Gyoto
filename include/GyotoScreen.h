@@ -238,7 +238,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /**
    * \param dist Distance in geometrical units.
    */
-  void setDmax(double dist);
+  void dMax(double dist);
 
   /// Set distance from observer
   /**
@@ -346,7 +346,7 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
   /**
    * In geometrical units.
    */
-  double getDmax() const;
+  double dMax() const;
 
   /// Get inclination relative to line-of-sight
   /**

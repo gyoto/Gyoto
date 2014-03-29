@@ -125,8 +125,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   /**
    * Unit: radians per geometrical unit time.
    */
-  virtual void   setPatternVelocity(double); ///< Set PatternDisk::Omega_
-  virtual double getPatternVelocity(); ///< Get PatternDisk::Omega_
+  virtual void   patternVelocity(double); ///< Set PatternDisk::Omega_
+  virtual double patternVelocity(); ///< Get PatternDisk::Omega_
 
   /// Read parameters and arrays from FITS file
   virtual void fitsRead(std::string filename_);

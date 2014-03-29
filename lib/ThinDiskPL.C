@@ -99,7 +99,7 @@ double ThinDiskPL::emissionBB(double nu,
   double TT=Mm/GYOTO_GAS_CST*cs2;//Temperature in SI
   //cout << "TT after rl= " << TT << endl;
   //cout << "r,rho,T= " << rcross << " " << rho_si << " " << TT << endl;
-  spectrumBB_->setTemperature(TT);
+  spectrumBB_->temperature(TT);
   return (*spectrumBB_)(nu);
 }
 

@@ -65,10 +65,10 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   //  PowerLaw(const Spectrum &);
   virtual PowerLaw * clone() const; ///< Cloner
 
-  double getConstant() const; ///< Get constant_
-  void setConstant(double); ///< Set constant_
-  double getExponent() const; ///< Get exponent_
-  void setExponent(double); ///< Set exponent_
+  double constant() const; ///< Get constant_
+  void constant(double); ///< Set constant_
+  double exponent() const; ///< Get exponent_
+  void exponent(double); ///< Set exponent_
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;

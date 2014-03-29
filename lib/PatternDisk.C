@@ -755,14 +755,14 @@ void PatternDisk::setOuterRadius(double rout) {
   if (nr_>1 && !radius_) dr_ = (rout_-rin_) / double(nr_-1);
 }
 
-void PatternDisk::setPatternVelocity(double omega) { Omega_ = omega; }
-double PatternDisk::getPatternVelocity() { return Omega_; }
+void PatternDisk::patternVelocity(double omega) { Omega_ = omega; }
+double PatternDisk::patternVelocity() { return Omega_; }
 
 int PatternDisk::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
   if      (name == "File")          fitsRead( content );
-  else if (name=="PatternVelocity") setPatternVelocity(atof(content.c_str()));
+  else if (name=="PatternVelocity") patternVelocity(atof(content.c_str()));
   else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }

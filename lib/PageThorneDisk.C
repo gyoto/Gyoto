@@ -125,7 +125,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   Ibolo*=mdot_*c6/g2m2; // Ibolo in cgs
   //F = sigma * T^4 (and F=pi*I)
   double TT=pow(Ibolo*M_PI/GYOTO_STEFANBOLTZMANN_CGS,0.25);
-  spectrumBB_->setTemperature(TT);
+  spectrumBB_->temperature(TT);
   double Iem=(*spectrumBB_)(nu_em);
   //cout << "r T nu Iem = " << coord_obj[1] << " " << TT << " " << nu_em << " " << Iem << endl;
   if (Iem < 0.) throwError("In PageThorneDisk::emission"

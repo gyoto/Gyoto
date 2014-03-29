@@ -57,7 +57,7 @@ PolishDoughnut::PolishDoughnut() :
   central_density_(1.),
   centraltemp_over_virial_(1.),
   beta_(0.),
-//aa_ and aa2_ are set by setLambda()
+//aa_ and aa2_ are set by lambda()
   spectral_oversampling_(10),
   intersection(this),
   komissarov_(0),
@@ -105,8 +105,8 @@ double PolishDoughnut::getWcentre() const { return W_centre_; }
 double PolishDoughnut::getRcusp() const { return r_cusp_; }
 double PolishDoughnut::getRcentre() const { return r_centre_; }
 
-double PolishDoughnut::getLambda() const { return lambda_; }
-void   PolishDoughnut::setLambda(double lambda) {
+double PolishDoughnut::lambda() const { return lambda_; }
+void   PolishDoughnut::lambda(double lambda) {
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
   lambda_=lambda;  
@@ -179,13 +179,13 @@ void   PolishDoughnut::centralDensity(double dens, string unit) {
   centralDensity(dens);
 }
 
-double PolishDoughnut::getCentralTempOverVirial() const
+double PolishDoughnut::centralTempOverVirial() const
 {return centraltemp_over_virial_;}
-void   PolishDoughnut::setCentralTempOverVirial(double val)
+void   PolishDoughnut::centralTempOverVirial(double val)
 {centraltemp_over_virial_=val;}
 
-double PolishDoughnut::getBeta() const { return beta_; }
-void   PolishDoughnut::setBeta(double beta)   { beta_ = beta; }
+double PolishDoughnut::beta() const { return beta_; }
+void   PolishDoughnut::beta(double beta)   { beta_ = beta; }
 
 size_t PolishDoughnut::getSpectralOversampling() const
 { return spectral_oversampling_; }
@@ -213,12 +213,12 @@ void PolishDoughnut::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
   gg_ = SmartPointer<Metric::KerrBL>(met);
   Generic::gg_ = gg_;
   if (gg_) gg_ -> hook(this);
-  GYOTO_DEBUG << "Metric set, calling setLambda\n";
-  setLambda(lambda_); // setLambda_ initializes other members
+  GYOTO_DEBUG << "Metric set, calling lambda\n";
+  lambda(lambda_); // setLambda_ initializes other members
 }
 
 void PolishDoughnut::tell(Hook::Teller * met) {
-  if (met == gg_) setLambda(lambda_);
+  if (met == gg_) lambda(lambda_);
   else throwError("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
 		  "wrong metric");
 }
@@ -1286,7 +1286,7 @@ double PolishDoughnut::bessk(int nn,double xx) {
 }
 
 int PolishDoughnut::setParameter(string name, string content, string unit) {
-  if      (name=="Lambda") setLambda(atof(content.c_str()));
+  if      (name=="Lambda") lambda(atof(content.c_str()));
   else if (name=="CentralDensity")
     centralDensity(atof(content.c_str()), unit);
   else if (name=="CentralTempOverVirial")

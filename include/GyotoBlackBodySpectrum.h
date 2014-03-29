@@ -68,10 +68,10 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
   BlackBody(double T, double scaling=1.);
   virtual BlackBody * clone() const; ///< Cloner
 
-  double getTemperature() const; ///< Get constant
-  void setTemperature(double); ///< Set constant
-  double getScaling() const; ///< Get exponent
-  void setScaling(double); ///< Set exponent
+  double temperature() const; ///< Get constant
+  void temperature(double); ///< Set constant
+  double scaling() const; ///< Get exponent
+  void scaling(double); ///< Set exponent
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
