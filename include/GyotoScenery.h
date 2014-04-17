@@ -268,11 +268,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   size_t nThreads() const ; ///< Get nthreads_;
 
   /// Set Scenery::intensity_converter_
-  void setIntensityConverter(std::string unit);
+  void intensityConverter(std::string unit);
   /// Set Scenery::spectrum_converter_
-  void setSpectrumConverter(std::string unit);
+  void spectrumConverter(std::string unit);
   /// Set Scenery::binspectrum_converter_
-  void setBinSpectrumConverter(std::string unit);
+  void binSpectrumConverter(std::string unit);
 
   /// Copy converters to Astrobj::Properties instance
   /**

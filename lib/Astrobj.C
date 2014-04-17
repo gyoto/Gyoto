@@ -490,30 +490,30 @@ void Astrobj::Properties::init(size_t nbnuobs) {
 }
 
 #ifdef HAVE_UDUNITS
-void Astrobj::Properties::setIntensityConverter(SmartPointer<Units::Converter> conv) {
+void Astrobj::Properties::intensityConverter(SmartPointer<Units::Converter> conv) {
   intensity_converter_ = conv ;
 }
 
-void Astrobj::Properties::setIntensityConverter(string unit) {
+void Astrobj::Properties::intensityConverter(string unit) {
   intensity_converter_ =
     new Units::Converter("J.m-2.s-1.sr-1.Hz-1",
 			 unit!=""?unit:"J.m-2.s-1.sr-1.Hz-1");
 }
 
-void Astrobj::Properties::setSpectrumConverter(SmartPointer<Units::Converter> conv) {
+void Astrobj::Properties::spectrumConverter(SmartPointer<Units::Converter> conv) {
   spectrum_converter_ = conv;
 }
 
-void Astrobj::Properties::setSpectrumConverter(string unit) {
+void Astrobj::Properties::spectrumConverter(string unit) {
   spectrum_converter_ =
     new Units::Converter("J.m-2.s-1.sr-1.Hz-1",
 			 unit!=""?unit:"J.m-2.s-1.sr-1.Hz-1");
 }
 
-void Astrobj::Properties::setBinSpectrumConverter(SmartPointer<Units::Converter> conv) {
+void Astrobj::Properties::binSpectrumConverter(SmartPointer<Units::Converter> conv) {
   binspectrum_converter_ = conv;
 }
-void Astrobj::Properties::setBinSpectrumConverter(string unit) {
+void Astrobj::Properties::binSpectrumConverter(string unit) {
   binspectrum_converter_ =
     new Units::Converter("J.m-2.s-1.sr-1",
 			 unit!=""?unit:"J.m-2.s-1.sr-1");

@@ -346,9 +346,9 @@ extern "C" {
 #     ifdef HAVE_UDUNITS
       if (data) (*OBJ)->setPropertyConverters(&prop);
       screen->mapPixUnit();
-      if (intu != "") prop.setIntensityConverter(intu);
-      if (spu  != "") prop.setSpectrumConverter(spu);
-      if (bspu != "") prop.setBinSpectrumConverter(bspu);
+      if (intu != "") prop.intensityConverter(intu);
+      if (spu  != "") prop.spectrumConverter(spu);
+      if (bspu != "") prop.binSpectrumConverter(bspu);
       screen->unmapPixUnit();
 #     endif
 

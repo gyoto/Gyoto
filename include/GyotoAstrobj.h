@@ -763,17 +763,17 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
   Properties operator+=(ptrdiff_t offset);
 
 # ifdef HAVE_UDUNITS
-  void setIntensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void intensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   ///< Set Properties::intentity_converter_
-  void setIntensityConverter(std::string);
+  void intensityConverter(std::string);
   ///< Set Properties::intentity_converter_
-  void setSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void spectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   ///< Set Properties::spectrum_converter_
-  void setSpectrumConverter(std::string);
+  void spectrumConverter(std::string);
   ///< Set Properties::spectrum_converter_
-  void setBinSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
+  void binSpectrumConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   ///< Set Properties::binspectrum_converter_
-  void setBinSpectrumConverter(std::string);
+  void binSpectrumConverter(std::string);
   ///< Set Properties::binspectrum_converter_
 # endif
 };

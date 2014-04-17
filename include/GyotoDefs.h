@@ -579,7 +579,9 @@ namespace Gyoto {
 # define setNSamples              nSamples
 # define getSpectralOverSampling  spectralOversampling
 # define setSpectralOverSampling  spectralOversampling
-
+# define setBinSpectrumConverter  binSpectrumConverter
+# define setSpectrumConverter     spectrumConverter
+# define setIntensityConverter    intensityConverter
 //\}
 #endif
 

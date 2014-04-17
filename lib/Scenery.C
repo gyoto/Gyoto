@@ -435,7 +435,7 @@ void Scenery::setRequestedQuantities(std::string squant) {
 
     if (!strcmp(tk, "Intensity")) {
       quantities_ |= GYOTO_QUANTITY_INTENSITY;
-      setIntensityConverter(unit);
+      intensityConverter(unit);
     } else if (!strcmp(tk, "EmissionTime"))
       quantities_ |= GYOTO_QUANTITY_EMISSIONTIME;
     else if (!strcmp(tk, "MinDistance"))
@@ -448,10 +448,10 @@ void Scenery::setRequestedQuantities(std::string squant) {
       quantities_ |= GYOTO_QUANTITY_IMPACTCOORDS;
     else if (!strcmp(tk, "Spectrum")) {
       quantities_ |= GYOTO_QUANTITY_SPECTRUM;
-      setSpectrumConverter(unit);
+      spectrumConverter(unit);
     } else if (!strcmp(tk, "BinSpectrum")) {
       quantities_ |= GYOTO_QUANTITY_BINSPECTRUM;
-      setBinSpectrumConverter(unit);
+      binSpectrumConverter(unit);
     } else if (!strcmp(tk, "User1"))
       quantities_ |= GYOTO_QUANTITY_USER1;
     else if (!strcmp(tk, "User2"))
@@ -478,7 +478,7 @@ Gyoto::Quantity_t Scenery::getRequestedQuantities() const {
   return quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
 }
 
-void Scenery::setIntensityConverter(string unit) {
+void Scenery::intensityConverter(string unit) {
 # ifdef HAVE_UDUNITS
   // default is SI
   if (unit=="") unit="J.m-2.s-1.sr-1.Hz-1";
@@ -493,13 +493,13 @@ void Scenery::setIntensityConverter(string unit) {
 
 void Scenery::setPropertyConverters(Astrobj::Properties * data) {
 # ifdef HAVE_UDUNITS
-  data -> setIntensityConverter(intensity_converter_);
-  data -> setSpectrumConverter(spectrum_converter_);
-  data -> setBinSpectrumConverter(binspectrum_converter_);
+  data -> intensityConverter(intensity_converter_);
+  data -> spectrumConverter(spectrum_converter_);
+  data -> binSpectrumConverter(binspectrum_converter_);
 # endif
 }
 
-void Scenery::setSpectrumConverter(string unit) {
+void Scenery::spectrumConverter(string unit) {
 # ifdef HAVE_UDUNITS
   // default is SI
   if (unit=="") unit="J.m-2.s-1.sr-1.Hz-1";
@@ -512,7 +512,7 @@ void Scenery::setSpectrumConverter(string unit) {
 # endif
 }
 
-void Scenery::setBinSpectrumConverter(string unit) {
+void Scenery::binSpectrumConverter(string unit) {
 # ifdef HAVE_UDUNITS
   // default is SI
   if (unit=="") unit="J.m-2.s-1.sr-1";
