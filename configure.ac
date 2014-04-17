@@ -49,6 +49,15 @@ AC_ARG_ENABLE([hardening],
   ]
 )
 
+AC_ARG_ENABLE([deprecated],
+  [AS_HELP_STRING([--enable-deprecated],
+     [enable deprecated method names (needing this is a bug)])],
+  [AS_IF([test "x$enable_deprecated" = "xno"],
+     [AX_APPEND_COMPILE_FLAGS([-DGYOTO_NO_DEPRECATED], [CPPFLAGS])])],
+  [AX_APPEND_COMPILE_FLAGS([-DGYOTO_NO_DEPRECATED], [CPPFLAGS])]
+)
+     
+
 # Guess *LD_LIBRARY_PATH variable for make check
 AC_SUBST([target_os])
 SYS=other
