@@ -2,10 +2,11 @@
  *  \file GyotoKerrKS.h
  *  \brief KerrKS metric
  *
+ *  Warning: this metric is seldom used and may be buggy.
  */
 
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2014 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -36,11 +37,18 @@ namespace Gyoto {
 #include <GyotoRegister.h>
 #endif
 
+// This Metric is work in progress
+#include <GyotoWIP.h>
+
 /**
  * \class Gyoto::Metric::KerrKS
  * \brief Metric around a Kerr black-hole in Kerr-Schild coordinates
+ *  Warning: this metric is seldom used and may be buggy.
  */
-class Gyoto::Metric::KerrKS : public Metric::Generic {
+class Gyoto::Metric::KerrKS
+: public Metric::Generic,
+  public WIP
+{
   friend class Gyoto::SmartPointer<Gyoto::Metric::KerrKS>;
   
   // Data : 

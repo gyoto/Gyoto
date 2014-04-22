@@ -20,6 +20,7 @@
 // include Metric headers
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
+#include "GyotoMinkowski.h"
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
@@ -49,6 +50,7 @@ extern "C" void __GyotostdplugInit() {
   // Register Metrics
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
+  Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));

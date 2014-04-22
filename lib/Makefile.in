@@ -148,8 +148,8 @@ libgyoto_lorene_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_LORENE_TRUE@am_libgyoto_lorene_la_rpath = -rpath $(soverdir)
 libgyoto_stdplug_la_LIBADD =
-am__libgyoto_stdplug_la_SOURCES_DIST = KerrBL.C KerrKS.C Star.C \
-	StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
+am__libgyoto_stdplug_la_SOURCES_DIST = KerrBL.C KerrKS.C Minkowski.C \
+	Star.C StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
 	BlackBodySpectrum.C ComplexAstrobj.C UniformSphere.C \
 	StandardAstrobj.C PageThorneDisk.C ThinDiskPL.C \
 	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C PatternDisk.C \
@@ -157,8 +157,8 @@ am__libgyoto_stdplug_la_SOURCES_DIST = KerrBL.C KerrKS.C Star.C \
 am__objects_1 = PatternDisk.lo PatternDiskBB.lo DynamicalDisk.lo \
 	Disk3D.lo DynamicalDisk3D.lo
 @HAVE_CFITSIO_TRUE@am__objects_2 = $(am__objects_1)
-am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Star.lo \
-	StarTrace.lo FixedStar.lo Torus.lo PowerLawSpectrum.lo \
+am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
+	Star.lo StarTrace.lo FixedStar.lo Torus.lo PowerLawSpectrum.lo \
 	BlackBodySpectrum.lo ComplexAstrobj.lo UniformSphere.lo \
 	StandardAstrobj.lo PageThorneDisk.lo ThinDiskPL.lo \
 	PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
@@ -170,8 +170,8 @@ libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 libgyoto_la_LIBADD =
 am_libgyoto_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
-	SmartPointer.lo Utils.lo Metric.lo Worldline.lo Photon.lo \
-	Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
+	SmartPointer.lo Utils.lo Metric.lo WIP.lo Worldline.lo \
+	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
 	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
 	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
 	Hooks.lo
@@ -419,7 +419,7 @@ library_include_HEADERS = $(top_srcdir)/include/*.h
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	Worldline.C Photon.C Scenery.C			\
+	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
@@ -430,11 +430,11 @@ libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 # STANDARD PLUGIN
 soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_2)
-libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Star.C StarTrace.C \
-	FixedStar.C Torus.C PowerLawSpectrum.C BlackBodySpectrum.C \
-	ComplexAstrobj.C UniformSphere.C StandardAstrobj.C \
-	PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
-	ThinDiskIronLine.C StdPlug.C $(am__append_1)
+libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C Star.C \
+	StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
+	BlackBodySpectrum.C ComplexAstrobj.C UniformSphere.C \
+	StandardAstrobj.C PageThorneDisk.C ThinDiskPL.C \
+	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C $(am__append_1)
 # those files are used only if cfitsio is available
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
 	 Disk3D.C DynamicalDisk3D.C
@@ -590,6 +590,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrBL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrKS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Metric.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Minkowski.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PageThorneDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PatternDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PatternDiskBB.Plo@am__quote@
@@ -613,6 +614,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSpectrometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WIP.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Worldline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorldlineIntegState.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-LorenePlug.Plo@am__quote@

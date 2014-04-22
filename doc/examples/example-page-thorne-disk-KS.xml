@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
   <Metric kind = "KerrKS">
+    Warning: this metric is seldom used and may be buggy.
     <Spin>
       0.
     </Spin>

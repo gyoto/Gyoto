@@ -11,7 +11,7 @@ library_include_HEADERS=$(top_srcdir)/include/*.h
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto.la
 libgyoto_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
-	Worldline.C Photon.C Scenery.C			\
+	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
@@ -21,7 +21,7 @@ libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 # STANDARD PLUGIN
 soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
-libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C \
+libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	Star.C StarTrace.C FixedStar.C Torus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \

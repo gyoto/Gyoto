@@ -44,8 +44,11 @@ So far (March 2011) KerrKS is just a stub ; to improve it, it's necessary to imp
 In particular, don't trust too much the result with spin>0
  */
 
-KerrKS::KerrKS() :
-  Generic(GYOTO_COORDKIND_CARTESIAN), spin_(0.) {kind("KerrKS");}
+KerrKS::KerrKS():
+  Generic(GYOTO_COORDKIND_CARTESIAN),
+  WIP("Metric::KerrKS"),
+  spin_(0.)
+{kind("KerrKS");}
 
 KerrKS::KerrKS(double a, double m) :
   Generic(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {kind("KerrKS");}

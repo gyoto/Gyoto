@@ -17,6 +17,8 @@ check: gyoto
 	   \!example-thin-disk.fits
 	$(CHECK_CMD) ../doc/examples/example-complex-astrobj.xml \
 	   \!example-complex-astrobj.fits
+	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski.xml \
+	   \!example-fixed-star-minkowski.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
 	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
