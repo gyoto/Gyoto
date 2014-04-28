@@ -133,25 +133,25 @@ void FixedStar::radius(double r) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(r) ;
 # endif
-  radius_ = r;
-  critical_value_=r*r;
-  safety_value_=1.1*critical_value_;
+  UniformSphere::radius(r);
   if (!gg_()) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "metric is not set yet" << endl;
 #   endif
     return;
   }
-  switch (gg_ -> coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    rmax_=3.*(pos_[0]+radius_);
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    rmax_=3.*(sqrt(pos_[0]*pos_[0]+pos_[1]*pos_[1]+pos_[2]*pos_[2])+radius_);
-    break;
-  default:
-    throwError("unimplemented coordinate system in FixedStar");
-  } 
+  if (!rmax_set_) {
+    switch (gg_ -> coordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      rmax_=3.*(pos_[0]+radius_);
+      break;
+    case GYOTO_COORDKIND_CARTESIAN:
+      rmax_=3.*(sqrt(pos_[0]*pos_[0]+pos_[1]*pos_[1]+pos_[2]*pos_[2])+radius_);
+      break;
+    default:
+      throwError("unimplemented coordinate system in FixedStar");
+    } 
+  }
 }
 
 void FixedStar::setPos(const double p[3])

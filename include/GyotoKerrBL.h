@@ -62,6 +62,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // -----
  protected:
   double spin_ ;  ///< Angular momentum parameter
+  double a2_ ; ///< spin_*spin_
 
   /// Numerical tuning parameter
   /**
@@ -115,6 +116,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 
   double getRmb() const; ///< Returns prograde marginally bound orbit
   
+  void gmunu(double g[4][4], const double * pos) const ;
   double gmunu(const double * const x, int mu, int nu) const ;
 
   /** 

@@ -3,7 +3,9 @@
  * \brief Base class for metric description
  * 
  * Classes which represent a metric (e.g. Gyoto::Kerr) should inherit
- * from Gyoto::Metric::Generic and implement all of the virtual methods. 
+ * from Gyoto::Metric::Generic and implement all of the virtual
+ * methods plus at least one of the gmunu methods and one of the
+ * christoffel methods.
  *
  */
 
@@ -345,14 +347,27 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
   /**
    * \brief Metric coefficients
    *
+   * The default implementation calls Metric:: gmunu(double g[4][4], const double * pos) const
+   * 
    * \param x  4-position at which to compute the coefficient;
    * \param mu 1st index of coefficient, 0&le;&mu;&le;3;
    * \param nu 2nd index of coefficient, 0&le;&nu;&le;3;
    * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
    */
-  virtual double gmunu(const double * x,
-		       int mu, int nu) const
-    = 0 ;
+  virtual double gmunu(const double * x, int mu, int nu) const;
+
+  /**
+   * \brief Metric coefficients
+   *
+   * The default implementation calls double gmunu(const double * x, int mu, int nu) const.
+   *
+   * \param[out] g  4x4 array to store the coeefficients
+   * \param[in] x  4-position at which to compute the coefficients;
+   * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
+   */
+  virtual void gmunu(double g[4][4], const double * pos) const;
+
+
 
   /**
    * \brief Chistoffel symbol
@@ -362,7 +377,18 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
    */  
   virtual double christoffel(const double coord[8],
-			     const int alpha, const int mu, const int nu) const = 0;
+			     const int alpha, const int mu, const int nu) const;
+
+  /**
+   * \brief Chistoffel symbol
+   *
+   * Value of Christoffel symbol
+   * &Gamma;<SUP>&alpha;</SUP><SUB>&mu;&nu;</SUB> at point
+   * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
+   */  
+  virtual void christoffel(double dst[4][4][4], const double coord[8]) const ;
+
+
 
   /**
    * \brief RK4 integrator

@@ -47,7 +47,7 @@ In particular, don't trust too much the result with spin>0
 KerrKS::KerrKS():
   Generic(GYOTO_COORDKIND_CARTESIAN),
   WIP("Metric::KerrKS"),
-  spin_(0.)
+  spin_(0.), a2_(0.)
 {kind("KerrKS");}
 
 KerrKS::KerrKS(double a, double m) :
@@ -78,6 +78,7 @@ std::ostream& KerrKS::print( std::ostream& o) const {
 // Mutators
 void KerrKS::spin(const double spin) {
   spin_=spin;
+  a2_=spin*spin;
   tellListeners();
 }
 
@@ -89,6 +90,32 @@ double KerrKS::christoffel(const double[8],
   throwError( "KerrKS.C : should never come here to find christoffel!!" );
   return 0.;
 }
+
+void KerrKS::gmunu(double g[4][4], const double * pos) const {
+  double eta[4][4]=
+    {{-1., 0., 0., 0.},
+     { 0., 1., 0., 0.},
+     { 0., 0., 1., 0.},
+     { 0., 0., 0., 1.}};
+  double
+    x=pos[1], y=pos[2], z=pos[3],
+    x2=x*x, y2=y*y, z2=z*z,
+    temp=x2+y2+z2-a2_,
+    r=sqrt(0.5*(temp+sqrt(temp*temp+4*a2_*z2))),
+    r2=r*r, r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,
+    f=2.*r3/(r4+a2_*z2);
+  double k[4]=
+    {
+      1.,
+      (r*x+spin_*y)/r2_a2,
+      (r*y+spin_*x)/r2_a2,
+      z/r
+    };
+  for (int mu=0; mu<4; ++mu)
+    for (int nu=0; nu<=mu;++nu)
+      g[mu][nu]=g[nu][mu]=eta[mu][nu]+f*k[mu]*k[nu];
+}
+
 
 double KerrKS::gmunu(const double * pos, int mu, int nu) const {
   if (mu<0 || nu<0 || mu>3 || nu>3) throwError ("KerrKS::gmunu: incorrect value for mu or nu");

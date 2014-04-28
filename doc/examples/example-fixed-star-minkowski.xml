@@ -6,16 +6,9 @@
 
     Flat space-time metric.
 
-    This metric (or rather the generic integrator it uses) is very
-    much work in progress, use with caution.
-
-
     By default, uses the Cartesian coordinates. Uncomment the
     following to use sperical coordinates instead:
     <!--Spherical/-->
-
-    (As of writing, the results are completely boggus when using
-    spherical coordinates).
 
   </Metric>
 

@@ -56,7 +56,7 @@ class Gyoto::Metric::KerrKS
 
  protected:
   double spin_ ;  ///< Angular momentum parameter
-
+  double a2_;     ///< spin_*spin_
   
   // Constructors - Destructor
   // -------------------------
@@ -85,7 +85,8 @@ class Gyoto::Metric::KerrKS
   double gmunu(const double * x,
 		       int alpha, int beta) const ;
 
- 
+  void gmunu(double g[4][4], const double * pos) const;
+
   /*
    it's necessary to define christoffel even if it's not used. KerrKS derives from Metric where christoffel is virtual pure. If the function is not defined in KerrKS,  it's considered virtual pure here too. Then KerrKS is considered an abstract class, and it's forbidden to declare any object of type KerrKS....
    See Delannoy C++ p.317-318

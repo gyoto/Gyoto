@@ -123,6 +123,7 @@ void  Metric::Generic::deltaMax(double h1) {delta_max_=h1;}
 
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
+  double g[4][4];
   int i,j;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
@@ -134,9 +135,10 @@ double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) c
 
   xpr[0]=1.; // dt/dt=1;
   for (i=0;i<3;++i) xpr[i+1]=v[i];
+  gmunu(g, pos);
   for (i=0;i<4;++i) {
     for (j=0;j<4;++j) {
-      sum+=gmunu(pos,i, j)*xpr[i]*xpr[j];
+      sum+=g[i][j]*xpr[i]*xpr[j];
     }
   }
   if (sum>=0) {
@@ -155,11 +157,13 @@ void Metric::Generic::nullifyCoord(double coord[8]) const {
 void Metric::Generic::nullifyCoord(double coord[8], double& tdot2) const {
   int i, j;
   double a, b=0., c=0.;
-  a=gmunu(coord, 0, 0);
+  double g[4][4];
+  gmunu(g, coord);
+  a=g[0][0];
   for (i=1;i<=3;++i) {
-    b+=gmunu(coord, 0, i)*coord[4+i];
+    b+=g[0][i]*coord[4+i];
     for (j=1;j<=3;++j) {
-      c+=gmunu(coord, i, j)*coord[4+i]*coord[4+j];
+      c+=g[i][j]*coord[4+i]*coord[4+j];
     }
   }
   double sDelta=sqrt(b*b-a*c), am1=1./a;
@@ -170,9 +174,11 @@ void Metric::Generic::nullifyCoord(double coord[8], double& tdot2) const {
 double Metric::Generic::ScalarProd(const double pos[4],
 			  const double u1[4], const double u2[4]) const {
   double res=0.;
+  double g[4][4];
+  gmunu(g, pos);
   for (int i=0;i<4;i++) {
     for (int j=0;j<4;j++) {
-      res+=gmunu(pos, i, j)*u1[i]*u2[j];
+      res+=g[i][j]*u1[i]*u2[j];
     }
   }
   return res;
@@ -181,9 +187,11 @@ double Metric::Generic::ScalarProd(const double pos[4],
 double Metric::Generic::Norm3D(double* pos) const {
   throwError("Check Norm3D");
   double res=0.;
+  double g[4][4];
+  gmunu(g, pos);
   for (int i=0;i<3;i++) {
     for (int j=0;j<3;j++) {
-      res+=gmunu(pos,i+1, j+1)*pos[i]*pos[j];
+      res+=g[i+1][j+1]*pos[i]*pos[j];
     }
   }
   return sqrt(res);
@@ -191,6 +199,40 @@ double Metric::Generic::Norm3D(double* pos) const {
 
 
 /***************Geodesic most general integration**************/
+
+
+double Metric::Generic::gmunu(const double * x, int mu, int nu) const {
+  double g[4][4];
+  gmunu(g, x);
+  return g[mu][nu];
+}
+
+void Metric::Generic::gmunu(double g[4][4], const double * x) const {
+  size_t mu, nu;
+  for (mu=0; mu<4; ++mu) {
+    g[mu][mu]=gmunu(x, mu, mu);
+    for (nu=mu+1; nu<4; ++nu)
+      g[mu][nu]=g[nu][mu]=gmunu(x, mu, nu);
+  }
+}
+
+
+double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
+  double dst[4][4][4];
+  christoffel(dst, x);
+  return dst[alpha][mu][nu];
+}
+
+void Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
+  size_t alpha, mu, nu;
+  for (alpha=0; alpha<4; ++alpha) {
+    for (mu=0; mu<4; ++mu) {
+      dst[alpha][mu][mu]=christoffel(x, alpha, mu, mu);
+      for (nu=mu+1; nu<4; ++nu)
+	dst[alpha][mu][nu]=dst[alpha][nu][mu]=christoffel(x, alpha, mu, nu);
+    }
+  }
+}
 
 /*
 Let : Y=[x0,x1,x2,x3,x0_dot,x1_dot,x2_dot,x3_dot] (dot=d/dtau, tau=proper time)
@@ -205,16 +247,14 @@ int Metric::Generic::diff(const double coord[8], double res[8]) const{
   res[1]=coord[5];
   res[2]=coord[6];
   res[3]=coord[7];
-  res[4]=res[5]=res[6]=res[7]=0.;
-  for (int i=0;i<4;i++) {
-    for (int j=0;j<4;j++) {
-      res[4]-=christoffel(coord,0,i,j)*coord[4+i]*coord[4+j];
-      res[5]-=christoffel(coord,1,i,j)*coord[4+i]*coord[4+j];
-      res[6]-=christoffel(coord,2,i,j)*coord[4+i]*coord[4+j];
-      res[7]-=christoffel(coord,3,i,j)*coord[4+i]*coord[4+j];
-    }
+  double dst[4][4][4];
+  christoffel(dst, coord);
+  for(int alpha=0; alpha<4; ++alpha) {
+    res[alpha+4]=0.;
+    for (int i=0;i<4;i++)
+      for (int j=0;j<4;j++)
+	res[alpha+4] -= dst[alpha][i][j]*coord[4+i]*coord[4+j];
   }
-
   return 0;
 }
 

@@ -132,9 +132,9 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_METRIC_GENERIC_KW "prime2tdot",				\
     "nullifycoord", "kind", "setparameter", "scalarprod",		\
     "mass", "deltamin", "deltamax", "unitlength", "circularvelocity",   \
-    "xmlwrite", "clone"
+    "christoffel", "xmlwrite", "clone"
 // Number of those keywords
-#define YGYOTO_METRIC_GENERIC_KW_N 12
+#define YGYOTO_METRIC_GENERIC_KW_N 13
 
 // Keywords processed by ygyoto_Astrobj_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW "metric", "rmax", "opticallythin",	\

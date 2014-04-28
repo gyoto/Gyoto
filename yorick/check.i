@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011, 2013-2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -149,6 +149,7 @@ gg=[];
 write, format= "%s\n"," ALL TESTS PASSED";
 
 #include "check-metric.i"
+#include "check-minkowski.i"
 #include "check-photon-BL.i"
 #include "check-star.i"
 #include "check-startrace.i"

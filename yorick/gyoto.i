@@ -730,6 +730,11 @@ extern gyoto_Metric;
                If the optional parameter DIR is -1, VELS corresponds
                to the counter-rotating circular velocity.
 
+       Gamma= gg(christoffel=pos)
+               Return the 64 Christoffel symbols at posistion POS.
+               Beware of the index ordering:
+                  Gamma(nu, mu, alpha) == Gamma^alpha_mu_nu
+
    SEE ALSO: gyoto, gyoto_KerrBL, gyoto_KerrKS
  */
 

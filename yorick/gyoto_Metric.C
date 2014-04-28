@@ -187,6 +187,46 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
       (*OBJ)->circularVelocity(coords, vels, dir);
   }
 
+  // christoffel
+  if ((iarg=kiargs[++k])>=0) {
+    if ((*rvset)++) y_error(rmsg);
+    if ((*paUsed)++) y_error(pmsg);
+    double * coords = ygeta_d(iarg, &ntot, dims);
+    if (!dims[0] || dims[1]<4)
+      y_error("syntax: christoffel=array(double, 4)");
+
+    Idx i_idx (piargs[0], 4);
+    if (i_idx.isNuller()) return;
+    Idx j_idx (piargs[1], 4);
+    if (j_idx.isNuller()) return;
+    Idx a_idx (piargs[2], 4);
+    if (a_idx.isNuller()) return;
+    long ni=i_idx.getNElements();
+    long nj=j_idx.getNElements();
+    long na=a_idx.getNElements();
+    long nelem=ni*nj*na;
+
+    dims[0]=i_idx.getNDims()+j_idx.getNDims()+a_idx.getNDims();
+    size_t offset=0;
+    if (i_idx.getNDims()) dims[++offset]=ni;
+    if (j_idx.getNDims()) dims[++offset]=nj;
+    if (a_idx.getNDims()) dims[++offset]=na;
+    double * data=ypush_d(dims);
+    double dst[4][4][4];
+
+    if (dims[0]==3 && dims[1]==4 && dims[2]==4 && dims[3]==4) {
+      (*OBJ)->christoffel(dst, coords);
+      memcpy(data, &dst[0][0], 4*4*4*sizeof(double));
+    } else {
+      size_t i, j, a;
+      for ( a=a_idx.first() ; a_idx.valid() ; a=a_idx.next() )
+	for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
+	  for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )
+	    *(data++) = (*OBJ)->christoffel(coords, a-1, i-1, j-1);
+    }
+
+  } 
+
   YGYOTO_WORKER_XMLWRITE;
   YGYOTO_WORKER_CLONE(Metric);
 
@@ -210,6 +250,13 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   if (i_idx.getNDims()) dims[++offset]=ni;
   if (j_idx.getNDims()) dims[++offset]=nj;
   double * data=ypush_d(dims);
+  double dst[4][4];
+
+  if (dims[0]==2 && dims[1]==4 && dims[2]==4) {
+    (*OBJ)->gmunu(dst, x);
+    memcpy(data, &dst[0][0], 4*4*sizeof(double));
+    return;
+  }
 
   size_t i, j;
   for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )

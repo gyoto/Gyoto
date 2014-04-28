@@ -142,15 +142,15 @@ class Gyoto::Astrobj::UniformSphere :
   virtual SmartPointer<Spectrum::Generic> opacity() const;
   ///< Get opacity_
   double radius() const ; ///< Get radius_ in geometrical units
-  void   radius(double); ///< Set radius_ in geometrical units
+  virtual void   radius(double); ///< Set radius_ in geometrical units
   double radius(std::string) const ; ///< Get radius_ in specified unit
-  void   radius(double, std::string); ///< Set radius_ in specified unit
+  virtual void   radius(double, std::string); ///< Set radius_ in specified unit
 
   double deltaMaxOverRadius(); ///< Get dltmor_
-  void   deltaMaxOverRadius(double f); ///< Set dltmor_
+  virtual void   deltaMaxOverRadius(double f); ///< Set dltmor_
 
   double deltaMaxOverDistance(); ///< Get dltmod_
-  void   deltaMaxOverDistance(double f); ///< Set dltmod_
+  virtual void   deltaMaxOverDistance(double f); ///< Set dltmod_
 
  public:
   virtual int setParameter(std::string name,
