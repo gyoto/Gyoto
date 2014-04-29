@@ -73,37 +73,12 @@ militari stop.
   //OK for a<0.999)
 					       
 KerrBL::KerrBL() :
-  Generic(GYOTO_COORDKIND_SPHERICAL), spin_(0.), a2_(0.),
+  Generic(GYOTO_COORDKIND_SPHERICAL, "KerrBL"), spin_(0.), a2_(0.),
   difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL)
-{
-  kind("KerrBL");
-}
-
-KerrBL::KerrBL(double a, double m) :
-  Generic(m, GYOTO_COORDKIND_SPHERICAL), spin_(a), a2_(a*a),
-  difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL)
-{
-  //DEBUG!!!
-  //spin_=0.;
-  //setMass(0.);
-  //******************
-  kind("KerrBL");
-
-}
+{}
 
 // default copy constructor should be fine 
-KerrBL::KerrBL(const KerrBL& gg) :
-  Metric::Generic(gg), spin_(gg.spin_), a2_(gg.a2_), difftol_(gg.difftol_)
-{kind("KerrBL");}
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
-
-
-
-KerrBL::~KerrBL() {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-}
 
 // Output
 /*

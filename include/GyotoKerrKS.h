@@ -62,14 +62,7 @@ class Gyoto::Metric::KerrKS
   // -------------------------
  public: 
   KerrKS(); ///< Default constructor
-  KerrKS(double spin, double mass) ; ///< Constructor with spin and mass specification
-
-  // Default is fine
-  // KerrKS(const KerrKS& ) ;       
   virtual KerrKS* clone () const;         ///< Copy constructor
-  
-  virtual ~KerrKS() ;                        ///< Destructor
-  
   
   // Mutators / assignment
   // ---------------------

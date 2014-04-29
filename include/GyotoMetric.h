@@ -171,19 +171,31 @@ class Gyoto::Metric::Generic
    */
   double delta_max_over_r_;
 
+ protected:
+  /**
+   * \brief Set kind_
+   *
+   * kind(const std::string) is protected because, for most Metrics,
+   * it should not be changed in runtime.
+   */
+  void kind(const std::string); ///< Set kind_
+
+  /**
+   * \brief Set coordkind_
+   *
+   * coordkind(int coordkind) is protected because, for most Metrics,
+   * it should not be changed in runtime.
+   */
+  void coordKind(int coordkind); ///< Set coordinate kind
+
 
  public:
   const std::string kind() const; ///< Get kind_
-  void kind(const std::string); ///< Set kind_
   int getRefCount();
   
   // Constructors - Destructor
   // -------------------------
-  //Metric(const Metric& ) ;                ///< Copy constructor
-  Generic();
-  Generic(const int coordkind); ///< Constructor setting Generic::coordkind_
-  Generic(const double m, const int coordkind);
-      ///<  Constructor setting Generic::mass_ and Generic::coordkind_
+  Generic(const int coordkind, const std::string &name); ///< Constructor setting Generic::coordkind_ and kind_
 
   virtual ~Generic() ;                        ///< Destructor
   
@@ -197,7 +209,6 @@ class Gyoto::Metric::Generic
   // Accessors
 
   int coordKind() const; ///< Get coordinate kind
-  void coordKind(int coordkind); ///< Set coordinate kind
 
   double mass() const;        ///< Get mass used in unitLength()
   double mass(const std::string &unit) const; ///< Get mass used in unitLength()

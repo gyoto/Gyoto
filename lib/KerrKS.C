@@ -45,22 +45,12 @@ In particular, don't trust too much the result with spin>0
  */
 
 KerrKS::KerrKS():
-  Generic(GYOTO_COORDKIND_CARTESIAN),
+  Generic(GYOTO_COORDKIND_CARTESIAN, "KerrKS"),
   WIP("Metric::KerrKS"),
   spin_(0.), a2_(0.)
-{kind("KerrKS");}
+{}
 
-KerrKS::KerrKS(double a, double m) :
-  Generic(m, GYOTO_COORDKIND_CARTESIAN), spin_(a) {kind("KerrKS");}
-
-// default copy constructor should be fine
-// KerrKS::KerrKS(const KerrKS& gg) : 
-//          Metric(gg), spin_(gg.spin_) {kind("KerrKS");}
-// "virtual" copy constructor:
 KerrKS * KerrKS::clone () const { return new KerrKS(*this); }
-
-
-KerrKS::~KerrKS() {}
 
 // Output
 /*

@@ -32,44 +32,18 @@ using namespace Gyoto;
 
 Register::Entry* Metric::Register_ = NULL;
 
-// Default constructor
-Metric::Generic::Generic() :
-  mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED),
+Metric::Generic::Generic(const int coordkind, const std::string &name) :
+  mass_(1.), coordkind_(coordkind), kind_(name),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
   delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 {
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-#endif
-  kind("Unspecified");
-}
-
-Metric::Generic::Generic(const double mas, const int coordkind) :
-  mass_(mas), coordkind_(coordkind),
-  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
-  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
-  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
-{
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_IF_DEBUG;
-  GYOTO_DEBUG_EXPR(mass_);
+  GYOTO_IF_DEBUG
   GYOTO_DEBUG_EXPR(coordkind_);
-  GYOTO_ENDIF_DEBUG;
+  GYOTO_DEBUG_EXPR(kind_);
+  GYOTO_ENDIF_DEBUG
 # endif
-  kind("Unspecified");
-}
-
-Metric::Generic::Generic(const int coordkind) :
-  mass_(1.), coordkind_(coordkind),
-  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
-  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
-  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
-{
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(coordkind_);
-# endif
-  kind("Unspecified");
 }
 
 // No copy constructor needed, default is fine
@@ -112,7 +86,11 @@ void Metric::Generic::mass(const double mas, const string &unit) {
 }
 
 int Metric::Generic::coordKind()               const { return coordkind_; }
-void Metric::Generic::coordKind(int coordkind)       { coordkind_=coordkind; }
+void Metric::Generic::coordKind(int coordkind)
+{
+  coordkind_=coordkind;
+  tellListeners();
+}
 
 double Metric::Generic::mass()                 const { return mass_; }
 double Metric::Generic::mass(const string &unit) const {

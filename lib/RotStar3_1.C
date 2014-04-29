@@ -42,13 +42,11 @@ using namespace Gyoto;
 using namespace Gyoto::Metric;
 
 RotStar3_1::RotStar3_1() : 
-  Generic(GYOTO_COORDKIND_SPHERICAL),
+Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),
   filename_(NULL),
   star_(NULL),
   integ_kind_(1)
-{
-  kind("RotStar3_1");
-}
+{}
 
 RotStar3_1::RotStar3_1(const RotStar3_1& o) : 
   Generic(o),

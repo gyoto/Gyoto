@@ -30,8 +30,8 @@ using namespace Gyoto::Metric ;
 // This is the minimal constructor: it just sets the coordinate kind and
 // the metric kind name.
 Minkowski::Minkowski() :
-  Generic(GYOTO_COORDKIND_CARTESIAN)
-{kind("Minkowski");}
+  Generic(GYOTO_COORDKIND_CARTESIAN, "Minkowski")
+{}
 
 // The cloner is necessary. If the metric class is not trivial (e.g. contains
 // arrays), it may be necessary to implement the copy constructor as well. 
