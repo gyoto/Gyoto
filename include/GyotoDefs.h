@@ -362,6 +362,15 @@ namespace Gyoto {
  */
 #define GYOTO_DEFAULT_DELTA_MIN 1e-2
 
+/**
+ * \brief Default value for delta_max_over_r_
+ *
+ * For invastigations close to the event horizon, 0.5 is usually
+ * fine. If high accuracy is needed long after deflection (weak
+ * lensing), then this must be smaller. A good test is to look at a
+ * MinDistance map for a FixedStar: it must be smooth.
+ */
+#define GYOTO_DEFAULT_DELTA_MAX_OVER_R 0.5
 
 /**
  * \brief Default value for Gyoto::Worldline::maxiter_

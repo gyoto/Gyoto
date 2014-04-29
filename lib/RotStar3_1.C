@@ -45,8 +45,7 @@ RotStar3_1::RotStar3_1() :
   Generic(GYOTO_COORDKIND_SPHERICAL),
   filename_(NULL),
   star_(NULL),
-  integ_kind_(1),
-  delta_max_over_r_(GYOTO_ROTSTAR31_DEFAULT_DELTA_MAX_OVER_R)
+  integ_kind_(1)
 {
   kind("RotStar3_1");
 }
@@ -55,8 +54,7 @@ RotStar3_1::RotStar3_1(const RotStar3_1& o) :
   Generic(o),
   filename_(NULL),
   star_(NULL),
-  integ_kind_(o.integ_kind_),
-  delta_max_over_r_(o.delta_max_over_r_)
+  integ_kind_(o.integ_kind_)
 {
   kind("RotStar3_1");
   fileName(o.fileName());
@@ -111,9 +109,6 @@ char const * RotStar3_1::fileName() const { return filename_; }
 
 void RotStar3_1::integKind(int ik) { integ_kind_ = ik; }
 int RotStar3_1::integKind() const { return integ_kind_; }
-
-double RotStar3_1::deltaMaxOverR() const { return delta_max_over_r_;}
-void RotStar3_1::deltaMaxOverR(double t) {delta_max_over_r_=t;}
 
 int RotStar3_1::diff(const double coord[8], double res[8]) const
 {
@@ -356,11 +351,8 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
   double errmin=1e-6;
   // double factnorm=2.;
   double sigh1=1.;
-  double h1max_default=coord[1]*delta_max_over_r_;
- 
-  if (h1max>h1max_default) h1max=h1max_default;
-  if (h1max>delta_max_) h1max=delta_max_;
-  if (h1max<delta_min_) h1max=delta_min_;
+
+  h1max=deltaMax(coord, h1max);
 
   /*if (debug()) cout << "RotStar.C: coord in rk=";
   for (int ii=0;ii<8;ii++) if (debug()) cout << coord[ii] << " " ;
@@ -769,15 +761,12 @@ double RotStar3_1::ScalarProd(const double pos[4],
 void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
   if (filename_) fmp -> setParameter("File", filename_);
   fmp -> setParameter("IntegKind", integ_kind_);
-  if (delta_max_over_r_ != GYOTO_ROTSTAR31_DEFAULT_DELTA_MAX_OVER_R)
-    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
   Generic::fillElement(fmp);
 }
 
 void RotStar3_1::setParameter(string name, string content, string unit){
   if      (name=="IntegKind")     integKind(atoi(content.c_str()));
   else if (name=="File")          fileName(content.c_str());
-  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
   else Generic::setParameter(name, content, unit);
 }
 

@@ -157,6 +157,21 @@ class Gyoto::Metric::Generic
   double delta_min_; ///< Minimum integration step for the adaptive integrator
   double delta_max_; ///< Maximum integration step for the adaptive integrator
 
+  /**
+   * \brief Numerical tuning parameter
+   *
+   * Ensure that delta (the numerical integration step) is never
+   * larger than a fraction of the distance between the current
+   * location and the center of the coordinate system.
+   *
+   * For invastigations close to the event horizon, 0.5 is usually
+   * fine. If high accuracy is needed long after deflection (weak
+   * lensing), then this must be smaller. A good test is to look at a
+   * MinDistance map for a FixedStar: it must be smooth.
+   */
+  double delta_max_over_r_;
+
+
  public:
   const std::string kind() const; ///< Get kind_
   void kind(const std::string); ///< Set kind_
@@ -211,9 +226,24 @@ class Gyoto::Metric::Generic
   double deltaMax() const;
 
   /**
+   * Get delta max at a given position
+   *
+   * \param pos 4-position
+   * \param[optional] delta_max_external external constraint on delta_max
+   * \return the smallest value between delta_max_,
+   * delta_max_external, and R*delta_max_over_r_ where R is pos[1] in
+   * spherical coordinates and max(x1, x2, x3) in Cartesian
+   * coordinates.
+   */
+  virtual double deltaMax(double const pos[8], double delta_max_external) const;
+
+  /**
    * Set delta_max_
    */
   void deltaMax(double h1);
+
+  double deltaMaxOverR() const; ///< Get delta_max_over_r_
+  void deltaMaxOverR(double t); ///< Set delta_max_over_r_
 
   virtual void cartesianVelocity(double const coord[8], double vel[3]);
   ///< Compute xprime, yprime and zprime from 8-coordinates

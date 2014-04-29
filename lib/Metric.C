@@ -36,7 +36,8 @@ Register::Entry* Metric::Register_ = NULL;
 Metric::Generic::Generic() :
   mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
-  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
+  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -47,7 +48,8 @@ Metric::Generic::Generic() :
 Metric::Generic::Generic(const double mas, const int coordkind) :
   mass_(mas), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
-  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
+  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG;
@@ -61,7 +63,8 @@ Metric::Generic::Generic(const double mas, const int coordkind) :
 Metric::Generic::Generic(const int coordkind) :
   mass_(1.), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
-  delta_max_(GYOTO_DEFAULT_DELTA_MAX)
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
+  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(coordkind_);
@@ -120,6 +123,22 @@ double Metric::Generic::deltaMin() const {return delta_min_;}
 double Metric::Generic::deltaMax() const {return delta_max_;}
 void  Metric::Generic::deltaMin(double h1) {delta_min_=h1;}
 void  Metric::Generic::deltaMax(double h1) {delta_max_=h1;}
+double Metric::Generic::deltaMaxOverR() const { return delta_max_over_r_;}
+void Metric::Generic::deltaMaxOverR(double t) {delta_max_over_r_=t;}
+
+double Metric::Generic::deltaMax(double const pos[8], double h1max) const
+{
+  double h1max_at_r=pos[1];
+  if (coordkind_==GYOTO_COORDKIND_CARTESIAN) {
+    if (pos[2]>h1max_at_r) h1max_at_r=pos[2];
+    if (pos[3]>h1max_at_r) h1max_at_r=pos[3];
+  }
+  h1max_at_r *= delta_max_over_r_;
+  if (h1max > h1max_at_r) h1max = h1max_at_r;
+  if (h1max>delta_max_) h1max=delta_max_;
+  if (h1max<delta_min_) h1max=delta_min_;
+  return h1max;
+}
 
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
@@ -472,12 +491,15 @@ void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
     fmp -> setParameter("DeltaMin", delta_min_);
   if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
     fmp -> setParameter("DeltaMax", delta_max_);
+  if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
+    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
 }
 
 void Metric::Generic::setParameter(string name, string content, string unit) {
   if      (name=="Mass")     mass(atof(content.c_str()), unit);
   else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
   else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
+  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
 }
 
 void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {

@@ -45,15 +45,6 @@ namespace Gyoto {
 #include <GyotoRegister.h>
 #endif
 
-/// Default value for delta_max_over_r_
-/**
- * For invastigations close to the event horizon, 0.5 is usually
- * fine. If high accuracy is needed long after deflection (weak
- * lensing), then this must be smaller. A good test is to look at a
- * MinDistance map for a FixedStar: it must be smooth.
- */
-#define GYOTO_ROTSTAR31_DEFAULT_DELTA_MAX_OVER_R 0.5
-
 /**
  * \class Gyoto::Metric::RotStar3_1
  * \brief Numerical metric around a rotating star in 3+1 formalism
@@ -65,19 +56,6 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   char* filename_; ///< Lorene output file name
   Star_rot * star_; ///< Pointer to underlying Lorene Star_rot instance 
   int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
-
-  /// Numerical tuning parameter
-  /**
-   * Ensure that delta (the numerical integration step) is never
-   * larger than a fraction of the distance between the current
-   * location and the center of the coordinate system.
-   *
-   * For invastigations close to the event horizon, 0.5 is usually
-   * fine. If high accuracy is needed long after deflection (weak
-   * lensing), then this must be smaller. A good test is to look at a
-   * MinDistance map for a FixedStar: it must be smooth.
-   */
-  double delta_max_over_r_;
 
  public:
 
@@ -93,11 +71,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   void integKind(int); ///< Set integ_kind_
   int integKind() const ; ///< Get integ_kind_
 
-  double deltaMaxOverR() const; ///< Get delta_max_over_r_
-  void deltaMaxOverR(double t); ///< Set delta_max_over_r_
-
   using Metric::Generic::myrk4;
-
 
   /**
    * \brief RK4 integrator
