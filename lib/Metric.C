@@ -36,7 +36,8 @@ Metric::Generic::Generic(const int coordkind, const std::string &name) :
   mass_(1.), coordkind_(coordkind), kind_(name),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
-  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
+  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
+  keplerian_(false)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
@@ -117,6 +118,9 @@ double Metric::Generic::deltaMax(double const pos[8], double h1max) const
   if (h1max<delta_min_) h1max=delta_min_;
   return h1max;
 }
+
+bool Metric::Generic::keplerian() const {return keplerian_;}
+void Metric::Generic::keplerian(bool t) {keplerian_=t;}
 
 double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) const {
   double sum=0.,xpr[4];
@@ -310,10 +314,37 @@ int Metric::Generic::myrk4(Worldline *, const double coord[8], double h, double 
   return 0;
 }
 
-void Metric::Generic::circularVelocity(double const * , double*, double) const {
-  stringstream ss;
-  ss << kind_ << "::circularVelocity() is not implemented";
-  throwError(ss.str());
+void Metric::Generic::circularVelocity(double const * coor, double* vel,
+				       double dir) const {
+  if (!keplerian_) {
+    stringstream ss;
+    ss << kind_
+       << "::circularVelocity() is not implemented. "
+       <<"Use \"<Keplerian/>\" for the Keplerian approximation.";
+    throwError(ss.str());
+  }
+
+  if (coordkind_==GYOTO_COORDKIND_SPHERICAL) {
+    double sinth = sin(coor[2]);
+    double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
+
+    vel[1] = vel[2] = 0.;
+    vel[3] = 1./(dir*pow(coord[1], 1.5)*sinth);
+
+    vel[0] = SysPrimeToTdot(coor, vel+1);
+    vel[3] *= vel[0];
+  } else if (coordkind_==GYOTO_COORDKIND_CARTESIAN) {
+    double rcross=sqrt ( coor[1]*coor[1] + coor[2]*coor[2] );
+    double Omega=dir*pow(rcross*rcross*rcross, -0.5);
+    //angular Keplerian velocity
+  
+    vel[1] = -coor[2]*Omega;
+    vel[2] =  coor[1]*Omega;
+    vel[3] = 0.;
+    vel[0] = SysPrimeToTdot(coor, vel+1);
+    vel[1] *= vel[0];
+    vel[2] *= vel[0];
+  } else throwError("Unknownn COORDKIND");
 }
 
 
@@ -471,6 +502,8 @@ void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
     fmp -> setParameter("DeltaMax", delta_max_);
   if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
     fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
+  if (keplerian_)
+    fmp -> setParameter("Keplerian");
 }
 
 void Metric::Generic::setParameter(string name, string content, string unit) {
@@ -478,6 +511,7 @@ void Metric::Generic::setParameter(string name, string content, string unit) {
   else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
   else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
   else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
+  else if (name=="Keplerian")keplerian(true);
 }
 
 void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {

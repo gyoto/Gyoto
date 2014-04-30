@@ -418,6 +418,13 @@ int KerrKS::myrk4(const double* coord, const double* cst , double h, double* res
 void KerrKS::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
 
+  if (keplerian_) {
+    // If keplerian_ is true, let the generic implementation return
+    // the Keplerian velocity instead of the true circular velocity
+    Generic::circularVelocity(coor, vel, dir);
+    return;
+  }
+
   double rcross=sqrt ( coor[1]*coor[1] + coor[2]*coor[2] - spin_*spin_);
   double Omega=dir*pow(rcross*rcross*rcross, -0.5);//angular Keplerian velocity
   

@@ -171,6 +171,8 @@ class Gyoto::Metric::Generic
    */
   double delta_max_over_r_;
 
+  bool keplerian_; ///< 1 if circularVelocity should return the Keplerian velocity
+
  protected:
   /**
    * \brief Set kind_
@@ -256,6 +258,9 @@ class Gyoto::Metric::Generic
   double deltaMaxOverR() const; ///< Get delta_max_over_r_
   void deltaMaxOverR(double t); ///< Set delta_max_over_r_
 
+  bool keplerian() const; ///< Get keplerian_
+  void keplerian(bool); ///< Set keplerian_
+
   virtual void cartesianVelocity(double const coord[8], double vel[3]);
   ///< Compute xprime, yprime and zprime from 8-coordinates
 
@@ -268,8 +273,20 @@ class Gyoto::Metric::Generic
   ///<Compute tdot as a function of dr/dt, dtheta/dt and dphi/dt. Everything is in geometrical units.
 
   /**
-   * \brief Yield circular valocity at a given position (projected on
-   * equatorial plane).
+   * \brief Yield circular velocity at a given position
+   * 
+   * Give the velocity of a massive particle in circular orbit at the
+   * given position projected onto the equatorial plane. Such a
+   * velocity may not exist everywhere (or anywhere) for a given
+   * metric. This method is intended to be used by Astrobj classes
+   * such as Torus or ThinDisk.
+   *
+   * If keplerian_ is set to true, this method should return the
+   * Keplerian velcity instead (derived classes should ensure this,
+   * see KerrBL::circularVelocity() for instance).
+   *
+   * The default implementation throws an error if keplerian_ is set
+   * to false.
    *
    * \param pos input: position,
    * \param vel output: velocity,

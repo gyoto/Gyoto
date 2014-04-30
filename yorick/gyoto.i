@@ -677,7 +677,7 @@ extern gyoto_Metric;
 
    MEMBER KEYWORDS:
 
-     mass=, unitlength=, kind=, deltamin=, deltamax=
+     mass=, unitlength=, kind=, deltamin=, deltamax=, keplerian=
    
      All the Metric kinds have a mass that can be set and retrieved
      using the mass keyword:
@@ -693,9 +693,12 @@ extern gyoto_Metric;
      The kind of the metric (e.g. "KerrBL") can be queried:
         kind_string = gg(kind=)
 
-     Finally, the minimum and maximum value of the adaptive step in
+     The minimum and maximum value of the adaptive step in
      the integrator can be set using respectively deltamin and
      deltamax.
+
+     KEPLERIAN can be set to 1 in oreder to get CIRCULARVELOCITY to
+     return the Keplerian approximation.
 
    METHODS
 

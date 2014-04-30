@@ -15,12 +15,18 @@ CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 check: gyoto
 	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
 	   \!example-thin-disk.fits
+	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-cartesian.xml \
+	   \!example-thin-disk-minkowski-cartesian.fits
+	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-spherical.xml \
+	   \!example-thin-disk-minkowski-spherical.fits
 	$(CHECK_CMD) ../doc/examples/example-complex-astrobj.xml \
 	   \!example-complex-astrobj.fits
-	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski.xml \
-	   \!example-fixed-star-minkowski.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
+	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-cartesian.xml \
+	   \!example-fixed-star-minkowski-cartesian.fits
+	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-spherical.xml \
+	   \!example-fixed-star-minkowski-spherical.fits
 	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
 	   \!example-startrace.fits
 	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \

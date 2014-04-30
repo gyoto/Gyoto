@@ -382,6 +382,14 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
 void KerrBL::circularVelocity(double const coor[4], double vel[4],
 			      double dir) const {
+
+  if (keplerian_) {
+    // If keplerian_ is true, let the generic implementation return
+    // the Keplerian velocity instead of the true circular velocity
+    Generic::circularVelocity(coor, vel, dir);
+    return;
+  }
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<<"coor=["<<coor[0]<<", "<<coor[1]<<", "<<coor[2]<<", "<<coor[3]
 	     <<"], dir="<<dir<<endl;

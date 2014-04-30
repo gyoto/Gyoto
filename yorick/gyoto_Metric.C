@@ -160,6 +160,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
 
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMin);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMax);
+  YGYOTO_WORKER_GETSET_LONG2(keplerian);
 
   // Unit length
   if ((iarg=kiargs[++k])>=0) { // unitLength()

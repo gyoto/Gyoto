@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
+  An optically thin blob centered on the origin of the coordinate
+  system, in flat space-time. Computation uses the spherical
+  coordinates.
+
   <Metric kind = "Minkowski">
     <Mass unit="sunmass"> 4e6 </Mass>
-
-    Flat space-time metric.
-
-    By default, uses the Cartesian coordinates. Uncomment the
-    following to use sperical coordinates instead:
-    <!--Spherical/-->
-
+    <Spherical/>
   </Metric>
 
   <Screen>
