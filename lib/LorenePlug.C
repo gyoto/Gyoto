@@ -19,6 +19,7 @@
 
 // include Metric headers
 #include "GyotoRotStar3_1.h"
+#include "GyotoNumericalMetricLorene.h"
 /*
 namespace Gyoto {
   void __StdLibInit();
@@ -29,4 +30,7 @@ extern "C" void __GyotoloreneInit() {
   Gyoto::Metric::Register("RotStar3_1",
 			  &(Gyoto::Metric::Subcontractor
 			    <Gyoto::Metric::RotStar3_1>));
+  Gyoto::Metric::Register("NumericalMetricLorene",
+			   &(Gyoto::Metric::Subcontractor
+			    <Gyoto::Metric::NumericalMetricLorene>));
 }

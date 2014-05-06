@@ -136,6 +136,7 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(soverdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES) $(sover_LTLIBRARIES)
 libgyoto_lorene_la_LIBADD =
 am_libgyoto_lorene_la_OBJECTS = libgyoto_lorene_la-RotStar3_1.lo \
+	libgyoto_lorene_la-NumericalMetricLorene.lo \
 	libgyoto_lorene_la-LorenePlug.lo
 libgyoto_lorene_la_OBJECTS = $(am_libgyoto_lorene_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -443,7 +444,7 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS) \
 				$(AM_LDFLAGS)
 
-libgyoto_lorene_la_SOURCES = RotStar3_1.C LorenePlug.C
+libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C LorenePlug.C
 libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS)
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 
@@ -618,6 +619,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Worldline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorldlineIntegState.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-LorenePlug.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-RotStar3_1.Plo@am__quote@
 
 .C.o:
@@ -647,6 +649,13 @@ libgyoto_lorene_la-RotStar3_1.lo: RotStar3_1.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='RotStar3_1.C' object='libgyoto_lorene_la-RotStar3_1.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_lorene_la-RotStar3_1.lo `test -f 'RotStar3_1.C' || echo '$(srcdir)/'`RotStar3_1.C
+
+libgyoto_lorene_la-NumericalMetricLorene.lo: NumericalMetricLorene.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_lorene_la-NumericalMetricLorene.lo -MD -MP -MF $(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Tpo -c -o libgyoto_lorene_la-NumericalMetricLorene.lo `test -f 'NumericalMetricLorene.C' || echo '$(srcdir)/'`NumericalMetricLorene.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Tpo $(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='NumericalMetricLorene.C' object='libgyoto_lorene_la-NumericalMetricLorene.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_lorene_la-NumericalMetricLorene.lo `test -f 'NumericalMetricLorene.C' || echo '$(srcdir)/'`NumericalMetricLorene.C
 
 libgyoto_lorene_la-LorenePlug.lo: LorenePlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_lorene_la-LorenePlug.lo -MD -MP -MF $(DEPDIR)/libgyoto_lorene_la-LorenePlug.Tpo -c -o libgyoto_lorene_la-LorenePlug.lo `test -f 'LorenePlug.C' || echo '$(srcdir)/'`LorenePlug.C
