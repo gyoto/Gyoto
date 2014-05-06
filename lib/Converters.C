@@ -244,7 +244,11 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
       throwError("Metric required for geometrical_time -> second conversion");
   }
 # ifdef HAVE_UDUNITS
-  else val = Second->To(val, unit);
+  else {
+    Unit from (unit);
+    if (areConvertible(from, *Meter)) val=Meter->To(val, from)/GYOTO_C;
+    else val = Second->To(val, from);
+  }
 # else
   else if (unit=="min") val *= 60. ;
   else if (unit=="h") val *= 3600. ;
@@ -274,7 +278,11 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
       throwError("Metric required for second -> geometrical_time conversion");
   }
 # ifdef HAVE_UDUNITS
-  else val = Second->From(val, unit);
+  else {
+    Unit to (unit);
+    if (areConvertible(to, *Meter)) val=Meter->From(val*GYOTO_C, to);
+    else val = Second->From(val, to);
+  }
 # else
   else if (unit=="min") val /= 60. ;
   else if (unit=="h") val /= 3600. ;

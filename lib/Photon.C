@@ -308,8 +308,9 @@ int Photon::hit(Astrobj::Properties *data) {
     }
     if (coord[0] == x0_[ind]) { // here, ind denotes previous step
       stopcond=1;
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	cerr << "SEVERE: Photon::hit(): time did not evolve, break." << endl;
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "time did not evolve, break." << endl;
+#     endif
       break;
     }
     if((stopcond=metric_->isStopCondition(coord))) {
@@ -320,7 +321,7 @@ int Photon::hit(Astrobj::Properties *data) {
     }
 
     if ( ++count > maxiter_ ) {
-      GYOTO_SEVERE << "***WARNING (severe): Photon::hit: too many iterations, "
+      GYOTO_SEVERE << "Photon::hit: too many iterations, "
 		   <<" break" << endl;
       stopcond = 1;
       break;

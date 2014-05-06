@@ -119,7 +119,7 @@ double Torus::operator()(double const pos[4]) {
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     h = pos[3];
-    drproj = sqrt(pos[1]*pos[1]+pos[2]*pos[2]);
+    drproj = sqrt(pos[1]*pos[1]+pos[2]*pos[2])-c_;
     break;
   default:
     throwError("Torus::distance(): unknown coordinate system kind");

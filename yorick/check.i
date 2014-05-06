@@ -149,6 +149,7 @@ gg=[];
 write, format= "%s\n"," ALL TESTS PASSED";
 
 #include "check-metric.i"
+#include "check-kerrks.i"
 #include "check-minkowski.i"
 #include "check-photon-BL.i"
 #include "check-star.i"

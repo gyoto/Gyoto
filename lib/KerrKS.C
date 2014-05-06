@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2014 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -35,9 +35,6 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
-#define drhor 0.5
-//stop integration at r_horizon+drhor for outgoing geodesics
-
 /*
 NOTA BENE: to improve KerrKS
 So far (March 2011) KerrKS is just a stub ; to improve it, it's necessary to imporve myrk4_adaptive, which is really obsolete (and longer!) as compared to KerrBL ; a check of cst of motion conservation should be implemented: so far, the norm behaves badly when approaching (not-so-)close to horizon, that's why drhor is chosen so big.
@@ -47,7 +44,8 @@ In particular, don't trust too much the result with spin>0
 KerrKS::KerrKS():
   Generic(GYOTO_COORDKIND_CARTESIAN, "KerrKS"),
   WIP("Metric::KerrKS"),
-  spin_(0.), a2_(0.)
+  spin_(0.), a2_(0.), rsink_(2.+GYOTO_KERRKS_HORIZON_SECURITY),
+  drhor_(GYOTO_KERRKS_HORIZON_SECURITY), generic_integrator_(true)
 {}
 
 KerrKS * KerrKS::clone () const { return new KerrKS(*this); }
@@ -69,43 +67,180 @@ std::ostream& KerrKS::print( std::ostream& o) const {
 void KerrKS::spin(const double spin) {
   spin_=spin;
   a2_=spin*spin;
+  rsink_=1.+sqrt(1.-a2_)+drhor_;
+  tellListeners();
+}
+
+void KerrKS::horizonSecurity(const double drhor) {
+  drhor_=drhor;
+  rsink_=1.+sqrt(1.-a2_)+drhor_;
   tellListeners();
 }
 
 // Accessors
 double KerrKS::spin() const { return spin_ ; }
+double KerrKS::horizonSecurity() const {return drhor_; }
 
-double KerrKS::christoffel(const double[8],
-		   const int, const int, const int) const{
-  throwError( "KerrKS.C : should never come here to find christoffel!!" );
-  return 0.;
+
+bool KerrKS::genericIntegrator() const {return generic_integrator_;}
+void KerrKS::genericIntegrator(bool t) {
+  generic_integrator_=t;
+  if (!generic_integrator_)
+    GYOTO_WARNING << "the specific integrator in Metric::KerrKS is known to be buggy. Use the generic integrator or debug." << endl;
 }
 
+
 void KerrKS::gmunu(double g[4][4], const double * pos) const {
-  double eta[4][4]=
-    {{-1., 0., 0., 0.},
-     { 0., 1., 0., 0.},
-     { 0., 0., 1., 0.},
-     { 0., 0., 0., 1.}};
   double
     x=pos[1], y=pos[2], z=pos[3],
     x2=x*x, y2=y*y, z2=z*z,
-    temp=x2+y2+z2-a2_,
-    r=sqrt(0.5*(temp+sqrt(temp*temp+4*a2_*z2))),
-    r2=r*r, r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,
+    tau=x2+y2+z2-a2_,
+    r2=0.5*(tau+sqrt(tau*tau+4*a2_*z2)),
+    r=sqrt(r2),
+    r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,
     f=2.*r3/(r4+a2_*z2);
   double k[4]=
     {
       1.,
       (r*x+spin_*y)/r2_a2,
-      (r*y+spin_*x)/r2_a2,
+      (r*y-spin_*x)/r2_a2,
       z/r
     };
   for (int mu=0; mu<4; ++mu)
     for (int nu=0; nu<=mu;++nu)
-      g[mu][nu]=g[nu][mu]=eta[mu][nu]+f*k[mu]*k[nu];
+      g[mu][nu]=g[nu][mu]=f*k[mu]*k[nu];
+  g[0][0] -= 1.;
+  for (int mu=1; mu<4;  ++mu) g[mu][mu]+=1.;
 }
 
+void KerrKS::gmunu_up(double gup[4][4], const double * pos) const {
+ double jac[4][4][4], dst[4][4][4];
+ christoffel(dst, pos, gup, jac);
+}
+
+void KerrKS::jacobian(double jac[4][4][4], const double * pos) const {
+ double gup[4][4], dst[4][4][4];
+ christoffel(dst, pos, gup, jac);
+}
+
+int KerrKS::christoffel(double dst[4][4][4], const double * pos) const {
+ double gup[4][4], jac[4][4][4];
+ return christoffel(dst, pos, gup, jac);
+}
+
+int KerrKS::christoffel(double dst[4][4][4], const double * pos, double gup[4][4], double jac[4][4][4]) const {
+  size_t a, mu, nu, i;
+  double
+    x=pos[1], y=pos[2], z=pos[3],
+    x2=x*x, y2=y*y, z2=z*z, a2z2=a2_*z2,
+    x2_y2_z2=x2+y2+z2,
+    tau=x2_y2_z2-a2_,
+    rho2=tau*tau+4.*a2z2, rho=sqrt(rho2),
+    r2=0.5*(tau+rho),
+    r=sqrt(r2), r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,
+    rx_ay=r*x+spin_*y, ry_ax=r*y-spin_*x,
+    f=2.*r3/(r4+a2_*z2), fr2=f*r2;
+
+  // computing gup[mu][up]=g^mu^nu
+  {
+    double frac = f/
+      (-fr2*(rx_ay*rx_ay + ry_ax*ry_ax)+ r2_a2*r2_a2 *(-r2 +fr2 -f*z2));
+    double kup[4]=
+      {
+	-r*r2_a2,
+	r*rx_ay,
+	r*ry_ax,
+	r2_a2*z
+      };
+    for (mu=0; mu<4; ++mu) {
+      for (nu=0; nu<=mu;++nu) {
+	gup[mu][nu]=gup[nu][mu]=frac*kup[mu]*kup[nu];
+      }
+    }
+    gup[0][0] -= 1.;
+    for (mu=1; mu<4; ++mu) gup[mu][mu] += 1.; 
+  }
+
+  // computing jac[a][mu][nu]=dg_mu_nu/dx^a
+  {
+    double k[4]=
+      {
+	1.,
+	rx_ay/r2_a2,
+	ry_ax/r2_a2,
+	z/r
+      };
+    
+    double
+      a4=a2_*a2_,
+      r4_a2z2=r4+a2z2,
+      temp=-(2.*r3*(r4-3.*a2z2))/(r4_a2z2*r4_a2z2*rho),
+      temp2=(a4+2.*r2*x2_y2_z2 - a2_* (x2_y2_z2 - 4.* z2 + rho));
+
+    double df[4]=
+      {
+	0.,
+	x*temp,	
+	y*temp,	
+	-((4.*r*z*(2.* a4*a2_ + (a2_ + 2.*r2)*x2_y2_z2*x2_y2_z2 + 
+		   a4*(-3.*x2 - 3.*y2 + z2 - 2.*rho) + 
+		   a2_*(x2 + y2 - z2)*rho))/(rho*temp2*temp2))
+      };
+
+    double
+      frac1=1./(r2_a2*r2_a2*rho),
+      frac2=z/(r2_a2*r*rho),
+      frac3=-z/(r*rho);
+    double dk[4][4]=
+      {
+	// d/dt
+	{0., 0., 0., 0.},
+	// d/dx
+	{
+	  0.,
+	  (r3*(x2+rho)-rx_ay*x*(x2+y2+z2+rho)+a2_*(rx_ay*x+r*(x2+rho)))*frac1,
+	  (x*(r3*y+a2_*(ry_ax+r*y)-ry_ax*(x2+y2+z2))-(spin_*r2_a2+ry_ax*x)*rho)*frac1,
+	  x*frac3
+	},
+	// d/dy
+	{
+	  0.,
+	  (a2_*(rx_ay+r*x)*y+r2_a2*spin_*rho-y*(-r3*x+rx_ay*(x2+y2+z2+rho)))*frac1,
+	  (r3*(y2+rho)-ry_ax*y*(x2+y2+z2+rho)+a2_*(ry_ax*y+r*(y2+rho)))*frac1,
+	  y*frac3
+
+	},
+	// d/dz
+	{
+	  0.,
+	  ((a2_-r2)*x-2*spin_*r*y)*frac2,
+	  ((a2_-r2)*y+2*spin_*r*x)*frac2,
+	  (2.*r2- (z2*(a2_ + x2 + y2 + z2 + rho))/rho)/(2.*r3)
+	}
+      };
+    
+    for(a=0; a<4; ++a)
+      for (int mu=0; mu<4; ++mu)
+	for (int nu=0; nu<=mu;++nu)
+	  jac[a][mu][nu]=jac[a][nu][mu]=df[a]*k[mu]*k[nu]+f*dk[a][mu]*k[nu]+f*k[mu]*dk[a][nu];
+    
+  }
+
+  // computing Gamma^a_mu_nu
+  for (a=0; a<4; ++a) {
+    for (mu=0; mu<4; ++mu) {
+      for (nu=0; nu<4; ++nu) {
+	dst[a][mu][nu]=0.;
+        for (i=0; i<4; ++i) {
+	  dst[a][mu][nu]+=0.5*gup[i][a]*
+	    (jac[mu][i][nu]+jac[nu][mu][i]-jac[i][mu][nu]);
+	}
+      }
+    }
+  }
+
+  return 0;
+}
 
 double KerrKS::gmunu(const double * pos, int mu, int nu) const {
   if (mu<0 || nu<0 || mu>3 || nu>3) throwError ("KerrKS::gmunu: incorrect value for mu or nu");
@@ -114,32 +249,31 @@ double KerrKS::gmunu(const double * pos, int mu, int nu) const {
   double x2=x*x;
   double y2=y*y;
   double z2=z*z;
-  double a2=spin_*spin_;
-  double temp=x2+y2+z2-a2;
-  double rr=sqrt(0.5*(temp+sqrt(temp*temp+4*a2*z2)));
+  double temp=x2+y2+z2-a2_;
+  double rr=sqrt(0.5*(temp+sqrt(temp*temp+4*a2_*z2)));
   double r2=rr*rr;
   double r3=rr*r2;
   double r4=rr*r3;
-  double fact=2.*r3/(r4+a2*z2);
+  double fact=2.*r3/(r4+a2_*z2);
 
   double res=0.;
   if (mu==nu) {
     if ((mu==0) && (nu==0)) res=fact-1.;
-    if ((mu==1) && (nu==1)) res= 1.+fact*pow((rr*x+spin_*y)/(r2+a2),2);
-    if ((mu==2) && (nu==2)) res= 1.+fact*pow((rr*y-spin_*x)/(r2+a2),2);
+    if ((mu==1) && (nu==1)) res= 1.+fact*pow((rr*x+spin_*y)/(r2+a2_),2);
+    if ((mu==2) && (nu==2)) res= 1.+fact*pow((rr*y-spin_*x)/(r2+a2_),2);
     if ((mu==3) && (nu==3)) res= 1.+fact*z2/r2;
   }
   if (nu<mu) {int vu=nu; nu=mu; mu=vu;}
   if (mu==0) {
-    if (nu==1) res= fact/(r2+a2)*(rr*x+spin_*y);
-    if (nu==2) res= fact/(r2+a2)*(rr*y-spin_*x);
+    if (nu==1) res= fact/(r2+a2_)*(rr*x+spin_*y);
+    if (nu==2) res= fact/(r2+a2_)*(rr*y-spin_*x);
     if (nu==3) res= fact*z/rr;
   }
   if (mu==1) {
-    if (nu==2) res= fact/pow(r2+a2,2)*(x*y*(r2-a2)+spin_*rr*(y2-x2));
-    if (nu==3) res= fact/(r2+a2)*(rr*x+spin_*y)*z/rr;
+    if (nu==2) res= fact/pow(r2+a2_,2)*(x*y*(r2-a2_)+spin_*rr*(y2-x2));
+    if (nu==3) res= fact/(r2+a2_)*(rr*x+spin_*y)*z/rr;
   }
-  if ((mu==2) && (nu==3)) res= fact/(r2+a2)*(rr*y-spin_*x)*z/rr;
+  if ((mu==2) && (nu==3)) res= fact/(r2+a2_)*(rr*y-spin_*x)*z/rr;
 
   return res;
   
@@ -197,9 +331,7 @@ int KerrKS::diff(const double* coord, const double* cst, double* res) const{
   double Tdot = 2*KK*rr/(Sigma*(BigE-Sigma*rdot))+EE;
 
   //Horizon test:
-  double rsink=1.+sqrt(1.-spin2)+drhor;
-
-  if (rr<rsink && rdot >0 && Tdot>0) {// even if KS is okay at the horizon, a geodesic can't escape the horizon, so the eq of geodesic fail there --> must check we're far enough
+  if (rr<rsink_ && rdot >0 && Tdot>0) {// even if KS is okay at the horizon, a geodesic can't escape the horizon, so the eq of geodesic fail there --> must check we're far enough
     if (debug()) 
       cerr << "Too close to horizon in KerrKS::diff at r= " << rr << endl;
     return 1;
@@ -223,11 +355,15 @@ int KerrKS::diff(const double* coord, const double* cst, double* res) const{
   return 0;
 }
 
-int KerrKS::diff(const double*, double*) const{
-  throwError("In KerrKS::diff should never get here!");
-  return 0;
-}
-int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , double , double* coord1, double h0, double& h1, double h1max) const{
+int KerrKS::myrk4_adaptive(Worldline* line, const double * coord,
+			   double lastnorm, double normref, double* coord1,
+			   double h0, double& h1, double h1max) const{
+
+
+
+  if (generic_integrator_)
+    return Generic::myrk4_adaptive(line, coord, lastnorm, normref,
+				   coord1, h0, h1, h1max);
 
   double const * const cst = line -> getCst();
 
@@ -343,6 +479,7 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord, double , doubl
 }
 
 int KerrKS::myrk4(Worldline *line, const double coord[8], double hh, double res[8]) const {
+  if (generic_integrator_) return Generic::myrk4(line, coord, hh, res);
   double const * const cst = line -> getCst();
   return myrk4(coord,cst,hh,res);
 }
@@ -440,6 +577,7 @@ void KerrKS::circularVelocity(double const coor[4], double vel[4],
 
 
 void KerrKS::MakeCst(const double* coord, double cst[4]) const{
+  if (generic_integrator_) return;
   /*
     To keep in mind : check the cst of integration by comparing to BL case, it must be the same for the same initial condition.
     Pay attention to the fact that it is NORMAL if the integration fails near the horizon when rdot<0 and Tdot<0 (see Eq 7 in Marck 96, if E=rdot - sign of E is related to sign of Tdot ; and Marck 96 reminds that at the horizon, E=abs(rdot)): a geodesic can't escape the horizon! However, if rdot<0 and Tdot >0 (which was the case in the earliest version of the code), the horizon can be passed. But it is an ingoing geodesic that is being integrated (here E=rdot never happens, E=-rdot at the horizon).
@@ -522,18 +660,35 @@ void KerrKS::setParticleProperties(Worldline * line, const double* coord) const 
 }
 
 int KerrKS::isStopCondition(double const * const coord) const {
-  if (fabs(coord[5]) > 5000.) return 1;
-  return 0;
+  double
+    x=coord[1], y=coord[2], z=coord[3],
+    Tdot=coord[4], xdot=coord[5], ydot=coord[6], zdot=coord[7],
+    x2=x*x, y2=y*y, z2=z*z, a2z2=a2_*z2,
+    x2_y2_z2=x2+y2+z2,
+    tau=x2_y2_z2-a2_,
+    rho2=tau*tau+4.*a2z2, rho=sqrt(rho2),
+    r2=0.5*(tau+rho),
+    r=sqrt(r2);
+  double rdot=(x*xdot+y*ydot+z*zdot+a2_*z*zdot/r2)/(r+a2z2/(r*r2));
+
+  return (r<rsink_ && rdot >0 && Tdot>0);
 }
 
 void KerrKS::setParameter(string name, string content, string unit) {
   if (name=="Spin") spin(atof(content.c_str()));
+  else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
+  else if (name=="GenericIntegrator") genericIntegrator(true);
+  else if (name=="SpecificIntegrator") genericIntegrator(false);
   else Generic::setParameter(name, content, unit);
 }
 
 #ifdef GYOTO_USE_XERCES
 void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
+  fmp -> setParameter("HorizonSecurity", drhor_);
+  fmp -> setParameter(generic_integrator_?
+		      "GenericIntegrator":
+		      "SpecificIntegrator");
   Metric::Generic::fillElement(fmp);
 }
 #endif

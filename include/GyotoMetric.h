@@ -444,7 +444,7 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * &Gamma;<SUP>&alpha;</SUP><SUB>&mu;&nu;</SUB> at point
    * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
    */  
-  virtual void christoffel(double dst[4][4][4], const double coord[8]) const ;
+  virtual int christoffel(double dst[4][4][4], const double coord[8]) const ;
 
 
 

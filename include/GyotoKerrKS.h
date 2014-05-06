@@ -27,6 +27,8 @@
 #ifndef __GyotoKerrKS_H_
 #define __GyotoKerrKS_H_ 
 
+#define GYOTO_KERRKS_HORIZON_SECURITY 0.01
+
 namespace Gyoto {
   namespace Metric { class KerrKS; }
 }
@@ -44,6 +46,13 @@ namespace Gyoto {
  * \class Gyoto::Metric::KerrKS
  * \brief Metric around a Kerr black-hole in Kerr-Schild coordinates
  *  Warning: this metric is seldom used and may be buggy.
+ *
+ * By default, uses the generic integrator
+ * (Metric::Generic::myrk4()). Use
+\code
+<SpecificIntegrator/>
+\endcode
+ * to use the specific integretor which is, as of writting, buggy.
  */
 class Gyoto::Metric::KerrKS
 : public Metric::Generic,
@@ -57,7 +66,10 @@ class Gyoto::Metric::KerrKS
  protected:
   double spin_ ;  ///< Angular momentum parameter
   double a2_;     ///< spin_*spin_
-  
+  double rsink_;  ///< numerical horizon
+  double drhor_;  ///< horizon security
+  bool   generic_integrator_; ///< which integrator to use
+
   // Constructors - Destructor
   // -------------------------
  public: 
@@ -74,20 +86,30 @@ class Gyoto::Metric::KerrKS
   // ---------
  public:
   double spin() const ; ///< Returns spin
+  void horizonSecurity(double drhor);
+  double horizonSecurity() const;
+  void genericIntegrator(bool);
+  bool genericIntegrator() const ;
   
   double gmunu(const double * x,
 		       int alpha, int beta) const ;
 
   void gmunu(double g[4][4], const double * pos) const;
 
-  /*
-   it's necessary to define christoffel even if it's not used. KerrKS derives from Metric where christoffel is virtual pure. If the function is not defined in KerrKS,  it's considered virtual pure here too. Then KerrKS is considered an abstract class, and it's forbidden to declare any object of type KerrKS....
-   See Delannoy C++ p.317-318
-   NB : and it's not necessary to declare "virtual" a function in a derived class if it has been declared "virtual" in the basis class.
-  */
-  double christoffel(const double[8],
-		     const int, const int, const int) const;
-  
+  /**
+   *\brief The inverse matrix of gmunu
+   */ 
+  void gmunu_up(double gup[4][4], const double * pos) const;
+
+  /**
+   * \brief The derivatives of gmunu
+   *
+   * Used in the test suite
+   */
+  void jacobian(double dst[4][4][4], const double * x) const ;
+
+  int christoffel(double dst[4][4][4], const double * x) const ;
+  int christoffel(double dst[4][4][4], const double * pos, double gup[4][4], double jac[4][4][4]) const ;
 
   void nullifyCoord(double coord[8], double &tdot2) const;
   void nullifyCoord(double coord[8]) const;
@@ -132,8 +154,8 @@ class Gyoto::Metric::KerrKS
 
   /** F function such as dy/dtau=F(y,cst)
    */
+  using Generic::diff;
   int diff(const double* coord, const double* cst, double* res) const;
-  int diff(const double y[8], double res[8]) const ;
   virtual int isStopCondition(double const * const coord) const;
   void setParticleProperties(Worldline* line, const double* coord) const;
 

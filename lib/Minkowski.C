@@ -62,14 +62,14 @@ void Minkowski::gmunu(double g[4][4], const double * pos) const
 
 }
 
-void Minkowski::christoffel(double dst[4][4][4], const double pos[8]) const {
+int Minkowski::christoffel(double dst[4][4][4], const double pos[8]) const {
   GYOTO_DEBUG<<endl;
   size_t alpha, mu, nu;
   for (alpha=0; alpha<4; ++alpha)
     for (mu=0; mu<4; ++mu)
       for (nu=0; nu<4; ++nu)
 	dst[alpha][mu][nu]=0.;
-  if (coordKind()==GYOTO_COORDKIND_CARTESIAN) return;
+  if (coordKind()==GYOTO_COORDKIND_CARTESIAN) return 0;
 
   double r=pos[1], theta=pos[2], sth, cth;
   sincos(theta, &sth, &cth);
@@ -80,6 +80,8 @@ void Minkowski::christoffel(double dst[4][4][4], const double pos[8]) const {
   dst[2][3][3]=-sth*cth;                   // Gamma^th_ph_ph = -sin(th)*cos(th)
   dst[3][1][3]=dst[3][3][1]= dst[2][1][2]; // Gamma^ph_r_ph  = 1/r
   dst[3][2][3]=dst[3][3][2]= tan(M_PI_2 - pos[2]); // Gamma^ph_th_ph = cotan(th)
+
+  return 0;
 }
 
 // It's only necessary to provide one of the two forms for gmunu and

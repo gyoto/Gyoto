@@ -56,7 +56,7 @@ class Gyoto::Metric::Minkowski
   Minkowski();
   virtual Minkowski* clone() const ;
   void gmunu(double g[4][4], const double * x) const ;
-  void christoffel(double dst[4][4][4], const double * x) const ;
+  int christoffel(double dst[4][4][4], const double * x) const ;
   virtual void setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory

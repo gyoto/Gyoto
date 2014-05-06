@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <Metric kind = "KerrKS">
+    <Spin> 0.52 </Spin>
+  </Metric>
+
+  <Screen>
+    <Position> 1000. 70.33 0. 71.09 </Position>
+    <Time unit="geometrical_time"> 1000. </Time>
+    <FieldOfView> 0.15 </FieldOfView>
+    <Resolution> 32 </Resolution>
+    <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
+  </Screen>
+
+  <Astrobj kind = "Torus">
+    <LargeRadius> 3.5 </LargeRadius>
+    <SmallRadius> 0.5 </SmallRadius>
+    <Spectrum kind="PowerLaw">
+      <Exponent> 0. </Exponent>
+      <Constant> 1. </Constant>
+    </Spectrum>
+    <Opacity kind="PowerLaw">
+      <Exponent> 0. </Exponent>
+      <Constant> 1e-10 </Constant>
+    </Opacity>
+    <OpticallyThin/>
+    <RMax> 20. </RMax>
+  </Astrobj>
+
+  <Quantities>BinSpectrum</Quantities>
+
+</Scenery>

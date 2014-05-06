@@ -224,7 +224,7 @@ double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu)
   return dst[alpha][mu][nu];
 }
 
-void Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
+int Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
   size_t alpha, mu, nu;
   for (alpha=0; alpha<4; ++alpha) {
     for (mu=0; mu<4; ++mu) {
@@ -233,6 +233,7 @@ void Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
 	dst[alpha][mu][nu]=dst[alpha][nu][mu]=christoffel(x, alpha, mu, nu);
     }
   }
+  return 0;
 }
 
 /*
@@ -241,15 +242,14 @@ diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
 int Metric::Generic::diff(const double coord[8], double res[8]) const{
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
+  if (coord[4]<1e-6) return 1;
   res[0]=coord[4];
   res[1]=coord[5];
   res[2]=coord[6];
   res[3]=coord[7];
   double dst[4][4][4];
-  christoffel(dst, coord);
+  int retval=christoffel(dst, coord);
+  if (retval) return retval;
   for(int alpha=0; alpha<4; ++alpha) {
     res[alpha+4]=0.;
     for (int i=0;i<4;i++)
@@ -264,7 +264,7 @@ int Metric::Generic::diff(const double coord[8], double res[8]) const{
  */
 
 //int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::Generic::myrk4(Worldline *, const double coord[8], double h, double res[8]) const{
+int Metric::Generic::myrk4(Worldline *line, const double coord[8], double h, double res[8]) const{
   //cout << "In Metric::Generic::myrk4" << endl;
   double k1[8] ; 
   double k2[8] ; 
@@ -422,9 +422,13 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
     //cout << "count in rk Met= " << count << endl;
     err=0.;
     //cout << "then diff" << endl;
-    myrk4(line,coord,h0,coordnew);
-    myrk4(line,coord,hbis,coordhalf);
-    myrk4(line,coordhalf,hbis,coord2);
+    if (
+	myrk4(line,coord,h0,coordnew) |
+	myrk4(line,coord,hbis,coordhalf)| 
+	myrk4(line,coordhalf,hbis,coord2)
+	)
+      return 1;
+    
     //cout << "end then diff" << endl;
 
     /* cout << "coordnew= ";
