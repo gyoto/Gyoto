@@ -106,6 +106,7 @@ LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 DEST_PKG_INSTALLED_DIR=$(DEST_Y_SITE)/packages/installed
 
 all: gyoto_std.so
+	cp yorick1 yorick
 
 gyoto_std.so: stdplug/gyoto_std.so
 	cp stdplug/gyoto_std.so ./
@@ -116,6 +117,7 @@ stdplug/gyoto_std.so: stdplug/*.C
 gyoto.so: gyoto.i $(OBJS)
 
 check-dll: $(PKG_DLL) check.i
+	cp yorick1 yorick
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
 	./yorick -i check.i
@@ -139,12 +141,14 @@ uninstall::
 	rm -f $(DESTDIR)$(prefix)/share/man/man1/gyotoy.1
 	-rm -f $(DEST_PKG_INSTALLED_DIR)/gyoto.info
 
-clean::
-	cd stdplug; yorick -batch make.i; make clean
+clean:: 
+	cd stdplug; $(Y_EXE) -batch make.i; make clean
 	rm -f gyoto_std.so example-patterndisk.fits.gz example-patterndisk.xml
+	cp yorick1 yorick
 
-distclean::
-	cd stdplug; yorick -batch make.i; make distclean
+distclean:: $(Y_EXE)
+	cd stdplug; $(Y_EXE) -batch make.i; make distclean
+	-rm yorick
 
 %: ;
 

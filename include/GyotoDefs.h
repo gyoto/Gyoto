@@ -384,6 +384,7 @@ namespace Gyoto {
  */
 #define GYOTO_T_TOL 1e-4
 
+#define GYOTO_KERR_HORIZON_SECURITY 0.01
 
 /// \brief Default value for Screen::dmax_
 #define GYOTO_SCREEN_DMAX DBL_MAX

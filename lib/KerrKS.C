@@ -44,8 +44,8 @@ In particular, don't trust too much the result with spin>0
 KerrKS::KerrKS():
   Generic(GYOTO_COORDKIND_CARTESIAN, "KerrKS"),
   WIP("Metric::KerrKS"),
-  spin_(0.), a2_(0.), rsink_(2.+GYOTO_KERRKS_HORIZON_SECURITY),
-  drhor_(GYOTO_KERRKS_HORIZON_SECURITY), generic_integrator_(true)
+  spin_(0.), a2_(0.), rsink_(2.+GYOTO_KERR_HORIZON_SECURITY),
+  drhor_(GYOTO_KERR_HORIZON_SECURITY), generic_integrator_(true)
 {}
 
 KerrKS * KerrKS::clone () const { return new KerrKS(*this); }
@@ -685,10 +685,11 @@ void KerrKS::setParameter(string name, string content, string unit) {
 #ifdef GYOTO_USE_XERCES
 void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
-  fmp -> setParameter("HorizonSecurity", drhor_);
+  Metric::Generic::fillElement(fmp);
+  if (drhor_!=GYOTO_KERR_HORIZON_SECURITY)
+    fmp -> setParameter("HorizonSecurity", drhor_);
   fmp -> setParameter(generic_integrator_?
 		      "GenericIntegrator":
 		      "SpecificIntegrator");
-  Metric::Generic::fillElement(fmp);
 }
 #endif

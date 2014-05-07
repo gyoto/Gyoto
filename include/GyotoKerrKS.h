@@ -27,8 +27,6 @@
 #ifndef __GyotoKerrKS_H_
 #define __GyotoKerrKS_H_ 
 
-#define GYOTO_KERRKS_HORIZON_SECURITY 0.01
-
 namespace Gyoto {
   namespace Metric { class KerrKS; }
 }

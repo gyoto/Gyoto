@@ -53,6 +53,8 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
  protected:
   double spin_ ;  ///< Angular momentum parameter
   double a2_ ; ///< spin_*spin_
+  double a3_ ; ///< a2_*spin_
+  double a4_ ; ///< a2_*a2_
 
   /// Numerical tuning parameter
   /**
@@ -60,6 +62,9 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    * computing time.
    */
   double difftol_;
+  double rsink_;  ///< numerical horizon
+  double drhor_;  ///< horizon security
+  bool   generic_integrator_; ///< which integrator to use
   
   // Constructors - Destructor
   // -------------------------
@@ -75,6 +80,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 
   double difftol() const; ///< Get difftol_
   void difftol(double t); ///< Set difftol_
+
+  void horizonSecurity(double drhor);
+  double horizonSecurity() const;
+  void genericIntegrator(bool);
+  bool genericIntegrator() const ;
 
   double getRms() const; ///< Returns prograde marginally stable orbit
 
@@ -154,6 +164,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   virtual void computeCst(const double coord[8], double cst[5]) const;
  public:
   void setParticleProperties(Worldline* line, const double* coord) const;
+  virtual int isStopCondition(double const * const coord) const;
   
 };
 

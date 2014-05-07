@@ -605,10 +605,10 @@ AS_IF([test "x$YORICK" != "x"],
 		    cd $oldpwd],
 		   YORICK=$YORICK)
    AC_CONFIG_FILES([yorick/gyoto.info
-		    yorick/yorick
+		    yorick/yorick1
 		    yorick/setpaths.i
 		   ],
-		   [chmod a+x yorick/yorick])
+		   [chmod a+x yorick/yorick1])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])

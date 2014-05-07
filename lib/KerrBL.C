@@ -63,40 +63,25 @@ militari stop.
 //#define GYOTO_MIN_THETA 1e-5 //seems too big
 #define GYOTO_MIN_THETA 1e-10
 
-#define drhor 1e-1
-  //stop integration at r_horizon+drhor ; it speeds up a lot if high
-  //enough (prevents geodesic from "accumulating" next to horizon) ;
-  //but must not be too big not to erase multiple images photons who
-  //can travel close to horizon In any case, for debug calculation,
-  //chose drhor high enough (1e-1 eg, not 1e-3) If ray-tracing ISCO,
-  //be at least sure that r_ISCO > rhor+drhor (eg for drhor=1e-1, it's
-  //OK for a<0.999)
 					       
 KerrBL::KerrBL() :
-  Generic(GYOTO_COORDKIND_SPHERICAL, "KerrBL"), spin_(0.), a2_(0.),
-  difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL)
+  Generic(GYOTO_COORDKIND_SPHERICAL, "KerrBL"),
+  spin_(0.), a2_(0.), a3_(0.), a4_(0.),
+  difftol_(GYOTO_KERRBL_DEFAULT_DIFFTOL),
+  rsink_(2.+GYOTO_KERR_HORIZON_SECURITY),
+  drhor_(GYOTO_KERR_HORIZON_SECURITY), generic_integrator_(false)
 {}
 
 // default copy constructor should be fine 
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
-// Output
-/*
-std::ostream& Gyoto::operator<<( std::ostream& o, const KerrBL& met ) {
-  return  met.print(o);
-}
-
-std::ostream& KerrBL::print( std::ostream& o) const {
-  o << "spin=" << spin_ << ", " ;
-  Metric::print(o);
-  return o;
-}
-*/
-
 // Mutators
 void KerrBL::spin(const double spin) {
   spin_=spin;
   a2_=spin_*spin_;
+  a3_=a2_*spin_;
+  a4_=a2_*a2_;
+  rsink_=1.+sqrt(1.-a2_)+drhor_;
   tellListeners();
 }
 
@@ -105,6 +90,24 @@ double KerrBL::spin() const { return spin_ ; }
 
 double KerrBL::difftol() const { return difftol_;}
 void KerrBL::difftol(double t) {difftol_=t;}
+
+void KerrBL::horizonSecurity(const double drhor) {
+  drhor_=drhor;
+  rsink_=1.+sqrt(1.-a2_)+drhor_;
+  tellListeners();
+}
+double KerrBL::horizonSecurity() const {return drhor_; }
+
+void KerrBL::genericIntegrator(bool t)
+{
+  generic_integrator_=t;
+  tellListeners();
+}
+bool KerrBL::genericIntegrator() const {return generic_integrator_;}
+
+int KerrBL::isStopCondition(double const * const coord) const {
+  return coord[1] < rsink_ ;
+}
 
 //Prograde marginally stable orbit
 double KerrBL::getRms() const {
@@ -226,7 +229,7 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
     s2th = 2.*sth*cth, c2th=cth2-sth2,
     s4th = 2.*s2th*c2th,
     s2th2= s2th*s2th, ctgth=cth/sth;
-  double r2=r*r, r4=r2*r2, r6=r4*r2, a4=a2_*a2_, a6=a4*a2_;
+  double r2=r*r, r4=r2*r2, r6=r4*r2, a6=a4_*a2_;
   double Sigma=r2+a2_*cth2, Sigma2=Sigma*Sigma;
   double Delta=r2-2.*r+a2_;
   double Deltam1=1./Delta,
@@ -249,7 +252,7 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
   dst[2][2][1]=dst[2][1][2]=rSigmam1;
   dst[2][2][2]=-a2cthsth*Sigmam1;
   dst[2][3][3]=
-    -((a2_+r2)*Sigma2+4.*a2_*r*Sigma*sth2+2.*a4*r*sth4)*s2th*0.5*Sigmam3;
+    -((a2_+r2)*Sigma2+4.*a2_*r*Sigma*sth2+2.*a4_*r*sth4)*s2th*0.5*Sigmam3;
   dst[2][0][3]=dst[2][3][0]=spin_*r*(Sigma+a2_*sth2)*s2th*Sigmam3;
   dst[2][0][0]=-2.*a2cthsth*r*Sigmam3;
   dst[3][3][1]=dst[3][1][3]=
@@ -263,11 +266,11 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
   dst[3][0][2]=dst[3][2][0]=
     -4.*spin_*r*(a2_+(-2.+r)*r)*ctgth*Deltam1*Sigmam1*term1m1;
   dst[0][3][1]=dst[0][1][3]=
-    (spin_*(-4.*r6+2.*r4*Sigma-4.*r2*Sigma2+a4*(-2.*r2+Sigma)+ 
+    (spin_*(-4.*r6+2.*r4*Sigma-4.*r2*Sigma2+a4_*(-2.*r2+Sigma)+ 
 	    3.*a2_*r2*(-2.*r2+Sigma)-a2_*(a2_+r2)*(2.*r2-Sigma)*c2th)*sth2)
     *Deltam1Sigmam2*term1m1;
   dst[0][3][2]=dst[0][2][3]=
-    (spin_*r*(2.*(a4+2.*r*(2.+r)*Sigma+a2_*(r2+2*Sigma)-
+    (spin_*r*(2.*(a4_+2.*r*(2.+r)*Sigma+a2_*(r2+2*Sigma)-
 		  (4.*(a2_+r2)*Sigma*(2.*r+Sigma))*term1m1
 		  )*s2th-a2_*(a2_+r2)*s4th))
     *0.25*Deltam1Sigmam2;
@@ -317,8 +320,6 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   //int width=25;//15;
   //int prec=15;//8;
 
-  double rsink=1.+sqrt(1.-a2_)+drhor;
-
   double r = coordGen[1] ; 
 
   if (r < 0.) {
@@ -327,7 +328,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
     
   }
 
-  if (r < rsink) {
+  if (r < rsink_) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "Too close to horizon in KerrBL::diff at r= " << r << endl;
 #   endif
@@ -351,8 +352,6 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
   double pr=coordGen[5];
   double ptheta=coordGen[6];
-
-  double a3=a2_*a;
 
   double Sigma=r2+a2_*costheta2;
   if (Sigma==0) throwError("In KerrBL::diff(): Sigma==0");
@@ -404,9 +403,9 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
     -0.5*(2.*(r*(r-a2_)-a2_*(1.-r)*costheta2)*tmp2m2)*pr*pr
     -0.5*(-2.*r*tmp2m2)*ptheta*ptheta
     +(tmp2m2/tmp3_2
-      *(a2_*(a2_*a2_*E2-2.*a3*E*L+2.*a*E*L*r2+E2*r3*(-4.+r)
+      *(a2_*(a4_*E2-2.*a3_*E*L+2.*a*E*L*r2+E2*r3*(-4.+r)
 	    +a2_*(L2*(1.-r)+2*E2*r2))*costheta2
-	+r*(-r*(a2_*a2_*E2-2.*a3*E*L+2.*a*E*L*(4.-3.*r)*r
+	+r*(-r*(a4_*E2-2.*a3_*E*L+2.*a*E*L*(4.-3.*r)*r
 		+a2_*(L2+2.*E2*r*(-2.+r))+r*(E2*r3-L2*(-2.+r)*(-2.+r)))
 	      +L2*tmp3_2*cotantheta2)));// prdot
   
@@ -458,6 +457,7 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
 int KerrBL::myrk4(Worldline * line, const double coordin[8],
 		  double h, double res[8]) const
 {
+  if (generic_integrator_) return Generic::myrk4(line, coordin, h, res);
   
   /*
     For external use only (i.e. from WlIntegState::nextstep) ; coor
@@ -678,9 +678,13 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
 }
 
 int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
-			   double , double , double coordout1[8],
+			   double lastnorm, double normref, double coordout1[8],
 			   double h0, double& h1, double h1max) const
 {
+  if (generic_integrator_)
+    return Generic::myrk4_adaptive(line, coordin, lastnorm, normref,
+				   coordout1, h0, h1, h1max);
+
   /*Switch BL -> principal momenta*/
 
   double coor[8], coor1[8], cstest[5], coorhalf[8], coor2[8],
@@ -1146,12 +1150,17 @@ void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   Metric::Generic::fillElement(fmp);
   if (difftol_ != GYOTO_KERRBL_DEFAULT_DIFFTOL)
     fmp -> setParameter("DiffTol", difftol_);
+  if (generic_integrator_) fmp->setParameter("GenericIntegrator");
+  if (drhor_!=GYOTO_KERR_HORIZON_SECURITY)
+    fmp -> setParameter("HorizonSecurity", drhor_);
 }
+#endif
 
 void KerrBL::setParameter(string name, string content, string unit) {
   if      (name=="Spin")          spin          (atof(content.c_str()));
   else if (name=="DiffTol")       difftol       (atof(content.c_str()));
+  else if (name=="GenericIntegrator") genericIntegrator(true);
+  else if (name=="SpecificIntegrator") genericIntegrator(false);
+  else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
   else Generic::setParameter(name, content, unit);
 }
-
-#endif
