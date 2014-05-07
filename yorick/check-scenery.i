@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,8 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto.i"
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "Scenery";
 
 // From yutils, for tic() and tac()
 #include "util_fr.i"
@@ -224,3 +225,4 @@ if (batch()) {
   winkill;
  }
 
+end_section, "Scenery";

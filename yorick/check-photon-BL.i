@@ -17,8 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto.i"
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "Photon in KerrBL metric";
 
 aa=0.;
 
@@ -153,6 +154,4 @@ screen=[];
 
 gg=[];
 
-
-
-write, format= "%s\n"," ALL TESTS PASSED";
+end_section, "Photon in KerrBL metric";

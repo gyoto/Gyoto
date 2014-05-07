@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,8 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto.i"
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "Star Astrobj", "in KerrBL metric";
 
 write, format="%s\n", "Attempting star construction:";
 st=gyoto_Star();
@@ -102,4 +103,4 @@ if (!nodisplay) {
 //data=[];
 //st=[];
 
-write, format="\n%s\n", "ALL TESTS PASSED";
+end_section, "Star Astrobj", "in KerrBL metric";

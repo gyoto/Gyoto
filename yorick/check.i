@@ -25,8 +25,9 @@ if (get_env("GYOTO_CHECK_NODISPLAY")) {
   xytitles = fma = winkill = pli = plg = pause = window = noop;
  }
 
-#include "gyoto.i"
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "basic functionality";
 
 aa=0.995;
 write, format="%s", "Checking gyoto_Kerr_new: ";
@@ -146,15 +147,15 @@ orbit=[];
 
 gg=[];
 
-write, format= "%s\n"," ALL TESTS PASSED";
+end_section, "basic functionality";
 
-#include "check-metric.i"
+#include "check-photon-BL.i"
+#include "check-scenery.i"
+#include "check-kerrbl.i"
 #include "check-kerrks.i"
 #include "check-minkowski.i"
-#include "check-photon-BL.i"
 #include "check-star.i"
 #include "check-startrace.i"
-#include "check-scenery.i"
 #include "check-patterndisk.i"
 //#include "check-disk3d.i"
 #include "check-polish-doughnut.i"

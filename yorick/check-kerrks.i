@@ -17,72 +17,39 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto.i"
-#include "gyoto_std.i"
-
-// There is no specific Yorick interface for the Minkowski metric.
-// The only limitation is that is is not possible to retrieve the kind
-// of coordinate system in use.
-
-func doing(msg) { write, format="%s... ", msg; }
-func done {write, format="%s\n", "done.";}
-func output(msg) {write, format="%s\n", msg;}
-
-func jacobian(met, pos, eps=) {
-  grad=array(double, 4, 4, 4);
-  if (is_void(eps)) eps=1e-10;
-  
-  for (i=1; i<=4; ++i) {
-    delta=array(0., 4);
-    delta(i)=eps;
-    grad(,,i)=(met(pos+delta)-met(pos-delta))/(2.*eps);
-  }
-
-  return grad;
-}
+#include "check-helpers.i"
 
 func check_jacobian(gg, pos) {
- j1=gg(jacobian=pos);
- j2=array(double, 4, 4, 4);
- for (a=1; a<=4; ++a)
-   for (i=1; i<=4; ++i)
-     for (j=1; j<=4; ++j)
-       j2(j,i,a)=gg(jacobian=pos, j, i, a);
- j3=jacobian(gg, pos);
- j4=jacfunc(gg, pos);
- if (anyof(j1!=j2))
-   error, "The two forms of the jacobian method don't yield the same result";
- if (max(abs(j1-j4))>1e-6)
-   error, "The Jacobian is wrong";
- if (max(abs(j1-j3))>1e-6)
-   error, "The Jacobian doesn't agree with its numerical estimate";
-}
-
-func christoffel(met, pos, eps=) {
-  // works only for metric defining gmunu_up
-  res=array(double, 4, 4, 4);
-  grad=array(double, 4, 4, 4);
-  if (is_void(eps)) eps=1e-10;
-  
-  g0=met(gmunu_up=pos);
-
-  for (i=1; i<=4; ++i) {
-    delta=array(0., 4);
-    delta(i)=eps;
-    grad(,,i)=(met(pos+delta)-met(pos-delta))/(2.*eps);
+  if (is_void(tolerance)) tolerance=1e-6;
+  d=dimsof(pos);
+  if (d(1)==0) {
+    pos=[[0., 10., 1., 2.]];
+    d=dimsof(pos);
+  } else if (d(1)==1) {
+    pos=[ pos ];
+    d=dimsof(pos);
   }
 
-  for (a=1; a<=4; ++a) {
-    for (mu=1; mu<=4; ++mu) {
-      for (nu=1; nu<=4; ++nu) {
-        for (i=1; i<=4; ++i) {
-          res(nu, mu, a) += 0.5*g0(a, i)*(grad(nu,i,mu)+grad(i,mu,nu)-grad(nu, mu, i));
-        }
-      }
-    }
+  doing, "checking Jacobian", 0;
+
+  for (n=1; n<=d(3); ++n) {
+    j1=gg(jacobian=pos(,n));
+    j2=array(double, 4, 4, 4);
+    for (a=1; a<=4; ++a)
+      for (i=1; i<=4; ++i)
+        for (j=1; j<=4; ++j)
+          j2(j,i,a)=gg(jacobian=pos(,n), j, i, a);
+    j3=jacobian(gg, pos(,n));
+    j4=jacfunc(gg, pos(,n));
+    if (anyof(j1!=j2))
+      error, "The two forms of the jacobian method don't yield the same result";
+    if (max(abs(j1-j4))>tolerance)
+      error, "The Jacobian is wrong";
+    if (max(abs(j1-j3))>tolerance)
+      error, "The Jacobian doesn't agree with its numerical estimate";
+    dot;
   }
-  return res;
-  
+ done;
 }
 
 func ffunc(gg, pos) {
@@ -245,50 +212,21 @@ func christofunc(gg, pos) {
   return dst;
 }
 
-func check_christoffels(gg, pos) {
- Gamma1=gg(christoffel=pos);
- Gamma2=array(double, 4, 4, 4);
- for (a=1; a<=4; ++a)
-   for (i=1; i<=4; ++i)
-     for (j=1; j<=4; ++j)
-       Gamma2(j,i,a)=gg(christoffel=pos, j, i, a);
- Gamma3=christoffel(gg, pos);
- Gamma4=christofunc(gg, pos);
- if (anyof(Gamma1!=Gamma2))
-   error, "The two forms of the christoffel method don't yield the same result";
- if (max(abs(Gamma1-Gamma3))>1e-6)
-   error, "The Christoffels don't agree with their numerical estimate";
-}
-
 restore, gyoto;
 
-output, "**************************************************";
-output, "CHECKING KERR METRIC IN KERR-SCHILD COORDINATES";
-output, "**************************************************";
+begin_section, "KerrKS metric", "Kerr in Kerr-Schild coordinates";
 
 doing, "creating KerrKS metric";
 gg=KerrKS(spin=0.);
 done;
 
-doing, "checking metric coefficients";
-pos=[0., 10., 11., 12.];
-g=gg(pos);
-g2=array(double, 4, 4);
-for (i=1; i<=4; ++i) g2(i, )=gg(pos, i, );
-if (max(abs((g2-g)/g)) > 1e-15)
-  error, "The two forms of the gmunu method don't yield the same result";
-done;
+positions=[[0, 10., 12., 5.],
+           [0, 5., 2., 7.],
+           [0, -10., 0., 50.],
+           [0, 0., 0., 10000.]];
 
-doing, "checking metric up coefficients";
-pos=[0., 10., 11., 12.];
-gup=gg(gmunu_up=pos);
-gup2=array(double, 4, 4);
-for (i=1; i<=4; ++i) gup2(i, )=gg(gmunu_up=pos, i, );
-if (max(abs((gup2-gup)/gup)) > 1e-15)
-  error, "The two forms of the gmunu_up method don't yield the same result";
-if (max(abs(g(,+)*gup(+,)-diag(array(1., 4))))>1e-15)
-  error, "gmunu_up is not the inverse of gmunu";
-done;
+check_gmunu, gg, positions;
+check_gmunu_up, gg, positions;
 
 doing, "checking dk";
 pos=[0, 10., 12., 5.];
@@ -306,29 +244,7 @@ if (max(abs(df1-df3))>1e-6)
   error, "df is wrong";
 done;
 
-doing, "checking Jacobian";
-check_jacobian, gg, [0, 10., 12., 5.];
-check_jacobian, gg, [0, 5., 2., 7.];
-check_jacobian, gg, [0, -10., 0., 50.];
-check_jacobian, gg, [0, 0., 0., 10000.];
-done;
+check_jacobian, gg, positions;
+check_christoffels, gg, positions;
 
-doing, "checking christoffels";
-check_christoffels, gg, [0, 10., 12., 5.];
-check_christoffels, gg, [0, 5., 2., 7.];
-check_christoffels, gg, [0, -10., 0., 50.];
-check_christoffels, gg, [0, 0., 0., 10000.];
-done;
-
-/*
-doing "checking symetry";
-g1=gg([0., 10., 0., 0.]);
-g2=gg([0., -10., 0., 0.]);
-g3=gg([0., 0., -10., 0.]);
-g4=gg([0., 0., 0., -10.]);
-done;
-*/
-
-output, "**************************************************";
-output, "ALL KERRKS TESTS PASSED";
-output, "**************************************************";
+end_section, "KerrKS metric", "Kerr in Kerr-Schild coordinates";

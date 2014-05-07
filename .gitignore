@@ -21,3 +21,6 @@ include/GyotoConfig.h
 include/stamp-h2
 stamp-h1
 yorick/stdplug/polishfit.i
+yorick/yorick
+yorick/setpaths.i
+yorick/gyoto.info

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,13 +17,18 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto.i"
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "KerrBL metric", "Kerr in Boyer-Lindquist coordinates";
 
 aa=0.995;
 write, format="%s", "Checking gyoto_KerrBL: ";
 gg=gyoto_KerrBL(spin=aa);
 write, format="%s\n","done.\n";
+
+check_gmunu, gg;
+// The Christoffels are not yet implemented
+//check_christoffels, gg;
 
 // initial conditions :
 ri=10.791;
@@ -98,5 +103,4 @@ pthetai=[];
 cst=[];
 yinit=[];
 
-
-write, format="\n%s\n", "ALL TESTS PASSED";
+end_section, "KerrBL metric", "Kerr in Boyer-Lindquist coordinates";

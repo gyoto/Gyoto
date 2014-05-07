@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Thibaut Paumard
+    Copyright 2013-2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,7 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "gyoto_std.i"
+#include "check-helpers.i"
+
+begin_section, "StarTrace Astrobj";
 
 sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
 noop, sc.screen(mask=0); // make sure no mask is set yet
@@ -52,3 +54,5 @@ tic;
 im2=sc(,,);
 tac();
 write, format="%s\n", "done.";
+
+end_section, "StarTrace Astrobj";
