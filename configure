@@ -18080,7 +18080,7 @@ if test "x$YORICK" != "x"; then :
 
    ac_config_files="$ac_config_files yorick/stdplug/Makefile"
 
-   ac_config_files="$ac_config_files yorick/gyoto.info"
+   ac_config_files="$ac_config_files yorick/gyoto.info yorick/yorick yorick/setpaths.i"
 
 
 
@@ -19220,6 +19220,8 @@ do
     "yorick/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/Makefile" ;;
     "yorick/stdplug/Makefile") CONFIG_FILES="$CONFIG_FILES yorick/stdplug/Makefile" ;;
     "yorick/gyoto.info") CONFIG_FILES="$CONFIG_FILES yorick/gyoto.info" ;;
+    "yorick/yorick") CONFIG_FILES="$CONFIG_FILES yorick/yorick" ;;
+    "yorick/setpaths.i") CONFIG_FILES="$CONFIG_FILES yorick/setpaths.i" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -20713,6 +20715,9 @@ _LT_EOF
 		    cd yorick/stdplug
 		    $YORICK -batch make.i
 		    cd $oldpwd ;;
+    "yorick/gyoto.info":F) chmod a+x yorick/yorick ;;
+    "yorick/yorick":F) chmod a+x yorick/yorick ;;
+    "yorick/setpaths.i":F) chmod a+x yorick/yorick ;;
 
   esac
 done # for ac_tag

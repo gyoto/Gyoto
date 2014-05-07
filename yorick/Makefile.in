@@ -117,9 +117,8 @@ gyoto.so: gyoto.i $(OBJS)
 
 check-dll: $(PKG_DLL) check.i
 	unset GYOTO_PLUGINS && \
-	$(DYLIB_VAR)=../lib/.libs:$$$(DYLIB_VAR) \
 	GYOTO_CHECK_NODISPLAY=true \
-	$(Y_EXE) -i check.i
+	./yorick -i check.i
 
 install::
 	cd stdplug; make install
