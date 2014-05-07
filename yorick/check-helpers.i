@@ -76,7 +76,7 @@ func jacobian(met, pos, eps=)
  */
 {
   grad=array(double, 4, 4, 4);
-  if (is_void(eps)) eps=1e-10;
+  if (is_void(eps)) eps=1e-6;
   
   for (i=1; i<=4; ++i) {
     delta=array(0., 4);
@@ -149,16 +149,16 @@ func check_christoffels(gg, pos, tolerance=, eps=)
   d=dimsof(pos);
 
   for (n=1; n<=d(3); ++n) {
-    Gamma1=gg(christoffel=pos);
+    Gamma1=gg(christoffel=pos(,n));
     Gamma2=array(double, 4, 4, 4);
     for (a=1; a<=4; ++a)
       for (i=1; i<=4; ++i)
         for (j=1; j<=4; ++j)
-          Gamma2(j,i,a)=gg(christoffel=pos, j, i, a);
-    Gamma3=christoffel(gg, pos, eps=eps);
+          Gamma2(j,i,a)=gg(christoffel=pos(,n), j, i, a);
+    Gamma3=christoffel(gg, pos(,n), eps=eps);
     if (anyof(Gamma1!=Gamma2))
       error, "The two forms of the christoffel method don't yield the same result";
-    if (max(abs(Gamma1-Gamma3))>1e-6)
+    if (max(abs(Gamma1(ind)-Gamma3(ind)))>tolerance)
       error, "The Christoffels don't agree with their numerical estimate";
     dot;
   }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2014 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -20,24 +20,26 @@
 #include <GyotoKerrBL.h>
 #include <GyotoFactory.h>
 #include "ygyoto.h"
+#include "ygyoto_idx.h"
 #include "yapi.h"
 
 #include <iostream>
 using namespace std;
 
 using namespace Gyoto;
+using namespace YGyoto;
 using namespace Gyoto::Metric;
 
 void ygyoto_KerrBL_eval(SmartPointer<Metric::Generic> *OBJ_, int argc) {
 
   static char const * knames[]={
     "unit",
-    "spin", "difftol", "deltamaxoverr", "makecoord",	\
+    "spin", "difftol", "deltamaxoverr", "makecoord", "gmunu_up",	\
     YGYOTO_METRIC_GENERIC_KW,
     0
   };
 
-  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+5);
+  YGYOTO_WORKER_INIT(Metric, KerrBL, knames, YGYOTO_METRIC_GENERIC_KW_N+6);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE2(spin);
@@ -61,7 +63,42 @@ void ygyoto_KerrBL_eval(SmartPointer<Metric::Generic> *OBJ_, int argc) {
 #   endif
     (*OBJ)->MakeCoord(coord_,cst_,coord);
   }
-  
+
+  // GMUNU_UP
+  if ((iarg=kiargs[++k])>=0) {
+    if ((*rvset)++) y_error(rmsg);
+    if ((*paUsed)++) y_error(pmsg);
+    GYOTO_DEBUG << "getting gmunu_up\n";
+    long  ntot, dims[Y_DIMSIZE];
+    double  *x     = ygeta_d(iarg, &ntot, NULL);
+    if (ntot<4) y_error("X must have at least four elements");
+
+    Idx i_idx (piargs[0], 4);
+    if (i_idx.isNuller()) return;
+    Idx j_idx (piargs[1], 4);
+    if (j_idx.isNuller()) return;
+    long ni=i_idx.getNElements();
+    long nj=j_idx.getNElements();
+    long nelem=ni*nj;
+
+    dims[0]=i_idx.getNDims()+j_idx.getNDims();
+    size_t offset=0;
+    if (i_idx.getNDims()) dims[++offset]=ni;
+    if (j_idx.getNDims()) dims[++offset]=nj;
+    double * data=ypush_d(dims);
+
+    if (dims[0]==2 && dims[1]==4 && dims[2]==4) {
+      double dst[4][4];
+      (*OBJ)->gmunu_up(dst, x);
+      memcpy(data, &dst[0][0], 4*4*sizeof(double));
+    } else {
+      size_t i, j;
+      for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )
+	for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
+	  *(data++) = (*OBJ)->gmunu_up(x, i-1, j-1);
+    }
+  }
+
   YGYOTO_WORKER_CALL_GENERIC(Metric);
 }
 

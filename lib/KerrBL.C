@@ -120,6 +120,7 @@ double KerrBL::getRmb() const {
   return 2.-spin_+2.*sqrt(1.-spin_);
 }
 
+//Computation of metric coefficients in covariant form
 void KerrBL::gmunu(double g[4][4], const double * pos) const {
   double r = pos[1];
   double sth2, cth2;
@@ -134,14 +135,13 @@ void KerrBL::gmunu(double g[4][4], const double * pos) const {
     for (nu=0; nu<4; ++nu)
       g[mu][nu]=0.;
 
-  g[0][0] = -(1.-2.*r/sigma);
+  g[0][0] = -1.+2.*r/sigma;
   g[1][1] = sigma/delta;
   g[2][2] = sigma;
   g[3][3] = (r2+a2_+2.*r*a2_*sth2/sigma)*sth2;
   g[0][3] = g[3][0] = -2*spin_*r*sth2/sigma;
 }
 
-//Computation of metric coefficients in covariant form
 double KerrBL::gmunu(const double * pos, int mu, int nu) const {
   double r = pos[1];
   double sth2, cth2;
@@ -164,6 +164,27 @@ double KerrBL::gmunu(const double * pos, int mu, int nu) const {
 } 
 
 //Computation of metric coefficients in contravariant form
+void KerrBL::gmunu_up(double gup[4][4], const double * pos) const {
+  double r = pos[1];
+  double sth2, cth2;
+  sincos(pos[2], &sth2, &cth2);
+  sth2*=sth2; cth2*=cth2;
+  double r2=r*r;
+  double sigma=r2+a2_*cth2;
+  double delta=r2-2.*r+a2_;
+  double xi=(r2+a2_)*(r2+a2_)-a2_*delta*sth2;
+
+  int mu, nu;
+  for (mu=0; mu<4; ++mu) for (nu=0; nu<4; ++nu) gup[mu][nu]=0.;
+
+  gup[0][0]=-xi/(delta*sigma);
+  gup[1][1]=delta/sigma;
+  gup[2][2]=1./sigma;
+  gup[3][3]=(delta-a2_*sth2)/(sigma*delta*sth2);
+  gup[0][3] = gup[3][0] = -2*spin_*r/(sigma*delta);
+
+}
+
 double KerrBL::gmunu_up(const double * pos, int mu, int nu) const {
   double r = pos[1];
   double sth2, cth2;
@@ -189,47 +210,73 @@ double KerrBL::gmunu_up(const double * pos, int mu, int nu) const {
   return 0.;
 } 
 
-double KerrBL::christoffel(const double pos[8],
-		   const int alpha, const int mmu, const int nnu) const{
-  throwError( "KerrBL.C : should never come here to find christoffel!!" );
-  return 0.; // avoid warning
+int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
+{
+  int a, mu, nu;
+  for (a=0; a<4; ++a)
+    for(mu=0; mu<4; ++mu)
+      for(nu=0; nu<4; ++nu)
+	dst[a][mu][nu]=0.;
 
-//   int mu, nu;
-//   if (nnu<mmu) {mu=nnu; nu=mmu;}
-//   else {mu=mmu; nu=nnu;}
+  double r = pos[1];
+  double sth, cth;
+  sincos(pos[2], &sth, &cth);
+  double
+    sth2 = sth*sth, cth2 = cth*cth, sth4=sth2*sth2,
+    s2th = 2.*sth*cth, c2th=cth2-sth2,
+    s4th = 2.*s2th*c2th,
+    s2th2= s2th*s2th, ctgth=cth/sth;
+  double r2=r*r, r4=r2*r2, r6=r4*r2, a4=a2_*a2_, a6=a4*a2_;
+  double Sigma=r2+a2_*cth2, Sigma2=Sigma*Sigma;
+  double Delta=r2-2.*r+a2_;
+  double Deltam1=1./Delta,
+    Sigmam1=1./Sigma,
+    Sigmam2=Sigmam1*Sigmam1,
+    Sigmam3=Sigmam2*Sigmam1,
+    a2cthsth=a2_*cth*sth,
+    rSigmam1=r*Sigmam1,
+    Deltam1Sigmam2=Deltam1*Sigmam2;
 
-//   double r = pos[1];
-//   double sth, cth, sth2, cth2;
-//   sincos(pos[2], &sth, &cth);
-//   sth2 = sth*sth; cth2 = cth*cth;
-//   double r2=r*r;
-//   double a2=spin_*spin_;
-//   double sigma=r2+a2*cth2;
-//   double delta=r2-2.*r+a2;
-//   double xi=(r2+a2)*(r2+a2)-a2*delta*sth2;
+  double term1=(a2_+2.*r2+a2_*c2th), term1m1=1./term1;
 
-//   GYOTO_WARNING << "KerrBL::christoffel() is seldom used. Expect bugs." << endl;
+  dst[1][1][1]=(1.-r)*Deltam1+rSigmam1;
+  dst[1][2][1]=dst[1][1][2]=-a2cthsth*Sigmam1;
+  dst[1][2][2]=-Delta*rSigmam1;
+  dst[1][3][3]=-Delta*sth2*(r+(a2_*(-2.*r2+Sigma)*sth2)/Sigma2)/Sigma;
+  dst[1][3][0]=dst[1][0][3]=spin_*Delta*(-2*r2+Sigma)*sth2*Sigmam3;
+  dst[1][0][0]=-Delta*(-2.*r2+Sigma)*Sigmam3;
+  dst[2][1][1]=a2cthsth/(Delta*(r2+a2_*cth2));
+  dst[2][2][1]=dst[2][1][2]=rSigmam1;
+  dst[2][2][2]=-a2cthsth*Sigmam1;
+  dst[2][3][3]=
+    -((a2_+r2)*Sigma2+4.*a2_*r*Sigma*sth2+2.*a4*r*sth4)*s2th*0.5*Sigmam3;
+  dst[2][0][3]=dst[2][3][0]=spin_*r*(Sigma+a2_*sth2)*s2th*Sigmam3;
+  dst[2][0][0]=-2.*a2cthsth*r*Sigmam3;
+  dst[3][3][1]=dst[3][1][3]=
+    (2.*r*Sigma*((-2.+r)*r+a2_*cth2)+2.*a2_*(-2.*r2+Sigma)*sth2)
+    *Deltam1*Sigmam1*term1m1;
+  dst[3][3][2]=dst[3][2][3]=
+    (2.*(a2_+r2)*Sigma2*(term1-4.*r)*ctgth+
+     a2_*r*s2th*(8.*(-1.+r)*r*Sigma+a2_*(8.*Sigma*cth2+4.*r2*sth2+a2_*s2th2)))
+    *0.5*Deltam1Sigmam2*term1m1;
+  dst[3][0][1]=dst[3][1][0]=spin_*(2.*r2-Sigma)*Deltam1Sigmam2;
+  dst[3][0][2]=dst[3][2][0]=
+    -4.*spin_*r*(a2_+(-2.+r)*r)*ctgth*Deltam1*Sigmam1*term1m1;
+  dst[0][3][1]=dst[0][1][3]=
+    (spin_*(-4.*r6+2.*r4*Sigma-4.*r2*Sigma2+a4*(-2.*r2+Sigma)+ 
+	    3.*a2_*r2*(-2.*r2+Sigma)-a2_*(a2_+r2)*(2.*r2-Sigma)*c2th)*sth2)
+    *Deltam1Sigmam2*term1m1;
+  dst[0][3][2]=dst[0][2][3]=
+    (spin_*r*(2.*(a4+2.*r*(2.+r)*Sigma+a2_*(r2+2*Sigma)-
+		  (4.*(a2_+r2)*Sigma*(2.*r+Sigma))*term1m1
+		  )*s2th-a2_*(a2_+r2)*s4th))
+    *0.25*Deltam1Sigmam2;
+  dst[0][0][1]=dst[0][1][0]=(a2_+r2)*(2.*r2-Sigma)*Deltam1Sigmam2;
+  dst[0][0][2]=dst[0][2][0]=
+    (a2_*r*(-a2_+r*(-r+(4.*Sigma)*term1m1))*s2th)*Deltam1Sigmam2;
 
-//   switch (alpha) {
-//   case 0:
-//     if (mu==0 && nu==0) return 0;
-//     if (mu==0 && nu==1)
-//       return ((-r2 + a2 * cth2) * (-a2*a2 - 2.*a2*r2 - r2*r2 + a2 *(a2 + r2) * sth2))/(delta*sigma*sigma*sigma);
-//     if (mu==0 && nu==2)
-//       return 2.*gmunu_up(pos, 0, 0)*r*a2*cth*sth/(sigma*sigma)+
-// 	0.5*gmunu_up(pos, 3, 0)*;
-//     if (mu==0 && nu==3) return 0;
-//     /*
-// (a^2 r Cos[theta] Sin[
-//   theta] (-2. a^4 - 4. a^2 r^2 + (4. - 2. r) r^3 + 
-//    a^2 (4. r Cos[theta]^2 + (2. a^2 + 2. r^2) Sin[
-//    theta]^2)))/((a^2 + (-2. + r) r) (r^2 + a^2 Cos[theta]^2)^3)
-//      */
-//     }
-//   default: throwError("unimplemented");
-//   } 
-  
-}
+  return 0;
+} 
 
 // Optimized version
 double KerrBL::ScalarProd(const double* pos,

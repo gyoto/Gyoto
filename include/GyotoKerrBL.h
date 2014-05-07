@@ -86,20 +86,10 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   /** 
    * \brief g<SUP>&mu;,&nu;</SUP>
    */
+  void gmunu_up(double gup[4][4], const double * pos) const ;
   double gmunu_up(const double * const x, int mu, int nu) const ;
  
-  /*
-   it's necessary to define christoffel even if it's not used. 
-   KerrBL derives from Metric where christoffel is virtual pure. 
-   If the function is not defined in KerrBL,  it's considered virtual 
-   pure here too. Then KerrBL is considered an abstract class, 
-   and it's forbidden to declare any object of type KerrBL....
-   See Delannoy C++ p.317-318
-   NB : and it's not necessary to declare "virtual" a function 
-   in a derived class if it has been declared "virtual" in the basis class.
-  */
-  double christoffel(const double[8],
-		     const int, const int, const int) const;
+  int christoffel(double dst[4][4][4], const double * pos) const ;
   
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;

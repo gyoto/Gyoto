@@ -27,8 +27,8 @@ gg=gyoto_KerrBL(spin=aa);
 write, format="%s\n","done.\n";
 
 check_gmunu, gg;
-// The Christoffels are not yet implemented
-//check_christoffels, gg;
+check_gmunu_up, gg;
+check_christoffels, gg;
 
 // initial conditions :
 ri=10.791;
