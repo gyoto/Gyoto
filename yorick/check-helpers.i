@@ -191,7 +191,9 @@ func check_gmunu(gg, pos, tolerance=)
     g=gg(pos);
     g2=array(double, 4, 4);
     for (i=1; i<=4; ++i) g2(i, )=gg(pos, i, );
-    if (max(abs((g2-g)/g)) > tolerance)
+    gm1=g*0.+1.;
+    gm1(where(g))=g(where(g));
+    if (max(abs((g2-g)*gm1)) > tolerance)
       error, "The two forms of the gmunu method don't yield the same result";
     if (anyof(g != transpose(g)))
       error, "The metric is not symmetric";
@@ -221,7 +223,9 @@ func check_gmunu_up(gg, pos, tolerance=)
     gup2=array(double, 4, 4);
     for (i=1; i<=4; ++i) gup2(i, )=gg(gmunu_up=pos(,n), i, );
     prod=g(,+)*gup(+,);
-    if (max(abs((gup2-gup)/gup)) > tolerance)
+    gm1=gup*0.+1.;
+    gm1(where(gup))=gup(where(gup));
+    if (max(abs((gup2-gup)*gm1)) > tolerance)
       error, "The two forms of the gmunu_up method don't yield the same result";
     if (max(abs((prod-diag([1., 1., 1., 1.])))) > tolerance)
       error, "gmunu_up is not the inverse of gmunu";
