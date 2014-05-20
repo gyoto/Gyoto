@@ -117,7 +117,10 @@ StdPlug.o: ../ygyoto_supplier.C ../ygyoto.h
 ../../lib/libgyoto.a: $(GYOTO_C) $(GYOTO_H)
 	make -C ../lib
 
-gyoto_std.so: $(OBJS)
+gyoto_std.so: ../gyoto.so $(OBJS)
+
+../gyoto.so:
+	make -C .. gyoto.so
 
 .PHONY: standalone test-cppprog test-standalone test test-plugin check
 
