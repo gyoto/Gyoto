@@ -109,8 +109,8 @@ int ThinDiskPL::setParameter(std::string name,
   if      (name=="PLSlope") PLSlope_=atof(content.c_str());
   else if (name=="PLRho") PLRho_=atof(content.c_str());
   else if (name=="PLRadRef") PLRadRef_=atof(content.c_str());
-  else if (name=="Rmin") setInnerRadius(atof(content.c_str()));
-  else if (name=="Rmax") setOuterRadius(atof(content.c_str()));
+  else if (name=="Rinner") setInnerRadius(atof(content.c_str()));
+  else if (name=="Router") setOuterRadius(atof(content.c_str()));
   else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }
