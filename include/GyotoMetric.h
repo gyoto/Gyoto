@@ -164,7 +164,7 @@ class Gyoto::Metric::Generic
    * larger than a fraction of the distance between the current
    * location and the center of the coordinate system.
    *
-   * For invastigations close to the event horizon, 0.5 is usually
+   * For investigations close to the event horizon, 0.5 is usually
    * fine. If high accuracy is needed long after deflection (weak
    * lensing), then this must be smaller. A good test is to look at a
    * MinDistance map for a FixedStar: it must be smooth.

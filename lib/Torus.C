@@ -129,7 +129,7 @@ double Torus::operator()(double const pos[4]) {
 }
 
 double Torus::deltaMax(double * coord) {
-  long d2 = (*this)(coord);
+  double d2 = (*this)(coord);
   if (d2<critical_value_) d2 = critical_value_;
   return 0.1 * sqrt(d2);
 }

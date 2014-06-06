@@ -28,6 +28,7 @@
     <TMin> 600 </TMin>
     <TMax> 800 </TMax>
     <OpticallyThick/>
+    <Integrator>Legacy</Integrator>
     <NonAdaptive/>
     <Delta>5</Delta>
   </Astrobj>

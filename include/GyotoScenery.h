@@ -255,9 +255,6 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   /// Set Scenery::tmin_ in specified unit
   void tMin(double, const std::string &unit);
 
-  void integrator(std::string type);
-  std::string integrator();
-
   void adaptive (bool mode) ; ///< Set Scenery::adaptive_
   bool adaptive () const ; ///< Get Scenery::adaptive_
 

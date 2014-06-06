@@ -37,16 +37,16 @@ using namespace boost::numeric::odeint;
     typedef a<state_type> error_stepper_type;				\
     auto controlled=make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 ); \
 									\
-    double delta_min=met->deltaMin();					\
+    double delta_min=line->deltaMin();					\
 									\
     stepper_=								\
-      [this, controlled, delta_min, system, met, line]			\
+      [this, controlled, delta_min, system, line]			\
       (double coord[8], double h1max)					\
       mutable								\
       {									\
 	double h1=this->delta_;                                         \
 	double sgn=h1>0?1.:-1.;						\
-        h1max=met->deltaMax(coord, h1max);				\
+        h1max=line->deltaMax(coord, h1max);				\
 	if (abs(h1)>h1max) h1=sgn*h1max;                                \
 	if (abs(h1)<delta_min) h1=sgn*delta_min;			\
 	controlled_step_result cres;					\
@@ -56,6 +56,7 @@ using namespace boost::numeric::odeint;
 									\
 	double dt=0.;							\
 									\
+	GYOTO_DEBUG << h1 << endl;					\
 	do {								\
 	  cres=controlled.try_step(system, inout, dt, h1);		\
 	} while (abs(h1)>=delta_min &&					\
@@ -111,6 +112,7 @@ Worldline::IntegState::Legacy::init(Worldline * line,
 }
 
 int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
+  GYOTO_DEBUG << h1max << endl;
   int j;
   double h1;
 
@@ -170,9 +172,8 @@ Worldline::IntegState::Boost::clone() const
 void
 Worldline::IntegState::Boost::init(Worldline * line,
 				   const double coord[8], const double delta) {
-  line_=line;
+  Generic::init(line, coord, delta);
   Metric::Generic* met=line_->metric();
-  delta_=delta;
 
   // This, below, is called a lambda function.
   auto system=[this, line, met](const std::array<double, 8> &x,
@@ -193,10 +194,10 @@ Worldline::IntegState::Boost::init(Worldline * line,
 	 //else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(rosenbrock4)
   else throwError("unknown stepper type");
 
-
 }
 
 int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
+  GYOTO_DEBUG << h1max << endl;
   stepper_(coord, h1max);
   return line_->stopcond;
 }

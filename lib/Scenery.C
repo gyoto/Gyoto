@@ -577,9 +577,6 @@ void Scenery::tMin(double tmin, const string &unit) {
   tMin(Units::ToGeometricalTime(tmin, unit, gg_));
 }
 
-void Scenery::integrator(std::string type) {ph_.integrator(type);}
-std::string Scenery::integrator(){return ph_.integrator();}
-
 void Scenery::adaptive(bool mode) { adaptive_ = mode; }
 bool Scenery::adaptive() const { return adaptive_; }
 
@@ -661,7 +658,10 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="Adaptive")    sc -> adaptive(true);
     if (name=="NonAdaptive") sc -> adaptive(false);
     if (name=="PrimaryOnly") sc -> secondary(false);
-    if (name=="Integrator")  sc -> integrator(content); 
+    if (name=="Integrator")  sc -> ph_ . integrator(content); 
+    if (name=="DeltaMin")    sc -> ph_ . deltaMin(atof(content.c_str()));
+    if (name=="DeltaMax")    sc -> ph_ . deltaMax(atof(content.c_str()));
+    if (name=="DeltaMaxOverR") sc -> ph_ . deltaMaxOverR (atof(content.c_str()));
   }
 
   return sc;

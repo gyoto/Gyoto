@@ -104,6 +104,8 @@ st4=st2(clone=);
 st5=st2(clone=);
 st6=st2(clone=);
 //st7=st2(clone=);
+st, setparameter="Integrator", "Legacy";
+st2, setparameter="Integrator", "Legacy";
 st3, setparameter="Integrator", "runge_kutta_cash_karp54";
 st4, setparameter="Integrator", "runge_kutta_fehlberg78";
 st5, setparameter="Integrator", "runge_kutta_dopri5";

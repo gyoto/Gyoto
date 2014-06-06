@@ -791,6 +791,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
     }else{
       h1=(err > errmin ? S*h0*pow(err,-0.2) : 4.*h0);//pour éviter les explosions
       if (fabs(h1)<delta_min_) {
+	GYOTO_SEVERE << "DeltaMin is too small" << endl;
 	h1= (h1>0)?delta_min_:-delta_min_;
       }
       if (fabs(h1)>h1max) h1=(h1>0.)?h1max:-h1max;

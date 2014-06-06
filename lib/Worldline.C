@@ -37,10 +37,14 @@ Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
-			 maxiter_(GYOTO_DEFAULT_MAXITER)
+			 maxiter_(GYOTO_DEFAULT_MAXITER),
+			 delta_min_(GYOTO_DEFAULT_DELTA_MIN),
+			 delta_max_(GYOTO_DEFAULT_DELTA_MAX),
+			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 { 
   xAllocate();
   state_ = new Worldline::IntegState::Legacy();
+  //state_ = new Worldline::IntegState::Boost("runge_kutta_fehlberg78");
 }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -49,7 +53,10 @@ Worldline::Worldline(const Worldline& orig) :
   adaptive_(orig.adaptive_), secondary_(orig.secondary_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
   wait_pos_(orig.wait_pos_), init_vel_(NULL),
-  maxiter_(orig.maxiter_), state_(NULL)
+  maxiter_(orig.maxiter_),
+  delta_min_(orig.delta_min_),
+  delta_max_(orig.delta_max_),
+  delta_max_over_r_(orig.delta_max_over_r_), state_(NULL)
 {
   if (orig.state_()) state_ = orig.state_->clone();
 
@@ -281,6 +288,12 @@ void Worldline::fillElement(FactoryMessenger *fmp) const {
     fmp -> setParameter("MaxIter", maxiter_);
 
   fmp -> setParameter("Integrator", state_->kind());
+  if (delta_min_!=GYOTO_DEFAULT_DELTA_MIN)
+    fmp -> setParameter("DeltaMin", delta_min_);
+  if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
+    fmp -> setParameter("DeltaMax", delta_max_);
+  if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
+    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {
@@ -327,6 +340,9 @@ int Worldline::setParameter(std::string name,
   else if (name=="Adaptive")    adaptive_ = true;
   else if (name=="PrimaryOnly") secondary_= false;
   else if (name=="Integrator") integrator(content);
+  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
+  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
+  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
   else return 1;
   return 0;
 }
@@ -1077,6 +1093,28 @@ bool Worldline::secondary() const { return secondary_; }
 
 void Worldline::maxiter(size_t miter) { maxiter_ = miter; }
 size_t Worldline::maxiter() const { return maxiter_; }
+
+double Worldline::deltaMin() const {return delta_min_;}
+double Worldline::deltaMax() const {return delta_max_;}
+void  Worldline::deltaMin(double h1) {delta_min_=h1;}
+void  Worldline::deltaMax(double h1) {delta_max_=h1;}
+double Worldline::deltaMaxOverR() const { return delta_max_over_r_;}
+void Worldline::deltaMaxOverR(double t) {delta_max_over_r_=t;}
+
+double Worldline::deltaMax(double const pos[8], double h1max) const
+{
+  double h1max_at_r=abs(pos[1]);
+  if (metric_ -> coordKind()==GYOTO_COORDKIND_CARTESIAN) {
+    double tmp;
+    if ((tmp=abs(pos[2]))>h1max_at_r) h1max_at_r=tmp;
+	if ((tmp=abs(pos[3]))>h1max_at_r) h1max_at_r=tmp;
+  }
+  h1max_at_r *= delta_max_over_r_;
+  if (h1max > h1max_at_r) h1max = h1max_at_r;
+  if (h1max>delta_max_) h1max=delta_max_;
+  if (h1max<delta_min_) h1max=delta_min_;
+  return h1max;
+}
 
 double const * Worldline::getCst() const {
   return cst_;

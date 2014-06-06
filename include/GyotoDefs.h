@@ -360,7 +360,7 @@ namespace Gyoto {
 /**
  * \brief Default value for the minimum step in the integration loop.
  */
-#define GYOTO_DEFAULT_DELTA_MIN 1e-2
+#define GYOTO_DEFAULT_DELTA_MIN DBL_MIN
 
 /**
  * \brief Default value for delta_max_over_r_
@@ -370,7 +370,7 @@ namespace Gyoto {
  * lensing), then this must be smaller. A good test is to look at a
  * MinDistance map for a FixedStar: it must be smooth.
  */
-#define GYOTO_DEFAULT_DELTA_MAX_OVER_R 0.5
+#define GYOTO_DEFAULT_DELTA_MAX_OVER_R DBL_MAX
 
 /**
  * \brief Default value for Gyoto::Worldline::maxiter_
