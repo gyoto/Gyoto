@@ -91,7 +91,7 @@ write, format="%s\n","done.\n";
 N=21;
 delta=pi/(10.*N);
 screen, fov=pi/10., resolution=21;
-
+gg, setparameter="GenericIntegrator";
 i=15; j=9;
 xscr=delta*(i-(N+1)/2.);
 yscr=delta*(j-(N+1)/2.);

@@ -26,24 +26,50 @@
 #include <cstring>
 #include <ctime>
 
+#include <boost/numeric/odeint/stepper/runge_kutta4_classic.hpp>
+#include <boost/numeric/odeint/stepper/runge_kutta_cash_karp54.hpp>
+#include <boost/numeric/odeint/stepper/generation.hpp>
+
 using namespace std ; 
 using namespace Gyoto;
+using namespace boost::numeric::odeint;
 
-Worldline::IntegState::IntegState(Worldline * line,
-				   const double coord[8], const double delta) :
-  line_(line),
-  gg_(line->metric()),
-  delta_(delta),
-  adaptive_(line->adaptive())
+/// Generic
+Worldline::IntegState::Generic::~Generic() {};
+Worldline::IntegState::Generic::Generic() : SmartPointee() {};
+void
+Worldline::IntegState::Generic::init(Worldline * line,
+				     const double coord[8],
+				     const double delta)
 {
+  line_=line;
+  delta_=delta;
+}
+
+/// Legacy
+
+Worldline::IntegState::Legacy::Legacy() : Generic() {}
+
+
+Worldline::IntegState::Legacy *
+Worldline::IntegState::Legacy::clone() const
+{ return new Legacy(*this); }
+
+
+void
+Worldline::IntegState::Legacy::init(Worldline * line,
+				    const double coord[8], const double delta) {
+  Generic::init(line, coord, delta);
+  gg_=line->metric();
+  adaptive_=line->adaptive();
+
   short i;
   for (i=0;i<8;++i) coord_[i]=coord[i];
 
   norm_=normref_= gg_->ScalarProd(coord,coord+4,coord+4);
 }
 
-
-int Worldline::IntegState::nextStep(double coord[8], double h1max) {
+int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
   int j;
   double h1;
 
@@ -84,4 +110,100 @@ int Worldline::IntegState::nextStep(double coord[8], double h1max) {
   return 0;
 }
 
-Worldline::IntegState::~IntegState() {}
+
+std::string Worldline::IntegState::Legacy::kind() { return "Legacy"; } 
+
+Worldline::IntegState::Legacy::~Legacy() {}
+
+/// Boost
+Worldline::IntegState::Boost::~Boost() {};
+Worldline::IntegState::Boost::Boost(std::string type) : Generic(), kind_(type) {
+};
+
+Worldline::IntegState::Boost *
+Worldline::IntegState::Boost::clone() const
+{ return new Boost(*this); }
+
+
+
+void
+Worldline::IntegState::Boost::init(Worldline * line,
+				   const double coord[8], const double delta) {
+  line_=line;
+  Metric::Generic* met=line_->metric();
+  delta_=delta;
+
+  // This, below, is called a lambda function.
+  auto system=[this, line, met](const std::array<double, 8> &x,
+		 std::array<double, 8> &dxdt,
+		 const double t)
+    {
+      double xx[8]={x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
+      double res[8];
+      line->stopcond=met->Generic::diff(xx, res);
+      for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
+      //GYOTO_DEBUG_ARRAY(xx, 8);
+      //GYOTO_DEBUG_ARRAY(res, 8);
+    };
+
+  typedef std::array< double, 8 > state_type;
+  if (kind_=="runge_kutta4_cash_karp54") {
+    typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
+    auto controlled=make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 );
+
+    double delta_min=met->deltaMin();
+
+    // here comes another lambda function
+    stepper_=
+      // This specifies the variables that are captured in the lambda:
+      [this, controlled, delta_min, system, met, line]
+      // This specified the parameters of the lambda (it's a function!)
+      (double coord[8], double h1max)
+      // This is the opposit of const:
+      mutable
+      // This is the body of the lambda
+      {
+	double h1=this->delta_;
+	double sgn=h1>0?1.:-1.;
+        h1max=met->deltaMax(coord, h1max);
+	if (abs(h1)>h1max) h1=sgn*h1max;
+	if (abs(h1)<delta_min) h1=sgn*delta_min;
+	controlled_step_result cres;
+	std::array<double, 8> inout = {
+	  coord[0], coord[1], coord[2], coord[3],
+	  coord[4], coord[5], coord[6], coord[7]};
+
+	double dt=0.;
+
+	do {
+	  // try with adaptive step
+	  cres=controlled.try_step(system, inout, dt, h1);
+	} while (abs(h1)>=delta_min &&
+		 cres==controlled_step_result::fail &&
+		 abs(h1)<h1max);
+
+	if (sgn*h1<0) throwError("h1 changed sign!");
+	if (abs(dt)>h1max) throwError("used step larger than provided");
+	if (cres==controlled_step_result::fail) {
+	  GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
+	  for (size_t i=0; i<=7; ++i) inout[i]=coord[i];
+	  controlled.stepper().do_step(system, inout, dt, sgn*delta_min);
+	}
+  
+	for (size_t i=0; i<=7; ++i) coord[i]=inout[i];
+	this->delta_=h1;
+  };
+
+
+
+  } else throwError("unknown stepper type");
+
+
+}
+
+int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
+  stepper_(coord, h1max);
+  return line_->stopcond;
+}
+
+std::string Worldline::IntegState::Boost::kind() { return kind_; } 

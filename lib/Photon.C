@@ -199,7 +199,7 @@ int Photon::hit(Astrobj::Properties *data) {
   double coord[8];
   int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
-  int stopcond=0;
+  stopcond=0;
   double rr=DBL_MAX, rr_prev=DBL_MAX;
 
   //-------------------------------------------------
@@ -266,8 +266,7 @@ int Photon::hit(Astrobj::Properties *data) {
     throwError("Incompatible coordinate kind in Photon.C");
   }
 
-  SmartPointer<Worldline::IntegState> state
-    = new Worldline::IntegState(this, coord, delta_* dir);
+  state_->init(this, coord, delta_* dir);
   //delta_ = initial integration step (defaults to 0.01)
 
   size_t count=0;// Must remain below count_max (prevents infinite integration)
@@ -294,7 +293,7 @@ int Photon::hit(Astrobj::Properties *data) {
   while (!stopcond) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(coord);
-    stopcond  = state -> nextStep(coord, h1max);
+    stopcond  = state_ -> nextStep(coord, h1max);
     if (!secondary_){ // to compute only primary image
       double sign = x1_[i0_]*cos(x2_[i0_]);
       if (coord[1]*cos(coord[2])*sign<0. && x1_[ind]*cos(x2_[ind])*sign<0.)

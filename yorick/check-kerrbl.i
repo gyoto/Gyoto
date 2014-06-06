@@ -92,16 +92,22 @@ if (gg2.deltamax!=400 || gg2.deltamin!=40 || gg2.difftol!=1e-3)
   error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
-doing, "comparing the two integrators";
+doing, "comparing the three integrators";
 gg=KerrBL(spin=0.995);
+//gg, deltamaxoverr=0.1, deltamin=1e-6;
 gg2=gg.clone;
-st=Star(metric=gg, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
 gg2, setparameter="GenericIntegrator";
+st=Star(metric=gg, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
 st2=Star(metric=gg2, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
+st3=st2(clone=);
+st3, setparameter="Integrator", "runge_kutta4_cash_karp54";
 dates=double(indgen(100));
 coords=st(get_coord=dates);
 coords2=st2(get_coord=dates);
+coords3=st3(get_coord=dates);
 if (max(abs(coords-coords2))>1e-4)
+  error, "the two integrators don't yield the same result";
+if (max(abs(coords-coords3))>1e-4)
   error, "the two integrators don't yield the same result";
 done;
 

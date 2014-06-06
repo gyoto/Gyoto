@@ -18,6 +18,9 @@ sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
+# Check for boost
+BOOST_REQUIRE([1.53.1])
+
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 # Checks for programs.
@@ -30,6 +33,9 @@ DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 # Provide additional defaults for user variables
+
+AX_APPEND_COMPILE_FLAGS([[-std=c++11]])
+
 AC_ARG_ENABLE([native],
   [AC_HELP_STRING([--enable-native],
      [append "-march=native" to CXXFLAGS if supported])],
@@ -147,6 +153,8 @@ AC_CHECK_LIB([dl], [dlopen])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
+
+#BOOST_FIND_HEADER([boost/numeric/odeint/stepper/runge_kutta4_classic.hpp])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE

@@ -32,22 +32,16 @@ using namespace std;
 using namespace Gyoto;
 
 
-Worldline::Worldline() : imin_(1), i0_(0), imax_(0), adaptive_(1),
+Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 secondary_(1),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
 			 maxiter_(GYOTO_DEFAULT_MAXITER)
-{ xAllocate(); }
-
-Worldline::Worldline(const size_t sz) : imin_(1), i0_(0), imax_(0),
-					adaptive_(1), secondary_(1),
-					delta_(GYOTO_DEFAULT_DELTA),
-					tmin_(-DBL_MAX),
-					cst_(NULL), cst_n_(0),
-					wait_pos_(0), init_vel_(NULL),
-					maxiter_(GYOTO_DEFAULT_MAXITER)
-{ xAllocate(sz); }
+{ 
+  xAllocate();
+  state_ = new Worldline::IntegState::Legacy();
+}
 
 Worldline::Worldline(const Worldline& orig) :
   metric_(NULL),
@@ -55,8 +49,10 @@ Worldline::Worldline(const Worldline& orig) :
   adaptive_(orig.adaptive_), secondary_(orig.secondary_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
   wait_pos_(orig.wait_pos_), init_vel_(NULL),
-  maxiter_(orig.maxiter_)
+  maxiter_(orig.maxiter_), state_(NULL)
 {
+  if (orig.state_()) state_ = orig.state_->clone();
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -169,6 +165,7 @@ Worldline::~Worldline(){
   delete[] x3dot_;
   if (cst_) delete [] cst_;
   if (init_vel_) delete[] init_vel_;
+  state_=NULL;
 }
 void Worldline::xAllocate() {xAllocate(GYOTO_DEFAULT_X_SIZE);}
 
@@ -282,6 +279,8 @@ void Worldline::fillElement(FactoryMessenger *fmp) const {
 
   if (maxiter_ != GYOTO_DEFAULT_MAXITER)
     fmp -> setParameter("MaxIter", maxiter_);
+
+  fmp -> setParameter("Integrator", state_->kind());
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {
@@ -327,8 +326,18 @@ int Worldline::setParameter(std::string name,
   else if (name=="NonAdaptive") adaptive_ = false;
   else if (name=="Adaptive")    adaptive_ = true;
   else if (name=="PrimaryOnly") secondary_= false;
+  else if (name=="Integrator") integrator(content);
   else return 1;
   return 0;
+}
+
+void Worldline::integrator(std::string type) {
+  if (type=="Legacy") state_ = new IntegState::Legacy();
+  else state_ = new IntegState::Boost(type);
+}
+
+std::string Worldline::integrator() {
+  return state_->kind();
 }
 
 SmartPointer<Metric::Generic> Worldline::metric() const { return metric_; }
@@ -463,9 +472,12 @@ void Worldline::xFill(double tlim) {
   double coord[8]={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
 		   x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
 
-  SmartPointer<IntegState> state
-    = new IntegState(this, coord, dir*delta_);
+  GYOTO_DEBUG << "IntegState initialization" << endl;
+
+  state_->init(this, coord, dir*delta_);
     //delta_ = initial integration step (defaults to 0.01)
+
+  GYOTO_DEBUG << "IntegState initialized" << endl;
 
   int mycount=0;// to prevent infinite integration
 
@@ -473,7 +485,7 @@ void Worldline::xFill(double tlim) {
     mycount++;
     ind+=dir;
 
-    stopcond= state -> nextStep(coord);
+    stopcond= state_ -> nextStep(coord);
 
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==maxiter_) {

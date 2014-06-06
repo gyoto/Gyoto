@@ -28,6 +28,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <functional>
+
 #include <GyotoDefs.h>
 
 namespace Gyoto {
@@ -63,6 +65,9 @@ class Gyoto::Worldline
 
   // Data : 
   // -----
+ public:
+  int stopcond; ///< Whether and why integration is finished
+
  protected:
   SmartPointer<Gyoto::Metric::Generic> metric_ ; ///< The Gyoto::Metric in this part of the universe
   double* x0_;///< t or T
@@ -91,7 +96,6 @@ class Gyoto::Worldline
   // -------------------------
  public: 
   Worldline() ; ///< Default constructor
-  Worldline(const size_t sz) ; ///< Default constructor
   
   Worldline(const Worldline& ) ;                ///< Copy constructor
   
@@ -139,6 +143,9 @@ class Gyoto::Worldline
 
   virtual std::string className() const ; ///< "Worldline"
   virtual std::string className_l() const ; ///< "worldline"
+
+  void integrator(std::string type);
+  std::string integrator();
 
   // Memory management
   // ----------------- 
@@ -381,7 +388,15 @@ class Gyoto::Worldline
   
  protected:
   virtual void tell(Gyoto::Hook::Teller*);
-  class IntegState;
+
+  class IntegState {
+  public:
+    class Generic;
+    class Legacy;
+    class Boost;
+  };
+
+  SmartPointer<Worldline::IntegState::Generic> state_;
 };
 
 
@@ -390,16 +405,46 @@ class Gyoto::Worldline
  * \brief Current state of a geodesic integration
  */
 
-class Gyoto::Worldline::IntegState : SmartPointee {
-  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState>;
-
- private:
+class Gyoto::Worldline::IntegState::Generic : SmartPointee {
+  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Generic>;
+ protected:
   /// Worldline that we are integrating.
   /**
    * Beware this is not a SmartPointer. Make sure line_ still exists
    * when calling nestStep().
    */
   Worldline * line_;
+  double delta_; ///< Integration step (current in case of adaptive).
+
+ public:
+  Generic();
+  virtual ~Generic();
+
+  virtual Generic * clone() const =0 ;
+
+  /**
+   * \param line The Worldline that we are integrating. Sets:
+   * Worldline::line_, Worldline::gg_, Worldline::adaptive_.
+   * \param coord Initial coordinate.
+   * \param delta Integration step. Sign determines direction.
+   */
+  virtual void init(Worldline * line, const double *coord, const double delta);
+
+  virtual std::string kind()=0;
+
+  /// Make one step.
+  /**
+   * \param[out] coord Next position-velocity;
+   * \param[in] h1max maximum step in case of adaptive integration
+   */
+  virtual int nextStep(double *coord, double h1max=1e6)=0;
+
+};
+
+class Gyoto::Worldline::IntegState::Legacy : public Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Legacy>;
+
+ private:
 
   /// The Metric in this end of the Universe.
   /**
@@ -410,7 +455,6 @@ class Gyoto::Worldline::IntegState : SmartPointee {
   double coord_[8]; ///< Previously determined coordinate.
   double norm_; ///< Current norm of the 4-velocity.
   double normref_; ///< Initial norm of the 4-velocity.
-  double delta_; ///< Integration step (current in case of adaptive).
 
   /// Whether Worldline::delta_ is adaptive.
   /**
@@ -420,14 +464,12 @@ class Gyoto::Worldline::IntegState : SmartPointee {
 
  public:
   /// Constructor
-  /**
-   * \param line The Worldline that we are integrating. Sets:
-   * Worldline::line_, Worldline::gg_, Worldline::adaptive_.
-   * \param coord Initial coordinate.
-   * \param delta Integration step. Sign determines direction.
-   */
-  IntegState(Worldline * line, const double *coord, const double delta);
-  
+
+  Legacy();
+  Legacy * clone() const ;
+  void init(Worldline * line, const double *coord, const double delta);
+  virtual std::string kind();
+
   /// Make one step.
   /**
    * \param[out] coord Next position-velocity;
@@ -435,7 +477,23 @@ class Gyoto::Worldline::IntegState : SmartPointee {
    */
   virtual int nextStep(double *coord, double h1max=1e6);
 
-  virtual ~IntegState();
+  virtual ~Legacy();
 };
+
+class Gyoto::Worldline::IntegState::Boost : public Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
+ private:
+  std::string kind_;
+  std::function< void(double coord[8], double h1max) > stepper_;
+ public:
+  Boost(std::string type);
+  Boost * clone() const ;
+  virtual ~Boost();
+  virtual void init(Worldline * line, const double *coord, const double delta);
+  virtual int nextStep(double *coord, double h1max=1e6);
+  virtual std::string kind();
+  
+};
+
 
 #endif

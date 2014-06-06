@@ -577,6 +577,9 @@ void Scenery::tMin(double tmin, const string &unit) {
   tMin(Units::ToGeometricalTime(tmin, unit, gg_));
 }
 
+void Scenery::integrator(std::string type) {ph_.integrator(type);}
+std::string Scenery::integrator(){return ph_.integrator();}
+
 void Scenery::adaptive(bool mode) { adaptive_ = mode; }
 bool Scenery::adaptive() const { return adaptive_; }
 
@@ -597,6 +600,8 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   GYOTO_DEBUG <<"fmp -> screen (screen_) ;" << endl;
 # endif
   if (screen_) fmp -> screen (screen_) ;
+
+  fmp->setParameter("Integrator", ph_.integrator());
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> astrobj (obj_) ;" << endl;
@@ -656,6 +661,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="Adaptive")    sc -> adaptive(true);
     if (name=="NonAdaptive") sc -> adaptive(false);
     if (name=="PrimaryOnly") sc -> secondary(false);
+    if (name=="Integrator")  sc -> integrator(content); 
   }
 
   return sc;
