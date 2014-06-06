@@ -328,6 +328,16 @@ void ygyoto_Spectrometer_generic_eval
 	(*OBJ) -> MEMBER (ygets_d(iarg));			   \
     }
 
+#define YGYOTO_WORKER_GETSET_STRING2(MEMBER)			   \
+  if ((iarg=kiargs[++k])>=0) {					   \
+      iarg+=*rvset;						   \
+      if (yarg_nil(iarg)) {					   \
+	if ((*rvset)++) y_error("Only one return value possible"); \
+	*ypush_q(0) = p_strcpy((*OBJ) -> MEMBER () . c_str() );	   \
+      } else							   \
+	(*OBJ) -> MEMBER (std::string(ygets_q(iarg)));		   \
+    }
+
 #define YGYOTO_WORKER_GETSET_LONG(MEMBER)			   \
   if ((iarg=kiargs[++k])>=0) {					   \
       iarg+=*rvset;						   \

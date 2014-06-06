@@ -580,6 +580,16 @@ void Scenery::tMin(double tmin, const string &unit) {
 void Scenery::adaptive(bool mode) { adaptive_ = mode; }
 bool Scenery::adaptive() const { return adaptive_; }
 
+void Scenery::integrator(std::string type) {ph_.integrator(type);}
+std::string Scenery::integrator() const { return ph_.integrator();}
+double Scenery::deltaMin() const {return ph_.deltaMin();}
+double Scenery::deltaMax() const {return ph_.deltaMax();}
+void  Scenery::deltaMin(double h1) {ph_.deltaMin(h1);}
+void  Scenery::deltaMax(double h1) {ph_.deltaMax(h1);}
+double Scenery::deltaMaxOverR() const { return ph_.deltaMaxOverR();}
+void Scenery::deltaMaxOverR(double t) {ph_.deltaMaxOverR(t);}
+
+
 void Scenery::secondary(bool sec) { secondary_ = sec; }
 bool Scenery::secondary() const { return secondary_; }
 

@@ -352,7 +352,7 @@ void Worldline::integrator(std::string type) {
   else state_ = new IntegState::Boost(type);
 }
 
-std::string Worldline::integrator() {
+std::string Worldline::integrator() const {
   return state_->kind();
 }
 

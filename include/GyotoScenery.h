@@ -257,6 +257,30 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void adaptive (bool mode) ; ///< Set Scenery::adaptive_
   bool adaptive () const ; ///< Get Scenery::adaptive_
+  void integrator(std::string type);
+  std::string integrator() const;
+  /**
+   * Get delta_min_
+   */
+  double deltaMin() const;
+
+  /**
+   * Set delta_min_
+   */
+  void deltaMin(double h1);
+
+  /**
+   * Get delta_max_
+   */
+  double deltaMax() const;
+
+  /**
+   * Set delta_max_
+   */
+  void deltaMax(double h1);
+
+  double deltaMaxOverR() const; ///< Get delta_max_over_r_
+  void deltaMaxOverR(double t); ///< Set delta_max_over_r_
 
   void secondary (bool sec) ; ///< Set Scenery::secondary_
   bool secondary () const ; ///< Get Scenery::secondary_

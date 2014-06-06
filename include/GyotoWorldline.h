@@ -161,7 +161,7 @@ class Gyoto::Worldline
   virtual std::string className_l() const ; ///< "worldline"
 
   void integrator(std::string type);
-  std::string integrator();
+  std::string integrator() const ;
   /**
    * Get delta_min_
    */

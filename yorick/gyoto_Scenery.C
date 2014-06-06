@@ -161,13 +161,13 @@ extern "C" {
       "get_pointer",
       "unit",
       "metric", "screen", "astrobj", "delta", "tmin", "quantities", "adaptive",
-      "maxiter",
+      "maxiter", "integrator", "deltamin", "deltamax", "deltamaxoverr",
       "xmlwrite", "clone",
       "impactcoords", "nthreads",
       0
     };
 
-    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 14)
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 18)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
@@ -215,6 +215,10 @@ extern "C" {
 
     YGYOTO_WORKER_GETSET_LONG2( adaptive );
     YGYOTO_WORKER_GETSET_LONG2( maxiter );
+    YGYOTO_WORKER_GETSET_STRING2( integrator );
+    YGYOTO_WORKER_GETSET_DOUBLE2( deltaMin );
+    YGYOTO_WORKER_GETSET_DOUBLE2( deltaMax );
+    YGYOTO_WORKER_GETSET_DOUBLE2( deltaMaxOverR );
     YGYOTO_WORKER_XMLWRITE;
     YGYOTO_WORKER_CLONE(Scenery);
 
