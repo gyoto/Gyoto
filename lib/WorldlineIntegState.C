@@ -26,13 +26,54 @@
 #include <cstring>
 #include <ctime>
 
-#include <boost/numeric/odeint/stepper/runge_kutta4_classic.hpp>
-#include <boost/numeric/odeint/stepper/runge_kutta_cash_karp54.hpp>
 #include <boost/numeric/odeint/stepper/generation.hpp>
 
 using namespace std ; 
 using namespace Gyoto;
 using namespace boost::numeric::odeint;
+
+#define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
+  if (kind_==#a) {							\
+    typedef a<state_type> error_stepper_type;				\
+    auto controlled=make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 ); \
+									\
+    double delta_min=met->deltaMin();					\
+									\
+    stepper_=								\
+      [this, controlled, delta_min, system, met, line]			\
+      (double coord[8], double h1max)					\
+      mutable								\
+      {									\
+	double h1=this->delta_;                                         \
+	double sgn=h1>0?1.:-1.;						\
+        h1max=met->deltaMax(coord, h1max);				\
+	if (abs(h1)>h1max) h1=sgn*h1max;                                \
+	if (abs(h1)<delta_min) h1=sgn*delta_min;			\
+	controlled_step_result cres;					\
+	std::array<double, 8> inout = {					\
+	  coord[0], coord[1], coord[2], coord[3],			\
+	  coord[4], coord[5], coord[6], coord[7]};			\
+									\
+	double dt=0.;							\
+									\
+	do {								\
+	  cres=controlled.try_step(system, inout, dt, h1);		\
+	} while (abs(h1)>=delta_min &&					\
+		 cres==controlled_step_result::fail &&			\
+		 abs(h1)<h1max);					\
+									\
+	if (sgn*h1<0) throwError("h1 changed sign!");			\
+	if (abs(dt)>h1max) throwError("used step larger than provided");\
+	if (cres==controlled_step_result::fail) {			\
+	  GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;\
+	  for (size_t i=0; i<=7; ++i) inout[i]=coord[i];		\
+	  controlled.stepper().do_step(system, inout, dt, sgn*delta_min); \
+	}								\
+									\
+	for (size_t i=0; i<=7; ++i) coord[i]=inout[i];			\
+	this->delta_=h1;						\
+      };								\
+   }
 
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
@@ -142,61 +183,15 @@ Worldline::IntegState::Boost::init(Worldline * line,
       double res[8];
       line->stopcond=met->Generic::diff(xx, res);
       for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
-      //GYOTO_DEBUG_ARRAY(xx, 8);
-      //GYOTO_DEBUG_ARRAY(res, 8);
     };
 
   typedef std::array< double, 8 > state_type;
-  if (kind_=="runge_kutta4_cash_karp54") {
-    typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
-    auto controlled=make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 );
-
-    double delta_min=met->deltaMin();
-
-    // here comes another lambda function
-    stepper_=
-      // This specifies the variables that are captured in the lambda:
-      [this, controlled, delta_min, system, met, line]
-      // This specified the parameters of the lambda (it's a function!)
-      (double coord[8], double h1max)
-      // This is the opposit of const:
-      mutable
-      // This is the body of the lambda
-      {
-	double h1=this->delta_;
-	double sgn=h1>0?1.:-1.;
-        h1max=met->deltaMax(coord, h1max);
-	if (abs(h1)>h1max) h1=sgn*h1max;
-	if (abs(h1)<delta_min) h1=sgn*delta_min;
-	controlled_step_result cres;
-	std::array<double, 8> inout = {
-	  coord[0], coord[1], coord[2], coord[3],
-	  coord[4], coord[5], coord[6], coord[7]};
-
-	double dt=0.;
-
-	do {
-	  // try with adaptive step
-	  cres=controlled.try_step(system, inout, dt, h1);
-	} while (abs(h1)>=delta_min &&
-		 cres==controlled_step_result::fail &&
-		 abs(h1)<h1max);
-
-	if (sgn*h1<0) throwError("h1 changed sign!");
-	if (abs(dt)>h1max) throwError("used step larger than provided");
-	if (cres==controlled_step_result::fail) {
-	  GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
-	  for (size_t i=0; i<=7; ++i) inout[i]=coord[i];
-	  controlled.stepper().do_step(system, inout, dt, sgn*delta_min);
-	}
-  
-	for (size_t i=0; i<=7; ++i) coord[i]=inout[i];
-	this->delta_=h1;
-  };
-
-
-
-  } else throwError("unknown stepper type");
+  GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54)
+  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_fehlberg78)
+  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_dopri5)
+  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54_classic)
+	 //else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(rosenbrock4)
+  else throwError("unknown stepper type");
 
 
 }
