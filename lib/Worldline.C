@@ -43,7 +43,7 @@ Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
 { 
   xAllocate();
-  state_ = new Worldline::IntegState::Legacy();
+  state_ = new Worldline::IntegState::Legacy(this);
   //state_ = new Worldline::IntegState::Boost("runge_kutta_fehlberg78");
 }
 
@@ -58,8 +58,6 @@ Worldline::Worldline(const Worldline& orig) :
   delta_max_(orig.delta_max_),
   delta_max_over_r_(orig.delta_max_over_r_), state_(NULL)
 {
-  if (orig.state_()) state_ = orig.state_->clone();
-
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -69,6 +67,9 @@ Worldline::Worldline(const Worldline& orig) :
 #   endif
     metric_=orig.metric_->clone();
   }
+
+  integrator(orig.integrator());
+
   xAllocate(x_size_);
   size_t sz = get_nelements()*sizeof(double);
 # if GYOTO_DEBUG_ENABLED
@@ -246,8 +247,12 @@ void Worldline::metric(SmartPointer<Metric::Generic> gg) {
   // Hook to new metric
   if (metric_) metric_ -> hook(this);
 
+  // Reinit integrator: some cache the metric
+  state_->init();
+
   // Reset integration
   reInit();
+
 }
 
 void Worldline::tell(Gyoto::Hook::Teller* msg) {
@@ -348,8 +353,8 @@ int Worldline::setParameter(std::string name,
 }
 
 void Worldline::integrator(std::string type) {
-  if (type=="Legacy") state_ = new IntegState::Legacy();
-  else state_ = new IntegState::Boost(type);
+  if (type=="Legacy") state_ = new IntegState::Legacy(this);
+  else state_ = new IntegState::Boost(this, type);
 }
 
 std::string Worldline::integrator() const {
@@ -1096,7 +1101,10 @@ size_t Worldline::maxiter() const { return maxiter_; }
 
 double Worldline::deltaMin() const {return delta_min_;}
 double Worldline::deltaMax() const {return delta_max_;}
-void  Worldline::deltaMin(double h1) {delta_min_=h1;}
+void  Worldline::deltaMin(double h1) {
+  delta_min_=h1;
+  state_->init();
+}
 void  Worldline::deltaMax(double h1) {delta_max_=h1;}
 double Worldline::deltaMaxOverR() const { return delta_max_over_r_;}
 void Worldline::deltaMaxOverR(double t) {delta_max_over_r_=t;}

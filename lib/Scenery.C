@@ -59,6 +59,7 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
 {
   if (screen_) screen_->metric(gg_);
   if (obj_) obj_->metric(gg_);
+  ph_.metric(gg_);
 }
 
 Scenery::Scenery(const Scenery& o) :
@@ -113,6 +114,7 @@ void Scenery::metric(SmartPointer<Metric::Generic> met) {
   if (!screen_) screen_ = new Screen ();
   screen_ -> metric(gg_);
   if (obj_) obj_ -> metric(gg_);
+  ph_.metric(gg_);
 }
 
 SmartPointer<Screen> Scenery::screen() { return screen_; }

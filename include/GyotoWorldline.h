@@ -467,10 +467,10 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
   double delta_; ///< Integration step (current in case of adaptive).
 
  public:
-  Generic();
+  Generic(Worldline *parent);
   virtual ~Generic();
 
-  virtual Generic * clone() const =0 ;
+  virtual Generic * clone(Worldline*newparent) const =0 ;
 
   /**
    * \param line The Worldline that we are integrating. Sets:
@@ -479,6 +479,8 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    * \param delta Integration step. Sign determines direction.
    */
   virtual void init(Worldline * line, const double *coord, const double delta);
+
+  virtual void init();
 
   virtual std::string kind()=0;
 
@@ -515,8 +517,8 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
  public:
   /// Constructor
 
-  Legacy();
-  Legacy * clone() const ;
+  Legacy(Worldline *parent);
+  Legacy * clone(Worldline*newparent) const ;
   void init(Worldline * line, const double *coord, const double delta);
   virtual std::string kind();
 
@@ -536,9 +538,10 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   std::string kind_;
   std::function< void(double coord[8], double h1max) > stepper_;
  public:
-  Boost(std::string type);
-  Boost * clone() const ;
+  Boost(Worldline* parent, std::string type);
+  Boost * clone(Worldline* newparent) const ;
   virtual ~Boost();
+  virtual void init();
   virtual void init(Worldline * line, const double *coord, const double delta);
   virtual int nextStep(double *coord, double h1max=1e6);
   virtual std::string kind();

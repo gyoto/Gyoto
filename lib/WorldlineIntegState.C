@@ -78,7 +78,10 @@ using namespace boost::numeric::odeint;
 
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
-Worldline::IntegState::Generic::Generic() : SmartPointee() {};
+Worldline::IntegState::Generic::Generic(Worldline *parent) :
+  SmartPointee(), line_(parent) {};
+void
+Worldline::IntegState::Generic::init(){}
 void
 Worldline::IntegState::Generic::init(Worldline * line,
 				     const double coord[8],
@@ -90,13 +93,12 @@ Worldline::IntegState::Generic::init(Worldline * line,
 
 /// Legacy
 
-Worldline::IntegState::Legacy::Legacy() : Generic() {}
+Worldline::IntegState::Legacy::Legacy(Worldline *parent) : Generic(parent) {}
 
 
 Worldline::IntegState::Legacy *
-Worldline::IntegState::Legacy::clone() const
-{ return new Legacy(*this); }
-
+Worldline::IntegState::Legacy::clone(Worldline *newparent) const
+{ return new Legacy(newparent); }
 
 void
 Worldline::IntegState::Legacy::init(Worldline * line,
@@ -160,31 +162,37 @@ Worldline::IntegState::Legacy::~Legacy() {}
 
 /// Boost
 Worldline::IntegState::Boost::~Boost() {};
-Worldline::IntegState::Boost::Boost(std::string type) : Generic(), kind_(type) {
-};
+Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
+  Generic(line), kind_(type)
+{
+  line_=line;
+  Boost::init();
+}
 
-Worldline::IntegState::Boost *
-Worldline::IntegState::Boost::clone() const
-{ return new Boost(*this); }
+void Worldline::IntegState::Boost::init()
+{
+  Worldline* line=line_;
+  Metric::Generic* met=line->metric();
+  std::function<void(const std::array<double, 8> &/*x*/,
+		  std::array<double, 8> & /*dxdt*/,
+		     const double /* t*/ )> system;
 
-
-
-void
-Worldline::IntegState::Boost::init(Worldline * line,
-				   const double coord[8], const double delta) {
-  Generic::init(line, coord, delta);
-  Metric::Generic* met=line_->metric();
-
-  // This, below, is called a lambda function.
-  auto system=[this, line, met](const std::array<double, 8> &x,
-		 std::array<double, 8> &dxdt,
-		 const double t)
-    {
-      double xx[8]={x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
-      double res[8];
-      line->stopcond=met->Generic::diff(xx, res);
-      for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
+  if (!met) 
+    system=[](const std::array<double, 8> &/*x*/,
+		  std::array<double, 8> & /*dxdt*/,
+		  const double /* t*/ ){
+      throwError("Metric not set");
     };
+  else
+    system=[this, line, met](const std::array<double, 8> &x,
+				  std::array<double, 8> &dxdt,
+				  const double t)
+      {
+	double xx[8]={x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
+	double res[8];
+	line->stopcond=met->Generic::diff(xx, res);
+	for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
+      };
 
   typedef std::array< double, 8 > state_type;
   GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54)
@@ -193,6 +201,18 @@ Worldline::IntegState::Boost::init(Worldline * line,
   else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54_classic)
 	 //else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(rosenbrock4)
   else throwError("unknown stepper type");
+};
+
+Worldline::IntegState::Boost *
+Worldline::IntegState::Boost::clone(Worldline*newparent) const
+{ return new Boost(newparent, kind_); }
+
+
+
+void
+Worldline::IntegState::Boost::init(Worldline * line,
+				   const double coord[8], const double delta) {
+  Generic::init(line, coord, delta);
 
 }
 

@@ -70,7 +70,8 @@ Star::Star(const Star& orig) :
   UniformSphere(orig), Worldline(orig)
 {
   GYOTO_DEBUG << endl;
-  gg_ = metric_; // we have two distinct clones of the metric, not good...
+  // we have two distinct clones of the metric, not good...
+  Worldline::metric(UniformSphere::metric());
 }
 
 Star* Star::clone() const { return new Star(*this); }
