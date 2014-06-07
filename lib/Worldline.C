@@ -73,7 +73,7 @@ Worldline::Worldline(const Worldline& orig) :
     metric_=orig.metric_->clone();
   }
 
-  integrator(orig.integrator());
+  state_ = orig.state_->clone(this);
 
   xAllocate(x_size_);
   size_t sz = get_nelements()*sizeof(double);
@@ -110,12 +110,17 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   adaptive_(orig->adaptive_), secondary_(orig->secondary_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
   wait_pos_(orig->wait_pos_), init_vel_(NULL),
-  maxiter_(orig->maxiter_)
+  maxiter_(orig->maxiter_),
+  delta_min_(orig->delta_min_),
+  delta_max_(orig->delta_max_),
+  delta_max_over_r_(orig->delta_max_over_r_),
+  abstol_(orig->abstol_),
+  reltol_(orig->reltol_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
-
+  state_ = orig->state_->clone(this);
   double d1 = orig->x0_[i0], d2 = orig->x0_[i0+dir];
   x_size_= size_t(fabs(d1-d2)/step_max)+2;
   double step = (d2-d1)/double(x_size_-1);
@@ -410,7 +415,7 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 				    const double coord[8],
 				    const int dir)
 {
-  if (met) metric_=met;
+  metric(met);
   setInitCoord(coord, dir);
 }
 

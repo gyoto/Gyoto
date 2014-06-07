@@ -119,9 +119,9 @@ coords4=st4(get_coord=dates);
 coords5=st5(get_coord=dates);
 coords6=st6(get_coord=dates);
 //coords7=st7(get_coord=dates);
-if (max(abs(coords-coords2))>1e-4)
+if (max(abs(coords-coords2))>1e-3)
   error, "the two integrators don't yield the same result";
-if (max(abs(coords-coords3))>1e-4)
+if (max(abs(coords-coords3))>1e-3)
   error, "the two integrators don't yield the same result";
 if (max(abs(coords-coords5))>1e-3)
   error, "the two integrators don't yield the same result";
