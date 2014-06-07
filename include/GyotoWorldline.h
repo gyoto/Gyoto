@@ -30,6 +30,8 @@
 #include <string>
 #include <functional>
 
+#include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
+
 #include <GyotoDefs.h>
 
 namespace Gyoto {
@@ -474,6 +476,14 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    */
   Worldline * line_;
   double delta_; ///< Integration step (current in case of adaptive).
+  bool adaptive_;
+  double norm_; ///< Current norm of the 4-velocity.
+  double normref_; ///< Initial norm of the 4-velocity.
+  /// The Metric in this end of the Universe.
+  /**
+   * Taken from Worldline::line_, never updated.
+   */
+  Gyoto::SmartPointer<Gyoto::Metric::Generic> gg_;
 
  public:
   Generic(Worldline *parent);
@@ -491,6 +501,8 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
 
   virtual void init();
 
+  virtual void checkNorm(double coord[8]);
+
   virtual std::string kind()=0;
 
   /// Make one step.
@@ -506,22 +518,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Legacy>;
 
  private:
-
-  /// The Metric in this end of the Universe.
-  /**
-   * Taken from Worldline::line_, never updated.
-   */
-  Gyoto::SmartPointer<Gyoto::Metric::Generic> gg_;
-  
   double coord_[8]; ///< Previously determined coordinate.
-  double norm_; ///< Current norm of the 4-velocity.
-  double normref_; ///< Initial norm of the 4-velocity.
-
-  /// Whether Worldline::delta_ is adaptive.
-  /**
-   * Taken from Worldline::line_, never updated.
-   */
-  bool adaptive_;
 
  public:
   /// Constructor
@@ -545,7 +542,9 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
  private:
   std::string kind_;
-  std::function< void(double coord[8], double h1max) > stepper_;
+  std::function<boost::numeric::odeint::controlled_step_result
+    (std::array<double,8>&, double&, double&)> try_step_;
+  std::function<void(std::array<double,8>&, double)> do_step_;
  public:
   Boost(Worldline* parent, std::string type);
   Boost * clone(Worldline* newparent) const ;

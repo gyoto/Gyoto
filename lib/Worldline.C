@@ -1106,7 +1106,7 @@ double Worldline::delta(const string &unit) const {
 double Worldline::tMin() const { return tmin_; }
 void Worldline::tMin(double tmin) { tmin_ = tmin; }
 
-void Worldline::adaptive(bool mode) { adaptive_ = mode; }
+void Worldline::adaptive(bool mode) { adaptive_ = mode; state_->init();}
 bool Worldline::adaptive() const { return adaptive_; }
 
 void Worldline::secondary(bool sec) { secondary_ = sec; }

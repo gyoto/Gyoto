@@ -35,53 +35,34 @@ using namespace boost::numeric::odeint;
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
   if (kind_==#a) {							\
     typedef a<state_type> error_stepper_type;				\
-    auto controlled=make_controlled< error_stepper_type >( line->absTol() , line->relTol() ); \
-									\
-    double delta_min=line->deltaMin();					\
-									\
-    stepper_=								\
-      [this, controlled, delta_min, system, line]			\
-      (double coord[8], double h1max)					\
+    auto controlled=							\
+      make_controlled< error_stepper_type >				\
+           ( line->absTol() , line->relTol() );				\
+    try_step_ =								\
+      [controlled, system]						\
+      (std::array<double, 8> &inout, double &t, double &h)		\
       mutable								\
-      {									\
-	double h1=this->delta_;                                         \
-	double sgn=h1>0?1.:-1.;						\
-        h1max=line->deltaMax(coord, h1max);				\
-	if (abs(h1)>h1max) h1=sgn*h1max;                                \
-	if (abs(h1)<delta_min) h1=sgn*delta_min;			\
-	controlled_step_result cres;					\
-	std::array<double, 8> inout = {					\
-	  coord[0], coord[1], coord[2], coord[3],			\
-	  coord[4], coord[5], coord[6], coord[7]};			\
-									\
-	double dt=0.;							\
-									\
-	GYOTO_DEBUG << h1 << endl;					\
-	do {								\
-	  cres=controlled.try_step(system, inout, dt, h1);		\
-	} while (abs(h1)>=delta_min &&					\
-		 cres==controlled_step_result::fail &&			\
-		 abs(h1)<h1max);					\
-									\
-	if (sgn*h1<0) throwError("h1 changed sign!");			\
-	if (abs(dt)>h1max) throwError("used step larger than provided");\
-	if (cres==controlled_step_result::fail) {			\
-	  GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;\
-	  for (size_t i=0; i<=7; ++i) inout[i]=coord[i];		\
-	  controlled.stepper().do_step(system, inout, dt, sgn*delta_min); \
-	}								\
-									\
-	for (size_t i=0; i<=7; ++i) coord[i]=inout[i];			\
-	this->delta_=h1;						\
-      };								\
-   }
+      -> controlled_step_result						\
+    {									\
+      return controlled.try_step(system, inout, t, h);			\
+    };									\
+    do_step_ =								\
+      [controlled, system]						\
+      (std::array<double, 8> &inout, double h)		\
+      mutable								\
+    {									\
+      controlled.stepper().do_step(system, inout, 0., h);		\
+    };									\
+  }
 
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
 Worldline::IntegState::Generic::Generic(Worldline *parent) :
   SmartPointee(), line_(parent) {};
 void
-Worldline::IntegState::Generic::init(){}
+Worldline::IntegState::Generic::init(){
+  adaptive_=line_->adaptive();
+}
 void
 Worldline::IntegState::Generic::init(Worldline * line,
 				     const double coord[8],
@@ -89,43 +70,12 @@ Worldline::IntegState::Generic::init(Worldline * line,
 {
   line_=line;
   delta_=delta;
-}
-
-/// Legacy
-
-Worldline::IntegState::Legacy::Legacy(Worldline *parent) : Generic(parent) {}
-
-
-Worldline::IntegState::Legacy *
-Worldline::IntegState::Legacy::clone(Worldline *newparent) const
-{ return new Legacy(newparent); }
-
-void
-Worldline::IntegState::Legacy::init(Worldline * line,
-				    const double coord[8], const double delta) {
-  Generic::init(line, coord, delta);
   gg_=line->metric();
-  adaptive_=line->adaptive();
-
-  short i;
-  for (i=0;i<8;++i) coord_[i]=coord[i];
-
   norm_=normref_= gg_->ScalarProd(coord,coord+4,coord+4);
 }
 
-int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
-  GYOTO_DEBUG << h1max << endl;
-  int j;
-  double h1;
-
-  if (adaptive_){
-    if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1, h1max)) return 1;
-    delta_ = h1;
-  }else{
-    if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1; 
-  }
-  for (j=0;j<8;j++) coord_[j] = coord[j];
-
+void Worldline::IntegState::Generic::checkNorm(double coord[8])
+{
   norm_=gg_ -> ScalarProd(coord,coord+4,coord+4);
 
   double normtol=.001;
@@ -143,7 +93,41 @@ int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
 		 << normref_ << " -- x1,x2,x3= " << coord[1] 
 		 << " " << coord[2] << " " << coord[3] << " " << endl;
   }
+}
 
+/// Legacy
+
+Worldline::IntegState::Legacy::Legacy(Worldline *parent) : Generic(parent) {}
+
+
+Worldline::IntegState::Legacy *
+Worldline::IntegState::Legacy::clone(Worldline *newparent) const
+{ return new Legacy(newparent); }
+
+void
+Worldline::IntegState::Legacy::init(Worldline * line,
+				    const double coord[8], const double delta) {
+  Generic::init(line, coord, delta);
+
+  short i;
+  for (i=0;i<8;++i) coord_[i]=coord[i];
+
+}
+
+int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
+  GYOTO_DEBUG << h1max << endl;
+  int j;
+  double h1;
+
+  if (adaptive_){
+    if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1, h1max)) return 1;
+    delta_ = h1;
+  }else{
+    if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1; 
+  }
+  for (j=0;j<8;j++) coord_[j] = coord[j];
+
+  checkNorm(coord);
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
   GYOTO_DEBUG_ARRAY(coord,8);
@@ -171,6 +155,7 @@ Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
 
 void Worldline::IntegState::Boost::init()
 {
+  Generic::init();
   Worldline* line=line_;
   Metric::Generic* met=line->metric();
   std::function<void(const std::array<double, 8> &/*x*/,
@@ -218,7 +203,55 @@ Worldline::IntegState::Boost::init(Worldline * line,
 
 int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
   GYOTO_DEBUG << h1max << endl;
-  stepper_(coord, h1max);
+
+  // We first make a C++ std::array out of the bare C array:
+  std::array<double, 8> inout = {
+    coord[0], coord[1], coord[2], coord[3],
+    coord[4], coord[5], coord[6], coord[7]};
+
+  if (adaptive_) {
+    double h1=delta_;
+    double sgn=h1>0?1.:-1.;
+    h1max=line_->deltaMax(coord, h1max);
+    double delta_min=line_->deltaMin();
+    double dt=0.;
+
+    if (abs(h1)>h1max) h1=sgn*h1max;
+    if (abs(h1)<delta_min) h1=sgn*delta_min;
+    controlled_step_result cres;
+    GYOTO_DEBUG << h1 << endl;
+
+    do {
+      // try_step_ is a lambda function encapsulating
+      // the actual adaptive-step integrator from boost
+      cres=try_step_(inout, dt, h1);
+    } while (abs(h1)>=delta_min &&
+	     cres==controlled_step_result::fail &&
+	     abs(h1)<h1max);
+  
+    // Check and report two possible error conditions (possible bugs)
+    if (sgn*h1<0) throwError("h1 changed sign!");
+    if (abs(dt)>h1max) throwError("used step larger than provided");
+
+    // cres is still fail, redo with delta_min using the fixed-step integrator
+    if (cres==controlled_step_result::fail) {
+      GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
+      for (size_t i=0; i<=7; ++i) inout[i]=coord[i];
+      do_step_(inout, sgn*delta_min);
+    }
+    // update adaptive step
+    delta_=h1;
+  } else {
+    // non adaptive case
+    // do_Step_ is a lambda function encapsulating a fixed-step integrator
+    // from Boost
+    do_step_(inout, delta_);
+  }
+
+  for (size_t i=0; i<=7; ++i) coord[i]=inout[i];
+
+  checkNorm(coord);
+
   return line_->stopcond;
 }
 
