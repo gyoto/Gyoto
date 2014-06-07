@@ -40,11 +40,13 @@ Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 maxiter_(GYOTO_DEFAULT_MAXITER),
 			 delta_min_(GYOTO_DEFAULT_DELTA_MIN),
 			 delta_max_(GYOTO_DEFAULT_DELTA_MAX),
-			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R)
+			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
+			 abstol_(GYOTO_DEFAULT_ABSTOL),
+			 reltol_(GYOTO_DEFAULT_RELTOL)
 { 
   xAllocate();
-  state_ = new Worldline::IntegState::Legacy(this);
-  //state_ = new Worldline::IntegState::Boost("runge_kutta_fehlberg78");
+  //state_ = new Worldline::IntegState::Legacy(this);
+  state_ = new Worldline::IntegState::Boost(this, "runge_kutta_fehlberg78");
 }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -56,7 +58,10 @@ Worldline::Worldline(const Worldline& orig) :
   maxiter_(orig.maxiter_),
   delta_min_(orig.delta_min_),
   delta_max_(orig.delta_max_),
-  delta_max_over_r_(orig.delta_max_over_r_), state_(NULL)
+  delta_max_over_r_(orig.delta_max_over_r_),
+  abstol_(orig.abstol_),
+  reltol_(orig.reltol_),
+  state_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -299,6 +304,10 @@ void Worldline::fillElement(FactoryMessenger *fmp) const {
     fmp -> setParameter("DeltaMax", delta_max_);
   if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
     fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
+  if (abstol_ != GYOTO_DEFAULT_ABSTOL)
+    fmp -> setParameter("AbsTol", abstol_);
+  if (reltol_ != GYOTO_DEFAULT_RELTOL)
+    fmp -> setParameter("RelTol", reltol_);
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {
@@ -348,6 +357,8 @@ int Worldline::setParameter(std::string name,
   else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
   else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
   else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
+  else if (name=="AbsTol") absTol(atof(content.c_str()));
+  else if (name=="RelTol") relTol(atof(content.c_str()));
   else return 1;
   return 0;
 }
@@ -1108,6 +1119,11 @@ void  Worldline::deltaMin(double h1) {
 void  Worldline::deltaMax(double h1) {delta_max_=h1;}
 double Worldline::deltaMaxOverR() const { return delta_max_over_r_;}
 void Worldline::deltaMaxOverR(double t) {delta_max_over_r_=t;}
+
+double Worldline::absTol() const {return abstol_;}
+void Worldline::absTol(double t) {abstol_=t; state_->init();}
+double Worldline::relTol() const {return reltol_;}
+void Worldline::relTol(double t) {reltol_=t; state_->init();}
 
 double Worldline::deltaMax(double const pos[8], double h1max) const
 {

@@ -35,7 +35,7 @@ using namespace boost::numeric::odeint;
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
   if (kind_==#a) {							\
     typedef a<state_type> error_stepper_type;				\
-    auto controlled=make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 ); \
+    auto controlled=make_controlled< error_stepper_type >( line->absTol() , line->relTol() ); \
 									\
     double delta_min=line->deltaMin();					\
 									\

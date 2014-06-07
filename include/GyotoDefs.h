@@ -372,6 +372,9 @@ namespace Gyoto {
  */
 #define GYOTO_DEFAULT_DELTA_MAX_OVER_R DBL_MAX
 
+#define GYOTO_DEFAULT_ABSTOL 1e-6
+#define GYOTO_DEFAULT_RELTOL 1e-6
+
 /**
  * \brief Default value for Gyoto::Worldline::maxiter_
  */

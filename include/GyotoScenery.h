@@ -282,6 +282,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   double deltaMaxOverR() const; ///< Get delta_max_over_r_
   void deltaMaxOverR(double t); ///< Set delta_max_over_r_
 
+  void absTol(double);
+  double absTol()const;
+  void relTol(double);
+  double relTol()const;
+
   void secondary (bool sec) ; ///< Set Scenery::secondary_
   bool secondary () const ; ///< Get Scenery::secondary_
 

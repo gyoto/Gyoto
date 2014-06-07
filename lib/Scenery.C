@@ -591,6 +591,10 @@ void  Scenery::deltaMax(double h1) {ph_.deltaMax(h1);}
 double Scenery::deltaMaxOverR() const { return ph_.deltaMaxOverR();}
 void Scenery::deltaMaxOverR(double t) {ph_.deltaMaxOverR(t);}
 
+double Scenery::absTol() const {return ph_.absTol();}
+void Scenery::absTol(double t) {ph_.absTol(t);}
+double Scenery::relTol() const {return ph_.relTol();}
+void Scenery::relTol(double t) {ph_.relTol(t);}
 
 void Scenery::secondary(bool sec) { secondary_ = sec; }
 bool Scenery::secondary() const { return secondary_; }
@@ -611,6 +615,12 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   if (screen_) fmp -> screen (screen_) ;
 
   fmp->setParameter("Integrator", ph_.integrator());
+
+  fmp->setParameter("DeltaMin", ph_.deltaMin());
+  fmp->setParameter("DeltaMax", ph_.deltaMax());
+  fmp->setParameter("DeltaMaxOverR", ph_.deltaMaxOverR());
+  fmp->setParameter("AbsTol", ph_.absTol());
+  fmp->setParameter("RelTol", ph_.relTol());
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> astrobj (obj_) ;" << endl;
@@ -674,6 +684,9 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="DeltaMin")    sc -> ph_ . deltaMin(atof(content.c_str()));
     if (name=="DeltaMax")    sc -> ph_ . deltaMax(atof(content.c_str()));
     if (name=="DeltaMaxOverR") sc -> ph_ . deltaMaxOverR (atof(content.c_str()));
+    if (name=="AbsTol")    sc -> ph_ . absTol(atof(content.c_str()));
+    if (name=="RelTol")    sc -> ph_ . relTol(atof(content.c_str()));
+
   }
 
   return sc;

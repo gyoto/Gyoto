@@ -94,6 +94,9 @@ class Gyoto::Worldline
   double delta_min_; ///< Minimum integration step for the adaptive integrator
   double delta_max_; ///< Maximum integration step for the adaptive integrator
 
+  double abstol_;
+  double reltol_;
+
   /**
    * \brief Numerical tuning parameter
    *
@@ -176,6 +179,12 @@ class Gyoto::Worldline
    * Get delta_max_
    */
   double deltaMax() const;
+
+
+  void absTol(double);
+  double absTol()const;
+  void relTol(double);
+  double relTol()const;
 
   /**
    * Get delta max at a given position
