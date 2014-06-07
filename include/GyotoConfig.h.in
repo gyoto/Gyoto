@@ -249,6 +249,18 @@
 # endif
 #endif
 
+/** \def HAVE_BOOST
+ *  \brief Whether boost support is compiled in.
+ *
+ *  Advanced integrators from boost/numeric/odeint/.
+ */
+#undef HAVE_BOOST
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_BOOST
+#  define HAVE_BOOST (undefined)
+# endif
+#endif
+
 /** \def HAVE_UNISTD_H
     \brief Whether the <unistd.h> header file was found. */
 #undef HAVE_UNISTD_H

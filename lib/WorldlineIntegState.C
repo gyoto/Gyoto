@@ -26,10 +26,11 @@
 #include <cstring>
 #include <ctime>
 
-#include <boost/numeric/odeint/stepper/generation.hpp>
-
 using namespace std ; 
 using namespace Gyoto;
+
+#ifdef HAVE_BOOST
+#include <boost/numeric/odeint/stepper/generation.hpp>
 using namespace boost::numeric::odeint;
 
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
@@ -54,6 +55,9 @@ using namespace boost::numeric::odeint;
       controlled.stepper().do_step(system, inout, 0., h);		\
     };									\
   }
+
+#endif // HAVE_BOOST
+
 
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
@@ -145,6 +149,7 @@ std::string Worldline::IntegState::Legacy::kind() { return "Legacy"; }
 Worldline::IntegState::Legacy::~Legacy() {}
 
 /// Boost
+#ifdef HAVE_BOOST
 Worldline::IntegState::Boost::~Boost() {};
 Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
   Generic(line)
@@ -273,3 +278,4 @@ std::string Worldline::IntegState::Boost::kind() {
   throwError("unknown enum value");
   return "error";
 } 
+#endif // HAVE_BOOST

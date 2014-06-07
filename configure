@@ -15421,6 +15421,7 @@ sovers=`echo $VERSINFO | tr : .`
 
 
 # Check for boost
+have_boost=yes
 
 echo "$as_me: this is boost.m4 serial 22" >&5
 boost_save_IFS=$IFS
@@ -15547,8 +15548,9 @@ $as_echo "$boost_cv_inc_path" >&6; }
     case $boost_cv_inc_path in #(
       no)
         boost_errmsg="cannot find Boost headers version >= $boost_version_req_string"
-        as_fn_error $? "$boost_errmsg" "$LINENO" 5
-
+        { $as_echo "$as_me:${as_lineno-$LINENO}: $boost_errmsg" >&5
+$as_echo "$as_me: $boost_errmsg" >&6;}
+        have_boost=no
         ;;#(
       yes)
         BOOST_CPPFLAGS=
@@ -21048,6 +21050,24 @@ $as_echo "$as_me: WARNING:
                          Building without udunits
 
                      *** Unit conversions disabled ***
+
+     " >&2;}
+
+fi
+if test "x$have_boost" == "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+                         Building without boost
+
+                   *** Advanced integrators disabled ***
+
+     " >&5
+$as_echo "$as_me: WARNING:
+
+                         Building without boost
+
+                   *** Advanced integrators disabled ***
 
      " >&2;}
 

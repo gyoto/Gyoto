@@ -45,8 +45,12 @@ Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 reltol_(GYOTO_DEFAULT_RELTOL)
 { 
   xAllocate();
-  //state_ = new Worldline::IntegState::Legacy(this);
+
+#ifdef HAVE_BOOST
   state_ = new Worldline::IntegState::Boost(this, "runge_kutta_fehlberg78");
+#else
+  state_ = new Worldline::IntegState::Legacy(this);
+#endif
 }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -370,7 +374,11 @@ int Worldline::setParameter(std::string name,
 
 void Worldline::integrator(std::string type) {
   if (type=="Legacy") state_ = new IntegState::Legacy(this);
+#ifdef HAVE_BOOST
   else state_ = new IntegState::Boost(this, type);
+#else
+  else throwError("unrecognized integrator (recompile with boost?)");
+#endif
 }
 
 std::string Worldline::integrator() const {

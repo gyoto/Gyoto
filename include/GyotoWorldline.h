@@ -30,9 +30,11 @@
 #include <string>
 #include <functional>
 
-#include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
-
 #include <GyotoDefs.h>
+
+#ifdef HAVE_BOOST
+# include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
+#endif
 
 namespace Gyoto {
   class Worldline;
@@ -454,7 +456,9 @@ class Gyoto::Worldline
   public:
     class Generic;
     class Legacy;
+#ifdef HAVE_BOOST
     class Boost;
+#endif
   };
 
   SmartPointer<Worldline::IntegState::Generic> state_;
@@ -538,6 +542,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   virtual ~Legacy();
 };
 
+#ifdef HAVE_BOOST
 class Gyoto::Worldline::IntegState::Boost : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
  public:
@@ -561,6 +566,6 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   virtual std::string kind();
   
 };
-
+#endif /// HAVE_BOOST
 
 #endif

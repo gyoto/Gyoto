@@ -19,7 +19,8 @@ AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
 # Check for boost
-BOOST_REQUIRE([1.53.1])
+have_boost=yes
+BOOST_REQUIRE([1.53.1], [have_boost=no])
 
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
@@ -643,6 +644,17 @@ AS_IF([test "x$have_udunits" == "xno"],
                          Building without udunits
 
                      *** Unit conversions disabled ***
+
+     ])
+  ])
+AS_IF([test "x$have_boost" == "xno"],
+  [
+   AC_MSG_WARN(
+     [
+
+                         Building without boost
+
+                   *** Advanced integrators disabled ***
 
      ])
   ])
