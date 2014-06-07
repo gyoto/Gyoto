@@ -33,8 +33,8 @@ using namespace Gyoto;
 using namespace boost::numeric::odeint;
 
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
-  if (kind_==#a) {							\
-    typedef a<state_type> error_stepper_type;				\
+  if (kind_==Kind::a) {							\
+    typedef boost::numeric::odeint::a<state_type> error_stepper_type;	\
     auto controlled=							\
       make_controlled< error_stepper_type >				\
            ( line->absTol() , line->relTol() );				\
@@ -147,9 +147,19 @@ Worldline::IntegState::Legacy::~Legacy() {}
 /// Boost
 Worldline::IntegState::Boost::~Boost() {};
 Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
+  Generic(line)
+{
+  if (type=="runge_kutta_cash_karp54") kind_=runge_kutta_cash_karp54;
+  else if (type=="runge_kutta_fehlberg78") kind_=runge_kutta_fehlberg78;
+  else if (type=="runge_kutta_dopri5") kind_=runge_kutta_dopri5;
+  else if (type=="runge_kutta_cash_karp54_classic") kind_=runge_kutta_cash_karp54_classic;
+  else throwError("unknown integrator kind");
+  Boost::init();
+}
+
+Worldline::IntegState::Boost::Boost(Worldline*line, Kind type) :
   Generic(line), kind_(type)
 {
-  line_=line;
   Boost::init();
 }
 
@@ -255,4 +265,11 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
   return line_->stopcond;
 }
 
-std::string Worldline::IntegState::Boost::kind() { return kind_; } 
+std::string Worldline::IntegState::Boost::kind() {
+  if (kind_== Kind::runge_kutta_cash_karp54) return "runge_kutta_cash_karp54";
+  if (kind_== Kind::runge_kutta_fehlberg78) return "runge_kutta_fehlberg78";
+  if (kind_== Kind::runge_kutta_dopri5) return "runge_kutta_dopri5";
+  if (kind_== Kind::runge_kutta_cash_karp54_classic) return "runge_kutta_cash_karp5";
+  throwError("unknown enum value");
+  return "error";
+} 

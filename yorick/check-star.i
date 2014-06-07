@@ -58,6 +58,10 @@ write, format="%s", "Setting initial condition... ";
 st, initcoord=[0, 10.791, 1.5708, 0], [0, 0, 0.0166637];
 write, format="%s\n", "done.";
 
+doing, "Setting integrator";
+st, setparameter="DeltaMaxOverR", "0.1";
+done;
+
 write, format="%s", "Computing orbit... ";
 st, xfill=800;
 write, format="%s\n", "done.";

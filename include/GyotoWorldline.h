@@ -540,13 +540,19 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
 
 class Gyoto::Worldline::IntegState::Boost : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
+ public:
+  enum Kind {runge_kutta_cash_karp54,
+	     runge_kutta_fehlberg78,
+	     runge_kutta_dopri5,
+	     runge_kutta_cash_karp54_classic };
  private:
-  std::string kind_;
+  Kind kind_;
   std::function<boost::numeric::odeint::controlled_step_result
     (std::array<double,8>&, double&, double&)> try_step_;
   std::function<void(std::array<double,8>&, double)> do_step_;
  public:
   Boost(Worldline* parent, std::string type);
+  Boost(Worldline* parent, Kind type);
   Boost * clone(Worldline* newparent) const ;
   virtual ~Boost();
   virtual void init();
