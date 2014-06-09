@@ -592,6 +592,19 @@ extern gyoto_Photon;
         adaptive= whether integration uses adaptive step
 
         maxiter= maximum number of iterations in integration
+
+        integrator= "Legacy" | "runge_kutta_fehlberg78" |
+            "runge_kutta_cash_karp54" |"runge_kutta_dopri5" |
+            "runge_kutta_cash_karp54_classic"
+            The integrator to use.
+
+        deltamin=, deltamax=, deltamaxoverr=, abstol, reltol:
+            numerical tuning parameters for the integrators other than
+            Legacy (the tuning parameters for the Legacy integrator
+            are set in the Metric object). You should normally need to
+            tweak only abstol and reltol. If you find you need to
+            change the others, try a higher order integrator, such as
+            runge_kutta_fehlberg78.
      
    SUBROUTINE-LIKE METHODS:
 

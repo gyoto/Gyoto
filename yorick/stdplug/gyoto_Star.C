@@ -19,6 +19,7 @@
 
 #include "../ygyoto.h"
 #include "yapi.h"
+#include "pstdlib.h"
 #include <GyotoStar.h>
 #include <GyotoStarTrace.h>
 #ifdef GYOTO_USE_XERCES
@@ -43,14 +44,16 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     "unit",
     "radius", "metric", "initcoord", "spectrum", "opacity", "delta", "adaptive",
     "deltamaxoverradius", "deltamaxoverdistance",
-    "maxiter", "reset", "xfill",
+    "maxiter",
+    "integrator", "deltamin", "deltamax", "deltamaxoverr", "abstol", "reltol",
+    "reset", "xfill",
     YGYOTO_ASTROBJ_GENERIC_KW,
     "get_skypos", "get_txyz", "get_prime", "get_coord", "get_cartesian",
     "startrace",
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+19);
+  YGYOTO_WORKER_INIT(Astrobj, Star, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+25);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(radius); 
@@ -103,6 +106,12 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverRadius);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverDistance);
   YGYOTO_WORKER_GETSET_LONG2( maxiter );
+  YGYOTO_WORKER_GETSET_STRING2( integrator );
+  YGYOTO_WORKER_GETSET_DOUBLE2( deltaMin );
+  YGYOTO_WORKER_GETSET_DOUBLE2( Worldline::deltaMax );
+  YGYOTO_WORKER_GETSET_DOUBLE2( deltaMaxOverR );
+  YGYOTO_WORKER_GETSET_DOUBLE2( absTol );
+  YGYOTO_WORKER_GETSET_DOUBLE2( relTol );
   YGYOTO_WORKER_RUN( reset() );
   YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );
  

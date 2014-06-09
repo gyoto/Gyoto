@@ -30,10 +30,11 @@ using namespace Gyoto;
 using namespace std;
 
 #define YGYOTO_PHOTON_GENERIC_KW "unit", "metric", "initcoord", "astrobj", \
-    "spectro", "tmin",	"delta", "adaptive", "maxiter", "setparameter",	\
-    "reset", "xfill", "save_txyz", "xmlwrite", "is_hit",		\
+    "spectro", "tmin",	"delta", "adaptive", "maxiter", \
+    "integrator", "deltamin", "deltamax", "deltamaxoverr", "abstol", "reltol", \
+    "setparameter", "reset", "xfill", "save_txyz", "xmlwrite", "is_hit", \
     "get_txyz", "get_coord", "get_cartesian", "clone"
-#define YGYOTO_PHOTON_GENERIC_KW_N 19
+#define YGYOTO_PHOTON_GENERIC_KW_N 25
 
 void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 				 int *kiargs, int *piargs, int *rvset, int *paUsed) {
@@ -116,6 +117,12 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(delta);
   YGYOTO_WORKER_GETSET_LONG2(adaptive);
   YGYOTO_WORKER_GETSET_LONG2( maxiter );
+  YGYOTO_WORKER_GETSET_STRING2( integrator );
+  YGYOTO_WORKER_GETSET_DOUBLE2( deltaMin );
+  YGYOTO_WORKER_GETSET_DOUBLE2( deltaMax );
+  YGYOTO_WORKER_GETSET_DOUBLE2( deltaMaxOverR );
+  YGYOTO_WORKER_GETSET_DOUBLE2( absTol );
+  YGYOTO_WORKER_GETSET_DOUBLE2( relTol );
   YGYOTO_WORKER_SETPARAMETER;
   YGYOTO_WORKER_RUN( reset() );
   YGYOTO_WORKER_RUN( xFill(ygets_d(iarg)) );
