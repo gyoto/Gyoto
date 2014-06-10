@@ -298,7 +298,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *
    *  \return rmax_ in geometrical units
    */
-  virtual double rMax(); ///< Get maximal distance from center of coordinate system
+  virtual double rMax() const; ///< Get maximal distance from center of coordinate system
 
   /**
    *  Call rMax() and convert result to unit.

@@ -137,6 +137,15 @@ void   PolishDoughnut::lambda(double lambda) {
   W_surface_ = potential(r_cusp_, M_PI/2.) ;
   W_centre_  = potential(r_centre_, M_PI/2.) ;
 
+  r_cusp_*=1.2;
+  /*
+    Temporary solution.
+    The potential=0 line can leak a bit out of the
+    tube r=r_cusp_ for high spins, high l0, leading
+    to incorrect images. This mult factor to r_cusp_
+    solves the problem in an ugly (but correct) way. 
+   */
+
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(lambda_);
   GYOTO_DEBUG_EXPR(l0_);
@@ -330,7 +339,6 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     the emissivity coming from:
     Wardzinski & Zdziarski, MNRAS, 314, 183 (2000)
   */
-
   /* COMPUTING PHYS QUANTITIES */
   double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
   double rcgs = rr * gg_ -> unitLength() * 100.;//rr in cgs
@@ -382,20 +390,26 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 
   double number_density = (enthalpy-kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1))
     /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
+
   double number_density_central = 
     (enthalpy_c-kappa*pow(enthalpy_c,1.+CST_POLY_INDEX_M1))
     /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
 
-  double magnetic_pressure = 0.;
+  double magnetic_pressure = 0., fact_b=1.;
+  // pm = b^2/fact_b
   if (!angle_averaged_){
     magnetic_pressure = kappam*pow(LL,CST_POLY_INDEX_M1)
       *pow(enthalpy,1.+CST_POLY_INDEX_M1);
+    fact_b = 8.*M_PI;
   }else{
     double gas_pressure = kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1);
     magnetic_pressure = gas_pressure/beta_;
+    fact_b = 24.*M_PI;
   }
 
-  double bphi = sqrt(24.*M_PI*magnetic_pressure/(g_pp+2*l0_*g_tp+l0_*l0_*g_tt));
+  double bnorm = sqrt(fact_b*magnetic_pressure);
+
+  double bphi = bnorm/sqrt(g_pp+2*l0_*g_tp+l0_*l0_*g_tt);
   //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
   // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
 
@@ -411,16 +425,7 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     photon_emframe[ii]=coord_ph[ii+4]
       +vel[ii]*gg_->ScalarProd(coord_ph,coord_ph+4,vel);
   }
-
-  double bnorm = gg_->ScalarProd(coord_ph,b4vec,b4vec);
-  if (bnorm<=0.) throwError("In PolishDoughnut::emission_komissarov"
-			    " b should be spacelike");
-  bnorm=sqrt(bnorm);
   
-  if (angle_averaged_){
-    bnorm = sqrt(24.*M_PI*magnetic_pressure);
-  }
-
   double lnorm = gg_->ScalarProd(coord_ph,photon_emframe,photon_emframe);
   if (lnorm<=0.) throwError("In PolishDoughnut::emission_komissarov"
 			    " photon_emframe should be spacelike");
@@ -459,7 +464,6 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS);
 
   /* SYNCHRO COMPUTATION */
-
   for (size_t ii=0; ii<nbnu; ++ii){
     // Formuli below are from Wardzinski&Zdziarski 2000:
     double nuem = nu_ems[ii];
@@ -476,11 +480,10 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 					    nuem,nuc);
     }
 
-      
     // ***Computation of nu_crit (self-abs)
     // We follow here Narayan&Yi 95 derivation
     double param[8]={rcgs,number_density,bnorm,T_electron,
-		     0.,0.,0.,emis_synch};
+    		     0.,0.,0.,emis_synch};
     double nu_test = 1e17;
     //NB: see mma Transcendental.nb, nu_crit is well below 1e17
     transcendental_t transcendental;
@@ -489,11 +492,11 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
     if (transcendental.status) { // maxiter reached in secant method
       double xmin = 2./3.*nu_test/(nuc*Theta_elec*Theta_elec), xmax;
       while (transcendental(xmin)<0.){
-	xmin*=0.1;
+    	xmin*=0.1;
       }
       xmax=10.*xmin;
       while (transcendental(xmax)>0.){
-	xmax*=10.;
+    	xmax*=10.;
       }
       xM_crit = transcendental.ridders(xmin, xmax) ;
     }
@@ -504,21 +507,21 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
       // Rayleigh-Jeans below nu_crit (smoothly connected to synchro)
       double emRJ = 2.*nuem*nuem/GYOTO_C2_CGS*GYOTO_BOLTZMANN_CGS*T_electron;
       double emRJ_c = 2.*nu_crit*nu_crit
-	/GYOTO_C2_CGS*GYOTO_BOLTZMANN_CGS*T_electron;
+    	/GYOTO_C2_CGS*GYOTO_BOLTZMANN_CGS*T_electron;
       double emSy_c = 0.;
       if (!angle_averaged_){
-	emSy_c=
-	  emissionSynchro_komissarov_direction(Theta_elec,number_density,
-					       nu_crit,nuc,theta_mag);
+    	emSy_c=
+    	  emissionSynchro_komissarov_direction(Theta_elec,number_density,
+    					       nu_crit,nuc,theta_mag);
       }else{
-	emSy_c=
-	  emissionSynchro_komissarov_averaged(Theta_elec,number_density,
-					      nu_crit,nuc);
+    	emSy_c=
+    	  emissionSynchro_komissarov_averaged(Theta_elec,number_density,
+    					      nu_crit,nuc);
       }
       emis_synch = emRJ*emSy_c/emRJ_c;
     }
   
-    // ***Final increment to intensity
+    // ***Final increment to intensity (in SI units)
     Inu[ii]=
       emis_synch*dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1 * GYOTO_INU_CGS_TO_SI;
   }
@@ -783,8 +786,6 @@ void PolishDoughnut::emission(double Inu[], // output
     }
     xM_crit = transcendental.ridders(xmin, xmax) ;
   }
-  //  cout << "xmin="<<xmin<<", xmax="<<xmax<<", xM_crit="<<xM_crit<<endl;
-  //  cout << "secant: xM_crit="<<xM_crit<<endl;
   double nu_crit = 3./2. * nu_0 * temp_e * temp_e * xM_crit ;
   
   if (usecompton){
@@ -795,7 +796,6 @@ void PolishDoughnut::emission(double Inu[], // output
     int inside=1;//will be 0 when getting out of doughnut
     double newr=rr,newth=theta,rsth=rr*sin(theta),neww,wbef=ww,rbef=rr;
     double dr=1e-2;//crude, but there will be a linear interpolation later
-    //if (debug()) cout << "***ww= " << ww << endl;
 
     // TO CHANGE!!!! put in the non-nu part above
     while (inside){
