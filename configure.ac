@@ -37,6 +37,8 @@ AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 AX_APPEND_COMPILE_FLAGS([[-std=c++11]])
 
+AX_APPEND_COMPILE_FLAGS([-rdynamic], [LDFLAGS])
+
 AC_ARG_ENABLE([native],
   [AC_HELP_STRING([--enable-native],
      [append "-march=native" to CXXFLAGS if supported])],

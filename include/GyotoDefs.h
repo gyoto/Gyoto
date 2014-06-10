@@ -370,7 +370,7 @@ namespace Gyoto {
  * lensing), then this must be smaller. A good test is to look at a
  * MinDistance map for a FixedStar: it must be smooth.
  */
-#define GYOTO_DEFAULT_DELTA_MAX_OVER_R DBL_MAX
+#define GYOTO_DEFAULT_DELTA_MAX_OVER_R 1.
 
 #define GYOTO_DEFAULT_ABSTOL 1e-6
 #define GYOTO_DEFAULT_RELTOL 1e-6

@@ -2,4 +2,4 @@ ACLOCAL_AMFLAGS = -I m4
 SUBDIRS=@mySUBDIRS@
 $(SUBDIRS):
 	cd $@ ; $(MAKE)
-.PHONY: $(SUBDIRS)
+.PHONY: $(SUBDIRS) install
