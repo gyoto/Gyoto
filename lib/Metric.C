@@ -107,10 +107,10 @@ void Metric::Generic::deltaMaxOverR(double t) {delta_max_over_r_=t;}
 
 double Metric::Generic::deltaMax(double const pos[8], double h1max) const
 {
-  double h1max_at_r=pos[1];
+  double h1max_at_r=abs(pos[1]);
   if (coordkind_==GYOTO_COORDKIND_CARTESIAN) {
-    if (pos[2]>h1max_at_r) h1max_at_r=pos[2];
-    if (pos[3]>h1max_at_r) h1max_at_r=pos[3];
+    if (abs(pos[2])>h1max_at_r) h1max_at_r=abs(pos[2]);
+    if (abs(pos[3])>h1max_at_r) h1max_at_r=abs(pos[3]);
   }
   h1max_at_r *= delta_max_over_r_;
   if (h1max > h1max_at_r) h1max = h1max_at_r;
@@ -394,8 +394,8 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   double errmin=1e-6;
   double factnorm=2.;
 
-  if (h1max>delta_max_) h1max=delta_max_;
-  if (h1max<delta_min_) h1max=delta_min_;
+
+  h1max=deltaMax(coord, h1max);
  
   //cout << "1st diff" << endl;
   diff(coord,dcoord) ;
