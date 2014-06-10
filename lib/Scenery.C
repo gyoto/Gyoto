@@ -407,6 +407,11 @@ void Scenery::operator() (
   }
 }
 
+SmartPointer<Photon> Scenery::clonePhoton() {
+  return ph_.clone();
+}
+
+
 void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant)
 {quantities_=quant;}
 void Scenery::setRequestedQuantities(std::string squant) {
