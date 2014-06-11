@@ -53,9 +53,7 @@ namespace Gyoto{
  * In addition, Quantities may be specified (or the default Quantity
  * will be produced: generally Intensity). Not all Astrobj implement
  * all Quantities. The order in which Quantities are listed is not
- * relevant (it is not stored). A value of the integration step for
- * the Photon's trajectory can be specified in Delta. It will be used
- * as the initial step, which is adaptive. Possible Quantities:
+ * relevant (it is not stored). Possible Quantities:
  *
  * - Intensity: the intensity that reaches the object, integrated over
  *        the line-of-sight;
@@ -81,6 +79,12 @@ namespace Gyoto{
  * actual number of cores available on the machine usually leads to a
  * decrease in performance.
  *
+ * Finally, Scenery accepts a number of numerical tuning parameters
+ * that are passed directly to the underlying photons (actually, the
+ * Scenery object holds a Photon instance which stores many
+ * parameters, including the Metric and Astrobj):
+ * Adaptive/NonAdaptive, Delta, MinimumTime, MaxIter, PrimaryOnly.
+ *
  * Thus a fully populated Scenery XML looks like that:
  * \code
  * <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -100,9 +104,26 @@ namespace Gyoto{
  *
  *  <Quantities> Spectrum Intensity ...</Quantities>
  *
- *  <Delta> 1. </Delta>
- *
  *  <NThreads> 2 </NThreads>  
+ *
+ *  Next come the numerical tuning parameters:
+ *  Integration step, initial in case of adaptive, reset for
+ *  for each ray being traced:
+ *  <Delta unit="geometrical"> 1 </Delta>
+ *
+ *  Adaptive or NonAdaptive:
+ *  <Adaptive/>
+ *
+ *  A few safe-guards to avoid infinite loops:
+ *
+ *  Maximum number of iterations for each ray:
+ *  <Maxiter> 1000000 </Maxiter>
+ *
+ *  Minimum date a photon may reach backwards in time:
+ *  <MinimumTime unit="yr">25e3</MinimumTime>
+ *
+ *  This one is an experimental, poorly specified feature:
+ *  <!--PrimaryOnly/-->
  *
  * </Scenery>
  * \endcode
@@ -114,24 +135,12 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   // Data : 
   // -----
  protected:
-  /**
-   * The Metric, or stage, for this scenery.
-   */
-  SmartPointer<Metric::Generic> gg_;
 
   /**
    * Screen, the camera for this scenery.
    */
   SmartPointer<Screen> screen_;
 
-  /**
-   * The astrophysical emitting light in this scenery... the actor.
-   */
-  SmartPointer<Astrobj::Generic> obj_;
-
-  bool   adaptive_; ///< Whether integration should use adaptive delta
-
-  bool   secondary_; ///< Choose 0 for computing only primary image
 
   /**
    * Default integration step for the photons
@@ -148,18 +157,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   Gyoto::Quantity_t quantities_;
 
   /**
-   * Used internally to not always reallocate memory when operator() is called.
+   * Used internally to not always reallocate memory when operator()
+   * is called and to store all the parameters which affect the
+   * integration, except delta_.
    */
-  Gyoto::Photon ph_; ///< Cached Photon.
-
-  /**
-   * Computation does not go back before tmin_. Default is -DBL_MAX. tmin_ is
-   * always expressed in geometrical units, it is essentially a tuning
-   * parameter for the ray-tracing process. tmin should be chosen to
-   * always be longer than the distance between the screen and the
-   * object.
-   */
-  double tmin_; ///< Time limit for the integration (geometrical units)
+  Gyoto::Photon ph_; ///< Template Photon.
 
   /**
    * When compiled with libpthread, Scenery::rayTrace() may compute
@@ -200,25 +202,25 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
  public:
   // Accessors
   // ---------
-  SmartPointer<Metric::Generic> metric(); ///< Get Scenery::gg_
+  SmartPointer<Metric::Generic> metric() const; ///< Get ph_.Worldline::metric_
   /**
    * The provided Metric will also be atached to the Screen and the Astrobj.
    */
   void metric(SmartPointer<Metric::Generic>);  ///< Set Scenery::gg_
-  SmartPointer<Screen> screen(); ///< Get Scenery::screen_
+  SmartPointer<Screen> screen() const; ///< Get Scenery::screen_
 
   /**
    * The Metric attached to the Scenery will be attached to the Screen
    */
   void screen(SmartPointer<Screen>);///< Set Scenery::screen_
-  SmartPointer<Astrobj::Generic> astrobj(); ///< Get Scenery::obj_
+  SmartPointer<Astrobj::Generic> astrobj() const; ///< Get ph_.obj_
   /**
    * The Metric attached to the Scenery will be attached to the Astrobj
    */
-  void astrobj(SmartPointer<Astrobj::Generic>); ///< Set Scenery::obj_
+  void astrobj(SmartPointer<Astrobj::Generic>); ///< Set ph_.obj_
 
 
-  SmartPointer<Photon> clonePhoton(); ///< Clone the internal Photon
+  SmartPointer<Photon> clonePhoton() const; ///< Clone the internal Photon
 
   double delta() const ; ///< Get default step in geometrical units
   double delta(const std::string &unit) const ;  ///< Get default step in specified units
@@ -250,23 +252,23 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   size_t getScalarQuantitiesCount() const ;
 
-  /// Get Scenery::tmin_
+  /// Get ph_.tmin_
   double tMin() const ;
-  /// Get Scenery::tmin_ in specified unit
+  /// Get ph_.tmin_ in specified unit
   double tMin(const std::string &unit) const ;
-  /// Set Scenery::tmin_
+  /// Set ph_.tmin_
   void tMin(double);
-  /// Set Scenery::tmin_ in specified unit
+  /// Set ph_.tmin_ in specified unit
   void tMin(double, const std::string &unit);
 
-  void adaptive (bool mode) ; ///< Set Scenery::adaptive_
-  bool adaptive () const ; ///< Get Scenery::adaptive_
+  void adaptive (bool mode) ; ///< Set ph_.adaptive_
+  bool adaptive () const ; ///< Get ph_.adaptive_
 
-  void secondary (bool sec) ; ///< Set Scenery::secondary_
-  bool secondary () const ; ///< Get Scenery::secondary_
+  void secondary (bool sec) ; ///< Set ph_.secondary_
+  bool secondary () const ; ///< Get ph_.secondary_
 
-  void maxiter (size_t miter) ; ///< Set Scenery::maxiter_
-  size_t maxiter () const ; ///< Get Scenery::maxiter_
+  void maxiter (size_t miter) ; ///< Set ph_.maxiter_
+  size_t maxiter () const ; ///< Get ph_.maxiter_
 
   void nThreads(size_t); ///< Set nthreads_;
   size_t nThreads() const ; ///< Get nthreads_;

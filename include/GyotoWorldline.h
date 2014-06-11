@@ -80,7 +80,19 @@ class Gyoto::Worldline
   bool   adaptive_; ///< Whether integration should use adaptive delta
   bool secondary_; ///< choose 0 to compute only primary image
   double delta_;///< Initial integrating step ; defaults to 0.01
-  double tmin_;///< Minimum time for integration, stop integration if t<tmin ; defaults to -DBL_MAX
+
+
+  /**
+   * \brief Time limit for the integration (geometrical units)
+   *
+   * Computation does not go back before tmin_. Default is -DBL_MAX. tmin_ is
+   * always expressed in geometrical units, it is essentially a tuning
+   * parameter for the ray-tracing process. tmin should be chosen to
+   * always be longer than the distance between the screen and the
+   * object.
+   */
+  double tmin_;
+
   double * cst_; ///< Worldline's csts of motion (if any)
   size_t cst_n_; ///< Number of constants of motion
   int wait_pos_; ///< Hack in setParameters()
@@ -186,7 +198,9 @@ class Gyoto::Worldline
   double delta() const ; ///< Get delta
   double delta(const std::string &unit) const ;  ///< Get default step in specified units
   double tMin() const ; ///< Get tmin value
+  double tMin(const std::string &unit) const ;  ///< Get tmin_ in specified unit
   void tMin(double tlim); ///< Set tmin to a given value
+  void tMin(double, const std::string &unit);   ///< Set tmin_ in specified unit
   void adaptive (bool mode) ; ///< Set adaptive_
   bool adaptive () const ; ///< Get adaptive_
   void secondary (bool sec) ; ///< Set secondary_
