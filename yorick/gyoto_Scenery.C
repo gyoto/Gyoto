@@ -422,11 +422,7 @@ extern "C" {
 	SmartPointer<Photon> ph=(*OBJ)->clonePhoton();
 	double coord[8];
 	screen -> getRayCoord(i_idx.getDVal(), j_idx.getDVal(), coord);
-	ph->tMin((*OBJ)->tMin());
-	ph->setInitialCondition((*OBJ)->metric(), (*OBJ)->astrobj(), coord);
-	ph->adaptive((*OBJ)->adaptive());
-	ph->secondary((*OBJ)->secondary());
-	ph->maxiter((*OBJ)->maxiter());
+	ph->setInitCoord(coord, -1);
 	ph->delta((*OBJ)->delta());
 	ph->hit(&prop);
       } else {
@@ -436,13 +432,9 @@ extern "C" {
 			      size_t(j_idx.first()),
 			      coord);
 	SmartPointer<Photon> ph=(*OBJ)->clonePhoton();
-	ph->setInitialCondition((*OBJ)->metric(), (*OBJ)->astrobj(), coord);
+	ph->setInitCoord(coord, -1);
 	ph->spectrometer(screen->spectrometer());
-	ph->tMin((*OBJ)->tMin());
 	ph->freqObs(screen->freqObs());
-	ph->adaptive((*OBJ)->adaptive());
-	ph->secondary((*OBJ)->secondary());
-	ph->maxiter((*OBJ)->maxiter());
 	ph->delta((*OBJ)->delta());
 
 	ySceneryThreadWorkerArg larg;

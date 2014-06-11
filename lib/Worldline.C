@@ -32,7 +32,8 @@ using namespace std;
 using namespace Gyoto;
 
 
-Worldline::Worldline() : stopcond(0), imin_(1), i0_(0), imax_(0), adaptive_(1),
+Worldline::Worldline() : stopcond(0), metric_(NULL),
+                         imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 secondary_(1),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
@@ -1112,7 +1113,14 @@ double Worldline::delta(const string &unit) const {
 }
 
 double Worldline::tMin() const { return tmin_; }
+double Worldline::tMin(const string &unit) const {
+  return Units::FromGeometricalTime(tMin(), unit, metric_);
+}
+
 void Worldline::tMin(double tmin) { tmin_ = tmin; }
+void Worldline::tMin(double tmin, const string &unit) {
+  tMin(Units::ToGeometricalTime(tmin, unit, metric_));
+}
 
 void Worldline::adaptive(bool mode) { adaptive_ = mode; state_->init();}
 bool Worldline::adaptive() const { return adaptive_; }

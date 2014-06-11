@@ -27,8 +27,6 @@
 #include <cstring>
 #include <cstdlib>
 
-#define DEFAULT_TMIN -DBL_MAX
-
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
@@ -39,105 +37,67 @@
 using namespace Gyoto;
 using namespace std;
 
-/*Scenery::Scenery() :
-  gg_(NULL), screen_(NULL), obj_(NULL),
-  deltatau_(0.01) {}
-*/
 Scenery::Scenery() :
-  gg_(NULL), screen_(NULL), obj_(NULL), delta_(GYOTO_DEFAULT_DELTA),
-  adaptive_(1), secondary_(1),
-  quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0),
-  maxiter_(GYOTO_DEFAULT_MAXITER){}
+  screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
+  quantities_(0), ph_(), nthreads_(0){}
 
 Scenery::Scenery(SmartPointer<Metric::Generic> met,
 		 SmartPointer<Screen> screen,
 		 SmartPointer<Astrobj::Generic> obj) :
-  gg_(met), screen_(screen), obj_(obj), delta_(GYOTO_DEFAULT_DELTA),
-  adaptive_(1), secondary_(1),
-  quantities_(0), ph_(), tmin_(DEFAULT_TMIN), nthreads_(0),
-  maxiter_(GYOTO_DEFAULT_MAXITER)
+  screen_(screen), delta_(GYOTO_DEFAULT_DELTA),
+  quantities_(0), ph_(), nthreads_(0)
 {
-  if (screen_) screen_->metric(gg_);
-  if (obj_) obj_->metric(gg_);
-  ph_.metric(gg_);
+  metric(met);
+  if (screen_) screen_->metric(met);
+  astrobj(obj);
 }
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
-  gg_(NULL), screen_(NULL), obj_(NULL), delta_(o.delta_), 
-  adaptive_(o.adaptive_), secondary_(o.secondary_),
-  quantities_(o.quantities_), ph_(o.ph_), tmin_(o.tmin_), 
-  nthreads_(o.nthreads_),
-  maxiter_(o.maxiter_)
+  screen_(NULL), delta_(o.delta_), 
+  quantities_(o.quantities_), ph_(o.ph_), 
+  nthreads_(o.nthreads_)
 {
-  // We have up to 3 _distinct_ clones of the same Metric.
-  // Keep only one.
-  if (o.gg_()) gg_=o.gg_->clone();
   if (o.screen_()) {
     screen_=o.screen_->clone();
-    screen_->metric(gg_);
-  }
-  if (o.obj_()) {
-    obj_=o.obj_->clone();
-    obj_->metric(gg_);
+    screen_->metric(ph_.metric());
   }
 }
 Scenery * Scenery::clone() const { return new Scenery(*this); }
 
-/*Scenery::Scenery(SmartPointer<Metric::Generic> met, SmartPointer<Screen> screen, SmartPointer<Astrobj::Generic> obj) :
-  gg_(met), screen_(screen), obj_(obj),
-  deltatau_(0.01)
-{}
-*/
-
 Scenery::~Scenery() {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "freeing metric\n";
-# endif
-  gg_ = NULL;
-
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "freeing screen\n";
 # endif
   screen_ = NULL;
-
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "freeing astrobj\n";
-# endif
-  obj_ = NULL;
  }
 
-SmartPointer<Metric::Generic> Scenery::metric() { return gg_; }
+SmartPointer<Metric::Generic> Scenery::metric() const { return ph_.metric(); }
 
 void Scenery::metric(SmartPointer<Metric::Generic> met) {
-  gg_ = met;
+  ph_.metric(met);
   if (!screen_) screen_ = new Screen ();
-  screen_ -> metric(gg_);
-  if (obj_) obj_ -> metric(gg_);
-  ph_.metric(gg_);
+  screen_ -> metric(met);
 }
 
-SmartPointer<Screen> Scenery::screen() { return screen_; }
+SmartPointer<Screen> Scenery::screen() const { return screen_; }
 
 void Scenery::screen(SmartPointer<Screen> screen) {
   screen_ = screen;
-  if (gg_) screen_ -> metric (gg_) ;
+  if (metric()) screen_ -> metric (metric()) ;
 }
 
-SmartPointer<Astrobj::Generic> Scenery::astrobj() { return obj_; }
-void Scenery::astrobj(SmartPointer<Astrobj::Generic> obj) {
-  obj_ = obj;
-  if (gg_) obj_ -> metric (gg_) ;
-}
+SmartPointer<Astrobj::Generic> Scenery::astrobj() const {return ph_.astrobj();}
+void Scenery::astrobj(SmartPointer<Astrobj::Generic> obj) { ph_.astrobj(obj); }
 
 double Scenery::delta() const { return delta_; }
 double Scenery::delta(const string &unit) const {
-  return Units::FromGeometrical(delta(), unit, gg_);
+  return Units::FromGeometrical(delta(), unit, metric());
 }
 
 void Scenery::delta(double d) { delta_ = d; }
 void Scenery::delta(double d, const string &unit) {
-  delta(Units::ToGeometrical(d, unit, gg_));
+  delta(Units::ToGeometrical(d, unit, metric()));
 }
 
 void  Scenery::nThreads(size_t n) { nthreads_ = n; }
@@ -274,14 +234,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   /// initialize photon once. It will be cloned.
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   ph_.spectrometer(spr);
-  ph_.tMin(tmin_);
   ph_.freqObs(screen_->freqObs());
   double coord[8];
   screen_ -> getRayCoord(imin,jmin, coord);
-  ph_ . setInitialCondition(gg_, obj_, coord);
-  ph_ . adaptive(adaptive_);
-  ph_ . secondary(secondary_);
-  ph_ . maxiter(maxiter_);
+  ph_ . setInitCoord(coord, -1);
   // delta is reset in operator()
 
   if (data) {
@@ -357,8 +313,6 @@ void Scenery::operator() (
   if (data) data -> init(nbnuobs); // Initialize requested quantities to 0. or DBL_MAX
   if (!(*screen_)(i,j)) return; // return if pixel is masked out
 
-  SmartPointer<Metric::Generic> gg = NULL;
-  SmartPointer<Astrobj::Generic> obj = NULL;
   if (!ph) {
     // if Photon was passed, assume it was initiliazed already. Don't
     // touch its metric and astrobj. Else, update cached photon. Photon
@@ -366,23 +320,13 @@ void Scenery::operator() (
     // environment: it may really need to work on a given copy of the object.
     ph = &ph_;
     ph -> spectrometer(spr);
-    ph -> tMin(tmin_);
     ph -> freqObs(screen_->freqObs());
-    ph -> adaptive(adaptive_);
-    ph -> secondary(secondary_);
-    ph -> maxiter(maxiter_);
-    obj=obj_;
-    gg=gg_;
   }
   // Always reset delta
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "reset delta" << endl;
 # endif
   ph -> delta(delta_);
-  ph -> adaptive(adaptive_);
-  ph -> secondary(secondary_);
-  ph -> maxiter(maxiter_);
-  ph -> tMin(tmin_);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "init nbnuobs" << endl;
@@ -393,21 +337,21 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
-      ph -> setInitialCondition(gg, obj, impactcoords+8);
+      ph -> setInitCoord(impactcoords+8, -1);
       ph -> resetTransmission();
-      obj_ -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
+      astrobj() -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
     screen_ -> getRayCoord(i,j, coord);
-    ph -> setInitialCondition(gg, obj, coord);
+    ph -> setInitCoord(coord, -1);
     ph -> hit(data);
   }
 }
 
-SmartPointer<Photon> Scenery::clonePhoton() {
+SmartPointer<Photon> Scenery::clonePhoton() const {
   return ph_.clone();
 }
 
@@ -482,7 +426,7 @@ void Scenery::setRequestedQuantities(std::string squant) {
 # endif
 }
 Gyoto::Quantity_t Scenery::getRequestedQuantities() const {
-  return quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
+  return quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
 }
 
 void Scenery::intensityConverter(string unit) {
@@ -535,7 +479,7 @@ void Scenery::binSpectrumConverter(string unit) {
 std::string Scenery::getRequestedQuantitiesString() const {
   string squant = "";
   Quantity_t quantities
-    = quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
+    = quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
   if (quantities & GYOTO_QUANTITY_INTENSITY   ) squant+="Intensity ";
   if (quantities & GYOTO_QUANTITY_EMISSIONTIME) squant+="EmissionTime ";
   if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) squant+="MinDistance ";
@@ -555,7 +499,7 @@ std::string Scenery::getRequestedQuantitiesString() const {
 size_t Scenery::getScalarQuantitiesCount() const {
   size_t nquant=0;
   Quantity_t quantities
-    = quantities_?quantities_:(obj_()?obj_->getDefaultQuantities():0);
+    = quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
   if (quantities & GYOTO_QUANTITY_INTENSITY   ) ++nquant;
   if (quantities & GYOTO_QUANTITY_EMISSIONTIME) ++nquant;
   if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) ++nquant;
@@ -574,18 +518,18 @@ size_t Scenery::getScalarQuantitiesCount() const {
   return nquant;
 }
 
-double Scenery::tMin() const { return tmin_; }
+double Scenery::tMin() const { return ph_.tMin(); }
 double Scenery::tMin(const string &unit) const {
-  return Units::FromGeometricalTime(tMin(), unit, gg_);
+  return ph_.tMin(unit);
 }
 
-void Scenery::tMin(double tmin) { tmin_ = tmin; }
+void Scenery::tMin(double tmin) { ph_.tMin(tmin); }
 void Scenery::tMin(double tmin, const string &unit) {
-  tMin(Units::ToGeometricalTime(tmin, unit, gg_));
+  ph_.tMin(tmin, unit);
 }
 
-void Scenery::adaptive(bool mode) { adaptive_ = mode; }
-bool Scenery::adaptive() const { return adaptive_; }
+void Scenery::adaptive(bool mode) { ph_.adaptive(mode); }
+bool Scenery::adaptive() const { return ph_.adaptive(); }
 
 void Scenery::integrator(std::string type) {ph_.integrator(type);}
 std::string Scenery::integrator() const { return ph_.integrator();}
@@ -601,18 +545,18 @@ void Scenery::absTol(double t) {ph_.absTol(t);}
 double Scenery::relTol() const {return ph_.relTol();}
 void Scenery::relTol(double t) {ph_.relTol(t);}
 
-void Scenery::secondary(bool sec) { secondary_ = sec; }
-bool Scenery::secondary() const { return secondary_; }
+void Scenery::secondary(bool sec) { ph_.secondary(sec); }
+bool Scenery::secondary() const { return ph_.secondary(); }
 
-void Scenery::maxiter(size_t miter) { maxiter_ = miter; }
-size_t Scenery::maxiter() const { return maxiter_; }
+void Scenery::maxiter(size_t miter) { ph_.maxiter(miter); }
+size_t Scenery::maxiter() const { return ph_.maxiter(); }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "fmp -> metric (gg_) ;" << endl;
+  GYOTO_DEBUG << "fmp -> metric (metric()) ;" << endl;
 # endif
-  if (gg_)     fmp -> metric (gg_) ;
+  if (metric())     fmp -> metric (metric()) ;
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<"fmp -> screen (screen_) ;" << endl;
@@ -628,9 +572,9 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   fmp->setParameter("RelTol", ph_.relTol());
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG <<"fmp -> astrobj (obj_) ;" << endl;
+  GYOTO_DEBUG <<"fmp -> astrobj (astrobj()) ;" << endl;
 # endif
-  if (obj_)    fmp -> astrobj (obj_) ;
+  if (astrobj())    fmp -> astrobj (astrobj()) ;
 
   if (delta_ != GYOTO_DEFAULT_DELTA) {
 #   if GYOTO_DEBUG_ENABLED
@@ -657,7 +601,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
   }
 
-  if (tmin_ != DEFAULT_TMIN) fmp -> setParameter("MinimumTime", tmin_);
+  if (tMin() != -DBL_MAX) fmp -> setParameter("MinimumTime", tMin());
   if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
 }
 

@@ -131,8 +131,11 @@ void Photon::resetTransmission() {
 double Photon::getMass() const { return 0.; }
 
 void Photon::astrobj(SmartPointer<Astrobj::Generic> ao) {
-  imin_=imax_=i0_;
-  object_=ao;
+  if (object_!=ao) {
+    imin_=imax_=i0_;
+    object_=ao;
+    if (metric_) object_->metric(metric_);
+  }
 }
 
 void Photon::spectrometer(SmartPointer<Spectrometer::Generic> spr) {
