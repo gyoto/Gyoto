@@ -28,11 +28,12 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <functional>
 
 #include <GyotoDefs.h>
 
 #ifdef HAVE_BOOST
+# include <functional>
+# include <array>
 # include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
 #endif
 
