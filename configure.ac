@@ -21,6 +21,8 @@ AC_SUBST([sovers])
 # Check for boost
 have_boost=yes
 BOOST_REQUIRE([1.53.1], [have_boost=no])
+AX_CXX_COMPILE_STDCXX_11
+
 
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
@@ -34,8 +36,6 @@ DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 
 # Provide additional defaults for user variables
-
-AX_APPEND_COMPILE_FLAGS([[-std=c++11]])
 
 AX_APPEND_COMPILE_FLAGS([-rdynamic], [LDFLAGS])
 
