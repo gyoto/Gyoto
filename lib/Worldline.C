@@ -392,6 +392,7 @@ string Worldline::className() const { return  string("Worldline"); }
 string Worldline::className_l() const { return  string("worldline"); }
 
 void Worldline::setInitCoord(const double coord[8], int dir) {
+  GYOTO_DEBUG_ARRAY(coord, 8);
   if (dir==0) dir = getMass() ? 1 : -1;
   imin_=imax_=i0_=(dir==1?0:x_size_-1);
   x0_[i0_]=coord[0];
@@ -441,17 +442,18 @@ void Worldline::setVelocity(double vel[3]) {
 
 
 
-void Worldline::reset() { imin_=imax_=i0_; }
+void Worldline::reset() { if (imin_<=imax_) imin_=imax_=i0_; }
 void Worldline::reInit() {
   if (imin_ <= imax_) {
     reset();
     double coord[8];
     getInitialCoord(coord);
+    GYOTO_DEBUG_ARRAY(coord, 8);
     if (metric_) {
       if ( metric_() -> coordKind() == GYOTO_COORDKIND_SPHERICAL 
 	   && x2_[i0_]==0. ) {
 	if (verbose() >= GYOTO_SEVERE_VERBOSITY)
-	  cerr << "SEVERE: Worldline::metric(): Kicking particle off z axis\n";
+	  cerr << "SEVERE: Worldline::reInit(): Kicking particle off z axis\n";
 	x2_[i0_]=coord[2]=1e-10;
       }
       metric_ -> setParticleProperties(this,coord);

@@ -163,12 +163,12 @@ extern "C" {
       "metric", "screen", "astrobj", "delta", "tmin", "quantities", "adaptive",
       "maxiter", "integrator", "deltamin", "deltamax", "deltamaxoverr",
       "abstol", "reltol", 
-      "xmlwrite", "clone",
+      "xmlwrite", "clone", "clonephoton",
       "impactcoords", "nthreads",
       0
     };
 
-    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 20)
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 21)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
@@ -224,6 +224,12 @@ extern "C" {
     YGYOTO_WORKER_GETSET_DOUBLE2( relTol );
     YGYOTO_WORKER_XMLWRITE;
     YGYOTO_WORKER_CLONE(Scenery);
+
+    /* CLONEPHOTON */
+    if ((iarg=kiargs[++k])>=0) {
+      if ((*rvset)++) y_error(rmsg);
+      *ypush_Photon() = (*OBJ)->clonePhoton();
+    }
 
     /* IMPACTCOORDS */
     if ((iarg=kiargs[++k])>=0) {
