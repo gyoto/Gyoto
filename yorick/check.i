@@ -157,6 +157,7 @@ end_section, "basic functionality";
 #include "check-star.i"
 #include "check-startrace.i"
 #include "check-patterndisk.i"
+#include "check-directionaldisk.i"
 //#include "check-disk3d.i"
 #include "check-polish-doughnut.i"
 
