@@ -397,7 +397,7 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
 
 }
 
-double DirectionalDisk::emission(double nu, double dsem,
+double DirectionalDisk::emission(double nu, double,
 				    double cp[8],
 				    double co[8]) const{
   GYOTO_DEBUG << endl;
@@ -425,17 +425,61 @@ double DirectionalDisk::emission(double nu, double dsem,
   getIndices(ind, co, cosi, nu);
 
   // Specific intensity emitted at the current location
-  size_t i0l=ind[0]+1, i0u=ind[0], 
-    i1l=ind[1]-1, i1u=ind[1], 
-    i2l=ind[2]-1, i2u=ind[2];
-  if (ind[0]==nnu_-1) i0l=i0u;
-  if (ind[1]==0) i1l=i1u;
-  if (ind[2]==0) i2l=i2u;
+  double rr=co[1];
+  // No emission outside radius and frequency data range
+  if (rr<=radius_[0] || rr>=radius_[nr_-1]) return 0.;
+  if (nu<=freq_[nnu_-1] || nu>=freq_[0]) return 0.;
 
-  double Il = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0l],
-    Iu = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u];
-  
-  return 0.5*(Il+Iu); // very crude interpolation
+  // So here, ind[2] should be >0 and ind[0]<nnu_-1
+  if (ind[2]==0 || ind[0]==nnu_-1){
+    throwError("In DirectionalDisk::emission "
+	       "bad {nu,r} indices");
+  }
+
+  double Iem=0.;
+  size_t i0l=ind[0]+1, i0u=ind[0], 
+    i2l=ind[2]-1, i2u=ind[2];
+  if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
+    // If cosi is out of the cosi_ range, bilinear interpol in nu,r
+    size_t i1=ind[1];
+    double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,r}
+      I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
+      I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
+      I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
+    double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
+      ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
+    Iem = I00+(I10-I00)*rationu
+      +(I01-I00)*ratior
+      +(I11-I01-I10+I00)*rationu*ratior;
+  }else{
+    // Trilinear interpol
+    if (ind[1]==0){
+      throwError("In DirectionalDisk::emission "
+		 "bad cosi indice");
+    }
+    size_t i1l=ind[1]-1, i1u=ind[1];
+    double I000 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0l], // I_{nu,cosi,r}
+      I100 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0u],
+      I110 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0u], 
+      I010 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0l],
+      I001 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0l], 
+      I101 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0u],
+      I111 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u],
+      I011 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0l];
+    double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
+      ratioi = (cosi-cosi_[i1l])/(cosi_[i1u]-cosi_[i1l]),
+      ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
+    Iem = I000
+      + (I100-I000)*rationu
+      + (I010-I000)*ratioi
+      + (I001-I000)*ratior
+      + (I110-I010-I100+I000)*rationu*ratioi
+      + (I011-I010-I001+I000)*ratioi*ratior
+      + (I101-I001-I100+I000)*rationu*ratior
+      + (I111-I011-I101-I110+I100+I001+I010-I000)*rationu*ratioi*ratior;
+  }
+
+  return Iem;
 }
 
 int DirectionalDisk::setParameter(std::string name,
