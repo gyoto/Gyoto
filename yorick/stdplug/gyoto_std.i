@@ -407,6 +407,59 @@ extern gyoto_PatternDisk;
 */
 gyoto_namespace, PatternDisk=gyoto_PatternDisk;
 
+//// DIRECTIONAL DISK
+extern _gyoto_DirectionalDisk_register_as_Astrobj;
+_gyoto_DirectionalDisk_register_as_Astrobj;
+extern gyoto_DirectionalDisk;
+/* DOCUMENT disk = gyotoDirectionalDisk(...)
+            disk, member=value...
+
+    This is a subkind of gyoto_ThinDisk.
+    The disk is 2D with emitted intensity depending
+    only on the coordinate radius and
+    on the direction of emission cos(i), where i
+    is the angle between the direction of emission and
+    the local normal. Intensity is given
+    in an array EMISSION, array(double, NNU, NI, NR),
+    with NNU the number of emitted frequencies,
+    NI the number of direction cosines, NR the number
+    of radii.
+
+    The radii and direction cosine must be supplied
+    in RADIUS and COSI.
+
+   KEYWORDS:
+
+    fitsread="filename.fits"  read pattern from FITS file.
+    
+    fitswrite="filename.fits" write pattern to FITS file.
+
+    copyintensity=EMISSION
+                * if EMISSION is nil, retrieve the surface brightness
+                  cube;
+                * if EMISSION==0, free the cube;
+                * if EMISSION is an array of NNU x NPHI x NR doubles,
+                  attach (copy) this array into DISK as the surface
+                  brightness cube. If this cube doesn't have the same
+                  dimensions as the previously set one, the velocity
+                  and radius arrays will also be freed (as they have
+                  inconsistent dimensions).
+
+    copygridfreq=FREQ
+                a NNU element vector containing the frequencies of emission
+
+    copygridcosi=COSI
+                a NI element vector containing the direction cosine
+
+    copygridradius=RADIUS
+                a NR element vector
+                specifying the R coordinate of the grid points
+
+   SEE ALSO:
+    gyoto_PatternDisk
+*/
+gyoto_namespace, DirectionalDisk=gyoto_DirectionalDisk;
+
 //// DISK3D
 extern _gyoto_Disk3D_register_as_Astrobj;
 _gyoto_Disk3D_register_as_Astrobj;

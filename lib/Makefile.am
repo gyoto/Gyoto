@@ -30,7 +30,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	StdPlug.C
 # those files are used only if cfitsio is available
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
-	 Disk3D.C DynamicalDisk3D.C
+	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 if HAVE_CFITSIO
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)

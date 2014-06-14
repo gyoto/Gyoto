@@ -39,6 +39,7 @@
 #include<GyotoAstrobj.h>
 #include<GyotoThinDisk.h>
 #include<GyotoPageThorneDisk.h>
+#include<GyotoDirectionalDisk.h>
 #include<GyotoPatternDisk.h>
 #include<GyotoPatternDiskBB.h>
 #include<GyotoDynamicalDisk.h>
