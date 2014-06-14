@@ -171,7 +171,7 @@ class Gyoto::Metric::Generic
    */
   double delta_max_over_r_;
 
-  bool keplerian_; ///< 1 if circularVelocity should return the Keplerian velocity
+  bool keplerian_; ///< 1 if circularVelocity should return the Newtonian Keplerian velocity, in r^-3/2
 
  protected:
   /**
