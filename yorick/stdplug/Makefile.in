@@ -85,6 +85,9 @@ include $(Y_MAKEDIR)/Make$(TGT)
 # Y_HOME and Y_SITE in Make.cfg may not be correct (e.g.- relocatable)
 Y_HOME=$(Y_EXE_HOME)
 Y_SITE=$(Y_EXE_SITE)
+# use the compiler selected with the configure script
+CC=@CC@
+CXX=@CXX@
 
 # Actual install directories set with ./configure --with-yorick-*
 prefix=@prefix@
