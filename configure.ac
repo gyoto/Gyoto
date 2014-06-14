@@ -18,11 +18,24 @@ sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
-# Check for boost
-have_boost=yes
-BOOST_REQUIRE([1.53.1], [have_boost=no])
-AX_CXX_COMPILE_STDCXX_11
+# Check for C++11
+AX_CXX_COMPILE_STDCXX_11(, [optional])
 
+# Check for boost
+AS_IF([test "x$HAVE_CXX11" = "x1"],
+  [have_boost=yes
+   BOOST_REQUIRE([1.53.1], [have_boost=no])],
+  [have_boost=no
+   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
+  ]
+)
+
+# If Boost was requested but not found, error out
+AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+  [AS_IF([test "x$have_boost" == "xno"],
+     [AC_MSG_ERROR([Boost requested but not found])])]
+)
 
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
