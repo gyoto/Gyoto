@@ -209,7 +209,205 @@ For instance, if you use the \texttt{example-page-thorne-disk-BL.xml} as is, you
 \label{fig:demo}
 \end{figure}
 
+\section{Choosing the right integrator}
+\label{tuning}
 
+Numerical ray-tracing can be very much time-consuming. In order to
+control the numerical errors in your application, it is wise to
+experiment with the numerical tuning parameters. \texttt{GYOTO}
+provides several distinct integrators (depending on compile-time
+options):
+\begin{itemize}
+\item the \texttt{Legacy} integrator, the first to have been introduced;
+\item Boost\footnote{\url{http://www.boost.org/}} integrators from the
+  \texttt{odeint}\footnote{\url{http://www.boost.org/doc/libs/1_55_0/libs/numeric/odeint/doc/html/index.html}}
+  library. In \texttt{GYOTO}, they are called
+  \texttt{runge\_kutta\_*} (see below).
+\end{itemize}
+
+The integrator and its numerical tuning parameters can be specified in
+either of these three XML sections:
+\begin{description}
+\item[\texttt{Scenery}] to specify the integrator and parameters used
+  during ray-tracing by the individual photons;
+\item[\texttt{Photon}] if the XML file describes a single photon (the
+  Yorick plug-in and the \texttt{gyotoy} tool can make use of such an
+  XML file);
+\item[\texttt{Astrobj}] if it is a \texttt{Star}, for specifying the
+  integrator and parameters used to compute the orbit of this star.
+\end{description}
+
+The full set of tuning parameters that \emph{may be} supported by the
+\texttt{Scenery} section is:
+\begin{code}
+<Scenery>
+  <Integrator> runge_kutta_fehlberg78 </Integrator>
+  <Abstol> 1e-6 </Abstol>
+  <RelTol> 1e-6 </RelTol>
+  <DeltaMax> 1.79769e+308 </DeltaMax>
+  <DeltaMin> 2.22507e-308 </DeltaMin>
+  <DeltaMaxOverR> 1.79769e+308 </DeltaMaxOverR>
+  <Maxiter> 100000 </Maxiter>
+  <Adaptive/>
+  <Delta unit="geometrical"> 1 </Delta>
+  <MinimumTime unit="geometrical_time"> -1.7e308 </MinimumTime>
+</Scenery>
+\end{code}
+
+\begin{description}
+\item[Integrator] the integrator to use (one of the runge\_kutta\_* or
+  Legacy; default: if compiled-in, \texttt{runge\_kutta\_fehlberg78});
+\item[AbsTol]\footnote{\label{note:abstol}The \texttt{Legacy}
+    integrator does not support the AbsTol nor the RelTol parameters}
+  absolute tolerance for adapting the integration step (see
+  \url{http://www.boost.org/doc/libs/1_55_0/libs/numeric/odeint/doc/html/boost_numeric_odeint/odeint_in_detail/generation_functions.html});
+\item[RelTol]\footnotemark[\value{footnote}] relative tolerance for
+  adapting the integration step (idem);
+\item[DeltaMax]\footnote{The \texttt{Legacy} integrator take the
+    DeltaMin, DeltaMax and DeltaMAxOverR parameters in the
+    \texttt{Metric} section.} the absolute maximum value for the
+  integration step (defaults to the largest possible non-infinite
+  value);
+\item[DeltaMin]\footnotemark[\value{footnote}] the absolute minimum value (defaults to the smallest
+  possible strictly positive value);
+\item[DeltaMaxOverR]\footnotemark[\value{footnote}] this is $h=\delta_\text{max}/r$ such that, at any
+  position, the integration step may not be larger than $h\times\;r$
+  where $r$ is the current distance to the centre of the coordinate
+  system (defaults to $1$).
+\item[Maxiter] maximum number of integration steps (per photon);
+\item[Adaptive] (or NonAdaptive) whether or not to use an adaptive step;
+\item[Delta] integration step, initial in case it is adaptive. Not
+  very important, but should be commensurable with the distance to the
+  \texttt{Screen} (i.e. don't use Delta$=10^{-6}$ if the screen is at
+  $10^{13}$ geometrical units!). Delta can be specified in any
+  distance-like or time-like unit.
+\item[MinimumTime] stop integration when the photon travels back to
+  this date. Defaults to the earliest possible date. Can be specified
+  in any time-like or distance-like unit.
+\end{description}
+
+\subsection{The Boost integrators}
+
+If \texttt{GYOTO} was compiled with a C++11-capable compiler and with
+the Boost library (version 1.53 or above), then the following
+integrators are available:
+\begin{itemize}
+\item \texttt{runge\_kutta\_cash\_karp54};
+\item \texttt{runge\_kutta\_fehlberg78};
+\item \texttt{runge\_kutta\_dopri5};
+\item \texttt{runge\_kutta\_cash\_karp54\_classic} (alternate
+  implementation of \texttt{runge\_kutta\_cash\_karp54}).
+\end{itemize}
+
+Those integrators are implemented in the \texttt{Worldline}
+object. This has the advantage that, when ray-tracing the image of a
+moving star (\texttt{Star} class), the star can use a different
+integrator than the photons. These integrators support all of the
+parameters described above.
+
+
+\subsection{The \texttt{Legacy} integrator}
+
+The \texttt{Legacy} integrator is a home-brewed
+4\textsuperscript{th}-order, adaptive-step Runge--Kutta integrator. It
+is always available, independent of any compile-time options. It does
+not support AbsTol nor RelTol, and takes DeltaMin, DeltaMax and
+DeltaMaxOver in the \texttt{Metric} section, not in the
+\texttt{Scenery} or \texttt{Astrobj} section. It is not possible to
+use different tuning parameters for the Star and the Photons if both
+use the \texttt{Legacy} integrator.
+
+The \texttt{Legacy} integrator is implemented in the \texttt{Metric}
+object and may be re-implemented by specific \texttt{Metric}
+kinds. Most notably, the \texttt{KerrBL} metric reimplements it (this
+specific implementation takes advantage of the specific constants of
+motion). When a metric reimplements the \texttt{Legacy} integrator, it
+is possible to choose which implementation to choose by specifying
+either \texttt{$<$GenericIntegrator$>$} or
+\texttt{$<$SpecificIntegrator$>$} in the \texttt{$<$Metric$>$}
+section. The \texttt{KerrBL} specific implementation of the
+\texttt{Legacy} integrator accepts one additional tuning parameter:
+\texttt{DiffTol}, which defaults to $10^{-2}$ and empirically seems to
+have very little actual impact on the behaviour of the integrator.
+
+\subsection{Integrator comparison}
+
+\begin{figure}
+  \includegraphics[width=0.32\textwidth]{doc-fig-dfl-tol.pdf}
+  \includegraphics[width=0.32\textwidth]{doc-fig-ctime-tol.pdf}
+  \includegraphics[width=0.32\textwidth]{doc-fig-dfl-ctime.pdf}
+  \caption{Comparison of the integrators when measuring a deflection
+    angle (see text). \emph{Left:} error on deflection angle
+    vs. tuning parameter; \emph{center:} computing time vs. tuning
+    parameter; \emph{right:} computing time vs. error on deflection
+    angle. Colors denote the integrator: \emph{red:} \texttt{Legacy}
+    (\emph{solid:} specific \texttt{KerrBL} implementation,
+    \emph{dash-dotted:} generic implementation); \emph{black:}
+    \texttt{runge\_kutta\_fehlberg78}; \emph{blue:}
+    \texttt{runge\_kutta\_karp54}; \emph{magenta:}
+    \texttt{runge\_kutta\_dopri5}.}
+\label{fig:integrators}
+\end{figure}
+
+It is advisable to try the various integrators in your context, and to
+play with the tuning parameters. As a rule of thumbs, if you need to
+change DeltaMin, DeltaMax, DeltaMaxOverR, or MAxiter, it probably
+means that you should change for a higher-order integrator. The
+highest order integrator is currently
+\texttt{runge\_kutta\_fehlberg78} and is the default.
+
+As an example, we have compared all the integrators for a simple
+situation: the \texttt{Metric} is a Schwarzschild black-hole of
+$4\times10^6\,M_\odot$, the \texttt{Screen} is at 8~kpc, a single
+light-ray is launched $50\,\mu$as from the center, we integrate the
+light-ray (back in time) during twice the travel-time to the origin of
+the coordinate center and compute the deflection angle. We do that for
+each integrator and a set of numerical tuning parameters. For the
+\texttt{Legacy} integrator, we try both the generic integrator and the
+specific \texttt{KerrBL} implementation, and use DeltaMaxOverR as
+tuning parameter. For the Boost integrators, we use AbsTol and RelTol
+as tuning parameters (they are kept equal to each-other). We then
+compare the result for two values of the tuning parameter and measure
+the computing time required for each
+realisation.
+
+For each integrator, there exists an optimum value or the tuning
+parameter, for which the (estimated) uncertainty in deflection angle
+is minimal (Fig.~\ref{fig:integrators}, left panel). As long as the
+tuning parameter is larger than (or equal to) this optimum,
+computation time varies very little (central panel). However, when the
+tuning parameter becomes too small, numerical error and computation
+time explode (right panel).
+
+The two low-order Boost integrators are the fastest, the two
+\texttt{Legacy} integrators are the slowest. The default,
+\texttt{runge\_kutta\_fehlberg78}, has intermediate performance, but
+seems to yield the smallest error and to be less sensitive on the
+exact value of the tuning parameter close to its optimum.
+
+All the integrators except the generic implementation of the
+\texttt{Legacy} integrator agree to within $2\,\mu$as on the
+deflection angle, which is of order 33°. The relative uncertainty is
+therefore of order $10^{-11}$.
+
+In conclusion, for this specific use case, the best choice seems to be:
+\begin{code}
+<Scenery>
+ <Integrator>runge_kutta_fehlberg78</Integrator>
+ <AbsTol>1e-19</AbsTol>
+ <RelTol>1e-19</RelTol>
+</Scenery>
+\end{code}
+If computation time is more critical than accuracy, the other Boost
+integrators are also good choices.
+
+The Yorick code that was used to generate Fig.~\ref{fig:integrators}
+is provided in the \texttt{GYOTO} source code as
+\texttt{yorick/compare-integrators.i}. You can run it from the top
+directory of the built source tree as:
+\begin{code}
+  yorick/yorick -i yorick/compare-integrators.i
+\end{code}
 
 \section{\texttt{GYOTO} architecture}
 \label{archi}
