@@ -52,6 +52,7 @@ Worldline::Worldline() : stopcond(0), metric_(NULL),
 #else
   state_ = new Worldline::IntegState::Legacy(this);
 #endif
+  state_ -> init();
 }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -104,6 +105,7 @@ Worldline::Worldline(const Worldline& orig) :
     init_vel_ = new double [3];
     memcpy(init_vel_, orig.init_vel_, 3*sizeof(double));
   }
+  state_ -> init();
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif
@@ -168,6 +170,7 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
     memcpy(init_vel_, orig->init_vel_, 3*sizeof(double));
   }
   */
+  state_ -> init();
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif

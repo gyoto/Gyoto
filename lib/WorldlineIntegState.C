@@ -101,7 +101,10 @@ void Worldline::IntegState::Generic::checkNorm(double coord[8])
 
 /// Legacy
 
-Worldline::IntegState::Legacy::Legacy(Worldline *parent) : Generic(parent) {}
+Worldline::IntegState::Legacy::Legacy(Worldline *parent) : Generic(parent)
+{
+  Legacy::init();
+}
 
 
 Worldline::IntegState::Legacy *

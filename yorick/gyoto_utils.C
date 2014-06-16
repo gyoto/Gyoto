@@ -125,6 +125,18 @@ extern "C" {
   }
 
   void
+  Y_gyoto_haveBoost(int)
+  {
+    ypush_long(
+#if defined HAVE_BOOST
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
   Y___gyoto_exportSupplier(int argc)
   {
     if (!YGyotoGlobalSupplier) {

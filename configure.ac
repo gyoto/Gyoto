@@ -671,5 +671,8 @@ AS_IF([test "x$have_boost" == "xno"],
 
                    *** Advanced integrators disabled ***
 
+        The advanced integrators require the Boost library (>=1.53)
+            and a C++ compiler that supports the c++11 standard.
+
      ])
   ])

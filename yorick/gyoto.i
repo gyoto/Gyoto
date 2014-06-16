@@ -27,6 +27,13 @@ extern gyoto_haveXerces;
     HAVE_XERCES=1 if compiled with Xerces, else 0.
 */
 
+extern gyoto_haveBoost;
+/* DOCUMENT have_boost = gyoto_haveBoost()
+    Tell whether GYOTO was compiled with Boost support (advanced integrators)
+   OUTPUT:
+    HAVE_BOOST=1 if compiled with Boost, else 0.
+*/
+
 extern __gyoto_setErrorHandler;
 /* xDOCUMENT __gyoto_setErrorHandler
    Must be called once to attach the GYOTO error handler to Yorick's one

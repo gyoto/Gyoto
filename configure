@@ -21276,12 +21276,18 @@ if test "x$have_boost" == "xno"; then :
 
                    *** Advanced integrators disabled ***
 
+        The advanced integrators require the Boost library (>=1.53)
+            and a C++ compiler that supports the c++11 standard.
+
      " >&5
 $as_echo "$as_me: WARNING:
 
                          Building without boost
 
                    *** Advanced integrators disabled ***
+
+        The advanced integrators require the Boost library (>=1.53)
+            and a C++ compiler that supports the c++11 standard.
 
      " >&2;}
 

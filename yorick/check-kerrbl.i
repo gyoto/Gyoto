@@ -92,43 +92,45 @@ if (gg2.deltamax!=400 || gg2.deltamin!=40 || gg2.difftol!=1e-3)
   error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
-doing, "comparing the three integrators";
+doing, "comparing the various integrators";
 gg=KerrBL(spin=0.995);
 //gg, deltamaxoverr=0.1, deltamin=1e-6;
 gg2=gg.clone;
 gg2, setparameter="GenericIntegrator";
 st=Star(metric=gg, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
 st2=Star(metric=gg2, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
-st3=st2(clone=);
-st4=st2(clone=);
-st5=st2(clone=);
-st6=st2(clone=);
-//st7=st2(clone=);
 st, setparameter="Integrator", "Legacy";
 st2, setparameter="Integrator", "Legacy";
-st3, setparameter="Integrator", "runge_kutta_cash_karp54";
-st4, setparameter="Integrator", "runge_kutta_fehlberg78";
-st5, setparameter="Integrator", "runge_kutta_dopri5";
-st6, setparameter="Integrator", "runge_kutta_cash_karp54_classic";
-//st7, setparameter="Integrator", "rosenbrock4";
 dates=double(indgen(100));
 coords=st(get_coord=dates);
 coords2=st2(get_coord=dates);
-coords3=st3(get_coord=dates);
-coords4=st4(get_coord=dates);
-coords5=st5(get_coord=dates);
-coords6=st6(get_coord=dates);
-//coords7=st7(get_coord=dates);
 if (max(abs(coords-coords2))>1e-3)
-  error, "the two integrators don't yield the same result";
-if (max(abs(coords-coords3))>1e-3)
-  error, "the two integrators don't yield the same result";
-if (max(abs(coords-coords5))>1e-3)
-  error, "the two integrators don't yield the same result";
-if (max(abs(coords-coords4))>1e-3)
-  error, "the two integrators don't yield the same result";
-if (max(abs(coords-coords6))>1e-3)
-  error, "the two integrators don't yield the same result";
+  error, "the two Legacy integrators don't yield the same result";
+if (gyoto_haveBoost()) {
+  st3=st2(clone=);
+  st4=st2(clone=);
+  st5=st2(clone=);
+  st6=st2(clone=);
+  //st7=st2(clone=);
+  st3, setparameter="Integrator", "runge_kutta_cash_karp54";
+  st4, setparameter="Integrator", "runge_kutta_fehlberg78";
+  st5, setparameter="Integrator", "runge_kutta_dopri5";
+  st6, setparameter="Integrator", "runge_kutta_cash_karp54_classic";
+  //st7, setparameter="Integrator", "rosenbrock4";
+  coords3=st3(get_coord=dates);
+  coords4=st4(get_coord=dates);
+  coords5=st5(get_coord=dates);
+  coords6=st6(get_coord=dates);
+  //coords7=st7(get_coord=dates);
+  if (max(abs(coords-coords3))>1e-3)
+    error, "two integrators don't yield the same result";
+  if (max(abs(coords-coords5))>1e-3)
+    error, "two integrators don't yield the same result";
+  if (max(abs(coords-coords4))>1e-3)
+    error, "two integrators don't yield the same result";
+  if (max(abs(coords-coords6))>1e-3)
+    error, "two integrators don't yield the same result";
+ }
 done;
 
 // Free memory for testing with valgrind

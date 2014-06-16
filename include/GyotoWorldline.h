@@ -544,6 +544,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
 
   Legacy(Worldline *parent);
   Legacy * clone(Worldline*newparent) const ;
+  using Generic::init;
   void init(Worldline * line, const double *coord, const double delta);
   virtual std::string kind();
 

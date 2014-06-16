@@ -59,8 +59,12 @@ st, initcoord=[0, 10.791, 1.5708, 0], [0, 0, 0.0166637];
 write, format="%s\n", "done.";
 
 doing, "Setting integrator";
-st, integrator="runge_kutta_fehlberg78";
-st, deltamaxoverr=0.1;
+if (gyoto_haveBoost()) {
+  st, integrator="runge_kutta_fehlberg78";
+  st, deltamaxoverr=0.1;
+ } else {
+  noop, st(metric=)(deltamaxoverr=0.1);
+ }
 done;
 
 write, format="%s", "Computing orbit... ";
