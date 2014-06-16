@@ -433,7 +433,7 @@ void Screen::getRayCoord(double alpha, double delta,
       law of cosine. 
       --> Following transformations are OK even for non-small alpha, delta
     */
-    if (alpha<1e-6 && delta < 1e-6) {
+    if (alpha<1e-6 || delta < 1e-6) {
       spherical_angle_a = sqrt(alpha*alpha+delta*delta);
     } else {
       spherical_angle_a = acos(cos(alpha)*cos(delta));
