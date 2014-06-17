@@ -76,11 +76,11 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
 
-#ifdef GYOTO_USE_XERCES
   virtual void setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 
+#ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
 #endif
 };

@@ -200,22 +200,31 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_CAT1(X, Y) X##Y
 #define YGYOTO_CAT(X, Y) YGYOTO_CAT1(X,Y)
 
+#ifdef GYOTO_USE_XERCES
+# define YGYOTO_CONSTRUCTOR_INIT2_XML(BASENAME, GETTER)			\
+  char * fname = ygets_q(argc-1);					\
+  OBJ = ypush_##BASENAME();						\
+  GYOTO_DEBUG_EXPR(OBJ);						\
+  * OBJ = Gyoto::Factory(fname).GETTER();				\
+  GYOTO_DEBUG << "Swapping object for filename\n";	                \
+  yarg_swap(0, argc);			\
+  GYOTO_DEBUG << "Dropping filename from stack\n";			\
+  yarg_drop(1);							\
+  GYOTO_DEBUG << "Dropped filename from stack\n";			\
+  --argc;
+#else
+# define YGYOTO_CONSTRUCTOR_INIT2_XML(BASENAME, GETTER)	\
+  y_error("this gyoto was built without XML support");
+#endif
+
+
 #define YGYOTO_CONSTRUCTOR_INIT2(BASENAME, BASECLASS, DERIVEDCLASS, GETTER)\
   Gyoto::SmartPointer<BASECLASS> *OBJ = NULL;				\
   if (yarg_##BASENAME(argc-1)) {					\
     OBJ = yget_##BASENAME(--argc);					\
     GYOTO_DEBUG_EXPR(OBJ);						\
   } else if (yarg_string(argc-1)) {					\
-    char * fname = ygets_q(argc-1);					\
-    OBJ = ypush_##BASENAME();						\
-    GYOTO_DEBUG_EXPR(OBJ);						\
-    * OBJ = Gyoto::Factory(fname).GETTER();			\
-    GYOTO_DEBUG << "Swapping object for filename\n";			\
-    yarg_swap(0, argc);							\
-    GYOTO_DEBUG << "Dropping filename from stack\n";			\
-    yarg_drop(1);							\
-    GYOTO_DEBUG << "Dropped filename from stack\n";			\
-    --argc;								\
+    YGYOTO_CONSTRUCTOR_INIT2_XML(BASENAME, GETTER);			\
   } else {								\
     OBJ = ypush_##BASENAME();						\
     GYOTO_DEBUG_EXPR(OBJ);						\
@@ -509,6 +518,17 @@ void ygyoto_Spectrometer_generic_eval
       ypush_long(yarg_##NAME(0));					\
     }									\
   }
+
+#ifdef GYOTO_USE_XERCES
+# define YGYOTO_BASE_CONSTRUCTOR1_XML(GETBASE)	\
+  GYOTO_DEBUG << "found no subcontractor for \"" << fname		\
+  << "\", calling Factory now\n";					\
+  *OBJ = Factory(fname).GETBASE();
+#else
+# define YGYOTO_BASE_CONSTRUCTOR1_XML(GETBASE)	\
+  y_error("no XML support in this gyoto");
+#endif
+
 #define YGYOTO_BASE_CONSTRUCTOR1(BASE,GETBASE)					\
   extern "C" {								\
   void Y_gyoto_##BASE(int argc)	{					\
@@ -527,9 +547,7 @@ void ygyoto_Spectrometer_generic_eval
 		    << "\", calling it now\n";				\
 	*OBJ = (*sub)(NULL);						\
       } else {								\
-	GYOTO_DEBUG << "found no subcontractor for \"" << fname		\
-		    << "\", calling Factory now\n";			\
-	*OBJ = Factory(fname).GETBASE();				\
+	YGYOTO_BASE_CONSTRUCTOR1_XML(GETBASE);				\
       }									\
       yarg_swap(0, argc);						\
       yarg_drop(1);							\

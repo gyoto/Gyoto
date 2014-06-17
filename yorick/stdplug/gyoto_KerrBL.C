@@ -23,6 +23,7 @@
 #include "ygyoto_idx.h"
 #include "yapi.h"
 
+#include <cstring>
 #include <iostream>
 using namespace std;
 

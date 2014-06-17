@@ -47,7 +47,6 @@
 using namespace Gyoto;
 
 extern "C" void __GyotostdplugInit() {
-#if defined GYOTO_USE_XERCES
   // Register Metrics
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
@@ -86,5 +85,4 @@ extern "C" void __GyotostdplugInit() {
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
   Spectrum::Register("BlackBody", 
 		     &(Spectrum::Subcontractor<Spectrum::BlackBody>));
-#endif
 }

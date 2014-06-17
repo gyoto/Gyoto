@@ -120,19 +120,20 @@ double Spectrum::Generic::operator()(double nu, double opacity, double ds)
   return 0.;
 }
 
+void Spectrum::Generic::setParameter(std::string, std::string, std::string) {}
+
 #ifdef GYOTO_USE_XERCES
 // do nothing... for now
 void Spectrum::Generic::fillElement(FactoryMessenger *fmp ) const {
   fmp->setSelfAttribute("kind", kind_);
 }
-void Spectrum::Generic::setParameter(std::string, std::string, std::string) {}
-
 void Spectrum::Generic::setParameters(FactoryMessenger *fmp) {
   string name="", content="", unit="";
   if (fmp)
     while (fmp->getNextParameter(&name, &content, &unit))
       setParameter(name, content, unit);
 }
+#endif
 
 Register::Entry* Gyoto::Spectrum::Register_ = NULL;
 
@@ -158,5 +159,4 @@ void Gyoto::Spectrum::initRegister() {
   Gyoto::Spectrum::Register_ = NULL;
 }
 
-#endif
 

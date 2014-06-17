@@ -55,7 +55,7 @@ write, format="%s\n", "-----------------------------";
 pd;
 write, format="%s\n", "-----------------------------";
 
-if (gyoto.haveUDUNITS()) {
+if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   write, format="%s", "Creating PolishDoughnut from file... ";
   pd = gyoto_Scenery("../doc/examples/example-polish-doughnut.xml").astrobj;
   write, format="%s\n", "done.";

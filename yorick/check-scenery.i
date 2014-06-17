@@ -114,7 +114,7 @@ if (gyoto_haveXerces()) {
  } else {
   write , format="%s", "No Xerces, creating scenery from scratch... ";
   gg  = gyoto_KerrBL();
-  spectro = gyoto_Spectrometer(kind="wave", nsamples=1, band=[2e-6, 2.4e-6]);
+  spectro = gyoto_Spectrometer("wave", nsamples=1, band=[2e-6, 2.4e-6]);
   scr = gyoto_Screen(metric=gg,
                      observerpos=[1000., 100., 0.78, 0. ],
                      time=1000.,

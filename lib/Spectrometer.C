@@ -36,7 +36,6 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 using namespace std;
 
-#if defined GYOTO_USE_XERCES
 Register::Entry* Gyoto::Spectrometer::Register_ = NULL;
 void Spectrometer::initRegister() {
   if (Gyoto::Spectrometer::Register_) delete Gyoto::Spectrometer::Register_;
@@ -62,6 +61,7 @@ Spectrometer::getSubcontractor(std::string name, int errmode) {
     -> getSubcontractor(name, errmode);
 }
 
+#if defined GYOTO_USE_XERCES
 void Spectrometer::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="", unit="";
   if (fmp)

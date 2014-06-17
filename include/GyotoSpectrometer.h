@@ -47,6 +47,8 @@
  */
 
 namespace Gyoto{
+  namespace Register { class Entry; }
+  class FactoryMessenger;
   namespace Spectrometer {
     /**
      * \class Gyoto::Spectrometer::Generic
@@ -81,7 +83,6 @@ namespace Gyoto{
    */
     typedef char const * kind_t;
 
-#if defined GYOTO_USE_XERCES
     /**
      * This is a more specific version of the
      * SmartPointee::Subcontractor_t type. A Spectrometer::Subcontrator_t
@@ -121,7 +122,9 @@ namespace Gyoto{
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
       (FactoryMessenger* fmp) {
       SmartPointer<T> spectro = new T();
+#ifdef GYOTO_USE_XERCES
       if (fmp) spectro -> setParameters(fmp);
+#endif
       return spectro;
     }
 
@@ -161,7 +164,6 @@ namespace Gyoto{
      * \endcode
      */
     void Register(std::string name, Gyoto::Spectrometer::Subcontractor_t* scp);
-#endif
 
   }
 }

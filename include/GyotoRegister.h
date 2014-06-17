@@ -33,7 +33,6 @@
  */
 
 namespace Gyoto {
-#ifdef GYOTO_USE_XERCES
   /**
    * \namespace Gyoto::Register
    * \brief Gyoto registers
@@ -66,7 +65,6 @@ namespace Gyoto {
      */
     void list();
   }
-#endif
 
   /**
    * \brief Load a plugin by name
@@ -85,7 +83,6 @@ namespace Gyoto {
   void loadPlugin(   char const * const plugname, int nofail = 0);
 }
 
-#ifdef GYOTO_USE_XERCES
 /**
  * \brief Entry in a register (or a full register)
  *
@@ -128,5 +125,4 @@ public:
     getSubcontractor(std::string name, int errmode=0);
 };
 
-#endif
 #endif

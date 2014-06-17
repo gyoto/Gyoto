@@ -99,17 +99,13 @@ extern "C" {
   void
   Y___gyoto_initRegister(int argc)
   {
-#if defined GYOTO_USE_XERCES
     Gyoto::Register::init();
-#endif
   }
 
   void
   Y_gyoto_listRegister(int argc)
   {
-#if defined GYOTO_USE_XERCES
     Gyoto::Register::list();
-#endif
   }
 
   void

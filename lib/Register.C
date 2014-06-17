@@ -75,7 +75,6 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   (*initfcn)();
 }
 
-#if defined GYOTO_USE_XERCES
 void Gyoto::Register::init(char const *  cpluglist) {
 
   // Clean registers
@@ -176,4 +175,3 @@ void Gyoto::Register::list() {
     cout << "    " << entry -> name_ << endl;
     
 }
-#endif

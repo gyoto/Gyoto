@@ -39,9 +39,7 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-#if defined GYOTO_USE_XERCES
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
-#endif
 
 Generic::Generic(string kind) :
 
@@ -406,7 +404,6 @@ double Generic::integrateEmission (double nu1, double nu2, double dsem,
 
 Quantity_t Generic::getDefaultQuantities() { return GYOTO_QUANTITY_INTENSITY; }
 
-#if defined GYOTO_USE_XERCES
 void Astrobj::initRegister() {
   if (Gyoto::Astrobj::Register_) delete Gyoto::Astrobj::Register_;
   Gyoto::Astrobj::Register_ = NULL;
@@ -445,8 +442,6 @@ Astrobj::getSubcontractor(std::string name, int errmode) {
   return (Subcontractor_t*)Gyoto::Astrobj::Register_
     -> getSubcontractor(name, errmode);
 }
-#endif
-
 
 Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),

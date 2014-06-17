@@ -510,14 +510,6 @@ void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
     fmp -> setParameter("Keplerian");
 }
 
-void Metric::Generic::setParameter(string name, string content, string unit) {
-  if      (name=="Mass")     mass(atof(content.c_str()), unit);
-  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
-  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
-  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
-  else if (name=="Keplerian")keplerian(true);
-}
-
 void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="", unit="";
   if (fmp)
@@ -533,6 +525,16 @@ void Metric::Generic::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
     if(name=="Mass")
       mass(atof(content.c_str()), fmp -> getAttribute("unit"));
   }
+}
+
+#endif
+
+void Metric::Generic::setParameter(string name, string content, string unit) {
+  if      (name=="Mass")     mass(atof(content.c_str()), unit);
+  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
+  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
+  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
+  else if (name=="Keplerian")keplerian(true);
 }
 
 void Metric::initRegister() {
@@ -555,4 +557,3 @@ Metric::getSubcontractor(std::string name, int errmode) {
     -> getSubcontractor(name, errmode);
 }
 
-#endif

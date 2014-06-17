@@ -68,7 +68,9 @@ namespace Gyoto {
     template<typename T> SmartPointer<Metric::Generic> Subcontractor
       (FactoryMessenger* fmp) {
       SmartPointer<T> gg = new T();
+#ifdef GYOTO_USE_XERCES
       gg -> setParameters(fmp);
+#endif
       return gg;
     }
 

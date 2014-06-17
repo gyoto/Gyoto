@@ -21,9 +21,22 @@
 
 begin_section, "StarTrace Astrobj";
 
-sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
-noop, sc.screen(mask=0); // make sure no mask is set yet
-st = sc.astrobj;
+if (gyoto_haveXerces()) {
+  sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
+  noop, sc.screen(mask=0); // make sure no mask is set yet
+  st = sc.astrobj;
+ } else {
+  // No XML, build from scratch
+  met=gyoto.KerrBL();
+  st=gyoto.Star(metric=met, radius=2.,
+                initcoord=[600., 9., 1.5707999999999999741, 0],  [0., 0., 0.037037]);
+  screen=gyoto.Screen(metric=met,
+                      observerpos=[1000., 100., 0.78, 0.],
+                      time=1000.,
+                      resolution=128,
+                      fov=0.1*pi);
+  sc=gyoto.Scenery(metric=met, screen=screen, astrobj=st, tmin=0.);
+ }
 
 write, format="%s", "Instanciating StarTrace from Star... ";
 stt = st(startrace=600, 800);

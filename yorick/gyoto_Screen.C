@@ -24,6 +24,7 @@
 #include <GyotoFactory.h>
 #endif
 
+#include <cstring>
 #include <iostream>
 using namespace std;
 using namespace Gyoto;

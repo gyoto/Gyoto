@@ -30,11 +30,12 @@
 #include "GyotoRegister.h"
 
 namespace Gyoto{
+  namespace Register { class Entry; }
   class FactoryMessenger;
+
   /// Spectrum of a simple object (e.g. a Gyoto::Astrobj::Star)
   namespace Spectrum {
     class Generic;
-#if defined GYOTO_USE_XERCES
 
     /// A function to build instances of a specific Spectrum::Generic sub-class
     /**
@@ -60,7 +61,9 @@ namespace Gyoto{
     template<typename T> SmartPointer<Spectrum::Generic> Subcontractor
       (FactoryMessenger* fmp) {
       SmartPointer<T> sp = new T();
+#ifdef GYOTO_USE_XERCES
       sp -> setParameters(fmp);
+#endif
       return sp;
     }
 
@@ -107,7 +110,6 @@ namespace Gyoto{
      *  Gyoto::Register::init().
      */
     void initRegister();
-#endif
   }
 }
 
@@ -170,6 +172,11 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
   virtual double integrate(double nu1, double nu2,
 			   const Spectrum::Generic * opacity, double ds) ;
 
+  virtual void setParameter(std::string name,
+			    std::string content,
+			    std::string unit) ;
+  ///< Set any parameter by its name
+
 #ifdef GYOTO_USE_XERCES
   /**
    * Spectrum implementations should impement fillElement to save their
@@ -179,10 +186,6 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
 
   virtual void fillElement(FactoryMessenger *fmp) const ;
                                              ///< called from Factory
-  virtual void setParameter(std::string name,
-			    std::string content,
-			    std::string unit) ;
-  ///< To be called by fillElement()
 
   /**
    * The Subcontractor_t function for each Spectrum kind should look

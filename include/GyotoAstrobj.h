@@ -74,7 +74,9 @@ namespace Gyoto{
     template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
       (FactoryMessenger* fmp) {
       SmartPointer<T> ao = new T();
+#ifdef GYOTO_USE_XERCES
       ao -> setParameters(fmp);
+#endif
       return ao;
     }
     ///< A template for Subcontractor_t functions
@@ -93,7 +95,6 @@ namespace Gyoto{
 						      int errmode = 0);
     ///< Query the Astrobj register
 
-#if defined GYOTO_USE_XERCES
     /**
      * Use the Astrobj::initRegister() once in your program to
      * initiliaze it, the Astrobj::Register() function to fill it, and
@@ -121,7 +122,6 @@ namespace Gyoto{
      */
     void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
     ///< Make an Astrobj kind known to the Factory
-#endif
   }
 }
 
