@@ -74,7 +74,7 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, ddims[0], ddims[1], ddims[2]};
+      long dims[] = {3, long(ddims[0]), long(ddims[1]), long(ddims[2])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->getIntensity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
@@ -84,7 +84,7 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyIntensity(NULL, 0);
       else if (dims[0]==3) {
-	size_t ddims[] = {dims[1], dims[2], dims[3]};
+	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3])};
 	(*OBJ)->copyIntensity(in, ddims);
       } else
 	y_error("COPYINTENSITY must be nil, 0, or array(double, nnu, nphi, nr");
@@ -101,7 +101,7 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
       if (freq) {
 	size_t ddims[3];
 	(*OBJ) -> getIntensityNaxes(ddims);
-	long dims[] = {1, ddims[0]};
+	long dims[] = {1, long(ddims[0])};
 	double * out = ypush_d(dims);
 	memcpy(out, freq, ddims[0]*sizeof(double));
       } else ypush_long(0);
@@ -125,7 +125,7 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
       if (cosi) {
 	size_t ddims[3];
 	(*OBJ) -> getIntensityNaxes(ddims);
-	long dims[] = {1, ddims[1]};
+	long dims[] = {1, long(ddims[1])};
 	double * out = ypush_d(dims);
 	memcpy(out, cosi, ddims[1]*sizeof(double));
       } else ypush_long(0);
@@ -149,7 +149,7 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
       if (radius) {
 	size_t ddims[3];
 	(*OBJ) -> getIntensityNaxes(ddims);
-	long dims[] = {1, ddims[2]};
+	long dims[] = {1, long(ddims[2])};
 	double * out = ypush_d(dims);
 	memcpy(out, radius, ddims[2]*sizeof(double));
       } else ypush_long(0);
