@@ -189,11 +189,11 @@ extern "C" {
       if (yarg_nil(iarg)) { // quantities=      : Getting
 	if ((*rvset)++) y_error("Only one return value possible");
 	Quantity_t quant = (*OBJ)->getRequestedQuantities();
-	size_t nk = (*OBJ)->getScalarQuantitiesCount();
+	long nk = long((*OBJ)->getScalarQuantitiesCount());
 	long rquant = nk>1?1:0;
 	long dims[2] = { rquant, nk };
 	ystring_t *squant = ypush_q(dims);
-	size_t k = 0;
+	long k = 0;
 	char *tk =
 	  strtok(const_cast<char*>((*OBJ)->getRequestedQuantitiesString().c_str()),
 		 " \n\t");
@@ -501,8 +501,8 @@ extern "C" {
     if (argc>=4 && !yarg_nil(argc-4)) jmin=ygets_l(argc-4);
     if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
 
-    size_t res;
-    try {res=scenery->screen()->resolution();}
+    long res;
+    try {res=long(scenery->screen()->resolution());}
     YGYOTO_STD_CATCH;
 
     double * impactcoords = NULL;
@@ -523,7 +523,7 @@ extern "C" {
       }
     }
 
-    size_t nbnuobs=0, nbdata;
+    long nbnuobs=0, nbdata;
     Quantity_t quantities;
     try {
       quantities = scenery -> getRequestedQuantities();
@@ -531,9 +531,9 @@ extern "C" {
 	SmartPointer<Spectrometer::Generic> spr=scenery->screen()->spectrometer();
 	if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
-	nbnuobs = spr -> nSamples();
+	nbnuobs = long(spr -> nSamples());
       }
-      nbdata= scenery->getScalarQuantitiesCount();
+      nbdata= long(scenery->getScalarQuantitiesCount());
     } YGYOTO_STD_CATCH;
 
     long dims[4]={(nbdata+nbnuobs) > 1 ? 3 : 2, res, res, nbdata+nbnuobs};

@@ -98,7 +98,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> nSamples();
+    long nsamples = long((*sp) -> nSamples());
     if (nsamples) {
       long dims[] = {2, 2, nsamples};
       double converted[(*sp)->getNBoundaries()];
@@ -107,7 +107,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
       size_t const * const chanind = (*sp) -> getChannelIndices();
       GYOTO_DEBUG_ARRAY(chanind, 2*nsamples);
       double * ychannels = ypush_d(dims);
-      for (size_t i=0; i<2*nsamples; ++i) {
+      for (long i=0; i<2*nsamples; ++i) {
 	ychannels[i] = converted[chanind[i]];
 	GYOTO_DEBUG << "ychannels["<< i << "]=" << ychannels[i] << endl;
       }
@@ -119,7 +119,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("MIDPOINTS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> nSamples();
+    long nsamples = long((*sp) -> nSamples());
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ychannels = ypush_d(dims);
@@ -131,7 +131,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("WIDTHS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*sp) -> nSamples();
+    long nsamples = long((*sp) -> nSamples());
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ywidths = ypush_d(dims);

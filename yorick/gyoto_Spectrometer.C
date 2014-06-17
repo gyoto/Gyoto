@@ -129,7 +129,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("CHANNELS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*OBJ) -> nSamples();
+    long nsamples = long((*OBJ) -> nSamples());
     if (nsamples) {
       long dims[] = {2, 2, nsamples};
       double converted[(*OBJ)->getNBoundaries()];
@@ -150,7 +150,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("MIDPOINTS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*OBJ) -> nSamples();
+    long nsamples = long((*OBJ) -> nSamples());
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ychannels = ypush_d(dims);
@@ -162,7 +162,7 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
   if ((iarg=kiargs[++k])>=0) {
     if (!yarg_nil(iarg)) y_error("WIDTHS is readonly");
     if ((*rvset)++) y_error(rmsg);
-    size_t nsamples = (*OBJ) -> nSamples();
+    long nsamples = long((*OBJ) -> nSamples());
     if (nsamples) {
       long dims[] = {1, nsamples};
       double * ywidths = ypush_d(dims);

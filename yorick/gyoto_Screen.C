@@ -62,7 +62,7 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) {
 	if ((*rvset)++) y_error(rmsg);
-	size_t npix = (*OBJ) -> resolution();
+	long npix = long((*OBJ) -> resolution());
 	long dims[] = {2, npix, npix};
 	double * out = ypush_d(dims);
 	memcpy(out, (*OBJ)->mask(), npix*npix*sizeof(double));

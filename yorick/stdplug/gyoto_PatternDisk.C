@@ -75,7 +75,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, ddims[0], ddims[1], ddims[2]};
+      long dims[] = {3, long(ddims[0]), long(ddims[1]), long(ddims[2])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->getIntensity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
@@ -85,7 +85,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyIntensity(NULL, 0);
       else if (dims[0]==3) {
-	size_t ddims[] = {dims[1], dims[2], dims[3]};
+	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3])};
 	(*OBJ)->copyIntensity(in, ddims);
       } else
 	y_error("COPYINTENSITY must be nil, 0, or array(double, nnu, nphi, nr");
@@ -100,7 +100,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, ddims[0], ddims[1], ddims[2]};
+      long dims[] = {3, long(ddims[0]), long(ddims[1]), long(ddims[2])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->opacity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
@@ -110,7 +110,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyOpacity(NULL, 0);
       else if (dims[0]==3) {
-	size_t ddims[] = {dims[1], dims[2], dims[3]};
+	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3])};
 	(*OBJ)->copyOpacity(in, ddims);
       } else
 	y_error("COPYOPACITY must be nil, 0, or array(double, nnu, nphi, nr");
@@ -124,7 +124,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, 2, ddims[1], ddims[2]};
+      long dims[] = {3, 2, long(ddims[1]), long(ddims[2])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->getVelocity(),
 	     2*dims[2]*dims[3]*sizeof(double));
@@ -134,7 +134,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyVelocity(NULL, 0);
       else if (dims[0]==3 && dims[1]==2) {
-	size_t ddims[] = {dims[2], dims[3]};
+	size_t ddims[] = {size_t(dims[2]), size_t(dims[3])};
 	(*OBJ)->copyVelocity(in, ddims);
       } else
 	y_error("COPYVELOCITY must be nil, 0, or array(double, 2, nphi, nr");
@@ -151,7 +151,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if (radius) {
 	size_t ddims[3];
 	(*OBJ) -> getIntensityNaxes(ddims);
-	long dims[] = {1, ddims[2]};
+	long dims[] = {1, long(ddims[2])};
 	double * out = ypush_d(dims);
 	memcpy(out, radius, ddims[2]*sizeof(double));
       } else ypush_long(0);
