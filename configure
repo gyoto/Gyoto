@@ -657,6 +657,8 @@ XERCES_LIBS
 XERCES_CFLAGS
 UDUNITS_CPPFLAGS
 UDUNITS_LDFLAGS
+HAVE_UDUNITS_FALSE
+HAVE_UDUNITS_TRUE
 UDUNITS_LIBS
 UDUNITS_CFLAGS
 PTHREAD_CFLAGS
@@ -17968,6 +17970,14 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 
 fi
+ if test "x$have_udunits" != xno; then
+  HAVE_UDUNITS_TRUE=
+  HAVE_UDUNITS_FALSE='#'
+else
+  HAVE_UDUNITS_TRUE='#'
+  HAVE_UDUNITS_FALSE=
+fi
+
 if test "x$have_udunits" == "xno"; then :
 
    if test "x$with_udunits" == "xyes"; then :
@@ -18700,6 +18710,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_UDUNITS_TRUE}" && test -z "${HAVE_UDUNITS_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_UDUNITS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then

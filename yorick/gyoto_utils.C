@@ -137,6 +137,18 @@ extern "C" {
   }
 
   void
+  Y_gyoto_haveUDUNITS(int)
+  {
+    ypush_long(
+#if defined HAVE_UDUNITS
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
   Y___gyoto_exportSupplier(int argc)
   {
     if (!YGyotoGlobalSupplier) {

@@ -34,6 +34,13 @@ extern gyoto_haveBoost;
     HAVE_BOOST=1 if compiled with Boost, else 0.
 */
 
+extern gyoto_haveUDUNITS;
+/* DOCUMENT have_udunits = gyoto_haveUNUITS()
+    Tell whether GYOTO was compiled with UDUNITS support (advanced units)
+   OUTPUT:
+    HAVE_UDUNITS=1 if compiled with UDUNITS, else 0.
+*/
+
 extern __gyoto_setErrorHandler;
 /* xDOCUMENT __gyoto_setErrorHandler
    Must be called once to attach the GYOTO error handler to Yorick's one

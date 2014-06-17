@@ -368,8 +368,8 @@ double Gyoto::Units::ToHerz(double value, const string &unit) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "converting " << value << string(unit) << "to Herz" << endl;
 # endif
-# ifdef HAVE_UDUNITS
   if (unit == "" || unit == "Hz") return value;
+# ifdef HAVE_UDUNITS
   Unit from (unit), Hz("Hz");
   if (areConvertible(from, Hz))
     return Hz.To(value, from);
@@ -384,7 +384,9 @@ double Gyoto::Units::ToHerz(double value, const string &unit) {
   throwError (ss.str());
 # else
   GYOTO_WARNING_UDUNITS(unit, "Hz");
+  return value;
 # endif
+  throwError("unit conversion failed");
   return 0.;
 }
 

@@ -294,6 +294,7 @@ AS_IF([test "x$with_udunits" != "xno"],
   ],
   []
 )
+AM_CONDITIONAL(HAVE_UDUNITS, [test "x$have_udunits" != xno])
 AS_IF([test "x$have_udunits" == "xno"],
   [
    AS_IF([test "x$with_udunits" == "xyes"],

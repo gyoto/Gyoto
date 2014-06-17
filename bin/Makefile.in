@@ -780,8 +780,8 @@ check: gyoto
 	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
-	$(CHECK_CMD) ../doc/examples/example-fixed-star-KS.xml \
-	   \!example-fixed-star-KS.fits
+@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star-KS.xml \
+@HAVE_UDUNITS_TRUE@	   \!example-fixed-star-KS.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-cartesian.xml \
 	   \!example-fixed-star-minkowski-cartesian.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-spherical.xml \
@@ -800,8 +800,8 @@ check: gyoto
 	   \!example-torus.fits
 	$(CHECK_CMD) ../doc/examples/example-torus-KS.xml \
 	   \!example-torus-KS.fits
-	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
-	   \!example-polish-doughnut.fits
+@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
+@HAVE_UDUNITS_TRUE@	   \!example-polish-doughnut.fits
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -25,8 +25,10 @@ check: gyoto
 	   \!example-complex-astrobj.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
 	   \!example-fixed-star.fits
+if HAVE_UDUNITS
 	$(CHECK_CMD) ../doc/examples/example-fixed-star-KS.xml \
 	   \!example-fixed-star-KS.fits
+endif
 	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-cartesian.xml \
 	   \!example-fixed-star-minkowski-cartesian.fits
 	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-spherical.xml \
@@ -45,5 +47,7 @@ check: gyoto
 	   \!example-torus.fits
 	$(CHECK_CMD) ../doc/examples/example-torus-KS.xml \
 	   \!example-torus-KS.fits
+if HAVE_UDUNITS
 	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
 	   \!example-polish-doughnut.fits
+endif
