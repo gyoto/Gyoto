@@ -35,18 +35,30 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
 
   static char const * knames[]={
     "unit",
+#ifdef GYOTO_USE_CFITSIO
     "fitsread", 
+#endif
     "copyintensity", "copygridfreq", "copygridcosi", "copygridradius",
+#ifdef GYOTO_USE_CFITSIO
     "fitswrite",
+#endif
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
 
+#ifdef GYOTO_USE_CFITSIO
+#define NKW 8
+#else
+#define NKW 6
+#endif
+
   YGYOTO_WORKER_INIT(Astrobj, DirectionalDisk, knames,
-		     YGYOTO_THINDISK_GENERIC_KW_N+8);
+		     YGYOTO_THINDISK_GENERIC_KW_N+NKW);
 
   YGYOTO_WORKER_SET_UNIT;
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
+#endif
   //YGYOTO_WORKER_GETSET_DOUBLE2(patternVelocity);
   //YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
   //YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
@@ -151,8 +163,9 @@ void ygyoto_DirectionalDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc)
     }
   }
 
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsWrite(ygets_q(iarg)) );
-
+#endif
   YGYOTO_WORKER_CALL_GENERIC(ThinDisk);
 }
 

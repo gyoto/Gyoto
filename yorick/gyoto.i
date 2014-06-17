@@ -27,6 +27,13 @@ extern gyoto_haveXerces;
     HAVE_XERCES=1 if compiled with Xerces, else 0.
 */
 
+extern gyoto_haveCFITSIO;
+/* DOCUMENT have_cfitsio = gyoto_haveCFITSIO()
+    Tell whether GYOTO was compiled with CFITSIO support (FITS i/o)
+   OUTPUT:
+    HAVE_CFITSIO=1 if compiled with CFITSIO, else 0.
+*/
+
 extern gyoto_haveBoost;
 /* DOCUMENT have_boost = gyoto_haveBoost()
     Tell whether GYOTO was compiled with Boost support (advanced integrators)

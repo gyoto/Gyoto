@@ -85,12 +85,13 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   // ---------
  public:
 
+#ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file
   virtual void fitsRead(std::string filename_);
 
   /// Write parameters and arrays to FITS file
   virtual void fitsWrite(std::string filename_);
-
+#endif
 
   /// Set DirectionalDisk::emission_
   /**

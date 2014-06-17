@@ -81,10 +81,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@HAVE_CFITSIO_TRUE@am__append_1 = $(cfitsio_stdplug_sources)
 
 # LORENE PLUGIN
-@HAVE_LORENE_TRUE@am__append_2 = libgyoto-lorene.la
+@HAVE_LORENE_TRUE@am__append_1 = libgyoto-lorene.la
 subdir = lib
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/gyoto.pc.in $(srcdir)/gyoto-uninstalled.pc.in \
@@ -151,22 +150,14 @@ libgyoto_lorene_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(LDFLAGS) -o $@
 @HAVE_LORENE_TRUE@am_libgyoto_lorene_la_rpath = -rpath $(soverdir)
 libgyoto_stdplug_la_LIBADD =
-am__libgyoto_stdplug_la_SOURCES_DIST = KerrBL.C KerrKS.C Minkowski.C \
-	Star.C StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
-	BlackBodySpectrum.C ComplexAstrobj.C UniformSphere.C \
-	StandardAstrobj.C PageThorneDisk.C ThinDiskPL.C \
-	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C PatternDisk.C \
-	PatternDiskBB.C DynamicalDisk.C Disk3D.C DynamicalDisk3D.C \
-	DirectionalDisk.C
 am__objects_1 = PatternDisk.lo PatternDiskBB.lo DynamicalDisk.lo \
 	Disk3D.lo DynamicalDisk3D.lo DirectionalDisk.lo
-@HAVE_CFITSIO_TRUE@am__objects_2 = $(am__objects_1)
 am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
 	Star.lo StarTrace.lo FixedStar.lo Torus.lo PowerLawSpectrum.lo \
 	BlackBodySpectrum.lo ComplexAstrobj.lo UniformSphere.lo \
 	StandardAstrobj.lo PageThorneDisk.lo ThinDiskPL.lo \
 	PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
-	$(am__objects_2)
+	$(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -220,7 +211,7 @@ am__v_CXXLD_1 =
 SOURCES = $(libgyoto_lorene_la_SOURCES) $(libgyoto_stdplug_la_SOURCES) \
 	$(EXTRA_libgyoto_stdplug_la_SOURCES) $(libgyoto_la_SOURCES)
 DIST_SOURCES = $(libgyoto_lorene_la_SOURCES) \
-	$(am__libgyoto_stdplug_la_SOURCES_DIST) \
+	$(libgyoto_stdplug_la_SOURCES) \
 	$(EXTRA_libgyoto_stdplug_la_SOURCES) $(libgyoto_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -437,13 +428,15 @@ libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
 soverdir = $(pkglibdir)/@sovers@
-sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_2)
+sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_1)
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C Star.C \
 	StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
 	BlackBodySpectrum.C ComplexAstrobj.C UniformSphere.C \
 	StandardAstrobj.C PageThorneDisk.C ThinDiskPL.C \
-	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C $(am__append_1)
-# those files are used only if cfitsio is available
+	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C \
+	$(cfitsio_stdplug_sources)
+
+# those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
 	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 

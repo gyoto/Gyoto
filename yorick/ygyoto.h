@@ -229,6 +229,7 @@ void ygyoto_Spectrometer_generic_eval
     OBJ = ypush_##BASENAME();						\
     GYOTO_DEBUG_EXPR(OBJ);						\
     *OBJ = new DERIVEDCLASS();						\
+    GYOTO_DEBUG << "object created" << endl;				\
     for (int arg=0; arg<argc; ++arg)					\
       yarg_swap(arg, arg+1);						\
   }									\

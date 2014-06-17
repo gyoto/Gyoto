@@ -16,8 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef GYOTO_USE_CFITSIO
 #define throwCfitsioError(status) \
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+#endif
 
 #include "GyotoPhoton.h"
 #include "GyotoDynamicalDisk.h"
@@ -27,7 +29,9 @@
 #include "GyotoKerrKS.h"
 
 
+#ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
+#endif
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -137,6 +141,7 @@ int DynamicalDisk::setParameter(std::string name,
 				std::string content,
 				std::string unit) {
   if (name == "File") {
+#ifdef GYOTO_USE_CFITSIO
     dirname_ = new char[strlen(content.c_str())+1];
     strcpy(dirname_,content.c_str());
     DIR *dp;
@@ -222,7 +227,9 @@ int DynamicalDisk::setParameter(std::string name,
       nphi_array_[i-1]=nphi;
       nr_array_[i-1]=nr;
     }
-      
+#else
+    throwError("This Gyoto has no FITS i/o");
+#endif
   }
   else if (name=="tinit") tinit_=atof(content.c_str());
   else if (name=="dt") dt_=atof(content.c_str());

@@ -55,7 +55,7 @@ write, format="%s", "Attaching DirectionalDisk to scenery...";
 sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);
 write, format="%s\n", " done.";
 
-if (gyoto_haveXerces()) {
+if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
   write, format="%s", "Saving data to fits file...";
   pd, fitswrite="!check-directionaldisk.fits.gz";
   write, format="%s\n", " done.";

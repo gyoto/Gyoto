@@ -28,13 +28,14 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	StandardAstrobj.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
 	StdPlug.C
-# those files are used only if cfitsio is available
+
+# those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
 	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
-if HAVE_CFITSIO
+
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
-endif
+
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS) \
 				$(AM_LDFLAGS)
 

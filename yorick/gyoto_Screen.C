@@ -67,7 +67,11 @@ extern "C" {
 	double * out = ypush_d(dims);
 	memcpy(out, (*OBJ)->mask(), npix*npix*sizeof(double));
       } else if (yarg_string(iarg)) {
+#ifdef GYOTO_USE_CFITSIO
 	(*OBJ)->fitsReadMask(ygets_q(iarg));
+#else
+	y_error("no cfitsio in this gyoto");
+#endif
       } else {
 	long ntot;
 	long dims[Y_DIMSIZE];
@@ -82,10 +86,14 @@ extern "C" {
 
     /* MASKWRITE */
     if ((iarg=kiargs[++k])>=0) {
+#ifdef GYOTO_USE_CFITSIO
       char * fname=const_cast<char*>("");
       iarg+=*rvset;
       if (!yarg_nil(iarg)) fname=ygets_q(iarg);
       (*OBJ)->fitsWriteMask(ygets_q(iarg));
+#else
+      y_error("no cfitsio in this gyoto");
+#endif
     }
 
 

@@ -35,19 +35,31 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
 
   static char const * knames[]={
     "unit",
-    "fitsread", "patternvelocity", "repeatphi", "nu0", "dnu",
+#ifdef GYOTO_USE_CFITSIO
+    "fitsread",
+#endif
+    "patternvelocity", "repeatphi", "nu0", "dnu",
     "phimin", "phimax",
     "copyintensity", "copyopacity", "copyvelocity", "copygridradius",
+#ifdef GYOTO_USE_CFITSIO
     "fitswrite",
+#endif
     YGYOTO_THINDISK_GENERIC_KW,
     0
   };
+#ifdef GYOTO_USE_CFITSIO
+#define NKW 13
+#else
+#define NKW 11
+#endif
 
   YGYOTO_WORKER_INIT(Astrobj, PatternDisk, knames,
-		     YGYOTO_THINDISK_GENERIC_KW_N+13);
+		     YGYOTO_THINDISK_GENERIC_KW_N+NKW);
 
   YGYOTO_WORKER_SET_UNIT;
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
+#endif
   YGYOTO_WORKER_GETSET_DOUBLE2(patternVelocity);
   YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
   YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
@@ -153,8 +165,9 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
     }
   }
 
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsWrite(ygets_q(iarg)) );
-
+#endif
   YGYOTO_WORKER_CALL_GENERIC(ThinDisk);
 }
 
@@ -168,6 +181,7 @@ extern "C" {
   Y_gyoto_PatternDisk(int argc)
   {
     YGYOTO_CONSTRUCTOR_INIT2(Astrobj, Astrobj::Generic, PatternDisk, astrobj);
+    GYOTO_DEBUG << "object contructed" << endl; 
     if ((*OBJ)->kind().compare("PatternDisk"))
       y_error("Expecting Astrobj of kind PatternDisk");
     ygyoto_PatternDisk_eval(OBJ, argc);

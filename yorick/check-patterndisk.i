@@ -48,7 +48,7 @@ write, format="%s", "Attaching PatternDisk to scenery...";
 sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);
 write, format="%s\n", " done.";
 
-if (gyoto_haveXerces()) {
+if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
   write, format="%s", "Saving data to fits file...";
   pd, fitswrite="!check-patterndisk.fits.gz";
   write, format="%s\n", " done.";

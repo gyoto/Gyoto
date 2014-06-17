@@ -1,5 +1,6 @@
 gyoto=save(
            haveXerces=gyoto_haveXerces,
+           haveCFITSIO=gyoto_haveCFITSIO,
            haveBoost=gyoto_haveBoost,
            haveUDUNITS=gyoto_haveUDUNITS,
            loadPlugin=gyoto_loadPlugin,

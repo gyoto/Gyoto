@@ -16,8 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef GYOTO_USE_CFITSIO
 #define throwCfitsioError(status) \
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+#endif
 
 #include "GyotoPhoton.h"
 #include "GyotoDirectionalDisk.h"
@@ -27,7 +29,9 @@
 #include "GyotoKerrKS.h"
 
 
+#ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
+#endif
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -186,6 +190,7 @@ void DirectionalDisk::copyGridFreq(double const *const freq, size_t nnu) {
 }
 double const * DirectionalDisk::getGridFreq() const { return freq_; }
 
+#ifdef GYOTO_USE_CFITSIO
 void DirectionalDisk::fitsRead(string filename) {
   GYOTO_MSG << "DirectionalDisk reading FITS file: " << filename << endl;
 
@@ -351,6 +356,7 @@ void DirectionalDisk::fitsWrite(string filename) {
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
 }
+#endif
 
 void DirectionalDisk::getIndices(size_t i[3], double const co[4], 
 				 double cosi, double nu) const {
@@ -485,7 +491,12 @@ double DirectionalDisk::emission(double nu, double,
 int DirectionalDisk::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
-  if      (name == "File")          fitsRead( content );
+  if      (name == "File")
+#ifdef GYOTO_USE_CFITSIO
+          fitsRead( content );
+#else
+          throwError("This Gyoto has no FITS i/o");
+#endif
   else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }

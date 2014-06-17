@@ -128,12 +128,13 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual void   patternVelocity(double); ///< Set PatternDisk::Omega_
   virtual double patternVelocity(); ///< Get PatternDisk::Omega_
 
+#ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file
   virtual void fitsRead(std::string filename_);
 
   /// Write parameters and arrays to FITS file
   virtual void fitsWrite(std::string filename_);
-
+#endif
 
   /// Set PatternDisk::emission_
   /**

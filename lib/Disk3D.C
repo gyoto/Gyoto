@@ -16,8 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef GYOTO_USE_CFITSIO
 #define throwCfitsioError(status) \
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+#endif
 
 #include "GyotoPhoton.h"
 #include "GyotoDisk3D.h"
@@ -27,7 +29,9 @@
 #include "GyotoKerrKS.h"
 
 
+#ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
+#endif
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -234,6 +238,7 @@ void Disk3D::phimax(double phimx) {
 double Disk3D::phimax() const {return phimax_;}
 
 
+#ifdef GYOTO_USE_CFITSIO
 void Disk3D::fitsRead(string filename) {
   GYOTO_MSG << "Disk3D reading FITS file: " << filename << endl;
 
@@ -611,6 +616,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
   else if (i[3] > nr_) throwError("In Disk3D::getIndices() impossible indice value for r");
 
 }
+#endif
 
 void Disk3D::getVelocity(double const pos[4], double vel[4]) {
   if (velocity_) {
@@ -777,7 +783,12 @@ int Disk3D::Impact(Photon *ph, size_t index,
 int Disk3D::setParameter(std::string name,
 			 std::string content,
 			 std::string unit) {
-  if      (name == "File")              fitsRead( content );
+  if      (name == "File")
+#ifdef GYOTO_USE_CFITSIO
+              fitsRead( content );
+#else
+              throwError("This Gyoto has no FITS i/o");
+#endif
   if      (name == "NoZsymmetrizeGrid") zsym_ = 0;
   else return Generic::setParameter(name, content, unit);
   return 0;

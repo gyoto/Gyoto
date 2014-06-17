@@ -16,8 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifdef GYOTO_USE_CFITSIO
 #define throwCfitsioError(status) \
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+#endif
 
 #include "GyotoPhoton.h"
 #include "GyotoPatternDisk.h"
@@ -26,8 +28,9 @@
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 
-
+#ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
+#endif
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -229,6 +232,7 @@ void PatternDisk::phimax(double phimx) {
 }
 double PatternDisk::phimax() const {return phimax_;}
 
+#ifdef GYOTO_USE_CFITSIO
 void PatternDisk::fitsRead(string filename) {
   GYOTO_MSG << "PatternDisk reading FITS file: " << filename << endl;
 
@@ -556,6 +560,7 @@ void PatternDisk::fitsWrite(string filename) {
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
 }
+#endif
 
 void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   GYOTO_DEBUG << "dnu_="<<dnu_<<", dphi_="<<dphi_<<", dr_="<<dr_<<endl;
@@ -761,7 +766,12 @@ double PatternDisk::patternVelocity() { return Omega_; }
 int PatternDisk::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
-  if      (name == "File")          fitsRead( content );
+  if      (name == "File")
+#ifdef GYOTO_USE_CFITSIO
+          fitsRead( content );
+#else
+          throwError("this gyoto has no FITS io");
+#endif
   else if (name=="PatternVelocity") patternVelocity(atof(content.c_str()));
   else return ThinDisk::setParameter(name, content, unit);
   return 0;

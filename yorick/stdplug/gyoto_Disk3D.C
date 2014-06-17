@@ -37,19 +37,32 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
 
   static char const * knames[]={
     "unit",
-    "fitsread", "repeatphi", "nu0", "dnu",
+#ifdef GYOTO_USE_CFITSIO
+    "fitsread",
+#endif
+    "repeatphi", "nu0", "dnu",
     "rin", "rout", "zmin", "zmax",
     "phimin", "phimax",
     "copyemissquant", "copyopacity", "copyvelocity",
+#ifdef GYOTO_USE_CFITSIO
     "fitswrite",
+#endif
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, Disk3D, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+15);
+#ifdef GYOTO_USE_CFITSIO
+  #define NKW 15
+#else
+  #define NKW 13
+#endif
+
+  YGYOTO_WORKER_INIT(Astrobj, Disk3D, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+NKW);
 
   YGYOTO_WORKER_SET_UNIT;
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsRead(ygets_q(iarg)) );
+#endif
   YGYOTO_WORKER_GETSET_LONG2(repeatPhi);
   YGYOTO_WORKER_GETSET_DOUBLE2(nu0);
   YGYOTO_WORKER_GETSET_DOUBLE2(dnu);
@@ -135,7 +148,9 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
     }
   }
 
+#ifdef GYOTO_USE_CFITSIO
   YGYOTO_WORKER_RUN( fitsWrite(ygets_q(iarg)) );
+#endif
 
   YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 }

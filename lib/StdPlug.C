@@ -32,14 +32,14 @@
 #include "GyotoThinDiskPL.h"
 #include "GyotoPolishDoughnut.h"
 #include "GyotoThinDiskIronLine.h"
-#ifdef GYOTO_USE_CFITSIO
+
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
 #include "GyotoDynamicalDisk.h"
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
-#endif
+
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
@@ -66,7 +66,6 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::PolishDoughnut>));
   Astrobj::Register("ThinDiskIronLine",  
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskIronLine>));
-#ifdef GYOTO_USE_CFITSIO
   Astrobj::Register("PatternDisk",
 		    &(Astrobj::Subcontractor<Astrobj::PatternDisk>));
   Astrobj::Register("PatternDiskBB",
@@ -79,7 +78,6 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::DynamicalDisk3D>));
   Astrobj::Register("DirectionalDisk",
 		    &(Astrobj::Subcontractor<Astrobj::DirectionalDisk>));
-#endif
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));

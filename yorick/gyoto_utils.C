@@ -145,6 +145,18 @@ extern "C" {
   }
 
   void
+  Y_gyoto_haveCFITSIO(int)
+  {
+    ypush_long(
+#if defined GYOTO_USE_CFITSIO
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
   Y___gyoto_exportSupplier(int argc)
   {
     if (!YGyotoGlobalSupplier) {
