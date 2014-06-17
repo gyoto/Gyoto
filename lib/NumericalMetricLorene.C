@@ -400,14 +400,17 @@ int NumericalMetricLorene::diff(const double y[7],
    */
   //clock_t t1=clock();
 
+  double myth=th; // TEST
   //LAPSE
   Scalar* lapse = lapse_tab_[indice_time];
-  double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
+  //double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
+  double NN = lapse -> val_point(rr,myth,phi), NNm1 = 1./NN,
     Nr = lapse->dsdr().val_point(rr,th,phi), 
     Nt = lapse->dsdt().val_point(rr,th,phi);
   //SHIFT
   const Vector& shift = *(shift_tab_[indice_time]);
-  double beta_r = shift(1).val_point(rr,th,phi),
+  //double beta_r = shift(1).val_point(rr,th,phi),
+  double beta_r = shift(1).val_point(rr,myth,phi),
     beta_t = rm1*shift(2).val_point(rr,th,phi),
     beta_r_r = shift(1).dsdr().val_point(rr,th,phi),
     beta_r_t = shift(1).dsdt().val_point(rr,th,phi),
@@ -419,6 +422,8 @@ int NumericalMetricLorene::diff(const double y[7],
     -rm2*sm1*shift(3).val_point(rr,th,phi),
     beta_p_t = rsm1*shift(3).dsdt().val_point(rr,th,phi)
     -cos(th)*sm2*rm1*shift(3).val_point(rr,th,phi);
+
+  //cout << "betar= " << beta_r << endl;
 
   //3-METRIC (assumed diagonal)
   const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
@@ -447,9 +452,13 @@ int NumericalMetricLorene::diff(const double y[7],
   
   //INVERSE 3-METRIC
   const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
-  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+  //  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+  double grr=g_up_ij(1,1).val_point(rr,myth,phi), 
     gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
     gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi); //NB: these are gamma^ij, not g^ij
+
+  //rr=0.19;th=M_PI/2.;phi=0.;
+  //cout << setprecision(10) << "coef met= " << " " << lapse -> val_point(rr,th,phi) << " " << shift(1).val_point(rr,th,phi) << " " << g_up_ij(1,1).val_point(rr,th,phi) << " " << shift(3).val_point(rr,th,phi) << endl;
 
   //EXTRINSIC CURVATURE
   const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -492,7 +501,19 @@ int NumericalMetricLorene::diff(const double y[7],
     - Vr*beta_p_r-Vth*beta_p_t;
 
   //  cout << beta_p << endl;
-
+  for (int ii=0;ii<7;ii++){
+    if (res[ii]!=res[ii]){
+      cout << "i, res[i]= " << ii << " " << res[ii] << endl;
+      throwError("In NumericalMetricLorene::diff(): "
+		 "derivatives are nan");
+    }
+    if (res[ii]==res[ii]+1.){
+      cout << "i, res[i]= " << ii << " " << res[ii] << endl;
+      throwError("In NumericalMetricLorene::diff(): "
+		 "derivatives are inf");
+    }
+  }
+  
   /*
     time2 = clock();
     diftime = time2 - time1;
@@ -777,13 +798,13 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
 	cout << "Step divided to " << h0 << endl;
       }
       if (fabs(h0)<stepmin) {
-	if (debug()){
+	//if (debug()){
 	  cout
 	    << "Stop condition: at t,r= " 
 	    << tt << " " << coord[1] 
 	    << ", due to too small integration step" 
 	    << " after dividing step: too close to horizon." << endl;
-	}
+	  //}
 	return 1;
       }
       step1=myrk4(tt,coord,h0,coordnew);

@@ -402,22 +402,16 @@ double DirectionalDisk::emission(double nu, double,
 				    double co[8]) const{
   GYOTO_DEBUG << endl;
   // Compute angle between photon direction and normal
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=cp[ii+4]
-      +co[ii+4]*gg_->ScalarProd(cp,cp+4,co+4);
-  }
-  double photon_norm=gg_->ScalarProd(cp,photon_emframe,photon_emframe);
-  if (photon_norm<=0.) throwError("In DirectionalDisk::emission"
-				  " photon_emframe should be spacelike");
-  photon_norm=sqrt(photon_norm);
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
   double normal_norm=gg_->ScalarProd(cp,normal,normal);
   if (normal_norm<=0.) throwError("In DirectionalDisk::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
-  double phscalnor = gg_->ScalarProd(cp,normal,photon_emframe);
-  double cosi = fabs(phscalnor/(normal_norm*photon_norm));
+  double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
+    up = gg_->ScalarProd(cp,co+4,cp+4);
+  double cosi = fabs(-np/up);
+  // cos between unit normal n and tangent to photon p
+  // is equal -n.p/u.p (u being the emitter's 4-vel);
   // fabs because assuming plane symmetry
 
   // Indices of the current closest grid point
@@ -429,7 +423,6 @@ double DirectionalDisk::emission(double nu, double,
   // No emission outside radius and frequency data range
   if (rr<=radius_[0] || rr>=radius_[nr_-1]) return 0.;
   if (nu<=freq_[nnu_-1] || nu>=freq_[0]) return 0.;
-
   // So here, ind[2] should be >0 and ind[0]<nnu_-1
   if (ind[2]==0 || ind[0]==nnu_-1){
     throwError("In DirectionalDisk::emission "
