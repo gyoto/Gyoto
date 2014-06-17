@@ -18,32 +18,6 @@ sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
-# Check for C++11
-AC_ARG_ENABLE([c++11],
-  [AS_HELP_STRING([--disable-c++11],
-     [disable C++11 features (including advanced integrators)])])
-AS_IF([test "x$enable_c__11" != "xno"],
-  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
-)
-AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
-  [AC_MSG_ERROR([C++11 requested but not found])])
-
-# Check for boost
-AS_IF([test "x$HAVE_CXX11" = "x1"],
-  [have_boost=yes
-   BOOST_REQUIRE([1.53.1], [have_boost=no])],
-  [have_boost=no
-   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
-  ]
-)
-
-# If Boost was requested but not found, error out
-AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-  [AS_IF([test "x$have_boost" == "xno"],
-     [AC_MSG_ERROR([Boost requested but not found])])]
-)
-
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 # Checks for programs.
@@ -106,6 +80,51 @@ AC_SUBST([DYLIB_VAR])
 AC_SUBST([SYS])
 AC_SUBST([plugin_sfx])
 
+# Checks for libraries.
+AC_CHECK_LIB([dl], [dlopen])
+
+# Checks for header files.
+# We are not using those tests to far
+# AC_CHECK_HEADERS([float.h stddef.h string.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
+AC_TYPE_SIZE_T
+
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_STRTOD
+# other functions we may need to check for according to autoscan:
+# floor getcwd pow sqrt strdup
+AC_CHECK_FUNCS([sincos])
+
+############### CHECK FOR OPTIONAL FEATURES #########################
+## ADVANCED INTEGRATORS
+# Check for C++11
+AC_ARG_ENABLE([c++11],
+  [AS_HELP_STRING([--disable-c++11],
+     [disable C++11 features (including advanced integrators)])])
+AS_IF([test "x$enable_c__11" != "xno"],
+  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
+)
+AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
+  [AC_MSG_ERROR([C++11 requested but not found])])
+
+# Check for boost
+AS_IF([test "x$HAVE_CXX11" = "x1"],
+  [have_boost=yes
+   BOOST_REQUIRE([1.53.1], [have_boost=no])],
+  [have_boost=no
+   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
+  ]
+)
+AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+  [AS_IF([test "x$have_boost" == "xno"],
+     [AC_MSG_ERROR([Boost requested but not found])])]
+)
+
+## YORICK
 # Check for Yorick
 yorick_exe=yorick
 YORICK=
@@ -166,30 +185,8 @@ AS_IF([test "x$YORICK" != "x"],
   ]
 )
 
-# Checks for libraries.
-AC_CHECK_LIB([dl], [dlopen])
 
-# Checks for header files.
-# We are not using those tests to far
-# AC_CHECK_HEADERS([float.h stddef.h string.h unistd.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
-AC_TYPE_SIZE_T
-
-#BOOST_FIND_HEADER([boost/numeric/odeint/stepper/runge_kutta4_classic.hpp])
-
-# Checks for library functions.
-AC_FUNC_ERROR_AT_LINE
-AC_FUNC_STRTOD
-# other functions we may need to check for according to autoscan:
-# floor getcwd pow sqrt strdup
-AC_CHECK_FUNCS([sincos])
-
-pkg_requires=
-pkg_cflags=
-pkg_libs=
-
+## DEBUGGING INFORMATION
 # Enable debugging by default
 GYOTO_DEBUG_ENABLED=yes
 AC_ARG_ENABLE([debugging],
@@ -205,6 +202,7 @@ AS_IF([test "x$GYOTO_DEBUG_ENABLED" == xyes],
   ]
 )
 
+## POSIX THREADS
 # Check for pthreads
 use_pthreads=yes
 AC_ARG_ENABLE([pthreads],
@@ -213,7 +211,12 @@ AC_ARG_ENABLE([pthreads],
   [AS_IF([test "x$enable_pthreads" = "xno"], [use_pthreads=no])])
 AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
 
+## UDUNITS
 # Check for UDUNITS
+pkg_requires=
+pkg_cflags=
+pkg_libs=
+
 AC_MSG_CHECKING([whether libudunits2 should be used])
 udunits_cppflags=
 udunits_ldflags=
@@ -318,7 +321,7 @@ AS_IF([test "x$have_udunits" == "xno"],
 AC_SUBST([UDUNITS_LDFLAGS])
 AC_SUBST([UDUNITS_CPPFLAGS])
 
-
+## XERCES
 # Check for Xerces-c
 AC_MSG_CHECKING([whether libxerces should be used])
 xerces_headers=
@@ -420,6 +423,7 @@ AS_IF([test "x$have_xerces" == "xno"],
 AC_SUBST([XERCESLDFLAGS])
 AC_SUBST([XERCESCPPFLAGS])
 
+## CFITSIO
 # Check for CFITSIO
 AC_MSG_CHECKING(whether libcfitsio should be used)
 cfitsio_headers=
@@ -524,6 +528,7 @@ AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
 AC_SUBST([CFITSIOLDFLAGS])
 AC_SUBST([CFITSIOCPPFLAGS])
 
+## LORENE
 # Check for LORENE
 AC_MSG_CHECKING([for LORENE])
 AC_ARG_VAR([MAKE_S],
@@ -596,6 +601,7 @@ _ACEOF
   ]
 )
 
+## DOCUMENTATION
 # disable doc
 AC_ARG_ENABLE([doc],
   [AS_HELP_STRING([--disable-doc],
@@ -608,6 +614,7 @@ AC_ARG_ENABLE([doc],
   ],
   [mkdoc=yes])
 
+####################   FINALIZATION   ###################################
 # Finalization: select output files, subdirs etc.
 AC_SUBST([pkg_requires])
 AC_SUBST([pkg_cflags])
@@ -646,6 +653,9 @@ AS_IF([test "x$YORICK" != "x"],
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
 AC_SUBST([mySUBDIRS])
 AC_OUTPUT
+
+########################## SUMMARY ############################
+
 AS_IF([test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ],
   [
    AC_MSG_WARN(
