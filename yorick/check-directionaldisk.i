@@ -21,15 +21,18 @@
 
 begin_section, "DirectionalDisk Astrobj";
 
-nnu=1; ni=2; nr=10;
+nnu=2; ni=2; nr=10;
 intensity=array(double, nnu, ni, nr);
-intensity(,1,1::2)=1.;
-intensity(,2,2::2)=1.;
+intensity(,1,1::2)=10.;
+intensity(,1,2::2)=7.;
+intensity(,1,3::8)=4.;
+intensity(,1,9::10)=1.;
+intensity(,2,)=0.1*intensity(,1,);
 
 freq=array(double,nnu);
 cosi=array(double,ni);
 radius=indgen(nr)*5.;
-freq+=1.; cosi+=0.5; 
+freq(1)+=10.; cosi+=0.5; 
 
 metric = gyoto_KerrBL(mass=4e6*GYOTO_SUN_MASS);
 
