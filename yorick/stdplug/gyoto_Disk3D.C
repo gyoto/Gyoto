@@ -81,7 +81,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[4];
       (*ao) -> getEmissquantNaxes(ddims);
-      long dims[] = {4, ddims[0], ddims[1], ddims[2], ddims[3]};
+      long dims[] = {4, long(ddims[0]), long(ddims[1]), long(ddims[2]), long(ddims[3])};
       double * out = ypush_d(dims);
       memcpy(out, (*ao)->getEmissquant(),
 	     dims[1]*dims[2]*dims[3]*dims[4]*sizeof(double));
@@ -91,7 +91,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*ao) -> copyEmissquant(NULL, 0);
       else if (dims[0]==4) {
-	size_t ddims[] = {dims[1], dims[2], dims[3], dims[4]};
+	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3]), size_t(dims[4])};
 	(*ao)->copyEmissquant(in, ddims);
       } else
 	y_error("COPYEMISSQUANT must be nil, 0, or array(double, nnu, nphi, nz, nr");
@@ -106,7 +106,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[4];
       (*ao) -> getEmissquantNaxes(ddims);
-      long dims[] = {4, ddims[0], ddims[1], ddims[2], ddims[3]};
+      long dims[] = {4, long(ddims[0]), long(ddims[1]), long(ddims[2]), long(ddims[3])};
       double * out = ypush_d(dims);
       memcpy(out, (*ao)->opacity(),
 	     dims[1]*dims[2]*dims[3]*dims[4]*sizeof(double));
@@ -116,7 +116,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*ao) -> copyOpacity(NULL, 0);
       else if (dims[0]==4) {
-	size_t ddims[] = {dims[1], dims[2], dims[3], dims[4]};
+	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3]), size_t(dims[4])};
 	(*ao)->copyOpacity(in, ddims);
       } else
 	y_error("COPYOPACITY must be nil, 0, or array(double, nnu, nphi, nz, nr");
@@ -131,7 +131,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[4];
       (*ao) -> getEmissquantNaxes(ddims);
-      long dims[] = {4, 3, ddims[1], ddims[2], ddims[3]};
+      long dims[] = {4, 3, long(ddims[1]), long(ddims[2]), long(ddims[3])};
       double * out = ypush_d(dims);
       memcpy(out, (*ao)->getVelocity(),
 	     3*dims[2]*dims[3]*dims[4]*sizeof(double));
@@ -141,7 +141,7 @@ void ygyoto_Disk3D_eval(SmartPointer<Astrobj::Generic> *ao_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*ao) -> copyVelocity(NULL, 0);
       else if (dims[0]==4 && dims[1]==3) {
-	size_t ddims[] = {dims[2], dims[3], dims[4]};
+	size_t ddims[] = {size_t(dims[2]), size_t(dims[3]), size_t(dims[4])};
 	(*ao)->copyVelocity(in, ddims);
       } else
 	y_error("COPYVELOCITY must be nil, 0, or array(double, 3, nphi, nz, nr");

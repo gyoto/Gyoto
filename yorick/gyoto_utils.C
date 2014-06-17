@@ -36,14 +36,14 @@ void ygyotoErrorHandler (const Gyoto::Error e) { y_error(e); }
 extern "C" {
 
   void
-  Y_gyoto_dontcatchSIGFPE(int argc)
+  Y_gyoto_dontcatchSIGFPE(int)
   {
     signal(SIGFPE, SIG_DFL);
   }
 
 
   void
-  Y_gyoto_dontcatchSIGSEGV(int argc)
+  Y_gyoto_dontcatchSIGSEGV(int)
   {
     signal(SIGSEGV, SIG_DFL);
   }
@@ -53,14 +53,14 @@ extern "C" {
   Y_gyoto_debug(int argc)
   {
     ypush_long(Gyoto::debug());
-    if (argc && !yarg_nil(argc)) Gyoto::debug(ygets_l(1));
+    if (argc && !yarg_nil(argc)) Gyoto::debug(int(ygets_l(1)));
   }
 
   void
   Y_gyoto_verbose(int argc)
   {
     ypush_long(Gyoto::verbose());
-    if (argc && !yarg_nil(argc)) Gyoto::verbose(ygets_l(1));
+    if (argc && !yarg_nil(argc)) Gyoto::verbose(int(ygets_l(1)));
   }
 
 
@@ -86,7 +86,7 @@ extern "C" {
     long ntot=0;
     long dims[Y_DIMSIZE];
     ystring_t * plugins = 0;
-    for (int iarg=argc-1; iarg>=0; iarg--) {
+    for (iarg=argc-1; iarg>=0; iarg--) {
       if (kiargs[0]<0 ||(iarg!=kiargs[0] && iarg!=kiargs[0]+1)) {
 	plugins = ygeta_q(iarg, &ntot, dims);
 	for (long i=0; i<ntot; ++i) Gyoto::loadPlugin(plugins[i], nofail);
@@ -97,13 +97,13 @@ extern "C" {
   }
 
   void
-  Y___gyoto_initRegister(int argc)
+  Y___gyoto_initRegister(int)
   {
     Gyoto::Register::init();
   }
 
   void
-  Y_gyoto_listRegister(int argc)
+  Y_gyoto_listRegister(int)
   {
     Gyoto::Register::list();
   }
@@ -157,7 +157,7 @@ extern "C" {
   }
 
   void
-  Y___gyoto_exportSupplier(int argc)
+  Y___gyoto_exportSupplier(int)
   {
     if (!YGyotoGlobalSupplier) {
       YGyotoGlobalSupplier = new YGyotoSupplier_t();
@@ -210,7 +210,7 @@ extern "C" {
   }
 
   void
-  Y___gyoto_setErrorHandler(int argc)
+  Y___gyoto_setErrorHandler(int)
   { Gyoto::Error::setHandler(&ygyotoErrorHandler); }
 
 }

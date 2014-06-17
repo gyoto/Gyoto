@@ -134,6 +134,9 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*OB
   char const * rmsg="Cannot set return value more than once";
   char const * pmsg="Cannot use positional argument more than once";
 
+  // avoid ununsed warning
+  if (rmsg && pmsg) {}
+
   if (debug())
     for (int i=0; i<YGYOTO_ASTROBJ_GENERIC_KW_N; ++i)
       cerr << "DEBUG: Astrobj_generic_eval: kiargs[" << i << "]="

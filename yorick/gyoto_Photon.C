@@ -137,7 +137,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     double t1                = 0.;//ygets_d(piargs[0]+*rvset);
     double mass_sun          = 1.;//ygets_d(piargs[1]+*rvset);
     double distance_kpc      = 1.;//ygets_d(piargs[2]+*rvset);
-    string unit              = "geometrical";//ygets_q(piargs[3]+*rvset);
+    string unt               = "geometrical";//ygets_q(piargs[3]+*rvset);
     SmartPointer<Screen>* sc = NULL; //yget_Screen(piargs[4]+*rvset);
 
     if (yarg_number(piargs[myarg]+*rvset)) {
@@ -150,11 +150,11 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
       }
     }
     if (yarg_string(piargs[myarg]+*rvset))
-      unit = ygets_q(piargs[myarg++]+*rvset);
+      unt = ygets_q(piargs[myarg++]+*rvset);
     if (yarg_Screen(piargs[myarg]+*rvset))
       sc = yget_Screen(piargs[myarg++]+*rvset);
 
-    (*ph) -> save_txyz ( filename, t1, mass_sun, distance_kpc, unit,
+    (*ph) -> save_txyz ( filename, t1, mass_sun, distance_kpc, unt,
 			 (sc?*sc:SmartPointer<Screen>(NULL)) );
 
     if (debug()) cerr << filename << endl ;
@@ -176,7 +176,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   if ((iarg=kiargs[++k])>=0) { // get_txyz=
     if (debug()) cerr << "     get_txyz=1" << endl;
     if ((*rvset)++) y_error(rmsg);
-    int nel =(*ph)->get_nelements();
+    long nel =(*ph)->get_nelements();
       
     long dims[] = {2, nel, 4};
     double * data=ypush_d(dims);
@@ -216,7 +216,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     if (dims[0] == 0 && argt == 1 && dates[0] == 1) {
       if(debug())
 	cerr << "DEBUG: retrieving all already computed coordinates" << endl;
-      int nel =(*ph)->get_nelements();
+      long nel =(*ph)->get_nelements();
       long ddims[] = {2, nel, 8};
       double * data = ypush_d(ddims);
 

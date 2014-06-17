@@ -35,7 +35,7 @@ Minkowski::Minkowski() :
 
 // The cloner is necessary. If the metric class is not trivial (e.g. contains
 // arrays), it may be necessary to implement the copy constructor as well. 
-Minkowski* Minkowski::clone() const { return new Minkowski(*this); };
+Minkowski* Minkowski::clone() const { return new Minkowski(*this); }
 
 void Minkowski::gmunu(double g[4][4], const double * pos) const
 {
@@ -110,7 +110,10 @@ double Minkowski::gmunu(const double * pos, int mu, int nu) const {
       return tmp*tmp;
     }
   }
-      
+
+  throwError("BUG: this point should not be reached.");
+  return 0.;
+  
 } 
 
 double Minkowski::christoffel(const double pos[8], const int alpha, const int mmu, const int nnu) const
@@ -150,6 +153,9 @@ double Minkowski::christoffel(const double pos[8], const int alpha, const int mm
     return 0;
   }
  
+  throwError("BUG: this point should not be reached.");
+  return 0.;
+
 }
 
 

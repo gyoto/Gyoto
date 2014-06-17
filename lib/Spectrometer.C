@@ -83,10 +83,11 @@ Generic::Generic() :
   midpoints_(NULL),
   widths_(NULL)
 {}
-Generic::Generic(kind_t kind) :
+
+Generic::Generic(kind_t kin) :
   SmartPointee(),
   Teller(),
-  kind_(kind),
+  kind_(kin),
   nsamples_(0),
   nboundaries_(0),
   boundaries_(NULL),
@@ -94,6 +95,7 @@ Generic::Generic(kind_t kind) :
   midpoints_(NULL),
   widths_(NULL)
 {}
+
 Generic::Generic(const Generic& o) :
   SmartPointee(o),
   Teller(o),
@@ -140,15 +142,16 @@ void Generic::getChannelBoundaries( double data[], std::string unit) {
 size_t const * Generic::getChannelIndices() const { return chanind_; }
 double const * Generic::getWidths() const { return widths_; }
 void Generic::getWidths( double data[], std::string unit) {
-  double cbound[nboundaries_];
+  double * cbound = new double[nboundaries_];
   getChannelBoundaries(cbound, unit);
   for(size_t i=0; i<nsamples_; ++i)
     data[i]=fabs(cbound[chanind_[2*i+1]]-cbound[chanind_[2*i]]);
+  delete [] cbound;
 }
 
-int Spectrometer::Generic::setParameter(string name,
-					 string content,
-					 string unit)
+int Spectrometer::Generic::setParameter(string /* name */,
+					string /* content */,
+					string /* unit */)
 {
   // nothing to do... yet
   return 1;

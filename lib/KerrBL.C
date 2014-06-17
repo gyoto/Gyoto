@@ -76,8 +76,8 @@ KerrBL::KerrBL() :
 KerrBL * KerrBL::clone () const { return new KerrBL(*this); }
 
 // Mutators
-void KerrBL::spin(const double spin) {
-  spin_=spin;
+void KerrBL::spin(const double a) {
+  spin_=a;
   a2_=spin_*spin_;
   a3_=a2_*spin_;
   a4_=a2_*a2_;
@@ -229,7 +229,7 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
     s2th = 2.*sth*cth, c2th=cth2-sth2,
     s4th = 2.*s2th*c2th,
     s2th2= s2th*s2th, ctgth=cth/sth;
-  double r2=r*r, r4=r2*r2, r6=r4*r2, a6=a4_*a2_;
+  double r2=r*r, r4=r2*r2, r6=r4*r2;
   double Sigma=r2+a2_*cth2, Sigma2=Sigma*Sigma;
   double Delta=r2-2.*r+a2_;
   double Deltam1=1./Delta,

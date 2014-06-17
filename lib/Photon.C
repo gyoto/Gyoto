@@ -556,7 +556,7 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 
 #ifdef GYOTO_USE_XERCES
-void Photon::fillElement(FactoryMessenger *fmp) {
+void Photon::fillElement(FactoryMessenger *fmp) const {
   if (object_)    fmp -> astrobj (object_) ;
   Worldline::fillElement(fmp);
 }

@@ -40,12 +40,13 @@ using namespace Gyoto::Astrobj;
 #define GYOTO_USPH_DELTAMAX_OVER_RAD 0.1
 #define GYOTO_USPH_DELTAMAX_OVER_DST 0.1
 
-UniformSphere::UniformSphere(string kind) :
-  Astrobj::Standard(kind),
-  spectrum_(NULL),
-  opacity_(NULL),
+UniformSphere::UniformSphere(string kin) :
+  Astrobj::Standard(kin),
+  // radius_(0.),
   isotropic_(0),
   alpha_(1),
+  spectrum_(NULL),
+  opacity_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
@@ -53,24 +54,26 @@ UniformSphere::UniformSphere(string kind) :
   GYOTO_DEBUG << endl;
 # endif
 
+  // also initial safety_value_ etc.
   radius(0.);
 
   spectrum_ = new Spectrum::BlackBody(); 
   opacity_ = new Spectrum::PowerLaw(0., 1.); 
 }
 
-UniformSphere::UniformSphere(string kind,
+UniformSphere::UniformSphere(string kin,
 			     SmartPointer<Metric::Generic> met, double rad) :
-  Astrobj::Standard(kind),
-  radius_(rad),
-  spectrum_(NULL), opacity_(NULL),
+  Astrobj::Standard(kin),
+  //radius_(rad),
   isotropic_(0),
   alpha_(1),
+  spectrum_(NULL), opacity_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
-  critical_value_ = radius_*radius_;
-  safety_value_ = critical_value_*1.1 + 0.1;
+  // also initialize safety_value_ etc.
+  radius(rad);
+
   spectrum_ = new Spectrum::BlackBody(); 
   opacity_ = new Spectrum::PowerLaw(0., 1.); 
 
@@ -81,9 +84,9 @@ UniformSphere::UniformSphere(string kind,
 UniformSphere::UniformSphere(const UniformSphere& orig) :
   Astrobj::Standard(orig),
   radius_(orig.radius_),
-  spectrum_(NULL), opacity_(NULL),
   isotropic_(orig.isotropic_),
   alpha_(orig.alpha_),
+  spectrum_(NULL), opacity_(NULL),
   dltmor_(orig.dltmor_),
   dltmod_(orig.dltmod_)
 
@@ -166,8 +169,6 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   // not simply g^3 as in the standard case 
   double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
-  size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
-  double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
 				    coord_ph_hit+4);// / 1.; 
@@ -202,16 +203,16 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
       
 double UniformSphere::transmission(double nuem, double dsem, double*) const {
   if (!flag_radtransf_) return 0.;
-  double opacity = (*opacity_)(nuem);
+  double opac = (*opacity_)(nuem);
   
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG <<  "(nuem="    << nuem
 	      << ", dsem="    << dsem
-	      << "), opacity=" << opacity << endl;
+	      << "), opacity=" << opac << endl;
 # endif
 
-  if (!opacity) return 1.;
-  return exp(-opacity*dsem);
+  if (!opac) return 1.;
+  return exp(-opac*dsem);
 }
 
 double UniformSphere::integrateEmission(double nu1, double nu2, double dsem,

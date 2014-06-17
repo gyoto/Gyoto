@@ -36,7 +36,7 @@ class Gyoto::Hook::Teller::ListenerItem {
   ListenerItem * next;
  public:
   ListenerItem(Listener*, ListenerItem*);
-  ~ListenerItem();
+  virtual ~ListenerItem();
   virtual void tell(Gyoto::Hook::Teller *);
   size_t len() const;
 };
@@ -62,11 +62,11 @@ size_t Teller::ListenerItem::len() const {
 /* LISTENER */
 Listener::Listener() {}
 Listener::~Listener() {}
-void Listener::tell(Teller *) {};
+void Listener::tell(Teller *) {}
 
 /* TELLER */
 Teller::Teller() : listeners_(0) {}
-Teller::Teller(const Teller &o) : listeners_(0) {}
+Teller::Teller(const Teller &) : listeners_(0) {}
 Teller::~Teller() {if (listeners_) delete listeners_;}
 void Teller::hook(Listener * hear)
 {

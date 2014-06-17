@@ -679,7 +679,7 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    *  Spectra elements are separated by offset doubles in memory. In
    *  other words, the ith spectral element is spectrum[i*offset].
    */
-  int offset; ///< How to jump from one spectral element to the next
+  ptrdiff_t offset; ///< How to jump from one spectral element to the next
 
   /**
    * Coordinates of the object and photon at impact

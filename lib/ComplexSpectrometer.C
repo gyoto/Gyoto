@@ -164,8 +164,8 @@ void Complex::tell(Gyoto::Hook::Teller *) {
   size_t boffset=0, offset=0;
   size_t const * chanind=0;
   for (size_t i=0; i<cardinal_; ++i) {
-    double enb = elements_[i]->getNBoundaries();
-    double ens = elements_[i]->nSamples();
+    size_t enb = elements_[i]->getNBoundaries();
+    size_t ens = elements_[i]->nSamples();
     memcpy(boundaries_+boffset,
 	   elements_[i]->getChannelBoundaries(),
 	   enb*sizeof(double));

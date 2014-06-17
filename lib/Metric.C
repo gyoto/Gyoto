@@ -33,7 +33,7 @@ using namespace Gyoto;
 Register::Entry* Metric::Register_ = NULL;
 
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
-  mass_(1.), coordkind_(coordkind), kind_(name),
+  kind_(name), mass_(1.), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
   delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
@@ -209,7 +209,7 @@ double Metric::Generic::gmunu(const double * x, int mu, int nu) const {
 }
 
 void Metric::Generic::gmunu(double g[4][4], const double * x) const {
-  size_t mu, nu;
+  int mu, nu;
   for (mu=0; mu<4; ++mu) {
     g[mu][mu]=gmunu(x, mu, mu);
     for (nu=mu+1; nu<4; ++nu)
@@ -225,7 +225,7 @@ double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu)
 }
 
 int Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
-  size_t alpha, mu, nu;
+  int alpha, mu, nu;
   for (alpha=0; alpha<4; ++alpha) {
     for (mu=0; mu<4; ++mu) {
       dst[alpha][mu][mu]=christoffel(x, alpha, mu, mu);
@@ -264,7 +264,7 @@ int Metric::Generic::diff(const double coord[8], double res[8]) const{
  */
 
 //int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::Generic::myrk4(Worldline *line, const double coord[8], double h, double res[8]) const{
+int Metric::Generic::myrk4(Worldline * /* line */ , const double coord[8], double h, double res[8]) const{
   //cout << "In Metric::Generic::myrk4" << endl;
   double k1[8] ; 
   double k2[8] ; 

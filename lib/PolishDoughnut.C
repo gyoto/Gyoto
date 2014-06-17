@@ -54,14 +54,15 @@ PolishDoughnut::PolishDoughnut() :
   W_centre_(0.),
   r_cusp_(0.),
   r_centre_(0.),
+  //DeltaWm1_(),
   central_density_(1.),
   centraltemp_over_virial_(1.),
   beta_(0.),
 //aa_ and aa2_ are set by lambda()
   spectral_oversampling_(10),
-  intersection(this),
   komissarov_(0),
-  angle_averaged_(0)
+  angle_averaged_(0),
+  intersection(this)
 {  
 #ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -85,9 +86,9 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   aa_(orig.aa_),
   aa2_(orig.aa2_),
   spectral_oversampling_(orig.spectral_oversampling_),
-		 intersection(orig.intersection),
-		 komissarov_(orig.komissarov_),
-		 angle_averaged_(orig.angle_averaged_)
+  komissarov_(orig.komissarov_),
+  angle_averaged_(orig.angle_averaged_),
+  intersection(orig.intersection)
 {
   intersection.papa=this;
   if (orig.gg_()) {
@@ -106,10 +107,10 @@ double PolishDoughnut::getRcusp() const { return r_cusp_; }
 double PolishDoughnut::getRcentre() const { return r_centre_; }
 
 double PolishDoughnut::lambda() const { return lambda_; }
-void   PolishDoughnut::lambda(double lambda) {
+void   PolishDoughnut::lambda(double lam) {
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
-  lambda_=lambda;  
+  lambda_=lam;  
   aa_=gg_->spin(), aa2_=aa_*aa_;
 
   double  rms = gg_->getRms();//(3. + z2 - pow((3. - z1)*(3. + z1 +
@@ -194,7 +195,7 @@ void   PolishDoughnut::centralTempOverVirial(double val)
 {centraltemp_over_virial_=val;}
 
 double PolishDoughnut::beta() const { return beta_; }
-void   PolishDoughnut::beta(double beta)   { beta_ = beta; }
+void   PolishDoughnut::beta(double b)   { beta_ = b; }
 
 size_t PolishDoughnut::spectralOversampling() const
 { return spectral_oversampling_; }
@@ -433,7 +434,7 @@ void PolishDoughnut::emission_komissarov(double Inu[], // output
 
   double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b4vec);
   double theta_mag = acos(lscalb/(lnorm*bnorm)),
-    sth = sin(theta_mag), cth = cos(theta_mag);
+    sth = sin(theta_mag);//, cth = cos(theta_mag);
   if (sth==0.) throwError("In PolishDoughnut::emission_komissarov: "
 			  "theta_mag is zero leads to undefined emission");
 
@@ -657,8 +658,8 @@ void PolishDoughnut::emission(double Inu[], // output
   GYOTO_DEBUG << "T0="<< T0 << endl;
 
   // gas mass density [g cm^-3]
-  double beta = beta_; // magnetic pressure parameter
-  GYOTO_DEBUG << "beta=" << beta << endl;
+  // magnetic pressure parameter
+  GYOTO_DEBUG << "beta=" << beta_ << endl;
 
   GYOTO_DEBUG << "kappa=";
   double kappa = (exp((W_centre_-W_surface_)/(CST_POLY_INDEX+1.))-1.)
@@ -713,7 +714,7 @@ void PolishDoughnut::emission(double Inu[], // output
   //Frequency of maximum BB emission (see Rybicki-Lightman)
   double numax = 2.82*GYOTO_BOLTZMANN_CGS*T_electron/GYOTO_PLANCK_CGS;
 
-  double BB = sqrt(24.*M_PI*beta*PP); // Pmagn = B^2/24pi
+  double BB = sqrt(24.*M_PI*beta_*PP); // Pmagn = B^2/24pi
   double nu_0    = GYOTO_ELEMENTARY_CHARGE_CGS* BB 
     / (2. * M_PI * GYOTO_ELECTRON_MASS_CGS * GYOTO_C_CGS) ;
   if (T_electron < 5e8){

@@ -41,10 +41,13 @@ using namespace Gyoto::Astrobj;
 DynamicalDisk3D::DynamicalDisk3D() :
   Disk3D(),
   spectrumBB_(NULL),
+  temperature_(1),
   dirname_(NULL),
-  tinit_(0.), dt_(1.), nb_times_(1),
-  PLindex_(3), novel_(0),
-  temperature_(1)
+  tinit_(0.),
+  dt_(1.),
+  nb_times_(1),
+  PLindex_(3),
+  novel_(0)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -53,9 +56,13 @@ DynamicalDisk3D::DynamicalDisk3D() :
 DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   Disk3D(o),
   spectrumBB_(NULL),
-  tinit_(o.tinit_), dt_(o.dt_), nb_times_(o.nb_times_),
-  PLindex_(o.PLindex_), novel_(o.novel_),
-  temperature_(o.temperature_)
+  temperature_(o.temperature_),
+  dirname_(NULL),
+  tinit_(o.tinit_),
+  dt_(o.dt_),
+  nb_times_(o.nb_times_),
+  PLindex_(o.PLindex_),
+  novel_(o.novel_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -357,6 +364,8 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
 		 "opacity should be provided");
     }
   }
+  throwError("BUG: should not reach this point!");
+  return 0.; // avoid pedantic warning
 }
 
 double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const {
@@ -388,8 +397,8 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
 
 void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
-  string kind = gg->kind();
-  if (kind != "KerrBL")
+  string kin = gg->kind();
+  if (kin != "KerrBL")
     throwError
       ("DynamicalDisk3D::metric(): metric must be KerrBL");
   Disk3D::metric(gg);
@@ -429,10 +438,13 @@ int DynamicalDisk3D::setParameter(std::string name,
       throwError("In DynamicalDisk3D.C: bad nb_times_ value");
 
     //check whether absorption is provided
-    ostringstream stream_name ;
-    stream_name << dirname_ << "data3D0001.fits.gz"; 
-    string filename = stream_name.str();
-    fitsRead(filename);
+    {
+      // make declarations local (avoid warning)
+      ostringstream stream_name ;
+      stream_name << dirname_ << "data3D0001.fits.gz"; 
+      string filename = stream_name.str();
+      fitsRead(filename);
+    }
     if (opacity()) withopacity=1;
 
     //initialize emission, absorption, velocity arrays

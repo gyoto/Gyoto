@@ -480,7 +480,8 @@ void Worldline::xStore(size_t ind, double coord[8])
 void Worldline::xFill(double tlim) {
 
   //GYOTO_DEBUG<< "In xFill" << endl;
-  int dir, stopcond=0;
+  int dir;
+  stopcond=0;
   size_t ind;
 
   // Check whether anything needs to be done,
@@ -530,7 +531,7 @@ void Worldline::xFill(double tlim) {
 
   GYOTO_DEBUG << "IntegState initialized" << endl;
 
-  int mycount=0;// to prevent infinite integration
+  size_t mycount=0;// to prevent infinite integration
 
   while (!stopcond) {
     mycount++;
@@ -717,9 +718,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = x2dot_[imax_];
       if (x3dot) x3dot[di] = x3dot_[imax_];
       if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
-	double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
-	checkPhiTheta(pos);
-	x2[di]=pos[2];x3[di]=pos[3];x2dot[di]=pos[6];
+	double pos2[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
+	checkPhiTheta(pos2);
+	x2[di]=pos2[2];x3[di]=pos2[3];x2dot[di]=pos2[6];
       }
       continue;
     } else if (date > x0_[imax_]) {
@@ -762,9 +763,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = x2dot_[curl];
       if (x3dot) x3dot[di] = x3dot_[curl];      
       if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
-	double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
-	checkPhiTheta(pos);
-	x2[di]=pos[2];x3[di]=pos[3];x2dot[di]=pos[6];
+	double pos2[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
+	checkPhiTheta(pos2);
+	x2[di]=pos2[2];x3[di]=pos2[3];x2dot[di]=pos2[6];
       }
       continue;
     }
@@ -918,9 +919,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     */
     if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL
 	&& x2 && x3 && x2dot){
-      double pos[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
-      checkPhiTheta(pos);
-      x2[di]=pos[2];x3[di]=pos[3];x2dot[di]=pos[6];
+      double pos2[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
+      checkPhiTheta(pos2);
+      x2[di]=pos2[2];x3[di]=pos2[3];x2dot[di]=pos2[6];
     }
     
   }

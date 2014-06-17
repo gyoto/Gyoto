@@ -130,13 +130,13 @@ double const * DirectionalDisk::getIntensity() const { return emission_; }
 void DirectionalDisk::getIntensityNaxes( size_t naxes[3] ) const
 { naxes[0] = nnu_; naxes[1] = ni_; naxes[2] = nr_; }
 
-void DirectionalDisk::copyGridRadius(double const *const radius, size_t nr) {
+void DirectionalDisk::copyGridRadius(double const *const rad, size_t nr) {
   GYOTO_DEBUG << endl;
   if (radius_) {
     GYOTO_DEBUG << "delete [] radius_;" << endl;
     delete [] radius_; radius_ = NULL;
   }
-  if (radius) {
+  if (rad) {
     if (!emission_) 
       throwError("Please use copyIntensity() before copyGridRadius()");
     if (nr_ != nr)
@@ -144,7 +144,7 @@ void DirectionalDisk::copyGridRadius(double const *const radius, size_t nr) {
     GYOTO_DEBUG << "allocate radius_;" << endl;
     radius_ = new double[nr_];
     GYOTO_DEBUG << "radius >> radius_" << endl;
-    memcpy(radius_, radius, nr_*sizeof(double));
+    memcpy(radius_, rad, nr_*sizeof(double));
   }
 }
 double const * DirectionalDisk::getGridRadius() const { return radius_; }
@@ -196,8 +196,6 @@ void DirectionalDisk::fitsRead(string filename) {
   fitsfile* fptr      = NULL;
   int       status    = 0;
   int       anynul    = 0;
-  long      tmpl;
-  double    tmpd;
   long      naxes []  = {1, 1, 1};
   long      fpixel[]  = {1,1,1};
   long      inc   []  = {1,1,1};

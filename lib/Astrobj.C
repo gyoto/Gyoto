@@ -41,9 +41,9 @@ using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-Generic::Generic(string kind) :
+Generic::Generic(string kin) :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kind), flag_radtransf_(0)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kin), flag_radtransf_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -410,7 +410,7 @@ void Astrobj::initRegister() {
 }
 
 double Generic::deltaMax(double coord[8]) {
-  double rr,h1max;
+  double rr=0.,h1max;
 
   if (!gg_)
     throwError("Please set metric before calling Astrobj::Generic::deltaMax()");
@@ -516,20 +516,20 @@ void Astrobj::Properties::binSpectrumConverter(string unit) {
 
 #endif
 
-Astrobj::Properties Astrobj::Properties::operator+=(ptrdiff_t offset) {
-  if (intensity)    intensity    += offset;
-  if (time)         time         += offset;
-  if (distance)     distance     += offset;
-  if (first_dmin)   first_dmin   += offset;
-  if (redshift)     redshift     += offset;
-  if (spectrum)     spectrum     += offset;
-  if (binspectrum)  binspectrum  += offset;
-  if (impactcoords) impactcoords += 16*offset;
-  if (user1)        user1        += offset;
-  if (user2)        user2        += offset;
-  if (user3)        user3        += offset;
-  if (user4)        user4        += offset;
-  if (user5)        user5        += offset;
+Astrobj::Properties Astrobj::Properties::operator+=(ptrdiff_t ofset) {
+  if (intensity)    intensity    += ofset;
+  if (time)         time         += ofset;
+  if (distance)     distance     += ofset;
+  if (first_dmin)   first_dmin   += ofset;
+  if (redshift)     redshift     += ofset;
+  if (spectrum)     spectrum     += ofset;
+  if (binspectrum)  binspectrum  += ofset;
+  if (impactcoords) impactcoords += 16*ofset;
+  if (user1)        user1        += ofset;
+  if (user2)        user2        += ofset;
+  if (user3)        user3        += ofset;
+  if (user4)        user4        += ofset;
+  if (user5)        user5        += ofset;
   return *this;
 }
 

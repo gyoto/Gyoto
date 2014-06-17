@@ -78,10 +78,10 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
     }
   }
   
-  double const * const radius=getGridRadius();
+  double const * const rad=getGridRadius();
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, pos, 0.); //NB: last arg should be nu, don't care here
-  double rgrid=radius[i[2]-1]; // this is the smallest radius used
+  double rgrid=rad[i[2]-1]; // this is the smallest radius used
                           // when dealing with the current r value
 
   if (rgrid<risco){
@@ -118,14 +118,13 @@ double PatternDiskBB::emission(double nu, double dsem,
 
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
-  double const * const radius=getGridRadius();
-  double rgrid=radius[i[2]-1];
+  double const * const rad=getGridRadius();
+  double rgrid=rad[i[2]-1];
 
   // no emission in any case above rmax_:
   if (rgrid > rmax_ || rgrid < risco) return 0.; 
 
   double Iem=0.;
-  double const * const emiss = getIntensity();
   size_t naxes[3];
   getIntensityNaxes(naxes);
   size_t nnu=naxes[0], nphi=naxes[1];
@@ -157,8 +156,8 @@ double PatternDiskBB::emission(double nu, double dsem,
 
 void PatternDiskBB::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL or alike
-  string kind = gg->kind();
-  if ((kind != "KerrBL") && (kind != "ChernSimons"))
+  string kin = gg->kind();
+  if ((kin != "KerrBL") && (kin != "ChernSimons"))
     throwError
       ("PatternDiskBB::metric(): metric must be KerrBL or CS");
   ThinDisk::metric(gg);

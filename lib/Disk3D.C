@@ -44,7 +44,7 @@ using namespace Gyoto::Astrobj;
 
 Disk3D::Disk3D() :
   Generic("Disk3D"), filename_(""),
-  emissquant_(NULL), velocity_(NULL), opacity_(NULL),
+  emissquant_(NULL), opacity_(NULL), velocity_(NULL),
   dnu_(1.), nu0_(0), nnu_(0),
   dphi_(0.), phimin_(-DBL_MAX), nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dz_(0.), zmin_(-DBL_MAX), nz_(0), zmax_(DBL_MAX),
@@ -56,7 +56,7 @@ Disk3D::Disk3D() :
 
 Disk3D::Disk3D(const Disk3D& o) :
   Generic(o), filename_(o.filename_),
-  emissquant_(NULL), velocity_(NULL), opacity_(NULL),
+  emissquant_(NULL), opacity_(NULL), velocity_(NULL),
   dnu_(o.dnu_), nu0_(o.nu0_), nnu_(o.nnu_),
   dphi_(o.dphi_), phimin_(o.phimin_),
   nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
@@ -144,21 +144,21 @@ void Disk3D::getEmissquantNaxes( size_t naxes[3] ) const
   naxes[3] = nr_;
 }
 
-void Disk3D::copyOpacity(double const *const opacity, size_t const naxes[4]) {
+void Disk3D::copyOpacity(double const *const opac, size_t const naxes[4]) {
   GYOTO_DEBUG << endl;
   if (opacity_) {
     GYOTO_DEBUG << "delete [] opacity_;" << endl;
     delete [] opacity_; opacity_ = NULL;
     flag_radtransf_=0;
   }
-  if (opacity) {
+  if (opac) {
     if (nnu_ != naxes[0] || nphi_ != naxes[1] || nz_ != naxes[2] || nr_ != naxes[3])
       throwError("Please set intensity before opacity. "
 		 "The two arrays must have the same dimensions.");
     GYOTO_DEBUG << "allocate opacity_;" << endl;
     opacity_ = new double[nnu_ * nphi_ * nz_ * nr_];
     GYOTO_DEBUG << "opacity >> opacity_" << endl;
-    memcpy(opacity_, opacity, nnu_ * nphi_ * nz_ * nr_ * sizeof(double));
+    memcpy(opacity_, opac, nnu_ * nphi_ * nz_ * nr_ * sizeof(double));
     flag_radtransf_=1;
   }
 }
@@ -674,7 +674,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
     return 0;
 
   double t1=coord1[0], t2=coord2[0];
-  double deltatmin=0.1, deltat12=fabs(t2-t1)*0.1;
+  double deltatmin=0.1;//, deltat12=fabs(t2-t1)*0.1;
   //Break the worldline in pieces of "size" deltat:
   //double deltat= deltat12 < deltatmin ? deltat12 : deltatmin;
   double deltat= deltatmin;

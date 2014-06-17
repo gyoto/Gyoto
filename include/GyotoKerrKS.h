@@ -106,6 +106,7 @@ class Gyoto::Metric::KerrKS
    */
   void jacobian(double dst[4][4][4], const double * x) const ;
 
+  using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * pos, double gup[4][4], double jac[4][4][4]) const ;
 

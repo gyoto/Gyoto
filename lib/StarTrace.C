@@ -216,7 +216,7 @@ double StarTrace::operator()(double const coord[]) {
   xFill(tmin_);
   xFill(tmax_);
 
-  double x, y, z;
+  double x=0., y=0., z=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL: 
     x=coord[1]*sin(coord[2])*cos(coord[3]);
@@ -235,9 +235,12 @@ double StarTrace::operator()(double const coord[]) {
 
   for (size_t i=imin_; i<=imax_; ++i) {
     if (x0_[i]<tmin_ || x0_[i]>tmax_) continue;
-    tmp = (tmp1=x-x_[i]) * tmp1;
-    tmp += (tmp1=y-y_[i]) * tmp1;
-    tmp += (tmp1=z-z_[i]) * tmp1;
+    tmp1 = x-x_[i];
+    tmp  = tmp1 * tmp1;
+    tmp1 = y-y_[i];
+    tmp += tmp1 * tmp1;
+    tmp1 = z-z_[i];
+    tmp += tmp1 * tmp1;
     if (tmp < d2) d2=tmp;
   }
   return d2;

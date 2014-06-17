@@ -42,9 +42,9 @@ using namespace Gyoto;
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
   tobs_(0.), fov_(M_PI*0.1), npix_(1001), mask_(NULL), mask_filename_(""),
+  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), anglekind_(0),
   alpha0_(0.), delta0_(0.),
-  anglekind_(0),
-  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), gg_(NULL), spectro_(NULL),
+  gg_(NULL), spectro_(NULL),
   freq_obs_(1.)
 {
 # if GYOTO_DEBUG_ENABLED
@@ -65,9 +65,10 @@ Screen::Screen(const Screen& o) :
   tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), mask_(NULL),
   mask_filename_(o.mask_filename_),
   distance_(o.distance_),
-  alpha0_(o.alpha0_), delta0_(o.delta0_),
+  dmax_(o.dmax_),
   anglekind_(o.anglekind_),
-  dmax_(o.dmax_), gg_(NULL), spectro_(NULL), freq_obs_(o.freq_obs_)
+  alpha0_(o.alpha0_), delta0_(o.delta0_),
+  gg_(NULL), spectro_(NULL), freq_obs_(o.freq_obs_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   if (o.spectro_()) spectro_ = o.spectro_ -> clone();
@@ -616,8 +617,6 @@ void Screen::fitsReadMask(std::string filename) {
   fitsfile* fptr      = NULL;
   int       status    = 0;
   int       anynul    = 0;
-  long      tmpl;
-  double    tmpd;
   long      naxes []  = {1, 1, 1};
   long      fpixel[]  = {1, 1, 1};
   long      inc   []  = {1, 1, 1};
@@ -650,9 +649,8 @@ void Screen::fitsWriteMask(string filename) {
   char*     pixfile   = const_cast<char*>(filename.c_str());
   fitsfile* fptr      = NULL;
   int       status    = 0;
-  long      naxes []  = {npix_, npix_};
+  long      naxes []  = {long(npix_), long(npix_)};
   long      fpixel[]  = {1,1};
-  char * CNULL=NULL;
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
@@ -1046,8 +1044,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   // Deal with fov later as we need Inclination
   double fov; string fov_unit; int fov_found=0;
-  double alpha0; int alpha0_found=0; 
-  double delta0; int delta0_found=0;
+  double alpha0=0.; int alpha0_found=0; 
+  double delta0=0.; int delta0_found=0;
 
   int fourvel_found=0, screen1_found=0,
     screen2_found=0, screen3_found=0;

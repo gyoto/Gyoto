@@ -27,7 +27,7 @@
 using namespace Gyoto;
 using namespace std;
 
-Spectrum::Generic::Generic(const string kind) : kind_(kind) {}
+Spectrum::Generic::Generic(const string kin) : kind_(kin) {}
 Spectrum::Generic * Spectrum::Generic::clone() const 
 {
   string msg = "Spectrum::clone() called: "

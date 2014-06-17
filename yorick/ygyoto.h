@@ -266,7 +266,9 @@ void ygyoto_Spectrometer_generic_eval
   int k=-1;								\
   char const * rmsg="Cannot set return value more than once";		\
   char const * pmsg="Cannot use positional argument more than once";	\
-  char * unit=NULL;
+  char * unit=NULL;							\
+  /* make sure we use the variables at least once */			\
+  if (OBJ && rmsg && pmsg && unit) {}
 
 
 #define YGYOTO_WORKER_GETSET_VECTOR(MEMBER, N)			  \
@@ -457,7 +459,7 @@ void ygyoto_Spectrometer_generic_eval
     size_t pos=0, len=0;					\
     try {rest = Factory(((gyoto_##NAME*)obj)->smptr).format();}	\
     YGYOTO_STD_CATCH;						\
-    while (len=rest.length())  {				\
+    while ( ( len=rest.length() ) )  {				\
       sub=rest.substr(0, pos=rest.find_first_of("\n",0));	\
       rest=rest.substr(pos+1, len-1);				\
       y_print( sub.c_str(),1 );					\
@@ -514,7 +516,7 @@ void ygyoto_Spectrometer_generic_eval
     return yget_obj(iarg,0)==gyoto_##NAME##_obj.type_name;		\
   }									\
   extern "C" {								\
-    void Y_is_gyoto_##NAME(int argc)					\
+    void Y_is_gyoto_##NAME(int)					\
     {									\
       ypush_long(yarg_##NAME(0));					\
     }									\

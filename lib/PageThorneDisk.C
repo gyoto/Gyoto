@@ -53,8 +53,8 @@ PageThorneDisk::PageThorneDisk() :
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
   x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
-  blackbody_(o.blackbody_), uniflux_(o.uniflux_), 
-  mdot_(0), spectrumBB_(NULL)
+  blackbody_(o.blackbody_), mdot_(0), uniflux_(o.uniflux_), 
+  spectrumBB_(NULL)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
   if (o.gg_()) gg_=o.gg_->clone();
@@ -96,8 +96,8 @@ void PageThorneDisk::updateSpin() {
 
 void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
-  string kind = gg->kind();
-  if (kind != "KerrBL" && kind != "KerrKS" && kind != "ChernSimons")
+  string kin = gg->kind();
+  if (kin != "KerrBL" && kin != "KerrKS" && kin != "ChernSimons")
     throwError
       ("PageThorneDisk::metric(): metric must be KerrBL or KerrKS");
   ThinDisk::metric(gg);
@@ -137,7 +137,7 @@ Quantity_t PageThorneDisk::getDefaultQuantities() {
   return GYOTO_QUANTITY_USER4;
 }
 
-double PageThorneDisk::bolometricEmission(double nuem, double dsem,
+double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
 				    double coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
@@ -283,7 +283,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 }
 
 void PageThorneDisk::tell(Hook::Teller* msg) {
-  updateSpin();
+  if (msg==gg_) updateSpin();
 }
 
 int PageThorneDisk::setParameter(std::string name,

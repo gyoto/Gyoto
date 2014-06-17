@@ -145,21 +145,21 @@ double const * PatternDisk::getIntensity() const { return emission_; }
 void PatternDisk::getIntensityNaxes( size_t naxes[3] ) const
 { naxes[0] = nnu_; naxes[1] = nphi_; naxes[2] = nr_; }
 
-void PatternDisk::copyOpacity(double const *const opacity, size_t const naxes[3]) {
+void PatternDisk::copyOpacity(double const *const opac, size_t const naxes[3]) {
   GYOTO_DEBUG << endl;
   if (opacity_) {
     GYOTO_DEBUG << "delete [] opacity_;" << endl;
     delete [] opacity_; opacity_ = NULL;
     flag_radtransf_=0;
   }
-  if (opacity) {
+  if (opac) {
     if (nnu_ != naxes[0] || nphi_ != naxes[1] || nr_ != naxes[2])
       throwError("Please set intensity before opacity. "
 		 "The two arrays must have the same dimensions.");
     GYOTO_DEBUG << "allocate opacity_;" << endl;
     opacity_ = new double[nnu_ * nphi_ * nr_];
     GYOTO_DEBUG << "opacity >> opacity_" << endl;
-    memcpy(opacity_, opacity, nnu_ * nphi_ * nr_ * sizeof(double));
+    memcpy(opacity_, opac, nnu_ * nphi_ * nr_ * sizeof(double));
     flag_radtransf_=1;
   }
 }
@@ -184,20 +184,20 @@ void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[
 }
 double const * PatternDisk::getVelocity() const { return velocity_; }
 
-void PatternDisk::copyGridRadius(double const *const radius, size_t nr) {
+void PatternDisk::copyGridRadius(double const *const rad, size_t nr) {
   GYOTO_DEBUG << endl;
   if (radius_) {
     GYOTO_DEBUG << "delete [] radius_;" << endl;
     delete [] radius_; radius_ = NULL;
   }
-  if (radius) {
+  if (rad) {
     if (!emission_) throwError("Please use copyIntensity() before copyGridRadius()");
     if (nr_ != nr)
       throwError("emission_ and radius_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate velocity_;" << endl;
     radius_ = new double[nr_];
     GYOTO_DEBUG << "velocity >> velocity_" << endl;
-    memcpy(radius_, radius, nr_*sizeof(double));
+    memcpy(radius_, rad, nr_*sizeof(double));
     rin_=radius_[0];
     rout_=radius_[nr_-1];
   }
@@ -643,7 +643,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
       double rp3=velocity_[i[2]*(nphi_*2)+(i[1]-1)*2+1];
 
       double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
-	phiinf=phimin_+(i[1]-1)*dphi_, phisup=phiinf+dphi_;
+	phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
 
       if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
 	throwError("In PatternDisk::getVelocity: "
@@ -710,7 +710,7 @@ double PatternDisk::emission(double nu, double dsem,
       double Iem3=emission_[i[2]*(nphi_*nnu_)+(i[1]-1)*nnu_+i[0]];
 
       double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
-	phiinf=phimin_+(i[1]-1)*dphi_, phisup=phiinf+dphi_;
+	phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
       
       if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
 	throwError("In PatternDisk::emission: "
@@ -741,10 +741,10 @@ double PatternDisk::transmission(double nu, double dsem, double*co) const {
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
   // NB: opacity is not interpolated so far
-  double opacity = opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
-  GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opacity <<endl;
-  if (!opacity) return 1.;
-  return exp(-opacity*dsem);
+  double opac = opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+  GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opac <<endl;
+  if (!opac) return 1.;
+  return exp(-opac*dsem);
 }
 
 void PatternDisk::setInnerRadius(double rin) {

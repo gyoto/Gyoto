@@ -49,7 +49,7 @@ Gyoto::Astrobj::ThinDiskIronLine::~ThinDiskIronLine()
   GYOTO_DEBUG << "Destroying dummy ThinDiskIronLine" << endl;
 }
 
-double ThinDiskIronLine::emission(double nu_em, double dsem,
+double ThinDiskIronLine::emission(double nu_em, double /* dsem */,
 				  double *,
 				  double coord_obj[8]) const{
   double rr=coord_obj[1];
@@ -101,15 +101,15 @@ int ThinDiskIronLine::setParameter(std::string name,
 
 #ifdef GYOTO_USE_XERCES
 // to print/save XML (i.e. to prepare an XML from Yorick), we need this:
-/*void ThinDiskIronLine::fillElement(FactoryMessenger *fmp) const {
-  /* for instance:
-
-     fmp -> setParameter("MyParameter", getMyParameter());
-
-     Then call fillElement *on the direct parent*
-  */
-/*  ThinDisk::fillElement(fmp);
-}*/
+//void ThinDiskIronLine::fillElement(FactoryMessenger *fmp) const {
+//  /* for instance:
+//
+//     fmp -> setParameter("MyParameter", getMyParameter());
+//
+//     Then call fillElement *on the direct parent*
+//  */
+//  ThinDisk::fillElement(fmp);
+//}
 #endif
 
 

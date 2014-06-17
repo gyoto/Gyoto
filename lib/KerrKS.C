@@ -64,9 +64,9 @@ std::ostream& KerrKS::print( std::ostream& o) const {
 */
 
 // Mutators
-void KerrKS::spin(const double spin) {
-  spin_=spin;
-  a2_=spin*spin;
+void KerrKS::spin(const double a) {
+  spin_=a;
+  a2_=spin_*spin_;
   rsink_=1.+sqrt(1.-a2_)+drhor_;
   tellListeners();
 }
@@ -220,8 +220,8 @@ int KerrKS::christoffel(double dst[4][4][4], const double * pos, double gup[4][4
       };
     
     for(a=0; a<4; ++a)
-      for (int mu=0; mu<4; ++mu)
-	for (int nu=0; nu<=mu;++nu)
+      for (mu=0; mu<4; ++mu)
+	for (nu=0; nu<=mu;++nu)
 	  jac[a][mu][nu]=jac[a][nu][mu]=df[a]*k[mu]*k[nu]+f*dk[a][mu]*k[nu]+f*k[mu]*dk[a][nu];
     
   }

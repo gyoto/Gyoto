@@ -95,12 +95,12 @@ double Torus::emission(double nu_em, double dsem, double *, double *) const {
 
 double Torus::transmission(double nuem, double dsem, double*) const {
   if (!flag_radtransf_) return 0.;
-  double opacity = (*opacity_)(nuem);
+  double opac = (*opacity_)(nuem);
   if (debug())
     cerr << "DEBUG: Torus::transmission(nuem="<<nuem<<", dsem="<<dsem<<"), "
-	 << "opacity=" << opacity << "\n";
-  if (!opacity) return 1.;
-  return exp(-opacity*dsem);
+	 << "opacity=" << opac << "\n";
+  if (!opac) return 1.;
+  return exp(-opac*dsem);
 }
 
 double Torus::integrateEmission(double nu1, double nu2, double dsem,

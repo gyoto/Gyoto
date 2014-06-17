@@ -93,6 +93,7 @@ class Gyoto::Astrobj::PageThorneDisk
   // Accessors
   // ---------
  public:
+  using ThinDisk::metric;
   virtual void metric(SmartPointer<Metric::Generic>);
   ///< Set metric, checking that it is either KerrBL or KerrKS
 

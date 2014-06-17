@@ -42,9 +42,9 @@ Scenery::Scenery() :
   quantities_(0), ph_(), nthreads_(0){}
 
 Scenery::Scenery(SmartPointer<Metric::Generic> met,
-		 SmartPointer<Screen> screen,
+		 SmartPointer<Screen> scr,
 		 SmartPointer<Astrobj::Generic> obj) :
-  screen_(screen), delta_(GYOTO_DEFAULT_DELTA),
+  screen_(scr), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), nthreads_(0)
 {
   metric(met);
@@ -82,8 +82,8 @@ void Scenery::metric(SmartPointer<Metric::Generic> met) {
 
 SmartPointer<Screen> Scenery::screen() const { return screen_; }
 
-void Scenery::screen(SmartPointer<Screen> screen) {
-  screen_ = screen;
+void Scenery::screen(SmartPointer<Screen> scr) {
+  screen_ = scr;
   if (metric()) screen_ -> metric (metric()) ;
 }
 

@@ -99,6 +99,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   void gmunu_up(double gup[4][4], const double * pos) const ;
   double gmunu_up(const double * const x, int mu, int nu) const ;
  
+  using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double * pos) const ;
   
   double ScalarProd(const double pos[4],

@@ -218,7 +218,7 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
 #ifdef GYOTO_USE_XERCES
  public:
   /// Write XML description
-  void fillElement(FactoryMessenger *fmp);
+  void fillElement(FactoryMessenger *fmp) const;
   /// Instanciate Photon from XML description
   static SmartPointer<Photon> Subcontractor(Gyoto::FactoryMessenger*);
 #endif

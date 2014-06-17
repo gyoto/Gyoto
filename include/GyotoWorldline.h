@@ -111,9 +111,6 @@ class Gyoto::Worldline
   double delta_min_; ///< Minimum integration step for the adaptive integrator
   double delta_max_; ///< Maximum integration step for the adaptive integrator
 
-  double abstol_;
-  double reltol_;
-
   /**
    * \brief Numerical tuning parameter
    *
@@ -127,6 +124,9 @@ class Gyoto::Worldline
    * MinDistance map for a FixedStar: it must be smooth.
    */
   double delta_max_over_r_;
+
+  double abstol_;
+  double reltol_;
 
   // Constructors - Destructor
   // -------------------------

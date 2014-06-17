@@ -36,8 +36,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-ThinDisk::ThinDisk(std::string kind) :
-  Generic(kind), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1)
+ThinDisk::ThinDisk(std::string kin) :
+  Generic(kin), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1)
 {
   GYOTO_DEBUG << "ThinDisk Construction" << endl;
 }

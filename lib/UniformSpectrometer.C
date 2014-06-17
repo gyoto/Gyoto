@@ -39,12 +39,12 @@ Uniform::Uniform() :
 {
   band_[0]=0.; band_[1]=0.;
 }
-Uniform::Uniform(size_t nsamples, double band_min, double band_max, kind_t kind)
-: Generic(kind)
+Uniform::Uniform(size_t nsamples, double band_min, double band_max, kind_t kin)
+: Generic(kin)
 {
   nsamples_=nsamples;
   band_[0]=band_min; band_[1]=band_max;
-  if (nsamples && kind) reset_();
+  if (nsamples && kin) reset_();
 }
 
 Uniform::Uniform(const Uniform& o) :
@@ -231,7 +231,7 @@ int Spectrometer::Uniform::setParameter(string name,
   } else if (name=="Kind") {
     kind(content);
   } else if (name=="NSamples") {
-    nSamples(atof(tc));
+    nSamples(atoi(tc));
   } else return Generic::setParameter(name, content, unit);
   return 0;
 }

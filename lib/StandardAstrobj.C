@@ -39,8 +39,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-Standard::Standard(string kind) :
-  Generic(kind),
+Standard::Standard(string kin) :
+  Generic(kin),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
 {
 # if GYOTO_DEBUG_ENABLED

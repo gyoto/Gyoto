@@ -121,7 +121,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     if (ntot!=4) y_error("POS must have 4 elements");
     double * vel=ygeta_d(piargs[0],&ntot,0);
     if (ntot!=3) y_error("VEL must have 3 elements");
-    long dims[]= {1, 8};
+    dims[0]=1; dims[1]=8;
     double *coord = ypush_d(dims);
     for (int i=0; i<4; ++i) coord[i]=pos[i];
     for (int i=0; i<3; ++i) coord[i+5]=vel[i];
@@ -142,8 +142,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   if ((iarg=kiargs[++k])>=0) {
     if ((*rvset)++) y_error(rmsg);
     if ((*paUsed)++) y_error(pmsg);
-    long ntot=0;
-    long dims[Y_DIMSIZE];
+    ntot=0;
     double * pos = ygeta_d(iarg, &ntot, dims);
     if (!dims[0] || dims[1]<4)
       y_error("scalarprod: pos must be at least 4 elements long");
@@ -173,13 +172,11 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   if ((iarg=kiargs[++k])>=0) {
     if ((*rvset)++) y_error(rmsg);
     if ((*paUsed)++) y_error(pmsg);
-    long ntot=0;
-    long dims[Y_DIMSIZE];
     double * coords = ygeta_d(iarg, &ntot, dims);
     if (!dims[0] || dims[1]<4)
       y_error("syntax: circularvelocity=array(double, 4 ...)");
-    long dir =1;
-    if (piargs[0] >= 0) dir = ygets_l(piargs[0]) >= 0 ? 1 : -1;
+    double dir =1;
+    if (piargs[0] >= 0) dir = ygets_d(piargs[0]) >= 0 ? 1 : -1;
     long d1 = dims[1];
     long npoints=ntot/d1;
     dims[1]=4;
@@ -205,7 +202,6 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     long ni=i_idx.getNElements();
     long nj=j_idx.getNElements();
     long na=a_idx.getNElements();
-    long nelem=ni*nj*na;
 
     dims[0]=i_idx.getNDims()+j_idx.getNDims()+a_idx.getNDims();
     size_t offset=0;
@@ -223,7 +219,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
       for ( a=a_idx.first() ; a_idx.valid() ; a=a_idx.next() )
 	for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
 	  for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )
-	    *(data++) = (*OBJ)->christoffel(coords, a-1, i-1, j-1);
+	    *(data++) = (*OBJ)->christoffel(coords, int(a-1), int(i-1), int(j-1));
     }
 
   } 
@@ -244,7 +240,6 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   if (j_idx.isNuller()) return;
   long ni=i_idx.getNElements();
   long nj=j_idx.getNElements();
-  long nelem=ni*nj;
 
   dims[0]=i_idx.getNDims()+j_idx.getNDims();
   size_t offset=0;
@@ -262,6 +257,6 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
   size_t i, j;
   for ( j=j_idx.first() ; j_idx.valid() ; j=j_idx.next() )
     for ( i=i_idx.first() ; i_idx.valid() ; i=i_idx.next() )
-      *(data++) = (*OBJ)->gmunu(x, i-1, j-1);
+      *(data++) = (*OBJ)->gmunu(x, int(i-1), int(j-1));
 
 }

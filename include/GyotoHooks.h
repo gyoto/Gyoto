@@ -58,14 +58,14 @@ namespace Gyoto {
      * Whisper to my ear by using my tell() method.
      */
     class Listener;
-  };
-};
+  }
+}
 
 class Gyoto::Hook::Listener {
   friend class Gyoto::Hook::Teller;
  public:
   Listener(); ///< Constructor
-  ~Listener(); ///< Destructor
+  virtual ~Listener(); ///< Destructor
 
  protected:
   /**
@@ -96,7 +96,7 @@ class Gyoto::Hook::Teller {
  public:
   Teller(); ///< Default constructor
   Teller(const Teller &); ///< Copy constructor
-  ~Teller(); ///< Destructor
+  virtual ~Teller(); ///< Destructor
 
   /**
    * \brief Start listening

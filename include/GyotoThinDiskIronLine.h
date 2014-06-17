@@ -6,8 +6,8 @@
 namespace Gyoto {
   namespace Astrobj {
     class ThinDiskIronLine;
-  };
-};
+  }
+}
 
 class Gyoto::Astrobj::ThinDiskIronLine
 : public Gyoto::Astrobj::ThinDisk {
@@ -21,6 +21,8 @@ class Gyoto::Astrobj::ThinDiskIronLine
   ThinDiskIronLine(const ThinDiskIronLine &o);
   virtual ~ThinDiskIronLine();
   virtual ThinDiskIronLine * clone() const ;
+
+  using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
   void getVelocity(double const pos[4], double vel[4]);
