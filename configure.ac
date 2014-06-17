@@ -19,7 +19,14 @@ AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
 # Check for C++11
-AX_CXX_COMPILE_STDCXX_11(, [optional])
+AC_ARG_ENABLE([c++11],
+  [AS_HELP_STRING([--disable-c++11],
+     [disable C++11 features (including advanced integrators)])])
+AS_IF([test "x$enable_c__11" != "xno"],
+  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
+)
+AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
+  [AC_MSG_ERROR([C++11 requested but not found])])
 
 # Check for boost
 AS_IF([test "x$HAVE_CXX11" = "x1"],

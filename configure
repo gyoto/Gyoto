@@ -818,6 +818,7 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_c__11
 with_boost
 enable_native
 enable_hardening
@@ -1494,6 +1495,8 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --disable-c++11         disable C++11 features (including advanced
+                          integrators)
   --enable-native         append "-march=native" to CXXFLAGS if supported
   --enable-hardening      add warnings and hardening flags if supported
   --enable-deprecated     enable deprecated method names (needing this is a
@@ -3272,6 +3275,7 @@ END
     as_fn_error $? "Your 'rm' program is bad, sorry." "$LINENO" 5
   fi
 fi
+
 
 
 ac_ext=cpp
@@ -15423,7 +15427,13 @@ sovers=`echo $VERSINFO | tr : .`
 
 
 # Check for C++11
-    ax_cxx_compile_cxx11_required=false
+# Check whether --enable-c++11 was given.
+if test "${enable_c__11+set}" = set; then :
+  enableval=$enable_c__11;
+fi
+
+if test "x$enable_c__11" != "xno"; then :
+      ax_cxx_compile_cxx11_required=false
   ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15617,6 +15627,11 @@ $as_echo "#define HAVE_CXX11 1" >>confdefs.h
 
   fi
 
+
+fi
+if test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"; then :
+  as_fn_error $? "C++11 requested but not found" "$LINENO" 5
+fi
 
 # Check for boost
 
