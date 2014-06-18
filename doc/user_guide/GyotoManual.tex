@@ -1,3 +1,20 @@
+% Copyright 2014 Frédéric Vincent, Thibaut Paumard
+%
+% This file is part of Gyoto.
+%
+% Gyoto is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% Gyoto is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+
 \documentclass[a4paper,12pt]{article}
 
 \usepackage[]{natbib}  
@@ -22,6 +39,10 @@
 \usepackage{fancyvrb}
 \DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small}
 \newcommand{\D}{\mathrm{d}}  
+\newcommand{\GYOTO}{\texttt{GYOTO}}
+\newcommand{\Metric}{\texttt{Metric}}
+\newcommand{\Astrobj}{\texttt{Astrobj}}
+\newcommand{\Spectrum}{\texttt{Spectrum}}
 
 \graphicspath{{../images/}}
 
@@ -55,7 +76,7 @@
 
 This Guide aims at giving a general presentation of the \textit{General relativitY Orbit Tracer of Observatoire de Paris}, \texttt{GYOTO} (pronounced \textipa{[dZIoto]}, as for the Italian trecento painter Giotto di Bondone). This text is not a lecture on ray-tracing techniques and is only devoted to presenting the code so that it can be quickly handled by any user. Readers interested in the physics behind \texttt{GYOTO} are referred to~\citet[][and references therein]{vincent11a,vincent12a}. The aim of this Guide is also to present the code in sufficient details so that people interested to develop their own version of \texttt{GYOTO} can do it easily.
 
-\texttt{GYOTO} is an open source C++ code with a Yorick plug-in that computes null and timelike geodesics in the Kerr metric as well as in any metric computed within the framework of the 3+1 formalism of general relativity. This code allows to compute mainly images and spectra of astrophysical sources emitting electromagnetic radiation in the vicinity of compact objects (e.g. accretion disks or nearby stars). 
+\texttt{GYOTO} is an open source C++ code with a Yorick plug-in that computes null and time-like geodesics in the Kerr metric as well as in any metric computed within the framework of the 3+1 formalism of general relativity. This code allows to compute mainly images and spectra of astrophysical sources emitting electromagnetic radiation in the vicinity of compact objects (e.g. accretion disks or nearby stars). 
 
 As \texttt{GYOTO} is continually evolving, this guide will (hopefully) be regularly updated to present the new functionalities added to the code. However, this guide does not constitute a full reference. The reference manual is built from the C++ header files using \texttt{doxygen} into the \texttt{doc/html/} directory of the source tree. It is also available online (rebuilt every night) at \url{http://gyoto.obspm.fr/}.
 
@@ -206,10 +227,10 @@ usually the number of hardware CPU cores on the machine. This option
 can also be specified in the input file using the
 \texttt{$<$NThreads$>$} entity. This facility does not work for
 LORENE-based metrics (see Sect.~\ref{3+1}). Another cheap way of
-parallelizing the computation is to call several \texttt{gyoto}
+parallelising the computation is to call several \texttt{gyoto}
 instances, running on different CPUs or even on different machines,
 each instance computing only a portion of the image. This sort of
-basic parrallelization is, naturally, supported by all the
+basic parrallelisation is, naturally, supported by all the
 \texttt{GYOTO} metrics.
 
  You can ask \texttt{GYOTO} to compute only a fraction of the screen's pixels by running:
@@ -231,13 +252,13 @@ scientific interpreted language such as
 Yorick\footnote{\url{http://dhmunro.github.io/yorick-doc/}} or
 Python\footnote{\url{https://www.python.org/}}.
 
-Several other parameters can be overriden on the command-line. This
+Several other parameters can be overridden on the command-line. This
 includes the position of the \texttt{Screen} and the observing time
-(\texttt{--time=TIME}), which is quite usefull to produce a movie.
+(\texttt{--time=TIME}), which is quite useful to produce a movie.
 
 \subsubsection{FITS output file}
 
-Once the computation is performed, the \texttt{output.fits} file is created. You can visualize it by using the \texttt{ds9} software (\url{http://hea-www.harvard.edu/RD/ds9/site/Home.html}) and simply running:
+Once the computation is performed, the \texttt{output.fits} file is created. You can visualise it by using the \texttt{ds9} software (\url{http://hea-www.harvard.edu/RD/ds9/site/Home.html}) and simply running:
 
 \begin{code}
  $ ds9 ouput.fits
@@ -247,7 +268,7 @@ Once the computation is performed, the \texttt{output.fits} file is created. You
 For instance, if you use the \texttt{example-page-thorne-disk-BL.xml} as is, you will obtain Fig.~\ref{fig:demo}.
 
 \subsection{The \texttt{gyotoy} interface}
-
+\label{sect:gyotoy}
 
 The second most basic tool provided by \texttt{GYOTO} is
 \texttt{gyotoy} (Fig.~\ref{fig:gyotoy}). This is a graphical user
@@ -258,7 +279,7 @@ complete, your launch gyotoy as:
  $ gyotoy  
 \end{code}
 %$
-or, from the \texttt{yorick/} subdirectory of the built source tree:
+or, from the \texttt{yorick/} sub-directory of the built source tree:
 \begin{code}
  $ ./yorick -i gyotoy.i
 \end{code}
@@ -279,7 +300,7 @@ metric defined in an \texttt{XML} file. As of writing, \texttt{gyotoy}
 assumes that the coordinate system is spherical-like. It should work
 in Cartesian coordinates as well, but the labels will be odd. It is
 possible to select which kind of geodesic to compute (time-like or
-light-like, using hte \texttt{Star} or \texttt{Photon} radio buttons),
+light-like, using the \texttt{Star} or \texttt{Photon} radio buttons),
 the initial position and 3-velocity of the particle, and the
 projection (a.k.a. the position of the observer). The bottom tool bar
 allows selecting a few numerical parameters such as whether or not to
@@ -298,7 +319,7 @@ computing spectra, performing model-fitting, computing movies,
 evaluating lensing effects etc.
 
 \subsection{Using the Yorick plug-in}
-
+\label{sect:yorick}
 Yorick is a fairly easy to learn interpreted computer language. We
 provide a Yorick plug-in which exposes the \texttt{GYOTO}
 functionalities to this language. This plug-in is self documented: at
@@ -311,7 +332,8 @@ the Yorick prompt, try:
 A lot of the \texttt{GYOTO} test suite is written in Yorick, which
 provides many example code in the various \texttt{*.i} files in the
 \texttt{yorick/} directory of the \texttt{GYOTO} source tree. Another
-example is provided by the \texttt{gyotoy} graphical interface.
+example is provided by the \texttt{gyotoy} graphical interface
+(Sect.~\ref{sect:gyotoy}).
 
 For Yorick basics, see:
 \begin{itemize}
@@ -321,7 +343,7 @@ For Yorick basics, see:
 \item \url{http://www.maumae.net/yorick/doc/index.php}.
 \end{itemize}
 
-As a very minimalistic example, here is how to ray-trace an XML
+As a very minimalist example, here is how to ray-trace an XML
 scenery into a FITS file in Yorick:
 \begin{code}
  $ rlwrap yorick
@@ -340,6 +362,17 @@ or, in two lines:
 \begin{code}
  > #include "gyoto.i"
  > fits_write, "output.fits", gyoto.Scenery("input.xml")(,,"Intensity");
+\end{code}
+Likewise, to integrate the spectrum over the field-of-view:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > sc = Scenery("input.xml");
+ > data = sc(,,"Spectrum[mJy.pix-2]");
+ > spectrum = data(sum, sum, );
+ > freq = sc(screen=)(spectro=)(midpoints=, unit="Hz");
+ > plg, spectrum, freq;
+ > xytitles, "Frequency [Hz]", "Spectrum [mJy]";
 \end{code}
 
 \subsection{Interfacing directly to the \texttt{GYOTO} library}
@@ -412,7 +445,7 @@ The full set of tuning parameters that \emph{may be} supported by the
 \item[RelTol]\footnotemark[\value{footnote}] relative tolerance for
   adapting the integration step (idem);
 \item[DeltaMax]\footnote{The \texttt{Legacy} integrator take the
-    DeltaMin, DeltaMax and DeltaMAxOverR parameters in the
+    DeltaMin, DeltaMax and DeltaMaxOverR parameters in the
     \texttt{Metric} section.} the absolute maximum value for the
   integration step (defaults to the largest possible non-infinite
   value);
@@ -444,7 +477,7 @@ integrators are available:
 \item \texttt{runge\_kutta\_fehlberg78};
 \item \texttt{runge\_kutta\_dopri5};
 \item \texttt{runge\_kutta\_cash\_karp54\_classic} (alternate
-  implementation of \texttt{runge\_kutta\_cash\_karp54}).
+  implementation of\\ \texttt{runge\_kutta\_cash\_karp54}).
 \end{itemize}
 
 Those integrators are implemented in the \texttt{Worldline}
@@ -486,9 +519,9 @@ have very little actual impact on the behaviour of the integrator.
   \includegraphics[width=0.32\textwidth]{doc-fig-dfl-ctime.pdf}
   \caption{Comparison of the integrators when measuring a deflection
     angle (see text). \emph{Left:} error on deflection angle
-    vs. tuning parameter; \emph{center:} computing time vs. tuning
+    vs. tuning parameter; \emph{centre:} computing time vs. tuning
     parameter; \emph{right:} computing time vs. error on deflection
-    angle. Colors denote the integrator: \emph{red:} \texttt{Legacy}
+    angle. Colours denote the integrator: \emph{red:} \texttt{Legacy}
     (\emph{solid:} specific \texttt{KerrBL} implementation,
     \emph{dash-dotted:} generic implementation); \emph{black:}
     \texttt{runge\_kutta\_fehlberg78}; \emph{blue:}
@@ -499,7 +532,7 @@ have very little actual impact on the behaviour of the integrator.
 
 It is advisable to try the various integrators in your context, and to
 play with the tuning parameters. As a rule of thumbs, if you need to
-change DeltaMin, DeltaMax, DeltaMaxOverR, or MAxiter, it probably
+change DeltaMin, DeltaMax, DeltaMaxOverR, or Maxiter, it probably
 means that you should change for a higher-order integrator. The
 highest order integrator is currently
 \texttt{runge\_kutta\_fehlberg78} and is the default.
@@ -507,9 +540,9 @@ highest order integrator is currently
 As an example, we have compared all the integrators for a simple
 situation: the \texttt{Metric} is a Schwarzschild black-hole of
 $4\times10^6\,M_\odot$, the \texttt{Screen} is at 8~kpc, a single
-light-ray is launched $50\,\mu$as from the center, we integrate the
+light-ray is launched $50\,\mu$as from the centre, we integrate the
 light-ray (back in time) during twice the travel-time to the origin of
-the coordinate center and compute the deflection angle. We do that for
+the coordinate centre and compute the deflection angle. We do that for
 each integrator and a set of numerical tuning parameters. For the
 \texttt{Legacy} integrator, we try both the generic integrator and the
 specific \texttt{KerrBL} implementation, and use DeltaMaxOverR as
@@ -562,15 +595,15 @@ directory of the built source tree as:
 
 \subsection{\texttt{GYOTO} base classes}
 
-\texttt{GYOTO} is basically organized around 8 base classes (see Fig.~\ref{fig:hierarch}):
+\texttt{GYOTO} is basically organised around 8 base classes (see Fig.~\ref{fig:hierarch}):
 
 \begin{itemize}
-\item The \texttt{Metric} class: it describes the metric of the spacetime (Kerr in Boyer-Lindquist coordinates, Kerr in Kerr-Schild coordinates, metric of a relativistic rotating star in 3+1 formalism...).
+\item The \texttt{Metric} class: it describes the metric of the space-time (Kerr in Boyer-Lindquist coordinates, Kerr in Kerr-Schild coordinates, metric of a relativistic rotating star in 3+1 formalism...).
 \item The \texttt{Astrobj} class: it describes the astrophysical target object that must ray-traced (e.g. a thin accretion disk, a thick 3D disk, a star...).
 \item The \texttt{Spectrum} class: it describes the emitted spectrum of the \texttt{Astrobj}.
-\item The \texttt{Worldline} class: it gives the evolving coordinates of a timelike or null geodesic. The \texttt{Star} class is a sub-class of \texttt{Worldline} as for the time being a star in \texttt{GYOTO} is only described by the timelike geodesic of its center, with a given fixed radius.
+\item The \texttt{Worldline} class: it gives the evolving coordinates of a time-like or null geodesic. The \texttt{Star} class is a sub-class of \texttt{Worldline} as for the time being a star in \texttt{GYOTO} is only described by the time-like geodesic of its centre, with a given fixed radius.
 \item The \texttt{WorldlineIntegState} class: it describes the integration of the \texttt{Worldline} in the given \texttt{Metric}.
-\item The \texttt{Screen} class: it describes the observer's screen, its resolution, its position in spacetime, its field of view.
+\item The \texttt{Screen} class: it describes the observer's screen, its resolution, its position in space-time, its field of view.
 \item The \texttt{Scenery} class: it describes the ray-tracing scene. It is made of a \texttt{Metric}, a \texttt{Screen}, an \texttt{Astrobj} and the quantities that must be computed (an image, a spectrum...).
 \item The \texttt{Factory} class: it allows to translate the \texttt{XML} input file into C++ objects.
 \end{itemize}
@@ -591,7 +624,7 @@ Let us now describe the main interactions of these various classes during the co
 
 All directories used in the following are located in \texttt{GYOTO} home directory.
 
-\texttt{GYOTO} \texttt{main} program is located in \texttt{bin/gyoto.C}. This program first interprets the command line given by the user. It creates a new \texttt{Factory} object, initialized by means of the \texttt{XML} input file, that will itself create (see \texttt{lib/Factory.C}) the \texttt{Scenery}, \texttt{Screen} and \texttt{Astrobj} objects. The output quantities the user is interested in (image, spectrum...) will be stored during the computation in the \texttt{data} object, of type \texttt{Astrobj::Properties}. The \texttt{Scenery} object is then used to perform the ray-tracing, by calling its \texttt{rayTrace} function. All the functions that begin with \texttt{fits\_} allow to store the final output quantities in \texttt{FITS} format.
+\texttt{GYOTO} \texttt{main} program is located in \texttt{bin/gyoto.C}. This program first interprets the command line given by the user. It creates a new \texttt{Factory} object, initialised by means of the \texttt{XML} input file, that will itself create (see \texttt{lib/Factory.C}) the \texttt{Scenery}, \texttt{Screen} and \texttt{Astrobj} objects. The output quantities the user is interested in (image, spectrum...) will be stored during the computation in the \texttt{data} object, of type \texttt{Astrobj::Properties}. The \texttt{Scenery} object is then used to perform the ray-tracing, by calling its \texttt{rayTrace} function. All the functions that begin with \texttt{fits\_} allow to store the final output quantities in \texttt{FITS} format.
 
 The function \texttt{Scenery::rayTrace} calls \texttt{Photon::hit} that forms the core of \texttt{GYOTO}: \texttt{Photon::hit} integrates the null geodesic from the observer's screen backward in time until the target object is reached (there are other stop conditions of course, see \texttt{lib/Photon.C}). \texttt{Photon::hit} is basically made of a loop that calls the function \texttt{WorldlineIntegState::nextStep} until a stop condition is reached.  \texttt{WorldlineIntegState::nextStep} itself calls the correct adaptive fourth order Runge-Kutta integrator (RK4) , depending on the metric used. Here, the metric being \texttt{KerrBL}, the RK4 used is \texttt{KerrBL::myrk4\_adaptive}. 
 
@@ -651,7 +684,13 @@ F_{\nu_{\mathrm{obs}}} = \sum_{\mathrm{pixels}} I_{\nu_{\mathrm{obs}},\mathrm{pi
 \end{equation}
 where $I_{\nu_{\mathrm{obs}},\mathrm{pixel}}$ is the specific intensity reaching the given pixel, $\theta_{\mathrm{pixel}}$ is the angle between the normal to the screen and the direction of incidence corresponding to this pixel and $\delta\Omega_{\mathrm{pixel}}$ is the element of solid angle introduced above. 
 
-This quantity $F_{\nu_{\mathrm{obs}}}$ can thus be very simply computed from the cube of specific intensities computed by \texttt{GYOTO}. Examples of spectra computed by \texttt{GYOTO} can be found in, e.g.,~\citet{straub12}.
+This quantity $F_{\nu_{\mathrm{obs}}}$ can thus be very simply
+computed from the cube of specific intensities computed by
+\texttt{GYOTO}. Examples of spectra computed by \texttt{GYOTO} can be
+found in, e.g.,~\citet{straub12}. Section~\ref{sect:yorick} contains
+example code to compute a spectrum directly using the provided Yorick
+interface. See also \texttt{yorick/check-polish-doughnut.i}, which
+does just that as part of the routine test suite of \GYOTO.
 
 
 \section{\texttt{GYOTO} in numerical metrics}
@@ -665,10 +704,280 @@ For the time being, only a simple example of numerical metric is implemented in 
 
 The basic functions developed in \texttt{lib/RotStar3\_1.C} are similar to their Kerr counterparts, but here the metric is expressed in terms of the 3+1 quantities (lapse, shift, 3-metric, extrinsic curvature). The equation of geodesics expressed in the 3+1 formalism is given in~\citet{vincent12a} and implemented in \texttt{lib/RotStar3\_1.C}. However, it is possible to choose in the \texttt{XML} file whether the integration will be performed by using this 3+1 equation of geodesics, or by using the most general 4D equation of geodesics~\citep[see][for a comparison of the two methods]{vincent11a}.
 
-\section{Adding a new astrophysical target object in \texttt{GYOTO}}
+\section{Extending \GYOTO}
+
+This section is currently under construction.
+
+\GYOTO\ can be extended easily by adding new \Metric, \Astrobj, and
+\Spectrum\ classes. Such classes can be bundled in \GYOTO\
+plug-ins. The main \GYOTO\ code-base already contain two plug-ins:
+\texttt{stdplug}, which contain all the standard analytical metrics
+and all the standard astrophysical object, and \texttt{lorene} which
+contains the numerical, LORENE-based metrics. In addition, we maintain
+our own private plug-in, which contains experimental or yet
+unpublished \Astrobj\ and \Metric\ classes. When we make a publication
+based on these classes, we move them from our private plug-in to the
+relevant public plug-in. We kindly request that you follow the same
+philosophy: whenever you write a new class and make a publication out
+of it, please publish the code as free software, either on your own
+servers or by letting us include it in \GYOTO. As soon as you write
+your own objects, you will dependent on the stability of the \GYOTO\
+application programming interface, which is subject to frequent
+changes. It will help us to help you maintain your code if you inform
+us of such development: \texttt{gyoto@sympa.obspm.fr}.
+
+\subsection{Writing a plug-in}
+\label{sect:plug-in}
+
+A plug-in is merely a shared library which contains the object code
+for your new objects, plus a special initialisation function. It is
+loaded into memory using \texttt{dlopen()} by the function
+\texttt{Gyoto::loadPlugin(char const*const name, int nofail)},
+implemented in \texttt{lib/Register.C}. The \texttt{name} argument
+will be used twice:
+\begin{itemize}
+\item the shared library file must be called
+  \texttt{libgyoto-\emph{name}.\$suffix} (\texttt{\$suffix} is usually
+  \texttt{.so} under Linux, \texttt{.dylib} under Mac OS);
+\item the init function for your plug-in must be called
+  \texttt{\_\_Gyoto\emph{name}Init}.
+\end{itemize}
+
+The role of the init function is to register subcontractors for your
+object classes so that they can be found by name. For instance,
+assuming you want to bundle the Minkowski metric (actually provided in
+the standard plug-in) in a plugin called \texttt{myplugin}, you would
+write a C++ file (whose name is not relevant, but assume
+\texttt{MyPlugin.C}) with this content:
+
+\begin{code}
+#include "GyotoMinkowski.h"
+using namespace Gyoto;
+extern "C" void __GyotomypluginInit() {
+  Metric::Register("Minkowski", \&Metric::Subcontractor<Metric::Minkowski>);
+}
+\end{code}
+
+Likewise, you could register more metrics, astrophysical objects and
+spectra. Other examples can be seen in the \texttt{lib/StdPlug.C} and
+\texttt{lib/LorenePlug.C} files.
+
+When building your plug-in, make sure \texttt{MyPlugin.C} ends up
+compiled with\\ \texttt{lib/Minkowski.C} (in this example) into a single
+shared library called\\ \texttt{libgyoto-myplugin.so} (assuming you work
+under Linux), and drop this file somewhere where the linker will find
+it at run-time. The following places are good choices:
+\begin{itemize}
+\item where-ever \texttt{libgyoto-stdplug.so} gets installed;
+\item \texttt{/usr/local/lib/};
+\item \texttt{/usr/lib/}.
+\end{itemize}
+
+\GYOTO\ ships a pkg-config file (\texttt{gyoto.pc}) which stores
+contains useful build-time information such as the install prefix and
+the plug-in suffix. This file gets installed in the standard location,
+by default \texttt{/usr/local/lib/pkgconfig/gyoto.pc}.
+
+\subsection{Adding a new metric (\Metric)}
+
+The simplest example for a \Metric\ object is certainly the
+\texttt{Minkowski} class. Let's go through the header file that
+defines its interface (expunged from all this useless documentation
+\texttt{;-)}), we trust the reader to go see the corresponding
+\texttt{.C} file:\\
+Avoid multiple and recursive inclusion of header files:
+\begin{code}
+  #ifndef __GyotoMinkowski_H_
+  #define __GyotoMinkowski_H_
+\end{code}
+Minkowski is a metric, include the \Metric\ base class header file:
+\begin{code}
+  #include <GyotoMetric.h>
+\end{code}
+Declare that our new class goes into the \texttt{Gyoto::Metric}
+namespace:
+\begin{code}
+  namespace Gyoto {
+    namespace Metric { class Minkowski; }
+  }
+\end{code}
+Declare that Minkowski inherits from the base class:
+\begin{code}
+  class Gyoto::Metric::Minkowski
+  : public Gyoto::Metric::Generic
+  {
+\end{code}
+Each class must be friend with the corresponding \texttt{SmartPointer}
+class:
+\begin{code}
+    friend class Gyoto::SmartPointer<Gyoto::Metric::Minkowski>;
+\end{code}
+Minkowski has no private data, else we would put it here:
+\begin{code}
+    private:
+
+\end{code}
+Every class needs a constructor, which will at least populate the
+\texttt{kind\_} attribute of the parent class and the kind of coordinate
+system (Cartesian-like or spherical-like):
+\begin{code}
+  public:
+    Minkowski();
+\end{code}
+The cloner is important, and easy to implement. It must provide a deep
+copy of an object instance. It is used in the multi-threading case to
+make sure two threads don't tip on each-other's toes, and in the
+Yorick plug-in (Sect.~\ref{sect:yorick}) when you want to make a copy
+of an object rather than reference the same object:
+\begin{code}
+    virtual Minkowski* clone() const ;
+\end{code}
+Then come the two most important methods, which actually define the
+mathematical metric:
+\begin{code}
+  void gmunu(double g[4][4], const double * x) const ;
+  int christoffel(double dst[4][4][4], const double * x) const ;
+\end{code}
+The \texttt{setParameter} method is the one that interprets options
+from the XML file. For each XML entity found in the \Metric\ section
+in the form\\
+\texttt{<ParName unit="unit\_name">ParValueString</ParName>},\\
+ the method
+\texttt{Metric::Generic::setParameters()} will call\\
+\texttt{setParameter(ParName, ParValueString, unit\_name)}:
+\begin{code}
+    virtual void setParameter(std::string, std::string, std::string);
+\end{code}
+\texttt{setParameter()} should interpret the parameters specific to
+this class and pass whatever remains to the \texttt{Generic}
+implementation. \texttt{setParameter()} has a counterpart,\\
+\texttt{fillElement()}, which is mostly used by the Yorick plug-in
+(Sect.~\ref{sect:yorick}) to dump an in-memory object instance to text
+format (this is what allows \texttt{gyotoy}, Sect.~\ref{sect:gyotoy},
+to write its parameters to disk). This method must be compiled only if
+XML input/output is compiled in:
+\begin{code}
+  #ifdef GYOTO_USE_XERCES
+    virtual void fillElement(FactoryMessenger *fmp);
+  #endif
+\end{code}
+The Minkowski implementation goes on with an alternate implementation
+of \texttt{gmunu()} and \texttt{christoffel()}. For the purpose of
+this documentation, we will skip these additional examples and close
+the header file here:
+\begin{code}
+  };
+  #endif
+\end{code}
+
+For more details, see the \GYOTO\ reference manual in
+\texttt{doc/html/} or at \url{http://gyoto.obspm.fr/}. There are a few
+other methods that are worthwhile reimplementing, such as
+\texttt{circularVelocity()}, which allows getting accurate beaming
+effects for thin disks and tori. Naturally,
+\texttt{circularVelocity()} can only be implemented if circular orbits
+physically exist in this metric (else, the Keplerian approximation is
+readily provided by the generic implementation). Some other low-level
+methods can be reimplemented, but it is not necessarily a good idea.
+
+Once you have implemented the new Metric, just make sure it is
+compiled into your plug-in and initialised in the initialisation
+function (Sect.~\ref{sect:plug-in}). For official \GYOTO\ code (that
+does not depend on LORENE), this is done by adding your \texttt{.C}
+file to\\
+\texttt{libgyoto\_stdplug\_la\_SOURCES} in
+\texttt{lib/Makefile.am} (and running \texttt{autoreconf} followed by
+\texttt{configure}), and adding one line in
+\texttt{\_\_GyotostdplugInit} in \texttt{lib/StdPlug.C}.
+
+\subsection{Adding a new spectrum (\Spectrum)}
+
+Adding a new spectrum kind is almost the same as adding a metric.
+
+\subsection{Adding a new astrophysical target object (\Astrobj)}
 \label{newastrobj}
 
-[In construction...]
+Adding a new astronomical object kind is almost the same as adding a
+metric. However, astronomical objects are more complex than metrics
+(they can have abundant hair). Instead of inheriting directly from the
+most generic base class, \texttt{Gyoto::Astrobj::Generic}, you will
+save yourself a lot of effort if you are able to derive from one of
+the higher level bases:
+\begin{description}
+\item[Astrobj::ThinDisk] a geometrically thin disk
+  (e.g. \texttt{PageThorneDisk}, \texttt{PatternDisk});
+\item[Astrobj::UniformSphere] a... uniform sphere (e.g. \texttt{Star},
+  \texttt{FixedStar});
+\item[Astrobj::Standard] any object whose boundary can be defined as
+  an iso-surface of some function of the coordinates, such as a sphere
+  or a torus (e.g. \texttt{UniformSphere}, \texttt{Torus}).
+\end{description}
+
+\subsection{Using your new plug-in}
+There are several ways to instruct \GYOTO\ to load your plug-in. You
+can set the environment variable\texttt{GYOTO\_PLUGINS}\footnote{How
+  to do it depends on your shell and is outside the scope of this
+  manual.}, with a command such as
+\begin{code}
+  export GYOTO_PLUGINS=stdplug,myplugin
+\end{code}
+Alternatively, a list of plug-ins can be specified on the command-line
+when using the \texttt{gyoto} tool:
+\begin{code}
+  gyoto --plugins=stdplug,myplugin ...
+\end{code}
+A plug-in can also be specified in the input XML file for each
+section:
+\begin{code}
+   <Metric kind = "KerrBL" plugin="stdplug">
+\end{code}
+Finally, the Yorick interface (Sect.~\ref{sect:yorick}) has a function
+to explicitly load a \GYOTO\ plug-in at run-time:
+\begin{code}
+ > gyoto.loadPlugin("myplugin");
+\end{code}
+Once the plug-in is loaded, your new object kinds should be registered
+(that's the purpose of the init function). To check that your objects
+are correctly register, you can use the \texttt{----debug} option of
+the \texttt{gyoto} tool or the \texttt{gyoto.listRegister()} function
+of the Yorick interface.
+
+You can use then use your classes directly in an XML file, using the
+name you provided to the \texttt{Register()} function in the init
+function of the plug-in:
+\begin{code}
+   <Metric kind = "Minkowski" plugin="myplugin">
+\end{code}
+The Yorick interface can load any object from an XML description, an
+can also initialise any object from its name:
+\begin{code}
+ > gyoto.loadPlugin("myplugin");
+ > metric = gyoto.Metric("Minkowski");
+\end{code}
+If your object supports any options using the \texttt{setParameter()}
+method, these options can also be set from within Yorick:
+\begin{code}
+ > metric, setparameter="ParName", "ParValueString", unit="unit_string";
+\end{code}
+If your want finer access to your objects from the Yorick interface,
+you will need to provide a Yorick plug-in around your \GYOTO\
+plug-in. Look at the content of the \texttt{yorick/stdplug/}
+directory. For new official \GYOTO\ objects in the standard plug-in,
+it is fairly easy to provide an interface directly inside our Yorick
+plug-in.
+
+\subsection{Quality assurance}
+
+It is customary to provide a test-suite for every new class in
+\GYOTO. This normally includes an example file in
+\texttt{doc/examples}, which is ray-traced in the \texttt{check}
+target of \texttt{bin/Makefile.am}. Usually, we also provide a new
+Yorick test file called\\
+\texttt{yorick/check-myclass.i} which is
+called from \texttt{yorick/check.i}. This is a good idea to do so even
+if you don't intend on using the Yorick plug-in: at least, you can use
+this interpreted interface to perform unit tests on your code in a
+more fine-grained manner than a full-featured ray-traced image.
 
 \bibliographystyle{kluwer}
 \bibliography{GyotoManual}

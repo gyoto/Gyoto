@@ -29,20 +29,11 @@
 #ifndef __GyotoMinkowski_H_
 #define __GyotoMinkowski_H_
 
-#include <iostream>
-#include <fstream>
+#include <GyotoMetric.h>
 
 namespace Gyoto {
   namespace Metric { class Minkowski; }
 }
-
-#include <GyotoMetric.h>
-#include <GyotoWorldline.h>
-#include <GyotoSmartPointer.h>
-
-#ifdef GYOTO_USE_XERCES
-#include <GyotoRegister.h>
-#endif
 
 class Gyoto::Metric::Minkowski
 : public Gyoto::Metric::Generic
