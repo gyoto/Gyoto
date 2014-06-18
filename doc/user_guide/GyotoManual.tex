@@ -1,5 +1,3 @@
-% rm ProjetRecherche.bib ; latex ProjetRecherche.tex ; bibtex ProjetRecherche ; latex ProjetRecherche.tex ; latex ProjetRecherche.tex ; dvips -o projet.ps ProjetRecherche.dvi ; ps2pdf projet.ps
-
 \documentclass[a4paper,12pt]{article}
 
 \usepackage[]{natbib}  
@@ -17,7 +15,7 @@
 \usepackage[frenchb,english]{babel} 
 \usepackage{amssymb,amsmath} 
 \usepackage{float}
-\usepackage{url}                
+\usepackage{hyperref}                
 \usepackage{amstext}
 \usepackage{tipa}
 %\usepackage{palatino}
@@ -25,7 +23,7 @@
 \DefineVerbatimEnvironment{code}{Verbatim}{fontsize=\small}
 \newcommand{\D}{\mathrm{d}}  
 
-\graphicspath{{ManualFig/}}
+\graphicspath{{../images/}}
 
 
 \begin{document}
@@ -59,7 +57,7 @@ This Guide aims at giving a general presentation of the \textit{General relativi
 
 \texttt{GYOTO} is an open source C++ code with a Yorick plug-in that computes null and timelike geodesics in the Kerr metric as well as in any metric computed within the framework of the 3+1 formalism of general relativity. This code allows to compute mainly images and spectra of astrophysical sources emitting electromagnetic radiation in the vicinity of compact objects (e.g. accretion disks or nearby stars). 
 
-As \texttt{GYOTO} is continually evolving, this guide will (hopefully) be regularly updated to present the new functionalities added to the code.
+As \texttt{GYOTO} is continually evolving, this guide will (hopefully) be regularly updated to present the new functionalities added to the code. However, this guide does not constitute a full reference. The reference manual is built from the C++ header files using \texttt{doxygen} into the \texttt{doc/html/} directory of the source tree. It is also available online (rebuilt every night) at \url{http://gyoto.obspm.fr/}.
 
 The reader is strongly encouraged to give feedback on this Manual, report typos, ask questions or suggest improvements by sending an email to \url{frederic.vincent@obspm.fr}
 
@@ -94,12 +92,16 @@ to build the code.
 
 In case of problems, have a look at the \texttt{INSTALL} file that gives important complementary informations on how to install \texttt{GYOTO}.
 
-\section{A first demonstration}
+\section{Basic usage}
+\subsection{Using the \texttt{gyoto} command-line tool}
 \label{demo}
 
-A \texttt{GYOTO} computation relies on two kinds of files: an \texttt{XML} file containing the inputs and a \texttt{FITS} file containing the outputs.
+The most basic way of using \texttt{GYOTO} is through the
+\texttt{gyoto} command-line tools. It relies on two kinds of files: an
+\texttt{XML} file containing the inputs and a \texttt{FITS} file
+containing the outputs.
 
-\subsection{XML input file}
+\subsubsection{XML input file}
 
 You can find examples of \texttt{XML} input files in \texttt{doc/examples/}. Let us consider the computation of the image of a standard Page-Thorne accretion disk in Boyer-Lindquist coordinates, described in \texttt{example-page-thorne-disk-BL.xml}. 
 
@@ -170,44 +172,190 @@ This is the end of the \texttt{XML} input file!
 
 \end{sloppypar}
 
-\subsection{Calling \texttt{GYOTO}}
+\subsubsection{Calling \texttt{gyoto}}
 
-Once the \texttt{XML} input file is ready, the call to \texttt{GYOTO} is done according to the following line:
 
+We will now use the \texttt{gyoto} command-line tools to ray-trace the
+scenery described in this \texttt{XML} file. The command-line options
+are documented in the usual UNIX-style manpage:
 \begin{code}
-> gyoto input.xml \!output.fits
+  $ man gyoto
 \end{code}
+%$
 
+Once the \texttt{XML} input file is ready, the call to \texttt{gyoto} is done according to the following line:
+\begin{code}
+ $ gyoto input.xml \!output.fits
+\end{code}
+%$
 where \texttt{input.xml} is the above mentioned \texttt{XML} file and \texttt{output.fits} is the name of the \texttt{FITS} that will contain the result of the computation.
 The \texttt{!} before the \texttt{.fits} file allows to overwrite a pre-existing file. If you remove it, an error will occur if the \texttt{.fits} file already exists. 
 
-The line above asks \texttt{GYOTO} to integrate a null geodesic from each pixel of the screen backward in time towards the astrophysical object. You can ask \texttt{GYOTO} to compute only a fraction of the screen's pixels by running:
-
-\begin{code}
-> gyoto ----imin=IMIN ----imax=IMAX ----jmin=JMIN ----jmax=JMAX input.xml \!output.fits
-\end{code}
-
-where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type:
-\begin{code}
-> gyoto ----imin=16 ----imax=16 ----jmin=16 ----jmax=16 input.xml \!output.fits
-\end{code}
-
-\subsection{FITS output file}
-
-Once the computation is performed, the \texttt{output.fits} file is created. You can visualize it by using the \texttt{ds9} software (\url{http://hea-www.harvard.edu/RD/ds9/site/Home.html}) and simply running:
-
-\begin{code}
-> ds9 ouput.fits
-\end{code}
-
-For instance, if you use the \texttt{example-page-thorne-disk-BL.xml} as is, you will obtain Fig.~\ref{fig:demo}.
-
-\begin{figure}[htbp]
+\begin{figure}
 \centering
 \includegraphics[width=8cm,height=8cm]{DemoPageThorne.pdf}
 \caption{Image of a Page-Thorne thin accretion disk around a Schwarzschild black hole, with a $32\times 32$ pixels screen.}
 \label{fig:demo}
 \end{figure}
+The line above asks \texttt{GYOTO} to integrate a null geodesic from each pixel of the screen backward in time towards the astrophysical object.
+
+You can accelerate computations by using several cores on a computer
+using the \texttt{----nthreads=NCORES} option. \texttt{NCORES} is the
+number of threads that \texttt{GYOTO} will use. The optimal value is
+usually the number of hardware CPU cores on the machine. This option
+can also be specified in the input file using the
+\texttt{$<$NThreads$>$} entity. This facility does not work for
+LORENE-based metrics (see Sect.~\ref{3+1}). Another cheap way of
+parallelizing the computation is to call several \texttt{gyoto}
+instances, running on different CPUs or even on different machines,
+each instance computing only a portion of the image. This sort of
+basic parrallelization is, naturally, supported by all the
+\texttt{GYOTO} metrics.
+
+ You can ask \texttt{GYOTO} to compute only a fraction of the screen's pixels by running:
+
+\begin{code}
+ $ gyoto --imin=IMIN --imax=IMAX --jmin=JMIN --jmax=JMAX input.xml \!output.fits
+\end{code}
+%$
+
+where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type:
+\begin{code}
+ $ gyoto --imin=16 --imax=16 --jmin=16 --jmax=16 input.xml \!output.fits
+\end{code}
+%$
+
+How to recombine the several output files into a single FITS file is
+left as an exercise to the reader. It is easily done using any
+scientific interpreted language such as
+Yorick\footnote{\url{http://dhmunro.github.io/yorick-doc/}} or
+Python\footnote{\url{https://www.python.org/}}.
+
+Several other parameters can be overriden on the command-line. This
+includes the position of the \texttt{Screen} and the observing time
+(\texttt{--time=TIME}), which is quite usefull to produce a movie.
+
+\subsubsection{FITS output file}
+
+Once the computation is performed, the \texttt{output.fits} file is created. You can visualize it by using the \texttt{ds9} software (\url{http://hea-www.harvard.edu/RD/ds9/site/Home.html}) and simply running:
+
+\begin{code}
+ $ ds9 ouput.fits
+\end{code}
+%$
+
+For instance, if you use the \texttt{example-page-thorne-disk-BL.xml} as is, you will obtain Fig.~\ref{fig:demo}.
+
+\subsection{The \texttt{gyotoy} interface}
+
+
+The second most basic tool provided by \texttt{GYOTO} is
+\texttt{gyotoy} (Fig.~\ref{fig:gyotoy}). This is a graphical user
+interface to visualize a single geodesic. See the \texttt{README} and
+\texttt{INSTALL} files for the prerequisites. Once the installation is
+complete, your launch gyotoy as:
+\begin{code}
+ $ gyotoy  
+\end{code}
+%$
+or, from the \texttt{yorick/} subdirectory of the built source tree:
+\begin{code}
+ $ ./yorick -i gyotoy.i
+\end{code}
+%$
+followed, on the Yorick prompt, by:
+\begin{code}
+ > gyotoy
+\end{code}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.7\linewidth]{gyotoy_screenshot.png}
+  \caption{The \texttt{gyotoy} graphical user interface.}
+  \label{fig:gyotoy}
+\end{figure}
+You can select a \texttt{KerrBL} metric and set the spin, or any other
+metric defined in an \texttt{XML} file. As of writing, \texttt{gyotoy}
+assumes that the coordinate system is spherical-like. It should work
+in Cartesian coordinates as well, but the labels will be odd. It is
+possible to select which kind of geodesic to compute (time-like or
+light-like, using hte \texttt{Star} or \texttt{Photon} radio buttons),
+the initial position and 3-velocity of the particle, and the
+projection (a.k.a. the position of the observer). The bottom tool bar
+allows selecting a few numerical parameters such as whether or not to
+use an adaptive step. Menus allow saving or opening the parameters as
+an XML file, exporting the geodesic as a text file, and saving the
+view as an image file in various formats. The view can be zoomed and
+panned by clicking in the plot area.
+
+\section{Beyond the basics: scripting \texttt{GYOTO}}
+
+We have seen the two most basic ways of using \texttt{GYOTO}:
+computing a single frame using the \texttt{gyoto} command-line tool,
+and exploring a single geodesic using the \texttt{gyotoy}
+interface. There is much more that \texttt{GYOTO} can be used for:
+computing spectra, performing model-fitting, computing movies,
+evaluating lensing effects etc.
+
+\subsection{Using the Yorick plug-in}
+
+Yorick is a fairly easy to learn interpreted computer language. We
+provide a Yorick plug-in which exposes the \texttt{GYOTO}
+functionalities to this language. This plug-in is self documented: at
+the Yorick prompt, try:
+\begin{code}
+ > #include "gyoto.i"
+ > help, gyoto
+\end{code}
+
+A lot of the \texttt{GYOTO} test suite is written in Yorick, which
+provides many example code in the various \texttt{*.i} files in the
+\texttt{yorick/} directory of the \texttt{GYOTO} source tree. Another
+example is provided by the \texttt{gyotoy} graphical interface.
+
+For Yorick basics, see:
+\begin{itemize}
+\item \url{https://github.com/dhmunro/yorick};
+\item \url{http://dhmunro.github.io/yorick-doc/};
+\item \url{http://yorick.sourceforge.net/};
+\item \url{http://www.maumae.net/yorick/doc/index.php}.
+\end{itemize}
+
+As a very minimalistic example, here is how to ray-trace an XML
+scenery into a FITS file in Yorick:
+\begin{code}
+ $ rlwrap yorick
+\end{code}
+%$
+This launches Yorick within the line-editing facility \texttt{rlwrap}
+(provided separately). Then, from the Yorick prompt:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > sc = Scenery("input.xml");
+ > data = sc(,,"Intensity");
+ > fits_write, "output.fits", data;
+\end{code}
+or, in two lines:
+\begin{code}
+ > #include "gyoto.i"
+ > fits_write, "output.fits", gyoto.Scenery("input.xml")(,,"Intensity");
+\end{code}
+
+\subsection{Interfacing directly to the \texttt{GYOTO} library}
+
+The core functionality is provided as a C++ shared library, which is
+used both by the \texttt{gyoto} command-line tool and the Yorick
+plug-in. You can, of course, interface directly to this library. The
+reference is generated from the source code using \texttt{doxygen} in
+the directory \texttt{doc/html/}. The application binary interface
+(ABI) is likely to change with every commit. We try to maintain a
+certain stability in the application programming interface (API), but
+the effort we put into this stability is function of the needs of our
+users. If you start depending on the \texttt{GYOTO} library, please
+contact us (\texttt{gyoto@sympa.obspm.fr}): we will try harder to
+facilitate your work, or at least warn you when there is a significant
+API change.
 
 \section{Choosing the right integrator}
 \label{tuning}
@@ -387,7 +535,7 @@ exact value of the tuning parameter close to its optimum.
 
 All the integrators except the generic implementation of the
 \texttt{Legacy} integrator agree to within $2\,\mu$as on the
-deflection angle, which is of order 33°. The relative uncertainty is
+deflection angle, which is of order 33Â°. The relative uncertainty is
 therefore of order $10^{-11}$.
 
 In conclusion, for this specific use case, the best choice seems to be:
@@ -517,20 +665,20 @@ For the time being, only a simple example of numerical metric is implemented in 
 
 The basic functions developed in \texttt{lib/RotStar3\_1.C} are similar to their Kerr counterparts, but here the metric is expressed in terms of the 3+1 quantities (lapse, shift, 3-metric, extrinsic curvature). The equation of geodesics expressed in the 3+1 formalism is given in~\citet{vincent12a} and implemented in \texttt{lib/RotStar3\_1.C}. However, it is possible to choose in the \texttt{XML} file whether the integration will be performed by using this 3+1 equation of geodesics, or by using the most general 4D equation of geodesics~\citep[see][for a comparison of the two methods]{vincent11a}.
 
-\section{\texttt{GYOTO} Yorick plug-in}
-\label{yorick}
-
-[In construction...]
- 
 \section{Adding a new astrophysical target object in \texttt{GYOTO}}
 \label{newastrobj}
 
 [In construction...]
 
-\bibliographystyle{aa}  % A&A bibliography style file (aa.bst)
+\bibliographystyle{kluwer}
 \bibliography{GyotoManual}
 
 
 \end{document}
 
-% Local IspellDict: francais
+%%%Local Variables:
+%%% mode: latex
+%%% coding: utf-8
+%%% TeX-PDF-mode: t
+%%% ispell-local-dictionary: "en_GB"
+%%%End:

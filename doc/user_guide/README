@@ -1,0 +1,6 @@
+To build the user guide, you need:
+ - pdflatex;
+ - bibtex;
+ - Harvard kluwer.bst.
+
+Simply type make.

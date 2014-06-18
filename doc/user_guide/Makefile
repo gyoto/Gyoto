@@ -1,0 +1,20 @@
+PDFLATEX=pdflatex
+BIBTEX=bibtex
+
+all: GyotoManual.pdf
+
+GyotoManual.aux: GyotoManual.tex
+	$(PDFLATEX) GyotoManual.tex
+
+GyotoManual.bbl: GyotoManual.bib GyotoManual.aux
+	$(BIBTEX) GyotoManual.aux
+
+GyotoManual.pdf: GyotoManual.tex GyotoManual.bbl
+	$(PDFLATEX) GyotoManual.tex
+	$(PDFLATEX) GyotoManual.tex
+
+clean:
+	-rm GyotoManual.aux GyotoManual.bbl GyotoManual.blg GyotoManual.log
+	-rm GyotoManual.out GyotoManual.pdf GyotoManual.toc
+
+.PHONY: clean
