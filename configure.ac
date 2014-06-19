@@ -26,8 +26,10 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 PKG_PROG_PKG_CONFIG([])
-DOXYGEN=
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
+AC_CHECK_PROGS([PDFLATEX], [pdflatex])
+AC_CHECK_PROGS([BIBTEX], [bibtex])
+AC_CHECK_PROGS([KPSEWHICH], [kpsewhich])
 
 # Provide additional defaults for user variables
 
@@ -614,6 +616,12 @@ AC_ARG_ENABLE([doc],
   ],
   [mkdoc=yes])
 
+# check if doxygen is available
+AM_CONDITIONAL([MKREF], [test "x$DOXYGEN" != "x"])
+
+# check if all the necessary LaTeX tools are available
+AM_CONDITIONAL([MKGUIDE], [test "x$KPSEWHICH" != "x" && ${KPSEWHICH} kluwer.bst && test "x$PDFLATEX" != "x" && test "x$BIBTEX" != "x"])
+
 ####################   FINALIZATION   ###################################
 # Finalization: select output files, subdirs etc.
 AC_SUBST([pkg_requires])
@@ -625,6 +633,7 @@ AS_IF([test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"],
 AC_CONFIG_FILES([Makefile
                  bin/Makefile
                  doc/Makefile
+                 doc/user_guide/Makefile
                  lib/Makefile
                  lib/gyoto.pc
                  lib/gyoto-uninstalled.pc

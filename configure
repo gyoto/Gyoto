@@ -639,6 +639,10 @@ mySUBDIRS
 pkg_libs
 pkg_cflags
 pkg_requires
+MKGUIDE_FALSE
+MKGUIDE_TRUE
+MKREF_FALSE
+MKREF_TRUE
 LORENELDFLAGS
 LORENECPPFLAGS
 HAVE_LORENE_FALSE
@@ -677,6 +681,9 @@ LIBOBJS
 plugin_sfx
 SYS
 DYLIB_VAR
+KPSEWHICH
+BIBTEX
+PDFLATEX
 DOXYGEN
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
@@ -15981,7 +15988,6 @@ $as_echo "no" >&6; }
 		PKG_CONFIG=""
 	fi
 fi
-DOXYGEN=
 for ac_prog in doxygen
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -16022,6 +16028,132 @@ fi
 
 
   test -n "$DOXYGEN" && break
+done
+
+for ac_prog in pdflatex
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_PDFLATEX+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$PDFLATEX"; then
+  ac_cv_prog_PDFLATEX="$PDFLATEX" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_PDFLATEX="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+PDFLATEX=$ac_cv_prog_PDFLATEX
+if test -n "$PDFLATEX"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PDFLATEX" >&5
+$as_echo "$PDFLATEX" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$PDFLATEX" && break
+done
+
+for ac_prog in bibtex
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_BIBTEX+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$BIBTEX"; then
+  ac_cv_prog_BIBTEX="$BIBTEX" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_BIBTEX="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+BIBTEX=$ac_cv_prog_BIBTEX
+if test -n "$BIBTEX"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $BIBTEX" >&5
+$as_echo "$BIBTEX" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$BIBTEX" && break
+done
+
+for ac_prog in kpsewhich
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_KPSEWHICH+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$KPSEWHICH"; then
+  ac_cv_prog_KPSEWHICH="$KPSEWHICH" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_KPSEWHICH="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+KPSEWHICH=$ac_cv_prog_KPSEWHICH
+if test -n "$KPSEWHICH"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $KPSEWHICH" >&5
+$as_echo "$KPSEWHICH" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$KPSEWHICH" && break
 done
 
 
@@ -18566,6 +18698,26 @@ else
 fi
 
 
+# check if doxygen is available
+ if test "x$DOXYGEN" != "x"; then
+  MKREF_TRUE=
+  MKREF_FALSE='#'
+else
+  MKREF_TRUE='#'
+  MKREF_FALSE=
+fi
+
+
+# check if all the necessary LaTeX tools are available
+ if test "x$KPSEWHICH" != "x" && ${KPSEWHICH} kluwer.bst && test "x$PDFLATEX" != "x" && test "x$BIBTEX" != "x"; then
+  MKGUIDE_TRUE=
+  MKGUIDE_FALSE='#'
+else
+  MKGUIDE_TRUE='#'
+  MKGUIDE_FALSE=
+fi
+
+
 ####################   FINALIZATION   ###################################
 # Finalization: select output files, subdirs etc.
 
@@ -18575,7 +18727,7 @@ mySUBDIRS="lib"
 if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then :
   mySUBDIRS="$mySUBDIRS bin"
 fi
-ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"
+ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile doc/user_guide/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"
 
 if test "x$YORICK" != "x"; then :
   mySUBDIRS="$mySUBDIRS yorick"
@@ -18743,6 +18895,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_LORENE_TRUE}" && test -z "${HAVE_LORENE_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_LORENE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MKREF_TRUE}" && test -z "${MKREF_FALSE}"; then
+  as_fn_error $? "conditional \"MKREF\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MKGUIDE_TRUE}" && test -z "${MKGUIDE_FALSE}"; then
+  as_fn_error $? "conditional \"MKGUIDE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -19721,6 +19881,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "bin/Makefile") CONFIG_FILES="$CONFIG_FILES bin/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+    "doc/user_guide/Makefile") CONFIG_FILES="$CONFIG_FILES doc/user_guide/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
     "lib/gyoto.pc") CONFIG_FILES="$CONFIG_FILES lib/gyoto.pc" ;;
     "lib/gyoto-uninstalled.pc") CONFIG_FILES="$CONFIG_FILES lib/gyoto-uninstalled.pc" ;;

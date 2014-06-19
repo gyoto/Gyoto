@@ -1,5 +1,5 @@
-PDFLATEX=pdflatex
-BIBTEX=bibtex
+PDFLATEX=@PDFLATEX@
+BIBTEX=@BIBTEX@
 
 all: GyotoManual.pdf
 

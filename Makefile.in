@@ -83,7 +83,9 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(top_srcdir)/include/GyotoConfig.h.in \
-	$(top_srcdir)/doc/Makefile.in $(top_srcdir)/yorick/Makefile.in \
+	$(top_srcdir)/doc/Makefile.in \
+	$(top_srcdir)/doc/user_guide/Makefile.in \
+	$(top_srcdir)/yorick/Makefile.in \
 	$(top_srcdir)/yorick/stdplug/Makefile.in \
 	$(top_srcdir)/yorick/gyoto.info.in \
 	$(top_srcdir)/yorick/yorick1.in \
@@ -105,9 +107,9 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h $(top_builddir)/include/GyotoConfig.h
-CONFIG_CLEAN_FILES = doc/Makefile yorick/Makefile \
-	yorick/stdplug/Makefile yorick/gyoto.info yorick/yorick1 \
-	yorick/setpaths.i
+CONFIG_CLEAN_FILES = doc/Makefile doc/user_guide/Makefile \
+	yorick/Makefile yorick/stdplug/Makefile yorick/gyoto.info \
+	yorick/yorick1 yorick/setpaths.i
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -216,6 +218,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BIBTEX = @BIBTEX@
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
 BOOST_ROOT = @BOOST_ROOT@
 CC = @CC@
@@ -254,6 +257,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+KPSEWHICH = @KPSEWHICH@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
@@ -282,6 +286,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PDFLATEX = @PDFLATEX@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -436,6 +441,8 @@ include/stamp-h2: $(top_srcdir)/include/GyotoConfig.h.in $(top_builddir)/config.
 distclean-hdr:
 	-rm -f config.h stamp-h1 include/GyotoConfig.h include/stamp-h2
 doc/Makefile: $(top_builddir)/config.status $(top_srcdir)/doc/Makefile.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+doc/user_guide/Makefile: $(top_builddir)/config.status $(top_srcdir)/doc/user_guide/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 yorick/Makefile: $(top_builddir)/config.status $(top_srcdir)/yorick/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

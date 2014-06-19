@@ -1,12 +1,14 @@
 SHELL=/bin/sh
+DOXYGEN=@DOXYGEN@
 
 all: doc
 
 doc: ../include/*.h
-	doxygen doxyfile
+@MKREF_TRUE@	$(DOXYGEN) doxyfile
+@MKGUIDE_TRUE@	cd user_guide; $(MAKE)
 
 distclean clean:
-	rm -fr html latex
-	rm -fr *~
+@MKREF_TRUE@	rm -fr html latex
+@MKGUIDE_TRUE@	cd user_guide; $(MAKE) clean
 
 %: ;
