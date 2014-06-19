@@ -53,7 +53,7 @@ func check_jacobian(gg, pos) {
 }
 
 func ffunc(gg, pos) {
-  spin_=gg.spin; a2_=spin_^2;
+  spin_=gg.spin(); a2_=spin_^2;
   x=pos(2); y=pos(3); z=pos(4);
   x2=x*x; y2=y*y; z2=z*z; a2z2=a2_*z2;
   tau=x2+y2+z2-a2_;
@@ -66,7 +66,7 @@ func ffunc(gg, pos) {
 }
 
 func dffunc(gg, pos) {
-  spin_=gg.spin; a2_=spin_^2; a4=a2_*a2_;
+  spin_=gg.spin(); a2_=spin_^2; a4=a2_*a2_;
   x=pos(2); y=pos(3); z=pos(4);
   x2=x*x; y2=y*y; z2=z*z; a2z2=a2_*z2;
   tau=x2+y2+z2-a2_;
@@ -108,7 +108,7 @@ func dfnum(gg, pos, eps=) {
 }
 
 func kfunc(gg, pos) {
-  spin_=gg.spin; a2_=spin_^2;
+  spin_=gg.spin(); a2_=spin_^2;
   x=pos(2); y=pos(3); z=pos(4);
   x2=x*x; y2=y*y; z2=z*z; a2z2=a2_*z2;
   tau=x2+y2+z2-a2_;
@@ -126,7 +126,7 @@ func kfunc(gg, pos) {
 }
 
 func dkfunc(gg, pos) {
-  spin_=gg.spin; a2_=spin_^2;
+  spin_=gg.spin(); a2_=spin_^2;
   x=pos(2); y=pos(3); z=pos(4);
   x2=x*x; y2=y*y; z2=z*z; a2z2=a2_*z2;
   tau=x2+y2+z2-a2_;

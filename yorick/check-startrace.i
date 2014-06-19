@@ -23,8 +23,8 @@ begin_section, "StarTrace Astrobj";
 
 if (gyoto_haveXerces()) {
   sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
-  noop, sc.screen(mask=0); // make sure no mask is set yet
-  st = sc.astrobj;
+  noop, sc.screen.mask(0); // make sure no mask is set yet
+  st = sc.astrobj();
  } else {
   // No XML, build from scratch
   met=gyoto.KerrBL();
@@ -61,7 +61,7 @@ im1=sc(,,);
 tac();
 write, format="%s\n", "done.";
 
-noop, sc.screen(mask=mask);
+noop, sc.screen.mask(mask);
 write, format="%s\n", "Ray-tracing Star with mask... ";
 tic;
 im2=sc(,,);

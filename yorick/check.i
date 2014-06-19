@@ -67,8 +67,8 @@ st,xfill=770.;
 //  write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
 txyz=st.get_txyz; dates=txyz(,1); x=txyz(,2); y=txyz(,3);
-coords=st.get_coord;
-primes=st.get_prime;
+coords=st.get_coord();
+primes=st.get_prime();
 
 write, format="%s", "Checking gg(prime2tdot= pos, vel): ";
 N=dimsof(coords)(2);

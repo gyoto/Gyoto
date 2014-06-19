@@ -50,8 +50,8 @@ pd;
 write, format="%s\n", " done.";
 
 screen = gyoto_Screen(metric=metric, resolution=64,
-                      time=1000.*metric.unitlength/GYOTO_C,
-                      distance=100.*metric.unitlength, fov=30./100.,
+                      time=1000.*metric.unitlength()/GYOTO_C,
+                      distance=100.*metric.unitlength(), fov=30./100.,
                       inclination=110./180.*pi, paln=pi);
 
 write, format="%s", "Attaching DirectionalDisk to scenery...";
@@ -77,28 +77,28 @@ if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
   write, format="%s\n", " done.";
  } else {
   write, format="%s", "Cloning...";
-  sc2 = sc.clone;
+  sc2 = sc.clone();
   write, format="%s\n", " done.";
  }
   
 write, format="%s", "Getting DirectionalDisk...";
-pd2 = sc2.astrobj;
+pd2 = sc2.astrobj();
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing intensity array...";
-if (anyof(intensity != pd2.copyintensity)) error, "CHECK FAILED";
+if (anyof(intensity != pd2.copyintensity())) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing freq array...";
-if (anyof(freq != pd2.copygridfreq)) error, "CHECK FAILED";
+if (anyof(freq != pd2.copygridfreq())) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing cosi array...";
-if (anyof(cosi != pd2.copygridcosi)) error, "CHECK FAILED";
+if (anyof(cosi != pd2.copygridcosi())) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 write, format="%s", "Comparing radius array...";
-if (anyof(radius != pd2.copygridradius)) error, "CHECK FAILED";
+if (anyof(radius != pd2.copygridradius())) error, "CHECK FAILED";
 write, format="%s\n", " done.";
 
 write, format="%s", "Performing raytracing...\n";

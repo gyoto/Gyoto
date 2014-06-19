@@ -371,7 +371,7 @@ func _gyotoy_on_realize
 
 func gyotoy_set_particle(part) {
   tp = typeof(part);
-  if (!((tp == "gyoto_Astrobj" && part.kind == "Star") ||
+  if (!((tp == "gyoto_Astrobj" && part(kind=) == "Star") ||
         (tp == "gyoto_Photon"))) {
     error, "Particle must be Star or Photon";
     return;
@@ -411,7 +411,7 @@ func gyotoy_set_particle(part) {
   if ((mtype=_gyotoy_metric(kind=))=="KerrBL") {
     if (omtype != "KerrBL")
       noop, _gyotoy.builder.get_object("metric_type").set_active(0);
-    noop, _gyotoy.builder.get_object("spin").set_value(_gyotoy_metric.spin);
+    noop, _gyotoy.builder.get_object("spin").set_value(_gyotoy_metric(spin=));
   } else {
     if (otype == "KerrBL")
       noop, _gyotoy.builder.get_object("metric_type").set_active(1);

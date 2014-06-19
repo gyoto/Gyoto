@@ -57,7 +57,7 @@ gg, spin=0.9;
 write, format="%s\n", "done.";
   
 write, format="%s", "Getting spin... ";
-if (gg.spin!=0.9) error, "CHECK FAILED";
+if (gg.spin()!=0.9) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 //write, format="%s", "Pointer to this Metric object: gg()==";
@@ -68,34 +68,34 @@ gg;
 
 write, format="%s", "Setting deltamin... ";
 gg, deltamin=40;
-if (gg.deltamin!=40) error, "CHECK FAILED";
+if (gg.deltamin()!=40) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 write, format="%s", "Setting deltamax... ";
 gg, deltamax=400;
-if (gg.deltamax!=400) error, "CHECK FAILED";
+if (gg.deltamax()!=400) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 write, format="%s", "Setting difftol... ";
 gg, difftol=1e-3;
-if (gg.difftol!=1e-3) error, "CHECK FAILED";
+if (gg.difftol()!=1e-3) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 write, format="%s", "Setting deltamaxoverr... ";
 gg, deltamaxoverr=2e-3;
-if (gg.deltamaxoverr!=2e-3) error, "CHECK FAILED";
+if (gg.deltamaxoverr()!=2e-3) error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 write, format="%s", "Cloning... ";
 gg2=gg(clone=);
-if (gg2.deltamax!=400 || gg2.deltamin!=40 || gg2.difftol!=1e-3)
+if (gg2.deltamax()!=400 || gg2.deltamin()!=40 || gg2.difftol()!=1e-3)
   error, "CHECK FAILED";
 write, format="%s\n", "done.";
 
 doing, "comparing the various integrators";
 gg=KerrBL(spin=0.995);
 //gg, deltamaxoverr=0.1, deltamin=1e-6;
-gg2=gg.clone;
+gg2=gg.clone();
 gg2, setparameter="GenericIntegrator";
 st=Star(metric=gg, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);
 st2=Star(metric=gg2, initcoord=[0., 10.791, pi/2., 0], [0., 0., 0.016664]);

@@ -1,5 +1,12 @@
 next 2014/03/28
 	* Give access to some numerical parameters of the RK4 integrator
+	* New integrators, require Boost >= 1.93 and C++11
+	* Yorick plug-in API change: the dot operator has changed its meaning.
+	    Codes that used it may require updating. Examples:
+	    m = gg.mass -> m =gg.mass()
+	    obj=gg.clone -> obj=gg.clone()
+	    scenery.screen(resolution=128) -> screnery.screen.resolution(128)
+	    scenery.astrobj(initcoord=x,v) -> scenery.astrobj()(initcoord=x,v)
 	* rename methods from from setMass()/getMass() style to mass()/mass() style.
 	  Macro with the old names are provided in GyotoDefs.h, triggering a
 	  deprecation warning. Code may break nevertheless, typically in two cases:

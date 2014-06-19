@@ -128,12 +128,12 @@ ph2=[];
 
 
 // Check that changing spin can be done on attached metric
-ph1, metric=ph1.metric;
+ph1, metric=ph1.metric();
 ph1, xfill=0.;
-txyz=ph1.get_txyz;
+txyz=ph1.get_txyz();
   plg, txyz(2,), txyz(1,);
-ph2=ph1.clone;
-gg2=gg.clone;
+ph2=ph1.clone();
+gg2=gg.clone();
 write, format="%s", "Mutating metric spin... ";
 gg, spin=0.5;
 write, format="%s\n", "done.";

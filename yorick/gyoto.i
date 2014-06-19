@@ -148,9 +148,9 @@ local gyoto;
     spin of a Kerr metric. Members can be set or retrieved using the
     correspinding keywords, either upon object instanciation or at any
     later point in time:
-       gg = gyoto_KerrBL( spin=0.995, mass=4e6 ) ;
+       gg = gyoto.KerrBL( spin=0.995, mass=4e6 ) ;
        gg, spin=0.5;
-       spin_param = gg(spin=); // or spin_param = gg.spin
+       spin_param = gg(spin=); // or spin_param = gg.spin()
        
     Note how giving a member keyword without any value, as in the last
     example above, allows _retrieving_ the previously set value. The
@@ -161,21 +161,32 @@ local gyoto;
     function. In that case, the return value will be the object
     itself, allowing to call it again as a function:
        spin_val = gg(spin=0.5)(spin=)
-       or spin_val = gg(spin=0.5).spin
+       or spin_val = gg(spin=0.5).spin()
     Although the above example is trivial, this is useful in some
     complex situations:
        Getting the resolution in a Screen attached to a Scenery:
          res_val = scenery(screen=)(resolution=);
-         res_val = scenery.screen.resolution; // more elegant but slower
+         res_val = scenery.screen.resolution(); // more elegant but slower
        Setting resolution:
          noop, scenery.screen(resolution=res_val);
-       (The noop above is not mandatory but avoid spurious display). 
+         noop, scenery.screen.resolution(res_val);
+       (The noop above is not mandatory but avoid spurious display).
+       
+    Note how scenery.screen().resolution is equivalent to just
+    scenery.screen.resolution; this is just more syntactic sugar. A
+    final note on the . operator: it is possible to set a member which
+    accepts the "unit" keyword in this way:
+       gg.mass(4e6, unit="sunmass");
+    This is strictly equivalent to (but slower than)
+       gg(mass=4e6, unit="sunmass");
+    As of writing, "unit" is the only keyword accepted by this
+    syntax. There must also not be more than one positional argument.
 
     Some member keywords accept more than one parameter, separated by
     comas. This is the first exception GYOTO makes to the Yorick
     syntax. For example, for setting the initial position and velocity
     of a star, one can use:
-       st = gyoto_Star( initcoord=pos,vel );
+       st = gyoto.Star( initcoord=pos,vel );
     Only one such keyword can be set at any time because it would be
     exceedingly difficult to parse them otherwise.
     
@@ -193,9 +204,9 @@ local gyoto;
     object. This is on purpose: this way, if you affect a Metric to a
     Photon and a Star, then change the spin of the Metric, the change
     will be reflected in all of the objects linked with this Metric:
-       gg = gyoto_KerrBL();
-       st = gyoto_Star( metric=gg );
-       ph = gyoto_Photon( metric=gg );
+       gg = gyoto.KerrBL();
+       st = gyoto.Star( metric=gg );
+       ph = gyoto.Photon( metric=gg );
        gg, spin=0.5;
     In the above, the spin change affect the Photon and the Star as
     well.
@@ -207,12 +218,12 @@ local gyoto;
                        // object
        
        gg_clone = gg(clone=);  // This is cloning: gg3 is a detached
-       gg_clone = gg.clone     // copy
+       gg_clone = gg.clone();  // copy
 
        gg_copy, spin=0.2;
        gg_clone, spin=0.7;
 
-       gg.spin;    // the spin in gg is the same as in gg_copy, not
+       gg.spin();  // the spin in gg is the same as in gg_copy, not
                    // gg_clone.
 
     
@@ -268,7 +279,7 @@ local gyoto;
     Most objects can be described in XML format. That's what you see
     when you print an object. You can also read/write an object
     from/to and XML file:
-       sc = gyoto_Scenery( "description.xml" );
+       sc = gyoto.Scenery( "description.xml" );
        print, sc;
        sc, xmlwrite="backup.xml";
 
@@ -285,8 +296,8 @@ local gyoto;
     ========
 
     Compute and display the orbit of a star:
-       data = gyoto_Star(radius=0.5,
-               metric=(gg=gyoto_KerrBL(spin=0.995)),
+       data = gyoto.Star(radius=0.5,
+               metric=(gg=gyoto.KerrBL(spin=0.995)),
                initcoord=[0, 10.791, 1.5708, 0], [0, 0, 0.0166637],
                xfill=800
                )(
@@ -295,21 +306,21 @@ local gyoto;
        plg, data(,2), data(,1);
 
     Ray-trace a scenery (orbiting star near a Kerr black-hole):
-       sc = gyoto_Scenery(
-             metric=(gg=gyoto_KerrBL()),
-             screen=gyoto_Screen(metric=gg,
+       sc = gyoto.Scenery(
+             metric=(gg=gyoto.KerrBL()),
+             screen=gyoto.Screen(metric=gg,
                                  observerpos=[1000, 100., 0.15, 0.],
                                  fov=pi/10.,
                                  resolution=128),
-             astrobj=gyoto_Star(metric=gg,
+             astrobj=gyoto.Star(metric=gg,
                                  radius=0.5,
                                  initcoord=[600, 9, pi/2, 0], [0, 0, 0.037037])
             )
        pli, sc(,,"Intensity");
 
      Trace the trajectory of a photon in the secondary image of the above:
-       ph = gyoto_Photon(initcoord=sc,77,45, xfill=870.623);
-       txyz = ph.get_txyz;
+       ph = gyoto.Photon(initcoord=sc,77,45, xfill=870.623);
+       txyz = ph.get_txyz();
        plg, txyz(,3), txyz(,2);
        limits, square=1;
 
@@ -329,7 +340,7 @@ extern gyoto_Scenery;
              Create GYOTO Scenery object
          or scenery, [members=values]
              Set GYOTO Scenery member
-         or res = scenery(member=) or res = scenery.member
+         or res = scenery(member=) or res = scenery.member()
              Get GYOTO Scenery member
          or scenery, xmlwrite=filename
              Save Scenery description to XML

@@ -30,6 +30,8 @@
 #include "GyotoScenery.h"
 #include "GyotoScreen.h"
 
+#include <cstring>
+
 #define YGYOTO_TYPE_LEN 21
 #define YGYOTO_STD_CATCH catch(Gyoto::Error e) \
   { y_error(e.get_message().c_str()); }
@@ -476,27 +478,113 @@ void ygyoto_Spectrometer_generic_eval
     typedef struct gyoto_##NAME {					\
       Gyoto::SmartPointer<CLASS> smptr;					\
     } gyoto_##NAME;							\
+    typedef struct gyoto_##NAME##_accessor {				\
+      Gyoto::SmartPointer<CLASS> smptr;					\
+      char * member;						\
+    } gyoto_##NAME##_accessor;						\
     void gyoto_##NAME##_free(void *obj) {				\
       if (((gyoto_##NAME*)obj)->smptr) {				\
 	((gyoto_##NAME*)obj)->smptr=NULL;				\
       } else printf("null pointer\n");					\
     }									\
+    void gyoto_##NAME##_accessor_free(void *obj) {			\
+      if (((gyoto_##NAME##_accessor*)obj)->smptr) {			\
+	((gyoto_##NAME##_accessor*)obj)->smptr=NULL;			\
+	p_free(((gyoto_##NAME##_accessor*)obj)->member);		\
+      } else printf("null pointer\n");					\
+    }									\
     YGYOTO_PRINT_YUSEROBJ(NAME)						\
+    void gyoto_##NAME##_accessor_print(void *obj) {			\
+      std::string phrase = "GYOTO " #NAME " accessor to member \"";	\
+      phrase.append(((gyoto_##NAME##_accessor*)obj)->member).append("\""); \
+      y_print(phrase.c_str(),0);					\
+    }									\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
-    void gyoto_##NAME##_extract(void *obj, char *member) {		\
+    void gyoto_##NAME##_accessor_eval(void *obj, int argc) {		\
       long idxo = yget_global("__gyoto_obj", 0);			\
       long idxr = yget_global("__gyoto_res", 0);			\
-      *ypush_##NAME()= ((gyoto_##NAME*)obj)->smptr;			\
+      long idxv = yget_global("__gyoto_val", 0);			\
+      long idxu = yget_global("__gyoto_unt", 0);			\
+      /* push object into __gyoto_obj */				\
+      *ypush_##NAME()= ((gyoto_##NAME##_accessor*)obj)->smptr;		\
+      yput_global(idxo, 0);						\
+      yarg_drop(1);							\
+      /* push nil into __gyoto_val */					\
+      ypush_nil();							\
+      yput_global(idxv, 0);						\
+      yarg_drop(1);							\
+      /* push nil into __gyoto_unt */					\
+      bool have_unit=false;						\
+      ypush_nil();							\
+      yput_global(idxu, 0);						\
+      yarg_drop(1);							\
+      /* process arguments*/						\
+      long kidx=0;							\
+      for (int iarg =argc-1; iarg>=0; --iarg) {				\
+	if ((kidx=yarg_key(iarg))>=0) {					\
+	  /* this is a keyword */					\
+	  char * kname=yfind_name(kidx);				\
+	  if (strcmp(kname, "unit"))					\
+	    y_error("only \"unit\" keyword supported right now");	\
+	  have_unit=true;						\
+	  ypush_use(yget_use(--iarg));					\
+	  yput_global(idxu, 0);						\
+	  yarg_drop(1);							\
+	} else {							\
+	  ypush_use(yget_use(iarg));					\
+	  yput_global(idxv, 0);						\
+	  yarg_drop(1);							\
+	}								\
+      }									\
+      /* prepare and interpret statement */				\
+      long dims[Y_DIMSIZE]={1,1};					\
+      string stmt = "eq_nocopy, __gyoto_res, __gyoto_obj(";		\
+      stmt.append(((gyoto_##NAME##_accessor*)obj)->member)		\
+	.append("=__gyoto_val");					\
+      if (have_unit) stmt.append(", unit=__gyoto_unt");			\
+      stmt.append(");");						\
+      *ypush_q(dims)=p_strcpy(stmt.c_str());				\
+      yexec_include(0, 1);						\
+      yarg_drop(1);							\
+      /* result is in __gyoto_res, push it on the stack */		\
+      ypush_global(idxr);						\
+      /* clean variables */						\
+      ypush_nil();							\
+      yput_global(idxo, 0);						\
+      yput_global(idxv, 0);						\
+      yput_global(idxu, 0);						\
+      yput_global(idxr, 0);						\
+      yarg_drop(1);							\
+    }									\
+    void gyoto_##NAME##_accessor_extract(void *obj, char*member) {	\
+      long idxo = yget_global("__gyoto_obj", 0);			\
+      long idxr = yget_global("__gyoto_res", 0);			\
+      *ypush_##NAME()= ((gyoto_##NAME##_accessor*)obj)->smptr;		\
       yput_global(idxo, 0);						\
       yarg_drop(1);							\
       long dims[Y_DIMSIZE]={1,1};					\
       string stmt = "eq_nocopy, __gyoto_res, __gyoto_obj(";		\
-      stmt.append(member).append("=);");				\
+      stmt.append(((gyoto_##NAME##_accessor*)obj)->member).append("=).")\
+	.append(member);						\
       *ypush_q(dims)=p_strcpy(stmt.c_str());				\
       yexec_include(0, 1);						\
       yarg_drop(1);							\
       ypush_global(idxr);						\
     }									\
+    static y_userobj_t gyoto_##NAME##_accessor_obj =			\
+    {const_cast<char*>("gyoto_" #NAME),					\
+     &gyoto_##NAME##_accessor_free,					\
+     &gyoto_##NAME##_accessor_print,					\
+     &gyoto_##NAME##_accessor_eval,					\
+     &gyoto_##NAME##_accessor_extract,					\
+     0};								\
+    void gyoto_##NAME##_extract(void *obj, char *member) {		\
+      gyoto_##NAME##_accessor * ACCESSOR =				\
+	(gyoto_##NAME##_accessor *)ypush_obj(&gyoto_##NAME##_accessor_obj, \
+					  sizeof(gyoto_##NAME##_accessor)); \
+      ACCESSOR -> smptr=((gyoto_##NAME*)obj)->smptr;			\
+      ACCESSOR -> member = p_strcpy(member);				\
+    }								\
     static y_userobj_t gyoto_##NAME##_obj =				\
     {const_cast<char*>("gyoto_" #NAME),					\
      &gyoto_##NAME##_free,						\
