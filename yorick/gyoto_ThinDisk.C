@@ -19,6 +19,7 @@
 
 #include <Gyoto.h>
 #include "ygyoto.h"
+#include "ygyoto_private.h"
 #include "yapi.h"
 
 using namespace Gyoto;

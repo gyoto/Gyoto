@@ -129,7 +129,7 @@ check-dll: $(PKG_DLL) check.i
 
 install::
 	cd stdplug; make install
-	$(YNSTALL) ygyoto.h ygyoto_supplier.C $(DEST_Y_SITE)/include
+	$(YNSTALL) ygyoto.h ygyoto_idx.h ygyoto_supplier.C $(DEST_Y_SITE)/include
 	$(YNSTALL) gyotoy.xml $(DEST_Y_SITE)/glade
 	$(YNSTALL) gyotoy.png $(DEST_Y_SITE)/data
 	$(YNSTALL) gyotoy $(DEST_Y_SITE)/bin

@@ -27,6 +27,7 @@
 #include "yapi.h"
 #include "pstdlib.h"
 #include "ygyoto.h"
+#include "ygyoto_private.h"
 
 #include <iostream>
 #include <cstring>

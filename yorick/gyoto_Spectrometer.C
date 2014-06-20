@@ -19,6 +19,7 @@
 
 #include <cmath>
 #include "ygyoto.h"
+#include "ygyoto_private.h"
 #include "yapi.h"
 #include "pstdlib.h"
 #ifdef GYOTO_USE_XERCES

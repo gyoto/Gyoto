@@ -18,6 +18,7 @@
  */
 
 #include "ygyoto.h"
+#include "ygyoto_private.h"
 #include "yapi.h"
 #include "pstdlib.h"
 

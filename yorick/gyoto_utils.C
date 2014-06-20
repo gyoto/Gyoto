@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "ygyoto.h"
+#include "ygyoto_private.h"
 
 
 using namespace std;
