@@ -20,6 +20,7 @@
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoDefs.h"
 #include <cmath>
+#include <cstdlib> /* atof */
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
 #include "GyotoFactoryMessenger.h"
