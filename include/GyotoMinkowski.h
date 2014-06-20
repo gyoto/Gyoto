@@ -2,7 +2,7 @@
  * \file GyotoMinkowski.h
  * \brief The Minkowski flat-space metric
  * 
- * Use </Cartesian> or </Spherical> to select the coordinate system
+ * Use &lt;Cartesian&gt; or &lt;/Spherical&gt; to select the coordinate system
  * kind.
  */
 
@@ -34,6 +34,14 @@
 namespace Gyoto {
   namespace Metric { class Minkowski; }
 }
+
+/**
+ * \class Gyoto::Metric::Minkowski
+ * \brief The Minkowski flat-space metric
+ * 
+ * Use &lt;Cartesian&gt; or &lt;/Spherical&gt; to select the coordinate system
+ * kind.
+ */
 
 class Gyoto::Metric::Minkowski
 : public Gyoto::Metric::Generic

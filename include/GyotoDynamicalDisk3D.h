@@ -66,7 +66,7 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   double tinit_; ///< Time of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
   int nb_times_; ///< Number of times
-  double PLindex_; ///< power law index such that density_elec(E) \propto E^{-p}
+  double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
   int novel_; ///< put to 1 if velocity of emitting particle is not provided
 
   /**

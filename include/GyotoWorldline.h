@@ -51,6 +51,18 @@ namespace Gyoto {
  * \class Gyoto::Worldline
  * \brief  Timelike or null geodesics
  *
+ * Their are two derived classes: Photon and Star. A Worldline can be
+ * integrated from an initial condition either backward or forward in
+ * time using xFill() (Photon::hit() also integrates the
+ * Worldline). Member #state_ holds the integration state as well as
+ * an integrator. There are several kinds of integration states, that
+ * derive from IntegState::Generic.
+ *
+ * The coordinates of the Worldline are stored in #x0_, #x1_, #x2_,
+ * #x3_, #x0dot_, #x1dot_, #x2dot_ ans #x3dot_. Those arrays are
+ * extended as needed using xExpand(). These coordinates can be
+ * retrieved using get_t(), get_xyz(), getCartesian(), getCoord() etc.
+ *
  * Supported XML parameters:
  *  - InitialCoordinate or InitCoord: 8-element vector yielding the initial
  *    4-position and 4-velocity;
@@ -62,6 +74,8 @@ namespace Gyoto {
  *    adaptive; default: Adaptive.;
  *  - MaxIter: maximum number of iterations for the integration;
  *    default: 100000.
+ *  - DeltaMin, DeltaMax, DeltaMaxOverR, AbsTol, RelTol: tuning
+ *    parameters used by some of the integrators.
  * 
  */
 class Gyoto::Worldline
@@ -77,27 +91,39 @@ class Gyoto::Worldline
   SmartPointer<Gyoto::Metric::Generic> metric_ ; ///< The Gyoto::Metric in this part of the universe
   double* x0_;///< t or T
   double* x1_;///< r or x
-  double* x2_;///< theta or y
-  double* x3_;///< phi or z
+  double* x2_;///< &theta; or y
+  double* x3_;///< &phi; or z
   double* x0dot_;///< tdot or Tdot
   double* x1dot_;///< rdot or xdot
-  double* x2dot_;///< thetadot or ydot
-  double* x3dot_;///< phidot or zdot
-  size_t x_size_;///< Size of x0, x1... arrays
-  size_t imin_;///< Minimum index for which x0, x1... have been computed
+  double* x2dot_;///< &theta;dot or ydot
+  double* x3dot_;///< &phi;dot or zdot
+  size_t x_size_;///< Size of #x0_, #x1_... arrays
+  size_t imin_;///< Minimum index for which #x0_, #x1_... have been computed
   size_t i0_;  ///< Index of initial condition in array
-  size_t imax_;///< Maximum index for which x0, x1... have been computed
+  size_t imax_;///< Maximum index for which #x0_, #x1_... have been computed
   bool   adaptive_; ///< Whether integration should use adaptive delta
-  bool secondary_; ///< choose 0 to compute only primary image
-  double delta_;///< Initial integrating step ; defaults to 0.01
+
+  /**
+   * \brief Experimental: choose 0 to compute only primary image
+   *
+   * This feature is in development.
+   */
+  bool secondary_;
+
+  /**
+   * \brief Initial integrating step
+   *
+   * Default: #GYOTO_DEFAULT_DELTA
+   */
+  double delta_;
 
 
   /**
    * \brief Time limit for the integration (geometrical units)
    *
-   * Computation does not go back before tmin_. Default is -DBL_MAX. tmin_ is
+   * Computation does not go back before #tmin_. Default is -DBL_MAX. #tmin_ is
    * always expressed in geometrical units, it is essentially a tuning
-   * parameter for the ray-tracing process. tmin should be chosen to
+   * parameter for the ray-tracing process. #tmin_ should be chosen to
    * always be longer than the distance between the screen and the
    * object.
    */
@@ -108,24 +134,54 @@ class Gyoto::Worldline
   int wait_pos_; ///< Hack in setParameters()
   double * init_vel_; ///< Hack in setParameters()
   size_t maxiter_ ; ///< Maximum number of iterations when integrating
-  double delta_min_; ///< Minimum integration step for the adaptive integrator
-  double delta_max_; ///< Maximum integration step for the adaptive integrator
+
+  /**
+   * \brief Minimum integration step for the adaptive integrator
+   *
+   * The default (#GYOTO_DEFAULT_DELTA_MIN) is usually fine.
+   *
+   * For IntegState::Legacy, set it in the Metric instead!
+   */
+  double delta_min_;
+
+  /**
+   * \brief Maximum integration step for the adaptive integrator
+   *
+   * The default (#GYOTO_DEFAULT_DELTA_MAX) is usually fine.
+   *
+   * For IntegState::Legacy, set it in the Metric instead!
+   */
+  double delta_max_;
 
   /**
    * \brief Numerical tuning parameter
+   *
+   * For IntegState::Legacy, set it in the Metric instead!
    *
    * Ensure that delta (the numerical integration step) is never
    * larger than a fraction of the distance between the current
    * location and the center of the coordinate system.
    *
-   * For investigations close to the event horizon, 0.5 is usually
-   * fine. If high accuracy is needed long after deflection (weak
-   * lensing), then this must be smaller. A good test is to look at a
-   * MinDistance map for a FixedStar: it must be smooth.
+   * The default (#GYOTO_DEFAULT_DELTA_MAX_OVER_R) is usually fine.
    */
   double delta_max_over_r_;
 
+  /**
+   * \brief Absolute tolerance of the integrator
+   *
+   * Used by the adaptive integrators implemented in
+   * IntegState::Boost. Refer to the boost::numeric::odeint
+   * documentation for more details.
+   */
   double abstol_;
+
+  /**
+   * \brief Absolute tolerance of the integrator
+   *
+   * Used by the adaptive integrators implemented in
+   * IntegState::Boost. Refer to the boost::numeric::odeint
+   * documentation for more details.
+   */
   double reltol_;
 
   // Constructors - Destructor
@@ -153,9 +209,9 @@ class Gyoto::Worldline
 
   virtual ~Worldline() ;                        ///< Destructor
 
-  size_t getImin() const; ///< Get index of computed date furthest in the past
-  size_t getImax() const; ///< Get index of computed date furthest in the future
-  size_t getI0() const; ///< Get index of initial condition
+  size_t getImin() const; ///< Get #imin_
+  size_t getImax() const; ///< Get #imax_
+  size_t getI0() const; ///< Get #i0_
 
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   metric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
@@ -180,36 +236,51 @@ class Gyoto::Worldline
   virtual std::string className() const ; ///< "Worldline"
   virtual std::string className_l() const ; ///< "worldline"
 
-  void integrator(std::string type);
-  std::string integrator() const ;
   /**
-   * Get delta_min_
+   * \brief Set the integrator
+   *
+   * Initialize #state_ to use the required integrator.
+   *
+   * \param[in] type Either "Legacy" or (if HAVE_BOOST) one of
+   *                 "runge_kutta_cash_karp54",
+   *                 "runge_kutta_fehlberg78", "runge_kutta_dopri5",
+   *                 "runge_kutta_cash_karp54_classic"
+   */
+  void integrator(std::string type);
+
+  /**
+   * \brief Describe the integrator used by #state_
+   */
+  std::string integrator() const ;
+
+  /**
+   * \brief Get #delta_min_
    */
   double deltaMin() const;
 
   /**
-   * Set delta_min_
+   * \brief Set #delta_min_
    */
   void deltaMin(double h1);
 
   /**
-   * Get delta_max_
+   * \brief Get #delta_max_
    */
   double deltaMax() const;
 
 
-  void absTol(double);
-  double absTol()const;
-  void relTol(double);
-  double relTol()const;
+  void absTol(double); ///< Set #abstol_
+  double absTol()const; ///< Get #abstol_
+  void relTol(double); ///< Set #reltol_
+  double relTol()const; ///< Get #reltol_
 
   /**
    * Get delta max at a given position
    *
-   * \param pos 4-position
-   * \param[optional] delta_max_external external constraint on delta_max
-   * \return the smallest value between delta_max_,
-   * delta_max_external, and R*delta_max_over_r_ where R is pos[1] in
+   * \param[in] pos 4-position
+   * \param[in] delta_max_external external constraint on delta_max
+   * \return the smallest value between #delta_max_,
+   * delta_max_external, and R*#delta_max_over_r_ where R is pos[1] in
    * spherical coordinates and max(x1, x2, x3) in Cartesian
    * coordinates.
    */
@@ -220,14 +291,14 @@ class Gyoto::Worldline
    */
   void deltaMax(double h1);
 
-  double deltaMaxOverR() const; ///< Get delta_max_over_r_
-  void deltaMaxOverR(double t); ///< Set delta_max_over_r_
+  double deltaMaxOverR() const; ///< Get #delta_max_over_r_
+  void deltaMaxOverR(double t); ///< Set #delta_max_over_r_
 
   // Memory management
   // ----------------- 
  protected:
   /**
-   * The default size is GYOTO_DEFAULT_X_SIZE
+   * The default size is #GYOTO_DEFAULT_X_SIZE
    */
   virtual void xAllocate(); ///< Allocate x0, x1 etc. with default size
 
@@ -264,20 +335,20 @@ class Gyoto::Worldline
  public:
   /// Assignment to another Worldline
   void operator=(const Worldline&) ;        
-  void delta(const double delta); ///< Set delta
-  void delta(double, const std::string &unit);   ///< Set default step in specified units
-  double delta() const ; ///< Get delta
-  double delta(const std::string &unit) const ;  ///< Get default step in specified units
-  double tMin() const ; ///< Get tmin value
-  double tMin(const std::string &unit) const ;  ///< Get tmin_ in specified unit
-  void tMin(double tlim); ///< Set tmin to a given value
-  void tMin(double, const std::string &unit);   ///< Set tmin_ in specified unit
-  void adaptive (bool mode) ; ///< Set adaptive_
-  bool adaptive () const ; ///< Get adaptive_
-  void secondary (bool sec) ; ///< Set secondary_
-  bool secondary () const ; ///< Get secondary_
-  void maxiter (size_t miter) ; ///< Set maxiter_
-  size_t maxiter () const ; ///< Get maxiter_
+  void delta(const double delta); ///< Set #delta_
+  void delta(double, const std::string &unit);   ///< Set #delta_ in specified units
+  double delta() const ; ///< Get #delta_
+  double delta(const std::string &unit) const ;  ///< Get #delta_ in specified units
+  double tMin() const ; ///< Get #tmin_
+  double tMin(const std::string &unit) const ;  ///< Get #tmin_ in specified unit
+  void tMin(double tlim); ///< Set #tmin_
+  void tMin(double, const std::string &unit);   ///< Set #tmin_ in specified unit
+  void adaptive (bool mode) ; ///< Set #adaptive_
+  bool adaptive () const ; ///< Get #adaptive_
+  void secondary (bool sec) ; ///< Set #secondary_
+  bool secondary () const ; ///< Get #secondary_
+  void maxiter (size_t miter) ; ///< Set #maxiter_
+  size_t maxiter () const ; ///< Get #maxiter_
 
   /**
    * Return pointer to array holding the previously set
@@ -476,15 +547,18 @@ class Gyoto::Worldline
 #endif
   };
 
+
+  /**
+   * \brief An object to hold the integration state
+   */
   SmartPointer<Worldline::IntegState::Generic> state_;
 };
 
 
 /**
- * \class Gyoto::Worldline::IntegState
+ * \class Gyoto::Worldline::IntegState::Generic
  * \brief Current state of a geodesic integration
  */
-
 class Gyoto::Worldline::IntegState::Generic : SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Generic>;
  protected:
@@ -494,8 +568,8 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    * when calling nestStep().
    */
   Worldline * line_;
-  double delta_; ///< Integration step (current in case of adaptive).
-  bool adaptive_;
+  double delta_; ///< Integration step (current in case of #adaptive_).
+  bool adaptive_; ///< Whether to use an adaptive step
   double norm_; ///< Current norm of the 4-velocity.
   double normref_; ///< Initial norm of the 4-velocity.
   /// The Metric in this end of the Universe.
@@ -505,9 +579,23 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
   Gyoto::SmartPointer<Gyoto::Metric::Generic> gg_;
 
  public:
+  /**
+   * \brief Normal constructor
+   *
+   * Sets #line_
+   */
   Generic(Worldline *parent);
+
+  /**
+   * \brief Virtual destructor
+   */
   virtual ~Generic();
 
+  /**
+   * \brief Deep copy
+   *
+   * Derived classes must implement it
+   */
   virtual Generic * clone(Worldline*newparent) const =0 ;
 
   /**
@@ -518,10 +606,27 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    */
   virtual void init(Worldline * line, const double *coord, const double delta);
 
+  /**
+   * \brief Cache whatever needs to be cached
+   *
+   * This is called by all the methods in Worldline each time an
+   * member that could be cached in Worldline::state_
+   * changes. Therefore, user code should normally not have to call
+   * it.
+   */
   virtual void init();
 
+  /**
+   * \brief Check norm
+   *
+   * Issue a warning using #GYOTO_SEVERE if norm is
+   * drifting. nextStep() implementations should call it.
+   */
   virtual void checkNorm(double coord[8]);
 
+  /**
+   * \brief Return the integrator kind
+   */
   virtual std::string kind()=0;
 
   /// Make one step.
@@ -529,10 +634,21 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    * \param[out] coord Next position-velocity;
    * \param[in] h1max maximum step in case of adaptive integration
    */
-  virtual int nextStep(double *coord, double h1max=1e6)=0;
+  virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
 
 };
 
+/**
+ * \class Gyoto::Worldline::IntegState::Legacy
+ * \brief Home-brewed integrator
+ *
+ * The integrator used by this IntegState::Generic implementation is
+ * actually implemented in Metric::Generic::myrk4_adaptive(). It does
+ * not use most of the tuning parameters Worldline, it uses the
+ * homonym parameters in Metric::Generic instead. to use this
+ * integrator, pass "Legacy" to Worldline::integrator(std::string
+ * type).
+ */
 class Gyoto::Worldline::IntegState::Legacy : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Legacy>;
 
@@ -559,20 +675,51 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
 };
 
 #ifdef HAVE_BOOST
+/**
+ * \class Gyoto::Worldline::IntegState::Boost
+ * \brief Boost integrator
+ *
+ * This Worldline::IntegState::Generic implementation provides several
+ * integrators from the boost::numeric::odeint library. To select it,
+ * pass one of "runge_kutta_cash_karp54", "runge_kutta_fehlberg78",
+ * "runge_kutta_dopri5", or "runge_kutta_cash_karp54_classic" to
+ * Worldline::integrator(std::string type).
+ */
 class Gyoto::Worldline::IntegState::Boost : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
  public:
+  /**
+   * \brief Enum to represent the integrator flavour
+   */
   enum Kind {runge_kutta_cash_karp54,
 	     runge_kutta_fehlberg78,
 	     runge_kutta_dopri5,
 	     runge_kutta_cash_karp54_classic };
  private:
+  /// Integrator flavour
   Kind kind_;
+
+  /// Stepper used by the adaptive-step integrator
   std::function<boost::numeric::odeint::controlled_step_result
     (std::array<double,8>&, double&, double&)> try_step_;
+
+  /// Stepper used by the non-adaptive-step integrator
   std::function<void(std::array<double,8>&, double)> do_step_;
  public:
+  /// Constructor
+  /**
+   * Since this IntegState::Generic implementation can actually be
+   * used to implement several distinct integrators, it is necessary
+   * to specify which one is meant.
+   */
   Boost(Worldline* parent, std::string type);
+
+  /// Constructor
+  /**
+   * Since this IntegState::Generic implementation can actually be
+   * used to implement several distinct integrators, it is necessary
+   * to specify which one is meant.
+   */
   Boost(Worldline* parent, Kind type);
   Boost * clone(Worldline* newparent) const ;
   virtual ~Boost();
