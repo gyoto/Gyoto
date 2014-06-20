@@ -184,10 +184,10 @@ class Gyoto::Astrobj::UniformSphere :
 
   ///< Ensure integration does not miss the object
   /**
-   * \parame[in] coord current photon position
-   * \return max( dltmor_*radius_, dltmxod_*operator()(double coord[]) )
+   * \param[in] coord current photon position
+   * \return max( #dltmor_*#radius_, #dltmod_*operator()(double coord[]) )
    */
-  virtual double deltaMax(double*);
+  virtual double deltaMax(double*coord);
 
  protected:
   /**

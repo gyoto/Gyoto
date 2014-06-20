@@ -142,7 +142,7 @@ class Gyoto::Astrobj::Star :
 
  public:
   using UniformSphere::rMax;
-  virtual double rMax();
+  virtual double rMax() ;
   virtual void unsetRmax();
   //  void setCoordSys(int); ///< Get coordinate system for integration
   //  int  getCoordSys(); ///< Set coordinate system for integration

@@ -205,16 +205,16 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    * instance when rMax() is called. External classes (Photons in
    * particular) must use rMax() to access this information.
    *
-   * rMax_set_==1 means that rMax_ was set using rMax() or the
+   * #rmax_set_==1 means that #rmax_ was set using rMax() or the
    * constructor. In this case, rMax() must always return this
    * value, not recompute it.
    *
-   * rmax_ is in geometrical units.
+   * #rmax_ is in geometrical units.
    */                                         
   double rmax_; ///< Maximum distance to the center of the coordinate system [geometrical units]
 
   /**
-   * rmax_set_==1 means that rmax_ was set using rMax(double r) or the
+   * #rmax_set_==1 means that #rmax_ was set using rMax(double r) or the
    * constructor. In this case, rMax() must always return this
    * value, not recompute it.
    *
@@ -235,17 +235,17 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   // -------------------------
  public:
   /**
-   *  kind_ =  "Default", rmax_ = 0., rmax_set_ = 0.
+   *  #kind_ =  "Default", #rmax_ = 0., #rmax_set_ = 0.
    */
   Generic(); ///< Default constructor.
 
   /**
-   *  kind_ =  "Default", rmax_ = radmax, rmax_set_ = 1.
+   *  #kind_ =  "Default", #rmax_ = radmax, #rmax_set_ = 1.
    */
   Generic(double radmax); ///< Set rmax in constructor.
 
   /**
-   *  kind_ =  kind, rmax_ = 0., rmax_set_ = 0.
+   *  #kind_ =  kind, #rmax_ = 0., #rmax_set_ = 0.
    */
   Generic(std::string kind); ///< Set kind in constructor.
 
@@ -278,12 +278,12 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   // ---------
  public:
   /**
-   * \brief Get the Metric Generic::gg_
+   * \brief Get the Metric #gg_
    */
   virtual SmartPointer<Metric::Generic> metric() const;
 
   /**
-   * \brief Set the Metric Generic::gg_
+   * \brief Set the Metric #gg_
    */
   virtual void metric(SmartPointer<Metric::Generic>) ;
 
@@ -298,7 +298,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *
    *  \return rmax_ in geometrical units
    */
-  virtual double rMax() const; ///< Get maximal distance from center of coordinate system
+  virtual double rMax(); ///< Get maximal distance from center of coordinate system
 
   /**
    *  Call rMax() and convert result to unit.
@@ -321,8 +321,8 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *  Set maximal distance from center of coordinate system at which a
    *  Photon may hit the object.
    *  
-   *  Side effect: set rmax_set_ to 1.
-   *  \param val new rmax_ in geometrical units.
+   *  Side effect: set #rmax_set_ to 1.
+   *  \param val new #rmax_ in geometrical units.
    */
   virtual void rMax(double val); ///< Set maximal distance from center of coordinate system
 
@@ -330,7 +330,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
    *  Call Generic::rMax(double val) after converting val from unit
    *  to geometrical units.
    *
-   *  \param val rmax_ expressed in unit "unit";
+   *  \param val #rmax_ expressed in unit "unit";
    *  \param unit string...
    */
   virtual void rMax(double val, std::string unit); ///< Set maximal distance from center of coordinate system

@@ -40,11 +40,15 @@ namespace Gyoto {
  * \class Gyoto::WIP
  * \brief Base class for work in progress
  *
+ * The constructors of this class simply issue a warning that the
+ * (derived) class is work in progress.
  */
 class Gyoto::WIP
 {
  public:
+  /// Issue a warning
   WIP();
+  /// Issue a warning specifying the name of the derived class
   WIP(std::string classname);
 };
 
