@@ -22,7 +22,9 @@
 #include <yapi.h>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <signal.h>
+#include <vector>
 
 #include "ygyoto.h"
 
@@ -213,4 +215,34 @@ extern "C" {
   Y___gyoto_setErrorHandler(int)
   { Gyoto::Error::setHandler(&ygyotoErrorHandler); }
 
+}
+
+
+/* Don't overuse the two below, the are not exported with the rest of the ABI */
+/* The point is to cache the variable names and global indices used by
+   the closure on_eval operator */
+char const * const __ygyoto_var_name(long id) {
+  static std::vector<std::string> names;
+  if (id >= names.size()) {
+    long cursize=names.size();
+    names.resize(id+1);
+    for (long k=cursize; k<=id; ++k) {
+      stringstream ss;
+      ss << "__gyoto_var" << k;
+      names[k]=ss.str();
+    }
+  } 
+  return names[id].c_str();
+}
+
+long int __ygyoto_var_idx(long id) {
+  static std::vector<long> ids;
+  if (id >= ids.size()) {
+    long cursize=ids.size();
+    ids.resize(id+1);
+    for (long k=cursize; k<=id; ++k)
+      ids[k]=yget_global(__ygyoto_var_name(k), 0);
+    cout << "new id: " << ids[id] << endl;
+  } 
+  return ids[id];
 }

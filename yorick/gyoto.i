@@ -21,28 +21,28 @@ plug_in, "gyoto";
 #include "graphk.i"
 
 extern gyoto_haveXerces;
-/* DOCUMENT have_xerces = gyoto_haveXerces()
+/* DOCUMENT have_xerces = gyoto.haveXerces()
     Tell whether GYOTO was compiled with Xerces support (XML i/o)
    OUTPUT:
     HAVE_XERCES=1 if compiled with Xerces, else 0.
 */
 
 extern gyoto_haveCFITSIO;
-/* DOCUMENT have_cfitsio = gyoto_haveCFITSIO()
+/* DOCUMENT have_cfitsio = gyoto.haveCFITSIO()
     Tell whether GYOTO was compiled with CFITSIO support (FITS i/o)
    OUTPUT:
     HAVE_CFITSIO=1 if compiled with CFITSIO, else 0.
 */
 
 extern gyoto_haveBoost;
-/* DOCUMENT have_boost = gyoto_haveBoost()
+/* DOCUMENT have_boost = gyoto.haveBoost()
     Tell whether GYOTO was compiled with Boost support (advanced integrators)
    OUTPUT:
     HAVE_BOOST=1 if compiled with Boost, else 0.
 */
 
 extern gyoto_haveUDUNITS;
-/* DOCUMENT have_udunits = gyoto_haveUNUITS()
+/* DOCUMENT have_udunits = gyoto.haveUNUITS()
     Tell whether GYOTO was compiled with UDUNITS support (advanced units)
    OUTPUT:
     HAVE_UDUNITS=1 if compiled with UDUNITS, else 0.
@@ -55,26 +55,26 @@ extern __gyoto_setErrorHandler;
 __gyoto_setErrorHandler;
 
 extern gyoto_loadPlugin;
-/* DOCUMENT gyoto_loadPlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
+/* DOCUMENT gyoto.loadPlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
 
    Load Gyoto plug-ins.
 
   INPUTS:
-   gyoto_loadPlugins() accepts an aribtrary number of positional
+   gyoto.loadPlugins() accepts an aribtrary number of positional
    arguments, each a string or string array naming individual Gyoto
    plugins. For instance, all of the following attempt to load the
    plug-ins, stdplug, lorene and myplug:
-    gyoto_loadPlugin, "stdplug", "lorene", myplug"
-    gyoto_loadPlugin, ["stdplug", "lorene", myplug"]
-    gyoto_loadPlugin, "stdplug", ["lorene", myplug"]
+    gyoto.loadPlugin, "stdplug", "lorene", myplug"
+    gyoto.loadPlugin, ["stdplug", "lorene", myplug"]
+    gyoto.loadPlugin, "stdplug", ["lorene", myplug"]
 
   KEYWORDS:
    nofail= if set and true, failure to load a plug-in will not trigger
            an error. It applies to _all_ plug-ins in the list.
 
   EXAMPLE:
-   gyoto_loadPlugin, "stdplug"
-   gyoto_loadPlugin, "lorene", nofail=1
+   gyoto.loadPlugin, "stdplug"
+   gyoto.loadPlugin, "lorene", nofail=1
  */
 
 extern __gyoto_initRegister;
@@ -110,19 +110,32 @@ local gyoto;
     to the Yorick uses, but some details can be surprising to a Yorick
     user.
 
+    The gyoto namespace
+    -------------------
+
+    Most of the Gyoto functions are put into the "gyoto" namespace
+    (actually an oxy group, for the interested reader). You can
+      restore, gyoto;
+    and be done with the "gyoto." prefix. A few (rare) functions have
+    the "gyoto_" prefix, they are not in the namespace.
+
 
     Creating a GYOTO object
     -----------------------
 
     To create a GYOTO object, one calls one of the object creators:
     for instance
-       gg = gyoto_KerrBL() ;
+       gg = gyoto.KerrBL() ;
     results in GG being an opaque object containing a GYOTO Metric (a
     Kerr Metric in this case, using the Boyer-Lindquist coordinate
     system).
 
     The creators accept a filename as positional argument (see FILE
-    FORMAT below): gg = gyoto_KerrBL( "my_KerrBL_descritpion.xml" );
+    FORMAT below): gg = gyoto.KerrBL( "my_KerrBL_descritpion.xml" );
+
+    Arbitrary derived classes can also be instanciated using the base
+    class constructor:
+       gg = gyoto.Metric("KerrBL");
 
 
     GYOTO OBJECTS BEHAVE LIKE FUNCTIONS
@@ -134,12 +147,56 @@ local gyoto;
     instance, to change the spin parameter of the GG Metric above, the
     two following are exactly synonymous:
        gg, spin=0.8 ;
-       gyoto_KerrBL, gg, spin=0.8;
+       gyoto.KerrBL, gg, spin=0.8;
+
+    Likewise, the value of the spin member can be retrieved like this:
+       a = gg(spin=);
+       a = gyoto.KerrBL(gg, spin=);
 
     Beware: in the second form, the positional parameter GG must be
     given before any keyword parameter. This is one of the few points
     were the GYOTO syntax does not fully adheres the Yorick uses.
 
+    SYNTACTIC SUGAR: the dot operator
+    ---------------------------------
+
+    The normal way to access members or methods in a Gyoto object (see
+    below) is:
+       object, member1=val1, member2=val2...;   // set member1 and member2
+       retval = object(member1=, member2=val2); // retrieve member1, set member2
+    In order to get a more usual look-and-feel, it is also possible to
+    write this instead:
+       noop, object.member(val[,other_args]); // set member
+       retval = object.member([,other_args]); // get member
+    For instance, to retrieve the mass in a Metric object, these two
+    syntaxes work (and will continue working in future releases, until
+    a design change is necessary):
+       m = gg(mass=, unit="sunmass");
+       m = gg.mass(unit="sunmass");
+
+    Incidently, it is currently possible to process several keywords
+    also in this way:
+       noop, object.member1(value1, member2=value2);
+    is the same as
+       object, member1=value1, member2=value2;
+    This is not intentional and your code should not rely on this
+    behaviour. For the sake of forward compatibility, when using the
+    .member() notation, use only additional keywords if they are
+    needed to process .member. Currently, this concerns only the
+    "unit=" keyword.
+
+    Additional sugar: when chaining dot extraction, intermediate "()"
+    are implied, so that
+       scenery.screen.resolution();
+    is a shorthand for:
+       scenery.screen().resolution();
+
+    A note on optimisation: the dot operator (currently) works by
+    calling the more basic keyword= syntax. It is therefore very
+    slightly slower.
+
+    In the following, we give the alternative dot notation alternative
+    as a comment (following "//").
     
     MEMBERS
     -------
@@ -153,40 +210,29 @@ local gyoto;
        spin_param = gg(spin=); // or spin_param = gg.spin()
        
     Note how giving a member keyword without any value, as in the last
-    example above, allows _retrieving_ the previously set value. The
-    alternative dot notation is semantically equivalent but slightly
-    slower.
+    example above, allows _retrieving_ the previously set value.
 
     When setting member, it is also possible to call the object as a
     function. In that case, the return value will be the object
     itself, allowing to call it again as a function:
        spin_val = gg(spin=0.5)(spin=)
-       or spin_val = gg(spin=0.5).spin()
-    Although the above example is trivial, this is useful in some
-    complex situations:
+       // or spin_val = gg.spin(0.5).spin()
+    Although the above example is trivial, this is useful in many
+    slightly more complex situations:
        Getting the resolution in a Screen attached to a Scenery:
          res_val = scenery(screen=)(resolution=);
-         res_val = scenery.screen.resolution(); // more elegant but slower
+         // or res_val = scenery.screen.resolution();
        Setting resolution:
          noop, scenery.screen(resolution=res_val);
-         noop, scenery.screen.resolution(res_val);
+         // or noop, scenery.screen.resolution(res_val);
        (The noop above is not mandatory but avoid spurious display).
        
-    Note how scenery.screen().resolution is equivalent to just
-    scenery.screen.resolution; this is just more syntactic sugar. A
-    final note on the . operator: it is possible to set a member which
-    accepts the "unit" keyword in this way:
-       gg.mass(4e6, unit="sunmass");
-    This is strictly equivalent to (but slower than)
-       gg(mass=4e6, unit="sunmass");
-    As of writing, "unit" is the only keyword accepted by this
-    syntax. There must also not be more than one positional argument.
-
     Some member keywords accept more than one parameter, separated by
-    comas. This is the first exception GYOTO makes to the Yorick
+    comas. This is the second exception GYOTO makes to the Yorick
     syntax. For example, for setting the initial position and velocity
     of a star, one can use:
        st = gyoto.Star( initcoord=pos,vel );
+       // or st = gyoto.Star().initcoord(pos, vel);
     Only one such keyword can be set at any time because it would be
     exceedingly difficult to parse them otherwise.
     
@@ -217,8 +263,8 @@ local gyoto;
        gg_copy = gg;   // This is copying: gg2 and gg are the same
                        // object
        
-       gg_clone = gg(clone=);  // This is cloning: gg3 is a detached
-       gg_clone = gg.clone();  // copy
+       gg_clone = gg(clone=);        // This is cloning: gg_clone is a
+       // or gg_clone = gg.clone();  // detached copy
 
        gg_copy, spin=0.2;
        gg_clone, spin=0.7;
@@ -235,42 +281,46 @@ local gyoto;
     example is the XMLWRITE keyword which most objects accept for
     dumping a description of themselves to an XML file:
        gg, xmlwrite="filename.xml";
+       // or noop, gg.xmlwrite("filename.xml")
 
     Other methods keywords are function-like: they usually take one or
-    several parameter and return a value. Only one value-retruning
+    several parameter and return a value. Only one value-returning
     keyword can be set at a time (be it a function-like method or
     member keyword set for retrieving a value, such as "spin="):
        coor = gg(makecoord=yinit, cst);
+       // or coor = gg.makecoord(init, cst);
        txyz = star(get_cartesian=dates);
+       // or txyz = star.get_cartesian(dates);
 
     Some objects have a default methods that is called when no keyword
     is present. This is the case for metrics, which return the metric
     coefficients at a specific location, and of sceneries, which
     perform ray-tracing:
        coefficient = gg(coordinates, mu, nu);
+       // or coefficients = scenery.metric()(coordinates, mu, nu);
        image = scenery();
        
        
     GYOTO OBJECT TYPES
     ==================
 
-    gyoto_Metric: the general relativity metric in which objects move...
-          Notable sub-classes: gyoto_KerrBL, gyoto_KerrKS
+    gyoto.Metric: the general relativity metric in which objects move...
+          Notable sub-classes: gyoto.KerrBL, gyoto.KerrKS
     
-    gyoto_Photon: massless particules used for ray-tracing
+    gyoto.Photon: massless particules used for ray-tracing
     
-    gyoto_Astrobj: astrophysical objects.
-          Notable sub-classes: gyoto_Star, gyoto_FixedStar,
-          gyoto_PolishDoughnut, gyoto_ThinInfiniteDisk
+    gyoto.Astrobj: astrophysical objects.
+          Notable sub-classes: gyoto.Star, gyoto.FixedStar,
+          gyoto.PolishDoughnut, gyoto.ThinInfiniteDisk
 
-    gyoto_Screen: the camera for ray-tracing
+    gyoto.Screen: the camera for ray-tracing
 
-    gyoto_Spectrometer: the spectral capabilites of a gyoto_Screen
-          (also found in gyoto_Photon)
+    gyoto.Spectrometer: the spectral capabilites of a gyoto.Screen
+          (also found in gyoto.Photon)
 
-    gyoto_Spectrum: a spectrum, only used in gyoto_Star so far
+    gyoto.Spectrum: a spectrum, only used in gyoto.Star so far
     
-    gyoto_Scenery: relationship between all of the above
+    gyoto.Scenery: relationship between all of the above
 
     
     FILE FORMAT
@@ -301,7 +351,7 @@ local gyoto;
                initcoord=[0, 10.791, 1.5708, 0], [0, 0, 0.0166637],
                xfill=800
                )(
-                 get_skypos=gyoto_Screen(metric=gg)
+                 get_skypos=gyoto.Screen(metric=gg)
                  );
        plg, data(,2), data(,1);
 
@@ -325,9 +375,9 @@ local gyoto;
        limits, square=1;
 
        
-  SEE ALSO: gyoto_Metric, gyoto_Astrobj, gyoto_Photon, gyoto_Screen,
-            gyoto_Scenery, gyoto_Spectrum, gyoto_Spectrometer
-            utilities: gyotoy, gyoto_plg3, gyoto_debug,
+  SEE ALSO: gyoto.Metric, gyoto.Astrobj, gyoto.Photon, gyoto.Screen,
+            gyoto.Scenery, gyoto.Spectrum, gyoto.Spectrometer
+            utilities: gyotoy, gyoto_plg3, gyoto.debug,
             gyoto_plgsky, gyoto_plmksky, gyoto_pltsky, gyoto_reticle,
             gyoto_orient3, gyoto_convert
     
@@ -336,7 +386,7 @@ local gyoto;
 //////// SCENERY
 
 extern gyoto_Scenery;
-/* DOCUMENT scenery = gyoto_Scenery([filename,] [members=values ...])
+/* DOCUMENT scenery = gyoto.Scenery([filename,] [members=values ...])
              Create GYOTO Scenery object
          or scenery, [members=values]
              Set GYOTO Scenery member
@@ -361,13 +411,13 @@ extern gyoto_Scenery;
 
    MEMBERS:
 
-    metric=  see gyoto_Metric(): what "straight" means for light
+    metric=  see gyoto.Metric(): what "straight" means for light
              travel;
              
-    screen=  see gyoto_Screen(), it specifies where the obseerver is
+    screen=  see gyoto.Screen(), it specifies where the obseerver is
              located and the obseerving time;
              
-    astrobj= see gyoto_Astrobj(): where the light comes from;
+    astrobj= see gyoto.Astrobj(): where the light comes from;
     
     delta=   a double scalar, the initial integration step for the
              Photons laucnched during ray-tracing;
@@ -415,7 +465,7 @@ extern gyoto_Scenery;
                     documentation for the Astrobj kind of your choice.
 
     nthreads=number of parallel threads to use in
-             gyoto_Scenery_rayTrace. This has no effect when
+             gyoto.Scenery_rayTrace. This has no effect when
              ray-tracing using the "data = scenery()" syntax below.
                     
     RAY-TRACING:
@@ -441,12 +491,12 @@ extern gyoto_Scenery;
     one plane in data.
     
    SEE ALSO:
-     gyoto_Metric, gyoto_Screen, gyoto_Astrobj, gyoto_Photon,
-     gyoto_Spectrometer, gyoto_Scenery_rayTrace
+     gyoto.Metric, gyoto.Screen, gyoto.Astrobj, gyoto.Photon,
+     gyoto.Spectrometer, gyoto.Scenery_rayTrace
 */
 
 extern gyoto_Scenery_rayTrace
-/* DOCUMENT res = gyoto_Scenery_rayTrace(scenery, imin, imax, jmin, jmax,
+/* DOCUMENT res = gyoto.Scenery_rayTrace(scenery, imin, imax, jmin, jmax,
                                          impactcoords)
 
      if IMPACTCOORDS is an unadorned, nil variable it is output. If it
@@ -468,7 +518,7 @@ BROKEN
      The minimum distance between photon and object is first computed
      on a coarse grid which is then refined as required.
 
-   SEE ALSO: gyoto_Scenery
+   SEE ALSO: gyoto.Scenery
  */
   write, format="%s\n",
     "WARNING: gyoto_Scenery_adaptive_raytrace() is under development";
@@ -563,7 +613,7 @@ BROKEN
 
 // PHOTON CLASS
 extern gyoto_Photon;
-/* DOCUMENT photon = gyoto_Photon([filename], [members=values])
+/* DOCUMENT photon = gyoto.Photon([filename], [members=values])
             photon, member=values
             value = photon(member=) or value = photon.member
             value = photon(function_method=params)
@@ -575,7 +625,7 @@ extern gyoto_Photon;
 
      Photons are mass-less particles following light-like geodesics of
      a metric. For basic concepts, see GYOTO. For ray-tracing,
-     gyoto_Scenery() is more appropriate.
+     gyoto.Scenery() is more appropriate.
 
    MEMBERS:
 
@@ -583,9 +633,9 @@ extern gyoto_Photon;
      retrieved with the syntax "value=photon(member=)" or
      "value=photon.member":
      
-        metric= a GYOTO Metric (see gyoto_Metric),
+        metric= a GYOTO Metric (see gyoto.Metric),
             initcoord=scenery,x,y also sets the metric.
-        astrobj=a GYOTO Astrobj (see gyoto_Astroj), the target of
+        astrobj=a GYOTO Astrobj (see gyoto.Astroj), the target of
             ray-tracing.
                   
         initcoord= the initial coordinates (4-position & 4 velocity).
@@ -599,7 +649,7 @@ extern gyoto_Photon;
                 for the velocity vector. The light-ray will be tangent
                 to this 3-vector.
             initcoord=SCREEN,DALPHA,DDELTA
-                SCREEN is a gyoto_Screen, DALPHA and DDELTA specify
+                SCREEN is a gyoto.Screen, DALPHA and DDELTA specify
                 the direction this photon comes from when it reaches
                 the screen. DALPHA and DDELTA are in radians and must
                 be floating-point values.
@@ -608,15 +658,15 @@ extern gyoto_Photon;
                 pixel of the arrival SCREEN which the photon hits.
             initcoord=SCENERY,DALPHA,DDELTA
             initcoord=SCENERY,I,J
-                As above, but specify a gyoto_Scenery instead of a
-                gyoto_Screen. The Metric and Astrobj of the Senery
+                As above, but specify a gyoto.Scenery instead of a
+                gyoto.Screen. The Metric and Astrobj of the Senery
                 will also be attached to the Photon.
 
             Those last ways of specifying the initial conditions are
             very useful to get the trajectory of a specific photon in
             a ray-traced scenery.
 
-        spectro= a gyoto_Spectrometer
+        spectro= a gyoto.Spectrometer
 
         delta= integration step (initial in case of adaptive, the
                default)
@@ -680,14 +730,14 @@ extern gyoto_Photon;
      get_cartesian=dates Get the 3-position and 3-velocity of the
             Photon in Cartesian coordinates for the specified dates.
      
-   SEE ALSO: gyoto, gyoto_Metric, gyoto_Screen, gyoto_Scenery,
-            gyoto_Astrobj
+   SEE ALSO: gyoto, gyoto.Metric, gyoto.Screen, gyoto.Scenery,
+            gyoto.Astrobj
  */
 
 /// METRIC
 
 extern gyoto_Metric;
-/* DOCUMENT gg = gyoto_Metric( filename, [members=values] )
+/* DOCUMENT gg = gyoto.Metric( filename, [members=values] )
             gg, members=values
             retval = gg(member=) or retval = gg.member;
             retval = gg(function_method=par1, par2...)
@@ -703,7 +753,7 @@ extern gyoto_Metric;
    
      The GYOTO plug-in for Yorick introduces "Metric" objects (see
      GYOTO for an introduction). Such objects are created used for
-     instance the gyoto_KerrBL() function. Any kind of metric (even if
+     instance the gyoto.KerrBL() function. Any kind of metric (even if
      not explicitely exposed in this plug-in) can be loaded from an
      XML file using the FILENAME parameter. This XML file can by any
      GYOTO file containing a Metric section: the top-level can be a
@@ -716,8 +766,8 @@ extern gyoto_Metric;
      Most GYOTO functions which accept a Metric as a parameter accept
      any kind of Metric. There are nevertheless specific
      functionsAstrobjs which make sense only in the framework of a
-     specific kind of Metric, notably gyoto_KerrBL. This is the case
-     for gyoto_PolishDoughnut for instance.
+     specific kind of Metric, notably gyoto.KerrBL. This is the case
+     for gyoto.PolishDoughnut for instance.
 
 
    MEMBER KEYWORDS:
@@ -783,11 +833,11 @@ extern gyoto_Metric;
                Beware of the index ordering:
                   Gamma(nu, mu, alpha) == Gamma^alpha_mu_nu
 
-   SEE ALSO: gyoto, gyoto_KerrBL, gyoto_KerrKS
+   SEE ALSO: gyoto, gyoto.KerrBL, gyoto.KerrKS
  */
 
 extern gyoto_Astrobj;
-/* DOCUMENT ao = gyoto_Astrobj( filename );
+/* DOCUMENT ao = gyoto.Astrobj( filename );
             ao, member1=val1, member2=val2...;
             val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
@@ -798,7 +848,7 @@ extern gyoto_Astrobj;
 
      Several specific kinds of objects can be created using the
      functions listed in "SEE ALSO". Any kind of Astrobj can be
-     loaded from an XML file using gyoto_Astrobj. This XML file can be
+     loaded from an XML file using gyoto.Astrobj. This XML file can be
      any GYOTO file containing an Astrobj section (for instance, a
      Scenery file).
      
@@ -835,7 +885,7 @@ extern gyoto_Astrobj;
      setparameter="name","content" generic method to set a parameter
                   in an Astrobj object, even if is has not been
                   explicitely exposed in the Yorick plug-in. For
-                  instance, if st is a gyoto_Star object, the two
+                  instance, if st is a gyoto.Star object, the two
                   following commands yield the same result, although
                   the former is faster than the latter:
                      st, radius=1.0;
@@ -847,16 +897,16 @@ extern gyoto_Astrobj;
      
    EXAMPLES:
     The following implement specific objects, most require gyoto_std.i:
-     gyoto_Star               A spherical object moving along a geodesic
-     gyoto_FixedStar          A spherical object of constant coordinates
-     gyoto_Torus              A simple torus (solid, Keplerian rotation)
-     gyoto_ThinDisk           A geometrically thin disk
-     gyoto_PatternDisk        As above, emission numerically provided
-     gyoto_Disk3D             Thick disk, emission numerically provided
+     gyoto.Star               A spherical object moving along a geodesic
+     gyoto.FixedStar          A spherical object of constant coordinates
+     gyoto.Torus              A simple torus (solid, Keplerian rotation)
+     gyoto.ThinDisk           A geometrically thin disk
+     gyoto.PatternDisk        As above, emission numerically provided
+     gyoto.Disk3D             Thick disk, emission numerically provided
 
     It is also possible to instanciate an astrobj by kind name even if
     this kind is not explicitly implemented in the yorick plug-in:
-     gyoto_Astrobj("PageThorneDisk")
+     gyoto.Astrobj("PageThorneDisk")
                               A geometrically thin, optically thick disk
                               with Page & Thorne 1974 emission
 
@@ -865,15 +915,15 @@ extern gyoto_Astrobj;
  */
 
 extern gyoto_ThinDisk;
-/* DOCUMENT ao = gyoto_ThinDisk( filename );
+/* DOCUMENT ao = gyoto.ThinDisk( filename );
             ao, member1=val1, member2=val2...;
             val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
 
-     A more specific version of the gyoto_Astrobj function. A very
-     crude Astrobj can be instanciated using gyoto_ThinDisk. More
-     elaborate derived classes also exist. gyoto_ThinDisk accepts a
-     few keywords in addition to those processed by gyoto_Astrobj.
+     A more specific version of the gyoto.Astrobj function. A very
+     crude Astrobj can be instanciated using gyoto.ThinDisk. More
+     elaborate derived classes also exist. gyoto.ThinDisk accepts a
+     few keywords in addition to those processed by gyoto.Astrobj.
             
    MEMBER KEYWORDS
 
@@ -884,21 +934,21 @@ extern gyoto_ThinDisk;
      dir:          1 if corotating (relative to the coordinate system),
                   -1 if coounter rotating.
 
-   SEE ALSO: gyoto, gyoto_Astrobj
+   SEE ALSO: gyoto, gyoto.Astrobj
     There is one derived classe in gyoto_std.i:
-     gyoto_PatternDisk        As above, emission numerically provided
-    try also gyoto_Astrobj("PageThorneDisk")
+     gyoto.PatternDisk        As above, emission numerically provided
+    try also gyoto.Astrobj("PageThorneDisk")
      
  */
 
 extern gyoto_Screen;
-/* DOCUMENT screen = gyoto_Screen([keyword=value ...])
+/* DOCUMENT screen = gyoto.Screen([keyword=value ...])
              
-         or gyoto_Screen, screen, [keyword=value]
+         or gyoto.Screen, screen, [keyword=value]
          or screen, [keyword=value]
              Set GYOTO Screen member
              
-         or res = gyoto_Screen(screen, get_keyword=1)
+         or res = gyoto.Screen(screen, get_keyword=1)
          or res = screen(get_keyword=1)
              Get GYOTO Screen member
 
@@ -910,7 +960,7 @@ extern gyoto_Screen;
     resolution of the output images and the location of the camera
     relative to the Metric.
      
-    A Screen is usually created using the gyoto_Screen function. It's
+    A Screen is usually created using the gyoto.Screen function. It's
     members are then set or queried using various member keywords (see
     KEYWORDS below, "help, gyoto"). A description of the Screen can be
     written to an XML file using the xmlwrite= keyword.
@@ -921,7 +971,7 @@ extern gyoto_Screen;
          the first form, SCENERY is instanciated with any member set
          accordingly to the KEYWORD=VALUE pairs. In the four other
          forms, SCREEN must have been instanciated by a previous call
-         to gyoto_Screen().
+         to gyoto.Screen().
 
    OUTPUT:
     SCREEN: in the first form, a new GYOTO Screen object is returned
@@ -944,7 +994,7 @@ extern gyoto_Screen;
        pojection (=[incl, paln, arg]), observerpos (alternative way to
        set time, dist, incl, and arg by giving the position of the
        camera. Here, dist is in geometrical units), fourvel, screen1,
-       screen2, screen3, spectro (see gyoto_Spectrometer);
+       screen2, screen3, spectro (see gyoto.Spectrometer);
 
     Screens provide two function-like methods and the usual
     subroutine-like method xmlwrite plus two methods for specifying
@@ -966,13 +1016,13 @@ extern gyoto_Screen;
      maskwrite=filename: save mask to FITS file.
 
    SEE ALSO:
-     gyoto, gyoto_Metric, gyoto_Scenery, gyoto_Astrobj,
-     gyoto_Spectrometer
+     gyoto, gyoto.Metric, gyoto.Scenery, gyoto.Astrobj,
+     gyoto.Spectrometer
 */
 
 
 extern gyoto_Spectrum;
-/* DOCUMENT sp = gyoto_Spectrum([filename, ][members=values]
+/* DOCUMENT sp = gyoto.Spectrum([filename, ][members=values]
          or sp, method=parameters
          or value = sp(method=parameters)
          
@@ -1010,24 +1060,24 @@ extern gyoto_Spectrum;
    GENERIC FUNCTION-LIKE METHODS
      clone=  (as usual)
      
-   SEE ALSO:  gyoto, gyoto_Star
+   SEE ALSO:  gyoto, gyoto.Star
  */
 
 extern gyoto_debug;
-/* DOCUMENT gyoto_debug, 1/0
+/* DOCUMENT gyoto.debug, 1/0
     Turn GYOTO debug output on/off.
    SEE ALSO: gyoto
  */
 
 extern gyoto_verbose;
-/* DOCUMENT gyoto_verbose, level
-         or level = gyoto_verbose()
+/* DOCUMENT gyoto.verbose, level
+         or level = gyoto.verbose()
     Set/get Gyoto verbosity level
    SEE ALSO: gyoto
  */
 
 extern gyoto_Spectrometer;
-/* DOCUMENT spectro = gyoto_Spectrometer([filename],[members=values])
+/* DOCUMENT spectro = gyoto.Spectrometer([filename],[members=values])
          or spectro, xmlwrite=filename
          or var = spectro( channels= | midpoints= | widths= |
                            nsamples= | kind= | clone= )
@@ -1067,24 +1117,24 @@ extern gyoto_Spectrometer;
                   (default: Hz).
        clone=     returns a deep copy of this Spectrometer.
        
-   SEE ALSO: gyoto, gyoto_Screen, gyoto_Scenery,
-             gyoto_SpectroUniform, gyoto_SpetroComplex
+   SEE ALSO: gyoto, gyoto.Screen, gyoto.Scenery,
+             gyoto.SpectroUniform, gyoto.SpetroComplex
  */
 
 extern gyoto_SpectroUniform;
 extern _gyoto_SpectroUniform_register_as_Spectro;
-/* DOCUMENT spectro = gyoto_SpectroUniform([members=values])
+/* DOCUMENT spectro = gyoto.SpectroUniform([members=values])
          or spectro, keywords=values
          or retval = spectro( keyword= )
          
-     gyoto_SpectroUniform() is a more specific implementation of
-     gyoto_Spectrometer(). It allows creating an Spectrometer::Uniform
+     gyoto.SpectroUniform() is a more specific implementation of
+     gyoto.Spectrometer(). It allows creating an Spectrometer::Uniform
      object which models a spectrometer where NSAMPLES spectral
      channels are unifromly spaced in wavelength, frequency, or log10
      thereof.
 
-     gyoto_SpectroUniform has a superset of the functionalities of
-     gyoto_Spectrometer.
+     gyoto.SpectroUniform has a superset of the functionalities of
+     gyoto.Spectrometer.
 
    MEMBERS:
      Members can be set with "spectro, member=value" and retrieved
@@ -1117,49 +1167,49 @@ extern _gyoto_SpectroUniform_register_as_Spectro;
      The following methods from gyoto_Spectrometer are implemented:
      xmlwrite, clone, channels, midpoints, widths.
        
-   SEE ALSO: gyoto_Spectrometer, gyoto_SpectroComplex
+   SEE ALSO: gyoto.Spectrometer, gyoto.SpectroComplex
  */
 _gyoto_SpectroUniform_register_as_Spectro;
 
 extern gyoto_SpectroComplex;
 extern _gyoto_SpCplx_register_as_Spectrometer;
-/* DOCUMENT spectro = gyoto_SpectroComplex([members=values])
+/* DOCUMENT spectro = gyoto.SpectroComplex([members=values])
          or spectro, keywords=values
          or retval = spectro( keyword= )
          or subspectro = spectro(index)
          
-     gyoto_SpectroComplex() is a more specific implementation of
-     gyoto_Spectrometer(). It allows creating an Spectrometer::Complex
+     gyoto.SpectroComplex() is a more specific implementation of
+     gyoto.Spectrometer(). It allows creating an Spectrometer::Complex
      object which models a spectrometer made of several simpler
      Spectrometer objects (sub-spectrometers).
 
-     gyoto_SpectroComplex has a superset of the functionalities of
-     gyoto_Spectrometer.
+     gyoto.SpectroComplex has a superset of the functionalities of
+     gyoto.Spectrometer.
 
      A single sub-spectrometer can be retrieved by its INDEX. INDEX is
      1-based, as is customary in Yorick.
 
    EXAMPLE:
-     sp1 = gyoto_SpectroUniform(kind="wave",
+     sp1 = gyoto.SpectroUniform(kind="wave",
                                 nsamples=10,
                                 unit="microm",
                                 band=[1, 2]);
-     sp2 = gyoto_SpectroUniform(kind="freqlog",
+     sp2 = gyoto.SpectroUniform(kind="freqlog",
                                 nsamples=10,
                                 unit="eV",
                                 band=[10, 20]);
-     sp = gyoto_SpectroComplex(append=sp1)(append=sp2);
+     sp = gyoto.SpectroComplex(append=sp1)(append=sp2);
      sp1bis = sp(1);
      sp2bis = sp(2);
      
    METHODS:
-     The following methods from gyoto_Spectrometer are implemented:
+     The following methods from gyoto.Spectrometer are implemented:
      xmlwrite, clone, channels, midpoints, widths. In addition,
-     gyoto_SpectroComplex accepts the following methods:
+     gyoto.SpectroComplex accepts the following methods:
        append=subspectro add new sub-spectrometer
        remove=index      remove sub-spectrometer INDEX
        
-   SEE ALSO: gyoto_Spectrometer, gyoto_SpectroUniform
+   SEE ALSO: gyoto.Spectrometer, gyoto.SpectroUniform
  */
 _gyoto_SpCplx_register_as_Spectrometer;
 
@@ -1381,9 +1431,9 @@ extern is_gyoto_Spectrometer;
 extern is_gyoto_Spectrum;
 extern is_gyoto_Screen;
 extern is_gyoto_Scenery;
-/* DOCUMENT bool = is_gyoto_BASE(arg)
+/* DOCUMENT bool = gyoto.is_BASE(arg)
    
-     BOOL is 1 if arg is a gyoto_BASE where base is Metric, Astrobj,
+     BOOL is 1 if arg is a gyoto.BASE where base is Metric, Astrobj,
      Spectrum, Spectrometer, Scenery, Screen...
 
    SEE ALSO: gyoto
@@ -1395,7 +1445,7 @@ extern gyoto_dontcatchSIGFPE;
 extern gyoto_dontcatchSIGSEGV;
 
 extern gyoto_listRegister;
-/* DOCUMENT gyoto_listRegister
+/* DOCUMENT gyoto.listRegister
      List the register of known Astrobj, Metric, Spectrum and
      Spectrometer kinds.
    SEE ALSO: gyoto

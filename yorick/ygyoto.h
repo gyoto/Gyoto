@@ -31,6 +31,7 @@
 #include "GyotoScreen.h"
 
 #include <cstring>
+#include <sstream>
 
 #define YGYOTO_TYPE_LEN 21
 #define YGYOTO_STD_CATCH catch(Gyoto::Error e) \
@@ -472,7 +473,16 @@ void ygyoto_Spectrometer_generic_eval
   void gyoto_##NAME##_print(void *obj) { \
     y_print("GYOTO " #NAME,0);	       \
   }
-#endif 
+#endif
+
+
+// Two helper functions for the dot operator below;
+// these are *not* public API, don't (ab)use them
+/* return "__gyoto_var<id>" */
+char const * const __ygyoto_var_name(long id);
+/* return the index of "__gyoto_var<id>" */
+long int __ygyoto_var_idx(long id);
+ 
 #define YGYOTO_YUSEROBJ(NAME, CLASS)					\
   extern "C" {								\
     typedef struct gyoto_##NAME {					\
@@ -501,59 +511,50 @@ void ygyoto_Spectrometer_generic_eval
     }									\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
     void gyoto_##NAME##_accessor_eval(void *obj, int argc) {		\
-      long idxo = yget_global("__gyoto_obj", 0);			\
-      long idxr = yget_global("__gyoto_res", 0);			\
-      long idxv = yget_global("__gyoto_val", 0);			\
-      long idxu = yget_global("__gyoto_unt", 0);			\
-      /* push object into __gyoto_obj */				\
+      long used_var=0;							\
+      /* we build a yorick statement into ss */				\
+      stringstream ss;							\
+      /* first variable (used_var=0) will be output */			\
+      ss << "eq_nocopy, " <<  __ygyoto_var_name(used_var++) << ", ";	\
+      cerr << ss.str() << endl;						\
+      /* push object second variable */					\
       *ypush_##NAME()= ((gyoto_##NAME##_accessor*)obj)->smptr;		\
-      yput_global(idxo, 0);						\
+      yput_global(__ygyoto_var_idx(used_var), 0);			\
       yarg_drop(1);							\
-      /* push nil into __gyoto_val */					\
-      ypush_nil();							\
-      yput_global(idxv, 0);						\
-      yarg_drop(1);							\
-      /* push nil into __gyoto_unt */					\
-      bool have_unit=false;						\
-      ypush_nil();							\
-      yput_global(idxu, 0);						\
-      yarg_drop(1);							\
-      /* process arguments*/						\
+      ss << __ygyoto_var_name(used_var++) << "(";			\
+      /* use "member=" keyword */					\
+      ss << ((gyoto_##NAME##_accessor*)obj)->member << "=";		\
+      bool coma=false;							\
+      /* process arguments */						\
       long kidx=0;							\
       for (int iarg =argc-1; iarg>=0; --iarg) {				\
 	if ((kidx=yarg_key(iarg))>=0) {					\
 	  /* this is a keyword */					\
-	  char * kname=yfind_name(kidx);				\
-	  if (strcmp(kname, "unit"))					\
-	    y_error("only \"unit\" keyword supported right now");	\
-	  have_unit=true;						\
-	  ypush_use(yget_use(--iarg));					\
-	  yput_global(idxu, 0);						\
-	  yarg_drop(1);							\
+	  ss << ", " << yfind_name(kidx) << "=";			\
+	  coma=false;							\
 	} else {							\
+	  /* add coma if preceding argument was not a keyword */	\
+	  if (coma) ss << ", ";						\
 	  ypush_use(yget_use(iarg));					\
-	  yput_global(idxv, 0);						\
+	  yput_global(__ygyoto_var_idx(used_var), 0);			\
 	  yarg_drop(1);							\
+	  ss << __ygyoto_var_name(used_var++);				\
+	  coma=true;							\
 	}								\
       }									\
-      /* prepare and interpret statement */				\
+      /* terminate statement */						\
+      ss << ");";							\
+      /* interpret statement */						\
       long dims[Y_DIMSIZE]={1,1};					\
-      string stmt = "eq_nocopy, __gyoto_res, __gyoto_obj(";		\
-      stmt.append(((gyoto_##NAME##_accessor*)obj)->member)		\
-	.append("=__gyoto_val");					\
-      if (have_unit) stmt.append(", unit=__gyoto_unt");			\
-      stmt.append(");");						\
-      *ypush_q(dims)=p_strcpy(stmt.c_str());				\
+      *ypush_q(dims)=p_strcpy(ss.str().c_str());			\
       yexec_include(0, 1);						\
       yarg_drop(1);							\
-      /* result is in __gyoto_res, push it on the stack */		\
-      ypush_global(idxr);						\
+      /* result is in var #0, push it on the stack */			\
+      ypush_global(__ygyoto_var_idx(0));				\
       /* clean variables */						\
       ypush_nil();							\
-      yput_global(idxo, 0);						\
-      yput_global(idxv, 0);						\
-      yput_global(idxu, 0);						\
-      yput_global(idxr, 0);						\
+      for (long k=0; k<used_var; ++k)					\
+	yput_global(__ygyoto_var_idx(k), 0);				\
       yarg_drop(1);							\
     }									\
     void gyoto_##NAME##_accessor_extract(void *obj, char*member) {	\
