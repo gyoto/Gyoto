@@ -35,6 +35,10 @@
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
 #endif
 
+#ifdef HAVE_BOOST
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#endif
+
 using namespace std ; 
 using namespace Gyoto;
 
@@ -434,6 +438,16 @@ void Screen::getRayCoord(double alpha, double delta,
       law of cosine. 
       --> Following transformations are OK even for non-small alpha, delta
     */
+
+#ifdef HAVE_BOOST
+    // using boost multiprecision to avoid information loss in trigonometry
+    boost::multiprecision::cpp_dec_float_100
+      alpha100=alpha, delta100=delta, a, b;
+    a=acos(cos(alpha100)*cos(delta100));
+    b=atan2(tan(delta100),sin(alpha100));
+    spherical_angle_a=a.convert_to<double>();
+    spherical_angle_b=b.convert_to<double>();
+#else
     if (abs(alpha)<1e-6 || abs(delta) < 1e-6) {
       spherical_angle_a = sqrt(alpha*alpha+delta*delta);
     } else {
@@ -441,6 +455,8 @@ void Screen::getRayCoord(double alpha, double delta,
     }
       spherical_angle_b = 
 	(alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+#endif
+
   }
 
   // Move these two angles to [0,pi], [0,2pi]
