@@ -243,7 +243,6 @@ long int __ygyoto_var_idx(long id) {
     ids.resize(id+1);
     for (long k=cursize; k<=id; ++k)
       ids[k]=yget_global(__ygyoto_var_name(k), 0);
-    cout << "new id: " << ids[id] << endl;
   } 
   return ids[id];
 }

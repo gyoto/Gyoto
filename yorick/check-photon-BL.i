@@ -55,15 +55,22 @@ coord;
 if (abs((coord-[0,6,1.5708,0,1.38165,0,0,0.0555556]))(max)<1e-5)
   write, format="%s\n","done.\n"; else error, "PREVIOUS CHECK FAILED";
 
+doing, "Setting metric spin";
+gg, spin=0.95;
+done;
+doing, "Computing initial coordinate";
+coord=gg.makecoord(yinit, cst);
+done;
+
 pos=coord(:4);
 v= coord(6:)/coord(5);
-write, format="%s", "Checking gyoto_Star: ";
+doing, "Checking gyoto_Star";
 st=gyoto_Star(metric=gg, radius=1., initcoord=pos, v);
-write, format="%s\n","done.\n";
+done;
 
-write, format="%s\n", "Trying gyoto_Star_xFill";
+doing, "Trying gyoto_Star_xFill";
 st,xfill=770.;
-"done";
+done;
 
 //Computing position of star at a given proper time :
 //time=212.4034;//proper time
