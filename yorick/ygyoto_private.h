@@ -63,41 +63,42 @@ long int __ygyoto_var_idx(long id);
     typedef struct gyoto_##NAME {					\
       Gyoto::SmartPointer<CLASS> smptr;					\
     } gyoto_##NAME;							\
-    typedef struct gyoto_##NAME##_accessor {				\
+    typedef struct gyoto_##NAME##_closure {				\
       Gyoto::SmartPointer<CLASS> smptr;					\
       char * member;						\
-    } gyoto_##NAME##_accessor;						\
+    } gyoto_##NAME##_closure;						\
     void gyoto_##NAME##_free(void *obj) {				\
       if (((gyoto_##NAME*)obj)->smptr) {				\
 	((gyoto_##NAME*)obj)->smptr=NULL;				\
       } else printf("null pointer\n");					\
     }									\
-    void gyoto_##NAME##_accessor_free(void *obj) {			\
-      if (((gyoto_##NAME##_accessor*)obj)->smptr) {			\
-	((gyoto_##NAME##_accessor*)obj)->smptr=NULL;			\
-	p_free(((gyoto_##NAME##_accessor*)obj)->member);		\
+    void gyoto_##NAME##_closure_free(void *obj) {			\
+      if (((gyoto_##NAME##_closure*)obj)->smptr) {			\
+	((gyoto_##NAME##_closure*)obj)->smptr=NULL;			\
+	p_free(((gyoto_##NAME##_closure*)obj)->member);		\
       } else printf("null pointer\n");					\
     }									\
     YGYOTO_PRINT_YUSEROBJ(NAME)						\
-    void gyoto_##NAME##_accessor_print(void *obj) {			\
-      std::string phrase = "GYOTO " #NAME " accessor to member \"";	\
-      phrase.append(((gyoto_##NAME##_accessor*)obj)->member).append("\""); \
-      y_print(phrase.c_str(),0);					\
+    void gyoto_##NAME##_closure_print(void *obj) {			\
+      std::string phrase = "Gyoto closure. Class: \"" #NAME "\", method: \"";	\
+      phrase.append(((gyoto_##NAME##_closure*)obj)->member).append("\""); \
+      y_print(phrase.c_str(),1);					\
+      y_print("(Hint: I'm a functor, call me as a function)", 0);	\
     }									\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
-    void gyoto_##NAME##_accessor_eval(void *obj, int argc) {		\
+    void gyoto_##NAME##_closure_eval(void *obj, int argc) {		\
       long used_var=0;							\
       /* we build a yorick statement into ss */				\
       stringstream ss;							\
       /* first variable (used_var=0) will be output */			\
       ss << "eq_nocopy, " <<  __ygyoto_var_name(used_var++) << ", ";	\
       /* push object second variable */					\
-      *ypush_##NAME()= ((gyoto_##NAME##_accessor*)obj)->smptr;		\
+      *ypush_##NAME()= ((gyoto_##NAME##_closure*)obj)->smptr;		\
       yput_global(__ygyoto_var_idx(used_var), 0);			\
       yarg_drop(1);							\
       ss << __ygyoto_var_name(used_var++) << "(";			\
       /* use "member=" keyword */					\
-      ss << ((gyoto_##NAME##_accessor*)obj)->member << "=";		\
+      ss << ((gyoto_##NAME##_closure*)obj)->member << "=";		\
       bool coma=false;							\
       /* process arguments */						\
       long kidx=0;							\
@@ -131,34 +132,34 @@ long int __ygyoto_var_idx(long id);
 	yput_global(__ygyoto_var_idx(k), 0);				\
       yarg_drop(1);							\
     }									\
-    void gyoto_##NAME##_accessor_extract(void *obj, char*member) {	\
+    void gyoto_##NAME##_closure_extract(void *obj, char*member) {	\
       long idxo = yget_global("__gyoto_obj", 0);			\
       long idxr = yget_global("__gyoto_res", 0);			\
-      *ypush_##NAME()= ((gyoto_##NAME##_accessor*)obj)->smptr;		\
+      *ypush_##NAME()= ((gyoto_##NAME##_closure*)obj)->smptr;		\
       yput_global(idxo, 0);						\
       yarg_drop(1);							\
       long dims[Y_DIMSIZE]={1,1};					\
       string stmt = "eq_nocopy, __gyoto_res, __gyoto_obj(";		\
-      stmt.append(((gyoto_##NAME##_accessor*)obj)->member).append("=).")\
+      stmt.append(((gyoto_##NAME##_closure*)obj)->member).append("=).")\
 	.append(member);						\
       *ypush_q(dims)=p_strcpy(stmt.c_str());				\
       yexec_include(0, 1);						\
       yarg_drop(1);							\
       ypush_global(idxr);						\
     }									\
-    static y_userobj_t gyoto_##NAME##_accessor_obj =			\
+    static y_userobj_t gyoto_##NAME##_closure_obj =			\
     {const_cast<char*>("gyoto_" #NAME),					\
-     &gyoto_##NAME##_accessor_free,					\
-     &gyoto_##NAME##_accessor_print,					\
-     &gyoto_##NAME##_accessor_eval,					\
-     &gyoto_##NAME##_accessor_extract,					\
+     &gyoto_##NAME##_closure_free,					\
+     &gyoto_##NAME##_closure_print,					\
+     &gyoto_##NAME##_closure_eval,					\
+     &gyoto_##NAME##_closure_extract,					\
      0};								\
     void gyoto_##NAME##_extract(void *obj, char *member) {		\
-      gyoto_##NAME##_accessor * ACCESSOR =				\
-	(gyoto_##NAME##_accessor *)ypush_obj(&gyoto_##NAME##_accessor_obj, \
-					  sizeof(gyoto_##NAME##_accessor)); \
-      ACCESSOR -> smptr=((gyoto_##NAME*)obj)->smptr;			\
-      ACCESSOR -> member = p_strcpy(member);				\
+      gyoto_##NAME##_closure * CLOSURE =				\
+	(gyoto_##NAME##_closure *)ypush_obj(&gyoto_##NAME##_closure_obj, \
+					  sizeof(gyoto_##NAME##_closure)); \
+      CLOSURE -> smptr=((gyoto_##NAME*)obj)->smptr;			\
+      CLOSURE -> member = p_strcpy(member);				\
     }								\
     static y_userobj_t gyoto_##NAME##_obj =				\
     {const_cast<char*>("gyoto_" #NAME),					\
