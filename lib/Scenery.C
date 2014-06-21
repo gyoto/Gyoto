@@ -553,56 +553,25 @@ size_t Scenery::maxiter() const { return ph_.maxiter(); }
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "fmp -> metric (metric()) ;" << endl;
-# endif
   if (metric())     fmp -> metric (metric()) ;
-
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG <<"fmp -> screen (screen_) ;" << endl;
-# endif
   if (screen_) fmp -> screen (screen_) ;
-
-  fmp->setParameter("Integrator", ph_.integrator());
-
-  fmp->setParameter("DeltaMin", ph_.deltaMin());
-  fmp->setParameter("DeltaMax", ph_.deltaMax());
-  fmp->setParameter("DeltaMaxOverR", ph_.deltaMaxOverR());
-  fmp->setParameter("AbsTol", ph_.absTol());
-  fmp->setParameter("RelTol", ph_.relTol());
-
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG <<"fmp -> astrobj (astrobj()) ;" << endl;
-# endif
   if (astrobj())    fmp -> astrobj (astrobj()) ;
 
-  if (delta_ != GYOTO_DEFAULT_DELTA) {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG <<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;" << endl;
-#   endif
-    fmp -> setParameter ("Delta", delta_);
-  }
+  fmp -> setParameter("Integrator", ph_.integrator());
+  fmp -> setParameter("DeltaMin", ph_.deltaMin());
+  fmp -> setParameter("DeltaMax", ph_.deltaMax());
+  fmp -> setParameter("DeltaMaxOverR", ph_.deltaMaxOverR());
+  fmp -> setParameter("AbsTol", ph_.absTol());
+  fmp -> setParameter("RelTol", ph_.relTol());
+  fmp -> setParameter ("Delta", delta_);
+  fmp -> setParameter (adaptive()?"Adaptive":"NonAdaptive");
+  fmp -> setParameter("MaxIter", maxiter_);
 
-  if (!adaptive()) {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG <<"fmp -> setParameter (\"NonAdaptive\") ;" << endl;
-#   endif
-    fmp -> setParameter ("NonAdaptive");
-  }
-
-  if (maxiter_ != GYOTO_DEFAULT_MAXITER)
-    fmp -> setParameter("MaxIter", maxiter_);
-
-  if (getRequestedQuantities()) {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG <<"fmp -> setParameter (\"Quantities\", \""
-		<<getRequestedQuantitiesString()<<"\") ;" << endl;
-#   endif
+  if (getRequestedQuantities())
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
-  }
 
-  if (tMin() != -DBL_MAX) fmp -> setParameter("MinimumTime", tMin());
-  if (nthreads_) fmp -> setParameter("NThreads", nthreads_);
+  fmp -> setParameter("MinimumTime", tMin());
+  fmp -> setParameter("NThreads", nthreads_);
 }
 
 SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {

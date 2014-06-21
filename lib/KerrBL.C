@@ -1149,11 +1149,9 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
 void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::Generic::fillElement(fmp);
-  if (difftol_ != GYOTO_KERRBL_DEFAULT_DIFFTOL)
-    fmp -> setParameter("DiffTol", difftol_);
-  if (generic_integrator_) fmp->setParameter("GenericIntegrator");
-  if (drhor_!=GYOTO_KERR_HORIZON_SECURITY)
-    fmp -> setParameter("HorizonSecurity", drhor_);
+  fmp -> setParameter("DiffTol", difftol_);
+  fmp->setParameter(generic_integrator_?"GenericIntegrator":"SpecificIntegrator");
+  fmp -> setParameter("HorizonSecurity", drhor_);
 }
 #endif
 

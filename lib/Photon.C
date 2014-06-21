@@ -562,7 +562,6 @@ void Photon::fillElement(FactoryMessenger *fmp) const {
 }
 
 SmartPointer<Photon> Gyoto::Photon::Subcontractor(FactoryMessenger* fmp) {
-
   string name="", content="";
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Astrobj::Generic> ao = NULL;

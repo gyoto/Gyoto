@@ -211,16 +211,10 @@ int ThinDisk::setParameter(std::string name,
 
 #ifdef GYOTO_USE_XERCES
 void ThinDisk::fillElement(FactoryMessenger *fmp) const {
-  GYOTO_DEBUG <<"InnerRadius" << endl;
-  if (rin_!=0.) fmp->setParameter("InnerRadius", rin_);
-  GYOTO_DEBUG <<"OuterRadius" << endl;
-  if (rout_!=DBL_MAX) fmp->setParameter("OuterRadius", rout_);
-  GYOTO_DEBUG <<"Thickness" << endl;
+  fmp->setParameter("InnerRadius", rin_);
+  fmp->setParameter("OuterRadius", rout_);
   if (flag_radtransf_) fmp->setParameter("Thickness", thickness_);
-  GYOTO_DEBUG <<"Dir" << endl;
   if (dir_==-1) fmp -> setParameter("CounterRotating");
-  GYOTO_DEBUG <<"Generic" << endl;
   Generic::fillElement(fmp);
-  GYOTO_DEBUG <<"done" << endl;
 }
 #endif

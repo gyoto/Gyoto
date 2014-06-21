@@ -500,14 +500,10 @@ int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }
 void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
   fmp -> setParameter("Mass", mass());
-  if (delta_min_!=GYOTO_DEFAULT_DELTA_MIN)
-    fmp -> setParameter("DeltaMin", delta_min_);
-  if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
-    fmp -> setParameter("DeltaMax", delta_max_);
-  if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
-    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
-  if (keplerian_)
-    fmp -> setParameter("Keplerian");
+  fmp -> setParameter("DeltaMin", delta_min_);
+  fmp -> setParameter("DeltaMax", delta_max_);
+  fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
+  if (keplerian_) fmp -> setParameter("Keplerian");
 }
 
 void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {

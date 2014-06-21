@@ -31,7 +31,7 @@ class Gyoto::Astrobj::ThinDiskIronLine
 			   std::string content,
 			   std::string unit);
 #ifdef GYOTO_USE_XERCES
-  //virtual void fillElement(FactoryMessenger *fmp) const ;
+  virtual void fillElement(FactoryMessenger *fmp) const ;
 #endif
 #endif
 };

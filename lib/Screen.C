@@ -1016,7 +1016,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
     fmp -> setParameter ("Distance", &d, 1, &child);
     child -> setSelfAttribute("unit", unit);
   }
-  if (dmax_ != GYOTO_SCREEN_DMAX) child -> setSelfAttribute("dmax", dmax_);
+  child -> setSelfAttribute("dmax", dmax_);
   delete child; child = NULL;
   fmp -> setParameter ("PALN", PALN());
   fmp -> setParameter ("Inclination", inclination());

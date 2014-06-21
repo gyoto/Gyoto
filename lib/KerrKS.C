@@ -686,8 +686,7 @@ void KerrKS::setParameter(string name, string content, string unit) {
 void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);
   Metric::Generic::fillElement(fmp);
-  if (drhor_!=GYOTO_KERR_HORIZON_SECURITY)
-    fmp -> setParameter("HorizonSecurity", drhor_);
+  fmp -> setParameter("HorizonSecurity", drhor_);
   fmp -> setParameter(generic_integrator_?
 		      "GenericIntegrator":
 		      "SpecificIntegrator");

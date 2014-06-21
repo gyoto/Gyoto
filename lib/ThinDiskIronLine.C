@@ -101,15 +101,16 @@ int ThinDiskIronLine::setParameter(std::string name,
 
 #ifdef GYOTO_USE_XERCES
 // to print/save XML (i.e. to prepare an XML from Yorick), we need this:
-//void ThinDiskIronLine::fillElement(FactoryMessenger *fmp) const {
+void ThinDiskIronLine::fillElement(FactoryMessenger *fmp) const {
+  GYOTO_SEVERE << "not fully implemented" << endl;
 //  /* for instance:
 //
 //     fmp -> setParameter("MyParameter", getMyParameter());
 //
 //     Then call fillElement *on the direct parent*
 //  */
-//  ThinDisk::fillElement(fmp);
-//}
+  ThinDisk::fillElement(fmp);
+}
 #endif
 
 

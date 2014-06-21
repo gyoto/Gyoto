@@ -537,8 +537,8 @@ int DynamicalDisk3D::setParameter(std::string name,
       
 #ifdef GYOTO_USE_XERCES
 void DynamicalDisk3D::fillElement(FactoryMessenger *fmp) const {
-  if (tinit_) fmp->setParameter("tinit", tinit_);
-  if (dt_) fmp->setParameter("dt", dt_);
+  fmp->setParameter("tinit", tinit_);
+  fmp->setParameter("dt", dt_);
   Disk3D::fillElement(fmp);
 }
 

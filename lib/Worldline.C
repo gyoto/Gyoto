@@ -298,29 +298,15 @@ void Worldline::fillElement(FactoryMessenger *fmp) const {
     }
   }
 
-  if (delta_ != GYOTO_DEFAULT_DELTA) {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG <<"fmp -> setParameter (\"Delta\", "<<delta_<<") ;" << endl;
-#   endif
-    fmp -> setParameter ("Delta", delta_);
-  }
-
-  if (!adaptive_) fmp->setParameter("NonAdaptive");
-
-  if (maxiter_ != GYOTO_DEFAULT_MAXITER)
-    fmp -> setParameter("MaxIter", maxiter_);
-
+  fmp -> setParameter ("Delta", delta_);
+  fmp -> setParameter(adaptive_?"Adaptive":"NonAdaptive");
+  fmp -> setParameter("MaxIter", maxiter_);
   fmp -> setParameter("Integrator", state_->kind());
-  if (delta_min_!=GYOTO_DEFAULT_DELTA_MIN)
-    fmp -> setParameter("DeltaMin", delta_min_);
-  if (delta_max_!=GYOTO_DEFAULT_DELTA_MAX)
-    fmp -> setParameter("DeltaMax", delta_max_);
-  if (delta_max_over_r_ != GYOTO_DEFAULT_DELTA_MAX_OVER_R)
-    fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
-  if (abstol_ != GYOTO_DEFAULT_ABSTOL)
-    fmp -> setParameter("AbsTol", abstol_);
-  if (reltol_ != GYOTO_DEFAULT_RELTOL)
-    fmp -> setParameter("RelTol", reltol_);
+  fmp -> setParameter("DeltaMin", delta_min_);
+  fmp -> setParameter("DeltaMax", delta_max_);
+  fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
+  fmp -> setParameter("AbsTol", abstol_);
+  fmp -> setParameter("RelTol", reltol_);
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {

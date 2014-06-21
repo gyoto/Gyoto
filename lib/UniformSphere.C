@@ -272,10 +272,8 @@ void UniformSphere::fillElement(FactoryMessenger *fmp) const {
   opacity_ -> fillElement(childfmp);
   delete childfmp;
 
-  if (dltmor_ != GYOTO_USPH_DELTAMAX_OVER_RAD)
-    fmp -> setParameter ("DeltaMaxOverRadius", dltmor_);
-  if (dltmod_ != GYOTO_USPH_DELTAMAX_OVER_DST)
-    fmp -> setParameter ("DeltaMaxOverDistance", dltmod_);
+  fmp -> setParameter ("DeltaMaxOverRadius", dltmor_);
+  fmp -> setParameter ("DeltaMaxOverDistance", dltmod_);
 
   Astrobj::Generic::fillElement(fmp);
 }

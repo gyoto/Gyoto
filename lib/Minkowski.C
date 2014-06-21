@@ -162,8 +162,9 @@ double Minkowski::christoffel(const double pos[8], const int alpha, const int mm
 // Fillelement is required to be able to export the Metric to an XML file.
 #ifdef GYOTO_USE_XERCES
 void Minkowski::fillElement(Gyoto::FactoryMessenger *fmp) {
-  if (coordKind()==GYOTO_COORDKIND_SPHERICAL)
-    fmp -> setParameter ( "Spherical");
+  fmp -> setParameter ((coordKind()==GYOTO_COORDKIND_SPHERICAL)?
+		       "Spherical":
+		       "Cartesian");
   Generic::fillElement(fmp);
 }
 #endif

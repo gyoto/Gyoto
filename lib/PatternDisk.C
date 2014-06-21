@@ -779,7 +779,7 @@ void PatternDisk::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("File", (filename_.compare(0,1,"!") ?
 			     filename_ :
 			     filename_.substr(1)));
-  if (Omega_) fmp->setParameter("PatternVelocity", Omega_);
+  fmp->setParameter("PatternVelocity", Omega_);
   ThinDisk::fillElement(fmp);
 }
 
