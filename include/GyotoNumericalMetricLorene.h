@@ -51,6 +51,7 @@ class Gyoto::Metric::NumericalMetricLorene
   char* filename_; ///< Lorene .d data file(s) path
   char* mapkind_; ///< Kind of Lorene mapping Map_af or Map_et
   int has_surface_; ///< 1 if the metric source has a surface
+  int specify_marginalorbits_; ///< 1 if marginal orbits are specified in file
   double horizon_; ///< Value of horizon (or any innermost limit)
   double r_refine_; ///< Refine integration below this r
   double h0_refine_; ///< Imposed integration step for refined integration
@@ -67,6 +68,8 @@ class Gyoto::Metric::NumericalMetricLorene
   Vector** vsurf_tab_; ///< 4-velocity at surface (if any)
   Scalar** lorentz_tab_; ///< Lorentz factor at surface (if any)
   Valeur** hor_tab_; ///< Apparent horizon (if any)
+  double risco_; ///< ISCO coordinate radius
+  double rmb_; ///< Marginally bound orbit coordinate radius
 
   void free(); ///< deallocate memory
 
@@ -90,6 +93,8 @@ class Gyoto::Metric::NumericalMetricLorene
   Vector** getVsurf_tab() const;
   Scalar** getLorentz_tab() const;
   Valeur** getHor_tab() const;
+  double getRisco() const;
+  double getRmb() const;
   void setLapse_tab(Scalar* lapse, int ii);
   void setShift_tab(Vector* shift, int ii);
   void setGamcov_tab(Sym_tensor* gamcov, int ii);

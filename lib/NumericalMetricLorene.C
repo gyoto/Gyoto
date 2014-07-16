@@ -32,6 +32,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
   mapkind_(NULL),
   initial_time_(0.),
   has_surface_(0),
+  specify_marginalorbits_(0),
   refine_(0),
   r_refine_(0.),
   h0_refine_(0.),
@@ -46,7 +47,9 @@ NumericalMetricLorene::NumericalMetricLorene() :
   vsurf_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
-  horizon_(0.)
+  horizon_(0.),
+  risco_(0.),
+  rmb_(0.)
 {
   GYOTO_DEBUG << endl;
 }
@@ -56,6 +59,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   mapkind_(NULL),
   initial_time_(o.initial_time_),
   has_surface_(o.has_surface_),
+  specify_marginalorbits_(o.specify_marginalorbits_),
   refine_(o.refine_),
   r_refine_(o.r_refine_),
   h0_refine_(o.h0_refine_),
@@ -70,7 +74,9 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   vsurf_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
-  horizon_(o.horizon_)
+  horizon_(o.horizon_),
+  risco_(o.risco_),
+  rmb_(o.rmb_)
 {
   GYOTO_DEBUG << endl;
   NumericalMetricLorene::setMetricSource();
@@ -220,6 +226,20 @@ void NumericalMetricLorene::setMetricSource() {
       hor_tab_[i-1] = horizon;
     }
 
+    if (specify_marginalorbits_){
+      double r_isco ;
+      fread_be(&r_isco, sizeof(double), 1, resu) ;
+      risco_ = r_isco ;
+      
+      if (debug()) cout << "DEBUG: READ Risco = " << r_isco << endl ;
+      
+      double r_mb ;
+      fread_be(&r_mb, sizeof(double), 1, resu) ;
+      rmb_ = r_mb;
+      
+      if (debug()) cout << "DEBUG: READ Rmb = " << r_mb << endl ;
+    }
+
     fclose(resu) ;
   }
 
@@ -260,6 +280,12 @@ Scalar** NumericalMetricLorene::getLorentz_tab() const {
 Valeur** NumericalMetricLorene::getHor_tab() const {
   GYOTO_DEBUG << endl;
   return hor_tab_;}
+double NumericalMetricLorene::getRisco() const {
+  GYOTO_DEBUG << endl;
+  return risco_;}  
+double NumericalMetricLorene::getRmb() const {
+  GYOTO_DEBUG << endl;
+  return rmb_;}  
 
 void NumericalMetricLorene::setLapse_tab(Scalar* lapse, int ii) {
   GYOTO_DEBUG << endl;
@@ -1584,6 +1610,14 @@ void  NumericalMetricLorene::setParameter(string name,
 		 "please provide Surface information before File in XML");
     }
     has_surface_=1;
+  }
+  else if (name=="SpecifyMarginalOrbits") {
+    if (filename_!=NULL){
+      throwError("In NumericalMetricLorene::setParameter "
+		 "please provide Marginel orbits information "
+		 "before File in XML");
+    }
+    specify_marginalorbits_=1;
   }
   else if (name=="Horizon") horizon_=atof(content.c_str());
   else if (name=="RefineIntegStep"){
