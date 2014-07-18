@@ -595,8 +595,8 @@ func gyotoy_export(filename, data)
     Gtk = gy.require("Gtk", "3.0");
 
     chooser = Gtk.FileChooserDialog();
-    noop, chooser.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.ok);
     noop, chooser.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.cancel);
+    noop, chooser.add_button(Gtk.STOCK_SAVE, Gtk.ResponseType.ok);
     fcfc = Gtk.FileChooser(chooser);
     noop, fcfc.set_action(Gtk.FileChooserAction.save);
     noop, fcfc.set_do_overwrite_confirmation(1);
@@ -687,8 +687,8 @@ func gyotoy_import(filename, data) {
     Gtk = gy.require("Gtk", "3.0");
 
     chooser = Gtk.FileChooserDialog();
-    noop, chooser.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.ok);
     noop, chooser.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.cancel);
+    noop, chooser.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.ok);
     fcfc = Gtk.FileChooser(chooser);
     noop, fcfc.set_action(Gtk.FileChooserAction.open);
     noop, fcfc.set_do_overwrite_confirmation(1);
