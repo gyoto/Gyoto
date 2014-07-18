@@ -1,48 +1,3083 @@
-next 2014/03/28
-	* Give access to some numerical parameters of the RK4 integrator
-	* New integrators, require Boost >= 1.93 and C++11
-	* Yorick plug-in API change: the dot operator has changed its meaning.
-	    Codes that used it may require updating. Examples:
-	    m = gg.mass -> m =gg.mass()
-	    obj=gg.clone -> obj=gg.clone()
-	    scenery.screen(resolution=128) -> screnery.screen.resolution(128)
-	    scenery.astrobj(initcoord=x,v) -> scenery.astrobj()(initcoord=x,v)
-	* rename methods from from setMass()/getMass() style to mass()/mass() style.
-	  Macro with the old names are provided in GyotoDefs.h, triggering a
-	  deprecation warning. Code may break nevertheless, typically in two cases:
-	    + if the new name was used as a variable name in your code:
-	      please change the variable name;
-	    + if your derived class overloaded only one of the two accessors
-	      (e.g. only setMetric, not getMetric): in this example add
-	        using Generic::metric;
-	      in your derived class definition.
-	  To get rid of the deprecation warning, define the GYOTO_NO_DEPRECATED,
-	  macro for instance "make CPPFLAGS=-DGYOTO_NO_DEPRECATED"
+commit e9cb96aae0fd402903a8f7b45aecdf7c68447802
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jul 18 15:53:40 2014 +0200
 
-0.1.0 2013/07/27 ABI 1
-	* add units system
-	* add PolishDoughnut astrobj
-	* use pkg-config
-	* gyotoy ported to yorick-gy instead of python
-	* in Worldline, Photon and Scenery: rename tlim to tmin, default
-	  value is -DBL_MAX.
-	* add a mutli-wavelength flavour of Astrobj::emission()
-	* install yorick plug-in under ${prefix}, not necessarily in Y_HOME
-	* add plugin attribute to the Metric, Astrobj and Spectrum entities
-	* reform build system to use the autotools
-	* add --plugins command-line option
-	* add virtual destrcuctor to Spectrum::Generic
-	* fix buffer overflow in lib/Factory.C
-	* update paper ref in bin/gyoto.C
+    yorick/gyotoy.i: fix SAVE button label in export dialog, reorder buttons in import dialg
 
-0.0.3 2012/05/01 BUG
-	* fix a tiny bug in PatternDisk (initialization of phimin/max)
-	* rearrange flags in Makefiles/local_settings
-	  for easier downstream packaging
+commit fa24dd06f48dd63f00d7afcf2df45297958b224c
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jul 16 19:15:38 2014 +0200
 
-0.0.2 2012/04/19 PKG
-	* install include files in include/Gyoto
-	* add this ChangeLog
+    Adding risco_ and rmb_ in NumericalMetricLorene
 
-0.0.1 2012/04/16 ABI 0
-	* release
+commit bf81397b3623882047d6d38cbc57093bbdb9582b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 21 18:50:07 2014 +0200
+
+    use boost::multiprecision in Screen::getRayCoord() to avoid loosing information due to the trigonometric functions
+
+commit de3a2b3cb763e097c0170547cfeeced0bab5805f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 21 12:22:32 2014 +0200
+
+    Don't hide parameters with default values in fillElement, this way the user have almost a complete view of the parameters they might want to set when printing an object.
+
+commit 4d1829e391e02257c0fb62b3421bce17ec0572d8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 21 11:51:48 2014 +0200
+
+    fix minor bugs in yorick check files
+
+commit f4093019883f1bccdca8e69842753875db44b34a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 21 09:48:25 2014 +0200
+
+    yorick: rename "accessor" to "closure", improve on_print method
+
+commit 840a4c5ed222a9aa8f87d3ab4c9c1567ea40943e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 22:43:45 2014 +0200
+
+    * remove const spcifier from Astrobj::rMax()
+    * improve doxygen doc
+
+commit 12b0002d89043608eff93bb4b36a692869b7275e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 22:27:14 2014 +0200
+
+    document Worldline and Worldline::IntegState
+
+commit 924773995e2ac4504d163a484ce333ce0a04c087
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 15:42:44 2014 +0200
+
+    split ygyoto_private.h out of ygyoto.h
+
+commit d690b09d60f29ee3b6c9bb761f3832e809c9f246
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 15:25:31 2014 +0200
+
+    remove doc/user_guide/.gitignore
+
+commit 493650058308da935411d040ad65745598e82770
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 15:21:15 2014 +0200
+
+    yorick: improve dot operator to support everything the () operator supports; improve doc
+
+commit 0981ff0c73420c42e239a7c780bf78390abd5fc1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 20 15:20:10 2014 +0200
+
+    fix lib/BlackBodySpectrum.C to compile with the minimal feature-set (--disable-xerces etc)
+
+commit c9a87c06ea0da00a9bb777e418847f7ac8e2ff1a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jun 19 16:03:08 2014 +0200
+
+    Change dot operator syntax in Yorick plug-in.
+    Warning: this may break existing code.
+
+commit e118820888b4822fad88ab727de594e8c5ed1a9f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jun 19 09:21:22 2014 +0200
+
+    doc build system:
+     * build ref only if DOXYGEN is available;
+     * build user guide only if all the necessary LaTeX bits are found
+
+commit 7d4f236c4bf6b304b4a5a822dcfe7da646d6b711
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 18 17:13:07 2014 +0200
+
+    Document how to extend Gyoto in the user guide.
+
+commit af3dafa2069750343d4610f8ac5cd4612fcfe3d4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 18 11:10:57 2014 +0200
+
+    Update manual:
+     * some documentation on Yorick and gyotoy;
+     * provide build system;
+     * change aa.bst to kluwer.bst, which is free and available in texlive-bibtex-extra
+
+commit f19633ff8149b09c9ea0cd9e24f5c9d4c368419f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 22:17:47 2014 +0200
+
+    reorder configure script
+
+commit 8bf325f08d67d92f5c0ea8c92e872b26e87e8af0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 22:07:05 2014 +0200
+
+    add configure option --disable-c++11
+
+commit df35b4773c7e6823ff4ee5d53dbfbb001dbe72ca
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 21:43:32 2014 +0200
+
+    fix more warnings
+
+commit 5b7a834364631a370c84401ba59b4d0af740beb6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 17:45:38 2014 +0200
+
+    more pedantic warnings
+
+commit 3349ed36907b54cffc4a098c35fe1c8f97b44f6f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 17:41:21 2014 +0200
+
+    fix many pedantic warnings (--enable-hardening)
+
+commit 0c275dd0e840f6719244ff707e5faf0496128deb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 14:11:02 2014 +0200
+
+    repair building *with* cfitsio (!)
+
+commit 34730f710625606dd48e4798ff997594fb528102
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 14:00:38 2014 +0200
+
+    repair support building and checking without cfitsio
+
+commit d33bc82240b0de477cac0b353b13eced87a2b4e1
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Jun 17 13:52:52 2014 +0200
+
+    Debug check-directionaldisk
+
+commit 87dafa1d0cb126c7c2579718f149d4ed22e63520
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 13:02:28 2014 +0200
+
+    ensure Gyoto builds and make check works even without xerces.
+
+commit b338cb057f7e424ab28bb312a4a545ebfb4d2b92
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 17 10:52:50 2014 +0200
+
+    * yorick: add haveUDUNITS()
+    * make sure the check suite passes even without UDUNITS
+
+commit f298d400995c1dc5939991bb99ac94d136e10c47
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 16 18:24:21 2014 +0200
+
+    fix bug in getRayCoord
+
+commit b60a37c080aab4789e8feeef0feeb9f7321870b6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 16 18:11:57 2014 +0200
+
+    fix getRayCoord to work better for very small angle increments
+
+commit 34f7f763f330605fd3002928bddb91cc64047877
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 16 16:29:50 2014 +0200
+
+    Document and compare the integrators in the user guide
+
+commit 728ab77261498a0f0c44e777210e7ffe1f885503
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Jun 16 12:21:08 2014 +0200
+
+    Biblio manual added
+
+commit 7f056100051aad17d6169156155070c19f72669c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 16 10:07:11 2014 +0200
+
+    * Fix bug that would break adaptive integration for the Legacy integrator in multi-threaded operation
+    * yorick: add gyoto_haveBoost()
+    * make check now works even without boost support
+
+commit df6d2c8eced475ae850f888e9a02be30f5de1932
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 14 15:43:57 2014 +0200
+
+    improve configure to error out if boost was requested but C++11 or Boost not found
+
+commit 36fdd3a700085dc104d13e8e3b59e6e3779d88b4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 14 10:27:00 2014 +0200
+
+    ensure the right compiler is used with compiling the yorick plug-in, and document how to select a compiler in INSTALL
+
+commit 9f5b70986d6654f22506063327aa7299debb3e9e
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jun 13 17:57:35 2014 +0200
+
+    DirectionalDisk: implemented trilinear interpolation in emission()
+
+commit 08e91914060ce90a9e9bd6f5d3eff9a6989365c0
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Jun 12 17:00:30 2014 +0200
+
+    Add new astrobj: DirectionalDisk
+
+commit fbf69f4563942725acce1b80f1b7651f87298fa2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 11 21:35:00 2014 +0200
+
+    Fix bug in Photon that would initialize the coordinate when it's supposed to remain uninitialized.
+    Give access to Scenery::clonePhoton()
+
+commit cc7f8f00f1441119155909a9c70356319379c017
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 11 14:57:31 2014 +0200
+
+    update configure to test for more flags to enable C++11, and to chicken out if none work.
+
+commit 37fc1c2e887d30add8ef6a9b598ae19d6364af39
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 11 11:40:35 2014 +0200
+
+    include <array> in GyotoWorldline.h
+
+commit 38b7b7c9cd48141eaf577008113e83fb77cf2168
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 11 11:01:28 2014 +0200
+
+    Don't store Photon parameters in the Scenery object, but directly in the Photon template it holds. This avoids getting out-of-sync.
+
+commit 579311b32b91b11c1cdf6bd969579d77e3595eeb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 10 23:05:18 2014 +0200
+
+    clone Scenery internal photon when ray-tracing in Yorick
+
+commit 768d6780f669dd617d0a4a0005e2b08feaaf4e3a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 10 20:42:13 2014 +0200
+
+    abide by delta_max_over_r_ in generic myrk4_adaptive, fix bug in Metric::Generic::deltaMax(pos, h) in case of Cartesian coordinates
+
+commit aaa1fc1d4d537411dc212b25bb2be4062a7f4610
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 10 14:26:33 2014 +0200
+
+    Few fixes for compilation under MacOS:
+     - default value for DeltaMaxOverR is now 1. to avoid overflow which triggers SIGFPE on MacOS
+     - make the "install" target phony
+     - check for the availability of -rdynamic in configure
+
+commit a412ba0b2b912ce069e8b62f5468065ccf083e2f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 9 19:21:42 2014 +0200
+
+    give access to the new integrator tuning parameters in yorick/Photon and Star
+
+commit 44296bc1ee7be5749d6db5a5d08c42fe911e102d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 19:38:11 2014 +0200
+
+    put CXXFLAGS in gyoto.pc to convey -std=c++11
+
+commit 6d11ab03a8323014c9d1f5c452648894507d1106
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 19:31:33 2014 +0200
+
+    put BOOST_CPPFLAGS in pkg-config file
+
+commit 933e1e7a5077be5b1a08672f3e2e3b68faf00b80
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 19:27:33 2014 +0200
+
+    support compiling without boost
+
+commit 267f69c3354b89886a4f07fd9c51141a5e150ffb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 16:16:08 2014 +0200
+
+    store boost integrator kind in an enum instead of a string
+
+commit f042b3b68fe258e9a2f6f9d117fe731883bc8772
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 15:48:26 2014 +0200
+
+    implement non-adaptive boost steppers
+
+commit 296521a1cad702139fb8e1772b480ecc46064213
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 14:37:29 2014 +0200
+
+    fix Worldline constructors and initializers to clone/init the IntegState when appropriate
+
+commit 00af1d197d18c76351755c43f7da74a1fc36f8bc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 11:56:15 2014 +0200
+
+    allow setting abstol and reltol in new integrators
+
+commit 54664768985636cf00922dda98eedf495cd2f8c8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jun 7 11:29:57 2014 +0200
+
+    improve new integrators (initialize minimally)
+
+commit 99fa623fc61788791b28f911070c9a78a3efe82c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 6 22:14:48 2014 +0200
+
+    access new integrator in Scenery from yorick
+
+commit 1b276a0e6e94805930c809338dfec5ea7a2d77a1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 6 21:31:07 2014 +0200
+
+    provide deltaMax, deltaMin and deltaMaxOverR interface directly in Worldline and Scenery for the new integrators.
+    change default values of deltaMin (DBL_MIN) and deltaMaxOverR (DBL_MAX).
+    fix bug in Torus::deltaMax().
+
+commit 7a18bef6c48efbe70eb8e11e75bb31e78dd81d68
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 6 17:17:17 2014 +0200
+
+    Support the 4 Boost Runge-Kutta integrators
+
+commit 6a41ecb5fa71254630905c6db8cd888e1190aeea
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 6 16:34:43 2014 +0200
+
+    Add support for Boost ODEint integrators. Adds new build dependency on Boost.
+
+commit b0f9d62d26d9ce2256714986b4d97d2a1759f9df
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri May 30 12:01:29 2014 +0200
+
+    ThinDiskPL: just remove Rmin and Rmax, they shadow InnerRadius and OuterRadius!
+
+commit e1c870d8ef55397d70f86f4a618595ca67b7e6ba
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri May 30 11:23:20 2014 +0200
+
+    Astrobj: add "const" keyword to rMax()
+    ThinDiskPL: rename Rmin, Rmax to Rinner, Router
+    
+    PolishDoughnut: redefine r_cusp_ to solve high spin problem ;
+    new correct version of p_mag implemented in Komissarov
+
+commit 9faae660da6f547d89af76cc273e6cf0f5a9a96f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 20 17:19:33 2014 +0200
+
+    ensure gyoto.so is compiled before gyoto_std.so, which needs it on MacOS X
+
+commit 95fe4c951593469a132eeb1f20a79ac1407af7ad
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 14 16:24:08 2014 +0200
+
+    avoid div by zero in yorick/check-helpers.i
+
+commit 54642a5ab6a8fd1c48110d35125feec97a607cb4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 7 18:27:35 2014 +0200
+
+    Allow setting FixedStar spectrum and opacity in the yorick plug-in
+
+commit baf94b96a940e40de28fcc9382c0a3382b3f4a4f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 7 17:25:23 2014 +0200
+
+    KerrBL: allow using the generic integrator.
+
+commit 038d036a513becca89bb2010433a9dcc04347a87
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 7 15:27:58 2014 +0200
+
+    Implement KerrBL::christoffel(dst, pos)
+
+commit 35c1e1bae837abe22ad48f26710f43f8accc4b7c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 7 12:10:28 2014 +0200
+
+    add some eye-candy in test suite
+
+commit d836302bf9d2f99e5c679fc60c9ddc23f3de9385
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 7 10:22:26 2014 +0200
+
+    Provide a proper system for running the yorick plug-in from the built source tree. Just use the script yorick/yorick which is generated at configure time.
+
+commit a84b8dc68cb01271d65f7fa90df36063b655939d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 6 15:52:22 2014 +0200
+
+    Include new metric (WIP): NumericalMetricLorene
+
+commit 1e3ff63fafb7797445f4f042a1981eb7fc8c3779
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 6 15:39:53 2014 +0200
+
+    + KerrKS: make it actually work, with the generic integrator. Using the specific integrator is an option, but it is currently broken.
+    + The christoffel method may now set a stop condition.
+    + myrk4_adaptive does not ignore the stop condition set by myrk4 anymore.
+    + Conversions To/From seconds may now be done from/to distances using GYOTO_C as a conversion factor
+    + Fix Torus, which was completely broken in Cartesian coordinates.
+
+commit 3a0e3e7a200be6c840cf24141cb1acc46453154c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 30 13:30:56 2014 +0200
+
+    Add Keplerian keyword in order to get circulartVelocity to return the Keplerian velocity
+
+commit 03b79c344c7b3cc88dcf39f277aa0aa29f348b39
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 29 17:11:37 2014 +0200
+
+    code cleanup: remove useless constructors and destructors (in Metrics), protect kind(string) and coordKind(int) which should generally not be used.
+
+commit 6e3e17a69ad368178b0a86243ed710ca78752332
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 29 11:03:23 2014 +0200
+
+    move delta_max_over_r_ machinery to Metric::Generic
+
+commit c6c149455ddd56ab2c5c22722706368a90c75dbc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 29 01:07:15 2014 +0200
+
+    add WIP, use single call gmunu() in Metric::Generic and KerrBL (10% speed gain)
+
+commit 02f034e8d9c029b635b76ac22ab16c5a531938b7
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Apr 22 16:55:00 2014 +0200
+
+    Add doc/user_guide
+
+commit 483b941a54c1902ee459e44a0f926c5774cd25ec
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 22 13:29:55 2014 +0200
+
+    Add work-in-progress (WIP) class
+    Add Minkowski metric class
+
+commit cfe128aab7efe99fc9bf91da141a410ee1c36f45
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 17 14:16:32 2014 +0200
+
+    Update configure script. Add "--enable-deprecated" option. The code should never be pushed when enabling this option is required to build the code.
+
+commit 4e3abda54a6d31d484b4dcdc978cba28562d1c9b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 17 14:05:51 2014 +0200
+
+    update autotools scripts, include new "compile" script.
+
+commit bb0c4990b396b835c2e3f2b385310f4464bce462
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 17 13:25:45 2014 +0200
+
+    rename set intensity/spectrum/binSpectrumConverter in Astrobj and Scenery
+
+commit 21dea0f9e97279702b47fa7fbd0cd2eb605033a3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 21:00:41 2014 +0100
+
+    add alpha0, delta0 in the doc of gyoto.Screen in the Yorick plug-in
+
+commit 36ad61d232fc960c33351546368b327ea06f48cf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 20:45:49 2014 +0100
+
+    get/set alpha0 and delta0 in Screen support in Yorick, support unit
+
+commit df78a088bde6ed4bc02b5dc471854b17f9a99b08
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 18:02:55 2014 +0100
+
+    rename get/SetFlag_radtransf -> opticallyThin, nThreads, resolution, nSamples, spectralOversampling
+
+commit 23daf50d49497d41b27474bb07cc9c2ec2d86977
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 17:45:10 2014 +0100
+
+    rename get/set lambda, centralTempOverVirial, beta, constant, exponent
+
+commit 852ef12998deab0ae2c7a7135e19ad2f84ed13df
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 17:11:03 2014 +0100
+
+    rename get/setRadius/SmallRadius/LargeRadius/CentralDensity -> radius/smallRadius/largeRadius/centralDensity
+
+commit 457bef5c21a594bf81b30d3d8600ec07b8c53b80
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 16:31:01 2014 +0100
+
+    rename get/setDelta/Delta0/Alpha0 -> delta/delta0/alpha0
+
+commit 0564a4fa0625edc915eae835ae1894b3400517b5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 16:18:42 2014 +0100
+
+    rename get/setSpectrum -> spectrum and get/setOpacity -> opacity
+
+commit 6a5776c5d36aa35ccad87df33afb2e02238ae2e8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 15:52:43 2014 +0100
+
+    rename get/setSpectrometer -> spectrometer
+
+commit 2682d2c581dd472e998df1719c06dc38e7908b96
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 14:02:24 2014 +0100
+
+    rename set/getAstrobj -> astrobj
+
+commit 9b1a7ab89b0d088303f99b0fab10a953ea6133ce
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 08:44:31 2014 +0100
+
+    rename set/getKind -> kind everywhere, make sure Gyoto compiles with and withoug GYOTO_NO_DEPRECATED
+
+commit 8a1accc56a2c4a32bbba632980537eee841a3a43
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 08:27:41 2014 +0100
+
+    Add some API compatibility deprecation code
+
+commit 54beda5617f259a540e339de4e962d3b73a43944
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 29 08:07:55 2014 +0100
+
+    rename methods set/getScreen -> screen, fix last remaining warning
+
+commit 8cbef78a57040fc4855564631e8395ebee2a55cc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 28 22:33:08 2014 +0100
+
+    get/setMetric->metric, get/setRmax->rMax
+
+commit fcd7f6bea42d258a6175b58ba9046ad983538f20
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Mar 28 16:48:02 2014 +0100
+
+    PolishDoughnut: erased Impact_ ; directional and angle-averaged synchrotron in Komissarov
+
+commit 8a8e16e126fcb27bf384ea7575bb33550d438946
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Mar 26 17:20:08 2014 +0100
+
+    Code cleaning in PolishDoughnut/Komissarov
+
+commit 62853366512a56bd0e5305e1f12f088e081aa9ea
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 26 17:03:42 2014 +0100
+
+    fix "../include/GyotoPolishDoughnut.h:251: error: a class-key must be used when declaring a friend "
+
+commit 61681551ab7faa42568cc68c80e48fa4f7ca7072
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 25 17:59:22 2014 +0100
+
+    Simplify interaction between PolishDoughnut and PolishDoughnut::intesection and
+
+commit 2253c42c813220ea646a39b0ea7b2da47c6f3296
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 14 21:56:49 2014 +0100
+
+    change method names in Screen: inclination, PALN, argument, distance
+
+commit c4e1bffa50cc51a29454836ae7db3b01c7f071b7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 12 15:35:26 2014 +0100
+
+    rename RotStar3_1::integKind, RotStar3_1::fileName. Make sure compilation goes fine with HOME_LORENE set.
+
+commit 968b109cfe50da2bb14c7cbd717773624c04253b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 12 15:26:34 2014 +0100
+
+    	* rename functions from setMass/getMass style to mass()/mass() style.
+    	  Are concerned the following (new names):
+    	    Metric::mass, Metric::coordKind, Metric::kind, Screen::coordKind,
+    	      KerrBL::spin, KerrKS::spin
+
+commit d6ab1f233265dabe15a02075dedaa50b80021ecb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 10 17:01:36 2014 +0100
+
+    add DiffTol and DeltaMaxOverR attributes to some of KerrBL, KerrKS and RotStar31
+
+commit 1f929ddad2d933489f9c2e3b40d4c8f4a003d4fe
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 10 14:45:04 2014 +0100
+
+    Add DeltaMin and DeltaMax attributes to Metric::Generic, support it in KerrBL
+
+commit 67f56565152b3a4cf0ed43354a0cd6fe205bb011
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Mar 5 12:03:55 2014 +0100
+
+    Code cleaning in KerrBL.
+    In KerrBL::myrk4_adaptive, redefined difftol depending
+    on metric kind
+
+commit 7b80e9cbf2ddd203ec084e85259ae7bc1928e0a0
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Feb 13 11:04:16 2014 +0100
+
+    PolishDoughnut::emission: temperature calculation changed, previous was buggy
+    PolishDoughnut::emission_komissarov: added Komissarov model for doughnuts
+
+commit 4bdf87445d39fd570f2845825cb5d0c5a6b962b0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Feb 8 18:58:11 2014 +0100
+
+    Make Gyoto work for large distances:
+     * use mathematical approximation for small angles in Screen::getRayCoord
+       which numerically more accurate than the exact trigonometry, this makes
+       Gyoto work for the Galactic Center case without using the dmax rescaling
+       trick;
+     * make dmax and h1max default to DBL_MAX;
+     * in KerrBL::myrk4_adaptive(), set difftol to 1e-6 (this makes Gyoto more
+       reliable for an object far behind the BH).
+
+commit ea573ac4c1efb3864b5ce0e7822087ffe8c689ee
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Feb 7 16:13:28 2014 +0100
+
+    use "approximate" formula in getRayCoord for small angles, this is numerically more accurate than the mathematically exact expression. Set h1max to 1e10, but it could be even bigger.
+
+commit cb1672c1b9dca9b49677e564b7a82e98f1a13d01
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jan 17 12:20:10 2014 +0100
+
+    Still updating website
+
+commit 9740df78064f45c6430132f2d49eab522b4a10cc
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jan 17 12:18:17 2014 +0100
+
+    Still updating website
+
+commit eb7c9ca31b5a82d55484fe67f7201c564af1c65b
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jan 17 12:14:04 2014 +0100
+
+    Website update
+
+commit bfd6777dcc785daba59eb8bc90f9fe3a8cb01c18
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Jan 16 12:36:26 2014 +0100
+
+    Website changing
+
+commit a0dce5a9b1fb7d2657393abd811d411b166a5086
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Jan 16 12:32:34 2014 +0100
+
+    Website change
+
+commit 0a55959d78a2daeacf1dd4af8f18e7b514e869d5
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Dec 20 13:10:04 2013 +0100
+
+    RotStar3_1: updated myrk4_ada to follow the change in WlIntegState
+
+commit 6f19033b72fda5d4321d87f04e37e3a696332399
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Dec 19 15:44:06 2013 +0100
+
+    UniformSphere: added spectral dependence (photon index)
+
+commit a9ade35e59be97f802631ebeb42dd3977e004136
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Dec 19 11:22:45 2013 +0100
+
+    UniformSphere.C: add optically thin case for isotropic_=1 in emission
+
+commit 57f4dfb92913b7a4d407d4b556bf2a415e8c76ac
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 12 14:19:51 2013 +0100
+
+    yorick/mk-movie*.i: precompute mask, set aspect ratio to 4:3
+
+commit 9458329ae80b99c6d2606d90c8832d845255a391
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Dec 11 17:55:58 2013 +0100
+
+    WorldlineIntegState: still updating warning message
+
+commit aa9b92e6590b43977f3837741d54783ea5698b94
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Dec 11 17:53:31 2013 +0100
+
+    WorldlineIntegState: update in warning message
+
+commit 4dd0875012fd862cead1e3909491fe719bf48118
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 27 14:56:24 2013 +0100
+
+    KerrBL::CheckCons: make limarg relative to KK
+
+commit a4002f53533abc4865d6c82f015b87b084efd341
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 27 14:55:28 2013 +0100
+
+    yorick/gyoto_Scenery.C: bugfix in maxiter keyword
+
+commit d618ef47079ef759b73ec67629c6681eee9e2b82
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Nov 24 21:10:36 2013 +0100
+
+    document StarTrace in Yorick plug-in
+
+commit 2e9080f5a97909d3f9060905d31eadb3c2819831
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Nov 24 20:48:54 2013 +0100
+
+    Make sure an Intensity FITS file can bre readiy used as a mask.
+    
+    Warning: run configure after pulling this commit.
+
+commit 316e34022311ca93145d33db7ab46c3d0b950da0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 23 23:03:11 2013 +0100
+
+    some doc in include/GyotoStarTrace.h
+
+commit 6193560ddb63baf58c23fda80859206f0ce7491f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 23 22:01:18 2013 +0100
+
+    make star from startrace in yorick
+
+commit dbad2ee8a7ab4365c312fba059e0dcf7e15e147a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 23 21:51:48 2013 +0100
+
+    make startrace from star
+    check-startrace.i
+
+commit bade5b68b272c9c52dd292790c4aa1aacfa675ad
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 23 20:22:09 2013 +0100
+
+    yorick interface for StarTrace
+
+commit 8479f542e19e5456cb6dfa57bc34feaf44bc21a0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 23 19:39:59 2013 +0100
+
+    optimize StarTrace
+
+commit 20bd44161e6b938988ae859367b9ba829c0211f5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 22 18:10:01 2013 +0100
+
+    automatically check startrace.
+    set resolution to 32 and nthreads to 8 in Makefiel for make check
+
+commit 6b0661f84eeef4fcf43db6d0476d7f63e3815466
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 22 18:00:52 2013 +0100
+
+    New astrobj StarTrace, currently too slow.
+
+commit a2b2856cec0e3a11f868a07687d7c0eb9a51a66b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 22 08:56:12 2013 +0100
+
+    add members and accessors to UniformSphere to fine tune getDelta from XML or Yorick code
+
+commit 863c2fd857a1e89ca34ade8ac42030f486a5f419
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 21 17:16:12 2013 +0100
+
+    implement deltaMAx for UniformSphere and Torus
+
+commit bfc90f5c920fe7e3470205eefbc008b311c76651
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 21 17:03:22 2013 +0100
+
+    make sure h1max >= h1min
+
+commit d40a0007b700b4a81deda1b6fbad5ce72c9ef9a8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 21 15:55:56 2013 +0100
+
+    implement Astrobj::Complex::deltaMax()
+
+commit 7cb526b968b7cb0aa056cd9e511ddc8b3ecf7eeb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 21 15:38:16 2013 +0100
+
+    * change Worldline::Integstate::nextStep() and Metric::*::myrk4_adaptive() to accept h1max parameter
+    * add Astrobj::*::deltaMax() to ask astrobj how to not miss it, provide Generic and FixedStar implementation
+
+commit 638a3f739dd004a31c2b2f0355c4a19155487748
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Nov 20 17:19:43 2013 +0100
+
+    In KerrBL::diff changed derlim_hor from 1e5 to 1e4.
+    Previous value leads to error due to bad z-axis pb treatment
+    close to horizon.
+
+commit 9740b41455c04dbdf896b6ca32e07aa2d1b8ce12
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Nov 12 11:31:19 2013 +0100
+
+    DynamicalDisk3D: added novel_ flag to ignore velocity when emitter velocity is not provided.
+
+commit 22887c725dc45b0d02aa1e907823188bfd64790e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 9 09:58:17 2013 +0100
+
+    update data pointer correctly to make tracing a subset of the field correct
+
+commit 202a5be4d8743df3fcd8fe70ec56b33c12ee86d9
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Nov 8 19:20:19 2013 +0100
+
+    Disk3D: changing value of deltat inside object to constant value
+
+commit 09ee9813c619e0a574d3f4af45e57d14b2ffb0e0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 8 15:05:28 2013 +0100
+
+    implement mask in screen to compute only parts of an image
+
+commit 50b108e91e1da87e444fcfe26a0905ff20c42678
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 6 18:04:58 2013 +0100
+
+    errmode should be 0 by default in Spectrometer as well
+
+commit e8299ba1ca56ede7180ebc0c41bf7be1ad165b7b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 6 18:00:26 2013 +0100
+
+    Fix Astrobj::getSubcontractor to throw error by default when kind is not found
+
+commit 2299fc943410d56165c3065e082fabee414d6343
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Nov 6 17:14:17 2013 +0100
+
+    DynamicalDisk3D: code cleaning, proper implementation
+    of radiative transfer for the non-blackbody case.
+
+commit 7cf9d8ac6cf8132eef8b3c7fb188eab8ba4fd63f
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Nov 6 15:34:07 2013 +0100
+
+    Added Makefile.in
+
+commit e79aded502727313414d4fff14785bac06e3e4cb
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Nov 6 15:28:40 2013 +0100
+
+    Disk3D_BB -> DynamicalDisk3D
+    This is only a change of name.
+
+commit e8b7aec3f98198c74ac259bcd8d65cd4beac77c1
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Nov 6 13:03:39 2013 +0100
+
+    Disk3D: Adding default value of opacity_ in constructor.
+
+commit 93176a0c30abf645c6cc85e75d16497424063f2e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 5 16:39:25 2013 +0100
+
+    add copyopacity= keyword to yorick/stdplug/gyoto_Disk3D.C
+
+commit d56536cdcd8a4b5636c50b95f91ec77be5187f13
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 5 15:01:28 2013 +0100
+
+    Implement reading opacity extension in Disk3D. Beware: read, but not use.
+
+commit 241d24a05fdbc621e279d3217faa6926c43fe77e
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Oct 30 17:35:42 2013 +0100
+
+    In Disk3D_BB: Updated radiative transfer treatment
+
+commit 2392f0fc1093be46f068a5019a24e3836843999b
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Oct 24 12:17:14 2013 +0200
+
+    UniformSphere: added possibility to emit isotropic constant emission
+
+commit a5b80a131a5245eda51cfa4ef224556516cfb3ca
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Oct 22 18:19:16 2013 +0200
+
+    Disk3D, Disk3D_BB: code cleaning + added flags to allow raytracing
+    on a grid where intensity is provided, not temperature
+
+commit 441a7c6c356aed8018a502f0f3b2986d00c9e0df
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Oct 22 16:17:35 2013 +0200
+
+    ThinDiskIronLine: changed default velocity when emission=0
+
+commit 85f54bbf4ab217794933e902b28daeca026d4a24
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Oct 9 11:49:40 2013 +0200
+
+    Added the possibility to raytrace only primary image of astrobj.
+    Put <PrimaryOnly/> in Scenery environment.
+
+commit 05a1a19db7320212793cf6c95d1e676087941171
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Sep 20 15:12:26 2013 +0200
+
+    KerrBL:
+    Modified z-axis tretment in myrk4, necessary for high spin.
+    Added display of r value when Warnings are launched.
+
+commit 29448ece43f5eb2229b6a8533eeeb774a67e78c1
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Aug 21 19:56:52 2013 +0200
+
+    PatternDisk: implemented bilinear interpol for getVelocity() and emission()
+    PatternDiskBB: code cleaning
+
+commit 0cdea91b781daf264ef637497638c663c36620f6
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Aug 19 12:59:18 2013 +0200
+
+    Added ThinDiskIronLine astrobj to compute iron line profiles of thin disk
+
+commit e3ef7aa0c3fc431e2415e1d6d89a9fb139c230be
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Jul 30 11:10:17 2013 +0200
+
+    PageThorne: added the possibility to compute observed
+    blackbody spectrum; [removed rednoise_ option, now useless]
+
+commit 7dadb8c5be20b02861eab63b04b78a9f7c49210a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jul 27 11:14:20 2013 +0200
+
+    Prepare for releasing 0.1.0
+
+commit a99c3e47c06370f9a6211c73db15bf68c2dae76e
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Jul 22 17:29:01 2013 +0200
+
+    Worldline: bug corrected in getCoord
+    PageThorneDisk: added possibility to use with CS metric
+
+commit 458ef15bc83edefbdad4d5cef8441ab20370af43
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Jul 15 16:42:48 2013 +0200
+
+    In KerrBL: removed all references to Chern-Simons,
+    virtualized some functions to allow ChernSimons to
+    be a KerrBK subclass
+
+commit 65fa9b9ab2f3d6b93fbef5e4a4cb89f6822f7002
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jul 5 11:56:48 2013 +0200
+
+    Removed PatternDiskBB::rmax_ that shadows Astrobj::rmax_.....
+
+commit 2a79baa386cc2be2fffbfaa0a985a46528f5156b
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jun 28 18:34:03 2013 +0200
+
+    Changed spherical angle limit in Screen
+
+commit 1ff9c36de34e221983173d26269dc9e378040ea6
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Jun 26 12:18:33 2013 +0200
+
+    gyoto.C: added test on indices value
+    KerrBL.C: added condition on z-axis problem solving, to be fine tuned
+
+commit f02f8e9e5b93f9f615b756bae9fb028f1d539051
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Jun 25 10:41:07 2013 +0200
+
+    Removed modification of z-axis problem treatment in KerrBL,
+    leads to bad behavior.
+
+commit 96cc334d0825cf65987b2b1de6a3c18027b0880c
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Jun 19 16:46:40 2013 +0200
+
+    Few comments on orientation stuff in Screen.C
+
+commit 07621118f38781f5a96c6938309109d6b15f9844
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Jun 17 17:39:01 2013 +0200
+
+    In KerrBL added test in z-axis problem loop of myrk4_ada.
+    Integration is stopped is modified step gets > than 2 times
+    initial step.
+
+commit bc678dffa500e97b8d4279fdb8e22a949f5d7073
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Jun 14 12:11:28 2013 +0200
+
+    Update PatternDiskBB.C
+
+commit d2341117f5960ac2eb445e0a860ab856b2b447c2
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Jun 13 16:50:58 2013 +0200
+
+    One more line of comment in Disk3D.h
+
+commit c471ec1085bd12fcca2f2d1e94c10dde3cbdc63a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 12 15:36:29 2013 +0200
+
+    make gyotoy compatible with both gy stable and gy git.
+
+commit a1a20baf792f3b66889aba9d04741bb2c037102a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 11 16:41:17 2013 +0200
+
+    gyotoy: sync wihth gy development
+
+commit 04cd6eca266edd6a42bfdc21be29477179a3b29c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 7 12:47:31 2013 +0200
+
+    SysPrimeToTdot: return 0 if v>c instead of error
+
+commit fd3533ed317d39c0dcd9501fc89c776fc30128f0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 7 00:12:14 2013 +0200
+
+    update relative to gy
+
+commit 2ca253ab36e720fb2cb693669bee63272db76253
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jun 6 17:45:34 2013 +0200
+
+    minor bug fixes in gyotoy
+
+commit f852c841de77b5390e7fc608722f21cb3790d5f7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 5 17:06:03 2013 +0200
+
+    Port gyotoy to yorick-gy, getting rid of Python.
+
+commit cae2bf0b0f169c65b296e6fc75767ced20a6d304
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 29 14:42:13 2013 +0200
+
+    increase max mass to 1e20 sunmass in gyotoy
+
+commit 43f1316219c9a590cbf9d8fe20cd6a1c9eb669f8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 28 15:30:43 2013 +0200
+
+    Document required yorick version
+
+commit e55ccd9fce21fb71a1790e2cfe382720a58cf763
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Apr 29 17:59:14 2013 +0200
+
+    Added UniFlux flag to PageThorne.C
+    Impose flux=1, useful when only interest is silhouette
+
+commit 80c716739f06b1cf7cad0ead5cae4b4b21dc9516
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Apr 29 15:58:45 2013 +0200
+
+    Added Chern-Simons modification at first order to KerrBL
+
+commit a08841edc6daad29f637435942711ac2c5bde836
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Apr 24 10:48:09 2013 +0200
+
+    Correct flux in PageThirne.C + rednoised emission
+
+commit ec3874b59b18545d3a6ce259d1ed724873dfed81
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Apr 19 22:27:43 2013 +0200
+
+    yorick: use dot notation in che*.i files and document it
+
+commit 3e89b6d68e3cc3a0a6574dbd3f17b5ca3692f2a3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Apr 19 18:26:34 2013 +0200
+
+    yorick: make object.member wrap around object(member=)
+
+commit 8fffe94a1a910dbd98c1dc76ce06886c688caecd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 11 19:19:42 2013 +0200
+
+    increase number of digits in gyotoy
+
+commit 2eaf338ef09a0f4e3063cdfbedefcec83fd9b82e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 8 15:28:28 2013 +0200
+
+    Bug fix: WorldlineIntegState::nextStep made no evolution in case of non-adaptive step
+
+commit b5918923e9fa19edbf8093b89e2afd4fc4cd65fa
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Apr 6 01:14:36 2013 +0200
+
+    Finish doc review
+
+commit 290562c9adacd42da9298f5408274eff10f2713f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Apr 5 11:58:25 2013 +0200
+
+    Rework Worldline::IntegState and Gyoto::Error
+    Improve doc
+
+commit 225cd70b19272953b7d4b659528504240b388849
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 4 21:15:16 2013 +0200
+
+    fix FTBFS introduced in last commit
+    improve doc
+
+commit 134640f1f7381e64179f8529b8a16ee0f6377ab5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 4 16:23:06 2013 +0200
+
+    Improve doc
+
+commit 7a4eef96f9c54226a15591fcfc36b271d063613f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 3 19:48:13 2013 +0200
+
+    Remove FocalPlane, it's not used anywhere.
+
+commit 03d1aefbf75a82fa52656910b0f516fcc3f650c4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 3 19:40:04 2013 +0200
+
+    Improve doc
+
+commit 6a229b22b0cc1ed1329b8d0fce911f5f2b9721a8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 3 01:03:18 2013 +0200
+
+    imrove doc
+    rename ScenerySubcontractor -> Scenery::Subcontractor, likewise Photon
+    implement PageThorneDisk::getDefautQuantities() to return User4
+
+commit e15250cc0c8d8932cdd02bf01d2699b884d7b293
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 2 22:33:20 2013 +0200
+
+    Improve doc
+
+commit 08767ea24f6186bff8d9978de8cb9ba174e7cad3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 2 17:33:26 2013 +0200
+
+    Improve doc
+
+commit c15947781f7dcd56036e5f47f0b915f6bb3513c7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 2 14:21:38 2013 +0200
+
+    Add icon to gyotoy
+
+commit 64110ee96f2bc2dc95afa6004c48627ab8ee2a14
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 2 00:17:16 2013 +0200
+
+    improve tooltips in gyotoy
+
+commit 286d97b34eec57b3a70e14dd6471731f5cc65b55
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 23:38:19 2013 +0200
+
+    update gyotoy screenshot
+
+commit aa0d245f9c573786db17b2b07f47760135296f49
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 22:15:42 2013 +0200
+
+    improve doc
+
+commit b4d499cba4f4b7a20987dd54aad0a415ce75f989
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 18:59:44 2013 +0200
+
+    yorick: small bug fix in Star
+
+commit b8ef1545389e702a38d429e63130254e1a2a1c48
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 18:02:34 2013 +0200
+
+    improve doc
+
+commit a7db416a2a6a09ba2c66d1b7bf503b47707609b2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 12:49:04 2013 +0200
+
+    improve doc
+
+commit 7f0bc5602a677cf2bd098613ae84d71d513ba08e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 12:04:28 2013 +0200
+
+    Add MaxIter parameter to Worldline (Photon, Star) and Scenery
+
+commit d4abd288deaa8d8e7689c8c877caad0bd841ea27
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 1 11:05:15 2013 +0200
+
+    fix gyotoy bug in dat output
+
+commit af655d31a2dda90d950c635da0a443b27f1c68c9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Mar 31 22:57:27 2013 +0200
+
+    avoid percentage > 100% in gyotoy
+
+commit 0971b5474b7448a819cb77664aefe208a741c6d2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Mar 31 22:14:08 2013 +0200
+
+    gyotoy: display pecentage with many digit in progressbar
+
+commit cc1106d3a783ec6cb2d2bfccddf96692c76a35c5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Mar 31 21:05:29 2013 +0200
+
+    Implement non-adaptive step for ray-tracing, fix bug with non-adaptive integration in the past
+
+commit 3567e23d2eb743a97d14ed212df99c449303a92a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Mar 31 00:54:19 2013 +0100
+
+    Improve rewind button behaviour in gyotoy
+
+commit 2dd31722afe059dcbd1d63176208f7f6192442ef
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Mar 30 20:26:54 2013 +0100
+
+    Worldline (Star, Photon): use <NonAdaptive/> in XML to disable adaptive step
+    Improve doc
+
+commit 0476d394c1e70889498948c5fa8dc209e8e78a74
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 29 18:36:37 2013 +0100
+
+    Re-add --tmin option to gyoto tool, install gyoto manpage, fix Spectrum doc.
+
+commit 4e5e1c715bea0997d56c69365c69db1d57504a83
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 29 09:37:01 2013 +0100
+
+    update .gitignore to ignore ./configure output
+
+commit d6f7fcf0e6e013f6db0f37707af659d2895a0d49
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 1 03:07:33 2001 +0100
+
+    bug fixes in gyotoy
+
+commit 753427147a72f976006b3b1d12124d6abab9f429
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jan 1 18:59:59 1981 +0100
+
+    gyotoy: add play/pause/stop buttons, fix minor bugs
+
+commit ef2da581fbedb4b28bbdd9fb3de6427542067624
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 27 11:11:08 2013 +0100
+
+    Enhance gyotoy: divide integration in nsteps
+
+commit 75a29a4253bd2617e7a102af869247e423d858ae
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 26 09:57:24 2013 +0100
+
+    add scalaprod metrod to Metric in yorick plug-in
+
+commit 94e0ea1ad1e5bf81db678e2d72da318526fe25d6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 26 08:10:43 2013 +0100
+
+    small gyotoy fixes
+
+commit f183cecdc01bf24e641d1d7ab3832665d52f8213
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 26 08:00:32 2013 +0100
+
+    yorick plug-in:
+     clean more
+     remove obsolete Star functions
+     introduce namespace object
+
+commit 54ff7864eb569150727aadf9e61113b1b5f0e10c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 25 16:48:42 2013 +0100
+
+    finish (?) streamlining main yorick plug-in
+
+commit 9ea6ad2a75918898254876e0b2f5628bdad8fef6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 25 14:52:25 2013 +0100
+
+    Work on gyotoy bugs when loading star from XML file
+
+commit 8275749c7e75ded99bc2fb3acd8f556849f068e1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 25 11:39:13 2013 +0100
+
+    Fix recent bug in yorick constructors
+    Streamline yorick/Scenery
+
+commit 7e3b05e52e596db57c628c0e516d124ecb01e6c3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Mar 24 17:18:59 2013 +0100
+
+    more yorick simplification and uniformization
+
+commit fe8f888b413843fd6ff12ae6e7dbad4d9067ae74
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 22 21:30:45 2013 +0100
+
+    clean yotick/Photon code
+
+commit 31fb658bac3412393657f7c6187bfc5d90d8a99b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 22 16:18:08 2013 +0100
+
+    Clean spectrum in yorick
+
+commit 1b7e6f000c96e20c71a011685db29877140f21e7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 22 15:52:52 2013 +0100
+
+    clean yorick spectro
+
+commit 9ec305fb709fc04d24fda6de2a6d74cb3fd4b776
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 1 01:25:28 2001 +0100
+
+    Try harder finding python3 in gyotoy.
+
+commit 1e8c70a58ca3200b950b502292b671cbfd3ee71c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 22 11:28:57 2013 +0100
+
+    clean yorick code (Astrobj, Metric)
+
+commit 29758060763dbe231b0e6064232cbd898cb4122f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 22 10:50:18 2013 +0100
+
+    Still clarify yorick Astrobj workers based on macros
+
+commit 94e5d9d3f5085d635247feebe595b61e68ef90c2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 21 21:29:00 2013 +0100
+
+    clarify yorick/gyoto_Astrobj.C
+
+commit 1506e7bb42464f1252c027fc6c2e2e21243599f0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 21 13:56:03 2013 +0100
+
+    clarify yorick plug-in with preprocessor macros
+
+commit 7c143252cf9f104753899baffc8b00593140f605
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 21 10:40:27 2013 +0100
+
+    expose Screen fourvel, screen# in yorick plug-in
+
+commit 3a264e2fa242bf1fb3f9c35b6004fb2f99adece7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 21:35:46 2013 +0100
+
+    fix gyotoy bugs
+
+commit 41bdbe7c68a9827a24a8dd8aecc5f1f29abe67da
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 16:42:51 2013 +0100
+
+    suppress extraneous output in gyotoy
+
+commit ba57d52364a1b4d4dcb54feeda00955d0c388af9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 16:26:33 2013 +0100
+
+    More documentation about gyotoy
+
+commit 98fafbbb7bc363e7b5fe5cc8fafa85c58bb46845
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 13:54:03 2013 +0100
+
+    fix documentation on python 3 and PyGObject
+
+commit 718979621af0a47beca5ccc655f42f62f9635646
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 13:40:52 2013 +0100
+
+    Gyotoy: port to python3
+
+commit 26da5715240feabafc52e43a3754c7aa23ff58f8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 20 12:59:17 2013 +0100
+
+    Gyotoy:
+     * Port to Gtk3 (a.k.a. PyGObject)
+     * Add possibiility to load metric from XML
+     * Various bug fixes
+
+commit ff478ad9bc5f6103c98f5f2a61bafa5cc06067f9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 19 16:16:26 2013 +0100
+
+    implement possibility to change delta in Star and Photon from the yorick plug-in
+
+commit aaf8e5ae0fadbfa06f8dba9012a95f8db10262b2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 19 15:49:07 2013 +0100
+
+    implement setParameter for Spectrometers, export ABI in Yorick Supplier
+
+commit 42d56b527809580752474cf88409319294392e46
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 19 15:04:28 2013 +0100
+
+    fix freqObs usage in PageThorneDisk::processHitQuantities
+
+commit 89308d3d0fb58f389e591c3e63b51764693fbb2b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 19 14:49:26 2013 +0100
+
+    Enable changing freqObs
+
+commit 1b619a75a758eeb91e4e431bad653bae2b64f358
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 19 11:02:17 2013 +0100
+
+    PageThorneDisk: bolometricEmission doesn't need a freq, remove from Yorick
+    plug-in as it can be instanciated with gyoto_Astrobj and updatespin is now
+    useless thanks to the Teller/Listener system.
+
+commit 3649da1e7097614ba73818ecb0f0aec057669591
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 18 17:17:15 2013 +0100
+
+    remove bolometric case from Astrobj. PAgeThorneDisk implements that as User4
+
+commit 6dbdab9f84937cf8252251c86ac355ea1f3f623e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 14 22:01:48 2013 +0100
+
+    Fix "error: 'Gyoto::Register' is not a function," namespace conflict in Spectrometer.C
+
+commit 3be921ec5fa74463bbced2b0bc8dfb22006d2e12
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 14 13:26:14 2013 +0100
+
+    imporve polishdoughnut doc in yorick
+
+commit 5a360e2236cd466a231fa54c1a39294d34d2a9b8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 14 12:39:20 2013 +0100
+
+    * Split yorick/gyoto_SpectroUniform.C out of gyoto_Spectrometer.C
+    * Document Spectrometers in gyoto.i
+    * Support units in Spectrometer::getWidths(), getMidpoints(), getChannelBoundaries()
+    * Support reading spectrometer from file
+
+commit c73613777e37c8f5ba3a0aa215b4a8edf1f548d4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 13 17:52:31 2013 +0100
+
+    Split Spectrometer.C and .h into two files, clean API, update doc
+
+commit fd40012fed4d11c1b021c5dfdbaa019ace79a85f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 18:07:16 2013 +0100
+
+    support creating empty Spectrometer::Complex in Yorick
+
+commit 7e2480dbad67ad0c733cc6e4c68196856345a081
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 18:04:32 2013 +0100
+
+    implement SpectroComplex in Yorick
+
+commit 057d16fb8f5f3d8366ba95fbb03ca7c27c025aad
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 17:04:23 2013 +0100
+
+    separate Spectrometer and SpectroUniform in Yorick plug-in
+
+commit 90d6e082dc3eb8ebc2f48f373e2b0e9699d26d8c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 14:34:52 2013 +0100
+
+    add missing files
+
+commit 784e7adc01ae60cf6f6b22d45582f891b9e1188f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 14:32:08 2013 +0100
+
+    fix yorick plug-in
+
+commit d4fb64d8fcf54892466b0c081314a046c94f4ea4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 14:10:07 2013 +0100
+
+    New Spectrometer Kind: Complex
+
+commit 6ca5b14840be29b990063013a9a7313ad33476bd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Mar 12 10:27:04 2013 +0100
+
+    use a register for spectrometer kinds
+
+commit 59a8966cd991e0a3bc5f5e5c01a613a0d04ae5e4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 11 22:12:18 2013 +0100
+
+    split Spectrometer into a Generic base and a Uniform subclass
+
+commit a8d9ae7ab7df5781544d1a1b1401c6b99c8c17bf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Mar 11 11:33:39 2013 +0100
+
+    Spectrometer channels may or may not be contiguous.
+
+commit 4573ce1ee64af76a594f4fffac6a8b666883a03a
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Feb 28 10:50:05 2013 +0100
+
+    - Added the Bolometric keyword for Astrobj when bolometric (and not
+    specific) intensity is returned by emission
+    - Astrobj::process deals with boloemtric or specific intensity
+    - Corrected all PageThorne examples that should be bolometric
+
+commit 7311719c49bce27058551d543fcb10d42c546891
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Feb 28 10:00:30 2013 +0100
+
+    Typo in Scenery
+
+commit 61a46b82e211b3e671b4672d75f2e937b7ffac93
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Feb 26 14:32:39 2013 +0100
+
+    Updated Photon.C to always store 1 in freq_obs_
+    This quantity is useless and will be deleted in the future
+
+commit 4ffc983cbe9aabb65e15e5da23caab84bfc3ffc2
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Tue Feb 26 13:06:39 2013 +0100
+
+    Come back to pre-doppler commit
+
+commit a85b3b16d7c4f2171900764c62d71c4f3b487406
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Feb 21 18:02:39 2013 +0100
+
+    Fix buggy Doppler factor when observer moves
+
+commit 691f44db5879ba91f2a78de8f77dc619ae3341b9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Feb 21 11:59:29 2013 +0100
+
+    Listeners must unhook from all Tellers in their destructor
+
+commit 220cbd7c80bb9103a32fd470b37a981040b9378b
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Feb 15 15:08:30 2013 +0100
+
+    Typo in Screen.
+
+commit cd4019015ab2468e72f6cf04fdaaacc9f7601121
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Fri Feb 15 14:29:15 2013 +0100
+
+    Implemented Screen with spherical angles
+
+commit 11a82d9f934acf610e9186cb4d3122b984a6236d
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Mon Feb 4 18:23:42 2013 +0100
+
+    Corrected checkPhiTheta in Worldline.C
+    with modifs in Photon.C accordingly
+
+commit c9fe23a0e80574217dc9c1cfd5e79030501553db
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Jan 30 17:16:04 2013 +0100
+
+    Typo in example file.
+
+commit 1b5a5012cc4788c892bf11a041ea62bc9b7265df
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Jan 30 16:34:59 2013 +0100
+
+    Example file for integration
+    with a given local frame for observer
+
+commit 413c242e342c999c454e57c90e1db9a498c00d67
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Jan 30 16:32:59 2013 +0100
+
+    Implemented definition of observer's local frame
+    given in XML input file --> allows to properly account
+    for any kind of observer's motion
+
+commit 749abccd4378a5eaecb509dfc2cf6ede35a33a14
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Thu Jan 17 17:51:47 2013 +0100
+
+    Screen::getRayCoord updated to allow screen orientation through
+    Screen::alpha0_ and Screen::delta0_
+    Corrected computation of spherical_angle_2 to be OK for not small
+    alpha, delta
+
+commit cfb4855f3ce04cb0f5ca910d0e270e515196d529
+Author: Frederic <frederic@MacBook-Pro-de-Frederic.local>
+Date:   Wed Dec 19 16:29:21 2012 +0100
+
+    Updated test for norm conservation, passed to norm/tdot conservation
+
+commit 6b67e12aa272510530a2734f61be8a2cc1add54b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Dec 6 16:03:12 2012 +0100
+
+    Moved checkPhiTheta from Astrobj to Worldline
+    Added call to checkPhiTheta in Worldline::getCoord
+
+commit 47a6cd46cbbca22b1a657211405d8b0f24eb99a4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Dec 5 16:59:55 2012 +0100
+
+    In KerrBL.C contravariant metric in a more readable form
+
+commit 294d3335fdbdee7ae230e330170cb6f3d4ac019f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 28 15:57:36 2012 +0100
+
+    Add contravariant Kerr metric
+
+commit 78d30c895db0ca362ac249852e73cf89e23a4b67
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 20 21:57:08 2012 +0100
+
+    Document Hooks
+
+commit 2acab338da5598f280f2a7ec3c156f79cc1356c6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 20 20:55:37 2012 +0100
+
+    Fix in Worldline::tell(): must reset particle properties (Metric::Generic::setParticleProperties())
+
+commit 7c0215c075416a599a2f0865295162405da87355
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 20 18:33:42 2012 +0100
+
+    Hook worldline to metric (using Hook::Teller/Listener)
+
+commit 8573cb991072749fc27e60c0c909afaec288749c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 20 16:36:17 2012 +0100
+
+    Move Hook::ListenerItem to Hook::Teller::ListenerItem and hide it. It's an implementation detail.
+
+commit fc0fad546a9513b5c3b0d33280de9e0452fad668
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 20 09:19:38 2012 +0100
+
+    Photon::clone(): reattach Metric to Astrobj
+
+commit 8c9db127d5314e018c9ee30d15eae278978cce51
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 19 11:36:07 2012 +0100
+
+    Fix RotStar3_1 copy constructor to get example-fixedstar-rotstar3_1.xml working
+
+commit 815112c00ccb398cf5ff8de3c87bb1c0e10c7259
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 19 10:41:31 2012 +0100
+
+    Implement hook system so that a Metric can warn objects when it changes
+
+commit 14a1447878cdff5f93ea46129f3f5626332d3976
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 12 18:05:04 2012 +0100
+
+    Use the setParameter(s) paradigm for Metrics as well.
+    Ability to instanciate any Metric from the Yorick plug-in.
+    Fixes in RotStar3_1.
+
+commit 0ec6dad93d122e2f0d0db1504f75f62f0398998f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 12 15:52:37 2012 +0100
+
+    Ability to instanciate any Astrobj of Spectrum in Yorick
+
+commit 4c3593e417c01146f92a5106e8a89197e66df4c9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 12 11:43:55 2012 +0100
+
+    * Spectrum:
+     + use a templated subcontractor
+     + accept unit in seParameter(not used yet)
+     + ability to instanciate arbitrary Spectrum in yorick:
+        sp = gyoto_Spectrum(kind)
+        sp, setparameter=name, content
+
+commit f463d49635774ac0264fc4692ade84c8a7caf395
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Nov 5 15:51:37 2012 +0100
+
+    PolishDoughnut: allow setting the spectral oversampling used in integrateEmission()
+
+commit 75d8d882ec877fa8eeb40d608f7d9c125be5688a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Nov 4 21:27:29 2012 +0100
+
+    * Astrobj: integrateEmission takes arrays as input/output
+    * PolishDoughnut: integrateEmission() uses emission() and oversampling
+
+commit dc0a065da77ac8ab094a7f09e498e9b61cef90cf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 3 16:51:59 2012 +0100
+
+    PoishDoughnut:
+     Try secant method for finding root of transcendental functor.
+     Use Ritter's method as a fallback.
+     Clean PolishDoughnut from now unused code.
+     Make math functions static members.
+
+commit 8af3691bed67f7ddbea8ea8a6e175e5ad0967537
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 3 16:51:04 2012 +0100
+
+    Implement Gyoto::Functor::Double_Double_const::secant() root-finding method
+
+commit dd54ef81e3e485a205b26b3006b3b4977c2443a8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 3 12:37:33 2012 +0100
+
+    Use Ridders' root-finding method instead of bisection*(). Implement intersection() as a Functor.
+
+commit 5d04756735cfcc67054cab10de1c08967798aa68
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 3 12:35:24 2012 +0100
+
+    * New source: lib/Functors.C
+    * Implement Ridders' root-finding method for Functors::Double_Double_const
+
+commit 2fad938cb9005f6b4a96d6e87c9ea2bf167c38f6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 26 20:57:35 2012 +0200
+
+    support for im=sc(,,"Intensity[unit]") in yorick plug-in
+
+commit 1b10cf4f583723bc529bda14bebcf8b02e5c42ab
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 26 15:30:14 2012 +0200
+
+    fix grave bug in Spectrometer::setBand(band, unit): only band[0] was converted
+
+commit ad7e980fa13cdf7cc967f4a9c950077a9520aa0a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 26 15:17:27 2012 +0200
+
+    * implement multithreading in Yorick plug-in's gyoto_Scenery operator ()
+    * fix PolishDoughnut's copy operator which prevented the PolishDoughnut from working in a multi-threaded environment
+
+commit 2f05e3368958919bb717181860c2ceeb10f6e3a8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 25 21:38:16 2012 +0200
+
+    * improve configure tricks to read Lorene's local_settings
+    * protect make check from GYOTO_PLUGINS environment variable
+
+commit dc0b79b4fcf54de431f2d4535e255284fa370f34
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 25 21:14:52 2012 +0200
+
+    * make configure more resilient on make behavior variations
+
+commit 4f7e08a39bb3e4fdf210a58dfad80a623626f1b7
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 25 18:09:32 2012 +0200
+
+    Warnings in Disk3D_BB
+
+commit d9a86c165635fdd4733f81f53a6d9d83d87ffb6d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 25 12:59:27 2012 +0200
+
+    * minor optimizations
+    * many warning fixes (--enable-hardening)
+
+commit 2cff2879a0a9975b6dd121586b4b9e474eec36da
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 25 10:01:09 2012 +0200
+
+    * implement Units::Converter::reset()
+    * implement default Converter constructor (trivial converter)
+    * fix warnings in Screen
+
+commit 960430153b1ddd65b47fa4d9a97dcf91ce489f17
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 24 22:18:17 2012 +0200
+
+    clean Converter API
+
+commit e1b15d0146cde835a7ebd0dcdc841995de9b41ab
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 24 19:52:27 2012 +0200
+
+    use "make -s" instead of "make" to retrieve Lorene configuration
+
+commit ded0931e8bbbaa4ca17210d6028a21b296b35857
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 24 17:59:55 2012 +0200
+
+    * add unit support to Spactometer::setBand()
+    * implement Units::To/FromHerz
+    * To/FromHerz and To/FromMeters can convert between length, duration and frequency
+
+commit b656125cb3b2b735aed8d6178cd7ce37761df5b9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 24 11:27:32 2012 +0200
+
+    * interpret units as UTF-8 instead of ASCII
+    * (re)introduce units: as, mas, µas, °, kyr
+    * implement To/FromGeometricalTime()
+    * re-work PolishDoughnut example to be closer to observation
+
+commit 6a163a70902942343fc3bbca45bcaf32594ae29e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 21:37:51 2012 +0200
+
+    fix Scenery constructor
+
+commit 330cc0cc367cc943fa7a2540d56ffc54930872fe
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 21:18:02 2012 +0200
+
+    (double) linking yorick plug-in with xerces-c is actually needed (under Darwin)
+
+commit d0da753a5007372643f3d0788944b3f98e56e175
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 20:42:06 2012 +0200
+
+    Don't link the yorick plug-in with xerces-c, cfitsio or udunits2: this is
+    unnecessary double linking which sometimes prevents the plug-in from running
+    with strange behavior (seen under Mac OS X).
+
+commit 0d1faa78acbda296c0a66e8960f5bf54db6991be
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 14:37:11 2012 +0200
+
+    Document include/GyotoConverters.h
+
+commit dd78b821d2113df93aa5f6dea6fc81412dfda2ae
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 11:46:36 2012 +0200
+
+    support for units in Metric::set/getMass and unitLength()
+
+commit f21b60f26b426ce903fcd4621649ba4ce1d5c1cb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 23 11:00:31 2012 +0200
+
+    * support for "pix" unit in Quantities: pix is the angle covered by a Screen pixel
+    * support for units in Scenery::set/getDelta() and set/getTmin()
+
+commit 10a25cce8d868270d63039fb52d02018a47f4f96
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 19:17:56 2012 +0200
+
+    fix syntax error in yorick/check.i
+
+commit b1e0d4d99821f76ab1a0cd84947bb40e55bb60ed
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 17:48:50 2012 +0200
+
+    fix missing -ludunits2 in some cases in configure
+
+commit 1eba0ab051cb1ef782f22877669b63085792974d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 17:38:06 2012 +0200
+
+    * Support for units in Screen properties
+    * new APIs: To/FromSeconds and others
+
+commit a4441eb1a5c6f5d0cb1dd97d33771af4242f4ab1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 14:11:12 2012 +0200
+
+    udunits support in Screen::fov_
+
+commit f39df39152ce2f118acfaf7e1fb22ba2927c2cc9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 13:22:15 2012 +0200
+
+    Add unit support for many Astrobj properties
+
+commit 2e5eddd4cb048d5c78c864fcc260c4787cb86a19
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 11:33:40 2012 +0200
+
+    * start supporting units from Astrobj objects in Yorick plug-in
+    * fix Astrobj::Standard::fillElement to call Astrobj::Generic::fillElement
+
+commit fb23f29eb9a6f8a22e833a4d38aa6a934a407659
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 22 09:04:23 2012 +0200
+
+    add --with-udunits-inc and --with-udunits-lib configure options
+
+commit e2b4fd7f7aef7d080c9a8656524d2e9486e50d1f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 19 20:22:58 2012 +0200
+
+    Generic support for units in XML files, in particular for Astrobj
+
+commit b742b53e8555bc989131139a420d429518f1d7ba
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 19 11:43:11 2012 +0200
+
+    * Add copyright to polishdoughnut
+    * PolishDoughnut::emission() returns SI
+    * Use udunits par défaut
+
+commit 5a99a140418ba894347a9842fb8c65382a061de8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 18 19:23:23 2012 +0200
+
+    Import PolishDoughnut
+
+commit 3f8a034141ab89586837c1f73c79528dfd37aa4e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 18 16:45:45 2012 +0200
+
+    Support converter for Intensity and Spectrum (--with-udunits)
+
+commit b2d1323067831e75d2d1c09777c3fd7a851a2ab8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 18 11:27:49 2012 +0200
+
+    work towards unit converters: introduce lib/Converters.C and include/GyotoConverters.h
+
+commit 96bcae6a43a48db80372b3232f7369e26686e88d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 18 16:47:04 2012 +0200
+
+    Updated include/GyotoDisk3D_BB.h and lib/Disk3D_BB.C to take into account Bremsstrahlung emission + absorption.
+
+commit 4930726d6ca2996d94e6bf56010a4598de96a5d4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 17 17:27:51 2012 +0200
+
+    Implement Photon::getTransmissionMax()
+
+commit 9ec6d52c3dec0cf41773be3ae83b45c3f7add7d5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 17 16:31:51 2012 +0200
+
+    experimental support for units using libudunits (enable with --with-udunits)
+
+commit d3423fcdabeab2818e87c7bbc31f0985fbca5799
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 17 09:41:05 2012 +0200
+
+    fixup! AC_SUBST SYS and plugin_sfx, used under Darwin for yorick/stdplug
+
+commit c23c8ec52d12bf97eaba6ad5e2a11ca91b39db57
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 21:53:05 2012 +0200
+
+    AC_SUBST SYS and plugin_sfx, used under Darwin for yorick/stdplug
+
+commit 95194fcddd800924fb28d28564f3764c8b457aff
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 21:36:47 2012 +0200
+
+    yorick/check-scenery.i: #include "util_fr.i"
+
+commit 78308f00b4a2e867af3f218720319720edc9a8c5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 17:34:45 2012 +0200
+
+    make --enable-pthreads the default
+
+commit f02fa3606ea1e0a34397d190c03a682124f4c978
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 16:45:49 2012 +0200
+
+    improve thread-safety (add SmartPointee::mutex_)
+
+commit f27966ee32aeeff1efa0c5f07de0b6115d2d32c1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 11:35:43 2012 +0200
+
+    include GyotoConfig.h in ygyoto.h
+
+commit 9f1e83ede206dde39ad2e6703cc0ca762a63b88e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 16 11:09:55 2012 +0200
+
+    Store configuration in include/GyotoConfig.h
+
+commit 01c60fb2ddd55440ba58558f1485bc92b916c7aa
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 15 18:02:11 2012 +0200
+
+    add @DEFS@ to *.pc so gyoto-obspm knows about HAVE_SINCOS
+
+commit 136afeeb0161daeb77821c297d66797ef1bf1edf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 15 17:38:49 2012 +0200
+
+    (Re-)enable building without xerces but warn about the consequences
+
+commit b61ea79247a62f33f1255edbf78987fe790c102f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 15 11:26:35 2012 +0200
+
+    improve HOME_LORENE checking
+
+commit 840da4c2a279e4feeb98e29c4b046337e6dc3520
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 15 10:44:05 2012 +0200
+
+    * Simplify configure.ac by using m4/ macros for --enable-(native|hardening)
+    * Make --enable-(native|hardening) also add there flags when CXXFLAGS and/or CPPFLAGS where set
+    * Clean configure help strings
+
+commit 35ae196a80b42af37e94dc108be9700fad7333ff
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 15 09:11:51 2012 +0200
+
+    Make sure configure fails if --with-(xerces-cfitsio)* is set but the corresponding library is not found.
+
+commit 6a2f8acf1bbe341efe6de00fd11e4b4c2b5a3fae
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 14 21:22:42 2012 +0200
+
+    test hardening flags before before adding them
+
+commit b404b5e771f1ee7a38e2dd54f09e7211f243cb2f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 14 11:25:12 2012 +0200
+
+    Check whether compiler supports -march=native before adding it to CXXFLAGS
+
+commit d25ef5acb39cb91e6ad2e6b7e8ce3847618d4669
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 13 15:44:09 2012 +0200
+
+    Revert --disable-native -> --enable static and --disable-hardening -> --enable-hardening
+
+commit 19650c84c6234658029c6b8fd003c35bc55ea8c4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 13 15:26:37 2012 +0200
+
+    Test for sincos in configure. Implement it as a macro in GyotoDefs.h if missing. Remove other unused configure tests.
+
+commit 2f2663d2b983d184fd31391ad198d5737ab55e6d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 12 16:28:38 2012 +0200
+
+    typo fix in configure.ac: -I -> -L in cfitsio_lib=-L$with_cfitsio_libs
+
+commit 72f9ef70fdc7688affb49a5e8e04c6463ff658b5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 11 10:17:02 2012 +0200
+
+    Optimize KerrBL::diff() (and others) to avoid multiple divisions and pow() calls.
+
+commit 737c15138375d5fa86bdb32e7cd1f0bcff6c7bf4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 10 16:40:57 2012 +0200
+
+    Add pedantic warnings and hardening flags to default CPP/CXXFLAGS. Use --disable-hardening to disable.
+
+commit c3bddf272bc8445d17abbdabe770d67d4b95ec68
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 10 14:00:35 2012 +0200
+
+    Don't build static libraries by default
+
+commit c17041083a06f26ff968b710e8b557354c8fc918
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 10 11:37:07 2012 +0200
+
+    add -march=native to the default CXXFLAGS
+
+commit 7317458529bb3a0c5d7338b5df3f77b7b248a537
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 9 16:56:09 2012 +0200
+
+    10-fold speed gain by not calling tan()!
+
+commit 5d5376f69b35e355f5d4c8367705afb1bf763415
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 9 16:08:05 2012 +0200
+
+    add GYOTO_*DEBUG* macros; add --disable-debugging configure flag which save a marginal amount of computing time
+
+commit fc528a3f1e7d3e7359d114860ac439849b9bab6c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 8 14:24:37 2012 +0200
+
+    store pthread flags in gyoto*.pc
+
+commit 50bbc6618fe7983b20df9cf9664bb132948eaa2e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 5 23:04:03 2012 +0200
+
+    build with -pthread again
+
+commit 9800f962b37537ef1173d50bc2b5e5e150fc6291
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 4 22:23:58 2012 +0200
+
+    add --enable-pthreads configure option
+
+commit e8fd135e2aa4efdd0adea066d461255ee673bce8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 3 10:49:12 2012 +0200
+
+    add --disable-doc option to configure
+
+commit a3ceec86062d16591bf150f8613e1e48c9a29410
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 3 09:55:58 2012 +0200
+
+    disable yorick in lib/gyoto-uninstalled.pc.in
+
+commit 23aaaf5aca44c6159e2da5123572c8ab65589cd7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 1 21:57:11 2012 +0200
+
+    throwError in Screen::getRayCoord() when on z-axis in spherical coordinates
+
+commit 54f0a0bc412c41b639bb3da4cec936b44d618792
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 1 14:34:33 2012 +0200
+
+    rename tlim->tmin in Worldline, Photon and Scenery. Default value is -DBL_MAX
+
+commit f15de6b70c52455749edae83b6802a7b4c2db251
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 29 08:53:02 2012 +0200
+
+    add .gitignore
+
+commit e19e026afc04fbcd0abaf82bc2b53c730578c92a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 29 08:43:02 2012 +0200
+
+    update ChangeLog
+
+commit 5b80bbfa6e864e90cfb26254fe9dcdb44a54e410
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 29 08:22:53 2012 +0200
+
+    fixup! * add --plugins parameter to gyoto executable; * add plugin attribute to Metric, Astrobj and Spectrum XML entities
+
+commit 250fa2dfbe3a759673114ec96c035afba6c28eba
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 29 08:13:42 2012 +0200
+
+    * add --plugins parameter to gyoto executable;
+    * add plugin attribute to Metric, Astrobj and Spectrum XML entities
+
+commit 88cab19bf71bc204053c5c0ab4c38793a1d8cf9c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 28 19:49:33 2012 +0200
+
+    * add nofail keyword to gyoto_loadPlugin
+    * load stdplug plug-in in gyoto_std.i
+
+commit c32e7b43c3d61593c4c6a3e1131a65eb7393d81c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 28 17:52:50 2012 +0200
+
+    expose Gyoto::loadPlugin() to Yorick
+
+commit 87f87ab03fdfd7ab60ff63ef1a3211a865566173
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 28 14:32:36 2012 +0200
+
+    add GYOTO variable to lib/*.pc
+
+commit 67ace2662805e061e13be804d7c5fdaf0a43d0f8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 22:04:08 2012 +0200
+
+    actually link lorene module with lorene!
+
+commit 48ac3463a89f9933b8b9a600a1075309c1649a6b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 16:47:13 2012 +0200
+
+    add -DGYOTO_USE_LORENE to LORENECPPFLAGS when appropriate
+
+commit 07439a5fcbd0f369adacf2ecd4189a0c013fc44d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 16:28:06 2012 +0200
+
+    add lib/gyoto-uninstalled.pc.in to ease building plug-ins from uninstalled gyoto
+
+commit 6fb54ab79bdb882411433035b065230723e02ce6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 15:50:14 2012 +0200
+
+    add m4/pkg.m4 (pkg-config)
+
+commit 977db71169513c319ede6cbaba23e49c1165de06
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 15:49:45 2012 +0200
+
+    Better integrate lorene build
+
+commit 1ac339c17c8698f8ec3ce25f394765ad97a41c32
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 14:31:33 2012 +0200
+
+    implement Astrobj::emission(double Inu[], double nuem[], nbnu,...)
+
+commit ffa38dc40ee1c34a922e1df028f337d269d26f1e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 27 14:30:19 2012 +0200
+
+    Use pkg-config if available for xerces-c and cfitsio and process gyoto.pc accordingly
+
+commit 35330aa7cde02ff2f19264adb08cdda758b97872
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 25 15:08:32 2012 +0200
+
+    add -lfftw3 to lorene ldflags
+
+commit 7373839eb94c3b617d2f50ce4165777ec5f52587
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 25 15:02:51 2012 +0200
+
+    By default, install yorick plug-in under ${prefix} even if Yorick is not there.
+
+commit 797c88873ce50cb2dfd519d77c4e26b084dc291e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 24 15:56:01 2012 +0200
+
+    PatternDisk: minor edit in debug output
+    lib/automakefile*: link libgyoto-stdplug with cfitsio
+
+commit f336bd0990c7307caa916ee38ef8b81ac8b7cfe5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Sep 19 10:54:36 2012 +0200
+
+    * INSTALL: document additional Yorick packages
+    * gyoto.pc: use GYOTO_ prefix in variables
+
+commit ece1730f89f9b8df1e1a2991e7f75d089dd4fdcb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 18 13:51:18 2012 +0200
+
+    Specify $(XEERCESLDFLAGS) in bin/Makefile* instead of (or rather in addition to) relying on libtool to keep its promises
+
+commit 9ca8955bd796f96ed11a40bc47903ea55871b1d6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 18 10:47:50 2012 +0200
+
+    * ship m4/* files instead of symlinks
+    * don't use "VERSION" file in configure
+    * includes are in srcdir, not builddir
+
+commit 33a25f7a05f5741589d0dde5fcf3b86861830610
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 13 00:19:26 2012 +0200
+
+    Revamp the build system based on the autotools
+
+commit 101db9603c1b18d43ab922ba666cfb63c32e4f1f
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Tue Sep 11 23:41:42 2012 +0200
+
+    Suppressed the reference to local_settings_ubuntu in the file INSTALL.ubuntu
+
+commit 31d27b9676a5f278c0b1a1667cad00e4a549c837
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Tue Sep 11 23:36:58 2012 +0200
+
+    Suppressed the newly added local_settings_ubuntu
+
+commit 692dad1ec8d3d5ae1849ab6c80b5ba9dfcea912c
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Tue Sep 11 21:43:15 2012 +0200
+
+    Re-added the template file local_settings_ubuntu
+
+commit a97de6ca50664160c2fe459ca56b75571bcdc5ec
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 10 21:11:21 2012 +0200
+
+    make mk-movie*.i scripts executable
+
+commit 7b5c5313948b07bc7ee289d803b9fed021b0d64e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 10 20:52:08 2012 +0200
+
+    bin/Makefile: put gyoto.o in front of the libraries when linking (matters for some linkers)
+
+commit 63f2e6a5860ace1b5f3d8d650dce003f5d76180f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jul 3 15:07:46 2012 +0200
+
+    Mention prepackaged binaries in INSTALL
+
+commit f83341793968069e0ca68aadc80699b448f3886b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Jun 24 11:13:07 2012 +0200
+
+    * fix buffer overflow in lib/Factory.C
+    * update paper ref in bin/gyoto.C
+    * take environment (CXX|CPP|LD)FLAGS into account in local_settings
+    * harden CXXFLAGS by default, may not work for all arches
+
+commit 6db2175d4955247ea307a96eaaaaee0b26740cdd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Jun 24 08:44:12 2012 +0200
+
+    Add Spectrum::Generic::~Generic() virtual destructor
+
+commit 58db9308dcfff681fa850f113c0d4ed82088edb6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu May 10 17:55:46 2012 +0200
+
+    yorick: put -L../lib and -I../include in front of COPTS
+
+commit dab4e175a691990be136aefd9984a5155eb50c39
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 20 13:22:05 2012 +0200
+
+    In Disk3D_BB.C: computation of Sem, Vem updated
+
+commit 1dbb3a3ef4517cc861a8093b03c3825575b68b89
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 13 11:57:29 2012 +0200
+
+    Disk3D_BB.C: updated computation of Sem, Vem
+
+commit 9f7ba8d9f6517986f0b0b36c9b49b077144ad1b2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu May 10 17:55:46 2012 +0200
+
+    yorick: put -L../lib and -I../include in front of COPTS
+
+commit be59e67e53c1c741b4dd10ab5870111feac3e979
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu May 10 17:24:26 2012 +0200
+
+    bin: clean bin/Makefile, rm gyoto.o in make clean, add includes for getpid() in gyoto.C
+
+commit 3bd00b018b0b35d632df060ca1240284be6e69bd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 1 18:08:09 2012 +0200
+
+    fixup (s/CFITSIO_PATH/CFITSIO_LDFLAGS/ local_settings)
+
+commit e78c12fd42456df8f852dbef8df1852f23479f22
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 1 13:41:58 2012 +0200
+
+    0.0.3 release
+
+commit 26c93688c912bf6397298b39cdbbc16fa4eba12d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue May 1 12:59:08 2012 +0200
+
+    + initialize PatternDisk's phimin_/phimax_ to 0 and 2*pi
+    + use standard flags CXXFLAGS/LDFLAGS/LDLIBS
+
+commit f8e9303ecb43db03c1e0e7083f61f0765ea595dd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 26 11:22:11 2012 +0200
+
+    add github URLs in  mk-movie-fork-raytracing.i
+
+commit 6fa5d65349fd6df471a6ba7b37f6da013ab76003
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 26 11:04:12 2012 +0200
+
+    document mk-movie-fork-raytracing.i
+
+commit b1a612f121d01e89453485a46eb2402a02eff7d1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 25 21:18:24 2012 +0200
+
+    * use gettimeofday() for profiling
+    * clone Photon in _each_ thread, including the parent (when nthreads_ > 1)
+    * include mk-movie*.i
+
+commit 26a32b02b49a77a5a3b38229a09c99470d92aebc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 23 20:17:42 2012 +0200
+
+    implement explicit KerrBL copy constructor
+    SceneryThreadWorker returns NULL
+
+commit 8fd8ed3ad732e914d81da36e782a8edea756606a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Apr 21 23:16:10 2012 +0200
+
+    + bugfix: initialize xnthreads in bin/gyoto.C
+    + add gyoto_verbose() in yorick/gyoto_utils.C
+    + improve informative output in Scnery::rayTrace()
+
+commit 565a9b031f2d1dc2985f6e967bb17ab1f457c35b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Apr 21 00:47:47 2012 +0200
+
+    provide an actual API for Scnery::nthreads_
+    rework yorick/gyoto_Scenery to render gyoto_Scenery_rayTace usable, it is the only way use nthreads from within yorick
+
+commit a9728a0136cc4bbf0e36f9277a2e3ca009ad8921
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Apr 20 15:20:42 2012 +0200
+
+    initial attempt at a multi-threaded Scenery::rayTrace
+
+commit c69f75261bbc942adcbd9b9d46fddef62af29ba6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 19 10:00:47 2012 +0200
+
+    add ChangLog, update copyright
+
+commit f8472f174108cb6cae554f89da3fab7cc7557d33
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Apr 19 09:34:56 2012 +0200
+
+    install include files in include/Gyoto/
+
+commit 41485117bcb304cdc6633c9b8efc1be539ae5e7f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Apr 16 14:09:47 2012 +0200
+
+    remove NULL default argument to Spectrum::Subcontractor_t, which is useless and makes build fail with icc.
+
+commit e62b6e834e5007b8f34e50aac6d96df502ba29bc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Apr 15 15:33:50 2012 +0200
+
+    add GYOTO_INC to PKG_CFLAGS in yorick Makefiles
+
+commit 5138519bc68382105637ecbaec2094532704c31a
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Apr 13 12:16:05 2012 +0200
+
+    Code cleaning in WorllineIntegState.
+
+commit 29a2d7436ea852cb744ee45305c8bd7b722edab9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Apr 3 17:25:19 2012 +0200
+
+    Corrected typo in local_settings: INC->GYOTO_INC in section "Path for the include files"
+
+commit 56c32b3195281cdb03d4281e23fb90e77a1b7e60
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Mar 13 12:38:16 2012 +0100
+
+    Simplifying expression of Vem in Disk3D_BB.C
+
+commit eb59bb0da7a84da7510d0a8b5298e3e85d68fa68
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Mar 13 11:48:49 2012 +0100
+
+    Modified jnu computation in Disk3D_BB.C
+
+commit b276815f865231983c117dad76693d8fb255dd94
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 29 11:54:17 2012 +0100
+
+    * Added test on val in StandardAstrobj::Impact before going to process
+
+commit c4ba43a80101b5c11e8f937cd76b35a388b9631d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Feb 28 18:19:25 2012 +0100
+
+    * Modified computation of jnu in Disk3D_BB
+
+commit 68d60d856e3c932d1dce73c4a84ad4aa0be586c2
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Feb 24 09:10:57 2012 +0100
+
+    * Changed computation of jnu in Disk3D_BB
+    * Changed computation of T in PatternDiskBB and ThinDiskPL
+
+commit d70f6d45dda64e513687fd620e675e968ec87546
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 22 19:02:40 2012 +0100
+
+    * Changed i[1] computation in getIndices in Disk3D and PatternDisk
+    * Error message for jnu computation in Disk3D_BB
+
+commit fddb718998a6210d1b083bcf4ef5f43f24be3e32
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 22 17:55:03 2012 +0100
+
+    * Added impact time for data in Disk3D
+    * Changed computation of jnu in Disk3D_BB
+    * Changed definition of rmax_ in PatternDiskBB
+
+commit a8e4ac4360d9164c7fc2a47ef1f81590d171d861
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 22 10:34:44 2012 +0100
+
+    * Computation of nr_, nphi_, nz_ in PatternDisk, Disk3D is updated
+    * Added phimin_ and phimax_ in PatternDisk, Disk3D
+    * Added ThinDiskPL class for powerlaw thin disk
+
+commit 35617c762a1039471796e6f05e11863c4fb5c833
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 16 18:02:40 2012 +0100
+
+    + Add call to checkPhiTheta in ThinDisk.C
+
+commit b1d851c6712ddef01a3819023a31ca90e2086659
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 16 13:10:50 2012 +0100
+
+    + Added null tests in PatternDisk and Disk3D
+
+commit 4700b0e6918dfd2dfcf993bbe94f5e86abefdae4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Feb 13 19:22:08 2012 +0100
+
+    * Changed treatment for power law part of disk
+
+commit 43e5cc37efee709f4f86368d4328a4b06f4182aa
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Feb 7 18:32:32 2012 +0100
+
+    * Moved giveDelta() to StandardAstrobj
+    * Implemented non-adaptive integration inside optically thin object in Standard::Impact()
+    + Added many csts in GyotoDefs.h for PolishDoughnut physics
+
+commit 84de159c9ce52e279cb48f319b20859b4fd851a1
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Feb 6 17:19:53 2012 +0100
+
+    + Add Generic::giveDelta to implement integration inside optically thin object
+    + Modified Photon::hit to take giveDelta into account
+    + Add call to checkPhiTheta in StdAstrobj::Impact
+
+commit 5d05cb0a06e93ceea9d701b28c122c64a37b698a
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Sun Feb 5 16:38:51 2012 +0100
+
+    Installation instructions for Linux Ubuntu.
+
+commit 77b0f6177eae0570db9fbefd3917457740e6ba42
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Sat Feb 4 18:45:19 2012 +0100
+
+    -- Added template local_settings file for Linux/Ubuntu systems
+    -- Change in lib/Makefile to fix a link issue on Ubuntu 11.10
+
+commit dc078a643ef14ccf014fb6279bcce9375d17279d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Feb 3 17:00:58 2012 +0100
+
+    * Added {} in switch calls in Disk3D.C
+
+commit 96519bb02c9adb70f0a03648b411c2a4845ba698
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Feb 3 08:03:09 2012 +0100
+
+    * Put some {...} in Astrobj::checkPhiTheta
+
+commit 98d19668e3d62ae6f6c5cd200e1de1fc88661d63
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 2 19:31:47 2012 +0100
+
+    + Add Disk3D_BB subclass with implementation of black body emission for 3D disk and dynamical evolution taken into account
+    + Add function checkPhiTheta in Astrobj to insure theta and phi are in the correct range
+
+commit 6c91c6c772ef873c5241266965b037ffbe67e412
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 1 20:37:16 2012 +0100
+
+    + Add Disk3D class, also in yorick plug-in
+      First version, compiles, runs, but not to be used for physics yet...
+
+commit 955536e5cd9217aea01ec7a97a8820bc1ca73832
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jan 27 12:08:16 2012 +0100
+
+    + Add special treatment when impact point is below ISCO in PatternDiskBB
+    + Add setprecision in WorldlinIntegState for display of current position in nextStep()
+
+commit 3745d3bb2a2659fbe9b4fbd5041e983b9be35a36
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jan 20 16:48:26 2012 +0100
+
+    * Typo in DynamicalDisk::setParameter
+
+commit d58f6c5b4b7da7886cba11884f9156871d28f800
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jan 20 16:44:57 2012 +0100
+
+    * Bug fixed in DynamicalDisk::setParameter
+
+commit ab712dc4d004fb9cac80f971adb6cf7c43288ea2
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 19 16:53:46 2012 +0100
+
+    + Added class DynamicalDisk that deals with evolving disk
+
+commit b4d73ca14b2d05333de91d09912a553c9e6b3aa8
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 19 16:50:01 2012 +0100
+
+    * Functions getEmission, getRadius, getVelocity in PatterDisk
+    * Added one forgotten line with rmax_ condition in PatterDiskBB
+    * User1 quantity added in ThinDisk to compute t_impact if needed
+
+commit c97a3e724475c0667474e16fd99e583b8598e8af
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jan 17 11:19:39 2012 +0100
+
+    PatternDiskBB update.
+    Added setMetric and call to getRms; some code cleaning; seems to work ok
+
+commit f1c037e47ae802453e097b602858f5705ad72aed
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jan 17 10:23:14 2012 +0100
+
+    lib/PatternDisk.C: bugfix: brackets around {delete [] array; array = NULL;} pairs.
+
+commit bc7fc63a284704e5d46774964d08b94134a6bfe7
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Mon Jan 16 16:28:33 2012 +0100
+
+    Added some include (<cstring>)
+
+commit 58b3935726808cf6885f131ccbb7c5274a25e37e
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jan 16 12:23:55 2012 +0100
+
+    New sub-class PatternDiskBB, heir of PatternDisk, with black body emission spectrum. The quantity PatternDisk::emission_ now bears temperature of emission.
+
+commit f3444c51537e11d0268dfacd6d453697b4270cb9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 21 09:42:09 2011 +0100
+
+    Add ThinDisk::thickness_
+
+commit 2620371c1d7747d5ccb9f2d0e4043e327fca8bc5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 21 08:45:00 2011 +0100
+
+    TinDisk::Impact(): fix bug which would extend disk to 2*rout_
+
+commit 7841fad57e8368bebece90e2b587ace7e2087331
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 20 13:43:42 2011 +0100
+
+    fixup
+
+commit d86eda83a2c69ff2a70e9e199d13d2a2ff9c13c5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 20 13:08:09 2011 +0100
+
+    Modified Worldline::getCoord to insure theta and phi are in the correct range
+
+commit 45337cff4f381a18ab4d7a6a3678abebebd7e595
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 19 10:44:38 2011 +0100
+
+    PatternDisk: add opacity
+
+commit 9bf35b2e2e2b9787e429430cc5387753cfec96bb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 16 23:28:30 2011 +0100
+
+    add circularvelocity= to yorick/gyoto_Metric.C
+    remove old syntax for gyoto_Metric (only the bject-oriented syntax remains)
+
+commit 77b437cab6f01762806a4b93ac6dc7f963c59df2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 16 16:48:59 2011 +0100
+
+    support impactcoords precomputation directly in yorick
+
+commit 927f352f0208a7c9e9414daffc3362103033b461
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 16 13:44:20 2011 +0100
+
+    PatternDisk:
+    + document gyoto_PatternDisk
+    + add nu0() and dnu() methods, expose them in yorick
+
+commit a0cca2fb04b37137a1e1df31cc3ef4546d1d33f1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 16 12:15:25 2011 +0100
+
+    + PatternDisk:
+      * readFile() -> fitsRead()
+      * add fitsWrite(), copyIntensity(), copyVelocity, copyGridRadius,
+        getIntensity(), getVelocity(), getGridRadius(), repeatPhi()
+      * expose all of this in yorick
+    + GYOTO_DEBUG( << more) ; -> GYOTO_DEBUG << more << endl;
+    + add GYOTO_QUIET, GYOTO_SEVERE, GYOTO_WARNING, GYOTO_MSG, GYOTO_INFO
+
+commit ac9537e1bb0904b3a9459a0c2810737c788c452c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 15 16:36:50 2011 +0100
+
+    + yorick/: add gyoto_ThinDisk, gyoto_PageThorneDisk, gyoto_PatternDisk
+    + utils: add GYOTO_DEBUG(more) macro
+    + add PatternDisk::getPatternVelocity()
+    + fix bug in ThinDisk::setElement() which would blow up on DBL_MAX
+
+commit dfaff07a2890aff610a4d2ed406abdd8d7b80377
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 14 17:58:02 2011 +0100
+
+    API incompatible
+    + bin/gyoto.C: fixed ug impacting --impact-coords
+    + Astrobj: change philosophy concerning the Subcontractors:
+      * add template<typename T> Astrobj::Subcontractor();
+      * add Generic::setParameters() (used in the above);
+      * setGenericParameter() -> setParameter;
+      * implement setParameter() for all Astrobjs, setParameters() for some of them;
+      * remove the Subcontractor and Init static member functions for all Astrobjs
+      * setParameter() now returns an int;
+    + Spectrum: setGenericParameter -> setParameter
+    + Star: some new features to adapt to the above
+    + yorick/gyoto_Astrobj.C: new keyword "setparameter" to set ANY
+      parameter covered by setParameter()!
+
+commit 448f24b651776768b373081dc8893b03cc667414
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 13 16:08:01 2011 +0100
+
+    This is an API incompatible commit (should be seamless).
+    + gyoto.C: remove --save option, add --impact-coords option, remove
+      all the GYOTO_QUANTITY_IMPACT_* quantity and introduce the one-stop
+      GYOTO_QUANTITY_IMPACTCOORDS (affects many classes)
+    + Scenery:
+      * Scenery::rayTrace(), Scenery::operator()(): accept argument
+        impactcoords and skip ray-tracing in that case; reome "save"
+        argument;
+      * reintroduce tlim_ member;
+      * add a Photon member to avoid reallocating memory each time
+        operator()() (or rayTrace()) is called;
+    + Make Worldline::getTlim() const;
+    + yorick/: also accept impactcoords as input, remove adaptive raytracing
+      (broken, unmaintainable, never really worked)
+
+commit 5786a225d86dd25b56a773fca5fba6f847048a46
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Mon Dec 12 16:21:02 2011 +0100
+
+    Added reference to the published paper for the html documentation.
+
+commit 92b91d465129a705931e1eddcfe6077aa7527dd0
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Mon Dec 12 14:15:03 2011 +0100
+
+    Changed <string> to <cstring> in the include
+
+commit e771ec0d895bf28a14ecb6522503f83dafc3830c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 00:24:00 2011 +0100
+
+    + Add Astrobj::PatternDisk class
+    + Add ThinDisk::projectedRadius() method
+    + Add GYOTO_USE_CFITSIO macro
+
+commit 78c15ef47d1812d89f86720da75c3a51d75bbc6c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 7 22:12:47 2011 +0100
+
+    + Add ThinDisk
+      * replace ThinInfiniteDisk* with PageThorneDisk
+    + Metric:
+      * circularVelocity() works outside the equatorial plane
+      * add KerrKS::circularVelocity()
+      * fix bug in KerrBL::circularVelocity()
+      * add Metric::Generic::cartesianVelocity()
+    + add GyotoFunctors.h
+
+commit ed8537709f0c62d22d7d4e038fe020b8688fd42d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 6 15:09:02 2011 +0100
+
+    Introduce Astrobj::Standard. Geometrically thick objects which use the operator() paradigm should inherit from Standard instead of Generic.
+
+commit b8347aff4f30e8d9c2f0c59d4811a8d81ea19028
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 2 11:47:20 2011 +0100
+
+    Improve documentation
+    Make Astrobj::Generic::clone() pure virtual, it's trivial to implement it for each object.
+
+commit 5b4f41a3c159de2505edc57351b69f4fcfc6ad8a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 1 23:26:19 2011 +0100
+
+    Document UniformSphere
+    Make Astrobj::kind_ const
+    Modify example-fixed-star.xml to lower opacity
+
+commit b3b679c42b37163ef106341dd1fbc6ae08da7194
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 1 18:11:39 2011 +0100
+
+    Add Gyoto::Photon::Refined class, which makes Gyoto:ComplexAstrobj::Impact() more robust.
+
+commit dc0a2fff5930294fa9482afa5246beab16bdfd7c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 1 11:37:00 2011 +0100
+
+    Base Star and FixedStar on a common UniformSphere abstract Astrobj
+    
+    Bugfix in Star shape
+
+commit f58886a9a878147692810d1a078b388b9085ba01
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 1 00:08:09 2011 +0100
+
+    Add ComplexAstrobj
+
+commit 0ba165c4e1753331904440f6e1abb42f0bf3e815
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 23 08:57:34 2011 +0200
+
+    improve Metrics documentation
+    add arXiv ref, change "submitted" to "accepted"
+
+commit 2874a408c49e65e16606f8d291dd6c8f42b2c258
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Sep 21 15:50:25 2011 +0200
+
+    Document FactoryMessenger and generally improve documentation
+
+commit ecdfc837dab8ac9a71e640c3d392182f906ede0b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 20 17:59:01 2011 +0200
+
+    improve documentation
+
+commit d2a03dfadefeec01c3141231a207e0a514a533b0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 16:26:04 2011 +0200
+
+    Add comment not to remove a line which should be useless but is not...
+
+commit a8ab52390945cea9438b71fb6a600ba722872690
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 15:06:01 2011 +0200
+
+    Fixup: apply namespace changes also to RotStar3_1
+
+commit c4396dd3d3cf40a95d0feec7f99ee929fc4c5b24
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 14:59:31 2011 +0200
+
+    Create Astrobj namespace
+
+commit f9c5a321f5db470c27e29309e7c59e0db756cf70
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 11:42:49 2011 +0200
+
+    Introduce Gyoto::Metric namespace
+
+commit 61b7df2cee16aab3a70a0c0966f74981f84ac081
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 10:31:05 2011 +0200
+
+    fixup: RotStar
+
+commit 3fe5ece1f975277663e75235518d6dceb2a0fb0c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 19 10:07:45 2011 +0200
+
+    Rename factoryMessenger -# FactoryMessenger, provide a separate GyotoFactoryMessenger header file
+
+commit a1ddb199fda080f02561ceb3b91cba08d6d91227
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 17 17:49:25 2011 +0200
+
+    setSelfAttribute: size_t -> unsigned int
+
+commit 61236e51084e5f71950e94b873f2660a37d37c97
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Sat Sep 17 14:24:03 2011 +0200
+
+    Corrected HTML anchors
+
+commit ce3903f74098117c00eb9979bc4919b45ea2db05
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Sep 17 10:14:14 2011 +0200
+
+    cast to SartPointee::Subcontractor_t* instead of void*
+
+commit 04c62d6b6b7a7ba10b01249b9ab0c57e79d6e848
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 16 22:44:01 2011 +0200
+
+    * fix many warnings
+
+commit d3a7ec0c9b63a6d5f4b557bcb2066469ab9a2d09
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 16 16:09:52 2011 +0200
+
+    Fix FTBFS: add factoryMessenger::setSelfAttribute(std::string, size_t)
+
+commit 3ebbad7c456e89270508400f249833f6cde192e9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 16 14:41:18 2011 +0200
+
+    add Y_HOME_PKG in yorick
+
+commit f20bb153950055baf678097e16dab6c9024aafa1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 16 11:41:44 2011 +0200
+
+    * add factoryMessenger::setSelfAttribute(,double)
+    * change char* to char const * in Register::Init()
+    * fix compilation warnings
+
+commit 0c180f4564e59a3fe7441bac592b8d6764aacfbf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 15 14:06:54 2011 +0200
+
+    Improve documentation and build system
+
+commit 63c7c42420cbcff45ea1174444857ba370e667ac
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Sep 15 12:31:08 2011 +0200
+
+    Small change in KerrBL/RK4_adaptive cst check
+
+commit 731221ccaa11dde37d01ef3d9812ce9eef413846
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Sep 15 12:16:09 2011 +0200
+
+    Updated cst check in KerrBL/RK4_adaptive
+
+commit 6687a996c378e282c6634f1023f9305419930104
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Sep 15 09:35:51 2011 +0200
+
+    Compilation Warnings cleaning
+
+commit 50c0d2bf1775a601a447bfc74e26b6a8fb273ab6
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Sep 14 16:26:19 2011 +0200
+
+    In KerrBL.C/myrk4_adaptive changed cstest[4]->cstest[5]
+
+commit 20ad795f75d9d315236d37b38883c41ac7fa1050
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 13 23:55:31 2011 +0200
+
+    KerrBL:
+     * cst has 5 elements: cst[4] == (Q==0. ? 1. : 1./Q )
+     * cst[0] is not norm but mu. Happens to be -norm.
+
+commit f3bd33ac33527a503a9bb627d472d2f2af38b7e9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 13 21:47:06 2011 +0200
+
+    print QCarter with the warning
+
+commit 9d98673e5dcc2a26f652e06c0d8c28db199ac404
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 12 09:11:40 2011 +0200
+
+    add yorick .info file
+
+commit 146854c9d54fbf31f15812d1949c27ac837c9663
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 9 10:01:27 2011 +0200
+
+    fix spelling errors
+
+commit c0802b44531e1aa034b73589dbf21c32026e2cc5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 9 09:26:53 2011 +0200
+
+    fixup
+
+commit 3d5416e9812cafebcf9992d2716ad1f336918fd5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 9 08:52:43 2011 +0200
+
+    add files to generate yorick documentation
+
+commit 47ed49bd48f8ea9145c7a5b4c35a687f76754b90
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 8 08:39:35 2011 +0200
+
+    * Initialize Photon::freq_obs_
+    * KerrBL.C: special case Q==0. in tests
+    * Screen::Screen(const Screen& o): fix copy constructor
+    * Worldline::setMetric(): call setParticleProperties only if initcond set
+    * Worldline::setInitialCondition(): avoid z axis in sperical coords
+    * create libgyoto.so links (underlinux) during build and install
+    * add gyotoy manpage
+    * spell-checking
+    * implement no display for check-yorick
+    * fix SIGFPE when printing Star
+    * check-yorick exits yorick (batch mode)
+
+commit aca6e3b562b0ed7b8121ed530604066ef7a81845
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Sep 7 09:56:36 2011 +0200
+
+    fix: uninstall manpage from the right directory
+
+commit a668765731a9af5aaf195591a8279d42f58f2996
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 6 17:40:18 2011 +0200
+
+    Create directory $(DESTDIR)$(PREFIX)/lib/gyoto/$(SOVERS)
+
+commit a928a7533cec2476cb6a12aff4678f1392546ab6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 6 16:13:04 2011 +0200
+
+    * Fix yorick/Makefile to look for ../lib/libgyoto.so.SOVERS
+    * Search for plugins (and install them) in $(PREFIX)/lib/gyoto/$(SOVERS)
+
+commit bc0956337764c9311c6bc508bb1725716a4fae66
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Aug 31 15:10:33 2011 +0200
+
+    * support DESTIDR in Makefiles
+    * move man under share
+    * fix gcc error in gyoto_Photon.C (address to temporary)
+    * implement SONAME under Linux
+    * improve lorene not loaded message
+    * add run-time copyright statement
+
+commit 1d0bdcd27b9126911bb9d700776414308a3ff4b1
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Aug 31 14:46:57 2011 +0200
+
+    Bug in KerrKS.C corrected
+
+commit c27d01a1d43c019901f157de9104a7a1c2f158de
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Aug 31 11:55:23 2011 +0200
+
+    Cosmetic changes in KerrBL, Photon, Scenery, Screen, Star, WlIntegState.C
+    Changed stop condition in KerrKS.C
+
+commit ec3ccfc31f9dabbb1def411e07b738557f7e3602
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Aug 30 17:33:50 2011 +0200
+
+    Initial import from private svn rev. 335

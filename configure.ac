@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [0.1.0], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [0.2.0], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -13,7 +13,7 @@ AC_LANG(C++)
 LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
-VERSINFO=1:0:0
+VERSINFO=2:0:0
 sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])

@@ -1,0 +1,64 @@
+0.2.0 2014/03/28 ABI 2
+	* New integrators, require Boost >= 1.93 and C++11. The new
+	  integrators live in Worldline::IntegState, not in the Metric. Read
+	  the user guide for more details, as well as the doxygen
+	  documentation for the Scenery class.
+	* New Metrics: Minkowski, NumericalMetricLorene
+	* New Astrobjs: DirectionalDisk, StarTrace, ThinDiskIronLine
+	* Give access to some numerical parameters of the RK4 integrator
+	* Include LaTeX user guide
+	* Yorick plug-in API change: the dot operator has changed its meaning.
+	  Codes that used it may require updating. Examples:
+	    m = gg.mass -> m =gg.mass()
+	    obj=gg.clone -> obj=gg.clone()
+	    scenery.screen(resolution=128) -> screnery.screen.resolution(128)
+	    scenery.astrobj(initcoord=x,v) -> scenery.astrobj()(initcoord=x,v)
+	* Rename methods from from setMass()/getMass() style to mass()/mass()
+	  style. Macro with the old names are provided in GyotoDefs.h,
+	  triggering a deprecation warning. Code may break nevertheless,
+	  typically in two cases:
+	    + if the new name was used as a variable name in your code:
+	      please change the variable name;
+	    + if your derived class overloaded only one of the two accessors
+	      (e.g. only setMetric, not getMetric): in this example add
+	        using Generic::metric;
+	      in your derived class definition.
+	  To get rid of the deprecation warning, define the GYOTO_NO_DEPRECATED
+	  macro, for instance "make CPPFLAGS=-DGYOTO_NO_DEPRECATED"
+	* Serious bug fixes and improvements in PolishDoughnut
+	* Replaced Disk3D_BB with DynamicalDisk3D
+	* Disk3D now has an opacity
+	* Make KerrKS work (using the generic integrator only)
+	* New interface: work in progress (WIP), to mark classes that are known
+	  to be broken. Instanciating such a class yields a warning.
+	* Update build systems to current autotools
+        * Implement mask in screen to compute only parts of an image
+	* Improve behaviour for emitter or observer far from massive object
+
+0.1.0 2013/07/27 ABI 1
+	* add units system
+	* add PolishDoughnut astrobj
+	* use pkg-config
+	* gyotoy ported to yorick-gy instead of python
+	* in Worldline, Photon and Scenery: rename tlim to tmin, default
+	  value is -DBL_MAX.
+	* add a mutli-wavelength flavour of Astrobj::emission()
+	* install yorick plug-in under ${prefix}, not necessarily in Y_HOME
+	* add plugin attribute to the Metric, Astrobj and Spectrum entities
+	* reform build system to use the autotools
+	* add --plugins command-line option
+	* add virtual destrcuctor to Spectrum::Generic
+	* fix buffer overflow in lib/Factory.C
+	* update paper ref in bin/gyoto.C
+
+0.0.3 2012/05/01 BUG
+	* fix a tiny bug in PatternDisk (initialization of phimin/max)
+	* rearrange flags in Makefiles/local_settings
+	  for easier downstream packaging
+
+0.0.2 2012/04/19 PKG
+	* install include files in include/Gyoto
+	* add this ChangeLog
+
+0.0.1 2012/04/16 ABI 0
+	* release

@@ -1,9 +1,11 @@
 /**
- * \file GyotoPatternDisk.h
- * \brief A geometrically thin, optically thick disk,
- *        with emitted intensity provided on a grid, depending
- *        on radius, frequency, and angle between direction of
- *        emission and the local normal. The disk is phi-symmetric.
+ * \file GyotoDirectionalDisk.h
+ * \brief Geometrically thin disk read from FITS file
+ * 
+ *   This class describes a disk contained in the z=0 (equatorial)
+ *   plane.  The flux emitted
+ *   at radius r, making an angle i with respect to the local normal,
+ *   at frequency nu is given in a FITS file.
  *
  *  The target of ray-traced Gyoto::Photon
  */

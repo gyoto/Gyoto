@@ -884,7 +884,11 @@ uninstall-am:
 
 $(SUBDIRS):
 	cd $@ ; $(MAKE)
-.PHONY: $(SUBDIRS) install
+
+ChangeLog:
+	git log --no-merges > ChangeLog
+
+.PHONY: $(SUBDIRS) install ChangeLog
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
