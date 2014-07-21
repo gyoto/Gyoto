@@ -1,3 +1,13 @@
+commit 9377e247c866095da355060bbd6d10cd79c8c28f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jul 18 17:38:30 2014 +0200
+
+    Prepare for releasing 0.2.0:
+     - update build system
+     - move ChangeLog to NEWS
+     - output git changelog into ChangeLog
+     - remove obsolete files (VERSION, Makefile.old, local_settings)
+
 commit e9cb96aae0fd402903a8f7b45aecdf7c68447802
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Fri Jul 18 15:53:40 2014 +0200
