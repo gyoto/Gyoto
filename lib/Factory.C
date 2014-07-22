@@ -44,9 +44,18 @@ using namespace Gyoto;
 using namespace xercesc;
 using namespace std;
 
-#define dvalLength 25
+// max length should be at least 26: " -0.1234567890123456E+123 \0"
+#define dvalLength 30
 #define dfmt " %.16g "
-#define d2txt(txt, val) sprintf( txt , dfmt, val)
+
+// support DBL_MIN, DBL_MAX, and put right format
+#define d2txt(txt, val) \
+  if      (val== DBL_MAX) strcpy(txt,  "DBL_MAX");	\
+  else if (val==-DBL_MAX) strcpy(txt, "-DBL_MAX");	\
+  else if (val== DBL_MIN) strcpy(txt,  "DBL_MIN");	\
+  else if (val==-DBL_MIN) strcpy(txt, "-DBL_MIN");	\
+  else sprintf( txt , dfmt, val)
+
 #define ifmt " %li "
 #define i2txt(txt, val) sprintf( txt, ifmt, val);
 
@@ -384,7 +393,6 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
 
 SmartPointer<Scenery> Factory::getScenery () {
   if (!scenery_) {
-    scenery_ = new Scenery(metric(), screen(), astrobj());
     DOMXPathResult* result;
     DOMElement *tmpEl;
 
@@ -820,7 +828,7 @@ void FactoryMessenger::setSelfAttribute(std::string attrname,
 void FactoryMessenger::setSelfAttribute(std::string attrname,
 					double attrvalue) {
   char val_string[dvalLength];
-  sprintf( val_string, dfmt, attrvalue);
+  d2txt(val_string, attrvalue);
   element_->setAttribute(X(attrname.c_str()), X(val_string));
 }
 

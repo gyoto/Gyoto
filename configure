@@ -15442,7 +15442,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 ac_config_headers="$ac_config_headers config.h include/GyotoConfig.h"
 
 
-VERSINFO=2:0:0
+VERSINFO=3:0:1
 sovers=`echo $VERSINFO | tr : .`
 
 

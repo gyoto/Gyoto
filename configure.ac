@@ -13,7 +13,7 @@ AC_LANG(C++)
 LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
-VERSINFO=2:0:0
+VERSINFO=3:0:1
 sovers=`echo $VERSINFO | tr : .`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])

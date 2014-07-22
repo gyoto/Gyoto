@@ -1,4 +1,12 @@
-0.2.0 2014/03/28 ABI 2
+0.2.1 2014/07/22 ABI 2.1
+	* ABI is backward compatible with 0.2.0.
+	* Support for the special values DBL_MAX, DBL_MIN, -DBL_MAX
+          and -DBL_MIN is any scalar floating-point value in XML i/o.
+          This avoids loss of precission or SGFPE when
+          saving/restoring certain default value in XML files.
+	* Bug fix: avoid buffer overflow in Factory.
+
+0.2.0 2014/07/21 ABI 2
 	* New integrators, require Boost >= 1.93 and C++11. The new
 	  integrators live in Worldline::IntegState, not in the Metric. Read
 	  the user guide for more details, as well as the doxygen

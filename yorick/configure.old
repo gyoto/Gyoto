@@ -1,5 +1,0 @@
-#!/bin/sh
-set -e
-yorick -batch make.i
-cd stdplug; yorick -batch make.i
-exit 0
