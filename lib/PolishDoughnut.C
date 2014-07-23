@@ -44,10 +44,12 @@ using namespace Gyoto::Astrobj;
 #define GYOTO_C2_CGS 8.98755178736817668096e+20 //c^2 in cgs
 #define GYOTO_C2_CGS_M1 1.1126500560536184087938986e-21 // 1./GYOTO_C2_CGS
 #define w_tol 1e-9
+#define nstep_angint 10 // for angle-averaging integration
 
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
   gg_(NULL),
+  spectrumBB_(NULL),
   l0_(0.),
   lambda_(0.5),
   W_surface_(0.),
@@ -72,11 +74,13 @@ PolishDoughnut::PolishDoughnut() :
   GYOTO_DEBUG << endl;
 #endif
   critical_value_=0.; safety_value_=.1; //rmax_=25.;
+  spectrumBB_ = new Spectrum::BlackBody(); 
 }
 
 PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   Standard(orig),
   gg_(NULL),
+  spectrumBB_(NULL),
   l0_(orig.l0_),
   lambda_(orig.lambda_),
   W_surface_(orig.W_surface_),
@@ -103,6 +107,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
     gg_=orig.gg_->clone();
     Standard::gg_ = gg_;
   }
+  if (orig.spectrumBB_()) spectrumBB_=orig.spectrumBB_->clone();
 }
 PolishDoughnut* PolishDoughnut::clone() const
 {return new PolishDoughnut(*this);}
@@ -355,7 +360,8 @@ double PolishDoughnut::emission(double nu_em, double dsem,
   return Inu;
 }
 
-double PolishDoughnut::emissionSynchro_komissarov_averaged(
+// First version: use an averaged quantity
+/*double PolishDoughnut::emissionSynchro_komissarov_averaged(
 double Theta_elec,double number_density,double nuem,double nuc 
 							   ) const
 {
@@ -377,17 +383,17 @@ double Theta_elec,double number_density,double nuem,double nuc
   
   return emis_synch;
 
-}
+  }*/
 
-double PolishDoughnut::emissionSynchro_komissarov_averaged_integ(
+// Second version: just integrate over angles
+double PolishDoughnut::emissionSynchro_komissarov_averaged(
 double Theta_elec,double number_density,double nuem,double nuc 
 							   ) const
 {
   double th0=0., thNm1=M_PI;
-  int nstep = 100;
-  double hh=(thNm1-th0)/double(nstep);
+  double hh=(thNm1-th0)/double(nstep_angint);
   double emis_synch=0.;
-  for (int ii=1;ii<=2*nstep-3;ii+=2){
+  for (int ii=1;ii<=2*nstep_angint-3;ii+=2){
     double theta=th0+double(ii)/2.*hh;
     emis_synch+=hh*emissionSynchro_komissarov_direction(Theta_elec,number_density,nuem,nuc,theta)*sin(theta);
   }
@@ -495,13 +501,50 @@ const {
 double PolishDoughnut::emissionSynchro_komissarov_PL_averaged(
        double number_density_PL, double nuem, double nuc)
   const {
-  return 1.;
+  double th0=0., thNm1=M_PI;
+  double hh=(thNm1-th0)/double(nstep_angint);
+  double emis_synch=0.;
+  for (int ii=1;ii<=2*nstep_angint-3;ii+=2){
+    double theta=th0+double(ii)/2.*hh;
+    emis_synch+=hh*emissionSynchro_komissarov_PL_direction(number_density_PL,
+							   nuem,nuc,theta)
+      *sin(theta);
+  }
+  
+  if (emis_synch!=emis_synch) {
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_PL_averaged: "
+	       "emissivity is nan");
+  }
+  if (emis_synch==emis_synch+1.) 
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_PL_averaged: "
+	       "emissivity is infinite");
+  
+  return emis_synch/2.;
+  //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
 }
 
 double PolishDoughnut::absorptionSynchro_komissarov_PL_averaged(
         double number_density_PL, double nuem, double nuc)
   const {
-  return 1.;
+  double th0=0., thNm1=M_PI;
+  double hh=(thNm1-th0)/double(nstep_angint);
+  double abs_synch=0.;
+  for (int ii=1;ii<=2*nstep_angint-3;ii+=2){
+    double theta=th0+double(ii)/2.*hh;
+    abs_synch+=hh*absorptionSynchro_komissarov_PL_direction(number_density_PL,
+							   nuem,nuc,theta)
+      *sin(theta);
+  }
+  
+  if (abs_synch!=abs_synch) {
+    throwError("In PolishDoughnut::absorptionSynchro_komissarov_PL_averaged: "
+	       "abs is nan");
+  }
+  if (abs_synch==abs_synch+1.) 
+    throwError("In PolishDoughnut::absorptionSynchro_komissarov_PL_averaged: "
+	       "abs is infinite");
+  
+  return abs_synch/2.;
 }
 
 void PolishDoughnut::emission(double Inu[], // output
@@ -1114,7 +1157,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   double T_electron = kappabis*pow(number_density,CST_POLY_INDEX_M1);
   double Theta_elec = GYOTO_BOLTZMANN_CGS*T_electron
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-  
+
   double thetae_mini=0.01; 
   /* 
      Important remark:  below thetae_mini, synchrotron is badly defined
@@ -1159,10 +1202,9 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     double abs_synch_PL=0.;
     double abs_synch=0.;
 
-    double Bnu = BBapprox(nuem,T_electron);
+    spectrumBB_->temperature(T_electron);
+    double Bnu =(*spectrumBB_)(nuem)/GYOTO_INU_CGS_TO_SI; // BB in cgs 
 
-    //    cout << "start normal synch " << endl;
- 
     // ***Synchrotron emission coef.
     if (!angle_averaged_){
       emis_synch_ther=
@@ -1181,9 +1223,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       emis_synch_ther=
 	emissionSynchro_komissarov_averaged(Theta_elec,number_density,
 					    nuem,nuc);
-      /*emis_synch_ther=
-	emissionSynchro_komissarov_averaged_integ(Theta_elec,number_density,
-	nuem,nuc);*/
+      abs_synch_ther=emis_synch_ther/Bnu;
       if (nonthermal_){
 	emis_synch_PL=
 	  emissionSynchro_komissarov_PL_averaged(number_density_PL,

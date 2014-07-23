@@ -36,12 +36,11 @@ namespace Gyoto{
  class FactoryMessenger;
 }
 
-//#include <GyotoMetric.h>
 #include <GyotoKerrBL.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoFunctors.h>
 #include <GyotoHooks.h>
-//#include <GyotoPolishDoughnutCst.h>
+#include <GyotoBlackBodySpectrum.h>
 
 /**
  * \brief A toroïdal accretion structure
@@ -70,6 +69,7 @@ protected:
    * same instance.
    */
  SmartPointer<Gyoto::Metric::KerrBL> gg_; 
+ SmartPointer<Spectrum::BlackBody> spectrumBB_;
  double l0_; ///< Angular momentum. Tied to PolishDoughnut::lambda_.
  double lambda_; ///< Adimentionned angular momentum
  double W_surface_; ///< Potential surface value. Tied to PolishDoughnut::lambda_.
