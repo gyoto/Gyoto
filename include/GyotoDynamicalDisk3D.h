@@ -68,6 +68,7 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   int nb_times_; ///< Number of times
   double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
   int novel_; ///< put to 1 if velocity of emitting particle is not provided
+  double floortemperature_; ///< if non-zero, emission and absorption are 0 for temperatures below this floor, emission=blackbody and absorption is infty for temperatures above (this is a kind of fake optically thick case, when the emitting surface is inside the grid, not at the boundary of the grid)
 
   /**
    * An array of arrays of dimensionality double[nr_][nz_][nphi_][nnu_]. 
