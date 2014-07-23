@@ -54,6 +54,7 @@ PolishDoughnut::PolishDoughnut() :
   W_centre_(0.),
   r_cusp_(0.),
   r_centre_(0.),
+  r_torusouter_(0.),
   //DeltaWm1_(),
   central_density_(1.),
   centraltemp_over_virial_(1.),
@@ -62,6 +63,9 @@ PolishDoughnut::PolishDoughnut() :
   spectral_oversampling_(10),
   komissarov_(0),
   angle_averaged_(0),
+  nonthermal_(0),
+  deltaPL_(0.),
+  expoPL_(0.),
   intersection(this)
 {  
 #ifdef GYOTO_DEBUG_ENABLED
@@ -79,6 +83,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   W_centre_(orig.W_centre_),
   r_cusp_(orig.r_cusp_),
   r_centre_(orig.r_centre_),
+  r_torusouter_(orig.r_torusouter_),
   DeltaWm1_(orig.DeltaWm1_),
   central_density_(orig.central_density_),
   centraltemp_over_virial_(orig.centraltemp_over_virial_),
@@ -88,6 +93,9 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   spectral_oversampling_(orig.spectral_oversampling_),
   komissarov_(orig.komissarov_),
   angle_averaged_(orig.angle_averaged_),
+  nonthermal_(orig.nonthermal_),		 
+  deltaPL_(orig.deltaPL_),		 
+  expoPL_(orig.expoPL_),		 
   intersection(orig.intersection)
 {
   intersection.papa=this;
@@ -124,7 +132,7 @@ void   PolishDoughnut::lambda(double lam) {
     = (rms*rms - 2.*aa_*sqrt(rms) + aa2_)/(pow(rms,3./2.) - 2.*sqrt(rms) + aa_);
   double  l_mb
     = (rmb*rmb - 2.*aa_*sqrt(rmb) + aa2_)/(pow(rmb,3./2.) - 2.*sqrt(rmb) + aa_);
- 
+
   l0_ = lambda_*(l_mb-l_ms)+l_ms ;//torus angular momentum
 
   //Computing the potential at the photon position:
@@ -133,10 +141,12 @@ void   PolishDoughnut::lambda(double lam) {
   double r2_min = rms ; 
   double r2_max = 1000. ;
  
-  r_cusp_   = intersection.ridders(r1_min, r1_max) ;
-  r_centre_ = intersection.ridders(r2_min, r2_max) ;
+  r_cusp_    = intersection.ridders(r1_min, r1_max) ;
+  r_centre_  = intersection.ridders(r2_min, r2_max) ;
   W_surface_ = potential(r_cusp_, M_PI/2.) ;
   W_centre_  = potential(r_centre_, M_PI/2.) ;
+  DeltaWm1_  = 1./(W_centre_ - W_surface_);
+  cout << "r W= " << r_centre_ << " " << r_cusp_ << " " << W_centre_ << " " << W_surface_ << endl;
 
   r_cusp_*=1.2;
   /*
@@ -145,7 +155,22 @@ void   PolishDoughnut::lambda(double lam) {
     tube r=r_cusp_ for high spins, high l0, leading
     to incorrect images. This mult factor to r_cusp_
     solves the problem in an ugly (but correct) way. 
+
+    Note: on the other hand, for slender tori, this
+    trick will lead to "blurring" the proper surface
+    of the doughnut and may lead to problems.
+
+    In any case this a tricky point to investigate.
    */
+
+  // Find torus outer radius
+  double r3_min=r_centre_, r3_max=1000.;
+  outerradius_t outerradius;
+  outerradius.papa = this;
+  r_torusouter_ = outerradius.ridders(r3_min,r3_max);
+  cout << "rin,out= " << r_cusp_ << " " << r_torusouter_ << endl;
+  if (r_torusouter_!=r_torusouter_ || r_torusouter_==r_torusouter_+1)
+    throwError("In PolishDoughnut::lambda(): bad r_torusouter_");
 
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(lambda_);
@@ -156,8 +181,6 @@ void   PolishDoughnut::lambda(double lam) {
   GYOTO_DEBUG_EXPR(W_surface_);
   GYOTO_DEBUG_EXPR(W_centre_);
   GYOTO_ENDIF_DEBUG
-
-    DeltaWm1_= 1./(W_centre_ - W_surface_);
 
 }
 
@@ -251,7 +274,12 @@ double PolishDoughnut::operator()(double const coord[4]) {
 
   double tmp =  W_surface_-potential(coord[1], coord[2]);
   double rproj = coord[1] * sin(coord[2]);
-  if (rproj<r_cusp_) tmp = fabs(tmp)+(r_cusp_-rproj);
+  //  cout << "in PD operator(): " << coord[1] << " " << rproj << " " << r_cusp_ << endl;
+  if (rproj<r_cusp_) {
+    //cout << "tmp before after= " << tmp << " " ;
+    tmp = fabs(tmp)+(r_cusp_-rproj);
+    //cout << tmp << endl;
+  }
   return tmp;
 }
 
@@ -327,207 +355,6 @@ double PolishDoughnut::emission(double nu_em, double dsem,
   return Inu;
 }
 
-void PolishDoughnut::emission_komissarov(double Inu[], // output
-					 double nu_ems[], size_t nbnu, // input
-					 double dsem,
-					 double coord_ph[8],
-					 double coord_obj[8]) const {
-  /*
-    This is the emission function for the 
-    Komissarov model: 
-    Komissarov, MNRAS, 368, 993 (2006)
-    Only synchrotron radiation is implemented,
-    the emissivity coming from:
-    Wardzinski & Zdziarski, MNRAS, 314, 183 (2000)
-  */
-  /* COMPUTING PHYS QUANTITIES */
-  double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
-  double rcgs = rr * gg_ -> unitLength() * 100.;//rr in cgs
-  double r_centre_cgs = r_centre_ * gg_ -> unitLength() * 100.;
-
-  double ww = (potential(rr, theta) - W_surface_)*DeltaWm1_;
-  if (ww<=0.){//Will generate nan in computations w must be strictly positive
-    if (fabs(ww)<w_tol) {
-      if (ww!=0.) ww=fabs(ww);
-      else ww=w_tol;//can be the case if w at entrance in doughnut is exactly 0
-    }else{
-      throwError("In PolishDoughnut::emission() w<0!");
-    }
-  }
-
-  double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here cgs
-
-  double enthalpy_c=central_density_; // Warning: central_density_ is here
-  // p+rho*c2 (enthalpy), not rho; model is different from std doughnut
-
-  double g_tt=gg_->gmunu(coord_ph,0,0),
-    g_pp=gg_->gmunu(coord_ph,3,3),
-    g_tp=gg_->gmunu(coord_ph,0,3),
-    LL=g_tp*g_tp-g_tt*g_pp;
-  double posc[4]={0.,r_centre_,M_PI/2.,0.};
-  double g_ttc=gg_->gmunu(posc,0,0),
-    g_ppc=gg_->gmunu(posc,3,3),
-    g_tpc=gg_->gmunu(posc,0,3),
-    LLc=g_tpc*g_tpc-g_ttc*g_ppc;
-
-  double kappa = 0., kappam=0.;
-
-  if (!angle_averaged_){
-    kappa= pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
-      /((CST_POLY_INDEX+1)*(1+1./beta_));
-    kappam = pow(LLc,-CST_POLY_INDEX_M1)/beta_*kappa;
-  }else{
-    kappa = pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
-      /(CST_POLY_INDEX+1);
-  }
-
-  double enthalpy = enthalpy_c*
-    pow(
-	ww*
-	(kappa+kappam*pow(LLc,CST_POLY_INDEX_M1))
-	/(kappa+kappam*pow(LL,CST_POLY_INDEX_M1))
-	,CST_POLY_INDEX
-	);
-
-  double number_density = (enthalpy-kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1))
-    /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
-
-  double number_density_central = 
-    (enthalpy_c-kappa*pow(enthalpy_c,1.+CST_POLY_INDEX_M1))
-    /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
-
-  double magnetic_pressure = 0., fact_b=1.;
-  // pm = b^2/fact_b
-  if (!angle_averaged_){
-    magnetic_pressure = kappam*pow(LL,CST_POLY_INDEX_M1)
-      *pow(enthalpy,1.+CST_POLY_INDEX_M1);
-    fact_b = 8.*M_PI;
-  }else{
-    double gas_pressure = kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1);
-    magnetic_pressure = gas_pressure/beta_;
-    fact_b = 24.*M_PI;
-  }
-
-  double bnorm = sqrt(fact_b*magnetic_pressure);
-
-  double bphi = bnorm/sqrt(g_pp+2*l0_*g_tp+l0_*l0_*g_tt);
-  //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
-  // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
-
-  double b4vec[4]={bphi*l0_,0,0,bphi}; // B 4-vector in BL frame
-  // this vector is orthogonal to the fluid 4-vel, so it already
-  // leaves in the comoving rest space, no need ot project
-
-  double vel[4]; // 4-velocity of emitter
-  const_cast<PolishDoughnut*>(this)->getVelocity(coord_obj, vel);
-
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=coord_ph[ii+4]
-      +vel[ii]*gg_->ScalarProd(coord_ph,coord_ph+4,vel);
-  }
-  
-  double lnorm = gg_->ScalarProd(coord_ph,photon_emframe,photon_emframe);
-  if (lnorm<=0.) throwError("In PolishDoughnut::emission_komissarov"
-			    " photon_emframe should be spacelike");
-  lnorm=sqrt(lnorm);
-
-  double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b4vec);
-  double theta_mag = acos(lscalb/(lnorm*bnorm)),
-    sth = sin(theta_mag);//, cth = cos(theta_mag);
-  if (sth==0.) throwError("In PolishDoughnut::emission_komissarov: "
-			  "theta_mag is zero leads to undefined emission");
-
-  // The virial temperature at doughnut's centre,
-  // derived at energy equipartition from : 3/2*k*T = G*M*mp/r_centre
-  double Tvir = 2./3. * GYOTO_G_CGS * Msgr * GYOTO_PROTON_MASS_CGS 
-    / (GYOTO_BOLTZMANN_CGS * r_centre_cgs) ;
-  // doughnut's central temperature
-  /*
-    NB: central temperature defined by a fraction of virial temperature
-  */
-  double T0   = centraltemp_over_virial_*Tvir;
-
-  double kappabis = T0*pow(number_density_central,-CST_POLY_INDEX_M1);
-  double T_electron = kappabis*pow(number_density,CST_POLY_INDEX_M1);
-
-  if (T_electron < 5e8){
-    for (size_t i=0; i<nbnu; ++i) Inu[i]=0.;
-    return;
-    //Synchrotron behaves badly for very low temperatures
-    //Checked: ~1% cases rejected
-  }
-  
-  double Theta_elec = GYOTO_BOLTZMANN_CGS*T_electron
-    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-
-  double nuc = GYOTO_ELEMENTARY_CHARGE_CGS*bnorm
-    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS);
-
-  /* SYNCHRO COMPUTATION */
-  for (size_t ii=0; ii<nbnu; ++ii){
-    // Formuli below are from Wardzinski&Zdziarski 2000:
-    double nuem = nu_ems[ii];
-    double emis_synch=0.;
- 
-    // ***Synchrotron emission coef.
-    if (!angle_averaged_){
-      emis_synch=
-	emissionSynchro_komissarov_direction(Theta_elec,number_density,
-					     nuem,nuc,theta_mag);
-    }else{
-      emis_synch=
-	emissionSynchro_komissarov_averaged(Theta_elec,number_density,
-					    nuem,nuc);
-    }
-
-    // ***Computation of nu_crit (self-abs)
-    // We follow here Narayan&Yi 95 derivation
-    double param[8]={rcgs,number_density,bnorm,T_electron,
-    		     0.,0.,0.,emis_synch};
-    double nu_test = 1e17;
-    //NB: see mma Transcendental.nb, nu_crit is well below 1e17
-    transcendental_t transcendental;
-    transcendental.par = param;
-    double xM_crit = transcendental.secant(50, 5000) ;
-    if (transcendental.status) { // maxiter reached in secant method
-      double xmin = 2./3.*nu_test/(nuc*Theta_elec*Theta_elec), xmax;
-      while (transcendental(xmin)<0.){
-    	xmin*=0.1;
-      }
-      xmax=10.*xmin;
-      while (transcendental(xmax)>0.){
-    	xmax*=10.;
-      }
-      xM_crit = transcendental.ridders(xmin, xmax) ;
-    }
-    double nu_crit = 3./2. * nuc * Theta_elec * Theta_elec * xM_crit ;
-      
-    // ***Transition to Rayleigh-Jeans below nu_crit
-    if (nuem<nu_crit){
-      // Rayleigh-Jeans below nu_crit (smoothly connected to synchro)
-      double emRJ = 2.*nuem*nuem/GYOTO_C2_CGS*GYOTO_BOLTZMANN_CGS*T_electron;
-      double emRJ_c = 2.*nu_crit*nu_crit
-    	/GYOTO_C2_CGS*GYOTO_BOLTZMANN_CGS*T_electron;
-      double emSy_c = 0.;
-      if (!angle_averaged_){
-    	emSy_c=
-    	  emissionSynchro_komissarov_direction(Theta_elec,number_density,
-    					       nu_crit,nuc,theta_mag);
-      }else{
-    	emSy_c=
-    	  emissionSynchro_komissarov_averaged(Theta_elec,number_density,
-    					      nu_crit,nuc);
-      }
-      emis_synch = emRJ*emSy_c/emRJ_c;
-    }
-  
-    // ***Final increment to intensity (in SI units)
-    Inu[ii]=
-      emis_synch*dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1 * GYOTO_INU_CGS_TO_SI;
-  }
-}
-
 double PolishDoughnut::emissionSynchro_komissarov_averaged(
 double Theta_elec,double number_density,double nuem,double nuc 
 							   ) const
@@ -551,10 +378,38 @@ double Theta_elec,double number_density,double nuem,double nuc
   return emis_synch;
 
 }
+
+double PolishDoughnut::emissionSynchro_komissarov_averaged_integ(
+double Theta_elec,double number_density,double nuem,double nuc 
+							   ) const
+{
+  double th0=0., thNm1=M_PI;
+  int nstep = 100;
+  double hh=(thNm1-th0)/double(nstep);
+  double emis_synch=0.;
+  for (int ii=1;ii<=2*nstep-3;ii+=2){
+    double theta=th0+double(ii)/2.*hh;
+    emis_synch+=hh*emissionSynchro_komissarov_direction(Theta_elec,number_density,nuem,nuc,theta)*sin(theta);
+  }
+
+  if (emis_synch!=emis_synch) {
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_averaged_integ: "
+	       "emissivity is nan");
+  }
+  if (emis_synch==emis_synch+1.) 
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_averaged_integ: "
+	       "emissivity is infinite");
+  
+  return emis_synch/2.;
+  //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
+
+}
+
 double PolishDoughnut::emissionSynchro_komissarov_direction(
 double Theta_elec,double number_density,double nuem,double nuc,double theta
-							    ) const
-{
+							    ) 
+const {
+  //cout << Theta_elec << " " << nuc << endl;
   double gamma0=0., chi0=0.;
   double sth=sin(theta), cth=cos(theta);
   if (Theta_elec<=0.08){
@@ -569,6 +424,7 @@ double Theta_elec,double number_density,double nuem,double nuc,double theta
   double tt = sqrt(gamma0*gamma0-1.)*sth,
     nn = nuem*(1.+tt*tt)/(nuc*gamma0);
   double Z0 = pow((tt*exp(1./sqrt(1.+tt*tt)))/(1.+sqrt(1.+tt*tt)),2.*nn);
+  //cout << "chi0,z0= " << chi0 << " " << Z0 << endl;
   double K2 = bessk(2,1./Theta_elec);
   double ne0 = number_density/Theta_elec*gamma0*sqrt(gamma0*gamma0-1.)/K2
     *exp(-gamma0/Theta_elec);
@@ -590,6 +446,64 @@ double Theta_elec,double number_density,double nuem,double nuc,double theta
   return emis_synch;
 }
 
+double PolishDoughnut::emissionSynchro_komissarov_PL_direction(
+           double number_density_PL,double nuem, double nuc,double theta_mag)
+  const {
+  // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
+  //  cout << "stuff= " << number_density_PL << " " << nuem << " " << nuc << " " << theta_mag << endl;
+  double emis_synch =
+    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
+    *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
+    *number_density_PL*(expoPL_-1.)
+    *pow(3.*nuc*(expoPL_+1.)*sin(theta_mag)/(4.*nuem),0.5*(expoPL_-1.))
+    *exp(-0.5*(expoPL_+1.));
+
+  if (emis_synch!=emis_synch) {
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_PL_direction: "
+	       "emissivity is nan");
+  }
+  if (emis_synch==emis_synch+1.) 
+    throwError("In PolishDoughnut::emissionSynchro_komissarov_PL_direction: "
+	       "emissivity is infinite");
+  return emis_synch;
+}
+
+double PolishDoughnut::absorptionSynchro_komissarov_PL_direction(
+       double number_density_PL,double nuem, double nuc, double theta_mag)
+const {
+  // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
+  double abs_synch =
+    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
+    *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
+    *number_density_PL*(expoPL_-1.)
+    *pow(3.*nuc*(expoPL_+2.)*sin(theta_mag)/(4.*nuem),0.5*expoPL_)
+    *exp(-0.5*(expoPL_+2.))
+    *(expoPL_+2.)
+    /(GYOTO_ELECTRON_MASS_CGS*nuem*nuem);
+
+  if (abs_synch!=abs_synch) {
+    throwError("In PolishDoughnut::absorptionSynchro_komissarov_PL_direction: "
+	       "abs is nan");
+  }
+  if (abs_synch==abs_synch+1.) 
+    throwError("In PolishDoughnut::absorptionSynchro_komissarov_PL_direction: "
+	       "abs is infinite");
+
+  return abs_synch;
+}
+
+double PolishDoughnut::emissionSynchro_komissarov_PL_averaged(
+       double number_density_PL, double nuem, double nuc)
+  const {
+  return 1.;
+}
+
+double PolishDoughnut::absorptionSynchro_komissarov_PL_averaged(
+        double number_density_PL, double nuem, double nuc)
+  const {
+  return 1.;
+}
+
 void PolishDoughnut::emission(double Inu[], // output
 			      double nu_ems[], size_t nbnu, // input
 			      double dsem,
@@ -609,7 +523,8 @@ void PolishDoughnut::emission(double Inu[], // output
   //return dsem;
 
   if (komissarov_){
-    return emission_komissarov(Inu,nu_ems,nbnu,dsem,coord_ph,coord_obj);
+    throwError("In PolishDoughnut::emission: "
+	       "deprecated call to Komissarov");
   }
 
   double emisstot=0., emiss_synch=0., emiss_brems=0.,
@@ -774,7 +689,8 @@ void PolishDoughnut::emission(double Inu[], // output
   double nu_test = 1e17;
   //NB: see mma Transcendental.nb, nu_crit is well below 1e17
   transcendental_t transcendental;
-  transcendental.par = param;
+  transcendental.papa = this;
+  transcendental.par  = param;
   double xM_crit = transcendental.secant(50, 5000) ;
   if (transcendental.status) { // maxiter reached in secant method
     double xmin = 2./3.*nu_test/(nu_0*temp_e*temp_e), xmax;
@@ -1068,8 +984,235 @@ double PolishDoughnut::emissionSynch(double nu_em, double nu_crit,
   
 }
 
-double PolishDoughnut::transmission(double , double , 
-				    double *) const {
+void PolishDoughnut::radiativeQ(double Inu[], // output
+				double Taunu[], // output
+				double nu_ems[], size_t nbnu, // input
+				double dsem,
+				double coord_ph[8],
+				double coord_obj[8]) const {
+
+  // This function computes the emission and transmission
+  // for the Komissarov model, with both thermal and
+  // non-thermal electron populations, with proper emission
+  // and absorption.
+
+  if (!komissarov_) throwError("In PolishDoughnut::radiativeQ: "
+			       "so far only Komissarov implemented");
+
+  /* COMPUTING PHYS QUANTITIES */
+  double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
+  double rcgs = rr * gg_ -> unitLength() * 100.;//rr in cgs
+  double r_centre_cgs = r_centre_ * gg_ -> unitLength() * 100.;
+
+  double ww = (potential(rr, theta) - W_surface_)*DeltaWm1_;
+
+  if (ww<=0.){//Will generate nan in computations w must be strictly positive
+    if (fabs(ww)<w_tol) {
+      if (ww!=0.) ww=fabs(ww);
+      else ww=w_tol;//can be the case if w at entrance in doughnut is exactly 0
+    }else{
+      throwError("In PolishDoughnut::emission() w<0!");
+    }
+  }
+
+  double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here cgs
+
+  double enthalpy_c=central_density_; // Warning: central_density_ is here
+  // p+rho*c2 (enthalpy), not rho; model is different from std doughnut
+
+  double g_tt=gg_->gmunu(coord_ph,0,0),
+    g_pp=gg_->gmunu(coord_ph,3,3),
+    g_tp=gg_->gmunu(coord_ph,0,3),
+    LL=g_tp*g_tp-g_tt*g_pp;
+  double posc[4]={0.,r_centre_,M_PI/2.,0.};
+  double g_ttc=gg_->gmunu(posc,0,0),
+    g_ppc=gg_->gmunu(posc,3,3),
+    g_tpc=gg_->gmunu(posc,0,3),
+    LLc=g_tpc*g_tpc-g_ttc*g_ppc;
+
+  double kappa = 0., kappam=0.;
+
+  if (!angle_averaged_){
+    kappa= pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
+      /((CST_POLY_INDEX+1)*(1+1./beta_));
+    kappam = pow(LLc,-CST_POLY_INDEX_M1)/beta_*kappa;
+  }else{
+    kappa = pow(enthalpy_c,-CST_POLY_INDEX_M1)*(W_centre_-W_surface_)
+      /(CST_POLY_INDEX+1);
+  }
+
+  double enthalpy = enthalpy_c*
+    pow(
+	ww*
+	(kappa+kappam*pow(LLc,CST_POLY_INDEX_M1))
+	/(kappa+kappam*pow(LL,CST_POLY_INDEX_M1))
+	,CST_POLY_INDEX
+	);
+
+
+  double number_density = (enthalpy-kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1))
+    /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
+
+  double number_density_central = 
+    (enthalpy_c-kappa*pow(enthalpy_c,1.+CST_POLY_INDEX_M1))
+    /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
+
+  double magnetic_pressure = 0., fact_b=1.;
+  // pm = b^2/fact_b
+  if (!angle_averaged_){
+    magnetic_pressure = kappam*pow(LL,CST_POLY_INDEX_M1)
+      *pow(enthalpy,1.+CST_POLY_INDEX_M1);
+    fact_b = 8.*M_PI;
+  }else{
+    double gas_pressure = kappa*pow(enthalpy,1.+CST_POLY_INDEX_M1);
+    magnetic_pressure = gas_pressure/beta_;
+    fact_b = 24.*M_PI;
+  }
+
+  double bnorm = sqrt(fact_b*magnetic_pressure);
+
+  double bphi = bnorm/sqrt(g_pp+2*l0_*g_tp+l0_*l0_*g_tt);
+  //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
+  // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
+
+  double b4vec[4]={bphi*l0_,0,0,bphi}; // B 4-vector in BL frame
+  // this vector is orthogonal to the fluid 4-vel, so it already
+  // leaves in the comoving rest space, no need ot project
+
+  double vel[4]; // 4-velocity of emitter
+  const_cast<PolishDoughnut*>(this)->getVelocity(coord_obj, vel);
+
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4]
+      +vel[ii]*gg_->ScalarProd(coord_ph,coord_ph+4,vel);
+  }
+  
+  double lnorm = gg_->ScalarProd(coord_ph,photon_emframe,photon_emframe);
+  if (lnorm<=0.) throwError("In PolishDoughnut::radiativeq"
+			    " photon_emframe should be spacelike");
+  lnorm=sqrt(lnorm);
+
+  double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b4vec);
+  double theta_mag = acos(lscalb/(lnorm*bnorm)),
+    sth = sin(theta_mag);//, cth = cos(theta_mag);
+  if (sth==0.) throwError("In PolishDoughnut::radiativeq: "
+			  "theta_mag is zero leads to undefined emission");
+
+  // The virial temperature at doughnut's centre,
+  // derived at energy equipartition from : 3/2*k*T = G*M*mp/r_centre
+  double Tvir = 2./3. * GYOTO_G_CGS * Msgr * GYOTO_PROTON_MASS_CGS 
+    / (GYOTO_BOLTZMANN_CGS * r_centre_cgs) ;
+
+  // doughnut's central temperature
+  /*
+    NB: central temperature defined by a fraction of virial temperature
+  */
+  double T0   = centraltemp_over_virial_*Tvir;
+
+  double kappabis = T0*pow(number_density_central,-CST_POLY_INDEX_M1);
+  double T_electron = kappabis*pow(number_density,CST_POLY_INDEX_M1);
+  double Theta_elec = GYOTO_BOLTZMANN_CGS*T_electron
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+  
+  double thetae_mini=0.01; 
+  /* 
+     Important remark:  below thetae_mini, synchrotron is badly defined
+     coz Bessel function of high numbers goes quickly to zero. As PL
+     electrons number density is expressed in terms of Bessel functions,
+     non-thermal electrons emission/absorption as well are badly defined.
+     Be sure that optical depth does not reach unity before temperature
+     reaches thetae_mini, or strange things will happen.
+     Below thetae_mini, we assume nothing happens (no emission, no
+     absorption). This is okay coz low-temperature synchrotron is
+     indeed very weak.
+  */
+  if (Theta_elec < thetae_mini){
+    for (size_t ii=0; ii<nbnu; ++ii) {Inu[ii]=0.;Taunu[ii]=1.;}
+    return;
+  }
+
+  double coef_ther = 
+    (3.*bessk(3,1./Theta_elec)+bessk1(1./Theta_elec))
+    /
+    (4.*bessk(2,1./Theta_elec))
+    -1.;
+  // coef_ther: see e.g. Ozel+2000, eq. 6
+  // here multiplied by Theta_elec coz there should be next line
+  // a multiplication by Theta_elec
+  double number_density_PL = 
+    (expoPL_-2.)/(expoPL_-1.)*deltaPL_*coef_ther*number_density;
+
+  double nuc = GYOTO_ELEMENTARY_CHARGE_CGS*bnorm
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS);
+
+  /* SYNCHRO COMPUTATION */
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Formuli below are from Wardzinski&Zdziarski 2000:
+    double nuem = nu_ems[ii];
+
+    double emis_synch_ther=0.;
+    double emis_synch_PL=0.;
+    double emis_synch=0.;
+
+    double abs_synch_ther=0.;
+    double abs_synch_PL=0.;
+    double abs_synch=0.;
+
+    double Bnu = BBapprox(nuem,T_electron);
+
+    //    cout << "start normal synch " << endl;
+ 
+    // ***Synchrotron emission coef.
+    if (!angle_averaged_){
+      emis_synch_ther=
+	emissionSynchro_komissarov_direction(Theta_elec,number_density,
+					     nuem,nuc,theta_mag);
+      abs_synch_ther=emis_synch_ther/Bnu;
+      if (nonthermal_){
+	emis_synch_PL=	
+	  emissionSynchro_komissarov_PL_direction(number_density_PL,
+						  nuem,nuc,theta_mag);
+	abs_synch_PL=	
+	  absorptionSynchro_komissarov_PL_direction(number_density_PL,
+						    nuem,nuc,theta_mag);	
+      }
+    }else{
+      emis_synch_ther=
+	emissionSynchro_komissarov_averaged(Theta_elec,number_density,
+					    nuem,nuc);
+      /*emis_synch_ther=
+	emissionSynchro_komissarov_averaged_integ(Theta_elec,number_density,
+	nuem,nuc);*/
+      if (nonthermal_){
+	emis_synch_PL=
+	  emissionSynchro_komissarov_PL_averaged(number_density_PL,
+					      nuem,nuc);
+	abs_synch_PL=
+	  absorptionSynchro_komissarov_PL_averaged(number_density_PL,
+						nuem,nuc);
+      }
+    }
+
+    emis_synch=emis_synch_ther+emis_synch_PL;
+    abs_synch=abs_synch_ther+abs_synch_PL;
+
+    // ***Final increment to intensity (in SI units)
+    double delta_s = 
+      dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1;
+
+    Inu[ii]=
+      emis_synch * GYOTO_INU_CGS_TO_SI * delta_s * exp(- abs_synch * delta_s);
+
+    Taunu[ii]=exp(- abs_synch * delta_s);
+    // NB: abs_synch is in cgs (cm^-1) as well as delta_s (cm)
+
+  }
+    
+}
+
+double PolishDoughnut::transmission(double nuem, double dsem, 
+				    double * coord) const {
 
   if (!flag_radtransf_) return 0.; //Complete absorption for optically thick
 
@@ -1133,12 +1276,45 @@ double PolishDoughnut::transcendental_t::operator()(double xM) const
   double  nu_0 = GYOTO_ELEMENTARY_CHARGE_CGS* BB 
     / (2. * M_PI * GYOTO_ELECTRON_MASS_CGS * GYOTO_C_CGS);
   double nuem = 3./2.*xM*nu_0*temp_e*temp_e;
+  //  cout << "nuem: " << xM << " " << nu_0 << " " << temp_e  << " " << nuem << endl;
   double Bnu = 2.*nuem*nuem/(GYOTO_C_CGS*GYOTO_C_CGS)*GYOTO_BOLTZMANN_CGS*Te;
 
   if (alpha1==0. && alpha2==0. && alpha3==0.){
-    // This uses Wardzinski&Zdziarski 2000 formulation
-    double jnu_sync_dir = par[7];
-    y = 4./3.*M_PI*rr*rr*rr*jnu_sync_dir - M_PI*Bnu*4.*M_PI*rr*rr;
+    // Using directional emission ; up-to-date
+    double theta_mag = par[7];
+    double alphanu_synch = 0.;
+    int isPL=par[8];
+    //  cout << "isPL= " << isPL << endl;
+    double conv = papa -> gg_ -> unitLength() * 100.;
+    double rcarac=(papa->r_torusouter_ - papa->r_cusp_) * conv; // cgs caracteristic length
+    //    cout << papa->r_centre_ << " " << papa->r_cusp_ << endl;
+    if (rcarac!=rcarac || rcarac==rcarac+1. || rcarac<0.)
+      throwError("In transcendental::operator:"
+		 " bad rcarac value");
+    if (theta_mag!=0.){
+      if (!isPL){
+	//Note: here n_e is the thermal nb density
+	double emis_synch = 
+	  papa->emissionSynchro_komissarov_direction(temp_e,n_e,
+						     nuem,nu_0,
+						     theta_mag);
+	alphanu_synch = emis_synch / Bnu;
+      }else{
+	//Note: here n_e is the PL nb density
+	//cout << "feed alpha with: " << n_e << " " << nuem << " " << nu_0 << " " << theta_mag << endl;
+	alphanu_synch = 
+	  papa->absorptionSynchro_komissarov_PL_direction(n_e,nuem,
+							  nu_0,theta_mag);
+      }
+    }else{
+      throwError("In doughnut operator: not ready yet");
+    }
+
+    y = alphanu_synch*rcarac - 1.;
+
+    //cout << "nu alpha r= " << xM << " " << nuem << " " << alphanu_synch << " " << rcarac << " " << y << endl;
+
+    //y = 4./3.*M_PI*rr*rr*rr*jnu_sync_dir - M_PI*Bnu*4.*M_PI*rr*rr;
   }else{
     // This uses Mahadevan et al. 1996 formulation
     double func_xM = PolishDoughnut::funcxM(alpha1,alpha2,alpha3,xM);
@@ -1152,6 +1328,14 @@ double PolishDoughnut::transcendental_t::operator()(double xM) const
   }
 
   return y ;   // y = 0 gives 1 intersection for each radius
+}
+
+// Solving the transcendental equation for "xM" numerically at each r
+double PolishDoughnut::outerradius_t::operator()(double rr) const
+{
+  double theta = M_PI/2.;
+  double ww = (papa->potential(rr, theta) - papa->W_surface_)*papa->DeltaWm1_;
+  return ww;
 }
 
 
@@ -1297,6 +1481,11 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
     spectral_oversampling_=atoi(content.c_str());
   else if (name=="Komissarov") komissarov_=1;
   else if (name=="KomissarovAngleAveraged") {komissarov_=1;angle_averaged_=1;}
+  else if (name=="NonThermalDeltaExpo") {nonthermal_=1; 
+    char * tc = const_cast<char*>(content.c_str());
+    deltaPL_=strtod(tc,&tc); 
+    expoPL_=strtod(tc,&tc); 
+  }
   else return Standard::setParameter(name, content, unit);
   return 0;
 }

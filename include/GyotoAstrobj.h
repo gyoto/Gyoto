@@ -231,6 +231,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
 
   int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
+  int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
   // Constructors - Destructor
   // -------------------------
  public:
@@ -564,6 +565,12 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ; 
+
+  // Under development
+  virtual void radiativeQ(double Inu[], double Taunu[], 
+			  double nu_em[], size_t nbnu,
+			  double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL) const ; 
 
   /**
    * Compute the integral of emission() from &nu;<SUB>1</SUB> to
