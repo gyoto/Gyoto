@@ -457,12 +457,14 @@ double PolishDoughnut::emissionSynchro_komissarov_PL_direction(
   const {
   // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
   //  cout << "stuff= " << number_density_PL << " " << nuem << " " << nuc << " " << theta_mag << endl;
+  double expoPL=expoPL_;
+  // if (nuem < 1e11) expoPL-=1.; // TEST!!!
   double emis_synch =
     sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
     *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
-    *number_density_PL*(expoPL_-1.)
-    *pow(3.*nuc*(expoPL_+1.)*sin(theta_mag)/(4.*nuem),0.5*(expoPL_-1.))
-    *exp(-0.5*(expoPL_+1.));
+    *number_density_PL*(expoPL-1.)
+    *pow(3.*nuc*(expoPL+1.)*sin(theta_mag)/(4.*nuem),0.5*(expoPL-1.))
+    *exp(-0.5*(expoPL+1.));
 
   if (emis_synch!=emis_synch) {
     throwError("In PolishDoughnut::emissionSynchro_komissarov_PL_direction: "
@@ -477,15 +479,29 @@ double PolishDoughnut::emissionSynchro_komissarov_PL_direction(
 double PolishDoughnut::absorptionSynchro_komissarov_PL_direction(
        double number_density_PL,double nuem, double nuc, double theta_mag)
 const {
+  // cout << "OZEL STUFF: " << number_density_PL <<" " << nuem << " " << nuc << endl;
   // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
-  double abs_synch =
+  double CC = 10.23; // for p=3.5
+  double abs_synch_ozel =
+    CC/GYOTO_ELECTRON_MASS_CGS
+    *GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/GYOTO_C_CGS
+    *number_density_PL
+    *pow(nuc/nuem,0.5*(expoPL_+3.))
+    *1./nuem;
+  double expoPL=expoPL_;
+  // if (nuem < 1e11) expoPL+=1.; // TEST!!!
+  double abs_synch_petro =
     sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
     *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
-    *number_density_PL*(expoPL_-1.)
-    *pow(3.*nuc*(expoPL_+2.)*sin(theta_mag)/(4.*nuem),0.5*expoPL_)
-    *exp(-0.5*(expoPL_+2.))
-    *(expoPL_+2.)
-    /(GYOTO_ELECTRON_MASS_CGS*nuem*nuem);
+    *number_density_PL*(expoPL-1.)
+    *pow(3.*nuc*(expoPL+2.)*sin(theta_mag)/(4.*nuem),0.5*expoPL)
+    *exp(-0.5*(expoPL+2.))
+    *(expoPL+2.)
+    /(GYOTO_ELECTRON_MASS_CGS*pow(nuem,2.)); // 2.5 for Ozel and co...*/
+    //    /(GYOTO_ELECTRON_MASS_CGS*nuem*nuem);
+
+  //cout << "diff anu= " << abs_synch_ozel << " " << abs_synch_petro  << endl;
+  double abs_synch = abs_synch_petro;
 
   if (abs_synch!=abs_synch) {
     throwError("In PolishDoughnut::absorptionSynchro_komissarov_PL_direction: "
@@ -1205,6 +1221,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     spectrumBB_->temperature(T_electron);
     double Bnu =(*spectrumBB_)(nuem)/GYOTO_INU_CGS_TO_SI; // BB in cgs 
 
+    //  cout << "Te= " << T_electron << " " << Theta_elec << endl;
     // ***Synchrotron emission coef.
     if (!angle_averaged_){
       emis_synch_ther=
@@ -1217,7 +1234,8 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 						  nuem,nuc,theta_mag);
 	abs_synch_PL=	
 	  absorptionSynchro_komissarov_PL_direction(number_density_PL,
-						    nuem,nuc,theta_mag);	
+	  					    nuem,nuc,theta_mag);	
+	  //	  emis_synch_PL/Bnu; // TEST!!!
       }
     }else{
       emis_synch_ther=
@@ -1236,6 +1254,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 
     emis_synch=emis_synch_ther+emis_synch_PL;
     abs_synch=abs_synch_ther+abs_synch_PL;
+    //cout << "jnu,anu TH,PL= " << emis_synch_PL/emis_synch_ther << " " << abs_synch_ther/abs_synch_PL << endl;
 
     // ***Final increment to intensity (in SI units)
     double delta_s = 
