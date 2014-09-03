@@ -295,9 +295,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       double * Inu          = new double[nbnuobs];
       double * Taunu        = new double[nbnuobs];
       double * nuem         = new double[nbnuobs];
-      //      cout << "red fact= " << ggredm1 << endl;
+
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	//	cout << "i,nu= " << ii << " " << nuobs[ii] << endl;
 	nuem[ii]=nuobs[ii]*ggredm1;
       }
       GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
@@ -309,9 +308,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
       }
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	//cout << "i,nu= " << ii << " " << nuobs[ii] << endl;
 	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
-	//if (inc < 1.) inc = 0.; //TEST
 #       ifdef HAVE_UDUNITS
 	if (data -> spectrum_converter_)
 	  inc = (*data -> spectrum_converter_)(inc);
@@ -323,18 +320,6 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	}else{
 	  ph -> transmit(ii,Taunu[ii]);
 	}
-
-	double GYOTO_C2_CGS_M1= 1.1126500560536184087938986e-21;
-	double Msgr = gg_->mass()*1e3; // cgs
-	double delta_s = 
-	  dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1; // cgs
-	double jnu = Inu[ii]/Taunu[ii]/delta_s/GYOTO_INU_CGS_TO_SI; // cgs
-	double anu = -log(Taunu[ii])/delta_s; // cgs
-	double depth = -log(ph -> getTransmission(ii));
-	/*if (depth > 1. && depth<10.) {
-	  data->spectrum[ii*data->offset]=jnu/anu * GYOTO_INU_CGS_TO_SI * ggred*ggred*ggred; // in SI to fit the standard case
-	  }*/
-	//cout << "in astrobj, opt dep, jnu*ds, Snu, data [all cgs]= " << depth << " " << Inu[ii]/Taunu[ii]/GYOTO_INU_CGS_TO_SI << " " << jnu/anu << " " << data->spectrum[ii*data->offset]/GYOTO_INU_CGS_TO_SI << endl; 
 	 
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG

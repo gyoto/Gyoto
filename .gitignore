@@ -25,11 +25,3 @@ yorick/yorick
 yorick/setpaths.i
 yorick/gyoto.info
 yorick/yorick1
-*.aux
-*.bbl
-*.blg
-*.log
-*.out
-*.pdf
-*.toc
-

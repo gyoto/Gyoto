@@ -222,14 +222,6 @@ Worldline::IntegState::Boost::init(Worldline * line,
 int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
   GYOTO_DEBUG << h1max << endl;
   
-  double rr=coord[1], th=coord[2], ph=coord[3];
-  //cout << "r th x y z: " <<  rr << " " << th << " " << rr*sin(th)*cos(ph) << " " << rr*sin(th)*sin(ph) << " " << rr*cos(th) << endl;
-  //cout << "t r th ph= " << setprecision(17) << coord[0] << " " << rr << " " << th << " " << ph << endl;
-  //cout << "tgt= " << coord[4] << " " << coord[5] << " " << coord[6] << " " << coord[7] << endl;
-  //cout << "norm= " << norm_ << endl;
-  //cout << setprecision(10) << coord[0] << " " << rr << endl;
-  //cout << "delta= " << delta_ << endl;
-  
   // We first make a C++ std::array out of the bare C array:
   std::array<double, 8> inout = {
     coord[0], coord[1], coord[2], coord[3],
