@@ -1,3 +1,21 @@
+commit unknown
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jul 22 13:41:16 2014 +0200
+
+    Released 0.2.1:
+     - update version info;
+     - New function Gyoto::atof() which supports the special values
+       DBL_MAX, DBL_MIN, -DBL_MAX and -DBL_MIN;
+     - Factory also outputs those special strings when needed;
+     - increase buffer size in Factory to avoid overflow;
+     - remove obsolete files (yorick/config*).
+
+commit d4ea8da5e4ab740a50627c86e7c982695ba99e1b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jul 21 11:39:27 2014 +0200
+
+    Released 0.2.0
+
 commit 9377e247c866095da355060bbd6d10cd79c8c28f
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Fri Jul 18 17:38:30 2014 +0200

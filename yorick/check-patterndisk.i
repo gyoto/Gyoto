@@ -61,6 +61,16 @@ if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
   sc2 = gyoto_Scenery("check-patterndisk.xml");
   write, format="%s\n", " done.";
 
+  doing, "Checking dmax";
+  if (sc2.screen().dmax() != sc.screen().dmax())
+    error, "dmax was not conserved when writing and reading XML";
+  done;
+
+  doing, "Checking tmin";
+  if (sc2.tmin() != sc.tmin())
+    error, "tmin was not conserved when writing and reading XML";
+  done;
+
   write, format="%s", "Removing temporary files...";
   remove, "check-patterndisk.xml";
   remove, "check-patterndisk.fits.gz";

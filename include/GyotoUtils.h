@@ -80,6 +80,20 @@ namespace Gyoto {
   void convert(double * const x, const std::size_t nelem,
 	       const double mass_sun, const double distance_kpc,
 	       const std::string unit);
+
+  /// Interpret C string as double
+  /**
+   * Wrapper around std::atof() that also interprets DBL_MIN, DBL_MAX,
+   * -DBL_MIN and -DBL_MAX.
+   *
+   * If str starts with "(-)DBL_M" and is not one of the four special
+   * values, then an error is thrown.
+   *
+   * \param[in] str C string to interpret
+   * \return  double valu represented by str.
+   */
+  double atof(const char * str);
+
 }
 
 #endif

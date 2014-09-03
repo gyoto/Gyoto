@@ -75,3 +75,29 @@ void Gyoto::convert(double * const x, const size_t nelem, const double mass_sun,
 
 }
 
+double Gyoto::atof(const char * str)
+{
+  GYOTO_DEBUG << "Gyoto::atof(\"" << str << "\")";
+  ptrdiff_t offset=0;
+  while (isspace(str[offset])) ++offset;
+  bool positive=true;
+  double retval=0.;
+  if (str[offset] == '-') {
+    positive=false;
+    ++offset;
+  }
+  if (str[offset++]=='D' && str[offset++]=='B' && str[offset++]=='L' &&
+      str[offset++]=='_' && str[offset++]=='M') {
+    if (str[offset]=='A' && str[offset+1]=='X') {
+      if (positive) retval = DBL_MAX;
+      else retval = -DBL_MAX;
+    } else if (str[offset]=='I' && str[offset+1]=='N') {
+      if (positive) retval = DBL_MIN;
+      else retval = -DBL_MIN;
+    } else throwError("unrecognize double representation");
+  } else retval = std::atof(str);
+
+  GYOTO_DEBUG << "==" << retval << endl;
+
+  return retval;
+}

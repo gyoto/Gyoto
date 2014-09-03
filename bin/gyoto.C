@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
       }
       else if (param.substr(0,7)=="--imin=") {
 	imin=atoi(param.substr(7).c_str());
-	double imintest=atof(param.substr(7).c_str());
+	double imintest=Gyoto::atof(param.substr(7).c_str());
 	if (imintest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
       }
       else if (param.substr(0,7)=="--imax=") {
 	imax=atoi(param.substr(7).c_str());
-	double imaxtest=atof(param.substr(7).c_str());
+	double imaxtest=Gyoto::atof(param.substr(7).c_str());
 	if (imaxtest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
       }
       else if (param.substr(0,7)=="--jmin=") {
 	jmin=atoi(param.substr(7).c_str());
-	double jmintest=atof(param.substr(7).c_str());
+	double jmintest=Gyoto::atof(param.substr(7).c_str());
 	if (jmintest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
       }
       else if (param.substr(0,7)=="--jmax=") {
 	jmax=atoi(param.substr(7).c_str());
-	double jmaxtest=atof(param.substr(7).c_str());
+	double jmaxtest=Gyoto::atof(param.substr(7).c_str());
 	if (jmaxtest<=0){
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
@@ -154,28 +154,28 @@ int main(int argc, char** argv) {
 	else ipct=1;
       }
       else if (param.substr(0,7)=="--time=") {
-	tobs=atof(param.substr(7).c_str());
+	tobs=Gyoto::atof(param.substr(7).c_str());
 	xtobs=1;
       } else if (param.substr(0,7)=="--tmin=") {
-	tmin=atof(param.substr(7).c_str());
+	tmin=Gyoto::atof(param.substr(7).c_str());
 	xtmin=1;
       } else if (param.substr(0,6)=="--fov=") {
-	fov=atof(param.substr(6).c_str());
+	fov=Gyoto::atof(param.substr(6).c_str());
 	xfov=1;
       } else if (param.substr(0,13)=="--resolution=") {
 	res=atoi(param.substr(13).c_str());
 	xres=1;
       } else if (param.substr(0,11)=="--distance=") {
-	dist=atof(param.substr(11).c_str());
+	dist=Gyoto::atof(param.substr(11).c_str());
 	xdist=1;
       } else if (param.substr(0,7)=="--paln=") {
-	paln=atof(param.substr(7).c_str());
+	paln=Gyoto::atof(param.substr(7).c_str());
 	xpaln=1;
       } else if (param.substr(0,14)=="--inclination=") {
-	incl=atof(param.substr(14).c_str());
+	incl=Gyoto::atof(param.substr(14).c_str());
 	xincl=1;
       } else if (param.substr(0,11)=="--argument=") {
-	arg=atof(param.substr(11).c_str());
+	arg=Gyoto::atof(param.substr(11).c_str());
 	xarg=1;
       }  else if (param.substr(0,11)=="--nthreads=") {
 	nthreads=atoi(param.substr(11).c_str());
