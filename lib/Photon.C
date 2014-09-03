@@ -33,9 +33,9 @@
 #include <cstdlib>
 #include <cfloat>
 
-#define GYOTO_LIMIT_TRANSMISSION 0.36788
-// transmission is exp() of minus optical depth, 0.36788=exp(-1)
-// below this tranmission, medium is optically thick
+#define GYOTO_LIMIT_TRANSMISSION 1e-6 //0.36788
+// NB: 0.36788=exp(-1), 1e-6 transmission is well thicker
+// than the standard optical depth = 1
 
 using namespace std;
 using namespace Gyoto;
