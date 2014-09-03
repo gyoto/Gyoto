@@ -47,7 +47,8 @@ DynamicalDisk3D::DynamicalDisk3D() :
   dt_(1.),
   nb_times_(1),
   PLindex_(3),
-  novel_(0)
+  novel_(0),
+  floortemperature_(0)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -62,7 +63,8 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   dt_(o.dt_),
   nb_times_(o.nb_times_),
   PLindex_(o.PLindex_),
-  novel_(o.novel_)
+  novel_(o.novel_),
+  floortemperature_(o.floortemperature_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -156,7 +158,7 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
 	tcomp+=dt_;
 	ifits++;
       }
-      
+
       if (ifits==1 || ifits==nb_times_){
 	copyQuantities(ifits);
 	Disk3D::getVelocity(pos,vel);
@@ -195,6 +197,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 
   double rcur=co[1];
   double th=co[2];
+  double ph=co[3];
 
   if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
@@ -215,6 +218,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
     if (temperature_){
       spectrumBB_->temperature(emissq);
       Ires=(*spectrumBB_)(nu);
+      //cout << "in emis: " << emissq << " " << Ires << endl;
     }else{
       Ires=emissq;
     }
@@ -222,44 +226,56 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   }else{//                 // optically thin case
 
     if (temperature_){
-      //SI value of cylindrical r coordinate:
-      double dist_unit = gg_->unitLength();
-      
-      /*
-	Following fact (in SI units) is defined by:
-	fact=RR/(Mm*kappa*gamma)
-	with:
-	RR=8.3144621; // Perfect gas constant in SI
-	Mm=6e-4; //This is N_avogadro*M_atomicmassunit/gamma in kg/mol
-	kappa=3e10; // p = kappa*density^gamma
-	gamma=1.66667;
-	[see DynaDisk3D.i]
-      */
-      double fact=2.77149e-07;
-      //See DynaDisk3D.i, or paper, for relation between emissq and density
-      double density=pow(fact*emissq,1.5);// 1.5 is 1/(gamma-1)
-      //density is in SI units, kg/m^3
-      
-      /*** Computing emission coef: ***/
-      
-      //Emission coef jnu for thermal bremsstrahlung 
-      // (see RybickiLightman 5.14a)
-      
-      /* 
-	 fact2=1/4pi * 2^5*pi*e^6/(3*me*c^3) * sqrt(2pi/(3*kB*me)) * 1/mu^2 
-	 in SI, with: me=electron mass, e=electron charge, kB=boltzman,
-	 mu=atomic mass unit
-	 Anyway this factor has no importance, 
-	 we are interested in relative values
-      */
-      double fact2=7.83315e-12;
-      double hok=4.79924e-11; //planck cst / boltzman cst
-      double jnu = fact2 * 1./sqrt(emissq) * density*density
-	* exp(-hok*nu/emissq);
-      
-      //Elementary intensity added by current dsem segment of worldline
-      //in SI units:
-      Ires=jnu*dsem*dist_unit; // usd e.g. for 3D RWI computation
+      if (emissq<floortemperature_){
+	//cout << "return 0 " << emissq << " " << floortemperature_ << endl;
+	//throwwError("test dynad3d");
+	Ires=0.;
+      }else{
+	// BB radiation
+	spectrumBB_->temperature(emissq);
+	Ires=(*spectrumBB_)(nu);
+	//	cout << "return  " << emissq << " " << Ires << endl;
+	// BELOW: BREMS computation for 2012 RWI paper
+	// //SI value of cylindrical r coordinate:
+	// double dist_unit = gg_->unitLength();
+	// /*
+	//   Following fact (in SI units) is defined by:
+	//   fact=RR/(Mm*kappa*gamma)
+	//   with:
+	//   RR=8.3144621; // Perfect gas constant in SI
+	//   Mm=6e-4; //This is N_avogadro*M_atomicmassunit/gamma in kg/mol
+	//   kappa=3e10; // p = kappa*density^gamma
+	//   gamma=1.66667;
+	//   [see DynaDisk3D.i]
+	// */
+	// double fact=2.77149e-07;
+	// //See DynaDisk3D.i, or paper, for relation between emissq and density
+	// double density=pow(fact*emissq,1.5);// 1.5 is 1/(gamma-1)
+	// //density is in SI units, kg/m^3
+	
+	// /*** Computing emission coef: ***/
+	
+	// //Emission coef jnu for thermal bremsstrahlung 
+	// // (see RybickiLightman 5.14a)
+	
+	// /* 
+	//    fact2=1/4pi * 2^5*pi*e^6/(3*me*c^3) * sqrt(2pi/(3*kB*me)) * 1/mu^2 
+	//    in SI, with: me=electron mass, e=electron charge, kB=boltzman,
+	//    mu=atomic mass unit
+	//    Anyway this factor has no importance, 
+	//    we are interested in relative values
+	// */
+	// double fact2=7.83315e-12;
+	// double hok=4.79924e-11; //planck cst / boltzman cst
+	// double jnu = fact2 * 1./sqrt(emissq) * density*density
+	//   * exp(-hok*nu/emissq);
+	
+	// //Elementary intensity added by current dsem segment of worldline
+	// //in SI units:
+	
+	// Ires=jnu*dsem*dist_unit; // usd e.g. for 3D RWI computation
+	// //cout << "stuff: " << density << " " << fact2 << " " << emissq << " " << dsem << " " << jnu << endl;
+      }
     }else{
       //Ires=Iem; // used e.g. for GC blob computation
       double dist_unit = gg_->unitLength()*100.; // unit length in cgs
@@ -331,27 +347,34 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
     double * emiss = const_cast<double*>(getEmissquant());
     double emissq = emiss[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
     //emissq is local temperature in K
-    spectrumBB_->temperature(emissq);
-    double BnuT=(*spectrumBB_)(nu); //Planck function
-    double jnu=emission1date(nu,dsem,NULL,co); // Emission coef * ds
-    double alphanu=0.; //absorption coef.
-    if (BnuT==0.){
-      /*
-	BnuT can be 0 in the region close to ISCO where density
-	decreases very fast. Then jnu should be 0 too (density~0).
-	If both are 0, then nothing happens (no absorption, no emission,
-	it's free space). Thus leave alphanu=0.
-	If jnu!=0 then alphanu is not defined, this should not happen.
-      */
-      if (jnu!=0.)
-	throwError("In DynamicalDisk3D::"
-		   "transmission1date absorption coef. undefined!");
-    }else{
-      alphanu=jnu/BnuT;
-    }
-    //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
-    return exp(-alphanu); // the dsem factor is already included
-                          //in alphanu via jnu=emission1date(...,dsem,...)
+
+    if (emissq<floortemperature_) return 1.;
+    else return 0.;
+    
+    // BELOW: absorption for RWI 2012 paper
+    // spectrumBB_->temperature(emissq);
+    // double BnuT=(*spectrumBB_)(nu); //Planck function
+    // double jnu=emission1date(nu,dsem,NULL,co); // Emission coef * ds
+    // double alphanu=0.; //absorption coef.
+    // if (BnuT==0.){
+    //   /*
+    // 	BnuT can be 0 in the region close to ISCO where density
+    // 	decreases very fast. Then jnu should be 0 too (density~0).
+    // 	If both are 0, then nothing happens (no absorption, no emission,
+    // 	it's free space). Thus leave alphanu=0.
+    // 	If jnu!=0 then alphanu is not defined, this should not happen.
+    //   */
+    //   if (jnu!=0.){
+    // 	cout << "r= " << rcur << " " << emissq << " " << jnu << " " << BnuT << endl;
+    // 	throwError("In DynamicalDisk3D::"
+    // 		   "transmission1date absorption coef. undefined!");
+    //   }
+    // }else{
+    //   alphanu=jnu/BnuT;
+    // }
+    // //Thermal emission assumed, use Kirchhoff alphanu=jnu/Bnu
+    // return exp(-alphanu); // the dsem factor is already included
+    //                       //in alphanu via jnu=emission1date(...,dsem,...)
   }else{
     if (absorption_array_){
       double * abs = const_cast<double*>(opacity());
@@ -445,7 +468,10 @@ int DynamicalDisk3D::setParameter(std::string name,
       string filename = stream_name.str();
       fitsRead(filename);
     }
-    if (opacity()) withopacity=1;
+    if (opacity()) {
+      //cout << "WITH OPACITY" << endl;
+      withopacity=1;
+    }
 
     //initialize emission, absorption, velocity arrays
     emission_array_ = new double*[nb_times_] ;
@@ -490,6 +516,7 @@ int DynamicalDisk3D::setParameter(std::string name,
 	  absorption_array_[i-1] = new double[nel1];
 	  for (size_t j=0;j<nel1;j++)
 	    absorption_array_[i-1][j]=abstemp[j];
+	  //cout << "SAVING ABS ARRAY" << endl;
 	}else{
 	  throwError("In DynamicalDisk3D::setParameter: "
 		     "Absorption should be supplied here");
@@ -531,6 +558,7 @@ int DynamicalDisk3D::setParameter(std::string name,
   else if (name=="IntensityGrid") temperature_=0;
   else if (name=="PLindex") PLindex_=atof(content.c_str());
   else if (name=="NoVelocity") novel_=1;
+  else if (name=="FloorTemperature") floortemperature_=atof(content.c_str());
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }

@@ -36,12 +36,11 @@ namespace Gyoto{
  class FactoryMessenger;
 }
 
-//#include <GyotoMetric.h>
 #include <GyotoKerrBL.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoFunctors.h>
 #include <GyotoHooks.h>
-//#include <GyotoPolishDoughnutCst.h>
+#include <GyotoBlackBodySpectrum.h>
 
 /**
  * \brief A toroïdal accretion structure
@@ -70,12 +69,14 @@ protected:
    * same instance.
    */
  SmartPointer<Gyoto::Metric::KerrBL> gg_; 
+ SmartPointer<Spectrum::BlackBody> spectrumBB_;
  double l0_; ///< Angular momentum. Tied to PolishDoughnut::lambda_.
  double lambda_; ///< Adimentionned angular momentum
  double W_surface_; ///< Potential surface value. Tied to PolishDoughnut::lambda_.
  double W_centre_; ///< Potential central value. Tied to PolishDoughnut::lambda_.
  double r_cusp_; ///< Cusp radius in geometrical units. Tied to PolishDoughnut::lambda_.
  double r_centre_; ///< Central radius in geometrical units. Tied to PolishDoughnut::lambda_.
+ double r_torusouter_ ; ///< Torus outer coordinate radius. Tied to PolishDoughnut::lambda_.
  double DeltaWm1_; ///< 1./(W_centre_ - W_surface_);
  double central_density_; ///< Central density in kg/L (same as g cm^-3)
  /*
@@ -90,6 +91,9 @@ protected:
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
  bool komissarov_; ///< 1 if Komissarov model is integrated
  bool angle_averaged_; ///< 1 if Komissarov model should be angle averaged
+ bool nonthermal_; ///< 1 to take into account non-thermal electrons
+ double deltaPL_; ///< fraction of thermal energy in non-thermal electrons
+ double expoPL_; ///< exponent of the non-thermal powerlaw = -expoPL_
 
  // Constructors - Destructor
  // -------------------------
@@ -187,9 +191,10 @@ protected:
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ;
 
-  void emission_komissarov(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const ;
+  virtual void radiativeQ(double Inu[], double Taunu[], 
+			  double nu_em[], size_t nbnu,
+			  double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL) const ;
 
   double emissionBrems(double nu_em, double nu_crit, 
 		       double numax, double T_electron,
@@ -206,18 +211,38 @@ protected:
 		       double alpha1, double alpha2,
 		       double alpha3, double preff,
 		       int comptonorder) const;
-
   double emissionSynchro_komissarov_direction(double Theta_elec, 
 					      double number_density,
 					      double nuem,
 					      double nuc, 
 					      double theta
-					      ) const;
+					      )  const;
   double emissionSynchro_komissarov_averaged(double Theta_elec, 
 					     double number_density,
 					     double nuem,
 					     double nuc 
 					     ) const;
+  double emissionSynchro_komissarov_averaged_integ(double Theta_elec, 
+						   double number_density,
+						   double nuem,
+						   double nuc 
+						   ) const;
+  double emissionSynchro_komissarov_PL_direction(
+						 double number_density_PL,
+						 double nuem, double nuc,
+						 double theta_mag) const;
+  double emissionSynchro_komissarov_PL_averaged(
+						 double number_density_PL,
+						 double nuem, double nuc
+						) const;
+  double absorptionSynchro_komissarov_PL_direction(
+						   double number_density_PL,
+						   double nuem, double nuc,
+						   double theta_mag) const ;
+  double absorptionSynchro_komissarov_PL_averaged(
+						  double number_density_PL,
+						  double nuem, double nuc
+						  ) const;
   ///< Synchrotron proxy for emission()
   double transmission(double nuem, double dsem, double coord_ph[8]) const ;
   double BBapprox(double nuem, double Te) const; ///< Approximated Black-Body function
@@ -274,9 +299,23 @@ protected:
     * \endcode
     */
     double const * par;
+    const PolishDoughnut * papa;
     virtual double operator() (double) const;
   };
  intersection_t intersection; ///< double intersection(double) Functor
+
+/**
+  * \class Gyoto::Astrobj::PolishDoughnut::outerradius_t
+  * \brief double outerradius(double) Functor class
+  *
+  * To find the outer doughnut radius.
+  * This class is as a local variable in PolishDoughnut::emission()
+  */
+  class outerradius_t : public Gyoto::Functor::Double_Double_const {
+  public:
+    const PolishDoughnut * papa;
+    virtual double operator() (double) const;
+  };
 
  public:
  static double bessi0(double xx);///< Modified Bessel function I<SUB>0</SUB>

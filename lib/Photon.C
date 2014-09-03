@@ -33,6 +33,9 @@
 #include <cstdlib>
 #include <cfloat>
 
+#define GYOTO_LIMIT_TRANSMISSION 0.36788
+// transmission is exp() of minus optical depth, 0.36788=exp(-1)
+// below this tranmission, medium is optically thick
 
 using namespace std;
 using namespace Gyoto;
@@ -388,7 +391,7 @@ int Photon::hit(Astrobj::Properties *data) {
       GYOTO_DEBUG_EXPR(transmission_freqobs_);
 #     endif
 
-      if ( getTransmissionMax() < 1e-6 ) {
+      if ( getTransmissionMax() < GYOTO_LIMIT_TRANSMISSION ) {
 	stopcond=1;
 
 #       if GYOTO_DEBUG_ENABLED
@@ -527,6 +530,7 @@ double Photon::getTransmission(size_t i) const {
 double Photon::getTransmissionMax() const {
   double transmax=transmission_freqobs_;
   if (spectro_()) {
+    transmax=0.;
     size_t i=0, imax= spectro_->nSamples();
     for (i=0; i < imax; ++i)
       if (transmission_[i] > transmax)

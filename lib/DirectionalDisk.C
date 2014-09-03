@@ -45,7 +45,8 @@ using namespace Gyoto::Astrobj;
 DirectionalDisk::DirectionalDisk() :
   ThinDisk("DirectionalDisk"), filename_(""),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
-  nnu_(0), ni_(0), nr_(0)
+  nnu_(0), ni_(0), nr_(0),
+  average_over_angle_(0)
 {
   GYOTO_DEBUG << "DirectionalDisk Construction" << endl;
 }
@@ -53,7 +54,8 @@ DirectionalDisk::DirectionalDisk() :
 DirectionalDisk::DirectionalDisk(const DirectionalDisk& o) :
   ThinDisk(o), filename_(o.filename_),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
-  nnu_(o.nnu_), ni_(o.ni_), nr_(o.nr_)
+  nnu_(o.nnu_), ni_(o.ni_), nr_(o.nr_),
+  average_over_angle_(o.average_over_angle_)
 {
   GYOTO_DEBUG << "DirectionalDisk Copy" << endl;
   size_t ncells = 0;
@@ -356,15 +358,16 @@ void DirectionalDisk::fitsWrite(string filename) {
 void DirectionalDisk::getIndices(size_t i[3], double const co[4], 
 				 double cosi, double nu) const {
   double rr = projectedRadius(co);
-
   if (radius_) {
-    if (rr >= radius_[nr_-1]) i[2] = nr_-1;
+    if (rr >= radius_[nr_-1]) i[2] = nr_-1; // emission will be 0
     else {
       for(i[2]=0; rr > radius_[i[2]]; ++i[2]){}
       /*
 	With this definition:
 	radius_[i[2]-1] <= r < radius_[i[2]]
-	provided r<rmax (i[2] is always at least 1)
+	
+	The case i[2]=0 (if r<radius_[0]) is dealt
+	with later on, it returns 0
       */
     }
   } else {
@@ -411,6 +414,14 @@ double DirectionalDisk::emission(double nu, double,
   double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
     up = gg_->ScalarProd(cp,co+4,cp+4);
   double cosi = fabs(-np/up);
+  double tolcos = 0.005;
+  if (cosi>1.){
+    if (fabs(cosi-1)>tolcos) throwError("In DirectionalDisk: bad cos!");
+    cosi=1.;
+  }
+  //cout << "cosi= " << cosi << endl;
+  // Don't put a "return cosi" here, see later
+
   // cos between unit normal n and tangent to photon p
   // is equal -n.p/u.p (u being the emitter's 4-vel);
   // fabs because assuming plane symmetry
@@ -418,6 +429,10 @@ double DirectionalDisk::emission(double nu, double,
   // Indices of the current closest grid point
   size_t ind[3]; // {i_nu, i_cosi, i_r}
   getIndices(ind, co, cosi, nu);
+
+  //cout << "r, i2, nr= " << co[1] << " " << ind[2] << " " << nr_ <<endl;
+
+  //if (ind[2]==nr_) return 0.; // 0 emission outside simulation scope
 
   // Specific intensity emitted at the current location
   double rr=co[1];
@@ -430,62 +445,105 @@ double DirectionalDisk::emission(double nu, double,
 	       "bad {nu,r} indices");
   }
 
+  //return acos(cosi)*180./M_PI; // TEST!!!
+
+  //  cout << "nu(eV), r, cosi= " << nu*6.62e-34/1.6e-19 << " " << rr << " " << cosi << endl;
   double Iem=0.;
   size_t i0l=ind[0]+1, i0u=ind[0], 
     i2l=ind[2]-1, i2u=ind[2];
-  if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
-    // If cosi is out of the cosi_ range, bilinear interpol in nu,r
-    size_t i1=ind[1];
-    double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,r}
-      I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
-      I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
-      I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
+
+  //  cout << "ind_cosi=, ni= " << ind[1] << " " << ni_ << endl;
+  //  cout << "min max r= " << radius_[0] << " " << radius_[nr_-1] << endl;
+
+  if (!average_over_angle_){
+    if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
+      // If cosi is out of the cosi_ range, bilinear interpol in nu,r
+      size_t i1=ind[1];
+      double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,r}
+	I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
+	I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
+	I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
+      double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
+	ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
+      Iem = I00+(I10-I00)*rationu
+	+(I01-I00)*ratior
+	+(I11-I01-I10+I00)*rationu*ratior;
+    }else{
+      // Trilinear interpol
+      if (ind[1]==0){
+	throwError("In DirectionalDisk::emission "
+		   "bad cosi indice");
+      }
+      size_t i1l=ind[1]-1, i1u=ind[1];
+      double I000 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0l], // I_{nu,cosi,r}
+	I100 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0u],
+	I110 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0u], 
+	I010 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0l],
+	I001 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0l], 
+	I101 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0u],
+	I111 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u],
+	I011 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0l];
+      //cout << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
+      double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
+	ratioi = (cosi-cosi_[i1l])/(cosi_[i1u]-cosi_[i1l]),
+	ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
+      Iem = I000
+	+ (I100-I000)*rationu
+	+ (I010-I000)*ratioi
+	+ (I001-I000)*ratior
+	+ (I110-I010-I100+I000)*rationu*ratioi
+	+ (I011-I010-I001+I000)*ratioi*ratior
+	+ (I101-I001-I100+I000)*rationu*ratior
+	+ (I111-I011-I101-I110+I100+I001+I010-I000)*rationu*ratioi*ratior;
+    }
+  }else{
+    // Average over cosi values
+    // with bilinear interpol in nu,r
+    double I00=0., I01=0., I10=0., I11=0.;
+    /* Using trapezoidal rule, I_integ = \int I(mu)*dmu, mu=cos(i)
+       NB: in Garcia+14, they compute a flux because they don't raytrace,
+       so they use F = 1/4pi * \int I(i) cos(i) di = 1/2 * \int I(mu) mu dmu,
+       here we are not interested in the same quantity */
+    for (int ii=0;ii<ni_-1;ii++){
+      double dcos = cosi_[ii+1]-cosi_[ii];
+      I00 += 0.5*dcos*
+	(emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l]
+	 +emission_[i2l*(ni_*nnu_)+ii*nnu_+i0l]);
+      I01 += 0.5*dcos*
+	(emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l]
+	 +emission_[i2u*(ni_*nnu_)+ii*nnu_+i0l]);
+      I10 += 0.5*dcos*
+	(emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u]
+	 +emission_[i2l*(ni_*nnu_)+ii*nnu_+i0u]);
+      I11 += 0.5*dcos*
+	(emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u]
+	 +emission_[i2u*(ni_*nnu_)+ii*nnu_+i0u]);
+    } 
+    //cout << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
     double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
       ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
     Iem = I00+(I10-I00)*rationu
       +(I01-I00)*ratior
       +(I11-I01-I10+I00)*rationu*ratior;
-  }else{
-    // Trilinear interpol
-    if (ind[1]==0){
-      throwError("In DirectionalDisk::emission "
-		 "bad cosi indice");
-    }
-    size_t i1l=ind[1]-1, i1u=ind[1];
-    double I000 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0l], // I_{nu,cosi,r}
-      I100 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0u],
-      I110 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0u], 
-      I010 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0l],
-      I001 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0l], 
-      I101 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0u],
-      I111 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u],
-      I011 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0l];
-    double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
-      ratioi = (cosi-cosi_[i1l])/(cosi_[i1u]-cosi_[i1l]),
-      ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
-    Iem = I000
-      + (I100-I000)*rationu
-      + (I010-I000)*ratioi
-      + (I001-I000)*ratior
-      + (I110-I010-I100+I000)*rationu*ratioi
-      + (I011-I010-I001+I000)*ratioi*ratior
-      + (I101-I001-I100+I000)*rationu*ratior
-      + (I111-I011-I101-I110+I100+I001+I010-I000)*rationu*ratioi*ratior;
   }
-
+  //cout << "return= " << Iem << endl;
   return Iem;
 }
 
 int DirectionalDisk::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
-  if      (name == "File")
+  if      (name == "File"){
 #ifdef GYOTO_USE_CFITSIO
-          fitsRead( content );
+    fitsRead( content );
 #else
-          throwError("This Gyoto has no FITS i/o");
+    throwError("This Gyoto has no FITS i/o");
 #endif
-  else return ThinDisk::setParameter(name, content, unit);
+  } else if (name == "AverageOverAngle"){
+    average_over_angle_=1;
+  } else {
+    return ThinDisk::setParameter(name, content, unit);
+  }
   return 0;
 }
 

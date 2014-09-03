@@ -43,7 +43,8 @@ Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
 Generic::Generic(string kin) :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kin), flag_radtransf_(0)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kin), flag_radtransf_(0),
+  radiativeq_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -52,7 +53,8 @@ Generic::Generic(string kin) :
 
 Generic::Generic() :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0)
+  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
+  radiativeq_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -60,7 +62,8 @@ Generic::Generic() :
 }
 
 Generic::Generic(double radmax) :
-  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0)
+  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
+  radiativeq_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -70,7 +73,7 @@ Generic::Generic(double radmax) :
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
-  flag_radtransf_(orig.flag_radtransf_)
+  flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -148,6 +151,7 @@ int Generic::setParameter(string name, string content, string unit)  {
   else if (name=="OpticallyThin")  flag_radtransf_= 1;
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
   else if (name=="RMax") rMax(atof(tc), unit);
+  else if (name=="RadiativeQ") radiativeq_=1;
   else return 1;
   return 0;
 }
@@ -179,6 +183,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*ggredm1; // * 1Hz ?
   double inc =0.;
+
   if (data) {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "data requested. " 
@@ -287,14 +292,20 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       delete [] boundaries;
     }
     if (data->spectrum) {
-      double * Inu  = new double[nbnuobs];
-      double * nuem = new double[nbnuobs];
+      double * Inu          = new double[nbnuobs];
+      double * Taunu        = new double[nbnuobs];
+      double * nuem         = new double[nbnuobs];
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	nuem[ii]=nuobs[ii]*ggredm1;
       }
       GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
       GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
-      emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
+      if (radiativeq_) {
+	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem, 
+		   coord_ph_hit, coord_obj_hit);
+      }else{
+	emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
+      }
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
 #       ifdef HAVE_UDUNITS
@@ -302,29 +313,36 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	  inc = (*data -> spectrum_converter_)(inc);
 #       endif
 	data->spectrum[ii*data->offset] += inc;
+	
+
+	if (!radiativeq_){
+	  ph -> transmit(ii,transmission(nuem[ii],dsem,coord_ph_hit));
+	}else{
+	  ph -> transmit(ii,Taunu[ii]);
+	}
 	 
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
-	       << "DEBUG: Generic::processHitQuantities(): "
-	       << "nuobs[" << ii << "]="<< nuobs[ii]
-	       << ", nuem=" << nuem 
-	       << ", dsem=" << dsem
-	       << ", Inu * GM/c2="
-	       << Inu[ii]
-	       << ", spectrum[" << ii*data->offset << "]="
-	       << data->spectrum[ii*data->offset]
-	       << ", transmission=" << ph -> getTransmission(ii)
-	       << ", redshift=" << ggred << ")\n";
+	  << "DEBUG: Generic::processHitQuantities(): "
+	  << "nuobs[" << ii << "]="<< nuobs[ii]
+	  << ", nuem=" << nuem[ii] 
+	  << ", dsem=" << dsem
+	  << ", Inu * GM/c2="
+	  << Inu[ii]
+	  << ", spectrum[" << ii*data->offset << "]="
+	  << data->spectrum[ii*data->offset]
+	  << ", transmission=" << ph -> getTransmission(ii)
+	  << ", optical depth=" << -log(ph -> getTransmission(ii))
+	  << ", redshift=" << ggred << ")\n" << endl;
 #       endif
       }
       delete [] Inu;
+      delete [] Taunu;
       delete [] nuem;
     }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
 		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
-    for (size_t ii=0; ii<nbnuobs; ++ii)
-      ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;
@@ -355,6 +373,19 @@ void Generic::emission(double * Inu, double * nuem , size_t nbnu,
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
+}
+
+void Generic::radiativeQ(double * Inu, double * Taunu, 
+			 double * nuem , size_t nbnu,
+			 double dsem, double *cph, double *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(flag_radtransf_);
+# endif
+  for (size_t i=0; i< nbnu; ++i) {
+    Inu[i]=emission(nuem[i], dsem, cph, co);
+    Taunu[i]=transmission(nuem[i], dsem, cph);
+  }
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,

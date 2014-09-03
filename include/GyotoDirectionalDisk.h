@@ -72,6 +72,8 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   size_t ni_; ///< Number of direction cosine
   size_t nr_; ///< Number of radius values
 
+  int average_over_angle_; ///< 1 to average over emission angle
+
 
   // Constructors - Destructor
   // -------------------------
