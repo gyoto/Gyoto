@@ -94,6 +94,9 @@ protected:
  bool nonthermal_; ///< 1 to take into account non-thermal electrons
  double deltaPL_; ///< fraction of thermal energy in non-thermal electrons
  double expoPL_; ///< exponent of the non-thermal powerlaw = -expoPL_
+ int adaf_; ///< 1 to switch to an ADAF model rather tha Polish doughnut
+ double ADAFtemperature_; ///< ADAF central temperature
+ double ADAFdensity_; ///< ADAF central density
 
  // Constructors - Destructor
  // -------------------------
