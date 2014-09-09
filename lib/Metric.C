@@ -329,7 +329,7 @@ void Metric::Generic::circularVelocity(double const * coor, double* vel,
     double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
 
     vel[1] = vel[2] = 0.;
-    vel[3] = 1./(dir*pow(coord[1], 1.5)*sinth);
+    vel[3] = 1./(dir*pow(coord[1], 1.5));
 
     vel[0] = SysPrimeToTdot(coor, vel+1);
     vel[3] *= vel[0];

@@ -333,8 +333,8 @@ double PolishDoughnut::operator()(double const coord[4]) {
 void PolishDoughnut::getVelocity(double const pos[4], double vel[4]) 
 {
   if (adaf_) {
-    // This will return the Keplerian velocity at the 
-    // radius projected on the equat plane
+    // This will return the circular velocity at the 
+    // radius projected on the equat plane, or it's Keplerian approximation
     return gg_->circularVelocity(pos,vel,1);
   }
   double gtt=gg_->gmunu(pos,0,0);
