@@ -444,7 +444,8 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
   double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
 
   vel[1] = vel[2] = 0.;
-  vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
+  //vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_)*sinth);
+  vel[3] = 1./((dir*pow(coord[1], 1.5) + spin_));
 
   vel[0] = SysPrimeToTdot(coor, vel+1);
   vel[3] *= vel[0];
