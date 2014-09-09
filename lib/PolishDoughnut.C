@@ -44,7 +44,7 @@ using namespace Gyoto::Astrobj;
 #define GYOTO_C2_CGS 8.98755178736817668096e+20 //c^2 in cgs
 #define GYOTO_C2_CGS_M1 1.1126500560536184087938986e-21 // 1./GYOTO_C2_CGS
 #define w_tol 1e-9
-#define nstep_angint 10 // 10  for angle-averaging integration
+#define nstep_angint 5 // 10  for angle-averaging integration
 
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
@@ -277,32 +277,34 @@ int PolishDoughnut::Impact(Photon *ph, size_t index,
     // -> only for comparison
     double coord[8];
     ph->getCoord(index, coord);
-    double rr = coord[1];
-    double router_adaf = 1000.; // same as Yuan+2000
-    if (rr > router_adaf) return 0;
-    else {
-      double p1[8], p2[8];
-      ph->getCoord(index, p1);
-      ph->getCoord(index+1, p2);
-      double t1 = p1[0], t2=p2[0];
-      double cph[8] = { t2 };
-      ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
-		     cph+4, cph+5, cph+6, cph+7);
+    double rr = coord[1], th = coord[2];
+    // The outer boundary of the ADAF is simply RMax_ in xml
+    if (rr*sin(th) < 6.) return 0;
+    // This allows to reject the points close to the axis
+    // such that the cylindrical radius is smaller than Sch ISCO ;
+    // they will anyway lead to zero flux (see the exponential in T, ne)
+    double p1[8], p2[8];
+    ph->getCoord(index, p1);
+    ph->getCoord(index+1, p2);
+    double t1 = p1[0], t2=p2[0];
+    double cph[8] = { t2 };
+    ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
+		   cph+4, cph+5, cph+6, cph+7);
       
-      double delta=giveDelta(cph);
-      double coh[8];
-      while (cph[0]>t1){
-	ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
-		       cph+4, cph+5, cph+6, cph+7);
-	for (int ii=0;ii<4;ii++) 
-	  coh[ii] = cph[ii];	
-	getVelocity(coh, coh+4);
-	if ((*this)(coh)<critical_value_)
-	  processHitQuantities(ph, cph, coh, delta, data);
-	cph[0]-=delta;
-      }
-      return 1;
+    double delta=giveDelta(cph);
+    double coh[8];
+    while (cph[0]>t1){
+      ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
+		     cph+4, cph+5, cph+6, cph+7);
+      for (int ii=0;ii<4;ii++) 
+	coh[ii] = cph[ii];	
+      getVelocity(coh, coh+4);
+      if ((*this)(coh)<critical_value_)
+	processHitQuantities(ph, cph, coh, delta, data);
+      cph[0]-=delta;
     }
+    return 1;
+    
   }
   
   return Standard::Impact(ph, index, data);
@@ -330,6 +332,11 @@ double PolishDoughnut::operator()(double const coord[4]) {
 
 void PolishDoughnut::getVelocity(double const pos[4], double vel[4]) 
 {
+  if (adaf_) {
+    // This will return the Keplerian velocity at the 
+    // radius projected on the equat plane
+    return gg_->circularVelocity(pos,vel,1);
+  }
   double gtt=gg_->gmunu(pos,0,0);
   double gtph=gg_->gmunu(pos,0,3); 
   double gphph=gg_->gmunu(pos,3,3);
