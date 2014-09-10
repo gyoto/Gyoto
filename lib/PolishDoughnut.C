@@ -44,7 +44,7 @@ using namespace Gyoto::Astrobj;
 #define GYOTO_C2_CGS 8.98755178736817668096e+20 //c^2 in cgs
 #define GYOTO_C2_CGS_M1 1.1126500560536184087938986e-21 // 1./GYOTO_C2_CGS
 #define w_tol 1e-9
-#define nstep_angint 5 // 10  for angle-averaging integration
+#define nstep_angint 10 // for angle-averaging integration
 
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
