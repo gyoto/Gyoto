@@ -1105,7 +1105,6 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   // for the Komissarov model, with both thermal and
   // non-thermal electron populations, with proper emission
   // and absorption.
-
   if (!komissarov_) throwError("In PolishDoughnut::radiativeQ: "
 			       "so far only Komissarov implemented");
 
@@ -1264,11 +1263,15 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       /
       (4.*bessk(2,1./Theta_elec))
       -1.;
-  }else{
+  }else if (Theta_elec > 1e-5){
     // For small Theta_elec, Bessel functions become
     // very small, so I use a linear fit, correct to 1%
     // at theta_e=0.01, and even better for smaller values
     coef_ther=1.5*Theta_elec;
+  }else{
+    // too low Theta_e leads to Bnu being nan...
+    for (size_t ii=0; ii<nbnu; ++ii) {Inu[ii]=0.;Taunu[ii]=1.;}
+    return;
   }
 
   double number_density_PL = 
@@ -1296,6 +1299,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 
     spectrumBB_->temperature(T_electron);
     double Bnu =(*spectrumBB_)(nuem)/GYOTO_INU_CGS_TO_SI; // BB in cgs 
+
     //  cout << "Te= " << T_electron << " " << Theta_elec << endl;
     // ***Synchrotron emission coef.
     if (!angle_averaged_){
@@ -1326,24 +1330,26 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       }
     }
 
-    //cout << "emission stuff: " << Theta_elec << " " << number_density << " " << nuc << " " << emis_synch_ther << endl;
-
     emis_synch = emis_synch_ther+emis_synch_PL;
     abs_synch  = abs_synch_ther+abs_synch_PL;
     //    emis_synch = emis_synch_PL;
     //    abs_synch  = abs_synch_PL;
-    //cout << "jnu,anu TH,PL= " << emis_synch_PL/emis_synch_ther << " " << abs_synch_ther/abs_synch_PL << endl;
 
+    if (abs_synch!=abs_synch || abs_synch==abs_synch+1.) {
+      throwError("In PolishDoughnut::radiativeq: "
+		 "abs coef is nan or infinite");
+      // NB: emission coef always checked in other functions
+      // but anu may be nan only here if e.g. Bnu=nan
+    }
+    
     // ***Final increment to intensity (in SI units)
     double delta_s = 
       dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1;
 
     Inu[ii]=
       emis_synch * GYOTO_INU_CGS_TO_SI * delta_s * exp(- abs_synch * delta_s);
-
     Taunu[ii]=exp(- abs_synch * delta_s);
     // NB: abs_synch is in cgs (cm^-1) as well as delta_s (cm)
-
   }
     
 }
