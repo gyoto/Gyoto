@@ -510,6 +510,7 @@ double PolishDoughnut::emissionSynchro_komissarov_direction(
     *Z0;
 
   if (emis_synch!=emis_synch) {
+    cout << "stuff emission= " << nuc << " " << nuem << " " << tt << " " << nn << " " << Z0 << endl;
     throwError("In PolishDoughnut::emissionSynchro_komissarov_direction: "
 	       "emissivity is nan");
   }
@@ -1279,7 +1280,13 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 
   double nuc = GYOTO_ELEMENTARY_CHARGE_CGS*bnorm
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS);
-  //  cout << "bnorm= " << bnorm << endl;
+
+  if (bnorm < 1e-5){
+    // too low magnetic field leads to nan in emission
+    // synchrotron is anyway vanishingly small
+    for (size_t ii=0; ii<nbnu; ++ii) {Inu[ii]=0.;Taunu[ii]=1.;}
+    return;
+  }
 
   //cout << "r, ne, npl, nuc= " << rr << " " << number_density << " " << number_density_PL << " " << nuc << endl;
   //cout << "ne, delta, npl= " << number_density << " " << deltaPL_ << " " << number_density_PL << endl;
