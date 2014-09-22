@@ -232,6 +232,7 @@ class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
   int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
   int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
+  int noredshift_; ///< 1 to impose redshift factor g = 1
   // Constructors - Destructor
   // -------------------------
  public:

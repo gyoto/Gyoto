@@ -44,7 +44,7 @@ Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 Generic::Generic(string kin) :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kin), flag_radtransf_(0),
-  radiativeq_(0)
+  radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -54,7 +54,7 @@ Generic::Generic(string kin) :
 Generic::Generic() :
 
   gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
-  radiativeq_(0)
+  radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -63,7 +63,7 @@ Generic::Generic() :
 
 Generic::Generic(double radmax) :
   gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
-  radiativeq_(0)
+  radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -73,7 +73,8 @@ Generic::Generic(double radmax) :
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
   rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
-  flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_)
+  flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_),
+  noredshift_(orig.noredshift_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -152,6 +153,7 @@ int Generic::setParameter(string name, string content, string unit)  {
   else if (name=="OpticallyThick")  flag_radtransf_= 0;
   else if (name=="RMax") rMax(atof(tc), unit);
   else if (name=="RadiativeQ") radiativeq_=1;
+  else if (name=="NoRedshift") noredshift_=1;
   else return 1;
   return 0;
 }
@@ -180,6 +182,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				    coord_ph_hit+4);// / 1.;  
                                        //this is nu_em/nu_obs
                                        // for nuobs=1. Hz
+  if (noredshift_) ggredm1=1.;
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*ggredm1; // * 1Hz ?
   double inc =0.;
