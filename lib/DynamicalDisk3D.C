@@ -48,7 +48,9 @@ DynamicalDisk3D::DynamicalDisk3D() :
   nb_times_(1),
   PLindex_(3),
   novel_(0),
-  floortemperature_(0)
+  floortemperature_(0),
+  tPattern_(0.),
+  omegaPattern_(0.)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -64,7 +66,9 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   nb_times_(o.nb_times_),
   PLindex_(o.PLindex_),
   novel_(o.novel_),
-  floortemperature_(o.floortemperature_)
+  floortemperature_(o.floortemperature_),
+  tPattern_(o.tPattern_),
+  omegaPattern_(o.omegaPattern_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -139,8 +143,16 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
     double risco;
     switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
-      risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+      {
+      string kin = gg_->kind();
+      if (kin == "KerrBL")
+	risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+      else if (kin == "Minkowski")
+	risco = 6.;
+      else
+	throwError("In DynamicalDisk3D::getVelocity: bad metric");
       break;
+      }
     default:
       throwError("DynamicalDisk3D::getVelocity: bad COORDKIND");
       risco=0.;
@@ -187,8 +199,16 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   double risco;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
-    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+    {
+      string kin = gg_->kind();
+      if (kin == "KerrBL")
+	risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+      else if (kin == "Minkowski")
+	risco = 6.;
+      else
+	throwError("In DynamicalDisk3D::getVelocity: bad metric");
     break;
+    }
   default:
     throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
@@ -198,6 +218,12 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   double rcur=co[1];
   double th=co[2];
   double ph=co[3];
+  double tt=co[0];
+
+  // Rotating the disk if the Pattern variables are given
+  co[3] -= omegaPattern_*(tt-tPattern_);
+  while (co[3]<0.) co[3]+=2*M_PI;
+  while (co[3]>2.*M_PI) co[3]-=2*M_PI;
 
   if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
@@ -234,7 +260,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 	// BB radiation
 	spectrumBB_->temperature(emissq);
 	Ires=(*spectrumBB_)(nu);
-	//	cout << "return  " << emissq << " " << Ires << endl;
+	//cout << "return  " << emissq << " " << Ires << endl;
 	// BELOW: BREMS computation for 2012 RWI paper
 	// //SI value of cylindrical r coordinate:
 	// double dist_unit = gg_->unitLength();
@@ -324,18 +350,32 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
   double risco;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
-    risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+    {
+      string kin = gg_->kind();
+      if (kin == "KerrBL")
+	risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+      else if (kin == "Minkowski")
+	risco = 6.;
+      else
+	throwError("In DynamicalDisk3D::getVelocity: bad metric");    
     break;
+    }
   default:
     throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
     risco=0.;
   }
 
+  double tt=co[0];
   double rcur=co[1];
   double th=co[2];
 
   if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
+
+  // Rotating the disk if the Pattern variables are given
+  co[3] -= omegaPattern_*(tt-tPattern_);
+  while (co[3]<0.) co[3]+=2*M_PI;
+  while (co[3]>2.*M_PI) co[3]-=2*M_PI;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
@@ -421,7 +461,7 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
 void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
   string kin = gg->kind();
-  if (kin != "KerrBL")
+  if (kin != "KerrBL" && kin != "Minkowski")
     throwError
       ("DynamicalDisk3D::metric(): metric must be KerrBL");
   Disk3D::metric(gg);
@@ -541,7 +581,7 @@ int DynamicalDisk3D::setParameter(std::string name,
 	zminb=zmin();zmaxb=zmax();nzb=nz;
 	rinb=rin();routb=rout();nrb=nr;
       }
-      
+
       if (
 	  nu0()!=nu0b || nnu!=nnub
 	  || nphi!=nphib
@@ -559,6 +599,8 @@ int DynamicalDisk3D::setParameter(std::string name,
   else if (name=="PLindex") PLindex_=atof(content.c_str());
   else if (name=="NoVelocity") novel_=1;
   else if (name=="FloorTemperature") floortemperature_=atof(content.c_str());
+  else if (name=="tPattern") tPattern_=atof(content.c_str());
+  else if (name=="omegaPattern") omegaPattern_=atof(content.c_str());
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }
