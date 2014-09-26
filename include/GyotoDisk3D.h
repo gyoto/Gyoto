@@ -102,6 +102,9 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
 
   int zsym_; ///< 1 to symmetrize the grid z -> -z (default case)
 
+  double tPattern_; ///< If the disk is being rotated (like a pattern disk) this is the origin of time for this rotation
+  double omegaPattern_; ///< If the disk is being rotated (like a pattern disk) this is the rotation velocity dphi/dt
+
   // Constructors - Destructor
   // -------------------------
  public:

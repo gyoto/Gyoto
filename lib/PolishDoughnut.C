@@ -524,6 +524,9 @@ double PolishDoughnut::emissionSynchro_komissarov_PL_direction(
 							       double number_density_PL,double nuem, double nuc,double theta_mag)
   const {
   // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
+  // Putting g(mu)=1 and using (Y+ + Y_)=2 to get jnu and alphanu.
+  // NB: putting g(mu)=1 or 1/2 is not important, it boils down
+  // to redefining the % amount delta of PL energy wrt THER energy
   double emis_synch =
     sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
     *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)

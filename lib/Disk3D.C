@@ -49,7 +49,7 @@ Disk3D::Disk3D() :
   dphi_(0.), phimin_(-DBL_MAX), nphi_(0), phimax_(DBL_MAX), repeat_phi_(1),
   dz_(0.), zmin_(-DBL_MAX), nz_(0), zmax_(DBL_MAX),
   dr_(0.), rin_(-DBL_MAX), nr_(0), rout_(DBL_MAX),
-  zsym_(1)
+  zsym_(1), tPattern_(0.), omegaPattern_(0.)
 {
   GYOTO_DEBUG << "Disk3D Construction" << endl;
 }
@@ -62,7 +62,8 @@ Disk3D::Disk3D(const Disk3D& o) :
   nphi_(o.nphi_), phimax_(o.phimax_), repeat_phi_(o.repeat_phi_),
   dz_(o.dz_), zmin_(o.zmin_), nz_(o.nz_), zmax_(o.zmax_),
   dr_(o.dr_), rin_(o.rin_), nr_(o.nr_), rout_(o.rout_),
-  zsym_(o.zsym_)
+  zsym_(o.zsym_), tPattern_(o.tPattern_),
+  omegaPattern_(o.omegaPattern_)
 {
   GYOTO_DEBUG << "Disk3D Copy" << endl;
   size_t ncells = 0;
@@ -588,10 +589,15 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     phi=zz=rr=0.;
   }
 
+  // Rotating the disk if the Pattern variables are given
+  phi -= omegaPattern_*(co[0]-tPattern_);
+  //  cout << "in indeice" << endl;
   if (dphi_*dz_*dr_==0.)
     throwError("In Disk3D::getIndices: dimensions can't be null!");
   //Phi indice
   while (phi<0) phi += 2.*M_PI;
+  while (phi>2.*M_PI) phi -= 2.*M_PI;
+
   if (phi<phimin_) //Possible: any phi value is in the grid anyway
     i[1]=0;
   else if (phi>phimax_)
@@ -787,6 +793,8 @@ int Disk3D::setParameter(std::string name,
               throwError("This Gyoto has no FITS i/o");
 #endif
   if      (name == "NoZsymmetrizeGrid") zsym_ = 0;
+  else if (name=="tPattern") tPattern_=atof(content.c_str());
+  else if (name=="omegaPattern") omegaPattern_=atof(content.c_str());
   else return Generic::setParameter(name, content, unit);
   return 0;
 }

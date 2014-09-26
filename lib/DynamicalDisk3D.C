@@ -48,9 +48,7 @@ DynamicalDisk3D::DynamicalDisk3D() :
   nb_times_(1),
   PLindex_(3),
   novel_(0),
-  floortemperature_(0),
-  tPattern_(0.),
-  omegaPattern_(0.)
+  floortemperature_(0)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -66,9 +64,7 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   nb_times_(o.nb_times_),
   PLindex_(o.PLindex_),
   novel_(o.novel_),
-  floortemperature_(o.floortemperature_),
-  tPattern_(o.tPattern_),
-  omegaPattern_(o.omegaPattern_)
+  floortemperature_(o.floortemperature_)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -220,11 +216,6 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   double ph=co[3];
   double tt=co[0];
 
-  // Rotating the disk if the Pattern variables are given
-  co[3] -= omegaPattern_*(tt-tPattern_);
-  while (co[3]<0.) co[3]+=2*M_PI;
-  while (co[3]>2.*M_PI) co[3]-=2*M_PI;
-
   if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
@@ -252,6 +243,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   }else{//                 // optically thin case
 
     if (temperature_){
+      // cout << "in DD3 Ires= " << rcur << " " << th  << " " << emissq << " " << floortemperature_ << " ";
       if (emissq<floortemperature_){
 	//cout << "return 0 " << emissq << " " << floortemperature_ << endl;
 	//throwwError("test dynad3d");
@@ -302,6 +294,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 	// Ires=jnu*dsem*dist_unit; // usd e.g. for 3D RWI computation
 	// //cout << "stuff: " << density << " " << fact2 << " " << emissq << " " << dsem << " " << jnu << endl;
       }
+      // cout << Ires << endl; // TEST
     }else{
       //Ires=Iem; // used e.g. for GC blob computation
       double dist_unit = gg_->unitLength()*100.; // unit length in cgs
@@ -310,6 +303,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
     }
 
   }
+
   return Ires;
 
 }
@@ -372,11 +366,6 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
 
   if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
 
-  // Rotating the disk if the Pattern variables are given
-  co[3] -= omegaPattern_*(tt-tPattern_);
-  while (co[3]<0.) co[3]+=2*M_PI;
-  while (co[3]>2.*M_PI) co[3]-=2*M_PI;
-
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
   size_t naxes[4];
@@ -388,6 +377,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
     double emissq = emiss[i[3]*nphi*nz*nnu+i[2]*nphi*nnu+i[1]*nnu+i[0]];
     //emissq is local temperature in K
 
+    //cout << "in trans DD3: " << rcur << " " << th << " " << emissq << " " << floortemperature_ << endl;
     if (emissq<floortemperature_) return 1.;
     else return 0.;
     
@@ -599,8 +589,6 @@ int DynamicalDisk3D::setParameter(std::string name,
   else if (name=="PLindex") PLindex_=atof(content.c_str());
   else if (name=="NoVelocity") novel_=1;
   else if (name=="FloorTemperature") floortemperature_=atof(content.c_str());
-  else if (name=="tPattern") tPattern_=atof(content.c_str());
-  else if (name=="omegaPattern") omegaPattern_=atof(content.c_str());
   else return Disk3D::setParameter(name, content, unit);
   return 0;
 }
