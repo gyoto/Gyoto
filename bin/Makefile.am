@@ -4,12 +4,17 @@ AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
-bin_PROGRAMS  = gyoto
+bin_PROGRAMS  = gyoto gyoto-mpi-worker
 dist_man_MANS = gyoto.1
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+
+gyoto_mpi_worker_SOURCES = gyoto-mpi-worker.C
+gyoto_mpi_worker_LDADD   = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_mpi_worker_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 check: gyoto

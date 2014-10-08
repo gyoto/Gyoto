@@ -79,7 +79,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = gyoto$(EXEEXT)
+bin_PROGRAMS = gyoto$(EXEEXT) gyoto-mpi-worker$(EXEEXT)
 subdir = bin
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -88,6 +88,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 	$(top_srcdir)/m4/ax_append_flag.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
+	$(top_srcdir)/m4/ax_prog_cxx_mpi.m4 \
 	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/m4/boost.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
@@ -112,6 +113,14 @@ am__v_lt_1 =
 gyoto_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(gyoto_LDFLAGS) $(LDFLAGS) -o $@
+am_gyoto_mpi_worker_OBJECTS =  \
+	gyoto_mpi_worker-gyoto-mpi-worker.$(OBJEXT)
+gyoto_mpi_worker_OBJECTS = $(am_gyoto_mpi_worker_OBJECTS)
+gyoto_mpi_worker_DEPENDENCIES = @top_builddir@/lib/libgyoto.la
+gyoto_mpi_worker_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(gyoto_mpi_worker_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -146,8 +155,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(gyoto_SOURCES)
-DIST_SOURCES = $(gyoto_SOURCES)
+SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_SOURCES)
+DIST_SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -265,6 +274,7 @@ MAKEINFO = @MAKEINFO@
 MAKE_S = @MAKE_S@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MPICXX = @MPICXX@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -380,6 +390,10 @@ gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_mpi_worker_SOURCES = gyoto-mpi-worker.C
+gyoto_mpi_worker_LDADD = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_mpi_worker_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 all: all-am
 
@@ -469,6 +483,10 @@ gyoto$(EXEEXT): $(gyoto_OBJECTS) $(gyoto_DEPENDENCIES) $(EXTRA_gyoto_DEPENDENCIE
 	@rm -f gyoto$(EXEEXT)
 	$(AM_V_CXXLD)$(gyoto_LINK) $(gyoto_OBJECTS) $(gyoto_LDADD) $(LIBS)
 
+gyoto-mpi-worker$(EXEEXT): $(gyoto_mpi_worker_OBJECTS) $(gyoto_mpi_worker_DEPENDENCIES) $(EXTRA_gyoto_mpi_worker_DEPENDENCIES) 
+	@rm -f gyoto-mpi-worker$(EXEEXT)
+	$(AM_V_CXXLD)$(gyoto_mpi_worker_LINK) $(gyoto_mpi_worker_OBJECTS) $(gyoto_mpi_worker_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -476,6 +494,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gyoto-gyoto.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -511,6 +530,20 @@ gyoto-gyoto.obj: gyoto.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto.C' object='gyoto-gyoto.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto-gyoto.obj `if test -f 'gyoto.C'; then $(CYGPATH_W) 'gyoto.C'; else $(CYGPATH_W) '$(srcdir)/gyoto.C'; fi`
+
+gyoto_mpi_worker-gyoto-mpi-worker.o: gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker-gyoto-mpi-worker.o -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker-gyoto-mpi-worker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
+
+gyoto_mpi_worker-gyoto-mpi-worker.obj: gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker-gyoto-mpi-worker.obj -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker-gyoto-mpi-worker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

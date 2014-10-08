@@ -39,6 +39,15 @@ namespace Gyoto{
 #include <GyotoPhoton.h>
 #include <GyotoConverters.h>
 
+#define HAVE_MPI
+
+#ifdef HAVE_MPI
+#include "GyotoFactory.h"
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#endif
+
+
 /**
  * \class Gyoto::Scenery
  * \brief Ray-tracing scene
@@ -203,6 +212,21 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 # endif
 
   size_t maxiter_ ; ///< Maximum number of iterations when integrating
+
+# ifdef HAVE_MPI
+  boost::mpi::environment * mpi_env_;
+  boost::mpi::communicator * mpi_world_;
+  boost::mpi::intercommunicator * mpi_workers_;
+  int mpi_nbworkers_;
+ public:
+  static bool is_worker;
+  void mpiSpawn(int nbchildren);
+  void mpiTerminate (bool keep_env=false);
+  void mpiClone();
+  enum mpi_tag {give_task, read_scenery, terminate,
+		raytrace, raytrace_done, ready,
+		impactcoords, noimpactcoords};
+# endif
 
   // Constructors - Destructor
   // -------------------------

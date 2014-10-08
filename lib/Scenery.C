@@ -27,6 +27,16 @@
 #include <cstring>
 #include <cstdlib>
 
+#ifdef HAVE_MPI
+#include "GyotoFactory.h"
+#include <boost/mpi/environment.hpp>
+#include <boost/mpi/communicator.hpp>
+#include <boost/mpi/intercommunicator.hpp>
+#include <string>
+#include <boost/serialization/string.hpp>
+namespace mpi = boost::mpi;
+#endif
+
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
@@ -39,13 +49,16 @@ using namespace std;
 
 Scenery::Scenery() :
   screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0){}
+  quantities_(0), ph_(), nthreads_(0),
+  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL)
+{}
 
 Scenery::Scenery(SmartPointer<Metric::Generic> met,
 		 SmartPointer<Screen> scr,
 		 SmartPointer<Astrobj::Generic> obj) :
   screen_(scr), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0)
+  quantities_(0), ph_(), nthreads_(0),
+  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL)
 {
   metric(met);
   if (screen_) screen_->metric(met);
@@ -56,7 +69,8 @@ Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   screen_(NULL), delta_(o.delta_), 
   quantities_(o.quantities_), ph_(o.ph_), 
-  nthreads_(o.nthreads_)
+  nthreads_(o.nthreads_),
+  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL)
 {
   if (o.screen_()) {
     screen_=o.screen_->clone();
@@ -70,6 +84,7 @@ Scenery::~Scenery() {
   GYOTO_DEBUG << "freeing screen\n";
 # endif
   screen_ = NULL;
+  if (!Scenery::is_worker) mpiTerminate();
  }
 
 SmartPointer<Metric::Generic> Scenery::metric() const { return ph_.metric(); }
@@ -213,6 +228,8 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 		       Astrobj::Properties *data,
 		       double * impactcoords) {
 
+
+
   /*
      Ray-trace now is multi-threaded. What it does is
        - some initialization
@@ -225,6 +242,55 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   const size_t npix = screen_->resolution();
   imax=(imax<=(npix)?imax:(npix));
   jmax=(jmax<=(npix)?jmax:(npix));
+
+  //#if 0
+  if (mpi_workers_) {
+    // dispatch over workers and monitor
+
+    size_t ij[2]={imin, jmin};
+    int working = 0;
+
+    // initiate raytracing
+    for (int w=0; w<mpi_workers_->remote_size(); ++w) {
+      if (impactcoords) {
+	mpi_workers_->send(w, give_task, Scenery::impactcoords);
+	mpi_workers_->send(w, Scenery::impactcoords, impactcoords, npix*npix*8);
+      } else mpi_workers_->send(w, give_task, Scenery::noimpactcoords);
+      mpi_workers_ -> send(w, give_task, raytrace);
+      mpi_workers_ -> send(w, raytrace, ij, 2);
+      ++working;
+      if (++ij[0]>imax) {
+	cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
+	if (++ij[1]>jmax) break;
+	else ij[0]=imin;
+      }
+      cerr << "Manager sent data to all workers" << endl;
+    }
+
+    // continue
+    while (working) {
+      // receive one result, need to track back where it belongs and
+      // store it there
+      int w;
+      cerr << "Manager waiting for worker to send result" << endl;
+      mpi_workers_ -> recv(mpi::any_source, raytrace_done, w);
+      cerr << "Manager received result from worker #"<<w << endl;
+
+      // give new task or decrease working counter
+      if (ij[0]<=imax) {
+	mpi_workers_ -> send(w, give_task, raytrace);
+	mpi_workers_ -> send(w, raytrace, ij, 2);
+	if (++ij[0]>imax) {
+	  cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
+	  if (++ij[1]<=jmax) ij[0]=imin;
+	}
+      } else --working;
+    }
+
+    return;
+  }
+  //#endif
+
   screen_->computeBaseVectors();
          // Necessary for KS integration, computes relation between
          // observer's x,y,z coord and KS X,Y,Z coord. Will be used to
@@ -606,7 +672,69 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="RelTol")    sc -> ph_ . relTol(atof(content.c_str()));
 
   }
+#ifdef HAVE_MPI
 
+  if (!Scenery::is_worker) {
+    sc -> mpiSpawn(5);
+    sc -> mpiClone();
+  }
+
+#endif
+
+  sleep(5);
   return sc;
 }
 #endif
+
+//#ifdef HAVE_MPI
+bool Gyoto::Scenery::is_worker=false;
+
+void Gyoto::Scenery::mpiSpawn(int nbchildren) {
+  if (mpi_workers_) {
+    if (mpi_workers_->size()==nbchildren) return;
+    mpiTerminate(true);
+  }
+  if (!mpi_env_)   mpi_env_   = new mpi::environment();
+  if (!mpi_world_) mpi_world_ = new mpi::communicator();
+
+  MPI_Comm children_c;
+  MPI_Comm_spawn("./gyoto-mpi-worker", MPI_ARGV_NULL, nbchildren,
+                 MPI_INFO_NULL, 0, MPI_COMM_SELF, &children_c,
+                 MPI_ERRCODES_IGNORE);
+
+  mpi_workers_ = new mpi::intercommunicator (children_c, mpi::comm_take_ownership); 
+  cerr<<"mpi_workers_->remote_size()=="<<mpi_workers_->remote_size()<< endl;
+  int size;
+  MPI_Comm_remote_size(children_c, &size);
+  cerr<<"MPI_Comm_size(children_c)=="<<size<<endl;
+}
+
+void Gyoto::Scenery::mpiTerminate(bool keep_env) {
+  cerr << "Manager terminating workers"<< endl; 
+  if (mpi_workers_) {
+    for (int i=0; i < mpi_workers_->remote_size(); ++i) {
+      cerr << "Manager killing worker #"<< i <<endl; 
+      mpi_workers_->send(i, give_task, terminate);
+    }
+    delete mpi_workers_;
+  }
+  if (mpi_world_ && !keep_env) delete mpi_world_;
+  if (mpi_env_ && !keep_env) delete mpi_env_;
+}
+
+void Gyoto::Scenery::mpiClone()
+{
+  char * tmpfile_c="tmp-gyoto-sc.xml";
+  std::string tmpfile(tmpfile_c);
+  Gyoto::Factory(this).write(tmpfile_c);
+  int errcode;
+  cerr<<"mpi_workers_->remote_size()=="<<mpi_workers_->remote_size()<< endl;
+  for (int i=0; i < mpi_workers_->remote_size(); ++i) {
+    //mpi_workers_->recv(i, ready, errcode);
+    mpi_workers_->send(i, give_task, read_scenery);
+    mpi_workers_->send(i, read_scenery, tmpfile);
+  }
+
+}
+
+  //#endif

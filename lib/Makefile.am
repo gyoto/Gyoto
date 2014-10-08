@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
 AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS) \
-	      $(UDUNITS_LDFLAGS)
+	      $(UDUNITS_LDFLAGS) -lboost_mpi -lboost_serialization
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PREFIX=\"${prefix}\"
 
 # HEADERS: where they are, where to install them
