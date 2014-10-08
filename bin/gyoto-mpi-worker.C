@@ -113,9 +113,6 @@ int main(int argc, char** argv) {
   Gyoto::Register::init(pluglist.c_str());
 
   int rk=world.rank();
-  srand(rk);
-  long delay;
-
 
   //Gyoto::debug(1);
 
@@ -133,18 +130,90 @@ int main(int argc, char** argv) {
       curmsg = "In gyoto.C: Error in Factory creation: ";
       curretval = 1;
       sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
+      cerr <<"Maxiter=="<<sc->maxiter()<<endl;
       break;
     }
     case Scenery::raytrace: {
       size_t ij[2]={0, 0};
       //      std::cerr << "Worker #" << rk << " receiving ij for raytracing" <<std::endl;
       manager.recv(0, task, ij, 2);
-      delay=long(double(rand())/double(RAND_MAX)*1e6);
-      std::cerr << "Worker #" << rk << " raytracing i="<<ij[0]<<", j="<<ij[1]
-		<<" (actually sleeping for "<<delay<<"µs)"<<std::endl;
-      usleep(delay);
+      std::cerr << "Worker #" << rk << " raytracing i="<<ij[0]<<", j="<<ij[1]<<std::endl;
+
+
+      // initialize AstrobjProperties
+      size_t nbnuobs=0;
+      Quantity_t quantities = sc -> getRequestedQuantities();
+      if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
+	SmartPointer<Spectrometer::Generic> spr = sc -> screen() -> spectrometer();
+	if (!spr) throwError("Spectral quantity requested but "
+			     "no spectrometer specified!");
+	nbnuobs = spr -> nSamples();
+      }
+      size_t nbdata= sc->getScalarQuantitiesCount();
+      size_t nelt=(nbdata+nbnuobs);
+      vect = new double[nelt];
+      data = new Astrobj::Properties();
+      size_t offset=1;
+      size_t curquant=0;
+
+      if (quantities & GYOTO_QUANTITY_INTENSITY) {
+	data->intensity=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_EMISSIONTIME) {
+	data->time=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) {
+	data->distance=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_FIRST_DMIN) {
+	data->first_dmin=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_REDSHIFT) {
+	data->redshift=vect+offset*(curquant++);
+      }
+      // if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {
+      // 	data->impactcoords = impactcoords = new double [res*res*16];
+      // 	ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
+      // }
+      if (quantities & GYOTO_QUANTITY_USER1) {
+	data->user1=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_USER2) {
+	data->user2=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_USER3) {
+	data->user3=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_USER4) {
+	data->user4=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_USER5) {
+	data->user5=vect+offset*(curquant++);
+      }
+      if (quantities & GYOTO_QUANTITY_SPECTRUM) {
+	data->spectrum=vect+offset*(curquant++);
+	data->offset=int(offset);
+      }
+      if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
+	data->binspectrum=vect+offset*(curquant++);
+	data->offset=int(offset);
+      }
+
+      data->init(nbnuobs);
+      sc->screen()->computeBaseVectors();
+      sc->setPropertyConverters(data);
+
+      // need to do something about impactcoords
+
+      (*sc)(ij[0], ij[1], data, NULL, NULL);
 
       manager.send(0, Scenery::raytrace_done, rk);
+      manager.send(0, Scenery::raytrace_done, ij, 2);
+      manager.send(0, Scenery::raytrace_done, nelt);
+      manager.send(0, Scenery::raytrace_done, vect, nelt);
+
+      delete[] vect;
+      delete data;
       //      std::cerr << "Worker #" << rk << " done raytracing i="<<ij[0]<<", j="<<ij[1]<<std::endl;
 
     }

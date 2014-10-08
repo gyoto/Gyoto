@@ -44,4 +44,6 @@
     Intensity[mJy.sr-1]
     Intensity[Jy.sr-1]
 
+  <NProcesses>12</NProcesses>
+
 </Scenery>

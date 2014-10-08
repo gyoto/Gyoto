@@ -249,6 +249,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
     size_t ij[2]={imin, jmin};
     int working = 0;
+    if (data) data->init(0);
 
     // initiate raytracing
     for (int w=0; w<mpi_workers_->remote_size(); ++w) {
@@ -272,9 +273,27 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       // receive one result, need to track back where it belongs and
       // store it there
       int w;
+      size_t nelt;
+      double * vect;
+      size_t ijr[2];
       cerr << "Manager waiting for worker to send result" << endl;
       mpi_workers_ -> recv(mpi::any_source, raytrace_done, w);
       cerr << "Manager received result from worker #"<<w << endl;
+
+      mpi_workers_ -> recv(w, raytrace_done, ijr, 2);
+      mpi_workers_ -> recv(w, raytrace_done, nelt);
+      vect=new double[nelt];
+      mpi_workers_ -> recv(w, raytrace_done, vect, nelt);
+
+      Astrobj::Properties *databis=data;
+      databis += (ijr[1]-1)*npix+ijr[0];
+      size_t offset=1;
+      size_t curquant=0;
+   
+      if (data->intensity) data->intensity[(ijr[1]-1)*npix+ijr[0]]=*(vect+offset*(curquant++));
+      //populate other quantities
+
+      delete[] vect;
 
       // give new task or decrease working counter
       if (ij[0]<=imax) {
@@ -631,7 +650,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   fmp -> setParameter("RelTol", ph_.relTol());
   fmp -> setParameter ("Delta", delta_);
   fmp -> setParameter (adaptive()?"Adaptive":"NonAdaptive");
-  fmp -> setParameter("MaxIter", maxiter_);
+  fmp -> setParameter("MaxIter", maxiter());
 
   if (getRequestedQuantities())
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
@@ -654,6 +673,8 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
 
+  int mpi=0;
+
   while (fmp->getNextParameter(&name, &content, &unit)) {
     char* tc = const_cast<char*>(content.c_str());
     if (name=="Delta")       sc -> delta(atof(tc), unit);;
@@ -670,12 +691,13 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="DeltaMaxOverR") sc -> ph_ . deltaMaxOverR (atof(content.c_str()));
     if (name=="AbsTol")    sc -> ph_ . absTol(atof(content.c_str()));
     if (name=="RelTol")    sc -> ph_ . relTol(atof(content.c_str()));
+    if (name=="NProcesses")  mpi=atoi(tc);
 
   }
 #ifdef HAVE_MPI
 
-  if (!Scenery::is_worker) {
-    sc -> mpiSpawn(5);
+  if (!Scenery::is_worker && mpi) {
+    sc -> mpiSpawn(mpi);
     sc -> mpiClone();
   }
 

@@ -326,8 +326,8 @@ int Photon::hit(Astrobj::Properties *data) {
     }
 
     if ( ++count > maxiter_ ) {
-      GYOTO_SEVERE << "Photon::hit: too many iterations, "
-		   <<" break" << endl;
+      GYOTO_SEVERE << "Photon::hit: too many iterations ("<<count<<" vs. "
+		   << maxiter_<<"), break" << endl;
       stopcond = 1;
       break;
     }

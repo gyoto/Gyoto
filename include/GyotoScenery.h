@@ -211,8 +211,6 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_;
 # endif
 
-  size_t maxiter_ ; ///< Maximum number of iterations when integrating
-
 # ifdef HAVE_MPI
   boost::mpi::environment * mpi_env_;
   boost::mpi::communicator * mpi_world_;
