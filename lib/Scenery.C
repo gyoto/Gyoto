@@ -356,15 +356,35 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
 	w = s.source();
 	
-	if (s.tag()==Scenery::raytrace_done) {
+	if (s.tag()==Scenery::raytrace_done && data) {
 	  size_t cell=(ijr[2*w+1]-1)*npix+ijr[2*w]-1;
-	  if (data->intensity) {
-	    // Perform conversion here
+	  // Copy each relevant quantity, performing conversion if needed
+	  if (data->intensity)
 	    data->intensity[cell]=data->intensity_converter_?
 	      (*data->intensity_converter_)(*locdata->intensity):
 	      *locdata->intensity;
-	  }
-	  //populate other quantities
+	  if (data->time) data->time[cell]=*locdata->time;
+	  if (data->distance) data->distance[cell]=*locdata->distance;
+	  if (data->first_dmin) data->first_dmin[cell]=*locdata->first_dmin;
+	  if (data->redshift) data->redshift[cell]=*locdata->redshift;
+	  // deal with impactcoords
+	  if (data->user1) data->user1[cell]=*locdata->user1;
+	  if (data->user2) data->user2[cell]=*locdata->user2;
+	  if (data->user3) data->user3[cell]=*locdata->user3;
+	  if (data->user4) data->user4[cell]=*locdata->user4;
+	  if (data->user5) data->user5[cell]=*locdata->user5;
+	  if (data->spectrum)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->spectrum[cell+c*data->offset]=
+		data->spectrum_converter_?
+		(*data->spectrum_converter_)(locdata->spectrum[c]):
+		locdata->spectrum[c];
+	  if (data->binspectrum)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->binspectrum[cell+c*data->offset]=
+		data->binspectrum_converter_?
+		(*data->binspectrum_converter_)(locdata->binspectrum[c]):
+		locdata->binspectrum[c];
 	}
 
 	// give new task or decrease working counter
