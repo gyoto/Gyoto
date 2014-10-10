@@ -39,6 +39,7 @@
 #include <xercesc/framework/StdOutFormatTarget.hpp>
 #include <xercesc/framework/LocalFileFormatTarget.hpp>
 #include <xercesc/framework/MemBufFormatTarget.hpp>
+#include <xercesc/framework/MemBufInputSource.hpp>
 
 using namespace Gyoto;
 using namespace xercesc;
@@ -183,11 +184,11 @@ void DOMErrorReporter::resetErrors()
 
 //// Now for the public API
 
-Factory::Factory(char * filename)
+Factory::Factory(char * data)
   : reporter_(NULL), gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(NULL), gg_(NULL), screen_(NULL), obj_(NULL), photon_(NULL),
     spectro_(NULL),
-    filename_(filename)
+    filename_("")
 {
   // Initialize Xerces XML parser
 
@@ -201,7 +202,22 @@ Factory::Factory(char * filename)
   parser_->setErrorHandler(errReporter);
   // Parse file
   
-  parser_->parse(filename);
+  // If data start with "<?xml", this is an xml buffer.
+  size_t len=strlen(data);
+  if (len < 5 || data[0]!='<' || data[1] != '?'
+      || data[2]!='x' || data[3]!='m' || data[4]!='l') {
+    // we are dealing with a file name
+    if (data[0]=='\\') ++data; // allow escaping 
+    filename_=data;
+    parser_->parse(data);
+  } else {
+    filename_="Gyoto XML data (in memory)";
+    xercesc::MemBufInputSource
+      xml_buf(reinterpret_cast<const XMLByte *>(data),
+		len,
+		filename_.c_str());
+    parser_->parse(xml_buf);
+  }
   
   doc_ = parser_ -> getDocument();
   root_ = doc_ -> getDocumentElement();

@@ -137,6 +137,15 @@ local gyoto;
     class constructor:
        gg = gyoto.Metric("KerrBL");
 
+    Finally, it is possible to instanciate an object using a buffer
+    containing XML data:
+       #include "pathfun.i"
+       gg = gyoto.KerrBL();
+       xmldata = pathform(print(gg), delim="\n");
+       gg2 =gyoto.Metric(xmldata).
+    This should be equivalent to gg2 == gg.clone(), see COPYING
+    vs. CLONIG below.
+
 
     GYOTO OBJECTS BEHAVE LIKE FUNCTIONS
     -----------------------------------

@@ -34,17 +34,18 @@ using namespace Gyoto::Astrobj;
 void ygyoto_FixedStar_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
 
   static char const * knames[]={
-    "unit", "radius", "position", "spectrum", "opacity", 
+    "unit", "radius", "position", "rotating", "spectrum", "opacity", 
     "deltamaxoverradius", "deltamaxoverdistance",
     YGYOTO_ASTROBJ_GENERIC_KW,
     0
   };
 
-  YGYOTO_WORKER_INIT(Astrobj, FixedStar, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+7);
+  YGYOTO_WORKER_INIT(Astrobj, FixedStar, knames, YGYOTO_ASTROBJ_GENERIC_KW_N+8);
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(radius);
   YGYOTO_WORKER_GETSET_VECTOR(Pos, 3);
+  YGYOTO_WORKER_GETSET_LONG2(rotating);
   YGYOTO_WORKER_GETSET_OBJECT2(spectrum,Spectrum);
   YGYOTO_WORKER_GETSET_OBJECT2(opacity,Spectrum);
   YGYOTO_WORKER_GETSET_DOUBLE2(deltaMaxOverRadius);

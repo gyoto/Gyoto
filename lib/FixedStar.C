@@ -37,7 +37,7 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-FixedStar::FixedStar() : UniformSphere("FixedStar")
+FixedStar::FixedStar() : UniformSphere("FixedStar"), rotating_(false)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -47,7 +47,7 @@ FixedStar::FixedStar() : UniformSphere("FixedStar")
 
 FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 		     double rad) :
-  UniformSphere("FixedStar", gg, rad)
+  UniformSphere("FixedStar", gg, rad), rotating_(false)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(metric, pos, rad)" << endl;
@@ -60,7 +60,7 @@ FixedStar::FixedStar(SmartPointer<Gyoto::Metric::Generic> gg, double StPsn[3],
 }
 
 FixedStar::FixedStar(const FixedStar& orig) :
-  UniformSphere(orig)
+  UniformSphere(orig), rotating_(orig.rotating_)
 {
   for (int i=0; i<3; ++i) pos_[i] = orig.pos_[i];
 }
@@ -112,9 +112,15 @@ void FixedStar::getCartesian(double const * const , size_t const n_dates,
 }
 
 void FixedStar::getVelocity(double const pos[4], double vel[4]) {
-  for (size_t i=0; i<4; ++i) vel[i]=0.;
-  vel[0]=gg_->SysPrimeToTdot(pos, vel+1);
+  if (rotating_) gg_->circularVelocity(pos, vel);
+  else {
+    for (size_t i=0; i<4; ++i) vel[i]=0.;
+    vel[0]=gg_->SysPrimeToTdot(pos, vel+1);
+  }
 }
+
+void FixedStar::rotating(bool rot) {rotating_=rot;}
+bool FixedStar::rotating() const { return rotating_; }
 
 double const * FixedStar::getPos() const { return pos_; }
 
@@ -163,6 +169,10 @@ int FixedStar::setParameter(string name, string content, string unit) {
     double pos[3];
     for (int i=0;i<3;++i) pos[i] = strtod(tc, &tc);
     setPos(pos);
+  } else if (name=="Rotating") {
+    rotating(true);
+  } else if (name=="NonRotating") {
+    rotating(false);
   } else return UniformSphere::setParameter(name, content, unit);
   return 0;
 }
@@ -170,6 +180,7 @@ int FixedStar::setParameter(string name, string content, string unit) {
 #ifdef GYOTO_USE_XERCES
 void FixedStar::fillElement(FactoryMessenger *fmp) const {
   fmp -> setParameter ("Position", const_cast<double*>(pos_), 3);
+  fmp -> setParameter (rotating_?"Rotating":"NonRotating");
   UniformSphere::fillElement(fmp);
 }
 #endif

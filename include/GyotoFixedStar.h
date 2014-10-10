@@ -54,7 +54,8 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
  protected:
   
   double pos_[3];///< x, y, z or r, theta, phi
-  
+  bool rotating_; ///< Whether the blob is rotating at Metric::circularVelocity()
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -79,6 +80,10 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
  public:
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
+
+  bool rotating() const ;
+  void rotating(bool) ;
+
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> metric) ;
   using UniformSphere::radius;

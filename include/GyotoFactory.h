@@ -159,6 +159,13 @@ class Gyoto::Factory
 
  public:
   /// Constructor for reading a file
+  /**
+   * If filename starts with "<?xml", it is interpreted as XML data
+   * and parsed directly (with no file access). It is possible to
+   * parse a file that actually starts with those unlikely characters
+   * by escaping the first with '\'. If filename starts with '\', this
+   * single character is always stripped.
+   */
   Factory(char * filename);
 
   /// Constructor for saving (or printing) a Scenery
