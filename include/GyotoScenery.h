@@ -212,11 +212,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 # endif
 
 # ifdef HAVE_MPI
+ public:
   boost::mpi::environment * mpi_env_;
   boost::mpi::communicator * mpi_world_;
   boost::mpi::intercommunicator * mpi_workers_;
-  int mpi_nbworkers_;
- public:
+  boost::mpi::intercommunicator * mpi_manager_;
   static bool is_worker;
   void mpiSpawn(int nbchildren);
   void mpiTerminate (bool keep_env=false);
