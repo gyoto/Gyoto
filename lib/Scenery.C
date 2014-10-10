@@ -275,8 +275,9 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       nbnuobs = spr -> nSamples();
     }
     size_t nelt= getScalarQuantitiesCount();
-    if (quantities & GYOTO_QUANTITY_SPECTRUM)    nelt += nbnuobs;
-    if (quantities & GYOTO_QUANTITY_BINSPECTRUM) nelt += nbnuobs;
+    if (quantities & GYOTO_QUANTITY_SPECTRUM)     nelt += nbnuobs;
+    if (quantities & GYOTO_QUANTITY_BINSPECTRUM)  nelt += nbnuobs;
+    //    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) nelt += 16;
     double * vect = new double[nelt];
     Astrobj::Properties *locdata = new Astrobj::Properties();
     size_t offset=1;
@@ -306,10 +307,9 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     if (quantities & GYOTO_QUANTITY_REDSHIFT) {
       locdata->redshift=vect+offset*(curquant++);
     }
-    // if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {
-    // 	locdata->impactcoords = impactcoords = new double [res*res*16];
-    // 	ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
-    // }
+    //    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) {
+    //      locdata->impactcoords=vect+offset*curquant; curquant+=16;
+    //    }
     if (quantities & GYOTO_QUANTITY_USER1) {
       locdata->user1=vect+offset*(curquant++);
     }
@@ -339,8 +339,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       int working = mpi_workers_->remote_size();
       // First tell the workers to join our task force
       // The corresponding recv is in gyoto-scenery-worker.c
-      for (int w=0; w<working; ++w)
+      for (int w=0; w<working; ++w) {
 	mpi_workers_->send(w, give_task, raytrace);
+	mpi_workers_->send(w, Scenery::impactcoords, bool(impactcoords));
+      }
 
       size_t *ijr = new size_t[working*2];
 
@@ -367,7 +369,11 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	  if (data->distance) data->distance[cell]=*locdata->distance;
 	  if (data->first_dmin) data->first_dmin[cell]=*locdata->first_dmin;
 	  if (data->redshift) data->redshift[cell]=*locdata->redshift;
-	  // deal with impactcoords
+	  //   cerr << getpid() << " manager copies impactcoords from "
+	  // 	 << locdata->impactcoords << endl;
+	  // if (data->impactcoords)
+	  //   for (size_t k=0; k<16; ++k)
+	  //     data->impactcoords[cell*16+k]=locdata->impactcoords[k];
 	  if (data->user1) data->user1[cell]=*locdata->user1;
 	  if (data->user2) data->user2[cell]=*locdata->user2;
 	  if (data->user3) data->user3[cell]=*locdata->user3;
@@ -389,10 +395,15 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
 	// give new task or decrease working counter
 	if (ij[0]<=imax) {
-	  //should send also impactcoords
 	  ijr[2*w]=ij[0];
 	  ijr[2*w+1]=ij[1];
+	  size_t cell=(ijr[2*w+1]-1)*npix+ijr[2*w]-1;
 	  mpi_workers_ -> send(w, raytrace, ij, 2);
+
+	  if (impactcoords) {
+	    mpi_workers_ -> send(w, Scenery::impactcoords, impactcoords+cell*16, 16);
+	  }
+
 	  if (++ij[0]>imax) {
 	    cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
 	    if (++ij[1]<=jmax) ij[0]=imin;
@@ -404,17 +415,24 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       }
       delete [] ijr;
     } else {
-      // we are a worker
+      // We are a worker, do we need to query for impactcoords?
+      bool has_ipct;
+      double ipct[16];
+      mpi_manager_->recv(0, Scenery::impactcoords, has_ipct);
+      if (has_ipct) impactcoords=&ipct[0];
+
       // First send dummy result, using tag "give_tag".
       // Manager will ignore the results and send first coordinates.
       mpi_manager_->send(0, give_task, vect, nelt);
       while (true) {
 	// Receive new coordinates to work on.
-	// Should also receive impactcoords.
 	s = mpi_manager_->recv(0, mpi::any_tag, ij, 2);
 	if (s.tag()==raytrace_done) {
 	  break;
 	}
+	// Receive impactcoords if needed
+	if (has_ipct)
+	  s = mpi_manager_->recv(0, Scenery::impactcoords, impactcoords, 16);
 	locdata->init(nbnuobs);
 	(*this)(ij[0], ij[1], locdata, impactcoords, &ph_);
 	// send result
