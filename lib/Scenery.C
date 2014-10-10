@@ -801,7 +801,7 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   if (!mpi_world_) mpi_world_ = new mpi::communicator();
 
   MPI_Comm children_c;
-  MPI_Comm_spawn("./gyoto-mpi-worker", MPI_ARGV_NULL, nbchildren,
+  MPI_Comm_spawn("gyoto-mpi-worker", MPI_ARGV_NULL, nbchildren,
                  MPI_INFO_NULL, 0, MPI_COMM_SELF, &children_c,
                  MPI_ERRCODES_IGNORE);
 
