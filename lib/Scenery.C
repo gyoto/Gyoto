@@ -823,14 +823,13 @@ void Gyoto::Scenery::mpiTerminate(bool keep_env) {
 
 void Gyoto::Scenery::mpiClone()
 {
-  char * tmpfile_c="tmp-gyoto-sc.xml";
-  std::string tmpfile(tmpfile_c);
-  Gyoto::Factory(this).write(tmpfile_c);
+  std::string xmldata=
+    Gyoto::Factory(this).format();
   int errcode;
   for (int i=0; i < mpi_workers_->remote_size(); ++i) {
     //mpi_workers_->recv(i, ready, errcode);
     mpi_workers_->send(i, give_task, read_scenery);
-    mpi_workers_->send(i, read_scenery, tmpfile);
+    mpi_workers_->send(i, read_scenery, xmldata);
   }
 
 }
