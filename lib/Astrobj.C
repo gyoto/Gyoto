@@ -571,3 +571,23 @@ Astrobj::Properties Astrobj::Properties::operator++() {
   (*this) += 1;
   return *this;
 }
+
+Astrobj::Properties::operator Quantity_t () const {
+  Quantity_t res=GYOTO_QUANTITY_NONE;
+
+  if (intensity)    res |= GYOTO_QUANTITY_INTENSITY;
+  if (time)         res |= GYOTO_QUANTITY_EMISSIONTIME;
+  if (distance)     res |= GYOTO_QUANTITY_MIN_DISTANCE;
+  if (first_dmin)   res |= GYOTO_QUANTITY_FIRST_DMIN;
+  if (redshift)     res |= GYOTO_QUANTITY_REDSHIFT;
+  if (spectrum)     res |= GYOTO_QUANTITY_SPECTRUM;
+  if (binspectrum)  res |= GYOTO_QUANTITY_BINSPECTRUM;
+  if (impactcoords) res |= GYOTO_QUANTITY_IMPACTCOORDS;
+  if (user1)        res |= GYOTO_QUANTITY_USER1;
+  if (user2)        res |= GYOTO_QUANTITY_USER2;
+  if (user3)        res |= GYOTO_QUANTITY_USER3;
+  if (user4)        res |= GYOTO_QUANTITY_USER4;
+  if (user5)        res |= GYOTO_QUANTITY_USER5;
+
+  return res;
+}

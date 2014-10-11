@@ -770,6 +770,8 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    */
   Properties operator+=(ptrdiff_t offset);
 
+  operator Gyoto::Quantity_t () const;
+
 # ifdef HAVE_UDUNITS
   void intensityConverter(Gyoto::SmartPointer<Gyoto::Units::Converter>);
   ///< Set Properties::intentity_converter_
