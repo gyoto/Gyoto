@@ -74,6 +74,8 @@ namespace Gyoto {
 
   /* Generic */
 
+#define GYOTO_QUANTITY_NONE           0
+
   /// Intensity: I<SUB>&nu;</SUB> at Scenery::freq_obs_.
 #define GYOTO_QUANTITY_INTENSITY      1
   /// EmissionTime: Emission date.
