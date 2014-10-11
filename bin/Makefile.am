@@ -6,7 +6,8 @@ CLEANFILES=example-*.fits
 
 bin_PROGRAMS  = gyoto
 if HAVE_MPI
- bin_PROGRAMS += gyoto-mpi-worker
+ soverdir=$(pkglibdir)/@sovers@
+ sover_PROGRAMS = gyoto-mpi-worker
 endif
 dist_man_MANS = gyoto.1
 gyoto_SOURCES = gyoto.C

@@ -849,6 +849,17 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 bool Gyoto::Scenery::is_worker=false;
 
 void Gyoto::Scenery::mpiSpawn(int nbchildren) {
+
+
+  // Add our SO-versionned directory at the end of the PATH variable.
+  string PATH=getenv("PATH");
+  PATH += ":";
+  PATH += GYOTO_PREFIX ;
+  PATH += "/lib/gyoto/" ;
+  PATH += GYOTO_SOVERS;
+
+  setenv("PATH", PATH.c_str(), 1);
+
   if (mpi_workers_) {
     if (mpi_workers_->size()==nbchildren) return;
     mpiTerminate(true);
