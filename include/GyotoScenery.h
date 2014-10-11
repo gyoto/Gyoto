@@ -39,8 +39,6 @@ namespace Gyoto{
 #include <GyotoPhoton.h>
 #include <GyotoConverters.h>
 
-#define HAVE_MPI
-
 #ifdef HAVE_MPI
 #include "GyotoFactory.h"
 #include <boost/mpi/environment.hpp>

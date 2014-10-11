@@ -49,16 +49,20 @@ using namespace std;
 
 Scenery::Scenery() :
   screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0),
-  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+  quantities_(0), ph_(), nthreads_(0)
+#ifdef HAVE_MPI
+  , mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+#endif
 {}
 
 Scenery::Scenery(SmartPointer<Metric::Generic> met,
 		 SmartPointer<Screen> scr,
 		 SmartPointer<Astrobj::Generic> obj) :
   screen_(scr), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0),
-  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+  quantities_(0), ph_(), nthreads_(0)
+#ifdef HAVE_MPI
+  , mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+#endif
 {
   metric(met);
   if (screen_) screen_->metric(met);
@@ -69,8 +73,10 @@ Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   screen_(NULL), delta_(o.delta_), 
   quantities_(o.quantities_), ph_(o.ph_), 
-  nthreads_(o.nthreads_),
-  mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+  nthreads_(o.nthreads_)
+#ifdef HAVE_MPI
+  , mpi_env_(NULL), mpi_world_(NULL), mpi_workers_(NULL), mpi_manager_(NULL)
+#endif
 {
   if (o.screen_()) {
     screen_=o.screen_->clone();
@@ -84,7 +90,9 @@ Scenery::~Scenery() {
   GYOTO_DEBUG << "freeing screen\n";
 # endif
   screen_ = NULL;
+# ifdef HAVE_MPI
   if (!Scenery::is_worker) mpiTerminate();
+# endif
  }
 
 SmartPointer<Metric::Generic> Scenery::metric() const { return ph_.metric(); }
@@ -260,7 +268,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
   if (data) setPropertyConverters(data);
 
-  //#if 0
+#ifdef HAVE_MPI
   if (mpi_workers_ || Scenery::is_worker) {
     // We are in an MPI content, either the manager or a worker.
     // dispatch over workers and monitor
@@ -450,7 +458,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     delete [] vect;
     return;
   }
-  //#endif
+#endif
 
   if (data) {
     size_t first_index=(jmin-1)*npix + imin -1;
@@ -833,12 +841,11 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
 #endif
 
-  sleep(5);
   return sc;
 }
 #endif
 
-//#ifdef HAVE_MPI
+#ifdef HAVE_MPI
 bool Gyoto::Scenery::is_worker=false;
 
 void Gyoto::Scenery::mpiSpawn(int nbchildren) {
@@ -883,4 +890,4 @@ void Gyoto::Scenery::mpiClone()
 
 }
 
-  //#endif
+#endif

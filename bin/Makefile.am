@@ -4,7 +4,10 @@ AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
-bin_PROGRAMS  = gyoto gyoto-mpi-worker
+bin_PROGRAMS  = gyoto
+if HAVE_MPI
+ bin_PROGRAMS += gyoto-mpi-worker
+endif
 dist_man_MANS = gyoto.1
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
@@ -15,6 +18,8 @@ gyoto_mpi_worker_SOURCES = gyoto-mpi-worker.C
 gyoto_mpi_worker_LDADD   = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
 gyoto_mpi_worker_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_mpi_worker_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+
+export PATH := .:$(PATH)
 
 CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 check: gyoto

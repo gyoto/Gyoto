@@ -22,22 +22,58 @@ AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 # Checks for programs.
 
-# If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
-# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
-# If --with-mpi=no is used, use a standard C compiler instead.
+############### CHECK FOR OPTIONAL FEATURES #########################
+## ADVANCED INTEGRATORS
+# Check for C++11
+AC_ARG_ENABLE([c++11],
+  [AS_HELP_STRING([--disable-c++11],
+     [disable C++11 features (including advanced integrators)])])
+AS_IF([test "x$enable_c__11" != "xno"],
+  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
+)
+AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
+  [AC_MSG_ERROR([C++11 requested but not found])])
+
 AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
     [compile with MPI (parallelization) support. If none is found,
     MPI is not used. Default: auto])
 ],,[with_mpi=auto])
 
-AX_PROG_CXX_MPI([test x"$with_mpi" != xno],[use_mpi=yes],[
-  use_mpi=no
-  if test x"$with_mpi" = xyes; then
-    AC_MSG_FAILURE([MPI compiler requested, but couldn't use MPI.])
-  else
-    AC_MSG_WARN([No MPI compiler found, won't use MPI.])
-  fi
+AS_IF([test "x$with_mpi" == xyes], [with_boost=yes])
+
+# Check for boost
+AS_IF([test "x$HAVE_CXX11" = "x1"],
+  [have_boost=yes
+   BOOST_REQUIRE([1.53.1], [have_boost=no])],
+  [have_boost=no
+   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
+  ]
+)
+AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+  [AS_IF([test "x$have_boost" == "xno"],
+     [AC_MSG_ERROR([Boost requested but not found])])]
+)
+
+# If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
+# If --with-mpi=yes is used, try to find MPI and fail if it isn't found.
+# If --with-mpi=no is used, use a standard C compiler instead.
+
+have_mpi=no
+AS_IF([test "x$with_mpi" != xno],
+[ AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx]),
+  AS_IF([test "x$MPICXX" != x], [
+    AC_SUBST(MPICXX)
+    AC_DEFINE([HAVE_MPI], [1], [Define to 1 if you have MPI])]
+    have_mpi=yes
+    CXX=$MPICXX],
+  [ AS_IF([test "x$with_mpi"=xyes],
+    [ AC_ERROR([MPI requested but not found])
+    ])
+  ])
 ])
+
+AM_CONDITIONAL(HAVE_MPI, [test "x$have_mpi" == xyes])
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -116,32 +152,6 @@ AC_FUNC_STRTOD
 # other functions we may need to check for according to autoscan:
 # floor getcwd pow sqrt strdup
 AC_CHECK_FUNCS([sincos])
-
-############### CHECK FOR OPTIONAL FEATURES #########################
-## ADVANCED INTEGRATORS
-# Check for C++11
-AC_ARG_ENABLE([c++11],
-  [AS_HELP_STRING([--disable-c++11],
-     [disable C++11 features (including advanced integrators)])])
-AS_IF([test "x$enable_c__11" != "xno"],
-  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
-)
-AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
-  [AC_MSG_ERROR([C++11 requested but not found])])
-
-# Check for boost
-AS_IF([test "x$HAVE_CXX11" = "x1"],
-  [have_boost=yes
-   BOOST_REQUIRE([1.53.1], [have_boost=no])],
-  [have_boost=no
-   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
-  ]
-)
-AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-  [AS_IF([test "x$have_boost" == "xno"],
-     [AC_MSG_ERROR([Boost requested but not found])])]
-)
 
 ## YORICK
 # Check for Yorick

@@ -148,6 +148,18 @@
 # endif
 #endif
 
+/** \def HAVE_MPI
+ *  \brief Whether MPI support is compiled in.
+ *
+ *  Message-passing interface, used in multi-process ray-tracing
+ */
+#undef HAVE_MPI
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_MPI
+#  define HAVE_MPI (Undefined)
+# endif
+#endif
+
 /** \def HAVE_PTHREAD
  *  \brief Whether POSIX threads support is compiled-in.
  *

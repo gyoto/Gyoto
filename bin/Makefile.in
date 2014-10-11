@@ -79,7 +79,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = gyoto$(EXEEXT) gyoto-mpi-worker$(EXEEXT)
+bin_PROGRAMS = gyoto$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_MPI_TRUE@am__append_1 = gyoto-mpi-worker
 subdir = bin
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -88,7 +89,6 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 	$(top_srcdir)/m4/ax_append_flag.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
-	$(top_srcdir)/m4/ax_prog_cxx_mpi.m4 \
 	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/m4/boost.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
@@ -101,6 +101,7 @@ CONFIG_HEADER = $(top_builddir)/config.h \
 	$(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@HAVE_MPI_TRUE@am__EXEEXT_1 = gyoto-mpi-worker$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_gyoto_OBJECTS = gyoto-gyoto.$(OBJEXT)
@@ -803,6 +804,8 @@ uninstall-man: uninstall-man1
 	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-man uninstall-man1
 
+
+export PATH := .:$(PATH)
 check: gyoto
 	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
 	   \!example-thin-disk.fits
