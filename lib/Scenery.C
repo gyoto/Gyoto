@@ -286,7 +286,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     size_t nelt= getScalarQuantitiesCount(&quantities);
     if (quantities & GYOTO_QUANTITY_SPECTRUM)     nelt += nbnuobs;
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM)  nelt += nbnuobs;
-    //    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) nelt += 16;
+    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) nelt += 16;
     double * vect = new double[nelt];
     Astrobj::Properties *locdata = new Astrobj::Properties();
     size_t offset=1;
@@ -316,9 +316,9 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     if (quantities & GYOTO_QUANTITY_REDSHIFT) {
       locdata->redshift=vect+offset*(curquant++);
     }
-    //    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) {
-    //      locdata->impactcoords=vect+offset*curquant; curquant+=16;
-    //    }
+    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) {
+      locdata->impactcoords=vect+offset*curquant; curquant+=16;
+    }
     if (quantities & GYOTO_QUANTITY_USER1) {
       locdata->user1=vect+offset*(curquant++);
     }
@@ -378,11 +378,9 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	  if (data->distance) data->distance[cell]=*locdata->distance;
 	  if (data->first_dmin) data->first_dmin[cell]=*locdata->first_dmin;
 	  if (data->redshift) data->redshift[cell]=*locdata->redshift;
-	  //   cerr << getpid() << " manager copies impactcoords from "
-	  // 	 << locdata->impactcoords << endl;
-	  // if (data->impactcoords)
-	  //   for (size_t k=0; k<16; ++k)
-	  //     data->impactcoords[cell*16+k]=locdata->impactcoords[k];
+	  if (data->impactcoords)
+	    for (size_t k=0; k<16; ++k)
+	      data->impactcoords[cell*16+k]=locdata->impactcoords[k];
 	  if (data->user1) data->user1[cell]=*locdata->user1;
 	  if (data->user2) data->user2[cell]=*locdata->user2;
 	  if (data->user3) data->user3[cell]=*locdata->user3;
