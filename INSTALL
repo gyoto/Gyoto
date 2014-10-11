@@ -34,6 +34,9 @@ I- INSTALL THE DEPENDENCIES
        http://www.unidata.ucar.edu/software/udunits/
    - boost >= 1.53 (required, contains the integrators)
        http://www.boost.org/
+   - an MPI implementation (tested with openmpi, optional). MPI uses
+     boost features from boost.mpi, you must use the same version as
+     boost.mpi is linked to.
    - Yorick    (optional, provides an interface to the Yorick
      interpreted language, allowing to write Gyoto scripts):
        http://yorick.sourceforge.net/
