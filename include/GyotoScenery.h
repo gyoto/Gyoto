@@ -295,7 +295,7 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   /**
    * This is all quantities except Spectrum, BinSpectrum and ImpactCoords.
    */
-  size_t getScalarQuantitiesCount() const ;
+  size_t getScalarQuantitiesCount(Quantity_t *q=NULL) const ;
 
   /// Get ph_.tmin_
   double tMin() const ;

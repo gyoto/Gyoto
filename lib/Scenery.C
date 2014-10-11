@@ -268,13 +268,22 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     size_t ij[2]={imin, jmin};
 
     size_t nbnuobs=0;
-    Quantity_t quantities = getRequestedQuantities();
+    Quantity_t quantities = GYOTO_QUANTITY_NONE;
+    
+    if (mpi_workers_) {
+      if (data) quantities=Quantity_t(*data);
+      for (int w=0; w<mpi_workers_->remote_size(); ++w)
+	mpi_workers_->send(w, raytrace, quantities);
+    } else {
+      mpi_manager_->recv(0, raytrace, quantities);
+    }
+
     if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
       if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }
-    size_t nelt= getScalarQuantitiesCount();
+    size_t nelt= getScalarQuantitiesCount(&quantities);
     if (quantities & GYOTO_QUANTITY_SPECTRUM)     nelt += nbnuobs;
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM)  nelt += nbnuobs;
     //    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) nelt += 16;
@@ -700,10 +709,14 @@ std::string Scenery::getRequestedQuantitiesString() const {
   return squant;
 }
 
-size_t Scenery::getScalarQuantitiesCount() const {
+size_t Scenery::getScalarQuantitiesCount(Quantity_t *q) const {
   size_t nquant=0;
-  Quantity_t quantities
-    = quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
+  Quantity_t quantities;
+  if (q) quantities=*q;
+  else
+    quantities=quantities_?
+      quantities_:
+      (astrobj()?astrobj()->getDefaultQuantities():GYOTO_QUANTITY_NONE);
   if (quantities & GYOTO_QUANTITY_INTENSITY   ) ++nquant;
   if (quantities & GYOTO_QUANTITY_EMISSIONTIME) ++nquant;
   if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) ++nquant;
