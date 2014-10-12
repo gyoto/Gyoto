@@ -1656,7 +1656,16 @@ void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
   fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);
   fmp->setParameter("Beta", beta_);
   fmp->setParameter("SpectralOversampling", spectral_oversampling_);
-  fmp->setParameter("Komissarov", komissarov_);
+  if (komissarov_) fmp->setParameter("Komissarov");
+  if (angle_averaged_) fmp->setParameter("KomissarovAngleAveraged");
+  if (nonthermal_){
+    double param[2]={deltaPL_, expoPL_};
+    fmp->setParameter("NonThermalDeltaExpo", param, 2);
+  }
+  if (adaf_){
+    double param[2]={ADAFtemperature_, ADAFdensity_};
+    fmp->setParameter("ADAF", param, 2);
+  }
   Standard::fillElement(fmp);
 }
 #endif

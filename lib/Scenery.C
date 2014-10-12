@@ -883,9 +883,16 @@ void Gyoto::Scenery::mpiTerminate(bool keep_env) {
       mpi_workers_->send(i, give_task, terminate);
     }
     delete mpi_workers_;
+    mpi_workers_=NULL;
   }
-  if (mpi_world_ && !keep_env) delete mpi_world_;
-  if (mpi_env_ && !keep_env) delete mpi_env_;
+  if (mpi_world_ && !keep_env) {
+    delete mpi_world_;
+    mpi_world_=NULL;
+  }
+  if (mpi_env_ && !keep_env) {
+    delete mpi_env_;
+    mpi_env_=NULL;
+  }
 }
 
 void Gyoto::Scenery::mpiClone()

@@ -98,6 +98,11 @@ int main(int argc, char** argv) {
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
 
+#ifdef HAVE_MPI
+  bool xnprocs=0;
+  int nprocs=0;
+#endif
+
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
@@ -180,6 +185,11 @@ int main(int argc, char** argv) {
       }  else if (param.substr(0,11)=="--nthreads=") {
 	nthreads=atoi(param.substr(11).c_str());
 	xnthreads=1;
+#ifdef HAVE_MPI
+      }  else if (param.substr(0,13)=="--nprocesses=") {
+	nprocs=atoi(param.substr(13).c_str());
+	xnprocs=1;
+#endif
       }
       else {
 	usage();
@@ -246,6 +256,12 @@ int main(int argc, char** argv) {
     if (xpaln) screen -> PALN           ( paln );
     if (xarg)  screen -> argument       ( arg  );
     if (xnthreads)  scenery -> nThreads    ( nthreads  );
+#ifdef HAVE_MPI
+    if (xnprocs) {
+      scenery -> mpiSpawn(nprocs);
+      scenery -> mpiClone();
+    }
+#endif
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
@@ -469,6 +485,10 @@ int main(int argc, char** argv) {
       if (debug()) cerr << "gyoto.C: delete [] data->impact" << endl;
       delete [] impactcoords;
     }
+
+#ifdef HAVE_MPI
+    if (xnprocs) scenery -> mpiTerminate();
+#endif
 
     if (debug()) cerr << "DEBUG: gyoto.C: scenery==NULL" << endl;
     scenery = NULL;
