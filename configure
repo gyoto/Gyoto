@@ -18493,6 +18493,8 @@ if test "x$YORICK" != "x"; then :
 
    ac_config_files="$ac_config_files yorick/gyoto.info yorick/yorick1 yorick/setpaths.i"
 
+   ac_config_files="$ac_config_files gyoto"
+
 
 
 fi
@@ -19646,6 +19648,7 @@ do
     "yorick/gyoto.info") CONFIG_FILES="$CONFIG_FILES yorick/gyoto.info" ;;
     "yorick/yorick1") CONFIG_FILES="$CONFIG_FILES yorick/yorick1" ;;
     "yorick/setpaths.i") CONFIG_FILES="$CONFIG_FILES yorick/setpaths.i" ;;
+    "gyoto") CONFIG_FILES="$CONFIG_FILES gyoto" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -21142,6 +21145,7 @@ _LT_EOF
     "yorick/gyoto.info":F) chmod a+x yorick/yorick1 ;;
     "yorick/yorick1":F) chmod a+x yorick/yorick1 ;;
     "yorick/setpaths.i":F) chmod a+x yorick/yorick1 ;;
+    "gyoto":F) chmod a+x gyoto ;;
 
   esac
 done # for ac_tag

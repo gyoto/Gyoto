@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "AUGUST 2013" Science "User Manuals"
+.TH GYOTO 1 "OCTOBER 2014" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
@@ -10,7 +10,8 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-time\fR=\fItobs\fR] [\fB\-\-tmin\fR=\fItmin\fR]
       [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
       [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
-      [\fB\-\-nthreads\fR=\fInth\fR] [\fB\-\-plugins\fR=\fIpluglist\fR]
+      [\fB\-\-nthreads\fR=\fInth\fR] [\fB\-\-nprocesses\fR=\fInprocs\fR]
+      [\fB\-\-plugins\fR=\fIpluglist\fR]
       [\fB\-\-impact-coords\fR[=\fIfname.fits\fR]]
       [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
 .SH DESCRIPTION
@@ -102,6 +103,12 @@ without POSIX threads support. Note that the metric and object are
 replicated for each thread which can lead to a decrease in performance
 if either is memory-intensive. Setting this option to 0 is equivalent
 to setting it to 1.
+.IP \fB\-\-nprocesses\fR=\fInprocs\fR
+Number of MPI processes to spawn for parallel ray-tracing, in addition
+to the main gyoto process which remains for managing the
+computation. Ignored if gyoto was compiled without MPI support. If
+both \-\-nthreads and \-\-nprocesses are specified, \-\-nthreads is
+ignored.
 .IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
 In some circumstances, you may want to perform several computations in
 which the computed geodesics end up being exactly identical. This is

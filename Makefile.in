@@ -89,8 +89,9 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/yorick/stdplug/Makefile.in \
 	$(top_srcdir)/yorick/gyoto.info.in \
 	$(top_srcdir)/yorick/yorick1.in \
-	$(top_srcdir)/yorick/setpaths.i.in COPYING compile \
-	config.guess config.sub depcomp install-sh missing ltmain.sh
+	$(top_srcdir)/yorick/setpaths.i.in $(srcdir)/gyoto.in COPYING \
+	compile config.guess config.sub depcomp install-sh missing \
+	ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 	$(top_srcdir)/m4/ax_append_flag.m4 \
@@ -109,7 +110,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h $(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES = doc/Makefile doc/user_guide/Makefile \
 	yorick/Makefile yorick/stdplug/Makefile yorick/gyoto.info \
-	yorick/yorick1 yorick/setpaths.i
+	yorick/yorick1 yorick/setpaths.i gyoto
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -454,6 +455,8 @@ yorick/gyoto.info: $(top_builddir)/config.status $(top_srcdir)/yorick/gyoto.info
 yorick/yorick1: $(top_builddir)/config.status $(top_srcdir)/yorick/yorick1.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 yorick/setpaths.i: $(top_builddir)/config.status $(top_srcdir)/yorick/setpaths.i.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+gyoto: $(top_builddir)/config.status $(srcdir)/gyoto.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:

@@ -91,17 +91,12 @@ int main(int argc, char** argv) {
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
   double tobs=0., tmin=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
-  size_t res=0, nthreads=0;
+  size_t res=0, nthreads=0, nprocs=0;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0;
+  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0, xnprocs;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
-
-#ifdef HAVE_MPI
-  bool xnprocs=0;
-  int nprocs=0;
-#endif
 
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):
@@ -185,11 +180,9 @@ int main(int argc, char** argv) {
       }  else if (param.substr(0,11)=="--nthreads=") {
 	nthreads=atoi(param.substr(11).c_str());
 	xnthreads=1;
-#ifdef HAVE_MPI
       }  else if (param.substr(0,13)=="--nprocesses=") {
 	nprocs=atoi(param.substr(13).c_str());
 	xnprocs=1;
-#endif
       }
       else {
 	usage();

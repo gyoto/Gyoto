@@ -695,6 +695,8 @@ AS_IF([test "x$YORICK" != "x"],
 		    yorick/setpaths.i
 		   ],
 		   [chmod a+x yorick/yorick1])
+   AC_CONFIG_FILES([gyoto],
+		   [chmod a+x gyoto])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
