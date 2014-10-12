@@ -39,8 +39,6 @@ AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
     MPI is not used. Default: auto])
 ],,[with_mpi=auto])
 
-AS_IF([test "x$with_mpi" == xyes], [with_boost=yes])
-
 # Check for boost
 AS_IF([test "x$HAVE_CXX11" = "x1"],
   [have_boost=yes
@@ -61,15 +59,28 @@ AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
 
 have_mpi=no
 AS_IF([test "x$with_mpi" != xno],
-[ AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx]),
+[ AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx])
   AS_IF([test "x$MPICXX" != x], [
-    AC_SUBST(MPICXX)
-    AC_DEFINE([HAVE_MPI], [1], [Define to 1 if you have MPI])]
-    have_mpi=yes
-    CXX=$MPICXX],
-  [ AS_IF([test "x$with_mpi"=xyes],
-    [ AC_ERROR([MPI requested but not found])
+    AS_IF([test "x$have_boost" == xyes], [
+      ax_save_CXX=$CXX
+      CXX=$MPICXX
+      saved_libs="$LIBS"
+      LIBS="$LIBS -lboost_mpi"
+      AC_TRY_LINK([#include <boost/mpi/environment.hpp>], [boost::mpi::environment()], [have_mpi=yes], [CXX=$ax_save_CXX])
+      LIBS="$saved_libs"
+    ],
+    [ AS_IF([test "x$with_mpi" == xyes],
+      [ AC_MSG_ERROR([MPI features require boost.mpi])
+      ])
     ])
+  ])
+])
+
+AS_IF([test "x$have_mpi" == xyes],
+[ AC_SUBST(MPICXX)
+  AC_DEFINE([HAVE_MPI], [1], [Define to 1 if you have MPI])],
+[ AS_IF([test "x$with_mpi" == xyes],
+  [ AC_ERROR([MPI requested but not found])
   ])
 ])
 

@@ -15680,10 +15680,6 @@ else
 fi
 
 
-if test "x$with_mpi" == xyes; then :
-  with_boost=yes
-fi
-
 # Check for boost
 
 if test "x$HAVE_CXX11" = "x1"; then :
@@ -15930,23 +15926,58 @@ fi
 
   test -n "$MPICXX" && break
 done
-,
+
   if test "x$MPICXX" != x; then :
 
+    if test "x$have_boost" == xyes; then :
+
+      ax_save_CXX=$CXX
+      CXX=$MPICXX
+      saved_libs="$LIBS"
+      LIBS="$LIBS -lboost_mpi"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <boost/mpi/environment.hpp>
+int
+main ()
+{
+boost::mpi::environment()
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_mpi=yes
+else
+  CXX=$ax_save_CXX
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      LIBS="$saved_libs"
+
+else
+   if test "x$with_mpi" == xyes; then :
+   as_fn_error $? "MPI features require boost.mpi" "$LINENO" 5
+
+fi
+
+fi
+
+fi
+
+fi
+
+if test "x$have_mpi" == xyes; then :
 
 
 $as_echo "#define HAVE_MPI 1" >>confdefs.h
 
-    have_mpi=yes
-    CXX=$MPICXX
 else
-   if test "x$with_mpi"=xyes; then :
+   if test "x$with_mpi" == xyes; then :
    as_fn_error $? "MPI requested but not found" "$LINENO" 5
 
 fi
 
-fi
-]
 fi
 
  if test "x$have_mpi" == xyes; then
