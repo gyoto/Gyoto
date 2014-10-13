@@ -32,6 +32,7 @@
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
 #include <boost/mpi/intercommunicator.hpp>
+#include <boost/mpi/collectives.hpp>
 #include <string>
 #include <boost/serialization/string.hpp>
 namespace mpi = boost::mpi;
@@ -901,10 +902,9 @@ void Gyoto::Scenery::mpiClone()
     Gyoto::Factory(this).format();
   int errcode;
   for (int i=0; i < mpi_workers_->remote_size(); ++i) {
-    //mpi_workers_->recv(i, ready, errcode);
     mpi_workers_->send(i, give_task, read_scenery);
-    mpi_workers_->send(i, read_scenery, xmldata);
   }
+  broadcast(mpi_workers_->merge(false), xmldata, 0);
 
 }
 

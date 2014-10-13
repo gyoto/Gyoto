@@ -42,6 +42,7 @@ static SmartPointer<Scenery> sc = NULL;
 #ifdef HAVE_MPI
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/intercommunicator.hpp>
+#include <boost/mpi/collectives.hpp>
 #include <string>
 #include <boost/serialization/string.hpp>
 namespace mpi = boost::mpi;
@@ -76,6 +77,7 @@ int main(int argc, char** argv) {
 
   mpi::intercommunicator manager(parent_c,mpi::comm_take_ownership);
   mpi::communicator world;
+  mpi::communicator team=manager.merge(true);
 
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):
@@ -96,7 +98,7 @@ int main(int argc, char** argv) {
     switch (task) {
     case Scenery::read_scenery: {
       std::string parfile;
-      manager.recv(0, task, parfile);
+      broadcast(team, parfile, 0);
       curmsg = "In gyoto-mpi-worker.C: Error in Factory creation: ";
       curretval = 1;
       sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
