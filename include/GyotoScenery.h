@@ -213,15 +213,15 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
  public:
   boost::mpi::environment * mpi_env_;
   boost::mpi::communicator * mpi_world_;
-  boost::mpi::intercommunicator * mpi_workers_;
-  boost::mpi::intercommunicator * mpi_manager_;
-  static bool is_worker;
+  boost::mpi::communicator * mpi_team_;
+  static bool am_worker;
   void mpiSpawn(int nbchildren);
   void mpiTerminate (bool keep_env=false);
   void mpiClone();
   enum mpi_tag {give_task, read_scenery, terminate,
 		raytrace, raytrace_done, ready,
 		impactcoords, noimpactcoords};
+  void mpiTask(mpi_tag &tag);
 # endif
 
   // Constructors - Destructor

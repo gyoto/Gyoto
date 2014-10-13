@@ -75,9 +75,8 @@ int main(int argc, char** argv) {
   MPI_Comm parent_c;
   MPI_Comm_get_parent(&parent_c);
 
-  mpi::intercommunicator manager(parent_c,mpi::comm_take_ownership);
   mpi::communicator world;
-  mpi::communicator team=manager.merge(true);
+  mpi::communicator team=mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
 
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):
@@ -89,12 +88,15 @@ int main(int argc, char** argv) {
 
   int rk=world.rank();
 
-  //Gyoto::debug(1);
+  sc = new Scenery();
+  sc -> mpi_world_   = &world;
+  sc -> mpi_env_     = &env;
+  sc -> mpi_team_    = &team;
 
   Scenery::mpi_tag task=Scenery::give_task;
-  Scenery::is_worker=true;
+  Scenery::am_worker=true;
   while (task != Scenery::terminate) {
-    manager.recv(0, Scenery::give_task, task);
+    sc->mpiTask(task);
     switch (task) {
     case Scenery::read_scenery: {
       std::string parfile;
@@ -102,9 +104,9 @@ int main(int argc, char** argv) {
       curmsg = "In gyoto-mpi-worker.C: Error in Factory creation: ";
       curretval = 1;
       sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
-      sc -> mpi_manager_ = &manager;
-      sc -> mpi_world_ = &world;
-      sc -> mpi_env_ = &env;
+      sc -> mpi_world_   = &world;
+      sc -> mpi_env_     = &env;
+      sc -> mpi_team_    = &team;
      break;
     }
     case Scenery::raytrace:
@@ -113,11 +115,13 @@ int main(int argc, char** argv) {
       sc -> rayTrace(0, 0, 0, 0, NULL, NULL);
       break;
     case Scenery::terminate:
+      sc = NULL;
       break;
     default:
       std::cerr << "unknown task" << endl;
     }
   }
 
+  team.barrier();
   return 0;
 }

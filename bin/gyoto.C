@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
   double tobs=0., tmin=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
   size_t res=0, nthreads=0, nprocs=0;
   //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0, xnprocs;
+  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0, xnprocs=0;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
@@ -251,6 +251,7 @@ int main(int argc, char** argv) {
     if (xnthreads)  scenery -> nThreads    ( nthreads  );
 #ifdef HAVE_MPI
     if (xnprocs) {
+      cerr << "nprocs="<< nprocs<< endl;
       scenery -> mpiSpawn(nprocs);
       scenery -> mpiClone();
     }
@@ -478,10 +479,6 @@ int main(int argc, char** argv) {
       if (debug()) cerr << "gyoto.C: delete [] data->impact" << endl;
       delete [] impactcoords;
     }
-
-#ifdef HAVE_MPI
-    if (xnprocs) scenery -> mpiTerminate();
-#endif
 
     if (debug()) cerr << "DEBUG: gyoto.C: scenery==NULL" << endl;
     scenery = NULL;
