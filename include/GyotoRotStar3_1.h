@@ -31,7 +31,9 @@
 #include <iostream>
 #include <fstream>
 
-class Star_rot;
+namespace Lorene{
+  class Star_rot;
+}
 
 namespace Gyoto {
   namespace Metric { class RotStar3_1; }
@@ -54,7 +56,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
 
  private:
   char* filename_; ///< Lorene output file name
-  Star_rot * star_; ///< Pointer to underlying Lorene Star_rot instance 
+  Lorene::Star_rot * star_; ///< Pointer to underlying Lorene Star_rot instance 
   int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
 
  public:

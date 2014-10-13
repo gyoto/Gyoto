@@ -6,6 +6,8 @@
 #include "graphique.h"
 #include "cmp.h"
 
+using namespace Lorene;
+
 //Gyoto headers
 #include "GyotoUtils.h"
 #include "GyotoNumericalMetricLorene.h"

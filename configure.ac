@@ -621,7 +621,7 @@ conftest.make:
 %: conftest.make
 	@echo \$(\$@)
 _ACEOF
-   LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene -llorenef77"
+   LORENELDFLAGS="-L$HOME_LORENE/Lib -llorene"
    LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_LAPACK | tr -d '\n\r'`"
    LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_GSL | tr -d '\n\r'`"
    LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_PGPLOT | tr -d '\n\r'`"

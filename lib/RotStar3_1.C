@@ -25,6 +25,8 @@
 #include "nbr_spx.h"
 #include "unites.h"
 
+using namespace Lorene;
+
 #include "GyotoUtils.h"
 #include "GyotoRotStar3_1.h"
 #include "GyotoError.h"
@@ -95,7 +97,7 @@ void RotStar3_1::fileName(char const * lorene_res) {
   Mg3d* mg = new Mg3d(resfile);
   Map_et* mps = new Map_et(*mg,resfile);
   Eos* p_eos = Eos::eos_from_file(resfile);
-  star_ = new Star_rot(*mps,*p_eos,resfile);
+  star_ = new Lorene::Star_rot(*mps,*p_eos,resfile);
   star_ -> equation_of_state();
   star_ -> update_metric();
   star_ -> hydro_euler();

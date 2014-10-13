@@ -22,10 +22,13 @@ namespace Gyoto {
   class FactoryMessenger;
 }
 
-class Scalar;
-class Vector;
-class Sym_tensor;
-class Valeur;
+// Forward declarations of Lorene classes
+namespace Lorene {
+  class Scalar;
+  class Vector;
+  class Sym_tensor;
+  class Valeur;
+}
 
 #include <GyotoMetric.h>
 #include <GyotoWorldline.h>
@@ -57,17 +60,17 @@ class Gyoto::Metric::NumericalMetricLorene
   double h0_refine_; ///< Imposed integration step for refined integration
   int refine_; ///< 1 if refined integration needed
   double initial_time_; ///< Time at which (first) metric is given
-  Scalar** lapse_tab_;
-  Vector** shift_tab_;
-  Sym_tensor** gamcov_tab_;
-  Sym_tensor** gamcon_tab_;
-  Sym_tensor** kij_tab_;
+  Lorene::Scalar** lapse_tab_;
+  Lorene::Vector** shift_tab_;
+  Lorene::Sym_tensor** gamcov_tab_;
+  Lorene::Sym_tensor** gamcon_tab_;
+  Lorene::Sym_tensor** kij_tab_;
   double* times_; ///< Coordinate times at which metrics are given
   int nb_times_; ///< Nb of time slices
-  Valeur** nssurf_tab_; ///< Metric source (e.g. star) surface (if any)
-  Vector** vsurf_tab_; ///< 4-velocity at surface (if any)
-  Scalar** lorentz_tab_; ///< Lorentz factor at surface (if any)
-  Valeur** hor_tab_; ///< Apparent horizon (if any)
+  Lorene::Valeur** nssurf_tab_; ///< Metric source (e.g. star) surface (if any)
+  Lorene::Vector** vsurf_tab_; ///< 4-velocity at surface (if any)
+  Lorene::Scalar** lorentz_tab_; ///< Lorentz factor at surface (if any)
+  Lorene::Valeur** hor_tab_; ///< Apparent horizon (if any)
   double risco_; ///< ISCO coordinate radius
   double rmb_; ///< Marginally bound orbit coordinate radius
 
@@ -84,22 +87,22 @@ class Gyoto::Metric::NumericalMetricLorene
    */
   virtual void setMetricSource();
   char const * getFileName() const;
-  Vector** getShift_tab() const;
-  Scalar** getLapse_tab() const;
-  Sym_tensor** getGamcon_tab() const;
+  Lorene::Vector** getShift_tab() const;
+  Lorene::Scalar** getLapse_tab() const;
+  Lorene::Sym_tensor** getGamcon_tab() const;
   double* getTimes() const;
   int getNbtimes() const;
-  Valeur** getNssurf_tab() const;
-  Vector** getVsurf_tab() const;
-  Scalar** getLorentz_tab() const;
-  Valeur** getHor_tab() const;
+  Lorene::Valeur** getNssurf_tab() const;
+  Lorene::Vector** getVsurf_tab() const;
+  Lorene::Scalar** getLorentz_tab() const;
+  Lorene::Valeur** getHor_tab() const;
   double getRisco() const;
   double getRmb() const;
-  void setLapse_tab(Scalar* lapse, int ii);
-  void setShift_tab(Vector* shift, int ii);
-  void setGamcov_tab(Sym_tensor* gamcov, int ii);
-  void setGamcon_tab(Sym_tensor* gamcon, int ii);
-  void setKij_tab(Sym_tensor* kij, int ii);
+  void setLapse_tab(Lorene::Scalar* lapse, int ii);
+  void setShift_tab(Lorene::Vector* shift, int ii);
+  void setGamcov_tab(Lorene::Sym_tensor* gamcov, int ii);
+  void setGamcon_tab(Lorene::Sym_tensor* gamcon, int ii);
+  void setKij_tab(Lorene::Sym_tensor* kij, int ii);
   void setTimes(double time,int ii);
   
   /**
