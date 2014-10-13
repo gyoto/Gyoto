@@ -359,7 +359,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       // First tell the workers to join our task force
       // The corresponding recv is in gyoto-scenery-worker.c
 
-      size_t *ijr = new size_t[working*2];
+      size_t *ijr = new size_t[working*2+2];
 
       while (working) {
 	// receive one result, need to track back where it belongs and
