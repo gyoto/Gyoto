@@ -6,7 +6,8 @@
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
 gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
-      [\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR]
+      [\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR]
+      [\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR]
       [\fB\-\-time\fR=\fItobs\fR] [\fB\-\-tmin\fR=\fItmin\fR]
       [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
       [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
@@ -63,10 +64,14 @@ pixel of the complete image has coordinates i=1 and j=1.
 Default value: 1.
 .IP \fB\-\-imax\fR=\fIi1
 Default value: \fInpix\fR (see option \fB\-\-resolution\fR below).
+.IP \fB\-\-di\fR=\fIdi
+Default value:1.
 .IP \fB\-\-jmin\fR=\fIj0
 Default value: 1.
 .IP \fB\-\-jmax\fR=\fIj1
 Default value: \fInpix\fR (see option \fB\-\-resolution\fR below).
+.IP \fB\-\-dj\fR=\fIdj
+Default value:1.
 
 .SS Setting the camera position
 The following parameters are normally provided in the Screen section

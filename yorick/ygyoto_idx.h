@@ -40,17 +40,21 @@ private:
   
 public:
   Idx(int iarg, int res);
-  int isNuller();
-  int getNDims();
-  long getNElements();
+  int isNuller() const;
+  int getNDims() const;
+  long getNElements() const;
   long first();
-  int  valid();
+  int  valid() const;
   long next();
-  long current();
-  double getDVal();
-  int isDouble();
-  int isFirst();
-  int isLast();
+  long current() const;
+  double getDVal() const;
+  int isDouble() const;
+  int isRangeOrScalar() const;
+  int isFirst() const;
+  int isLast() const;
+  long range_min() const;
+  long range_max() const;
+  long range_dlt() const;
 };
 
 

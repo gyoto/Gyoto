@@ -737,6 +737,13 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    */
   Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_ ;
 # endif
+
+  typedef int alloc_t; 
+  enum alloc_values {minimal=0, entire_field=1, all_rows=2};
+  alloc_t alloc;
+  ptrdiff_t di;
+  ptrdiff_t dj;
+
  public:
   Properties(); ///< Default constructor (everything is set to NULL);
   Properties (double*, double*); ///<< Set intensity and time pointers.

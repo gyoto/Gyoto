@@ -19,20 +19,23 @@
 
 #include "ygyoto_idx.h"
 #include "yapi.h"
+#include "GyotoError.h"
 
 using namespace YGyoto;
+using namespace Gyoto;
 
-int YGyoto::Idx::isNuller() {return _is_nuller;}
-long YGyoto::Idx::getNElements() {return _nel;}
-long YGyoto::Idx::current() {
+int YGyoto::Idx::isNuller() const {return _is_nuller;}
+long YGyoto::Idx::getNElements() const {return _nel;}
+long YGyoto::Idx::current() const {
   if (_is_list) return _idx[_cur];
   return _cur;
 }
-double YGyoto::Idx::getDVal() {return _is_double?_dval:_range[0];}
-int YGyoto::Idx::isDouble() {return _is_double;}
-int YGyoto::Idx::isFirst() {return _is_first;}
+double YGyoto::Idx::getDVal() const {return _is_double?_dval:_range[0];}
+int YGyoto::Idx::isDouble() const {return _is_double;}
+int YGyoto::Idx::isRangeOrScalar() const {return _is_range || _is_scalar;}
+int YGyoto::Idx::isFirst() const {return _is_first;}
 
-int YGyoto::Idx::isLast() {
+int YGyoto::Idx::isLast() const {
   if (_is_range) return _cur+_range[2] > _range[1];
   if (_is_scalar) return 1;
   if (_is_list) return _cur >= _nel;
@@ -47,7 +50,7 @@ long YGyoto::Idx::first() {
   return 0;
 }
 
-int YGyoto::Idx::valid() {
+int YGyoto::Idx::valid() const {
   if (_is_range) return _cur<=_range[1];
   if (_is_scalar) return _cur==_range[0];
   if (_is_list) return _cur<_nel;
@@ -64,6 +67,20 @@ long YGyoto::Idx::next() {
   return 0;
 }
 
+long YGyoto::Idx::range_min() const {
+  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  return _range[0];
+}
+
+long YGyoto::Idx::range_max() const {
+  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  return _range[1];
+}
+
+long YGyoto::Idx::range_dlt() const {
+  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  return _range[2];
+}
 
 YGyoto::Idx::Idx(int iarg, int res) :
   _is_nuller(0), _is_range(0), _is_list(0), _is_scalar(0), _is_double(0)
@@ -128,7 +145,7 @@ YGyoto::Idx::Idx(int iarg, int res) :
   y_error("unsupported range syntax");
 }
 
-int YGyoto::Idx::getNDims() {
+int YGyoto::Idx::getNDims() const {
   if (_is_range) return 1;
   if (_is_list) return 1;
   if (_is_scalar) return 0;

@@ -365,6 +365,7 @@ extern "C" {
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
+      prop.alloc=Astrobj::Properties::minimal;
       SmartPointer<Screen> screen = (*OBJ) -> screen();
 #     ifdef HAVE_UDUNITS
       if (data) (*OBJ)->setPropertyConverters(&prop);
@@ -441,7 +442,16 @@ extern "C" {
 	ph->setInitCoord(coord, -1);
 	ph->delta((*OBJ)->delta());
 	ph->hit(&prop);
+      } else if (i_idx.isRangeOrScalar() && j_idx.isRangeOrScalar()){
+	// i and j can be trated as ranges
+	// We will use Scenery::rayTrace()
+	prop.di=i_idx.range_dlt();
+	prop.dj=j_idx.range_dlt();
+	(*OBJ)->rayTrace(i_idx.range_min(), i_idx.range_max(),
+			 j_idx.range_min(), j_idx.range_max(),
+			 &prop, impactcoords);
       } else {
+	// i and j specify integers; at least one is a list.
 	screen -> computeBaseVectors();
 	double coord[8];
 	screen -> getRayCoord(size_t(i_idx.first()),

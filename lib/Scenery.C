@@ -132,7 +132,7 @@ typedef struct SceneryThreadWorkerArg {
   pthread_mutex_t * mutex;
   pthread_t * parent;
 #endif
-  size_t i, j, imin, imax, jmin, jmax;
+  size_t i, j, imin, imax, jmin, jmax, eol_offset;
   Scenery *sc;
   Photon * ph;
   Astrobj::Properties *data;
@@ -160,8 +160,11 @@ static void * SceneryThreadWorker (void *arg) {
 
   // local variables to store our parameters
   size_t i, j;
-  size_t eol_offset =
-    larg->sc->screen()->resolution() - larg->imax + larg->imin -1;
+
+  // end-of-line offset, depends on whether memory was allocated for
+  // the full field or only for the imin-imax, jmin:jmax window
+  size_t eol_offset = larg -> eol_offset;
+
   Astrobj::Properties data;
   double * impactcoords = NULL;
 
@@ -189,13 +192,13 @@ static void * SceneryThreadWorker (void *arg) {
 
     data = *larg->data; 
     // update i, j and pointer
-    ++larg->i;
-    ++(*larg->data);
+    larg->i += data.di;
+    *larg->data += data.alloc&Astrobj::Properties::all_rows?data.di:1;
     if (larg->impactcoords) {
-      impactcoords = larg->impactcoords; larg->impactcoords+=16;
+      impactcoords = larg->impactcoords; larg->impactcoords+=16*data.di;
     }
     if (larg->i > larg->imax) {
-      ++larg->j; larg->i=larg->imin;
+      larg->j+=data.dj; larg->i=larg->imin;
       (*larg->data) += eol_offset;
       if (larg->impactcoords) larg->impactcoords+=16*eol_offset;
     }
@@ -269,6 +272,33 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
   if (data) setPropertyConverters(data);
 
+  // curcell will be the current cell, i.e. where to store the
+  // result of the next computation. It's initial value depends on
+  // how memory was allocated in data:
+  //
+  //   data->alloc & Properties::entire_field means memory was
+  //       allocated for the entire field. Else, memory was only
+  //       allocated for the imin:imax, jmin:jmax portion.
+  //
+  // eol_offset is the additional offset at the end of a line. It is 0
+  // if memory was allocated only for the window.
+  size_t curcell=0, eol_offset=0;
+  if (data && data->alloc & Astrobj::Properties::entire_field) {
+    curcell = (jmin-1)*npix+imin-1;
+    eol_offset = data->dj*npix - data->di*((imax-imin)/data->di+1);
+  }
+
+  if (data) {
+    int toto=debug();
+    debug(1);
+    GYOTO_DEBUG_EXPR(data->di);
+    GYOTO_DEBUG_EXPR(data->dj);
+    GYOTO_DEBUG_EXPR(data->alloc);
+    GYOTO_DEBUG_EXPR(curcell);
+    GYOTO_DEBUG_EXPR(eol_offset);
+    GYOTO_DEBUG_EXPR((imax-imin)%data->di);
+    debug(toto);
+  }
 #ifdef HAVE_MPI
   if (mpi_team_) {
     // We are in an MPI content, either the manager or a worker.
@@ -359,7 +389,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       // First tell the workers to join our task force
       // The corresponding recv is in gyoto-scenery-worker.c
 
-      size_t *ijr = new size_t[working*2+2];
+      vector<size_t> cell(working+1);
 
       while (working) {
 	// receive one result, need to track back where it belongs and
@@ -374,33 +404,32 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	w = s.source();
 	
 	if (s.tag()==Scenery::raytrace_done && data) {
-	  size_t cell=(ijr[2*w+1]-1)*npix+ijr[2*w]-1;
 	  // Copy each relevant quantity, performing conversion if needed
 	  if (data->intensity)
-	    data->intensity[cell]=data->intensity_converter_?
+	    data->intensity[cell[w]]=data->intensity_converter_?
 	      (*data->intensity_converter_)(*locdata->intensity):
 	      *locdata->intensity;
-	  if (data->time) data->time[cell]=*locdata->time;
-	  if (data->distance) data->distance[cell]=*locdata->distance;
-	  if (data->first_dmin) data->first_dmin[cell]=*locdata->first_dmin;
-	  if (data->redshift) data->redshift[cell]=*locdata->redshift;
+	  if (data->time) data->time[cell[w]]=*locdata->time;
+	  if (data->distance) data->distance[cell[w]]=*locdata->distance;
+	  if (data->first_dmin) data->first_dmin[cell[w]]=*locdata->first_dmin;
+	  if (data->redshift) data->redshift[cell[w]]=*locdata->redshift;
 	  if (data->impactcoords)
 	    for (size_t k=0; k<16; ++k)
-	      data->impactcoords[cell*16+k]=locdata->impactcoords[k];
-	  if (data->user1) data->user1[cell]=*locdata->user1;
-	  if (data->user2) data->user2[cell]=*locdata->user2;
-	  if (data->user3) data->user3[cell]=*locdata->user3;
-	  if (data->user4) data->user4[cell]=*locdata->user4;
-	  if (data->user5) data->user5[cell]=*locdata->user5;
+	      data->impactcoords[cell[w]*16+k]=locdata->impactcoords[k];
+	  if (data->user1) data->user1[cell[w]]=*locdata->user1;
+	  if (data->user2) data->user2[cell[w]]=*locdata->user2;
+	  if (data->user3) data->user3[cell[w]]=*locdata->user3;
+	  if (data->user4) data->user4[cell[w]]=*locdata->user4;
+	  if (data->user5) data->user5[cell[w]]=*locdata->user5;
 	  if (data->spectrum)
 	    for (size_t c=0; c<nbnuobs; ++c)
-	      data->spectrum[cell+c*data->offset]=
+	      data->spectrum[cell[w]+c*data->offset]=
 		data->spectrum_converter_?
 		(*data->spectrum_converter_)(locdata->spectrum[c]):
 		locdata->spectrum[c];
 	  if (data->binspectrum)
 	    for (size_t c=0; c<nbnuobs; ++c)
-	      data->binspectrum[cell+c*data->offset]=
+	      data->binspectrum[cell[w]+c*data->offset]=
 		data->binspectrum_converter_?
 		(*data->binspectrum_converter_)(locdata->binspectrum[c]):
 		locdata->binspectrum[c];
@@ -408,25 +437,42 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
 	// give new task or decrease working counter
 	if (ij[0]<=imax) {
-	  ijr[2*w]=ij[0];
-	  ijr[2*w+1]=ij[1];
-	  size_t cell=(ijr[2*w+1]-1)*npix+ijr[2*w]-1;
+	  cell[w]=curcell; // store curcell
 	  mpi_team_ -> send(w, raytrace, ij, 2);
 
+  if (data) {
+    int toto=debug();
+    debug(1);
+    GYOTO_DEBUG_EXPR(data->di);
+    GYOTO_DEBUG_EXPR(data->dj);
+    GYOTO_DEBUG_EXPR(data->alloc);
+    GYOTO_DEBUG_EXPR(curcell);
+    GYOTO_DEBUG_EXPR(eol_offset);
+    GYOTO_DEBUG_EXPR((imax-imin)%data->di);
+    debug(toto);
+  }
+
 	  if (impactcoords) {
-	    mpi_team_ -> send(w, Scenery::impactcoords, impactcoords+cell*16, 16);
+	    mpi_team_ -> send(w, Scenery::impactcoords, impactcoords+cell[w]*16, 16);
 	  }
 
-	  if (++ij[0]>imax) {
-	    cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
-	    if (++ij[1]<=jmax) ij[0]=imin;
+	  curcell += (data&&data->alloc&Astrobj::Properties::all_rows)?
+	    data->di:1;
+
+	  if ( (ij[0]+=data?data->di:1) >imax) {
+	    if (verbose()) 
+	      cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
+	    if ( (ij[1]+=data?data->dj:1) <=jmax) {
+	      ij[0]=imin;
+	      curcell += eol_offset;
+	    }
 	  }
 	} else {
 	  mpi_team_ -> send(w, raytrace_done, ij, 2);
 	  --working;
 	}
       }
-      delete [] ijr;
+      if (verbose()) cout << endl;
     } else {
       // We are a worker, do we need to query for impactcoords?
       double ipct[16];
@@ -473,6 +519,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   larg.imax=imax;
   larg.jmin=jmin;
   larg.jmax=jmax;
+  larg.eol_offset=eol_offset;
 
   struct timeval tim;
   double start, end;

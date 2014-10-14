@@ -89,6 +89,7 @@ int main(int argc, char** argv) {
   string param;
 
   size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
+  ptrdiff_t di=1, dj=1;
   //  double tobs, tmin, fov, dist, paln, incl, arg;
   double tobs=0., tmin=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
   size_t res=0, nthreads=0, nprocs=0;
@@ -147,6 +148,14 @@ int main(int argc, char** argv) {
 	  cerr << "In gyoto.C: screen indices should be >0" << endl;
 	  return 1;
 	}
+      }
+      else if (param.substr(0,5)=="--di=") {
+	di=atoi(param.substr(5).c_str());
+	if (di==0) di=1;
+      }
+      else if (param.substr(0,5)=="--dj=") {
+	dj=atoi(param.substr(5).c_str());
+	if (dj==0) dj=1;
       }
       else if (param.substr(0,15)=="--impact-coords")  {
 	if (param.size() > 16 && param.substr(15,1)=="=")
@@ -324,6 +333,10 @@ int main(int argc, char** argv) {
 
     // Allocate space for the output data
     data = new Astrobj::Properties();
+    data->alloc=
+      Astrobj::Properties::entire_field |
+      Astrobj::Properties::all_rows;
+    data->di=di; data->dj=dj;
 
     size_t curquant=0;
     size_t offset=res*res;
