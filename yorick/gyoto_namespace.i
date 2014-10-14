@@ -3,6 +3,8 @@ gyoto=save(
            haveCFITSIO=gyoto_haveCFITSIO,
            haveBoost=gyoto_haveBoost,
            haveUDUNITS=gyoto_haveUDUNITS,
+           havePTHREAD=gyoto_havePTHREAD,
+           haveMPI=gyoto_haveMPI,
            loadPlugin=gyoto_loadPlugin,
 
            Scenery=gyoto_Scenery,

@@ -160,6 +160,30 @@ extern "C" {
   }
 
   void
+  Y_gyoto_havePTHREAD(int)
+  {
+    ypush_long(
+#if defined HAVE_PTHREAD
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
+  Y_gyoto_haveMPI(int)
+  {
+    ypush_long(
+#if defined HAVE_MPI
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
   Y___gyoto_exportSupplier(int)
   {
     if (!YGyotoGlobalSupplier) {

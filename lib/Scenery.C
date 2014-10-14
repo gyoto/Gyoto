@@ -860,16 +860,19 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
     if (mpi_team_->size()==nbchildren+1) return;
     mpiTerminate(true);
   }
-  if (!mpi_env_)   mpi_env_   = new mpi::environment();
-  if (!mpi_world_) mpi_world_ = new mpi::communicator();
 
-  MPI_Comm children_c;
-  MPI_Comm_spawn(const_cast<char*>("gyoto-mpi-worker"),
-		 MPI_ARGV_NULL, nbchildren,
-                 MPI_INFO_NULL, 0, MPI_COMM_SELF, &children_c,
-                 MPI_ERRCODES_IGNORE);
+  if (nbchildren) {
+    if (!mpi_env_)   mpi_env_   = new mpi::environment();
+    if (!mpi_world_) mpi_world_ = new mpi::communicator();
 
-  mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
+    MPI_Comm children_c;
+    MPI_Comm_spawn(const_cast<char*>("gyoto-mpi-worker"),
+		   MPI_ARGV_NULL, nbchildren,
+		   MPI_INFO_NULL, 0, MPI_COMM_SELF, &children_c,
+		   MPI_ERRCODES_IGNORE);
+
+    mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
+  }
 }
 
 void Gyoto::Scenery::mpiTerminate(bool keep_env) {

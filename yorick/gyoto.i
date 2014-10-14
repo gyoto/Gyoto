@@ -48,6 +48,23 @@ extern gyoto_haveUDUNITS;
     HAVE_UDUNITS=1 if compiled with UDUNITS, else 0.
 */
 
+extern gyoto_havePTHREAD;
+/* DOCUMENT have_pthread = gyoto.havePTHREAD()
+    Tell whether GYOTO was compiled with POSIX thread support
+    (multi-thread parallel computing)
+   OUTPUT:
+    HAVE_PTHREAD=1 if compiled with PTHREAD, else 0.
+*/
+
+extern gyoto_haveMPI;
+/* DOCUMENT have_mpi = gyoto.haveMPI()
+    Tell whether GYOTO was compiled with MPI support (multi-process
+    parallel computing)
+    
+   OUTPUT:
+    HAVE_MPI=1 if compiled with MPI, else 0.
+*/
+
 extern __gyoto_setErrorHandler;
 /* xDOCUMENT __gyoto_setErrorHandler
    Must be called once to attach the GYOTO error handler to Yorick's one
@@ -476,6 +493,23 @@ extern gyoto_Scenery;
     nthreads=number of parallel threads to use in
              gyoto.Scenery_rayTrace. This has no effect when
              ray-tracing using the "data = scenery()" syntax below.
+
+    mpispawn=number of parallel MPI jobs (a.k.a. workers) to spawn for
+             ray-tracing using gyoto.Scenery_rayTrace(). Works only if
+             MPI support was built in. Spawned jobs may consume CPU
+             cycles even if they are idle. Use mpispawn=0 to terminate
+             those jobs. Always use mpiclone to send the current
+             Scenery to the workers before calling
+             gyoto.Scenery_rayTrace(). This can be done in the same
+             call as mpispawn:
+               sc, mpispawn=12, mpiclone=;
+
+    mpiclone=[anything]: clone this Scenery into the MPI workers (see
+             mpispawn). The workers do not stay synchonised
+             automatically. mpiclone must always be called right
+             before gyoto.Scenery_rayTrace() (i.e. after any
+             modification to the Scenery or any of the objects it
+             contains, and after having called mpispawn).
                     
     RAY-TRACING:
     
@@ -508,8 +542,28 @@ extern gyoto_Scenery_rayTrace
 /* DOCUMENT res = gyoto.Scenery_rayTrace(scenery, imin, imax, jmin, jmax,
                                          impactcoords)
 
-     if IMPACTCOORDS is an unadorned, nil variable it is output. If it
+     If IMPACTCOORDS is an unadorned, nil variable it is output. If it
      is an expression or non-nil, it is input.
+
+     This function is a very thin wrapper around the C++ method
+     Gyoto::Scenery::rayTrace(). It behaves exactly the same as the
+     command-line utility gyoto, except:
+     
+     - the data are returned as a Yorick array instead of saved to a
+       FITS file (if multiple quantities are requested, they are
+       stored in successive planes in he output data cube);
+     - (i|j)(min|max) default to sane values.
+       
+     Gyoto provides an alternative manner for ray-tracing, which is
+     simply calling the Scenery object without any keyword
+     argument. The two methods are not equivalent.
+     
+     Example using MPI multi-processing:
+       #include "gyoto.i"
+       restore, gyoto;
+       sc = Scenery("../doc/examples/example-polish-doughnut.xml");
+       data = Scenery_rayTrace(sc(mpispawn=12, mpiclone=));
+       sc, mpispawn=0;
  */
 
 func _gyoto_Scenery_adaptive_raytrace(sco, respmax, &computed) {

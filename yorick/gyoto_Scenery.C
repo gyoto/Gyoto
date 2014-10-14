@@ -166,10 +166,11 @@ extern "C" {
       "abstol", "reltol", 
       "xmlwrite", "clone", "clonephoton",
       "impactcoords", "nthreads",
+      "mpispawn", "mpiclone",
       0
     };
 
-    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 21)
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 23)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
@@ -248,6 +249,14 @@ extern "C" {
     }
 
     YGYOTO_WORKER_GETSET_LONG2(nThreads);
+#ifdef HAVE_MPI
+    YGYOTO_WORKER_RUN( mpiSpawn(ygets_l(iarg)) );
+    YGYOTO_WORKER_RUN( mpiClone() );
+#else
+    if ((iarg=kiargs[++k])>=0) GYOTO_WARNING << "No MPI in this GYOTO" << endl;
+    if ((iarg=kiargs[++k])>=0) GYOTO_WARNING << "No MPI in this GYOTO" << endl;
+#endif
+
 
     // Get ray-traced image if there is a supplementary positional argument
     if (
