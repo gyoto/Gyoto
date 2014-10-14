@@ -26,6 +26,10 @@
 #include <signal.h>
 #include <vector>
 
+#if defined HAVE_MPI
+# include <mpi.h>
+#endif
+
 #include "ygyoto.h"
 #include "ygyoto_private.h"
 
@@ -181,6 +185,25 @@ extern "C" {
 	       0
 #endif
 	       );
+  }
+
+  void
+  Y_gyoto_mpiFinalize(int)
+  {
+    ypush_nil();
+#if defined HAVE_MPI
+    if (!MPI::Is_finalized()) MPI::Finalize();
+#endif
+  }
+
+  void
+  Y_gyoto_mpiFinalized(int argc)
+  {
+#if defined HAVE_MPI
+    ypush_long(MPI::Is_finalized());
+#else
+    ypush_long(1);
+#endif
   }
 
   void

@@ -200,6 +200,8 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   size_t nthreads_; ///< Number of parallel threads to use in rayTrace()
 
+  int nprocesses_; ///< Number of parallel processes to use in rayTrace()
+
 # ifdef HAVE_UDUNITS
   /// See Astrobj::Properties::intensity_converter_
   Gyoto::SmartPointer<Gyoto::Units::Converter> intensity_converter_;
@@ -211,12 +213,10 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
 # ifdef HAVE_MPI
  public:
-  boost::mpi::environment * mpi_env_;
-  boost::mpi::communicator * mpi_world_;
   boost::mpi::communicator * mpi_team_;
   static bool am_worker;
   void mpiSpawn(int nbchildren);
-  void mpiTerminate (bool keep_env=false);
+  void mpiTerminate ();
   void mpiClone();
   enum mpi_tag {give_task, read_scenery, terminate,
 		raytrace, raytrace_done, ready,
@@ -345,6 +345,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   void nThreads(size_t); ///< Set nthreads_;
   size_t nThreads() const ; ///< Get nthreads_;
+
+  void nProcesses(int); ///< Set nprocesses_;
+  int  nProcesses() const ; ///< Get nprocesses_;
 
   /// Set Scenery::intensity_converter_
   void intensityConverter(std::string unit);

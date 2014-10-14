@@ -89,8 +89,6 @@ int main(int argc, char** argv) {
   int rk=world.rank();
 
   sc = new Scenery();
-  sc -> mpi_world_   = &world;
-  sc -> mpi_env_     = &env;
   sc -> mpi_team_    = &team;
 
   Scenery::mpi_tag task=Scenery::give_task;
@@ -104,8 +102,6 @@ int main(int argc, char** argv) {
       curmsg = "In gyoto-mpi-worker.C: Error in Factory creation: ";
       curretval = 1;
       sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
-      sc -> mpi_world_   = &world;
-      sc -> mpi_env_     = &env;
       sc -> mpi_team_    = &team;
      break;
     }
@@ -118,7 +114,7 @@ int main(int argc, char** argv) {
       sc = NULL;
       break;
     default:
-      std::cerr << "unknown task" << endl;
+      std::cerr << "unknown task " << task << endl;
     }
   }
 

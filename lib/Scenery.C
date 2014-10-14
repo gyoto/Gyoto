@@ -52,7 +52,7 @@ Scenery::Scenery() :
   screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), nthreads_(0)
 #ifdef HAVE_MPI
-  , mpi_env_(NULL), mpi_world_(NULL), mpi_team_(NULL)
+  , mpi_team_(NULL)
 #endif
 {}
 
@@ -62,7 +62,7 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
   screen_(scr), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), nthreads_(0)
 #ifdef HAVE_MPI
-  , mpi_env_(NULL), mpi_world_(NULL), mpi_team_(NULL)
+  , mpi_team_(NULL)
 #endif
 {
   metric(met);
@@ -76,7 +76,7 @@ Scenery::Scenery(const Scenery& o) :
   quantities_(o.quantities_), ph_(o.ph_), 
   nthreads_(o.nthreads_)
 #ifdef HAVE_MPI
-  , mpi_env_(NULL), mpi_world_(NULL), mpi_team_(NULL)
+  , mpi_team_(NULL)
 #endif
 {
   if (o.screen_()) {
@@ -126,6 +126,9 @@ void Scenery::delta(double d, const string &unit) {
 
 void  Scenery::nThreads(size_t n) { nthreads_ = n; }
 size_t Scenery::nThreads() const { return nthreads_; }
+
+void  Scenery::nProcesses(int n) { nprocesses_ = n; }
+int Scenery::nProcesses() const { return nprocesses_; }
 
 typedef struct SceneryThreadWorkerArg {
 #ifdef HAVE_PTHREAD
@@ -240,7 +243,19 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 		       Astrobj::Properties *data,
 		       double * impactcoords) {
 
-
+#if defined HAVE_MPI
+  bool need_to_terminate=false;
+  if (nprocesses_ && mpi_team_) {
+    if (!MPI::Is_initialized() && !MPI::Is_finalized()) need_to_terminate=true;
+    if (MPI::Is_finalized()) {
+      GYOTO_SEVERE
+	<< "MPI_Finalize() has been called already, won't use MPI"<< endl;
+    } else {
+      mpiSpawn(nprocesses_);
+      mpiClone();
+    }
+  }
+#endif
 
   /*
      Ray-trace now is multi-threaded. What it does is
@@ -288,17 +303,6 @@ void Scenery::rayTrace(size_t imin, size_t imax,
     eol_offset = data->dj*npix - data->di*((imax-imin)/data->di+1);
   }
 
-  if (data) {
-    int toto=debug();
-    debug(1);
-    GYOTO_DEBUG_EXPR(data->di);
-    GYOTO_DEBUG_EXPR(data->dj);
-    GYOTO_DEBUG_EXPR(data->alloc);
-    GYOTO_DEBUG_EXPR(curcell);
-    GYOTO_DEBUG_EXPR(eol_offset);
-    GYOTO_DEBUG_EXPR((imax-imin)%data->di);
-    debug(toto);
-  }
 #ifdef HAVE_MPI
   if (mpi_team_) {
     // We are in an MPI content, either the manager or a worker.
@@ -439,19 +443,6 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	if (ij[0]<=imax) {
 	  cell[w]=curcell; // store curcell
 	  mpi_team_ -> send(w, raytrace, ij, 2);
-
-  if (data) {
-    int toto=debug();
-    debug(1);
-    GYOTO_DEBUG_EXPR(data->di);
-    GYOTO_DEBUG_EXPR(data->dj);
-    GYOTO_DEBUG_EXPR(data->alloc);
-    GYOTO_DEBUG_EXPR(curcell);
-    GYOTO_DEBUG_EXPR(eol_offset);
-    GYOTO_DEBUG_EXPR((imax-imin)%data->di);
-    debug(toto);
-  }
-
 	  if (impactcoords) {
 	    mpi_team_ -> send(w, Scenery::impactcoords, impactcoords+cell[w]*16, 16);
 	  }
@@ -473,6 +464,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	}
       }
       if (verbose()) cout << endl;
+      if (need_to_terminate) {
+	mpiTerminate();
+	MPI_Finalize();
+      }
     } else {
       // We are a worker, do we need to query for impactcoords?
       double ipct[16];
@@ -838,6 +833,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
 
   fmp -> setParameter("MinimumTime", tMin());
   fmp -> setParameter("NThreads", nthreads_);
+  fmp -> setParameter("NProcesses", nprocesses_);
 }
 
 SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
@@ -872,18 +868,9 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
     if (name=="DeltaMaxOverR") sc -> ph_ . deltaMaxOverR (atof(content.c_str()));
     if (name=="AbsTol")    sc -> ph_ . absTol(atof(content.c_str()));
     if (name=="RelTol")    sc -> ph_ . relTol(atof(content.c_str()));
-    if (name=="NProcesses")  mpi=atoi(tc);
+    if (name=="NProcesses")  sc -> nProcesses(atoi(content.c_str()));
 
   }
-#ifdef HAVE_MPI
-
-  if (!Scenery::am_worker && mpi) {
-    sc -> mpiSpawn(mpi);
-    sc -> mpiClone();
-  }
-
-#endif
-
   return sc;
 }
 #endif
@@ -905,12 +892,11 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 
   if (mpi_team_) {
     if (mpi_team_->size()==nbchildren+1) return;
-    mpiTerminate(true);
+    mpiTerminate();
   }
 
   if (nbchildren) {
-    if (!mpi_env_)   mpi_env_   = new mpi::environment();
-    if (!mpi_world_) mpi_world_ = new mpi::communicator();
+    if (!MPI::Is_initialized()) MPI::Init();
 
     MPI_Comm children_c;
     MPI_Comm_spawn(const_cast<char*>("gyoto-mpi-worker"),
@@ -922,21 +908,13 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   }
 }
 
-void Gyoto::Scenery::mpiTerminate(bool keep_env) {
+void Gyoto::Scenery::mpiTerminate() {
   if (mpi_team_) {
     mpi_tag tag=terminate;
     mpiTask(tag);
     mpi_team_->barrier();
     delete mpi_team_;
     mpi_team_=NULL;
-  }
-  if (mpi_world_ && !keep_env) {
-    delete mpi_world_;
-    mpi_world_=NULL;
-  }
-  if (mpi_env_ && !keep_env) {
-    delete mpi_env_;
-    mpi_env_=NULL;
   }
 }
 

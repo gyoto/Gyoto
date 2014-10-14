@@ -5,6 +5,8 @@ gyoto=save(
            haveUDUNITS=gyoto_haveUDUNITS,
            havePTHREAD=gyoto_havePTHREAD,
            haveMPI=gyoto_haveMPI,
+           mpiFinalize=gyoto_mpiFinalize,
+           mpiFinalized=gyoto_mpiFinalized,
            loadPlugin=gyoto_loadPlugin,
 
            Scenery=gyoto_Scenery,

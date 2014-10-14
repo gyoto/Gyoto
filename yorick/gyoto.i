@@ -65,6 +65,27 @@ extern gyoto_haveMPI;
     HAVE_MPI=1 if compiled with MPI, else 0.
 */
 
+extern gyoto_mpiFinalize;
+/* DOCUMENT gyoto.mpiFinalize;
+    Finalize MPI.
+    
+    Unlike the underlying implementation, does not trigger an error if
+    MPI is already finalized.
+
+    This is a noop if MPI is not compiled-in.
+
+   SEE ALSO: gyoto.haveMPI, gyoto.mpiFinalized
+*/
+
+extern gyoto_mpiFinalized;
+/* DOCUMENT is_finalized=gyoto.mpiFinalized();
+    Tell whether some implemention of MPI_Finalize() was already called.
+
+    If MPI support is not present, return 1.
+
+   SEE ALSO: gyoto.haveMPI, gyoto.mpiFinalize
+ */
+
 extern __gyoto_setErrorHandler;
 /* xDOCUMENT __gyoto_setErrorHandler
    Must be called once to attach the GYOTO error handler to Yorick's one
@@ -532,6 +553,25 @@ extern gyoto_Scenery;
 
     The "Spectrum" quantity is a bit peculiar since it take more than
     one plane in data.
+
+   PARALLEL COMPUTING:
+
+    Gyoto supports parallel computing using either multi-threading
+    (pthreads) or multi-processing (MPI). Not all classes work well
+    using multi-threading (in particular, Lorene metrics are not
+    thread-safe). On the other hand, all of Gyoto should support
+    multi-processing.
+
+    If you want to use mutli-processing, you should take care of:
+      - calling 'sc, mpispawn=<nprocs>' before sending ray-tracing;
+      - calling 'sc, mpiclone=;' once the scenery is ready, before tracing;
+      - before quitting yorick:
+          * destroy all of your sceneries with sc[];
+          * call gyoto.mpiFinalize().
+
+    libgyoto may automatically initialize MPI, in which case it will
+    also automatically terminate it. To prevent this behaviour, use
+    mpispawn at least once before ray-tracing.
     
    SEE ALSO:
      gyoto.Metric, gyoto.Screen, gyoto.Astrobj, gyoto.Photon,

@@ -257,14 +257,8 @@ int main(int argc, char** argv) {
     if (xincl) screen -> inclination    ( incl );
     if (xpaln) screen -> PALN           ( paln );
     if (xarg)  screen -> argument       ( arg  );
-    if (xnthreads)  scenery -> nThreads    ( nthreads  );
-#ifdef HAVE_MPI
-    if (xnprocs) {
-      cerr << "nprocs="<< nprocs<< endl;
-      scenery -> mpiSpawn(nprocs);
-      scenery -> mpiClone();
-    }
-#endif
+    if (xnthreads) scenery -> nThreads    ( nthreads  );
+    if (xnprocs)   scenery -> nProcesses  ( nprocs    );
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
