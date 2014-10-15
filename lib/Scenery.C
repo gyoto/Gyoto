@@ -867,14 +867,12 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 bool Gyoto::Scenery::am_worker=false;
 
 void Gyoto::Scenery::mpiSpawn(int nbchildren) {
-#ifdef HAVE_MPI
-  int flag;
-  if (MPI_Initialized(&flag)) throwError("Error running MPI_Initialized()");
-  if (!flag) {
-    nprocesses_=0;
-    return;
-  }
   nprocesses_=nbchildren;
+#ifdef HAVE_MPI
+  int flagi=0, flagt=0;
+  if (MPI_Initialized(&flagi)) throwError("Error running MPI_Initialized()");
+  if (MPI_Finalized(&flagt)) throwError("Error running MPI_Finalized()");
+  if (!flagi || flagt) return;
   if (mpi_team_) {
     if (mpi_team_->size()==nbchildren+1) return;
     mpiTerminate();
