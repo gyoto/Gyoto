@@ -219,43 +219,6 @@ The \texttt{!} before the \texttt{.fits} file allows to overwrite a pre-existing
 \label{fig:demo}
 \end{figure}
 The line above asks \texttt{GYOTO} to integrate a null geodesic from each pixel of the screen backward in time towards the astrophysical object.
-
-You can accelerate computations by using several cores on a computer
-using the \texttt{----nthreads=NCORES} option. \texttt{NCORES} is the
-number of threads that \texttt{GYOTO} will use. The optimal value is
-usually the number of hardware CPU cores on the machine. This option
-can also be specified in the input file using the
-\texttt{$<$NThreads$>$} entity. This facility does not work for
-LORENE-based metrics (see Sect.~\ref{3+1}). Another cheap way of
-parallelising the computation is to call several \texttt{gyoto}
-instances, running on different CPUs or even on different machines,
-each instance computing only a portion of the image. This sort of
-basic parrallelisation is, naturally, supported by all the
-\texttt{GYOTO} metrics.
-
- You can ask \texttt{GYOTO} to compute only a fraction of the screen's pixels by running:
-
-\begin{code}
- $ gyoto --imin=IMIN --imax=IMAX --jmin=JMIN --jmax=JMAX input.xml \!output.fits
-\end{code}
-%$
-
-where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type:
-\begin{code}
- $ gyoto --imin=16 --imax=16 --jmin=16 --jmax=16 input.xml \!output.fits
-\end{code}
-%$
-
-How to recombine the several output files into a single FITS file is
-left as an exercise to the reader. It is easily done using any
-scientific interpreted language such as
-Yorick\footnote{\url{http://dhmunro.github.io/yorick-doc/}} or
-Python\footnote{\url{https://www.python.org/}}.
-
-Several other parameters can be overridden on the command-line. This
-includes the position of the \texttt{Screen} and the observing time
-(\texttt{--time=TIME}), which is quite useful to produce a movie.
-
 \subsubsection{FITS output file}
 
 Once the computation is performed, the \texttt{output.fits} file is created. You can visualise it by using the \texttt{ds9} software (\url{http://hea-www.harvard.edu/RD/ds9/site/Home.html}) and simply running:
@@ -266,6 +229,72 @@ Once the computation is performed, the \texttt{output.fits} file is created. You
 %$
 
 For instance, if you use the \texttt{example-page-thorne-disk-BL.xml} as is, you will obtain Fig.~\ref{fig:demo}.
+
+\subsection{Parallelisation}
+
+Ray-tracing of several hundreds of light-rays is a problem that is
+easily parralelised, by letting different CPUs compute distinct
+geodesics. \texttt{GYOTO} offers several facilities to perform such
+parallelisation, depending on the hardware and software environment.
+
+\subsubsection{Multi-threading}
+
+You can accelerate computations by using several cores on a computer
+using the \texttt{----nthreads=NCORES} option. \texttt{NCORES} is the
+number of threads that \texttt{GYOTO} will use. The optimal value is
+usually the number of hardware CPU cores on the machine. This option
+can also be specified in the input file using the
+\texttt{$<$NThreads$>$} entity. This facility does not work for
+LORENE-based metrics (see Sect.~\ref{3+1}).
+
+\subsubsection{Multi-processing}
+
+\texttt{GYOTO} is able to use the Message Passing Interface (MPI) to
+distribute the workload over many CPUs, possibly hosted on different
+computers. YOu can activate it by specifying
+\texttt{--nprocesses=NPROCS}. \texttt{NPROCS} is the number of helper
+processes that \texttt{GYOTO} will spawn. This does not include the
+main \texttt{GYOTO} process, which will act as a manager for the
+helpers. This functionnality relies on Astrobj::fillElement() and
+Metric::fillElement() being properly implemented, which is not always
+the case for new classes. Also, classes that use supplemental data
+(additional files referenced to in the XML file) do require that these
+supplemental data be accessible to all the processes using the same
+absolute path. Most notably, Lorene metrics require such data. Astrobj
+classes such as the PatternDisk also require on-disk data.
+
+\subsubsection{Poor-mans parallelisation}
+
+Another cheap way of parallelising the computation is to call several
+\texttt{gyoto} instances, running on different CPUs or even on
+different machines, each instance computing only a portion of the
+image. This sort of basic parrallelisation is, naturally, supported by
+all the \texttt{GYOTO} metrics.
+
+You can ask \texttt{GYOTO} to compute only a fraction of
+the screen's pixels by running:
+
+\begin{code}
+ $ gyoto --imin=IMIN --imax=IMAX --jmin=JMIN --jmax=JMAX --di=DI --dj=DJ input.xml \!output.fits
+\end{code}
+%$
+
+where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. \texttt{DI} and \texttt{DJ} are the step size in the $i$ and $j$ direction respictively. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type:
+\begin{code}
+ $ gyoto --imin=16 --imax=16 --jmin=16 --jmax=16 input.xml \!output.fits
+\end{code}
+%$
+To compute only the points with even $i$ and od $j$, use:
+\begin{code}
+ $ gyoto --imin=2 --di=2 --jmin=1 --dj=2 input.xml \!output.fits
+\end{code}
+%$
+
+How to recombine the several output files into a single FITS file is
+left as an exercise to the reader. It is easily done using any
+scientific interpreted language such as
+Yorick\footnote{\url{http://dhmunro.github.io/yorick-doc/}} or
+Python\footnote{\url{https://www.python.org/}}.
 
 \subsection{The \texttt{gyotoy} interface}
 \label{sect:gyotoy}
@@ -375,6 +404,32 @@ Likewise, to integrate the spectrum over the field-of-view:
  > xytitles, "Frequency [Hz]", "Spectrum [mJy]";
 \end{code}
 
+MPI multi-processing is also available from within Yorick. To activate
+this functionality, you must call \texttt{gyoto.mpiInit} early in your
+script. Spawn the required number of processes using the
+\texttt{mpispawn} method, and don't forget to use the
+\texttt{mpiclone} method. Although not strictly necessary, it is also
+recommended to explicitely terminate helper processes that have been
+spawned in the background (using \texttt{mpispawn=0}, and to call
+\texttt{gyoto.mpiFinalize} at the very end of your script:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > // call MPI_Init():
+ > mpiInit;
+ > sc = Scenery("input.xml");
+ > // spawn helpers and send them the scenery
+ > sc, mpispawn=12, mpiclone=;
+ > // compute stuff
+ > data =sc();
+ > // shut down the helper processes
+ > sc, mpispawn=0;
+ > // shut down MPI
+ > mpiFinalize;
+ > quit;
+\end{code}
+
+
 \subsection{Interfacing directly to the \texttt{GYOTO} library}
 
 The core functionality is provided as a C++ shared library, which is
@@ -383,12 +438,13 @@ plug-in. You can, of course, interface directly to this library. The
 reference is generated from the source code using \texttt{doxygen} in
 the directory \texttt{doc/html/}. The application binary interface
 (ABI) is likely to change with every commit. We try to maintain a
-certain stability in the application programming interface (API), but
-the effort we put into this stability is function of the needs of our
-users. If you start depending on the \texttt{GYOTO} library, please
-contact us (\texttt{gyoto@sympa.obspm.fr}): we will try harder to
-facilitate your work, or at least warn you when there is a significant
-API change.
+certain stability in the application programming interface (API), and
+to maintain a stable branch whic honly sees bug-fixes between official
+releases. But the effort we put into this stability is function of the
+needs of our users. If you start depending on the \texttt{GYOTO}
+library, please contact us (\texttt{gyoto@sympa.obspm.fr}): we will
+try harder to facilitate your work, or at least warn you when there is
+a significant API change.
 
 \section{Choosing the right integrator}
 \label{tuning}
