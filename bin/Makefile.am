@@ -4,24 +4,35 @@ AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES=example-*.fits
 
-bin_PROGRAMS  = gyoto
-if HAVE_MPI
- soverdir=$(pkglibdir)/@sovers@
- sover_PROGRAMS = gyoto-mpi-worker
+bin_PROGRAMS  =
+dist_man_MANS =
+
+if BUILD_GYOTO
+bin_PROGRAMS += gyoto
+dist_man_MANS += gyoto.1
 endif
-dist_man_MANS = gyoto.1
+
+if HAVE_MPI
+bin_PROGRAMS += gyoto-mpi-worker.@sovers@
+dist_man_MANS += gyoto-mpi-worker.@sovers@.1
+endif
+
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
-gyoto_mpi_worker_SOURCES = gyoto-mpi-worker.C
-gyoto_mpi_worker_LDADD   = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
-gyoto_mpi_worker_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_mpi_worker_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
+gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+
+gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
+	cp $^ $@
 
 export PATH := .:$(PATH)
 
+if BUILD_GYOTO
 CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 check: gyoto
 	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
@@ -61,4 +72,5 @@ endif
 if HAVE_UDUNITS
 	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
 	   \!example-polish-doughnut.fits
+endif
 endif

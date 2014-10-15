@@ -79,8 +79,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = gyoto$(EXEEXT)
-@HAVE_MPI_TRUE@sover_PROGRAMS = gyoto-mpi-worker$(EXEEXT)
+bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
+@BUILD_GYOTO_TRUE@am__append_1 = gyoto
+@BUILD_GYOTO_TRUE@am__append_2 = gyoto.1
+@HAVE_MPI_TRUE@am__append_3 = gyoto-mpi-worker.@sovers@
+@HAVE_MPI_TRUE@am__append_4 = gyoto-mpi-worker.@sovers@.1
 subdir = bin
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -101,9 +104,10 @@ CONFIG_HEADER = $(top_builddir)/config.h \
 	$(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(soverdir)" \
-	"$(DESTDIR)$(man1dir)"
-PROGRAMS = $(bin_PROGRAMS) $(sover_PROGRAMS)
+@BUILD_GYOTO_TRUE@am__EXEEXT_1 = gyoto$(EXEEXT)
+@HAVE_MPI_TRUE@am__EXEEXT_2 = gyoto-mpi-worker.@sovers@$(EXEEXT)
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
+PROGRAMS = $(bin_PROGRAMS)
 am_gyoto_OBJECTS = gyoto-gyoto.$(OBJEXT)
 gyoto_OBJECTS = $(am_gyoto_OBJECTS)
 gyoto_DEPENDENCIES = @top_builddir@/lib/libgyoto.la
@@ -114,14 +118,16 @@ am__v_lt_1 =
 gyoto_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(gyoto_LDFLAGS) $(LDFLAGS) -o $@
-am_gyoto_mpi_worker_OBJECTS =  \
-	gyoto_mpi_worker-gyoto-mpi-worker.$(OBJEXT)
-gyoto_mpi_worker_OBJECTS = $(am_gyoto_mpi_worker_OBJECTS)
-gyoto_mpi_worker_DEPENDENCIES = @top_builddir@/lib/libgyoto.la
-gyoto_mpi_worker_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+am_gyoto_mpi_worker_@sovers@_OBJECTS =  \
+	gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.$(OBJEXT)
+gyoto_mpi_worker_@sovers@_OBJECTS =  \
+	$(am_gyoto_mpi_worker_@sovers@_OBJECTS)
+gyoto_mpi_worker_@sovers@_DEPENDENCIES =  \
+	@top_builddir@/lib/libgyoto.la
+gyoto_mpi_worker_@sovers@_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(gyoto_mpi_worker_LDFLAGS) \
-	$(LDFLAGS) -o $@
+	$(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(gyoto_mpi_worker_@sovers@_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -156,8 +162,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_SOURCES)
-DIST_SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_SOURCES)
+SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_@sovers@_SOURCES)
+DIST_SOURCES = $(gyoto_SOURCES) $(gyoto_mpi_worker_@sovers@_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -386,17 +392,16 @@ AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(B
 AM_LDFLAGS = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES = example-*.fits
-@HAVE_MPI_TRUE@soverdir = $(pkglibdir)/@sovers@
-dist_man_MANS = gyoto.1
+dist_man_MANS = $(am__append_2) $(am__append_4)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
-gyoto_mpi_worker_SOURCES = gyoto-mpi-worker.C
-gyoto_mpi_worker_LDADD = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
-gyoto_mpi_worker_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_mpi_worker_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
-CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
+gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
+gyoto_mpi_worker_@sovers@_LDADD = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
+gyoto_mpi_worker_@sovers@_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+@BUILD_GYOTO_TRUE@CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8
 all: all-am
 
 .SUFFIXES:
@@ -480,63 +485,14 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-install-soverPROGRAMS: $(sover_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	@list='$(sover_PROGRAMS)'; test -n "$(soverdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(soverdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(soverdir)" || exit 1; \
-	fi; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p \
-	 || test -f $$p1 \
-	  ; then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' \
-	    -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(soverdir)$$dir'"; \
-	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(soverdir)$$dir" || exit $$?; \
-	    } \
-	; done
-
-uninstall-soverPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(sover_PROGRAMS)'; test -n "$(soverdir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' \
-	`; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(soverdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(soverdir)" && rm -f $$files
-
-clean-soverPROGRAMS:
-	@list='$(sover_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
 
 gyoto$(EXEEXT): $(gyoto_OBJECTS) $(gyoto_DEPENDENCIES) $(EXTRA_gyoto_DEPENDENCIES) 
 	@rm -f gyoto$(EXEEXT)
 	$(AM_V_CXXLD)$(gyoto_LINK) $(gyoto_OBJECTS) $(gyoto_LDADD) $(LIBS)
 
-gyoto-mpi-worker$(EXEEXT): $(gyoto_mpi_worker_OBJECTS) $(gyoto_mpi_worker_DEPENDENCIES) $(EXTRA_gyoto_mpi_worker_DEPENDENCIES) 
-	@rm -f gyoto-mpi-worker$(EXEEXT)
-	$(AM_V_CXXLD)$(gyoto_mpi_worker_LINK) $(gyoto_mpi_worker_OBJECTS) $(gyoto_mpi_worker_LDADD) $(LIBS)
+gyoto-mpi-worker.@sovers@$(EXEEXT): $(gyoto_mpi_worker_@sovers@_OBJECTS) $(gyoto_mpi_worker_@sovers@_DEPENDENCIES) $(EXTRA_gyoto_mpi_worker_@sovers@_DEPENDENCIES) 
+	@rm -f gyoto-mpi-worker.@sovers@$(EXEEXT)
+	$(AM_V_CXXLD)$(gyoto_mpi_worker_@sovers@_LINK) $(gyoto_mpi_worker_@sovers@_OBJECTS) $(gyoto_mpi_worker_@sovers@_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -545,7 +501,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gyoto-gyoto.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Po@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -582,19 +538,19 @@ gyoto-gyoto.obj: gyoto.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto-gyoto.obj `if test -f 'gyoto.C'; then $(CYGPATH_W) 'gyoto.C'; else $(CYGPATH_W) '$(srcdir)/gyoto.C'; fi`
 
-gyoto_mpi_worker-gyoto-mpi-worker.o: gyoto-mpi-worker.C
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker-gyoto-mpi-worker.o -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker-gyoto-mpi-worker.o' libtool=no @AMDEPBACKSLASH@
+gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.o: gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_@sovers@_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.o -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_@sovers@_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.o `test -f 'gyoto-mpi-worker.C' || echo '$(srcdir)/'`gyoto-mpi-worker.C
 
-gyoto_mpi_worker-gyoto-mpi-worker.obj: gyoto-mpi-worker.C
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker-gyoto-mpi-worker.obj -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker-gyoto-mpi-worker.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker-gyoto-mpi-worker.obj' libtool=no @AMDEPBACKSLASH@
+gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.obj: gyoto-mpi-worker.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_@sovers@_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.obj -MD -MP -MF $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Tpo -c -o gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Tpo $(DEPDIR)/gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='gyoto-mpi-worker.C' object='gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gyoto_mpi_worker_@sovers@_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gyoto_mpi_worker_@sovers@-gyoto-mpi-worker.obj `if test -f 'gyoto-mpi-worker.C'; then $(CYGPATH_W) 'gyoto-mpi-worker.C'; else $(CYGPATH_W) '$(srcdir)/gyoto-mpi-worker.C'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -731,7 +687,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(MANS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(soverdir)" "$(DESTDIR)$(man1dir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -767,8 +723,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool \
-	clean-soverPROGRAMS mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -788,7 +743,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-man install-soverPROGRAMS
+install-data-am: install-man
 
 install-dvi: install-dvi-am
 
@@ -834,67 +789,67 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-man \
-	uninstall-soverPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-man
 
 uninstall-man: uninstall-man1
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean \
-	clean-binPROGRAMS clean-generic clean-libtool \
-	clean-soverPROGRAMS cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-man1 install-pdf \
-	install-pdf-am install-ps install-ps-am install-soverPROGRAMS \
+	clean-binPROGRAMS clean-generic clean-libtool cscopelist-am \
+	ctags ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-man uninstall-man1 \
-	uninstall-soverPROGRAMS
+	uninstall-binPROGRAMS uninstall-man uninstall-man1
 
+
+gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
+	cp $^ $@
 
 export PATH := .:$(PATH)
-check: gyoto
-	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
-	   \!example-thin-disk.fits
-	$(CHECK_CMD) ../doc/examples/example-thin-disk-KS.xml \
-	   \!example-thin-disk-KS.fits
-	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-cartesian.xml \
-	   \!example-thin-disk-minkowski-cartesian.fits
-	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-spherical.xml \
-	   \!example-thin-disk-minkowski-spherical.fits
-	$(CHECK_CMD) ../doc/examples/example-complex-astrobj.xml \
-	   \!example-complex-astrobj.fits
-	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
-	   \!example-fixed-star.fits
-@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star-KS.xml \
-@HAVE_UDUNITS_TRUE@	   \!example-fixed-star-KS.fits
-	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-cartesian.xml \
-	   \!example-fixed-star-minkowski-cartesian.fits
-	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-spherical.xml \
-	   \!example-fixed-star-minkowski-spherical.fits
-	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
-	   \!example-startrace.fits
-	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \
-	   \!example-moving-star.fits
-	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL.xml \
-	   \!example-page-thorne-disk-BL.fits
-	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-KS.xml \
-	   \!example-page-thorne-disk-KS.fits
-	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL-with-basis.xml \
-	   \!example-page-thorne-disk-BL-with-basis.fits
-	$(CHECK_CMD) ../doc/examples/example-torus.xml \
-	   \!example-torus.fits
-	$(CHECK_CMD) ../doc/examples/example-torus-KS.xml \
-	   \!example-torus-KS.fits
-@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
-@HAVE_UDUNITS_TRUE@	   \!example-polish-doughnut.fits
+@BUILD_GYOTO_TRUE@check: gyoto
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-thin-disk.xml \
+@BUILD_GYOTO_TRUE@	   \!example-thin-disk.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-thin-disk-KS.xml \
+@BUILD_GYOTO_TRUE@	   \!example-thin-disk-KS.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-cartesian.xml \
+@BUILD_GYOTO_TRUE@	   \!example-thin-disk-minkowski-cartesian.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-thin-disk-minkowski-spherical.xml \
+@BUILD_GYOTO_TRUE@	   \!example-thin-disk-minkowski-spherical.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-complex-astrobj.xml \
+@BUILD_GYOTO_TRUE@	   \!example-complex-astrobj.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star.xml \
+@BUILD_GYOTO_TRUE@	   \!example-fixed-star.fits
+@BUILD_GYOTO_TRUE@@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star-KS.xml \
+@BUILD_GYOTO_TRUE@@HAVE_UDUNITS_TRUE@	   \!example-fixed-star-KS.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-cartesian.xml \
+@BUILD_GYOTO_TRUE@	   \!example-fixed-star-minkowski-cartesian.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-fixed-star-minkowski-spherical.xml \
+@BUILD_GYOTO_TRUE@	   \!example-fixed-star-minkowski-spherical.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-startrace.xml \
+@BUILD_GYOTO_TRUE@	   \!example-startrace.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-moving-star.xml \
+@BUILD_GYOTO_TRUE@	   \!example-moving-star.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL.xml \
+@BUILD_GYOTO_TRUE@	   \!example-page-thorne-disk-BL.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-KS.xml \
+@BUILD_GYOTO_TRUE@	   \!example-page-thorne-disk-KS.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-page-thorne-disk-BL-with-basis.xml \
+@BUILD_GYOTO_TRUE@	   \!example-page-thorne-disk-BL-with-basis.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-torus.xml \
+@BUILD_GYOTO_TRUE@	   \!example-torus.fits
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) ../doc/examples/example-torus-KS.xml \
+@BUILD_GYOTO_TRUE@	   \!example-torus-KS.fits
+@BUILD_GYOTO_TRUE@@HAVE_UDUNITS_TRUE@	$(CHECK_CMD) ../doc/examples/example-polish-doughnut.xml \
+@BUILD_GYOTO_TRUE@@HAVE_UDUNITS_TRUE@	   \!example-polish-doughnut.fits
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

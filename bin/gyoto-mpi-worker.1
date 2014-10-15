@@ -1,0 +1,22 @@
+.\" Process this file with
+.\" groff -man -Tascii foo.1
+.\"
+.TH GYOTO-MPI-WORKER 1 "OCTOBER 2014" Science "User Manuals"
+.SH NAME
+Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
+.SH SYNOPSIS
+gyoto-mpi-worker.\fISOVERS\fR [MPI options]
+.SH DESCRIPTION
+Gyoto is a framework for computing geodesics in curved
+space-times. The \fBgyoto-mpi-worker\fR helper program is not meant to
+be executed directly by the user. It is spawned by the MPI frawework
+when using multi-processing. It does not process any command-line
+parameter, but passes them to MPI_Init(3). \fBgyoto-mpi-worker\fR is
+bound to a specific version of the Gyoto application binary interface
+(ABI). To allow for co-installation of several versions of the Gyoto
+library, the SO information digits are appended to the executable
+name.
+.SH AUTHOR
+Thibaut Paumard <thibaut.paumard@obspm.fr> wrote this manual.
+.SH "SEE ALSO"
+.BR gyoto (1)

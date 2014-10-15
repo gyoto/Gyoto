@@ -636,6 +636,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 mySUBDIRS
+BUILD_GYOTO_FALSE
+BUILD_GYOTO_TRUE
 pkg_libs
 pkg_cflags
 pkg_requires
@@ -15450,7 +15452,7 @@ ac_config_headers="$ac_config_headers config.h include/GyotoConfig.h"
 
 
 VERSINFO=3:0:1
-sovers=`echo $VERSINFO | tr : .`
+sovers=`echo $VERSINFO | tr : _`
 
 
 
@@ -18108,6 +18110,9 @@ if test "x$have_xerces" == "xno"; then :
 
 
 fi
+   if test "x$have_mpi" == "xyes"; then :
+  as_fn_error $? "The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces." "$LINENO" 5
+fi
 
 else
   use_xerces=yes
@@ -18480,9 +18485,26 @@ fi
 
 
 mySUBDIRS="lib"
+build_exec=no
+if test "x$have_mpi" == xyes; then :
+  build_exec=yes
+fi
 if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then :
+  build_exec=yes
+fi
+if test "x$build_exec" == xyes; then :
   mySUBDIRS="$mySUBDIRS bin"
 fi
+
+ if test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"; then
+  BUILD_GYOTO_TRUE=
+  BUILD_GYOTO_FALSE='#'
+else
+  BUILD_GYOTO_TRUE='#'
+  BUILD_GYOTO_FALSE=
+fi
+
+
 ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile doc/user_guide/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"
 
 if test "x$YORICK" != "x"; then :
@@ -18661,6 +18683,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${MKGUIDE_TRUE}" && test -z "${MKGUIDE_FALSE}"; then
   as_fn_error $? "conditional \"MKGUIDE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_GYOTO_TRUE}" && test -z "${BUILD_GYOTO_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_GYOTO\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

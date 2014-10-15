@@ -882,18 +882,14 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
     mpiTerminate();
   }
 
-  // Add our SO-versionned directory at the end of the PATH variable.
-  string PATH=getenv("PATH");
-  PATH += ":";
-  PATH += GYOTO_PREFIX ;
-  PATH += "/lib/gyoto/" ;
-  PATH += GYOTO_SOVERS;
 
-  setenv("PATH", PATH.c_str(), 1);
+
 
   if (nbchildren) {
+    char * exec = const_cast<char*>("gyoto-mpi-worker." GYOTO_SOVERS); 
+
     MPI_Comm children_c;
-    MPI_Comm_spawn(const_cast<char*>("gyoto-mpi-worker"),
+    MPI_Comm_spawn(exec,
 		   MPI_ARGV_NULL, nbchildren,
 		   MPI_INFO_NULL, 0, MPI_COMM_SELF, &children_c,
 		   MPI_ERRCODES_IGNORE);

@@ -14,7 +14,7 @@ LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
 VERSINFO=3:0:1
-sovers=`echo $VERSINFO | tr : .`
+sovers=`echo $VERSINFO | tr : _`
 AC_SUBST([VERSINFO])
 AC_SUBST([sovers])
 
@@ -456,6 +456,8 @@ AS_IF([test "x$have_xerces" == "xno"],
      [AC_MSG_ERROR([xerces requested but not found])
      ]
    )
+   AS_IF([test "x$have_mpi" == "xyes"],
+     [AC_MSG_ERROR([The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces.])])
   ],
   [use_xerces=yes
    AC_DEFINE([GYOTO_USE_XERCES], [1], [Define to 1 if you have Xerces])]
@@ -666,8 +668,13 @@ AC_SUBST([pkg_requires])
 AC_SUBST([pkg_cflags])
 AC_SUBST([pkg_libs])
 mySUBDIRS="lib"
-AS_IF([test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"],
-  [mySUBDIRS="$mySUBDIRS bin"])
+build_exec=no
+AS_IF([test "x$have_mpi" == xyes], [build_exec=yes])
+AS_IF([test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"], [build_exec=yes])
+AS_IF([test "x$build_exec" == xyes], [mySUBDIRS="$mySUBDIRS bin"])
+
+AM_CONDITIONAL([BUILD_GYOTO], [test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"])
+
 AC_CONFIG_FILES([Makefile
                  bin/Makefile
                  doc/Makefile
