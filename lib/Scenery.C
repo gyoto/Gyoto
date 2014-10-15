@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013-2014 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -400,37 +400,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 
 	w = s.source();
 	
-	if (s.tag()==Scenery::raytrace_done && data) {
-	  // Copy each relevant quantity, performing conversion if needed
-	  if (data->intensity)
-	    data->intensity[cell[w]]=data->intensity_converter_?
-	      (*data->intensity_converter_)(*locdata->intensity):
-	      *locdata->intensity;
-	  if (data->time) data->time[cell[w]]=*locdata->time;
-	  if (data->distance) data->distance[cell[w]]=*locdata->distance;
-	  if (data->first_dmin) data->first_dmin[cell[w]]=*locdata->first_dmin;
-	  if (data->redshift) data->redshift[cell[w]]=*locdata->redshift;
-	  if (data->impactcoords)
-	    for (size_t k=0; k<16; ++k)
-	      data->impactcoords[cell[w]*16+k]=locdata->impactcoords[k];
-	  if (data->user1) data->user1[cell[w]]=*locdata->user1;
-	  if (data->user2) data->user2[cell[w]]=*locdata->user2;
-	  if (data->user3) data->user3[cell[w]]=*locdata->user3;
-	  if (data->user4) data->user4[cell[w]]=*locdata->user4;
-	  if (data->user5) data->user5[cell[w]]=*locdata->user5;
-	  if (data->spectrum)
-	    for (size_t c=0; c<nbnuobs; ++c)
-	      data->spectrum[cell[w]+c*data->offset]=
-		data->spectrum_converter_?
-		(*data->spectrum_converter_)(locdata->spectrum[c]):
-		locdata->spectrum[c];
-	  if (data->binspectrum)
-	    for (size_t c=0; c<nbnuobs; ++c)
-	      data->binspectrum[cell[w]+c*data->offset]=
-		data->binspectrum_converter_?
-		(*data->binspectrum_converter_)(locdata->binspectrum[c]):
-		locdata->binspectrum[c];
-	}
+	size_t cs=cell[w]; // remember where to store results
 
 	// give new task or decrease working counter
 	if (ij[0]<=imax) {
@@ -455,6 +425,40 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	  mpi_team_ -> send(w, raytrace_done, ij, 2);
 	  --working;
 	}
+
+	// Now that the worker is back to work, triage data it has just delivered
+	if (s.tag()==Scenery::raytrace_done && data) {
+	  // Copy each relevant quantity, performing conversion if needed
+	  if (data->intensity)
+	    data->intensity[cs]=data->intensity_converter_?
+	      (*data->intensity_converter_)(*locdata->intensity):
+	      *locdata->intensity;
+	  if (data->time) data->time[cs]=*locdata->time;
+	  if (data->distance) data->distance[cs]=*locdata->distance;
+	  if (data->first_dmin) data->first_dmin[cs]=*locdata->first_dmin;
+	  if (data->redshift) data->redshift[cs]=*locdata->redshift;
+	  if (data->impactcoords)
+	    for (size_t k=0; k<16; ++k)
+	      data->impactcoords[cs*16+k]=locdata->impactcoords[k];
+	  if (data->user1) data->user1[cs]=*locdata->user1;
+	  if (data->user2) data->user2[cs]=*locdata->user2;
+	  if (data->user3) data->user3[cs]=*locdata->user3;
+	  if (data->user4) data->user4[cs]=*locdata->user4;
+	  if (data->user5) data->user5[cs]=*locdata->user5;
+	  if (data->spectrum)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->spectrum[cs+c*data->offset]=
+		data->spectrum_converter_?
+		(*data->spectrum_converter_)(locdata->spectrum[c]):
+		locdata->spectrum[c];
+	  if (data->binspectrum)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->binspectrum[cs+c*data->offset]=
+		data->binspectrum_converter_?
+		(*data->binspectrum_converter_)(locdata->binspectrum[c]):
+		locdata->binspectrum[c];
+	}
+
       }
       if (verbose()) cout << endl;
     } else {
