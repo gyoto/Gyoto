@@ -1146,6 +1146,74 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
   line -> setCst(cst,5);
 }
 
+void KerrBL::observerTetrad(string const obskind,
+			    double const pos[4], double fourvel[4],
+			    double screen1[4], double screen2[4], 
+			    double screen3[4]) const{
+
+  double gtt = gmunu(pos,0,0),
+    grr      = gmunu(pos,1,1),
+    gthth    = gmunu(pos,2,2),
+    gpp      = gmunu(pos,3,3),
+    gtp      = gmunu(pos,0,3);
+
+  if (obskind=="ZAMO"){
+    double fact = gtt*gpp - gtp*gtp;
+    if (fact == 0.){
+      throwError("In KerrBL::observerTetrad: "
+		 "bad values");
+    }
+    double ut2 = -gpp/fact;
+    if (grr==0. || gthth==0. || gpp==0. || ut2<=0.){
+      throwError("In KerrBL::observerTetrad: "
+		 "bad values");
+    }
+    double omega = -gtp/gpp;
+    double ut = sqrt(ut2);
+    double fourv[4]={ut,0.,0.,omega*ut};
+    double e3[4] = {0.,-1./sqrt(grr),0.,0.};
+    double e2[4] = {0.,0.,-1./sqrt(gthth),0.};
+    double e1[4] = {0.,0.,0.,-1/sqrt(gpp)};
+    
+    for (int ii=0;ii<4;ii++){
+      fourvel[ii]=fourv[ii];
+      screen1[ii]=e1[ii];
+      screen2[ii]=e2[ii];
+      screen3[ii]=e3[ii];
+    }
+    
+  }else if (obskind=="KeplerianObserver"){
+    double omega = 1./(pow(pos[1],1.5)+spin_);
+    double ut2 = -1/(gtt+gpp*omega*omega+2.*gtp*omega);
+    if (ut2 <= 0. || grr<=0. || gthth <=0.) {
+      throwError("In KerrBL::observerTetrad: "
+		 "bad values");
+    }
+    double ut = sqrt(ut2);
+    double fourv[4]={ut,0.,0.,omega*ut};
+    double e3[4] = {0.,-1./sqrt(grr),0.,0.};
+    double e2[4] = {0.,0.,-1./sqrt(gthth),0.};
+    
+    double fact1 = (gtp+gpp*omega)/(gtt+gtp*omega),
+      fact2 = gtt*fact1*fact1+gpp-2.*gtp*fact1;
+    if (fact2 <= 0.) throwError("In KerrBL::observerTetrad: "
+				"bad values");
+    double a2 = 1./sqrt(fact2), a1 = -a2*fact1;
+    double e1[4] = {-a1,0.,0.,-a2};
+    
+    for (int ii=0;ii<4;ii++){
+      fourvel[ii]=fourv[ii];
+      screen1[ii]=e1[ii];
+      screen2[ii]=e2[ii];
+      screen3[ii]=e3[ii];
+    }
+  }else{
+    throwError("In KerrBL::observerTetrad "
+	       "unknown observer kind");
+  }
+  Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
+}
+
 #ifdef GYOTO_USE_XERCES
 void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setParameter("Spin", spin_);

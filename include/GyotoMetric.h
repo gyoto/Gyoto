@@ -364,6 +364,21 @@ int MyKind::setParameter(std::string name, std::string content, std::string unit
 			    std::string content,
 			    std::string unit);
 
+  /**
+   * \brief Computes the orthonormal local tetrad of the observer
+   * 
+   * \param obskind  input: kind of observer (eg: "ZAMO","KeplerianObserver"...)
+   * \param pos      input: position,
+   * \param fourvel output: observer 4-velocity (norm -1)
+   * \param screen1 output: first vector in the screen plane
+   * \param screen2 output: second vector in the screen plane
+   * \param screen3 output: vector normal to the screen
+   */
+  virtual void observerTetrad(std::string const obskind,
+			      double const pos[4], double fourvel[4],
+			      double screen1[4], double screen2[4],
+			      double screen3[4]) const ;
+
   // Outputs
 #ifdef GYOTO_USE_XERCES
 

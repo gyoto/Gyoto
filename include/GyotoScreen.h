@@ -205,6 +205,12 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    */
   double freq_obs_;
 
+  /**
+   * \brief What kind of observer are we considering? (At infinity, ZAMO...)
+   *
+   */
+  std::string observerkind_;
+
  public:
    
   // Constructors - Destructor
@@ -311,7 +317,8 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
    * system. Content is copied.
    */
   void setObserverPos(const double pos[4]);
-
+  void setObserverKind(const std::string kind);
+  std::string getObserverKind();
   void setFourVel(const double coord[4]);
   ///< Sets the observer's 4-velocity
   void setScreen1(const double coord[4]);

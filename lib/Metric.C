@@ -490,7 +490,33 @@ void Metric::Generic::setParticleProperties(Worldline*, const double*) const {
 # endif
 }
 
-
+void Metric::Generic::observerTetrad(string const obskind,
+				     double const coord[4], double fourvel[4],
+				     double screen1[4], double screen2[4], 
+				     double screen3[4]) const{
+  // No general way to define the tetrad, should be defined
+  // in specific metrics. Test below will obviously fail for
+  // a machine-initialized tetrad.
+  double normtol=1e-10;
+  if (fabs(ScalarProd(coord,fourvel,fourvel)+1.)>normtol ||
+      fabs(ScalarProd(coord,screen1,screen1)-1.)>normtol ||
+      fabs(ScalarProd(coord,screen2,screen2)-1.)>normtol ||
+      fabs(ScalarProd(coord,screen3,screen3)-1.)>normtol){
+    cout << "norm= " << ScalarProd(coord,fourvel,fourvel) << " " << ScalarProd(coord,screen1,screen1) << " " << ScalarProd(coord,screen2,screen2) << " " << ScalarProd(coord,screen3,screen3) << endl;
+    throwError("In Metric:observerTetrad: observer's local"
+	       " basis is not properly normalized");
+  }
+  
+  if (fabs(ScalarProd(coord,fourvel,screen1))>normtol ||
+      fabs(ScalarProd(coord,fourvel,screen2))>normtol ||
+      fabs(ScalarProd(coord,fourvel,screen3))>normtol ||
+      fabs(ScalarProd(coord,screen1,screen2))>normtol ||
+      fabs(ScalarProd(coord,screen1,screen3))>normtol ||
+      fabs(ScalarProd(coord,screen2,screen3))>normtol){
+    throwError("In Metric:observerTetrad: observer's local"
+	       " basis is not orthogonal");
+  }
+}
 
 /***************For SmartPointers**************/
 

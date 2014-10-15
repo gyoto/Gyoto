@@ -89,7 +89,7 @@ int Minkowski::christoffel(double dst[4][4][4], const double pos[8]) const {
 // second form is given below, as an example.
 double Minkowski::gmunu(const double * pos, int mu, int nu) const {
   if (mu<0 || nu<0 || mu>3 || nu>3)
-    throwError ("KerrKS::gmunu: incorrect value for mu or nu");
+    throwError ("Minkowski::gmunu: incorrect value for mu or nu");
 
   if (mu!=nu) return 0.;
   if (mu==0)  return -1.;
@@ -157,6 +157,51 @@ double Minkowski::christoffel(const double pos[8], const int alpha, const int mm
   return 0.;
 
 }
+
+void Minkowski::observerTetrad(string const obskind,
+			       double const pos[4], double fourvel[4],
+			       double screen1[4], double screen2[4], 
+			       double screen3[4]) const{
+  if (coordKind()!=GYOTO_COORDKIND_SPHERICAL){
+    throwError("In Minkowski::observerTetrad: "
+	       "coordinates should be spherical-like");
+  }
+  if (obskind=="KeplerianObserver"){
+    double gtt = gmunu(pos,0,0),
+      grr      = gmunu(pos,1,1),
+      gthth    = gmunu(pos,2,2),
+      gpp      = gmunu(pos,3,3);
+    double omega = 1./(pow(pos[1],1.5));
+    double ut2 = -1/(gtt+gpp*omega*omega);
+    if (ut2 <= 0. || grr<=0. || gthth <=0.) {
+      throwError("In Minkowski::observerTetrad: "
+		 "bad values");
+    }
+    double ut = sqrt(ut2);
+    double fourv[4]={ut,0.,0.,omega*ut};
+    double e3[4] = {0.,-1./sqrt(grr),0.,0.};
+    double e2[4] = {0.,0.,-1./sqrt(gthth),0.};
+    
+    double fact1 = gpp*omega/gtt,
+      fact2 = gtt*fact1*fact1+gpp;
+    if (fact2 <= 0.) throwError("In Minkowski::observerTetrad: "
+				"bad values");
+    double a2 = 1./sqrt(fact2), a1 = -a2*fact1;
+    double e1[4] = {-a1,0.,0.,-a2};
+    
+    for (int ii=0;ii<4;ii++){
+      fourvel[ii]=fourv[ii];
+      screen1[ii]=e1[ii];
+      screen2[ii]=e2[ii];
+      screen3[ii]=e3[ii];
+    }
+  }else{
+    throwError("In Minkowski::observerTetrad "
+	       "unknown observer kind");
+  }
+  Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
+}
+
 
 
 // Fillelement is required to be able to export the Metric to an XML file.
