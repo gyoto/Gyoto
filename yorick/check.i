@@ -160,6 +160,7 @@ end_section, "basic functionality";
 #include "check-directionaldisk.i"
 //#include "check-disk3d.i"
 #include "check-polish-doughnut.i"
+#include "check-mpi.i"
 
 write, format="\n\n%s\n%s\n%s\n",
   "  ********************************************",
