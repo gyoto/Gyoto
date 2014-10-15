@@ -211,18 +211,42 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
   Gyoto::SmartPointer<Gyoto::Units::Converter> binspectrum_converter_;
 # endif
 
-# ifdef HAVE_MPI
  public:
+# ifdef HAVE_MPI
+  /// Team of processes for MPI
+  /**
+   * Rank 0 is the manager, other ranks are workers, instances of the
+   * gyoto-mpi-worker executable.
+   */
   boost::mpi::communicator * mpi_team_;
+# endif
+  /// True in instance of gyoto-mpi-worker, otherwise false.
   static bool am_worker;
+
+  /// Spawn gyoto-mpi-worker processes
+  /**
+   * Also sets nprocesses_. If the right number of workers is already
+   * running, does nothing.  Also does nothing if MPI_Init() has not
+   * been called yet.
+   */
   void mpiSpawn(int nbchildren);
+
+  /// Terminate gyoto-mpi-worker-processes
   void mpiTerminate ();
+
+  /// Send a copy of self to the mpi workers
+  /**
+   * Always call mpiClone() before ray-tracing if workers are running.
+   */
   void mpiClone();
+
+  /// Tags that may be sent to communicate with workers using MPI_Send()
   enum mpi_tag {give_task, read_scenery, terminate,
 		raytrace, raytrace_done, ready,
 		impactcoords, noimpactcoords};
+
+  /// Send a tag to workers
   void mpiTask(mpi_tag &tag);
-# endif
 
   // Constructors - Destructor
   // -------------------------

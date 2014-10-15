@@ -32,7 +32,12 @@
 // getpid()
 #include <sys/types.h>
 #include <unistd.h>
- 
+
+// MPI
+#if defined HAVE_MPI
+# include <mpi.h>
+#endif
+
 using namespace std;
 using namespace Gyoto;
 
@@ -80,6 +85,7 @@ int main(int argc, char** argv) {
     fixed star or disk).  The final result is a list of illuminated
     pixels.
   */
+
   //	For debug output
   debug(0);
   // verbose(1);
@@ -240,10 +246,32 @@ int main(int argc, char** argv) {
   curmsg = "In gyoto.C: Error getting Kind: ";
   const string kind = factory->kind();
 
-  if (!kind.compare("Scenery")) {
+  if (kind.compare("Scenery")) {
+    cerr << "Unknown kind for root element in XML file" << endl;
+    return 1;
+  }
+
+  curmsg = "In gyoto.C: Error getting Scenery: ";
+  SmartPointer<Scenery> scenery = factory -> getScenery();
+
+  curmsg = "In gyoto.C: Error deleting Scenery: ";
+  delete factory;
+
+  if (xnprocs)   scenery -> nProcesses  ( nprocs    );
+
+#if defined HAVE_MPI
+  if (scenery -> nProcesses()) {
+    int status = MPI_Init(&argc, &argv);
+    if (status) {
+      cerr << "error initializing MPI"<< endl;
+      return 2;
+    }
+  }
+#endif
+
+  {
     curmsg = "In gyoto.C: Error initializing ray-tracing: ";
     curretval = 2;
-    SmartPointer<Scenery> scenery = factory -> getScenery();
     SmartPointer<Screen>  screen = scenery->screen();
     SmartPointer<Astrobj::Generic> object = scenery->astrobj();
 
@@ -258,7 +286,6 @@ int main(int argc, char** argv) {
     if (xpaln) screen -> PALN           ( paln );
     if (xarg)  screen -> argument       ( arg  );
     if (xnthreads) scenery -> nThreads    ( nthreads  );
-    if (xnprocs)   scenery -> nProcesses  ( nprocs    );
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
@@ -493,11 +520,12 @@ int main(int argc, char** argv) {
 
     if (status) return status;
 
-  } else {
-    cerr << "Unknown kind for root element in XML file" << endl;
-    return 1;
   }
 
-  delete factory;
+#if defined HAVE_MPI
+  if (MPI::Is_initialized() && !MPI::Is_finalized()) MPI_Finalize();
+#endif
+
+
   return 0;
 }

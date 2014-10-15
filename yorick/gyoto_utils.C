@@ -20,6 +20,7 @@
 #include <GyotoUtils.h>
 #include <GyotoRegister.h>
 #include <yapi.h>
+#include <pstdlib.h>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -188,11 +189,50 @@ extern "C" {
   }
 
   void
+  Y_gyoto_mpiInit(int argc)
+  {
+#if defined HAVE_MPI
+    long int mpiargcl=0;
+    char **mpiargv=NULL;
+    long index=-1;
+    if (argc>1) y_error("gyoto.mpiInit() takes at most one argument");
+    if (argc) {
+      index=yget_ref(0);
+      if (!yarg_nil(0)) mpiargv=ygeta_q(0, &mpiargcl, NULL);
+    }
+    int mpiargc=mpiargcl;
+    ypush_long(MPI_Init(&mpiargc, &mpiargv));
+    if (index>=0) {
+      long dims[]={1, mpiargc};
+      ystring_t * out=ypush_q(dims);
+      for (long i=0; i<mpiargc; ++i) out[i] = p_strcpy(mpiargv[i]);
+      yput_global(index, 0);
+      yarg_drop(1);
+    }
+#else
+    ypush_long(1);
+#endif
+  }
+
+  void
+  Y_gyoto_mpiInitialized(int argc)
+  {
+#if defined HAVE_MPI
+    int flag=0;
+    MPI_Initialized(&flag);
+    ypush_long(flag);
+#else
+    ypush_long(0);
+#endif
+  }
+
+  void
   Y_gyoto_mpiFinalize(int)
   {
-    ypush_nil();
 #if defined HAVE_MPI
-    if (!MPI::Is_finalized()) MPI::Finalize();
+    ypush_long(MPI_Finalize());
+#else
+    ypush_long(1);
 #endif
   }
 
@@ -200,9 +240,11 @@ extern "C" {
   Y_gyoto_mpiFinalized(int argc)
   {
 #if defined HAVE_MPI
-    ypush_long(MPI::Is_finalized());
+    int flag=0;
+    MPI_Finalized(&flag);
+    ypush_long(flag);
 #else
-    ypush_long(1);
+    ypush_long(0);
 #endif
   }
 

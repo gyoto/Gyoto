@@ -165,12 +165,12 @@ extern "C" {
       "maxiter", "integrator", "deltamin", "deltamax", "deltamaxoverr",
       "abstol", "reltol", 
       "xmlwrite", "clone", "clonephoton",
-      "impactcoords", "nthreads",
+      "impactcoords", "nthreads", "nprocesses",
       "mpispawn", "mpiclone",
       0
     };
 
-    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 23)
+    YGYOTO_WORKER_INIT1(Scenery, Scenery, knames, 24)
 
     // Get pointer
     if (yarg_true(kiargs[++k])) {
@@ -249,6 +249,7 @@ extern "C" {
     }
 
     YGYOTO_WORKER_GETSET_LONG2(nThreads);
+    YGYOTO_WORKER_GETSET_LONG2(nProcesses);
 #ifdef HAVE_MPI
     YGYOTO_WORKER_RUN( mpiSpawn(ygets_l(iarg)) );
     YGYOTO_WORKER_RUN( mpiClone() );

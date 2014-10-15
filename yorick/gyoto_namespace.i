@@ -5,7 +5,9 @@ gyoto=save(
            haveUDUNITS=gyoto_haveUDUNITS,
            havePTHREAD=gyoto_havePTHREAD,
            haveMPI=gyoto_haveMPI,
+           mpiInit=gyoto_mpiInit,
            mpiFinalize=gyoto_mpiFinalize,
+           mpiInitialized=gyoto_mpiInitialized,
            mpiFinalized=gyoto_mpiFinalized,
            loadPlugin=gyoto_loadPlugin,
 

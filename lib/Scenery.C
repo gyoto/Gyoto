@@ -50,7 +50,7 @@ using namespace std;
 
 Scenery::Scenery() :
   screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0)
+  quantities_(0), ph_(), nthreads_(0), nprocesses_(0)
 #ifdef HAVE_MPI
   , mpi_team_(NULL)
 #endif
@@ -60,7 +60,7 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
 		 SmartPointer<Screen> scr,
 		 SmartPointer<Astrobj::Generic> obj) :
   screen_(scr), delta_(GYOTO_DEFAULT_DELTA),
-  quantities_(0), ph_(), nthreads_(0)
+  quantities_(0), ph_(), nthreads_(0), nprocesses_(0)
 #ifdef HAVE_MPI
   , mpi_team_(NULL)
 #endif
@@ -74,7 +74,7 @@ Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
   screen_(NULL), delta_(o.delta_), 
   quantities_(o.quantities_), ph_(o.ph_), 
-  nthreads_(o.nthreads_)
+  nthreads_(o.nthreads_), nprocesses_(0)
 #ifdef HAVE_MPI
   , mpi_team_(NULL)
 #endif
@@ -244,16 +244,9 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 		       double * impactcoords) {
 
 #if defined HAVE_MPI
-  bool need_to_terminate=false;
-  if (nprocesses_ && mpi_team_) {
-    if (!MPI::Is_initialized() && !MPI::Is_finalized()) need_to_terminate=true;
-    if (MPI::Is_finalized()) {
-      GYOTO_SEVERE
-	<< "MPI_Finalize() has been called already, won't use MPI"<< endl;
-    } else {
-      mpiSpawn(nprocesses_);
-      mpiClone();
-    }
+  if (nprocesses_ && !mpi_team_) {
+    mpiSpawn(nprocesses_);
+    mpiClone();
   }
 #endif
 
@@ -464,10 +457,6 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	}
       }
       if (verbose()) cout << endl;
-      if (need_to_terminate) {
-	mpiTerminate();
-	MPI_Finalize();
-      }
     } else {
       // We are a worker, do we need to query for impactcoords?
       double ipct[16];
@@ -875,11 +864,21 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 }
 #endif
 
-#ifdef HAVE_MPI
 bool Gyoto::Scenery::am_worker=false;
 
 void Gyoto::Scenery::mpiSpawn(int nbchildren) {
-
+#ifdef HAVE_MPI
+  int flag;
+  if (MPI_Initialized(&flag)) throwError("Error running MPI_Initialized()");
+  if (!flag) {
+    nprocesses_=0;
+    return;
+  }
+  nprocesses_=nbchildren;
+  if (mpi_team_) {
+    if (mpi_team_->size()==nbchildren+1) return;
+    mpiTerminate();
+  }
 
   // Add our SO-versionned directory at the end of the PATH variable.
   string PATH=getenv("PATH");
@@ -890,14 +889,7 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 
   setenv("PATH", PATH.c_str(), 1);
 
-  if (mpi_team_) {
-    if (mpi_team_->size()==nbchildren+1) return;
-    mpiTerminate();
-  }
-
   if (nbchildren) {
-    if (!MPI::Is_initialized()) MPI::Init();
-
     MPI_Comm children_c;
     MPI_Comm_spawn(const_cast<char*>("gyoto-mpi-worker"),
 		   MPI_ARGV_NULL, nbchildren,
@@ -906,9 +898,12 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 
     mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
   }
+
+#endif 
 }
 
 void Gyoto::Scenery::mpiTerminate() {
+#ifdef HAVE_MPI
   if (mpi_team_) {
     mpi_tag tag=terminate;
     mpiTask(tag);
@@ -916,20 +911,25 @@ void Gyoto::Scenery::mpiTerminate() {
     delete mpi_team_;
     mpi_team_=NULL;
   }
+#endif
 }
 
-void Gyoto::Scenery::mpiClone()
-{
+void Gyoto::Scenery::mpiClone() {
+#ifdef HAVE_MPI
+  if (!mpi_team_) return;
   std::string xmldata=
     Gyoto::Factory(this).format();
   int errcode;
   mpi_tag tag=read_scenery;
   mpiTask(tag);
   broadcast(*mpi_team_, xmldata, 0);
+#endif
 }
 
 void Gyoto::Scenery::mpiTask(mpi_tag &tag) {
+#ifdef HAVE_MPI
+  if (!mpi_team_) return;
   mpi::broadcast(*mpi_team_, tag, 0);
+#endif
 }
 
-#endif

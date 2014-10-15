@@ -63,27 +63,51 @@ extern gyoto_haveMPI;
     
    OUTPUT:
     HAVE_MPI=1 if compiled with MPI, else 0.
+
+   SEE ALSO: gyoto.mpiInit, .mpiFinalize, .mpiInitialized, .mpiFinalized
+*/
+
+extern gyoto_mpiInit;
+/* DOCUMENT status = gyoto.mpiInit([argv]);
+    Initialize MPI.
+    
+    Wrapper around MPI_Init(numberof(argv), argv). argv may be
+    modified upon completion.
+
+    Returns 0 for success, no-zer otherwise.
+
+    If MPI is not compiled-in, returns 1.
+
+   SEE ALSO: gyoto.haveMPI, .mpiFinalize, .mpiInitialized, .mpiFinalized
 */
 
 extern gyoto_mpiFinalize;
 /* DOCUMENT gyoto.mpiFinalize;
     Finalize MPI.
     
-    Unlike the underlying implementation, does not trigger an error if
-    MPI is already finalized.
+    Wrapper around MPI_Finalize(). Returns 0 for success, non-zero otherwise.
+    
+    If MPI is not compiled-in, returns 1.
 
-    This is a noop if MPI is not compiled-in.
-
-   SEE ALSO: gyoto.haveMPI, gyoto.mpiFinalized
+   SEE ALSO: gyoto.haveMPI, .mpiInit, .mpiFinalized, .mpiInitialized
 */
 
 extern gyoto_mpiFinalized;
 /* DOCUMENT is_finalized=gyoto.mpiFinalized();
     Tell whether some implemention of MPI_Finalize() was already called.
 
-    If MPI support is not present, return 1.
+    If MPI support is not present, return 0.
 
-   SEE ALSO: gyoto.haveMPI, gyoto.mpiFinalize
+   SEE ALSO: gyoto.haveMPI, .mpiFinalize, .mpiInit, .mpiInitialzed
+ */
+
+extern gyoto_mpiInitialized;
+/* DOCUMENT is_initialized=gyoto.mpiInitialized();
+    Tell whether some implemention of MPI_Init() was already called.
+
+    If MPI support is not present, return 0.
+
+   SEE ALSO: gyoto.haveMPI, .mpiInit, .mpiFinalize, .mpiFinalized
  */
 
 extern __gyoto_setErrorHandler;
@@ -515,22 +539,36 @@ extern gyoto_Scenery;
              gyoto.Scenery_rayTrace. This has no effect when
              ray-tracing using the "data = scenery()" syntax below.
 
-    mpispawn=number of parallel MPI jobs (a.k.a. workers) to spawn for
-             ray-tracing using gyoto.Scenery_rayTrace(). Works only if
-             MPI support was built in. Spawned jobs may consume CPU
-             cycles even if they are idle. Use mpispawn=0 to terminate
-             those jobs. Always use mpiclone to send the current
-             Scenery to the workers before calling
-             gyoto.Scenery_rayTrace(). This can be done in the same
-             call as mpispawn:
-               sc, mpispawn=12, mpiclone=;
 
-    mpiclone=[anything]: clone this Scenery into the MPI workers (see
+    MPI MULTI-PROCESSING:
+
+     You can check whether MPI support is compiled-in using
+     gyoto.haveMPI(). To benefit from it, you must call
+     gyoto.mpiInit() once, before using the following keywords. Before
+     quitting Yorick, should should also call 'sc, mpispawn=0;
+     gyoto.mpiFinalize;'. Failure to do that may lead to helper
+     processes lingering around.
+
+     nprocesses=number of parallel processes to use. If you just set
+            nprocesses this way, they will be launched (but not
+            stopped) automatically the first time ray-tracing is
+            attempted. Setting nprocesses after processes have been
+            launched does not change the number of processes running.
+             
+     mpispawn=number of parallel MPI jobs (a.k.a. workers) to
+            spawn. This also sets nprocesses, and actually launches
+            the processes. use mpilaunch=0 to stop the processes (they
+            consume CPU cycles even when idle). Always use mpiclone to
+            send the current Scenery to the workers before calling
+            gyoto.Scenery_rayTrace(). This can be done in the same
+            call as mpispawn: sc, mpispawn=12, mpiclone=;
+
+     mpiclone=[anything]: clone this Scenery into the MPI workers (see
              mpispawn). The workers do not stay synchonised
              automatically. mpiclone must always be called right
-             before gyoto.Scenery_rayTrace() (i.e. after any
-             modification to the Scenery or any of the objects it
-             contains, and after having called mpispawn).
+             before ray-tracing (i.e. after any modification to the
+             Scenery or any of the objects it contains, and after
+             having called mpispawn).
                     
     RAY-TRACING:
     

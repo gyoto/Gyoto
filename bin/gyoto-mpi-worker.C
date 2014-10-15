@@ -69,13 +69,12 @@ int main(int argc, char** argv) {
   debug(0);
   // verbose(1);
 
-  mpi::environment env;
+  mpi::environment env(argc, argv);
 
 
   MPI_Comm parent_c;
   MPI_Comm_get_parent(&parent_c);
 
-  mpi::communicator world;
   mpi::communicator team=mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
 
   string pluglist= getenv("GYOTO_PLUGINS")?
@@ -85,8 +84,6 @@ int main(int argc, char** argv) {
   curmsg = "In gyoto-mpi-worker.C: Error initializing libgyoto: ";
   curretval = 1;
   Gyoto::Register::init(pluglist.c_str());
-
-  int rk=world.rank();
 
   sc = new Scenery();
   sc -> mpi_team_    = &team;
