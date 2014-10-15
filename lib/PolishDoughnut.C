@@ -195,7 +195,10 @@ void   PolishDoughnut::lambda(double lam) {
   outerradius_t outerradius;
   outerradius.papa = this;
   r_torusouter_ = outerradius.ridders(r3_min,r3_max);
-  cout << "Polish doughnut rin, rout= " << r_cusp_ << " " << r_torusouter_ << endl;
+  GYOTO_IF_DEBUG;
+  GYOTO_DEBUG_EXPR(r_cusp_);
+  GYOTO_DEBUG_EXPR(r_torusouter_);
+  GYOTO_ENDIF_DEBUG;
   if (r_torusouter_!=r_torusouter_ || r_torusouter_==r_torusouter_+1)
     throwError("In PolishDoughnut::lambda(): bad r_torusouter_");
 
