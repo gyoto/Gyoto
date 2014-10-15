@@ -364,9 +364,10 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
      */
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
     yscr = double(j-1)*2.*M_PI/double(npix_-1);
-    getRayCoord(xscr, yscr, coord);
-    // NB: there will be also a X->-X transformation needed,
-    // that must be done when plotting the image
+    getRayCoord(xscr,M_PI-yscr, coord);
+    // NB: here xscr and yscr are the spherical angles
+    // a and b ; the b->pi-b transformation boils down
+    // to performing X->-X, just as below for equat angles.
   }else{
     /*
       GYOTO screen labelled by equatorial
@@ -471,6 +472,7 @@ void Screen::getRayCoord(double alpha, double delta,
   while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi[
   spherical_angle_a=s1tmp;
   spherical_angle_b=s2tmp;
+
 
   /* 
      Tangent vector of incident photon in observer's local frame
