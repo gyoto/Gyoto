@@ -35,6 +35,7 @@
 #include <boost/mpi/collectives.hpp>
 #include <string>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/array.hpp>
 namespace mpi = boost::mpi;
 #endif
 
@@ -135,12 +136,22 @@ typedef struct SceneryThreadWorkerArg {
   pthread_mutex_t * mutex;
   pthread_t * parent;
 #endif
-  size_t i, j, imin, imax, jmin, jmax, eol_offset;
+  Screen::Coord2dSet & ij;
+  size_t cnt, npix;
   Scenery *sc;
   Photon * ph;
   Astrobj::Properties *data;
   double * impactcoords;
+  SceneryThreadWorkerArg(Screen::Coord2dSet & ijin);
+  bool is_pixel;
 } SceneryThreadWorkerArg ;
+
+SceneryThreadWorkerArg::SceneryThreadWorkerArg(Screen::Coord2dSet & ijin)
+  :ij(ijin)
+{
+
+}
+
 
 static void * SceneryThreadWorker (void *arg) {
   /*
@@ -162,11 +173,8 @@ static void * SceneryThreadWorker (void *arg) {
 #endif
 
   // local variables to store our parameters
-  size_t i, j;
-
-  // end-of-line offset, depends on whether memory was allocated for
-  // the full field or only for the imin-imax, jmin:jmax window
-  size_t eol_offset = larg -> eol_offset;
+  GYOTO_ARRAY<size_t, 2> ijb;
+  GYOTO_ARRAY<double, 2> ad;
 
   Astrobj::Properties data;
   double * impactcoords = NULL;
@@ -182,9 +190,13 @@ static void * SceneryThreadWorker (void *arg) {
     // lock mutex so we can safely read and update i, j et al.
     if (larg->mutex) pthread_mutex_lock(larg->mutex);
 #endif
-    // copy i & j 
-    i = larg->i; j = larg->j;
-    if (j > larg->jmax || (j==larg->jmax && i>larg->imax)) {
+
+    // copy i & j or alpha and delta
+
+    if (larg->is_pixel) ijb =  *(larg->ij);
+    else ad = larg->ij.angles();
+
+    if (!larg->ij.valid()) {
       // terminate, but first...
 #ifdef HAVE_PTHREAD
       // ...unlock mutex so our siblings can access i & j and terminate too
@@ -193,38 +205,26 @@ static void * SceneryThreadWorker (void *arg) {
       break;
     }
 
-    data = *larg->data; 
-    // update i, j and pointer
-    larg->i += data.di;
-    *larg->data += data.alloc&Astrobj::Properties::all_rows?data.di:1;
-    if (larg->impactcoords) {
-      impactcoords = larg->impactcoords; larg->impactcoords+=16*data.di;
-    }
-    if (larg->i > larg->imax) {
-      larg->j+=data.dj; larg->i=larg->imin;
-      (*larg->data) += eol_offset;
-      if (larg->impactcoords) larg->impactcoords+=16*eol_offset;
-    }
+    size_t lcnt = larg->cnt++;
+ 
+    ++(larg->ij);
 
 #ifdef HAVE_PTHREAD
     // unlock mutex so our siblings can can access i, j et al. and procede
     if (larg->mutex) pthread_mutex_unlock(larg->mutex);
 #endif
 
-    ////// 2- do the actual work.
-    if (i==larg->imin && verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords) {
-#     ifdef HAVE_PTHREAD
-      if (larg->mutex) pthread_mutex_lock(larg->mutex);
-#     endif
-      cout << "\rj = " << j << " / " << larg->jmax << " " << flush;
-#     ifdef HAVE_PTHREAD
-      if (larg->mutex) pthread_mutex_unlock(larg->mutex);
-#     endif
-    }
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
-#   endif
-    (*larg->sc)(i, j, &data, impactcoords, ph);
+    // Store current cell
+    data = *larg->data; 
+    size_t cell=lcnt;
+    if (larg->is_pixel && data.alloc) cell=(ijb[1]-1)*larg->npix+ijb[0]-1;
+    data += cell;
+    impactcoords=larg->impactcoords?larg->impactcoords+16*cell:NULL;
+
+    if (larg->is_pixel)
+      (*larg->sc)(ijb[0], ijb[1], &data, impactcoords, ph);
+    else (*larg->sc)(ad[0], ad[1], &data, ph);
+    
     ++count;
   }
 #ifdef HAVE_PTHREAD
@@ -238,10 +238,10 @@ static void * SceneryThreadWorker (void *arg) {
   return NULL;
 }
 
-void Scenery::rayTrace(size_t imin, size_t imax,
-		       size_t jmin, size_t jmax,
+void Scenery::rayTrace(Screen::Coord2dSet & ij,
 		       Astrobj::Properties *data,
 		       double * impactcoords) {
+  GYOTO_DEBUG_EXPR(am_worker);
 
 #if defined HAVE_MPI
   if (nprocesses_ && !mpi_team_) {
@@ -259,10 +259,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
        - some housekeeping
    */
 
-  const size_t npix = screen_->resolution();
-  imax=(imax<=(npix)?imax:(npix));
-  jmax=(jmax<=(npix)?jmax:(npix));
-
+  if (!screen_) {
+    if (am_worker) throwError("No screen, have you called mpiClone()?");
+    else throwError("Scenery::rayTrace() needs a Screen to work on");
+  }
   screen_->computeBaseVectors();
          // Necessary for KS integration, computes relation between
          // observer's x,y,z coord and KS X,Y,Z coord. Will be used to
@@ -274,27 +274,17 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   ph_.spectrometer(spr);
   ph_.freqObs(screen_->freqObs());
   double coord[8];
-  screen_ -> getRayCoord(imin,jmin, coord);
+  screen_ -> getRayCoord(size_t(1),size_t(1), coord);
   ph_ . setInitCoord(coord, -1);
   // delta is reset in operator()
 
   if (data) setPropertyConverters(data);
 
-  // curcell will be the current cell, i.e. where to store the
-  // result of the next computation. It's initial value depends on
-  // how memory was allocated in data:
-  //
-  //   data->alloc & Properties::entire_field means memory was
-  //       allocated for the entire field. Else, memory was only
-  //       allocated for the imin:imax, jmin:jmax portion.
-  //
-  // eol_offset is the additional offset at the end of a line. It is 0
-  // if memory was allocated only for the window.
-  size_t curcell=0, eol_offset=0;
-  if (data && data->alloc & Astrobj::Properties::entire_field) {
-    curcell = (jmin-1)*npix+imin-1;
-    eol_offset = data->dj*npix - data->di*((imax-imin)/data->di+1);
-  }
+  GYOTO_ARRAY<size_t, 2> ijb;
+  GYOTO_ARRAY<double, 2> ad;
+
+  bool alloc=data?data->alloc:false;
+  size_t npix=screen_->resolution();
 
 #ifdef HAVE_MPI
   if (mpi_team_) {
@@ -306,14 +296,14 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       mpiTask(tag);
     }
 
-    size_t ij[2]={imin, jmin};
-
     size_t nbnuobs=0;
     Quantity_t quantities = (am_worker || !data)?GYOTO_QUANTITY_NONE:*data;
     bool has_ipct=am_worker?false:bool(impactcoords);
+    bool is_pixel=(ij.kind==Screen::pixel);
     
     mpi::broadcast(*mpi_team_, quantities, 0);
     mpi::broadcast(*mpi_team_, has_ipct, 0);
+    mpi::broadcast(*mpi_team_, is_pixel, 0);
 
     if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
       if (!spr) throwError("Spectral quantity requested but "
@@ -387,6 +377,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       // The corresponding recv is in gyoto-scenery-worker.c
 
       vector<size_t> cell(working+1);
+      size_t cnt=0;
 
       while (working) {
 	// receive one result, need to track back where it belongs and
@@ -403,30 +394,32 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	size_t cs=cell[w]; // remember where to store results
 
 	// give new task or decrease working counter
-	if (ij[0]<=imax) {
-	  cell[w]=curcell; // store curcell
-	  mpi_team_ -> send(w, raytrace, ij, 2);
+	if (ij.valid()) {
+	  cell[w]=cnt++;
+	  if (is_pixel) {
+	    ijb=*ij;
+	    if (alloc) cell[w]=(ijb[1]-1)*npix+ijb[0]-1;
+	    mpi_team_ -> send(w, raytrace, ijb);
+	  } else {
+	    ad = ij.angles();
+	    mpi_team_ -> send(w, raytrace, ad);
+	  }
 	  if (impactcoords) {
 	    mpi_team_ -> send(w, Scenery::impactcoords, impactcoords+cell[w]*16, 16);
 	  }
 
-	  curcell += (data&&data->alloc&Astrobj::Properties::all_rows)?
-	    data->di:1;
+	  ++ij;
 
-	  if ( (ij[0]+=data?data->di:1) >imax) {
-	    if (verbose()) 
-	      cout << "\rj = " << ij[1] << " / " << jmax << " " << flush;
-	    if ( (ij[1]+=data?data->dj:1) <=jmax) {
-	      ij[0]=imin;
-	      curcell += eol_offset;
-	    }
-	  }
 	} else {
-	  mpi_team_ -> send(w, raytrace_done, ij, 2);
+	  if (is_pixel)
+	    mpi_team_ -> send(w, raytrace_done, ijb);
+	  else
+	    mpi_team_ -> send(w, raytrace_done, ad);
 	  --working;
 	}
 
 	// Now that the worker is back to work, triage data it has just delivered
+
 	if (s.tag()==Scenery::raytrace_done && data) {
 	  // Copy each relevant quantity, performing conversion if needed
 	  if (data->intensity)
@@ -471,7 +464,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
       mpi_team_->send(0, give_task, vect, nelt);
       while (true) {
 	// Receive new coordinates to work on.
-	s = mpi_team_->recv(0, mpi::any_tag, ij, 2);
+	if (is_pixel)
+	  s = mpi_team_->recv(0, mpi::any_tag, ijb);
+	else
+	  s = mpi_team_->recv(0, mpi::any_tag, ad);
 	if (s.tag()==raytrace_done) {
 	  break;
 	}
@@ -479,7 +475,10 @@ void Scenery::rayTrace(size_t imin, size_t imax,
 	if (has_ipct)
 	  s = mpi_team_->recv(0, Scenery::impactcoords, impactcoords, 16);
 	locdata->init(nbnuobs);
-	(*this)(ij[0], ij[1], locdata, impactcoords, &ph_);
+	if (is_pixel)
+	  (*this)(ijb[0], ijb[1], locdata, impactcoords, &ph_);
+	else
+	  (*this)(ad[0], ad[1], locdata, &ph_);
 	// send result
 	mpi_team_->send(0, raytrace_done, vect, nelt);
       }
@@ -490,24 +489,14 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   }
 #endif
 
-  if (data) {
-    size_t first_index=(jmin-1)*npix + imin -1;
-    (*data) += first_index;
-    if (impactcoords) impactcoords += first_index * 16;
-  }
-
-  SceneryThreadWorkerArg larg;
+  SceneryThreadWorkerArg larg(ij);
   larg.sc=this;
   larg.ph=&ph_;
   larg.data=data;
+  larg.cnt=0;
+  larg.npix=npix;
   larg.impactcoords=impactcoords;
-  larg.i=imin;
-  larg.j=jmin;
-  larg.imin=imin;
-  larg.imax=imax;
-  larg.jmin=jmin;
-  larg.jmax=jmax;
-  larg.eol_offset=eol_offset;
+  larg.is_pixel= (ij.kind==Screen::pixel);
 
   struct timeval tim;
   double start, end;
@@ -545,7 +534,7 @@ void Scenery::rayTrace(size_t imin, size_t imax,
   gettimeofday(&tim, NULL);  
   end=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);  
 
-  GYOTO_MSG << "\nRaytraced "<< (jmax-jmin+1) * (imax-imin+1)
+  GYOTO_MSG << "\nRaytraced "<< ij.size()
 	    << " photons in " << end-start
 	    << "s using " << nthreads_ << " thread(s)\n";
 
@@ -556,6 +545,7 @@ void Scenery::operator() (
 			  Astrobj::Properties *data, double * impactcoords,
 			  Photon *ph
 			  ) {
+
   double coord[8];
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
@@ -599,6 +589,32 @@ void Scenery::operator() (
     ph -> setInitCoord(coord, -1);
     ph -> hit(data);
   }
+}
+
+void Scenery::operator() (
+			  double a, double d,
+			  Astrobj::Properties *data,
+			  Photon *ph
+			  ) {
+
+  double coord[8];
+  SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
+  size_t nbnuobs = spr() ? spr -> nSamples() : 0;
+
+  if (data) data -> init(nbnuobs);
+
+  if (!ph) {
+    ph = &ph_;
+    ph -> spectrometer(spr);
+    ph -> freqObs(screen_->freqObs());
+  }
+  // Always reset delta
+  ph -> delta(delta_);
+
+  screen_ -> getRayCoord(a, d, coord);
+  ph -> setInitCoord(coord, -1);
+  ph -> hit(data);
+
 }
 
 SmartPointer<Photon> Scenery::clonePhoton() const {

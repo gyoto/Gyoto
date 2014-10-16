@@ -389,10 +389,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
 
   // Worker:
  public:
-  /// Perform ray-tracing for a square area on Screen
+  /// Perform ray-tracing
   /**
-   * For each Scenery::screen_ pixel in the square area limited by
-   * imin, imax, jmin and jmax, launch a Photon back in time to
+   * For each directions specified, launch a Photon back in time to
    * compute the various quantities.
    *
    * At this time, the computed quantities depend on on the pointers
@@ -407,7 +406,11 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * the various pointers in *data must be NULL or point to the first
    * cell in an array of size at least Screen::npix_ squared.
    *
-   * If Scenery::nthreads_ is &ge;2 and Gyoto has been compiled with
+   * If MPI support is built-in, MPI_Init() has been called, and
+   * nprocesses_ is &ge;1, then rayTrace() will use several processes,
+   * launching them using mpiSpawn() if necessary.
+   *
+   * Else, if Scenery::nthreads_ is &ge;2 and Gyoto has been compiled with
    * pthreads support, rayTrace() will use Scenery::nthreads_ threads
    * and launch photons in parallel. This works only if the
    * Astrobj::Generic::clone() and Metric::Generic::clone() methods
@@ -415,9 +418,14 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * metric kind, and if they are both thread-safe. At the moment,
    * unfortunately, Lorene metrics are known to not be thread-safe.
    *
-   * \param[in] imin, imax, jmin, jmax First and last rows and columns in
-   * Scenery::screen_ to compute
-
+   * \param[in] ij Screen::Coord2dSet specification of rays to trace. e.g.:
+   *
+   * \code
+   * Screen::Range irange(imin, imax, di); 
+   * Screen::Range jrange(jmin, jmax, dj);
+   * Screen::Grid ij(irange, jrange); 
+   * \endcode
+   *
    * \param[in, out] data Pointer to a preallocated
    * Astrobj::Properties instance which sets which quantities must be
    * computed and where to store the output.
@@ -431,9 +439,9 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    * distributions are not. impactcoords can be computed using the
    * ImpactCoords quantity.
    */
-  void rayTrace(size_t imin, size_t imax, size_t jmin, size_t jmax,
-		Astrobj::Properties* data, double * impactcoords = NULL);
-
+  void rayTrace(Screen::Coord2dSet & ij,
+		Astrobj::Properties *data,
+		double * impactcoords=NULL);
 
   /// Ray-trace a single pixel in Scenery::screen_
   /**
@@ -445,6 +453,17 @@ class Gyoto::Scenery : protected Gyoto::SmartPointee {
    */
   void operator() (size_t i, size_t j, Astrobj::Properties *data,
 		   double * impactcoords = NULL, Photon * ph = NULL);
+
+  /// Ray-trace single direction
+  /**
+   * Almost identical to rayTrace(), but for a single direction.
+   *
+   * If ph is passed, it is assumed to have been properly initialized
+   * (with the right metric and astrobj etc.) already. Else, use
+   * &Scenery::ph_.
+   */
+  void operator() (double alpha, double delta, Astrobj::Properties *data,
+		   Photon * ph = NULL);
 
 #ifdef GYOTO_USE_XERCES
  public:

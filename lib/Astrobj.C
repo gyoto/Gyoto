@@ -487,8 +487,7 @@ Astrobj::Properties::Properties() :
   , intensity_converter_(NULL), spectrum_converter_(NULL),
   binspectrum_converter_(NULL)
 # endif
-  , alloc(Properties::entire_field | Properties::all_rows)
-  , di(1), dj(1)
+  , alloc(false)
 {}
 
 Astrobj::Properties::Properties( double * I, double * t) :
@@ -501,8 +500,7 @@ Astrobj::Properties::Properties( double * I, double * t) :
   , intensity_converter_(NULL), spectrum_converter_(NULL),
   binspectrum_converter_(NULL)
 # endif
-  , alloc(Properties::entire_field | Properties::all_rows)
-  , di(1), dj(1)
+  , alloc(false)
 {}
 
 void Astrobj::Properties::init(size_t nbnuobs) {

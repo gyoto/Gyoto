@@ -41,111 +41,6 @@ using namespace std;
 using namespace Gyoto;
 using namespace YGyoto;
 
-typedef struct ySceneryThreadWorkerArg {
-#ifdef HAVE_PTHREAD
-  pthread_mutex_t * mutex;
-  pthread_t * parent;
-#endif
-  Idx *i_idx, *j_idx;
-  Scenery *sc;
-  Photon * ph;
-  Astrobj::Properties *data;
-  double * impactcoords;
-  size_t res;
-} ySceneryThreadWorkerArg ;
-
-static void * ySceneryThreadWorker (void *arg) {
-  /*
-    This is the real ray-tracing loop. It may be called by multiple
-    threads in parallel, launched from ::rayTrace
-   */
-
-  ySceneryThreadWorkerArg *larg = static_cast<ySceneryThreadWorkerArg*>(arg);
-
-  // Each thread needs its own Photon, clone cached Photon
-  // it is assumed to be already initialized with spectrometer et al.
-  Photon * ph = larg -> ph;
-#ifdef HAVE_PTHREAD
-  if (larg->mutex) {
-    GYOTO_DEBUG << "locking mutex\n";
-    pthread_mutex_lock(larg->mutex);
-    GYOTO_DEBUG << "mutex locked\n";
-    ph = larg -> ph -> clone();
-    GYOTO_DEBUG << "unlocking mutex\n";
-    pthread_mutex_unlock(larg->mutex);
-    GYOTO_DEBUG << "mutex unlocked\n";
-  }
-#endif
-
-  // local variables to store our parameters
-  size_t i, j;
-  Astrobj::Properties data;
-  double * impactcoords = NULL;
-
-  size_t count=0;
-
-  while (1) {
-    /////// 1- get input and output parameters and update them for next access
-    //// i and j are input, data and impactcoords are where to store
-    //// output.  we must get them and increase them so that another
-    //// thread can get the next values while we integrate.
-#ifdef HAVE_PTHREAD
-    // lock mutex so we can safely read and update i, j et al.
-    if (larg->mutex) pthread_mutex_lock(larg->mutex);
-#endif
-    // copy i & j 
-    i = larg->i_idx->current(); j = larg->j_idx->current();
-
-    // check whether there remains something to compute
-    if (!larg->j_idx->valid()
-	|| (larg->j_idx->isLast() && !larg->i_idx->valid())) {
-      // terminate, but first...
-#ifdef HAVE_PTHREAD
-      // ...unlock mutex so our siblings can access i & j and terminate too
-      if (larg->mutex) pthread_mutex_unlock(larg->mutex);
-#endif
-      break;
-    }
-
-    // print some info
-    if (larg->i_idx->isFirst() &&
-	verbose() >= GYOTO_QUIET_VERBOSITY && !impactcoords) {
-      cout << "\rRay-tracing scenery: j = " << j << flush ;
-    }
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "i = " << i << ", j = " << j << endl;
-#   endif
-
-    // update i & j
-    larg->i_idx->next();
-    if (!larg->i_idx->valid()) {
-      larg->j_idx->next(); larg->i_idx->first();
-    }
-
-    // copy output pointers and update them
-    data = *larg->data; ++(*larg->data);
-    if (larg->impactcoords) impactcoords=larg->impactcoords+((j-1)*larg->res+i-1)*16;
-
-#ifdef HAVE_PTHREAD
-    // unlock mutex so our siblings can can access i, j et al. and procede
-    if (larg->mutex) pthread_mutex_unlock(larg->mutex);
-#endif
-
-    ////// 2- do the actual work.
-    (*larg->sc)(i, j, &data, impactcoords, ph);
-    ++count;
-  }
-#ifdef HAVE_PTHREAD
-  if (larg->mutex) {
-    delete ph;
-    pthread_mutex_lock(larg->mutex);
-  }
-  GYOTO_MSG << "\nThread terminating after integrating " << count << " photons";
-  if (larg->mutex) pthread_mutex_unlock(larg->mutex);
-# endif
-  return NULL;
-}
-
 YGYOTO_YUSEROBJ(Scenery, Scenery)
 
 extern "C" {
@@ -277,9 +172,34 @@ extern "C" {
       if (i_idx.isNuller()) return;
       Idx j_idx (piargs[1], res);
       if (j_idx.isNuller()) return;
-      long ni=i_idx.getNElements();
-      long nj=j_idx.getNElements();
-      long nelem=ni*nj;
+
+      bool is_double=false;
+
+      long ndims, dims[Y_DIMSIZE]={0};
+      long nelem;
+
+      if (i_idx.isDouble() || j_idx.isDouble()) {
+	if (!i_idx.isDouble() || !j_idx.isDouble())
+	  throwError("i and j must be of same type (double or long)");
+	is_double=true;
+	nelem=i_idx.getNElements();
+	long const *idims=i_idx.getDims();
+	for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
+	if (j_idx.getNElements() != nelem) {
+	  if (nelem==1) {
+	    nelem=j_idx.getNElements();
+	    idims=j_idx.getDims();
+	    for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
+	  }
+	  else throwError("alpha and delta must be conformable");
+	}
+      } else {
+	nelem=i_idx.getNElements()*j_idx.getNElements();
+	dims[0]=0;
+	if (precompute)       dims[++dims[0]]=16;
+	if (i_idx.getNDims()) dims[++dims[0]]=i_idx.getNElements();
+	if (j_idx.getNDims()) dims[++dims[0]]=j_idx.getNElements();
+      }
 
       long nk = 0; int rquant = 0; ystring_t * squant = NULL;
 
@@ -347,26 +267,19 @@ extern "C" {
       if (has_bsp) nk+=nbnuobs-1;
       if (!has_sp && !has_bsp) nbnuobs=0;
 
-      long ndims=i_idx.getNDims()+j_idx.getNDims()
-	+ (precompute ? 1 : (((rquant>=1)||has_sp||has_bsp)));
-      GYOTO_DEBUG << "i_idx.getNDims()=" << i_idx.getNDims()
-		  << ", j_idx.getNDims()" << j_idx.getNDims()
-		  << ", precompute ? 1 : (((rquant>=1)||has_sp||has_bsp))"
-		  << (precompute ? 1 : (((rquant>=1)||has_sp||has_bsp))) <<endl;
-      long dims[4]={ndims};
-      size_t offset=0;
-      if (precompute)       dims[++offset]=16;
-      if (i_idx.getNDims()) dims[++offset]=ni;
-      if (j_idx.getNDims()) dims[++offset]=nj;
-      if ( !precompute && ((rquant>=1)||has_sp||has_bsp) ) dims[++offset]=nk;
+      if ( !precompute && ((rquant>=1)||has_sp||has_bsp) ) dims[++dims[0]]=nk;
+
       GYOTO_DEBUG << "precompute=" << precompute << ", nk=" << nk
 		  << ", nbnuobs="<<nbnuobs << ", data=ypush_d({"<< dims[0]
 		  << ", " << dims[1] << ", " << dims[2] << ", " << dims[3]
 		  << "})\n";
+
+      GYOTO_DEBUG_ARRAY(dims, Y_DIMSIZE);
+
       double * data=ypush_d(dims);
 
       Astrobj::Properties prop;
-      prop.alloc=Astrobj::Properties::minimal;
+      prop.alloc=false;
       SmartPointer<Screen> screen = (*OBJ) -> screen();
 #     ifdef HAVE_UDUNITS
       if (data) (*OBJ)->setPropertyConverters(&prop);
@@ -435,76 +348,52 @@ extern "C" {
 	  } else y_errorq("unknown quantity: %s", squant[k]);
 	}
       }
-      if (i_idx.isDouble() ||j_idx.isDouble()) {
-	prop.init(nbnuobs);
-	SmartPointer<Photon> ph=(*OBJ)->clonePhoton();
-	double coord[8];
-	screen -> getRayCoord(i_idx.getDVal(), j_idx.getDVal(), coord);
-	ph->setInitCoord(coord, -1);
-	ph->delta((*OBJ)->delta());
-	ph->hit(&prop);
-      } else if (i_idx.isRangeOrScalar() && j_idx.isRangeOrScalar()){
-	// i and j can be trated as ranges
-	// We will use Scenery::rayTrace()
-	prop.di=i_idx.range_dlt();
-	prop.dj=j_idx.range_dlt();
-	(*OBJ)->rayTrace(i_idx.range_min(), i_idx.range_max(),
-			 j_idx.range_min(), j_idx.range_max(),
-			 &prop, impactcoords);
+
+      Screen::Coord2dSet *ijspec=NULL;
+      Screen::Coord1dSet *ispec=NULL, *jspec=NULL;
+
+      if (is_double) {
+	size_t sz = i_idx.getNElements() >= j_idx.getNElements()?
+	  i_idx.getNElements():j_idx.getNElements();
+	if (i_idx.getNElements()==1)
+	  ispec = new Screen::RepeatAngle(i_idx.getDVal(), sz);
+	else 
+	  ispec = new Screen::Angles(i_idx.getDoubleBuffer(), sz);
+	if (j_idx.getNElements()==1)
+	  jspec = new Screen::RepeatAngle(j_idx.getDVal(), sz);
+	else 
+	  jspec = new Screen::Angles(j_idx.getDoubleBuffer(), sz);
+	ijspec = new Screen::Bucket(*ispec, *jspec);
       } else {
-	// i and j specify integers; at least one is a list.
-	screen -> computeBaseVectors();
-	double coord[8];
-	screen -> getRayCoord(size_t(i_idx.first()),
-			      size_t(j_idx.first()),
-			      coord);
-	SmartPointer<Photon> ph=(*OBJ)->clonePhoton();
-	ph->setInitCoord(coord, -1);
-	ph->spectrometer(screen->spectrometer());
-	ph->freqObs(screen->freqObs());
-	ph->delta((*OBJ)->delta());
 
-	ySceneryThreadWorkerArg larg;
-	larg.sc=(*OBJ);
-	larg.ph=ph;
-	larg.data=&prop;
-	larg.impactcoords=impactcoords;
-	larg.i_idx=&i_idx;
-	larg.j_idx=&j_idx;
-	larg.res=res;
+	if (i_idx.isRangeOrScalar())
+	  ispec = new Screen::Range
+	    (i_idx.range_min(), i_idx.range_max(), i_idx.range_dlt());
+	else
+	  ispec = new Screen::Indices
+	    (reinterpret_cast<size_t const*const>(i_idx.getBuffer()),
+	     i_idx.getNElements());
 
-#       ifdef HAVE_PTHREAD
-	larg.mutex  = NULL;
-	pthread_mutex_t mumu = PTHREAD_MUTEX_INITIALIZER;
-	pthread_t * threads = NULL;
-	pthread_t pself = pthread_self();
-	larg.parent = &pself;
-	size_t nthreads = (*OBJ) -> nThreads();
-	if (nthreads >= 2) {
-	  threads = new pthread_t[nthreads-1];
-	  larg.mutex  = &mumu;
-	  for (size_t th=0; th < nthreads-1; ++th) {
-	    if (pthread_create(threads+th, NULL,
-			       ySceneryThreadWorker,
-			       static_cast<void*>(&larg)) < 0)
-	      y_error("Error creating thread");
-	  }
-	}
-#       endif
+	if (j_idx.isRangeOrScalar())
+	  jspec = new Screen::Range
+	    (j_idx.range_min(), j_idx.range_max(), j_idx.range_dlt());
+	else
+	  jspec = new Screen::Indices
+	    (reinterpret_cast<size_t const*const>(j_idx.getBuffer()),
+	     j_idx.getNElements());
 
-	// Call worker on the parent thread
-	(*ySceneryThreadWorker)(static_cast<void*>(&larg));
-
-#       ifdef HAVE_PTHREAD
-	// Wait for the child threads
-	if (nthreads>=2)
-	  for (size_t th=0; th < nthreads-1; ++th)
-	    pthread_join(threads[th], NULL);
-#       endif
-	if (impactcoords==NULL) GYOTO_MSG << endl;
+	ijspec = new Screen::Grid(*ispec, *jspec, "\rj = ");
+	if (verbose() >= GYOTO_QUIET_VERBOSITY)
+	  cout << "\nj = 1/" << jspec->size() << flush;
       }
-    }
-  }
+
+      (*OBJ)->rayTrace(*ijspec, &prop, impactcoords);
+
+      delete ispec;
+      delete jspec;
+      delete ijspec;
+    } // if (conditions for ray-tracing)
+  } //  void gyoto_Scenery_eval(void *obj, int argc);
 
   // Constructor
   void Y_gyoto_Scenery(int argc) {
@@ -512,7 +401,7 @@ extern "C" {
     gyoto_Scenery_eval(OBJ, argc);
   }
 
-  void Y_gyoto_Scenery_rayTrace(int argc) {
+void Y_gyoto_Scenery_rayTrace(int argc) {
     size_t imin=1, imax=-1, jmin=1, jmax=-1;
     if (argc<1) y_error("gyoto_Scenery_rayTrace takes at least 1 argument");
     gyoto_Scenery * s_obj=(gyoto_Scenery*)yget_obj(argc-1, &gyoto_Scenery_obj);
@@ -525,6 +414,13 @@ extern "C" {
     long res;
     try {res=long(scenery->screen()->resolution());}
     YGYOTO_STD_CATCH;
+
+    if (imax>res) imax=res;
+    if (jmax>res) jmax=res;
+
+    Screen::Range irange(imin, imax, 1);
+    Screen::Range jrange(jmin, jmax, 1);
+    Screen::Grid grid(irange, jrange, "\r j = ");
 
     double * impactcoords = NULL;
     int ipctout = 0;
@@ -598,8 +494,10 @@ extern "C" {
 
     data.intensity=vect;
 
-    try {scenery -> rayTrace(imin, imax, jmin, jmax, &data,
-			     ipctout?NULL:impactcoords);}
+    if (verbose() >= GYOTO_QUIET_VERBOSITY)
+      cout << endl << flush;
+
+    try {scenery -> rayTrace(grid, &data, ipctout?NULL:impactcoords);}
     YGYOTO_STD_CATCH;
 
   }

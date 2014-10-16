@@ -354,10 +354,7 @@ int main(int argc, char** argv) {
 
     // Allocate space for the output data
     data = new Astrobj::Properties();
-    data->alloc=
-      Astrobj::Properties::entire_field |
-      Astrobj::Properties::all_rows;
-    data->di=di; data->dj=dj;
+    data->alloc=true;
 
     size_t curquant=0;
     size_t offset=res*res;
@@ -471,8 +468,19 @@ int main(int argc, char** argv) {
     signal(SIGINT, sigint_handler);
 
     curmsg = "In gyoto.C: Error during ray-tracing: ";
-    scenery -> rayTrace(imin, imax, jmin, jmax, data,
-			ipctdims[0]?impactcoords:NULL);
+
+    if (imax>res) imax=res;
+    if (jmax>res) jmax=res;
+
+
+    Screen::Range irange(imin, imax, di);
+    Screen::Range jrange(jmin, jmax, dj);
+    Screen::Grid  grid(irange, jrange, "\rj = ");
+
+    if (verbose() >= GYOTO_QUIET_VERBOSITY)
+      cout << "j = " << imin << "/" << (imax-imin+1)/di << flush;
+
+    scenery -> rayTrace(grid, data, ipctdims[0]?impactcoords:NULL);
 
     curmsg = "In gyoto.C: Error while saving: ";
     if (verbose() >= GYOTO_QUIET_VERBOSITY)

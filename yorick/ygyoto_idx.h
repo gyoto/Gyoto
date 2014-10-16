@@ -20,6 +20,8 @@
 #ifndef __YGYOTO_IDX_H
 #define __YGYOTO_IDX_H
 
+#include "yapi.h"
+
 namespace YGyoto { class Idx; }
 
 class YGyoto::Idx {
@@ -29,10 +31,13 @@ private:
   int _is_list;
   int _is_scalar;
   int _is_double;
+  int _is_dlist;
   int _is_first;
 
   long _range[3];
+  long _dims[Y_DIMSIZE];
   double _dval;
+  double *_buf;
   long *_idx;
   long _nel;
   long _cur;
@@ -49,12 +54,16 @@ public:
   long current() const;
   double getDVal() const;
   int isDouble() const;
+  int isDoubleArray() const;
   int isRangeOrScalar() const;
   int isFirst() const;
   int isLast() const;
   long range_min() const;
   long range_max() const;
   long range_dlt() const;
+  long const * getBuffer() const;
+  double const * getDoubleBuffer() const;
+  long const * getDims() const;
 };
 
 

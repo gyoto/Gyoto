@@ -158,7 +158,7 @@ func check_christoffels(gg, pos, tolerance=, eps=)
     Gamma3=christoffel(gg, pos(,n), eps=eps);
     if (anyof(Gamma1!=Gamma2))
       error, "The two forms of the christoffel method don't yield the same result";
-    if (max(abs(Gamma1(ind)-Gamma3(ind)))>tolerance)
+    if (max(abs(Gamma1-Gamma3))>tolerance)
       error, "The Christoffels don't agree with their numerical estimate";
     dot;
   }

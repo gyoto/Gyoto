@@ -73,6 +73,29 @@ mdiff=max(abs(diff));
 if (mdiff > 1e-6) error, "Results differ";
 output, " OK (max rel. dif.: "+pr1(mdiff)+")";
 
+fov=sc.screen().fov();
+npix=sc.screen().resolution();
+delta= fov/double(npix);
+
+xx=((indgen(npix)-0.5)*delta-fov/2.)(, -:1:32);
+yy=transpose(xx);
+
+sc, mpispawn=8, mpiclone=;
+
+doing, "Integrating whole field, specifying angles, with MPI";
+data2 = sc(-xx, yy, );
+done;
+
+sc, mpispawn=0;
+
+doing, "Comparing results";
+diff=data-data2;
+ind=where(data);
+diff(ind)/=data(ind);
+mdiff=max(abs(diff));
+if (mdiff > 1e-6) error, "Results differ";
+output, " OK (max rel. dif.: "+pr1(mdiff)+")";
+
 doing, "Deleting Scenery";
 sc=[];
 done;

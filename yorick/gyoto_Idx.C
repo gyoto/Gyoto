@@ -20,10 +20,12 @@
 #include "ygyoto_idx.h"
 #include "yapi.h"
 #include "GyotoError.h"
-
+#include "GyotoDefs.h"
+#include "GyotoUtils.h"
+#include <iostream>
 using namespace YGyoto;
 using namespace Gyoto;
-
+using namespace std;
 int YGyoto::Idx::isNuller() const {return _is_nuller;}
 long YGyoto::Idx::getNElements() const {return _nel;}
 long YGyoto::Idx::current() const {
@@ -31,7 +33,7 @@ long YGyoto::Idx::current() const {
   return _cur;
 }
 double YGyoto::Idx::getDVal() const {return _is_double?_dval:_range[0];}
-int YGyoto::Idx::isDouble() const {return _is_double;}
+int YGyoto::Idx::isDouble() const {return _is_double || _is_dlist;}
 int YGyoto::Idx::isRangeOrScalar() const {return _is_range || _is_scalar;}
 int YGyoto::Idx::isFirst() const {return _is_first;}
 
@@ -83,7 +85,8 @@ long YGyoto::Idx::range_dlt() const {
 }
 
 YGyoto::Idx::Idx(int iarg, int res) :
-  _is_nuller(0), _is_range(0), _is_list(0), _is_scalar(0), _is_double(0)
+  _is_nuller(0), _is_range(0), _is_list(0), _is_scalar(0), _is_double(0),
+  _buf(NULL), _is_dlist(0)
 {
   int flags = yget_range(iarg, _range), ndims=0;
   if (flags) {
@@ -113,10 +116,11 @@ YGyoto::Idx::Idx(int iarg, int res) :
     return;
   }
   if (yarg_rank(iarg) > 0) {
-    _is_list=1;
-    _nel=1;
-    _idx = ygeta_l(iarg, &_nel, 0);
-    return;
+    if (yarg_number(iarg)==1){
+      _is_list=1;
+      _idx = ygeta_l(iarg, &_nel, _dims);
+      return;
+    }
   }
   if (yarg_number(iarg)==1) {
     _is_scalar=1;
@@ -131,7 +135,13 @@ YGyoto::Idx::Idx(int iarg, int res) :
   if (yarg_number(iarg)==2) {
     _is_scalar=1;
     _is_double=1;
-    _dval=ygets_d(iarg);
+    _buf=ygeta_d(iarg, &_nel, _dims);
+    _dval=_buf[0];
+    if (_dims[0]) _is_dlist=1;
+    else _is_scalar=1;
+    GYOTO_DEBUG_ARRAY(_dims, Y_DIMSIZE);
+    GYOTO_DEBUG_EXPR(_is_scalar);
+    GYOTO_DEBUG_EXPR(_is_dlist);
     return;
   }
   if (iarg<0 || yarg_nil(iarg)) {
@@ -150,3 +160,8 @@ int YGyoto::Idx::getNDims() const {
   if (_is_list) return 1;
   if (_is_scalar) return 0;
 }
+
+long const * YGyoto::Idx::getDims() const {return _dims;}
+
+long const * YGyoto::Idx::getBuffer() const {return _idx;}
+double const * YGyoto::Idx::getDoubleBuffer() const {return _buf;}

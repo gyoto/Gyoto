@@ -18,6 +18,7 @@
  */
 
 #include "check-helpers.i"
+restore, gyoto;
 
 begin_section, "Scenery";
 
@@ -211,11 +212,97 @@ sc4;
 ph = gyoto_Photon(initcoord=sc3, 6, 19);
 ph.is_hit();
 
+doing, "Reading Scenery...";
+sc=Scenery("../doc/examples/example-complex-astrobj.xml");
+done;
+
+sc, nthreads=8, nprocesses=0, mpispawn=0;
+
+doing, "Integrating whole field...";
+data=sc();
+done;
+
+r1=8:25:4;
+r2=2:-2:3;
+v1=[1, 4, 16];
+v2=[15, 20, 22];
+
+doing, "Integrating subfield...";
+data2=sc(r1, r2, );
+done;
+
+doing, "Comparing...";
+if (anyof(data2 != data(r1, r2, ))) error, "result differ";
+done;
+
+doing, "Integrating subfield...";
+data2=sc(v1, v2, );
+done;
+
+doing, "Comparing...";
+if (anyof(data2 != data(v1, v2, ))) error, "result differ";
+done;
+
+doing, "Integrating subfield...";
+data2=sc(r1, v2, );
+done;
+
+doing, "Comparing...";
+if (anyof(data2 != data(r1, v2, ))) error, "result differ";
+done;
+
+doing, "Integrating subfield...";
+data2=sc(v1, r2, );
+done;
+
+doing, "Comparing...";
+if (anyof(data2 != data(v1, r2, ))) error, "result differ";
+done;
+
+fov=sc.screen().fov();
+npix=sc.screen().resolution();
+delta= fov/double(npix);
+
+xx=((indgen(npix)-0.5)*delta-fov/2.)(, -:1:32);
+yy=transpose(xx);
+
+data2=array(double, npix, npix, 1);
+doing, "integrating pix. by pix., specifying angles...\n";
+verbosity=verbose(0);
+for (j=1; j<=npix; ++j) {
+  write, format="\rj = %d/%d", j, npix;
+  for (i=1; i<=npix; ++i) {
+    data2(i, j, 1) = sc(-xx(i, j), yy(i, j), );
+  }
+ }
+write, format="%s\n", "";
+done;
+verbose, verbosity;
+
+doing, "Comparing results";
+diff=data-data2;
+ind=where(data);
+diff(ind)/=data(ind);
+mdiff=max(abs(diff));
+if (mdiff > 1e-6) error, "Results differ";
+output, " OK (max rel. dif.: "+pr1(mdiff)+")";
+
+doing, "integrating whole field, specifying angles...\n";
+data2 = sc(-xx, yy, );
+done;
+
+doing, "Comparing results";
+diff=data-data2;
+ind=where(data);
+diff(ind)/=data(ind);
+mdiff=max(abs(diff));
+if (mdiff > 1e-6) error, "Results differ";
+output, " OK (max rel. dif.: "+pr1(mdiff)+")";
 
 if (batch()) {
 
   // Free memory for easier checking with valgrind
-  data=[];
+  xx=yy=data2=data=ind=[];
   sc4=[];
   sc3=[];
   sc2=[];

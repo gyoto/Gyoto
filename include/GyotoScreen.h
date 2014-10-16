@@ -29,6 +29,13 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#if defined HAVE_BOOST
+#include <boost/array.hpp>
+#define GYOTO_ARRAY boost::array
+#else
+#include <array>
+#define GYOTO_ARRAY std::array
+#endif
 
 namespace Gyoto {
   class Screen;
@@ -555,7 +562,168 @@ class Gyoto::Screen : protected Gyoto::SmartPointee {
     static   SmartPointer<Screen> Subcontractor(FactoryMessenger* fmp);
 #endif
 
+    /// Enum to specify whether a coordinate set (Coord1dSet or Coord2dSet) holds pixel values or angles
+    enum CoordType_e {angle, pixel};
 
+    /// Set of 1-d coordinates: indices or angles
+    /**
+     * Acts like a container (array-like) of either size_t (pixel
+     * coordinate) or double (angle) values. This container can be
+     * iterated-through using the operator++(), derefenced using the
+     * operator*() (if containing pixel coordinates) or angle() (in
+     * containing angles).
+     */
+    class Coord1dSet {
+    public:
+      /// Whether this specifier represents angles or pixels
+      const CoordType_e kind;
+    public:
+      /// Set kind during initialization
+      Coord1dSet(CoordType_e k);
+      /// Reset specifier to point to the first value
+      virtual void begin() =0;
+      /// True if pointing to something, false if end has been reached.
+      virtual bool valid() =0;
+      /// Number of values in this container
+      virtual size_t size()=0;
+      /// Get size_t value crrently pointed to
+      virtual size_t operator*() const ;
+      /// Get double value currently pointed to
+      virtual double angle() const ;
+      /// Increment iterator (point to next value)
+      virtual Coord1dSet& operator++()=0;
+    };
+
+    /// Class to specify a set of points on the Screen
+    /**
+     * Container (array-like) holding several 2D points. Can be a 2D
+     * grid of pixel coordinates or a vector of floating-point (alpha,
+     * delta) pairs, for instance.
+     */
+    class Coord2dSet {
+    public:
+      /// Whether this set holds pixels or angle specifications
+      const CoordType_e kind;
+      /// Set kind at initialisation
+      Coord2dSet(CoordType_e k);
+      /// Increment pointer
+      virtual Coord2dSet& operator++()    =0;
+      /// Get pixel coordinates
+      virtual GYOTO_ARRAY<size_t, 2> operator*  () const;
+      /// Get angle coordinates
+      virtual GYOTO_ARRAY<double, 2> angles() const ;
+      /// Reset pointer
+      virtual void begin() =0;
+      /// Whether the end has not been passed
+      virtual bool valid() =0;
+      /// Number of positions contained
+      virtual size_t size()=0;
+    };
+
+    /// Class containing 2D-points organized in a grid
+    class Grid: public Coord2dSet {
+    protected:
+    protected:
+      /// If non-NULL, cout j each tims it is incremented.
+      const char * const prefix_;
+      Coord1dSet &iset_;
+      Coord1dSet &jset_;
+    public:
+      Grid(Coord1dSet &iset, Coord1dSet &jset, const char * const p=NULL);
+      virtual Coord2dSet& operator++();
+      virtual GYOTO_ARRAY<size_t, 2> operator*  () const;
+      virtual void begin();
+      virtual bool valid();
+      virtual size_t size();
+    };
+
+    /// Class containing arbitrary 2D-points 
+    /**
+     * ispec_ and jspec_ must be the same size.
+     */
+    class Bucket : public Coord2dSet {
+    protected:
+      Coord1dSet &alpha_;
+      Coord1dSet &delta_;
+    public:
+      Bucket(Coord1dSet &iset, Coord1dSet &jset);
+      virtual Coord2dSet& operator++();
+      virtual GYOTO_ARRAY<double, 2> angles() const;
+      virtual GYOTO_ARRAY<size_t, 2> operator*() const;
+      virtual void begin();
+      virtual bool valid();
+      virtual size_t size();
+    };
+
+    /// A dummy, empty 2D set.
+    class Empty: public Coord2dSet {
+    public:
+      Empty();
+      virtual Coord2dSet& operator++();
+      virtual void begin();
+      virtual bool valid();
+      virtual size_t size();
+    };
+
+    /// 1D coordinated specifier for a range
+    class Range : public Coord1dSet {
+    protected:
+      const size_t mi_, ma_, d_, sz_;
+      size_t cur_;
+    public:
+      /// Specify min, max and step of this range.
+      Range(size_t mi, size_t ma, size_t d);
+      void begin();
+      bool valid();
+      size_t size();
+      Coord1dSet& operator++();
+      size_t operator*() const ;
+    };
+
+    /// 1D specifier for an arbitrary pixel coordinate set.
+    class Indices : public Coord1dSet {
+    protected:
+      size_t const * const indices_;
+      size_t const sz_;
+      size_t i_;
+    public:
+      Indices (size_t const*const buf, size_t sz);
+      void begin();
+      bool valid();
+      size_t size();
+      Coord1dSet& operator++();
+      size_t operator*() const ;
+    };
+
+    /// 1D specifier for an arbitrary angle coordinate set.
+    class Angles : public Coord1dSet {
+    protected:
+      double const * const buf_;
+      size_t const sz_;
+      size_t i_;
+    public:
+      Angles (double const*const buf, size_t sz);
+      void begin();
+      bool valid();
+      size_t size();
+      Coord1dSet& operator++();
+      double angle() const ;
+    };
+
+    /// 1D specifier for an angle that is repeated.
+    class RepeatAngle : public Coord1dSet {
+    protected:
+      double const val_;
+      size_t const sz_;
+      size_t i_;
+    public:
+      RepeatAngle (double val, size_t sz);
+      void begin();
+      bool valid();
+      size_t size();
+      Coord1dSet& operator++();
+      double angle() const ;
+    };
 };
 
 #endif

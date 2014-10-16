@@ -1209,3 +1209,154 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   return scr;
 }
 #endif
+
+//////// COORD2DSET
+
+Screen::Coord2dSet::Coord2dSet(CoordType_e k) : kind(k) {}
+
+GYOTO_ARRAY<size_t, 2> Screen::Coord2dSet::operator* () const {
+  if (kind==pixel)
+    throwError("BUG: Coord2dSet of kind pixel should implement operator*");
+  else
+    throwError("Coord2dSet of kind angle should not be dereferenced");
+  // avoid warning
+  GYOTO_ARRAY<size_t, 2> a = {0, 0};
+  return a;
+}
+
+GYOTO_ARRAY<double, 2> Screen::Coord2dSet::angles () const {
+  if (kind==Screen::angle)
+    throwError("BUG: Coord2dSet of kind angle should implement angles()");
+  else
+    throwError("angles() should not be called on Coord2dSet of kind pixel");
+  // avoid warning
+  GYOTO_ARRAY<double, 2> a = {0., 0.};
+  return a;
+}
+
+//////// GRID
+
+Screen::Grid::Grid(Coord1dSet &iset, Coord1dSet &jset,
+		   const char * const p)
+  : Coord2dSet(pixel),
+    prefix_(p),
+    iset_(iset), jset_(jset)
+{}
+
+GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
+  GYOTO_ARRAY<size_t, 2> ij = {*iset_, *jset_};
+  return ij;
+}
+void Screen::Grid::begin() {iset_.begin(); jset_.begin();}
+bool Screen::Grid::valid() {return iset_.valid() && jset_.valid();}
+size_t Screen::Grid::size() {return (iset_.size())*(jset_.size());}
+
+Screen::Coord2dSet& Screen::Grid::operator++() {
+  if (!valid()) return *this;
+  ++iset_;
+  if (!iset_.valid()) {
+    iset_.begin();
+    ++jset_;
+    if (prefix_ && verbose() >= GYOTO_QUIET_VERBOSITY && jset_.valid())
+      cout << prefix_ << *jset_ << "/" << jset_.size() << flush;
+  }
+
+  return *this;
+}
+
+//////// COORD1DSET
+
+Screen::Coord1dSet::Coord1dSet(CoordType_e k) : kind(k) {}
+
+size_t Screen::Coord1dSet::operator* () const {
+  if (kind==pixel)
+    throwError("BUG: Coord1dSet of kind pixel should implement operator*");
+  else
+    throwError("Coord1dSet of kind angle should not be dereferenced");
+  // avoid warning
+  return 0;
+}
+
+double Screen::Coord1dSet::angle () const {
+  if (kind==Screen::angle)
+    throwError("BUG: Coord1dSet of kind angle should implement angle()");
+  else
+    throwError("angle() should not be called on Coord1dSet of kind pixel");
+  // avoid warning
+  return 0.;
+}
+
+///////
+
+Screen::Range::Range(size_t mi, size_t ma, size_t d)
+  : Coord1dSet(pixel), mi_(mi), ma_(ma), d_(d), cur_(mi), sz_((ma-mi+1)/d)
+{}
+
+void Screen::Range::begin() {cur_=mi_;}
+Screen::Coord1dSet& Screen::Range::operator++() {
+  cur_ += d_; return *this;
+}
+bool Screen::Range::valid() {return cur_ <= ma_;}
+size_t Screen::Range::size() {return sz_;}
+size_t Screen::Range::operator*() const {return cur_;}
+
+//////
+
+Screen::Indices::Indices (size_t const*const buf, size_t sz)
+  : Coord1dSet(pixel), indices_(buf), sz_(sz), i_(0)
+{}
+void Screen::Indices::begin() {i_=0;}
+bool Screen::Indices::valid() {return i_ < sz_;}
+size_t Screen::Indices::size(){return sz_;}
+Screen::Coord1dSet& Screen::Indices::operator++() {++i_; return *this;}
+size_t Screen::Indices::operator*() const {return indices_[i_];}
+
+
+/////
+
+Screen::Angles::Angles (double const*const buf, size_t sz)
+  : Coord1dSet(Screen::angle), buf_(buf), sz_(sz), i_(0)
+{}
+void Screen::Angles::begin() {i_=0;}
+bool Screen::Angles::valid() {return i_<sz_;}
+size_t Screen::Angles::size(){return sz_;}
+Screen::Coord1dSet& Screen::Angles::operator++(){++i_;}
+double Screen::Angles::angle() const {return buf_[i_];}
+
+Screen::RepeatAngle::RepeatAngle (double val, size_t sz)
+  : Coord1dSet(Screen::angle), val_(val), sz_(sz), i_(0)
+{}
+void Screen::RepeatAngle::begin() {i_=0;}
+bool Screen::RepeatAngle::valid() {return i_<sz_;}
+size_t Screen::RepeatAngle::size(){return sz_;}
+Screen::Coord1dSet& Screen::RepeatAngle::operator++(){++i_;}
+double Screen::RepeatAngle::angle() const {return val_;}
+
+Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
+  : Coord2dSet(alp.kind), alpha_(alp), delta_(del)
+{
+  if (alp.kind != angle || alp.kind != angle)
+    throwError("both specifiers must be of same kind");
+  if (alp.size() != del.size())
+    throwError("alpha and delta should be of same size"); 
+}
+void Screen::Bucket::begin() {alpha_.begin(); delta_.begin();}
+bool Screen::Bucket::valid() {return alpha_.valid() && delta_.valid();}
+size_t Screen::Bucket::size(){return alpha_.size();}
+Screen::Coord2dSet& Screen::Bucket::operator++(){++alpha_; ++delta_;}
+GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
+  GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
+  return out;
+}
+GYOTO_ARRAY<size_t, 2> Screen::Bucket::operator* () const {
+  GYOTO_ARRAY<size_t, 2> ij = {*alpha_, *delta_};
+  return ij;
+}
+
+///// Empty
+
+Screen::Empty::Empty () : Coord2dSet(pixel) {}
+Screen::Coord2dSet& Screen::Empty::operator++() {return *this;}
+void Screen::Empty::begin() {}
+bool Screen::Empty::valid() {return false;}
+size_t Screen::Empty::size() {return 0;}

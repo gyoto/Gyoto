@@ -23,6 +23,7 @@
 #include "GyotoUtils.h"
 #include "GyotoRegister.h"
 #include "GyotoScenery.h"
+#include "GyotoScreen.h"
 
 // FITS I/O
 #include <fitsio.h>
@@ -67,7 +68,7 @@ int main(int argc, char** argv) {
   */
   //	For debug output
   debug(0);
-  // verbose(1);
+  verbose(GYOTO_SEVERE_VERBOSITY);
 
   mpi::environment env(argc, argv);
 
@@ -88,6 +89,8 @@ int main(int argc, char** argv) {
   sc = new Scenery();
   sc -> mpi_team_    = &team;
 
+  Screen::Empty empty;
+
   Scenery::mpi_tag task=Scenery::give_task;
   Scenery::am_worker=true;
   while (task != Scenery::terminate) {
@@ -105,7 +108,7 @@ int main(int argc, char** argv) {
     case Scenery::raytrace:
       curmsg = "In gyoto-mpi-worker.C: Error in ray-tracing: ";
       curretval = 1;
-      sc -> rayTrace(0, 0, 0, 0, NULL, NULL);
+      sc -> rayTrace(empty, NULL, NULL);
       break;
     case Scenery::terminate:
       sc = NULL;
