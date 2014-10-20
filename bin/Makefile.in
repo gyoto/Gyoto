@@ -84,6 +84,7 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @BUILD_GYOTO_TRUE@am__append_2 = gyoto.1
 @HAVE_MPI_TRUE@am__append_3 = gyoto-mpi-worker.@sovers@
 @HAVE_MPI_TRUE@am__append_4 = gyoto-mpi-worker.@sovers@.1
+@HAVE_MPI_TRUE@am__append_5 = gyoto-mpi-worker.@sovers@.1
 subdir = bin
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(dist_man_MANS)
@@ -391,7 +392,7 @@ ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
 AM_LDFLAGS = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
-CLEANFILES = example-*.fits
+CLEANFILES = example-*.fits $(am__append_5)
 dist_man_MANS = $(am__append_2) $(am__append_4)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto.la

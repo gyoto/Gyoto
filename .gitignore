@@ -1,4 +1,5 @@
 *.fits
+gyoto
 bin/gyoto
 *.lo
 *.o
@@ -25,3 +26,10 @@ yorick/yorick
 yorick/setpaths.i
 yorick/gyoto.info
 yorick/yorick1
+doc/user_guide/GyotoManual.aux
+doc/user_guide/GyotoManual.bbl
+doc/user_guide/GyotoManual.blg
+doc/user_guide/GyotoManual.log
+doc/user_guide/GyotoManual.out
+doc/user_guide/GyotoManual.pdf
+doc/user_guide/GyotoManual.toc

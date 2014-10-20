@@ -15,6 +15,7 @@ endif
 if HAVE_MPI
 bin_PROGRAMS += gyoto-mpi-worker.@sovers@
 dist_man_MANS += gyoto-mpi-worker.@sovers@.1
+CLEANFILES += gyoto-mpi-worker.@sovers@.1
 endif
 
 gyoto_SOURCES = gyoto.C
