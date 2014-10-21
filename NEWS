@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 next future ABI 3
    * New functionality: MPI-based parallelisation
    * Change Scenery::rayTrace() API, replacing i/jmin and max with a
