@@ -1,15 +1,26 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Tue Sep 19 14:47:16 2014 +0200
+Date:   Tue Oct 21 14:08:33 2014 +0200
 
-    Released 0.2.2
+    Release 0.2.3
+	* Fix minor memory-management bug in yorick-gyoto_Scenery.C
+    
+    Signed-off-by: Thibaut Paumard <paumard@users.sourceforge.net>
+
+commit fa5c38593c5d49d35ad6744522beb011477c57ea
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Sep 19 14:47:33 2014 +0200
+
+    Release 0.2.2
+    
+    Signed-off-by: Thibaut Paumard <paumard@users.sourceforge.net>
 
 commit 44a8a2536af0e51e50831c8f151432d9f83fe24f
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Tue Sep 9 11:22:24 2014 +0200
 
     Correct also the generic implementation of circularVelocity()
-
+    
     Conflicts:
     	lib/PolishDoughnut.C
 
