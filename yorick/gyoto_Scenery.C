@@ -184,21 +184,24 @@ extern "C" {
 	is_double=true;
 	nelem=i_idx.getNElements();
 	long const *idims=i_idx.getDims();
-	for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
 	if (j_idx.getNElements() != nelem) {
 	  if (nelem==1) {
 	    nelem=j_idx.getNElements();
 	    idims=j_idx.getDims();
-	    for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
 	  }
 	  else throwError("alpha and delta must be conformable");
 	}
+	for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
       } else {
 	nelem=i_idx.getNElements()*j_idx.getNElements();
 	dims[0]=0;
 	if (precompute)       dims[++dims[0]]=16;
-	if (i_idx.getNDims()) dims[++dims[0]]=i_idx.getNElements();
-	if (j_idx.getNDims()) dims[++dims[0]]=j_idx.getNElements();
+	if ( (precompute + i_idx.getDims()[0]+j_idx.getDims()[0]) >= Y_DIMSIZE )
+	  throwError("Too many dimensions");
+	long const *idims=i_idx.getDims();
+	for (int m=1; m<=idims[0];++m) dims[++dims[0]]=idims[m];
+	idims=j_idx.getDims();
+	for (int m=1; m<=idims[0];++m) dims[++dims[0]]=idims[m];
       }
 
       long nk = 0; int rquant = 0; ystring_t * squant = NULL;
@@ -267,7 +270,11 @@ extern "C" {
       if (has_bsp) nk+=nbnuobs-1;
       if (!has_sp && !has_bsp) nbnuobs=0;
 
-      if ( !precompute && ((rquant>=1)||has_sp||has_bsp) ) dims[++dims[0]]=nk;
+      if ( !precompute && ((rquant>=1)||has_sp||has_bsp) ) {
+	++dims[0];
+	if (dims[0] >=Y_DIMSIZE) throwError("Too many dimensions");
+	dims[dims[0]]=nk;
+      }
 
       GYOTO_DEBUG << "precompute=" << precompute << ", nk=" << nk
 		  << ", nbnuobs="<<nbnuobs << ", data=ypush_d({"<< dims[0]

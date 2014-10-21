@@ -113,16 +113,15 @@ YGyoto::Idx::Idx(int iarg, int res) :
 
 
     _nel=(_range[1]-_range[0]+_range[2])/_range[2];
+    _dims[0]=1; _dims[1]=_nel;
     return;
   }
-  if (yarg_rank(iarg) > 0) {
-    if (yarg_number(iarg)==1){
+  if (yarg_number(iarg)==1){
+    if (yarg_rank(iarg) > 0) {
       _is_list=1;
       _idx = ygeta_l(iarg, &_nel, _dims);
       return;
     }
-  }
-  if (yarg_number(iarg)==1) {
     _is_scalar=1;
     long val=ygets_l(iarg);
     if (val>res) y_error("max index too large");
@@ -130,10 +129,10 @@ YGyoto::Idx::Idx(int iarg, int res) :
     _range[0]=_range[1]=val;
     _range[2]=1;
     _nel=1;
+    _dims[0]=0;
     return;
   }
   if (yarg_number(iarg)==2) {
-    _is_scalar=1;
     _is_double=1;
     _buf=ygeta_d(iarg, &_nel, _dims);
     _dval=_buf[0];
@@ -150,6 +149,8 @@ YGyoto::Idx::Idx(int iarg, int res) :
       _range[1]=res;
       _range[2]=1;
       _nel=res;
+      _dims[0]=1;
+      _dims[1]=_nel;
       return;
   }
   y_error("unsupported range syntax");

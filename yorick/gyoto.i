@@ -575,16 +575,27 @@ extern gyoto_Scenery;
      Ray-traced data is retrieved calling the object like a function
      with no keyword:
         data = scenery ();
-     or data = scenery (irange, jrange, quant )
-     
-    IRANGE and JRANGE are either scalars (i, j) or ranges in the usual
-    form min:max:step. QUANT is an array of Yorick strings where each
-    element selects one quantity to retrieve (see the QUANTITIES
-    member above). QUANT may be void to use the quantities already set
-    in the Scenery or the default for the Astrobj. If specifyng QUANT,
-    DATA will be a MxNxP double array, where P=numberof(QUANT) and
-    DATA(,,i) will contain the value of the quantity specifeid by
-    QUANT(i).
+     or data = scenery (ispec, jspec, quant )
+     or data = scenery (alpha, delta, quant )
+
+    ISPEC and JSPEC are about anything that can be use to index an
+    array (except range functions, wildcards and rubber indices):
+    scalar integers, ranges (imin:imax:step), or arrays of
+    integers. The result is that
+       scenery() (ispec, jspec, ) == scenery(ispec, jspec, );
+    Indices are in the range 1 to scenery.screen().resolution().
+
+    ALPHA and DELTA are double scalars or arrays of scalars. If they
+    are both arrays, they must have the same dimensions. They are used
+    as angles to address the screen. Angles are normally in the range
+    [-0.5,0.5]*scenery.screen().fov().
+
+    QUANT is an array of Yorick strings where each element selects one
+    quantity to retrieve (see the QUANTITIES member above). QUANT may
+    be void to use the quantities already set in the Scenery or the
+    default for the Astrobj. If specifyng QUANT, DATA will be a MxNxP
+    double array, where P=numberof(QUANT) and DATA(,,i) will contain
+    the value of the quantity specified by QUANT(i).
 
     QUANTITIES may also be a scalar to retrieve a single
     quantity.

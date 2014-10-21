@@ -226,6 +226,8 @@ r1=8:25:4;
 r2=2:-2:3;
 v1=[1, 4, 16];
 v2=[15, 20, 22];
+s1=[[1, 2], [3, 4]];
+s2=[[[12, 13], [14, 15]], [[1, 2], [3, 4]], [[10, 11], [16, 17]], [[7, 8], [20, 22]]];
 
 doing, "Integrating subfield...";
 data2=sc(r1, r2, );
@@ -241,6 +243,14 @@ done;
 
 doing, "Comparing...";
 if (anyof(data2 != data(v1, v2, ))) error, "result differ";
+done;
+
+doing, "Integrating subfield...";
+data2=sc(s1, s2, );
+done;
+
+doing, "Comparing...";
+if (anyof(data2 != data(s1, s2, ))) error, "result differ";
 done;
 
 doing, "Integrating subfield...";
