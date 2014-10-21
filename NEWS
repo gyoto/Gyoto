@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 next future ABI 3
    * New functionality: MPI-based parallelisation
    * Change Scenery::rayTrace() API, replacing i/jmin and max with a
      new concept Screen::Coord2dSet. This allows using the same
      code-path for both the gyoto utility and all the yorick use cases.
+
+0.2.3 2014/10/21 BUG
+	* Fix minor memory management bug in yotck/gyoto_Scenery.C
 
 0.2.2 2014/09/19 BUG
 	* Correct Metric:: and KerrBL::circularVelocity().
