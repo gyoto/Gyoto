@@ -91,9 +91,8 @@ extern "C" {
 	long dims[2] = { rquant, nk };
 	ystring_t *squant = ypush_q(dims);
 	long k = 0;
-	char *tk =
-	  strtok(const_cast<char*>((*OBJ)->getRequestedQuantitiesString().c_str()),
-		 " \n\t");
+	string requested=(*OBJ)->getRequestedQuantitiesString();
+	char *tk = strtok(const_cast<char*>(requested.c_str()), " \n\t");
 	while (tk!=NULL) {
 	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
 	  squant[k++] = p_strcpy(tk);

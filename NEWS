@@ -4,6 +4,9 @@ next future ABI 3
      new concept Screen::Coord2dSet. This allows using the same
      code-path for both the gyoto utility and all the yorick use cases.
 
+0.2.2 2014/09/19 BUG
+	* Correct Metric:: and KerrBL::circularVelocity().
+
 0.2.1 2014/07/22 ABI 2.1
 	* ABI is backward compatible with 0.2.0.
 	* Support for the special values DBL_MAX, DBL_MIN, -DBL_MAX
