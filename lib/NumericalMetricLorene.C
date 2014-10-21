@@ -1353,7 +1353,7 @@ double NumericalMetricLorene::gmunu_up_dr(const double pos[3],
 
   if ((mu==0) && (nu==0)) 
     {
-      res = 2.*lapsedr*lapse_valm1;
+      res = 2.*lapsedr*lapse_valm3;
     }else if ((mu==1) && (nu==1))
     {
       res = 0.;
@@ -1375,7 +1375,7 @@ double NumericalMetricLorene::gmunu_up_dr(const double pos[3],
       res = 0.;
     }else if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0)) )
     {
-      res = lapse_valm2*rsinthm1*(-rm1+betapdr-2.*betap*lapsedr*lapse_valm1);
+      res = lapse_valm2*rsinthm1*(-rm1*betap+betapdr-2.*betap*lapsedr*lapse_valm1);
     }
   if (res!=res) throwError("NumericalMetricLorene::gmunu_up_dr is nan!");
   if (res==res+1.) throwError("NumericalMetricLorene::gmunu_up_dr is inf!");
