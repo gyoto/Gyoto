@@ -1,3 +1,6 @@
+0.2.3 2014/10/21 BUG
+	* Fix minor memory management bug in yotck/gyoto_Scenery.C
+
 0.2.2 2014/09/19 BUG
 	* Correct Metric:: and KerrBL::circularVelocity().
 
