@@ -891,16 +891,21 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 #ifdef HAVE_MPI
   int flagi=0, flagt=0;
   if (MPI_Initialized(&flagi)) throwError("Error running MPI_Initialized()");
+  if (!flagi) {
+    GYOTO_WARNING << "MPI_Init not called yet: "
+		  << "not spawning processes" << endl;
+    return;
+  }
   if (MPI_Finalized(&flagt)) throwError("Error running MPI_Finalized()");
-  if (!flagi || flagt) return;
+  if (flagt) {
+    GYOTO_WARNING << "MPI_Finalize already called: "
+		  << "not spawning processes" << endl;
+    return;
+  }
   if (mpi_team_) {
     if (mpi_team_->size()==nbchildren+1) return;
     mpiTerminate();
   }
-
-
-
-
   if (nbchildren) {
     char * exec = const_cast<char*>("gyoto-mpi-worker." GYOTO_SOVERS); 
 
@@ -912,7 +917,8 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 
     mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
   }
-
+#else
+  GYOTO_WARNING << "No MPI in this Gyoto" << endl;
 #endif 
 }
 
