@@ -27,15 +27,15 @@ have_mpi=haveMPI();
 output, (have_mpi?" yes":" no");
 
 doing, "Calling MPI_Initiliazed";
-if (mpiInitialized()) error, "MPI should not be initialized yet";
+if (MPI_Initialized()) error, "MPI should not be initialized yet";
 done;
 
 doing, "Calling MPI_Init";
-if (mpiInit() && have_mpi) error, "MPI INIT FAILED";
+if (MPI_Init() && have_mpi) error, "MPI INIT FAILED";
 done;
 
 doing, "Calling MPI_Initiliazed again";
-inited=mpiInitialized();
+inited=MPI_Initialized();
 if (have_mpi && !inited) error, "MPI should be initialized by now";
 if (!have_mpi && inited) error, "MPI should not be initializable";
 done;
@@ -101,15 +101,15 @@ sc=[];
 done;
 
 doing, "Calling MPI_Finalized";
-if (mpiFinalized()) error, "MPI should not be finalized yet";
+if (MPI_Finalized()) error, "MPI should not be finalized yet";
 done;
 
 doing, "Calling MPI_Finalize";
-if (mpiFinalize() && have_mpi) error, "MPI FINALIZE FAILED";
+if (MPI_Finalize() && have_mpi) error, "MPI FINALIZE FAILED";
 done;
 
 doing, "Calling MPI_Finalized again";
-finited=mpiFinalized();
+finited=MPI_Finalized();
 if (have_mpi && !finited) error, "MPI should be finalized by now";
 if (!have_mpi && finited) error, "MPI should not be finalizable";
 done;

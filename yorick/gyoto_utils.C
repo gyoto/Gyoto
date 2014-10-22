@@ -189,13 +189,13 @@ extern "C" {
   }
 
   void
-  Y_gyoto_mpiInit(int argc)
+  Y_gyoto_MPI_Init(int argc)
   {
 #if defined HAVE_MPI
     long int mpiargcl=0;
     char **mpiargv=NULL;
     long index=-1;
-    if (argc>1) y_error("gyoto.mpiInit() takes at most one argument");
+    if (argc>1) y_error("gyoto.MPI_Init() takes at most one argument");
     if (argc) {
       index=yget_ref(0);
       if (!yarg_nil(0)) mpiargv=ygeta_q(0, &mpiargcl, NULL);
@@ -215,7 +215,7 @@ extern "C" {
   }
 
   void
-  Y_gyoto_mpiInitialized(int argc)
+  Y_gyoto_MPI_Initialized(int argc)
   {
 #if defined HAVE_MPI
     int flag=0;
@@ -227,7 +227,7 @@ extern "C" {
   }
 
   void
-  Y_gyoto_mpiFinalize(int)
+  Y_gyoto_MPI_Finalize(int)
   {
 #if defined HAVE_MPI
     ypush_long(MPI_Finalize());
@@ -237,7 +237,7 @@ extern "C" {
   }
 
   void
-  Y_gyoto_mpiFinalized(int argc)
+  Y_gyoto_MPI_Finalized(int argc)
   {
 #if defined HAVE_MPI
     int flag=0;

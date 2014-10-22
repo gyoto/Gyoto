@@ -64,11 +64,11 @@ extern gyoto_haveMPI;
    OUTPUT:
     HAVE_MPI=1 if compiled with MPI, else 0.
 
-   SEE ALSO: gyoto.mpiInit, .mpiFinalize, .mpiInitialized, .mpiFinalized
+   SEE ALSO: gyoto.MPI_Init, .MPI_Finalize, .MPI_Initialized, .MPI_Finalized
 */
 
-extern gyoto_mpiInit;
-/* DOCUMENT status = gyoto.mpiInit([argv]);
+extern gyoto_MPI_Init;
+/* DOCUMENT status = gyoto.MPI_Init([argv]);
     Initialize MPI.
     
     Wrapper around MPI_Init(numberof(argv), argv). argv may be
@@ -78,36 +78,36 @@ extern gyoto_mpiInit;
 
     If MPI is not compiled-in, returns 1.
 
-   SEE ALSO: gyoto.haveMPI, .mpiFinalize, .mpiInitialized, .mpiFinalized
+   SEE ALSO: gyoto.haveMPI, .MPI_Finalize, .MPI_Initialized, .MPI_Finalized
 */
 
-extern gyoto_mpiFinalize;
-/* DOCUMENT gyoto.mpiFinalize;
+extern gyoto_MPI_Finalize;
+/* DOCUMENT gyoto.MPI_Finalize;
     Finalize MPI.
     
     Wrapper around MPI_Finalize(). Returns 0 for success, non-zero otherwise.
     
     If MPI is not compiled-in, returns 1.
 
-   SEE ALSO: gyoto.haveMPI, .mpiInit, .mpiFinalized, .mpiInitialized
+   SEE ALSO: gyoto.haveMPI, .MPI_Init, .MPI_Finalized, .MPI_Initialized
 */
 
-extern gyoto_mpiFinalized;
-/* DOCUMENT is_finalized=gyoto.mpiFinalized();
+extern gyoto_MPI_Finalized;
+/* DOCUMENT is_finalized=gyoto.MPI_Finalized();
     Tell whether some implemention of MPI_Finalize() was already called.
 
     If MPI support is not present, return 0.
 
-   SEE ALSO: gyoto.haveMPI, .mpiFinalize, .mpiInit, .mpiInitialzed
+   SEE ALSO: gyoto.haveMPI, .MPI_Finalize, .MPI_Init, .MPI_Initialzed
  */
 
-extern gyoto_mpiInitialized;
-/* DOCUMENT is_initialized=gyoto.mpiInitialized();
+extern gyoto_MPI_Initialized;
+/* DOCUMENT is_initialized=gyoto.MPI_Initialized();
     Tell whether some implemention of MPI_Init() was already called.
 
     If MPI support is not present, return 0.
 
-   SEE ALSO: gyoto.haveMPI, .mpiInit, .mpiFinalize, .mpiFinalized
+   SEE ALSO: gyoto.haveMPI, .MPI_Init, .MPI_Finalize, .MPI_Finalized
  */
 
 extern __gyoto_setErrorHandler;
@@ -544,9 +544,9 @@ extern gyoto_Scenery;
 
      You can check whether MPI support is compiled-in using
      gyoto.haveMPI(). To benefit from it, you must call
-     gyoto.mpiInit() once, before using the following keywords. Before
+     gyoto.MPI_Init() once, before using the following keywords. Before
      quitting Yorick, should should also call 'sc, mpispawn=0;
-     gyoto.mpiFinalize;'. Failure to do that may lead to helper
+     gyoto.MPI_Finalize;'. Failure to do that may lead to helper
      processes lingering around.
 
      nprocesses=number of parallel processes to use. If you just set
@@ -616,7 +616,7 @@ extern gyoto_Scenery;
       - calling 'sc, mpiclone=;' once the scenery is ready, before tracing;
       - before quitting yorick:
           * destroy all of your sceneries with sc[];
-          * call gyoto.mpiFinalize().
+          * call gyoto.MPI_Finalize().
 
     libgyoto may automatically initialize MPI, in which case it will
     also automatically terminate it. To prevent this behaviour, use
