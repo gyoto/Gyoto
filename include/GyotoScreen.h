@@ -33,8 +33,12 @@
 #include <boost/array.hpp>
 #define GYOTO_ARRAY boost::array
 #else
-#include <array>
-#define GYOTO_ARRAY std::array
+template <typename T, size_t sz> class GYOTO_ARRAY {
+ private:
+  T buf[sz];
+ public:
+  T& operator[](size_t c) { return buf[c] ; }
+};
 #endif
 
 namespace Gyoto {

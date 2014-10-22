@@ -1220,7 +1220,7 @@ GYOTO_ARRAY<size_t, 2> Screen::Coord2dSet::operator* () const {
   else
     throwError("Coord2dSet of kind angle should not be dereferenced");
   // avoid warning
-  GYOTO_ARRAY<size_t, 2> a = {0, 0};
+  GYOTO_ARRAY<size_t, 2> a;
   return a;
 }
 
@@ -1230,7 +1230,7 @@ GYOTO_ARRAY<double, 2> Screen::Coord2dSet::angles () const {
   else
     throwError("angles() should not be called on Coord2dSet of kind pixel");
   // avoid warning
-  GYOTO_ARRAY<double, 2> a = {0., 0.};
+  GYOTO_ARRAY<double, 2> a;
   return a;
 }
 
@@ -1244,7 +1244,13 @@ Screen::Grid::Grid(Coord1dSet &iset, Coord1dSet &jset,
 {}
 
 GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
+#if defined HAVE_BOOST
   GYOTO_ARRAY<size_t, 2> ij = {*iset_, *jset_};
+#else
+  GYOTO_ARRAY<size_t, 2> ij;
+  ij[0]=*iset_;
+  ij[1]=*jset_;
+#endif
   return ij;
 }
 void Screen::Grid::begin() {iset_.begin(); jset_.begin();}
@@ -1345,11 +1351,23 @@ bool Screen::Bucket::valid() {return alpha_.valid() && delta_.valid();}
 size_t Screen::Bucket::size(){return alpha_.size();}
 Screen::Coord2dSet& Screen::Bucket::operator++(){++alpha_; ++delta_;}
 GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
+#if defined HAVE_BOOST
   GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
+#else
+  GYOTO_ARRAY<double, 2> out;
+  out[0]=alpha_.angle();
+  out[1]=delta_.angle();
+#endif
   return out;
 }
 GYOTO_ARRAY<size_t, 2> Screen::Bucket::operator* () const {
+#if defined HAVE_BOOST
   GYOTO_ARRAY<size_t, 2> ij = {*alpha_, *delta_};
+#else
+  GYOTO_ARRAY<size_t, 2> ij;
+  ij[0]=*alpha_;
+  ij[1]=*delta_;
+#endif
   return ij;
 }
 
