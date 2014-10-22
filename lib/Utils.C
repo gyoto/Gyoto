@@ -21,6 +21,7 @@
 #include "GyotoError.h"
 #include "GyotoPhoton.h"
 #include <cmath>
+#include <cstdlib>
 
 using namespace Gyoto;
 using namespace std;
