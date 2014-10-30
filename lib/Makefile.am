@@ -13,14 +13,14 @@ library_includedir=$(includedir)/Gyoto
 library_include_HEADERS=$(top_srcdir)/include/*.h
 
 # MAIN LIBRARY
-lib_LTLIBRARIES = libgyoto.la
-libgyoto_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+lib_LTLIBRARIES = libgyoto@FEATURES@.la
+libgyoto@FEATURES@_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
-libgyoto_la_LIBS = $(XERCESLDFLAGS)
-libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
+libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
+libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
 soverdir=$(pkglibdir)/@sovers@

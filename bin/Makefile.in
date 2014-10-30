@@ -111,7 +111,7 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_gyoto_OBJECTS = gyoto-gyoto.$(OBJEXT)
 gyoto_OBJECTS = $(am_gyoto_OBJECTS)
-gyoto_DEPENDENCIES = @top_builddir@/lib/libgyoto.la
+gyoto_DEPENDENCIES = @top_builddir@/lib/libgyoto@FEATURES@.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -124,7 +124,7 @@ am_gyoto_mpi_worker_@sovers@_OBJECTS =  \
 gyoto_mpi_worker_@sovers@_OBJECTS =  \
 	$(am_gyoto_mpi_worker_@sovers@_OBJECTS)
 gyoto_mpi_worker_@sovers@_DEPENDENCIES =  \
-	@top_builddir@/lib/libgyoto.la
+	@top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_mpi_worker_@sovers@_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) \
@@ -258,6 +258,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+FEATURES = @FEATURES@
 FGREP = @FGREP@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
@@ -395,11 +396,11 @@ AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES = example-*.fits $(am__append_5)
 dist_man_MANS = $(am__append_2) $(am__append_4)
 gyoto_SOURCES = gyoto.C
-gyoto_LDADD = @top_builddir@/lib/libgyoto.la
+gyoto_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
-gyoto_mpi_worker_@sovers@_LDADD = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_@sovers@_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la -lboost_mpi -lboost_serialization
 gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_mpi_worker_@sovers@_LDFLAGS = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 @BUILD_GYOTO_TRUE@CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8

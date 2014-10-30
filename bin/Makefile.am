@@ -19,12 +19,12 @@ CLEANFILES += gyoto-mpi-worker.@sovers@.1
 endif
 
 gyoto_SOURCES = gyoto.C
-gyoto_LDADD   = @top_builddir@/lib/libgyoto.la
+gyoto_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
-gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la -lboost_mpi -lboost_serialization
 gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 

@@ -75,6 +75,17 @@ CFITIO are in /opt/local:
                  CPPFLAGS=-I/opt/local/include \
                  LDFLAGS=-L/opt/local/lib
 
+If compiling a release (rather than the master branch from git) for
+binary distribution, you should use the --enable-release argument to
+get rid of "-unreleased" in the SONAME. Don't do that when compiling
+anything which is not an official release, though. The unqualified
+name libgyoto.* is reserved for full-featured, official releases. The
+configure script takes care of adding suffixes when some features are
+disabled, e.g. libgyoto-nompi.*. Note that there is no guarantee that
+two -unreleased builds are ABI compatible, even if they share the same
+SONAME, because the version information is incremented only
+immediately before making and official release.
+
 III- BUILD
 ==========
    $ make

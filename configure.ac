@@ -14,11 +14,15 @@ LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
 VERSINFO=3:0:1
-sovers=`echo $VERSINFO | tr : _`
 AC_SUBST([VERSINFO])
-AC_SUBST([sovers])
 
-AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
+FEATURES=""
+AC_ARG_ENABLE([release],
+  [AS_HELP_STRING([--enable-release],
+     [enable a release build (remove -unreleased from SONAME)])])
+AS_IF([test "x$enable_release" != "xyes"],
+  [FEATURES+="-unreleased"])
+
 
 # Checks for programs.
 
@@ -50,7 +54,9 @@ AS_IF([test "x$HAVE_CXX11" = "x1"],
 )
 AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
   [AS_IF([test "x$have_boost" == "xno"],
-     [AC_MSG_ERROR([Boost requested but not found])])]
+     [AC_MSG_ERROR([Boost requested but not found])],
+     [FEATURES+="-noboost"])
+  ]
 )
 
 # If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.
@@ -81,7 +87,8 @@ AS_IF([test "x$have_mpi" == xyes],
   AC_DEFINE([HAVE_MPI], [1], [Define to 1 if you have MPI])],
 [ AS_IF([test "x$with_mpi" == xyes],
   [ AC_ERROR([MPI requested but not found])
-  ])
+  ],
+  [FEATURES+="-nompi"])
 ])
 
 AM_CONDITIONAL(HAVE_MPI, [test "x$have_mpi" == xyes])
@@ -249,7 +256,8 @@ AC_ARG_ENABLE([pthreads],
   [AS_HELP_STRING([--disable-pthreads],
      [disable POSIX threads parallelization])],
   [AS_IF([test "x$enable_pthreads" = "xno"], [use_pthreads=no])])
-AS_IF([test "x$use_pthreads" = "xyes"], [AX_PTHREAD])
+AS_IF([test "x$use_pthreads" == "xyes"], [AX_PTHREAD],
+      [FEATURES+="-nopthreads"])
 
 ## UDUNITS
 # Check for UDUNITS
@@ -352,7 +360,8 @@ AS_IF([test "x$have_udunits" == "xno"],
  ****************************************
  *** UDUNITS requested but not found! ***
  ****************************************])
-     ]
+     ],
+     [FEATURES+="-nounits"]
    )
   ],
   [use_udunits=yes
@@ -454,7 +463,8 @@ AS_IF([test "x$have_xerces" == "xno"],
   [
    AS_IF([test "x$with_xerces" == "xyes"],
      [AC_MSG_ERROR([xerces requested but not found])
-     ]
+     ],
+     [FEATURES+="-noxml"]
    )
    AS_IF([test "x$have_mpi" == "xyes"],
      [AC_MSG_ERROR([The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces.])])
@@ -557,7 +567,8 @@ AS_IF([test "x$with_cfitsio" != "xno"],
 AS_IF([test "x$have_cfitsio" == "xno"],
   [AS_IF([test "x$with_cfitsio" == "xyes"],
      [AC_MSG_ERROR([cfitsio requested but not found])
-     ]
+     ],
+     [FEATURES+="-nofits"]
    )
   ],
   [use_cfitsio=yes
@@ -674,6 +685,12 @@ AS_IF([test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"], [build_exec=y
 AS_IF([test "x$build_exec" == xyes], [mySUBDIRS="$mySUBDIRS bin"])
 
 AM_CONDITIONAL([BUILD_GYOTO], [test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"])
+
+sovers=`echo $VERSINFO | tr : _`
+sovers+=$FEATURES
+AC_SUBST([FEATURES])
+AC_SUBST([sovers])
+AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 AC_CONFIG_FILES([Makefile
                  bin/Makefile

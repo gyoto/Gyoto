@@ -164,17 +164,18 @@ libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(libgyoto_stdplug_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-libgyoto_la_LIBADD =
-am_libgyoto_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
+libgyoto@FEATURES@_la_LIBADD =
+am_libgyoto@FEATURES@_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
 	SmartPointer.lo Utils.lo Metric.lo WIP.lo Worldline.lo \
 	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
 	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
 	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
 	Hooks.lo
-libgyoto_la_OBJECTS = $(am_libgyoto_la_OBJECTS)
-libgyoto_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(libgyoto_la_LDFLAGS) $(LDFLAGS) -o $@
+libgyoto@FEATURES@_la_OBJECTS = $(am_libgyoto@FEATURES@_la_OBJECTS)
+libgyoto@FEATURES@_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(libgyoto@FEATURES@_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -210,10 +211,12 @@ am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(libgyoto_lorene_la_SOURCES) $(libgyoto_stdplug_la_SOURCES) \
-	$(EXTRA_libgyoto_stdplug_la_SOURCES) $(libgyoto_la_SOURCES)
+	$(EXTRA_libgyoto_stdplug_la_SOURCES) \
+	$(libgyoto@FEATURES@_la_SOURCES)
 DIST_SOURCES = $(libgyoto_lorene_la_SOURCES) \
 	$(libgyoto_stdplug_la_SOURCES) \
-	$(EXTRA_libgyoto_stdplug_la_SOURCES) $(libgyoto_la_SOURCES)
+	$(EXTRA_libgyoto_stdplug_la_SOURCES) \
+	$(libgyoto@FEATURES@_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -279,6 +282,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+FEATURES = @FEATURES@
 FGREP = @FGREP@
 GREP = @GREP@
 HAVE_CXX11 = @HAVE_CXX11@
@@ -420,15 +424,15 @@ library_includedir = $(includedir)/Gyoto
 library_include_HEADERS = $(top_srcdir)/include/*.h
 
 # MAIN LIBRARY
-lib_LTLIBRARIES = libgyoto.la
-libgyoto_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+lib_LTLIBRARIES = libgyoto@FEATURES@.la
+libgyoto@FEATURES@_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
 
-libgyoto_la_LIBS = $(XERCESLDFLAGS)
-libgyoto_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
+libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
+libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
 soverdir = $(pkglibdir)/@sovers@
@@ -570,8 +574,8 @@ libgyoto-lorene.la: $(libgyoto_lorene_la_OBJECTS) $(libgyoto_lorene_la_DEPENDENC
 libgyoto-stdplug.la: $(libgyoto_stdplug_la_OBJECTS) $(libgyoto_stdplug_la_DEPENDENCIES) $(EXTRA_libgyoto_stdplug_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(libgyoto_stdplug_la_LINK) -rpath $(soverdir) $(libgyoto_stdplug_la_OBJECTS) $(libgyoto_stdplug_la_LIBADD) $(LIBS)
 
-libgyoto.la: $(libgyoto_la_OBJECTS) $(libgyoto_la_DEPENDENCIES) $(EXTRA_libgyoto_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(libgyoto_la_LINK) -rpath $(libdir) $(libgyoto_la_OBJECTS) $(libgyoto_la_LIBADD) $(LIBS)
+libgyoto@FEATURES@.la: $(libgyoto@FEATURES@_la_OBJECTS) $(libgyoto@FEATURES@_la_DEPENDENCIES) $(EXTRA_libgyoto@FEATURES@_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(libgyoto@FEATURES@_la_LINK) -rpath $(libdir) $(libgyoto@FEATURES@_la_OBJECTS) $(libgyoto@FEATURES@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

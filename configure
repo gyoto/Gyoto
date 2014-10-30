@@ -636,6 +636,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 mySUBDIRS
+sovers
+FEATURES
 BUILD_GYOTO_FALSE
 BUILD_GYOTO_TRUE
 pkg_libs
@@ -693,7 +695,6 @@ BOOST_CPPFLAGS
 DISTCHECK_CONFIGURE_FLAGS
 BOOST_ROOT
 HAVE_CXX11
-sovers
 VERSINFO
 CXXCPP
 CPP
@@ -830,6 +831,7 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_release
 enable_c__11
 with_mpi
 with_boost
@@ -1508,6 +1510,8 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-release        enable a release build (remove -unreleased from
+                          SONAME)
   --disable-c++11         disable C++11 features (including advanced
                           integrators)
   --enable-native         append "-march=native" to CXXFLAGS if supported
@@ -15452,14 +15456,17 @@ ac_config_headers="$ac_config_headers config.h include/GyotoConfig.h"
 
 
 VERSINFO=3:0:1
-sovers=`echo $VERSINFO | tr : _`
 
 
+FEATURES=""
+# Check whether --enable-release was given.
+if test "${enable_release+set}" = set; then :
+  enableval=$enable_release;
+fi
 
-
-cat >>confdefs.h <<_ACEOF
-#define GYOTO_SOVERS "${sovers}"
-_ACEOF
+if test "x$enable_release" != "xyes"; then :
+  FEATURES+="-unreleased"
+fi
 
 
 # Checks for programs.
@@ -15877,7 +15884,10 @@ fi
 if test "x$with_boost" != "x" && test "x$with_boost" != "xno"; then :
   if test "x$have_boost" == "xno"; then :
   as_fn_error $? "Boost requested but not found" "$LINENO" 5
+else
+  FEATURES+="-noboost"
 fi
+
 
 fi
 
@@ -15978,6 +15988,8 @@ else
    if test "x$with_mpi" == xyes; then :
    as_fn_error $? "MPI requested but not found" "$LINENO" 5
 
+else
+  FEATURES+="-nompi"
 fi
 
 fi
@@ -17277,7 +17289,7 @@ if test "${enable_pthreads+set}" = set; then :
 fi
 fi
 
-if test "x$use_pthreads" = "xyes"; then :
+if test "x$use_pthreads" == "xyes"; then :
 
 
 ac_ext=c
@@ -17674,6 +17686,8 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 
+else
+  FEATURES+="-nopthreads"
 fi
 
 ## UDUNITS
@@ -17893,6 +17907,8 @@ if test "x$have_udunits" == "xno"; then :
  *** UDUNITS requested but not found! ***
  ****************************************" "$LINENO" 5
 
+else
+  FEATURES+="-nounits"
 
 fi
 
@@ -18108,6 +18124,8 @@ if test "x$have_xerces" == "xno"; then :
    if test "x$with_xerces" == "xyes"; then :
   as_fn_error $? "xerces requested but not found" "$LINENO" 5
 
+else
+  FEATURES+="-noxml"
 
 fi
    if test "x$have_mpi" == "xyes"; then :
@@ -18325,6 +18343,8 @@ if test "x$have_cfitsio" == "xno"; then :
   if test "x$with_cfitsio" == "xyes"; then :
   as_fn_error $? "cfitsio requested but not found" "$LINENO" 5
 
+else
+  FEATURES+="-nofits"
 
 fi
 
@@ -18503,6 +18523,16 @@ else
   BUILD_GYOTO_TRUE='#'
   BUILD_GYOTO_FALSE=
 fi
+
+
+sovers=`echo $VERSINFO | tr : _`
+sovers+=$FEATURES
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define GYOTO_SOVERS "${sovers}"
+_ACEOF
 
 
 ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile doc/user_guide/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"
