@@ -41,6 +41,7 @@ static YGyotoSupplier_t *YGyotoGlobalSupplier = NULL;
 
 void ygyotoErrorHandler (const Gyoto::Error e) { y_error(e); }
 
+#if defined HAVE_MPI
 void ygyotoMPIErrorHandlerFcn(MPI_Comm * comm, int * error_code, ...) {
   char error_string[MPI_MAX_ERROR_STRING];
   int error_string_length;
@@ -48,8 +49,8 @@ void ygyotoMPIErrorHandlerFcn(MPI_Comm * comm, int * error_code, ...) {
   error_string[error_string_length] = '\0';
   y_error(error_string);
 }
-
 MPI_Errhandler ygyotoMPIErrorHandler;
+#endif
 
 extern "C" {
 
