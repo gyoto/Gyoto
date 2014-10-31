@@ -141,6 +141,11 @@ void Photon::astrobj(SmartPointer<Astrobj::Generic> ao) {
   }
 }
 
+void Photon::metric(SmartPointer<Metric::Generic> met) {
+  Worldline::metric(met);
+  if (object_) object_->metric(met);
+}
+
 void Photon::spectrometer(SmartPointer<Spectrometer::Generic> spr) {
   spectro_=spr;
   _allocateTransmission();

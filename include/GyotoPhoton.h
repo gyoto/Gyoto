@@ -120,6 +120,11 @@ class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
   /// Get Photon::object_
   SmartPointer<Astrobj::Generic> astrobj() const ;
 
+  using Worldline::metric;
+  // Set Worldline::metric_ as well as the Astrobj metric
+  void metric(SmartPointer<Metric::Generic>);
+
+
   /// Set Photon::spectro_
   void spectrometer(SmartPointer<Spectrometer::Generic> spr);
   /// Get Photon::spectro_
