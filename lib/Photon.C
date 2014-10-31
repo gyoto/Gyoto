@@ -408,6 +408,12 @@ int Photon::hit(Astrobj::Properties *data) {
 		    << "2) we are flying away" << endl;
 #       endif
 
+	// store coordinates of outgoing photon in impactcoords
+	if (data && data->impactcoords) {
+	  for (size_t i=0; i<8; ++i) data->impactcoords[i]=DBL_MAX;
+	  memcpy(data->impactcoords+8, coord, 8 * sizeof(double));
+	}
+
 	stopcond=1;
 	break;
       }
