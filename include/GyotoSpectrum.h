@@ -62,7 +62,7 @@ namespace Gyoto{
       (FactoryMessenger* fmp) {
       SmartPointer<T> sp = new T();
 #ifdef GYOTO_USE_XERCES
-      sp -> setParameters(fmp);
+      if (fmp) sp -> setParameters(fmp);
 #endif
       return sp;
     }
