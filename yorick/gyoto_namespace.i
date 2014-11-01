@@ -44,7 +44,9 @@ gyoto=save(
            G_OVER_C_SQUARE=GYOTO_G_OVER_C_SQUARE,
            SUN_MASS=GYOTO_SUN_MASS,
            SUN_RADIUS=GYOTO_SUN_RADIUS,
-           KPC=GYOTO_KPC
+           KPC=GYOTO_KPC,
+
+           coordkind=save(unspecified=0, cartesian=1, spherical=2)
            
            );
   

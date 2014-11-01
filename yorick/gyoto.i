@@ -940,6 +940,10 @@ extern gyoto_Metric;
      The kind of the metric (e.g. "KerrBL") can be queried:
         kind_string = gg(kind=)
 
+     The coordinate kind of this metric can be compared with members
+     of the oxy group gyoto.coordkind:
+        if (gg.coordkind() == gyoto.coordkind.cartesian) ...;
+
      The minimum and maximum value of the adaptive step in
      the integrator can be set using respectively deltamin and
      deltamax.

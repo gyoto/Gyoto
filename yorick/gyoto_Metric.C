@@ -137,6 +137,13 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
     *kind = p_strcpy((*OBJ)->kind().c_str());
   }
 
+  // coordkind
+  if ((iarg=kiargs[++k])>=0) {
+    if ((*rvset)++) y_error(rmsg);
+    if (!yarg_nil(iarg)) y_error("COORDKIND is readonly");
+    ypush_long((*OBJ)->coordKind());
+  }
+
   YGYOTO_WORKER_SETPARAMETER;
 
   // ScalarProd
