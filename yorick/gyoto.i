@@ -812,10 +812,10 @@ func gyoto_matte_paint(set, paint, kind=, yaw=, pitch=, roll=)
   // Then, apply each rotation in order.
   // yaw, about Z axis
   if (!is_void(yaw)) R = gyoto.rotation(3, yaw);
-  // pitch, about rotated Z axis
-  if (!is_void(pitch)) R = gyoto.rotation(1, pitch)(,+)*R(+,);
+  // pitch, about rotated Y axis
+  if (!is_void(pitch)) R = gyoto.rotation(2, pitch)(,+)*R(+,);
   // roll, about rotated X axis
-  if (!is_void(roll)) R = gyoto.rotation(2, roll)(,+)*R(+,);
+  if (!is_void(roll)) R = gyoto.rotation(1, roll)(,+)*R(+,);
   
   // Transform the photon's 4-velocity into Cartesian coordinates
   if (coordkind==gyoto.coordkind.spherical) {
