@@ -763,6 +763,283 @@ BROKEN
   return data;
 }
 
+func gyoto_matte_paint(set, paint, kind=, yaw=, pitch=, roll=)
+/* DOCUMENT bg = gyoto.matte_paint(set, paint[, coordkind=coordkind])
+
+   Vizualize lensing effects on a painted background. Only geometrical
+   distorsion effects are rendered.
+
+   gyoto.matte_paint() will ray-trace the Scenery SET, compute the
+   origin direction of each Photon that do originate from infinite,
+   and pass these directions to PAINT.
+
+   INPUTS:
+    set: a Gyoto Scenery or impact coordinates as computed with
+      sc(,,impactcoords=);
+    paint: a function-like object that will perform the actual
+      painting. PAINT will be called as:
+        bg = paint(theta, phi, mask=mask);
+      where THETA and PHI denote the direction from which each Photon
+      originates, as seen from the center of the coordinate system,
+      and mask is 0 for Photons that do not exist (e.g. photons that
+      would fall into the black-hole.
+
+   OUTPUT:
+    The rendered image.
+
+ */
+{
+  restore, gyoto;
+  coordkind=kind
+  if (is_Scenery(set)) {
+    data=sc(,,impactcoords=)(9:,,);
+    coordkind=sc.metric().coordkind();
+  } else {
+    if (is_void(coordkind))
+      error, "KIND must be provided if SET is not a Scenery";
+    if (dimsof(set)(2)==8) data=set;
+    else data=set(9:,,);
+  }
+
+
+  // Prepare rotation matrix to transform from compact object
+  // coordinates to painter coordinates. Yaw, pitch and roll are the
+  // angles defining the orientation of the painter relative to the
+  // metric coordinate system.
+  // First, R is identity.
+  R=array(0., 3, 3);
+  for (i=1; i<=3; ++i) R(i, i)=1.;
+  // Then, apply each rotation in order.
+  // yaw, about Z axis
+  if (!is_void(yaw)) R = gyoto.rotation(3, yaw);
+  // pitch, about rotated Z axis
+  if (!is_void(pitch)) R = gyoto.rotation(1, pitch)(,+)*R(+,);
+  // roll, about rotated X axis
+  if (!is_void(roll)) R = gyoto.rotation(2, roll)(,+)*R(+,);
+  
+  // Transform the photon's 4-velocity into Cartesian coordinates
+  if (coordkind==gyoto.coordkind.spherical) {
+
+    t=data(1,,);
+    r=data(2,,);
+    theta=data(3,,);  
+    phi=data(4,,);
+    tdot=data(5,,);
+    rp=rdot=data(6,,);
+    thp=thetadot=data(7,,);
+    php=phidot=data(8,,);
+
+    ind=where(tdot);
+    taup=tdot; taup(ind)=1./tdot(ind);
+    rp =rdot    *taup;
+    php=phidot  *taup;
+    thp=thetadot*taup;
+
+    sth=sin(theta);
+    cth=cos(theta);
+    sph=sin(phi);
+    cph=cos(phi);
+
+    ur= [sth*cph, sth*sph, cth];
+    uth=[cth*cph, cth*sph, -sth];
+    uph=[   -sph,     cph,   0];
+
+    durdph=sth*uph;
+    durdth=uth;
+
+    durdt=php*durdph+thp*durdth;
+
+    v=rp*ur + r*durdt;
+
+    mask0=char(r<1e200);
+  
+  } else {
+    tdot=data(5,,);
+    xdot=data(6,,);
+    ydot=data(7,,);
+    zdot=data(8,,);
+    v=[xdot, ydot, zdot]/tdot(,,-);
+    mask0=char(tdot<1e200);
+  }
+
+  // Express this in the painter base:
+  V=R(,+)*v(,,+);
+
+  // transform to spherical coordinates
+  vproj2=V(1,,)^2+V(2,,)^2;
+
+  vr=sqrt(vproj2+V(3,,)^2);
+  vph=atan(V(2,,), V(1,,));
+  vth=atan(sqrt(vproj2), V(3,,));
+
+  theta=pi-vth;
+  phi=vph-pi;
+  if (numberof((ind=where(phi<-pi)))) phi(ind)+=2.*pi;
+
+  bg=paint(theta, phi);
+
+  bg *= mask0(-,,);
+  
+  return bg;
+}
+
+if (is_func(use))
+  painters_junk=save(painters_junk,
+                     gyoto_painters_p_mode_eval,
+                     gyoto_painters_mk_p_mode,
+                     gyoto_painters_panorama_eval,
+                     gyoto_painters_mk_panorama);
+  
+func gyoto_painters_p_mode_eval(theta, phi, mask=) {
+  use, ntheta, nphi;
+  bg=sin(ntheta*theta)*sin(nphi*phi)+1.;
+  if (!is_void(mask)) bg*=mask;
+  return bg;
+}
+
+func gyoto_painters_mk_p_mode(ntheta=, nphi=)
+/* DOCUMENT painter = gyoto.painters.mk_p_mode([ntheta=ntheta, [nphi=nphi])
+
+    Make a painter for gyoto.matte_paint(). In this painter, the sky
+    is mainted in a p-mode spherical harmonic fashion, with m=nphi and
+    l=nphi+ntheta.
+   
+   SEE ALSO: gyoto.matte_paint
+*/
+  {
+  if (is_void(ntheta)) ntheta=1;
+  if (is_void(nphi)) nphi=1;
+  return closure(save(ntheta=ntheta, nphi=nphi,
+                      painter_eval=gyoto.painters.p_mode_eval),
+                 painter_eval);
+}
+
+func gyoto_rotation(axis, angle)
+/* DOCUMENT R=gyoto.rotation(axis, angle)
+
+     Yield rotation matrix about axis AXIS (Ox=1, Oy=2, Oz=3) by
+     amount ANGLE.
+
+     If vector V holds the coordinates of a point in original the
+     coordinate base,
+       R(,+)*v(+)
+     holds coordinates of same point in rotated base while
+       R(+,)*v(+)
+     holds coordinates of rotated vector in original base.
+
+     In both cases, if S and T are two rotations, R=T(,+)*S(+,) if the
+     rotation obtained by first applying S, then T.
+     
+   SEE ALSO:
+ */
+{
+
+  ca=cos(angle);
+  sa=sin(angle);
+
+  R2=[[ca, -sa], [sa, ca]];
+
+  R3=array(0., 3, 3);
+  for (i=1; i<=3; ++i) R3(i, i)=1.;
+
+  plane=(axis+[1, 2])%3;
+
+  if (numberof((ind=where(plane==0)))) plane(ind)=3;
+
+  R3(plane, plane)=R2;
+
+  return R3;
+}
+
+func gyoto_painters_panorama_eval(theta, phi, mask=) {
+  use, img, phi_fov, theta_fov;
+  dmatte=dimsof(img);
+  nphi=dmatte(3);
+  ntheta=dmatte(4);
+
+  if (is_void(phi_fov)) phi_fov=2.*pi;
+  if (is_void(theta_fov)) theta_fov=pi;
+
+
+  // Thats in pixel per radian.  Minus signs because theta increases
+  // from top to bottom and phi from right to left, as seen from
+  // inside the sphere.
+  phi_scale=-nphi/phi_fov;
+  theta_scale=-ntheta/theta_fov;
+
+  // Below, +0.5 so that for a 4x4 grid, the center is at 2.5, and
+  // another +0.5 so that the long() conversion yields the closest
+  // approximation rahter than the bottom truncation.
+  i0=nphi*0.5 +1.;
+  j0=ntheta*0.5 +1.;
+  
+  x=long(i0 + phi*phi_scale) ;
+  y=long(j0 + (theta-0.5*pi)*theta_scale) ;
+
+  if (anyof(x<=0 | y<=0 | x>nphi | y>ntheta))
+    error, "something fishy in pixel computation";
+
+  dd=dimsof(phi);
+  
+  bg=array(char, 3, dd(2), dd(3));
+  for(k=1; k<=3; ++k) {
+    for (i=1; i<=dd(2); ++i) {
+      for (j=1; j<=dd(3); ++j) {
+        bg(k,i,j)=img(k,x(i, j),y(i, j));
+      }
+    }
+  }
+
+  return bg;
+}
+
+
+func gyoto_painters_mk_panorama(img=, phi_fov=, theta_fov=)
+/* DOCUMENT painter = gyoto.painters.mk_picture(img=img)
+
+    Make a painter for gyoto.matte_paint(). In this painter, the sky
+    is painted using an image. The image should be a 360°x180°
+    panorama rendered in equirectagular projection. If the image does
+    not cover the full celestial sphere, use phi_fov and theta_fov to
+    specify the field of view in each direction. img should be an
+    array(char, 3, nphi, ntheta).
+   
+   SEE ALSO: gyoto.matte_paint, .painters.mk_p_mode
+*/
+{
+  d=dimsof(img);
+  nx=d(3);
+  ny=d(4);
+  if (is_void(phi_fov)) phi_fov=2.*pi;
+  if (is_void(theta_fov)) theta_fov=pi;
+  return closure(save(img, phi_fov, theta_fov,
+                      painter_eval=gyoto.painters.panorama_eval),
+                 painter_eval);
+}
+
+local gyoto_painters;
+/* DOCUMENT namespace gyoto.painters
+   
+    Contains painters to be used with gyoto.matte_paint.
+
+    EXAMPLE:
+     sc=gyoto.Scenery("file.xml");
+     painter=gyoto.painters.mk_p_mode(ntheta=80, nphi=80);
+     bg=gyoto.matte_paint(sc, painter);
+
+   SEE ALSO: gyoto.matte_paint, .painters.mk_p_mode
+ */
+
+if (is_func(use)) {
+  gyoto_painters=save(p_mode_eval=gyoto_painters_p_mode_eval,
+                      mk_p_mode=gyoto_painters_mk_p_mode,
+                      picture_eval=gyoto_painters_picture_eval,
+                      mk_picture=gyoto_painters_mk_picture,
+                      panorama_eval=gyoto_painters_panorama_eval,
+                      mk_panorama=gyoto_painters_mk_panorama);
+  restore, painters_junk;
+ }
+
 // PHOTON CLASS
 extern gyoto_Photon;
 /* DOCUMENT photon = gyoto.Photon([filename], [members=values])

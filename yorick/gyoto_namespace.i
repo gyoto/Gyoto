@@ -13,6 +13,7 @@ gyoto=save(
 
            Scenery=gyoto_Scenery,
            Scenery_rayTrace=gyoto_Scenery_rayTrace,
+           matte_paint=gyoto_matte_paint,
            Photon=gyoto_Photon,
            Metric=gyoto_Metric,
            Astrobj=gyoto_Astrobj,
@@ -46,7 +47,10 @@ gyoto=save(
            SUN_RADIUS=GYOTO_SUN_RADIUS,
            KPC=GYOTO_KPC,
 
-           coordkind=save(unspecified=0, cartesian=1, spherical=2)
+           coordkind=save(unspecified=0, cartesian=1, spherical=2),
+
+           painters=gyoto_painters,
+           rotation=gyoto_rotation
            
            );
   
