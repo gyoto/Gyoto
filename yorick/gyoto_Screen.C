@@ -39,7 +39,7 @@ extern "C" {
       "unit",
       "metric",
       "time","fov","resolution", "mask", "maskwrite",
-      "alpha0", "delta0",
+      "alpha0", "delta0", "anglekind",
       "distance", "dmax", "inclination", "paln", "argument",
       "freqobs",
       "projection", "observerpos",
@@ -49,7 +49,7 @@ extern "C" {
       "xmlwrite", "clone",
       0
     };
-    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 26)
+    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 27)
 
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
@@ -100,6 +100,7 @@ extern "C" {
 
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(alpha0);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(delta0);
+    YGYOTO_WORKER_GETSET_STRING2(anglekind);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(distance);
     YGYOTO_WORKER_GETSET_DOUBLE2(dMax);
     YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(inclination);

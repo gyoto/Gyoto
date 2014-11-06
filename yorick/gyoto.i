@@ -878,7 +878,8 @@ func gyoto_matte_paint(set, paint, kind=, yaw=, pitch=, roll=)
 
   bg=paint(theta, phi);
 
-  bg *= mask0(-,,);
+  if (structof(bg)==char) {bg*=mask0(-,,);}
+  else bg *= mask0;
   
   return bg;
 }
@@ -976,9 +977,15 @@ func gyoto_painters_panorama_eval(theta, phi, mask=) {
   x=long(i0 + phi*phi_scale) ;
   y=long(j0 + (theta-0.5*pi)*theta_scale) ;
 
-  if (anyof(x<=0 | y<=0 | x>nphi | y>ntheta))
+  // Rounding algo + errors can lead to an overflow by one pixel, but
+  // more would be fishy
+  if (anyof(x<-1 | y<-1 | x>(nphi+1) | y>(ntheta+1)))
     error, "something fishy in pixel computation";
-
+  if (numberof((ind=where(x==0)))) x(ind)=1;
+  if (numberof((ind=where(y==0)))) y(ind)=1;
+  if (numberof((ind=where(x==nphi+1)))) x(ind)=nphi;
+  if (numberof((ind=where(x==ntheta+1)))) x(ind)=ntheta;
+  
   dd=dimsof(phi);
   
   bg=array(char, 3, dd(2), dd(3));

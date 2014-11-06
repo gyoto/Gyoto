@@ -47,7 +47,7 @@ using namespace Gyoto;
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
   tobs_(0.), fov_(M_PI*0.1), npix_(1001), mask_(NULL), mask_filename_(""),
-  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), anglekind_(0),
+  distance_(1.), dmax_(GYOTO_SCREEN_DMAX), anglekind_(equatorial_angles),
   alpha0_(0.), delta0_(0.),
   gg_(NULL), spectro_(NULL),
   freq_obs_(1.),
@@ -362,34 +362,42 @@ void Screen::spectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=sp
 SmartPointer<Spectrometer::Generic> Screen::spectrometer() const { return spectro_; }
 
 void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
-  const double delta= fov_/double(npix_);
   double xscr, yscr;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
 # endif
-  if (anglekind_){
+  if (anglekind_ == Screen::spherical_angles){
     /*
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
-    yscr = double(j-1)*2.*M_PI/double(npix_-1);
-    getRayCoord(xscr,M_PI-yscr, coord);
+    yscr = M_PI-(double(j-1)*2.*M_PI/double(npix_-1));
     // NB: here xscr and yscr are the spherical angles
     // a and b ; the b->pi-b transformation boils down
     // to performing X->-X, just as below for equat angles.
-  }else{
+  }else if (anglekind_ == Screen::equatorial_angles) {
     /*
       GYOTO screen labelled by equatorial
       angles alpha and delta (see Fig. in user guide)
      */
+    const double delta= fov_/double(npix_);
     yscr=delta*(double(j)-double(npix_+1)/2.);
-    xscr=delta*(double(i)-double(npix_+1)/2.);
-    getRayCoord(-xscr, yscr, coord); 
+    xscr=-delta*(double(i)-double(npix_+1)/2.);
     // transforming X->-X (X being coord along e_1 observer vector)
     // this is due to the orientation convention of the screen 
     // (cf InitialConditions.pdf)
+  } else if (anglekind_ == Screen::rectilinear) {
+    if (fov_ >= M_PI)
+      throwError("Rectilinear projection requires fov_ < M_PI");
+    const double xfov=2.*tan(fov_*0.5);
+    const double delta= xfov/double(npix_);
+    yscr=delta*(double(j)-double(npix_+1)/2.);
+    xscr=-delta*(double(i)-double(npix_+1)/2.);
+  } else {
+    throwError("Unrecognized anglekind_");
   }
+  getRayCoord(xscr, yscr, coord); 
 }
 
 void Screen::getRayCoord(double alpha, double delta,
@@ -419,7 +427,7 @@ void Screen::getRayCoord(double alpha, double delta,
   double spherical_angle_a,
     spherical_angle_b;
   
-  if (anglekind_){
+  if (anglekind_ == spherical_angles){
     /*
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
@@ -427,7 +435,10 @@ void Screen::getRayCoord(double alpha, double delta,
 
     spherical_angle_a = alpha;
     spherical_angle_b = delta;
-  }else{
+  } else if (anglekind_ == rectilinear) {
+    spherical_angle_a = atan(sqrt(alpha*alpha+delta*delta));
+    spherical_angle_b = atan2(delta, alpha);
+  } else if (anglekind_ == equatorial_angles) {
     /*
       GYOTO screen labelled by equatorial
       angles alpha and delta (see Fig. in user guide)
@@ -1002,7 +1013,29 @@ void Screen::delta0(double fov, const string &unit) {
   delta0(fov);
 }
 
-void Screen::setAnglekind(int kind) { anglekind_ = kind; }
+void Screen::anglekind(int kind) { anglekind_ = kind; }
+void Screen::anglekind(std::string skind) {
+  if      (skind=="EquatorialAngles") anglekind_=equatorial_angles;
+  else if (skind=="SphericalAngles")  anglekind_=spherical_angles;
+  else if (skind=="Rectilinear")      anglekind_=rectilinear;
+  else throwError("Invalid string value for anglekind_");
+}
+
+std::string Screen::anglekind() const {
+  switch (anglekind_) {
+  case equatorial_angles:
+    return "EquatorialAngles";
+    break;
+  case spherical_angles:
+    return "SphericalAngles";
+    break;
+  case rectilinear:
+    return "Rectilinear";
+    break;
+  default:
+    throwError("Invalid integer value for Screen::anglekind_");
+  }
+}
 
 size_t Screen::resolution() { return npix_; }
 void Screen::resolution(size_t n) {
@@ -1097,7 +1130,7 @@ void Screen::fillElement(FactoryMessenger *fmp) {
     delete child; child = NULL;
   }
   fmp -> setParameter ("FreqObs", freq_obs_);
-  fmp -> setParameter ( anglekind_? "SphericalAngles" : "EquatorialAngles");
+  fmp -> setParameter (anglekind());
   if (mask_filename_!="") fmp->setParameter("Mask",
 					    (mask_filename_.compare(0,1,"!") ?
 					     mask_filename_ :
@@ -1179,8 +1212,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       delta0 = atof(tc); delta0_found=1;
     }
     else if (name=="FreqObs") scr -> freqObs(atof(tc), unit);
-    else if (name=="SphericalAngles")  scr -> setAnglekind(1);
-    else if (name=="EquatorialAngles") scr -> setAnglekind(0);
+    else if (name=="SphericalAngles" ||
+	     name=="EquatorialAngles" ||
+	     name=="Rectilinear")  scr -> anglekind(name);
 #   ifdef GYOTO_USE_CFITSIO
     else if (name=="Mask")        scr -> fitsReadMask(fmp->fullPath(content));
 #   endif

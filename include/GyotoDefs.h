@@ -550,6 +550,7 @@ namespace Gyoto {
 # define getDelta0          delta0
 # define setAlpha0          alpha0
 # define getAlpha0          alpha0
+# define setAnglekind       anglekind
 # define getTmin            tMin
 # define setTmin            tMin
 # define getTime            time
