@@ -43,6 +43,7 @@
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
+#include "GyotoThermalBremsstrahlungSpectrum.h"
 
 using namespace Gyoto;
 
@@ -83,4 +84,6 @@ extern "C" void __GyotostdplugInit() {
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
   Spectrum::Register("BlackBody", 
 		     &(Spectrum::Subcontractor<Spectrum::BlackBody>));
+  Spectrum::Register("ThermalBremsstrahlung", 
+		     &(Spectrum::Subcontractor<Spectrum::ThermalBremsstrahlung>));
 }

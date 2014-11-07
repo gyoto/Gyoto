@@ -28,6 +28,7 @@ sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	Star.C StarTrace.C FixedStar.C Torus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
+	ThermalBremsstrahlungSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	StandardAstrobj.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
