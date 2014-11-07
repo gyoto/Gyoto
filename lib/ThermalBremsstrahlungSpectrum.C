@@ -43,7 +43,7 @@ Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung() :
 
 double Spectrum::ThermalBremsstrahlung::temperature() const { return T_; }
 void Spectrum::ThermalBremsstrahlung::temperature(double tt) {
-  T_ = tt; Tm1_=1./T_; 
+  T_ = tt; Tm1_=1./T_; Tm05_=sqrt(Tm1_);
   spectrumBB_->temperature(T_);
 }
 double Spectrum::ThermalBremsstrahlung::massdensityCGS() const { 
