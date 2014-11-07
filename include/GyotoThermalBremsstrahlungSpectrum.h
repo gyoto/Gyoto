@@ -51,6 +51,10 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
   double cst_; ///< Scaling constant
+  double T_; ///< Temperature
+  double Tm1_; ///< 1/T
+  double Tm05_; ///< 1/sqrt(T)
+  double massdensityCGS_; ///< Mass density in CGS UNITS (careful)
 
  public:
   ThermalBremsstrahlung();
@@ -61,10 +65,43 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   virtual ThermalBremsstrahlung * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();
+ /**
+   * This function returns the optically thick Inu
+   * which is not defined here, returns an error
+   *
+   * \param nu frequency in Hz
+   */
   virtual double operator()(double nu) const;
+ /**
+   * This function returns the optically thin increment
+   * to intensity dI_nu = j_nu*ds*exp(-alpha_nu*ds)
+   * in SI units
+   *
+   * \param nu frequency in Hz
+   * \param ds length element in SI (careful to this)
+   */
+  virtual double operator()(double nu,double ,double ds) const;
+  // NB: the second argument, opacity in the Spectrum API
+  // is useless here
 
-  double jnu(double nu, double temp,double massdensity);
-  double alphanu(double nu, double temp,double massdensity);
+  double temperature() const;
+  void temperature(double tt);
+  double massdensityCGS() const;
+  void massdensityCGS(double rho);
+
+ /**
+   * Returns the emission coefficient j_nu in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   */
+  double jnuCGS(double nu) const;
+ /**
+   * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   */
+  double alphanuCGS(double nu) const;
 
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp) const ;
