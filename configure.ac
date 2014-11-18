@@ -88,7 +88,8 @@ AS_IF([test "x$have_mpi" == xyes],
 [ AS_IF([test "x$with_mpi" == xyes],
   [ AC_ERROR([MPI requested but not found])
   ],
-  [FEATURES+="-nompi"])
+  [FEATURES+="-nompi"
+   MPICXX=""])
 ])
 
 AM_CONDITIONAL(HAVE_MPI, [test "x$have_mpi" == xyes])

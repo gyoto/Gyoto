@@ -15990,6 +15990,7 @@ else
 
 else
   FEATURES+="-nompi"
+   MPICXX=""
 fi
 
 fi
