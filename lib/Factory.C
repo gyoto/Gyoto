@@ -307,7 +307,7 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
     if (Plugin != "") loadPlugin(Plugin.c_str());
     string AstrobjKind =
       Cs(tmpEl->getAttribute(X("kind")));
-    if (debug()) cout << "Astrobj kind : " << AstrobjKind << endl ;
+    GYOTO_DEBUG_EXPR(AstrobjKind);
 
     FactoryMessenger fm(this, tmpEl);
 
@@ -368,7 +368,7 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
     if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
-    if (debug()) cout << "Spectrum kind : " << Kind << endl ;
+    GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
     return (*Spectrum::getSubcontractor(Kind))(&fm);
@@ -398,7 +398,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
     if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
-    if (debug()) cout << "Spectrometer kind : " << Kind << endl ;
+    GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
     return (*Spectrometer::getSubcontractor(Kind))(&fm);
@@ -795,12 +795,12 @@ int FactoryMessenger::getNextParameter(std::string* namep,
 				       std::string* unitp)
 {
 
-  if (debug()) {
-    cerr << "DEBUG: FactoryMessenger::getNextParameter(" << namep
-	 << ", " << contp << "): " ;
-    cerr << "*namep=" << *namep;
-    cerr << ", *contp=" << *contp << endl;
-  }
+
+  GYOTO_DEBUG
+    << "namep="    << namep
+    << ", contp="  << contp << ": "
+    << "*namep="   << *namep
+    << ", *contp=" << *contp << endl;
     
   if (curNodeIndex_ >= nodeCount_) return 0;
 
@@ -942,7 +942,6 @@ size_t FactoryMessenger::parseArray(std::string content, double val[], size_t ma
 
   while (sub && n<max_tokens) {
     val[n++] = Gyoto::atof(sub);
-    cerr << "#"<< n << ": " << sub << " -> " << val[n-1] << endl;
     sub = strtok(NULL, delim);
   }
   
@@ -958,7 +957,7 @@ std::string FactoryMessenger::fullPath(std::string fname) {
 }
 
 std::string Factory::fullPath(std::string fname) {
-  if (debug()) cerr << "DEBUG: Factory::fullPath("<< fname << ")" << endl;
+  GYOTO_DEBUG << endl;
   if (!fname.compare(0, 1, "/")) return fname; // fname is already absolute 
   string fpath = "";
 
@@ -983,7 +982,7 @@ std::string Factory::fullPath(std::string fname) {
 
   fpath += fname;
 
-  if (debug()) cerr << "DEBUG: Factory::fullPath() returns " << fpath << endl;
+  GYOTO_DEBUG << "returns " << fpath << endl;
   return fpath;
   
 }
