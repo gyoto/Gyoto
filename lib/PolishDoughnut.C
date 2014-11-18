@@ -1638,14 +1638,18 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
   else if (name=="Komissarov") komissarov_=1;
   else if (name=="KomissarovAngleAveraged") {komissarov_=1;angle_averaged_=1;}
   else if (name=="NonThermalDeltaExpo") {nonthermal_=1; 
-    char * tc = const_cast<char*>(content.c_str());
-    deltaPL_=strtod(tc,&tc); 
-    expoPL_=strtod(tc,&tc); 
+    double parms[2];
+    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
+      throwError("PolishDoughnut \"NonThermalDeltaExpo\" requires exactly 2 tokens");
+    deltaPL_= parms[0];
+    expoPL_ = parms[1]; 
   }
   else if (name=="ADAF") {adaf_ = 1;
-    char * tc = const_cast<char*>(content.c_str());
-    ADAFtemperature_=strtod(tc,&tc); 
-    ADAFdensity_=strtod(tc,&tc); 
+    double parms[2];
+    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
+      throwError("PolishDoughnut \"ADAF\" requires exactly 2 tokens");
+    ADAFtemperature_ = parms[0];
+    ADAFdensity_     = parms[1]; 
   }
   else return Standard::setParameter(name, content, unit);
   return 0;

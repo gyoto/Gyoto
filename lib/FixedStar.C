@@ -165,9 +165,9 @@ void FixedStar::setPos(const double p[3])
 
 int FixedStar::setParameter(string name, string content, string unit) {
   if (name=="Position") {
-    char* tc = const_cast<char*>(content.c_str());
     double pos[3];
-    for (int i=0;i<3;++i) pos[i] = strtod(tc, &tc);
+    if (FactoryMessenger::parseArray(content, pos, 3) != 3)
+      throwError("FixedStar \"Position\" element requires exactly 3 tokens");
     setPos(pos);
   } else if (name=="Rotating") {
     rotating(true);

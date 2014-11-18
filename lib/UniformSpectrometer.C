@@ -209,10 +209,9 @@ void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
   string unit = fmp -> getSelfAttribute( "unit" );
 
   string content = fmp -> getFullContent();
-  char * tc = const_cast<char*>(content.c_str());
   double band[2];
-  band[0]=strtod(tc, &tc);
-  band[1]=strtod(tc, &tc);
+  if (FactoryMessenger::parseArray(content, band, 2) != 2)
+    throwError("Spectromecter::Uniform requires exactly 2 tokens");
 
   setBand(band, unit, skind);
   nSamples(nsamples);
@@ -226,7 +225,8 @@ int Spectrometer::Uniform::setParameter(string name,
   double band[2];
   char* tc = const_cast<char*>(content.c_str());
   if (name=="Band") {
-    for (int i=0;i<2;++i) band[i] = strtod(tc, &tc);
+    if (FactoryMessenger::parseArray(content, band, 2) != 2)
+      throwError("Spectromecter::Uniform \"Band\" requires exactly 2 tokens");
     setBand(band, unit);
   } else if (name=="Kind") {
     kind(content);

@@ -331,17 +331,20 @@ int Worldline::setParameter(std::string name,
   double coord[8];
   char* tc = const_cast<char*>(content.c_str());
   if (name=="InitialCoordinate" || name=="InitCoord") {
-    for (int i=0;i<8;++i) coord[i] = strtod(tc, &tc);
+    if (FactoryMessenger::parseArray(content, coord, 8) != 8)
+      throwError("Worldline \"InitialCoordinate\" requires exactly 8 tokens");
     setInitCoord(coord);
   } else if (name=="Position") {
-    for (int i=0;i<4;++i) coord[i] = strtod(tc, &tc);
+    if (FactoryMessenger::parseArray(content, coord, 4) != 4)
+      throwError("Worldline \"Position\" requires exactly 4 tokens");
     if (init_vel_) {
       setInitCoord(coord, init_vel_);
       delete[] init_vel_; init_vel_=NULL;
     } else setPosition(coord);
     wait_pos_ = 0;
   } else if (name=="Velocity") {
-    for (int i=0;i<3;++i) coord[i] = strtod(tc, &tc);
+    if (FactoryMessenger::parseArray(content, coord, 3) != 3)
+      throwError("Worldline \"Velocity\" requires exactly 3 tokens");
     if (wait_pos_) {
       if (init_vel_) delete [] init_vel_;
       init_vel_ = new double[3];

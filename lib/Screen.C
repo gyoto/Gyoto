@@ -1163,7 +1163,9 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     GYOTO_ENDIF_DEBUG
 #   endif
     if      (name=="Time")     {tobs_tmp = atof(tc); tunit=unit; tobs_found=1;}
-    else if (name=="Position") {for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+    else if (name=="Position") {
+      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
+	throwError("Screen \"Position\" requires exactly 4 tokens");
       scr -> setObserverPos (pos); 
     }
     else if (name=="KeplerianObserver" || name=="ZAMO") {
@@ -1171,22 +1173,26 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="FourVelocity") {
       fourvel_found=1;
-      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
+	throwError("Screen \"FourVelocity\" requires exactly 4 tokens");
       scr -> setFourVel (pos); 
     }
     else if (name=="ScreenVector1") {
       screen1_found=1;
-      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
+	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
       scr -> setScreen1 (pos); 
     }
     else if (name=="ScreenVector2") {
       screen2_found=1;
-      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
+	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
       scr -> setScreen2 (pos); 
     }
     else if (name=="ScreenVector3") {
       screen3_found=1;
-      for (int i=0;i<4;++i) pos[i] = strtod(tc, &tc);
+      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
+	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
       scr -> setScreen3 (pos); 
     }
     else if (name=="Distance")    

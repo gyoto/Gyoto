@@ -1624,9 +1624,11 @@ void  NumericalMetricLorene::setParameter(string name,
   else if (name=="Horizon") horizon_=atof(content.c_str());
   else if (name=="RefineIntegStep"){
     refine_=1;
-    char * tc = const_cast<char*>(content.c_str());
-    r_refine_  = strtod(tc, &tc);
-    h0_refine_ = strtod(tc, &tc);
+    double parms[2];
+    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
+      throwError("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
+    r_refine_  = parms[0];
+    h0_refine_ = parms[1];
   }
   else  Generic::setParameter(name, content, unit);
 }

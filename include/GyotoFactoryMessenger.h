@@ -456,6 +456,16 @@ class Gyoto::FactoryMessenger {
   FactoryMessenger* makeChild(std::string name);
   ///< Create child FactoryMessenger
 
+  /**
+   * \brief Parse string into array
+   *
+   * Parse at most max_tokens tokens from string src into
+   * pre-allocated array dst. Returns the number of tokens actually
+   * found (interpreted using atof). dst must be at least of size
+   * max_tokens.
+   */
+  static size_t parseArray(std::string src, double dst[], size_t max_tokens);
+
 };
 
 #endif

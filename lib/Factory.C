@@ -928,6 +928,31 @@ void FactoryMessenger::setParameter(std::string name, double val[], size_t n,
   employer_ -> setParameter(name, val, n, element_, child);
 }
 
+size_t FactoryMessenger::parseArray(std::string content, double val[], size_t max_tokens)
+{
+  char const * const delim = " \t\n" ;
+  char const * const c_content=content.c_str();
+  size_t len=strlen(c_content);
+  if (len==0) return 0;
+
+  size_t n=0;
+  char * const tc = new char[len+1];
+  memcpy(tc, c_content, len+1);
+  char * sub = strtok(tc, delim);
+
+  while (sub && n<max_tokens) {
+    val[n++] = Gyoto::atof(sub);
+    cerr << "#"<< n << ": " << sub << " -> " << val[n-1] << endl;
+    sub = strtok(NULL, delim);
+  }
+  
+  if (sub) n=max_tokens+1;
+
+  delete [] tc;
+
+  return n;
+}
+
 std::string FactoryMessenger::fullPath(std::string fname) {
   return employer_ -> fullPath(fname);
 }
