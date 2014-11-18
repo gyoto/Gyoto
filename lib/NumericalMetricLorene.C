@@ -1637,7 +1637,18 @@ void  NumericalMetricLorene::setParameter(string name,
 void NumericalMetricLorene::fillElement(Gyoto::FactoryMessenger *fmp) {
   GYOTO_DEBUG << endl;
   fmp -> setParameter("File", filename_);
-  //fmp -> setParameter("Time", collapse_time_);
+  if      (!strcmp(mapkind_, "MapEt")) fmp->setParameter("MapEt");
+  else if (!strcmp(mapkind_, "MapAf")) fmp->setParameter("MapAf");
+  fmp -> setParameter("Time", initial_time_);
+  if (has_surface_)
+    fmp -> setParameter("HasSurface");
+  if (specify_marginalorbits_)
+    fmp -> setParameter("SpecifyMarginalOrbits");
+  fmp -> setParameter("Horizon", horizon_);
+  if (refine_) {
+    double parms[2] = {r_refine_, h0_refine_};
+    fmp -> setParameter("RefineIntegStep", parms, 2);
+  }
   Generic::fillElement(fmp);
 }
 
