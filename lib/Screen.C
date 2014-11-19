@@ -702,7 +702,11 @@ void Screen::fitsReadMask(std::string filename) {
   long      fpixel[]  = {1, 1, 1};
   long      inc   []  = {1, 1, 1};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status) ;
+  if (fits_open_file(&fptr, pixfile, 0, &status)) {
+    GYOTO_WARNING << "Unable to read Screen mask file '"
+		  << filename << "', ignoring." << endl;
+    return;
+  }
   if (fits_get_img_size(fptr, 3, naxes, &status)) throwCfitsioError(status) ;
   if (naxes[0] != naxes[1])
     throwError("Screen::fitsReadMask(): mask must be square");
