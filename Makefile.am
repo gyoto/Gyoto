@@ -6,7 +6,7 @@ $(SUBDIRS):
 ChangeLog:
 	git log --no-merges > ChangeLog
 
-check-mpi check-mpi-clean:
+check-mpi check-mpi-clean check-lorene check-lorene-clean:
 if BUILD_GYOTO
 	cd bin ; $(MAKE) $@
 endif

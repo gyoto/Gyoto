@@ -81,6 +81,31 @@ check-mpi: check-mpi-clean check-mpi-compute
 
 check: check-nompi
 
+if HAVE_LORENE
+export HOME_LORENE
+$(HOME_LORENE)/Codes/Nrotstar/nrotstar:
+	cd $(HOME_LORENE)/Codes/Nrotstar/ && cp Parameters/GR/Kepler/*.d ./ && $(SED) -i.bak 's/1       graph/0       graph/' par_rot.d && $(MAKE)
+
+$(HOME_LORENE)/Codes/Nrotstar/resu.d: $(HOME_LORENE)/Codes/Nrotstar/nrotstar
+	cd $(HOME_LORENE)/Codes/Nrotstar/ && ./nrotstar
+
+$(EXAMPLE_DIR)resu.d: $(HOME_LORENE)/Codes/Nrotstar/resu.d
+	cp $^ $@
+
+CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
+
+$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(EXAMPLE_DIR)resu.d
+	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+check-lorene-clean:
+	rm -f $(CHECK_ROTSTAR_RESULTS) $(EXAMPLE_DIR)resu.d
+
+check-lorene-compute: $(CHECK_ROTSTAR_RESULTS)
+
+check-lorene: check-lorene-clean check-lorene-compute
+
+endif
+
 endif
 
 .PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check
