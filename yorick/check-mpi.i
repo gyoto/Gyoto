@@ -17,6 +17,14 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// NODISPLAY implies batch mode
+if (get_env("GYOTO_CHECK_NODISPLAY")) {
+  batch, 1;
+  __xytitles=xytitles; __fma=fma; __winkill=winkill; __pli=pli; __plg=plg;
+  __pause=pause; __window=window;
+  xytitles = fma = winkill = pli = plg = pause = window = noop;
+ }
+
 #include "check-helpers.i"
 restore, gyoto;
 
@@ -119,3 +127,5 @@ data=data2=have_mpi=mdiff=diff=inited=finited=[];
 done;
 
 end_section, "MPI functionalities";
+
+if (anyof(get_argv() == "check-mpi.i")) quit;

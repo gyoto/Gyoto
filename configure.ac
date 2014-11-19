@@ -195,6 +195,8 @@ AC_ARG_WITH([yorick],
   [AC_CHECK_PROGS([YORICK],$yorick_exe)]
 )
 
+AM_CONDITIONAL(HAVE_YORICK, [test "x$YORICK" != "x"])
+
 # Only if YORICK available, check for install directories
 AS_IF([test "x$YORICK" != "x"],
   [AC_MSG_CHECKING([install path for Yorick platform-dependent files])

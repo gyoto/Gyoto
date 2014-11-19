@@ -675,6 +675,8 @@ PTHREAD_CC
 ax_pthread_config
 Y_INST_SITE
 Y_INST_HOME
+HAVE_YORICK_FALSE
+HAVE_YORICK_TRUE
 YORICK
 POW_LIB
 LIBOBJS
@@ -17215,6 +17217,15 @@ done
 fi
 
 
+ if test "x$YORICK" != "x"; then
+  HAVE_YORICK_TRUE=
+  HAVE_YORICK_FALSE='#'
+else
+  HAVE_YORICK_TRUE='#'
+  HAVE_YORICK_FALSE=
+fi
+
+
 # Only if YORICK available, check for install directories
 if test "x$YORICK" != "x"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking install path for Yorick platform-dependent files" >&5
@@ -18694,6 +18705,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_MPI_TRUE}" && test -z "${HAVE_MPI_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_MPI\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_YORICK_TRUE}" && test -z "${HAVE_YORICK_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_YORICK\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_UDUNITS_TRUE}" && test -z "${HAVE_UDUNITS_FALSE}"; then

@@ -160,12 +160,15 @@ end_section, "basic functionality";
 #include "check-directionaldisk.i"
 //#include "check-disk3d.i"
 #include "check-polish-doughnut.i"
-#include "check-mpi.i"
+// Don't run check-mpi.i automatically,
+// It may hang the computer if not plugged to the network
+//#include "check-mpi.i"
 
-write, format="\n\n%s\n%s\n%s\n",
+write, format="\n\n%s\n%s\n%s\n%s\n\n",
   "  ********************************************",
   "  *             ALL TESTS PASSED             *",
-  "  ********************************************";
+  "  ********************************************",
+  "  (You may want to run 'make check-mpi' still)";
 
 if (anyof(get_argv() == "check.i")) quit;
 //if (batch()) quit;

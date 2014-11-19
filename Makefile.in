@@ -893,6 +893,10 @@ $(SUBDIRS):
 ChangeLog:
 	git log --no-merges > ChangeLog
 
+check-mpi check-mpi-clean:
+@BUILD_GYOTO_TRUE@	cd bin ; $(MAKE) $@
+@HAVE_YORICK_TRUE@	cd yorick ; $(MAKE) $@
+
 .PHONY: $(SUBDIRS) install ChangeLog
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

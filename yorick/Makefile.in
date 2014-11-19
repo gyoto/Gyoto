@@ -127,6 +127,12 @@ check-dll: $(PKG_DLL) check.i
 	GYOTO_CHECK_NODISPLAY=true \
 	./yorick -i check.i
 
+check-mpi: $(PKG_DLL) check-mpi.i
+	cp yorick1 yorick
+	unset GYOTO_PLUGINS && \
+	GYOTO_CHECK_NODISPLAY=true \
+	./yorick -i check-mpi.i
+
 install::
 	cd stdplug; make install
 	$(YNSTALL) ygyoto.h ygyoto_idx.h ygyoto_supplier.C $(DEST_Y_SITE)/include
