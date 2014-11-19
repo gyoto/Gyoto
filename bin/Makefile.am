@@ -82,30 +82,50 @@ check-mpi: check-mpi-clean check-mpi-compute
 check: check-nompi
 
 if HAVE_LORENE
+# make check-lorene check-lorene-mpi
+# Will
+#   1- copy the Nrotstar directory from HOME_LORENE into .check-lorene;
+#   2- configure Nrotstar by copying par_eos.d and par_rot.d from GR/Kepler;
+#   3- build Nrotstar/nrotstar;
+#   4- run it to build Nrotstar/resu.d;
+#   5- ray-trace ../doc/examples/example-*-rotstar3_1.xml twice
+#      (with and without MPI).
+
 export HOME_LORENE
-$(HOME_LORENE)/Codes/Nrotstar/nrotstar:
-	cd $(HOME_LORENE)/Codes/Nrotstar/ && cp Parameters/GR/Kepler/*.d ./ && $(SED) -i.bak 's/1       graph/0       graph/' par_rot.d && $(MAKE)
-
-$(HOME_LORENE)/Codes/Nrotstar/resu.d: $(HOME_LORENE)/Codes/Nrotstar/nrotstar
-	cd $(HOME_LORENE)/Codes/Nrotstar/ && ./nrotstar
-
-$(EXAMPLE_DIR)resu.d: $(HOME_LORENE)/Codes/Nrotstar/resu.d
-	cp $^ $@
+.check-lorene/resu.d:
+	rm -Rf .check-lorene
+	cp -a $(HOME_LORENE)/Codes/Nrotstar ./.check-lorene
+	cd .check-lorene && rm -f nrotstar *.o
+	cd .check-lorene && cp -f Parameters/GR/Kepler/*.d ./
+	cd .check-lorene && $(SED) -i.bak 's/1       graph/0       graph/' par_rot.d
+	cd .check-lorene && $(MAKE)
+	cd .check-lorene && ./nrotstar
 
 CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
+CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
+CLEANFILES += $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 
-$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(EXAMPLE_DIR)resu.d
-	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+$(CHECK_ROTSTAR_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d
+	$(CHECK_CMD) --nprocesses=4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d
+	$(CHECK_CMD) --nthreads=0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 check-lorene-clean:
-	rm -f $(CHECK_ROTSTAR_RESULTS) $(EXAMPLE_DIR)resu.d
-
+	rm -f $(CHECK_ROTSTAR_RESULTS)
 check-lorene-compute: $(CHECK_ROTSTAR_RESULTS)
-
 check-lorene: check-lorene-clean check-lorene-compute
 
-endif
+check-lorene-mpi-clean:
+	rm -f $(CHECK_ROTSTAR_RESULTS)
+check-lorene-mpi-compute: $(CHECK_ROTSTAR_MPI_RESULTS)
+check-lorene-mpi: check-lorene-mpi-clean check-lorene-mpi-compute
 
 endif
 
-.PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check
+endif
+
+clean-local:
+	-rm -rf .check-lorene
+
+.PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check check-lorene-clean check-lorene-compute check-lorene check-lorene-mpi-clean check-lorene-mpi-compute check-lorene-mpi check

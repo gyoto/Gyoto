@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
   <Metric kind = "RotStar3_1">
-    <File>resu.d</File>
+    <File>../../bin/.check-lorene/resu.d</File>
     <IntegKind>1</IntegKind>
     <!--0: integ 4D ; 1: integ 3+1 D  -->
   </Metric>
