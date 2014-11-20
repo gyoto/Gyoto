@@ -83,7 +83,8 @@ PKG_I_DEPS=$(PKG_I)
 Y_DISTMAKE=distmake
 
 include $(Y_MAKEDIR)/Make.cfg
-include $(Y_MAKEDIR)/Makepkg
+# Yorick-distributed Makepkg is not reliable for out-of-tree builds.
+include @top_srcdir@/yorick/Makepkg
 include $(Y_MAKEDIR)/Make$(TGT)
 
 # override macros Makepkg sets for rules and other macros
