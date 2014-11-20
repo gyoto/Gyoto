@@ -10,7 +10,7 @@ endif
 
 # HEADERS: where they are, where to install them
 library_includedir=$(includedir)/Gyoto
-library_include_HEADERS=$(top_srcdir)/include/*.h
+library_include_HEADERS=$(top_srcdir)/include/*.h $(top_builddir)/include/*.h
 
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto@FEATURES@.la

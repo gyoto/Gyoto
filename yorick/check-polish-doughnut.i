@@ -57,7 +57,7 @@ write, format="%s\n", "-----------------------------";
 
 if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   write, format="%s", "Creating PolishDoughnut from file... ";
-  pd = gyoto_Scenery("../doc/examples/example-polish-doughnut.xml").astrobj();
+  pd = gyoto_Scenery(GYOTO_EXAMPLES_DIR+"example-polish-doughnut.xml").astrobj();
   write, format="%s\n", "done.";
   
   write, format="%s\n", "Printing object:";
@@ -66,7 +66,7 @@ if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   write, format="%s\n", "-----------------------------";
 
   write, format="%s", "Reading PolishDoughnut scenery... ";
-  sc = gyoto_Scenery("../doc/examples/example-polish-doughnut.xml") ;
+  sc = gyoto_Scenery(GYOTO_EXAMPLES_DIR+"example-polish-doughnut.xml") ;
   write, format="%s\n", "done.";
   
   write, format="%s", "Setting spectro... ";

@@ -22,7 +22,7 @@
 begin_section, "StarTrace Astrobj";
 
 if (gyoto_haveXerces()) {
-  sc = gyoto.Scenery("../doc/examples/example-moving-star.xml");
+  sc = gyoto.Scenery(GYOTO_EXAMPLES_DIR+"example-moving-star.xml");
   noop, sc.screen.mask(0); // make sure no mask is set yet
   st = sc.astrobj();
  } else {

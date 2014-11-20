@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_builddir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
 AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES =
@@ -33,7 +33,7 @@ gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 
 export PATH := .:$(PATH)
 
-EXAMPLE_DIR = ../doc/examples/
+EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS = \
         example-thin-disk.fits \
         example-thin-disk-KS.fits \

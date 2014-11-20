@@ -16,6 +16,8 @@ TGT=$(DEFAULT_TGT)
 
 #include ../local_settings
 
+vpath %.C @srcdir@
+
 CXXFLAGS=@CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@
 XERCESLDFLAGS=@XERCESLDFLAGS@
@@ -27,13 +29,13 @@ DYLIB_VAR=@DYLIB_VAR@
 PTHREAD_CFLAGS= @PTHREAD_CFLAGS@
 PTHREAD_LIBS= @PTHREAD_LIBS@
 
-YGYOTO_C = $(shell ls *.C)
-GYOTO_C = $(shell ls ../lib/*.C)
+YGYOTO_C = $(shell ls @srcdir@/*.C)
+GYOTO_C = $(shell ls @top_srcdir@/lib/*.C)
 GYOTO_OBJ = $(GYOTO_C:.C=.o)
-GYOTO_H = $(shell ls ../include/*.h)
+GYOTO_H = $(shell ls @top_srcdir@/include/*.h)
 
 PKG_NAME=gyoto
-PKG_I=gyoto.i
+PKG_I=@srcdir@/gyoto.i
 
 OBJS=gyoto_utils.o gyoto_Metric.o gyoto_Photon.o \
 	gyoto_Scenery.o gyoto_Screen.o gyoto_Idx.o gyoto_Spectrum.o \
@@ -48,7 +50,7 @@ PKG_EXENAME=yorick
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
 PKG_DEPLIBS=-L../lib/.libs -lgyoto@FEATURES@ $(XERCESLDFLAGS) $(PTHREAD_LIBS)
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS) $(PTHREAD_CFLAGS)
+PKG_CFLAGS= -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS) $(PTHREAD_CFLAGS)
 PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME
@@ -61,7 +63,7 @@ PKG_CLEAN=
 # autoload file for this package, if any
 PKG_I_START=
 # non-pkg.i include files for this package, if any
-PKG_I_EXTRA=gyoto_constants.i gyotoy.i gyoto_namespace.i
+PKG_I_EXTRA=@srcdir@/gyoto_constants.i @srcdir@/gyotoy.i @srcdir@/gyoto_namespace.i
 
 # -------------------------------- standard targets and rules (in Makepkg)
 
@@ -116,31 +118,34 @@ all: gyoto.so gyoto_std.so
 gyoto_std.so: stdplug/gyoto_std.so
 	cp stdplug/gyoto_std.so ./
 
-stdplug/gyoto_std.so: stdplug/*.C
+stdplug/gyoto_std.so: @srcdir@/stdplug/*.C
 	cd stdplug; $(MAKE)
 
 gyoto.so: gyoto.i $(OBJS)
 
-check-dll: $(PKG_DLL) check.i
+yorick: yorick1
 	cp yorick1 yorick
+custom.i: @srcdir@/custom1.i
+	cp $< $@
+
+check-dll: $(PKG_DLL) check.i yorick custom.i
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
 	./yorick -i check.i
 
-check-mpi: $(PKG_DLL) check-mpi.i
-	cp yorick1 yorick
+check-mpi: $(PKG_DLL) check-mpi.i yorick custom.i
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
 	./yorick -i check-mpi.i
 
 install::
 	cd stdplug; make install
-	$(YNSTALL) ygyoto.h ygyoto_idx.h ygyoto_supplier.C $(DEST_Y_SITE)/include
-	$(YNSTALL) gyotoy.xml $(DEST_Y_SITE)/glade
-	$(YNSTALL) gyotoy.png $(DEST_Y_SITE)/data
-	$(YNSTALL) gyotoy $(DEST_Y_SITE)/bin
+	$(YNSTALL) @srcdir@/ygyoto.h @srcdir@/ygyoto_idx.h @srcdir@/ygyoto_supplier.C $(DEST_Y_SITE)/include
+	$(YNSTALL) @srcdir@/gyotoy.xml $(DEST_Y_SITE)/glade
+	$(YNSTALL) @srcdir@/gyotoy.png $(DEST_Y_SITE)/data
+	$(YNSTALL) @srcdir@/gyotoy $(DEST_Y_SITE)/bin
 	-ln $(DEST_Y_SITE)/bin/gyotoy $(DESTDIR)$(prefix)/bin/
-	$(YNSTALL) gyotoy.1 $(DESTDIR)$(prefix)/share/man/man1
+	$(YNSTALL) @srcdir@/gyotoy.1 $(DESTDIR)$(prefix)/share/man/man1
 	$(YNSTALL) gyoto.info $(DEST_PKG_INSTALLED_DIR)
 
 uninstall::
@@ -159,7 +164,7 @@ clean::
 
 distclean:: $(Y_EXE)
 	cd stdplug; $(Y_EXE) -batch make.i; make distclean
-	-rm yorick
+	-rm yorick custom.i
 
 %: ;
 

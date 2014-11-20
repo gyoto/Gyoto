@@ -1,17 +1,26 @@
 PDFLATEX=@PDFLATEX@
 BIBTEX=@BIBTEX@
 
+PDFLATEXCMD = $(PDFLATEX) \
+ '\nonstopmode \newcommand{\GyotoSrcDir}{@top_srcdir@} \input{@srcdir@/GyotoManual.tex}'
+
+vpath %.tex @srcdir@
+vpath %.bib @srcdir@
+
+TEXINPUTS=.:@srcdir@:@top_srcdir@/images/:
+export TEXINPUTS
+
 all: GyotoManual.pdf
 
 GyotoManual.aux: GyotoManual.tex
-	$(PDFLATEX) GyotoManual.tex
+	$(PDFLATEXCMD)
 
-GyotoManual.bbl: GyotoManual.bib GyotoManual.aux
-	$(BIBTEX) GyotoManual.aux
+GyotoManual.bbl: GyotoManual.aux GyotoManual.bib
+	$(BIBTEX) $<
 
 GyotoManual.pdf: GyotoManual.tex GyotoManual.bbl
-	$(PDFLATEX) GyotoManual.tex
-	$(PDFLATEX) GyotoManual.tex
+	$(PDFLATEXCMD)
+	$(PDFLATEXCMD)
 
 clean:
 	-rm GyotoManual.aux GyotoManual.bbl GyotoManual.blg GyotoManual.log

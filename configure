@@ -18564,6 +18564,10 @@ if test "x$YORICK" != "x"; then :
 fi
 if test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"; then :
   mySUBDIRS="$mySUBDIRS doc"
+   ac_config_files="$ac_config_files doc/doxyfile"
+
+
+
 fi
 
 cat >confcache <<\_ACEOF
@@ -19721,6 +19725,7 @@ do
     "yorick/yorick1") CONFIG_FILES="$CONFIG_FILES yorick/yorick1" ;;
     "yorick/setpaths.i") CONFIG_FILES="$CONFIG_FILES yorick/setpaths.i" ;;
     "gyoto") CONFIG_FILES="$CONFIG_FILES gyoto" ;;
+    "doc/doxyfile") CONFIG_FILES="$CONFIG_FILES doc/doxyfile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

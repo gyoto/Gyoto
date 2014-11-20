@@ -111,7 +111,7 @@ if (gyoto_haveXerces()) {
   remove, "test.xml";
 
   write , format="%s", "Reading Scenery from XML description... ";
-  sc3=gyoto_Scenery("../doc/examples/example-moving-star.xml");
+  sc3=gyoto_Scenery(GYOTO_EXAMPLES_DIR+"example-moving-star.xml");
  } else {
   write , format="%s", "No Xerces, creating scenery from scratch... ";
   gg  = gyoto_KerrBL();
@@ -213,7 +213,7 @@ ph = gyoto_Photon(initcoord=sc3, 6, 19);
 ph.is_hit();
 
 doing, "Reading Scenery...";
-sc=Scenery("../doc/examples/example-complex-astrobj.xml");
+sc=Scenery(GYOTO_EXAMPLES_DIR+"example-complex-astrobj.xml");
 done;
 
 sc, nthreads=8, nprocesses=0, mpispawn=0;

@@ -17,6 +17,10 @@
 
 \documentclass[a4paper,12pt]{article}
 
+% The build system will provide this command to make out-of-tree build
+% work
+\providecommand{\GyotoSrcDir}{../..}
+
 \usepackage[]{natbib}  
 
 \usepackage{fullpage}
@@ -44,7 +48,7 @@
 \newcommand{\Astrobj}{\texttt{Astrobj}}
 \newcommand{\Spectrum}{\texttt{Spectrum}}
 
-\graphicspath{{../images/}}
+\graphicspath{{\GyotoSrcDir/doc/images/}}
 
 
 \begin{document}
@@ -73,6 +77,8 @@
 \newpage
 
 \section*{Introduction - Scope of this Guide}
+
+
 
 This Guide aims at giving a general presentation of the \textit{General relativitY Orbit Tracer of Observatoire de Paris}, \texttt{GYOTO} (pronounced \textipa{[dZIoto]}, as for the Italian trecento painter Giotto di Bondone). This text is not a lecture on ray-tracing techniques and is only devoted to presenting the code so that it can be quickly handled by any user. Readers interested in the physics behind \texttt{GYOTO} are referred to~\citet[][and references therein]{vincent11a,vincent12a}. The aim of this Guide is also to present the code in sufficient details so that people interested to develop their own version of \texttt{GYOTO} can do it easily.
 
@@ -1036,7 +1042,7 @@ this interpreted interface to perform unit tests on your code in a
 more fine-grained manner than a full-featured ray-traced image.
 
 \bibliographystyle{kluwer}
-\bibliography{GyotoManual}
+\bibliography{\GyotoSrcDir/doc/user_guide/GyotoManual}
 
 
 \end{document}

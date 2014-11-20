@@ -24,9 +24,13 @@
   system.
  */
 
-abs_top_builddir="@abs_top_builddir@";
+abs_top_srcdir="@abs_top_srcdir@";
+abs_top_builddir="@abs_top_srcdir@";
 
 #include "pathfun.i"
-dirs=abs_top_builddir+"/yorick/"+["", "stdplug/"];
-plug_dir,_(dirs, plug_dir());
-set_path, pathform(dirs)+":"+get_path();
+idirs=abs_top_srcdir+"/yorick/"+["", "stdplug/"];
+sodirs=abs_top_builddir+"/yorick/"+["", "stdplug/"];
+plug_dir,_(sodirs, plug_dir());
+set_path, pathform(idirs)+":"+get_path();
+
+GYOTO_EXAMPLES_DIR=abs_top_builddir+"/doc/examples/";

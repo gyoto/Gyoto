@@ -49,7 +49,7 @@ if (!have_mpi && inited) error, "MPI should not be initializable";
 done;
 
 doing, "Reading Scenery";
-sc = Scenery("../doc/examples/example-complex-astrobj.xml");
+sc = Scenery(GYOTO_EXAMPLES_DIR+"example-complex-astrobj.xml");
 done;
 
 doing, "Spawning workers";

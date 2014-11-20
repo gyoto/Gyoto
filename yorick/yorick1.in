@@ -28,6 +28,6 @@ YORICK=@YORICK@
 export ${DYLIB_VAR}=${abs_top_builddir}/lib/.libs:${!DYLIB_VAR}
 export PATH=${abs_top_builddir}/bin:${PATH}
 
-${YORICK} -i ${abs_top_builddir}/yorick/setpaths.i $@
+${YORICK} -i ${abs_top_builddir}/yorick/setpaths.i $@  -i ${abs_top_builddir}/yorick/setpaths.i
 
 exit 0

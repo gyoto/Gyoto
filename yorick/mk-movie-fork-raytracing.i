@@ -24,7 +24,7 @@
 
 
 //// PARAMETERS
-ifile="../doc/examples/example-moving-star.xml";
+ifile=GYOTO_EXAMPLES_DIR+"example-moving-star.xml";
 ofile="test.ogg";
 vcodec="libtheora";
 resolution=64;

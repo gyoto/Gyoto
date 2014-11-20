@@ -19,7 +19,7 @@ yorick(20187,0x7fff706cdcc0) malloc: *** error for object 0x10038d0c8: incorrect
 #include "pnm.i"
 #include "libav.i"
 
-ifile="../doc/examples/example-moving-star.xml";
+ifile=GYOTO_EXAMPLES_DIR+"example-moving-star.xml";
 ofile="test_single.ogg";
 resolution=64;
 // use jmin and jmax to fix aspect ratio

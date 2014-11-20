@@ -9,10 +9,12 @@ Y_HOME_PKG=
 # ----------------------------------------------------- optimization flags
 
 # options for make command line, e.g.-   make COPT=-g TGT=exe
-COPT=$(COPT_DEFAULT) -L../../lib -I../../include
+COPT=$(COPT_DEFAULT) -L../../lib -I@top_srcdir@/include -I@top_builddir@/include
 TGT=$(DEFAULT_TGT)
 
 # ------------------------------------------------ macros for this package
+
+vpath %.C @srcdir@
 
 CXXFLAGS=@CXXFLAGS@
 CPPFLAGS=@CPPFLAGS@
@@ -29,13 +31,13 @@ PTHREAD_LIBS= @PTHREAD_LIBS@
 SYS=@SYS@
 plugin_sfx=@plugin_sfx@
 
-YGYOTO_C = $(shell ls ../*.C)
-GYOTO_C = $(shell ls ../../lib/*.C)
+YGYOTO_C = $(shell ls @srcdir@/../*.C)
+GYOTO_C = $(shell ls @top_srcdir@/lib/*.C)
 GYOTO_OBJ = $(GYOTO_C:.C=.o)
-GYOTO_H = $(shell ls ../../include/*.h)
+GYOTO_H = $(shell ls @top_srcdir@/include/*.h)
 
 PKG_NAME=gyoto_std
-PKG_I=gyoto_std.i
+PKG_I=@srcdir@/gyoto_std.i
 
 OBJS = StdPlug.o gyoto_KerrBL.o gyoto_KerrKS.o \
 	gyoto_Star.o gyoto_StarTrace.o gyoto_FixedStar.o \
@@ -56,7 +58,7 @@ PKG_DEPLIBS+=-bundle_loader ../../lib/.libs/libgyoto-stdplug.$(plugin_sfx) \
 endif
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I../../include -I.. $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS) $(PTHREAD_CFLAGS)
+PKG_CFLAGS= -I@top_srcdir@/include -I@top_srcdir@/yorick $(XERCESCPPFLAGS) $(CFITSIOCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS) $(PTHREAD_CFLAGS)
 PKG_LDFLAGS= $(PTHREAD_CFLAGS)
 
 # list of additional package names you want in PKG_EXENAME
@@ -117,7 +119,7 @@ LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 #	$(CC) $(CPPFLAGS) $(CFLAGS) -DMY_SWITCH -o $@ -c myfunc.c
 
 
-StdPlug.o: ../ygyoto_supplier.C ../ygyoto.h 
+StdPlug.o: @srcdir@/../ygyoto_supplier.C @srcdir@/../ygyoto.h 
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -o $@ $<
 
 ../../lib/libgyoto.a: $(GYOTO_C) $(GYOTO_H)

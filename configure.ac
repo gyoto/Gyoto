@@ -726,7 +726,11 @@ AS_IF([test "x$YORICK" != "x"],
 		   [chmod a+x gyoto])
   ]
 )
-AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"], [mySUBDIRS="$mySUBDIRS doc"])
+AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
+  [mySUBDIRS="$mySUBDIRS doc"
+   AC_CONFIG_FILES([doc/doxyfile])
+  ]
+)
 AC_SUBST([mySUBDIRS])
 AC_OUTPUT
 
