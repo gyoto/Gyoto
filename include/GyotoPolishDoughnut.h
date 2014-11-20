@@ -36,7 +36,6 @@ namespace Gyoto{
  class FactoryMessenger;
 }
 
-#include <GyotoKerrBL.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoFunctors.h>
 #include <GyotoHooks.h>
@@ -60,15 +59,6 @@ class Gyoto::Astrobj::PolishDoughnut
  // Data : 
  // -----
 protected:
-  /**
-   * \brief KerrBL metric
-   *
-   * This Astrobj::Generic subclass only works (so far?) in KerrBL
-   * metric.  We store a copy of the Astrobj::Generic::gg_
-   * SmartPointer appropriately cast. The two pointers point to the
-   * same instance.
-   */
- SmartPointer<Gyoto::Metric::KerrBL> gg_; 
  SmartPointer<Spectrum::BlackBody> spectrumBB_;
  double l0_; ///< Angular momentum. Tied to PolishDoughnut::lambda_.
  double lambda_; ///< Adimentionned angular momentum
@@ -103,7 +93,6 @@ protected:
  // -------------------------
 public:
  PolishDoughnut() ; ///< Default constructor
- //PolishDoughnut(SmartPointer<Metric::KerrBL> gg, double lambda) ; ///< Standard constructor
  PolishDoughnut(const PolishDoughnut& ) ;                ///< Copy constructor
  virtual  PolishDoughnut* clone() const;
  virtual ~PolishDoughnut() ;                        ///< Destructor
@@ -147,7 +136,7 @@ public:
  double getRcusp() const; ///< Get PolishDoughnut::r_cusp_
  double getRcentre() const; ///< Get PolishDoughnut::r_centre_
 
- virtual Gyoto::SmartPointer<Gyoto::Metric::Generic> metric() const;
+ using Standard::metric;
  virtual void metric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
 
  // ASTROBJ API

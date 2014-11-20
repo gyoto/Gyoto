@@ -38,7 +38,6 @@ using namespace Gyoto::Astrobj;
 #define nstep_angint 10 // for angle-averaging integration
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
-  gg_(NULL),
   spectrumBB_(NULL),
   l0_(0.),
   lambda_(0.5),
@@ -71,7 +70,6 @@ PolishDoughnut::PolishDoughnut() :
 }
 PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   Standard(orig),
-  gg_(NULL),
   spectrumBB_(NULL),
   l0_(orig.l0_),
   lambda_(orig.lambda_),
@@ -97,10 +95,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
 		 changecusp_(orig.changecusp_)
 {
   intersection.papa=this;
-  if (orig.gg_()) {
-    gg_=orig.gg_->clone();
-    Standard::gg_ = gg_;
-  }
+  if (gg_) gg_ -> hook(this);
   if (orig.spectrumBB_()) spectrumBB_=orig.spectrumBB_->clone();
 }
 PolishDoughnut* PolishDoughnut::clone() const
@@ -230,16 +225,11 @@ PolishDoughnut::~PolishDoughnut() {
   GYOTO_DEBUG << "PolishDoughnut Destruction" << endl;
   if (gg_) gg_ -> unhook(this);
 }
-Gyoto::SmartPointer<Gyoto::Metric::Generic> PolishDoughnut::metric() const {
-  return SmartPointer<Metric::Generic>(gg_);
-}
+
 void PolishDoughnut::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
-  if (met->kind() != "KerrBL")
-    throwError("PolishDoughnut::metric(): only KerrBL, please");
   if (gg_) gg_ -> unhook(this);
-  gg_ = SmartPointer<Metric::KerrBL>(met);
-  Generic::gg_ = gg_;
+  Standard::metric(met);
   if (gg_) gg_ -> hook(this);
   GYOTO_DEBUG << "Metric set, calling lambda\n";
   lambda(lambda_); // setLambda_ initializes other members
@@ -1443,7 +1433,6 @@ int PolishDoughnut::setParameter(string name, string content, string unit) {
 }
 #ifdef GYOTO_USE_XERCES
 void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
-  fmp->metric(gg_);
   fmp->setParameter("Lambda", lambda_);
   fmp->setParameter("CentralDensity", central_density_);
   fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);
