@@ -123,6 +123,24 @@ double KerrBL::getRmb() const {
   return 2.-spin_+2.*sqrt(1.-spin_);
 }
 
+double KerrBL::getSpecificAngularMomentum(double rr) const {
+  // this is l = -u_phi/u_t for a circular equatorial 4-velocity
+  double aa=spin_, sqrtr=sqrt(rr);
+  return (rr*rr-2.*aa*sqrtr+aa*aa)/(pow(rr,1.5)-2.*sqrtr+aa);
+}
+
+double KerrBL::getPotential(double pos[4], double l_cst) const {
+  // this is W = -ln(|u_t|) for a circular equatorial 4-velocity
+  double  gtt = gmunu(pos,0,0);
+  double  gtp = gmunu(pos,0,3);
+  double  gpp = gmunu(pos,3,3);
+  double  Omega = -(gtp + l_cst * gtt)/(gpp + l_cst * gtp) ;
+  
+  double  W = 0.5 * log(abs(gtt + 2. * Omega * gtp + Omega*Omega * gpp)) 
+    - log(abs(gtt + Omega * gtp)) ;
+  return  W ;
+}
+
 //Computation of metric coefficients in covariant form
 void KerrBL::gmunu(double g[4][4], const double * pos) const {
   double r = pos[1];

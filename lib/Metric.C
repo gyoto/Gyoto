@@ -518,6 +518,26 @@ void Metric::Generic::observerTetrad(string const obskind,
   }
 }
 
+double Metric::Generic::getRmb() const{
+  throwError("In Metric::getRmb: should be implemented "
+	     "in the derived metric");
+}
+
+double Metric::Generic::getRms() const{
+  throwError("In Metric::getRms: should be implemented "
+	     "in the derived metric");
+}
+
+double Metric::Generic::getSpecificAngularMomentum(double rr) const{
+  throwError("In Metric::getSpecificAngularMomentum: should be implemented "
+	     "in the derived metric");
+}
+
+double Metric::Generic::getPotential(double pos[4], double l_cst) const{
+  throwError("In Metric::getPotential: should be implemented "
+	     "in the derived metric");
+}
+
 /***************For SmartPointers**************/
 
 int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }

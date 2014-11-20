@@ -86,10 +86,14 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   void genericIntegrator(bool);
   bool genericIntegrator() const ;
 
-  double getRms() const; ///< Returns prograde marginally stable orbit
+  virtual double getRms() const; 
 
-  double getRmb() const; ///< Returns prograde marginally bound orbit
+  virtual double getRmb() const; 
+
+  virtual double getSpecificAngularMomentum(double rr) const;
   
+  virtual double getPotential(double pos[4], double l_cst) const;
+
   void gmunu(double g[4][4], const double * pos) const ;
   double gmunu(const double * const x, int mu, int nu) const ;
 

@@ -97,6 +97,7 @@ protected:
  int adaf_; ///< 1 to switch to an ADAF model rather tha Polish doughnut
  double ADAFtemperature_; ///< ADAF central temperature
  double ADAFdensity_; ///< ADAF central density
+ int changecusp_; ///< 1 to apply the fishy rcusp_ change (to be changed)
 
  // Constructors - Destructor
  // -------------------------

@@ -226,6 +226,34 @@ class Gyoto::Metric::Generic
   double unitLength(const std::string &unit) const ; ///< unitLength expressed in specified unit
 
   /**
+   * Returns the marginally bound radius
+   * Should be implemented in derived classes if useful
+   * If called on the base class, returns an error
+   */
+  virtual double getRmb() const;
+
+  /**
+   * Returns the marginally stable (ISCO) radius 
+   * Should be implemented in derived classes if useful
+   * If called on the base class, returns an error
+   */
+  virtual double getRms() const;
+
+  /**
+   * Returns the specific angular momentum l=-u_phi/u_t
+   * Should be implemented in derived classes if useful
+   * If called on the base class, returns an error
+   */
+  virtual double getSpecificAngularMomentum(double rr) const;
+
+  /**
+   * Returns potential W=-ln(|u_t|) for a cst specific angular momentum l_cst
+   * Should be implemented in derived classes if useful
+   * If called on the base class, returns an error
+   */
+  virtual double getPotential(double pos[4], double l_cst) const;
+
+  /**
    * Get delta_min_
    */
   double deltaMin() const;
