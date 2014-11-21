@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
   <Metric kind = "RotStar3_1">
-    <File>../../bin/.check-lorene/resu.d</File>
+
+    The path is normally either absolute or relative to the XML file,
+    but it is interpreted as relative to the working directory if
+    prefixed with "`pwd`/" :
+    <File>`pwd`/.check-lorene/resu.d</File>
+
     <IntegKind>1</IntegKind>
     <!--0: integ 4D ; 1: integ 3+1 D  -->
   </Metric>

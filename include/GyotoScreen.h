@@ -155,7 +155,11 @@ namespace Gyoto {
  * \endcode
  * The mask needs to be have the same size as the Screen itself, so
  * loading a mask also sets the resolution, and changing the
- * resolution after setting a mask also removes the mask.
+ * resolution after setting a mask also removes the mask. The content
+ * of the Mask entity is parsed by Factory::fullPath(), so it can be
+ * an absolute path, a path relative to where the XML file is stored,
+ * or relative to the current working directory if prefixed with
+ * "`pwd`/".
  *
  */
 class Gyoto::Screen : protected Gyoto::SmartPointee {

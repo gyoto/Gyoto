@@ -11,7 +11,13 @@
     <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
     <Resolution> 128 </Resolution>
     <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
-    <Mask>../../bin/example-startrace.fits</Mask>
+
+    By using a cleverly pre-computed mask, on can avoid computing
+    pixels that are known to be black. The path is normally either
+    absolute or relative to the XML file, but it is interpreted as
+    relative to the working directory if prefixed with "`pwd`/" :
+    <Mask>`pwd`/example-startrace.fits</Mask>
+
   </Screen>
 
   <Astrobj kind = "Star">

@@ -976,11 +976,18 @@ std::string Factory::fullPath(std::string fname) {
     free (cwd); cwd = NULL;
   }
 
-  if (xmlpath.compare(0, 1, "/")) fpath = curwd + "/" ;
-
-  fpath += xmlpath + "/";
-
-  fpath += fname;
+  string prefix="`pwd`/";
+  if (fname.compare(0, prefix.size(), prefix)) {
+    // fname does not start with "`pwd`/":
+    // it is relative to xmlpath
+    if (xmlpath.compare(0, 1, "/")) fpath = curwd + "/" ;
+    fpath += xmlpath + "/";
+    fpath += fname;
+  } else {
+    // fname starts with "`pwd`/": relative to working directory
+    fpath = curwd + "/";
+    fpath += fname.substr(prefix.size());
+  }
 
   GYOTO_DEBUG << "returns " << fpath << endl;
   return fpath;

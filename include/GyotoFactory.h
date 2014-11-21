@@ -393,7 +393,20 @@ class Gyoto::Factory
 
   /// Transform relative path into absolute path.
   /**
-   * \param relpath Path relative to XML file.
+   * relpath is interpreted as follows:
+   *
+   * If it starts with "/", it is interpreted as an absolute path and
+   * is returned as is.
+   *
+   * If it is prefixed with "`pwd`/", the rest of relpath is
+   * interpreted as relative to the current working directory,
+   * i.e. fullPath() tries to mimick how the shell would expand
+   * relpath into an absolute path.
+   *
+   * In any other circumstance, relpath is interpreted to relative to
+   * the directory where the XML file resides.
+   *
+   * \param relpath Path specification.
    * \return Absolute path to same file.
    */
   std::string fullPath(std::string relpath);
