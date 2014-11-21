@@ -146,6 +146,11 @@ int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
   return 0;
 }
 
+void Worldline::IntegState::Legacy::doStep(double const coordin[8],
+					   double step, 
+					   double coordout[8]) {
+  gg_ -> myrk4(line_, coordin, step, coordout); 
+}
 
 std::string Worldline::IntegState::Legacy::kind() { return "Legacy"; } 
 
@@ -271,6 +276,21 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
   checkNorm(coord);
 
   return line_->stopcond;
+}
+
+void Worldline::IntegState::Boost::doStep(double const coordin[8],
+					 double step, 
+					 double coordout[8]) {
+  // We first make a C++ std::array out of the bare C array:
+  std::array<double, 8> inout = {
+    coordin[0], coordin[1], coordin[2], coordin[3],
+    coordin[4], coordin[5], coordin[6], coordin[7]};
+
+  // We call the Boost stepper
+  do_step_(inout, step);
+
+  // Copy the result
+  for (size_t i=0; i<=7; ++i) coordout[i]=inout[i];
 }
 
 std::string Worldline::IntegState::Boost::kind() {

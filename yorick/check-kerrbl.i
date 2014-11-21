@@ -124,7 +124,7 @@ if (gyoto_haveBoost()) {
   //coords7=st7(get_coord=dates);
   if (max(abs(coords-coords3))>1e-3)
     error, "two integrators don't yield the same result";
-  if (max(abs(coords-coords5))>1e-3)
+  if (max(abs(coords-coords5))>3e-3)
     error, "two integrators don't yield the same result";
   if (max(abs(coords-coords4))>1e-3)
     error, "two integrators don't yield the same result";

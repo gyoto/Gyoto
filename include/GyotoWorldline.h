@@ -636,6 +636,19 @@ class Gyoto::Worldline::IntegState::Generic : SmartPointee {
    */
   virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
 
+  /// Make one step of exactly this size.
+  /**
+   * doStep() is meant to refine a computation made using
+   * nextStep(). In particular, there is no checking for norm
+   * conservation.
+   *
+   * \param[in] coordin current position-velocity;
+   * \param[in] step  exact step to use.
+   * \param[out] coordout next position-velocity;
+   */
+  virtual void doStep(double const coordin[8], 
+		      double step,
+		      double coordout[8])=0;
 };
 
 /**
@@ -664,12 +677,11 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   void init(Worldline * line, const double *coord, const double delta);
   virtual std::string kind();
 
-  /// Make one step.
-  /**
-   * \param[out] coord Next position-velocity;
-   * \param[in] h1max maximum step in case of adaptive integration
-   */
   virtual int nextStep(double *coord, double h1max=1e6);
+
+  virtual void doStep(double const coordin[8], 
+		      double step,
+		      double coordout[8]);
 
   virtual ~Legacy();
 };
@@ -726,6 +738,9 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   virtual void init();
   virtual void init(Worldline * line, const double *coord, const double delta);
   virtual int nextStep(double *coord, double h1max=1e6);
+  virtual void doStep(double const coordin[8], 
+		      double step,
+		      double coordout[8]);
   virtual std::string kind();
   
 };

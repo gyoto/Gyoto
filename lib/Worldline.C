@@ -785,7 +785,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestl[5] = x1dot_[curl];
     bestl[6] = x2dot_[curl];
     bestl[7] = x3dot_[curl];
-    metric_ -> myrk4(this, bestl, dtaul, resl);
+    state_ -> doStep(bestl, dtaul, resl);
 
     // from above...
     besth[0] =    x0_[curh];
@@ -796,7 +796,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     besth[5] = x1dot_[curh];
     besth[6] = x2dot_[curh];
     besth[7] = x3dot_[curh];
-    metric_ -> myrk4(this, besth, dtauh, resh);
+    state_ -> doStep(besth, dtauh, resh);
 
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_IF_DEBUG
