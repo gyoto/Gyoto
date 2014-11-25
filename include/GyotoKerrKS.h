@@ -115,7 +115,7 @@ class Gyoto::Metric::KerrKS
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
-  virtual void setParameter(std::string, std::string, std::string);
+  virtual int setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp);
 #endif

@@ -76,7 +76,7 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
 
-  virtual void setParameter(std::string name,
+  virtual int setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 

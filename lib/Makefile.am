@@ -18,7 +18,7 @@ libgyoto@FEATURES@_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C U
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
-	ThinDisk.C Converters.C Functors.C Hooks.C
+	ThinDisk.C Converters.C Functors.C Hooks.C Object.C
 libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 

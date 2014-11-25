@@ -170,7 +170,7 @@ am_libgyoto@FEATURES@_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
 	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
 	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
 	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
-	Hooks.lo
+	Hooks.lo Object.lo
 libgyoto@FEATURES@_la_OBJECTS = $(am_libgyoto@FEATURES@_la_OBJECTS)
 libgyoto@FEATURES@_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -429,7 +429,7 @@ libgyoto@FEATURES@_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Ut
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
-	ThinDisk.C Converters.C Functors.C Hooks.C
+	ThinDisk.C Converters.C Functors.C Hooks.C Object.C
 
 libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
@@ -601,6 +601,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/KerrKS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Metric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Minkowski.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Object.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PageThorneDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PatternDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PatternDiskBB.Plo@am__quote@

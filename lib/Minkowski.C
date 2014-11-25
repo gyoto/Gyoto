@@ -215,8 +215,9 @@ void Minkowski::fillElement(Gyoto::FactoryMessenger *fmp) {
 #endif
 
 // setParameter is the minimal interface to read data from the XML.
-void Minkowski::setParameter(string name, string content, string unit){
+int Minkowski::setParameter(string name, string content, string unit){
   if      (name=="Spherical")     coordKind(GYOTO_COORDKIND_SPHERICAL);
   else if (name=="Cartesian")     coordKind(GYOTO_COORDKIND_CARTESIAN);
-  else Generic::setParameter(name, content, unit);
+  else return Generic::setParameter(name, content, unit);
+  return 0;
 }

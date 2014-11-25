@@ -175,7 +175,7 @@ class Gyoto::Metric::NumericalMetricLorene
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
 
-  virtual void setParameter(std::string, std::string, std::string);
+  virtual int setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); /// < called from Factory
   virtual void setParameters(FactoryMessenger *fmp);

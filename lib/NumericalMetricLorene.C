@@ -1630,7 +1630,8 @@ void  NumericalMetricLorene::setParameter(string name,
     r_refine_  = parms[0];
     h0_refine_ = parms[1];
   }
-  else  Generic::setParameter(name, content, unit);
+  else  return Generic::setParameter(name, content, unit);
+  return 0;
 }
 
 #ifdef GYOTO_USE_XERCES

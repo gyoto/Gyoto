@@ -32,8 +32,51 @@ using namespace Gyoto;
 
 Register::Entry* Metric::Register_ = NULL;
 
+//// Gyoto::Object API
+// Keplerian/NonKeplerian
+
+#define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
+  Property const * const name##_ancestors[] = {ancestor, NULL}
+
+#define GYOTO_PROPERTY_BOOL(name, namef, fname, ancestor) \
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+         #namef, \
+         (Property::set_bool_t)&fname, \
+         (Property::get_bool_t)&fname, \
+         name##_ancestors)
+
+#define GYOTO_PROPERTY_DOUBLE(name, fname, ancestor) \
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+         (Property::set_double_t)&fname, \
+         (Property::get_double_t)&fname, \
+         name##_ancestors)
+
+GYOTO_PROPERTY_BOOL(Keplerian, NonKeplerian, Metric::Generic::keplerian, Object::properties);
+GYOTO_PROPERTY_DOUBLE(DeltaMaxOverR, Metric::Generic::deltaMaxOverR, &Keplerian);
+GYOTO_PROPERTY_DOUBLE(DeltaMax, Metric::Generic::deltaMax, &DeltaMaxOverR);
+GYOTO_PROPERTY_DOUBLE(DeltaMin, Metric::Generic::deltaMin, &DeltaMax);
+
+// Mass
+Property const * const _Mass_ancestors[] = {&DeltaMin, NULL};
+Property _Mass(std::string("Mass"),
+	       (Property::set_double_t)&Metric::Generic::mass,
+	       (Property::get_double_t)&Metric::Generic::mass,
+	       (Property::set_double_unit_t)&Metric::Generic::mass,
+	       (Property::get_double_unit_t)&Metric::Generic::mass,
+	       _Mass_ancestors);
+Property const * const Metric::Generic::properties = &_Mass;
+
+Property const * Metric::Generic::getProperties() const {
+  return Metric::Generic::properties;
+}
+///
+
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
-  kind_(name), mass_(1.), coordkind_(coordkind),
+  SmartPointee(name), mass_(1.), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
   delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
@@ -47,7 +90,12 @@ Metric::Generic::Generic(const int coordkind, const std::string &name) :
 # endif
 }
 
-// No copy constructor needed, default is fine
+Metric::Generic::Generic(Generic const &o):
+  SmartPointee(o), mass_(o.mass_), coordkind_(o.coordkind_),
+  delta_min_(o.delta_min_), delta_max_(o.delta_max_),
+  delta_max_over_r_(o.delta_max_over_r_), keplerian_(o.keplerian_)
+{}
+
 Metric::Generic * Metric::Generic::clone() const {
   string msg = "Metric::Generic::clone() called: cloning not supported for metric kind ";
   msg += kind();
@@ -541,43 +589,6 @@ double Metric::Generic::getPotential(double pos[4], double l_cst) const{
 /***************For SmartPointers**************/
 
 int Metric::Generic::getRefCount() { return SmartPointee::getRefCount(); }
-
-#ifdef GYOTO_USE_XERCES
-void Metric::Generic::fillElement(Gyoto::FactoryMessenger *fmp) {
-  fmp -> setSelfAttribute("kind", kind_);
-  fmp -> setParameter("Mass", mass());
-  fmp -> setParameter("DeltaMin", delta_min_);
-  fmp -> setParameter("DeltaMax", delta_max_);
-  fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
-  if (keplerian_) fmp -> setParameter("Keplerian");
-}
-
-void Metric::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {
-  string name="", content="", unit="";
-  if (fmp)
-    while (fmp->getNextParameter(&name, &content, &unit))
-      setParameter(name, content, unit);
-}
-
-void Metric::Generic::processGenericParameters(Gyoto::FactoryMessenger *fmp)  {
-  if (!fmp) return;
-  string name="", content="";
-  fmp -> reset();
-  while (fmp->getNextParameter(&name, &content)) {
-    if(name=="Mass")
-      mass(atof(content.c_str()), fmp -> getAttribute("unit"));
-  }
-}
-
-#endif
-
-void Metric::Generic::setParameter(string name, string content, string unit) {
-  if      (name=="Mass")     mass(atof(content.c_str()), unit);
-  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
-  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
-  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
-  else if (name=="Keplerian")keplerian(true);
-}
 
 void Metric::initRegister() {
   if (Gyoto::Metric::Register_) delete Gyoto::Metric::Register_;

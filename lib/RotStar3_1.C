@@ -767,7 +767,8 @@ void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
 void RotStar3_1::setParameter(string name, string content, string unit){
   if      (name=="IntegKind")     integKind(atoi(content.c_str()));
   else if (name=="File")          fileName(content.c_str());
-  else Generic::setParameter(name, content, unit);
+  else return Generic::setParameter(name, content, unit);
+  return 0;
 }
 
 void RotStar3_1::setParameters(FactoryMessenger* fmp) {

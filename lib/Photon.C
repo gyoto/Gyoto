@@ -583,8 +583,16 @@ SmartPointer<Photon> Gyoto::Photon::Subcontractor(FactoryMessenger* fmp) {
 
   SmartPointer<Photon> ph = new Photon();
   ph -> astrobj( fmp->astrobj() );
-  ph -> setParameters(fmp);
+  ph -> Worldline::setParameters(fmp);
+  ph -> SmartPointee::setParameters(fmp);
 
   return ph;
 }
 #endif
+
+int Photon::setParameter(std::string name,
+			   std::string content,
+			 std::string unit) {
+  return (Worldline::setParameter(name, content, unit) &&
+	  SmartPointee::setParameter(name, content, unit));
+}

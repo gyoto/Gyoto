@@ -44,13 +44,12 @@
 #include <pthread.h>
 #endif
 
-
 namespace Gyoto {
   class SmartPointee;
-  class FactoryMessenger;
   template <class T> class SmartPointer;
 }
 
+#include <GyotoObject.h>
 #include <GyotoError.h>
 #include <stddef.h>
 #include <iostream>
@@ -76,7 +75,7 @@ namespace Gyoto {
  * @endcode
  *
  */
-class Gyoto::SmartPointee
+class Gyoto::SmartPointee : public Gyoto::Object
 {
  private:
   int refCount; ///< Reference counter.
@@ -90,6 +89,7 @@ class Gyoto::SmartPointee
 
  public:
   SmartPointee () ;
+  SmartPointee (std::string kind) ;
   SmartPointee (const   SmartPointee&) ; ///< Copy constructor
   void incRefCount () ; ///< Increment the reference counter. Warning: Don't mess with the counter.
   int decRefCount () ;  ///< Decrement the reference counter and return current value. Warning: Don't mess with the counter.

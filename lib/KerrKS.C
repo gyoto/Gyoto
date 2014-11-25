@@ -674,12 +674,13 @@ int KerrKS::isStopCondition(double const * const coord) const {
   return (r<rsink_ && rdot >0 && Tdot>0);
 }
 
-void KerrKS::setParameter(string name, string content, string unit) {
+int KerrKS::setParameter(string name, string content, string unit) {
   if (name=="Spin") spin(atof(content.c_str()));
   else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
   else if (name=="GenericIntegrator") genericIntegrator(true);
   else if (name=="SpecificIntegrator") genericIntegrator(false);
-  else Generic::setParameter(name, content, unit);
+  else return Generic::setParameter(name, content, unit);
+  return 0;
 }
 
 #ifdef GYOTO_USE_XERCES

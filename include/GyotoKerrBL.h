@@ -125,7 +125,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   void MakeMomentum(const double coordin[8], const double cst[5], double coordout[8]) const;
   ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
 
-  virtual void setParameter(std::string, std::string, std::string);
+  virtual int setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
 #endif

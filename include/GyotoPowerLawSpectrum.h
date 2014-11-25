@@ -74,7 +74,7 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   virtual double operator()(double nu) const;
 
 #ifdef GYOTO_USE_XERCES
-  virtual void setParameter(std::string name,
+  virtual int setParameter(std::string name,
 			    std::string content,
 			    std::string unit);
 

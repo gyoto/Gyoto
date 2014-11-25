@@ -145,13 +145,12 @@ namespace Gyoto {
  *
  */
 class Gyoto::Metric::Generic
-: protected Gyoto::SmartPointee,
+: public Gyoto::SmartPointee,
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
 
  private:
-  std::string kind_; ///< Metric kind name (e.g. "KerrBL")
   double mass_;     ///< Mass yielding geometrical unit (in kg).
   int coordkind_; ///< Kind of coordinates (cartesian-like, spherical-like, unspecified)
 
@@ -194,13 +193,17 @@ class Gyoto::Metric::Generic
 
 
  public:
+  static Property const * const properties;
+  virtual Property const * getProperties() const;
+
+
   const std::string kind() const; ///< Get kind_
   int getRefCount();
   
   // Constructors - Destructor
   // -------------------------
   Generic(const int coordkind, const std::string &name); ///< Constructor setting Generic::coordkind_ and kind_
-
+  Generic(Generic const &o); ///< Copy constructor
   virtual ~Generic() ;                        ///< Destructor
   
   // Mutators / assignment
@@ -367,32 +370,6 @@ class Gyoto::Metric::Generic
  
 
   /**
-   * \brief Set parameter by name
-   *
-   * Assume MyKind is a subclass of Metric::Generic which has two
-   * members (a string StringMember and a double DoubleMember):
-\code
-int MyKind::setParameter(std::string name, std::string content, std::string unit) {
- if      (name=="StringMember") setStringMember(content);
- else if (name=="DoubleMember") setDoubleMemeber(atof(content.c_str()), unit);
- else return Generic::setParameter(name, content, unit);
- return 0;
-}
-\endcode
-   * If MyKind is not a direct subclass of Generic, it should call the
-   * corresponding setParameter() implementation instead of
-   * Generic::setParameter().
-   *
-   * \param name XML name of the parameter
-   * \param content string representation of the value
-   * \param unit string representation of the unit
-   * \return 0 if this parameter is known, 1 if it is not.
-   */
-  virtual void setParameter(std::string name,
-			    std::string content,
-			    std::string unit);
-
-  /**
    * \brief Computes the orthonormal local tetrad of the observer
    * 
    * \param obskind  input: kind of observer (eg: "ZAMO","KeplerianObserver"...)
@@ -408,44 +385,6 @@ int MyKind::setParameter(std::string name, std::string content, std::string unit
 			      double screen3[4]) const ;
 
   // Outputs
-#ifdef GYOTO_USE_XERCES
-
-  /**
-   * \brief Main loop in Subcontractor_t function
-   *
-   * The Subcontractor_t function for each Metric kind should look
-   * somewhat like this (templated as
-   * Gyoto::Metric::Subcontractor<MyKind>):
-\code
-SmartPointer<Metric::Generic>
-Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
-  SmartPointer<MyKind> gg = new MyKind();
-  gg -> setParameters(fmp);
-  return gg;
-}
-\endcode
-   *
-   * Each metric kind should implement setParameter(string name,
-   * string content, string unit) to interpret the individual XML
-   * elements. setParameters() can be overloaded in case the specific
-   * Metric class needs low level access to the FactoryMessenger. See
-   * Gyoto::Astrobj::UniformSphere::setParameters().
-   */
-  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
-
-  /**
-   * Metrics implementations should impement fillElement to save their
-   * parameters to XML and call the Metric::fillElement(fmp) for the
-   * shared properties
-   */
-
-  virtual void fillElement(FactoryMessenger *fmp) ; ///< called from Factory
-
-  /**
-   * \brief Process generic XML parameters 
-   */
-  void processGenericParameters(Gyoto::FactoryMessenger *fmp) ;
-#endif
 
   /**
    * \brief Metric coefficients

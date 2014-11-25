@@ -49,13 +49,14 @@ void Spectrum::PowerLaw::fillElement(FactoryMessenger *fmp) const {
   Spectrum::Generic::fillElement(fmp);
 }
 
-void Gyoto::Spectrum::PowerLaw::setParameter(std::string name,
+int Gyoto::Spectrum::PowerLaw::setParameter(std::string name,
 			      std::string content,
 			      std::string unit) {
   char * tc=const_cast<char*>(content.c_str());
   if (name=="Exponent") exponent(atof(tc));
   else if (name=="Constant") constant(atof(tc));
-  else Spectrum::Generic::setParameter(name, content, unit);
+  else return Spectrum::Generic::setParameter(name, content, unit);
+  return 0;
 }
 
 #endif

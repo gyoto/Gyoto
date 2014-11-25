@@ -1242,11 +1242,12 @@ void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
 }
 #endif
 
-void KerrBL::setParameter(string name, string content, string unit) {
+int KerrBL::setParameter(string name, string content, string unit) {
   if      (name=="Spin")          spin          (atof(content.c_str()));
   else if (name=="DiffTol")       difftol       (atof(content.c_str()));
   else if (name=="GenericIntegrator") genericIntegrator(true);
   else if (name=="SpecificIntegrator") genericIntegrator(false);
   else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
-  else Generic::setParameter(name, content, unit);
+  else return Generic::setParameter(name, content, unit);
+  return 0;
 }

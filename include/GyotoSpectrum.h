@@ -122,7 +122,7 @@ namespace Gyoto{
  *  Light emitted by e.g. a Star
  *
  */
-class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
+class Gyoto::Spectrum::Generic : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
  protected:
   std::string kind_; ///< e.g. constants, blackbody...
@@ -172,10 +172,6 @@ class Gyoto::Spectrum::Generic : protected Gyoto::SmartPointee {
   virtual double integrate(double nu1, double nu2,
 			   const Spectrum::Generic * opacity, double ds) ;
 
-  virtual void setParameter(std::string name,
-			    std::string content,
-			    std::string unit) ;
-  ///< Set any parameter by its name
 
 #ifdef GYOTO_USE_XERCES
   /**

@@ -45,13 +45,14 @@ double Spectrum::BlackBody::operator()(double nu) const {
     /(exp(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)-1.);
 }
 
-void Spectrum::BlackBody::setParameter(std::string name,
+int Spectrum::BlackBody::setParameter(std::string name,
 				       std::string content,
 				       std::string unit) {
   char * tc=const_cast<char*>(content.c_str());
   if (name=="Temperature") temperature(atof(tc));
   else if (name=="Scaling") scaling(atof(tc));
-  else Spectrum::Generic::setParameter(name, content, unit);
+  else return Spectrum::Generic::setParameter(name, content, unit);
+  return 0;
 }
 
 #ifdef GYOTO_USE_XERCES

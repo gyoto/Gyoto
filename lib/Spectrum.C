@@ -120,8 +120,6 @@ double Spectrum::Generic::operator()(double nu, double opacity, double ds)
   return 0.;
 }
 
-void Spectrum::Generic::setParameter(std::string, std::string, std::string) {}
-
 #ifdef GYOTO_USE_XERCES
 // do nothing... for now
 void Spectrum::Generic::fillElement(FactoryMessenger *fmp ) const {
