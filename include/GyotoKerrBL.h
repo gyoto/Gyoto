@@ -69,6 +69,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // Constructors - Destructor
   // -------------------------
  public: 
+  GYOTO_PROPERTY;
   KerrBL(); ///< Default constructor
   virtual KerrBL * clone () const ;
 
@@ -124,11 +125,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    ///< Computes pr, ptheta, E and L from rdot, thetadot, phidot, tdot
   void MakeMomentum(const double coordin[8], const double cst[5], double coordout[8]) const;
   ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
-
-  virtual int setParameter(std::string, std::string, std::string);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-#endif
 
  protected:
 

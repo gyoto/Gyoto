@@ -158,7 +158,7 @@ namespace Gyoto{
  * </Scenery>
  * \endcode
  */
-class Gyoto::Scenery : protected Gyoto::SmartPointee {
+class Gyoto::Scenery : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Scenery>;
   
   

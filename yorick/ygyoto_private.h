@@ -25,6 +25,13 @@
 #ifndef __YGYOTO_PRIVATE_H
 #define __YGYOTO_PRIVATE_H
 
+#include "GyotoSmartPointer.h"
+
+void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+		    Gyoto::Property const&, int, std::string, std::string);
+void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+		   Gyoto::Property const&, int, std::string, std::string);
+
 /*
   The following are to declare a new base (such as Metric or Astrobj)
   or independent (such as Photon) class. Seldom used in a Gyoto
@@ -87,6 +94,40 @@ long int __ygyoto_var_idx(long id);
     }									\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
     void gyoto_##NAME##_closure_eval(void *obj, int argc) {		\
+      Property const * prop = ((gyoto_##NAME##_closure*)obj)->smptr	\
+	->property(((gyoto_##NAME##_closure*)obj)->member);		\
+	if (prop) {							\
+	  std::string unit="";						\
+	  std::string kwd="";						\
+	  int parg=-1;							\
+	  long kidx=0;							\
+	  for (int iarg =argc-1; iarg>=0; --iarg) {			\
+	    if ((kidx=yarg_key(iarg))>=0) {				\
+	      /* this is a keyword */					\
+	      if (strcmp(yfind_name(kidx),"unit"))			\
+		y_error("Only the 'unit' keyword is supported");	\
+	      unit=ygets_q(--iarg);					\
+	    } else {							\
+	      if (parg!=-1)						\
+		y_error("Only one positional argument accepted");	\
+	      parg=iarg;						\
+	    }								\
+	  }								\
+	  if (yarg_nil(parg)) parg=-1;					\
+	  if (parg==-1)							\
+	    ypush_property(((gyoto_##NAME##_closure*)obj)->smptr,	\
+			   *prop, parg,					\
+			   ((gyoto_##NAME##_closure*)obj)->member,	\
+			   unit);					\
+	  else	{							\
+	    yget_property(((gyoto_##NAME##_closure*)obj)->smptr,	\
+			  *prop, parg,					\
+			   ((gyoto_##NAME##_closure*)obj)->member,	\
+			  unit);					\
+	    *ypush_##NAME()= ((gyoto_##NAME##_closure*)obj)->smptr;	\
+	  }								\
+	  return;							\
+	}								\
       long used_var=0;							\
       /* we build a yorick statement into ss */				\
       stringstream ss;							\

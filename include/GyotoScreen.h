@@ -162,7 +162,7 @@ namespace Gyoto {
  * "`pwd`/".
  *
  */
-class Gyoto::Screen : protected Gyoto::SmartPointee {
+class Gyoto::Screen : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Screen>;
 
  private:

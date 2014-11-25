@@ -35,6 +35,67 @@ namespace Gyoto {
   class FactoryMessenger;
 }
 
+/// Make an NULL-terminated array of ancestors
+/**
+ * Called automatically in GYOTO_PROPERTY_*
+ */
+#define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
+  Property const * const name##_ancestors[] = {ancestor, NULL}
+
+/// Define a new Property of type Bool
+/*
+ * Declares a static variable named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class name
+ * \param[in] name name of property if true;
+ * \param[in] namef name of property if false;
+ * \param[in] fname name of functions for setting or getting the property
+ * \param[in] ancestor pointer to next Property instance
+ */
+#define GYOTO_PROPERTY_BOOL(class, name, namef, fname, ancestor) \
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name				 \
+  (#name,					 \
+   #namef,								\
+   (Gyoto::Property::set_bool_t)&class :: fname,			\
+   (Gyoto::Property::get_bool_t)&class :: fname,			\
+   name##_ancestors)
+
+/// Define a Property of type Double
+#define GYOTO_PROPERTY_DOUBLE(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	   (Gyoto::Property::set_double_t)&class::fname,	\
+	   (Gyoto::Property::get_double_t)&class::fname,	\
+         name##_ancestors)
+
+/// Define a Property of type Double supporting unit
+#define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname, ancestor) \
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	 (Gyoto::Property::set_double_t)&class::fname,	\
+	 (Gyoto::Property::get_double_t)&class::fname,	\
+	 (Gyoto::Property::set_double_unit_t)&class::fname,	\
+	 (Gyoto::Property::get_double_unit_t)&class::fname,	\
+         name##_ancestors)
+
+/// Define class::properties and class::getProperties() 
+#define GYOTO_PROPERTY_FINALIZE(class, property)		\
+  Property const * const class::properties = &property;		\
+  Property const * class::getProperties() const {		\
+    return class::properties;					\
+ }
+
+/// Declare  class::properties and class::getProperties()
+#define GYOTO_PROPERTY \
+  static Property const * const properties;		\
+  virtual Property const * getProperties() const
+
+
+
 /**
  * \brief Object with properties
  */

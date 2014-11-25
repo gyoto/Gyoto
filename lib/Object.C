@@ -73,7 +73,7 @@ void Object::get(Property const &p, double &val, std::string const &unit) {
   if (getu) {
     val = (this->*getu)(unit);
   } else {
-    if (unit == "") throwError("Can't set this Property with unit");
+    if (unit != "") throwError("Can't get this Property with unit");
     get(p, val);
   }
 }
@@ -132,21 +132,19 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) {
   default:
     throwError("Unimplemented");
   }
+  Property const * const * parent = p.parents;
+  if (parent) {
+    for ( ; *parent; ++parent) {
+      fillProperty(fmp, **parent);
+    } 
+  }
 }
 
 void Object::fillElement(Gyoto::FactoryMessenger *fmp) {
   fmp -> setSelfAttribute("kind", kind_);
 
   Property const * prop = getProperties();
-  if (prop) {
-    fillProperty(fmp, *prop);
-    if (prop->parents) {
-      Property const * const * parent;
-      for (parent=prop->parents; *parent; ++parent) {
-	fillProperty(fmp, **parent);
-      } 
-    }
-  }
+  if (prop) fillProperty(fmp, *prop);
 }
 
 void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {

@@ -350,3 +350,46 @@ long int __ygyoto_var_idx(long id) {
   } 
   return ids[id];
 }
+
+void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
+		    Gyoto::Property const& p, int iarg,
+		    std::string name, std::string unit) {
+  switch(p.type) {
+  case Gyoto::Property::bool_t:
+    {
+      bool val;
+      ptr->get(p, val);
+      ypush_long(name==p.name?val:!val);
+    }
+    break;
+  case Gyoto::Property::double_t:
+    {
+      double val;
+      ptr->get(p, val, unit);
+      ypush_double(val);
+    }
+    break;
+  default:
+    y_error("Property type unimplemented in ypush_property()");
+   }
+}
+
+void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
+		   Gyoto::Property const& p, int iarg, std::string name,
+		   std::string unit) {
+  cerr << "dummy: should get property" << endl;
+  switch(p.type) {
+  case Gyoto::Property::bool_t:
+    {
+      bool val=ygets_l(iarg);
+      if (name != p.name) val = !val;
+      ptr->set(p, val);
+    }
+    break;
+  case Gyoto::Property::double_t:
+    ptr->set(p, ygets_d(iarg), unit);
+    break;
+  default:
+    y_error("Property type unimplemented in yget_property()");
+   }
+}

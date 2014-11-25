@@ -35,6 +35,14 @@ using namespace std ;
 using namespace Gyoto ;
 using namespace Gyoto::Metric ;
 
+GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity,
+		      Generic::properties);
+GYOTO_PROPERTY_BOOL(KerrBL, GenericIntegrator, SpecificIntegrator,
+		    genericIntegrator, &HorizonSecurity);
+GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol, &GenericIntegrator);
+GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin, &DiffTol);
+GYOTO_PROPERTY_FINALIZE(KerrBL, Spin);
+
 /*
   NB: points delicats de KerrBL:
   - z-axis problems (d'ou interet de KS? a creuser)
@@ -1230,24 +1238,4 @@ void KerrBL::observerTetrad(string const obskind,
 	       "unknown observer kind");
   }
   Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
-}
-
-#ifdef GYOTO_USE_XERCES
-void KerrBL::fillElement(Gyoto::FactoryMessenger *fmp) {
-  fmp -> setParameter("Spin", spin_);
-  Metric::Generic::fillElement(fmp);
-  fmp -> setParameter("DiffTol", difftol_);
-  fmp->setParameter(generic_integrator_?"GenericIntegrator":"SpecificIntegrator");
-  fmp -> setParameter("HorizonSecurity", drhor_);
-}
-#endif
-
-int KerrBL::setParameter(string name, string content, string unit) {
-  if      (name=="Spin")          spin          (atof(content.c_str()));
-  else if (name=="DiffTol")       difftol       (atof(content.c_str()));
-  else if (name=="GenericIntegrator") genericIntegrator(true);
-  else if (name=="SpecificIntegrator") genericIntegrator(false);
-  else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
-  else return Generic::setParameter(name, content, unit);
-  return 0;
 }

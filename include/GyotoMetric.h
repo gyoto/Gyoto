@@ -193,9 +193,7 @@ class Gyoto::Metric::Generic
 
 
  public:
-  static Property const * const properties;
-  virtual Property const * getProperties() const;
-
+  GYOTO_PROPERTY;
 
   const std::string kind() const; ///< Get kind_
   int getRefCount();

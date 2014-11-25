@@ -169,7 +169,7 @@ namespace Gyoto{
 }
 
 class Gyoto::Spectrometer::Generic
-: protected Gyoto::SmartPointee,
+: public Gyoto::SmartPointee,
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;

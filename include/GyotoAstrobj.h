@@ -184,7 +184,7 @@ namespace Gyoto{
  *
  * See introduction in the Gyoto::Astrobj namespace.
  */
-class Gyoto::Astrobj::Generic : protected Gyoto::SmartPointee {
+class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 
 

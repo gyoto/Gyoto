@@ -35,44 +35,16 @@ Register::Entry* Metric::Register_ = NULL;
 //// Gyoto::Object API
 // Keplerian/NonKeplerian
 
-#define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
-  Property const * const name##_ancestors[] = {ancestor, NULL}
+GYOTO_PROPERTY_BOOL(Metric::Generic, Keplerian, NonKeplerian,
+		    keplerian, Object::properties);
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR,
+		      deltaMaxOverR, &Keplerian);
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax, &DeltaMaxOverR);
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin, &DeltaMax);
+GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass, &DeltaMin);
 
-#define GYOTO_PROPERTY_BOOL(name, namef, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-         #namef, \
-         (Property::set_bool_t)&fname, \
-         (Property::get_bool_t)&fname, \
-         name##_ancestors)
+GYOTO_PROPERTY_FINALIZE(Metric::Generic, Mass);
 
-#define GYOTO_PROPERTY_DOUBLE(name, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-         (Property::set_double_t)&fname, \
-         (Property::get_double_t)&fname, \
-         name##_ancestors)
-
-GYOTO_PROPERTY_BOOL(Keplerian, NonKeplerian, Metric::Generic::keplerian, Object::properties);
-GYOTO_PROPERTY_DOUBLE(DeltaMaxOverR, Metric::Generic::deltaMaxOverR, &Keplerian);
-GYOTO_PROPERTY_DOUBLE(DeltaMax, Metric::Generic::deltaMax, &DeltaMaxOverR);
-GYOTO_PROPERTY_DOUBLE(DeltaMin, Metric::Generic::deltaMin, &DeltaMax);
-
-// Mass
-Property const * const _Mass_ancestors[] = {&DeltaMin, NULL};
-Property _Mass(std::string("Mass"),
-	       (Property::set_double_t)&Metric::Generic::mass,
-	       (Property::get_double_t)&Metric::Generic::mass,
-	       (Property::set_double_unit_t)&Metric::Generic::mass,
-	       (Property::get_double_unit_t)&Metric::Generic::mass,
-	       _Mass_ancestors);
-Property const * const Metric::Generic::properties = &_Mass;
-
-Property const * Metric::Generic::getProperties() const {
-  return Metric::Generic::properties;
-}
 ///
 
 Metric::Generic::Generic(const int coordkind, const std::string &name) :

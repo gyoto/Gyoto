@@ -48,7 +48,7 @@ namespace Gyoto{
  *
  * This is the central object for ray-tracing. 
  */
-class Gyoto::Photon : public Gyoto::Worldline, protected Gyoto::SmartPointee {
+class Gyoto::Photon : public Gyoto::Worldline, public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Photon>;
   // Data : 
   // -----
