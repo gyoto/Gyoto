@@ -369,6 +369,14 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       ypush_double(val);
     }
     break;
+  case Gyoto::Property::string_t:
+  case Gyoto::Property::filename_t:
+    {
+      string val;
+      ptr->get(p, val);
+      *ypush_q(0) = p_strcpy(val.c_str());
+    }
+    break;
   default:
     y_error("Property type unimplemented in ypush_property()");
    }
@@ -377,7 +385,6 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		   Gyoto::Property const& p, int iarg, std::string name,
 		   std::string unit) {
-  cerr << "dummy: should get property" << endl;
   switch(p.type) {
   case Gyoto::Property::bool_t:
     {
@@ -389,6 +396,10 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::double_t:
     ptr->set(p, ygets_d(iarg), unit);
     break;
+  case Gyoto::Property::filename_t:
+  case Gyoto::Property::string_t:
+    ptr -> set(p, string(ygets_q(iarg)));
+    return;
   default:
     y_error("Property type unimplemented in yget_property()");
    }
