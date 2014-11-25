@@ -1586,7 +1586,7 @@ void NumericalMetricLorene::setParticleProperties(Worldline * line,
   line -> setCst(cst,3);
 }
 
-void  NumericalMetricLorene::setParameter(string name,
+int  NumericalMetricLorene::setParameter(string name,
 					  string content,
 					  string unit) {
   GYOTO_DEBUG << endl;

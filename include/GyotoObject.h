@@ -82,6 +82,24 @@ namespace Gyoto {
 	 (Gyoto::Property::get_double_unit_t)&class::fname,	\
          name##_ancestors)
 
+/// Define a Property of type Filename
+#define GYOTO_PROPERTY_FILENAME(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	   (Gyoto::Property::set_string_t)&class::fname,	\
+	   (Gyoto::Property::get_string_t)&class::fname,	\
+         name##_ancestors, true)
+
+/// Define a Property of type String
+#define GYOTO_PROPERTY_STRING(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	   (Gyoto::Property::set_string_t)&class::fname,	\
+	   (Gyoto::Property::get_string_t)&class::fname,	\
+         name##_ancestors, false)
+
 /// Define class::properties and class::getProperties() 
 #define GYOTO_PROPERTY_FINALIZE(class, property)		\
   Property const * const class::properties = &property;		\
@@ -114,10 +132,10 @@ class Gyoto::Object
   void set(Property const &p, bool val);
   void set(Property const &p, std::string const &val);
   //void set(std::string const pname, double val);
-  void get(Property const &p, double &val);
-  void get(Property const &p, double &val, std::string const &unit);
-  void get(Property const &p, bool &val);
-  void set(Property const &p, std::string &val);
+  void get(Property const &p, double &val) const ;
+  void get(Property const &p, double &val, std::string const &unit) const ;
+  void get(Property const &p, bool &val) const ;
+  void get(Property const &p, std::string &val) const ;
   //void get(std::string const pname, double &val);
   Property const * property(std::string const pname) const;
   virtual Property const * getProperties() const;
@@ -182,6 +200,10 @@ int MyKind::setParameter(std::string name, std::string content, std::string unit
 			    std::string content,
 			    std::string unit);
 
+  virtual void setParameter(Gyoto::Property const &p,
+			    std::string const &name,
+			    std::string const &content,
+			    std::string const &unit);
 
 };
 
@@ -194,7 +216,7 @@ class Gyoto::Property
  private:
 
  public:
-  enum type_e {double_t, long_t, bool_t};
+  enum type_e {double_t, long_t, bool_t, string_t, filename_t};
   std::string name;
   std::string name_false;
   int type;
@@ -207,15 +229,21 @@ class Gyoto::Property
   typedef long (Object::* get_long_t)() const;
   typedef void (Object::* set_bool_t)(bool val);
   typedef bool (Object::* get_bool_t)() const;
+  typedef void (Object::* set_string_t)(std::string const&);
+  typedef std::string (Object::* get_string_t)() const;
+  typedef void (Object::* set_fname_t)(std::string const&);
+  typedef std::string (Object::* get_fname_t)() const;
   union setter_t {
     set_double_t set_double;
     set_long_t set_long;
     set_bool_t set_bool;
+    set_string_t set_string;
   };
   union getter_t {
     get_double_t get_double;
     get_long_t get_long;
     get_bool_t get_bool;
+    get_string_t get_string;
   };
   union setter_unit_t {set_double_unit_t set_double;};
   union getter_unit_t {get_double_unit_t get_double;};
@@ -242,6 +270,12 @@ class Gyoto::Property
 	   set_bool_t set_bool,
 	   get_bool_t get_bool,
 	   Property const * const * ancestors);
+
+  Property(std::string name,
+	   set_string_t set_string,
+	   get_string_t get_string,
+	   Property const * const * ancestors,
+	   bool is_filename=false);
 
   Property const * find(std::string name) const;
 

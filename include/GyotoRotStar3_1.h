@@ -60,7 +60,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
 
  public:
-
+  GYOTO_PROPERTY;
   RotStar3_1(); ///< Constructor
   RotStar3_1(const RotStar3_1& ) ;                ///< Copy constructor
   virtual ~RotStar3_1() ;        ///< Destructor
@@ -70,8 +70,13 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   void fileName(char const *); ///< Set filename_
   char const * fileName() const; ///< Get filename_
 
+  void file(std::string const &); ///< Set filename_
+  std::string file() const; ///< Get filename_
+
   void integKind(int); ///< Set integ_kind_
   int integKind() const ; ///< Get integ_kind_
+  void genericIntegrator(bool); ///< Set !integ_kind_
+  bool genericIntegrator() const ;///< Get !integ_kind_
 
   using Metric::Generic::myrk4;
 
@@ -127,10 +132,6 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
 		    const double u1[4], const double u2[4]) const ;
 
   virtual int setParameter(std::string, std::string, std::string);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
-#endif
 
 };
 

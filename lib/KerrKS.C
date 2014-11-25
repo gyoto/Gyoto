@@ -35,6 +35,13 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
+GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity,
+		      Generic::properties);
+GYOTO_PROPERTY_BOOL(KerrKS, GenericIntegrator, SpecificIntegrator,
+		    genericIntegrator, &HorizonSecurity);
+GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin, &GenericIntegrator);
+GYOTO_PROPERTY_FINALIZE(KerrKS, Spin);
+
 /*
 NOTA BENE: to improve KerrKS
 So far (March 2011) KerrKS is just a stub ; to improve it, it's necessary to imporve myrk4_adaptive, which is really obsolete (and longer!) as compared to KerrBL ; a check of cst of motion conservation should be implemented: so far, the norm behaves badly when approaching (not-so-)close to horizon, that's why drhor is chosen so big.
@@ -673,23 +680,3 @@ int KerrKS::isStopCondition(double const * const coord) const {
 
   return (r<rsink_ && rdot >0 && Tdot>0);
 }
-
-int KerrKS::setParameter(string name, string content, string unit) {
-  if (name=="Spin") spin(atof(content.c_str()));
-  else if (name=="HorizonSecurity") horizonSecurity(atof(content.c_str()));
-  else if (name=="GenericIntegrator") genericIntegrator(true);
-  else if (name=="SpecificIntegrator") genericIntegrator(false);
-  else return Generic::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void KerrKS::fillElement(Gyoto::FactoryMessenger *fmp) {
-  fmp -> setParameter("Spin", spin_);
-  Metric::Generic::fillElement(fmp);
-  fmp -> setParameter("HorizonSecurity", drhor_);
-  fmp -> setParameter(generic_integrator_?
-		      "GenericIntegrator":
-		      "SpecificIntegrator");
-}
-#endif

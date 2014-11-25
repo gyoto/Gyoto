@@ -51,15 +51,17 @@ class Gyoto::Metric::Minkowski
  private:
   
  public:
+  // Those are mere wrappers arround Generic::coordKind(), useful for
+  // declaring a boolen property using the macro GYOTO_PROPERTY_BOOL:
+  void spherical(bool);
+  bool spherical() const;
   // This is the bare minimum of what a Metric class must implement:
+  GYOTO_PROPERTY;
   Minkowski();
   virtual Minkowski* clone() const ;
+
   void gmunu(double g[4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * x) const ;
-  virtual int setParameter(std::string, std::string, std::string);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); ///< called from Factory
-#endif
 
   // Those two are implemented as examples.
   double gmunu(const double * x, int mu, int nu) const ;

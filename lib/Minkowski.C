@@ -27,6 +27,13 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
+// We create one property; its "parent" is the Generic Property list
+GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian,
+		    spherical, Generic::properties);
+// We still need to connect this (single) property to
+// Minkowski::properties and define getProperties():
+GYOTO_PROPERTY_FINALIZE(Minkowski, Spherical);
+
 // This is the minimal constructor: it just sets the coordinate kind and
 // the metric kind name.
 Minkowski::Minkowski() :
@@ -202,22 +209,10 @@ void Minkowski::observerTetrad(string const obskind,
   Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
 }
 
-
-
-// Fillelement is required to be able to export the Metric to an XML file.
-#ifdef GYOTO_USE_XERCES
-void Minkowski::fillElement(Gyoto::FactoryMessenger *fmp) {
-  fmp -> setParameter ((coordKind()==GYOTO_COORDKIND_SPHERICAL)?
-		       "Spherical":
-		       "Cartesian");
-  Generic::fillElement(fmp);
+void Minkowski::spherical(bool t) {
+  coordKind(t?GYOTO_COORDKIND_SPHERICAL:GYOTO_COORDKIND_CARTESIAN);
 }
-#endif
 
-// setParameter is the minimal interface to read data from the XML.
-int Minkowski::setParameter(string name, string content, string unit){
-  if      (name=="Spherical")     coordKind(GYOTO_COORDKIND_SPHERICAL);
-  else if (name=="Cartesian")     coordKind(GYOTO_COORDKIND_CARTESIAN);
-  else return Generic::setParameter(name, content, unit);
-  return 0;
+bool Minkowski::spherical() const {
+  return coordKind() == GYOTO_COORDKIND_SPHERICAL;
 }

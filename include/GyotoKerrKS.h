@@ -71,6 +71,7 @@ class Gyoto::Metric::KerrKS
   // Constructors - Destructor
   // -------------------------
  public: 
+  GYOTO_PROPERTY;
   KerrKS(); ///< Default constructor
   virtual KerrKS* clone () const;         ///< Copy constructor
   
@@ -114,11 +115,6 @@ class Gyoto::Metric::KerrKS
   void nullifyCoord(double coord[8]) const;
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
-
-  virtual int setParameter(std::string, std::string, std::string);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp);
-#endif
 
  public:
 

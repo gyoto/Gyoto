@@ -43,6 +43,11 @@ using namespace Lorene;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
+GYOTO_PROPERTY_FILENAME(RotStar3_1, File, file, Generic::properties);
+GYOTO_PROPERTY_BOOL(RotStar3_1, GenericIntegrator, SpecificIntegrator,
+		    genericIntegrator, &File);
+GYOTO_PROPERTY_FINALIZE(RotStar3_1, GenericIntegrator);
+
 RotStar3_1::RotStar3_1() : 
 Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),
   filename_(NULL),
@@ -78,6 +83,15 @@ RotStar3_1::~RotStar3_1()
   if (debug()) cout << "RotStar3_1 Destruction" << endl;
 }
 
+void RotStar3_1::file(std::string const &fname) {
+  cerr << "Setting file name to '" << fname << "'" << endl;
+  fileName(fname.c_str());
+}
+
+std::string RotStar3_1::file() const {
+  if (!filename_) return "";
+  return filename_;
+}
 
 void RotStar3_1::fileName(char const * lorene_res) {
   if (filename_) { delete[] filename_; filename_=NULL; }
@@ -109,6 +123,9 @@ char const * RotStar3_1::fileName() const { return filename_; }
 
 void RotStar3_1::integKind(int ik) { integ_kind_ = ik; }
 int RotStar3_1::integKind() const { return integ_kind_; }
+
+bool RotStar3_1::genericIntegrator() const {return !integ_kind_;}
+void RotStar3_1::genericIntegrator(bool t) {integ_kind_=!t;}
 
 int RotStar3_1::diff(const double coord[8], double res[8]) const
 {
@@ -757,29 +774,11 @@ double RotStar3_1::ScalarProd(const double pos[4],
   return g_tt*u1[0]*u2[0]+g_rr*u1[1]*u2[1]+g_thth*u1[2]*u2[2]+g_pp*u1[3]*u2[3]+g_tp*u1[0]*u2[3]+g_tp*u1[3]*u2[0];
 }
 
-#ifdef GYOTO_USE_XERCES
-void RotStar3_1::fillElement(Gyoto::FactoryMessenger *fmp) {
-  if (filename_) fmp -> setParameter("File", filename_);
-  fmp -> setParameter("IntegKind", integ_kind_);
-  Generic::fillElement(fmp);
-}
-
-void RotStar3_1::setParameter(string name, string content, string unit){
-  if      (name=="IntegKind")     integKind(atoi(content.c_str()));
-  else if (name=="File")          fileName(content.c_str());
-  else return Generic::setParameter(name, content, unit);
+int RotStar3_1::setParameter(string name, string content, string unit){
+  if      (name=="IntegKind") {
+    GYOTO_WARNING << "IntegKind is deprecated, please use "
+      "<GenericIntegrator/> or <SpecificIntegrator/> instead\n";
+    integKind(atoi(content.c_str()));
+  } else return Generic::setParameter(name, content, unit);
   return 0;
 }
-
-void RotStar3_1::setParameters(FactoryMessenger* fmp) {
-  string name="", content="", unit="";
-  if (fmp) {
-    while (fmp->getNextParameter(&name, &content, &unit)) {
-      if (name == "File") content = fmp -> fullPath( content );
-      GYOTO_DEBUG << "Setting \"" << name << "\" to \"" << content
-		  << "\" (in unit \"" << unit << "\")\n";
-      setParameter(name, content, unit);
-    }
-  }
-}
-#endif
