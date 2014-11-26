@@ -377,6 +377,16 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       *ypush_q(0) = p_strcpy(val.c_str());
     }
     break;
+  case Gyoto::Property::vector_double_t:
+    {
+      std::vector<double> val;
+      ptr->get(p, val);
+      size_t n=val.size();
+      long dims[]={1, long(n)};
+      double * buf = ypush_d(dims);
+      for (size_t i=0; i<n; ++i) buf[i]=val[i];
+    }
+    break;
   default:
     y_error("Property type unimplemented in ypush_property()");
    }
@@ -399,6 +409,15 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::filename_t:
   case Gyoto::Property::string_t:
     ptr -> set(p, string(ygets_q(iarg)));
+    return;
+  case Gyoto::Property::vector_double_t:
+    {
+      long n;
+      double *buf = ygeta_d(iarg, &n, NULL);
+      std::vector<double> val(n, 0.);
+      for (size_t i=0; i<n; ++i) val[i]=buf[i];
+      ptr -> set(p, val);
+    }
     return;
   default:
     y_error("Property type unimplemented in yget_property()");

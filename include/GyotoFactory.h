@@ -29,6 +29,8 @@
 #ifndef __GyotoFactory_H_
 #define __GyotoFactory_H_
 
+#include <vector>
+
 #include "GyotoConfig.h"
 
 /// Xerces internal.
@@ -388,6 +390,10 @@ class Gyoto::Factory
    * pointing to the new element. It must be deleted later.
    */
   void setParameter(std::string name, double val[], size_t nelem,
+		    xercesc::DOMElement* pel,
+		    FactoryMessenger **child = NULL);
+
+  void setParameter(std::string name, std::vector<double> const &val,
 		    xercesc::DOMElement* pel,
 		    FactoryMessenger **child = NULL);
 

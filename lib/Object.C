@@ -56,6 +56,14 @@ void Object::set(Property const &p, string const &val) {
   } else throwError("Cannot set this Property from a string");
 }
 
+void Object::set(Property const &p, vector<double> const &val) {
+  if (p.type != Property::vector_double_t)
+    throwError("Property is not a vector<double>");
+  Property::set_vector_double_t set = p.setter.set_vdouble;
+  if (!set) throwError("Can't set this Property");
+  (this->*set)(val);
+}
+
 // void Object::set(std::string const pname, double val) {
 //   Property const * const p = property(pname);
 //   if (!p) throwError ("No such Property");
@@ -105,6 +113,14 @@ void Object::get(Property const &p, string &val) const {
   }
 }
 
+void Object::get(Property const &p, vector<double> &val) const {
+  if (p.type != Property::vector_double_t)
+    throwError("Property is not a vector<double>");
+  Property::get_vector_double_t get = p.getter.get_vdouble;
+  if (!get) throwError("Can't get this Property");
+  val = (this->*get)();
+}
+
 // void Object::get(std::string const pname, double &val) {
 //   Property const * const p = property(pname);
 //   if (!p) throwError ("No such Property");
@@ -142,6 +158,13 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) {
   case Property::filename_t:
     {
       string val;
+      get(p, val);
+      fmp->setParameter(name, val);
+    }
+    break;
+  case Property::vector_double_t:
+    {
+      std::vector<double> val;
       get(p, val);
       fmp->setParameter(name, val);
     }
@@ -199,6 +222,9 @@ void Object::setParameter(Property const &p, string const &name,
   case Property::string_t:
     set(p, content);
     return;
+  case Property::vector_double_t:
+    set(p, FactoryMessenger::parseArray(content));
+    return;
   default:
     throwError("Property type unimplemented in Object::setParameter()");
   }
@@ -245,6 +271,15 @@ Property::Property(string n, set_string_t set, get_string_t get,
   : name(n), type(is_filename?filename_t:string_t), parents(ancestors) {
   setter.set_string=set;
   getter.get_string=get;
+}
+
+Property::Property(string n,
+		   set_vector_double_t set,
+		   get_vector_double_t get,
+		   Property const * const * ancestors)
+  : name(n), type(vector_double_t), parents(ancestors) {
+  setter.set_vdouble=set;
+  getter.get_vdouble=get;
 }
 
 Property const * Property::find(std::string n) const {

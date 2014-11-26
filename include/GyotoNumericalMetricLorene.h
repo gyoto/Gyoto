@@ -100,6 +100,8 @@ class Gyoto::Metric::NumericalMetricLorene
   void specifyMarginalOrbits(bool s);
   bool mapEt() const;
   void mapEt(bool s);
+  std::vector<double> refineIntegStep() const;
+  void refineIntegStep(std::vector<double> const&);
 
   char const * getFileName() const;
   Lorene::Vector** getShift_tab() const;
@@ -189,11 +191,6 @@ class Gyoto::Metric::NumericalMetricLorene
   using Generic::diff;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
-
-  virtual int setParameter(std::string, std::string, std::string);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp); /// < called from Factory
-#endif
 
 };
 

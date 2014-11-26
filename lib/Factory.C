@@ -763,6 +763,23 @@ void Factory::setParameter(std::string name, double val[],
 
 }
 
+void Factory::setParameter(std::string name,
+			   std::vector<double> const &val,
+			   DOMElement *pel, FactoryMessenger **child){
+
+  ostringstream ss;
+  ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
+  size_t n=val.size();
+  for (size_t i=1; i<n; ++i) {
+    ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
+  }
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+  el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  if (child) *child = new FactoryMessenger(this, el);
+
+}
+
 void Factory::setContent(std::string content, DOMElement *el) {
   el -> appendChild( doc_->createTextNode( X( content.c_str() ) ) );
 }
@@ -927,6 +944,11 @@ void FactoryMessenger::setParameter(std::string name, double val[], size_t n,
 				    FactoryMessenger **child){
   employer_ -> setParameter(name, val, n, element_, child);
 }
+void FactoryMessenger::setParameter(std::string name,
+				    std::vector<double> const &val,
+				    FactoryMessenger **child){
+  employer_ -> setParameter(name, val, element_, child);
+}
 
 size_t FactoryMessenger::parseArray(std::string content, double val[], size_t max_tokens)
 {
@@ -950,6 +972,29 @@ size_t FactoryMessenger::parseArray(std::string content, double val[], size_t ma
   delete [] tc;
 
   return n;
+}
+
+std::vector<double> FactoryMessenger::parseArray(std::string content)
+{
+  std::vector<double> result;
+  char const * const delim = " \t\n" ;
+  char const * const c_content=content.c_str();
+  size_t len=strlen(c_content);
+  if (len==0) return result;
+
+  size_t n=0;
+  char * const tc = new char[len+1];
+  memcpy(tc, c_content, len+1);
+  char * sub = strtok(tc, delim);
+
+  while (sub) {
+    result.push_back(Gyoto::atof(sub));
+    sub = strtok(NULL, delim);
+  }
+  
+  delete [] tc;
+
+  return result;
 }
 
 std::string FactoryMessenger::fullPath(std::string fname) {

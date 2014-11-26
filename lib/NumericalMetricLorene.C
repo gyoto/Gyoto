@@ -31,8 +31,11 @@ using namespace Gyoto::Metric;
 // Keep File first here, so it is processed last in fillElement() 
 GYOTO_PROPERTY_FILENAME(NumericalMetricLorene,
 			File, directory, Generic::properties);
+GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
+			     RefineIntegStep, refineIntegStep,
+			     &File);
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
-		      Time, initialTime, &File);
+		      Time, initialTime, &RefineIntegStep);
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
 		      Horizon, horizon, &Time);
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
@@ -1647,30 +1650,14 @@ void NumericalMetricLorene::initialTime(double t0) {initial_time_=t0;}
 double NumericalMetricLorene::horizon() const {return horizon_;}
 void NumericalMetricLorene::horizon(double r0) {horizon_=r0;}
 
-int  NumericalMetricLorene::setParameter(string name,
-					  string content,
-					  string unit) {
-  GYOTO_DEBUG << endl;
-  if (name=="RefineIntegStep"){
-    refine_=1;
-    double parms[2];
-    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
+vector<double> NumericalMetricLorene::refineIntegStep() const {
+  vector<double> v (2, r_refine_); // set both elements to r_refine_
+  v[1] = h0_refine_;               // then set the second one to h0_refine_
+  return v;
+}
+void NumericalMetricLorene::refineIntegStep(vector<double> const &v) {
+  if (v.size() != 2)
       throwError("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
-    r_refine_  = parms[0];
-    h0_refine_ = parms[1];
-  }
-  else  return Generic::setParameter(name, content, unit);
-  return 0;
+  r_refine_  = v[0];
+  h0_refine_ = v[1];
 }
-
-#ifdef GYOTO_USE_XERCES
-void NumericalMetricLorene::fillElement(Gyoto::FactoryMessenger *fmp) {
-  GYOTO_DEBUG << endl;
-  if (refine_) {
-    double parms[2] = {r_refine_, h0_refine_};
-    fmp -> setParameter("RefineIntegStep", parms, 2);
-  }
-  Generic::fillElement(fmp);
-}
-
-#endif

@@ -34,6 +34,7 @@
 #define XERCES_INCLUDE_WCHAR_H 0
 #endif
 #include <xercesc/dom/DOMElement.hpp>
+#include <vector>
 #include <string>
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
@@ -392,6 +393,9 @@ class Gyoto::FactoryMessenger {
 		    FactoryMessenger** child= NULL);
   ///< Output an array of parameters
 
+  void setParameter(std::string name, std::vector<double> const &val,
+		    FactoryMessenger** child= NULL);
+  ///< Output a vector of parameters
 
   /**
    * For instance Spectrometer::fillElement() sets its "kind"
@@ -466,6 +470,13 @@ class Gyoto::FactoryMessenger {
    */
   static size_t parseArray(std::string src, double dst[], size_t max_tokens);
 
+  /**
+   * \brief Parse string into array
+   *
+   * Parse tokens from string src, returns them into a
+   * std::vector<double>.
+   */
+  static std::vector<double> parseArray(std::string src);
 };
 
 #endif
