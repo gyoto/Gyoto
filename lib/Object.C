@@ -137,7 +137,7 @@ Property const * Object::getProperties() const {
 
 
 #ifdef GYOTO_USE_XERCES
-void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) {
+void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   string name=p.name;
   switch (p.type) {
   case Property::bool_t:
@@ -180,7 +180,7 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) {
   }
 }
 
-void Object::fillElement(Gyoto::FactoryMessenger *fmp) {
+void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute("kind", kind_);
 
   Property const * prop = getProperties();

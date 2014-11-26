@@ -84,7 +84,9 @@ SmartPointer<Spectrum::Generic> Torus::opacity() const { return opacity_; }
 void Torus::opacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
 
 double Torus::rMax() {
-  if (!rmax_set_ && rmax_==DBL_MAX) { rmax_ = 3.*(c_+sqrt(critical_value_)); }
+  if (rmax_==DBL_MAX) {
+    rmax_ = 3.*(c_+sqrt(critical_value_));
+  }
   return rmax_ ;
 }
 

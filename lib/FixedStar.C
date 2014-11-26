@@ -146,7 +146,10 @@ void FixedStar::radius(double r) {
 #   endif
     return;
   }
-  if (!rmax_set_) {
+}
+
+double FixedStar::rMax() {
+  if (rmax_==DBL_MAX) {
     switch (gg_ -> coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       rmax_=3.*(pos_[0]+radius_);
@@ -158,6 +161,7 @@ void FixedStar::radius(double r) {
       throwError("unimplemented coordinate system in FixedStar");
     } 
   }
+  return rmax_;
 }
 
 void FixedStar::setPos(const double p[3])

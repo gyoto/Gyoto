@@ -143,7 +143,6 @@ class Gyoto::Astrobj::Star :
  public:
   using UniformSphere::rMax;
   virtual double rMax() ;
-  virtual void unsetRmax();
   //  void setCoordSys(int); ///< Get coordinate system for integration
   //  int  getCoordSys(); ///< Set coordinate system for integration
   virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)

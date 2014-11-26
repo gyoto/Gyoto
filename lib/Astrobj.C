@@ -41,9 +41,18 @@ using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-Generic::Generic(string kin) :
+GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick,
+		    opticallyThin, Object::properties);
+GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ,
+		    radiativeQ, &OpticallyThin);
+GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift,
+		    redshift, &RadiativeQ);
+GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax, &Redshift);
+GYOTO_PROPERTY_FINALIZE(Astrobj::Generic, RMax);
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_(kin), flag_radtransf_(0),
+
+Generic::Generic(string kin) :
+  SmartPointee(kin), gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -53,7 +62,7 @@ Generic::Generic(string kin) :
 
 Generic::Generic() :
 
-  gg_(NULL), rmax_(DBL_MAX), rmax_set_(0), kind_("Default"), flag_radtransf_(0),
+  SmartPointee("Default"), gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -62,7 +71,7 @@ Generic::Generic() :
 }
 
 Generic::Generic(double radmax) :
-  gg_(NULL), rmax_(radmax), rmax_set_(1), kind_("Default"), flag_radtransf_(0),
+  SmartPointee("Default"), gg_(NULL), rmax_(radmax), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -72,7 +81,7 @@ Generic::Generic(double radmax) :
 
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), gg_(NULL),
-  rmax_(orig.rmax_), rmax_set_(orig.rmax_set_), kind_(orig.kind_),
+  rmax_(orig.rmax_),
   flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_),
   noredshift_(orig.noredshift_)
 {
@@ -99,64 +108,39 @@ Generic::~Generic() {
 SmartPointer<Metric::Generic> Generic::metric() const { return gg_; }
 void Generic::metric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
 
-double Generic::rMax() {
-  return rmax_;
-}
+const string Generic::kind() const { return kind_; }
 
-double Generic::rMax(string unit) {
-  return Units::FromGeometrical(rMax(), unit, gg_);
-}
-
-const string Generic::kind() const {
-  return kind_;
-}
-
-void Generic::rMax(double val) {
-  rmax_set_=1;
-  rmax_=val;
-}
-
-void Generic::rMax(double val, string unit) {
-  rMax(Units::ToGeometrical(val, unit, gg_));
-}
-
-void Generic::unsetRmax() {
-  rmax_set_=0;
-}
+double Generic::rMax() { return rmax_; }
+double Generic::rMax() const { return rmax_; }
+double Generic::rMax(string const &unit) {
+  return Units::FromGeometrical(rMax(), unit, gg_); }
+double Generic::rMax(string const &unit) const {
+  return Units::FromGeometrical(rMax(), unit, gg_); }
+void Generic::rMax(double val) { rmax_=val; }
+void Generic::rMax(double val, string const &unit) {
+  rMax(Units::ToGeometrical(val, unit, gg_)); }
 
 #ifdef GYOTO_USE_XERCES
 void Generic::fillElement(FactoryMessenger *fmp) const {
-  if (rmax_set_) fmp -> setParameter ( "RMax", rmax_ ) ;
   fmp -> metric(gg_);
-  fmp -> setSelfAttribute("kind", kind_);
-  fmp -> setParameter ( flag_radtransf_? "OpticallyThin" : "OpticallyThick");
+  Object::fillElement(fmp);
 }
 
 void Generic::setParameters(FactoryMessenger *fmp) {
-  string name="", content="", unit="";
-  if (fmp) {
-    metric(fmp->metric());
-    while (fmp->getNextParameter(&name, &content, &unit))
-      setParameter(name, content, unit);
-  }
+  if (fmp) metric(fmp->metric());
+  Object::setParameters(fmp);
 }
 #endif
 
 
-void Generic::opticallyThin(int flag) {flag_radtransf_=flag;}
-int Generic::opticallyThin() const {return flag_radtransf_;}
+void Generic::opticallyThin(bool flag) {flag_radtransf_=flag;}
+bool Generic::opticallyThin() const {return flag_radtransf_;}
 
-int Generic::setParameter(string name, string content, string unit)  {
-  char* tc = const_cast<char*>(content.c_str());
-  if (name=="Flag_radtransf")  flag_radtransf_= atoi(tc);
-  else if (name=="OpticallyThin")  flag_radtransf_= 1;
-  else if (name=="OpticallyThick")  flag_radtransf_= 0;
-  else if (name=="RMax") rMax(atof(tc), unit);
-  else if (name=="RadiativeQ") radiativeq_=1;
-  else if (name=="NoRedshift") noredshift_=1;
-  else return 1;
-  return 0;
-}
+void Generic::radiativeQ(bool flag) {radiativeq_=flag;}
+bool Generic::radiativeQ() const {return radiativeq_;}
+
+void Generic::redshift(bool flag) {noredshift_=!flag;}
+bool Generic::redshift() const {return !noredshift_;}
 
 void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 				     double* coord_obj_hit, double dt,

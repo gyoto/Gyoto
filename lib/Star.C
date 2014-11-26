@@ -109,21 +109,12 @@ void Star::getCartesian(double const * const t,
 
 
 double Star::rMax() {
-  // rmax may not be up to date. Assume it's OK if it's non-0 warning:
-  // if line is extended, need to either update rmax or reset it to 0
-  // if (debug()) cerr << "DEBUG: Star::rMax(): rmax_set_==" 
-  //                   << rmax_set_ << endl;
-  if (!rmax_set_ && !rmax_) {
+  if (rmax_==DBL_MAX) {
     size_t i;
     for (i=imin_;i<=imax_;++i) if (x1_[i]>rmax_) rmax_=x1_[i];
-    rmax_*=3.;
+    rmax_ *= 3.;
   }
   return rmax_;
-}
-
-void Star::unsetRmax() {
-  rmax_set_=0;
-  rmax_=DBL_MAX;
 }
 
 int Star::setParameter(string name, string content, string unit) {

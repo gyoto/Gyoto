@@ -122,6 +122,9 @@ namespace Gyoto {
   static Property const * const properties;		\
   virtual Property const * getProperties() const
 
+#define GYOTO_OBJECT \
+  static Property const * const properties;		\
+  virtual Property const * getProperties() const
 
 
 /**
@@ -153,7 +156,7 @@ class Gyoto::Object
   virtual Property const * getProperties() const;
 
 #ifdef GYOTO_USE_XERCES
-  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) ;
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
 
   /// Called from Factory
   /**
@@ -161,7 +164,7 @@ class Gyoto::Object
    * parameters to XML and call the Metric::fillElement(fmp) for the
    * shared properties
    */
-  virtual void fillElement(Gyoto::FactoryMessenger *fmp) ;
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 
   /**
    * \brief Main loop in Subcontractor_t function

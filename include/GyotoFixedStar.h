@@ -81,6 +81,8 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
 
+  double rMax();
+
   bool rotating() const ;
   void rotating(bool) ;
 

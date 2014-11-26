@@ -200,54 +200,36 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
 
   /**
    * Maximum distance from the center of the coordinate system at
-   * which a photon may hit the object.  Child classes may choose to
-   * update rMax at all time or to use it to cache the value, for
-   * instance when rMax() is called. External classes (Photons in
-   * particular) must use rMax() to access this information.
-   *
-   * #rmax_set_==1 means that #rmax_ was set using rMax() or the
-   * constructor. In this case, rMax() must always return this
-   * value, not recompute it.
+   * which a photon may hit the object.  Child classes may compute a
+   * decent value for #rmax_ at any time if #rmax_ is
+   * DBL_MAX. External classes (Photons in particular) must use rMax()
+   * to access this information.
    *
    * #rmax_ is in geometrical units.
    */                                         
   double rmax_; ///< Maximum distance to the center of the coordinate system [geometrical units]
 
-  /**
-   * #rmax_set_==1 means that #rmax_ was set using rMax(double r) or the
-   * constructor. In this case, rMax() must always return this
-   * value, not recompute it.
-   *
-   * Use unsetRmax() to reset rmax_set_ to 0.
-   *
-   */                                         
-  int rmax_set_; ///< Never recompute rmax: it was externally set
-
-  /**
-   * The kind should match the name of the class, e.g. "Star" for a
-   * Gyoto::Star.
-   */
-  std::string kind_; ///< Kind of object (e.g. "Star"...)
-
-  int flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
+  bool flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
   int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
   int noredshift_; ///< 1 to impose redshift factor g = 1
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
   /**
-   *  #kind_ =  "Default", #rmax_ = 0., #rmax_set_ = 0.
+   *  #kind_ =  "Default", #rmax_ = DBL_MAX
    */
   Generic(); ///< Default constructor.
 
   /**
-   *  #kind_ =  "Default", #rmax_ = radmax, #rmax_set_ = 1.
+   *  #kind_ =  "Default", #rmax_ = radmax
    */
   Generic(double radmax); ///< Set rmax in constructor.
 
   /**
-   *  #kind_ =  kind, #rmax_ = 0., #rmax_set_ = 0.
+   *  #kind_ =  kind, #rmax_ = DBL_MAX
    */
   Generic(std::string kind); ///< Set kind in constructor.
 
@@ -293,14 +275,15 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
    *  Get maximal distance from center of coordinate system at which a
    *  Photon may hit the object.
    *  
-   *  Child classes may use the rmax_ member to cache this value.
+   *  Child classes may use the #rmax_ member to cache this value, if
+   *  its current value is DBL_MAX.
    *
-   *  It can also be set using rmax(). If rmax has been used
-   *  to set rmax_, rMax() must not recompute it.
+   *  It can also be set using rMax().
    *
    *  \return rmax_ in geometrical units
    */
   virtual double rMax(); ///< Get maximal distance from center of coordinate system
+  virtual double rMax() const; ///< Get maximal distance from center of coordinate system
 
   /**
    *  Call rMax() and convert result to unit.
@@ -308,7 +291,8 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
    *  \param unit string
    *  \return double rmax converted to unit
    */
-  virtual double rMax(std::string unit); ///< Get rmax_ is specified unit
+  virtual double rMax(std::string const &unit); ///< Get rmax_ is specified unit
+  virtual double rMax(std::string const &unit) const; ///< Get rmax_ is specified unit
 
   /// Get max step constraint for adaptive integration
   /**
@@ -323,7 +307,6 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
    *  Set maximal distance from center of coordinate system at which a
    *  Photon may hit the object.
    *  
-   *  Side effect: set #rmax_set_ to 1.
    *  \param val new #rmax_ in geometrical units.
    */
   virtual void rMax(double val); ///< Set maximal distance from center of coordinate system
@@ -335,27 +318,26 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
    *  \param val #rmax_ expressed in unit "unit";
    *  \param unit string...
    */
-  virtual void rMax(double val, std::string unit); ///< Set maximal distance from center of coordinate system
-
-  /**
-   * rmax() will then be free to recompute rmax_. Astrobjs
-   * which cache rmax_ may need to update it when unrmax() is
-   * called.
-   */
-  virtual void unsetRmax() ; ///< Set rmax_set_ to 0.
+  virtual void rMax(double val, std::string const &unit); ///< Set maximal distance from center of coordinate system
 
   /**
    * Set flag indicating that radiative transfer should be integrated,
    * i.e. the object is to be considered optically thin.
    * \param flag: 1 if optically thin, 0 if optically thick.
    */
-  void opticallyThin(int flag);
+  void opticallyThin(bool flag);
   ///< Set whether the object is optically thin.
   /**
-   * See opticallyThin(int flag).
+   * See opticallyThin(bool flag).
    */
-  int opticallyThin() const ;
+  bool opticallyThin() const ;
   ///< Query whether object is optically thin.
+
+  void radiativeQ(bool flag);
+  bool radiativeQ() const ;
+
+  void redshift(bool flag);
+  bool redshift() const ;
 
   /**
    * Return a Gyoto::Quantity_t suitable as input to
@@ -368,35 +350,6 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
 
   //XML I/O
  public:
-  /**
-   * \brief Set parameter by name
-   *
-   * Assume MyKind is a subclass of Astrobj::Generic which has two
-   * members (a string StringMember and a double DoubleMember):
-   * \code
-   * int MyKind::setParameter(std::string name,
-   *                          std::string content,
-   *                          std::string unit) {
-   *   if      (name=="StringMember") setStringMember(content);
-   *   else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()),
-   *                                                  unit);
-   *   else return Generic::setParameter(name, content, unit);
-   *   return 0;
-   * }
-   * \endcode
-   * If MyKind is not a direct subclass of Generic but is a subclass
-   * of e.g. Standard, UniformSphere of ThinDisk, it should call the
-   * corresponding setParameter() implementation instead of
-   * Generic::setParameter().
-   *
-   * \param name XML name of the parameter
-   * \param content string representation of the value
-   * \param unit string representation of the unit
-   * \return 0 if this parameter is known, 1 if it is not.
-   */
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
 
 #ifdef GYOTO_USE_XERCES
   /**
