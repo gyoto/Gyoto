@@ -235,9 +235,9 @@ int Photon::hit(Astrobj::Properties *data) {
     default:
       throwError("Incompatible coordinate kind in Photon.C");
     }
+    if (rr<rmax)
+      hitt = object_ -> Impact(this, ind, data);
   }
-  if (rr<rmax)
-    hitt = object_ -> Impact(this, ind, data);
   if (hitt) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "DEBUG: Photon.C: Hit for already computed position; "
