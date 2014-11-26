@@ -52,7 +52,7 @@ class Gyoto::Metric::NumericalMetricLorene
 
  private:
   char* filename_; ///< Lorene .d data file(s) path
-  char* mapkind_; ///< Kind of Lorene mapping Map_af or Map_et
+  bool mapet_; ///< Kind of Lorene mapping: 'false' for Map_af, 'true' for Map_et
   int has_surface_; ///< 1 if the metric source has a surface
   int specify_marginalorbits_; ///< 1 if marginal orbits are specified in file
   double horizon_; ///< Value of horizon (or any innermost limit)
@@ -77,6 +77,7 @@ class Gyoto::Metric::NumericalMetricLorene
   void free(); ///< deallocate memory
 
  public:
+  GYOTO_PROPERTY;
   NumericalMetricLorene(); ///< Constructor
   NumericalMetricLorene(const NumericalMetricLorene&); ///< Copy constructor
   virtual NumericalMetricLorene* clone() const ;
@@ -86,6 +87,20 @@ class Gyoto::Metric::NumericalMetricLorene
    * Access functions to get or set private attributes
    */
   virtual void setMetricSource();
+
+  void        directory(std::string const &dir) ;
+  std::string directory() const ;
+  double initialTime() const ;
+  void   initialTime(double t0);
+  double horizon() const ;
+  void   horizon(double t0);
+  bool hasSurface() const;
+  void hasSurface(bool s);
+  bool specifyMarginalOrbits() const;
+  void specifyMarginalOrbits(bool s);
+  bool mapEt() const;
+  void mapEt(bool s);
+
   char const * getFileName() const;
   Lorene::Vector** getShift_tab() const;
   Lorene::Scalar** getLapse_tab() const;
@@ -178,7 +193,6 @@ class Gyoto::Metric::NumericalMetricLorene
   virtual int setParameter(std::string, std::string, std::string);
 #ifdef GYOTO_USE_XERCES
   virtual void fillElement(FactoryMessenger *fmp); /// < called from Factory
-  virtual void setParameters(FactoryMessenger *fmp);
 #endif
 
 };

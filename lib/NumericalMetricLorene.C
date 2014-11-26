@@ -28,10 +28,27 @@ using namespace Lorene;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
+// Keep File first here, so it is processed last in fillElement() 
+GYOTO_PROPERTY_FILENAME(NumericalMetricLorene,
+			File, directory, Generic::properties);
+GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
+		      Time, initialTime, &File);
+GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
+		      Horizon, horizon, &Time);
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
+		    HasSurface, HasNoSurface, hasSurface, &Horizon);
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
+		    SpecifyMarginalOrbits, DontSpecifyMarginalOrbits,
+		    specifyMarginalOrbits, &HasSurface);
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
+		    MapEt, MapAf,
+		    mapEt, &SpecifyMarginalOrbits);
+GYOTO_PROPERTY_FINALIZE(NumericalMetricLorene, MapEt);
+
 NumericalMetricLorene::NumericalMetricLorene() :
   WIP("Metric::NumericalMetricLorene"),
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
-  mapkind_(NULL),
+  mapet_(true),
   initial_time_(0.),
   has_surface_(0),
   specify_marginalorbits_(0),
@@ -58,7 +75,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
 
 NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   Generic(GYOTO_COORDKIND_SPHERICAL,"NumericalMetricLorene"),
-  mapkind_(NULL),
+  mapet_(o.mapet_),
   initial_time_(o.initial_time_),
   has_surface_(o.has_surface_),
   specify_marginalorbits_(o.specify_marginalorbits_),
@@ -81,7 +98,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   rmb_(o.rmb_)
 {
   GYOTO_DEBUG << endl;
-  NumericalMetricLorene::setMetricSource();
+  if (o.filename_) directory(o.filename_);
 }
 
 NumericalMetricLorene* NumericalMetricLorene::clone() const{
@@ -185,15 +202,12 @@ void NumericalMetricLorene::setMetricSource() {
     Mg3d* grid = new Mg3d(resu) ;
     Map* map;
     /* Use Map_af for collapse + Kerr + BS, Map_et for star imaging */
-    if (mapkind_=="MapEt"){
+    if (mapet_) { // Map_et case
       //Map_et* map = new Map_et(*grid, resu) ;
       map = new Map_et(*grid, resu) ;
-    }else if (mapkind_=="MapAf"){
+    } else {      // Map_af case
       //      Map_af* map = new Map_af(*grid, resu) ;
       map = new Map_af(*grid, resu) ;
-    }else{
-      cout << "MapKind= " << mapkind_ << endl;
-      throwError("In NumericalMetricLorene: bad mapping kind.");
     }
     Scalar* lapse = new Scalar(*map, *grid, resu) ;
     (*lapse).std_spectral_base() ;
@@ -1586,43 +1600,58 @@ void NumericalMetricLorene::setParticleProperties(Worldline * line,
   line -> setCst(cst,3);
 }
 
+void NumericalMetricLorene::directory(std::string const &dir) {
+  char const * const cdir=dir.c_str();
+  filename_ = new char[strlen(cdir)+1];
+  strcpy(filename_, cdir);
+  setMetricSource();
+}
+
+std::string NumericalMetricLorene::directory() const {
+  return filename_?string(filename_):string("");
+}
+
+bool NumericalMetricLorene::hasSurface() const {return  has_surface_;}
+void NumericalMetricLorene::hasSurface(bool s) {
+  has_surface_ = s;
+  if (filename_!=NULL){
+    throwError("In NumericalMetricLorene::setParameter "
+	       "please provide Surface information before File in XML");
+  }
+}
+
+bool NumericalMetricLorene::specifyMarginalOrbits() const {
+  return specify_marginalorbits_;
+}
+void NumericalMetricLorene::specifyMarginalOrbits(bool s) {
+  specify_marginalorbits_=s;
+  if (filename_!=NULL){
+    throwError("In NumericalMetricLorene::setParameter "
+	       "please provide Marginal orbits information "
+	       "before File in XML");
+  }
+}
+
+bool NumericalMetricLorene::mapEt() const {return  mapet_;}
+void NumericalMetricLorene::mapEt(bool s) {
+  mapet_ = s;
+  if (filename_!=NULL){
+    throwError("In NumericalMetricLorene::setParameter "
+	       "please provide MapET/MapAF information before File in XML");
+  }
+}
+
+double NumericalMetricLorene::initialTime() const {return initial_time_;}
+void NumericalMetricLorene::initialTime(double t0) {initial_time_=t0;}
+
+double NumericalMetricLorene::horizon() const {return horizon_;}
+void NumericalMetricLorene::horizon(double r0) {horizon_=r0;}
+
 int  NumericalMetricLorene::setParameter(string name,
 					  string content,
 					  string unit) {
   GYOTO_DEBUG << endl;
-  if (name=="File") {
-    if (mapkind_!="MapEt" && mapkind_!="MapAf"){
-      throwError("In NumericalMetricLorene::setParameter "
-		 "please provide Map kind before File in XML");
-    }
-    filename_ = new char[strlen(content.c_str())+1];
-    strcpy(filename_,content.c_str());
-    setMetricSource();
-  }
-  else if (name=="MapEt") {
-    mapkind_="MapEt";
-  }
-  else if (name=="MapAf") {
-    mapkind_="MapAf";
-  }
-  else if (name=="Time") initial_time_=atof(content.c_str());
-  else if (name=="HasSurface") {
-    if (filename_!=NULL){
-      throwError("In NumericalMetricLorene::setParameter "
-		 "please provide Surface information before File in XML");
-    }
-    has_surface_=1;
-  }
-  else if (name=="SpecifyMarginalOrbits") {
-    if (filename_!=NULL){
-      throwError("In NumericalMetricLorene::setParameter "
-		 "please provide Marginel orbits information "
-		 "before File in XML");
-    }
-    specify_marginalorbits_=1;
-  }
-  else if (name=="Horizon") horizon_=atof(content.c_str());
-  else if (name=="RefineIntegStep"){
+  if (name=="RefineIntegStep"){
     refine_=1;
     double parms[2];
     if (FactoryMessenger::parseArray(content, parms, 2) != 2)
@@ -1637,33 +1666,11 @@ int  NumericalMetricLorene::setParameter(string name,
 #ifdef GYOTO_USE_XERCES
 void NumericalMetricLorene::fillElement(Gyoto::FactoryMessenger *fmp) {
   GYOTO_DEBUG << endl;
-  fmp -> setParameter("File", filename_);
-  if      (!strcmp(mapkind_, "MapEt")) fmp->setParameter("MapEt");
-  else if (!strcmp(mapkind_, "MapAf")) fmp->setParameter("MapAf");
-  fmp -> setParameter("Time", initial_time_);
-  if (has_surface_)
-    fmp -> setParameter("HasSurface");
-  if (specify_marginalorbits_)
-    fmp -> setParameter("SpecifyMarginalOrbits");
-  fmp -> setParameter("Horizon", horizon_);
   if (refine_) {
     double parms[2] = {r_refine_, h0_refine_};
     fmp -> setParameter("RefineIntegStep", parms, 2);
   }
   Generic::fillElement(fmp);
-}
-
-void NumericalMetricLorene::setParameters(FactoryMessenger* fmp) {
-  GYOTO_DEBUG << endl;
-  string name="", content="", unit="";
-  if (fmp) {
-    while (fmp->getNextParameter(&name, &content, &unit)) {
-      if (name == "File") content = fmp -> fullPath( content );
-      GYOTO_DEBUG << "Setting \"" << name << "\" to \"" << content
-		  << "\" (in unit \"" << unit << "\")\n";
-      setParameter(name, content, unit);
-    }
-  }
 }
 
 #endif
