@@ -114,7 +114,6 @@ LD_EXE=$(CXX) $(LDFLAGS) $(PLUG_EXPORT)
 DEST_PKG_INSTALLED_DIR=$(DEST_Y_SITE)/packages/installed
 
 all: gyoto.so gyoto_std.so
-	cp yorick1 yorick
 
 gyoto_std.so: stdplug/gyoto_std.so
 	cp stdplug/gyoto_std.so ./
@@ -124,20 +123,18 @@ stdplug/gyoto_std.so: @srcdir@/stdplug/*.C
 
 gyoto.so: gyoto.i $(OBJS)
 
-yorick: yorick1
-	cp yorick1 yorick
 custom.i: @srcdir@/custom1.i
 	cp $< $@
 
-check-dll: $(PKG_DLL) check.i yorick custom.i
+check-dll: $(PKG_DLL) check.i custom.i
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
-	./yorick -i check.i
+	./yorick1 -i check.i
 
-check-mpi: $(PKG_DLL) check-mpi.i yorick custom.i
+check-mpi: $(PKG_DLL) check-mpi.i custom.i
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
-	./yorick -i check-mpi.i
+	./yorick1 -i check-mpi.i
 
 install::
 	cd stdplug; make install
@@ -162,11 +159,10 @@ uninstall::
 clean:: 
 	cd stdplug; $(Y_EXE) -batch make.i; make clean
 	rm -f gyoto_std.so example-patterndisk.fits.gz example-patterndisk.xml
-	cp yorick1 yorick
 
 distclean:: $(Y_EXE)
 	cd stdplug; $(Y_EXE) -batch make.i; make distclean
-	-rm yorick custom.i
+	-rm custom.i
 
 %: ;
 
