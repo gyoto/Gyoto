@@ -9,123 +9,132 @@ using namespace Gyoto ;
 
 GYOTO_PROPERTY_FINALIZE(Object, NULL);
 
+/// Value
+
+Property::Value::Value() {}
+Property::Value::~Value() {}
+
+Property::Value::Value(double val) : Double(val) {}
+Property::Value::operator double() const {return Double;}
+
+Property::Value::Value(bool val) : Bool(val) {}
+Property::Value::operator bool() const {return Bool;}
+
+Property::Value::Value(long val) : Long(val) {}
+Property::Value::operator long() const {return Long;}
+
+Property::Value::Value(std::string val) : String(val) {}
+Property::Value::operator std::string() const {return String;}
+
+Property::Value::Value(std::vector<double> val) : VDouble(val) {}
+Property::Value::operator std::vector<double>() const {return VDouble;}
+
+/// Object
+
 Gyoto::Object::Object(std::string const &name):kind_(name) {}
 Gyoto::Object::Object():kind_("") {}
 Gyoto::Object::Object(Object const &o):kind_(o.kind_) {}
 Gyoto::Object::~Object() {}
 
 
+void Object::set(Property const &p,
+		 Property::Value const &val,
+		 std::string const &unit) {
 
-void Object::set(Property const &p, double val) {
-  if (p.type != Property::double_t)
-    throwError("Property is no a double");
-  Property::set_double_t set = p.setter.set_double;
-  if (!set) throwError("Can't set this Property");
-  (this->*set)(val);
-}
-
-void Object::set(Property const &p, double val, std::string const &unit) {
-  if (p.type != Property::double_t)
-    throwError("Property is no a double");
-  Property::set_double_unit_t setu = p.setter_unit.set_double;
-  if (setu) {
-    (this->*setu)(val, unit);
-  } else {
-    if (unit != "") throwError("Can't set this property with unit");
-    set(p, val);
+  if (p.type == Property::double_t) {
+    Property::set_double_unit_t setu = p.setter_unit.set_double;
+    if (setu) {
+      (this->*setu)(val, unit);
+    } else {
+      if (unit != "") throwError("Can't set this property with unit");
+      set(p, val);
+    }
+    return;
   }
+
+  if (unit != "")
+    throwError("Can't set this property with unit (not a double)");
+
+  set(p, val);
+  return;
+
 }
 
-void Object::set(Property const &p, bool val) {
-  if (p.type != Property::bool_t)
-    throwError("Property is no a bool");
-  Property::set_bool_t set = p.setter.set_bool;
-  if (!set) throwError("Can't set this Property");
-  (this->*set)(val);
-}
-
-void Object::set(Property const &p, string const &val) {
-  if (p.type == Property::bool_t) {
-    cerr << "Object::set("<<p.name<<", "<<val<<")"<<std::endl<<std::endl;
-    set(p, val==p.name);
-  } else if (   p.type == Property::string_t
-	     || p.type == Property::filename_t) {
-    Property::set_string_t set = p.setter.set_string;
-    if (!set) throwError("Can't set this Property");
-    (this->*set)(val);
-  } else throwError("Cannot set this Property from a string");
-}
-
-void Object::set(Property const &p, vector<double> const &val) {
-  if (p.type != Property::vector_double_t)
-    throwError("Property is not a vector<double>");
-  Property::set_vector_double_t set = p.setter.set_vdouble;
-  if (!set) throwError("Can't set this Property");
-  (this->*set)(val);
-}
-
-// void Object::set(std::string const pname, double val) {
-//   Property const * const p = property(pname);
-//   if (!p) throwError ("No such Property");
-//   set(*p, val);
-// }
-
-void Object::get(Property const &p, double &val) const {
-  if (p.type != Property::double_t)
-    throwError("Property is no a double");
-  Property::get_double_t get = p.getter.get_double;
-  if (!get) throwError("Can't get this Property");
-  val = (this->*get)();
-}
-
-void Object::get(Property const &p, double &val, std::string const &unit) const {
-  if (p.type != Property::double_t)
-    throwError("Property is no a double");
-  Property::get_double_unit_t getu = p.getter_unit.get_double;
-  if (getu) {
-    val = (this->*getu)(unit);
-  } else {
-    if (unit != "") throwError("Can't get this Property with unit");
-    get(p, val);
+void Object::set(Property const &p, Property::Value const &val) {
+# define ___local_case(type)			\
+  case Property::type##_t:			\
+    {						\
+      Property::set_##type##_t set = p.setter.set_##type; \
+      if (!set) throwError("Can't set this Property");	\
+      (this->*set)(val);				\
+    }							\
+    break
+  
+  switch (p.type) {
+    ___local_case(double);
+    ___local_case(bool);
+    ___local_case(long);
+  case Property::filename_t:
+    ___local_case(string);
+  case Property::vector_double_t:
+    {
+      Property::set_vector_double_t set = p.setter.set_vdouble;
+      if (!set) throwError("Can't set this Property");
+      (this->*set)(val);
+    }
+    break;
+  default:
+    throwError("Unimplemented Property type in Object::set");
   }
+# undef ___local_case
 }
 
+Property::Value Object::get(Property const &p,
+			    std::string const &unit) const {
 
-void Object::get(Property const &p, bool &val) const {
-  if (p.type != Property::bool_t)
-    throwError("Property is no a bool");
-  Property::get_bool_t get = p.getter.get_bool;
-  if (!get) throwError("Can't get this Property");
-  val = (this->*get)();
-}
-
-void Object::get(Property const &p, string &val) const {
-  if (p.type == Property::bool_t) {
-    bool bval;
-    get(p, bval);
-    if (bval) val=p.name;
-    else val=p.name_false;
-  } else if (   p.type == Property::string_t
-	     || p.type == Property::filename_t) {
-    Property::get_string_t get = p.getter.get_string;
-    if (!get) throwError("Can't get this Property as a string");
-    val = (this->*get)();
+  if (p.type == Property::double_t) {
+    Property::get_double_unit_t getu = p.getter_unit.get_double;
+    if (getu) return (this->*getu)(unit);
+    if (unit != "") throwError("Can't get this property with unit");
+    return get(p);
   }
+
+  if (unit != "")
+    throwError("Can't set this property with unit (not a double)");
+
+  return get(p);
 }
 
-void Object::get(Property const &p, vector<double> &val) const {
-  if (p.type != Property::vector_double_t)
-    throwError("Property is not a vector<double>");
-  Property::get_vector_double_t get = p.getter.get_vdouble;
-  if (!get) throwError("Can't get this Property");
-  val = (this->*get)();
-}
+Property::Value Object::get(Property const &p) const {
+# define ___local_case(type) \
+  case Property::type##_t:     \
+    {			     \
+    Property::get_##type##_t get = p.getter.get_##type;	\
+    if (!get) throwError("Can't get this Property");	\
+    val = (this->*get)();				\
+    }							\
+    break
 
-// void Object::get(std::string const pname, double &val) {
-//   Property const * const p = property(pname);
-//   if (!p) throwError ("No such Property");
-//   get(*p, val);
-// }
+  Property::Value val;
+  switch (p.type) {
+    ___local_case(bool);
+    ___local_case(double);
+    ___local_case(long);
+  case Property::filename_t:
+    ___local_case(string);
+  case Property::vector_double_t:
+    {
+      Property::get_vector_double_t get = p.getter.get_vdouble;
+      if (!get) throwError("Can't get this Property");
+      val = (this->*get)();
+    }
+    break;
+  default:
+    throwError("Unimplemented Property type in Object::get");
+  }
+  return val;
+# undef ___local_case
+}
 
 Property const * Object::property(std::string const pname) const {
   return getProperties() -> find(pname);
@@ -136,33 +145,17 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   string name=p.name;
   switch (p.type) {
   case Property::bool_t:
-    {
-      bool val;
-      get(p, val);
-      fmp->setParameter(val?name:p.name_false);
-    }
+    fmp->setParameter(get(p)?name:p.name_false);
     break;
   case Property::double_t:
-    {
-      double val;
-      get(p, val);
-      fmp->setParameter(name, val);
-    }
+    fmp->setParameter(name, double(get(p)));
     break;
   case Property::string_t:
   case Property::filename_t:
-    {
-      string val;
-      get(p, val);
-      fmp->setParameter(name, val);
-    }
+    fmp->setParameter(name, std::string(get(p)));
     break;
   case Property::vector_double_t:
-    {
-      std::vector<double> val;
-      get(p, val);
-      fmp->setParameter(name, val);
-    }
+    fmp->setParameter(name, get(p).VDouble);
     break;
   default:
     throwError("Property type unimplemented in Object::fillProperty()");
@@ -206,23 +199,26 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 
 void Object::setParameter(Property const &p, string const &name,
 			  string const & content, string const & unit) {
+  Property::Value val;
   switch (p.type) {
   case Property::bool_t:
-    Object::set(p, name==p.name);
-    return;
+    val = (name==p.name);
+    break;
   case Property::double_t:
-    set(p, atof(content.c_str()), unit);
+    val = atof(content.c_str());
+    set(p, val, unit);
     return;
   case Property::filename_t:
   case Property::string_t:
-    set(p, content);
-    return;
+    val = content;
+    break;
   case Property::vector_double_t:
-    set(p, FactoryMessenger::parseArray(content));
-    return;
+    val = FactoryMessenger::parseArray(content);
+    break;
   default:
     throwError("Property type unimplemented in Object::setParameter()");
   }
+  set(p, val);
 }
 
 int Object::setParameter(string name, string content, string unit) {

@@ -354,37 +354,30 @@ long int __ygyoto_var_idx(long id) {
 void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		    Gyoto::Property const& p, int iarg,
 		    std::string name, std::string unit) {
+  Gyoto::Property::Value val;
+  if (p.type == Gyoto::Property::double_t)
+    val = ptr->get(p, unit);
+  else
+    val = ptr->get(p);
+
   switch(p.type) {
   case Gyoto::Property::bool_t:
-    {
-      bool val;
-      ptr->get(p, val);
-      ypush_long(name==p.name?val:!val);
-    }
+    ypush_long(name==p.name?bool(val):!val);
     break;
   case Gyoto::Property::double_t:
-    {
-      double val;
-      ptr->get(p, val, unit);
-      ypush_double(val);
-    }
+    ypush_double(val);
     break;
   case Gyoto::Property::string_t:
   case Gyoto::Property::filename_t:
-    {
-      string val;
-      ptr->get(p, val);
-      *ypush_q(0) = p_strcpy(val.c_str());
-    }
+    *ypush_q(0) = p_strcpy(string(val).c_str());
     break;
   case Gyoto::Property::vector_double_t:
     {
-      std::vector<double> val;
-      ptr->get(p, val);
-      size_t n=val.size();
+      std::vector<double> vval = val;
+      size_t n = vval.size();
       long dims[]={1, long(n)};
       double * buf = ypush_d(dims);
-      for (size_t i=0; i<n; ++i) buf[i]=val[i];
+      for (size_t i=0; i<n; ++i) buf[i]=vval[i];
     }
     break;
   default:
@@ -395,31 +388,32 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		   Gyoto::Property const& p, int iarg, std::string name,
 		   std::string unit) {
+  Gyoto::Property::Value val;
   switch(p.type) {
   case Gyoto::Property::bool_t:
     {
-      bool val=ygets_l(iarg);
+      val=ygets_l(iarg);
       if (name != p.name) val = !val;
-      ptr->set(p, val);
     }
     break;
   case Gyoto::Property::double_t:
     ptr->set(p, ygets_d(iarg), unit);
-    break;
+    return;
   case Gyoto::Property::filename_t:
   case Gyoto::Property::string_t:
-    ptr -> set(p, string(ygets_q(iarg)));
-    return;
+    val =  string(ygets_q(iarg));
+    break;
   case Gyoto::Property::vector_double_t:
     {
       long n;
       double *buf = ygeta_d(iarg, &n, NULL);
-      std::vector<double> val(n, 0.);
-      for (size_t i=0; i<n; ++i) val[i]=buf[i];
-      ptr -> set(p, val);
+      std::vector<double> vval(n, 0.);
+      for (size_t i=0; i<n; ++i) vval[i]=buf[i];
+      val = vval;
     }
-    return;
+    break;
   default:
     y_error("Property type unimplemented in yget_property()");
    }
+  ptr->set(p, val);
 }
