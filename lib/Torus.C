@@ -23,7 +23,7 @@
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoMetric.h"
-#include "GyotoPhoton.h"
+#include "GyotoProperty.h"
 #include "GyotoFactoryMessenger.h"
 
 #include <float.h>
@@ -34,6 +34,16 @@
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 using namespace std;
+
+GYOTO_PROPERTY_DOUBLE(Torus,
+		      LargeRadius, largeRadius, Standard::properties);
+GYOTO_PROPERTY_DOUBLE(Torus,
+		      SmallRadius, smallRadius, &LargeRadius);
+GYOTO_PROPERTY_SPECTRUM(Torus,
+			Opacity, opacity, &SmallRadius);
+GYOTO_PROPERTY_SPECTRUM(Torus,
+			Spectrum, spectrum, &Opacity);
+GYOTO_PROPERTY_FINALIZE(Torus, &::Spectrum);
 
 Torus::Torus() : Standard("Torus"),
 	  c_(3.5)
@@ -154,59 +164,3 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
   }
   gg_ -> circularVelocity(pos2, vel);
 }
-
-int Torus::setParameter(std::string name,
-			std::string content,
-			std::string unit) {
-  if      (name=="LargeRadius") largeRadius(atof(content.c_str()), unit);
-  else if (name=="SmallRadius") smallRadius(atof(content.c_str()), unit);
-  else return Standard::setParameter(name, content, unit);
-  return 0;
-}
-
-
-#ifdef GYOTO_USE_XERCES
-void Torus::fillElement(FactoryMessenger *fmp) const {
-  FactoryMessenger * childfmp=NULL;
-
-  fmp -> metric (gg_) ;
-  fmp -> setParameter ("LargeRadius", c_);
-  fmp -> setParameter ("SmallRadius", sqrt(critical_value_));
-
-  childfmp = fmp -> makeChild ( "Spectrum" );
-  spectrum_ -> fillElement(childfmp);
-  delete childfmp;
-
-  childfmp = fmp -> makeChild ( "Opacity" );
-  opacity_ -> fillElement(childfmp);
-  delete childfmp;
-
-  Standard::fillElement(fmp);
-}
-
-void Torus::setParameters(FactoryMessenger* fmp) {
-
-  string name="", content="", unit="";
-  SmartPointer<Metric::Generic> gg = NULL;
-  SmartPointer<Spectrum::Generic> sp = NULL;
-  FactoryMessenger * child = NULL;
-
-  metric(fmp->metric());
-
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    if (name=="Spectrum") {
-      content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      spectrum( (*Spectrum::getSubcontractor(content))(child) );
-      delete child;
-    }
-    else if (name=="Opacity") {
-      content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      opacity( (*Spectrum::getSubcontractor(content))(child) );
-      delete child;
-    }
-    else setParameter(name, content, unit);
-  }
-}
-#endif

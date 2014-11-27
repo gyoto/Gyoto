@@ -66,6 +66,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
   /**
    *  kind_ =  "Torus", c_ = 3.5, a_=0.5
    */
@@ -141,17 +142,6 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 
   using Standard::rMax;
   virtual double rMax();
-
-  //XML I/O
- public:
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
-
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  virtual void setParameters(FactoryMessenger *fmp) ;
-#endif
   
   // Outputs
   // -------
