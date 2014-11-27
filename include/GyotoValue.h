@@ -33,6 +33,7 @@
 
 namespace Gyoto {
   namespace Metric {class Generic;}
+  namespace Spectrum {class Generic;}
 }
 
 class Gyoto::Value {
@@ -65,6 +66,10 @@ class Gyoto::Value {
   Gyoto::SmartPointer<Gyoto::Metric::Generic> Metric;
   Value(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
   operator Gyoto::SmartPointer<Gyoto::Metric::Generic>();
+
+  Gyoto::SmartPointer<Gyoto::Spectrum::Generic> Spectrum;
+  Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>);
+  operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>();
 };
 
 #endif

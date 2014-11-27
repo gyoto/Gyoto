@@ -4,6 +4,7 @@
 #include "GyotoError.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMetric.h"
+#include "GyotoSpectrum.h"
 
 #include <iostream>
 
@@ -65,6 +66,7 @@ void Object::set(Property const &p, Value val) {
     }
     break;
     ___local_case(metric);
+    ___local_case(spectrum);
   default:
     throwError("Unimplemented Property type in Object::set");
   }
@@ -112,6 +114,7 @@ Value Object::get(Property const &p) const {
     }
     break;
     ___local_case(metric);
+    ___local_case(spectrum);
   default:
     throwError("Unimplemented Property type in Object::get");
   }
@@ -125,6 +128,7 @@ Property const * Object::property(std::string const pname) const {
 
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  FactoryMessenger * childfmp=NULL;
   string name=p.name;
   switch (p.type) {
   case Property::bool_t:
@@ -142,6 +146,11 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     break;
   case Property::metric_t:
     fmp->metric(get(p));
+    break;
+  case Property::spectrum_t:
+    childfmp = fmp -> makeChild ( name );
+    get(p).Spectrum -> fillElement(childfmp);
+    delete childfmp;
     break;
   default:
     throwError("Property type unimplemented in Object::fillProperty()");
@@ -163,6 +172,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
 
 void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="", unit="";
+  FactoryMessenger * child = NULL;
   if (fmp)
     while (fmp->getNextParameter(&name, &content, &unit)) {
       GYOTO_DEBUG << "Setting '" << name << "' to '" << content
@@ -176,6 +186,12 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	switch (prop->type) {
 	case Property::metric_t:
 	  set(*prop, fmp->metric());
+	  break;
+	case Property::spectrum_t:
+	  content = fmp -> getAttribute("kind");
+	  child = fmp -> getChild();
+	  set(*prop, (*Spectrum::getSubcontractor(content))(child) );
+	  delete child;
 	  break;
 	case Property::filename_t:
 	  content = fmp->fullPath(content);

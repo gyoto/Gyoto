@@ -385,6 +385,9 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::metric_t:
     *ypush_Metric() = val.Metric;
     break;
+  case Gyoto::Property::spectrum_t:
+    *ypush_Spectrum() = val.Spectrum;
+    break;
   default:
     y_error("Property type unimplemented in ypush_property()");
    }
@@ -419,6 +422,9 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
     break;
   case Gyoto::Property::metric_t:
     val = *yget_Metric(iarg);
+    break;
+  case Gyoto::Property::spectrum_t:
+    val = *yget_Spectrum(iarg);
     break;
   default:
     y_error("Property type unimplemented in yget_property()");

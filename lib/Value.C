@@ -1,5 +1,6 @@
 #include "GyotoValue.h"
 #include "GyotoMetric.h"
+#include "GyotoSpectrum.h"
 #include <iostream>
 using namespace Gyoto ;
 using namespace std ;
@@ -25,9 +26,14 @@ Value::Value(std::vector<double> val) : VDouble(val) {}
 Value::operator std::vector<double>() const {return VDouble;}
 
 Value::Value(Gyoto::SmartPointer<Gyoto::Metric::Generic> p)
-  : Metric(p) {cerr << "In Value constructor: Metric==" << Metric() << endl;}
+  : Metric(p) {}
 Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>()
 { return Metric; }
+
+Value::Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic> p)
+  : Spectrum(p) {}
+Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>()
+{ return Spectrum; }
 
 Value& Value::operator=(Value const &right) {
 # define ___local_case(member) member = right.member
@@ -37,6 +43,7 @@ Value& Value::operator=(Value const &right) {
   ___local_case(String);
   ___local_case(VDouble);
   ___local_case(Metric);
+  ___local_case(Spectrum);
   return *this;
 # undef ___local_case
 }

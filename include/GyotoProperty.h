@@ -34,6 +34,7 @@ namespace Gyoto {
   class Object;
   class Property;
   namespace Metric { class Generic; }
+  namespace Spectrum { class Generic; }
   template <class T> class SmartPointer;
 }
 
@@ -120,6 +121,15 @@ namespace Gyoto {
 	 (Gyoto::Property::get_metric_t)&class::fname,			\
 	name##_ancestors)
 
+/// Define a Property of type Gyoto::Spectrum::Generic
+#define GYOTO_PROPERTY_SPECTRUM(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor);		\
+  Property const name						\
+        (#name,								\
+	 (Gyoto::Property::set_spectrum_t)&class::fname,		\
+	 (Gyoto::Property::get_spectrum_t)&class::fname,		\
+	name##_ancestors)
+
 /// Define class::properties and class::getProperties() 
 #define GYOTO_PROPERTY_FINALIZE(class, ancestor)		\
   Property const * const class::properties = ancestor;		\
@@ -136,7 +146,7 @@ class Gyoto::Property
 
  public:
   enum type_e {double_t, long_t, bool_t, string_t, filename_t,
-	       vector_double_t, metric_t};
+	       vector_double_t, metric_t, spectrum_t};
   std::string name;
   std::string name_false;
   int type;
@@ -161,6 +171,11 @@ class Gyoto::Property
   typedef Gyoto::SmartPointer<Gyoto::Metric::Generic>
     (Object::* get_metric_t)() const;
 
+  typedef void (Object::* set_spectrum_t)
+    (Gyoto::SmartPointer<Gyoto::Spectrum::Generic>);
+  typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
+    (Object::* get_spectrum_t)() const;
+
   union setter_t {
     set_double_t set_double;
     set_long_t set_long;
@@ -168,6 +183,7 @@ class Gyoto::Property
     set_string_t set_string;
     set_vector_double_t set_vdouble;
     set_metric_t set_metric;
+    set_spectrum_t set_spectrum;
   };
   union getter_t {
     get_double_t get_double;
@@ -176,6 +192,7 @@ class Gyoto::Property
     get_string_t get_string;
     get_vector_double_t get_vdouble;
     get_metric_t get_metric;
+    get_spectrum_t get_spectrum;
   };
   union setter_unit_t {set_double_unit_t set_double;};
   union getter_unit_t {get_double_unit_t get_double;};
@@ -217,6 +234,11 @@ class Gyoto::Property
   Property(std::string name,
 	   set_metric_t set_metric,
 	   get_metric_t get_metric,
+	   Property const * const * ancestors);
+
+  Property(std::string name,
+	   set_spectrum_t set_spectrum,
+	   get_spectrum_t get_spectrum,
 	   Property const * const * ancestors);
 
   Property const * find(std::string name) const;

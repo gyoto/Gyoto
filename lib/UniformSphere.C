@@ -24,6 +24,7 @@
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoConverters.h"
+#include "GyotoProperty.h"
 
 #include <iostream>
 #include <cmath>
@@ -36,6 +37,24 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_DOUBLE(UniformSphere, Radius, radius, Standard::properties);
+GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha, &Radius);
+GYOTO_PROPERTY_DOUBLE(UniformSphere,
+		      DeltaMaxOverRadius, deltaMaxOverRadius, &Alpha);
+GYOTO_PROPERTY_DOUBLE(UniformSphere,
+		      DeltaMaxOverDistance, deltaMaxOverDistance,
+		      &DeltaMaxOverRadius);
+GYOTO_PROPERTY_BOOL(UniformSphere,
+		    IsotropicEmittedIntensity,
+		    TrueEmittedIntensity,
+		    isotropic, &DeltaMaxOverDistance);
+GYOTO_PROPERTY_SPECTRUM(UniformSphere,
+			Opacity, opacity, &IsotropicEmittedIntensity);
+GYOTO_PROPERTY_SPECTRUM(UniformSphere,
+			Spectrum, spectrum, &Opacity);
+GYOTO_PROPERTY_FINALIZE(UniformSphere, &::Spectrum);
+
 
 #define GYOTO_USPH_DELTAMAX_OVER_RAD 0.1
 #define GYOTO_USPH_DELTAMAX_OVER_DST 0.1
@@ -57,8 +76,9 @@ UniformSphere::UniformSphere(string kin) :
   // also initial safety_value_ etc.
   radius(0.);
 
-  spectrum_ = new Spectrum::BlackBody(); 
-  opacity_ = new Spectrum::PowerLaw(0., 1.); 
+  spectrum(new Spectrum::BlackBody()); 
+  opacity(new Spectrum::PowerLaw(0., 1.)); 
+  opticallyThin(false);
 }
 
 UniformSphere::UniformSphere(string kin,
@@ -74,9 +94,9 @@ UniformSphere::UniformSphere(string kin,
   // also initialize safety_value_ etc.
   radius(rad);
 
-  spectrum_ = new Spectrum::BlackBody(); 
-  opacity_ = new Spectrum::PowerLaw(0., 1.); 
-
+  spectrum(new Spectrum::BlackBody()); 
+  opacity(new Spectrum::PowerLaw(0., 1.)); 
+  opticallyThin(false);
   gg_=met;
 
 }
@@ -111,7 +131,10 @@ SmartPointer<Spectrum::Generic> UniformSphere::spectrum() const { return spectru
 void UniformSphere::spectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 
 SmartPointer<Spectrum::Generic> UniformSphere::opacity() const { return opacity_; }
-void UniformSphere::opacity(SmartPointer<Spectrum::Generic> sp) {opacity_=sp;}
+void UniformSphere::opacity(SmartPointer<Spectrum::Generic> sp) {
+  opticallyThin(sp);
+  opacity_=sp;
+}
 
 
 double UniformSphere::operator()(double const coord[4]) {
@@ -241,82 +264,14 @@ void UniformSphere::radius(double r, std::string unit) {
   radius(Units::ToGeometrical(r, unit, gg_));
 }
 
-double UniformSphere::deltaMaxOverRadius() {return dltmor_;}
+double UniformSphere::deltaMaxOverRadius() const {return dltmor_;}
 void UniformSphere::deltaMaxOverRadius(double f) {dltmor_=f;}
 
-double UniformSphere::deltaMaxOverDistance() {return dltmod_;}
+double UniformSphere::deltaMaxOverDistance() const {return dltmod_;}
 void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
 
-int UniformSphere::setParameter(string name, string content, string unit) {
-  if (name=="Radius") radius(atof(content.c_str()), unit);
-  else if (name=="IsotropicEmittedIntensity") isotropic_=1;
-  else if (name=="Alpha") alpha_=atof(content.c_str());
-  else if (name=="DeltaMaxOverRadius") deltaMaxOverRadius(atof(content.c_str()));
-  else if (name=="DeltaMaxOverDistance") deltaMaxOverDistance(atof(content.c_str()));
-  else return Standard::setParameter(name, content, unit);
-  return 0;
-}
+double UniformSphere::alpha() const { return alpha_; }
+void UniformSphere::alpha(double a) { alpha_ = a; }
 
-#ifdef GYOTO_USE_XERCES
-void UniformSphere::fillElement(FactoryMessenger *fmp) const {
-  FactoryMessenger * childfmp=NULL;
-
-  fmp -> metric (metric()) ;
-  fmp -> setParameter ("Radius", radius());
-
-  childfmp = fmp -> makeChild ( "Spectrum" );
-  spectrum_ -> fillElement(childfmp);
-  delete childfmp;
-
-  childfmp = fmp -> makeChild ( "Opacity" );
-  opacity_ -> fillElement(childfmp);
-  delete childfmp;
-
-  fmp -> setParameter ("DeltaMaxOverRadius", dltmor_);
-  fmp -> setParameter ("DeltaMaxOverDistance", dltmod_);
-
-  Astrobj::Generic::fillElement(fmp);
-}
-
-void Gyoto::Astrobj::UniformSphere::setParameters(FactoryMessenger* fmp){
-  opticallyThin(0);
-  if (!fmp) return;
-
-  string name="", content="", unit="";
-  FactoryMessenger * child = NULL;
-
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "metric()" << endl;
-# endif
-  metric(fmp->metric());
-
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    if (name=="Spectrum") {
-      content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-#     if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << "spectrum()" << endl;
-#     endif
-      spectrum((*Spectrum::getSubcontractor(content))(child));
-      delete child;
-    }
-    else if (name=="Opacity") {
-      content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-#     if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << "opacity()" << endl;
-#     endif
-      opacity((*Spectrum::getSubcontractor(content))(child));
-      opticallyThin(1);
-      delete child;
-    } else {
-#     if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << "setParameter("<<name<<", "<<content<<")\n";
-#     endif
-      setParameter(name, content, unit);
-    }
-  }
-
-}
-
-#endif
+bool UniformSphere::isotropic() const { return isotropic_; }
+void UniformSphere::isotropic(bool a) { isotropic_ = a; }

@@ -94,7 +94,7 @@ class Gyoto::Astrobj::UniformSphere :
   // -----
  protected:
   double radius_ ; ///< sphere radius [geometrical units]
-  int isotropic_; ///< if 1, then emission just returns 1
+  bool isotropic_; ///< if 1, then emission just returns 1
   double alpha_; ///< such that nu*I_nu = nu^alpha_; note that Xray photon
               ///< index Gamma is: alpha_ = 2-Gamma
   SmartPointer<Spectrum::Generic> spectrum_; ///< sphere emission law
@@ -105,6 +105,8 @@ class Gyoto::Astrobj::UniformSphere :
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
  /**
   * Create UniformSphere object.
   * \param kind: specifi kind (e.g. "Star" or "FixedStar")
@@ -146,38 +148,18 @@ class Gyoto::Astrobj::UniformSphere :
   double radius(std::string) const ; ///< Get radius_ in specified unit
   virtual void   radius(double, std::string); ///< Set radius_ in specified unit
 
-  double deltaMaxOverRadius(); ///< Get dltmor_
+  double deltaMaxOverRadius() const ; ///< Get dltmor_
   virtual void   deltaMaxOverRadius(double f); ///< Set dltmor_
 
-  double deltaMaxOverDistance(); ///< Get dltmod_
+  double deltaMaxOverDistance() const ; ///< Get dltmod_
   virtual void   deltaMaxOverDistance(double f); ///< Set dltmod_
 
- public:
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
+  bool isotropic() const;
+  void isotropic(bool);
+  double alpha() const ;
+  void alpha(double);
 
-#ifdef GYOTO_USE_XERCES
-  /**
-   * The sub-classes implementations of the
-   * Astrobj::Generic::fillElement() method should call
-   * Astrobj::UniformSphere::fillElement() to fill the common bits.
-   */
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  ///< Fill the generic XML bits
-  /**
-   * The sub-classes subcontractor function (see
-   * Astrobj::Subcontractor_t) should call this after creating the
-   * object to interpret the common bits (Spectrum, Opacity, Radius):
-\code
-  SmartPointer<MyObject> object = new MyObject (.....);
-  fmp -> reset();
-  object -> setParameters(fmp);
-\endcode
-   */
-  virtual void setParameters(FactoryMessenger *fmp) ;
-  ///< Interpret common XML sections
-#endif
+ public:
 
   virtual double operator()(double const coord[4]) ;
   ///< Square distance to the center of the sphere

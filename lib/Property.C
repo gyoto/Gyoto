@@ -55,6 +55,15 @@ Property::Property(string n,
   getter.get_metric=get;
 }
 
+Property::Property(string n,
+		   set_spectrum_t set,
+		   get_spectrum_t get,
+		   Property const * const * ancestors)
+  : name(n), type(spectrum_t), parents(ancestors) {
+  setter.set_spectrum=set;
+  getter.get_spectrum=get;
+}
+
 Property const * Property::find(std::string n) const {
   if (this == NULL) return NULL;
   if (name == n || (type == bool_t && name_false == n)) return this;
