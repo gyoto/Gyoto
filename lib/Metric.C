@@ -23,6 +23,7 @@
 #include "GyotoMetric.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoConverters.h"
+#include "GyotoProperty.h"
 #include <cmath>
 #include <string>
 #include <sstream>

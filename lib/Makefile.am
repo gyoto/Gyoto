@@ -14,11 +14,13 @@ library_include_HEADERS=$(top_srcdir)/include/*.h $(top_builddir)/include/*.h
 
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto@FEATURES@.la
-libgyoto@FEATURES@_la_SOURCES =  Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+libgyoto@FEATURES@_la_SOURCES =  \
+	Value.C Property.C Object.C \
+	Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
-	ThinDisk.C Converters.C Functors.C Hooks.C Object.C
+	ThinDisk.C Converters.C Functors.C Hooks.C
 libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 

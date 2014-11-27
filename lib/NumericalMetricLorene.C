@@ -13,6 +13,7 @@ using namespace Lorene;
 #include "GyotoNumericalMetricLorene.h"
 #include "GyotoError.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 
 //Std headers
 #include <iostream>

@@ -21,6 +21,7 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMinkowski.h"
 #include "GyotoError.h"
+#include "GyotoProperty.h"
 #include <cmath>
 
 using namespace std ; 

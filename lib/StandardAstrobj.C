@@ -24,6 +24,7 @@
 #include "GyotoPhoton.h"
 #include "GyotoRegister.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 
 // SYSTEM HEADERS
 #include <iostream>

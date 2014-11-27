@@ -165,12 +165,12 @@ libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(libgyoto_stdplug_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 libgyoto@FEATURES@_la_LIBADD =
-am_libgyoto@FEATURES@_la_OBJECTS = Astrobj.lo Factory.lo Register.lo \
-	SmartPointer.lo Utils.lo Metric.lo WIP.lo Worldline.lo \
-	Photon.lo Scenery.lo WorldlineIntegState.lo Error.lo Screen.lo \
-	Spectrum.lo Spectrometer.lo ComplexSpectrometer.lo \
-	UniformSpectrometer.lo ThinDisk.lo Converters.lo Functors.lo \
-	Hooks.lo Object.lo
+am_libgyoto@FEATURES@_la_OBJECTS = Value.lo Property.lo Object.lo \
+	Astrobj.lo Factory.lo Register.lo SmartPointer.lo Utils.lo \
+	Metric.lo WIP.lo Worldline.lo Photon.lo Scenery.lo \
+	WorldlineIntegState.lo Error.lo Screen.lo Spectrum.lo \
+	Spectrometer.lo ComplexSpectrometer.lo UniformSpectrometer.lo \
+	ThinDisk.lo Converters.lo Functors.lo Hooks.lo
 libgyoto@FEATURES@_la_OBJECTS = $(am_libgyoto@FEATURES@_la_OBJECTS)
 libgyoto@FEATURES@_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -425,11 +425,13 @@ library_include_HEADERS = $(top_srcdir)/include/*.h $(top_builddir)/include/*.h
 
 # MAIN LIBRARY
 lib_LTLIBRARIES = libgyoto@FEATURES@.la
-libgyoto@FEATURES@_la_SOURCES = Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
+libgyoto@FEATURES@_la_SOURCES = \
+	Value.C Property.C Object.C \
+	Astrobj.C Factory.C Register.C SmartPointer.C Utils.C Metric.C	\
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
-	ThinDisk.C Converters.C Functors.C Hooks.C Object.C
+	ThinDisk.C Converters.C Functors.C Hooks.C
 
 libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
@@ -608,6 +610,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Photon.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PolishDoughnut.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PowerLawSpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Property.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Register.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Screen.Plo@am__quote@
@@ -626,6 +629,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSpectrometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UniformSphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Utils.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Value.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WIP.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Worldline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/WorldlineIntegState.Plo@am__quote@

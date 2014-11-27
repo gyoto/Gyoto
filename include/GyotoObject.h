@@ -33,205 +33,14 @@
 namespace Gyoto {
   class Object;
   class Property;
+  class Value;
   class FactoryMessenger;
 }
-
-/// Make an NULL-terminated array of ancestors
-/**
- * Called automatically in GYOTO_PROPERTY_*
- */
-#define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
-  Property const * const name##_ancestors[] = {ancestor, NULL}
-
-/// Define a new Property of type Bool
-/*
- * Declares a static variable named "name". name and namef should not
- * be quoted.
- *
- * \param[in] class name
- * \param[in] name name of property if true;
- * \param[in] namef name of property if false;
- * \param[in] fname name of functions for setting or getting the property
- * \param[in] ancestor pointer to next Property instance
- */
-#define GYOTO_PROPERTY_BOOL(class, name, namef, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name				 \
-  (#name,					 \
-   #namef,								\
-   (Gyoto::Property::set_bool_t)&class :: fname,			\
-   (Gyoto::Property::get_bool_t)&class :: fname,			\
-   name##_ancestors)
-
-/// Define a Property of type Double
-#define GYOTO_PROPERTY_DOUBLE(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_double_t)&class::fname,	\
-	   (Gyoto::Property::get_double_t)&class::fname,	\
-         name##_ancestors)
-
-/// Define a Property of type Double supporting unit
-#define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	 (Gyoto::Property::set_double_t)&class::fname,	\
-	 (Gyoto::Property::get_double_t)&class::fname,	\
-	 (Gyoto::Property::set_double_unit_t)&class::fname,	\
-	 (Gyoto::Property::get_double_unit_t)&class::fname,	\
-         name##_ancestors)
-
-/// Define a Property of type Filename
-#define GYOTO_PROPERTY_FILENAME(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_string_t)&class::fname,	\
-	   (Gyoto::Property::get_string_t)&class::fname,	\
-         name##_ancestors, true)
-
-/// Define a Property of type String
-#define GYOTO_PROPERTY_STRING(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_string_t)&class::fname,	\
-	   (Gyoto::Property::get_string_t)&class::fname,	\
-         name##_ancestors, false)
-
-/// Define a Property of type String
-#define GYOTO_PROPERTY_VECTOR_DOUBLE(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_vector_double_t)&class::fname,	\
-	   (Gyoto::Property::get_vector_double_t)&class::fname,	\
-         name##_ancestors)
-
-/// Define class::properties and class::getProperties() 
-#define GYOTO_PROPERTY_FINALIZE(class, ancestor)		\
-  Property const * const class::properties = ancestor;		\
-  Property const * class::getProperties() const {		\
-    return class::properties;					\
- }
 
 /// Declare  class::properties and class::getProperties()
 #define GYOTO_OBJECT \
   static Property const * const properties;		\
   virtual Property const * getProperties() const
-
-/**
- * \brief Property
- */
-class Gyoto::Property
-{
- private:
-
- public:
-  enum type_e {double_t, long_t, bool_t, string_t, filename_t,
-	       vector_double_t};
-  std::string name;
-  std::string name_false;
-  int type;
-  typedef void (Object::* set_double_t)(double val);
-  typedef double (Object::* get_double_t)() const;
-  typedef void (Object::* set_double_unit_t)(double val,
-					     std::string const &unit);
-  typedef double (Object::* get_double_unit_t)(std::string const &unit) const;
-  typedef void (Object::* set_long_t)(double val);
-  typedef long (Object::* get_long_t)() const;
-  typedef void (Object::* set_bool_t)(bool val);
-  typedef bool (Object::* get_bool_t)() const;
-  typedef void (Object::* set_string_t)(std::string const&);
-  typedef std::string (Object::* get_string_t)() const;
-  typedef void (Object::* set_fname_t)(std::string const&);
-  typedef std::string (Object::* get_fname_t)() const;
-  typedef void (Object::* set_vector_double_t)(std::vector<double> const&);
-  typedef std::vector<double> (Object::* get_vector_double_t)() const;
-  union setter_t {
-    set_double_t set_double;
-    set_long_t set_long;
-    set_bool_t set_bool;
-    set_string_t set_string;
-    set_vector_double_t set_vdouble;
-  };
-  union getter_t {
-    get_double_t get_double;
-    get_long_t get_long;
-    get_bool_t get_bool;
-    get_string_t get_string;
-    get_vector_double_t get_vdouble;
-  };
-  union setter_unit_t {set_double_unit_t set_double;};
-  union getter_unit_t {get_double_unit_t get_double;};
-  setter_t setter;
-  getter_t getter;
-  setter_unit_t setter_unit;
-  getter_unit_t getter_unit;
-  Property const * const  * const parents;
-  
-  Property(std::string name,
-	   set_double_t set_double,
-	   get_double_t get_double,
-	   Property const * const * ancestors);
-
-  Property(std::string name,
-	   set_double_t set_double,
-	   get_double_t get_double,
-	   set_double_unit_t set_double_unit,
-	   get_double_unit_t get_double_unit,
-	   Property const * const * ancestors);
-
-  Property(std::string name,
-	   std::string name_false,
-	   set_bool_t set_bool,
-	   get_bool_t get_bool,
-	   Property const * const * ancestors);
-
-  Property(std::string name,
-	   set_string_t set_string,
-	   get_string_t get_string,
-	   Property const * const * ancestors,
-	   bool is_filename=false);
-
-  Property(std::string name,
-	   set_vector_double_t set_vdouble,
-	   get_vector_double_t get_vdouble,
-	   Property const * const * ancestors);
-
-  Property const * find(std::string name) const;
-
-  class Value {
-  public:
-    Value();
-    ~Value();
-
-    double Double;
-    Value(double);
-    operator double() const;
-
-    bool Bool;
-    Value(bool);
-    operator bool() const;
-
-    long Long;
-    Value(long);
-    operator long() const;
-
-    std::string String;
-    Value(std::string);
-    operator std::string() const;
-
-    std::vector<double> VDouble;
-    Value(std::vector<double>);
-    operator std::vector<double>() const;
-
-  };
-
-};
-
 
 /**
  * \brief Object with properties
@@ -246,11 +55,11 @@ class Gyoto::Object
   Object () ;
   Object (Object const &orig) ;
   virtual ~Object();
-  void set(Property const &p, Property::Value const & val);
-  void set(Property const &p, Property::Value const & val, std::string const &unit);
+  void set(Property const &p, Value val);
+  void set(Property const &p, Value val, std::string const &unit);
 
-  Property::Value get(Property const &p) const;
-  Property::Value get(Property const &p, std::string const &unit) const;
+  Value get(Property const &p) const;
+  Value get(Property const &p, std::string const &unit) const;
 
   Property const * property(std::string const pname) const;
 

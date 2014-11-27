@@ -31,6 +31,7 @@ using namespace Lorene;
 #include "GyotoRotStar3_1.h"
 #include "GyotoError.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 
 #include <iostream>
 #include <cmath>

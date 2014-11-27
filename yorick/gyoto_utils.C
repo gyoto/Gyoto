@@ -17,8 +17,10 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <GyotoUtils.h>
-#include <GyotoRegister.h>
+#include "GyotoUtils.h"
+#include "GyotoRegister.h"
+#include "GyotoProperty.h"
+#include "GyotoValue.h"
 #include <yapi.h>
 #include <pstdlib.h>
 #include <cstring>
@@ -354,7 +356,7 @@ long int __ygyoto_var_idx(long id) {
 void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		    Gyoto::Property const& p, int iarg,
 		    std::string name, std::string unit) {
-  Gyoto::Property::Value val;
+  Gyoto::Value val;
   if (p.type == Gyoto::Property::double_t)
     val = ptr->get(p, unit);
   else
@@ -380,6 +382,9 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       for (size_t i=0; i<n; ++i) buf[i]=vval[i];
     }
     break;
+  case Gyoto::Property::metric_t:
+    *ypush_Metric() = val.Metric;
+    break;
   default:
     y_error("Property type unimplemented in ypush_property()");
    }
@@ -388,7 +393,7 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		   Gyoto::Property const& p, int iarg, std::string name,
 		   std::string unit) {
-  Gyoto::Property::Value val;
+  Gyoto::Value val;
   switch(p.type) {
   case Gyoto::Property::bool_t:
     {
@@ -411,6 +416,9 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       for (size_t i=0; i<n; ++i) vval[i]=buf[i];
       val = vval;
     }
+    break;
+  case Gyoto::Property::metric_t:
+    val = *yget_Metric(iarg);
     break;
   default:
     y_error("Property type unimplemented in yget_property()");

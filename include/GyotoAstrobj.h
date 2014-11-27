@@ -353,15 +353,6 @@ class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
 
 #ifdef GYOTO_USE_XERCES
   /**
-   * \brief Fill XML section
-   *
-   * Astrobj implementations should impement fillElement to save their
-   * parameters to XML and call the generic implementation to save
-   * generic parts such as Flag_radtrans: Generic::fillElement(fmp).
-   */
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-
-  /**
    * \brief Main loop in Subcontractor_t function
    *
    * The Subcontractor_t function for each Astrobj kind should look

@@ -1,6 +1,9 @@
 #include "GyotoObject.h"
+#include "GyotoProperty.h"
+#include "GyotoValue.h"
 #include "GyotoError.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoMetric.h"
 
 #include <iostream>
 
@@ -9,28 +12,6 @@ using namespace Gyoto ;
 
 GYOTO_PROPERTY_FINALIZE(Object, NULL);
 
-/// Value
-
-Property::Value::Value() {}
-Property::Value::~Value() {}
-
-Property::Value::Value(double val) : Double(val) {}
-Property::Value::operator double() const {return Double;}
-
-Property::Value::Value(bool val) : Bool(val) {}
-Property::Value::operator bool() const {return Bool;}
-
-Property::Value::Value(long val) : Long(val) {}
-Property::Value::operator long() const {return Long;}
-
-Property::Value::Value(std::string val) : String(val) {}
-Property::Value::operator std::string() const {return String;}
-
-Property::Value::Value(std::vector<double> val) : VDouble(val) {}
-Property::Value::operator std::vector<double>() const {return VDouble;}
-
-/// Object
-
 Gyoto::Object::Object(std::string const &name):kind_(name) {}
 Gyoto::Object::Object():kind_("") {}
 Gyoto::Object::Object(Object const &o):kind_(o.kind_) {}
@@ -38,7 +19,7 @@ Gyoto::Object::~Object() {}
 
 
 void Object::set(Property const &p,
-		 Property::Value const &val,
+		 Value val,
 		 std::string const &unit) {
 
   if (p.type == Property::double_t) {
@@ -60,7 +41,7 @@ void Object::set(Property const &p,
 
 }
 
-void Object::set(Property const &p, Property::Value const &val) {
+void Object::set(Property const &p, Value val) {
 # define ___local_case(type)			\
   case Property::type##_t:			\
     {						\
@@ -83,13 +64,14 @@ void Object::set(Property const &p, Property::Value const &val) {
       (this->*set)(val);
     }
     break;
+    ___local_case(metric);
   default:
     throwError("Unimplemented Property type in Object::set");
   }
 # undef ___local_case
 }
 
-Property::Value Object::get(Property const &p,
+Value Object::get(Property const &p,
 			    std::string const &unit) const {
 
   if (p.type == Property::double_t) {
@@ -105,17 +87,17 @@ Property::Value Object::get(Property const &p,
   return get(p);
 }
 
-Property::Value Object::get(Property const &p) const {
+Value Object::get(Property const &p) const {
 # define ___local_case(type) \
   case Property::type##_t:     \
     {			     \
     Property::get_##type##_t get = p.getter.get_##type;	\
     if (!get) throwError("Can't get this Property");	\
-    val = (this->*get)();				\
+    val = Value((this->*get)());			\
     }							\
     break
 
-  Property::Value val;
+  Gyoto::Value val;
   switch (p.type) {
     ___local_case(bool);
     ___local_case(double);
@@ -129,6 +111,7 @@ Property::Value Object::get(Property const &p) const {
       val = (this->*get)();
     }
     break;
+    ___local_case(metric);
   default:
     throwError("Unimplemented Property type in Object::get");
   }
@@ -156,6 +139,9 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     break;
   case Property::vector_double_t:
     fmp->setParameter(name, get(p).VDouble);
+    break;
+  case Property::metric_t:
+    fmp->metric(get(p));
     break;
   default:
     throwError("Property type unimplemented in Object::fillProperty()");
@@ -187,9 +173,16 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	// this entity
 	setParameter(name, content, unit);
       } else {
-	if (prop->type == Property::filename_t)
+	switch (prop->type) {
+	case Property::metric_t:
+	  set(*prop, fmp->metric());
+	  break;
+	case Property::filename_t:
 	  content = fmp->fullPath(content);
-	setParameter(*prop, name, content, unit);
+	  // no 'break;' here, we need to proceed
+	default:
+	  setParameter(*prop, name, content, unit);
+	}
       }
     }
   GYOTO_DEBUG << "Done processing parameters" << endl;
@@ -199,7 +192,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 
 void Object::setParameter(Property const &p, string const &name,
 			  string const & content, string const & unit) {
-  Property::Value val;
+  Value val;
   switch (p.type) {
   case Property::bool_t:
     val = (name==p.name);
@@ -215,6 +208,8 @@ void Object::setParameter(Property const &p, string const &name,
   case Property::vector_double_t:
     val = FactoryMessenger::parseArray(content);
     break;
+  case Property::metric_t:
+    throwError("Metric can't be set using setParameter()");
   default:
     throwError("Property type unimplemented in Object::setParameter()");
   }
@@ -226,62 +221,4 @@ int Object::setParameter(string name, string content, string unit) {
   if (!prop) return 1;
   setParameter(*prop, name, content, unit);
   return 0;
-}
-
-//// Property
-
-Property::Property(string n, set_double_t set, get_double_t get,
-		   Property const * const * ancestors)
-  : name(n), type(double_t), parents(ancestors) {
-  setter.set_double=set;
-  getter.get_double=get;
-  setter_unit.set_double=NULL;
-  getter_unit.get_double=NULL;
-}
-
-Property::Property(string n, set_double_t set, get_double_t get,
-		   set_double_unit_t setu, get_double_unit_t getu,
-		   Property const * const * ancestors)
-  : name(n), type(double_t), parents(ancestors) {
-  setter.set_double=set;
-  getter.get_double=get;
-  setter_unit.set_double=setu;
-  getter_unit.get_double=getu;
-}
-
-Property::Property(string n, string nf, set_bool_t set, get_bool_t get,
-		   Property const * const * ancestors)
-  : name(n), name_false(nf), type(bool_t), parents(ancestors) {
-  setter.set_bool=set;
-  getter.get_bool=get;
-}
-
-Property::Property(string n, set_string_t set, get_string_t get,
-		   Property const * const * ancestors,
-		   bool is_filename)
-  : name(n), type(is_filename?filename_t:string_t), parents(ancestors) {
-  setter.set_string=set;
-  getter.get_string=get;
-}
-
-Property::Property(string n,
-		   set_vector_double_t set,
-		   get_vector_double_t get,
-		   Property const * const * ancestors)
-  : name(n), type(vector_double_t), parents(ancestors) {
-  setter.set_vdouble=set;
-  getter.get_vdouble=get;
-}
-
-Property const * Property::find(std::string n) const {
-  if (this == NULL) return NULL;
-  if (name == n || (type == bool_t && name_false == n)) return this;
-  if (parents == NULL) return NULL;
-  Property const * const * p ;
-  Property const * result = NULL;
-  for (p=parents;  *p != NULL; ++p) {
-    result = (*p)->find(n);
-    if (result) break;
-  }
-  return result; 
 }

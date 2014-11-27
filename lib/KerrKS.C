@@ -22,6 +22,7 @@
 #include "GyotoKerrKS.h"
 #include "GyotoWorldline.h"
 #include "GyotoError.h"
+#include "GyotoProperty.h"
 
 #include <iostream>
 #include <cmath>

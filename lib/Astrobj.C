@@ -24,6 +24,7 @@
 #include "GyotoPhoton.h"
 #include "GyotoRegister.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 
 // SYSTEM HEADERS
 #include <iostream>
@@ -48,8 +49,8 @@ GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ,
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift,
 		    redshift, &RadiativeQ);
 GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax, &Redshift);
-GYOTO_PROPERTY_FINALIZE(Astrobj::Generic, &RMax);
-
+GYOTO_PROPERTY_METRIC(Generic, Metric, metric, &RMax);
+GYOTO_PROPERTY_FINALIZE(Generic, &::Metric);
 
 Generic::Generic(string kin) :
   SmartPointee(kin), gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
@@ -121,11 +122,6 @@ void Generic::rMax(double val, string const &unit) {
   rMax(Units::ToGeometrical(val, unit, gg_)); }
 
 #ifdef GYOTO_USE_XERCES
-void Generic::fillElement(FactoryMessenger *fmp) const {
-  fmp -> metric(gg_);
-  Object::fillElement(fmp);
-}
-
 void Generic::setParameters(FactoryMessenger *fmp) {
   if (fmp) metric(fmp->metric());
   Object::setParameters(fmp);
