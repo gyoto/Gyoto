@@ -598,6 +598,8 @@ namespace Gyoto {
 # define setBinSpectrumConverter  binSpectrumConverter
 # define setSpectrumConverter     spectrumConverter
 # define setIntensityConverter    intensityConverter
+# define getSafetyValue           safetyValue;
+# define setSafetyValue           safetyValue;
 //\}
 #endif
 

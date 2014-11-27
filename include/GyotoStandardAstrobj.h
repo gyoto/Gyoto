@@ -97,6 +97,8 @@ class Gyoto::Astrobj::Standard :
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
   /**
    *  kind_ =  "Default", rmax_ = 0., rmax_set_ = 0.
    */
@@ -122,8 +124,8 @@ class Gyoto::Astrobj::Standard :
   // Accessors
   // ---------
  public:
-  virtual void setSafetyValue(double val) ; ///< Set Standard::safety_value_
-  virtual double getSafetyValue() const ; ///< Get Standard::safety_value_
+  virtual void safetyValue(double val) ; ///< Set Standard::safety_value_
+  virtual double safetyValue() const ; ///< Get Standard::safety_value_
 
   // Outputs
   // -------
@@ -163,15 +165,6 @@ class Gyoto::Astrobj::Standard :
    * \param coord input coordinate at which &delta;<SUB>t</SUB> is given
    */
   virtual double giveDelta(double coord[8]);
-
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit = "") ;
-
-
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 
 };
 

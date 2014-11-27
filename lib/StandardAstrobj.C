@@ -39,6 +39,10 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+GYOTO_PROPERTY_DOUBLE(Standard,
+		      SafetyValue, safetyValue, Generic::properties);
+GYOTO_PROPERTY_FINALIZE(Standard, &SafetyValue);
+
 Standard::Standard(string kin) :
   Generic(kin),
   critical_value_(DBL_MIN), safety_value_(DBL_MAX)
@@ -157,20 +161,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 
 }
 
-void Standard::setSafetyValue(double val) {safety_value_ = val; }
-double Standard::getSafetyValue() const { return safety_value_; }
+void Standard::safetyValue(double val) {safety_value_ = val; }
+double Standard::safetyValue() const { return safety_value_; }
 
 double Standard::giveDelta(double *) {return 0.05;}
-
-int Standard::setParameter(string name, string content, string unit)  {
-  if (name == "SafetyValue") safety_value_ = atof(content.c_str());
-  else return Generic::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void Standard::fillElement(FactoryMessenger* fmp) const {
-  fmp -> setParameter("SafetyValue", safety_value_);
-  Generic::fillElement(fmp);
-}
-#endif
