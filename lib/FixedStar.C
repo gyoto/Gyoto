@@ -20,6 +20,7 @@
 #include "GyotoUtils.h"
 #include "GyotoPhoton.h"
 #include "GyotoFixedStar.h"
+#include "GyotoProperty.h"
 #include "GyotoFactoryMessenger.h"
 
 #include <iostream>
@@ -36,6 +37,12 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_BOOL(FixedStar,
+		    Rotating, NonRotating, rotating,
+		    UniformSphere::properties);
+GYOTO_PROPERTY_VECTOR_DOUBLE(FixedStar, Position, position, &Rotating);
+GYOTO_PROPERTY_FINALIZE(FixedStar, &Position);
 
 FixedStar::FixedStar() : UniformSphere("FixedStar"), rotating_(false)
 {
@@ -167,24 +174,15 @@ double FixedStar::rMax() {
 void FixedStar::setPos(const double p[3])
 { for (int i=0; i<3; ++i) pos_[i]=p[i]; radius(radius_);}
 
-int FixedStar::setParameter(string name, string content, string unit) {
-  if (name=="Position") {
-    double pos[3];
-    if (FactoryMessenger::parseArray(content, pos, 3) != 3)
-      throwError("FixedStar \"Position\" element requires exactly 3 tokens");
-    setPos(pos);
-  } else if (name=="Rotating") {
-    rotating(true);
-  } else if (name=="NonRotating") {
-    rotating(false);
-  } else return UniformSphere::setParameter(name, content, unit);
-  return 0;
+void FixedStar::position(std::vector<double> const &v) {
+  if (v.size() !=3)
+    throwError("FixedStar position needs exactly 3 tokens"); 
+  for (int i=0; i<3; ++i) pos_[i]=v[i];
+  radius(radius_);
 }
 
-#ifdef GYOTO_USE_XERCES
-void FixedStar::fillElement(FactoryMessenger *fmp) const {
-  fmp -> setParameter ("Position", const_cast<double*>(pos_), 3);
-  fmp -> setParameter (rotating_?"Rotating":"NonRotating");
-  UniformSphere::fillElement(fmp);
+std::vector<double> FixedStar::position() const {
+  std::vector<double> res(3, 0.);
+  for (int i=0; i<3; ++i) res[i]=pos_[i];
+  return res;
 }
-#endif

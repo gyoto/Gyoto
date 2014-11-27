@@ -59,6 +59,7 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
   
   /**
    * Everything is undefined, call setCoordSys(), setPos() and
@@ -81,6 +82,9 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   double const * getPos() const; ///< Get const pointer to pos_
   void getPos(double* dst) const; ///< Get a copy of the pos_ array
 
+  std::vector<double> position() const; ///< Get vector copy of #pos_
+  void position(std::vector<double> const&); ///< Set #pos_ from vector
+
   double rMax();
 
   bool rotating() const ;
@@ -93,15 +97,6 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
   void setPos(const double[3]); ///< Set pos_ array
   //  void setCoordSys(int); ///< set coordinate system
   
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
-
   // Outputs
   // -------
  protected:
