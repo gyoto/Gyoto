@@ -46,7 +46,7 @@ GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    MapEt, MapAf,
 		    mapEt, &SpecifyMarginalOrbits);
-GYOTO_PROPERTY_FINALIZE(NumericalMetricLorene, MapEt);
+GYOTO_PROPERTY_FINALIZE(NumericalMetricLorene, &MapEt);
 
 NumericalMetricLorene::NumericalMetricLorene() :
   WIP("Metric::NumericalMetricLorene"),

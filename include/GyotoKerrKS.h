@@ -71,7 +71,7 @@ class Gyoto::Metric::KerrKS
   // Constructors - Destructor
   // -------------------------
  public: 
-  GYOTO_PROPERTY;
+  GYOTO_OBJECT;
   KerrKS(); ///< Default constructor
   virtual KerrKS* clone () const;         ///< Copy constructor
   

@@ -69,7 +69,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   // Constructors - Destructor
   // -------------------------
  public: 
-  GYOTO_PROPERTY;
+  GYOTO_OBJECT;
   KerrBL(); ///< Default constructor
   virtual KerrBL * clone () const ;
 

@@ -60,7 +60,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   int integ_kind_;///< 1 if RotStar3_1::myrk4(), 0 if Metric::myrk4()
 
  public:
-  GYOTO_PROPERTY;
+  GYOTO_OBJECT;
   RotStar3_1(); ///< Constructor
   RotStar3_1(const RotStar3_1& ) ;                ///< Copy constructor
   virtual ~RotStar3_1() ;        ///< Destructor

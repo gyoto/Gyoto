@@ -46,7 +46,7 @@ using namespace Gyoto::Metric;
 GYOTO_PROPERTY_FILENAME(RotStar3_1, File, file, Generic::properties);
 GYOTO_PROPERTY_BOOL(RotStar3_1, GenericIntegrator, SpecificIntegrator,
 		    genericIntegrator, &File);
-GYOTO_PROPERTY_FINALIZE(RotStar3_1, GenericIntegrator);
+GYOTO_PROPERTY_FINALIZE(RotStar3_1, &GenericIntegrator);
 
 RotStar3_1::RotStar3_1() : 
 Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),

@@ -111,17 +111,13 @@ namespace Gyoto {
          name##_ancestors)
 
 /// Define class::properties and class::getProperties() 
-#define GYOTO_PROPERTY_FINALIZE(class, property)		\
-  Property const * const class::properties = &property;		\
+#define GYOTO_PROPERTY_FINALIZE(class, ancestor)		\
+  Property const * const class::properties = ancestor;		\
   Property const * class::getProperties() const {		\
     return class::properties;					\
  }
 
 /// Declare  class::properties and class::getProperties()
-#define GYOTO_PROPERTY \
-  static Property const * const properties;		\
-  virtual Property const * getProperties() const
-
 #define GYOTO_OBJECT \
   static Property const * const properties;		\
   virtual Property const * getProperties() const
@@ -135,7 +131,7 @@ class Gyoto::Object
  protected:
   std::string kind_;
  public:
-  static Property const * const properties;
+  GYOTO_OBJECT;
   Object (std::string const &kind) ;
   Object () ;
   Object (Object const &orig) ;
@@ -153,7 +149,6 @@ class Gyoto::Object
   void get(Property const &p, std::vector<double> &val) const;
   //void get(std::string const pname, double &val);
   Property const * property(std::string const pname) const;
-  virtual Property const * getProperties() const;
 
 #ifdef GYOTO_USE_XERCES
   void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;

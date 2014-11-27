@@ -56,7 +56,7 @@ class Gyoto::Metric::Minkowski
   void spherical(bool);
   bool spherical() const;
   // This is the bare minimum of what a Metric class must implement:
-  GYOTO_PROPERTY;
+  GYOTO_OBJECT;
   Minkowski();
   virtual Minkowski* clone() const ;
 

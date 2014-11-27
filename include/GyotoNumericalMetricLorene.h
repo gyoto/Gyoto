@@ -77,7 +77,7 @@ class Gyoto::Metric::NumericalMetricLorene
   void free(); ///< deallocate memory
 
  public:
-  GYOTO_PROPERTY;
+  GYOTO_OBJECT;
   NumericalMetricLorene(); ///< Constructor
   NumericalMetricLorene(const NumericalMetricLorene&); ///< Copy constructor
   virtual NumericalMetricLorene* clone() const ;

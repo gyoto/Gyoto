@@ -40,7 +40,7 @@ GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity,
 GYOTO_PROPERTY_BOOL(KerrKS, GenericIntegrator, SpecificIntegrator,
 		    genericIntegrator, &HorizonSecurity);
 GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin, &GenericIntegrator);
-GYOTO_PROPERTY_FINALIZE(KerrKS, Spin);
+GYOTO_PROPERTY_FINALIZE(KerrKS, &Spin);
 
 /*
 NOTA BENE: to improve KerrKS

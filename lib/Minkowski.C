@@ -32,7 +32,7 @@ GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian,
 		    spherical, Generic::properties);
 // We still need to connect this (single) property to
 // Minkowski::properties and define getProperties():
-GYOTO_PROPERTY_FINALIZE(Minkowski, Spherical);
+GYOTO_PROPERTY_FINALIZE(Minkowski, &Spherical);
 
 // This is the minimal constructor: it just sets the coordinate kind and
 // the metric kind name.

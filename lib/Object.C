@@ -7,7 +7,7 @@
 using namespace std ;
 using namespace Gyoto ;
 
-Property const * const Object::properties = NULL;
+GYOTO_PROPERTY_FINALIZE(Object, NULL);
 
 Gyoto::Object::Object(std::string const &name):kind_(name) {}
 Gyoto::Object::Object():kind_("") {}
@@ -131,11 +131,6 @@ Property const * Object::property(std::string const pname) const {
   return getProperties() -> find(pname);
 }
 
-Property const * Object::getProperties() const {
-  return properties;
-}
-
-
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   string name=p.name;
@@ -191,8 +186,8 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
   string name="", content="", unit="";
   if (fmp)
     while (fmp->getNextParameter(&name, &content, &unit)) {
-      cerr << "Setting '" << name << "' to '" << content
-	   << "' (unit='"<<unit<<"')" << endl;
+      GYOTO_DEBUG << "Setting '" << name << "' to '" << content
+		  << "' (unit='"<<unit<<"')" << endl;
       Property const * prop = property(name);
       if (!prop) {;
 	// The specific setParameter() implementation may well know
@@ -204,7 +199,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	setParameter(*prop, name, content, unit);
       }
     }
-  cerr << "Done processing parameters" << endl;
+  GYOTO_DEBUG << "Done processing parameters" << endl;
 }
 
 #endif

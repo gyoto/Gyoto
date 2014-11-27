@@ -48,7 +48,7 @@ GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ,
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift,
 		    redshift, &RadiativeQ);
 GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax, &Redshift);
-GYOTO_PROPERTY_FINALIZE(Astrobj::Generic, RMax);
+GYOTO_PROPERTY_FINALIZE(Astrobj::Generic, &RMax);
 
 
 Generic::Generic(string kin) :

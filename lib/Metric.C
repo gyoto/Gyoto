@@ -43,7 +43,7 @@ GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax, &DeltaMaxOverR);
 GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin, &DeltaMax);
 GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass, &DeltaMin);
 
-GYOTO_PROPERTY_FINALIZE(Metric::Generic, Mass);
+GYOTO_PROPERTY_FINALIZE(Metric::Generic, &Mass);
 
 ///
 

@@ -41,7 +41,7 @@ GYOTO_PROPERTY_BOOL(KerrBL, GenericIntegrator, SpecificIntegrator,
 		    genericIntegrator, &HorizonSecurity);
 GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol, &GenericIntegrator);
 GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin, &DiffTol);
-GYOTO_PROPERTY_FINALIZE(KerrBL, Spin);
+GYOTO_PROPERTY_FINALIZE(KerrBL, &Spin);
 
 /*
   NB: points delicats de KerrBL:
