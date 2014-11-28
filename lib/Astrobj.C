@@ -53,7 +53,8 @@ GYOTO_PROPERTY_METRIC(Generic, Metric, metric, &RMax);
 GYOTO_PROPERTY_FINALIZE(Generic, &::Metric);
 
 Generic::Generic(string kin) :
-  SmartPointee(kin), gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
+  SmartPointee(), Object(kin),
+  gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -62,8 +63,8 @@ Generic::Generic(string kin) :
 }
 
 Generic::Generic() :
-
-  SmartPointee("Default"), gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
+  SmartPointee(), Object("Default"),
+  gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -72,7 +73,8 @@ Generic::Generic() :
 }
 
 Generic::Generic(double radmax) :
-  SmartPointee("Default"), gg_(NULL), rmax_(radmax), flag_radtransf_(0),
+  SmartPointee(), Object("Default"),
+  gg_(NULL), rmax_(radmax), flag_radtransf_(0),
   radiativeq_(0), noredshift_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -81,7 +83,8 @@ Generic::Generic(double radmax) :
 }
 
 Generic::Generic(const Generic& orig) :
-  SmartPointee(orig), gg_(NULL),
+  SmartPointee(orig), Object(orig),
+  gg_(NULL),
   rmax_(orig.rmax_),
   flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_),
   noredshift_(orig.noredshift_)

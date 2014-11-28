@@ -19,7 +19,7 @@
 
 #include <GyotoWorldline.h>
 #include <GyotoUtils.h>
-//#include <GyotoKerrBL.h>
+#include <GyotoProperty.h>
 #include <GyotoFactoryMessenger.h>
 #include <iostream>
 #include <sstream>
@@ -31,6 +31,21 @@
 using namespace std;
 using namespace Gyoto;
 
+GYOTO_PROPERTY_BOOL(Worldline,
+		    HighOrderImages, PrimaryOnly, secondary,
+		    Object::properties);
+GYOTO_PROPERTY_DOUBLE(Worldline, RelTol, relTol, &HighOrderImages);
+GYOTO_PROPERTY_DOUBLE(Worldline, AbsTol, absTol, &RelTol);
+GYOTO_PROPERTY_DOUBLE(Worldline, DeltaMaxOverR, deltaMaxOverR, &AbsTol);
+GYOTO_PROPERTY_DOUBLE(Worldline, DeltaMax, deltaMax, &DeltaMaxOverR);
+GYOTO_PROPERTY_DOUBLE(Worldline, DeltaMin, deltaMin, &DeltaMax);
+GYOTO_PROPERTY_STRING(Worldline, Integrator, integrator, &DeltaMin);
+GYOTO_PROPERTY_SIZE_T(Worldline, MaxIter, maxiter, &Integrator);
+GYOTO_PROPERTY_BOOL(Worldline, Adaptive, NonAdaptive, adaptive, &MaxIter);
+GYOTO_PROPERTY_DOUBLE_UNIT(Worldline, Delta, delta, &Adaptive);
+GYOTO_PROPERTY_VECTOR_DOUBLE(Worldline, InitCoord, initCoord, &Delta);
+GYOTO_PROPERTY_METRIC(Worldline, Metric, metric, &InitCoord);
+GYOTO_PROPERTY_FINALIZE(Worldline, &::Metric);
 
 Worldline::Worldline() : stopcond(0), metric_(NULL),
                          imin_(1), i0_(0), imax_(0), adaptive_(1),
@@ -281,41 +296,37 @@ void Worldline::tell(Gyoto::Hook::Teller* msg) {
 }
 
 #ifdef GYOTO_USE_XERCES
-void Worldline::fillElement(FactoryMessenger *fmp) const {
-  if (metric_)     fmp -> metric (metric_) ;
 
-  if (imin_ <= imax_) {
-    double coord[8];
-    getInitialCoord(coord);
-    if (getMass()) {
-      // For massive particule, express initial condition with 3-velocity
-      double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
-      fmp -> setParameter ("Position", coord, 4);
-      fmp -> setParameter ("Velocity", vel, 3);
-    } else {
-      // For massless particle, only 4-velocity is meaningfull
-      fmp -> setParameter("InitCoord", coord, 8);
+void Worldline::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  if (p.name == "InitCoord") {
+    if (imin_ <= imax_) {
+      double coord[8];
+      getInitialCoord(coord);
+      if (getMass()) {
+	// For massive particule, express initial condition with 3-velocity
+	double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
+	fmp -> setParameter ("Position", coord, 4);
+	fmp -> setParameter ("Velocity", vel, 3);
+      } else {
+	// For massless particle, only 4-velocity is meaningfull
+	fmp -> setParameter("InitCoord", coord, 8);
+      }
     }
+    Property const * const * parent = p.parents;
+    if (parent) {
+      for ( ; *parent; ++parent) {
+	fillProperty(fmp, **parent);
+      } 
+    }
+    return;
   }
-
-  fmp -> setParameter ("Delta", delta_);
-  fmp -> setParameter(adaptive_?"Adaptive":"NonAdaptive");
-  fmp -> setParameter("MaxIter", maxiter_);
-  fmp -> setParameter("Integrator", state_->kind());
-  fmp -> setParameter("DeltaMin", delta_min_);
-  fmp -> setParameter("DeltaMax", delta_max_);
-  fmp -> setParameter("DeltaMaxOverR", delta_max_over_r_);
-  fmp -> setParameter("AbsTol", abstol_);
-  fmp -> setParameter("RelTol", reltol_);
+  Object::fillProperty(fmp, p);
 }
 
 void Worldline::setParameters(FactoryMessenger* fmp) {
-  if (!fmp) return;
-  string name="", content="", unit="";
   wait_pos_ = 1;
   metric(fmp->metric());
-  while (fmp->getNextParameter(&name, &content, &unit))
-    setParameter(name, content, unit);
+  Object::setParameters(fmp);
   wait_pos_ = 0;
   if (init_vel_) {
     delete[] init_vel_; init_vel_=NULL;
@@ -330,10 +341,9 @@ int Worldline::setParameter(std::string name,
 			    std::string unit) {
   double coord[8];
   char* tc = const_cast<char*>(content.c_str());
-  if (name=="InitialCoordinate" || name=="InitCoord") {
-    if (FactoryMessenger::parseArray(content, coord, 8) != 8)
-      throwError("Worldline \"InitialCoordinate\" requires exactly 8 tokens");
-    setInitCoord(coord);
+  if (name=="InitialCoordinate") {
+    name=="InitCoord";
+    return Object::setParameter(name, content, unit);
   } else if (name=="Position") {
     if (FactoryMessenger::parseArray(content, coord, 4) != 4)
       throwError("Worldline \"Position\" requires exactly 4 tokens");
@@ -350,22 +360,12 @@ int Worldline::setParameter(std::string name,
       init_vel_ = new double[3];
       memcpy(init_vel_, coord, 3*sizeof(double));
     } else setVelocity(coord);
-  } else   if (name=="Delta")   delta(atof(content.c_str()), unit);
-  else if (name=="MaxIter")     maxiter_  = atoi(content.c_str());
-  else if (name=="NonAdaptive") adaptive_ = false;
-  else if (name=="Adaptive")    adaptive_ = true;
-  else if (name=="PrimaryOnly") secondary_= false;
-  else if (name=="Integrator") integrator(content);
-  else if (name=="DeltaMin") deltaMin(atof(content.c_str()));
-  else if (name=="DeltaMax") deltaMax(atof(content.c_str()));
-  else if (name=="DeltaMaxOverR") deltaMaxOverR (atof(content.c_str()));
-  else if (name=="AbsTol") absTol(atof(content.c_str()));
-  else if (name=="RelTol") relTol(atof(content.c_str()));
-  else return 1;
+  }
+  else return Object::setParameter(name, content, unit);
   return 0;
 }
 
-void Worldline::integrator(std::string type) {
+void Worldline::integrator(std::string const &type) {
   if (type=="Legacy") state_ = new IntegState::Legacy(this);
 #ifdef HAVE_BOOST
   else state_ = new IntegState::Boost(this, type);
@@ -382,6 +382,27 @@ SmartPointer<Metric::Generic> Worldline::metric() const { return metric_; }
 
 string Worldline::className() const { return  string("Worldline"); }
 string Worldline::className_l() const { return  string("worldline"); }
+
+void Worldline::initCoord(std::vector<double> const &v) {
+  if (v.size() != 8)
+    throwError("Worldline::initCoord() requires an 8-element vector");
+  double c[8];
+  for (size_t i=0; i<8; ++i) c[i]=v[i];
+  setInitCoord(c);
+}
+
+std::vector<double> Worldline::initCoord() const {
+  std::vector<double> coord(8, 0.);
+  coord[0] = x0_[i0_];
+  coord[1] = x1_[i0_];
+  coord[2] = x2_[i0_];
+  coord[3] = x3_[i0_];
+  coord[4] = x0dot_[i0_];
+  coord[5] = x1dot_[i0_];
+  coord[6] = x2dot_[i0_];
+  coord[7] = x3dot_[i0_];
+  return coord;
+}
 
 void Worldline::setInitCoord(const double coord[8], int dir) {
   GYOTO_DEBUG_ARRAY(coord, 8);

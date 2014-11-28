@@ -64,7 +64,7 @@ class Gyoto::Object
   Property const * property(std::string const pname) const;
 
 #ifdef GYOTO_USE_XERCES
-  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
 
   /// Called from Factory
   /**

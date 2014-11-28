@@ -21,6 +21,11 @@
 #include "GyotoRegister.h"
 #include "GyotoProperty.h"
 #include "GyotoValue.h"
+#include "GyotoObject.h"
+#include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
+#include "GyotoSpectrum.h"
+#include "GyotoSpectrometer.h"
 #include <yapi.h>
 #include <pstdlib.h>
 #include <cstring>
@@ -357,14 +362,34 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		    Gyoto::Property const& p, int iarg,
 		    std::string name, std::string unit) {
   Gyoto::Value val;
+
+  Gyoto::SmartPointee * smptee = (Gyoto::SmartPointee*) ptr();
+  Gyoto::Object * object = dynamic_cast<Gyoto::Object*> (smptee);
+  Gyoto::Astrobj::Generic * ao=NULL;
+
+  if (!smptee) Gyoto::throwError("NULL SmartPointee*");
+
+  // Some Astrobj (in particular Star) inherit twice from Object.
+  if (!object && (ao=dynamic_cast<Gyoto::Astrobj::Generic*> (smptee)) )
+    object = dynamic_cast<Gyoto::Object*> (ao);
+
+  if (!object)
+    Gyoto::throwError("dynamic_cast from SmartPointee* to Object* failed");
+
   if (p.type == Gyoto::Property::double_t)
-    val = ptr->get(p, unit);
+    val = object -> get(p, unit);
   else
-    val = ptr->get(p);
+    val = object -> get(p);
 
   switch(p.type) {
   case Gyoto::Property::bool_t:
     ypush_long(name==p.name?bool(val):!val);
+    break;
+  case Gyoto::Property::long_t:
+    ypush_long(long(val));
+    break;
+  case Gyoto::Property::unsigned_long_t:
+    ypush_long(long((unsigned long)(val)));
     break;
   case Gyoto::Property::double_t:
     ypush_double(val);
@@ -397,15 +422,35 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
 		   Gyoto::Property const& p, int iarg, std::string name,
 		   std::string unit) {
   Gyoto::Value val;
+
+  Gyoto::SmartPointee * smptee = (Gyoto::SmartPointee*) ptr();
+  Gyoto::Object * object = dynamic_cast<Gyoto::Object*> (smptee);
+  Gyoto::Astrobj::Generic * ao=NULL;
+
+  if (!smptee) Gyoto::throwError("NULL SmartPointee*");
+
+  // Some Astrobj (in particular Star) inherit twice from Object.
+  if (!object && (ao=dynamic_cast<Gyoto::Astrobj::Generic*> (smptee)) )
+    object = dynamic_cast<Gyoto::Object*> (ao);
+
+  if (!object)
+    Gyoto::throwError("dynamic_cast from SmartPointee* to Object* failed");
+
   switch(p.type) {
   case Gyoto::Property::bool_t:
     {
-      val=ygets_l(iarg);
+      val=bool(ygets_l(iarg));
       if (name != p.name) val = !val;
     }
     break;
+  case Gyoto::Property::long_t:
+    val = long(ygets_l(iarg));
+    break;
+  case Gyoto::Property::unsigned_long_t:
+    val = (unsigned long)(ygets_l(iarg));
+    break;
   case Gyoto::Property::double_t:
-    ptr->set(p, ygets_d(iarg), unit);
+    object->set(p, ygets_d(iarg), unit);
     return;
   case Gyoto::Property::filename_t:
   case Gyoto::Property::string_t:
@@ -429,5 +474,5 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   default:
     y_error("Property type unimplemented in yget_property()");
    }
-  ptr->set(p, val);
+  object->set(p, val);
 }

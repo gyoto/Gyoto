@@ -74,6 +74,26 @@ namespace Gyoto {
 	   (Gyoto::Property::get_double_t)&class::fname,	\
          name##_ancestors)
 
+/// Define a Property of type Long
+#define GYOTO_PROPERTY_LONG(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	   (Gyoto::Property::set_long_t)&class::fname,	\
+	   (Gyoto::Property::get_long_t)&class::fname,	\
+         name##_ancestors)
+
+/// Define a Property of type Long
+#define GYOTO_PROPERTY_UNSIGNED_LONG(class, name, fname, ancestor)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
+  Property const name \
+        (#name, \
+	   (Gyoto::Property::set_unsigned_long_t)&class::fname,	\
+	   (Gyoto::Property::get_unsigned_long_t)&class::fname,	\
+         name##_ancestors)
+
+#define GYOTO_PROPERTY_SIZE_T GYOTO_PROPERTY_UNSIGNED_LONG
+
 /// Define a Property of type Double supporting unit
 #define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname, ancestor) \
   GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
@@ -145,7 +165,8 @@ class Gyoto::Property
  private:
 
  public:
-  enum type_e {double_t, long_t, bool_t, string_t, filename_t,
+  enum type_e {double_t, long_t, unsigned_long_t, bool_t,
+	       string_t, filename_t,
 	       vector_double_t, metric_t, spectrum_t};
   std::string name;
   std::string name_false;
@@ -155,8 +176,10 @@ class Gyoto::Property
   typedef void (Object::* set_double_unit_t)(double val,
 					     std::string const &unit);
   typedef double (Object::* get_double_unit_t)(std::string const &unit) const;
-  typedef void (Object::* set_long_t)(double val);
+  typedef void (Object::* set_long_t)(long val);
   typedef long (Object::* get_long_t)() const;
+  typedef void (Object::* set_unsigned_long_t)(unsigned long val);
+  typedef unsigned long (Object::* get_unsigned_long_t)() const;
   typedef void (Object::* set_bool_t)(bool val);
   typedef bool (Object::* get_bool_t)() const;
   typedef void (Object::* set_string_t)(std::string const&);
@@ -179,6 +202,7 @@ class Gyoto::Property
   union setter_t {
     set_double_t set_double;
     set_long_t set_long;
+    set_unsigned_long_t set_unsigned_long;
     set_bool_t set_bool;
     set_string_t set_string;
     set_vector_double_t set_vdouble;
@@ -188,6 +212,7 @@ class Gyoto::Property
   union getter_t {
     get_double_t get_double;
     get_long_t get_long;
+    get_unsigned_long_t get_unsigned_long;
     get_bool_t get_bool;
     get_string_t get_string;
     get_vector_double_t get_vdouble;
@@ -202,6 +227,16 @@ class Gyoto::Property
   getter_unit_t getter_unit;
   Property const * const  * const parents;
   
+  Property(std::string name,
+	   set_long_t set_long,
+	   get_long_t get_long,
+	   Property const * const * ancestors);
+
+  Property(std::string name,
+	   set_unsigned_long_t set_unsigned_long,
+	   get_unsigned_long_t get_unsigned_long,
+	   Property const * const * ancestors);
+
   Property(std::string name,
 	   set_double_t set_double,
 	   get_double_t get_double,

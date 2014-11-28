@@ -36,6 +36,7 @@
 #include <string>
 
 #include <GyotoSmartPointer.h>
+#include <GyotoObject.h>
 #include <GyotoAstrobj.h>
 #include <GyotoRegister.h>
 #include <GyotoHooks.h>
@@ -146,6 +147,7 @@ namespace Gyoto {
  */
 class Gyoto::Metric::Generic
 : public Gyoto::SmartPointee,
+  public Gyoto::Object,
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;

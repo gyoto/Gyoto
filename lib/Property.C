@@ -3,6 +3,21 @@
 using namespace std ;
 using namespace Gyoto ;
 
+Property::Property(string n, set_long_t set, get_long_t get,
+		   Property const * const * ancestors)
+  : name(n), type(long_t), parents(ancestors) {
+  setter.set_long=set;
+  getter.get_long=get;
+}
+
+Property::Property(string n,
+		   set_unsigned_long_t set, get_unsigned_long_t get,
+		   Property const * const * ancestors)
+  : name(n), type(unsigned_long_t), parents(ancestors) {
+  setter.set_unsigned_long=set;
+  getter.get_unsigned_long=get;
+}
+
 Property::Property(string n, set_double_t set, get_double_t get,
 		   Property const * const * ancestors)
   : name(n), type(double_t), parents(ancestors) {

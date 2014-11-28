@@ -49,7 +49,7 @@ GYOTO_PROPERTY_FINALIZE(Metric::Generic, &Mass);
 ///
 
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
-  SmartPointee(name), mass_(1.), coordkind_(coordkind),
+  SmartPointee(), Object(name), mass_(1.), coordkind_(coordkind),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
   delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
@@ -64,7 +64,7 @@ Metric::Generic::Generic(const int coordkind, const std::string &name) :
 }
 
 Metric::Generic::Generic(Generic const &o):
-  SmartPointee(o), mass_(o.mass_), coordkind_(o.coordkind_),
+  SmartPointee(o), Object(o), mass_(o.mass_), coordkind_(o.coordkind_),
   delta_min_(o.delta_min_), delta_max_(o.delta_max_),
   delta_max_over_r_(o.delta_max_over_r_), keplerian_(o.keplerian_)
 {}

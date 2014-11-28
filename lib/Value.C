@@ -19,6 +19,9 @@ Value::operator bool() const {return Bool;}
 Value::Value(long val) : Long(val) {}
 Value::operator long() const {return Long;}
 
+Value::Value(unsigned long val) : ULong(val) {}
+Value::operator unsigned long() const {return ULong;}
+
 Value::Value(std::string val) : String(val) {}
 Value::operator std::string() const {return String;}
 
@@ -40,6 +43,7 @@ Value& Value::operator=(Value const &right) {
   ___local_case(Double);
   ___local_case(Bool);
   ___local_case(Long);
+  ___local_case(ULong);
   ___local_case(String);
   ___local_case(VDouble);
   ___local_case(Metric);

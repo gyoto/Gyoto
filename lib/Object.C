@@ -56,6 +56,7 @@ void Object::set(Property const &p, Value val) {
     ___local_case(double);
     ___local_case(bool);
     ___local_case(long);
+    ___local_case(unsigned_long);
   case Property::filename_t:
     ___local_case(string);
   case Property::vector_double_t:
@@ -104,6 +105,7 @@ Value Object::get(Property const &p) const {
     ___local_case(bool);
     ___local_case(double);
     ___local_case(long);
+    ___local_case(unsigned_long);
   case Property::filename_t:
     ___local_case(string);
   case Property::vector_double_t:
@@ -133,6 +135,12 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   switch (p.type) {
   case Property::bool_t:
     fmp->setParameter(get(p)?name:p.name_false);
+    break;
+  case Property::long_t:
+    fmp->setParameter(name, long(get(p)));
+    break;
+  case Property::unsigned_long_t:
+    fmp->setParameter(name, (unsigned long)(get(p)));
     break;
   case Property::double_t:
     fmp->setParameter(name, double(get(p)));
@@ -212,6 +220,12 @@ void Object::setParameter(Property const &p, string const &name,
   switch (p.type) {
   case Property::bool_t:
     val = (name==p.name);
+    break;
+  case Property::long_t:
+    val = long(atoi(content.c_str()));
+    break;
+  case Property::unsigned_long_t:
+    val = (unsigned long)(atoi(content.c_str()));
     break;
   case Property::double_t:
     val = atof(content.c_str());

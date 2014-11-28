@@ -29,6 +29,7 @@
 
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
+#include <GyotoObject.h>
 #include <GyotoRegister.h>
 #include <GyotoHooks.h>
 #include <string>
@@ -170,6 +171,7 @@ namespace Gyoto{
 
 class Gyoto::Spectrometer::Generic
 : public Gyoto::SmartPointee,
+  public Gyoto::Object,
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;

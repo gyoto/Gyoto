@@ -30,20 +30,17 @@ Gyoto::SmartPointee::SmartPointee() :
   pthread_mutex_init(&mutex_, NULL);
 #endif
 }
-Gyoto::SmartPointee::SmartPointee(std::string name) :
-  Object(name), refCount (0)
-{
-#ifdef HAVE_PTHREAD
-  pthread_mutex_init(&mutex_, NULL);
-#endif
-}
+
+Gyoto::SmartPointee::~SmartPointee() {}
+
 Gyoto::SmartPointee::SmartPointee(const SmartPointee&o) :
-  Object(o), refCount (0)
+  refCount (0)
 {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&mutex_, NULL);
 #endif
 }
+
 void Gyoto::SmartPointee::incRefCount () {
 #ifdef HAVE_PTHREAD
  pthread_mutex_lock(&mutex_);

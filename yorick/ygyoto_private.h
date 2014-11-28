@@ -94,7 +94,8 @@ long int __ygyoto_var_idx(long id);
     }									\
     void gyoto_##NAME##_eval(void *obj, int argc);			\
     void gyoto_##NAME##_closure_eval(void *obj, int argc) {		\
-      Property const * prop = ((gyoto_##NAME##_closure*)obj)->smptr	\
+      Property const * prop = \
+	((Gyoto::Object*)((gyoto_##NAME##_closure*)obj)->smptr())	\
 	->property(((gyoto_##NAME##_closure*)obj)->member);		\
 	if (prop) {							\
 	  std::string unit="";						\

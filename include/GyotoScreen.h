@@ -48,6 +48,7 @@ namespace Gyoto {
 #include <GyotoDefs.h>
 #include <GyotoUtils.h>
 #include <GyotoSmartPointer.h>
+#include <GyotoObject.h>
 #include <GyotoMetric.h>
 #include <GyotoSpectrometer.h>
 
@@ -162,7 +163,10 @@ namespace Gyoto {
  * "`pwd`/".
  *
  */
-class Gyoto::Screen : public Gyoto::SmartPointee {
+class Gyoto::Screen
+: public Gyoto::SmartPointee,
+  public Gyoto::Object
+{
   friend class Gyoto::SmartPointer<Gyoto::Screen>;
 
  private:

@@ -32,6 +32,7 @@
 #include <vector>
 
 namespace Gyoto {
+  class Value;
   namespace Metric {class Generic;}
   namespace Spectrum {class Generic;}
 }
@@ -54,6 +55,10 @@ class Gyoto::Value {
   long Long;
   Value(long);
   operator long() const;
+
+  unsigned long ULong;
+  Value(unsigned long);
+  operator unsigned long() const;
 
   std::string String;
   Value(std::string);

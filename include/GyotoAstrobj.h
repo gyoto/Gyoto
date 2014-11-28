@@ -38,6 +38,7 @@
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
 #include <GyotoConverters.h>
+#include <GyotoObject.h>
 
 namespace Gyoto{
   class Photon;
@@ -184,7 +185,10 @@ namespace Gyoto{
  *
  * See introduction in the Gyoto::Astrobj namespace.
  */
-class Gyoto::Astrobj::Generic : public Gyoto::SmartPointee {
+class Gyoto::Astrobj::Generic
+: public Gyoto::SmartPointee,
+  public Gyoto::Object
+{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 
 

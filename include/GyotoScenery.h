@@ -33,6 +33,7 @@ namespace Gyoto{
 
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
+#include <GyotoObject.h>
 #include <GyotoAstrobj.h>
 #include <GyotoMetric.h>
 #include <GyotoScreen.h>
@@ -158,7 +159,10 @@ namespace Gyoto{
  * </Scenery>
  * \endcode
  */
-class Gyoto::Scenery : public Gyoto::SmartPointee {
+class Gyoto::Scenery
+: public Gyoto::SmartPointee,
+  public Gyoto::Object
+{
   friend class Gyoto::SmartPointer<Gyoto::Scenery>;
   
   

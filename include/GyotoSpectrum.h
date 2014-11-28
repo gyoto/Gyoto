@@ -28,6 +28,7 @@
 #define __GyotoSpectrum_H_ 
 
 #include "GyotoRegister.h"
+#include "GyotoObject.h"
 
 namespace Gyoto{
   namespace Register { class Entry; }
@@ -122,7 +123,10 @@ namespace Gyoto{
  *  Light emitted by e.g. a Star
  *
  */
-class Gyoto::Spectrum::Generic : public Gyoto::SmartPointee {
+class Gyoto::Spectrum::Generic
+: public Gyoto::SmartPointee,
+  public Gyoto::Object
+{
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
  protected:
   std::string kind_; ///< e.g. constants, blackbody...

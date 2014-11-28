@@ -79,7 +79,7 @@ namespace Gyoto {
  * 
  */
 class Gyoto::Worldline
-:  protected Gyoto::Hook::Listener
+:  protected Gyoto::Hook::Listener, public Gyoto::Object
 {
 
   // Data : 
@@ -187,6 +187,7 @@ class Gyoto::Worldline
   // Constructors - Destructor
   // -------------------------
  public: 
+  GYOTO_OBJECT;
   Worldline() ; ///< Default constructor
   
   Worldline(const Worldline& ) ;                ///< Copy constructor
@@ -216,6 +217,10 @@ class Gyoto::Worldline
   virtual double getMass() const = 0; ///< Get mass of particule.
   void   metric(SmartPointer<Metric::Generic>); ///< Set metric Smartpointer
   SmartPointer<Metric::Generic> metric() const; ///< Get metric
+
+  void initCoord(std::vector<double> const&); 
+  std::vector<double> initCoord() const; 
+
   virtual void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
 
   /**
@@ -246,7 +251,7 @@ class Gyoto::Worldline
    *                 "runge_kutta_fehlberg78", "runge_kutta_dopri5",
    *                 "runge_kutta_cash_karp54_classic"
    */
-  void integrator(std::string type);
+  void integrator(std::string const & type);
 
   /**
    * \brief Describe the integrator used by #state_
@@ -383,46 +388,19 @@ class Gyoto::Worldline
   virtual void xStore(size_t ind, double coord[8]) ; ///< Store coord at index ind
   virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
-  /**
-   * \brief Set parameter by name
-   *
-   * Assume MyKind is a subclass of Worldline which has two
-   * members (a string StringMember and a double DoubleMember):
-   * \code
-   * int MyKind::setParameter(std::string name,
-   *                          std::string content,
-   *                          std::string unit) {
-   *   if      (name=="StringMember") setStringMember(content);
-   *   else if (name=="DoubleMember") setDoubleMember(atof(content.c_str()),
-   *                                                  unit);
-   *   else return Worldline::setParameter(name, content, unit);
-   *   return 0;
-   * }
-   * \endcode
-   *
-   * \param name XML name of the parameter
-   * \param content string representation of the value
-   * \param unit string representation of the unit
-   * \return 0 if this parameter is known, 1 if it is not.
-   */
+
+  // Object / Property overloading for special needs:
+  // Overload to interpret InitialCoordinate alias, and to interpret
+  // Position/Velocity
   virtual int setParameter(std::string name,
 			   std::string content,
 			   std::string unit) ;
-
 #ifdef GYOTO_USE_XERCES
-  /**
-   * \brief Process XML entity
-   * Uses wait_pos_ and init_vel_ to make sure setVelocity() is called
-   * after setPosition().
-   */
+  // Overload to 1- get metric first and 2- interpret Position/Velocity
   virtual void setParameters(FactoryMessenger *fmp) ;
-  /**
-   * Derived classes implementations should implement fillElement to save their
-   * parameters to XML and call the generic implementation to save
-   * generic parts such as adaptive_: Worldline::fillElement(fmp).
-   */
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             ///< XML output
+  // Overload to dispatch InitCoord into Position and Velocity
+  // for massive particle
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
 #endif
 
   // Accessors

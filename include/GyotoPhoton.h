@@ -267,9 +267,6 @@ class Gyoto::Photon : public Gyoto::Worldline, public Gyoto::SmartPointee {
    */
   virtual void transmit(size_t i, double t);
 
-  int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
  private:
   /// Allocate Photon::transmission_
   void _allocateTransmission();
