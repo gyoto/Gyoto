@@ -38,7 +38,7 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_DOUBLE(UniformSphere, Radius, radius, Standard::properties);
+GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, Standard::properties);
 GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha, &Radius);
 GYOTO_PROPERTY_DOUBLE(UniformSphere,
 		      DeltaMaxOverRadius, deltaMaxOverRadius, &Alpha);
@@ -256,11 +256,11 @@ void UniformSphere::radius(double r) {
   safety_value_ = critical_value_*1.1+0.1;
 }
 
-double UniformSphere::radius(std::string unit) const {
+double UniformSphere::radius(std::string const &unit) const {
   return Units::FromGeometrical(radius(), unit, gg_);
 }
 
-void UniformSphere::radius(double r, std::string unit) {
+void UniformSphere::radius(double r, std::string const &unit) {
   radius(Units::ToGeometrical(r, unit, gg_));
 }
 

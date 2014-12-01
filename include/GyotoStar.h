@@ -101,6 +101,8 @@ class Gyoto::Astrobj::Star :
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
  /**
   * Create Star object and set initial condition.
   * \param gg Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
@@ -147,20 +149,24 @@ class Gyoto::Astrobj::Star :
   //  int  getCoordSys(); ///< Set coordinate system for integration
   virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
+ public:
+  // Object / Property overloading for special needs:
+  // Overload to interpret InitialCoordinate alias, and to interpret
+  // Position/Velocity
   virtual int setParameter(std::string name,
 			   std::string content,
-			   std::string unit);
-
- public:
+			   std::string unit) ;
 #ifdef GYOTO_USE_XERCES
-  /**
-   * This implementation of UniformSphere::setParameters() uses
-   * wait_pos_ and init_vel_ to make sure setVelocity() is called
-   * after setPosition().
-   */
+  // Overload to 1- get metric first and 2- interpret Position/Velocity
   virtual void setParameters(FactoryMessenger *fmp) ;
-  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
+  // Overload to dispatch InitCoord into Position and Velocity
+  // for massive particle
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 #endif
+  GYOTO_WORLDLINE;
+  using Gyoto::Worldline::deltaMax;
+  using Gyoto::Astrobj::UniformSphere::deltaMax;
 
  public:
   

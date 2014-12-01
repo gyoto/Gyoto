@@ -18,7 +18,9 @@
  */
 
 #include "GyotoUtils.h"
+#include "GyotoWorldline.h"
 #include "GyotoStar.h"
+#include "GyotoProperty.h"
 #include "GyotoPhoton.h"
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
@@ -35,6 +37,9 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_WORLDLINE_PROPERTIES(Star, UniformSphere::properties);
+GYOTO_PROPERTY_FINALIZE(Star, &GYOTO_WORLDLINE_FIRST_PROPERTY);
 
 Star::Star() :
   UniformSphere("Star"),
@@ -117,21 +122,61 @@ double Star::rMax() {
   return rmax_;
 }
 
-int Star::setParameter(string name, string content, string unit) {
-  if        (!UniformSphere::setParameter(name, content, unit)) ; // if found
-  else if   (!Worldline    ::setParameter(name, content, unit)) ; // do nothing
-  else return 1;
+int Star::setParameter(std::string name,
+			    std::string content,
+			    std::string unit) {
+  double coord[8];
+  char* tc = const_cast<char*>(content.c_str());
+  if (name=="InitialCoordinate") {
+    name=="InitCoord";
+    return UniformSphere::setParameter(name, content, unit);
+  } else if (name=="Position") {
+    if (FactoryMessenger::parseArray(content, coord, 4) != 4)
+      throwError("Worldline \"Position\" requires exactly 4 tokens");
+    if (init_vel_) {
+      setInitCoord(coord, init_vel_);
+      delete[] init_vel_; init_vel_=NULL;
+    } else setPosition(coord);
+    wait_pos_ = 0;
+  } else if (name=="Velocity") {
+    if (FactoryMessenger::parseArray(content, coord, 3) != 3)
+      throwError("Worldline \"Velocity\" requires exactly 3 tokens");
+    if (wait_pos_) {
+      if (init_vel_) delete [] init_vel_;
+      init_vel_ = new double[3];
+      memcpy(init_vel_, coord, 3*sizeof(double));
+    } else setVelocity(coord);
+  }
+  else return UniformSphere::setParameter(name, content, unit);
   return 0;
 }
 
 #ifdef GYOTO_USE_XERCES
-void Star::fillElement(FactoryMessenger *fmp) const {
-  Worldline::fillElement(fmp);
-  Astrobj::UniformSphere::fillElement(fmp);
+
+void Star::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  if (p.name == "InitCoord") {
+    if (imin_ <= imax_) {
+      double coord[8];
+      getInitialCoord(coord);
+      // For massive particule, express initial condition with 3-velocity
+      double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
+      fmp -> setParameter ("Position", coord, 4);
+      fmp -> setParameter ("Velocity", vel, 3);
+    }
+    Property const * const * parent = p.parents;
+    if (parent) {
+      for ( ; *parent; ++parent) {
+	fillProperty(fmp, **parent);
+      } 
+    }
+    return;
+  }
+  UniformSphere::fillProperty(fmp, p);
 }
 
 void Star::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;
+  metric(fmp->metric());
   UniformSphere::setParameters(fmp);
   wait_pos_ = 0;
   if (init_vel_) {
@@ -139,5 +184,8 @@ void Star::setParameters(FactoryMessenger* fmp) {
     throwError("Worldline::setParameters(): "
 	       "Velocity was found but not Position");
   }
+}
+void Star::fillElement(Gyoto::FactoryMessenger *fmp) const {
+  UniformSphere::fillElement(fmp);
 }
 #endif

@@ -39,6 +39,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoScreen.h>
 #include <GyotoWorldline.h>
+#include <GyotoObject.h>
 
 #include <float.h>
 
@@ -48,7 +49,11 @@ namespace Gyoto{
  *
  * This is the central object for ray-tracing. 
  */
-class Gyoto::Photon : public Gyoto::Worldline, public Gyoto::SmartPointee {
+class Gyoto::Photon
+: public Gyoto::Worldline,
+  public Gyoto::SmartPointee,
+  public Gyoto::Object
+{
   friend class Gyoto::SmartPointer<Gyoto::Photon>;
   // Data : 
   // -----
@@ -90,6 +95,8 @@ class Gyoto::Photon : public Gyoto::Worldline, public Gyoto::SmartPointee {
   // -------------------------
 
  public:
+  GYOTO_OBJECT;
+  GYOTO_WORLDLINE;
   virtual std::string className() const ; ///< "Photon"
   virtual std::string className_l() const ; ///< "photon"
 
@@ -221,10 +228,9 @@ class Gyoto::Photon : public Gyoto::Worldline, public Gyoto::SmartPointee {
 		 double tinside, double &toutside) ;
 
 #ifdef GYOTO_USE_XERCES
- public:
-  /// Write XML description
-  void fillElement(FactoryMessenger *fmp) const;
-  /// Instanciate Photon from XML description
+  virtual void setParameters(FactoryMessenger *fmp) ;
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
   static SmartPointer<Photon> Subcontractor(Gyoto::FactoryMessenger*);
 #endif
 

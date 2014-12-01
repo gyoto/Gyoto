@@ -36,7 +36,6 @@ using namespace Gyoto::Astrobj;
 StarTrace::StarTrace() : Star()
 {
   Generic::kind_="StarTrace";
-  Worldline::kind_="StarTrace";
   xAllocateXYZ();
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done." << endl;
@@ -49,7 +48,6 @@ StarTrace::StarTrace(SmartPointer<Metric::Generic> met, double rad,
   Star(met, rad, pos, v)
 {
   Generic::kind_="StarTrace";
-  Worldline::kind_="StarTrace";
   xAllocateXYZ();
   computeXYZ(i0_);
 }
@@ -57,7 +55,6 @@ StarTrace::StarTrace(SmartPointer<Metric::Generic> met, double rad,
 StarTrace::StarTrace(const StarTrace& o) : Star(o), tmin_(o.tmin_), tmax_(o.tmax_)
 {
   Generic::kind_="StarTrace";
-  Worldline::kind_="StarTrace";
   xAllocateXYZ();
   size_t sz = get_nelements()*sizeof(double);
   memcpy(x_+imin_, o.x_+imin_, sz);
@@ -69,7 +66,6 @@ StarTrace::StarTrace(const Star& o, double tmin, double tmax) :
   Star(o), tmin_(tmin), tmax_(tmax)
 {
   Generic::kind_="StarTrace";
-  Worldline::kind_="StarTrace";
   xAllocateXYZ();
   computeXYZ();
 }
@@ -185,7 +181,7 @@ int StarTrace::setParameter(string name, string content, string unit) {
 
 #ifdef GYOTO_USE_XERCES
 void StarTrace::fillElement(FactoryMessenger *fmp) const {
-  Star::fillElement(fmp);
+  UniformSphere::fillElement(fmp);
   fmp->setParameter("TMin", tmin_);
   fmp->setParameter("TMax", tmax_);
 }

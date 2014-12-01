@@ -45,6 +45,14 @@ namespace Gyoto {
 #define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
   Property const * const name##_ancestors[] = {ancestor, NULL}
 
+#define GYOTO_PROPERTY_MAKE_ANCESTORS2(name, ancestor1, ancestor2)	\
+  Property const * const name##_ancestors[] = {ancestor1, ancestor2, NULL}
+
+#define GYOTO_PROPERTY_EMPTY2(class, name, ancestor1, ancestor2)	\
+  GYOTO_PROPERTY_MAKE_ANCESTORS2(name, ancestor1, ancestor2);		\
+  Property const name							\
+  (name##_ancestors)
+
 /// Define a new Property of type Bool
 /*
  * Declares a static variable named "name". name and namef should not
@@ -167,7 +175,7 @@ class Gyoto::Property
  public:
   enum type_e {double_t, long_t, unsigned_long_t, bool_t,
 	       string_t, filename_t,
-	       vector_double_t, metric_t, spectrum_t};
+	       vector_double_t, metric_t, spectrum_t, empty_t};
   std::string name;
   std::string name_false;
   int type;
@@ -227,6 +235,8 @@ class Gyoto::Property
   getter_unit_t getter_unit;
   Property const * const  * const parents;
   
+  Property(Property const * const * ancestors);
+
   Property(std::string name,
 	   set_long_t set_long,
 	   get_long_t get_long,

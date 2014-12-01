@@ -22,23 +22,31 @@ Gyoto::Object::~Object() {}
 void Object::set(Property const &p,
 		 Value val,
 		 std::string const &unit) {
-
-  if (p.type == Property::double_t) {
-    Property::set_double_unit_t setu = p.setter_unit.set_double;
-    if (setu) {
-      (this->*setu)(val, unit);
-    } else {
-      if (unit != "") throwError("Can't set this property with unit");
-      set(p, val);
+  GYOTO_DEBUG_EXPR(p.type);
+  switch (p.type) {
+  case Property::empty_t:
+    throwError("Attempt to set empty_t Property");
+    return;
+  case Property::double_t:
+    {
+      Property::set_double_unit_t setu = p.setter_unit.set_double;
+      if (setu) {
+	GYOTO_DEBUG << "double Property which supports unit" << endl;
+	(this->*setu)(val, unit);
+      } else {
+	GYOTO_DEBUG << "double Property which does not support unit" << endl;
+	if (unit != "") throwError("Can't set this property with unit");
+	set(p, val);
+      }
     }
     return;
+  default:
+    GYOTO_DEBUG<< "Not a double_t or empty_t Property" << endl;
+    if (unit != "")
+      throwError("Can't set this property with unit (not a double)");
+    set(p, val);
+    return;
   }
-
-  if (unit != "")
-    throwError("Can't set this property with unit (not a double)");
-
-  set(p, val);
-  return;
 
 }
 
@@ -46,13 +54,17 @@ void Object::set(Property const &p, Value val) {
 # define ___local_case(type)			\
   case Property::type##_t:			\
     {						\
-      Property::set_##type##_t set = p.setter.set_##type; \
+      GYOTO_DEBUG <<"Setting property of type " #type << endl;	\
+      Property::set_##type##_t set = p.setter.set_##type;	\
+      GYOTO_DEBUG_EXPR(set);					\
       if (!set) throwError("Can't set this Property");	\
       (this->*set)(val);				\
     }							\
     break
   
   switch (p.type) {
+  case Property::empty_t:
+    return;
     ___local_case(double);
     ___local_case(bool);
     ___local_case(long);
@@ -102,6 +114,8 @@ Value Object::get(Property const &p) const {
 
   Gyoto::Value val;
   switch (p.type) {
+  case Property::empty_t:
+    throwError("Can't get empty property");
     ___local_case(bool);
     ___local_case(double);
     ___local_case(long);
@@ -133,6 +147,8 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   FactoryMessenger * childfmp=NULL;
   string name=p.name;
   switch (p.type) {
+  case Property::empty_t:
+    break;
   case Property::bool_t:
     fmp->setParameter(get(p)?name:p.name_false);
     break;

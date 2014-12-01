@@ -145,8 +145,8 @@ class Gyoto::Astrobj::UniformSphere :
   ///< Get opacity_
   double radius() const ; ///< Get radius_ in geometrical units
   virtual void   radius(double); ///< Set radius_ in geometrical units
-  double radius(std::string) const ; ///< Get radius_ in specified unit
-  virtual void   radius(double, std::string); ///< Set radius_ in specified unit
+  double radius(std::string const &) const ; ///< Get radius_ in specified unit
+  virtual void   radius(double, std::string const &); ///< Set radius_ in specified unit
 
   double deltaMaxOverRadius() const ; ///< Get dltmor_
   virtual void   deltaMaxOverRadius(double f); ///< Set dltmor_

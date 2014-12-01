@@ -23,6 +23,7 @@
 #include "GyotoScreen.h"
 #include "GyotoDefs.h"
 #include "GyotoError.h"
+#include "GyotoProperty.h"
 
 #include <iostream>
 #include <fstream>
@@ -40,8 +41,12 @@
 using namespace std;
 using namespace Gyoto;
 
+GYOTO_WORLDLINE_PROPERTIES(Photon, Object::properties);
+GYOTO_PROPERTY_FINALIZE(Photon, &GYOTO_WORLDLINE_FIRST_PROPERTY);
+
 Photon::Photon() :
   Worldline(),
+  Object("Photon"),
   object_(NULL),
   freq_obs_(1.), transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
@@ -571,20 +576,46 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 
 #ifdef GYOTO_USE_XERCES
+void Photon::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  if (p.name == "InitCoord") {
+    if (imin_ <= imax_) {
+      double coord[8];
+      getInitialCoord(coord);
+      // For massless particle, only 4-velocity is meaningfull
+      fmp -> setParameter("InitCoord", coord, 8);
+    }
+    Property const * const * parent = p.parents;
+    if (parent) {
+      for ( ; *parent; ++parent) {
+	fillProperty(fmp, **parent);
+      } 
+    }
+    return;
+  }
+  Object::fillProperty(fmp, p);
+}
+
 void Photon::fillElement(FactoryMessenger *fmp) const {
   if (object_)    fmp -> astrobj (object_) ;
-  Worldline::fillElement(fmp);
+  Object::fillElement(fmp);
+}
+
+void Photon::setParameters(FactoryMessenger* fmp) {
+  wait_pos_ = 1;
+  metric(fmp->metric());
+  astrobj( fmp->astrobj() );
+  Object::setParameters(fmp);
+  wait_pos_ = 0;
+  if (init_vel_) {
+    delete[] init_vel_; init_vel_=NULL;
+    throwError("Worldline::setParameters(): "
+	       "Velocity was found but not Position");
+  }
 }
 
 SmartPointer<Photon> Gyoto::Photon::Subcontractor(FactoryMessenger* fmp) {
-  string name="", content="";
-  SmartPointer<Metric::Generic> gg = NULL;
-  SmartPointer<Astrobj::Generic> ao = NULL;
-
   SmartPointer<Photon> ph = new Photon();
-  ph -> astrobj( fmp->astrobj() );
-  ph -> Worldline::setParameters(fmp);
-
+  ph -> setParameters(fmp);
   return ph;
 }
 #endif

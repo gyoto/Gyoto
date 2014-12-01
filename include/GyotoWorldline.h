@@ -47,6 +47,76 @@ namespace Gyoto {
 #include <GyotoScreen.h>
 #include <GyotoHooks.h>
 
+#define GYOTO_WORLDLINE_PROPERTIES(c, a)				\
+  GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary, a);	\
+  GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol, &HighOrderImages);		\
+  GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol, &RelTol);			\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR, &AbsTol);	\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, &DeltaMaxOverR);	\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, &DeltaMax);		\
+  GYOTO_PROPERTY_STRING(c, Integrator, _integrator, &DeltaMin);		\
+  GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter, &Integrator);		\
+  GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive, &MaxIter);	\
+  GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta, &Adaptive);		\
+  GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord, &Delta);	\
+  GYOTO_PROPERTY_METRIC(c, Metric, _metric, &InitCoord);		\
+  void c::_secondary(bool s) {secondary(s);}				\
+  bool c::_secondary() const {return secondary();}			\
+  void c::_adaptive(bool s) {adaptive(s);}				\
+  bool c::_adaptive() const {return adaptive();}			\
+  void c::_relTol(double f){relTol(f);}					\
+  double c::_relTol()const{return relTol();}				\
+  void c::_absTol(double f){absTol(f);}					\
+  double c::_absTol()const{return absTol();}				\
+  void c::_deltaMin(double f){deltaMin(f);}				\
+  double c::_deltaMin()const{return deltaMin();}			\
+  void c::_deltaMax(double f){deltaMax(f);}		\
+  double c::_deltaMax()const{return deltaMax();}	\
+  void c::_deltaMaxOverR(double f){deltaMaxOverR(f);}			\
+  double c::_deltaMaxOverR()const{return deltaMaxOverR();}		\
+  void c::_delta(double f){delta(f);}					\
+  double c::_delta()const{return delta();}				\
+  void c::_delta(double f, std::string const &u){delta(f, u);}		\
+  double c::_delta(std::string const &u)const{return delta(u);}		\
+  void c::_maxiter(size_t f){maxiter(f);}				\
+  size_t c::_maxiter()const{return maxiter();}				\
+  void c::_integrator(std::string const &f){integrator(f);}		\
+  std::string c::_integrator() const {return integrator();}		\
+  std::vector<double> c::_initCoord()const{return initCoord();}		\
+  void c::_initCoord(std::vector<double> const &f){initCoord(f);}	\
+  void c::_metric(SmartPointer<Metric::Generic>f){metric(f);}		\
+  SmartPointer<Metric::Generic> c::_metric() const{return metric();}
+
+#define GYOTO_WORLDLINE_FIRST_PROPERTY ::Metric
+
+#define GYOTO_WORLDLINE					\
+  void _delta(const double delta);			\
+  void _delta(double, const std::string &unit);		\
+  double _delta() const ;				\
+  double _delta(const std::string &unit) const ;	\
+  void _adaptive (bool mode) ;				\
+  bool _adaptive () const ;				\
+  void _secondary (bool sec) ;				\
+  bool _secondary () const ;				\
+  void _maxiter (size_t miter) ;			\
+  size_t _maxiter () const ;				\
+  void _integrator(std::string const & type);		\
+  std::string _integrator() const ;			\
+  double _deltaMin() const;				\
+  void _deltaMin(double h1);				\
+  void _absTol(double);					\
+  double _absTol()const;				\
+  void _relTol(double);					\
+  double _relTol()const;				\
+  void _deltaMax(double h1);				\
+  double _deltaMax()const;				\
+  double _deltaMaxOverR() const;			\
+  void _deltaMaxOverR(double t);			\
+  std::vector<double> _initCoord()const;		\
+  void _initCoord(std::vector<double> const&f);		\
+  void _metric(SmartPointer<Metric::Generic>);		\
+  SmartPointer<Metric::Generic> _metric() const;
+
 /**
  * \class Gyoto::Worldline
  * \brief  Timelike or null geodesics
@@ -79,7 +149,7 @@ namespace Gyoto {
  * 
  */
 class Gyoto::Worldline
-:  protected Gyoto::Hook::Listener, public Gyoto::Object
+:  protected Gyoto::Hook::Listener
 {
 
   // Data : 
@@ -187,7 +257,6 @@ class Gyoto::Worldline
   // Constructors - Destructor
   // -------------------------
  public: 
-  GYOTO_OBJECT;
   Worldline() ; ///< Default constructor
   
   Worldline(const Worldline& ) ;                ///< Copy constructor
@@ -389,19 +458,6 @@ class Gyoto::Worldline
   virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 
-  // Object / Property overloading for special needs:
-  // Overload to interpret InitialCoordinate alias, and to interpret
-  // Position/Velocity
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
-#ifdef GYOTO_USE_XERCES
-  // Overload to 1- get metric first and 2- interpret Position/Velocity
-  virtual void setParameters(FactoryMessenger *fmp) ;
-  // Overload to dispatch InitCoord into Position and Velocity
-  // for massive particle
-  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
-#endif
 
   // Accessors
   // ---------
