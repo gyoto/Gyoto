@@ -11,7 +11,14 @@
 using namespace std ;
 using namespace Gyoto ;
 
-GYOTO_PROPERTY_FINALIZE(Object, NULL);
+// We do have a propert list. In contains a single item, wich is a
+// link to the NULL pointer, meaning end-of-the list.  This is used to
+// terminate the property list of our descendents in a
+// forward-compatible manner, i.e., we may well add very generic
+// Properties in the future.
+GYOTO_PROPERTY_START(Object)
+GYOTO_PROPERTY_END(Object, NULL)
+
 
 Gyoto::Object::Object(std::string const &name):kind_(name) {}
 Gyoto::Object::Object():kind_("") {}
@@ -139,7 +146,14 @@ Value Object::get(Property const &p) const {
 }
 
 Property const * Object::property(std::string const pname) const {
-  return getProperties() -> find(pname);
+  Property const * prop = getProperties(); 
+  while (prop) {
+    if (*prop) {
+      if (prop->name == pname) return prop;
+      ++prop;
+    } else prop=prop->parent;
+  }
+  return NULL;
 }
 
 #ifdef GYOTO_USE_XERCES
@@ -179,19 +193,17 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   default:
     throwError("Property type unimplemented in Object::fillProperty()");
   }
-  Property const * const * parent = p.parents;
-  if (parent) {
-    for ( ; *parent; ++parent) {
-      fillProperty(fmp, **parent);
-    } 
-  }
 }
 
 void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   fmp -> setSelfAttribute("kind", kind_);
-
-  Property const * prop = getProperties();
-  if (prop) fillProperty(fmp, *prop);
+  Property const * prop = getProperties(); 
+  while (prop) {
+    if (*prop) {
+      fillProperty(fmp, *prop);
+      ++prop;
+    } else prop=prop->parent;
+  }
 }
 
 void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {

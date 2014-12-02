@@ -38,20 +38,8 @@ namespace Gyoto {
   template <class T> class SmartPointer;
 }
 
-/// Make an NULL-terminated array of ancestors
-/**
- * Called automatically in GYOTO_PROPERTY_*
- */
-#define GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor)	\
-  Property const * const name##_ancestors[] = {ancestor, NULL}
-
-#define GYOTO_PROPERTY_MAKE_ANCESTORS2(name, ancestor1, ancestor2)	\
-  Property const * const name##_ancestors[] = {ancestor1, ancestor2, NULL}
-
-#define GYOTO_PROPERTY_EMPTY2(class, name, ancestor1, ancestor2)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS2(name, ancestor1, ancestor2);		\
-  Property const name							\
-  (name##_ancestors)
+#define GYOTO_PROPERTY_START(class) \
+  Property const class::properties[] = {
 
 /// Define a new Property of type Bool
 /*
@@ -64,106 +52,88 @@ namespace Gyoto {
  * \param[in] fname name of functions for setting or getting the property
  * \param[in] ancestor pointer to next Property instance
  */
-#define GYOTO_PROPERTY_BOOL(class, name, namef, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name				 \
-  (#name,					 \
+#define GYOTO_PROPERTY_BOOL(class, name, namef, fname)			\
+  Gyoto::Property							\
+  (#name,								\
    #namef,								\
    (Gyoto::Property::set_bool_t)&class :: fname,			\
-   (Gyoto::Property::get_bool_t)&class :: fname,			\
-   name##_ancestors)
+   (Gyoto::Property::get_bool_t)&class :: fname),
 
 /// Define a Property of type Double
-#define GYOTO_PROPERTY_DOUBLE(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_double_t)&class::fname,	\
-	   (Gyoto::Property::get_double_t)&class::fname,	\
-         name##_ancestors)
+#define GYOTO_PROPERTY_DOUBLE(class, name, fname)		\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_double_t)&class::fname,		\
+   (Gyoto::Property::get_double_t)&class::fname),
 
 /// Define a Property of type Long
-#define GYOTO_PROPERTY_LONG(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_long_t)&class::fname,	\
-	   (Gyoto::Property::get_long_t)&class::fname,	\
-         name##_ancestors)
+#define GYOTO_PROPERTY_LONG(class, name, fname)		\
+  Gyoto::Property					\
+  (#name,						\
+   (Gyoto::Property::set_long_t)&class::fname,		\
+   (Gyoto::Property::get_long_t)&class::fname),
 
 /// Define a Property of type Long
-#define GYOTO_PROPERTY_UNSIGNED_LONG(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_unsigned_long_t)&class::fname,	\
-	   (Gyoto::Property::get_unsigned_long_t)&class::fname,	\
-         name##_ancestors)
+#define GYOTO_PROPERTY_UNSIGNED_LONG(class, name, fname)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_unsigned_long_t)&class::fname,		\
+   (Gyoto::Property::get_unsigned_long_t)&class::fname),
 
 #define GYOTO_PROPERTY_SIZE_T GYOTO_PROPERTY_UNSIGNED_LONG
 
 /// Define a Property of type Double supporting unit
-#define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname, ancestor) \
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	 (Gyoto::Property::set_double_t)&class::fname,	\
-	 (Gyoto::Property::get_double_t)&class::fname,	\
-	 (Gyoto::Property::set_double_unit_t)&class::fname,	\
-	 (Gyoto::Property::get_double_unit_t)&class::fname,	\
-         name##_ancestors)
+#define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname) \
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_double_t)&class::fname,		\
+   (Gyoto::Property::get_double_t)&class::fname,		\
+   (Gyoto::Property::set_double_unit_t)&class::fname,		\
+   (Gyoto::Property::get_double_unit_t)&class::fname),
 
 /// Define a Property of type Filename
-#define GYOTO_PROPERTY_FILENAME(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_string_t)&class::fname,	\
-	   (Gyoto::Property::get_string_t)&class::fname,	\
-         name##_ancestors, true)
+#define GYOTO_PROPERTY_FILENAME(class, name, fname)		\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_string_t)&class::fname,		\
+   (Gyoto::Property::get_string_t)&class::fname,		\
+   true),
 
 /// Define a Property of type String
-#define GYOTO_PROPERTY_STRING(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_string_t)&class::fname,	\
-	   (Gyoto::Property::get_string_t)&class::fname,	\
-         name##_ancestors, false)
+#define GYOTO_PROPERTY_STRING(class, name, fname)			\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_string_t)&class::fname,			\
+   (Gyoto::Property::get_string_t)&class::fname,			\
+   false),
 
 /// Define a Property of type vector<double>
-#define GYOTO_PROPERTY_VECTOR_DOUBLE(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor); \
-  Property const name \
-        (#name, \
-	   (Gyoto::Property::set_vector_double_t)&class::fname,	\
-	   (Gyoto::Property::get_vector_double_t)&class::fname,	\
-         name##_ancestors)
+#define GYOTO_PROPERTY_VECTOR_DOUBLE(class, name, fname)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_double_t)&class::fname,			\
+   (Gyoto::Property::get_vector_double_t)&class::fname),
 
 /// Define a Property of type Gyoto::Metric::Generic
-#define GYOTO_PROPERTY_METRIC(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor);		\
-  Property const name						\
-        (#name,								\
-	 (Gyoto::Property::set_metric_t)&class::fname,			\
-	 (Gyoto::Property::get_metric_t)&class::fname,			\
-	name##_ancestors)
+#define GYOTO_PROPERTY_METRIC(class, name, fname)			\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_metric_t)&class::fname,			\
+   (Gyoto::Property::get_metric_t)&class::fname),
 
 /// Define a Property of type Gyoto::Spectrum::Generic
-#define GYOTO_PROPERTY_SPECTRUM(class, name, fname, ancestor)	\
-  GYOTO_PROPERTY_MAKE_ANCESTORS(name, ancestor);		\
-  Property const name						\
-        (#name,								\
-	 (Gyoto::Property::set_spectrum_t)&class::fname,		\
-	 (Gyoto::Property::get_spectrum_t)&class::fname,		\
-	name##_ancestors)
+#define GYOTO_PROPERTY_SPECTRUM(class, name, fname)			\
+  Gyoto::Property							\
+    (#name,								\
+     (Gyoto::Property::set_spectrum_t)&class::fname,			\
+     (Gyoto::Property::get_spectrum_t)&class::fname),
 
 /// Define class::properties and class::getProperties() 
-#define GYOTO_PROPERTY_FINALIZE(class, ancestor)		\
-  Property const * const class::properties = ancestor;		\
-  Property const * class::getProperties() const {		\
-    return class::properties;					\
- }
+#define GYOTO_PROPERTY_END(class, next)				\
+  Property(next)};							\
+  Gyoto::Property const * class::getProperties() const {		\
+    return class::properties;						\
+  }
 
 /**
  * \brief Property
@@ -233,58 +203,52 @@ class Gyoto::Property
   getter_t getter;
   setter_unit_t setter_unit;
   getter_unit_t getter_unit;
-  Property const * const  * const parents;
+
+  operator bool() const ;
+
+  Property const * const  parent;
   
-  Property(Property const * const * ancestors);
+  Property(Property const * const ancestor);
 
   Property(std::string name,
 	   set_long_t set_long,
-	   get_long_t get_long,
-	   Property const * const * ancestors);
+	   get_long_t get_long);
 
   Property(std::string name,
 	   set_unsigned_long_t set_unsigned_long,
-	   get_unsigned_long_t get_unsigned_long,
-	   Property const * const * ancestors);
+	   get_unsigned_long_t get_unsigned_long);
 
   Property(std::string name,
 	   set_double_t set_double,
-	   get_double_t get_double,
-	   Property const * const * ancestors);
+	   get_double_t get_double);
 
   Property(std::string name,
 	   set_double_t set_double,
 	   get_double_t get_double,
 	   set_double_unit_t set_double_unit,
-	   get_double_unit_t get_double_unit,
-	   Property const * const * ancestors);
+	   get_double_unit_t get_double_unit);
 
   Property(std::string name,
 	   std::string name_false,
 	   set_bool_t set_bool,
-	   get_bool_t get_bool,
-	   Property const * const * ancestors);
+	   get_bool_t get_bool);
 
   Property(std::string name,
 	   set_string_t set_string,
 	   get_string_t get_string,
-	   Property const * const * ancestors,
-	   bool is_filename=false);
+	   bool is_filename);
 
   Property(std::string name,
 	   set_vector_double_t set_vdouble,
-	   get_vector_double_t get_vdouble,
-	   Property const * const * ancestors);
+	   get_vector_double_t get_vdouble);
 
   Property(std::string name,
 	   set_metric_t set_metric,
-	   get_metric_t get_metric,
-	   Property const * const * ancestors);
+	   get_metric_t get_metric);
 
   Property(std::string name,
 	   set_spectrum_t set_spectrum,
-	   get_spectrum_t get_spectrum,
-	   Property const * const * ancestors);
+	   get_spectrum_t get_spectrum);
 
   Property const * find(std::string name) const;
 

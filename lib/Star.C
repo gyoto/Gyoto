@@ -38,8 +38,8 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_WORLDLINE_PROPERTIES(Star, UniformSphere::properties);
-GYOTO_PROPERTY_FINALIZE(Star, &GYOTO_WORLDLINE_FIRST_PROPERTY);
+GYOTO_PROPERTY_START(Star)
+GYOTO_WORLDLINE_PROPERTY_END(Star, UniformSphere::properties)
 
 Star::Star() :
   UniformSphere("Star"),
@@ -162,12 +162,6 @@ void Star::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
       double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
       fmp -> setParameter ("Position", coord, 4);
       fmp -> setParameter ("Velocity", vel, 3);
-    }
-    Property const * const * parent = p.parents;
-    if (parent) {
-      for ( ; *parent; ++parent) {
-	fillProperty(fmp, **parent);
-      } 
     }
     return;
   }

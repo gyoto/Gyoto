@@ -40,9 +40,9 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_DOUBLE(Standard,
-		      SafetyValue, safetyValue, Generic::properties);
-GYOTO_PROPERTY_FINALIZE(Standard, &SafetyValue);
+GYOTO_PROPERTY_START(Standard)
+GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue)
+GYOTO_PROPERTY_END(Standard, Generic::properties)
 
 Standard::Standard(string kin) :
   Generic(kin),

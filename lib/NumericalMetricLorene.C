@@ -29,25 +29,23 @@ using namespace Lorene;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
-// Keep File first here, so it is processed last in fillElement() 
-GYOTO_PROPERTY_FILENAME(NumericalMetricLorene,
-			File, directory, Generic::properties);
-GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
-			     RefineIntegStep, refineIntegStep,
-			     &File);
-GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
-		      Time, initialTime, &RefineIntegStep);
-GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene,
-		      Horizon, horizon, &Time);
-GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
-		    HasSurface, HasNoSurface, hasSurface, &Horizon);
+GYOTO_PROPERTY_START(NumericalMetricLorene)
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene, MapEt, MapAf, mapEt)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    SpecifyMarginalOrbits, DontSpecifyMarginalOrbits,
-		    specifyMarginalOrbits, &HasSurface);
+		    specifyMarginalOrbits)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
-		    MapEt, MapAf,
-		    mapEt, &SpecifyMarginalOrbits);
-GYOTO_PROPERTY_FINALIZE(NumericalMetricLorene, &MapEt);
+		    HasSurface, HasNoSurface, hasSurface)
+GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Horizon, horizon)
+GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Time, initialTime)
+GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
+			     RefineIntegStep, refineIntegStep)
+// Keep File last here, so it is processed last in fillElement() 
+// (just before the generic Properties, that is
+GYOTO_PROPERTY_FILENAME(NumericalMetricLorene, File, directory)
+GYOTO_PROPERTY_END(NumericalMetricLorene, Generic::properties)
+
+
 
 NumericalMetricLorene::NumericalMetricLorene() :
   WIP("Metric::NumericalMetricLorene"),

@@ -38,11 +38,10 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_BOOL(FixedStar,
-		    Rotating, NonRotating, rotating,
-		    UniformSphere::properties);
-GYOTO_PROPERTY_VECTOR_DOUBLE(FixedStar, Position, position, &Rotating);
-GYOTO_PROPERTY_FINALIZE(FixedStar, &Position);
+GYOTO_PROPERTY_START(FixedStar)
+GYOTO_PROPERTY_VECTOR_DOUBLE(FixedStar, Position, position)
+GYOTO_PROPERTY_BOOL(FixedStar, Rotating, NonRotating, rotating)
+GYOTO_PROPERTY_END(FixedStar, UniformSphere::properties)
 
 FixedStar::FixedStar() : UniformSphere("FixedStar"), rotating_(false)
 {

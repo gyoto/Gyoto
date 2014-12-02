@@ -41,8 +41,8 @@
 using namespace std;
 using namespace Gyoto;
 
-GYOTO_WORLDLINE_PROPERTIES(Photon, Object::properties);
-GYOTO_PROPERTY_FINALIZE(Photon, &GYOTO_WORLDLINE_FIRST_PROPERTY);
+GYOTO_PROPERTY_START(Photon)
+GYOTO_WORLDLINE_PROPERTY_END(Photon, Object::properties)
 
 Photon::Photon() :
   Worldline(),
@@ -576,25 +576,6 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 
 #ifdef GYOTO_USE_XERCES
-void Photon::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
-  if (p.name == "InitCoord") {
-    if (imin_ <= imax_) {
-      double coord[8];
-      getInitialCoord(coord);
-      // For massless particle, only 4-velocity is meaningfull
-      fmp -> setParameter("InitCoord", coord, 8);
-    }
-    Property const * const * parent = p.parents;
-    if (parent) {
-      for ( ; *parent; ++parent) {
-	fillProperty(fmp, **parent);
-      } 
-    }
-    return;
-  }
-  Object::fillProperty(fmp, p);
-}
-
 void Photon::fillElement(FactoryMessenger *fmp) const {
   if (object_)    fmp -> astrobj (object_) ;
   Object::fillElement(fmp);

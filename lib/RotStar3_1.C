@@ -44,10 +44,11 @@ using namespace Lorene;
 using namespace Gyoto;
 using namespace Gyoto::Metric;
 
-GYOTO_PROPERTY_FILENAME(RotStar3_1, File, file, Generic::properties);
+GYOTO_PROPERTY_START(RotStar3_1)
 GYOTO_PROPERTY_BOOL(RotStar3_1, GenericIntegrator, SpecificIntegrator,
-		    genericIntegrator, &File);
-GYOTO_PROPERTY_FINALIZE(RotStar3_1, &GenericIntegrator);
+		    genericIntegrator)
+GYOTO_PROPERTY_FILENAME(RotStar3_1, File, file)
+GYOTO_PROPERTY_END(RotStar3_1, Generic::properties)
 
 RotStar3_1::RotStar3_1() : 
 Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),

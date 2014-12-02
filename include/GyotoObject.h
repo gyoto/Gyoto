@@ -39,7 +39,7 @@ namespace Gyoto {
 
 /// Declare  class::properties and class::getProperties()
 #define GYOTO_OBJECT \
-  static Property const * const properties;		\
+  static Property const  properties[];		\
   virtual Property const * getProperties() const
 
 /**

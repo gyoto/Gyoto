@@ -38,22 +38,19 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, Standard::properties);
-GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha, &Radius);
-GYOTO_PROPERTY_DOUBLE(UniformSphere,
-		      DeltaMaxOverRadius, deltaMaxOverRadius, &Alpha);
-GYOTO_PROPERTY_DOUBLE(UniformSphere,
-		      DeltaMaxOverDistance, deltaMaxOverDistance,
-		      &DeltaMaxOverRadius);
+GYOTO_PROPERTY_START(UniformSphere)
+GYOTO_PROPERTY_SPECTRUM(UniformSphere, Spectrum, spectrum)
+GYOTO_PROPERTY_SPECTRUM(UniformSphere,Opacity, opacity)
 GYOTO_PROPERTY_BOOL(UniformSphere,
-		    IsotropicEmittedIntensity,
-		    TrueEmittedIntensity,
-		    isotropic, &DeltaMaxOverDistance);
-GYOTO_PROPERTY_SPECTRUM(UniformSphere,
-			Opacity, opacity, &IsotropicEmittedIntensity);
-GYOTO_PROPERTY_SPECTRUM(UniformSphere,
-			Spectrum, spectrum, &Opacity);
-GYOTO_PROPERTY_FINALIZE(UniformSphere, &::Spectrum);
+		    IsotropicEmittedIntensity, TrueEmittedIntensity,
+		    isotropic)
+GYOTO_PROPERTY_DOUBLE(UniformSphere,
+		      DeltaMaxOverDistance, deltaMaxOverDistance)
+GYOTO_PROPERTY_DOUBLE(UniformSphere,
+		      DeltaMaxOverRadius, deltaMaxOverRadius)
+GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha)
+GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius)
+GYOTO_PROPERTY_END(UniformSphere, Standard::properties)
 
 
 #define GYOTO_USPH_DELTAMAX_OVER_RAD 0.1

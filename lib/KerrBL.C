@@ -36,13 +36,13 @@ using namespace std ;
 using namespace Gyoto ;
 using namespace Gyoto::Metric ;
 
-GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity,
-		      Generic::properties);
+GYOTO_PROPERTY_START(KerrBL)
+GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin)
+GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity)
 GYOTO_PROPERTY_BOOL(KerrBL, GenericIntegrator, SpecificIntegrator,
-		    genericIntegrator, &HorizonSecurity);
-GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol, &GenericIntegrator);
-GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin, &DiffTol);
-GYOTO_PROPERTY_FINALIZE(KerrBL, &Spin);
+		    genericIntegrator)
+GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol)
+GYOTO_PROPERTY_END(KerrBL, Generic::properties)
 
 /*
   NB: points delicats de KerrBL:

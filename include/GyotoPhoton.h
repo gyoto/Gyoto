@@ -229,7 +229,6 @@ class Gyoto::Photon
 
 #ifdef GYOTO_USE_XERCES
   virtual void setParameters(FactoryMessenger *fmp) ;
-  virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
   virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
   static SmartPointer<Photon> Subcontractor(Gyoto::FactoryMessenger*);
 #endif

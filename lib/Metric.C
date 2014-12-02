@@ -36,15 +36,13 @@ Register::Entry* Metric::Register_ = NULL;
 //// Gyoto::Object API
 // Keplerian/NonKeplerian
 
-GYOTO_PROPERTY_BOOL(Metric::Generic, Keplerian, NonKeplerian,
-		    keplerian, Object::properties);
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR,
-		      deltaMaxOverR, &Keplerian);
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax, &DeltaMaxOverR);
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin, &DeltaMax);
-GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass, &DeltaMin);
-
-GYOTO_PROPERTY_FINALIZE(Metric::Generic, &Mass);
+GYOTO_PROPERTY_START(Metric::Generic)
+GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass)
+GYOTO_PROPERTY_BOOL(Metric::Generic, Keplerian, NonKeplerian, keplerian)
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin)
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax)
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR, deltaMaxOverR)
+GYOTO_PROPERTY_END(Metric::Generic, NULL)
 
 ///
 

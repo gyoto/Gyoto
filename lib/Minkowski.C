@@ -28,12 +28,22 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
-// We create one property; its "parent" is the Generic Property list
-GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian,
-		    spherical, Generic::properties);
-// We still need to connect this (single) property to
-// Minkowski::properties and define getProperties():
-GYOTO_PROPERTY_FINALIZE(Minkowski, &Spherical);
+//// Property list:
+//
+// Note that none of those lines ends with punctation. "," and ";" are
+// added by the macros where needed. Three steps:
+//  1- GYOTO_PROPERTY_START(<classname>)
+//  2- For each Property we want to support, a line such as:
+//       GYOTO_PROPERTY_<type>(<classname>, <propertyname>, <accessorname>)
+//     Note that the BOOL type is a bit special: the argument
+//     <propertyname> is replaced by two arguments: <name_if_true> and
+//     <name_if_false>.
+//  3- GYOTO_PROPERTY_END(<classname>, <pointer to parent's property list>)
+//
+////
+GYOTO_PROPERTY_START(Minkowski)
+GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian, spherical)
+GYOTO_PROPERTY_END(Minkowski, Generic::properties)
 
 // This is the minimal constructor: it just sets the coordinate kind and
 // the metric kind name.

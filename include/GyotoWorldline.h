@@ -47,19 +47,43 @@ namespace Gyoto {
 #include <GyotoScreen.h>
 #include <GyotoHooks.h>
 
-#define GYOTO_WORLDLINE_PROPERTIES(c, a)				\
-  GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary, a);	\
-  GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol, &HighOrderImages);		\
-  GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol, &RelTol);			\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR, &AbsTol);	\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, &DeltaMaxOverR);	\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, &DeltaMax);		\
-  GYOTO_PROPERTY_STRING(c, Integrator, _integrator, &DeltaMin);		\
-  GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter, &Integrator);		\
-  GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive, &MaxIter);	\
-  GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta, &Adaptive);		\
-  GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord, &Delta);	\
-  GYOTO_PROPERTY_METRIC(c, Metric, _metric, &InitCoord);		\
+/// Define the bunch of Properties that make up the Worldline interface
+/**
+ * This macro, which is called automatically by
+ * GYOTO_WORLDLINE_PROPERTY_END(c, a), must be inserted in the
+ * definition of the Property list for any class derived from
+ * Worldline.
+ */
+#define GYOTO_WORLDLINE_PROPERTIES(c)					\
+  GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary)	\
+  GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol)				\
+  GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol)				\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR)		\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax)				\
+  GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin)				\
+  GYOTO_PROPERTY_STRING(c, Integrator, _integrator)			\
+  GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter)				\
+  GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive)		\
+  GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta)				\
+  GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord)		\
+  GYOTO_PROPERTY_METRIC(c, Metric, _metric)
+
+/// Define the wrapper accessors used in GYOTO_WORLDLINE_PROPERTIES(class)
+/**
+   This macro, which is called automatically by
+   GYOTO_WORLDLINE_PROPERTY_END(c, a), must be called once with the
+   definition of the methods (.C file) of any class that derives from
+   Worldline. The corresponding macro GYOTO_WORLDLINE must be called
+   in the corresponding class declaration (.h file).
+
+   This is made necessary by how multiple inheritence works: directly
+   using the accessors in the Worldline API leads to segfault at
+   runtime (unless too much extra care is taken) and may go unnoticed.
+
+   These accessors must be declared in the class declaration using the
+   GYOTO_WORLDLINE macro.
+*/
+#define GYOTO_WORLDLINE_ACCESSORS(c)					\
   void c::_secondary(bool s) {secondary(s);}				\
   bool c::_secondary() const {return secondary();}			\
   void c::_adaptive(bool s) {adaptive(s);}				\
@@ -70,8 +94,8 @@ namespace Gyoto {
   double c::_absTol()const{return absTol();}				\
   void c::_deltaMin(double f){deltaMin(f);}				\
   double c::_deltaMin()const{return deltaMin();}			\
-  void c::_deltaMax(double f){deltaMax(f);}		\
-  double c::_deltaMax()const{return deltaMax();}	\
+  void c::_deltaMax(double f){deltaMax(f);}				\
+  double c::_deltaMax()const{return deltaMax();}			\
   void c::_deltaMaxOverR(double f){deltaMaxOverR(f);}			\
   double c::_deltaMaxOverR()const{return deltaMaxOverR();}		\
   void c::_delta(double f){delta(f);}					\
@@ -87,8 +111,26 @@ namespace Gyoto {
   void c::_metric(SmartPointer<Metric::Generic>f){metric(f);}		\
   SmartPointer<Metric::Generic> c::_metric() const{return metric();}
 
-#define GYOTO_WORLDLINE_FIRST_PROPERTY ::Metric
+/// Drop-in replacement for GYOTO_PROPERTY_END(), which adds the Worldline interface
+/**
+ * This macro replaces GYOTO_PROPERTY_END(c, a) for classes that
+ * derive from Worldline. It calls GYOTO_WORLDLINE_PROPERTIES(a) and
+ * GYOTO_WORLDLINE_ACCESSORS(c). If this macro is used,
+ * GYOTO_WORLDLINE must be called in the class declaration (.h file).
+ */
+#define GYOTO_WORLDLINE_PROPERTY_END(c, a) \
+  GYOTO_WORLDLINE_PROPERTIES(c)		   \
+  GYOTO_PROPERTY_END(c, a)		   \
+  GYOTO_WORLDLINE_ACCESSORS(c)
 
+/// Declare the Worldline interface wrappers
+/**
+   This macro must be called in the class declaration (.h file), in a
+   public section. Its sibling GYOTO_WORLDLINE_ACCESSORS(c) must be
+   called with the class method definition (.C file). Note that
+   GYOTO_WORLDLINE_PROPERTY_END(c, a) calls
+   GYOTO_WORLDLINE_ACCESSORS(c).
+*/
 #define GYOTO_WORLDLINE					\
   void _delta(const double delta);			\
   void _delta(double, const std::string &unit);		\

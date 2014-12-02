@@ -36,12 +36,13 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
-GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity,
-		      Generic::properties);
+
+GYOTO_PROPERTY_START(KerrKS)
+GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin)
+GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity)
 GYOTO_PROPERTY_BOOL(KerrKS, GenericIntegrator, SpecificIntegrator,
-		    genericIntegrator, &HorizonSecurity);
-GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin, &GenericIntegrator);
-GYOTO_PROPERTY_FINALIZE(KerrKS, &Spin);
+		    genericIntegrator)
+GYOTO_PROPERTY_END(KerrKS, Generic::properties)
 
 /*
 NOTA BENE: to improve KerrKS

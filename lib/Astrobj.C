@@ -42,15 +42,13 @@ using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick,
-		    opticallyThin, Object::properties);
-GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ,
-		    radiativeQ, &OpticallyThin);
-GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift,
-		    redshift, &RadiativeQ);
-GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax, &Redshift);
-GYOTO_PROPERTY_METRIC(Generic, Metric, metric, &RMax);
-GYOTO_PROPERTY_FINALIZE(Generic, &::Metric);
+GYOTO_PROPERTY_START(Generic)
+GYOTO_PROPERTY_METRIC(Generic, Metric, metric)
+GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax)
+GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift)
+GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ)
+GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin)
+GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
