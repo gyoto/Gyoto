@@ -7,6 +7,7 @@
 #include "GyotoSpectrum.h"
 
 #include <iostream>
+#include <cstdlib>
 
 using namespace std ;
 using namespace Gyoto ;
@@ -250,10 +251,10 @@ void Object::setParameter(Property const &p, string const &name,
     val = (name==p.name);
     break;
   case Property::long_t:
-    val = long(atoi(content.c_str()));
+    val = strtol(content.c_str(), NULL, 0);
     break;
   case Property::unsigned_long_t:
-    val = (unsigned long)(atoi(content.c_str()));
+    val = strtoul(content.c_str(), NULL, 0);
     break;
   case Property::double_t:
     val = atof(content.c_str());
