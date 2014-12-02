@@ -65,7 +65,9 @@ Worldline::IntegState::Generic::Generic(Worldline *parent) :
   SmartPointee(), line_(parent) {};
 void
 Worldline::IntegState::Generic::init(){
+  if (!line_) return;
   adaptive_=line_->adaptive();
+  gg_=line_->metric();
 }
 void
 Worldline::IntegState::Generic::init(Worldline * line,
