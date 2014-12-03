@@ -18,6 +18,7 @@
  */
 #include "GyotoPhoton.h"
 #include "GyotoPatternDiskBB.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -35,6 +36,27 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(PatternDiskBB)
+GYOTO_PROPERTY_BOOL(PatternDiskBB,
+		    SpectralEmission, BolometricEmission, spectralEmission)
+GYOTO_PROPERTY_DOUBLE(PatternDiskBB, Risco, risco)
+GYOTO_PROPERTY_END(PatternDiskBB, PatternDisk::properties)
+
+bool PatternDiskBB::spectralEmission() const {return SpectralEmission_;}
+void PatternDiskBB::spectralEmission(bool t) {SpectralEmission_=t;}
+
+double PatternDiskBB::risco() const {
+  if (risco_>0.) return risco_;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    return static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
+  default:
+    throwError("PatternDiskBB::getVelocity: bad COORDKIND");
+  }
+  return 0.; // avoid warning, never reached
+}
+void PatternDiskBB::risco(double r) {risco_=r;}
 
 PatternDiskBB::PatternDiskBB() :
   PatternDisk(),
@@ -65,26 +87,13 @@ double const * PatternDiskBB::getVelocity() const { return PatternDisk::getVeloc
 void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
   // The only use of this reimplementation: ensure nothing happens below ISCO
 
-  double risco;
-  if (risco_>0.) risco=risco_;
-  else {
-    switch (gg_->coordKind()) {
-    case GYOTO_COORDKIND_SPHERICAL:
-      risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-      break;
-    default:
-      throwError("PatternDiskBB::getVelocity: bad COORDKIND");
-      risco=0.;
-    }
-  }
-  
   double const * const rad=getGridRadius();
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, pos, 0.); //NB: last arg should be nu, don't care here
   double rgrid=rad[i[2]-1]; // this is the smallest radius used
                           // when dealing with the current r value
 
-  if (rgrid<risco){
+  if (rgrid<risco()){
     //default velocity, emission will be 0 there anyway
     vel[0]=1.;
     for (int ii=1;ii<4;ii++)
@@ -103,26 +112,13 @@ double PatternDiskBB::emission(double nu, double dsem,
 
   GYOTO_DEBUG << endl;
   
-  double risco;
-  if (risco_>0.) risco=risco_;
-  else {
-    switch (gg_->coordKind()) {
-    case GYOTO_COORDKIND_SPHERICAL:
-      risco = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-      break;
-    default:
-      throwError("PatternDiskBB::emission: bad COORDKIND");
-      risco=0.;
-    }
-  }
-
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
   double const * const rad=getGridRadius();
   double rgrid=rad[i[2]-1];
 
   // no emission in any case above rmax_:
-  if (rgrid > rmax_ || rgrid < risco) return 0.; 
+  if (rgrid > rmax_ || rgrid < risco()) return 0.; 
 
   double Iem=0.;
   size_t naxes[3];
@@ -162,20 +158,3 @@ void PatternDiskBB::metric(SmartPointer<Metric::Generic> gg) {
       ("PatternDiskBB::metric(): metric must be KerrBL or CS");
   ThinDisk::metric(gg);
 }
-
-int PatternDiskBB::setParameter(std::string name,
-				std::string content,
-				std::string unit) {
-  if (name=="SpectralEmission") SpectralEmission_=1;
-  else if (name=="Risco") risco_=atof(content.c_str());
-  else return PatternDisk::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void PatternDiskBB::fillElement(FactoryMessenger *fmp) const {
-  fmp -> setParameter ( SpectralEmission_? "SpectralEmission" : "BolometricEmission");
-  PatternDisk::fillElement(fmp);
-}
-
-#endif

@@ -18,6 +18,7 @@
  */
 #include "GyotoPhoton.h"
 #include "GyotoDisk3D.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -41,6 +42,38 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(Disk3D)
+GYOTO_PROPERTY_FILENAME(Disk3D, File, file)
+GYOTO_PROPERTY_BOOL(Disk3D, ZsymmetrizeGrid, NoZsymmetrizeGrid, zsym)
+GYOTO_PROPERTY_DOUBLE(Disk3D, tPattern, tPattern)
+GYOTO_PROPERTY_DOUBLE(Disk3D, omegaPattern, omegaPattern)
+GYOTO_PROPERTY_END(Disk3D, Generic::properties)
+
+void Disk3D::fillProperty(Gyoto::FactoryMessenger *fmp,
+			       Property const &p) const {
+  if (p.name == "File")
+    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+			       filename_ :
+			       filename_.substr(1)) );
+  else Generic::fillProperty(fmp, p);
+}
+
+
+void Disk3D::file(std::string const &f) {
+#ifdef GYOTO_USE_CFITSIO
+              fitsRead(f);
+#else
+              throwError("This Gyoto has no FITS i/o");
+#endif
+}
+std::string Disk3D::file() const {return filename_;}
+void Disk3D::zsym(bool t) {zsym_=t;}
+bool Disk3D::zsym() const {return zsym_;}
+void Disk3D::tPattern(double t) {tPattern_=t;}
+double Disk3D::tPattern() const {return tPattern_;}
+void Disk3D::omegaPattern(double t) {omegaPattern_=t;}
+double Disk3D::omegaPattern() const {return omegaPattern_;}
 
 Disk3D::Disk3D() :
   Generic("Disk3D"), filename_(""),
@@ -782,37 +815,3 @@ int Disk3D::Impact(Photon *ph, size_t index,
   return 1;
 
 }
-
-int Disk3D::setParameter(std::string name,
-			 std::string content,
-			 std::string unit) {
-  if      (name == "File")
-#ifdef GYOTO_USE_CFITSIO
-              fitsRead( content );
-#else
-              throwError("This Gyoto has no FITS i/o");
-#endif
-  if      (name == "NoZsymmetrizeGrid") zsym_ = 0;
-  else if (name=="tPattern") tPattern_=atof(content.c_str());
-  else if (name=="omegaPattern") omegaPattern_=atof(content.c_str());
-  else return Generic::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void Disk3D::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			     filename_ :
-			     filename_.substr(1)));
-  Generic::fillElement(fmp);
-}
-
-void Disk3D::setParameters(FactoryMessenger* fmp) {
-  string name, content, unit;
-  metric(fmp->metric());
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
-    else setParameter(name, content, unit);
-  }
-}
-#endif

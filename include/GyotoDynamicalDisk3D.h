@@ -61,13 +61,13 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
   ///< emission law
  private:
-  int temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
+  bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
   char* dirname_; ///< FITS files directory
   double tinit_; ///< Time of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
   int nb_times_; ///< Number of times
   double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
-  int novel_; ///< put to 1 if velocity of emitting particle is not provided
+  bool novel_; ///< put to true if velocity of emitting particle is not provided
   double floortemperature_; ///< if non-zero, emission and absorption are 0 for temperatures below this floor, emission=blackbody and absorption is infty for temperatures above (this is a kind of fake optically thick case, when the emitting surface is inside the grid, not at the boundary of the grid)
 
   /**
@@ -95,6 +95,8 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
   DynamicalDisk3D(); ///< Standard constructor
   
   DynamicalDisk3D(const DynamicalDisk3D& ) ;///< Copy constructor
@@ -105,13 +107,25 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   // Accessors
   // ---------
  public:
-
   using Generic::metric;
   void metric(SmartPointer<Metric::Generic> gg);
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
+  void file(std::string const &f);
+  std::string file() const;
+  void tinit(double t);
+  double tinit()const;
+  void dt(double t);
+  double dt()const;
+  void PLindex(double t);
+  double PLindex()const;
+  void floorTemperature(double t);
+  double floorTemperature()const;
+  void temperature(bool t);
+  bool temperature() const;
+  void withVelocity(bool t);
+  bool withVelocity() const;
 
+  // Stuff
+  // -----
   /// Compute emission at one grid date.
   double emission1date(double nu_em, double dsem,
 		  double c_ph[8], double c_obj[8]) const;
@@ -139,11 +153,6 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
    * \param iq Index of the date slice.
    */
   void copyQuantities(int iq) ;
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 
 };
 

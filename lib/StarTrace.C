@@ -19,6 +19,7 @@
 
 #include "GyotoUtils.h"
 #include "GyotoStarTrace.h"
+#include "GyotoProperty.h"
 #include "GyotoFactoryMessenger.h"
 
 #include <iostream>
@@ -32,6 +33,11 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(StarTrace)
+GYOTO_PROPERTY_DOUBLE(StarTrace, TMin, TMin)
+GYOTO_PROPERTY_DOUBLE(StarTrace, TMax, TMax)
+GYOTO_PROPERTY_END(StarTrace, Star::properties)
 
 StarTrace::StarTrace() : Star()
 {
@@ -172,22 +178,7 @@ void StarTrace::setInitialCondition(double coord[8]) {
   Star::setInitialCondition(coord);
 }
 
-int StarTrace::setParameter(string name, string content, string unit) {
-  if (name=="TMin") tmin_=atof(content.c_str());
-  else if (name=="TMax") tmax_=atof(content.c_str());
-  else return Star::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void StarTrace::fillElement(FactoryMessenger *fmp) const {
-  UniformSphere::fillElement(fmp);
-  fmp->setParameter("TMin", tmin_);
-  fmp->setParameter("TMax", tmax_);
-}
-#endif
-
-double StarTrace::TMin() { return tmin_; }
+double StarTrace::TMin() const { return tmin_; }
 void StarTrace::TMin(double t)
 {
   if (t>tmax_) {
@@ -198,7 +189,7 @@ void StarTrace::TMin(double t)
   GYOTO_DEBUG_EXPR(tmax_);
 }
 
-double StarTrace::TMax() { return tmax_; }
+double StarTrace::TMax() const { return tmax_; }
 void StarTrace::TMax(double t)
 {
   if (t<tmin_) {

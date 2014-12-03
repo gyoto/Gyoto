@@ -19,6 +19,7 @@
 
 #include "GyotoPhoton.h"
 #include "GyotoPageThorneDisk.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -40,6 +41,26 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(PageThorneDisk)
+// Since BlackbodyMdot also sets BlackBody, it's important to keep the
+// later after the former
+GYOTO_PROPERTY_DOUBLE(PageThorneDisk, BlackbodyMdot, BlackbodyMdot)
+GYOTO_PROPERTY_BOOL(PageThorneDisk, BlackBody, NonBlackBody, blackBody)
+GYOTO_PROPERTY_BOOL(PageThorneDisk, UniFlux, NonUniFlux, uniFlux)
+GYOTO_PROPERTY_END(PageThorneDisk, ThinDisk::properties)
+
+void PageThorneDisk::BlackbodyMdot(double v) {
+  blackbody_=true;
+  mdot_=v;
+}
+double PageThorneDisk::BlackbodyMdot() const { return mdot_; }
+
+void PageThorneDisk::blackBody(bool t) {blackbody_=t;}
+bool PageThorneDisk::blackBody() const {return blackbody_;}
+
+void PageThorneDisk::uniFlux(bool t) {uniflux_=t;}
+bool PageThorneDisk::uniFlux() const {return uniflux_;}
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
@@ -285,23 +306,3 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 void PageThorneDisk::tell(Hook::Teller* msg) {
   if (msg==gg_) updateSpin();
 }
-
-int PageThorneDisk::setParameter(std::string name,
-				 std::string content,
-				 std::string unit) {
-  char* tc = const_cast<char*>(content.c_str());
-  if (name=="BlackbodyMdot") {
-    blackbody_=1;
-    mdot_=atof(tc);
-  }
-  if (name=="UniFlux") uniflux_=1;
-  else return ThinDisk::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void PageThorneDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->metric(gg_);
-  ThinDisk::fillElement(fmp);
-}
-#endif

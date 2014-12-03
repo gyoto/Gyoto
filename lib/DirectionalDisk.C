@@ -20,6 +20,7 @@
 #include "GyotoDirectionalDisk.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoProperty.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 
@@ -41,6 +42,26 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+//// Properties:
+
+GYOTO_PROPERTY_START(DirectionalDisk)
+GYOTO_PROPERTY_FILENAME(DirectionalDisk, File, file)
+GYOTO_PROPERTY_BOOL(DirectionalDisk,
+		    AverageOverAngle, DontAverageOverAngle,
+		    averageOverAngle)
+GYOTO_PROPERTY_END(DirectionalDisk, ThinDisk::properties)
+
+void DirectionalDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
+			       Property const &p) const {
+  if (p.name == "File")
+    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+			       filename_ :
+			       filename_.substr(1)) );
+  else ThinDisk::fillProperty(fmp, p);
+}
+
+////
 
 DirectionalDisk::DirectionalDisk() :
   ThinDisk("DirectionalDisk"), filename_(""),
@@ -188,6 +209,21 @@ void DirectionalDisk::copyGridFreq(double const *const freq, size_t nnu) {
   }
 }
 double const * DirectionalDisk::getGridFreq() const { return freq_; }
+
+void DirectionalDisk::averageOverAngle(bool t) {average_over_angle_=t;}
+bool DirectionalDisk::averageOverAngle()const {return average_over_angle_;}
+
+void DirectionalDisk::file(std::string const &f) {
+# ifdef GYOTO_USE_CFITSIO
+  fitsRead(f);
+# else
+  throwError("This Gyoto has no FITS i/o");
+# endif
+}
+
+std::string DirectionalDisk::file() const {
+  return filename_;
+}
 
 #ifdef GYOTO_USE_CFITSIO
 void DirectionalDisk::fitsRead(string filename) {
@@ -529,38 +565,3 @@ double DirectionalDisk::emission(double nu, double,
   //cout << "return= " << Iem << endl;
   return Iem;
 }
-
-int DirectionalDisk::setParameter(std::string name,
-			      std::string content,
-			      std::string unit) {
-  if      (name == "File"){
-#ifdef GYOTO_USE_CFITSIO
-    fitsRead( content );
-#else
-    throwError("This Gyoto has no FITS i/o");
-#endif
-  } else if (name == "AverageOverAngle"){
-    average_over_angle_=1;
-  } else {
-    return ThinDisk::setParameter(name, content, unit);
-  }
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void DirectionalDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			     filename_ :
-			     filename_.substr(1)));
-  ThinDisk::fillElement(fmp);
-}
-
-void DirectionalDisk::setParameters(FactoryMessenger* fmp) {
-  string name, content, unit;
-  metric(fmp->metric());
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
-    else setParameter(name, content, unit);
-  }
-}
-#endif

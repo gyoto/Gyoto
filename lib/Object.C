@@ -150,7 +150,9 @@ Property const * Object::property(std::string const pname) const {
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
-      if (prop->name == pname) return prop;
+      if (prop->name == pname ||
+	  (prop->type==Property::bool_t && prop->name_false == pname))
+	return prop;
       ++prop;
     } else prop=prop->parent;
   }
@@ -216,10 +218,13 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 		  << "' (unit='"<<unit<<"')" << endl;
       Property const * prop = property(name);
       if (!prop) {;
+	GYOTO_DEBUG << "'" << name << "' not found, calling setParameter()"
+		    << endl;
 	// The specific setParameter() implementation may well know
 	// this entity
 	setParameter(name, content, unit);
       } else {
+	GYOTO_DEBUG << "'" << name << "' found "<< endl;
 	switch (prop->type) {
 	case Property::metric_t:
 	  set(*prop, fmp->metric());

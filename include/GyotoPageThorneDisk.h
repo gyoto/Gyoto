@@ -75,14 +75,15 @@ class Gyoto::Astrobj::PageThorneDisk
   double x3_; ///< Value cached for bolometricEmission()
   int blackbody_; ///< Flag for computing BB flux (for spectra)
   double mdot_; ///< accretion rate (for BB spectrum computation)
-  int uniflux_; ///< Flag for uniform flux = 1
+  bool uniflux_; ///< Flag for uniform flux = 1
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
   ///< emission law
   
   // Constructors - Destructor
   // -------------------------
  public:
-  
+  GYOTO_OBJECT;
+
   PageThorneDisk(); ///< Standard constructor
   
   PageThorneDisk(const PageThorneDisk& ) ;///< Copy constructor
@@ -96,6 +97,14 @@ class Gyoto::Astrobj::PageThorneDisk
   using ThinDisk::metric;
   virtual void metric(SmartPointer<Metric::Generic>);
   ///< Set metric, checking that it is either KerrBL or KerrKS
+
+  /// Set #mdot_ to v, and #blackbody_ to true
+  void BlackbodyMdot(double v);
+  double BlackbodyMdot() const;
+  void blackBody(bool t) ;
+  bool blackBody() const ;
+  void uniFlux(bool t) ;
+  bool uniFlux() const ;
 
  private:
   virtual void updateSpin() ;
@@ -128,10 +137,6 @@ virtual double bolometricEmission(double nuem, double dsem,
                                    double* coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
 
-  int setParameter(std::string name,
-		   std::string content,
-		   std::string unit);
-
   Quantity_t getDefaultQuantities();
 
   // Hook::Listener API //
@@ -144,11 +149,6 @@ virtual double bolometricEmission(double nuem, double dsem,
    * See Hook::Listener::tell()
    */
   virtual void tell(Gyoto::Hook::Teller *msg);
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
-#endif
 
 };
 

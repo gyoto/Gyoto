@@ -72,12 +72,16 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   size_t ni_; ///< Number of direction cosine
   size_t nr_; ///< Number of radius values
 
-  int average_over_angle_; ///< 1 to average over emission angle
+  bool average_over_angle_; ///< true to average over emission angle
 
 
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+  // fillProperty is overridden to remove leading "!" from FITS filename
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
   DirectionalDisk(); ///< Standard constructor
   
   DirectionalDisk(const DirectionalDisk& ) ;///< Copy constructor
@@ -88,6 +92,11 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
+
+  void file(std::string const &f);
+  std::string file() const ;
+  void averageOverAngle(bool t);
+  bool averageOverAngle()const;
 
 #ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file
@@ -138,10 +147,6 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
 			      size_t ni = 0 );
   virtual double const * getGridFreq() const; ///< Get DirectionalDisk::freq_
 
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
-
  protected:
   void getIndices(size_t i[3], double const co[4], double cosi, double nu=0.) const ;
   ///< Get emission_ cell corresponding to position co[4]
@@ -150,12 +155,6 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8], double c_obj[8]) const;
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  virtual void setParameters(FactoryMessenger *fmp);
-#endif
 
 };
 

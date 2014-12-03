@@ -93,6 +93,8 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
   DynamicalDisk(); ///< Standard constructor
   
   DynamicalDisk(const DynamicalDisk& ) ;///< Copy constructor
@@ -104,9 +106,12 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   // ---------
  public:
 
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
+  std::string file() const;
+  void file(std::string const &fname);
+  void tinit(double t);
+  double tinit()const;
+  void dt(double t);
+  double dt()const;
 
   using PatternDiskBB::emission;
   virtual double emission(double nu_em, double dsem,
@@ -123,10 +128,6 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
    */
   void copyQuantities(int iq) ;
 
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 
 };
 

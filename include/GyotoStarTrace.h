@@ -82,6 +82,8 @@ class Gyoto::Astrobj::StarTrace :
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
  /**
   * Create Star object and set initial condition.
   * \param gg Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
@@ -133,20 +135,12 @@ class Gyoto::Astrobj::StarTrace :
   virtual std::string className() const ; ///< "StarTrace"
   virtual std::string className_l() const ; ///< "startrace"
 
-  double TMin(); ///< Get tmin_
+  double TMin()const; ///< Get tmin_
   void TMin(double); ///< Set tmin_
-  double TMax(); ///< Get tmax_
+  double TMax()const; ///< Get tmax_
   void TMax(double); ///< Set tmax_
 
   virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
-
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
-
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
-#endif
 
   virtual double operator()(double const coord[4]) ;
 

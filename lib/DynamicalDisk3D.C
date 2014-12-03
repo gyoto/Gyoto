@@ -38,6 +38,18 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(DynamicalDisk3D)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, tinit, tinit)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, dt, dt)
+GYOTO_PROPERTY_BOOL(DynamicalDisk3D,
+		    TemperatureGrid, IntensityGrid, temperature)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, PLindex, PLindex)
+GYOTO_PROPERTY_BOOL(DynamicalDisk3D,
+		    WithVelocity, NoVelocity, withVelocity)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, FloorTemperature, floorTemperature)
+GYOTO_PROPERTY_END(DynamicalDisk3D, Disk3D::properties)
+
 DynamicalDisk3D::DynamicalDisk3D() :
   Disk3D(),
   spectrumBB_(NULL),
@@ -457,10 +469,7 @@ void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   Disk3D::metric(gg);
 }
 
-int DynamicalDisk3D::setParameter(std::string name,
-			    std::string content,
-			    std::string unit) {
-  if (name == "File") {
+void DynamicalDisk3D::file(std::string const &content) {
 #ifdef GYOTO_USE_CFITSIO
     int withopacity=0;
 
@@ -535,7 +544,7 @@ int DynamicalDisk3D::setParameter(std::string name,
 	for (size_t j=0;j<nel1;j++)
 	  emission_array_[i-1][j]=emtemp[j];
       }else {
-	throwError("In DynamicalDisk3D::setParameter: "
+	throwError("In DynamicalDisk3D::file(fname): "
 		   "Emission must be supplied");
       }
 
@@ -548,7 +557,7 @@ int DynamicalDisk3D::setParameter(std::string name,
 	    absorption_array_[i-1][j]=abstemp[j];
 	  //cout << "SAVING ABS ARRAY" << endl;
 	}else{
-	  throwError("In DynamicalDisk3D::setParameter: "
+	  throwError("In DynamicalDisk3D::file(fname): "
 		     "Absorption should be supplied here");
 	}
       }
@@ -560,7 +569,7 @@ int DynamicalDisk3D::setParameter(std::string name,
 	for (size_t j=0;j<nel2;j++)
 	  velocity_array_[i-1][j]=veltemp[j];
       }else{
-	throwError("In DynmicalDisk::setParameter: "
+	throwError("In DynmicalDisk::file(fname): "
 		   "Velocity must be supplied");
       }
       
@@ -577,27 +586,28 @@ int DynamicalDisk3D::setParameter(std::string name,
 	  || nphi!=nphib
 	  || zmin()!=zminb || zmax()!=zmaxb || nz!=nzb
 	  || rin()!=rinb || rout()!=routb || nr!=nrb
-	  ) throwError("DynamicalDisk3D::setParameter Grid is not constant!");
+	  ) throwError("DynamicalDisk3D::file(fname) Grid is not constant!");
     }
 #else
     throwError("This Gyoto has no FITS i/o"); 
 #endif     
-  }
-  else if (name=="tinit") tinit_=atof(content.c_str());
-  else if (name=="dt") dt_=atof(content.c_str());
-  else if (name=="IntensityGrid") temperature_=0;
-  else if (name=="PLindex") PLindex_=atof(content.c_str());
-  else if (name=="NoVelocity") novel_=1;
-  else if (name=="FloorTemperature") floortemperature_=atof(content.c_str());
-  else return Disk3D::setParameter(name, content, unit);
-  return 0;
 }
-      
-#ifdef GYOTO_USE_XERCES
-void DynamicalDisk3D::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("tinit", tinit_);
-  fmp->setParameter("dt", dt_);
-  Disk3D::fillElement(fmp);
-}
+std::string DynamicalDisk3D::file() const {return dirname_;}
 
-#endif
+void DynamicalDisk3D::tinit(double t) {tinit_=t;}
+double DynamicalDisk3D::tinit()const{return tinit_;}
+
+void DynamicalDisk3D::dt(double t) {dt_=t;}
+double DynamicalDisk3D::dt()const{return dt_;}
+
+void DynamicalDisk3D::PLindex(double t) {PLindex_=t;}
+double DynamicalDisk3D::PLindex()const{return PLindex_;}
+
+void DynamicalDisk3D::floorTemperature(double t) {floortemperature_=t;}
+double DynamicalDisk3D::floorTemperature()const{return floortemperature_;}
+
+void DynamicalDisk3D::temperature(bool t) {temperature_=t;}
+bool DynamicalDisk3D::temperature() const {return temperature_;}
+
+void DynamicalDisk3D::withVelocity(bool t) {novel_=!t;}
+bool DynamicalDisk3D::withVelocity() const {return !novel_;}

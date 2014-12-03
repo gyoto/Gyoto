@@ -18,6 +18,7 @@
  */
 #include "GyotoPhoton.h"
 #include "GyotoPatternDisk.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -40,6 +41,24 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+/// Properties
+
+GYOTO_PROPERTY_START(PatternDisk)
+GYOTO_PROPERTY_FILENAME(PatternDisk, File, file)
+GYOTO_PROPERTY_DOUBLE(PatternDisk, PatternVelocity, patternVelocity)
+GYOTO_PROPERTY_END(PatternDisk, ThinDisk::properties)
+
+void PatternDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
+			       Property const &p) const {
+  if (p.name == "File")
+    fmp->setParameter("File", (filename_.compare(0,1,"!") ?
+			       filename_ :
+			       filename_.substr(1)) );
+  else ThinDisk::fillProperty(fmp, p);
+}
+
+///
 
 PatternDisk::PatternDisk() :
   ThinDisk("PatternDisk"), filename_(""),
@@ -747,48 +766,27 @@ double PatternDisk::transmission(double nu, double dsem, double*co) const {
   return exp(-opac*dsem);
 }
 
-void PatternDisk::setInnerRadius(double rin) {
-  ThinDisk::setInnerRadius(rin);
+void PatternDisk::innerRadius(double rin) {
+  ThinDisk::innerRadius(rin);
   if (nr_>1 && !radius_) dr_ = (rout_-rin_) / double(nr_-1);
 }
 
-void PatternDisk::setOuterRadius(double rout) {
-  ThinDisk::setOuterRadius(rout);
+void PatternDisk::outerRadius(double rout) {
+  ThinDisk::outerRadius(rout);
   if (nr_>1 && !radius_) dr_ = (rout_-rin_) / double(nr_-1);
 }
 
 void PatternDisk::patternVelocity(double omega) { Omega_ = omega; }
-double PatternDisk::patternVelocity() { return Omega_; }
+double PatternDisk::patternVelocity() const { return Omega_; }
 
-int PatternDisk::setParameter(std::string name,
-			      std::string content,
-			      std::string unit) {
-  if      (name == "File")
-#ifdef GYOTO_USE_CFITSIO
-          fitsRead( content );
-#else
-          throwError("this gyoto has no FITS io");
-#endif
-  else if (name=="PatternVelocity") patternVelocity(atof(content.c_str()));
-  else return ThinDisk::setParameter(name, content, unit);
-  return 0;
+void PatternDisk::file(std::string const &f) {
+# ifdef GYOTO_USE_CFITSIO
+  fitsRead(f);
+# else
+  throwError("This Gyoto has no FITS i/o");
+# endif
 }
 
-#ifdef GYOTO_USE_XERCES
-void PatternDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("File", (filename_.compare(0,1,"!") ?
-			     filename_ :
-			     filename_.substr(1)));
-  fmp->setParameter("PatternVelocity", Omega_);
-  ThinDisk::fillElement(fmp);
+std::string PatternDisk::file() const {
+  return filename_;
 }
-
-void PatternDisk::setParameters(FactoryMessenger* fmp) {
-  string name, content, unit;
-  metric(fmp->metric());
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    if  (name == "File") setParameter(name, fmp -> fullPath(content), unit);
-    else setParameter(name, content, unit);
-  }
-}
-#endif

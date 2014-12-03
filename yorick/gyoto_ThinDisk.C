@@ -93,9 +93,9 @@ ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getInnerRadius(unit?unit:""));
+      ypush_double((*ao)->innerRadius(unit?unit:""));
     } else
-      (*ao)->setInnerRadius(ygets_d(iarg), unit?unit:"") ;
+      (*ao)->innerRadius(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* OUTERRADIUS */
@@ -103,9 +103,9 @@ ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getOuterRadius(unit?unit:""));
+      ypush_double((*ao)->outerRadius(unit?unit:""));
     } else
-      (*ao)->setOuterRadius(ygets_d(iarg), unit?unit:"") ;
+      (*ao)->outerRadius(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* THICKNESS */
@@ -113,9 +113,9 @@ ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_double((*ao)->getThickness(unit?unit:""));
+      ypush_double((*ao)->thickness(unit?unit:""));
     } else
-      (*ao)->setThickness(ygets_d(iarg), unit?unit:"") ;
+      (*ao)->thickness(ygets_d(iarg), unit?unit:"") ;
   }
 
   /* DIR */
@@ -123,9 +123,9 @@ ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
-      ypush_long((*ao)->getDir());
+      ypush_long((*ao)->dir());
     } else
-      (*ao)->setDir(ygets_l(iarg)) ;
+      (*ao)->dir(ygets_l(iarg)) ;
   }
 
   GYOTO_DEBUG << "calling ygyoto_Astrobj_generic_eval\n";

@@ -107,6 +107,10 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+  // fillProperty is overridden to remove leading "!" from FITS filename
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
   PatternDisk(); ///< Standard constructor
   
   PatternDisk(const PatternDisk& ) ;///< Copy constructor
@@ -117,16 +121,19 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
-  using ThinDisk::setInnerRadius;
-  virtual void   setInnerRadius(double);
-  using ThinDisk::setOuterRadius;
-  virtual void   setOuterRadius(double);
+  using ThinDisk::innerRadius;
+  virtual void   innerRadius(double);
+  using ThinDisk::outerRadius;
+  virtual void   outerRadius(double);
 
   /**
    * Unit: radians per geometrical unit time.
    */
   virtual void   patternVelocity(double); ///< Set PatternDisk::Omega_
-  virtual double patternVelocity(); ///< Get PatternDisk::Omega_
+  virtual double patternVelocity() const; ///< Get PatternDisk::Omega_
+
+  virtual void file(std::string const &f);
+  virtual std::string file() const ;
 
 #ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file
@@ -256,10 +263,6 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   void phimax(double phimax); ///< Set PatternDisk::phimax_
   double phimax() const; ///< Get PatternDisk::phimax_
 
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
-
  protected:
   void getIndices(size_t i[3], double const co[4], double nu=0.) const ;
   ///< Get emission_ cell corresponding to position co[4]
@@ -271,12 +274,6 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   virtual double transmission(double nu_em, double dsem, double coord[8]) const;
 
   virtual void getVelocity(double const pos[4], double vel[4])  ;
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  virtual void setParameters(FactoryMessenger *fmp);
-#endif
 
 };
 

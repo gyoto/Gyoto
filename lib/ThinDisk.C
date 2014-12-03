@@ -19,6 +19,7 @@
 
 #include "GyotoPhoton.h"
 #include "GyotoThinDisk.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 
@@ -35,6 +36,13 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(ThinDisk)
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, InnerRadius, innerRadius)
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, OuterRadius, outerRadius)
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, Thickness, thickness)
+GYOTO_PROPERTY_BOOL(ThinDisk, CoRotating, CounterRotating, corotating)
+GYOTO_PROPERTY_END(ThinDisk, Generic::properties)
 
 ThinDisk::ThinDisk(std::string kin) :
   Generic(kin), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1)
@@ -55,36 +63,39 @@ ThinDisk::~ThinDisk() {
   GYOTO_DEBUG << "ThinDisk Destruction" << endl;
 }
 
-double ThinDisk::getInnerRadius() const   { return rin_; }
-double ThinDisk::getInnerRadius(string unit) const   {
-  return Units::FromGeometrical(getInnerRadius(), unit, gg_);
+double ThinDisk::innerRadius() const   { return rin_; }
+double ThinDisk::innerRadius(string const &unit) const   {
+  return Units::FromGeometrical(innerRadius(), unit, gg_);
 }
-void   ThinDisk::setInnerRadius(double r) { rin_ = r;    }
-void   ThinDisk::setInnerRadius(double r, string unit) {
-  setInnerRadius(Units::ToGeometrical(r, unit, gg_));
-}
-
-
-double ThinDisk::getOuterRadius() const   { return rout_;}
-double ThinDisk::getOuterRadius(string unit) const   {
-  return Units::FromGeometrical(getOuterRadius(), unit, gg_);
-}
-void   ThinDisk::setOuterRadius(double r) { rout_ = r;   }
-void   ThinDisk::setOuterRadius(double r, string unit) {
-  setOuterRadius(Units::ToGeometrical(r, unit, gg_));
+void   ThinDisk::innerRadius(double r) { rin_ = r;    }
+void   ThinDisk::innerRadius(double r, string const &unit) {
+  innerRadius(Units::ToGeometrical(r, unit, gg_));
 }
 
-double ThinDisk::getThickness() const     { return thickness_;}
-double ThinDisk::getThickness(string unit) const   {
-  return Units::FromGeometrical(getThickness(), unit, gg_);
+
+double ThinDisk::outerRadius() const   { return rout_;}
+double ThinDisk::outerRadius(string const &unit) const   {
+  return Units::FromGeometrical(outerRadius(), unit, gg_);
 }
-void   ThinDisk::setThickness(double h)   { thickness_ = h;   }
-void   ThinDisk::setThickness(double h, string unit)   {
-  setThickness(Units::ToGeometrical(h, unit, gg_));
+void   ThinDisk::outerRadius(double r) { rout_ = r;   }
+void   ThinDisk::outerRadius(double r, string const &unit) {
+  outerRadius(Units::ToGeometrical(r, unit, gg_));
 }
 
-int    ThinDisk::getDir() const           { return dir_; }
-void   ThinDisk::setDir(int dir)          { dir_ = dir;  }
+double ThinDisk::thickness() const     { return thickness_;}
+double ThinDisk::thickness(string const &unit) const   {
+  return Units::FromGeometrical(thickness(), unit, gg_);
+}
+void   ThinDisk::thickness(double h)   { thickness_ = h;   }
+void   ThinDisk::thickness(double h, string const &unit)   {
+  thickness(Units::ToGeometrical(h, unit, gg_));
+}
+
+int    ThinDisk::dir() const           { return dir_; }
+void   ThinDisk::dir(int dir)          { dir_ = dir;  }
+
+void ThinDisk::corotating(bool t) { dir_ = (t?1:-1);}
+bool ThinDisk::corotating() const { return dir_ == 1; }
 
 double ThinDisk::operator()(double const coord[4])  {
   double theta;
@@ -196,25 +207,3 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
   return 1;
 }
-
-int ThinDisk::setParameter(std::string name,
-			   std::string content,
-			   std::string unit) {
-    char* tc = const_cast<char*>(content.c_str());
-    if      (name=="InnerRadius")     setInnerRadius (atof(tc), unit); 
-    else if (name=="OuterRadius")     setOuterRadius (atof(tc), unit); 
-    else if (name=="Thickness")       setThickness   (atof(tc), unit); 
-    else if (name=="CounterRotating") setDir         (-1);
-    else return Generic::setParameter(name, content, unit);
-    return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void ThinDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("InnerRadius", rin_);
-  fmp->setParameter("OuterRadius", rout_);
-  if (flag_radtransf_) fmp->setParameter("Thickness", thickness_);
-  if (dir_==-1) fmp -> setParameter("CounterRotating");
-  Generic::fillElement(fmp);
-}
-#endif

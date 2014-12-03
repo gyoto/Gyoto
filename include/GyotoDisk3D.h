@@ -108,6 +108,10 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+  // fillProperty is overridden to remove leading "!" from FITS filename
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
   Disk3D(); ///< Standard constructor.
   
   Disk3D(const Disk3D& ) ;///< Copy constructor.
@@ -126,6 +130,16 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   /// Write parameters and arrays to FITS file.
   virtual void fitsWrite(std::string filename_);
 #endif
+
+  void file(std::string const &f);
+  std::string file() const;
+  void zsym(bool t);
+  bool zsym() const;
+  void tPattern(double t);
+  double tPattern() const;
+  void omegaPattern(double t);
+  double omegaPattern() const;
+
 
   /// Set Disk3D::emissquant_.
   /**
@@ -243,10 +257,6 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
   /// Get Disk3D::phimax_.
   double phimax() const;
 
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit);
-
  protected:
   void getIndices(size_t i[4], double const co[4], double nu=0.) const ;
   ///< Get emissquant_ cell corresponding to position co[4].
@@ -263,12 +273,6 @@ class Gyoto::Astrobj::Disk3D : public Gyoto::Astrobj::Generic {
    * \param[out] vel 4-velocity at pos.
    */
   virtual void getVelocity(double const pos[4], double vel[4])  ;
-
- public:
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  virtual void setParameters(FactoryMessenger *fmp);
-#endif
 
 };
 

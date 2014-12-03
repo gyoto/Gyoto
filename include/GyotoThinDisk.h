@@ -88,6 +88,7 @@ class Gyoto::Astrobj::ThinDisk :
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
 
   /**
    * Create direct ThinDisk object. When initializing a derived class,
@@ -103,20 +104,22 @@ class Gyoto::Astrobj::ThinDisk :
   // Accessors
   // ---------
  public:
-  virtual double getInnerRadius() const ; ///< Get rin_
-  virtual double getInnerRadius(std::string unit) const ; ///< Get rin_
-  virtual void   setInnerRadius(double); ///< Set rin_
-  virtual void   setInnerRadius(double, std::string unit); ///< Set rin_
-  virtual double getOuterRadius() const ; ///< Get rout_
-  virtual double getOuterRadius(std::string unit) const ; ///< Get rout_
-  virtual void   setOuterRadius(double); ///< Set rout_
-  virtual void   setOuterRadius(double, std::string unit); ///< Set rout_
-  virtual double getThickness() const ; ///< Get thickness_
-  virtual double getThickness(std::string unit) const ; ///< Get thickness_
-  virtual void   setThickness(double); ///< Set thickness_
-  virtual void   setThickness(double, std::string unit); ///< Set thickness_
-  virtual int    getDir() const ; ///< Get dir_
-  virtual void   setDir(int); ///< Set dir_
+  virtual double innerRadius() const ; ///< Get rin_
+  virtual double innerRadius(std::string const &) const ; ///< Get rin_
+  virtual void   innerRadius(double); ///< Set rin_
+  virtual void   innerRadius(double, std::string const &); ///< Set rin_
+  virtual double outerRadius() const ; ///< Get rout_
+  virtual double outerRadius(std::string const &) const ; ///< Get rout_
+  virtual void   outerRadius(double); ///< Set rout_
+  virtual void   outerRadius(double, std::string const &); ///< Set rout_
+  virtual double thickness() const ; ///< Get thickness_
+  virtual double thickness(std::string const &) const ; ///< Get thickness_
+  virtual void   thickness(double); ///< Set thickness_
+  virtual void   thickness(double, std::string const&); ///< Set thickness_
+  virtual int    dir() const ; ///< Get dir_
+  virtual void   dir(int); ///< Set dir_
+  virtual bool   corotating() const; /// Get dir_==1
+  virtual void   corotating(bool t); /// Set dir_=t?1:-1
 
   /**
    * A function which changes sign on the equatorial plane.
@@ -140,21 +143,6 @@ class Gyoto::Astrobj::ThinDisk :
    * \param[out] vel 4-velocity at pos.
    */
   virtual void getVelocity(double const pos[4], double vel[4])  ;
-
- public:
-  virtual int setParameter(std::string name,
-			   std::string content,
-			   std::string unit) ;
-
-#ifdef GYOTO_USE_XERCES
-  /**
-   * The sub-classes implementations of the
-   * Astrobj::Generic::fillElement() method should call
-   * Astrobj::ThinDisk::fillElement() to fill the common bits.
-   */
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-  ///< Fill the generic XML bits
-#endif
 
   public:
   virtual int Impact(Gyoto::Photon* ph, size_t index,

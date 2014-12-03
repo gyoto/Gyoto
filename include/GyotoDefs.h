@@ -600,6 +600,14 @@ namespace Gyoto {
 # define setIntensityConverter    intensityConverter
 # define getSafetyValue           safetyValue;
 # define setSafetyValue           safetyValue;
+# define setInnerRadius           innerRadius;
+# define getInnerRadius           innerRadius;
+# define setOuterRadius           outerRadius;
+# define getOuterRadius           outerRadius;
+# define setThickness             thickness;
+# define getThickness             thickness;
+# define setDir                   dir;
+# define getDir                   dir;
 //\}
 #endif
 

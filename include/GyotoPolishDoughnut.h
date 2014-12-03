@@ -81,17 +81,26 @@ protected:
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
  bool komissarov_; ///< 1 if Komissarov model is integrated
  bool angle_averaged_; ///< 1 if Komissarov model should be angle averaged
- bool nonthermal_; ///< 1 to take into account non-thermal electrons
- double deltaPL_; ///< fraction of thermal energy in non-thermal electrons
+
+ /// fraction of thermal energy in non-thermal electrons
+ /**
+  * Obsiously, 0 means no non-thermal electrons at all. In this case,
+  * the (trivial) non-thermal computations are skipped. Ther is thus
+  * non need for an additional "nonthermal_" flag.
+  */
+ double deltaPL_;
  double expoPL_; ///< exponent of the non-thermal powerlaw = -expoPL_
- int adaf_; ///< 1 to switch to an ADAF model rather tha Polish doughnut
+
+ bool adaf_; ///< true to switch to an ADAF model rather tha Polish doughnut
  double ADAFtemperature_; ///< ADAF central temperature
  double ADAFdensity_; ///< ADAF central density
- int changecusp_; ///< 1 to apply the fishy rcusp_ change (to be changed)
+
+ bool changecusp_; ///< true to apply the fishy rcusp_ change (to be changed)
 
  // Constructors - Destructor
  // -------------------------
 public:
+ GYOTO_OBJECT;
  PolishDoughnut() ; ///< Default constructor
  PolishDoughnut(const PolishDoughnut& ) ;                ///< Copy constructor
  virtual  PolishDoughnut* clone() const;
@@ -114,9 +123,9 @@ public:
  void   lambda(double lambda); ///< Set PolishDoughnut::lambda_
 
  double centralDensity() const; ///< Get PolishDoughnut::central_density_
- double centralDensity(std::string unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
+ double centralDensity(std::string const &unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
  void   centralDensity(double density); ///< Set PolishDoughnut::central_density_
- void   centralDensity(double density, std::string unit); ///< Set PolishDoughnut::central_density_ in specified unit
+ void   centralDensity(double density, std::string const &unit); ///< Set PolishDoughnut::central_density_ in specified unit
 
  double centralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
  void   centralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
@@ -127,8 +136,28 @@ public:
  void   spectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
  size_t spectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
 
+ bool changeCusp() const; ///< Get PolishDoughnut::komissarov_
+ void changeCusp(bool t); ///< Set PolishDoughnut::komissarov_
  bool komissarov() const; ///< Get PolishDoughnut::komissarov_
  void komissarov(bool komis); ///< Set PolishDoughnut::komissarov_
+ bool angleAveraged() const; ///< Get PolishDoughnut::angle_averaged_
+
+ /**
+  * if komis, also sets komissarov_ to true
+  */
+ void angleAveraged(bool komis); ///< Set PolishDoughnut::angle_averaged_
+
+ void nonThermalDeltaExpo(std::vector<double> const &v);
+ std::vector<double> nonThermalDeltaExpo() const;
+ void adafparams(std::vector<double> const &v);
+ std::vector<double> adafparams() const;
+ void adaf(bool t);
+ bool adaf() const;
+ void setParameter(Gyoto::Property const &p,
+		   std::string const & name,
+		   std::string const & content,
+		   std::string const & unit);
+
 
  // Read only members, depend on lambda
  double getWsurface() const; ///< Get PolishDoughnut::W_surface_
@@ -145,13 +174,6 @@ public:
 			    Astrobj::Properties *data);
 
  virtual double operator()(double const coord[4]) ;
-
- virtual int setParameter(std::string name,
-			  std::string content,
-			  std::string unit) ;
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 
   // ASTROBJ processHitQuantities API
   // --------------------------------

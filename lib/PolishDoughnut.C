@@ -14,6 +14,7 @@
 */
 #include "GyotoUtils.h"
 #include "GyotoPolishDoughnut.h"
+#include "GyotoProperty.h"
 #include "GyotoPhoton.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoDefs.h"
@@ -25,6 +26,31 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(PolishDoughnut)
+GYOTO_PROPERTY_DOUBLE(PolishDoughnut, Lambda, lambda)
+GYOTO_PROPERTY_DOUBLE_UNIT(PolishDoughnut, CentralDensity, centralDensity)
+GYOTO_PROPERTY_DOUBLE(PolishDoughnut,
+		      CentralTempOverVirial, centralTempOverVirial)
+GYOTO_PROPERTY_DOUBLE(PolishDoughnut, Beta, beta)
+GYOTO_PROPERTY_SIZE_T(PolishDoughnut,
+		      SpectralOversampling, spectralOversampling)
+// Since <KomissarovAngleAveraged/> also sets <Komissarov/>, it's
+// important to keep the later after the former.
+GYOTO_PROPERTY_BOOL(PolishDoughnut,
+		    KomissarovAngleAveraged, NoKomissarovAngleAveraged,
+		    angleAveraged)
+GYOTO_PROPERTY_BOOL(PolishDoughnut, Komissarov, NoKomissarov, komissarov)
+GYOTO_PROPERTY_VECTOR_DOUBLE(PolishDoughnut,
+			     NonThermalDeltaExpo, nonThermalDeltaExpo)
+// Since adafparams(vector) sets adaf_ to true, ADAF must come after
+// ADAFParameters
+GYOTO_PROPERTY_VECTOR_DOUBLE(PolishDoughnut, ADAFParameters, adafparams)
+GYOTO_PROPERTY_BOOL(PolishDoughnut, ADAF, NonADAF, adaf)
+GYOTO_PROPERTY_BOOL(PolishDoughnut,
+		    ChangeCusp, KeepCusp, changeCusp)
+GYOTO_PROPERTY_END(PolishDoughnut, Standard::properties)
+
 #define CST_POLY_INDEX 1.5//polytropic index n (gamma=1+1/n=5/3)
 #define CST_POLY_INDEX_M1 0.666666666666666666666666666666666666666667
 #define CST_HYDRO_FRAC 0.75//hydrogen fraction
@@ -53,7 +79,6 @@ PolishDoughnut::PolishDoughnut() :
   spectral_oversampling_(10),
   komissarov_(0),
   angle_averaged_(0),
-  nonthermal_(0),
   deltaPL_(0.),
   expoPL_(0.),
   adaf_(0),
@@ -85,7 +110,6 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   spectral_oversampling_(orig.spectral_oversampling_),
 		 komissarov_(orig.komissarov_),
 		 angle_averaged_(orig.angle_averaged_),
-		 nonthermal_(orig.nonthermal_),
 		 deltaPL_(orig.deltaPL_),
 		 expoPL_(orig.expoPL_),
 		 adaf_(orig.adaf_),
@@ -181,7 +205,7 @@ void PolishDoughnut::lambda(double lam) {
   GYOTO_ENDIF_DEBUG
     }
 double PolishDoughnut::centralDensity() const {return central_density_;}
-double PolishDoughnut::centralDensity(string unit) const {
+double PolishDoughnut::centralDensity(string const &unit) const {
   double dens = centralDensity();
   if (unit != "") {
 # ifdef HAVE_UDUNITS
@@ -196,7 +220,7 @@ double PolishDoughnut::centralDensity(string unit) const {
 void PolishDoughnut::centralDensity(double dens) {
   central_density_=dens;
 }
-void PolishDoughnut::centralDensity(double dens, string unit) {
+void PolishDoughnut::centralDensity(double dens, string const &unit) {
   if (unit != "") {
 # ifdef HAVE_UDUNITS
     dens = Units::Converter(unit, "kg/L")(dens);
@@ -217,10 +241,56 @@ size_t PolishDoughnut::spectralOversampling() const
 { return spectral_oversampling_; }
 void PolishDoughnut::spectralOversampling(size_t val)
 { spectral_oversampling_ = val; }
-bool PolishDoughnut::komissarov() const
-{return komissarov_;}
-void PolishDoughnut::komissarov(bool komis)
-{komissarov_=komis;}
+bool PolishDoughnut::changeCusp() const {return changecusp_;}
+void PolishDoughnut::changeCusp(bool t) {changecusp_=t;}
+bool PolishDoughnut::komissarov() const {return komissarov_;}
+void PolishDoughnut::komissarov(bool komis) {komissarov_=komis;}
+bool PolishDoughnut::angleAveraged() const
+{return angle_averaged_;}
+void PolishDoughnut::angleAveraged(bool komis)
+{angle_averaged_=komis; if (komis) komissarov(true); }
+void PolishDoughnut::nonThermalDeltaExpo(std::vector<double> const &v) {
+  if (v.size() != 2)
+    throwError("nonThermalDeltaExpo must have exactly 2 elements");
+  deltaPL_= v[0];
+  expoPL_ = v[1];
+}
+std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
+  std::vector<double> v (2, deltaPL_);
+  v[1]=expoPL_;
+  return v;
+}
+
+void PolishDoughnut::adafparams(std::vector<double> const &v) {
+  if (v.size() != 2)
+    throwError("ADAF must have exactly 2 elements");
+  adaf(true);
+  ADAFtemperature_ = v[0];
+  ADAFdensity_ = v[1];
+}
+std::vector<double> PolishDoughnut::adafparams() const {
+  std::vector<double> v (2, ADAFtemperature_);
+  v[1]=ADAFdensity_;
+  return v;
+}
+
+void PolishDoughnut::adaf(bool t) {adaf_=t;}
+bool PolishDoughnut::adaf() const {return adaf_;}
+
+void PolishDoughnut::setParameter(Property const &p,
+				  string const & name,
+				  string const & content,
+				  string const & unit) {
+  // Override default behaviour to support obsolete format where
+  // ADAFParameters was in ADAF
+  if (name=="ADAF") {
+    std::vector<double> v=FactoryMessenger::parseArray(content);
+    if (v.size()) adafparams(v);
+    return ;
+  }
+  Standard::setParameter(p, name, content, unit);
+}
+
 PolishDoughnut::~PolishDoughnut() {
   GYOTO_DEBUG << "PolishDoughnut Destruction" << endl;
   if (gg_) gg_ -> unhook(this);
@@ -1148,7 +1218,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 	emissionSynchro_komissarov_direction(Theta_elec,number_density,
 					     nuem,nuc,theta_mag);
       abs_synch_ther=emis_synch_ther/Bnu;
-      if (nonthermal_){
+      if (deltaPL_!=0.){
 	emis_synch_PL=
 	  emissionSynchro_komissarov_PL_direction(number_density_PL,
 						  nuem,nuc,theta_mag);
@@ -1161,7 +1231,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 	emissionSynchro_komissarov_averaged(Theta_elec,number_density,
 					    nuem,nuc);
       abs_synch_ther=emis_synch_ther/Bnu;
-      if (nonthermal_){
+      if (deltaPL_!=0.){
 	emis_synch_PL=
 	  emissionSynchro_komissarov_PL_averaged(number_density_PL,
 						 nuem,nuc);
@@ -1402,52 +1472,3 @@ double PolishDoughnut::bessk(int nn,double xx) {
   }
   return bk;
 }
-int PolishDoughnut::setParameter(string name, string content, string unit) {
-  if (name=="Lambda") lambda(atof(content.c_str()));
-  else if (name=="CentralDensity")
-    centralDensity(atof(content.c_str()), unit);
-  else if (name=="CentralTempOverVirial")
-    centraltemp_over_virial_=atof(content.c_str());
-  else if (name=="Beta") beta_=atof(content.c_str());
-  else if (name=="SpectralOversampling")
-    spectral_oversampling_=atoi(content.c_str());
-  else if (name=="Komissarov") komissarov_=1;
-  else if (name=="KomissarovAngleAveraged") {komissarov_=1;angle_averaged_=1;}
-  else if (name=="NonThermalDeltaExpo") {nonthermal_=1;
-    double parms[2];
-    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
-      throwError("PolishDoughnut \"NonThermalDeltaExpo\" requires exactly 2 tokens");
-    deltaPL_= parms[0];
-    expoPL_ = parms[1];
-  }
-  else if (name=="ADAF") {adaf_ = 1;
-    double parms[2];
-    if (FactoryMessenger::parseArray(content, parms, 2) != 2)
-      throwError("PolishDoughnut \"ADAF\" requires exactly 2 tokens");
-    ADAFtemperature_ = parms[0];
-    ADAFdensity_ = parms[1];
-  }
-  else if (name=="ChangeCusp") changecusp_=1;
-  else return Standard::setParameter(name, content, unit);
-  return 0;
-}
-#ifdef GYOTO_USE_XERCES
-void PolishDoughnut::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("Lambda", lambda_);
-  fmp->setParameter("CentralDensity", central_density_);
-  fmp->setParameter("CentralTempOverVirial", centraltemp_over_virial_);
-  fmp->setParameter("Beta", beta_);
-  fmp->setParameter("SpectralOversampling", spectral_oversampling_);
-  if (komissarov_) fmp->setParameter("Komissarov");
-  if (angle_averaged_) fmp->setParameter("KomissarovAngleAveraged");
-  if (nonthermal_){
-    double param[2]={deltaPL_, expoPL_};
-    fmp->setParameter("NonThermalDeltaExpo", param, 2);
-  }
-  if (adaf_){
-    double param[2]={ADAFtemperature_, ADAFdensity_};
-    fmp->setParameter("ADAF", param, 2);
-  }
-  Standard::fillElement(fmp);
-}
-#endif

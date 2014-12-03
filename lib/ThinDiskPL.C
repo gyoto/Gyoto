@@ -19,6 +19,7 @@
 
 #include "GyotoPhoton.h"
 #include "GyotoThinDiskPL.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -38,6 +39,21 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+GYOTO_PROPERTY_START(ThinDiskPL)
+GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLSlope, PLSlope)
+GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLRho, PLRho)
+GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLRadRef, PLRadRef)
+GYOTO_PROPERTY_END(ThinDiskPL, ThinDisk::properties)
+
+// ACCESSORS
+void ThinDiskPL::PLSlope(double v) {PLSlope_=v;}
+double ThinDiskPL::PLSlope()const{return PLSlope_;}
+void ThinDiskPL::PLRho(double v) {PLRho_=v;}
+double ThinDiskPL::PLRho()const{return PLRho_;}
+void ThinDiskPL::PLRadRef(double v) {PLRadRef_=v;}
+double ThinDiskPL::PLRadRef()const{return PLRadRef_;}
+//
 
 ThinDiskPL::ThinDiskPL() :
   ThinDisk("ThinDiskPL"),
@@ -102,23 +118,3 @@ double ThinDiskPL::emissionBB(double nu,
   spectrumBB_->temperature(TT);
   return (*spectrumBB_)(nu);
 }
-
-int ThinDiskPL::setParameter(std::string name,
-			     std::string content,
-			     std::string unit) {
-  if      (name=="PLSlope") PLSlope_=atof(content.c_str());
-  else if (name=="PLRho") PLRho_=atof(content.c_str());
-  else if (name=="PLRadRef") PLRadRef_=atof(content.c_str());
-  else return ThinDisk::setParameter(name, content, unit);
-  return 0;
-}
-
-
-#ifdef GYOTO_USE_XERCES
-void ThinDiskPL::fillElement(FactoryMessenger *fmp) const {
-  if (PLSlope_) fmp->setParameter("PLSlope", PLSlope_);
-  if (PLRho_) fmp->setParameter("PLRho", PLRho_);
-  if (PLRadRef_) fmp->setParameter("PLRadRef", PLRadRef_);
-  ThinDisk::fillElement(fmp);
-}
-#endif

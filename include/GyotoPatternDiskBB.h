@@ -69,6 +69,8 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+
   PatternDiskBB(); ///< Standard constructor
   
   PatternDiskBB(const PatternDiskBB& ) ;///< Copy constructor
@@ -79,8 +81,10 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
   // Accessors
   // ---------
  public:
-
-  int setParameter(std::string name, std::string content, std::string unit);
+  bool spectralEmission() const;
+  void spectralEmission(bool t);
+  double risco() const;
+  void risco(double r);
 
  public:
   using PatternDisk::emission;
@@ -92,11 +96,6 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
 
   using Generic::metric;
   void metric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL or alike
-
- public:
-#ifdef GYOTO_USE_XERCES
-  void fillElement(FactoryMessenger *fmp) const ;
-#endif
 
 };
 

@@ -18,6 +18,7 @@
 */
 
 #include "GyotoThinDiskIronLine.h"
+#include "GyotoProperty.h"
 
 #include <iostream>
 #include <cmath>
@@ -27,6 +28,26 @@
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 using namespace std;
+
+GYOTO_PROPERTY_START(ThinDiskIronLine)
+GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, PowerLawIndex, PowerLawIndex)
+GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, LineFreq, LineFreq)
+GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, CutRadius, CutRadius)
+GYOTO_PROPERTY_END(ThinDiskIronLine, ThinDisk::properties)
+
+// ACCESSORS
+void ThinDiskIronLine::PowerLawIndex(double v) {plindex_=v;}
+double ThinDiskIronLine::PowerLawIndex()const{return plindex_;}
+#define ___local_f 1e3*1.60217657e-19/GYOTO_PLANCK;
+void ThinDiskIronLine::LineFreq(double v) {linefreq_=v*___local_f;}
+double ThinDiskIronLine::LineFreq()const{return linefreq_/___local_f;}
+#undef ___local_f
+void ThinDiskIronLine::CutRadius(double v) {cutradius_=v;}
+double ThinDiskIronLine::CutRadius()const{return cutradius_;}
+//
+
+
+
 
 Gyoto::Astrobj::ThinDiskIronLine::ThinDiskIronLine()
   : ThinDisk("ThinDiskIronLine"), plindex_(0.), linefreq_(0.), 
@@ -77,40 +98,5 @@ void ThinDiskIronLine::getVelocity(double const pos[4], double vel[4]) {
     ThinDisk::getVelocity(pos,vel);
   }
 }
-
-
-// to load from XML, we only need to implement this:
-int ThinDiskIronLine::setParameter(std::string name,
-			   std::string content,
-			   std::string unit) {
-
-  char* tc = const_cast<char*>(content.c_str());
-  if (name=="PowerLawIndex") {
-    plindex_=atof(tc);
-  }
-  else if (name=="LineFreq") {
-    double freq=atof(tc);
-    linefreq_=freq*1e3*1.60217657e-19/GYOTO_PLANCK;
-  }
-  else if (name=="CutRadius") {
-    cutradius_=atof(tc);
-  }
-  else return ThinDisk::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-// to print/save XML (i.e. to prepare an XML from Yorick), we need this:
-void ThinDiskIronLine::fillElement(FactoryMessenger *fmp) const {
-  GYOTO_SEVERE << "not fully implemented" << endl;
-//  /* for instance:
-//
-//     fmp -> setParameter("MyParameter", getMyParameter());
-//
-//     Then call fillElement *on the direct parent*
-//  */
-  ThinDisk::fillElement(fmp);
-}
-#endif
 
 

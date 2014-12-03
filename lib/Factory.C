@@ -767,15 +767,19 @@ void Factory::setParameter(std::string name,
 			   std::vector<double> const &val,
 			   DOMElement *pel, FactoryMessenger **child){
 
-  ostringstream ss;
-  ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
-  size_t n=val.size();
-  for (size_t i=1; i<n; ++i) {
-    ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
-  }
   DOMElement*  el = doc_->createElement(X(name.c_str()));
   pel -> appendChild(el);
-  el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+
+  size_t n=val.size();
+
+  if (n) {
+    ostringstream ss;
+    ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
+    for (size_t i=1; i<n; ++i) {
+      ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
+    }
+    el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  }
   if (child) *child = new FactoryMessenger(this, el);
 
 }

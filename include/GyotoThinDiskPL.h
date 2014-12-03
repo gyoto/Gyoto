@@ -64,6 +64,7 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
   
   ThinDiskPL(); ///< Standard constructor
   
@@ -75,6 +76,14 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
+  void PLSlope(double);
+  double PLSlope()const;
+  void PLRho(double);
+  double PLRho()const;
+  void PLRadRef(double);
+  double PLRadRef()const;
+
+ public:
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8],double c_obj[8]) const;
@@ -84,12 +93,6 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
    * \brief emission() helper
    */
   double emissionBB(double nu, double co[8]) const;
-
- public:
-  int setParameter(std::string name, std::string content, std::string unit);
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ; ///< called from Factory
-#endif
 
 };
 

@@ -18,6 +18,7 @@
  */
 #include "GyotoPhoton.h"
 #include "GyotoDynamicalDisk.h"
+#include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoKerrBL.h"
@@ -37,6 +38,16 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+
+/// Properties
+
+GYOTO_PROPERTY_START(DynamicalDisk)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk, tinit, tinit)
+GYOTO_PROPERTY_DOUBLE(DynamicalDisk, dt, dt)
+GYOTO_PROPERTY_END(DynamicalDisk, PatternDiskBB::properties)
+
+///
+
 
 DynamicalDisk::DynamicalDisk() :
   PatternDiskBB(),
@@ -128,13 +139,11 @@ double DynamicalDisk::emission(double nu, double dsem,
   return 0.;
 }
 
-int DynamicalDisk::setParameter(std::string name,
-				std::string content,
-				std::string unit) {
-  if (name == "File") {
+std::string DynamicalDisk::file() const {return dirname_;}
+void DynamicalDisk::file(std::string const &fname) {
 #ifdef GYOTO_USE_CFITSIO
-    dirname_ = new char[strlen(content.c_str())+1];
-    strcpy(dirname_,content.c_str());
+    dirname_ = new char[strlen(fname.c_str())+1];
+    strcpy(dirname_,fname.c_str());
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(dirname_)) == NULL) {
@@ -189,7 +198,7 @@ int DynamicalDisk::setParameter(std::string name,
 	emission_array_[i-1] = new double[nel1];
 	for (size_t j=0;j<nel1;++j)
 	  emission_array_[i-1][j]=emtemp[j];
-      }else throwError("In DynmicalDisk::setParameter: Emission must be supplied");
+      }else throwError("In DynmicalDisk::file: Emission must be supplied");
       //save opacity
       if (opacity()){
 	double * optemp = const_cast<double*>(opacity());
@@ -203,14 +212,14 @@ int DynamicalDisk::setParameter(std::string name,
 	velocity_array_[i-1] = new double[nel2];
 	for (size_t j=0;j<nel2;++j)
 	  velocity_array_[i-1][j]=veltemp[j];
-      }else throwError("In DynmicalDisk::setParameter: Velocity must be supplied");
+      }else throwError("In DynmicalDisk::file: Velocity must be supplied");
       //save radius
       if (getGridRadius()){
       double * radtemp = const_cast<double*>(getGridRadius());
       radius_array_[i-1] = new double[nr];
       for (size_t j=0;j<nr;++j)
 	radius_array_[i-1][j]=radtemp[j];
-      }else throwError("In DynmicalDisk::setParameter: Radius must be supplied");
+      }else throwError("In DynmicalDisk::file: Radius must be supplied");
       //save other quantities
       dnu_array_[i-1]=dnu();
       nu0_array_[i-1]=nu0();
@@ -221,18 +230,11 @@ int DynamicalDisk::setParameter(std::string name,
 #else
     throwError("This Gyoto has no FITS i/o");
 #endif
-  }
-  else if (name=="tinit") tinit_=atof(content.c_str());
-  else if (name=="dt") dt_=atof(content.c_str());
-  else return PatternDiskBB::setParameter(name, content, unit);
-  return 0;
-}
-      
-#ifdef GYOTO_USE_XERCES
-void DynamicalDisk::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("tinit", tinit_);
-  fmp->setParameter("dt", dt_);
-  PatternDiskBB::fillElement(fmp);
 }
 
-#endif
+void DynamicalDisk::tinit(double t) {tinit_=t;}
+double DynamicalDisk::tinit()const{return tinit_;}
+
+void DynamicalDisk::dt(double t) {dt_=t;}
+double DynamicalDisk::dt()const{return dt_;}
+

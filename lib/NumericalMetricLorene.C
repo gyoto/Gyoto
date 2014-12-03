@@ -1617,7 +1617,7 @@ bool NumericalMetricLorene::hasSurface() const {return  has_surface_;}
 void NumericalMetricLorene::hasSurface(bool s) {
   has_surface_ = s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::setParameter "
+    throwError("In NumericalMetricLorene::hasSurface "
 	       "please provide Surface information before File in XML");
   }
 }
@@ -1628,7 +1628,7 @@ bool NumericalMetricLorene::specifyMarginalOrbits() const {
 void NumericalMetricLorene::specifyMarginalOrbits(bool s) {
   specify_marginalorbits_=s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::setParameter "
+    throwError("In NumericalMetricLorene::specifyMarginalOrbits "
 	       "please provide Marginal orbits information "
 	       "before File in XML");
   }
@@ -1638,7 +1638,7 @@ bool NumericalMetricLorene::mapEt() const {return  mapet_;}
 void NumericalMetricLorene::mapEt(bool s) {
   mapet_ = s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::setParameter "
+    throwError("In NumericalMetricLorene::mapEt "
 	       "please provide MapET/MapAF information before File in XML");
   }
 }
