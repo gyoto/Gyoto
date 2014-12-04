@@ -27,6 +27,16 @@
 #endif
 using namespace Gyoto;
 
+/// Properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Spectrum::BlackBody)
+GYOTO_PROPERTY_DOUBLE(Spectrum::BlackBody, Temperature, temperature)
+GYOTO_PROPERTY_DOUBLE(Spectrum::BlackBody, Scaling, scaling)
+GYOTO_PROPERTY_END(Spectrum::BlackBody, Generic::properties)
+
+///
+
 Spectrum::BlackBody::BlackBody() :
   Spectrum::Generic("BlackBody"), T_(10000.),
   cst_(2.*GYOTO_PLANCK_OVER_C_SQUARE) {Tm1_=1./T_;}
@@ -45,21 +55,3 @@ double Spectrum::BlackBody::operator()(double nu) const {
     /(exp(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)-1.);
 }
 
-int Spectrum::BlackBody::setParameter(std::string name,
-				       std::string content,
-				       std::string unit) {
-  char * tc=const_cast<char*>(content.c_str());
-  if (name=="Temperature") temperature(atof(tc));
-  else if (name=="Scaling") scaling(atof(tc));
-  else return Spectrum::Generic::setParameter(name, content, unit);
-  return 0;
-}
-
-#ifdef GYOTO_USE_XERCES
-void Spectrum::BlackBody::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("Temperature", T_);
-  fmp->setParameter("Scaling", cst_);
-  Spectrum::Generic::fillElement(fmp);
-}
-
-#endif

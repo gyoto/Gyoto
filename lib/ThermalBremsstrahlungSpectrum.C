@@ -27,6 +27,17 @@
 #endif
 using namespace Gyoto;
 
+/// Properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Spectrum::ThermalBremsstrahlung)
+GYOTO_PROPERTY_DOUBLE(Spectrum::ThermalBremsstrahlung, Temperature, temperature)
+GYOTO_PROPERTY_END(Spectrum::ThermalBremsstrahlung, Generic::properties)
+
+///
+
+
+
 Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung() :
   T_(10000.), massdensityCGS_(0.),
   spectrumBB_(NULL),Spectrum::Generic("ThermalBremsstrahlung") {
@@ -81,10 +92,3 @@ double Spectrum::ThermalBremsstrahlung::alphanuCGS(double nu) const{
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
 }
-
-#ifdef GYOTO_USE_XERCES
-void Spectrum::ThermalBremsstrahlung::fillElement(FactoryMessenger *fmp) const {
-  Spectrum::Generic::fillElement(fmp);
-}
-
-#endif

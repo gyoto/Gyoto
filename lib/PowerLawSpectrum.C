@@ -26,6 +26,16 @@
 #endif
 using namespace Gyoto;
 
+/// Properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Spectrum::PowerLaw)
+GYOTO_PROPERTY_DOUBLE(Spectrum::PowerLaw, Exponent, exponent)
+GYOTO_PROPERTY_DOUBLE(Spectrum::PowerLaw, Constant, constant)
+GYOTO_PROPERTY_END(Spectrum::PowerLaw, Generic::properties)
+
+///
+
 Spectrum::PowerLaw::PowerLaw() :
   Spectrum::Generic("PowerLaw"), constant_(1.), exponent_(0.) {}
 Spectrum::PowerLaw::PowerLaw(double p, double c) :
@@ -41,23 +51,3 @@ void Spectrum::PowerLaw::exponent(double c) { exponent_ = c; }
 double Spectrum::PowerLaw::operator()(double nu) const {
   return constant_ * pow(nu, exponent_);
 }
-
-#ifdef GYOTO_USE_XERCES
-void Spectrum::PowerLaw::fillElement(FactoryMessenger *fmp) const {
-  fmp->setParameter("Exponent", exponent_);
-  fmp->setParameter("Constant", constant_);
-  Spectrum::Generic::fillElement(fmp);
-}
-
-int Gyoto::Spectrum::PowerLaw::setParameter(std::string name,
-			      std::string content,
-			      std::string unit) {
-  char * tc=const_cast<char*>(content.c_str());
-  if (name=="Exponent") exponent(atof(tc));
-  else if (name=="Constant") constant(atof(tc));
-  else return Spectrum::Generic::setParameter(name, content, unit);
-  return 0;
-}
-
-#endif
-

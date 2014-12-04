@@ -57,6 +57,8 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   double massdensityCGS_; ///< Mass density in CGS UNITS (careful)
 
  public:
+  GYOTO_OBJECT;
+
   ThermalBremsstrahlung();
 
   /**
@@ -103,9 +105,6 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
    */
   double alphanuCGS(double nu) const;
 
-#ifdef GYOTO_USE_XERCES
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 };
 
 #endif

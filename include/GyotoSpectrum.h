@@ -132,6 +132,8 @@ class Gyoto::Spectrum::Generic
   std::string kind_; ///< e.g. constants, blackbody...
 
  public:
+  GYOTO_OBJECT;
+
   Generic(const std::string kind); ///< Set kind in constructor
   //  Spectrum::Generic(const Spectrum::Generic &); ///< Copy constructor. Default is fine.
   virtual Generic * clone() const; ///< Cloner
@@ -176,39 +178,6 @@ class Gyoto::Spectrum::Generic
   virtual double integrate(double nu1, double nu2,
 			   const Spectrum::Generic * opacity, double ds) ;
 
-
-#ifdef GYOTO_USE_XERCES
-  /**
-   * Spectrum implementations should impement fillElement to save their
-   * parameters to XML and call the generic implementation to save
-   * generic parts.
-   */
-
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-                                             ///< called from Factory
-
-  /**
-   * The Subcontractor_t function for each Spectrum kind should look
-   * somewhat like this:
-   * \code
-   * SmartPointer<Spectrum::Generic>
-   * Gyoto::Spectrum::MyKind::Subcontractor(FactoryMessenger* fmp) {
-   *   SmartPointer<MyKind> sp = new MyKind();
-   *   sp -> setParameters(fmp);
-   *   return sp;
-   * }
-   * \endcode
-   *
-   * Each spectrum kind should implement setParameter(string name,
-   * string content) to interpret the individual XML
-   * elements. setParameters() can be overloaded in case the specific
-   * Spectrum class needs low level access to the FactoryMessenger (see
-   * Astrobj::UniformSphere::setParameters()).
-   */
-  virtual void setParameters(FactoryMessenger *fmp);
-  ///< Main loop in Subcontractor_t function
-
-#endif
 };
 
 

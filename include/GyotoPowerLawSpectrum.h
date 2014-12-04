@@ -56,6 +56,8 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   double exponent_; ///< I_nu=constant_*nu^exponent_
 
  public:
+  GYOTO_OBJECT;
+
   PowerLaw();
 
   /**
@@ -73,13 +75,6 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
 
-#ifdef GYOTO_USE_XERCES
-  virtual int setParameter(std::string name,
-			    std::string content,
-			    std::string unit);
-
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-#endif
 };
 
 #endif

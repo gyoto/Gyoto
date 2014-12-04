@@ -27,6 +27,18 @@
 using namespace Gyoto;
 using namespace std;
 
+/// Properties
+
+// There is no generic properties for spectra. Nevertheless, we define
+// this to derived classes can point to Spectrum::Generic::properties
+// rather than Object::properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Spectrum::Generic)
+GYOTO_PROPERTY_END(Spectrum::Generic, Object::properties)
+
+///
+
 Spectrum::Generic::Generic(const string kin) : kind_(kin) {}
 Spectrum::Generic * Spectrum::Generic::clone() const 
 {
@@ -119,19 +131,6 @@ double Spectrum::Generic::operator()(double nu, double opacity, double ds)
   if ((thickness=(opacity*ds))) return operator()(nu) * (1. - exp (-thickness)) ;
   return 0.;
 }
-
-#ifdef GYOTO_USE_XERCES
-// do nothing... for now
-void Spectrum::Generic::fillElement(FactoryMessenger *fmp ) const {
-  fmp->setSelfAttribute("kind", kind_);
-}
-void Spectrum::Generic::setParameters(FactoryMessenger *fmp) {
-  string name="", content="", unit="";
-  if (fmp)
-    while (fmp->getNextParameter(&name, &content, &unit))
-      setParameter(name, content, unit);
-}
-#endif
 
 Register::Entry* Gyoto::Spectrum::Register_ = NULL;
 
