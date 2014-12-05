@@ -609,6 +609,8 @@ namespace Gyoto {
 # define setDir                   dir;
 # define getDir                   dir;
 # define setBand                  band;
+# define setObserverKind          observerKind;
+# define getObserverKind          observerKind;
 //\}
 #endif
 

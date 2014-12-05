@@ -234,7 +234,8 @@ class Gyoto::Screen
   std::string observerkind_;
 
  public:
-   
+  GYOTO_OBJECT;
+
   // Constructors - Destructor
   // -------------------------
   Screen() ; ///< Default constructor
@@ -273,7 +274,7 @@ class Gyoto::Screen
    * \param dist the distance expressed in the specified unit;
    * \param unit convertible to meters
    */
-  void distance(double dist, const std::string unit);
+  void distance(double dist, const std::string &unit);
 
   /// Set inclination relative to line-of-sight
   /**
@@ -339,8 +340,8 @@ class Gyoto::Screen
    * system. Content is copied.
    */
   void setObserverPos(const double pos[4]);
-  void setObserverKind(const std::string kind);
-  std::string getObserverKind();
+  void observerKind(const std::string &kind);
+  std::string observerKind() const;
   void setFourVel(const double coord[4]);
   ///< Sets the observer's 4-velocity
   void setScreen1(const double coord[4]);
@@ -400,10 +401,10 @@ class Gyoto::Screen
   void metric(SmartPointer<Metric::Generic> gg); ///< Set Screen::gg_
 
   /// Get observing date in seconds
-  double time();
+  double time() const;
 
   /// Get observing date in seconds
-  double time(const std::string &);
+  double time(const std::string &) const;
 
   /// Set observing date in specified unit
   void time(double, const std::string &);
@@ -412,10 +413,10 @@ class Gyoto::Screen
   void time(double);
 
   /// Get Screen::fov_ in radians
-  double fieldOfView();
+  double fieldOfView() const;
 
   /// Get Screen::fov_ in specified unit
-  double fieldOfView(std::string unit);
+  double fieldOfView(std::string const &unit) const;
 
   /// Set Screen::fov_ in radians
   void fieldOfView(double);
@@ -430,7 +431,7 @@ class Gyoto::Screen
   /// Get direction of the center of the field
   double alpha0() const;
   /// Get direction of the center of the field in specified unit
-  double alpha0(std::string unit);
+  double alpha0(std::string const &unit)const;
   /// Set direction of the center of the field
   void delta0(double);
   /// Set direction of the center of the field in specified unit
@@ -438,15 +439,15 @@ class Gyoto::Screen
   /// Get direction of the center of the field
   double delta0() const;
   /// Get direction of the center of the field in specified unit
-  double delta0(std::string unit);
+  double delta0(std::string const &unit)const;
 
   /// Set Screen::anglekind_
   void anglekind(int);
-  void anglekind(std::string);
+  void anglekind(std::string const&);
   std::string anglekind() const;
 
   /// Get Screen::npix_
-  size_t resolution();
+  size_t resolution() const;
   /// Set Screen::npix_
   void resolution(size_t);
 
@@ -459,13 +460,15 @@ class Gyoto::Screen
 
   /// Retrieve const pointer to mask_
   double const * mask() const ;
+  void maskFile(std::string const &fname);
+  std::string maskFile() const;
 # ifdef GYOTO_USE_CFITSIO
 
   /// Read mask_ from FITS file
-  void fitsReadMask(std::string fname);
+  void fitsReadMask(std::string const &fname);
 
   /// Save mask_ from FITS file
-  void fitsWriteMask(std::string fname);
+  void fitsWriteMask(std::string const &fname);
 # endif
 
   /// Whether this pixel should be ray-traced
@@ -495,6 +498,15 @@ class Gyoto::Screen
    * \param[out] fourvel preallocated 4-element array
    */
   void getFourVel(double fourvel[]) const;
+
+  void fourVel(std::vector<double> const &);
+  std::vector<double> fourVel() const;
+  void screenVector1(std::vector<double> const &);
+  std::vector<double> screenVector1() const;
+  void screenVector2(std::vector<double> const &);
+  std::vector<double> screenVector2() const;
+  void screenVector3(std::vector<double> const &);
+  std::vector<double> screenVector3() const;
 
   /// Get copy of Screen::screen1_
   /**
@@ -574,6 +586,8 @@ class Gyoto::Screen
 
 #ifdef GYOTO_USE_XERCES
  public:
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
     void fillElement(FactoryMessenger *fmp); ///< called from Factory
     /// Instanciate a Screen from XML entity 
     static   SmartPointer<Screen> Subcontractor(FactoryMessenger* fmp);

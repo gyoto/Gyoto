@@ -43,6 +43,31 @@
 using namespace std ; 
 using namespace Gyoto;
 
+/// Properties
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Screen)
+GYOTO_PROPERTY_METRIC(Screen, Metric, metric)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Time, time)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FieldOfView, fieldOfView)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, PALN, PALN)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Inclination, inclination)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Argument, argument)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Alpha0, alpha0)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Delta0, delta0)
+GYOTO_PROPERTY_SIZE_T(Screen, Resolution, resolution)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Distance, distance)
+GYOTO_PROPERTY_DOUBLE(Screen, DMax, dMax)
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FreqObs, freqObs)
+GYOTO_PROPERTY_STRING(Screen, AngleKind, anglekind)
+GYOTO_PROPERTY_STRING(Screen, ObserverKind, observerKind)
+GYOTO_PROPERTY_FILENAME(Screen, Mask, maskFile)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, FourVelocity, fourVel)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector1, screenVector1)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector2, screenVector2)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector3, screenVector3)
+GYOTO_PROPERTY_END(Screen, Object::properties)
+///
+
 // Default constructor
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
@@ -129,7 +154,7 @@ void Screen::setProjection(const double dist,
   setProjection(paln, incl, arg);
 }
 
-void Screen::distance(double dist, const string unit)    {
+void Screen::distance(double dist, const string &unit)    {
   distance(Units::ToMeters(dist, unit, gg_));
 }
 void Screen::distance(double dist)    {
@@ -279,16 +304,64 @@ void Screen::setObserverPos(const double coord[4]) {
   computeBaseVectors();
 }
 
-void Screen::setObserverKind(const string kind) {
+void Screen::observerKind(const string &kind) {
   observerkind_=kind;
 }
-string Screen::getObserverKind() {
+string Screen::observerKind() const {
   return observerkind_;
 }
 
 void Screen::setFourVel(const double coord[4]) {
   for (int ii=0;ii<4;ii++)
     fourvel_[ii]=coord[ii];
+}
+
+void Screen::fourVel(std::vector<double> const &coord) {
+  if (coord.size() != 4)
+    throwError("base screen vectors require 4 elements");
+  for (int ii=0;ii<4;ii++)
+    fourvel_[ii]=coord[ii];
+}
+std::vector<double> Screen::fourVel() const {
+  std::vector<double> output(4, 0.);
+  for (int ii=0;ii<4;ii++) output[ii]=fourvel_[ii];
+  return output;
+}
+
+void Screen::screenVector1(std::vector<double> const &coord) {
+  if (coord.size() != 4)
+    throwError("base screen vectors require 4 elements");
+  for (int ii=0;ii<4;ii++)
+    screen1_[ii]=coord[ii];
+}
+std::vector<double> Screen::screenVector1() const {
+  std::vector<double> output(4, 0.);
+  for (int ii=0;ii<4;ii++) output[ii]=screen1_[ii];
+  return output;
+}
+
+void Screen::screenVector2(std::vector<double> const &coord) {
+  if (coord.size() != 4)
+    throwError("base screen vectors require 4 elements");
+  for (int ii=0;ii<4;ii++)
+    screen2_[ii]=coord[ii];
+}
+std::vector<double> Screen::screenVector2() const {
+  std::vector<double> output(4, 0.);
+  for (int ii=0;ii<4;ii++) output[ii]=screen2_[ii];
+  return output;
+}
+
+void Screen::screenVector3(std::vector<double> const &coord) {
+  if (coord.size() != 4)
+    throwError("base screen vectors require 4 elements");
+  for (int ii=0;ii<4;ii++)
+    screen3_[ii]=coord[ii];
+}
+std::vector<double> Screen::screenVector3() const {
+  std::vector<double> output(4, 0.);
+  for (int ii=0;ii<4;ii++) output[ii]=screen3_[ii];
+  return output;
 }
 
 void Screen::setScreen1(const double coord[4]) {
@@ -691,8 +764,18 @@ void Screen::mask(double const * const mm, size_t res) {
 
 double const * Screen::mask() const { return mask_; }
 
+void Screen::maskFile(std::string const &fname) {
+# ifdef GYOTO_USE_CFITSIO
+  if (fname != "") fitsReadMask(fname);
+# else
+  GYOTO_WARNING << "No FITS i/o, Screen mask file ignored" << endl;
+# endif 
+}
+
+std::string Screen::maskFile() const {return mask_filename_;}
+
 #ifdef GYOTO_USE_CFITSIO
-void Screen::fitsReadMask(std::string filename) {
+void Screen::fitsReadMask(std::string const &filename) {
   GYOTO_DEBUG << "Screen::fitsReadMask(\"" << filename << "\")"<<endl;
   char*     pixfile   = const_cast<char*>(filename.c_str());
   fitsfile* fptr      = NULL;
@@ -727,7 +810,8 @@ void Screen::fitsReadMask(std::string filename) {
   fptr = NULL;
 }
 
-void Screen::fitsWriteMask(string filename) {
+void Screen::fitsWriteMask(string const &fname) {
+  std::string filename = fname==""?mask_filename_:fname;
   if (filename=="") filename=mask_filename_;
   if (filename=="") throwError("no filename specified");
   if (!mask_) throwError("Screen::fitsWriteMask(filename): nothing to save!");
@@ -835,8 +919,8 @@ void Screen::coordToXYZ(const double pos[4], double xyz[3]) const {
   }
 }
 
-double Screen::time() { return tobs_ ; }
-double Screen::time(const string &unit) {
+double Screen::time() const { return tobs_ ; }
+double Screen::time(const string &unit) const {
   return Units::FromSeconds(time(), unit, gg_) ;
 }
 
@@ -856,9 +940,9 @@ void Screen::time(double tobs) {
 
 //double Screen::getMinimumTime() { return tmin_; }
 //void Screen::setMinimumTime(double tmin) { tmin_ = tmin; }
-double Screen::fieldOfView() { return fov_; }
+double Screen::fieldOfView() const { return fov_; }
 
-double Screen::fieldOfView(string unit) {
+double Screen::fieldOfView(string const &unit) const {
   double fov = fieldOfView();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
@@ -915,7 +999,7 @@ double Screen::alpha0() const { return alpha0_; }
 void Screen::delta0(double delta) { delta0_ = delta; }
 double Screen::delta0() const { return delta0_; }
 
-double Screen::alpha0(string unit) {
+double Screen::alpha0(string const &unit) const {
   double fov = alpha0();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
@@ -939,7 +1023,7 @@ double Screen::alpha0(string unit) {
   return fov;
 }
 
-double Screen::delta0(string unit) {
+double Screen::delta0(string const &unit) const{
   double fov = delta0();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
@@ -1018,7 +1102,7 @@ void Screen::delta0(double fov, const string &unit) {
 }
 
 void Screen::anglekind(int kind) { anglekind_ = kind; }
-void Screen::anglekind(std::string skind) {
+void Screen::anglekind(std::string const &skind) {
   if      (skind=="EquatorialAngles") anglekind_=equatorial_angles;
   else if (skind=="SphericalAngles")  anglekind_=spherical_angles;
   else if (skind=="Rectilinear")      anglekind_=rectilinear;
@@ -1041,7 +1125,7 @@ std::string Screen::anglekind() const {
   }
 }
 
-size_t Screen::resolution() { return npix_; }
+size_t Screen::resolution() const { return npix_; }
 void Screen::resolution(size_t n) {
   if (mask_ && n != npix_) {
     GYOTO_INFO << "Changing resolution: deleting mask" << endl;
@@ -1093,56 +1177,56 @@ void Gyoto::Screen::unmapPixUnit() {
 #endif
 
 #ifdef GYOTO_USE_XERCES
+void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
+			  Property const &p) const {
+  if (p.name=="Distance") {
+    FactoryMessenger* child = NULL;
+    double d = distance();
+    if (gg_() && (gg_->mass() == 1.)) {
+      d /=  gg_->unitLength();
+      fmp -> setParameter ("Distance", &d, 1, &child);
+      child -> setSelfAttribute("unit", "geometrical");
+    } else {
+      string unit = "m";
+      if (     d >= GYOTO_KPC*1e3   ) { d /= (1000.*GYOTO_KPC); unit = "Mpc"; }
+      else if (d >= GYOTO_KPC       ) { d /= GYOTO_KPC;         unit = "kpc"; }
+      else if (d >= GYOTO_KPC*1e-3  ) { d /= (GYOTO_KPC*1e-3);  unit = "pc"; }
+      else if (d >= GYOTO_LIGHT_YEAR) { d /= GYOTO_LIGHT_YEAR;  unit = "ly"; }
+      else if (d >= GYOTO_ASTRONOMICAL_UNIT)
+	{ d /= GYOTO_ASTRONOMICAL_UNIT; unit = "AU"; }
+      else if (d >= GYOTO_SUN_RADIUS)
+	{ d /= GYOTO_SUN_RADIUS;  unit = "sunradius"; }
+      else if (d >= 1e3)              { d *= 1e-3;              unit = "km";}
+      else if (d >= 1.) ;//           { d *= 1.;                unit = "m";}
+      else if (d >= 1e-2)             { d *= 1e2;               unit = "cm";}
+      //else ;                        { d *= 1.;                unit = "m";}
+      fmp -> setParameter ("Distance", &d, 1, &child);
+      child -> setSelfAttribute("unit", unit);
+    }
+    child -> setSelfAttribute("dmax", dmax_);
+    delete child; child = NULL;
+  }
+  else if (p.name=="DMax") ; // do nothing
+  else if (p.name=="Mask" && mask_filename_!="")
+    fmp->setParameter("Mask",
+		      (mask_filename_.compare(0,1,"!") ?
+		       mask_filename_ :
+		       mask_filename_.substr(1)));
+  else Object::fillProperty(fmp, p);
+}
+
 void Screen::fillElement(FactoryMessenger *fmp) {
   FactoryMessenger* child = NULL;
-  if (gg_) fmp -> metric (gg_) ;
-  fmp -> setParameter ("Time", tobs_);
-  fmp -> setParameter ("FieldOfView", fov_);
-  fmp -> setParameter ("Alpha0", alpha0_);
-  fmp -> setParameter ("Delta0", delta0_);
-  fmp -> setParameter ("Resolution", npix_);
-  double d = distance();
-  if (gg_() && (gg_->mass() == 1.)) {
-    d /=  gg_->unitLength();
-    fmp -> setParameter ("Distance", &d, 1, &child);
-    child -> setSelfAttribute("unit", "geometrical");
-  } else {
-    string unit = "m";
-    if (     d >= GYOTO_KPC*1e3   ) { d /= (1000.*GYOTO_KPC); unit = "Mpc"; }
-    else if (d >= GYOTO_KPC       ) { d /= GYOTO_KPC;         unit = "kpc"; }
-    else if (d >= GYOTO_KPC*1e-3  ) { d /= (GYOTO_KPC*1e-3);  unit = "pc"; }
-    else if (d >= GYOTO_LIGHT_YEAR) { d /= GYOTO_LIGHT_YEAR;  unit = "ly"; }
-    else if (d >= GYOTO_ASTRONOMICAL_UNIT)
-                                  { d /= GYOTO_ASTRONOMICAL_UNIT; unit = "AU"; }
-    else if (d >= GYOTO_SUN_RADIUS)
-                                  { d /= GYOTO_SUN_RADIUS;  unit = "sunradius"; }
-    else if (d >= 1e3)              { d *= 1e-3;              unit = "km";}
-    else if (d >= 1.) ;//           { d *= 1.;                unit = "m";}
-    else if (d >= 1e-2)             { d *= 1e2;               unit = "cm";}
-    //else ;                        { d *= 1.;                unit = "m";}
-    fmp -> setParameter ("Distance", &d, 1, &child);
-    child -> setSelfAttribute("unit", unit);
-  }
-  child -> setSelfAttribute("dmax", dmax_);
-  delete child; child = NULL;
-  fmp -> setParameter ("PALN", PALN());
-  fmp -> setParameter ("Inclination", inclination());
-  fmp -> setParameter ("Argument", argument());
+  Object::fillElement(fmp);
   if (spectro_) {
     child = fmp -> makeChild("Spectrometer");
     spectro_ -> fillElement(child) ;
     delete child; child = NULL;
   }
-  fmp -> setParameter ("FreqObs", freq_obs_);
-  fmp -> setParameter (anglekind());
-  if (mask_filename_!="") fmp->setParameter("Mask",
-					    (mask_filename_.compare(0,1,"!") ?
-					     mask_filename_ :
-					     mask_filename_.substr(1)));
 }
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
-  string name="", content="", unit="", tunit="";
+  string name="", content="", unit="", tunit="", aunit="", dunit="";
   SmartPointer<Screen> scr = new Screen();
   scr -> metric(fmp->metric());
   int tobs_found=0;
@@ -1153,9 +1237,6 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   double fov; string fov_unit; int fov_found=0;
   double alpha0=0.; int alpha0_found=0; 
   double delta0=0.; int delta0_found=0;
-
-  int fourvel_found=0, screen1_found=0,
-    screen2_found=0, screen3_found=0;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     tc = const_cast<char*>(content.c_str());
@@ -1172,32 +1253,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 	throwError("Screen \"Position\" requires exactly 4 tokens");
       scr -> setObserverPos (pos); 
     }
-    else if (name=="KeplerianObserver" || name=="ZAMO") {
-      scr -> setObserverKind(name);
-    }
-    else if (name=="FourVelocity") {
-      fourvel_found=1;
-      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
-	throwError("Screen \"FourVelocity\" requires exactly 4 tokens");
-      scr -> setFourVel (pos); 
-    }
-    else if (name=="ScreenVector1") {
-      screen1_found=1;
-      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
-	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
-      scr -> setScreen1 (pos); 
-    }
-    else if (name=="ScreenVector2") {
-      screen2_found=1;
-      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
-	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
-      scr -> setScreen2 (pos); 
-    }
-    else if (name=="ScreenVector3") {
-      screen3_found=1;
-      if (FactoryMessenger::parseArray(content, pos, 4) != 4)
-	throwError("Screen \"ScreenVector*\" require exactly 4 tokens");
-      scr -> setScreen3 (pos); 
+    else if (name=="KeplerianObserver" ||
+	     name=="ZAMO" ||
+	     name=="ObserverAtInfinity") {
+      scr -> observerKind(name);
     }
     else if (name=="Distance")    
       {
@@ -1205,46 +1264,33 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 	string dmax = fmp -> getAttribute("dmax");
 	if (dmax != "") scr -> dMax(atof(dmax.c_str()));
       }
-    else if (name=="PALN")        scr -> PALN        ( atof(tc), unit );
-    else if (name=="Inclination") scr -> inclination ( atof(tc), unit );
-    else if (name=="Argument")    scr -> argument    ( atof(tc), unit );
     else if (name=="FieldOfView") {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
-    else if (name=="Resolution")  scr -> resolution  ( atoi(tc) );
     else if (name=="Spectrometer") {
       scr -> spectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
     }
     else if (name=="Alpha0"){
-      alpha0 = atof(tc); alpha0_found=1;
+      alpha0 = atof(tc); alpha0_found=1; aunit=unit;
     }
     else if (name=="Delta0"){
-      delta0 = atof(tc); delta0_found=1;
+      delta0 = atof(tc); delta0_found=1; dunit=unit;
     }
-    else if (name=="FreqObs") scr -> freqObs(atof(tc), unit);
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||
 	     name=="Rectilinear")  scr -> anglekind(name);
-#   ifdef GYOTO_USE_CFITSIO
-    else if (name=="Mask")        scr -> fitsReadMask(fmp->fullPath(content));
-#   endif
+    else if (scr->setParameter(name, content, unit))
+      throwError("no such Screen Property");
   }
 
+  // Must be processed after Position
   if (tobs_found) scr -> time ( tobs_tmp, tunit );
 
+  // Must be processed after Position and Distance so pix_unit is
+  // defined
   if (fov_found) scr -> fieldOfView ( fov, fov_unit );
-
-  if (alpha0_found) scr -> alpha0(alpha0);
-
-  if (delta0_found) scr -> delta0(delta0);
-
-  int sum_found=fourvel_found+screen1_found
-    +screen2_found+screen3_found;
-
-  if (sum_found>0 && sum_found<4)
-    throwError("In Screen::subContractor: either all four, or no "
-	       "basis vectors should be given");
-
+  if (alpha0_found) scr -> alpha0(alpha0, aunit);
+  if (delta0_found) scr -> delta0(delta0, dunit);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(scr->dMax());
