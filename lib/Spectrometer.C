@@ -36,6 +36,18 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 using namespace std;
 
+/// Properties
+
+// There is no generic properties for spectrometers. Nevertheless, we
+// define this to derived classes can point to
+// Spectrometer::Generic::properties rather than Object::properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Spectrometer::Generic)
+GYOTO_PROPERTY_END(Spectrometer::Generic, Object::properties)
+
+///
+
 Register::Entry* Gyoto::Spectrometer::Register_ = NULL;
 void Spectrometer::initRegister() {
   if (Gyoto::Spectrometer::Register_) delete Gyoto::Spectrometer::Register_;
@@ -61,21 +73,11 @@ Spectrometer::getSubcontractor(std::string name, int errmode) {
     -> getSubcontractor(name, errmode);
 }
 
-#if defined GYOTO_USE_XERCES
-void Spectrometer::Generic::setParameters(Gyoto::FactoryMessenger *fmp)  {
-  string name="", content="", unit="";
-  if (fmp)
-    while (fmp->getNextParameter(&name, &content, &unit))
-      setParameter(name, content, unit);
-}
-#endif
-
-
-
 Generic::Generic() :
   SmartPointee(),
   Teller(),
-  kind_(NULL),
+  Object(),
+  kindid_(NULL),
   nsamples_(0),
   nboundaries_(0),
   boundaries_(NULL),
@@ -87,7 +89,8 @@ Generic::Generic() :
 Generic::Generic(kind_t kin) :
   SmartPointee(),
   Teller(),
-  kind_(kin),
+  Object(kin),
+  kindid_(kin),
   nsamples_(0),
   nboundaries_(0),
   boundaries_(NULL),
@@ -99,7 +102,8 @@ Generic::Generic(kind_t kin) :
 Generic::Generic(const Generic& o) :
   SmartPointee(o),
   Teller(o),
-  kind_(o.kind_),
+  Object(o),
+  kindid_(o.kindid_),
   nsamples_(o.nsamples_),
   nboundaries_(o.nboundaries_),
   boundaries_(NULL),
@@ -123,8 +127,8 @@ Generic::~Generic() {
   if (chanind_) delete [] chanind_;
 }
 
-char const * Generic::kind() const {return kind_;}
-void Generic::kind(char const * k) {kind_=k; tellListeners();}
+char const * Generic::kindid() const {return kindid_;}
+void Generic::kindid(char const * k) {kindid_=k; kind_=k; tellListeners();}
 
 size_t Generic::nSamples() const { return nsamples_; }
 size_t Generic::getNBoundaries() const { return nboundaries_; }
@@ -148,18 +152,3 @@ void Generic::getWidths( double data[], std::string unit) {
     data[i]=fabs(cbound[chanind_[2*i+1]]-cbound[chanind_[2*i]]);
   delete [] cbound;
 }
-
-int Spectrometer::Generic::setParameter(string /* name */,
-					string /* content */,
-					string /* unit */)
-{
-  // nothing to do... yet
-  return 1;
-}
-
-#ifdef GYOTO_USE_XERCES
-
-void Generic::fillElement(FactoryMessenger *fmp) const {
-  fmp -> setSelfAttribute( "kind", kind() );
-}
-#endif

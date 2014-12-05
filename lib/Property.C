@@ -55,6 +55,20 @@ Property::Property(string n,
   : name(n), type(vector_double_t), parent(NULL) {
   setter.set_vdouble=set;
   getter.get_vdouble=get;
+  setter_unit.set_vdouble=NULL;
+  getter_unit.get_vdouble=NULL;
+}
+
+Property::Property(string n,
+		   set_vector_double_t set,
+		   get_vector_double_t get,
+		   set_vector_double_unit_t setu,
+		   get_vector_double_unit_t getu)
+  : name(n), type(vector_double_t), parent(NULL) {
+  setter.set_vdouble=set;
+  getter.get_vdouble=get;
+  setter_unit.set_vdouble=setu;
+  getter_unit.get_vdouble=getu;
 }
 
 Property::Property(string n,

@@ -48,8 +48,21 @@ void Object::set(Property const &p,
       }
     }
     return;
+  case Property::vector_double_t:
+    {
+      Property::set_vector_double_unit_t setu = p.setter_unit.set_vdouble;
+      if (setu) {
+	GYOTO_DEBUG << "vector<double> Property which supports unit" << endl;
+	(this->*setu)(val, unit);
+      } else {
+	GYOTO_DEBUG << "vector<double> Property which does not support unit" << endl;
+	if (unit != "") throwError("Can't set this property with unit");
+	set(p, val);
+      }
+    }
+    return;
   default:
-    GYOTO_DEBUG<< "Not a double_t or empty_t Property" << endl;
+    GYOTO_DEBUG<< "Not a double_t, vector_double_t or empty_t Property" << endl;
     if (unit != "")
       throwError("Can't set this property with unit (not a double)");
     set(p, val);
@@ -99,6 +112,13 @@ Value Object::get(Property const &p,
 
   if (p.type == Property::double_t) {
     Property::get_double_unit_t getu = p.getter_unit.get_double;
+    if (getu) return (this->*getu)(unit);
+    if (unit != "") throwError("Can't get this property with unit");
+    return get(p);
+  }
+
+  if (p.type == Property::vector_double_t) {
+    Property::get_vector_double_unit_t getu = p.getter_unit.get_vdouble;
     if (getu) return (this->*getu)(unit);
     if (unit != "") throwError("Can't get this property with unit");
     return get(p);
@@ -271,7 +291,8 @@ void Object::setParameter(Property const &p, string const &name,
     break;
   case Property::vector_double_t:
     val = FactoryMessenger::parseArray(content);
-    break;
+    set(p, val, unit);
+    return;
   case Property::metric_t:
     throwError("Metric can't be set using setParameter()");
   default:

@@ -59,7 +59,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
     iarg+=*rvset;
     if (yarg_nil(iarg)) { // get spectro kind
       if ((*rvset)++) y_error(rmsg);
-      *ypush_q(0) = p_strcpy((*sp) -> kind() );
+      *ypush_q(0) = p_strcpy((*sp) -> kindid() );
     } else { // set spectro kind
       (*sp) -> kind(std::string(ygets_q(iarg)));
     }
@@ -82,7 +82,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
       boundaries = ygeta_d(iarg, &ntot, NULL);
       if (ntot != 2)
 	  y_error("BAND must have 2 elements");
-      (*sp) -> setBand(boundaries, unit?unit:"");
+      (*sp) -> band(boundaries, unit?unit:"");
     }
   }
 
@@ -160,7 +160,7 @@ extern "C" {
   {
     YGYOTO_CONSTRUCTOR_INIT2(Spectrometer, Spectrometer::Generic,
 			     Uniform, spectrometer);
-    kind_t kind=(*sp)->kind();
+    kind_t kind=(*sp)->kindid();
     if (kind != Uniform::WaveKind &&
 	kind != Uniform::WaveLogKind &&
 	kind != Uniform::FreqKind &&

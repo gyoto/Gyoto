@@ -73,7 +73,7 @@ namespace Gyoto{
   /**
    * \brief Type for Spectrometer kind
    * 
-   * Spectrometer kind is a unique numerical identifier for that kind,
+   * Spectrometer kindid is a unique numerical identifier for that kind,
    * produced as the address to a static C string variable holding the
    * kind's name. Most of the time, the address is the only
    * significant part as this is more reliable and allows for direct
@@ -153,7 +153,7 @@ namespace Gyoto{
      *
      * \param name The kind name which identifies this object type in
      * an XML file, as in &lt;Spectrometer kind="name"&gt;. For
-     * clarity, this should be the same as the value of kind_ for this
+     * clarity, this should be the same as the value of kindid_ for this
      * object, but it is not mandatory.
      *
      * \param scp A pointer to the subcontractor, which will
@@ -177,14 +177,14 @@ class Gyoto::Spectrometer::Generic
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
  protected:
   /**
-   * \brief Spectrometer kind name
+   * \brief Spectrometer kind ID
    *
-   * The content is not copied. kind_ should be set (as a parameter to
-   * the Generic() constructor or using kind()) to the adress of a
+   * The content is not copied. kindid_ should be set (as a parameter to
+   * the Generic() constructor or using kindid()) to the adress of a
    * static variable holding the name. This allows checking the kind
    * using pointer comparison rather than string comparison.
    */
-  kind_t kind_;
+  kind_t kindid_;
  public:
   size_t nsamples_; ///< Number of spectral elements
   size_t nboundaries_; ///< Size of the boundaries_ array
@@ -228,6 +228,8 @@ class Gyoto::Spectrometer::Generic
   double* widths_;
 
  public:
+  GYOTO_OBJECT;
+
   /**
    * \brief Default constructor
    *
@@ -236,26 +238,26 @@ class Gyoto::Spectrometer::Generic
   Generic();
 
   /**
-   * \brief Constructor setting kind
+   * \brief Constructor setting kindid
    *
    * Sets the other members to 0. This is usually the right
    * constructor to use:
    * \code
-   * Complex::Complex : Generic(Complex::Kind) {}
+   * Complex::Complex : Generic(Complex::Kindid) {}
    * \endcode
    *
-   * Always set kind to the adress of a static variable, not to a temporary.
+   * Always set kindid to the adress of a static variable, not to a temporary.
    * Usually your class should have a static member for that purpose:
    * \code
    * class MyKind : public Spectrometer::Generic
    * {
-   *   static kind_t Kind;
+   *   static kind_t Kindid;
    * };
-   * kind_t MyKind::Kind = "MyKind";
+   * kind_t MyKind::Kindid = "MyKind";
    * \endcode
    *
    */
-  Generic(kind_t kind);
+  Generic(kind_t kindid);
 
   /**
    * \brief Copy constructor
@@ -287,25 +289,25 @@ class Gyoto::Spectrometer::Generic
   virtual ~Generic();
 
   /**
-   * \brief Get kind_
+   * \brief Get kindid_
    *
    * You can check whether the Spectrometer sp is of a given kind
    * MyKind with something like:
    *
    * \code
-   * if (sp->kind()) == MyKind::Kind;
+   * if (sp->kind()) == MyKind::Kindid;
    * \endcode
    *
    * See Uniform::WaveKind, Uniform::WaveLogKind, Uniform::FreqKind,
    * Uniform::FreqLogKind and Complex::Kind.
    *
    */
-  virtual kind_t kind() const ;
+  virtual kind_t kindid() const ;
 
   /**
-   * \brief Set Generic::kind_
+   * \brief Set Generic::kindid_
    *
-   * This should rarely be used as the Generic::kind_ attribute usually is set
+   * This should rarely be used as the Generic::kindid_ attribute usually is set
    * in the constructor and doesn't change after that.
    *
    * Always set to the adress of a static variable, not to a temporary.
@@ -313,16 +315,16 @@ class Gyoto::Spectrometer::Generic
    * \code
    * class MyKind : public Spectrometer::Generic
    * {
-   *   static kind_t Kind;
+   *   static kind_t Kindid;
    * };
    * kind_t MyKind::Kind = "MyKind";
    * ...
    * SmartPointer<MyKind> sp();
-   * sp->kind(MyKind::Kind)
+   * sp->kindid(MyKind::Kindid)
    * \endcode
    * 
    */
-  virtual void  kind(kind_t) ;
+  virtual void  kindid(kind_t) ;
 
   virtual size_t nSamples() const ; ///< Get Generic::nsamples_.
   virtual size_t getNBoundaries() const ; ///< Get Generic::nboundaries_
@@ -354,75 +356,6 @@ class Gyoto::Spectrometer::Generic
    */
   virtual void getWidths( double data[], std::string unit);
 
-  /**
-   * \brief Set parameter by name
-   *
-   * Assume MyKind is a subclass of Spectrometer::Generic which has
-   * two members (a string StringMember and a double DoubleMember):
-   *
-   * \code
-   * int MyKind::setParameter(std::string name, std::string content, std::string unit)
-   * {
-   *  if      (name=="StringMember") setStringMember(content);
-   *  else if (name=="DoubleMember") setDoubleMemeber(atof(content.c_str()), unit);
-   *  else return Generic::setParameter(name, content, unit);
-   *  return 0;
-   * }
-   * \endcode
-   *
-   * If MyKind is not a direct subclass of Generic, it should call the
-   * corresponding setParameter() implementation instead of
-   * Generic::setParameter().
-   *
-   * \param name XML name of the parameter
-   * \param content string representation of the value
-   * \param unit string representation of the unit
-   * \return 0 if this parameter is known, 1 if it is not.
-   */
-  virtual int setParameter(std::string name,
-			    std::string content,
-			    std::string unit);
-#ifdef GYOTO_USE_XERCES
-
-
-  /**
-   * \brief Main loop in Subcontractor_t function
-   *
-   * The Subcontractor_t function for each Spectrometer kind should look
-   * somewhat like this (templated as
-   * Gyoto::Spectrometer::Subcontractor<MyKind>):
-   *
-   * \code
-   * SmartPointer<Spectrometer::Generic>
-   * Gyoto::Spectrometer::MyKind::Subcontractor(FactoryMessenger* fmp)
-   * {
-   *   SmartPointer<MyKind> gg = new MyKind();
-   *   gg -> setParameters(fmp);
-   *   return gg;
-   * }
-   * \endcode
-   *
-   * Each spectrometer kind should implement setParameter(string name,
-   * string content, string unit) to interpret the individual XML
-   * elements. setParameters() can be overloaded in case the specific
-   * Spectrometer class needs low level access to the FactoryMessenger. See
-   * Gyoto::Astrobj::UniformSphere::setParameters().
-   */
-  virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;
-
-  /**
-   * \brief Write out parameters to XML entities
-   *
-   * Spectrometers implementations should impement fillElement to save their
-   * parameters to XML and call the Spectrometer::fillElement(fmp) for the
-   * shared properties.
-   *
-   * This is mainly used by the Yorick plug-in to print out any sort
-   * of GYOTO objects and to save them to XML files.
-   */
-  virtual void fillElement(FactoryMessenger *fmp) const ;
-
-#endif
 };
 
 

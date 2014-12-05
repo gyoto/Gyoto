@@ -129,13 +129,12 @@ class Gyoto::Spectrum::Generic
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
  protected:
-  std::string kind_; ///< e.g. constants, blackbody...
 
  public:
   GYOTO_OBJECT;
 
   Generic(const std::string kind); ///< Set kind in constructor
-  //  Spectrum::Generic(const Spectrum::Generic &); ///< Copy constructor. Default is fine.
+  Generic(const Spectrum::Generic &);
   virtual Generic * clone() const; ///< Cloner
 
   virtual ~Generic() ; ///< Destructor: does nothing.

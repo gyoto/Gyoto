@@ -78,6 +78,7 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   void reset_(); ///< Computes boundaries_, midpoints_ and widths_
 
  public:
+  GYOTO_OBJECT;
   Uniform() ; ///< Default constructor
   Uniform(size_t nsamples, double band_min, double band_max,
 	       kind_t kind); ///< Constructor setting everything
@@ -85,8 +86,8 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
   Generic * clone() const; ///< Cloner
   virtual ~Uniform() ; ///< Destructor
 
-  using Generic::kind;
-  void kind(kind_t);
+  using Generic::kindid;
+  void kindid(kind_t);
 
   /**
    * \brief Set Generic::kind_ from a std::string
@@ -97,7 +98,8 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    * \param name std::string, one of "wave", "wavelog", "freq" or
    * "freqlog"
    */
-  void kind(std::string name);
+  void kind(std::string const &name);
+  std::string kind() const;
  
   using Generic::nSamples;
  /**
@@ -105,13 +107,18 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    */
   void nSamples(size_t n);
  
+  void band(std::vector<double> const &nu);
+  void band(std::vector<double> const &nu, std::string const &unit);
+  std::vector<double>band() const;
+  std::vector<double>band(std::string const &unit) const;
+
  /**
    * \brief Set Uniform::band_
    *
    * \param nu 2-element vector, in Hz, m, log10(Hz) or log10(m)
    * depending on Generic::kind_
    */
-  void setBand(double nu[2]);
+  void band(double nu[2]);
 
   /**
    * \brief Set the spectral band boundaries in specified unit
@@ -125,27 +132,17 @@ class Gyoto::Spectrometer::Uniform : public Gyoto::Spectrometer::Generic {
    *  - kind==wavelog: 10^nu in meters
    * 
    */
-  void setBand(double nu[2], std::string unit, std::string kind="");
+  void band(double nu[2], std::string const &unit, std::string const &kind);
+  void band(double nu[], std::string const &unit);
 
   double const * getBand() const ; ///< Get Uniform::band_
 
-#ifdef GYOTO_USE_XERCES
  public:
-  void fillElement(FactoryMessenger *fmp) const ;
-  
-  /**
-   * \brief Main loop in the (templated) subcontractor
-   *
-   * In the case of Spectrometer::Complex, the setParameter() API is
-   * not sufficient: setParameters() needs acces to the
-   * FactoryMessenger to instanciate childs for the SubSpectrometers.
-     */
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+#ifdef GYOTO_USE_XERCES
   virtual void setParameters(FactoryMessenger *fmp);
 #endif
 
-  virtual int setParameter(std::string name,
-			    std::string content,
-			    std::string unit);
   /**
    * \brief "wave"
    *

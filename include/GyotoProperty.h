@@ -114,6 +114,15 @@ namespace Gyoto {
    (Gyoto::Property::set_vector_double_t)&class::fname,			\
    (Gyoto::Property::get_vector_double_t)&class::fname),
 
+/// Define a Property of type vector<double> with unit support
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(class, name, fname)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_double_t)&class::fname,			\
+   (Gyoto::Property::get_vector_double_t)&class::fname,			\
+   (Gyoto::Property::set_vector_double_unit_t)&class::fname,		\
+   (Gyoto::Property::get_vector_double_unit_t)&class::fname),
+
 /// Define a Property of type Gyoto::Metric::Generic
 #define GYOTO_PROPERTY_METRIC(class, name, fname)			\
   Gyoto::Property							\
@@ -166,6 +175,8 @@ class Gyoto::Property
   typedef std::string (Object::* get_fname_t)() const;
   typedef void (Object::* set_vector_double_t)(std::vector<double> const&);
   typedef std::vector<double> (Object::* get_vector_double_t)() const;
+  typedef void (Object::* set_vector_double_unit_t)(std::vector<double> const&, std::string const &);
+  typedef std::vector<double> (Object::* get_vector_double_unit_t)(std::string const &) const;
 
   typedef void (Object::* set_metric_t)
     (Gyoto::SmartPointer<Gyoto::Metric::Generic>);
@@ -197,8 +208,14 @@ class Gyoto::Property
     get_metric_t get_metric;
     get_spectrum_t get_spectrum;
   };
-  union setter_unit_t {set_double_unit_t set_double;};
-  union getter_unit_t {get_double_unit_t get_double;};
+  union setter_unit_t {
+    set_double_unit_t set_double;
+    set_vector_double_unit_t set_vdouble;
+  };
+  union getter_unit_t {
+    get_double_unit_t get_double;
+    get_vector_double_unit_t get_vdouble;
+  };
   setter_t setter;
   getter_t getter;
   setter_unit_t setter_unit;
@@ -241,6 +258,12 @@ class Gyoto::Property
   Property(std::string name,
 	   set_vector_double_t set_vdouble,
 	   get_vector_double_t get_vdouble);
+
+  Property(std::string name,
+	   set_vector_double_t set_vdouble,
+	   get_vector_double_t get_vdouble,
+	   set_vector_double_unit_t set_vdouble_unit,
+	   get_vector_double_unit_t get_vdouble_unit);
 
   Property(std::string name,
 	   set_metric_t set_metric,

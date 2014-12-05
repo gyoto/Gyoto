@@ -39,7 +39,10 @@ GYOTO_PROPERTY_END(Spectrum::Generic, Object::properties)
 
 ///
 
-Spectrum::Generic::Generic(const string kin) : kind_(kin) {}
+Spectrum::Generic::Generic(const string kin)
+: SmartPointee(), Object(kin) {}
+Spectrum::Generic::Generic(const Generic& o)
+: SmartPointee(o), Object(o) {}
 Spectrum::Generic * Spectrum::Generic::clone() const 
 {
   string msg = "Spectrum::clone() called: "

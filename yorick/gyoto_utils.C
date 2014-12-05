@@ -376,7 +376,8 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   if (!object)
     Gyoto::throwError("dynamic_cast from SmartPointee* to Object* failed");
 
-  if (p.type == Gyoto::Property::double_t)
+  if (p.type == Gyoto::Property::double_t ||
+      p.type == Gyoto::Property::vector_double_t)
     val = object -> get(p, unit);
   else
     val = object -> get(p);
@@ -462,9 +463,9 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       double *buf = ygeta_d(iarg, &n, NULL);
       std::vector<double> vval(n, 0.);
       for (size_t i=0; i<n; ++i) vval[i]=buf[i];
-      val = vval;
+      object->set(p, vval, unit);
     }
-    break;
+    return;
   case Gyoto::Property::metric_t:
     val = *yget_Metric(iarg);
     break;

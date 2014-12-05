@@ -34,6 +34,48 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrometer;
 using namespace std;
 
+/// Properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Uniform)
+GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(Uniform, Band, band)
+GYOTO_PROPERTY_STRING(Uniform, Kind, kind)
+GYOTO_PROPERTY_SIZE_T(Uniform, NSamples, nSamples)
+GYOTO_PROPERTY_END(Uniform, Generic::properties)
+
+void Uniform::fillProperty(Gyoto::FactoryMessenger *fmp,
+			   Property const &p) const {
+  if (p.type == Property::unsigned_long_t      && p.name == "NSamples")
+    fmp -> setSelfAttribute("nsamples", nsamples_);
+  else if (p.type == Property::string_t        && p.name == "Kind")
+    ; // do nothing
+  else if (p.type == Property::vector_double_t && p.name == "Band") {
+    ostringstream ss;
+    ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[0] << " "
+       << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[1];
+    fmp -> setFullContent(ss.str());
+  } else throwError("Unsupported Property in Spectrometer::Uniform"); 
+}
+
+#ifdef GYOTO_USE_XERCES
+
+void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
+  string skind = fmp -> getSelfAttribute( "kind" );
+  size_t nsamples = atol( fmp -> getSelfAttribute( "nsamples" ) . c_str () );
+  string unit = fmp -> getSelfAttribute( "unit" );
+
+  string content = fmp -> getFullContent();
+  double band[2];
+  if (FactoryMessenger::parseArray(content, band, 2) != 2)
+    throwError("Spectromecter::Uniform requires exactly 2 tokens");
+
+  Uniform::band(band, unit, skind);
+  nSamples(nsamples);
+}
+#endif
+
+///
+
 Uniform::Uniform() :
   Generic(WaveKind)
 {
@@ -72,7 +114,7 @@ void Uniform::reset_() {
   midpoints_ = NULL;
   widths_ = NULL;
   GYOTO_DEBUG << endl;
-  if (!nsamples_ || !kind_) return;
+  if (!nsamples_ || !kindid_) return;
 
   boundaries_ = new double[nsamples_+1];
   chanind_    = new size_t[nsamples_*2];
@@ -84,7 +126,7 @@ void Uniform::reset_() {
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(band_);
   if (band_) GYOTO_DEBUG_ARRAY(band_, 2);
-  GYOTO_DEBUG_EXPR(kind_);
+  GYOTO_DEBUG_EXPR(kindid_);
   GYOTO_ENDIF_DEBUG
 # endif
   for (i=0; i<=nsamples_; ++i){
@@ -92,11 +134,11 @@ void Uniform::reset_() {
     GYOTO_DEBUG << "boundaries_[" <<i<<"]=";
 #   endif
     boundaries_[i]=band_[0]+double(i)*(band_[1]-band_[0])/double(nsamples_);
-    if (kind_==FreqLogKind ||
-	kind_==WaveLogKind)
+    if (kindid_==FreqLogKind ||
+	kindid_==WaveLogKind)
       boundaries_[i]=pow(10.,boundaries_[i]);
-    if (kind_==WaveKind ||
-	kind_==WaveLogKind)
+    if (kindid_==WaveKind ||
+	kindid_==WaveLogKind)
       boundaries_[i]=boundaries_[i]?GYOTO_C/boundaries_[i]:DBL_MAX;
 #   if GYOTO_DEBUG_ENABLED
     if (debug()) cerr << boundaries_[i]<< endl;
@@ -131,12 +173,14 @@ void Uniform::reset_() {
   tellListeners();
 }
 
-void Uniform::kind(kind_t k) {
-  kind_ = k;
+void Uniform::kindid(kind_t k) {
+  kind_=k;
+  kindid_ = k;
   reset_();
 }
 
-void Uniform::kind(std::string str) {
+void Uniform::kind(std::string const &str) {
+  kind_ = str;
   kind_t s;
 
   if (str == "freq"   ) s = FreqKind;
@@ -147,94 +191,103 @@ void Uniform::kind(std::string str) {
     throwError("unknown Spectrometer::Uniform kind"); s=NULL;
   }
 
-  kind_ = s;
+  kindid_ = s;
   reset_();
 }
+
+std::string Uniform::kind() const {return Object::kind_;}
 
 void Uniform::nSamples(size_t n) {
   nsamples_ = n;
   nboundaries_=nsamples_+1;
   reset_();
 }
-void Uniform::setBand(double nu[2]) {
+
+void Uniform::band(std::vector<double>const &vnu) {
+  if (vnu.size() != 2) throwError("Band needs exactly two elements");
+  double nu[] = {vnu[0], vnu[1]};
+  band(nu);
+}
+
+void Uniform::band(std::vector<double>const &vnu, std::string const &u) {
+  if (vnu.size() != 2) throwError("Band needs exactly two elements");
+  double nu[] = {vnu[0], vnu[1]};
+  band(nu, u);
+}
+
+std::vector<double> Uniform::band() const {
+  std::vector<double> vnu(2, band_[0]);
+  vnu[1]=band_[1];
+  return vnu;
+}
+
+std::vector<double> Uniform::band(std::string const &unit) const {
+  std::vector<double> vnu = band();
+
+  if (kindid_== FreqKind) {
+    if (unit != "" && unit != "Hz")
+      for (size_t i=0; i<=1; ++i)
+	vnu[i] = Units::FromHerz(vnu[i], unit);
+  } else if (kindid_== FreqLogKind) {
+    if (unit != "" && unit != "Hz")
+      for (size_t i=0; i<=1; ++i)
+	vnu[i] = pow(10., Units::FromHerz(log10(vnu[i]), unit));
+  } else if (kindid_== WaveKind) {
+    if (unit != "" && unit != "m")
+      for (size_t i=0; i<=1; ++i)
+	vnu[i] = Units::FromMeters(vnu[i], unit);
+  } else if (kindid_ == WaveLogKind) {
+    if (unit != "" && unit != "m")
+      for (size_t i=0; i<=1; ++i)
+	vnu[i] = pow(10., Units::FromMeters(log10(vnu[i]), unit));
+  } else {
+    throwError("Uniform::band(string const &unit) at loss: "
+	       "please specify Spectrometer kind");
+  }
+
+  return vnu;
+}
+
+void Uniform::band(double nu[2]) {
   band_[0] = nu[0];
   band_[1] = nu[1];
   reset_();
 }
 
-void Uniform::setBand(double nu[2], string unit, string skind) {
+void Uniform::band(double nu[2], string const &unit, string const &skind) {
   if (skind != "") kind(skind);
+  band(nu, unit);
+}
+
+void Uniform::band(double nu[2], string const &unit) {
   double band[2] = {nu[0], nu[1]};
 
-  if (kind_== FreqKind) {
+  if (kindid_== FreqKind) {
     if (unit != "" && unit != "Hz")
       for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToHerz(nu[i], unit);
-  } else if (kind_== FreqLogKind) {
+  } else if (kindid_== FreqLogKind) {
     if (unit != "" && unit != "Hz")
       for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToHerz(pow(10., nu[i]), unit));
-  } else if (kind_== WaveKind) {
+  } else if (kindid_== WaveKind) {
     if (unit != "" && unit != "m")
       for (size_t i=0; i<=1; ++i)
 	band[i] = Units::ToMeters(nu[i], unit);
-  } else if (kind_ == WaveLogKind) {
+  } else if (kindid_ == WaveLogKind) {
     if (unit != "" && unit != "m")
       for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
   } else {
-    throwError("Uniform::setBand(double, string, string) at loss: "
+    throwError("Uniform::band(double, string) at loss: "
 	       "please specify Spectrometer kind");
   }
 
-  setBand(band);
+  Uniform::band(band);
 }
+
 
 double const * Uniform::getBand() const { return band_; }
-
-#ifdef GYOTO_USE_XERCES
-
-void Uniform::fillElement(FactoryMessenger *fmp) const {
-  fmp -> setSelfAttribute( "nsamples", nsamples_ );
-  ostringstream ss;
-  ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[0] << " "
-     << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[1];
-  fmp -> setFullContent(ss.str()); 
-  Generic::fillElement(fmp);
-}
-
-void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
-  string skind = fmp -> getSelfAttribute( "kind" );
-  size_t nsamples = atol( fmp -> getSelfAttribute( "nsamples" ) . c_str () );
-  string unit = fmp -> getSelfAttribute( "unit" );
-
-  string content = fmp -> getFullContent();
-  double band[2];
-  if (FactoryMessenger::parseArray(content, band, 2) != 2)
-    throwError("Spectromecter::Uniform requires exactly 2 tokens");
-
-  setBand(band, unit, skind);
-  nSamples(nsamples);
-}
-#endif
-
-int Spectrometer::Uniform::setParameter(string name,
-					 string content,
-					 string unit)
-{
-  double band[2];
-  char* tc = const_cast<char*>(content.c_str());
-  if (name=="Band") {
-    if (FactoryMessenger::parseArray(content, band, 2) != 2)
-      throwError("Spectromecter::Uniform \"Band\" requires exactly 2 tokens");
-    setBand(band, unit);
-  } else if (name=="Kind") {
-    kind(content);
-  } else if (name=="NSamples") {
-    nSamples(atoi(tc));
-  } else return Generic::setParameter(name, content, unit);
-  return 0;
-}
 
 char const * const Uniform::WaveKind = "wave";
 char const * const Uniform::WaveLogKind = "wavelog";

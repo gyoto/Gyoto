@@ -87,7 +87,7 @@ extern "C" {
   {
     YGYOTO_CONSTRUCTOR_INIT2(Spectrometer, Spectrometer::Generic,
 			     Complex, spectrometer);
-    if ((*OBJ)->kind() != Complex::Kind)
+    if ((*OBJ)->kindid() != Complex::Kind)
       y_error("Expecting Spectrometer of kind Complex");
     YGyoto::SpCplxEval(OBJ, argc);
   }

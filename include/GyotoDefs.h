@@ -608,6 +608,7 @@ namespace Gyoto {
 # define getThickness             thickness;
 # define setDir                   dir;
 # define getDir                   dir;
+# define setBand                  band;
 //\}
 #endif
 
