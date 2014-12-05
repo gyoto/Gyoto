@@ -485,12 +485,12 @@ The full set of tuning parameters that \emph{may be} supported by the
 \begin{code}
 <Scenery>
   <Integrator> runge_kutta_fehlberg78 </Integrator>
-  <Abstol> 1e-6 </Abstol>
+  <AbsTol> 1e-6 </AbsTol>
   <RelTol> 1e-6 </RelTol>
   <DeltaMax> 1.79769e+308 </DeltaMax>
   <DeltaMin> 2.22507e-308 </DeltaMin>
   <DeltaMaxOverR> 1.79769e+308 </DeltaMaxOverR>
-  <Maxiter> 100000 </Maxiter>
+  <MaxIter> 100000 </MaxIter>
   <Adaptive/>
   <Delta unit="geometrical"> 1 </Delta>
   <MinimumTime unit="geometrical_time"> -1.7e308 </MinimumTime>
@@ -517,7 +517,7 @@ The full set of tuning parameters that \emph{may be} supported by the
   position, the integration step may not be larger than $h\times\;r$
   where $r$ is the current distance to the centre of the coordinate
   system (defaults to $1$).
-\item[Maxiter] maximum number of integration steps (per photon);
+\item[MaxIter] maximum number of integration steps (per photon);
 \item[Adaptive] (or NonAdaptive) whether or not to use an adaptive step;
 \item[Delta] integration step, initial in case it is adaptive. Not
   very important, but should be commensurable with the distance to the
@@ -594,7 +594,7 @@ have very little actual impact on the behaviour of the integrator.
 
 It is advisable to try the various integrators in your context, and to
 play with the tuning parameters. As a rule of thumbs, if you need to
-change DeltaMin, DeltaMax, DeltaMaxOverR, or Maxiter, it probably
+change DeltaMin, DeltaMax, DeltaMaxOverR, or MaxIter, it probably
 means that you should change for a higher-order integrator. The
 highest order integrator is currently
 \texttt{runge\_kutta\_fehlberg78} and is the default.
