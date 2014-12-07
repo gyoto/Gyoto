@@ -34,7 +34,10 @@
 namespace Gyoto {
   class Value;
   namespace Metric {class Generic;}
+  namespace Astrobj {class Generic;}
   namespace Spectrum {class Generic;}
+  namespace Spectrometer {class Generic;}
+  class Screen;
 }
 
 class Gyoto::Value {
@@ -72,9 +75,21 @@ class Gyoto::Value {
   Value(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
   operator Gyoto::SmartPointer<Gyoto::Metric::Generic>();
 
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> Astrobj;
+  Value(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>);
+  operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>();
+
   Gyoto::SmartPointer<Gyoto::Spectrum::Generic> Spectrum;
   Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>);
   operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>();
+
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> Spectrometer;
+  Value(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>);
+  operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>();
+
+  Gyoto::SmartPointer<Gyoto::Screen> Screen;
+  Value(Gyoto::SmartPointer<Gyoto::Screen>);
+  operator Gyoto::SmartPointer<Gyoto::Screen>();
 };
 
 #endif

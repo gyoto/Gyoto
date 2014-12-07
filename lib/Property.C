@@ -6,18 +6,22 @@ using namespace Gyoto ;
 Property::Property(Property const * const ancestors)
   : name(""), type(empty_t), parent(ancestors) {}
 
-Property::Property(string n, set_long_t set, get_long_t get)
-  : name(n), type(long_t), parent(NULL) {
-  setter.set_long=set;
-  getter.get_long=get;
-}
+#define GYOTO_LOCAL(T)							\
+  Property::Property(string n, set_##T##_t set, get_##T##_t get)	\
+    : name(n), type(T##_t), parent(NULL) {				\
+    setter.set_##T=set;							\
+    getter.get_##T=get;							\
+  }
 
-Property::Property(string n,
-		   set_unsigned_long_t set, get_unsigned_long_t get)
-  : name(n), type(unsigned_long_t), parent(NULL) {
-  setter.set_unsigned_long=set;
-  getter.get_unsigned_long=get;
-}
+GYOTO_LOCAL(long)
+GYOTO_LOCAL(unsigned_long)
+GYOTO_LOCAL(metric)
+GYOTO_LOCAL(spectrum)
+GYOTO_LOCAL(astrobj)
+GYOTO_LOCAL(screen)
+GYOTO_LOCAL(spectrometer)
+
+#undef GYOTO_LOCAL
 
 Property::Property(string n, set_double_t set, get_double_t get)
   : name(n), type(double_t), parent(NULL) {
@@ -69,22 +73,6 @@ Property::Property(string n,
   getter.get_vdouble=get;
   setter_unit.set_vdouble=setu;
   getter_unit.get_vdouble=getu;
-}
-
-Property::Property(string n,
-		   set_metric_t set,
-		   get_metric_t get)
-  : name(n), type(metric_t), parent(NULL) {
-  setter.set_metric=set;
-  getter.get_metric=get;
-}
-
-Property::Property(string n,
-		   set_spectrum_t set,
-		   get_spectrum_t get)
-  : name(n), type(spectrum_t), parent(NULL) {
-  setter.set_spectrum=set;
-  getter.get_spectrum=get;
 }
 
 Property const * Property::find(std::string n) const {

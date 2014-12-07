@@ -47,6 +47,7 @@ using namespace Gyoto;
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Screen)
 GYOTO_PROPERTY_METRIC(Screen, Metric, metric)
+GYOTO_PROPERTY_SPECTROMETER(Screen, Spectrometer, spectrometer)
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Time, time)
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FieldOfView, fieldOfView)
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, PALN, PALN)
@@ -1215,15 +1216,6 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
   else Object::fillProperty(fmp, p);
 }
 
-void Screen::fillElement(FactoryMessenger *fmp) {
-  FactoryMessenger* child = NULL;
-  Object::fillElement(fmp);
-  if (spectro_) {
-    child = fmp -> makeChild("Spectrometer");
-    spectro_ -> fillElement(child) ;
-    delete child; child = NULL;
-  }
-}
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   string name="", content="", unit="", tunit="", aunit="", dunit="";

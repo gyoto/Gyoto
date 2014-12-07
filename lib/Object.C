@@ -4,7 +4,10 @@
 #include "GyotoError.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
 #include "GyotoSpectrum.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -100,7 +103,10 @@ void Object::set(Property const &p, Value val) {
     }
     break;
     ___local_case(metric);
+    ___local_case(astrobj);
     ___local_case(spectrum);
+    ___local_case(spectrometer);
+    ___local_case(screen);
   default:
     throwError("Unimplemented Property type in Object::set");
   }
@@ -158,7 +164,10 @@ Value Object::get(Property const &p) const {
     }
     break;
     ___local_case(metric);
+    ___local_case(astrobj);
     ___local_case(spectrum);
+    ___local_case(spectrometer);
+    ___local_case(screen);
   default:
     throwError("Unimplemented Property type in Object::get");
   }
@@ -208,9 +217,20 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   case Property::metric_t:
     fmp->metric(get(p));
     break;
+  case Property::astrobj_t:
+    fmp->astrobj(get(p));
+    break;
+  case Property::screen_t:
+    fmp->screen(get(p));
+    break;
   case Property::spectrum_t:
     childfmp = fmp -> makeChild ( name );
     get(p).Spectrum -> fillElement(childfmp);
+    delete childfmp;
+    break;
+  case Property::spectrometer_t:
+    childfmp = fmp -> makeChild ( name );
+    get(p).Spectrometer -> fillElement(childfmp);
     delete childfmp;
     break;
   default:
@@ -249,10 +269,22 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	case Property::metric_t:
 	  set(*prop, fmp->metric());
 	  break;
+	case Property::astrobj_t:
+	  set(*prop, fmp->astrobj());
+	  break;
+	case Property::screen_t:
+	  set(*prop, fmp->screen());
+	  break;
 	case Property::spectrum_t:
 	  content = fmp -> getAttribute("kind");
 	  child = fmp -> getChild();
 	  set(*prop, (*Spectrum::getSubcontractor(content))(child) );
+	  delete child;
+	  break;
+	case Property::spectrometer_t:
+	  content = fmp -> getAttribute("kind");
+	  child = fmp -> getChild();
+	  set(*prop, (*Spectrometer::getSubcontractor(content))(child) );
 	  delete child;
 	  break;
 	case Property::filename_t:

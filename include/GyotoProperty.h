@@ -34,7 +34,10 @@ namespace Gyoto {
   class Object;
   class Property;
   namespace Metric { class Generic; }
+  namespace Astrobj { class Generic; }
   namespace Spectrum { class Generic; }
+  namespace Spectrometer { class Generic; }
+  class Screen;
   template <class T> class SmartPointer;
 }
 
@@ -130,12 +133,33 @@ namespace Gyoto {
    (Gyoto::Property::set_metric_t)&class::fname,			\
    (Gyoto::Property::get_metric_t)&class::fname),
 
+/// Define a Property of type Gyoto::Screen
+#define GYOTO_PROPERTY_SCREEN(class, name, fname)			\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_screen_t)&class::fname,			\
+   (Gyoto::Property::get_screen_t)&class::fname),
+
+/// Define a Property of type Gyoto::Astrobj::Generic
+#define GYOTO_PROPERTY_ASTROBJ(class, name, fname)			\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_astrobj_t)&class::fname,			\
+   (Gyoto::Property::get_astrobj_t)&class::fname),
+
 /// Define a Property of type Gyoto::Spectrum::Generic
 #define GYOTO_PROPERTY_SPECTRUM(class, name, fname)			\
   Gyoto::Property							\
     (#name,								\
      (Gyoto::Property::set_spectrum_t)&class::fname,			\
      (Gyoto::Property::get_spectrum_t)&class::fname),
+
+/// Define a Property of type Gyoto::Spectrometer::Generic
+#define GYOTO_PROPERTY_SPECTROMETER(class, name, fname)			\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_spectrometer_t)&class::fname,			\
+   (Gyoto::Property::get_spectrometer_t)&class::fname),
 
 /// Define class::properties and class::getProperties() 
 #define GYOTO_PROPERTY_END(class, next)				\
@@ -154,7 +178,8 @@ class Gyoto::Property
  public:
   enum type_e {double_t, long_t, unsigned_long_t, bool_t,
 	       string_t, filename_t,
-	       vector_double_t, metric_t, spectrum_t, empty_t};
+	       vector_double_t, metric_t, screen_t, astrobj_t, spectrum_t, spectrometer_t,
+	       empty_t};
   std::string name;
   std::string name_false;
   int type;
@@ -183,10 +208,25 @@ class Gyoto::Property
   typedef Gyoto::SmartPointer<Gyoto::Metric::Generic>
     (Object::* get_metric_t)() const;
 
+  typedef void (Object::* set_screen_t)
+    (Gyoto::SmartPointer<Gyoto::Screen>);
+  typedef Gyoto::SmartPointer<Gyoto::Screen>
+    (Object::* get_screen_t)() const;
+
+  typedef void (Object::* set_astrobj_t)
+    (Gyoto::SmartPointer<Gyoto::Astrobj::Generic>);
+  typedef Gyoto::SmartPointer<Gyoto::Astrobj::Generic>
+    (Object::* get_astrobj_t)() const;
+
   typedef void (Object::* set_spectrum_t)
     (Gyoto::SmartPointer<Gyoto::Spectrum::Generic>);
   typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
     (Object::* get_spectrum_t)() const;
+
+  typedef void (Object::* set_spectrometer_t)
+    (Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>);
+  typedef Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>
+    (Object::* get_spectrometer_t)() const;
 
   union setter_t {
     set_double_t set_double;
@@ -196,7 +236,10 @@ class Gyoto::Property
     set_string_t set_string;
     set_vector_double_t set_vdouble;
     set_metric_t set_metric;
+    set_screen_t set_screen;
+    set_astrobj_t set_astrobj;
     set_spectrum_t set_spectrum;
+    set_spectrometer_t set_spectrometer;
   };
   union getter_t {
     get_double_t get_double;
@@ -206,7 +249,10 @@ class Gyoto::Property
     get_string_t get_string;
     get_vector_double_t get_vdouble;
     get_metric_t get_metric;
+    get_screen_t get_screen;
+    get_astrobj_t get_astrobj;
     get_spectrum_t get_spectrum;
+    get_spectrometer_t get_spectrometer;
   };
   union setter_unit_t {
     set_double_unit_t set_double;
@@ -270,8 +316,20 @@ class Gyoto::Property
 	   get_metric_t get_metric);
 
   Property(std::string name,
+	   set_screen_t set_screen,
+	   get_screen_t get_screen);
+
+  Property(std::string name,
+	   set_astrobj_t set_astrobj,
+	   get_astrobj_t get_astrobj);
+
+  Property(std::string name,
 	   set_spectrum_t set_spectrum,
 	   get_spectrum_t get_spectrum);
+
+  Property(std::string name,
+	   set_spectrometer_t set_spectrometer,
+	   get_spectrometer_t get_spectrometer);
 
   Property const * find(std::string name) const;
 

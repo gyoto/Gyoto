@@ -26,6 +26,7 @@
 #include "GyotoAstrobj.h"
 #include "GyotoSpectrum.h"
 #include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
 #include <yapi.h>
 #include <pstdlib.h>
 #include <cstring>
@@ -411,8 +412,17 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::metric_t:
     *ypush_Metric() = val.Metric;
     break;
+  case Gyoto::Property::astrobj_t:
+    *ypush_Astrobj() = val.Astrobj;
+    break;
   case Gyoto::Property::spectrum_t:
     *ypush_Spectrum() = val.Spectrum;
+    break;
+  case Gyoto::Property::spectrometer_t:
+    *ypush_Spectrometer() = val.Spectrometer;
+    break;
+  case Gyoto::Property::screen_t:
+    *ypush_Screen() = val.Screen;
     break;
   default:
     y_error("Property type unimplemented in ypush_property()");
@@ -469,8 +479,17 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::metric_t:
     val = *yget_Metric(iarg);
     break;
+  case Gyoto::Property::astrobj_t:
+    val = *yget_Astrobj(iarg);
+    break;
   case Gyoto::Property::spectrum_t:
     val = *yget_Spectrum(iarg);
+    break;
+  case Gyoto::Property::spectrometer_t:
+    val = *yget_Spectrometer(iarg);
+    break;
+  case Gyoto::Property::screen_t:
+    val = *yget_Screen(iarg);
     break;
   default:
     y_error("Property type unimplemented in yget_property()");

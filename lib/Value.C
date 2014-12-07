@@ -1,6 +1,9 @@
 #include "GyotoValue.h"
 #include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
 #include "GyotoSpectrum.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
 #include <iostream>
 using namespace Gyoto ;
 using namespace std ;
@@ -33,10 +36,25 @@ Value::Value(Gyoto::SmartPointer<Gyoto::Metric::Generic> p)
 Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>()
 { return Metric; }
 
+Value::Value(Gyoto::SmartPointer<Gyoto::Astrobj::Generic> p)
+  : Astrobj(p) {}
+Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>()
+{ return Astrobj; }
+
 Value::Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic> p)
   : Spectrum(p) {}
 Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>()
 { return Spectrum; }
+
+Value::Value(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> p)
+  : Spectrometer(p) {}
+Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>()
+{ return Spectrometer; }
+
+Value::Value(Gyoto::SmartPointer<Gyoto::Screen> p)
+  : Screen(p) {}
+Value::operator Gyoto::SmartPointer<Gyoto::Screen>()
+{ return Screen; }
 
 Value& Value::operator=(Value const &right) {
 # define ___local_case(member) member = right.member
@@ -47,7 +65,10 @@ Value& Value::operator=(Value const &right) {
   ___local_case(String);
   ___local_case(VDouble);
   ___local_case(Metric);
+  ___local_case(Astrobj);
   ___local_case(Spectrum);
+  ___local_case(Spectrometer);
+  ___local_case(Screen);
   return *this;
 # undef ___local_case
 }

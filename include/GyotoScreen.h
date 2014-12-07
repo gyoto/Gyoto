@@ -588,7 +588,6 @@ class Gyoto::Screen
  public:
   void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
 
-    void fillElement(FactoryMessenger *fmp); ///< called from Factory
     /// Instanciate a Screen from XML entity 
     static   SmartPointer<Screen> Subcontractor(FactoryMessenger* fmp);
 #endif
