@@ -596,7 +596,7 @@ Factory::Factory(SmartPointer<Spectrometer::Generic> sp)
 }
 
 void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
-
+  if (!gg && !gg_) return;
   if (gg_ && gg && gg!= gg_) throwError("Inconsistent use of Metrics");
   if (gg && !gg_el_) {
   
@@ -613,6 +613,7 @@ void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 
 void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
   GYOTO_DEBUG << endl;
+  if (!ao && !obj_) return;
   if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
   if (ao && !obj_el_) {
     GYOTO_DEBUG <<"obj_ = ao;" << endl;
@@ -632,7 +633,7 @@ void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
 }
 
 void Factory::screen(SmartPointer<Screen> scr, DOMElement *el) {
-
+  if (!scr && !screen_) return;
   if (screen_ && scr && scr!= screen_)
     throwError("Inconsistent use of Screens");
   

@@ -224,11 +224,13 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     fmp->screen(get(p));
     break;
   case Property::spectrum_t:
+    if (!get(p).Spectrum) return;
     childfmp = fmp -> makeChild ( name );
     get(p).Spectrum -> fillElement(childfmp);
     delete childfmp;
     break;
   case Property::spectrometer_t:
+    if (!get(p).Spectrometer) return;
     childfmp = fmp -> makeChild ( name );
     get(p).Spectrometer -> fillElement(childfmp);
     delete childfmp;
