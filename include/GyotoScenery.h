@@ -255,6 +255,8 @@ class Gyoto::Scenery
   // Constructors - Destructor
   // -------------------------
  public:
+  GYOTO_OBJECT;
+  GYOTO_WORLDLINE;
   Scenery(); ///< Set everything to defaults
   Scenery (const Scenery& o); ///< Copy constructor
   Scenery * clone() const; ///< Cloner
@@ -297,6 +299,10 @@ class Gyoto::Scenery
   double delta(const std::string &unit) const ;  ///< Get default step in specified units
   void delta(double); ///< set default step in geometrical units
   void delta(double, const std::string &unit);   ///< set default step in specified units
+
+  void initCoord(std::vector<double> c);
+  std::vector<double> initCoord() const;
+
 
   /// Set Scenery::quantities_
   /**

@@ -49,6 +49,14 @@ namespace mpi = boost::mpi;
 using namespace Gyoto;
 using namespace std;
 
+/// Properties
+
+#include "GyotoProperty.h"
+GYOTO_PROPERTY_START(Scenery)
+GYOTO_WORLDLINE_PROPERTY_END(Scenery, Object::properties)
+
+///
+
 Scenery::Scenery() :
   screen_(NULL), delta_(GYOTO_DEFAULT_DELTA),
   quantities_(0), ph_(), nthreads_(0), nprocesses_(0)
@@ -124,6 +132,9 @@ void Scenery::delta(double d) { delta_ = d; }
 void Scenery::delta(double d, const string &unit) {
   delta(Units::ToGeometrical(d, unit, metric()));
 }
+
+void Scenery::initCoord(std::vector<double> c) { ph_ . initCoord(c); }
+std::vector<double> Scenery::initCoord() const { return ph_.initCoord();}
 
 void  Scenery::nThreads(size_t n) { nthreads_ = n; }
 size_t Scenery::nThreads() const { return nthreads_; }
@@ -824,18 +835,8 @@ size_t Scenery::maxiter() const { return ph_.maxiter(); }
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillElement(FactoryMessenger *fmp) {
   if (metric())     fmp -> metric (metric()) ;
-  if (screen_) fmp -> screen (screen_) ;
+  if (screen_)      fmp -> screen (screen_) ;
   if (astrobj())    fmp -> astrobj (astrobj()) ;
-
-  fmp -> setParameter("Integrator", ph_.integrator());
-  fmp -> setParameter("DeltaMin", ph_.deltaMin());
-  fmp -> setParameter("DeltaMax", ph_.deltaMax());
-  fmp -> setParameter("DeltaMaxOverR", ph_.deltaMaxOverR());
-  fmp -> setParameter("AbsTol", ph_.absTol());
-  fmp -> setParameter("RelTol", ph_.relTol());
-  fmp -> setParameter ("Delta", delta_);
-  fmp -> setParameter (adaptive()?"Adaptive":"NonAdaptive");
-  fmp -> setParameter("MaxIter", maxiter());
 
   if (getRequestedQuantities())
     fmp -> setParameter("Quantities", getRequestedQuantitiesString());
@@ -843,6 +844,8 @@ void Scenery::fillElement(FactoryMessenger *fmp) {
   fmp -> setParameter("MinimumTime", tMin());
   fmp -> setParameter("NThreads", nthreads_);
   fmp -> setParameter("NProcesses", nprocesses_);
+
+  Object::fillElement(fmp);
 }
 
 SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
@@ -863,22 +866,12 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     char* tc = const_cast<char*>(content.c_str());
-    if (name=="Delta")       sc -> delta(atof(tc), unit);;
     if (name=="Quantities")  sc -> setRequestedQuantities(tc);
-    if (name=="MinimumTime") sc -> tMin(atof(tc), unit);
-    if (name=="NThreads")    sc -> nThreads(atoi(tc));
-    if (name=="MaxIter")     sc -> maxiter(atoi(tc));
-    if (name=="Adaptive")    sc -> adaptive(true);
-    if (name=="NonAdaptive") sc -> adaptive(false);
-    if (name=="PrimaryOnly") sc -> secondary(false);
-    if (name=="Integrator")  sc -> ph_ . integrator(content); 
-    if (name=="DeltaMin")    sc -> ph_ . deltaMin(atof(content.c_str()));
-    if (name=="DeltaMax")    sc -> ph_ . deltaMax(atof(content.c_str()));
-    if (name=="DeltaMaxOverR") sc -> ph_ . deltaMaxOverR (atof(content.c_str()));
-    if (name=="AbsTol")    sc -> ph_ . absTol(atof(content.c_str()));
-    if (name=="RelTol")    sc -> ph_ . relTol(atof(content.c_str()));
-    if (name=="NProcesses")  sc -> nProcesses(atoi(content.c_str()));
-
+    else if (name=="MinimumTime") sc -> tMin(atof(tc), unit);
+    else if (name=="NThreads")    sc -> nThreads(atoi(tc));
+    else if (name=="NProcesses")  sc -> nProcesses(atoi(content.c_str()));
+    else if (name=="Metric" || name=="Screen" || name=="Astrobj") ;
+    else sc -> setParameter(name, content, unit);
   }
   return sc;
 }
