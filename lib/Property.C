@@ -75,10 +75,4 @@ Property::Property(string n,
   getter_unit.get_vdouble=getu;
 }
 
-Property const * Property::find(std::string n) const {
-  if (type == empty_t) return parent;
-  if (name == n || (type == bool_t && name_false == n)) return this;
-  return this + 1;
-}
-
 Property::operator bool() const { return type != empty_t; }

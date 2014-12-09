@@ -41,7 +41,7 @@ namespace Gyoto {
 /**
  * Any derived class that does define Properties (i.e. the macro
  * GYOTO_PROPERTY_START() is called somewhere in the .C file) must
- * call the GYOTO_OBJECT macro in a "public:" section of the class
+ * call the #GYOTO_OBJECT macro in a "public:" section of the class
  * declaration. Else, the property list is inherited from the direct
  * parent, and calling GYOTO_PROPERTY_START() in the .C file leads to
  * a compile-time error.
@@ -66,7 +66,7 @@ namespace Gyoto {
  *   1. declare (in the class declaration, .h file) and define (.C
  *      file) the pair or quadruplet of accessors for your Property
  *      (see Property class documentation;
- *   2. call the GYOTO_OBJECT macro in in a public section of the
+ *   2. call the #GYOTO_OBJECT macro in in a public section of the
  *      class declaration (in the .h file):
  *      \code
  *      class A: public Object {
@@ -113,6 +113,28 @@ class Gyoto::Object
   std::string kind_;
  public:
   GYOTO_OBJECT;
+  /** \fn virtual Property const * Object::getProperties() const
+   *  \brief Get list of properties 
+   *
+   * This method is declared automatically by the #GYOTO_OBJECT macro
+   * and defined automatically by the #GYOTO_PROPERTY_END macro.
+   */
+  /** \property static Property const  properties[]
+   * \brief Property list
+   * 
+   * This static member is declared automatically by the #GYOTO_OBJECT
+   * macro and defined automatically by the #GYOTO_PROPERTY_START,
+   * #GYOTO_PROPERTY_END and GYOTO_PROPERTY_* macros.
+   *
+   * The list of properties is implemented as a static array of
+   * Property instances. The last item in a Property of type
+   * Property::empty_t, which evaluates to false, so the list can be
+   * considered to be NULL-terminated (it is actually rather
+   * false-terminated). This empty_t last item can be a link to
+   * another Property list: for instance, the last item in
+   * Gyoto::Astrobj::Standard::properties is a link to
+   * Gyoto::Astrobj::Generic::properties.
+   */
 
   /// Constructor setting kind
   Object (std::string const &kind) ;

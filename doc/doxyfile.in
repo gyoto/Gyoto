@@ -1244,7 +1244,9 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = DOXYGEN_RUN
+PREDEFINED             = DOXYGEN_RUN GYOTO_OBJECT="GYOTO_OBJECT \
+  static Property const  properties[];		\
+  virtual Property const * getProperties() const"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 
