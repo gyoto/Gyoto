@@ -53,7 +53,57 @@ using namespace std;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Scenery)
+GYOTO_PROPERTY_METRIC(Scenery, Metric, metric)
+GYOTO_PROPERTY_SCREEN(Scenery, Screen, screen)
+GYOTO_PROPERTY_ASTROBJ(Scenery, Astrobj, astrobj)
+GYOTO_PROPERTY_DOUBLE_UNIT(Scenery, MinimumTime, tMin)
+GYOTO_PROPERTY_SIZE_T(Scenery, NThreads, nThreads)
+GYOTO_PROPERTY_SIZE_T(Scenery, NProcesses, nProcesses)
+GYOTO_PROPERTY_STRING(Scenery, Quantities, requestedQuantitiesString)
 GYOTO_WORLDLINE_PROPERTY_END(Scenery, Object::properties)
+
+#ifdef GYOTO_USE_XERCES
+void Scenery::fillProperty(Gyoto::FactoryMessenger *fmp,
+			   Property const &p) const {
+  if (p.name == "InitCoord") {
+    std::vector<double> v=initCoord();
+    if (v[4] != 0) fmp -> setParameter(p.name, v);
+  } else Object::fillProperty(fmp, p);
+}
+
+void Scenery::fillElement(FactoryMessenger *fmp) {
+  if (metric())     fmp -> metric (metric()) ;
+  if (screen_)      fmp -> screen (screen_) ;
+  if (astrobj())    fmp -> astrobj (astrobj()) ;
+  Object::fillElement(fmp);
+}
+
+SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
+  std::string name="", content="", unit="";
+  SmartPointer<Metric::Generic> gg = NULL;
+  SmartPointer<Screen> scr = NULL;
+  SmartPointer<Astrobj::Generic> ao = NULL;
+  Property const *prop=NULL;
+
+  gg = fmp->metric();
+  scr= fmp->screen();
+  ao = fmp->astrobj();
+
+  SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
+
+  int mpi=0;
+
+  while (fmp->getNextParameter(&name, &content, &unit)) {
+    if (name=="Metric" || name=="Screen" || name=="Astrobj") ;
+    else if (prop = sc->property(name))
+      sc -> setParameter(*prop, name, content, unit);
+    else GYOTO_WARNING << "Unrecognized XML entity in Scenery section: '"
+		       << name << "'" << endl;
+  }
+  return sc;
+}
+#endif
+
 
 ///
 
@@ -139,8 +189,8 @@ std::vector<double> Scenery::initCoord() const { return ph_.initCoord();}
 void  Scenery::nThreads(size_t n) { nthreads_ = n; }
 size_t Scenery::nThreads() const { return nthreads_; }
 
-void  Scenery::nProcesses(int n) { nprocesses_ = n; }
-int Scenery::nProcesses() const { return nprocesses_; }
+void  Scenery::nProcesses(size_t n) { nprocesses_ = n; }
+size_t Scenery::nProcesses() const { return nprocesses_; }
 
 typedef struct SceneryThreadWorkerArg {
 #ifdef HAVE_PTHREAD
@@ -635,7 +685,7 @@ SmartPointer<Photon> Scenery::clonePhoton() const {
 
 void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant)
 {quantities_=quant;}
-void Scenery::setRequestedQuantities(std::string squant) {
+void Scenery::requestedQuantitiesString(std::string const &squant) {
   quantities_=0;
   char * tk = strtok(const_cast<char*>(squant.c_str()), " \t\n");
   string tkk="", quant="", unit = "";
@@ -753,7 +803,7 @@ void Scenery::binSpectrumConverter(string unit) {
 # endif
 }
 
-std::string Scenery::getRequestedQuantitiesString() const {
+std::string Scenery::requestedQuantitiesString() const {
   string squant = "";
   Quantity_t quantities
     = quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
@@ -831,51 +881,6 @@ bool Scenery::secondary() const { return ph_.secondary(); }
 
 void Scenery::maxiter(size_t miter) { ph_.maxiter(miter); }
 size_t Scenery::maxiter() const { return ph_.maxiter(); }
-
-#ifdef GYOTO_USE_XERCES
-void Scenery::fillElement(FactoryMessenger *fmp) {
-  if (metric())     fmp -> metric (metric()) ;
-  if (screen_)      fmp -> screen (screen_) ;
-  if (astrobj())    fmp -> astrobj (astrobj()) ;
-
-  if (getRequestedQuantities())
-    fmp -> setParameter("Quantities", getRequestedQuantitiesString());
-
-  fmp -> setParameter("MinimumTime", tMin());
-  fmp -> setParameter("NThreads", nthreads_);
-  fmp -> setParameter("NProcesses", nprocesses_);
-
-  Object::fillElement(fmp);
-}
-
-SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
-
-  string name="", content="", unit="";
-  SmartPointer<Metric::Generic> gg = NULL;
-  SmartPointer<Screen> scr = NULL;
-  SmartPointer<Astrobj::Generic> ao = NULL;
-  string squant = "";
-
-  gg = fmp->metric();
-  scr= fmp->screen();
-  ao = fmp->astrobj();
-
-  SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
-
-  int mpi=0;
-
-  while (fmp->getNextParameter(&name, &content, &unit)) {
-    char* tc = const_cast<char*>(content.c_str());
-    if (name=="Quantities")  sc -> setRequestedQuantities(tc);
-    else if (name=="MinimumTime") sc -> tMin(atof(tc), unit);
-    else if (name=="NThreads")    sc -> nThreads(atoi(tc));
-    else if (name=="NProcesses")  sc -> nProcesses(atoi(content.c_str()));
-    else if (name=="Metric" || name=="Screen" || name=="Astrobj") ;
-    else sc -> setParameter(name, content, unit);
-  }
-  return sc;
-}
-#endif
 
 bool Gyoto::Scenery::am_worker=false;
 

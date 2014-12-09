@@ -315,13 +315,13 @@ class Gyoto::Scenery
    * \param squant Coma-separated list of quantities, e.g. "Spectrum
    * MinDistance". The order is not relevant.
    */
-  void setRequestedQuantities(std::string squant) ;
+  void requestedQuantitiesString(std::string const &squant) ;
 
   /// Get Scenery::quantities_
   Quantity_t getRequestedQuantities() const ;
 
   /// Get a string representation of Scenery::quantities_
-  std::string getRequestedQuantitiesString() const ;
+  std::string requestedQuantitiesString() const ;
 
   /// Get number of requested quantities of scalar nature
   /**
@@ -380,8 +380,8 @@ class Gyoto::Scenery
   void nThreads(size_t); ///< Set nthreads_;
   size_t nThreads() const ; ///< Get nthreads_;
 
-  void nProcesses(int); ///< Set nprocesses_;
-  int  nProcesses() const ; ///< Get nprocesses_;
+  void nProcesses(size_t); ///< Set nprocesses_;
+  size_t nProcesses() const ; ///< Get nprocesses_;
 
   /// Set Scenery::intensity_converter_
   void intensityConverter(std::string unit);
@@ -477,11 +477,9 @@ class Gyoto::Scenery
 
 #ifdef GYOTO_USE_XERCES
  public:
-  /// Fill XML section
-  /**
-   * Akin to Astrobj::Generic::fillElement or
-   * Metric::Generic::fillElement for instance.
-   */
+  // Override fillProperty() to issue InitCoord only if it was set
+  void fillProperty(FactoryMessenger *fmp, Property const &p) const ;
+  // Override fillElement to fill metric, screen and astrobj first
   void fillElement(FactoryMessenger *fmp);
   /// Instanciate Scenery from an XML description.
   static SmartPointer<Scenery> Subcontractor(Gyoto::FactoryMessenger*);

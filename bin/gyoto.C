@@ -363,7 +363,7 @@ int main(int argc, char** argv) {
       cerr << "DEBUG: gyoto.C: flag_radtransf = ";
       cerr << scenery -> astrobj() -> opticallyThin() << endl;
       cerr << "DEBUG: gyoto.C: Requested quantities: ";
-      cerr << scenery -> getRequestedQuantitiesString() << endl;
+      cerr << scenery -> requestedQuantitiesString() << endl;
     }
 
     char keyname[FLEN_KEYWORD];

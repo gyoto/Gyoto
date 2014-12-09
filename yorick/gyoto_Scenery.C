@@ -91,7 +91,7 @@ extern "C" {
 	long dims[2] = { rquant, nk };
 	ystring_t *squant = ypush_q(dims);
 	long k = 0;
-	string requested=(*OBJ)->getRequestedQuantitiesString();
+	string requested=(*OBJ)->requestedQuantitiesString();
 	char *tk = strtok(const_cast<char*>(requested.c_str()), " \n\t");
 	while (tk!=NULL) {
 	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
@@ -106,7 +106,7 @@ extern "C" {
 	  quants += " ";
 	  quants += squant[k];
 	}
-	(*OBJ) -> setRequestedQuantities(quants);
+	(*OBJ) -> requestedQuantitiesString(quants);
       }
     }
 
@@ -215,7 +215,7 @@ extern "C" {
 	squant = ypush_q(dims);
 	size_t k = 0;
 	char *tk =
-	  strtok(const_cast<char*>((*OBJ)->getRequestedQuantitiesString().c_str()),
+	  strtok(const_cast<char*>((*OBJ)->requestedQuantitiesString().c_str()),
 		 " \n\t");
 	while (tk!=NULL) {
 	  if (k>=nk) y_error("BUG: too many tokens in quantity list");
