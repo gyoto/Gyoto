@@ -18,7 +18,7 @@
 */
 
 #include "GyotoThinDiskIronLine.h"
-#include "GyotoProperty.h"
+#include "GyotoConverters.h"
 
 #include <iostream>
 #include <cmath>
@@ -29,22 +29,37 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 using namespace std;
 
+/// Properties
+#include "GyotoProperty.h"
 GYOTO_PROPERTY_START(ThinDiskIronLine)
 GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, PowerLawIndex, PowerLawIndex)
-GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, LineFreq, LineFreq)
-GYOTO_PROPERTY_DOUBLE(ThinDiskIronLine, CutRadius, CutRadius)
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDiskIronLine, LineFreq, LineFreq)
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDiskIronLine, CutRadius, CutRadius)
 GYOTO_PROPERTY_END(ThinDiskIronLine, ThinDisk::properties)
 
 // ACCESSORS
-void ThinDiskIronLine::PowerLawIndex(double v) {plindex_=v;}
-double ThinDiskIronLine::PowerLawIndex()const{return plindex_;}
-#define ___local_f 1e3*1.60217657e-19/GYOTO_PLANCK;
+GYOTO_PROPERTY_ACCESSORS(ThinDiskIronLine, double, plindex_, PowerLawIndex)
+GYOTO_PROPERTY_ACCESSORS(ThinDiskIronLine, double, cutradius_, CutRadius)
+// Define the accessors with unit manually
+void ThinDiskIronLine::CutRadius(double v, std::string const &u) {
+  CutRadius(Units::ToGeometrical(v, u, gg_));
+}
+double ThinDiskIronLine::CutRadius(std::string const &u)const{
+  return Units::FromGeometrical(CutRadius(), u, gg_);
+}
+
+// The following is not completely standard, let's implement it manually:
+#define ___local_f 2.417989579752276e+17 //(1e3*1.60217657e-19/GYOTO_PLANCK);
 void ThinDiskIronLine::LineFreq(double v) {linefreq_=v*___local_f;}
 double ThinDiskIronLine::LineFreq()const{return linefreq_/___local_f;}
+void ThinDiskIronLine::LineFreq(double v, std::string const &u) {
+  LineFreq(Units::ToHerz(v, u));
+}
+double ThinDiskIronLine::LineFreq(std::string const &u)const{
+  return Units::FromHerz(LineFreq(), u);
+}
 #undef ___local_f
-void ThinDiskIronLine::CutRadius(double v) {cutradius_=v;}
-double ThinDiskIronLine::CutRadius()const{return cutradius_;}
-//
+///
 
 
 

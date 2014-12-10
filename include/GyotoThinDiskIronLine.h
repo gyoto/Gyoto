@@ -28,13 +28,15 @@ class Gyoto::Astrobj::ThinDiskIronLine
 			  double c_ph[8], double c_obj[8]) const;
   void getVelocity(double const pos[4], double vel[4]);
 
-  void PowerLawIndex(double v);
-  double PowerLawIndex()const;
 
-  void LineFreq(double v);
-  double LineFreq()const;
+  // standard pairs of accessors
+  GYOTO_OBJECT_ACCESSORS(double, PowerLawIndex);
+  GYOTO_OBJECT_ACCESSORS(double, LineFreq);
+  void LineFreq(double v, std::string const &u);
+  double LineFreq(std::string const &u)const;
+  GYOTO_OBJECT_ACCESSORS(double, CutRadius);
+  void CutRadius(double v, std::string const &u);
+  double CutRadius(std::string const &u)const;
 
-  void CutRadius(double v);
-  double CutRadius()const;
 };
 #endif
