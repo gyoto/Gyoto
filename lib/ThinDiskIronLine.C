@@ -88,7 +88,7 @@ Gyoto::Astrobj::ThinDiskIronLine::~ThinDiskIronLine()
 double ThinDiskIronLine::emission(double nu_em, double /* dsem */,
 				  double *,
 				  double coord_obj[8]) const{
-  double rr=coord_obj[1];
+  double rr=projectedRadius(coord_obj);
   if (rr<cutradius_) return 0.;
   double dfreq=linefreq_/100.;
   /*
@@ -104,7 +104,7 @@ double ThinDiskIronLine::emission(double nu_em, double /* dsem */,
 }
 
 void ThinDiskIronLine::getVelocity(double const pos[4], double vel[4]) {
-  if (pos[1]<cutradius_){
+  if (projectedRadius(pos)<cutradius_){
     //any velocity, emission=0 anyway
     for (int ii=1;ii<4;ii++) vel[ii]=0;
     vel[0] = 1.;
