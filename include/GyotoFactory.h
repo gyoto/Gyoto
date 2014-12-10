@@ -397,6 +397,10 @@ class Gyoto::Factory
 		    xercesc::DOMElement* pel,
 		    FactoryMessenger **child = NULL);
 
+  void setParameter(std::string name, std::vector<unsigned long> const &val,
+		    xercesc::DOMElement* pel,
+		    FactoryMessenger **child = NULL);
+
   /// Transform relative path into absolute path.
   /**
    * relpath is interpreted as follows:

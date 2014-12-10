@@ -41,6 +41,16 @@ namespace Gyoto {
   template <class T> class SmartPointer;
 }
 
+
+/// Define a pair of accessors to scalar member (double, long, size_t)
+/**
+ * Accessors must also be declared in the class declaration, which can
+ * be done using #GYOTO_OBJECT_SCALAR_ACCESSORS.
+ */
+#define GYOTO_PROPERTY_ACCESSORS(class, type, member, method)	\
+  void class::method(type v) {member=v;}				\
+  type class::method() const {return member;}
+
 /// Start Property list
 /**
  * \param class Class for which we are defining a Property list
@@ -130,6 +140,13 @@ namespace Gyoto {
    (Gyoto::Property::set_vector_double_unit_t)&class::fname,		\
    (Gyoto::Property::get_vector_double_unit_t)&class::fname),
 
+/// Define a Property of type vector<unsigned long>
+#define GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG(class, name, fname)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_unsigned_long_t)&class::fname,		\
+   (Gyoto::Property::get_vector_unsigned_long_t)&class::fname),
+
 /// Define a Property of type Gyoto::Metric::Generic
 #define GYOTO_PROPERTY_METRIC(class, name, fname)			\
   Gyoto::Property							\
@@ -212,6 +229,8 @@ namespace Gyoto {
  *   - bool: see #GYOTO_PROPERTY_BOOL;
  *   - std::vector<double>: see #GYOTO_PROPERTY_VECTOR_DOUBLE
  *     and #GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT;
+ *   - std::vector<unsigned long>:
+ *     see #GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG;
  *   - Gyoto::SmartPointers to various base classes: Screen,
  *     Metric::Generic, Astrobj::Generic, Spectrum::Generic and
  *     Spectrometer::Generic. See #GYOTO_PROPERTY_METRIC,
@@ -226,7 +245,7 @@ namespace Gyoto {
  *
  * The type used in these accessors may not be the same as the type of
  * the underlying class member. For instance, to read an array, it was
- * chosen to use the std::vector<double> type because it is easy to
+ * chosen to use the std::vector<type> type because it is easy to
  * read such a vector from XML and to thus determine dynamically the
  * number of elements provided. But this type is slow, so it is
  * expected that the class member will rather be a C-style array
@@ -295,6 +314,8 @@ class Gyoto::Property
     filename_t,
     /// Type is std::vector<double>
     vector_double_t,
+    /// Type is std::vector<unsigned long>
+    vector_unsigned_long_t,
     /// Type is Gyoto::SmartPointer<Gyoto::Metric::Generic>
     metric_t,
     /// Type is Gyoto::SmartPointer<Gyoto::Screen::Generic>
@@ -360,6 +381,10 @@ class Gyoto::Property
   typedef void (Object::* set_vector_double_unit_t)(std::vector<double> const&, std::string const &);
   /// Prototype for an accessor to get a std::vector<double>, with unit
   typedef std::vector<double> (Object::* get_vector_double_unit_t)(std::string const &) const;
+  /// Prototype for an accessor to set a std::vector<unsigned long>
+  typedef void (Object::* set_vector_unsigned_long_t)(std::vector<unsigned long> const&);
+  /// Prototype for an accessor to get a std::vector<unsigned long>
+  typedef std::vector<unsigned long> (Object::* get_vector_unsigned_long_t)() const;
 
   /// Prototype for an accessor to set a Gyoto::SmartPointer<Gyoto::Metric::Generic>
   typedef void (Object::* set_metric_t)
@@ -407,6 +432,7 @@ class Gyoto::Property
     set_bool_t set_bool;
     set_string_t set_string;
     set_vector_double_t set_vdouble;
+    set_vector_unsigned_long_t set_vulong;
     set_metric_t set_metric;
     set_screen_t set_screen;
     set_astrobj_t set_astrobj;
@@ -424,6 +450,7 @@ class Gyoto::Property
     get_bool_t get_bool;
     get_string_t get_string;
     get_vector_double_t get_vdouble;
+    get_vector_unsigned_long_t get_vulong;
     get_metric_t get_metric;
     get_screen_t get_screen;
     get_astrobj_t get_astrobj;
@@ -525,6 +552,11 @@ class Gyoto::Property
 	   get_vector_double_t get_vdouble,
 	   set_vector_double_unit_t set_vdouble_unit,
 	   get_vector_double_unit_t get_vdouble_unit);
+
+  /// Constructor for #type==#vector_unsigned_long_t
+  Property(std::string name,
+	   set_vector_unsigned_long_t set_vulong,
+	   get_vector_unsigned_long_t get_vulong);
 
   /// Constructor for #type==#metric_t
   Property(std::string name,

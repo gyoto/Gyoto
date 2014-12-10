@@ -395,6 +395,8 @@ class Gyoto::FactoryMessenger {
 
   void setParameter(std::string name, std::vector<double> const &val,
 		    FactoryMessenger** child= NULL);
+  void setParameter(std::string name, std::vector<unsigned long> const &val,
+		    FactoryMessenger** child= NULL);
   ///< Output a vector of parameters
 
   /**
@@ -477,6 +479,14 @@ class Gyoto::FactoryMessenger {
    * std::vector<double>.
    */
   static std::vector<double> parseArray(std::string src);
+
+  /**
+   * \brief Parse string into array
+   *
+   * Parse tokens from string src, returns them into a
+   * std::vector<unsigned long>.
+   */
+  static std::vector<unsigned long> parseArrayULong(std::string src);
 };
 
 #endif

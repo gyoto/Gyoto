@@ -175,19 +175,24 @@ namespace Gyoto {
  * extended as needed using xExpand(). These coordinates can be
  * retrieved using get_t(), get_xyz(), getCartesian(), getCoord() etc.
  *
- * Supported XML parameters:
- *  - InitialCoordinate or InitCoord: 8-element vector yielding the initial
- *    4-position and 4-velocity;
- *  - Only for massive particle (Gyoto::Astrobj::Star): Position
- *    (yielding initial 4-position) and Velocity (yielding initial
- *    3-velocity);
- *  - Delta: integration step, initial in case or adaptive step;
- *  - Adaptive or NonAdaptive: sets whether integration step should be
- *    adaptive; default: Adaptive.;
- *  - MaxIter: maximum number of iterations for the integration;
- *    default: 100000.
- *  - DeltaMin, DeltaMax, DeltaMaxOverR, AbsTol, RelTol: tuning
- *    parameters used by some of the integrators.
+ * Worldline does not derive from Object, and does not instanciate a
+ * Property list. This is because this would lead to multiple
+ * inheritance of the Object base in derived classes. Instead,
+ * #GyotoWorldline.h provides a few macros that can be used to include
+ * the Worldline properties in a derived classe's Property list:
+ *   - #GYOTO_WORLDLINE is to be used in a public section of the
+ *     derived class declaration (.h file); it declares wrappers
+ *     around the Worldline property accessors;
+ *   - #GYOTO_WORLDLINE_ACCESSORS is to be used with the class
+ *     definition (.C file; it defines the accessors declared by
+ *     #GYOTO_WORLDLINE;
+ *   - #GYOTO_WORLDLINE_PROPERTIES declares the Properties that use
+ *     these accessors. It must be used like
+ *     e.g. #GYOTO_PROPERTY_DOUBLE, between #GYOTO_PROPERTY_START andf
+ *     #GYOTO_PROPERTY_END.
+ *   - Finally, #GYOTO_WORLDLINE_PROPERTY_END is a drop-in replacement
+ *     for #GYOTO_PROPERTY_END that calls #GYOTO_WORLDLINE_PROPERTIES
+ *     and #GYOTO_WORLDLINE_ACCESSORS.
  * 
  */
 class Gyoto::Worldline

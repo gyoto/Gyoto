@@ -75,4 +75,12 @@ Property::Property(string n,
   getter_unit.get_vdouble=getu;
 }
 
+Property::Property(string n,
+		   set_vector_unsigned_long_t set,
+		   get_vector_unsigned_long_t get)
+  : name(n), type(vector_unsigned_long_t), parent(NULL) {
+  setter.set_vulong=set;
+  getter.get_vulong=get;
+}
+
 Property::operator bool() const { return type != empty_t; }

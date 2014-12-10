@@ -409,6 +409,14 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       for (size_t i=0; i<n; ++i) buf[i]=vval[i];
     }
     break;
+  case Gyoto::Property::vector_unsigned_long_t:
+    {
+      size_t n = val.VULong.size();
+      long dims[]={1, long(n)};
+      long * buf = ypush_l(dims);
+      for (size_t i=0; i<n; ++i) buf[i]=val.VULong[i];
+    }
+    break;
   case Gyoto::Property::metric_t:
     *ypush_Metric() = val.Metric;
     break;
@@ -476,6 +484,14 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       object->set(p, vval, unit);
     }
     return;
+  case Gyoto::Property::vector_unsigned_long_t:
+    {
+      long n;
+      long *buf = ygeta_l(iarg, &n, NULL);
+      val.VULong.resize(n);
+      for (size_t i=0; i<n; ++i) val.VULong[i]=buf[i];
+    }
+    break;
   case Gyoto::Property::metric_t:
     val = *yget_Metric(iarg);
     break;

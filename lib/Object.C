@@ -102,6 +102,13 @@ void Object::set(Property const &p, Value val) {
       (this->*set)(val);
     }
     break;
+  case Property::vector_unsigned_long_t:
+    {
+      Property::set_vector_unsigned_long_t set = p.setter.set_vulong;
+      if (!set) throwError("Can't set this Property");
+      (this->*set)(val);
+    }
+    break;
     ___local_case(metric);
     ___local_case(astrobj);
     ___local_case(spectrum);
@@ -163,6 +170,13 @@ Value Object::get(Property const &p) const {
       val = (this->*get)();
     }
     break;
+  case Property::vector_unsigned_long_t:
+    {
+      Property::get_vector_unsigned_long_t get = p.getter.get_vulong;
+      if (!get) throwError("Can't get this Property");
+      val = (this->*get)();
+    }
+    break;
     ___local_case(metric);
     ___local_case(astrobj);
     ___local_case(spectrum);
@@ -179,6 +193,7 @@ Property const * Object::property(std::string const pname) const {
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
+      GYOTO_DEBUG_EXPR(prop->name);
       if (prop->name == pname ||
 	  (prop->type==Property::bool_t && prop->name_false == pname))
 	return prop;
@@ -213,6 +228,9 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     break;
   case Property::vector_double_t:
     fmp->setParameter(name, get(p).VDouble);
+    break;
+  case Property::vector_unsigned_long_t:
+    fmp->setParameter(name, get(p).VULong);
     break;
   case Property::metric_t:
     fmp->metric(get(p));
@@ -327,6 +345,9 @@ void Object::setParameter(Property const &p, string const &name,
     val = FactoryMessenger::parseArray(content);
     set(p, val, unit);
     return;
+  case Property::vector_unsigned_long_t:
+    val = FactoryMessenger::parseArrayULong(content);
+    break;
   case Property::metric_t:
     throwError("Metric can't be set using setParameter()");
   default:

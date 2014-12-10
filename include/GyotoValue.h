@@ -110,6 +110,13 @@ class Gyoto::Value {
   /// Cast to vector of doubles
   operator std::vector<double>() const;
 
+  /// A vector of unsigned long values
+  std::vector<unsigned long> VULong;
+  /// Construct/cast from vector of unsigned long values
+  Value(std::vector<unsigned long>);
+  /// Cast to vector of unsigned long values
+  operator std::vector<unsigned long>() const;
+
   /// A Metric object
   Gyoto::SmartPointer<Gyoto::Metric::Generic> Metric;
   /// Cast from Metric object

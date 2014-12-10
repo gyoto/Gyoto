@@ -31,6 +31,9 @@ Value::operator std::string() const {return String;}
 Value::Value(std::vector<double> val) : VDouble(val) {}
 Value::operator std::vector<double>() const {return VDouble;}
 
+Value::Value(std::vector<unsigned long> val) : VULong(val) {}
+Value::operator std::vector<unsigned long>() const {return VULong;}
+
 Value::Value(Gyoto::SmartPointer<Gyoto::Metric::Generic> p)
   : Metric(p) {}
 Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>()
@@ -64,6 +67,7 @@ Value& Value::operator=(Value const &right) {
   ___local_case(ULong);
   ___local_case(String);
   ___local_case(VDouble);
+  ___local_case(VULong);
   ___local_case(Metric);
   ___local_case(Astrobj);
   ___local_case(Spectrum);

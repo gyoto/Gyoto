@@ -27,6 +27,7 @@
 #include <string>
 #include <libgen.h>
 #include <unistd.h>
+#include <cstdlib>
 
 #include "GyotoMetric.h"
 #include "GyotoAstrobj.h"
@@ -785,6 +786,27 @@ void Factory::setParameter(std::string name,
 
 }
 
+void Factory::setParameter(std::string name,
+			   std::vector<unsigned long> const &val,
+			   DOMElement *pel, FactoryMessenger **child){
+
+  DOMElement*  el = doc_->createElement(X(name.c_str()));
+  pel -> appendChild(el);
+
+  size_t n=val.size();
+
+  if (n) {
+    ostringstream ss;
+    ss << val[0];
+    for (size_t i=1; i<n; ++i) {
+      ss << " " << val[i];
+    }
+    el->appendChild( doc_->createTextNode(X(ss.str().c_str())) );
+  }
+  if (child) *child = new FactoryMessenger(this, el);
+
+}
+
 void Factory::setContent(std::string content, DOMElement *el) {
   el -> appendChild( doc_->createTextNode( X( content.c_str() ) ) );
 }
@@ -955,6 +977,12 @@ void FactoryMessenger::setParameter(std::string name,
   employer_ -> setParameter(name, val, element_, child);
 }
 
+void FactoryMessenger::setParameter(std::string name,
+				    std::vector<unsigned long> const &val,
+				    FactoryMessenger **child){
+  employer_ -> setParameter(name, val, element_, child);
+}
+
 size_t FactoryMessenger::parseArray(std::string content, double val[], size_t max_tokens)
 {
   char const * const delim = " \t\n" ;
@@ -994,6 +1022,29 @@ std::vector<double> FactoryMessenger::parseArray(std::string content)
 
   while (sub) {
     result.push_back(Gyoto::atof(sub));
+    sub = strtok(NULL, delim);
+  }
+  
+  delete [] tc;
+
+  return result;
+}
+
+std::vector<unsigned long> FactoryMessenger::parseArrayULong(std::string content)
+{
+  std::vector<unsigned long> result;
+  char const * const delim = " \t\n" ;
+  char const * const c_content=content.c_str();
+  size_t len=strlen(c_content);
+  if (len==0) return result;
+
+  size_t n=0;
+  char * const tc = new char[len+1];
+  memcpy(tc, c_content, len+1);
+  char * sub = strtok(tc, delim);
+
+  while (sub) {
+    result.push_back(atol(sub));
     sub = strtok(NULL, delim);
   }
   

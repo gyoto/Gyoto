@@ -162,9 +162,11 @@ class Gyoto::Astrobj::Star :
   // Overload to dispatch InitCoord into Position and Velocity
   // for massive particle
   virtual void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const ;
-  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 #endif
+  // Declare the wrappers around the Worldline accessors
   GYOTO_WORLDLINE;
+  // Both base classes have deltaMax methods: we need to explicitly
+  // use both
   using Gyoto::Worldline::deltaMax;
   using Gyoto::Astrobj::UniformSphere::deltaMax;
 

@@ -179,7 +179,4 @@ void Star::setParameters(FactoryMessenger* fmp) {
 	       "Velocity was found but not Position");
   }
 }
-void Star::fillElement(Gyoto::FactoryMessenger *fmp) const {
-  UniformSphere::fillElement(fmp);
-}
 #endif

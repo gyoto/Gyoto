@@ -174,6 +174,7 @@ void FixedStar::setPos(const double p[3])
 { for (int i=0; i<3; ++i) pos_[i]=p[i]; radius(radius_);}
 
 void FixedStar::position(std::vector<double> const &v) {
+  GYOTO_DEBUG_EXPR(v.size());
   if (v.size() !=3)
     throwError("FixedStar position needs exactly 3 tokens"); 
   for (int i=0; i<3; ++i) pos_[i]=v[i];
