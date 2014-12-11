@@ -37,18 +37,39 @@ namespace Gyoto {
   class FactoryMessenger;
 }
 
+/// Declare a pair of accessors to string member in a class declaration
+/**
+ * The accessors must also be defined in the .C file
+ *
+ * \param method name of the accessors.
+ */
+#define GYOTO_OBJECT_ACCESSORS_STRING(method)				\
+  virtual void method(std::string const&);				\
+  virtual std::string method() const;
+
 /// Declare a pair of accessors to scalar member in a class declaration
 /**
  * The accessors must also be defined in the .C file, which can be
- * done using #GYOTO_PROPERTY_SCALAR_ACCESSORS
+ * done using #GYOTO_PROPERTY_ACCESSORS
  *
  * \param type data type of the memebr beeing accessed. Any scalar
  *        type (double, long, size_t, SmartPointer<Metric::Generic> etc).
  * \param method name of the accessors.
  */
 #define GYOTO_OBJECT_ACCESSORS(type, method)				\
-  void method(type);							\
-  type method() const;
+  virtual void method(type);						\
+  virtual type method() const;
+
+/// Declare a quadruplet of accessors to double member that supports unit
+/**
+ * The accessors must also be defined in the .C file.
+ *
+ * \param method name of the accessors.
+ */
+#define GYOTO_OBJECT_ACCESSORS_UNIT(method)				\
+  GYOTO_OBJECT_ACCESSORS(double, method)				\
+  virtual void method(double, std::string const &);			\
+  virtual double method(std::string const &) const;
 
 /// Declare  class::properties and class::getProperties()
 /**

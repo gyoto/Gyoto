@@ -51,6 +51,26 @@ namespace Gyoto {
   void class::method(type v) {member=v;}				\
   type class::method() const {return member;}
 
+/// Define 4 accessors to double scalar member in geometrical units
+/**
+ * Accessors must also be declared in the class declaration, which can
+ * be done using #GYOTO_OBJECT_ACCESSORS_UNIT.
+ *
+ * \param class class name
+ * \param member member holding the value in geometrical unit
+ * \param method name for accessors
+ * \metric member or expression yielding metric (which defines the
+ * geometrical unit)
+ */
+#define GYOTO_PROPERTY_ACCESSORS_GEOMETRICAL(class, member, method, metric) \
+  GYOTO_PROPERTY_ACCESSORS(class, double, member, method)		\
+  void class::method(double v, std::string const &u) {			\
+    member=Units::ToGeometrical(v, u, metric);				\
+  }									\
+  double class::method(std::string const &u) const {			\
+    return Units::FromGeometrical(member, u, metric);			\
+  }
+
 /// Start Property list
 /**
  * \param class Class for which we are defining a Property list
