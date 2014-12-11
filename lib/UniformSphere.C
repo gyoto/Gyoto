@@ -139,6 +139,18 @@ double UniformSphere::operator()(double const coord[4]) {
 }
 
 double UniformSphere::deltaMax(double * coord) {
+  double r;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_CARTESIAN:
+    r=sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]);
+    break;
+  case GYOTO_COORDKIND_SPHERICAL:
+    r=coord[1];
+    break;
+  default:
+    throwError("unsupported coordkind");
+  }
+  if (rmax_!=DBL_MAX && r>rmax_) return r*0.5; 
   return max(dltmod_*sqrt((*this)(coord)), dltmor_*radius_);
 }
 
