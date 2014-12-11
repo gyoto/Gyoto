@@ -96,7 +96,7 @@ class Gyoto::Metric::NumericalMetricLorene
   Lorene::Vector** getVsurf_tab() const;
   Lorene::Scalar** getLorentz_tab() const;
   Lorene::Valeur** getHor_tab() const;
-  double getRisco() const;
+  double getRms() const;
   double getRmb() const;
   void setLapse_tab(Lorene::Scalar* lapse, int ii);
   void setShift_tab(Lorene::Vector* shift, int ii);
@@ -104,6 +104,9 @@ class Gyoto::Metric::NumericalMetricLorene
   void setGamcon_tab(Lorene::Sym_tensor* gamcon, int ii);
   void setKij_tab(Lorene::Sym_tensor* kij, int ii);
   void setTimes(double time,int ii);
+
+  virtual double getSpecificAngularMomentum(double rr) const;
+  virtual double getPotential(double pos[4], double l_cst) const;  
   
   /**
    * Runge-Kutta integrator at order 4

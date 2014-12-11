@@ -282,12 +282,47 @@ Scalar** NumericalMetricLorene::getLorentz_tab() const {
 Valeur** NumericalMetricLorene::getHor_tab() const {
   GYOTO_DEBUG << endl;
   return hor_tab_;}
-double NumericalMetricLorene::getRisco() const {
+double NumericalMetricLorene::getRms() const {
   GYOTO_DEBUG << endl;
   return risco_;}  
 double NumericalMetricLorene::getRmb() const {
   GYOTO_DEBUG << endl;
   return rmb_;}  
+
+
+double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
+ double gtt_dr, gtph_dr, gphph_dr, l_ms, l_mb, gtt, gtph, gphph;
+
+  double pos[4]={0., rr, M_PI/2., 0.};
+
+  gtt_dr  =gmunu_up_dr(pos, 0, 0);      //upper index
+  gtph_dr =gmunu_up_dr(pos, 0, 3); 
+  gphph_dr=gmunu_up_dr(pos, 3, 3);
+  
+  gtt=gmunu(pos,0,0);
+  gtph=gmunu(pos,0,3); 
+  gphph=gmunu(pos,3,3);
+
+  l_ms = gtph_dr/gphph_dr + 
+         sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr) ;
+  return l_ms;
+
+}
+
+double NumericalMetricLorene::getPotential(double pos[4], double l_cst) const {
+  
+  double gtt=gmunu(pos,0,0);
+  double gtph=gmunu(pos,0,3); 
+  double gphph=gmunu(pos,3,3);
+  
+  double  Omega = -(gtph + l_cst * gtt)/(gphph + l_cst * gtph) ;
+  
+  double  W = 0.5 * log(abs(-gtt - 2. * Omega * gtph - Omega*Omega * gphph)) 
+    - log(abs(-gtt - Omega * gtph)) ;
+  
+  return  W ;
+}
+
 
 void NumericalMetricLorene::setLapse_tab(Scalar* lapse, int ii) {
   GYOTO_DEBUG << endl;
