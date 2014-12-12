@@ -79,6 +79,10 @@ int yarg_Spectrum(int iarg);
 Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>* yget_Spectrometer(int iarg);
 Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>* ypush_Spectrometer();
 int yarg_Spectrometer(int iarg);
+void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+		    Gyoto::Property const&, std::string, std::string);
+void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+		   Gyoto::Property const&, int, std::string, std::string);
 
 /*
   You can register your own on_eval worker. It will be called when a
@@ -250,8 +254,37 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_WORKER_INIT1(BASE, CLASS, KNAMES, NKW)			\
   int rvset[1]={0}, paUsed[1]={0};					\
   *ypush_##BASE()=*YGYOTO_CAT(OBJ, _);					\
-  Gyoto::SmartPointer<CLASS> *OBJ =				\
-    (Gyoto::SmartPointer<CLASS> *)YGYOTO_CAT(OBJ, _);	\
+  {									\
+  long kidx;								\
+  Gyoto::Property const * prop;						\
+  std::string pname="", unit="";					\
+  bool unit_found, prop_pushed=false;					\
+  ++argc;								\
+  while ( (  argc > 0                 ) &&				\
+	  ( (kidx=yarg_key(argc-1)) >=0 ) &&				\
+	  ( (prop=(*YGYOTO_CAT(OBJ, _))					\
+	     ->property(pname=yfind_name(kidx)))) ) {			\
+    if ( (kidx=yarg_key(argc-3)) >=0 &&					\
+	 !strcmp(yfind_name(kidx),"unit") ) {				\
+      unit=ygets_q(argc-4);						\
+      unit_found=true;							\
+    } else {								\
+      unit_found=false;							\
+      unit="";								\
+    }									\
+    if (yarg_nil(argc-2)) {						\
+      if (prop_pushed++) y_error("Can push only one return value");	\
+      yarg_drop(1);							\
+      ypush_property(*YGYOTO_CAT(OBJ, _), *prop, pname, unit);	\
+    }									\
+    else yget_property(*YGYOTO_CAT(OBJ, _), *prop, argc-2, pname, unit); \
+    argc -= unit_found?4:2;						\
+  }									\
+  if (prop_pushed) ++*rvset;						\
+  --argc;								\
+  }									\
+  Gyoto::SmartPointer<CLASS> *OBJ =					\
+    (Gyoto::SmartPointer<CLASS> *)YGYOTO_CAT(OBJ, _);			\
   static long kglobs[NKW+1];						\
   int kiargs[NKW];							\
   int piargs[]={-1,-1,-1,-1};						\
@@ -459,6 +492,14 @@ void ygyoto_Spectrometer_generic_eval
 
 typedef Gyoto::SmartPointer<Gyoto::Metric::Generic> *ygyoto_yget_Metric_t(int);
 typedef Gyoto::SmartPointer<Gyoto::Metric::Generic> *ygyoto_ypush_Metric_t();
+
+typedef void ygyoto_ypush_property_t
+(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+ Gyoto::Property const&, std::string, std::string);
+typedef void ygyoto_yget_property_t
+(Gyoto::SmartPointer<Gyoto::SmartPointee>,
+ Gyoto::Property const&, int, std::string, std::string);
+
 typedef int yarg_OBJTYPE_t(int);
 typedef void ygyoto_Metric_register_t(char const * const, ygyoto_Metric_eval_worker_t*);
 typedef void ygyoto_Metric_generic_eval_t(Gyoto::SmartPointer<Gyoto::Metric::Generic>*, \
@@ -538,6 +579,9 @@ typedef struct YGyotoSupplier {
   yarg_OBJTYPE_t        *yarg_Spectrometer;
   ygyoto_Spectrometer_register_t *ygyoto_Spectrometer_register;
   ygyoto_Spectrometer_generic_eval_t* ygyoto_Spectrometer_generic_eval;
+  // Properties
+  ygyoto_ypush_property_t *ypush_property;
+  ygyoto_yget_property_t *yget_property;
 } YGyotoSupplier_t;
 
 
@@ -548,6 +592,10 @@ extern YGyotoSupplier_t* YGYOTO_LOCAL_SUPPLIER;
 
 #define yget_Metric(iarg) YGYOTO_LOCAL_SUPPLIER -> yget_Metric(iarg)
 #define ypush_Metric()   YGYOTO_LOCAL_SUPPLIER  -> ypush_Metric()
+#define yget_property(a, b, c, d, e) \
+  YGYOTO_LOCAL_SUPPLIER -> yget_property(a, b, c, d, e)
+#define ypush_property(a, b, c, d)\
+  YGYOTO_LOCAL_SUPPLIER  -> ypush_property(a, b, c, d)
 #define yarg_Metric(iarg) YGYOTO_LOCAL_SUPPLIER -> yarg_Metric(iarg)
 #define ygyoto_Metric_register(kind, on_eval) \
                           YGYOTO_LOCAL_SUPPLIER -> \

@@ -27,11 +27,6 @@
 
 #include "GyotoSmartPointer.h"
 
-void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
-		    Gyoto::Property const&, int, std::string, std::string);
-void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee>,
-		   Gyoto::Property const&, int, std::string, std::string);
-
 /*
   The following are to declare a new base (such as Metric or Astrobj)
   or independent (such as Photon) class. Seldom used in a Gyoto
@@ -118,7 +113,7 @@ long int __ygyoto_var_idx(long id);
 	  if (yarg_nil(parg)) parg=-1;					\
 	  if (parg==-1)							\
 	    ypush_property(((gyoto_##NAME##_closure*)obj)->smptr,	\
-			   *prop, parg,					\
+			   *prop,					\
 			   ((gyoto_##NAME##_closure*)obj)->member,	\
 			   unit);					\
 	  else	{							\

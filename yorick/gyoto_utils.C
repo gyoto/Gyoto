@@ -320,6 +320,10 @@ extern "C" {
 	                           = &ygyoto_Spectrometer_register;
       YGyotoGlobalSupplier -> ygyoto_Spectrometer_generic_eval
                                    = &ygyoto_Spectrometer_generic_eval;
+
+      // Property ABI
+      YGyotoGlobalSupplier -> yget_property = &yget_property;
+      YGyotoGlobalSupplier -> ypush_property = &ypush_property;
     }
     ypush_long(long(YGyotoGlobalSupplier));
   }
@@ -360,7 +364,7 @@ long int __ygyoto_var_idx(long id) {
 }
 
 void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
-		    Gyoto::Property const& p, int iarg,
+		    Gyoto::Property const& p,
 		    std::string name, std::string unit) {
   Gyoto::Value val;
 
