@@ -50,6 +50,42 @@ extern "C" {
   void gyoto_Scenery_eval(void *obj, int argc) {
     SmartPointer<Scenery> *OBJ_ = &(((gyoto_Scenery*)obj)->smptr);
 
+    { // First look for introspected Properties at the beginning of
+      // the argument list. Only four syntaxes possible for each
+      // property:
+      //   obj, Property=value;
+      //   obj, Property=value, unit="unit";
+      //   obj(Property=);
+      //   obj(Property=, unit="unit");
+
+      long kidx;
+      Property const * prop;
+      std::string pname="", unit="";
+      bool unit_found, prop_pushed=false;
+      ypush_nil(); ++argc;
+      while ( (  argc > 0                 ) &&  
+	      ( (kidx=yarg_key(argc-1)) >=0 ) &&
+	      ( (prop=(*OBJ_)->property(pname=yfind_name(kidx)))) ) {
+	if ( (kidx=yarg_key(argc-3)) >=0 &&
+	     !strcmp(yfind_name(kidx),"unit") ) {
+	  unit=ygets_q(argc-4);
+	  unit_found=true;
+	} else {
+	  unit_found=false;
+	  unit="";
+	}
+	if (yarg_nil(argc-2)) {
+	  if (prop_pushed++) y_error("Can push only one return value");
+	  yarg_drop(1);
+	  ypush_property(*OBJ_, *prop, -1, pname, unit);
+	}
+	else yget_property(*OBJ_, *prop, argc-2, pname, unit);
+	argc -= unit_found?4:2;
+      }
+      if (prop_pushed) return;
+      yarg_drop(1); --argc;
+    }
+
     double * impactcoords = NULL;
     bool precompute = 0;
 
