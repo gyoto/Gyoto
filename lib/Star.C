@@ -180,10 +180,20 @@ void Star::getCartesian(double const * const t,
 
 
 double Star::rMax() {
-  if (rmax_==DBL_MAX) {
+  if (rmax_==DBL_MAX && i0_>=imin_ && i0_<=imax_) {
     size_t i;
-    for (i=imin_;i<=imax_;++i) if (x1_[i]>rmax_) rmax_=x1_[i];
+    rmax_=x1_[i0_];
+    int ck=gg_->coordKind();
+    for (i=imin_;i<=imax_;++i) {
+      if (x1_[i]>rmax_) rmax_=x1_[i];
+      if (ck==GYOTO_COORDKIND_CARTESIAN) {
+	if (x2_[i]>rmax_) rmax_=x2_[i];
+	if (x3_[i]>rmax_) rmax_=x3_[i];
+      }
+    }
     rmax_ *= 3.;
   }
   return rmax_;
 }
+  
+  

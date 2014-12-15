@@ -311,7 +311,7 @@ std::vector<double> Worldline::initCoord() const {
   coord[1] = x1_[i0_];
   coord[2] = x2_[i0_];
   coord[3] = x3_[i0_];
-  coord[4] = x0dot_[i0_];
+  coord[4] = (i0_<=imax_ && imin_<=i0_)?x0dot_[i0_]:0.;
   coord[5] = x1dot_[i0_];
   coord[6] = x2dot_[i0_];
   coord[7] = x3dot_[i0_];
