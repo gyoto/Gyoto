@@ -319,6 +319,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     size_t offset=1;
     size_t curquant=0;
 
+# ifdef GYOTO_USE_UDUNITS
     if (Scenery::am_worker) {
       // set all converters to the trivial one, conversion is
       // performed in the manager.
@@ -327,6 +328,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
       binspectrum_converter_ = NULL;
       setPropertyConverters(locdata);
     }
+# endif
 
     if (quantities & GYOTO_QUANTITY_INTENSITY) {
       locdata->intensity=vect+offset*(curquant++);
@@ -423,8 +425,11 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 	if (s.tag()==Scenery::raytrace_done && data) {
 	  // Copy each relevant quantity, performing conversion if needed
 	  if (data->intensity)
-	    data->intensity[cs]=data->intensity_converter_?
+	    data->intensity[cs]=
+# ifdef GYOTO_USE_UDUNITS
+	      data->intensity_converter_?
 	      (*data->intensity_converter_)(*locdata->intensity):
+# endif
 	      *locdata->intensity;
 	  if (data->time) data->time[cs]=*locdata->time;
 	  if (data->distance) data->distance[cs]=*locdata->distance;
@@ -441,14 +446,18 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 	  if (data->spectrum)
 	    for (size_t c=0; c<nbnuobs; ++c)
 	      data->spectrum[cs+c*data->offset]=
+# ifdef GYOTO_USE_UDUNITS
 		data->spectrum_converter_?
 		(*data->spectrum_converter_)(locdata->spectrum[c]):
+# endif
 		locdata->spectrum[c];
 	  if (data->binspectrum)
 	    for (size_t c=0; c<nbnuobs; ++c)
 	      data->binspectrum[cs+c*data->offset]=
+# ifdef GYOTO_USE_UDUNITS
 		data->binspectrum_converter_?
 		(*data->binspectrum_converter_)(locdata->binspectrum[c]):
+# endif
 		locdata->binspectrum[c];
 	}
 
