@@ -114,12 +114,6 @@ class Gyoto::Error
   /// Constructor with an error message.
   Error( const std::string m );
 
-  /// Constructor with an error code.
-  Error( const int errcode );
-
-  /// Constructor with both an error message and an error code.
-  Error( const std::string m, const int errcode );
-
   /// Print-out error message on standard error.
   void Report() const ;
 

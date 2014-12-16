@@ -712,7 +712,7 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    * All valid pointers are incremented by 1 (sizeof(double)), excepted
    * impactcoords which is incremented by 16.
    */
-  Properties operator++();
+  Properties& operator++();
 
   /**
    * \brief Increment pointers by offset
@@ -720,7 +720,7 @@ class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
    * All valid pointers are incremented by offset (sizeof(double)), excepted
    * impactcoords which is incremented by 16*offset.
    */
-  Properties operator+=(ptrdiff_t offset);
+  Properties& operator+=(ptrdiff_t offset);
 
   operator Gyoto::Quantity_t () const;
 

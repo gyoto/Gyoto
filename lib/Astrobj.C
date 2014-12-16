@@ -533,7 +533,7 @@ void Astrobj::Properties::binSpectrumConverter(string unit) {
 
 #endif
 
-Astrobj::Properties Astrobj::Properties::operator+=(ptrdiff_t ofset) {
+Astrobj::Properties& Astrobj::Properties::operator+=(ptrdiff_t ofset) {
   if (intensity)    intensity    += ofset;
   if (time)         time         += ofset;
   if (distance)     distance     += ofset;
@@ -550,7 +550,7 @@ Astrobj::Properties Astrobj::Properties::operator+=(ptrdiff_t ofset) {
   return *this;
 }
 
-Astrobj::Properties Astrobj::Properties::operator++() {
+Astrobj::Properties& Astrobj::Properties::operator++() {
   (*this) += 1;
   return *this;
 }
