@@ -25,11 +25,6 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
   return;
 }
 
-void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
-                                    double *invec, int n1, int n2)
-{
-  p->intensity=invec;
-} 
 %}
 
 
@@ -46,11 +41,6 @@ void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
   import_array();
  }
 
-
-%apply (double* IN_ARRAY2, int DIM1, int DIM2) {(double *invec, int n1, int n2)}
-void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
-                                   double *invec, int n1, int n2);
-
 %ignore Gyoto::SmartPointee;
 %include "GyotoSmartPointer.h"
 
@@ -65,13 +55,35 @@ void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
 
 %template(AstrobjPtr) Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 %ignore Gyoto::Astrobj::Generic;
-//%ignore Gyoto::Astrobj::Properties;
 %ignore Gyoto::Astrobj::Register_;
 %ignore Gyoto::Astrobj::Register;
 %ignore Gyoto::Astrobj::initRegister;
 %ignore Gyoto::Astrobj::getSubcontractor;
+
 %include "GyotoAstrobj.h"
-%rename(Astrobj) pyGyotoAstrobj;
+
+%define _PAccessor(member, setter)
+  void setter(double *IN_ARRAY2, int DIM1, int DIM2) {
+    $self->member = IN_ARRAY2;
+  }
+%enddef
+
+%extend Gyoto::Astrobj::Properties{
+  _PAccessor(intensity, Intensity)
+  _PAccessor(binspectrum, BinSpectrum)
+  _PAccessor(distance, MinDistance)
+  _PAccessor(first_dmin, FirstDistMin)
+  _PAccessor(impactcoords, ImpactCoords)
+  _PAccessor(redshift, Redshift)
+  _PAccessor(spectrum, Spectrum)
+  _PAccessor(time, EmissionTime)
+  _PAccessor(user1, User1)
+  _PAccessor(user2, User2)
+  _PAccessor(user3, User3)
+  _PAccessor(user4, User4)
+  _PAccessor(user5, User5)
+ };
+
 Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pyGyotoAstrobj(std::string const&);
 
 %template(MetricPtr) Gyoto::SmartPointer<Gyoto::Metric::Generic>;

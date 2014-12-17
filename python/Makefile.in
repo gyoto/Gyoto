@@ -86,8 +86,11 @@ all: gyoto.py _gyoto$(PYTHON_EXTENSION_SUFFIX)
 _gyoto$(PYTHON_EXTENSION_SUFFIX): $(srcdir)/gyoto.cxx gyoto_wrap.cxx
 	$(PYTHON) $(srcdir)/setup.py build_ext
 
-gyoto.py gyoto_wrap.cxx:
+gyoto.py gyoto_wrap.cxx: gyoto.i header.py
 	swig2.0 -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto.i
+	mv gyoto.py trailer.py
+	cat header.py trailer.py > gyoto.py
+	rm trailer.py
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 
