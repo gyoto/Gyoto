@@ -2,6 +2,7 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
+#include "Python.h"
 #define GYOTO_NO_DEPRECATED
 #include "GyotoConfig.h"
 #include "GyotoFactory.h"
@@ -22,7 +23,16 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
   PyErr_SetString(PyExc_RuntimeError, e);
   return;
 }
+
+void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
+                                    double *invec, int n1, int n2)
+{
+  p->intensity=invec;
+} 
 %}
+
+
+
 
 %include "std_string.i" 
 %include "numpy.i"
@@ -35,14 +45,16 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
   import_array();
  }
 
+
+%apply (double* IN_ARRAY2, int DIM1, int DIM2) {(double *invec, int n1, int n2)}
+void AstrobjPropertiesSetIntensity(Gyoto::Astrobj::Properties *p,
+                                   double *invec, int n1, int n2);
+
 %ignore Gyoto::SmartPointee;
 %include "GyotoSmartPointer.h"
 
 %include "GyotoValue.h"
 %include "GyotoObject.h"
-
-%template(SceneryPtr) Gyoto::SmartPointer<Gyoto::Scenery>;
-%include "GyotoScenery.h"
 
 %template(ScreenPtr) Gyoto::SmartPointer<Gyoto::Screen>;
 %include "GyotoScreen.h"
@@ -230,3 +242,8 @@ public:
   Coord1dSet& operator++();
   double angle() const ;
 };
+
+%template(SceneryPtr) Gyoto::SmartPointer<Gyoto::Scenery>;
+%define GYOTO_SWIGIMPORTED
+%enddef
+%include "GyotoScenery.h"

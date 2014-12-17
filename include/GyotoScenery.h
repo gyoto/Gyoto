@@ -449,7 +449,12 @@ class Gyoto::Scenery
    * distributions are not. impactcoords can be computed using the
    * ImpactCoords quantity.
    */
-  void rayTrace(Screen::Coord2dSet & ij,
+  void rayTrace(
+#ifdef GYOTO_SWIGIMPORTED
+		Coord2dSet & ij,
+#else
+		Screen::Coord2dSet & ij,
+#endif
 		Astrobj::Properties *data,
 		double * impactcoords=NULL);
 
