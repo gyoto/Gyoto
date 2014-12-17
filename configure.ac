@@ -1,5 +1,13 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
+# Few bits where taken from pyconf, bearing this notice:
+dnl Copyright 2012, 2013 Brandon Invergo <brandon@invergo.net>
+dnl
+dnl Copying and distribution of this file, with or without modification,
+dnl are permitted in any medium without royalty provided the copyright
+dnl notice and this notice are preserved.  This file is offered as-is,
+dnl without any warranty.
+
 
 AC_PREREQ([2.69])
 AC_INIT([Gyoto], [0.2.0], [gyoto@sympa.obspm.fr])
@@ -13,6 +21,23 @@ AC_LANG(C++)
 LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
+
+# PYTHON STUFF
+PC_INIT([2.7], [3.4.99])
+PC_PYTHON_CHECK_SITE_DIR
+PC_PYTHON_SITE_PACKAGE_DIR
+AC_ARG_WITH([virtualenv],
+	[AS_HELP_STRING([--with-virtualenv], [install to a Python virtualenv])],
+	[],
+	[with_virtualenv=no])
+AS_IF([test "x$with_virtualenv" != xno],
+	    AC_CHECK_PROGS([VIRTUALENV], [virtualenv virtualenv3 virtualenv2], [no])
+	    AS_IF([test "x$VIRTUALENV" = xno],
+	    [AC_MSG_FAILURE(
+		[--with-virtualenv given but virtualenv could not be found])]),
+	AC_SUBST([VIRTUALENV], [no]))
+AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
+
 VERSINFO=3:0:1
 AC_SUBST([VERSINFO])
 
@@ -23,6 +48,16 @@ AC_ARG_ENABLE([release],
 AS_IF([test "x$enable_release" != "xyes"],
   [FEATURES+="-unreleased"])
 
+PC_PYTHON_CHECK_HEADERS(,[PYTHON=""])
+AS_IF([test "x$PYTHON" != "x"],
+  [PC_PYTHON_CHECK_LIBS
+   PC_PYTHON_CHECK_CFLAGS
+   PC_PYTHON_CHECK_LDFLAGS
+   PC_PYTHON_CHECK_EXTENSION_SUFFIX
+   PC_PYTHON_CHECK_ABI_FLAGS
+  ]
+)
+# DONE WITH PYTHON STUFF
 
 # Checks for programs.
 
@@ -94,6 +129,7 @@ AS_IF([test "x$have_mpi" == xyes],
 
 AM_CONDITIONAL(HAVE_MPI, [test "x$have_mpi" == xyes])
 
+AC_PROG_MKDIR_P
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -724,6 +760,11 @@ AS_IF([test "x$YORICK" != "x"],
 		   [chmod a+x yorick/yorick1])
    AC_CONFIG_FILES([gyoto],
 		   [chmod a+x gyoto])
+  ]
+)
+AS_IF([test "x$PYTHON" != "x"],
+  [
+   AC_CONFIG_FILES([python/Makefile python/setup.py])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
