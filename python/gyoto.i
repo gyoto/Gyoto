@@ -1,5 +1,8 @@
 %module gyoto
 
+%define GYOTO_SWIGIMPORTED
+%enddef
+
 %{
 #define SWIG_FILE_WITH_INIT
   //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -12,6 +15,7 @@
 #include "GyotoObject.h"
 #include "GyotoAstrobj.h"
 #include "GyotoError.h"
+#include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
 using namespace Gyoto;
@@ -31,6 +35,11 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
 
 
 %include "std_string.i" 
+%include "std_vector.i"
+%template(vector_double) std::vector<double>;
+%template(vector_unsigned_long) std::vector<unsigned long>;
+%include "carrays.i"
+%array_class(double, array_double)
 %include "numpy.i"
 
 %include "GyotoError.h"
@@ -49,6 +58,22 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
 
 %template(ScreenPtr) Gyoto::SmartPointer<Gyoto::Screen>;
 %include "GyotoScreen.h"
+
+%ignore Gyoto::Worldline::IntegState;
+%ignore Gyoto::Worldline::IntegState::Generic;
+%ignore Gyoto::Worldline::IntegState::Boost;
+%ignore Gyoto::Worldline::IntegState::Legacy;
+%include "GyotoWorldline.h"
+
+%rename (castToWorldline) pyGyotoCastToWorldline;
+%inline %{
+Gyoto::Worldline * pyGyotoCastToWorldline
+  (Gyoto::SmartPointer<Gyoto::Astrobj::Generic> const_p) {
+  Gyoto::SmartPointee * p=const_cast<Gyoto::Astrobj::Generic*>(const_p());
+  Gyoto::Worldline * res = dynamic_cast<Gyoto::Worldline*>(p);
+  return res;
+}
+%}
 
 %template(PhotonPtr) Gyoto::SmartPointer<Gyoto::Photon>;
 %include "GyotoPhoton.h"
@@ -257,6 +282,4 @@ public:
 };
 
 %template(SceneryPtr) Gyoto::SmartPointer<Gyoto::Scenery>;
-%define GYOTO_SWIGIMPORTED
-%enddef
 %include "GyotoScenery.h"

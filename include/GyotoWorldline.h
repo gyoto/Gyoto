@@ -635,7 +635,7 @@ class Gyoto::Worldline
   SmartPointer<Worldline::IntegState::Generic> state_;
 };
 
-
+#ifndef GYOTO_SWIGIMPORTED
 /**
  * \class Gyoto::Worldline::IntegState::Generic
  * \brief Current state of a geodesic integration
@@ -826,5 +826,5 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   
 };
 #endif /// HAVE_BOOST
-
+#endif /// GYOTO_SWIGIMPORTED
 #endif
