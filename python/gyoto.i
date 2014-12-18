@@ -3,6 +3,35 @@
 %define GYOTO_SWIGIMPORTED
 %enddef
 
+%define GyotoSmPtrClass(klass)
+%ignore Gyoto:: klass ;
+%include Gyoto ## klass ## .h
+%rename(klass) pyGyoto ## klass;
+%inline {
+Gyoto::SmartPointer<Gyoto::klass> pyGyoto ## klass () {
+  return new Gyoto::klass();
+}
+}
+%template(klass ## Ptr) Gyoto::SmartPointer<Gyoto::klass>;
+%enddef
+
+%define GyotoSmPtrClassGeneric(klass)
+%template(klass ## Ptr) Gyoto::SmartPointer<Gyoto::klass::Generic>;
+%rename(klass) klass ## Ptr;
+%ignore Gyoto::klass::Register_;
+%ignore Gyoto::klass::Register;
+%ignore Gyoto::klass::initRegister;
+%ignore Gyoto::klass::getSubcontractor;
+%ignore Gyoto::klass::Generic;
+%include Gyoto ## klass ## .h
+%rename(klass) pyGyoto ## klass;
+%inline {
+Gyoto::SmartPointer<Gyoto::klass::Generic> pyGyoto ## klass (std::string const&s) {
+  return Gyoto::klass::getSubcontractor(s.c_str())(NULL);
+}
+}
+%enddef
+
 %{
 #define SWIG_FILE_WITH_INIT
   //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -19,10 +48,7 @@
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
 using namespace Gyoto;
-Gyoto::SmartPointer<Gyoto::Metric::Generic> pyGyotoMetric(std::string const&);
-Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pyGyotoAstrobj(std::string const&);
-Gyoto::SmartPointer<Gyoto::Spectrum::Generic> pyGyotoSpectrum(std::string const&);
-Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> pyGyotoSpectrometer(std::string const&);
+
 void pyGyotoErrorHandler (const Gyoto::Error e) {
   std::cerr << "GYOTO error: "<<e<<std::endl;
   PyErr_SetString(PyExc_RuntimeError, e);
@@ -30,9 +56,6 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
 }
 
 %}
-
-
-
 
 %include "std_string.i" 
 %include "std_vector.i"
@@ -50,14 +73,10 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
   import_array();
  }
 
-%ignore Gyoto::SmartPointee;
 %include "GyotoSmartPointer.h"
 
 %include "GyotoValue.h"
 %include "GyotoObject.h"
-
-%template(ScreenPtr) Gyoto::SmartPointer<Gyoto::Screen>;
-%include "GyotoScreen.h"
 
 %ignore Gyoto::Worldline::IntegState;
 %ignore Gyoto::Worldline::IntegState::Generic;
@@ -75,24 +94,17 @@ Gyoto::Worldline * pyGyotoCastToWorldline
 }
 %}
 
-%template(PhotonPtr) Gyoto::SmartPointer<Gyoto::Photon>;
-%include "GyotoPhoton.h"
+GyotoSmPtrClass(Screen)
+GyotoSmPtrClass(Scenery)
+GyotoSmPtrClass(Photon)
+GyotoSmPtrClassGeneric(Astrobj)
 
-%template(AstrobjPtr) Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
-%ignore Gyoto::Astrobj::Generic;
-%ignore Gyoto::Astrobj::Register_;
-%ignore Gyoto::Astrobj::Register;
-%ignore Gyoto::Astrobj::initRegister;
-%ignore Gyoto::Astrobj::getSubcontractor;
-
-%include "GyotoAstrobj.h"
 
 %define _PAccessor(member, setter)
   void setter(double *IN_ARRAY2, int DIM1, int DIM2) {
     $self->member = IN_ARRAY2;
   }
 %enddef
-
 %extend Gyoto::Astrobj::Properties{
   _PAccessor(intensity, Intensity)
   _PAccessor(binspectrum, BinSpectrum)
@@ -109,38 +121,9 @@ Gyoto::Worldline * pyGyotoCastToWorldline
   _PAccessor(user5, User5)
  };
 
-Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pyGyotoAstrobj(std::string const&);
-
-%template(MetricPtr) Gyoto::SmartPointer<Gyoto::Metric::Generic>;
-%ignore Gyoto::Metric::Generic;
-%ignore Gyoto::Metric::Register_;
-%ignore Gyoto::Metric::Register;
-%ignore Gyoto::Metric::initRegister;
-%ignore Gyoto::Metric::getSubcontractor;
-%include "GyotoMetric.h"
-%rename(Metric) pyGyotoMetric;
-Gyoto::SmartPointer<Gyoto::Metric::Generic> pyGyotoMetric(std::string const&);
-
-%template(SpectrumPtr) Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
-%ignore Gyoto::Spectrum::Generic;
-%ignore Gyoto::Spectrum::Register_;
-%ignore Gyoto::Spectrum::Register;
-%ignore Gyoto::Spectrum::initRegister;
-%ignore Gyoto::Spectrum::getSubcontractor;
-%include "GyotoSpectrum.h"
-%rename(Spectrum) pyGyotoSpectrum;
-Gyoto::SmartPointer<Gyoto::Spectrum::Generic> pyGyotoSpectrum(std::string const&);
-
-%template(SpectrometerPtr) Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
-%ignore Gyoto::Spectrometer::Generic;
-%ignore Gyoto::Spectrometer::Register_;
-%ignore Gyoto::Spectrometer::Register;
-%ignore Gyoto::Spectrometer::initRegister;
-%ignore Gyoto::Spectrometer::getSubcontractor;
-%include "GyotoSpectrometer.h"
-%rename(Spectrometer) pyGyotoSpectrometer;
-Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> pyGyotoSpectrometer(std::string const&);
-
+GyotoSmPtrClassGeneric(Metric)
+GyotoSmPtrClassGeneric(Spectrum)
+GyotoSmPtrClassGeneric(Spectrometer)
 
 %include "GyotoConfig.h"
 %include "GyotoDefs.h"
@@ -280,6 +263,3 @@ public:
   Coord1dSet& operator++();
   double angle() const ;
 };
-
-%template(SceneryPtr) Gyoto::SmartPointer<Gyoto::Scenery>;
-%include "GyotoScenery.h"

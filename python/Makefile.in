@@ -83,7 +83,7 @@ export CC
 
 all: gyoto.py _gyoto$(PYTHON_EXTENSION_SUFFIX)
 
-_gyoto$(PYTHON_EXTENSION_SUFFIX): $(srcdir)/gyoto.cxx gyoto_wrap.cxx
+_gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
 	$(PYTHON) $(srcdir)/setup.py build_ext
 
 gyoto.py gyoto_wrap.cxx: gyoto.i header.py

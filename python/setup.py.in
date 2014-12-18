@@ -33,7 +33,7 @@ else:
         pass
 
 gyoto_module = Extension('_gyoto',
-                         sources=['gyoto_wrap.cxx', 'gyoto.cxx'],
+                         sources=['gyoto_wrap.cxx'],
                          include_dirs=[numpy_include]
                          )
 
