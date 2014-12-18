@@ -83,3 +83,23 @@ plt.imshow(time)
 plt.show()
 plt.imshow(distance)
 plt.show()
+
+# Another Scenery, with spectrum
+
+sc=gyoto.Factory("../doc/examples/example-polish-doughnut.xml").getScenery()
+res=sc.screen().resolution()
+ns=sc.screen().spectrometer().nSamples()
+spectrum=numpy.zeros((ns, res, res), dtype=float)
+
+ii=gyoto.Range(1, res, 1)
+jj=gyoto.Range(1, res, 1)
+grid=gyoto.Grid(ii, jj)
+
+aop=gyoto.Properties()
+aop.Spectrum(spectrum)
+aop.offset=res*res
+
+sc.rayTrace(grid, aop)
+
+plt.imshow(spectrum[1,:,:])
+plt.show()

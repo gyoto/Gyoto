@@ -1,4 +1,5 @@
-%module gyoto
+%module(docstring="The General relativitY Orbit Tracer of paris Observatory") gyoto
+%feature("autodoc", "1");
 
 %define GYOTO_SWIGIMPORTED
 %enddef
@@ -104,25 +105,30 @@ GyotoSmPtrClass(Photon)
 GyotoSmPtrClassGeneric(Astrobj)
 
 
-%define _PAccessor(member, setter)
+%define _PAccessor2(member, setter)
   void setter(double *IN_ARRAY2, int DIM1, int DIM2) {
     $self->member = IN_ARRAY2;
   }
 %enddef
+%define _PAccessor3(member, setter)
+void setter(double *IN_ARRAY3, int DIM1, int DIM2, int DIM3) {
+    $self->member = IN_ARRAY3;
+  }
+%enddef
 %extend Gyoto::Astrobj::Properties{
-  _PAccessor(intensity, Intensity)
-  _PAccessor(binspectrum, BinSpectrum)
-  _PAccessor(distance, MinDistance)
-  _PAccessor(first_dmin, FirstDistMin)
-  _PAccessor(impactcoords, ImpactCoords)
-  _PAccessor(redshift, Redshift)
-  _PAccessor(spectrum, Spectrum)
-  _PAccessor(time, EmissionTime)
-  _PAccessor(user1, User1)
-  _PAccessor(user2, User2)
-  _PAccessor(user3, User3)
-  _PAccessor(user4, User4)
-  _PAccessor(user5, User5)
+  _PAccessor2(intensity, Intensity)
+  _PAccessor3(binspectrum, BinSpectrum)
+  _PAccessor2(distance, MinDistance)
+  _PAccessor2(first_dmin, FirstDistMin)
+  _PAccessor3(impactcoords, ImpactCoords)
+  _PAccessor2(redshift, Redshift)
+  _PAccessor3(spectrum, Spectrum)
+  _PAccessor2(time, EmissionTime)
+  _PAccessor2(user1, User1)
+  _PAccessor2(user2, User2)
+  _PAccessor2(user3, User3)
+  _PAccessor2(user4, User4)
+  _PAccessor2(user5, User5)
  };
 
 GyotoSmPtrClassGeneric(Metric)
