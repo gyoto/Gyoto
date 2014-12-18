@@ -49,13 +49,20 @@ Gyoto::SmartPointer<Gyoto::klass::Generic> pyGyoto ## klass (std::string const&s
 #include "GyotoScreen.h"
 using namespace Gyoto;
 
-void pyGyotoErrorHandler (const Gyoto::Error e) {
-  std::cerr << "GYOTO error: "<<e<<std::endl;
-  PyErr_SetString(PyExc_RuntimeError, e);
-  return;
+%}
+
+%include "GyotoError.h"
+
+%exception {
+	try {
+	$function
+	}
+	catch (Gyoto::Error e) {
+	 	PyErr_SetString(PyExc_IndexError, e);
+		return NULL;
+	}
 }
 
-%}
 
 %include "std_string.i" 
 %include "std_vector.i"
@@ -65,10 +72,7 @@ void pyGyotoErrorHandler (const Gyoto::Error e) {
 %array_class(double, array_double)
 %include "numpy.i"
 
-%include "GyotoError.h"
-
 %init {
-  Gyoto::Error::setHandler(&pyGyotoErrorHandler);
   Gyoto::Register::init();
   import_array();
  }
