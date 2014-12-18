@@ -90,7 +90,6 @@ Screen::Screen() :
     screen2_[ii]=0.;
     screen3_[ii]=0.;
   }
-  std::cerr << "Screen created" << std::endl;
 }
 
 Screen::Screen(const Screen& o) :
@@ -127,7 +126,7 @@ Screen::Screen(const Screen& o) :
 }
 Screen * Screen::clone() const { return new Screen(*this); }
 
-Screen::~Screen(){if (mask_) delete [] mask_; std::cerr << "Screen destroyed" << std::endl;}
+Screen::~Screen(){if (mask_) delete [] mask_;}
 
 std::ostream& Screen::print( std::ostream& o) const {
   o << "distance="    << distance_ << ", " ;
