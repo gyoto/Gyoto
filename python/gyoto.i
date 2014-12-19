@@ -71,7 +71,10 @@ using namespace Gyoto;
 %template(vector_unsigned_long) std::vector<unsigned long>;
 %include "carrays.i"
 %array_class(double, array_double)
+%array_class(double, array_unsigned_long)
 %include "numpy.i"
+%numpy_typemaps(size_t, NPY_ULONG , size_t)
+%numpy_typemaps(double, NPY_DOUBLE, size_t)
 
 %init {
   Gyoto::Register::init();
@@ -106,12 +109,12 @@ GyotoSmPtrClassGeneric(Astrobj)
 
 
 %define _PAccessor2(member, setter)
-  void setter(double *IN_ARRAY2, int DIM1, int DIM2) {
+  void setter(double *IN_ARRAY2, size_t DIM1, size_t DIM2) {
     $self->member = IN_ARRAY2;
   }
 %enddef
 %define _PAccessor3(member, setter)
-void setter(double *IN_ARRAY3, int DIM1, int DIM2, int DIM3) {
+void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
     $self->member = IN_ARRAY3;
   }
 %enddef
@@ -238,7 +241,7 @@ protected:
   size_t const sz_;
   size_t i_;
 public:
-  Indices (unsigned long * IN_ARRAY1, unsigned long DIM1);
+  Indices (size_t *IN_ARRAY1, size_t DIM1);
   void begin();
   bool valid();
   size_t size();
@@ -252,7 +255,7 @@ protected:
   size_t const sz_;
   size_t i_;
 public:
-  Angles (double const*const buf, size_t sz);
+  Angles (double * IN_ARRAY1, size_t DIM1);
   void begin();
   bool valid();
   size_t size();

@@ -1423,7 +1423,7 @@ double Screen::RepeatAngle::angle() const {return val_;}
 Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
   : Coord2dSet(alp.kind), alpha_(alp), delta_(del)
 {
-  if (alp.kind != angle || alp.kind != angle)
+  if (alp.kind != del.kind)
     throwError("both specifiers must be of same kind");
   if (alp.size() != del.size())
     throwError("alpha and delta should be of same size"); 
