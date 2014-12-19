@@ -19293,7 +19293,7 @@ if test "x$YORICK" != "x"; then :
 fi
 if test "x$PYTHON" != "x"; then :
 
-   ac_config_files="$ac_config_files python/Makefile python/setup.py python/setup_std.py"
+   ac_config_files="$ac_config_files python/Makefile python/setup.py python/setup_std.py python/setup_lorene.py"
 
 
 
@@ -20464,6 +20464,7 @@ do
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "python/setup.py") CONFIG_FILES="$CONFIG_FILES python/setup.py" ;;
     "python/setup_std.py") CONFIG_FILES="$CONFIG_FILES python/setup_std.py" ;;
+    "python/setup_lorene.py") CONFIG_FILES="$CONFIG_FILES python/setup_lorene.py" ;;
     "doc/doxyfile") CONFIG_FILES="$CONFIG_FILES doc/doxyfile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;

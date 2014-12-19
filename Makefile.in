@@ -93,6 +93,7 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/python/Makefile.in \
 	$(top_srcdir)/python/setup.py.in \
 	$(top_srcdir)/python/setup_std.py.in \
+	$(top_srcdir)/python/setup_lorene.py.in \
 	$(top_srcdir)/doc/doxyfile.in COPYING compile config.guess \
 	config.sub depcomp install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -114,7 +115,8 @@ CONFIG_HEADER = config.h $(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES = doc/Makefile doc/user_guide/Makefile \
 	yorick/Makefile yorick/stdplug/Makefile yorick/gyoto.info \
 	yorick/yorick1 yorick/setpaths.i gyoto python/Makefile \
-	python/setup.py python/setup_std.py doc/doxyfile
+	python/setup.py python/setup_std.py python/setup_lorene.py \
+	doc/doxyfile
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -481,6 +483,8 @@ python/Makefile: $(top_builddir)/config.status $(top_srcdir)/python/Makefile.in
 python/setup.py: $(top_builddir)/config.status $(top_srcdir)/python/setup.py.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 python/setup_std.py: $(top_builddir)/config.status $(top_srcdir)/python/setup_std.py.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+python/setup_lorene.py: $(top_builddir)/config.status $(top_srcdir)/python/setup_lorene.py.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 doc/doxyfile: $(top_builddir)/config.status $(top_srcdir)/doc/doxyfile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
