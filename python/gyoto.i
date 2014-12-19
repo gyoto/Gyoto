@@ -33,6 +33,26 @@ Gyoto::SmartPointer<Gyoto::klass::Generic> pyGyoto ## klass (std::string const&s
 }
 %enddef
 
+%define GyotoSmPtrClassDerivedPtrHdr(nspace, klass, nick, hdr)
+%template(nick ## Ptr) Gyoto::SmartPointer<Gyoto::nspace::klass>;
+%ignore Gyoto::nspace::klass;
+%include hdr
+%rename(nick) pyGyoto ## nick;
+%inline {
+Gyoto::SmartPointer<Gyoto::nspace::klass> pyGyoto ## nick () {
+  return new Gyoto::nspace::klass();
+}
+}
+%enddef
+
+%define GyotoSmPtrClassDerivedHdr(nspace, klass, hdr)
+GyotoSmPtrClassDerivedPtrHdr(nspace, klass, klass, hdr)
+%enddef
+
+%define GyotoSmPtrClassDerived(nspace, klass)
+GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
+%enddef
+
 %{
 #define SWIG_FILE_WITH_INIT
   //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -48,6 +68,13 @@ Gyoto::SmartPointer<Gyoto::klass::Generic> pyGyoto ## klass (std::string const&s
 #include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
+#include "GyotoStandardAstrobj.h"
+#include "GyotoUniformSphere.h"
+#include "GyotoThinDisk.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoComplexSpectrometer.h"
+#include "GyotoUniformSpectrometer.h"
+#include "GyotoRegister.h"
 using namespace Gyoto;
 
 %}
@@ -81,6 +108,12 @@ using namespace Gyoto;
   import_array();
  }
 
+%ignore Gyoto::Register::Entry;
+%ignore Gyoto::Register::init;
+%rename(listRegister) Gyoto::Register::list;
+%include GyotoRegister.h
+
+
 %include "GyotoSmartPointer.h"
 
 %include "GyotoValue.h"
@@ -107,6 +140,12 @@ GyotoSmPtrClass(Scenery)
 GyotoSmPtrClass(Photon)
 GyotoSmPtrClassGeneric(Astrobj)
 
+%ignore Gyoto::Astrobj::Standard;
+%ignore Gyoto::Astrobj::UniformSphere;
+%ignore Gyoto::Astrobj::ThinDisk;
+%include GyotoStandardAstrobj.h
+%include GyotoUniformSphere.h
+%include GyotoThinDisk.h
 
 %define _PAccessor2(member, setter)
   void setter(double *IN_ARRAY2, size_t DIM1, size_t DIM2) {
@@ -137,6 +176,9 @@ void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
 GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)
 GyotoSmPtrClassGeneric(Spectrometer)
+
+GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoComplexSpectrometer.h)
+GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUniformSpectrometer.h)
 
 %include "GyotoConfig.h"
 %include "GyotoDefs.h"

@@ -764,7 +764,7 @@ AS_IF([test "x$YORICK" != "x"],
 )
 AS_IF([test "x$PYTHON" != "x"],
   [
-   AC_CONFIG_FILES([python/Makefile python/setup.py])
+   AC_CONFIG_FILES([python/Makefile python/setup.py python/setup_std.py])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],

@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+# setup.py.in.distutils
+#
+# Copyright 2012, 2013 Brandon Invergo <brandon@invergo.net>
+# Copyright 2014 Thibaut Paumard
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+
+
+from distutils.core import setup, Extension
+import platform
+
+
+if platform.system() == 'Linux':
+    doc_dir = '@prefix@/share/doc/@PACKAGE_TARNAME@'
+else:
+    try:
+        from win32com.shell import shellcon, shell
+        homedir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        appdir = '@PACKAGE_TARNAME@'
+        doc_dir = os.path.join(homedir, appdir)
+    except:
+        pass
+
+gyoto_std_module = Extension('_gyoto_std',
+                         sources=['gyoto_std_wrap.cxx']
+                         )
+
+setup(name='@PACKAGE_NAME@'+'_std',
+      version='@PACKAGE_VERSION@',
+      author_email='@PACKAGE_BUGREPORT@',
+      py_modules=["gyoto_std"],
+      ext_modules=[gyoto_std_module]
+     )

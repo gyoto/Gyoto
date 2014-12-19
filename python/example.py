@@ -1,9 +1,16 @@
 #/bin/env python
 # -*- coding: utf-8 -*-
+# Example file for gyoto
+# Before loading the gyoto_std extension:
+#  - gyoto must be imported;
+#  - the stdplug Gyoto plug-in must be loaded. This normally happens
+#    automatically, unless the user has set her environment otherwise.
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 import gyoto
+gyoto.loadPlugin("stdplug")
+import gyoto_std
 
 a=gyoto.Factory("../doc/examples/example-moving-star.xml")
 sc=a.getScenery()
@@ -187,3 +194,35 @@ sc.rayTrace(bucket, aop)
 t=numpy.clip(ipct[:,0,0], a_min=-200, a_max=0)
 plt.plot(t)
 plt.show()
+
+# Instanciate and manipulate derived classes from the standard
+# plug-in: Note that objects from gyoto_std needs to be downcast to
+# the relevant base before the can be used in gyoto:
+# e.g. AstrobjPtr(obj.__deref__()). The opposite is not (yet)
+# possible: you can't cast the Astrobj from sc.astrobj() up to a
+# StarPtr or TorusPtr. That's where the Object/Value/Property
+# mechanism comes into play, since you don't need to cast an object to
+# set a property:
+
+# By creating an object from gyoto_std, we have full access to its methods:
+tr=gyoto_std.Torus()
+tr.smallRadius(0.1)
+
+# Before feeding it to a function that expects a SmartPointer<Astrobj>,
+# we nee to cast it:
+tt=gyoto.AstrobjPtr(tr.__deref__())
+
+# We can still use the Torus methods on tr, but not on tt.  However,
+# the Property mechanism gives access to the members that can be set
+# from XML:
+p=tt.property("SmallRadius")
+tt.set(p, gyoto.Value(0.2))
+tt.get(p).Double == tr.smallRadius()
+
+# Etc:
+cplx=gyoto_std.ComplexAstrobj()
+cplx.append(gyoto.AstrobjPtr(tr.__deref__()))
+cplx.append(sc.astrobj())
+sc.astrobj(gyoto.AstrobjPtr(cplx.__deref__()))
+
+cplx.rMax(100)

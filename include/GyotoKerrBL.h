@@ -135,14 +135,15 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    */
   int myrk4(Worldline * line, const double coordin[8], double h, double res[8]) const; //external-use RK4
   
- private:
+ public:
   int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;///< Internal-use RK4 proxy
-  int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1, double h1max) const; ///< Internal-use adaptive RK4 proxy
+  int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1, double h1max=GYOTO_DEFAULT_DELTA_MAX) const; ///< Internal-use adaptive RK4 proxy
   /**
    * \brief Ensure conservation of the constants of motion
    *
    * Tweak thetadot if necessary.
    */
+ private:
   int CheckCons(const double coor_init[8], const double cst[5], double coor_fin[8]) const;
 
   /**
@@ -152,9 +153,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    */
   void Normalize4v(double coord[8], const double part_mass) const;
 
+ public:
   /** F function such as dy/dtau=F(y,cst)
    */
   using Metric::Generic::diff;
+ private:
   /** 
    * \brief Used in RK4 proxies.
    */

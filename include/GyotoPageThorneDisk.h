@@ -137,7 +137,7 @@ virtual double bolometricEmission(double nuem, double dsem,
                                    double* coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
 
-  Quantity_t getDefaultQuantities();
+  Gyoto::Quantity_t getDefaultQuantities();
 
   // Hook::Listener API //
  public:

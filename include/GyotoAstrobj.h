@@ -349,7 +349,7 @@ class Gyoto::Astrobj::Generic
    * quantities to compute for this object. The default of these
    * defaults GYOTO_QUANTITY_INTENSITY.
    */
-  virtual Quantity_t getDefaultQuantities();
+  virtual Gyoto::Quantity_t getDefaultQuantities();
   ///< Which quantities to compute if know was requested
 
   //XML I/O
