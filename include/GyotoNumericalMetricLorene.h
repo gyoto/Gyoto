@@ -103,7 +103,6 @@ class Gyoto::Metric::NumericalMetricLorene
   std::vector<double> refineIntegStep() const;
   void refineIntegStep(std::vector<double> const&);
 
-  char const * getFileName() const;
   Lorene::Vector** getShift_tab() const;
   Lorene::Scalar** getLapse_tab() const;
   Lorene::Sym_tensor** getGamcon_tab() const;

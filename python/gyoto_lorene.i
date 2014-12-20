@@ -1,6 +1,9 @@
 %module(docstring="The Gyoto Lorene plug-in") gyoto_lorene
 %import gyoto.i
+
 %{
+
+#define GYOTO_NO_DEPRECATED
 #include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoUniformSphere.h"
@@ -19,6 +22,6 @@
 %array_class(double, array_double)
 %array_class(double, array_unsigned_long)
 
-
-   //GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
 GyotoSmPtrClassDerived(Metric, RotStar3_1)
+GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
+

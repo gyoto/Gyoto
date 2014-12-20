@@ -266,11 +266,6 @@ void NumericalMetricLorene::setMetricSource() {
 
 }
 
-char const *  NumericalMetricLorene::getFileName() const 
-{
-  GYOTO_DEBUG << endl; 
-  return filename_; }
-
 Sym_tensor** NumericalMetricLorene::getGamcon_tab() const {
   GYOTO_DEBUG << endl;
   return gamcon_tab_;}
