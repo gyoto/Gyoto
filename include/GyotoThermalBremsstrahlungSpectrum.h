@@ -82,7 +82,9 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
    * \param nu frequency in Hz
    * \param ds length element in SI (careful to this)
    */
+#ifndef GYOTO_SWIGIMPORTED
   virtual double operator()(double nu,double ,double ds) const;
+#endif
   // NB: the second argument, opacity in the Spectrum API
   // is useless here
 

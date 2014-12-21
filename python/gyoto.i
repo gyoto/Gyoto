@@ -113,7 +113,7 @@ using namespace Gyoto;
 %rename(listRegister) Gyoto::Register::list;
 %include GyotoRegister.h
 
-
+%ignore Gyoto::SmartPointer::operator();
 %include "GyotoSmartPointer.h"
 
 %include "GyotoValue.h"
