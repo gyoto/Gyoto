@@ -164,9 +164,9 @@ class Gyoto::Spectrometer::Complex
   cplx[0] = objB;
 \endcode
    */
-  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> operator[](size_t i) ;
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> & operator[](size_t i) ;
   ///< Retrieve i-th element.
-  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> const operator[](size_t i) const;
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> const & operator[](size_t i) const;
   ///< Retrieve a const version of the i-th element.
   
   /**

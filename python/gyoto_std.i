@@ -48,7 +48,7 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Complex, ComplexAstrobj, GyotoComplexAstro
 
 %extend Gyoto::SmartPointer<Gyoto::Astrobj::Complex> {
   void __setitem__(int i, Gyoto::SmartPointer<Gyoto::Astrobj::Generic> p) {
-    (*$self)->set(i, p);
+    (*$self)->operator[](i)=p;
   }
  };
 

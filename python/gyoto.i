@@ -177,7 +177,13 @@ GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)
 GyotoSmPtrClassGeneric(Spectrometer)
 
+%rename(__getitem__) Gyoto::Spectrometer::Complex::operator[];
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoComplexSpectrometer.h)
+%extend Gyoto::SmartPointer<Gyoto::Spectrometer::Complex> {
+  void __setitem__(int i, Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> p) {
+    (*$self)->operator[](i)=p;
+  }
+ };
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUniformSpectrometer.h)
 
 %include "GyotoConfig.h"
