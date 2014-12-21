@@ -90,7 +90,11 @@ void Complex::append(SmartPointer<Generic> e)
   if (debug())
     cerr << "DEBUG: out Complex::append(SmartPointer<Generic> e)" << endl;
 }
-
+void Complex::set(size_t i, SmartPointer<Generic> e) {
+  if (i > cardinal_)
+    throwError("Complex::set(size_t i, SmartPointer<Generic> e): no such element");
+  elements_[i]=e;
+}
 SmartPointer<Generic> Complex::operator[](size_t i)
 {
   if (i > cardinal_)

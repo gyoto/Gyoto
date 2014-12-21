@@ -42,8 +42,17 @@
 %array_class(double, array_double)
 %array_class(double, array_unsigned_long)
 
+%rename(__getitem__) Gyoto::Astrobj::Complex::operator[];
 %rename(ComplexAstrobjPtr) ComplexPtr;
 GyotoSmPtrClassDerivedPtrHdr(Astrobj, Complex, ComplexAstrobj, GyotoComplexAstrobj.h)
+
+%extend Gyoto::SmartPointer<Gyoto::Astrobj::Complex> {
+  void __setitem__(int i, Gyoto::SmartPointer<Gyoto::Astrobj::Generic> p) {
+    (*$self)->set(i, p);
+  }
+ };
+
+
 GyotoSmPtrClassDerived(Astrobj, Star)
 GyotoSmPtrClassDerived(Astrobj, StarTrace)
 GyotoSmPtrClassDerived(Astrobj, FixedStar)

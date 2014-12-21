@@ -117,6 +117,7 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
    */
   void append(Gyoto::SmartPointer<Gyoto::Astrobj::Generic> element);
   ///< Add element at the end of the array.
+  void set(size_t i, Gyoto::SmartPointer<Gyoto::Astrobj::Generic> element);
   void remove(size_t i);
   ///< Remove i-th element from the array.
   size_t getCardinal() const;
