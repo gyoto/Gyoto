@@ -4,6 +4,9 @@
 %define GYOTO_SWIGIMPORTED
 %enddef
 
+%define GYOTO_NO_DEPRECATED
+%enddef
+
 %define GyotoSmPtrClass(klass)
 %ignore Gyoto:: klass ;
 %include Gyoto ## klass ## .h
@@ -79,6 +82,8 @@ using namespace Gyoto;
 
 %}
 
+%include "GyotoConfig.h"
+
 %include "GyotoError.h"
 
 %exception {
@@ -113,9 +118,35 @@ using namespace Gyoto;
 %rename(listRegister) Gyoto::Register::list;
 %include GyotoRegister.h
 
+%ignore Gyoto::Functor::Double_constDoubleArray;
+%ignore Gyoto::Functor::Double_Double_const;
+%include "GyotoFunctors.h"
+
+%ignore Gyoto::Hook::Listener;
+%ignore Gyoto::Hook::Teller;
+%include "GyotoHooks.h"
+
+%ignore Gyoto::WIP;
+%include "GyotoWIP.h"
+
 %ignore Gyoto::SmartPointer::operator();
+%rename(assign) Gyoto::SmartPointer::operator=;
 %include "GyotoSmartPointer.h"
 
+%rename(assign) Gyoto::Value::operator=;
+%rename(toDouble) Gyoto::Value::operator double;
+%rename(toLong) Gyoto::Value::operator long;
+%rename(toULong) Gyoto::Value::operator unsigned long;
+%rename(toString) Gyoto::Value::operator std::string;
+%rename(toVDouble) Gyoto::Value::operator std::vector<double>;
+%{
+  typedef unsigned long unsignedlong;
+  %}
+%rename(toVULong) Gyoto::Value::operator std::vector<unsigned long>;
+%rename(toMetricPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>;
+%rename(toAstrobjPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
+%rename(toSpectrumPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
+%rename(toSpectrometerPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
 %include "GyotoValue.h"
 %include "GyotoObject.h"
 
@@ -138,6 +169,7 @@ Gyoto::Worldline * pyGyotoCastToWorldline
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
 GyotoSmPtrClass(Photon)
+%rename(increment) Gyoto::Astrobj::Properties::operator++;
 GyotoSmPtrClassGeneric(Astrobj)
 
 %ignore Gyoto::Astrobj::Standard;
@@ -207,6 +239,7 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 
 enum CoordType_e;
 
+%rename(increment) *::operator++;
 class Coord1dSet {
 public:
   const CoordType_e kind;

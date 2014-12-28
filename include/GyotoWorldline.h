@@ -455,7 +455,6 @@ class Gyoto::Worldline
   // ---------------------
  public:
   /// Assignment to another Worldline
-  void operator=(const Worldline&) ;        
   void delta(const double delta); ///< Set #delta_
   void delta(double, const std::string &unit);   ///< Set #delta_ in specified units
   double delta() const ; ///< Get #delta_
@@ -613,9 +612,6 @@ class Gyoto::Worldline
   void save_txyz(char* const filename, double const t1, double const  mass_sun,
 		 double const distance_kpc, std::string const unit, SmartPointer<Screen> sc = NULL);///< Save, converted
 
-  /// Display
-  friend std::ostream& operator<<(std::ostream& , const Worldline& ) ;
-  
  protected:
   virtual void tell(Gyoto::Hook::Teller*);
 
