@@ -610,6 +610,8 @@ class Gyoto::Screen
     public:
       /// Set kind during initialization
       Coord1dSet(CoordType_e k);
+      /// Virtual destructor
+      virtual ~Coord1dSet();
       /// Reset specifier to point to the first value
       virtual void begin() =0;
       /// True if pointing to something, false if end has been reached.
@@ -636,6 +638,8 @@ class Gyoto::Screen
       const CoordType_e kind;
       /// Set kind at initialisation
       Coord2dSet(CoordType_e k);
+      /// Virtual destructor
+      virtual ~Coord2dSet();
       /// Increment pointer
       virtual Coord2dSet& operator++()    =0;
       /// Get pixel coordinates

@@ -4,6 +4,8 @@
 %{
 
 #define GYOTO_NO_DEPRECATED
+#include "GyotoConfig.h"
+
 #include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoUniformSphere.h"

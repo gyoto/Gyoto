@@ -169,6 +169,7 @@ Gyoto::Worldline * pyGyotoCastToWorldline
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
 GyotoSmPtrClass(Photon)
+%rename(AstrobjProperties) Gyoto::Astrobj::Properties;
 %rename(increment) Gyoto::Astrobj::Properties::operator++;
 GyotoSmPtrClassGeneric(Astrobj)
 

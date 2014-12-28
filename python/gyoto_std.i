@@ -1,6 +1,10 @@
 %module(docstring="The Gyoto standard plug-in") gyoto_std
 %import gyoto.i
 %{
+
+#define GYOTO_NO_DEPRECATED
+#include "GyotoConfig.h"
+
 #include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoUniformSphere.h"

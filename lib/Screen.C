@@ -1295,6 +1295,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 //////// COORD2DSET
 
 Screen::Coord2dSet::Coord2dSet(CoordType_e k) : kind(k) {}
+Screen::Coord2dSet::~Coord2dSet() {}
 
 GYOTO_ARRAY<size_t, 2> Screen::Coord2dSet::operator* () const {
   if (kind==pixel)
@@ -1355,6 +1356,7 @@ Screen::Coord2dSet& Screen::Grid::operator++() {
 //////// COORD1DSET
 
 Screen::Coord1dSet::Coord1dSet(CoordType_e k) : kind(k) {}
+Screen::Coord1dSet::~Coord1dSet() {}
 
 size_t Screen::Coord1dSet::operator* () const {
   if (kind==pixel)
