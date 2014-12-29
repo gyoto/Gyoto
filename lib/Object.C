@@ -227,10 +227,10 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     fmp->setParameter(name, std::string(get(p)));
     break;
   case Property::vector_double_t:
-    fmp->setParameter(name, get(p).VDouble);
+    fmp->setParameter(name, get(p).operator std::vector<double>());
     break;
   case Property::vector_unsigned_long_t:
-    fmp->setParameter(name, get(p).VULong);
+    fmp->setParameter(name, get(p).operator std::vector<unsigned long>());
     break;
   case Property::metric_t:
     fmp->metric(get(p));
@@ -242,16 +242,22 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     fmp->screen(get(p));
     break;
   case Property::spectrum_t:
-    if (!get(p).Spectrum) return;
-    childfmp = fmp -> makeChild ( name );
-    get(p).Spectrum -> fillElement(childfmp);
-    delete childfmp;
+    {
+      SmartPointer<Spectrum::Generic> sp=get(p);
+      if (!sp) return;
+      childfmp = fmp -> makeChild ( name );
+      sp -> fillElement(childfmp);
+      delete childfmp;
+    }
     break;
   case Property::spectrometer_t:
-    if (!get(p).Spectrometer) return;
-    childfmp = fmp -> makeChild ( name );
-    get(p).Spectrometer -> fillElement(childfmp);
-    delete childfmp;
+    {
+      SmartPointer<Spectrometer::Generic> spr=get(p);
+      if (!spr) return;
+      childfmp = fmp -> makeChild ( name );
+      spr -> fillElement(childfmp);
+      delete childfmp;
+    }
     break;
   default:
     throwError("Property type unimplemented in Object::fillProperty()");

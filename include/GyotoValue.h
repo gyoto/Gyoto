@@ -68,89 +68,116 @@ class Gyoto::Value {
   /// Assignement operator
   Value& operator=(Value const&);
 
+  /// Type of this instance
+  int type;
+
+ private:
   /// A double value
   double Double;
+ public:
   /// Construct/cast from double
   Value(double);
   /// Cast to double
   operator double() const;
 
+ private:
   /// A boolean value
   bool Bool;
+ public:
   /// Construct/cast from boolean
   Value(bool);
   /// Cast to bool
   operator bool() const;
 
+ private:
   /// A long value
   long Long;
+ public:
   /// Construct/cast from long
   Value(long);
   /// Cast to long
   operator long() const;
 
+ private:
   /// An unsigned long (a.k.a. size_t)
   unsigned long ULong;
+ public:
   /// Construct/cast from unsigned long
   Value(unsigned long);
   /// Cast to unsigned long
   operator unsigned long() const;
 
+ private:
   /// A string value
   std::string String;
+ public:
   /// Construct/cast from string
   Value(std::string);
   /// Cast to string
   operator std::string() const;
 
+ private:
   /// A vector of double values
   std::vector<double> VDouble;
+ public:
   /// Construct/cast from vector of doubles
   Value(std::vector<double>);
   /// Cast to vector of doubles
   operator std::vector<double>() const;
 
+ private:
   /// A vector of unsigned long values
   std::vector<unsigned long> VULong;
+ public:
   /// Construct/cast from vector of unsigned long values
   Value(std::vector<unsigned long>);
   /// Cast to vector of unsigned long values
   operator std::vector<unsigned long>() const;
 
+ private:
   /// A Metric object
   Gyoto::SmartPointer<Gyoto::Metric::Generic> Metric;
-  /// Cast from Metric object
+ public:
+ /// Cast from Metric object
   Value(Gyoto::SmartPointer<Gyoto::Metric::Generic>);
   /// Cast to Metric object
-  operator Gyoto::SmartPointer<Gyoto::Metric::Generic>();
+  operator Gyoto::SmartPointer<Gyoto::Metric::Generic>() const;
 
+ private:
   /// An Astrobj Object
-  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> Astrobj;
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> Astrobj; 
+ public:
   /// Cast from Astrobj
   Value(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>);
   /// Cast to Astrobj
-  operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>();
+  operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>() const;
 
+ private:
   /// A Spectrum object
   Gyoto::SmartPointer<Gyoto::Spectrum::Generic> Spectrum;
+ public:
   /// Cast from Spectrum
   Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>);
   /// Cast to Spectrum
-  operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>();
+  operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>() const;
 
+ private:
   /// A Spectrometer object
   Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> Spectrometer;
+ public:
   /// Cast from Spectrometer
   Value(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>);
   /// Cast to Spectrometer
-  operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>();
+  operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>() const;
 
+ private:
   /// A Screen object
   Gyoto::SmartPointer<Gyoto::Screen> Screen;
+ public:
   /// Cast from Screen
   Value(Gyoto::SmartPointer<Gyoto::Screen>);
   /// Cast to Screen
-  operator Gyoto::SmartPointer<Gyoto::Screen>();
+  operator Gyoto::SmartPointer<Gyoto::Screen>() const;
 };
 
 #endif

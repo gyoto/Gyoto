@@ -415,26 +415,27 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
     break;
   case Gyoto::Property::vector_unsigned_long_t:
     {
-      size_t n = val.VULong.size();
+      std::vector<unsigned long> vval = val;
+      size_t n = vval.size();
       long dims[]={1, long(n)};
       long * buf = ypush_l(dims);
-      for (size_t i=0; i<n; ++i) buf[i]=val.VULong[i];
+      for (size_t i=0; i<n; ++i) buf[i]=vval[i];
     }
     break;
   case Gyoto::Property::metric_t:
-    *ypush_Metric() = val.Metric;
+    *ypush_Metric() = Gyoto::SmartPointer<Gyoto::Metric::Generic>(val);
     break;
   case Gyoto::Property::astrobj_t:
-    *ypush_Astrobj() = val.Astrobj;
+    *ypush_Astrobj() = Gyoto::SmartPointer<Gyoto::Astrobj::Generic>(val);
     break;
   case Gyoto::Property::spectrum_t:
-    *ypush_Spectrum() = val.Spectrum;
+    *ypush_Spectrum() = Gyoto::SmartPointer<Gyoto::Spectrum::Generic>(val);
     break;
   case Gyoto::Property::spectrometer_t:
-    *ypush_Spectrometer() = val.Spectrometer;
+    *ypush_Spectrometer() = Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>(val);
     break;
   case Gyoto::Property::screen_t:
-    *ypush_Screen() = val.Screen;
+    *ypush_Screen() = Gyoto::SmartPointer<Gyoto::Screen>(val);
     break;
   default:
     y_error("Property type unimplemented in ypush_property()");
@@ -492,8 +493,9 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
     {
       long n;
       long *buf = ygeta_l(iarg, &n, NULL);
-      val.VULong.resize(n);
-      for (size_t i=0; i<n; ++i) val.VULong[i]=buf[i];
+      std::vector<unsigned long> vval=val;
+      vval.resize(n);
+      for (size_t i=0; i<n; ++i) vval[i]=buf[i];
     }
     break;
   case Gyoto::Property::metric_t:

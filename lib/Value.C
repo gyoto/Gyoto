@@ -4,6 +4,7 @@
 #include "GyotoSpectrum.h"
 #include "GyotoSpectrometer.h"
 #include "GyotoScreen.h"
+#include "GyotoProperty.h"
 #include <iostream>
 using namespace Gyoto ;
 using namespace std ;
@@ -13,54 +14,30 @@ using namespace std ;
 Value::Value() {}
 Value::~Value() {}
 
-Value::Value(double val) : Double(val) {}
-Value::operator double() const {return Double;}
+#define ___local_stuff(t, t_t, T)			\
+  Value::Value(t val) : type(Property::t_t), T(val){}	\
+  Value::operator t() const {				\
+  if (type!=Property::t_t)				\
+    throwError("This Value does not hold a " #t);	\
+  return T;						\
+  }
 
-Value::Value(bool val) : Bool(val) {}
-Value::operator bool() const {return Bool;}
-
-Value::Value(long val) : Long(val) {}
-Value::operator long() const {return Long;}
-
-Value::Value(unsigned long val) : ULong(val) {}
-Value::operator unsigned long() const {return ULong;}
-
-Value::Value(std::string val) : String(val) {}
-Value::operator std::string() const {return String;}
-
-Value::Value(std::vector<double> val) : VDouble(val) {}
-Value::operator std::vector<double>() const {return VDouble;}
-
-Value::Value(std::vector<unsigned long> val) : VULong(val) {}
-Value::operator std::vector<unsigned long>() const {return VULong;}
-
-Value::Value(Gyoto::SmartPointer<Gyoto::Metric::Generic> p)
-  : Metric(p) {}
-Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>()
-{ return Metric; }
-
-Value::Value(Gyoto::SmartPointer<Gyoto::Astrobj::Generic> p)
-  : Astrobj(p) {}
-Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>()
-{ return Astrobj; }
-
-Value::Value(Gyoto::SmartPointer<Gyoto::Spectrum::Generic> p)
-  : Spectrum(p) {}
-Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>()
-{ return Spectrum; }
-
-Value::Value(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> p)
-  : Spectrometer(p) {}
-Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>()
-{ return Spectrometer; }
-
-Value::Value(Gyoto::SmartPointer<Gyoto::Screen> p)
-  : Screen(p) {}
-Value::operator Gyoto::SmartPointer<Gyoto::Screen>()
-{ return Screen; }
+___local_stuff(double, double_t, Double)
+___local_stuff(bool, bool_t, Bool)
+___local_stuff(long, long_t, Long)
+___local_stuff(unsigned long, unsigned_long_t, ULong)
+___local_stuff(std::string, string_t, String)
+___local_stuff(std::vector<double>, vector_double_t, VDouble)
+___local_stuff(std::vector<unsigned long>, vector_unsigned_long_t, VULong)
+___local_stuff(Gyoto::SmartPointer<Gyoto::Metric::Generic>, metric_t, Metric)
+___local_stuff(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>, astrobj_t, Astrobj)
+___local_stuff(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>, spectrum_t, Spectrum)
+___local_stuff(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>, spectrometer_t, Spectrometer)
+___local_stuff(Gyoto::SmartPointer<Gyoto::Screen>, screen_t, Screen)
 
 Value& Value::operator=(Value const &right) {
 # define ___local_case(member) member = right.member
+  ___local_case(type);
   ___local_case(Double);
   ___local_case(Bool);
   ___local_case(Long);

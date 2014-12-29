@@ -75,7 +75,7 @@ res=sc.screen().resolution()
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
-aop=gyoto.Properties()
+aop=gyoto.AstrobjProperties()
 aop.Intensity(intensity)
 aop.EmissionTime(time)
 aop.MinDistance(distance)
@@ -104,7 +104,7 @@ ii=gyoto.Range(1, res, 1)
 jj=gyoto.Range(1, res, 1)
 grid=gyoto.Grid(ii, jj, "\rj = ")
 
-aop=gyoto.Properties()
+aop=gyoto.AstrobjProperties()
 aop.Spectrum(spectrum)
 aop.offset=res*res
 
@@ -145,7 +145,7 @@ grid=gyoto.Grid(ii, jj, "\rj = ")
 
 ipct=numpy.zeros((res, res, 16), dtype=float)
 
-aop=gyoto.Properties()
+aop=gyoto.AstrobjProperties()
 aop.ImpactCoords(ipct)
 aop.offset=res*res
 
@@ -165,7 +165,7 @@ bucket=gyoto.Bucket(a, d)
 
 ipct=numpy.zeros((N, 1, 16), dtype=float)
 
-aop=gyoto.Properties()
+aop=gyoto.AstrobjProperties()
 aop.ImpactCoords(ipct)
 aop.offset=N
 
@@ -185,7 +185,7 @@ bucket=gyoto.Bucket(ii, jj)
 
 ipct=numpy.zeros((res, 1, 16), dtype=float)
 
-aop=gyoto.Properties()
+aop=gyoto.AstrobjProperties()
 aop.ImpactCoords(ipct)
 aop.offset=res
 
@@ -217,7 +217,7 @@ tt=gyoto.AstrobjPtr(tr.__deref__())
 # from XML:
 p=tt.property("SmallRadius")
 tt.set(p, gyoto.Value(0.2))
-tt.get(p).Double == tr.smallRadius()
+tt.get(p).toDouble() == tr.smallRadius()
 
 # Etc:
 cplx=gyoto_std.ComplexAstrobj()
