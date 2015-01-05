@@ -485,7 +485,7 @@ class Gyoto::Scenery
   // Override fillProperty() to issue InitCoord only if it was set
   void fillProperty(FactoryMessenger *fmp, Property const &p) const ;
   // Override fillElement to fill metric, screen and astrobj first
-  void fillElement(FactoryMessenger *fmp);
+  void fillElement(FactoryMessenger *fmp) const;
   /// Instanciate Scenery from an XML description.
   static SmartPointer<Scenery> Subcontractor(Gyoto::FactoryMessenger*);
 

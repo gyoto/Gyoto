@@ -11,6 +11,7 @@
 #include "GyotoPhoton.h"
 #include "GyotoScenery.h"
 #include "GyotoSpectrometer.h"
+#include "GyotoUniformSpectrometer.h"
 #include "GyotoComplexSpectrometer.h"
 #include "GyotoValue.h"
 
@@ -41,6 +42,7 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
+using namespace Gyoto;
 %}
 
 %array_class(double, array_double)

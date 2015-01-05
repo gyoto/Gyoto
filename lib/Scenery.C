@@ -71,7 +71,7 @@ void Scenery::fillProperty(Gyoto::FactoryMessenger *fmp,
   } else Object::fillProperty(fmp, p);
 }
 
-void Scenery::fillElement(FactoryMessenger *fmp) {
+void Scenery::fillElement(FactoryMessenger *fmp) const {
   if (metric())     fmp -> metric (metric()) ;
   if (screen_)      fmp -> screen (screen_) ;
   if (astrobj())    fmp -> astrobj (astrobj()) ;

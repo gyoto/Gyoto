@@ -57,6 +57,9 @@ AS_IF([test "x$PYTHON" != "x"],
    PC_PYTHON_CHECK_ABI_FLAGS
   ]
 )
+
+AX_PKG_SWIG(2.0)
+
 # DONE WITH PYTHON STUFF
 
 # Checks for programs.

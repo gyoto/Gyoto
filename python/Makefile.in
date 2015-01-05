@@ -49,11 +49,16 @@ pkgincludedir = $(includedir)/@PACKAGE_NAME@
 pkgpythondir = @pkgpythondir@
 pkgpyexecdir = @pkgpyexecdir@
 PYTHONPATH = $(pythondir)$(PATH_SEPARATOR)$(DESTDIR)$(pythondir)
+SWIG=@SWIG@
 
 CFITSIO_CFLAGS = @CFITSIO_CFLAGS@
 CFITSIO_LIBS = @CFITSIO_LIBS@
 XERCES_CFLAGS = @XERCES_CFLAGS@
 XERCES_LIBS = @XERCES_LIBS@
+UDUNITS_CFLAGS = @UDUNITS_CFLAGS@
+UDUNITS_CPPFLAGS = @UDUNITS_CPPFLAGS@
+UDUNITS_LDFLAGS = @UDUNITS_LDFLAGS@
+UDUNITS_LIBS = @UDUNITS_LIBS@
 
 CXX=@CXX@
 CC=$(CXX)
@@ -70,9 +75,9 @@ PYTHON_PREFIX = @PYTHON_PREFIX@
 
 FEATURES=@FEATURES@
 
-LDFLAGS=-L../lib/.libs -lgyoto$(FEATURES) $(CFITSIO_LIBS) $(XERCES_LIBS)
-CPPFLAGS=-I../include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS)
-CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS)
+LDFLAGS=-L../lib/.libs -lgyoto$(FEATURES) $(CFITSIO_LIBS) $(XERCES_LIBS) $(UDUNITS_LIBS)
+CPPFLAGS=-I../include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
+CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CFLAGS=$(CXXFLAGS)
 
 export LDFLAGS
@@ -107,16 +112,16 @@ _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX): gyoto_lorene_wrap.cxx
 	$(PYTHON) $(srcdir)/setup_lorene.py build_ext
 
 gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i
-	swig2.0 -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto.i
+	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto.i
 	mv gyoto.py trailer.py
 	cat header.py trailer.py > gyoto.py
 	rm trailer.py
 
 gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
-	swig2.0 -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_std.i
+	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_std.i
 
 gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_std.i gyoto.i
-	swig2.0 -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_lorene.i
+	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_lorene.i
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 
@@ -156,10 +161,10 @@ uninstall:
 clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build
-	-rm gyoto*.py gyoto_wrap*.cxx *.pyc gyoto_doc.i
+	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i
 
 # Clean up the output of configure
-distclean: 
+distclean: clean 
 	-rm -v $(builddir)/setup*.py
 	-rm -v $(builddir)/Makefile
 
