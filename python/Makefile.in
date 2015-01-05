@@ -84,8 +84,10 @@ export CC
 GYOTO_EXTENSIONS =  _gyoto$(PYTHON_EXTENSION_SUFFIX) \
                     _gyoto_std$(PYTHON_EXTENSION_SUFFIX)
 GYOTO_PYFILES = gyoto.py gyoto_std.py
+GYOTO_SWIGFILES = gyoto.i gyoto_std.i
 @HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX)
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto_lorene.py
+@HAVE_LORENE_TRUE@GYOTO_SWIGFILES += gyoto_lorene.i
 
 all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 
@@ -117,15 +119,17 @@ gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_std.i gyoto.i
 # variable is set to anything other than "no", set up a new virtualenv and install there, otherwise
 # install as usual from setup.py
 install: installdirs
-	$(PYTHON) $(srcdir)/setup.py install
-	$(PYTHON) $(srcdir)/setup_std.py install
-@HAVE_LORENE_TRUE@	$(PYTHON) $(srcdir)/setup_lorene.py install
 ifneq ($(VIRTUALENV),no)
 	$(VIRTUALENV) $(VIRTUALENV_FLAGS) $(DESTDIR)$(prefix) || $(VIRTUALENV) $(DESTDIR)$(prefix)
 	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup_std.py install --prefix=$(DESTDIR)$(prefix)
+@HAVE_LORENE_TRUE@	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 else
 	$(PYTHON) $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(PYTHON) $(srcdir)/setup_std.py install --prefix=$(DESTDIR)$(prefix)
+@HAVE_LORENE_TRUE@	$(PYTHON) $(srcdir)/setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 endif
+	$(INSTALL_DATA) $(GYOTO_SWIGFILES) numpy.i $(DESTDIR)$(pkgincludedir)
 
 
 # setup.py doesn't (yet) support an uninstall command, so until it does, you 
@@ -134,11 +138,12 @@ endif
 # triple-check it so that you don't remove something you shouldn't!
 # Be sure to remove any extra files you install, such as binaries or documentation!
 uninstall: 
-	-rm -rvf $(pkgpythondir)
-	-rm -v $(pythondir)/$(PACKAGE_DISTNAME)-*.egg-info
-	-rm $(pythondir)/_gyoto$(PYTHON_EXTENSION_SUFFIX)
-	-rm $(pythondir)/gyoto.py
-	-rm $(pythondir)/gyoto.pyc
+	-cd $(DESTDIR)$(pkgincludedir) ; rm $(GYOTO_SWIGFILES) numpy.i
+	-rm -rvf $(DESTDIR)$(pkgpythondir)
+	-rm -v $(DESTDIR)$(pythondir)/$(PACKAGE_DISTNAME)-*.egg-info
+	-rm $(DESTDIR)$(pythondir)/_gyoto$(PYTHON_EXTENSION_SUFFIX)
+	-rm $(DESTDIR)$(pythondir)/gyoto.py
+	-rm $(DESTDIR)$(pythondir)/gyoto.pyc
 
 
 # Just use the usual setup.py clean command
@@ -168,6 +173,8 @@ check:
 # here
 installdirs:
 	$(MKDIR_P) $(DESTDIR)$(pkgpythondir)
+	$(MKDIR_P) $(DESTDIR)$(pkgincludedir)
+
 
 
 # The following show how to install documentation. In this example,
