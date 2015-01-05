@@ -95,7 +95,7 @@ all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 	cd ../doc; $(MAKE) doxygen.stamp
 
 gyoto_doc.i: ../doc/xml/index.xml
-	$(PYTHON) $(srcdir)/doxy2swig.py $< $@ || rm $@
+	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
 
 _gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
 	$(PYTHON) $(srcdir)/setup.py build_ext
@@ -156,7 +156,7 @@ uninstall:
 clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build
-	-rm gyoto*.py gyoto_wrap*.cxx
+	-rm gyoto*.py gyoto_wrap*.cxx *.pyc gyoto_doc.i
 
 # Clean up the output of configure
 distclean: 
