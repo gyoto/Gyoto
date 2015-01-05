@@ -1,6 +1,8 @@
 %module(docstring="The General relativitY Orbit Tracer of paris Observatory") gyoto
 %feature("autodoc", "1");
 
+%import gyoto_doc.i
+
 %define GYOTO_SWIGIMPORTED
 %enddef
 

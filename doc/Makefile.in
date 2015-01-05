@@ -1,14 +1,19 @@
 SHELL=/bin/sh
 DOXYGEN=@DOXYGEN@
 
-all: doc
+all: doxygen.stamp latex.stamp
 
-doc: ../include/*.h
+doxygen.stamp: ../include/*.h
 @MKREF_TRUE@	$(DOXYGEN) doxyfile
+	touch  doxygen.stamp
+
+latex.stamp:
 @MKGUIDE_TRUE@	cd user_guide; $(MAKE)
+	touch latex.stamp
 
 distclean clean:
-@MKREF_TRUE@	rm -fr html latex
+	-rm doxygen.stamp latex.stamp
+	-rm -fr html xml latex
 @MKGUIDE_TRUE@	cd user_guide; $(MAKE) clean
 
 %: ;

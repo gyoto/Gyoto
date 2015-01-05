@@ -84,12 +84,18 @@ export CC
 GYOTO_EXTENSIONS =  _gyoto$(PYTHON_EXTENSION_SUFFIX) \
                     _gyoto_std$(PYTHON_EXTENSION_SUFFIX)
 GYOTO_PYFILES = gyoto.py gyoto_std.py
-GYOTO_SWIGFILES = gyoto.i gyoto_std.i
+GYOTO_SWIGFILES = gyoto.i gyoto_std.i gyoto_doc.i
 @HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX)
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto_lorene.py
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += gyoto_lorene.i
 
 all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
+
+../doc/xml/index.xml:
+	cd ../doc; $(MAKE) doxygen.stamp
+
+gyoto_doc.i: ../doc/xml/index.xml
+	$(PYTHON) $(srcdir)/doxy2swig.py $< $@ || rm $@
 
 _gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
 	$(PYTHON) $(srcdir)/setup.py build_ext
@@ -100,7 +106,7 @@ _gyoto_std$(PYTHON_EXTENSION_SUFFIX): gyoto_std_wrap.cxx
 _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX): gyoto_lorene_wrap.cxx
 	$(PYTHON) $(srcdir)/setup_lorene.py build_ext
 
-gyoto.py gyoto_wrap.cxx: gyoto.i header.py
+gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i
 	swig2.0 -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto.i
 	mv gyoto.py trailer.py
 	cat header.py trailer.py > gyoto.py
@@ -150,7 +156,7 @@ uninstall:
 clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build
-	-rm gyoto*.py gyoto_wrap*.cxx 
+	-rm gyoto*.py gyoto_wrap*.cxx
 
 # Clean up the output of configure
 distclean: 

@@ -697,7 +697,7 @@ _ACEOF
 # disable doc
 AC_ARG_ENABLE([doc],
   [AS_HELP_STRING([--disable-doc],
-     [disable building documentation])],
+     [disable building documentation (automatically)])],
   [AS_IF([test "x$enable_doc" == "xyes"],
      [mkdoc=yes],
      [test "x$enable_doc" == "xno"],
@@ -734,6 +734,7 @@ AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 AC_CONFIG_FILES([Makefile
                  bin/Makefile
                  doc/Makefile
+                 doc/doxyfile
                  doc/user_guide/Makefile
                  lib/Makefile
                  lib/gyoto.pc
@@ -769,7 +770,6 @@ AS_IF([test "x$PYTHON" != "x"],
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
   [mySUBDIRS="$mySUBDIRS doc"
-   AC_CONFIG_FILES([doc/doxyfile])
   ]
 )
 AC_SUBST([mySUBDIRS])
