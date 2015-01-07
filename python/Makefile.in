@@ -120,7 +120,7 @@ gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i
 gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
 	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_std.i
 
-gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_std.i gyoto.i
+gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
 	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_lorene.i
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
@@ -129,7 +129,7 @@ gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_std.i gyoto.i
 # Since installing to a virtualenv is all the rage these days, support it here. If the VIRTUALENV
 # variable is set to anything other than "no", set up a new virtualenv and install there, otherwise
 # install as usual from setup.py
-install: installdirs
+install: all installdirs
 ifneq ($(VIRTUALENV),no)
 	$(VIRTUALENV) $(VIRTUALENV_FLAGS) $(DESTDIR)$(prefix) || $(VIRTUALENV) $(DESTDIR)$(prefix)
 	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
