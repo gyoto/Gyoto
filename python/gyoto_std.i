@@ -20,6 +20,7 @@
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
 // include Astrobj headers
+#include "GyotoStandardAstrobj.h"
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
@@ -49,6 +50,8 @@ using namespace Gyoto;
 %array_class(double, array_unsigned_long)
 
 // Typemaps to translate SmartPointer to specific classes
+GyotoSmPtrTypeMapClassDerived(Astrobj, Standard)
+GyotoSmPtrTypeMapClassDerived(Astrobj, UniformSphere)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Star)
 GyotoSmPtrTypeMapClassDerived(Astrobj, StarTrace)
 GyotoSmPtrTypeMapClassDerived(Astrobj, FixedStar)
@@ -71,6 +74,18 @@ GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
 GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
+
+
+%ignore Gyoto::Astrobj::Standard::Standard();
+%ignore Gyoto::Astrobj::Standard::Standard(double radmax);
+%ignore Gyoto::Astrobj::Standard::Standard(std::string kind);
+%ignore Gyoto::Astrobj::Standard::Standard(const Standard& );
+GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAstrobj.h)
+
+%ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind, SmartPointer<Metric::Generic> gg, double radius);
+%ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind);
+%ignore Gyoto::Astrobj::UniformSphere::UniformSphere (const UniformSphere& orig);
+GyotoSmPtrClassDerived(Astrobj, UniformSphere)
 
 %extend Gyoto::Astrobj::Complex {
   Gyoto::Astrobj::Generic * __getitem__ (int i) {
@@ -110,3 +125,9 @@ GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, ThermalBremsstrahlung, GyotoThermalBremsstrahlungSpectrum.h)
 
+// Workaround cvar bug in Swig which makes help(gyoto_std) fail:
+%inline {
+  namespace GyotoStd {
+    extern int __class__=0;
+  }
+}

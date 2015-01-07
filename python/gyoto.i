@@ -118,14 +118,20 @@
 // ref/unref features
 %define GyotoSmPtrClassGeneric(klass)
 %rename(klass) klass ## Ptr;
-%ignore Gyoto::klass::Register_;
-%ignore Gyoto::klass::Register;
-%ignore Gyoto::klass::initRegister;
-%ignore Gyoto::klass::getSubcontractor;
+%rename(klass ## Register) Gyoto::klass::Register_;
+%inline {
+  Gyoto::Register::Entry * get ## klass ## Register() { return Gyoto::klass::Register_; }
+ }
+%rename(register ## klass) Gyoto::klass::Register;
+%rename(init ## klass ## Register) Gyoto::klass::initRegister;
+%rename(get ## klass ## Subcontractor) Gyoto::klass::getSubcontractor;
 %rename(klass) Gyoto::klass::Generic;
 %feature("ref") Gyoto:: klass ::Generic"$this->incRefCount();";
 %feature("unref") Gyoto:: klass ::Generic"$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+// Need to mark the base classes as "notabstract" to extend them with
+// a down-cast constructor
 %feature("notabstract") Gyoto::klass::Generic;
+// Ignore all the actual constructors are these classes are really abstract
 %ignore  Gyoto::klass::Generic::Generic(Gyoto::klass::Generic const &);
 %ignore  Gyoto::klass::Generic::Generic(const Generic &);
 %ignore  Gyoto::klass::Generic::Generic(const klass::Generic &);
@@ -133,6 +139,7 @@
 %ignore  Gyoto::klass::Generic::Generic(double);
 %ignore  Gyoto::klass::Generic::Generic(kind_t);
 %ignore  Gyoto::klass::Generic::Generic(const std::string);
+// Make a pseudo constructor for down-casting.
 %extend Gyoto::klass::Generic {
   Generic(std::string nm) {
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
@@ -192,13 +199,13 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 #include "GyotoWorldline.h"
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
-#include "GyotoStandardAstrobj.h"
-#include "GyotoUniformSphere.h"
 #include "GyotoThinDisk.h"
 #include "GyotoSpectrometer.h"
 #include "GyotoComplexSpectrometer.h"
 #include "GyotoUniformSpectrometer.h"
 #include "GyotoRegister.h"
+#include "GyotoWIP.h"
+#include "GyotoConverters.h"
 using namespace Gyoto;
 
 %}
@@ -217,6 +224,7 @@ GyotoSmPtrTypeMapClassGeneric(Metric);
 GyotoSmPtrTypeMapClassGeneric(Astrobj);
 GyotoSmPtrTypeMapClassGeneric(Spectrum);
 GyotoSmPtrTypeMapClassGeneric(Spectrometer);
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk);
 
 GyotoSmPtrTypeMapClass(Screen);
 GyotoSmPtrTypeMapClass(Scenery);
@@ -224,6 +232,9 @@ GyotoSmPtrTypeMapClass(Photon);
 
 GyotoSmPtrTypeMapClassDerived(Spectrometer, Complex);
 GyotoSmPtrTypeMapClassDerived(Spectrometer, Uniform);
+
+GyotoSmPtrTypeMapClassDerived(Units, Unit);
+GyotoSmPtrTypeMapClassDerived(Units, Converter);
 
 // Non-Gyoto typemaps:
 // Handle std::string
@@ -261,26 +272,23 @@ GyotoSmPtrTypeMapClassDerived(Spectrometer, Uniform);
 	}
 }
 
-// Expose Gyoto::Register::list as gyoto.listRegister
-%ignore Gyoto::Register::Entry;
-%ignore Gyoto::Register::init;
-%rename(listRegister) Gyoto::Register::list;
-%include GyotoRegister.h
-
-%ignore Gyoto::Functor::Double_constDoubleArray;
-%ignore Gyoto::Functor::Double_Double_const;
-%include "GyotoFunctors.h"
-
-%ignore Gyoto::Hook::Listener;
-%ignore Gyoto::Hook::Teller;
-%include "GyotoHooks.h"
-
-%ignore Gyoto::WIP;
-%include "GyotoWIP.h"
-
 %ignore Gyoto::SmartPointer::operator();
 %rename(assign) Gyoto::SmartPointer::operator=;
 %include "GyotoSmartPointer.h"
+
+// Expose Gyoto::Register::list as gyoto.listRegister
+%rename(RegisterEntry) Gyoto::Register::Entry;
+%rename(initRegister) Gyoto::Register::init;
+%rename(listRegister) Gyoto::Register::list;
+%include GyotoRegister.h
+
+%rename(Functor__Double_constDoubleArray) Gyoto::Functor::Double_constDoubleArray;
+%rename(Functor__Double_Double_const) Gyoto::Functor::Double_Double_const;
+%include "GyotoFunctors.h"
+
+%include "GyotoHooks.h"
+
+%include "GyotoWIP.h"
 
 %immutable Gyoto::Value::type;
 %rename(assign) Gyoto::Value::operator=;
@@ -300,10 +308,9 @@ GyotoSmPtrTypeMapClassDerived(Spectrometer, Uniform);
 %include "GyotoValue.h"
 %include "GyotoObject.h"
 
-%ignore Gyoto::Worldline::IntegState;
-%ignore Gyoto::Worldline::IntegState::Generic;
-%ignore Gyoto::Worldline::IntegState::Boost;
-%ignore Gyoto::Worldline::IntegState::Legacy;
+%rename(Worldline__IntegState__Generic) Gyoto::Worldline::IntegState::Generic;
+%rename(Worldline__IntegState__Boost) Gyoto::Worldline::IntegState::Boost;
+%rename(Worldline__IntegState__Legacy) Gyoto::Worldline::IntegState::Legacy;
 %include "GyotoWorldline.h"
 
 GyotoSmPtrClass(Screen)
@@ -313,12 +320,7 @@ GyotoSmPtrClass(Photon)
 %rename(increment) Gyoto::Astrobj::Properties::operator++;
 GyotoSmPtrClassGeneric(Astrobj)
 
-%ignore Gyoto::Astrobj::Standard;
-%ignore Gyoto::Astrobj::UniformSphere;
-%ignore Gyoto::Astrobj::ThinDisk;
-%include GyotoStandardAstrobj.h
-%include GyotoUniformSphere.h
-%include GyotoThinDisk.h
+GyotoSmPtrClassDerived(Astrobj, ThinDisk)
 
 %define _PAccessor2(member, setter)
   void setter(double *IN_ARRAY2, size_t DIM1, size_t DIM2) {
@@ -328,6 +330,14 @@ GyotoSmPtrClassGeneric(Astrobj)
 %define _PAccessor3(member, setter)
 void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
     $self->member = IN_ARRAY3;
+  }
+%enddef
+%define _PConverter(member, method)
+  Gyoto::Units::Converter * method() {
+  Gyoto::Units::Converter * res = $self->member;
+    if (!res) Gyoto::throwError(#member " converter not set");
+    res -> incRefCount();
+    return res;
   }
 %enddef
 %extend Gyoto::Astrobj::Properties{
@@ -344,6 +354,9 @@ void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
   _PAccessor2(user3, User3)
   _PAccessor2(user4, User4)
   _PAccessor2(user5, User5)
+  _PConverter(binspectrum_converter_, binSpectrumConverter)
+  _PConverter(intensity_converter_, intensityConverter)
+  _PConverter(spectrum_converter_, spectrumConverter)
  };
 
 GyotoSmPtrClassGeneric(Metric)
@@ -522,4 +535,14 @@ enum {
   Property_spectrum_t=Gyoto::Property::spectrum_t,
   Property_spectrometer_t=Gyoto::Property::spectrometer_t,
   Property_empty_t=Gyoto::Property::empty_t};
+}
+
+
+%include "GyotoConverters.h"
+
+// Workaround cvar bug in Swig which makes help(gyoto) fail:
+%inline {
+  namespace Gyoto {
+    extern int __class__=0;
+  }
 }

@@ -588,7 +588,7 @@ class Gyoto::Astrobj::Generic
  *
  *  Also see Gyoto::Scenery and Gyoto::Quantity_t.
  */
-class Gyoto::Astrobj::Properties : protected Gyoto::SmartPointee {
+class Gyoto::Astrobj::Properties : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Properties>;
  public:
   double *intensity; ///< GYOTO_QUANTITY_INTENSITY   : Intensity

@@ -636,7 +636,7 @@ class Gyoto::Worldline
  * \class Gyoto::Worldline::IntegState::Generic
  * \brief Current state of a geodesic integration
  */
-class Gyoto::Worldline::IntegState::Generic : SmartPointee {
+class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Generic>;
  protected:
   /// Worldline that we are integrating.

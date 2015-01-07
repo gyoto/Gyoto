@@ -400,7 +400,7 @@ namespace Gyoto {
 }
 
 #ifdef HAVE_UDUNITS
-class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
+class Gyoto::Units::Unit : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Units::Unit>;
   friend class Gyoto::Units::Converter;
  private:
@@ -469,7 +469,7 @@ class Gyoto::Units::Unit : protected Gyoto::SmartPointee {
   operator ut_unit*() const ;
 };
 
-class Gyoto::Units::Converter : protected Gyoto::SmartPointee {
+class Gyoto::Units::Converter : public Gyoto::SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Units::Converter>;
  private:
   cv_converter * converter_; ///< Underlying ut_converter object from udunits

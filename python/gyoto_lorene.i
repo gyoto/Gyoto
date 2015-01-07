@@ -27,3 +27,9 @@
 GyotoSmPtrClassDerived(Metric, RotStar3_1)
 GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
 
+// Workaround cvar bug in Swig which makes help(module) fail:
+%inline {
+  namespace GyotoLorene {
+    extern int __class__=0;
+  }
+}
