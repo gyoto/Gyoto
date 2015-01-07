@@ -191,6 +191,7 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 #define GYOTO_NO_DEPRECATED
 #include "GyotoConfig.h"
 #include "GyotoFactory.h"
+#include "GyotoFactoryMessenger.h"
 #include "GyotoValue.h"
 #include "GyotoProperty.h"
 #include "GyotoObject.h"
@@ -382,6 +383,7 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 %include "GyotoDefs.h"
 %include "GyotoUtils.h"
 %include "GyotoFactory.h"
+%include "GyotoFactoryMessenger.h"
 
  // SWIG fails on nested classes. Work around this limitation:
 %{
@@ -518,25 +520,8 @@ public:
   double angle() const ;
 };
 
-// Can't work out how to get swig to do this automatically
-%inline {
-enum {
-  Property_double_t=Gyoto::Property::double_t,
-  Property_long_t=Gyoto::Property::long_t,
-  Property_unsigned_long_t=Gyoto::Property::unsigned_long_t,
-  Property_bool_t=Gyoto::Property::bool_t,
-  Property_string_t=Gyoto::Property::string_t,
-  Property_filename_t=Gyoto::Property::filename_t,
-  Property_vector_double_t=Gyoto::Property::vector_double_t,
-  Property_vector_unsigned_long_t=Gyoto::Property::vector_unsigned_long_t,
-  Property_metric_t=Gyoto::Property::metric_t,
-  Property_screen_t=Gyoto::Property::screen_t,
-  Property_astrobj_t=Gyoto::Property::astrobj_t,
-  Property_spectrum_t=Gyoto::Property::spectrum_t,
-  Property_spectrometer_t=Gyoto::Property::spectrometer_t,
-  Property_empty_t=Gyoto::Property::empty_t};
-}
-
+%ignore Gyoto::Property::Property;
+%include "GyotoProperty.h"
 
 %include "GyotoConverters.h"
 
