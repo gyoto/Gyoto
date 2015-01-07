@@ -44,8 +44,9 @@ plt.plot(t2, r2)
 plt.show()
 
 # Trace and plot timelike geodesic
+# We need to cast the object to a gyoto_std.Star:
 
-wl=gyoto.castToWorldline(sc.astrobj());
+wl=gyoto_std.Star(sc.astrobj())
 wl.xFill(1000)
 
 n=wl.get_nelements()
@@ -96,6 +97,7 @@ plt.show()
 # Another Scenery, with spectrum
 
 sc=gyoto.Factory("../doc/examples/example-polish-doughnut.xml").getScenery()
+sc.screen().resolution(32)
 res=sc.screen().resolution()
 ns=sc.screen().spectrometer().nSamples()
 spectrum=numpy.zeros((ns, res, res), dtype=float)
@@ -195,34 +197,48 @@ t=numpy.clip(ipct[:,0,0], a_min=-200, a_max=0)
 plt.plot(t)
 plt.show()
 
-# Instanciate and manipulate derived classes from the standard
-# plug-in: Note that objects from gyoto_std needs to be downcast to
-# the relevant base before the can be used in gyoto:
-# e.g. AstrobjPtr(obj.__deref__()). The opposite is not (yet)
-# possible: you can't cast the Astrobj from sc.astrobj() up to a
-# StarPtr or TorusPtr. That's where the Object/Value/Property
-# mechanism comes into play, since you don't need to cast an object to
-# set a property:
+# Any derived class can be instanciated from its name, as soon as the
+# corresponding plug-in has been loaded into Gyoto. The standard
+# plug-in is normally loaded automatically, but this can also be
+# forced with gyoto.loadPlugin():
+gyoto.loadPlugin('stdplug')
+tt=gyoto.Astrobj('Torus')
+kerr=gyoto.Metric('KerrBL')
 
-# By creating an object from gyoto_std, we have full access to its methods:
-tr=gyoto_std.Torus()
-tr.smallRadius(0.1)
-
-# Before feeding it to a function that expects a SmartPointer<Astrobj>,
-# we nee to cast it:
-tt=gyoto.AstrobjPtr(tr.__deref__())
-
-# We can still use the Torus methods on tr, but not on tt.  However,
-# the Property mechanism gives access to the members that can be set
-# from XML:
+# Most properties that can be set in an XML file can also be accessed
+# from Python using the Property/Value mechanism:
 p=tt.property("SmallRadius")
 tt.set(p, gyoto.Value(0.2))
+tt.get(p).toDouble() == 0.2
+
+p=kerr.property("Spin")
+kerr.set(p, gyoto.Value(0.95))
+kerr.get(p).toDouble() == 0.95
+
+# However, we also have Python extensions around the standard Gyoto
+# plug-ins. Beware that the plug-in must be loaded into Gyoto before
+# importing the corresponding Python extension:
+gyoto.loadPlugin('stdplug')
+import gyoto_std
+# And if the lorene plug-in has been compiled:
+# gyoto.loadPlugin('lorene')
+# import gyoto_lorene
+
+# It then becomes possible to access the methods specific to derived
+# classes. They can be instanciated directly from the gyoto_* extension:
+tr2=gyoto_std.Torus()
+# and we can cast a generic pointer (from the gyoto extension) to a
+# derived class:
+tr=gyoto_std.Torus(tt)
+p=tt.property("SmallRadius")
 tt.get(p).toDouble() == tr.smallRadius()
 
-# Etc:
+# Another example: using a complex (i.e. compound) Astrobj:
 cplx=gyoto_std.ComplexAstrobj()
-cplx.append(gyoto.AstrobjPtr(tr.__deref__()))
+cplx.append(tr)
 cplx.append(sc.astrobj())
-sc.astrobj(gyoto.AstrobjPtr(cplx.__deref__()))
+sc.astrobj(cplx)
 
 cplx.rMax(100)
+
+print("All done, exiting")

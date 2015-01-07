@@ -122,7 +122,7 @@ class Gyoto::Astrobj::StarTrace :
   void computeXYZ(); ///< Compute (and cache) x_, y_ and z_
 
   using Star::setInitCoord;
-  virtual void setInitCoord(const double coord[8], int dir);
+  virtual void setInitCoord(const double coord[8], int dir = 0);
 
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> gg);

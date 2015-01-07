@@ -1,63 +1,182 @@
+/*
+    Copyright 2014 Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+    This is a Swig interface file. It is currently meant to provide
+    Python bindings only, but it should ne be too difficult to provide
+    bindings for java, Tcl or whatever other language Swig supports.
+ */
+
+// ******** SOME INITIALIZATION ********* //
+
+// Define the module name, with a docstring
 %module(docstring="The General relativitY Orbit Tracer of paris Observatory") gyoto
+
+// Let Swig generate some documentation for the overloaded methods
 %feature("autodoc", "1");
 
+// gyoto_doc.i is generated from the doxygen comments using doxy2swig.py
 %import gyoto_doc.i
 
+// Make it possible to detect that a .h file is being processed by
+// Swig rather than CPP. There should be a Swig feature for that, I
+// didn't find it.
 %define GYOTO_SWIGIMPORTED
 %enddef
 
+// Make sure we don't activate the deprecated method names (see
+// GyotoDefs.h): it is better to fail on them to update them now.
 %define GYOTO_NO_DEPRECATED
 %enddef
 
-%define GyotoSmPtrClass(klass)
-%ignore Gyoto:: klass ;
-%include Gyoto ## klass ## .h
-%rename(klass) pyGyoto ## klass;
-%inline {
-Gyoto::SmartPointer<Gyoto::klass> pyGyoto ## klass () {
-  return new Gyoto::klass();
-}
-}
-%template(klass ## Ptr) Gyoto::SmartPointer<Gyoto::klass>;
+//  ********** MACRO DEFINITIONS *********** //
+
+// Exposing SmartPointers does not work well: it breaks automatic
+// inheritance and docstring generation. We therefore provide Swig
+// typemaps to convert SmartPointers to normal pointers
+// automatically. We also use the ref/unref features to let Swig
+// handle the reference counting for us mostly automatically (which is
+// what we wouldotherwise loose by not using SmartPointers).
+//
+// Since SmartPointers are templates, we use macros here to provide
+// typemaps for various SmartPointer specializations.
+
+// Typemaps for Gyoto::SmartPointer<Gyoto::klass>
+%define GyotoSmPtrTypeMapClass(klass)
+  GyotoSmPtrTypeMap(Gyoto::klass, SWIGTYPE_p_Gyoto__ ## klass)
 %enddef
 
+// Typemaps for Gyoto::SmartPointer<Gyoto::nspace::Generic>
+%define GyotoSmPtrTypeMapClassGeneric(nspace)
+  GyotoSmPtrTypeMap(Gyoto::nspace::Generic, SWIGTYPE_p_Gyoto__ ## nspace ## __Generic)
+%enddef
+
+// Typemaps for Gyoto::SmartPointer<Gyoto::nspace::klass>
+%define GyotoSmPtrTypeMapClassDerived(nspace, klass)
+   GyotoSmPtrTypeMap(Gyoto::nspace::klass, SWIGTYPE_p_Gyoto__ ## nspace ## __ ## klass)
+%enddef
+
+// Basic macro used in the above: gtype is the Gyoto name of a type,
+// e.g. Gyoto::Metric::KerrBL, while stype is the Swig name for same
+// type, e.g. SWIGTYPE_p_Gyoto__Metric__KerrBL
+%define GyotoSmPtrTypeMap(gtype, stype)
+%typemap(in)
+  Gyoto::SmartPointer<gtype>  (gtype *)
+{
+  int res=0;
+  void *argp=0;
+  res=SWIG_ConvertPtr($input, &argp, stype, 0);
+  if (!SWIG_IsOK(res)) {
+    SWIG_exception_fail(SWIG_ArgError(res), "argument of type '" #gtype "*'");
+  }
+  gtype * kp=reinterpret_cast< gtype * >(argp);
+  $1 = Gyoto::SmartPointer<gtype>(kp);
+}
+%typemap(out)
+  Gyoto::SmartPointer<gtype>  (gtype *)
+{
+  gtype* normal_pointer=(gtype *) (Gyoto::SmartPointer<gtype>(result));
+  normal_pointer->incRefCount();
+  $result = SWIG_NewPointerObj( normal_pointer, stype, SWIG_POINTER_OWN |  0 );
+}
+%typemap(typecheck) Gyoto::SmartPointer<gtype>, gtype * {
+  void *vptr = 0;
+  int res = SWIG_ConvertPtr($input, &vptr, stype, 0);
+  $1 = SWIG_CheckState(res);
+ }
+%typemap(typecheck) Gyoto::SmartPointer< gtype > = Gyoto::SmartPointer<gtype>;
+%typemap(typecheck) gtype * = Gyoto::SmartPointer<gtype>;
+%typemap(typecheck) gtype const * = Gyoto::SmartPointer<gtype>;
+%enddef
+
+// Include header for a class deriving from SmartPointee, providing
+// the ref and unref features
+%define GyotoSmPtrClass(klass)
+%feature("ref") Gyoto:: klass "$this->incRefCount();";
+%feature("unref") Gyoto:: klass "$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%include Gyoto ## klass ## .h
+%enddef
+
+// Include header for a base class (e.g. GyotoMetric.h), provide
+// constructor from kind string (e.g. gyoto.Metric('KerrBL')), provide
+// ref/unref features
 %define GyotoSmPtrClassGeneric(klass)
-%template(klass ## Ptr) Gyoto::SmartPointer<Gyoto::klass::Generic>;
 %rename(klass) klass ## Ptr;
 %ignore Gyoto::klass::Register_;
 %ignore Gyoto::klass::Register;
 %ignore Gyoto::klass::initRegister;
 %ignore Gyoto::klass::getSubcontractor;
-%ignore Gyoto::klass::Generic;
+%rename(klass) Gyoto::klass::Generic;
+%feature("ref") Gyoto:: klass ::Generic"$this->incRefCount();";
+%feature("unref") Gyoto:: klass ::Generic"$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%feature("notabstract") Gyoto::klass::Generic;
+%ignore  Gyoto::klass::Generic::Generic(Gyoto::klass::Generic const &);
+%ignore  Gyoto::klass::Generic::Generic(const Generic &);
+%ignore  Gyoto::klass::Generic::Generic(const klass::Generic &);
+%ignore  Gyoto::klass::Generic::Generic();
+%ignore  Gyoto::klass::Generic::Generic(double);
+%ignore  Gyoto::klass::Generic::Generic(kind_t);
+%ignore  Gyoto::klass::Generic::Generic(const std::string);
+%extend Gyoto::klass::Generic {
+  Generic(std::string nm) {
+    Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
+      Gyoto::klass::getSubcontractor(nm.c_str())(NULL);
+    Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
+    res -> incRefCount();
+    return res;
+  }
+};
 %include Gyoto ## klass ## .h
-%rename(klass) pyGyoto ## klass;
-%inline {
-Gyoto::SmartPointer<Gyoto::klass::Generic> pyGyoto ## klass (std::string const&s) {
-  return Gyoto::klass::getSubcontractor(s.c_str())(NULL);
-}
-}
 %enddef
 
+// Include header for derived class. Parameters: nspace: namespace
+// (e.g. Astrobj); klass: classname (e.g. Complex); nick: name to use
+// in the flattened namespace (e.g. ComplexAstrobj); hdr: header file
+// (e.g. GyotoComplexAstrobj.h). Extends class with a pseudo
+// constructor for upcasting,
+// e.g. cplx=gyoto_std.ComplexAstrobj(sc.strobj())
 %define GyotoSmPtrClassDerivedPtrHdr(nspace, klass, nick, hdr)
-%template(nick ## Ptr) Gyoto::SmartPointer<Gyoto::nspace::klass>;
-%ignore Gyoto::nspace::klass;
+%rename(nick) Gyoto::nspace::klass;
+%feature("notabstract") Gyoto::nspace::klass;
+%extend  Gyoto::nspace::klass {
+  klass(Gyoto::nspace::Generic * base) {
+    Gyoto::nspace::klass * res = dynamic_cast< Gyoto::nspace::klass * >(base);
+    if (!res) Gyoto::throwError("This pointer cannot be cast to 'Gyoto::" #nspace "::" #klass "*'");
+    return res;
+  }
+ };
 %include hdr
-%rename(nick) pyGyoto ## nick;
-%inline {
-Gyoto::SmartPointer<Gyoto::nspace::klass> pyGyoto ## nick () {
-  return new Gyoto::nspace::klass();
-}
-}
 %enddef
 
+// Simplification of the above when nick == klass
 %define GyotoSmPtrClassDerivedHdr(nspace, klass, hdr)
 GyotoSmPtrClassDerivedPtrHdr(nspace, klass, klass, hdr)
 %enddef
 
+// Simplification of the above when hdr == Gyoto ## klass ## .h
 %define GyotoSmPtrClassDerived(nspace, klass)
 GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 %enddef
 
+
+// ******** INCLUDES ******** //
+// Include any file that is needed to compile the wrappers
 %{
 #define SWIG_FILE_WITH_INIT
   //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
@@ -84,37 +203,65 @@ using namespace Gyoto;
 
 %}
 
-%include "GyotoConfig.h"
-
-%include "GyotoError.h"
-
-%exception {
-	try {
-	$function
-	}
-	catch (Gyoto::Error e) {
-	 	PyErr_SetString(PyExc_IndexError, e);
-		return NULL;
-	}
-}
-
-
-%include "std_string.i" 
-%include "std_vector.i"
-%template(vector_double) std::vector<double>;
-%template(vector_unsigned_long) std::vector<unsigned long>;
-%include "carrays.i"
-%array_class(double, array_double)
-%array_class(double, array_unsigned_long)
-%include "numpy.i"
-%numpy_typemaps(size_t, NPY_ULONG , size_t)
-%numpy_typemaps(double, NPY_DOUBLE, size_t)
-
+// ******** INITIALIZATION ******** //
+// This will be called upon extension initialization
 %init {
   Gyoto::Register::init();
   import_array();
  }
 
+// ******** TYPEMAPS ******** //
+// Actually instanciate typemaps using de macros defined above
+
+GyotoSmPtrTypeMapClassGeneric(Metric);
+GyotoSmPtrTypeMapClassGeneric(Astrobj);
+GyotoSmPtrTypeMapClassGeneric(Spectrum);
+GyotoSmPtrTypeMapClassGeneric(Spectrometer);
+
+GyotoSmPtrTypeMapClass(Screen);
+GyotoSmPtrTypeMapClass(Scenery);
+GyotoSmPtrTypeMapClass(Photon);
+
+GyotoSmPtrTypeMapClassDerived(Spectrometer, Complex);
+GyotoSmPtrTypeMapClassDerived(Spectrometer, Uniform);
+
+// Non-Gyoto typemaps:
+// Handle std::string
+%include "std_string.i";
+// Handle std::vector<double> and <unsigned long int>
+%include "std_vector.i";
+%template(vector_double) std::vector<double>;
+%template(vector_unsigned_long) std::vector<unsigned long>;
+// Handle generic C arrays using a class-like interface
+%include "carrays.i"
+%array_class(double, array_double);
+%array_class(double, array_unsigned_long);
+// Handle some arrays as NumPy arrays
+%include "numpy.i";
+%numpy_typemaps(size_t, NPY_ULONG , size_t);
+%numpy_typemaps(double, NPY_DOUBLE, size_t);
+
+// ******** INTERFACE ******** //
+// Here starts the actual pasing of the various header files
+
+// Expose the build-time configuration variables
+%include "GyotoConfig.h"
+
+// Expose the Gyoto::Error class
+%include "GyotoError.h"
+
+// Catch all Gyoto errors and re-throw them as a Python run-time error
+%exception {
+	try {
+	$function
+	}
+	catch (Gyoto::Error e) {
+		PyErr_SetString(PyExc_RuntimeError, e);
+		return NULL;
+	}
+}
+
+// Expose Gyoto::Register::list as gyoto.listRegister
 %ignore Gyoto::Register::Entry;
 %ignore Gyoto::Register::init;
 %rename(listRegister) Gyoto::Register::list;
@@ -146,10 +293,10 @@ using namespace Gyoto;
   typedef unsigned long unsignedlong;
   %}
 %rename(toVULong) Gyoto::Value::operator std::vector<unsigned long>;
-%rename(toMetricPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>;
-%rename(toAstrobjPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
-%rename(toSpectrumPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
-%rename(toSpectrometerPtr) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+%rename(toMetric) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>;
+%rename(toAstrobj) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
+%rename(toSpectrum) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
+%rename(toSpectrometer) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
 %include "GyotoValue.h"
 %include "GyotoObject.h"
 
@@ -158,16 +305,6 @@ using namespace Gyoto;
 %ignore Gyoto::Worldline::IntegState::Boost;
 %ignore Gyoto::Worldline::IntegState::Legacy;
 %include "GyotoWorldline.h"
-
-%rename (castToWorldline) pyGyotoCastToWorldline;
-%inline %{
-Gyoto::Worldline * pyGyotoCastToWorldline
-  (Gyoto::SmartPointer<Gyoto::Astrobj::Generic> const_p) {
-  Gyoto::SmartPointee * p=const_cast<Gyoto::Astrobj::Generic*>(const_p());
-  Gyoto::Worldline * res = dynamic_cast<Gyoto::Worldline*>(p);
-  return res;
-}
-%}
 
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
@@ -213,13 +350,19 @@ GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)
 GyotoSmPtrClassGeneric(Spectrometer)
 
-%rename(__getitem__) Gyoto::Spectrometer::Complex::operator[];
-GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoComplexSpectrometer.h)
-%extend Gyoto::SmartPointer<Gyoto::Spectrometer::Complex> {
-  void __setitem__(int i, Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> p) {
-    (*$self)->operator[](i)=p;
+%extend Gyoto::Spectrometer::Complex {
+  Gyoto::Spectrometer::Generic * __getitem__ (int i) {
+    Gyoto::Spectrometer::Generic * res = ($self)->operator[](i);
+    res -> incRefCount();
+    return res;
   }
  };
+%extend Gyoto::Spectrometer::Complex {
+  void __setitem__(int i, Gyoto::Spectrometer::Generic * p) {
+    ($self)->operator[](i)=p;
+  }
+ };
+GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoComplexSpectrometer.h)
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUniformSpectrometer.h)
 
 %include "GyotoConfig.h"

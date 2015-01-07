@@ -48,17 +48,45 @@ using namespace Gyoto;
 %array_class(double, array_double)
 %array_class(double, array_unsigned_long)
 
-%rename(__getitem__) Gyoto::Astrobj::Complex::operator[];
-%rename(ComplexAstrobjPtr) ComplexPtr;
-GyotoSmPtrClassDerivedPtrHdr(Astrobj, Complex, ComplexAstrobj, GyotoComplexAstrobj.h)
+// Typemaps to translate SmartPointer to specific classes
+GyotoSmPtrTypeMapClassDerived(Astrobj, Star)
+GyotoSmPtrTypeMapClassDerived(Astrobj, StarTrace)
+GyotoSmPtrTypeMapClassDerived(Astrobj, FixedStar)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Torus)
+GyotoSmPtrTypeMapClassDerived(Astrobj, PageThorneDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskPL)
+GyotoSmPtrTypeMapClassDerived(Astrobj, PolishDoughnut)
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskIronLine)
+GyotoSmPtrTypeMapClassDerived(Astrobj, PatternDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, PatternDiskBB)
+GyotoSmPtrTypeMapClassDerived(Astrobj, DynamicalDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Disk3D)
+GyotoSmPtrTypeMapClassDerived(Astrobj, DynamicalDisk3D)
+GyotoSmPtrTypeMapClassDerived(Astrobj, DirectionalDisk)
 
-%extend Gyoto::SmartPointer<Gyoto::Astrobj::Complex> {
-  void __setitem__(int i, Gyoto::SmartPointer<Gyoto::Astrobj::Generic> p) {
-    (*$self)->operator[](i)=p;
+GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
+GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
+GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
+
+GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
+GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
+GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
+
+%extend Gyoto::Astrobj::Complex {
+  Gyoto::Astrobj::Generic * __getitem__ (int i) {
+    Gyoto::Astrobj::Generic * res = ($self)->operator[](i);
+    res -> incRefCount();
+    return res;
   }
  };
+%extend Gyoto::Astrobj::Complex {
+  void __setitem__(int i, Gyoto::Astrobj::Generic * p) {
+    ($self)->operator[](i)=p;
+  }
+ };
+GyotoSmPtrClassDerivedPtrHdr(Astrobj, Complex, ComplexAstrobj, GyotoComplexAstrobj.h)
 
-
+// Declare specific classes
 GyotoSmPtrClassDerived(Astrobj, Star)
 GyotoSmPtrClassDerived(Astrobj, StarTrace)
 GyotoSmPtrClassDerived(Astrobj, FixedStar)
