@@ -435,6 +435,133 @@ spawned in the background (using \texttt{mpispawn=0}, and to call
  > quit;
 \end{code}
 
+The Yorick plug-in is not generated automatically. Therefore only a
+subset of the Gyoto API is exposed. However, all the properties of any
+object (most of what can be set in XML) can be read and written from
+Yorick, with the possibility of specifying a unit for properties that
+support it:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > tr = Astrobj("Torus");
+ > noop, tr.SmallRadius(0.5, unit="geometrical");
+ > small_radius_in_meters=tr.SmallRadius(unit="m");
+ > tr, SmallRadius=0.5, unit="geometrical", LargeRadius=5e6, unit="m";
+ > large_radius_in_default_unit=tr(LargeRadius=);
+\end{code}
+
+
+\subsection{Using the Python extensions}
+\label{sect:python}
+
+As of writting (January 2015), the Python extensions are fairly
+new. Some of the instructions below for loading the extensions or
+creating objects may change in future releases of the code.
+
+The Python layer is split into several extensions:
+\begin{description}
+\item[gyoto] expose the generic framework compiled in
+  \texttt{libgyoto};
+\item[gyoto\_std] expose the derived classes compiled in the
+  standard plug-in, \texttt{libgyoto-stdplug};
+\item[gyoto\_lorene] expose the derived classes compiled in
+  the Lorene plug-in, \texttt{libgyoto-lorene}.
+\end{description}
+
+\subsubsection{Building and installing}
+
+How to build and install these extensions is documented in INSTALL. At
+the moment, this is not done automatically. The requisites are:
+\begin{itemize}
+\item Python (tested with 2.7 and 3.4), including the development
+  files;
+\item Swig (tested with 2.0.12 and 3.0.2);
+\item NumPy, installed with its development files for the specific
+  Python interpreter you plan on using.
+\end{itemize}
+For instance, on Debian Wheezy, to use compile the \texttt{gyoto}
+extension for Python 3.4, you need the packages:
+\begin{itemize}
+\item \texttt{python3.4-dev};
+\item \texttt{python3-numpy};
+\item \texttt{swig} or \texttt{swig2.0}.
+\end{itemize}
+Configure the Gyoto source tree specifying the Python interpreter (if
+you don't want to use the default on your system), build and install
+gyoto, then move to the \texttt{python/} subdirectory, build and install:
+\begin{code}
+ $ ./configure PYTHON=/usr/bin/python3.4
+ $ make
+ $ sudo make install
+ $ cd python
+ $ make
+ $ sudo make install
+\end{code}
+Depending on your system, you may need to add the directory where
+gyoto.py has been installed to your PYTHONPATH variable.
+
+\subsubsection{Using}
+
+Some sample code can be found in \texttt{python/example.py}. The
+Python extension matches the C++ API very closely, so the C++
+reference in \texttt{doc/html/} is quite relevant. Most of it can also
+be accessed through the Python function '\texttt{help}'.
+
+The \texttt{gyoto} extension should be enough to perform ray-tracing
+on anykind of objects, even located in plug-ins:
+
+Import the \texttt{gyoto} extension and load the standard plug-in into
+gyoto:
+\begin{code}
+  import gyoto
+  gyoto.loadPlugin("stdplug")
+\end{code}
+Get help on Gyoto:
+\begin{code}
+  help(gyoto)
+\end{code}
+Read scenery from XML:
+\begin{code}
+  a=gyoto.Factory("../doc/examples/example-moving-star.xml")
+  sc=a.getScenery()
+\end{code}
+Create Astrobj by name, access property by name:
+\begin{code}
+  tr=gyoto.Astrobj('Torus')
+  p=tr.property('SmallRadius')
+  tr.set(p, gyoto.Value(0.5))
+\end{code}
+
+To access methods of specific derived classes (for instance the Star
+API, which allows computing time-like geodesics), the python extension
+for a specific Gyoto plug-in must be imported:
+\begin{code}
+  import gyoto
+  gyoto.loadPlugin("stdplug")
+  import gyoto_std
+  st=gyoto_std.Star()
+\end{code}
+The three extensions are fully compatible with each other:
+\begin{code}
+  sc=gyoto.Scenery()
+  st=gyoto_std.Star()
+  sc.astrobj(st)
+\end{code}
+Pointers to the base classes can be up-cast to derived classes:
+\begin{code}
+  ao = sc.astrobj() # ao contains a Gyoto::Astrobj::Generic * pointer
+  st = gyoto_std.Star(ao) # if conversion fails, error is thrown
+\end{code}
+
+
+\subsection{Other languages}
+\label{sect:swig}
+
+The Python extension (Sect.~\ref{sect:python}) is generated
+automatically using the Swig tool, with only little python-specific
+code. It should therefore be rather easy to compile extensions for the
+other languages that Swig supports (Tcl, java, R, and many others). If
+you want it to happen, feel free to contact the Gyoto developers.
 
 \subsection{Interfacing directly to the \texttt{GYOTO} library}
 
