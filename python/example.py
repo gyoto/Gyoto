@@ -23,22 +23,30 @@ ph=gyoto.Photon()
 ph.setInitialCondition(sc.metric(), sc.astrobj(), sc.screen(), 0., 0.)
 ph.hit()
 n=ph.get_nelements()
-t=gyoto.array_double(n)
-r=gyoto.array_double(n)
-theta=gyoto.array_double(n)
-phi=gyoto.array_double(n)
+
+# Gyoto supports simple C-like arrays through the gyoto.array_double
+# and gyoto.array_unsigned_long classes. Beware that this type does
+# not provide any safeguards, it is quite easy to get it to SEGFAULT.
+#
+# To use NumPy arrays, create the arrays using numpy, then cast them
+# using the fromnumpyN static methods. The actual array will be
+# deleted with the NumPy variable: don't use the array_double()
+# variable (for anyting else that destroying it) past that time.
+
+# Create NumPy arrays
+t2=numpy.ndarray(n)
+r2=numpy.ndarray(n)
+theta2=numpy.ndarray(n)
+phi2=numpy.ndarray(n)
+
+# Cast them to array_double type
+t=gyoto.array_double.fromnumpy1(t2)
+r=gyoto.array_double.fromnumpy1(r2)
+theta=gyoto.array_double.fromnumpy1(theta2)
+phi=gyoto.array_double.fromnumpy1(phi2)
+
+# Call Gyoto method that takes pointers as argument:
 ph.getCoord(t, r, theta, phi)
-
-t2=numpy.zeros(n)
-r2=numpy.zeros(n)
-theta2=numpy.zeros(n)
-phi2=numpy.zeros(n)
-
-for i in range(0, n):
-    t2[i]=t[i]
-    r2[i]=r[i]
-    theta2[i]=theta[i]
-    phi2[i]=phi[i]
 
 plt.plot(t2, r2)
 plt.show()
@@ -50,22 +58,18 @@ wl=gyoto_std.Star(sc.astrobj())
 wl.xFill(1000)
 
 n=wl.get_nelements()
-t=gyoto.array_double(n)
-r=gyoto.array_double(n)
-theta=gyoto.array_double(n)
-phi=gyoto.array_double(n)
+
+t2=numpy.ndarray(n)
+r2=numpy.ndarray(n)
+theta2=numpy.ndarray(n)
+phi2=numpy.ndarray(n)
+
+t=gyoto.array_double.fromnumpy1(t2)
+r=gyoto.array_double.fromnumpy1(r2)
+theta=gyoto.array_double.fromnumpy1(theta2)
+phi=gyoto.array_double.fromnumpy1(phi2)
+
 wl.getCoord(t, r, theta, phi)
-
-t2=numpy.zeros(n)
-r2=numpy.zeros(n)
-theta2=numpy.zeros(n)
-phi2=numpy.zeros(n)
-
-for i in range(0, n):
-    t2[i]=t[i]
-    r2[i]=r[i]
-    theta2[i]=theta[i]
-    phi2[i]=phi[i]
 
 plt.plot(r2*numpy.cos(phi2), r2*numpy.sin(phi2))
 plt.show()
@@ -77,9 +81,10 @@ intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
 aop=gyoto.AstrobjProperties()
-aop.Intensity(intensity)
-aop.EmissionTime(time)
-aop.MinDistance(distance)
+
+aop.intensity=gyoto.array_double.fromnumpy2(intensity)
+aop.time=gyoto.array_double.fromnumpy2(time)
+aop.distance=gyoto.array_double.fromnumpy2(distance)
 
 ii=gyoto.Range(1, res, 1)
 jj=gyoto.Range(1, res, 1)
@@ -107,7 +112,7 @@ jj=gyoto.Range(1, res, 1)
 grid=gyoto.Grid(ii, jj, "\rj = ")
 
 aop=gyoto.AstrobjProperties()
-aop.Spectrum(spectrum)
+aop.spectrum=gyoto.array_double.fromnumpy3(spectrum)
 aop.offset=res*res
 
 sc.rayTrace(grid, aop)
@@ -148,7 +153,7 @@ grid=gyoto.Grid(ii, jj, "\rj = ")
 ipct=numpy.zeros((res, res, 16), dtype=float)
 
 aop=gyoto.AstrobjProperties()
-aop.ImpactCoords(ipct)
+aop.impactcoords=gyoto.array_double.fromnumpy3(ipct)
 aop.offset=res*res
 
 sc.rayTrace(grid, aop)
@@ -165,14 +170,14 @@ a=gyoto.Angles(buf)
 d=gyoto.RepeatAngle(screen.fieldOfView()*-0.5, N)
 bucket=gyoto.Bucket(a, d)
 
-ipct=numpy.zeros((N, 1, 16), dtype=float)
+ipct=numpy.zeros((N, 16), dtype=float)
 
 aop=gyoto.AstrobjProperties()
-aop.ImpactCoords(ipct)
+aop.impactcoords=gyoto.array_double.fromnumpy2(ipct)
 aop.offset=N
 
 sc.rayTrace(bucket, aop)
-plt.plot(buf, ipct[:,0,0])
+plt.plot(buf, ipct[:,0])
 plt.show()
 
 # Trace the diagonal of the above using i and j. The Range and Indices
@@ -185,15 +190,15 @@ ii=gyoto.Indices(ind)
 jj=gyoto.Range(1, res, 1)
 bucket=gyoto.Bucket(ii, jj)
 
-ipct=numpy.zeros((res, 1, 16), dtype=float)
+ipct=numpy.zeros((res, 16), dtype=float)
 
 aop=gyoto.AstrobjProperties()
-aop.ImpactCoords(ipct)
+aop.impactcoords=gyoto.array_double.fromnumpy2(ipct)
 aop.offset=res
 
 sc.rayTrace(bucket, aop)
 
-t=numpy.clip(ipct[:,0,0], a_min=-200, a_max=0)
+t=numpy.clip(ipct[:,0], a_min=-200, a_max=0)
 plt.plot(t)
 plt.show()
 

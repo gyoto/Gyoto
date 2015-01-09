@@ -27,9 +27,9 @@ distance=numpy.zeros((res, res), dtype=float)
 
 # Store array pointers in AstrobjProperties
 aop=gyoto.AstrobjProperties()
-aop.Intensity(intensity)
-aop.EmissionTime(time)
-aop.MinDistance(distance)
+aop.intensity=gyoto.array_double.fromnumpy2(intensity)
+aop.time=gyoto.array_double.fromnumpy2(time)
+aop.distance=gyoto.array_double.fromnumpy2(distance)
 
 # Prepare Coord2dSet to select what Photons to launch
 ii=gyoto.Range(1, res, 1)

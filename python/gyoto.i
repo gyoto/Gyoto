@@ -244,18 +244,40 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 // Non-Gyoto typemaps:
 // Handle std::string
 %include "std_string.i";
+
 // Handle std::vector<double> and <unsigned long int>
 %include "std_vector.i";
 %template(vector_double) std::vector<double>;
 %template(vector_unsigned_long) std::vector<unsigned long>;
-// Handle generic C arrays using a class-like interface
-%include "carrays.i"
-%array_class(double, array_double);
-%array_class(double, array_unsigned_long);
+
 // Handle some arrays as NumPy arrays
 %include "numpy.i";
 %numpy_typemaps(size_t, NPY_ULONG , size_t);
 %numpy_typemaps(double, NPY_DOUBLE, size_t);
+
+// Handle generic C arrays using a class-like interface
+%include "carrays.i"
+%array_class(double, array_double);
+%array_class(double, array_unsigned_long);
+// Provide conversion between generic C arrays and NumPy ndarrays
+%define ExtendArrayNumPy(name, type)
+%extend name {
+  static name* fromnumpy1(type* IN_ARRAY1, size_t DIM1) {
+    return static_cast< name * >(IN_ARRAY1);
+  }
+  static name* fromnumpy2(type* IN_ARRAY2, size_t DIM1, size_t DIM2) {
+    return static_cast< name * >(IN_ARRAY2);
+  }
+  static name* fromnumpy3(type* IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
+    return static_cast< name * >(IN_ARRAY3);
+  }
+  static name* fromnumpy4(type* IN_ARRAY4, size_t DIM1, size_t DIM2, size_t DIM3, size_t DIM4) {
+    return static_cast< name * >(IN_ARRAY4);
+  }
+};
+%enddef
+
+ExtendArrayNumPy(array_double, double);
 
 // ******** INTERFACE ******** //
 // Here starts the actual parsing of the various header files
@@ -330,16 +352,6 @@ GyotoSmPtrClassGeneric(Astrobj)
 
 GyotoSmPtrClassDerived(Astrobj, ThinDisk)
 
-%define _PAccessor2(member, setter)
-  void setter(double *IN_ARRAY2, size_t DIM1, size_t DIM2) {
-    $self->member = IN_ARRAY2;
-  }
-%enddef
-%define _PAccessor3(member, setter)
-void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
-    $self->member = IN_ARRAY3;
-  }
-%enddef
 %define _PConverter(member, method)
   Gyoto::Units::Converter * method() {
   Gyoto::Units::Converter * res = $self->member;
@@ -349,19 +361,6 @@ void setter(double *IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
   }
 %enddef
 %extend Gyoto::Astrobj::Properties{
-  _PAccessor2(intensity, Intensity)
-  _PAccessor3(binspectrum, BinSpectrum)
-  _PAccessor2(distance, MinDistance)
-  _PAccessor2(first_dmin, FirstDistMin)
-  _PAccessor3(impactcoords, ImpactCoords)
-  _PAccessor2(redshift, Redshift)
-  _PAccessor3(spectrum, Spectrum)
-  _PAccessor2(time, EmissionTime)
-  _PAccessor2(user1, User1)
-  _PAccessor2(user2, User2)
-  _PAccessor2(user3, User3)
-  _PAccessor2(user4, User4)
-  _PAccessor2(user5, User5)
   _PConverter(binspectrum_converter_, binSpectrumConverter)
   _PConverter(intensity_converter_, intensityConverter)
   _PConverter(spectrum_converter_, spectrumConverter)
