@@ -190,6 +190,7 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 #include "Python.h"
 #define GYOTO_NO_DEPRECATED
 #include "GyotoConfig.h"
+#include "GyotoDefs.h"
 #include "GyotoFactory.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoValue.h"
@@ -254,10 +255,13 @@ GyotoSmPtrTypeMapClassDerived(Units, Converter);
 %numpy_typemaps(double, NPY_DOUBLE, size_t);
 
 // ******** INTERFACE ******** //
-// Here starts the actual pasing of the various header files
+// Here starts the actual parsing of the various header files
 
 // Expose the build-time configuration variables
 %include "GyotoConfig.h"
+
+// Expose the global definitions and typedefs
+%include "GyotoDefs.h"
 
 // Expose the Gyoto::Error class
 %include "GyotoError.h"
@@ -380,7 +384,6 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoCo
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUniformSpectrometer.h)
 
 %include "GyotoConfig.h"
-%include "GyotoDefs.h"
 %include "GyotoUtils.h"
 %include "GyotoFactory.h"
 %include "GyotoFactoryMessenger.h"
