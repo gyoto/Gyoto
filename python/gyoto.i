@@ -231,12 +231,15 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk);
 GyotoSmPtrTypeMapClass(Screen);
 GyotoSmPtrTypeMapClass(Scenery);
 GyotoSmPtrTypeMapClass(Photon);
+GyotoSmPtrTypeMapClass(SmartPointee);
 
 GyotoSmPtrTypeMapClassDerived(Spectrometer, Complex);
 GyotoSmPtrTypeMapClassDerived(Spectrometer, Uniform);
 
 GyotoSmPtrTypeMapClassDerived(Units, Unit);
 GyotoSmPtrTypeMapClassDerived(Units, Converter);
+GyotoSmPtrTypeMapClassDerived(Worldline, IntegState);
+GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 
 // Non-Gyoto typemaps:
 // Handle std::string
