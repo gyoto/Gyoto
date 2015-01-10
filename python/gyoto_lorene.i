@@ -22,7 +22,8 @@
 %}
 
 %array_class(double, array_double)
-%array_class(double, array_unsigned_long)
+%array_class(unsigned long, array_unsigned_long)
+%array_class(size_t, array_size_t)
 
 GyotoSmPtrClassDerived(Metric, RotStar3_1)
 GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)

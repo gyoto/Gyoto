@@ -258,7 +258,8 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 // Handle generic C arrays using a class-like interface
 %include "carrays.i"
 %array_class(double, array_double);
-%array_class(double, array_unsigned_long);
+%array_class(size_t, array_size_t);
+%array_class(unsigned long, array_unsigned_long);
 // Provide conversion between generic C arrays and NumPy ndarrays
 %define ExtendArrayNumPy(name, type)
 %extend name {
@@ -278,6 +279,8 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 %enddef
 
 ExtendArrayNumPy(array_double, double);
+ExtendArrayNumPy(array_unsigned_long, unsigned long);
+ExtendArrayNumPy(array_size_t, size_t);
 
 // ******** INTERFACE ******** //
 // Here starts the actual parsing of the various header files
@@ -489,13 +492,19 @@ protected:
   size_t const sz_;
   size_t i_;
 public:
-  Indices (size_t *IN_ARRAY1, size_t DIM1);
+  Indices (size_t *carray, size_t nel);
   void begin();
   bool valid();
   size_t size();
   Coord1dSet& operator++();
   size_t operator*() const ;
 };
+%extend Indices {
+  Indices (size_t DIM1, size_t *IN_ARRAY1) {
+    return new Indices(IN_ARRAY1, DIM1);
+  }
+
+}
 
 class Angles : public Coord1dSet {
 protected:
@@ -503,13 +512,19 @@ protected:
   size_t const sz_;
   size_t i_;
 public:
-  Angles (double * IN_ARRAY1, size_t DIM1);
+  Angles (double * carray, size_t nel);
   void begin();
   bool valid();
   size_t size();
   Coord1dSet& operator++();
   double angle() const ;
 };
+%extend Angles {
+  Angles (size_t DIM1, double *IN_ARRAY1) {
+    return new Angles(IN_ARRAY1, DIM1);
+  }
+
+}
 
 class RepeatAngle : public Coord1dSet {
 protected:

@@ -185,8 +185,14 @@ plt.show()
 # range, Indices can hold arbitrary indices.
 
 ind=numpy.arange(1, res+1, dtype=numpy.uintp) # on 64bit arch...
-
 ii=gyoto.Indices(ind)
+
+# Or:
+# ind=gyoto.array_size_t(res)
+# for i in range(0, res):
+#   ind[i]=i+1
+# ii=gyoto.Indices(ind, res)
+
 jj=gyoto.Range(1, res, 1)
 bucket=gyoto.Bucket(ii, jj)
 
