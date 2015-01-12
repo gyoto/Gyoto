@@ -40,6 +40,7 @@ includedir = @includedir@
 infodir = @infodir@
 prefix = @prefix@
 srcdir = @srcdir@
+top_srcdir = @top_srcdir@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
@@ -77,9 +78,11 @@ PYTHON_PREFIX = @PYTHON_PREFIX@
 FEATURES=@FEATURES@
 
 LDFLAGS=-L../lib/.libs -lgyoto$(FEATURES) $(CFITSIO_LIBS) $(XERCES_LIBS) $(UDUNITS_LIBS)
-CPPFLAGS=-I../include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
+CPPFLAGS=-I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CFLAGS=$(CXXFLAGS)
+
+SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir .
 
 export LDFLAGS
 export CFLAGS
@@ -90,10 +93,10 @@ export CC
 GYOTO_EXTENSIONS =  _gyoto$(PYTHON_EXTENSION_SUFFIX) \
                     _gyoto_std$(PYTHON_EXTENSION_SUFFIX)
 GYOTO_PYFILES = gyoto.py gyoto_std.py
-GYOTO_SWIGFILES = gyoto.i gyoto_std.i gyoto_doc.i
+GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i
 @HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX)
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto_lorene.py
-@HAVE_LORENE_TRUE@GYOTO_SWIGFILES += gyoto_lorene.i
+@HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
 all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 
@@ -116,25 +119,25 @@ gyoto_doc.i: gyoto_doc.i.orig
 	          $< > $@
 
 _gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
-	$(PYTHON) $(srcdir)/setup.py build_ext
+	$(PYTHON) setup.py build_ext
 
 _gyoto_std$(PYTHON_EXTENSION_SUFFIX): gyoto_std_wrap.cxx
-	$(PYTHON) $(srcdir)/setup_std.py build_ext
+	$(PYTHON) setup_std.py build_ext
 
 _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX): gyoto_lorene_wrap.cxx
-	$(PYTHON) $(srcdir)/setup_lorene.py build_ext
+	$(PYTHON) setup_lorene.py build_ext
 
 gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i
-	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto.i
+	$(SWIG_CMD) -o gyoto_wrap.cxx $(srcdir)/gyoto.i
 	mv gyoto.py trailer.py
-	cat header.py trailer.py > gyoto.py
+	cat $(srcdir)/header.py trailer.py > gyoto.py
 	rm trailer.py
 
 gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
-	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_std.i
+	$(SWIG_CMD) -o gyoto_std_wrap.cxx $(srcdir)/gyoto_std.i
 
 gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
-	$(SWIG) -I$(srcdir)/../include -c++ -python  $(srcdir)/gyoto_lorene.i
+	$(SWIG_CMD) -o gyoto_lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 
@@ -145,15 +148,15 @@ gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
 install: all installdirs
 ifneq ($(VIRTUALENV),no)
 	$(VIRTUALENV) $(VIRTUALENV_FLAGS) $(DESTDIR)$(prefix) || $(VIRTUALENV) $(DESTDIR)$(prefix)
-	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
-	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup_std.py install --prefix=$(DESTDIR)$(prefix)
-@HAVE_LORENE_TRUE@	$(DESTDIR)$(prefix)/bin/python $(srcdir)/setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
+	$(DESTDIR)$(prefix)/bin/python setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(DESTDIR)$(prefix)/bin/python setup_std.py install --prefix=$(DESTDIR)$(prefix)
+@HAVE_LORENE_TRUE@	$(DESTDIR)$(prefix)/bin/python setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 else
-	$(PYTHON) $(srcdir)/setup.py install --prefix=$(DESTDIR)$(prefix)
-	$(PYTHON) $(srcdir)/setup_std.py install --prefix=$(DESTDIR)$(prefix)
-@HAVE_LORENE_TRUE@	$(PYTHON) $(srcdir)/setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
+	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(PYTHON) setup_std.py install --prefix=$(DESTDIR)$(prefix)
+@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 endif
-	$(INSTALL_DATA) $(GYOTO_SWIGFILES) numpy.i $(DESTDIR)$(pkgincludedir)
+	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(srcdir)/numpy.i $(DESTDIR)$(pkgincludedir)
 
 
 # setup.py doesn't (yet) support an uninstall command, so until it does, you 
@@ -173,6 +176,8 @@ uninstall:
 # Just use the usual setup.py clean command
 clean:
 	$(PYTHON) setup.py clean
+	$(PYTHON) setup_std.py clean
+@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py clean
 	-rm -Rf build
 	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
 
