@@ -219,6 +219,9 @@ using namespace Gyoto;
   import_array();
  }
 
+// Rename operator++() -> increment() for everything
+%rename(increment) *::operator++;
+
 // ******** TYPEMAPS ******** //
 // Actually instanciate typemaps using de macros defined above
 
@@ -350,7 +353,6 @@ GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
 GyotoSmPtrClass(Photon)
 %rename(AstrobjProperties) Gyoto::Astrobj::Properties;
-%rename(increment) Gyoto::Astrobj::Properties::operator++;
 GyotoSmPtrClassGeneric(Astrobj)
 
 GyotoSmPtrClassDerived(Astrobj, ThinDisk)
@@ -429,7 +431,6 @@ template <typename T, size_t sz> class GYOTO_ARRAY {
 %template(ARRAY_double_2) GYOTO_ARRAY<double, 2>;
 %template(ARRAY_size_t_2) GYOTO_ARRAY<size_t, 2>;
 
-%rename(increment) *::operator++;
 class Coord1dSet {
 public:
   const CoordType_e kind;

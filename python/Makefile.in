@@ -14,6 +14,7 @@ DISTFILES = PKG-INFO Makefile.in configure setup.py install-sh
 
 DESTDIR = 
 VPATH = @srcdir@
+SED = @SED@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
 PACKAGE_STRING = @PACKAGE_STRING@
@@ -99,8 +100,20 @@ all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 ../doc/xml/index.xml:
 	cd ../doc; $(MAKE) doxygen.stamp
 
-gyoto_doc.i: ../doc/xml/index.xml
+gyoto_doc.i.orig: ../doc/xml/index.xml
 	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
+
+gyoto_doc.i: gyoto_doc.i.orig
+	$(SED) -e 's/Gyoto::Screen::Angles/Angles/' \
+	       -e 's/Gyoto::Screen::Bucket/Bucket/' \
+	       -e 's/Gyoto::Screen::Coord1dSet/Coord1dSet/' \
+	       -e 's/Gyoto::Screen::Coord2dSet/Coord2dSet/' \
+	       -e 's/Gyoto::Screen::Empty/Empty/' \
+	       -e 's/Gyoto::Screen::Grid/Grid/' \
+	       -e 's/Gyoto::Screen::Indices/Indices/' \
+	       -e 's/Gyoto::Screen::Range/Range/' \
+	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
+	          $< > $@
 
 _gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
 	$(PYTHON) $(srcdir)/setup.py build_ext
@@ -161,7 +174,7 @@ uninstall:
 clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build
-	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i
+	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
 
 # Clean up the output of configure
 distclean: clean 
