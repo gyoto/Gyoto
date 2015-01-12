@@ -414,13 +414,9 @@ enum CoordType_e;
 #ifdef HAVE_BOOST
 namespace boost {
 template <typename T, size_t sz> class array {
-#else
-template <typename T, size_t sz> class GYOTO_ARRAY {
-#endif
  public:
     T& operator[](size_t c) { return buf[c] ; }
   };
-#ifdef HAVE_BOOST
 }
 #endif
 %extend GYOTO_ARRAY {

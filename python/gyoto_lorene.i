@@ -13,6 +13,7 @@
 #include "GyotoScenery.h"
 #include "GyotoSpectrometer.h"
 #include "GyotoComplexSpectrometer.h"
+#include "GyotoUniformSpectrometer.h"
 #include "GyotoValue.h"
 #include "GyotoThinDisk.h"
 
