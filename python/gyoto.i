@@ -19,7 +19,7 @@
 
 /*
     This is a Swig interface file. It is currently meant to provide
-    Python bindings only, but it should ne be too difficult to provide
+    Python bindings only, but it should not be too difficult to provide
     bindings for java, Tcl or whatever other language Swig supports.
  */
 
@@ -186,8 +186,6 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 // Include any file that is needed to compile the wrappers
 %{
 #define SWIG_FILE_WITH_INIT
-  //#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include "Python.h"
 #define GYOTO_NO_DEPRECATED
 #include "GyotoConfig.h"
 #include "GyotoDefs.h"
@@ -297,15 +295,16 @@ ExtendArrayNumPy(array_size_t, size_t);
 // Expose the Gyoto::Error class
 %include "GyotoError.h"
 
-// Catch all Gyoto errors and re-throw them as a Python run-time error
+// Catch all Gyoto errors and re-throw them as run-time errors for the
+// target language
 %exception {
-	try {
-	$function
-	}
-	catch (Gyoto::Error e) {
-		PyErr_SetString(PyExc_RuntimeError, e);
-		return NULL;
-	}
+  try {
+    $action
+  }
+  catch (Gyoto::Error e) {
+    SWIG_Error(SWIG_RuntimeError, e);
+    SWIG_fail;
+  }
 }
 
 %ignore Gyoto::SmartPointer::operator();
