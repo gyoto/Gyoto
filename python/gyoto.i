@@ -92,10 +92,11 @@
   Gyoto::SmartPointer<gtype>  (gtype *)
 {
   gtype* normal_pointer=(gtype *) (Gyoto::SmartPointer<gtype>(result));
-  normal_pointer->incRefCount();
+  if (normal_pointer) normal_pointer->incRefCount();
   $result = SWIG_NewPointerObj( normal_pointer, stype, SWIG_POINTER_OWN |  0 );
 }
-%typemap(typecheck) Gyoto::SmartPointer<gtype>, gtype * {
+%typemap(typecheck,precedence=SWIG_TYPECHECK_VOIDPTR)
+Gyoto::SmartPointer<gtype>, gtype * {
   void *vptr = 0;
   int res = SWIG_ConvertPtr($input, &vptr, stype, 0);
   $1 = SWIG_CheckState(res);
@@ -145,7 +146,7 @@
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
       Gyoto::klass::getSubcontractor(nm.c_str())(NULL);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
-    res -> incRefCount();
+    if (res) res -> incRefCount();
     return res;
   }
 };
@@ -242,6 +243,177 @@ GyotoSmPtrTypeMapClassDerived(Units, Converter);
 GyotoSmPtrTypeMapClassDerived(Worldline, IntegState);
 GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 
+// Typemaps for Gyoto::Value:
+// In: cast from Python representations for all the supported types.
+// Implementation is specific to Python.
+%typemap(in) Gyoto::Value {
+  int res=0;
+  void *argp=0;
+  res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Value, 0);
+  if (SWIG_IsOK(res)) {
+    Gyoto::Value * temp = reinterpret_cast< Gyoto::Value * >(argp);
+    $1 = *temp;
+    if (SWIG_IsNewObj(res)) delete temp;
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Metric__Generic, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::SmartPointer<Gyoto::Metric::Generic> temp = reinterpret_cast< Gyoto::Metric::Generic * >(argp);
+      $1 = Gyoto::Value(temp);
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Astrobj__Generic, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::SmartPointer<Gyoto::Astrobj::Generic> temp = reinterpret_cast< Gyoto::Astrobj::Generic * >(argp);
+      $1 = Gyoto::Value(temp);
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Spectrum__Generic, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::SmartPointer<Gyoto::Spectrum::Generic> temp = reinterpret_cast< Gyoto::Spectrum::Generic * >(argp);
+      $1 = Gyoto::Value(temp);
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Spectrometer__Generic, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> temp = reinterpret_cast< Gyoto::Spectrometer::Generic * >(argp);
+      $1 = Gyoto::Value(temp);
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Screen, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::SmartPointer<Gyoto::Screen> temp = reinterpret_cast< Gyoto::Screen * >(argp);
+      $1 = Gyoto::Value(temp);
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    std::string *temp = 0;
+    res = SWIG_AsPtr_std_string ($input, &temp) ;
+    if (SWIG_IsOK(res)) $1 = Gyoto::Value(*temp);
+    if (SWIG_IsNewObj(res) && temp) delete temp;
+  }
+
+  if (!SWIG_IsOK(res)) {
+    std::vector<unsigned long> *temp=0;
+    res = swig::traits_asptr< std::vector<unsigned long> >::asptr($input, &temp);
+    if (SWIG_IsOK(res)) $1 = Gyoto::Value(*temp);
+    if (SWIG_IsNewObj(res) && temp) delete temp;
+  }
+
+  if (!SWIG_IsOK(res)) {
+    std::vector<double> *temp=0;
+    res = swig::traits_asptr< std::vector<double> >::asptr($input, &temp);
+    if (SWIG_IsOK(res)) $1 = Gyoto::Value(*temp);
+    if (SWIG_IsNewObj(res) && temp) delete temp;
+  }
+
+  /*
+  // This would help in making this language-agnostic, but it become
+  // difficult to distinguish the various subtypes (long vs bool vs
+  // double):
+  if (!SWIG_IsOK(res)) {
+    bool temp=false;
+    res = SWIG_AsVal(bool)($input, &temp)
+    if (SWIG_IsOK(res)) $1 = Gyoto::Value(temp);
+  }
+  */
+
+  if (SWIG_IsOK(res)) ; // done
+  else if (PyBool_Check($input)) $1 = Gyoto::Value($input == Py_True);
+  else if (PyInt_Check($input)) $1 = Gyoto::Value(long(PyInt_AsLong($input)));
+  else if (PyLong_Check($input)) $1 = Gyoto::Value(long(PyLong_AsLong($input)));
+  else if (PyFloat_Check($input)) $1 = Gyoto::Value(PyFloat_AsDouble($input));
+  else {
+    SWIG_exception_fail(SWIG_ArgError(res), "argument of type 'Gyoto::Value*'");
+  }
+ }
+// Typecheck: should be debugged, does not seem to filter anything
+%typemap(typecheck) Gyoto::Value {
+  void *vptr = 0;
+  int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Gyoto__Value, 0);
+  $1 = res;
+  //  $1 = res ||
+  //    PyInt_Check($input) ||
+  //    PyLong_Check($input)
+  //    ;
+}
+// Out: cast from Gyoto::Value to language-specific representation
+// for each sub-type. Probably language-agnostic.
+%typemap(out) Gyoto::Value {
+  switch ($1.type) {
+  case Gyoto::Property::unsigned_long_t:
+    $result = SWIG_From_unsigned_SS_long((unsigned long)($1));
+    break;
+  case Gyoto::Property::long_t:
+    $result = SWIG_From_long(long($1));
+    break;
+  case Gyoto::Property::bool_t:
+    $result = SWIG_From_bool(bool($1));
+    break;
+  case Gyoto::Property::double_t:
+    $result = SWIG_From_double(double($1));
+    break;
+  case Gyoto::Property::filename_t:
+  case Gyoto::Property::string_t:
+    $result = SWIG_From_std_string(static_cast< std::string >($1));
+    break;
+  case Gyoto::Property::vector_double_t:
+    $result = swig::from(($1).operator std::vector<double>());
+    break;
+  case Gyoto::Property::vector_unsigned_long_t:
+    $result = swig::from(($1).operator std::vector<unsigned long>());
+    break;
+  case Gyoto::Property::metric_t:
+    {
+      Gyoto::Metric::Generic* normal_pointer=(Gyoto::Metric::Generic *) (Gyoto::SmartPointer<Gyoto::Metric::Generic>($1));
+      if (normal_pointer) normal_pointer->incRefCount();
+      $result = SWIG_NewPointerObj( normal_pointer, SWIGTYPE_p_Gyoto__Metric__Generic, SWIG_POINTER_OWN |  0 );
+    }
+    break;
+  case Gyoto::Property::astrobj_t:
+    {
+      Gyoto::Astrobj::Generic* normal_pointer=(Gyoto::Astrobj::Generic *) (Gyoto::SmartPointer<Gyoto::Astrobj::Generic>($1));
+      if (normal_pointer) normal_pointer->incRefCount();
+      $result = SWIG_NewPointerObj( normal_pointer, SWIGTYPE_p_Gyoto__Astrobj__Generic, SWIG_POINTER_OWN |  0 );
+    }
+    break;
+  case Gyoto::Property::spectrum_t:
+    {
+      Gyoto::Spectrum::Generic* normal_pointer=(Gyoto::Spectrum::Generic *) (Gyoto::SmartPointer<Gyoto::Spectrum::Generic>($1));
+      if (normal_pointer) normal_pointer->incRefCount();
+      $result = SWIG_NewPointerObj( normal_pointer, SWIGTYPE_p_Gyoto__Spectrum__Generic, SWIG_POINTER_OWN |  0 );
+    }
+    break;
+  case Gyoto::Property::spectrometer_t:
+    {
+      Gyoto::Spectrometer::Generic* normal_pointer=(Gyoto::Spectrometer::Generic *) (Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>($1));
+      if (normal_pointer) normal_pointer->incRefCount();
+      $result = SWIG_NewPointerObj( normal_pointer, SWIGTYPE_p_Gyoto__Spectrometer__Generic, SWIG_POINTER_OWN |  0 );
+    }
+    break;
+  case Gyoto::Property::screen_t:
+    {
+      Gyoto::Screen* normal_pointer=(Gyoto::Screen *) (Gyoto::SmartPointer<Gyoto::Screen>($1));
+      if (normal_pointer) normal_pointer->incRefCount();
+      $result = SWIG_NewPointerObj( normal_pointer, SWIGTYPE_p_Gyoto__Screen, SWIG_POINTER_OWN |  0 );
+    }
+    break;
+  default:
+    $result = SWIG_NewPointerObj((new Gyoto::Value(static_cast< const Gyoto::Value& >($1))), SWIGTYPE_p_Gyoto__Value, SWIG_POINTER_OWN |  0 );
+  }
+}
+
+
 // Non-Gyoto typemaps:
 // Handle std::string
 %include "std_string.i";
@@ -249,6 +421,9 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 // Handle std::vector<double> and <unsigned long int>
 %include "std_vector.i";
 %template(vector_double) std::vector<double>;
+%{
+  typedef unsigned long unsignedlong;
+  %}
 %template(vector_unsigned_long) std::vector<unsigned long>;
 
 // Handle some arrays as NumPy arrays
@@ -359,8 +534,7 @@ GyotoSmPtrClassDerived(Astrobj, ThinDisk)
 %define _PConverter(member, method)
   Gyoto::Units::Converter * method() {
   Gyoto::Units::Converter * res = $self->member;
-    if (!res) Gyoto::throwError(#member " converter not set");
-    res -> incRefCount();
+    if (res) res -> incRefCount();
     return res;
   }
 %enddef
@@ -377,7 +551,7 @@ GyotoSmPtrClassGeneric(Spectrometer)
 %extend Gyoto::Spectrometer::Complex {
   Gyoto::Spectrometer::Generic * __getitem__ (int i) {
     Gyoto::Spectrometer::Generic * res = ($self)->operator[](i);
-    res -> incRefCount();
+    if (res) res -> incRefCount();
     return res;
   }
  };

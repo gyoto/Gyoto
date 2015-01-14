@@ -22,10 +22,34 @@ Value::~Value() {}
   return T;						\
   }
 
+Value::Value(long val) : type(Property::long_t), Long(val){}
+Value::Value(unsigned long val) : type(Property::unsigned_long_t), ULong(val){}
+Value::operator long() const {
+  switch (type) {
+  case Property::long_t:
+    return Long;
+  case Property::unsigned_long_t:
+    return long(ULong);
+  default:
+    throwError("This Value does not hold a long (or unsigned long)");
+  }
+  return 0;
+}
+
+Value::operator unsigned long() const {
+  switch (type) {
+  case Property::long_t:
+    return (unsigned long)(Long);
+  case Property::unsigned_long_t:
+    return ULong;
+  default:
+    throwError("This Value does not hold a long (or unsigned long)");
+  }
+  return 0;
+}
+
 ___local_stuff(double, double_t, Double)
 ___local_stuff(bool, bool_t, Bool)
-___local_stuff(long, long_t, Long)
-___local_stuff(unsigned long, unsigned_long_t, ULong)
 ___local_stuff(std::string, string_t, String)
 ___local_stuff(std::vector<double>, vector_double_t, VDouble)
 ___local_stuff(std::vector<unsigned long>, vector_unsigned_long_t, VULong)

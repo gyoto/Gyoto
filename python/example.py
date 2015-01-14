@@ -218,13 +218,14 @@ kerr=gyoto.Metric('KerrBL')
 
 # Most properties that can be set in an XML file can also be accessed
 # from Python using the Property/Value mechanism:
+# Low-level access:
 p=tt.property("SmallRadius")
+p.type==gyoto.Property.double_t
 tt.set(p, gyoto.Value(0.2))
-tt.get(p).toDouble() == 0.2
-
-p=kerr.property("Spin")
-kerr.set(p, gyoto.Value(0.95))
-kerr.get(p).toDouble() == 0.95
+tt.get(p) == 0.2
+# Higher-level:
+kerr.set("Spin", 0.95)
+kerr.get("Spin") == 0.95
 
 # However, we also have Python extensions around the standard Gyoto
 # plug-ins. Beware that the plug-in must be loaded into Gyoto before
@@ -241,8 +242,7 @@ tr2=gyoto_std.Torus()
 # and we can cast a generic pointer (from the gyoto extension) to a
 # derived class:
 tr=gyoto_std.Torus(tt)
-p=tt.property("SmallRadius")
-tt.get(p).toDouble() == tr.smallRadius()
+tt.get("SmallRadius") == tr.smallRadius()
 
 # Another example: using a complex (i.e. compound) Astrobj:
 cplx=gyoto_std.ComplexAstrobj()

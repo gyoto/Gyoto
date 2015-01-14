@@ -120,6 +120,20 @@ void Object::set(Property const &p, Value val) {
 # undef ___local_case
 }
 
+void Object::set(std::string const &pname, Value val) {
+  Property const * p = property(pname);
+  if (!p) throwError("No Property by that name");
+  set(*p, ((p->type == Property::bool_t && pname == p->name_false)?
+	  Value(!val):val));
+}
+
+void Object::set(std::string const &pname, Value val, std::string const &unit) {
+  Property const * p = property(pname);
+  if (!p) throwError("No Property by that name");
+  set(*p, ((p->type == Property::bool_t && pname == p->name_false)?
+	  Value(!val):val), unit);
+}
+
 Value Object::get(Property const &p,
 			    std::string const &unit) const {
 
@@ -187,6 +201,24 @@ Value Object::get(Property const &p) const {
   }
   return val;
 # undef ___local_case
+}
+
+Value Object::get(std::string const &pname) const {
+  Property const * p = property(pname);
+  if (!p) throwError("No Property by that name");
+  Value res = get(*p);
+  if (p->type == Property::bool_t && pname == p->name_false)
+    return !bool(res);
+  return res;
+}
+
+Value Object::get(std::string const &pname, std::string const &unit) const{
+  Property const * p = property(pname);
+  if (!p) throwError("No Property by that name");
+  Value res = get(*p, unit);
+  if (p->type == Property::bool_t && pname == p->name_false)
+    return !bool(res);
+  return res;
 }
 
 Property const * Object::property(std::string const pname) const {
