@@ -215,7 +215,9 @@ using namespace Gyoto;
 // This will be called upon extension initialization
 %init {
   Gyoto::Register::init();
+#ifdef SWIGPYTHON
   import_array();
+#endif
  }
 
 // Rename operator++() -> increment() for everything
@@ -419,16 +421,19 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
   %}
 %template(vector_unsigned_long) std::vector<unsigned long>;
 
+#ifdef SWIGPYTHON
 // Handle some arrays as NumPy arrays
 %include "numpy.i";
 %numpy_typemaps(size_t, NPY_ULONG , size_t);
 %numpy_typemaps(double, NPY_DOUBLE, size_t);
+#endif
 
 // Handle generic C arrays using a class-like interface
 %include "carrays.i"
 %array_class(double, array_double);
 %array_class(size_t, array_size_t);
 %array_class(unsigned long, array_unsigned_long);
+#ifdef SWIGPYTHON
 // Provide conversion between generic C arrays and NumPy ndarrays
 %define ExtendArrayNumPy(name, type)
 %extend name {
@@ -450,6 +455,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 ExtendArrayNumPy(array_double, double);
 ExtendArrayNumPy(array_unsigned_long, unsigned long);
 ExtendArrayNumPy(array_size_t, size_t);
+#endif
 
 // ******** INTERFACE ******** //
 // Here starts the actual parsing of the various header files
