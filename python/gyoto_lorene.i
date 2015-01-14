@@ -20,6 +20,8 @@
 #include "GyotoRotStar3_1.h"
 #include "GyotoNumericalMetricLorene.h"
 
+  using namespace Gyoto;
+
 %}
 
 %array_class(double, array_double)

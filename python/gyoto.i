@@ -524,6 +524,7 @@ ExtendArrayNumPy(array_size_t, size_t);
 
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
+%ignore Gyoto::Photon::Refined;
 GyotoSmPtrClass(Photon)
 %rename(AstrobjProperties) Gyoto::Astrobj::Properties;
 GyotoSmPtrClassGeneric(Astrobj)
