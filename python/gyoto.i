@@ -244,8 +244,9 @@ GyotoSmPtrTypeMapClassDerived(Worldline, IntegState);
 GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 
 // Typemaps for Gyoto::Value:
-// In: cast from Python representations for all the supported types.
-// Implementation is specific to Python.
+
+// In: cast from target language representations for all the supported
+// types.
 %typemap(in) Gyoto::Value {
   int res=0;
   void *argp=0;
@@ -317,38 +318,30 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
     if (SWIG_IsNewObj(res) && temp) delete temp;
   }
 
-  /*
-  // This would help in making this language-agnostic, but it become
-  // difficult to distinguish the various subtypes (long vs bool vs
-  // double):
   if (!SWIG_IsOK(res)) {
-    bool temp=false;
-    res = SWIG_AsVal(bool)($input, &temp)
+    long temp=0;
+    res = SWIG_AsVal(long)($input, &temp);
     if (SWIG_IsOK(res)) $1 = Gyoto::Value(temp);
   }
-  */
 
-  if (SWIG_IsOK(res)) ; // done
-  else if (PyBool_Check($input)) $1 = Gyoto::Value($input == Py_True);
-  else if (PyInt_Check($input)) $1 = Gyoto::Value(long(PyInt_AsLong($input)));
-  else if (PyLong_Check($input)) $1 = Gyoto::Value(long(PyLong_AsLong($input)));
-  else if (PyFloat_Check($input)) $1 = Gyoto::Value(PyFloat_AsDouble($input));
-  else {
-    SWIG_exception_fail(SWIG_ArgError(res), "argument of type 'Gyoto::Value*'");
+  if (!SWIG_IsOK(res)) {
+    double temp=0;
+    res = SWIG_AsVal(double)($input, &temp);
+    if (SWIG_IsOK(res)) $1 = Gyoto::Value(temp);
   }
+
+  if (!SWIG_IsOK(res))
+    SWIG_exception_fail(SWIG_ArgError(res), "argument of type 'Gyoto::Value*'");
+
  }
 // Typecheck: should be debugged, does not seem to filter anything
 %typemap(typecheck) Gyoto::Value {
   void *vptr = 0;
   int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_Gyoto__Value, 0);
   $1 = res;
-  //  $1 = res ||
-  //    PyInt_Check($input) ||
-  //    PyLong_Check($input)
-  //    ;
 }
 // Out: cast from Gyoto::Value to language-specific representation
-// for each sub-type. Probably language-agnostic.
+// for each sub-type.
 %typemap(out) Gyoto::Value {
   switch ($1.type) {
   case Gyoto::Property::unsigned_long_t:

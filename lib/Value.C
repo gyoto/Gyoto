@@ -24,6 +24,7 @@ Value::~Value() {}
 
 Value::Value(long val) : type(Property::long_t), Long(val){}
 Value::Value(unsigned long val) : type(Property::unsigned_long_t), ULong(val){}
+Value::Value(bool val) : type(Property::bool_t), Bool(val){}
 Value::operator long() const {
   switch (type) {
   case Property::long_t:
@@ -48,8 +49,21 @@ Value::operator unsigned long() const {
   return 0;
 }
 
+Value::operator bool() const {
+  switch (type) {
+  case Property::bool_t:
+    return Bool;
+  case Property::long_t:
+    return bool(Long);
+  case Property::unsigned_long_t:
+    return bool(ULong);
+  default:
+    throwError("This Value does not hold an integer");
+  }
+  return 0;
+}
+
 ___local_stuff(double, double_t, Double)
-___local_stuff(bool, bool_t, Bool)
 ___local_stuff(std::string, string_t, String)
 ___local_stuff(std::vector<double>, vector_double_t, VDouble)
 ___local_stuff(std::vector<unsigned long>, vector_unsigned_long_t, VULong)
