@@ -36,6 +36,7 @@
 #   Copyright (c) 2008 Rafael Laboissiere <rafael@laboissiere.net>
 #   Copyright (c) 2008 Andrew Collier
 #   Copyright (c) 2011 Murray Cumming <murrayc@openismus.com>
+#   Copyright (c) 2015 Thibaut Paumard <thibaut.paumard@obspm.fr>
 #
 #   This program is free software; you can redistribute it and/or modify it
 #   under the terms of the GNU General Public License as published by the
@@ -63,11 +64,16 @@
 #   modified version of the Autoconf Macro, you may extend this special
 #   exception to the GPL to apply to your modified version as well.
 
+#   (Partial) History:
+#      2015-01-29, Thibaut Paumard: append swig3.0 to the list of
+#      executables to try.
+
 #serial 11
 
 AC_DEFUN([AX_PKG_SWIG],[
         # Ubuntu has swig 2.0 as /usr/bin/swig2.0
-        AC_PATH_PROGS([SWIG],[swig swig2.0])
+        # Debian has swig 3.0 as /usr/bin/swig3.0
+        AC_PATH_PROGS([SWIG],[swig swig2.0 swig3.0])
         if test -z "$SWIG" ; then
                 m4_ifval([$3],[$3],[:])
         elif test -n "$1" ; then
