@@ -200,7 +200,8 @@ void Worldline::IntegState::Boost::init()
       {
 	double xx[8]={x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
 	double res[8];
-	line->stopcond=met->Generic::diff(xx, res);
+	//line->stopcond=met->Generic::diff(xx, res);
+	line->stopcond=met->diff(xx, res);
 	for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
       };
 

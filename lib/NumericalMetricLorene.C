@@ -354,6 +354,19 @@ void NumericalMetricLorene::setTimes(double time, int ii) {
   GYOTO_DEBUG << endl;
   times_[ii]=time;}
 
+int NumericalMetricLorene::diff(const double coord[8], double res[8]) const{
+  double tt=coord[0], rr=coord[1], th=coord[2], phi=coord[3];
+  double pos[4]={tt,rr,th,phi};
+  double rhor=computeHorizon(pos);
+  if (rr<rhor && rhor>0.) {
+    GYOTO_DEBUG << "rr, rhor= " << rr << " " << rhor << endl;
+    GYOTO_DEBUG << "Sub-horizon r, stop" << endl;
+    return 1; 
+  }
+
+  return Generic::diff(coord,res);
+}
+
 int NumericalMetricLorene::diff(double tt, 
 				const double y[7], double res[7]) const
 {
@@ -437,7 +450,6 @@ int NumericalMetricLorene::diff(const double y[7],
 				double res[7], int indice_time) const
 {
   GYOTO_DEBUG << endl;
-
   /*
     3+1 diff function WITH ENERGY INTEG, computing the derivatives of
     the 7-vector : y=[E,r,th,ph,Vr,Vth,Vph] (see CQG 3+1 paper for
@@ -1434,10 +1446,409 @@ double NumericalMetricLorene::christoffel(const double coord[8],
 					  const int alpha, 
 					  const int mu, const int nu) const
 {
+  // 4D christoffels: time interpolation
   GYOTO_DEBUG << endl;
-  //4D Christoffels
-  throwError("In NumericalMetricLorene.C: christoffel not implemented");
-  return 0.; //not to have a warning when compiling
+
+  double tt = coord[0];
+
+  int it=nb_times_-1;
+  while(tt<times_[it] && it>=0) it--;
+
+  if (it==nb_times_-1) {
+    return christoffel(coord,alpha,mu,nu,nb_times_-1); 
+    //use metric nb nb_times_-1 for all times > max(metric times)
+  }
+  if (it==-1) {
+    return christoffel(coord,alpha,mu,nu,0); 
+    //use metric nb 0 for all times < min(metric times)
+  }
+  if (it==nb_times_-2 || it==0){ // LINEAR interp for extremal-1 points
+    double t1=times_[it], t2=times_[it+1];
+    double chris1 = christoffel(coord,alpha,mu,nu,it), 
+      chris2 = christoffel(coord,alpha,mu,nu,it+1); 
+    double chris = (chris2-chris1)/(t2-t1)*(tt-t1)+chris1;
+    return chris;
+  }
+    
+  //Else: use THIRD ORDER interp
+  double chris1 = christoffel(coord,alpha,mu,nu,it-1), 
+    chris2 = christoffel(coord,alpha,mu,nu,it), 
+    chris3 = christoffel(coord,alpha,mu,nu,it+1), 
+    chris4 = christoffel(coord,alpha,mu,nu,it+2);
+  double values[4]={chris1,chris2,chris3,chris4};
+  double chris = Interpol3rdOrder(tt,it,values);
+  return chris;
+}
+
+double NumericalMetricLorene::christoffel(const double coord[8], 
+					  const int alpha, 
+					  const int mu, const int nu,
+					  const int indice_time) const
+{
+  // 4D christoffels: actual computation on a given time slice
+  // CAUTION: here it assumed that the metric is stationary, axisymmetric,
+  // and that the spacetime is circular (typically, rotating relativistic
+  // stars framework)
+  if (coord[1]==0. || sin(coord[2])==0.) throwError("NML::christoffel:"
+						    " bad location");
+
+  double rr=coord[1], th=coord[2], ph=coord[3],
+    r2=rr*rr, rsinth=rr*sin(th), rsm1 = 1./rsinth, r2sinth2=r2*sin(th)*sin(th),
+    sinth2=sin(th)*sin(th), rm2 = 1/r2;
+  if ((alpha==0 && mu==0 && nu==1) || (alpha==0 && mu==1 && nu==0)){
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nr = lapse->dsdr().val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    return 1./NN*(Nr-Krp*beta_p);
+  }else if ((alpha==0 && mu==0 && nu==2) || (alpha==0 && mu==2 && nu==0)){
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nt = lapse->dsdt().val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
+    return 1./NN*(Nt-Ktp*beta_p);
+  } else if ((alpha==0 && mu==1 && nu==3) || (alpha==0 && mu==3 && nu==1)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    return -Krp/NN;
+  } else if ((alpha==0 && mu==2 && nu==3) || (alpha==0 && mu==3 && nu==2)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
+    return -Ktp/NN;
+  } else if (alpha==1 && mu==0 && nu==0) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nr = lapse->dsdr().val_point(rr,th,ph); 
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double grr=g_up_ij(1,1).val_point(rr,th,ph);
+    return NN*grr*(Nr - 2.*Krp*beta_p);
+  } else if (alpha==2 && mu==0 && nu==0) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nt = lapse->dsdt().val_point(rr,th,ph); 
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(1,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double gtt=1./r2*g_up_ij(1,1).val_point(rr,th,ph);
+    return NN*gtt*(Nt - 2.*Ktp*beta_p);
+  } else if ((alpha==1 && mu==0 && nu==3) || (alpha==1 && mu==3 && nu==0)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double grr=g_up_ij(1,1).val_point(rr,th,ph);
+    return -NN*grr*Krp;
+  } else if ((alpha==2 && mu==0 && nu==3) || (alpha==2 && mu==3 && nu==0)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double gtt=1./r2*g_up_ij(2,2).val_point(rr,th,ph);
+    return -NN*gtt*Ktp;
+  } else if ((alpha==3 && mu==1 && nu==0) || (alpha==3 && mu==0 && nu==1)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nr = lapse->dsdr().val_point(rr,th,ph); 
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
+      -1./(r2*sin(th))*beta_p;
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double gpp=rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    double gamma_prp = 0.5*gpp
+      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");    
+    return beta_pr + gamma_prp*beta_p
+      -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr);
+  } else if ((alpha==3 && mu==2 && nu==0) || (alpha==3 && mu==0 && nu==2)) {
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nt = lapse->dsdt().val_point(rr,th,ph); 
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    double beta_pt = rsm1*shift(3).dsdt().val_point(rr,th,ph)
+      -cos(th)/(rr*sin(th)*sin(th))*beta_p;
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double gpp=rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    double gamma_ptp = 0.5*gpp
+      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");    
+    return beta_pt + gamma_ptp*beta_p
+      -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
+  } else if (alpha==1 && mu==1 && nu==1) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return 0.5*g_up_ij(1,1).val_point(rr,th,ph)
+      *g_ij(1,1).dsdr().val_point(rr,th,ph);
+  } else if (alpha==1 && mu==3 && nu==3) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return -0.5*g_up_ij(1,1).val_point(rr,th,ph)
+      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
+  } else if ((alpha==1 && mu==1 && nu==2) || (alpha==1 && mu==2 && nu==1)) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return 0.5*g_up_ij(1,1).val_point(rr,th,ph)
+      *g_ij(1,1).dsdt().val_point(rr,th,ph); 
+  } else if (alpha==1 && mu==2 && nu==2) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return -0.5*g_up_ij(1,1).val_point(rr,th,ph)
+      *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph) 
+	+ 2.*rr*g_ij(2,2).val_point(rr,th,ph));
+  } else if (alpha==2 && mu==3 && nu==3) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));    
+  } else if (alpha==2 && mu==1 && nu==1) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+      *g_ij(1,1).dsdt().val_point(rr,th,ph);
+  } else if (alpha==2 && mu==2 && nu==2) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return 0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+      *(r2*g_ij(2,2).dsdt().val_point(rr,th,ph));
+  } else if ((alpha==2 && mu==1 && nu==2) || (alpha==2 && mu==2 && nu==1)) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    return 0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+      *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph)
+	+2.*rr*g_ij(2,2).val_point(rr,th,ph));
+  } else if ((alpha==3 && mu==1 && nu==3) || (alpha==3 && mu==3 && nu==1)) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    return 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
+      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph)) + beta_p/NN*Krp;
+  } else if ((alpha==3 && mu==2 && nu==3) || (alpha==3 && mu==3 && nu==2)) {
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Ktp = rr*rsinth*kij(1,3).val_point(rr,th,ph);
+    return 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
+      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)) 
+      + beta_p/NN*Ktp;
+  }
+  // Other christo are zero
+  return 0.;
+}
+
+int NumericalMetricLorene::christoffel(double dst[4][4][4], 
+				       const double * coord) const {
+  // all at once computation of christoffel 4D: time interpolation
+  GYOTO_DEBUG << endl;
+
+  double tt = coord[0];
+
+  int it=nb_times_-1;
+  while(tt<times_[it] && it>=0) it--;
+
+  if (it==nb_times_-1) {
+    return christoffel(dst,coord,nb_times_-1); 
+    //use metric nb nb_times_-1 for all times > max(metric times)
+  }
+  if (it==-1) {
+    return christoffel(dst,coord,0); 
+    //use metric nb 0 for all times < min(metric times)
+  }
+  if (it==nb_times_-2 || it==0){ // LINEAR interp for extremal-1 points
+    double t1=times_[it], t2=times_[it+1];
+    double dst1[4][4][4], dst2[4][4][4];
+    if (christoffel(dst1,coord,it) || christoffel(dst2,coord,it+1)) return 1;
+    int alpha, mu, nu;
+    for (alpha=0; alpha<4; ++alpha) {
+      for (mu=0; mu<4; ++mu) {
+	double dst1c = dst1[alpha][mu][mu], dst2c = dst2[alpha][mu][mu];
+	dst[alpha][mu][mu]=(dst2c-dst1c)/(t2-t1)*(tt-t1)+dst1c;
+	for (nu=mu+1; nu<4; ++nu){
+	  double dst1c = dst1[alpha][mu][nu], dst2c = dst2[alpha][mu][nu];
+	  dst[alpha][mu][nu]=dst[alpha][nu][mu]=
+	    (dst2c-dst1c)/(t2-t1)*(tt-t1)+dst1c;
+	}
+      }
+    }
+    return 0;
+  }
+    
+  //Else: use THIRD ORDER interp
+  double dst1[4][4][4], dst2[4][4][4], dst3[4][4][4], dst4[4][4][4];
+  if (christoffel(dst1,coord,it-1) || christoffel(dst2,coord,it)
+      || christoffel(dst3,coord,it+1) || christoffel(dst4,coord,it+2)) return 1;
+  int alpha, mu, nu;
+  for (alpha=0; alpha<4; ++alpha) {
+    for (mu=0; mu<4; ++mu) {
+      double values[4]={dst1[alpha][mu][mu],dst2[alpha][mu][mu],
+			dst3[alpha][mu][mu],dst4[alpha][mu][mu]};
+      dst[alpha][mu][mu]=Interpol3rdOrder(tt,it,values);
+      for (nu=mu+1; nu<4; ++nu){
+	double values[4]={dst1[alpha][mu][nu],dst2[alpha][mu][nu],
+			  dst3[alpha][mu][nu],dst4[alpha][mu][nu]};
+	dst[alpha][mu][nu]=dst[alpha][nu][mu]=Interpol3rdOrder(tt,it,values);
+      }
+    }
+  }
+  return 0;
+}
+
+int NumericalMetricLorene::christoffel(double dst[4][4][4], 
+				       const double * coord,
+				       const int indice_time) const {
+  // all at once computation of christoffel 4D: actual computation
+  GYOTO_DEBUG << endl;
+  if (coord[1]==0. || sin(coord[2])==0.) throwError("NML::christoffel:"
+						    " bad location");
+  double rr=coord[1], th=coord[2], ph=coord[3],
+    r2=rr*rr, rsinth=rr*sin(th), rsm1 = 1./rsinth, r2sinth2=r2*sin(th)*sin(th),
+    sinth2=sin(th)*sin(th), rm2 = 1/r2;
+
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph),
+      Nr = lapse->dsdr().val_point(rr,th,ph),
+      Nt = lapse->dsdt().val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph);
+    double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
+      -1./(r2*sin(th))*beta_p;
+    double beta_pt = rsm1*shift(3).dsdt().val_point(rr,th,ph)
+      -cos(th)/(rr*sin(th)*sin(th))*beta_p;
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
+    double Ktp = rr*rsinth*kij(1,3).val_point(rr,th,ph);
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double grr=g_up_ij(1,1).val_point(rr,th,ph),
+      gtt=1./r2*g_up_ij(1,1).val_point(rr,th,ph),
+      gpp=rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph);
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    double gamma_prp = 0.5*gpp
+      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
+    double gamma_ptp = 0.5*gpp
+      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+    
+  dst[0][0][1]=dst[0][1][0]=1./NN*(Nr-Krp*beta_p);
+  dst[0][0][2]=dst[0][2][0]=1./NN*(Nt-Ktp*beta_p);
+  dst[0][1][3]=dst[0][3][1]=-Krp/NN;
+  dst[0][2][3]=dst[0][3][2]=-Ktp/NN;
+  dst[1][0][0]=NN*grr*(Nr - 2.*Krp*beta_p);
+  dst[2][0][0]=NN*gtt*(Nt - 2.*Ktp*beta_p);
+  dst[1][0][3]=dst[1][3][0]=-NN*grr*Krp;
+  dst[2][0][3]=dst[2][3][0]=-NN*gtt*Ktp;
+  dst[3][1][0]=dst[3][0][1]=beta_pr + gamma_prp*beta_p
+    -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr);
+  dst[3][2][0]=dst[3][0][2]=beta_pt + gamma_ptp*beta_p
+    -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
+  dst[1][1][1]=0.5*g_up_ij(1,1).val_point(rr,th,ph)
+    *g_ij(1,1).dsdr().val_point(rr,th,ph);
+  dst[1][3][3]=-0.5*g_up_ij(1,1).val_point(rr,th,ph)
+    *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+      +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
+  dst[1][1][2]=dst[1][2][1]=0.5*g_up_ij(1,1).val_point(rr,th,ph)
+    *g_ij(1,1).dsdt().val_point(rr,th,ph); 
+  dst[1][2][2]=-0.5*g_up_ij(1,1).val_point(rr,th,ph)
+    *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph) 
+      + 2.*rr*g_ij(2,2).val_point(rr,th,ph));
+  dst[2][3][3]=-0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+    *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)); 
+  dst[2][1][1]=-0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+    *g_ij(1,1).dsdt().val_point(rr,th,ph);
+  dst[2][2][2]=0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+    *(r2*g_ij(2,2).dsdt().val_point(rr,th,ph));
+  dst[2][1][2]=dst[2][2][1]=0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
+    *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph)
+      +2.*rr*g_ij(2,2).val_point(rr,th,ph));
+  dst[3][1][3]=dst[3][3][1]=0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
+    *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+      +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph)) + beta_p/NN*Krp;
+  dst[3][2][3]=dst[3][3][2]=0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
+    *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)) 
+    + beta_p/NN*Ktp;
+  dst[0][0][0]=0.;
+  dst[0][0][3]=0.;
+  dst[0][3][0]=0.;
+  dst[0][1][1]=0.;
+  dst[0][2][2]=0.;
+  dst[0][3][3]=0.;
+  dst[0][1][2]=0.;
+  dst[0][2][1]=0.;
+  dst[3][0][0]=0.;
+  dst[1][0][1]=0.;
+  dst[1][1][0]=0.;
+  dst[1][0][2]=0.;
+  dst[1][2][0]=0.;
+  dst[2][0][1]=0.;
+  dst[2][1][0]=0.;
+  dst[2][0][2]=0.;
+  dst[2][2][0]=0.;
+  dst[3][0][3]=0.;
+  dst[3][3][0]=0.;
+  dst[1][1][3]=0.;
+  dst[1][3][1]=0.;
+  dst[1][2][3]=0.;
+  dst[1][3][2]=0.;
+  dst[2][1][3]=0.;
+  dst[2][3][1]=0.;
+  dst[2][2][3]=0.;
+  dst[2][3][2]=0.;
+  dst[3][1][1]=0.;
+  dst[3][2][2]=0.;
+  dst[3][3][3]=0.;
+  dst[3][1][2]=0.;
+  dst[3][2][1]=0.;
+  // Oh yeah, this makes 64 christoffels
+  
+  return 0;
 }
 
 double NumericalMetricLorene::christoffel3(const double coord[6],

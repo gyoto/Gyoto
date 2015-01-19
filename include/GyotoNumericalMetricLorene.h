@@ -166,6 +166,15 @@ class Gyoto::Metric::NumericalMetricLorene
   
   double christoffel(const double coord[8], const int alpha, const int mu, 
 		     const int nu) const ;
+  double christoffel(const double coord[8], 
+		     const int alpha, 
+		     const int mu, const int nu,
+		     const int indice_time) const;
+  virtual int christoffel(double dst[4][4][4], 
+			  const double * coord) const;
+  int christoffel(double dst[4][4][4], 
+		  const double * coord,
+		  const int indice_time) const;
   /**
    * 3-Christoffels
    */
@@ -190,7 +199,8 @@ class Gyoto::Metric::NumericalMetricLorene
   /**
    * F function such as d(coord)/d(tau)=F(coord)
    */
-  using Generic::diff;
+  //using Generic::diff;
+  virtual int diff(const double coord[8], double res[8]) const;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
 
