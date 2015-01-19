@@ -147,6 +147,7 @@ class Gyoto::Astrobj::ThinDisk :
   public:
   virtual int Impact(Gyoto::Photon* ph, size_t index,
 		     Astrobj::Properties *data=NULL) ;
+  virtual double emission(double , double, double *, double) const;
 
 };
 
