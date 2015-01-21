@@ -158,7 +158,7 @@ end_section, "basic functionality";
 #include "check-startrace.i"
 #include "check-patterndisk.i"
 #include "check-directionaldisk.i"
-//#include "check-disk3d.i"
+#include "check-disk3d.i"
 #include "check-polish-doughnut.i"
 // Don't run check-mpi.i automatically,
 // It may hang the computer if not plugged to the network
