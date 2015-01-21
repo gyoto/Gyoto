@@ -40,6 +40,7 @@ using namespace Gyoto::Astrobj;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(DynamicalDisk3D)
+GYOTO_PROPERTY_FILENAME(DynamicalDisk3D, File, file)
 GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, tinit, tinit)
 GYOTO_PROPERTY_DOUBLE(DynamicalDisk3D, dt, dt)
 GYOTO_PROPERTY_BOOL(DynamicalDisk3D,
