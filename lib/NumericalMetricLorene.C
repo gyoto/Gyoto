@@ -36,6 +36,7 @@ GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    specifyMarginalOrbits)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    HasSurface, HasNoSurface, hasSurface)
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene, BosonStarCircular, NonBosonStarCircular, bosonstarcircular)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Horizon, horizon)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Time, initialTime)
 GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
@@ -70,7 +71,8 @@ NumericalMetricLorene::NumericalMetricLorene() :
   hor_tab_(NULL),
   horizon_(0.),
   risco_(0.),
-  rmb_(0.)
+  rmb_(0.),
+  bosonstarcircular_(false)
 {
   GYOTO_DEBUG << endl;
 }
@@ -97,7 +99,8 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   hor_tab_(NULL),
   horizon_(o.horizon_),
   risco_(o.risco_),
-  rmb_(o.rmb_)
+  rmb_(o.rmb_),
+  bosonstarcircular_(o.bosonstarcircular_)		 
 {
   GYOTO_DEBUG << endl;
   if (o.filename_) directory(o.filename_);
@@ -1334,7 +1337,11 @@ double NumericalMetricLorene::gmunu(const double pos[3],
       res = rsinth*g_ij(3,3).val_point(rr,th,ph)*shift(3).val_point(rr,th,ph);
     }
   if (res!=res) throwError("NumericalMetricLorene::gmunu is nan!");
-  if (res==res+1.) throwError("NumericalMetricLorene::gmunu is inf!");
+  if (res==res+1.) {
+    //cout << "r,th,ph= " << rr << " " << th << " " << ph << endl;
+    //cout << "mu,nu,res= " << mu << " " << nu << " " << res << endl;
+    //throwError("NumericalMetricLorene::gmunu is inf!");
+  }
   return res; 
 }
 
@@ -2063,6 +2070,10 @@ void NumericalMetricLorene::hasSurface(bool s) {
   }
 }
 
+bool NumericalMetricLorene::bosonstarcircular() const {
+  return bosonstarcircular_;}
+void NumericalMetricLorene::bosonstarcircular(bool t) {bosonstarcircular_=t;}
+
 bool NumericalMetricLorene::specifyMarginalOrbits() const {
   return specify_marginalorbits_;
 }
@@ -2100,4 +2111,95 @@ void NumericalMetricLorene::refineIntegStep(vector<double> const &v) {
       throwError("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
   r_refine_  = v[0];
   h0_refine_ = v[1];
+}
+  
+void NumericalMetricLorene::circularVelocity(double const * coord, 
+					     double* vel,
+					     double dir) const {
+  GYOTO_DEBUG << endl;
+  //  return Generic::circularVelocity(coord,vel,dir); // TEST!!
+
+  double tt = coord[0];
+
+  int it=nb_times_-1;
+  while(tt<times_[it] && it>=0) it--;
+
+  if (it==nb_times_-1) {
+    return circularVelocity(coord,vel,dir,nb_times_-1); 
+  }
+  if (it==-1) {
+    return circularVelocity(coord,vel,dir,0);
+  }
+
+  // Linear interp for extremal-1 points
+  if (it==nb_times_-2 || it==0){ 
+    double vel1[4], vel2[4];
+    double t1=times_[it], t2=times_[it+1];
+    circularVelocity(coord,vel1,dir,it);
+    circularVelocity(coord,vel2,dir,it+1);
+    for (int ii=0;ii<4;ii++) vel[ii] = 
+			       (vel2[ii]-vel1[ii])/(t2-t1)*(tt-t1) 
+			       + vel1[ii];
+    return;
+  }
+
+  //Else: use 3rd order interp
+  double vel1[4], vel2[4], vel3[4], vel4[4];
+  circularVelocity(coord,vel1,dir,it-1);
+  circularVelocity(coord,vel2,dir,it);
+  circularVelocity(coord,vel3,dir,it+1);
+  circularVelocity(coord,vel4,dir,it+2);
+  double values[4];
+  for (int ii=0;ii<4;ii++) {
+    values[0]=vel1[ii];
+    values[1]=vel2[ii];
+    values[2]=vel3[ii];
+    values[3]=vel4[ii];
+    vel[ii] = Interpol3rdOrder(tt,it,values);
+  }
+  return;
+
+}
+
+void NumericalMetricLorene::circularVelocity(double const * coor, 
+					     double* vel,
+					     double dir, 
+					     int indice_time) const {
+  if (bosonstarcircular_){
+    // This expression is related to the ZAMO 3-velocity derived
+    // in Grandclement+14 boson star paper
+    double rr=coor[1], th=coor[2], sinth=sin(th), ph=coor[3];
+    if (rr<=0. || sinth==0.) throwError("In NML::circularv: bad coor");
+    double rsm1 = 1./(rr*sinth), rm2 = 1/(rr*rr), sm1 = 1./sinth;
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+    double B2 = g_ij(3,3).val_point(rr,th,ph);
+    if (B2<=0.) throwError("In NML::circularv: bad B2");
+    double BB = sqrt(B2);
+    double Br = g_ij(3,3).dsdr().val_point(rr,th,ph)/(2.*BB);
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double beta_p = rsm1*shift(3).val_point(rr,th,ph),
+      beta_p_r = rsm1*shift(3).dsdr().val_point(rr,th,ph)
+      -rm2*sm1*shift(3).val_point(rr,th,ph);
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,ph);
+    if (NN==0.) throwError("In NML::circularv: bad N");
+    double Nr = lapse->dsdr().val_point(rr,th,ph);
+    double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
+      + 4.*Nr/NN*(Br/BB+1./rr);
+    if (DD<0.) throwError("In NML::circularv: bad D");
+    double g_tt = gmunu(coor,0,0), g_tp = gmunu(coor,0,3),
+      g_pp = gmunu(coor,3,3);
+    if (g_pp<=0.) throwError("In NML::circularv: bad g_pp");
+    double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(1./rr+Br/BB);
+    double Omega = NN*Vzamo/sqrt(g_pp) - beta_p;
+    double ut = 1./(NN*sqrt(1.-Vzamo*Vzamo));
+    vel[0] = ut; vel[1] = 0.; vel[2] = 0.; vel[3] = Omega*ut;
+    double normtol = 1e-6;
+    double norm = ScalarProd(coor,vel,vel);
+    if (fabs(norm+1.)>normtol) throwError("In NML::circularv: bad norm");
+    return;
+  }
+
+  throwError("In NML::circularVelocity: circular velocity not implemented"
+	     " for this particular metric");
 }

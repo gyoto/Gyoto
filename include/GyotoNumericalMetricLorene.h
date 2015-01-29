@@ -53,6 +53,7 @@ class Gyoto::Metric::NumericalMetricLorene
  private:
   char* filename_; ///< Lorene .d data file(s) path
   bool mapet_; ///< Kind of Lorene mapping: 'false' for Map_af, 'true' for Map_et
+  bool bosonstarcircular_; ///< 1 to implement the circular velocity of a boson star
   int has_surface_; ///< 1 if the metric source has a surface
   int specify_marginalorbits_; ///< 1 if marginal orbits are specified in file
   double horizon_; ///< Value of horizon (or any innermost limit)
@@ -96,6 +97,8 @@ class Gyoto::Metric::NumericalMetricLorene
   void   horizon(double t0);
   bool hasSurface() const;
   void hasSurface(bool s);
+  bool bosonstarcircular() const;
+  void bosonstarcircular(bool);
   bool specifyMarginalOrbits() const;
   void specifyMarginalOrbits(bool s);
   bool mapEt() const;
@@ -203,6 +206,30 @@ class Gyoto::Metric::NumericalMetricLorene
   virtual int diff(const double coord[8], double res[8]) const;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
+
+  /**
+   * \brief Yield circular velocity at a given position
+   * 
+   * Give the velocity of a massive particle in circular orbit at the
+   * given position projected onto the equatorial plane. Such a
+   * velocity may not exist everywhere (or anywhere) for a given
+   * metric. This method is intended to be used by Astrobj classes
+   * such as Torus or ThinDisk.
+   *
+   * This circular velocity should be implemented for all specific
+   * numerical metric used.
+   *
+   * If bosonstarcircular_ is set to true, this method returns the
+   * boson star circular velocity.
+   *
+   * \param coor input: position,
+   * \param vel output: velocity,
+   * \param dir 1 for corotating, -1 for counterrotating.
+   */
+  void circularVelocity(double const * coor, double* vel,
+			double dir) const ;
+  void circularVelocity(double const * coor, double* vel,
+			double dir, int indice_time) const ;
 
 };
 
