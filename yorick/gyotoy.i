@@ -174,11 +174,15 @@ func gyotoy_set_metric(fname, void)
     fname = gy.Gtk.FileChooser(fname).get_filename();
   if (is_string(fname)) metric=gyoto_Metric(fname);
   if (typeof(metric)!="gyoto_Metric") gyotoy_warning, "Failed to set metric";
+  prev_metric=_gyotoy_metric;
   _gyotoy_metric=metric;
   _gyotoy_metric_file=fname;
   if (catch(0x08)) {
     // avoid breaking in case of v>c or other problem
     gyotoy_warning, "metric loaded but orbit computation failed";
+    _gyotoy_metric=prev_metric;
+    _gyotoy_particle,metric=_gyotoy_metric,
+      initcoord=_gyotoy_initcoord(1:4), _gyotoy_initcoord(5:7);
     return;
   }
   _gyotoy_particle,metric=_gyotoy_metric,
@@ -909,6 +913,10 @@ func _gyotoy_unlimit(wdg, data)
 {
   limits;
 }
+
+
+extern gyotoy_warning;
+gyotoy_warning=error;
 
 extern _pyk_proc, _gyotoy_stand_alone;
 if (is_void(_gyotoy.yid)) _gyotoy,yid=0;

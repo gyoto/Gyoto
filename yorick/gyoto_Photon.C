@@ -273,29 +273,15 @@ extern "C" {
       return;
     }
 
-    SmartPointer<Photon> *ph = &(((gyoto_Photon*)obj)->smptr);
+    SmartPointer<Photon> *ph_ = &(((gyoto_Photon*)obj)->smptr);
 
     static char const * knames[]={
       YGYOTO_PHOTON_GENERIC_KW, 0
     };
-    static long kglobs[YGYOTO_PHOTON_GENERIC_KW_N+1];
-    int kiargs[YGYOTO_PHOTON_GENERIC_KW_N];
-    int piargs[]={-1,-1,-1,-1,-1};
-    // push default return value: the photon itsef
-    *ypush_Photon() = *ph;
-    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
-   
-    int iarg=argc, parg=0;
-    while (iarg>=1) {
-      iarg = yarg_kw(iarg, kglobs, kiargs);
-      if (iarg>=1) {
-	if (parg<5) piargs[parg++]=iarg--;
-	else y_error("gyoto_Photon takes at most 5 positional arguments");
-      }
-    }
 
-    int rvset[1]={0}, paUsed[1]={0};
-    ygyoto_Photon_generic_eval(ph, kiargs, piargs, rvset, paUsed);
+    YGYOTO_WORKER_INIT1(Photon, Photon, knames, YGYOTO_PHOTON_GENERIC_KW_N);
+   
+    ygyoto_Photon_generic_eval(ph_, kiargs, piargs, rvset, paUsed);
 
   }
 

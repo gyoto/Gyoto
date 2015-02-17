@@ -499,19 +499,34 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
     }
     break;
   case Gyoto::Property::metric_t:
-    val = *yget_Metric(iarg);
+    if (yarg_number(iarg) && ygets_l(iarg)==0)
+      val=(Gyoto::SmartPointer<Gyoto::Metric::Generic>(NULL));
+    else
+      val = *yget_Metric(iarg);
     break;
   case Gyoto::Property::astrobj_t:
-    val = *yget_Astrobj(iarg);
+    if (yarg_number(iarg) && ygets_l(iarg)==0)
+      val=(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>(NULL));
+    else
+      val = *yget_Astrobj(iarg);
     break;
   case Gyoto::Property::spectrum_t:
-    val = *yget_Spectrum(iarg);
+    if (yarg_number(iarg) && ygets_l(iarg)==0)
+      val=(Gyoto::SmartPointer<Gyoto::Spectrum::Generic>(NULL));
+    else
+      val = *yget_Spectrum(iarg);
     break;
   case Gyoto::Property::spectrometer_t:
-    val = *yget_Spectrometer(iarg);
+    if (yarg_number(iarg) && ygets_l(iarg)==0)
+      val=(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>(NULL));
+    else
+      val = *yget_Spectrometer(iarg);
     break;
   case Gyoto::Property::screen_t:
-    val = *yget_Screen(iarg);
+    if (yarg_number(iarg) && ygets_l(iarg)==0)
+      val=(Gyoto::SmartPointer<Gyoto::Screen>(NULL));
+    else
+      val = *yget_Screen(iarg);
     break;
   default:
     y_error("Property type unimplemented in yget_property()");

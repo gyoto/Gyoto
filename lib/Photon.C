@@ -42,6 +42,7 @@ using namespace std;
 using namespace Gyoto;
 
 GYOTO_PROPERTY_START(Photon)
+GYOTO_PROPERTY_ASTROBJ(Photon, Astrobj, astrobj)
 GYOTO_WORLDLINE_PROPERTY_END(Photon, Object::properties)
 
 Photon::Photon() :
@@ -576,15 +577,9 @@ void Photon::Refined::transmit(size_t i, double t) {
 
 
 #ifdef GYOTO_USE_XERCES
-void Photon::fillElement(FactoryMessenger *fmp) const {
-  if (object_)    fmp -> astrobj (object_) ;
-  Object::fillElement(fmp);
-}
-
 void Photon::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;
   metric(fmp->metric());
-  astrobj( fmp->astrobj() );
   Object::setParameters(fmp);
   wait_pos_ = 0;
   if (init_vel_) {

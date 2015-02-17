@@ -287,17 +287,17 @@ void ygyoto_Spectrometer_generic_eval
     (Gyoto::SmartPointer<CLASS> *)YGYOTO_CAT(OBJ, _);			\
   static long kglobs[NKW+1];						\
   int kiargs[NKW];							\
-  int piargs[]={-1,-1,-1,-1};						\
+  int piargs[]={-1,-1,-1,-1,-1};					\
   yarg_kw_init(const_cast<char**>(KNAMES), kglobs, kiargs);		\
   int iarg=argc, parg=0;						\
   while (iarg>=1) {							\
     iarg = yarg_kw(iarg, kglobs, kiargs);				\
     if (iarg>=1) {							\
-      if (parg<4) piargs[parg++]=iarg--;				\
-      else y_error( #CLASS " worker takes at most 4 positional arguments"); \
+      if (parg<5) piargs[parg++]=iarg--;				\
+      else y_error( #CLASS " worker takes at most 5 positional arguments"); \
     }									\
   }									\
-  GYOTO_DEBUG_ARRAY(piargs, 4);						\
+  GYOTO_DEBUG_ARRAY(piargs, 5);						\
   GYOTO_DEBUG_ARRAY(kiargs, NKW);					\
   int k=-1;								\
   char const * rmsg="Cannot set return value more than once";		\
@@ -406,31 +406,32 @@ void ygyoto_Spectrometer_generic_eval
 	(*OBJ) -> MEMBER (ygets_l(iarg));		   \
     }
 
-#define YGYOTO_WORKER_GETSET_OBJECT(MEMBER)			   \
+#define YGYOTO_WORKER_GETSET_OBJECT0(SETMEMBER,GETMEMBER,YMEMBER)   \
   if ((iarg=kiargs[++k])>=0) {					   \
     iarg+=*rvset;						   \
     if (yarg_nil(iarg)) {					   \
-      GYOTO_DEBUG << "pushing " #MEMBER << std::endl;		   \
+      GYOTO_DEBUG << "pushing " #YMEMBER << std::endl;		   \
       if ((*rvset)++) y_error("Only one return value possible");   \
-      *ypush_##MEMBER () = (*OBJ) -> get##MEMBER ();		   \
+      void * tmp = (*OBJ) -> GETMEMBER ();			   \
+      if (tmp)							   \
+	*ypush_##YMEMBER () = (*OBJ) -> GETMEMBER ();		   \
+      else ypush_long(0);					   \
     } else {							   \
-      GYOTO_DEBUG << "setting " #MEMBER << std::endl;		   \
-      (*OBJ) -> set##MEMBER (*yget_##MEMBER (kiargs[k]));	   \
+      GYOTO_DEBUG << "setting " #YMEMBER << std::endl;		   \
+      if (yarg_number(iarg)) {					   \
+        if (ygets_l(iarg) != 0)					   \
+	  y_error("Argument should be a " #YMEMBER " or 0");	   \
+	(*OBJ) -> SETMEMBER (0);				   \
+      } else							   \
+	(*OBJ) -> SETMEMBER (*yget_##YMEMBER (kiargs[k]));	   \
     }								   \
   }
 
-#define YGYOTO_WORKER_GETSET_OBJECT2(MEMBER,YMEMBER)			   \
-  if ((iarg=kiargs[++k])>=0) {					   \
-    iarg+=*rvset;						   \
-    if (yarg_nil(iarg)) {					   \
-      GYOTO_DEBUG << "pushing " #MEMBER << std::endl;		   \
-      if ((*rvset)++) y_error("Only one return value possible");   \
-      *ypush_##YMEMBER () = (*OBJ) -> MEMBER ();		   \
-    } else {							   \
-      GYOTO_DEBUG << "setting " #MEMBER << std::endl;		   \
-      (*OBJ) -> MEMBER (*yget_##YMEMBER (kiargs[k]));	   \
-    }								   \
-  }
+#define YGYOTO_WORKER_GETSET_OBJECT(MEMBER)			   \
+  YGYOTO_WORKER_GETSET_OBJECT0(set##MEMBER,get##MEMBER,MEMBER)
+
+#define YGYOTO_WORKER_GETSET_OBJECT2(MEMBER,YMEMBER)		   \
+  YGYOTO_WORKER_GETSET_OBJECT0(MEMBER,MEMBER,YMEMBER)
 
 #define YGYOTO_WORKER_SET_UNIT		 \
   if ((iarg=kiargs[++k])>=0) {		 \

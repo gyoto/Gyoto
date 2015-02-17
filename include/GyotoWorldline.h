@@ -64,6 +64,7 @@ namespace Gyoto {
   GYOTO_PROPERTY_STRING(c, Integrator, _integrator)			\
   GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter)				\
   GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive)		\
+  GYOTO_PROPERTY_DOUBLE_UNIT(c, MinimumTime, _tMin)			\
   GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta)				\
   GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord)		\
   GYOTO_PROPERTY_METRIC(c, Metric, _metric)
@@ -102,6 +103,10 @@ namespace Gyoto {
   double c::_delta()const{return delta();}				\
   void c::_delta(double f, std::string const &u){delta(f, u);}		\
   double c::_delta(std::string const &u)const{return delta(u);}		\
+  void c::_tMin(double f){tMin(f);}					\
+  double c::_tMin()const{return tMin();}				\
+  void c::_tMin(double f, std::string const &u){tMin(f, u);}		\
+  double c::_tMin(std::string const &u)const{return tMin(u);}		\
   void c::_maxiter(size_t f){maxiter(f);}				\
   size_t c::_maxiter()const{return maxiter();}				\
   void c::_integrator(std::string const &f){integrator(f);}		\
@@ -136,6 +141,10 @@ namespace Gyoto {
   void _delta(double, const std::string &unit);		\
   double _delta() const ;				\
   double _delta(const std::string &unit) const ;	\
+  void _tMin(const double tmin);			\
+  void _tMin(double, const std::string &unit);		\
+  double _tMin() const ;				\
+  double _tMin(const std::string &unit) const ;		\
   void _adaptive (bool mode) ;				\
   bool _adaptive () const ;				\
   void _secondary (bool sec) ;				\
