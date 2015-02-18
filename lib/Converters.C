@@ -41,7 +41,7 @@ void Gyoto::Units::Init() {
   /* sunradius */
   tmpu = ut_get_unit_by_name(SI, "meter");
   tmpu2 = ut_scale(GYOTO_SUN_RADIUS, tmpu);
-  ut_map_symbol_to_unit("sunradius", UT_UTF8, tmpu);
+  ut_map_symbol_to_unit("sunradius", UT_UTF8, tmpu2);
   ut_free(tmpu2);
   ut_free(tmpu);
 
