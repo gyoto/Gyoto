@@ -294,6 +294,9 @@ class Gyoto::Scenery
 
 
   SmartPointer<Photon> clonePhoton() const; ///< Clone the internal Photon
+  SmartPointer<Photon> clonePhoton(size_t i, size_t j); ///< Clone the internal Photon
+  SmartPointer<Photon> clonePhoton(double a, double d); ///< Clone the internal Photon
+  void updatePhoton(); ///< Update values in cached Photon
 
   double delta() const ; ///< Get default step in geometrical units
   double delta(const std::string &unit) const ;  ///< Get default step in specified units

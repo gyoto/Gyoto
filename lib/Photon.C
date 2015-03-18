@@ -494,6 +494,11 @@ double Photon::findMin(Functor::Double_constDoubleArray* object,
 
   while ( (fabs(t2-t1)>GYOTO_T_TOL) && (curval>threshold) ) {
     pcur[0] = 0.5*(t1+t2);
+    if ((pcur[0]==t1) ||pcur[0]==t2) {
+      GYOTO_SEVERE << "Photon::findMin(): dt still above GYOTO_T_TOL (t2-t1="
+		   << t2-t1 << ")";
+      break;
+    }
     getCoord(pcur, 1, pcur+1, pcur+2, pcur+3, pcur+4, pcur+5, pcur+6, pcur+7);
     curval=(*object)(pcur);
     if (val1<val2) {

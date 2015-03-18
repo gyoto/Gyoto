@@ -298,6 +298,30 @@ static void * SceneryThreadWorker (void *arg) {
   return NULL;
 }
 
+void Scenery::updatePhoton(){
+  if (screen_) {
+    ph_.spectrometer(screen_->spectrometer());
+    ph_.freqObs(screen_->freqObs());
+  }
+  ph_ . delta(delta_);
+}
+
+SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
+  updatePhoton();
+  double coord[8];
+  screen_ -> getRayCoord(size_t(1),size_t(1), coord);
+  ph_ . setInitCoord(coord, -1);
+  return ph_.clone();
+}
+
+SmartPointer<Photon> Scenery::clonePhoton(double a, double b) {
+  updatePhoton();
+  double coord[8];
+  screen_ -> getRayCoord(a, b, coord);
+  ph_ . setInitCoord(coord, -1);
+  return ph_.clone();
+}
+
 void Scenery::rayTrace(Screen::Coord2dSet & ij,
 		       Astrobj::Properties *data,
 		       double * impactcoords) {
@@ -330,12 +354,8 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
      // Note : this is a BUG if this is required, should be done automagically.
 
   /// initialize photon once. It will be cloned.
-  SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
-  ph_.spectrometer(spr);
-  ph_.freqObs(screen_->freqObs());
-  double coord[8];
-  screen_ -> getRayCoord(size_t(1),size_t(1), coord);
-  ph_ . setInitCoord(coord, -1);
+  updatePhoton();
+  SmartPointer<Spectrometer::Generic> spr = screen_ -> spectrometer();
   // delta is reset in operator()
 
   if (data) setPropertyConverters(data);
@@ -628,8 +648,7 @@ void Scenery::operator() (
     // is passed in particular when called in a multi-threaded
     // environment: it may really need to work on a given copy of the object.
     ph = &ph_;
-    ph -> spectrometer(spr);
-    ph -> freqObs(screen_->freqObs());
+    updatePhoton();
   }
   // Always reset delta
 # if GYOTO_DEBUG_ENABLED
@@ -674,8 +693,7 @@ void Scenery::operator() (
 
   if (!ph) {
     ph = &ph_;
-    ph -> spectrometer(spr);
-    ph -> freqObs(screen_->freqObs());
+    updatePhoton();
   }
   // Always reset delta
   ph -> delta(delta_);

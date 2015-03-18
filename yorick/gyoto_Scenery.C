@@ -124,7 +124,21 @@ extern "C" {
     /* CLONEPHOTON */
     if ((iarg=kiargs[++k])>=0) {
       if ((*rvset)++) y_error(rmsg);
-      *ypush_Photon() = (*OBJ)->clonePhoton();
+      int nb=0;
+      if (yarg_nil(iarg))
+	*ypush_Photon() = (*OBJ)->clonePhoton();
+      else if ((nb=yarg_number(iarg))==1) {
+	size_t i=ygets_l(iarg);
+	size_t j=ygets_l(piargs[0]);
+	if ((*paUsed)++) y_error(pmsg);
+	*ypush_Photon() = (*OBJ)->clonePhoton(i, j);
+      }
+      else if (nb==2) {
+	double a=ygets_d(iarg);
+	double d=ygets_d(piargs[0]);
+	if ((*paUsed)++) y_error(pmsg);
+	*ypush_Photon() = (*OBJ)->clonePhoton(a, d);
+      } else y_error("unsupported argument for clonephoton");
     }
 
     /* IMPACTCOORDS */
