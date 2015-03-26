@@ -13,6 +13,7 @@ dist_man_MANS += gyoto.1
 endif
 
 if HAVE_MPI
+AM_LDFLAGS += -lboost_mpi -lboost_serialization
 bin_PROGRAMS += gyoto-mpi-worker.@sovers@
 dist_man_MANS += gyoto-mpi-worker.@sovers@.1
 CLEANFILES += gyoto-mpi-worker.@sovers@.1

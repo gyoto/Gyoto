@@ -90,10 +90,10 @@ AS_IF([test "x$HAVE_CXX11" = "x1"],
      [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
   ]
 )
-AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-  [AS_IF([test "x$have_boost" == "xno"],
-     [AC_MSG_ERROR([Boost requested but not found])],
-     [FEATURES+="-noboost"])
+AS_IF([test "x$have_boost" == "xno"],
+  [AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
+     [AC_MSG_ERROR([Boost requested but not found])])
+   FEATURES+="-noboost"
   ]
 )
 
@@ -102,23 +102,24 @@ AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
 # If --with-mpi=no is used, use a standard C compiler instead.
 
 have_mpi=no
-AS_IF([test "x$with_mpi" != xno],
-[ AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx])
-  AS_IF([test "x$MPICXX" != x], [
-    AS_IF([test "x$have_boost" == xyes], [
-      ax_save_CXX=$CXX
-      CXX=$MPICXX
-      saved_libs="$LIBS"
-      LIBS="$LIBS -lboost_mpi"
-      AC_TRY_LINK([#include <boost/mpi/environment.hpp>], [boost::mpi::environment()], [have_mpi=yes], [CXX=$ax_save_CXX])
-      LIBS="$saved_libs"
-    ],
-    [ AS_IF([test "x$with_mpi" == xyes],
-      [ AC_MSG_ERROR([MPI features require boost.mpi])
-      ])
+AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx])
+AS_IF([test "x$MPICXX" != x && test "x$have_boost" == xyes],
+  [
+   ax_save_CXX=$CXX
+   CXX=$MPICXX
+   BOOST_FIND_HEADER([boost/mpi/environment.hpp],
+     [have_mpi=no
+      CXX=$ax_save_CXX
+      AS_IF([test "x$with_mpi" == xyes],
+        [ AC_MSG_ERROR([MPI features require boost.mpi])
+      ])],
+     [
+      BOOST_FIND_LIBS([mpi], [mpi], [], [boost/mpi/environment.hpp],
+        [boost::mpi::environment()], [])
+      have_mpi=yes
     ])
-  ])
-])
+  ]
+)
 
 AS_IF([test "x$have_mpi" == xyes],
 [ AC_SUBST(MPICXX)
