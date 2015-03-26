@@ -420,7 +420,7 @@ int Photon::hit(Astrobj::Properties *data) {
 #       endif
 
 	// store coordinates of outgoing photon in impactcoords
-	if (data && data->impactcoords) {
+	if (data && data->impactcoords && data->impactcoords[0]==DBL_MAX) {
 	  for (size_t i=0; i<8; ++i) data->impactcoords[i]=DBL_MAX;
 	  memcpy(data->impactcoords+8, coord, 8 * sizeof(double));
 	}

@@ -188,7 +188,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       GYOTO_DEBUG_EXPR(*data->time);
 #endif
     }
-    if (data->impactcoords) {
+    if (data->impactcoords && data->impactcoords[0]==DBL_MAX) {
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
       memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
     }
