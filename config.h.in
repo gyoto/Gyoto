@@ -24,6 +24,9 @@
 /* Define to 1 if you have <boost/mpi/environment.hpp> */
 #undef HAVE_BOOST_MPI_ENVIRONMENT_HPP
 
+/* Define to 1 if you have <boost/serialization/base_object.hpp> */
+#undef HAVE_BOOST_SERIALIZATION_BASE_OBJECT_HPP
+
 /* define if the compiler supports basic C++11 syntax */
 #undef HAVE_CXX11
 

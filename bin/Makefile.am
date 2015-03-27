@@ -13,7 +13,8 @@ dist_man_MANS += gyoto.1
 endif
 
 if HAVE_MPI
-AM_LDFLAGS += -lboost_mpi -lboost_serialization
+AM_LDFLAGS += $(BOOST_MPI_LDFLAGS) -lboost_mpi \
+	      $(BOOST_SERIALIZATION_LDFLAGS) -lboost_serialization
 bin_PROGRAMS += gyoto-mpi-worker.@sovers@
 dist_man_MANS += gyoto-mpi-worker.@sovers@.1
 CLEANFILES += gyoto-mpi-worker.@sovers@.1
@@ -25,7 +26,7 @@ gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 
 gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
-gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la -lboost_mpi -lboost_serialization
+gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
 gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
 

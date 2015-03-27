@@ -4,7 +4,8 @@ AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS) \
 	      $(UDUNITS_LDFLAGS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PREFIX=\"${prefix}\"
 if HAVE_MPI
-AM_LDFLAGS += -lboost_mpi -lboost_serialization
+AM_LDFLAGS += $(BOOST_MPI_LDFLAGS) -lboost_mpi \
+	      $(BOOST_SERIALIZATION_LDFLAGS) -lboost_serialization
 endif
 
 

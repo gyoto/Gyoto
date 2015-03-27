@@ -103,10 +103,12 @@ AS_IF([test "x$have_boost" == "xno"],
 
 have_mpi=no
 AC_CHECK_PROGS([MPICXX], [mpic++ mpicxx])
-AS_IF([test "x$MPICXX" != x && test "x$have_boost" == xyes],
+AS_IF([test "x$MPICXX" != x && test "x$have_boost" == xyes && test "x$with_mpi" != xno],
   [
    ax_save_CXX=$CXX
+   ax_save_CPP=$CXXCPP
    CXX=$MPICXX
+   CXXCPP="$MPICXX -E"
    BOOST_FIND_HEADER([boost/mpi/environment.hpp],
      [have_mpi=no
       CXX=$ax_save_CXX
@@ -116,6 +118,9 @@ AS_IF([test "x$MPICXX" != x && test "x$have_boost" == xyes],
      [
       BOOST_FIND_LIBS([mpi], [mpi], [], [boost/mpi/environment.hpp],
         [boost::mpi::environment()], [])
+      BOOST_FIND_LIBS([serialization], [serialization], [],
+        [boost/serialization/base_object.hpp],
+        [], [])
       have_mpi=yes
     ])
   ]
