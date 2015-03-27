@@ -105,8 +105,6 @@ AS_IF([test "x$with_boost" != "xno"],
    [have_boost=no]
 )
 
-echo "*******************" x$HAVE_CXX11 "**" $ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp "**"
-
 AS_IF([test "x$HAVE_CXX11" == "x1" &&  test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
   [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if C++11 and Boost.odeint are both available]
   )]

@@ -16843,8 +16843,6 @@ else
 
 fi
 
-echo "*******************" x$HAVE_CXX11 "**" $ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp "**"
-
 if test "x$HAVE_CXX11" == "x1" &&  test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes; then :
 
 $as_echo "#define GYOTO_HAVE_BOOST_INTEGRATORS 1" >>confdefs.h
