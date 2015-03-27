@@ -36,7 +36,7 @@
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
 #endif
 
-#ifdef HAVE_BOOST
+#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #endif
 
@@ -535,7 +535,7 @@ void Screen::getRayCoord(double alpha, double delta,
       --> Following transformations are OK even for non-small alpha, delta
     */
 
-#ifdef HAVE_BOOST
+#ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
     // using boost multiprecision to avoid information loss in trigonometry
     boost::multiprecision::cpp_dec_float_100
       alpha100=alpha, delta100=delta, a, b;
@@ -1327,7 +1327,7 @@ Screen::Grid::Grid(Coord1dSet &iset, Coord1dSet &jset,
 {}
 
 GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
-#if defined HAVE_BOOST
+#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*iset_, *jset_};
 #else
   GYOTO_ARRAY<size_t, 2> ij;
@@ -1435,7 +1435,7 @@ bool Screen::Bucket::valid() {return alpha_.valid() && delta_.valid();}
 size_t Screen::Bucket::size(){return alpha_.size();}
 Screen::Coord2dSet& Screen::Bucket::operator++(){++alpha_; ++delta_;}
 GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
-#if defined HAVE_BOOST
+#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
 #else
   GYOTO_ARRAY<double, 2> out;
@@ -1445,7 +1445,7 @@ GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
   return out;
 }
 GYOTO_ARRAY<size_t, 2> Screen::Bucket::operator* () const {
-#if defined HAVE_BOOST
+#if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<size_t, 2> ij = {*alpha_, *delta_};
 #else
   GYOTO_ARRAY<size_t, 2> ij;

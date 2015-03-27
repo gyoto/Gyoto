@@ -82,19 +82,38 @@ AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
 ],,[with_mpi=auto])
 
 # Check for boost
-AS_IF([test "x$HAVE_CXX11" = "x1"],
+
+have_boost=no
+AS_IF([test "x$with_boost" != "xno"],
   [have_boost=yes
-   BOOST_REQUIRE([1.53.1], [have_boost=no])],
-  [have_boost=no
-   AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-     [AC_MSG_ERROR([Boost features require a C++11 capable compiler])])
-  ]
+   BOOST_REQUIRE([1.53.1], [have_boost=no])
+   AS_IF([test "x$have_boost" == "xyes"],
+     [BOOST_FIND_HEADER([boost/multiprecision/cpp_dec_float.hpp],
+        [AC_MSG_WARN([Boost.multiprecision not found])
+	 have_boost=partial],
+        [])
+      BOOST_FIND_HEADER([boost/array.hpp],
+        [AC_MSG_WARN([boost/array.hpp not found])
+	 have_boost=partial],
+        [])
+      BOOST_FIND_HEADER([boost/numeric/odeint/stepper/controlled_step_result.hpp],
+        [AC_MSG_WARN([Boost.odeint not found])
+	 have_boost=partial],
+        [])
+     ])
+   ],
+   [have_boost=no]
 )
-AS_IF([test "x$have_boost" == "xno"],
-  [AS_IF([test "x$with_boost" != "x" && test "x$with_boost" != "xno"],
-     [AC_MSG_ERROR([Boost requested but not found])])
-   FEATURES+="-noboost"
-  ]
+
+echo "*******************" x$HAVE_CXX11 "**" $ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp "**"
+
+AS_IF([test "x$HAVE_CXX11" == "x1" &&  test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
+  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if C++11 and Boost.odeint are both available]
+  )]
+)
+
+AS_IF([test "x$have_boost" != "xyes"],
+  [FEATURES+="-noboost"]
 )
 
 # If --with-mpi=auto is used, try to find MPI, but use standard C compiler if it is not found.

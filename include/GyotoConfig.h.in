@@ -261,15 +261,37 @@
 # endif
 #endif
 
-/** \def HAVE_BOOST
- *  \brief Whether boost support is compiled in.
+/** \def HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+ *  \brief Whether support for arbitrary precision arithmetics is present
+ *
+ */
+#undef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+#  define HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP (undefined)
+# endif
+#endif
+
+/** \def HAVE_BOOST_ARRAY_HPP
+ *  \brief Whether boost::array is available
+ *
+ */
+#undef HAVE_BOOST_ARRAY_HPP
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_BOOST_ARRAY_HPP
+#  define HAVE_BOOST_ARRAY_HPP (undefined)
+# endif
+#endif
+
+/** \def GYOTO_HAVE_BOOST_INTEGRATORS
+ *  \brief Whether Boost.odeint is present, as well as C++11
  *
  *  Advanced integrators from boost/numeric/odeint/.
  */
-#undef HAVE_BOOST
+#undef GYOTO_HAVE_BOOST_INTEGRATORS
 #ifdef DOXYGEN_RUN
-# ifndef HAVE_BOOST
-#  define HAVE_BOOST (undefined)
+# ifndef GYOTO_HAVE_BOOST_INTEGRATORS
+#  define GYOTO_HAVE_BOOST_INTEGRATORS (undefined)
 # endif
 #endif
 

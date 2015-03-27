@@ -3,6 +3,9 @@
 /* Enable debugging information gathering code for putative speed gain */
 #undef GYOTO_DEBUG_ENABLED
 
+/* Define to 1 if C++11 and Boost.odeint are both available */
+#undef GYOTO_HAVE_BOOST_INTEGRATORS
+
 /* Suffix for Gyoto plug-ins */
 #undef GYOTO_PLUGIN_SFX
 
@@ -21,8 +24,18 @@
 /* Defined if the requested minimum BOOST version is satisfied */
 #undef HAVE_BOOST
 
+/* Define to 1 if you have <boost/array.hpp> */
+#undef HAVE_BOOST_ARRAY_HPP
+
 /* Define to 1 if you have <boost/mpi/environment.hpp> */
 #undef HAVE_BOOST_MPI_ENVIRONMENT_HPP
+
+/* Define to 1 if you have <boost/multiprecision/cpp_dec_float.hpp> */
+#undef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+
+/* Define to 1 if you have
+   <boost/numeric/odeint/stepper/controlled_step_result.hpp> */
+#undef HAVE_BOOST_NUMERIC_ODEINT_STEPPER_CONTROLLED_STEP_RESULT_HPP
 
 /* Define to 1 if you have <boost/serialization/base_object.hpp> */
 #undef HAVE_BOOST_SERIALIZATION_BASE_OBJECT_HPP

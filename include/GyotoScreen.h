@@ -29,7 +29,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#if defined HAVE_BOOST
+#if defined HAVE_BOOST_ARRAY_HPP
 #include <boost/array.hpp>
 #define GYOTO_ARRAY boost::array
 #else
@@ -37,7 +37,7 @@ template <typename T, size_t sz> class GYOTO_ARRAY {
  private:
   T buf[sz];
  public:
-  T& operator[](size_t c) { return buf[c] ; }
+  T& operator[](size_t c) { throwError("toto"); return buf[c] ; }
 };
 #endif
 

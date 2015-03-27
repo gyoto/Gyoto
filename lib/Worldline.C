@@ -46,7 +46,7 @@ Worldline::Worldline() : stopcond(0), metric_(NULL),
 { 
   xAllocate();
 
-#ifdef HAVE_BOOST
+#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
   state_ = new Worldline::IntegState::Boost(this, "runge_kutta_fehlberg78");
 #else
   state_ = new Worldline::IntegState::Legacy(this);
@@ -281,7 +281,7 @@ void Worldline::tell(Gyoto::Hook::Teller* msg) {
 
 void Worldline::integrator(std::string const &type) {
   if (type=="Legacy") state_ = new IntegState::Legacy(this);
-#ifdef HAVE_BOOST
+#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
   else state_ = new IntegState::Boost(this, type);
 #else
   else throwError("unrecognized integrator (recompile with boost?)");

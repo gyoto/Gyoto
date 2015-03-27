@@ -29,7 +29,7 @@
 using namespace std ; 
 using namespace Gyoto;
 
-#ifdef HAVE_BOOST
+#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
 #include <boost/numeric/odeint/stepper/generation.hpp>
 using namespace boost::numeric::odeint;
 
@@ -56,7 +56,7 @@ using namespace boost::numeric::odeint;
     };									\
   }
 
-#endif // HAVE_BOOST
+#endif // GYOTO_HAVE_BOOST_INTEGRATORS
 
 
 /// Generic
@@ -159,7 +159,7 @@ std::string Worldline::IntegState::Legacy::kind() { return "Legacy"; }
 Worldline::IntegState::Legacy::~Legacy() {}
 
 /// Boost
-#ifdef HAVE_BOOST
+#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
 Worldline::IntegState::Boost::~Boost() {};
 Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
   Generic(line)
@@ -304,4 +304,4 @@ std::string Worldline::IntegState::Boost::kind() {
   throwError("unknown enum value");
   return "error";
 } 
-#endif // HAVE_BOOST
+#endif // GYOTO_HAVE_BOOST_INTEGRATORS
