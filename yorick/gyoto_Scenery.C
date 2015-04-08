@@ -191,6 +191,9 @@ extern "C" {
       long ndims, dims[Y_DIMSIZE]={0};
       long nelem;
 
+      dims[0]=0;
+      if (precompute)       dims[++dims[0]]=16;
+
       if (i_idx.isDouble() || j_idx.isDouble()) {
 	if (!i_idx.isDouble() || !j_idx.isDouble())
 	  throwError("i and j must be of same type (double or long)");
@@ -204,11 +207,9 @@ extern "C" {
 	  }
 	  else throwError("alpha and delta must be conformable");
 	}
-	for (int m=0; m<idims[0]+1; ++m) dims[m]=idims[m];
+	for (int m=1; m<=idims[0]; ++m) dims[++dims[0]]=idims[m];
       } else {
 	nelem=i_idx.getNElements()*j_idx.getNElements();
-	dims[0]=0;
-	if (precompute)       dims[++dims[0]]=16;
 	if ( (precompute + i_idx.getDims()[0]+j_idx.getDims()[0]) >= Y_DIMSIZE )
 	  throwError("Too many dimensions");
 	long const *idims=i_idx.getDims();
