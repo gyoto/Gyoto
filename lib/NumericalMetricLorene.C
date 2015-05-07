@@ -39,6 +39,7 @@ GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene, BosonStarCircular, NonBosonStarCircular, bosonstarcircular)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Horizon, horizon)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Time, initialTime)
+GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Rico, rico)
 GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
 			     RefineIntegStep, refineIntegStep)
 // Keep File last here, so it is processed last in fillElement() 
@@ -72,7 +73,8 @@ NumericalMetricLorene::NumericalMetricLorene() :
   horizon_(0.),
   risco_(0.),
   rmb_(0.),
-  bosonstarcircular_(false)
+  bosonstarcircular_(false),
+  rico_(0.)
 {
   GYOTO_DEBUG << endl;
 }
@@ -100,7 +102,8 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   horizon_(o.horizon_),
   risco_(o.risco_),
   rmb_(o.rmb_),
-  bosonstarcircular_(o.bosonstarcircular_)		 
+  bosonstarcircular_(o.bosonstarcircular_),
+  rico_(o.rico_)	 
 {
   GYOTO_DEBUG << endl;
   if (o.filename_) directory(o.filename_);
@@ -298,23 +301,34 @@ Valeur** NumericalMetricLorene::getHor_tab() const {
   return hor_tab_;}
 double NumericalMetricLorene::getRms() const {
   GYOTO_DEBUG << endl;
-  return risco_;}  
+  if (rico()!=0.) return rico();
+  else return risco_;
+}  
 double NumericalMetricLorene::getRmb() const {
   GYOTO_DEBUG << endl;
   return rmb_;}  
 
 
 double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
-  // Computes the specific angular momentum \ell = -u_phi / u_t
+  // Computes the Keplerian specific angular momentum \ell = -u_phi / u_t
+  // for circular geodesics,
   // for a general axisym metric in the equatorial plane
   double pos[4]={0., rr, M_PI/2., 0.};
   
   double gtt_dr  =gmunu_up_dr(pos, 0, 0),
     gtph_dr =gmunu_up_dr(pos, 0, 3), 
     gphph_dr=gmunu_up_dr(pos, 3, 3);
-  
-  return gtph_dr/gphph_dr + 
-    sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr) ;
+
+  double lKep = gtph_dr/gphph_dr + 
+    sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr);
+
+  if (lKep!=lKep || lKep==lKep+1.){
+    cerr << "At r= " << rr << endl;
+    throwError("In NML::getSpecificAngMom: lKep not defined here!"
+	       " You are probably below the innermost circular orbit.");
+  }
+
+  return lKep;
 }
 
 double NumericalMetricLorene::getPotential(double pos[4], double l_cst) const {
@@ -2077,6 +2091,9 @@ void NumericalMetricLorene::specifyMarginalOrbits(bool s) {
   }
 }
 
+double NumericalMetricLorene::rico() const {return rico_;}
+void NumericalMetricLorene::rico(double r0) {rico_=r0;}
+
 bool NumericalMetricLorene::mapEt() const {return  mapet_;}
 void NumericalMetricLorene::mapEt(bool s) {
   mapet_ = s;
@@ -2156,6 +2173,7 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
 					     double* vel,
 					     double dir, 
 					     int indice_time) const {
+  //cout << "IN CIRCULAR" << endl;
   if (bosonstarcircular_){
     // This expression is related to the ZAMO 3-velocity derived
     // in Grandclement+14 boson star paper
@@ -2191,14 +2209,17 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     double ut = 1./(NN*sqrt(1.-Vzamo*Vzamo));
     vel[0] = ut; vel[1] = 0.; vel[2] = 0.; vel[3] = Omega*ut;
     
-    //double ell=2.5;
-    //double pot = 0.5*log((g_tp*g_tp-g_tt*g_pp)
-    ///(g_tt*ell*ell+2.*ell*g_tp+g_pp));
+    double ell=2.5;
+    double pot = 0.5*log((g_tp*g_tp-g_tt*g_pp)
+			 /(g_tt*ell*ell+2.*ell*g_tp+g_pp));
     //cout << rr << " " << g_tp*g_tp-g_tt*g_pp << " " << g_tt*ell*ell+2.*ell*g_tp+g_pp << " " << pot << endl;
     //}
     double normtol = 1e-6;
     double norm = ScalarProd(coor,vel,vel);
-    if (fabs(norm+1.)>normtol) throwError("In NML::circularv: bad norm");
+    if (fabs(norm+1.)>normtol) {
+      cerr << "At rr=" << coor[1] << endl;
+      throwError("In NML::circularv: bad norm");
+    }
     return;
   }
   

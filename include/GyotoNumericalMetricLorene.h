@@ -73,6 +73,7 @@ class Gyoto::Metric::NumericalMetricLorene
   Lorene::Scalar** lorentz_tab_; ///< Lorentz factor at surface (if any)
   Lorene::Valeur** hor_tab_; ///< Apparent horizon (if any)
   double risco_; ///< ISCO coordinate radius
+  double rico_; ///< Innermost circular orbit coordinate radius
   double rmb_; ///< Marginally bound orbit coordinate radius
 
   void free(); ///< deallocate memory
@@ -95,6 +96,8 @@ class Gyoto::Metric::NumericalMetricLorene
   void   initialTime(double t0);
   double horizon() const ;
   void   horizon(double t0);
+  double rico() const ;
+  void   rico(double r0);
   bool hasSurface() const;
   void hasSurface(bool s);
   bool bosonstarcircular() const;
