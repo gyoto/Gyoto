@@ -96,6 +96,8 @@ protected:
  double ADAFdensity_; ///< ADAF central density
 
  bool changecusp_; ///< true to apply the fishy rcusp_ change (to be changed)
+ bool rochelobefilling_; ///< true if torus filling its Roche lobe
+ double rintorus_; ///< Inner radius of the doughnut
 
  // Constructors - Destructor
  // -------------------------
@@ -149,6 +151,8 @@ public:
 
  void nonThermalDeltaExpo(std::vector<double> const &v);
  std::vector<double> nonThermalDeltaExpo() const;
+ void angmomrinner(std::vector<double> const &v);
+ std::vector<double> angmomrinner() const;
  void adafparams(std::vector<double> const &v);
  std::vector<double> adafparams() const;
  void adaf(bool t);

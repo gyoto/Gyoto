@@ -29,6 +29,7 @@ using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(PolishDoughnut)
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut, Lambda, lambda)
+GYOTO_PROPERTY_VECTOR_DOUBLE(PolishDoughnut, AngMomRinner, angmomrinner)
 GYOTO_PROPERTY_DOUBLE_UNIT(PolishDoughnut, CentralDensity, centralDensity)
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut,
 		      CentralTempOverVirial, centralTempOverVirial)
@@ -65,7 +66,7 @@ GYOTO_PROPERTY_END(PolishDoughnut, Standard::properties)
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
   spectrumBB_(NULL),
-  l0_(0.),
+  l0_(10.),
   lambda_(0.5),
   W_surface_(0.),
   W_centre_(0.),
@@ -85,7 +86,9 @@ PolishDoughnut::PolishDoughnut() :
   ADAFtemperature_(0.),
   ADAFdensity_(0.),
   intersection(this),
-  changecusp_(0)
+  changecusp_(0),
+  rochelobefilling_(0),
+  rintorus_(10.)
 {
 #ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -116,7 +119,9 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
 		 ADAFtemperature_(orig.ADAFtemperature_),
 		 ADAFdensity_(orig.ADAFdensity_),
 		 intersection(orig.intersection),
-		 changecusp_(orig.changecusp_)
+		 changecusp_(orig.changecusp_),
+		 rochelobefilling_(orig.rochelobefilling_),
+		 rintorus_(orig.rintorus_)
 {
   intersection.papa=this;
   if (gg_) gg_ -> hook(this);
@@ -132,6 +137,7 @@ double PolishDoughnut::getRcusp() const { return r_cusp_; }
 double PolishDoughnut::getRcentre() const { return r_centre_; }
 double PolishDoughnut::lambda() const { return lambda_; }
 void PolishDoughnut::lambda(double lam) {
+  rochelobefilling_=1; // if here, the torus fills its Roche lobe
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
   lambda_=lam;
@@ -261,6 +267,34 @@ std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
   return v;
 }
 
+void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
+  if (v.size() != 2)
+    throwError("Only 2 arguments to define l0 and rin");
+  l0_ = v[0];
+  rintorus_ = v[1];
+  //cout << "l0,rin= " << l0_ << " " << rintorus_ << endl;
+  double posin[4]={0.,rintorus_,M_PI/2.,0.};
+  W_surface_ = gg_->getPotential(posin,l0_);
+  double rmin = rintorus_, rmax = 1000.;
+  r_centre_ = intersection.ridders(rmin, rmax) ;
+  double posc[4]={0.,r_centre_,M_PI/2.,0.};
+  W_centre_  = gg_->getPotential(posc,l0_);
+  DeltaWm1_ = 1./(W_centre_ - W_surface_);
+  //cout << "Ws Wc rc= " << W_surface_ << " " << W_centre_ << " " << r_centre_ << endl;
+  GYOTO_IF_DEBUG;
+  GYOTO_DEBUG_EXPR(l0_);
+  GYOTO_DEBUG_EXPR(r_centre_);
+  GYOTO_DEBUG_EXPR(rintorus_);
+  GYOTO_DEBUG_EXPR(W_surface_);
+  GYOTO_DEBUG_EXPR(W_centre_);
+  GYOTO_ENDIF_DEBUG
+}
+std::vector<double> PolishDoughnut::angmomrinner() const {
+  std::vector<double> v (2, 0.);
+  v[0]=l0_; v[1]=rintorus_;
+  return v;
+}
+
 void PolishDoughnut::adafparams(std::vector<double> const &v) {
   if (v.size() != 2)
     throwError("ADAF must have exactly 2 elements");
@@ -302,10 +336,22 @@ void PolishDoughnut::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
   Standard::metric(met);
   if (gg_) gg_ -> hook(this);
   GYOTO_DEBUG << "Metric set, calling lambda\n";
-  lambda(lambda_); // setLambda_ initializes other members
+  
+  if (!rochelobefilling_){ 
+    // don't read this if lambda() had been already called
+    std::vector<double> vv = angmomrinner();
+    angmomrinner(vv); //initializes other members, should always be well defined
+  }
+  //lambda(lambda_);//initializes other members; lambda() is not always defined
 }
 void PolishDoughnut::tell(Hook::Teller * met) {
-  if (met == gg_) lambda(lambda_);
+  if (met == gg_) {
+    if (!rochelobefilling_){ 
+      // don't read this if lambda() had been already called
+      std::vector<double> vv = angmomrinner();
+      angmomrinner(vv); //initializes other members
+    }
+  }//if (met == gg_) lambda(lambda_); // not always defined
   else throwError("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
 		  "wrong metric");
 }
@@ -360,7 +406,6 @@ double PolishDoughnut::operator()(double const coord[4]) {
   for (int ii=0;ii<4;ii++) pos[ii]=coord[ii];
   double tmp =  W_surface_ - gg_->getPotential(pos,l0_);
   double rproj = coord[1] * sin(coord[2]);
-
   if (rproj<r_cusp_) {
     tmp = fabs(tmp)+(r_cusp_-rproj);
   }
@@ -1292,7 +1337,7 @@ PolishDoughnut::intersection_t::intersection_t(PolishDoughnut*parent)
 double PolishDoughnut::intersection_t::operator()(double rr) const
 {
   double y = papa->gg_->getSpecificAngularMomentum(rr) - papa->l0_;
-  
+
   return y ; // y = 0 gives 2 intersections,
   //the cusp and the central radius of the torus
 }
