@@ -293,12 +293,12 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   if (rico>0.) rmin=rico;
   else rmin=rintorus_;
   double rmax = 1000.;
-  cout << "rmin max= " << rmin << " " << rmax << endl;
+  //cout << "rmin max= " << rmin << " " << rmax << endl;
   r_centre_ = intersection.ridders(rmin, rmax) ;
   double posc[4]={0.,r_centre_,M_PI/2.,0.};
   W_centre_  = gg_->getPotential(posc,l0_);
   DeltaWm1_ = 1./(W_centre_ - W_surface_);
-  cout << "Ws Wc rc= " << W_surface_ << " " << W_centre_ << " " << r_centre_ << endl;
+  //cout << "Ws Wc rc= " << W_surface_ << " " << W_centre_ << " " << r_centre_ << endl;
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(l0_);
   GYOTO_DEBUG_EXPR(r_centre_);
