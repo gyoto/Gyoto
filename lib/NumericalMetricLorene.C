@@ -46,7 +46,7 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
 GYOTO_PROPERTY_FILENAME(NumericalMetricLorene, File, directory)
 GYOTO_PROPERTY_END(NumericalMetricLorene, Generic::properties)
 
-
+#define GYOTO_NML_PPHI_TOL 5 // tolerance on p_phi drift, percentage
 
 NumericalMetricLorene::NumericalMetricLorene() :
   WIP("Metric::NumericalMetricLorene"),
@@ -305,36 +305,33 @@ double NumericalMetricLorene::getRmb() const {
 
 
 double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
- double gtt_dr, gtph_dr, gphph_dr, l_ms, l_mb, gtt, gtph, gphph;
-
+  // Computes the specific angular momentum \ell = -u_phi / u_t
+  // for a general axisym metric in the equatorial plane
   double pos[4]={0., rr, M_PI/2., 0.};
-
-  gtt_dr  =gmunu_up_dr(pos, 0, 0);      //upper index
-  gtph_dr =gmunu_up_dr(pos, 0, 3); 
-  gphph_dr=gmunu_up_dr(pos, 3, 3);
   
-  gtt=gmunu(pos,0,0);
-  gtph=gmunu(pos,0,3); 
-  gphph=gmunu(pos,3,3);
-
-  l_ms = gtph_dr/gphph_dr + 
-         sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr) ;
-  return l_ms;
-
+  double gtt_dr  =gmunu_up_dr(pos, 0, 0),
+    gtph_dr =gmunu_up_dr(pos, 0, 3), 
+    gphph_dr=gmunu_up_dr(pos, 3, 3);
+  
+  return gtph_dr/gphph_dr + 
+    sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr) ;
 }
 
 double NumericalMetricLorene::getPotential(double pos[4], double l_cst) const {
-  
+  // returns W= -log(abs(u_t)), so that PD::operator, returning Wsurf-W,
+  // is negative inside doughnut
+
   double gtt=gmunu(pos,0,0);
   double gtph=gmunu(pos,0,3); 
   double gphph=gmunu(pos,3,3);
+
+  double u_t_squared = (gtph*gtph-gtt*gphph)
+    /(gtt*l_cst*l_cst+2.*l_cst*gtph+gphph);
+
+  if (u_t_squared<0.) return -DBL_MAX; // so Wsurf-W is always >0, not hit,
+                                       // 4-velocity not defined
   
-  double  Omega = -(gtph + l_cst * gtt)/(gphph + l_cst * gtph) ;
-  
-  double  W = 0.5 * log(abs(-gtt - 2. * Omega * gtph - Omega*Omega * gphph)) 
-    - log(abs(-gtt - Omega * gtph)) ;
-  
-  return  W ;
+  return  -log(sqrt(u_t_squared)) ;
 }
 
 
@@ -703,7 +700,7 @@ int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8],
   double cst_p_ph = cst[1];
   double pphi_err=fabs(cst_p_ph-(gmunu(coord,0,3)*tdot + gmunu(coord,3,3)
 				   *phdot))/fabs(cst_p_ph)*100.; 
-  double pphi_err_tol=1.;//in percent
+  double pphi_err_tol=GYOTO_NML_PPHI_TOL;
   /*
     Next test done on pphi/tdot as pphi propto
     tdot and tdot can diverge close to horizon.
@@ -1006,7 +1003,7 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   double cst_p_ph = cst[1];
   double pphi_err=fabs(cst_p_ph-(gmunu(coord,0,3)*tdot + gmunu(coord,3,3)
 				 *phdot))/fabs(cst_p_ph)*100.; 
-  double pphi_err_tol=1.;//in percent
+  double pphi_err_tol=GYOTO_NML_PPHI_TOL;
   /*
     Next test done on pphi/tdot as pphi propto
     tdot and tdot can diverge close to horizon.
@@ -1455,6 +1452,9 @@ double NumericalMetricLorene::christoffel(const double coord[8],
 {
   // 4D christoffels: time interpolation
   GYOTO_DEBUG << endl;
+  
+  if (nb_times_>1) throwError("In NML::christoffel:"
+			      "so far only stationary metric implemented");
 
   double tt = coord[0];
 
@@ -1695,6 +1695,9 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
 
   double tt = coord[0];
 
+  if (nb_times_>1) throwError("In NML::christoffel all at once:"
+			      "so far only stationary metric implemented");
+
   int it=nb_times_-1;
   while(tt<times_[it] && it>=0) it--;
 
@@ -1764,98 +1767,86 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
-      -1./(r2*sin(th))*beta_p;
+      -1./(r2*sin(th))*shift(3).val_point(rr,th,ph);
     double beta_pt = rsm1*shift(3).dsdt().val_point(rr,th,ph)
-      -cos(th)/(rr*sin(th)*sin(th))*beta_p;
+      -cos(th)/(rr*sinth2)*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
-    double Ktp = rr*rsinth*kij(1,3).val_point(rr,th,ph);
+    double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
     const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    // contravariant 3-metric
     double grr=g_up_ij(1,1).val_point(rr,th,ph),
-      gtt=1./r2*g_up_ij(1,1).val_point(rr,th,ph),
+      gtt=1./r2*g_up_ij(2,2).val_point(rr,th,ph),
       gpp=rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph);
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
-    double gamma_prp = 0.5*gpp
-      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
-	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-    double gamma_ptp = 0.5*gpp
-      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+    // derivation of covariant 3-metric
+    double g_rr_r = g_ij(1,1).dsdr().val_point(rr,th,ph),
+      g_rr_t = g_ij(1,1).dsdt().val_point(rr,th,ph),
+      g_tt_r = r2*g_ij(2,2).dsdr().val_point(rr,th,ph) 
+      + 2.*rr*g_ij(2,2).val_point(rr,th,ph),
+      g_tt_t = r2*g_ij(2,2).dsdt().val_point(rr,th,ph),
+      g_pp_r = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
+      +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph),
+      g_pp_t = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
+      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph);
     
-  dst[0][0][1]=dst[0][1][0]=1./NN*(Nr-Krp*beta_p);
-  dst[0][0][2]=dst[0][2][0]=1./NN*(Nt-Ktp*beta_p);
-  dst[0][1][3]=dst[0][3][1]=-Krp/NN;
-  dst[0][2][3]=dst[0][3][2]=-Ktp/NN;
-  dst[1][0][0]=NN*grr*(Nr - 2.*Krp*beta_p);
-  dst[2][0][0]=NN*gtt*(Nt - 2.*Ktp*beta_p);
-  dst[1][0][3]=dst[1][3][0]=-NN*grr*Krp;
-  dst[2][0][3]=dst[2][3][0]=-NN*gtt*Ktp;
-  dst[3][1][0]=dst[3][0][1]=beta_pr + gamma_prp*beta_p
-    -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr);
-  dst[3][2][0]=dst[3][0][2]=beta_pt + gamma_ptp*beta_p
-    -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
-  dst[1][1][1]=0.5*g_up_ij(1,1).val_point(rr,th,ph)
-    *g_ij(1,1).dsdr().val_point(rr,th,ph);
-  dst[1][3][3]=-0.5*g_up_ij(1,1).val_point(rr,th,ph)
-    *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
-      +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-  dst[1][1][2]=dst[1][2][1]=0.5*g_up_ij(1,1).val_point(rr,th,ph)
-    *g_ij(1,1).dsdt().val_point(rr,th,ph); 
-  dst[1][2][2]=-0.5*g_up_ij(1,1).val_point(rr,th,ph)
-    *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph) 
-      + 2.*rr*g_ij(2,2).val_point(rr,th,ph));
-  dst[2][3][3]=-0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-    *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)); 
-  dst[2][1][1]=-0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-    *g_ij(1,1).dsdt().val_point(rr,th,ph);
-  dst[2][2][2]=0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-    *(r2*g_ij(2,2).dsdt().val_point(rr,th,ph));
-  dst[2][1][2]=dst[2][2][1]=0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-    *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph)
-      +2.*rr*g_ij(2,2).val_point(rr,th,ph));
-  dst[3][1][3]=dst[3][3][1]=0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
-    *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
-      +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph)) + beta_p/NN*Krp;
-  dst[3][2][3]=dst[3][3][2]=0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
-    *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)) 
-    + beta_p/NN*Ktp;
-  dst[0][0][0]=0.;
-  dst[0][0][3]=0.;
-  dst[0][3][0]=0.;
-  dst[0][1][1]=0.;
-  dst[0][2][2]=0.;
-  dst[0][3][3]=0.;
-  dst[0][1][2]=0.;
-  dst[0][2][1]=0.;
-  dst[3][0][0]=0.;
-  dst[1][0][1]=0.;
-  dst[1][1][0]=0.;
-  dst[1][0][2]=0.;
-  dst[1][2][0]=0.;
-  dst[2][0][1]=0.;
-  dst[2][1][0]=0.;
-  dst[2][0][2]=0.;
-  dst[2][2][0]=0.;
-  dst[3][0][3]=0.;
-  dst[3][3][0]=0.;
-  dst[1][1][3]=0.;
-  dst[1][3][1]=0.;
-  dst[1][2][3]=0.;
-  dst[1][3][2]=0.;
-  dst[2][1][3]=0.;
-  dst[2][3][1]=0.;
-  dst[2][2][3]=0.;
-  dst[2][3][2]=0.;
-  dst[3][1][1]=0.;
-  dst[3][2][2]=0.;
-  dst[3][3][3]=0.;
-  dst[3][1][2]=0.;
-  dst[3][2][1]=0.;
-  // Oh yeah, this makes 64 christoffels
-  
-  return 0;
+    dst[0][0][1]=dst[0][1][0]=1./NN*(Nr-Krp*beta_p); //checked
+    dst[0][0][2]=dst[0][2][0]=1./NN*(Nt-Ktp*beta_p); //checked
+    dst[0][1][3]=dst[0][3][1]=-Krp/NN; //checked
+    dst[0][2][3]=dst[0][3][2]=-Ktp/NN; //checked
+    dst[1][0][0]=NN*grr*(Nr - 2.*Krp*beta_p - beta_p*beta_p/(2.*NN)*g_pp_r); //checked
+    dst[2][0][0]=NN*gtt*(Nt - 2.*Ktp*beta_p - beta_p*beta_p/(2.*NN)*g_pp_t); //checked
+    dst[1][0][3]=dst[1][3][0]=-grr*(NN*Krp+0.5*beta_p*g_pp_r); //checked
+    dst[2][0][3]=dst[2][3][0]=-gtt*(NN*Ktp+0.5*beta_p*g_pp_t); //checked
+    dst[3][1][0]=dst[3][0][1]=beta_pr + 0.5*gpp*g_pp_r*beta_p
+    -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr); //checked
+    dst[3][2][0]=dst[3][0][2]=beta_pt + 0.5*gpp*g_pp_t*beta_p
+    -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt); //checked
+    dst[1][1][1]=0.5*grr*g_rr_r; //checked
+    dst[1][3][3]=-0.5*grr*g_pp_r; //checked
+    dst[1][1][2]=dst[1][2][1]=0.5*grr*g_rr_t; //checked
+    dst[1][2][2]=-0.5*grr*g_tt_r; //checked
+    dst[2][3][3]=-0.5*gtt*g_pp_t; //checked
+    dst[2][1][1]=-0.5*gtt*g_rr_t; //checked
+    dst[2][2][2]=0.5*gtt*g_tt_t; //checked
+    dst[2][1][2]=dst[2][2][1]=0.5*gtt*g_tt_r; //checked
+    dst[3][1][3]=dst[3][3][1]=0.5*gpp*g_pp_r + beta_p/NN*Krp; //checked
+    dst[3][2][3]=dst[3][3][2]=0.5*gpp*g_pp_t + beta_p/NN*Ktp; //checked
+    dst[0][0][0]=0.;
+    dst[0][0][3]=0.;
+    dst[0][3][0]=0.;
+    dst[0][1][1]=0.;
+    dst[0][2][2]=0.;
+    dst[0][3][3]=0.;
+    dst[0][1][2]=0.;
+    dst[0][2][1]=0.;
+    dst[3][0][0]=0.;
+    dst[1][0][1]=0.;
+    dst[1][1][0]=0.;
+    dst[1][0][2]=0.;
+    dst[1][2][0]=0.;
+    dst[2][0][1]=0.;
+    dst[2][1][0]=0.;
+    dst[2][0][2]=0.;
+    dst[2][2][0]=0.;
+    dst[3][0][3]=0.;
+    dst[3][3][0]=0.;
+    dst[1][1][3]=0.;
+    dst[1][3][1]=0.;
+    dst[1][2][3]=0.;
+    dst[1][3][2]=0.;
+    dst[2][1][3]=0.;
+    dst[2][3][1]=0.;
+    dst[2][2][3]=0.;
+    dst[2][3][2]=0.;
+    dst[3][1][1]=0.;
+    dst[3][2][2]=0.;
+    dst[3][3][3]=0.;
+    dst[3][1][2]=0.;
+    dst[3][2][1]=0.;
+    // Oh yeah, this makes 64 christoffels
+    
+    return 0;
 }
 
 double NumericalMetricLorene::christoffel3(const double coord[6],
@@ -2168,7 +2159,10 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
   if (bosonstarcircular_){
     // This expression is related to the ZAMO 3-velocity derived
     // in Grandclement+14 boson star paper
+    //for (int ii=1;ii<=5000;ii++){
+    //double coorbis[4]={0.,double(ii*0.01),M_PI/2.,0.};
     double rr=coor[1], th=coor[2], sinth=sin(th), ph=coor[3];
+    //double rr=coorbis[1], th=coorbis[2], sinth=sin(th), ph=coorbis[3];
     if (rr<=0. || sinth==0.) throwError("In NML::circularv: bad coor");
     double rsm1 = 1./(rr*sinth), rm2 = 1/(rr*rr), sm1 = 1./sinth;
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
@@ -2189,17 +2183,25 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     if (DD<0.) throwError("In NML::circularv: bad D");
     double g_tt = gmunu(coor,0,0), g_tp = gmunu(coor,0,3),
       g_pp = gmunu(coor,3,3);
+    //double g_tt = gmunu(coorbis,0,0), g_tp = gmunu(coorbis,0,3),
+    //g_pp = gmunu(coorbis,3,3);
     if (g_pp<=0.) throwError("In NML::circularv: bad g_pp");
     double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(1./rr+Br/BB);
     double Omega = NN*Vzamo/sqrt(g_pp) - beta_p;
     double ut = 1./(NN*sqrt(1.-Vzamo*Vzamo));
     vel[0] = ut; vel[1] = 0.; vel[2] = 0.; vel[3] = Omega*ut;
+    
+    //double ell=2.5;
+    //double pot = 0.5*log((g_tp*g_tp-g_tt*g_pp)
+    ///(g_tt*ell*ell+2.*ell*g_tp+g_pp));
+    //cout << rr << " " << g_tp*g_tp-g_tt*g_pp << " " << g_tt*ell*ell+2.*ell*g_tp+g_pp << " " << pot << endl;
+    //}
     double normtol = 1e-6;
     double norm = ScalarProd(coor,vel,vel);
     if (fabs(norm+1.)>normtol) throwError("In NML::circularv: bad norm");
     return;
   }
-
+  
   throwError("In NML::circularVelocity: circular velocity not implemented"
 	     " for this particular metric");
 }
