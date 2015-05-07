@@ -63,10 +63,12 @@ GYOTO_PROPERTY_END(PolishDoughnut, Standard::properties)
 #define GYOTO_C2_CGS_M1 1.1126500560536184087938986e-21 // 1./GYOTO_C2_CGS
 #define w_tol 1e-9
 #define nstep_angint 10 // for angle-averaging integration
+#define DEFAULT_L0 10.
+#define DEFAULT_RIN 10.
 PolishDoughnut::PolishDoughnut() :
   Standard("PolishDoughnut"),
   spectrumBB_(NULL),
-  l0_(10.),
+  l0_(DEFAULT_L0),
   lambda_(0.5),
   W_surface_(0.),
   W_centre_(0.),
@@ -88,7 +90,8 @@ PolishDoughnut::PolishDoughnut() :
   intersection(this),
   changecusp_(0),
   rochelobefilling_(0),
-  rintorus_(10.)
+  defangmomrinner_(0),
+  rintorus_(DEFAULT_RIN)
 {
 #ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -121,6 +124,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
 		 intersection(orig.intersection),
 		 changecusp_(orig.changecusp_),
 		 rochelobefilling_(orig.rochelobefilling_),
+		 defangmomrinner_(orig.defangmomrinner_),
 		 rintorus_(orig.rintorus_)
 {
   intersection.papa=this;
@@ -138,6 +142,10 @@ double PolishDoughnut::getRcentre() const { return r_centre_; }
 double PolishDoughnut::lambda() const { return lambda_; }
 void PolishDoughnut::lambda(double lam) {
   rochelobefilling_=1; // if here, the torus fills its Roche lobe
+  if (defangmomrinner_ && (rintorus_!=DEFAULT_L0 || l0_!=DEFAULT_RIN)){
+    throwError("In PolishDoughnut::lambda(): "
+	       "Lambda OR AngMomRinner should be provided");
+  }
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
   lambda_=lam;
@@ -268,6 +276,11 @@ std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
 }
 
 void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
+  defangmomrinner_=1;
+  if (rochelobefilling_){
+    throwError("In PolishDoughnut::angmomrinner(): "
+	       "Lambda OR AngMomRinner should be provided");
+  }
   if (v.size() != 2)
     throwError("Only 2 arguments to define l0 and rin");
   l0_ = v[0];

@@ -97,6 +97,7 @@ protected:
 
  bool changecusp_; ///< true to apply the fishy rcusp_ change (to be changed)
  bool rochelobefilling_; ///< true if torus filling its Roche lobe
+ bool defangmomrinner_; ///< true if torus defined from l0 and rin
  double rintorus_; ///< Inner radius of the doughnut
 
  // Constructors - Destructor
