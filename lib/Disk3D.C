@@ -219,7 +219,7 @@ double const * Disk3D::getVelocity() const { return velocity_; }
 
 void Disk3D::repeatPhi(size_t n) {
   repeat_phi_ = n;
-  if ((nphi_-1)*repeat_phi_>0.)
+  if (nphi_>1 && repeat_phi_>0.)
     dphi_=(phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     //dphi_=2.*M_PI/double((nphi_-1.)*repeat_phi_);
     
