@@ -166,7 +166,7 @@ double PolishDoughnut::lambda() const {
 void PolishDoughnut::lambda(double lam) {
   rochelobefilling_=1; // if here, the torus fills its Roche lobe
   if (defangmomrinner_){
-    GYOTO_WARNING << "Setting Lambda overrides AngMomRinner previously set";
+    GYOTO_WARNING << "Setting Lambda overrides AngMomRinner previously set\n";
     defangmomrinner_=0;
   }
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
@@ -301,7 +301,7 @@ std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
 void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   defangmomrinner_=1;
   if (rochelobefilling_){
-    GYOTO_WARNING << "Setting AngMomRinner overrides Lambda previously set";
+    GYOTO_WARNING << "Setting AngMomRinner overrides Lambda previously set\n";
     rochelobefilling_=0;
   }
   if (v.size() != 2)
