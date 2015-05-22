@@ -52,6 +52,20 @@ GYOTO_PROPERTY_BOOL(PolishDoughnut,
 		    ChangeCusp, KeepCusp, changeCusp)
 GYOTO_PROPERTY_END(PolishDoughnut, Standard::properties)
 
+#ifdef GYOTO_USE_XERCES
+/*
+  Either lambda_ or rintorus_ is defined. Filter out the other one
+  when writing properties to XML.
+ */
+void PolishDoughnut::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  if ((p.name == "Lambda" && !rochelobefilling_) ||
+      (p.name == "AngMomRinner" && !defangmomrinner_))
+    return; // do nothing
+  else
+    Standard::fillProperty(fmp, p);
+}
+#endif
+
 #define CST_POLY_INDEX 1.5//polytropic index n (gamma=1+1/n=5/3)
 #define CST_POLY_INDEX_M1 0.666666666666666666666666666666666666666667
 #define CST_HYDRO_FRAC 0.75//hydrogen fraction
@@ -139,12 +153,21 @@ double PolishDoughnut::getWsurface() const { return W_surface_; }
 double PolishDoughnut::getWcentre() const { return W_centre_; }
 double PolishDoughnut::getRcusp() const { return r_cusp_; }
 double PolishDoughnut::getRcentre() const { return r_centre_; }
-double PolishDoughnut::lambda() const { return lambda_; }
+
+double PolishDoughnut::lambda() const {
+  if (!rochelobefilling_) {
+    if (defangmomrinner_)
+      throwError("Lambda is not set because AngMomRinner is.");
+    else
+      throwError("Lambda is not set yet.");
+  }
+  return lambda_;
+}
 void PolishDoughnut::lambda(double lam) {
   rochelobefilling_=1; // if here, the torus fills its Roche lobe
-  if (defangmomrinner_ && (rintorus_!=DEFAULT_L0 || l0_!=DEFAULT_RIN)){
-    throwError("In PolishDoughnut::lambda(): "
-	       "Lambda OR AngMomRinner should be provided");
+  if (defangmomrinner_){
+    GYOTO_WARNING << "Setting Lambda overrides AngMomRinner previously set";
+    defangmomrinner_=0;
   }
   if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
@@ -278,8 +301,8 @@ std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
 void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   defangmomrinner_=1;
   if (rochelobefilling_){
-    throwError("In PolishDoughnut::angmomrinner(): "
-	       "Lambda OR AngMomRinner should be provided");
+    GYOTO_WARNING << "Setting AngMomRinner overrides Lambda previously set";
+    rochelobefilling_=0;
   }
   if (v.size() != 2)
     throwError("Only 2 arguments to define l0 and rin");
@@ -308,6 +331,12 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   GYOTO_ENDIF_DEBUG
 }
 std::vector<double> PolishDoughnut::angmomrinner() const {
+  if (!defangmomrinner_) {
+    if (rochelobefilling_)
+      throwError("AngMomRinner is not set because Lambda has been set.");
+    else
+      throwError("AngMomRinner is not set yet.");
+  }
   std::vector<double> v (2, 0.);
   v[0]=l0_; v[1]=rintorus_;
   return v;
@@ -355,21 +384,21 @@ void PolishDoughnut::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
   if (gg_) gg_ -> hook(this);
   GYOTO_DEBUG << "Metric set, calling lambda\n";
   
-  if (!rochelobefilling_){ 
-    // don't read this if lambda() had been already called
-    std::vector<double> vv = angmomrinner();
-    angmomrinner(vv); //initializes other members, should always be well defined
-  }
-  //lambda(lambda_);//initializes other members; lambda() is not always defined
+
+  // Initialize other members only if lambda(val) or
+  // angmomrinner(vect) has been called already. Mutually exclusive.
+  if (defangmomrinner_) angmomrinner(angmomrinner());
+  else if (rochelobefilling_) lambda(lambda());
+  
+  GYOTO_DEBUG << "done\n";
 }
 void PolishDoughnut::tell(Hook::Teller * met) {
   if (met == gg_) {
-    if (!rochelobefilling_){ 
-      // don't read this if lambda() had been already called
-      std::vector<double> vv = angmomrinner();
-      angmomrinner(vv); //initializes other members
-    }
-  }//if (met == gg_) lambda(lambda_); // not always defined
+    // Initialize other members only if lambda(val) or
+    // angmomrinner(vect) has been called already. Mutually exclusive.
+    if (defangmomrinner_) angmomrinner(angmomrinner());
+    else if (rochelobefilling_) lambda(lambda());
+  }
   else throwError("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
 		  "wrong metric");
 }

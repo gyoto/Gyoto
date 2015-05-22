@@ -103,7 +103,11 @@ protected:
  // Constructors - Destructor
  // -------------------------
 public:
- GYOTO_OBJECT;
+ GYOTO_OBJECT; // This object has Properties
+#ifdef GYOTO_USE_XERCES
+ // We need to filter some properties when writing XML
+ void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+#endif
  PolishDoughnut() ; ///< Default constructor
  PolishDoughnut(const PolishDoughnut& ) ;                ///< Copy constructor
  virtual  PolishDoughnut* clone() const;
