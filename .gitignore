@@ -1,5 +1,5 @@
 *.fits
-gyoto
+./gyoto
 bin/gyoto
 *.lo
 *.o
