@@ -72,8 +72,8 @@ namespace Gyoto {
    * Uses dlopen to load the file libgyoto-&lt;plugname&gt;.so, looks for
    * the function __Gyoto&lt;plugname&gt;Init inside it and run it.
    * Plug-ins must be located in the runtime link search path, or in
-   * GYOTO_PREFIX/lib/gyoto/, or in
-   * GYOTO_PREFIX/lib/gyoto/GYOTO_SOVERS/.
+   * GYOTO_PKGLIBDIR, or in
+   * GYOTO_PKGLIBDIR/GYOTO_SOVERS/.
    *
    * \param plugname Plug-in name.
    * \param nofail Unless nofail evals to true, the inability to find

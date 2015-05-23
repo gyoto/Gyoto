@@ -50,8 +50,7 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
 		    << " from file: " << dlfile << endl;
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
   if (!handle) {
-    string dlpath = GYOTO_PREFIX ;
-    dlpath += "/lib/gyoto/" ;
+    string dlpath = GYOTO_PKGLIBDIR "/";
     string dlfull = dlpath + dlfile;
     handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if (!handle) {

@@ -1,12 +1,12 @@
 prefix=@prefix@
-exec_prefix=${prefix}
-abs_top_srcdir=@abs_top_srcdir@
-libdir=${abs_top_srcdir}/lib/.libs
-includedir=${abs_top_srcdir}/include
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+pkglibdir=${libdir}/@PACKAGE@
 
-GYOTO=${abs_top_srcdir}/bin/gyoto
+GYOTO=${exec_prefix}/bin/gyoto
 
-GYOTO_PLUGDIR=${exec_prefix}/lib/gyoto/@sovers@
+GYOTO_PLUGDIR=${pkglibdir}/@sovers@
 
 YORICK=@YORICK@
 Y_INST_HOME=@Y_INST_HOME@

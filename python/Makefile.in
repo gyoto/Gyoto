@@ -180,6 +180,7 @@ clean:
 @HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py clean
 	-rm -Rf build
 	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
+	-rm doxygen_sqlite3.db
 
 # Clean up the output of configure
 distclean: clean 

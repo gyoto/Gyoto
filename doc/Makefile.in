@@ -13,7 +13,7 @@ latex.stamp:
 
 distclean clean:
 	-rm doxygen.stamp latex.stamp
-	-rm -fr html xml latex
+	-rm -fr html xml latex doxygen_sqlite3.db
 @MKGUIDE_TRUE@	cd user_guide; $(MAKE) clean
 
 %: ;

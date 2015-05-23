@@ -60,6 +60,15 @@
 # endif
 #endif
 
+/** \def GYOTO_PKGLIBDIR
+    \brief Gyoto pkglibdir, usually GYOTO_PREFIX/lib/gyoto */
+#undef GYOTO_PKGLIBDIR
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_PKGLIBDIR
+#  define GYOTO_PKGLIBDIR (undefined)
+# endif
+#endif
+
 /** \def GYOTO_SOVERS
     \brief Gyoto ABI version.
 
