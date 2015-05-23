@@ -180,7 +180,7 @@ class Gyoto::Spectrometer::Generic
    * \brief Spectrometer kind ID
    *
    * The content is not copied. kindid_ should be set (as a parameter to
-   * the Generic() constructor or using kindid()) to the adress of a
+   * the Generic() constructor or using kindid()) to the address of a
    * static variable holding the name. This allows checking the kind
    * using pointer comparison rather than string comparison.
    */
@@ -246,7 +246,7 @@ class Gyoto::Spectrometer::Generic
    * Complex::Complex : Generic(Complex::Kindid) {}
    * \endcode
    *
-   * Always set kindid to the adress of a static variable, not to a temporary.
+   * Always set kindid to the address of a static variable, not to a temporary.
    * Usually your class should have a static member for that purpose:
    * \code
    * class MyKind : public Spectrometer::Generic
@@ -310,7 +310,7 @@ class Gyoto::Spectrometer::Generic
    * This should rarely be used as the Generic::kindid_ attribute usually is set
    * in the constructor and doesn't change after that.
    *
-   * Always set to the adress of a static variable, not to a temporary.
+   * Always set to the address of a static variable, not to a temporary.
    * Usually your class should have a static member for that purpose:
    * \code
    * class MyKind : public Spectrometer::Generic

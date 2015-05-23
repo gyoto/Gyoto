@@ -400,7 +400,7 @@ class Gyoto::Astrobj::Generic
    * will look in it for pointers to properties which apply to its
    * kind. If a pointer to a property known to this object is present,
    * then the property is computed and store at the pointed-to
-   * adress. For instance, all objects know the "intensity"
+   * address. For instance, all objects know the "intensity"
    * property. If data->intensity != NULL, the instensity is computed
    * and stored in *data->intensity.
    *

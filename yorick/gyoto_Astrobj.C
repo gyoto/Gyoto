@@ -91,7 +91,7 @@ extern "C" {
       worker = &ygyoto_ThinDisk_generic_eval;
       break;
     default:
-      y_error("BUG: unkown base type");
+      y_error("BUG: unknown base type");
     }
 
     yarg_kw_init(knames, kglobs, kiargs);

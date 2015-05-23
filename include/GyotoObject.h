@@ -259,8 +259,8 @@ class Gyoto::Object
    * To customize how a given Property is rendered, it is better to
    * override fillProperty().
    *
-   * If this method is overriden, the implementation should in general
-   * call fillElement() on the direct base.
+   * If this method is overridden, the implementation should in
+   * general call fillElement() on the direct base.
    */
   virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 
