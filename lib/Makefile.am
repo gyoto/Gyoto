@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS) -export-dynamic $(PTHREAD_LIBS) \
-	      $(UDUNITS_LDFLAGS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS)
+AM_LDFLAGS  = $(XERCES_LIBS) -export-dynamic $(PTHREAD_LIBS) \
+	      $(UDUNITS_LIBS) $(CFITSIO_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PKGLIBDIR=\"${pkglibdir}\"
 if HAVE_MPI
 AM_LDFLAGS += $(BOOST_MPI_LDFLAGS) -lboost_mpi \
@@ -22,7 +22,7 @@ libgyoto@FEATURES@_la_SOURCES =  \
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	ThinDisk.C Converters.C Functors.C Hooks.C
-libgyoto@FEATURES@_la_LIBS = $(XERCESLDFLAGS)
+libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
 # STANDARD PLUGIN
@@ -44,8 +44,7 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
 
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(CFITSIOLDFLAGS) \
-				$(AM_LDFLAGS)
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS)
 
 # LORENE PLUGIN
 if HAVE_LORENE

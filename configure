@@ -653,18 +653,12 @@ HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
 MAKE_S
-CFITSIOCPPFLAGS
-CFITSIOLDFLAGS
 HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
 CFITSIO_CFLAGS
-XERCESCPPFLAGS
-XERCESLDFLAGS
 XERCES_LIBS
 XERCES_CFLAGS
-UDUNITS_CPPFLAGS
-UDUNITS_LDFLAGS
 HAVE_UDUNITS_FALSE
 HAVE_UDUNITS_TRUE
 UDUNITS_LIBS
@@ -19431,8 +19425,8 @@ pkg_libs=
 $as_echo_n "checking whether libudunits2 should be used... " >&6; }
 udunits_cppflags=
 udunits_ldflags=
-UDUNITS_CPPFLAGS=
-UDUNITS_LDFLAGS=
+UDUNITS_CFLAGS=
+UDUNITS_LIBS=
 
 # Check whether --with-udunits was given.
 if test "${with_udunits+set}" = set; then :
@@ -19572,8 +19566,6 @@ else
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} udunits"
           have_udunits=yes
-	  UDUNITS_CPPFLAGS=${UDUNITS_CFLAGS}
-	  UDUNITS_LDFLAGS=${UDUNITS_LIBS}
 
 fi
 
@@ -19614,10 +19606,10 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LDFLAGS="$udunits_ldflags -ludunits2"
-      UDUNITS_CPPFLAGS="$udunits_cppflags"
-      pkg_cflags="${pkg_cflags} ${UDUNITS_CPPFLAGS}"
-      pkg_libs="${pkg_libs} ${UDUNITS_LDFLAGS}"
+      UDUNITS_LIBS="$udunits_ldflags -ludunits2"
+      UDUNITS_CFLAGS="$udunits_cppflags"
+      pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
+      pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 fi
 
@@ -19659,8 +19651,8 @@ fi
 $as_echo_n "checking whether libxerces should be used... " >&6; }
 xerces_headers=
 xerces_lib=
-XERCESCPPFLAGS=
-XERCESLDFLAGS=
+XERCES_CFLAGS=
+XERCES_LIBS=
 
 # Check whether --with-xerces was given.
 if test "${with_xerces+set}" = set; then :
@@ -19800,8 +19792,6 @@ else
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} xerces-c"
           have_xerces=yes
-	  XERCESCPPFLAGS=${XERCES_CFLAGS}
-	  XERCESLDFLAGS=${XERCES_LIBS}
 
 fi
 
@@ -19842,10 +19832,10 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCESLDFLAGS="$xerces_lib -lxerces-c"
-      XERCESCPPFLAGS="$xerces_headers"
-      pkg_cflags="${pkg_cflags} ${XERCESCPPFLAGS}"
-      pkg_libs="${pkg_libs} ${XERCESLDFLAGS}"
+      XERCES_LIBS="$xerces_lib -lxerces-c"
+      XERCES_CFLAGS="$xerces_headers"
+      pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
+      pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 fi
 
@@ -20018,8 +20008,6 @@ else
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} cfitsio"
           have_cfitsio=yes
-	  CFITSIOCPPFLAGS=${CFITSIO_CFLAGS}
-	  CFITSIOLDFLAGS=${CFITSIO_LIBS}
 
 fi
 
@@ -20061,10 +20049,10 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
-      CFITSIOCPPFLAGS="$cfitsio_headers"
-      pkg_cflags="${pkg_cflags} ${CFITSIOCPPFLAGS}"
-      pkg_libs="${pkg_libs} ${CFITSIOLDFLAGS}"
+      CFITSIO_LIBS="$cfitsio_lib -lcfitsio"
+      CFITSIO_CFLAGS="$cfitsio_headers"
+      pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
+      pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
 
 
 fi

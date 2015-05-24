@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(UDUNITS_CPPFLAGS) $(BOOST_CPPFLAGS)
-AM_LDFLAGS  = $(XERCESLDFLAGS) $(PTHREAD_LIBS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS)
+AM_LDFLAGS  = $(XERCES_LIBS) $(PTHREAD_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS)
 CLEANFILES =
 
@@ -22,13 +22,13 @@ endif
 
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la
-gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIO_CFLAGS)
+gyoto_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynamic
 
 gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
 gyoto_mpi_worker_@sovers@_LDADD   = @top_builddir@/lib/libgyoto@FEATURES@.la
-gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIOCPPFLAGS)
-gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIOLDFLAGS) -export-dynamic
+gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIO_CFLAGS)
+gyoto_mpi_worker_@sovers@_LDFLAGS  = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynamic
 
 gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 	cp $^ $@

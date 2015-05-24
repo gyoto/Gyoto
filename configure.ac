@@ -333,8 +333,8 @@ pkg_libs=
 AC_MSG_CHECKING([whether libudunits2 should be used])
 udunits_cppflags=
 udunits_ldflags=
-UDUNITS_CPPFLAGS=
-UDUNITS_LDFLAGS=
+UDUNITS_CFLAGS=
+UDUNITS_LIBS=
 AC_ARG_WITH(
   [udunits],
   [AS_HELP_STRING( [--with-udunits[[=DIR]]], 
@@ -381,8 +381,6 @@ AS_IF([test "x$with_udunits" != "xno"],
          [udunits],
 	 [pkg_requires="${pkg_requires} udunits"
           have_udunits=yes
-	  UDUNITS_CPPFLAGS=${UDUNITS_CFLAGS}
-	  UDUNITS_LDFLAGS=${UDUNITS_LIBS}
          ],
 	 [AC_MSG_NOTICE([udunits.pc not found])
          ]
@@ -409,10 +407,10 @@ AS_IF([test "x$with_udunits" != "xno"],
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LDFLAGS="$udunits_ldflags -ludunits2"
-      UDUNITS_CPPFLAGS="$udunits_cppflags"
-      pkg_cflags="${pkg_cflags} ${UDUNITS_CPPFLAGS}"
-      pkg_libs="${pkg_libs} ${UDUNITS_LDFLAGS}"
+      UDUNITS_LIBS="$udunits_ldflags -ludunits2"
+      UDUNITS_CFLAGS="$udunits_cppflags"
+      pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
+      pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
      ])
   ],
   []
@@ -432,16 +430,16 @@ AS_IF([test "x$have_udunits" == "xno"],
   [use_udunits=yes
    AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])]
 )
-AC_SUBST([UDUNITS_LDFLAGS])
-AC_SUBST([UDUNITS_CPPFLAGS])
+AC_SUBST([UDUNITS_LIBS])
+AC_SUBST([UDUNITS_CFLAGS])
 
 ## XERCES
 # Check for Xerces-c
 AC_MSG_CHECKING([whether libxerces should be used])
 xerces_headers=
 xerces_lib=
-XERCESCPPFLAGS=
-XERCESLDFLAGS=
+XERCES_CFLAGS=
+XERCES_LIBS=
 AC_ARG_WITH(
   [xerces],
   [AS_HELP_STRING( [--with-xerces[[=xerces-prefix]]], 
@@ -488,8 +486,6 @@ AS_IF([test "x$with_xerces" != "xno"],
          [xerces-c],
 	 [pkg_requires="${pkg_requires} xerces-c"
           have_xerces=yes
-	  XERCESCPPFLAGS=${XERCES_CFLAGS}
-	  XERCESLDFLAGS=${XERCES_LIBS}
          ],
 	 [AC_MSG_NOTICE([xerces-c.pc not found])
          ]
@@ -516,10 +512,10 @@ AS_IF([test "x$with_xerces" != "xno"],
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCESLDFLAGS="$xerces_lib -lxerces-c"
-      XERCESCPPFLAGS="$xerces_headers"
-      pkg_cflags="${pkg_cflags} ${XERCESCPPFLAGS}"
-      pkg_libs="${pkg_libs} ${XERCESLDFLAGS}"
+      XERCES_LIBS="$xerces_lib -lxerces-c"
+      XERCES_CFLAGS="$xerces_headers"
+      pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
+      pkg_libs="${pkg_libs} ${XERCES_LIBS}"
      ])
   ],
   []
@@ -537,8 +533,8 @@ AS_IF([test "x$have_xerces" == "xno"],
   [use_xerces=yes
    AC_DEFINE([GYOTO_USE_XERCES], [1], [Define to 1 if you have Xerces])]
 )
-AC_SUBST([XERCESLDFLAGS])
-AC_SUBST([XERCESCPPFLAGS])
+AC_SUBST([XERCES_LIBS])
+AC_SUBST([XERCES_CFLAGS])
 
 ## CFITSIO
 # Check for CFITSIO
@@ -591,8 +587,6 @@ AS_IF([test "x$with_cfitsio" != "xno"],
          [cfitsio],
 	 [pkg_requires="${pkg_requires} cfitsio"
           have_cfitsio=yes
-	  CFITSIOCPPFLAGS=${CFITSIO_CFLAGS}
-	  CFITSIOLDFLAGS=${CFITSIO_LIBS}
          ],
 	 [AC_MSG_NOTICE([cfitsio.pc not found])
          ]
@@ -620,10 +614,10 @@ AS_IF([test "x$with_cfitsio" != "xno"],
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIOLDFLAGS="$cfitsio_lib -lcfitsio"
-      CFITSIOCPPFLAGS="$cfitsio_headers"
-      pkg_cflags="${pkg_cflags} ${CFITSIOCPPFLAGS}"
-      pkg_libs="${pkg_libs} ${CFITSIOLDFLAGS}"
+      CFITSIO_LIBS="$cfitsio_lib -lcfitsio"
+      CFITSIO_CFLAGS="$cfitsio_headers"
+      pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
+      pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
      ]
    )
   ],
@@ -643,8 +637,8 @@ AS_IF([test "x$have_cfitsio" == "xno"],
   ]
 )
 AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
-AC_SUBST([CFITSIOLDFLAGS])
-AC_SUBST([CFITSIOCPPFLAGS])
+AC_SUBST([CFITSIO_LIBS])
+AC_SUBST([CFITSIO_CFLAGS])
 
 ## LORENE
 # Check for LORENE
