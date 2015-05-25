@@ -1,8 +1,16 @@
-next future ABI 3
-   * New functionality: MPI-based parallelisation
+1.0.0 2015/05/25 ABI 3
+   * New functionality: MPI-based parallelisation.
+   * New functionality: Python extension.
+   * New functionality: most classes now derive from Gyoto::Object and
+     have "Properties" (instances of Gyoto::Property). This provides
+     for some introspection which is used notably in the Yorick
+     plug-in and simplifies writing new derived classes.
    * Change Scenery::rayTrace() API, replacing i/jmin and max with a
      new concept Screen::Coord2dSet. This allows using the same
      code-path for both the gyoto utility and all the yorick use cases.
+   * Update PolishDoughnut to support numerical (non-Kerr) metrics.
+   * New spectrum: Gyoto::Spectrum::ThermalBremsstrahlung.
+   * The usual lot of bug fixes and enhancements.
 
 0.2.3 2014/10/21 BUG
 	* Fix minor memory management bug in yotck/gyoto_Scenery.C

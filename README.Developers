@@ -1,0 +1,65 @@
+Dear Gyoto developers,
+
+A few notes on maintenance:
+
+Before each commit:
+===================
+
+* If you touched configure.ac or any Makefile.am file, run autoreconf
+  and commit the regenerated files (configure, Makefile*.in)
+
+* Run make check. If possible, build the yorick plug-in so that
+  make-check will do the detailed regression testing suite.
+
+* Check that the files you are commiting have correct Copyright
+  information, including the years. If needed, use "git blame
+  <filename> to check who modified this file and when.
+
+* Add something in the NEWS file. The NEWS file should contain an
+  entry fror the next release, put your note in there.
+
+To make a new release:
+======================
+
+* Check with the team whether they had plans fr this release.
+
+* Choose a version number. Version is MAJOR.MINOR.MICRO. Bump MAJOR
+  when singnificant new feature are there; update MINOR for continued
+  development of existing features; update MICRO for bugfix or
+  packaging releasing.
+
+* Edit configure.ac
+  + update the version info in AC_INIT
+  + update VERSINFO according to
+http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+  Note that this VERSINFO has nothing to do with the Gyoto version.
+  + run autoreconf
+
+* Edit NEWS
+  + add a new entry (or change the one which has not been released yet)
+  + mark the release either "ABI n" if the ABI changed, "BUG" if its a
+    simple backwards-compatible bugfix release, PKG if only the
+    packaging has been changed.
+  + document shortly what has changed in Gyoto: new features,
+    significant bug fixes...
+
+* Regenerate ChangeLog:
+  + run "git log --no-merges > ChangeLog"
+  + add an item on top which should correspond to the log message that
+    you will use for the *next* commit (the one that does the
+    release). Use "unknown" as commit identifier and the output of
+    "LANG=C date --rfc-822" as date.
+
+* Make clean, configure, make, make check again
+
+* Commit the changes
+
+* Merge the released branch into stable, make sure the two branches
+  (stable and master) can be merged both ways and are identical.
+
+* Tag the release using the version as tag name. Use a signed tag:
+  "git tag -s 1.0.0".
+
+* Take a coffee break.
+
+Regards, Thibaut.

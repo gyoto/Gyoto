@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [0.2.0], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [1.0.0], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -38,7 +38,7 @@ AS_IF([test "x$with_virtualenv" != xno],
 	AC_SUBST([VIRTUALENV], [no]))
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
 
-VERSINFO=3:0:1
+VERSINFO=4:0:0
 AC_SUBST([VERSINFO])
 
 FEATURES=""

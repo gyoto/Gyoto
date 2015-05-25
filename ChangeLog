@@ -1,11 +1,1236 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Tue Oct 21 14:08:33 2014 +0200
+Date:   Mon, 25 May 2015 16:47:09 +0200
+
+    Releasing 1.0.0 (Youhou!)
+    + add a note about --enable-release in README
+    + add README.Developers to remember how to make a release...
+    + update NEWS, ChangeLog and configure.ac.
+
+commit aa035f96465a0a45dd910de47281e7652dffb44e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon May 25 15:46:10 2015 +0200
+
+    * Update python/numpy.i
+    * Put BSD license in python/doxyfile.py
+    * Update copyright notice in every file edited in 2015
+
+commit ca1979527bb018d77ad40cc9749b27e8d9bd4148
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun May 24 10:23:25 2015 +0200
+
+    Clean *CFLAGS and *LDFLAGS and link always with CFITSIO which is now needed by Screen
+
+commit 603f961fba9a796cf57bd7427cdd7b504db93e3e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat May 23 13:56:25 2015 +0200
+
+    Don't .gitignore all gyoto files
+
+commit 1f40e4053f01633839dbdb6b74b3e806663fbded
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat May 23 13:50:16 2015 +0200
+
+    fix spelling errors
+
+commit 752026d3bc4d4bd5c4fdf3e74c2e6c6d8170d887
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat May 23 09:31:29 2015 +0200
+
+    * clean leftover files from doxygen
+    * use pkglibdir instead of asuming it is prefix/lib/yorick
+
+commit 11c4faa047b9eb172281c62ff366e9bf741d0831
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri May 22 12:07:06 2015 +0200
+
+    Fix Disk3D::repeatPhi() to avoid SIGFPE when nphi_ is 0
+
+commit d50df30e31cf0c89eb51744564f145859f6b280e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri May 22 11:50:34 2015 +0200
+
+    fixup polishdoughnut warnings
+
+commit 3339bf7115e2b9769fa05bd18fd0be6b702c7d8e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri May 22 11:42:48 2015 +0200
+
+    Fix PolishDoughnut to export either Lambda or AngMomRinner to XML, but not both.
+
+commit 56a4548398a87c01e34893ed38426a8b13ff7bf9
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu May 7 15:06:56 2015 +0200
+
+    PolishDOughnut: few couts forgotten
+
+commit e8ddcf706e7f80481bcf017ca356940ab86dd5b2
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu May 7 15:05:09 2015 +0200
+
+    NML: adding the rico() Property read by Polish Doughnut
+
+commit 4c47e67456caafb80fff8489f639c563d352cbfa
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu May 7 11:53:49 2015 +0200
+
+    PolishDoughnut: adding a test such that lamnda and angmomrinner can't be defined together
+
+commit 9127af4e64a6f9296c437621a14a130d3cfd29cc
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu May 7 10:42:26 2015 +0200
+
+    NML: hopefully correct expression for 4D christoffels from 3+1 quantities
+
+commit 3d2021646a177981e737c8b1777ae52633f30423
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu May 7 10:35:00 2015 +0200
+
+    PolishDoughnut: adding the possibility to define a doughnut by specifying the angular momentum and inner radius, so no longer limited to Roche-lobe-filling tori.
+
+commit 8efb25243c99776ed1cd49777385d20b69cf69e9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 8 08:00:08 2015 +0200
+
+    yorick: fix bug bug in dimension calculation of impactcoords when addressing sceneray with angles
+
+commit 70b36cea4a91b1bed1f582f28312fb096d7c6112
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 27 16:53:24 2015 +0100
+
+    fixup
+
+commit c764b58ed8e4b55c4172d03080e8a3fbac43b647
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Mar 27 16:49:37 2015 +0100
+
+    Be more specific about which part of Boost is needed in each file (we use boost::array, Boost.multiprecision, Boost.odeint, Boost.mpi)
+
+commit 17aca8b349c38a4e5ef2355422feadd781414c63
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Mar 27 12:45:42 2015 +0100
+
+    Improve Boost.mpi detection. Slightly tuned to ObsPM cluster...
+
+commit b7511de0edd86a6c6596465673a757d1df6e253d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Mar 26 18:16:10 2015 +0100
+
+    Fix Boost.mpi detection
+
+commit 26c95ca9f32dfb5c4627203e470c571a17000fa8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Mar 26 12:39:30 2015 +0100
+
+    Change impactcoords to always return the first (backwards) encounter with the object
+
+commit cba8e4e56314432dee6e0ea1a6fbc1a4fccb9dd4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Mar 18 13:17:12 2015 +0100
+
+    Scenery: add updatePhoton and clonePhoton(i, j) APIs to get Photon with all tuning parameters from the Scenery
+    Photon: fix findMin to work also when time is too large
+
+commit a3b908914d273f7effb527e0f71c5d0a83fda0e3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Feb 18 10:28:58 2015 +0100
+
+    Fix sunradius unit, which was set to 1 meter
+
+commit 6d80547e5b7f145afddfae05bd3df3bc5b238735
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Feb 17 16:40:10 2015 +0100
+
+    * Expose MinimumTime as a property in Worldline;
+    * yorick:
+      + support setting Properties in the generic way for Photon;
+      + support setting Properties of object kind (Astrobj, Metric)... to 0.
+    * gyotoy: make gyotoy_warning an alias to error (it was undefined).
+
+commit b79baab9367f5951d3e433bc4304cc095a3a940a
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu Jan 29 11:51:11 2015 +0100
+
+    NML.C: adding boson star circular velocity
+
+commit 3e45810d24fc4b3f9212d9e34b51c0bc500286b2
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jan 21 16:44:18 2015 +0100
+
+    Adding the Disk3D to yorick test suit
+
+commit 650fe87d89e4a14a745c413683b84fe31e403d9f
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jan 21 16:24:27 2015 +0100
+
+    DynaDisk3D: adding File Property
+
+commit be07f7f26c39a452120103924f5a17f976c324c5
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Mon Jan 19 18:12:47 2015 +0100
+
+    NumericalMetricLorene: adding 4D Christoffels
+
+commit 4783d49d394efad393ee3ffe75c2dea7e70c8384
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Mon Jan 19 18:11:13 2015 +0100
+
+    ThinDisk: adding a trivial constant emission for simple visualization
+
+commit 5ea26ab877df2421529b5a571c4eb06fa1a99d48
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jan 15 11:47:20 2015 +0100
+
+    configure: look for swig3.0 as alternative for SWIG
+
+commit b3d3a31520cd9dc00d7638384ce15377c261b635
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 14 19:31:14 2015 +0100
+
+    Puthon: small adjustments (incl. ignore Photon::Refined) to compile with Swig 3.0
+
+commit ca3d163e0780d3ad171d51ed37d07fa770fbf230
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 14 16:05:13 2015 +0100
+
+    Python: make Swig interface file language agnostic (by including NumPy lines only conditionaly)
+
+commit 42c4e894b6e7ba2d0c5f0f5a97651edab62eae69
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 14 15:52:58 2015 +0100
+
+    + Gyoto::Value: make operator bool deal with long_t and unsigned_long_t
+    + Python: make %typemap(in) Gyoto::Value target-language-agnostic
+
+commit da505ec0da17ad3dc8507dca3261819ed1d6c74d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 14 12:52:05 2015 +0100
+
+    + Add Gyoto::Object::get/set(std::string const &property_name ...)
+    + Gyoto::Value::operator [unsigned] long() work also if the other type of long was set
+    + Python:
+      * bugfix: avoid segfault when outputting a NULL SmartPointer;
+      * new typemaps around Gyoto::Value
+
+commit 8f8a3aa5a61663848e19b8067b574a222fba52f0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jan 13 13:16:44 2015 +0100
+
+    Python: make swig file a little less dependent on python
+
+commit 9832ccbf6af0d53a050ff0b9cac8cdcce458c2cd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 12 15:05:57 2015 +0100
+
+    Python: support building without boost
+
+commit e8642a125992918c08ed1569eb6fc83a16b65bc2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 12 13:44:16 2015 +0100
+
+    Python: support out-of-tree builds
+
+commit 1cf513c3acb4a2df3b83644f08f5e3079295a186
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 12 10:59:15 2015 +0100
+
+    Python: patch gyoto_doc.i doc accomodate for renamed nested classed in Screen
+
+commit b75734f061eed2241b952e0708e0715b3b33ff6a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jan 10 22:42:26 2015 +0100
+
+    Python: expose GYOTO_ARRAY<type, 2>::operator[]()
+
+commit ad176cbeb4fea6d6079c879c6eebbaa58264955c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Jan 10 15:20:00 2015 +0100
+
+    Python: support NumPy arrays *in addition* to low level C arrays in Coord1dSets Indices and Angles
+
+commit edeec3e193af94c5b948ce93d878022d7d01992b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jan 9 15:19:35 2015 +0100
+
+    Provide casting from NumPy ndarray to gyoto.array_double. All Gyoto methods take the latter as argument.
+
+commit 608982f15f0bbb2aecb91be51259c143ed6c6778
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jan 9 11:17:02 2015 +0100
+
+    Add typemaps for Worldline::IntegState, Astrobj::Properties and SmartPointee
+
+commit 1f85f55834b543671e4f8bb6ef41d26385951ac5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jan 9 10:44:02 2015 +0100
+
+    Python: correctly support Gyoto::Quantity_t as a integer type
+
+commit aa91388eef6c4f7b0d6d77bb9f85232fec356ba8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jan 8 14:43:48 2015 +0100
+
+    Add python/example-mpi.py showing how to use MPI
+
+commit 66a26bb1cf3c26f836ca98b940e7cf2bedb21dfe
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jan 8 13:53:38 2015 +0100
+
+    Document Python extension in the user guide
+
+commit 30f655752a852dfeb6a92c4f4d3a7c98635bc535
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 7 19:58:07 2015 +0100
+
+    Python: Expose Gyoto::Property (ignore constructors)
+
+commit 3dcf970c10046d2302b90af217f8f3d0ffd4e939
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 7 17:40:19 2015 +0100
+
+    Python:
+      + don't ignore any class (only constructors for abstract classes and some other methods)
+      + work around a swig bug that makes "help(<module>)" fail
+      + expose the Unit and Converters system
+
+commit 1c495fdf30f3cd973b86d8bf58c8c36feb520a88
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 7 14:47:54 2015 +0100
+
+    small tweaks in Python build-system
+
+commit e8ba9a5ebfdd7b2987213d5c468dd8e024135d2d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jan 7 14:01:05 2015 +0100
+
+    Python: expose normal pointers (with reference counting) rather than SmartPointers.
+
+commit afcfaef4bd1ac997186522cacbda5766d0981e7c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 5 18:07:00 2015 +0100
+
+    Check for Swig in configure, fix glitches so python extension compiles under MacOS (w/ macports)
+
+commit c84d32b4eab3d3c1a721218cd5a8329cfcd3400a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 5 15:51:45 2015 +0100
+
+    Minor fixes in Python docstring generation
+
+commit 46e73509da11e0f0ac1b52970689773ce186b4ed
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 5 15:26:56 2015 +0100
+
+    Use doxygen to provide docstrings in the python bindings (based on doxy2swig)
+
+commit 78b9c99ea2c79f54a3bd045c2d9c77845ba7a959
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jan 5 09:56:46 2015 +0100
+
+    Install enough material to build python extensions around 3rd party Gyoto plugins
+
+commit 97601b0c1e2be46355a41c1e49fad0a7ae4bd4d7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 30 09:18:22 2014 +0100
+
+    Add python/setup_lorene.py.in
+
+commit 8557a8fa22832152f0e70629bfada1945f38d440
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 29 12:39:44 2014 +0100
+
+    * Value: make sure only the member that was set can be retrieved.
+    * Python: rename Properties to AstrobjProperties
+
+commit 333a61c9fc961ddf5888c701bbcda585b9f71c69
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 28 17:26:14 2014 +0100
+
+    Screen::Coord1D/2DSet destructor is now public virtual
+
+commit 4d8dd3151d84c5ee8def7c6fdc7703bf7d8f891e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 28 16:14:28 2014 +0100
+
+    + include/GyotoWorldline.h: remove prototypes for operators that were never implemented
+    + python/: fix warnings about unkown base classes and cast operators
+
+commit 6c31bc7424062db02573da7b0f4273f95ccb9eaa
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 21 20:37:50 2014 +0100
+
+    Fix operator[] to return reference in (Astrobj|Spectrometer)::Complex, use it to implemet r/w item access in Python
+
+commit e45e108aa696ba959b02af937c660437a179d5b0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 21 16:23:39 2014 +0100
+
+    Support getting/setting element in Astrobj::Complex, including in python
+
+commit 80974d03b5a251bdb6730ce28b38469fec484f30
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 21 10:21:36 2014 +0100
+
+    Python: ignore SmartPointer<T>::operator() to give access to T::operator()
+
+commit 1b064a9fcd21e588ead7e4f7860c72695bdab375
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 20 22:39:04 2014 +0100
+
+    Remove NumericalMetricLorene::getFileName(); complete gyoto_lorene Python extension.
+
+commit fe94dbfb9fdc278eeabed0f2e978216c55302cfd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 19 20:20:19 2014 +0100
+
+    Oups, commit gyoto_lorene.i
+
+commit 618076c72c47251ca62c2735c6ab9021e3aec754
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 19 20:18:10 2014 +0100
+
+    Python: new extension gyoto_loren (wraps only RotStar3_1 so far)
+
+commit b9f6e31e39057fcf175b112e19f79f7676b70001
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 19 16:18:37 2014 +0100
+
+    Python: add second python extension, gyoto_std, wrapping libgyoto-stdplug
+
+commit f104a3bf96f73c4ee1fb8fa15f24a931b0962b67
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 19 13:18:19 2014 +0100
+
+    Fix Screen::Bucket::Bucket to work with pixel-type Coord2dSets; more Python examples
+
+commit 478041e13458fa968d0cb964ce071dce44052c81
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 22:04:30 2014 +0100
+
+    Python: add some doc; examplify ray-tracing with Spectrum
+
+commit 0f27551c51a02fffebc3a4dfa3d4030bde9941f6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 17:34:55 2014 +0100
+
+    Add Python example, revert spurious changes in Screen (some unconditional debug output)
+
+commit ca66c51021487fd1e7ccf39a0f09ec1a3451dd18
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 17:31:35 2014 +0100
+
+    Document Python interface in INSTALL
+
+commit aa5b211a11b3729bee63f39512757faa69a16108
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 17:20:37 2014 +0100
+
+    Python: catch Gyoto exceptions correctly
+
+commit 417b5c3e64dea8afac0ff0188b51377b0feec897
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 16:58:58 2014 +0100
+
+    Python: hide base classes, make "Class" a sucontractor for that class
+
+commit e35255bf64a9fa8f30838826cca3419105c8b2d5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 18 13:15:22 2014 +0100
+
+    Python: basic (but sufficient) support for tracing intidivual geodesics
+
+commit 506d66f6aa45e3c129cc9893f700d08cec9408af
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 17 19:45:08 2014 +0100
+
+    Python: set flags for dlopen in gyoto.py; wrap all Astrobj::Properties members.
+
+commit 455b96296e7974e0879c69fda662dd1c870dad8c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 17 17:10:51 2014 +0100
+
+    Build system for the Python extension
+
+commit fdde55aebd59b2011082e9ecbd36a3b1c63901ca
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 17 12:52:13 2014 +0100
+
+    Python: fix Scenery interface so ray-tracing is possible. Implement a way to connect a buffer to Astrobj::intensity.
+
+commit 3f2426ba0cb206a36d2c030e46215653986cd993
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 16 18:08:23 2014 +0100
+
+    Initial attempt at Python interface
+
+commit 24a436d4ed82043a588489aab75da41416df1041
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 15 15:22:25 2014 +0100
+
+    + Bugfix: fix Star::rMax() to not SIGFPE and to compute the right thing.
+    + Bugfix: v=Worldine::initCoord(): make sure v[4] is 0 if initial coordinate was not set.
+
+commit 6a9859c7668a51a0cf8714dbdc46888a6659b665
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 15 11:54:34 2014 +0100
+
+    Fix Scenery to ccompile correctly with --without-udunits
+
+commit 57e2d588adc6dfc0f44be8d28edacd14a2a00be2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 12 14:48:03 2014 +0100
+
+    Yorick: support setting/getting Properties with the eval operator in all object types.
+
+commit cc2c3fdfae3cbc6ecf8d0e08b4ec43d15710c5e6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 12 14:23:38 2014 +0100
+
+    Yorick: parse Properties in eval, only for Scenery.
+
+commit c82d2af0a41698357c4579d618560d3efb51363d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 11 22:13:34 2014 +0100
+
+    UniformSphere::deltaMax(pos): don't use operator() if pos is outside rmax_, as this can lead to extremely lon integration in case of moving Star
+
+commit 5be938b22ea54e0c8405a0ce98e110cde922ca5b
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu Dec 11 19:25:00 2014 +0100
+
+    Adding 3+1 metric functions necessary for PolishDoughnut
+
+commit 0f553cc2e466d78a7b2cfcb9753ef8003848b38c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 11 12:59:05 2014 +0100
+
+    More macros in Object a, Property to easily declare and define accessors.
+
+commit 4900995e52f403f006a1b88fb386e233e330ca61
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 10 16:49:42 2014 +0100
+
+    ThinDiskIronLine: don't assume coordinate system is spherical
+
+commit fb57a49ada9b85019e08a18623d76d237e28b276
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 10 16:43:18 2014 +0100
+
+    ThinDiskIronLine: Fix bug in LineFreq conversion, support unit in LineFreq and CutRadius
+
+commit 478139baf50b295eeb6265673b2c3496c82ef725
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 10 15:33:10 2014 +0100
+
+    New Property type: vector<unsigned long>
+    Documentation in Worldline
+
+commit fb5078b9c3c295ac72c0b1e5c76962cb269489ec
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 9 17:43:19 2014 +0100
+
+    document Property and Value
+
+commit bca056121fdfa7d741fa2ef84fc8a61c1c63dda8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 9 14:27:56 2014 +0100
+
+    Document Object class
+
+commit 4cd3a4069075c18cc440b50617c946487feadd68
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 9 11:04:16 2014 +0100
+
+    Finish converting Scenery to Object/Property
+
+commit 59c4103f87cb6e920b90ada84fa4047c9f1b8a9b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 8 10:28:18 2014 +0100
+
+    Start converting Scenery to Object/Property
+
+commit 20149de74409aa429cf07f4ba9090224ad796f43
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 8 10:13:39 2014 +0100
+
+    Object and Factory: don't create SmartPointer sections if NULL
+
+commit 8d94ccd9491ad00037c3353045675a9f704d856d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 7 18:21:06 2014 +0100
+
+    Implement Astrobj, Spectrometer and Screen as possible Value and Property. Finish converting Screen.
+
+commit 932197f354913c2b0dd27dc5208c09adbd8ec5d9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 5 22:30:52 2014 +0100
+
+    Convert Screen to Object/Property (spectrometer remains to be done)
+
+commit 4876907c001532a7a6a2685800fc47de8d94f42e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 5 17:01:34 2014 +0100
+
+    Convert Spectrommeter::Generic and ::Uniform to Object/Property; rename Spectrometer::Generic::kind_ to kindid_; remove kind_ from Spectrum::Generic
+
+commit 6de673c39658f27fa04f75aaf53d3e185b600119
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Dec 5 15:02:40 2014 +0100
+
+    Typos in user guide
+
+commit 6abd4422798979f5474faa5524ceb4fbb800d9ee
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 4 18:09:44 2014 +0100
+
+    Convert all Spectra to Object/Property
+
+commit 7a3e7857c06a6532e02895c49559016c20dfa0a7
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 3 17:04:33 2014 +0100
+
+    Convert all the remaining Astrobj classes to Object/Property mechanism
+
+commit 116d62889340f0a067f7479ce82b524b9f501aa1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 2 15:29:50 2014 +0100
+
+    Fix bug in WorldLineIntegState, which failed to update gg_ in init()
+
+commit f3e9aef11264e4c141a05aba8acc9fb4284ccc75
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 2 15:19:23 2014 +0100
+
+    Use strtoul and strtol instead of atoi when parsing longs/unsigned longs from XML
+
+commit 020d8486c265ef169bee8d0ddaf836d22a367141
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 2 12:20:16 2014 +0100
+
+    Change Object/Property API to use arrays (with "links") rather than chained lists. Much easier to understand and to read.
+
+commit 9e0d71b4eea1926d72573245caff6999ca5d5d75
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 1 11:29:46 2014 +0100
+
+    Move Object API out of Worldline and into Star and Photon
+
+commit 3dfa0fd17208be7f95947062271ac9148763b3d1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 28 14:57:14 2014 +0100
+
+    * Make SmartPointee not and Object, but most of its descendents.
+    * New Value/Property type: unsigned long
+    * Convert Worldline to Object/Property
+
+commit a3c32d0cff9cadcadf4adf97cc972dd1664a13ba
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 21:09:12 2014 +0100
+
+    Convert Torus to Object/Property
+
+commit e843260a99b0863c828064383bb451a1836cb057
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 19:50:28 2014 +0100
+
+    Convert FixedStar to Object/Property
+
+commit f5659d915d3f4b462b286dbe4b24cfe2109a517c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 18:42:00 2014 +0100
+
+    * New Value/Property type: spectrum;
+    * Converted UniformSphere to Object/Property metaphor
+
+commit d7912a1152d7d265381829e78a8f996f62912631
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 17:21:39 2014 +0100
+
+    Split GyotoObject.h and Object.C in Object, Property and Value;
+    Move Gyoto::Property::Value to Gyoto::Value;
+    Add Metric member to Gyoto::Value;
+    Make metric a Property in Astrobj::Generic.
+
+commit 30a2278267e2130611faee81126582a0a3eaef1a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 12:05:00 2014 +0100
+
+    Simplify introspection code by using new class Property::Value
+
+commit c307c5caea29a9d21575157020ce6967fa0d0016
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 09:33:41 2014 +0100
+
+    Convert Astrobj::Standard to Object/Property (safetyValue)
+
+commit a6130803e3155ea5e6f28db86a0b14d84f96063c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 27 09:19:37 2014 +0100
+
+    Rename GYOTO_PROPERTY to GYOTO_OBJECT, change GYOTO_PROPERTY_FINALIZE to accept a Property* rather than a Property
+
+commit a8b849a195f85546a6179d891de7d55de7e580a6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 26 23:09:50 2014 +0100
+
+    Bug fix in Photon::hit(), where Astrobj::Generic::Impact() was called with bogus indices
+
+commit 714d24bb9bbb90be2e875be2c9b3579654564ce0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 26 23:02:51 2014 +0100
+
+    Convert Astrobj::Generic to Object/Property paradigm
+
+commit f4996d72f9cc03a1ab27fa6b4d6108ad246348de
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 26 16:11:34 2014 +0100
+
+    New Property type: std::vector<double> (used in NumericalMetricLorene)
+
+commit 3ab767866961fcbd5f54f304bfa057da4f26422e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 26 14:58:49 2014 +0100
+
+    Convert most of NumericalMetricLorene to the Object/Property paradigm.
+
+commit 8b7cb7e5c7b290e999abf67cbb3299ad7dd976ec
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 26 09:21:40 2014 +0100
+
+    yorick: don't use a wrpper called "yorick", this confuses the build system (use yorick1 instead)
+
+commit d42c33c4bb514ecffa7816f9de62bf0fec5f94a6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 25 17:59:43 2014 +0100
+
+    support string and filename Property types in Yorick
+
+commit e5ed94416615058394c582c560f426c611c3a688
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 25 17:44:50 2014 +0100
+
+    Add new Property types string_t and filename_t, convert KerrKS, Minkowski and RotStar3_1 to Property-based objects
+
+commit b1f25ac8408bd7c7e4acfa8b038f13c9b96fffb8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 25 15:13:05 2014 +0100
+
+    Implmented Properties in KerrBL and Yorick
+
+commit ea26db033dfbf301f11d217ba0fb8fd62bb91d6a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 25 09:16:54 2014 +0100
+
+    Start working on introspection framework: new classes 'Object' and 'Property', properties can be set and retrieved by name. Metric::Generic converted to this framework.
+
+commit 6f7f809a06a58b304d99decacd62d5c2570949c3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 21 14:50:11 2014 +0100
+
+    Use the integrator set in state_ when refining geodesic in Worldline::getCoord()
+
+commit ea6cb0c53cd95fed2d0421d4fdd4a83b12c7a98e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 21 11:49:41 2014 +0100
+
+    make fullPath able to interpret `pwd`/
+
+commit 2b88bd410a3cde049512099854c270123675e2bd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 20 21:36:31 2014 +0100
+
+    remove KerrBL gg_ from PolishDoughnut
+
+commit 72e87b0e4d6c64eef8ff2826237f6c6aa7490ddf
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Thu Nov 20 17:44:07 2014 +0100
+
+    PolishDoughnut is no longer KerrBL-dependent (1)
+
+commit 0f1fc51888fbc968d5fa270224fec8ac12af840f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 20 17:19:50 2014 +0100
+
+    Distribute our own yorick/Makepkg. Out-of-tree builds uninstall is buggy in the Yorick-distributed version.
+
+commit 232eab11b9f82f29503fd548540124160bc0f155
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 20 12:55:08 2014 +0100
+
+    out-of-tree builds: 'make', 'make check', 'make check-mpi' and 'make install' all work.
+
+commit e0b58d5f40e97ee6eee1e4d6708dd232c3561a0c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 19 17:26:34 2014 +0100
+
+    implement 'make check-lorene' and 'make check-lorene-mpi'
+
+commit af0810339362462079fd66339aaca2509692b2ba
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 19 16:04:47 2014 +0100
+
+    First step into checking lorene in make check
+
+commit ad1ba1329fc6174c3d5584613afa635783e3b6ad
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 19 15:07:36 2014 +0100
+
+    yorick/gyoto.i: fix gyoto_painters_panorama_eval() for partial panoramas
+
+commit 9fd5a3941bd862652f93642809e9dba2dbe9a5f8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 19 14:53:19 2014 +0100
+
+    Screen::fitsReadMask(): if file can't be openned, just issue a warning.
+
+commit bc4190910c8c2f8e6222a06c9672580d2e1da5ce
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Nov 19 14:43:31 2014 +0100
+
+    Separate MPI tests in 'make check-mpi' to avoid hanging the computer when not plugged to the network
+
+commit 2dbcf363aa2ea2487e1ca538ffeacad4a9d1a2db
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 18 18:14:42 2014 +0100
+
+    Remove spurious cerr introduced in development; streamline debug output
+
+commit ead9bccc7b5b1bcd21ef8741b94295c801927be3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 18 17:49:44 2014 +0100
+
+    Write up NumericalMetricLorene::fillElement()
+
+commit 6946b14a1c645ec324efd2276c8df1769e72feb5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 18 16:25:15 2014 +0100
+
+    Put MPICXX in gyoto.pc, only if HAVE_MPI. Also update autoconf-generated stuff.
+
+commit 40cf1c2b9b65942fafa02259209aa92d29c2791b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 18 15:38:23 2014 +0100
+
+    New API: FactoryMessenger::parseArray(). Use it instead of direct calls to strtod everywhere.
+
+commit 12ac38e0093a24e14728883dc9a5f40bae11f03d
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Nov 7 17:48:14 2014 +0100
+
+    Small error in ThermalBrems
+
+commit f1d40ddc477ee70270914e442475a34711b16882
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Nov 7 17:33:04 2014 +0100
+
+    Updating ThermalBrems
+
+commit 579960ae455c568a1678325a02198b7c8f478ebb
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Nov 7 13:32:32 2014 +0100
+
+    Adding Thermal Bremsstrahlung spectrum
+
+commit 409df1d00db643a9b9c0bd9aa7bad3ef33c313f3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Nov 6 17:17:01 2014 +0100
+
+    Changed the anglekind API and "Rectilinear" option, better suited for photo-realistic ray-tracing.
+
+commit b708cf11be0d6bcf76d356ac824a90bb3e87a7d9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 4 19:32:01 2014 +0100
+
+    exchange pitch and roll in gyoto_matte_paint
+
+commit 185edcb99782a5ed0138a3ca4a53966245403a8f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Nov 4 18:35:04 2014 +0100
+
+    put most of the matte_painting machinery in gyoto.i
+
+commit d0d9f0540ffe7af9ff98d415e83d206169e04543
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 1 18:14:52 2014 +0100
+
+    yorick: new example script "matte-painting.i"
+
+commit eb6b70cec3421fdb47bafcc6ddd83f7a3027070e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 1 17:56:55 2014 +0100
+
+    yorick: expose Metric::coordKind()
+
+commit 72464f30fe3113a3f187e675e7a71bfa30113e5b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Nov 1 17:51:46 2014 +0100
+
+    Only call setParameters in template subcontractors if fmp in not NULL
+
+commit c355db11137993d482295cec1838f05f530296b1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 31 19:34:43 2014 +0100
+
+    Photon::metric() also sets the metric in the astrobj. Works also for Scenery::metric().
+
+commit f6f711ff8201bea086fa36f4fbc1e2dd2ed39ef4
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 31 19:06:01 2014 +0100
+
+    Store coordinates of escaping photons in impactcoords
+
+commit 5835d8497e5dcf28f82cfc419e79d6577d515e0a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 31 09:44:34 2014 +0100
+
+    fix trick yo yorick/Makefile.in that's sometimes needed for linking under OSX (with clang?)
+
+commit 2a2fe9dda180ddd79392e36161ea9c417303979d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 30 12:27:11 2014 +0100
+
+    Bug fix: build yorick plug-in successfully also without MPI support
+
+commit 69522f0aad85d65531c3d30131a4af12b70c99b9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 30 12:12:30 2014 +0100
+
+    Change SONAME depending on built-in features and by default add "-unreleased" to the SONAME.
+
+commit 9ac7d4aeaf91ff1ded73de320699bfb73da60e37
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 22 16:36:53 2014 +0200
+
+    Set an MPI error handler in Yorick (only attached to MPI_COMM_WORLD atm.)
+
+commit 9dbb7c5c9d97ef3918dbb6b565ca0ef33ceb615d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 22 16:06:39 2014 +0200
+
+    Scenery::mpiSpawn(): issue warnings when MPI is not available/not initialized/finalized
+
+commit b83fc4f4052b4fb8fc976ae01c224f9c7e7abca2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 22 15:17:05 2014 +0200
+
+    Change GYOTO_ARRAY if Boost is not available to compile fine with C++98 (e.g. gcc-4.4)
+
+commit b52fbedb1d0973e7d75dc24fb1b10a957eb9fb09
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 22 13:17:10 2014 +0200
+
+    lib/Utils.C: #include <cstdlib>
+
+commit 5a357b4860d007163f0c38dd17e2b20741863088
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 22 12:17:14 2014 +0200
+
+    yorick: rename gyoto.mpi* to gyoto.MPI_*, matching the normal C language name of the API.
+
+commit 6f076286911da439a75bb3bd843854464d1a10d6
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Tue Oct 21 18:35:47 2014 +0200
+
+    NumericalMetricLorene: correcting gmunu_up_dr
+
+commit 705cd88d901a4de50d348da020082d3d1b577732
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 21 15:24:41 2014 +0200
+
+    fix format of NEWS file
+
+commit c582a2e37be6059c9cf9c90ad4428573aaadfdee
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 21 15:06:52 2014 +0200
+
+    update NEWS, which was left behind when releasing 0.2.3
+
+commit a2ddb8efe5733c8fc371b2063fef4d7a39e6de63
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 21 14:15:34 2014 +0200
 
     Release 0.2.3
-	* Fix minor memory-management bug in yorick-gyoto_Scenery.C
+        * Fix minor memory-management bug in yorick-gyoto_Scenery.C
     
     Signed-off-by: Thibaut Paumard <paumard@users.sourceforge.net>
+
+commit 97a0e08cea0bb46c408f6d956d875fe4b2c3723d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 21 13:03:36 2014 +0200
+
+    yorick: when raytracing, support using arbitraty size arrays as indices.
+
+commit ec667993caf716fb285e7a6e427ca8ab8b9ec43e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 20 16:11:38 2014 +0200
+
+    clean gyoto-mpi-worker.*.1 (manpage copy), hide more files in .gitignore
+
+commit fb035b8ec215a6e14bd87231645c70b9bd0729ed
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 16 16:15:01 2014 +0200
+
+    * New API: Screen::Coord1dSet & Coord2dSet
+    * Change Scenery::rayTrace() API tu use a Coord2dSet instead of i/jmin/max
+    * Make Astrobj::Properties::alloc a simple bool
+    * Fix PATH in yorick/yorick1.in
+    * Got rid of yorick-specific multi-thread code.
+    * Support ray-tracing of a bunch of angle-specified directions, including in wYorick, and in parallel
+
+commit d0374b75093a82f6dfa419fac880a99ee70217cf
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Oct 15 19:04:09 2014 +0200
+
+    Implementing specific moving observers for KerrBL/Minkowski.
+    
+    Screen: getRayCoord calls Metric::observerTetrad; new keywords in XML
+    Metric: Metric::observerTetrad checks the normalization
+    KerrBL and Minkowski: observerTetrad implements Keplerian observer
+    KerrBL: obserTetrad implements ZAMO observer
+
+commit e790df753b30ef038308ada1170e8e5ed6121272
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 17:53:01 2014 +0200
+
+    * install gyoto-mpi-worker as ${bindir}/gyoto-mpi-worker.SOVERS
+    * change dots in SOVERS to underscores
+    * make sure MPI support build and works --without-cfitsio
+    * add manpage for gyoto-mpi-worker.SOVERS
+
+commit 25a54daaaeb49d8ab96f972e7a8921424f44ae64
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 16:23:17 2014 +0200
+
+    Add yorick/check-mpi.i
+
+commit efce82c20bd798296cc4b08499b582a3ac860bcd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 15:03:45 2014 +0200
+
+    document MPI functionality in the user guide.
+
+commit 8d1fa3df6b40b55f236ae0d0b865b6e575c53632
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 14:26:37 2014 +0200
+
+    PolishDoughnut: turn cout message into debug message
+
+commit b7cb430940d7961fbb69ffcf3c749ed90de5bfc2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 14:25:49 2014 +0200
+
+    MPI: give work to the workers before copying data
+
+commit feee6118168ba2ac1a4c8766dd30745909247c02
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 13:50:04 2014 +0200
+
+    also check that mpi was not terminated when chacking that is has been initialized
+
+commit b59317d408f3e08a5c834d64533b1890d6f01c7e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 15 13:06:05 2014 +0200
+
+    Do not run MPI_Init automatically, instead check that it has been done and fall-back to non-MPI behaviour if it has not.
+
+commit 1556512862b395ddbef9d1da056db22fbda0b1b2
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Oct 15 12:04:11 2014 +0200
+
+    Screen: add the x -> -x transformation for SphericalAngles
+
+commit 6d902aa3ff440f9543e1133bbacfb4543644707a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 14 17:59:41 2014 +0200
+
+    Better control of when MPI_Initialize() and MPI_Finalize() are called.
+
+commit 8c1a676e776387e3617c7468f17f7c361d244dfe
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 14 16:19:52 2014 +0200
+
+    Support di and dj arguments, route yorick Scenery ray-tracing through Scenery::rayTrace when possible. The case that remains is when i_idx or j_idx is a list.
+
+commit 3745ef35f95051d4f52089eb7706afd8c37a9eb9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Oct 14 11:01:25 2014 +0200
+
+    Basic support for MPI functionality in the yorick plug-in:
+     * mpispawn=, mpiclone=;
+     * gyoto.Scenery_rayTrace() support was automatic;
+     * new functions haveMPI(), havePTHREAD().
+
+commit ec9accf5215558b315f5a7fb05773cc6d9217056
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 21:53:38 2014 +0200
+
+    Port to current Lorene (with namespace), remove linking against liblorenef77
+
+commit f34c98c482c836d36fce9635b4ab276eb9732824
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 17:45:15 2014 +0200
+
+    add example slurm batch file (extremely basic)
+
+commit 52f654bab80cf092c318b3e1de597153abcd5371
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 17:09:25 2014 +0200
+
+    fix bug in MPI rayTrace (invalid write)
+
+commit f7d82e73926d276504576a8bd3114ec2d6e3a071
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 14:01:23 2014 +0200
+
+    add gyoto.in,  needed to generate local wrapper
+
+commit 7b1e3a433b633ae92823a9b8fe11cdbbf10dc453
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 09:12:08 2014 +0200
+
+    * rename Scenery::is_worker to am_worker
+    * give raytrace task earlier in Scenery::raytrace()
+    * merge workers and manager into a team, use broadcast instead of P2P whenever appropriate
+
+commit bb16b57f3f3175c267fd2378a3ed78603d644bac
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 13 09:06:59 2014 +0200
+
+    MPI: broadcast XML data instead of sequential send
+
+commit 4ebc4d5eed25ad1f9e52368a61e54dd77dd69557
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 12 20:19:07 2014 +0200
+
+    * provide wrapper script directly in the root of the source directory (sets $PATH)
+    * update man page
+    * accept (but ignore) --nprocesses when gyoto was built without MPI
+
+commit 92b56464dfba00e5c025d752a9f18c65db5e928c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 12 16:27:08 2014 +0200
+
+    gyoto executable supports --nprocesses option; fill PolishDoughnut::fillElement
+
+commit d935adb36db5ac409692f0b5585ae6c97d35a15a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 12 12:18:34 2014 +0200
+
+    Better detection and error handling of MPI prerequisites
+
+commit 5c5313403eb2bd214c934c2f7defa753395b3f31
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 23:25:52 2014 +0200
+
+    Document MPI dependencies in INSTALL
+
+commit b27967a8590b6bf15f0dd53f7d753aaaf83571a3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 18:20:20 2014 +0200
+
+    MPI: install gyoto-mpi-worker in ${soversdir}
+
+commit 5865d2bc68ac6f5992be80b1737a208763a8c1b1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 16:37:06 2014 +0200
+
+    MPI: compile (and run) fine with and without MPI
+
+commit 924eaad2df7b5e9a5e6039e69ec3a255253fa66e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 13:20:49 2014 +0200
+
+    MPI: support computing impactcoords
+
+commit 82a24f08b062eac91741703d1bda199c681788e9
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 12:53:11 2014 +0200
+
+    MPI: Get requested quantities from data pointer instead of Scenery.
+
+commit ab278de34b78e5f80db2b0fa4a6567a9fe122e15
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 11 12:39:25 2014 +0200
+
+    Add typecast from Astrobj::Properties to Quantity_t
+
+commit 4fe110b735e93d6dee4afc4020b2613f04f1903e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 20:54:52 2014 +0200
+
+    MPI: support using provided impactcoords
+
+commit 405957cad35d8adc662b01862c0c90b8e364381e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 17:21:38 2014 +0200
+
+    MPI: support all the quantities except impactcoords
+
+commit 2e4f125ce57e1e746c79ae78687ba1b0e3bb76dc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 17:02:17 2014 +0200
+
+    MPI: works as long as gyoto-mpi-worker is in the PATH, which is the case by default.
+
+commit 9020a896378525685268cb77691a390233fdfb5f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 16:38:34 2014 +0200
+
+    MPI: use a buffer instead of a temporary file when cloning remotely
+
+commit 5f99e28e9df677b5097233e6a924777623750c72
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 16:35:38 2014 +0200
+
+    Factory: allow constructing an object from in-memory XML data.
+
+commit 2232e31bac6a76f729ff0ebe8c1207c5fd9157dc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 10 15:45:16 2014 +0200
+
+    MPI: move all the raytrace logic into Scenery::rayTrace
+
+commit 64d65a086a1238557e68b8fff0b595d5062ed538
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 9 21:20:37 2014 +0200
+
+    Allow fixed star to be "rotating", i.e. velocity is given by Metric::circularVelocity()
+
+commit 87e22922c0b79bad3ba4163476824b237a9d7e03
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 8 18:17:28 2014 +0200
+
+    MPI actually working, at least for quantity "intensity".
+
+commit bb1816d21691d2c3c5fb0f570ed5cb458ab50662
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Oct 8 15:11:37 2014 +0200
+
+    Initial MPI version. Dummy implementation: calls are made to parallelize Scenery::rayTrace, but no raytracing actually occurs.
+
+commit f1d58b489da853785c2f75f5ec0fd5070f3116f3
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Sep 26 14:20:40 2014 +0200
+
+    Migrating omegaPattern_ and tPattern_ from DynaDisk3D to Disk3D where they belong
+
+commit 95e32fc78f9ce8018ba63164708dab89beb8696f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 23 11:05:04 2014 +0200
+
+    fix lib/gyoto-uninstalled.pc.in top hopfully support C++11
+
+commit 8ec7314dcc217a3e56f0b312f390694daf7f1333
+Author: Frederic <frederic@apcdhcp53.in2p3.fr>
+Date:   Mon Sep 22 15:04:15 2014 +0200
+
+    Astrobj: adding noredshift_ keyword
+
+commit 224c254a314a346940f61986e766c44548cb7778
+Author: Frederic <frederic@apcdhcp53.in2p3.fr>
+Date:   Mon Sep 22 12:20:08 2014 +0200
+
+    DynaDisk3D: adding rotation velocity keyword and Minkowski integration
 
 commit fa5c38593c5d49d35ad6744522beb011477c57ea
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -14,6 +1239,30 @@ Date:   Fri Sep 19 14:47:33 2014 +0200
     Release 0.2.2
     
     Signed-off-by: Thibaut Paumard <paumard@users.sourceforge.net>
+
+commit 4925c06002b51049873f8a7b2581d514579931f1
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Fri Sep 12 12:26:17 2014 +0200
+
+    PolishDoughnut: still cleaning
+
+commit c9aaafa1e7b8934ed8c7cc0bd745a9c28de1f256
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 10 16:01:20 2014 +0200
+
+    PolishDoughnut: still code cleaning...
+
+commit 5c0dc7a5e9e4ecda0c780433b20055f3fcf14f45
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 10 14:45:44 2014 +0200
+
+    PolishDoughnut: again code cleaning
+
+commit a82ce262e2cf389c88f21eb1441ef4a8702e89e4
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 10 11:57:31 2014 +0200
+
+    PolishDoughnut: again some code cleaning
 
 commit 44a8a2536af0e51e50831c8f151432d9f83fe24f
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -30,6 +1279,68 @@ Date:   Tue Sep 9 11:38:18 2014 +0200
 
     Correct KerrBL::circularVelocity()
 
+commit f9f33402a22908cd25d1d0b71ac6a40f2317489d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Sep 9 11:22:24 2014 +0200
+
+    Correct also the generic implementation of circularVelocity()
+
+commit 4b184b1a2332530ac51014bf3a368efd86214088
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Tue Sep 9 10:36:50 2014 +0200
+
+    KerrBL: correct Keplerian velocity
+    PolishDoughnut: few changes to ADAF
+
+commit f3f9823316668dabe55c21ebb4b4e781494c3dae
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Mon Sep 8 14:20:17 2014 +0200
+
+    PolishDoughnut: Adding ADAF Yuan+03 model for comparison
+
+commit 8815ed58a4ceeacf5e2ca53c6563351bcccd5f07
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 3 16:22:27 2014 +0200
+
+    Code cleaning
+
+commit 65e3700fa71ad2510fb42149db7e9fb3cc630cf8
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 3 16:07:55 2014 +0200
+
+    Removing DS_Store file
+
+commit cc6269f9e3c98577f6c0cad545ba1112cc872c2d
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 3 15:11:12 2014 +0200
+
+    Photon.C: coming back to transmission limit of 1e-6 to stop integration
+
+commit 98ddf275b8bd0e2b66952215e700f77624f21d7e
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Sep 3 15:08:01 2014 +0200
+
+    Updating DirectionalDisk, adding angle averaging keyword
+
+commit cf161aee564f25a7fc193c5245d4d93ff64b773a
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jul 23 20:05:32 2014 +0200
+
+    PolishDoughnut: a bit more updates
+
+commit ed286e1ef49258408e0d6d5e3c3c7b5d4666446f
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jul 23 18:36:09 2014 +0200
+
+    Astrobj: introducing radiativeq for radiative transfer
+    Doughnut: major update
+
+commit 2658641fbcad32179df074f80ee59671b57e914c
+Author: Frederic <frederic@MacFrederic.local>
+Date:   Wed Jul 23 17:58:12 2014 +0200
+
+    Updating DynamicalDisk3D
+
 commit b57d70da05b3348dcaa9898851ee04bbb16eb660
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Tue Jul 22 13:41:16 2014 +0200
@@ -41,6 +1352,18 @@ Date:   Tue Jul 22 13:41:16 2014 +0200
      - Factory also outputs those special strings when needed;
      - increase buffer size in Factory to avoid overflow;
      - remove obsolete and useless files (yorick/config*, .deps...).
+
+commit 09b1de055eedadad328531a267e70ce29edee9a5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jul 22 13:41:16 2014 +0200
+
+    Released 0.2.1:
+     - update version info;
+     - New function Gyoto::atof() which supports the special values
+       DBL_MAX, DBL_MIN, -DBL_MAX and -DBL_MIN;
+     - Factory also outputs those special strings when needed;
+     - increase buffer size in Factory to avoid overflow;
+     - remove obsolete files (yorick/config*).
 
 commit d4ea8da5e4ab740a50627c86e7c982695ba99e1b
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
