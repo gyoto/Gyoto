@@ -56,11 +56,11 @@
  *
  * Gyoto aims at providing a framework for computing orbits and
  * ray-traced images in General relativity. It consists of a library
- * (libgyoto), utility programs, and a plug-in for the Yorick
- * programing language. Gyoto is known to run under Linux and Mac OS
- * X. Please do tell us if you manage to run Gyoto under a different
- * OS. It should compile and run with moderate effort on most
- * UNIX-like systems.
+ * (libgyoto), utility programs, a plug-in for the Yorick programing
+ * language, and an extension for the Python (2 and 3) programing
+ * language. Gyoto is known to run under Linux and Mac OS X. Please do
+ * tell us if you manage to run Gyoto under a different OS. It should
+ * compile and run with moderate effort on most UNIX-like systems.
  *
  * Gyoto can be expanded with plug-ins providing custom Gyoto::Metric::Generic,
  * Gyoto::Astrobj::Generic and Gyoto::Spectrum::Generic classes, which describe
@@ -109,7 +109,8 @@
  * code base. Contributors will be listed in the relevant source files as
  * well as in the AUTHORS file in the package.
  *
- *   Gyoto is Copyright 2011 Thibaut Paumard, Fr&eacute;d&eacute;ric Vincent.
+ *   Gyoto is Copyright 2011-2015 Thibaut Paumard,
+ *   Fr&eacute;d&eacute;ric Vincent and Odele Straub.
  *
  *  Gyoto is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

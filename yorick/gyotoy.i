@@ -1,7 +1,7 @@
 #!/usr/bin/env yorick -i
 /*
     Copyright 2007 F. Rigaut
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011-2015 Thibaut Paumard
 
     This file is part of Gyoto.
 

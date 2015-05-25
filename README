@@ -21,9 +21,9 @@ paper), for instance by contributing it directly to the Gyoto
 code base. Contributors will be listed in the relevant source files as
 well as in the AUTHORS file in the package.
 
-    Gyoto is Copyright 2011-2012 Thibaut Paumard, Frédéric Vincent (To
-    ease reading on non-UTF8 systems, French accents are omitted in
-    file headers).
+    Gyoto is Copyright 2011-2015 Thibaut Paumard, Frédéric Vincent and
+    Odele Straub (To ease reading on non-UTF8 systems, French accents
+    are omitted in file headers).
 
     Gyoto is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,11 @@ well as in the AUTHORS file in the package.
 
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+
+File python/doxyfile.py is Copyright 2008 Prabhu Ramachandran under
+BSD style license. File python/numpy.i is Copyright (c) 2005-2015,
+NumPy Developers under BSD 3-clause license. See each file for
+details.
 
 Refer to the file INSTALL for building and installing Gyoto.
 Specific instructions for Linux/Ubuntu are in the file INSTALL.ubuntu. 

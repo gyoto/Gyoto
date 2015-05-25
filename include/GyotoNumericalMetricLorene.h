@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2012 Frederic Vincent
+ *   Copyright (c) 2012-2015 Frederic Vincent, Thibaut Paumard
  *
  *
  */

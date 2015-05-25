@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2014 Thibaut Paumard
+    Copyright 2014-2015 Thibaut Paumard
 
     This file is part of Gyoto.
 
