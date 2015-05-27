@@ -1,11 +1,38 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon, 25 May 2015 16:47:09 +0200
+Date:  Wed, 27 May 2015 11:25:05 +0200
 
-    Releasing 1.0.0 (Youhou!)
-    + add a note about --enable-release in README
-    + add README.Developers to remember how to make a release...
-    + update NEWS, ChangeLog and configure.ac.
+        Releasing 1.0.1 (1984 release)
+	+ add Odele to AUTHORS
+        + update NEWS, ChangeLog and configure*.
+
+commit 2292f1d74eaa9968ea9ec64bd00fdc150d8fe8b1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 27 11:17:14 2015 +0200
+
+    Simplify python detection and add --without-python to make it possible
+    to build Gyoto when python is installed but with wrong version.
+
+commit 041c5fc40ee736afb183d693d93bca3b5fcdc1d5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 27 10:06:52 2015 +0200
+
+    python/doxy2swig.py: add 3rd clause of BSD license per request of original author
+
+commit 21dba0161760650512abd8507cfcfa7be27b5e22
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 27 08:45:11 2015 +0200
+
+    Fix (bin|lib)/Makefile.am to use BOOST_*_LIBS instead of hardcoding the library name. This allows compiling with MPI support under at least macports.
+
+commit 27fc03fe981bbcd3e6f919120a6b43bc6fc62a62
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon May 25 17:06:24 2015 +0200
+
+        Releasing 1.0.0 (Youhou!)
+        + add a note about --enable-release in README
+        + add README.Developers to remember how to make a release...
+        + update NEWS, ChangeLog and configure.ac.
 
 commit aa035f96465a0a45dd910de47281e7652dffb44e
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
