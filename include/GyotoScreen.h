@@ -37,7 +37,7 @@ template <typename T, size_t sz> class GYOTO_ARRAY {
  private:
   T buf[sz];
  public:
-  T& operator[](size_t c) { throwError("toto"); return buf[c] ; }
+  T& operator[](size_t c) { return buf[c] ; }
 };
 #endif
 
