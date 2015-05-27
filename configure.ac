@@ -21,11 +21,28 @@ AC_LANG(C++)
 LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
 
+VERSINFO=4:0:0
+AC_SUBST([VERSINFO])
+
+FEATURES=""
+AC_ARG_ENABLE([release],
+  [AS_HELP_STRING([--enable-release],
+     [enable a release build (remove -unreleased from SONAME)])])
+AS_IF([test "x$enable_release" != "xyes"],
+  [FEATURES+="-unreleased"])
 
 # PYTHON STUFF
-PC_INIT([2.7], [3.4.99])
-PC_PYTHON_CHECK_SITE_DIR
-PC_PYTHON_SITE_PACKAGE_DIR
+AC_ARG_WITH([python],
+	[AC_HELP_STRING([--with-python], [force (or disable) python support])],
+	[],
+	[with_python=optional])
+
+PC_PROG_PYTHON([], [2.7], [4.0])
+PC_PYTHON_CHECK_HEADERS(,[PYTHON=""])
+AS_IF([test "x$with_python" = xno], [PYTHON=""])
+AS_IF([test "x$with_python" = xyes && test "x$PYTHON"=x],
+  [AC_MSG_ERROR([Python requested but no supported version found (>=2.7, <4.0)])])
+
 AC_ARG_WITH([virtualenv],
 	[AS_HELP_STRING([--with-virtualenv], [install to a Python virtualenv])],
 	[],
@@ -37,26 +54,6 @@ AS_IF([test "x$with_virtualenv" != xno],
 		[--with-virtualenv given but virtualenv could not be found])]),
 	AC_SUBST([VIRTUALENV], [no]))
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
-
-VERSINFO=4:0:0
-AC_SUBST([VERSINFO])
-
-FEATURES=""
-AC_ARG_ENABLE([release],
-  [AS_HELP_STRING([--enable-release],
-     [enable a release build (remove -unreleased from SONAME)])])
-AS_IF([test "x$enable_release" != "xyes"],
-  [FEATURES+="-unreleased"])
-
-PC_PYTHON_CHECK_HEADERS(,[PYTHON=""])
-AS_IF([test "x$PYTHON" != "x"],
-  [PC_PYTHON_CHECK_LIBS
-   PC_PYTHON_CHECK_CFLAGS
-   PC_PYTHON_CHECK_LDFLAGS
-   PC_PYTHON_CHECK_EXTENSION_SUFFIX
-   PC_PYTHON_CHECK_ABI_FLAGS
-  ]
-)
 
 AX_PKG_SWIG(2.0)
 
