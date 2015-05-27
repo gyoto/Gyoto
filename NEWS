@@ -1,3 +1,10 @@
+1.0.1 2015/05/27 PKG
+   * Add 3rd clause of BSD license to python/doxy2swig.py;
+   * Add Odele to AUTHORS;
+   * Bugfixes in configure.ac: use BOOST_*_LIBS variables instead of
+     hardcoding one possible value, make it possible to build when
+     python is installed but with an unsupported version.
+
 1.0.0 2015/05/25 ABI 3
    * New functionality: MPI-based parallelisation.
    * New functionality: Python extension.
