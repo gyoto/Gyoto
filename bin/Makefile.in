@@ -82,8 +82,8 @@ target_triplet = @target@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @BUILD_GYOTO_TRUE@am__append_1 = gyoto
 @BUILD_GYOTO_TRUE@am__append_2 = gyoto.1
-@HAVE_MPI_TRUE@am__append_3 = $(BOOST_MPI_LDFLAGS) -lboost_mpi \
-@HAVE_MPI_TRUE@	      $(BOOST_SERIALIZATION_LDFLAGS) -lboost_serialization
+@HAVE_MPI_TRUE@am__append_3 = $(BOOST_MPI_LDFLAGS) $(BOOST_MPI_LIBS) \
+@HAVE_MPI_TRUE@	      $(BOOST_SERIALIZATION_LDFLAGS) $(BOOST_SERIALIZATION_LIBS)
 
 @HAVE_MPI_TRUE@am__append_4 = gyoto-mpi-worker.@sovers@
 @HAVE_MPI_TRUE@am__append_5 = gyoto-mpi-worker.@sovers@.1

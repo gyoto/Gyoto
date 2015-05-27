@@ -81,8 +81,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@HAVE_MPI_TRUE@am__append_1 = $(BOOST_MPI_LDFLAGS) -lboost_mpi \
-@HAVE_MPI_TRUE@	      $(BOOST_SERIALIZATION_LDFLAGS) -lboost_serialization
+@HAVE_MPI_TRUE@am__append_1 = $(BOOST_MPI_LDFLAGS) $(BOOST_MPI_LIBS) \
+@HAVE_MPI_TRUE@	      $(BOOST_SERIALIZATION_LDFLAGS) $(BOOST_SERIALIZATION_LIBS)
 
 
 # LORENE PLUGIN
