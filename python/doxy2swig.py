@@ -28,7 +28,7 @@ output will be written (the file will be clobbered).
 #   Bill Spotz:  bug reports and testing.
 #   Sebastian Henschel:   Misc. enhancements.
 #
-# Copyright 2008 Prabhu Ramachandran
+# Copyright 2008-2015 Prabhu Ramachandran
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
 # met:
@@ -39,6 +39,10 @@ output will be written (the file will be clobbered).
 # 2. Redistributions in binary form must reproduce the above copyright
 #    notice, this list of conditions and the following disclaimer in the
 #    documentation and/or other materials provided with the distribution.
+#
+# 3. Neither the name of the copyright holder nor the names of its
+#    contributors may be used to endorse or promote products derived from
+#    this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -53,9 +57,12 @@ output will be written (the file will be clobbered).
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Gyoto history:
+#   2015-05-27:
+#      * add the third clause of the BSD license per request of the
+#        original author.
 #   2015-05-25:
 #      * add explicit copyright notice and BSD (2 clause) license. The
-#      * original author only specified "BSD style".
+#        original author only specified "BSD style".
 #   2015-01-05:
 #      * download this file from
 #   http://www.aero.iitb.ac.in/~prabhu/software/code/python/doxy2swig.py
