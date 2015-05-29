@@ -94,7 +94,7 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Metric" || name=="Screen" || name=="Astrobj") ;
-    else if (prop = sc->property(name))
+    else if ((prop = sc->property(name)))
       sc -> setParameter(*prop, name, content, unit);
     else GYOTO_WARNING << "Unrecognized XML entity in Scenery section: '"
 		       << name << "'" << endl;

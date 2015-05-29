@@ -125,7 +125,7 @@ void Uniform::reset_() {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(band_);
-  if (band_) GYOTO_DEBUG_ARRAY(band_, 2);
+  GYOTO_DEBUG_ARRAY(band_, 2);
   GYOTO_DEBUG_EXPR(kindid_);
   GYOTO_ENDIF_DEBUG
 # endif

@@ -1124,6 +1124,7 @@ std::string Screen::anglekind() const {
   default:
     throwError("Invalid integer value for Screen::anglekind_");
   }
+  return ""; // silence warning
 }
 
 size_t Screen::resolution() const { return npix_; }
@@ -1410,7 +1411,7 @@ Screen::Angles::Angles (double const*const buf, size_t sz)
 void Screen::Angles::begin() {i_=0;}
 bool Screen::Angles::valid() {return i_<sz_;}
 size_t Screen::Angles::size(){return sz_;}
-Screen::Coord1dSet& Screen::Angles::operator++(){++i_;}
+Screen::Coord1dSet& Screen::Angles::operator++(){++i_; return *this;}
 double Screen::Angles::angle() const {return buf_[i_];}
 
 Screen::RepeatAngle::RepeatAngle (double val, size_t sz)
@@ -1419,7 +1420,7 @@ Screen::RepeatAngle::RepeatAngle (double val, size_t sz)
 void Screen::RepeatAngle::begin() {i_=0;}
 bool Screen::RepeatAngle::valid() {return i_<sz_;}
 size_t Screen::RepeatAngle::size(){return sz_;}
-Screen::Coord1dSet& Screen::RepeatAngle::operator++(){++i_;}
+Screen::Coord1dSet& Screen::RepeatAngle::operator++(){++i_; return *this;}
 double Screen::RepeatAngle::angle() const {return val_;}
 
 Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
@@ -1433,7 +1434,8 @@ Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
 void Screen::Bucket::begin() {alpha_.begin(); delta_.begin();}
 bool Screen::Bucket::valid() {return alpha_.valid() && delta_.valid();}
 size_t Screen::Bucket::size(){return alpha_.size();}
-Screen::Coord2dSet& Screen::Bucket::operator++(){++alpha_; ++delta_;}
+Screen::Coord2dSet& Screen::Bucket::operator++(){
+  ++alpha_; ++delta_; return *this;}
 GYOTO_ARRAY<double, 2> Screen::Bucket::angles() const {
 #if defined HAVE_BOOST_ARRAY_HPP
   GYOTO_ARRAY<double, 2> out {alpha_.angle(), delta_.angle()};
