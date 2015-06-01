@@ -26,6 +26,11 @@ sudo make install
 
 I- INSTALL THE DEPENDENCIES
 ===========================
+   - a C++ compiler. GCC 4.9 works very well. Several features require
+     the C++11 standard. Clang/LLVM is discouraged because it does not
+     support fenv.h, which sometimes leads to spurious SIFPE in the
+     Yorick plug-in:
+       https://llvm.org/bugs/show_bug.cgi?id=23707
    - xercesc-3 (recommended, required for the executable):
        http://xerces.apache.org/xerces-c/
    - cfitsio   (required for the executable and some of the Astrobj):
