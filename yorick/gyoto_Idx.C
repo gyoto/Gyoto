@@ -160,6 +160,8 @@ int YGyoto::Idx::getNDims() const {
   if (_is_range) return 1;
   if (_is_list) return 1;
   if (_is_scalar) return 0;
+  throwError("BUG: What does this YGyoto::Idx instance hold?");
+  return 0;
 }
 
 long const * YGyoto::Idx::getDims() const {return _dims;}

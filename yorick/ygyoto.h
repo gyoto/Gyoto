@@ -273,7 +273,8 @@ void ygyoto_Spectrometer_generic_eval
       unit="";								\
     }									\
     if (yarg_nil(argc-2)) {						\
-      if (prop_pushed++) y_error("Can push only one return value");	\
+      if (prop_pushed) y_error("Can push only one return value");	\
+      prop_pushed=true;							\
       yarg_drop(1);							\
       ypush_property(*YGYOTO_CAT(OBJ, _), *prop, pname, unit);	\
     }									\
