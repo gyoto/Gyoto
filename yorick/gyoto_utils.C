@@ -35,6 +35,10 @@
 #include <signal.h>
 #include <vector>
 
+#if defined HAVE_FENV_H
+# include <fenv.h>
+#endif
+
 #if defined HAVE_MPI
 # include <mpi.h>
 #endif
@@ -75,6 +79,15 @@ extern "C" {
     signal(SIGSEGV, SIG_DFL);
   }
 
+  void
+  Y_gyoto_fedisableexcept(int)
+  {
+#if defined HAVE_FENV_H
+    fedisableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID);
+#else
+    GYOTO_WARNING << "no GNU fenv.h in this Gyoto\n";
+#endif
+  }
 
   void
   Y_gyoto_debug(int argc)

@@ -313,6 +313,15 @@
 # endif
 #endif
 
+/** \def HAVE_FENV_H
+    \brief Define to 1 to use fenv.h. */
+#undef HAVE_FENV_H
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_FENV_H
+#  define HAVE_FENV_H (undefined)
+# endif
+#endif
+
 /** \def HAVE__BOOL
     \brief Whether the system has the type `_Bool'. */
 #undef HAVE__BOOL

@@ -31,6 +31,26 @@ AC_ARG_ENABLE([release],
 AS_IF([test "x$enable_release" != "xyes"],
   [FEATURES+="-unreleased"])
 
+## SIGFPE delivery
+#
+AC_ARG_WITH([fenv],
+  [AS_HELP_STRING([--without-fenv],
+     [do not use fenv.h (see README.SIGFPE)],)],
+   [],
+   [with_fenv=auto])
+AS_IF([test "x$with_fenv" != xno],
+  [AC_MSG_CHECKING([for fenv.h])
+   AC_TRY_LINK(
+     [#include <fenv.h>],
+     [feenableexcept(FE_DIVBYZERO);],
+     [AC_DEFINE([HAVE_FENV_H], [1], [Define to 1 to use fenv.h.])
+      HAVE_FENV_H=1
+      AC_MSG_RESULT(yes)],
+     [AC_MSG_RESULT(no)])
+  ])
+AS_IF([test "x$with_fenv" = xyes && test "x$HAVE_FENV_H" != x1],
+  [AC_MSG_ERROR(fenv.h required but not usable")])
+
 # PYTHON STUFF
 AC_ARG_WITH([python],
 	[AC_HELP_STRING([--with-python], [force (or disable) python support])],
@@ -293,7 +313,6 @@ AS_IF([test "x$YORICK" != "x"],
 
   ]
 )
-
 
 ## DEBUGGING INFORMATION
 # Enable debugging by default
