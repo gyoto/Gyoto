@@ -23,6 +23,11 @@
 #include "GyotoUtils.h"
 #include "GyotoRegister.h"
 
+// feenableexcept()
+#if defined HAVE_FENV_H
+# include <fenv.h>
+#endif
+
 // FITS I/O
 #include <fitsio.h>
 
@@ -109,6 +114,10 @@ int main(int argc, char** argv) {
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
 
+#if defined HAVE_FENV_H
+  bool use_fenv=true;
+#endif
+
   int stop=0;
   for (int i=1;i<argc;++i) {
     param=argv[i];
@@ -119,6 +128,9 @@ int main(int argc, char** argv) {
       else if (param.substr(0,7)=="--quiet") verbose(GYOTO_QUIET_VERBOSITY);
       else if (param.substr(0,9)=="--verbose") verbose(10);
       else if (param.substr(0,7)=="--debug") debug(1);
+#if defined HAVE_FENV_H
+      else if (param.substr(0,11)=="--no-sigfpe") use_fenv=false;
+#endif
       else if (param.substr(0,10)=="--plugins="){
 	pluglist=param.substr(10);
 	cout << pluglist << endl;
@@ -217,6 +229,15 @@ int main(int argc, char** argv) {
     usage();
     return 1;
   }
+
+#if defined HAVE_FENV_H
+  if (use_fenv) {
+    GYOTO_DEBUG << "enabling SIGFPE delivery\n";
+    feenableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID);
+  } else {
+    GYOTO_DEBUG << "NOT enabling SIGFPE delivery\n";
+  }
+#endif
 
   // State copyright
   if (verbose() >= GYOTO_QUIET_VERBOSITY)

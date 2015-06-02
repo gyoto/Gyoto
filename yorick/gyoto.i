@@ -1879,6 +1879,38 @@ extern is_gyoto_Scenery;
 
 extern gyoto_dontcatchSIGFPE;
 extern gyoto_dontcatchSIGSEGV;
+/* DOCUMENT gyoto.dontcatchSIGFPE
+        and gyoto.dontcatchSIGSEGV
+
+     By default, Yorick will catch SIGFPE and SIGSEGV and throw a
+     Yorick error when they occur. Although this is arguably the right
+     thing to do in the general case, this makes it difficult to debug
+     compiled code that triggers these signals. These functions
+     disables catching the corresponding signal, so that a debugger
+     such as GDB can be used to track down their origin.
+
+ */
+
+extern gyoto_fedisableexcept;
+/* DOCUMENT gyoto.fedisableexcept
+
+     Yorick tries very hard to set the floating-point environment such
+     that e.g. divisions by zero will trigger SIGFPE. Gyoto tries to
+     not allow SIGFPE to occur and this normally is a bug when it
+     does. However, certain compilers will optimize the code in such
+     a way that the safeguards that Gyoto puts in place will be
+     bypassed. If you encounter spurious SIGFPE, use this function
+     right before the offending code. Remember that Yorick will reset
+     the floating-point environment regularly, so it is not enough to
+     just call fedisableexcept() once at the beginning of your
+     program.
+
+     Note that this function is just a "practical" hack to work around
+     a defficiency of some compilers. If you need this hack, consider
+     recompiling Gyoto as instructed in README.SIGFPE (in Gyoto source
+     code).
+
+ */
 
 extern gyoto_listRegister;
 /* DOCUMENT gyoto.listRegister

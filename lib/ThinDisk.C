@@ -165,7 +165,7 @@ int ThinDisk::Impact(Photon *ph, size_t index,
   double h1=operator()(coord1), h2=operator()(coord2);
   double r1=projectedRadius(coord1), r2=projectedRadius(coord2);
 
-  if ( r1 > 2.*rout_ && r2 > 2.*rout_) return 0;
+  if ( 0.5*r1 > rout_ && 0.5*r2 > rout_) return 0;
   if ( h1 == h2 && h2 != 0 ) return 0;
   if ( (h1 > 0.) == (h2 > 0.) && h1 != 0. && h2 != 0. ) return 0;
   

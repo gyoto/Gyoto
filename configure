@@ -842,6 +842,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 enable_release
+with_fenv
 with_python
 with_virtualenv
 enable_c__11
@@ -1548,6 +1549,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
+  --without-fenv          do not use fenv.h (see README.SIGFPE)
   --with-python           force (or disable) python support
   --with-virtualenv       install to a Python virtualenv
   --with-mpi              compile with MPI (parallelization) support. If none
@@ -15584,6 +15586,49 @@ if test "x$enable_release" != "xyes"; then :
   FEATURES+="-unreleased"
 fi
 
+## SIGFPE delivery
+#
+
+# Check whether --with-fenv was given.
+if test "${with_fenv+set}" = set; then :
+  withval=$with_fenv;
+else
+  with_fenv=auto
+fi
+
+if test "x$with_fenv" != xno; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fenv.h" >&5
+$as_echo_n "checking for fenv.h... " >&6; }
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <fenv.h>
+int
+main ()
+{
+feenableexcept(FE_DIVBYZERO);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+
+$as_echo "#define HAVE_FENV_H 1" >>confdefs.h
+
+      HAVE_FENV_H=1
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+if test "x$with_fenv" = xyes && test "x$HAVE_FENV_H" != x1; then :
+  as_fn_error $? "fenv.h required but not usable\"" "$LINENO" 5
+fi
+
 # PYTHON STUFF
 
 # Check whether --with-python was given.
@@ -18568,7 +18613,6 @@ $as_echo "$Y_INST_SITE" >&6; }
 
 
 fi
-
 
 ## DEBUGGING INFORMATION
 # Enable debugging by default

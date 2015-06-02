@@ -30,6 +30,7 @@ gyoto=save(
            
            dontcatchSIGFPE=gyoto_dontcatchSIGFPE,
            dontcatchSIGSEGV=gyoto_dontcatchSIGSEGV,
+           fedisableexcept=gyoto_fedisableexcept,
            listRegister=gyoto_listRegister,
 
            is_Photon=is_gyoto_Photon,
