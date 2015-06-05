@@ -69,6 +69,15 @@
 # endif
 #endif
 
+/** \def GYOTO_SIZE__T_IS_UNSIGNED_LONG
+    \brief Define to 1 if size_t and unsigned long are the same */
+#undef GYOTO_SIZE__T_IS_UNSIGNED_LONG
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_SIZE__T_IS_UNSIGNED_LONG
+#  define GYOTO_SIZE__T_IS_UNSIGNED_LONG (undefined)
+# endif
+#endif
+
 /** \def GYOTO_SOVERS
     \brief Gyoto ABI version.
 

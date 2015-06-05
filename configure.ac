@@ -51,6 +51,45 @@ AS_IF([test "x$with_fenv" != xno],
 AS_IF([test "x$with_fenv" = xyes && test "x$HAVE_FENV_H" != x1],
   [AC_MSG_ERROR(fenv.h required but not usable")])
 
+## IS SIZE_T EQUIVALENT TO UNSIGNED LONG?
+#
+AC_MSG_CHECKING(whether size_t is the same as unsigned long)
+
+AC_ARG_WITH([size_t],
+  [AS_HELP_STRING([--with-size_t=same|distinct|auto],
+     [consider size_t as the same as or distinct from unsigned long (auto). Should normally be specified only if cross-compiling.])],
+  [AS_IF([test "x$with_size__t" != xsame && test "x$with_size__t" != xdistinct && test "x$with_size__t" != xauto],
+     [AC_MSG_ERROR([with-size_t should be one of same, distinct or auto])])
+  ],
+  [with_size__t=auto]
+)
+
+AS_IF([test "x$with_size__t" = xauto],
+  [AC_TRY_RUN(
+     [
+      #include <sys/types.h>
+      typedef void (* set_size_t_t) (size_t val);
+      typedef void (* set_unsigned_long_t) (unsigned long);
+      size_t size_t_value;
+      void set_size_t (size_t v) {size_t_value = v;}
+        int main(int, char**) {
+        set_unsigned_long_t ulsetter = &set_size_t;
+        (*ulsetter)(25);
+        if (size_t_value != 25) return 1;
+        return 0;
+      }
+     ],
+     [with_size__t="same"],
+     [with_size__t="distinct"])
+  ]
+)
+
+AS_IF([test "x$with_size__t" = xsame],
+  [AC_DEFINE([GYOTO_SIZE__T_IS_UNSIGNED_LONG], [1], [Define to 1 if size_t and unsigned long are the same])]
+)
+
+AC_MSG_RESULT($with_size__t)
+
 # PYTHON STUFF
 AC_ARG_WITH([python],
 	[AC_HELP_STRING([--with-python], [force (or disable) python support])],
@@ -60,7 +99,7 @@ AC_ARG_WITH([python],
 PC_PROG_PYTHON([], [2.7], [4.0])
 PC_PYTHON_CHECK_HEADERS(,[PYTHON=""])
 AS_IF([test "x$with_python" = xno], [PYTHON=""])
-AS_IF([test "x$with_python" = xyes && test "x$PYTHON"=x],
+AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
   [AC_MSG_ERROR([Python requested but no supported version found (>=2.7, <4.0)])])
 
 AC_ARG_WITH([virtualenv],

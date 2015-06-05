@@ -232,7 +232,7 @@ doing, "checking dk";
 pos=[0, 10., 12., 5.];
 dk1=dkfunc(gg, pos);
 dk3=dknum(gg, pos);
-if (max(abs(dk1-dk3))>1e-6)
+if (max(abs(dk1-dk3))>1e-5)
   error, "dk is wrong";
 done;
 

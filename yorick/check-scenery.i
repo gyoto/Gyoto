@@ -34,6 +34,35 @@ sc;
 
 write, format="%s %i\n", "Pointer to this Scenery:", sc(get_pointer=1);
 
+// MaxIter is a property of type size_t. The implementation of such
+// properties rely on undefined behaviour. Check here that it works in
+// practice. If one of these test fail, we have to find a new
+// implementation of GYOTO_PROPERTY_SIZE_T.
+
+doing, "Using maxiter()";
+max1=sc.maxiter();
+done;
+
+doing, "Using MaxIter()";
+max2=sc.MaxIter();
+done;
+
+doing, "Comparing";
+if (max1!=max2) error, "maxiter() and MaxIter() do not yield the same value";
+done;
+
+doing, "Checking MaxIter(val)";
+if ((sc.MaxIter(25)).maxiter() != 25) error, "MaxIter and maxiter do not agree";
+done;
+
+doing, "Checking maxiter(val)";
+if ((sc.maxiter(40)).MaxIter() != 40) error, "MaxIter and maxiter do not agree";
+done;
+
+// Set back the original value. Phew, GYOTO_PROPERTY_SIZE_T works as
+// expected.
+sc, MaxIter=max1;
+
 write, format="%s", "New scenery, setting only \"time\"... ";
 sc2=gyoto_Scenery(screen=gyoto_Screen(time=1));
 write, format="%s\n", "done.";
