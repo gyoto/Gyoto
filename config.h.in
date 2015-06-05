@@ -9,6 +9,9 @@
 /* Suffix for Gyoto plug-ins */
 #undef GYOTO_PLUGIN_SFX
 
+/* Define to 1 if size_t and unsigned long are the same */
+#undef GYOTO_SIZE__T_IS_UNSIGNED_LONG
+
 /* Gyoto ABI version */
 #undef GYOTO_SOVERS
 

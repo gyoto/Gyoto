@@ -42,6 +42,9 @@ Value::~Value() {}
 
 Value::Value(long val) : type(Property::long_t), Long(val){}
 Value::Value(unsigned long val) : type(Property::unsigned_long_t), ULong(val){}
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+Value::Value(size_t val) : type(Property::size_t_t), SizeT(val){}
+#endif
 Value::Value(bool val) : type(Property::bool_t), Bool(val){}
 Value::operator long() const {
   switch (type) {
@@ -49,6 +52,10 @@ Value::operator long() const {
     return Long;
   case Property::unsigned_long_t:
     return long(ULong);
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  case Property::size_t_t:
+    return long(SizeT);
+#endif
   default:
     throwError("This Value does not hold a long (or unsigned long)");
   }
@@ -61,11 +68,31 @@ Value::operator unsigned long() const {
     return (unsigned long)(Long);
   case Property::unsigned_long_t:
     return ULong;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  case Property::size_t_t:
+    return (unsigned long)(SizeT);
+#endif
   default:
     throwError("This Value does not hold a long (or unsigned long)");
   }
   return 0;
 }
+
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+Value::operator size_t() const {
+  switch (type) {
+  case Property::long_t:
+    return size_t(Long);
+  case Property::unsigned_long_t:
+    return size_t(ULong);
+  case Property::size_t_t:
+    return SizeT;
+  default:
+    throwError("This Value does not hold a long (or unsigned long)");
+  }
+  return 0;
+}
+#endif
 
 Value::operator bool() const {
   switch (type) {
@@ -75,6 +102,9 @@ Value::operator bool() const {
     return bool(Long);
   case Property::unsigned_long_t:
     return bool(ULong);
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+    return bool(SizeT);
+#endif
   default:
     throwError("This Value does not hold an integer");
   }
@@ -98,6 +128,9 @@ Value& Value::operator=(Value const &right) {
   ___local_case(Bool);
   ___local_case(Long);
   ___local_case(ULong);
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  ___local_case(SizeT);
+#endif
   ___local_case(String);
   ___local_case(VDouble);
   ___local_case(VULong);

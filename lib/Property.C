@@ -15,6 +15,9 @@ Property::Property(Property const * const ancestors)
 
 GYOTO_LOCAL(long)
 GYOTO_LOCAL(unsigned_long)
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+GYOTO_LOCAL(size_t)
+#endif
 GYOTO_LOCAL(metric)
 GYOTO_LOCAL(spectrum)
 GYOTO_LOCAL(astrobj)

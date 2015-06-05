@@ -410,6 +410,11 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::unsigned_long_t:
     ypush_long(long((unsigned long)(val)));
     break;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  case Gyoto::Property::size_t_t:
+    ypush_long(long(size_t(val)));
+    break;
+#endif
   case Gyoto::Property::double_t:
     ypush_double(val);
     break;
@@ -486,6 +491,11 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   case Gyoto::Property::unsigned_long_t:
     val = (unsigned long)(ygets_l(iarg));
     break;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  case Gyoto::Property::size_t_t:
+    val = size_t(ygets_l(iarg));
+    break;
+#endif
   case Gyoto::Property::double_t:
     object->set(p, ygets_d(iarg), unit);
     return;

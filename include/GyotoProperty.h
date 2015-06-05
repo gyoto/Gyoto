@@ -117,7 +117,15 @@ namespace Gyoto {
    (Gyoto::Property::set_unsigned_long_t)&class::fname,		\
    (Gyoto::Property::get_unsigned_long_t)&class::fname),
 
-#define GYOTO_PROPERTY_SIZE_T GYOTO_PROPERTY_UNSIGNED_LONG
+#if defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+# define GYOTO_PROPERTY_SIZE_T GYOTO_PROPERTY_UNSIGNED_LONG
+#else
+#define GYOTO_PROPERTY_SIZE_T(class, name, fname)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_size_t_t)&class::fname,		\
+   (Gyoto::Property::get_size_t_t)&class::fname),
+#endif
 
 /// Define a Property of type Double supporting unit
 #define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname) \
@@ -318,6 +326,10 @@ class Gyoto::Property
     long_t,
     /// Type is unsigned long (a.k.a. size_t)
     unsigned_long_t,
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+    /// Type is size_t (only if distinct from unsigned long)
+    size_t_t,
+#endif
     /// Type is bool
     bool_t,
     /// Type is std::string
@@ -381,6 +393,12 @@ class Gyoto::Property
   typedef void (Object::* set_unsigned_long_t)(unsigned long val);
   /// Prototype for an accessor to get an unsigned long
   typedef unsigned long (Object::* get_unsigned_long_t)() const;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  /// Prototype for an accessor to set a size_t
+  typedef void (Object::* set_size_t_t)(size_t val);
+  /// Prototype for an accessor to get a size_t
+  typedef size_t (Object::* get_size_t_t)() const;
+#endif
   /// Prototype for an accessor to set a bool
   typedef void (Object::* set_bool_t)(bool val);
   /// Prototype for an accessor to get a bool
@@ -449,6 +467,9 @@ class Gyoto::Property
     set_double_t set_double;
     set_long_t set_long;
     set_unsigned_long_t set_unsigned_long;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+    set_size_t_t set_size_t;
+#endif
     set_bool_t set_bool;
     set_string_t set_string;
     set_vector_double_t set_vdouble;
@@ -467,6 +488,9 @@ class Gyoto::Property
     get_double_t get_double;
     get_long_t get_long;
     get_unsigned_long_t get_unsigned_long;
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+    get_size_t_t get_size_t;
+#endif
     get_bool_t get_bool;
     get_string_t get_string;
     get_vector_double_t get_vdouble;
@@ -530,6 +554,13 @@ class Gyoto::Property
   Property(std::string name,
 	   set_unsigned_long_t set_unsigned_long,
 	   get_unsigned_long_t get_unsigned_long);
+
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  /// Constructor for #type==#size_t_t
+  Property(std::string name,
+	   set_size_t_t set_size_t,
+	   get_size_t_t get_size_t);
+#endif
 
   /// Constructor for #type==#double_t, without unit support
   Property(std::string name,
