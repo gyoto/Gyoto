@@ -185,6 +185,7 @@ void PolishDoughnut::lambda(double lam) {
   double r2_min = rms ;
   double r2_max = 1000. ;
   r_cusp_ = intersection.ridders(r1_min, r1_max) ;
+  rintorus_ = r_cusp_;
   r_centre_ = intersection.ridders(r2_min, r2_max) ;
   double poss[4]={0.,r_cusp_,M_PI/2.,0.};
   double posc[4]={0.,r_centre_,M_PI/2.,0.};
@@ -308,6 +309,7 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
     throwError("Only 2 arguments to define l0 and rin");
   l0_ = v[0];
   rintorus_ = v[1];
+  r_cusp_=rintorus_; // NB: the cusp is most probably not at this radius; however we need to define it to avoid having cases where operator() returns "inside torus" when the photon actually is in the funnel at r<r_cusp_. Defining r_cusp_ that way is okay, we won't miss any part of the real torus.
   //cout << "l0,rin= " << l0_ << " " << rintorus_ << endl;
   double posin[4]={0.,rintorus_,M_PI/2.,0.};
   W_surface_ = gg_->getPotential(posin,l0_);
