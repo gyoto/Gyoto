@@ -57,7 +57,19 @@ static SmartPointer<Astrobj::Properties> data = NULL;
 
 void usage() {
   cout << "Usage:" << endl <<
-    "    rayXML [--imin=i0 --imax=i1 --jmin=j0 --jmax=j1] input.xml output.dat" << endl;
+     "  gyoto [--silent|--quiet|--verbose[=N]|--debug]\n"
+#if defined HAVE_FENV_H
+     "        [--no-sigfpe]\n"
+#endif
+     "        [--imin=i0] [--imax=i1] [--di=di]\n"
+     "        [--jmin=j0] [--jmax=j1] [--dj=dj]\n"
+     "        [--time=tobs] [--tmin=tmin]\n"
+     "        [--fov=angle] [--resolution=npix] [--distance=dist]\n"
+     "        [--paln=Omega] [--inclination=i] [--argument=theta]\n"
+     "        [--nthreads=nth] [--nprocesses=nprocs]\n"
+     "        [--plugins=pluglist]\n"
+     "        [--impact-coords[=fname.fits]]\n"
+     "        [--] input.xml output.fits" << endl;
 }
 
 void sigint_handler(int sig)
