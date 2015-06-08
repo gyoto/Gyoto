@@ -22,6 +22,7 @@
 #include "GyotoFactory.h"
 #include "GyotoUtils.h"
 #include "GyotoRegister.h"
+#include "optionparser.h"
 
 // feenableexcept()
 #if defined HAVE_FENV_H
@@ -43,6 +44,9 @@
 # include <mpi.h>
 #endif
 
+// ULONG_MAX
+#include <climits>
+
 using namespace std;
 using namespace Gyoto;
 
@@ -55,22 +59,71 @@ static double*   vect      = NULL;
 static double*   impactcoords=NULL;
 static SmartPointer<Astrobj::Properties> data = NULL;
 
-void usage() {
-  cout << "Usage:" << endl <<
-     "  gyoto [--silent|--quiet|--verbose[=N]|--debug]\n"
-#if defined HAVE_FENV_H
-     "        [--no-sigfpe]\n"
-#endif
-     "        [--imin=i0] [--imax=i1] [--di=di]\n"
-     "        [--jmin=j0] [--jmax=j1] [--dj=dj]\n"
-     "        [--time=tobs] [--tmin=tmin]\n"
-     "        [--fov=angle] [--resolution=npix] [--distance=dist]\n"
-     "        [--paln=Omega] [--inclination=i] [--argument=theta]\n"
-     "        [--nthreads=nth] [--nprocesses=nprocs]\n"
-     "        [--plugins=pluglist]\n"
-     "        [--impact-coords[=fname.fits]]\n"
-     "        [--] input.xml output.fits" << endl;
+namespace Gyoto {
+  struct Arg;
 }
+
+struct Gyoto::Arg: public option::Arg
+{
+  static void printError(const char* msg1, const option::Option& opt, const char* msg2)
+  {
+    fprintf(stderr, "ERROR: %s", msg1);
+    fwrite(opt.name, opt.namelen, 1, stderr);
+    fprintf(stderr, "%s", msg2);
+  }
+  static option::ArgStatus Required(const option::Option& option, bool msg)
+  {
+    if (option.arg != 0)
+      return option::ARG_OK;
+
+    if (msg) printError("Option '", option, "' requires an argument\n");
+    return option::ARG_ILLEGAL;
+  }
+};
+enum  optionType { DEBUG, QUIET, VERBOSE, SILENT, IMIN, IMAX, JMIN, JMAX, ISTEP, JSTEP, ISPEC, JSPEC };
+enum  optionIndex { UNKNOWN, HELP, PLUGINS, LIST, VERBOSITY, NOSIGFPE, RANGE,
+		    BOUNDARIES, STEPS, IPCT, TIME, TMIN, FOV, RESOLUTION,
+		    DISTANCE, PALN, INCLINATION, ARGUMENT, NTHREADS, NPROCESSES };
+const option::Descriptor usage[] =
+{
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\n\n"
+                                        "Generic options:\n  -- \tStop option processing." },
+ {HELP, 0,"h","help",option::Arg::None, "  --help, -h  \tPrint usage and exit." },
+ {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
+ {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
+#if !defined HAVE_FENV_H
+  " (noop: this Gyoto lacks fenv.h support)".
+#endif
+ },
+ {PLUGINS, 0,"p","plugins",option::Arg::Optional, "  --plugins=<list>, -p<list>  \tList of plug-ins to load instead of $GYOTO_PLUGINS." },
+ {NTHREADS, 0, "", "nthreads", Gyoto::Arg::Required, "  --nthreads=<arg> \tNumber of parallel threads to use."},
+ {NPROCESSES, 0, "", "nprocesses", Gyoto::Arg::Required, "  --nprocesses=<arg> \tNumber of MPI parallel processes to use."},
+ {IPCT, 0, "", "impact-coords", option::Arg::Optional, "  --impact-coords[=<filename>] \tRead impact coordinates from filename or store in output.fits."},
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nVerbosity level:" },
+ {VERBOSITY, SILENT, "s", "silent", option::Arg::None, "  --silent, -s \tBe silent." },
+ {VERBOSITY, QUIET, "q", "quiet", option::Arg::None, "  --quiet, -q \tBe quiet." },
+ {VERBOSITY, VERBOSE, "v", "verbose", option::Arg::Optional, "  --verbose[=<l>], -v[<l>] \tBe verbose. Optional parameter: verbosity level." },
+ {VERBOSITY, DEBUG, "d", "debug", option::Arg::None, "  --debug, -d \tEnable debug output." },
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nField selection:" },
+ {BOUNDARIES, IMIN, "", "imin", Gyoto::Arg::Required, "  --imin=<arg>  \tFirst column (1)."},
+ {BOUNDARIES, IMAX, "", "imax", Gyoto::Arg::Required, "  --imax=<arg>  \tLast column (ULONG_MAX)."},
+ {STEPS, ISTEP, "", "di", Gyoto::Arg::Required, "  --di=<arg>  \tColumn step (1)."},
+ {BOUNDARIES, JMIN, "", "jmin", Gyoto::Arg::Required, "  --jmin=<arg>  \tFirst line (1)."},
+ {BOUNDARIES, JMAX, "", "jmax", Gyoto::Arg::Required, "  --jmax=<arg>  \tLast line (ULONG_MAX)."},
+ {STEPS, JSTEP, "", "dj", Gyoto::Arg::Required, "  --dj=<arg>  \tLine step (1)."},
+ {RANGE, ISPEC, "i", "ispec", Gyoto::Arg::Required, "  --ispec=<arg>, -i<arg>  \tColumn specification (imin[:imax[:di]])."},
+ {RANGE, JSPEC, "j", "jspec", Gyoto::Arg::Required, "  --jspec=<arg>, -j<arg>  \tLine specification (jmin[:jmax[:dj]])."},
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nScreen parameters:" },
+ {TIME, 0, "", "time", Gyoto::Arg::Required, "  --time=<arg> \tObserving date."},
+ {TMIN, 0, "", "tmin", Gyoto::Arg::Required, "  --tmin=<arg> \tMinimum time."},
+ {FOV, 0, "", "fov", Gyoto::Arg::Required, "  --fov=<arg> \tField-of-view."},
+ {RESOLUTION, 0, "", "resolution", Gyoto::Arg::Required, "  --resolution=<arg>. \tField size in pixels (on each side)."},
+ {DISTANCE, 0, "", "distance", Gyoto::Arg::Required, "  --distance=<arg> \tDistance from observer."},
+ {PALN, 0, "", "paln", Gyoto::Arg::Required, "  --paln=<arg> \tPosition angle of the line of nodes."},
+ {INCLINATION, 0, "", "inclination", Gyoto::Arg::Required, "  --inclination=<arg> \tInclination."},
+ {ARGUMENT, 0, "", "argument", Gyoto::Arg::Required, "  --argument=<arg> \tArgument of the x axis."},
+ {0,0,0,0,0,0}
+};
 
 void sigint_handler(int sig)
 {
@@ -96,28 +149,19 @@ void gyotoErrorHandler( const Gyoto::Error e ) {
 }
 
 int main(int argc, char** argv) {
-  /*
-    This program aims at computing the null geodesics of photons from
-    an observation screen to an astrophysical object (star orbit,
-    fixed star or disk).  The final result is a list of illuminated
-    pixels.
-  */
 
-  //	For debug output
+  // Set-up error reporter
+  Gyoto::Error::setHandler ( &gyotoErrorHandler );
+
+  // No debug out put by default
   debug(0);
-  // verbose(1);
   
   char * parfile=NULL;
   string ipctfile="";
   string param;
 
-  size_t imin=1, imax=1000000000, jmin=1, jmax=1000000000;
+  size_t imin=1, imax=ULONG_MAX, jmin=1, jmax=ULONG_MAX;
   ptrdiff_t di=1, dj=1;
-  //  double tobs, tmin, fov, dist, paln, incl, arg;
-  double tobs=0., tmin=0., fov=0., dist=0., paln=0., incl=0., arg=0.;
-  size_t res=0, nthreads=0, nprocs=0;
-  //  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0;
-  bool  xtobs=0, xtmin=0, xfov=0, xres=0, xdist=0, xpaln=0, xincl=0, xarg=0, xnthreads=0, xnprocs=0;
   bool  ipct=0;
   long  ipctdims[3]={0, 0, 0};
   double ipcttime;
@@ -126,133 +170,46 @@ int main(int argc, char** argv) {
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
 
-#if defined HAVE_FENV_H
-  bool use_fenv=true;
-#endif
+  argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
+  option::Stats  stats(true, usage, argc, argv);
+  option::Option* options = new option::Option[stats.options_max];
+  option::Option* buffer  = new option::Option[stats.buffer_max];
+  option::Parser parse(true, usage, argc, argv, options, buffer, 1);
 
-  int stop=0;
-  for (int i=1;i<argc;++i) {
-    param=argv[i];
-    if (param.substr(0,1)=="-" && !stop) {
-      if (param=="--") stop=1;
-      else if (param.substr(0,10)=="--verbose=") verbose(atoi(param.substr(10).c_str()));
-      else if (param.substr(0,8)=="--silent") verbose(0);
-      else if (param.substr(0,7)=="--quiet") verbose(GYOTO_QUIET_VERBOSITY);
-      else if (param.substr(0,9)=="--verbose") verbose(10);
-      else if (param.substr(0,7)=="--debug") debug(1);
-#if defined HAVE_FENV_H
-      else if (param.substr(0,11)=="--no-sigfpe") use_fenv=false;
-#endif
-      else if (param.substr(0,10)=="--plugins="){
-	pluglist=param.substr(10);
-	cout << pluglist << endl;
-      }
-      else if (param.substr(0,7)=="--imin=") {
-	imin=atoi(param.substr(7).c_str());
-	double imintest=Gyoto::atof(param.substr(7).c_str());
-	if (imintest<=0){
-	  cerr << "In gyoto.C: screen indices should be >0" << endl;
-	  return 1;
-	}
-      }
-      else if (param.substr(0,7)=="--imax=") {
-	imax=atoi(param.substr(7).c_str());
-	double imaxtest=Gyoto::atof(param.substr(7).c_str());
-	if (imaxtest<=0){
-	  cerr << "In gyoto.C: screen indices should be >0" << endl;
-	  return 1;
-	}
-      }
-      else if (param.substr(0,7)=="--jmin=") {
-	jmin=atoi(param.substr(7).c_str());
-	double jmintest=Gyoto::atof(param.substr(7).c_str());
-	if (jmintest<=0){
-	  cerr << "In gyoto.C: screen indices should be >0" << endl;
-	  return 1;
-	}
-      }
-      else if (param.substr(0,7)=="--jmax=") {
-	jmax=atoi(param.substr(7).c_str());
-	double jmaxtest=Gyoto::atof(param.substr(7).c_str());
-	if (jmaxtest<=0){
-	  cerr << "In gyoto.C: screen indices should be >0" << endl;
-	  return 1;
-	}
-      }
-      else if (param.substr(0,5)=="--di=") {
-	di=atoi(param.substr(5).c_str());
-	if (di==0) di=1;
-      }
-      else if (param.substr(0,5)=="--dj=") {
-	dj=atoi(param.substr(5).c_str());
-	if (dj==0) dj=1;
-      }
-      else if (param.substr(0,15)=="--impact-coords")  {
-	if (param.size() > 16 && param.substr(15,1)=="=")
-	  ipctfile=param.substr(16);
-	else ipct=1;
-      }
-      else if (param.substr(0,7)=="--time=") {
-	tobs=Gyoto::atof(param.substr(7).c_str());
-	xtobs=1;
-      } else if (param.substr(0,7)=="--tmin=") {
-	tmin=Gyoto::atof(param.substr(7).c_str());
-	xtmin=1;
-      } else if (param.substr(0,6)=="--fov=") {
-	fov=Gyoto::atof(param.substr(6).c_str());
-	xfov=1;
-      } else if (param.substr(0,13)=="--resolution=") {
-	res=atoi(param.substr(13).c_str());
-	xres=1;
-      } else if (param.substr(0,11)=="--distance=") {
-	dist=Gyoto::atof(param.substr(11).c_str());
-	xdist=1;
-      } else if (param.substr(0,7)=="--paln=") {
-	paln=Gyoto::atof(param.substr(7).c_str());
-	xpaln=1;
-      } else if (param.substr(0,14)=="--inclination=") {
-	incl=Gyoto::atof(param.substr(14).c_str());
-	xincl=1;
-      } else if (param.substr(0,11)=="--argument=") {
-	arg=Gyoto::atof(param.substr(11).c_str());
-	xarg=1;
-      }  else if (param.substr(0,11)=="--nthreads=") {
-	nthreads=atoi(param.substr(11).c_str());
-	xnthreads=1;
-      }  else if (param.substr(0,13)=="--nprocesses=") {
-	nprocs=atoi(param.substr(13).c_str());
-	xnprocs=1;
-      }
-      else {
-	usage();
-	return 1;
-      }
-    } else {
-      if (!parfile) parfile=argv[i];
-      else if (!pixfile) pixfile=argv[i];
-      else {
-	usage();
-	return 1;
-      }
+  if (parse.error())
+    return 1;
+
+  // Check whether to output usage string
+  if (!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN]) || options[HELP] ) {
+    option::printUsage(std::cout, usage);
+    if (!options[LIST]) {
+      if (options[HELP]) return 0;
+      return 1;
     }
   }
 
-  if (!pixfile) {
-    usage();
-    return 1;
+  // Process options setting verbosity or debug level
+  for (option::Option* opt = options[VERBOSITY]; opt; opt = opt->next()) {
+    switch (opt->type()) {
+    case DEBUG: debug(1); break;
+    case SILENT: verbose(0); break;
+    case QUIET: verbose(GYOTO_QUIET_VERBOSITY); break;
+    case VERBOSE:
+      if (opt->arg) verbose(atoi(opt->arg));
+      else verbose(10);
+      break;
+    default:
+      cerr << "gyoto: error parsing command line, unknown verbosity type" << endl;
+      return 1;
+    }
   }
 
-#if defined HAVE_FENV_H
-  if (use_fenv) {
-    GYOTO_DEBUG << "enabling SIGFPE delivery\n";
-    feenableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID);
-  } else {
-    GYOTO_DEBUG << "NOT enabling SIGFPE delivery\n";
-  }
-#endif
+  // Retrieve file names
+  if (parse.nonOptionsCount() > 0) parfile=strdup(parse.nonOptions()[0]);
+  if (parse.nonOptionsCount() > 1) pixfile=strdup(parse.nonOptions()[1]);
 
   // State copyright
-  if (verbose() >= GYOTO_QUIET_VERBOSITY)
+  if (!options[LIST] && verbose() >= GYOTO_QUIET_VERBOSITY)
     cout << " Copyright (c) 2011 Frederic Vincent & Thibaut Paumard\n"
 	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
 	 << " We request that use of Gyoto in scientific publications be "
@@ -263,34 +220,131 @@ int main(int argc, char** argv) {
 	 << "[arXiv:1109.4769]"
 	 << endl << endl;
 
-  // set-up error reporter
-  Gyoto::Error::setHandler ( &gyotoErrorHandler );
-
+  if (options[PLUGINS])
+    pluglist = options[PLUGINS].last()->arg?options[PLUGINS].last()->arg:"";
   curmsg = "In gyoto.C: Error initializing libgyoto: ";
   curretval = 1;
   Gyoto::Register::init(pluglist.c_str());
 
-  Factory *factory ;
-  if (verbose() >= GYOTO_QUIET_VERBOSITY) cout << "Reading parameter file: " << parfile << endl;
-  curmsg = "In gyoto.C: Error in Factory creation: ";
-  curretval = 1;
-  factory = new Factory(parfile);
+  SmartPointer<Scenery> scenery = NULL;
+  if (parfile) {
+    Factory *factory =NULL;
+    if (verbose() >= GYOTO_QUIET_VERBOSITY) cout << "Reading parameter file: " << parfile << endl;
+    curmsg = "In gyoto.C: Error in Factory creation: ";
+    curretval = 1;
+    factory = new Factory(parfile);
 
-  curmsg = "In gyoto.C: Error getting Kind: ";
-  const string kind = factory->kind();
+    curmsg = "In gyoto.C: Error getting Kind: ";
+    const string kind = factory->kind();
 
-  if (kind.compare("Scenery")) {
-    cerr << "Unknown kind for root element in XML file" << endl;
-    return 1;
+    if (kind.compare("Scenery")) {
+      cerr << "Unknown kind for root element in XML file" << endl;
+      return 1;
+    }
+
+    curmsg = "In gyoto.C: Error getting Scenery: ";
+    scenery = factory -> getScenery();
+
+    curmsg = "In gyoto.C: Error deleting Scenery: ";
+    delete factory;
   }
 
-  curmsg = "In gyoto.C: Error getting Scenery: ";
-  SmartPointer<Scenery> scenery = factory -> getScenery();
+  if (options[LIST]) {
+    Gyoto::Register::list();
+    return 0;
+  }
 
-  curmsg = "In gyoto.C: Error deleting Scenery: ";
-  delete factory;
+  curmsg = "In gyoto.C: Error initializing ray-tracing: ";
+  curretval = 2;
+  SmartPointer<Screen>  screen = scenery->screen();
 
-  if (xnprocs)   scenery -> nProcesses  ( nprocs    );
+  for (int i = 0; i < parse.optionsCount(); ++i) {
+    option::Option& opt = buffer[i];
+    switch(opt.index()) {
+    case NOSIGFPE:
+#if defined HAVE_FENV_H
+      GYOTO_DEBUG << "enabling SIGFPE delivery\n";
+      feenableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID);
+#endif
+      break;
+    case BOUNDARIES:
+      {
+	double valtest=Gyoto::atof(opt.arg);
+	if (valtest<=0){
+	  cerr << "In gyoto.C: screen indices should be >0" << endl;
+	  return 1;
+	}
+	size_t val=atoi(opt.arg);
+	switch (opt.type()) {
+	case IMIN: imin=val; break;
+	case IMAX: imax=val; break;
+	case JMIN: jmin=val; break;
+	case JMAX: jmax=val; break;
+	default:
+	  cerr << "Gyoto BUG: unknown type of screen boundary" << endl;
+	  return 1;
+	}
+      }
+      break;
+    case STEPS:
+      {
+	ptrdiff_t val=atoi(opt.arg);
+	if (val==0) val=1;
+	switch(opt.type()) {
+	case ISTEP: di=val; break;
+	case JSTEP: dj=val; break;
+	default:
+	  cerr << "Gyoto BUG: unknown type of screen step" << endl;
+	  return 1;
+	}
+      }
+      break;
+    case RANGE:
+      {
+	string spec=opt.arg;
+	size_t pos=spec.find(":"), pos2=string::npos;
+	string sub=spec.substr(0, pos);
+	size_t nmin=1, nmax=ULONG_MAX;
+	ptrdiff_t dn=1;
+	if (sub.length()) nmin=atoi(sub.c_str());
+	if (pos==string::npos) {
+	  nmax=nmin;
+	} else {
+	  pos2=spec.find(":", pos+1);
+	  sub=spec.substr(pos+1, pos2-pos-1);
+	  if (sub.length()) nmax=atoi(sub.c_str());
+	  if (pos2 != string::npos) {
+	    sub=spec.substr(pos2+1);
+	    if (sub.length()) dn=atoi(sub.c_str());
+	  }
+	}
+	GYOTO_DEBUG << "nmin="<<nmin<<", nmax="<<nmax<<", dn="<<dn<<endl;
+	switch (opt.type()) {
+	case ISPEC: imin=nmin; imax=nmax; di=dn; break;
+	case JSPEC: jmin=nmin; jmax=nmax; dj=dn; break;
+	default:
+	  cerr << "Gyoto BUG: unknown type of pixel specification\n";
+	  return 1;
+	}
+      }
+      break;
+    case IPCT:
+      if (opt.arg) ipctfile=opt.arg;
+      else ipct=1;
+      break;
+    case TIME:        screen -> time       (Gyoto::atof(opt.arg)); break;
+    case TMIN:       scenery -> tMin       (Gyoto::atof(opt.arg)); break;
+    case FOV:         screen -> fieldOfView(Gyoto::atof(opt.arg)); break;
+    case RESOLUTION:  screen -> resolution (       atoi(opt.arg)); break;
+    case DISTANCE:    screen -> distance   (Gyoto::atof(opt.arg)); break;
+    case PALN:        screen -> PALN       (Gyoto::atof(opt.arg)); break;
+    case INCLINATION: screen -> inclination(Gyoto::atof(opt.arg)); break;
+    case ARGUMENT:    screen -> argument   (Gyoto::atof(opt.arg)); break;
+    case NTHREADS:   scenery -> nThreads   (       atoi(opt.arg)); break;
+    case NPROCESSES: scenery -> nProcesses (       atoi(opt.arg)); break;
+    default: break;
+    }
+  }
 
 #if defined HAVE_MPI
   if (scenery -> nProcesses()) {
@@ -303,22 +357,8 @@ int main(int argc, char** argv) {
 #endif
 
   {
-    curmsg = "In gyoto.C: Error initializing ray-tracing: ";
-    curretval = 2;
-    SmartPointer<Screen>  screen = scenery->screen();
-    SmartPointer<Astrobj::Generic> object = scenery->astrobj();
-
-    if (xtobs) screen -> time        ( tobs );
-    else tobs= screen -> time();
-    if (xtmin) scenery -> tMin ( tmin );
-    if (xres)  screen -> resolution  ( res  );
-    else res = screen -> resolution();
-    if (xfov)  screen -> fieldOfView ( fov  );
-    if (xdist) screen -> distance       ( dist );
-    if (xincl) screen -> inclination    ( incl );
-    if (xpaln) screen -> PALN           ( paln );
-    if (xarg)  screen -> argument       ( arg  );
-    if (xnthreads) scenery -> nThreads    ( nthreads  );
+    double tobs= screen -> time();
+    size_t res = screen -> resolution();
 
     if (ipctfile != "") {
       //	  if (verbose() >= GYOTO_QUIET_VERBOSITY)
@@ -505,7 +545,6 @@ int main(int argc, char** argv) {
     if (imax>res) imax=res;
     if (jmax>res) jmax=res;
 
-
     Screen::Range irange(imin, imax, di);
     Screen::Range jrange(jmin, jmax, dj);
     Screen::Grid  grid(irange, jrange, "\rj = ");
@@ -555,9 +594,11 @@ int main(int argc, char** argv) {
       delete [] impactcoords;
     }
 
-    if (debug()) cerr << "DEBUG: gyoto.C: scenery==NULL" << endl;
-    scenery = NULL;
+    GYOTO_DEBUG << "screen = NULL\n";
+    screen = NULL;
 
+    GYOTO_DEBUG << "scenery = NULL\n";
+    scenery = NULL;
 
     if (status) return status;
 
@@ -566,7 +607,6 @@ int main(int argc, char** argv) {
 #if defined HAVE_MPI
   if (MPI::Is_initialized() && !MPI::Is_finalized()) MPI_Finalize();
 #endif
-
 
   return 0;
 }
