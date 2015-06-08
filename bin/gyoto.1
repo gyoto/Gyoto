@@ -1,14 +1,16 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "OCTOBER 2014" Science "User Manuals"
+.TH GYOTO 1 "JUNE 2015" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
 gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
       [\fB\-\-no\-sigfpe\fR]
-      [\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR]
-      [\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR]
+      [\fB\-\-help\fR] [\fB\-\-list\fR]
+      [\fB\-\-ispec=\fIi0\fR:\fIi1\fR:\fIdi\fR] [\fB\-\-jspec=\fIj0\fR:\fIj1\fR:\fIdj\fR]
+      ([\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR])
+      ([\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR])
       [\fB\-\-time\fR=\fItobs\fR] [\fB\-\-tmin\fR=\fItmin\fR]
       [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
       [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
@@ -41,21 +43,27 @@ option.
 .IP \fB\-\-
 Ends option processing, in case either \fIinput.xml\fR or
 \fIoutput.fits\fR starts with "\-".
+.SS Getting help
+.IP \fB\-\-help\fR|\fB\-h\fR
+Print help summary.
+.IP \fB\-\-list\fR|\fB\-l\fR
+Print list of currently registered Astrobj, Metric etc.
+
 .SS Setting the verbosity level
-.IP \fB\-\-silent\fR
+.IP \fB\-\-silent\fR|\fB\-s\fR
 No output.
-.IP \fB\-\-quiet\fR
+.IP \fB\-\-quiet\fR|\fB\-q\fR
 Minimal output.
-.IP \fB\-\-verbose\fR[=\fIN\fR]
+.IP \fB\-\-verbose\fR[=\fIN\fR]|\fB\-v\fR[\fIN\fR]
 Verbose mode. Verbosity level \fIN\fR may be specified.
-.IP \fB\-\-debug\fR
+.IP \fB\-\-debug\fR|\fB\-d\fR
 Insanely verbose.
 .IP \fB\-\-no\-sigfpe\fR
 Do not try to raise SIGFPE upon arithmetic exceptions (only if fenv.h
 support is built in).
 
 .SS Choosing plug-ins
-.IP \fB\-\-plugins\fR=\fI[nofail:]plug1[,[nofail:]plug2][...]
+.IP \fB\-\-plugins\fR=\fI[nofail:]plug1[,[nofail:]plug2][...]\fR|\fB\-p\fI[...]\fR
 Comma-separated list of Gyoto plugins to load. Overwrites GYOTO_PLUGINS
 environment variable below.
 
@@ -63,7 +71,19 @@ environment variable below.
 It's possible to ray-trace only part of the scenery by providing the
 pixel coordinates of the bottom-left (\fIi0\fR, \fIj0\fR) and
 top-right (\fIi1\fR, \fIj1\fR) corners of the region. The bottom-left
-pixel of the complete image has coordinates i=1 and j=1.
+pixel of the complete image has coordinates i=1 and j=1. The step in
+each direction (\fIdi\fR, \fIdj\dR) can also be specified.
+.IP \fB\-\-ispec\fR=\fI[i0]:[i1]:[di]\fR|\fB\-i\fI[i0]:[i1]:[di]\fR
+.IP \fB\-\-jspec\fR=\fI[j0]:[j1]:[dj]\fR|\fB\-j\fI[j0]:[j1]:[dj]\fR
+Default values: \fIx0\fR: 1; \fIx1\fR: \fInpix\fR (see option
+\fB\-\-resolution\fR below); \fIdx\fR: 1.
+.IP \fB\-\-ispec\fR=\fIN\fR|\fB\-i\fIN\fR
+.IP \fB\-\-jspec\fR=\fIN\fR|\fB\-j\fIN\fR
+Set both \fIx0\fR and \fIx1\fR to \fIN\fR.
+
+.SS Obsolete region-selection options:
+Those options are still supported for backward compatibility. They are
+deprecated in favour of \fB\-\-ispec\fR and \fB\-\-jspec\fR above:
 .IP \fB\-\-imin\fR=\fIi0
 Default value: 1.
 .IP \fB\-\-imax\fR=\fIi1
