@@ -29,23 +29,44 @@ using namespace std ;
 
 /// Value
 
-Value::Value() {}
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+# define INIT_SIZE_T SizeT(0),
+#else
+# define INIT_SIZE_T
+#endif
+
+#define INIT_MEMBERS				\
+    Double(0.),					\
+    Bool(false),				\
+    Long(0),					\
+    ULong(0),					\
+    INIT_SIZE_T					\
+    String(""),					\
+    VDouble(),					\
+    VULong(),					\
+    Metric(),					\
+    Astrobj(),					\
+    Spectrum(),					\
+    Spectrometer(),				\
+    Screen()
+
+Value::Value(): type(Property::empty_t), INIT_MEMBERS {}
 Value::~Value() {}
 
-#define ___local_stuff(t, t_t, T)			\
-  Value::Value(t val) : type(Property::t_t), T(val){}	\
-  Value::operator t() const {				\
-  if (type!=Property::t_t)				\
-    throwError("This Value does not hold a " #t);	\
-  return T;						\
+#define ___local_stuff(t, t_t, T)				   \
+  Value::Value(t val) : type(Property::t_t), INIT_MEMBERS {T=val;} \
+  Value::operator t() const {		                           \
+    if (type!=Property::t_t)		                           \
+    throwError("This Value does not hold a " #t);                  \
+    return T;					                   \
   }
 
-Value::Value(long val) : type(Property::long_t), Long(val){}
-Value::Value(unsigned long val) : type(Property::unsigned_long_t), ULong(val){}
+Value::Value(long val) : type(Property::long_t), INIT_MEMBERS {Long=val;}
+Value::Value(unsigned long val) : type(Property::unsigned_long_t), INIT_MEMBERS {ULong=val;}
 #if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
-Value::Value(size_t val) : type(Property::size_t_t), SizeT(val){}
+Value::Value(size_t val) : type(Property::size_t_t), INIT_MEMBERS {SizeT=val;}
 #endif
-Value::Value(bool val) : type(Property::bool_t), Bool(val){}
+Value::Value(bool val) : type(Property::bool_t), INIT_MEMBERS {Bool=val;}
 Value::operator long() const {
   switch (type) {
   case Property::long_t:
@@ -122,23 +143,25 @@ ___local_stuff(Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>, spectrometer_t
 ___local_stuff(Gyoto::SmartPointer<Gyoto::Screen>, screen_t, Screen)
 
 Value& Value::operator=(Value const &right) {
-# define ___local_case(member) member = right.member
-  ___local_case(type);
-  ___local_case(Double);
-  ___local_case(Bool);
-  ___local_case(Long);
-  ___local_case(ULong);
+# define ___local_case(t_t, member) case Property::t_t: member = right.member; break;
+  type=right.type;
+  switch (type) {
+    ___local_case(double_t, Double);
+    ___local_case(bool_t, Bool);
+    ___local_case(long_t, Long);
+    ___local_case(unsigned_long_t, ULong);
 #if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
-  ___local_case(SizeT);
+    ___local_case(size_t_t, SizeT);
 #endif
-  ___local_case(String);
-  ___local_case(VDouble);
-  ___local_case(VULong);
-  ___local_case(Metric);
-  ___local_case(Astrobj);
-  ___local_case(Spectrum);
-  ___local_case(Spectrometer);
-  ___local_case(Screen);
+    ___local_case(string_t, String);
+    ___local_case(vector_double_t, VDouble);
+    ___local_case(vector_unsigned_long_t, VULong);
+    ___local_case(metric_t, Metric);
+    ___local_case(astrobj_t, Astrobj);
+    ___local_case(spectrum_t, Spectrum);
+    ___local_case(spectrometer_t, Spectrometer);
+    ___local_case(screen_t, Screen);
+  }
   return *this;
 # undef ___local_case
 }

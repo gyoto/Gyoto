@@ -33,12 +33,28 @@ using namespace Gyoto;
 #include <boost/numeric/odeint/stepper/generation.hpp>
 using namespace boost::numeric::odeint;
 
+#if defined HAVE_FENV_H
+# include <fenv.h>
+# pragma STDC FENV_ACCESS ON
+# define DISABLE_SIGFPE							\
+  fenv_t envp;								\
+  if (feholdexcept(&envp)) throwError("failed holding FPE")
+# define REENABLE_SIGFPE						\
+  if (feclearexcept(FE_ALL_EXCEPT)) throwError("failed clearing FPE");	\
+  if (fesetenv(&envp)) throwError("failed setting back FPE")
+#else
+# define DISABLE_SIGFPE
+# define REENABLE_SIGFPE
+#endif
+
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
   if (kind_==Kind::a) {							\
     typedef boost::numeric::odeint::a<state_type> error_stepper_type;	\
+    DISABLE_SIGFPE;							\
     auto controlled=							\
       make_controlled< error_stepper_type >				\
            ( line->absTol() , line->relTol() );				\
+    REENABLE_SIGFPE;							\
     try_step_ =								\
       [controlled, system]						\
       (std::array<double, 8> &inout, double &t, double &h)		\
@@ -77,7 +93,7 @@ Worldline::IntegState::Generic::init(Worldline * line,
   line_=line;
   delta_=delta;
   gg_=line->metric();
-  norm_=normref_= gg_->ScalarProd(coord,coord+4,coord+4);
+  if (line_->getImin() <= line_->getImax() && gg_) norm_=normref_= gg_->ScalarProd(coord,coord+4,coord+4);
 }
 
 void Worldline::IntegState::Generic::checkNorm(double coord[8])
@@ -204,6 +220,8 @@ void Worldline::IntegState::Boost::init()
 	line->stopcond=met->diff(xx, res);
 	for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
       };
+
+  if (line->getImin() > line->getImax() || !met) return;
 
   typedef std::array< double, 8 > state_type;
   GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54)

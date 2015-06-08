@@ -264,9 +264,6 @@ void Worldline::metric(SmartPointer<Metric::Generic> gg) {
   // Hook to new metric
   if (metric_) metric_ -> hook(this);
 
-  // Reinit integrator: some cache the metric
-  state_->init();
-
   // Reset integration
   reInit();
 
@@ -385,6 +382,7 @@ void Worldline::reInit() {
       }
       metric_ -> setParticleProperties(this,coord);
     }
+    state_ -> init();
   }
 }
 
