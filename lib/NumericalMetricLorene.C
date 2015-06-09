@@ -331,20 +331,53 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
   // Computes the Keplerian specific angular momentum \ell = -u_phi / u_t
   // for circular geodesics,
   // for a general axisym metric in the equatorial plane
-  double pos[4]={0., rr, M_PI/2., 0.};
-  
-  double gtt_dr  =gmunu_up_dr(pos, 0, 0),
+
+  /*
+    // Standard formula: leads to problem at least in Kerr where
+    // gphph_dr goes to zero outside horizon.
+
+    double pos[4]={0., rr, M_PI/2., 0.};
+
+    double gtt_dr  =gmunu_up_dr(pos, 0, 0),
     gtph_dr =gmunu_up_dr(pos, 0, 3), 
     gphph_dr=gmunu_up_dr(pos, 3, 3);
-
-  double lKep = gtph_dr/gphph_dr + 
+    
+    double lKep = gtph_dr/gphph_dr + 
     sqrt(gtph_dr/gphph_dr * gtph_dr/gphph_dr - gtt_dr/gphph_dr);
-
-  if (lKep!=lKep || lKep==lKep+1.){
+    
+    if (lKep!=lKep || lKep==lKep+1.){
     cerr << "At r= " << rr << endl;
     throwError("In NML::getSpecificAngMom: lKep not defined here!"
-	       " You are probably below the innermost circular orbit.");
-  }
+    " You are probably below the innermost circular orbit.");
+    }
+  */
+
+  if (nb_times_>1) throwError("In NML::getSpecificAngularMomentum:"
+			      "so far only stationary metric implemented");
+
+  int indice_time=0;
+  double th=M_PI/2., ph=0.; // in equatorial plane
+  double rsm1 = 1./rr, rm2 = 1/(rr*rr), sm1 = 1.; // NB: sinth=1
+  const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
+  double B2 = g_ij(3,3).val_point(rr,th,ph); // no mistake here, B2 is g_pp_Lorene, but g_pp_Gyoto/(r2sinth2)
+  if (B2<=0.) throwError("In NML::getSpecificAngMom: bad B2");
+  double BB = sqrt(B2);
+  double Br = g_ij(3,3).dsdr().val_point(rr,th,ph)/(2.*BB);
+  const Vector& shift = *(shift_tab_[indice_time]);
+  double beta_p = rsm1*shift(3).val_point(rr,th,ph),
+    beta_p_r = rsm1*shift(3).dsdr().val_point(rr,th,ph)
+    -rm2*sm1*shift(3).val_point(rr,th,ph);
+  Scalar* lapse = lapse_tab_[indice_time];
+  double NN = lapse -> val_point(rr,th,ph);
+  if (NN==0.) throwError("In NML::getSpecificAngMom: bad N");
+  double Nr = lapse->dsdr().val_point(rr,th,ph);
+  double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
+    + 4.*Nr/NN*(Br/BB+1./rr);
+  if (DD<0.) throwError("In NML::getSpecificAngMom: bad D");
+  double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(1./rr+Br/BB);
+  
+  // 3+1 l_Kep for any circular QI-coord spacetime:
+  double lKep = BB*rr*Vzamo/(NN-beta_p*BB*rr*Vzamo); 
 
   return lKep;
 }
