@@ -278,21 +278,33 @@ image. This sort of basic parrallelisation is, naturally, supported by
 all the \texttt{GYOTO} metrics.
 
 You can ask \texttt{GYOTO} to compute only a fraction of
-the screen's pixels by running:
-
+the screen's pixels by running one of:
 \begin{code}
- $ gyoto --imin=IMIN --imax=IMAX --jmin=JMIN --jmax=JMAX --di=DI --dj=DJ input.xml \!output.fits
+ $ gyoto -iIMIN:IMAX:DI -jJMIN:JMAX:DJ input.xml \!output.fits
+ $ gyoto --ispec=IMIN:IMAX:DI --jspec=JMIN:JMAX:DJ input.xml \!output.fits
+ $ gyoto --imin=IMIN --imax=IMAX --jmin=JMIN --jmax=JMAX --di=DI --dj=DJ \
+            input.xml \!output.fits
 \end{code}
 %$
-
-where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. \texttt{DI} and \texttt{DJ} are the step size in the $i$ and $j$ direction respictively. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type:
+where \texttt{IMIN}, \texttt{IMAX}, \texttt{JMIN}, \texttt{JMAX} are the extremal indices of the pixels that will be computed. \texttt{DI} and \texttt{DJ} are the step size in the $i$ and $j$ direction respictively. With the \texttt{-{}-ispec} or \texttt{-i} syntax, \texttt{IMAX} defaults to \texttt{IMIN} if there is no colon in the specification, and to the image resolution otherwise. For instance, to compute only the geodesic that hits the central pixel of a $32 \times 32$ screen, type one of:
 \begin{code}
+ $ gyoto -i16 -j16 input.xml \!output.fits
+ $ gyoto --ispec=16 --jspec=16 input.xml \!output.fits
  $ gyoto --imin=16 --imax=16 --jmin=16 --jmax=16 input.xml \!output.fits
 \end{code}
 %$
-To compute only the points with even $i$ and od $j$, use:
+To compute only the points with even $i$ and od $j$, use (for instance) one of:
 \begin{code}
+ $ gyoto -i2::2 -j::2 input.xml \!output.fits
+ $ gyoto --ispec=2::2 --jspec=1::2 input.xml \!output.fits
  $ gyoto --imin=2 --di=2 --jmin=1 --dj=2 input.xml \!output.fits
+\end{code}
+%$
+To compute only the lower-right quadrant of the image:
+\begin{code}
+ $ gyoto -i17: -j:16 input.xml \!output.fits
+ $ gyoto --ispec=17: --jspec=:16 input.xml \!output.fits
+ $ gyoto --imin=17 --jmax=16 input.xml \!output.fits
 \end{code}
 %$
 
@@ -1113,8 +1125,10 @@ can set the environment variable\texttt{GYOTO\_PLUGINS}\footnote{How
 Alternatively, a list of plug-ins can be specified on the command-line
 when using the \texttt{gyoto} tool:
 \begin{code}
-  gyoto --plugins=stdplug,myplugin ...
+  $ gyoto --plugins=stdplug,myplugin ...
+  $ gyoto -pstdplug,myplugin ...
 \end{code}
+%$
 A plug-in can also be specified in the input XML file for each
 section:
 \begin{code}
@@ -1127,9 +1141,14 @@ to explicitly load a \GYOTO\ plug-in at run-time:
 \end{code}
 Once the plug-in is loaded, your new object kinds should be registered
 (that's the purpose of the init function). To check that your objects
-are correctly register, you can use the \texttt{----debug} option of
-the \texttt{gyoto} tool or the \texttt{gyoto.listRegister()} function
-of the Yorick interface.
+are correctly register, you can use the \texttt{-{}-list} (or
+\texttt{-l}) option of the \texttt{gyoto} tool or the
+\texttt{gyoto.listRegister()} function of the Yorick interface:
+\begin{code}
+  $ gyoto --list [input.xml]
+  $ gyoto -l [input.xml]
+\end{code}
+%$
 
 You can use then use your classes directly in an XML file, using the
 name you provided to the \texttt{Register()} function in the init

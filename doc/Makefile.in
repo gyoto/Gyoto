@@ -3,11 +3,11 @@ DOXYGEN=@DOXYGEN@
 
 all: doxygen.stamp latex.stamp
 
-doxygen.stamp: ../include/*.h
+doxygen.stamp: @top_srcdir@/include/*.h ../include/*.h
 @MKREF_TRUE@	$(DOXYGEN) doxyfile
 	touch  doxygen.stamp
 
-latex.stamp:
+latex.stamp: @srcdir@/user_guide/GyotoManual.tex
 @MKGUIDE_TRUE@	cd user_guide; $(MAKE)
 	touch latex.stamp
 
