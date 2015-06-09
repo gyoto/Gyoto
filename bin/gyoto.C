@@ -80,10 +80,13 @@ struct Gyoto::Arg: public option::Arg
     return option::ARG_ILLEGAL;
   }
 };
-enum  optionType { DEBUG, QUIET, VERBOSE, SILENT, IMIN, IMAX, JMIN, JMAX, ISTEP, JSTEP, ISPEC, JSPEC };
+enum  optionType { DEBUG, QUIET, VERBOSE, SILENT,
+		   IMIN, IMAX, JMIN, JMAX, ISTEP, JSTEP, ISPEC, JSPEC,
+		   ASTROBJ, METRIC, SPECTROMETER, SCREEN, SCENERY };
 enum  optionIndex { UNKNOWN, HELP, PLUGINS, LIST, VERBOSITY, NOSIGFPE, RANGE,
 		    BOUNDARIES, STEPS, IPCT, TIME, TMIN, FOV, RESOLUTION,
-		    DISTANCE, PALN, INCLINATION, ARGUMENT, NTHREADS, NPROCESSES };
+		    DISTANCE, PALN, INCLINATION, ARGUMENT, NTHREADS, NPROCESSES,
+		    SETPARAMETER, UNIT, XMLWRITE};
 const option::Descriptor usage[] =
 {
  {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\n\n"
@@ -99,6 +102,7 @@ const option::Descriptor usage[] =
  {NTHREADS, 0, "", "nthreads", Gyoto::Arg::Required, "  --nthreads=<arg> \tNumber of parallel threads to use."},
  {NPROCESSES, 0, "", "nprocesses", Gyoto::Arg::Required, "  --nprocesses=<arg> \tNumber of MPI parallel processes to use."},
  {IPCT, 0, "", "impact-coords", option::Arg::Optional, "  --impact-coords[=<filename>] \tRead impact coordinates from filename or store in output.fits."},
+ {XMLWRITE, 0, "X", "xmlwrite", Gyoto::Arg::Required, "  --xmlwrite=<fname>, -X<fname> \tWrite back scenery to XML file fname. Useful to see default values and check the effect of --<object>-parameter, see below."},
  {UNKNOWN, 0, "", "",option::Arg::None, "\nVerbosity level:" },
  {VERBOSITY, SILENT, "s", "silent", option::Arg::None, "  --silent, -s \tBe silent." },
  {VERBOSITY, QUIET, "q", "quiet", option::Arg::None, "  --quiet, -q \tBe quiet." },
@@ -122,6 +126,19 @@ const option::Descriptor usage[] =
  {PALN, 0, "", "paln", Gyoto::Arg::Required, "  --paln=<arg> \tPosition angle of the line of nodes."},
  {INCLINATION, 0, "", "inclination", Gyoto::Arg::Required, "  --inclination=<arg> \tInclination."},
  {ARGUMENT, 0, "", "argument", Gyoto::Arg::Required, "  --argument=<arg> \tArgument of the x axis."},
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nArbitrary parameters:" },
+ {UNIT, 0, "u", "unit", Gyoto::Arg::Optional, "  --unit[=<unit>], -u[<unit>] \tUnit for following parameters (until next instance of this option)."},
+ {SETPARAMETER, METRIC,  "M", "metric-parameter", Gyoto::Arg::Required,
+  "  --metric-parameter=<Name>[=<value>],       -M<Name>[=<value>]"},
+ {SETPARAMETER, SCREEN, "R", "screen-parameter", Gyoto::Arg::Required,
+  "  --screen-parameter=<Name>[=<value>],       -R<Name>[=<value>]"},
+ {SETPARAMETER, SCENERY, "E", "scenery-parameter", Gyoto::Arg::Required,
+  "  --scenery-parameter=<Name>[=<value>],      -E<Name>[=<value>]"},
+ {SETPARAMETER, ASTROBJ, "A", "astrobj-parameter", Gyoto::Arg::Required,
+  "  --astrobj-parameter=<Name>[=<value>],      -A<Name>[=<value>]"},
+ {SETPARAMETER, SPECTROMETER, "O", "spectrometer-parameter", Gyoto::Arg::Required,
+  "  --spectrometer-parameter=<Name>[=<value>], -O<Name>[=<value>] \n"
+  "\tSet arbitrary parameter by name. Optional value is expressed in unit previously set with --unit/-u.)"},
  {0,0,0,0,0,0}
 };
 
@@ -257,6 +274,7 @@ int main(int argc, char** argv) {
   curmsg = "In gyoto.C: Error initializing ray-tracing: ";
   curretval = 2;
   SmartPointer<Screen>  screen = scenery->screen();
+  string unit="";
 
   for (int i = 0; i < parse.optionsCount(); ++i) {
     option::Option& opt = buffer[i];
@@ -342,6 +360,40 @@ int main(int argc, char** argv) {
     case ARGUMENT:    screen -> argument   (Gyoto::atof(opt.arg)); break;
     case NTHREADS:   scenery -> nThreads   (       atoi(opt.arg)); break;
     case NPROCESSES: scenery -> nProcesses (       atoi(opt.arg)); break;
+    case UNIT: unit=opt.arg?opt.arg:""; break;
+    case SETPARAMETER:
+      {
+	string arg=opt.arg;
+	size_t pos=arg.find("=");
+	string name=arg.substr(0, pos);
+	string val=(pos==string::npos)?"":arg.substr(pos+1);
+	GYOTO_DEBUG << "Setting parameter \"" << name << "\" to value \"" << val << "\" using unit \"" << unit << "\".\n";
+	switch (opt.type()) {
+	case ASTROBJ:
+	  if(scenery -> astrobj() -> setParameter(name, val, unit))
+	    throwError("Unknown parameter");
+	  break;
+	case METRIC:
+	  if(scenery -> metric() -> setParameter(name, val, unit))
+	    throwError("Unknown parameter");
+	  break;
+	case SPECTROMETER:
+	  if(screen -> spectrometer() -> setParameter(name, val, unit))
+	    throwError("Unknown parameter");
+	  break;
+	case SCREEN:
+	  if(scenery -> screen() -> setParameter(name, val, unit))
+	    throwError("Unknown parameter");
+	  break;
+	case SCENERY:
+	  if(scenery -> setParameter(name, val, unit))
+	    throwError("Unknown parameter");
+	  break;
+	default: throwError("BUG");
+	}
+      }
+      break;
+    case XMLWRITE: Factory(scenery).write(opt.arg); break;
     default: break;
     }
   }

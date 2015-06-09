@@ -17,6 +17,9 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-nthreads\fR=\fInth\fR] [\fB\-\-nprocesses\fR=\fInprocs\fR]
       [\fB\-\-plugins\fR=\fIpluglist\fR]
       [\fB\-\-impact-coords\fR[=\fIfname.fits\fR]]
+      [\fB\-\-unit\fR[=\fIunit\fR]]
+      [\fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR=\fIName\fR[=\fIvalue\fR]]
+      [\fB\-\-xmlwrite\fR=\fIoutput.xml\fR]
       [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
 .SH DESCRIPTION
 Gyoto is a framework for computing geodesics in curved
@@ -185,6 +188,26 @@ In this case, the impact coordinates are read from
 \fIimpactcoords.fits\fR, shifted in time, and saved in
 \fIoutput.fits\fR.
 .RE
+
+.IP \fB\-\-unit\fR[=\fIunit\fR]
+Specify unit to use for allowing instances of
+\fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR,
+untill next instance of \fB\-\-unit\fR
+.IP \fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR=\fIName\fR[=\fIvalue\fR]|\fB\-(A|M|E|R|O)\fIName\fR[=\fIvalue\fR]
+Set arbitray parameter by name in the Astrobj, Metric, scEnery, scReen
+or spectrOmeter.
+.IP
+Example: change Star radius to 3km:
+.IP
+gyoto \-ukm \-ARadius=3 star.xml star.fits
+.IP
+gyoto \-\-unit=km \-\-astrobj-parameter=Radius=3 star.xml star.fits
+.IP \fB\-\-xmlwrite\fR=\fIoutput.xml\fR
+Write back scenery to an XML file. The new file will contain
+additional default parameters and reflect the effect of
+\fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR that
+appear before \fB\-\-xmlwrite\fR. Can appear several times, e.g. to
+generate several XML files with different settings.
 
 .SH FILES
 .IP \fIinput.xml
