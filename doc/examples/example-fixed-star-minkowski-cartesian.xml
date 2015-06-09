@@ -12,8 +12,10 @@
   <Screen>
     <Distance unit="kpc"> 8 </Distance>
     <Time unit="yr"> 30e3 </Time>
-    <FieldOfView unit="µas"> 150 </FieldOfView>
-    <Inclination unit="°"> 90 </Inclination>
+    <FieldOfView unit="microas"> 150 </FieldOfView>
+    In UTF-8 locales, "microas" may be written "µas".
+    <Inclination unit="degree"> 90 </Inclination>
+    In UTF-8 locales, "degree" may be written "°".
     <PALN> 0 </PALN>
     <Argument> 0 </Argument>
     <Resolution> 32 </Resolution>

@@ -8,7 +8,7 @@ Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
       [\fB\-\-no\-sigfpe\fR]
       [\fB\-\-help\fR] [\fB\-\-list\fR]
-      [\fB\-\-ispec=\fIi0\fR:\fIi1\fR:\fIdi\fR] [\fB\-\-jspec=\fIj0\fR:\fIj1\fR:\fIdj\fR]
+      [\fB\-\-ispec\fR=\fIi0\fR:\fIi1\fR:\fIdi\fR] [\fB\-\-jspec\fR=\fIj0\fR:\fIj1\fR:\fIdj\fR]
       ([\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR])
       ([\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR])
       [\fB\-\-time\fR=\fItobs\fR] [\fB\-\-tmin\fR=\fItmin\fR]
@@ -43,48 +43,94 @@ then compute the rest of the image later using the \fB\-\-jmin\fR
 option.
 
 .SH OPTIONS
-.IP \fB\-\-
-Ends option processing, in case either \fIinput.xml\fR or
-\fIoutput.fits\fR starts with "\-".
+The \fBgyoto\fR program accepts many options. Most have a long name
+(e.g. \fB\-\-astrobj\-parameter\fR) and a short name
+(e.g. \fB\-A\fR). When an option takes an argument, this argument must
+follow immediately the short option (e.g. \fB\-A\fIName\fR) and be
+separated from the long option by exactly the character "="
+(e.g. \fB\-\-astrobj\-parameter\fR=\fIName\fR). Long options can be
+abbreviated as long as the abbreviation is unambiguous
+(e.g. \fB\-\-astrobj=\fIName\fR or even \fB\-\-a=\fIName\fR). Most
+options can appear several times and are processed in the order they
+appear in the command line. The two positional parameters
+(\fIinput.xml\fR and \fIoutput.fits\fR) can appear anywhere in the
+command line, except if they start with a minus character (\-) in
+which case they must appear last, after the option \fB\-\-\fR.
+
 .SS Getting help
-.IP \fB\-\-help\fR|\fB\-h\fR
-Print help summary.
-.IP \fB\-\-list\fR|\fB\-l\fR
-Print list of currently registered Astrobj, Metric etc.
+.IP \fB\-\-help\fR
+.PD 0
+.IP \fB\-h\fR
+Print help summary. Although not as verbose as this manual page, the
+output of \fBgyoto \fI\-h\fR may be more complete and up to date. Then exit the
+program, unless \fB\-\-list\fR below has only been specified.
+.PD
+
+.PD 0
+.IP \fB\-\-list\fR
+.IP \fB\-l\fR
+Print list of currently registered Astrobj, Metric etc., then exit the
+program. This occurs after loading \fIinput.xml\fR (if provided), so
+that any plug-in specified in the input file have already been loaded.
+.PD
 
 .SS Setting the verbosity level
-.IP \fB\-\-silent\fR|\fB\-s\fR
+Those options are processed separately from the other and take effect
+early in the program execution.
+.IP \fB\-\-silent\fR
+.PD 0
+.IP \fB\-s\fR
 No output.
-.IP \fB\-\-quiet\fR|\fB\-q\fR
+.PD
+.IP \fB\-\-quiet\fR
+.PD 0
+.IP \fB\-q\fR
 Minimal output.
-.IP \fB\-\-verbose\fR[=\fIN\fR]|\fB\-v\fR[\fIN\fR]
+.PD
+.IP \fB\-\-verbose\fR[=\fIN\fR]
+.PD 0
+.IP \fB\-v\fR[\fIN\fR]
 Verbose mode. Verbosity level \fIN\fR may be specified.
-.IP \fB\-\-debug\fR|\fB\-d\fR
+.PD
+.IP \fB\-\-debug\fR
+.PD 0
+.IP \fB\-d\fR
 Insanely verbose.
+.PD
 .IP \fB\-\-no\-sigfpe\fR
-Do not try to raise SIGFPE upon arithmetic exceptions (only if fenv.h
-support is built in).
+Do not try to raise SIGFPE upon arithmetic exceptions. This option is
+meaningful only if fenv.h support is built in. Else this option is a
+no-op as SIGFPE is never raised.
 
-.SS Choosing plug-ins
-.IP \fB\-\-plugins\fR=\fI[nofail:]plug1[,[nofail:]plug2][...]\fR|\fB\-p\fI[...]\fR
-Comma-separated list of Gyoto plugins to load. Overwrites GYOTO_PLUGINS
-environment variable below.
-
+.SS Loading plug-ins
+.IP \fB\-\-plugins\fR[=\fI[nofail:]plug1[,[nofail:]plug2][...]]\fR
+.PD 0
+.IP \fB\-p\fI[[nofail:]plug1[,[nofail:]plug2][...]]\fR
+Comma-separated list of Gyoto plugins to load. Overrides GYOTO_PLUGINS
+environment variable below. Only the last occurence matters.
+.PD
 .SS Selecting a region
-It's possible to ray-trace only part of the scenery by providing the
+It is possible to ray-trace only part of the scenery by providing the
 pixel coordinates of the bottom-left (\fIi0\fR, \fIj0\fR) and
 top-right (\fIi1\fR, \fIj1\fR) corners of the region. The bottom-left
 pixel of the complete image has coordinates i=1 and j=1. The step in
-each direction (\fIdi\fR, \fIdj\dR) can also be specified.
-.IP \fB\-\-ispec\fR=\fI[i0]:[i1]:[di]\fR|\fB\-i\fI[i0]:[i1]:[di]\fR
-.IP \fB\-\-jspec\fR=\fI[j0]:[j1]:[dj]\fR|\fB\-j\fI[j0]:[j1]:[dj]\fR
+each direction (\fIdi\fR, \fIdj\fR) can also be specified.
+.IP \fB\-\-ispec\fR=\fI[i0]:[i1]:[di]\fR
+.PD 0
+.IP \fB\-i\fI[i0]:[i1]:[di]\fR
+.IP \fB\-\-jspec\fR=\fI[j0]:[j1]:[dj]\fR
+.IP \fB\-j\fI[j0]:[j1]:[dj]\fR
 Default values: \fIx0\fR: 1; \fIx1\fR: \fInpix\fR (see option
 \fB\-\-resolution\fR below); \fIdx\fR: 1.
-.IP \fB\-\-ispec\fR=\fIN\fR|\fB\-i\fIN\fR
-.IP \fB\-\-jspec\fR=\fIN\fR|\fB\-j\fIN\fR
+.PD
+.IP \fB\-\-ispec\fR=\fIN\fR
+.PD 0
+.IP \fB\-i\fIN\fR
+.IP \fB\-\-jspec\fR=\fIN\fR
+.IP \fB\-j\fIN\fR
 Set both \fIx0\fR and \fIx1\fR to \fIN\fR.
-
-.SS Obsolete region-selection options:
+.PD
+.SS Alternate region-selection options:
 Those options are still supported for backward compatibility. They are
 deprecated in favour of \fB\-\-ispec\fR and \fB\-\-jspec\fR above:
 .IP \fB\-\-imin\fR=\fIi0
@@ -110,6 +156,9 @@ The observing time in geometrical units.
 .IP \fB\-\-fov\fR=\fIangle\fR
 The field-of-view of the camera, in radians.
 .IP \fB\-\-resolution\fR=\fInpix\fR
+.PD 0
+.IP \fB\-r\fInpix\fR
+.PD
 Number of rows and columns in the output image.
 .IP \fB\-\-distance\fR=\fIdist\fR
 (Coordinate) distance from the observer to the center of the
@@ -127,7 +176,13 @@ main axes of the coordinate system.
 
 .SS Miscellaneous
 Unsorted option(s):
+.IP \fB\-\-
+Ends option processing, in case either \fIinput.xml\fR or
+\fIoutput.fits\fR starts with "\-".
 .IP \fB\-\-nthreads\fR=\fInth\fR
+.PD 0
+.IP \fB\-T\fInth\fR
+.PD
 Number of parallel threads to use. For instance, on a dual-core
 machine, \fB\-\-nthreads\fR=2 should yield the fastest
 computation. This option is silently ignored if Gyoto was compiled
@@ -136,11 +191,24 @@ replicated for each thread which can lead to a decrease in performance
 if either is memory-intensive. Setting this option to 0 is equivalent
 to setting it to 1.
 .IP \fB\-\-nprocesses\fR=\fInprocs\fR
+.PD 0
+.IP \fB\-P\fInprocs\fR
+.PD
 Number of MPI processes to spawn for parallel ray-tracing, in addition
 to the main gyoto process which remains for managing the
-computation. Ignored if gyoto was compiled without MPI support. If
-both \-\-nthreads and \-\-nprocesses are specified, \-\-nthreads is
-ignored.
+computation. Ignored if gyoto was compiled without MPI
+support. \fInprocs\fR is the number of workers spawned. \fB-P\fR0
+disables MPI multi-processing, whild \fB\-P\fR1 uses two processes:
+the manager and one worker. If \fInprocs\fR is >0, \-\-nthreads is
+ignored. Note that the MPI environment usually needs to be set-up
+using some variant of \fBmpirun\fR. You should only launch one
+instance of \fBgyoto\fR and let it spawn its workers:
+.RS 10
+.PD 0
+.IP
+\fBmpirun\fR \-np 1 \fBgyoto\fR \-P\fInprocs\fR \fIinput.xml\fR \fIoutput.fits\fR
+.RE
+.PD
 .IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
 In some circumstances, you may want to perform several computations in
 which the computed geodesics end up being exactly identical. This is
@@ -181,28 +249,46 @@ using the \fB\-\-time\fR option and the impact coordinates are shifted
 in time accordingly.
 .IP
 It is also possible to set the two versions of this option at the same time:
+.RS
+.PD 0
 .IP
 \fB\-\-impact\-coords\fR=\fIimpactcoords.fits\fR \fB\-\-impact\-coords\fR
+.RE
 .IP
 In this case, the impact coordinates are read from
 \fIimpactcoords.fits\fR, shifted in time, and saved in
 \fIoutput.fits\fR.
-.RE
-
+.PD
 .IP \fB\-\-unit\fR[=\fIunit\fR]
+.PD 0
+.IP \fB\-u\fR[\fIunit\fR]
+.PD
 Specify unit to use for allowing instances of
 \fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR,
-untill next instance of \fB\-\-unit\fR
-.IP \fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR=\fIName\fR[=\fIvalue\fR]|\fB\-(A|M|E|R|O)\fIName\fR[=\fIvalue\fR]
+untill next instance of \fB\-\-unit\fR.
+.IP \fB\-\-astrobj-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.PD 0
+.IP \fB\-\-metric-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.IP \fB\-\-scenery-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.IP \fB\-\-screen-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.IP \fB\-\-spectrometer-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.IP \fB\-(A|M|E|R|O)\fIName\fR[=\fIvalue\fR]
+.PD
 Set arbitray parameter by name in the Astrobj, Metric, scEnery, scReen
-or spectrOmeter.
+or spectrOmeter. For instance, assuming the Astrobj in \fIstar.xml\fR
+has a property named "Radius" that can be set in unit "km":
+.RS 10
+.PD 0
 .IP
-Example: change Star radius to 3km:
+\fBgyoto\fR \-ukm \-ARadius=3 star.xml star.fits
 .IP
-gyoto \-ukm \-ARadius=3 star.xml star.fits
-.IP
-gyoto \-\-unit=km \-\-astrobj-parameter=Radius=3 star.xml star.fits
+\fBgyoto\fR \-\-unit=km \-\-astrobj-parameter=Radius=3 star.xml star.fits
+.RE
+.PD
 .IP \fB\-\-xmlwrite\fR=\fIoutput.xml\fR
+.PD 0
+.IP \fB\-X\fIoutput.xml\fR
+.PD
 Write back scenery to an XML file. The new file will contain
 additional default parameters and reflect the effect of
 \fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR that
@@ -233,7 +319,7 @@ use more (or less!) than the standard plug-ins, you may set the
 environment variable GYOTO_PLUGINS to a comma-separated list of
 plug-ins. \fBgyoto\fR will exit with an error status if unable to load
 a specified plug-in, unless it is prefixed with "nofail:" in
-GYOTO_PLUGINS. This environment variable is overwritten byt he
+GYOTO_PLUGINS. This environment variable is overridden by he
 \fB\-\-plugins\fR command-line parameter. Default value:
 "stdplug,nofail:lorene". Gyoto attempts to find plug-ins first by
 relying on the system's dynamic linker (so paths in

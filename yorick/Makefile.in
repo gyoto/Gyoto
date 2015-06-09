@@ -36,6 +36,8 @@ GYOTO_C = $(shell ls @top_srcdir@/lib/*.C)
 GYOTO_OBJ = $(GYOTO_C:.C=.o)
 GYOTO_H = $(shell ls @top_srcdir@/include/*.h)
 
+MPIRUN = mpirun
+
 PKG_NAME=gyoto
 PKG_I=@srcdir@/gyoto.i
 
@@ -136,7 +138,7 @@ check-dll: $(PKG_DLL) check.i custom.i
 check-mpi: $(PKG_DLL) check-mpi.i custom.i
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
-	./yorick1 -i check-mpi.i
+	$(MPIRUN) ./yorick1 -i check-mpi.i
 
 install::
 	cd stdplug; make install

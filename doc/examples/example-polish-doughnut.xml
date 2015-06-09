@@ -11,22 +11,24 @@
     <Distance unit="kpc"> 8 </Distance>
           The distance to SgrA*.
     <Time unit="yr"> 30e3 </Time>
-    <FieldOfView unit="µas"> 150 </FieldOfView>
+    <FieldOfView unit="microas"> 150 </FieldOfView>
           A reasonable field-of-view, about 15 Schwarzschild radii.
-    <Inclination unit="°"> 90 </Inclination>
+          In UTF-8 locales, "microas" may be written "µas".
+    <Inclination unit="degree"> 90 </Inclination>
           90° is edge-on
-    <PALN unit="°"> 180 </PALN>
+          In UTF-8 locales, "degree" may be written "°".
+    <PALN unit="degree"> 180 </PALN>
           Put top on top...
     <Argument> 0 </Argument>
     <Resolution> 32 </Resolution>
     <Spectrometer kind="Complex">
-      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+      <SubSpectrometer kind="wave" nsamples="1" unit="microm">
 	0.9 1.1      
       </SubSpectrometer>
-      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+      <SubSpectrometer kind="wave" nsamples="1" unit="microm">
 	2.1 2.3      
       </SubSpectrometer>
-      <SubSpectrometer kind="wave" nsamples="1" unit="µm">
+      <SubSpectrometer kind="wave" nsamples="1" unit="microm">
 	2.9 3.1      
       </SubSpectrometer>
     </Spectrometer>
@@ -34,14 +36,15 @@
 
   <!--Quantities>BinSpectrum[W/m²/pix²]</Quantities-->
           This is what a real-life detector measures.
-  <Quantities>Spectrum[mJy/pix²]</Quantities>
+  <Quantities>Spectrum[mJy/pix2]</Quantities>
           This unit can easily be confronted to observations.
-
+          In UTF-8 locales, "pix2" may be written "pix²".
   <Astrobj kind = "PolishDoughnut" plugin = "stdplug">
           We can specify the plug-in in which this Astrobj is implemented.
     <Lambda>0.3</Lambda>
-    <CentralDensity unit="g/cm³">1e-17</CentralDensity>
+    <CentralDensity unit="g/cm3">1e-17</CentralDensity>
           g/cm³ is actually the same as kg/L, the default.
+          In UTF-8 locales, "cm3" may be written "cm³".
     <CentralTempOverVirial>0.04</CentralTempOverVirial>
     <Beta>0.1</Beta>
     <OpticallyThin/>

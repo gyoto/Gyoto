@@ -434,7 +434,8 @@ CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
 	example-page-thorne-disk-BL-with-basis.fits example-torus.fits \
 	example-torus-KS.fits $(am__append_7)
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
-CHECK_CMD = unset GYOTO_PLUGINS && ./gyoto --resolution=32 --nthreads=8 --nprocesses=0
+MPIRUN = mpirun
+CHECK_CMD = ./gyoto -pstdplug -r32 -T8 -P0
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 all: all-am
@@ -863,7 +864,7 @@ check-mpi-clean:
 @BUILD_GYOTO_TRUE@	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@$(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
-@BUILD_GYOTO_TRUE@	$(CHECK_CMD) --nprocesses=4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@	$(MPIRUN) $(CHECK_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@check-nompi-compute: $(CHECK_RESULTS)
 @BUILD_GYOTO_TRUE@check-nompi: check-nompi-clean check-nompi-compute
@@ -893,10 +894,10 @@ check-mpi-clean:
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	cd .check-lorene && ./nrotstar
 
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@$(CHECK_ROTSTAR_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d
-@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	$(CHECK_CMD) --nprocesses=4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	$(MPIRUN) $(CHECK_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d
-@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	$(CHECK_CMD) --nthreads=0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	$(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@check-lorene-clean:
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@	rm -f $(CHECK_ROTSTAR_RESULTS)

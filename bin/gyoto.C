@@ -98,11 +98,11 @@ const option::Descriptor usage[] =
   " (noop: this Gyoto lacks fenv.h support)".
 #endif
  },
- {PLUGINS, 0,"p","plugins",option::Arg::Optional, "  --plugins=<list>, -p<list>  \tList of plug-ins to load instead of $GYOTO_PLUGINS." },
- {NTHREADS, 0, "", "nthreads", Gyoto::Arg::Required, "  --nthreads=<arg> \tNumber of parallel threads to use."},
- {NPROCESSES, 0, "", "nprocesses", Gyoto::Arg::Required, "  --nprocesses=<arg> \tNumber of MPI parallel processes to use."},
- {IPCT, 0, "", "impact-coords", option::Arg::Optional, "  --impact-coords[=<filename>] \tRead impact coordinates from filename or store in output.fits."},
- {XMLWRITE, 0, "X", "xmlwrite", Gyoto::Arg::Required, "  --xmlwrite=<fname>, -X<fname> \tWrite back scenery to XML file fname. Useful to see default values and check the effect of --<object>-parameter, see below."},
+ {PLUGINS, 0,"p","plugins",option::Arg::Optional, "  --plugins=<l>, -p<l>  \tList of plug-ins to load instead of $GYOTO_PLUGINS." },
+ {NTHREADS, 0, "T", "nthreads", Gyoto::Arg::Required, "  --nthreads=<n>, -T<n> \tNumber of parallel threads to use."},
+ {NPROCESSES, 0, "P", "nprocesses", Gyoto::Arg::Required, "  --nprocesses=<n>, -P<n> \tNumber of MPI parallel processes to use."},
+ {IPCT, 0, "", "impact-coords", option::Arg::Optional, "  --impact-coords[=<f>] \tRead impact coordinates from file <f> or store in output.fits."},
+ {XMLWRITE, 0, "X", "xmlwrite", Gyoto::Arg::Required, "  --xmlwrite=<f>, -X<f> \tWrite back scenery to XML file <f>. Useful to see default values and check the effect of --<object>-parameter, see below."},
  {UNKNOWN, 0, "", "",option::Arg::None, "\nVerbosity level:" },
  {VERBOSITY, SILENT, "s", "silent", option::Arg::None, "  --silent, -s \tBe silent." },
  {VERBOSITY, QUIET, "q", "quiet", option::Arg::None, "  --quiet, -q \tBe quiet." },
@@ -121,13 +121,13 @@ const option::Descriptor usage[] =
  {TIME, 0, "", "time", Gyoto::Arg::Required, "  --time=<arg> \tObserving date."},
  {TMIN, 0, "", "tmin", Gyoto::Arg::Required, "  --tmin=<arg> \tMinimum time."},
  {FOV, 0, "", "fov", Gyoto::Arg::Required, "  --fov=<arg> \tField-of-view."},
- {RESOLUTION, 0, "", "resolution", Gyoto::Arg::Required, "  --resolution=<arg>. \tField size in pixels (on each side)."},
+ {RESOLUTION, 0, "r", "resolution", Gyoto::Arg::Required, "  --resolution=<n>, -r<n> \tField size in pixels (on each side)."},
  {DISTANCE, 0, "", "distance", Gyoto::Arg::Required, "  --distance=<arg> \tDistance from observer."},
  {PALN, 0, "", "paln", Gyoto::Arg::Required, "  --paln=<arg> \tPosition angle of the line of nodes."},
  {INCLINATION, 0, "", "inclination", Gyoto::Arg::Required, "  --inclination=<arg> \tInclination."},
  {ARGUMENT, 0, "", "argument", Gyoto::Arg::Required, "  --argument=<arg> \tArgument of the x axis."},
  {UNKNOWN, 0, "", "",option::Arg::None, "\nArbitrary parameters:" },
- {UNIT, 0, "u", "unit", Gyoto::Arg::Optional, "  --unit[=<unit>], -u[<unit>] \tUnit for following parameters (until next instance of this option)."},
+ {UNIT, 0, "u", "unit", Gyoto::Arg::Optional, "  --unit[=<u>], -u[<u>] \tUnit for following parameters (until next instance of this option)."},
  {SETPARAMETER, METRIC,  "M", "metric-parameter", Gyoto::Arg::Required,
   "  --metric-parameter=<Name>[=<value>],       -M<Name>[=<value>]"},
  {SETPARAMETER, SCREEN, "R", "screen-parameter", Gyoto::Arg::Required,
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
 
   // State copyright
   if (!options[LIST] && verbose() >= GYOTO_QUIET_VERBOSITY)
-    cout << " Copyright (c) 2011 Frederic Vincent & Thibaut Paumard\n"
+    cout << " Copyright (c) 2011-2015 Frederic Vincent & Thibaut Paumard\n"
 	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
 	 << " We request that use of Gyoto in scientific publications be "
 	 << " properly \n acknowledged. Please cite:\n"
