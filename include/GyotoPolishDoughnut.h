@@ -75,6 +75,7 @@ protected:
    density_central*c2+pressure_central in Komissarov model
   */
  double centraltemp_over_virial_; ///< T<SUB>center</SUB>/T<SUB>virial</SUB>
+ double central_temperature_; /// T<SUB>center</SUB> in K
  double beta_; ///< P<SUB>magn</SUB>/P<SUB>gas</SUB>
  double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
  double aa2_; ///< aa_<SUP>2</SUP>
@@ -136,6 +137,9 @@ public:
 
  double centralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
  void   centralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
+
+ double centralTemp() const; ///< Get PolishDoughnut::central_temperature_
+ void   centralTemp(double val); ///< Set PolishDoughnut::central_temperature_
 
  double beta() const; ///< Get PolishDoughnut::beta_
  void   beta(double beta);///< Set PolishDoughnut::beta_

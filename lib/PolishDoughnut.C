@@ -33,6 +33,8 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(PolishDoughnut, AngMomRinner, angmomrinner)
 GYOTO_PROPERTY_DOUBLE_UNIT(PolishDoughnut, CentralDensity, centralDensity)
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut,
 		      CentralTempOverVirial, centralTempOverVirial)
+GYOTO_PROPERTY_DOUBLE(PolishDoughnut,
+		      CentralTemperature, centralTemp)
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut, Beta, beta)
 GYOTO_PROPERTY_SIZE_T(PolishDoughnut,
 		      SpectralOversampling, spectralOversampling)
@@ -91,6 +93,7 @@ PolishDoughnut::PolishDoughnut() :
   r_torusouter_(0.),
 //DeltaWm1_(),
   central_density_(1.),
+  central_temperature_(1e10),
   centraltemp_over_virial_(1.),
   beta_(0.),
   spectral_oversampling_(10),
@@ -125,6 +128,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   r_torusouter_(orig.r_torusouter_),
   DeltaWm1_(orig.DeltaWm1_),
   central_density_(orig.central_density_),
+  central_temperature_(orig.central_temperature_),
   centraltemp_over_virial_(orig.centraltemp_over_virial_),
   beta_(orig.beta_),
   spectral_oversampling_(orig.spectral_oversampling_),
@@ -273,6 +277,10 @@ double PolishDoughnut::centralTempOverVirial() const
 {return centraltemp_over_virial_;}
 void PolishDoughnut::centralTempOverVirial(double val)
 {centraltemp_over_virial_=val;}
+double PolishDoughnut::centralTemp() const
+{return central_temperature_;}
+void PolishDoughnut::centralTemp(double val)
+{central_temperature_=val;}
 double PolishDoughnut::beta() const { return beta_; }
 void PolishDoughnut::beta(double b) { beta_ = b; }
 size_t PolishDoughnut::spectralOversampling() const
@@ -1168,8 +1176,6 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 		 * rS / (12. * rr));
     //cout << "r z ne b= " << rr << " " << zz << " " << nth0*pow(rr/2.,-1.1) << " " << exp(-zz*zz/(2.*rcyl*rcyl)) << " " << number_density << " " << bnorm << endl;
   }else{
-    double r_centre_cgs = r_centre_ * gg_ -> unitLength() * 100.;
-
     double pos[4]={0.,rr,theta,0.};
     double ww = (gg_->getPotential(pos, l0_) - W_surface_)*DeltaWm1_;
     if (ww<=0.){//Will generate nan in computations w must be strictly positive
@@ -1248,13 +1254,13 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 			    "theta_mag is zero leads to undefined emission");
     // The virial temperature at doughnut's centre,
     // derived at energy equipartition from : 3/2*k*T = G*M*mp/r_centre
-    double Tvir = 2./3. * GYOTO_G_CGS * Msgr * GYOTO_PROTON_MASS_CGS
-      / (GYOTO_BOLTZMANN_CGS * r_centre_cgs) ;
+    //double Tvir = 2./3. * GYOTO_G_CGS * Msgr * GYOTO_PROTON_MASS_CGS
+    //  / (GYOTO_BOLTZMANN_CGS * r_centre_cgs) ;
     // NB: this depends on r_centre, which depends on both spin
     // and lambda; however, r_centre is always a few r_g (~2 to 10)
     // so it does not vary so much
     // doughnut's central temperature
-    double T0 = centraltemp_over_virial_*Tvir;
+    double T0 = central_temperature_;//centraltemp_over_virial_*Tvir;
     double kappabis = T0*pow(number_density_central,-CST_POLY_INDEX_M1);
     T_electron = kappabis*pow(number_density,CST_POLY_INDEX_M1);
   } // End of the switch between doughnut and adaf
