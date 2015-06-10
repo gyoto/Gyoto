@@ -91,7 +91,7 @@ extern "C" {
       char * fname=const_cast<char*>("");
       iarg+=*rvset;
       if (!yarg_nil(iarg)) fname=ygets_q(iarg);
-      (*OBJ)->fitsWriteMask(ygets_q(iarg));
+      (*OBJ)->fitsWriteMask(fname);
 #else
       y_error("no cfitsio in this gyoto");
 #endif

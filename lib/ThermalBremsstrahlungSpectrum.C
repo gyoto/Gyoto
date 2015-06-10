@@ -38,9 +38,10 @@ GYOTO_PROPERTY_END(Spectrum::ThermalBremsstrahlung, Generic::properties)
 
 
 
-Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung() :
-  T_(10000.), massdensityCGS_(0.),
-  spectrumBB_(NULL),Spectrum::Generic("ThermalBremsstrahlung") {
+Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung()
+: Spectrum::Generic("ThermalBremsstrahlung"),
+  spectrumBB_(NULL), T_(10000.), massdensityCGS_(0.)
+{
   Tm1_=1./T_; Tm05_=sqrt(Tm1_);
   // This awful constant is the constant part of the thermal brems j_nu
   cst_ = 1/(4.*M_PI)

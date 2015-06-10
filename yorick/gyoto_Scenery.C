@@ -85,7 +85,6 @@ extern "C" {
       iarg+=*rvset;
       if (yarg_nil(iarg)) { // quantities=      : Getting
 	if ((*rvset)++) y_error("Only one return value possible");
-	Quantity_t quant = (*OBJ)->getRequestedQuantities();
 	long nk = long((*OBJ)->getScalarQuantitiesCount());
 	long rquant = nk>1?1:0;
 	long dims[2] = { rquant, nk };
@@ -151,7 +150,7 @@ extern "C" {
 	long dims[Y_DIMSIZE];
 	size_t res=(*OBJ)->screen()->resolution();
 	impactcoords = ygeta_d(iarg, &ntot, dims);
-	if (dims[0] != 3 || dims[1] != 16 || dims[2] != res || dims[3] != res)
+	if (dims[0] != 3 || dims[1] != 16 || dims[2] != long(res) || dims[3] != long(res))
 	  y_error("dimsof(impactcoords) != [3,16,res,res]");
       }
     }
@@ -188,7 +187,7 @@ extern "C" {
 
       bool is_double=false;
 
-      long ndims, dims[Y_DIMSIZE]={0};
+      long dims[Y_DIMSIZE]={0};
       long nelem;
 
       dims[0]=0;
@@ -218,7 +217,7 @@ extern "C" {
 	for (int m=1; m<=idims[0];++m) dims[++dims[0]]=idims[m];
       }
 
-      long nk = 0; int rquant = 0; ystring_t * squant = NULL;
+      size_t nk = 0; int rquant = 0; ystring_t * squant = NULL;
 
       if (piargs[2] < 0 || yarg_nil(piargs[2])) {
 	Quantity_t quant = (*OBJ)->getRequestedQuantities();
@@ -226,7 +225,7 @@ extern "C" {
 	if (quant & GYOTO_QUANTITY_SPECTRUM) nk += 1;
 	if (quant & GYOTO_QUANTITY_BINSPECTRUM) nk += 1;
 	rquant = nk>1?1:0;
-	long dims[2] = { 1, nk };
+	long dims[2] = { 1, long(nk) };
 	squant = ypush_q(dims);
 	size_t k = 0;
 	char *tk =
@@ -240,7 +239,9 @@ extern "C" {
       } else {
 	GYOTO_DEBUG << "quantities provided online"<<endl;
 	rquant = yarg_rank(piargs[2]);
-	squant = ygeta_q(piargs[2], &nk, NULL);
+	long ntot;
+	squant = ygeta_q(piargs[2], &ntot, NULL);
+	nk=ntot;
 	GYOTO_DEBUG << "nk="<<nk<<endl;
 
       }
@@ -311,7 +312,6 @@ extern "C" {
       screen->unmapPixUnit();
 #     endif
 
-      size_t i, j;
       if (precompute) prop.impactcoords=data;
       else {
 	for ( k=0; k<nk-nbnuobs+has_sp+has_bsp; ++k ) {
@@ -432,8 +432,8 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
     if (argc>=4 && !yarg_nil(argc-4)) jmin=ygets_l(argc-4);
     if (argc>=5 && !yarg_nil(argc-5)) jmax=ygets_l(argc-5);
 
-    long res;
-    try {res=long(scenery->screen()->resolution());}
+    size_t res=0;
+    try {res=scenery->screen()->resolution();}
     YGYOTO_STD_CATCH;
 
     if (imax>res) imax=res;
@@ -448,7 +448,7 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
     if (argc>=6) {
       int iarg = argc-6;
       long ref = yget_ref(iarg);
-      long dims[Y_DIMSIZE] = {3, 16, res, res};
+      long dims[Y_DIMSIZE] = {3, 16, long(res), long(res)};
       if (ref >= 0 && yarg_nil(iarg)) {
 	impactcoords = ypush_d(dims);
 	yput_global(ref, 0);
@@ -456,13 +456,13 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
       } else {
 	long ntot = 0;
 	impactcoords = ygeta_d(iarg, &ntot, dims);
-	if (dims[0]!=3 || dims[1]!=16 || dims[2]!=res || dims[3]!=res)
+	if (dims[0]!=3 || dims[1]!=16 || dims[2]!=long(res) || dims[3]!=long(res))
 	  y_error("Wrong dims for impactcoords");
       }
     }
 
-    long nbnuobs=0, nbdata;
-    Quantity_t quantities;
+    long nbnuobs=0, nbdata=0;
+    Quantity_t quantities=0;
     try {
       quantities = scenery -> getRequestedQuantities();
       if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
@@ -474,7 +474,7 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
       nbdata= long(scenery->getScalarQuantitiesCount());
     } YGYOTO_STD_CATCH;
 
-    long dims[4]={(nbdata+nbnuobs) > 1 ? 3 : 2, res, res, nbdata+nbnuobs};
+    long dims[4]={(nbdata+nbnuobs) > 1 ? 3 : 2, long(res), long(res), nbdata+nbnuobs};
     double * vect=ypush_d(dims);
 
     Astrobj::Properties data;

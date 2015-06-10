@@ -540,7 +540,7 @@ double DirectionalDisk::emission(double nu, double,
        NB: in Garcia+14, they compute a flux because they don't raytrace,
        so they use F = 1/4pi * \int I(i) cos(i) di = 1/2 * \int I(mu) mu dmu,
        here we are not interested in the same quantity */
-    for (int ii=0;ii<ni_-1;ii++){
+    for (size_t ii=0; ii<ni_-1; ++ii){
       double dcos = cosi_[ii+1]-cosi_[ii];
       I00 += 0.5*dcos*
 	(emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l]

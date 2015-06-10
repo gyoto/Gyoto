@@ -168,6 +168,7 @@ double UniformSphere::deltaMax(double * coord) {
     r=coord[1];
     break;
   default:
+    r=0.;
     throwError("unsupported coordkind");
   }
   if (rmax_!=DBL_MAX && r>rmax_) return r*0.5; 

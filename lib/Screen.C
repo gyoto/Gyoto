@@ -440,7 +440,8 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
 # endif
-  if (anglekind_ == Screen::spherical_angles){
+  switch (anglekind_) {
+  case Screen::spherical_angles:
     /*
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
@@ -450,25 +451,31 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
     // NB: here xscr and yscr are the spherical angles
     // a and b ; the b->pi-b transformation boils down
     // to performing X->-X, just as below for equat angles.
-  }else if (anglekind_ == Screen::equatorial_angles) {
+    break;
+  case Screen::equatorial_angles:{
     /*
       GYOTO screen labelled by equatorial
       angles alpha and delta (see Fig. in user guide)
-     */
+    */
     const double delta= fov_/double(npix_);
     yscr=delta*(double(j)-double(npix_+1)/2.);
     xscr=-delta*(double(i)-double(npix_+1)/2.);
+    break;
+  }
     // transforming X->-X (X being coord along e_1 observer vector)
     // this is due to the orientation convention of the screen 
     // (cf InitialConditions.pdf)
-  } else if (anglekind_ == Screen::rectilinear) {
+  case Screen::rectilinear: {
     if (fov_ >= M_PI)
       throwError("Rectilinear projection requires fov_ < M_PI");
     const double xfov=2.*tan(fov_*0.5);
     const double delta= xfov/double(npix_);
     yscr=delta*(double(j)-double(npix_+1)/2.);
     xscr=-delta*(double(i)-double(npix_+1)/2.);
-  } else {
+    break;
+  }
+  default:
+    xscr=yscr=0.;
     throwError("Unrecognized anglekind_");
   }
   getRayCoord(xscr, yscr, coord); 
@@ -501,24 +508,26 @@ void Screen::getRayCoord(double alpha, double delta,
   double spherical_angle_a,
     spherical_angle_b;
   
-  if (anglekind_ == spherical_angles){
+  switch (anglekind_) {
+  case spherical_angles:
     /*
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
-
     spherical_angle_a = alpha;
     spherical_angle_b = delta;
-  } else if (anglekind_ == rectilinear) {
+    break;
+  case rectilinear:
     spherical_angle_a = atan(sqrt(alpha*alpha+delta*delta));
     spherical_angle_b = atan2(delta, alpha);
-  } else if (anglekind_ == equatorial_angles) {
+    break;
+  case equatorial_angles:
     /*
       GYOTO screen labelled by equatorial
       angles alpha and delta (see Fig. in user guide)
       Must compute spherical angles a and b
       from these.
-     */
+    */
     
     /*
       NB: spherical_angles = spherical angles associated with the
@@ -537,22 +546,27 @@ void Screen::getRayCoord(double alpha, double delta,
 
 #ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
     // using boost multiprecision to avoid information loss in trigonometry
-    boost::multiprecision::cpp_dec_float_100
-      alpha100=alpha, delta100=delta, a, b;
-    a=acos(cos(alpha100)*cos(delta100));
-    b=atan2(tan(delta100),sin(alpha100));
-    spherical_angle_a=a.convert_to<double>();
-    spherical_angle_b=b.convert_to<double>();
+    {
+      boost::multiprecision::cpp_dec_float_100
+	alpha100=alpha, delta100=delta, a, b;
+      a=acos(cos(alpha100)*cos(delta100));
+      b=atan2(tan(delta100),sin(alpha100));
+      spherical_angle_a=a.convert_to<double>();
+      spherical_angle_b=b.convert_to<double>();
+    }
 #else
     if (abs(alpha)<1e-6 || abs(delta) < 1e-6) {
       spherical_angle_a = sqrt(alpha*alpha+delta*delta);
     } else {
       spherical_angle_a = acos(cos(alpha)*cos(delta));
     }
-      spherical_angle_b = 
-	(alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+    spherical_angle_b =
+		   (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
 #endif
-
+    break;
+  default:
+    spherical_angle_a=spherical_angle_b=0.;
+    throwError("Unknown angle type");
   }
 
   // Move these two angles to [0,pi], [0,2pi]
@@ -1380,7 +1394,7 @@ double Screen::Coord1dSet::angle () const {
 ///////
 
 Screen::Range::Range(size_t mi, size_t ma, size_t d)
-  : Coord1dSet(pixel), mi_(mi), ma_(ma), d_(d), cur_(mi), sz_((ma-mi+1)/d)
+  : Coord1dSet(pixel), mi_(mi), ma_(ma), d_(d), sz_((ma-mi+1)/d), cur_(mi)
 {}
 
 void Screen::Range::begin() {cur_=mi_;}

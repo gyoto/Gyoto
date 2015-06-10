@@ -95,8 +95,6 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
 				int *rvset, int *paUsed, char * unit) {
   int k=-1, iarg=-1;
   char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
-  long  ntot, dims[Y_DIMSIZE];
 
   /* METHODS */  
 
@@ -137,9 +135,9 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
       (*OBJ) -> getChannelBoundaries(converted, unit?unit:"");
       GYOTO_DEBUG_ARRAY(converted, (*OBJ)->getNBoundaries());
       size_t const * const chanind = (*OBJ) -> getChannelIndices();
-      GYOTO_DEBUG_ARRAY(chanind, 2*nsamples);
+      GYOTO_DEBUG_ARRAY(chanind, 2*size_t(nsamples));
       double * ychannels = ypush_d(dims);
-      for (size_t i=0; i<2*nsamples; ++i) {
+      for (long i=0; i<2*nsamples; ++i) {
 	ychannels[i] = converted[chanind[i]];
 	GYOTO_DEBUG << "ychannels["<< i << "]=" << ychannels[i] << endl;
       }

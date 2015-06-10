@@ -351,12 +351,12 @@ extern "C" {
 /* Don't overuse the two below, the are not exported with the rest of the ABI */
 /* The point is to cache the variable names and global indices used by
    the closure on_eval operator */
-char const * const __ygyoto_var_name(long id) {
+char const * const __ygyoto_var_name(size_t id) {
   static std::vector<std::string> names;
   if (id >= names.size()) {
-    long cursize=names.size();
+    size_t cursize=names.size();
     names.resize(id+1);
-    for (long k=cursize; k<=id; ++k) {
+    for (size_t k=cursize; k<=id; ++k) {
       stringstream ss;
       ss << "__gyoto_var" << k;
       names[k]=ss.str();
@@ -365,12 +365,12 @@ char const * const __ygyoto_var_name(long id) {
   return names[id].c_str();
 }
 
-long int __ygyoto_var_idx(long id) {
+long int __ygyoto_var_idx(size_t id) {
   static std::vector<long> ids;
   if (id >= ids.size()) {
-    long cursize=ids.size();
+    size_t cursize=ids.size();
     ids.resize(id+1);
-    for (long k=cursize; k<=id; ++k)
+    for (size_t k=cursize; k<=id; ++k)
       ids[k]=yget_global(__ygyoto_var_name(k), 0);
   } 
   return ids[id];
@@ -508,7 +508,7 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       long n;
       double *buf = ygeta_d(iarg, &n, NULL);
       std::vector<double> vval(n, 0.);
-      for (size_t i=0; i<n; ++i) vval[i]=buf[i];
+      for (long i=0; i<n; ++i) vval[i]=buf[i];
       object->set(p, vval, unit);
     }
     return;
@@ -518,7 +518,7 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
       long *buf = ygeta_l(iarg, &n, NULL);
       std::vector<unsigned long> vval=val;
       vval.resize(n);
-      for (size_t i=0; i<n; ++i) vval[i]=buf[i];
+      for (long i=0; i<n; ++i) vval[i]=buf[i];
     }
     break;
   case Gyoto::Property::metric_t:

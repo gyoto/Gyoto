@@ -1015,7 +1015,6 @@ std::vector<double> FactoryMessenger::parseArray(std::string content)
   size_t len=strlen(c_content);
   if (len==0) return result;
 
-  size_t n=0;
   char * const tc = new char[len+1];
   memcpy(tc, c_content, len+1);
   char * sub = strtok(tc, delim);
@@ -1038,7 +1037,6 @@ std::vector<unsigned long> FactoryMessenger::parseArrayULong(std::string content
   size_t len=strlen(c_content);
   if (len==0) return result;
 
-  size_t n=0;
   char * const tc = new char[len+1];
   memcpy(tc, c_content, len+1);
   char * sub = strtok(tc, delim);

@@ -406,44 +406,23 @@ int KerrKS::myrk4_adaptive(Worldline* line, const double * coord,
   
   double coordhalf[8];
   double coord2[8];
-  double delta1[7];
   
-  double err;
-  int count=0;
+  double err, err_try;
 
-  //  double newnorm;
-  
   while (1){
-    count++;
-    //cout << "count= " << count << endl;
     err=0.;
     if (myrk4(coord,cst,h0,coord1)) return 1; 
                    //NB: myrk4 is fed with 8-sized vector, no pb here
     if (myrk4(coord,cst,hbis,coordhalf)) return 1;
     if (myrk4(coordhalf,cst,hbis,coord2)) return 1;
 
-    for (int i = 0;i<4;i++){
-      delta1[i]=coord2[i]-coord1[i];
-      //cout << "del= " << delta1[i] << endl;
-      if (err<fabs(delta1[i]/delta0[i])) err=fabs(delta1[i]/delta0[i]);
-    }
-    for (int i = 5;i<8;i++){//NB: delta0 is a 7-sized vector, see comment in diff
-      delta1[i]=coord2[i]-coord1[i];
-      //cout << "del= " << delta1[i] << endl;
-      if (err<fabs(delta1[i]/delta0[i-1])) err=fabs(delta1[i]/delta0[i-1]);
-    }
-
-    /*cout << "coord in RK= " ;
-    for (int ii=0;ii<8;ii++) cout << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << coord[ii] << " ";
-    cout << endl;
-    cout << "coord1 in RK= " ;
-    for (int ii=0;ii<8;ii++) cout << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << coord1[ii] << " ";
-    cout << endl;
-    cout << "coord2 in RK= " ;
-    for (int ii=0;ii<8;ii++) cout << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << coord2[ii] << " ";
-    cout << endl;
-    
-    cout << "err= " << err << endl;*/
+    //NB: delta0 is a 7-sized vector, see comment in diff
+    for (ptrdiff_t i = 0; i<4; ++i)
+      if (err < (err_try=fabs((coord2[i]-coord1[i])/delta0[i])) )
+	err=err_try;
+    for (ptrdiff_t i = 5; i<8; ++i)
+      if (err < (err_try=fabs((coord2[i]-coord1[i])/delta0[i-1])) )
+	err=err_try;
     
     if (err>1) {
       h0=S*h0*pow(err,-0.25);

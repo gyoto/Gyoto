@@ -86,9 +86,9 @@ long YGyoto::Idx::range_dlt() const {
 
 YGyoto::Idx::Idx(int iarg, int res) :
   _is_nuller(0), _is_range(0), _is_list(0), _is_scalar(0), _is_double(0),
-  _buf(NULL), _is_dlist(0)
+  _is_dlist(0), _buf(NULL)
 {
-  int flags = yget_range(iarg, _range), ndims=0;
+  int flags = yget_range(iarg, _range);
   if (flags) {
     _is_range=1;
     if (flags>=Y_MAX_DFLT) {

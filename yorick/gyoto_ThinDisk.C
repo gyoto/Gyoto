@@ -57,8 +57,6 @@ void ygyoto_ThinDisk_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>* ao_, int
   }
 
   int k=-1;
-  char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
 
   char * unit = NULL;
 
@@ -81,7 +79,6 @@ ygyoto_ThinDisk_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*ao_,
   SmartPointer<ThinDisk> *ao = (SmartPointer<ThinDisk> *)ao_;
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
 
   if (debug())
     for (int i=0; i<YGYOTO_THINDISK_GENERIC_KW_N; ++i)

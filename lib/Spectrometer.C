@@ -75,8 +75,8 @@ Spectrometer::getSubcontractor(std::string name, int errmode) {
 
 Generic::Generic() :
   SmartPointee(),
-  Teller(),
   Object(),
+  Teller(),
   kindid_(NULL),
   nsamples_(0),
   nboundaries_(0),
@@ -88,8 +88,8 @@ Generic::Generic() :
 
 Generic::Generic(kind_t kin) :
   SmartPointee(),
-  Teller(),
   Object(kin),
+  Teller(),
   kindid_(kin),
   nsamples_(0),
   nboundaries_(0),
@@ -101,8 +101,8 @@ Generic::Generic(kind_t kin) :
 
 Generic::Generic(const Generic& o) :
   SmartPointee(o),
-  Teller(o),
   Object(o),
+  Teller(o),
   kindid_(o.kindid_),
   nsamples_(o.nsamples_),
   nboundaries_(o.nboundaries_),

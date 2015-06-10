@@ -105,7 +105,7 @@ YGyoto::SpectroUniformYEval(Gyoto::SmartPointer<Spectrometer::Generic>*sp_,
       (*sp) -> getChannelBoundaries(converted, unit?unit:"");
       GYOTO_DEBUG_ARRAY(converted, (*sp)->getNBoundaries());
       size_t const * const chanind = (*sp) -> getChannelIndices();
-      GYOTO_DEBUG_ARRAY(chanind, 2*nsamples);
+      GYOTO_DEBUG_ARRAY(chanind, 2*size_t(nsamples));
       double * ychannels = ypush_d(dims);
       for (long i=0; i<2*nsamples; ++i) {
 	ychannels[i] = converted[chanind[i]];

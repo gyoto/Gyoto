@@ -305,7 +305,7 @@ void ygyoto_Spectrometer_generic_eval
   char const * pmsg="Cannot use positional argument more than once";	\
   char * unit=NULL;							\
   /* make sure we use the variables at least once */			\
-  if (OBJ && rmsg && pmsg && unit) {}
+  if (OBJ && rmsg && pmsg && unit && k && *paUsed) {}
 
 
 #define YGYOTO_WORKER_GETSET_VECTOR(MEMBER, N)			  \

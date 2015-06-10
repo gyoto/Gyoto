@@ -159,7 +159,7 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	throwError("In DynamicalDisk3D::getVelocity: bad metric");
+	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
       break;
       }
     default:
@@ -215,7 +215,7 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	throwError("In DynamicalDisk3D::getVelocity: bad metric");
+	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
     break;
     }
   default:
@@ -225,11 +225,8 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
   }
 
   double rcur=co[1];
-  double th=co[2];
-  double ph=co[3];
-  double tt=co[0];
 
-  if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
+  if (rcur*fabs(sin(co[2])) > rout() || rcur < risco) return 0.;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);
@@ -364,7 +361,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	throwError("In DynamicalDisk3D::getVelocity: bad metric");    
+	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
     break;
     }
   default:
@@ -373,11 +370,9 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
     risco=0.;
   }
 
-  double tt=co[0];
   double rcur=co[1];
-  double th=co[2];
-
-  if (rcur*fabs(sin(th)) > rout() || rcur < risco) return 0.;
+ 
+  if (rcur*fabs(sin(co[2])) > rout() || rcur < risco) return 0.;
 
   size_t i[4]; // {i_nu, i_phi, i_z, i_r}
   getIndices(i,co,nu);

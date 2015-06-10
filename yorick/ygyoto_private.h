@@ -56,9 +56,9 @@
 // Two helper functions for the dot operator below;
 // these are *not* public API, don't (ab)use them
 /* return "__gyoto_var<id>" */
-char const * const __ygyoto_var_name(long id);
+char const * const __ygyoto_var_name(size_t id);
 /* return the index of "__gyoto_var<id>" */
-long int __ygyoto_var_idx(long id);
+long int __ygyoto_var_idx(size_t id);
  
 #define YGYOTO_YUSEROBJ(NAME, CLASS)					\
   extern "C" {								\

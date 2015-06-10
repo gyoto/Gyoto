@@ -52,7 +52,6 @@ int Star::setParameter(std::string name,
 			    std::string content,
 			    std::string unit) {
   double coord[8];
-  char* tc = const_cast<char*>(content.c_str());
   if (name=="InitialCoordinate") {
     name="InitCoord";
     return UniformSphere::setParameter(name, content, unit);

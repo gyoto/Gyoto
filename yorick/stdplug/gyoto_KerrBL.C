@@ -80,7 +80,6 @@ void ygyoto_KerrBL_eval(SmartPointer<Metric::Generic> *OBJ_, int argc) {
     if (j_idx.isNuller()) return;
     long ni=i_idx.getNElements();
     long nj=j_idx.getNElements();
-    long nelem=ni*nj;
 
     dims[0]=i_idx.getNDims()+j_idx.getNDims();
     size_t offset=0;

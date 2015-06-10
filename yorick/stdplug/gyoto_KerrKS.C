@@ -62,7 +62,6 @@ void ygyoto_KerrKS_eval(SmartPointer<Metric::Generic> *gg_, int argc) {
     if (j_idx.isNuller()) return;
     long ni=i_idx.getNElements();
     long nj=j_idx.getNElements();
-    long nelem=ni*nj;
 
     dims[0]=i_idx.getNDims()+j_idx.getNDims();
     size_t offset=0;
@@ -101,7 +100,6 @@ void ygyoto_KerrKS_eval(SmartPointer<Metric::Generic> *gg_, int argc) {
     long ni=i_idx.getNElements();
     long nj=j_idx.getNElements();
     long na=a_idx.getNElements();
-    long nelem=ni*nj*na;
 
     dims[0]=i_idx.getNDims()+j_idx.getNDims()+a_idx.getNDims();
     size_t offset=0;

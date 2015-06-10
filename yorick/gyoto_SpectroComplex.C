@@ -64,7 +64,7 @@ void YGyoto::SpCplxEval(SmartPointer<Spectrometer::Generic> *OBJ_, int argc) {
     if ((*rvset)++) y_error(rmsg);
     ++(*paUsed);
     size_t cardinal=(*OBJ) -> getCardinal();
-    long item = ygets_l(iarg);
+    size_t item = ygets_l(iarg);
     if (item > cardinal) y_error("index overreach array bounds");
     if (item <= 0) {
       item += cardinal;

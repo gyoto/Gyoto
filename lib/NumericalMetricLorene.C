@@ -70,58 +70,60 @@ GYOTO_PROPERTY_END(NumericalMetricLorene, Generic::properties)
 NumericalMetricLorene::NumericalMetricLorene() :
   WIP("Metric::NumericalMetricLorene"),
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
+  filename_(NULL),
   mapet_(true),
-  initial_time_(0.),
+  bosonstarcircular_(false),
   has_surface_(0),
   specify_marginalorbits_(0),
-  refine_(0),
+  horizon_(0.),
   r_refine_(0.),
   h0_refine_(0.),
-  filename_(NULL),
+  refine_(0),
+  initial_time_(0.),
   lapse_tab_(NULL),
   shift_tab_(NULL),
   gamcov_tab_(NULL),
   gamcon_tab_(NULL),
   kij_tab_(NULL),
   times_(NULL),
+  nb_times_(0),
   nssurf_tab_(NULL),
   vsurf_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
-  horizon_(0.),
   risco_(0.),
-  rmb_(0.),
-  bosonstarcircular_(false),
-  rico_(0.)
+  rico_(0.),
+  rmb_(0.)
 {
   GYOTO_DEBUG << endl;
 }
 
 NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   Generic(GYOTO_COORDKIND_SPHERICAL,"NumericalMetricLorene"),
+  filename_(NULL),
   mapet_(o.mapet_),
-  initial_time_(o.initial_time_),
+  bosonstarcircular_(o.bosonstarcircular_),
   has_surface_(o.has_surface_),
   specify_marginalorbits_(o.specify_marginalorbits_),
-  refine_(o.refine_),
+  horizon_(o.horizon_),
   r_refine_(o.r_refine_),
   h0_refine_(o.h0_refine_),
-  filename_(NULL),
+  refine_(o.refine_),
+  initial_time_(o.initial_time_),
   lapse_tab_(NULL),
   shift_tab_(NULL),
   gamcov_tab_(NULL),
   gamcon_tab_(NULL),
   kij_tab_(NULL),
   times_(NULL),
+  nb_times_(0),
   nssurf_tab_(NULL),
   vsurf_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
-  horizon_(o.horizon_),
   risco_(o.risco_),
-  rmb_(o.rmb_),
-  bosonstarcircular_(o.bosonstarcircular_),
-  rico_(o.rico_)	 
+  rico_(o.rico_),
+  rmb_(o.rmb_)
 {
   GYOTO_DEBUG << endl;
   if (o.filename_) directory(o.filename_);
@@ -357,7 +359,7 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
 
   int indice_time=0;
   double th=M_PI/2., ph=0.; // in equatorial plane
-  double rsm1 = 1./rr, rm2 = 1/(rr*rr), sm1 = 1.; // NB: sinth=1
+  double rm1 = 1./rr, rsm1 = rm1, rm2 = rm1*rm1, sm1 = 1.; // NB: sinth=1
   const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
   double B2 = g_ij(3,3).val_point(rr,th,ph); // no mistake here, B2 is g_pp_Lorene, but g_pp_Gyoto/(r2sinth2)
   if (B2<=0.) throwError("In NML::getSpecificAngMom: bad B2");
@@ -372,9 +374,9 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
   if (NN==0.) throwError("In NML::getSpecificAngMom: bad N");
   double Nr = lapse->dsdr().val_point(rr,th,ph);
   double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
-    + 4.*Nr/NN*(Br/BB+1./rr);
+    + 4.*Nr/NN*(Br/BB+rm1);
   if (DD<0.) throwError("In NML::getSpecificAngMom: bad D");
-  double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(1./rr+Br/BB);
+  double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(rm1+Br/BB);
   
   // 3+1 l_Kep for any circular QI-coord spacetime:
   double lKep = BB*rr*Vzamo/(NN-beta_p*BB*rr*Vzamo); 
@@ -535,7 +537,9 @@ int NumericalMetricLorene::diff(const double y[7],
   }
 
   //NB: here t=theta, not time!
-  double EE=y[0], rr=y[1], th=y[2], phi=y[3], sth = sin(th), rsinth = rr*sth,
+  double EE=y[0], rr=y[1], th=y[2], phi=y[3], sth=0, cth=0;
+  sincos(th, &sth, &cth);
+  double rsinth = rr*sth,
     r2sinth2 = rsinth*rsinth, sinth2 = sth*sth;
   if (rr==0.) throwError("In NumericalMetricLorene.C::diff r is 0!");
   if (rsinth==0.) throwError("In NumericalMetricLorene.C::diff on z axis!");
@@ -572,7 +576,7 @@ int NumericalMetricLorene::diff(const double y[7],
     beta_p_r = rsm1*shift(3).dsdr().val_point(rr,th,phi)
     -rm2*sm1*shift(3).val_point(rr,th,phi),
     beta_p_t = rsm1*shift(3).dsdt().val_point(rr,th,phi)
-    -cos(th)*sm2*rm1*shift(3).val_point(rr,th,phi);
+    -cth*sm2*rm1*shift(3).val_point(rr,th,phi);
 
   //cout << "betar= " << beta_r << endl;
 
@@ -599,7 +603,7 @@ int NumericalMetricLorene::diff(const double y[7],
     g_pp  = g_ij(3,3).val_point(rr,th,phi),
     g_ppr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)+2.*rr*sinth2*g_pp,
     g_ppt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
-    +2.*cos(th)*sin(th)*r2*g_pp;
+    +2.*cth*sth*r2*g_pp;
   
   //INVERSE 3-METRIC
   const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
@@ -756,8 +760,8 @@ int NumericalMetricLorene::myrk4(double tt, const double coorin[7],
 int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8], 
 				 double h, double res[8]) const{
   GYOTO_DEBUG << endl;
-  double tt=coord[0], rr=coord[1], r2=rr*rr, rm1=1./rr, 
-    th=coord[2],rsinth = rr*sin(th), rsm1=1./rsinth, ph=coord[3],
+  double tt=coord[0], rr=coord[1],
+    th=coord[2],rsinth = rr*sin(th), ph=coord[3],
     tdot=coord[4], rdot=coord[5],thdot=coord[6],phdot=coord[7];
 
   //Check p_phi conservation:
@@ -981,14 +985,11 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
     } //End zaxis
 
     /* *** Error determination  *** */
-    int ierr=10;
     if (!zaxis){
       for (int i = 0;i<7;i++){
 	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i])) {
+	if (err<fabs(delta1[i]/delta0[i]))
 	  err=fabs(delta1[i]/delta0[i]);
-	  ierr=i;
-	}
       }
     }else{ /* z-axis pb case : forget phi coordinate, which is a
 	      function of 1/sin(theta) Indeed phidotdot is a function
@@ -999,17 +1000,13 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
 	    */
       for (int i = 0;i<3;i++){
 	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i])) {
+	if (err<fabs(delta1[i]/delta0[i]))
 	  err=fabs(delta1[i]/delta0[i]);
-	  ierr=i;
-	}
       }
       for (int i = 4;i<7;i++){
 	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i])) {
+	if (err<fabs(delta1[i]/delta0[i]))
 	  err=fabs(delta1[i]/delta0[i]);
-	  ierr=i;
-	}
       }
     } //End of err determination
 
@@ -1103,7 +1100,6 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   if (rr==0.) throwError("In NumericalMetricLorene.C::myrk4_ada r is 0!");
   if (rsinth==0.) 
     throwError("In NumericalMetricLorene.C::myrk4_ada on z axis!");
-  double rm1 = 1./rr, rsm1 = 1./rsinth;
   
   // Lapse and shift at tt:
   double NN, beta[3];
@@ -1146,7 +1142,6 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   
   double tnow = tt+hused, rnow=coornew[1], thnow=coornew[2], phnow=coornew[3];
   
-  rm1 = 1./rnow;rsm1 = 1./(rnow*sin(thnow));
   double posend[4]={tnow,rnow,thnow,phnow};
   
   //Lapse and shift at tnow:
@@ -1564,9 +1559,10 @@ double NumericalMetricLorene::christoffel(const double coord[8],
   if (coord[1]==0. || sin(coord[2])==0.) throwError("NML::christoffel:"
 						    " bad location");
 
-  double rr=coord[1], th=coord[2], ph=coord[3],
-    r2=rr*rr, rsinth=rr*sin(th), rsm1 = 1./rsinth, r2sinth2=r2*sin(th)*sin(th),
-    sinth2=sin(th)*sin(th), rm2 = 1/r2;
+  double rr=coord[1], th=coord[2], ph=coord[3], sinth=0., costh=0.;
+  sincos(th, &sinth, &costh);
+  double r2=rr*rr, rsinth=rr*sinth, sm1=1./sinth, rm1=1./rr, rsm1 = rm1*sm1,
+    sinth2=sinth*sinth, r2sinth2=r2*sinth2, rm2 = rm1*rm1;
   if ((alpha==0 && mu==0 && nu==1) || (alpha==0 && mu==1 && nu==0)){
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
@@ -1646,7 +1642,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
-      -1./(r2*sin(th))*beta_p;
+      -1./(r2*sinth)*beta_p;
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
     const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
@@ -1665,7 +1661,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     double beta_pt = rsm1*shift(3).dsdt().val_point(rr,th,ph)
-      -cos(th)/(rr*sin(th)*sin(th))*beta_p;
+      -costh*rsm1*sm1*beta_p;
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
     const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
@@ -1673,7 +1669,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     double gamma_ptp = 0.5*gpp
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
     if (NN==0.) throwError("In NML::christoffel: bad laspe value");    
     return beta_pt + gamma_ptp*beta_p
       -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
@@ -1704,7 +1700,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     return -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));    
+	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
   } else if (alpha==2 && mu==1 && nu==1) {
     const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
@@ -1746,7 +1742,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     double Ktp = rr*rsinth*kij(1,3).val_point(rr,th,ph);
     return 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph)) 
+	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph))
       + beta_p/NN*Ktp;
   }
   // Other christo are zero
@@ -1818,11 +1814,14 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
 				       const int indice_time) const {
   // all at once computation of christoffel 4D: actual computation
   GYOTO_DEBUG << endl;
-  if (coord[1]==0. || sin(coord[2])==0.) throwError("NML::christoffel:"
+  double sinth=0., costh=0, rr=coord[1], th=coord[2], ph=coord[3];
+  sincos(th, &sinth, &costh);
+  if (rr==0. || sinth==0.) throwError("NML::christoffel:"
 						    " bad location");
-  double rr=coord[1], th=coord[2], ph=coord[3],
-    r2=rr*rr, rsinth=rr*sin(th), rsm1 = 1./rsinth, r2sinth2=r2*sin(th)*sin(th),
-    sinth2=sin(th)*sin(th), rm2 = 1/r2;
+  double
+    r2=rr*rr, rsinth=rr*sinth, rm1=1./rr, sm1=1./sinth,
+    rsm1 = rm1*sm1, sinth2=sinth*sinth, r2sinth2=r2*sinth2,
+    rm2 = rm1*rm1;
 
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
@@ -1832,16 +1831,16 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
-      -1./(r2*sin(th))*shift(3).val_point(rr,th,ph);
+      -rm1*rsm1*shift(3).val_point(rr,th,ph);
     double beta_pt = rsm1*shift(3).dsdt().val_point(rr,th,ph)
-      -cos(th)/(rr*sinth2)*shift(3).val_point(rr,th,ph);
+      -costh*rsm1*sm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
     double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
     const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
     // contravariant 3-metric
     double grr=g_up_ij(1,1).val_point(rr,th,ph),
-      gtt=1./r2*g_up_ij(2,2).val_point(rr,th,ph),
+      gtt=rm2*g_up_ij(2,2).val_point(rr,th,ph),
       gpp=rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph);
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     // derivation of covariant 3-metric
@@ -1853,7 +1852,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
       g_pp_r = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
       +2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph),
       g_pp_t = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-      +2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph);
+      +2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph);
     
     dst[0][0][1]=dst[0][1][0]=1./NN*(Nr-Krp*beta_p); //checked
     dst[0][0][2]=dst[0][2][0]=1./NN*(Nt-Ktp*beta_p); //checked
@@ -1930,12 +1929,14 @@ double NumericalMetricLorene::christoffel3(const double coord[6],
   if ( ii<1 || ii>3 || jj<1 || jj>3 || kk<1 || kk>3 )
        throwError("In NumericalMetricLorene::christoffel3 bad indice value");
 
-  double rr=coord[0], r2=rr*rr, th=coord[1], rsinth=rr*sin(th);
+  double rr=coord[0], r2=rr*rr, th=coord[1], sinth=0., costh=0.;
+  sincos(th, &sinth, &costh);
+  double rsinth=rr*sinth;
   if (rr==0.) throwError("In NumericalMetricLorene.C::christoffel3 r is 0!");
   if (rsinth==0.) throwError("In NumericalMetricLorene.C::christoffel3 "
 			     "on z axis!");
-  double rm2=1./r2, rsm1 = 1./rsinth, r2sinth2=r2*sin(th)*sin(th), 
-    sinth2=sin(th)*sin(th), ph=coord[2];
+  double rm2=1./r2, rsm1 = 1./rsinth, sinth2=sinth*sinth,
+	 r2sinth2=r2*sinth2, ph=coord[2];
   
   Scalar* lapse = (lapse_tab_[indice_time]);
 
@@ -1970,7 +1971,7 @@ double NumericalMetricLorene::christoffel3(const double coord[6],
   }else if((ii==2) && (jj==3) && (kk==3)){
     res = -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
   }else if((ii==2) && (jj==1) && (kk==1)){
     res = -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
       *g_ij(1,1).dsdt().val_point(rr,th,ph);
@@ -1985,7 +1986,7 @@ double NumericalMetricLorene::christoffel3(const double coord[6],
   }else if(((ii==3) && (jj==2) && (kk==3)) || ((ii==3) && (jj==3) && (kk==2))){
     res = 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*cos(th)*sin(th)*r2*g_ij(3,3).val_point(rr,th,ph));
+	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
   }
   //Other Christoffels are 0
 
@@ -2006,7 +2007,7 @@ double NumericalMetricLorene::computeHorizon(const double* pos) const{
 
   if (hor_tab_ && !horizon_){
     int it=nb_times_-1;
-    double tt=pos[0], th=pos[2], phi=pos[3];
+    double tt=pos[0];
     double* times=getTimes();
 
     while(tt<times[it] && it>=0){ //ASSUMES backward integration, to generalize
@@ -2031,7 +2032,6 @@ double NumericalMetricLorene::computeHorizon(const double* pos) const{
       return rhor;
     }
 
-    double t1=times[it-1], t2=times[it], t3=times[it+1], t4=times[it+2];
     double rhor1=computeHorizon(pos,it-1),
       rhor2=computeHorizon(pos,it),
       rhor3=computeHorizon(pos,it+1),
@@ -2043,6 +2043,7 @@ double NumericalMetricLorene::computeHorizon(const double* pos) const{
 
   throwError("In NumericalMetricLorene::computeHorizon: "
 	     "impossible case");
+  return 0.;
   
 }
 
@@ -2250,8 +2251,8 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
       + 4.*Nr/NN*(Br/BB+1./rr);
     if (DD<0.) throwError("In NML::circularv: bad D");
-    double g_tt = gmunu(coor,0,0), g_tp = gmunu(coor,0,3),
-      g_pp = gmunu(coor,3,3);
+    //    double g_tt = gmunu(coor,0,0), g_tp = gmunu(coor,0,3);
+    double g_pp = gmunu(coor,3,3);
     //double g_tt = gmunu(coorbis,0,0), g_tp = gmunu(coorbis,0,3),
     //g_pp = gmunu(coorbis,3,3);
     if (g_pp<=0.) throwError("In NML::circularv: bad g_pp");
@@ -2260,9 +2261,9 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     double ut = 1./(NN*sqrt(1.-Vzamo*Vzamo));
     vel[0] = ut; vel[1] = 0.; vel[2] = 0.; vel[3] = Omega*ut;
     
-    double ell=2.5;
-    double pot = 0.5*log((g_tp*g_tp-g_tt*g_pp)
-			 /(g_tt*ell*ell+2.*ell*g_tp+g_pp));
+    //    double ell=2.5;
+    //    double pot = 0.5*log((g_tp*g_tp-g_tt*g_pp)
+    //			 /(g_tt*ell*ell+2.*ell*g_tp+g_pp));
     //cout << rr << " " << g_tp*g_tp-g_tt*g_pp << " " << g_tt*ell*ell+2.*ell*g_tp+g_pp << " " << pot << endl;
     //}
     double normtol = 1e-6;

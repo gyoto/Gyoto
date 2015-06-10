@@ -90,8 +90,6 @@ SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
 
   SmartPointer<Scenery> sc = new Scenery(gg, scr, ao);
 
-  int mpi=0;
-
   while (fmp->getNextParameter(&name, &content, &unit)) {
     if (name=="Metric" || name=="Screen" || name=="Astrobj") ;
     else if ((prop = sc->property(name)))
@@ -963,7 +961,6 @@ void Gyoto::Scenery::mpiClone() {
   if (!mpi_team_) return;
   std::string xmldata=
     Gyoto::Factory(this).format();
-  int errcode;
   mpi_tag tag=read_scenery;
   mpiTask(tag);
   broadcast(*mpi_team_, xmldata, 0);

@@ -197,7 +197,7 @@ int main(int argc, char** argv) {
     return 1;
 
   // Check whether to output usage string
-  if (!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN]) || options[HELP] ) {
+  if ((!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN])) || options[HELP] ) {
     option::printUsage(std::cout, usage);
     if (!options[LIST]) {
       if (options[HELP]) return 0;

@@ -91,7 +91,6 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*OBJ,
 				  int *rvset, int *paUsed, char* unit) {
   int k=-1, iarg;
   char const * rmsg="Cannot set return value more than once";
-  char const * pmsg="Cannot use positional argument more than once";
 
   if (debug())
     for (int i=0; i<YGYOTO_SPECTRUM_GENERIC_KW_N; ++i)

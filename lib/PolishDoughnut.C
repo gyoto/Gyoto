@@ -101,11 +101,11 @@ PolishDoughnut::PolishDoughnut() :
   adaf_(0),
   ADAFtemperature_(0.),
   ADAFdensity_(0.),
-  intersection(this),
   changecusp_(0),
   rochelobefilling_(0),
   defangmomrinner_(0),
-  rintorus_(DEFAULT_RIN)
+  rintorus_(DEFAULT_RIN),
+  intersection(this)
 {
 #ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -128,18 +128,18 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   centraltemp_over_virial_(orig.centraltemp_over_virial_),
   beta_(orig.beta_),
   spectral_oversampling_(orig.spectral_oversampling_),
-		 komissarov_(orig.komissarov_),
-		 angle_averaged_(orig.angle_averaged_),
-		 deltaPL_(orig.deltaPL_),
-		 expoPL_(orig.expoPL_),
-		 adaf_(orig.adaf_),
-		 ADAFtemperature_(orig.ADAFtemperature_),
-		 ADAFdensity_(orig.ADAFdensity_),
-		 intersection(orig.intersection),
-		 changecusp_(orig.changecusp_),
-		 rochelobefilling_(orig.rochelobefilling_),
-		 defangmomrinner_(orig.defangmomrinner_),
-		 rintorus_(orig.rintorus_)
+  komissarov_(orig.komissarov_),
+  angle_averaged_(orig.angle_averaged_),
+  deltaPL_(orig.deltaPL_),
+  expoPL_(orig.expoPL_),
+  adaf_(orig.adaf_),
+  ADAFtemperature_(orig.ADAFtemperature_),
+  ADAFdensity_(orig.ADAFdensity_),
+  changecusp_(orig.changecusp_),
+  rochelobefilling_(orig.rochelobefilling_),
+  defangmomrinner_(orig.defangmomrinner_),
+  rintorus_(orig.rintorus_),
+  intersection(orig.intersection)
 {
   intersection.papa=this;
   if (gg_) gg_ -> hook(this);
@@ -1168,7 +1168,6 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 		 * rS / (12. * rr));
     //cout << "r z ne b= " << rr << " " << zz << " " << nth0*pow(rr/2.,-1.1) << " " << exp(-zz*zz/(2.*rcyl*rcyl)) << " " << number_density << " " << bnorm << endl;
   }else{
-    double rcgs = rr * gg_ -> unitLength() * 100.;//rr in cgs
     double r_centre_cgs = r_centre_ * gg_ -> unitLength() * 100.;
 
     double pos[4]={0.,rr,theta,0.};
