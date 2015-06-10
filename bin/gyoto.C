@@ -95,7 +95,7 @@ const option::Descriptor usage[] =
  {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
  {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
 #if !defined HAVE_FENV_H
-  " (noop: this Gyoto lacks fenv.h support)".
+  " (noop: this Gyoto lacks fenv.h support)."
 #endif
  },
  {PLUGINS, 0,"p","plugins",option::Arg::Optional, "  --plugins=<l>, -p<l>  \tList of plug-ins to load instead of $GYOTO_PLUGINS." },
