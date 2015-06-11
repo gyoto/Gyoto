@@ -5,6 +5,7 @@ gyoto=save(
            haveUDUNITS=gyoto_haveUDUNITS,
            havePTHREAD=gyoto_havePTHREAD,
            haveMPI=gyoto_haveMPI,
+           haveFENV=gyoto_haveFENV,
            MPI_Init=gyoto_MPI_Init,
            MPI_Finalize=gyoto_MPI_Finalize,
            MPI_Initialized=gyoto_MPI_Initialized,
@@ -31,6 +32,8 @@ gyoto=save(
            dontcatchSIGFPE=gyoto_dontcatchSIGFPE,
            dontcatchSIGSEGV=gyoto_dontcatchSIGSEGV,
            fedisableexcept=gyoto_fedisableexcept,
+           feenableexcept=gyoto_feenableexcept,
+           FE=gyoto_FE,
            listRegister=gyoto_listRegister,
 
            is_Photon=is_gyoto_Photon,

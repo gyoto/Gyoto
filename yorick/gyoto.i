@@ -20,6 +20,46 @@ plug_in, "gyoto";
 
 #include "graphk.i"
 
+local GYOTO_PLUGINS;
+/* DOCUMENT GYOTO_PLUGINS
+
+    Comma-separated list of plug-ins to load when initializing gyoto
+    (more plug-ins can be loaded afterwards). Must be set before
+    #including gyoto.i. If this Yorick variable is not set, then the
+    environment variable of the same name is used. If it is not set
+    either, then the built-in default (usually
+    "stdplug,nofail:lorene") is used. Each plug-in may be prefixed
+    with "nofail:" to tell gyoto that it is not an error if this
+    plug-oin cannot be loaded.
+
+   EXAMPLES:
+    To load gyoto with no plug-in at all, and load "myplugin" afterwards:
+    GYOTO_PLUGINS="";
+    GYOTO_NO_STD=1;
+    #include "gyoto.i"
+    noop, gyoto.loadPlugin("myplugin");
+
+   SEE ASLO: gyoto.loadPlugin, GYOTO_NO_STD
+ */
+
+local GYOTO_PLUGINS;
+/* DOCUMENT GYOTO_NO_STD=1
+
+    By default, #include "gyoto.i" will also #include "gyoto_std.i"
+    (which in turn loads the stdplug Gyoto plug-in).  To inhibit this
+    behavios, set this variable (to something that evaluates as true)
+    before #including gyoto.i.
+
+   EXAMPLES:
+    To load gyoto with no plug-in at all, and load only "myplugin":
+    GYOTO_PLUGINS="";
+    GYOTO_NO_STD=1;
+    #include "gyoto.i"
+    noop, gyoto.loadPlugin("myplugin");
+
+   SEE ASLO: gyoto.loadPlugin, GYOTO_PLUGINS
+ */
+
 extern gyoto_haveXerces;
 /* DOCUMENT have_xerces = gyoto.haveXerces()
     Tell whether GYOTO was compiled with Xerces support (XML i/o)
@@ -140,10 +180,15 @@ extern gyoto_loadPlugin;
  */
 
 extern __gyoto_initRegister;
-/* xDOCUMENT __gyoto_initRegister
-   Must be called once to initialize the GYOTO plug-in register
+/* xDOCUMENT __gyoto_initRegister[, pluglist]
+
+   Must be called once to initialize the GYOTO plug-in register.
+
+   PLUGLIST: list of plug-ins to load. If absent or nil, load the
+   default list (either from the GYOTO_PLUGINS environment variable,
+   or built-in default).
 */
-__gyoto_initRegister;
+__gyoto_initRegister, GYOTO_PLUGINS;
 
 extern __gyoto_exportSupplier;
 /* xDOCUMENT __gyoto_exportSupplier
@@ -1889,27 +1934,69 @@ extern gyoto_dontcatchSIGSEGV;
      disables catching the corresponding signal, so that a debugger
      such as GDB can be used to track down their origin.
 
+   SEE ALSO: gyoto.fedisableexcept
  */
 
 extern gyoto_fedisableexcept;
-/* DOCUMENT gyoto.fedisableexcept
+extern gyoto_feenableexcept;
+extern gyoto_haveFENV;
+extern gyoto_FE;
+/* DOCUMENT gyoto.fedisableexcept[(excepts)];
+            gyoto.fedisableexcept[(excepts)];
+            gyoto.haveFENV();
+            except=gyoto.FE(except_name);
 
      Yorick tries very hard to set the floating-point environment such
      that e.g. divisions by zero will trigger SIGFPE. Gyoto tries to
      not allow SIGFPE to occur and this normally is a bug when it
-     does. However, certain compilers will optimize the code in such
-     a way that the safeguards that Gyoto puts in place will be
-     bypassed. If you encounter spurious SIGFPE, use this function
-     right before the offending code. Remember that Yorick will reset
-     the floating-point environment regularly, so it is not enough to
-     just call fedisableexcept() once at the beginning of your
-     program.
+     does. However, it is sometimes impossible to avoid it: depending
+     on the compiler used to build Gyoto and its dependencies,
+     optimizations may be done under the assumption that the code will
+     always run with all exceptions disabled. See README.SIGFPE in the
+     Gyoto source code for details.
 
-     Note that this function is just a "practical" hack to work around
-     a defficiency of some compilers. If you need this hack, consider
-     recompiling Gyoto as instructed in README.SIGFPE (in Gyoto source
-     code).
+     Gyoto therefore provides the following functions to control the
+     floating-point environment from Yorick scripts. Parameters are
+     discribed below.
 
+      gyoto.fedisableexcept([int excepts]);
+        Disable exceptions specified in EXCEPT. By default, all
+        exceptions normally enabled by Yorick (FE_DIVBYZERO |
+        FE_OVERFLOW | FE_INVALID). Values suitable for EXCEPT are
+        those returned by gyoto.FE() and any ored combination of
+        those.
+
+      gyoto.feenableexcept([int excepts]);
+        Enable exceptions specified in EXCEPT. By default, all
+        exceptions normally enabled by Yorick.
+
+      gyoto.haveFENV();
+        Return 1 if support for setting the floating-point environment
+        is built-in, else 0.
+
+      gyoto.FE(string except_name);
+        Get integer flag representation of a given exception, e.g.
+        FE_DIVBYZERO=gyoto.FE("DIVBYZERO").  EXCEPT_NAME is one of:
+        DIVBYZERO, INVALID, INEXACT, OVERFLOW, UNDERFLOW, ALL_EXCEPT.
+
+     EXAMPLES:
+      Disable all exceptions normally enabled by Yorick:
+       gyoto.fedisableexcept();
+
+      Disable absolutely all exceptions:
+       gyoto.dedisableexcept(gyoto.FE("ALL_EXCEPT"));
+
+      Specifically enable overflow and underflow exceptions, but not
+      DIVBYZERO:
+       gyoto.feenableexcept(gyoto.FE("OVERFLOW") | gyoto.FE("UNDEFLOW"));
+
+      Enable all exceptions normally enabled by Yorick:
+       gyoto.feenableexcept();
+
+      Enable absolutely all exceptions:
+       gyoto.feenableexcept(gyoto.FE("ALL_EXCEPT"))
+
+   SEE ALSO: gyoto.dontcatchSIGFPE
  */
 
 extern gyoto_listRegister;
@@ -1925,4 +2012,4 @@ if (is_func(use)) {
   gyoto_namespace=noop;
  }
 
-include, "gyoto_std.i", 2;
+if (!GYOTO_NO_STD) include, "gyoto_std.i", 2;
