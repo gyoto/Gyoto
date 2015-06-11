@@ -72,6 +72,50 @@ extern "C" {
     signal(SIGFPE, SIG_DFL);
   }
 
+  void Y_gyoto_FE(int argc) {
+    std::string name=ygets_q(0);
+#if defined HAVE_FENV_H
+# if defined FE_DIVBYZERO
+    if (name=="DIVBYZERO") {
+      ypush_int(FE_DIVBYZERO);
+      return;
+    }
+# endif
+# if defined FE_INEXACT
+    if (name=="INEXACT") {
+      ypush_int(FE_INEXACT);
+      return;
+    }
+# endif
+# if defined FE_INVALID
+    if (name=="INVALID") {
+      ypush_int(FE_INVALID);
+      return;
+    }
+# endif
+# if defined FE_OVERFLOW
+    if (name=="OVERFLOW") {
+      ypush_int(FE_OVERFLOW);
+      return;
+    }
+# endif
+# if defined FE_UNDERFLOW
+    if (name=="UNDERFLOW") {
+      ypush_int(FE_UNDERFLOW);
+      return;
+    }
+# endif
+# if defined FE_ALL_EXCEPT
+    if (name=="ALL_EXCEPT") {
+      ypush_int(FE_ALL_EXCEPT);
+      return;
+    }
+# endif
+    y_errorq("No such exception: FE_%s", name.c_str());
+#else
+    GYOTO_WARNING << "no GNU fenv.h in this Gyoto\n";
+#endif
+  }
 
   void
   Y_gyoto_dontcatchSIGSEGV(int)
@@ -80,10 +124,24 @@ extern "C" {
   }
 
   void
-  Y_gyoto_fedisableexcept(int)
+  Y_gyoto_fedisableexcept(int argc)
   {
 #if defined HAVE_FENV_H
-    fedisableexcept(FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID);
+    int excepts=FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID;
+    if (argc && !yarg_nil(0)) excepts=ygets_i(0);
+    ypush_int(fedisableexcept(excepts));
+#else
+    GYOTO_WARNING << "no GNU fenv.h in this Gyoto\n";
+#endif
+  }
+
+  void
+  Y_gyoto_feenableexcept(int argc)
+  {
+#if defined HAVE_FENV_H
+    int excepts=FE_DIVBYZERO | FE_OVERFLOW | FE_INVALID;
+    if (argc && !yarg_nil(0)) excepts=ygets_i(0);
+    ypush_int(feenableexcept(excepts));
 #else
     GYOTO_WARNING << "no GNU fenv.h in this Gyoto\n";
 #endif
@@ -137,9 +195,11 @@ extern "C" {
   }
 
   void
-  Y___gyoto_initRegister(int)
+  Y___gyoto_initRegister(int argc)
   {
-    Gyoto::Register::init();
+    const char * pluglist = NULL;
+    if (argc && !yarg_nil(argc-1)) pluglist=ygets_q(argc-1);
+    Gyoto::Register::init(pluglist);
   }
 
   void
@@ -213,6 +273,18 @@ extern "C" {
   {
     ypush_long(
 #if defined HAVE_MPI
+	       1
+#else
+	       0
+#endif
+	       );
+  }
+
+  void
+  Y_gyoto_haveFENV(int)
+  {
+    ypush_long(
+#if defined HAVE_FENV_H
 	       1
 #else
 	       0

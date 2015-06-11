@@ -46,18 +46,20 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   GyotoInitFcn* initfcn = NULL;
   char * err = NULL;
 
-  if (debug()) cerr << "DEBUG: loading plug-in: " << name
-		    << " from file: " << dlfile << endl;
+  GYOTO_DEBUG << "Loading plug-in: " << name <<endl;
+  GYOTO_DEBUG << "Trying to dlopen " << dlfile << "...\n";
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
   if (!handle) {
     string dlpath = GYOTO_PKGLIBDIR "/";
     string dlfull = dlpath + dlfile;
+    GYOTO_DEBUG << "Trying to dlopen " << dlfull << "...\n";
     handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if (!handle) {
       dlfull = dlpath ;
       dlfull += GYOTO_SOVERS ;
       dlfull += "/" ;
       dlfull += dlfile ;
+      GYOTO_DEBUG << "Trying to dlopen " << dlfull << "...\n";
       handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
       if (!handle && nofail) {
 	if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
@@ -65,13 +67,20 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
 	return;
       }
     }
+    if (handle) {
+      GYOTO_DEBUG << "Successfully loaded " << dlfull << ".\n";
+    } else {
+      GYOTO_DEBUG << "Failed loading " << dlfull << ".\n";
+    }
   }
   if ( (err=dlerror()) ) throwError(err);
   if (!handle) throwError((string("Failed to load plug-in ")+dlfile).c_str());
-  if (debug()) cerr << "DEBUG: calling plug-in init function " << dlfunc << endl;
+  GYOTO_DEBUG << "Searching plug-in init function " << dlfunc << endl;
   initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
   if ( (err=dlerror()) ) throwError(err);
+  GYOTO_DEBUG << "Calling plug-in init function " << dlfunc << endl;
   (*initfcn)();
+  GYOTO_DEBUG << "Done." << endl;
 }
 
 void Gyoto::Register::init(char const *  cpluglist) {
