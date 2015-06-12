@@ -49,6 +49,11 @@ class Gyoto::WIP
   /// Issue a warning
   WIP();
   /// Issue a warning specifying the name of the derived class
+  /**
+   * If classname is the empty string (""), the warning is not issued.
+   * Use this to mark that a class is no more work in progress without
+   * breaking the ABI (i.e. in the Gyoto stable branch).
+   */
   WIP(std::string classname);
 };
 
