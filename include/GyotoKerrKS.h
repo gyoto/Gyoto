@@ -62,7 +62,6 @@ class Gyoto::Metric::KerrKS
   double a2_;     ///< spin_*spin_
   double rsink_;  ///< numerical horizon
   double drhor_;  ///< horizon security
-  bool   generic_integrator_; ///< which integrator to use
 
   // Constructors - Destructor
   // -------------------------
@@ -83,8 +82,6 @@ class Gyoto::Metric::KerrKS
   double spin() const ; ///< Returns spin
   void horizonSecurity(double drhor);
   double horizonSecurity() const;
-  void genericIntegrator(bool);
-  bool genericIntegrator() const ;
   
   double gmunu(const double * x,
 		       int alpha, int beta) const ;
@@ -107,49 +104,14 @@ class Gyoto::Metric::KerrKS
   int christoffel(double dst[4][4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * pos, double gup[4][4], double jac[4][4][4]) const ;
 
-  void nullifyCoord(double coord[8], double &tdot2) const;
-  void nullifyCoord(double coord[8]) const;
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
- public:
-
-  void MakeCst(const double* coord, double* cst) const;
-  ///< In Kerr-Schild coordinates [T,x,y,z,Tdot,xdot,ydot,zdot], computes the four constants of the movement : particule mass, energy, angular momentum and Carter's constant.
- protected:
-
-  /**
-   * \brief RK4 integrator
-   *
-   * Wrapper around myrk4(const double * coord, const double* cst , double h, double* res) const
-   *
-   *
-   */
-  int myrk4(Worldline * line, const double coord[8], double h, double res[8]) const;//NB non adaptive integration doesn't work for KS ; this function is not implemented
-
-  /**
-   * \brief RK4 integrator
-   * \param coord [r,theta,phi,t,pr,ptheta]
-   * \param cst   [a,E,L,Q],dy/dtau=F(y,cst)
-   * \param h     proper time step.
-   * \param res   result
-   */
-  int myrk4(const double * coord, const double* cst , double h, double* res) const;
-
-  /**
-   * \brief ?
-   *
-   * Is it ever called?
-   */
-  int myrk4_adaptive(Gyoto::Worldline* line, const double * coord, double lastnorm, double normref, double* coord1, double h0, double& h1, double h1max) const;
-
-  /** F function such as dy/dtau=F(y,cst)
-   */
-  using Generic::diff;
-  int diff(const double* coord, const double* cst, double* res) const;
   virtual int isStopCondition(double const * const coord) const;
-  void setParticleProperties(Worldline* line, const double* coord) const;
 
+  virtual int setParameter(std::string name,
+			   std::string content,
+			   std::string unit);
 };
 
 #endif
