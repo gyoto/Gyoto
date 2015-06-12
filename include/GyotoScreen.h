@@ -618,12 +618,19 @@ class Gyoto::Screen
       virtual bool valid() =0;
       /// Number of values in this container
       virtual size_t size()=0;
-      /// Get size_t value crrently pointed to
+      /// Get size_t value currently pointed to
       virtual size_t operator*() const ;
       /// Get double value currently pointed to
       virtual double angle() const ;
       /// Increment iterator (point to next value)
       virtual Coord1dSet& operator++()=0;
+      /// Get index of value currently pointed to
+      /**
+       * Starts at 0 and is implemented each time operator++ is
+       * called. Depending on the implementation, this may be a real
+       * index or computed on demand.
+       */
+      virtual size_t index() const=0;
     };
 
     /// Class to specify a set of points on the Screen
@@ -712,6 +719,7 @@ class Gyoto::Screen
       size_t size();
       Coord1dSet& operator++();
       size_t operator*() const ;
+      virtual size_t index() const ;
     };
 
     /// 1D specifier for an arbitrary pixel coordinate set.
@@ -727,6 +735,7 @@ class Gyoto::Screen
       size_t size();
       Coord1dSet& operator++();
       size_t operator*() const ;
+      virtual size_t index() const ;
     };
 
     /// 1D specifier for an arbitrary angle coordinate set.
@@ -742,6 +751,7 @@ class Gyoto::Screen
       size_t size();
       Coord1dSet& operator++();
       double angle() const ;
+      virtual size_t index() const ;
     };
 
     /// 1D specifier for an angle that is repeated.
@@ -757,6 +767,7 @@ class Gyoto::Screen
       size_t size();
       Coord1dSet& operator++();
       double angle() const ;
+      virtual size_t index() const ;
     };
 };
 

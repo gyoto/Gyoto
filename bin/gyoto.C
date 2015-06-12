@@ -602,7 +602,7 @@ int main(int argc, char** argv) {
     Screen::Grid  grid(irange, jrange, "\rj = ");
 
     if (verbose() >= GYOTO_QUIET_VERBOSITY)
-      cout << "j = " << imin << "/" << (imax-imin+1)/di << flush;
+      cout << "j = " << 1 << "/" << (jmax-jmin)/dj+1 << flush;
 
     scenery -> rayTrace(grid, data, ipctdims[0]?impactcoords:NULL);
 

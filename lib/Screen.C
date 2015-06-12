@@ -1362,7 +1362,7 @@ Screen::Coord2dSet& Screen::Grid::operator++() {
     iset_.begin();
     ++jset_;
     if (prefix_ && verbose() >= GYOTO_QUIET_VERBOSITY && jset_.valid())
-      cout << prefix_ << *jset_ << "/" << jset_.size() << flush;
+      cout << prefix_ << jset_.index()+1 << "/" << jset_.size() << flush;
   }
 
   return *this;
@@ -1394,7 +1394,7 @@ double Screen::Coord1dSet::angle () const {
 ///////
 
 Screen::Range::Range(size_t mi, size_t ma, size_t d)
-  : Coord1dSet(pixel), mi_(mi), ma_(ma), d_(d), sz_((ma-mi+1)/d), cur_(mi)
+  : Coord1dSet(pixel), mi_(mi), ma_(ma), d_(d), sz_((ma-mi)/d+1), cur_(mi)
 {}
 
 void Screen::Range::begin() {cur_=mi_;}
@@ -1404,6 +1404,7 @@ Screen::Coord1dSet& Screen::Range::operator++() {
 bool Screen::Range::valid() {return cur_ <= ma_;}
 size_t Screen::Range::size() {return sz_;}
 size_t Screen::Range::operator*() const {return cur_;}
+size_t Screen::Range::index() const {return (cur_-mi_) / d_;}
 
 //////
 
@@ -1415,6 +1416,7 @@ bool Screen::Indices::valid() {return i_ < sz_;}
 size_t Screen::Indices::size(){return sz_;}
 Screen::Coord1dSet& Screen::Indices::operator++() {++i_; return *this;}
 size_t Screen::Indices::operator*() const {return indices_[i_];}
+size_t Screen::Indices::index() const {return i_;}
 
 
 /////
@@ -1427,6 +1429,7 @@ bool Screen::Angles::valid() {return i_<sz_;}
 size_t Screen::Angles::size(){return sz_;}
 Screen::Coord1dSet& Screen::Angles::operator++(){++i_; return *this;}
 double Screen::Angles::angle() const {return buf_[i_];}
+size_t Screen::Angles::index() const {return i_;}
 
 Screen::RepeatAngle::RepeatAngle (double val, size_t sz)
   : Coord1dSet(Screen::angle), val_(val), sz_(sz), i_(0)
@@ -1436,6 +1439,7 @@ bool Screen::RepeatAngle::valid() {return i_<sz_;}
 size_t Screen::RepeatAngle::size(){return sz_;}
 Screen::Coord1dSet& Screen::RepeatAngle::operator++(){++i_; return *this;}
 double Screen::RepeatAngle::angle() const {return val_;}
+size_t Screen::RepeatAngle::index() const {return i_;}
 
 Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
   : Coord2dSet(alp.kind), alpha_(alp), delta_(del)
