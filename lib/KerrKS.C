@@ -52,7 +52,7 @@ In particular, don't trust too much the result with spin>0
 
 KerrKS::KerrKS():
   Generic(GYOTO_COORDKIND_CARTESIAN, "KerrKS"),
-  WIP("Metric::KerrKS"),
+  WIP(""),
   spin_(0.), a2_(0.), rsink_(2.+GYOTO_KERR_HORIZON_SECURITY),
   drhor_(GYOTO_KERR_HORIZON_SECURITY), generic_integrator_(true)
 {}
@@ -95,7 +95,7 @@ bool KerrKS::genericIntegrator() const {return generic_integrator_;}
 void KerrKS::genericIntegrator(bool t) {
   generic_integrator_=t;
   if (!generic_integrator_)
-    GYOTO_WARNING << "the specific integrator in Metric::KerrKS is known to be buggy. Use the generic integrator or debug." << endl;
+    GYOTO_SEVERE << "the specific integrator in Metric::KerrKS is known to be buggy. Use the generic integrator or debug." << endl;
 }
 
 

@@ -36,6 +36,7 @@ WIP::WIP()
 
 WIP::WIP(string classname)
 {
+  if (classname == "") return;
   GYOTO_WARNING << "**************************************************" << endl;
   GYOTO_WARNING
     << "Class \"" << classname << "\" is marked *work in progress*."    << endl;
