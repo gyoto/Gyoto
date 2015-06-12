@@ -37,9 +37,6 @@ namespace Gyoto {
 #include <GyotoRegister.h>
 #endif
 
-// This Metric is work in progress
-#include <GyotoWIP.h>
-
 /**
  * \class Gyoto::Metric::KerrKS
  * \brief Metric around a Kerr black-hole in Kerr-Schild coordinates
@@ -53,8 +50,7 @@ namespace Gyoto {
  * to use the specific integretor which is, as of writting, buggy.
  */
 class Gyoto::Metric::KerrKS
-: public Metric::Generic,
-  public WIP
+: public Metric::Generic
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::KerrKS>;
   

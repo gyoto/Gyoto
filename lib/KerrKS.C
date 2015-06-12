@@ -52,7 +52,6 @@ In particular, don't trust too much the result with spin>0
 
 KerrKS::KerrKS():
   Generic(GYOTO_COORDKIND_CARTESIAN, "KerrKS"),
-  WIP(""),
   spin_(0.), a2_(0.), rsink_(2.+GYOTO_KERR_HORIZON_SECURITY),
   drhor_(GYOTO_KERR_HORIZON_SECURITY), generic_integrator_(true)
 {}
