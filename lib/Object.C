@@ -111,9 +111,7 @@ void Object::set(Property const &p, Value val) {
     ___local_case(bool);
     ___local_case(long);
     ___local_case(unsigned_long);
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
     ___local_case(size_t);
-#endif
   case Property::filename_t:
     ___local_case(string);
   case Property::vector_double_t:
@@ -196,9 +194,7 @@ Value Object::get(Property const &p) const {
     ___local_case(double);
     ___local_case(long);
     ___local_case(unsigned_long);
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
     ___local_case(size_t);
-#endif
   case Property::filename_t:
     ___local_case(string);
   case Property::vector_double_t:
@@ -275,11 +271,9 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
   case Property::unsigned_long_t:
     fmp->setParameter(name, (unsigned long)(get(p)));
     break;
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   case Property::size_t_t:
     fmp->setParameter(name, (unsigned long)(size_t(get(p))));
     break;
-#endif
   case Property::double_t:
     fmp->setParameter(name, double(get(p)));
     break;
@@ -401,11 +395,9 @@ void Object::setParameter(Property const &p, string const &name,
   case Property::unsigned_long_t:
     val = strtoul(content.c_str(), NULL, 0);
     break;
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   case Property::size_t_t:
     val = size_t(strtoul(content.c_str(), NULL, 0));
     break;
-#endif
   case Property::double_t:
     val = atof(content.c_str());
     set(p, val, unit);
@@ -449,13 +441,9 @@ std::string Object::describeProperty(Property const &p) const {
     break;
   case Property::unsigned_long_t:
     out += "unsigned long";
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
     break;
   case Property::size_t_t:
-    out += size_t
-#else
-    out += " (a.k.a. size_t)";
-#endif
+    out += "size_t";
     break;
   case Property::double_t:
     out += "double";

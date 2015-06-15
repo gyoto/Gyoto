@@ -29,18 +29,12 @@ using namespace std ;
 
 /// Value
 
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
-# define INIT_SIZE_T SizeT(0),
-#else
-# define INIT_SIZE_T
-#endif
-
 #define INIT_MEMBERS				\
     Double(0.),					\
     Bool(false),				\
     Long(0),					\
     ULong(0),					\
-    INIT_SIZE_T					\
+    SizeT(0),					\
     String(""),					\
     VDouble(),					\
     VULong(),					\
@@ -73,10 +67,8 @@ Value::operator long() const {
     return Long;
   case Property::unsigned_long_t:
     return long(ULong);
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   case Property::size_t_t:
     return long(SizeT);
-#endif
   default:
     throwError("This Value does not hold a long (or unsigned long)");
   }
@@ -89,10 +81,8 @@ Value::operator unsigned long() const {
     return (unsigned long)(Long);
   case Property::unsigned_long_t:
     return ULong;
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   case Property::size_t_t:
     return (unsigned long)(SizeT);
-#endif
   default:
     throwError("This Value does not hold a long (or unsigned long)");
   }
@@ -123,9 +113,8 @@ Value::operator bool() const {
     return bool(Long);
   case Property::unsigned_long_t:
     return bool(ULong);
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+  case Property::size_t_t:
     return bool(SizeT);
-#endif
   default:
     throwError("This Value does not hold an integer");
   }
@@ -150,9 +139,7 @@ Value& Value::operator=(Value const &right) {
     ___local_case(bool_t, Bool);
     ___local_case(long_t, Long);
     ___local_case(unsigned_long_t, ULong);
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
     ___local_case(size_t_t, SizeT);
-#endif
     ___local_case(string_t, String);
     ___local_case(vector_double_t, VDouble);
     ___local_case(vector_unsigned_long_t, VULong);

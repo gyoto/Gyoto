@@ -107,11 +107,11 @@ class Gyoto::Value {
   /// Cast to unsigned long
   operator unsigned long() const;
 
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
  private:
   /// A size_t (only if distinct from unsigned long)
   size_t SizeT;
  public:
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   /// Construct/cast from unsigned long
   Value(size_t);
   /// Cast to unsigned long

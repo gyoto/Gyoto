@@ -45,12 +45,7 @@ GYOTO_PROPERTY_END(Uniform, Generic::properties)
 
 void Uniform::fillProperty(Gyoto::FactoryMessenger *fmp,
 			   Property const &p) const {
-  if (p.type == 
-#if defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
-      Property::unsigned_long_t
-#else
-      Property::size_t_t
-#endif
+  if (p.type == Property::size_t_t
       && p.name == "NSamples")
     fmp -> setSelfAttribute("nsamples", nsamples_);
   else if (p.type == Property::string_t        && p.name == "Kind")

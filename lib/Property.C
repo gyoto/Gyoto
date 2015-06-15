@@ -18,9 +18,6 @@ Property::Property(std::string classname, std::string doc)
 
 GYOTO_LOCAL(long)
 GYOTO_LOCAL(unsigned_long)
-#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
-GYOTO_LOCAL(size_t)
-#endif
 GYOTO_LOCAL(metric)
 GYOTO_LOCAL(spectrum)
 GYOTO_LOCAL(astrobj)
@@ -28,6 +25,13 @@ GYOTO_LOCAL(screen)
 GYOTO_LOCAL(spectrometer)
 
 #undef GYOTO_LOCAL
+
+Property::Property(string n, set_size_t_t set, get_size_t_t get, int,
+		   string d)
+: name(n), type(size_t_t), parent(NULL), doc(d) {
+  setter.set_size_t=set;
+  getter.get_size_t=get;
+}
 
 Property::Property(string n, set_double_t set, get_double_t get, string d)
 : name(n), type(double_t), parent(NULL), doc(d) {
