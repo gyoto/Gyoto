@@ -398,6 +398,10 @@ local gyoto;
     dumping a description of themselves to an XML file:
        gg, xmlwrite="filename.xml";
        // or noop, gg.xmlwrite("filename.xml")
+    Another notable example is the HELP keyword, which lists the
+    properties that can be set or retrieved in any object:
+       gg, help=;
+       // or noop, gg.help();
 
     Other methods keywords are function-like: they usually take one or
     several parameter and return a value. Only one value-returning
@@ -584,6 +588,9 @@ extern gyoto_Scenery;
              gyoto.Scenery_rayTrace. This has no effect when
              ray-tracing using the "data = scenery()" syntax below.
 
+
+    METHODS:
+    xmlwrite, help
 
     MPI MULTI-PROCESSING:
 
@@ -1180,6 +1187,8 @@ extern gyoto_Photon;
      xmlwrite=filename as usual, save an XML description of this
             photon;
 
+     help=; list properties;
+
      setparameter=name[,value] set any low-level parameter. Name and
             value are strings.
 
@@ -1220,6 +1229,7 @@ extern gyoto_Metric;
             retval = gg(function_method=par1, par2...)
             gg, xmlwrite=filename
             coef = gg(coordinates, mu, nu)
+            gg, help=;
 
    PURPOSE:
      Create and manipulate GYOTO Metric objects
@@ -1239,6 +1249,9 @@ extern gyoto_Metric;
 
      When printed, a Metric displays an XML description of itself,
      which can be dumped to a file using the XMLWRITE keyword.
+
+     The HELP method prints the list of properties supported by this
+     astrobj.
 
      Most GYOTO functions which accept a Metric as a parameter accept
      any kind of Metric. There are nevertheless specific
@@ -1314,6 +1327,8 @@ extern gyoto_Metric;
                Beware of the index ordering:
                   Gamma(nu, mu, alpha) == Gamma^alpha_mu_nu
 
+       gg, help=; print help on properties.
+
    SEE ALSO: gyoto, gyoto.KerrBL, gyoto.KerrKS
  */
 
@@ -1322,6 +1337,7 @@ extern gyoto_Astrobj;
             ao, member1=val1, member2=val2...;
             val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
+            ao, help=;
 
      Generic class for describing an astronomical object (a star, an
      accretion disk...) in the context of GYOTO. See "help, gyoto" for
@@ -1336,6 +1352,9 @@ extern gyoto_Astrobj;
      When printed, an astrobj displays an XML description of
      itself. This description can be saved to disk using the XMLWRITE
      method keyword.
+
+     The HELP method prints the list of properties supported by this
+     astrobj.
 
    MEMBER KEYWORDS
    
@@ -1400,6 +1419,7 @@ extern gyoto_ThinDisk;
             ao, member1=val1, member2=val2...;
             val = ao(member=) or val = ao.member
             ao, xmlwrite=filename
+            ao, help=;
 
      A more specific version of the gyoto.Astrobj function. A very
      crude Astrobj can be instanciated using gyoto.ThinDisk. More
@@ -1444,7 +1464,9 @@ extern gyoto_Screen;
     A Screen is usually created using the gyoto.Screen function. It's
     members are then set or queried using various member keywords (see
     KEYWORDS below, "help, gyoto"). A description of the Screen can be
-    written to an XML file using the xmlwrite= keyword.
+    written to an XML file using the xmlwrite= keyword. The help=
+    keyword prints the list of poperties that the Screen class
+    supports.
 
    INPUT:
 
@@ -1489,6 +1511,8 @@ extern gyoto_Screen;
        direction d_alpha, d_delta.
 
      xmlwrite = filename to export screen to XML.
+
+     help=nil list properties.
 
      mask= [nil | filename | image] use nil to retrieve the mask,
        filename to load mask from FITS file, image array to set mask
@@ -1537,6 +1561,7 @@ extern gyoto_Spectrum;
 
    GENERIC SUBROUTINE-LIKE METHODS
      xmlwrite=filename (as usual)
+     help=nil (as usual)
 
    GENERIC FUNCTION-LIKE METHODS
      clone=  (as usual)
@@ -1582,6 +1607,8 @@ extern gyoto_Spectrometer;
    METHODS:
        xmlwrite=filename, write XML desription of this spectrometer
                   to hard drive. E.g. spectro, wmlwrite="file.xml"
+
+       help=nil, list properties
    
      The following keywords allow retrieving information on the
      spectrometer. They don't take a value but return one with this
@@ -1646,7 +1673,7 @@ extern _gyoto_SpectroUniform_register_as_Spectro;
 
    METHODS:
      The following methods from gyoto_Spectrometer are implemented:
-     xmlwrite, clone, channels, midpoints, widths.
+     xmlwrite, help, clone, channels, midpoints, widths.
        
    SEE ALSO: gyoto.Spectrometer, gyoto.SpectroComplex
  */
@@ -1685,7 +1712,7 @@ extern _gyoto_SpCplx_register_as_Spectrometer;
      
    METHODS:
      The following methods from gyoto.Spectrometer are implemented:
-     xmlwrite, clone, channels, midpoints, widths. In addition,
+     xmlwrite, help, clone, channels, midpoints, widths. In addition,
      gyoto.SpectroComplex accepts the following methods:
        append=subspectro add new sub-spectrometer
        remove=index      remove sub-spectrometer INDEX

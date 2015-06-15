@@ -373,7 +373,19 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
 			    std::string const &content,
 			    std::string const &unit);
 
+   /**
+    * \brief Format desrciption for a property
+    *
+    * Returns a string containing the name(s) and type of the
+    * property, as well as whether it supports unit.
+    */
    std::string describeProperty(Gyoto::Property const &p) const ;
+
+   /**
+    * \brief Print (to stdout) some help on this class
+    *
+    * Describe all properties that this instance supports.
+    */
    void help() const ;
 };
 

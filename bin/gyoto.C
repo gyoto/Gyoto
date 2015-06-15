@@ -91,7 +91,7 @@ const option::Descriptor usage[] =
 {
  {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\n\n"
                                         "Generic options:\n  -- \tStop option processing." },
- {HELP, 0,"h","help",option::Arg::None, "  --help, -h  \tPrint usage and exit." },
+ {HELP, 0,"h","help",option::Arg::Optional, "  --help[=<c>, -h<c>  \tWithout argument, print usage and exit. With argument, document class <c> (e.g. \"Screen\", \"Astrobj::Star\") and exit." },
  {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
  {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
 #if !defined HAVE_FENV_H
@@ -198,8 +198,8 @@ int main(int argc, char** argv) {
 
   // Check whether to output usage string
   if ((!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN])) || options[HELP] ) {
-    option::printUsage(std::cout, usage);
-    if (!options[LIST]) {
+    if (!options[HELP].arg) option::printUsage(std::cout, usage);
+    if (!options[LIST] && !options[HELP].arg) {
       if (options[HELP]) return 0;
       return 1;
     }
@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
   if (parse.nonOptionsCount() > 1) pixfile=strdup(parse.nonOptions()[1]);
 
   // State copyright
-  if (!options[LIST] && verbose() >= GYOTO_QUIET_VERBOSITY)
+  if (!options[LIST] && !options[HELP] && verbose() >= GYOTO_QUIET_VERBOSITY)
     cout << " Copyright (c) 2011-2015 Frederic Vincent & Thibaut Paumard\n"
 	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
 	 << " We request that use of Gyoto in scientific publications be "
@@ -264,6 +264,11 @@ int main(int argc, char** argv) {
 
     curmsg = "In gyoto.C: Error deleting Scenery: ";
     delete factory;
+  }
+
+  if (options[HELP] && options[HELP].arg) {
+    help(options[HELP].arg);
+    if (!options[LIST]) return 0;
   }
 
   if (options[LIST]) {
