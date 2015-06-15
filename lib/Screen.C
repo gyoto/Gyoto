@@ -1286,7 +1286,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||
 	     name=="Rectilinear")  scr -> anglekind(name);
-    else if (name=="Mask") scr -> maskFile(fmp->fullPath(content));
+    else if (name=="Mask")
+      scr -> maskFile(content==""?"":fmp->fullPath(content));
     else if (scr->setParameter(name, content, unit))
       throwError("no such Screen Property");
   }
