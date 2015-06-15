@@ -74,142 +74,365 @@ namespace Gyoto {
 /// Start Property list
 /**
  * \param class Class for which we are defining a Property list
+ * \param doc Documentation for this class. Optional but recommended.
  */
-#define GYOTO_PROPERTY_START(class)		\
-  Property const class::properties[] = {	\
-    Property (#class),
+#define GYOTO_PROPERTY_START(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments",			\
+			 GYOTO_PROPERTY_START_DOC(__VA_ARGS__),		\
+			 GYOTO_PROPERTY_START_NODOC(__VA_ARGS__),	\
+			 "wrong number of arguments"			\
+			 )
 
-/// Define a new Property of type Bool
+
+/// Define a new Property of type bool
 /*
- * Declares a static variable named "name". name and namef should not
+ * Declares a Property named "name". name and namef should not
  * be quoted.
  *
- * \param[in] class name
- * \param[in] name name of property if true;
- * \param[in] namef name of property if false;
- * \param[in] fname name of functions for setting or getting the property
- * \param[in] ancestor pointer to next Property instance
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] namef Name of property if false;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
  */
-#define GYOTO_PROPERTY_BOOL(class, name, namef, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   #namef,								\
-   (Gyoto::Property::set_bool_t)&class :: fname,			\
-   (Gyoto::Property::get_bool_t)&class :: fname),
+#define GYOTO_PROPERTY_BOOL(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 "wrong number of arguments",			\
+			 GYOTO_PROPERTY_BOOL_DOC(__VA_ARGS__),		\
+			 GYOTO_PROPERTY_BOOL_NODOC(__VA_ARGS__),	\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments",			\
+			 "wrong number of arguments"			\
+			 )
 
-/// Define a Property of type Double
-#define GYOTO_PROPERTY_DOUBLE(class, name, fname)		\
-  Gyoto::Property						\
-  (#name,							\
-   (Gyoto::Property::set_double_t)&class::fname,		\
-   (Gyoto::Property::get_double_t)&class::fname),
+/// Define a Property of type double
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_DOUBLE(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,			\
+			 GYOTO_NOTHING_5,			\
+			 GYOTO_PROPERTY_DOUBLE_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_DOUBLE_NODOC(__VA_ARGS__),	\
+			 GYOTO_NOTHING_2,			\
+			 GYOTO_NOTHING_1,			\
+			 GYOTO_NOTHING_0			\
+			 )
 
-/// Define a Property of type Long
-#define GYOTO_PROPERTY_LONG(class, name, fname)		\
-  Gyoto::Property					\
-  (#name,						\
-   (Gyoto::Property::set_long_t)&class::fname,		\
-   (Gyoto::Property::get_long_t)&class::fname),
 
-/// Define a Property of type Long
-#define GYOTO_PROPERTY_UNSIGNED_LONG(class, name, fname)	\
-  Gyoto::Property						\
-  (#name,							\
-   (Gyoto::Property::set_unsigned_long_t)&class::fname,		\
-   (Gyoto::Property::get_unsigned_long_t)&class::fname),
+/// Define a Property of type double with unit
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_DOUBLE_UNIT(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,			\
+			 GYOTO_NOTHING_5,			\
+			 GYOTO_PROPERTY_DOUBLE_UNIT_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_DOUBLE_UNIT_NODOC(__VA_ARGS__),	\
+			 GYOTO_NOTHING_2,			\
+			 GYOTO_NOTHING_1,			\
+			 GYOTO_NOTHING_0			\
+			 )
+
+/// Define a Property of type vector<double>
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_VECTOR_DOUBLE(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_VECTOR_DOUBLE_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_VECTOR_DOUBLE_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type vector<double> with unit
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT_DOC(__VA_ARGS__), \
+			 GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type String
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_STRING(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_STRING_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_STRING_NODOC(__VA_ARGS__),	\
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type Filename
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_FILENAME(...)					\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_FILENAME_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_FILENAME_NODOC(__VA_ARGS__),	\
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type long
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_LONG(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_LONG_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_LONG_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type unsigned long
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_UNSIGNED_LONG(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_UNSIGNED_LONG_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_UNSIGNED_LONG_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+/// Define a Property of type vector<unsigned long>
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG(...)			\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG_DOC(__VA_ARGS__), \
+			 GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
 
 #if defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
 # define GYOTO_PROPERTY_SIZE_T GYOTO_PROPERTY_UNSIGNED_LONG
 #else
-#define GYOTO_PROPERTY_SIZE_T(class, name, fname)	\
-  Gyoto::Property						\
-  (#name,							\
-   (Gyoto::Property::set_size_t_t)&class::fname,		\
-   (Gyoto::Property::get_size_t_t)&class::fname),
+/// Define a Property of type size_t
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_SIZE_T(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_SIZE_T_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_SIZE_T_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
 #endif
 
-/// Define a Property of type Double supporting unit
-#define GYOTO_PROPERTY_DOUBLE_UNIT(class, name, fname) \
-  Gyoto::Property						\
-  (#name,							\
-   (Gyoto::Property::set_double_t)&class::fname,		\
-   (Gyoto::Property::get_double_t)&class::fname,		\
-   (Gyoto::Property::set_double_unit_t)&class::fname,		\
-   (Gyoto::Property::get_double_unit_t)&class::fname),
-
-/// Define a Property of type Filename
-#define GYOTO_PROPERTY_FILENAME(class, name, fname)		\
-  Gyoto::Property						\
-  (#name,							\
-   (Gyoto::Property::set_string_t)&class::fname,		\
-   (Gyoto::Property::get_string_t)&class::fname,		\
-   true),
-
-/// Define a Property of type String
-#define GYOTO_PROPERTY_STRING(class, name, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_string_t)&class::fname,			\
-   (Gyoto::Property::get_string_t)&class::fname,			\
-   false),
-
-/// Define a Property of type vector<double>
-#define GYOTO_PROPERTY_VECTOR_DOUBLE(class, name, fname)		\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_vector_double_t)&class::fname,			\
-   (Gyoto::Property::get_vector_double_t)&class::fname),
-
-/// Define a Property of type vector<double> with unit support
-#define GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(class, name, fname)		\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_vector_double_t)&class::fname,			\
-   (Gyoto::Property::get_vector_double_t)&class::fname,			\
-   (Gyoto::Property::set_vector_double_unit_t)&class::fname,		\
-   (Gyoto::Property::get_vector_double_unit_t)&class::fname),
-
-/// Define a Property of type vector<unsigned long>
-#define GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG(class, name, fname)		\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_vector_unsigned_long_t)&class::fname,		\
-   (Gyoto::Property::get_vector_unsigned_long_t)&class::fname),
-
 /// Define a Property of type Gyoto::Metric::Generic
-#define GYOTO_PROPERTY_METRIC(class, name, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_metric_t)&class::fname,			\
-   (Gyoto::Property::get_metric_t)&class::fname),
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_METRIC(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_METRIC_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_METRIC_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
 
-/// Define a Property of type Gyoto::Screen
-#define GYOTO_PROPERTY_SCREEN(class, name, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_screen_t)&class::fname,			\
-   (Gyoto::Property::get_screen_t)&class::fname),
-
-/// Define a Property of type Gyoto::Astrobj::Generic
-#define GYOTO_PROPERTY_ASTROBJ(class, name, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_astrobj_t)&class::fname,			\
-   (Gyoto::Property::get_astrobj_t)&class::fname),
 
 /// Define a Property of type Gyoto::Spectrum::Generic
-#define GYOTO_PROPERTY_SPECTRUM(class, name, fname)			\
-  Gyoto::Property							\
-    (#name,								\
-     (Gyoto::Property::set_spectrum_t)&class::fname,			\
-     (Gyoto::Property::get_spectrum_t)&class::fname),
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_SPECTRUM(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_SPECTRUM_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_SPECTRUM_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+
+/// Define a Property of type Gyoto::Astrobj::Generic
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_ASTROBJ(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_ASTROBJ_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_ASTROBJ_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
+
+/// Define a Property of type Gyoto::Screen
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_SCREEN(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_SCREEN_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_SCREEN_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
+
 
 /// Define a Property of type Gyoto::Spectrometer::Generic
-#define GYOTO_PROPERTY_SPECTROMETER(class, name, fname)			\
-  Gyoto::Property							\
-  (#name,								\
-   (Gyoto::Property::set_spectrometer_t)&class::fname,			\
-   (Gyoto::Property::get_spectrometer_t)&class::fname),
+/*
+ * Declares a Property named "name". name and namef should not
+ * be quoted.
+ *
+ * \param[in] class Class name
+ * \param[in] name Name of property if true;
+ * \param[in] fname Name of functions for setting or getting the property
+ * \param[in] doc Document string (optional but recommended)
+ */
+#define GYOTO_PROPERTY_SPECTROMETER(...)				\
+  GYOTO_PROPERTY_CHOOSER(,##__VA_ARGS__,				\
+			 GYOTO_NOTHING_6,				\
+			 GYOTO_NOTHING_5,				\
+			 GYOTO_PROPERTY_SPECTROMETER_DOC(__VA_ARGS__),	\
+			 GYOTO_PROPERTY_SPECTROMETER_NODOC(__VA_ARGS__), \
+			 GYOTO_NOTHING_2,				\
+			 GYOTO_NOTHING_1,				\
+			 GYOTO_NOTHING_0				\
+			 )
 
 /// Define class::properties and class::getProperties() 
 #define GYOTO_PROPERTY_END(class, next)				\
@@ -537,6 +760,8 @@ class Gyoto::Property
    */
   getter_unit_t getter_unit;
 
+  std::string doc;
+
   /// True if #Gyoto::Property::type is not #Gyoto::Property::empty_t
   operator bool() const ;
 
@@ -547,42 +772,48 @@ class Gyoto::Property
   Property(Property const * const ancestor);
 
   /// Constructor for class name pseudo-property
-  Property(std::string classname);
+  Property(std::string classname, std::string doc="");
 
   /// Constructor for #type==#long_t
   Property(std::string name,
 	   set_long_t set_long,
-	   get_long_t get_long);
+	   get_long_t get_long,
+	   std::string doc);
 
   /// Constructor for #type==#unsigned_long_t
   Property(std::string name,
 	   set_unsigned_long_t set_unsigned_long,
-	   get_unsigned_long_t get_unsigned_long);
+	   get_unsigned_long_t get_unsigned_long,
+	   std::string doc);
 
 #if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
   /// Constructor for #type==#size_t_t
   Property(std::string name,
 	   set_size_t_t set_size_t,
-	   get_size_t_t get_size_t);
+	   get_size_t_t get_size_t,
+	   std::string doc);
 #endif
 
   /// Constructor for #type==#double_t, without unit support
   Property(std::string name,
 	   set_double_t set_double,
-	   get_double_t get_double);
+	   get_double_t get_double,
+	   std::string doc);
 
   /// Constructor for #type==#double_t, with unit support
   Property(std::string name,
 	   set_double_t set_double,
 	   get_double_t get_double,
 	   set_double_unit_t set_double_unit,
-	   get_double_unit_t get_double_unit);
+	   get_double_unit_t get_double_unit,
+	   std::string doc);
 
   /// Constructor for #type==#bool_t
   Property(std::string name,
 	   std::string name_false,
 	   set_bool_t set_bool,
-	   get_bool_t get_bool);
+	   get_bool_t get_bool,
+	   std::string doc);
 
   /// Constructor for #type==#string_t or #filename_t
   /**
@@ -594,50 +825,221 @@ class Gyoto::Property
   Property(std::string name,
 	   set_string_t set_string,
 	   get_string_t get_string,
-	   bool is_filename);
+	   bool is_filename,
+	   std::string doc);
 
   /// Constructor for #type==#vector_double_t, without unit support
   Property(std::string name,
 	   set_vector_double_t set_vdouble,
-	   get_vector_double_t get_vdouble);
+	   get_vector_double_t get_vdouble,
+	   std::string doc);
 
   /// Constructor for #type==#vector_double_t, with unit support
   Property(std::string name,
 	   set_vector_double_t set_vdouble,
 	   get_vector_double_t get_vdouble,
 	   set_vector_double_unit_t set_vdouble_unit,
-	   get_vector_double_unit_t get_vdouble_unit);
+	   get_vector_double_unit_t get_vdouble_unit,
+	   std::string doc);
 
   /// Constructor for #type==#vector_unsigned_long_t
   Property(std::string name,
 	   set_vector_unsigned_long_t set_vulong,
-	   get_vector_unsigned_long_t get_vulong);
+	   get_vector_unsigned_long_t get_vulong,
+	   std::string doc);
 
   /// Constructor for #type==#metric_t
   Property(std::string name,
 	   set_metric_t set_metric,
-	   get_metric_t get_metric);
+	   get_metric_t get_metric,
+	   std::string doc);
 
   /// Constructor for #type==#screen_t
   Property(std::string name,
 	   set_screen_t set_screen,
-	   get_screen_t get_screen);
+	   get_screen_t get_screen,
+	   std::string doc);
 
   /// Constructor for #type==#astrobj_t
   Property(std::string name,
 	   set_astrobj_t set_astrobj,
-	   get_astrobj_t get_astrobj);
+	   get_astrobj_t get_astrobj,
+	   std::string doc);
 
   /// Constructor for #type==#spectrum_t
   Property(std::string name,
 	   set_spectrum_t set_spectrum,
-	   get_spectrum_t get_spectrum);
+	   get_spectrum_t get_spectrum,
+	   std::string doc);
 
   /// Constructor for #type==#spectrometer_t
   Property(std::string name,
 	   set_spectrometer_t set_spectrometer,
-	   get_spectrometer_t get_spectrometer);
+	   get_spectrometer_t get_spectrometer,
+	   std::string doc);
 
 };
+
+/// \cond INTERNAL
+#define GYOTO_PROPERTY_CHOOSER(x, A, B, C, D, E, F, FUNC, ...) FUNC
+
+#define GYOTO_PROPERTY_START_DOC(class, doc)	\
+  Property const class::properties[] = {	\
+    Property (#class, doc),
+
+#define GYOTO_PROPERTY_START_NODOC(class)		\
+  GYOTO_PROPERTY_START_DOC(class, "")
+
+
+#define GYOTO_PROPERTY_BOOL_DOC(class, name, namef, fname, doc)		\
+  Gyoto::Property							\
+  (#name,								\
+   #namef,								\
+   (Gyoto::Property::set_bool_t)&class :: fname,			\
+   (Gyoto::Property::get_bool_t)&class :: fname,			\
+   doc),
+#define GYOTO_PROPERTY_BOOL_NODOC(class, name, namef, fname)	\
+  GYOTO_PROPERTY_BOOL_DOC(class, name, namef, fname, "")
+
+#define GYOTO_PROPERTY_DOUBLE_DOC(class, name, fname, doc)		\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_double_t)&class::fname,		\
+   (Gyoto::Property::get_double_t)&class::fname,		\
+   doc),
+#define GYOTO_PROPERTY_DOUBLE_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_DOUBLE_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_LONG_DOC(class, name, fname, doc)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_long_t)&class::fname,			\
+   (Gyoto::Property::get_long_t)&class::fname),
+#define GYOTO_PROPERTY_LONG_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_LONG_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_UNSIGNED_LONG_DOC(class, name, fname, doc)	\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_unsigned_long_t)&class::fname,			\
+   (Gyoto::Property::get_unsigned_long_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_UNSIGNED_LONG_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_UNSIGNED_LONG_DOC(class, name, fname, "")
+
+#if defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+#define GYOTO_PROPERTY_SIZE_T_DOC(class, name, fname, doc)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_size_t_t)&class::fname,		\
+   (Gyoto::Property::get_size_t_t)&class::fname,		\
+   doc),
+#define GYOTO_PROPERTY_SIZE_T_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_SIZE_T_DOC(class, name, fname, "")
+#endif
+
+#define GYOTO_PROPERTY_DOUBLE_UNIT_DOC(class, name, fname, doc)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_double_t)&class::fname,		\
+   (Gyoto::Property::get_double_t)&class::fname,		\
+   (Gyoto::Property::set_double_unit_t)&class::fname,		\
+   (Gyoto::Property::get_double_unit_t)&class::fname,		\
+   doc),
+#define GYOTO_PROPERTY_DOUBLE_UNIT_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_DOUBLE_UNIT_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_FILENAME_DOC(class, name, fname, doc)	\
+  Gyoto::Property						\
+  (#name,							\
+   (Gyoto::Property::set_string_t)&class::fname,		\
+   (Gyoto::Property::get_string_t)&class::fname,		\
+   true, doc),
+#define GYOTO_PROPERTY_FILENAME_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_FILENAME_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_STRING_DOC(class, name, fname, doc)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_string_t)&class::fname,			\
+   (Gyoto::Property::get_string_t)&class::fname,			\
+   false, doc),
+#define GYOTO_PROPERTY_STRING_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_STRING_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_DOC(class, name, fname, doc)	\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_double_t)&class::fname,			\
+   (Gyoto::Property::get_vector_double_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_VECTOR_DOUBLE_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT_DOC(class, name, fname, doc)	\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_double_t)&class::fname,			\
+   (Gyoto::Property::get_vector_double_t)&class::fname,			\
+   (Gyoto::Property::set_vector_double_unit_t)&class::fname,		\
+   (Gyoto::Property::get_vector_double_unit_t)&class::fname,		\
+   doc),
+#define GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG_DOC(class, name, fname, doc) \
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_vector_unsigned_long_t)&class::fname,		\
+   (Gyoto::Property::get_vector_unsigned_long_t)&class::fname,		\
+   doc),
+#define GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_VECTOR_UNSIGNED_LONG_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_METRIC_DOC(class, name, fname, doc)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_metric_t)&class::fname,			\
+   (Gyoto::Property::get_metric_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_METRIC_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_METRIC_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_SCREEN_DOC(class, name, fname, doc)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_screen_t)&class::fname,			\
+   (Gyoto::Property::get_screen_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_SCREEN_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_SCREEN_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_ASTROBJ_DOC(class, name, fname, doc)		\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_astrobj_t)&class::fname,			\
+   (Gyoto::Property::get_astrobj_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_ASTROBJ_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_ASTROBJ_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_SPECTRUM_DOC(class, name, fname, doc)		\
+  Gyoto::Property							\
+    (#name,								\
+     (Gyoto::Property::set_spectrum_t)&class::fname,			\
+     (Gyoto::Property::get_spectrum_t)&class::fname,			\
+     doc),
+#define GYOTO_PROPERTY_SPECTRUM_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_SPECTRUM_DOC(class, name, fname, "")
+
+#define GYOTO_PROPERTY_SPECTROMETER_DOC(class, name, fname, doc)	\
+  Gyoto::Property							\
+  (#name,								\
+   (Gyoto::Property::set_spectrometer_t)&class::fname,			\
+   (Gyoto::Property::get_spectrometer_t)&class::fname,			\
+   doc),
+#define GYOTO_PROPERTY_SPECTROMETER_NODOC(class, name, fname)	\
+  GYOTO_PROPERTY_SPECTROMETER_DOC(class, name, fname, "")
+// \endcond INTERNAL
 
 #endif

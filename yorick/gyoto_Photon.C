@@ -34,8 +34,8 @@ using namespace std;
     "spectro", "tmin",	"delta", "adaptive", "maxiter", \
     "integrator", "deltamin", "deltamax", "deltamaxoverr", "abstol", "reltol", \
     "setparameter", "reset", "xfill", "save_txyz", "xmlwrite", "is_hit", \
-    "get_txyz", "get_coord", "get_cartesian", "clone"
-#define YGYOTO_PHOTON_GENERIC_KW_N 25
+    "get_txyz", "get_coord", "get_cartesian", "clone", "help"
+#define YGYOTO_PHOTON_GENERIC_KW_N 26
 
 void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 				 int *kiargs, int *piargs, int *rvset, int *paUsed) {
@@ -259,6 +259,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   }
 
   YGYOTO_WORKER_CLONE(Photon);
+  YGYOTO_WORKER_HELP;
 
   if (debug()) cerr << endl;
 }

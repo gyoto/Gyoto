@@ -140,9 +140,9 @@ void ygyoto_Spectrometer_generic_eval
     "nullifycoord", "kind", "coordkind", "setparameter", "scalarprod",	\
     "mass", "deltamin", "deltamax", "keplerian",					\
     "unitlength", "circularvelocity",					\
-    "christoffel", "xmlwrite", "clone"
+    "christoffel", "xmlwrite", "clone", "help"
 // Number of those keywords
-#define YGYOTO_METRIC_GENERIC_KW_N 15
+#define YGYOTO_METRIC_GENERIC_KW_N 16
 
 // Keywords processed by ygyoto_Astrobj_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW "metric", "rmax", "opticallythin",	\
@@ -161,15 +161,17 @@ void ygyoto_Spectrometer_generic_eval
 #define YGYOTO_ASTROBJ_BASE_MAX_KW_N YGYOTO_THINDISK_GENERIC_KW_N
 
 // Keywords processed by ygyoto_Spectrum_generic_eval
-#define YGYOTO_SPECTRUM_GENERIC_KW "xmlwrite", "kind", "setparameter", "clone", "integrate"
+#define YGYOTO_SPECTRUM_GENERIC_KW				\
+  "xmlwrite", "kind", "setparameter", "clone", "help", "integrate"
 // number of those keywords
-#define YGYOTO_SPECTRUM_GENERIC_KW_N 5
+#define YGYOTO_SPECTRUM_GENERIC_KW_N 6
 
 // Keywords processed by ygyoto_Spectrometer_generic_eval
-#define YGYOTO_SPECTROMETER_GENERIC_KW "kind", "xmlwrite", "clone", "nsamples",\
+#define YGYOTO_SPECTROMETER_GENERIC_KW			\
+  "kind", "xmlwrite", "clone", "help", "nsamples",		\
     "setparameter", "channels", "midpoints", "widths"
 // number of those keywords
-#define YGYOTO_SPECTROMETER_GENERIC_KW_N 8
+#define YGYOTO_SPECTROMETER_GENERIC_KW_N 9
 
 /*
 

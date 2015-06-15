@@ -55,20 +55,31 @@ namespace Gyoto {
  * Worldline.
  */
 #define GYOTO_WORLDLINE_PROPERTIES(c)					\
-  Gyoto::Property("Gyoto::Worldline"),					\
-  GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary)	\
-  GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol)				\
-  GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol)				\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR)		\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax)				\
-  GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin)				\
-  GYOTO_PROPERTY_STRING(c, Integrator, _integrator)			\
-  GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter)				\
-  GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive)		\
-  GYOTO_PROPERTY_DOUBLE_UNIT(c, MinimumTime, _tMin)			\
-  GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta)				\
-  GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord)		\
-  GYOTO_PROPERTY_METRIC(c, Metric, _metric)
+  Gyoto::Property("Gyoto::Worldline", "Time-like or null geodesic."),	\
+    GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary,	\
+			"Whether to stop Photon integration at 180° deflection.") \
+    GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol,				\
+			  "Relative tolerance for the adaptive step integrators.") \
+    GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol,				\
+			  "Absolute tolerance for the adaptive step integrators.") \
+    GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR,		\
+			  "Maximum value of step/distance from center of mass.") \
+    GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, "Maximum step.")	\
+    GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, "Minimum step.")	\
+    GYOTO_PROPERTY_STRING(c, Integrator, _integrator,			\
+			  "Name of integrator.")			\
+    GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter,				\
+			  "Maximum number of integration steps.")	\
+    GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive,		\
+			"Whether to use an adaptive step.")		\
+    GYOTO_PROPERTY_DOUBLE_UNIT(c, MinimumTime, _tMin,			\
+			       "Do not integrate earlier than this date.") \
+    GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta,			\
+			       "Initial integration step.")		\
+    GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord,		\
+				 "Initial 8-coordinate.")		\
+    GYOTO_PROPERTY_METRIC(c, Metric, _metric,				\
+			  "The geometry of space-time at this end of the Universe.")
 
 /// Define the wrapper accessors used in GYOTO_WORLDLINE_PROPERTIES(class)
 /**

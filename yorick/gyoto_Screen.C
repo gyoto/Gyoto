@@ -46,10 +46,10 @@ extern "C" {
       "fourvel", "screen1", "screen2", "screen3",
       "spectro",
       "skycoord",  "raycoord",
-      "xmlwrite", "clone",
+      "xmlwrite", "clone", "help",
       0
     };
-    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 27)
+    YGYOTO_WORKER_INIT1(Screen, Screen, knames, 28)
 
     YGYOTO_WORKER_SET_UNIT;
     YGYOTO_WORKER_GETSET_OBJECT2(metric,Metric);
@@ -161,6 +161,7 @@ extern "C" {
       
     YGYOTO_WORKER_XMLWRITE;
     YGYOTO_WORKER_CLONE(Screen);
+    YGYOTO_WORKER_HELP;
 
   }
 }

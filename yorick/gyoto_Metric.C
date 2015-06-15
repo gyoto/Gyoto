@@ -234,6 +234,7 @@ void ygyoto_Metric_generic_eval(SmartPointer<Metric::Generic>*OBJ,
 
   YGYOTO_WORKER_XMLWRITE;
   YGYOTO_WORKER_CLONE(Metric);
+  YGYOTO_WORKER_HELP;
 
   if (*rvset || *paUsed || piargs[0]<0 || !yarg_number(piargs[0])) return;
   //else     /* GET G MU NU */

@@ -38,7 +38,7 @@ using namespace Gyoto ;
 // terminate the property list of our descendents in a
 // forward-compatible manner, i.e., we may well add very generic
 // Properties in the future.
-GYOTO_PROPERTY_START(Object)
+GYOTO_PROPERTY_START(Gyoto::Object, "Object with properties.")
 GYOTO_PROPERTY_END(Object, NULL)
 
 
@@ -499,8 +499,13 @@ void Object::help() const {
   Property const * prop = getProperties();
   while (prop) {
     if (*prop) {
-      if (prop->type==Property::empty_t) cout << prop->name << endl;
-      else cout << "\t"<< describeProperty(*prop) << endl;
+      if (prop->type==Property::empty_t) {
+	cout << prop->name << endl;
+	if (prop->doc != "") cout << "  " << prop->doc << endl;
+      } else {
+	cout << "\t"<< describeProperty(*prop) << endl;
+	if (prop->doc != "") cout << "\t  " << prop->doc << endl;
+      }
       ++prop;
     } else prop=prop->parent;
   }
