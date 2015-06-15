@@ -40,8 +40,10 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(Standard)
-GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Standard,
+  "Gyoto::Astrobj whose shape is defined by a scalar function.")
+GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue,
+  "Value of the function below which to look more carefully.")
 GYOTO_PROPERTY_END(Standard, Generic::properties)
 
 Standard::Standard(string kin) :

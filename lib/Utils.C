@@ -23,6 +23,8 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "GyotoScenery.h"
+
 using namespace Gyoto;
 using namespace std;
 
@@ -101,4 +103,37 @@ double Gyoto::atof(const char * str)
   GYOTO_DEBUG << "==" << retval << endl;
 
   return retval;
+}
+
+void Gyoto::help(std::string class_name) {
+  if (class_name.substr(0, 7)=="Gyoto::")
+    class_name=class_name.substr(7);
+  if (class_name=="Scenery") {Scenery().help(); return;}
+  if (class_name=="Screen") {Screen().help(); return;}
+  if (class_name=="Photon") {Photon().help(); return;}
+  size_t pos=class_name.find("::");
+  if (pos==0 || pos+2==class_name.size())
+    throwError("Not a valid class name: "+class_name);
+  if (pos > 0 && pos != string::npos) {
+    string nspace = class_name.substr(0, pos);
+    class_name = class_name.substr(pos+2);
+    if (nspace=="Astrobj") {
+      (*Astrobj::getSubcontractor(class_name))(NULL)->help();
+      return;
+    }
+    if (nspace=="Metric") {
+      (*Metric::getSubcontractor(class_name))(NULL)->help();
+      return;
+    }
+    if (nspace=="Spectrum") {
+      (*Spectrum::getSubcontractor(class_name))(NULL)->help();
+      return;
+    }
+    if (nspace=="Spectrometer") {
+      (*Spectrometer::getSubcontractor(class_name))(NULL)->help();
+      return;
+    }
+    throwError("Unrecognized namespace: "+nspace);
+  }
+  throwError("Help string not implemented (yet) for "+class_name);
 }

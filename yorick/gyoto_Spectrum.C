@@ -111,6 +111,7 @@ void ygyoto_Spectrum_generic_eval(Gyoto::SmartPointer<Generic>*OBJ,
 
   YGYOTO_WORKER_SETPARAMETER;
   YGYOTO_WORKER_CLONE(Spectrum);
+  YGYOTO_WORKER_HELP;
 
   /* INTEGRATE */
   if ((iarg=kiargs[++k])>=0) {

@@ -52,13 +52,20 @@ using namespace std;
 /// Properties
 
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Scenery)
-GYOTO_PROPERTY_METRIC(Scenery, Metric, metric)
-GYOTO_PROPERTY_SCREEN(Scenery, Screen, screen)
-GYOTO_PROPERTY_ASTROBJ(Scenery, Astrobj, astrobj)
-GYOTO_PROPERTY_SIZE_T(Scenery, NThreads, nThreads)
-GYOTO_PROPERTY_SIZE_T(Scenery, NProcesses, nProcesses)
-GYOTO_PROPERTY_STRING(Scenery, Quantities, requestedQuantitiesString)
+GYOTO_PROPERTY_START(Gyoto::Scenery,
+ "Container with a Gyoto::Metric, a Gyoto::Astrobj and a Gyoto::Screen.")
+GYOTO_PROPERTY_METRIC(Scenery, Metric, metric,
+		      "The geometry of space-time at this end of the Universe.")
+GYOTO_PROPERTY_SCREEN(Scenery, Screen, screen,
+		      "Where light rays are detected.")
+GYOTO_PROPERTY_ASTROBJ(Scenery, Astrobj, astrobj,
+		       "Whatever emits (or absorbs) light.")
+GYOTO_PROPERTY_SIZE_T(Scenery, NThreads, nThreads,
+		      "Number of threads to use (using POSIX threads).")
+GYOTO_PROPERTY_SIZE_T(Scenery, NProcesses, nProcesses,
+		      "Number of MPI worker processes to spawn.")
+GYOTO_PROPERTY_STRING(Scenery, Quantities, requestedQuantitiesString,
+		      "Physical quantities to evaluate for each light ray.")
 GYOTO_WORLDLINE_PROPERTY_END(Scenery, Object::properties)
 
 #ifdef GYOTO_USE_XERCES

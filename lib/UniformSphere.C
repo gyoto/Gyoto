@@ -38,18 +38,24 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(UniformSphere)
-GYOTO_PROPERTY_SPECTRUM(UniformSphere, Spectrum, spectrum)
-GYOTO_PROPERTY_SPECTRUM(UniformSphere,Opacity, opacity)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::UniformSphere,
+ "Coordinate sphere with uniform emission and absorption.")
+GYOTO_PROPERTY_SPECTRUM(UniformSphere, Spectrum, spectrum,
+ "Emission.")
+GYOTO_PROPERTY_SPECTRUM(UniformSphere,Opacity, opacity,
+ "Absorption.")
 GYOTO_PROPERTY_BOOL(UniformSphere,
 		    IsotropicEmittedIntensity, TrueEmittedIntensity,
-		    isotropic)
+		    isotropic,
+ "If true, then emission just returns 1.")
 GYOTO_PROPERTY_DOUBLE(UniformSphere,
-		      DeltaMaxOverDistance, deltaMaxOverDistance)
+		      DeltaMaxOverDistance, deltaMaxOverDistance,
+ "Maximum value of step/distance from centre of sphere for photons.")
 GYOTO_PROPERTY_DOUBLE(UniformSphere,
-		      DeltaMaxOverRadius, deltaMaxOverRadius)
+		      DeltaMaxOverRadius, deltaMaxOverRadius,
+ "Maximum value of step/radius of sphere for photons.")
 GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha)
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius)
+GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, "Sphere radius.")
 GYOTO_PROPERTY_END(UniformSphere, Standard::properties)
 
 

@@ -42,12 +42,18 @@ using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-GYOTO_PROPERTY_START(Generic)
-GYOTO_PROPERTY_METRIC(Generic, Metric, metric)
-GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax)
-GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift)
-GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ)
-GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Generic,
+   "Whatever emits or absorbs light.")
+GYOTO_PROPERTY_METRIC(Generic, Metric, metric,
+   "The geometry of space-time at this end of the Universe.")
+GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax,
+   "Maximum distance from the centre of mass.")
+GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift,
+    "Whether to take redshift into account.")
+GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ,
+    "Whether to use new treatement for radiative transfer (in progress).")
+GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
+    "Whether the object should be considered optically thin or thick.")
 GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :

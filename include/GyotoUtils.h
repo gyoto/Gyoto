@@ -94,6 +94,11 @@ namespace Gyoto {
    */
   double atof(const char * str);
 
+  /// Print help on class
+  /**
+   * \param[in] class_name e.g. "Gyoto::Screen", "Gyoto::Astrobj::Torus".
+   */
+  void help(std::string class_name);
 }
 
 #endif

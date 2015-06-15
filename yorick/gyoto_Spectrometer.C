@@ -113,6 +113,9 @@ void ygyoto_Spectrometer_generic_eval(SmartPointer<Spectrometer::Generic>*OBJ,
   /* CLONE */
   YGYOTO_WORKER_CLONE(Spectrometer);
 
+  /* HELP */
+  YGYOTO_WORKER_HELP;
+
   // get members //
   /* NSAMPLES */
   if ((iarg=kiargs[++k])>=0) {

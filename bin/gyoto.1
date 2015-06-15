@@ -7,7 +7,7 @@ Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
 gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
       [\fB\-\-no\-sigfpe\fR]
-      [\fB\-\-help\fR] [\fB\-\-list\fR]
+      [\fB\-\-help\fR[=\fIclass\fR]] [\fB\-\-list\fR]
       [\fB\-\-ispec\fR=\fIi0\fR:\fIi1\fR:\fIdi\fR] [\fB\-\-jspec\fR=\fIj0\fR:\fIj1\fR:\fIdj\fR]
       ([\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR])
       ([\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR])
@@ -58,12 +58,15 @@ command line, except if they start with a minus character (\-) in
 which case they must appear last, after the option \fB\-\-\fR.
 
 .SS Getting help
-.IP \fB\-\-help\fR
+.IP \fB\-\-help\fR[=\fIclass\fR]
 .PD 0
-.IP \fB\-h\fR
-Print help summary. Although not as verbose as this manual page, the
-output of \fBgyoto \fI\-h\fR may be more complete and up to date. Then exit the
-program, unless \fB\-\-list\fR below has only been specified.
+.IP \fB\-h\fR[\fIclass\fR]
+Without argument \fIclass\fR, print help summary. Although not as
+verbose as this manual page, the output of \fBgyoto \fI\-h\fR may be
+more complete and up to date. If \fIclass\fR is specified, list and
+document the properties of \fIclass\fR (e.g. "Screen",
+"Astrobj::Star"). Then exit the program, unless \fB\-\-list\fR below
+has only been specified.
 .PD
 
 .PD 0
