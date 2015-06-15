@@ -162,6 +162,7 @@ void ygyoto_Astrobj_generic_eval(Gyoto::SmartPointer<Gyoto::Astrobj::Generic>*OB
   /* SETPARAMETER */
   YGYOTO_WORKER_SETPARAMETER;
   YGYOTO_WORKER_CLONE(Astrobj);
+  YGYOTO_WORKER_HELP;
 
   if (debug()) cerr << "DEBUG: out of Astrobj_generic_eval"<< endl;
 

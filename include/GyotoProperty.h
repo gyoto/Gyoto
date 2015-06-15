@@ -75,8 +75,9 @@ namespace Gyoto {
 /**
  * \param class Class for which we are defining a Property list
  */
-#define GYOTO_PROPERTY_START(class) \
-  Property const class::properties[] = {
+#define GYOTO_PROPERTY_START(class)		\
+  Property const class::properties[] = {	\
+    Property (#class),
 
 /// Define a new Property of type Bool
 /*
@@ -544,6 +545,9 @@ class Gyoto::Property
   
   /// Constructor for #type==#empty_t
   Property(Property const * const ancestor);
+
+  /// Constructor for class name pseudo-property
+  Property(std::string classname);
 
   /// Constructor for #type==#long_t
   Property(std::string name,

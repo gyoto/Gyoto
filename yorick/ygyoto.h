@@ -146,9 +146,9 @@ void ygyoto_Spectrometer_generic_eval
 
 // Keywords processed by ygyoto_Astrobj_generic_eval
 #define YGYOTO_ASTROBJ_GENERIC_KW "metric", "rmax", "opticallythin",	\
-    "xmlwrite", "kind", "setparameter", "clone"
+    "xmlwrite", "kind", "setparameter", "clone", "help"
 // number of those keywords
-#define YGYOTO_ASTROBJ_GENERIC_KW_N 7
+#define YGYOTO_ASTROBJ_GENERIC_KW_N 8
 
 // Keywords processed by ygyoto_ThinDisk_generic_eval
 #define YGYOTO_THINDISK_GENERIC_KW \
@@ -478,6 +478,14 @@ void ygyoto_Spectrometer_generic_eval
     GYOTO_DEBUG << #METHOD << std::endl ;		\
     iarg+=*rvset;					\
     (*OBJ)-> METHOD ;			\
+  }
+
+#define YGYOTO_WORKER_HELP				\
+  if ((iarg=kiargs[++k])>=0) {				\
+    GYOTO_DEBUG << "help" << std::endl ;		\
+    iarg+=*rvset;					\
+    (*OBJ)-> help() ;					\
+    ypush_nil();					\
   }
 
 #define YGYOTO_WORKER_CALL_GENERIC(BASE) \

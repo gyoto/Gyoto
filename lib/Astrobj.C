@@ -42,7 +42,7 @@ using namespace Gyoto::Astrobj;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
-GYOTO_PROPERTY_START(Generic)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Generic)
 GYOTO_PROPERTY_METRIC(Generic, Metric, metric)
 GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax)
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift)

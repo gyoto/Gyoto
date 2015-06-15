@@ -55,6 +55,7 @@ namespace Gyoto {
  * Worldline.
  */
 #define GYOTO_WORLDLINE_PROPERTIES(c)					\
+  Gyoto::Property("Gyoto::Worldline"),					\
   GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary)	\
   GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol)				\
   GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol)				\

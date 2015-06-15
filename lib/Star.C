@@ -39,7 +39,7 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 /// Properties
-GYOTO_PROPERTY_START(Star)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::Star)
 // Star only need to implement the Worldline interface on top of the 
 // UniformSphere interface, which is trivially tone with this macro:
 GYOTO_WORLDLINE_PROPERTY_END(Star, UniformSphere::properties)

@@ -330,7 +330,8 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
-      fillProperty(fmp, *prop);
+      if (prop->type != Property::empty_t)
+	fillProperty(fmp, *prop);
       ++prop;
     } else prop=prop->parent;
   }
@@ -433,4 +434,74 @@ int Object::setParameter(string name, string content, string unit) {
   if (!prop) return 1;
   setParameter(*prop, name, content, unit);
   return 0;
+}
+
+std::string Object::describeProperty(Property const &p) const {
+  string out=p.name+": ";
+  switch (p.type) {
+  case Property::empty_t:
+    return "";
+  case Property::bool_t:
+    out = p.name + "/" + p.name_false + ": bool";
+    break;
+  case Property::long_t:
+    out += "long";
+    break;
+  case Property::unsigned_long_t:
+    out += "unsigned long";
+#if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
+    break;
+  case Property::size_t_t:
+    out += size_t
+#else
+    out += " (a.k.a. size_t)";
+#endif
+    break;
+  case Property::double_t:
+    out += "double";
+    if (p.setter_unit.set_double) out += " with unit";
+    break;
+  case Property::string_t:
+    out += "string";
+    break;
+  case Property::filename_t:
+    out += "filename";
+    break;
+  case Property::vector_double_t:
+    out += "vector<double>";
+    if (p.setter_unit.set_vdouble) out += " with unit";
+    break;
+  case Property::vector_unsigned_long_t:
+    out += "vector<unsigned> long";
+    break;
+  case Property::metric_t:
+    out += "Gyoto::Metric::Generic";
+    break;
+  case Property::astrobj_t:
+    out += "Gyoto::Astrobj::Generic";
+    break;
+  case Property::screen_t:
+    out += "Gyoto::Screen";
+    break;
+  case Property::spectrum_t:
+    out += "Gyoto::Spectrum";
+    break;
+  case Property::spectrometer_t:
+    out += "Gyoto::Spectrometer";
+    break;
+  default:
+    throwError("Property type unimplemented in Object::fillProperty()");
+  }
+  return out;
+}
+
+void Object::help() const {
+  Property const * prop = getProperties();
+  while (prop) {
+    if (*prop) {
+      if (prop->type==Property::empty_t) cout << prop->name << endl;
+      else cout << "\t"<< describeProperty(*prop) << endl;
+      ++prop;
+    } else prop=prop->parent;
+  }
 }

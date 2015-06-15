@@ -373,6 +373,8 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
 			    std::string const &content,
 			    std::string const &unit);
 
+   std::string describeProperty(Gyoto::Property const &p) const ;
+   void help() const ;
 };
 
 #endif

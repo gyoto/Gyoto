@@ -6,6 +6,9 @@ using namespace Gyoto ;
 Property::Property(Property const * const ancestors)
   : name(""), type(empty_t), parent(ancestors) {}
 
+Property::Property(std::string classname)
+  : name(classname), type(empty_t), parent(NULL) {}
+
 #define GYOTO_LOCAL(T)							\
   Property::Property(string n, set_##T##_t set, get_##T##_t get)	\
     : name(n), type(T##_t), parent(NULL) {				\
@@ -86,4 +89,4 @@ Property::Property(string n,
   getter.get_vulong=get;
 }
 
-Property::operator bool() const { return type != empty_t; }
+Property::operator bool() const { return type != empty_t || name != ""; }

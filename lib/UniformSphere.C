@@ -38,7 +38,7 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(UniformSphere)
+GYOTO_PROPERTY_START(Gyoto::Astrobj::UniformSphere)
 GYOTO_PROPERTY_SPECTRUM(UniformSphere, Spectrum, spectrum)
 GYOTO_PROPERTY_SPECTRUM(UniformSphere,Opacity, opacity)
 GYOTO_PROPERTY_BOOL(UniformSphere,
