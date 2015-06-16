@@ -18,7 +18,7 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-plugins\fR=\fIpluglist\fR]
       [\fB\-\-impact-coords\fR[=\fIfname.fits\fR]]
       [\fB\-\-unit\fR[=\fIunit\fR]]
-      [\fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR=\fIName\fR[=\fIvalue\fR]]
+      [\fB\-\-parameter\fR=\fIPath::Name\fR[=\fIvalue\fR]]
       [\fB\-\-xmlwrite\fR=\fIoutput.xml\fR]
       [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
 .SH DESCRIPTION
@@ -44,18 +44,18 @@ option.
 
 .SH OPTIONS
 The \fBgyoto\fR program accepts many options. Most have a long name
-(e.g. \fB\-\-astrobj\-parameter\fR) and a short name
-(e.g. \fB\-A\fR). When an option takes an argument, this argument must
-follow immediately the short option (e.g. \fB\-A\fIName\fR) and be
-separated from the long option by exactly the character "="
-(e.g. \fB\-\-astrobj\-parameter\fR=\fIName\fR). Long options can be
+(e.g. \fB\-\-parameter\fR) and a short name (e.g. \fB\-E\fR). When an
+option takes an argument, this argument must follow immediately the
+short option (e.g. \fB\-E\fIPath::Name\fR) and be separated from the
+long option by exactly the character "="
+(e.g. \fB\-\-parameter\fR=\fIPath::Name\fR). Long options can be
 abbreviated as long as the abbreviation is unambiguous
-(e.g. \fB\-\-astrobj=\fIName\fR or even \fB\-\-a=\fIName\fR). Most
-options can appear several times and are processed in the order they
-appear in the command line. The two positional parameters
-(\fIinput.xml\fR and \fIoutput.fits\fR) can appear anywhere in the
-command line, except if they start with a minus character (\-) in
-which case they must appear last, after the option \fB\-\-\fR.
+(e.g. \fB\-\-par=\fIPath::Name\fR). Most options can appear several
+times and are processed in the order they appear in the command
+line. The two positional parameters (\fIinput.xml\fR and
+\fIoutput.fits\fR) can appear anywhere in the command line, except if
+they start with a minus character (\-) in which case they must appear
+last, after the option \fB\-\-\fR.
 
 .SS Getting help
 .IP \fB\-\-help\fR
@@ -263,28 +263,37 @@ In this case, the impact coordinates are read from
 .PD 0
 .IP \fB\-u\fR[\fIunit\fR]
 .PD
-Specify unit to use for allowing instances of
-\fB\-\-(astrobj|metric|scenery|screen|spectrometer)-parameter\fR,
+Specify unit to use for allowing instances of \fB\-\-parameter\fR,
 untill next instance of \fB\-\-unit\fR.
-.IP \fB\-\-astrobj-parameter\fR=\fIName\fR[=\fIvalue\fR]
+.IP \fB\-\-parameter\fR=\fIPath::Name\fR[=\fIvalue\fR]
 .PD 0
-.IP \fB\-\-metric-parameter\fR=\fIName\fR[=\fIvalue\fR]
-.IP \fB\-\-scenery-parameter\fR=\fIName\fR[=\fIvalue\fR]
-.IP \fB\-\-screen-parameter\fR=\fIName\fR[=\fIvalue\fR]
-.IP \fB\-\-spectrometer-parameter\fR=\fIName\fR[=\fIvalue\fR]
-.IP \fB\-(A|M|E|R|O)\fIName\fR[=\fIvalue\fR]
+.IP \fB\-E\fIPath::Name\fR[=\fIvalue\fR]
 .PD
-Set arbitray parameter by name in the Astrobj, Metric, scEnery, scReen
-or spectrOmeter. For instance, assuming the Astrobj in \fIstar.xml\fR
-has a property named "Radius" that can be set in unit "km":
+Set arbitray parameter by name. Parameters can be set in the Astrobj,
+Metric etc. using the \fIPath\fR componenent. For instance,
+
+For instance, assuming the Astrobj in \fIstar.xml\fR
+has a property named "Radius" that can be set in unit "km", and a property named "Spectrum" which has a property named "Temperature", we can set the radius, temperature and the quantities to compute (a property in the Scenery itself) with:
 .RS 10
-.PD 0
-.IP
-\fBgyoto\fR \-ukm \-ARadius=3 star.xml star.fits
-.IP
-\fBgyoto\fR \-\-unit=km \-\-astrobj-parameter=Radius=3 star.xml star.fits
+\fBgyoto\fR \-EQuantities=Spectrum \\
+.br
+      \-ukm \-EAstrobj::Radius=3 \\
+.br
+      \-u \-EAstrobj::Spectrum::Temperature=1000 \\
+.br
+      star.xml star.fits
+
+\fBgyoto\fR \-\-parameter=Quantities=Spectrum \\
+.br
+      \-\-unit=km \-\-parameter=Astrobj::Radius=3 \\
+.br
+      \-\-unit="" \-\-param=Astrobj::Spectrum::Temperature=1000 \\
+.br
+      star.xml star.fits
+
 .RE
-.PD
+
+
 .IP \fB\-\-xmlwrite\fR=\fIoutput.xml\fR
 .PD 0
 .IP \fB\-X\fIoutput.xml\fR
