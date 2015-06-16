@@ -327,7 +327,11 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
    * }
    * \endcode
    *
-   * \param name XML name of the parameter (XML entity)
+   * \param name XML name of the parameter (XML entity). This may have
+   *        a path component, e.g. "Astrobj::Radius", in which case a
+   *        property named "Astrobj" will be sought in the current
+   *        object, and setParameter will be called recusrively on
+   *        this Astrobj with Radius as name.
    * \param content string representation of the value
    * \param unit string representation of the unit
    * \return 0 if this parameter is known, 1 if it is not.

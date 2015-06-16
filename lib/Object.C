@@ -423,7 +423,39 @@ void Object::setParameter(Property const &p, string const &name,
 
 int Object::setParameter(string name, string content, string unit) {
   Property const * prop = property(name);
-  if (!prop) return 1;
+  if (!prop) {
+    size_t pos=name.find("::");
+    if (pos != string::npos) {
+      string childname = name.substr(0,pos);
+      name=name.substr(pos+2);
+      prop=property(childname);
+      if (!prop) return 1;
+      Object * obj=NULL;
+      Value val=get(*prop);
+      switch (prop->type) {
+      case Property::screen_t:
+	obj = SmartPointer<Screen>(val);
+	break;
+      case Property::metric_t:
+	obj = SmartPointer<Metric::Generic>(val);
+	break;
+      case Property::astrobj_t:
+	obj = SmartPointer<Astrobj::Generic>(val);
+	break;
+      case Property::spectrum_t:
+	obj = SmartPointer<Spectrum::Generic>(val);
+	break;
+      case Property::spectrometer_t:
+	obj = SmartPointer<Spectrometer::Generic>(val);
+	break;
+      default:
+	throwError(childname+" is not an object");
+      }
+      if (obj) return obj -> setParameter(name, content, unit);
+      throwError(childname+" not set yet");
+    }
+    return 1;
+  }
   setParameter(*prop, name, content, unit);
   return 0;
 }
