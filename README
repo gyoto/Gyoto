@@ -43,8 +43,7 @@ BSD style license. File python/numpy.i is Copyright (c) 2005-2015,
 NumPy Developers under BSD 3-clause license. File bin/optionparser.h
 is Copyright (C) 2012 Matthias S. Benkmann. See each file for details.
 
-Refer to the file INSTALL for building and installing Gyoto.
-Specific instructions for Linux/Ubuntu are in the file INSTALL.ubuntu. 
+Refer to the file INSTALL.Gyoto for building and installing Gyoto.
 
 Several sample files are provided in doc/examples. You can ray-trace
 those sceneries with:
