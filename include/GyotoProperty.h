@@ -906,7 +906,8 @@ class Gyoto::Property
   Gyoto::Property						\
   (#name,							\
    (Gyoto::Property::set_long_t)&class::fname,			\
-   (Gyoto::Property::get_long_t)&class::fname),
+   (Gyoto::Property::get_long_t)&class::fname,			\
+   doc),
 #define GYOTO_PROPERTY_LONG_NODOC(class, name, fname)	\
   GYOTO_PROPERTY_LONG_DOC(class, name, fname, "")
 

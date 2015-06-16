@@ -24,6 +24,11 @@
 #include <cstdlib>
 
 #include "GyotoScenery.h"
+#include "GyotoSpectrum.h"
+#include "GyotoMetric.h"
+#include "GyotoAstrobj.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
 
 using namespace Gyoto;
 using namespace std;
