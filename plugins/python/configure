@@ -637,6 +637,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 mySUBDIRS
+pluginname
 PYTHON_LIBS
 PYTHON_LDFLAGS
 PYTHON_CFLAGS
@@ -16641,6 +16642,8 @@ fi
 $as_echo "$pc_cv_python_libs" >&6; }
 PYTHON_LIBS=$pc_cv_python_libs
 
+
+pluginname=`basename $PYTHON`
 
 
 mySUBDIRS="lib"

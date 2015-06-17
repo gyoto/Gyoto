@@ -123,9 +123,10 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(soverdir)" \
 	"$(DESTDIR)$(library_includedir)"
 LTLIBRARIES = $(sover_LTLIBRARIES)
-libgyoto_python_la_LIBADD =
-am_libgyoto_python_la_OBJECTS = PythonPlug.lo Spectrum.lo
-libgyoto_python_la_OBJECTS = $(am_libgyoto_python_la_OBJECTS)
+libgyoto_@pluginname@_la_LIBADD =
+am_libgyoto_@pluginname@_la_OBJECTS = PythonPlug.lo Spectrum.lo
+libgyoto_@pluginname@_la_OBJECTS =  \
+	$(am_libgyoto_@pluginname@_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -164,8 +165,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libgyoto_python_la_SOURCES)
-DIST_SOURCES = $(libgyoto_python_la_SOURCES)
+SOURCES = $(libgyoto_@pluginname@_la_SOURCES)
+DIST_SOURCES = $(libgyoto_@pluginname@_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -320,6 +321,7 @@ mySUBDIRS = @mySUBDIRS@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 plugin_sfx = @plugin_sfx@
+pluginname = @pluginname@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -346,8 +348,8 @@ AM_LDFLAGS = $(Gyoto_LDFLAGS) -module -export-dynamic \
 AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \
 	$(PYTHON_CFLAGS)
 
-sover_LTLIBRARIES = libgyoto-python.la
-libgyoto_python_la_SOURCES = PythonPlug.C Spectrum.C
+sover_LTLIBRARIES = libgyoto-@pluginname@.la
+libgyoto_@pluginname@_la_SOURCES = PythonPlug.C Spectrum.C
 
 # HEADERS: where they are, where to install them
 library_includedir = $(GYOTO_PREFIX)/include/Gyoto
@@ -422,8 +424,8 @@ clean-soverLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libgyoto-python.la: $(libgyoto_python_la_OBJECTS) $(libgyoto_python_la_DEPENDENCIES) $(EXTRA_libgyoto_python_la_DEPENDENCIES) 
-	$(AM_V_CXXLD)$(CXXLINK) -rpath $(soverdir) $(libgyoto_python_la_OBJECTS) $(libgyoto_python_la_LIBADD) $(LIBS)
+libgyoto-@pluginname@.la: $(libgyoto_@pluginname@_la_OBJECTS) $(libgyoto_@pluginname@_la_DEPENDENCIES) $(EXTRA_libgyoto_@pluginname@_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK) -rpath $(soverdir) $(libgyoto_@pluginname@_la_OBJECTS) $(libgyoto_@pluginname@_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

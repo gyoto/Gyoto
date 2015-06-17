@@ -72,6 +72,7 @@ PC_PYTHON_CHECK_CFLAGS
 PC_PYTHON_CHECK_LDFLAGS
 PC_PYTHON_CHECK_LIBS
 
+AC_SUBST([pluginname], [`basename $PYTHON`])
 
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],

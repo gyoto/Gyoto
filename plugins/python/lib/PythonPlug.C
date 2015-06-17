@@ -24,7 +24,7 @@ using namespace Gyoto;
 
 static PyThreadState* mainPyThread=NULL;
 
-extern "C" void __GyotopythonInit() {
+extern "C" void __GyotoPluginInit() {
   Spectrum::Register("Python",
 		     &(Spectrum::Subcontractor<Spectrum::Python>));
   Py_InitializeEx(0);
