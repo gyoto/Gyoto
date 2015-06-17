@@ -7,11 +7,14 @@ using namespace Gyoto;
 using namespace Gyoto::Spectrum;
 using namespace std;
 
-GYOTO_PROPERTY_START(Gyoto::Spectrum::Python)
-GYOTO_PROPERTY_STRING(Python, Module, module)
-GYOTO_PROPERTY_STRING(Python, Class, klass)
+GYOTO_PROPERTY_START(Gyoto::Spectrum::Python,
+      "Python-based Spectrum class")
+GYOTO_PROPERTY_STRING(Python, Module, module,
+      "Python module containing the Spectrum implementation.")
+GYOTO_PROPERTY_STRING(Python, Class, klass,
+      "Python class (in Module) implementing the Spectrum.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Spectrum::Python, Parameters, parameters,
-			     "List of parameters")
+      "Parameters for the class instance.")
 GYOTO_PROPERTY_END(Gyoto::Spectrum::Python,
 		   Gyoto::Spectrum::Generic::properties)
 
