@@ -21,19 +21,21 @@ GYOTO_PROPERTY_END(Gyoto::Spectrum::Python,
 Spectrum::Python::Python()
 : Generic("Python"),
   module_(""), class_(""),
-  pModule_(NULL), pClass_(NULL), pInstance_(NULL), pIntegrate_(NULL),
+  pModule_(NULL), pClass_(NULL), pInstance_(NULL), pCall_(NULL), pIntegrate_(NULL),
   parameters_()
 {}
 
 Python::Python(const Python&o)
   : Generic(o), module_(o.module_), class_(o.class_),
-    pModule_(o.pModule_), pClass_(o.pClass_), pInstance_(o.pInstance_), pIntegrate_(o.pIntegrate_),
+    pModule_(o.pModule_), pClass_(o.pClass_), pInstance_(o.pInstance_),
+    pCall_(o.pCall_), pIntegrate_(o.pIntegrate_),
     parameters_(o.parameters_)
 {
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XINCREF(pModule_);
   Py_XINCREF(pClass_);
   Py_XINCREF(pInstance_);
+  Py_XINCREF(pCall_);
   Py_XINCREF(pIntegrate_);
   PyGILState_Release(gstate);
 }
@@ -41,6 +43,7 @@ Python::Python(const Python&o)
 Spectrum::Python::~Python(){
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XDECREF(pIntegrate_);
+  Py_XDECREF(pCall_);
   Py_XDECREF(pInstance_);
   Py_XDECREF(pClass_);
   Py_XDECREF(pModule_);
@@ -83,6 +86,7 @@ void Python::klass(const std::string &f) {
   if (!pModule_) return;
   gstate = PyGILState_Ensure();
   Py_XDECREF(pIntegrate_); pIntegrate_=NULL;
+  Py_XDECREF(pCall_); pCall_=NULL;
   Py_XDECREF(pInstance_); pInstance_=NULL;
   Py_XDECREF(pClass_); pClass_=NULL;
   pClass_ = PyObject_GetAttrString(pModule_, class_.c_str());
@@ -109,6 +113,17 @@ void Python::klass(const std::string &f) {
     PyErr_Print();
     PyGILState_Release(gstate);
     throwError("Error instanciating python class");
+  }
+
+  pCall_=PyObject_GetAttrString(pInstance_, "__call__");
+  if (PyErr_Occurred() || !pCall_) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("This class does not seem to implement __call__");
+  }
+
+  if (!PyCallable_Check(pCall_)) {
+    throwError("Member \"__call__\" present but not callable\n");
   }
 
   PyObject * pName = PyUnicode_FromString("integrate");
@@ -199,19 +214,36 @@ void Python::parameters(const std::vector<double> &p){
 }
 
 double Spectrum::Python::operator()(double nu) const {
-  if (!pInstance_) throwError("Python class not loaded yet");
+  if (!pCall_) throwError("Python class not loaded yet");
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
-  PyObject * pValue =
-    PyObject_CallMethod(pInstance_, "__call__", "(d)", nu);
-  if (!pValue) {
+  PyObject * pArgs = Py_BuildValue("(d)", nu);
+  if (PyErr_Occurred() || !pArgs) {
     PyErr_Print();
+    Py_XDECREF(pArgs);
     PyGILState_Release(gstate);
-    throwError("Python class call failed");
+    throwError("Failed building argument list");
   }
+
+  PyObject * pValue = PyObject_CallObject(pCall_, pArgs);
+  Py_DECREF(pArgs);
+  if (PyErr_Occurred() || !pValue) {
+    PyErr_Print();
+    Py_XDECREF(pValue);
+    PyGILState_Release(gstate);
+    throwError("Failed calling Python method __call__");
+  }
+
   double res = PyFloat_AsDouble(pValue);
   Py_DECREF(pValue);
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("Error interpreting result as double");
+  }
+
   PyGILState_Release(gstate);
+
   return res;
 }
 

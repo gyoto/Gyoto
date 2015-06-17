@@ -58,6 +58,7 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
   PyObject * pModule_;
   PyObject * pClass_;
   PyObject * pInstance_;
+  PyObject * pCall_;
   PyObject * pIntegrate_;
   std::vector<double> parameters_;
 
