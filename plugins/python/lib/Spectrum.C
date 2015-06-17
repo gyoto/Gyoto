@@ -22,14 +22,14 @@ Spectrum::Python::Python()
 : Generic("Python"),
   module_(""), class_(""),
   pModule_(NULL), pClass_(NULL), pInstance_(NULL), pCall_(NULL), pIntegrate_(NULL),
-  parameters_()
+  parameters_(), pCall_overloaded_(false)
 {}
 
 Python::Python(const Python&o)
   : Generic(o), module_(o.module_), class_(o.class_),
     pModule_(o.pModule_), pClass_(o.pClass_), pInstance_(o.pInstance_),
     pCall_(o.pCall_), pIntegrate_(o.pIntegrate_),
-    parameters_(o.parameters_)
+    parameters_(o.parameters_), pCall_overloaded_(o.pCall_overloaded_)
 {
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XINCREF(pModule_);
@@ -126,7 +126,29 @@ void Python::klass(const std::string &f) {
     throwError("Member \"__call__\" present but not callable\n");
   }
 
-  PyObject * pName = PyUnicode_FromString("integrate");
+  PyObject * pName = PyUnicode_FromString("inspect");
+  PyObject * pModule = PyImport_Import(pName);
+  Py_XDECREF(pName); pName=NULL;
+  PyObject * pFunc = PyObject_GetAttrString(pModule, "getargspec");
+  PyObject * pArgSpec = PyObject_CallFunctionObjArgs(pFunc, pCall_, NULL);
+  Py_XDECREF(pFunc);
+  if (PyErr_Occurred() || !pArgSpec) {
+    PyErr_Print();
+    Py_XDECREF(pArgSpec);
+    PyGILState_Release(gstate);
+    throwError("Error checking __call__ arguments");
+  }
+
+  pCall_overloaded_ = (PyTuple_GetItem(pArgSpec, 1) != Py_None);
+  Py_XDECREF(pArgSpec);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("Error preparing Python string");
+  }
+
+  pName = PyUnicode_FromString("integrate");
   if (PyErr_Occurred() || !pName) {
     PyErr_Print();
     Py_XDECREF(pName);
@@ -141,7 +163,7 @@ void Python::klass(const std::string &f) {
       GYOTO_WARNING << "Member \"integrate\" present but not callable\n";
       Py_DECREF(pIntegrate_);
     }
-  }
+  } else Py_XDECREF(pName);
 
   if (PyErr_Occurred()) {
     PyErr_Print();
@@ -210,6 +232,43 @@ double Spectrum::Python::operator()(double nu) const {
 
   return res;
 }
+
+double Python::operator()(double nu, double opacity, double ds) const {
+  if (!pCall_overloaded_) return Generic::operator()(nu, opacity, ds);
+
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+  PyObject * pArgs = Py_BuildValue("(ddd)", nu, opacity, ds);
+  if (PyErr_Occurred() || !pArgs) {
+    PyErr_Print();
+    Py_XDECREF(pArgs);
+    PyGILState_Release(gstate);
+    throwError("Failed building argument list");
+  }
+
+  PyObject * pValue = PyObject_CallObject(pCall_, pArgs);
+  Py_DECREF(pArgs);
+  if (PyErr_Occurred() || !pValue) {
+    PyErr_Print();
+    Py_XDECREF(pValue);
+    PyGILState_Release(gstate);
+    throwError("Failed calling Python method __call__");
+  }
+
+  double res = PyFloat_AsDouble(pValue);
+  Py_DECREF(pValue);
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("Error interpreting result as double");
+  }
+
+  PyGILState_Release(gstate);
+
+  return res;
+
+}
+
 
 double Spectrum::Python::integrate(double nu1, double nu2) {
   if (!pIntegrate_) return Generic::integrate(nu1, nu2);

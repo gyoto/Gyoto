@@ -94,14 +94,32 @@ class PowerLaw:
         else:
             raise IndexError
 
-    def __call__(self, nu):
-        '''
-        spectrum(frequency_in_Hz) = constant * nu**exponent
+    def __call__(self, *args):
+        '''spectrum(frequency_in_Hz) = constant * nu**exponent
 
-        This function implements
-        Gyoto::Spectrum::Python::operator()(double nu).
+        This function implements both
+        Spectrum::Python::operator()(double nu).
+        and
+        Spectrum::Python::operator()(double nu, double opacity, double ds).
+
+        This behavior is obtained by having the varargs *args as
+        second argument instead of a normal variable.
+
+        The second overloaded function is here exactly the same as the
+        C++ generic implementation and therefore useless. It is here
+        to illustrate the API.
+
         '''
-        return self.constant * math.pow(nu, self.exponent)
+        nu=args[0]
+        if (len(args)==1):
+            return self.constant * math.pow(nu, self.exponent)
+        else:
+            opacity=args[1]
+            ds=args[2]
+            thickness=(opacity*ds)
+            if (thickness):
+                return self(nu) * (1.-math.exp(-thickness))
+            return 0.
 
     def integrate(self, nu1, nu2):
         '''
