@@ -156,59 +156,23 @@ void Python::klass(const std::string &f) {
 
 std::vector<double> Python::parameters() const {return parameters_;}
 void Python::parameters(const std::vector<double> &p){
-  GYOTO_DEBUG << "Setting parameters to vector of size " << p.size() << endl;
   parameters_=p;
-  if (!pInstance_) return;
+  if (!pInstance_ || p.size()==0) return;
 
-  /* Multi-threading guard */
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  /* Find setPArameter method in insance. The object returns knows 'self'. */
-  GYOTO_DEBUG << "Looking for method \"setParameters\" in instance" << endl;
-  PyObject * pMethod =  PyObject_GetAttrString(pInstance_, "setParameters");
-  if (!pMethod) {
-    PyErr_Print();
-    PyGILState_Release(gstate);
-    throwError("Could not find method in class");
-  }
-  if (!PyCallable_Check(pMethod)) {
-    Py_DECREF(pMethod);
-    PyErr_Print();
-    PyGILState_Release(gstate);
-    throwError("Method is not callable");
-  }
-
-  /* Transform parameter vector into Python tuple */
-  PyObject * pArgs  = PyTuple_New(p.size());
-  PyObject * pValue;
-  for (size_t i=0; i<parameters_.size(); ++i) {
-    GYOTO_DEBUG << "Adding parameter #" << i << " with value " << p[i] << " into parameter list\n";
-    pValue = PyFloat_FromDouble(parameters_[i]);
-    if (!pValue) throwError("Failed converting parameter to Python Value");
-    /* pValue reference stolen here */
-    PyTuple_SetItem(pArgs, i, pValue);
+  for (size_t i=0; i<p.size(); ++i) {
+    Py_XDECREF(PyObject_CallMethod(pInstance_,
+				   "__setitem__",
+				   "id", i, p[i]));
     if (PyErr_Occurred()) {
       PyErr_Print();
-      Py_DECREF(pArgs);
       PyGILState_Release(gstate);
       throwError("Failed constructing args");
     }
+
   }
 
-  /* Actually call method */
-  GYOTO_DEBUG << "Calling method setParameters\n";
-  pValue = PyObject_CallObject(pMethod, pArgs);
-
-  /* Check for error, release memory, release lock */
-  GYOTO_DEBUG << "Doing house-keeping tasks\n";
-  Py_DECREF(pArgs);
-  Py_DECREF(pMethod);
-  Py_XDECREF(pValue);
-  if (PyErr_Occurred()) {
-    PyErr_Print();
-    PyGILState_Release(gstate);
-    throwError("Failed calling Python method setParameters");
-  }
   PyGILState_Release(gstate);
   GYOTO_DEBUG << "done.\n";
 }
