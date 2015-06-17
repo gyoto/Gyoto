@@ -77,6 +77,10 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   if (!handle) throwError((string("Failed to load plug-in ")+dlfile).c_str());
   GYOTO_DEBUG << "Searching plug-in init function " << dlfunc << endl;
   initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
+  if ( (err=dlerror()) || !initfcn) {
+    dlfunc = "__GyotoPluginInit";
+    initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
+  }
   if ( (err=dlerror()) ) throwError(err);
   GYOTO_DEBUG << "Calling plug-in init function " << dlfunc << endl;
   (*initfcn)();
