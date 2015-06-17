@@ -26,4 +26,6 @@ extern "C" void __GyotopythonInit() {
   Spectrum::Register("Python",
 		     &(Spectrum::Subcontractor<Spectrum::Python>));
   Py_Initialize();
+  PyEval_InitThreads();
+  PyEval_ReleaseLock();
 }

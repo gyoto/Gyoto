@@ -65,6 +65,8 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
 
   Python();
 
+  Python(const Python&);
+
   virtual Python * clone() const;
 
   ~Python();

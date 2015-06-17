@@ -22,20 +22,38 @@ Spectrum::Python::Python()
   parameters_()
 {}
 
+Python::Python(const Python&o)
+  : Generic(o), module_(o.module_), class_(o.class_),
+    pModule_(o.pModule_), pClass_(o.pClass_), pInstance_(o.pInstance_),
+    parameters_(o.parameters_)
+{
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  Py_XINCREF(pModule_);
+  Py_XINCREF(pClass_);
+  Py_XINCREF(pInstance_);
+  PyGILState_Release(gstate);
+}
+
 Spectrum::Python::~Python(){
+  PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XDECREF(pInstance_);
   Py_XDECREF(pClass_);
   Py_XDECREF(pModule_);
+  PyGILState_Release(gstate);
 }
 
 Spectrum::Python* Spectrum::Python::clone() const {return new Python(*this);}
 
 std::string Python::module() const { return module_; }
 void Python::module(const std::string &m) {
+  PyGILState_STATE gstate;
   module_=m;
+
+  gstate = PyGILState_Ensure();
   PyObject *pName=PyString_FromString(m.c_str());
   if (!pName) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Failed translating string to Python");
   }
   Py_XDECREF(pModule_);
@@ -43,33 +61,41 @@ void Python::module(const std::string &m) {
   Py_DECREF(pName);
   if (!pModule_) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Failed loading Python module");
   }
+  PyGILState_Release(gstate);
   if (class_ != "") klass(class_);
 }
 
 std::string Python::klass() const { return class_; }
 void Python::klass(const std::string &f) {
+  PyGILState_STATE gstate;
   class_=f;
   if (!pModule_) return;
+  gstate = PyGILState_Ensure();
   Py_XDECREF(pInstance_); pInstance_=NULL;
   Py_XDECREF(pClass_); pClass_=NULL;
   pClass_ = PyObject_GetAttrString(pModule_, class_.c_str());
   if (!pClass_) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Could not find class in module");
   }
   if (!PyCallable_Check(pClass_)) {
     Py_DECREF(pClass_);
     pClass_ = NULL;
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Class is not callable");
   }
   pInstance_ = PyObject_CallObject(pClass_, NULL);
   if (!pInstance_) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Failed instanciating Python class");
   }
+  PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
 }
 
@@ -77,6 +103,8 @@ std::vector<double> Python::parameters() const {return parameters_;}
 void Python::parameters(const std::vector<double> &p){
   parameters_=p;
   if (!pInstance_) return;
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
   PyObject * pArgs  = PyTuple_New(1);
   PyObject * pValue;
   for (size_t i=0; i<parameters_.size(); ++i) {
@@ -89,20 +117,26 @@ void Python::parameters(const std::vector<double> &p){
   Py_DECREF(pArgs);
   if (!pValue) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Failed calling Python method setParameters");
   }
   Py_DECREF(pValue);
+  PyGILState_Release(gstate);
 }
 
 double Spectrum::Python::operator()(double nu) const {
   if (!pInstance_) throwError("Python class not loaded yet");
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
   PyObject * pValue =
     PyObject_CallMethod(pInstance_, "__call__", "(d)", nu);
   if (!pValue) {
     PyErr_Print();
+    PyGILState_Release(gstate);
     throwError("Python class call failed");
   }
   double res = PyFloat_AsDouble(pValue);
   Py_DECREF(pValue);
+  PyGILState_Release(gstate);
   return res;
 }
