@@ -49,7 +49,6 @@ AC_SUBST([plugin_sfx])
 PKG_CHECK_MODULES([Gyoto],
    [gyoto],
    [
-    AC_SUBST([PYTHON],        [`$PKG_CONFIG --variable=PYTHON         gyoto`])
     AC_SUBST([soverdir],      [`$PKG_CONFIG --variable=GYOTO_PLUGDIR  gyoto`])
     AC_SUBST([GYOTO],         [`$PKG_CONFIG --variable=GYOTO          gyoto`])
     AC_SUBST([GYOTO_PREFIX],  [`$PKG_CONFIG --variable=prefix         gyoto`])

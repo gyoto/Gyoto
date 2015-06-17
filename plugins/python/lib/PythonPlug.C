@@ -22,10 +22,14 @@
 #include <Python.h>
 using namespace Gyoto;
 
+static PyThreadState* mainPyThread=NULL;
+
 extern "C" void __GyotopythonInit() {
   Spectrum::Register("Python",
 		     &(Spectrum::Subcontractor<Spectrum::Python>));
-  Py_Initialize();
-  PyEval_InitThreads();
-  PyEval_ReleaseLock();
+  Py_InitializeEx(0);
+  if (!PyEval_ThreadsInitialized()) {
+    PyEval_InitThreads();
+    mainPyThread = PyEval_SaveThread();
+  }
 }

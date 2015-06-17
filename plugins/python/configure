@@ -642,13 +642,13 @@ PYTHON_LDFLAGS
 PYTHON_CFLAGS
 PYTHON_INCLUDES
 PYTHON_CONFIG
+PYTHON
 Y_INST_SITE
 Y_INST_HOME
 GYOTO_EPREFIX
 GYOTO_PREFIX
 GYOTO
 soverdir
-PYTHON
 Gyoto_LIBS
 Gyoto_CFLAGS
 plugin_sfx
@@ -16320,8 +16320,6 @@ else
 	Gyoto_LIBS=$pkg_cv_Gyoto_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
-    PYTHON=`$PKG_CONFIG --variable=PYTHON         gyoto`
 
     soverdir=`$PKG_CONFIG --variable=GYOTO_PLUGDIR  gyoto`
 

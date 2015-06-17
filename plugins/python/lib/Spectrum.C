@@ -53,7 +53,7 @@ void Python::module(const std::string &m) {
   module_=m;
 
   gstate = PyGILState_Ensure();
-  PyObject *pName=PyString_FromString(m.c_str());
+  PyObject *pName=PyUnicode_FromString(m.c_str());
   if (!pName) {
     PyErr_Print();
     PyGILState_Release(gstate);
@@ -116,9 +116,9 @@ void Python::parameters(const std::vector<double> &p){
     /* pValue reference stolen here */
     PyTuple_SetItem(pArgs, i, pValue);
   }
-  pValue = PyObject_CallMethod(pInstance_, "setParameters", "O", pArgs);
+  pValue = PyObject_CallMethod(pInstance_, "setParameters", "(O)", pArgs);
   Py_DECREF(pArgs);
-  if (!pValue) {
+  if (!PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
     throwError("Failed calling Python method setParameters");
