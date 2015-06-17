@@ -54,11 +54,11 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Python>;
  protected:
   std::string module_;
+  std::string class_;
   PyObject * pModule_;
-  std::string function_;
-  PyObject * pFunc_;
+  PyObject * pClass_;
+  PyObject * pInstance_;
   std::vector<double> parameters_;
-  std::string expression_;
 
  public:
   GYOTO_OBJECT;
@@ -72,8 +72,8 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
   std::string module() const ;
   void module(const std::string&);
 
-  std::string function() const ;
-  void function(const std::string&);
+  std::string klass() const ;
+  void klass(const std::string&);
 
   std::vector<double> parameters() const;
   void parameters(const std::vector<double>&);

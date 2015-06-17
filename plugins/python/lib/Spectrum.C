@@ -9,21 +9,22 @@ using namespace std;
 
 GYOTO_PROPERTY_START(Gyoto::Spectrum::Python)
 GYOTO_PROPERTY_STRING(Python, Module, module)
-GYOTO_PROPERTY_STRING(Python, Function, function)
-GYOTO_PROPERTY_VECTOR_DOUBLE(Spectrum::Python, parameters, parameters,
+GYOTO_PROPERTY_STRING(Python, Class, klass)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Spectrum::Python, Parameters, parameters,
 			     "List of parameters")
 GYOTO_PROPERTY_END(Gyoto::Spectrum::Python,
 		   Gyoto::Spectrum::Generic::properties)
 
 Spectrum::Python::Python()
 : Generic("Python"),
-  module_(""), pModule_(NULL),
-  function_(""), pFunc_(NULL),
-  parameters_(), expression_("")
+  module_(""), class_(""),
+  pModule_(NULL), pClass_(NULL), pInstance_(NULL),
+  parameters_()
 {}
 
 Spectrum::Python::~Python(){
-  Py_XDECREF(pFunc_);
+  Py_XDECREF(pInstance_);
+  Py_XDECREF(pClass_);
   Py_XDECREF(pModule_);
 }
 
@@ -33,42 +34,73 @@ std::string Python::module() const { return module_; }
 void Python::module(const std::string &m) {
   module_=m;
   PyObject *pName=PyString_FromString(m.c_str());
-  if (!pName) throwError("Failed translating string to Python");
+  if (!pName) {
+    PyErr_Print();
+    throwError("Failed translating string to Python");
+  }
   Py_XDECREF(pModule_);
   pModule_ = PyImport_Import(pName);
   Py_DECREF(pName);
-  if (!pModule_) throwError("Failed loading Python module");
-  if (function_ != "") function(function_);
-}
-
-std::string Python::function() const { return function_; }
-void Python::function(const std::string &f) {
-  function_=f;
-  if (!pModule_) return;
-  Py_XDECREF(pFunc_);
-  pFunc_ = PyObject_GetAttrString(pModule_, function_.c_str());
-  if (!pFunc_) throwError("Could not find function in module");
-  if (!PyCallable_Check(pFunc_)) {
-    Py_DECREF(pFunc_);
-    pFunc_ = NULL;
-    throwError("Function is not callable");
+  if (!pModule_) {
+    PyErr_Print();
+    throwError("Failed loading Python module");
   }
+  if (class_ != "") klass(class_);
 }
 
-std::vector<double> Spectrum::Python::parameters() const {return parameters_;}
-void Spectrum::Python::parameters(const std::vector<double> &p){parameters_=p;}
+std::string Python::klass() const { return class_; }
+void Python::klass(const std::string &f) {
+  class_=f;
+  if (!pModule_) return;
+  Py_XDECREF(pInstance_); pInstance_=NULL;
+  Py_XDECREF(pClass_); pClass_=NULL;
+  pClass_ = PyObject_GetAttrString(pModule_, class_.c_str());
+  if (!pClass_) {
+    PyErr_Print();
+    throwError("Could not find class in module");
+  }
+  if (!PyCallable_Check(pClass_)) {
+    Py_DECREF(pClass_);
+    pClass_ = NULL;
+    PyErr_Print();
+    throwError("Class is not callable");
+  }
+  pInstance_ = PyObject_CallObject(pClass_, NULL);
+  if (!pInstance_) {
+    PyErr_Print();
+    throwError("Failed instanciating Python class");
+  }
+  if (parameters_.size()) parameters(parameters_);
+}
 
-double Spectrum::Python::operator()(double nu) const {
-  if (!pFunc_) throwError("Python function not loaded yet");
+std::vector<double> Python::parameters() const {return parameters_;}
+void Python::parameters(const std::vector<double> &p){
+  parameters_=p;
+  if (!pInstance_) return;
   PyObject * pArgs  = PyTuple_New(1);
-  PyObject * pValue = PyFloat_FromDouble(nu);
-  /* pValue reference stolen here */
-  PyTuple_SetItem(pArgs, 0, pValue);
-  pValue = PyObject_CallObject(pFunc_, pArgs);
+  PyObject * pValue;
+  for (size_t i=0; i<parameters_.size(); ++i) {
+    pValue = PyFloat_FromDouble(parameters_[i]);
+    if (!pValue) throwError("Failed converting parameter to Python Value");
+    /* pValue reference stolen here */
+    PyTuple_SetItem(pArgs, i, pValue);
+  }
+  pValue = PyObject_CallMethod(pInstance_, "setParameters", "O", pArgs);
   Py_DECREF(pArgs);
   if (!pValue) {
     PyErr_Print();
-    throwError("Python function call failed");
+    throwError("Failed calling Python method setParameters");
+  }
+  Py_DECREF(pValue);
+}
+
+double Spectrum::Python::operator()(double nu) const {
+  if (!pInstance_) throwError("Python class not loaded yet");
+  PyObject * pValue =
+    PyObject_CallMethod(pInstance_, "__call__", "(d)", nu);
+  if (!pValue) {
+    PyErr_Print();
+    throwError("Python class call failed");
   }
   double res = PyFloat_AsDouble(pValue);
   Py_DECREF(pValue);
