@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+export LD_LIBRARY_PATH=@abs_top_srcdir@/lib/.libs:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=@abs_top_srcdir@/lib/.libs:$DYLD_LIBRARY_PATH
+export GYOTO_PLUGINS=stdplug,nofail:lorene,obspm
+
+@GYOTO@ $@@
+
+exit 0
