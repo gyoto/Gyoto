@@ -58,6 +58,7 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
   PyObject * pModule_;
   PyObject * pClass_;
   PyObject * pInstance_;
+  PyObject * pIntegrate_;
   std::vector<double> parameters_;
 
  public:
@@ -82,6 +83,8 @@ class Gyoto::Spectrum::Python : public Gyoto::Spectrum::Generic {
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
+
+  virtual double integrate(double nu1, double nu2) ;
 
 };
 
