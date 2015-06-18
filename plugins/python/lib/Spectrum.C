@@ -65,61 +65,23 @@ void Spectrum::Python::klass(const std::string &f) {
   gstate = PyGILState_Ensure();
   GYOTO_DEBUG << "Checking Python class methods" << f << endl;
 
-  pCall_=PyObject_GetAttrString(pInstance_, "__call__");
-  if (PyErr_Occurred() || !pCall_) {
-    PyErr_Print();
-    PyGILState_Release(gstate);
-    throwError("This class does not seem to implement __call__");
-  }
-
-  if (!PyCallable_Check(pCall_)) {
-    throwError("Member \"__call__\" present but not callable\n");
-  }
-
-  PyObject * pName = PyUnicode_FromString("inspect");
-  PyObject * pModule = PyImport_Import(pName);
-  Py_XDECREF(pName); pName=NULL;
-  PyObject * pFunc = PyObject_GetAttrString(pModule, "getargspec");
-  PyObject * pArgSpec = PyObject_CallFunctionObjArgs(pFunc, pCall_, NULL);
-  Py_XDECREF(pFunc);
-  if (PyErr_Occurred() || !pArgSpec) {
-    PyErr_Print();
-    Py_XDECREF(pArgSpec);
-    PyGILState_Release(gstate);
-    throwError("Error checking __call__ arguments");
-  }
-
-  pCall_overloaded_ = (PyTuple_GetItem(pArgSpec, 1) != Py_None);
-  Py_XDECREF(pArgSpec);
+  pCall_ =
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "__call__");
+  pIntegrate_ =
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "integrate");
 
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error preparing Python string");
+    throwError("Error while retrieving methods");
   }
 
-  pName = PyUnicode_FromString("integrate");
-  if (PyErr_Occurred() || !pName) {
-    PyErr_Print();
-    Py_XDECREF(pName);
+  if (!pCall_) {
     PyGILState_Release(gstate);
-    throwError("Error preparing Python string");
+    throwError("Object does not implement required method \"__call__\"");
   }
 
-  if (PyObject_HasAttr(pInstance_, pName)) {
-    pIntegrate_ = PyObject_GetAttr(pInstance_, pName);
-    Py_DECREF(pName);
-    if (!PyCallable_Check(pIntegrate_)) {
-      GYOTO_WARNING << "Member \"integrate\" present but not callable\n";
-      Py_DECREF(pIntegrate_);
-    }
-  } else Py_XDECREF(pName);
-
-  if (PyErr_Occurred()) {
-    PyErr_Print();
-    PyGILState_Release(gstate);
-    throwError("Error looking for integrate method");
-  }
+  pCall_overloaded_ = Gyoto::Python::PyCallable_HasVarArg(pCall_);
 
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);

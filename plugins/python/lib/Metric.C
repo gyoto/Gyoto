@@ -115,26 +115,25 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
   gstate = PyGILState_Ensure();
   GYOTO_DEBUG << "Checking Python class methods" << f << endl;
 
-  pGmunu_=PyObject_GetAttrString(pInstance_, "gmunu");
-  if (PyErr_Occurred() || !pGmunu_) {
+  pGmunu_ =
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "gmunu");
+  pChristoffel_ =
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "christoffel");
+
+  if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("This class does not seem to implement gmunu");
+    throwError("Error while retrieving methods");
   }
 
-  if (!PyCallable_Check(pGmunu_)) {
-    throwError("Member \"gmunu\" present but not callable\n");
-  }
-
-  pChristoffel_=PyObject_GetAttrString(pInstance_, "christoffel");
-  if (PyErr_Occurred() || !pChristoffel_) {
-    PyErr_Print();
+  if (!pGmunu_) {
     PyGILState_Release(gstate);
-    throwError("This class does not seem to implement christoffel");
+    throwError("Object does not implement required method \"__call__\"");
   }
 
-  if (!PyCallable_Check(pChristoffel_)) {
-    throwError("Member \"christoffel\" present but not callable\n");
+  if (!pChristoffel_) {
+    PyGILState_Release(gstate);
+    throwError("Object does not implement required method \"getVelocity\"");
   }
 
   PyGILState_Release(gstate);
