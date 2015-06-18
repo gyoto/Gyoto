@@ -42,15 +42,30 @@ extern "C" void __GyotoPluginInit() {
 		     &(Metric::Subcontractor<Metric::Python>));
   Py_InitializeEx(0);
 
-  PyImport_ImportModule("numpy");
+  PyObject *pSys = PyImport_ImportModule("sys");
+  PyObject *pPath = PyObject_GetAttrString(pSys, "path");
+  PyObject *pDir = PyUnicode_FromString(".");
+  Py_XDECREF(pSys);
+  PyList_Reverse(pPath);
+  PyList_Append(pPath, pDir);
+  Py_XDECREF(pDir);
+  PyList_Reverse(pPath);
+  Py_XDECREF(pPath);
+
+  Py_XDECREF(PyImport_ImportModule("numpy"));
   if (PyErr_Occurred()) {
     PyErr_Print();
-    throwError("Failed");
+    throwError("Failed imorting numpy");
   }
   Gyoto::eat_import_array();
 
   if (!PyEval_ThreadsInitialized()) {
     PyEval_InitThreads();
     mainPyThread = PyEval_SaveThread();
+  }
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    throwError("Failed");
   }
 }
