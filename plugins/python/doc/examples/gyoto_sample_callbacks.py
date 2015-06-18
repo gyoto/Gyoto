@@ -27,9 +27,19 @@
    __setitem__: optional;
    integrate: optional.
 
+   Metrics:
+
+   Classes that aim at implementing the Gyoto::Metric::Generic
+   interface do so by providing the following methods:
+
+   gmunu(self, dst, pos): mandatory;
+   christoffel(self, dst, pos): mandatory
+   __setitem__(self, key, value): mandatory
+
 '''
 
 import math
+
 class BlackBody6000:
     '''Black-body spectrum at 6000K
 
@@ -43,13 +53,17 @@ class BlackBody6000:
     def __call__(self, nu):
         '''spectrum(frequency_in_Hz) = black-body distribution for T=6000K.
 
-        This function implements
+        This function implements only
         Gyoto::Spectrum::Python::operator()(double nu).
+
+        It does so by not accepting the varargs argument. Contrast
+        with the PowerLaw definition of __call__.
 
         '''
         temperature=6000.
         PLANCK_OVER_BOLTZMANN=4.7992373e-11
         return nu*nu*nu/(math.exp(PLANCK_OVER_BOLTZMANN*nu/temperature)-1.);
+
 
 class PowerLaw:
     '''Powerlaw spectrum
@@ -131,3 +145,87 @@ class PowerLaw:
         if (self.exponent == -1.):
             return self.constant * (math.log(nu2) -math.log(nu1))
         return self.constant * (math.pow(nu2, self.exponent+1)- math.pow(nu1, self.exponent+1)) / (self.exponent+1)
+
+
+class Minkowski:
+    '''Flat space metric
+
+    Implemented for both Cartesian and spherical coordinates.
+
+    Every Gyoto Metric implemented in Python must implement the three
+    methods illustrated here.
+
+    '''
+    spherical = False
+
+    def __setitem__(self, key, value):
+        '''Set parameters.
+
+        Mandatory.
+
+        At least 'spherical' and 'mass' must be supported. If only one
+        kind (Spherical or Cartesian) is supported, __setitem__ must
+        still accept both True or False as valid, it is not the right
+        place to raise an exception. Do this in gmunu or christoffel
+        or both.
+
+        Additional parameters, if any, will be sent using integer keys
+        like in the SPectrum examples.
+
+        '''
+        if key == "spherical":
+            spherical = value
+        elif key == "mass":
+            # C++ may send a mass, we accept it but ignore it.
+            pass
+        else:
+            raise IndexError
+
+    def gmunu(self, g, x):
+        ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
+
+        Mandatory.
+
+        C++ will send two NumPy arrays.
+
+        '''
+        for mu in range(0, 4):
+            for nu in range(0, 4):
+                g[mu][nu]=g[nu][mu]=0
+        g[0][0]=-1;
+        if not self.spherical:
+            for mu in range(1, 4):
+                g[mu][mu]=1.
+            return
+        r=x[1]
+        theta=x[2]
+        tmp=r*math.sin(theta)
+        g[1][1]=1.
+        g[2][2]=r*r
+        g[3][3]=tmp*tmp
+
+    def christoffel(self, dst, x):
+        '''Gyoto::Metric::Generic::christoffel(double dst[4][4][4], const double pos[4])
+
+        Mandatory.
+
+        C++ will send two NumPy arrays.
+
+        '''
+        for alpha in range(0, 4):
+            for mu in range(0, 4):
+                for nu in range(0, 4):
+                    dst[alpha][mu][nu]=0.
+        if not self.spherical:
+            return 0
+        r=x[1]
+        theta=x[2]
+        sth=math.sin(theta)
+        cth=math.cos(theta)
+        dst[1][2][2]=-r
+        dst[1][3][3]=-r*sth*sth
+        dst[2][1][2]=dst[2][2][1]= 1./r
+        dst[2][3][3]=-sth*cth
+        dst[3][1][3]=dst[3][3][1]= dst[2][1][2]
+        dst[3][2][3]=dst[3][3][2]= math.tan(math.pi*0.5 - x[2])
+        return 0

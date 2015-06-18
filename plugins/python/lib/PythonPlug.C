@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2015 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,17 +17,38 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// include Metric headers
 #include "GyotoPython.h"
+
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define PY_ARRAY_UNIQUE_SYMBOL GyotoPython_ARRAY_API
+#include <numpy/arrayobject.h>
+
 using namespace Gyoto;
 
 static PyThreadState* mainPyThread=NULL;
 
+namespace Gyoto {
+  // import_array is actually a MACRO which returns a value.
+  // We want to eat this return.
+  bool eat_import_array() { import_array(); return true;}
+}
+
 extern "C" void __GyotoPluginInit() {
   Spectrum::Register("Python",
 		     &(Spectrum::Subcontractor<Spectrum::Python>));
+  Metric::Register("Python",
+		     &(Metric::Subcontractor<Metric::Python>));
   Py_InitializeEx(0);
+
+  PyImport_ImportModule("numpy");
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    throwError("Failed");
+  }
+  Gyoto::eat_import_array();
+
   if (!PyEval_ThreadsInitialized()) {
     PyEval_InitThreads();
     mainPyThread = PyEval_SaveThread();

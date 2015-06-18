@@ -1,5 +1,6 @@
 import gyoto
 gyoto.loadPlugin("python3.4")
+
 sp=gyoto.Spectrum("Python")
 sp.set("Module", "gyoto_sample_callbacks")
 sp.set("Class", "PowerLaw")
@@ -43,3 +44,7 @@ sp2=gyoto.Spectrum("PowerLaw")
 sp2.set("Exponent", -1.)
 sp2.set("Constant", 5.)
 print('using Gyoto generic integrator: {}'.format(sp2.integrate(1., 2.)))
+
+gg=gyoto.Metric("Python")
+gg.set("Module", "gyoto_sample_callbacks")
+gg.set("Class", "Minkowski")
