@@ -125,7 +125,7 @@ am__installdirs = "$(DESTDIR)$(soverdir)" \
 LTLIBRARIES = $(sover_LTLIBRARIES)
 libgyoto_@pluginname@_la_LIBADD =
 am_libgyoto_@pluginname@_la_OBJECTS = PythonPlug.lo Base.lo \
-	Spectrum.lo Metric.lo
+	Spectrum.lo Metric.lo Standard.lo
 libgyoto_@pluginname@_la_OBJECTS =  \
 	$(am_libgyoto_@pluginname@_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -350,7 +350,9 @@ AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \
 	$(PYTHON_CFLAGS)
 
 sover_LTLIBRARIES = libgyoto-@pluginname@.la
-libgyoto_@pluginname@_la_SOURCES = PythonPlug.C Base.C Spectrum.C Metric.C
+libgyoto_@pluginname@_la_SOURCES = \
+	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C
+
 
 # HEADERS: where they are, where to install them
 library_includedir = $(GYOTO_PREFIX)/include/Gyoto
@@ -438,6 +440,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Metric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PythonPlug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Spectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Standard.Plo@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

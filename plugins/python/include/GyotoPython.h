@@ -69,17 +69,25 @@
 #define __GyotoPython_H_ 
 #include <GyotoSpectrum.h>
 #include <GyotoMetric.h>
+#include <GyotoStandardAstrobj.h>
 #include <Python.h>
 
 namespace Gyoto {
   namespace Python {
     class Base;
+    PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
+    bool PyCallable_HasVarArg(PyObject * pMethod);
   }
   namespace Spectrum {
     class Python;
   }
   namespace Metric {
     class Python;
+  }
+  namespace Astrobj {
+    namespace Python {
+      class Standard;
+    }
   }
 }
 
@@ -481,6 +489,60 @@ class Gyoto::Metric::Python
   // The minimal Gyoto::Metric API:
   void gmunu(double g[4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * x) const ;
+
+};
+
+class Gyoto::Astrobj::Python::Standard
+: public Gyoto::Astrobj::Standard,
+  public Gyoto::Python::Base
+{
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::Standard>;
+
+ private:
+  PyObject *pEmission_, *pIntegrateEmission_, *pTransmission_, *pCall_,
+    *pGetVelocity_, *pGiveDelta_;
+  bool pEmission_overloaded_, pIntegrateEmission_overloaded_;
+
+ public:
+  GYOTO_OBJECT;
+
+  /* Birth and Death*/
+  Standard();
+  Standard(const Standard&);
+  ~Standard();
+  Standard* clone() const;
+
+  /* Astrobj::Generic API */
+  virtual double emission(double nu_em, double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL) const ;
+
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
+  virtual double integrateEmission(double nu1, double nu2, double dsem,
+				   double c_ph[8], double c_obj[8]=NULL) const;
+
+  virtual void integrateEmission(double * I, double const * boundaries,
+				 size_t const * chaninds, size_t nbnu,
+				 double dsem, double *cph, double *co) const;
+
+  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+
+  /* Astrobj::Standard API */
+  virtual double operator()(double const coord[4]) ;
+  virtual void getVelocity(double const pos[4], double vel[4]) ;
+  virtual double giveDelta(double coord[8]);
+
+  /* Python::Base */
+  virtual std::string module() const ;
+  virtual void module(const std::string&);
+  virtual std::string klass() const ;
+  virtual void klass(const std::string&);
+  virtual std::vector<double> parameters() const;
+  virtual void parameters(const std::vector<double>&);
+  virtual double criticalValue() const ;
+  virtual void criticalValue(double) ;
 
 };
 

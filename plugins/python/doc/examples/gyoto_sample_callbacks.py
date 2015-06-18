@@ -36,9 +36,22 @@
    christoffel(self, dst, pos): mandatory
    __setitem__(self, key, value): mandatory
 
+   Astrobjs:
+
+   Classes that aim at implementing the Gyoto::Metric::Generic
+   interface do so by providing the following methods:
+
+   __call__: required
+   getVelocity: required
+   giveDelta, emission, integrateEmission, transmission, __setitem__:
+              optional.
+   emission and integrateEmission can be overloaded by using the
+   varargs argument.
+
 '''
 
 import math
+import numpy
 
 class BlackBody6000:
     '''Black-body spectrum at 6000K
@@ -229,3 +242,76 @@ class Minkowski:
         dst[3][1][3]=dst[3][3][1]= dst[2][1][2]
         dst[3][2][3]=dst[3][3][2]= math.tan(math.pi*0.5 - x[2])
         return 0
+
+
+class FixedStar:
+    ''' Sample class for Astrobj::Python::Standard
+    '''
+    def __init__(self):
+        '''Initialize instance
+
+        Needed here to make a non-static array data member.
+        '''
+        self.pos = numpy.zeros((4), float)
+        self.spherical = False
+
+    def __setitem__(self, key, value):
+        '''Set parameters
+
+        Here, the parameters will be the 3 space coordinates of the
+        center of the blob.
+
+        The 4-th parameter gives the coordinate system kind: 0 for
+        Cartesian, anything else for Spherical.
+
+        '''
+        if key in (0, 1, 2):
+            self.pos[key+1]=value
+        elif key is 3:
+            self.spherical=bool(value)
+        else:
+            raise IndexError
+        self.coord_st=self.to_cartesian(self.pos)
+
+    def to_cartesian(self, coord):
+        '''Helper function, not in the API
+
+        '''
+        if self.spherical:
+            rs=coord[1]
+            ths=coord[2]
+            phs=coord[3]
+            st=math.sin(ths)
+            ct=math.cos(ths)
+            sp=math.sin(phs)
+            cp=math.cos(phs)
+            return numpy.array((coord[0], rs*st*cp, rs*st*sp, rs*ct))
+        return coord
+
+    def __call__(self, coord):
+        ''' Astrobj::Standard::operator()()
+
+        Required
+        '''
+        coord_ph=self.to_cartesian(coord)
+        coord_st=self.coord_st
+        dx = coord_ph[1]-coord_st[1]
+        dy = coord_ph[2]-coord_st[2]
+        dz = coord_ph[3]-coord_st[3]
+        return math.sqrt(dx*dx + dy*dy + dz*dz)
+
+    def getVelocity(self, coord, vel):
+        ''' Velocity field
+
+        Required
+        '''
+        vel[0]=1.
+        for i in range(1, 4):
+            vel[i]=0.
+
+    def emission(self, nuem, dsem, cph, co):
+        ''' emission
+
+        Optional
+        '''
+        return 1.

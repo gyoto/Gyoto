@@ -6,6 +6,42 @@ using namespace Gyoto;
 using namespace Gyoto::Python;
 using namespace std;
 
+PyObject * Gyoto::Python::PyInstance_GetMethod
+(PyObject* pInstance, const char *name) {
+  PyObject * pName = PyUnicode_FromString(name);
+  if (!pName) return NULL;
+  if (!PyObject_HasAttr(pInstance, pName)) {
+    Py_XDECREF(pName);
+    return NULL;
+  }
+  PyObject * pMethod = PyObject_GetAttr(pInstance, pName);
+  Py_DECREF(pName);
+  if (!pMethod) return NULL;
+  if (!PyCallable_Check(pMethod)) {
+    Py_DECREF(pMethod);
+    return NULL;
+  }
+  return pMethod;
+}
+
+bool Gyoto::Python::PyCallable_HasVarArg(PyObject * pMethod) {
+  static PyObject * pGetArgSpec = NULL;
+
+  if (!pGetArgSpec) {
+    PyObject * pName = PyUnicode_FromString("inspect");
+    PyObject * pModule = PyImport_Import(pName);
+    Py_XDECREF(pName); pName=NULL;
+    pGetArgSpec = PyObject_GetAttrString(pModule, "getargspec");
+  }
+
+  PyObject * pArgSpec =
+    PyObject_CallFunctionObjArgs(pGetArgSpec, pMethod, NULL);
+  bool answer = (PyTuple_GetItem(pArgSpec, 1) != Py_None);
+  Py_XDECREF(pArgSpec);
+
+  return answer;
+}
+
 // Birth and death
 Base::Base()
 : module_(""), class_(""),   parameters_(),

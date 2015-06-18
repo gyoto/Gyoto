@@ -40,6 +40,9 @@ extern "C" void __GyotoPluginInit() {
 		     &(Spectrum::Subcontractor<Spectrum::Python>));
   Metric::Register("Python",
 		     &(Metric::Subcontractor<Metric::Python>));
+  Astrobj::Register("Python::Standard",
+		    &(Astrobj::Subcontractor<Astrobj::Python::Standard>));
+
   Py_InitializeEx(0);
 
   PyObject *pSys = PyImport_ImportModule("sys");
