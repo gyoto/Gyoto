@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <Metric kind = "KerrBL">
+    <Spin> 0. </Spin>
+  </Metric>
+
+  <Screen>
+    <Position> 1000. 100. 1.22 0. </Position>
+    <Time unit="geometrical_time"> 1000. </Time>
+    <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
+    <Resolution> 32 </Resolution>
+  </Screen>
+
+  <Astrobj kind = "Python::ThinDisk">
+    <InnerRadius> 3. </InnerRadius>
+    <OpticallyThin/>
+    <Module>gyoto_sample_callbacks</Module>
+    <Class>ThinDisk</Class>
+  </Astrobj>
+
+  <MinimumTime> 0. </MinimumTime>
+</Scenery>
