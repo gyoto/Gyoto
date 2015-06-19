@@ -207,9 +207,3 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
   return 1;
 }
-
-double ThinDisk::emission(double , double,
-			    double *, double) const{
-  // This is a trivial constant emission for geometric visualization
-  return 1.;
-}
