@@ -10,7 +10,7 @@ AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \
 soverdir=@soverdir@
 sover_LTLIBRARIES = libgyoto-@pluginname@.la
 libgyoto_@pluginname@_la_SOURCES = \
-	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C
+	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C
 
 # HEADERS: where they are, where to install them
 library_includedir=$(GYOTO_PREFIX)/include/Gyoto

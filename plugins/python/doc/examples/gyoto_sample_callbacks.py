@@ -315,3 +315,9 @@ class FixedStar:
         Optional
         '''
         return 1.
+
+class ThinDisk:
+    '''A ThinDisk with funny emission
+    '''
+    def emission(self, nuem, dsem, cph, co):
+        return dsem

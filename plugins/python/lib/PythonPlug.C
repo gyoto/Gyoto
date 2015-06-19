@@ -42,6 +42,8 @@ extern "C" void __GyotoPluginInit() {
 		     &(Metric::Subcontractor<Metric::Python>));
   Astrobj::Register("Python::Standard",
 		    &(Astrobj::Subcontractor<Astrobj::Python::Standard>));
+  Astrobj::Register("Python::ThinDisk",
+		    &(Astrobj::Subcontractor<Astrobj::Python::ThinDisk>));
 
   Py_InitializeEx(0);
 

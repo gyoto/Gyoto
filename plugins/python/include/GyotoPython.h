@@ -70,6 +70,7 @@
 #include <GyotoSpectrum.h>
 #include <GyotoMetric.h>
 #include <GyotoStandardAstrobj.h>
+#include <GyotoThinDisk.h>
 #include <Python.h>
 
 namespace Gyoto {
@@ -87,6 +88,7 @@ namespace Gyoto {
   namespace Astrobj {
     namespace Python {
       class Standard;
+      class ThinDisk;
     }
   }
 }
@@ -543,6 +545,57 @@ class Gyoto::Astrobj::Python::Standard
   virtual void parameters(const std::vector<double>&);
   virtual double criticalValue() const ;
   virtual void criticalValue(double) ;
+
+};
+
+class Gyoto::Astrobj::Python::ThinDisk
+: public Gyoto::Astrobj::ThinDisk,
+  public Gyoto::Python::Base
+{
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::ThinDisk>;
+
+ private:
+  PyObject *pEmission_, *pIntegrateEmission_, *pTransmission_, *pCall_,
+    *pGetVelocity_, *pGiveDelta_;
+  bool pEmission_overloaded_, pIntegrateEmission_overloaded_;
+
+ public:
+  GYOTO_OBJECT;
+
+  /* Birth and Death*/
+  ThinDisk();
+  ThinDisk(const ThinDisk&);
+  ~ThinDisk();
+  ThinDisk* clone() const;
+
+  /* Astrobj::Generic API */
+  virtual double emission(double nu_em, double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL) const ;
+
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
+  virtual double integrateEmission(double nu1, double nu2, double dsem,
+				   double c_ph[8], double c_obj[8]=NULL) const;
+
+  virtual void integrateEmission(double * I, double const * boundaries,
+				 size_t const * chaninds, size_t nbnu,
+				 double dsem, double *cph, double *co) const;
+
+  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+
+  /* Astrobj::ThinDisk API */
+  virtual double operator()(double const coord[4]) ;
+  virtual void getVelocity(double const pos[4], double vel[4]) ;
+
+  /* Python::Base */
+  virtual std::string module() const ;
+  virtual void module(const std::string&);
+  virtual std::string klass() const ;
+  virtual void klass(const std::string&);
+  virtual std::vector<double> parameters() const;
+  virtual void parameters(const std::vector<double>&);
 
 };
 
