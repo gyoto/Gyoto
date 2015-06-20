@@ -21,10 +21,11 @@
  * \file GyotoPython.h
  * \brief Extending Gyoto using Python
  *
- * The classes provided here allow implementing a Spectrum or a Metric
- * in Python. Together, they form the a Gyoto plug-in.
+ * The classes provided here allow implementing a Spectrum, an Astrobj
+ * or a Metric in Python. Together, they form the "python" Gyoto
+ * plug-in.
  *
- * This is complementary to, but distinct from the Gyoto * Python
+ * This is complementary to, but distinct from the "gyoto" Python
  * extension. Here, we are embedding Python inside Gyoto so that a few
  * functions are coded in Python. The Python extension does the
  * reverse: it allows calling Gyoto functions from within
@@ -34,34 +35,54 @@
  *
  * The plug-in works within the gyoto command-line utility as well as
  * when Gyoto is used inside Python or inside Yorick. The only caveat
- * is that the Python plug-in of Gyoto should not be loaded into a
+ * is that the python plug-in of Gyoto should not be loaded into a
  * Python interpreter different from the one that was used for
  * building the plug-in.
  *
  * For this reason, the name of this plug-in depends on the Python
  * interpreter that was used when building. It can be simply "python",
  * or a be versionned: for instance "python2.7" or "python3.4". This
- * way, it is possible to keep several copies of the plug-in. Any
- * version can be used in the gyoto command-line utility or in Yorick,
- * but when Gyoto is used inside Python, only the matching version of
- * this plug-in may be used.
+ * way, it is possible to keep several copies of the plug-in, one for
+ * each version of the Python interpreter that are installed on the
+ * machine. Any version can be used in the gyoto command-line utility
+ * or in Yorick, but when Gyoto is used inside Python, only the
+ * matching version of this plug-in may be used.
  *
- * Imlpementing a Spectrum or Metric kind in Python is much easier
- * than implementing a new C++ plug-in for Gyoto. This saves in
+ * Implementing a Spectrum, Astrobj or Metric kind in Python is much
+ * easier than implementing a new C++ plug-in for Gyoto. This saves in
  * development time. However, there is a cost in terms of computing
- * time. While this cost may not be noticeable for Spectra, it is
- * quite significant for Metrics. On one example using the Minkowski
- * Metric, the integration of a full image with the Python
- * implementation took approx. 150-200 more time than the same
- * integration with the C++ implementation. So the Python
- * implementation can serve as a prototyping test-bed, but most users
- * will probably still want to re-implement their Metrics in C++
- * eventually.
+ * time. While this cost may not be noticeable for Spectra and is
+ * moderate for Astrobjs (at least for simple ones), it is quite
+ * significant for Metrics, because the gmunu and christoffel methods
+ * are evaluated several times per integration step, for every
+ * photon. On one example using the Minkowski Metric, the integration
+ * of a full image with the Python implementation took approx. 150-200
+ * more time than the same integration with the C++
+ * implementation. So, for Metrics, the Python implementation can
+ * serve as a prototyping test-bed, but most users will probably still
+ * want to re-implement their Metrics in C++ eventually.
  *
  * Note also that multi-threading is not very efficient for the
  * Metric::Python class, because only one thread may interact with the
  * Python interpreter at any time. MPI multi-processing runs much
- * faster.
+ * faster. Here again, this limitation is less problematic for Spectra
+ * and Astrobjs than it is for Metrics.
+ *
+ * The principle of these classes is very simple: the plugin embeds a
+ * Python interpreter. Each instance of the Gyoto classes
+ * Gyoto::Metric::Python, Gyoto::Spectrum::Python,
+ * Gyoto::Astrobj:Python::Standard and
+ * Gyoto::Astrobj::Python::ThinDisk instanciate a Python class in this
+ * interpreter, and delegate certain methods from the Gyoto API to
+ * this instance.
+ *
+ * In simple cases, the Python instance does not even need to know
+ * that it is running in Gyoto. It simply exposes an interface that is
+ * being called. However, Gyoto sets a few attributes in each
+ * method. Most notably, if the "gyoto" python extension is available,
+ * Gyoto will the the attribute "this" to the C++ instance that
+ * created the Python class instance, so that the Python code can
+ * access C++-side information.
  *
  */
 
@@ -116,7 +137,25 @@ namespace Gyoto {
  *
  * \brief Base class for classes in the Python plug-in.
  *
+ * All classes have those three Properties:
+ * - Module (string): the module in which the Python class is
+ *   implemented;
+ * - Class (string): the name of the Python class, in module Module,
+ *   to interface with;
+ * - Parameters (vector<double>): list of parameters for this
+ *   class. These parameters are passed one by one to the Python
+ *   instance using __setitem__ with numerical keys.
  *
+ * All the Gyoto instances of the classes descending from
+ * Gyoto::Python::Base expose themselves to the Python instance they
+ * wrap immediately after instanciation by setting the 'this'
+ * attribute. If the 'gyoto' Python extension can be loaded, then
+ * 'this' will be an instance of one of the classes gyoto.Metric,
+ * gyoto.Spectrum, gyoto.StandardAstrobj or gyoto.ThinDisk pointing to
+ * the underlying C++ instance. If the 'gyoto' extension is not
+ * available, 'this' will be None.
+ *
+
  */
 class Gyoto::Python::Base {
  protected:
@@ -139,7 +178,8 @@ class Gyoto::Python::Base {
    * \brief Parameters that this class needs
    *
    * A list of parameters (doubles) can be passed in the Property
-   * Parameters.
+   * Parameters. They will be sent to the Python instance using
+   * __setitem__.
    */
   std::vector<double> parameters_;
 
@@ -177,11 +217,12 @@ class Gyoto::Python::Base {
    * Sets #pInstance_.
    *
    * This generic implementation takes care of the common ground, but
-   * does not call #parameters(#parameters_). Therefore, all the derived
-   * classes should reimplement this method and at least call
-   * Python::Base::klass(c) and #parameters(#parameters_). Between the
-   * two is the right moment to check that the Python class implements
-   * the required API and to cache PyObject* pointers to class methods.
+   * does not set 'this' or call #parameters(#parameters_). Therefore,
+   * all the derived classes should reimplement this method and at
+   * least call Python::Base::klass(c) and
+   * #parameters(#parameters_). Between the two is the right moment to
+   * check that the Python class implements the required API and to
+   * cache PyObject* pointers to class methods.
    */
   virtual void klass(const std::string& c);
 
@@ -392,30 +433,47 @@ class Minkowski:
     methods illustrated here.
 
     '''
-    spherical = False
+    def __setattr__(self, key, value):
+        '''Set attributes.
 
-    def __setitem__(self, key, value):
-        '''Set parameters.
+        Optional.
 
-        Mandatory.
+        C++ will set several attributes. By overloading __setattr__,
+        on can react when that occurs, in particular to make sure this
+        knows the coordinate kind as in this example.
 
-        At least 'spherical' and 'mass' must be supported. If only one
-        kind (Spherical or Cartesian) is supported, __setitem__ must
-        still accept both True or False as valid, it is not the right
-        place to raise an exception. Do this in gmunu or christoffel
-        or both.
+        Attributes set by the C++ layer:
 
-        Additional parameters, if any, will be sent using integer keys
-        like in the SPectrum examples.
+          this: if the Python extension "gyoto" can be imported, it
+                will be set to a gyoto.Metric instance pointing to the
+                C++-side instance. If the "gyoto" extension cannot be
+                loaded, this will be set to None.
+
+          spherical: when the spherical(bool t) method is called in
+                the C++ layer, it sets the spherical attribute in the
+                Python side.
+
+          mass: when the mass(double m) method is called in the C++
+                side, it sets the spherical attribute in the Python
+                side.
+
+        This example initializes coordKind in the C++ side if it is
+        not already set, since this Minkowski class can work in
+        either.
 
         '''
-        if key == "spherical":
-            spherical = value
-        elif key == "mass":
-            # C++ may send a mass, we accept it but ignore it.
-            pass
-        else:
-            raise IndexError
+        # First, actually store the attribute. This is what would
+        # happen if we did not overload __setattr__.
+        self.__dict__[key]=value
+        # Then, if key is "this", ensure this knows a valid coordKind.
+        if (key is "this"):
+            cK=value.coordKind()
+            if cK is gyoto.GYOTO_COORDKIND_UNSPECIFIED:
+                value.set("Spherical", False)
+            # We could do without this, since this will tell us later
+            # anyway.
+            else:
+                self.spherical = (cK is gyoto.GYOTO_COORDKIND_SPHERICAL)
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
@@ -511,6 +569,83 @@ class Gyoto::Metric::Python
   int christoffel(double dst[4][4][4], const double * x) const ;
 
 };
+
+/**
+ * \class Gyoto::Astrobj::Python::Standard
+ * \brief Coding a Gyoto::Astrobj::Standard in Python
+ *
+\code
+class FixedStar:
+    ''' Sample class for Astrobj::Python::Standard
+    '''
+    def __init__(self):
+        '''Initialize instance
+
+        Needed here to make a non-static array data member.
+        '''
+        self.pos = numpy.zeros((4), float)
+
+    def __setitem__(self, key, value):
+        '''Set parameters
+
+        Here, the parameters will be the 3 space coordinates of the
+        center of the blob.
+
+        '''
+        if key in (0, 1, 2):
+            self.pos[key+1]=value
+        else:
+            raise IndexError
+        self.coord_st=self.to_cartesian(self.pos)
+
+    def to_cartesian(self, coord):
+        '''Helper function, not in the API
+
+        '''
+        gg=self.this.metric()
+        spherical=False
+        if gg is not None:
+            spherical = gg.coordKind() == gyoto.GYOTO_COORDKIND_SPHERICAL
+        if spherical:
+            rs=coord[1]
+            ths=coord[2]
+            phs=coord[3]
+            st=math.sin(ths)
+            ct=math.cos(ths)
+            sp=math.sin(phs)
+            cp=math.cos(phs)
+            return numpy.array((coord[0], rs*st*cp, rs*st*sp, rs*ct))
+        return coord
+
+    def __call__(self, coord):
+        ''' Astrobj::Standard::operator()()
+
+        Required
+        '''
+        coord_ph=self.to_cartesian(coord)
+        coord_st=self.coord_st
+        dx = coord_ph[1]-coord_st[1]
+        dy = coord_ph[2]-coord_st[2]
+        dz = coord_ph[3]-coord_st[3]
+        return math.sqrt(dx*dx + dy*dy + dz*dz)
+
+    def getVelocity(self, coord, vel):
+        ''' Velocity field
+
+        Required
+        '''
+        vel[0]=1.
+        for i in range(1, 4):
+            vel[i]=0.
+
+    def emission(self, nuem, dsem, cph, co):
+        ''' emission
+
+        Optional
+        '''
+        return 1.
+\endcode
+ */
 
 class Gyoto::Astrobj::Python::Standard
 : public Gyoto::Astrobj::Standard,
