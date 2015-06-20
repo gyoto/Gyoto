@@ -149,6 +149,11 @@ Gyoto::SmartPointer<gtype>, gtype * {
     if (res) res -> incRefCount();
     return res;
   }
+  Generic(long address) {
+    Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(address);
+    if (res) res -> incRefCount();
+    return res;
+  }
 };
 %include Gyoto ## klass ## .h
 %enddef
@@ -166,6 +171,12 @@ Gyoto::SmartPointer<gtype>, gtype * {
   klass(Gyoto::nspace::Generic * base) {
     Gyoto::nspace::klass * res = dynamic_cast< Gyoto::nspace::klass * >(base);
     if (!res) Gyoto::throwError("This pointer cannot be cast to 'Gyoto::" #nspace "::" #klass "*'");
+    return res;
+  }
+  klass(long address) {
+    Gyoto::nspace::klass * res = (Gyoto::nspace::klass *)(address);
+    if (res) res -> incRefCount();
+    std::cerr << "Importing " << res << std::endl;
     return res;
   }
  };
@@ -201,6 +212,7 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 #include "GyotoPhoton.h"
 #include "GyotoScreen.h"
 #include "GyotoThinDisk.h"
+#include "GyotoStandardAstrobj.h"
 #include "GyotoSpectrometer.h"
 #include "GyotoComplexSpectrometer.h"
 #include "GyotoUniformSpectrometer.h"
@@ -231,6 +243,7 @@ GyotoSmPtrTypeMapClassGeneric(Astrobj);
 GyotoSmPtrTypeMapClassGeneric(Spectrum);
 GyotoSmPtrTypeMapClassGeneric(Spectrometer);
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk);
+GyotoSmPtrTypeMapClassDerived(Astrobj, Standard)
 
 GyotoSmPtrTypeMapClass(Screen);
 GyotoSmPtrTypeMapClass(Scenery);
@@ -530,6 +543,12 @@ GyotoSmPtrClass(Photon)
 GyotoSmPtrClassGeneric(Astrobj)
 
 GyotoSmPtrClassDerived(Astrobj, ThinDisk)
+
+%ignore Gyoto::Astrobj::Standard::Standard();
+%ignore Gyoto::Astrobj::Standard::Standard(double radmax);
+%ignore Gyoto::Astrobj::Standard::Standard(std::string kind);
+%ignore Gyoto::Astrobj::Standard::Standard(const Standard& );
+GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAstrobj.h)
 
 %define _PConverter(member, method)
   Gyoto::Units::Converter * method() {

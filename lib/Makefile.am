@@ -21,7 +21,7 @@ libgyoto@FEATURES@_la_SOURCES =  \
 	WIP.C Worldline.C Photon.C Scenery.C			\
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
-	ThinDisk.C Converters.C Functors.C Hooks.C
+	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
@@ -33,7 +33,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
-	StandardAstrobj.C PageThorneDisk.C \
+	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
 	StdPlug.C
 

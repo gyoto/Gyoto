@@ -38,7 +38,6 @@
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
 // include Astrobj headers
-#include "GyotoStandardAstrobj.h"
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
@@ -69,7 +68,6 @@ using namespace Gyoto;
 %array_class(size_t, array_size_t)
 
 // Typemaps to translate SmartPointer to specific classes
-GyotoSmPtrTypeMapClassDerived(Astrobj, Standard)
 GyotoSmPtrTypeMapClassDerived(Astrobj, UniformSphere)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Star)
 GyotoSmPtrTypeMapClassDerived(Astrobj, StarTrace)
@@ -93,13 +91,6 @@ GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
 GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
-
-
-%ignore Gyoto::Astrobj::Standard::Standard();
-%ignore Gyoto::Astrobj::Standard::Standard(double radmax);
-%ignore Gyoto::Astrobj::Standard::Standard(std::string kind);
-%ignore Gyoto::Astrobj::Standard::Standard(const Standard& );
-GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAstrobj.h)
 
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind, SmartPointer<Metric::Generic> gg, double radius);
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind);
