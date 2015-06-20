@@ -42,6 +42,84 @@ bool Gyoto::Python::PyCallable_HasVarArg(PyObject * pMethod) {
   return answer;
 }
 
+PyObject * Gyoto::Python::PyImport_Gyoto() {
+  static PyObject * pModule = NULL;
+  static bool need_load = true;
+
+  if (need_load) {
+    need_load=false;
+    pModule = PyImport_ImportModule("gyoto");
+    if (PyErr_Occurred()) {
+      GYOTO_WARNING << "";
+      PyErr_Print();
+    }
+  }
+
+  return pModule;
+}
+
+PyObject * Gyoto::Python::pGyotoSpectrum() {
+  PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Spectrum");
+  }
+  return res;
+}
+
+PyObject * Gyoto::Python::pGyotoThinDisk() {
+  PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "ThinDisk");
+  }
+  return res;
+}
+
+PyObject * Gyoto::Python::pGyotoMetric() {
+  PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Metric");
+  }
+  return res;
+}
+
+PyObject * Gyoto::Python::pGyotoStandardAstrobj() {
+  PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "StandardAstrobj");
+  }
+  return res;
+}
+
+void Gyoto::Python::PyInstance_SetThis(PyObject * pInstance,
+				       PyObject * pNew,
+				       void * ptr) {
+  PyObject * pThis = NULL;
+  if (pNew) pThis = PyObject_CallFunction(pNew, "l", (long)ptr);
+  else {
+    pThis = Py_None;
+    Py_INCREF(pThis);
+  }
+  PyObject_SetAttrString(pInstance, "this", pThis);
+  Py_XDECREF(pThis);
+}
+
+
 // Birth and death
 Base::Base()
 : module_(""), class_(""),   parameters_(),

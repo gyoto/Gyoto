@@ -52,6 +52,7 @@
 
 import math
 import numpy
+import gyoto
 
 class BlackBody6000:
     '''Black-body spectrum at 6000K
@@ -169,7 +170,6 @@ class Minkowski:
     methods illustrated here.
 
     '''
-    spherical = False
 
     def __setitem__(self, key, value):
         '''Set parameters.
@@ -187,7 +187,7 @@ class Minkowski:
 
         '''
         if key == "spherical":
-            spherical = value
+            pass
         elif key == "mass":
             # C++ may send a mass, we accept it but ignore it.
             pass
@@ -202,11 +202,12 @@ class Minkowski:
         C++ will send two NumPy arrays.
 
         '''
+        spherical=self.this.get('Spherical')
         for mu in range(0, 4):
             for nu in range(0, 4):
                 g[mu][nu]=g[nu][mu]=0
         g[0][0]=-1;
-        if not self.spherical:
+        if not spherical:
             for mu in range(1, 4):
                 g[mu][mu]=1.
             return
@@ -225,11 +226,12 @@ class Minkowski:
         C++ will send two NumPy arrays.
 
         '''
+        spherical=self.this.get('Spherical')
         for alpha in range(0, 4):
             for mu in range(0, 4):
                 for nu in range(0, 4):
                     dst[alpha][mu][nu]=0.
-        if not self.spherical:
+        if not spherical:
             return 0
         r=x[1]
         theta=x[2]
@@ -253,7 +255,6 @@ class FixedStar:
         Needed here to make a non-static array data member.
         '''
         self.pos = numpy.zeros((4), float)
-        self.spherical = False
 
     def __setitem__(self, key, value):
         '''Set parameters
@@ -261,14 +262,9 @@ class FixedStar:
         Here, the parameters will be the 3 space coordinates of the
         center of the blob.
 
-        The 4-th parameter gives the coordinate system kind: 0 for
-        Cartesian, anything else for Spherical.
-
         '''
         if key in (0, 1, 2):
             self.pos[key+1]=value
-        elif key is 3:
-            self.spherical=bool(value)
         else:
             raise IndexError
         self.coord_st=self.to_cartesian(self.pos)
@@ -277,7 +273,11 @@ class FixedStar:
         '''Helper function, not in the API
 
         '''
-        if self.spherical:
+        gg=self.this.metric()
+        spherical=False
+        if gg is not None:
+            spherical = gg.coordKind() == gyoto.GYOTO_COORDKIND_SPHERICAL
+        if spherical:
             rs=coord[1]
             ths=coord[2]
             phs=coord[3]

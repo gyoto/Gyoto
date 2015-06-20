@@ -76,8 +76,26 @@
 namespace Gyoto {
   namespace Python {
     class Base;
+
+    /// Return new reference to method, or NULL if method not found.
     PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
+
+    /// Return refernce to the gyoto module, or NULL.
+    PyObject * PyImport_Gyoto();
+
+    /// Set "this" attribute in instance
+    void PyInstance_SetThis(PyObject * pInstance,
+			    PyObject * pNew,
+			    void * ptr);
+
+    /// Check whether method accepts the varargs argument
     bool PyCallable_HasVarArg(PyObject * pMethod);
+
+    /// Get reference to Spectrum constructor in gyoto module
+    PyObject * pGyotoSpectrum() ;
+    PyObject * pGyotoMetric() ;
+    PyObject * pGyotoStandardAstrobj() ;
+    PyObject * pGyotoThinDisk() ;
   }
   namespace Spectrum {
     class Python;

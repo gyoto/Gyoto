@@ -83,6 +83,15 @@ void Spectrum::Python::klass(const std::string &f) {
 
   pCall_overloaded_ = Gyoto::Python::PyCallable_HasVarArg(pCall_);
 
+  Gyoto::Python::PyInstance_SetThis(pInstance_,
+				    Gyoto::Python::pGyotoSpectrum(),
+				    this);
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("Error while setting this");
+  }
+
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
   GYOTO_DEBUG << "Done checking Python class methods" << f << endl;

@@ -133,6 +133,10 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
   pIntegrateEmission_overloaded_ = pIntegrateEmission_ &&
     Gyoto::Python::PyCallable_HasVarArg(pIntegrateEmission_);
 
+  Gyoto::Python::PyInstance_SetThis(pInstance_,
+				    Gyoto::Python::pGyotoStandardAstrobj(),
+				    this);
+
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
   GYOTO_DEBUG << "Done checking Python class methods" << f << endl;

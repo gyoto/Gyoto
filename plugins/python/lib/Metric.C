@@ -28,11 +28,13 @@ GYOTO_PROPERTY_END(Metric::Python, Generic::properties)
 // Birth and death
 Gyoto::Metric::Python::Python()
 : Generic(GYOTO_COORDKIND_CARTESIAN, "Python"),
+  Base(),
   pGmunu_(NULL), pChristoffel_(NULL)
 {}
 
 Gyoto::Metric::Python::Python(const Python& o)
 : Generic(o),
+  Base(o),
   pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_)
 {
   Py_XINCREF(pGmunu_);
@@ -87,7 +89,7 @@ void Gyoto::Metric::Python::mass(double m) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed setting \"spherical\" using __setitem__");
+    throwError("Failed setting \"mass\" using __setitem__");
   }
 
   PyGILState_Release(gstate);
@@ -135,6 +137,10 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
     PyGILState_Release(gstate);
     throwError("Object does not implement required method \"getVelocity\"");
   }
+
+  Gyoto::Python::PyInstance_SetThis(pInstance_,
+				    Gyoto::Python::pGyotoMetric(),
+				    this);
 
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
