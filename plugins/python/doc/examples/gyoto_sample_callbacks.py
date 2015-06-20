@@ -34,7 +34,8 @@
 
    gmunu(self, dst, pos): mandatory;
    christoffel(self, dst, pos): mandatory
-   __setitem__(self, key, value): mandatory
+   __setattr__(self, key, value): optional
+   __setitem__(self, key, value): optional
 
    Astrobjs:
 
@@ -170,29 +171,47 @@ class Minkowski:
     methods illustrated here.
 
     '''
+    def __setattr__(self, key, value):
+        '''Set attributes.
 
-    def __setitem__(self, key, value):
-        '''Set parameters.
+        Optional.
 
-        Mandatory.
+        C++ will set several attributes. By overloading __setattr__,
+        on can react when that occurs, in particular to make sure this
+        knows the coordinate kind as in this example.
 
-        At least 'spherical' and 'mass' must be supported. If only one
-        kind (Spherical or Cartesian) is supported, __setitem__ must
-        still accept both True or False as valid, it is not the right
-        place to raise an exception. Do this in gmunu or christoffel
-        or both.
+        Attributes set by the C++ layer:
 
-        Additional parameters, if any, will be sent using integer keys
-        like in the SPectrum examples.
+          this: if the Python extension "gyoto" can be imported, it
+                will be set to a gyoto.Metric instance pointing to the
+                C++-side instance. If the "gyoto" extension cannot be
+                loaded, this will be set to None.
+
+          spherical: when the spherical(bool t) method is called in
+                the C++ layer, it sets the spherical attribute in the
+                Python side.
+
+          mass: when the mass(double m) method is called in the C++
+                side, it sets the spherical attribute in the Python
+                side.
+
+        This example initializes coordKind in the C++ side if it is
+        not already set, since this Minkowski class can work in
+        either.
 
         '''
-        if key == "spherical":
-            pass
-        elif key == "mass":
-            # C++ may send a mass, we accept it but ignore it.
-            pass
-        else:
-            raise IndexError
+        # First, actually store the attribute. This is what would
+        # happen if we did not overload __setattr__.
+        self.__dict__[key]=value
+        # Then, if key is "this", ensure this knows a valid coordKind.
+        if (key is "this"):
+            cK=value.coordKind()
+            if cK is gyoto.GYOTO_COORDKIND_UNSPECIFIED:
+                value.set("Spherical", False)
+            # We could do without this, since this will tell us later
+            # anyway.
+            else:
+                self.spherical = (cK is gyoto.GYOTO_COORDKIND_SPHERICAL)
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
@@ -202,12 +221,11 @@ class Minkowski:
         C++ will send two NumPy arrays.
 
         '''
-        spherical=self.this.get('Spherical')
         for mu in range(0, 4):
             for nu in range(0, 4):
                 g[mu][nu]=g[nu][mu]=0
         g[0][0]=-1;
-        if not spherical:
+        if not self.spherical:
             for mu in range(1, 4):
                 g[mu][mu]=1.
             return
@@ -226,12 +244,11 @@ class Minkowski:
         C++ will send two NumPy arrays.
 
         '''
-        spherical=self.this.get('Spherical')
         for alpha in range(0, 4):
             for mu in range(0, 4):
                 for nu in range(0, 4):
                     dst[alpha][mu][nu]=0.
-        if not spherical:
+        if not self.spherical:
             return 0
         r=x[1]
         theta=x[2]

@@ -57,13 +57,12 @@ void Gyoto::Metric::Python::spherical(bool t) {
   GYOTO_DEBUG << "Set \"spherical\"\n";
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  Py_XDECREF(PyObject_CallMethod(pInstance_,
-				 "__setitem__",
-				 "sb", "spherical", t));
-  if (PyErr_Occurred()) {
+  int res = PyObject_SetAttrString(pInstance_, "spherical", t?Py_True:Py_False);
+
+  if (PyErr_Occurred() || res == -1) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed setting \"spherical\" using __setitem__");
+    throwError("Failed setting \"spherical\" using __setattr__");
   }
 
   PyGILState_Release(gstate);
@@ -72,6 +71,8 @@ void Gyoto::Metric::Python::spherical(bool t) {
 }
 
 bool Gyoto::Metric::Python::spherical() const {
+  if (coordKind() == GYOTO_COORDKIND_UNSPECIFIED)
+    throwError("coordKind unspecified");
   return coordKind() == GYOTO_COORDKIND_SPHERICAL;
 }
 
@@ -83,13 +84,16 @@ void Gyoto::Metric::Python::mass(double m) {
   GYOTO_DEBUG << "Setting \"mass\"\n";
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  Py_XDECREF(PyObject_CallMethod(pInstance_,
-				 "__setitem__",
-				 "sd", "mass", m));
-  if (PyErr_Occurred()) {
+  PyObject * pM = PyFloat_FromDouble(mass());
+
+  int res = PyObject_SetAttrString(pInstance_, "mass", pM);
+
+  Py_DECREF(pM);
+
+  if (PyErr_Occurred() || res == -1) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed setting \"mass\" using __setitem__");
+    throwError("Failed setting \"mass\" using __setattr__");
   }
 
   PyGILState_Release(gstate);
@@ -144,7 +148,7 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
 
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
-  spherical(spherical());
+  if (coordKind()) spherical(spherical());
   mass(mass());
   GYOTO_DEBUG << "Done checking Python class methods" << f << endl;
 }
