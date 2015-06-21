@@ -32,7 +32,7 @@ static PyThreadState* mainPyThread=NULL;
 namespace Gyoto {
   // import_array is actually a MACRO which returns a value.
   // We want to eat this return.
-  bool eat_import_array() { import_array(); return true;}
+  bool eat_import_array() { import_array1(false); return true;}
 }
 
 extern "C" void __GyotoPluginInit() {
