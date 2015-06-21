@@ -19,7 +19,8 @@ AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
 LT_INIT([dlopen disable-static])
-AC_CONFIG_HEADERS([config.h include/GyotoConfig.h]) 
+AC_CONFIG_HEADERS([config.h include/GyotoConfig.h])
+AC_SUBST([VERBATIM], [])
 
 VERSINFO=4:0:0
 AC_SUBST([VERSINFO])
@@ -805,6 +806,9 @@ sovers+=$FEATURES
 AC_SUBST([FEATURES])
 AC_SUBST([sovers])
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
+
+AS_IF([test "x$PYTHON" != "x"],
+ [AC_CONFIG_SUBDIRS([plugins/python])])
 
 AC_CONFIG_FILES([Makefile
                  bin/Makefile

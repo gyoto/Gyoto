@@ -1,5 +1,13 @@
 ACLOCAL_AMFLAGS = -I m4 
 SUBDIRS=@mySUBDIRS@
+
+@VERBATIM@ifneq ($(wildcard plugins/python/Makefile),)
+@VERBATIM@    SUBDIRS += plugins/python
+@VERBATIM@endif
+
+list-dirs:
+	echo $(SUBDIRS)
+
 $(SUBDIRS):
 	cd $@ ; $(MAKE)
 

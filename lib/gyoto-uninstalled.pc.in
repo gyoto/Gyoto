@@ -4,6 +4,9 @@ libdir=@libdir@
 includedir=@includedir@
 pkglibdir=${libdir}/@PACKAGE@
 
+top_srcdir=@abs_top_srcdir@
+top_builddir=@abs_top_builddir@
+
 GYOTO=${exec_prefix}/bin/gyoto
 
 GYOTO_PLUGDIR=${pkglibdir}/@sovers@
@@ -27,6 +30,6 @@ Version: @VERSION@
 URL: http://gyoto.obspm.fr
 Requires: @pkg_requires@
 Conflicts:
-Libs: -L${libdir} -lgyoto@FEATURES@ -ldl @pkg_libs@ @PTHREAD_LIBS@
+Libs: -L${top_builddir}/lib/.libs -lgyoto@FEATURES@ -ldl @pkg_libs@ @PTHREAD_LIBS@
 Libs.private:
-Cflags: @CXXFLAGS@ -I${includedir} @pkg_cflags@ @PTHREAD_CFLAGS@ @BOOST_CPPFLAGS@
+Cflags: @CXXFLAGS@ -I${top_srcdir}/include -I${top_builddir}/include @pkg_cflags@ @PTHREAD_CFLAGS@ @BOOST_CPPFLAGS@

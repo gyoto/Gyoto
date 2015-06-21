@@ -45,6 +45,9 @@ AC_SUBST([DYLIB_VAR])
 AC_SUBST([SYS])
 AC_SUBST([plugin_sfx])
 
+PKG_CONFIG_PATH+=../../lib
+export PKG_CONFIG_PATH
+
 # Read Gyoto's pkg-config file
 PKG_CHECK_MODULES([Gyoto],
    [gyoto],

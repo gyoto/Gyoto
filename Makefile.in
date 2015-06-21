@@ -320,6 +320,7 @@ SWIG_LIB = @SWIG_LIB@
 SYS = @SYS@
 UDUNITS_CFLAGS = @UDUNITS_CFLAGS@
 UDUNITS_LIBS = @UDUNITS_LIBS@
+VERBATIM = @VERBATIM@
 VERSINFO = @VERSINFO@
 VERSION = @VERSION@
 VIRTUALENV = @VIRTUALENV@
@@ -384,6 +385,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sovers = @sovers@
 srcdir = @srcdir@
+subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -909,6 +911,14 @@ uninstall-am:
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am
+
+
+@VERBATIM@ifneq ($(wildcard plugins/python/Makefile),)
+@VERBATIM@    SUBDIRS += plugins/python
+@VERBATIM@endif
+
+list-dirs:
+	echo $(SUBDIRS)
 
 $(SUBDIRS):
 	cd $@ ; $(MAKE)

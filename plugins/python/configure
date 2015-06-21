@@ -16247,6 +16247,9 @@ plugin_sfx=so
 
 
 
+PKG_CONFIG_PATH+=../../lib
+export PKG_CONFIG_PATH
+
 # Read Gyoto's pkg-config file
 
 pkg_failed=no
