@@ -12,6 +12,16 @@ sover_LTLIBRARIES = libgyoto-@pluginname@.la
 libgyoto_@pluginname@_la_SOURCES = \
 	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C
 
+if DEFAULT
+install-data-hook:
+	cd $(DESTDIR)$(soverdir) && \
+	  rm -f libgyoto-python.$(GYOTO_PLUGIN_SFX) && \
+	  $(LN_S) libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX) \
+	          libgyoto-python.$(GYOTO_PLUGIN_SFX)
+uninstall-hook:
+	rm -f $(DESTDIR)$(soverdir)/libgyoto-python.$(GYOTO_PLUGIN_SFX)
+endif
+
 # HEADERS: where they are, where to install them
 library_includedir=$(GYOTO_PREFIX)/include/Gyoto
 library_include_HEADERS=$(top_srcdir)/include/*.h

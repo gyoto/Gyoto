@@ -679,6 +679,7 @@ LIBOBJS
 plugin_sfx
 SYS
 DYLIB_VAR
+GYOTO_PLUGIN_SFX
 KPSEWHICH
 BIBTEX
 PDFLATEX
@@ -18238,6 +18239,8 @@ plugin_sfx=so
 cat >>confdefs.h <<_ACEOF
 #define GYOTO_PLUGIN_SFX "${plugin_sfx}"
 _ACEOF
+
+GYOTO_PLUGIN_SFX=${plugin_sfx}
 
 
 # Used in yorick/stdplug/Makefile

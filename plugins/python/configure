@@ -637,6 +637,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 mySUBDIRS
+DEFAULT_FALSE
+DEFAULT_TRUE
 pluginname
 PYTHON_LIBS
 PYTHON_LDFLAGS
@@ -646,6 +648,7 @@ PYTHON_CONFIG
 PYTHON
 Y_INST_SITE
 Y_INST_HOME
+GYOTO_PLUGIN_SFX
 GYOTO_EPREFIX
 GYOTO_PREFIX
 GYOTO
@@ -16333,6 +16336,8 @@ $as_echo "yes" >&6; }
 
     GYOTO_EPREFIX=`$PKG_CONFIG --variable=exec_prefix    gyoto`
 
+    GYOTO_PLUGIN_SFX=`$PKG_CONFIG --variable=GYOTO_PLUGIN_SFX    gyoto`
+
     Y_INST_HOME=`$PKG_CONFIG --variable=Y_INST_HOME    gyoto`
 
     Y_INST_SITE=`$PKG_CONFIG --variable=Y_INST_SITE    gyoto`
@@ -16646,7 +16651,31 @@ $as_echo "$pc_cv_python_libs" >&6; }
 PYTHON_LIBS=$pc_cv_python_libs
 
 
+default_python=`which python || true`
+
 pluginname=`basename $PYTHON`
+mklink=no
+if test x$pluginname == xpython; then :
+
+  fullpath=`which $PYTHON`
+  real=`readlink $fullpath || true`
+  if test x$real != x; then :
+
+    pluginname=`basename $real`
+    mklink=yes
+
+fi
+
+fi
+
+
+ if test x$mklink = xyes; then
+  DEFAULT_TRUE=
+  DEFAULT_FALSE='#'
+else
+  DEFAULT_TRUE='#'
+  DEFAULT_FALSE=
+fi
 
 
 mySUBDIRS="lib"
@@ -16828,6 +16857,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${DEFAULT_TRUE}" && test -z "${DEFAULT_FALSE}"; then
+  as_fn_error $? "conditional \"DEFAULT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

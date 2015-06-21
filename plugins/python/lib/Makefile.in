@@ -227,6 +227,7 @@ FGREP = @FGREP@
 GREP = @GREP@
 GYOTO = @GYOTO@
 GYOTO_EPREFIX = @GYOTO_EPREFIX@
+GYOTO_PLUGIN_SFX = @GYOTO_PLUGIN_SFX@
 GYOTO_PREFIX = @GYOTO_PREFIX@
 Gyoto_CFLAGS = @Gyoto_CFLAGS@
 Gyoto_LIBS = @Gyoto_LIBS@
@@ -610,6 +611,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@DEFAULT_FALSE@install-data-hook:
+@DEFAULT_FALSE@uninstall-hook:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-soverLTLIBRARIES \
@@ -635,7 +638,8 @@ info-am:
 
 install-data-am: install-library_includeHEADERS \
 	install-soverLTLIBRARIES
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
@@ -682,25 +686,34 @@ ps-am:
 
 uninstall-am: uninstall-library_includeHEADERS \
 	uninstall-soverLTLIBRARIES
-
-.MAKE: install-am install-strip
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: install-am install-data-am install-strip uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-soverLTLIBRARIES cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-library_includeHEADERS install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-soverLTLIBRARIES install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-data-am install-data-hook install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-library_includeHEADERS \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-soverLTLIBRARIES install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
+	tags tags-am uninstall uninstall-am uninstall-hook \
 	uninstall-library_includeHEADERS uninstall-soverLTLIBRARIES
 
+
+@DEFAULT_TRUE@install-data-hook:
+@DEFAULT_TRUE@	cd $(DESTDIR)$(soverdir) && \
+@DEFAULT_TRUE@	  rm -f libgyoto-python.$(GYOTO_PLUGIN_SFX) && \
+@DEFAULT_TRUE@	  $(LN_S) libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX) \
+@DEFAULT_TRUE@	          libgyoto-python.$(GYOTO_PLUGIN_SFX)
+@DEFAULT_TRUE@uninstall-hook:
+@DEFAULT_TRUE@	rm -f $(DESTDIR)$(soverdir)/libgyoto-python.$(GYOTO_PLUGIN_SFX)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

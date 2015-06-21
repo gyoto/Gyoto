@@ -56,6 +56,7 @@ PKG_CHECK_MODULES([Gyoto],
     AC_SUBST([GYOTO],         [`$PKG_CONFIG --variable=GYOTO          gyoto`])
     AC_SUBST([GYOTO_PREFIX],  [`$PKG_CONFIG --variable=prefix         gyoto`])
     AC_SUBST([GYOTO_EPREFIX], [`$PKG_CONFIG --variable=exec_prefix    gyoto`])
+    AC_SUBST([GYOTO_PLUGIN_SFX], [`$PKG_CONFIG --variable=GYOTO_PLUGIN_SFX    gyoto`])
     AC_SUBST([Y_INST_HOME],   [`$PKG_CONFIG --variable=Y_INST_HOME    gyoto`])
     AC_SUBST([Y_INST_SITE],   [`$PKG_CONFIG --variable=Y_INST_SITE    gyoto`])
     gyoto_MPICXX=`$PKG_CONFIG --variable=MPICXX gyoto`
@@ -75,7 +76,21 @@ PC_PYTHON_CHECK_CFLAGS
 PC_PYTHON_CHECK_LDFLAGS
 PC_PYTHON_CHECK_LIBS
 
-AC_SUBST([pluginname], [`basename $PYTHON`])
+default_python=`which python || true`
+
+pluginname=`basename $PYTHON`
+mklink=no
+AS_IF([test x$pluginname == xpython], [
+  fullpath=`which $PYTHON`
+  real=`readlink $fullpath || true`
+  AS_IF([test x$real != x], [
+    pluginname=`basename $real`
+    mklink=yes
+  ])
+])
+
+AC_SUBST([pluginname])
+AM_CONDITIONAL([DEFAULT], [test x$mklink = xyes])
 
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],

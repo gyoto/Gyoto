@@ -7,9 +7,10 @@ pkglibdir=${libdir}/@PACKAGE@
 top_srcdir=@abs_top_srcdir@
 top_builddir=@abs_top_builddir@
 
-GYOTO=${exec_prefix}/bin/gyoto
+GYOTO=${top_builddir}/bin/gyoto
 
 GYOTO_PLUGDIR=${pkglibdir}/@sovers@
+GYOTO_PLUGIN_SFX=@GYOTO_PLUGIN_SFX@
 
 YORICK=@YORICK@
 Y_INST_HOME=@Y_INST_HOME@
