@@ -808,7 +808,9 @@ AC_SUBST([sovers])
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 AS_IF([test "x$PYTHON" != "x"],
- [AC_CONFIG_SUBDIRS([plugins/python])])
+ [AC_CONFIG_SUBDIRS([plugins/python])
+  mySUBDIRS="$mySUBDIRS python"
+ ])
 
 AC_CONFIG_FILES([Makefile
                  bin/Makefile

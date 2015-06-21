@@ -19961,6 +19961,8 @@ _ACEOF
 if test "x$PYTHON" != "x"; then :
   subdirs="$subdirs plugins/python"
 
+  mySUBDIRS="$mySUBDIRS python"
+
 fi
 
 ac_config_files="$ac_config_files Makefile bin/Makefile doc/Makefile doc/doxyfile doc/user_guide/Makefile lib/Makefile lib/gyoto.pc lib/gyoto-uninstalled.pc"

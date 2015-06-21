@@ -7,6 +7,9 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 
+# This Makefile contains targets that fail if run in parallel
+.NOTPARALLEL:
+
 # List whatever files you want to include in your source distribution here.
 # You can include whole directories but note that *everything* under that 
 # directory will be included
