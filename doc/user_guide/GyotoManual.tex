@@ -910,24 +910,89 @@ The basic functions developed in \texttt{lib/RotStar3\_1.C} are similar to their
 This section is currently under construction.
 
 \GYOTO\ can be extended easily by adding new \Metric, \Astrobj, and
-\Spectrum\ classes. Such classes can be bundled in \GYOTO\
-plug-ins. The main \GYOTO\ code-base already contain two plug-ins:
-\texttt{stdplug}, which contain all the standard analytical metrics
-and all the standard astrophysical object, and \texttt{lorene} which
-contains the numerical, LORENE-based metrics. In addition, we maintain
-our own private plug-in, which contains experimental or yet
-unpublished \Astrobj\ and \Metric\ classes. When we make a publication
-based on these classes, we move them from our private plug-in to the
-relevant public plug-in. We kindly request that you follow the same
-philosophy: whenever you write a new class and make a publication out
-of it, please publish the code as free software, either on your own
-servers or by letting us include it in \GYOTO. As soon as you write
-your own objects, you will dependent on the stability of the \GYOTO\
-application programming interface, which is subject to frequent
-changes. It will help us to help you maintain your code if you inform
-us of such development: \texttt{gyoto@sympa.obspm.fr}.
+\Spectrum\ classes. Such classes can be written in the Python language
+(Sect.~\ref{sect:python-plug-in}) or in C++, in which case they are made
+available to Gyoto by cumpiling them into a \GYOTO\ plug-in
+(Sect.~\ref{sect:plug-in}). The main \GYOTO\ code-base already contain
+tree plug-ins:
+\begin{itemize}
+\item \texttt{stdplug}, which contain all the standard analytical
+  metrics and all the standard astrophysical object;
+\item \texttt{python}, which allows implementing new \Metric,
+  \Astrobj, and \Spectrum\ classes in the Python (2 or 3) language;
+\item and \texttt{lorene}, which contains the numerical, LORENE-based
+  metrics.
+\end{itemize}
+In addition, we maintain our own private plug-in, which contains
+experimental or yet unpublished \Astrobj\ and \Metric\ classes. When
+we make a publication based on these classes, we try to move them from
+our private plug-in to the relevant public plug-in. We kindly request
+that you follow the same philosophy: whenever you write a new class
+and make a publication out of it, please publish the code as free
+software, either on your own servers or by letting us include it in
+\GYOTO.
 
-\subsection{Writing a plug-in}
+As soon as you write your own objects (especially if you do so in
+C++), you will dependent on the stability of the \GYOTO\ application
+programming interface, which is subject to frequent changes. It will
+help us to help you maintain your code if you inform us of such
+development: \texttt{gyoto@sympa.obspm.fr}. In addition, we try to
+maintain a stable branch in our github repository
+(\url{http://github.com/gyoto/Gyoto}). Code on this branch should
+remain API-and ABI-compatible with the latest official release.
+
+\subsection{Extending in Python}
+\label{sect:python-plug-in}
+The `python' plug-in allows writting derived classes
+in Python rather than C++.
+
+This is the easiest approach and lets you set-up your new
+objects in just a few lines of code, without the need for setting-up a
+plug-in, compiling it frequently during your deverlopment
+cycle. However, there is a cost in terms of code execution speed. This
+code is usually negligible to moderate for classes implementing the
+\Astrobj\ and \Spectrum\ interfaces, but it is major for classes
+implementing the \Metric\ interface. This is because the \Metric\
+methods are evaluated several times per iteration when iterating
+geodesics, while the \Astrobj\ and \Spectrum\ methods are evaluated
+less frequently.
+
+To use your Python classes, simply load the Python plug-in, for
+instance by setting the \texttt{GYOTO\_PLUGINS} environment variable
+to include the ``python''\footnote{The actual name of the Gyoto plug-in
+  will match that of the Python interpreter used for compiling it. For
+  instance, if Gyoto was configured with \texttt{./configure
+    PYTHON=/usr/bin/python3.4}, the plug-in will be called
+  \texttt{python3.4} instead of \texttt{python}. This allows you to
+  compile several versions of the plug-in, that will run inside each
+  of the Python interpreters.} plug-in (see
+Sect.~\ref{sect:using-plug-in}). Then tell the plug-in about your
+module and class. For instance, in an XML file:
+\begin{code}
+  <Metric kind="Python">
+   Python module name for ``my_module.py'':
+    <Module>my_module</Module>
+
+   Class defined in ``my_module.py'':
+    <Class>my_class</Class>
+
+   Any parameters (foating point) ``my_class'' may need:
+    <Parameters>2.0 20.0</Parameters>
+  </Metric>
+\end{code}
+
+The Python class will need to implement a few methods, with the same
+name as the C++ method it implements (except the C++ name
+\texttt{operator()} is translated as \texttt{\_\_call\_\_} in Python).
+
+More information can be found in the doxygen-generated documentation
+for the
+\href{https://github.com/gyoto/Gyoto/blob/master/plugins/python/include/GyotoPython.h}{\texttt{GyotoPython.h}}
+file and in the
+\href{https://github.com/gyoto/Gyoto/tree/master/plugins/python/doc/examples}{\texttt{plugins/python/doc/examples}}
+sub-directory of the source code distribution.
+
+\subsection{Writing a C++ plug-in}
 \label{sect:plug-in}
 
 A plug-in is merely a shared library which contains the object code
@@ -1115,6 +1180,7 @@ the higher level bases:
 \end{description}
 
 \subsection{Using your new plug-in}
+\label{sect:using-plug-in}
 There are several ways to instruct \GYOTO\ to load your plug-in. You
 can set the environment variable\texttt{GYOTO\_PLUGINS}\footnote{How
   to do it depends on your shell and is outside the scope of this
