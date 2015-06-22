@@ -25,6 +25,9 @@ AC_SUBST([VERBATIM], [])
 VERSINFO=4:0:0
 AC_SUBST([VERSINFO])
 
+# Needed for gcc-5, should be harmless for other compilers:
+AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
+
 FEATURES=""
 AC_ARG_ENABLE([release],
   [AS_HELP_STRING([--enable-release],
