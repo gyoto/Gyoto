@@ -1,6 +1,6 @@
 /**
- * \file GyotoObject.h
- * \brief Introspectbale objects 
+ * \file GyotoValue.h
+ * \brief Introspectable value
  */
 
 /*

@@ -23,14 +23,14 @@
   </Screen>
 
   <Astrobj kind = "Python::Standard">
-    <Module>gyoto_sample_callbacks</Module>
+    <Module>gyoto_sample_standard</Module>
     <Class>FixedStar</Class>
     <CriticalValue> 12 </CriticalValue>
     <SafetyValue> 15 </SafetyValue>
 
     For this object, the 3 first parameters give the position, the
     last parameter give Cartesian (0) or spherical (non-zero).
-    <Parameters> 0 0 0    0 </Parameters>
+    <Parameters> 0 0 0 </Parameters>
     <OpticallyThin/>
     <RMax>20.</RMax>
   </Astrobj>

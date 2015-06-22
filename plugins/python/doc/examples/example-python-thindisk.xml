@@ -14,7 +14,7 @@
   <Astrobj kind = "Python::ThinDisk">
     <InnerRadius> 3. </InnerRadius>
     <OpticallyThin/>
-    <Module>gyoto_sample_callbacks</Module>
+    <Module>gyoto_sample_thindisks</Module>
     <Class>ThinDisk</Class>
   </Astrobj>
 

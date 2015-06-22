@@ -17,6 +17,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** \file GyotoThinDiskIronLine.h */
+
 #ifndef __GyotoThinDiskIronLine_h
 #define __GyotoThinDiskIronLine_h
 

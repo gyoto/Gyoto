@@ -95,6 +95,11 @@
 #include <Python.h>
 
 namespace Gyoto {
+  /**
+   * \namespace Gyoto::Python
+   * \brief Helpers for the classes deriving from Gyoto::Python::Base
+   */
+
   namespace Python {
     class Base;
 
@@ -112,10 +117,13 @@ namespace Gyoto {
     /// Check whether method accepts the varargs argument
     bool PyCallable_HasVarArg(PyObject * pMethod);
 
-    /// Get reference to Spectrum constructor in gyoto module
+    /// Get reference to the Spectrum constructor in the gyoto Python extension
     PyObject * pGyotoSpectrum() ;
+    /// Get reference to the Metric constructor in the gyoto Python extension
     PyObject * pGyotoMetric() ;
+    /// Get reference to the StandardAstrobj constructor in the gyoto Python extension
     PyObject * pGyotoStandardAstrobj() ;
+    /// Get reference to the ThinDisk constructor in the gyoto Python extension
     PyObject * pGyotoThinDisk() ;
   }
   namespace Spectrum {
@@ -125,6 +133,10 @@ namespace Gyoto {
     class Python;
   }
   namespace Astrobj {
+  /**
+   * \namespace Gyoto::Astrobj::Python
+   * \brief Classes that wrap Python classes as Gyoto Astrobj implementations
+   */
     namespace Python {
       class Standard;
       class ThinDisk;
@@ -248,90 +260,10 @@ class Gyoto::Python::Base {
  * It interfaces with a Python class which must implement at least the
  * __call__ method.
  *
- *  XML stanza:
- *  \code
- *    <Spectrum kind="Python">
- *      <Module>my_python_module</Module>
- *      <Class>my_python_class</Class>
- *      <Parameters> 0. 1. 2. ... </Parameters>
- *    </Spectrum>
- *  \endcode
- *
- * Example:
- *
-\code
-class PowerLaw:
-    def __setitem__(self, key, value):
-        '''
-        This is how Gyoto sends the <Parameter/> XML entity:
-        spectrum[i]=value
-        i=0: set constant
-        i=1: set exponent
-        '''
-        if (key==0):
-            self.constant = value
-        elif (key==1):
-            self.exponent = value
-        else:
-            raise IndexError
-
-    def __getitem__(self, key, value):
-        '''
-        Implementing this is absolutely not necessary (Gyoto does not
-        use it, as of now), but we can: it allows retrieving the
-        parameters like __setitem__ sets them:
-
-        spectrum[0] == spectrum.constant
-        spectrum[1] == spectrum.exponent
-        '''
-        if (key==0):
-            return self.constant
-        elif (key==1):
-            return self.exponent
-        else:
-            raise IndexError
-
-    def __call__(self, *args):
-        '''spectrum(frequency_in_Hz) = constant * nu**exponent
-
-        This function implements both
-        Spectrum::Python::operator()(double nu).
-        and
-        Spectrum::Python::operator()(double nu, double opacity, double ds).
-
-        This behavior is obtained by having the varargs *args as
-        second argument instead of a normal variable.
-
-	To implement only Spectrum::Python::operator()(double nu), use
-	this definition instead: def __call__(self, nu):
-
-        The second overloaded function is here exactly the same as the
-        C++ generic implementation and therefore useless. It is here
-        to illustrate the API.
-
-        '''
-        nu=args[0]
-        if (len(args)==1):
-            return self.constant * math.pow(nu, self.exponent)
-        else:
-            opacity=args[1]
-            ds=args[2]
-            thickness=(opacity*ds)
-            if (thickness):
-                return self(nu) * (1.-math.exp(-thickness))
-            return 0.
-
-    def integrate(self, nu1, nu2):
-        '''
-        If present, this function implements
-        Gyoto::Spectrum::Python::integrate(double nu1, double nu2)
-
-        If absent, the generic integrator is used.
-        '''
-        if (self.exponent == -1.):
-            return self.constant * (math.log(nu2) -math.log(nu1))
-        return self.constant * (math.pow(nu2, self.exponent+1)- math.pow(nu1, self.exponent+1)) / (self.exponent+1)
-\endcode
+ * Sample XML file:
+ * \include example-python.xml
+ * Sample Python module:
+ * \include gyoto_sample_spectra.py
  */
 class Gyoto::Spectrum::Python
 : public Gyoto::Spectrum::Generic,
@@ -410,120 +342,10 @@ class Gyoto::Spectrum::Python
  * Use &lt;Cartesian&gt; or &lt;/Spherical&gt; to select the coordinate system
  * kind.
  *
- *  XML stanza:
- *  \code
- *    <Metric kind="Python">
- *      <Module>my_python_module</Module>
- *      <Class>my_python_class</Class>
- *      <Spherical/> or Cartesian
- *      <Mass unit="kg"> 1. </Mass>
- *      <Parameters> 0. 1. 2. ... </Parameters>
- *    </Spectrum>
- *  \endcode
- *
- * Example:
- *
-\code
-class Minkowski:
-    '''Flat space metric
-
-    Implemented for both Cartesian and spherical coordinates.
-
-    Every Gyoto Metric implemented in Python must implement the three
-    methods illustrated here.
-
-    '''
-    def __setattr__(self, key, value):
-        '''Set attributes.
-
-        Optional.
-
-        C++ will set several attributes. By overloading __setattr__,
-        on can react when that occurs, in particular to make sure this
-        knows the coordinate kind as in this example.
-
-        Attributes set by the C++ layer:
-
-          this: if the Python extension "gyoto" can be imported, it
-                will be set to a gyoto.Metric instance pointing to the
-                C++-side instance. If the "gyoto" extension cannot be
-                loaded, this will be set to None.
-
-          spherical: when the spherical(bool t) method is called in
-                the C++ layer, it sets the spherical attribute in the
-                Python side.
-
-          mass: when the mass(double m) method is called in the C++
-                side, it sets the spherical attribute in the Python
-                side.
-
-        This example initializes coordKind in the C++ side if it is
-        not already set, since this Minkowski class can work in
-        either.
-
-        '''
-        # First, actually store the attribute. This is what would
-        # happen if we did not overload __setattr__.
-        self.__dict__[key]=value
-        # Then, if key is "this", ensure this knows a valid coordKind.
-        if (key is "this"):
-            cK=value.coordKind()
-            if cK is gyoto.GYOTO_COORDKIND_UNSPECIFIED:
-                value.set("Spherical", False)
-            # We could do without this, since this will tell us later
-            # anyway.
-            else:
-                self.spherical = (cK is gyoto.GYOTO_COORDKIND_SPHERICAL)
-
-    def gmunu(self, g, x):
-        ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
-
-        Mandatory.
-
-        C++ will send two NumPy arrays.
-
-        '''
-        for mu in range(0, 4):
-            for nu in range(0, 4):
-                g[mu][nu]=g[nu][mu]=0
-        g[0][0]=-1;
-        if not self.spherical:
-            for mu in range(1, 4):
-                g[mu][mu]=1.
-            return
-        r=x[1]
-        theta=x[2]
-        tmp=r*math.sin(theta)
-        g[1][1]=1.
-        g[2][2]=r*r
-        g[3][3]=tmp*tmp
-
-    def christoffel(self, dst, x):
-        '''Gyoto::Metric::Generic::christoffel(double dst[4][4][4], const double pos[4])
-
-        Mandatory.
-
-        C++ will send two NumPy arrays.
-
-        '''
-        for alpha in range(0, 4):
-            for mu in range(0, 4):
-                for nu in range(0, 4):
-                    dst[alpha][mu][nu]=0.
-        if not self.spherical:
-            return 0
-        r=x[1]
-        theta=x[2]
-        sth=math.sin(theta)
-        cth=math.cos(theta)
-        dst[1][2][2]=-r
-        dst[1][3][3]=-r*sth*sth
-        dst[2][1][2]=dst[2][2][1]= 1./r
-        dst[2][3][3]=-sth*cth
-        dst[3][1][3]=dst[3][3][1]= dst[2][1][2]
-        dst[3][2][3]=dst[3][3][2]= math.tan(math.pi*0.5 - x[2])
-        return 0
-\endcode
+ * Sample XML file:
+ * \include example-python.xml
+ * Sample Python module:
+ * \include gyoto_sample_metrics.py
  */
 class Gyoto::Metric::Python
 : public Gyoto::Metric::Generic,
@@ -574,79 +396,11 @@ class Gyoto::Metric::Python
  * \class Gyoto::Astrobj::Python::Standard
  * \brief Coding a Gyoto::Astrobj::Standard in Python
  *
-\code
-class FixedStar:
-    ''' Sample class for Astrobj::Python::Standard
-    '''
-    def __init__(self):
-        '''Initialize instance
-
-        Needed here to make a non-static array data member.
-        '''
-        self.pos = numpy.zeros((4), float)
-
-    def __setitem__(self, key, value):
-        '''Set parameters
-
-        Here, the parameters will be the 3 space coordinates of the
-        center of the blob.
-
-        '''
-        if key in (0, 1, 2):
-            self.pos[key+1]=value
-        else:
-            raise IndexError
-        self.coord_st=self.to_cartesian(self.pos)
-
-    def to_cartesian(self, coord):
-        '''Helper function, not in the API
-
-        '''
-        gg=self.this.metric()
-        spherical=False
-        if gg is not None:
-            spherical = gg.coordKind() == gyoto.GYOTO_COORDKIND_SPHERICAL
-        if spherical:
-            rs=coord[1]
-            ths=coord[2]
-            phs=coord[3]
-            st=math.sin(ths)
-            ct=math.cos(ths)
-            sp=math.sin(phs)
-            cp=math.cos(phs)
-            return numpy.array((coord[0], rs*st*cp, rs*st*sp, rs*ct))
-        return coord
-
-    def __call__(self, coord):
-        ''' Astrobj::Standard::operator()()
-
-        Required
-        '''
-        coord_ph=self.to_cartesian(coord)
-        coord_st=self.coord_st
-        dx = coord_ph[1]-coord_st[1]
-        dy = coord_ph[2]-coord_st[2]
-        dz = coord_ph[3]-coord_st[3]
-        return math.sqrt(dx*dx + dy*dy + dz*dz)
-
-    def getVelocity(self, coord, vel):
-        ''' Velocity field
-
-        Required
-        '''
-        vel[0]=1.
-        for i in range(1, 4):
-            vel[i]=0.
-
-    def emission(self, nuem, dsem, cph, co):
-        ''' emission
-
-        Optional
-        '''
-        return 1.
-\endcode
+ * Sample XML file:
+ * \include example-python-standard.xml
+ * Sample Python module:
+ * \include gyoto_sample_standard.py
  */
-
 class Gyoto::Astrobj::Python::Standard
 : public Gyoto::Astrobj::Standard,
   public Gyoto::Python::Base
@@ -701,6 +455,15 @@ class Gyoto::Astrobj::Python::Standard
 
 };
 
+/**
+ * \class Gyoto::Astrobj::Python::ThinDisk
+ * \brief Coding a Gyoto::Astrobj::ThinDisk in Python
+ *
+ * Sample XML file:
+ * \include example-python-thindisk.xml
+ * Sample Python module:
+ * \include gyoto_sample_thindisks.py
+ */
 class Gyoto::Astrobj::Python::ThinDisk
 : public Gyoto::Astrobj::ThinDisk,
   public Gyoto::Python::Base

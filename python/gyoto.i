@@ -176,7 +176,6 @@ Gyoto::SmartPointer<gtype>, gtype * {
   klass(long address) {
     Gyoto::nspace::klass * res = (Gyoto::nspace::klass *)(address);
     if (res) res -> incRefCount();
-    std::cerr << "Importing " << res << std::endl;
     return res;
   }
  };

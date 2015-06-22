@@ -13,7 +13,7 @@
   <Metric kind = "Python">
     <Mass unit="sunmass"> 4e6 </Mass>
     <Cartesian/>
-    <Module>gyoto_sample_callbacks</Module>
+    <Module>gyoto_sample_metrics</Module>
     <Class>Minkowski</Class>
   </Metric>
 
@@ -34,12 +34,12 @@
     <Position> 0 0 0 </Position>
     <UseGenericImpact/>
     <Spectrum kind="Python">
-      <Module>gyoto_sample_callbacks</Module>
+      <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
       <Parameters>0.001 0.</Parameters>
     </Spectrum>
     <Opacity kind="Python">
-      <Module>gyoto_sample_callbacks</Module>
+      <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
       <Parameters>0.001 0.</Parameters>
     </Opacity>
