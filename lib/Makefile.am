@@ -44,14 +44,14 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
 
-libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS)
+libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
 
 # LORENE PLUGIN
 if HAVE_LORENE
 sover_LTLIBRARIES += libgyoto-lorene.la
 endif
 libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C LorenePlug.C
-libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS)
+libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS) -avoid-version
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 
 # pkg-config file
