@@ -341,8 +341,14 @@ PTHREAD_CC = @PTHREAD_CC@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 PTHREAD_LIBS = @PTHREAD_LIBS@
 PYTHON = @PYTHON@
+PYTHON_CFLAGS = @PYTHON_CFLAGS@
 PYTHON_CONFIG = @PYTHON_CONFIG@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_EXTENSION_SUFFIX = @PYTHON_EXTENSION_SUFFIX@
 PYTHON_INCLUDES = @PYTHON_INCLUDES@
+PYTHON_LDFLAGS = @PYTHON_LDFLAGS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PREFIX = @PYTHON_PREFIX@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -410,10 +416,13 @@ pdfdir = @pdfdir@
 pkg_cflags = @pkg_cflags@
 pkg_libs = @pkg_libs@
 pkg_requires = @pkg_requires@
+pkgpythondir = @pkgpythondir@
 plugin_sfx = @plugin_sfx@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+pyexecdir = @pyexecdir@
+pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sovers = @sovers@
@@ -932,8 +941,9 @@ ps-am:
 uninstall-am: uninstall-libLTLIBRARIES \
 	uninstall-library_includeHEADERS uninstall-pkgconfigDATA \
 	uninstall-soverLTLIBRARIES
-
-.MAKE: install-am install-strip
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: install-am install-strip uninstall-am
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
 	clean-libLTLIBRARIES clean-libtool clean-soverLTLIBRARIES \
@@ -949,10 +959,15 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-library_includeHEADERS uninstall-pkgconfigDATA \
-	uninstall-soverLTLIBRARIES
+	tags tags-am uninstall uninstall-am uninstall-hook \
+	uninstall-libLTLIBRARIES uninstall-library_includeHEADERS \
+	uninstall-pkgconfigDATA uninstall-soverLTLIBRARIES
 
+
+uninstall-hook:
+	-rmdir $(DESTDIR)$(soverdir)
+	-rmdir $(DESTDIR)$(pkglibdir)
+	-rmdir $(DESTDIR)$(library_includedir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

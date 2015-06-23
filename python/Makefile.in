@@ -9,7 +9,6 @@
 
 # This Makefile contains targets that fail if run in parallel
 .NOTPARALLEL:
-
 # List whatever files you want to include in your source distribution here.
 # You can include whole directories but note that *everything* under that 
 # directory will be included
@@ -155,9 +154,9 @@ ifneq ($(VIRTUALENV),no)
 	$(DESTDIR)$(prefix)/bin/python setup_std.py install --prefix=$(DESTDIR)$(prefix)
 @HAVE_LORENE_TRUE@	$(DESTDIR)$(prefix)/bin/python setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 else
-	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix)
-	$(PYTHON) setup_std.py install --prefix=$(DESTDIR)$(prefix)
-@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
+	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_installed.txt
+	$(PYTHON) setup_std.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_std_installed.txt
+@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_lorene_installed.txt
 endif
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(srcdir)/numpy.i $(DESTDIR)$(pkgincludedir)
 
@@ -168,12 +167,13 @@ endif
 # triple-check it so that you don't remove something you shouldn't!
 # Be sure to remove any extra files you install, such as binaries or documentation!
 uninstall: 
-	-cd $(DESTDIR)$(pkgincludedir) ; rm $(GYOTO_SWIGFILES) numpy.i
+	-cd $(DESTDIR)$(pkgincludedir) ; \
+	   for file in $(GYOTO_SWIGFILES) numpy.i ; do \
+	      rm `basename $$file` ;\
+	   done
 	-rm -rvf $(DESTDIR)$(pkgpythondir)
-	-rm -v $(DESTDIR)$(pythondir)/$(PACKAGE_DISTNAME)-*.egg-info
-	-rm $(DESTDIR)$(pythondir)/_gyoto$(PYTHON_EXTENSION_SUFFIX)
-	-rm $(DESTDIR)$(pythondir)/gyoto.py
-	-rm $(DESTDIR)$(pythondir)/gyoto.pyc
+	-cat gyoto_*installed.txt | xargs rm
+	-rmdir $(DESTDIR)$(pkgincludedir)
 
 
 # Just use the usual setup.py clean command
@@ -183,7 +183,7 @@ clean:
 @HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py clean
 	-rm -Rf build
 	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
-	-rm doxygen_sqlite3.db
+	-rm doxygen_sqlite3.db gyoto_*installed.txt
 
 # Clean up the output of configure
 distclean: clean 

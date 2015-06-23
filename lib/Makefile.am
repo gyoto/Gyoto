@@ -57,3 +57,8 @@ libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
 # pkg-config file
 pkgconfigdir=$(libdir)/pkgconfig
 pkgconfig_DATA=gyoto.pc
+
+uninstall-hook:
+	-rmdir $(DESTDIR)$(soverdir)
+	-rmdir $(DESTDIR)$(pkglibdir)
+	-rmdir $(DESTDIR)$(library_includedir)

@@ -101,7 +101,19 @@ AC_ARG_WITH([python],
 	[with_python=optional])
 
 PC_PROG_PYTHON([], [2.7], [4.0])
-PC_PYTHON_CHECK_HEADERS(,[PYTHON=""])
+PC_PYTHON_PROG_PYTHON_CONFIG
+PC_PYTHON_CHECK_HEADERS(
+ [
+  PC_PYTHON_CHECK_INCLUDES
+  PC_PYTHON_CHECK_CFLAGS
+  PC_PYTHON_CHECK_LDFLAGS
+  PC_PYTHON_CHECK_LIBS
+  PC_PYTHON_CHECK_SITE_DIR
+  PC_PYTHON_SITE_PACKAGE_DIR
+  PC_PYTHON_CHECK_EXEC_DIR
+  PC_PYTHON_CHECK_EXTENSION_SUFFIX
+  PC_PYTHON_CHECK_EXEC_DIR
+],[PYTHON=""])
 AS_IF([test "x$with_python" = xno], [PYTHON=""])
 AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
   [AC_MSG_ERROR([Python requested but no supported version found (>=2.7, <4.0)])])
