@@ -16,20 +16,30 @@
   </Screen>
 
   <Astrobj kind = "Python::ThinDisk">
+
+    Python::ThinDisk inherits from ThinDisk, we can set the usual
+    parameters:
     <InnerRadius> 3. </InnerRadius>
     <OpticallyThin/>
 
-    Instead of using the "Module" attribute to let Python load a
-    module from file, we can put the Python code inline using
-    "InlineModule":
 
+    We could write a python module in a separate file, say
+    "gyoto_sample_spectra.py", and use the "Module" entity to load it:
+    <!--Module>gyoto_sample_spectra</Module-->
+
+    Alternatively, we can put the Python code inline using the
+    "InlineModule" entity. Common indentation will be removed so we
+    don't have to flush everything left .
     <InlineModule>
         class ThinDisk:
             def emission(self, nuem, dsem, cph, co):
                 return dsem
     </InlineModule>
 
-    <Class>ThinDisk</Class>
+    Since there is only one class in the module, we do not need to
+    specify the class name here:
+    <!--Class>ThinDisk</Class-->
+
   </Astrobj>
 
   <MinimumTime> 0. </MinimumTime>

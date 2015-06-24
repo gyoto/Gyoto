@@ -264,6 +264,49 @@ void Base::klass(const std::string &f) {
   
   Py_XDECREF(pInstance_); pInstance_=NULL;
 
+  if (class_ == ""){
+    GYOTO_DEBUG << "class_ is empty: check whether there is a single class in module...\n";
+
+    PyObject * dict = PyModule_GetDict(pModule_);
+    PyObject *key, *value, *tmp;
+    Py_ssize_t pos = 0, nclass=0;
+
+    while (PyDict_Next(dict, &pos, &key, &value)) {
+      if (
+#if PY_VERSION_HEX < 0x03000000
+	  PyClass_Check(value) ||
+#endif
+	  PyObject_TypeCheck(value, &PyType_Type)) {
+	++nclass;
+	if (PyUnicode_Check(key)) {
+	  tmp = PyUnicode_AsUTF8String(key);
+	} else {
+	  tmp = key;
+	  Py_INCREF(tmp);
+	}
+
+	if (!PyBytes_Check(tmp)) {
+	  Py_DECREF(tmp);
+	  PyGILState_Release(gstate);
+	  throwError("not a PyBytes string");
+	}
+
+	class_= PyBytes_AsString(tmp);
+
+	Py_DECREF(tmp);
+      }
+    }
+    if (nclass>1) {
+      GYOTO_DEBUG << "several classes in module" << endl;
+      class_ = "";
+    } else if (nclass == 1) GYOTO_DEBUG << "single class in module: " << class_ << endl;
+    else if (nclass == 0) {
+      PyGILState_Release(gstate);
+      throwError("no class in Python module\n");
+    }
+
+  }
+
   PyObject * pClass = PyObject_GetAttrString(pModule_, class_.c_str());
   if (PyErr_Occurred() || !pClass) {
     PyErr_Print();
