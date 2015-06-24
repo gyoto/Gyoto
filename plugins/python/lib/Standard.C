@@ -16,6 +16,8 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Python::Standard,
       "Python-based Astrobj class")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, Module, module,
       "Python module containing the Astrobj implementation.")
+GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, InlineModule, inlineModule,
+      "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::Standard,
@@ -73,6 +75,10 @@ void Astrobj::Python::Standard::parameters(const std::vector<double>& m)
 {Gyoto::Python::Base::parameters(m);}
 std::string Astrobj::Python::Standard::module() const
 {return Gyoto::Python::Base::module();}
+std::string Astrobj::Python::Standard::inlineModule() const
+{return Gyoto::Python::Base::inlineModule();}
+void Astrobj::Python::Standard::inlineModule(const std::string& m)
+{Gyoto::Python::Base::inlineModule(m);}
 void Astrobj::Python::Standard::module(const std::string& m)
 {Gyoto::Python::Base::module(m);}
 std::string Astrobj::Python::Standard::klass() const

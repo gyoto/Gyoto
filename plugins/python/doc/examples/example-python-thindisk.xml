@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
+
+  This example shows how to code a spectrum in Python directly in the
+  XML file.
+
   <Metric kind = "KerrBL">
     <Spin> 0. </Spin>
   </Metric>
@@ -14,7 +18,17 @@
   <Astrobj kind = "Python::ThinDisk">
     <InnerRadius> 3. </InnerRadius>
     <OpticallyThin/>
-    <Module>gyoto_sample_thindisks</Module>
+
+    Instead of using the "Module" attribute to let Python load a
+    module from file, we can put the Python code inline using
+    "InlineModule":
+
+    <InlineModule>
+        class ThinDisk:
+            def emission(self, nuem, dsem, cph, co):
+                return dsem
+    </InlineModule>
+
     <Class>ThinDisk</Class>
   </Astrobj>
 

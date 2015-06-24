@@ -17,6 +17,8 @@ GYOTO_PROPERTY_START(Gyoto::Metric::Python,
       "Python-based Metric class")
 GYOTO_PROPERTY_STRING(Gyoto::Metric::Python, Module, module,
       "Python module containing the Metric implementation.")
+GYOTO_PROPERTY_STRING(Gyoto::Metric::Python, InlineModule, inlineModule,
+      "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Metric::Python, Class, klass,
       "Python class (in Module) implementing the Metric.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Metric::Python, Parameters, parameters,
@@ -107,6 +109,8 @@ void Metric::Python::parameters(const std::vector<double>& m)
 {Python::Base::parameters(m);}
 std::string Metric::Python::module() const {return Python::Base::module();}
 void Metric::Python::module(const std::string& m){Python::Base::module(m);}
+std::string Metric::Python::inlineModule() const {return Python::Base::inlineModule();}
+void Metric::Python::inlineModule(const std::string& m){Python::Base::inlineModule(m);}
 std::string Metric::Python::klass() const {return Python::Base::klass();}
 void Gyoto::Metric::Python::klass(const std::string &f) {
 

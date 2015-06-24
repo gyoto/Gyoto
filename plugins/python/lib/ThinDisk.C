@@ -16,6 +16,8 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Python::ThinDisk,
       "Python-based Astrobj class")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, Module, module,
       "Python module containing the Astrobj implementation.")
+GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, InlineModule, inlineModule,
+      "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::ThinDisk,
@@ -65,6 +67,10 @@ std::string Astrobj::Python::ThinDisk::module() const
 {return Gyoto::Python::Base::module();}
 void Astrobj::Python::ThinDisk::module(const std::string& m)
 {Gyoto::Python::Base::module(m);}
+std::string Astrobj::Python::ThinDisk::inlineModule() const
+{return Gyoto::Python::Base::inlineModule();}
+void Astrobj::Python::ThinDisk::inlineModule(const std::string& m)
+{Gyoto::Python::Base::inlineModule(m);}
 std::string Astrobj::Python::ThinDisk::klass() const
 {return Gyoto::Python::Base::klass();}
 

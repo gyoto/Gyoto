@@ -117,6 +117,9 @@ namespace Gyoto {
     /// Check whether method accepts the varargs argument
     bool PyCallable_HasVarArg(PyObject * pMethod);
 
+    /// Create module from Python source code in a C string
+    PyObject * PyModule_NewFromPythonCode(const char * code);
+
     /// Get reference to the Spectrum constructor in the gyoto Python extension
     PyObject * pGyotoSpectrum() ;
     /// Get reference to the Metric constructor in the gyoto Python extension
@@ -180,6 +183,12 @@ class Gyoto::Python::Base {
   std::string module_;
 
   /**
+   * \brief Python source code for module that holds the class
+   *
+   */
+  std::string inline_module_;
+
+  /**
    * \brief Name of the Python class that we want to expose
    *
    * Property name: Class.
@@ -211,14 +220,27 @@ class Gyoto::Python::Base {
   ~Base();
 
   virtual std::string module() const ; ///< Return module_
+  virtual std::string inlineModule() const ; ///< Return inline_module_
 
   /**
    * \brief Set #module_ and import the Python module
    *
-   * Also calls #klass(#class_) if #class_ is already known, so #module_
-   * can be set (or reset) after #class_.
+   * Side effects:
+   *   - sets #inline_module_ to "";
+   *   - calls #klass(#class_) if #class_ is already known, so #module_
+   *     can be set (or reset) after #class_.
    */
   virtual void module(const std::string&);
+
+  /**
+   * \brief Set #inline_module_ and import the Python module
+   *
+   * Side effects:
+   *   - sets #module_ to "";
+   *   - calls #klass(#class_) if #class_ is already known, so #module_
+   *     can be set (or reset) after #class_.
+   */
+  virtual void inlineModule(const std::string&);
 
   /// Retrieve #class_.
   virtual std::string klass() const ;
@@ -319,6 +341,8 @@ class Gyoto::Spectrum::Python
   // is non-trivial
   virtual std::string module() const ;
   virtual void module(const std::string&);
+  virtual std::string inlineModule() const ;
+  virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
   virtual std::vector<double> parameters() const;
@@ -379,6 +403,8 @@ class Gyoto::Metric::Python
   bool spherical() const;
   virtual std::string module() const ;
   virtual void module(const std::string&);
+  virtual std::string inlineModule() const ;
+  virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
   virtual std::vector<double> parameters() const;
@@ -446,6 +472,8 @@ class Gyoto::Astrobj::Python::Standard
   /* Python::Base */
   virtual std::string module() const ;
   virtual void module(const std::string&);
+  virtual std::string inlineModule() const ;
+  virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
   virtual std::vector<double> parameters() const;
@@ -508,6 +536,8 @@ class Gyoto::Astrobj::Python::ThinDisk
   /* Python::Base */
   virtual std::string module() const ;
   virtual void module(const std::string&);
+  virtual std::string inlineModule() const ;
+  virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
   virtual std::vector<double> parameters() const;

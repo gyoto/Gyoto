@@ -119,15 +119,55 @@ void Gyoto::Python::PyInstance_SetThis(PyObject * pInstance,
   Py_XDECREF(pThis);
 }
 
+PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * code) {
+  static PyObject * _interp = NULL;
+  if (!_interp) {
+    GYOTO_DEBUG << "creating Python helper function\n";
+    const char * code =
+"import types\n"
+"import sys\n"
+"sys.modules['gyoto_embedded_python_code']="
+      "types.ModuleType('gyoto_embedded_python_code')\n"
+"exec '"
+      "def new_module(code):\\n"
+      "    import types\\n"
+      "    import textwrap\\n"
+      "    ctxt = types.ModuleType(\"ctxt\")\\n"
+      "    exec textwrap.dedent(code) in ctxt.__dict__\\n"
+      "    return ctxt\\n"
+"' in sys.modules['gyoto_embedded_python_code'].__dict__\n";
+    GYOTO_DEBUG << "exec'ing code: " << code;
+    if (PyRun_SimpleString(code)) return NULL;
+    GYOTO_DEBUG << "code successfully exec'ed, importing module\n";
+    PyObject * mod = PyImport_ImportModule("gyoto_embedded_python_code");
+    if (PyErr_Occurred() ||!mod) {
+      GYOTO_DEBUG << "Module import failed\n";
+      Py_XDECREF(mod);
+      return NULL;
+    }
+    GYOTO_DEBUG << "getting function\n";
+    _interp=PyObject_GetAttrString(mod, "new_module");
+    Py_XDECREF(mod);
+    if (PyErr_Occurred() ||!_interp) {
+      GYOTO_DEBUG << "Getting function\n";
+      Py_XDECREF(mod);
+      return NULL;
+    }
+  }
+  GYOTO_DEBUG << "creating module from string\n";
+  return PyObject_CallFunction(_interp, "s", code);
+}
+
 
 // Birth and death
 Base::Base()
-: module_(""), class_(""),   parameters_(),
+  : module_(""), inline_module_(""), class_(""),   parameters_(),
   pModule_(NULL), pInstance_(NULL)
 {}
 
 Base::Base(const Base& o)
-: module_(o.module_), class_(o.class_), parameters_(o.parameters_),
+: module_(o.module_), inline_module_(o.inline_module_),
+  class_(o.class_), parameters_(o.parameters_),
   pModule_(o.pModule_), pInstance_(o.pInstance_)
 {
   Py_XINCREF(pModule_);
@@ -139,6 +179,7 @@ Base::~Base() {
   Py_XDECREF(pModule_);
 }
 
+
 /* Accessors */
 
 std::string Base::module() const { return module_; }
@@ -146,6 +187,8 @@ void Base::module(const std::string &m) {
   GYOTO_DEBUG << "Loading Python module " << m << endl;
   PyGILState_STATE gstate;
   module_=m;
+  if (m=="") return;
+  inline_module_="";
 
   gstate = PyGILState_Ensure();
   PyObject *pName=PyUnicode_FromString(m.c_str());
@@ -161,6 +204,26 @@ void Base::module(const std::string &m) {
     PyErr_Print();
     PyGILState_Release(gstate);
     throwError("Failed loading Python module");
+  }
+  PyGILState_Release(gstate);
+  if (class_ != "") klass(class_);
+  GYOTO_DEBUG << "Done loading Python module " << m << endl;
+}
+
+std::string Base::inlineModule() const { return inline_module_; }
+void Base::inlineModule(const std::string &m) {
+  inline_module_=m;
+  if (m=="") return;
+  module_="";
+
+  GYOTO_DEBUG << "Loading inline Python module :" << m << endl;
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  Py_XDECREF(pModule_);
+  pModule_ = Gyoto::Python::PyModule_NewFromPythonCode(m.c_str());
+  if (PyErr_Occurred() || !pModule_) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    throwError("Failed loading inline Python module");
   }
   PyGILState_Release(gstate);
   if (class_ != "") klass(class_);

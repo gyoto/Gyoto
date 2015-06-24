@@ -10,7 +10,9 @@ using namespace std;
 GYOTO_PROPERTY_START(Gyoto::Spectrum::Python,
       "Python-based Spectrum class")
 GYOTO_PROPERTY_STRING(Gyoto::Spectrum::Python, Module, module,
-      "Python module containing the Spectrum implementation.")
+      "Name of Python module containing the Spectrum implementation.")
+GYOTO_PROPERTY_STRING(Gyoto::Spectrum::Python, InlineModule, inlineModule,
+      "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Spectrum::Python, Class, klass,
       "Python class (in Module) implementing the Spectrum.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Spectrum::Python, Parameters, parameters,
@@ -51,6 +53,8 @@ void Spectrum::Python::parameters(const std::vector<double>& m)
 {Python::Base::parameters(m);}
 std::string Spectrum::Python::module() const {return Python::Base::module();}
 void Spectrum::Python::module(const std::string& m){Python::Base::module(m);}
+std::string Spectrum::Python::inlineModule() const {return Python::Base::inlineModule();}
+void Spectrum::Python::inlineModule(const std::string& m){Python::Base::inlineModule(m);}
 std::string Spectrum::Python::klass() const {return Python::Base::klass();}
 void Spectrum::Python::klass(const std::string &f) {
 
