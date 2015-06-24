@@ -639,6 +639,7 @@ LIBOBJS
 mySUBDIRS
 DEFAULT_FALSE
 DEFAULT_TRUE
+linkname
 pluginname
 PYTHON_LIBS
 PYTHON_LDFLAGS
@@ -16651,25 +16652,24 @@ $as_echo "$pc_cv_python_libs" >&6; }
 PYTHON_LIBS=$pc_cv_python_libs
 
 
-default_python=`which python || true`
-
+# Make sure plug-in name matches real name of interpreter.
+# If different from provided name, make a symlink.
 pluginname=`basename $PYTHON`
-mklink=no
-if test x$pluginname == xpython; then :
+linkname=`basename $PYTHON`
+real=`which $PYTHON`
+curdir=`pwd`
 
-  fullpath=`which $PYTHON`
-  real=`readlink $fullpath || true`
-  if test x$real != x; then :
+while test x$real != x ; do
+  cd `dirname $real`
+  pluginname=`basename $real`
+  real=`readlink $pluginname || true`
+done
 
-    pluginname=`basename $real`
-    mklink=yes
-
-fi
-
-fi
+cd $curdir
 
 
- if test x$mklink = xyes; then
+
+ if test x$pluginname != x$linkname; then
   DEFAULT_TRUE=
   DEFAULT_FALSE='#'
 else

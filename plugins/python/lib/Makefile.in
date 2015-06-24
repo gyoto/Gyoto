@@ -315,6 +315,7 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+linkname = @linkname@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -709,9 +710,9 @@ uninstall-am: uninstall-library_includeHEADERS \
 
 @DEFAULT_TRUE@install-data-hook:
 @DEFAULT_TRUE@	cd $(DESTDIR)$(soverdir) && \
-@DEFAULT_TRUE@	  rm -f libgyoto-python.$(GYOTO_PLUGIN_SFX) && \
+@DEFAULT_TRUE@	  rm -f libgyoto-$(linkname).$(GYOTO_PLUGIN_SFX) && \
 @DEFAULT_TRUE@	  $(LN_S) libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX) \
-@DEFAULT_TRUE@	          libgyoto-python.$(GYOTO_PLUGIN_SFX)
+@DEFAULT_TRUE@	          libgyoto-$(linkname).$(GYOTO_PLUGIN_SFX)
 @DEFAULT_TRUE@uninstall-hook:
 @DEFAULT_TRUE@	rm -f $(DESTDIR)$(soverdir)/libgyoto-python.$(GYOTO_PLUGIN_SFX)
 

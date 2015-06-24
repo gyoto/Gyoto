@@ -76,21 +76,24 @@ PC_PYTHON_CHECK_CFLAGS
 PC_PYTHON_CHECK_LDFLAGS
 PC_PYTHON_CHECK_LIBS
 
-default_python=`which python || true`
-
+# Make sure plug-in name matches real name of interpreter.
+# If different from provided name, make a symlink.
 pluginname=`basename $PYTHON`
-mklink=no
-AS_IF([test x$pluginname == xpython], [
-  fullpath=`which $PYTHON`
-  real=`readlink $fullpath || true`
-  AS_IF([test x$real != x], [
-    pluginname=`basename $real`
-    mklink=yes
-  ])
-])
+linkname=`basename $PYTHON`
+real=`which $PYTHON`
+curdir=`pwd`
+
+while test x$real != x ; do
+  cd `dirname $real`
+  pluginname=`basename $real`
+  real=`readlink $pluginname || true`
+done
+
+cd $curdir
 
 AC_SUBST([pluginname])
-AM_CONDITIONAL([DEFAULT], [test x$mklink = xyes])
+AC_SUBST([linkname])
+AM_CONDITIONAL([DEFAULT], [test x$pluginname != x$linkname])
 
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],

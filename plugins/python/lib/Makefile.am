@@ -15,9 +15,9 @@ libgyoto_@pluginname@_la_SOURCES = \
 if DEFAULT
 install-data-hook:
 	cd $(DESTDIR)$(soverdir) && \
-	  rm -f libgyoto-python.$(GYOTO_PLUGIN_SFX) && \
+	  rm -f libgyoto-$(linkname).$(GYOTO_PLUGIN_SFX) && \
 	  $(LN_S) libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX) \
-	          libgyoto-python.$(GYOTO_PLUGIN_SFX)
+	          libgyoto-$(linkname).$(GYOTO_PLUGIN_SFX)
 uninstall-hook:
 	rm -f $(DESTDIR)$(soverdir)/libgyoto-python.$(GYOTO_PLUGIN_SFX)
 endif
