@@ -119,43 +119,66 @@ void Gyoto::Python::PyInstance_SetThis(PyObject * pInstance,
   Py_XDECREF(pThis);
 }
 
-PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * code) {
-  static PyObject * _interp = NULL;
-  if (!_interp) {
-    GYOTO_DEBUG << "creating Python helper function\n";
-    const char * code =
-"import types\n"
-"import sys\n"
-"sys.modules['gyoto_embedded_python_code']="
-      "types.ModuleType('gyoto_embedded_python_code')\n"
-"exec '"
-      "def new_module(code):\\n"
-      "    import types\\n"
-      "    import textwrap\\n"
-      "    ctxt = types.ModuleType(\"ctxt\")\\n"
-      "    exec textwrap.dedent(code) in ctxt.__dict__\\n"
-      "    return ctxt\\n"
-"' in sys.modules['gyoto_embedded_python_code'].__dict__\n";
-    GYOTO_DEBUG << "exec'ing code: " << code;
-    if (PyRun_SimpleString(code)) return NULL;
-    GYOTO_DEBUG << "code successfully exec'ed, importing module\n";
-    PyObject * mod = PyImport_ImportModule("gyoto_embedded_python_code");
-    if (PyErr_Occurred() ||!mod) {
-      GYOTO_DEBUG << "Module import failed\n";
+PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * source_code) {
+  PyObject * pDedent = NULL;
+  if (!pDedent) {
+    GYOTO_DEBUG << "importing textwrap.dedent\n";
+    PyObject * mod = PyImport_ImportModule("textwrap");
+    if (PyErr_Occurred() || !mod) {
       Py_XDECREF(mod);
       return NULL;
     }
-    GYOTO_DEBUG << "getting function\n";
-    _interp=PyObject_GetAttrString(mod, "new_module");
+    pDedent = PyObject_GetAttrString(mod, "dedent");
     Py_XDECREF(mod);
-    if (PyErr_Occurred() ||!_interp) {
-      GYOTO_DEBUG << "Getting function\n";
-      Py_XDECREF(mod);
+    if (PyErr_Occurred() || !pDedent) {
       return NULL;
     }
+    GYOTO_DEBUG << "done importing textwrap.dedent\n";
   }
-  GYOTO_DEBUG << "creating module from string\n";
-  return PyObject_CallFunction(_interp, "s", code);
+
+  GYOTO_DEBUG << "dedenting source code... \n";
+  PyObject * pCode = PyObject_CallFunction(pDedent, "s", source_code);
+  if (PyErr_Occurred() || !pCode) {
+    GYOTO_DEBUG << "failed dedenting source code!\n";
+    Py_XDECREF(pCode);
+    return NULL;
+  }
+
+  const char * new_source_code = NULL;
+
+  if (PyUnicode_Check(pCode)) {
+    PyObject * tmp = PyUnicode_AsUTF8String(pCode);
+    Py_DECREF(pCode);
+    pCode = tmp;
+  }
+
+  if (!PyBytes_Check(pCode)) {
+    GYOTO_DEBUG << "not a PyBytes string\n";
+    Py_DECREF(pCode);
+    return NULL;
+  }
+
+  new_source_code = PyBytes_AsString(pCode);
+
+  GYOTO_DEBUG << "compiling inline code...\n";
+  PyObject * object_code=Py_CompileString(new_source_code, "<inline>", Py_file_input);
+  Py_DECREF(pCode);
+  if (PyErr_Occurred() || !object_code) {
+  GYOTO_DEBUG << "failed compiling inline code!\n";
+    Py_XDECREF(object_code);
+    return NULL;
+  }
+
+  GYOTO_DEBUG << "importing object code as module...\n";
+  PyObject * mod = PyImport_ExecCodeModule("gyoto_inline", object_code);
+  Py_XDECREF(object_code);
+  if (PyErr_Occurred() || !mod) {
+    GYOTO_DEBUG << "failed importing object code as module!\n";
+    Py_XDECREF(mod);
+    return NULL;
+  }
+
+  return mod;
 }
 
 
