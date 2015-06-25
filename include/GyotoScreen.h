@@ -491,13 +491,13 @@ class Gyoto::Screen
    *
    * \param[out] coord position of the observer. Must be preallocated.
    */
-  void getObserverPos(double coord[]) const;
+  void getObserverPos(double dest[4]) const;
 
   /// Get copy of Screen::fourvel_
   /**
    * \param[out] fourvel preallocated 4-element array
    */
-  void getFourVel(double fourvel[]) const;
+  void getFourVel(double dest[4]) const;
 
   void fourVel(std::vector<double> const &);
   std::vector<double> fourVel() const;
@@ -510,21 +510,21 @@ class Gyoto::Screen
 
   /// Get copy of Screen::screen1_
   /**
-   * \param[out] output preallocated 4-element array
+   * \param[out] dest preallocated 4-element array
    */
-  void getScreen1(double output[]) const;
+  void getScreen1(double dest[4]) const;
 
   /// Get copy of Screen::screen2_
   /**
-   * \param[out] output preallocated 4-element array
+   * \param[out] dest preallocated 4-element array
    */
-  void getScreen2(double output[]) const;
+  void getScreen2(double dest[4]) const;
 
   /// Get copy of Screen::screen3_
   /**
-   * \param[out] output preallocated 4-element array
+   * \param[out] dest preallocated 4-element array
    */
-  void getScreen3(double output[]) const;
+  void getScreen3(double dest[4]) const;
 
   /// Get 8-coordinate of Photon hitting screen from a given direction
   /**
@@ -533,10 +533,10 @@ class Gyoto::Screen
    * given by x and y.
    * \param[in] x    RA (d_alpha*cos(delta)) offset in radians;
    * \param[in] y    Dec offset (d_delta) in radians; 
-   * \param[out] coord position-velocity of the observer Photon. Preallocated.
+   * \param[out] dest position-velocity of the observer Photon. Preallocated.
    * 
    */
-  void getRayCoord(double x, double y, double coord[]) const;
+  void getRayCoord(double x, double y, double dest[8]) const;
 
   /// Get 8-coordinate of Photon hitting screen pixel
   /**
@@ -544,15 +544,15 @@ class Gyoto::Screen
    * the 4-velocity of a photon corresponding to the sky direction
    * given by x and y.
    * \param[in] i, j pixel coordinates   
-   * \param[out] coord position-velocity of the Photon. Preallocated.
+   * \param[out] dest position-velocity of the Photon. Preallocated.
    * 
    */
-  void getRayCoord(const size_t i, const size_t j, double coord[]) const;
+  void getRayCoord(const size_t i, const size_t j, double dest[8]) const;
   
-  void coordToSky(const double pos[4], double skypos[3]) const;
+  void coordToSky(const double pos[4], double dest[3]) const;
   ///< Convert 4-position to 3-sky position
 
-  void coordToXYZ(const double pos[4], double xyz[3]) const;
+  void coordToXYZ(const double pos[4], double dest[3]) const;
   ///< Convert 4-position to 3-cartesian coordinates
 
   void computeBaseVectors() ;

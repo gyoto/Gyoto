@@ -42,31 +42,18 @@ ph.setInitialCondition(sc.metric(), sc.astrobj(), sc.screen(), 0., 0.)
 ph.hit()
 n=ph.get_nelements()
 
-# Gyoto supports simple C-like arrays through the gyoto.array_double
-# and gyoto.array_unsigned_long classes. Beware that this type does
-# not provide any safeguards, it is quite easy to get it to SEGFAULT.
-#
-# To use NumPy arrays, create the arrays using numpy, then cast them
-# using the fromnumpyN static methods. The actual array will be
-# deleted with the NumPy variable: don't use the array_double()
-# variable (for anyting else that destroying it) past that time.
+# We try to map Gyoto arrays to NumPy arrays wherever possible.
 
 # Create NumPy arrays
-t2=numpy.ndarray(n)
-r2=numpy.ndarray(n)
-theta2=numpy.ndarray(n)
-phi2=numpy.ndarray(n)
+t=numpy.ndarray(n)
+r=numpy.ndarray(n)
+theta=numpy.ndarray(n)
+phi=numpy.ndarray(n)
 
-# Cast them to array_double type
-t=gyoto.array_double.fromnumpy1(t2)
-r=gyoto.array_double.fromnumpy1(r2)
-theta=gyoto.array_double.fromnumpy1(theta2)
-phi=gyoto.array_double.fromnumpy1(phi2)
-
-# Call Gyoto method that takes pointers as argument:
+# Call Gyoto method that takes these arrays as argument:
 ph.getCoord(t, r, theta, phi)
 
-plt.plot(t2, r2)
+plt.plot(t, r)
 plt.show()
 
 # Trace and plot timelike geodesic
@@ -77,19 +64,13 @@ wl.xFill(1000)
 
 n=wl.get_nelements()
 
-t2=numpy.ndarray(n)
-r2=numpy.ndarray(n)
-theta2=numpy.ndarray(n)
-phi2=numpy.ndarray(n)
+x=numpy.ndarray(n)
+y=numpy.ndarray(n)
+z=numpy.ndarray(n)
 
-t=gyoto.array_double.fromnumpy1(t2)
-r=gyoto.array_double.fromnumpy1(r2)
-theta=gyoto.array_double.fromnumpy1(theta2)
-phi=gyoto.array_double.fromnumpy1(phi2)
+wl.get_xyz(x, y, z)
 
-wl.getCoord(t, r, theta, phi)
-
-plt.plot(r2*numpy.cos(phi2), r2*numpy.sin(phi2))
+plt.plot(x, y)
 plt.show()
 
 # Ray-trace scenery
@@ -99,6 +80,24 @@ intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
 aop=gyoto.AstrobjProperties()
+
+# Here we will use the low-level AstrobjProperties facilities. This is
+# one of a few Gyoto functionalities where NumPy arrays are not
+# directly supported. We use lower-level C-like arrays through the
+# gyoto.array_double and gyoto.array_unsigned_long classes. Beware
+# that this type does not provide any safeguards, it is quite easy to
+# get it to SEGFAULT. As we develop Gyoto, we try to remove the need
+# for the gyoto.array_* classes in favor of NumPy arrays. Code that
+# uses this... ``feature'' therefore may break in future releases.
+#
+# To (indirectly) use NumPy arrays with a functionality that requires
+# gyoto.array_* arguments, create the arrays using numpy (see above:
+# `intensity', `time' and `distance' arrays) , then cast them using
+# the fromnumpyN static methods, where the digit N indicates the
+# dimensionality of the NumPy array. The underlying storage belongs to
+# the NumPy variable and will be deleted with it: don't use the
+# array_double() variable (for anyting else that destroying it) past
+# the destruction of the corresponding NumPy variable.
 
 aop.intensity=gyoto.array_double.fromnumpy2(intensity)
 aop.time=gyoto.array_double.fromnumpy2(time)

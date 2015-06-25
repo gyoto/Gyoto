@@ -469,6 +469,27 @@ ExtendArrayNumPy(array_unsigned_long, unsigned long);
 ExtendArrayNumPy(array_size_t, size_t);
 #endif
 
+%apply (double * IN_ARRAY1, size_t DIM1) {(double * dates, size_t n_dates)};
+%apply (double * IN_ARRAY1, size_t DIM1) {(double const * cst, size_t const ncsts)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x1dest, size_t n1)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x2dest, size_t n2)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x3dest, size_t n3)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x0dot, size_t n0d)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x1dot, size_t n1d)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x2dot, size_t n2d)};
+%apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x3dot, size_t n3d)};
+%apply (double IN_ARRAY1[ANY]) {(const double coord[8])};
+%apply (double IN_ARRAY1[ANY]) {(double const pos[8])};
+%apply (double IN_ARRAY1[ANY]) {(double const pos[4])};
+%apply (double IN_ARRAY1[ANY]) {(const double pos[4])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double coord[8])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double dest[8])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double dest[ANY])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double vel[4])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double skypos[3])};
+%apply (double INPLACE_ARRAY1[ANY]) {(double xyz[3])};
+
+
 // ******** INTERFACE ******** //
 // Here starts the actual parsing of the various header files
 
@@ -532,6 +553,89 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(Worldline__IntegState__Generic) Gyoto::Worldline::IntegState::Generic;
 %rename(Worldline__IntegState__Boost) Gyoto::Worldline::IntegState::Boost;
 %rename(Worldline__IntegState__Legacy) Gyoto::Worldline::IntegState::Legacy;
+%ignore Gyoto::Worldline::getCoord(double const * const dates, size_t const n_dates,
+		double * const x1dest,
+		double * const x2dest, double * const x3dest,
+		double * const x0dot=NULL,  double * const x1dot=NULL,
+		double * const x2dot=NULL,  double * const x3dot=NULL) ;
+%extend Gyoto::Worldline {
+  void get_t(double * INPLACE_ARRAY1, size_t DIM1) {
+    if (DIM1 != ($self)->get_nelements()) throwError("wrong output array size");
+    ($self)->get_t(INPLACE_ARRAY1);
+  }
+  void getCoord(double * dates, size_t n_dates,
+		double * x1dest, size_t n1,
+		double * x2dest, size_t n2,
+                double * x3dest, size_t n3,
+		double * x0dot, size_t n0d,
+                double * x1dot, size_t n1d,
+		double * x2dot, size_t n2d,
+                double * x3dot, size_t n3d) {
+    if (n1 != n_dates || n2 != n_dates || n3 != n_dates ||
+        (x0dot && n0d != n_dates) ||
+        (x1dot && n1d != n_dates) ||
+        (x2dot && n2d != n_dates) ||
+        (x3dot && n3d != n_dates))
+      throwError("wrong size for output array");
+    ($self)->getCoord(dates, n_dates, x1dest, x2dest, x3dest, x0dot, x1dot, x2dot, x3dot);
+  }
+  void getCartesian(double * dates, size_t n_dates,
+		double * x1dest, size_t n1,
+		double * x2dest, size_t n2,
+                double * x3dest, size_t n3,
+                double * x1dot, size_t n1d,
+		double * x2dot, size_t n2d,
+                double * x3dot, size_t n3d) {
+    if (n1 != n_dates || n2 != n_dates || n3 != n_dates ||
+        (x1dot && n1d != n_dates) ||
+        (x2dot && n2d != n_dates) ||
+        (x3dot && n3d != n_dates))
+      throwError("wrong size for output array");
+    ($self)->getCartesian(dates, n_dates, x1dest, x2dest, x3dest, x1dot, x2dot, x3dot);
+  }
+  void getCoord(double * dates, size_t n_dates,
+		double * x1dest, size_t n1,
+		double * x2dest, size_t n2,
+                double * x3dest, size_t n3) {
+    if (n_dates != ($self)->get_nelements() || n1 != n_dates || n2 != n_dates || n3 != n_dates)
+      throwError("wrong size for output array");
+    ($self)->getCoord(dates, x1dest, x2dest, x3dest);
+  }
+  void get_xyz(
+		double * x1dest, size_t n1,
+		double * x2dest, size_t n2,
+                double * x3dest, size_t n3) {
+    if (n1 != ($self)->get_nelements() || n2 != n1 || n3 != n1)
+      throwError("wrong size for output array");
+    ($self)->get_xyz(x1dest, x2dest, x3dest);
+  }
+  void getSkyPos(SmartPointer<Screen> screen,
+		double * x1dest, size_t n1,
+		double * x2dest, size_t n2,
+                double * x3dest, size_t n3) {
+    if (n1 != ($self)->get_nelements() || n2 != n1 || n3 != n1)
+      throwError("wrong size for output array");
+    ($self)->getSkyPos(screen, x1dest, x2dest, x3dest);
+  }
+  void get_dot(double * x0dot, size_t n0d,
+               double * x1dot, size_t n1d,
+               double * x2dot, size_t n2d,
+               double * x3dot, size_t n3d) {
+    if (n0d != ($self)->get_nelements() || n1d != n0d || n2d != n0d || n3d != n0d)
+      throwError("wrong size for output array");
+    ($self)->get_dot(x0dot, x1dot, x2dot, x3dot);
+  }
+  void get_prime(
+                 double * x1dot, size_t n1d,
+                 double * x2dot, size_t n2d,
+                 double * x3dot, size_t n3d) {
+    if (n1d != ($self)->get_nelements() || n2d != n1d || n3d != n1d)
+      throwError("wrong size for output array");
+    ($self)->get_prime(x1dot, x2dot, x3dot);
+  }
+
+};
+
 %include "GyotoWorldline.h"
 
 GyotoSmPtrClass(Screen)

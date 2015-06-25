@@ -1235,6 +1235,7 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   string name="", content="", unit="", tunit="", aunit="", dunit="";
   SmartPointer<Screen> scr = new Screen();
+  if (!fmp) return scr;
   scr -> metric(fmp->metric());
   int tobs_found=0;
   double tobs_tmp, pos[4] ;
