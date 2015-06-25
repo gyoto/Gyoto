@@ -233,6 +233,10 @@ using namespace Gyoto;
 
 // Rename operator++() -> increment() for everything
 %rename(increment) *::operator++;
+// Rename operator=() -> assign() for everything
+%rename(assign) *::operator=;
+// Rename operator*() -> __ref__
+// nothing to do, that's the default
 
 // ******** TYPEMAPS ******** //
 // Actually instanciate typemaps using de macros defined above

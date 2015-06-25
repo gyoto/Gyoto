@@ -146,8 +146,6 @@ class Gyoto::Photon
   // Mutators / assignment
   // ---------------------
  public:
-  /// Assignment to another Photon
-  void operator=(const Photon&) ; 
 
   /// Set or re-set the initial condition prior to integration.
   /**

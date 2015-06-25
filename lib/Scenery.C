@@ -85,6 +85,7 @@ void Scenery::fillElement(FactoryMessenger *fmp) const {
 }
 
 SmartPointer<Scenery> Gyoto::Scenery::Subcontractor(FactoryMessenger* fmp) {
+  if (!fmp) return new Scenery();
   std::string name="", content="", unit="";
   SmartPointer<Metric::Generic> gg = NULL;
   SmartPointer<Screen> scr = NULL;

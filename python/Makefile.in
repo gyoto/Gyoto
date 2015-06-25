@@ -129,7 +129,7 @@ _gyoto_std$(PYTHON_EXTENSION_SUFFIX): gyoto_std_wrap.cxx
 _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX): gyoto_lorene_wrap.cxx
 	$(PYTHON) setup_lorene.py build_ext
 
-gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i
+gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(SWIG_CMD) -o gyoto_wrap.cxx $(srcdir)/gyoto.i
 	mv gyoto.py trailer.py
 	cat $(srcdir)/header.py trailer.py > gyoto.py
