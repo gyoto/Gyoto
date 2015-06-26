@@ -1,10 +1,220 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:  Wed, 27 May 2015 11:25:05 +0200
+Date:   Fri, 26 Jun 2015 09:18:45 +0200
 
-        Releasing 1.0.1 (1984 release)
-	+ add Odele to AUTHORS
-        + update NEWS, ChangeLog and configure*.
+    Releasing 1.0.2
+
+commit 06d6c425df78028ab32388baaefdbd4d98a4c396
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 22 18:09:01 2015 +0200
+
+    Fix CPPFLAGS for GCC 5 (add -P flag)
+
+commit f0282ed61db0442d1c16c33b40b2c7b3fccce525
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 16 12:48:38 2015 +0200
+
+    Simplify setting arbitrary parameters from the command line
+    
+    Object::setParameter(name, content, unit) is made recursive: if name
+    contains "::" (e.g. Astrobj::Spectrum::Temperature), the component
+    before the first occurence of "::" (here, "Astrobj") is interpreted as
+    a path. A property by that name in the curent object is sought. If it
+    is found, setParameter is called on this child object with the
+    remainder of the string (here "Spectrum::Temperature") and the other
+    parameters unchanged (content and unit).
+    
+    On the command-line, replace the bunch of --TYPE-parameter options
+    with a single --parameter option, which applies to the root (Scenery)
+    level and uses this facility to access members in the Astrobj, Screen
+    etc.
+
+commit b8766a3a4549e409b42663db881638b66a833223
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 15 22:20:04 2015 +0200
+
+    Do not interpret empty Mask as current directory in Screen
+
+commit 98c978d52dc0c9f80a42b9fa5470f6001c2f7c37
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 15 20:47:58 2015 +0200
+
+    Fix Screen::Subcontractor to parse Mask as a filename
+
+commit a2288b60a34c86cd97f5d09ddc0837fc45c48d70
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Jun 11 16:25:49 2015 +0200
+
+    fenv.h functions in the Yorick plug-in
+    
+      * Add more functions to control the floating-point environment from
+        Yorick.
+    
+      * Note in README.SIGFPE to loading a plug-in can change the
+        floating-point environment.
+    
+      * More debugging in Register::init().
+
+commit 32722870c929dc888d1b796fb7f37ee3a1e9774d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 12 10:56:39 2015 +0200
+
+    Fix copyright years for KerrKS
+
+commit 238b83d61030c2f2509039cb59513e89b8c05925
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 12 10:33:36 2015 +0200
+
+    KerrKS is not WIP anymore
+    
+    Modify the WIP (work in progress) class constructor to not issue a
+    warning if passed the empty string instead of a class name. Use this
+    facility to stop issuing the warning for KerrKS, which has grown in
+    maturity. This is an ABI-safe change. Next step is to stop inheriting
+    from WIP, but this will break the ABI and is not for the stable
+    branch.
+    
+    The warning when using the specific integrator is now severe. This is
+    the part that really is still buggy in KerrKS.
+
+commit 17cc24485252ccef252fd6eefa9b6e5fce89d6d1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 10 13:50:35 2015 +0200
+
+    Fix build failure when not using fenv.h
+
+commit 6cdf9242e25263e9232d7bba8680980372e17597
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Jun 10 12:07:18 2015 +0200
+
+    Fix warnings (incl. undefined behavior) and some optimization
+     * pass 'make CPPFLAGS="-Wall -Werror -DGYOTO_NO_DEPRECATED \
+                            -Wno-error=literal-suffix -Wno-error=unknown-pragmas"'
+     * some code optimization in NumericalMetricLorene
+
+commit 3fd7a08f6d2a22f996317ef14399ed4b989216fc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 9 17:32:06 2015 +0200
+
+    Update documentation and test suite
+     + update manpage and gyoto -h
+     + update test suite to use short options and mpirun
+     + update copyright statement in binary
+
+commit c62b5619bc7693123ccb87c2032ec7855174bd87
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 9 12:15:54 2015 +0200
+
+    Add and/or document parameters to gyoto utility
+     --ispec, --jspec, --astrobj|metric|scenery|screen|spectrometer-parameter, --unit, --xmlwrite
+
+commit e5dae98b13fae0b1b71ecdfbd792a5fc6713759d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 9 12:15:54 2015 +0200
+
+    Add and/or document parameters to gyoto utility
+     --ispec, --jspec, --astrobj|metric|scenery|screen|spectrometer-parameter, --unit, --xmlwrite
+
+commit 08ca7552f739f28a4460b710661b34ca20763eb6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 9 01:57:12 2015 +0200
+
+    Rewrite gyoto.C option parsing using optionparser.h.
+
+commit 913c7ddc07097712fbb15e7e78cf2dbcfce15518
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 8 16:34:28 2015 +0200
+
+    Document --no-sigfpe in manpage; update synopsys in usage() in bin/gyoto.C
+
+commit e188a2624a2444d796d01214686c10a70c0286a6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 9 01:57:12 2015 +0200
+
+    Rewrite gyoto.C option parsing using optionparser.h.
+
+commit 5097acfeeec1282cf07de1211c0dcfddc988915c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 8 16:34:28 2015 +0200
+
+    Document --no-sigfpe in manpage; update synopsys in usage() in bin/gyoto.C
+
+commit 62b4bb62aa0b94b92d31841839d6c6a0cc736605
+Author: Frederic <frederic@macfrederic.(none)>
+Date:   Mon Jun 8 16:26:32 2015 +0200
+
+    NML.C: changed computation of Keplerian angular momentum.
+    Doughnut: adding definition of rcusp and rintorus for all cases.
+
+commit efc0f53daf24b88c8c76c1690aaefeb7ed6c2dac
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 8 14:57:50 2015 +0200
+
+    Fix spurious SIGFPE
+        + initialize all members of Value instances do avoid bad (NAN) random values;
+        + hold FP exceptions when makeing boost stepper as make_controlled can raise.
+
+commit 7ce95331587e2951d202fa2cb1baf6ae1a3d735a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 8 14:57:50 2015 +0200
+
+    Fix spurious SIGFPE
+        + initialize all members of Value instances do avoid bad (NAN) random values;
+        + hold FP exceptions when makeing boost stepper as make_controlled can raise.
+
+commit d069bb5d5ab279608a5a646568c7200fe4330937
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 5 16:04:58 2015 +0200
+
+    Fix GYOTO_PROPERTY_SIZE_T to work on 32-bit architectures.
+    
+    On 32 bit system, size_t and unsigned double are identical but distinct types.
+
+commit 4015547ad848caa33dfbf60fa1781e485a811902
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Jun 5 16:04:58 2015 +0200
+
+    Fix GYOTO_PROPERTY_SIZE_T to work on 32-bit architectures.
+    
+    On 32 bit system, size_t and unsigned double are identical but distinct types.
+
+commit a5a1ae7165e010e7cec820f974f739706d977ecc
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 2 15:03:56 2015 +0200
+
+    fenv.h support: by default, enable SIGFPE exceptions. Provide mechanisms to disable it. See README.SIGFPE.
+
+commit af37c64da82edf5c43c356728372eed9b14e16b2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Jun 2 15:03:56 2015 +0200
+
+    fenv.h support: by default, enable SIGFPE exceptions. Provide mechanisms to disable it. See README.SIGFPE.
+
+commit cad7c2040d5d80d9fd98d1011c8fb614c6a8881f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Jun 1 12:06:21 2015 +0200
+
+    Discourage compiling with clang in INSTALL.
+
+commit cbcdffb2048ce9a2f78718c7c9b2d69c1ef096df
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri May 29 13:01:43 2015 +0200
+
+    Small improvements triggered by clang warnings
+
+commit 3cb08ede61007eeacaa057dca76589dadc7dc8da
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 27 16:19:00 2015 +0200
+
+    Remove unconditional throwError from GyotoScreen.h
+
+commit faae244af48a65782123b0034389aca1ec79f439
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed May 27 11:34:02 2015 +0200
+
+    Releasing 1.0.1 (1984 release)
+    + add Odele to AUTHORS
+    + update NEWS, ChangeLog and configure*.
 
 commit 2292f1d74eaa9968ea9ec64bd00fdc150d8fe8b1
 Author: Thibaut Paumard <paumard@users.sourceforge.net>

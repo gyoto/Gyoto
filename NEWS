@@ -1,3 +1,17 @@
+1.0.2 2015/06/26 BUG
+   * Fix FTBFS with gcc 5.0;
+   * Improve fenv support and lack thereof with some compilers;
+   * Distinguish size_t from unsigned long in Gyoto::Value;
+   * Rewrite option parsing in `gyoto' command line utility, add many
+     options: short options, -i/-j, -E, -X... see manpage and
+     $ gyoto --help
+   * Fix many compile-time warnings, including potentially harmfull
+     undefined behavior;
+   * KerrKS is not work-in-progress anymore, but it's specific
+     integrator is known to be buggy (and issues a severe warning when
+     used).
+   * Several small bug-fixes, see ChangeLog for details.
+
 1.0.1 2015/05/27 PKG
    * Add 3rd clause of BSD license to python/doxy2swig.py;
    * Add Odele to AUTHORS;
