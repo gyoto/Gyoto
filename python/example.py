@@ -30,11 +30,27 @@ import gyoto
 gyoto.loadPlugin("stdplug")
 import gyoto_std
 
+# Simple stuff
+
+scr=gyoto.Screen()
+gg=gyoto_std.KerrBL()
+scr.metric(gg)
+pos=numpy.zeros(4, float)
+scr.getObserverPos(pos)
+
+# Load Scenery
+
 a=gyoto.Factory("../doc/examples/example-moving-star.xml")
 sc=a.getScenery()
 sc.nThreads(8)
 sc.astrobj().opticallyThin(False)
 
+scr=sc.screen()
+dest=numpy.zeros(8, float)
+scr.getRayCoord(1,1,dest)
+dest=numpy.ndarray(3, float)
+scr.coordToSky((0., 5., numpy.pi/2, 0), dest)
+    
 # Trace and plot NULL geodesic:
 
 ph=gyoto.Photon()
