@@ -110,10 +110,10 @@ CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 
 $(CHECK_ROTSTAR_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d
-	$(MPIRUN) $(CHECK_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	$(MPIRUN) $(CHECK_CMD) -pstdplug,lorene -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 $(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d
-	$(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+	$(CHECK_CMD) -pstdplug,lorene -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 check-lorene-clean:
 	rm -f $(CHECK_ROTSTAR_RESULTS)
