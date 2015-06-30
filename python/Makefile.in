@@ -137,6 +137,10 @@ gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i $(top_srcdir)/include/*.h
 
 gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
 	$(SWIG_CMD) -o gyoto_std_wrap.cxx $(srcdir)/gyoto_std.i
+	mv gyoto_std.py gyoto_std_trailer.py
+	echo "# -*- coding: utf-8 -*-" > gyoto_std.py
+	cat gyoto_std_trailer.py >> gyoto_std.py
+	rm gyoto_std_trailer.py
 
 gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
 	$(SWIG_CMD) -o gyoto_lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
@@ -184,6 +188,8 @@ clean:
 	-rm -Rf build
 	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm doxygen_sqlite3.db gyoto_*installed.txt
+	-rm -f tests/*.pyc
+	-rm -Rf _gyoto.so Gyoto.egg-info
 
 # Clean up the output of configure
 distclean: clean 
@@ -198,9 +204,9 @@ dist:
 	tar -czf $(PACKAGE_DISTNAME).tar.gz $(PACKAGE_DISTNAME)
 	rm -rf $(PACKAGE_DISTNAME)
 
-# Use the setup.py check command
+# Use the setup.py test command
 check:
-	$(PYTHON) setup.py check
+	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ $(PYTHON) setup.py test
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here

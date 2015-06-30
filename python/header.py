@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 The General relativitY Orbit Tracer of paris Observatory
 """

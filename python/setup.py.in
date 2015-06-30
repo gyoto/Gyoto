@@ -11,7 +11,7 @@
 # without any warranty.
 
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import platform
 
 import numpy
@@ -41,5 +41,6 @@ setup(name='@PACKAGE_NAME@',
       version='@PACKAGE_VERSION@',
       author_email='@PACKAGE_BUGREPORT@',
       py_modules=["gyoto"],
-      ext_modules=[gyoto_module]
+      ext_modules=[gyoto_module],
+      test_suite='tests'
      )
