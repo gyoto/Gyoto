@@ -102,18 +102,6 @@
 # endif
 #endif
 
-/** \def GYOTO_USE_LORENE
-    \brief Whether Lorene support is compiled-in.
-
-    Used only in the lorene plug-in.
- */
-#undef GYOTO_USE_LORENE
-#ifdef DOXYGEN_RUN
-# ifndef GYOTO_USE_LORENE
-#  define GYOTO_USE_LORENE (undefined)
-# endif
-#endif
-
 /** \def GYOTO_USE_XERCES
     \brief Whether Xerces support (XML i/o) is compiled-in.
 

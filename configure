@@ -20392,9 +20392,6 @@ _ACEOF
    LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX | tr -d '\n\r'`"
    LORENECPPFLAGS=`$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make INC | tr -d '\n\r'`
    LORENECPPFLAGS="$LORENECPPFLAGS"
-
-$as_echo "#define GYOTO_USE_LORENE 1" >>confdefs.h
-
    rm conftest.make
 
 

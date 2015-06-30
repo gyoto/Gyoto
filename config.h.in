@@ -18,9 +18,6 @@
 /* Define to 1 if you have cfitsio */
 #undef GYOTO_USE_CFITSIO
 
-/* Define to 1 if you have Lorene */
-#undef GYOTO_USE_LORENE
-
 /* Define to 1 if you have Xerces */
 #undef GYOTO_USE_XERCES
 

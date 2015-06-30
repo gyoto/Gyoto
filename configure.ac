@@ -773,9 +773,6 @@ _ACEOF
    LORENELDFLAGS="$LORENELDFLAGS `$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make LIB_CXX | tr -d '\n\r'`"
    LORENECPPFLAGS=`$MAKE_S HOME_LORENE=$HOME_LORENE -f conftest.make INC | tr -d '\n\r'`
    LORENECPPFLAGS="$LORENECPPFLAGS"
-   AC_DEFINE([GYOTO_USE_LORENE],
-     [1],
-     [Define to 1 if you have Lorene])
    rm conftest.make
    AC_SUBST([LORENECPPFLAGS])
    AC_SUBST([LORENELDFLAGS])
