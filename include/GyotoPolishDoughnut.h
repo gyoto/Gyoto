@@ -118,9 +118,6 @@ public:
  // Mutators / assignment
  // ---------------------
 public:
- /// Assignment to another PolishDoughnut
- void operator=(const PolishDoughnut&) ;        
-
  // Accessors
  // ---------
 public:
