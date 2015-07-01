@@ -64,6 +64,9 @@ using namespace Gyoto;
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
+
+swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() ;
+
 %}
 
 %array_class(double, array_double)

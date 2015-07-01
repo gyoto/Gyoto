@@ -192,7 +192,6 @@ GyotoSmPtrClassDerivedPtrHdr(nspace, klass, klass, hdr)
 GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 %enddef
 
-
 // ******** INCLUDES ******** //
 // Include any file that is needed to compile the wrappers
 %{
@@ -220,9 +219,29 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 #include "GyotoConverters.h"
 using namespace Gyoto;
 
+ swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {return SWIGTYPE_p_Gyoto__Error;}
+
 %}
 
 // ******** INITIALIZATION ******** //
+
+// Catch all Gyoto errors and re-throw them as run-time errors for the
+// target language
+%exception {
+  try {
+    $action
+  }
+  catch (Gyoto::Error e) {
+    //    PyErr_SetString(PyErr_NewException("gyoto.Error", NULL, NULL), e);
+   SWIG_Python_Raise
+     (SWIG_NewPointerObj
+      ((new Gyoto::Error(static_cast<const Gyoto::Error& >(e))),
+      __Gyoto_SWIGTYPE_p_Gyoto__Error(),SWIG_POINTER_OWN),
+      "gyoto.Error", __Gyoto_SWIGTYPE_p_Gyoto__Error());
+    SWIG_fail;
+  }
+}
+
 // This will be called upon extension initialization
 %init {
   Gyoto::Register::init();
@@ -504,20 +523,14 @@ ExtendArrayNumPy(array_size_t, size_t);
 %include "GyotoDefs.h"
 
 // Expose the Gyoto::Error class
+%extend Gyoto::Error {
+  const char *__str__() {
+    return *($self);
+  }
+ };
 %include "GyotoError.h"
 
-// Catch all Gyoto errors and re-throw them as run-time errors for the
-// target language
-%exception {
-  try {
-    $action
-  }
-  catch (Gyoto::Error e) {
-    SWIG_Error(SWIG_RuntimeError, e);
-    SWIG_fail;
-  }
-}
-
+// Expose the SmartPointer API
 %ignore Gyoto::SmartPointer::operator();
 %rename(assign) Gyoto::SmartPointer::operator=;
 %include "GyotoSmartPointer.h"

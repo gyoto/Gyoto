@@ -7,5 +7,5 @@ class TestError(unittest.TestCase):
         a=gyoto.Error("toto")
         self.assertEqual(a.get_message(), "toto")
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_throwError(self):
+        self.assertRaises(gyoto.Error, lambda: gyoto.throwError("msg"))
