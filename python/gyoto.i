@@ -855,6 +855,11 @@ public:
 %ignore Gyoto::Property::Property;
 %include "GyotoProperty.h"
 
+%extend Gyoto::Units::Unit {
+  const char *__str__() {
+    return (std::string(*($self))).c_str();
+  }
+};
 %include "GyotoConverters.h"
 
 // Workaround cvar bug in Swig which makes help(gyoto) fail:
