@@ -537,16 +537,17 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(toDouble) Gyoto::Value::operator double;
 %rename(toLong) Gyoto::Value::operator long;
 %rename(toULong) Gyoto::Value::operator unsigned long;
+%extend Gyoto::Value {size_t toSizeT() {return size_t(*$self);}};
 %rename(toString) Gyoto::Value::operator std::string;
 %rename(toVDouble) Gyoto::Value::operator std::vector<double>;
-%{
-  typedef unsigned long unsignedlong;
-  %}
-%rename(toVULong) Gyoto::Value::operator std::vector<unsigned long>;
+%extend Gyoto::Value {
+  std::vector<unsigned long> toVULong() {return ($self)->operator std::vector<unsigned long>();}
+};
 %rename(toMetric) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Metric::Generic>;
 %rename(toAstrobj) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 %rename(toSpectrum) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrum::Generic>;
 %rename(toSpectrometer) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+%rename(toScreen) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Screen>;
 %include "GyotoValue.h"
 %include "GyotoObject.h"
 
