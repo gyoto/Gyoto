@@ -9,3 +9,7 @@ class TestError(unittest.TestCase):
 
     def test_throwError(self):
         self.assertRaises(gyoto.Error, lambda: gyoto.throwError("msg"))
+
+    def test_getErrcode(self):
+        a=gyoto.Error("toto")
+        self.assertEqual(a.getErrcode(), 1)
