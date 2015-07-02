@@ -22,28 +22,12 @@
 %{
 
 #define GYOTO_NO_DEPRECATED
-#include "GyotoConfig.h"
-
-#include "GyotoWorldline.h"
-#include "GyotoPhoton.h"
-#include "GyotoUniformSphere.h"
-#include "GyotoPhoton.h"
-#include "GyotoScenery.h"
-#include "GyotoSpectrometer.h"
-#include "GyotoComplexSpectrometer.h"
-#include "GyotoUniformSpectrometer.h"
-#include "GyotoValue.h"
-#include "GyotoThinDisk.h"
+#include "gyoto_swig.h"
 
 #include "GyotoRotStar3_1.h"
 #include "GyotoNumericalMetricLorene.h"
 
-  using namespace Gyoto;
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
-
-swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() ;
+using namespace Gyoto;
 
 %}
 

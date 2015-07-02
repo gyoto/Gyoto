@@ -197,29 +197,12 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 %{
 #define SWIG_FILE_WITH_INIT
 #define GYOTO_NO_DEPRECATED
-#include "GyotoConfig.h"
-#include "GyotoDefs.h"
-#include "GyotoFactory.h"
-#include "GyotoFactoryMessenger.h"
-#include "GyotoValue.h"
-#include "GyotoProperty.h"
-#include "GyotoObject.h"
-#include "GyotoAstrobj.h"
-#include "GyotoError.h"
-#include "GyotoWorldline.h"
-#include "GyotoPhoton.h"
-#include "GyotoScreen.h"
-#include "GyotoThinDisk.h"
-#include "GyotoStandardAstrobj.h"
-#include "GyotoSpectrometer.h"
-#include "GyotoComplexSpectrometer.h"
-#include "GyotoUniformSpectrometer.h"
-#include "GyotoRegister.h"
-#include "GyotoWIP.h"
-#include "GyotoConverters.h"
+#include "gyoto_swig.h"
 using namespace Gyoto;
 
- swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {return SWIGTYPE_p_Gyoto__Error;}
+swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {
+  return SWIGTYPE_p_Gyoto__Error;
+}
 
 %}
 

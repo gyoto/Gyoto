@@ -21,51 +21,10 @@
 %{
 
 #define GYOTO_NO_DEPRECATED
-#include "GyotoConfig.h"
+#include "gyoto_swig.h"
+#include "gyoto_std_swig.h"
 
-#include "GyotoWorldline.h"
-#include "GyotoPhoton.h"
-#include "GyotoUniformSphere.h"
-#include "GyotoPhoton.h"
-#include "GyotoScenery.h"
-#include "GyotoSpectrometer.h"
-#include "GyotoUniformSpectrometer.h"
-#include "GyotoComplexSpectrometer.h"
-#include "GyotoValue.h"
-
-  // include Metric headers
-#include "GyotoKerrBL.h"
-#include "GyotoKerrKS.h"
-#include "GyotoMinkowski.h"
-// include Astrobj headers
-#include "GyotoComplexAstrobj.h"
-#include "GyotoStar.h"
-#include "GyotoStarTrace.h"
-#include "GyotoFixedStar.h"
-#include "GyotoTorus.h"
-#include "GyotoThinDisk.h"
-#include "GyotoPageThorneDisk.h"
-#include "GyotoThinDiskPL.h"
-#include "GyotoPolishDoughnut.h"
-#include "GyotoThinDiskIronLine.h"
-
-#include "GyotoPatternDisk.h"
-#include "GyotoPatternDiskBB.h"
-#include "GyotoDynamicalDisk.h"
-#include "GyotoDisk3D.h"
-#include "GyotoDynamicalDisk3D.h"
-#include "GyotoDirectionalDisk.h"
-
-// include Spectrum headers
-#include "GyotoPowerLawSpectrum.h"
-#include "GyotoBlackBodySpectrum.h"
-#include "GyotoThermalBremsstrahlungSpectrum.h"
 using namespace Gyoto;
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
-
-swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() ;
 
 %}
 

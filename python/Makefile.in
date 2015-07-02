@@ -95,7 +95,7 @@ export CC
 GYOTO_EXTENSIONS =  _gyoto$(PYTHON_EXTENSION_SUFFIX) \
                     _gyoto_std$(PYTHON_EXTENSION_SUFFIX)
 GYOTO_PYFILES = gyoto.py gyoto_std.py
-GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i
+GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/numpy.i $(srcdir)/gyoto_swig.h $(srcdir)/gyoto_std_swig.h
 @HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX)
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto_lorene.py
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
@@ -162,7 +162,7 @@ else
 	$(PYTHON) setup_std.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_std_installed.txt
 @HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_lorene_installed.txt
 endif
-	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(srcdir)/numpy.i $(DESTDIR)$(pkgincludedir)
+	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
 
 # setup.py doesn't (yet) support an uninstall command, so until it does, you 
@@ -172,7 +172,7 @@ endif
 # Be sure to remove any extra files you install, such as binaries or documentation!
 uninstall: 
 	-cd $(DESTDIR)$(pkgincludedir) ; \
-	   for file in $(GYOTO_SWIGFILES) numpy.i ; do \
+	   for file in $(GYOTO_SWIGFILES) numpy.i gyoto_swig.h ; do \
 	      rm `basename $$file` ;\
 	   done
 	-rm -rvf $(DESTDIR)$(pkgpythondir)
