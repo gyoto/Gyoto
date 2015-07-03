@@ -367,7 +367,7 @@ namespace Gyoto {
 /**
  * \brief Default value for delta_max_over_r_
  *
- * For invastigations close to the event horizon, 0.5 is usually
+ * For investigations close to the event horizon, 0.5 is usually
  * fine. If high accuracy is needed long after deflection (weak
  * lensing), then this must be smaller. A good test is to look at a
  * MinDistance map for a FixedStar: it must be smooth.
@@ -495,6 +495,12 @@ namespace Gyoto {
 #define GYOTO_eV2Hz 2.417989348e+14
 
 //\}
+
+/// \brief Stringify macro content
+#define GYOTO_STRINGIFY(a) GYOTO_STRINGIFY_ARGUMENT(a)
+
+/// \brief Stringify argument
+#define GYOTO_STRINGIFY_ARGUMENT(a) #a
 
 #ifndef GYOTO_NO_DEPRECATED
 #warning Using deprecated method names.\
