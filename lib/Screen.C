@@ -45,27 +45,42 @@ using namespace Gyoto;
 
 /// Properties
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Screen)
-GYOTO_PROPERTY_METRIC(Screen, Metric, metric)
-GYOTO_PROPERTY_SPECTROMETER(Screen, Spectrometer, spectrometer)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Time, time)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FieldOfView, fieldOfView)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, PALN, PALN)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Inclination, inclination)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Argument, argument)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Alpha0, alpha0)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Delta0, delta0)
-GYOTO_PROPERTY_SIZE_T(Screen, Resolution, resolution)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Distance, distance)
-GYOTO_PROPERTY_DOUBLE(Screen, DMax, dMax)
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FreqObs, freqObs)
-GYOTO_PROPERTY_STRING(Screen, AngleKind, anglekind)
-GYOTO_PROPERTY_STRING(Screen, ObserverKind, observerKind)
-GYOTO_PROPERTY_FILENAME(Screen, Mask, maskFile)
-GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, FourVelocity, fourVel)
-GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector1, screenVector1)
-GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector2, screenVector2)
-GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector3, screenVector3)
+GYOTO_PROPERTY_START(Screen,
+		     "Pin-hole camera with spectrometer.")
+GYOTO_PROPERTY_METRIC(Screen, Metric, metric,
+		      "It surrounds us and penetrates us; it binds the galaxy together.")
+GYOTO_PROPERTY_SPECTROMETER(Screen, Spectrometer, spectrometer,
+			    "Spectrometric capabilities.")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Time, time,
+			   "Observing date (seconds).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FieldOfView, fieldOfView,
+			   "Field-of-view of the camera, in angle or length (radians).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, PALN, PALN,
+			   "Position angle of the line of nodes of the equatorial plane (radians).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Inclination, inclination,
+			   "Angle between the equatorial and sky planes (radians).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Argument, argument,
+			   "Angle between the line of nodes and the Ox axis (radians).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Alpha0, alpha0, "(radians)")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Delta0, delta0, "(radians)")
+GYOTO_PROPERTY_SIZE_T(Screen, Resolution, resolution,
+		      "Number of rows and columns.")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Distance, distance,
+			   "Distance from observer to centre of metric (meters).")
+GYOTO_PROPERTY_DOUBLE(Screen, DMax, dMax,
+		      "If DMax<Distance, use Distance=DMax and rescale (geometrical units).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FreqObs, freqObs,
+			   "Observing frequency, wavelength or energy (Hz).")
+GYOTO_PROPERTY_STRING(Screen, AngleKind, anglekind,
+		      "\"EquatorialAngles\" (default), \"SphericalAngles\" or \"Rectilinear\".")
+GYOTO_PROPERTY_STRING(Screen, ObserverKind, observerKind,
+		      "\"ObserverAtInfinity\" (default), \"KeplerianObserver\" or \"ZAMO\".")
+GYOTO_PROPERTY_FILENAME(Screen, Mask, maskFile,
+			"FITS file to use as mask.")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, FourVelocity, fourVel, "4-velocity of observer.")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector1, screenVector1, "Screen e1 4-vector.")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector2, screenVector2, "Screen e2 4-vector.")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, ScreenVector3, screenVector3, "Screen e3 4-vector.")
 GYOTO_PROPERTY_END(Screen, Object::properties)
 ///
 

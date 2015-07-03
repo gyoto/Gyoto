@@ -34,9 +34,12 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(StarTrace)
-GYOTO_PROPERTY_DOUBLE(StarTrace, TMin, TMin)
-GYOTO_PROPERTY_DOUBLE(StarTrace, TMax, TMax)
+GYOTO_PROPERTY_START(StarTrace,
+		     "All the points that would be inside a Star at any date between TMin and TMax.")
+GYOTO_PROPERTY_DOUBLE(StarTrace, TMin, TMin,
+		      "Date defining start of the trace (geometrical_time).")
+GYOTO_PROPERTY_DOUBLE(StarTrace, TMax, TMax,
+		      "Date defining end of the trace (geometrical_time).")
 GYOTO_PROPERTY_END(StarTrace, Star::properties)
 
 StarTrace::StarTrace() : Star()

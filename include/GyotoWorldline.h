@@ -64,18 +64,18 @@ namespace Gyoto {
 			  "Absolute tolerance for the adaptive step integrators.") \
     GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR,		\
 			  "Maximum value of step/distance from center of mass.") \
-    GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, "Maximum step.")	\
-    GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, "Minimum step.")	\
+    GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, "Maximum step (geometrical units).")	\
+    GYOTO_PROPERTY_DOUBLE(c, DeltaMin, _deltaMin, "Minimum step (geometrical units).")	\
     GYOTO_PROPERTY_STRING(c, Integrator, _integrator,			\
-			  "Name of integrator.")			\
+			  "Name of integrator (\"runge_kutta_fehlberg78\").")			\
     GYOTO_PROPERTY_SIZE_T(c, MaxIter, _maxiter,				\
 			  "Maximum number of integration steps.")	\
     GYOTO_PROPERTY_BOOL(c, Adaptive, NonAdaptive, _adaptive,		\
 			"Whether to use an adaptive step.")		\
     GYOTO_PROPERTY_DOUBLE_UNIT(c, MinimumTime, _tMin,			\
-			       "Do not integrate earlier than this date.") \
+			       "Do not integrate earlier than this date (geometrical_time).") \
     GYOTO_PROPERTY_DOUBLE_UNIT(c, Delta, _delta,			\
-			       "Initial integration step.")		\
+			       "Initial integration step (geometrical units).")		\
     GYOTO_PROPERTY_VECTOR_DOUBLE(c, InitCoord, _initCoord,		\
 				 "Initial 8-coordinate.")		\
     GYOTO_PROPERTY_METRIC(c, Metric, _metric,				\

@@ -35,11 +35,16 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 using namespace std;
 
-GYOTO_PROPERTY_START(Torus)
-GYOTO_PROPERTY_SPECTRUM(Torus, Spectrum, spectrum)
-GYOTO_PROPERTY_SPECTRUM(Torus, Opacity, opacity)
-GYOTO_PROPERTY_DOUBLE(Torus, SmallRadius, smallRadius)
-GYOTO_PROPERTY_DOUBLE(Torus, LargeRadius, largeRadius)
+GYOTO_PROPERTY_START(Torus,
+		     "Geometrical Torus in circular rotation.")
+GYOTO_PROPERTY_SPECTRUM(Torus, Spectrum, spectrum,
+			"Emission law.")
+GYOTO_PROPERTY_SPECTRUM(Torus, Opacity, opacity,
+			"Absorption law.")
+GYOTO_PROPERTY_DOUBLE(Torus, SmallRadius, smallRadius,
+		      "Minor radius, radius of a meridian circle.")
+GYOTO_PROPERTY_DOUBLE(Torus, LargeRadius, largeRadius,
+		      "Major radius, distance from centre of tube to centre of torus. ")
 GYOTO_PROPERTY_END(Torus, Standard::properties)
 
 Torus::Torus() : Standard("Torus"),

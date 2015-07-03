@@ -47,7 +47,7 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Generic,
 GYOTO_PROPERTY_METRIC(Generic, Metric, metric,
    "The geometry of space-time at this end of the Universe.")
 GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax,
-   "Maximum distance from the centre of mass.")
+   "Maximum distance from the centre of mass (geometrical units).")
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift,
     "Whether to take redshift into account.")
 GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ,

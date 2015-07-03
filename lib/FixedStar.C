@@ -38,9 +38,12 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(FixedStar)
-GYOTO_PROPERTY_VECTOR_DOUBLE(FixedStar, Position, position)
-GYOTO_PROPERTY_BOOL(FixedStar, Rotating, NonRotating, rotating)
+GYOTO_PROPERTY_START(FixedStar,
+		     "Coordinate-spherical blob with fixed centre coordinates.")
+GYOTO_PROPERTY_VECTOR_DOUBLE(FixedStar, Position, position,
+			     "Space coordinates (3 components).")
+GYOTO_PROPERTY_BOOL(FixedStar, Rotating, NonRotating, rotating,
+		    "Is fluid at rest or in circular rotation in coordinate system.")
 GYOTO_PROPERTY_END(FixedStar, UniformSphere::properties)
 
 FixedStar::FixedStar() : UniformSphere("FixedStar"), rotating_(false)

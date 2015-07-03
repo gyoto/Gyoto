@@ -37,11 +37,16 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-GYOTO_PROPERTY_START(ThinDisk)
-GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, InnerRadius, innerRadius)
-GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, OuterRadius, outerRadius)
-GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, Thickness, thickness)
-GYOTO_PROPERTY_BOOL(ThinDisk, CoRotating, CounterRotating, corotating)
+GYOTO_PROPERTY_START(ThinDisk,
+		     "Geometrically thin disk.")
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, InnerRadius, innerRadius,
+			   "Inner radius (geometrical units, 0).")
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, OuterRadius, outerRadius,
+			   "Outer radius (geometrical units, DBL_MAX).")
+GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, Thickness, thickness,
+			   "Geometrical thickness (geometrical units, 1e-3, for optical depth).")
+GYOTO_PROPERTY_BOOL(ThinDisk, CoRotating, CounterRotating, corotating,
+		    "Direction of rotation.")
 GYOTO_PROPERTY_END(ThinDisk, Generic::properties)
 
 ThinDisk::ThinDisk(std::string kin) :

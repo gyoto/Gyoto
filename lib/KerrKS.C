@@ -36,9 +36,12 @@ using namespace std ;
 using namespace Gyoto ; 
 using namespace Gyoto::Metric ; 
 
-GYOTO_PROPERTY_START(KerrKS)
-GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin)
-GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity)
+GYOTO_PROPERTY_START(KerrKS,
+		     "Metric around a rotating black-hole, in Cartesian Kerr-Schild coordinates.")
+GYOTO_PROPERTY_DOUBLE(KerrKS, Spin, spin,
+		      "Spin parameter (adimensioned, 0).")
+GYOTO_PROPERTY_DOUBLE(KerrKS, HorizonSecurity, horizonSecurity,
+		      "Thickness of sink layer around horizon (geometrical units, 0.01).")
 GYOTO_PROPERTY_END(KerrKS, Generic::properties)
 
 KerrKS::KerrKS():

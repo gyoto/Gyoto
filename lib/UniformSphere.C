@@ -41,9 +41,9 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(Gyoto::Astrobj::UniformSphere,
  "Coordinate sphere with uniform emission and absorption.")
 GYOTO_PROPERTY_SPECTRUM(UniformSphere, Spectrum, spectrum,
- "Emission.")
+ "Emission law.")
 GYOTO_PROPERTY_SPECTRUM(UniformSphere,Opacity, opacity,
- "Absorption.")
+ "Absorption law.")
 GYOTO_PROPERTY_BOOL(UniformSphere,
 		    IsotropicEmittedIntensity, TrueEmittedIntensity,
 		    isotropic,
@@ -55,7 +55,7 @@ GYOTO_PROPERTY_DOUBLE(UniformSphere,
 		      DeltaMaxOverRadius, deltaMaxOverRadius,
  "Maximum value of step/radius of sphere for photons.")
 GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha)
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, "Sphere radius.")
+GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, "Sphere radius (geometrical units).")
 GYOTO_PROPERTY_END(UniformSphere, Standard::properties)
 
 

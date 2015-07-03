@@ -34,15 +34,19 @@ using namespace Gyoto;
 Register::Entry* Metric::Register_ = NULL;
 
 //// Gyoto::Object API
-// Keplerian/NonKeplerian
-
-GYOTO_PROPERTY_START(Metric::Generic)
-GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass)
-GYOTO_PROPERTY_BOOL(Metric::Generic, Keplerian, NonKeplerian, keplerian)
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin)
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax)
-GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR, deltaMaxOverR)
-GYOTO_PROPERTY_END(Metric::Generic, NULL)
+GYOTO_PROPERTY_START(Metric::Generic,
+		     "The geometry of space-time at this end of the Universe.")
+GYOTO_PROPERTY_DOUBLE_UNIT(Metric::Generic, Mass, mass,
+			   "Mass for scaling geometrical units to meters (kg, 1.).")
+GYOTO_PROPERTY_BOOL(Metric::Generic, Keplerian, NonKeplerian, keplerian,
+		    "Whether to use the Keplerian approximation in circularVelocity().")
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMin, deltaMin,
+		      "Minimum step for Legacy integrator (geometrical units, DBL_MIN).")
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMax, deltaMax,
+		      "Maximum step for Legacy integrator (geometrical units, DBL_MAX).")
+GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR, deltaMaxOverR,
+		      "Max of step/r coordinate for Legacy integrator (geometrical units, 1)")
+GYOTO_PROPERTY_END(Metric::Generic, Object::properties)
 
 ///
 

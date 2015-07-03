@@ -41,8 +41,10 @@ using namespace Gyoto::Metric ;
 //  3- GYOTO_PROPERTY_END(<classname>, <pointer to parent's property list>)
 //
 ////
-GYOTO_PROPERTY_START(Minkowski)
-GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian, spherical)
+GYOTO_PROPERTY_START(Minkowski,
+		     "Flat space-time.")
+GYOTO_PROPERTY_BOOL(Minkowski, Spherical, Cartesian, spherical,
+		    "Whether to use spherical or Cartesian coordinates.")
 GYOTO_PROPERTY_END(Minkowski, Generic::properties)
 
 // This is the minimal constructor: it just sets the coordinate kind and

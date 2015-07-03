@@ -43,7 +43,8 @@ using namespace std;
 // Spectrometer::Generic::properties rather than Object::properties
 
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Spectrometer::Generic)
+GYOTO_PROPERTY_START(Spectrometer::Generic,
+		     "Spectrometric capabilities of a Gyoto::Screen.")
 GYOTO_PROPERTY_END(Spectrometer::Generic, Object::properties)
 
 ///

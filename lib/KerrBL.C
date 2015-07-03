@@ -36,12 +36,17 @@ using namespace std ;
 using namespace Gyoto ;
 using namespace Gyoto::Metric ;
 
-GYOTO_PROPERTY_START(KerrBL)
-GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin)
-GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity)
+GYOTO_PROPERTY_START(KerrBL,
+		     "Metric around a rotating black-hole, in spherical Boyer-Lindquist coordinates.")
+GYOTO_PROPERTY_DOUBLE(KerrBL, Spin, spin,
+		      "Spin parameter (adimensioned, 0).")
+GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity,
+		      "Thickness of sink layer around horizon (geometrical units, 0.01).")
 GYOTO_PROPERTY_BOOL(KerrBL, GenericIntegrator, SpecificIntegrator,
-		    genericIntegrator)
-GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol)
+		    genericIntegrator,
+		    "Which version ofthe Legacy integrator should be used (specific).")
+GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol,
+		      "Tuning parameter for the specific Legacy integrator (0.01).")
 GYOTO_PROPERTY_END(KerrBL, Generic::properties)
 
 /*

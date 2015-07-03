@@ -39,7 +39,7 @@
  * \brief Access to spectrometers
  * 
  * Objects which describe spectrometers (including one-channel
- * devices, a.k.a cameras) space-time geometry must inherit from the
+ * devices, a.k.a cameras) must inherit from the
  * Gyoto::Spectrometer::Generic class.
  *
  * To be usable, a Spectrometer::Generic sub-class should register a

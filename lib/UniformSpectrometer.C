@@ -37,10 +37,14 @@ using namespace std;
 /// Properties
 
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Uniform)
-GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(Uniform, Band, band)
-GYOTO_PROPERTY_STRING(Uniform, Kind, kind)
-GYOTO_PROPERTY_SIZE_T(Uniform, NSamples, nSamples)
+GYOTO_PROPERTY_START(Uniform,
+		     "Spectrometer with uniform spacing (log or linear, wave. of freq.).")
+GYOTO_PROPERTY_VECTOR_DOUBLE_UNIT(Uniform, Band, band,
+				  "Spectral band (default unit: Hz, m, Log(Hz) or Log(m)).")
+GYOTO_PROPERTY_STRING(Uniform, Kind, kind,
+		      "\"freq\", \"wave\", \"freqlog\" or \"wavelog\".")
+GYOTO_PROPERTY_SIZE_T(Uniform, NSamples, nSamples,
+		      "Number of spectral channels.")
 GYOTO_PROPERTY_END(Uniform, Generic::properties)
 
 void Uniform::fillProperty(Gyoto::FactoryMessenger *fmp,
