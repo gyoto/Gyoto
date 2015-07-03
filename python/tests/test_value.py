@@ -31,3 +31,20 @@ class TestValue(unittest.TestCase):
         self.assertRaises(gyoto.Error, lambda: gyoto.Value(5.).toLong())
         self.assertRaises(gyoto.Error, lambda: gyoto.Value((1,)).toVDouble())
         self.assertRaises(gyoto.Error, lambda: gyoto.Value('a').toVULong())
+
+class TestProperty(unittest.TestCase):
+
+    def test_get(self):
+        s=gyoto.Screen()
+        self.assertEqual(s.get('Distance'), 1.0)
+        self.assertRaises(gyoto.Error, lambda: s.get('NonExistentProperty'))
+
+    def test_set(self):
+        s=gyoto.Screen()
+        s.set('Distance', 8., 'kpc')
+        self.assertAlmostEqual(s.get('Distance'), 8.*gyoto.GYOTO_KPC, -15)
+
+    def test_describe(self):
+        s=gyoto.Screen()
+        p=s.property('Distance')
+        self.assertIn('Distance: double with unit', s.describeProperty(p))
