@@ -249,6 +249,7 @@ MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
+NUMPY_CFLAGS = @NUMPY_CFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OTOOL = @OTOOL@
@@ -343,7 +344,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include -DGYOTO_NO_DEPRECATED \
-	$(PYTHON_INCLUDES)
+	$(PYTHON_INCLUDES) $(NUMPY_CFLAGS)
 
 AM_LDFLAGS = $(Gyoto_LDFLAGS) -module -export-dynamic \
 	$(PYTHON_LDFLAGS) $(PYTHON_LIBS) -avoid-version -shared

@@ -637,6 +637,7 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 mySUBDIRS
+NUMPY_CFLAGS
 DEFAULT_FALSE
 DEFAULT_TRUE
 linkname
@@ -16675,6 +16676,19 @@ cd $curdir
 else
   DEFAULT_TRUE='#'
   DEFAULT_FALSE=
+fi
+
+
+# Find out where NumPy headers are located
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for NumPy include files" >&5
+$as_echo_n "checking for NumPy include files... " >&6; }
+numpy_includes=`$PYTHON -c "import numpy ; print(numpy.get_include())"`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $numpy_includes" >&5
+$as_echo "$numpy_includes" >&6; }
+if  test "x$numpy_includes" != "x"; then :
+  NUMPY_CFLAGS=-I$numpy_includes
+else
+  NUMPY_CFLAGS=""
 fi
 
 

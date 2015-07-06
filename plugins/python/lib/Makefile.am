@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4 
 AM_CPPFLAGS = -I@top_srcdir@/include -DGYOTO_NO_DEPRECATED \
-	$(PYTHON_INCLUDES)
+	$(PYTHON_INCLUDES) $(NUMPY_CFLAGS)
 AM_LDFLAGS  = $(Gyoto_LDFLAGS) -module -export-dynamic \
 	$(PYTHON_LDFLAGS) $(PYTHON_LIBS) -avoid-version -shared
 AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \

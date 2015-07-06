@@ -10,10 +10,14 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 
-
 from distutils.core import setup, Extension
 import platform
 
+import numpy
+try:
+    numpy_include = numpy.get_include()
+except AttributeError:
+    numpy_include = numpy.get_numpy_include()
 
 if platform.system() == 'Linux':
     doc_dir = '@prefix@/share/doc/@PACKAGE_TARNAME@'
@@ -27,7 +31,8 @@ else:
         pass
 
 gyoto_std_module = Extension('_gyoto_std',
-                         sources=['gyoto_std_wrap.cxx']
+                         sources=['gyoto_std_wrap.cxx'],
+                         include_dirs=[numpy_include]
                          )
 
 setup(name='@PACKAGE_NAME@'+'_std',

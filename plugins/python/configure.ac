@@ -95,6 +95,15 @@ AC_SUBST([pluginname])
 AC_SUBST([linkname])
 AM_CONDITIONAL([DEFAULT], [test x$pluginname != x$linkname])
 
+# Find out where NumPy headers are located
+AC_MSG_CHECKING([for NumPy include files])
+numpy_includes=`$PYTHON -c "import numpy ; print(numpy.get_include())"`
+AC_MSG_RESULT($numpy_includes)
+AS_IF([ test "x$numpy_includes" != "x"],
+ [NUMPY_CFLAGS=-I$numpy_includes],
+ [NUMPY_CFLAGS=""])
+AC_SUBST([NUMPY_CFLAGS])
+
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],
   [test -e bin/gyoto && chmod a+x bin/gyoto])
