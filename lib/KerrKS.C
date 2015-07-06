@@ -73,11 +73,11 @@ double KerrKS::horizonSecurity() const {return drhor_; }
 int KerrKS::setParameter(std::string name,
 			    std::string content,
 			    std::string unit) {
-  if (name=="GenericIntegrator")
+  if (name=="GenericIntegrator") {
     GYOTO_WARNING << "Specifying GenericIntegrator is useless and obsolete\n";
-  else if (name=="SpecificIntegrator")
+  } else if (name=="SpecificIntegrator") {
     GYOTO_SEVERE << "SpecificIntegrator is not supported anymore\n";
-  else return Metric::Generic::setParameter(name, content, unit);
+  } else return Metric::Generic::setParameter(name, content, unit);
   return 0;
 }
 
