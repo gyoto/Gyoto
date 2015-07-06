@@ -220,7 +220,7 @@ void Gyoto::Astrobj::Python::ThinDisk::emission
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  npy_intp I_dims[] = {nbnu};
+  npy_intp I_dims[] = {static_cast<npy_intp>(nbnu)};
   npy_intp dims[] = {8};
 
   PyObject * pIn = PyArray_SimpleNewFromData(1, I_dims, NPY_DOUBLE, Inu);
