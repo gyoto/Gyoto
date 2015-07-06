@@ -27,8 +27,6 @@
         import math
         import gyoto
         class FlaredDisk:
-            vel2=gyoto.array_double(4)
-            coord2=gyoto.array_double(4)
             opening=0.2
             rin=4
             rout=15
@@ -37,11 +35,7 @@
                 h_r=abs(math.cos(coord[2]))
                 return max(h_r-self.opening, self.rin-r, r-self.rout)
             def getVelocity(self, coord, vel):
-                for i in range(0, 4):
-                    self.coord2[i]=coord[i]
-                self.this.metric().circularVelocity(self.coord2, self.vel2)
-                for i in range(0, 4):
-                    vel[i]=self.vel2[i]
+                self.this.metric().circularVelocity(coord, vel)
     </InlineModule>
     <Class>FlaredDisk</Class>
   </Astrobj>
