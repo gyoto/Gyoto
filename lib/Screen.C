@@ -238,7 +238,7 @@ double Screen::PALN(const string &unit) const {
   double paln = PALN();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
-    paln = Units::Converter(unit, "rad")(paln);
+    paln = Units::Converter("rad", unit)(paln);
 #else
     GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
 #endif
@@ -251,7 +251,7 @@ double Screen::inclination(const string &unit) const {
   double incl = inclination();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
-    incl = Units::Converter(unit, "rad")(incl);
+    incl = Units::Converter("rad", unit)(incl);
 #else
     GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
 #endif
@@ -264,7 +264,7 @@ double Screen::argument(const string &unit) const {
   double arg = argument();
   if (unit != "" && unit != "rad" ) {
 # ifdef HAVE_UDUNITS
-    arg = Units::Converter(unit, "rad")(arg);
+    arg = Units::Converter("rad", unit)(arg);
 #else
     GYOTO_WARNING << "unit ignored, please recompile with --with-udunits\n";
 #endif
