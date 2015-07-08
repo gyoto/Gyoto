@@ -484,16 +484,10 @@ ExtendArrayNumPy(array_size_t, size_t);
 %apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x1dot, size_t n1d)};
 %apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x2dot, size_t n2d)};
 %apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x3dot, size_t n3d)};
-%apply (double IN_ARRAY1[ANY]) {(const double coord[8])};
-%apply (double IN_ARRAY1[ANY]) {(double const pos[8])};
-%apply (double IN_ARRAY1[ANY]) {(double const pos[4])};
-%apply (double IN_ARRAY1[ANY]) {(const double pos[4])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double coord[8])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double dest[8])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double dest[ANY])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double vel[4])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double skypos[3])};
-%apply (double INPLACE_ARRAY1[ANY]) {(double xyz[3])};
+// Handle all const arrays of fixed size as NumPy IN_ARRAYs
+%apply (double IN_ARRAY1[ANY]) {(const double [ANY])};
+// Handle all non-const arrays of fixed size as INPLACE.
+%apply (double INPLACE_ARRAY1[ANY]) {(double [ANY])};
 
 
 // ******** INTERFACE ******** //
@@ -634,9 +628,19 @@ ExtendArrayNumPy(array_size_t, size_t);
       throwError("wrong size for output array");
     ($self)->get_prime(x1dot, x2dot, x3dot);
   }
-
+  // support this syntax:
+  // vel = gg.circularVelocity(pos)
+  // in addition of gg.circularVelocity(pos, vel)
+  void getInitialCoord(double ARGOUT_ARRAY1[8]) {
+    ($self)->getInitialCoord(ARGOUT_ARRAY1);
+  }
+  void getCoord(size_t index, double ARGOUT_ARRAY1[8]) {
+    ($self)->getCoord(index, ARGOUT_ARRAY1);
+  }
+  void getCartesianPos(size_t index, double ARGOUT_ARRAY1[8]) {
+    ($self)->getCartesianPos(index, ARGOUT_ARRAY1);
+  }
 };
-
 %include "GyotoWorldline.h"
 
 GyotoSmPtrClass(Screen)
@@ -667,6 +671,14 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   _PConverter(spectrum_converter_, spectrumConverter)
  };
 
+%extend Gyoto::Metric::Generic {
+  // support this syntax:
+  // vel = gg.circularVelocity(pos)
+  // in addition of gg.circularVelocity(pos, vel)
+  void circularVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
+    ($self)->circularVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
+  }
+};
 GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)
 GyotoSmPtrClassGeneric(Spectrometer)
