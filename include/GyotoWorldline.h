@@ -367,10 +367,10 @@ class Gyoto::Worldline
    * \param vel initial 3-velocity
    * \param dir direction of integration
    */
-  virtual void setInitCoord(double pos[4], double vel[3], int dir=1);
+  virtual void setInitCoord(double const pos[4], double const vel[3], int dir=1);
 
-  virtual void setPosition(double pos[4]); ///< Set initial 4-position
-  virtual void setVelocity(double vel[3]); ///< Set initial 3-velocity
+  virtual void setPosition(double const pos[4]); ///< Set initial 4-position
+  virtual void setVelocity(double const vel[3]); ///< Set initial 3-velocity
 
   void reset() ; ///< Forget integration, keeping initial contition
   void reInit() ; ///< Reset and recompute particle properties
@@ -521,7 +521,7 @@ class Gyoto::Worldline
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
 
-  virtual void xStore(size_t ind, double coord[8]) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, double const coord[8]) ; ///< Store coord at index ind
   virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 

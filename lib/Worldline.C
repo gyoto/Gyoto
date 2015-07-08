@@ -330,7 +330,7 @@ void Worldline::setInitCoord(const double coord[8], int dir) {
   reInit();
 }
 
-void Worldline::setInitCoord(double pos[4], double v[3], int dir) {
+void Worldline::setInitCoord(double const pos[4], double const v[3], int dir) {
   if (!getMass())
     throwError("Worldline::setInitCoord(pos, vel) "
 	       "only makes sense for massive particles");
@@ -353,12 +353,12 @@ void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
   setInitCoord(coord, dir);
 }
 
-void Worldline::setPosition(double pos[4]) {
+void Worldline::setPosition(double const pos[4]) {
   double vel[] = {0., 0., 0.};
   setInitCoord(pos, vel);
 }
 
-void Worldline::setVelocity(double vel[3]) {
+void Worldline::setVelocity(double const vel[3]) {
   double coord[8];
   getInitialCoord(coord);
   setInitCoord(coord, vel);
@@ -387,7 +387,7 @@ void Worldline::reInit() {
 }
 
 
-void Worldline::xStore(size_t ind, double coord[8])
+void Worldline::xStore(size_t ind, double const coord[8])
 {
   x0_[ind] = coord[0];
   x1_[ind] = coord[1];
