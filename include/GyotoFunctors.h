@@ -43,6 +43,7 @@ namespace Gyoto {
 class Gyoto::Functor::Double_constDoubleArray
 {
  public:
+  virtual ~Double_constDoubleArray();
   /**
    * \brief The actual function
    */
@@ -56,6 +57,7 @@ class Gyoto::Functor::Double_constDoubleArray
 class Gyoto::Functor::Double_Double_const
 {
  public:
+  virtual ~Double_Double_const();
   /**
    * \brief Exit status code of "various" methods (at least secant() !)
    */

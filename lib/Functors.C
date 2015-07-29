@@ -27,6 +27,10 @@
 #define f_tol 1e-9
 #define sign(a) (a>=0?1:-1)
 
+Gyoto::Functor::Double_constDoubleArray::~Double_constDoubleArray() {}
+
+Gyoto::Functor::Double_Double_const::~Double_Double_const() {}
+
 double Gyoto::Functor::Double_Double_const::ridders(double r1, double r2) const
 {
   // Ridders' root-finding method applied to operator()

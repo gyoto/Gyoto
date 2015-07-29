@@ -128,12 +128,11 @@ class Gyoto::Metric::NumericalMetricLorene
   void setTimes(double time,int ii);
 
   virtual double getSpecificAngularMomentum(double rr) const;
-  virtual double getPotential(double pos[4], double l_cst) const;  
+  virtual double getPotential(double const pos[4], double l_cst) const;
   
   /**
    * Runge-Kutta integrator at order 4
    */
-  //using Generic::myrk4; //--> why using this?
   virtual int myrk4(double tt, const double coord[7], double h, double res[7]) const;
   virtual int myrk4(Worldline* line, const double coord[8], 
 	    double h, double res[8]) const;
@@ -147,9 +146,9 @@ class Gyoto::Metric::NumericalMetricLorene
   ///< With energy integration also, coor=[E,r,th,ph,dE/dt,Vr,Vth,Vph]
 
   /**
-   * Reverse spatial vector if going throough 0, without horizon
+   * Reverse spatial vector if going through 0, without horizon
    */
-  void reverseR(double tt, double coord[4]) const;
+  void reverseR(double tt, double coord[7]) const;
 
   /**
    * Compute lapse and shift at given coordinates
@@ -159,45 +158,48 @@ class Gyoto::Metric::NumericalMetricLorene
   /**
    * 4-Metric
    */
+  using Generic::gmunu;
   double gmunu(const double x[4], int mu, int nu) const ;
 
   double gmunu(const double x[3], int indice_time, int mu, int nu) const ;
 
   /**
-   * r derivative of contravariant 4-metric
+   * \brief r derivative of contravariant 4-metric
    */
   double gmunu_up_dr(const double x[4], int mu, int nu) const ;
 
   double gmunu_up_dr(const double x[3], int indice_time, int mu, int nu) const ;
   
-  double christoffel(const double coord[8], const int alpha, const int mu, 
+  double christoffel(const double coord[4], const int alpha, const int mu,
 		     const int nu) const ;
-  double christoffel(const double coord[8], 
+  double christoffel(const double coord[4],
 		     const int alpha, 
 		     const int mu, const int nu,
 		     const int indice_time) const;
   virtual int christoffel(double dst[4][4][4], 
-			  const double * coord) const;
+			  const double coord[4]) const;
   int christoffel(double dst[4][4][4], 
-		  const double * coord,
+		  const double coord[4],
 		  const int indice_time) const;
   /**
-   * 3-Christoffels
+   * \brief 3-Christoffels
    */
-  double christoffel3(const double coord[6], const int indice_time, const int ii, 
-		      const int jj, const int kk) const ; //3D Christoffel
+  double christoffel3(const double coord[3], const int indice_time,
+		      const int ii, const int jj, const int kk) const ;
 
-  void setParticleProperties(Worldline * line, const double* coord) const;
+  void setParticleProperties(Worldline * line, const double coord[8]) const;
 
   /**
-   * 3rd order interpolation routine
+   * \brief 3rd order interpolation routine
+   *
+   * Interpolation at order 3 at point tt, the considered function
+   * taking the values "values" at time indices "indices".
+   *
    */
   double Interpol3rdOrder(double tt, int indice_time, double values[4]) const;
-  /*Interpolation at order 3 at point tt, the considered function 
-    taking the values "values" at time indices "indices".*/
 
   /**
-   * Computation of horizon value
+   * \brief Computation of horizon value
    */
   double computeHorizon(const double* pos) const;
   double computeHorizon(const double* pos, int indice) const;
@@ -229,9 +231,9 @@ class Gyoto::Metric::NumericalMetricLorene
    * \param vel output: velocity,
    * \param dir 1 for corotating, -1 for counterrotating.
    */
-  void circularVelocity(double const * coor, double* vel,
+  void circularVelocity(double const coor[4], double vel[3],
 			double dir) const ;
-  void circularVelocity(double const * coor, double* vel,
+  void circularVelocity(double const coor[4], double vel[3],
 			double dir, int indice_time) const ;
 
 };

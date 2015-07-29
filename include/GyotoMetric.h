@@ -254,7 +254,7 @@ class Gyoto::Metric::Generic
    * Should be implemented in derived classes if useful
    * If called on the base class, returns an error
    */
-  virtual double getPotential(double pos[4], double l_cst) const;
+  virtual double getPotential(double const pos[4], double l_cst) const;
 
   /**
    * Get delta_min_
@@ -366,8 +366,6 @@ class Gyoto::Metric::Generic
   virtual double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const; ///< Scalar product
 
-  virtual double Norm3D(double* pos) const; ///< not clear
- 
 
   /**
    * \brief Computes the orthonormal local tetrad of the observer
@@ -396,7 +394,7 @@ class Gyoto::Metric::Generic
    * \param nu 2nd index of coefficient, 0&le;&nu;&le;3;
    * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
    */
-  virtual double gmunu(const double * x, int mu, int nu) const;
+  virtual double gmunu(double const x[4], int mu, int nu) const;
 
   /**
    * \brief Metric coefficients
@@ -407,7 +405,7 @@ class Gyoto::Metric::Generic
    * \param[in] x  4-position at which to compute the coefficients;
    * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
    */
-  virtual void gmunu(double g[4][4], const double * pos) const;
+  virtual void gmunu(double g[4][4], double const pos[4]) const;
 
 
 
@@ -418,7 +416,7 @@ class Gyoto::Metric::Generic
    * &Gamma;<SUP>&alpha;</SUP><SUB>&mu;&nu;</SUB> at point
    * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
    */  
-  virtual double christoffel(const double coord[8],
+  virtual double christoffel(const double coord[4],
 			     const int alpha, const int mu, const int nu) const;
 
   /**
@@ -427,8 +425,10 @@ class Gyoto::Metric::Generic
    * Value of Christoffel symbol
    * &Gamma;<SUP>&alpha;</SUP><SUB>&mu;&nu;</SUB> at point
    * (x<SUB>1</SUB>, x<SUB>2</SUB>, x<SUB>3</SUB>).
+   *
+   * \return 1 on error, 0 otherwise
    */  
-  virtual int christoffel(double dst[4][4][4], const double coord[8]) const ;
+  virtual int christoffel(double dst[4][4][4], const double coord[4]) const ;
 
 
 
@@ -449,13 +449,13 @@ class Gyoto::Metric::Generic
    * \brief Check whether integration should stop
    *
    * The integrating loop will ask this the Metric through this method
-   * whether or not it is happy to conitnue the integration.
+   * whether or not it is happy to continue the integration.
    * Typically, the Metric should answer 0 when everything is fine, 1
    * when too close to the event horizon, inside the BH...
    *
    * \param coord 8-coordinate vector to check.
    */
-  virtual int isStopCondition(double const * const coord) const;
+  virtual int isStopCondition(double const coord[8]) const;
 
   /**
    * \brief F function such as dy/dtau=F(y,cst)
@@ -466,7 +466,7 @@ class Gyoto::Metric::Generic
    * \brief Set Metric-specific constants of motion. Used e.g. in KerrBL.
    */
   virtual void setParticleProperties(Gyoto::Worldline* line,
-				     const double * coord) const;
+				     double const coord[8]) const;
   
 
 };

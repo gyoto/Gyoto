@@ -60,13 +60,13 @@ class Gyoto::Metric::Minkowski
   Minkowski();
   virtual Minkowski* clone() const ;
 
-  void gmunu(double g[4][4], const double * x) const ;
-  int christoffel(double dst[4][4][4], const double * x) const ;
+  void gmunu(double g[4][4], const double x[4]) const ;
+  int christoffel(double dst[4][4][4], const double x[4]) const ;
 
   // Those two are implemented as examples.
-  double gmunu(const double * x, int mu, int nu) const ;
-  double christoffel(const double coord[8], const int alpha, const int mu, 
-		     const int nu) const ;
+  double gmunu(const double x[4], int mu, int nu) const ;
+  double christoffel(const double coord[4],
+		     const int alpha, const int mu, const int nu) const ;
   void observerTetrad(std::string const obskind,
 		      double const pos[4], double fourvel[4],
 		      double screen1[4], double screen2[4], 

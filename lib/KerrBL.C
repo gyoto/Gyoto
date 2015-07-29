@@ -143,7 +143,7 @@ double KerrBL::getSpecificAngularMomentum(double rr) const {
   return (rr*rr-2.*aa*sqrtr+aa*aa)/(pow(rr,1.5)-2.*sqrtr+aa);
 }
 
-double KerrBL::getPotential(double pos[4], double l_cst) const {
+double KerrBL::getPotential(double const pos[4], double l_cst) const {
   // this is W = -ln(|u_t|) for a circular equatorial 4-velocity
   double  gtt = gmunu(pos,0,0);
   double  gtp = gmunu(pos,0,3);

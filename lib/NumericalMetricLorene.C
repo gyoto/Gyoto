@@ -384,7 +384,7 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
   return lKep;
 }
 
-double NumericalMetricLorene::getPotential(double pos[4], double l_cst) const {
+double NumericalMetricLorene::getPotential(double const pos[4], double l_cst) const {
   // returns W= -log(abs(u_t)), so that PD::operator, returning Wsurf-W,
   // is negative inside doughnut
 
@@ -1506,8 +1506,8 @@ double NumericalMetricLorene::gmunu_up_dr(const double pos[3],
 
 /////////
 
-double NumericalMetricLorene::christoffel(const double coord[8], 
-					  const int alpha, 
+double NumericalMetricLorene::christoffel(const double coord[4],
+					  const int alpha,
 					  const int mu, const int nu) const
 {
   // 4D christoffels: time interpolation
@@ -1547,8 +1547,8 @@ double NumericalMetricLorene::christoffel(const double coord[8],
   return chris;
 }
 
-double NumericalMetricLorene::christoffel(const double coord[8], 
-					  const int alpha, 
+double NumericalMetricLorene::christoffel(const double coord[4],
+					  const int alpha,
 					  const int mu, const int nu,
 					  const int indice_time) const
 {
@@ -1567,7 +1567,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
       Nr = lapse->dsdr().val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1577,7 +1577,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
       Nt = lapse->dsdt().val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1593,7 +1593,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
   } else if ((alpha==0 && mu==2 && nu==3) || (alpha==0 && mu==3 && nu==2)) {
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
     return -Ktp/NN;
@@ -1651,7 +1651,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     double gamma_prp = 0.5*gpp
       *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
 	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");    
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     return beta_pr + gamma_prp*beta_p
       -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr);
   } else if ((alpha==3 && mu==2 && nu==0) || (alpha==3 && mu==0 && nu==2)) {
@@ -1670,7 +1670,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     double gamma_ptp = 0.5*gpp
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
 	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");    
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     return beta_pt + gamma_ptp*beta_p
       -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
   } else if (alpha==1 && mu==1 && nu==1) {
@@ -1722,7 +1722,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1735,7 +1735,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1750,7 +1750,7 @@ double NumericalMetricLorene::christoffel(const double coord[8],
 }
 
 int NumericalMetricLorene::christoffel(double dst[4][4][4], 
-				       const double * coord) const {
+				       const double coord[4]) const {
   // all at once computation of christoffel 4D: time interpolation
   GYOTO_DEBUG << endl;
 
@@ -1810,7 +1810,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
 }
 
 int NumericalMetricLorene::christoffel(double dst[4][4][4], 
-				       const double * coord,
+				       const double coord[4],
 				       const int indice_time) const {
   // all at once computation of christoffel 4D: actual computation
   GYOTO_DEBUG << endl;
@@ -1913,7 +1913,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
     return 0;
 }
 
-double NumericalMetricLorene::christoffel3(const double coord[6],
+double NumericalMetricLorene::christoffel3(const double coord[3],
 					    const int indice_time, 
 					    const int ii, 
 					    const int jj, 

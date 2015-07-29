@@ -486,8 +486,18 @@ ExtendArrayNumPy(array_size_t, size_t);
 %apply (double * INPLACE_ARRAY1, size_t DIM1) {(double * x3dot, size_t n3d)};
 // Handle all const arrays of fixed size as NumPy IN_ARRAYs
 %apply (double IN_ARRAY1[ANY]) {(const double [ANY])};
+%apply (double IN_ARRAY2[ANY][ANY]) {(const double [ANY][ANY])};
+%apply (double IN_ARRAY3[ANY][ANY][ANY]) {(const double [ANY][ANY][ANY])};
+%apply (double IN_ARRAY4[ANY][ANY][ANY][ANY]) {(const double [ANY][ANY][ANY][ANY])};
 // Handle all non-const arrays of fixed size as INPLACE.
 %apply (double INPLACE_ARRAY1[ANY]) {(double [ANY])};
+%apply (double INPLACE_ARRAY2[ANY][ANY]) {(double [ANY][ANY])};
+%apply (double INPLACE_ARRAY3[ANY][ANY][ANY]) {(double [ANY][ANY][ANY])};
+%apply (double INPLACE_ARRAY4[ANY][ANY][ANY][ANY]) {(double [ANY][ANY][ANY][ANY])};
+%apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_1[ANY])}
+%apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_2[ANY])}
+%apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_3[ANY])}
+%apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_4[ANY])}
 
 
 // ******** INTERFACE ******** //
@@ -672,11 +682,27 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
  };
 
 %extend Gyoto::Metric::Generic {
-  // support this syntax:
+  // Support this syntax:
   // vel = gg.circularVelocity(pos)
   // in addition of gg.circularVelocity(pos, vel)
+  // Same for gmunu and christoffel
   void circularVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
     ($self)->circularVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
+  }
+  void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) {
+    ($self)->gmunu(ARGOUT_ARRAY2, IN_ARRAY1);
+  }
+  void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
+    ($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
+  }
+  void observerTetrad(std::string const obskind,
+                      double const IN_ARRAY1[4], double ARGOUT_ARRAY1_1[4],
+                      double ARGOUT_ARRAY1_2[4], double ARGOUT_ARRAY1_3[4],
+                      double ARGOUT_ARRAY1_4[4]) const {
+    ($self)-> observerTetrad(obskind,
+                      IN_ARRAY1, ARGOUT_ARRAY1_1,
+                      ARGOUT_ARRAY1_2, ARGOUT_ARRAY1_3,
+                             ARGOUT_ARRAY1_4);
   }
 };
 GyotoSmPtrClassGeneric(Metric)

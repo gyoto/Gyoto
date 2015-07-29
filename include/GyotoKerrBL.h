@@ -93,7 +93,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
 
   virtual double getSpecificAngularMomentum(double rr) const;
   
-  virtual double getPotential(double pos[4], double l_cst) const;
+  virtual double getPotential(double const pos[4], double l_cst) const;
 
   void gmunu(double g[4][4], const double * pos) const ;
   double gmunu(const double * const x, int mu, int nu) const ;
@@ -105,7 +105,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   double gmunu_up(const double * const x, int mu, int nu) const ;
  
   using Generic::christoffel;
-  int christoffel(double dst[4][4][4], const double * pos) const ;
+  int christoffel(double dst[4][4][4], const double pos[4]) const ;
   
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;

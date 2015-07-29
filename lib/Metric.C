@@ -208,30 +208,16 @@ double Metric::Generic::ScalarProd(const double pos[4],
   return res;
 }
 
-double Metric::Generic::Norm3D(double* pos) const {
-  throwError("Check Norm3D");
-  double res=0.;
-  double g[4][4];
-  gmunu(g, pos);
-  for (int i=0;i<3;i++) {
-    for (int j=0;j<3;j++) {
-      res+=g[i+1][j+1]*pos[i]*pos[j];
-    }
-  }
-  return sqrt(res);
-}
-
-
 /***************Geodesic most general integration**************/
 
 
-double Metric::Generic::gmunu(const double * x, int mu, int nu) const {
+double Metric::Generic::gmunu(const double x[4], int mu, int nu) const {
   double g[4][4];
   gmunu(g, x);
   return g[mu][nu];
 }
 
-void Metric::Generic::gmunu(double g[4][4], const double * x) const {
+void Metric::Generic::gmunu(double g[4][4], const double x[4]) const {
   int mu, nu;
   for (mu=0; mu<4; ++mu) {
     g[mu][mu]=gmunu(x, mu, mu);
@@ -559,7 +545,7 @@ double Metric::Generic::getSpecificAngularMomentum(double rr) const{
   return 0.; // silence warning
 }
 
-double Metric::Generic::getPotential(double pos[4], double l_cst) const{
+double Metric::Generic::getPotential(double const pos[4], double l_cst) const{
   throwError("In Metric::getPotential: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
