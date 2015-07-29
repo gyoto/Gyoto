@@ -32,7 +32,7 @@ else:
 
 gyoto_std_module = Extension('_gyoto_std',
                          sources=['gyoto_std_wrap.cxx'],
-                         include_dirs=[numpy_include]
+                         include_dirs=[numpy_include, '@abs_srcdir@']
                          )
 
 setup(name='@PACKAGE_NAME@'+'_std',
