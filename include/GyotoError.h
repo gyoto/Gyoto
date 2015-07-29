@@ -114,6 +114,9 @@ class Gyoto::Error
   /// Constructor with an error message.
   Error( const std::string m );
 
+  // Copy constructor
+  Error( const Gyoto::Error &o);
+
   /// Print-out error message on standard error.
   void Report() const ;
 

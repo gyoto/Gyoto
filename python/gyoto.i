@@ -219,7 +219,7 @@ swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {
    SWIG_Python_Raise
      (SWIG_NewPointerObj
       ((new Gyoto::Error(static_cast<const Gyoto::Error& >(e))),
-      __Gyoto_SWIGTYPE_p_Gyoto__Error(),SWIG_POINTER_OWN),
+      __Gyoto_SWIGTYPE_p_Gyoto__Error(),SWIG_POINTER_NEW),
       "gyoto.Error", __Gyoto_SWIGTYPE_p_Gyoto__Error());
     SWIG_fail;
   }
@@ -515,6 +515,7 @@ ExtendArrayNumPy(array_size_t, size_t);
     return *($self);
   }
  };
+%exceptionclass Gyoto::Error ;
 %include "GyotoError.h"
 
 // Expose the SmartPointer API

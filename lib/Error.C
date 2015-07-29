@@ -25,6 +25,8 @@ using namespace std;
 
 Error::Error( const std::string m ) : message(m), errcode(EXIT_FAILURE) { }
 
+Error::Error( const Gyoto::Error &o): message(o.message), errcode(o.errcode) {}
+
 void Error::Report() const { cerr << message << endl; }
 
 int Error::getErrcode() const { return errcode ; }
