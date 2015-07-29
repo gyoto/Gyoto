@@ -225,6 +225,12 @@ void Worldline::xExpand(double* &x, int dir) {
 size_t Worldline::xExpand(int dir) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(dir);
+  GYOTO_DEBUG << endl << "massive=" << getMass()
+	      << ", size=" << x_size_
+	      << ", imin_=" << imin_
+	      << ", i0_=" << i0_
+	      << ", imax_=" << imax_
+	      << endl;
 # endif
 
   xExpand(x0_, dir);
@@ -238,14 +244,22 @@ size_t Worldline::xExpand(int dir) {
 
   size_t retval=(dir==1)?(x_size_-1):x_size_;
   size_t offset=(dir==1)?0:x_size_;
+
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << "retval=" << retval
+	      << ", offset=" << offset
+	      << ", dir=" << dir
+	      << endl;
+# endif
+
   x_size_*=2;
-  
+
   imin_+=offset;
   i0_+=offset;
   imax_+=offset;
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG<< ", xsize_=" << x_size_
+  GYOTO_DEBUG << ", xsize_=" << x_size_
 		    << ", imin_=" << imin_
 		    << ", i0_=" << i0_
 		    << ", imax_=" << imax_;
