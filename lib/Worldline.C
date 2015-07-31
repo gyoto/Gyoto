@@ -331,8 +331,18 @@ std::vector<double> Worldline::initCoord() const {
 
 void Worldline::setInitCoord(const double coord[8], int dir) {
   GYOTO_DEBUG_ARRAY(coord, 8);
-  if (dir==0) dir = getMass() ? 1 : -1;
-  imin_=imax_=i0_=(dir==1?0:x_size_-1);
+
+  // If dir is not forced and Worldline has never been initialize,
+  // make a default direction depending on particle mass
+  if (dir==0 && i0_==0 && imin_==1 && imax_==0) dir = getMass() ? 1 : -1;
+
+  switch (dir) {
+  case 0: break; // don't move i0_
+  case -1: i0_=x_size_-1; break;// integrate backwards
+  case 1: i0_=0; // integrate forwards
+  }
+
+  imin_=imax_=i0_;
   x0_[i0_]=coord[0];
   x1_[i0_]=coord[1];
   x2_[i0_]=coord[2];

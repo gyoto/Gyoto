@@ -358,7 +358,25 @@ class Gyoto::Worldline
   void initCoord(std::vector<double> const&); 
   std::vector<double> initCoord() const; 
 
-  virtual void   setInitCoord(const double coord[8], int dir = 0); ///< Set Initial coordinate
+  /**
+   * \brief Set Initial coordinate
+   *
+   * Set #imin_=#imax_=#i0_, and x<i>_[i0_]=coord[<i>].
+   *
+   * If dir==1, #i0_ is set to 0. If dir==-1, #i0_ is set to #x_size_-1.
+   *
+   * If dir==0 and the Worldine has never been computed (#i0_==0,
+   * #imin_==1 and #imax_==0), then dir defaults to 1 for a massive
+   * particle and -1 for a massless particle.
+   *
+   * If dir==0 and the Worldine has already been computed, #i0_ is not
+   * changed.
+   *
+   * \param coord new initial coordinates
+   * \param dir direction of integration. 1 for forward integration,
+   *        -1 for backards integration, 0 for unkown or both.
+   */
+  virtual void   setInitCoord(const double coord[8], int dir = 0);
 
   /**
    * \brief Set initial coordinate
@@ -367,7 +385,7 @@ class Gyoto::Worldline
    * \param vel initial 3-velocity
    * \param dir direction of integration
    */
-  virtual void setInitCoord(double const pos[4], double const vel[3], int dir=1);
+  virtual void setInitCoord(double const pos[4], double const vel[3], int dir=0);
 
   virtual void setPosition(double const pos[4]); ///< Set initial 4-position
   virtual void setVelocity(double const vel[3]); ///< Set initial 3-velocity

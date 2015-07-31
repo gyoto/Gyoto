@@ -162,7 +162,7 @@ void Star::metric(SmartPointer<Metric::Generic> gg) {
 
 void Star::setInitialCondition(double const coord[8]) {
   if (!metric_) throwError("Please set metric before calling Star::setInitialCondition(double*)");
-  Worldline::setInitialCondition(metric_, coord, 1);
+  Worldline::setInitialCondition(metric_, coord, 0);
 }
 
 double Star::getMass() const {return 1. ;}

@@ -316,7 +316,7 @@ SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
   updatePhoton();
   double coord[8];
   screen_ -> getRayCoord(size_t(1),size_t(1), coord);
-  ph_ . setInitCoord(coord, -1);
+  ph_ . setInitCoord(coord, 0);
   return ph_.clone();
 }
 
@@ -324,7 +324,7 @@ SmartPointer<Photon> Scenery::clonePhoton(double a, double b) {
   updatePhoton();
   double coord[8];
   screen_ -> getRayCoord(a, b, coord);
-  ph_ . setInitCoord(coord, -1);
+  ph_ . setInitCoord(coord, 0);
   return ph_.clone();
 }
 
@@ -671,7 +671,7 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
-      ph -> setInitCoord(impactcoords+8, -1);
+      ph -> setInitCoord(impactcoords+8, 0);
       ph -> resetTransmission();
       astrobj() -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
     }
@@ -680,7 +680,7 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
     screen_ -> getRayCoord(i,j, coord);
-    ph -> setInitCoord(coord, -1);
+    ph -> setInitCoord(coord, 0);
     ph -> hit(data);
   }
 }
@@ -705,7 +705,7 @@ void Scenery::operator() (
   ph -> delta(delta_);
 
   screen_ -> getRayCoord(a, d, coord);
-  ph -> setInitCoord(coord, -1);
+  ph -> setInitCoord(coord, 0);
   ph -> hit(data);
 
 }
