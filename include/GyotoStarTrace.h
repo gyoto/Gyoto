@@ -85,14 +85,15 @@ class Gyoto::Astrobj::StarTrace :
   GYOTO_OBJECT;
 
  /**
-  * Create Star object and set initial condition.
+  * \brief Create Star object and set initial condition.
+  *
   * \param gg Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
   * \param radius star radius
   * \param pos initial 4-position
   * \param v   initial 3-velocity
   */
   StarTrace(SmartPointer<Metric::Generic> gg, double radius,
-       double pos[4], double v[3]) ;                        ///< Standard constructor
+       double const pos[4], double const v[3]) ;
 
  /**
   * Create Star object with undefined initial conditions. One needs to
@@ -127,7 +128,7 @@ class Gyoto::Astrobj::StarTrace :
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> gg);
 
-  virtual void xStore(size_t ind, double coord[8]) ;
+  virtual void xStore(size_t ind, double const coord[8]) ;
 
   // Accessors
   // ---------
@@ -140,7 +141,7 @@ class Gyoto::Astrobj::StarTrace :
   double TMax()const; ///< Get tmax_
   void TMax(double); ///< Set tmax_
 
-  virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
+  virtual void setInitialCondition(double const coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
   virtual double operator()(double const coord[4]) ;
 

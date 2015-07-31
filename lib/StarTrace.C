@@ -52,8 +52,8 @@ StarTrace::StarTrace() : Star()
 }
 
 StarTrace::StarTrace(SmartPointer<Metric::Generic> met, double rad,
-		double pos[4],
-		double v[3]) :
+		double const pos[4],
+		double const v[3]) :
   Star(met, rad, pos, v)
 {
   Generic::kind_="StarTrace";
@@ -156,7 +156,7 @@ void StarTrace::computeXYZ()
   }
 }
 
-void StarTrace::xStore(size_t ind, double coord[])
+void StarTrace::xStore(size_t ind, double const coord[8])
 {
   Star::xStore(ind, coord);
   computeXYZ(ind);
@@ -177,7 +177,7 @@ void StarTrace::metric(SmartPointer<Metric::Generic> gg)
 string StarTrace::className() const { return  string("StarTrace"); }
 string StarTrace::className_l() const { return  string("startrace"); }
 
-void StarTrace::setInitialCondition(double coord[8]) {
+void StarTrace::setInitialCondition(double const coord[8]) {
   Star::setInitialCondition(coord);
 }
 

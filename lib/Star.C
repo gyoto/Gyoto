@@ -117,8 +117,8 @@ Star::Star() :
 }
 
 Star::Star(SmartPointer<Metric::Generic> met, double rad,
-	   double pos[4],
-	   double v[3]) :
+	   double const pos[4],
+	   double const v[3]) :
   UniformSphere("Star"),
   Worldline()
 {
@@ -160,7 +160,7 @@ void Star::metric(SmartPointer<Metric::Generic> gg) {
   Worldline::metric(gg);
 }
 
-void Star::setInitialCondition(double coord[8]) {
+void Star::setInitialCondition(double const coord[8]) {
   if (!metric_) throwError("Please set metric before calling Star::setInitialCondition(double*)");
   Worldline::setInitialCondition(metric_, coord, 1);
 }

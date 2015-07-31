@@ -104,14 +104,14 @@ class Gyoto::Astrobj::Star :
   GYOTO_OBJECT;
 
  /**
-  * Create Star object and set initial condition.
+  * \brief Create Star object and set initial condition.
   * \param gg Gyoto::SmartPointer to the Gyoto::Metric in this part of the Universe
   * \param radius star radius
   * \param pos initial 4-position
   * \param v   initial 3-velocity
   */
   Star(SmartPointer<Metric::Generic> gg, double radius,
-       double pos[4], double v[3]) ;                        ///< Standard constructor
+       double const pos[4], double const v[3]) ;
 
  /**
   * Create Star object with undefined initial conditions. One needs to
@@ -147,7 +147,7 @@ class Gyoto::Astrobj::Star :
   virtual double rMax() ;
   //  void setCoordSys(int); ///< Get coordinate system for integration
   //  int  getCoordSys(); ///< Set coordinate system for integration
-  virtual void setInitialCondition(double coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
+  virtual void setInitialCondition(double const coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
  public:
   // Object / Property overloading for special needs:
