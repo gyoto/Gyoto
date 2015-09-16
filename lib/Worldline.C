@@ -425,11 +425,10 @@ void Worldline::xStore(size_t ind, double const coord[8])
 
 void Worldline::xFill(double tlim) {
 
-  //GYOTO_DEBUG<< "In xFill" << endl;
   int dir;
   stopcond=0;
   size_t ind;
-
+  
   // Check whether anything needs to be done,
   // Determine direction,
   // Allocate memory.
@@ -442,7 +441,7 @@ void Worldline::xFill(double tlim) {
     dir = -1;
     ind = (imin_==0)?xExpand(-1):imin_;
   } else return ; // nothing to do
-
+  
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<< "Integrating worldline " ;
 # endif
@@ -452,39 +451,48 @@ void Worldline::xFill(double tlim) {
   if (MassPart==1.) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_IF_DEBUG
-    cerr << "of massive particule ....." << endl;
+      cerr << "of massive particule ....." << endl;
     GYOTO_ENDIF_DEBUG
 #   endif
-  }else if(MassPart==0.){
+      }else if(MassPart==0.){
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_IF_DEBUG
-    cerr << "of 0-mass particule ....." << endl;
+      cerr << "of 0-mass particule ....." << endl;
     GYOTO_ENDIF_DEBUG
 #   endif
-  }else{
+      }else{
     throwError("In Worldline.C Unrecognized mass.");
     //GYOTO_DEBUG<< "of unrecognized mass (!!) particule ....." << endl;
     //equations of geodesics written for a mass=1 star
   }
- 
+  
   double coord[8]={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
 		   x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
-
+  
   GYOTO_DEBUG << "IntegState initialization" << endl;
-
+  
   state_->init(this, coord, dir*delta_);
-    //delta_ = initial integration step (defaults to 0.01)
-
+  //delta_ = initial integration step (defaults to 0.01)
+  
   GYOTO_DEBUG << "IntegState initialized" << endl;
-
+  
   size_t mycount=0;// to prevent infinite integration
-
+  
   while (!stopcond) {
     mycount++;
     ind+=dir;
-
+    
     stopcond= state_ -> nextStep(coord);
-
+    
+    if(metric_->isStopCondition(coord)) {
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "stopcond set by metric"<<endl;
+#     endif
+      //coord[0]=1.01*tlim;
+      //xStore(ind, coord);
+      break;
+    }
+    
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==maxiter_) {
       stopcond=1;
@@ -492,7 +500,7 @@ void Worldline::xFill(double tlim) {
     }
     // store particle's trajectory for later use
     xStore(ind, coord);
-
+    
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
       if (coord[0]>tlim) stopcond=1;
@@ -512,7 +520,7 @@ void Worldline::xFill(double tlim) {
   }
   if (dir==1) imax_=ind; // tell when we actually stopped integrating
   else imin_=ind;
-
+  
 }
 
 size_t Worldline::get_nelements() const { return imax_-imin_+1; }
