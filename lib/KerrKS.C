@@ -304,5 +304,6 @@ int KerrKS::isStopCondition(double const * const coord) const {
     r=sqrt(r2);
   double rdot=(x*xdot+y*ydot+z*zdot+a2_*z*zdot/r2)/(r+a2z2/(r*r2));
 
-  return (r<rsink_ && rdot >0 && Tdot>0);
+  //  return (r<rsink_ && rdot >0 && Tdot>0);
+  return (r<rsink_);
 }
