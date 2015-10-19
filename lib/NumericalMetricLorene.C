@@ -248,13 +248,13 @@ void NumericalMetricLorene::setMetricSource() {
     setGamcon_tab(g_up_ij,i-1);
     Sym_tensor* kij = new Sym_tensor(*map, (*map).get_bvect_spher(), resu) ;
     
-    /*    if (has_surface_){
+    if (has_surface_){
       // This seems to be only necessary for collapsing or not collapsing star
       // --> F.V. October 2015: seems outdated, now produces a bug on dzpuis
       for (int l=1; l<=3; l++)
 	for (int c=l; c<=3; c++)
 	  (*kij).set(l,c).dec_dzpuis(2) ;
-	  }*/
+    }
 
     setKij_tab(kij,i-1);
 
