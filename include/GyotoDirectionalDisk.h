@@ -6,6 +6,12 @@
  *   plane.  The flux emitted
  *   at radius r, making an angle i with respect to the local normal,
  *   at frequency nu is given in a FITS file.
+ *  
+ *   This astrobj is typically used to compute reflected spectra
+ *   in the lamp post model. 
+ *
+ *   For the time being the metric is imposed to be KerrBL, but should
+ *   easily generalized.
  *
  *  The target of ray-traced Gyoto::Photon
  */
@@ -68,12 +74,19 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   double * cosi_; ///< Direction cosine vector
   double * freq_; ///< Frequencies vector
 
+  double lampaltitude_; ///< Lamp altitude (z coordinate) in M units
+
   size_t nnu_; ///< Number of frequencies provided in DirectionalDisk::emission_
   size_t ni_; ///< Number of direction cosine
   size_t nr_; ///< Number of radius values
 
-  bool average_over_angle_; ///< true to average over emission angle
+  double minfreq_computed_; ///< Minimum frequency computed by ATM21
+  double maxfreq_computed_; ///< Maximum frequency computed by ATM21
 
+  double minfreq_lampframe_; ///< Minimum frequency emitted by the lamp
+  double maxfreq_lampframe_; ///< Maximum frequency emitted by the lamp
+
+  bool average_over_angle_; ///< true to average over emission angle
 
   // Constructors - Destructor
   // -------------------------
@@ -81,6 +94,9 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   GYOTO_OBJECT;
   // fillProperty is overridden to remove leading "!" from FITS filename
   void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
+  using Generic::metric;
+  void metric(SmartPointer<Metric::Generic> gg);
 
   DirectionalDisk(); ///< Standard constructor
   
@@ -97,6 +113,10 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
   std::string file() const ;
   void averageOverAngle(bool t);
   bool averageOverAngle()const;
+  void lampaltitude(double zz);
+  double lampaltitude() const ;
+  void lampcutoffsinev(std::vector<double> const &v) ;
+  std::vector<double> lampcutoffsinev() const ;
 
 #ifdef GYOTO_USE_CFITSIO
   /// Read parameters and arrays from FITS file

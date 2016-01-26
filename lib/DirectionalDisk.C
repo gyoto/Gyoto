@@ -47,6 +47,8 @@ using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(DirectionalDisk)
 GYOTO_PROPERTY_FILENAME(DirectionalDisk, File, file)
+GYOTO_PROPERTY_DOUBLE(DirectionalDisk, LampAltitude, lampaltitude)
+GYOTO_PROPERTY_VECTOR_DOUBLE(DirectionalDisk, LampCutOffsIneV, lampcutoffsinev)
 GYOTO_PROPERTY_BOOL(DirectionalDisk,
 		    AverageOverAngle, DontAverageOverAngle,
 		    averageOverAngle)
@@ -67,6 +69,9 @@ DirectionalDisk::DirectionalDisk() :
   ThinDisk("DirectionalDisk"), filename_(""),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
   nnu_(0), ni_(0), nr_(0),
+  lampaltitude_(10.),
+  minfreq_computed_(DBL_MIN), maxfreq_computed_(DBL_MAX),
+  minfreq_lampframe_(1.), maxfreq_lampframe_(1e30),
   average_over_angle_(0)
 {
   GYOTO_DEBUG << "DirectionalDisk Construction" << endl;
@@ -76,6 +81,11 @@ DirectionalDisk::DirectionalDisk(const DirectionalDisk& o) :
   ThinDisk(o), filename_(o.filename_),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
   nnu_(o.nnu_), ni_(o.ni_), nr_(o.nr_),
+  lampaltitude_(o.lampaltitude_),
+  minfreq_computed_(o.minfreq_computed_), 
+  maxfreq_computed_(o.maxfreq_computed_),
+  minfreq_lampframe_(o.minfreq_lampframe_), 
+  maxfreq_lampframe_(o.maxfreq_lampframe_), 
   average_over_angle_(o.average_over_angle_)
 {
   GYOTO_DEBUG << "DirectionalDisk Copy" << endl;
@@ -225,6 +235,27 @@ std::string DirectionalDisk::file() const {
   return filename_;
 }
 
+void DirectionalDisk::lampaltitude(double zz) {
+  lampaltitude_ = zz;
+}
+
+double DirectionalDisk::lampaltitude() const {
+  return lampaltitude_;
+}
+
+void DirectionalDisk::lampcutoffsinev(std::vector<double> const &v) {
+  if (v.size() != 2)
+    throwError("In DirectionalDisk: Only 2 arguments to define lamp energy range");
+  minfreq_lampframe_ = v[0]*GYOTO_eV2Hz;
+  maxfreq_lampframe_ = v[1]*GYOTO_eV2Hz;
+}
+
+std::vector<double> DirectionalDisk::lampcutoffsinev() const {
+  std::vector<double> v (2, 0.);
+  v[0]=minfreq_lampframe_; v[1]=maxfreq_lampframe_;
+  return v;
+}
+
 #ifdef GYOTO_USE_CFITSIO
 void DirectionalDisk::fitsRead(string filename) {
   GYOTO_MSG << "DirectionalDisk reading FITS file: " << filename << endl;
@@ -285,6 +316,17 @@ void DirectionalDisk::fitsRead(string filename) {
      delete [] freq_; freq_=NULL;
      throwCfitsioError(status) ;
    }
+
+   // Computing min and max of freq_
+
+   minfreq_computed_ = DBL_MAX;
+   maxfreq_computed_ = DBL_MIN;
+   for (int ii=0;ii<nnu_;ii++){
+     if (freq_[ii]<minfreq_computed_) minfreq_computed_=freq_[ii];
+     if (freq_[ii]>maxfreq_computed_) maxfreq_computed_=freq_[ii];
+   }
+   
+   GYOTO_DEBUG << "Min, max freq= " << minfreq_computed_ << " " << maxfreq_computed_ << endl;
 
   ////// FIND MANDATORY COSI HDU ///////
   
@@ -438,9 +480,33 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
 }
 
 double DirectionalDisk::emission(double nu, double,
-				    double cp[8],
-				    double co[8]) const{
+				 double cp[8],
+				 double co[8]) const{
   GYOTO_DEBUG << endl;
+  // Checking whether the current freq is outside of 
+  // the redshifted illumination range
+  double aa = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+  double zz = lampaltitude_;
+  double rr = co[1];
+  double gg_lampdisk = (pow(rr,1.5)+aa)/sqrt(rr*rr*rr+2*aa*pow(rr,1.5)-3*rr*rr)
+    *sqrt((zz*zz+aa*aa-2.*zz)/(zz*zz+aa*aa)); // this is the redshift factor
+  // linking the lamp-frame and the disk-frame, it has nothing to do with the
+  // redshift factor between the disk and the far-away-observer frames.
+  double minfreq_diskframe = minfreq_lampframe_*gg_lampdisk,
+    maxfreq_diskframe = maxfreq_lampframe_*gg_lampdisk;
+  //cout << "Limits computed= " << minfreq_computed_ << " " << maxfreq_computed_<< endl;
+  //cout << "Limits lamp= " << minfreq_lampframe_ << " " << maxfreq_lampframe_<< endl;
+  //cout << "Limits disk= " << minfreq_diskframe << " " << maxfreq_diskframe << endl;
+  //cout << "Local nu= " << nu << endl;
+  if (minfreq_diskframe < minfreq_computed_ || maxfreq_diskframe > maxfreq_computed_){
+    throwError("In DirectionalDisk::emission(): "
+	       "bad freq value ; update LampCutOffsIneV in XML");
+  }
+
+  // Cut-offs in disk frame: if the local freq is not inside the
+  // redshifted illumination band, no signal
+  if (nu < minfreq_diskframe || nu > maxfreq_diskframe) return 0.;
+
   // Compute angle between photon direction and normal
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
   double normal_norm=gg_->ScalarProd(cp,normal,normal);
@@ -471,7 +537,6 @@ double DirectionalDisk::emission(double nu, double,
   //if (ind[2]==nr_) return 0.; // 0 emission outside simulation scope
 
   // Specific intensity emitted at the current location
-  double rr=co[1];
   // No emission outside radius and frequency data range
   if (rr<=radius_[0] || rr>=radius_[nr_-1]) return 0.;
   if (nu<=freq_[nnu_-1] || nu>=freq_[0]) return 0.;
@@ -481,29 +546,33 @@ double DirectionalDisk::emission(double nu, double,
 	       "bad {nu,r} indices");
   }
 
-  //return acos(cosi)*180./M_PI; // TEST!!!
+  //return acos(cosi)*180./M_PI; // TEST!!! Don't forget to impose redshift to 1
 
-  //  cout << "nu(eV), r, cosi= " << nu*6.62e-34/1.6e-19 << " " << rr << " " << cosi << endl;
+  //cout << "nu(eV), r(rS), cosi= " << nu/GYOTO_eV2Hz << " " << rr/2. << " " << cosi << endl;
   double Iem=0.;
   size_t i0l=ind[0]+1, i0u=ind[0], 
-    i2l=ind[2]-1, i2u=ind[2];
+    i2l=ind[2]-1, i2u=ind[2]; // Correct: i0 is freq, ordered decreasingly,
+                              // i2 is radius ordered increasingly
 
   //  cout << "ind_cosi=, ni= " << ind[1] << " " << ni_ << endl;
-  //  cout << "min max r= " << radius_[0] << " " << radius_[nr_-1] << endl;
+  //cout << "min max r= " << radius_[0] << " " << radius_[nr_-1] << endl;
 
   if (!average_over_angle_){
     if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
       // If cosi is out of the cosi_ range, bilinear interpol in nu,r
       size_t i1=ind[1];
+      //cout << "cos value unique= " << cosi_[i1] << endl;
       double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,r}
 	I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
 	I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
 	I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
+      //cout << "bilin dir: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
       double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
 	ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
       Iem = I00+(I10-I00)*rationu
 	+(I01-I00)*ratior
 	+(I11-I01-I10+I00)*rationu*ratior;
+      //cout << "I interp= " << Iem << endl;
     }else{
       // Trilinear interpol
       if (ind[1]==0){
@@ -531,15 +600,18 @@ double DirectionalDisk::emission(double nu, double,
 	+ (I011-I010-I001+I000)*ratioi*ratior
 	+ (I101-I001-I100+I000)*rationu*ratior
 	+ (I111-I011-I101-I110+I100+I001+I010-I000)*rationu*ratioi*ratior;
+      //cout << "I interp= " << Iem << endl;
     }
   }else{
     // Average over cosi values
     // with bilinear interpol in nu,r
     double I00=0., I01=0., I10=0., I11=0.;
+    double I00min=DBL_MAX, I00max=DBL_MIN, I01min=DBL_MAX, I01max=DBL_MIN, I10min=DBL_MAX, I10max=DBL_MIN, I11min=DBL_MAX, I11max=DBL_MIN;
     /* Using trapezoidal rule, I_integ = \int I(mu)*dmu, mu=cos(i)
        NB: in Garcia+14, they compute a flux because they don't raytrace,
        so they use F = 1/4pi * \int I(i) cos(i) di = 1/2 * \int I(mu) mu dmu,
        here we are not interested in the same quantity */
+    double dcostot = 0.; // will contain \int d\mu (~1 but not exactly)
     for (size_t ii=0; ii<ni_-1; ++ii){
       double dcos = cosi_[ii+1]-cosi_[ii];
       I00 += 0.5*dcos*
@@ -554,14 +626,66 @@ double DirectionalDisk::emission(double nu, double,
       I11 += 0.5*dcos*
 	(emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u]
 	 +emission_[i2u*(ni_*nnu_)+ii*nnu_+i0u]);
+      dcostot+=dcos;
+
+      /*
+	// CHECK MINIMUM
+	if (emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l]<I00min) I00min=emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l];
+      if (emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0l]<I00min) I00min=emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0l];
+      if (emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l]<I01min) I01min=emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l];
+      if (emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0l]<I01min) I01min=emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0l];
+      if (emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u]<I10min) I10min=emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u];
+      if (emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0u]<I10min) I10min=emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0u];
+      if (emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u]<I11min) I11min=emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u];
+      if (emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0u]<I11min) I11min=emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0u];
+      */
+
+      /*
+      // CHECK MAXIMUM
+      if (emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l]>I00max) I00max=emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l];
+      if (emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0l]>I00max) I00max=emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0l];
+      if (emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l]>I01max) I01max=emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l];
+      if (emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0l]>I01max) I01max=emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0l];
+      if (emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u]>I10max) I10max=emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u];
+      if (emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0u]>I10max) I10max=emission_[i2l*(ni_*nnu_)+(ii)*nnu_+i0u];
+      if (emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u]>I11max) I11max=emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u];
+      if (emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0u]>I11max) I11max=emission_[i2u*(ni_*nnu_)+(ii)*nnu_+i0u];
+      */
+      
+      
+      //cout << "Raw data 1 for I00= " << radius_[i2l]/2. << " " << radius_[i2u]/2. << " " << freq_[i0l]/GYOTO_eV2Hz << " " << freq_[i0u]/GYOTO_eV2Hz << " " << cosi_[ii] << " " << cosi_[ii+1] << endl;
+      //cout << "Raw data 2 for I00= " << emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l] << " " << emission_[i2l*(ni_*nnu_)+ii*nnu_+i0l] << endl;
+
+      //cout << "IO in avg i= " << ii << " and I0= " << I00 << endl;
+
+      
     } 
+
+    // Normalizing (int d co(i) is very close to 1 but not exactly 1)
+    I00/=dcostot;
+    I01/=dcostot;
+    I10/=dcostot;
+    I11/=dcostot;
+
     //cout << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
+
+    //if (I00<I00min || I01<I01min || I10<I10min || I11<I11min) throwError("test");
+    //if (I00>I00max || I01>I01max || I10>I10max || I11>I11max) throwError("test");
     double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
       ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
     Iem = I00+(I10-I00)*rationu
       +(I01-I00)*ratior
       +(I11-I01-I10+I00)*rationu*ratior;
+    //cout << "I interp= " << Iem << endl;
   }
   //cout << "return= " << Iem << endl;
   return Iem;
+}
+
+void DirectionalDisk::metric(SmartPointer<Metric::Generic> gg) {
+  //Metric must be KerrBL (see emission function)
+  string kin = gg->kind();
+  if (kin != "KerrBL")
+    throwError("DirectionalDisk::metric(): metric must be KerrBL");
+  ThinDisk::metric(gg);
 }
