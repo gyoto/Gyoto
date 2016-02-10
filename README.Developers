@@ -18,10 +18,17 @@ Before each commit:
 * Add something in the NEWS file. The NEWS file should contain an
   entry fror the next release, put your note in there.
 
+* If this commit changes the user manual, update the date on the title
+  page.
+
 To make a new release:
 ======================
 
 * Check with the team whether they had plans fr this release.
+
+* Update the date in the user manual. Check the right date by using
+    git log doc/user_guide
+  and edit doc/user_guide/GyotoManual.tex accordingly.
 
 * Choose a version number. Version is MAJOR.MINOR.MICRO. Bump MAJOR
   when singnificant new feature are there; update MINOR for continued
