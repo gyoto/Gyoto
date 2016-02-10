@@ -62,7 +62,7 @@ CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 
 MPIRUN = mpirun
 
-CHECK_CMD = ./gyoto -pstdplug -r32 -T8 -P0
+CHECK_CMD = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH) ./gyoto -pstdplug -r32 -T8 -P0
 
 check-nompi-clean:
 	rm -f $(CHECK_RESULTS)

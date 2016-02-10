@@ -447,7 +447,7 @@ CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
 	example-torus-KS.fits $(am__append_7)
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
-CHECK_CMD = ./gyoto -pstdplug -r32 -T8 -P0
+CHECK_CMD = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH) ./gyoto -pstdplug -r32 -T8 -P0
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 all: all-am
