@@ -19,6 +19,9 @@
 
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoUtils.h"
+
+#include <cstdlib>
 
 #include <cmath>
 #ifdef GYOTO_USE_XERCES
@@ -32,14 +35,17 @@ using namespace Gyoto;
 GYOTO_PROPERTY_START(Spectrum::PowerLaw)
 GYOTO_PROPERTY_DOUBLE(Spectrum::PowerLaw, Exponent, exponent)
 GYOTO_PROPERTY_DOUBLE(Spectrum::PowerLaw, Constant, constant)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Spectrum::PowerLaw, CutOffIneV, cutoffinev)
 GYOTO_PROPERTY_END(Spectrum::PowerLaw, Generic::properties)
 
 ///
 
 Spectrum::PowerLaw::PowerLaw() :
-  Spectrum::Generic("PowerLaw"), constant_(1.), exponent_(0.) {}
+Spectrum::Generic("PowerLaw"), constant_(1.), exponent_(0.),
+  minfreq_(DBL_MIN), maxfreq_(DBL_MAX){}
 Spectrum::PowerLaw::PowerLaw(double p, double c) :
-  Spectrum::Generic("PowerLaw"), constant_(c), exponent_(p) {}
+  Spectrum::Generic("PowerLaw"), constant_(c), exponent_(p),
+  minfreq_(DBL_MIN), maxfreq_(DBL_MAX){}
 Spectrum::PowerLaw * Spectrum::PowerLaw::clone() const
 { return new Spectrum::PowerLaw(*this); }
 
@@ -47,7 +53,20 @@ double Spectrum::PowerLaw::constant() const { return constant_; }
 void Spectrum::PowerLaw::constant(double c) { constant_ = c; }
 double Spectrum::PowerLaw::exponent() const { return exponent_; }
 void Spectrum::PowerLaw::exponent(double c) { exponent_ = c; }
+void Spectrum::PowerLaw::cutoffinev(std::vector<double> const &v) {
+  if (v.size() != 2)
+    throwError("In PowerLawSpectrum: Only 2 arguments to define"
+	       " cutoffs");
+  minfreq_ = v[0]*GYOTO_eV2Hz;
+  maxfreq_ = v[1]*GYOTO_eV2Hz;
+}
+std::vector<double> Spectrum::PowerLaw::cutoffinev() const {
+  std::vector<double> v (2, 0.);
+  v[0]=minfreq_; v[1]=maxfreq_;
+  return v;
+}
 
 double Spectrum::PowerLaw::operator()(double nu) const {
+if (nu<minfreq_ || nu>maxfreq_) return 0.; // cutoffs
   return constant_ * pow(nu, exponent_);
 }

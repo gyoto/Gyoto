@@ -32,7 +32,7 @@ intensity(,2,)=0.1*intensity(,1,);
 freq=array(double,nnu);
 cosi=array(double,ni);
 radius=indgen(nr)*5.;
-freq(1)+=10.; cosi+=0.5; 
+freq(1)+=100.; freq(2)+=10.; cosi+=0.5; 
 
 metric = gyoto_KerrBL(mass=4e6*GYOTO_SUN_MASS);
 

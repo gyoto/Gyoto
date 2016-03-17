@@ -54,6 +54,8 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
  protected:
   double constant_; ///< I_nu=constant_*nu^exponent_
   double exponent_; ///< I_nu=constant_*nu^exponent_
+  double minfreq_; ///< Lower-frequency cutoff (emits at nu>=minfreq_)
+  double maxfreq_; ///< Upper-frequency cutoff (emits at nu<=maxfreq_)
 
  public:
   GYOTO_OBJECT;
@@ -71,6 +73,8 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   void constant(double); ///< Set constant_
   double exponent() const; ///< Get exponent_
   void exponent(double); ///< Set exponent_
+  std::vector<double> cutoffinev() const; ///< Get cutoffs
+  void cutoffinev(std::vector<double> const &v); ///< Set cutoffs
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
