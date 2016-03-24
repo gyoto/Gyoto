@@ -320,6 +320,14 @@ int Photon::hit(Astrobj::Properties *data) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by integrator\n";
 #     endif
+      int shadow=object_->showshadow();
+      if (shadow && data && data->spectrum){
+	SmartPointer<Spectrometer::Generic> spr = spectrometer();
+	size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
+	for (size_t ii=0; ii<nbnuobs; ++ii) {
+	  data->spectrum[ii*data->offset] = 1e10; // something very big
+	}
+      }
       break;
     }
     if (coord[0] == x0_[ind]) { // here, ind denotes previous step

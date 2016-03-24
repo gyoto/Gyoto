@@ -216,6 +216,7 @@ class Gyoto::Astrobj::Generic
   bool flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
   int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
+  int shadow_; ///< 1 to highlight the shadow region in the image
   int noredshift_; ///< 1 to impose redshift factor g = 1
   // Constructors - Destructor
   // -------------------------
@@ -339,6 +340,9 @@ class Gyoto::Astrobj::Generic
 
   void radiativeQ(bool flag);
   bool radiativeQ() const ;
+
+  void showshadow(bool flag);
+  bool showshadow() const ;
 
   void redshift(bool flag);
   bool redshift() const ;

@@ -52,6 +52,8 @@ GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift,
     "Whether to take redshift into account.")
 GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ,
     "Whether to use new treatement for radiative transfer (in progress).")
+GYOTO_PROPERTY_BOOL(Generic, ShowShadow, NoShowShadow, showshadow,
+    "Whether to highlight the shadow region on the image.")
 GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
     "Whether the object should be considered optically thin or thick.")
 GYOTO_PROPERTY_END(Generic, Object::properties)
@@ -59,7 +61,7 @@ GYOTO_PROPERTY_END(Generic, Object::properties)
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0)
+  radiativeq_(0), noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -69,7 +71,7 @@ Generic::Generic(string kin) :
 Generic::Generic() :
   SmartPointee(), Object("Default"),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0)
+  radiativeq_(0), noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -79,7 +81,7 @@ Generic::Generic() :
 Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
   gg_(NULL), rmax_(radmax), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0)
+  radiativeq_(0), noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -91,7 +93,7 @@ Generic::Generic(const Generic& orig) :
   gg_(NULL),
   rmax_(orig.rmax_),
   flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_),
-  noredshift_(orig.noredshift_)
+  noredshift_(orig.noredshift_), shadow_(orig.shadow_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -141,6 +143,9 @@ bool Generic::opticallyThin() const {return flag_radtransf_;}
 
 void Generic::radiativeQ(bool flag) {radiativeq_=flag;}
 bool Generic::radiativeQ() const {return radiativeq_;}
+
+void Generic::showshadow(bool flag) {shadow_=flag;}
+bool Generic::showshadow() const {return shadow_;}
 
 void Generic::redshift(bool flag) {noredshift_=!flag;}
 bool Generic::redshift() const {return !noredshift_;}
