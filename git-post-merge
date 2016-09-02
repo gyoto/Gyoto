@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Git does not preserve time stamps. This causes problems with files
+# generated with the autotools ("automake" and "autoconf"), as
+# generated files may seem older than source files and "make" will try
+# to regenerate them.
+#
+# This script fixes time stamps of these generated files.
+#
+# To run this script automatically after every "git merge" or "git
+# pull" invocation, copy it or link it as .git/hooks/post-merge .
+
+touch aclocal.m4 configure Makefile.in */Makefile.in */*/Makefile.in config.h.in
+
+exit 0

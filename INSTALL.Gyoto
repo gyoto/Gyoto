@@ -17,12 +17,17 @@ On an Apple Mac, you can install MacPorts (http://www.macports.org/) and run:
 If Gyoto is not packaged for your system or if you prefer to build
 from source, read on.
 
-In un nutshell:
+If the source code was fetched from git, you may
+need to first update de timestamp of a few files by running the script
+git-post-merge:
+   $ ./git-post-merge
+See documentation therein.
+
+Then the build process is in a nutshell:
 ./configure
 make
 make check
 sudo make install
-
 
 I- INSTALL THE DEPENDENCIES
 ===========================
