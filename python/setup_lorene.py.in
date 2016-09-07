@@ -13,6 +13,7 @@
 
 from distutils.core import setup, Extension
 import platform
+import re
 
 import numpy
 try:
@@ -31,9 +32,21 @@ else:
     except:
         pass
 
+gyoto_lib_dirs=['../lib/.libs']
+gyoto_libs=['gyoto@FEATURES@']
+for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
+    libspec=re.split('[ \t]', libspec)
+    for comp in libspec:
+        if re.match('-L', comp):
+            gyoto_lib_dirs.append(re.sub('^-L', '', comp))
+        elif re.match('-l', comp):
+            gyoto_libs.append(re.sub('^-l', '', comp))
+
 gyoto_lorene_module = Extension('_gyoto_lorene',
                          sources=['gyoto_lorene_wrap.cxx'],
-                         include_dirs=[numpy_include, '@abs_srcdir@']
+                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         library_dirs=gyoto_lib_dirs,
+                         libraries=gyoto_libs
                          )
 
 setup(name='@PACKAGE_NAME@'+'_lorene',
