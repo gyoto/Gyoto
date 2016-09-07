@@ -62,7 +62,9 @@ CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 
 MPIRUN = mpirun
 
-CHECK_CMD = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH) ./gyoto -pstdplug -r32 -T8 -P0
+CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
+CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
+CHECK_CMD = $(CHECK_ENV) $(CHECK_RAW_CMD)
 
 check-nompi-clean:
 	rm -f $(CHECK_RESULTS)
@@ -75,7 +77,7 @@ $(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
-	$(MPIRUN) $(CHECK_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 check-nompi-compute: $(CHECK_RESULTS)
 check-nompi: check-nompi-clean check-nompi-compute
@@ -110,7 +112,7 @@ CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 
 $(CHECK_ROTSTAR_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d
-	$(MPIRUN) $(CHECK_CMD) -pstdplug,lorene -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -pstdplug,lorene -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 $(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d
 	$(CHECK_CMD) -pstdplug,lorene -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
