@@ -182,7 +182,7 @@ clean:
 	$(PYTHON) setup.py clean
 	$(PYTHON) setup_std.py clean
 @HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py clean
-	-rm -Rf build
+	-rm -Rf build dist
 	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc
@@ -203,7 +203,7 @@ dist:
 
 # Use the setup.py test command
 check:
-	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ $(PYTHON) setup.py test
+	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup.py test
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here
