@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [1.0.2], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [1.1.0], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -22,7 +22,7 @@ LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h])
 AC_SUBST([VERBATIM], [])
 
-VERSINFO=4:0:0
+VERSINFO=5:0:0
 AC_SUBST([VERSINFO])
 
 # Needed for gcc-5, should be harmless for other compilers:

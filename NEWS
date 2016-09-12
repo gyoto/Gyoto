@@ -1,3 +1,21 @@
+1.1.0 2016/09/12 ABI 4 (5:0:0)
+   * New functionality: provide a plug-in for writing new Metrics,
+     Astrobjs and Spectra in Python.
+   * New functionality: objects can describe there own
+     properties. This feature is accessible through the help() method
+     in the Python and Yorick interfaces and through -h on the
+     command-line: "gyoto -hMetric::KerrBL"
+   * New functionality: adding a flag to highligh the shadow region in
+     a strong-field image
+   * Various improvements and bug fixes in the Python extension.
+   * Yorick: Add more functions to control the floating-point
+     environment from Yorick.
+   * Screen: properly parse "Mask" as a filename
+   * KerrKS: remove specific integrator, which has never worked well.
+   * PowerLawSpectrum: add cut-offs.
+   * DirectionalDisk: add cutoff in lamp/disk frames.
+   * PolishDoughnut: add central_temperature_ parameter.
+
 1.0.2 2015/06/26 BUG
    * Fix FTBFS with gcc 5.0;
    * Improve fenv support and lack thereof with some compilers;
