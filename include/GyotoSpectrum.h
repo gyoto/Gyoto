@@ -77,7 +77,7 @@ namespace Gyoto{
      * an XML file, as in &lt;Spectrum kind="name"&gt;
      *
      * \param scp A pointer to the subcontractor, which will
-     * communicate whith the Gyoto::Factory to build an instance of
+     * communicate with the Gyoto::Factory to build an instance of
      * the class from its XML description
      */
     void Register(std::string kind, Gyoto::Spectrum::Subcontractor_t* scp);

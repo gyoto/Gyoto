@@ -5,7 +5,7 @@
    this plug-in can be renamed to whatever matches the particular
    version of Python it has been built against (e.g. python3.4).
 
-   The goal is to be able to instanciate these from XML, from
+   The goal is to be able to instantiate these from XML, from
    Yorick... and even from Python using the gyoto extension...
 
    Synopsis:

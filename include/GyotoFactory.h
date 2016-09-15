@@ -200,49 +200,49 @@ class Gyoto::Factory
   /// Get Factory::kind_
   const std::string kind();
 
-  /// Find Scenery element, instanciate it and get it.
+  /// Find Scenery element, instantiate it and get it.
   /**
    * Scenery must be the root element. getScenery() will call
    * metric(), astrobj() and screen().
    */
   Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
 
-  /// Find Metric element, instanciate it and get it.
+  /// Find Metric element, instantiate it and get it.
   /**
    * Metric may be either the root element or directly within the root
    * element.
    */
   Gyoto::SmartPointer<Gyoto::Metric::Generic>  metric();
 
-  /// Find Screen element, instanciate it and get it.
+  /// Find Screen element, instantiate it and get it.
   /**
    * Screen may be either the root element or directly within the root
    * element.
    */
   Gyoto::SmartPointer<Gyoto::Screen>  screen();
 
-  /// Find Astrobj element, instanciate it and get it.
+  /// Find Astrobj element, instantiate it and get it.
   /**
    * Astrobj may be either the root element or directly within the root
    * element.
    */
   Gyoto::SmartPointer<Gyoto::Astrobj::Generic> astrobj();
 
-  /// Find Photon element, instanciate it and get it.
+  /// Find Photon element, instantiate it and get it.
   /**
    * Photon may be either the root element or directly within the root
    * element.
    */
   Gyoto::SmartPointer<Gyoto::Photon>  getPhoton();
 
-  /// Find Photon element, instanciate it and get it.
+  /// Find Photon element, instantiate it and get it.
   /**
    * Photon may be either the root element or directly within the root
    * element.
    */
   Gyoto::SmartPointer<Gyoto::Spectrum::Generic>  spectrum();
 
-  /// Find Spectrometer element, instanciate it and get it.
+  /// Find Spectrometer element, instantiate it and get it.
   /**
    * Spectrometer may be either the root element or directly within the root
    * element.
@@ -410,7 +410,7 @@ class Gyoto::Factory
    *
    * If it is prefixed with "`pwd`/", the rest of relpath is
    * interpreted as relative to the current working directory,
-   * i.e. fullPath() tries to mimick how the shell would expand
+   * i.e. fullPath() tries to mimic how the shell would expand
    * relpath into an absolute path.
    *
    * In any other circumstance, relpath is interpreted to relative to

@@ -241,7 +241,7 @@ t=numpy.clip(ipct[:,0], a_min=-200, a_max=0)
 plt.plot(t)
 plt.show()
 
-# Any derived class can be instanciated from its name, as soon as the
+# Any derived class can be instantiated from its name, as soon as the
 # corresponding plug-in has been loaded into Gyoto. The standard
 # plug-in is normally loaded automatically, but this can also be
 # forced with gyoto.loadPlugin():
@@ -270,7 +270,7 @@ import gyoto_std
 # import gyoto_lorene
 
 # It then becomes possible to access the methods specific to derived
-# classes. They can be instanciated directly from the gyoto_* extension:
+# classes. They can be instantiated directly from the gyoto_* extension:
 tr2=gyoto_std.Torus()
 # and we can cast a generic pointer (from the gyoto extension) to a
 # derived class:

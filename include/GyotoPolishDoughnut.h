@@ -287,7 +287,7 @@ protected:
   * Gyoto::Functor::Double_Double_const subclass to access generic
   * root-finding methods.
   *
-  * This class is instanciated in a single
+  * This class is instantiated in a single
   * PolishDoughnut::intersection member.
   */
   class intersection_t : public Gyoto::Functor::Double_Double_const {

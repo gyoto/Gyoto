@@ -110,7 +110,7 @@ no-op as SIGFPE is never raised.
 .PD 0
 .IP \fB\-p\fI[[nofail:]plug1[,[nofail:]plug2][...]]\fR
 Comma-separated list of Gyoto plugins to load. Overrides GYOTO_PLUGINS
-environment variable below. Only the last occurence matters.
+environment variable below. Only the last occurrence matters.
 .PD
 .SS Selecting a region
 It is possible to ray-trace only part of the scenery by providing the
@@ -245,7 +245,7 @@ unit).
 If \fIimpactcoords.fits\fR is specified, the above mentioned data are
 read back from this file. The ray-tracing is not performed, but the
 Gyoto::Astrobj::Generic::processHitQuantities() method is called
-directy, yielding the same result if the four conditions above are
+directly, yielding the same result if the four conditions above are
 met. The observing date stored in the FITS keyword "HIERARCH Gyoto
 Observing Date" is compared to the date specified in the screen or
 using the \fB\-\-time\fR option and the impact coordinates are shifted
@@ -267,12 +267,12 @@ In this case, the impact coordinates are read from
 .IP \fB\-u\fR[\fIunit\fR]
 .PD
 Specify unit to use for allowing instances of \fB\-\-parameter\fR,
-untill next instance of \fB\-\-unit\fR.
+until next instance of \fB\-\-unit\fR.
 .IP \fB\-\-parameter\fR=\fIPath::Name\fR[=\fIvalue\fR]
 .PD 0
 .IP \fB\-E\fIPath::Name\fR[=\fIvalue\fR]
 .PD
-Set arbitray parameter by name. Parameters can be set in the Astrobj,
+Set arbitrary parameter by name. Parameters can be set in the Astrobj,
 Metric etc. using the \fIPath\fR componenent. For instance,
 
 For instance, assuming the Astrobj in \fIstar.xml\fR

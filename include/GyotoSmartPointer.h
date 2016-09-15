@@ -96,7 +96,7 @@ class Gyoto::SmartPointee
   int getRefCount () ;  ///< Get the current number of references
   /**
    * Various classes need to provide a subcontractor to be able to
-   * instanciate themselves upon order from the Factory. A
+   * instantiate themselves upon order from the Factory. A
    * subcontractor is a function (often a static member function)
    * which accepts a pointer to a FactoryMessenger as unique
    * parameter, communicates with the Factory using this messenger to

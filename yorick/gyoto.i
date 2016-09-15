@@ -240,11 +240,11 @@ local gyoto;
     The creators accept a filename as positional argument (see FILE
     FORMAT below): gg = gyoto.KerrBL( "my_KerrBL_descritpion.xml" );
 
-    Arbitrary derived classes can also be instanciated using the base
+    Arbitrary derived classes can also be instantiated using the base
     class constructor:
        gg = gyoto.Metric("KerrBL");
 
-    Finally, it is possible to instanciate an object using a buffer
+    Finally, it is possible to instantiate an object using a buffer
     containing XML data:
        #include "pathfun.i"
        gg = gyoto.KerrBL();
@@ -319,7 +319,7 @@ local gyoto;
     
     All the GYOTO objects have properties called "members" such as the
     spin of a Kerr metric. Members can be set or retrieved using the
-    correspinding keywords, either upon object instanciation or at any
+    correspinding keywords, either upon object instantiation or at any
     later point in time:
        gg = gyoto.KerrBL( spin=0.995, mass=4e6 ) ;
        gg, spin=0.5;
@@ -1105,7 +1105,7 @@ extern gyoto_Photon;
 
    PURPOSE:
 
-     Instanciate and use a single GYOTO photon.
+     Instantiate and use a single GYOTO photon.
 
      Photons are mass-less particles following light-like geodesics of
      a metric. For basic concepts, see GYOTO. For ray-tracing,
@@ -1404,7 +1404,7 @@ extern gyoto_Astrobj;
      gyoto.PatternDisk        As above, emission numerically provided
      gyoto.Disk3D             Thick disk, emission numerically provided
 
-    It is also possible to instanciate an astrobj by kind name even if
+    It is also possible to instantiate an astrobj by kind name even if
     this kind is not explicitly implemented in the yorick plug-in:
      gyoto.Astrobj("PageThorneDisk")
                               A geometrically thin, optically thick disk
@@ -1422,7 +1422,7 @@ extern gyoto_ThinDisk;
             ao, help=;
 
      A more specific version of the gyoto.Astrobj function. A very
-     crude Astrobj can be instanciated using gyoto.ThinDisk. More
+     crude Astrobj can be instantiated using gyoto.ThinDisk. More
      elaborate derived classes also exist. gyoto.ThinDisk accepts a
      few keywords in addition to those processed by gyoto.Astrobj.
             
@@ -1471,9 +1471,9 @@ extern gyoto_Screen;
    INPUT:
 
     SCREEN: an opaque object referencing a GYOTO Screen instance. In
-         the first form, SCENERY is instanciated with any member set
+         the first form, SCENERY is instantiated with any member set
          accordingly to the KEYWORD=VALUE pairs. In the four other
-         forms, SCREEN must have been instanciated by a previous call
+         forms, SCREEN must have been instantiated by a previous call
          to gyoto.Screen().
 
    OUTPUT:
@@ -1597,7 +1597,7 @@ extern gyoto_Spectrometer;
      For basics, see GYOTO.
 
      In the first form, if FILENAME is specified, a new Spectrometer
-     is instanciated from XML file FILENAME. FILENAME can also name a
+     is instantiated from XML file FILENAME. FILENAME can also name a
      Spectrometer Kind, such as "Complex" or "wave".
 
    KEYWORDS:

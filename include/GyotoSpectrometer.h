@@ -157,7 +157,7 @@ namespace Gyoto{
      * object, but it is not mandatory.
      *
      * \param scp A pointer to the subcontractor, which will
-     * communicate whith the Gyoto::Factory to build an instance of
+     * communicate with the Gyoto::Factory to build an instance of
      * the class from its XML description. If all parameters can be
      * set using setParameter(), this can be:
      * \code

@@ -72,7 +72,7 @@
  * Python interpreter. Each instance of the Gyoto classes
  * Gyoto::Metric::Python, Gyoto::Spectrum::Python,
  * Gyoto::Astrobj:Python::Standard and
- * Gyoto::Astrobj::Python::ThinDisk instanciate a Python class in this
+ * Gyoto::Astrobj::Python::ThinDisk instantiate a Python class in this
  * interpreter, and delegate certain methods from the Gyoto API to
  * this instance.
  *
@@ -163,7 +163,7 @@ namespace Gyoto {
  *
  * All the Gyoto instances of the classes descending from
  * Gyoto::Python::Base expose themselves to the Python instance they
- * wrap immediately after instanciation by setting the 'this'
+ * wrap immediately after instantiation by setting the 'this'
  * attribute. If the 'gyoto' Python extension can be loaded, then
  * 'this' will be an instance of one of the classes gyoto.Metric,
  * gyoto.Spectrum, gyoto.StandardAstrobj or gyoto.ThinDisk pointing to
@@ -210,7 +210,7 @@ class Gyoto::Python::Base {
   PyObject * pModule_;
 
   /**
-   * \brief Reference to the python instance once it has been instanciated.
+   * \brief Reference to the python instance once it has been instantiated.
    */
   PyObject * pInstance_;
 
@@ -246,7 +246,7 @@ class Gyoto::Python::Base {
   virtual std::string klass() const ;
 
   /**
-   * \brief Set #class_ and instanciate the Python class.
+   * \brief Set #class_ and instantiate the Python class.
    *
    * Sets #pInstance_.
    *

@@ -433,7 +433,7 @@ class Gyoto::FactoryMessenger {
 
   /**
    * Exceptionnaly, a class instance may be best described by setting
-   * the entire content of the correponding element than by setting a
+   * the entire content of the corresponding element than by setting a
    * bunch of "parameters". This is the case of the spectrometer,
    * which sets a couple of attributes and reserves the full content
    * for the spectral boundaries (see Spectrometer::fillElement()).

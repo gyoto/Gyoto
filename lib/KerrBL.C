@@ -44,7 +44,7 @@ GYOTO_PROPERTY_DOUBLE(KerrBL, HorizonSecurity, horizonSecurity,
 		      "Thickness of sink layer around horizon (geometrical units, 0.01).")
 GYOTO_PROPERTY_BOOL(KerrBL, GenericIntegrator, SpecificIntegrator,
 		    genericIntegrator,
-		    "Which version ofthe Legacy integrator should be used (specific).")
+		    "Which version of the Legacy integrator should be used (specific).")
 GYOTO_PROPERTY_DOUBLE(KerrBL, DiffTol, difftol,
 		      "Tuning parameter for the specific Legacy integrator (0.01).")
 GYOTO_PROPERTY_END(KerrBL, Generic::properties)
@@ -892,7 +892,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
 	    // some rare cases can end up with bad cst conservation
 	    // even at r = a few rhor...
 	  }else{
-	    GYOTO_SEVERE << "This warning occured at r= " << coor1[1] << endl
+	    GYOTO_SEVERE << "This warning occurred at r= " << coor1[1] << endl
 			 << "i.e. far from horizon --> to be investigated"
 			 << ", or maybe increase parameter cstol" 
 			 << "in KerrBL.C" << endl;

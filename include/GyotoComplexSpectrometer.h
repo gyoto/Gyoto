@@ -145,7 +145,8 @@ class Gyoto::Spectrometer::Complex
    *
    * In the case of Spectrometer::Complex, the setParameter() API is
    * not sufficient: setParameters() needs acces to the
-   * FactoryMessenger to instanciate childs for the SubSpectrometers.
+   * FactoryMessenger to instantiate children for the
+   * SubSpectrometers.
    */
   virtual void setParameters(FactoryMessenger *fmp);
 #endif

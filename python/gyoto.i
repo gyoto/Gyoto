@@ -241,7 +241,7 @@ swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {
 // nothing to do, that's the default
 
 // ******** TYPEMAPS ******** //
-// Actually instanciate typemaps using de macros defined above
+// Actually instantiate typemaps using de macros defined above
 
 GyotoSmPtrTypeMapClassGeneric(Metric);
 GyotoSmPtrTypeMapClassGeneric(Astrobj);

@@ -405,7 +405,7 @@ class Gyoto::Units::Unit : public Gyoto::SmartPointee {
   friend class Gyoto::Units::Converter;
  private:
   ut_unit * unit_; ///< the underlying ut_unit (from udunits)
-  std::string kind_; ///< the string used to instanciate this unit
+  std::string kind_; ///< the string used to instantiate this unit
  public:
 
   /**

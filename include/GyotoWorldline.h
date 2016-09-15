@@ -196,7 +196,7 @@ namespace Gyoto {
  * extended as needed using xExpand(). These coordinates can be
  * retrieved using get_t(), get_xyz(), getCartesian(), getCoord() etc.
  *
- * Worldline does not derive from Object, and does not instanciate a
+ * Worldline does not derive from Object, and does not instantiate a
  * Property list. This is because this would lead to multiple
  * inheritance of the Object base in derived classes. Instead,
  * #GyotoWorldline.h provides a few macros that can be used to include
@@ -331,7 +331,7 @@ class Gyoto::Worldline
   
   /// Refine constructor
   /**
-   * Meant to instanciate a copy of orig with a smaller step to refine
+   * Meant to instantiate a copy of orig with a smaller step to refine
    * integration, for instance for more accurate radiative transfer
    * integration.
    *
@@ -374,7 +374,7 @@ class Gyoto::Worldline
    *
    * \param coord new initial coordinates
    * \param dir direction of integration. 1 for forward integration,
-   *        -1 for backards integration, 0 for unkown or both.
+   *        -1 for backards integration, 0 for unknown or both.
    */
   virtual void   setInitCoord(const double coord[8], int dir = 0);
 

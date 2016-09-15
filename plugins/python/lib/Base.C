@@ -258,7 +258,7 @@ void Base::klass(const std::string &f) {
   class_=f;
   if (!pModule_) return;
 
-  GYOTO_DEBUG << "Instanciating Python class " << f << endl;
+  GYOTO_DEBUG << "Instantiating Python class " << f << endl;
   
   PyGILState_STATE gstate = PyGILState_Ensure();
   
@@ -326,11 +326,11 @@ void Base::klass(const std::string &f) {
     PyErr_Print();
     Py_XDECREF(pInstance_); pInstance_=NULL;
     PyGILState_Release(gstate);
-    throwError("Failed instanciating Python class");
+    throwError("Failed instantiating Python class");
   }
 
   PyGILState_Release(gstate);
-  GYOTO_DEBUG << "Done instanciating Python class " << f << endl;
+  GYOTO_DEBUG << "Done instantiating Python class " << f << endl;
 }
 
 std::vector<double> Base::parameters() const {return parameters_;}

@@ -415,7 +415,7 @@ class Gyoto::Scenery
    * - Astrobj::Properties::init() to initialize each cell in *data;
    * - Astrobj::Properties::operator++() to step through the arrays in *data.
    *
-   * data must have been instanciated prior to calling rayTrace and
+   * data must have been instantiated prior to calling rayTrace and
    * the various pointers in *data must be NULL or point to the first
    * cell in an array of size at least Screen::npix_ squared.
    *

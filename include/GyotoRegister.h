@@ -28,7 +28,7 @@
  * \brief Gyoto registers
  *
  * Gyoto::Register::Entry instances are used to map kind names to
- * Gyoto::SmartPointee::Subcontractor_t functions used to instanciate
+ * Gyoto::SmartPointee::Subcontractor_t functions used to instantiate
  * objects from XML files through the Gyoto::Factory.
  */
 
@@ -39,7 +39,7 @@ namespace Gyoto {
    * 
    * Gyoto::Register::Entry instances are used to map kind names to
    * Gyoto::SmartPointee::Subcontractor_t functions used to
-   * instanciate objects from XML files through the Gyoto::Factory.
+   * instantiate objects from XML files through the Gyoto::Factory.
    */
   namespace Register {
 
