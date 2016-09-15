@@ -256,9 +256,14 @@ AC_ARG_ENABLE([hardening],
         -Wno-long-long -Wformat -Wformat-security -Werror=format-security \
         -fstack-protector "--param ssp-buffer-size=4"])
       AX_APPEND_COMPILE_FLAGS([-D_FORTIFY_SOURCE=2], [CPPFLAGS])
+      AX_APPEND_COMPILE_FLAGS([-fPIE], [CXXFLAGS_EXEC])
+      AX_APPEND_LINK_FLAGS([-pie], [LDFLAGS_EXEC], [-fPIE])
      ])
   ]
 )
+
+AC_SUBST([CXXFLAGS_EXEC])
+AC_SUBST([LDFLAGS_EXEC])
 
 AC_ARG_ENABLE([deprecated],
   [AS_HELP_STRING([--enable-deprecated],

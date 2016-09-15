@@ -680,6 +680,8 @@ plugin_sfx
 SYS
 DYLIB_VAR
 GYOTO_PLUGIN_SFX
+LDFLAGS_EXEC
+CXXFLAGS_EXEC
 KPSEWHICH
 BIBTEX
 PDFLATEX
@@ -15642,62 +15644,7 @@ VERSINFO=5:0:0
 
 
 # Needed for gcc-5, should be harmless for other compilers:
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts " >&5
-$as_echo_n "checking whether C++ compiler accepts ... " >&6; }
-if ${ax_cv_check_cxxflags__+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
 
-  ax_check_save_flags=$CXXFLAGS
-  CXXFLAGS="$CXXFLAGS  "
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  ax_cv_check_cxxflags__=yes
-else
-  ax_cv_check_cxxflags__=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CXXFLAGS=$ax_check_save_flags
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cxxflags__" >&5
-$as_echo "$ax_cv_check_cxxflags__" >&6; }
-if test x"$ax_cv_check_cxxflags__" = xyes; then :
-  :
-else
-  :
-fi
-
-if ${CXXFLAGS+:} false; then :
-  case " $CXXFLAGS " in
-    *"  "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains "; } >&5
-  (: CXXFLAGS already contains ) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS \""; } >&5
-  (: CXXFLAGS="$CXXFLAGS ") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      CXXFLAGS="$CXXFLAGS "
-      ;;
-   esac
-else
-  CXXFLAGS=""
-fi
 
 
 
@@ -15734,26 +15681,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CPPFLAGS+:} false; then :
-  case " $CPPFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
+
+if ${CPPFLAGS+:} false; then :
+
+  case " $CPPFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
   (: CPPFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS \$flag\""; } >&5
-  (: CPPFLAGS="$CPPFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CPPFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CPPFLAGS="$CPPFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CPPFLAGS="$flag"
+
+  CPPFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18335,6 +18292,8 @@ done
 
 
 
+
+
 for flag in -rdynamic; do
   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags__$flag" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
@@ -18368,26 +18327,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${LDFLAGS+:} false; then :
-  case " $LDFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS already contains \$flag"; } >&5
+
+if ${LDFLAGS+:} false; then :
+
+  case " $LDFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS already contains \$flag"; } >&5
   (: LDFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS=\"\$LDFLAGS \$flag\""; } >&5
-  (: LDFLAGS="$LDFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append LDFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS=\"\$LDFLAGS\""; } >&5
+  (: LDFLAGS="$LDFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      LDFLAGS="$LDFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  LDFLAGS="$flag"
+
+  LDFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS=\"\$LDFLAGS\""; } >&5
+  (: LDFLAGS="$LDFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18400,6 +18369,8 @@ done
 # Check whether --enable-native was given.
 if test "${enable_native+set}" = set; then :
   enableval=$enable_native; if test "x$enable_native" = "xyes"; then :
+
+
 
 
 for flag in -march=native; do
@@ -18435,26 +18406,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CXXFLAGS+:} false; then :
-  case " $CXXFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains \$flag"; } >&5
+
+if ${CXXFLAGS+:} false; then :
+
+  case " $CXXFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains \$flag"; } >&5
   (: CXXFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS \$flag\""; } >&5
-  (: CXXFLAGS="$CXXFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CXXFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS\""; } >&5
+  (: CXXFLAGS="$CXXFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CXXFLAGS="$CXXFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CXXFLAGS="$flag"
+
+  CXXFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS\""; } >&5
+  (: CXXFLAGS="$CXXFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18470,6 +18451,8 @@ fi
 # Check whether --enable-hardening was given.
 if test "${enable_hardening+set}" = set; then :
   enableval=$enable_hardening; if test "x$enable_hardening" = "xyes"; then :
+
+
 
 
 for flag in -pedantic -Wall -W -Wundef -Wshadow -Wcast-qual \
@@ -18508,26 +18491,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CXXFLAGS+:} false; then :
-  case " $CXXFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains \$flag"; } >&5
+
+if ${CXXFLAGS+:} false; then :
+
+  case " $CXXFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS already contains \$flag"; } >&5
   (: CXXFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS \$flag\""; } >&5
-  (: CXXFLAGS="$CXXFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CXXFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS\""; } >&5
+  (: CXXFLAGS="$CXXFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CXXFLAGS="$CXXFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CXXFLAGS="$flag"
+
+  CXXFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS=\"\$CXXFLAGS\""; } >&5
+  (: CXXFLAGS="$CXXFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18535,6 +18528,8 @@ else
 fi
 
 done
+
+
 
 
 
@@ -18571,26 +18566,187 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CPPFLAGS+:} false; then :
-  case " $CPPFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
+
+if ${CPPFLAGS+:} false; then :
+
+  case " $CPPFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
   (: CPPFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS \$flag\""; } >&5
-  (: CPPFLAGS="$CPPFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CPPFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CPPFLAGS="$CPPFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CPPFLAGS="$flag"
+
+  CPPFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
+fi
+
+else
+  :
+fi
+
+done
+
+
+
+
+
+for flag in -fPIE; do
+  as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags__$flag" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
+$as_echo_n "checking whether C++ compiler accepts $flag... " >&6; }
+if eval \${$as_CACHEVAR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$CXXFLAGS
+  CXXFLAGS="$CXXFLAGS  $flag"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "$as_CACHEVAR=yes"
+else
+  eval "$as_CACHEVAR=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS=$ax_check_save_flags
+fi
+eval ac_res=\$$as_CACHEVAR
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
+
+if ${CXXFLAGS_EXEC+:} false; then :
+
+  case " $CXXFLAGS_EXEC " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS_EXEC already contains \$flag"; } >&5
+  (: CXXFLAGS_EXEC already contains $flag) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CXXFLAGS_EXEC " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS_EXEC=\"\$CXXFLAGS_EXEC\""; } >&5
+  (: CXXFLAGS_EXEC="$CXXFLAGS_EXEC") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+     ;;
+esac
+
+else
+
+  CXXFLAGS_EXEC=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXXFLAGS_EXEC=\"\$CXXFLAGS_EXEC\""; } >&5
+  (: CXXFLAGS_EXEC="$CXXFLAGS_EXEC") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
+fi
+
+else
+  :
+fi
+
+done
+
+
+
+
+
+for flag in -pie; do
+  as_CACHEVAR=`$as_echo "ax_cv_check_ldflags_-fPIE_$flag" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the linker accepts $flag" >&5
+$as_echo_n "checking whether the linker accepts $flag... " >&6; }
+if eval \${$as_CACHEVAR+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ax_check_save_flags=$LDFLAGS
+  LDFLAGS="$LDFLAGS -fPIE $flag"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  eval "$as_CACHEVAR=yes"
+else
+  eval "$as_CACHEVAR=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+  LDFLAGS=$ax_check_save_flags
+fi
+eval ac_res=\$$as_CACHEVAR
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_CACHEVAR"\" = x"yes"; then :
+
+if ${LDFLAGS_EXEC+:} false; then :
+
+  case " $LDFLAGS_EXEC " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS_EXEC already contains \$flag"; } >&5
+  (: LDFLAGS_EXEC already contains $flag) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append LDFLAGS_EXEC " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS_EXEC=\"\$LDFLAGS_EXEC\""; } >&5
+  (: LDFLAGS_EXEC="$LDFLAGS_EXEC") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+     ;;
+esac
+
+else
+
+  LDFLAGS_EXEC=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : LDFLAGS_EXEC=\"\$LDFLAGS_EXEC\""; } >&5
+  (: LDFLAGS_EXEC="$LDFLAGS_EXEC") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18604,6 +18760,9 @@ fi
 
 
 fi
+
+
+
 
 
 # Check whether --enable-deprecated was given.
@@ -18611,6 +18770,8 @@ if test "${enable_deprecated+set}" = set; then :
   enableval=$enable_deprecated; if test "x$enable_deprecated" = "xno"; then :
 
 
+
+
 for flag in -DGYOTO_NO_DEPRECATED; do
   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags__$flag" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
@@ -18644,26 +18805,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CPPFLAGS+:} false; then :
-  case " $CPPFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
+
+if ${CPPFLAGS+:} false; then :
+
+  case " $CPPFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
   (: CPPFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS \$flag\""; } >&5
-  (: CPPFLAGS="$CPPFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CPPFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CPPFLAGS="$CPPFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CPPFLAGS="$flag"
+
+  CPPFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
@@ -18676,6 +18847,8 @@ fi
 else
 
 
+
+
 for flag in -DGYOTO_NO_DEPRECATED; do
   as_CACHEVAR=`$as_echo "ax_cv_check_cxxflags__$flag" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C++ compiler accepts $flag" >&5
@@ -18709,26 +18882,36 @@ eval ac_res=\$$as_CACHEVAR
 	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
 $as_echo "$ac_res" >&6; }
 if test x"`eval 'as_val=${'$as_CACHEVAR'};$as_echo "$as_val"'`" = xyes; then :
-  if ${CPPFLAGS+:} false; then :
-  case " $CPPFLAGS " in
-    *" $flag "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
+
+if ${CPPFLAGS+:} false; then :
+
+  case " $CPPFLAGS " in #(
+  *" $flag "*) :
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains \$flag"; } >&5
   (: CPPFLAGS already contains $flag) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS \$flag\""; } >&5
-  (: CPPFLAGS="$CPPFLAGS $flag") 2>&5
+  test $ac_status = 0; } ;; #(
+  *) :
+
+     as_fn_append CPPFLAGS " $flag"
+     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-      CPPFLAGS="$CPPFLAGS $flag"
-      ;;
-   esac
+     ;;
+esac
+
 else
-  CPPFLAGS="$flag"
+
+  CPPFLAGS=$flag
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS\""; } >&5
+  (: CPPFLAGS="$CPPFLAGS") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+
 fi
 
 else
