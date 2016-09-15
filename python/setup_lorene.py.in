@@ -11,7 +11,7 @@
 # without any warranty.
 
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import platform
 import re
 
