@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -59,7 +59,7 @@ namespace Gyoto{
      * provided so that you may not have to code anything.
      */
     typedef SmartPointer<Gyoto::Astrobj::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger*);
+      Subcontractor_t(Gyoto::FactoryMessenger*, std::string);
     ///< A function to build instances of a specific Astrobj::Generic sub-class
  
     /**
@@ -73,8 +73,9 @@ namespace Gyoto{
      * \tparam T Gyoto::Astrobj::Generic sub-class
      */
     template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
-      (FactoryMessenger* fmp) {
+      (FactoryMessenger* fmp, std::string plugin) {
       SmartPointer<T> ao = new T();
+      ao -> plugin(plugin) ;
 #ifdef GYOTO_USE_XERCES
       if (fmp) ao -> setParameters(fmp);
 #endif
@@ -82,19 +83,26 @@ namespace Gyoto{
     }
     ///< A template for Subcontractor_t functions
 
+    /// Query the Astrobj register
    /**
      * Query the Astrobj register to get the Astrobj::Subcontractor_t
-     * correspondig to a given kind name. This function is normally
-     * called only from the Factory.
+     * corresponding to a given kind name. This function is normally
+     * called only from the Factory. If plugin is specified, only a
+     * subcontractor matching both name and plugin will be returned,
+     * loading the plug-in if necessary. If plugin is the empty
+     * string, then the first subcontractor matching name will be
+     * returned, and the name of the plug-in it belongs to will be
+     * returned in plugin upon output.
      *
-     * \param name e.g. "Star"
-     * \param errmode 1 to return NULL in case of failure instead of
+     * \param[in] name e.g. "Star"
+     * \param[inout] plugin e.g. "stdplug".
+     * \param[in] errmode 1 to return NULL in case of failure instead of
      * throwing an Error.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name,
+						      std::string &plugin,
 						      int errmode = 0);
-    ///< Query the Astrobj register
 
     /**
      * Use the Astrobj::initRegister() once in your program to

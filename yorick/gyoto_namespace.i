@@ -11,6 +11,8 @@ gyoto=save(
            MPI_Initialized=gyoto_MPI_Initialized,
            MPI_Finalized=gyoto_MPI_Finalized,
            loadPlugin=gyoto_loadPlugin,
+           requirePlugin=gyoto_requirePlugin,
+           havePlugin=gyoto_havePlugin,
 
            Scenery=gyoto_Scenery,
            Scenery_rayTrace=gyoto_Scenery_rayTrace,

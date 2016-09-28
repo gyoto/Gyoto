@@ -5,7 +5,7 @@ import os.path
 # The name of the Gyoto plug-in that can be loaded in a given Python
 # session is the same as the name of the Python executable
 python_plugin = os.path.basename(sys.executable)
-gyoto.loadPlugin(python_plugin)
+gyoto.requirePlugin(python_plugin)
 
 sp=gyoto.Spectrum("Python")
 sp.set("Module", "gyoto_sample_spectra")

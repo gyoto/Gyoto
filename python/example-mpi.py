@@ -27,7 +27,7 @@ import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 import gyoto
-gyoto.loadPlugin("stdplug")
+gyoto.requirePlugin("stdplug")
 import gyoto_std
 
 a=gyoto.Factory("../doc/examples/example-moving-star.xml")

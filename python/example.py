@@ -27,7 +27,7 @@ import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 import gyoto
-gyoto.loadPlugin("stdplug")
+gyoto.requirePlugin("stdplug")
 import gyoto_std
 
 # Simple stuff
@@ -244,8 +244,8 @@ plt.show()
 # Any derived class can be instantiated from its name, as soon as the
 # corresponding plug-in has been loaded into Gyoto. The standard
 # plug-in is normally loaded automatically, but this can also be
-# forced with gyoto.loadPlugin():
-gyoto.loadPlugin('stdplug')
+# forced with gyoto.requirePlugin():
+gyoto.requirePlugin('stdplug')
 tt=gyoto.Astrobj('Torus')
 kerr=gyoto.Metric('KerrBL')
 
@@ -263,10 +263,10 @@ kerr.get("Spin") == 0.95
 # However, we also have Python extensions around the standard Gyoto
 # plug-ins. Beware that the plug-in must be loaded into Gyoto before
 # importing the corresponding Python extension:
-gyoto.loadPlugin('stdplug')
+gyoto.requirePlugin('stdplug')
 import gyoto_std
 # And if the lorene plug-in has been compiled:
-# gyoto.loadPlugin('lorene')
+# gyoto.requirePlugin('lorene')
 # import gyoto_lorene
 
 # It then becomes possible to access the methods specific to derived

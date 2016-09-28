@@ -125,7 +125,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   if (debug())
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
-  string name="", content="", unit="";
+  string name="", content="", unit="", plugin("");
   FactoryMessenger * child = NULL;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
@@ -133,8 +133,9 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       cerr << "DEBUG: Spectrometer::Complex::Subcontractor(): name=" << name << endl;
     if (name=="SubSpectrometer") {
       content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      append ((*Spectrometer::getSubcontractor(content))(child));
+      child   = fmp -> getChild();
+      plugin  = fmp -> getAttribute("plugin");
+      append ((*Spectrometer::getSubcontractor(content, plugin))(child, plugin));
       delete child;
     } else setParameter(name, content, unit);
   }

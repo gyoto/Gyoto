@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright 2011, 2013 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2013, 2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -55,7 +55,7 @@ namespace Gyoto {
      * Factory and Subcontractor_t function communicate through a
      * Gyoto::FactoryMessenger.
      */
-    typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*);
+    typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*, std::string);
 
 
     /** 
@@ -67,8 +67,9 @@ namespace Gyoto {
      * \tparam T Sub-class of Metric::Generic 
      */
     template<typename T> SmartPointer<Metric::Generic> Subcontractor
-      (FactoryMessenger* fmp) {
+      (FactoryMessenger* fmp, std::string plugin) {
       SmartPointer<T> gg = new T();
+      gg -> plugin(plugin);
 #ifdef GYOTO_USE_XERCES
       if (fmp) gg -> setParameters(fmp);
 #endif
@@ -79,15 +80,22 @@ namespace Gyoto {
     /**
      * Query the Metric register to get the Metric::Subcontractor_t
      * correspondig to a given kind name. This function is normally
-     * called only from the Factory.
+     * called only from the Factory. If plugin is specified, only a
+     * subcontractor matching both name and plugin will be returned,
+     * loading the plug-in if necessary. If plugin is the empty
+     * string, then the first subcontractor matching name will be
+     * returned, and the name of the plug-in it belongs to will be
+     * returned in plugin upon output.
      *
-     * \param name e.g. "KerrBL"
-     * \param errmode int=0. If errmode==0, failure to find a
+     * \param[in] name e.g. "KerrBL"
+     * \param[inout] plugin e.g. "stdplug".
+     * \param[in] errmode int=0. If errmode==0, failure to find a
      *        registered Metric by that name is an error. Else, simply
      *        return NULL pointer in that case.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name,
+						     std::string &plugin,
 						     int errmode=0);
 
     /// The Metric register

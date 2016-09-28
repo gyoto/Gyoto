@@ -12,7 +12,7 @@
    Synopsis:
 
    import gyoto
-   gyoto.loadPlugin("python") # or python2.7 or python3.4...
+   gyoto.requirePlugin("python") # or python2.7 or python3.4...
    sp=gyoto.Astrobj("Python::Standard")
    sp.set("Module", "gyoto_sample_standard")
    sp.set("Class", "FixedStar")

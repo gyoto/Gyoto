@@ -111,6 +111,7 @@ double Gyoto::atof(const char * str)
 }
 
 void Gyoto::help(std::string class_name) {
+  std::string plugin("");
   if (class_name.substr(0, 7)=="Gyoto::")
     class_name=class_name.substr(7);
   if (class_name=="Scenery") {Scenery().help(); return;}
@@ -123,19 +124,23 @@ void Gyoto::help(std::string class_name) {
     string nspace = class_name.substr(0, pos);
     class_name = class_name.substr(pos+2);
     if (nspace=="Astrobj") {
-      (*Astrobj::getSubcontractor(class_name))(NULL)->help();
+      (*Astrobj::getSubcontractor(class_name, plugin))
+	(NULL, plugin)->help();
       return;
     }
     if (nspace=="Metric") {
-      (*Metric::getSubcontractor(class_name))(NULL)->help();
+      (*Metric::getSubcontractor(class_name, plugin))
+	(NULL, plugin)->help();
       return;
     }
     if (nspace=="Spectrum") {
-      (*Spectrum::getSubcontractor(class_name))(NULL)->help();
+      (*Spectrum::getSubcontractor(class_name, plugin))
+	(NULL, plugin)->help();
       return;
     }
     if (nspace=="Spectrometer") {
-      (*Spectrometer::getSubcontractor(class_name))(NULL)->help();
+      (*Spectrometer::getSubcontractor(class_name, plugin))
+	(NULL, plugin)->help();
       return;
     }
     throwError("Unrecognized namespace: "+nspace);

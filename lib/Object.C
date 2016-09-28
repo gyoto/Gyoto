@@ -42,9 +42,9 @@ GYOTO_PROPERTY_START(Gyoto::Object, "Object with properties.")
 GYOTO_PROPERTY_END(Object, NULL)
 
 
-Gyoto::Object::Object(std::string const &name):kind_(name) {}
-Gyoto::Object::Object():kind_("") {}
-Gyoto::Object::Object(Object const &o):kind_(o.kind_) {}
+Gyoto::Object::Object(std::string const &name):kind_(name), plugin_("") {}
+Gyoto::Object::Object():kind_(""), plugin_("") {}
+Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugin_(o.plugin_) {}
 Gyoto::Object::~Object() {}
 
 
@@ -320,7 +320,9 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
 }
 
 void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
-  fmp -> setSelfAttribute("kind", kind_);
+  std::string plg(plugin());
+  if (plg != "") fmp -> setSelfAttribute("plugin", plg);
+  if (kind_ != "") fmp -> setSelfAttribute("kind", kind_);
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
@@ -347,6 +349,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	setParameter(name, content, unit);
       } else {
 	GYOTO_DEBUG << "'" << name << "' found "<< endl;
+	std::string plugin("");
 	switch (prop->type) {
 	case Property::metric_t:
 	  set(*prop, fmp->metric());
@@ -360,13 +363,15 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	case Property::spectrum_t:
 	  content = fmp -> getAttribute("kind");
 	  child = fmp -> getChild();
-	  set(*prop, (*Spectrum::getSubcontractor(content))(child) );
+	  plugin = fmp -> getAttribute("plugin");
+	  set(*prop, (*Spectrum::getSubcontractor(content, plugin))(child, plugin) );
 	  delete child;
 	  break;
 	case Property::spectrometer_t:
 	  content = fmp -> getAttribute("kind");
 	  child = fmp -> getChild();
-	  set(*prop, (*Spectrometer::getSubcontractor(content))(child) );
+	  plugin = fmp -> getAttribute("plugin");
+	  set(*prop, (*Spectrometer::getSubcontractor(content, plugin))(child, plugin) );
 	  delete child;
 	  break;
 	case Property::filename_t:

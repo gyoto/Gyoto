@@ -185,7 +185,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   if (debug())
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
-  string name="", content="", unit="";
+  string name="", content="", unit="", plugin("");
   FactoryMessenger * child = NULL;
 
   metric( fmp->metric() );
@@ -195,8 +195,9 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       cerr << "DEBUG: Astrobj::Complex::Subcontractor(): name=" << name << endl;
     if (name=="SubAstrobj") {
       content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      append ((*Astrobj::getSubcontractor(content))(child));
+      plugin  = fmp -> getAttribute("plugin");
+      child   = fmp -> getChild();
+      append ((*Astrobj::getSubcontractor(content, plugin))(child, plugin));
       delete child;
     } else setParameter(name, content, unit);
   }

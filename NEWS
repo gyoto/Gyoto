@@ -1,3 +1,11 @@
+NEXT  2016/09/28 API
+   * New functionality: the plug-in from which each subcontractor is
+     registered is now tracked, so that it becomes possible to look
+     for a subcontractor matching a specific kind and plug-in. We
+     introduce the function Gyoto::requirePlugin() in addition to
+     Gyoto::loadPlugin(). The subcontractor signature is changed to
+     accept a second parameter, which breaks the API.
+
 1.1.0 2016/09/12 ABI 4 (5:0:0)
    * New functionality: provide a plug-in for writing new Metrics,
      Astrobjs and Spectra in Python.

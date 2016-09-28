@@ -37,9 +37,9 @@ local GYOTO_PLUGINS;
     GYOTO_PLUGINS="";
     GYOTO_NO_STD=1;
     #include "gyoto.i"
-    noop, gyoto.loadPlugin("myplugin");
+    noop, gyoto.requirePlugin("myplugin");
 
-   SEE ASLO: gyoto.loadPlugin, GYOTO_NO_STD
+   SEE ASLO: gyoto.requirePlugin, GYOTO_NO_STD
  */
 
 local GYOTO_PLUGINS;
@@ -55,9 +55,9 @@ local GYOTO_PLUGINS;
     GYOTO_PLUGINS="";
     GYOTO_NO_STD=1;
     #include "gyoto.i"
-    noop, gyoto.loadPlugin("myplugin");
+    noop, gyoto.requirePlugin("myplugin");
 
-   SEE ASLO: gyoto.loadPlugin, GYOTO_PLUGINS
+   SEE ASLO: gyoto.requirePlugin, GYOTO_PLUGINS
  */
 
 extern gyoto_haveXerces;
@@ -156,27 +156,43 @@ extern __gyoto_setErrorHandler;
 */
 __gyoto_setErrorHandler;
 
+extern gyoto_requirePlugin;
 extern gyoto_loadPlugin;
-/* DOCUMENT gyoto.loadPlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
+extern gyoto_havePlugin;
+/* DOCUMENT gyoto.requirePlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
+            gyoto.loadPlugin, plugin[, plugin2[, plugin3]] [, nofail=1]
+            gyoto.havePlugin(plugin]
 
    Load Gyoto plug-ins.
 
   INPUTS:
-   gyoto.loadPlugins() accepts an aribtrary number of positional
-   arguments, each a string or string array naming individual Gyoto
-   plugins. For instance, all of the following attempt to load the
-   plug-ins, stdplug, lorene and myplug:
-    gyoto.loadPlugin, "stdplug", "lorene", myplug"
-    gyoto.loadPlugin, ["stdplug", "lorene", myplug"]
-    gyoto.loadPlugin, "stdplug", ["lorene", myplug"]
+   gyoto.requirePlugin() and gyoto.loadPlugin() accept an aribtrary
+   number of positional arguments, each a string or string array
+   naming individual Gyoto plug-ins. For instance, all of the
+   following attempt to load the plug-ins, stdplug, lorene and myplug:
+
+    gyoto.requirePlugin, "stdplug", "lorene", myplug"
+    gyoto.requirePlugin, ["stdplug", "lorene", myplug"]
+    gyoto.requirePlugin, "stdplug", ["lorene", myplug"]
+
+   In the first (preferred) form, each plug-in is loaded only if it is
+   not already. In the second form, each plug-in is forcibly loaded,
+   which has the effect that the classes it implements will be
+   registered twice. The only use of this feature is to put the
+   classes of this plug-in first in the registers to make sure they
+   are the version that is used when instanciating a class without
+   specifying it's plug-in. In short, this should not be used.
+
+   gyoto.havePlugin("myplug") returns 1 if myplug has already been
+   loaded, 0 otherwise.
 
   KEYWORDS:
    nofail= if set and true, failure to load a plug-in will not trigger
            an error. It applies to _all_ plug-ins in the list.
 
   EXAMPLE:
-   gyoto.loadPlugin, "stdplug"
-   gyoto.loadPlugin, "lorene", nofail=1
+   gyoto.requirePlugin, "stdplug"
+   gyoto.requirePlugin, "lorene", nofail=1
  */
 
 extern __gyoto_initRegister;
@@ -242,7 +258,13 @@ local gyoto;
 
     Arbitrary derived classes can also be instantiated using the base
     class constructor:
-       gg = gyoto.Metric("KerrBL");
+       gg = gyoto.Metric("KerrBL", [plugin]);
+    The PLUGIN argument is optional and has two effects:
+       - it ensures the plug-in PLUGIN is loaded before attempting to
+         instantiate the object;
+       - it ensures the class of the newly created object comes from
+         this plug-in and that another class by the same name in
+         another plug-in is not inadvertently used.
 
     Finally, it is possible to instantiate an object using a buffer
     containing XML data:
@@ -252,7 +274,6 @@ local gyoto;
        gg2 =gyoto.Metric(xmldata).
     This should be equivalent to gg2 == gg.clone(), see COPYING
     vs. CLONIG below.
-
 
     GYOTO OBJECTS BEHAVE LIKE FUNCTIONS
     -----------------------------------

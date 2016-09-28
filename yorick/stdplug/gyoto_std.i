@@ -1,5 +1,5 @@
 require, "gyoto.i";
-gyoto_loadPlugin, "stdplug";
+gyoto_requirePlugin, "stdplug";
 plug_in, "gyoto_std";
 /*
     Copyright 2011 Thibaut Paumard

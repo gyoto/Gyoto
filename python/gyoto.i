@@ -132,7 +132,7 @@ Gyoto::SmartPointer<gtype>, gtype * {
 // Need to mark the base classes as "notabstract" to extend them with
 // a down-cast constructor
 %feature("notabstract") Gyoto::klass::Generic;
-// Ignore all the actual constructors are these classes are really abstract
+// Ignore all the actual constructors as these classes are really abstract
 %ignore  Gyoto::klass::Generic::Generic(Gyoto::klass::Generic const &);
 %ignore  Gyoto::klass::Generic::Generic(const Generic &);
 %ignore  Gyoto::klass::Generic::Generic(const klass::Generic &);
@@ -140,11 +140,20 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %ignore  Gyoto::klass::Generic::Generic(double);
 %ignore  Gyoto::klass::Generic::Generic(kind_t);
 %ignore  Gyoto::klass::Generic::Generic(const std::string);
+%ignore  Gyoto::klass::Generic::Generic(const int, const std::string &);
 // Make a pseudo constructor for down-casting.
 %extend Gyoto::klass::Generic {
   Generic(std::string nm) {
+    std::string plugin;
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
-      Gyoto::klass::getSubcontractor(nm.c_str())(NULL);
+      Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+    Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
+    if (res) res -> incRefCount();
+    return res;
+  }
+  Generic(std::string nm, std::string &plugin) {
+    Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
+      Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
     if (res) res -> incRefCount();
     return res;

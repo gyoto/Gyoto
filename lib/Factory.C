@@ -271,12 +271,11 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
     } else MetricDOM = root_;
 
     string Plugin = C(MetricDOM->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
     FactoryMessenger fm(this, MetricDOM);
 
-    gg_= (*Metric::getSubcontractor(Kind))(&fm);
+    gg_= (*Metric::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
   }
 
@@ -305,14 +304,13 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
       delete result;
     }
     string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
     string AstrobjKind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(AstrobjKind);
 
     FactoryMessenger fm(this, tmpEl);
 
-    obj_ = (*Astrobj::getSubcontractor(AstrobjKind))(&fm);
+    obj_ = (*Astrobj::getSubcontractor(AstrobjKind, Plugin))(&fm, Plugin);
 
   }
   return obj_;
@@ -366,13 +364,12 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
       delete result;
     }
     string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
-    return (*Spectrum::getSubcontractor(Kind))(&fm);
+    return (*Spectrum::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
 
@@ -396,13 +393,12 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
       delete result;
     }
     string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
-    return (*Spectrometer::getSubcontractor(Kind))(&fm);
+    return (*Spectrometer::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
 

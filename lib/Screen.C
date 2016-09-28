@@ -1248,7 +1248,7 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
 
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
-  string name="", content="", unit="", tunit="", aunit="", dunit="";
+  string name="", content="", unit="", tunit="", aunit="", dunit="", plugin("");
   SmartPointer<Screen> scr = new Screen();
   if (!fmp) return scr;
   scr -> metric(fmp->metric());
@@ -1291,7 +1291,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Spectrometer") {
-      scr -> spectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
+      scr ->
+	spectrometer((Spectrometer::getSubcontractor(fmp->getAttribute("kind"),
+						     plugin))
+		     (fmp->getChild(), plugin));
     }
     else if (name=="Alpha0"){
       alpha0 = atof(tc); alpha0_found=1; aunit=unit;

@@ -27,6 +27,7 @@
 #define __GyotoObject_H_
 
 #include "GyotoConfig.h"
+#include "GyotoSmartPointer.h"
 #include <string>
 #include <vector>
 
@@ -81,8 +82,12 @@ namespace Gyoto {
  * a compile-time error.
  */
 #define GYOTO_OBJECT \
-  static Property const  properties[];		\
-  virtual Property const * getProperties() const
+  static Property const  properties[];			\
+  virtual Property const * getProperties() const;	\
+  static const std::string builtinPluginValue;		\
+  virtual void plugin(std::string const & plugname);	\
+  virtual std::string plugin() const
+
 
 /// Object with properties
 /**
@@ -140,11 +145,22 @@ class Gyoto::Object
   /**
    * E.g. for an Astrobj, fillElement() will ensure
    * \code
-   *   <Astrobj kind="kind_">...</Astrobj>
+   *   <Astrobj kind="kind_" ...>...</Astrobj>
    * \endcode
    * is written.
    */
   std::string kind_;
+
+  /// The plug-in that needs to be loaded to access this instance's class
+  /**
+   * E.g. for an Astrobj, fillElement() will ensure
+   * \code
+   *   <Astrobj ... plugin="plugin_">...</Astrobj>
+   * \endcode
+   * is written.
+   */
+  std::string plugin_;
+
  public:
   GYOTO_OBJECT;
   /** \fn virtual Property const * Object::getProperties() const

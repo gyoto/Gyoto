@@ -109,7 +109,7 @@ class Gyoto::SmartPointee
    * Metric::Register(), Spectrum::Register().
    */
   typedef Gyoto::SmartPointer<Gyoto::SmartPointee>
-    Subcontractor_t(Gyoto::FactoryMessenger*);
+    Subcontractor_t(Gyoto::FactoryMessenger*, std::string);
   ///< A subcontractor builds an object upon order from the Factory
 
 };
