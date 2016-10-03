@@ -1,3 +1,8 @@
+NEXT  2016/10/03 BUG
+   * Yorick: actually implement `picture' painter for the matte_paint
+     framework. Allow using any two or three-dimensional image or
+     stack of images in the `picture' and `panorama' painters.
+
 1.1.0 2016/09/12 ABI 4 (5:0:0)
    * New functionality: provide a plug-in for writing new Metrics,
      Astrobjs and Spectra in Python.
