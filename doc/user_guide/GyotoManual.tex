@@ -60,7 +60,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated June 22, 2015}
+\Large{Updated October 13, 2016}
 %\today
 
 \vspace{4cm}
@@ -1007,8 +1007,9 @@ will be used twice:
 \item the shared library file must be called
   \texttt{libgyoto-\emph{name}.\$suffix} (\texttt{\$suffix} is usually
   \texttt{.so} under Linux, \texttt{.dylib} under Mac OS);
-\item the init function for your plug-in must be called
-  \texttt{\_\_Gyoto\emph{name}Init}.
+\item the init function for your plug-in must be called either
+  \texttt{\_\_Gyoto\emph{name}Init} or exactly
+  \texttt{\_\_GyotoPluginInit}.
 \end{itemize}
 
 The role of the init function is to register subcontractors for your
@@ -1045,6 +1046,12 @@ it at run-time. The following places are good choices:
 contains useful build-time information such as the install prefix and
 the plug-in suffix. This file gets installed in the standard location,
 by default \texttt{/usr/local/lib/pkgconfig/gyoto.pc}.
+
+The Gyoto source code contains several examples of plug-ins. One of
+them is minimalistic and its only purpose is to illustrate how to
+build a plug-in. It is a good starting point for writing your own
+plug-in. See the content of the subdirectory \texttt{plugins/null/},
+in particular the \texttt{README} file.
 
 \subsection{Adding a new metric (\Metric)}
 

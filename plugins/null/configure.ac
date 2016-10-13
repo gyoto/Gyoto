@@ -1,8 +1,11 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+# Whenever this file is edited, reprocess it with autoreconf.
 
 AC_PREREQ([2.69])
+
+# Choose a good name: replace `null' with your own name.
+# Also change the e-mail address to your own.
 AC_INIT([gyoto-null], [0.0.0], [gyoto@sympa.obspm.fr])
+# Below, give the name of some file that will stay in you source tree.
 AC_CONFIG_SRCDIR([include/GyotoNull.h])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
@@ -74,7 +77,7 @@ AS_IF([test "x$HOME_LORENE" != "x"],
  ])
 
 mySUBDIRS="lib"
-AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto python/Makefile],
+AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],
   [test -e bin/gyoto && chmod a+x bin/gyoto])
 AC_SUBST([mySUBDIRS])
 AC_OUTPUT

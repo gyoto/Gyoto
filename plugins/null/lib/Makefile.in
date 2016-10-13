@@ -14,6 +14,9 @@
 
 @SET_MAKE@
 
+# Whenever this file is edited, reprocess it with autoreconf, then
+# re-run the configure script.
+
 VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
@@ -123,7 +126,7 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(soverdir)"
 LTLIBRARIES = $(sover_LTLIBRARIES)
 libgyoto_null_la_LIBADD =
-am_libgyoto_null_la_OBJECTS = Null.lo NullPlug.lo
+am_libgyoto_null_la_OBJECTS = Null.lo InitPlug.lo
 libgyoto_null_la_OBJECTS = $(am_libgyoto_null_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -334,12 +337,15 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-ACLOCAL_AMFLAGS = -I m4 
+ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCESCPPFLAGS) $(LORENECPPFLAGS)
-AM_LDFLAGS = $(Gyoto_LDFLAGS) -module -export-dynamic -avoid-version $(LORENELDFLAGS)
+AM_LDFLAGS = $(Gyoto_LDFLAGS) -module -export-dynamic -shared -avoid-version $(LORENELDFLAGS)
 AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\"
+
+# replace all occurrences of null below by the actual name of the
+# plug-in
 sover_LTLIBRARIES = libgyoto-null.la
-libgyoto_null_la_SOURCES = Null.C NullPlug.C
+libgyoto_null_la_SOURCES = Null.C InitPlug.C
 all: all-am
 
 .SUFFIXES:
@@ -419,8 +425,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/InitPlug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Null.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/NullPlug.Plo@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
