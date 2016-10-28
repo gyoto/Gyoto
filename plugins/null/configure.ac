@@ -12,8 +12,6 @@ AM_INIT_AUTOMAKE
 LT_INIT
 
 # Checks for programs.
-AC_PROG_CXX
-AC_PROG_CC
 AC_PROG_INSTALL
 PKG_PROG_PKG_CONFIG([])
 AS_IF([test "x$PKG_CONFIG" == "x"],
@@ -63,18 +61,13 @@ PKG_CHECK_MODULES([Gyoto],
     AC_SUBST([Y_INST_HOME],   [`$PKG_CONFIG --variable=Y_INST_HOME    gyoto`])
     AC_SUBST([Y_INST_SITE],   [`$PKG_CONFIG --variable=Y_INST_SITE    gyoto`])
     gyoto_MPICXX=`$PKG_CONFIG --variable=MPICXX gyoto`
+    gyoto_CXX=`$PKG_CONFIG --variable=CXX gyoto`
    ],
    [AC_MSG_ERROR([gyoto.pc not found or not functional! 
                   Check PKG_CONFIG_PATH or call the guru])]
 )
 
-#AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
-
-#AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
-
-#AS_IF([test "x$HOME_LORENE" != "x"],
-# [AX_APPEND_FLAG([-DGYOTO_USE_LORENE], [CPPFLAGS])
-# ])
+AC_PROG_CXX(["$gyoto_MPICXX" "$gyoto_CXX" g++ c++ gpp aCC CC cxx cc++ cl.exe FCC KCC RCC xlC_r xlC])
 
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],
