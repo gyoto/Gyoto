@@ -637,8 +637,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 mySUBDIRS
-HAVE_LORENE_FALSE
-HAVE_LORENE_TRUE
 Y_INST_SITE
 Y_INST_HOME
 GYOTO_EPREFIX
@@ -16202,44 +16200,13 @@ $as_echo "yes" >&6; }
 
 fi
 
-if test "x$gyoto_MPICXX" != "x"; then :
-  CXX="$gyoto_MPICXX"
-fi
+#AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
 
- if test "x$HOME_LORENE" != "x"; then
-  HAVE_LORENE_TRUE=
-  HAVE_LORENE_FALSE='#'
-else
-  HAVE_LORENE_TRUE='#'
-  HAVE_LORENE_FALSE=
-fi
+#AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
 
-
-if test "x$HOME_LORENE" != "x"; then :
-  if ${CPPFLAGS+:} false; then :
-  case " $CPPFLAGS " in
-    *" -DGYOTO_USE_LORENE "*)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS already contains -DGYOTO_USE_LORENE"; } >&5
-  (: CPPFLAGS already contains -DGYOTO_USE_LORENE) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      ;;
-    *)
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: : CPPFLAGS=\"\$CPPFLAGS -DGYOTO_USE_LORENE\""; } >&5
-  (: CPPFLAGS="$CPPFLAGS -DGYOTO_USE_LORENE") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-      CPPFLAGS="$CPPFLAGS -DGYOTO_USE_LORENE"
-      ;;
-   esac
-else
-  CPPFLAGS="-DGYOTO_USE_LORENE"
-fi
-
-
-fi
+#AS_IF([test "x$HOME_LORENE" != "x"],
+# [AX_APPEND_FLAG([-DGYOTO_USE_LORENE], [CPPFLAGS])
+# ])
 
 mySUBDIRS="lib"
 ac_config_files="$ac_config_files Makefile lib/Makefile bin/gyoto"
@@ -16420,10 +16387,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_LORENE_TRUE}" && test -z "${HAVE_LORENE_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_LORENE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
