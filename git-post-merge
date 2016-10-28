@@ -10,6 +10,6 @@
 # To run this script automatically after every "git merge" or "git
 # pull" invocation, copy it or link it as .git/hooks/post-merge .
 
-touch aclocal.m4 configure Makefile.in */Makefile.in */*/Makefile.in config.h.in
+touch aclocal.m4 plugins/*/aclocal.m4 configure plugins/*/configure Makefile.in */Makefile.in */*/Makefile.in */*/*/Makefile.in config.h.in
 
 exit 0

@@ -68,13 +68,13 @@ PKG_CHECK_MODULES([Gyoto],
                   Check PKG_CONFIG_PATH or call the guru])]
 )
 
-AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
+#AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
 
-AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
+#AM_CONDITIONAL([HAVE_LORENE], [test "x$HOME_LORENE" != "x"])
 
-AS_IF([test "x$HOME_LORENE" != "x"],
- [AX_APPEND_FLAG([-DGYOTO_USE_LORENE], [CPPFLAGS])
- ])
+#AS_IF([test "x$HOME_LORENE" != "x"],
+# [AX_APPEND_FLAG([-DGYOTO_USE_LORENE], [CPPFLAGS])
+# ])
 
 mySUBDIRS="lib"
 AC_CONFIG_FILES([Makefile lib/Makefile bin/gyoto],
