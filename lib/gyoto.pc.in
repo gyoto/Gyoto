@@ -21,6 +21,7 @@ LORENECPPFLAGS=@LORENECPPFLAGS@
 LORENELDFLAGS=@LORENELDFLAGS@
 
 MPICXX=@MPICXX@
+CXX=@CXX@
 
 Name: Gyoto
 Description: Relativistic geodesic integration and ray-tracing
