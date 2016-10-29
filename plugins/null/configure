@@ -644,12 +644,12 @@ CXXDEPMODE
 ac_ct_CXX
 CXXFLAGS
 CXX
+soverdir
 Y_INST_SITE
 Y_INST_HOME
 GYOTO_EPREFIX
 GYOTO_PREFIX
 GYOTO
-soverdir
 LORENELDFLAGS
 LORENECPPFLAGS
 HOME_LORENE
@@ -792,6 +792,8 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+enable_globalinstall
+with_soverdir
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1441,6 +1443,8 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-globalinstall  install the plug-in in the global system directory
+                          instead of the local tree
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1450,6 +1454,10 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
+  --with-soverdir=SOVERDIR
+                          install the plug-in exactly in SOVERDIR. By default,
+                          use instructions from gyoto.pc or default to LIBDIR
+                          (see --enable-globalinstall)
 
 Some influential environment variables:
   CC          C compiler command
@@ -11787,7 +11795,7 @@ plugin_sfx=so
 
 
 
-# Read Gyoto's pkg-config file
+# Read Gyoto's pkg-config file (gyoto.pc)
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Gyoto" >&5
@@ -11848,13 +11856,19 @@ fi
 	echo "$Gyoto_PKG_ERRORS" >&5
 
 	as_fn_error $? "gyoto.pc not found or not functional!
-                  Check PKG_CONFIG_PATH or call the guru" "$LINENO" 5
+                  Possible culprits:
+		     is PKG_CONFIG_PATH correct?
+		     are all the dependencies specified in gyoto.pc installed?
+		  Else call the guru." "$LINENO" 5
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 	as_fn_error $? "gyoto.pc not found or not functional!
-                  Check PKG_CONFIG_PATH or call the guru" "$LINENO" 5
+                  Possible culprits:
+		     is PKG_CONFIG_PATH correct?
+		     are all the dependencies specified in gyoto.pc installed?
+		  Else call the guru." "$LINENO" 5
 
 else
 	Gyoto_CFLAGS=$pkg_cv_Gyoto_CFLAGS
@@ -11873,8 +11887,6 @@ $as_echo "yes" >&6; }
 
     LORENELDFLAGS=`$PKG_CONFIG --variable=LORENELDFLAGS  gyoto`
 
-    soverdir=`$PKG_CONFIG --variable=GYOTO_PLUGDIR  gyoto`
-
     GYOTO=`$PKG_CONFIG --variable=GYOTO          gyoto`
 
     GYOTO_PREFIX=`$PKG_CONFIG --variable=prefix         gyoto`
@@ -11885,11 +11897,57 @@ $as_echo "yes" >&6; }
 
     Y_INST_SITE=`$PKG_CONFIG --variable=Y_INST_SITE    gyoto`
 
+
+    # all about the install directories
+    GYOTO_PLUGDIR=` $PKG_CONFIG --variable=GYOTO_PLUGDIR  gyoto`
+    GYOTO_SOVERS=`  $PKG_CONFIG --variable=GYOTO_SOVERS   gyoto`
+    localpkglibdir=`$PKG_CONFIG --variable=localpkglibdir gyoto`
+
+    # all about the C++ compilers
     gyoto_MPICXX=`$PKG_CONFIG --variable=MPICXX gyoto`
     gyoto_CXX=`$PKG_CONFIG --variable=CXX gyoto`
 
 fi
 
+
+## Where shall we install the plug-in?
+# If the user passes the option --enable-globalinstall,
+# then install in the same place as the standard plug-ins.
+#
+# Else, if gyoto.pc specifies a local install directory, use it (it
+# will typically be /usr/local/lib/gyoto/SOVERS).
+#
+# Else, default to LIBDIR (as can be customized with --libdir).
+# Check whether --enable-globalinstall was given.
+if test "${enable_globalinstall+set}" = set; then :
+  enableval=$enable_globalinstall;
+fi
+
+if test "x$enable_globalinstall" == xyes; then :
+  soverdir=${GYOTO_PLUGDIR}
+else
+  if test "x$localpkglibdir" == x; then :
+  soverdir=${libdir}
+else
+  soverdir=${localpkglibdir}/${GYOTO_SOVERS}
+fi
+fi
+
+# For picky users, allow setting soverdir explicitely, overriding the above:
+
+# Check whether --with-soverdir was given.
+if test "${with_soverdir+set}" = set; then :
+  withval=$with_soverdir; if test "x$with_soverdir" != xno; then :
+  soverdir=$with_soverdir
+fi
+fi
+
+
+# Finally propagate this variable to the Makefiles:
+
+
+## Which C++ compiler should we use?
+# gyoto.pc should specify MPICXX and/or CXX. Try them first.
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'

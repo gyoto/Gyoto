@@ -3,10 +3,12 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 pkglibdir=${libdir}/@PACKAGE@
+localpkglibdir=@localpkglibdir@
 
 GYOTO=${exec_prefix}/bin/gyoto
 
-GYOTO_PLUGDIR=${pkglibdir}/@sovers@
+GYOTO_SOVERS=@sovers@
+GYOTO_PLUGDIR=${pkglibdir}/${GYOTO_SOVERS}
 GYOTO_PLUGIN_SFX=@GYOTO_PLUGIN_SFX@
 
 YORICK=@YORICK@

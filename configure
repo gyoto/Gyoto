@@ -719,6 +719,9 @@ PYTHON_CFLAGS
 PYTHON_INCLUDES
 PYTHON_CONFIG
 PYTHON
+localpkglibdir
+HAVE_LOCALPKGLIBDIR_FALSE
+HAVE_LOCALPKGLIBDIR_TRUE
 VERSINFO
 VERBATIM
 CXXCPP
@@ -857,6 +860,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 enable_release
+enable_localpkglibdir
 with_fenv
 with_size_t
 with_python
@@ -1545,6 +1549,13 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-release        enable a release build (remove -unreleased from
                           SONAME)
+  --enable-localpkglibdir[=PKGLIBDIR]
+                          additional directory to look for plug-ins
+                          [/usr/local/lib/gyoto, only if PREFIX is not
+                          /usr/local]. If specified, Gyoto will look for
+                          additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS
+                          and LOCALPKGLIBDIR before looking in
+                          PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR
   --disable-c++11         disable C++11 features (including advanced
                           integrators)
   --enable-static-boost   Prefer the static boost libraries over the shared
@@ -15643,7 +15654,8 @@ ac_config_headers="$ac_config_headers config.h include/GyotoConfig.h"
 VERSINFO=5:0:0
 
 
-# Needed for gcc-5, should be harmless for other compilers:
+## Needed for gcc-5, should be harmless for other compilers:
+#
 
 
 
@@ -15720,6 +15732,8 @@ fi
 done
 
 
+## Ensure local build does not have a release soname by default
+#
 FEATURES=""
 # Check whether --enable-release was given.
 if test "${enable_release+set}" = set; then :
@@ -15729,6 +15743,39 @@ fi
 if test "x$enable_release" != "xyes"; then :
   FEATURES+="-unreleased"
 fi
+
+## An additional directory to look for plug-ins
+#  Default /usr/local/lib/gyoto, only if ${prefix} is not /usr/local
+# Check whether --enable-localpkglibdir was given.
+if test "${enable_localpkglibdir+set}" = set; then :
+  enableval=$enable_localpkglibdir;
+else
+  if test x${prefix} == xNONE || test "x${prefix}" == x/usr/local; then :
+  enable_localpkglibdir=no
+else
+  enable_localpkglibdir=yes
+fi
+fi
+
+if test x$enable_localpkglibdir != "xno"; then :
+  if test x$enable_localpkglibdir == "xyes"; then :
+  localpkglibdir="/usr/local/lib/"${PACKAGE}
+else
+  localpkglibdir=$enable_localpkglibdir
+
+fi
+else
+  localpkglibdir=""
+fi
+ if test "x$localpkglibdir" != "x"; then
+  HAVE_LOCALPKGLIBDIR_TRUE=
+  HAVE_LOCALPKGLIBDIR_FALSE='#'
+else
+  HAVE_LOCALPKGLIBDIR_TRUE='#'
+  HAVE_LOCALPKGLIBDIR_FALSE=
+fi
+
+
 
 ## SIGFPE delivery
 #
@@ -20830,6 +20877,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_LOCALPKGLIBDIR_TRUE}" && test -z "${HAVE_LOCALPKGLIBDIR_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_LOCALPKGLIBDIR\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_MPI_TRUE}" && test -z "${HAVE_MPI_FALSE}"; then

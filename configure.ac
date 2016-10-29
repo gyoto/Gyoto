@@ -25,15 +25,36 @@ AC_SUBST([VERBATIM], [])
 VERSINFO=5:0:0
 AC_SUBST([VERSINFO])
 
-# Needed for gcc-5, should be harmless for other compilers:
+## Needed for gcc-5, should be harmless for other compilers:
+#
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
 
+## Ensure local build does not have a release soname by default
+#
 FEATURES=""
 AC_ARG_ENABLE([release],
   [AS_HELP_STRING([--enable-release],
      [enable a release build (remove -unreleased from SONAME)])])
 AS_IF([test "x$enable_release" != "xyes"],
   [FEATURES+="-unreleased"])
+
+## An additional directory to look for plug-ins
+#  Default /usr/local/lib/gyoto, only if ${prefix} is not /usr/local
+AC_ARG_ENABLE([localpkglibdir],
+  [AS_HELP_STRING([--enable-localpkglibdir[[=PKGLIBDIR]]],
+     [additional directory to look for plug-ins [/usr/local/lib/gyoto, only if PREFIX is not /usr/local]. If specified, Gyoto will look for additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS and  LOCALPKGLIBDIR before looking in PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR])],
+  [],
+  [AS_IF([test x${prefix} == xNONE || test "x${prefix}" == x/usr/local],
+     [enable_localpkglibdir=no],
+     [enable_localpkglibdir=yes])])
+AS_IF([test x$enable_localpkglibdir != "xno"],
+  [AS_IF([test x$enable_localpkglibdir == "xyes"],
+     [localpkglibdir="/usr/local/lib/"${PACKAGE}],
+     [localpkglibdir=$enable_localpkglibdir]
+  )],
+  [localpkglibdir=""])
+AM_CONDITIONAL(HAVE_LOCALPKGLIBDIR, [test "x$localpkglibdir" != "x"])
+AC_SUBST(localpkglibdir)
 
 ## SIGFPE delivery
 #
