@@ -22,7 +22,14 @@ LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h])
 AC_SUBST([VERBATIM], [])
 
-VERSINFO=5:0:0
+
+# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# C: current; R: revision; A: age
+# Linux library name is: libgyoto.so.(C-A).A.R
+VERSINFO_C=5
+VERSINFO_R=0
+VERSINFO_A=0
+VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
 
 ## Needed for gcc-5, should be harmless for other compilers:
@@ -840,7 +847,7 @@ AS_IF([test "x$build_exec" == xyes], [mySUBDIRS="$mySUBDIRS bin"])
 
 AM_CONDITIONAL([BUILD_GYOTO], [test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"])
 
-sovers=`echo $VERSINFO | tr : _`
+sovers=$(( VERSINFO_C - VERSINFO_A ))
 sovers+=$FEATURES
 AC_SUBST([FEATURES])
 AC_SUBST([sovers])
