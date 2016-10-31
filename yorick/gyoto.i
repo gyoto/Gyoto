@@ -1,6 +1,6 @@
 plug_in, "gyoto";
 /*
-    Copyright 2011-2013 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -319,7 +319,7 @@ local gyoto;
     
     All the GYOTO objects have properties called "members" such as the
     spin of a Kerr metric. Members can be set or retrieved using the
-    correspinding keywords, either upon object instantiation or at any
+    corresponding keywords, either upon object instantiation or at any
     later point in time:
        gg = gyoto.KerrBL( spin=0.995, mass=4e6 ) ;
        gg, spin=0.5;

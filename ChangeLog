@@ -1,6 +1,110 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon, 12 Sep 2016 19:12:25 +0200
+Date:   Mon, 31 Oct 2016 10:08:00 +0100
+
+    Releasing 1.1.1
+
+commit f4af3a5198d87ce4113a90fb7cf753b3731044ae
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 31 10:02:08 2016 +0100
+
+    Update copyright years and other cosmetic changes for next release
+
+commit c28648aff060bbda5c9dce2588c8666d181fa98e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Oct 30 10:03:30 2016 +0100
+
+    Use only major library version in GYOTO_PLUGDIR
+    
+    Up to know, the versioned directory for plug-ins used the full libtool
+    versinfo, changing with each new library soname revision.  From know
+    onwards, it is only the major number, which is kept for
+    backward-compatible changes. Users will not need to recompile their
+    plug-ins when upgrading to a backwarsd-compatible version of Gyoto.
+
+commit aa6594aab69059bf72d38c79ee77c0a1e722d91c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 29 16:42:01 2016 +0200
+
+    Introduce localpkglibdir to install plug-ins
+    
+      - lib/Register.C: look for plug-ins in localpkglibdir;
+      - configure.ac: determine a sensible value for localpkglibdir;
+      - lib/gyoto.pc.in: store this information;
+      - plugins/null: examplify how to install there safely;
+      - doc/user_guide: document this change.
+
+commit 1a903a7440a529639bba80d10e9407ff40ad711c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 28 22:12:28 2016 +0200
+
+    plugins/null/configure: check for MPICXX and CXX from gyoto.pc
+
+commit 6e1c6aa8104cd11ef11982868bac63e785c3cf12
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 28 19:43:48 2016 +0200
+
+    Commit autoreconf products and update git-post-merge script
+    
+    (cherry picked from commit 63b5bf61f21d0e1b425795737ec1d2bd3cf570c8)
+    
+    Conflicts:
+    	plugins/null/aclocal.m4
+
+commit 988ebdb08d4ba4c2d6caaf39ff5719731c3519ec
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 28 19:06:49 2016 +0200
+
+    Add CXX variable to gyoto*.pc
+
+commit a7ffea424d32afc247465c33900fe8a64f2ad93c
+Author: Frédéric Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 27 18:00:44 2016 +0200
+
+    Fix copy constructor of Page-Thorne disk
+
+commit 4dde0a63601316839d433d4560ce15fb23c5f0c5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 13 22:45:34 2016 +0200
+
+    Improve plug-in example in plugins/null and document it in the user manual.
+
+commit 6bbadeaa2af76014d83c99090af1271148adf49e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 13 18:15:26 2016 +0200
+
+    Add null plug-in as an example
+
+commit ece3df86a402d1c0d02d31706a344b32c32d5f88
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 3 11:27:05 2016 +0200
+
+    NEXT  2016/10/03 BUG
+       * Yorick: actually implement `picture' painter for the matte_paint
+         framework. Allow using any two or three-dimensional image or
+         stack of images in the `picture' and `panorama' painters.
+
+commit 22c8c78b2388b987ee5afca27706e2d54c4a3c0a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 15 22:22:29 2016 +0200
+
+    * configure --enable-hardening now also activates -fPIE and -pie for executables
+
+commit 633157529a837b21ee38373928f6c32a75554769
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 15 18:32:01 2016 +0200
+
+    * Use setuptools also in setup_lorene.py
+
+commit acbcd37ef3a83d609d36008029c6d50e2b9e02df
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Sep 15 18:27:42 2016 +0200
+
+    * Fix typos detected by lintian
+
+commit d53a546a2bea1799cf129405e8657dfb66c20e4b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Sep 12 19:20:28 2016 +0200
 
     Releasing 1.1.0
 
