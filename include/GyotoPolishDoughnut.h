@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright (c) 2012-2015 Frederic Vincent, Odele Straub, Thibaut Paumard
+    Copyright (c) 2012-2016 Frederic Vincent, Odele Straub, Thibaut Paumard
 
     This file is part of Gyoto.
 

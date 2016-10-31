@@ -8,7 +8,7 @@
  *
  */
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2014, 2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
