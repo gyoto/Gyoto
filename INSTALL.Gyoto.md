@@ -4,8 +4,17 @@ INSTALLING GYOTO
 0- DISTRIBUTION PACKAGES
 ========================
 
-Gyoto comes prepackaged for some systems. Of course, the development version
-may be much more advanced at a given time.
+Gyoto comes prepackaged for some systems. Although the development
+version may be much more advanced at a given time, using pre-compiled
+binaries is the recommended way of using Gyoto for most users.
+
+Debian GNU/Linux:
+
+Gyoto is part of Debian since Wheezy (Debian 7.0). Updated packages
+are made available through the official backports infrastructure:
+  https://backports.debian.org/
+Occasionally, even more advanced packages may be available at:
+  https://people.debian.org/~thibaut/
 
 On Debian GNU/Linux (and derivatives), try:
  sudo apt-get install gyoto gyoto-doc yorick-gyoto
