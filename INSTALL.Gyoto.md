@@ -14,9 +14,11 @@ are made available through the official [backports infrastructure]
 packages may be available at https://people.debian.org/~thibaut/.
 
 You can get a list of available packages with
+
     apt-cache search gyoto
 
 The most recent packages will install about everything in Gyoto with
+
     sudo apt-get install gyoto
 
 ### Ubuntu
