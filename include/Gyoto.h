@@ -21,9 +21,13 @@
  * \file Gyoto.h
  * \brief All of Gyoto
  *
- * Gyoto.h includes all of the other Gyoto C++ header files. Beware
- * that some symbols are resolved only in the plugins
- * (libgyoto-stdplug.so, libgyoto-lorene.so).
+ * Gyoto.h should include all of the other Gyoto C++ header
+ * files. Note that at any given time it may be lacking some new
+ * headers. It is always best to specifically include the headers that
+ * you actually use.
+ *
+ * Beware that some symbols are resolved only in the
+ * plugins (libgyoto-stdplug.so, libgyoto-lorene.so).
  */
 
 #include<GyotoUtils.h>
@@ -62,11 +66,27 @@
  * tell us if you manage to run Gyoto under a different OS. It should
  * compile and run with moderate effort on most UNIX-like systems.
  *
- * Gyoto can be expanded with plug-ins providing custom Gyoto::Metric::Generic,
- * Gyoto::Astrobj::Generic and Gyoto::Spectrum::Generic classes, which describe
- * respectively analytical or numerical metrics, astronomical objects,
- * and spectral shapes for astronomical objects (see \ref
- * writing_plugins_page).
+ * Gyoto can be expanded with plug-ins providing custom
+ * Gyoto::Metric::Generic, Gyoto::Astrobj::Generic and
+ * Gyoto::Spectrum::Generic classes, which describe respectively
+ * analytical or numerical metrics, astronomical objects, and spectral
+ * shapes for astronomical objects (see \ref
+ * writing_plugins_page). Custom Gyoto::Metric::Generic,
+ * Gyoto::Astrobj::Generic and Gyoto::Spectrum::Generic classes can
+ * also be written in the <A HREF="https://www.python.org/">Python</A>
+ * (2.7 or 3.x) interpreted language using the \c python plug-in for
+ * Gyoto, see below. Beware that a Python implementation of a custom
+ * class will run significantly slower than the equivalent C++
+ * implementation, but sometimes saving on development time is better
+ * than saving on computing time.
+ *
+ * The base distribution includes three plug-ins: the standard plug-in
+ * (\c stdplug), a plug-in for using <A
+ * HREF="http://http://www.lorene.obspm.fr/">LORENE</A>-based
+ * numerical metrics (\c lorene) and a plug-in for writing custom
+ * astronomical objects or metrics in the <A
+ * HREF="https://www.python.org/">Python</A> (2.7 or 3.x) interpreted
+ * language (\c python).
  *
  * A graphical user interface for tracing stellar orbits is provided
  * with the Yorick plug-in (see \ref yorick_plugin_page).
@@ -76,16 +96,8 @@
  *
  * \section download_sec Downloading and installing
  *
- * Gyoto is version-controlled by the 
- * <A HREF="https://github.com/gyoto/Gyoto"><B>git</B></A> software.
- * 
- * The easiest way to acces it is by typing on a command line:
- *
- * <I><B>git clone git://github.com/gyoto/Gyoto.git</B></I> 
- *
- * More information on installing Gyoto is available 
- * <A HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL"><B>here</B></A>
- * as well as in the user manual below.
+ * Detailed information on installing Gyoto is available <A
+ * HREF="http://github.com/gyoto/Gyoto/blob/master/INSTALL.Gyoto.md"><B>here</B></A>. The user manual below is also a valuable read.
  *
  * \section manual_sec User manual
  *
@@ -109,7 +121,7 @@
  * code base. Contributors will be listed in the relevant source files as
  * well as in the AUTHORS file in the package.
  *
- *   Gyoto is Copyright 2011-2015 Thibaut Paumard,
+ *   Gyoto is Copyright 2011-2016 Thibaut Paumard,
  *   Fr&eacute;d&eacute;ric Vincent and Odele Straub.
  *
  *  Gyoto is free software: you can redistribute it and/or modify
