@@ -1,45 +1,73 @@
-INSTALLING GYOTO
-================
+# INSTALLING GYOTO
 
-0- DISTRIBUTION PACKAGES
-========================
+## 0- Installing precompiled packages
 
 Gyoto comes prepackaged for some systems. Although the development
 version may be much more advanced at a given time, using pre-compiled
 binaries is the recommended way of using Gyoto for most users.
 
-Debian GNU/Linux:
+### Debian GNU/Linux
 
 Gyoto is part of Debian since Wheezy (Debian 7.0). Updated packages
-are made available through the official backports infrastructure:
-  https://backports.debian.org/
-Occasionally, even more advanced packages may be available at:
-  https://people.debian.org/~thibaut/
+are made available through the official [backports infrastructure]
+(https://backports.debian.org/). Occasionally, even more advanced
+packages may be available at https://people.debian.org/~thibaut/.
 
-On Debian GNU/Linux (and derivatives), try:
- sudo apt-get install gyoto gyoto-doc yorick-gyoto
-Developers may be interested in gyoto-dbg and libgyoto0-dev in addition.
+You can get a list of available packages with
+    apt-cache search gyoto
 
-On an Apple Mac, you can install MacPorts (http://www.macports.org/) and run:
- sudo port install Gyoto
+The most recent packages will install about everything in Gyoto with
+    sudo apt-get install gyoto
+
+### Ubuntu
+
+Gyoto is also part of Ubuntu at least since Raring (13.04). Updated
+versions are provided on our [personal package archive]
+(https://launchpad.net/~paumard/+archive/ubuntu/gyoto/).
+
+You can get a list of available packages with
+    apt-cache search gyoto
+
+The most recent packages will install about everything in Gyoto with
+    sudo apt-get install gyoto
+
+### Mac OS X
+
+Precompiled binaries (or at least automatic compilation) is provided
+through [MacPorts] (http://www.macports.org/). With MacPorts installed, run:
+    sudo port sync
+    sudo port install Gyoto
+
+To get MPI parallelization, you must first install Boost with one of
+its MPI variant, then Gyoto with the same variant:
+    sudo port install Boost +openmpi
+    sudo port install Gyoto +openmpi
+
+
+## 1- Downloading the source code
 
 If Gyoto is not packaged for your system or if you prefer to build
 from source, read on.
 
-If the source code was fetched from git, you may
-need to first update de timestamp of a few files by running the script
-git-post-merge:
-   $ ./git-post-merge
-See documentation therein.
+The source code is available from
+[Github](https://github.com/gyoto/Gyoto):
+    git clone git://github.com/gyoto/Gyoto.git
 
-Then the build process is in a nutshell:
-./configure
-make
-make check
-sudo make install
+Then the build process is, in a nutshell, after having installed the
+dependencies:
+    ./git-post-merge
+    ./configure
+    make
+    sudo make install
+    sudo ldconfig
 
-I- INSTALL THE DEPENDENCIES
-===========================
+The rest of this file details each step.
+
+
+## 2- Installing the dependencies
+
+Gyoto reqires:
+
    - a C++ compiler. GCC 4.9 works very well. Several features require
      the C++11 standard. Clang/LLVM is discouraged because it does not
      support fenv.h, which sometimes leads to spurious SIFPE in the
@@ -80,66 +108,73 @@ I- INSTALL THE DEPENDENCIES
      but this is the default).
    - developers may need the GNU autotools: autoconf, automake, libtool.
 
-II- CONFIGURE GYOTO
-===================
+## 3- Fixing the timestamps
+
+Unfortunately git does not preserve the timestamps of files, which
+confuses the the build system. The easiest way to do that is running a
+provided script each time you pull from our repository:
+    ./git-post-merge
+
+This script contains instructions to automate this step if you plan of
+pulling again from github in the future.
+
+Alternatively, you could recreate the autotools-generated files using
+`autoreconf`. This requires the development tools autoconf, automake,
+libtool, and is really necessary only for developpers who modfied the
+the build system (configure.ac, */Makefile.am...)
+
+## 4- Configuring Gyoto
+
 If all the dependencies are installed in standard places (/usr or
 /usr/local) and if the default prefix (/usr/local) is OK for you, this
 should do:
-   $ ./configure
+    ./configure
 
 You may need to pass some options or configuration variables. To list
 the available options:
- ./configure --help
-The standard GNU INSTALL file is appended to this file and documents
+    ./configure --help
+The standard GNU INSTALL file is provided next to this file and documents
 the most standard and obscure features.
 
-The --enable-release option is important to package maintainers:
-without it, the library name will contain "-unreleased". This is to
-allow users to compile new versions without overriding the
-system-provided library by default. Binaries distributed e.g. by
-package managers should be compiled with --enable-release. Also, the
-configure script will append flags to the SONAME when features are not
-available. This limits the probability of linking with the wrong
-version of the library at run time.
+The --enable-release option is reserved for pre-compiled package
+maintainers. In short, don't use it, it is for us alone. Without this
+option, the library name will contain "-unreleased". This is to allow
+users to compile new versions without overriding the system-provided
+library by default. Binaries distributed e.g. by package managers
+should be compiled with --enable-release. Also, the configure script
+will append flags to the SONAME when features are not available,
+e.g. libgyoto-nompi.*. This limits the probability of linking with the
+wrong version of the library at run time. Note that there is no
+guarantee that two -unreleased builds are ABI compatible, even if they
+share the same SONAME, because the version information is incremented
+only immediately before making and official release.
 
 To select a different compiler than the default on your system, set
 the CC and CXX environment variables accordingly during the configure
 step:
-   $ CC=gcc-4.8 CXX=g++-4.8 ./configure
+    CC=gcc-4.8 CXX=g++-4.8 ./configure
 
-Example: assume you want to install in ${HOME}/mysoft, that LORENE is
-in ${HOME}/mysoft/Lorene (but HOME_LORENE is not set), and Xerces and
-CFITIO are in /opt/local:
-   $ ./configure --prefix=${HOME}/mysoft \
-                 --with-lorene=${HOME}/mysoft/Lorene \
-                 CPPFLAGS=-I/opt/local/include \
-                 LDFLAGS=-L/opt/local/lib
+Example: assume you want to install in `${HOME}/mysoft`, that LORENE is
+in `${HOME}/mysoft/Lorene` (but `HOME_LORENE` is not set), and Xerces and
+CFITIO are in `/opt/local`:
+    ./configure --prefix=${HOME}/mysoft \
+                --with-lorene=${HOME}/mysoft/Lorene \
+                CPPFLAGS=-I/opt/local/include \
+                LDFLAGS=-L/opt/local/lib
 
-If compiling a release (rather than the master branch from git) for
-binary distribution, you should use the --enable-release argument to
-get rid of "-unreleased" in the SONAME. Don't do that when compiling
-anything which is not an official release, though. The unqualified
-name libgyoto.* is reserved for full-featured, official releases. The
-configure script takes care of adding suffixes when some features are
-disabled, e.g. libgyoto-nompi.*. Note that there is no guarantee that
-two -unreleased builds are ABI compatible, even if they share the same
-SONAME, because the version information is incremented only
-immediately before making and official release.
 
-III- BUILD
-==========
-   $ make
-   $ make -C python
+## 5- Building Gyoto
 
-IV- TEST
-========
-Several example files are provided in doc/examples. All the files
-without "rotstar3_1" should work out of the box. The rotstar3_1
-require the lorene plug-in and some work to create lorene data
-files. You can ray-trace all these sceneries (may take up to a couple
-of minutes on recent hardware) with:
+    make
 
-   $ make check
+## 6- Testing
+
+Gyoto includes a detailed check suite, including atomic tests writen
+in Yorick and Python as well as full ray-tracing tests. MPI tests and
+LORENE tests are run using separate Makefile targets. To run all the
+tests (which assumes that both Gyoto was configures with both MPI and
+LORENE):
+    make check check-lorene check-mpi check-lorene-mpi
 
 Don't worry too much for the "severe" warnings.
 
@@ -147,35 +182,30 @@ You can now open the resulting FITS files with ds9
 (http://hea-www.harvard.edu/RD/ds9/) or spydr
 (http://www.maumae.net/yorick/doc/spydr_intro.php) or any other
 FITS-aware image viewer:
+    spydr example-*.fits
 
-   $ spydr example-*.fits
+## 7- Installing
 
-In addition, if Gyoto has been configured to build the Yorick plug-in,
-this plug-in is also tested.
-
-V- INSTALL
-==========
 If installing to a system location (i.e. if you don't
 have right access to PREFIX), you need to gain root privileges using,
 for instance, su or sudo:
-1- using su:
-   $ su -
-    (type root password)
-   # make install
-   # make -C python install
 
-2- using sudo:
-   $ sudo make install
+Using su:
+    su - # (type root password)
+    make install
+    make -C python install
+
+Using sudo:
+    sudo make install
     (type your password)
 
 Under Linux, if installing to a system location, you may need to also
 run
-   # ldconfig -v
-or
-   $ sudo ldconfig -v
+    ldconfig -v
+as root (so most likely `sudo ldconfig -v`).
 
-VII- Setting your environment
-=============================
+## 8- Setting your environment
+
 If installing in a non-standard place (e.g. under your home
 directory), you do not need to run ldconfig, but you need to adapt
 your environment for instance by adding the following lines to
@@ -183,11 +213,11 @@ ${HOME}/.profile (replace <gyoto-prefix> by the actual Gyoto
 prefix!). One Gyoto file installed in each directory is listed as a
 comment:
 
-export PREFIX=<gyoto-prefix>
-export PATH=${PREFIX}/bin:${PATH}                       # gyoto
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH} # libgyoto.so.*
-export MANPATH=${PREFIX}/share/man:${MANPATH}           # gyoto.1
-export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig          # gyoto.pc
+    export PREFIX=<gyoto-prefix>
+    export PATH=${PREFIX}/bin:${PATH}                       # gyoto
+    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH} # libgyoto*.so.*
+    export MANPATH=${PREFIX}/share/man:${MANPATH}           # gyoto.1
+    export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig          # gyoto.pc
 
 Under Mac OS X, LD_LIBRARY_PATH is replaced by DYLD_LIBRARY_PATH.
 
@@ -202,15 +232,9 @@ be found immediately by Yorick. Assuming you used the default prefix
 (/usr/local), it should be sufficient to create a file named
 ${HOME}/Yorick/custom.i containing the three following lines:
 
-require, "pathfun.i";
-add_y_home,"/usr/local/lib/yorick/";
-command_line= process_argv();
+    require, "pathfun.i";
+    add_y_home,"/usr/local/lib/yorick/";
+    command_line= process_argv();
 
 Under Debian and Ubuntu GNU/Linux, /usr/local/lib/yorick/ is by
 default in Yorick search paths.
-
-
-VII- More on GNU ./configure script:
-====================================
-
-See the generic INSTALL file.
