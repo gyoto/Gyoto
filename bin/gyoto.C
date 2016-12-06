@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013, 2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -386,12 +386,12 @@ int main(int argc, char** argv) {
       cerr << "error initializing MPI"<< endl;
       return 2;
     }
+    // If WORLD size is more than 1, use processes from WORLD
+    // instead of spawning new processes
     int wsize=0;
     MPI_Comm_size(MPI_COMM_WORLD, &wsize);
     if (wsize > 1) {
-      scenery -> nProcesses(wsize-1);
-      scenery -> mpi_team_ = new boost::mpi::communicator();
-      scenery -> mpiClone();
+      scenery -> nProcesses(-1);
     }
   }
 #endif

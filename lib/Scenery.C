@@ -917,6 +917,7 @@ size_t Scenery::maxiter() const { return ph_.maxiter(); }
 bool Gyoto::Scenery::am_worker=false;
 
 void Gyoto::Scenery::mpiSpawn(int nbchildren) {
+  GYOTO_DEBUG_EXPR(nbchildren);
   nprocesses_=nbchildren;
 #ifdef HAVE_MPI
   int flagi=0, flagt=0;
@@ -934,9 +935,11 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   }
   if (mpi_team_) {
     if (mpi_team_->size()==nbchildren+1) return;
+    // Resizing the team: need to terminate the old team
     mpiTerminate();
   }
-  if (nbchildren) {
+  if (nbchildren && nbchildren != -1) {
+    // Actually requesting to spawn processes
     char * exec = const_cast<char*>("gyoto-mpi-worker." GYOTO_SOVERS); 
 
     MPI_Comm children_c;
@@ -946,6 +949,15 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
 		   MPI_ERRCODES_IGNORE);
 
     mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
+  }
+  if (nbchildren == -1) {
+    // Requesting to use processes already exising in WORLD
+    int wsize=0;
+    MPI_Comm_size(MPI_COMM_WORLD, &wsize);
+    if (wsize > 1) {
+      nprocesses_ = wsize-1;
+      mpi_team_ = new boost::mpi::communicator();
+    }
   }
 #else
   GYOTO_WARNING << "No MPI in this Gyoto" << endl;
