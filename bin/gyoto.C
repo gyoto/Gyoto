@@ -35,13 +35,14 @@
 // signal()
 #include <csignal>
 
-// getpid()
+// getpid(), execlp
 #include <sys/types.h>
 #include <unistd.h>
 
 // MPI
 #if defined HAVE_MPI
 # include <mpi.h>
+# include <boost/mpi/communicator.hpp>
 #endif
 
 // ULONG_MAX
@@ -157,6 +158,11 @@ void gyotoErrorHandler( const Gyoto::Error e ) {
 }
 
 int main(int argc, char** argv) {
+  // If we are no rank 0 in an OpenMPI context, respawn as gyoto-mpi-worker
+  if (getenv("OMPI_COMM_WORLD_RANK") &&
+      (string("0") != getenv("OMPI_COMM_WORLD_RANK")) ) {
+    execlp("gyoto-mpi-worker." GYOTO_SOVERS, (char *) NULL);
+  }
 
   // Set-up error reporter
   Gyoto::Error::setHandler ( &gyotoErrorHandler );
@@ -374,11 +380,18 @@ int main(int argc, char** argv) {
   }
 
 #if defined HAVE_MPI
-  if (scenery -> nProcesses()) {
+  if (scenery -> nProcesses() || getenv("OMPI_COMM_WORLD_SIZE")) {
     int status = MPI_Init(&argc, &argv);
     if (status) {
       cerr << "error initializing MPI"<< endl;
       return 2;
+    }
+    int wsize=0;
+    MPI_Comm_size(MPI_COMM_WORLD, &wsize);
+    if (wsize > 1) {
+      scenery -> nProcesses(wsize-1);
+      scenery -> mpi_team_ = new boost::mpi::communicator();
+      scenery -> mpiClone();
     }
   }
 #endif

@@ -201,17 +201,20 @@ Number of MPI processes to spawn for parallel ray-tracing, in addition
 to the main gyoto process which remains for managing the
 computation. Ignored if gyoto was compiled without MPI
 support. \fInprocs\fR is the number of workers spawned. \fB-P\fR0
-disables MPI multi-processing, whild \fB\-P\fR1 uses two processes:
+disables MPI multi-processing, while \fB\-P\fR1 uses two processes:
 the manager and one worker. If \fInprocs\fR is >0, \-\-nthreads is
 ignored. Note that the MPI environment usually needs to be set-up
-using some variant of \fBmpirun\fR. You should only launch one
+using some variant of \fBmpirun\fR. You should usually only launch one
 instance of \fBgyoto\fR and let it spawn its workers:
-.RS 10
-.PD 0
+.RS
 .IP
 \fBmpirun\fR \-np 1 \fBgyoto\fR \-P\fInprocs\fR \fIinput.xml\fR \fIoutput.fits\fR
-.RE
-.PD
+.P
+However, under Open MPI, \fBgyoto\fR also supports the more traditional:
+.IP
+\fBmpirun\fR \-np \fInprocs\fR \fBgyoto\fR \fIinput.xml\fR \fIoutput.fits\fR
+.P
+In this case, this option (\fB\-\-nprocesses\fR/\fB\-P\fR) is ignored.
 .IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
 In some circumstances, you may want to perform several computations in
 which the computed geodesics end up being exactly identical. This is
