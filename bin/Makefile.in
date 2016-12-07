@@ -448,7 +448,7 @@ CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
 	example-fixed-star-minkowski-cartesian.fits \
 	example-fixed-star-minkowski-spherical.fits \
 	example-startrace.fits example-moving-star.fits \
-	example-page-thorne-disk-BL.fits \
+	example-moving-star-CS.fits example-page-thorne-disk-BL.fits \
 	example-page-thorne-disk-KS.fits \
 	example-page-thorne-disk-BL-with-basis.fits example-torus.fits \
 	example-torus-KS.fits $(am__append_7)

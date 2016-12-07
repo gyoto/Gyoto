@@ -29,6 +29,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <cstring>
 
 using namespace Gyoto;
 using namespace std;
@@ -49,11 +50,25 @@ void Gyoto::requirePlugin(std::string name, int nofail) {
   if (!havePlugin(name)) loadPlugin(name.c_str(), nofail);
 }
 
-void Gyoto::loadPlugin(char const*const name, int nofail) {
+void Gyoto::loadPlugin(char const*const nam, int nofail) {
+  string name(nam);
+
+  // Determine file name
   string dlfile = "libgyoto-" ;
   dlfile += name ;
   dlfile += "." ;
   dlfile += GYOTO_PLUGIN_SFX ;
+
+  // If nam _is_ a file name, retrieve plug-in name
+  string marker="/libgyoto-";
+  if (strstr(nam, marker.c_str())) {
+    dlfile = name;
+    name=name.substr(0, name.rfind("." GYOTO_PLUGIN_SFX));
+    name=name.substr(name.rfind(marker)+marker.size());
+    cout << name << endl;
+  }
+
+  // Prepare name of init function
   string dlfunc = "__Gyoto";
   dlfunc += name ;
   dlfunc += "Init";
@@ -61,10 +76,22 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   GyotoInitFcn* initfcn = NULL;
   char * err = NULL;
 
+  // Keep track of all dlopen() errors
+  string errors("Failed loading plug-in '");
+  errors += name;
+  errors += "'.\n  The following attempts were made:";
+
+  // Try first without path (i.e. in default linker locations)
   GYOTO_DEBUG << "Loading plug-in: " << name <<endl;
   GYOTO_DEBUG << "Trying to dlopen " << dlfile << "...\n";
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+  if (!handle && (err=dlerror())) {
+    errors += "\n  * Error loading ";
+    errors += dlfile + ":\n    ";
+    errors += err;
+  }
 
+  // Then try the various hard-coded locations
   std::vector<std::string> plug_path;
   plug_path.push_back(GYOTO_PKGLIBDIR "/");
   plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
@@ -80,8 +107,14 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
     GYOTO_DEBUG << "Trying to dlopen " << dlfull << "...\n";
     handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     ++cur;
+    if (!handle && (err=dlerror())) {
+      errors += "\n  * Error loading ";
+      errors += dlfull + ":\n    ";
+      errors += err;
+    }
   }
 
+  // Check for success
   if (handle) {
     GYOTO_DEBUG << "Successfully loaded " << dlfull << ".\n";
   } else {
@@ -91,10 +124,10 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
 	cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
       return;
     }
-    if ( (err=dlerror()) ) throwError(err);
-    throwError((string("Failed to load plug-in ")+dlfile).c_str());
+    throwError(errors.c_str());
   }
 
+  // Find and execute init function
   GYOTO_DEBUG << "Searching plug-in init function " << dlfunc << endl;
   initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
   if ( (err=dlerror()) || !initfcn) {

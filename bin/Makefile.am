@@ -47,6 +47,7 @@ CHECK_RESULTS = \
         example-fixed-star-minkowski-spherical.fits \
         example-startrace.fits \
         example-moving-star.fits \
+        example-moving-star-CS.fits \
         example-page-thorne-disk-BL.fits \
         example-page-thorne-disk-KS.fits \
         example-page-thorne-disk-BL-with-basis.fits \

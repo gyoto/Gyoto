@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -39,6 +39,8 @@
 #include<GyotoMetric.h>
 #include<GyotoKerrBL.h>
 #include<GyotoKerrKS.h>
+#include<GyotoChernSimons.h>
+#include<GyotoRezzollaZhidenko.h>
 
 #include<GyotoAstrobj.h>
 #include<GyotoThinDisk.h>

@@ -166,6 +166,8 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-DirectionalDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
+	libgyoto_stdplug_la-ChernSimons.lo \
+	libgyoto_stdplug_la-RezzollaZhidenko.lo \
 	libgyoto_stdplug_la-Star.lo libgyoto_stdplug_la-StarTrace.lo \
 	libgyoto_stdplug_la-FixedStar.lo libgyoto_stdplug_la-Torus.lo \
 	libgyoto_stdplug_la-PowerLawSpectrum.lo \
@@ -484,12 +486,12 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
-libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C Star.C \
-	StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
-	BlackBodySpectrum.C ThermalBremsstrahlungSpectrum.C \
-	ComplexAstrobj.C UniformSphere.C PageThorneDisk.C ThinDiskPL.C \
-	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C \
-	$(cfitsio_stdplug_sources)
+libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
+	ChernSimons.C RezzollaZhidenko.C Star.C StarTrace.C \
+	FixedStar.C Torus.C PowerLawSpectrum.C BlackBodySpectrum.C \
+	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
+	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
+	ThinDiskIronLine.C StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
@@ -657,6 +659,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-RotStar3_1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-BlackBodySpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ComplexAstrobj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DirectionalDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Disk3D.Plo@am__quote@
@@ -671,6 +674,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PatternDiskBB.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PolishDoughnut.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo@am__quote@
@@ -742,6 +746,20 @@ libgyoto_stdplug_la-Minkowski.lo: Minkowski.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Minkowski.C' object='libgyoto_stdplug_la-Minkowski.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Minkowski.lo `test -f 'Minkowski.C' || echo '$(srcdir)/'`Minkowski.C
+
+libgyoto_stdplug_la-ChernSimons.lo: ChernSimons.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-ChernSimons.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Tpo -c -o libgyoto_stdplug_la-ChernSimons.lo `test -f 'ChernSimons.C' || echo '$(srcdir)/'`ChernSimons.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Tpo $(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ChernSimons.C' object='libgyoto_stdplug_la-ChernSimons.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ChernSimons.lo `test -f 'ChernSimons.C' || echo '$(srcdir)/'`ChernSimons.C
+
+libgyoto_stdplug_la-RezzollaZhidenko.lo: RezzollaZhidenko.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-RezzollaZhidenko.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Tpo -c -o libgyoto_stdplug_la-RezzollaZhidenko.lo `test -f 'RezzollaZhidenko.C' || echo '$(srcdir)/'`RezzollaZhidenko.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Tpo $(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='RezzollaZhidenko.C' object='libgyoto_stdplug_la-RezzollaZhidenko.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-RezzollaZhidenko.lo `test -f 'RezzollaZhidenko.C' || echo '$(srcdir)/'`RezzollaZhidenko.C
 
 libgyoto_stdplug_la-Star.lo: Star.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Star.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Star.Tpo -c -o libgyoto_stdplug_la-Star.lo `test -f 'Star.C' || echo '$(srcdir)/'`Star.C

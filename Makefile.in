@@ -93,7 +93,7 @@ DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(top_srcdir)/python/Makefile.in \
 	$(top_srcdir)/python/setup.py.in \
 	$(top_srcdir)/python/setup_std.py.in \
-	$(top_srcdir)/python/setup_lorene.py.in COPYING compile \
+	$(top_srcdir)/python/setup_lorene.py.in COPYING TODO compile \
 	config.guess config.sub depcomp install-sh missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
