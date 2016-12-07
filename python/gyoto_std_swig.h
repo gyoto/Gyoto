@@ -3,6 +3,8 @@
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
+#include "GyotoRezzollaZhidenko.h"
+
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"

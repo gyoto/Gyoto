@@ -161,8 +161,8 @@ libgyoto_stdplug_la_LIBADD =
 am__objects_1 = PatternDisk.lo PatternDiskBB.lo DynamicalDisk.lo \
 	Disk3D.lo DynamicalDisk3D.lo DirectionalDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
-	ChernSimons.lo Star.lo StarTrace.lo FixedStar.lo Torus.lo \
-	PowerLawSpectrum.lo BlackBodySpectrum.lo \
+	ChernSimons.lo RezzollaZhidenko.lo Star.lo StarTrace.lo \
+	FixedStar.lo Torus.lo PowerLawSpectrum.lo BlackBodySpectrum.lo \
 	ThermalBremsstrahlungSpectrum.lo ComplexAstrobj.lo \
 	UniformSphere.lo PageThorneDisk.lo ThinDiskPL.lo \
 	PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
@@ -473,8 +473,8 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C Star.C StarTrace.C FixedStar.C Torus.C \
-	PowerLawSpectrum.C BlackBodySpectrum.C \
+	ChernSimons.C RezzollaZhidenko.C Star.C StarTrace.C \
+	FixedStar.C Torus.C PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
 	ThinDiskIronLine.C StdPlug.C $(cfitsio_stdplug_sources)
@@ -644,6 +644,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PowerLawSpectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Property.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Register.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/RezzollaZhidenko.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Scenery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Screen.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SmartPointer.Plo@am__quote@

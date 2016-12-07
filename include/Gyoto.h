@@ -40,6 +40,7 @@
 #include<GyotoKerrBL.h>
 #include<GyotoKerrKS.h>
 #include<GyotoChernSimons.h>
+#include<GyotoRezzollaZhidenko.h>
 
 #include<GyotoAstrobj.h>
 #include<GyotoThinDisk.h>

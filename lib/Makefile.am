@@ -31,7 +31,8 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 # STANDARD PLUGIN
 soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
-libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C ChernSimons.C \
+libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
+	ChernSimons.C RezzollaZhidenko.C \
 	Star.C StarTrace.C FixedStar.C Torus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \

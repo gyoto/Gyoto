@@ -1,5 +1,5 @@
 NEXT 2016/12/07 FEATURE
-   * New Metric in stdplug: ChernSimons.
+   * New Metrics in stdplug: ChernSimons, RezzollaZhidenko.
 
 1.1.1 2016/10/30 BUG
    * When Gyoto is configured to be installed in another prefix than
