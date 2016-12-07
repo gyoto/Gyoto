@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2013 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -21,6 +21,7 @@
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
+#include "GyotoChernSimons.h"
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
 #include "GyotoStar.h"
@@ -52,6 +53,7 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
+  Metric::Register("ChernSimons", &(Metric::Subcontractor<Metric::ChernSimons>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));

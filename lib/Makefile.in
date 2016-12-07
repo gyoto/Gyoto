@@ -161,10 +161,11 @@ libgyoto_stdplug_la_LIBADD =
 am__objects_1 = PatternDisk.lo PatternDiskBB.lo DynamicalDisk.lo \
 	Disk3D.lo DynamicalDisk3D.lo DirectionalDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
-	Star.lo StarTrace.lo FixedStar.lo Torus.lo PowerLawSpectrum.lo \
-	BlackBodySpectrum.lo ThermalBremsstrahlungSpectrum.lo \
-	ComplexAstrobj.lo UniformSphere.lo PageThorneDisk.lo \
-	ThinDiskPL.lo PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
+	ChernSimons.lo Star.lo StarTrace.lo FixedStar.lo Torus.lo \
+	PowerLawSpectrum.lo BlackBodySpectrum.lo \
+	ThermalBremsstrahlungSpectrum.lo ComplexAstrobj.lo \
+	UniformSphere.lo PageThorneDisk.lo ThinDiskPL.lo \
+	PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
 	$(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
@@ -471,12 +472,12 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 # STANDARD PLUGIN
 soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
-libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C Star.C \
-	StarTrace.C FixedStar.C Torus.C PowerLawSpectrum.C \
-	BlackBodySpectrum.C ThermalBremsstrahlungSpectrum.C \
-	ComplexAstrobj.C UniformSphere.C PageThorneDisk.C ThinDiskPL.C \
-	PolishDoughnut.C ThinDiskIronLine.C StdPlug.C \
-	$(cfitsio_stdplug_sources)
+libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
+	ChernSimons.C Star.C StarTrace.C FixedStar.C Torus.C \
+	PowerLawSpectrum.C BlackBodySpectrum.C \
+	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
+	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
+	ThinDiskIronLine.C StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
@@ -617,6 +618,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Astrobj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/BlackBodySpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ChernSimons.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ComplexAstrobj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ComplexSpectrometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Converters.Plo@am__quote@
