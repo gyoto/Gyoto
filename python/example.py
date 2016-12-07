@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Example file for gyoto
 #
-# Copyright 2014, 2015 Thibaut Paumard
+# Copyright 2014-2016 Thibaut Paumard
 #
 # This file is part of Gyoto.
 #

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -74,7 +74,7 @@ PageThorneDisk::PageThorneDisk() :
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
   x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
-  blackbody_(o.blackbody_), mdot_(0), uniflux_(o.uniflux_), 
+  blackbody_(o.blackbody_), mdot_(o.mdot_), uniflux_(o.uniflux_), 
   spectrumBB_(NULL)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();

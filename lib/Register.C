@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <string>
 #include <iostream>
+#include <vector>
 
 using namespace Gyoto;
 using namespace std;
@@ -63,32 +64,37 @@ void Gyoto::loadPlugin(char const*const name, int nofail) {
   GYOTO_DEBUG << "Loading plug-in: " << name <<endl;
   GYOTO_DEBUG << "Trying to dlopen " << dlfile << "...\n";
   handle = dlopen(dlfile.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-  if (!handle) {
-    string dlpath = GYOTO_PKGLIBDIR "/";
-    string dlfull = dlpath + dlfile;
+
+  std::vector<std::string> plug_path;
+  plug_path.push_back(GYOTO_PKGLIBDIR "/");
+  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
+# if defined GYOTO_LOCALPKGLIBDIR
+  plug_path.insert(plug_path.begin(), GYOTO_LOCALPKGLIBDIR "/");
+  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
+# endif
+  std::vector<std::string>::iterator cur = plug_path.begin();
+  std::vector<std::string>::iterator end = plug_path.end();
+  std::string dlfull= dlfile;
+  while (!handle && cur != end) {
+    dlfull = *cur + dlfile;
     GYOTO_DEBUG << "Trying to dlopen " << dlfull << "...\n";
     handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-    if (!handle) {
-      dlfull = dlpath ;
-      dlfull += GYOTO_SOVERS ;
-      dlfull += "/" ;
-      dlfull += dlfile ;
-      GYOTO_DEBUG << "Trying to dlopen " << dlfull << "...\n";
-      handle = dlopen(dlfull.c_str(), RTLD_LAZY | RTLD_GLOBAL);
-      if (!handle && nofail) {
-	if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
-	  cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
-	return;
-      }
-    }
-    if (handle) {
-      GYOTO_DEBUG << "Successfully loaded " << dlfull << ".\n";
-    } else {
-      GYOTO_DEBUG << "Failed loading " << dlfull << ".\n";
-    }
+    ++cur;
   }
-  if ( (err=dlerror()) ) throwError(err);
-  if (!handle) throwError((string("Failed to load plug-in ")+dlfile).c_str());
+
+  if (handle) {
+    GYOTO_DEBUG << "Successfully loaded " << dlfull << ".\n";
+  } else {
+    GYOTO_DEBUG << "Failed loading " << dlfull << ".\n";
+    if (nofail) {
+      if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
+	cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
+      return;
+    }
+    if ( (err=dlerror()) ) throwError(err);
+    throwError((string("Failed to load plug-in ")+dlfile).c_str());
+  }
+
   GYOTO_DEBUG << "Searching plug-in init function " << dlfunc << endl;
   initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
   if ( (err=dlerror()) || !initfcn) {
@@ -202,6 +208,18 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
 
 void Gyoto::Register::list() {
   Register::Entry* entry = NULL;
+
+  cout <<
+"Gyoto will look for plug-ins first in the run-time linker default locations\n"
+"(typically includes directories listed in e.g. $LD_LIBRARY_PATH), then in the\n"
+"following locations:" << endl;
+
+# if defined GYOTO_LOCALPKGLIBDIR
+  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
+  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" << endl;
+# endif
+  cout << "    " << GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
+  cout << "    " << GYOTO_PKGLIBDIR "/" << endl << endl;
 
   cout << "List of loaded plug-ins:" << endl;
   for (size_t i=0; i < GyotoRegisteredPlugins.size(); ++i)

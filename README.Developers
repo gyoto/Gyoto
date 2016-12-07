@@ -40,7 +40,7 @@ To make a new release:
   + update VERSINFO according to
 http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
   Note that this VERSINFO has nothing to do with the Gyoto version.
-  + run autoreconf
+  + run autoreconf.
 
 * Edit NEWS
   + add a new entry (or change the one which has not been released yet)
@@ -57,12 +57,13 @@ http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
     release). Use "unknown" as commit identifier and the output of
     "LANG=C date --rfc-822" as date.
 
-* Make clean, configure, make, make check again
+* Make clean, configure, make, make check again.
 
-* Commit the changes
+* Commit the changes.
 
-* Merge the released branch into stable, make sure the two branches
-  (stable and master) can be merged both ways and are identical.
+* If releasing another branch than stable: merge this branch into
+  stable, make sure the two branches can be merged both ways and are
+  identical, merge stable into master.
 
 * Tag the release using the version as tag name. Use a signed tag:
   "git tag -s 1.0.0".

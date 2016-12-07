@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2015 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -229,13 +229,29 @@ class Gyoto::Scenery
 
   /// Spawn gyoto-mpi-worker processes
   /**
-   * Also sets nprocesses_. If the right number of workers is already
-   * running, does nothing.  Also does nothing if MPI_Init() has not
-   * been called yet.
+   * If nbchildren is -1 set #mpi_team_ to MPI_COMM_WORLD else spawn
+   * nbchildren processes and set #nprocesses_ accordingly. If a
+   * different number of workers are already running, terminate them
+   * first. If nbchildren is 0, just terminate running workers.
+   *
+   * It is not recommended to mix usage of MPI_COMM_WORLD processes
+   * and spawned processes in the same process. In other words:
+   *   - use only nbchlidren=-1 when the manager and workers have been
+   *     started with
+   *     \code
+   *     mpirun -np 1 manager : -np N gyoto-mpi-worker.version
+   *     \endcode
+   *   - use only nbchildren > 0 when only the manager has been
+   *     started with
+   *     \code
+   *     mpirun -np 1 manager
+   *     \endcode
+   *
+   * \param[in] nbchildren number of processes to spawn.
    */
   void mpiSpawn(int nbchildren);
 
-  /// Terminate gyoto-mpi-worker-processes
+  /// Terminate gyoto-mpi-worker processes
   void mpiTerminate ();
 
   /// Send a copy of self to the mpi workers

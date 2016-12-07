@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [1.1.0], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [1.1.1], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -22,18 +22,46 @@ LT_INIT([dlopen disable-static])
 AC_CONFIG_HEADERS([config.h include/GyotoConfig.h])
 AC_SUBST([VERBATIM], [])
 
-VERSINFO=5:0:0
+
+# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# C: current; R: revision; A: age
+# Linux library name is: libgyoto.so.(C-A).A.R
+VERSINFO_C=5
+VERSINFO_R=1
+VERSINFO_A=0
+VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
 
-# Needed for gcc-5, should be harmless for other compilers:
+## Needed for gcc-5, should be harmless for other compilers:
+#
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
 
+## Ensure local build does not have a release soname by default
+#
 FEATURES=""
 AC_ARG_ENABLE([release],
   [AS_HELP_STRING([--enable-release],
      [enable a release build (remove -unreleased from SONAME)])])
 AS_IF([test "x$enable_release" != "xyes"],
   [FEATURES+="-unreleased"])
+
+## An additional directory to look for plug-ins
+#  Default /usr/local/lib/gyoto, only if ${prefix} is not /usr/local
+AC_ARG_ENABLE([localpkglibdir],
+  [AS_HELP_STRING([--enable-localpkglibdir[[=PKGLIBDIR]]],
+     [additional directory to look for plug-ins [/usr/local/lib/gyoto, only if PREFIX is not /usr/local]. If specified, Gyoto will look for additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS and  LOCALPKGLIBDIR before looking in PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR])],
+  [],
+  [AS_IF([test x${prefix} == xNONE || test "x${prefix}" == x/usr/local],
+     [enable_localpkglibdir=no],
+     [enable_localpkglibdir=yes])])
+AS_IF([test x$enable_localpkglibdir != "xno"],
+  [AS_IF([test x$enable_localpkglibdir == "xyes"],
+     [localpkglibdir="/usr/local/lib/"${PACKAGE}],
+     [localpkglibdir=$enable_localpkglibdir]
+  )],
+  [localpkglibdir=""])
+AM_CONDITIONAL(HAVE_LOCALPKGLIBDIR, [test "x$localpkglibdir" != "x"])
+AC_SUBST(localpkglibdir)
 
 ## SIGFPE delivery
 #
@@ -819,7 +847,7 @@ AS_IF([test "x$build_exec" == xyes], [mySUBDIRS="$mySUBDIRS bin"])
 
 AM_CONDITIONAL([BUILD_GYOTO], [test "x$use_xerces" != "x" && test "x$use_cfitsio" != "x"])
 
-sovers=`echo $VERSINFO | tr : _`
+sovers=$(( VERSINFO_C - VERSINFO_A ))
 sovers+=$FEATURES
 AC_SUBST([FEATURES])
 AC_SUBST([sovers])

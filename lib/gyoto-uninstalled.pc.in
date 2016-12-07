@@ -3,13 +3,15 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 pkglibdir=${libdir}/@PACKAGE@
+localpkglibdir=@localpkglibdir@
 
 top_srcdir=@abs_top_srcdir@
 top_builddir=@abs_top_builddir@
 
 GYOTO=${top_builddir}/bin/gyoto
 
-GYOTO_PLUGDIR=${pkglibdir}/@sovers@
+GYOTO_SOVERS=@sovers@
+GYOTO_PLUGDIR=${pkglibdir}/${GYOTO_SOVERS}
 GYOTO_PLUGIN_SFX=@GYOTO_PLUGIN_SFX@
 
 YORICK=@YORICK@
@@ -24,6 +26,7 @@ LORENECPPFLAGS=@LORENECPPFLAGS@
 LORENELDFLAGS=@LORENELDFLAGS@
 
 MPICXX=@MPICXX@
+CXX=@CXX@
 
 Name: Gyoto
 Description: Relativistic geodesic integration and ray-tracing

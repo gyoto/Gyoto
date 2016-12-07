@@ -76,7 +76,8 @@ int main(int argc, char** argv) {
   MPI_Comm parent_c;
   MPI_Comm_get_parent(&parent_c);
 
-  mpi::communicator team=mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
+  mpi::communicator team=(parent_c==MPI_COMM_NULL)?mpi::communicator():
+    mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
 
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):

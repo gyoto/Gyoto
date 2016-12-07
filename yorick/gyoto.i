@@ -1,6 +1,6 @@
 plug_in, "gyoto";
 /*
-    Copyright 2011-2013 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -340,7 +340,7 @@ local gyoto;
     
     All the GYOTO objects have properties called "members" such as the
     spin of a Kerr metric. Members can be set or retrieved using the
-    correspinding keywords, either upon object instantiation or at any
+    corresponding keywords, either upon object instantiation or at any
     later point in time:
        gg = gyoto.KerrBL( spin=0.995, mass=4e6 ) ;
        gg, spin=0.5;
@@ -951,7 +951,7 @@ func gyoto_matte_paint(set, paint, kind=, yaw=, pitch=, roll=)
 
   bg=paint(theta, phi);
 
-  if (structof(bg)==char) {bg*=mask0(-,,);}
+  if (dimsof(bg)(1) == 3) {bg*=mask0(-,,);}
   else bg *= mask0;
   
   return bg;
@@ -962,7 +962,9 @@ if (is_func(use))
                      gyoto_painters_p_mode_eval,
                      gyoto_painters_mk_p_mode,
                      gyoto_painters_panorama_eval,
-                     gyoto_painters_mk_panorama);
+                     gyoto_painters_mk_panorama,
+                     gyoto_painters_picture_eval,
+                     gyoto_painters_mk_picture);
   
 func gyoto_painters_p_mode_eval(theta, phi, mask=) {
   use, ntheta, nphi;
@@ -1025,17 +1027,113 @@ func gyoto_rotation(axis, angle)
   return R3;
 }
 
+func gyoto_painters_picture_eval(theta_spherical, phi_spherical, mask=) {
+  // see http://mathworld.wolfram.com/GnomonicProjection.html
+  use, img, phi1, lambda0;
+  dmatte=dimsof(img);
+  ndims=dmatte(1);
+  nx=dmatte(-1);
+  ny=dmatte(0);
+
+
+  phi=pi/2-theta_spherical ; // latitude
+  lambda=-phi_spherical ; // longitude
+
+  cos_c=sin(phi1)*sin(phi)+cos(phi1)*cos(phi)*cos(lambda-lambda0);
+  x=cos(phi)*sin(lambda-lambda0)/cos_c;
+  y=(cos(phi1)*sin(phi)-sin(phi1)*cos(phi)*cos(lambda-lambda0))/cos_c;
+
+  // two extreme points in the long dimension
+  phi_corners=phi1+fov*0.5*[-1.,1.]*(ny>nx);
+  lambda_corners=lambda0+fov*0.5*[-1.,1.]*(nx>=ny);
+  cos_c_corners=sin(phi1)*sin(phi_corners)+
+    cos(phi1)*cos(phi_corners)*cos(lambda_corners-lambda0);
+  x_corners=cos(phi_corners)*sin(lambda_corners-lambda0)/
+    cos_c_corners;
+  y_corners=(cos(phi1)*sin(phi_corners)-
+             sin(phi1)*cos(phi_corners)*cos(lambda_corners-lambda0))/
+    cos_c_corners;
+
+  scale=(nx>=ny)?(nx/x_corners(dif)):(ny/y_corners(dif));
+
+  // Below, +0.5 so that for a 4x4 grid, the center is at 2.5, and
+  // another +0.5 so that the long() conversion yields the closest
+  // approximation rather than the bottom truncation.
+  i0=nx*0.5 +1.;
+  j0=ny*0.5 +1.;
+
+  xp=i0 + x*scale ;
+  yp=j0 + y*scale ;
+
+  if (numberof((ind=where(xp<=0)))) xp(ind)=1;
+  if (numberof((ind=where(yp<=0)))) yp(ind)=1;
+  if (numberof((ind=where(xp>nx)))) xp(ind)=nx;
+  if (numberof((ind=where(yp>ny)))) yp(ind)=ny;
+
+  dd=dimsof(phi);
+
+  if (ndims==3) bg=array(structof(img), dmatte(2), dd(2), dd(3));
+  if (ndims==2) bg=array(structof(img), dd(2), dd(3));
+  for (i=1; i<=dd(2); ++i) {
+    for (j=1; j<=dd(3); ++j) {
+      bg(..,i,j)=img(..,long(xp(i, j)),long(yp(i, j)));
+    }
+  }
+
+  return bg;
+}
+
+
+func gyoto_painters_mk_picture(img=, fov=, phi1=, lambda0=)
+/* DOCUMENT painter = gyoto.painters.mk_picture(img=img)
+
+    Make a painter for gyoto.matte_paint(). In this painter, only a
+    fraction of the celestial sphere is available in rectilinear
+    (=gnomonic) projection. In other words, as a normal photographic
+    picture. Missing pixels are painted like the closest available
+    pixel.
+
+   Keywords:
+    Mandatory:
+    img: the image, suitable for displaying with pli.
+
+    Optional:
+    h_fov: horizontal angle of view of the image, in radians.
+    v_fov: vertical field of view of the image.
+    fov:   field-of-view in the largest dimension of the image.
+
+    By default, FOV corresponds to 36mm film behind a 50mm
+    focal-length lense (about 40°) and the pixel scale is assumed to
+    be the same in the horizontal and vertical dimensions. All angles
+    must be specified in radians.
+
+   SEE ALSO: gyoto.matte_paint, .painters.mk_p_mode
+*/
+{
+  if (is_void(img)) error, "img can't be void";
+  d=dimsof(img);
+  nx=d(-1);
+  ny=d(0);
+  if (is_void(fov)) fov=2.*atan(36./100.);
+  if (is_void(phi1)) phi1=0.;
+  if (is_void(lambda0)) lambda0=0.;
+  return closure(save(img, h_fov, v_fov, phi1, lambda0,
+                      painter_eval=gyoto.painters.picture_eval),
+                 painter_eval);
+}
+
 func gyoto_painters_panorama_eval(theta, phi, mask=) {
   use, img, phi_fov, theta_fov;
   dmatte=dimsof(img);
-  nphi=dmatte(3);
-  ntheta=dmatte(4);
+  ndims=dmatte(1);
+  nphi=dmatte(ndims);
+  ntheta=dmatte(ndims+1);
 
   if (is_void(phi_fov)) phi_fov=2.*pi;
   if (is_void(theta_fov)) theta_fov=pi;
 
 
-  // Thats in pixel per radian.  Minus signs because theta increases
+  // That's in pixel per radian.  Minus signs because theta increases
   // from top to bottom and phi from right to left, as seen from
   // inside the sphere.
   phi_scale=-nphi/phi_fov;
@@ -1043,7 +1141,7 @@ func gyoto_painters_panorama_eval(theta, phi, mask=) {
 
   // Below, +0.5 so that for a 4x4 grid, the center is at 2.5, and
   // another +0.5 so that the long() conversion yields the closest
-  // approximation rahter than the bottom truncation.
+  // approximation rather than the bottom truncation.
   i0=nphi*0.5 +1.;
   j0=ntheta*0.5 +1.;
   
@@ -1057,12 +1155,11 @@ func gyoto_painters_panorama_eval(theta, phi, mask=) {
   
   dd=dimsof(phi);
   
-  bg=array(char, 3, dd(2), dd(3));
-  for(k=1; k<=3; ++k) {
-    for (i=1; i<=dd(2); ++i) {
-      for (j=1; j<=dd(3); ++j) {
-        bg(k,i,j)=img(k,x(i, j),y(i, j));
-      }
+  if (ndims==3) bg=array(structof(img), dmatte(2), dd(2), dd(3));
+  if (ndims==2) bg=array(structof(img), dd(2), dd(3));
+  for (i=1; i<=dd(2); ++i) {
+    for (j=1; j<=dd(3); ++j) {
+      bg(..,i,j)=img(..,x(i, j),y(i, j));
     }
   }
 
@@ -1071,11 +1168,11 @@ func gyoto_painters_panorama_eval(theta, phi, mask=) {
 
 
 func gyoto_painters_mk_panorama(img=, phi_fov=, theta_fov=)
-/* DOCUMENT painter = gyoto.painters.mk_picture(img=img)
+/* DOCUMENT painter = gyoto.painters.mk_panorama(img=img)
 
     Make a painter for gyoto.matte_paint(). In this painter, the sky
     is painted using an image. The image should be a 360°x180°
-    panorama rendered in equirectagular projection. If the image does
+    panorama rendered in equirectangular projection. If the image does
     not cover the full celestial sphere, use phi_fov and theta_fov to
     specify the field of view in each direction. img should be an
     array(char, 3, nphi, ntheta).
@@ -1083,9 +1180,6 @@ func gyoto_painters_mk_panorama(img=, phi_fov=, theta_fov=)
    SEE ALSO: gyoto.matte_paint, .painters.mk_p_mode
 */
 {
-  d=dimsof(img);
-  nx=d(3);
-  ny=d(4);
   if (is_void(phi_fov)) phi_fov=2.*pi;
   if (is_void(theta_fov)) theta_fov=pi;
   return closure(save(img, phi_fov, theta_fov,

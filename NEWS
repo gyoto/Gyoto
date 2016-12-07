@@ -6,6 +6,21 @@ NEXT  2016/09/28 API
      Gyoto::loadPlugin(). The subcontractor signature is changed to
      accept a second parameter, which breaks the API.
 
+1.1.1 2016/10/30 BUG
+   * When Gyoto is configured to be installed in another prefix than
+     /usr/local/, look into two additional directories when loading
+     plug-ins: /usr/local/lib/gyoto/<sovers>/ and
+     /usr/local/lib/gyoto/.
+   * The name of the versioned directories for plug-ins (<sovers>
+     above) is now the major version of the library, so users don't
+     need to reinstall there plug-ins when ugrading Gyoto to a
+     binary-compatible release.
+   * --enable-hardening now also enables -fPIE.
+   * Yorick: actually implement `picture' painter for the matte_paint
+     framework. Allow using any two or three-dimensional image or
+     stack of images in the `picture' and `panorama' painters.
+   * Include minimal plug-in example in plugins/null/.
+
 1.1.0 2016/09/12 ABI 4 (5:0:0)
    * New functionality: provide a plug-in for writing new Metrics,
      Astrobjs and Spectra in Python.

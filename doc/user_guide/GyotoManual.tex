@@ -60,7 +60,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated September 28, 2016}
+\Large{Updated December 7, 2016}
 %\today
 
 \vspace{4cm}
@@ -1009,10 +1009,11 @@ argument will be used three times:
 \item the shared library file must be called
   \texttt{libgyoto-\emph{name}.\$suffix} (\texttt{\$suffix} is usually
   \texttt{.so} under Linux, \texttt{.dylib} under Mac OS);
-\item the init function for your plug-in must be called
-  \texttt{\_\_Gyoto\emph{name}Init};
+\item the init function for your plug-in must be called either
+  \texttt{\_\_Gyoto\emph{name}Init} or exactly
+  \texttt{\_\_GyotoPluginInit};
 \item each subcontractor registered by the init function (see below)
-  will be tagged with the plug-in name, so is is later possible to
+  will be tagged with the plug-in name, so it is later possible to
   search for a registered subcontractor by kind name and plugin name.
 \end{itemize}
 
@@ -1037,20 +1038,43 @@ spectra. Other examples can be seen in the \texttt{lib/StdPlug.C} and
 directory.
 
 When building your plug-in, make sure \texttt{MyPlugin.C} ends up
-compiled with\\ \texttt{lib/Minkowski.C} (in this example) into a single
-shared library called\\ \texttt{libgyoto-myplugin.so} (assuming you work
-under Linux), and drop this file somewhere where the linker will find
-it at run-time. The following places are good choices:
+compiled with\\ \texttt{lib/Minkowski.C} (in this example) into a
+single shared library called\\ \texttt{libgyoto-myplugin.so} (assuming
+you work under Linux), and drop this file somewhere where Gyoto
+will find it at run-time. Gyoto will try to ldopen the plug-ins from
+the following locations in order (some variables are defined in
+\texttt{gyoto.pc}, see below):
 \begin{itemize}
-\item where-ever \texttt{libgyoto-stdplug.so} gets installed;
-\item \texttt{/usr/local/lib/};
-\item \texttt{/usr/lib/}.
+\item wherever the run-time linker looks by default, which typically
+  includes:
+  \begin{itemize}
+  \item any directory listed in the \texttt{\$LD\_LIBRARY\_PATH}
+    environment variable;
+  \item \texttt{/usr/local/lib/};
+  \item \texttt{/usr/lib/};
+  \end{itemize}
+\item \texttt{\$\{localpkglibdir\}/\$\{GYOTO\_SOVERS\}/};
+\item \texttt{\$\{localpkglibdir\}/} (typically \texttt{/usr/local/lib/gyoto});
+\item \texttt{\$\{GYOTO\_PLUGDIR\}/}, this is the directory where the
+  standard plug-ins shipped with Gyoto are installed (typically
+  \texttt{\$\{pkglibdir\}/\$\{GYOTO\_SOVERS\}/});
+\item \texttt{\$\{pkglibdir\}/} (typically
+  \texttt{/usr/local/lib/gyoto} or \texttt{/usr/lib/gyoto}).
 \end{itemize}
+Note that \texttt{\$\{localpkglibdir\}} is defined only when it makes
+sense (i.e. when Gyoto is not itself installed under \texttt{/usr/local}).
 
-\GYOTO\ ships a pkg-config file (\texttt{gyoto.pc}) which
-contains useful build-time information such as the install prefix and
-the plug-in suffix. This file gets installed in the standard location,
-by default \texttt{/usr/local/lib/pkgconfig/gyoto.pc}.
+\GYOTO\ ships a pkg-config file (\texttt{gyoto.pc}) which stores
+useful build-time information such as the install prefix and the
+plug-in suffix. This file gets installed in the standard location, by
+default \texttt{/usr/local/lib/pkgconfig/gyoto.pc}.
+
+The Gyoto source code contains several examples of plug-ins. One of
+them is minimalistic and its only purpose is to illustrate how to
+build a plug-in, including an autoconf-based build system that parses
+\texttt{gyoto.pc}. It is a good starting point for writing your own
+plug-in. See the content of the subdirectory \texttt{plugins/null/},
+in particular the \texttt{README} file.
 
 \subsection{Adding a new metric (\Metric)}
 
