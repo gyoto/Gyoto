@@ -3,7 +3,7 @@
 
   <Metric kind = "ChernSimons">
     <Spin> 0. </Spin>
-    <ModifCS> 0.5 </ModifCS>
+    <DzetaCS> 0.5 </DzetaCS>
   </Metric>
 
   <Screen>

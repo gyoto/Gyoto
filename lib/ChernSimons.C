@@ -31,7 +31,7 @@ using namespace std;
 /// Properties
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(ChernSimons, "Chern-Simons 1st order perturbation to KerrBL metric")
-GYOTO_PROPERTY_DOUBLE(ChernSimons, ModifCS, dzetaCS, "Chern-Simons coupling constant")
+GYOTO_PROPERTY_DOUBLE(ChernSimons, DzetaCS, dzetaCS, "Chern-Simons coupling constant")
 GYOTO_PROPERTY_END(ChernSimons, KerrBL::properties)
 
 // accessor
