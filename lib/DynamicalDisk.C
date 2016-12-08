@@ -51,31 +51,112 @@ GYOTO_PROPERTY_END(DynamicalDisk, PatternDiskBB::properties)
 
 DynamicalDisk::DynamicalDisk() :
   PatternDiskBB(),
-  tinit_(0.), dt_(1.)
+  dirname_(NULL),
+  tinit_(0.),
+  dt_(1.),
+  nb_times_(0),
+  emission_array_(NULL),
+  opacity_array_(NULL),
+  velocity_array_(NULL),
+  radius_array_(NULL),
+  dnu_array_(NULL),
+  nu0_array_(NULL),
+  nnu_array_(NULL),
+  dphi_array_(NULL),
+  nphi_array_(NULL),
+  dr_array_(NULL),
+  nr_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk Construction" << endl;
 }
 
 DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   PatternDiskBB(o),
-  tinit_(o.tinit_), dt_(o.dt_)
+  dirname_(NULL),
+  tinit_(o.tinit_),
+  dt_(o.dt_),
+  nb_times_(0),
+  emission_array_(NULL),
+  opacity_array_(NULL),
+  velocity_array_(NULL),
+  radius_array_(NULL),
+  dnu_array_(NULL),
+  nu0_array_(NULL),
+  nnu_array_(NULL),
+  dphi_array_(NULL),
+  nphi_array_(NULL),
+  dr_array_(NULL),
+  nr_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk Copy" << endl;
+#ifdef GYOTO_USE_CFITSIO
+  if (o.dirname_) {
+    dirname_ = new char[strlen(o.dirname_)+1];
+    strcpy(dirname_,o.dirname_);
+  }
+  if (!nb_times_) return;
+  emission_array_ = new double*[nb_times_] ;
+  opacity_array_  = new double*[nb_times_] ;
+  velocity_array_ = new double*[nb_times_] ;
+  radius_array_   = new double*[nb_times_] ;
+  dnu_array_      = new double [nb_times_];
+  nu0_array_      = new double [nb_times_];
+  nnu_array_      = new size_t [nb_times_];
+  nphi_array_     = new size_t [nb_times_];
+  nr_array_       = new size_t [nb_times_];
+  memcpy(dnu_array_,  o.dnu_array_,  nb_times_*sizeof(double));
+  memcpy(nu0_array_,  o.nu0_array_,  nb_times_*sizeof(double));
+  memcpy(nnu_array_,  o.nnu_array_,  nb_times_*sizeof(size_t));
+  memcpy(nnu_array_,  o.nnu_array_,  nb_times_*sizeof(size_t));
+  memcpy(nphi_array_, o.nphi_array_, nb_times_*sizeof(size_t));
+  memcpy(nr_array_,   o.nr_array_,   nb_times_*sizeof(size_t));
+  for (int i=1; i<=nb_times_; i++) {
+    size_t nnu  = nnu_array_ [i-1];
+    size_t nphi = nphi_array_[i-1];
+    size_t nr   = nr_array_  [i-1];
+    size_t nel1=nnu*nphi*nr, nel2=2*nr*nphi;
+    emission_array_[i-1] = new double[nel1];
+    opacity_array_ [i-1] = new double[nel1];
+    velocity_array_[i-1] = new double[nel2];
+    radius_array_  [i-1] = new double[nr  ];
+    memcpy(emission_array_[i-1], o.emission_array_[i-1], nel1*sizeof(double));
+    memcpy(opacity_array_ [i-1], o.opacity_array_ [i-1], nel1*sizeof(double));
+    memcpy(velocity_array_[i-1], o.velocity_array_[i-1], nel2*sizeof(double));
+    memcpy(radius_array_  [i-1], o.radius_array_  [i-1], nr  *sizeof(double));
+  }
+#endif
 }
 DynamicalDisk* DynamicalDisk::clone() const
 { return new DynamicalDisk(*this); }
 
 DynamicalDisk::~DynamicalDisk() {
   GYOTO_DEBUG << "DynamicalDisk Destruction" << endl;
-  delete [] emission_array_;
-  delete [] opacity_array_;
-  delete [] velocity_array_;
-  delete [] radius_array_;
-  delete [] dnu_array_;
-  delete [] nu0_array_;
-  delete [] nnu_array_;
-  delete [] nphi_array_;
-  delete [] nr_array_;
+  for (int i=1; i<=nb_times_; i++) {
+    if (emission_array_) delete [] emission_array_[i-1];
+    if (opacity_array_)  delete [] opacity_array_ [i-1];
+    if (velocity_array_) delete [] velocity_array_[i-1];
+    if (radius_array_)   delete [] radius_array_  [i-1];
+  }
+  if (emission_array_) delete [] emission_array_;
+  if (opacity_array_)  delete [] opacity_array_ ;
+  if (velocity_array_) delete [] velocity_array_;
+  if (radius_array_)   delete [] radius_array_  ;
+  if (dnu_array_)      delete [] dnu_array_;
+  if (nu0_array_)      delete [] nu0_array_;
+  if (nnu_array_)      delete [] nnu_array_;
+  if (nphi_array_)     delete [] nphi_array_;
+  if (nr_array_)       delete [] nr_array_;
+  emission_array_ = NULL;
+  opacity_array_  = NULL;
+  velocity_array_ = NULL;
+  radius_array_   = NULL;
+  dnu_array_      = NULL;
+  nu0_array_      = NULL;
+  nnu_array_      = NULL;
+  nphi_array_     = NULL;
+  nr_array_       = NULL;
+  nb_times_ = 0;
+  if (dirname_) delete dirname_;
 }
 
 double const * DynamicalDisk::getVelocity() const { return PatternDiskBB::getVelocity(); }
@@ -139,9 +220,39 @@ double DynamicalDisk::emission(double nu, double dsem,
   return 0.;
 }
 
-std::string DynamicalDisk::file() const {return dirname_;}
+std::string DynamicalDisk::file() const {return dirname_?dirname_:"";}
 void DynamicalDisk::file(std::string const &fname) {
 #ifdef GYOTO_USE_CFITSIO
+    if (nb_times_) {
+      // first free current arrays, if any
+      for (int i=1; i<=nb_times_; i++) {
+	if (emission_array_) delete [] emission_array_[i-1];
+	if (opacity_array_)  delete [] opacity_array_ [i-1];
+	if (velocity_array_) delete [] velocity_array_[i-1];
+	if (radius_array_)   delete [] radius_array_  [i-1];
+      }
+      if (emission_array_) delete [] emission_array_;
+      if (opacity_array_)  delete [] opacity_array_ ;
+      if (velocity_array_) delete [] velocity_array_;
+      if (radius_array_)   delete [] radius_array_  ;
+      if (dnu_array_)      delete [] dnu_array_;
+      if (nu0_array_)      delete [] nu0_array_;
+      if (nnu_array_)      delete [] nnu_array_;
+      if (nphi_array_)     delete [] nphi_array_;
+      if (nr_array_)       delete [] nr_array_;
+      emission_array_ = NULL;
+      opacity_array_  = NULL;
+      velocity_array_ = NULL;
+      radius_array_   = NULL;
+      dnu_array_      = NULL;
+      nu0_array_      = NULL;
+      nnu_array_      = NULL;
+      nphi_array_     = NULL;
+      nr_array_       = NULL;
+      nb_times_ = 0;
+    }
+
+    if (dirname_) delete dirname_;
     dirname_ = new char[strlen(fname.c_str())+1];
     strcpy(dirname_,fname.c_str());
     DIR *dp;
