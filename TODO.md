@@ -12,7 +12,7 @@ RezzollaZhidenko:        Document and provide example
 DeformedTorus:           Document and provide example
 DynamicalDiskBolometric: Document and provide example
 EquatorialHotspot:       Document and provide example
-InflateStar:             Add
+InflateStar:             Document and provide example
 OscilTorus:              Add
 NumericalMetricLorene: stop inheriting from WIP (ABI-breaking)
 

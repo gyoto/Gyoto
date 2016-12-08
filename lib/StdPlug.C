@@ -29,6 +29,7 @@
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
+#include "GyotoInflateStar.h"
 #include "GyotoTorus.h"
 #include "GyotoThinDisk.h"
 #include "GyotoPageThorneDisk.h"
@@ -66,6 +67,7 @@ extern "C" void __GyotostdplugInit() {
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
   Astrobj::Register("StarTrace", &(Astrobj::Subcontractor<Astrobj::StarTrace>));
   Astrobj::Register("FixedStar", &(Astrobj::Subcontractor<Astrobj::FixedStar>));
+  Astrobj::Register("InflateStar",      &(Astrobj::Subcontractor<Astrobj::InflateStar>));
   Astrobj::Register("Torus",     &(Astrobj::Subcontractor<Astrobj::Torus>));
   Astrobj::Register("ThinDisk",  &(Astrobj::Subcontractor<Astrobj::ThinDisk>));
   Astrobj::Register("PageThorneDisk",

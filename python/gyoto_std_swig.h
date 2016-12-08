@@ -10,6 +10,7 @@
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
+#include "GyotoInflateStar.h"
 #include "GyotoTorus.h"
 #include "GyotoThinDisk.h"
 #include "GyotoPageThorneDisk.h"
