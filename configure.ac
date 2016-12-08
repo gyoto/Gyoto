@@ -67,7 +67,7 @@ AC_SUBST(localpkglibdir)
 #
 AC_ARG_WITH([fenv],
   [AS_HELP_STRING([--without-fenv],
-     [do not use fenv.h (see README.SIGFPE)],)],
+     [do not use fenv.h (see BUGS.md)],)],
    [],
    [with_fenv=auto])
 AS_IF([test "x$with_fenv" != xno],

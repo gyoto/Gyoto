@@ -1576,7 +1576,7 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
-  --without-fenv          do not use fenv.h (see README.SIGFPE)
+  --without-fenv          do not use fenv.h (see BUGS.md)
   --with-size_t=same|distinct|auto
                           consider size_t as the same as or distinct from
                           unsigned long (auto). Should normally be specified

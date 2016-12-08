@@ -75,20 +75,21 @@ The rest of this file details each step.
 
 ## 2- Installing the dependencies
 
+Please refer to [BUGS.md] for known bugs in some versions of the
+following dependencies.
+
 Gyoto requires:
 
-   - a C++ compiler. GCC 4.9 works very well. Several features require
-     the C++11 standard. Clang/LLVM is discouraged because it does not
-     support fenv.h, which sometimes leads to spurious SIFPE in the
-     Yorick plug-in:
-       https://llvm.org/bugs/show_bug.cgi?id=23707
+   - a C++ compiler. GCC 4.9 and above work very well. Several
+     features require the C++11 standard. Clang/LLVM is discouraged,
+     see [BUGS.md].       
    - xercesc-3 (recommended, required for the executable):
        http://xerces.apache.org/xerces-c/
    - cfitsio   (required for the executable and some of the Astrobj):
        http://heasarc.gsfc.nasa.gov/fitsio/
    - libudunits2 (recommended, support for unit conversions):
        http://www.unidata.ucar.edu/software/udunits/
-   - boost >= 1.53 (required, contains the integrators)
+   - boost >= 1.53 (required, contains the integrators). See [BUGS.md].
        http://www.boost.org/
    - an MPI implementation (tested with openmpi, optional). MPI uses
      boost features from boost.mpi, you must use the same version as
