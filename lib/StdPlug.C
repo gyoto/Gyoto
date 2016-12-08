@@ -43,7 +43,9 @@
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
+
 #include "GyotoDeformedTorus.h"
+#include "GyotoEquatorialHotSpot.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -90,6 +92,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::DirectionalDisk>));
   Astrobj::Register("DeformedTorus",
 		    &(Astrobj::Subcontractor<Astrobj::DeformedTorus>));
+  Astrobj::Register("EquatorialHotSpot",
+		    &(Astrobj::Subcontractor<Astrobj::EquatorialHotSpot>));
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));

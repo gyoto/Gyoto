@@ -7,13 +7,13 @@ attend to at their earliest convenience:
 
 All: Add/check doxygen comments in header file and document properties
      in C++ source file
-ChernSimons: Document
-RezzollaZhidenko: Document and provide example
-DeformedTorus: Document and provide example
+ChernSimons:             Document
+RezzollaZhidenko:        Document and provide example
+DeformedTorus:           Document and provide example
 DynamicalDiskBolometric: Document and provide example
-EquatorialHotspot: Add
-InflateStar: Add
-OscilTorus: Add
+EquatorialHotspot:       Document and provide example
+InflateStar:             Add
+OscilTorus:              Add
 NumericalMetricLorene: stop inheriting from WIP (ABI-breaking)
 
 ## libgyoto:

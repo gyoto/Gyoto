@@ -53,6 +53,7 @@
 #include<GyotoFixedStar.h>
 #include<GyotoStar.h>
 #include<GyotoDeformedTorus.h>
+#include<GyotoEquatorialHotSpot.h>
 
 /**
  * \mainpage Gyoto
