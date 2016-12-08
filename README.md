@@ -2,10 +2,10 @@
 
 ## What Gyoto is
 
-Gyoto aims at providing a framework for computing orbits and
-ray-traced images in General relativity. It consists in a library
-(libgyoto), utility programs, and a plug-in for the Yorick programing
-language.
+[Gyoto](http://gyoto.obspm.fr/) aims at providing a framework for
+computing orbits and ray-traced images in General relativity. It
+consists in a library (libgyoto), utility programs, and a plug-in for
+the Yorick programing language.
 
 We request that use of Gyoto in scientific publications be properly
 acknowledged. Please cite:
