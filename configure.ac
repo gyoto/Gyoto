@@ -14,7 +14,7 @@ AC_INIT([Gyoto], [1.1.1], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
