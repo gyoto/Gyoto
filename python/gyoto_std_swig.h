@@ -22,6 +22,7 @@
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
+#include "GyotoDeformedTorus.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"

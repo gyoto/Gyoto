@@ -52,6 +52,7 @@
 #include<GyotoDisk3D.h>
 #include<GyotoFixedStar.h>
 #include<GyotoStar.h>
+#include<GyotoDeformedTorus.h>
 
 /**
  * \mainpage Gyoto

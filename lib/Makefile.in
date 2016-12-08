@@ -165,8 +165,8 @@ am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
 	FixedStar.lo Torus.lo PowerLawSpectrum.lo BlackBodySpectrum.lo \
 	ThermalBremsstrahlungSpectrum.lo ComplexAstrobj.lo \
 	UniformSphere.lo PageThorneDisk.lo ThinDiskPL.lo \
-	PolishDoughnut.lo ThinDiskIronLine.lo StdPlug.lo \
-	$(am__objects_1)
+	PolishDoughnut.lo ThinDiskIronLine.lo DeformedTorus.lo \
+	StdPlug.lo $(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -477,7 +477,8 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	FixedStar.C Torus.C PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
-	ThinDiskIronLine.C StdPlug.C $(cfitsio_stdplug_sources)
+	ThinDiskIronLine.C DeformedTorus.C StdPlug.C \
+	$(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
@@ -622,6 +623,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ComplexAstrobj.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ComplexSpectrometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Converters.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DeformedTorus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DirectionalDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Disk3D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicalDisk.Plo@am__quote@

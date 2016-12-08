@@ -6,7 +6,7 @@ attend to at their earliest convenience:
 ## stdplug:
 ChernSimons: Document
 RezzollaZhidenko: Document and provide example
-DeformedTorus: Add
+DeformedTorus: Document and provide example
 DynamicalDiskBolometric: Add
 EquatorialHotspot: Add
 InflateStar: Add

@@ -48,6 +48,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, DynamicalDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Disk3D)
 GyotoSmPtrTypeMapClassDerived(Astrobj, DynamicalDisk3D)
 GyotoSmPtrTypeMapClassDerived(Astrobj, DirectionalDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, DeformedTorus)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -93,6 +94,8 @@ GyotoSmPtrClassDerived(Astrobj, DynamicalDisk)
 GyotoSmPtrClassDerived(Astrobj, Disk3D)
 GyotoSmPtrClassDerived(Astrobj, DynamicalDisk3D)
 GyotoSmPtrClassDerived(Astrobj, DirectionalDisk)
+GyotoSmPtrClassDerived(Astrobj, DeformedTorus)
+
 
 GyotoSmPtrClassDerived(Metric, KerrBL)
 GyotoSmPtrClassDerived(Metric, KerrKS)
