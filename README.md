@@ -1,6 +1,7 @@
-                             ***  GYOTO  ***
+# GYOTO: the General relativitY Orbit Tracer of Observatoire de Paris
 
-       General relativitY Orbit Tracer of Observatoire de Paris
+For installation instructions, refer to
+[INSTALL.Gyoto.md](INSTALL.GYOTO.md).
 
 Gyoto aims at providing a framework for computing orbits and
 ray-traced images in General relativity. It consists in a library
@@ -35,8 +36,9 @@ well as in the AUTHORS file in the package.
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the [GNU General Public
+    License](COPYING) along with Gyoto.  If not, see
+    <http://www.gnu.org/licenses/>.
 
 File python/doxyfile.py is Copyright 2008 Prabhu Ramachandran under
 BSD style license. File python/numpy.i is Copyright (c) 2005-2015,
@@ -55,10 +57,7 @@ software. See http://heasarc.gsfc.nasa.gov/docs/heasarc/fits.html.
 
 Custom metrics and astronomical objects can be added fairly easily by
 implementing them as a Gyoto plug-in. This, of course, requires
-knowledge of the C++ language. We don't provide yet a complete guide,
-but look at the standard plug-in lib/StdPlug.C which includes the Kerr
-metric and the standard objects. The Lorene (numerical) metrics are
-also implemented as a plug-in, see lib/LorenePlug.C and
-lib/Makefile.lorene.
-
-                        -- Thibaut Paumard, Tue Aug 30 2011.
+knowledge of the C++ language. The [user
+manual](http://gyoto.obspm.fr/GyotoManual.pdf) contains detailed
+instructions.
+                        -- Thibaut Paumard, Thu Dec 08 2016.
