@@ -159,7 +159,8 @@ libgyoto_lorene_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 @HAVE_LORENE_TRUE@am_libgyoto_lorene_la_rpath = -rpath $(soverdir)
 libgyoto_stdplug_la_LIBADD =
 am__objects_1 = PatternDisk.lo PatternDiskBB.lo DynamicalDisk.lo \
-	Disk3D.lo DynamicalDisk3D.lo DirectionalDisk.lo
+	DynamicalDiskBolometric.lo Disk3D.lo DynamicalDisk3D.lo \
+	DirectionalDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = KerrBL.lo KerrKS.lo Minkowski.lo \
 	ChernSimons.lo RezzollaZhidenko.lo Star.lo StarTrace.lo \
 	FixedStar.lo Torus.lo PowerLawSpectrum.lo BlackBodySpectrum.lo \
@@ -481,8 +482,9 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	$(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
-cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
-	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
+cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
+	DynamicalDisk.C DynamicalDiskBolometric.C \
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -628,6 +630,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Disk3D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicalDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicalDisk3D.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/DynamicalDiskBolometric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Factory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FixedStar.Plo@am__quote@

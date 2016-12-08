@@ -19,6 +19,7 @@
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
 #include "GyotoDynamicalDisk.h"
+#include "GyotoDynamicalDiskBolometric.h"
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
