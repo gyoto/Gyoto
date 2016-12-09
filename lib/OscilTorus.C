@@ -30,7 +30,7 @@ GYOTO_PROPERTY_DOUBLE(OscilTorus,PolyIndex, polyIndex,
 GYOTO_PROPERTY_DOUBLE(OscilTorus,CentralDensity, centralDensity,
 		      "Central density.")
 GYOTO_PROPERTY_STRING(OscilTorus,PerturbKind, perturbKind,
-		      "One of: Radial Vertical X BreathingMinus BreathingPlus")
+		      "One of: Radial Vertical X Plus Breathing")
 GYOTO_PROPERTY_DOUBLE(OscilTorus, PerturbIntens, perturbIntens,
 		      "Perturbations intensity.")
 GYOTO_PROPERTY_FILENAME(OscilTorus, EmittingArea, emittingArea,
@@ -47,11 +47,11 @@ GYOTO_PROPERTY_ACCESSORS(OscilTorus, double, central_density_, centralDensity)
 GYOTO_PROPERTY_ACCESSORS(OscilTorus, double, perturb_intens_, perturbIntens)
 
 void OscilTorus::perturbKind(std::string const &k) {
-  if      (k == "Radial")         perturb_kind_ = Radial;
-  else if (k == "Vertical")       perturb_kind_ = Vertical;
-  else if (k == "X")              perturb_kind_ = X;
-  else if (k == "BreathingMinus") perturb_kind_ = BreathingMinus;
-  else if (k == "BreathingPlus")  perturb_kind_ = BreathingPlus;
+  if      (k == "Radial")    perturb_kind_ = Radial;
+  else if (k == "Vertical")  perturb_kind_ = Vertical;
+  else if (k == "X")         perturb_kind_ = X;
+  else if (k == "Plus")      perturb_kind_ = Plus;
+  else if (k == "Breathing") perturb_kind_ = Breathing;
   else {
     string errmsg="unknown perturbation kind: '";
     errmsg += k + "'";
@@ -61,11 +61,11 @@ void OscilTorus::perturbKind(std::string const &k) {
 }
 std::string OscilTorus::perturbKind() const {
   switch (perturb_kind_) {
-  case Radial:         return "Radial";
-  case Vertical:       return "Vertical";
-  case X:              return "X";
-  case BreathingMinus: return "BreathingMinus";
-  case BreathingPlus:  return "BreathingPlus";
+  case Radial:    return "Radial";
+  case Vertical:  return "Vertical";
+  case X:         return "X";
+  case Plus:      return "Plus";
+  case Breathing: return "Breathing";
   }
 }
 
@@ -178,31 +178,19 @@ double OscilTorus::operator()(double const pos[4]) {
   //  cout << "xb,yb= " << x_bar << " " << y_bar << endl;
   double uu=0.; // perturbation-dependent factor of surface function
   switch (perturb_kind_) {
-  case Radial: // Radial oscillation
-    {
-      uu = x_bar;
-      break;
-    }
-  case Vertical: // Vertical oscillation
-    {
-      uu = y_bar;
-      break;
-    }
-  case X: // X mode
-    {
-      uu = x_bar*y_bar;
-      break;
-    }
-  case BreathingMinus: // breathing - mode
-    {
-      uu = 1+w1_*x_bar*x_bar+w2_*y_bar*y_bar;
-      break;
-    }
-  case BreathingPlus: // breathing + mode
-    {
-      uu = 1+w1_*x_bar*x_bar+w2_*y_bar*y_bar;
-      break;
-    }
+  case Radial:
+    uu = x_bar;
+    break;
+  case Vertical:
+    uu = y_bar;
+    break;
+  case X:
+    uu = x_bar*y_bar;
+    break;
+  case Plus:
+  case Breathing:
+    uu = 1+w1_*x_bar*x_bar+w2_*y_bar*y_bar;
+    break;
   default:
     throwError("In OscilTorus.C::operator():"
 	       "Unrecognized perturbation kind");
@@ -239,34 +227,21 @@ void OscilTorus::getVelocity(double const pos[4], double vel[4])
 
   double vr=0., vth=0.;
   switch (perturb_kind_) {
-  case Radial: // Radial oscil
-    {
-      vr = 1.;
+  case Radial:
+    vr = 1.;
     break;
-    }
-  case Vertical: // Vertical oscil
-    {
-      vth = 1.;
+  case Vertical:
+    vth = 1.;
     break;
-    }
-  case X: // X mode
-    {
-      vr = y_bar;
-      vth = x_bar;
-      break;
-    }
-  case BreathingMinus: // breathing - mode
-    {
-      vr = 2.*w1_*x_bar;
-      vth = 2.*w2_*y_bar;
-      break;
-    }
-  case BreathingPlus: // breathing + mode
-    {
-      vr = 2.*w1_*x_bar;
-      vth = 2.*w2_*y_bar;
-      break;
-    }
+  case X:
+    vr = y_bar;
+    vth = x_bar;
+    break;
+  case Plus:
+  case Breathing:
+    vr = 2.*w1_*x_bar;
+    vth = 2.*w2_*y_bar;
+    break;
   default:
     throwError("In OscilTorus.C::operator():"
 	       "Unrecognized perturbation kind");
@@ -403,7 +378,7 @@ void OscilTorus::updateCachedValues() {
       alpha_ = alpha0*sqrt(4*(polyindex_+1)*(polyindex_+2)*omr2_*omth2_);
       break;
     }
-  case BreathingMinus: // breathing - mode
+  case Plus: // + mode
     {
       double sigmaminus2 = (
 			    (2.*polyindex_+1)*(omr2_+omth2_) 
@@ -428,7 +403,7 @@ void OscilTorus::updateCachedValues() {
 	     );
       break;
     }
-  case BreathingPlus: // breathing + mode
+  case Breathing: // breathing mode
     {
       double sigmaplus2 = (
 			   (2.*polyindex_+1)*(omr2_+omth2_) 

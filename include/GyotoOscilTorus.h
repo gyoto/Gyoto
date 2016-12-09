@@ -48,7 +48,7 @@ class Gyoto::Astrobj::OscilTorus
   double polycst_; ///< Polytropic constant
   double polyindex_; ///< Polytropic index
   double central_density_; ///< Central density
-  enum perturb_t {Radial=1, Vertical=2, X=3, BreathingMinus=4, BreathingPlus=5};
+  enum perturb_t {Radial=1, Vertical=2, X=3, Plus=4, Breathing=5};
   perturb_t perturb_kind_;
   std::string emitting_area_; ///< Only for mode=0, file containing time series of cross section area
   double perturb_intens_; ///< Perturbation intensity

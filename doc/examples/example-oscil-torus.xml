@@ -40,8 +40,8 @@
     t2 area2
     ...
     tN areaN
-    <PerturbKind>BreathingPlus</PerturbKind>
-    Perturbation kind, one of Radial Vertical X BreathingMinus BreathingPlus
+    <PerturbKind>Breathing</PerturbKind>
+    Perturbation kind, one of Radial Vertical X Plus Breathing
 
     <PerturbIntens>0.15</PerturbIntens>
     Perturbation strength
