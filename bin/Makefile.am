@@ -52,7 +52,8 @@ CHECK_RESULTS = \
         example-page-thorne-disk-KS.fits \
         example-page-thorne-disk-BL-with-basis.fits \
         example-torus.fits \
-        example-torus-KS.fits
+        example-torus-KS.fits \
+	example-oscil-torus.fits
 if HAVE_UDUNITS
 CHECK_RESULTS += \
         example-fixed-star-KS.fits \

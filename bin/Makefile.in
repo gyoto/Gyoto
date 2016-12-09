@@ -451,7 +451,7 @@ CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
 	example-moving-star-CS.fits example-page-thorne-disk-BL.fits \
 	example-page-thorne-disk-KS.fits \
 	example-page-thorne-disk-BL-with-basis.fits example-torus.fits \
-	example-torus-KS.fits $(am__append_7)
+	example-torus-KS.fits example-oscil-torus.fits $(am__append_7)
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
 CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)

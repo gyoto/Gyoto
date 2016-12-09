@@ -33,7 +33,8 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C \
-	Star.C StarTrace.C FixedStar.C InflateStar.C Torus.C \
+	Star.C StarTrace.C FixedStar.C InflateStar.C \
+	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \

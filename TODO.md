@@ -13,7 +13,7 @@ DeformedTorus:           Document and provide example
 DynamicalDiskBolometric: Document and provide example
 EquatorialHotspot:       Document and provide example
 InflateStar:             Document and provide example
-OscilTorus:              Add
+OscilTorus:              Document
 NumericalMetricLorene: stop inheriting from WIP (ABI-breaking)
 
 ## libgyoto:
