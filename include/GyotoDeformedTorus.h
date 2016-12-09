@@ -36,12 +36,19 @@ class Gyoto::Astrobj::DeformedTorus
  private:
   SmartPointer<Gyoto::Metric::KerrBL> gg_;
   SmartPointer<Spectrum::Generic> spectrum_;
-  double r_center_;
-  int mode_;
+  double c_;
+  unsigned long mode_;
   double param_beta_;
   double param_beta_st_;
   double param_eta_;
-  int perturb_kind_;
+  enum perturb_t {RadialTranslation=1,
+		  VerticalTranslation=2,
+		  Rotation=3,
+		  Expansion=4,
+		  RadialShear=5,
+		  VerticalShear=6,
+		  PureShear=7};
+  perturb_t perturb_kind_;
  public:
   GYOTO_OBJECT;
   DeformedTorus();
@@ -51,12 +58,12 @@ class Gyoto::Astrobj::DeformedTorus
 
   // Standard accessors
   GYOTO_OBJECT_ACCESSORS(SmartPointer<Spectrum::Generic>, spectrum);
-  GYOTO_OBJECT_ACCESSORS(double, Rcenter);
-  GYOTO_OBJECT_ACCESSORS(double, ParamBeta);
-  GYOTO_OBJECT_ACCESSORS(double, ParamBetaSt);
-  GYOTO_OBJECT_ACCESSORS(double, ParamEta);
-  GYOTO_OBJECT_ACCESSORS(long, Mode);
-  GYOTO_OBJECT_ACCESSORS(long, PerturbKind);
+  GYOTO_OBJECT_ACCESSORS(double, largeRadius);
+  GYOTO_OBJECT_ACCESSORS(double, beta);
+  GYOTO_OBJECT_ACCESSORS(double, betaSt);
+  GYOTO_OBJECT_ACCESSORS(double, eta);
+  GYOTO_OBJECT_ACCESSORS(unsigned long, mode);
+  GYOTO_OBJECT_ACCESSORS_STRING(perturbKind);
 
   using Generic::metric;
   virtual void metric(Gyoto::SmartPointer<Gyoto::Metric::Generic>);

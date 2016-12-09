@@ -18,28 +18,52 @@ using namespace std;
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(DeformedTorus, "Slender torus subject to simple time-periodic deformations")
 GYOTO_PROPERTY_SPECTRUM(DeformedTorus, Spectrum, spectrum)
-GYOTO_PROPERTY_DOUBLE(DeformedTorus, Rcenter, Rcenter)
-GYOTO_PROPERTY_DOUBLE(DeformedTorus, ParamBeta, ParamBeta)
-GYOTO_PROPERTY_DOUBLE(DeformedTorus, ParamBetaSt, ParamBetaSt)
-GYOTO_PROPERTY_DOUBLE(DeformedTorus, ParamEta, ParamEta)
-GYOTO_PROPERTY_LONG(DeformedTorus, Mode, Mode)
-GYOTO_PROPERTY_LONG(DeformedTorus, PerturbKind, PerturbKind)
+GYOTO_PROPERTY_DOUBLE(DeformedTorus, LargeRadius, largeRadius)
+GYOTO_PROPERTY_DOUBLE(DeformedTorus, Beta, beta)
+GYOTO_PROPERTY_DOUBLE(DeformedTorus, BetaSt, betaSt)
+GYOTO_PROPERTY_DOUBLE(DeformedTorus, Eta, eta)
+GYOTO_PROPERTY_UNSIGNED_LONG(DeformedTorus, Mode, mode)
+GYOTO_PROPERTY_STRING(DeformedTorus, PerturbKind, perturbKind)
 GYOTO_PROPERTY_END(DeformedTorus, Standard::properties)
 
 // Accessors
 GYOTO_PROPERTY_ACCESSORS(DeformedTorus, SmartPointer<Spectrum::Generic>,
 			 spectrum_, spectrum)
-GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, r_center_, Rcenter)
-void DeformedTorus::ParamBeta(double beta){
-  if (beta>=1.) throwError("In DeformedTorus.C: beta should be << 1");
-  param_beta_=beta;
-}
-double DeformedTorus::ParamBeta() const {return param_beta_;}
+GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, c_, largeRadius)
+GYOTO_PROPERTY_ACCESSORS_SPECIAL(DeformedTorus, double, param_beta_, beta,
+				 if (param_beta_>=1.) throwError("In DeformedTorus.C: beta should be << 1"); , )
 GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double,
-			 param_beta_st_, ParamBetaSt)
-GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, param_eta_, ParamEta)
-GYOTO_PROPERTY_ACCESSORS(DeformedTorus, long, mode_, Mode)
-GYOTO_PROPERTY_ACCESSORS(DeformedTorus, long, perturb_kind_, PerturbKind)
+			 param_beta_st_, betaSt)
+GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, param_eta_, eta)
+GYOTO_PROPERTY_ACCESSORS(DeformedTorus, unsigned long, mode_, mode)
+
+void DeformedTorus::perturbKind(std::string const &k) {
+  if      (k == "RadialTranslation")   perturb_kind_ = RadialTranslation;
+  else if (k == "VerticalTranslation") perturb_kind_ = VerticalTranslation;
+  else if (k == "Rotation")            perturb_kind_ = Rotation;
+  else if (k == "Expansion")           perturb_kind_ = Expansion;
+  else if (k == "RadialShear")         perturb_kind_ = RadialShear;
+  else if (k == "VerticalShear")       perturb_kind_ = VerticalShear;
+  else if (k == "PureShear")           perturb_kind_ = PureShear;
+  else {
+    string errmsg="unknown perturbation kind: '";
+    errmsg += k + "'";
+    throwError(errmsg.c_str());
+  }
+}
+std::string DeformedTorus::perturbKind() const {
+  switch (perturb_kind_) {
+  case RadialTranslation:   return "RadialTranslation";
+  case VerticalTranslation: return "VerticalTranslation";
+  case Rotation:            return "Rotation";
+  case Expansion:           return "Expansion";
+  case RadialShear:         return "RadialShear";
+  case VerticalShear:       return "VerticalShear";
+  case PureShear:           return "PureShear";
+  default: throwError("Unknown perturbation kind");
+  }
+  return "";
+}
 
 ///
 
@@ -47,12 +71,12 @@ Gyoto::Astrobj::DeformedTorus::DeformedTorus()
   : Standard("DeformedTorus"),
     gg_(NULL),
     spectrum_(NULL),
-    r_center_(10.8),
+    c_(10.8),
     mode_(0),
     param_beta_(0.01),
     param_beta_st_(0.01),
     param_eta_(0.01),
-    perturb_kind_(1)
+    perturb_kind_(RadialTranslation)
 {
   GYOTO_DEBUG << "Building DeformedTorus" << endl;
 }
@@ -61,7 +85,7 @@ Gyoto::Astrobj::DeformedTorus::DeformedTorus(const DeformedTorus &orig)
   : Standard(orig),
     gg_(NULL),
     spectrum_(NULL),
-    r_center_(orig.r_center_),
+    c_(orig.c_),
     mode_(orig.mode_),
     param_beta_(orig.param_beta_),
     param_beta_st_(orig.param_beta_st_),
@@ -71,9 +95,8 @@ Gyoto::Astrobj::DeformedTorus::DeformedTorus(const DeformedTorus &orig)
   if (orig.gg_()) {
     gg_=orig.gg_->clone();
     Standard::gg_ = gg_;
-    if (orig.spectrum_()) 
-      spectrum_ = orig.spectrum_->clone();
   }
+  if (orig.spectrum_()) spectrum_ = orig.spectrum_->clone();
   GYOTO_DEBUG << "Copying DeformedTorus" << endl;
 }
 DeformedTorus * DeformedTorus::clone() const { return new DeformedTorus(*this); }
@@ -86,20 +109,20 @@ Gyoto::Astrobj::DeformedTorus::~DeformedTorus()
 double DeformedTorus::operator()(double const pos[4]) {
 
   // needed: operator()() < 0. <=> inside torus
-  double posc[4]={0.,r_center_,M_PI/2.,0.};//don't care about t and phi
+  double posc[4]={0.,c_,M_PI/2.,0.};//don't care about t and phi
   double g_rr=gg_->gmunu(posc,1,1);// covar components
   double g_thth=gg_->gmunu(posc,2,2); 
   double aa=gg_->spin();
-  double Omegac=1./(pow(r_center_,1.5)+aa);
-  double omr2=1.-6./r_center_+8.*aa*pow(r_center_,-1.5)
-    -3.*aa*aa/(r_center_*r_center_);
-  double omth2=1.-4*aa*pow(r_center_,-1.5)
-    +3.*aa*aa/(r_center_*r_center_);
+  double Omegac=1./(pow(c_,1.5)+aa);
+  double omr2=1.-6./c_+8.*aa*pow(c_,-1.5)
+    -3.*aa*aa/(c_*c_);
+  double omth2=1.-4*aa*pow(c_,-1.5)
+    +3.*aa*aa/(c_*c_);
   double x_bar=1./param_beta_
-    *sqrt(g_rr)*(pos[1]-r_center_)/r_center_;
+    *sqrt(g_rr)*(pos[1]-c_)/c_;
   double xb2=x_bar*x_bar;
   double y_bar=1./param_beta_
-    *sqrt(g_thth)*(M_PI/2.-pos[2])/r_center_;
+    *sqrt(g_thth)*(M_PI/2.-pos[2])/c_;
   double yb2=y_bar*y_bar;
 
   double a1=0., a2=0., a3=0.,
@@ -152,13 +175,13 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
   double aa=gg_->spin();
 
   // Computations at the torus center for Omegac, lc
-  double posc[4]={0.,r_center_,M_PI/2.,0.};//don't care about t and phi
+  double posc[4]={0.,c_,M_PI/2.,0.};//don't care about t and phi
   double g_tt=gg_->gmunu(posc,0,0);// covar components
   double g_rr=gg_->gmunu(posc,1,1);
   double g_thth=gg_->gmunu(posc,2,2);
   double g_tp=gg_->gmunu(posc,0,3); 
   double g_pp=gg_->gmunu(posc,3,3);
-  double Omegac=1./(pow(r_center_,1.5)+aa); // Kepler rotation vel
+  double Omegac=1./(pow(c_,1.5)+aa); // Kepler rotation vel
   double lc=-(Omegac*g_pp+g_tp)/(Omegac*g_tp+g_tt); // Rescaled ang mom
 
   // Now computations at the torus surface for gmunu_up coef
@@ -170,29 +193,29 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
 
   // xbar and ybar unperturbed
   double xbar=1./param_beta_
-    *sqrt(g_rr)*(pos[1]-r_center_)/r_center_;
+    *sqrt(g_rr)*(pos[1]-c_)/c_;
   double ybar=1./param_beta_
-    *sqrt(g_thth)*(M_PI/2.-pos[2])/r_center_;
+    *sqrt(g_thth)*(M_PI/2.-pos[2])/c_;
 
   // dr/dt and dtheta/dt depending on transformation
 
   double drdt=0., dthdt=0.;
   switch (perturb_kind_) {
   case 1: // Radial translation
-    drdt=r_center_/sqrt(g_rr)*param_beta_*param_eta_
+    drdt=c_/sqrt(g_rr)*param_beta_*param_eta_
       *Omegac*cos(Omegac*pos[0]);
     break;
   case 2: // Vertical translation
-    dthdt=-r_center_/sqrt(g_thth)*param_beta_*param_eta_
+    dthdt=-c_/sqrt(g_thth)*param_beta_*param_eta_
       *Omegac*cos(Omegac*pos[0]);
     break;
   case 3: // Rotation
     {
       double x0 = xbar*cos(Omegac*pos[0])-ybar*sin(Omegac*pos[0]),
 	y0 = xbar*sin(Omegac*pos[0])+ybar*cos(Omegac*pos[0]);
-      drdt = r_center_/sqrt(g_rr)*param_beta_*Omegac
+      drdt = c_/sqrt(g_rr)*param_beta_*Omegac
 	*(-sin(Omegac*pos[0])*x0+cos(Omegac*pos[0])*y0);
-      dthdt = -r_center_/sqrt(g_thth)*param_beta_*Omegac
+      dthdt = -c_/sqrt(g_thth)*param_beta_*Omegac
 	*(-cos(Omegac*pos[0])*x0-sin(Omegac*pos[0])*y0);
     }
     break;
@@ -200,23 +223,23 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
     {
       double x0 = xbar/(1.+param_eta_*sin(Omegac*pos[0])),
 	y0 = ybar/(1.+param_eta_*sin(Omegac*pos[0]));
-      drdt = r_center_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
+      drdt = c_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
 	*cos(Omegac*pos[0])*x0;
-      dthdt = -r_center_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
+      dthdt = -c_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
 	*cos(Omegac*pos[0])*y0;
     }
     break;
   case 5: // Simple shear radial
     {
       double y0 = ybar;
-      drdt = r_center_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
+      drdt = c_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
 	*cos(Omegac*pos[0])*y0;
     }
     break;
   case 6: // Simple shear vertical
     {
       double x0 = xbar;
-      dthdt = -r_center_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
+      dthdt = -c_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
 	*cos(Omegac*pos[0])*x0;
     }
     break;
@@ -224,9 +247,9 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
     {
       double x0 = xbar/(1.+param_eta_*sin(Omegac*pos[0])),
 	y0 = ybar*(1.+param_eta_*sin(Omegac*pos[0]));
-      drdt = r_center_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
+      drdt = c_/sqrt(g_rr)*param_beta_*Omegac*param_eta_
 	*cos(Omegac*pos[0])*x0;
-      dthdt = -r_center_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
+      dthdt = -c_/sqrt(g_thth)*param_beta_*Omegac*param_eta_
 	*(
 	  -cos(Omegac*pos[0])
 	  /( (1.+param_eta_*sin(Omegac*pos[0]))*

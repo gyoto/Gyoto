@@ -12,5 +12,5 @@ class TestDeformedTorus(unittest.TestCase):
         sp=gyoto_std.BlackBody()
         ao.spectrum(sp)
         r=4.
-        ao.Rcenter(r)
-        self.assertTrue((ao.Rcenter() == r))
+        ao.largeRadius(r)
+        self.assertTrue((ao.largeRadius() == r))
