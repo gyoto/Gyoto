@@ -1,6 +1,224 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon, 31 Oct 2016 10:08:00 +0100
+Date:   Mon Oct 31 11:08:12 2016 +0100
+
+    Releasing 1.1.2
+
+commit b0413450c29b5a2fca5af1ac30c30954e23f4da8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 9 19:18:24 2016 +0100
+
+    Rename the breathing modes in OscilTorus
+    
+    BreathingMinus -> Plus
+    BreathingPlus -> Breathing
+
+commit eb117650ade102b30eae37f62f6669c366c12776
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 9 18:47:52 2016 +0100
+
+    Correct style in Deformed Torus
+    
+    Use an enum and strin property for perturb_kind_, rename r_center_ to
+    c_ and Rcenter to LargeRadius like the other torii, rename Param*
+    properties to just *.
+
+commit 9d68e18c39fb952b932390f35445ecf6d1f53d9c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 9 16:43:25 2016 +0100
+
+    New Astrobj: OscilTorus
+
+commit 4811d8dc0bcba755415ebdf03040177c2b2b36cf
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Dec 9 16:39:51 2016 +0100
+
+    New convenience macros in GyotoProperty.h
+    
+    GYOTO_PROPERTY_ACCESSORS_SPECIAL
+    GYOTO_PROPERTY_ACCESSORS_GEOMETRICAL_SPECIAL
+    GYOTO_PROPERTY_ACCESSORS_UNIT
+
+commit a187bcf6aa168acfcd1bf9c965726624668f79f6
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 16:59:25 2016 +0100
+
+    New Astrobj: InflateStar
+
+commit e349992c3d98a2b04563a655195760b3a55eca06
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 15:28:06 2016 +0100
+
+    New Astrobj: EquatorialHotSpot
+
+commit 031d97346f3e53780b59d0d3e442096749e6a1f2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 15:17:17 2016 +0100
+
+    Fix memory management in DynamicalDisk
+    
+    Actually free all memory in the destructor and before reading new
+    files; initialize pointers to NULL and only delete them when they are
+    not NULL.
+
+commit ed3f2912cb667043bce77208b0d2e5d12053a04d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 13:05:33 2016 +0100
+
+    New Astrobj: DynamicalDiskBolometric
+
+commit b350fd5f5551aef5262e05c2ba1eab3f8d81505a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 12:10:35 2016 +0100
+
+    Rename property ModifCS to DzetaCS in Metric::ChernSimons
+
+commit 65af14b090e3f639a70bd8749894f1a25068856f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 12:05:55 2016 +0100
+
+    New Astrobj: DeformedTorus
+
+commit 925fe15b6d6c2ab0e5d4bf66d91a31b60c9a01d3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 11:34:37 2016 +0100
+
+    Use AM_INIT_AUTOMAKE([foreign]) in configure.ac
+    
+    This way the fact that README is called README.md does not trigger an
+    error.
+
+commit ee0010f3a53d1b7d51a49ba1f4d6f3d618fa79ea
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 11:19:35 2016 +0100
+
+    Add link to homepage in README.md
+
+commit f4b30574e12948917f8cab75b3804f2fd8eb79fb
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 11:16:28 2016 +0100
+
+    fixup README.md
+
+commit ca95a5d3a4c96c4033b621cb18ade42d74faee99
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 11:12:24 2016 +0100
+
+    Update README and rename it README.md
+    
+    Also fix broken links to BUGS.md in INSTALL.Gyoto.md
+
+commit 59f31b293055bef1716a4867f91daf32106e698a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 09:51:54 2016 +0100
+
+    Enhance user documentation about known bugs and to-do list
+
+commit 78818a4c1101a65f18a9a596823442501216e09e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Dec 8 08:54:32 2016 +0100
+
+    NumericalMetricLorene is mature
+    
+    Use WIP("") in constructor to not issue the warning. With the next ABI
+    change, we should stop inherinting from WIP entirely.
+
+commit 561872afd56cfd5bd84bd3f7f5552193649bbd25
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 7 22:27:05 2016 +0100
+
+    Allow loading plug-in from path
+    
+    e.g. gyoto -p./libgyoto-foo.so -l
+
+commit 5c9fdfdeca8cfcd804a85e9199cbe2a595024361
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 7 21:49:36 2016 +0100
+
+    Issue a useful message when a plug-in cannot be loaded
+    
+    Gyoto tries to load plug-ins from several places. When a plug-in could
+    not be loaded, Gyoto used to issue the error message of only the last
+    attempt, which was often "no such file or directory". With the patch,
+    the error messages of all the attempts are displayed.
+
+commit 0c18e20e0a5978f3a9468d106b34172206d7c8d0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 7 21:29:31 2016 +0100
+
+    New Metric: RezzollaZhidenko
+
+commit fe84646be29f65cdca27a1bf808df3935b8f527f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Dec 7 18:39:25 2016 +0100
+
+    New Metric: ChernSimons
+
+commit 9c37464e7c317a0edd685e8bd80588a910516be0
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 6 22:43:19 2016 +0100
+
+    Support colon syntax for mpirun
+    
+    Support spawning gyoto-mpi-worker directly from mpirun on any MPI
+    implementation (that supports the MIMD model), for any Gyoto interface
+    (gyoto, Python, Yorick...).
+    
+    Just start the processes with something like:
+    
+      mpirun -np 1 <manager> : -np 8 gyoto-mpi-worker.<version>
+    
+    In the <manager> process, use Scenery::mpiSpawn(-1) to use the
+    processes available in the WORLD communicator instead of spawning new
+    ones.
+    
+    'gyoto' still needs to know that it has to use MPI parallelisation, so
+    use of the -P option is still mandatory (except under Open MPI):
+    
+      mpirun -np 1 gyoto -P1 <parameters> : -np 8 gyoto-mpi-worker.<version>
+
+commit e46518508a1ffbd62f5d7bf4a16025b3929c32fd
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Dec 6 18:01:57 2016 +0100
+
+    gyoto: Support -np option in Open MPI
+    
+    MPI support in Gyoto has been implemented using the singleton
+    approach, where a single processess exists at start-up and spawns its
+    worker as needed using MPI_Comm_spawn().
+    
+    With this commit, the gyoto command line tool also supports the more
+    traditional approach where N processes are started directly by
+    mpirun. This is only for the gyoto command-line tool (so, not for the
+    Python or Yorick interfaces), and only for Open MPI (not e.g. MPICH).
+
+commit eeaf74670926be5a2e2e2e4db1b10745fb5caf85
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 4 11:24:04 2016 +0100
+
+    Update documentation
+
+commit 5ec7cc1587c00c1eaf0d50e96683387e04824f70
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 4 11:09:13 2016 +0100
+
+    Update INSTALL.Gyoto.md
+
+commit ea49cda36b6d6de133546fc298c80c36f2143c1b
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 4 11:08:22 2016 +0100
+
+    Update INSTAL.Gyoto.md
+
+commit 153aaf51016fd471ff540dd31cdb497bfd207b3a
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Nov 4 11:04:28 2016 +0100
+
+    Update INSTALL.Gyoto and move is to INSTALL.Gyoto.md
+
+commit debdbe925d59a5c4be43d71e40200f7fd224a940
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Oct 31 11:08:12 2016 +0100
 
     Releasing 1.1.1
 
@@ -21,6 +239,24 @@ Date:   Sun Oct 30 10:03:30 2016 +0100
     onwards, it is only the major number, which is kept for
     backward-compatible changes. Users will not need to recompile their
     plug-ins when upgrading to a backwarsd-compatible version of Gyoto.
+
+commit 00d66f0a3279b336280240bb19a2b3b0a86c2a76
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Oct 29 16:42:01 2016 +0200
+
+    Introduce localpkglibdir to install plug-ins
+    
+      - lib/Register.C: look for plug-ins in localpkglibdir;
+      - configure.ac: determine a sensible value for localpkglibdir;
+      - lib/gyoto.pc.in: store this information;
+      - plugins/null: examplify how to install there safely;
+      - doc/user_guide: document this change.
+
+commit ebb0ef13dced5c31984f166d99aa6c26390824b2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 28 22:12:28 2016 +0200
+
+    plugins/null/configure: check for MPICXX and CXX from gyoto.pc
 
 commit aa6594aab69059bf72d38c79ee77c0a1e722d91c
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -57,11 +293,29 @@ Date:   Fri Oct 28 19:06:49 2016 +0200
 
     Add CXX variable to gyoto*.pc
 
+commit d6bb1a07f5f4edc01ef3696e19bb0fcf4d59e52d
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Oct 28 17:14:02 2016 +0200
+
+    plugins/null: don't use mpic++; don't use LORENE.
+
+commit 72ad9b06b6be7cbfc725ceaed04a26f551d0ed65
+Author: Frédéric Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 27 18:00:44 2016 +0200
+
+    Fix copy constructor of Page-Thorne disk
+
 commit a7ffea424d32afc247465c33900fe8a64f2ad93c
 Author: Frédéric Vincent <frederic.vincent@obspm.fr>
 Date:   Thu Oct 27 18:00:44 2016 +0200
 
     Fix copy constructor of Page-Thorne disk
+
+commit 63b5bf61f21d0e1b425795737ec1d2bd3cf570c8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu Oct 27 16:21:03 2016 +0200
+
+    Commit autoreconf products and update git-post-merge script
 
 commit 4dde0a63601316839d433d4560ce15fb23c5f0c5
 Author: Thibaut Paumard <paumard@users.sourceforge.net>

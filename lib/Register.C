@@ -51,7 +51,7 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
     dlfile = name;
     name=name.substr(0, name.rfind("." GYOTO_PLUGIN_SFX));
     name=name.substr(name.rfind(marker)+marker.size());
-    cout << name << endl;
+    GYOTO_DEBUG << name << endl;
   }
 
   // Prepare name of init function

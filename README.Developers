@@ -42,13 +42,12 @@ http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
   Note that this VERSINFO has nothing to do with the Gyoto version.
   + run autoreconf.
 
-* Edit NEWS
-  + add a new entry (or change the one which has not been released yet)
-  + mark the release either "ABI n" if the ABI changed, "BUG" if its a
-    simple backwards-compatible bugfix release, PKG if only the
-    packaging has been changed.
-  + document shortly what has changed in Gyoto: new features,
-    significant bug fixes...
+* Edit NEWS + add a new entry (or change the one which has not been
+  released yet) + mark the release either "ABI n" if the ABI changed,
+  FTR for addition of features in an ABI-compatible way, "BUG" if its
+  a simple backwards-compatible bugfix release, PKG if only the
+  packaging has been changed.  + document shortly what has changed in
+  Gyoto: new features, significant bug fixes...
 
 * Regenerate ChangeLog:
   + run "git log --no-merges > ChangeLog"
