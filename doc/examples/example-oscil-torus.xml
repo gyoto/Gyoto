@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <Metric kind = "KerrBL">
+    <Mass unit="sunmass">10</Mass>
+    <Spin>0.</Spin>
+  </Metric>
+
+  <Screen>
+    <Position>1000. 1000. 1.484 0.</Position>
+    <Time unit="geometrical_time">1090.</Time>
+    <FieldOfView>0.07</FieldOfView>
+    <Resolution>50</Resolution>
+    <Spectrometer kind="freq" nsamples="1">1e17 1e17</Spectrometer>
+  </Screen>
+
+  <!--<PrimaryOnly/>-->
+  
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "OscilTorus">
+    <LargeRadius>18.</LargeRadius>
+    Torus radius: distance from origin to center of torus tube
+
+    <PolyCst>0.0001</PolyCst>
+    Polytropic constant kappa
+
+    <PolyIndex>1.5</PolyIndex>
+    Polytropic index n
+
+    <CentralDensity>1.</CentralDensity>
+    Central energy density
+
+    <Mode>0</Mode>
+    Mode number
+
+    <!--<EmittingArea>file.dat</EmittingArea>-->
+    Only for mode=0, file containing time series of cross section area:
+    t1 area1
+    t2 area2
+    ...
+    tN areaN
+    <PerturbKind>Breathing</PerturbKind>
+    Perturbation kind, one of Radial Vertical X Plus Breathing
+
+    <PerturbIntens>0.15</PerturbIntens>
+    Perturbation strength
+    NB: if this factor is >>1 (absurd case) then the image looks strange
+    as the perturbation 4-vel is ~ the Keplerian 4-vel, so
+    the redshift distribution (hence the intensity)
+    is more or less random.
+
+    <OpticallyThick/>
+    Always optically thick
+
+    <RMax>50.</RMax>
+
+    <SafetyValue> 50. </SafetyValue>
+          Increase SafetyValue if you have trouble resolving the
+          surface of the doughnut. Increasing SafetyValue also
+          increases computation time. The default value is slightly
+          more conservative.
+
+  </Astrobj>
+  <MinimumTime> -1000. </MinimumTime>
+  <NThreads> 1 </NThreads>
+</Scenery>
+

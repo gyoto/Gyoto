@@ -29,16 +29,21 @@
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
+#include "GyotoInflateStar.h"
 #include "GyotoTorus.h"
+#include "GyotoDeformedTorus.h"
+#include "GyotoOscilTorus.h"
 #include "GyotoThinDisk.h"
 #include "GyotoPageThorneDisk.h"
 #include "GyotoThinDiskPL.h"
 #include "GyotoPolishDoughnut.h"
 #include "GyotoThinDiskIronLine.h"
+#include "GyotoEquatorialHotSpot.h"
 
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
 #include "GyotoDynamicalDisk.h"
+#include "GyotoDynamicalDiskBolometric.h"
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
@@ -62,7 +67,12 @@ extern "C" void __GyotostdplugInit() {
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
   Astrobj::Register("StarTrace", &(Astrobj::Subcontractor<Astrobj::StarTrace>));
   Astrobj::Register("FixedStar", &(Astrobj::Subcontractor<Astrobj::FixedStar>));
+  Astrobj::Register("InflateStar",      &(Astrobj::Subcontractor<Astrobj::InflateStar>));
   Astrobj::Register("Torus",     &(Astrobj::Subcontractor<Astrobj::Torus>));
+  Astrobj::Register("OscilTorus",
+		    &(Astrobj::Subcontractor<Astrobj::OscilTorus>));
+  Astrobj::Register("DeformedTorus",
+		    &(Astrobj::Subcontractor<Astrobj::DeformedTorus>));
   Astrobj::Register("ThinDisk",  &(Astrobj::Subcontractor<Astrobj::ThinDisk>));
   Astrobj::Register("PageThorneDisk",
 		    &(Astrobj::Subcontractor<Astrobj::PageThorneDisk>));
@@ -72,12 +82,16 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::PolishDoughnut>));
   Astrobj::Register("ThinDiskIronLine",  
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskIronLine>));
+  Astrobj::Register("EquatorialHotSpot",
+		    &(Astrobj::Subcontractor<Astrobj::EquatorialHotSpot>));
   Astrobj::Register("PatternDisk",
 		    &(Astrobj::Subcontractor<Astrobj::PatternDisk>));
   Astrobj::Register("PatternDiskBB",
 		    &(Astrobj::Subcontractor<Astrobj::PatternDiskBB>));
   Astrobj::Register("DynamicalDisk",
 		    &(Astrobj::Subcontractor<Astrobj::DynamicalDisk>));
+  Astrobj::Register("DynamicalDiskBolometric",
+		    &(Astrobj::Subcontractor<Astrobj::DynamicalDiskBolometric>));
   Astrobj::Register("Disk3D",
 		    &(Astrobj::Subcontractor<Astrobj::Disk3D>));
   Astrobj::Register("DynamicalDisk3D",

@@ -6,8 +6,10 @@ NEXT  2016/09/28 API
      Gyoto::loadPlugin(). The subcontractor signature is changed to
      accept a second parameter, which breaks the API.
 
-NEXT 2016/12/07 FEATURE
+NEXT 2016/12/07 FTR
    * New Metrics in stdplug: ChernSimons, RezzollaZhidenko.
+   * New Astrobjs in stdplug: DeformedTorus, DynamicalDiskBolometric,
+         EquatorialHotSpot, InflateStar, OscilTorus.
 
 1.1.1 2016/10/30 BUG
    * When Gyoto is configured to be installed in another prefix than

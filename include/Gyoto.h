@@ -51,7 +51,10 @@
 #include<GyotoDynamicalDisk.h>
 #include<GyotoDisk3D.h>
 #include<GyotoFixedStar.h>
+#include<GyotoInflateStar.h>
 #include<GyotoStar.h>
+#include<GyotoDeformedTorus.h>
+#include<GyotoEquatorialHotSpot.h>
 
 /**
  * \mainpage Gyoto

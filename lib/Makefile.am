@@ -34,17 +34,20 @@ sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C \
-	Star.C StarTrace.C FixedStar.C Torus.C \
+	Star.C StarTrace.C FixedStar.C InflateStar.C \
+	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
+	DeformedTorus.C EquatorialHotSpot.C \
 	StdPlug.C
 
 # those files need cfitsio for some functionality
-cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
-	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
+cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
+	DynamicalDisk.C DynamicalDiskBolometric.C \
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)

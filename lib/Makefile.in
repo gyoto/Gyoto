@@ -161,6 +161,7 @@ libgyoto_stdplug_la_LIBADD =
 am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-PatternDiskBB.lo \
 	libgyoto_stdplug_la-DynamicalDisk.lo \
+	libgyoto_stdplug_la-DynamicalDiskBolometric.lo \
 	libgyoto_stdplug_la-Disk3D.lo \
 	libgyoto_stdplug_la-DynamicalDisk3D.lo \
 	libgyoto_stdplug_la-DirectionalDisk.lo
@@ -169,7 +170,9 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
 	libgyoto_stdplug_la-RezzollaZhidenko.lo \
 	libgyoto_stdplug_la-Star.lo libgyoto_stdplug_la-StarTrace.lo \
-	libgyoto_stdplug_la-FixedStar.lo libgyoto_stdplug_la-Torus.lo \
+	libgyoto_stdplug_la-FixedStar.lo \
+	libgyoto_stdplug_la-InflateStar.lo \
+	libgyoto_stdplug_la-Torus.lo libgyoto_stdplug_la-OscilTorus.lo \
 	libgyoto_stdplug_la-PowerLawSpectrum.lo \
 	libgyoto_stdplug_la-BlackBodySpectrum.lo \
 	libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.lo \
@@ -179,6 +182,8 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-ThinDiskPL.lo \
 	libgyoto_stdplug_la-PolishDoughnut.lo \
 	libgyoto_stdplug_la-ThinDiskIronLine.lo \
+	libgyoto_stdplug_la-DeformedTorus.lo \
+	libgyoto_stdplug_la-EquatorialHotSpot.lo \
 	libgyoto_stdplug_la-StdPlug.lo $(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
@@ -488,14 +493,17 @@ sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C Star.C StarTrace.C \
-	FixedStar.C Torus.C PowerLawSpectrum.C BlackBodySpectrum.C \
+	FixedStar.C InflateStar.C Torus.C OscilTorus.C \
+	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
-	ThinDiskIronLine.C StdPlug.C $(cfitsio_stdplug_sources)
+	ThinDiskIronLine.C DeformedTorus.C EquatorialHotSpot.C \
+	StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
-cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C DynamicalDisk.C \
-	 Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
+cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
+	DynamicalDisk.C DynamicalDiskBolometric.C \
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -519,9 +527,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu lib/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign lib/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu lib/Makefile
+	  $(AUTOMAKE) --foreign lib/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -661,14 +669,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-BlackBodySpectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ComplexAstrobj.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DeformedTorus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DirectionalDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Disk3D.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk3D.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Minkowski.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-OscilTorus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PageThorneDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PatternDisk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PatternDiskBB.Plo@am__quote@
@@ -782,12 +795,26 @@ libgyoto_stdplug_la-FixedStar.lo: FixedStar.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FixedStar.lo `test -f 'FixedStar.C' || echo '$(srcdir)/'`FixedStar.C
 
+libgyoto_stdplug_la-InflateStar.lo: InflateStar.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-InflateStar.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-InflateStar.Tpo -c -o libgyoto_stdplug_la-InflateStar.lo `test -f 'InflateStar.C' || echo '$(srcdir)/'`InflateStar.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-InflateStar.Tpo $(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='InflateStar.C' object='libgyoto_stdplug_la-InflateStar.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-InflateStar.lo `test -f 'InflateStar.C' || echo '$(srcdir)/'`InflateStar.C
+
 libgyoto_stdplug_la-Torus.lo: Torus.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Torus.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Torus.Tpo -c -o libgyoto_stdplug_la-Torus.lo `test -f 'Torus.C' || echo '$(srcdir)/'`Torus.C
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Torus.Tpo $(DEPDIR)/libgyoto_stdplug_la-Torus.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Torus.C' object='libgyoto_stdplug_la-Torus.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Torus.lo `test -f 'Torus.C' || echo '$(srcdir)/'`Torus.C
+
+libgyoto_stdplug_la-OscilTorus.lo: OscilTorus.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-OscilTorus.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-OscilTorus.Tpo -c -o libgyoto_stdplug_la-OscilTorus.lo `test -f 'OscilTorus.C' || echo '$(srcdir)/'`OscilTorus.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-OscilTorus.Tpo $(DEPDIR)/libgyoto_stdplug_la-OscilTorus.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='OscilTorus.C' object='libgyoto_stdplug_la-OscilTorus.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-OscilTorus.lo `test -f 'OscilTorus.C' || echo '$(srcdir)/'`OscilTorus.C
 
 libgyoto_stdplug_la-PowerLawSpectrum.lo: PowerLawSpectrum.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-PowerLawSpectrum.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Tpo -c -o libgyoto_stdplug_la-PowerLawSpectrum.lo `test -f 'PowerLawSpectrum.C' || echo '$(srcdir)/'`PowerLawSpectrum.C
@@ -852,6 +879,20 @@ libgyoto_stdplug_la-ThinDiskIronLine.lo: ThinDiskIronLine.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ThinDiskIronLine.lo `test -f 'ThinDiskIronLine.C' || echo '$(srcdir)/'`ThinDiskIronLine.C
 
+libgyoto_stdplug_la-DeformedTorus.lo: DeformedTorus.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-DeformedTorus.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-DeformedTorus.Tpo -c -o libgyoto_stdplug_la-DeformedTorus.lo `test -f 'DeformedTorus.C' || echo '$(srcdir)/'`DeformedTorus.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-DeformedTorus.Tpo $(DEPDIR)/libgyoto_stdplug_la-DeformedTorus.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='DeformedTorus.C' object='libgyoto_stdplug_la-DeformedTorus.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-DeformedTorus.lo `test -f 'DeformedTorus.C' || echo '$(srcdir)/'`DeformedTorus.C
+
+libgyoto_stdplug_la-EquatorialHotSpot.lo: EquatorialHotSpot.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-EquatorialHotSpot.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Tpo -c -o libgyoto_stdplug_la-EquatorialHotSpot.lo `test -f 'EquatorialHotSpot.C' || echo '$(srcdir)/'`EquatorialHotSpot.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Tpo $(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='EquatorialHotSpot.C' object='libgyoto_stdplug_la-EquatorialHotSpot.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-EquatorialHotSpot.lo `test -f 'EquatorialHotSpot.C' || echo '$(srcdir)/'`EquatorialHotSpot.C
+
 libgyoto_stdplug_la-StdPlug.lo: StdPlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-StdPlug.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Tpo -c -o libgyoto_stdplug_la-StdPlug.lo `test -f 'StdPlug.C' || echo '$(srcdir)/'`StdPlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Tpo $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo
@@ -879,6 +920,13 @@ libgyoto_stdplug_la-DynamicalDisk.lo: DynamicalDisk.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='DynamicalDisk.C' object='libgyoto_stdplug_la-DynamicalDisk.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-DynamicalDisk.lo `test -f 'DynamicalDisk.C' || echo '$(srcdir)/'`DynamicalDisk.C
+
+libgyoto_stdplug_la-DynamicalDiskBolometric.lo: DynamicalDiskBolometric.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-DynamicalDiskBolometric.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Tpo -c -o libgyoto_stdplug_la-DynamicalDiskBolometric.lo `test -f 'DynamicalDiskBolometric.C' || echo '$(srcdir)/'`DynamicalDiskBolometric.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Tpo $(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='DynamicalDiskBolometric.C' object='libgyoto_stdplug_la-DynamicalDiskBolometric.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-DynamicalDiskBolometric.lo `test -f 'DynamicalDiskBolometric.C' || echo '$(srcdir)/'`DynamicalDiskBolometric.C
 
 libgyoto_stdplug_la-Disk3D.lo: Disk3D.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Disk3D.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Disk3D.Tpo -c -o libgyoto_stdplug_la-Disk3D.lo `test -f 'Disk3D.C' || echo '$(srcdir)/'`Disk3D.C

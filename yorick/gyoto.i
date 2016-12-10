@@ -2094,7 +2094,7 @@ extern gyoto_FE;
      does. However, it is sometimes impossible to avoid it: depending
      on the compiler used to build Gyoto and its dependencies,
      optimizations may be done under the assumption that the code will
-     always run with all exceptions disabled. See README.SIGFPE in the
+     always run with all exceptions disabled. See BUGS.md in the
      Gyoto source code for details.
 
      Gyoto therefore provides the following functions to control the
