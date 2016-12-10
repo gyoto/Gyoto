@@ -27,7 +27,7 @@ AC_SUBST([VERBATIM], [])
 # C: current; R: revision; A: age
 # Linux library name is: libgyoto.so.(C-A).A.R
 VERSINFO_C=5
-VERSINFO_R=1
+VERSINFO_R=2
 VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
