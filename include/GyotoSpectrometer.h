@@ -93,7 +93,7 @@ namespace Gyoto{
      * communicate through a Gyoto::FactoryMessenger.
      */
     typedef SmartPointer<Gyoto::Spectrometer::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger*, std::string);
+      Subcontractor_t(Gyoto::FactoryMessenger*, std::vector<std::string> const &);
     ///< A function to build instances of a specific Astrobj::Generic sub-class
 
     /**
@@ -117,7 +117,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
-							   std::string &plugin,
+							   std::vector<std::string> &plugins,
 							   int errmode = 0);
 
     /**
@@ -130,9 +130,9 @@ namespace Gyoto{
      * \tparam T A Spectrometer::Generic sub-class.
      */
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
-      (FactoryMessenger* fmp, std::string plugin) {
+      (FactoryMessenger* fmp, std::vector<std::string> const &plugins) {
       SmartPointer<T> spectro = new T();
-      spectro -> plugin(plugin);
+      spectro -> plugins(plugins);
 #ifdef GYOTO_USE_XERCES
       if (fmp) spectro -> setParameters(fmp);
 #endif

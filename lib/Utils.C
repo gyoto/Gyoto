@@ -111,7 +111,7 @@ double Gyoto::atof(const char * str)
 }
 
 void Gyoto::help(std::string class_name) {
-  std::string plugin("");
+  std::vector<std::string> plugins;
   if (class_name.substr(0, 7)=="Gyoto::")
     class_name=class_name.substr(7);
   if (class_name=="Scenery") {Scenery().help(); return;}
@@ -124,26 +124,40 @@ void Gyoto::help(std::string class_name) {
     string nspace = class_name.substr(0, pos);
     class_name = class_name.substr(pos+2);
     if (nspace=="Astrobj") {
-      (*Astrobj::getSubcontractor(class_name, plugin))
-	(NULL, plugin)->help();
+      (*Astrobj::getSubcontractor(class_name, plugins))
+	(NULL, plugins)->help();
       return;
     }
     if (nspace=="Metric") {
-      (*Metric::getSubcontractor(class_name, plugin))
-	(NULL, plugin)->help();
+      (*Metric::getSubcontractor(class_name, plugins))
+	(NULL, plugins)->help();
       return;
     }
     if (nspace=="Spectrum") {
-      (*Spectrum::getSubcontractor(class_name, plugin))
-	(NULL, plugin)->help();
+      (*Spectrum::getSubcontractor(class_name, plugins))
+	(NULL, plugins)->help();
       return;
     }
     if (nspace=="Spectrometer") {
-      (*Spectrometer::getSubcontractor(class_name, plugin))
-	(NULL, plugin)->help();
+      (*Spectrometer::getSubcontractor(class_name, plugins))
+	(NULL, plugins)->help();
       return;
     }
     throwError("Unrecognized namespace: "+nspace);
   }
   throwError("Help string not implemented (yet) for "+class_name);
+}
+
+std::vector<std::string> Gyoto::split(std::string const &src, std::string const &delim) {
+  std::vector<std::string> res;
+  size_t pos=0, fpos=0, sz=src.length();
+  std::string tmp("");
+  while (fpos != string::npos && pos < sz) {
+    fpos = src.find_first_of(delim, pos);
+    if (fpos==pos) {++pos; continue;}
+    cerr << "src.substr(pos, fpos-pos)" << endl;
+    res.push_back(src.substr(pos, fpos-pos));
+    pos = fpos+1;
+  }
+  return res;
 }

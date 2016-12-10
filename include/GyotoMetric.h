@@ -55,7 +55,7 @@ namespace Gyoto {
      * Factory and Subcontractor_t function communicate through a
      * Gyoto::FactoryMessenger.
      */
-    typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*, std::string);
+    typedef SmartPointer<Metric::Generic> Subcontractor_t(FactoryMessenger*, std::vector<std::string> const &);
 
 
     /** 
@@ -67,9 +67,9 @@ namespace Gyoto {
      * \tparam T Sub-class of Metric::Generic 
      */
     template<typename T> SmartPointer<Metric::Generic> Subcontractor
-      (FactoryMessenger* fmp, std::string plugin) {
+      (FactoryMessenger* fmp, std::vector<std::string> const &plugins) {
       SmartPointer<T> gg = new T();
-      gg -> plugin(plugin);
+      gg -> plugins(plugins);
 #ifdef GYOTO_USE_XERCES
       if (fmp) gg -> setParameters(fmp);
 #endif
@@ -95,7 +95,7 @@ namespace Gyoto {
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Metric::Subcontractor_t* getSubcontractor(std::string name,
-						     std::string &plugin,
+						     std::vector<std::string> &plugin,
 						     int errmode=0);
 
     /// The Metric register

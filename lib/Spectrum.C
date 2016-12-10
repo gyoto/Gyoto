@@ -147,13 +147,7 @@ void Gyoto::Spectrum::Register(std::string name,
   Gyoto::Spectrum::Register_ = ne;
 }
 
-Spectrum::Subcontractor_t*
-Spectrum::getSubcontractor(std::string name, std::string &plugin, int errmode) {
-  if (plugin!="") Gyoto::requirePlugin(plugin);
-  if (!Gyoto::Spectrum::Register_) throwError("No Spectrum kind registered!");
-  return (Spectrum::Subcontractor_t*)Gyoto::Spectrum::Register_
-    -> getSubcontractor(name, plugin, errmode);
-}
+GYOTO_GETSUBCONTRACTOR(Spectrum)
 
 void Gyoto::Spectrum::initRegister() {
   if (Gyoto::Spectrum::Register_) delete Gyoto::Spectrum::Register_;

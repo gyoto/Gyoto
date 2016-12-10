@@ -54,6 +54,8 @@ namespace Gyoto {
 #include <stddef.h>
 #include <iostream>
 #include <typeinfo>
+#include <string>
+#include <vector>
 
 /**
  * \brief Can be pointed to by a SmartPointer
@@ -109,7 +111,7 @@ class Gyoto::SmartPointee
    * Metric::Register(), Spectrum::Register().
    */
   typedef Gyoto::SmartPointer<Gyoto::SmartPointee>
-    Subcontractor_t(Gyoto::FactoryMessenger*, std::string);
+    Subcontractor_t(Gyoto::FactoryMessenger*, std::vector<std::string> const &);
   ///< A subcontractor builds an object upon order from the Factory
 
 };

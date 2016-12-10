@@ -144,14 +144,15 @@ Gyoto::SmartPointer<gtype>, gtype * {
 // Make a pseudo constructor for down-casting.
 %extend Gyoto::klass::Generic {
   Generic(std::string nm) {
-    std::string plugin;
+    std::vector<std::string> plugin;
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
       Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
     if (res) res -> incRefCount();
     return res;
   }
-  Generic(std::string nm, std::string &plugin) {
+  Generic(std::string nm, std::vector<std::string> plugin) {
+    GYOTO_DEBUG_EXPR(plugin.size());
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
       Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
@@ -442,6 +443,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 
 // Handle std::vector<double> and <unsigned long int>
 %include "std_vector.i";
+%template(vector_string) std::vector<std::string>;
 %template(vector_double) std::vector<double>;
 %{
   typedef unsigned long unsignedlong;

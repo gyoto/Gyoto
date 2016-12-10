@@ -42,9 +42,9 @@ GYOTO_PROPERTY_START(Gyoto::Object, "Object with properties.")
 GYOTO_PROPERTY_END(Object, NULL)
 
 
-Gyoto::Object::Object(std::string const &name):kind_(name), plugin_("") {}
-Gyoto::Object::Object():kind_(""), plugin_("") {}
-Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugin_(o.plugin_) {}
+Gyoto::Object::Object(std::string const &name):kind_(name), plugins_() {}
+Gyoto::Object::Object():kind_(""), plugins_() {}
+Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugins_(o.plugins_) {}
 Gyoto::Object::~Object() {}
 
 
@@ -320,8 +320,15 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
 }
 
 void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
-  std::string plg(plugin());
-  if (plg != "") fmp -> setSelfAttribute("plugin", plg);
+  std::vector<std::string> const plgs=plugins();
+  size_t np=plgs.size();
+  if (np) {
+    std::string plg(plgs[0]);
+    for (size_t i=1; i<np; ++np) {
+      plg += std::string(",") +plgs[i] ;
+    }
+    fmp -> setSelfAttribute("plugin", plg);
+  }
   if (kind_ != "") fmp -> setSelfAttribute("kind", kind_);
   Property const * prop = getProperties(); 
   while (prop) {
@@ -349,7 +356,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	setParameter(name, content, unit);
       } else {
 	GYOTO_DEBUG << "'" << name << "' found "<< endl;
-	std::string plugin("");
+	std::vector<std::string> plugins;
 	switch (prop->type) {
 	case Property::metric_t:
 	  set(*prop, fmp->metric());
@@ -363,15 +370,15 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	case Property::spectrum_t:
 	  content = fmp -> getAttribute("kind");
 	  child = fmp -> getChild();
-	  plugin = fmp -> getAttribute("plugin");
-	  set(*prop, (*Spectrum::getSubcontractor(content, plugin))(child, plugin) );
+	  plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	  set(*prop, (*Spectrum::getSubcontractor(content, plugins))(child, plugins) );
 	  delete child;
 	  break;
 	case Property::spectrometer_t:
 	  content = fmp -> getAttribute("kind");
 	  child = fmp -> getChild();
-	  plugin = fmp -> getAttribute("plugin");
-	  set(*prop, (*Spectrometer::getSubcontractor(content, plugin))(child, plugin) );
+	  plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	  set(*prop, (*Spectrometer::getSubcontractor(content, plugins))(child, plugins) );
 	  delete child;
 	  break;
 	case Property::filename_t:

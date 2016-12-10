@@ -136,12 +136,31 @@ public:
   Gyoto::SmartPointee::Subcontractor_t*
     getSubcontractor(std::string name, std::string &plugin, int errmode=0);
 
-#ifndef GYOTO_NO_DEPRECATED
-#warning Using deprecated method signature.\
-  Define GYOTO_NO_DEPRECATED to disable.
-Gyoto::SmartPointee::Subcontractor_t*
-    getSubcontractor(std::string name, int errmode=0);
-#endif
 };
+
+#define GYOTO_GETSUBCONTRACTOR(space)		\
+  Gyoto::space::Subcontractor_t*					\
+  Gyoto::space::getSubcontractor(std::string name, std::vector<std::string> &plugin, int errmode) { \
+  for (size_t i=0; i<plugin.size(); ++i) {				\
+    GYOTO_DEBUG_EXPR(plugin[i]);					\
+    Gyoto::requirePlugin(plugin[i]);					\
+  }									\
+  if (!Gyoto::space::Register_) throwError("No " GYOTO_STRINGIFY(space) " kind registered!"); \
+  Subcontractor_t* sctr= NULL;						\
+  std::string plg("");							\
+  if (!plugin.size()) {							\
+  sctr =								\
+    (Subcontractor_t*)Gyoto::space::Register_				\
+    -> getSubcontractor(name, plg, errmode);				\
+  plugin.push_back(plg);						\
+  }									\
+  for (size_t i=plugin.size()-1; i>=0 && sctr == NULL; --i) {		\
+    sctr=								\
+      (Subcontractor_t*)Gyoto::space::Register_				\
+      -> getSubcontractor(name, plugin[i], 1);				\
+  }									\
+  if (!errmode && !sctr) throwError ("Kind not found in the specified plug-ins: "+name); \
+  return sctr;								\
+}
 
 #endif

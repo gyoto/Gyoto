@@ -49,7 +49,7 @@ namespace Gyoto{
      * provided so that you may not have to code anything.
      */
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger* fmp, std::string);
+      Subcontractor_t(Gyoto::FactoryMessenger* fmp, std::vector<std::string> const &);
 
     /**
      * \brief Subcontractor template
@@ -60,9 +60,9 @@ namespace Gyoto{
      * \tparam T Sub-class of Spectrum::Generic 
      */
     template<typename T> SmartPointer<Spectrum::Generic> Subcontractor
-      (FactoryMessenger* fmp, std::string plugin) {
+      (FactoryMessenger* fmp, std::vector<std::string> const & plugins) {
       SmartPointer<T> sp = new T();
-      sp -> plugin(plugin) ;
+      sp -> plugins(plugins) ;
 #ifdef GYOTO_USE_XERCES
       if (fmp) sp -> setParameters(fmp);
 #endif
@@ -102,7 +102,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string name,
-						       std::string &plugin,
+						       std::vector<std::string> &plugins,
 						       int errmode=0);
 
     /// The Spectrum register

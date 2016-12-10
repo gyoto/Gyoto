@@ -270,7 +270,7 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
       delete result;
     } else MetricDOM = root_;
 
-    string Plugin = C(MetricDOM->getAttribute(X("plugin")));
+    vector<string> Plugin = Gyoto::split(C(MetricDOM->getAttribute(X("plugin"))), ",");
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
     FactoryMessenger fm(this, MetricDOM);
@@ -303,7 +303,7 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string AstrobjKind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(AstrobjKind);
@@ -363,7 +363,7 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);
@@ -392,7 +392,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);

@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2013, 2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -125,7 +125,8 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   if (debug())
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
-  string name="", content="", unit="", plugin("");
+  string name="", content="", unit="";
+  std::vector<std::string> plugin;
   FactoryMessenger * child = NULL;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
@@ -134,7 +135,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
     if (name=="SubSpectrometer") {
       content = fmp -> getAttribute("kind");
       child   = fmp -> getChild();
-      plugin  = fmp -> getAttribute("plugin");
+      plugin  = split(fmp -> getAttribute("plugin"), ",");
       append ((*Spectrometer::getSubcontractor(content, plugin))(child, plugin));
       delete child;
     } else setParameter(name, content, unit);

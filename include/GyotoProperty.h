@@ -487,14 +487,23 @@ namespace Gyoto {
 			 )
 
 /// Define class::properties and class::getProperties() 
-#define GYOTO_PROPERTY_END(class, next)				\
+#define GYOTO_PROPERTY_END(class, next)					\
   Property(next)};							\
   Gyoto::Property const * class::getProperties() const {		\
     return class::properties;						\
   }									\
   const std::string class::builtinPluginValue ( GYOTO_STRINGIFY(GYOTO_PLUGIN) ); \
-  std::string class::plugin() const {if (plugin_ == "") return class::builtinPluginValue; return plugin_;} \
-  void  class::plugin(std::string const & plugname) {plugin_=plugname;}
+  std::vector<std::string> class::plugins() const {			\
+    if (plugins_.size() == 0) {						\
+      std::vector<std::string> p;					\
+      p.push_back(class::builtinPluginValue);				\
+      return p;					\
+    }									\
+    return plugins_;							\
+  }									\
+  void  class::plugins(std::vector<std::string> const & plugname) {	\
+    plugins_=plugname;							\
+  }
 
 /// Property that can be set and got using standard methods
 /**

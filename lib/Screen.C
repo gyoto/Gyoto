@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -1248,7 +1248,8 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
 
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
-  string name="", content="", unit="", tunit="", aunit="", dunit="", plugin("");
+  string name="", content="", unit="", tunit="", aunit="", dunit="";
+  vector<string> plugin;
   SmartPointer<Screen> scr = new Screen();
   if (!fmp) return scr;
   scr -> metric(fmp->metric());

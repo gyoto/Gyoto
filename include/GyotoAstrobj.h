@@ -59,7 +59,7 @@ namespace Gyoto{
      * provided so that you may not have to code anything.
      */
     typedef SmartPointer<Gyoto::Astrobj::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger*, std::string);
+      Subcontractor_t(Gyoto::FactoryMessenger*, std::vector<std::string> const &);
     ///< A function to build instances of a specific Astrobj::Generic sub-class
  
     /**
@@ -73,9 +73,9 @@ namespace Gyoto{
      * \tparam T Gyoto::Astrobj::Generic sub-class
      */
     template<typename T> SmartPointer<Astrobj::Generic> Subcontractor
-      (FactoryMessenger* fmp, std::string plugin) {
+      (FactoryMessenger* fmp, std::vector<std::string> const &plugin) {
       SmartPointer<T> ao = new T();
-      ao -> plugin(plugin) ;
+      ao -> plugins(plugin) ;
 #ifdef GYOTO_USE_XERCES
       if (fmp) ao -> setParameters(fmp);
 #endif
@@ -101,7 +101,7 @@ namespace Gyoto{
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Astrobj::Subcontractor_t* getSubcontractor(std::string name,
-						      std::string &plugin,
+						      std::vector<std::string> &plugin,
 						      int errmode = 0);
 
     /**

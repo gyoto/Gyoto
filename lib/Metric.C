@@ -568,11 +568,4 @@ void Gyoto::Metric::Register(std::string name, Metric::Subcontractor_t* scp) {
   Gyoto::Metric::Register_ = ne;
 }
 
-Metric::Subcontractor_t*
-Metric::getSubcontractor(std::string name, std::string &plugin, int errmode) {
-  if (plugin!="") Gyoto::requirePlugin(plugin);
-  if (!Gyoto::Metric::Register_) throwError("No Metric kind registered!");
-  Metric::Subcontractor_t *sub=(Metric::Subcontractor_t*)Gyoto::Metric::Register_
-    -> getSubcontractor(name, plugin, errmode);
-  return sub;
-}
+GYOTO_GETSUBCONTRACTOR(Metric)

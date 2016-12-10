@@ -85,8 +85,8 @@ namespace Gyoto {
   static Property const  properties[];			\
   virtual Property const * getProperties() const;	\
   static const std::string builtinPluginValue;		\
-  virtual void plugin(std::string const & plugname);	\
-  virtual std::string plugin() const
+  virtual void plugins(std::vector<std::string> const & plugname);	\
+  virtual std::vector<std::string> plugins() const
 
 
 /// Object with properties
@@ -151,15 +151,15 @@ class Gyoto::Object
    */
   std::string kind_;
 
-  /// The plug-in that needs to be loaded to access this instance's class
+  /// The plug-ins that needs to be loaded to access this instance's class
   /**
    * E.g. for an Astrobj, fillElement() will ensure
    * \code
-   *   <Astrobj ... plugin="plugin_">...</Astrobj>
+   *   <Astrobj ... plugin="plugins_">...</Astrobj>
    * \endcode
    * is written.
    */
-  std::string plugin_;
+  std::vector<std::string> plugins_;
 
  public:
   GYOTO_OBJECT;

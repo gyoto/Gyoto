@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -185,7 +185,8 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   if (debug())
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
-  string name="", content="", unit="", plugin("");
+  string name="", content="", unit="";
+  vector<string> plugin;
   FactoryMessenger * child = NULL;
 
   metric( fmp->metric() );
@@ -195,7 +196,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       cerr << "DEBUG: Astrobj::Complex::Subcontractor(): name=" << name << endl;
     if (name=="SubAstrobj") {
       content = fmp -> getAttribute("kind");
-      plugin  = fmp -> getAttribute("plugin");
+      plugin  = split(fmp -> getAttribute("plugin"), ",");
       child   = fmp -> getChild();
       append ((*Astrobj::getSubcontractor(content, plugin))(child, plugin));
       delete child;
