@@ -137,10 +137,12 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
   if ( (err=dlerror()) ) throwError(err);
   GYOTO_DEBUG << "Calling plug-in init function " << dlfunc << endl;
   std::string tmp_name(GyotoRegisterCurrentPlugin);
-  GyotoRegisterCurrentPlugin = name;
+  // In case nam is a file name, that's what we wan't to store
+  GyotoRegisterCurrentPlugin = nam;
   (*initfcn)();
   GyotoRegisterCurrentPlugin = tmp_name;
-  GyotoRegisteredPlugins.insert(GyotoRegisteredPlugins.begin(), name);
+  // In case nam is a file name, that's what we wan't to store
+  GyotoRegisteredPlugins.insert(GyotoRegisteredPlugins.begin(), nam);
   GYOTO_DEBUG << "Done." << endl;
 }
 
