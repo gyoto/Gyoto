@@ -33,7 +33,6 @@ namespace Lorene {
 #include <GyotoMetric.h>
 #include <GyotoWorldline.h>
 #include <GyotoSmartPointer.h>
-#include <GyotoWIP.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -46,7 +45,7 @@ namespace Lorene {
  *        stars, collapsing stars, Kerr, boson star e.g.
  */
 class Gyoto::Metric::NumericalMetricLorene
-: public WIP, public Gyoto::Metric::Generic
+: public Gyoto::Metric::Generic
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::NumericalMetricLorene>;
 

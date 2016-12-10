@@ -68,7 +68,6 @@ GYOTO_PROPERTY_END(NumericalMetricLorene, Generic::properties)
 #define GYOTO_NML_PPHI_TOL 5 // tolerance on p_phi drift, percentage
 
 NumericalMetricLorene::NumericalMetricLorene() :
-  WIP(""),
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
   filename_(NULL),
   mapet_(true),

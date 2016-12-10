@@ -14,8 +14,6 @@ DynamicalDiskBolometric: Document and provide example
 EquatorialHotspot:       Document and provide example
 InflateStar:             Document and provide example
 OscilTorus:              Document
-NumericalMetricLorene: stop inheriting from WIP (ABI-breaking)
 
 ## libgyoto:
-merge branch track-plugin (ABI-breaking)
 implement thread-safety declaration (ABI-breaking)
