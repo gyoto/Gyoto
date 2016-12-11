@@ -155,7 +155,6 @@ std::vector<std::string> Gyoto::split(std::string const &src, std::string const 
   while (fpos != string::npos && pos < sz) {
     fpos = src.find_first_of(delim, pos);
     if (fpos==pos) {++pos; continue;}
-    cerr << "src.substr(pos, fpos-pos)" << endl;
     res.push_back(src.substr(pos, fpos-pos));
     pos = fpos+1;
   }
