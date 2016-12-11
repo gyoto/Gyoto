@@ -71,7 +71,8 @@ std::string OscilTorus::perturbKind() const {
 
 std::string OscilTorus::emittingArea() const {return emitting_area_;}
 void OscilTorus::emittingArea(std::string const &f)  {
-  if (f=="") {
+  if (f=="" || f.substr(f.size()-1) == "/") {
+    emitting_area_ = "";
     with_cross_=0;
     tt_.clear();
     area_.clear();
@@ -96,7 +97,8 @@ void OscilTorus::emittingArea(std::string const &f)  {
       file.ignore(numeric_limits<streamsize>::max(), '\n');//next line
     }
     nbt_=tt_.size();
-  }
+    emitting_area_ = f;
+  } else throwError("Unable to read " + f);
 }
 
 Gyoto::Astrobj::OscilTorus::OscilTorus()
