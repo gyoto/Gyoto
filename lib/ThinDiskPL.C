@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2012, 2014, 2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -75,6 +75,11 @@ ThinDiskPL::ThinDiskPL(const ThinDiskPL& o) :
 }
 ThinDiskPL* ThinDiskPL::clone() const
 { return new ThinDiskPL(*this); }
+
+bool ThinDiskPL::isThreadSafe() const {
+  return ThinDisk::isThreadSafe()
+    && (!spectrumBB_ || spectrumBB_ -> isThreadSafe());
+}
 
 ThinDiskPL::~ThinDiskPL() {
   if (debug()) cerr << "DEBUG: ThinDiskPL Destruction" << endl;

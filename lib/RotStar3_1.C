@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent
+    Copyright 2011-2014, 2016 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -49,6 +49,9 @@ GYOTO_PROPERTY_BOOL(RotStar3_1, GenericIntegrator, SpecificIntegrator,
 		    genericIntegrator)
 GYOTO_PROPERTY_FILENAME(RotStar3_1, File, file)
 GYOTO_PROPERTY_END(RotStar3_1, Generic::properties)
+
+// Lorene Metrics are not thread-safe
+GYOTO_PROPERTY_THREAD_UNSAFE(RotStar3_1)
 
 RotStar3_1::RotStar3_1() : 
 Generic(GYOTO_COORDKIND_SPHERICAL, "RotStar3_1"),

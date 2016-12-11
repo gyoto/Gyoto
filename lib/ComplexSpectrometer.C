@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2013-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -52,6 +52,11 @@ Complex::Complex(const Complex& o) :
 }
 Complex *Complex::clone() const {return new Complex(*this); }
 
+bool Complex::isThreadSafe() const {
+  bool safe = Generic::isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  return safe;
+}
 
 Complex::~Complex()
 {

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -55,6 +55,12 @@ Complex *Complex::clone() const {return new Complex(*this); }
 Complex::~Complex()
 {
   if (cardinal_) for (size_t i=0; i< cardinal_; ++i) elements_[i] = NULL;
+}
+
+bool Complex::isThreadSafe() const {
+  bool safe = Generic::isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  return safe;
 }
 
 void Complex::metric(SmartPointer<Metric::Generic> gg)

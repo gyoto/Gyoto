@@ -141,6 +141,12 @@ Screen::Screen(const Screen& o) :
 }
 Screen * Screen::clone() const { return new Screen(*this); }
 
+bool Screen::isThreadSafe() const {
+  return Object::isThreadSafe()
+    && (!gg_ || gg_ -> isThreadSafe())
+    && (!spectro_ || spectro_ -> isThreadSafe());
+}
+
 Screen::~Screen(){if (mask_) delete [] mask_;}
 
 std::ostream& Screen::print( std::ostream& o) const {

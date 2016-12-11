@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2014 Thibaut Paumard
+    Copyright 2014-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -45,6 +45,12 @@ namespace Gyoto {
   template <class T> class SmartPointer;
 }
 
+/// Define the class as not beeing thread-safe
+/**
+ * See also GYOTO_OBJECT_THREAD_SAFETY
+ */
+#define GYOTO_PROPERTY_THREAD_UNSAFE(class)		\
+  bool class::isThreadSafe() const {return false;}
 
 /// Define a pair of accessors to scalar member (double, long, size_t)
 /**

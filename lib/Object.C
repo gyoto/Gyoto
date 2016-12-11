@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2015 Thibaut Paumard
+    Copyright 2014-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -47,6 +47,60 @@ Gyoto::Object::Object():kind_(""), plugins_() {}
 Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugins_(o.plugins_) {}
 Gyoto::Object::~Object() {}
 
+bool Object::isThreadSafe() const {
+  /**
+   * The default behaviour is to consider that everything is
+   * thread-safe (for the purpose of threads in
+   * Gyoto::Scenery::rayTrace()).
+   *
+   * For Objects that have other Object as children, we need to
+   * recursively ask those children whether they are thread-safe and
+   * accumulate the answer. It can be done in a generic manner as long
+   * as the Object declares its children as properties, this is what
+   * we do here.
+   *
+   * Objects that are never thread-safe must reimplement this function
+   * to simply return "false", which can be done with the pair of
+   * macros GYOTO_OBJECT_THREAD_SAFETY/GYOTO_PROPERTY_THREAD_UNSAFE
+   * respectively in the class declaration and definition.
+   *
+   * Objects that need to clone children that are not declared as
+   * properties in their copy constructors need to reimplement this
+   * method to take care of those children.
+   */
+  bool safe = true;
+  Property const * prop = getProperties();
+  SmartPointer<SmartPointee> child=NULL;
+  while (prop) {
+    if (*prop) {
+      switch (prop -> type) {
+      case Property::metric_t:
+	child=SmartPointer<Metric::Generic>(get(*prop));
+	break;
+      case Property::screen_t:
+	child=SmartPointer<Screen>(get(prop));
+	break;
+      case Property::astrobj_t:
+	child=SmartPointer<Astrobj::Generic>(get(*prop));
+	break;
+      case Property::spectrum_t:
+	child=SmartPointer<Spectrum::Generic>(get(*prop));
+	break;
+      case Property::spectrometer_t:
+	child=SmartPointer<Spectrometer::Generic>(get(*prop));
+	break;
+      default:
+	child=NULL;
+      }
+      if (child) safe &= dynamic_cast<Object const*>(child()) -> isThreadSafe();
+      ++prop;
+    } else {
+      prop=prop->parent;
+    }
+  }
+  GYOTO_DEBUG_EXPR(safe);
+  return safe;
+}
 
 void Object::set(Property const &p,
 		 Value val,

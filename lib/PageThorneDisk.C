@@ -78,12 +78,16 @@ PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   spectrumBB_(NULL)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
-  if (o.gg_()) gg_=o.gg_->clone();
-  Generic::gg_=gg_;
   gg_->hook(this);
 }
 PageThorneDisk* PageThorneDisk::clone() const
 { return new PageThorneDisk(*this); }
+
+bool PageThorneDisk::isThreadSafe() const {
+  // spectrumBB_ is not a Property
+  return ThinDisk::isThreadSafe()
+    && (!spectrumBB_ || spectrumBB_->isThreadSafe());
+}
 
 PageThorneDisk::~PageThorneDisk() {
   GYOTO_DEBUG<<endl;

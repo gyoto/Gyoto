@@ -105,6 +105,7 @@ protected:
  // -------------------------
 public:
  GYOTO_OBJECT; // This object has Properties
+ GYOTO_OBJECT_THREAD_SAFETY;
 #ifdef GYOTO_USE_XERCES
  // We need to filter some properties when writing XML
  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;

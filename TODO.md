@@ -16,4 +16,5 @@ InflateStar:             Document and provide example
 OscilTorus:              Document
 
 ## libgyoto:
-implement thread-safety declaration (ABI-breaking)
+
+Scenery:                 Apply Object/Property paradigm

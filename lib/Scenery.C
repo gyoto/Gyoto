@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -67,6 +67,14 @@ GYOTO_PROPERTY_SIZE_T(Scenery, NProcesses, nProcesses,
 GYOTO_PROPERTY_STRING(Scenery, Quantities, requestedQuantitiesString,
 		      "Physical quantities to evaluate for each light ray.")
 GYOTO_WORLDLINE_PROPERTY_END(Scenery, Object::properties)
+
+bool Scenery::isThreadSafe() const {
+  bool safe=true;
+  if (metric() ) safe &= metric()  -> isThreadSafe();
+  if (screen_  ) safe &= screen_   -> isThreadSafe();
+  if (astrobj()) safe &= astrobj() -> isThreadSafe();
+  return safe;
+}
 
 #ifdef GYOTO_USE_XERCES
 void Scenery::fillProperty(Gyoto::FactoryMessenger *fmp,
@@ -604,13 +612,20 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
   pthread_t * threads = NULL;
   pthread_t pself = pthread_self();
   larg.parent = &pself;
+  bool thread_safe = isThreadSafe();
   if (nthreads_ >= 2) {
-    threads = new pthread_t[nthreads_-1];
-    larg.mutex  = &mumu;
-    for (size_t th=0; th < nthreads_-1; ++th) {
-      if (pthread_create(threads+th, NULL,
-			 SceneryThreadWorker, static_cast<void*>(&larg)) < 0)
-	throwError("Error creating thread");
+    if (!thread_safe) {
+      GYOTO_WARNING <<
+	"Something in this Scenery is not thread-safe: running single-threaded"
+		    << endl;
+    } else {
+      threads = new pthread_t[nthreads_-1];
+      larg.mutex  = &mumu;
+      for (size_t th=0; th < nthreads_-1; ++th) {
+	if (pthread_create(threads+th, NULL,
+			   SceneryThreadWorker, static_cast<void*>(&larg)) < 0)
+	  throwError("Error creating thread");
+      }
     }
   }
 #endif
@@ -621,7 +636,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 
 #ifdef HAVE_PTHREAD
   // Wait for the child threads
-  if (nthreads_>=2)
+  if (thread_safe && nthreads_>=2)
     for (size_t th=0; th < nthreads_-1; ++th)
       pthread_join(threads[th], NULL);
 #endif
@@ -631,7 +646,8 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 
   GYOTO_MSG << "\nRaytraced "<< ij.size()
 	    << " photons in " << end-start
-	    << "s using " << nthreads_ << " thread(s)\n";
+	    << "s using " << (thread_safe?nthreads_:1) << " thread"
+	    << (thread_safe && nthreads_>1)?"s\n":"\n";
 
 }
 

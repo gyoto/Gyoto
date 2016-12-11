@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2013-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -87,6 +87,7 @@ class Gyoto::Spectrometer::Complex
 
 
  public:
+  GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.
 

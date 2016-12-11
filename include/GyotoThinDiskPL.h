@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2012-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -65,6 +65,7 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   // -------------------------
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   
   ThinDiskPL(); ///< Standard constructor
   

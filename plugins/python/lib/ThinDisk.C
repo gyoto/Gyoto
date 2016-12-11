@@ -25,6 +25,8 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::ThinDisk,
       "Parameters for the class instance.")
 GYOTO_PROPERTY_END(Astrobj::Python::ThinDisk, Astrobj::ThinDisk::properties)
 
+GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::ThinDisk)
+
 // Birth and death
 Gyoto::Astrobj::Python::ThinDisk::ThinDisk()
 : Astrobj::ThinDisk("Python::ThinDisk"),

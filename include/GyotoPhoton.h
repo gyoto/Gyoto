@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2011, 2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -96,6 +96,7 @@ class Gyoto::Photon
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   GYOTO_WORLDLINE;
   virtual std::string className() const ; ///< "Photon"
   virtual std::string className_l() const ; ///< "photon"

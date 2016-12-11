@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2012-2015 Frederic Vincent, Thibaut Paumard
+ *   Copyright (c) 2014-2016 Frederic Vincent, Thibaut Paumard
  *
  *
  */
@@ -79,6 +79,7 @@ class Gyoto::Metric::NumericalMetricLorene
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   NumericalMetricLorene(); ///< Constructor
   NumericalMetricLorene(const NumericalMetricLorene&); ///< Copy constructor
   virtual NumericalMetricLorene* clone() const ;
