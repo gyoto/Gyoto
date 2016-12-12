@@ -2,7 +2,7 @@ import unittest
 import gyoto
 import numpy
 
-gyoto.loadPlugin('stdplug')
+gyoto.requirePlugin('stdplug')
 
 class TestMetric(unittest.TestCase):
 

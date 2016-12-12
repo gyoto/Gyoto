@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -67,12 +67,7 @@ void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
   Gyoto::Spectrometer::Register_ = ne;
 }
 
-Gyoto::Spectrometer::Subcontractor_t*
-Spectrometer::getSubcontractor(std::string name, int errmode) {
-  if (!Gyoto::Spectrometer::Register_) throwError("No Spectrometer kind registered!");
-  return (Subcontractor_t*)Gyoto::Spectrometer::Register_
-    -> getSubcontractor(name, errmode);
-}
+GYOTO_GETSUBCONTRACTOR(Spectrometer)
 
 Generic::Generic() :
   SmartPointee(),

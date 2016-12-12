@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -140,6 +140,12 @@ Screen::Screen(const Screen& o) :
 
 }
 Screen * Screen::clone() const { return new Screen(*this); }
+
+bool Screen::isThreadSafe() const {
+  return Object::isThreadSafe()
+    && (!gg_ || gg_ -> isThreadSafe())
+    && (!spectro_ || spectro_ -> isThreadSafe());
+}
 
 Screen::~Screen(){if (mask_) delete [] mask_;}
 
@@ -1249,6 +1255,7 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
 
 SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   string name="", content="", unit="", tunit="", aunit="", dunit="";
+  vector<string> plugin;
   SmartPointer<Screen> scr = new Screen();
   if (!fmp) return scr;
   scr -> metric(fmp->metric());
@@ -1291,7 +1298,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       fov = atof(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Spectrometer") {
-      scr -> spectrometer ((Spectrometer::getSubcontractor(fmp->getAttribute("kind")))(fmp->getChild()));
+      scr ->
+	spectrometer((Spectrometer::getSubcontractor(fmp->getAttribute("kind"),
+						     plugin))
+		     (fmp->getChild(), plugin));
     }
     else if (name=="Alpha0"){
       alpha0 = atof(tc); alpha0_found=1; aunit=unit;

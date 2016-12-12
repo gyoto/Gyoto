@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -30,6 +30,7 @@
 #include "GyotoDefs.h"
 
 #include <string>
+#include <vector>
 
 namespace Gyoto {
   /// Set debug mode
@@ -99,6 +100,9 @@ namespace Gyoto {
    * \param[in] class_name e.g. "Gyoto::Screen", "Gyoto::Astrobj::Torus".
    */
   void help(std::string class_name);
+
+  /// Split string
+  std::vector<std::string> split(std::string const &src, std::string const &delim);
 }
 
 #endif

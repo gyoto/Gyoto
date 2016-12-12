@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2014 Thibaut Paumard
+    Copyright 2014-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -30,6 +30,10 @@
 #include <string>
 #include <vector>
 
+#ifndef GYOTO_PLUGIN
+#define GYOTO_PLUGIN
+#endif
+
 namespace Gyoto {
   class Object;
   class Property;
@@ -41,6 +45,12 @@ namespace Gyoto {
   template <class T> class SmartPointer;
 }
 
+/// Define the class as not beeing thread-safe
+/**
+ * See also GYOTO_OBJECT_THREAD_SAFETY
+ */
+#define GYOTO_PROPERTY_THREAD_UNSAFE(class)		\
+  bool class::isThreadSafe() const {return false;}
 
 /// Define a pair of accessors to scalar member (double, long, size_t)
 /**
@@ -483,10 +493,22 @@ namespace Gyoto {
 			 )
 
 /// Define class::properties and class::getProperties() 
-#define GYOTO_PROPERTY_END(class, next)				\
+#define GYOTO_PROPERTY_END(class, next)					\
   Property(next)};							\
   Gyoto::Property const * class::getProperties() const {		\
     return class::properties;						\
+  }									\
+  const std::string class::builtinPluginValue ( GYOTO_STRINGIFY(GYOTO_PLUGIN) ); \
+  std::vector<std::string> class::plugins() const {			\
+    if (plugins_.size() == 0) {						\
+      std::vector<std::string> p;					\
+      p.push_back(class::builtinPluginValue);				\
+      return p;					\
+    }									\
+    return plugins_;							\
+  }									\
+  void  class::plugins(std::vector<std::string> const & plugname) {	\
+    plugins_=plugname;							\
   }
 
 /// Property that can be set and got using standard methods

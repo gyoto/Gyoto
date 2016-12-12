@@ -31,6 +31,7 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 # STANDARD PLUGIN
 soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
+libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C \
 	Star.C StarTrace.C FixedStar.C InflateStar.C \
@@ -59,7 +60,7 @@ sover_LTLIBRARIES += libgyoto-lorene.la
 endif
 libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C LorenePlug.C
 libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS) -avoid-version
-libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS)
+libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS) -DGYOTO_PLUGIN=lorene
 
 # pkg-config file
 pkgconfigdir=$(libdir)/pkgconfig

@@ -28,6 +28,8 @@ GYOTO_PROPERTY_DOUBLE(Gyoto::Astrobj::Python::Standard,
       "The object is defined by __call__ < this value")
 GYOTO_PROPERTY_END(Astrobj::Python::Standard, Generic::properties)
 
+GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::Standard)
+
 // Birth and death
 Gyoto::Astrobj::Python::Standard::Standard()
 : Astrobj::Standard("Python::Standard"),

@@ -93,7 +93,7 @@ namespace Gyoto{
      * communicate through a Gyoto::FactoryMessenger.
      */
     typedef SmartPointer<Gyoto::Spectrometer::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger*);
+      Subcontractor_t(Gyoto::FactoryMessenger*, std::vector<std::string> const &);
     ///< A function to build instances of a specific Astrobj::Generic sub-class
 
     /**
@@ -101,15 +101,24 @@ namespace Gyoto{
      *
      * Get the Spectrometer::Subcontractor_t correspondig to a given
      * kind name. This function is normally called only from the
-     * Gyoto::Factory.
+     * Gyoto::Factory. If plugin is specified, only a
+     * subcontractor matching both name and plugin will be returned,
+     * loading the plug-in if necessary. If plugin is the empty
+     * string, then the first subcontractor matching name will be
+     * returned, and the name of the plug-in it belongs to will be
+     * returned in plugin upon output.
      *
-     * \param name     Name of the subclass to build, e.g. "Complex" or "wave".
-     * \param errmode  If name is not registered, getSubcontractor() return NULL
-     *                 errmode==1, throws a Gyoto::Error if errmode==0.
+     * \param[in] name Name of the subclass to build, e.g. "Complex"
+     *            or "wave".
+     * \param[inout] plugin e.g. "stdplug".
+     * \param errmode[in] If name is not registered,
+     *             getSubcontractor() return NULL errmode==1, throws a
+     *             Gyoto::Error if errmode==0.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
-						      int errmode = 0);
+							   std::vector<std::string> &plugins,
+							   int errmode = 0);
 
     /**
      * \brief A template for Subcontractor_t functions
@@ -121,8 +130,9 @@ namespace Gyoto{
      * \tparam T A Spectrometer::Generic sub-class.
      */
     template<typename T> SmartPointer<Spectrometer::Generic> Subcontractor
-      (FactoryMessenger* fmp) {
+      (FactoryMessenger* fmp, std::vector<std::string> const &plugins) {
       SmartPointer<T> spectro = new T();
+      spectro -> plugins(plugins);
 #ifdef GYOTO_USE_XERCES
       if (fmp) spectro -> setParameters(fmp);
 #endif

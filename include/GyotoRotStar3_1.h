@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011 Frederic Vincent
+    Copyright 2011-2014, 2016 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -61,6 +61,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   RotStar3_1(); ///< Constructor
   RotStar3_1(const RotStar3_1& ) ;                ///< Copy constructor
   virtual ~RotStar3_1() ;        ///< Destructor

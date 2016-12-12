@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -72,6 +72,13 @@ Photon::Photon(const Photon& o) :
 }
 
 Photon * Photon::clone() const { return new Photon(*this); }
+
+bool Photon::isThreadSafe() const {
+  // spectro_ is not a Property
+  return
+    Object::isThreadSafe()
+    && (!spectro_ || spectro_ -> isThreadSafe());
+}
 
 Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   Worldline(orig, i0, dir, step_max), SmartPointee(),

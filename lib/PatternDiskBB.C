@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2014, 2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -77,6 +77,12 @@ PatternDiskBB::PatternDiskBB(const PatternDiskBB& o) :
 }
 PatternDiskBB* PatternDiskBB::clone() const
 { return new PatternDiskBB(*this); }
+
+bool PatternDiskBB::isThreadSafe() const {
+  // spectrumBB_ is not a Property
+  return PatternDisk::isThreadSafe()
+    && (!spectrumBB_ || spectrumBB_->isThreadSafe());
+}
 
 PatternDiskBB::~PatternDiskBB() {
   GYOTO_DEBUG << "PatternDiskBB Destruction" << endl;

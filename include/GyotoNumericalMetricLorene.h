@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2012-2015 Frederic Vincent, Thibaut Paumard
+ *   Copyright (c) 2014-2016 Frederic Vincent, Thibaut Paumard
  *
  *
  */
@@ -33,7 +33,6 @@ namespace Lorene {
 #include <GyotoMetric.h>
 #include <GyotoWorldline.h>
 #include <GyotoSmartPointer.h>
-#include <GyotoWIP.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -46,7 +45,7 @@ namespace Lorene {
  *        stars, collapsing stars, Kerr, boson star e.g.
  */
 class Gyoto::Metric::NumericalMetricLorene
-: public WIP, public Gyoto::Metric::Generic
+: public Gyoto::Metric::Generic
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::NumericalMetricLorene>;
 
@@ -80,6 +79,7 @@ class Gyoto::Metric::NumericalMetricLorene
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   NumericalMetricLorene(); ///< Constructor
   NumericalMetricLorene(const NumericalMetricLorene&); ///< Copy constructor
   virtual NumericalMetricLorene* clone() const ;

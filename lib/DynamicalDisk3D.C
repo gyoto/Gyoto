@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -123,6 +123,12 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
 }
 DynamicalDisk3D* DynamicalDisk3D::clone() const
 { return new DynamicalDisk3D(*this); }
+
+bool DynamicalDisk3D::isThreadSafe() const {
+  // spectrumBB_ is not handled by a property.
+  return Disk3D::isThreadSafe()
+    && (!spectrumBB_ || spectrumBB_ -> isThreadSafe());
+}
 
 DynamicalDisk3D::~DynamicalDisk3D() {
   GYOTO_DEBUG << "DynamicalDisk3D Destruction" << endl;

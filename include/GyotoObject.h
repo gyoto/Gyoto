@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2014-2015 Thibaut Paumard
+    Copyright 2014-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -27,6 +27,7 @@
 #define __GyotoObject_H_
 
 #include "GyotoConfig.h"
+#include "GyotoSmartPointer.h"
 #include <string>
 #include <vector>
 
@@ -81,8 +82,22 @@ namespace Gyoto {
  * a compile-time error.
  */
 #define GYOTO_OBJECT \
-  static Property const  properties[];		\
-  virtual Property const * getProperties() const
+  static Property const  properties[];			\
+  virtual Property const * getProperties() const;	\
+  static const std::string builtinPluginValue;		\
+  virtual void plugins(std::vector<std::string> const & plugname);	\
+  virtual std::vector<std::string> plugins() const
+
+/// Declare virtual bool isThreadSafe() const
+/**
+ * Use this to declare that the object is not (or not always) thread
+ * safe. The corresponding definition of isThreadSafe() must exist. If
+ * the object is always thread unsafe (e.g. Lorene Metrics of Python
+ * based objects), you can simply use GYOTO_PROPERTY_THREAD_SAFETY in
+ * the corresponding .C file.
+ */
+#define GYOTO_OBJECT_THREAD_SAFETY		\
+  virtual bool isThreadSafe() const
 
 /// Object with properties
 /**
@@ -140,12 +155,48 @@ class Gyoto::Object
   /**
    * E.g. for an Astrobj, fillElement() will ensure
    * \code
-   *   <Astrobj kind="kind_">...</Astrobj>
+   *   <Astrobj kind="kind_" ...>...</Astrobj>
    * \endcode
    * is written.
    */
   std::string kind_;
+
+  /// The plug-ins that needs to be loaded to access this instance's class
+  /**
+   * E.g. for an Astrobj, fillElement() will ensure
+   * \code
+   *   <Astrobj ... plugin="plugins_">...</Astrobj>
+   * \endcode
+   * is written.
+   */
+  std::vector<std::string> plugins_;
+
  public:
+  /// Whether this class is thread-safe
+  /**
+   * Return True if this object is thread-safe, i.e. if an instance
+   * and its clone can be used in parallel threads (in the context of
+   * Scenery::raytrace()). Known objects which are not thread-safe
+   * include Lorene metrics and everything from the Python plug-in.
+   *
+   * The default implementation considers that the class itself is
+   * thread safe and recurses into the declared properties to check
+   * whether they are safe too. Classes that abide to the
+   * Object/Property paradigm and are themselves thread-safe have
+   * nothing special to do.
+   *
+   * Objects that clone children in their copy constructor that are
+   * not declared as properties must take these children into
+   * account.
+   *
+   * Classes that are never thread-safe must declare it. It acn be
+   * easily done using GYOTO_OBJECT_THREAD_SAFETY in the class
+   * declaration and GYOTO_PROPERTY_THREAD_UNSAFE in the class
+   * definition.
+   */
+  virtual bool isThreadSafe() const;
+
+
   GYOTO_OBJECT;
   /** \fn virtual Property const * Object::getProperties() const
    *  \brief Get list of properties 

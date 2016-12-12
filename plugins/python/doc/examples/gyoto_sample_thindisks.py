@@ -12,7 +12,7 @@
    Synopsis:
 
    import gyoto
-   gyoto.loadPlugin("python") # or python2.7 or python3.4...
+   gyoto.requirePlugin("python") # or python2.7 or python3.4...
    td=gyoto.Spectrum("Python::ThinDisk")
    td.set("Module", "gyoto_sample_thindisks")
    td.set("Class", "ThinDisk")

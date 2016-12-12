@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -147,12 +147,7 @@ void Gyoto::Spectrum::Register(std::string name,
   Gyoto::Spectrum::Register_ = ne;
 }
 
-Spectrum::Subcontractor_t*
-Spectrum::getSubcontractor(std::string name, int errmode) {
-  if (!Gyoto::Spectrum::Register_) throwError("No Spectrum kind registered!");
-  return (Spectrum::Subcontractor_t*)Gyoto::Spectrum::Register_
-    -> getSubcontractor(name, errmode);
-}
+GYOTO_GETSUBCONTRACTOR(Spectrum)
 
 void Gyoto::Spectrum::initRegister() {
   if (Gyoto::Spectrum::Register_) delete Gyoto::Spectrum::Register_;

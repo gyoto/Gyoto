@@ -20,6 +20,8 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Spectrum::Python, Parameters, parameters,
 GYOTO_PROPERTY_END(Gyoto::Spectrum::Python,
 		   Gyoto::Spectrum::Generic::properties)
 
+GYOTO_PROPERTY_THREAD_UNSAFE(Gyoto::Spectrum::Python)
+
 Spectrum::Python::Python()
 : Generic("Python"), Base(),
   pCall_(NULL), pIntegrate_(NULL), pCall_overloaded_(false)

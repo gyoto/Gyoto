@@ -81,6 +81,8 @@ namespace Gyoto {
    * an Gyoto::Error.
    */
   void loadPlugin(   char const * const plugname, int nofail = 0);
+  bool havePlugin(std::string plugname);
+  void requirePlugin(std::string plugname, int nofail = 0);
 }
 
 /**
@@ -101,6 +103,8 @@ protected:
     ///< Pointer to the Gyoto::SmartPointee::Subcontractor_t function that produces an object of this kind
   Register::Entry* next_;
     ///< Next entry in the register, or NULL
+  const std::string plugin_;
+    ///< Plug-in from which this Entry was loaded
 public:
   /**
    * \brief Constructor
@@ -114,15 +118,49 @@ public:
    * \brief Get subcontractor for a given name
    * 
    * Search through the register for an Entry matching name and return
-   * the corresponding subcontractor.
+   * the corresponding subcontractor. If plugin is specified, only a
+   * subcontractor matching both name and plugin will be returned.
+   * Note that Gyoto::Entry::getSubcontractor() will not load the
+   * plug-in for you, contrary to
+   * e.g. Gyoto::Metric::getSubcontractor(). If plugin is the empty
+   * string, then the first subcontractor matching name will be
+   * returned, and the name of the plug-in it belongs to will be
+   * returned in plugin upon output.
    *
-   * \param name Name of the kind to look for.
-   * \param errmode 1 if getSubContractor() should return NULL upon
+   * \param[in] name Name of the kind to look for.
+   * \param[inout] plugin e.g. "stdplug".
+   * \param[in] errmode 1 if getSubContractor() should return NULL upon
    * failure. Else a Gyoto::Error is thrown.
    * \return Pointer to subcontractor function.
    */
   Gyoto::SmartPointee::Subcontractor_t*
-    getSubcontractor(std::string name, int errmode=0);
+    getSubcontractor(std::string name, std::string &plugin, int errmode=0);
+
 };
+
+#define GYOTO_GETSUBCONTRACTOR(space)		\
+  Gyoto::space::Subcontractor_t*					\
+  Gyoto::space::getSubcontractor(std::string name, std::vector<std::string> &plugin, int errmode) { \
+  for (size_t i=0; i<plugin.size(); ++i) {				\
+    GYOTO_DEBUG_EXPR(plugin[i]);					\
+    Gyoto::requirePlugin(plugin[i]);					\
+  }									\
+  if (!Gyoto::space::Register_) throwError("No " GYOTO_STRINGIFY(space) " kind registered!"); \
+  Subcontractor_t* sctr= NULL;						\
+  std::string plg("");							\
+  if (!plugin.size()) {							\
+  sctr =								\
+    (Subcontractor_t*)Gyoto::space::Register_				\
+    -> getSubcontractor(name, plg, errmode);				\
+  plugin.push_back(plg);						\
+  }									\
+  for (size_t i=plugin.size()-1; i>=0 && sctr == NULL; --i) {		\
+    sctr=								\
+      (Subcontractor_t*)Gyoto::space::Register_				\
+      -> getSubcontractor(name, plugin[i], 1);				\
+  }									\
+  if (!errmode && !sctr) throwError ("Kind not found in the specified plug-ins: "+name); \
+  return sctr;								\
+}
 
 #endif

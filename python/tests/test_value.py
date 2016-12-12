@@ -1,6 +1,6 @@
 import unittest
 import gyoto
-gyoto.loadPlugin("stdplug")
+gyoto.requirePlugin("stdplug")
 
 class TestValue(unittest.TestCase):
 

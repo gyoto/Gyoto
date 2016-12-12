@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2014-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -65,10 +65,12 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
 GYOTO_PROPERTY_FILENAME(NumericalMetricLorene, File, directory)
 GYOTO_PROPERTY_END(NumericalMetricLorene, Generic::properties)
 
+// Lorene Metrics are not thread-safe
+GYOTO_PROPERTY_THREAD_UNSAFE(NumericalMetricLorene)
+
 #define GYOTO_NML_PPHI_TOL 5 // tolerance on p_phi drift, percentage
 
 NumericalMetricLorene::NumericalMetricLorene() :
-  WIP(""),
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
   filename_(NULL),
   mapet_(true),

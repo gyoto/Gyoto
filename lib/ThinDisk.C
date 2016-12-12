@@ -17,6 +17,9 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* The subcontractor is registered by the stdplug plugin */
+#define GYOTO_PLUGIN stdplug
+
 #include "GyotoPhoton.h"
 #include "GyotoThinDisk.h"
 #include "GyotoProperty.h"

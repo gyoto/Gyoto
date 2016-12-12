@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014 Thibaut Paumard
+    Copyright 2011-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -244,13 +244,19 @@ long int __ygyoto_var_idx(size_t id);
       if (!yarg_string(argc-1))						\
         y_error("Cannot allocate object of virtual class " #BASE);	\
       char * fname = ygets_q(argc-1);					\
+      std::vector<std::string> plugin;					\
+      if (argc >= 2 && yarg_string(argc-2)) {				\
+	long ntot=0;							\
+	ystring_t * plugs = ygeta_q(argc-2, &ntot, NULL);		\
+	for (size_t i=0; i<ntot; ++i) plugin.push_back(plugs[i]);	\
+      }									\
       OBJ = ypush_##BASE();						\
       Gyoto::BASE::Subcontractor_t * sub =				\
-	Gyoto::BASE::getSubcontractor(fname, 1);			\
+	Gyoto::BASE::getSubcontractor(fname, plugin, 1);		\
       if (sub) {							\
 	GYOTO_DEBUG << "found a subcontractor for \"" << fname		\
 		    << "\", calling it now\n";				\
-	*OBJ = (*sub)(NULL);						\
+	*OBJ = (*sub)(NULL, plugin);					\
       } else {								\
 	YGYOTO_BASE_CONSTRUCTOR1_XML(GETBASE);				\
       }									\

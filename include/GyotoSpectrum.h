@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2014, 2016 Thibaut Paumard
+    Copyright 2011-2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -49,7 +49,7 @@ namespace Gyoto{
      * provided so that you may not have to code anything.
      */
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
-      Subcontractor_t(Gyoto::FactoryMessenger* fmp);
+      Subcontractor_t(Gyoto::FactoryMessenger* fmp, std::vector<std::string> const &);
 
     /**
      * \brief Subcontractor template
@@ -60,8 +60,9 @@ namespace Gyoto{
      * \tparam T Sub-class of Spectrum::Generic 
      */
     template<typename T> SmartPointer<Spectrum::Generic> Subcontractor
-      (FactoryMessenger* fmp) {
+      (FactoryMessenger* fmp, std::vector<std::string> const & plugins) {
       SmartPointer<T> sp = new T();
+      sp -> plugins(plugins) ;
 #ifdef GYOTO_USE_XERCES
       if (fmp) sp -> setParameters(fmp);
 #endif
@@ -86,16 +87,23 @@ namespace Gyoto{
     /**
      * Query the Spectrum register to get the Metric::Subcontractor_t
      * correspondig to a given kind name. This function is normally
-     * called only from the Factory.
+     * called only from the Factory. If plugin is specified, only a
+     * subcontractor matching both name and plugin will be returned,
+     * loading the plug-in if necessary. If plugin is the empty
+     * string, then the first subcontractor matching name will be
+     * returned, and the name of the plug-in it belongs to will be
+     * returned in plugin upon output.
      *
-     * \param name e.g. "PowerLaw"
-     * \param errmode int=0. If errmode==0, failure to find a
+     * \param[in] name e.g. "PowerLaw"
+     * \param[inout] plugin e.g. "stdplug".
+     * \param[in] errmode int=0. If errmode==0, failure to find a
      *        registered Spectrum by that name is an error. Else, simply
      *        return NULL pointer in that case.
      * \return pointer to the corresponding subcontractor.
      */
-    Gyoto::Spectrum::Subcontractor_t*
-      getSubcontractor(std::string name, int errmode=0);
+    Gyoto::Spectrum::Subcontractor_t* getSubcontractor(std::string name,
+						       std::vector<std::string> &plugins,
+						       int errmode=0);
 
     /// The Spectrum register
     /**

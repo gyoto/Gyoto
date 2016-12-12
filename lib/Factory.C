@@ -270,13 +270,12 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
       delete result;
     } else MetricDOM = root_;
 
-    string Plugin = C(MetricDOM->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
+    vector<string> Plugin = Gyoto::split(C(MetricDOM->getAttribute(X("plugin"))), ",");
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
     FactoryMessenger fm(this, MetricDOM);
 
-    gg_= (*Metric::getSubcontractor(Kind))(&fm);
+    gg_= (*Metric::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
   }
 
@@ -304,15 +303,14 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string AstrobjKind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(AstrobjKind);
 
     FactoryMessenger fm(this, tmpEl);
 
-    obj_ = (*Astrobj::getSubcontractor(AstrobjKind))(&fm);
+    obj_ = (*Astrobj::getSubcontractor(AstrobjKind, Plugin))(&fm, Plugin);
 
   }
   return obj_;
@@ -365,14 +363,13 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
-    return (*Spectrum::getSubcontractor(Kind))(&fm);
+    return (*Spectrum::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
 
@@ -395,14 +392,13 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
-    string Plugin = C(tmpEl->getAttribute(X("plugin")));
-    if (Plugin != "") loadPlugin(Plugin.c_str());
+    vector<string> Plugin = split(C(tmpEl->getAttribute(X("plugin"))), ",");
     string Kind =
       Cs(tmpEl->getAttribute(X("kind")));
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
-    return (*Spectrometer::getSubcontractor(Kind))(&fm);
+    return (*Spectrometer::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
 

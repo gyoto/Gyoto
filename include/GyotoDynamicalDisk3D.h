@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -96,6 +96,7 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
   // -------------------------
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
 
   DynamicalDisk3D(); ///< Standard constructor
   

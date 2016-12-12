@@ -163,6 +163,12 @@ extern "C" {
 
 
   void
+  Y_gyoto_havePlugin(int argc)
+  {
+    ypush_long(Gyoto::havePlugin(ygets_q(0)));
+  }
+
+  void
   Y_gyoto_loadPlugin(int argc)
   {
     // Step 1: determine whether nofail is set (to true)
@@ -188,6 +194,38 @@ extern "C" {
       if (kiargs[0]<0 ||(iarg!=kiargs[0] && iarg!=kiargs[0]+1)) {
 	plugins = ygeta_q(iarg, &ntot, dims);
 	for (long i=0; i<ntot; ++i) Gyoto::loadPlugin(plugins[i], nofail);
+      }
+    }
+    ypush_nil();
+    //    Gyoto::Register::init();
+  }
+
+  void
+  Y_gyoto_requirePlugin(int argc)
+  {
+    // Step 1: determine whether nofail is set (to true)
+    int nofail=0;
+    static char const * knames[2] = { "nofail", 0 };
+    static long kglobs[2];
+    int kiargs[1];
+    yarg_kw_init(const_cast<char**>(knames), kglobs, kiargs);
+    int iarg=argc-1;
+    while (iarg>=0) {
+      iarg = yarg_kw(iarg, kglobs, kiargs);
+      iarg--;
+    }
+    if (kiargs[0]>=0) {// nofail= present
+      nofail=yarg_true(kiargs[0]);
+    }
+
+    // Step 2: load plug-ins
+    long ntot=0;
+    long dims[Y_DIMSIZE];
+    ystring_t * plugins = 0;
+    for (iarg=argc-1; iarg>=0; iarg--) {
+      if (kiargs[0]<0 ||(iarg!=kiargs[0] && iarg!=kiargs[0]+1)) {
+	plugins = ygeta_q(iarg, &ntot, dims);
+	for (long i=0; i<ntot; ++i) Gyoto::requirePlugin(plugins[i], nofail);
       }
     }
     ypush_nil();

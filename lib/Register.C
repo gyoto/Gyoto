@@ -34,7 +34,21 @@
 using namespace Gyoto;
 using namespace std;
 
+static std::string GyotoRegisterCurrentPlugin ("built-in");
+
+static std::vector<std::string> GyotoRegisteredPlugins;
+
 typedef void GyotoInitFcn();
+
+bool Gyoto::havePlugin(std::string name) {
+  for (size_t i=0; i < GyotoRegisteredPlugins.size(); ++i)
+    if (GyotoRegisteredPlugins[i]==name) return true;
+  return false;
+}
+
+void Gyoto::requirePlugin(std::string name, int nofail) {
+  if (!havePlugin(name)) loadPlugin(name.c_str(), nofail);
+}
 
 void Gyoto::loadPlugin(char const*const nam, int nofail) {
   string name(nam);
@@ -122,7 +136,13 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
   }
   if ( (err=dlerror()) ) throwError(err);
   GYOTO_DEBUG << "Calling plug-in init function " << dlfunc << endl;
+  std::string tmp_name(GyotoRegisterCurrentPlugin);
+  // In case nam is a file name, that's what we wan't to store
+  GyotoRegisterCurrentPlugin = nam;
   (*initfcn)();
+  GyotoRegisterCurrentPlugin = tmp_name;
+  // In case nam is a file name, that's what we wan't to store
+  GyotoRegisteredPlugins.insert(GyotoRegisteredPlugins.begin(), nam);
   GYOTO_DEBUG << "Done." << endl;
 }
 
@@ -134,6 +154,8 @@ void Gyoto::Register::init(char const *  cpluglist) {
   Spectrum::initRegister();
   // This cleans and fills Spectometer::Register_
   Spectrometer::initRegister();
+
+  GyotoRegisteredPlugins.push_back(GyotoRegisterCurrentPlugin);
 
   // Init units system
   Units::Init();
@@ -184,22 +206,36 @@ void Gyoto::Register::init(char const *  cpluglist) {
 Register::Entry::Entry(std::string name,
 		       Gyoto::SmartPointee::Subcontractor_t* subcontractor,
 		       Register::Entry* next)
-  : name_(name), subcontractor_(subcontractor), next_(next)
+  : name_(name), subcontractor_(subcontractor), next_(next), plugin_(GyotoRegisterCurrentPlugin)
 {}
 
 Register::Entry::~Entry() { if (next_) delete next_; }
 
 
+#ifndef GYOTO_NO_DEPRECATED
+#warning Embedding deprecated method.\
+  Define GYOTO_NO_DEPRECATED to disable.
 Gyoto::SmartPointee::Subcontractor_t*
 Register::Entry::getSubcontractor(std::string name, int errmode) {
+  std::string plugin("");
+  return getSubcontractor(name, plugin, errmode);
+}
+#endif
+
+Gyoto::SmartPointee::Subcontractor_t*
+Register::Entry::getSubcontractor(std::string name, std::string &plugin, int errmode) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(name);
     GYOTO_DEBUG_EXPR(errmode);
   GYOTO_ENDIF_DEBUG
 # endif
-  if (name_==name) return subcontractor_;
-  if (next_) return next_ -> getSubcontractor(name, errmode);
+  bool any_plugin = (plugin == "");
+  if (name_==name && (any_plugin || (plugin_ == plugin))) {
+    if (any_plugin) plugin=plugin_;
+    return subcontractor_;
+  }
+  if (next_) return next_ -> getSubcontractor(name, plugin, errmode);
   if (errmode) return NULL;
   throwError ("Unregistered kind: "+name);
   return NULL; // will never get there, avoid compilation warning
@@ -220,21 +256,25 @@ void Gyoto::Register::list() {
   cout << "    " << GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
   cout << "    " << GYOTO_PKGLIBDIR "/" << endl << endl;
 
+  cout << "List of loaded plug-ins:" << endl;
+  for (size_t i=0; i < GyotoRegisteredPlugins.size(); ++i)
+    cout << "    " << GyotoRegisteredPlugins[i] << endl;
+
   cout << "List of available Metrics:" << endl;
   for (entry = Metric::Register_; entry; entry = entry -> next_)
-    cout << "    " << entry -> name_ << endl;
+    cout << "    " << entry -> name_ << " (in plug-in: " << entry -> plugin_ << ")" << endl;
   
   cout << "List of available Astrobjs:" << endl;
   for (entry = Astrobj::Register_; entry; entry = entry -> next_)
-    cout << "    " << entry -> name_ << endl;
+    cout << "    " << entry -> name_ << " (in plug-in: " << entry -> plugin_ << ")" << endl;
   
   cout << "List of available Spectra:" << endl;
   for (entry = Spectrum::Register_; entry; entry = entry -> next_)
-    cout << "    " << entry -> name_ << endl;
+    cout << "    " << entry -> name_ << " (in plug-in: " << entry -> plugin_ << ")" << endl;
     
   
   cout << "List of available Spectrometers:" << endl;
   for (entry = Spectrometer::Register_; entry; entry = entry -> next_)
-    cout << "    " << entry -> name_ << endl;
+    cout << "    " << entry -> name_ << " (in plug-in: " << entry -> plugin_ << ")" << endl;
     
 }

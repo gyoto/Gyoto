@@ -216,6 +216,7 @@ class Gyoto::Scenery
 # endif
 
  public:
+  GYOTO_OBJECT_THREAD_SAFETY;
 # ifdef HAVE_MPI
   /// Team of processes for MPI
   /**

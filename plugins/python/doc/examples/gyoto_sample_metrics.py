@@ -11,7 +11,7 @@
    Synopsis:
 
    import gyoto
-   gyoto.loadPlugin("python") # or python2.7 or python3.4...
+   gyoto.requirePlugin("python") # or python2.7 or python3.4...
    gg=gyoto.Metric("Python")
    gg.set("Module", "gyoto_sample_metric")
    gg.set("Class", "Minkowski")

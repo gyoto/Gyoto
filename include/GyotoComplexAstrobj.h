@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -93,6 +93,7 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   double step_max_; ///< Maximum &delta; step inside the Astrobj
 
  public:
+  GYOTO_OBJECT_THREAD_SAFETY;
   Complex(); ///< Default constructor.
   Complex(const Complex& ) ; ///< Copy constructor.
   virtual Complex* clone() const; ///< "Virtual" copy constructor

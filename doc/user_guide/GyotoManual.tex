@@ -60,7 +60,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated October 29, 2016}
+\Large{Updated December 7, 2016}
 %\today
 
 \vspace{4cm}
@@ -528,7 +528,7 @@ Import the \texttt{gyoto} extension and load the standard plug-in into
 gyoto:
 \begin{code}
   import gyoto
-  gyoto.loadPlugin("stdplug")
+  gyoto.requirePlugin("stdplug")
 \end{code}
 Get help on Gyoto:
 \begin{code}
@@ -551,7 +551,7 @@ API, which allows computing time-like geodesics), the python extension
 for a specific Gyoto plug-in must be imported:
 \begin{code}
   import gyoto
-  gyoto.loadPlugin("stdplug")
+  gyoto.requirePlugin("stdplug")
   import gyoto_std
   st=gyoto_std.Star()
 \end{code}
@@ -1000,16 +1000,21 @@ sub-directory of the source code distribution.
 A plug-in is merely a shared library which contains the object code
 for your new objects, plus a special initialisation function. It is
 loaded into memory using \texttt{dlopen()} by the function
-\texttt{Gyoto::loadPlugin(char const*const name, int nofail)},
-implemented in \texttt{lib/Register.C}. The \texttt{name} argument
-will be used twice:
+\texttt{Gyoto::loadPlugin(char const*const name, int nofail)} (note
+that the upper level function \texttt{Gyoto::requirePlugin(char
+  const*const name, int nofail)} should be used instead whenever
+applicable), implemented in \texttt{lib/Register.C}. The \texttt{name}
+argument will be used three times:
 \begin{itemize}
 \item the shared library file must be called
   \texttt{libgyoto-\emph{name}.\$suffix} (\texttt{\$suffix} is usually
   \texttt{.so} under Linux, \texttt{.dylib} under Mac OS);
 \item the init function for your plug-in must be called either
   \texttt{\_\_Gyoto\emph{name}Init} or exactly
-  \texttt{\_\_GyotoPluginInit}.
+  \texttt{\_\_GyotoPluginInit};
+\item each subcontractor registered by the init function (see below)
+  will be tagged with the plug-in name, so it is later possible to
+  search for a registered subcontractor by kind name and plugin name.
 \end{itemize}
 
 The role of the init function is to register subcontractors for your
@@ -1029,7 +1034,8 @@ extern "C" void __GyotomypluginInit() {
 
 Likewise, you could register more metrics, astrophysical objects and
 spectra. Other examples can be seen in the \texttt{lib/StdPlug.C} and
-\texttt{lib/LorenePlug.C} files.
+\texttt{lib/LorenePlug.C} files, and in the \texttt{plugins/python/}
+directory.
 
 When building your plug-in, make sure \texttt{MyPlugin.C} ends up
 compiled with\\ \texttt{lib/Minkowski.C} (in this example) into a
@@ -1229,7 +1235,7 @@ section:
 Finally, the Yorick interface (Sect.~\ref{sect:yorick}) has a function
 to explicitly load a \GYOTO\ plug-in at run-time:
 \begin{code}
- > gyoto.loadPlugin("myplugin");
+ > gyoto.requirePlugin("myplugin");
 \end{code}
 Once the plug-in is loaded, your new object kinds should be registered
 (that's the purpose of the init function). To check that your objects
@@ -1251,8 +1257,7 @@ function of the plug-in:
 The Yorick interface can load any object from an XML description, an
 can also initialise any object from its name:
 \begin{code}
- > gyoto.loadPlugin("myplugin");
- > metric = gyoto.Metric("Minkowski");
+ > metric = gyoto.Metric("Minkowski", "myplugin");
 \end{code}
 If your object supports any options using the \texttt{setParameter()}
 method, these options can also be set from within Yorick:

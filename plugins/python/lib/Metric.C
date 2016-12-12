@@ -27,6 +27,8 @@ GYOTO_PROPERTY_BOOL(Metric::Python, Spherical, Cartesian, spherical,
       "Whether the coordinate system is Spherical or (default) Cartesian.")
 GYOTO_PROPERTY_END(Metric::Python, Generic::properties)
 
+GYOTO_PROPERTY_THREAD_UNSAFE(Metric::Python)
+
 // Birth and death
 Gyoto::Metric::Python::Python()
 : Generic(GYOTO_COORDKIND_CARTESIAN, "Python"),

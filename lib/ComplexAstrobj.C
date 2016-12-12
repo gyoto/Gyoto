@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -55,6 +55,12 @@ Complex *Complex::clone() const {return new Complex(*this); }
 Complex::~Complex()
 {
   if (cardinal_) for (size_t i=0; i< cardinal_; ++i) elements_[i] = NULL;
+}
+
+bool Complex::isThreadSafe() const {
+  bool safe = Generic::isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  return safe;
 }
 
 void Complex::metric(SmartPointer<Metric::Generic> gg)
@@ -186,6 +192,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
   string name="", content="", unit="";
+  vector<string> plugin;
   FactoryMessenger * child = NULL;
 
   metric( fmp->metric() );
@@ -195,8 +202,9 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       cerr << "DEBUG: Astrobj::Complex::Subcontractor(): name=" << name << endl;
     if (name=="SubAstrobj") {
       content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      append ((*Astrobj::getSubcontractor(content))(child));
+      plugin  = split(fmp -> getAttribute("plugin"), ",");
+      child   = fmp -> getChild();
+      append ((*Astrobj::getSubcontractor(content, plugin))(child, plugin));
       delete child;
     } else setParameter(name, content, unit);
   }

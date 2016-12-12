@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -462,12 +462,7 @@ void Gyoto::Astrobj::Register(std::string name, Subcontractor_t* scp){
   Gyoto::Astrobj::Register_ = ne;
 }
 
-Gyoto::Astrobj::Subcontractor_t*
-Astrobj::getSubcontractor(std::string name, int errmode) {
-  if (!Gyoto::Astrobj::Register_) throwError("No Astrobj kind registered!");
-  return (Subcontractor_t*)Gyoto::Astrobj::Register_
-    -> getSubcontractor(name, errmode);
-}
+GYOTO_GETSUBCONTRACTOR(Astrobj)
 
 Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),

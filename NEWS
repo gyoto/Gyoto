@@ -1,3 +1,14 @@
+1.2.0 2016/12/12 ABI 6:0:0
+   * New functionality: the plug-in from which each subcontractor is
+     registered is now tracked, so that it becomes possible to look
+     for a subcontractor matching a specific kind and plug-in. We
+     introduce the function Gyoto::requirePlugin() in addition to
+     Gyoto::loadPlugin(). The subcontractor signature is changed to
+     accept a second parameter, which breaks the API.
+   * New functionality: thread-unsafe classes declare themselves as
+     such, so that NThreads is ignored when multi-threading would
+     cause erroneous results.
+
 1.1.2 2016/12/10 FTR
    * New Metrics in stdplug: ChernSimons, RezzollaZhidenko.
    * New Astrobjs in stdplug: DeformedTorus, DynamicalDiskBolometric,

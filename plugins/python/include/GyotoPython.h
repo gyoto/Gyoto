@@ -328,6 +328,7 @@ class Gyoto::Spectrum::Python
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
 
   Python();
 
@@ -391,6 +392,7 @@ class Gyoto::Metric::Python
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
   Python();
   Python(const Python&);
   ~Python();
@@ -440,6 +442,7 @@ class Gyoto::Astrobj::Python::Standard
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
 
   /* Birth and Death*/
   Standard();
@@ -505,6 +508,7 @@ class Gyoto::Astrobj::Python::ThinDisk
 
  public:
   GYOTO_OBJECT;
+  GYOTO_OBJECT_THREAD_SAFETY;
 
   /* Birth and Death*/
   ThinDisk();

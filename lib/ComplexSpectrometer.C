@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2013-2014, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -52,6 +52,11 @@ Complex::Complex(const Complex& o) :
 }
 Complex *Complex::clone() const {return new Complex(*this); }
 
+bool Complex::isThreadSafe() const {
+  bool safe = Generic::isThreadSafe();
+  for (size_t i=0; i < cardinal_; ++i) safe &= elements_[i] -> isThreadSafe();
+  return safe;
+}
 
 Complex::~Complex()
 {
@@ -126,6 +131,7 @@ void Complex::setParameters(FactoryMessenger *fmp) {
     cerr << "DEBUG: in Complex::setParameters()" << endl;
 
   string name="", content="", unit="";
+  std::vector<std::string> plugin;
   FactoryMessenger * child = NULL;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
@@ -133,8 +139,9 @@ void Complex::setParameters(FactoryMessenger *fmp) {
       cerr << "DEBUG: Spectrometer::Complex::Subcontractor(): name=" << name << endl;
     if (name=="SubSpectrometer") {
       content = fmp -> getAttribute("kind");
-      child = fmp -> getChild();
-      append ((*Spectrometer::getSubcontractor(content))(child));
+      child   = fmp -> getChild();
+      plugin  = split(fmp -> getAttribute("plugin"), ",");
+      append ((*Spectrometer::getSubcontractor(content, plugin))(child, plugin));
       delete child;
     } else setParameter(name, content, unit);
   }
