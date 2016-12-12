@@ -83,15 +83,16 @@ struct Gyoto::Arg: public option::Arg
 };
 enum  optionType { DEBUG, QUIET, VERBOSE, SILENT,
 		   IMIN, IMAX, JMIN, JMAX, ISTEP, JSTEP, ISPEC, JSPEC};
-enum  optionIndex { UNKNOWN, HELP, PLUGINS, LIST, VERBOSITY, NOSIGFPE, RANGE,
+enum  optionIndex { UNKNOWN, HELP, PLUGINS, LIST, VERSION, VERBOSITY, NOSIGFPE, RANGE,
 		    BOUNDARIES, STEPS, IPCT, TIME, TMIN, FOV, RESOLUTION,
 		    DISTANCE, PALN, INCLINATION, ARGUMENT, NTHREADS, NPROCESSES,
 		    SETPARAMETER, UNIT, XMLWRITE};
 const option::Descriptor usage[] =
 {
- {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\n\n"
-                                        "Generic options:\n  -- \tStop option processing." },
+ {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\t\n\n"
+                                        "Generic options:\t\n  -- \tStop option processing." },
  {HELP, 0,"h","help",option::Arg::Optional, "  --help[=<c>, -h<c>  \tWithout argument, print usage and exit. With argument, document class <c> (e.g. \"Screen\", \"Astrobj::Star\") and exit." },
+ {VERSION, 0, "", "version", option::Arg::None, "  --version, -V  \tPrint the Gyoto version."},
  {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
  {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
 #if !defined HAVE_FENV_H
@@ -194,9 +195,12 @@ int main(int argc, char** argv) {
     return 1;
 
   // Check whether to output usage string
-  if ((!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN])) || options[HELP] ) {
-    if (!options[HELP].arg) option::printUsage(std::cout, usage);
-    if (!options[LIST] && !options[HELP].arg) {
+  if (options[VERSION]
+      || (!options[LIST] && (argc == 0 || parse.nonOptionsCount() != 2 || options[UNKNOWN])) || options[HELP] ) {
+    cout << GYOTO_STRINGIFY(PACKAGE_STRING) << endl
+	 << "ABI compatibility version: " << GYOTO_SOVERS << endl;
+    if (!options[VERSION] && !options[HELP].arg) option::printUsage(std::cout, usage);
+    if (!options[VERSION] && !options[LIST] && !options[HELP].arg) {
       if (options[HELP]) return 0;
       return 1;
     }
@@ -223,7 +227,8 @@ int main(int argc, char** argv) {
   if (parse.nonOptionsCount() > 1) pixfile=strdup(parse.nonOptions()[1]);
 
   // State copyright
-  if (!options[LIST] && !options[HELP] && verbose() >= GYOTO_QUIET_VERBOSITY)
+  if (options[VERSION]
+      ||(!options[LIST] && !options[HELP] && verbose() >= GYOTO_QUIET_VERBOSITY)) {
     cout << " Copyright (c) 2011-2015 Frederic Vincent & Thibaut Paumard\n"
 	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
 	 << " We request that use of Gyoto in scientific publications be "
@@ -233,6 +238,8 @@ int main(int argc, char** argv) {
 	 << "  Classical and Quantum Gravity 28, 225011 (2011) "
 	 << "[arXiv:1109.4769]"
 	 << endl << endl;
+  }
+  if (options[VERSION]) return 0;
 
   if (options[PLUGINS])
     pluglist = options[PLUGINS].last()->arg?options[PLUGINS].last()->arg:"";

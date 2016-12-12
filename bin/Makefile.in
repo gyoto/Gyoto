@@ -425,7 +425,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) \
+	-DPACKAGE_STRING="$(PACKAGE_STRING)"
+
 AM_LDFLAGS = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC) \
 	$(am__append_3)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) $(CXXFLAGS_EXEC)
