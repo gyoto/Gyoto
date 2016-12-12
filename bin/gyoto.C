@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
   // State copyright
   if (options[VERSION]
       ||(!options[LIST] && !options[HELP] && verbose() >= GYOTO_QUIET_VERBOSITY)) {
-    cout << " Copyright (c) 2011-2015 Frederic Vincent & Thibaut Paumard\n"
+    cout << " Copyright (c) 2011-2016 Frederic Vincent & Thibaut Paumard\n"
 	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
 	 << " We request that use of Gyoto in scientific publications be "
 	 << " properly \n acknowledged. Please cite:\n"

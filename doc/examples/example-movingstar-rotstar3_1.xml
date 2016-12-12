@@ -7,8 +7,10 @@
     prefixed with "`pwd`/" :
     <File>`pwd`/.check-lorene/resu.d</File>
 
-    <IntegKind>1</IntegKind>
-    <!--0: integ 4D ; 1: integ 3+1 D  -->
+    <SpecificIntegrator/>
+    SpecificIntegrator: 3+1D integration;
+    GenericIntegrator:  4D   integration.
+
   </Metric>
 
   <Screen>

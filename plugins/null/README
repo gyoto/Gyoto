@@ -23,7 +23,7 @@ To make your own,
      - In XML: <Astrobj plugin="null" kind="null"/>
      - On the command line: gyoto -pstdplug,null ...
      - In Python:
-          gyoto.loadPlugin('null')
+          gyoto.requirePlugin('null')
      - In all cases: export GYOTO_PLUGINS="stdplug,null".
 
 For further details, refer to the Gyoto user manual, section entitled

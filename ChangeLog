@@ -1,8 +1,88 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon Oct 31 11:08:12 2016 +0100
+Date:   Mon, 12 Dec 2016 13:49:58 +0100
+
+    Releasing 1.2.0
+
+commit b3052c5f8663e4b6c49256b5041bcd67a91c2d85
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 12:57:47 2016 +0100
+
+    Add --version option to gyoto command-line tool
+
+commit 6ca591a2660e1293b559af6c1e86015d7be0bd48
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 10:45:37 2016 +0100
+
+    Support enroling MPI_COMM_WORLD in python/example-mpi.py
+    
+    Apply the same heuristics and algorithm as in bin/gyoto.C to support
+    mpirun starting the worker process itself.
+
+commit 87e8567f6c9bcd263a874bc1f11811556770c276
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 20:46:35 2016 +0100
+
+    Correctly handle empty stry case in OscilTorus::emittingArea()
+
+commit 09a179b9d5d070c949d0969221cc4efc0bdcc989
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 20:08:45 2016 +0100
+
+    Remove spurious cerr
+
+commit 63632ea68aee0e6ff3d2e58d13991ce2148ece06
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 19:33:11 2016 +0100
+
+    Implement thread-safety declaration
+    
+    Thread-unsafe classes declare themselves as such, so that NThreads is
+    ignored when multi-threading would cause erroneous results.
+
+commit b524fef7147c66ec16190b4c8f7e31adbaa1e64c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 20:44:57 2016 +0100
+
+    NumericalMetricalLorene is mature: not WIP anymore
+    
+    Stop inheriting from WIP
+
+commit 22d3e7f974b8f52dbe40b3776bdb2c90d7e9261c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 18:11:35 2016 +0100
 
     Releasing 1.1.2
+
+commit 039f3b98a6ddfa3a99470f2a9b50b9bfcabc97e3
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 15:53:19 2016 +0100
+
+    Change subcontractor APIs to use a vector<string>
+    
+    It is now possible to specify several plugins for loading an
+    object. Useful when a plug-in depends on another one. In XML:
+      <Klass kind="foo" plugin="plug1,plug2,plug3">
+    Plugins are loaded in order and looked into in reverse order
+    for the class.
+
+commit 78608e5a49a349166d15b570ffcec5c9a2754571
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 13:15:06 2016 +0100
+
+    Store plug-in name as given by user
+    
+    When plu-gin name is actually a file name, loadPlugin() determines the
+    actual plug-in name to find out the intilialization
+    function. Nevertherless we prefer to store the file name in that case
+    so users can load several versions of the same plug-in e.g. for
+    testing purposes.
+
+commit 5f35070ab4371ab0829de38585b635bd3d0cf51f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 12:34:15 2016 +0100
+
+    Merging branch master into track-plugin
 
 commit b0413450c29b5a2fca5af1ac30c30954e23f4da8
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -337,6 +417,18 @@ Date:   Mon Oct 3 11:27:05 2016 +0200
        * Yorick: actually implement `picture' painter for the matte_paint
          framework. Allow using any two or three-dimensional image or
          stack of images in the `picture' and `panorama' painters.
+
+commit 649d76dce7a90a15d55ec444a9d7b50f5868a6f8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Sep 28 12:21:32 2016 +0200
+
+    NEXT  2016/09/28 API
+       * New functionality: the plug-in from which each subcontractor is
+         registered is now tracked, so that it becomes possible to look
+         for a subcontractor matching a specific kind and plug-in. We
+         introduce the function Gyoto::requirePlugin() in addition to
+         Gyoto::loadPlugin(). The subcontractor signature is changed to
+         accept a second parameter, which breaks the API.
 
 commit 22c8c78b2388b987ee5afca27706e2d54c4a3c0a
 Author: Thibaut Paumard <paumard@users.sourceforge.net>

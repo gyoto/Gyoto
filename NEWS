@@ -1,4 +1,4 @@
-NEXT  2016/12/10 API
+1.2.0 2016/12/12 ABI 6:0:0
    * New functionality: the plug-in from which each subcontractor is
      registered is now tracked, so that it becomes possible to look
      for a subcontractor matching a specific kind and plug-in. We
