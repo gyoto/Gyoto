@@ -1,6 +1,33 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon Oct 31 11:08:12 2016 +0100
+Date:   Tue, 13 Dec 2016 14:18:33 +0100
+
+    Releasing 1.1.3
+
+commit 1561f09fa182726270c7861183354669fbdff76f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 12:57:47 2016 +0100
+
+    Add --version option to gyoto command-line tool
+
+commit 340875ee303e950dfbd2bfd53d3b52846e2d1df5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 10:45:37 2016 +0100
+
+    Support enroling MPI_COMM_WORLD in python/example-mpi.py
+    
+    Apply the same heuristics and algorithm as in bin/gyoto.C to support
+    mpirun starting the worker process itself.
+
+commit abf51da9a8ced305f1c597cf2b9ac7d1f03f2805
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 20:46:35 2016 +0100
+
+    Correctly handle empty stry case in OscilTorus::emittingArea()
+
+commit 22d3e7f974b8f52dbe40b3776bdb2c90d7e9261c
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sat Dec 10 18:11:35 2016 +0100
 
     Releasing 1.1.2
 
