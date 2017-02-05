@@ -35,6 +35,7 @@ func __gyotoy_before_init
 {
   noop, gy.GLib.set_prgname("Gyotoy");
   noop, gy.GLib.set_application_name("Gyotoy");
+  noop, gy.Gdk.set_allowed_backends("x11,*");
 }
 
 GYOTOY_VERSION = "0.2";
