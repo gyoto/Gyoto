@@ -1,8 +1,6 @@
 import numpy
 import unittest
 import gyoto
-gyoto.loadPlugin('stdplug')
-gyoto.loadPlugin('lorene')
 import gyoto_std
 import gyoto_lorene
 

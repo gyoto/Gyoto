@@ -132,15 +132,17 @@ gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i $(top_srcdir)/include/*.h
 	cat $(srcdir)/header.py trailer.py > gyoto.py
 	rm trailer.py
 
-gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
+gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i std_header.py
 	$(SWIG_CMD) -o gyoto_std_wrap.cxx $(srcdir)/gyoto_std.i
 	mv gyoto_std.py gyoto_std_trailer.py
-	echo "# -*- coding: utf-8 -*-" > gyoto_std.py
-	cat gyoto_std_trailer.py >> gyoto_std.py
+	cat $(srcdir)/std_header.py gyoto_std_trailer.py > gyoto_std.py
 	rm gyoto_std_trailer.py
 
-gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
+gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i lorene_header.py
 	$(SWIG_CMD) -o gyoto_lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
+	mv gyoto_lorene.py gyoto_lorene_trailer.py
+	cat $(srcdir)/lorene_header.py gyoto_lorene_trailer.py > gyoto_lorene.py
+	rm gyoto_lorene_trailer.py
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 

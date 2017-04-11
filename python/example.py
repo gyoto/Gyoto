@@ -19,15 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 
-# Before loading the gyoto_std extension:
-#  - gyoto must be imported;
-#  - the stdplug Gyoto plug-in must be loaded. This normally happens
-#    automatically, unless the user has set her environment otherwise.
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 import gyoto
-gyoto.requirePlugin("stdplug")
 import gyoto_std
 
 # Simple stuff
@@ -243,8 +238,9 @@ plt.show()
 
 # Any derived class can be instantiated from its name, as soon as the
 # corresponding plug-in has been loaded into Gyoto. The standard
-# plug-in is normally loaded automatically, but this can also be
-# forced with gyoto.requirePlugin():
+# plug-in is normally loaded automatically (and is always loaded when
+# gyoto_std is imported), but this can also be forced with
+# gyoto.requirePlugin():
 gyoto.requirePlugin('stdplug')
 tt=gyoto.Astrobj('Torus')
 kerr=gyoto.Metric('KerrBL')
@@ -261,12 +257,9 @@ kerr.set("Spin", 0.95)
 kerr.get("Spin") == 0.95
 
 # However, we also have Python extensions around the standard Gyoto
-# plug-ins. Beware that the plug-in must be loaded into Gyoto before
-# importing the corresponding Python extension:
-gyoto.requirePlugin('stdplug')
+# plug-ins.
 import gyoto_std
 # And if the lorene plug-in has been compiled:
-# gyoto.requirePlugin('lorene')
 # import gyoto_lorene
 
 # It then becomes possible to access the methods specific to derived

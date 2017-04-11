@@ -1,7 +1,6 @@
 import numpy
 import unittest
 import gyoto
-gyoto.loadPlugin('stdplug')
 import gyoto_std
 
 class TestEquatorialHotSpot(unittest.TestCase):

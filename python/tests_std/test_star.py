@@ -1,7 +1,6 @@
 import numpy
 import unittest
 import gyoto
-gyoto.requirePlugin('stdplug')
 import gyoto_std
 
 class TestStar(unittest.TestCase):
