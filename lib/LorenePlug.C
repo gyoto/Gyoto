@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2016 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -20,6 +20,10 @@
 // include Metric headers
 #include "GyotoRotStar3_1.h"
 #include "GyotoNumericalMetricLorene.h"
+
+// include Astrobj headers
+#include "GyotoNeutronStar.h"
+
 /*
 namespace Gyoto {
   void __StdLibInit();
@@ -33,4 +37,7 @@ extern "C" void __GyotoloreneInit() {
   Gyoto::Metric::Register("NumericalMetricLorene",
 			   &(Gyoto::Metric::Subcontractor
 			    <Gyoto::Metric::NumericalMetricLorene>));
+  Gyoto::Astrobj::Register("NeutronStar",
+			   &(Gyoto::Astrobj::Subcontractor
+			    <Gyoto::Astrobj::NeutronStar>));
 }

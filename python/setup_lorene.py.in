@@ -53,5 +53,6 @@ setup(name='@PACKAGE_NAME@'+'_lorene',
       version='@PACKAGE_VERSION@',
       author_email='@PACKAGE_BUGREPORT@',
       py_modules=["gyoto_lorene"],
-      ext_modules=[gyoto_lorene_module]
+      ext_modules=[gyoto_lorene_module],
+      test_suite='tests_lorene'
      )

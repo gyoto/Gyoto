@@ -205,7 +205,7 @@ dist:
 check:
 	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup.py test
 	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup_std.py test
-
+	@HAVE_LORENE_TRUE@@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup_lorene.py test
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here
 installdirs:
