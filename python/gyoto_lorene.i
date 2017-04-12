@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
-%module(docstring="The Gyoto Lorene plug-in") gyoto_lorene
+%module(docstring="The Gyoto Lorene plug-in", package="gyoto") lorene
 %import gyoto.i
 
 %{

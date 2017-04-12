@@ -101,10 +101,10 @@ import mpi4py.MPI
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
-import gyoto
-import gyoto_std
+import gyoto.core
+import gyoto.std
 
-a=gyoto.Factory("../doc/examples/example-moving-star.xml")
+a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
 sc=a.getScenery()
 sc.nThreads(1)
 sc.astrobj().opticallyThin(False)
@@ -118,15 +118,15 @@ time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
 
 # Store array pointers in AstrobjProperties
-aop=gyoto.AstrobjProperties()
-aop.intensity=gyoto.array_double.fromnumpy2(intensity)
-aop.time=gyoto.array_double.fromnumpy2(time)
-aop.distance=gyoto.array_double.fromnumpy2(distance)
+aop=gyoto.core.AstrobjProperties()
+aop.intensity=gyoto.core.array_double.fromnumpy2(intensity)
+aop.time=gyoto.core.array_double.fromnumpy2(time)
+aop.distance=gyoto.core.array_double.fromnumpy2(distance)
 
 # 5- Prepare Coord2dSet to select what Photons to launch
-ii=gyoto.Range(1, res, 1)
-jj=gyoto.Range(1, res, 1)
-grid=gyoto.Grid(ii, jj)
+ii=gyoto.core.Range(1, res, 1)
+jj=gyoto.core.Range(1, res, 1)
+grid=gyoto.core.Grid(ii, jj)
 
 # 6- Autodetect scenario 1 vs. scenarios 2/3
 # Spawn processes and clone scenery into them:

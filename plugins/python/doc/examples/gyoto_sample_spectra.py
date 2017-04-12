@@ -10,9 +10,9 @@
 
    Synopsis:
 
-   import gyoto
-   gyoto.requirePlugin("python") # or python2.7 or python3.4...
-   sp=gyoto.Spectrum("Python")
+   import gyoto.core
+   gyoto.core.requirePlugin("python") # or python2.7 or python3.4...
+   sp=gyoto.core.Spectrum("Python")
    sp.set("Module", "gyoto_sample_spectra")
    sp.set("Class", "PowerLaw") # or "BlackBody6000"
    sp.set("Parameters", (1., 2.))
@@ -29,7 +29,7 @@
 
 import math
 import numpy
-import gyoto
+import gyoto.core
 
 class BlackBody6000:
     '''Black-body spectrum at 6000K

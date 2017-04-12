@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
-%module(docstring="The Gyoto standard plug-in") gyoto_std
+%module(docstring="The Gyoto standard plug-in", package="gyoto") std
 %import gyoto.i
 %{
 

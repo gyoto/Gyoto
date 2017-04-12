@@ -68,7 +68,7 @@ PyObject * Gyoto::Python::PyImport_Gyoto() {
 
   if (need_load) {
     need_load=false;
-    pModule = PyImport_ImportModule("gyoto");
+    pModule = PyImport_ImportModule("gyoto.core");
     if (PyErr_Occurred()) {
       GYOTO_WARNING << "";
       PyErr_Print();

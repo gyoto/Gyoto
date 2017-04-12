@@ -11,9 +11,9 @@
 
    Synopsis:
 
-   import gyoto
-   gyoto.requirePlugin("python") # or python2.7 or python3.4...
-   td=gyoto.Spectrum("Python::ThinDisk")
+   import gyoto.core
+   gyoto.core.requirePlugin("python") # or python2.7 or python3.4...
+   td=gyoto.core.Astrobj("Python::ThinDisk")
    td.set("Module", "gyoto_sample_thindisks")
    td.set("Class", "ThinDisk")
 

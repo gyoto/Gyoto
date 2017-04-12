@@ -10,9 +10,9 @@
 
    Synopsis:
 
-   import gyoto
-   gyoto.requirePlugin("python") # or python2.7 or python3.4...
-   gg=gyoto.Metric("Python")
+   import gyoto.core
+   gyoto.core.requirePlugin("python") # or python2.7 or python3.4...
+   gg=gyoto.core.Metric("Python")
    gg.set("Module", "gyoto_sample_metric")
    gg.set("Class", "Minkowski")
 
@@ -28,7 +28,7 @@
 
 import math
 import numpy
-import gyoto
+import gyoto.core
 
 class Minkowski:
     '''Flat space metric
@@ -50,9 +50,9 @@ class Minkowski:
 
         Attributes set by the C++ layer:
 
-          this: if the Python extension "gyoto" can be imported, it
-                will be set to a gyoto.Metric instance pointing to the
-                C++-side instance. If the "gyoto" extension cannot be
+          this: if the Python extension "gyoto.core" can be imported, it
+                will be set to a gyoto.core.Metric instance pointing to the
+                C++-side instance. If the "gyoto.core" extension cannot be
                 loaded, this will be set to None.
 
           spherical: when the spherical(bool t) method is called in
@@ -74,12 +74,12 @@ class Minkowski:
         # Then, if key is "this", ensure this knows a valid coordKind.
         if (key is "this"):
             cK=value.coordKind()
-            if cK is gyoto.GYOTO_COORDKIND_UNSPECIFIED:
+            if cK is gyoto.core.GYOTO_COORDKIND_UNSPECIFIED:
                 value.set("Spherical", False)
             # We could do without this, since this will tell us later
             # anyway.
             else:
-                self.spherical = (cK is gyoto.GYOTO_COORDKIND_SPHERICAL)
+                self.spherical = (cK is gyoto.core.GYOTO_COORDKIND_SPHERICAL)
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])

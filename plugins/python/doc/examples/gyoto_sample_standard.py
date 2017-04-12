@@ -11,9 +11,9 @@
 
    Synopsis:
 
-   import gyoto
-   gyoto.requirePlugin("python") # or python2.7 or python3.4...
-   sp=gyoto.Astrobj("Python::Standard")
+   import gyoto.core
+   gyoto.core.requirePlugin("python") # or python2.7 or python3.4...
+   sp=gyoto.core.Astrobj("Python::Standard")
    sp.set("Module", "gyoto_sample_standard")
    sp.set("Class", "FixedStar")
    sp.set("Parameters", (0., 0., 0.))
@@ -32,7 +32,7 @@
 
 import math
 import numpy
-import gyoto
+import gyoto.core
 
 class FixedStar:
     ''' Sample class for Astrobj::Python::Standard
@@ -64,7 +64,7 @@ class FixedStar:
         gg=self.this.metric()
         spherical=False
         if gg is not None:
-            spherical = gg.coordKind() == gyoto.GYOTO_COORDKIND_SPHERICAL
+            spherical = gg.coordKind() == gyoto.core.GYOTO_COORDKIND_SPHERICAL
         if spherical:
             rs=coord[1]
             ths=coord[2]

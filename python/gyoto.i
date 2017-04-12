@@ -26,7 +26,7 @@
 // ******** SOME INITIALIZATION ********* //
 
 // Define the module name, with a docstring
-%module(docstring="The General relativitY Orbit Tracer of paris Observatory") gyoto
+%module(docstring="The General relativitY Orbit Tracer of paris Observatory", package="gyoto") core
 
 // Let Swig generate some documentation for the overloaded methods
 %feature("autodoc", "1");
