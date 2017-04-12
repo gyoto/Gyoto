@@ -237,7 +237,11 @@ swig_type_info * __Gyoto_SWIGTYPE_p_Gyoto__Error() {
 
 // This will be called upon extension initialization
 %init {
-  Gyoto::Register::init();
+  if (!Gyoto::Astrobj::Register_ &&
+      !Gyoto::Metric::Register_ &&
+      !Gyoto::Spectrum::Register_ &&
+      !Gyoto::Spectrometer::Register_)
+    Gyoto::Register::init();
 #ifdef SWIGPYTHON
   import_array();
 #endif
