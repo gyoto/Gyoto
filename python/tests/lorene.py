@@ -39,6 +39,20 @@ if gyoto.core.havePlugin("lorene"):
             sp=gyoto.std.BlackBody()
             ao.spectrum(sp)
             self.assertIsNotNone(ao.spectrum())
+            
+        def test_NeutronStarModelAtmosphere(self):
+            ao=gyoto.core.Astrobj("NeutronStarModelAtmosphere")
+            ao=gyoto.lorene.NeutronStarModelAtmosphere()
+            gg=gyoto.std.KerrBL()
+            with self.assertRaises(gyoto.Error):
+                ao.metric(gg)
+            self.assertIsNone(ao.metric())
+            gg=gyoto.lorene.NumericalMetricLorene()
+            ao.metric(gg)
+            self.assertIsNotNone(ao.metric())
+            ao.metric(None)
+            self.assertIsNone(ao.metric())
+            
 else:
     import warnings
     warnings.warn('Could not load plug-in "lorene"')

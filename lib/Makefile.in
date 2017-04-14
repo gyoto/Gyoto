@@ -157,6 +157,7 @@ am_libgyoto_lorene_la_OBJECTS = libgyoto_lorene_la-RotStar3_1.lo \
 	libgyoto_lorene_la-NumericalMetricLorene.lo \
 	libgyoto_lorene_la-NeutronStar.lo \
 	libgyoto_lorene_la-NeutronStarAnalyticEmission.lo \
+	libgyoto_lorene_la-NeutronStarModelAtmosphere.lo \
 	libgyoto_lorene_la-LorenePlug.lo
 libgyoto_lorene_la_OBJECTS = $(am_libgyoto_lorene_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -523,7 +524,7 @@ EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
 libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C \
 	NeutronStar.C NeutronStarAnalyticEmission.C \
-	LorenePlug.C
+	NeutronStarModelAtmosphere.C LorenePlug.C
 
 libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS) -avoid-version
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS) -DGYOTO_PLUGIN=lorene
@@ -682,6 +683,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-LorenePlug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NeutronStar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NeutronStarAnalyticEmission.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NeutronStarModelAtmosphere.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-NumericalMetricLorene.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_lorene_la-RotStar3_1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-BlackBodySpectrum.Plo@am__quote@
@@ -763,6 +765,13 @@ libgyoto_lorene_la-NeutronStarAnalyticEmission.lo: NeutronStarAnalyticEmission.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='NeutronStarAnalyticEmission.C' object='libgyoto_lorene_la-NeutronStarAnalyticEmission.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_lorene_la-NeutronStarAnalyticEmission.lo `test -f 'NeutronStarAnalyticEmission.C' || echo '$(srcdir)/'`NeutronStarAnalyticEmission.C
+
+libgyoto_lorene_la-NeutronStarModelAtmosphere.lo: NeutronStarModelAtmosphere.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_lorene_la-NeutronStarModelAtmosphere.lo -MD -MP -MF $(DEPDIR)/libgyoto_lorene_la-NeutronStarModelAtmosphere.Tpo -c -o libgyoto_lorene_la-NeutronStarModelAtmosphere.lo `test -f 'NeutronStarModelAtmosphere.C' || echo '$(srcdir)/'`NeutronStarModelAtmosphere.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_lorene_la-NeutronStarModelAtmosphere.Tpo $(DEPDIR)/libgyoto_lorene_la-NeutronStarModelAtmosphere.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='NeutronStarModelAtmosphere.C' object='libgyoto_lorene_la-NeutronStarModelAtmosphere.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_lorene_la-NeutronStarModelAtmosphere.lo `test -f 'NeutronStarModelAtmosphere.C' || echo '$(srcdir)/'`NeutronStarModelAtmosphere.C
 
 libgyoto_lorene_la-LorenePlug.lo: LorenePlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_lorene_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_lorene_la-LorenePlug.lo -MD -MP -MF $(DEPDIR)/libgyoto_lorene_la-LorenePlug.Tpo -c -o libgyoto_lorene_la-LorenePlug.lo `test -f 'LorenePlug.C' || echo '$(srcdir)/'`LorenePlug.C

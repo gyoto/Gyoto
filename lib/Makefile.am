@@ -60,7 +60,7 @@ sover_LTLIBRARIES += libgyoto-lorene.la
 endif
 libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C \
 	NeutronStar.C NeutronStarAnalyticEmission.C \
-	LorenePlug.C
+	NeutronStarModelAtmosphere.C LorenePlug.C
 libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS) -avoid-version
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS) -DGYOTO_PLUGIN=lorene
 

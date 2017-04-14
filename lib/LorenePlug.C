@@ -24,7 +24,7 @@
 // include Astrobj headers
 #include "GyotoNeutronStar.h"
 #include "GyotoNeutronStarAnalyticEmission.h"
-//#include "GyotoNeutronStarModelAtmosphere.h"
+#include "GyotoNeutronStarModelAtmosphere.h"
 
 /*
 namespace Gyoto {
@@ -45,7 +45,7 @@ extern "C" void __GyotoloreneInit() {
   Gyoto::Astrobj::Register("NeutronStarAnalyticEmission",
 			   &(Gyoto::Astrobj::Subcontractor
 			    <Gyoto::Astrobj::NeutronStarAnalyticEmission>));
-  /*  Gyoto::Astrobj::Register("NeutronStarModelAtmosphere",
+  Gyoto::Astrobj::Register("NeutronStarModelAtmosphere",
 			   &(Gyoto::Astrobj::Subcontractor
-			   <Gyoto::Astrobj::NeutronStarModelAtmosphere>));*/
+			   <Gyoto::Astrobj::NeutronStarModelAtmosphere>));
 }
