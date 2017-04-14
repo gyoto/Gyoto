@@ -5,4 +5,4 @@ future release. Please update your code to import gyoto.core instead.
 
 """
 
-from core import *
+from gyoto.core import *
