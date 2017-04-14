@@ -28,6 +28,7 @@
 #include "GyotoNumericalMetricLorene.h"
 
 #include "GyotoNeutronStar.h"
+#include "GyotoNeutronStarAnalyticEmission.h"
 
 using namespace Gyoto;
 
@@ -41,6 +42,7 @@ GyotoSmPtrClassDerived(Metric, RotStar3_1)
 GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
 
 GyotoSmPtrClassDerived(Astrobj, NeutronStar)
+GyotoSmPtrClassDerived(Astrobj, NeutronStarAnalyticEmission)
 
 // Workaround cvar bug in Swig which makes help(module) fail:
 %inline {

@@ -1,6 +1,6 @@
 /**
  * \file GyotoNeutronStar.h
- * \brief Neutron star emitting at its surface
+ * \brief Neutron star defined by its surface ; no emission
  *
  *  The target of ray-traced Gyoto::Photon
  */
@@ -29,7 +29,6 @@
 
 #include <GyotoStandardAstrobj.h>
 #include <GyotoNumericalMetricLorene.h>
-#include <GyotoSpectrum.h>
 
 namespace Gyoto{
   namespace Astrobj { class NeutronStar; }
@@ -37,23 +36,22 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::NeutronStar
- * \brief A neutron star emitting at its surface
+ * \brief Neutron star defined by its surface ; no emission
  *
  * The underlying Gyoto::Metric::Generic #gg_ instance must be a
- * Gyoto::Metric::NumericalMetricLorene describing a neutron star. The
- * emission law is given by #spectrum_.
+ * Gyoto::Metric::NumericalMetricLorene describing a neutron star.
  *
  */
 class Gyoto::Astrobj::NeutronStar : public Astrobj::Standard {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::NeutronStar>;
 
  protected:
-  SmartPointer<Spectrum::Generic> spectrum_; ///< Emission spectrum
   SmartPointer<Metric::NumericalMetricLorene> gg_; ///< Underlying metric
 
  public:
   GYOTO_OBJECT;
   NeutronStar(); ///< Standard constructor
+  NeutronStar(std::string kin);
   NeutronStar(const NeutronStar& o); ///< Copy constructor
   virtual NeutronStar * clone() const ; ///< Cloner
   virtual ~NeutronStar() ; ///< Destructor
@@ -61,14 +59,9 @@ class Gyoto::Astrobj::NeutronStar : public Astrobj::Standard {
  public:
   virtual Gyoto::SmartPointer<Metric::Generic> metric() const; ///< Get gg_
   virtual void metric(SmartPointer<Metric::Generic> met); ///< Set gg_
-  virtual void spectrum(SmartPointer<Spectrum::Generic>);
-  virtual SmartPointer<Spectrum::Generic> spectrum() const;
 
   virtual double operator()(double const coord[4]);
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-  virtual double emission(double nu_em, double dsem,
-			  double _ph[8], double _obj[8]=NULL) const;
-
 };
 
 #endif

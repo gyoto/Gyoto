@@ -28,7 +28,6 @@
 #include "GyotoPhoton.h"
 #include "GyotoNeutronStar.h"
 #include "GyotoFactoryMessenger.h"
-#include "GyotoBlackBodySpectrum.h"
 
 //Std headers
 #include <iostream>
@@ -51,24 +50,26 @@ using namespace Lorene;
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(NeutronStar,
 		     "Neutron star emitting at its surface.")
-GYOTO_PROPERTY_SPECTRUM(NeutronStar, Spectrum, spectrum,
-			"Emission law.")
 GYOTO_PROPERTY_END(NeutronStar, Standard::properties)
 
-NeutronStar::NeutronStar() : Standard("NeutronStar"), gg_(NULL),
-  spectrum_(NULL) {
+NeutronStar::NeutronStar() : Standard("NeutronStar"), gg_(NULL) {
   GYOTO_DEBUG << endl;
-  spectrum_ = new Spectrum::BlackBody();
+  Generic::gg_=gg_;
+}
+
+NeutronStar::NeutronStar(std::string kin) :
+  Standard(kin), gg_(NULL)
+{
+  GYOTO_DEBUG << endl;
   Generic::gg_=gg_;
 }
 
 NeutronStar::NeutronStar(const NeutronStar& o) :
   Standard(o),
-  gg_(NULL), spectrum_(NULL)
+  gg_(NULL)
 {
   GYOTO_DEBUG << endl;
   if (o.gg_()) gg_=o.gg_->clone();
-  if (o.spectrum_()) spectrum_ = o.spectrum_->clone();
   Generic::gg_=gg_;
 }
 NeutronStar * NeutronStar::clone() const { return new NeutronStar(*this); }
@@ -96,9 +97,6 @@ void NeutronStar::metric(SmartPointer<Gyoto::Metric::Generic> met) {
   gg_ = smptr;
   Generic::metric(met);
 }
-
-SmartPointer<Spectrum::Generic> NeutronStar::spectrum() const { return spectrum_; }
-  void NeutronStar::spectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 
 double NeutronStar::operator()(double const coord[4]) {
   GYOTO_DEBUG << endl;
@@ -154,14 +152,5 @@ void NeutronStar::getVelocity(double const pos[4], double uu[4]){
   for (int ii=0;ii<4;ii++) cout << uu[ii] << " ";
   cout << endl;*/
 
-}
-
-double NeutronStar::emission(double nu_em, double, double *,
-			      double *) const{
-  GYOTO_DEBUG << endl;
-  if (flag_radtransf_)
-    throwError("Radiative transfer not implemented for NeutronStar.");
-
-  return (*spectrum_)(nu_em);
 }
 
