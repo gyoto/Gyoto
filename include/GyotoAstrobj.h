@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -421,6 +421,9 @@ class Gyoto::Astrobj::Generic
    * Photon (see Photon::transmit(size_t, double)). This must not be
    * done if data is NULL (see Astrobj::Complex::Impact() for an
    * explanation).
+   *
+   * Impact() may not extend the ph Worldline. The only two dates that
+   * are guaranteed to be defined are at indices index and index+1.
    *
    * \param ph   Gyoto::Photon aimed at the object;
    * \param index    Index of the last photon step;

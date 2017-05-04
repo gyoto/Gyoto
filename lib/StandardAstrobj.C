@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2012, 2014, 2015, 2017 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -31,6 +31,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <string>
+#include <cstring>
 #include <float.h>
 #include <cmath>
 #include <sstream>
@@ -134,8 +135,8 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 	return 0;
       }
       ph -> findValue(this, critical_value_, tmin, t2);
-    }
-    ph -> findValue(this, critical_value_, t2, t1);
+    } else tmin=t2;
+    ph -> findValue(this, critical_value_, tmin, t1);
   } else if (val2 > critical_value_)
     ph -> findValue(this, critical_value_, t1, t2);
 
@@ -143,21 +144,63 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
   ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
 		 cph+4, cph+5, cph+6, cph+7);
 
+  double coh[8] = {cph[0], cph[1], cph[2], cph[3]};
+  getVelocity(coh, coh+4);
+  bool current_is_inside = true; // by construction, t2 is always inside
+
   double delta=giveDelta(cph);
-  double coh[8];
+  double dt;
+  double coh_next[8], cph_next[8];
+  bool next_is_inside;
+
   while (cph[0]>t1){
-    ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
-		   cph+4, cph+5, cph+6, cph+7);
-    for (int ii=0;ii<4;ii++) 
-      coh[ii] = cph[ii];
-    
-    getVelocity(coh, coh+4);
-    //Next test to insure every point given to process
-    //is inside objetc. Not obvious as the worldline between
-    //t1 and t2 is not necessarily straight (at small r in particular)
-    if ((*this)(coh)<critical_value_)
-      processHitQuantities(ph, cph, coh, delta, data);
-    cph[0]-=delta;
+    // Warning: Impact must not extend the Worldline!
+    // never call get Coord with anything outside [t1, t2].
+    cph_next[0] = max(cph[0] - delta, t1);
+    ph -> getCoord(cph_next, 1, cph_next+1, cph_next+2, cph_next+3,
+		   cph_next+4, cph+5, cph_next+6, cph_next+7);
+
+    memcpy(coh_next, cph_next, 4*sizeof(cph_next[0]));
+    getVelocity(coh_next, coh_next+4);
+
+    next_is_inside = ((*this)(coh_next) <= critical_value_);
+
+    if (current_is_inside) {
+      if (next_is_inside) {
+	// Both points are inside
+	dt = delta;
+      } else {
+	// Late point in object, early outside
+	// Find date of surface crossing and update dt.
+	double t_out = cph_next[0];
+	ph -> findValue(this, critical_value_, *cph, t_out);
+	dt = cph[0] - t_out;
+      }
+    } else {
+      if (next_is_inside) {
+	// Early point in object, late point outside
+	// Place cph and coh inside, near surface; update dt
+	ph -> findValue(this, critical_value_, *cph_next, *cph);
+	ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
+		       cph+4, cph+5, cph+6, cph+7);
+	memcpy(coh, cph, 4*sizeof(cph_next[0]));
+	getVelocity(coh, coh+4);
+	dt = cph[0]-cph_next[0];
+      } else {
+	// Two points outside
+	dt = 0.;
+      }
+    }
+
+    // dt == 0 means the two points are outside
+    if (dt != 0.)
+      processHitQuantities(ph, cph, coh, dt, data);
+
+    // Copy next to current
+    memcpy(cph, cph_next, 8*sizeof(cph[0]));
+    memcpy(coh, coh_next, 8*sizeof(coh[0]));
+    current_is_inside = next_is_inside;
+
   }
 
   return 1;
