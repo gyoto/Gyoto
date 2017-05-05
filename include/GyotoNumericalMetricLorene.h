@@ -54,6 +54,8 @@ class Gyoto::Metric::NumericalMetricLorene
   bool mapet_; ///< Kind of Lorene mapping: 'false' for Map_af, 'true' for Map_et
   bool bosonstarcircular_; ///< 1 to implement the circular velocity of a boson star
   int has_surface_; ///< 1 if the metric source has a surface
+  int has_acceleration_vector_; ///< 1 if the metric source provides an
+                                ///< acceleration vector
   int specify_marginalorbits_; ///< 1 if marginal orbits are specified in file
   double horizon_; ///< Value of horizon (or any innermost limit)
   double r_refine_; ///< Refine integration below this r
@@ -69,6 +71,7 @@ class Gyoto::Metric::NumericalMetricLorene
   int nb_times_; ///< Nb of time slices
   Lorene::Valeur** nssurf_tab_; ///< Metric source (e.g. star) surface (if any)
   Lorene::Vector** vsurf_tab_; ///< 4-velocity at surface (if any)
+  Lorene::Vector** accel_tab_; ///< 4-acceleration at surface (if any)
   Lorene::Scalar** lorentz_tab_; ///< Lorentz factor at surface (if any)
   Lorene::Valeur** hor_tab_; ///< Apparent horizon (if any)
   double risco_; ///< ISCO coordinate radius
@@ -100,6 +103,8 @@ class Gyoto::Metric::NumericalMetricLorene
   void   rico(double r0);
   bool hasSurface() const;
   void hasSurface(bool s);
+  bool hasAccelerationVector() const;
+  void hasAccelerationVector(bool aa);
   bool bosonstarcircular() const;
   void bosonstarcircular(bool);
   bool specifyMarginalOrbits() const;
@@ -112,10 +117,12 @@ class Gyoto::Metric::NumericalMetricLorene
   Lorene::Vector** getShift_tab() const;
   Lorene::Scalar** getLapse_tab() const;
   Lorene::Sym_tensor** getGamcon_tab() const;
+  Lorene::Sym_tensor** getGamcov_tab() const;
   double* getTimes() const;
   int getNbtimes() const;
   Lorene::Valeur** getNssurf_tab() const;
   Lorene::Vector** getVsurf_tab() const;
+  Lorene::Vector** getAccel_tab() const;
   Lorene::Scalar** getLorentz_tab() const;
   Lorene::Valeur** getHor_tab() const;
   double getRms() const;

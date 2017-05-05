@@ -48,6 +48,8 @@
     { fits_get_errstatus(status, ermsg); throwError(ermsg); }
 #endif
 
+#define LORENE_UNIT_ACCEL GYOTO_C*GYOTO_C/1e4
+
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
@@ -285,6 +287,14 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
   }
   GYOTO_DEBUG << " done." << endl;
 
+  double minemission=DBL_MAX, maxemission=DBL_MIN;
+  for (int myi=0;myi<nnu_ * ni_ * nsg_-1;myi++){
+    if (emission_[myi]<minemission) minemission=emission_[myi];
+    if (emission_[myi]>maxemission) maxemission=emission_[myi];
+  }
+  //cout << "In NSModelAtm::fitsRead: Min and max emission= " <<
+  //  minemission << " " << maxemission << endl;
+
   ////// FIND MANDATORY FREQ HDU ///////
   
    if (fits_movnam_hdu(fptr, ANY_HDU,
@@ -410,7 +420,30 @@ void NeutronStarModelAtmosphere::fitsWrite(string filename) {
 
 void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4], 
 				 double cosi, double nu) const {
-  double sgloc = 10.; // UPDATE!!! read local surfgrav
+  const Vector& a_i = *(gg_->getAccel_tab()[0]);
+  double rr=co[1], th=co[2], phi=co[3];
+  if (rr==0.) throwError("In NeutronStarModelAtm.C::getIndices r is 0!");
+  double rsinth = rr*sin(th);
+  if (rsinth==0.) throwError("In NeutronStarModelAtm.C::getIndices on z axis!");
+  double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
+    sm2 = sm1*sm1;
+  double a_r = a_i(1).val_point(rr,th,phi),
+    a_t = rr*a_i(2).val_point(rr,th,phi),
+    a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
+  const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
+  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
+    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi);
+
+  double ar = a_r*grr, at = a_t*gtt, ap = a_p*gpp; //contravariant 3-accel
+
+  const Sym_tensor& g_ij = *(gg_->getGamcov_tab()[0]);
+  double sgloc = sqrt(g_ij(1,1).val_point(rr,th,phi)*ar*ar
+		      + g_ij(2,2).val_point(rr,th,phi)*at*at
+		      + g_ij(3,3).val_point(rr,th,phi)*ap*ap);
+  sgloc*=LORENE_UNIT_ACCEL;
+  
+  //cout << "Accel vect compo, gs= " << a_r << " " << a_t << " " << a_p << " " << sgloc << endl;
   if (surfgrav_) { 
     if (nsg_==1){ // Only one value of surfgrav, put some value, won't be used
       i[2]=1; // don't put 0, see later why: it would return an error
@@ -418,6 +451,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
       if (sgloc >= surfgrav_[nsg_-1]) i[2] = nsg_-1; // emission will be 0
       else {
 	for(i[2]=0; sgloc > surfgrav_[i[2]]; ++i[2]){}
+	//cout << "In indices sg: " << i[2] << " " << surfgrav_[i[2]-1] << " " << sgloc << " " << surfgrav_[i[2]] << endl;
 	/*
 	  With this definition:
 	  surfgrav_[i[2]-1] <= sgloc < surfgrav_[i[2]]
@@ -435,6 +469,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
     if (cosi >= cosi_[ni_-1]) i[1] = ni_-1;
     else {
       for(i[1]=0; cosi > cosi_[i[1]]; ++i[1]){}
+      //cout << "In indices cos: " << i[1] << " " << cosi_[i[1]-1] << " " << cosi << " " << cosi_[i[1]] << endl;
       /*
 	cosi_[i[1]-1] <= cosi < cosi_[i[1]]
       */
@@ -445,8 +480,9 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
 
   if (freq_) {
     if (nu <= freq_[nnu_-1]) i[0] = nnu_-1;
-    else { 
+    else {
       for(i[0]=nnu_-1; nu > freq_[i[0]]; --i[0]){}
+      //cout << "In indices nu: " << i[0] << " " << freq_[i[0]+1]/GYOTO_eV2Hz << " " << nu/GYOTO_eV2Hz << " " << freq_[i[0]]/GYOTO_eV2Hz << endl;
       /*
 	Caution: freq is ordered decreasingly!
 	freq_[i[0]+1] <= nu < freq_[i[0]]
@@ -464,26 +500,68 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
 
   GYOTO_DEBUG << endl;
   //cout << "In emission NSatm, intens test= " << emission_[0] << endl;
-  double sgloc = 10.; // UPDATE!! Read surfgrav
+  const Vector& a_i = *(gg_->getAccel_tab()[0]);
+  double rr=co[1], th=co[2], phi=co[3];
+  if (rr==0.) throwError("In NeutronStarModelAtm.C::emission r is 0!");
+  double rsinth = rr*sin(th);
+  if (rsinth==0.) throwError("In NeutronStarModelAtm.C::emission on z axis!");
+  double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
+    sm2 = sm1*sm1;
+  double a_r = a_i(1).val_point(rr,th,phi),
+    a_t = rr*a_i(2).val_point(rr,th,phi),
+    a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
+  const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
+  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
+    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi); // here gpp is gamma^{phi,phi}
+  double ar = a_r*grr, at = a_t*gtt, ap = a_p*gpp; //contravariant 3-accel
 
-  // Compute angle between photon direction and normal
-  double normal[4]={0.,1.,0.,0.}; // UPDATE!!!! local normal??? \partial_r for the time being...
+  const Sym_tensor& g_ij = *(gg_->getGamcov_tab()[0]);
+  double sgloc = sqrt(g_ij(1,1).val_point(rr,th,phi)*ar*ar
+		      + g_ij(2,2).val_point(rr,th,phi)*at*at
+		      + g_ij(3,3).val_point(rr,th,phi)*ap*ap);
+  sgloc*=LORENE_UNIT_ACCEL;
+
+  //cout << "r, sg, nsg= " << rr << " " << sgloc << " " << nsg_ << endl; 
+
+  // Finding normal 4-vector
+  /*
+    Let us call a^\alpha the 4-vector normal to the surface,
+    i.e. the gravity acceleration 4-vector.
+    Because we assume circular fluid motion, the covariant
+    acceleration reads
+    a_\alpha = - \nabla (ln u_t) = - \partial_\alpha (ln u_t)
+    Thus, because of stationarity + axisymetry: a_t = a_phi = 0
+    Thus a^t = g^{tt} a_t + g^{tphi} a_phi = 0 and the same for a^phi.
+    Thus only a^r and a^theta remain.
+   */
+  double normal[4]={0.,ar,at,0.};
+  
   double normal_norm=gg_->ScalarProd(cp,normal,normal);
   if (normal_norm<=0.) throwError("In NeutronStarModelAtmosphere::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
+    
+  // Compute angle between photon direction and normal
   double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
     up = gg_->ScalarProd(cp,co+4,cp+4);
 
   // cos between unit normal n and tangent to photon p
   // is equal -n.p/u.p (u being the emitter's 4-vel);
-  // fabs because assuming plane symmetry : UPDATE still true?
-  double cosi = fabs(-np/up);
+  double cosi = -np/up;
+  //cout << "cosi= " << cosi << endl;
   double tolcos = 0.005;
   if (cosi>1.){
     if (fabs(cosi-1)>tolcos)
       throwError("In NeutronStarModelAtmosphere: bad cos!");
     cosi=1.;
+  }
+  if (cosi<0.){
+    // cosi should be >0, the photon cannot come from
+    // inside the star!
+    if (fabs(cosi)>tolcos)
+      throwError("In NeutronStarModelAtmosphere: bad cos!");
+    cosi=0.;
   }
   //cout << "cosi= " << cosi << endl;
   // Don't put a "return cosi" here, see later
@@ -492,7 +570,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   size_t ind[3]; // {i_nu, i_cosi, i_surfgrav}
   getIndices(ind, co, cosi, nu);
 
-  //cout << "sg, i2, nsg= " << sgloc << " " << ind[2] << " " << nsg_ <<endl;
+  //cout << "sg, isg, nsg= " << sgloc << " " << ind[2] << " " << nsg_ <<endl;
 
   //if (ind[2]==nsg_) return 0.; // 0 emission outside simulation scope
 
@@ -515,33 +593,47 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   //return acos(cosi)*180./M_PI; // TEST!!! Don't forget to impose redshift to 1
 
   //cout << "nu(eV), surfgrav, cosi= " << nu/GYOTO_eV2Hz << " " << sgloc << " " << cosi << endl;
+  //cout << "indices= " << ind[0] << " " << ind[1] << " " << ind[2] << endl;
   double Iem=0.;
-  size_t i0l=ind[0]+1, i0u=ind[0], 
-    i2l=ind[2]-1, i2u=ind[2]; // Correct: i0 is freq, ordered decreasingly,
-                              // i2 is surfgrav ordered increasingly
+  size_t inul=ind[0]+1, inuu=ind[0], 
+    isgl=ind[2]-1, isgu=ind[2]; // Correct: inu is freq, ordered decreasingly,
+                              // isg is surfgrav ordered increasingly
 
   if (nsg_==1){
     // Only one value of surfgrav, i.e. non-rotating star
     // put surfgrav indices to zero, no interpolation in this direction
-    i2l=0;
-    i2u=0;
+    isgl=0;
+    isgu=0;
   }
 
   //  cout << "ind_cosi=, ni= " << ind[1] << " " << ni_ << endl;
   //cout << "min max sg= " << surfgrav_[0] << " " << surfgrav_[nsg_-1] << endl;
 
+  /* 
+     How emission_ is organized:
+
+     [
+     (nu=0,cos=0,sg=0),(nu=0,cos=0,sg=1),...,(nu=0,cos=0,sg=nsg-1),
+     (nu=0,cos=1,sg=0),(nu=0,cos=1,sg=1),...,(nu=0,cos=1,sg=nsg-1),
+     ...
+     (nu=0,cos=ni-1,sg=0),(nu=0,cos=ni-1,sg=1),...,(nu=0,cos=ni-1,sg=nsg-1),
+     (nu=1,cos=0,sg=0),(nu=1,cos=0,sg=1),...,(nu=1,cos=0,sg=nsg-1),
+     ...
+     ]
+
+   */
   if (!average_over_angle_){
     if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
       // If cosi is out of the cosi_ range, bilinear interpol in nu,sg
-      size_t i1=ind[1];
-      //cout << "cos value unique= " << cosi_[i1] << endl;
-      double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,sg}
-	I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
-	I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
-	I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
+      size_t icos=ind[1];
+      //cout << "Bilin cos value unique= " << cosi_[icos] << endl;
+      double I00 = emission_[inul*ni_*nsg_+icos*nsg_+isgl], // I_{nu,sg}
+	I01 = emission_[inul*ni_*nsg_+icos*nsg_+isgu],
+	I10 = emission_[inuu*ni_*nsg_+icos*nsg_+isgl],
+	I11 = emission_[inuu*ni_*nsg_+icos*nsg_+isgu];
       //cout << "bilin dir: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
-      double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
-	ratiosg = (sgloc-surfgrav_[i2l])/(surfgrav_[i2u]-surfgrav_[i2l]);
+      double rationu = (nu-freq_[inul])/(freq_[inuu]-freq_[inul]),
+	ratiosg = (sgloc-surfgrav_[isgl])/(surfgrav_[isgu]-surfgrav_[isgl]);
       if (nsg_==1) ratiosg=0.; // no interpolation in sg
       Iem = I00+(I10-I00)*rationu
 	+(I01-I00)*ratiosg
@@ -553,19 +645,20 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
 	throwError("In NeutronStarModelAtmosphere::emission "
 		   "bad cosi indice");
       }
-      size_t i1l=ind[1]-1, i1u=ind[1];
-      double I000 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0l], // I_{nu,cosi,sg}
-	I100 = emission_[i2l*(ni_*nnu_)+i1l*nnu_+i0u],
-	I110 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0u], 
-	I010 = emission_[i2l*(ni_*nnu_)+i1u*nnu_+i0l],
-	I001 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0l], 
-	I101 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0u],
-	I111 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u],
-	I011 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0l];
+      size_t icosl=ind[1]-1, icosu=ind[1];
+      //cout << "Trilin interpol indices= " << inul << " " << inuu << " " << icosl << " " << icosu << " " << isgl << " " << isgu << endl;
+      double I000 = emission_[inul*ni_*nsg_+icosl*nsg_+isgl], // I_{nu,cosi,sg}
+	I100 = emission_[inuu*ni_*nsg_+icosl*nsg_+isgl],
+	I110 = emission_[inuu*ni_*nsg_+icosu*nsg_+isgl], 
+	I010 = emission_[inul*ni_*nsg_+icosu*nsg_+isgl],
+	I001 = emission_[inul*ni_*nsg_+icosl*nsg_+isgu], 
+	I101 = emission_[inuu*ni_*nsg_+icosl*nsg_+isgu],
+	I111 = emission_[inuu*ni_*nsg_+icosu*nsg_+isgu],
+	I011 = emission_[inul*ni_*nsg_+icosu*nsg_+isgu];
       //cout << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
-      double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
-	ratioi = (cosi-cosi_[i1l])/(cosi_[i1u]-cosi_[i1l]),
-	ratiosg = (sgloc-surfgrav_[i2l])/(surfgrav_[i2u]-surfgrav_[i2l]);
+      double rationu = (nu-freq_[inul])/(freq_[inuu]-freq_[inul]),
+	ratioi = (cosi-cosi_[icosl])/(cosi_[icosu]-cosi_[icosl]),
+	ratiosg = (sgloc-surfgrav_[isgl])/(surfgrav_[isgu]-surfgrav_[isgl]);
       if (nsg_==1) ratiosg=0.; // no interpolation in sg
       Iem = I000
 	+ (I100-I000)*rationu
@@ -581,7 +674,6 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     // Average over cosi values
     // with bilinear interpol in nu,sg
     double I00=0., I01=0., I10=0., I11=0.;
-    double I00min=DBL_MAX, I00max=DBL_MIN, I01min=DBL_MAX, I01max=DBL_MIN, I10min=DBL_MAX, I10max=DBL_MIN, I11min=DBL_MAX, I11max=DBL_MIN;
     /* Using trapezoidal rule, I_integ = \int I(mu)*dmu, mu=cos(i)
        NB: in Garcia+14, they compute a flux because they don't raytrace,
        so they use F = 1/4pi * \int I(i) cos(i) di = 1/2 * \int I(mu) mu dmu,
@@ -590,33 +682,31 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     for (size_t ii=0; ii<ni_-1; ++ii){
       double dcos = cosi_[ii+1]-cosi_[ii];
       I00 += 0.5*dcos*
-	(emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l]
-	 +emission_[i2l*(ni_*nnu_)+ii*nnu_+i0l]);
+	(emission_[inul*ni_*nsg_+(ii+1)*nsg_+isgl]
+	 +emission_[inul*ni_*nsg_+ii*nsg_+isgl]);
       I01 += 0.5*dcos*
-	(emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0l]
-	 +emission_[i2u*(ni_*nnu_)+ii*nnu_+i0l]);
+	(emission_[inul*ni_*nsg_+(ii+1)*nsg_+isgu]
+	 +emission_[inul*ni_*nsg_+ii*nsg_+isgu]);
       I10 += 0.5*dcos*
-	(emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0u]
-	 +emission_[i2l*(ni_*nnu_)+ii*nnu_+i0u]);
+	(emission_[inuu*ni_*nsg_+(ii+1)*nsg_+isgl]
+	 +emission_[inuu*ni_*nsg_+ii*nsg_+isgl]);
       I11 += 0.5*dcos*
-	(emission_[i2u*(ni_*nnu_)+(ii+1)*nnu_+i0u]
-	 +emission_[i2u*(ni_*nnu_)+ii*nnu_+i0u]);
+	(emission_[inuu*ni_*nsg_+(ii+1)*nsg_+isgu]
+	 +emission_[inuu*ni_*nsg_+ii*nsg_+isgu]);
       dcostot+=dcos;
       
     } 
 
-    // Normalizing (int d co(i) is very close to 1 but not exactly 1)
+    // Normalizing (int d cos(i) is very close to 1 but not exactly 1)
     I00/=dcostot;
     I01/=dcostot;
     I10/=dcostot;
     I11/=dcostot;
 
-    //cout << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
+    //cout << "\int dcos, and I bilin avg: " << dcostot << " " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
 
-    //if (I00<I00min || I01<I01min || I10<I10min || I11<I11min) throwError("test");
-    //if (I00>I00max || I01>I01max || I10>I10max || I11>I11max) throwError("test");
-    double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
-      ratiosg = (sgloc-surfgrav_[i2l])/(surfgrav_[i2u]-surfgrav_[i2l]);
+    double rationu = (nu-freq_[inul])/(freq_[inuu]-freq_[inul]),
+      ratiosg = (sgloc-surfgrav_[isgl])/(surfgrav_[isgu]-surfgrav_[isgl]);
     if (nsg_==1) ratiosg=0.; // no interpolation in sg
     Iem = I00+(I10-I00)*rationu
       +(I01-I00)*ratiosg
@@ -624,6 +714,6 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     //cout << "I interp= " << Iem << endl;
   }
   //cout << "return= " << Iem << endl;
-  return Iem;
+  return Iem/1e3; // 1e3 factor translates from cgs to SI, gyoto speaks in SI
 
 }

@@ -109,6 +109,7 @@ double NeutronStar::operator()(double const coord[4]) {
   ns_surf->std_base_scal();
   double rstar = ns_surf->val_point(0,0.,thcur,phcur);
 
+  //cout << "rcur rstar in NS= " << rcur << " " << rstar << endl;
   return rcur-rstar;
 }
 
@@ -140,6 +141,7 @@ void NeutronStar::getVelocity(double const pos[4], double uu[4]){
   double betar = shift(1).val_point(rr,th,phi),
     betat = rm1*shift(2).val_point(rr,th,phi),
     betap = rsm1*shift(3).val_point(rr,th,phi);
+  //cout << "beta= " << betar << " " << betat << " " << betap << endl;
   Scalar* lapse_scal = gg_->getLapse_tab()[0];
   double lapse = lapse_scal->val_point(rr,th,phi);
 
