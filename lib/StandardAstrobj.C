@@ -168,7 +168,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
     if (current_is_inside) {
       if (next_is_inside) {
 	// Both points are inside
-	dt = delta;
+	dt = cph[0]-cph_next[0];
       } else {
 	// Late point in object, early outside
 	// Find date of surface crossing and update dt.
