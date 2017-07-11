@@ -187,6 +187,7 @@ double const * PatternDisk::opacity() const { return opacity_; }
 
 void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[2]) {
   GYOTO_DEBUG << endl;
+
   if (velocity_) {
     GYOTO_DEBUG << "delete [] velocity_;\n";
     delete [] velocity_; velocity_ = NULL;
@@ -219,6 +220,7 @@ void PatternDisk::copyGridRadius(double const *const rad, size_t nr) {
     memcpy(radius_, rad, nr_*sizeof(double));
     rin_=radius_[0];
     rout_=radius_[nr_-1];
+    dr_ = (rout_ - rin_) / double(nr_-1);
   }
 }
 double const * PatternDisk::getGridRadius() const { return radius_; }
@@ -606,17 +608,22 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
     phimin_+(i[1]-1)*dphi_ <= phi < phimin_+i[1]*dphi_ 
     provided phi is not bigger than phimax_ nor smaller
     than phimin_
-   */
+  */
+  //cerr << "Test inner Radius= " << innerRadius() << endl;
+  //cerr << "in indice --PHI: " << phimin_+(i[1]-1)*dphi_ << " " << phi << " " << phimin_+i[1]*dphi_  << endl;
   if (radius_) {
     GYOTO_DEBUG <<"radius_ != NULL" << endl;
     // if the radius_ vector is set, find closest value
     if (r >= radius_[nr_-1]) i[2] = nr_-1;
     else {
       for(i[2]=0; r > radius_[i[2]]; ++i[2]){}
+      //cerr << "in indice --RAD: " << radius_[i[2]-1] << " " << r << " " << radius_[i[2]] << endl;
       /*
 	With this definition:
 	radius_[i[2]-1] <= r < radius_[i[2]]
-	provided r<rmax (i[2] is always at least 1)
+	provided r<rmax (i[2] is always at least 1
+	because if ThinDisk returns Impact=1, then
+	r>rmin=radius_[0])
        */
       /*if (i[2]>0 && r-radius_[i[2]-1] < radius_[i[2]]) {
 	--i[2];
@@ -634,37 +641,49 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
 }
 
 void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
+  //cerr << "In pattern get vel" << endl;
   if (velocity_) {
     if (dir_ != 1)
       throwError("PatternDisk::getVelocity(): "
 		 "dir_ should be 1 if velocity_ is provided");
     size_t i[3]; // {i_nu, i_phi, i_r}
+    //cout << "in pattern getvel go to getIndices" << endl;
     getIndices(i, pos);
-
+    //cout << "in pattern getvel after getIndices" << endl;
+    
     double rr = projectedRadius(pos);
     double phi = sphericalPhi(pos);
 
+    //cout << "in velo r phi= " << rr << " " << phi << endl;
+    //cout << "and indices= " << i[0] << " " << i[1] << " " << i[2] << endl;
+    
     double phiprime=0., rprime=0.;
     if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
       // Extreme cases no interpolation
-      phiprime=velocity_[i[2]*(nphi_*2)+i[1]*2+0];
-      rprime=velocity_[i[2]*(nphi_*2)+i[1]*2+1];
+      rprime=velocity_[i[1]*nr_+i[2]];
+      phiprime=velocity_[nr_*nphi_+i[1]*nr_+i[2]];
     }else{
       // Bilinear interpolation
-      double phip0=velocity_[(i[2]-1)*(nphi_*2)+(i[1]-1)*2+0];
-      double phip1=velocity_[(i[2]-1)*(nphi_*2)+i[1]*2+0];
-      double phip2=velocity_[i[2]*(nphi_*2)+i[1]*2+0];
-      double phip3=velocity_[i[2]*(nphi_*2)+(i[1]-1)*2+0];
+      // Notation: X_{phi,r}
+      double phip00=velocity_[nr_*nphi_+(i[1]-1)*nr_+(i[2]-1)];
+      double phip10=velocity_[nr_*nphi_+    i[1]*nr_+(i[2]-1)];
+      double phip11=velocity_[nr_*nphi_+    i[1]*nr_+i[2]];
+      double phip01=velocity_[nr_*nphi_+(i[1]-1)*nr_+i[2]];
       
-      double rp0=velocity_[(i[2]-1)*(nphi_*2)+(i[1]-1)*2+1];
-      double rp1=velocity_[(i[2]-1)*(nphi_*2)+i[1]*2+1];
-      double rp2=velocity_[i[2]*(nphi_*2)+i[1]*2+1];
-      double rp3=velocity_[i[2]*(nphi_*2)+(i[1]-1)*2+1];
+      double rp00=velocity_[(i[1]-1)*nr_+(i[2]-1)];
+      double rp10=velocity_[    i[1]*nr_+(i[2]-1)];
+      double rp11=velocity_[    i[1]*nr_+i[2]];
+      double rp01=velocity_[(i[1]-1)*nr_+i[2]];
+
+      //cout << "velo bilin interpo, phip, rp: " << phip00 << " " << rp00 << " " << phip01 << " " << rp01 << " " << phip10 << " " << rp10 << " " << phip11 << " " << rp11 << endl;
 
       double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
 	phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
 
+      //cout << "rin sup, phi inf sup, r phi: " << rinf << " " << rsup << " " << phiinf << " " << phisup << " " << rr << " " << phi << endl;
+
       if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
+	//cout << "r, phis= " << i[2] << " " <<  rinf << " " << rr << " " << rsup << " " << phiinf << " " << phi << " " << phisup << endl;
 	throwError("In PatternDisk::getVelocity: "
 		   "bad interpolation");
       }
@@ -672,15 +691,13 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
       double cr = (rr-rinf)/(rsup-rinf),
 	cp = (phi-phiinf)/(phisup-phiinf);
 
-      rprime=(1-cr)*(1-cp)*rp0
-	+cr*(1-cp)*rp1
-	+cr*cp*rp2
-	+(1-cr)*cp*rp3;
+      rprime=rp00 + cp*(rp10-rp00) + cr*(rp01-rp00)
+	+ cr*cp*(rp11-rp01+rp00-rp10);
 
-      phiprime=(1-cr)*(1-cp)*phip0
-	+cr*(1-cp)*phip1
-	+cr*cp*phip2
-	+(1-cr)*cp*phip3;
+      phiprime=phip00 + cp*(phip10-phip00) + cr*(phip01-phip00)
+	+ cr*cp*(phip11-phip01+phip00-phip10);
+
+      //cout << "interpol velo phi, rp= " << phiprime << " " << rprime << endl;
     }
 	
     switch (gg_->coordKind()) {
@@ -691,7 +708,9 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 	vel[1] = rprime;
 	vel[2] = 0.;
 	vel[3] = phiprime;
-	vel[0] = gg_->SysPrimeToTdot(pos2, vel+1);
+	// vel[0] = gg_->SysPrimeToTdot(pos2, vel+1); // WHY this pos2 business?
+	//cout << "pos and vel= " << pos[1] << " " << pos[2] << " " << pos[3] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+	vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
 	vel[1] *= vel[0];
 	vel[3] *= vel[0];
       }
@@ -714,41 +733,53 @@ double PatternDisk::emission(double nu, double dsem,
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
 
-    double rr = projectedRadius(co);
-    double phi = sphericalPhi(co);
+  double rr = projectedRadius(co);
+  double phi = sphericalPhi(co);
 
-    double Iem=0.;
-    if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
-      // Extreme cases no interpolation
-      Iem=emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
-    }else{
-      // Bilinear interpolation
-      double Iem0=emission_[(i[2]-1)*(nphi_*nnu_)+(i[1]-1)*nnu_+i[0]];
-      double Iem1=emission_[(i[2]-1)*(nphi_*nnu_)+i[1]*nnu_+i[0]];
-      double Iem2=emission_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
-      double Iem3=emission_[i[2]*(nphi_*nnu_)+(i[1]-1)*nnu_+i[0]];
+  //cout << "in emission r, phi= " << rr << " " << phi << endl;
+  //cout << "and indices= " << i[0] << " " << i[1] << " " << i[2] << endl;
+  
+  double Iem=0.;
 
-      double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
-	phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
-      
-      if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
-	throwError("In PatternDisk::emission: "
-		   "bad interpolation");
-      }
+  if (nnu_>1) throwError("In PatternDisk: multifrequency case not implemented");
+  
+  if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
+    // Extreme cases no interpolation
+    Iem=emission_[i[1]*nr_+i[2]];
+    // NB: here and below there is no i[0] because the frequency
+    // dependence is not coded yet, nnu_ should be 1 (it is tested above),
+    // i[0] is always 0.
+    //cout << "In emission no interpo: " << Iem << endl;
+  }else{
+    // Bilinear interpolation
+    // Notation I_{phi,r}
+    double I00=emission_[(i[1]-1)*nr_+(i[2]-1)];
+    double I10=emission_[    i[1]*nr_+(i[2]-1)];
+    double I11=emission_[    i[1]*nr_+i[2]];
+    double I01=emission_[(i[1]-1)*nr_+i[2]];
+    //cout << "In emission Iem grid= " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
+    
+    double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
+      phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
 
-      double cr = (rr-rinf)/(rsup-rinf),
-	cp = (phi-phiinf)/(phisup-phiinf);
-
-      Iem = (1-cr)*(1-cp)*Iem0
-	+cr*(1-cp)*Iem1
-	+cr*cp*Iem2
-	+(1-cr)*cp*Iem3;
+    //cout << " In emission rin sup, phi inf sup, r phi: " << rinf << " " << rsup << " " << phiinf << " " << phisup << " " << rr << " " << phi << endl;
+    
+    if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
+      throwError("In PatternDisk::emission: "
+		 "bad interpolation");
     }
-
+    
+    double cr = (rr-rinf)/(rsup-rinf),
+      cp = (phi-phiinf)/(phisup-phiinf);
+    
+    Iem = I00 + cp*(I10-I00) + cr*(I01-I00) + cr*cp*(I11-I01+I00-I10);
+    //cout << "In emission I interpo= " << Iem << endl;
+  }
+  
   if (!flag_radtransf_) return Iem;
   double thickness;
   // NB: thickness is not interpolated so far
-  if (opacity_ && (thickness=opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]]*dsem))
+  if (opacity_ && (thickness=opacity_[i[1]*nr_+i[2]]*dsem))
     return Iem * (1. - exp (-thickness)) ;
   return 0.;
 }
@@ -760,7 +791,7 @@ double PatternDisk::transmission(double nu, double dsem, double*co) const {
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
   // NB: opacity is not interpolated so far
-  double opac = opacity_[i[2]*(nphi_*nnu_)+i[1]*nnu_+i[0]];
+  double opac = opacity_[i[1]*nr_+i[2]];
   GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opac <<endl;
   if (!opac) return 1.;
   return exp(-opac*dsem);

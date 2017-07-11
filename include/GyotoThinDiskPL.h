@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2012-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2017 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -43,21 +43,16 @@ namespace Gyoto{
  * \class Gyoto::Astrobj::ThinDiskPL
  * \brief Geometrically thin disk with black-body emission
  * 
- * Mass density varies with a power-law, temperature depends on density.
+ * Temperature varies with a power-law from the inner radius outwards:
  *
- * &rho; = &rho;<SUB>0</SUB> (r<SUB>cur</SUB>/r<SUB>0</SUB>)<SUP>&alpha;</SUP>
+ * &T; = &T;<SUB>0</SUB> (r<SUB>cur</SUB>/r<SUB>inner</SUB>)<SUP>&alpha;</SUP>
  *
- * XML entities:
- *  - PLSlope: ThinDiskPL::PLSlope_
- *  - PLRho: ThinDiskPL::PLRho_
- *  - PLRadRef: ThinDiskPL::PLRadRef_
  */
 class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinDiskPL>;
  private:
-  double PLSlope_; ///< Power law index
-  double PLRho_; ///< Reference density
-  double PLRadRef_; ///< Reference radius
+  double slope_; ///< Power law index
+  double Tinner_; ///< Reference temperature assumed at inner radius
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
 
@@ -77,24 +72,15 @@ class Gyoto::Astrobj::ThinDiskPL : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
-  void PLSlope(double);
-  double PLSlope()const;
-  void PLRho(double);
-  double PLRho()const;
-  void PLRadRef(double);
-  double PLRadRef()const;
+  void Slope(double);
+  double Slope()const;
+  void Tinner(double);
+  double Tinner()const;
 
  public:
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  double c_ph[8],double c_obj[8]=NULL) const;
-
- private:
-  /**
-   * \brief emission() helper
-   */
-  double emissionBB(double nu, double co[8]) const;
-
 };
 
 #endif

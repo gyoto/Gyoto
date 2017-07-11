@@ -55,17 +55,10 @@ DynamicalDisk::DynamicalDisk() :
   tinit_(0.),
   dt_(1.),
   nb_times_(0),
+  nnu_(0), nphi_(0), nr_(0),
   emission_array_(NULL),
-  opacity_array_(NULL),
   velocity_array_(NULL),
-  radius_array_(NULL),
-  dnu_array_(NULL),
-  nu0_array_(NULL),
-  nnu_array_(NULL),
-  dphi_array_(NULL),
-  nphi_array_(NULL),
-  dr_array_(NULL),
-  nr_array_(NULL)
+  radius_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk Construction" << endl;
 }
@@ -76,17 +69,10 @@ DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   tinit_(o.tinit_),
   dt_(o.dt_),
   nb_times_(0),
+  nnu_(o.nnu_), nphi_(o.nphi_), nr_(o.nr_),
   emission_array_(NULL),
-  opacity_array_(NULL),
   velocity_array_(NULL),
-  radius_array_(NULL),
-  dnu_array_(NULL),
-  nu0_array_(NULL),
-  nnu_array_(NULL),
-  dphi_array_(NULL),
-  nphi_array_(NULL),
-  dr_array_(NULL),
-  nr_array_(NULL)
+  radius_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk Copy" << endl;
 #ifdef GYOTO_USE_CFITSIO
@@ -96,33 +82,16 @@ DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   }
   if (!nb_times_) return;
   emission_array_ = new double*[nb_times_] ;
-  opacity_array_  = new double*[nb_times_] ;
   velocity_array_ = new double*[nb_times_] ;
   radius_array_   = new double*[nb_times_] ;
-  dnu_array_      = new double [nb_times_];
-  nu0_array_      = new double [nb_times_];
-  nnu_array_      = new size_t [nb_times_];
-  nphi_array_     = new size_t [nb_times_];
-  nr_array_       = new size_t [nb_times_];
-  memcpy(dnu_array_,  o.dnu_array_,  nb_times_*sizeof(double));
-  memcpy(nu0_array_,  o.nu0_array_,  nb_times_*sizeof(double));
-  memcpy(nnu_array_,  o.nnu_array_,  nb_times_*sizeof(size_t));
-  memcpy(nnu_array_,  o.nnu_array_,  nb_times_*sizeof(size_t));
-  memcpy(nphi_array_, o.nphi_array_, nb_times_*sizeof(size_t));
-  memcpy(nr_array_,   o.nr_array_,   nb_times_*sizeof(size_t));
   for (int i=1; i<=nb_times_; i++) {
-    size_t nnu  = nnu_array_ [i-1];
-    size_t nphi = nphi_array_[i-1];
-    size_t nr   = nr_array_  [i-1];
-    size_t nel1=nnu*nphi*nr, nel2=2*nr*nphi;
+    size_t nel1=nnu_*nphi_*nr_, nel2=2*nr_*nphi_;
     emission_array_[i-1] = new double[nel1];
-    opacity_array_ [i-1] = new double[nel1];
     velocity_array_[i-1] = new double[nel2];
-    radius_array_  [i-1] = new double[nr  ];
+    radius_array_  [i-1] = new double[nr_ ];
     memcpy(emission_array_[i-1], o.emission_array_[i-1], nel1*sizeof(double));
-    memcpy(opacity_array_ [i-1], o.opacity_array_ [i-1], nel1*sizeof(double));
     memcpy(velocity_array_[i-1], o.velocity_array_[i-1], nel2*sizeof(double));
-    memcpy(radius_array_  [i-1], o.radius_array_  [i-1], nr  *sizeof(double));
+    memcpy(radius_array_  [i-1], o.radius_array_  [i-1], nr_ *sizeof(double));
   }
 #endif
 }
@@ -133,28 +102,15 @@ DynamicalDisk::~DynamicalDisk() {
   GYOTO_DEBUG << "DynamicalDisk Destruction" << endl;
   for (int i=1; i<=nb_times_; i++) {
     if (emission_array_) delete [] emission_array_[i-1];
-    if (opacity_array_)  delete [] opacity_array_ [i-1];
     if (velocity_array_) delete [] velocity_array_[i-1];
-    if (radius_array_)   delete [] radius_array_  [i-1];
+    if (radius_array_)   delete [] radius_array_[i-1];
   }
   if (emission_array_) delete [] emission_array_;
-  if (opacity_array_)  delete [] opacity_array_ ;
   if (velocity_array_) delete [] velocity_array_;
   if (radius_array_)   delete [] radius_array_  ;
-  if (dnu_array_)      delete [] dnu_array_;
-  if (nu0_array_)      delete [] nu0_array_;
-  if (nnu_array_)      delete [] nnu_array_;
-  if (nphi_array_)     delete [] nphi_array_;
-  if (nr_array_)       delete [] nr_array_;
   emission_array_ = NULL;
-  opacity_array_  = NULL;
   velocity_array_ = NULL;
   radius_array_   = NULL;
-  dnu_array_      = NULL;
-  nu0_array_      = NULL;
-  nnu_array_      = NULL;
-  nphi_array_     = NULL;
-  nr_array_       = NULL;
   nb_times_ = 0;
   if (dirname_) delete dirname_;
 }
@@ -170,28 +126,42 @@ void DynamicalDisk::copyQuantities(int iq) {
   radius(radius_array_[iq-1]);
 }
 
+void DynamicalDisk::nullifyQuantities() {
+  // This function is necessary to remove a malloc error
+  // in PatternDisk destructor; I don't understand why (May 2017)
+  setEmission(NULL);
+  setVelocity(NULL);
+  radius(NULL);
+}
+
 void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {
   double time = pos[0], tcomp=tinit_;
   int ifits=1;
+  //cout << "time in dyna velo: " << time << " " << tinit_ << endl;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
     ifits++;
   }
-
+  //cout << "ifits= " << ifits << endl;
   if (ifits==1 || ifits==nb_times_){
     copyQuantities(ifits);
     PatternDiskBB::getVelocity(pos,vel);
+    //cout << "in dyna velo no interpo: " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
   }else{
     double vel1[4], vel2[4];
     copyQuantities(ifits-1);
+    //cerr << "in dyna go to get vel of pattern" << endl;
     PatternDiskBB::getVelocity(pos,vel1);
+    //cerr << "in dyna after get vel of pattern" << endl;
     copyQuantities(ifits);
     PatternDiskBB::getVelocity(pos,vel2);
+    double t1 = tinit_+(ifits-2)*dt_; // t1 <= time <= t1+dt_    
     for (int ii=0;ii<4;ii++){ // 1st order interpol
-      double t1 = tinit_+(ifits-2)*dt_;
       vel[ii]=vel1[ii]+(vel2[ii]-vel1[ii])/dt_*(time-t1);
     }
+    //cout << "in dyna velo dph/dtau_1, dph/dtau_2, dph/dtau, time, t1, dt= " << vel1[3] << " " << vel2[3] << " " << vel[3] << " " << time << " " << t1 << " " << dt_ << endl;
   }
+  nullifyQuantities();
 }
 
 double DynamicalDisk::emission(double nu, double dsem,
@@ -199,14 +169,20 @@ double DynamicalDisk::emission(double nu, double dsem,
 			       double co[8]) const {
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
+  //cout << "time in dyna emission: " << time << " " << tinit_ << endl;
   int ifits=1;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
     ifits++;
   }
+  //cout << "ifits= " << ifits << endl;
+  //if (ifits==1 || time>tinit_+(nb_times_-1)*dt_){
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
-    return PatternDiskBB::emission(nu,dsem,NULL,co);
+    double Iem=PatternDiskBB::emission(nu,dsem,NULL,co);
+    const_cast<DynamicalDisk*>(this)->nullifyQuantities();
+    //cout << "in dyna emis no interpo: " << Iem << endl;
+    return Iem;
   }else{
     double I1, I2;
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits-1);
@@ -214,9 +190,11 @@ double DynamicalDisk::emission(double nu, double dsem,
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits);
     I2=PatternDiskBB::emission(nu,dsem,NULL,co);
     double t1 = tinit_+(ifits-2)*dt_;
+    const_cast<DynamicalDisk*>(this)->nullifyQuantities();
+    //cout << "in dyna I1, I2, time, t1, dt= " << I1 << " " << I2 << " " << time << " " << t1 << " " << dt_ << endl;
+    //cout << "in dyna interpo time= " << I1+(I2-I1)/dt_*(time-t1) << endl;
     return I1+(I2-I1)/dt_*(time-t1);
   }
- 
   return 0.;
 }
 
@@ -227,28 +205,15 @@ void DynamicalDisk::file(std::string const &fname) {
       // first free current arrays, if any
       for (int i=1; i<=nb_times_; i++) {
 	if (emission_array_) delete [] emission_array_[i-1];
-	if (opacity_array_)  delete [] opacity_array_ [i-1];
 	if (velocity_array_) delete [] velocity_array_[i-1];
 	if (radius_array_)   delete [] radius_array_  [i-1];
       }
       if (emission_array_) delete [] emission_array_;
-      if (opacity_array_)  delete [] opacity_array_ ;
       if (velocity_array_) delete [] velocity_array_;
       if (radius_array_)   delete [] radius_array_  ;
-      if (dnu_array_)      delete [] dnu_array_;
-      if (nu0_array_)      delete [] nu0_array_;
-      if (nnu_array_)      delete [] nnu_array_;
-      if (nphi_array_)     delete [] nphi_array_;
-      if (nr_array_)       delete [] nr_array_;
       emission_array_ = NULL;
-      opacity_array_  = NULL;
       velocity_array_ = NULL;
       radius_array_   = NULL;
-      dnu_array_      = NULL;
-      nu0_array_      = NULL;
-      nnu_array_      = NULL;
-      nphi_array_     = NULL;
-      nr_array_       = NULL;
       nb_times_ = 0;
     }
 
@@ -280,18 +245,12 @@ void DynamicalDisk::file(std::string const &fname) {
       throwError("In DynamicalDisk.C: bad nb_times_ value");
     
     emission_array_ = new double*[nb_times_] ;
-    opacity_array_ = new double*[nb_times_] ;
     velocity_array_ = new double*[nb_times_] ;
     radius_array_ = new double*[nb_times_] ;
-    dnu_array_ = new double[nb_times_];
-    nu0_array_ = new double[nb_times_];
-    nnu_array_ = new size_t[nb_times_];
-    nphi_array_ = new size_t[nb_times_];
-    nr_array_ = new size_t[nb_times_];
     
     for (int i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
-      stream_name << dirname_ << "pseudoN2D" 
+      stream_name << dirname_ << "data" 
 		  << setw(4) << setfill('0') 
 		  << i << ".fits.gz" ;
       
@@ -300,9 +259,15 @@ void DynamicalDisk::file(std::string const &fname) {
       fitsRead(filename);
       size_t naxes[3];
       getIntensityNaxes(naxes);
-      size_t nnu=naxes[0],nphi=naxes[1],nr=naxes[2];
+      if (i==1){
+	nnu_=naxes[0],nphi_=naxes[1],nr_=naxes[2];
+      }else{
+	if (nnu_!=naxes[0] || nphi_!=naxes[1] || nr_!=naxes[2]){
+	  throwError("In DynDisk::file: grid dimensions changing!");
+	}
+      }
       //	nel = (nnu=naxes[0])*(nphi=naxes[1])*(nr=naxes[2]);
-      size_t nel1=nnu*nphi*nr, nel2=2*nr*nphi;
+      size_t nel1=nnu_*nphi_*nr_, nel2=2*nr_*nphi_;
       //save emission
       if (getIntensity()){
 	double * emtemp = const_cast<double*>(getIntensity());
@@ -310,13 +275,6 @@ void DynamicalDisk::file(std::string const &fname) {
 	for (size_t j=0;j<nel1;++j)
 	  emission_array_[i-1][j]=emtemp[j];
       }else throwError("In DynmicalDisk::file: Emission must be supplied");
-      //save opacity
-      if (opacity()){
-	double * optemp = const_cast<double*>(opacity());
-	opacity_array_[i-1] = new double[nel1];
-	for (size_t j=0;j<nel1;++j)
-	  opacity_array_[i-1][j]=optemp[j];
-      }
       //save velocity
       if (getVelocity()){
 	double * veltemp = const_cast<double*>(getVelocity());
@@ -327,16 +285,11 @@ void DynamicalDisk::file(std::string const &fname) {
       //save radius
       if (getGridRadius()){
       double * radtemp = const_cast<double*>(getGridRadius());
-      radius_array_[i-1] = new double[nr];
-      for (size_t j=0;j<nr;++j)
+      radius_array_[i-1] = new double[nr_];
+      for (size_t j=0;j<nr_;++j)
 	radius_array_[i-1][j]=radtemp[j];
       }else throwError("In DynmicalDisk::file: Radius must be supplied");
       //save other quantities
-      dnu_array_[i-1]=dnu();
-      nu0_array_[i-1]=nu0();
-      nnu_array_[i-1]=nnu;
-      nphi_array_[i-1]=nphi;
-      nr_array_[i-1]=nr;
     }
 #else
     throwError("This Gyoto has no FITS i/o");

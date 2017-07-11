@@ -96,10 +96,10 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
   double const * const rad=getGridRadius();
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, pos, 0.); //NB: last arg should be nu, don't care here
-  double rgrid=rad[i[2]-1]; // this is the smallest radius used
+  double rgridmin=rad[i[2]-1]; // this is the smallest radius used
                           // when dealing with the current r value
 
-  if (rgrid<risco()){
+  if (rgridmin<risco()){
     //default velocity, emission will be 0 there anyway
     vel[0]=1.;
     for (int ii=1;ii<4;ii++)
@@ -121,10 +121,9 @@ double PatternDiskBB::emission(double nu, double dsem,
   size_t i[3]; // {i_nu, i_phi, i_r}
   getIndices(i, co, nu);
   double const * const rad=getGridRadius();
-  double rgrid=rad[i[2]-1];
-
+  double rgridmin=rad[i[2]-1], rgridmax=rad[i[2]];
   // no emission in any case above rmax_:
-  if (rgrid > rmax_ || rgrid < risco()) return 0.; 
+  if (rgridmax > rmax_ || rgridmin < risco()) return 0.; 
 
   double Iem=0.;
   size_t naxes[3];
@@ -144,16 +143,14 @@ double PatternDiskBB::emission(double nu, double dsem,
     double TT;
     TT = PatternDisk::emission(nu,dsem,co,co);
     spectrumBB_->temperature(TT);
+    //    cout << "In pattern BB nu, T= " << nu << " " << TT << endl;
     Iem=(*spectrumBB_)(nu);
   }
 
   if (!flag_radtransf_) return Iem;
-
-  double thickness;
-  double const * const op = opacity();
-  if (op && (thickness=op[i[2]*(nphi*nnu)+i[1]*nnu+i[0]]*dsem))
-    return Iem * (1. - exp (-thickness)) ;
-  return 0.;
+  else throwError("In PatternDiskBB::emission: should be optically thick!");
+  // The PatternDisk::emission function called above will return
+  // nonsense for the temperature in case the object is optically thin.
 }
 
 void PatternDiskBB::metric(SmartPointer<Metric::Generic> gg) {
