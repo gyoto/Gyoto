@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2017 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -39,6 +39,7 @@
 #include "GyotoPolishDoughnut.h"
 #include "GyotoThinDiskIronLine.h"
 #include "GyotoEquatorialHotSpot.h"
+#include "GyotoJet.h"
 
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
@@ -98,6 +99,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::DynamicalDisk3D>));
   Astrobj::Register("DirectionalDisk",
 		    &(Astrobj::Subcontractor<Astrobj::DirectionalDisk>));
+  Astrobj::Register("Jet",
+		    &(Astrobj::Subcontractor<Astrobj::Jet>));
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));

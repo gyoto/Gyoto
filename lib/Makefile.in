@@ -196,7 +196,8 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-ThinDiskIronLine.lo \
 	libgyoto_stdplug_la-DeformedTorus.lo \
 	libgyoto_stdplug_la-EquatorialHotSpot.lo \
-	libgyoto_stdplug_la-StdPlug.lo $(am__objects_1)
+	libgyoto_stdplug_la-Jet.lo libgyoto_stdplug_la-StdPlug.lo \
+	$(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -512,7 +513,7 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
-	ThinDiskIronLine.C DeformedTorus.C EquatorialHotSpot.C \
+	ThinDiskIronLine.C DeformedTorus.C EquatorialHotSpot.C Jet.C \
 	StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
@@ -698,6 +699,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Minkowski.Plo@am__quote@
@@ -933,6 +935,13 @@ libgyoto_stdplug_la-EquatorialHotSpot.lo: EquatorialHotSpot.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='EquatorialHotSpot.C' object='libgyoto_stdplug_la-EquatorialHotSpot.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-EquatorialHotSpot.lo `test -f 'EquatorialHotSpot.C' || echo '$(srcdir)/'`EquatorialHotSpot.C
+
+libgyoto_stdplug_la-Jet.lo: Jet.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Jet.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Jet.Tpo -c -o libgyoto_stdplug_la-Jet.lo `test -f 'Jet.C' || echo '$(srcdir)/'`Jet.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Jet.Tpo $(DEPDIR)/libgyoto_stdplug_la-Jet.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Jet.C' object='libgyoto_stdplug_la-Jet.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Jet.lo `test -f 'Jet.C' || echo '$(srcdir)/'`Jet.C
 
 libgyoto_stdplug_la-StdPlug.lo: StdPlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-StdPlug.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Tpo -c -o libgyoto_stdplug_la-StdPlug.lo `test -f 'StdPlug.C' || echo '$(srcdir)/'`StdPlug.C
