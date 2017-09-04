@@ -430,20 +430,21 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
   double a_r = a_i(1).val_point(rr,th,phi),
     a_t = rr*a_i(2).val_point(rr,th,phi),
     a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
+  if (a_p!=0.) {throwError("In NeutronStarModelAtm::getIndices: "
+			   "For axisym spacetime phi-compo should be zero");}
   const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
   double grr=g_up_ij(1,1).val_point(rr,th,phi), 
-    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
-    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi);
+    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi);
+  double ar = a_r*grr, at = a_t*gtt; //contravariant 3-accel
 
-  double ar = a_r*grr, at = a_t*gtt, ap = a_p*gpp; //contravariant 3-accel
+  double accelvecNorm2 = grr*a_r*a_r + gtt*a_t*a_t; // squared norm of accel vector
+  if (accelvecNorm2<=0.) throwError("In NeutronStarModelAtmosphere::getIndices"
+				    " accel vector should be spacelike");
+  double accelvecNorm = sqrt(accelvecNorm2);
 
-  const Sym_tensor& g_ij = *(gg_->getGamcov_tab()[0]);
-  double sgloc = sqrt(g_ij(1,1).val_point(rr,th,phi)*ar*ar
-		      + g_ij(2,2).val_point(rr,th,phi)*at*at
-		      + g_ij(3,3).val_point(rr,th,phi)*ap*ap);
-  sgloc*=LORENE_UNIT_ACCEL;
-  
-  //cout << "Accel vect compo, gs= " << a_r << " " << a_t << " " << a_p << " " << sgloc << endl;
+  double sgloc = accelvecNorm*LORENE_UNIT_ACCEL*100.; // LORENE speaks in SI, the 100 translates to cgs
+
+  //cout << "Accel vec compo, gs= " << a_r << " " << a_t << " " << a_p << " " << sgloc << endl;
   if (surfgrav_) { 
     if (nsg_==1){ // Only one value of surfgrav, put some value, won't be used
       i[2]=1; // don't put 0, see later why: it would return an error
@@ -497,37 +498,62 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
 double NeutronStarModelAtmosphere::emission(double nu, double,
 					    double cp[8],
 					    double co[8]) const{
+  /*
+    Important remarks on the precision: the variable GYOTO_T_TOL
+    defined in GyotoDefs.h is important as it tunes the precision
+    with which Gyoto will fine the star's surface. GYOTO_T_TOL=1e-4
+    e.g. leads to an error on r_emission of approx 1e-4 as well.
+    This for instance leads to small changes of Iobs when varying
+    the inclination for a non-rotating star (although the emission
+    should be indep of i). There is another limitation specifically
+    for photons that hit the star tangentially. These guys should
+    be integrated with care to find a precise (r_emission,theta_emission),
+    and thus get a precise photon tangent vector at emission, that in
+    turn manages the precision of cosi. To ensure this, a good
+    precaution is to decrease DeltaMaxOverR in the xml, eg to 0.1
+    to get something very precise. [Tested on August 2017 for a 30*30
+    map: actually some few pixels even need 0.01 to get the same
+    value for i=1° and i=90°! This would be really crazy long for
+    a full map...]
+
+    There is a second important limitation: the precision of Lorene.
+    The metrics given by Michal in May 2017 e.g. lead to a value of
+    r_star constant with theta to within approx 1e-8. 
+
+    So to have the most precise calcualtion (to machine prec), take
+    GYOTO_T_TOL=machine prec, make sure that Lorene works at
+    machine prec as well, and use a small DeltaMAxOverR. Of course
+    this is only needed to get crazy high precision (definitely not
+    a problem to fit observations e.g.)
+   */
 
   GYOTO_DEBUG << endl;
   //cout << "In emission NSatm, intens test= " << emission_[0] << endl;
   const Vector& a_i = *(gg_->getAccel_tab()[0]);
   double rr=co[1], th=co[2], phi=co[3];
+  //cout << "r,th,phi in emiss= " << setprecision(10) << rr << " " << th << " " << phi << endl;
+
+  // First, check that we are on the star surface (not obvious, photon
+  // could be a bit inside, see StandardAstrobj.C). If not, return 0.
+  // This is important coz if not present, sgloc can be computed inside
+  // the star and be out of the range computed in the grid, leading to error.
+  Valeur* ns_surf = gg_->getNssurf_tab()[0];
+  ns_surf->std_base_scal();
+  double rstar = ns_surf->val_point(0,0.,th,phi);
+  //cout << "rstar= " << rstar << endl;
+  double rtol = 1e-4; // should be such that GYOTO_T_TOL ensures a
+                      // a convergence to rstar better than rtol
+  if (fabs(rstar-rr)>rtol) return 0.;
+  
   if (rr==0.) throwError("In NeutronStarModelAtm.C::emission r is 0!");
   double rsinth = rr*sin(th);
   if (rsinth==0.) throwError("In NeutronStarModelAtm.C::emission on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
     sm2 = sm1*sm1;
-  double a_r = a_i(1).val_point(rr,th,phi),
-    a_t = rr*a_i(2).val_point(rr,th,phi),
-    a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
-  const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
-  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
-    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
-    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi); // here gpp is gamma^{phi,phi}
-  double ar = a_r*grr, at = a_t*gtt, ap = a_p*gpp; //contravariant 3-accel
 
-  const Sym_tensor& g_ij = *(gg_->getGamcov_tab()[0]);
-  double sgloc = sqrt(g_ij(1,1).val_point(rr,th,phi)*ar*ar
-		      + g_ij(2,2).val_point(rr,th,phi)*at*at
-		      + g_ij(3,3).val_point(rr,th,phi)*ap*ap);
-  sgloc*=LORENE_UNIT_ACCEL;
-
-  //cout << "r, sg, nsg= " << rr << " " << sgloc << " " << nsg_ << endl; 
-
-  // Finding normal 4-vector
+  // Finding acceleration 4-vector
   /*
-    Let us call a^\alpha the 4-vector normal to the surface,
-    i.e. the gravity acceleration 4-vector.
+    Let us call a^\alpha the acceleration 4-vector (normal to the surface).
     Because we assume circular fluid motion, the covariant
     acceleration reads
     a_\alpha = - \nabla (ln u_t) = - \partial_\alpha (ln u_t)
@@ -535,16 +561,48 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     Thus a^t = g^{tt} a_t + g^{tphi} a_phi = 0 and the same for a^phi.
     Thus only a^r and a^theta remain.
    */
-  double normal[4]={0.,ar,at,0.};
   
-  double normal_norm=gg_->ScalarProd(cp,normal,normal);
-  if (normal_norm<=0.) throwError("In NeutronStarModelAtmosphere::emission"
-				  " normal should be spacelike");
-  normal_norm=sqrt(normal_norm);
+  double a_r = a_i(1).val_point(rr,th,phi),
+    a_t = rr*a_i(2).val_point(rr,th,phi),
+    a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
+  if (a_p!=0.) {throwError("In NeutronStarModelAtm::emission: "
+			   "For axisym spacetime phi-compo should be zero");}
+  const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
+  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi);
+    //gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi); // here gpp is gamma^{phi,phi} ; it is useless as a_p is zero
+  double ar = a_r*grr, at = a_t*gtt; //contravariant 3-accel compo
+
+  double accelvec[4]={0.,ar,at,0.}; // acceleration 4-vector, normal to surf
+
+  //cout << "accel= " << a_r  << " " << a_t << " " << a_p << endl;
+
+  double accelvecNorm2 = grr*a_r*a_r + gtt*a_t*a_t; // squared norm of accel vector
+  if (accelvecNorm2<=0.) throwError("In NeutronStarModelAtmosphere::emission"
+				    " accel vector should be spacelike");
+  double accelvecNorm = sqrt(accelvecNorm2);
+  // Surface gravity is that quantity, scaled to cgs units:
+  double sgloc = accelvecNorm*LORENE_UNIT_ACCEL*100.; // LORENE speaks in SI, the 100 translates to cgs
+
+  //cout << "r,rstar,sgloc=" << rr << " " << rstar << " " << sgloc << endl;
+  
+  //cout << "r, sg, nsg= " << rr << " " << sgloc << " " << nsg_ << endl; 
+  
+  //cout << "accel vector= " << ar << " " << at << endl;
+  //cout << "photon vector= " << cp[4] << " " << cp[5] << " " << cp[6] << " " << cp[7] << endl;
     
   // Compute angle between photon direction and normal
-  double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
+  double np = 1./accelvecNorm*gg_->ScalarProd(cp,accelvec,cp+4),
     up = gg_->ScalarProd(cp,co+4,cp+4);
+  //cout << "accel and velo= " << accelvec[0] << " " << accelvec[1] << " " << accelvec[2] << " " << accelvec[3] << " " << cp[4] << " " << cp[5] << " " << cp[6] << " " << cp[7] << " " << endl;
+  //cout << "scalar prods= " << np << " " << up << endl;
+  double p_r=cp[5]/grr, p_t=cp[6]/gtt;
+  double myscalprod = 1./accelvecNorm*(grr*a_r*p_r + gtt*a_t*p_t);
+  //cout << "myscalprod= " << myscalprod << endl;
+  //cout << "gmunu= " << grr << " " << gtt << endl;
+  //cout << "prods of ap= " << a_r*p_r << " " << a_t*p_t << endl;
+  //cout << "parts of scal prod= " << grr*a_r*p_r << " " << gtt*a_t*p_t << endl;
+  //cout << "ar, pr, arpr= " << a_r << " " << p_r << " " << a_r*p_r << endl;
 
   // cos between unit normal n and tangent to photon p
   // is equal -n.p/u.p (u being the emitter's 4-vel);
@@ -552,15 +610,19 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   //cout << "cosi= " << cosi << endl;
   double tolcos = 0.005;
   if (cosi>1.){
-    if (fabs(cosi-1)>tolcos)
+    if (fabs(cosi-1)>tolcos){
+      cout << "Bad cosi= " << cosi << endl;
       throwError("In NeutronStarModelAtmosphere: bad cos!");
+    }
     cosi=1.;
   }
   if (cosi<0.){
     // cosi should be >0, the photon cannot come from
     // inside the star!
-    if (fabs(cosi)>tolcos)
-      throwError("In NeutronStarModelAtmosphere: bad cos!");
+    if (fabs(cosi)>tolcos){
+      cout << "Bad cosi= " << cosi << endl;
+      //throwError("In NeutronStarModelAtmosphere: bad cos!");
+    }
     cosi=0.;
   }
   //cout << "cosi= " << cosi << endl;
@@ -576,6 +638,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
 
   // Error if current surfgrav is not in provided range
   if (nsg_>1 && (sgloc<=surfgrav_[0] || sgloc>=surfgrav_[nsg_-1])){
+    cout << "With surf grav= " << sgloc << endl;
     throwError("In NeutronStarModelAtmosphere: bad value of surface gravity");
   }
   // No emission outside freq range
@@ -592,7 +655,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
 
   //return acos(cosi)*180./M_PI; // TEST!!! Don't forget to impose redshift to 1
 
-  //cout << "nu(eV), surfgrav, cosi= " << nu/GYOTO_eV2Hz << " " << sgloc << " " << cosi << endl;
+  //cout << setprecision(10) << "nu(eV), surfgrav, cosi= " << nu/GYOTO_eV2Hz << " " << sgloc << " " << cosi << endl;
   //cout << "indices= " << ind[0] << " " << ind[1] << " " << ind[2] << endl;
   double Iem=0.;
   size_t inul=ind[0]+1, inuu=ind[0], 
@@ -655,7 +718,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
 	I101 = emission_[inuu*ni_*nsg_+icosl*nsg_+isgu],
 	I111 = emission_[inuu*ni_*nsg_+icosu*nsg_+isgu],
 	I011 = emission_[inul*ni_*nsg_+icosu*nsg_+isgu];
-      //cout << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
+      //cout << setprecision(10) << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
       double rationu = (nu-freq_[inul])/(freq_[inuu]-freq_[inul]),
 	ratioi = (cosi-cosi_[icosl])/(cosi_[icosu]-cosi_[icosl]),
 	ratiosg = (sgloc-surfgrav_[isgl])/(surfgrav_[isgu]-surfgrav_[isgl]);
