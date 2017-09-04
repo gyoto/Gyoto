@@ -54,7 +54,7 @@ class Gyoto::Astrobj::FixedStar : public Astrobj::UniformSphere {
  protected:
   
   double pos_[3];///< x, y, z or r, theta, phi
-  bool rotating_; ///< Whether the blob is rotating at Metric::circularVelocity()
+  bool rotating_; ///< Whether the blob has a non-zero 3-velocity at Metric::circularVelocity(); note that the star anyway is fixed, but it can be useful to give it a non-zero velocity (that will enter the redshift computation) to simulate a snapshot on a rotating star
 
   // Constructors - Destructor
   // -------------------------
