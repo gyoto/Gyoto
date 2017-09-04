@@ -558,10 +558,10 @@ namespace Gyoto {
 # define getDelta           delta
 # define setDelta           delta
 # define getDelta           delta
-# define setDelta0          delta0
-# define getDelta0          delta0
-# define setAlpha0          alpha0
-# define getAlpha0          alpha0
+# define setDangle2         dangle2
+# define getDangle2         dangle2
+# define setDangle1         dangle1
+# define getDangle1         dangle1
 # define setAnglekind       anglekind
 # define getTmin            tMin
 # define setTmin            tMin

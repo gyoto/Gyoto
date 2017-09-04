@@ -1607,7 +1607,7 @@ extern gyoto_Screen;
      (value=screen(member=) or value=screen.member). Many support
      "unit".:
        metric, time, tmin, fov (field-of-view), resolution (N pixels
-       on each side), alpha0, delta0, distance (meters), inclination,
+       on each side), dangle1, dangle2, distance (meters), inclination,
        paln (position angle of the line of nodes), argument, freqobs,
        pojection (=[incl, paln, arg]), observerpos (alternative way to
        set time, dist, incl, and arg by giving the position of the
