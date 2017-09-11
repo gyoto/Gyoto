@@ -58,6 +58,8 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
   double T_; ///< Temperature (K)
   double cst_; ///< Scaling constant
   double Tm1_; ///< 1./T_;
+  double colorcor_; ///< Color-correction factor, see def in Suleimanov et al., A&A 527 A139 (2011), Eq. 23
+  double colorcorm4_; ///< colorcor_ to power -4.
 
  public:
   GYOTO_OBJECT;
@@ -74,6 +76,8 @@ class Gyoto::Spectrum::BlackBody : public Gyoto::Spectrum::Generic {
   void temperature(double); ///< Set constant
   double scaling() const; ///< Get exponent
   void scaling(double); ///< Set exponent
+  double colorCorrection() const; ///< Get color correction
+  void colorCorrection(double); ///< Set color correction
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
