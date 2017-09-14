@@ -36,10 +36,10 @@
     <FieldOfView>
       1.570796327
     </FieldOfView>
-    <!-- Use non-0 value for alpha0 to rotate the screen -->
-    <Alpha0>
+    <!-- Use non-0 value for dangle1, dangle2 to rotate the screen -->
+    <Dangle1>
       0.
-    </Alpha0>
+    </Dangle1>
     <Resolution>
       101
     </Resolution>
