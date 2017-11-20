@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -30,8 +30,15 @@
 #include <fstream>
 #include <string>
 #if defined HAVE_BOOST_ARRAY_HPP
-#include <boost/array.hpp>
-#define GYOTO_ARRAY boost::array
+# include <boost/array.hpp>
+# define GYOTO_ARRAY boost::array
+# if defined HAVE_MPI
+#  include <boost/version.hpp>
+#  if BOOST_VERSION >= 106400 
+#   include <boost/serialization/boost_array.hpp>
+#   include <boost/serialization/array_wrapper.hpp>
+#  endif
+# endif
 #else
 template <typename T, size_t sz> class GYOTO_ARRAY {
  private:
