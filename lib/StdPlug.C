@@ -48,6 +48,7 @@
 #include "GyotoDisk3D.h"
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
+#include "GyotoXillverReflection.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -101,6 +102,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::DirectionalDisk>));
   Astrobj::Register("Jet",
 		    &(Astrobj::Subcontractor<Astrobj::Jet>));
+  Astrobj::Register("XillverReflection",
+		    &(Astrobj::Subcontractor<Astrobj::XillverReflection>));
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));

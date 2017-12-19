@@ -27,6 +27,7 @@
 #include "GyotoDirectionalDisk.h"
 #include "GyotoDeformedTorus.h"
 #include "GyotoEquatorialHotSpot.h"
+#include "GyotoXillverReflection.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"

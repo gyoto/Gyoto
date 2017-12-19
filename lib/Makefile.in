@@ -176,7 +176,8 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-DynamicalDiskBolometric.lo \
 	libgyoto_stdplug_la-Disk3D.lo \
 	libgyoto_stdplug_la-DynamicalDisk3D.lo \
-	libgyoto_stdplug_la-DirectionalDisk.lo
+	libgyoto_stdplug_la-DirectionalDisk.lo \
+	libgyoto_stdplug_la-XillverReflection.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
@@ -519,7 +520,7 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
-	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -718,6 +719,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ThinDiskPL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-UniformSphere.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo@am__quote@
 
 .C.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -998,6 +1000,13 @@ libgyoto_stdplug_la-DirectionalDisk.lo: DirectionalDisk.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='DirectionalDisk.C' object='libgyoto_stdplug_la-DirectionalDisk.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-DirectionalDisk.lo `test -f 'DirectionalDisk.C' || echo '$(srcdir)/'`DirectionalDisk.C
+
+libgyoto_stdplug_la-XillverReflection.lo: XillverReflection.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-XillverReflection.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Tpo -c -o libgyoto_stdplug_la-XillverReflection.lo `test -f 'XillverReflection.C' || echo '$(srcdir)/'`XillverReflection.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Tpo $(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='XillverReflection.C' object='libgyoto_stdplug_la-XillverReflection.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-XillverReflection.lo `test -f 'XillverReflection.C' || echo '$(srcdir)/'`XillverReflection.C
 
 mostlyclean-libtool:
 	-rm -f *.lo
