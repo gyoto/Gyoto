@@ -369,7 +369,13 @@ double XillverReflection::timelampphizero() const{
 }
 
 void XillverReflection::timelampphizero(double tt){
-  timelampphizero_=tt;
+  if (lampradius_==0.)
+    {
+      throwError("In Xillver::timelempphizero: "
+		 "update lampradius before timelampphizero.");
+    }
+  double lampperiod = 2*M_PI*(pow(lampradius_,1.5)+aa_);
+  timelampphizero_=fmod(tt,lampperiod);
 }
 
 double XillverReflection::lampradius() const{
@@ -828,19 +834,29 @@ double XillverReflection::emission(double nu, double,
   // the radius range
   double rr=co[1], phi=co[3];
   if (rr<=radius_[0] || rr>=radius_[nr_-1]) return 0.;
-  double philamp = timerescale/lampperiod*2*M_PI; // lamp phi position at hit
+  double philamp = (timerescale-timelampphizero_)/lampperiod*2*M_PI; // lamp phi position at hit
   double dphi = phi - philamp; // phi difference between lamp and disk hit pos
   // this is the quantity with which to interpolate the illum data computed
   // only for philamp=0
-  // At this stage we have -2pi < dphi < 2pi
-  if (dphi<0.){
+  // At this stage we have -2pi < dphi < 4pi (checked)
+  
+  if (dphi<-2*M_PI or dphi>4*M_PI) {
+    cout << "tresc, tlamp, period, phi, philamp, dphi= "
+	 << timerescale << " " << timelampphizero_ << " " << lampperiod
+	 << " " << phi << " " << philamp << " " << dphi << endl;
+    throwError("In Xillver::emission: "
+	       "bad dphi");
+  }
+  while (dphi<0.){
     dphi+=2.*M_PI;
+  }
+  while (dphi>2*M_PI){
+    dphi-=2.*M_PI;
   }
   // Here 0<dphi<2pi, ready for interpolation
   //cout << "r, phi, philamp, dphi= " << rr << " " << phi << " " << philamp << " " << dphi << endl;
   if (dphi<0. or dphi>2*M_PI) {
-    cout << "times= " << timehit << " " << lampperiod << " " << timerescale << " " << endl;
-    throwError("In Xillver::emission: bad dphi");
+    throwError("In Xillver::emission: bad dphi after correction");
   }
   // Illumination indices of the current closest grid point
   size_t indIllum[2]; // {i_r, i_phi}
