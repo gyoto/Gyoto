@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -549,9 +549,12 @@ class Gyoto::Screen
    * \param[in] x    RA (d_alpha*cos(delta)) offset in radians;
    * \param[in] y    Dec offset (d_delta) in radians; 
    * \param[out] dest position-velocity of the observer Photon. Preallocated.
+   * \param[out] Ephi first polarisation direction. Preallocated. Default: NULL.
+   * \param[out] Etheta second polarisation direction. Preallocated. Default: NULL.
    * 
    */
-  void getRayCoord(double x, double y, double dest[8]) const;
+  void getRayCoord(double x, double y, double dest[8],
+		   double *Ephi=NULL, double *Etheta=NULL) const;
 
   /// Get 8-coordinate of Photon hitting screen pixel
   /**

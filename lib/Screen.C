@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -509,9 +509,11 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
 }
 
 void Screen::getRayCoord(double angle1, double angle2,
-		      double coord[]) const
+			 double coord[], double * Ephi, double *Etheta) const
 
 {
+  if (Ephi or Etheta) throwError("Polarisation en chantier");
+
   angle1+=dangle1_; angle2+=dangle2_; // Screen orientation
   double normtol=1e-10;
   int i; // dimension : 0, 1, 2

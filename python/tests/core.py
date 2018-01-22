@@ -140,3 +140,18 @@ class TestProperty(unittest.TestCase):
         s=gyoto.core.Screen()
         p=s.property('Distance')
         self.assertIn('Distance: double with unit', s.describeProperty(p))
+
+class TestScreen(unittest.TestCase):
+    def test_getRayCoord(self):
+        met=gyoto.core.Metric("KerrBL")
+        s=gyoto.core.Screen()
+        # define distance etc.
+        coord=numpy.zeros(8, float)
+        Ephi=numpy.zeros(4, float)
+        Etheta=numpy.zeros(4, float)
+        s.getRayCoord(0.,0., coord, Ephi, Etheta)
+        x = coord[0:3]
+        k = coord[4:7]
+        self.assertAlmostEqual(met.ScalarProd(x, k, Ephi), 0., -15)
+        self.assertAlmostEqual(met.ScalarProd(x, k, Etheta), 0., -15)
+        self.assertAlmostEqual(met.ScalarProd(x, Etheta, Ephi), 0., -15)
