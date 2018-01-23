@@ -3,7 +3,7 @@
  * \brief Gyoto ubiquitous macros and typedefs
  */
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -95,7 +95,13 @@ namespace Gyoto {
    */ 
 #define GYOTO_QUANTITY_IMPACTCOORDS  32
   /// Spectrum: I<SUB>&nu;</SUB> at each frequency in Scenery::screen_->getMidpoints().
-#define GYOTO_QUANTITY_SPECTRUM     512
+#define GYOTO_QUANTITY_SPECTRUM      64
+  /// SpectrumStokesQ
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_Q     128
+  /// SpectrumStokesU
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_U     256
+  /// SpectrumStokesV
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_V     512
   /// Spectrum: &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>I<SUB>&nu;</SUB> d&nu; in each frequency channel in Scenery::screen_.
 #define GYOTO_QUANTITY_BINSPECTRUM 1024
   /* Astrobj-specific */
@@ -109,6 +115,10 @@ namespace Gyoto {
 #define GYOTO_QUANTITY_USER4         4096
   /// User5: Gyoto::Astrobj specific Gyoto::Quantity_t
 #define GYOTO_QUANTITY_USER5         2048
+  /// Bitwise or of all spectral quantities
+#define GYOTO_QUANTITY_SPECTRAL GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_SPECTRUM_STOKES_Q | GYOTO_QUANTITY_SPECTRUM_STOKES_U | GYOTO_QUANTITY_SPECTRUM_STOKES_V | GYOTO_QUANTITY_BINSPECTRUM
+  /// Bitwise or of all the Stokes parameters
+#define GYOTO_QUANTITY_SPECTRUM_STOKES GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_SPECTRUM_STOKES_Q | GYOTO_QUANTITY_SPECTRUM_STOKES_U | GYOTO_QUANTITY_SPECTRUM_STOKES_V
   //\}
 
   /**

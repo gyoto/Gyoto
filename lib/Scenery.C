@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -399,15 +399,14 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     mpi::broadcast(*mpi_team_, has_ipct, 0);
     mpi::broadcast(*mpi_team_, is_pixel, 0);
 
-    if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
+    if (quantities & GYOTO_QUANTITY_SPECTRAL) {
       if (!spr) throwError("Spectral quantity requested but "
 			     "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }
-    size_t nelt= getScalarQuantitiesCount(&quantities);
-    if (quantities & GYOTO_QUANTITY_SPECTRUM)     nelt += nbnuobs;
-    if (quantities & GYOTO_QUANTITY_BINSPECTRUM)  nelt += nbnuobs;
-    if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) nelt += 16;
+    size_t nelt= getScalarQuantitiesCount(&quantities)
+      +nbnuobs*getSpectralQuantitiesCount(&quantities)
+      +(quantities & GYOTO_QUANTITY_IMPACTCOORDS)?16:0;
     double * vect = new double[nelt];
     Astrobj::Properties *locdata = new Astrobj::Properties();
     size_t offset=1;
@@ -459,6 +458,18 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     }
     if (quantities & GYOTO_QUANTITY_SPECTRUM) {
       locdata->spectrum=vect+offset*(curquant++);
+      locdata->offset=int(offset);
+    }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_Q) {
+      locdata->stokesQ=vect+offset*(curquant++);
+      locdata->offset=int(offset);
+    }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_U) {
+      locdata->stokesU=vect+offset*(curquant++);
+      locdata->offset=int(offset);
+    }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_V) {
+      locdata->stokesV=vect+offset*(curquant++);
       locdata->offset=int(offset);
     }
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
@@ -772,8 +783,17 @@ void Scenery::requestedQuantitiesString(std::string const &squant) {
       quantities_ |= GYOTO_QUANTITY_REDSHIFT;
     else if (!strcmp(tk, "ImpactCoords"))
       quantities_ |= GYOTO_QUANTITY_IMPACTCOORDS;
+    else if (!strcmp(tk, "SpectrumStokesQ"))
+      quantities_ |= GYOTO_QUANTITY_SPECTRUM_STOKES_Q;
+    else if (!strcmp(tk, "SpectrumStokesU"))
+      quantities_ |= GYOTO_QUANTITY_SPECTRUM_STOKES_U;
+    else if (!strcmp(tk, "SpectrumStokesV"))
+      quantities_ |= GYOTO_QUANTITY_SPECTRUM_STOKES_V;
     else if (!strcmp(tk, "Spectrum")) {
       quantities_ |= GYOTO_QUANTITY_SPECTRUM;
+      spectrumConverter(unit);
+    } else if (!strcmp(tk, "SpectrumStokes")) {
+      quantities_ |= GYOTO_QUANTITY_SPECTRUM_STOKES;
       spectrumConverter(unit);
     } else if (!strcmp(tk, "BinSpectrum")) {
       quantities_ |= GYOTO_QUANTITY_BINSPECTRUM;
@@ -855,19 +875,22 @@ std::string Scenery::requestedQuantitiesString() const {
   string squant = "";
   Quantity_t quantities
     = quantities_?quantities_:(astrobj()?astrobj()->getDefaultQuantities():0);
-  if (quantities & GYOTO_QUANTITY_INTENSITY   ) squant+="Intensity ";
-  if (quantities & GYOTO_QUANTITY_EMISSIONTIME) squant+="EmissionTime ";
-  if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) squant+="MinDistance ";
-  if (quantities & GYOTO_QUANTITY_FIRST_DMIN  ) squant+="FirstDistMin ";
-  if (quantities & GYOTO_QUANTITY_REDSHIFT    ) squant+="Redshift ";
-  if (quantities & GYOTO_QUANTITY_IMPACTCOORDS) squant+="ImpactCoords ";
-  if (quantities & GYOTO_QUANTITY_SPECTRUM    ) squant+="Spectrum ";
-  if (quantities & GYOTO_QUANTITY_BINSPECTRUM ) squant+="BinSpectrum ";
-  if (quantities & GYOTO_QUANTITY_USER1       ) squant+="User1 ";
-  if (quantities & GYOTO_QUANTITY_USER2       ) squant+="User2 ";
-  if (quantities & GYOTO_QUANTITY_USER3       ) squant+="User3 ";
-  if (quantities & GYOTO_QUANTITY_USER4       ) squant+="User4 ";
-  if (quantities & GYOTO_QUANTITY_USER5       ) squant+="User5 ";
+  if (quantities & GYOTO_QUANTITY_INTENSITY        ) squant+="Intensity ";
+  if (quantities & GYOTO_QUANTITY_EMISSIONTIME     ) squant+="EmissionTime ";
+  if (quantities & GYOTO_QUANTITY_MIN_DISTANCE     ) squant+="MinDistance ";
+  if (quantities & GYOTO_QUANTITY_FIRST_DMIN       ) squant+="FirstDistMin ";
+  if (quantities & GYOTO_QUANTITY_REDSHIFT         ) squant+="Redshift ";
+  if (quantities & GYOTO_QUANTITY_IMPACTCOORDS     ) squant+="ImpactCoords ";
+  if (quantities & GYOTO_QUANTITY_SPECTRUM         ) squant+="Spectrum ";
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_Q) squant+="SpectrumStokesQ ";
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_U) squant+="SpectrumStokesU ";
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_V) squant+="SpectrumStokesV ";
+  if (quantities & GYOTO_QUANTITY_BINSPECTRUM      ) squant+="BinSpectrum ";
+  if (quantities & GYOTO_QUANTITY_USER1            ) squant+="User1 ";
+  if (quantities & GYOTO_QUANTITY_USER2            ) squant+="User2 ";
+  if (quantities & GYOTO_QUANTITY_USER3            ) squant+="User3 ";
+  if (quantities & GYOTO_QUANTITY_USER4            ) squant+="User4 ";
+  if (quantities & GYOTO_QUANTITY_USER5            ) squant+="User5 ";
   return squant;
 }
 
@@ -894,6 +917,22 @@ size_t Scenery::getScalarQuantitiesCount(Quantity_t *q) const {
   if (quantities & GYOTO_QUANTITY_USER3       ) ++nquant;
   if (quantities & GYOTO_QUANTITY_USER4       ) ++nquant;
   if (quantities & GYOTO_QUANTITY_USER5       ) ++nquant;
+  return nquant;
+}
+
+size_t Scenery::getSpectralQuantitiesCount(Quantity_t *q) const {
+  size_t nquant=0;
+  Quantity_t quantities;
+  if (q) quantities=*q;
+  else
+    quantities=quantities_?
+      quantities_:
+      (astrobj()?astrobj()->getDefaultQuantities():GYOTO_QUANTITY_NONE);
+  if (quantities & GYOTO_QUANTITY_SPECTRUM         ) ++nquant;
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_Q) ++nquant;
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_U) ++nquant;
+  if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_V) ++nquant;
+  if (quantities & GYOTO_QUANTITY_BINSPECTRUM      ) ++nquant;
   return nquant;
 }
 

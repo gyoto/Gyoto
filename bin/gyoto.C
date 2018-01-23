@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2013, 2016, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -449,22 +449,23 @@ int main(int argc, char** argv) {
 		      << quantities <<endl;
 
     size_t nbnuobs=0;
-    if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
+    if (quantities & GYOTO_QUANTITY_SPECTRAL) {
       SmartPointer<Spectrometer::Generic> spr = screen -> spectrometer();
       if (!spr) throwError("Spectral quantity requested but "
 			   "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }
                //nb of frames that will be used for spectral cube
-    size_t nbdata= scenery->getScalarQuantitiesCount();
+    size_t nbdata= scenery->getScalarQuantitiesCount()
+      +scenery->getSpectralQuantitiesCount()*nbnuobs;
                //nb of frames used for diverse interesting outputs
                //(obs flux, impact time, redshift..)
-    size_t nelt=res*res*(nbdata+nbnuobs);
+    size_t nelt=res*res*nbdata;
     vect = new double[nelt];
 
     // First check whether we can open file
     int naxis=3; 
-    long naxes[] = {long(res), long(res), long(nbdata+nbnuobs)};
+    long naxes[] = {long(res), long(res), long(nbdata)};
     nelements=nelt; 
 
     fits_create_file(&fptr, pixfile, &status);
@@ -568,16 +569,51 @@ int main(int argc, char** argv) {
 		     const_cast<char*>("User5"),
 		     CNULL, &status);
     }
+    double * curvect=vect+offset*curquant;
     if (quantities & GYOTO_QUANTITY_SPECTRUM) {
-      data->spectrum=vect+offset*(curquant++);
+      data->spectrum=curvect;
+      curvect += offset*nbnuobs;
+      ++curquant;
       data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Spectrum"),
 		     CNULL, &status);
     }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_Q) {
+      data->stokesQ=curvect;
+      curvect += offset*nbnuobs;
+      ++curquant;
+      data->offset=int(offset);
+      sprintf(keyname, fmt, curquant);
+      fits_write_key(fptr, TSTRING, keyname,
+		     const_cast<char*>("SpectrumStokesQ"),
+		     CNULL, &status);
+    }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_U) {
+      data->stokesU=curvect;
+      curvect += offset*nbnuobs;
+      ++curquant;
+      data->offset=int(offset);
+      sprintf(keyname, fmt, curquant);
+      fits_write_key(fptr, TSTRING, keyname,
+		     const_cast<char*>("SpectrumStokesU"),
+		     CNULL, &status);
+    }
+    if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_V) {
+      data->stokesV=curvect;
+      curvect += offset*nbnuobs;
+      ++curquant;
+      data->offset=int(offset);
+      sprintf(keyname, fmt, curquant);
+      fits_write_key(fptr, TSTRING, keyname,
+		     const_cast<char*>("SpectrumStokesV"),
+		     CNULL, &status);
+    }
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
-      data->binspectrum=vect+offset*(curquant++);
+      data->binspectrum=curvect;
+      curvect += offset*nbnuobs;
+      ++curquant;
       data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,

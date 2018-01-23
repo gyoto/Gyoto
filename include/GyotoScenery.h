@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -348,6 +348,12 @@ class Gyoto::Scenery
    * This is all quantities except Spectrum, BinSpectrum and ImpactCoords.
    */
   size_t getScalarQuantitiesCount(Quantity_t *q=NULL) const ;
+
+  /// Get number of requested quantities of spectral nature
+  /**
+   * This is Spectrum, SpectrumStokesQ, SpectrumStokesU, SpectrumStokesV and BinSpectrum.
+   */
+  size_t getSpectralQuantitiesCount(Quantity_t *q=NULL) const ;
 
   /// Get ph_.tmin_
   double tMin() const ;

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -638,6 +638,10 @@ class Gyoto::Astrobj::Properties : public Gyoto::SmartPointee {
    * I<SUB>&nu;</SUB> (&nu;) (observed specific intensity)
    */
   double *spectrum; ///< GYOTO_QUANTITY_SPECTRUM    : Spectrum
+
+  double *stokesQ;
+  double *stokesU;
+  double *stokesV;
 
   /**
    *  I<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>, the

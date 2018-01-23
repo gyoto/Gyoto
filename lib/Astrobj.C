@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -468,7 +468,8 @@ Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
   redshift(NULL),
-  spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
+  spectrum(NULL), stokesQ(NULL), stokesU(NULL), stokesV(NULL),
+  binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 # ifdef HAVE_UDUNITS
   , intensity_converter_(NULL), spectrum_converter_(NULL),
@@ -481,7 +482,8 @@ Astrobj::Properties::Properties( double * I, double * t) :
   intensity(I), time(t), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
   redshift(NULL),
-  spectrum(NULL), binspectrum(NULL), offset(1), impactcoords(NULL),
+  spectrum(NULL), stokesQ(NULL), stokesU(NULL), stokesV(NULL),
+  binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
 # ifdef HAVE_UDUNITS
   , intensity_converter_(NULL), spectrum_converter_(NULL),
@@ -497,6 +499,9 @@ void Astrobj::Properties::init(size_t nbnuobs) {
   if (first_dmin){*first_dmin = DBL_MAX; first_dmin_found=0;}
   if (redshift)   *redshift   = 0.;
   if (spectrum) for (size_t ii=0; ii<nbnuobs; ++ii) spectrum[ii*offset]=0.; 
+  if (stokesQ)  for (size_t ii=0; ii<nbnuobs; ++ii) stokesQ [ii*offset]=0.;
+  if (stokesU)  for (size_t ii=0; ii<nbnuobs; ++ii) stokesU [ii*offset]=0.;
+  if (stokesV)  for (size_t ii=0; ii<nbnuobs; ++ii) stokesV [ii*offset]=0.;
   if (binspectrum) for (size_t ii=0; ii<nbnuobs; ++ii)
 		     binspectrum[ii*offset]=0.; 
   if (impactcoords) for (size_t ii=0; ii<16; ++ii) impactcoords[ii]=DBL_MAX;
@@ -546,6 +551,9 @@ Astrobj::Properties& Astrobj::Properties::operator+=(ptrdiff_t ofset) {
   if (first_dmin)   first_dmin   += ofset;
   if (redshift)     redshift     += ofset;
   if (spectrum)     spectrum     += ofset;
+  if (stokesQ)      stokesQ      += ofset;
+  if (stokesU)      stokesU      += ofset;
+  if (stokesV)      stokesV      += ofset;
   if (binspectrum)  binspectrum  += ofset;
   if (impactcoords) impactcoords += 16*ofset;
   if (user1)        user1        += ofset;
@@ -570,6 +578,9 @@ Astrobj::Properties::operator Quantity_t () const {
   if (first_dmin)   res |= GYOTO_QUANTITY_FIRST_DMIN;
   if (redshift)     res |= GYOTO_QUANTITY_REDSHIFT;
   if (spectrum)     res |= GYOTO_QUANTITY_SPECTRUM;
+  if (stokesQ)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_Q;
+  if (stokesU)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_U;
+  if (stokesV)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_V;
   if (binspectrum)  res |= GYOTO_QUANTITY_BINSPECTRUM;
   if (impactcoords) res |= GYOTO_QUANTITY_IMPACTCOORDS;
   if (user1)        res |= GYOTO_QUANTITY_USER1;
