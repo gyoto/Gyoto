@@ -549,12 +549,21 @@ class Gyoto::Screen
    * \param[in] x    RA (d_alpha*cos(delta)) offset in radians;
    * \param[in] y    Dec offset (d_delta) in radians; 
    * \param[out] dest position-velocity of the observer Photon. Preallocated.
+   * 
+   */
+  void getRayCoord(double x, double y, double dest[8]) const;
+
+  /// Get polarization triad
+  /**
+   * Computes the polarization triad (Ephi,Etheta,k) from the
+   * tangent to photon geodesic k.
+   * \param[in] coord Photon coordinate + tangent vector (double[8])
    * \param[out] Ephi first polarisation direction. Preallocated. Default: NULL.
    * \param[out] Etheta second polarisation direction. Preallocated. Default: NULL.
    * 
    */
-  void getRayCoord(double x, double y, double dest[8],
-		   double *Ephi=NULL, double *Etheta=NULL) const;
+  void getRayTriad(double coord[8],
+		   double Ephi[4], double Etheta[4]) const;
 
   /// Get 8-coordinate of Photon hitting screen pixel
   /**

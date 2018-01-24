@@ -144,14 +144,31 @@ class TestProperty(unittest.TestCase):
 class TestScreen(unittest.TestCase):
     def test_getRayCoord(self):
         met=gyoto.core.Metric("KerrBL")
+        met.set("Spin",0.99)
         s=gyoto.core.Screen()
-        # define distance etc.
+        s.metric(met)
+        s.distance(8., 'kpc')
+        s.inclination(95,"°")
+        s.PALN(numpy.pi)
+        s.argument(-numpy.pi/2)
+        s.time(100e3,"yr")
         coord=numpy.zeros(8, float)
         Ephi=numpy.zeros(4, float)
         Etheta=numpy.zeros(4, float)
-        s.getRayCoord(0.,0., coord, Ephi, Etheta)
-        x = coord[0:3]
-        k = coord[4:7]
+
+        fov=4.85e-10 # fov in rad for typical Sgr conditions
+        #s.getRayCoord(0.,0., coord)
+        s.getRayCoord(fov/2.,fov/2., coord)
+        s.getRayTriad(coord, Ephi, Etheta)
+        x = coord[0:4]
+        k = coord[4:8]
+        #print("")
+        #print("Photon pos= ",x)
+        #print("Photon tangent= ",k)
+        #print("Ephi= ",Ephi)
+        #print("Etheta= ",Etheta)
         self.assertAlmostEqual(met.ScalarProd(x, k, Ephi), 0., -15)
         self.assertAlmostEqual(met.ScalarProd(x, k, Etheta), 0., -15)
         self.assertAlmostEqual(met.ScalarProd(x, Etheta, Ephi), 0., -15)
+        self.assertAlmostEqual(met.ScalarProd(x, Etheta, Etheta), 1., -15)
+        self.assertAlmostEqual(met.ScalarProd(x, Ephi, Ephi), 1., -15)

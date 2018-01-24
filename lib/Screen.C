@@ -509,11 +509,9 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
 }
 
 void Screen::getRayCoord(double angle1, double angle2,
-			 double coord[], double * Ephi, double *Etheta) const
+			 double coord[]) const
 
 {
-  if (Ephi or Etheta) throwError("Polarisation en chantier");
-
   angle1+=dangle1_; angle2+=dangle2_; // Screen orientation
   double normtol=1e-10;
   int i; // dimension : 0, 1, 2
@@ -533,7 +531,6 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
 
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
-
   double spherical_angle_a,
     spherical_angle_b;
   
@@ -623,7 +620,6 @@ void Screen::getRayCoord(double angle1, double angle2,
   double vel[3]={-sin(spherical_angle_a)*cos(spherical_angle_b),
 		 -sin(spherical_angle_a)*sin(spherical_angle_b),
 		 -cos(spherical_angle_a)};
-  
   // 4-vector tangent to photon geodesic
   
   if (fourvel_[0]==0. && observerkind_=="ObserverAtInfinity"){
@@ -791,7 +787,42 @@ void Screen::getRayCoord(double angle1, double angle2,
     }
     
   }
-  
+}
+
+void Screen::getRayTriad(double coord[8],
+			 double Ephi[4], double Etheta[4]) const {
+  // Defining polarization vectors
+  int coordkind=gg_ -> coordKind();
+  switch (coordkind) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    {
+      double k_phi = gg_->gmunu(coord,3,3)*coord[7]
+	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
+                           // of tangent vector to null geodesic
+      double ktheta = coord[6];
+      double rr = coord[1];
+      double sth=sin(coord[2]);
+      if (sth==0.)
+	throwError("Please move Screen away from z-axis");
+      double rsm1 = 1./(rr*sth);
+
+      double sp=sin(euler_[0]);
+      double cp=cos(euler_[0]);
+      // Ephi
+      Ephi[0]=0.;
+      Ephi[1]=-k_phi*rsm1;      
+      Ephi[2]=sp/rr;
+      Ephi[3]=-cp*rsm1;
+      // Etheta
+      Etheta[0]=0.;
+      Etheta[1]=rr*ktheta;
+      Etheta[2]=cp/rr;
+      Etheta[3]=sp*rsm1;
+      break;
+    }
+  default:
+    throwError("Non implemented coord kind for polarization");
+  }
 }
 
 /************** MASK ******************/
