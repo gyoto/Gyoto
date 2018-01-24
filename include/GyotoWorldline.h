@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -58,6 +58,8 @@ namespace Gyoto {
   Gyoto::Property("Gyoto::Worldline", "Time-like or null geodesic."),	\
     GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary,	\
 			"Whether to stop Photon integration at 180° deflection.") \
+    GYOTO_PROPERTY_BOOL(c, ParallelTransport, NoParallelTransport, _parallelTransport,	\
+			"Whether to perform parallel transport of a local triad (used for polarization).") \
     GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol,				\
 			  "Relative tolerance for the adaptive step integrators.") \
     GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol,				\
@@ -99,6 +101,8 @@ namespace Gyoto {
 #define GYOTO_WORLDLINE_ACCESSORS(c)					\
   void c::_secondary(bool s) {secondary(s);}				\
   bool c::_secondary() const {return secondary();}			\
+  void c::_parallelTransport(bool s) {parallelTransport(s);}		\
+  bool c::_parallelTransport() const {return parallelTransport();}	\
   void c::_adaptive(bool s) {adaptive(s);}				\
   bool c::_adaptive() const {return adaptive();}			\
   void c::_relTol(double f){relTol(f);}					\
@@ -161,6 +165,8 @@ namespace Gyoto {
   bool _adaptive () const ;				\
   void _secondary (bool sec) ;				\
   bool _secondary () const ;				\
+  void _parallelTransport (bool sec) ;			\
+  bool _parallelTransport () const ;			\
   void _maxiter (size_t miter) ;			\
   size_t _maxiter () const ;				\
   void _integrator(std::string const & type);		\
@@ -235,6 +241,14 @@ class Gyoto::Worldline
   double* x1dot_;///< rdot or xdot
   double* x2dot_;///< &theta;dot or ydot
   double* x3dot_;///< &phi;dot or zdot
+  double* ep0_;/// Coordinate of first base vector to parallel transport
+  double* ep1_;/// Coordinate of first base vector to parallel transport
+  double* ep2_;/// Coordinate of first base vector to parallel transport
+  double* ep3_;/// Coordinate of first base vector to parallel transport
+  double* et0_;/// Coordinate of Second base vector to parallel transport
+  double* et1_;/// Coordinate of Second base vector to parallel transport
+  double* et2_;/// Coordinate of Second base vector to parallel transport
+  double* et3_;/// Coordinate of Second base vector to parallel transport
   size_t x_size_;///< Size of #x0_, #x1_... arrays
   size_t imin_;///< Minimum index for which #x0_, #x1_... have been computed
   size_t i0_;  ///< Index of initial condition in array
@@ -247,6 +261,14 @@ class Gyoto::Worldline
    * This feature is in development.
    */
   bool secondary_;
+
+  /**
+   * \brief Whether to parallel transport a local triad
+   *
+   * Typically used to trace the base in which the Stokes parameters
+   * are expressed in the context of polarization.
+   */
+  bool parallel_transport_;
 
   /**
    * \brief Initial integrating step
@@ -479,7 +501,6 @@ class Gyoto::Worldline
    * new index of old first element
    */
   virtual size_t xExpand(int dir); ///< Expand x0, x1 etc... to hold more elements
- 
 
   /**
    * If you need to expand more arrays than x0_ ... x3_ and the dots,
@@ -489,6 +510,21 @@ class Gyoto::Worldline
    * \param[in] dir
    */
   virtual void xExpand(double * &x, int dir); ///< Expand one array to hold more elements
+
+  /**
+   * Allocate memory for polarization vectors
+   */
+  virtual void eAllocate (); ///< Allocate ep0_ ... et3_.
+
+  /**
+   * Deallocate memory for polarization vectors
+   */
+  virtual void eDeallocate (); ///< Deallocate ep0_ ... et3_.
+
+  /**
+   * Call #xExpand(double * &x, int dir) on #ep0_, #ep1_ etc.
+   */
+  virtual void eExpand(int dir); /// Expand memory slots for polarization vectors
 
   // Mutators / assignment
   // ---------------------
@@ -506,6 +542,8 @@ class Gyoto::Worldline
   bool adaptive () const ; ///< Get #adaptive_
   void secondary (bool sec) ; ///< Set #secondary_
   bool secondary () const ; ///< Get #secondary_
+  void parallelTransport (bool pt) ; ///< Set #parallel_transport_
+  bool parallelTransport () const ; ///< Get #parallel_transport_
   void maxiter (size_t miter) ; ///< Set #maxiter_
   size_t maxiter () const ; ///< Get #maxiter_
 

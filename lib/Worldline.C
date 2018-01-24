@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -31,9 +31,11 @@
 using namespace std;
 using namespace Gyoto;
 
-Worldline::Worldline() : stopcond(0), metric_(NULL),
+Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
+			 et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
+                         stopcond(0), metric_(NULL),
                          imin_(1), i0_(0), imax_(0), adaptive_(1),
-			 secondary_(1),
+			 secondary_(1), parallel_transport_(false),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
@@ -55,9 +57,12 @@ Worldline::Worldline() : stopcond(0), metric_(NULL),
 }
 
 Worldline::Worldline(const Worldline& orig) :
+  ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
+  et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
   metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig.adaptive_), secondary_(orig.secondary_),
+  parallel_transport_(orig.parallel_transport_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
   wait_pos_(orig.wait_pos_), init_vel_(NULL),
   maxiter_(orig.maxiter_),
@@ -93,6 +98,16 @@ Worldline::Worldline(const Worldline& orig) :
   memcpy(x1dot_+imin_, orig.x1dot_+imin_, sz);
   memcpy(x2dot_+imin_, orig.x2dot_+imin_, sz);
   memcpy(x3dot_+imin_, orig.x3dot_+imin_, sz);
+  if (parallel_transport_) {
+    memcpy(ep0_+imin_, orig.ep0_+imin_, sz);
+    memcpy(ep1_+imin_, orig.ep1_+imin_, sz);
+    memcpy(ep2_+imin_, orig.ep2_+imin_, sz);
+    memcpy(ep3_+imin_, orig.ep3_+imin_, sz);
+    memcpy(et0_+imin_, orig.et0_+imin_, sz);
+    memcpy(et1_+imin_, orig.et1_+imin_, sz);
+    memcpy(et2_+imin_, orig.et2_+imin_, sz);
+    memcpy(et3_+imin_, orig.et3_+imin_, sz);
+  }
   if (orig.cst_ && cst_n_) {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "cloning constants of motion\n";
@@ -111,9 +126,12 @@ Worldline::Worldline(const Worldline& orig) :
 }
 
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
+  ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
+  et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
   metric_(orig->metric_),
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig->adaptive_), secondary_(orig->secondary_),
+  parallel_transport_(orig->parallel_transport_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
   wait_pos_(orig->wait_pos_), init_vel_(NULL),
   maxiter_(orig->maxiter_),
@@ -123,6 +141,8 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   abstol_(orig->abstol_),
   reltol_(orig->reltol_)
 {
+  if (parallel_transport_) throwError("TODO: implement parallel transport");
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -188,6 +208,7 @@ Worldline::~Worldline(){
   delete[] x1dot_;
   delete[] x2dot_;
   delete[] x3dot_;
+  eDeallocate();
   if (cst_) delete [] cst_;
   if (init_vel_) delete[] init_vel_;
   state_=NULL;
@@ -208,6 +229,7 @@ void Worldline::xAllocate(size_t sz)
   x1dot_ = new double[x_size_];
   x2dot_ = new double[x_size_];
   x3dot_ = new double[x_size_];
+  eAllocate();
 }
 
 void Worldline::xExpand(double* &x, int dir) {
@@ -241,6 +263,7 @@ size_t Worldline::xExpand(int dir) {
   xExpand(x1dot_, dir);
   xExpand(x2dot_, dir);
   xExpand(x3dot_, dir);
+  eExpand(dir);
 
   size_t retval=(dir==1)?(x_size_-1):x_size_;
   size_t offset=(dir==1)?0:x_size_;
@@ -266,6 +289,44 @@ size_t Worldline::xExpand(int dir) {
 # endif
 
   return retval;
+}
+
+void Worldline::eAllocate()
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(x_size_);
+# endif
+  if (!x_size_ || !parallel_transport_) return;
+  ep0_ = new double[x_size_];
+  ep1_ = new double[x_size_];
+  ep2_ = new double[x_size_];
+  ep3_ = new double[x_size_];
+  et0_ = new double[x_size_];
+  et1_ = new double[x_size_];
+  et2_ = new double[x_size_];
+  et3_ = new double[x_size_];
+}
+
+void Worldline::eDeallocate() {
+  if (ep0_) delete[] ep0_;
+  if (ep1_) delete[] ep1_;
+  if (ep2_) delete[] ep2_;
+  if (ep3_) delete[] ep3_;
+  if (et0_) delete[] et0_;
+  if (et1_) delete[] et1_;
+  if (et2_) delete[] et2_;
+  if (et3_) delete[] et3_;
+}
+
+void Worldline::eExpand(int dir) {
+  if (ep0_) xExpand(ep0_, dir);
+  if (ep1_) xExpand(ep1_, dir);
+  if (ep2_) xExpand(ep2_, dir);
+  if (ep3_) xExpand(ep3_, dir);
+  if (et0_) xExpand(et0_, dir);
+  if (et1_) xExpand(et1_, dir);
+  if (et2_) xExpand(et2_, dir);
+  if (et3_) xExpand(et3_, dir);
 }
 
 void Worldline::metric(SmartPointer<Metric::Generic> gg) {
@@ -1088,6 +1149,19 @@ bool Worldline::adaptive() const { return adaptive_; }
 
 void Worldline::secondary(bool sec) { secondary_ = sec; }
 bool Worldline::secondary() const { return secondary_; }
+
+void Worldline::parallelTransport(bool pt) {
+  bool reinit = pt && !parallel_transport_;
+  bool deinit = !pt && parallel_transport_;
+  parallel_transport_ = pt;
+  if (reinit) {
+    eAllocate();
+    reInit();
+  } else if (deinit) {
+    eDeallocate();
+  }
+}
+bool Worldline::parallelTransport() const { return parallel_transport_; }
 
 void Worldline::maxiter(size_t miter) { maxiter_ = miter; }
 size_t Worldline::maxiter() const { return maxiter_; }

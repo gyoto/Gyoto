@@ -966,6 +966,9 @@ void Scenery::relTol(double t) {ph_.relTol(t);}
 void Scenery::secondary(bool sec) { ph_.secondary(sec); }
 bool Scenery::secondary() const { return ph_.secondary(); }
 
+void Scenery::parallelTransport(bool pt) { ph_.parallelTransport(pt); }
+bool Scenery::parallelTransport() const { return ph_.parallelTransport(); }
+
 void Scenery::maxiter(size_t miter) { ph_.maxiter(miter); }
 size_t Scenery::maxiter() const { return ph_.maxiter(); }
 
