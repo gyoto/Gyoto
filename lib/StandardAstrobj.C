@@ -93,19 +93,20 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(kind());
 # endif
-  double p1[8], p2[8];
+  size_t sz = ph -> parallelTransport()?16:8;
+  Gyoto::Worldline::state_type p1(sz), p2(sz);
   ph->getCoord(index, p1);
   ph->getCoord(index+1, p2);
   double tmin, minval;
 
   if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
     //Allows theta and phi to be in the correct range
-    ph->checkPhiTheta(p1);
-    ph->checkPhiTheta(p2);
+    ph->checkPhiTheta(&p1[0]);
+    ph->checkPhiTheta(&p2[0]);
   }
 
   double t1 = p1[0], t2=p2[0];
-  double val1=(*this)(p1), val2=(*this)(p2);
+  double val1=(*this)(&p1[0]), val2=(*this)(&p2[0]);
 
   if (val1 > critical_value_) {
     if (val2 > critical_value_) {

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2012, 2014-2015 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2012, 2014-2015, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -154,15 +154,15 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
   double coord_ph_hit[8], coord_obj_hit[8];
   double rcross;
-  double coord1[8], coord2[8];
+  Gyoto::Worldline::state_type coord1, coord2;
   double dt=0.;
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
 
   if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
     //Allows theta and phi to be in the correct range
-    ph->checkPhiTheta(coord1);
-    ph->checkPhiTheta(coord2);
+    ph->checkPhiTheta(&coord1[0]);
+    ph->checkPhiTheta(&coord2[0]);
   }
   
 
@@ -170,8 +170,8 @@ int ThinDisk::Impact(Photon *ph, size_t index,
       fabs(coord2[2]-coord1[2]) > M_PI)
     throwError ("ThinDisk::Impact: fishy heuristic");
 
-  double h1=operator()(coord1), h2=operator()(coord2);
-  double r1=projectedRadius(coord1), r2=projectedRadius(coord2);
+  double h1=operator()(&coord1[0]), h2=operator()(&coord2[0]);
+  double r1=projectedRadius(&coord1[0]), r2=projectedRadius(&coord2[0]);
 
   if ( 0.5*r1 > rout_ && 0.5*r2 > rout_) return 0;
   if ( h1 == h2 && h2 != 0 ) return 0;

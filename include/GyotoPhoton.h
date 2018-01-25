@@ -147,10 +147,14 @@ class Gyoto::Photon
   // Mutators / assignment
   // ---------------------
  public:
+  using Worldline::setInitialCondition;
 
   /// Set or re-set the initial condition prior to integration.
   /**
-   * Set initial condition for this Photon :
+   * Set initial condition for this Photon. Several versions of this
+   * function, with and without base vectors to parallel-transport,
+   * are provided. If polarization is to be treated, use the version
+   * with the base vectors.
    *
    * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
    * \param obj   Gyoto::SmartPointer to the target Gyoto::Astrobj;
@@ -165,7 +169,34 @@ class Gyoto::Photon
 
   /// Set or re-set the initial condition prior to integration.
   /**
-   * Set initial condition for this Photon :
+   * Set initial condition for this Photon. Several versions of this
+   * function, with and without base vectors to parallel-transport,
+   * are provided. If polarization is to be treated, use the version
+   * with the base vectors. Initialize those vectors to the two base
+   * vectors for the Stokes parameters in the observer screen.
+   *
+   * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
+   * \param obj   Gyoto::SmartPointer to the target Gyoto::Astrobj;
+   * \param coord 8-element array containing the initial condition,
+   *        i.e. the 4-position and the 4-velocity of the Photon at
+   *        the receiving end;
+   * \param Ephi initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
+   * \param Etheta initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
+   *
+   */
+  void setInitialCondition(SmartPointer<Metric::Generic> gg,
+			   SmartPointer<Astrobj::Generic> obj,
+			   const double coord[8],
+			   const double Ephi[4],
+			   const double Etheta[4]) ;
+
+  /// Set or re-set the initial condition prior to integration.
+  /**
+   * Set initial condition for this Photon. This version of this
+   * function automatically takes care of initializing the base
+   * vectors for polarization when needed.
    *
    * \param gg       Gyoto::SmartPointer to the Gyoto::Metric in this universe;
    * \param obj      Gyoto::SmartPointer to the target Gyoto::Astrobj;

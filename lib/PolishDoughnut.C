@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012-2016 Frederic Vincent, Odele Straub, Thibaut Paumard
+  Copyright (c) 2012-2016, 2018 Frederic Vincent, Odele Straub, Thibaut Paumard
   This file is part of Gyoto.
   Gyoto is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -430,7 +430,7 @@ int PolishDoughnut::Impact(Photon *ph, size_t index,
     // ADAF model, this is actually no longer a Polish doughnut
     // -> only for comparison
     //cout << "ICI1" << endl;
-    double coord[8];
+    Worldline::state_type coord;
     ph->getCoord(index, coord);
     double rr = coord[1], th = coord[2];
     // The outer boundary of the ADAF is simply RMax_ in xml
@@ -439,7 +439,7 @@ int PolishDoughnut::Impact(Photon *ph, size_t index,
     // This allows to reject the points close to the axis
     // such that the cylindrical radius is smaller than Sch ISCO ;
     // there, the Keplerian velocity is not defined
-    double p1[8], p2[8];
+    Gyoto::Worldline::state_type p1, p2;
     ph->getCoord(index, p1);
     ph->getCoord(index+1, p2);
     double t1 = p1[0], t2=p2[0];

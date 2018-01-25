@@ -657,10 +657,10 @@ ExtendArrayNumPy(array_size_t, size_t);
   // support this syntax:
   // vel = gg.circularVelocity(pos)
   // in addition of gg.circularVelocity(pos, vel)
-  void getInitialCoord(double ARGOUT_ARRAY1[8]) {
+  void getInitialCoord(std::vector<double> &ARGOUT_ARRAY1) {
     ($self)->getInitialCoord(ARGOUT_ARRAY1);
   }
-  void getCoord(size_t index, double ARGOUT_ARRAY1[8]) {
+  void getCoord(size_t index, Gyoto::Worldline::state_type &ARGOUT_ARRAY1) {
     ($self)->getCoord(index, ARGOUT_ARRAY1);
   }
   void getCartesianPos(size_t index, double ARGOUT_ARRAY1[8]) {

@@ -128,7 +128,7 @@ class Gyoto::Astrobj::StarTrace :
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> gg);
 
-  virtual void xStore(size_t ind, double const coord[8]) ;
+  virtual void xStore(size_t ind, state_type &coord) ;
 
   // Accessors
   // ---------
@@ -141,6 +141,7 @@ class Gyoto::Astrobj::StarTrace :
   double TMax()const; ///< Get tmax_
   void TMax(double); ///< Set tmax_
 
+  using Star::setInitialCondition;
   virtual void setInitialCondition(double const coord[8]); ///< Same as Worldline::setInitialCondition(gg, coord, sys,1)
 
   virtual double operator()(double const coord[4]) ;

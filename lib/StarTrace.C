@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2013, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -156,7 +156,7 @@ void StarTrace::computeXYZ()
   }
 }
 
-void StarTrace::xStore(size_t ind, double const coord[8])
+void StarTrace::xStore(size_t ind, state_type &coord)
 {
   Star::xStore(ind, coord);
   computeXYZ(ind);

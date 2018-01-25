@@ -1,5 +1,5 @@
 /*
-    Copyright 2012-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2015, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -694,13 +694,13 @@ int Disk3D::Impact(Photon *ph, size_t index,
   GYOTO_DEBUG << endl;
 
   double coord_ph_hit[8], coord_obj_hit[8];
-  double coord1[8], coord2[8];
+  Worldline::state_type coord1, coord2;
  
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
 
-  ph->checkPhiTheta(coord1);
-  ph->checkPhiTheta(coord2);
+  ph->checkPhiTheta(&coord1[0]);
+  ph->checkPhiTheta(&coord2[0]);
 
   // HEURISTIC TESTS TO PREVENT TOO MANY INTEGRATION STEPS
   // Speeds up a lot!

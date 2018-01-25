@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -115,7 +115,7 @@ string InflateStar::className_l() const { return  string("inflate_star"); }
 
 int InflateStar::Impact(Gyoto::Photon* ph, size_t index,
 			 Astrobj::Properties *data) {
-  double p1[8];
+  Worldline::state_type p1;
   ph->getCoord(index, p1);
   double time = p1[0];
   double radinit = radius();

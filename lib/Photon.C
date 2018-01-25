@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -112,9 +112,11 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
   transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL)
 {
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   screen -> getRayCoord(d_alpha, d_delta, coord);
-  Worldline::setInitialCondition(met, coord, -1);
+  if (parallel_transport_)
+    screen -> getRayTriad(coord, Ephi, Etheta);
+  Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   spectrometer(screen);
 }
 
@@ -179,9 +181,11 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 const double d_alpha,
 				 const double d_delta)
 {
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   screen -> getRayCoord(d_alpha, d_delta, coord);
-  Worldline::setInitialCondition(met, coord, -1);
+  if (parallel_transport_)
+    screen -> getRayTriad(coord, Ephi, Etheta);
+  Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   if (obj) object_=obj;
 
 }
@@ -192,6 +196,17 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 {
   if (!met) met = metric_;
   Worldline::setInitialCondition(met, coord, -1);
+  if (obj) object_=obj;
+}
+
+void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
+				 SmartPointer<Astrobj::Generic> obj,
+				 const double coord[8],
+				 const double Ephi[4],
+				 const double Etheta[4])
+{
+  if (!met) met = metric_;
+  Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   if (obj) object_=obj;
 }
 
@@ -220,7 +235,7 @@ int Photon::hit(Astrobj::Properties *data) {
   //is not yet hit with adaptive integration step. A second integration
   //with small fixed step will be performed to determine more precisely
   //the surface point.
-  Worldline::IntegState::state_type coord(8);
+  Worldline::IntegState::state_type coord(parallel_transport_?16:8);
   int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
   stopcond=0;
@@ -278,7 +293,7 @@ int Photon::hit(Astrobj::Properties *data) {
   else if (dir==-1 && ind==0) ind=xExpand(-1);
 
   // Set up integration
-  getCoord(ind, &coord[0]);
+  getCoord(ind, coord);
   switch (coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr=coord[1];
@@ -368,6 +383,16 @@ int Photon::hit(Astrobj::Properties *data) {
     x1dot_[ind] = coord[5];
     x2dot_[ind] = coord[6];
     x3dot_[ind] = coord[7];
+    if (parallel_transport_) {
+      ep0_[ind] = coord[8];
+      ep1_[ind] = coord[9];
+      ep2_[ind] = coord[10];
+      ep3_[ind] = coord[11];
+      et0_[ind] = coord[12];
+      et1_[ind] = coord[13];
+      et2_[ind] = coord[14];
+      et3_[ind] = coord[15];
+    }
 
 
     if (dir==1) ++imax_; else --imin_;

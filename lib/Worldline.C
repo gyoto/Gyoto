@@ -141,8 +141,6 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   abstol_(orig->abstol_),
   reltol_(orig->reltol_)
 {
-  if (parallel_transport_) throwError("TODO: implement parallel transport");
-
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -157,7 +155,7 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   for (i=i0_+dir; i>imin_ && i<imax_; i+=dir) x0_[i] = x0_[i-dir]+step;
   x0_[i]=d2;
 
-  orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_);
+  orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_, ep0_, ep1_, ep2_, ep3_, et0_, et1_, et2_, et3_);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
@@ -308,14 +306,14 @@ void Worldline::eAllocate()
 }
 
 void Worldline::eDeallocate() {
-  if (ep0_) delete[] ep0_;
-  if (ep1_) delete[] ep1_;
-  if (ep2_) delete[] ep2_;
-  if (ep3_) delete[] ep3_;
-  if (et0_) delete[] et0_;
-  if (et1_) delete[] et1_;
-  if (et2_) delete[] et2_;
-  if (et3_) delete[] et3_;
+  if (ep0_) {delete[] ep0_; ep0_=NULL;}
+  if (ep1_) {delete[] ep1_; ep1_=NULL;}
+  if (ep2_) {delete[] ep2_; ep2_=NULL;}
+  if (ep3_) {delete[] ep3_; ep3_=NULL;}
+  if (et0_) {delete[] et0_; et0_=NULL;}
+  if (et1_) {delete[] et1_; et1_=NULL;}
+  if (et2_) {delete[] et2_; et2_=NULL;}
+  if (et3_) {delete[] et3_; et3_=NULL;}
 }
 
 void Worldline::eExpand(int dir) {
@@ -390,7 +388,8 @@ std::vector<double> Worldline::initCoord() const {
   return coord;
 }
 
-void Worldline::setInitCoord(const double coord[8], int dir) {
+void Worldline::setInitCoord(const double coord[8], int dir,
+			     double const Ephi[8], double const Etheta[8]) {
   GYOTO_DEBUG_ARRAY(coord, 8);
 
   // If dir is not forced and Worldline has never been initialize,
@@ -412,7 +411,22 @@ void Worldline::setInitCoord(const double coord[8], int dir) {
   x1dot_[i0_]=coord[5];
   x2dot_[i0_]=coord[6];
   x3dot_[i0_]=coord[7];
+  if (parallel_transport_) {
+    ep0_[i0_] = Ephi[0];
+    ep1_[i0_] = Ephi[1];
+    ep2_[i0_] = Ephi[2];
+    ep3_[i0_] = Ephi[3];
+    et0_[i0_] = Etheta[0];
+    et1_[i0_] = Etheta[1];
+    et2_[i0_] = Etheta[2];
+    et3_[i0_] = Etheta[3];
+  }
   reInit();
+}
+
+void Worldline::setInitCoord(const double coord[8], int dir) {
+  double const zeroes[4] = {0., 0., 0., 0.};
+  setInitCoord(coord, dir, zeroes, zeroes);
 }
 
 void Worldline::setInitCoord(double const pos[4], double const v[3], int dir) {
@@ -432,6 +446,15 @@ void Worldline::setInitCoord(double const pos[4], double const v[3], int dir) {
 
 void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
 				    const double coord[8],
+				    const int dir,
+				    double const Ephi[4], double const Etheta[4])
+{
+  metric(met);
+  setInitCoord(coord, dir, Ephi, Etheta);
+}
+
+void Worldline::setInitialCondition(SmartPointer<Metric::Generic> met,
+				    const double coord[8],
 				    const int dir)
 {
   metric(met);
@@ -444,9 +467,9 @@ void Worldline::setPosition(double const pos[4]) {
 }
 
 void Worldline::setVelocity(double const vel[3]) {
-  double coord[8];
+  state_type coord;
   getInitialCoord(coord);
-  setInitCoord(coord, vel);
+  setInitCoord(&coord[0], vel);
 }
 
 
@@ -455,7 +478,7 @@ void Worldline::reset() { if (imin_<=imax_) imin_=imax_=i0_; }
 void Worldline::reInit() {
   if (imin_ <= imax_) {
     reset();
-    double coord[8];
+    state_type coord;
     getInitialCoord(coord);
     GYOTO_DEBUG_ARRAY(coord, 8);
     if (metric_) {
@@ -465,14 +488,14 @@ void Worldline::reInit() {
 	  cerr << "SEVERE: Worldline::reInit(): Kicking particle off z axis\n";
 	x2_[i0_]=coord[2]=1e-10;
       }
-      metric_ -> setParticleProperties(this,coord);
+      metric_ -> setParticleProperties(this,&coord[0]);
     }
     state_ -> init();
   }
 }
 
 
-void Worldline::xStore(size_t ind, double const coord[8])
+void Worldline::xStore(size_t ind, state_type &coord)
 {
   x0_[ind] = coord[0];
   x1_[ind] = coord[1];
@@ -482,6 +505,16 @@ void Worldline::xStore(size_t ind, double const coord[8])
   x1dot_[ind] = coord[5];
   x2dot_[ind] = coord[6];
   x3dot_[ind] = coord[7];
+  if (parallel_transport_) {
+    ep0_[ind] = coord[ 8];
+    ep1_[ind] = coord[ 9];
+    ep2_[ind] = coord[10];
+    ep3_[ind] = coord[11];
+    et0_[ind] = coord[12];
+    et1_[ind] = coord[13];
+    et2_[ind] = coord[14];
+    et3_[ind] = coord[15];
+  }
 }
 
 void Worldline::xFill(double tlim) {
@@ -527,9 +560,8 @@ void Worldline::xFill(double tlim) {
     //equations of geodesics written for a mass=1 star
   }
 
-  Worldline::IntegState::state_type coord
-    ={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
-      x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
+  Worldline::IntegState::state_type coord(parallel_transport_?16:8);
+  getCoord(ind, coord);
   
   GYOTO_DEBUG << "IntegState initialization" << endl;
   
@@ -561,7 +593,7 @@ void Worldline::xFill(double tlim) {
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
     // store particle's trajectory for later use
-    xStore(ind, &coord[0]);
+    xStore(ind, coord);
     
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
@@ -705,7 +737,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 			 double * const x1,
 			 double * const x2,    double * const x3,
 			 double * const x0dot, double * const x1dot,
-			 double * const x2dot, double * const x3dot)
+			 double * const x2dot, double * const x3dot,
+			 double * ep0, double * ep1, double * ep2, double * ep3,
+			 double * et0, double * et1, double * et2, double * et3)
 {
 
   size_t curl=imin_, curm, curh=imax_;
@@ -715,7 +749,8 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double date; // current date
 
   // For the interpolation
-  Worldline::IntegState::state_type bestl(8), besth(8), resl(8), resh(8); // i/o for myrk4
+  int sz = parallel_transport_?16:8;
+  Worldline::IntegState::state_type bestl(sz), besth(sz), resl(sz), resh(sz); // i/o for myrk4
   double factl, facth;
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
@@ -739,6 +774,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[imax_];
       if (x2dot) x2dot[di] =   pos2[6];
       if (x3dot) x3dot[di] = x3dot_[imax_];
+      if (parallel_transport_) {
+	if (ep0)     ep0[di] =   ep0_[imax_];
+	if (ep1)     ep1[di] =   ep1_[imax_];
+	if (ep2)     ep2[di] =   ep2_[imax_];
+	if (ep3)     ep3[di] =   ep3_[imax_];
+	if (et0)     et0[di] =   et0_[imax_];
+	if (et1)     et1[di] =   et1_[imax_];
+	if (et2)     et2[di] =   et2_[imax_];
+	if (et3)     et3[di] =   et3_[imax_];
+      }
       continue;
     } else if (date > x0_[imax_]) {
       GYOTO_DEBUG << "Extending worldline towards future" << endl;
@@ -784,6 +829,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = x1dot_[curl];
       if (x2dot) x2dot[di] =   pos2[6];
       if (x3dot) x3dot[di] = x3dot_[curl];
+      if (parallel_transport_) {
+	if (ep0)     ep0[di] =   ep0_[curl];
+	if (ep1)     ep1[di] =   ep1_[curl];
+	if (ep2)     ep2[di] =   ep2_[curl];
+	if (ep3)     ep3[di] =   ep3_[curl];
+	if (et0)     et0[di] =   et0_[curl];
+	if (et1)     et1[di] =   et1_[curl];
+	if (et2)     et2[di] =   et2_[curl];
+	if (et3)     et3[di] =   et3_[curl];
+      }
       continue;
     }
 
@@ -813,6 +868,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestl[5] = x1dot_[curl];
     bestl[6] = x2dot_[curl];
     bestl[7] = x3dot_[curl];
+    if (parallel_transport_) {
+      bestl[8]  =   ep0_[curl];
+      bestl[9]  =   ep1_[curl];
+      bestl[10] =   ep2_[curl];
+      bestl[11] =   ep3_[curl];
+      bestl[12] =   et0_[curl];
+      bestl[13] =   et1_[curl];
+      bestl[14] =   et2_[curl];
+      bestl[15] =   et3_[curl];
+    }
     state_ -> doStep(bestl, dtaul, resl);
 
     // from above...
@@ -824,6 +889,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     besth[5] = x1dot_[curh];
     besth[6] = x2dot_[curh];
     besth[7] = x3dot_[curh];
+    if (parallel_transport_) {
+      besth[8]  =   ep0_[curh];
+      besth[9]  =   ep1_[curh];
+      besth[10] =   ep2_[curh];
+      besth[11] =   ep3_[curh];
+      besth[12] =   et0_[curh];
+      besth[13] =   et1_[curh];
+      besth[14] =   et2_[curh];
+      besth[15] =   et3_[curh];
+    }
     state_ -> doStep(besth, dtauh, resh);
 
 #   if GYOTO_DEBUG_ENABLED
@@ -844,15 +919,15 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     // Now sometimes we actually got further away. We have 4 dates
     // well estimated, take the 2 best, 1 above, 1 below.
     if (resl[0]<=date) {
-      if (resl[0] > bestl[0]) memcpy(&bestl[0], &resl[0], 8*sizeof(double));
+      if (resl[0] > bestl[0]) memcpy(&bestl[0], &resl[0], sz*sizeof(double));
     } else {
-      if (resl[0] < besth[0]) memcpy(&besth[0], &resl[0], 8*sizeof(double));
+      if (resl[0] < besth[0]) memcpy(&besth[0], &resl[0], sz*sizeof(double));
     }
 
     if (resh[0]<=date) {
-      if (resh[0] > bestl[0]) memcpy(&bestl[0], &resh[0], 8*sizeof(double));
+      if (resh[0] > bestl[0]) memcpy(&bestl[0], &resh[0], sz*sizeof(double));
     } else {
-      if (resh[0] < besth[0]) memcpy(&besth[0], &resh[0], 8*sizeof(double));
+      if (resh[0] < besth[0]) memcpy(&besth[0], &resh[0], sz*sizeof(double));
     }
 
 #   if GYOTO_DEBUG_ENABLED
@@ -876,6 +951,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = bestl[5];
       if (x2dot) x2dot[di] = bestl[6];
       if (x3dot) x3dot[di] = bestl[7];
+      if (parallel_transport_) {
+	if (ep0)     ep0[di] =   bestl[ 8];
+	if (ep1)     ep1[di] =   bestl[ 9];
+	if (ep2)     ep2[di] =   bestl[10];
+	if (ep3)     ep3[di] =   bestl[11];
+	if (et0)     et0[di] =   bestl[12];
+	if (et1)     et1[di] =   bestl[13];
+	if (et2)     et2[di] =   bestl[14];
+	if (et3)     et3[di] =   bestl[15];
+      }
     }
     if (besth[0]==date) {
       if (x1)       x1[di] = besth[1];
@@ -885,6 +970,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = besth[5];
       if (x2dot) x2dot[di] = besth[6];
       if (x3dot) x3dot[di] = besth[7];
+      if (parallel_transport_) {
+	if (ep0)     ep0[di] =   besth[ 8];
+	if (ep1)     ep1[di] =   besth[ 9];
+	if (ep2)     ep2[di] =   besth[10];
+	if (ep3)     ep3[di] =   besth[11];
+	if (et0)     et0[di] =   besth[12];
+	if (et1)     et1[di] =   besth[13];
+	if (et2)     et2[di] =   besth[14];
+	if (et3)     et3[di] =   besth[15];
+      }
     }
 
     dtl=date-bestl[0]; Dt=besth[0]-bestl[0]; Dtm1=1./Dt;
@@ -916,15 +1011,26 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = vel[0]*tdot;
       if (x2dot) x2dot[di] = vel[1]*tdot;
       if (x3dot) x3dot[di] = vel[2]*tdot;
+      if (parallel_transport_) throwError("TODO: implement parallel transport");
     } else {
       // Photon: don't be so elaborate, we certainly don't need it... yet
-      if (x1)       x1[di] = bestl[1]*factl + besth[1]*facth;
-      if (x2)       x2[di] = bestl[2]*factl + besth[2]*facth;
-      if (x3)       x3[di] = bestl[3]*factl + besth[3]*facth;
-      if (x0dot) x0dot[di] = bestl[4]*factl + besth[4]*facth;
-      if (x1dot) x1dot[di] = bestl[5]*factl + besth[5]*facth;
-      if (x2dot) x2dot[di] = bestl[6]*factl + besth[6]*facth;
-      if (x3dot) x3dot[di] = bestl[7]*factl + besth[7]*facth;
+      if (x1)       x1[di] = bestl[ 1]*factl + besth[ 1]*facth;
+      if (x2)       x2[di] = bestl[ 2]*factl + besth[ 2]*facth;
+      if (x3)       x3[di] = bestl[ 3]*factl + besth[ 3]*facth;
+      if (x0dot) x0dot[di] = bestl[ 4]*factl + besth[ 4]*facth;
+      if (x1dot) x1dot[di] = bestl[ 5]*factl + besth[ 5]*facth;
+      if (x2dot) x2dot[di] = bestl[ 6]*factl + besth[ 6]*facth;
+      if (x3dot) x3dot[di] = bestl[ 7]*factl + besth[ 7]*facth;
+      if (parallel_transport_) {
+	if (ep0)   ep0[di] = bestl[ 8]*factl + besth[ 8]*facth;
+	if (ep1)   ep1[di] = bestl[ 9]*factl + besth[ 9]*facth;
+	if (ep2)   ep2[di] = bestl[10]*factl + besth[10]*facth;
+	if (ep3)   ep3[di] = bestl[11]*factl + besth[11]*facth;
+	if (et0)   et0[di] = bestl[12]*factl + besth[12]*facth;
+	if (et1)   et1[di] = bestl[13]*factl + besth[13]*facth;
+	if (et2)   et2[di] = bestl[14]*factl + besth[14]*facth;
+	if (et3)   et3[di] = bestl[15]*factl + besth[15]*facth;
+      }
     }
 
     /* For spherical-like coordinates,
@@ -1208,19 +1314,13 @@ void Worldline::setCst(double const * const cst, const size_t n) {
   for (size_t ii=0;ii<n;ii++) cst_[ii]=cst[ii];
 }
 
-void Worldline::getInitialCoord(double coord[8]) const {
+void Worldline::getInitialCoord(state_type &coord) const {
   if (imax_<imin_)
     throwError("Worldline::getInitialCoord(): initial coordinate not set yet");
-  coord[0] = x0_[i0_];
-  coord[1] = x1_[i0_];
-  coord[2] = x2_[i0_];
-  coord[3] = x3_[i0_];
-  coord[4] = x0dot_[i0_];
-  coord[5] = x1dot_[i0_];
-  coord[6] = x2dot_[i0_];
-  coord[7] = x3dot_[i0_];
+  getCoord(i0_, coord);
 }
-void Worldline::getCoord(size_t index, double coord[8]) const {
+
+void Worldline::getCoord(size_t index, state_type &coord) const {
   //GYOTO_DEBUG<< "index=" << index << endl;
   //GYOTO_DEBUG<< "x0[index]= " << x1dot_[index] << endl;
   //GYOTO_DEBUG<< "index == " << index << endl;
@@ -1228,6 +1328,7 @@ void Worldline::getCoord(size_t index, double coord[8]) const {
     cerr << "Indices min curr max= " << imin_ << " " << index << " " << imax_ << endl;
     throwError("Worldline::getCoord: bad index");
   }
+  coord.resize(parallel_transport_?16:8);
   coord[0] = x0_[index];
   coord[1] = x1_[index];
   coord[2] = x2_[index];
@@ -1236,6 +1337,16 @@ void Worldline::getCoord(size_t index, double coord[8]) const {
   coord[5] = x1dot_[index];
   coord[6] = x2dot_[index];
   coord[7] = x3dot_[index];
+  if (parallel_transport_) {
+    coord[8] = ep0_[index];
+    coord[9] = ep1_[index];
+    coord[10] = ep2_[index];
+    coord[11] = ep3_[index];
+    coord[12] = et0_[index];
+    coord[13] = et1_[index];
+    coord[14] = et2_[index];
+    coord[15] = et3_[index];
+  }
 }
 
 void Worldline::getCartesianPos(size_t index, double dest[4]) const {

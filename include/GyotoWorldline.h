@@ -230,6 +230,8 @@ class Gyoto::Worldline
   // Data : 
   // -----
  public:
+  typedef Gyoto::Metric::state_type state_type;
+
   int stopcond; ///< Whether and why integration is finished
 
  protected:
@@ -397,7 +399,34 @@ class Gyoto::Worldline
    *
    * \param coord new initial coordinates
    * \param dir direction of integration. 1 for forward integration,
-   *        -1 for backards integration, 0 for unknown or both.
+   *        -1 for backards integration, 0 for unknown or both
+   * \param Ephi initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
+   * \param Etheta initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
+   */
+  virtual void   setInitCoord(const double coord[8], int dir,
+			      double const Ephi[4],
+			      double const Etheta[4]);
+
+
+  /**
+   * \brief Set Initial coordinate
+   *
+   * Set #imin_=#imax_=#i0_, and x<i>_[i0_]=coord[<i>].
+   *
+   * If dir==1, #i0_ is set to 0. If dir==-1, #i0_ is set to #x_size_-1.
+   *
+   * If dir==0 and the Worldine has never been computed (#i0_==0,
+   * #imin_==1 and #imax_==0), then dir defaults to 1 for a massive
+   * particle and -1 for a massless particle.
+   *
+   * If dir==0 and the Worldine has already been computed, #i0_ is not
+   * changed.
+   *
+   * \param coord new initial coordinates
+   * \param dir direction of integration. 1 for forward integration,
+   *        -1 for backards integration, 0 for unknown or both
    */
   virtual void   setInitCoord(const double coord[8], int dir = 0);
 
@@ -568,17 +597,45 @@ class Gyoto::Worldline
    *        i.e. the 4-position and the 4-velocity of the Photon at
    *        the receiving end;
    * \param dir direction: 1 for future, -1 for past.
+   * \param Ephi initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
+   * \param Etheta initial value of base vector to parallel-transport.
+   *        Ignored if #parallel_transport_ is false.
    */
   void setInitialCondition(SmartPointer<Metric::Generic> gg, 
 			   const double coord[8],
+			   const int dir,
+			   double const Ephi[4], double const Etheta[4]) ;
+
+  /// Set or re-set the initial condition prior to integration.
+  /**
+   * \param gg    Gyoto::SmartPointer to the Gyoto::Metric in this universe;
+   * \param coord 8 element array containing the initial condition,
+   *        i.e. the 4-position and the 4-velocity of the Photon at
+   *        the receiving end;
+   * \param dir direction: 1 for future, -1 for past.
+   */
+  void setInitialCondition(SmartPointer<Metric::Generic> gg,
+			   const double coord[8],
 			   const int dir) ;
 
-  void getInitialCoord(double dest[8]) const; ///< Get initial coordinate
-  void getCoord(size_t index, double dest[8]) const; ///< Get coordinates corresponding to index
+  /**
+   * Depending on the size of dest and on the value of
+   * #parallel_transport_, get position (xi_), velocity (xidot_) and
+   * possibly other triad vectors (epi_ and eti_).
+   */
+  void getInitialCoord(std::vector<double> &dest) const; ///< Get initial coordinates + base vectors
+
+  /**
+   * Depending on the value of #parallel_transport_, get position
+   * (xi_), velocity (xidot_) and possibly other triad vectors (epi_
+   * and eti_). coord is resized to the right number of elements.
+   */
+  void getCoord(size_t index, state_type &dest) const; ///< Get coordinates+base vectors corresponding to index
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
 
-  virtual void xStore(size_t ind, double const coord[8]) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, state_type &coord) ; ///< Store coord at index ind
   virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 
@@ -647,7 +704,9 @@ class Gyoto::Worldline
 		double * const x1dest,
 		double * const x2dest, double * const x3dest,
 		double * const x0dot=NULL,  double * const x1dot=NULL,
-		double * const x2dot=NULL,  double * const x3dot=NULL) ;
+		double * const x2dot=NULL,  double * const x3dot=NULL,
+		double * ep0=NULL, double * ep1=NULL, double * ep2=NULL, double * ep3=NULL,
+		double * et0=NULL, double * et1=NULL, double * et2=NULL, double * et3=NULL) ;
 
   /**
    * \brief Get all computed positions

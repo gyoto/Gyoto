@@ -322,17 +322,21 @@ void Scenery::updatePhoton(){
 
 SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
   updatePhoton();
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   screen_ -> getRayCoord(size_t(1),size_t(1), coord);
-  ph_ . setInitCoord(coord, 0);
+  if (ph_ . parallelTransport())
+    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
 
 SmartPointer<Photon> Scenery::clonePhoton(double a, double b) {
   updatePhoton();
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   screen_ -> getRayCoord(a, b, coord);
-  ph_ . setInitCoord(coord, 0);
+  if (ph_ . parallelTransport())
+    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
 
@@ -668,7 +672,7 @@ void Scenery::operator() (
 			  Photon *ph
 			  ) {
 
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
 
@@ -698,6 +702,8 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
+      if (ph -> parallelTransport())
+	throwError("ParallelTransport is incompatible with ImpactCoords (ATM)");
       ph -> setInitCoord(impactcoords+8, 0);
       ph -> resetTransmission();
       astrobj() -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
@@ -707,7 +713,9 @@ void Scenery::operator() (
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
     screen_ -> getRayCoord(i,j, coord);
-    ph -> setInitCoord(coord, 0);
+    if (ph -> parallelTransport())
+      screen_ -> getRayTriad(coord, Ephi, Etheta);
+    ph -> setInitCoord(coord, 0, Ephi, Etheta);
     ph -> hit(data);
   }
 }
@@ -718,7 +726,7 @@ void Scenery::operator() (
 			  Photon *ph
 			  ) {
 
-  double coord[8];
+  double coord[8], Ephi[4], Etheta[4];
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
 
@@ -732,7 +740,9 @@ void Scenery::operator() (
   ph -> delta(delta_);
 
   screen_ -> getRayCoord(a, d, coord);
-  ph -> setInitCoord(coord, 0);
+  if (ph_ . parallelTransport())
+    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  ph -> setInitCoord(coord, 0, Ephi, Etheta);
   ph -> hit(data);
 
 }
@@ -742,8 +752,13 @@ SmartPointer<Photon> Scenery::clonePhoton() const {
 }
 
 
-void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant)
-{quantities_=quant;}
+void Scenery::setRequestedQuantities(Gyoto::Quantity_t quant) {
+  quantities_=quant;
+  if (quantities_ & (GYOTO_QUANTITY_SPECTRUM_STOKES_Q |
+		     GYOTO_QUANTITY_SPECTRUM_STOKES_U |
+		     GYOTO_QUANTITY_SPECTRUM_STOKES_V))
+    parallelTransport(true);
+}
 void Scenery::requestedQuantitiesString(std::string const &squant) {
   quantities_=0;
   char * tk = strtok(const_cast<char*>(squant.c_str()), " \t\n");
@@ -816,6 +831,11 @@ void Scenery::requestedQuantitiesString(std::string const &squant) {
   if (screen_) screen_ -> unmapPixUnit();
 # endif
 
+  if (quantities_ & (GYOTO_QUANTITY_SPECTRUM_STOKES_Q |
+		     GYOTO_QUANTITY_SPECTRUM_STOKES_U |
+		     GYOTO_QUANTITY_SPECTRUM_STOKES_V))
+    parallelTransport(true);
+  
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "("<<squant<<"): " << "quantities_=" << quantities_ << endl;
 # endif
