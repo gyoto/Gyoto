@@ -526,9 +526,10 @@ void Worldline::xFill(double tlim) {
     //GYOTO_DEBUG<< "of unrecognized mass (!!) particule ....." << endl;
     //equations of geodesics written for a mass=1 star
   }
-  
-  double coord[8]={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
-		   x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
+
+  Worldline::IntegState::state_type coord
+    ={x0_[ind], x1_[ind], x2_[ind], x3_[ind],
+      x0dot_[ind], x1dot_[ind], x2dot_[ind], x3dot_[ind]};
   
   GYOTO_DEBUG << "IntegState initialization" << endl;
   
@@ -545,7 +546,7 @@ void Worldline::xFill(double tlim) {
     
     stopcond= state_ -> nextStep(coord);
     
-    if(metric_->isStopCondition(coord)) {
+    if(metric_->isStopCondition(&coord[0])) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by metric"<<endl;
 #     endif
@@ -560,7 +561,7 @@ void Worldline::xFill(double tlim) {
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
     // store particle's trajectory for later use
-    xStore(ind, coord);
+    xStore(ind, &coord[0]);
     
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
@@ -714,7 +715,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double date; // current date
 
   // For the interpolation
-  double bestl[8], besth[8], resl[8], resh[8]; // i/o for myrk4
+  Worldline::IntegState::state_type bestl(8), besth(8), resl(8), resh(8); // i/o for myrk4
   double factl, facth;
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
@@ -843,15 +844,15 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     // Now sometimes we actually got further away. We have 4 dates
     // well estimated, take the 2 best, 1 above, 1 below.
     if (resl[0]<=date) {
-      if (resl[0] > bestl[0]) memcpy(bestl, resl, 8*sizeof(double));
+      if (resl[0] > bestl[0]) memcpy(&bestl[0], &resl[0], 8*sizeof(double));
     } else {
-      if (resl[0] < besth[0]) memcpy(besth, resl, 8*sizeof(double));
+      if (resl[0] < besth[0]) memcpy(&besth[0], &resl[0], 8*sizeof(double));
     }
 
     if (resh[0]<=date) {
-      if (resh[0] > bestl[0]) memcpy(bestl, resh, 8*sizeof(double));
+      if (resh[0] > bestl[0]) memcpy(&bestl[0], &resh[0], 8*sizeof(double));
     } else {
-      if (resh[0] < besth[0]) memcpy(besth, resh, 8*sizeof(double));
+      if (resh[0] < besth[0]) memcpy(&besth[0], &resh[0], 8*sizeof(double));
     }
 
 #   if GYOTO_DEBUG_ENABLED

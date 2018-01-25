@@ -34,6 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include <GyotoSmartPointer.h>
 #include <GyotoObject.h>
@@ -44,6 +45,8 @@
 
 namespace Gyoto {
   namespace Metric {
+    typedef std::vector<double> state_type;
+
     class Generic;
 
     /// A function to build instances of a specific Metric::Generic sub-class
@@ -443,14 +446,14 @@ class Gyoto::Metric::Generic
   /**
    * \brief RK4 integrator
    */
-  virtual int myrk4(Worldline * line, const double coord[8], double h, double res[8]) const;
+  virtual int myrk4(Worldline * line, state_type const &coord, double h, state_type &res) const;
   
   /**
    * \brief RK4 integrator with adaptive step
    */
-  virtual int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8],
+  virtual int myrk4_adaptive(Gyoto::Worldline* line, state_type const &coord,
 			     double lastnorm, double normref,
-			     double coordnew[8], double h0, double& h1,
+			     state_type &coordnew, double h0, double& h1,
 			     double deltamax=GYOTO_DEFAULT_DELTA_MAX) const;
 
   /**
@@ -466,9 +469,9 @@ class Gyoto::Metric::Generic
   virtual int isStopCondition(double const coord[8]) const;
 
   /**
-   * \brief F function such as dy/dtau=F(y,cst)
+   * \brief F function such as dx/dt=F(x,cst)
    */
-  virtual int diff(const double y[8], double res[8]) const ;
+  virtual int diff(state_type const &x, state_type &dxdt) const ;
 
   /**
    * \brief Set Metric-specific constants of motion. Used e.g. in KerrBL.

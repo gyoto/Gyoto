@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2014, 2016 Frederic Vincent & Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -95,7 +95,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
    *
    * Dispatches between Generic::myrk4_adaptive() and  myrk4_adaptive(const double coor[6], double lastnorm, double normref, double coornew[6], double cst[2], double& tdot_used, double h0, double& h1, double& hused) const depending on RotStar3_1::integ_kind_
    */
-  int myrk4_adaptive(Gyoto::Worldline* line, const double coord[8], double lastnorm, double normref, double coordnew[8], double h0, double& h1, double h1max) const;
+  int myrk4_adaptive(Gyoto::Worldline* line, state_type const &coord, double lastnorm, double normref, state_type &coordnew, double h0, double& h1, double h1max) const;
 
   /**
    * \brief RK4 integrator (3+1)
@@ -107,7 +107,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   /**
    * \brief F function such as dy/dtau=F(y,cst)
    */
-  int diff(const double coord[8], double res[8]) const ;
+  int diff(state_type const &coord, state_type &res) const ;
 
   /**
    * \brief Alternate version of diff(const double coord[8], double res[8]) const

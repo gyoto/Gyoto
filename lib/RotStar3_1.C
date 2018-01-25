@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016 Frederic Vincent & Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -132,7 +132,7 @@ int RotStar3_1::integKind() const { return integ_kind_; }
 bool RotStar3_1::genericIntegrator() const {return !integ_kind_;}
 void RotStar3_1::genericIntegrator(bool t) {integ_kind_=!t;}
 
-int RotStar3_1::diff(const double coord[8], double res[8]) const
+int RotStar3_1::diff(state_type const &coord, state_type &res) const
 {
   //4-DIMENSIONAL INTEGRATION
   //NB: this diff is only called by Generic::RK4
@@ -475,9 +475,9 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
   return 0;
 }
 
-int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8], 
+int RotStar3_1::myrk4_adaptive(Worldline* line, state_type const &coord, 
 			       double lastnorm, double normref, 
-			       double coordnew[8], double h0, 
+			       state_type &coordnew, double h0, 
 			       double& h1, double h1max) const
 {
   //  if (debug()) cout << "In Rotstar::adaptive [8]" << endl;
@@ -513,7 +513,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8],
   
   double Vr = 1./NN*rprime, Vth=1./NN*thprime, Vph=1./NN*(phprime-omega);
 
-  double g_tt=gmunu(coord,0,0), g_tp=gmunu(coord,0,3), g_pp=gmunu(coord,3,3);
+  double g_tt=gmunu(coord.data(),0,0), g_tp=gmunu(coord.data(),0,3), g_pp=gmunu(coord.data(),3,3);
   double cst_p_t=g_tt*tdot+g_tp*phdot, cst_p_ph=g_pp*phdot+g_tp*tdot;//Cst of motion because the vectors d/dt and d/dphi are Killing
   //if (debug()) cout << "Rot: cst= " << cst_p_t << " " << cst_p_ph << endl;
   double cst[2]={cst_p_t,cst_p_ph};

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -487,8 +487,8 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
 }
 
 //Runge Kutta to order 4
-int KerrBL::myrk4(Worldline * line, const double coordin[8],
-		  double h, double res[8]) const
+int KerrBL::myrk4(Worldline * line, state_type const &coordin,
+		  double h, state_type &res) const
 {
   if (generic_integrator_) return Generic::myrk4(line, coordin, h, res);
   
@@ -508,7 +508,7 @@ int KerrBL::myrk4(Worldline * line, const double coordin[8],
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_ARRAY(cst,3);
 #endif
-  MakeMomentum(coordin,cst,coor);
+  MakeMomentum(coordin.data(),cst,coor);
 
   double k1[8] ; 
   double k2[8] ; 
@@ -579,7 +579,7 @@ int KerrBL::myrk4(Worldline * line, const double coordin[8],
     res_mom[i]=coor[i]+sixth_k1[i]+third_k2[i]+third_k3[i]+sixth_k4[i];
   
   /*Switch principal momenta -> BL  */
-  MakeCoord(res_mom,cst,res);
+  MakeCoord(res_mom,cst,res.data());
 
   //  line -> checkPhiTheta(res);
  
@@ -710,8 +710,8 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
   return 0;
 }
 
-int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
-			   double lastnorm, double normref, double coordout1[8],
+int KerrBL::myrk4_adaptive(Worldline * line, state_type const &coordin,
+			   double lastnorm, double normref, state_type &coordout1,
 			   double h0, double& h1, double h1max) const
 {
   if (generic_integrator_)
@@ -723,7 +723,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
   double coor[8], coor1[8], cstest[5], coorhalf[8], coor2[8],
     coor1bis[8], mycoor[8], delta1[8];
   double const * const cst = line -> getCst();
-  MakeMomentum(coordin,cst,coor);
+  MakeMomentum(coordin.data(),cst,coor);
   double delta0[8], dcoor[8];
   double delta0min=1e-15, eps=0.0001, S=0.9, errmin=1e-6, hbis=0.5*h0,
     err, diffr, diffth, normtemp,
@@ -908,7 +908,7 @@ int KerrBL::myrk4_adaptive(Worldline * line, const double coordin[8],
       //      cout << "KerrBL Used h0= " << h0 << endl;
       //*** Switch principal momenta -> BL: ***
       
-      MakeCoord(coor1,cst,coordout1);
+      MakeCoord(coor1,cst,coordout1.data());
       break;
       
     } //err>1 if-loop end

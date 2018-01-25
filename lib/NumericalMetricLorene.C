@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2014-2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -444,12 +444,10 @@ void NumericalMetricLorene::setTimes(double time, int ii) {
   GYOTO_DEBUG << endl;
   times_[ii]=time;}
 
-int NumericalMetricLorene::diff(const double coord[8], double res[8]) const{
-  double tt=coord[0], rr=coord[1], th=coord[2], phi=coord[3];
-  double pos[4]={tt,rr,th,phi};
-  double rhor=computeHorizon(pos);
-  if (rr<rhor && rhor>0.) {
-    GYOTO_DEBUG << "rr, rhor= " << rr << " " << rhor << endl;
+int NumericalMetricLorene::diff(state_type const &coord, state_type &res) const{
+  double rhor=computeHorizon(&coord[0]);
+  if (coord[1]<rhor && rhor>0.) {
+    GYOTO_DEBUG << "rr, rhor= " << coord[1] << " " << rhor << endl;
     GYOTO_DEBUG << "Sub-horizon r, stop" << endl;
     return 1; 
   }
@@ -780,8 +778,8 @@ int NumericalMetricLorene::myrk4(double tt, const double coorin[7],
 }
 
 //Non adaptive Runge Kutta (called by WorldlineIntegState if fixed step)
-int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8], 
-				 double h, double res[8]) const{
+int NumericalMetricLorene::myrk4(Worldline * line, state_type const &coord, 
+				 double h, state_type &res) const{
   GYOTO_DEBUG << endl;
   double tt=coord[0], rr=coord[1],
     th=coord[2],rsinth = rr*sin(th), ph=coord[3],
@@ -790,7 +788,7 @@ int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8],
   //Check p_phi conservation:
   double const * const cst = line -> getCst();
   double cst_p_ph = cst[1];
-  double pphi_err=fabs(cst_p_ph-(gmunu(coord,0,3)*tdot + gmunu(coord,3,3)
+  double pphi_err=fabs(cst_p_ph-(gmunu(coord.data(),0,3)*tdot + gmunu(coord.data(),3,3)
 				   *phdot))/fabs(cst_p_ph)*100.; 
   double pphi_err_tol=GYOTO_NML_PPHI_TOL;
   /*
@@ -810,7 +808,7 @@ int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8],
   //Check p_t conservation if stationary
   if (nb_times_==1){
     double cst_p_t = cst[2];
-    double pt_err=fabs(cst_p_t-(gmunu(coord,0,0)*tdot + gmunu(coord,0,3)
+    double pt_err=fabs(cst_p_t-(gmunu(&coord[0],0,0)*tdot + gmunu(&coord[0],0,3)
 				*phdot))/fabs(cst_p_t)*100.; 
     double pt_err_tol=1.;//in percent
     if (pt_err>pt_err_tol){
@@ -830,7 +828,7 @@ int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8],
 
   // Lapse and shift at tt:
   double NN, beta[3];
-  computeNBeta(coord,NN,beta);
+  computeNBeta(&coord[0],NN,beta);
   double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
 
   double Vr = 1./NN*(rprime+beta_r), Vth = 1./NN*(thprime+beta_t),
@@ -1073,9 +1071,9 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
 
 //Main adaptive RK4
 int NumericalMetricLorene::myrk4_adaptive(Worldline* line, 
-					  const double coord[8], 
+					  state_type const &coord, 
 					  double lastnorm, double normref, 
-					  double coordnew[8], double h0, 
+					  state_type &coordnew, double h0, 
 					  double& h1,
 					  double h1max) const
 {
@@ -1086,7 +1084,7 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   //Check p_phi conservation:
   double const * const cst = line -> getCst();
   double cst_p_ph = cst[1];
-  double pphi_err=fabs(cst_p_ph-(gmunu(coord,0,3)*tdot + gmunu(coord,3,3)
+  double pphi_err=fabs(cst_p_ph-(gmunu(&coord[0],0,3)*tdot + gmunu(&coord[0],3,3)
 				 *phdot))/fabs(cst_p_ph)*100.; 
   double pphi_err_tol=GYOTO_NML_PPHI_TOL;
   /*
@@ -1106,7 +1104,7 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   //Check p_t conservation if stationary
   if (nb_times_==1){
     double cst_p_t = cst[2];
-    double pt_err=fabs(cst_p_t-(gmunu(coord,0,0)*tdot + gmunu(coord,0,3)
+    double pt_err=fabs(cst_p_t-(gmunu(&coord[0],0,0)*tdot + gmunu(&coord[0],0,3)
 				*phdot))/fabs(cst_p_t)*100.; 
     double pt_err_tol=1.;//in percent
     if (pt_err>pt_err_tol){
@@ -1126,7 +1124,7 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
   
   // Lapse and shift at tt:
   double NN, beta[3];
-  computeNBeta(coord,NN,beta);
+  computeNBeta(&coord[0],NN,beta);
   double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
   
   double Vr = 1./NN*(rprime+beta_r), Vth = 1./NN*(thprime+beta_t),

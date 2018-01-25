@@ -28,6 +28,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include <GyotoDefs.h>
 
@@ -694,6 +695,7 @@ class Gyoto::Worldline
 
   class IntegState {
   public:
+    typedef Gyoto::Metric::state_type state_type;
     class Generic;
     class Legacy;
 #ifdef GYOTO_HAVE_BOOST_INTEGRATORS
@@ -715,6 +717,7 @@ class Gyoto::Worldline
  */
 class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Generic>;
+
  protected:
   /// Worldline that we are integrating.
   /**
@@ -724,6 +727,7 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   Worldline * line_;
   double delta_; ///< Integration step (current in case of #adaptive_).
   bool adaptive_; ///< Whether to use an adaptive step
+  bool parallel_transport_; ///< Whether to parallel-transport base vectors
   double norm_; ///< Current norm of the 4-velocity.
   double normref_; ///< Initial norm of the 4-velocity.
   /// The Metric in this end of the Universe.
@@ -758,7 +762,7 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param coord Initial coordinate.
    * \param delta Integration step. Sign determines direction.
    */
-  virtual void init(Worldline * line, const double *coord, const double delta);
+  virtual void init(Worldline * line, const state_type &coord, const double delta);
 
   /**
    * \brief Cache whatever needs to be cached
@@ -788,7 +792,7 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param[out] coord Next position-velocity;
    * \param[in] h1max maximum step in case of adaptive integration
    */
-  virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
+  virtual int nextStep(state_type &coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
 
   /// Make one step of exactly this size.
   /**
@@ -800,9 +804,9 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param[in] step  exact step to use.
    * \param[out] coordout next position-velocity;
    */
-  virtual void doStep(double const coordin[8], 
+  virtual void doStep(state_type const &coordin, 
 		      double step,
-		      double coordout[8])=0;
+		      state_type &coordout)=0;
 };
 
 /**
@@ -820,7 +824,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Legacy>;
 
  private:
-  double coord_[8]; ///< Previously determined coordinate.
+  state_type coord_; ///< Previously determined coordinate.
 
  public:
   /// Constructor
@@ -828,14 +832,14 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   Legacy(Worldline *parent);
   Legacy * clone(Worldline*newparent) const ;
   using Generic::init;
-  void init(Worldline * line, const double *coord, const double delta);
+  void init(Worldline * line, const state_type &coord, const double delta);
   virtual std::string kind();
 
-  virtual int nextStep(double *coord, double h1max=1e6);
+  virtual int nextStep(state_type &coord, double h1max=1e6);
 
-  virtual void doStep(double const coordin[8], 
+  virtual void doStep(state_type const &coordin, 
 		      double step,
-		      double coordout[8]);
+		      state_type &coordout);
 
   virtual ~Legacy();
 };
@@ -865,12 +869,19 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   /// Integrator flavour
   Kind kind_;
 
+  typedef std::function<boost::numeric::odeint::controlled_step_result
+    (state_type&, double&, double&)> try_step_type;
+  typedef std::function<void(state_type&, double)> do_step_type;
+  typedef std::function<void(const state_type &/*x*/,
+			     state_type & /*dxdt*/,
+			     const double /* t*/ )> system_type;
+
   /// Stepper used by the adaptive-step integrator
-  std::function<boost::numeric::odeint::controlled_step_result
-    (std::array<double,8>&, double&, double&)> try_step_;
+  try_step_type try_step_;
 
   /// Stepper used by the non-adaptive-step integrator
-  std::function<void(std::array<double,8>&, double)> do_step_;
+  do_step_type do_step_;
+
  public:
   /// Constructor
   /**
@@ -890,11 +901,11 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   Boost * clone(Worldline* newparent) const ;
   virtual ~Boost();
   virtual void init();
-  virtual void init(Worldline * line, const double *coord, const double delta);
-  virtual int nextStep(double *coord, double h1max=1e6);
-  virtual void doStep(double const coordin[8], 
+  virtual void init(Worldline * line, const state_type &coord, const double delta);
+  virtual int nextStep(state_type &coord, double h1max=1e6);
+  virtual void doStep(state_type const &coordin, 
 		      double step,
-		      double coordout[8]);
+		      state_type &coordout);
   virtual std::string kind();
   
 };

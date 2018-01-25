@@ -57,7 +57,7 @@ using namespace boost::numeric::odeint;
     REENABLE_SIGFPE;							\
     try_step_ =								\
       [controlled, system]						\
-      (std::array<double, 8> &inout, double &t, double &h)		\
+      (state_type &inout, double &t, double &h)				\
       mutable								\
       -> controlled_step_result						\
     {									\
@@ -65,7 +65,7 @@ using namespace boost::numeric::odeint;
     };									\
     do_step_ =								\
       [controlled, system]						\
-      (std::array<double, 8> &inout, double h)		\
+      (state_type &inout, double h)					\
       mutable								\
     {									\
       controlled.stepper().do_step(system, inout, 0., h);		\
@@ -83,17 +83,18 @@ void
 Worldline::IntegState::Generic::init(){
   if (!line_) return;
   adaptive_=line_->adaptive();
+  parallel_transport_=line_->parallelTransport();
   gg_=line_->metric();
 }
 void
 Worldline::IntegState::Generic::init(Worldline * line,
-				     const double coord[8],
+				     const state_type &coord,
 				     const double delta)
 {
   line_=line;
+  init();
   delta_=delta;
-  gg_=line->metric();
-  if (line_->getImin() <= line_->getImax() && gg_) norm_=normref_= gg_->ScalarProd(coord,coord+4,coord+4);
+  if (line_->getImin() <= line_->getImax() && gg_) norm_=normref_= gg_->ScalarProd(&coord[0],&coord[4],&coord[4]);
 }
 
 void Worldline::IntegState::Generic::checkNorm(double coord[8])
@@ -131,19 +132,18 @@ Worldline::IntegState::Legacy::clone(Worldline *newparent) const
 
 void
 Worldline::IntegState::Legacy::init(Worldline * line,
-				    const double coord[8], const double delta) {
+				    const state_type &coord, const double delta) {
   Generic::init(line, coord, delta);
-
-  short i;
-  for (i=0;i<8;++i) coord_[i]=coord[i];
+  coord_ = coord;
 
 }
 
-int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
+int Worldline::IntegState::Legacy::nextStep(state_type &coord, double h1max) {
+  if (parallel_transport_) throwError("TODO: implement parallel transport");
   GYOTO_DEBUG << h1max << endl;
   int j;
   double h1;
-
+  
   if (adaptive_){
     if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1, h1max)) return 1;
     delta_ = h1;
@@ -152,7 +152,7 @@ int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
   }
   for (j=0;j<8;j++) coord_[j] = coord[j];
 
-  checkNorm(coord);
+  checkNorm(&coord[0]);
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
   GYOTO_DEBUG_ARRAY(coord,8);
@@ -164,9 +164,9 @@ int Worldline::IntegState::Legacy::nextStep(double coord[8], double h1max) {
   return 0;
 }
 
-void Worldline::IntegState::Legacy::doStep(double const coordin[8],
+void Worldline::IntegState::Legacy::doStep(state_type const &coordin,
 					   double step, 
-					   double coordout[8]) {
+					   state_type &coordout) {
   gg_ -> myrk4(line_, coordin, step, coordout); 
 }
 
@@ -199,31 +199,24 @@ void Worldline::IntegState::Boost::init()
   Generic::init();
   Worldline* line=line_;
   Metric::Generic* met=line->metric();
-  std::function<void(const std::array<double, 8> &/*x*/,
-		  std::array<double, 8> & /*dxdt*/,
-		     const double /* t*/ )> system;
+  system_type system;
 
-  if (!met) 
-    system=[](const std::array<double, 8> &/*x*/,
-		  std::array<double, 8> & /*dxdt*/,
-		  const double /* t*/ ){
+  if (!met)
+    system=[](const state_type &/*x*/,
+	      state_type & /*dxdt*/,
+	      const double /* t*/ ){
       throwError("Metric not set");
     };
   else
-    system=[this, line, met](const std::array<double, 8> &x,
-				  std::array<double, 8> &dxdt,
-				  const double t)
+    system=[this, line, met](const state_type &x,
+			     state_type &dxdt,
+			     const double t)
       {
-	double xx[8]={x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7]};
-	double res[8];
-	//line->stopcond=met->Generic::diff(xx, res);
-	line->stopcond=met->diff(xx, res);
-	for (size_t i=0; i<=7; ++i) dxdt[i]=res[i];
+	line->stopcond=met->diff(x, dxdt);
       };
 
   if (line->getImin() > line->getImax() || !met) return;
 
-  typedef std::array< double, 8 > state_type;
   GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54)
   else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_fehlberg78)
   else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_dopri5)
@@ -240,23 +233,18 @@ Worldline::IntegState::Boost::clone(Worldline*newparent) const
 
 void
 Worldline::IntegState::Boost::init(Worldline * line,
-				   const double coord[8], const double delta) {
+				   const state_type &coord, const double delta) {
   Generic::init(line, coord, delta);
 
 }
 
-int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
+int Worldline::IntegState::Boost::nextStep(state_type &coord, double h1max) {
   GYOTO_DEBUG << h1max << endl;
   
-  // We first make a C++ std::array out of the bare C array:
-  std::array<double, 8> inout = {
-    coord[0], coord[1], coord[2], coord[3],
-    coord[4], coord[5], coord[6], coord[7]};
-
   if (adaptive_) {
     double h1=delta_;
     double sgn=h1>0?1.:-1.;
-    h1max=line_->deltaMax(coord, h1max);
+    h1max=line_->deltaMax(&coord[0], h1max);
     double delta_min=line_->deltaMin();
     double dt=0.;
 
@@ -268,7 +256,7 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
     do {
       // try_step_ is a lambda function encapsulating
       // the actual adaptive-step integrator from boost
-      cres=try_step_(inout, dt, h1);
+      cres=try_step_(coord, dt, h1);
     } while (abs(h1)>=delta_min &&
 	     cres==controlled_step_result::fail &&
 	     abs(h1)<h1max);
@@ -280,8 +268,7 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
     // cres is still fail, redo with delta_min using the fixed-step integrator
     if (cres==controlled_step_result::fail) {
       GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
-      for (size_t i=0; i<=7; ++i) inout[i]=coord[i];
-      do_step_(inout, sgn*delta_min);
+      do_step_(coord, sgn*delta_min);
     }
     // update adaptive step
     delta_=h1;
@@ -289,29 +276,21 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
     // non adaptive case
     // do_Step_ is a lambda function encapsulating a fixed-step integrator
     // from Boost
-    do_step_(inout, delta_);
+    do_step_(coord, delta_);
   }
 
-  for (size_t i=0; i<=7; ++i) coord[i]=inout[i];
-
-  checkNorm(coord);
+  checkNorm(&coord[0]);
 
   return line_->stopcond;
 }
 
-void Worldline::IntegState::Boost::doStep(double const coordin[8],
-					 double step, 
-					 double coordout[8]) {
-  // We first make a C++ std::array out of the bare C array:
-  std::array<double, 8> inout = {
-    coordin[0], coordin[1], coordin[2], coordin[3],
-    coordin[4], coordin[5], coordin[6], coordin[7]};
+void Worldline::IntegState::Boost::doStep(state_type const &coordin,
+					  double step, 
+					  state_type &coordout) {
+  coordout = coordin;
 
   // We call the Boost stepper
-  do_step_(inout, step);
-
-  // Copy the result
-  for (size_t i=0; i<=7; ++i) coordout[i]=inout[i];
+  do_step_(coordout, step);
 }
 
 std::string Worldline::IntegState::Boost::kind() {

@@ -220,7 +220,7 @@ int Photon::hit(Astrobj::Properties *data) {
   //is not yet hit with adaptive integration step. A second integration
   //with small fixed step will be performed to determine more precisely
   //the surface point.
-  double coord[8];
+  Worldline::IntegState::state_type coord(8);
   int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
   stopcond=0;
@@ -278,7 +278,7 @@ int Photon::hit(Astrobj::Properties *data) {
   else if (dir==-1 && ind==0) ind=xExpand(-1);
 
   // Set up integration
-  getCoord(ind, coord);
+  getCoord(ind, &coord[0]);
   switch (coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr=coord[1];
@@ -316,7 +316,7 @@ int Photon::hit(Astrobj::Properties *data) {
   double h1max=DBL_MAX;
   while (!stopcond) {
     // Next step along photon's worldline
-    h1max=object_ -> deltaMax(coord);
+    h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, h1max);
     if (!secondary_){ // to compute only primary image
       double sign = x1_[i0_]*cos(x2_[i0_]);
@@ -344,7 +344,7 @@ int Photon::hit(Astrobj::Properties *data) {
 #     endif
       break;
     }
-    if((stopcond=metric_->isStopCondition(coord))) {
+    if((stopcond=metric_->isStopCondition(&coord[0]))) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond step by metric"<<endl;
 #     endif
@@ -437,7 +437,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	// store coordinates of outgoing photon in impactcoords
 	if (data && data->impactcoords && data->impactcoords[0]==DBL_MAX) {
 	  for (size_t i=0; i<8; ++i) data->impactcoords[i]=DBL_MAX;
-	  memcpy(data->impactcoords+8, coord, 8 * sizeof(double));
+	  memcpy(data->impactcoords+8, &coord[0], 8 * sizeof(double));
 	}
 
 	stopcond=1;

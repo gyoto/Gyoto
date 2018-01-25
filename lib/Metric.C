@@ -250,20 +250,26 @@ Let : Y=[x0,x1,x2,x3,x0_dot,x1_dot,x2_dot,x3_dot] (dot=d/dtau, tau=proper time)
 diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
-int Metric::Generic::diff(const double coord[8], double res[8]) const{
-  if (coord[4]<1e-6) return 1;
-  res[0]=coord[4];
-  res[1]=coord[5];
-  res[2]=coord[6];
-  res[3]=coord[7];
+int Metric::Generic::diff(const state_type &x,
+			  state_type &dxdt) const {
+  if (x.size()<8) throwError("x should have at least 8 elements");
+  if (x.size() != dxdt.size()) throwError("x.size() should be the same as dxdt.size()");
+  if (x[4]<1e-6) return 1;
+  int nvec = (x.size()-4)/4;
+  dxdt[0]=x[4];
+  dxdt[1]=x[5];
+  dxdt[2]=x[6];
+  dxdt[3]=x[7];
   double dst[4][4][4];
-  int retval=christoffel(dst, coord);
+  int retval=christoffel(dst, x.data());
   if (retval) return retval;
   for(int alpha=0; alpha<4; ++alpha) {
-    res[alpha+4]=0.;
+    for (int v=1; v<=nvec; ++v)
+      dxdt[alpha+4*v]=0.;
     for (int i=0;i<4;i++)
       for (int j=0;j<4;j++)
-	res[alpha+4] -= dst[alpha][i][j]*coord[4+i]*coord[4+j];
+	for (int v=1; v<=nvec; ++v) 
+	  dxdt[alpha+v*4] -= dst[alpha][i][j]*x[4+i]*x[v*4+j];
   }
   return 0;
 }
@@ -273,19 +279,20 @@ int Metric::Generic::diff(const double coord[8], double res[8]) const{
  */
 
 //int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::Generic::myrk4(Worldline * /* line */ , const double coord[8], double h, double res[8]) const{
+int Metric::Generic::myrk4(Worldline * /* line */ , const state_type &coord, double h, state_type &res) const{
   //cout << "In Metric::Generic::myrk4" << endl;
-  double k1[8] ; 
-  double k2[8] ; 
-  double k3[8] ; 
-  double k4[8] ; 
-  double coord_plus_halfk1[8] ; 
-  double sixth_k1[8] ; 
-  double coord_plus_halfk2[8] ; 
-  double third_k2[8] ; 
-  double coord_plus_k3[8] ; 
-  double third_k3[8] ; 
-  double sixth_k4[8] ; 
+  size_t sz = coord.size();
+  state_type k1(sz) ; 
+  state_type k2(sz) ; 
+  state_type k3(sz) ; 
+  state_type k4(sz) ; 
+  state_type coord_plus_halfk1(sz) ; 
+  state_type sixth_k1(sz) ; 
+  state_type coord_plus_halfk2(sz) ; 
+  state_type third_k2(sz) ; 
+  state_type coord_plus_k3(sz) ; 
+  state_type third_k3(sz) ; 
+  state_type sixth_k4(sz) ; 
 	  
   if (diff(coord, k1)) return 1 ; 
   
@@ -393,18 +400,18 @@ void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
   }
 }
 
-int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, double lastnorm , double normref, double* coordnew , double h0, double& h1, double h1max) const{ 
+int Metric::Generic::myrk4_adaptive(Worldline* line, state_type const &coord, double lastnorm , double normref, state_type &coordnew, double h0, double& h1, double h1max) const{ 
   
   double delta0[8];
   double delta0min=1e-15;
-  double dcoord[8];
+  state_type dcoord(coord.size());
   double eps=0.0001;
   double S=0.9;
   double errmin=1e-6;
   double factnorm=2.;
 
 
-  h1max=deltaMax(coord, h1max);
+  h1max=deltaMax(coord.data(), h1max);
  
   //cout << "1st diff" << endl;
   diff(coord,dcoord) ;
@@ -412,8 +419,8 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
   for (int i = 0;i<8;i++) delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
 
   double hbis=0.5*h0;
-  double coordhalf[8];
-  double coord2[8];
+  state_type coordhalf(coord.size());
+  state_type coord2(coord.size());
   double delta1[8];
   
   double err;
@@ -462,7 +469,7 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, const double * coord, doubl
       
       //Testing tangent vector norm stays next to 0 :
       
-      newnorm=ScalarProd(coordnew, coordnew+4, coordnew+4);
+      newnorm=ScalarProd(coordnew.data(), coordnew.data()+4, coordnew.data()+4);
 
       if ( fabs(newnorm-normref) > factnorm*fabs(lastnorm-normref) ) {
 	//cout << "norm big!" << endl;
