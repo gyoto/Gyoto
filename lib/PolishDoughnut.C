@@ -514,7 +514,7 @@ void PolishDoughnut::integrateEmission
   size_t onbb = onbnu+nbnu; // number of subchannel boundaries : most
   // are used twice as subchannels are
   // contiguous in each channel.
-  double * Inu = new double[onbnu+1];
+  double * Inu = new double[onbb];
   double * bo = new double[onbb];
   size_t * ii = new size_t[2*onbnu]; // two indices for each subchannel
   double dnu;
