@@ -223,19 +223,20 @@ double Gyoto::Astrobj::Python::Standard::giveDelta(double coord[8]) {
 }
 
 double Gyoto::Astrobj::Python::Standard::emission
-(double nu_em, double dsem, double coord_ph[8], double coord_obj[8])
+(double nu_em, double dsem, state_t const &coord_ph, double const coord_obj[8])
   const {
   if (!pEmission_)
     return Astrobj::Standard::emission(nu_em, dsem, coord_ph, coord_obj);
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  npy_intp dims[] = {8};
+  npy_intp dims_co[] = {8};
+  npy_intp dims_ph[] = {npy_intp(coord_ph.size())};
   
   PyObject * pNu = PyFloat_FromDouble(nu_em);
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, coord_ph);
-  PyObject * pCo = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE,coord_obj);
+  PyObject * pCp = PyArray_SimpleNewFromData(1, dims_ph, NPY_DOUBLE, const_cast<double*>(&coord_ph[0]));
+  PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pNu, pDs, pCp, pCo, NULL);
   double res = PyFloat_AsDouble(pR);
@@ -257,8 +258,8 @@ double Gyoto::Astrobj::Python::Standard::emission
 }
 
 void Gyoto::Astrobj::Python::Standard::emission
-(double Inu[], double nu_em[], size_t nbnu, double dsem, double coord_ph[8],
- double coord_obj[8]) const {
+(double Inu[], double const nu_em[], size_t nbnu, double dsem, state_t const &coord_ph,
+ double const coord_obj[8]) const {
   if (!pEmission_ || !pEmission_overloaded_) {
     Astrobj::Standard::emission(Inu, nu_em, nbnu, dsem,
 				coord_ph, coord_obj);
@@ -268,13 +269,14 @@ void Gyoto::Astrobj::Python::Standard::emission
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp I_dims[] = {static_cast<npy_intp>(nbnu)};
-  npy_intp dims[] = {8};
+  npy_intp dims_co[] = {8};
+  npy_intp dims_cp[] = {npy_intp(coord_ph.size())};
   
   PyObject * pIn = PyArray_SimpleNewFromData(1, I_dims, NPY_DOUBLE, Inu);
-  PyObject * pNu = PyArray_SimpleNewFromData(1, I_dims, NPY_DOUBLE, nu_em);
+  PyObject * pNu = PyArray_SimpleNewFromData(1, I_dims, NPY_DOUBLE, const_cast<double*>(nu_em));
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, coord_ph);
-  PyObject * pCo = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE,coord_obj);
+  PyObject * pCp = PyArray_SimpleNewFromData(1, dims_cp, NPY_DOUBLE, const_cast<double*>(&coord_ph[0]));
+  PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pIn, pNu, pDs, pCp, pCo, NULL);
   
@@ -295,20 +297,21 @@ void Gyoto::Astrobj::Python::Standard::emission
 }
 
 double Gyoto::Astrobj::Python::Standard::integrateEmission
-(double nu1, double nu2, double dsem, double c_ph[8], double c_obj[8])
+(double nu1, double nu2, double dsem, state_t const &c_ph, double const c_obj[8])
   const {
   if (!pIntegrateEmission_)
     return Astrobj::Standard::integrateEmission(nu1, nu2, dsem, c_ph,c_obj);
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  npy_intp dims[] = {8};
+  npy_intp dims_co[] = {8};
+  npy_intp dims_cp[] = {npy_intp(c_ph.size())};
   
   PyObject * pN1 = PyFloat_FromDouble(nu1);
   PyObject * pN2 = PyFloat_FromDouble(nu2);
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, c_ph);
-  PyObject * pCo = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, c_obj);
+  PyObject * pCp = PyArray_SimpleNewFromData(1, dims_cp, NPY_DOUBLE, const_cast<double*>(&c_ph[0]));
+  PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(c_obj));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pN1, pN2, pDs, pCp, pCo, NULL);
@@ -333,7 +336,7 @@ double Gyoto::Astrobj::Python::Standard::integrateEmission
 
 void Gyoto::Astrobj::Python::Standard::integrateEmission
 (double * I, double const * boundaries, size_t const * chaninds,
- size_t nbnu, double dsem, double *cph, double *co) const{
+ size_t nbnu, double dsem, state_t const &cph, const double *co) const{
   if (!pIntegrateEmission_ || !pIntegrateEmission_overloaded_) {
     Gyoto::Astrobj::Standard::integrateEmission(I, boundaries, chaninds,
 						nbnu, dsem, cph, co);
@@ -345,7 +348,7 @@ void Gyoto::Astrobj::Python::Standard::integrateEmission
   size_t nbo=0;
   for (size_t i=0; i<2*nbnu; ++i)
     if (nbo < chaninds[i]) nbo=chaninds[i];
-  npy_intp nNu = nbnu, nBo = nbo, nCh = 2*nbnu, nCo = 8;
+  npy_intp nNu = nbnu, nBo = nbo, nCh = 2*nbnu, nCo = 8, nCp = npy_intp(cph.size());
 
   PyObject * pI  = PyArray_SimpleNewFromData(1, &nNu, NPY_DOUBLE, I);
   PyObject * pBo = PyArray_SimpleNewFromData(1, &nBo, NPY_DOUBLE,
@@ -353,8 +356,8 @@ void Gyoto::Astrobj::Python::Standard::integrateEmission
   PyObject * pCh = PyArray_SimpleNewFromData(1, &nCh, NPY_UINTP,
 					     const_cast<size_t *>(chaninds));
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, &nCo, NPY_DOUBLE, cph);
-  PyObject * pCo = PyArray_SimpleNewFromData(1, &nCo, NPY_DOUBLE, co);
+  PyObject * pCp = PyArray_SimpleNewFromData(1, &nCp, NPY_DOUBLE, const_cast<double*>(&cph[0]));
+  PyObject * pCo = PyArray_SimpleNewFromData(1, &nCo, NPY_DOUBLE, const_cast<double*>(co));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pI, pBo, pCh, pDs, pCp, pCo, NULL);
@@ -377,17 +380,17 @@ void Gyoto::Astrobj::Python::Standard::integrateEmission
 }
 
 double Gyoto::Astrobj::Python::Standard::transmission
-(double nuem, double dsem, double coord[8]) const {
+(double nuem, double dsem, state_t const &coord) const {
   if (!pTransmission_)
     return Astrobj::Standard::transmission(nuem, dsem, coord);
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  npy_intp dims[] = {8};
+  npy_intp dims[] = {npy_intp(coord.size())};
   
   PyObject * pNu = PyFloat_FromDouble(nuem);
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, coord);
+  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, const_cast<double*>(&coord[0]));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, NULL);
   double res = PyFloat_AsDouble(pR);

@@ -1,5 +1,5 @@
 /*
-    Copyright 2013 Thibaut Paumard
+    Copyright 2013, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -60,9 +60,11 @@ void ygyoto_StarTrace_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
     iarg+=*rvset;
     if (yarg_nil(iarg)) {
       if ((*rvset)++) y_error(rmsg);
+      state_t v(8);
+      (*ao)->getInitialCoord(v);
       long dims[]= {1, 8};
       double *coord = ypush_d(dims);
-      (*ao)->getInitialCoord(coord);
+      for (int i=0; i<8; ++i) coord[i]=v[i];
     } else {
       long ptot=1, vtot=1;
       double *pos=ygeta_d(iarg, &ptot, 0);

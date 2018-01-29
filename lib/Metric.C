@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -250,8 +250,8 @@ Let : Y=[x0,x1,x2,x3,x0_dot,x1_dot,x2_dot,x3_dot] (dot=d/dtau, tau=proper time)
 diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
-int Metric::Generic::diff(const state_type &x,
-			  state_type &dxdt) const {
+int Metric::Generic::diff(const state_t &x,
+			  state_t &dxdt) const {
   if (x.size()<8) throwError("x should have at least 8 elements");
   if (x.size() != dxdt.size()) throwError("x.size() should be the same as dxdt.size()");
   if (x[4]<1e-6) return 1;
@@ -279,21 +279,21 @@ int Metric::Generic::diff(const state_type &x,
  */
 
 //int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::Generic::myrk4(Worldline * /* line */ , const state_type &coord, double h, state_type &res) const{
+int Metric::Generic::myrk4(Worldline * /* line */ , const state_t &coord, double h, state_t &res) const{
   //cout << "In Metric::Generic::myrk4" << endl;
   size_t sz = coord.size();
-  state_type k1(sz) ; 
-  state_type k2(sz) ; 
-  state_type k3(sz) ; 
-  state_type k4(sz) ; 
-  state_type coord_plus_halfk1(sz) ; 
-  state_type sixth_k1(sz) ; 
-  state_type coord_plus_halfk2(sz) ; 
-  state_type third_k2(sz) ; 
-  state_type coord_plus_k3(sz) ; 
-  state_type third_k3(sz) ; 
-  state_type sixth_k4(sz) ; 
-	  
+  state_t k1(sz) ;
+  state_t k2(sz) ;
+  state_t k3(sz) ;
+  state_t k4(sz) ;
+  state_t coord_plus_halfk1(sz) ;
+  state_t sixth_k1(sz) ;
+  state_t coord_plus_halfk2(sz) ;
+  state_t third_k2(sz) ;
+  state_t coord_plus_k3(sz) ;
+  state_t third_k3(sz) ;
+  state_t sixth_k4(sz) ;
+  
   if (diff(coord, k1)) return 1 ; 
   
   for (int i=0;i<8;i++) {
@@ -400,11 +400,11 @@ void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
   }
 }
 
-int Metric::Generic::myrk4_adaptive(Worldline* line, state_type const &coord, double lastnorm , double normref, state_type &coordnew, double h0, double& h1, double h1max) const{ 
+int Metric::Generic::myrk4_adaptive(Worldline* line, state_t const &coord, double lastnorm , double normref, state_t &coordnew, double h0, double& h1, double h1max) const{ 
   
   double delta0[8];
   double delta0min=1e-15;
-  state_type dcoord(coord.size());
+  state_t dcoord(coord.size());
   double eps=0.0001;
   double S=0.9;
   double errmin=1e-6;
@@ -419,8 +419,8 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, state_type const &coord, do
   for (int i = 0;i<8;i++) delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
 
   double hbis=0.5*h0;
-  state_type coordhalf(coord.size());
-  state_type coord2(coord.size());
+  state_t coordhalf(coord.size());
+  state_t coord2(coord.size());
   double delta1[8];
   
   double err;

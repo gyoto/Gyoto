@@ -1,5 +1,5 @@
 /*
-    Copyright 2012-2014, 2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2012-2014, 2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -110,8 +110,8 @@ void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
 }
 
 double PatternDiskBB::emission(double nu, double dsem,
-			       double *,
-			       double co[8]) const{
+			       state_t const &cp,
+			       double const co[8]) const{
   // This reimplementation of emission has 2 goals, ensuring that
   // nothing happens below ISCO, and allowing to compute BB emission
   // when the PatternDisk structure contains temperature
@@ -134,14 +134,14 @@ double PatternDiskBB::emission(double nu, double dsem,
       Here the intensity is assumed to be given by the emission
       function of PatternDisk
      */
-    Iem = PatternDisk::emission(nu,dsem,co,co);//NB: 3rd argument is not used
+    Iem = PatternDisk::emission(nu,dsem,cp,co);//NB: 3rd argument is not used
   }else{ //Spectral emission    
     /*
       Here the temperature is assumed to be given by the emission
       function of PatternDisk, intensity is computed assuming BB
      */
     double TT;
-    TT = PatternDisk::emission(nu,dsem,co,co);
+    TT = PatternDisk::emission(nu,dsem,cp,co);
     spectrumBB_->temperature(TT);
     //    cout << "In pattern BB nu, T= " << nu << " " << TT << endl;
     Iem=(*spectrumBB_)(nu);

@@ -1,5 +1,5 @@
 /*
-    Copyright 2012, 2014, 2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2012, 2014, 2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -83,8 +83,8 @@ ThinDiskPL::~ThinDiskPL() {
 }
 
 double ThinDiskPL::emission(double nu, double,
-			    double *,
-			    double coord_obj[8]) const{  
+			    state_t const &,
+			    double const coord_obj[8]) const{  
   double rcur=projectedRadius(coord_obj);
   double TT = Tinner_*pow(rcur/rin_,slope_);
   //  cout << "In ThinPL rin, slope, Tinner, TT= " << rin_ << " " << slope_ << " " << Tinner_ << " " << TT << endl;

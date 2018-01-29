@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -131,8 +131,8 @@ void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
 }
 
 double PageThorneDisk::emission(double nu_em, double dsem,
-				    double *,
-				    double coord_obj[8]) const{
+				    state_t const &,
+				    double const coord_obj[8]) const{
   if (!blackbody_) {
     throwError("In PageThorneDisk::emission: "
 	       "blackbody is necessary to compute emission, "
@@ -163,7 +163,7 @@ Quantity_t PageThorneDisk::getDefaultQuantities() {
 }
 
 double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
-				    double coord_obj[8]) const{
+				    double const coord_obj[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   // Important remark: this emision function gives I(r),
   // not I_nu(r). And I(r)/nu^4 is conserved.
@@ -216,8 +216,8 @@ double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
   
 }
 
-void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
-				     double* coord_obj_hit, double dt,
+void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
+				     double const *coord_obj_hit, double dt,
 				     Properties* data) const {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -235,8 +235,8 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
   size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
-  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4);// / 1.; 
+  double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
+				    &coord_ph_hit[4]);// / 1.; 
                                        //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   if (uniflux_) ggred=1.;
@@ -263,8 +263,9 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #endif
     }
     if (data->impactcoords) {
+      if (coord_ph_hit.size() > 8) throwError("ImpactCoords is incompatible with parallel transport");
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
-      memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
+      memcpy(data->impactcoords+8, &coord_ph_hit[0], 8 * sizeof(double));
     }
 #if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
@@ -289,8 +290,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
       }
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	double nuem=nuobs[ii]*ggredm1;
-	double * tmp;
-	inc = (emission(nuem, dsem, tmp, coord_obj_hit))
+	inc = (emission(nuem, dsem, coord_ph_hit, coord_obj_hit))
 	  * (ph -> getTransmission(size_t(-1)))
 	  * ggred*ggred*ggred; // Inu/nu^3 invariant
 	data->spectrum[ii*data->offset] += inc;

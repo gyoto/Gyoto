@@ -447,9 +447,12 @@ class Gyoto::Astrobj::Generic
    * You can overload it for your Astrobj. The generic implementation
    * calls emission(), integrateEmission() and transmission() below.
    */
+  virtual void processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
+                                   double const * coord_obj_hit, double dt,
+                                   Astrobj::Properties* data) const;
   virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
                                    double* coord_obj_hit, double dt,
-                                   Astrobj::Properties* data) const;
+                                   Astrobj::Properties* data) const = delete ;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB>
@@ -500,9 +503,12 @@ class Gyoto::Astrobj::Generic
    * \param coord_ph Photon coordinate
    * \param coord_obj Emitter coordinate at current photon position
    */
+  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL)
+    const ;
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL)
-    const ;
+    const = delete; ///< Obsolete, update your code;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
@@ -526,15 +532,22 @@ class Gyoto::Astrobj::Generic
    * \param coord_obj Emitter coordinate at current photon position
    * \return I<SUB>&nu;</SUB> or dI<SUB>&nu;</SUB> [W m-2 sr-2]
    */
+  virtual void emission(double Inu[], double const nu_em[], size_t nbnu,
+			double dsem, state_t const &coord_ph,
+			double const coord_obj[8]=NULL) const ;
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const ; 
+			double coord_obj[8]=NULL) const = delete ; ///< Obsolete, update your code
 
   // Under development
   virtual void radiativeQ(double Inu[], double Taunu[], 
+			  double const nu_em[], size_t nbnu,
+			  double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
+  virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ; 
+			  double coord_obj[8]=NULL) const = delete ; 
 
   /**
    * Compute the integral of emission() from &nu;<SUB>1</SUB> to
@@ -548,8 +561,10 @@ class Gyoto::Astrobj::Generic
    * instrument.
    */
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-                                  double c_ph[8], double c_obj[8]=NULL) const;
+				   state_t const &c_ph, double const c_obj[8]=NULL) const;
     ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
+  virtual double integrateEmission(double nu1, double nu2, double dsem,
+				   double c_ph[8], double c_obj[8]=NULL) const=delete; ///< Obsolete, update your code
 
   /**
    * Like double integrateEmission(double nu1, double nu2, double
@@ -558,8 +573,12 @@ class Gyoto::Astrobj::Generic
    */
   virtual void integrateEmission(double * I, double const * boundaries,
 				 size_t const * chaninds, size_t nbnu,
-				 double dsem, double *cph, double *co) const;
+				 double dsem, state_t const &cph, double const *co) const;
     ///< &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP> I<SUB>&nu;</SUB> d&nu; (or j<SUB>&nu;</SUB>)
+  virtual void integrateEmission(double * I, double const * boundaries,
+				 size_t const * chaninds, size_t nbnu,
+				 double dsem, double *cph, double *co) const = delete;
+  ///< Obsolete, update your code
 
   /**
    * transmission() computes the transmission of this fluid element or
@@ -570,8 +589,10 @@ class Gyoto::Astrobj::Generic
    * \param coord Photon coordinate
    * \param dsem geometrical length in geometrical units
    */
-  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
      ///< Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+  virtual double transmission(double nuem, double dsem, double coord[8]) const = delete;
+  ///< Obsolete, update your code
 
 };
 

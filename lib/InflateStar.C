@@ -115,7 +115,7 @@ string InflateStar::className_l() const { return  string("inflate_star"); }
 
 int InflateStar::Impact(Gyoto::Photon* ph, size_t index,
 			 Astrobj::Properties *data) {
-  Worldline::state_type p1;
+  state_t p1;
   ph->getCoord(index, p1);
   double time = p1[0];
   double radinit = radius();
@@ -127,7 +127,7 @@ int InflateStar::Impact(Gyoto::Photon* ph, size_t index,
 }
 
 double InflateStar::emission(double nu_em, double dsem, 
-			     double coord_ph[8], double coord_obj[8]) const {
+			     state_t const &coord_ph, double const coord_obj[8]) const {
   double time = coord_ph[0];
   double radinit = radius();
   double radcur=radiusAt(time);

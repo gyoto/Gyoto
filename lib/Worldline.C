@@ -467,7 +467,7 @@ void Worldline::setPosition(double const pos[4]) {
 }
 
 void Worldline::setVelocity(double const vel[3]) {
-  state_type coord;
+  state_t coord;
   getInitialCoord(coord);
   setInitCoord(&coord[0], vel);
 }
@@ -478,7 +478,7 @@ void Worldline::reset() { if (imin_<=imax_) imin_=imax_=i0_; }
 void Worldline::reInit() {
   if (imin_ <= imax_) {
     reset();
-    state_type coord;
+    state_t coord;
     getInitialCoord(coord);
     GYOTO_DEBUG_ARRAY(coord, 8);
     if (metric_) {
@@ -495,7 +495,7 @@ void Worldline::reInit() {
 }
 
 
-void Worldline::xStore(size_t ind, state_type &coord)
+void Worldline::xStore(size_t ind, state_t const &coord)
 {
   x0_[ind] = coord[0];
   x1_[ind] = coord[1];
@@ -560,7 +560,7 @@ void Worldline::xFill(double tlim) {
     //equations of geodesics written for a mass=1 star
   }
 
-  Worldline::IntegState::state_type coord(parallel_transport_?16:8);
+  state_t coord(parallel_transport_?16:8);
   getCoord(ind, coord);
   
   GYOTO_DEBUG << "IntegState initialization" << endl;
@@ -750,7 +750,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 
   // For the interpolation
   int sz = parallel_transport_?16:8;
-  Worldline::IntegState::state_type bestl(sz), besth(sz), resl(sz), resh(sz); // i/o for myrk4
+  state_t bestl(sz), besth(sz), resl(sz), resh(sz); // i/o for myrk4
   double factl, facth;
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
@@ -1314,13 +1314,17 @@ void Worldline::setCst(double const * const cst, const size_t n) {
   for (size_t ii=0;ii<n;ii++) cst_[ii]=cst[ii];
 }
 
-void Worldline::getInitialCoord(state_type &coord) const {
+void Worldline::getInitialCoord(state_t &coord) const {
   if (imax_<imin_)
     throwError("Worldline::getInitialCoord(): initial coordinate not set yet");
   getCoord(i0_, coord);
 }
 
-void Worldline::getCoord(size_t index, state_type &coord) const {
+void Worldline::getCoord(size_t index, state_t &coord) {
+  const_cast<Worldline const *>(this)->getCoord(index, coord);
+}
+
+void Worldline::getCoord(size_t index, state_t &coord) const {
   //GYOTO_DEBUG<< "index=" << index << endl;
   //GYOTO_DEBUG<< "x0[index]= " << x1dot_[index] << endl;
   //GYOTO_DEBUG<< "index == " << index << endl;
@@ -1328,24 +1332,56 @@ void Worldline::getCoord(size_t index, state_type &coord) const {
     cerr << "Indices min curr max= " << imin_ << " " << index << " " << imax_ << endl;
     throwError("Worldline::getCoord: bad index");
   }
-  coord.resize(parallel_transport_?16:8);
+  size_t sz=coord.size();
+  if (sz==0) {
+    sz = parallel_transport_?16:8;
+    coord.resize(sz);
+  }
   coord[0] = x0_[index];
   coord[1] = x1_[index];
   coord[2] = x2_[index];
   coord[3] = x3_[index];
-  coord[4] = x0dot_[index];
-  coord[5] = x1dot_[index];
-  coord[6] = x2dot_[index];
-  coord[7] = x3dot_[index];
-  if (parallel_transport_) {
-    coord[8] = ep0_[index];
-    coord[9] = ep1_[index];
-    coord[10] = ep2_[index];
-    coord[11] = ep3_[index];
-    coord[12] = et0_[index];
-    coord[13] = et1_[index];
-    coord[14] = et2_[index];
-    coord[15] = et3_[index];
+  if (sz>=4) {
+    coord[4] = x0dot_[index];
+    coord[5] = x1dot_[index];
+    coord[6] = x2dot_[index];
+    coord[7] = x3dot_[index];
+    if (parallel_transport_ && sz==16) {
+      coord[8] = ep0_[index];
+      coord[9] = ep1_[index];
+      coord[10] = ep2_[index];
+      coord[11] = ep3_[index];
+      coord[12] = et0_[index];
+      coord[13] = et1_[index];
+      coord[14] = et2_[index];
+      coord[15] = et3_[index];
+    }
+  }
+}
+
+void Worldline::getCoord(double t, state_t &coord) {
+  size_t sz=coord.size();
+  if (sz==0) {
+    sz = parallel_transport_?16:8;
+    coord.resize(sz);
+  }
+  coord[0]=t;
+  switch (sz) {
+  case 4:
+    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3], &coord[4]);  // x
+    break;
+  case 8:
+    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3],              // x
+	     &coord[4], &coord[5], &coord[6], &coord[7]);            // v or k
+    break;
+  case 16:
+    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3],              // x
+	     &coord[4], &coord[5], &coord[6], &coord[7],             // k
+	     &coord[8], &coord[9], &coord[10], &coord[12],           // Ephi
+	     &coord[13], &coord[14], &coord[15], &coord[16]);        // Etheta
+    break;
+  default:
+    throwError("Inconsistent size for output vector");
   }
 }
 

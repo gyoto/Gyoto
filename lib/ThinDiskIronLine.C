@@ -1,5 +1,5 @@
 /*
-  Copyright 2013 Frederic Vincent
+  Copyright 2013, 2018 Frederic Vincent & Thibaut Paumard
   
   This file is part of Gyoto.
   
@@ -86,8 +86,8 @@ Gyoto::Astrobj::ThinDiskIronLine::~ThinDiskIronLine()
 }
 
 double ThinDiskIronLine::emission(double nu_em, double /* dsem */,
-				  double *,
-				  double coord_obj[8]) const{
+				  state_t const &,
+				  double const coord_obj[8]) const{
   double rr=projectedRadius(coord_obj);
   if (rr<cutradius_) return 0.;
   double dfreq=linefreq_/100.;

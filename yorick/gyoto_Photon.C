@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013-2015 Thibaut Paumard
+    Copyright 2011, 2013-2015, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -55,9 +55,12 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
     if (yarg_nil(iarg)) { // Getting initcoord
       if (debug()) cerr << "     get_initcoord=1" << endl;
       if ((*rvset)++) y_error(rmsg);
+      state_t v(8);
+      (*ph)->getInitialCoord(v);
       long dims[]= {1, 8};
       double *coord = ypush_d(dims);
-      (*ph)->getInitialCoord(coord);
+      for (int i=0; i<8; ++i) coord[i]=v[i];
+      //TODO: support polarization (v.size()==16)
     } else {          // Setting initcoord
       long ptot=1;
       double coord[8];

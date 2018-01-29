@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -49,7 +49,7 @@ using namespace boost::numeric::odeint;
 
 #define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
   if (kind_==Kind::a) {							\
-    typedef boost::numeric::odeint::a<state_type> error_stepper_type;	\
+    typedef boost::numeric::odeint::a<state_t> error_stepper_type;	\
     DISABLE_SIGFPE;							\
     auto controlled=							\
       make_controlled< error_stepper_type >				\
@@ -57,7 +57,7 @@ using namespace boost::numeric::odeint;
     REENABLE_SIGFPE;							\
     try_step_ =								\
       [controlled, system]						\
-      (state_type &inout, double &t, double &h)				\
+      (state_t &inout, double &t, double &h)				\
       mutable								\
       -> controlled_step_result						\
     {									\
@@ -65,7 +65,7 @@ using namespace boost::numeric::odeint;
     };									\
     do_step_ =								\
       [controlled, system]						\
-      (state_type &inout, double h)					\
+      (state_t &inout, double h)					\
       mutable								\
     {									\
       controlled.stepper().do_step(system, inout, 0., h);		\
@@ -88,7 +88,7 @@ Worldline::IntegState::Generic::init(){
 }
 void
 Worldline::IntegState::Generic::init(Worldline * line,
-				     const state_type &coord,
+				     const state_t &coord,
 				     const double delta)
 {
   line_=line;
@@ -132,13 +132,13 @@ Worldline::IntegState::Legacy::clone(Worldline *newparent) const
 
 void
 Worldline::IntegState::Legacy::init(Worldline * line,
-				    const state_type &coord, const double delta) {
+				    const state_t &coord, const double delta) {
   Generic::init(line, coord, delta);
   coord_ = coord;
 
 }
 
-int Worldline::IntegState::Legacy::nextStep(state_type &coord, double h1max) {
+int Worldline::IntegState::Legacy::nextStep(state_t &coord, double h1max) {
   if (parallel_transport_) throwError("TODO: implement parallel transport");
   GYOTO_DEBUG << h1max << endl;
   int j;
@@ -164,9 +164,9 @@ int Worldline::IntegState::Legacy::nextStep(state_type &coord, double h1max) {
   return 0;
 }
 
-void Worldline::IntegState::Legacy::doStep(state_type const &coordin,
+void Worldline::IntegState::Legacy::doStep(state_t const &coordin,
 					   double step, 
-					   state_type &coordout) {
+					   state_t &coordout) {
   gg_ -> myrk4(line_, coordin, step, coordout); 
 }
 
@@ -199,17 +199,17 @@ void Worldline::IntegState::Boost::init()
   Generic::init();
   Worldline* line=line_;
   Metric::Generic* met=line->metric();
-  system_type system;
+  system_t system;
 
   if (!met)
-    system=[](const state_type &/*x*/,
-	      state_type & /*dxdt*/,
+    system=[](const state_t &/*x*/,
+	      state_t & /*dxdt*/,
 	      const double /* t*/ ){
       throwError("Metric not set");
     };
   else
-    system=[this, line, met](const state_type &x,
-			     state_type &dxdt,
+    system=[this, line, met](const state_t &x,
+			     state_t &dxdt,
 			     const double t)
       {
 	line->stopcond=met->diff(x, dxdt);
@@ -233,12 +233,12 @@ Worldline::IntegState::Boost::clone(Worldline*newparent) const
 
 void
 Worldline::IntegState::Boost::init(Worldline * line,
-				   const state_type &coord, const double delta) {
+				   const state_t &coord, const double delta) {
   Generic::init(line, coord, delta);
 
 }
 
-int Worldline::IntegState::Boost::nextStep(state_type &coord, double h1max) {
+int Worldline::IntegState::Boost::nextStep(state_t &coord, double h1max) {
   GYOTO_DEBUG << h1max << endl;
   
   if (adaptive_) {
@@ -284,9 +284,9 @@ int Worldline::IntegState::Boost::nextStep(state_type &coord, double h1max) {
   return line_->stopcond;
 }
 
-void Worldline::IntegState::Boost::doStep(state_type const &coordin,
+void Worldline::IntegState::Boost::doStep(state_t const &coordin,
 					  double step, 
-					  state_type &coordout) {
+					  state_t &coordout) {
   coordout = coordin;
 
   // We call the Boost stepper

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -102,12 +102,12 @@ double Torus::rMax() {
   return rmax_ ;
 }
 
-double Torus::emission(double nu_em, double dsem, double *, double *) const {
+double Torus::emission(double nu_em, double dsem, state_t const &, double const *) const {
   if (flag_radtransf_) return (*spectrum_)(nu_em, (*opacity_)(nu_em), dsem);
   return (*spectrum_)(nu_em);
 }
 
-double Torus::transmission(double nuem, double dsem, double*) const {
+double Torus::transmission(double nuem, double dsem, state_t const &) const {
   if (!flag_radtransf_) return 0.;
   double opac = (*opacity_)(nuem);
   if (debug())
@@ -118,7 +118,7 @@ double Torus::transmission(double nuem, double dsem, double*) const {
 }
 
 double Torus::integrateEmission(double nu1, double nu2, double dsem,
-			       double *, double *) const {
+			       state_t const &, double const *) const {
   if (flag_radtransf_)
     return spectrum_->integrate(nu1, nu2, opacity_(), dsem);
   return spectrum_->integrate(nu1, nu2);

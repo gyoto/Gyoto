@@ -693,8 +693,9 @@ int Disk3D::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
   GYOTO_DEBUG << endl;
 
-  double coord_ph_hit[8], coord_obj_hit[8];
-  Worldline::state_type coord1, coord2;
+  state_t coord_ph_hit(ph->parallelTransport()?16:8);;
+  double coord_obj_hit[8];
+  state_t coord1, coord2;
  
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
@@ -749,10 +750,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
     //NB: condition on zmin assumes disk is symmetric in z if zmin>=0
     
     tcur-=deltat;
-    coord_ph_hit[0]=tcur;
-    ph -> getCoord( coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
-		    coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
-		    coord_ph_hit+6, coord_ph_hit+7);
+    ph -> getCoord(tcur,  coord_ph_hit);
     //Cylindrical z and r coordinates
     myrcur=coord_ph_hit[1];
     thetacur=coord_ph_hit[2];
@@ -781,10 +779,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
       //deltat=tcur-t1; //No: see important remark above, don't change deltat
       tcur=t1;
     }
-    coord_ph_hit[0]=tcur;
-    ph -> getCoord( coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
-		    coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
-		    coord_ph_hit+6, coord_ph_hit+7);
+    ph -> getCoord(tcur, coord_ph_hit);
     //Cylindrical z and r coordinates
     myrcur=coord_ph_hit[1];
     thetacur=coord_ph_hit[2];
@@ -799,7 +794,7 @@ int Disk3D::Impact(Photon *ph, size_t index,
 	){//then out of grid
       indisk=0;
     }else{ //Inside grid: compute emission
-      ph->checkPhiTheta(coord_ph_hit);
+      ph->checkPhiTheta(&coord_ph_hit[0]);
       for (int ii=0;ii<4;ii++) coord_obj_hit[ii]=coord_ph_hit[ii];
       getVelocity(coord_obj_hit, coord_obj_hit+4);
       if (data) {

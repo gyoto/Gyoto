@@ -1,5 +1,5 @@
 /*
-    Copyright 2017 Frederic Vincent
+    Copyright 2017, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -96,17 +96,17 @@ Jet::~Jet() {
 }
 
 double Jet::emission(double nu, double,
-		     double *,
-		     double coord_obj[8]) const{
+		     state_t const &,
+		     double const coord_obj[8]) const{
   return 1.;
 }
 
 void Jet::radiativeQ(double Inu[], // output
 		     double Taunu[], // output
-		     double nu_ems[], size_t nbnu, // input
+		     double const nu_ems[], size_t nbnu, // input
 		     double dsem,
-		     double coord_ph[8],
-		     double coord_obj[8]) const {
+		     state_t const &coord_ph,
+		     double const coord_obj[8]) const {
   double rcyl=0.; // cylindrical radius
   double zz=0.; // height, z coord
   switch (gg_->coordKind()) {

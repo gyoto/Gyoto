@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard, Frederic Vincent
+    Copyright 2011, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -181,7 +181,7 @@ double UniformSphere::deltaMax(double * coord) {
   return max(dltmod_*sqrt((*this)(coord)), dltmor_*radius_);
 }
 
-double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
+double UniformSphere::emission(double nu_em, double dsem, state_t const &, double const *) const {
   if (isotropic_){
     if (flag_radtransf_){
       return dsem;
@@ -193,8 +193,8 @@ double UniformSphere::emission(double nu_em, double dsem, double *, double *) co
   return (*spectrum_)(nu_em);
 }
 
-void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
-					 double* coord_obj_hit, double dt,
+void UniformSphere::processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
+					 double const coord_obj_hit[8], double dt,
 					 Properties* data) const {
   if (alpha_==1) {
     // then I_nu \propto nu^0, standard case
@@ -209,8 +209,8 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
-  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4);// / 1.; 
+  double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
+				    &coord_ph_hit[4]);// / 1.; 
   //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*ggredm1; // *1.
@@ -240,7 +240,7 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
   }
 }  
       
-double UniformSphere::transmission(double nuem, double dsem, double*) const {
+double UniformSphere::transmission(double nuem, double dsem, state_t const &) const {
   if (!flag_radtransf_) return 0.;
   double opac = (*opacity_)(nuem);
   
@@ -255,7 +255,7 @@ double UniformSphere::transmission(double nuem, double dsem, double*) const {
 }
 
 double UniformSphere::integrateEmission(double nu1, double nu2, double dsem,
-			       double *, double *) const {
+			       state_t const &, double const *) const {
   if (flag_radtransf_)
     return spectrum_->integrate(nu1, nu2, opacity_(), dsem);
   return spectrum_->integrate(nu1, nu2);

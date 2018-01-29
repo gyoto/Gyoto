@@ -235,7 +235,7 @@ int Photon::hit(Astrobj::Properties *data) {
   //is not yet hit with adaptive integration step. A second integration
   //with small fixed step will be performed to determine more precisely
   //the surface point.
-  Worldline::IntegState::state_type coord(parallel_transport_?16:8);
+  state_t coord(parallel_transport_?16:8);
   int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
   stopcond=0;

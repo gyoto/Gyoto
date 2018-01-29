@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -205,8 +205,8 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
 }
 
 double DynamicalDisk3D::emission1date(double nu, double dsem,
-			       double *,
-			       double co[8]) const{
+			       state_t const &,
+			       double const co[8]) const{
   GYOTO_DEBUG << endl;
   
   double * emiss = const_cast<double*>(getEmissquant());
@@ -325,8 +325,8 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
 }
 
 double DynamicalDisk3D::emission(double nu, double dsem,
-			       double *,
-			       double co[8]) const {
+			       state_t const &cph,
+			       double const co[8]) const {
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
   int ifits=1;
@@ -337,13 +337,13 @@ double DynamicalDisk3D::emission(double nu, double dsem,
 
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
-    return emission1date(nu,dsem,NULL,co);
+    return emission1date(nu,dsem,cph,co);
   }else{
     double I1, I2;
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits-1);
-    I1=emission1date(nu,dsem,NULL,co);
+    I1=emission1date(nu,dsem,cph,co);
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits);
-    I2=emission1date(nu,dsem,NULL,co);
+    I2=emission1date(nu,dsem,cph,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }
@@ -352,8 +352,8 @@ double DynamicalDisk3D::emission(double nu, double dsem,
 }
 
 double DynamicalDisk3D::transmission1date(double nu, double dsem,
-			       double*,
-			       double co[8]) const{
+			       state_t const &,
+			       double const co[8]) const{
   GYOTO_DEBUG << endl;
   if (!flag_radtransf_) return 0.;
   
@@ -435,7 +435,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
   return 0.; // avoid pedantic warning
 }
 
-double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const {
+double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &co) const {
 
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
@@ -447,13 +447,13 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, double* co) const
 
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
-    return transmission1date(nuem,dsem,NULL,co);
+    return transmission1date(nuem,dsem,co,&co[0]);
   }else{
     double I1, I2;
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits-1);
-    I1=transmission1date(nuem,dsem,NULL,co);
+    I1=transmission1date(nuem,dsem,co,&co[0]);
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits);
-    I2=transmission1date(nuem,dsem,NULL,co);
+    I2=transmission1date(nuem,dsem,co,&co[0]);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }

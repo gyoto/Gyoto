@@ -152,9 +152,10 @@ void ThinDisk::getVelocity(double const pos[4], double vel[4]) {
 
 int ThinDisk::Impact(Photon *ph, size_t index,
 			       Astrobj::Properties *data) {
-  double coord_ph_hit[8], coord_obj_hit[8];
+  state_t coord_ph_hit;
+  double coord_obj_hit[8];
   double rcross;
-  Gyoto::Worldline::state_type coord1, coord2;
+  state_t coord1, coord2;
   double dt=0.;
   ph->getCoord(index, coord1);
   ph->getCoord(index+1, coord2);
@@ -184,13 +185,10 @@ int ThinDisk::Impact(Photon *ph, size_t index,
     tlow = coord2[0]; thigh = coord1[0];
   }
   ph -> findValue(this, 0., tlow, thigh);
-  coord_ph_hit[0]=thigh;
 
-  ph -> getCoord(coord_ph_hit, 1, coord_ph_hit+1, coord_ph_hit+2,
-		 coord_ph_hit+3, coord_ph_hit+4, coord_ph_hit+5,
-		 coord_ph_hit+6, coord_ph_hit+7);
+  ph -> getCoord(thigh, coord_ph_hit);
 
-  if ((rcross=projectedRadius(coord_ph_hit)) < rin_ ||
+  if ((rcross=projectedRadius(&coord_ph_hit[0])) < rin_ ||
       rcross > rout_) return 0;
 
   for (int i=0;i<4;i++) coord_obj_hit[i]=coord_ph_hit[i];
@@ -198,7 +196,7 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
   if (flag_radtransf_) {
     double vel[3];
-    gg_->cartesianVelocity(coord_ph_hit, vel);
+    gg_->cartesianVelocity(&coord_ph_hit[0], vel);
     dt = (vel[2]==0.)
       ? (coord2[0] - coord1[0]) 
       : sqrt(1.+(vel[0]*vel[0]+vel[1]*vel[1])/(vel[2]*vel[2]))*thickness_;

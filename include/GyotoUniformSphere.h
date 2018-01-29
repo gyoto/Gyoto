@@ -187,15 +187,15 @@ class Gyoto::Astrobj::UniformSphere :
 
   using Standard::emission;
   virtual double emission(double nu_em, double dsem,
-			  double cp[8], double co[8]=NULL) const;
+			  state_t const &cp, double const co[8]=NULL) const;
   ///< Emission is determined by spectrum_ and opacity_
   using Standard::integrateEmission;
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const;
-  virtual double transmission(double nuem, double dsem, double*) const ;
+				   state_t const &c_ph, double const *c_obj=NULL) const;
+  virtual double transmission(double nuem, double dsem, state_t const &) const ;
   ///< Transmission is determined by opacity_
-  void processHitQuantities(Photon* ph, double* coord_ph_hit,
-			    double* coord_obj_hit, double dt,
+  void processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
+			    double const * coord_obj_hit, double dt,
 			    Properties* data) const;
     
 };

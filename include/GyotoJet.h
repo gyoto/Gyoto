@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2017 Frederic Vincent
+    Copyright 2017-2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -95,12 +95,12 @@ class Gyoto::Astrobj::Jet
   virtual void metric(SmartPointer<Metric::Generic>);
     
   virtual double emission(double nu_em, double dsem,
-			  double c_ph[8],double c_obj[8]=NULL) const;
+			  state_t const &c_ph,double const c_obj[8]=NULL) const;
   virtual double operator()(double const coord[4]) ;
   virtual void radiativeQ(double Inu[], double Taunu[], 
-			  double nu_em[], size_t nbnu,
-			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ;
+			  double const nu_em[], size_t nbnu,
+			  double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
   virtual void updateSpin() ;
   virtual void tell(Gyoto::Hook::Teller *msg);

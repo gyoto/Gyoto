@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2013 Frederic Vincent
+ *   Copyright (c) 2013, 2018 Frederic Vincent & Thibaut Paumard
  *
  *
  */
@@ -92,7 +92,7 @@ class Gyoto::Astrobj::OscilTorus
 
   virtual double operator()(double const coord[4]) ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-  double emission(double nuem,double,double*,double*) const;
+  double emission(double nuem,double,state_t const &,double const *) const;
 
 #ifdef GYOTO_USE_XERCES
   virtual void setParameters(Gyoto::FactoryMessenger *fmp) ;

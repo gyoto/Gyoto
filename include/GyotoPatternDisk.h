@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -270,8 +270,8 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
  public:
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
-			  double c_ph[8], double c_obj[8]=NULL) const;
-  virtual double transmission(double nu_em, double dsem, double coord[8]) const;
+			  state_t const &c_ph, double const c_obj[8]=NULL) const;
+  virtual double transmission(double nu_em, double dsem, state_t const &coord) const;
 
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 

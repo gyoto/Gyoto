@@ -444,7 +444,7 @@ void NumericalMetricLorene::setTimes(double time, int ii) {
   GYOTO_DEBUG << endl;
   times_[ii]=time;}
 
-int NumericalMetricLorene::diff(state_type const &coord, state_type &res) const{
+int NumericalMetricLorene::diff(state_t const &coord, state_t &res) const{
   double rhor=computeHorizon(&coord[0]);
   if (coord[1]<rhor && rhor>0.) {
     GYOTO_DEBUG << "rr, rhor= " << coord[1] << " " << rhor << endl;
@@ -778,8 +778,8 @@ int NumericalMetricLorene::myrk4(double tt, const double coorin[7],
 }
 
 //Non adaptive Runge Kutta (called by WorldlineIntegState if fixed step)
-int NumericalMetricLorene::myrk4(Worldline * line, state_type const &coord, 
-				 double h, state_type &res) const{
+int NumericalMetricLorene::myrk4(Worldline * line, state_t const &coord, 
+				 double h, state_t &res) const{
   GYOTO_DEBUG << endl;
   double tt=coord[0], rr=coord[1],
     th=coord[2],rsinth = rr*sin(th), ph=coord[3],
@@ -1071,9 +1071,9 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
 
 //Main adaptive RK4
 int NumericalMetricLorene::myrk4_adaptive(Worldline* line, 
-					  state_type const &coord, 
+					  state_t const &coord, 
 					  double lastnorm, double normref, 
-					  state_type &coordnew, double h0, 
+					  state_t &coordnew, double h0, 
 					  double& h1,
 					  double h1max) const
 {

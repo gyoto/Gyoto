@@ -17,7 +17,7 @@
  */
 
 /*
-    Copyright 2014-2015 Frederic Vincent, Thibaut Paumard
+    Copyright 2014-2015, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -174,7 +174,7 @@ class Gyoto::Astrobj::DirectionalDisk : public Astrobj::ThinDisk {
  public:
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
-			  double c_ph[8], double c_obj[8]=NULL) const;
+			  state_t const &c_ph, double const c_obj[8]=NULL) const;
 
 };
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2013, 2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -68,22 +68,23 @@ DynamicalDiskBolometric::~DynamicalDiskBolometric() {
 }
 
 double DynamicalDiskBolometric::emission(double nu_em, double dsem,
-					 double *,
-					 double coord_obj[8]) const{
+					 state_t const &,
+					 double const coord_obj[8]) const{
   throwError("In DynamicalDiskBolometric::emission: "
 	     "not implemented");
 }
 
 double DynamicalDiskBolometric::bolometricEmission(double dsem,
-						   double coord_obj[8]) const{
+						   state_t const &cph,
+						   double const coord_obj[8]) const{
   //  cout << "in bolometricem, will return: " << DynamicalDisk::emission(0.,dsem,coord_obj,coord_obj) << endl;
-  return DynamicalDisk::emission(0.,dsem,coord_obj,coord_obj);  
+  return DynamicalDisk::emission(0.,dsem,cph,coord_obj);  
   //never mind about 1st and 3rd elements
 }
 
 void DynamicalDiskBolometric::processHitQuantities(Photon* ph, 
-						   double* coord_ph_hit,
-						   double* coord_obj_hit, double dt,
+						   state_t const & coord_ph_hit,
+						   double const * coord_obj_hit, double dt,
 						   Properties* data) const {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -98,8 +99,8 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
   */
   double freqObs=ph->freqObs(); // this is a useless quantity, always 1
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
-  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4);// / 1.; 
+  double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],&coord_obj_hit[4],
+				    &coord_ph_hit[4]);// / 1.; 
                                        //this is nu_em/nu_obs
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   double dsem = dlambda*ggredm1; // *1.
@@ -125,8 +126,9 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
 #endif
     }
     if (data->impactcoords) {
+      if (coord_ph_hit.size()>8) throwError("ImpactCoord incompatible with parallel transport");
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
-      memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
+      memcpy(data->impactcoords+8, &coord_ph_hit[0], 8 * sizeof(double));
     }
 #if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
@@ -135,7 +137,7 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
     if (data->intensity) throwError("In DynamicalDiskBolometric::process: "
 				    "unimplemented");
     else if (data->user4) {
-      inc = (bolometricEmission(dsem, coord_obj_hit))
+      inc = (bolometricEmission(dsem, coord_ph_hit, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
 	* ggred*ggred*ggred*ggred; // I/nu^4 invariant
       *data->user4 += inc;

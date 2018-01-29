@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2013 Frederic Vincent
+ *   Copyright (c) 2013, 2018 Frederic Vincent & Thibaut Paumard
  *
  *
  */
@@ -72,6 +72,6 @@ class Gyoto::Astrobj::DeformedTorus
   virtual void getVelocity(double const pos[4], double vel[4]) ;
   /*virtual int Impact(Gyoto::Photon* ph, size_t index,
     Astrobj::Properties *data=NULL);*/
-  double emission(double nuem,double,double*,double*) const;
+  double emission(double nuem,double,state_t const &,double const *) const;
 #endif
 };

@@ -75,8 +75,8 @@ NeutronStarAnalyticEmission::~NeutronStarAnalyticEmission() {
 SmartPointer<Spectrum::Generic> NeutronStarAnalyticEmission::spectrum() const { return spectrum_; }
   void NeutronStarAnalyticEmission::spectrum(SmartPointer<Spectrum::Generic> sp) {spectrum_=sp;}
 
-double NeutronStarAnalyticEmission::emission(double nu_em, double, double *,
-			      double *) const{
+double NeutronStarAnalyticEmission::emission(double nu_em, double, state_t const &,
+			      double const *) const{
   GYOTO_DEBUG << endl;
   if (flag_radtransf_)
     throwError("Radiative transfer not implemented for NeutronStarAnalyticEmission.");

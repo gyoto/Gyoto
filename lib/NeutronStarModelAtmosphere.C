@@ -1,5 +1,5 @@
 /*
-  Copyright 2017 Frederic Vincent, Thibaut Paumard
+  Copyright 2017, 2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -496,8 +496,8 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
 }
 
 double NeutronStarModelAtmosphere::emission(double nu, double,
-					    double cp[8],
-					    double co[8]) const{
+					    state_t const &cp,
+					    double const co[8]) const{
   /*
     Important remarks on the precision: the variable GYOTO_T_TOL
     defined in GyotoDefs.h is important as it tunes the precision
@@ -592,8 +592,8 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   //cout << "photon vector= " << cp[4] << " " << cp[5] << " " << cp[6] << " " << cp[7] << endl;
     
   // Compute angle between photon direction and normal
-  double np = 1./accelvecNorm*gg_->ScalarProd(cp,accelvec,cp+4),
-    up = gg_->ScalarProd(cp,co+4,cp+4);
+  double np = 1./accelvecNorm*gg_->ScalarProd(&cp[0],accelvec,&cp[4]),
+    up = gg_->ScalarProd(&cp[0],co+4,&cp[4]);
   //cout << "accel and velo= " << accelvec[0] << " " << accelvec[1] << " " << accelvec[2] << " " << accelvec[3] << " " << cp[4] << " " << cp[5] << " " << cp[6] << " " << cp[7] << " " << endl;
   //cout << "scalar prods= " << np << " " << up << endl;
   double p_r=cp[5]/grr, p_t=cp[6]/gtt;

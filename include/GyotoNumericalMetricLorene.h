@@ -141,13 +141,13 @@ class Gyoto::Metric::NumericalMetricLorene
    * Runge-Kutta integrator at order 4
    */
   virtual int myrk4(double tt, const double coord[7], double h, double res[7]) const;
-  virtual int myrk4(Worldline* line, state_type const &coord, 
-	    double h, state_type &res) const;
+  virtual int myrk4(Worldline* line, state_t const &coord, 
+	    double h, state_t &res) const;
 
   /**
    * Adaptive Runge-Kutta
    */
-  int myrk4_adaptive(Gyoto::Worldline* line, state_type const &coord, double lastnorm, double normref, state_type &coordnew, double h0, double& h1, double h1max) const;
+  int myrk4_adaptive(Gyoto::Worldline* line, state_t const &coord, double lastnorm, double normref, state_t &coordnew, double h0, double& h1, double h1max) const;
 
   int myrk4_adaptive(double tt, const double coor[7], double lastnorm, double normref, double coornew[7], const double cst[2], double& tdot_used, double h0, double& h1, double& hused, double h1max) const;
   ///< With energy integration also, coor=[E,r,th,ph,dE/dt,Vr,Vth,Vph]
@@ -215,7 +215,7 @@ class Gyoto::Metric::NumericalMetricLorene
    * F function such as d(coord)/d(tau)=F(coord)
    */
   //using Generic::diff;
-  virtual int diff(state_type const &coord, state_type &res) const;
+  virtual int diff(state_t const &coord, state_t &res) const;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
 

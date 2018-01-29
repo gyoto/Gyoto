@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2012, 2014, 2015, 2017 Thibaut Paumard & Frederic Vincent
+    Copyright 2011, 2012, 2014, 2015, 2017, 2018 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -94,7 +94,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
   GYOTO_DEBUG_EXPR(kind());
 # endif
   size_t sz = ph -> parallelTransport()?16:8;
-  Gyoto::Worldline::state_type p1(sz), p2(sz);
+  state_t p1(sz), p2(sz);
   ph->getCoord(index, p1);
   ph->getCoord(index+1, p2);
   double tmin, minval;
@@ -141,27 +141,25 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
   } else if (val2 > critical_value_)
     ph -> findValue(this, critical_value_, t1, t2);
 
-  double cph[8] = { t2 };
-  ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
-		 cph+4, cph+5, cph+6, cph+7);
+  state_t cph(sz);
+  ph -> getCoord(t2, cph);
 
   double coh[8] = {cph[0], cph[1], cph[2], cph[3]};
   getVelocity(coh, coh+4);
   bool current_is_inside = true; // by construction, t2 is always inside
 
-  double delta=giveDelta(cph);
+  double delta=giveDelta(&cph[0]);
   double dt;
-  double coh_next[8], cph_next[8];
+  double coh_next[8];
+  state_t cph_next(sz);
   bool next_is_inside;
 
   while (cph[0]>t1){
     // Warning: Impact must not extend the Worldline!
     // never call get Coord with anything outside [t1, t2].
-    cph_next[0] = max(cph[0] - delta, t1);
-    ph -> getCoord(cph_next, 1, cph_next+1, cph_next+2, cph_next+3,
-		   cph_next+4, cph+5, cph_next+6, cph_next+7);
+    ph -> getCoord(max(cph[0] - delta, t1), cph_next);
 
-    memcpy(coh_next, cph_next, 4*sizeof(cph_next[0]));
+    memcpy(coh_next, &cph_next[0], 4*sizeof(cph_next[0]));
     getVelocity(coh_next, coh_next+4);
 
     next_is_inside = ((*this)(coh_next) <= critical_value_);
@@ -174,17 +172,17 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 	// Late point in object, early outside
 	// Find date of surface crossing and update dt.
 	double t_out = cph_next[0];
-	ph -> findValue(this, critical_value_, *cph, t_out);
+	ph -> findValue(this, critical_value_, cph[0], t_out);
 	dt = cph[0] - t_out;
       }
     } else {
       if (next_is_inside) {
 	// Early point in object, late point outside
 	// Place cph and coh inside, near surface; update dt
-	ph -> findValue(this, critical_value_, *cph_next, *cph);
-	ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
-		       cph+4, cph+5, cph+6, cph+7);
-	memcpy(coh, cph, 4*sizeof(cph_next[0]));
+	double t_out = cph[0];
+	ph -> findValue(this, critical_value_, cph_next[0], t_out);
+	ph -> getCoord(t_out, cph);
+	memcpy(coh, &cph[0], 4*sizeof(cph_next[0]));
 	getVelocity(coh, coh+4);
 	dt = cph[0]-cph_next[0];
       } else {
@@ -198,7 +196,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
       processHitQuantities(ph, cph, coh, dt, data);
 
     // Copy next to current
-    memcpy(cph, cph_next, 8*sizeof(cph[0]));
+    cph = cph_next;
     memcpy(coh, coh_next, 8*sizeof(coh[0]));
     current_is_inside = next_is_inside;
 

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2013 Frederic Vincent
+    Copyright 2013, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -75,8 +75,8 @@ class Gyoto::Astrobj::EquatorialHotSpot
   void getVelocity(double const pos[4], double vel[4]);
 
   double emission(double nu_em, double dsem,
-		  double *,
-		  double coord_obj[8]) const;
+		  state_t const &,
+		  double const coord_obj[8]) const;
   
   // needed for legacy XML files
   virtual int setParameter(std::string name,

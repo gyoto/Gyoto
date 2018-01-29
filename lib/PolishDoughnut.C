@@ -430,7 +430,7 @@ int PolishDoughnut::Impact(Photon *ph, size_t index,
     // ADAF model, this is actually no longer a Polish doughnut
     // -> only for comparison
     //cout << "ICI1" << endl;
-    Worldline::state_type coord;
+    state_t coord;
     ph->getCoord(index, coord);
     double rr = coord[1], th = coord[2];
     // The outer boundary of the ADAF is simply RMax_ in xml
@@ -439,23 +439,21 @@ int PolishDoughnut::Impact(Photon *ph, size_t index,
     // This allows to reject the points close to the axis
     // such that the cylindrical radius is smaller than Sch ISCO ;
     // there, the Keplerian velocity is not defined
-    Gyoto::Worldline::state_type p1, p2;
+    state_t p1, p2;
     ph->getCoord(index, p1);
     ph->getCoord(index+1, p2);
     double t1 = p1[0], t2=p2[0];
-    double cph[8] = { t2 };
-    ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
-		   cph+4, cph+5, cph+6, cph+7);
-    double delta=giveDelta(cph);
+    state_t cph;
+    ph -> getCoord(t2, cph);
+    double delta=giveDelta(&cph[0]);
     double coh[8];
-    while (cph[0]>t1){
-      ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
-		     cph+4, cph+5, cph+6, cph+7);
+    while (t2>t1){
+      ph -> getCoord(t2, cph);
       for (int ii=0;ii<4;ii++)
 	coh[ii] = cph[ii];
       getVelocity(coh, coh+4);
       processHitQuantities(ph, cph, coh, delta, data);
-      cph[0]-=delta;
+      t2 -= delta;
     }
     return 1;
   }
@@ -502,9 +500,9 @@ void PolishDoughnut::getVelocity(double const pos[4], double vel[4])
   vel[3] = Omega*sqrt(ut2);
 }
 void PolishDoughnut::integrateEmission
-(double * I, double * boundaries,
- size_t * chaninds, size_t nbnu,
- double dsem, double *cph, double *co) const
+(double * I, double const * boundaries,
+ size_t const * chaninds, size_t nbnu,
+ double dsem, state_t const &cph, double const *co) const
 {
   // The original channels may or may not be contiguous. We split
   // each original channels into spectral_oversampling_ subchannels.
@@ -545,7 +543,7 @@ void PolishDoughnut::integrateEmission
   delete [] ii;
 }
 double PolishDoughnut::emission(double nu_em, double dsem,
-				double *cph, double *co) const
+				state_t const &cph, double const *co) const
 {
   GYOTO_DEBUG << endl;
   double Inu;
@@ -725,10 +723,10 @@ double PolishDoughnut::absorptionSynchro_komissarov_PL_averaged(
   return abs_synch/2.;
 }
 void PolishDoughnut::emission(double Inu[], // output
-			      double nu_ems[], size_t nbnu, // input
+			      double const nu_ems[], size_t nbnu, // input
 			      double dsem,
-			      double coord_ph[8],
-			      double coord_obj[8]) const {
+			      state_t const &coord_ph,
+			      double const coord_obj[8]) const {
   // Beware: all computations are done in cgs, output must be in SI
   GYOTO_DEBUG << "entering emission()\n";
   if (!flag_radtransf_) {//NON RADIATIVE TRANSFER CASE
@@ -1148,10 +1146,10 @@ double PolishDoughnut::emissionSynch(double nu_em, double nu_crit,
 }
 void PolishDoughnut::radiativeQ(double Inu[], // output
 				double Taunu[], // output
-				double nu_ems[], size_t nbnu, // input
+				double const nu_ems[], size_t nbnu, // input
 				double dsem,
-				double coord_ph[8],
-				double coord_obj[8]) const {
+				state_t const &coord_ph,
+				double const coord_obj[8]) const {
   // This function computes the emission and transmission
   // for the Komissarov model, with both thermal and
   // non-thermal electron populations, with proper emission
@@ -1198,9 +1196,9 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     }
     double enthalpy_c=central_density_; // Warning: central_density_ is here
     // p+rho*c2 (enthalpy), not rho; model is different from std doughnut
-    double g_tt=gg_->gmunu(coord_ph,0,0),
-      g_pp=gg_->gmunu(coord_ph,3,3),
-      g_tp=gg_->gmunu(coord_ph,0,3),
+    double g_tt=gg_->gmunu(&coord_ph[0],0,0),
+      g_pp=gg_->gmunu(&coord_ph[0],3,3),
+      g_tp=gg_->gmunu(&coord_ph[0],0,3),
       LL=g_tp*g_tp-g_tt*g_pp;
     double posc[4]={0.,r_centre_,M_PI/2.,0.};
     double g_ttc=gg_->gmunu(posc,0,0),
@@ -1251,13 +1249,13 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     double photon_emframe[4]; // photon tgt vector projected in comoving frame
     for (int ii=0;ii<4;ii++){
       photon_emframe[ii]=coord_ph[ii+4]
-	+vel[ii]*gg_->ScalarProd(coord_ph,coord_ph+4,vel);
+	+vel[ii]*gg_->ScalarProd(&coord_ph[0],&coord_ph[4],vel);
     }
-    double lnorm = gg_->ScalarProd(coord_ph,photon_emframe,photon_emframe);
+    double lnorm = gg_->ScalarProd(&coord_ph[0],photon_emframe,photon_emframe);
     if (lnorm<=0.) throwError("In PolishDoughnut::radiativeq"
 			      " photon_emframe should be spacelike");
     lnorm=sqrt(lnorm);
-    double lscalb = gg_->ScalarProd(coord_ph,photon_emframe,b4vec);
+    double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,b4vec);
     theta_mag = acos(lscalb/(lnorm*bnorm));
     double sth = sin(theta_mag);//, cth = cos(theta_mag);
     if (sth==0.) throwError("In PolishDoughnut::radiativeq: "
@@ -1368,8 +1366,8 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     // NB: abs_synch is in cgs (cm^-1) as well as delta_s (cm)
   }
 }
-double PolishDoughnut::transmission(double nuem, double dsem,
-				    double * coord) const {
+double PolishDoughnut::transmission(double, double,
+				    state_t const &) const {
   if (!flag_radtransf_) return 0.; //Complete absorption for optically thick
   return 1.;//NO ABSORPTION FOR OPTICALLY THIN
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright 2017 Frederic Vincent, Thibaut Paumard
+  Copyright 2017, 2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -817,8 +817,8 @@ void XillverReflection::getIndicesIllum(size_t i[2], double const co[4])
 }
 
 double XillverReflection::emission(double nu, double,
-				   double cp[8],
-				   double co[8]) const{
+				   state_t const &cp,
+				   double const co[8]) const{
   // ************* ILLUMINATION *************
 
   double lampperiod = 2*M_PI*(pow(lampradius_,1.5)+aa_),
@@ -908,12 +908,12 @@ double XillverReflection::emission(double nu, double,
 
   // **** Emission angle
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
-  double normal_norm=gg_->ScalarProd(cp,normal,normal);
+  double normal_norm=gg_->ScalarProd(&cp[0],normal,normal);
   if (normal_norm<=0.) throwError("In XillverReflection::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
-  double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
-    up = gg_->ScalarProd(cp,co+4,cp+4);
+  double np = 1./normal_norm*gg_->ScalarProd(&cp[0],normal,&cp[4]),
+    up = gg_->ScalarProd(&cp[0],co+4,&cp[4]);
   // cos between unit normal n and tangent to photon p
   // is equal -n.p/u.p (u being the emitter's 4-vel);
   // fabs because assuming plane symmetry

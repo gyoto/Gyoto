@@ -1,5 +1,5 @@
 /**
- * \file GyotoStar.h
+ * \file GyotoInflateStar.h
  * \brief Mass-less, spherical object following a timelike geodesic
  *
  *  A Gyoto::InflateStar evolves in a Gyoto::Metric following time-like
@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2011, 2013 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2013, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -99,7 +99,7 @@ class Gyoto::Astrobj::InflateStar :
   virtual int Impact(Gyoto::Photon* ph, size_t index,
 		     Astrobj::Properties *data=NULL);
   virtual double emission(double nu_em, double dsem,
-			  double cp[8], double co[8]=NULL) const;
+			  state_t const &cp, double const co[8]=NULL) const;
 };
 
 

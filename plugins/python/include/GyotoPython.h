@@ -451,21 +451,21 @@ class Gyoto::Astrobj::Python::Standard
   Standard* clone() const;
 
   /* Astrobj::Generic API */
-  virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ;
+  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
 
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const ;
+  virtual void emission(double Inu[], double const nu_em[], size_t nbnu,
+			double dsem, state_t const &coord_ph,
+			double const coord_obj[8]=NULL) const ;
 
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const;
+				   state_t const &c_ph, double const c_obj[8]=NULL) const;
 
   virtual void integrateEmission(double * I, double const * boundaries,
 				 size_t const * chaninds, size_t nbnu,
-				 double dsem, double *cph, double *co) const;
+				 double dsem, state_t const &cph, double const *co) const;
 
-  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
 
   /* Astrobj::Standard API */
   virtual double operator()(double const coord[4]) ;
@@ -517,21 +517,21 @@ class Gyoto::Astrobj::Python::ThinDisk
   ThinDisk* clone() const;
 
   /* Astrobj::Generic API */
-  virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ;
+  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
 
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const ;
+  virtual void emission(double Inu[], double const nu_em[], size_t nbnu,
+			double dsem, state_t const &coord_ph,
+			double const coord_obj[8]=NULL) const ;
 
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const;
+				   state_t const &c_ph, double const c_obj[8]=NULL) const;
 
   virtual void integrateEmission(double * I, double const * boundaries,
 				 size_t const * chaninds, size_t nbnu,
-				 double dsem, double *cph, double *co) const;
+				 double dsem, state_t const &cph, double const *co) const;
 
-  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
 
   /* Astrobj::ThinDisk API */
   virtual double operator()(double const coord[4]) ;

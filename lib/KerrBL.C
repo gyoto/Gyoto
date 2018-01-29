@@ -487,8 +487,8 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
 }
 
 //Runge Kutta to order 4
-int KerrBL::myrk4(Worldline * line, state_type const &coordin,
-		  double h, state_type &res) const
+int KerrBL::myrk4(Worldline * line, state_t const &coordin,
+		  double h, state_t &res) const
 {
   if (generic_integrator_) return Generic::myrk4(line, coordin, h, res);
   
@@ -710,8 +710,8 @@ int KerrBL::myrk4(const double coor[8], const double cst[5],
   return 0;
 }
 
-int KerrBL::myrk4_adaptive(Worldline * line, state_type const &coordin,
-			   double lastnorm, double normref, state_type &coordout1,
+int KerrBL::myrk4_adaptive(Worldline * line, state_t const &coordin,
+			   double lastnorm, double normref, state_t &coordout1,
 			   double h0, double& h1, double h1max) const
 {
   if (generic_integrator_)

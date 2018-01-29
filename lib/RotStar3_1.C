@@ -132,7 +132,7 @@ int RotStar3_1::integKind() const { return integ_kind_; }
 bool RotStar3_1::genericIntegrator() const {return !integ_kind_;}
 void RotStar3_1::genericIntegrator(bool t) {integ_kind_=!t;}
 
-int RotStar3_1::diff(state_type const &coord, state_type &res) const
+int RotStar3_1::diff(state_t const &coord, state_t &res) const
 {
   //4-DIMENSIONAL INTEGRATION
   //NB: this diff is only called by Generic::RK4
@@ -475,9 +475,9 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
   return 0;
 }
 
-int RotStar3_1::myrk4_adaptive(Worldline* line, state_type const &coord, 
+int RotStar3_1::myrk4_adaptive(Worldline* line, state_t const &coord, 
 			       double lastnorm, double normref, 
-			       state_type &coordnew, double h0, 
+			       state_t &coordnew, double h0, 
 			       double& h1, double h1max) const
 {
   //  if (debug()) cout << "In Rotstar::adaptive [8]" << endl;

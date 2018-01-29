@@ -12,7 +12,7 @@
  */
 
 /*
-  Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+  Copyright 2011-2016, 2018 Frederic Vincent, Thibaut Paumard
   
   This file is part of Gyoto.
   
@@ -118,15 +118,15 @@ class Gyoto::Astrobj::PageThorneDisk
    * Throws a Gyoto::Error
    */
   virtual double emission(double nu_em, double dsem,
-			  double c_ph[8], double c_obj[8]=NULL) const;
+			  state_t const &c_ph, double const c_obj[8]=NULL) const;
 
   /**
    * \brief Bolometric emission
    *
    * Similar to Generic::emission(), but bolometric.
    */
-virtual double bolometricEmission(double nuem, double dsem,
-				    double c_obj[8]) const;
+  virtual double bolometricEmission(double nuem, double dsem,
+				    double const c_obj[8]) const;
 
   /**
    * \brief 
@@ -134,8 +134,8 @@ virtual double bolometricEmission(double nuem, double dsem,
    * PageThorneDisk, only fill User4, which corresponds to bolometric
    * intensity.
    */
-  virtual void processHitQuantities(Photon* ph, double* coord_ph_hit,
-                                   double* coord_obj_hit, double dt,
+  virtual void processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
+                                   double const *coord_obj_hit, double dt,
                                    Astrobj::Properties* data) const;
 
   Gyoto::Quantity_t getDefaultQuantities();

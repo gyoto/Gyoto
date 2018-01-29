@@ -116,7 +116,7 @@ int EquatorialHotSpot::setParameter(string name, string content, string unit) {
 void EquatorialHotSpot::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   if (p.name == "InitCoord") {
     if (imin_ <= imax_) {
-      state_type coord;
+      state_t coord;
       getInitialCoord(coord);
       // For massive particule, express initial condition with 3-velocity
       double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};
@@ -183,8 +183,8 @@ void EquatorialHotSpot::getVelocity(double const pos[4], double vel[4]) {
 }
 
 double EquatorialHotSpot::emission(double nu_em, double dsem,
-				   double coord_ph[8],
-				   double coord_obj[8]) const{
+				   state_t const &coord_ph,
+				   double const coord_obj[8]) const{
   double coord_spot[4]={coord_obj[0]};
   const_cast<EquatorialHotSpot*>(this)
     ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
@@ -197,12 +197,12 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
   double ds2=sizespot_*sizespot_;
   if (d2 < ds2){
     // computing the angle (normal,photon tangent)
-    double gthth=gg_->gmunu(coord_ph,2,2);
+    double gthth=gg_->gmunu(&coord_ph[0],2,2);
     double pth=coord_ph[6];
     double uemitter[4];
     const_cast<EquatorialHotSpot*>(this)
-      ->getVelocity(coord_ph,uemitter);
-    double pscalu=fabs(gg_->ScalarProd(coord_ph,coord_ph+4,
+      ->getVelocity(&coord_ph[0],uemitter);
+    double pscalu=fabs(gg_->ScalarProd(&coord_ph[0],&coord_ph[4],
 				       uemitter));
     double cosalpha = 1./pscalu*sqrt(gthth)*fabs(pth); // = |cos(alpha)|
 

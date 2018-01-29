@@ -7,7 +7,7 @@
  */
 
 /*
-  Copyright (c) 2017 Frederic Vincent, Thibaut Paumard
+  Copyright (c) 2017, 2018 Frederic Vincent, Thibaut Paumard
   This file is part of Gyoto.
 
   Gyoto is free software: you can redistribute it and/or modify
@@ -139,7 +139,7 @@ class Gyoto::Astrobj::NeutronStarModelAtmosphere : public Astrobj::NeutronStar {
  public:
   
   virtual double emission(double nu_em, double dsem,
-			  double _ph[8], double _obj[8]=NULL) const;
+			  state_t const &_ph, double const _obj[8]=NULL) const;
 
 };
 

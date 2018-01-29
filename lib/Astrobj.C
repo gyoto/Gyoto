@@ -150,8 +150,8 @@ bool Generic::showshadow() const {return shadow_;}
 void Generic::redshift(bool flag) {noredshift_=!flag;}
 bool Generic::redshift() const {return !noredshift_;}
 
-void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
-				     double* coord_obj_hit, double dt,
+void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
+				     double const * coord_obj_hit, double dt,
 				     Properties* data) const {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -170,8 +170,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   //  cout << "freqObs="<<freqObs<<endl;
-  double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4);// / 1.;  
+  double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
+				    &coord_ph_hit[4]);// / 1.;  
                                        //this is nu_em/nu_obs
                                        // for nuobs=1. Hz
   if (noredshift_) ggredm1=1.;
@@ -200,8 +200,9 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #endif
     }
     if (data->impactcoords && data->impactcoords[0]==DBL_MAX) {
+      if (coord_ph_hit.size() > 8) throwError("ImpactCoords is incompatible with parallel transport");
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
-      memcpy(data->impactcoords+8, coord_ph_hit, 8 * sizeof(double));
+      memcpy(data->impactcoords+8, &coord_ph_hit[0], 8 * sizeof(double));
     }
 #if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
@@ -345,14 +346,14 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   }
 }
 
-double Generic::transmission(double, double, double*) const {
+double Generic::transmission(double, double, state_t const &) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
   return double(flag_radtransf_);
 }
 
-double Generic::emission(double , double dsem, double *, double *) const
+double Generic::emission(double , double dsem, state_t const &, double const *) const
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
@@ -361,8 +362,8 @@ double Generic::emission(double , double dsem, double *, double *) const
   return 1.;
 }
 
-void Generic::emission(double * Inu, double * nuem , size_t nbnu,
-			 double dsem, double *cph, double *co) const
+void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
+			 double dsem, state_t const &cph, double const *co) const
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
@@ -371,21 +372,20 @@ void Generic::emission(double * Inu, double * nuem , size_t nbnu,
 }
 
 void Generic::radiativeQ(double * Inu, double * Taunu, 
-			 double * nuem , size_t nbnu,
-			 double dsem, double *cph, double *co) const
+			 double const * nuem , size_t nbnu,
+			 double dsem, state_t const &cph, double const *co) const
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
-  for (size_t i=0; i< nbnu; ++i) {
-    Inu[i]=emission(nuem[i], dsem, cph, co);
+  emission(Inu, nuem, nbnu, dsem, cph, co);
+  for (size_t i=0; i< nbnu; ++i)
     Taunu[i]=transmission(nuem[i], dsem, cph);
-  }
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,
 				size_t const * chaninds, size_t nbnu,
-				double dsem, double *cph, double *co) const
+				double dsem, state_t const &cph, double const *co) const
 {
   for (size_t i=0; i<nbnu; ++i)
     I[i] = integrateEmission(boundaries[chaninds[2*i]],
@@ -394,7 +394,7 @@ void Generic::integrateEmission(double * I, double const * boundaries,
 }
 
 double Generic::integrateEmission (double nu1, double nu2, double dsem,
-				   double coord_ph[8], double coord_obj[8])
+				   state_t const &coord_ph, double const coord_obj[8])
   const {
   double nu;
   if(nu1>nu2) {nu=nu1; nu1=nu2; nu2=nu;}

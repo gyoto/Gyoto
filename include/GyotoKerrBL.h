@@ -133,11 +133,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
      cst=[a,E,L,Q,1/Q],dy/dtau=F(y,cst), h=proper time step. 
      For KerrBL geodesic computation.
    */
-  int myrk4(Worldline * line, state_type const &coordin, double h, state_type &res) const; //external-use RK4
+  int myrk4(Worldline * line, Gyoto::state_t const &coordin, double h, Gyoto::state_t &res) const; //external-use RK4
   
  public:
   int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;///< Internal-use RK4 proxy
-  int myrk4_adaptive(Gyoto::Worldline* line, state_type const &coor, double lastnorm, double normref, state_type &coor1, double h0, double& h1, double h1max=GYOTO_DEFAULT_DELTA_MAX) const; ///< Internal-use adaptive RK4 proxy
+  int myrk4_adaptive(Gyoto::Worldline* line, Gyoto::state_t const &coor, double lastnorm, double normref, Gyoto::state_t &coor1, double h0, double& h1, double h1max=GYOTO_DEFAULT_DELTA_MAX) const; ///< Internal-use adaptive RK4 proxy
   /**
    * \brief Ensure conservation of the constants of motion
    *

@@ -436,8 +436,8 @@ void OscilTorus::updateCachedValues() {
   }
 }
 
-double OscilTorus::emission(double nu_em, double, double * cp, 
-			      double *) const{
+double OscilTorus::emission(double nu_em, double, state_t const &cp, 
+			      double const *) const{
   //cout << "r,theta,rcosth= " << cp[1] << " " << cp[2] << " " << cp[1]*cos(cp[2]) << endl;
   if (flag_radtransf_)
     throwError("Radiative transfer not implemented for OscilTorus.");

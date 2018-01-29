@@ -698,15 +698,17 @@ void Scenery::operator() (
 # endif
 
   if (impactcoords) {
+    if (ph -> parallelTransport())
+      throwError("ImpactCoords is not compatible with parallel transport");
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords set" << endl;
 #   endif
     if(impactcoords[0] != DBL_MAX) {
-      if (ph -> parallelTransport())
-	throwError("ParallelTransport is incompatible with ImpactCoords (ATM)");
       ph -> setInitCoord(impactcoords+8, 0);
       ph -> resetTransmission();
-      astrobj() -> processHitQuantities(ph,impactcoords+8,impactcoords,0.,data);
+      state_t coord(8);
+      ph -> getInitialCoord(coord);
+      astrobj() -> processHitQuantities(ph,coord,impactcoords,0.,data);
     }
   } else {
 #   if GYOTO_DEBUG_ENABLED

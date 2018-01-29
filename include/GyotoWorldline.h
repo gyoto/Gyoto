@@ -230,8 +230,6 @@ class Gyoto::Worldline
   // Data : 
   // -----
  public:
-  typedef Gyoto::Metric::state_type state_type;
-
   int stopcond; ///< Whether and why integration is finished
 
  protected:
@@ -631,11 +629,26 @@ class Gyoto::Worldline
    * (xi_), velocity (xidot_) and possibly other triad vectors (epi_
    * and eti_). coord is resized to the right number of elements.
    */
-  void getCoord(size_t index, state_type &dest) const; ///< Get coordinates+base vectors corresponding to index
+  void getCoord(size_t index, Gyoto::state_t &dest) const; ///< Get coordinates+base vectors corresponding to index
+
+  /**
+   * We need this non-const implementation to allow the const, size_t
+   * and the non-const, double implementations to coexist.
+   */
+  void getCoord(size_t index, Gyoto::state_t &dest) ; ///< Get coordinates+base vectors corresponding to index
+
+  /**
+   * Depending on the value of #parallel_transport_, get position
+   * (xi_), velocity (xidot_) and possibly other triad vectors (epi_
+   * and eti_). coord is resized to the right number of elements.
+   */
+  void getCoord(double date, Gyoto::state_t &dest); ///< Get coordinates+base vectors corresponding to date dest[0].
+
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
 
-  virtual void xStore(size_t ind, state_type &coord) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, state_t const &coord) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, double const coord[8]) = delete; ///< Obsolete, update your code
   virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 
@@ -754,7 +767,6 @@ class Gyoto::Worldline
 
   class IntegState {
   public:
-    typedef Gyoto::Metric::state_type state_type;
     class Generic;
     class Legacy;
 #ifdef GYOTO_HAVE_BOOST_INTEGRATORS
@@ -821,7 +833,9 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param coord Initial coordinate.
    * \param delta Integration step. Sign determines direction.
    */
-  virtual void init(Worldline * line, const state_type &coord, const double delta);
+  virtual void init(Worldline * line, const state_t &coord, const double delta);
+  /// Obsolete, update your code
+  virtual void init(Worldline * line, const double *coord, const double delta) = delete;
 
   /**
    * \brief Cache whatever needs to be cached
@@ -851,7 +865,9 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param[out] coord Next position-velocity;
    * \param[in] h1max maximum step in case of adaptive integration
    */
-  virtual int nextStep(state_type &coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
+  virtual int nextStep(state_t &coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
+  /// Obsolete, update your code
+  virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX) = delete;
 
   /// Make one step of exactly this size.
   /**
@@ -863,9 +879,14 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \param[in] step  exact step to use.
    * \param[out] coordout next position-velocity;
    */
-  virtual void doStep(state_type const &coordin, 
+  virtual void doStep(state_t const &coordin, 
 		      double step,
-		      state_type &coordout)=0;
+		      state_t &coordout)=0;
+  /// Obsolete, update your code
+  virtual void doStep(double const coordin[8], 
+                      double step,
+		      double coordout[8]) = delete;
+
 };
 
 /**
@@ -883,7 +904,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Legacy>;
 
  private:
-  state_type coord_; ///< Previously determined coordinate.
+  state_t coord_; ///< Previously determined coordinate.
 
  public:
   /// Constructor
@@ -891,14 +912,14 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   Legacy(Worldline *parent);
   Legacy * clone(Worldline*newparent) const ;
   using Generic::init;
-  void init(Worldline * line, const state_type &coord, const double delta);
+  void init(Worldline * line, const state_t &coord, const double delta);
   virtual std::string kind();
 
-  virtual int nextStep(state_type &coord, double h1max=1e6);
+  virtual int nextStep(state_t &coord, double h1max=1e6);
 
-  virtual void doStep(state_type const &coordin, 
+  virtual void doStep(state_t const &coordin, 
 		      double step,
-		      state_type &coordout);
+		      state_t &coordout);
 
   virtual ~Legacy();
 };
@@ -929,17 +950,17 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   Kind kind_;
 
   typedef std::function<boost::numeric::odeint::controlled_step_result
-    (state_type&, double&, double&)> try_step_type;
-  typedef std::function<void(state_type&, double)> do_step_type;
-  typedef std::function<void(const state_type &/*x*/,
-			     state_type & /*dxdt*/,
-			     const double /* t*/ )> system_type;
+    (state_t&, double&, double&)> try_step_t;
+  typedef std::function<void(state_t&, double)> do_step_t;
+  typedef std::function<void(const state_t &/*x*/,
+			     state_t & /*dxdt*/,
+			     const double /* t*/ )> system_t;
 
   /// Stepper used by the adaptive-step integrator
-  try_step_type try_step_;
+  try_step_t try_step_;
 
   /// Stepper used by the non-adaptive-step integrator
-  do_step_type do_step_;
+  do_step_t do_step_;
 
  public:
   /// Constructor
@@ -960,11 +981,11 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   Boost * clone(Worldline* newparent) const ;
   virtual ~Boost();
   virtual void init();
-  virtual void init(Worldline * line, const state_type &coord, const double delta);
-  virtual int nextStep(state_type &coord, double h1max=1e6);
-  virtual void doStep(state_type const &coordin, 
+  virtual void init(Worldline * line, const state_t &coord, const double delta);
+  virtual int nextStep(state_t &coord, double h1max=1e6);
+  virtual void doStep(state_t const &coordin, 
 		      double step,
-		      state_type &coordout);
+		      state_t &coordout);
   virtual std::string kind();
   
 };

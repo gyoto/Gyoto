@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -165,8 +165,8 @@ void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {
 }
 
 double DynamicalDisk::emission(double nu, double dsem,
-			       double *,
-			       double co[8]) const {
+			       state_t const &cp,
+			       double const co[8]) const {
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
   //cout << "time in dyna emission: " << time << " " << tinit_ << endl;
@@ -179,16 +179,16 @@ double DynamicalDisk::emission(double nu, double dsem,
   //if (ifits==1 || time>tinit_+(nb_times_-1)*dt_){
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function emission -> to improve
-    double Iem=PatternDiskBB::emission(nu,dsem,NULL,co);
+    double Iem=PatternDiskBB::emission(nu,dsem,cp,co);
     const_cast<DynamicalDisk*>(this)->nullifyQuantities();
     //cout << "in dyna emis no interpo: " << Iem << endl;
     return Iem;
   }else{
     double I1, I2;
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits-1);
-    I1=PatternDiskBB::emission(nu,dsem,NULL,co);
+    I1=PatternDiskBB::emission(nu,dsem,cp,co);
     const_cast<DynamicalDisk*>(this)->copyQuantities(ifits);
-    I2=PatternDiskBB::emission(nu,dsem,NULL,co);
+    I2=PatternDiskBB::emission(nu,dsem,cp,co);
     double t1 = tinit_+(ifits-2)*dt_;
     const_cast<DynamicalDisk*>(this)->nullifyQuantities();
     //cout << "in dyna I1, I2, time, t1, dt= " << I1 << " " << I2 << " " << time << " " << t1 << " " << dt_ << endl;

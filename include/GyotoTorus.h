@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -153,13 +153,13 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
   virtual void getVelocity(double const pos[4], double vel[4]) ;
 
   using Standard::emission;
-  virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ;
+  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
   using Standard::integrateEmission;
   virtual double integrateEmission(double nu1, double nu2, double dsem,
-				   double c_ph[8], double c_obj[8]=NULL) const;
+				   state_t const &c_ph, double const c_obj[8]=NULL) const;
 
-  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
   
 };
 

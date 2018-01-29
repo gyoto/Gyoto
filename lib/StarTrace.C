@@ -156,7 +156,7 @@ void StarTrace::computeXYZ()
   }
 }
 
-void StarTrace::xStore(size_t ind, state_type &coord)
+void StarTrace::xStore(size_t ind, state_t const &coord)
 {
   Star::xStore(ind, coord);
   computeXYZ(ind);

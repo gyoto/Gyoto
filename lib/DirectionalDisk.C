@@ -1,5 +1,5 @@
 /*
-    Copyright 2014 Frederic Vincent, Thibaut Paumard
+    Copyright 2014, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -480,8 +480,8 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
 }
 
 double DirectionalDisk::emission(double nu, double,
-				 double cp[8],
-				 double co[8]) const{
+				 state_t const &cp,
+				 double const co[8]) const{
   GYOTO_DEBUG << endl;
   // Checking whether the current freq is outside of 
   // the redshifted illumination range
@@ -509,12 +509,12 @@ double DirectionalDisk::emission(double nu, double,
 
   // Compute angle between photon direction and normal
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
-  double normal_norm=gg_->ScalarProd(cp,normal,normal);
+  double normal_norm=gg_->ScalarProd(&cp[0],normal,normal);
   if (normal_norm<=0.) throwError("In DirectionalDisk::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
-  double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
-    up = gg_->ScalarProd(cp,co+4,cp+4);
+  double np = 1./normal_norm*gg_->ScalarProd(&cp[0],normal,&cp[4]),
+    up = gg_->ScalarProd(&cp[0],co+4,&cp[4]);
   double cosi = fabs(-np/up);
   double tolcos = 0.005;
   if (cosi>1.){

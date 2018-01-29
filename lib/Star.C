@@ -81,7 +81,7 @@ int Star::setParameter(std::string name,
 void Star::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   if (p.name == "InitCoord") {
     if (imin_ <= imax_) {
-      state_type coord;
+      state_t coord;
       getInitialCoord(coord);
       // For massive particule, express initial condition with 3-velocity
       double vel[3] = {coord[5]/coord[4], coord[6]/coord[4], coord[7]/coord[4]};

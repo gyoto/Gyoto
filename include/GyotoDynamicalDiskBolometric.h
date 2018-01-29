@@ -6,7 +6,7 @@
  */
 
 /*
-  Copyright 2013 Frederic Vincent, Thibaut Paumard
+  Copyright 2013, 2018 Frederic Vincent, Thibaut Paumard
   
   This file is part of Gyoto.
   
@@ -65,14 +65,14 @@ class Gyoto::Astrobj::DynamicalDiskBolometric
   virtual ~DynamicalDiskBolometric() ;                        ///< Destructor
   
   double emission(double nu_em, double dsem,
-		  double *,
-		  double coord_obj[8]) const;
+		  state_t const &,
+		  double const coord_obj[8]) const;
     
-  double bolometricEmission(double dsem, double coord_obj[8]) const;
+  double bolometricEmission(double dsem, state_t const & cph, double const coord_obj[8]) const;
 
   void processHitQuantities(Photon* ph, 
-			    double* coord_ph_hit,
-			    double* coord_obj_hit, double dt,
+			    state_t const &coord_ph_hit,
+			    double const *coord_obj_hit, double dt,
 			    Properties* data) const;
 };
 

@@ -26,6 +26,7 @@
 
 #include "GyotoConfig.h"
 #include <float.h>
+#include <vector>
 
 /**
  * \brief Replacement for GNU extension sincos
@@ -46,6 +47,8 @@
 
 /* Typedef for various Gyoto data types */
 namespace Gyoto {
+  typedef std::vector<double> state_t;
+
   //\{
   /**
    * \name Observable quantities

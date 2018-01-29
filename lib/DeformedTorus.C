@@ -313,8 +313,8 @@ void DeformedTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
   return 0;
   }*/
 
-double DeformedTorus::emission(double nu_em, double, double *, 
-			      double *) const{
+double DeformedTorus::emission(double nu_em, double, state_t const &, 
+			      double const *) const{
   if (flag_radtransf_)
     throwError("Radiative transfer not implemented for DeformedTorus.");
   //cout << "in flaring emission" << endl;

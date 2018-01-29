@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright (c) 2012-2016 Frederic Vincent, Odele Straub, Thibaut Paumard
+    Copyright (c) 2012-2016, 2018 Frederic Vincent, Odele Straub, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -207,20 +207,20 @@ protected:
    *
    * For general documentation, see Astrobj::Generic::integrateEmission(double * I, double const * boundaries, size_t const * chaninds, size_t nbnu, double dsem, double *cph, double *co) const .
    */
-  virtual void integrateEmission(double * I, double * boundaries,
-				 size_t* chaninds, size_t nbnu,
-				 double dsem, double *cph, double *co) const;
+  virtual void integrateEmission(double * I, double const * boundaries,
+				 size_t const * chaninds, size_t nbnu,
+				 double dsem, state_t const &cph, double const *co) const;
 
-  virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]) const;
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, double coord_ph[8],
-			double coord_obj[8]=NULL) const ;
+  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]) const;
+  virtual void emission(double Inu[], double const nu_em[], size_t nbnu,
+			double dsem, state_t const &coord_ph,
+			double const coord_obj[8]=NULL) const ;
 
   virtual void radiativeQ(double Inu[], double Taunu[], 
-			  double nu_em[], size_t nbnu,
-			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const ;
+			  double const nu_em[], size_t nbnu,
+			  double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
 
   double emissionBrems(double nu_em, double nu_crit, 
 		       double numax, double T_electron,
@@ -270,7 +270,7 @@ protected:
 						  double nuem, double nuc
 						  ) const;
   ///< Synchrotron proxy for emission()
-  double transmission(double nuem, double dsem, double coord_ph[8]) const ;
+  double transmission(double nuem, double dsem, state_t const &coord_ph) const ;
   double BBapprox(double nuem, double Te) const; ///< Approximated Black-Body function
   static double funcxM(double alpha1, double alpha2, double alpha3, double xM);
   ///< Mahadevan 96 fit function
