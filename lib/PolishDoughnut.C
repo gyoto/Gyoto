@@ -737,8 +737,9 @@ void PolishDoughnut::emission(double Inu[], // output
     put here 'return dsem;' (not 'return 1;')*/
   //return dsem;
   if (komissarov_){
-    throwError("In PolishDoughnut::emission: "
-	       "deprecated call to Komissarov");
+    double Taunu[nbnu];
+    radiativeQ(Inu, Taunu, nu_ems, nbnu, dsem, coord_ph, coord_obj);
+    return;
   }
   double emisstot=0., emiss_synch=0., emiss_brems=0.,
     emiss_Cbrems=0., emiss_Csynch=0.;
@@ -1154,8 +1155,12 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   // for the Komissarov model, with both thermal and
   // non-thermal electron populations, with proper emission
   // and absorption.
-  if (!komissarov_) throwError("In PolishDoughnut::radiativeQ: "
-			       "so far only Komissarov implemented");
+  if (!komissarov_) {
+    Standard::radiativeQ(Inu, Taunu, nu_ems, nbnu, dsem, coord_ph, coord_obj);
+    return;
+    throwError("In PolishDoughnut::radiativeQ: "
+	       "so far only Komissarov implemented");
+  }
   /* COMPUTING PHYS QUANTITIES */
   double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
   double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here cgs
