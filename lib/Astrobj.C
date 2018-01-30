@@ -287,54 +287,136 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
       delete [] I;
       delete [] boundaries;
     }
-    if (data->spectrum) {
-      double * Inu          = new double[nbnuobs];
-      double * Taunu        = new double[nbnuobs];
-      double * nuem         = new double[nbnuobs];
+    if (data->spectrum||data->stokesQ||data->stokesU||data->stokesV) {
+      if (ph -> parallelTransport()) { // Compute polarization
+	double * Inu          = new double[nbnuobs];
+	double * Qnu          = new double[nbnuobs];
+	double * Unu          = new double[nbnuobs];
+	double * Vnu          = new double[nbnuobs];
+	double * alphaInu     = new double[nbnuobs];
+	double * alphaQnu     = new double[nbnuobs];
+	double * alphaUnu     = new double[nbnuobs];
+	double * alphaVnu     = new double[nbnuobs];
+	double * rQnu         = new double[nbnuobs];
+	double * rUnu         = new double[nbnuobs];
+	double * rVnu         = new double[nbnuobs];
+	double * nuem         = new double[nbnuobs];
 
-      for (size_t ii=0; ii<nbnuobs; ++ii) {
-	nuem[ii]=nuobs[ii]*ggredm1;
-      }
-      GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
-      GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
-      if (radiativeq_) {
+	for (size_t ii=0; ii<nbnuobs; ++ii) {
+	  nuem[ii]=nuobs[ii]*ggredm1;
+	}
+	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
+	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
+	radiativeQ(Inu, Qnu, Unu, Vnu,
+		   alphaInu, alphaQnu, alphaUnu, alphaVnu,
+		   rQnu, rUnu, rVnu,
+		   nuem, nbnuobs, dsem,
+		   coord_ph_hit, coord_obj_hit);
+	ph -> transfer (Inu, Qnu, Unu, Vnu,
+			alphaInu, alphaQnu, alphaUnu, alphaVnu,
+			rQnu, rUnu, rVnu);
+	double ggred3 = ggred*ggred*ggred;
+	for (size_t ii=0; ii<nbnuobs; ++ii) {
+	  if (data-> spectrum) {
+	    inc = Inu[ii] * ggred3;
+#           ifdef HAVE_UDUNITS
+	    if (data -> spectrum_converter_)
+	      inc = (*data -> spectrum_converter_)(inc);
+#           endif
+	    data->spectrum[ii*data->offset] += inc;
+	  }
+	  if (data-> stokesQ) {
+	    inc = Qnu[ii] * ggred3;
+#           ifdef HAVE_UDUNITS
+	    if (data -> spectrum_converter_)
+	      inc = (*data -> spectrum_converter_)(inc);
+#           endif
+	    data->stokesQ [ii*data->offset] += inc;
+	  }
+	  if (data-> stokesU) {
+	    inc = Unu[ii] * ggred3;
+#           ifdef HAVE_UDUNITS
+	    if (data -> spectrum_converter_)
+	      inc = (*data -> spectrum_converter_)(inc);
+#           endif
+	    data->stokesU [ii*data->offset] += inc;
+	  }
+	  if (data-> stokesV) {
+	    inc = Vnu[ii] * ggred3;
+#           ifdef HAVE_UDUNITS
+	    if (data -> spectrum_converter_)
+	      inc = (*data -> spectrum_converter_)(inc);
+#           endif
+	    data->stokesV [ii*data->offset] += inc;
+	  }
+
+#         if GYOTO_DEBUG_ENABLED
+	  GYOTO_DEBUG
+	    << "DEBUG: Generic::processHitQuantities(): "
+	    << "nuobs[" << ii << "]="<< nuobs[ii]
+	    << ", nuem=" << nuem[ii]
+	    << ", dsem=" << dsem
+	    << ", Inu * GM/c2="
+	    << Inu[ii]
+	    << ", spectrum[" << ii*data->offset << "]="
+	    << data->spectrum[ii*data->offset]
+	    << ", transmission=" << ph -> getTransmission(ii)
+	    << ", optical depth=" << -log(ph -> getTransmission(ii))
+	    << ", redshift=" << ggred << ")\n" << endl;
+#         endif
+	}
+	delete [] Inu;
+	delete [] Qnu;
+	delete [] Unu;
+	delete [] Vnu;
+	delete [] alphaInu;
+	delete [] alphaQnu;
+	delete [] alphaUnu;
+	delete [] alphaVnu;
+	delete [] rQnu;
+	delete [] rUnu;
+	delete [] rVnu;
+	delete [] nuem;
+      } else { // No polarization
+	double * Inu          = new double[nbnuobs];
+	double * Taunu        = new double[nbnuobs];
+	double * nuem         = new double[nbnuobs];
+
+	for (size_t ii=0; ii<nbnuobs; ++ii) {
+	  nuem[ii]=nuobs[ii]*ggredm1;
+	}
+	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
+	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
 	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem, 
 		   coord_ph_hit, coord_obj_hit);
-      }else{
-	emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
-      }
-      for (size_t ii=0; ii<nbnuobs; ++ii) {
-	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
-#       ifdef HAVE_UDUNITS
-	if (data -> spectrum_converter_)
-	  inc = (*data -> spectrum_converter_)(inc);
-#       endif
-	data->spectrum[ii*data->offset] += inc;
-	
-	if (!radiativeq_){
-	  ph -> transmit(ii,transmission(nuem[ii],dsem,coord_ph_hit));
-	}else{
+	for (size_t ii=0; ii<nbnuobs; ++ii) {
+	  inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
+#         ifdef HAVE_UDUNITS
+	  if (data -> spectrum_converter_)
+	    inc = (*data -> spectrum_converter_)(inc);
+#         endif
+	  data->spectrum[ii*data->offset] += inc;
 	  ph -> transmit(ii,Taunu[ii]);
-	}
 	 
-#       if GYOTO_DEBUG_ENABLED
-	GYOTO_DEBUG
-	  << "DEBUG: Generic::processHitQuantities(): "
-	  << "nuobs[" << ii << "]="<< nuobs[ii]
-	  << ", nuem=" << nuem[ii] 
-	  << ", dsem=" << dsem
-	  << ", Inu * GM/c2="
-	  << Inu[ii]
-	  << ", spectrum[" << ii*data->offset << "]="
-	  << data->spectrum[ii*data->offset]
-	  << ", transmission=" << ph -> getTransmission(ii)
-	  << ", optical depth=" << -log(ph -> getTransmission(ii))
-	  << ", redshift=" << ggred << ")\n" << endl;
-#       endif
+#         if GYOTO_DEBUG_ENABLED
+	  GYOTO_DEBUG
+	    << "DEBUG: Generic::processHitQuantities(): "
+	    << "nuobs[" << ii << "]="<< nuobs[ii]
+	    << ", nuem=" << nuem[ii]
+	    << ", dsem=" << dsem
+	    << ", Inu * GM/c2="
+	    << Inu[ii]
+	    << ", spectrum[" << ii*data->offset << "]="
+	    << data->spectrum[ii*data->offset]
+	    << ", transmission=" << ph -> getTransmission(ii)
+	    << ", optical depth=" << -log(ph -> getTransmission(ii))
+	    << ", redshift=" << ggred << ")\n" << endl;
+#         endif
+	}
+	delete [] Inu;
+	delete [] Taunu;
+	delete [] nuem;
       }
-      delete [] Inu;
-      delete [] Taunu;
-      delete [] nuem;
     }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
@@ -381,6 +463,36 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
   emission(Inu, nuem, nbnu, dsem, cph, co);
   for (size_t i=0; i< nbnu; ++i)
     Taunu[i]=transmission(nuem[i], dsem, cph);
+}
+
+void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
+                         double *alphaInu, double *alphaQnu,
+			 double *alphaUnu, double *alphaVnu,
+                         double *rQnu, double *rUnu, double *rVnu,
+			 double const *nuem , size_t nbnu, double dsem,
+                         state_t const &cph,
+			 double const *co) const
+{
+  // cph has 16 elements, 4 elements for each one of
+  // X, Xdot, Ephi, Etheta
+  //
+  // If this method is not reimplemented, the emission is not polarized.
+  // Compute the outpur from the non-polarized radiativeQ().
+  double Taunu[nbnu];
+  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+  for (size_t i=0; i<nbnu; ++i) {
+    // Inu[i] = Inu[i];
+    Qnu[i] = 0.;
+    Unu[i] = 0.;
+    Vnu[i] = 0.;
+    alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
+    alphaQnu[i] = 0.; // Is everything else 0.?
+    alphaUnu[i] = 0.;
+    alphaVnu[i] = 0.;
+    rQnu[i] = 0.;
+    rUnu[i] = 0.;
+    rVnu[i] = 0.;
+  }
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,

@@ -548,6 +548,13 @@ class Gyoto::Astrobj::Generic
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const = delete ; 
+  virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
+			  double *alphaInu, double *alphaQnu,
+			  double *alphaUnu, double *alphaVnu,
+			  double *rQnu, double *rUnu, double *rVnu,
+			  double const *nuem , size_t nbnu, double dsem,
+			  state_t const &cph,
+			  double const *co) const ;
 
   /**
    * Compute the integral of emission() from &nu;<SUB>1</SUB> to

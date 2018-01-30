@@ -301,6 +301,12 @@ class Gyoto::Photon
    */
   virtual void transmit(size_t i, double t);
 
+  /// Perform one step of radiative transfer
+  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
+			double const * aInu, double const * aQnu,
+			double const * aUnu, double const * aVnu,
+			double const * rQnu, double const * rUnu, double const * rVnu) ;
+
  private:
   /// Allocate Photon::transmission_
   void _allocateTransmission();
@@ -339,6 +345,11 @@ class Gyoto::Photon::Refined : public Gyoto::Photon {
   ///< Constructor
   virtual void transmit(size_t i, double t);
   ///< Update transmission both in *this and in *parent_
+  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
+			double const * aInu, double const * aQnu,
+			double const * aUnu, double const * aVnu,
+			double const * rQnu, double const * rUnu, double const * rVnu) ;
+  ///< Perform one step of radiative transfer
 };
 
 

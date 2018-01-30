@@ -620,7 +620,26 @@ void Photon::Refined::transmit(size_t i, double t) {
   if (i==size_t(-1)) transmission_freqobs_ = parent_->transmission_freqobs_;
 }
 
-
+void Photon::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
+		      double const * aInu, double const * aQnu,
+		      double const * aUnu, double const * aVnu,
+		      double const * rQnu, double const * rUnu, double const * rVnu) {
+  // Apply transfer function to I, Q, U and V, then update the transfer function.
+  // For the prototype,
+  //   * just apply the transmission to Inu;
+  //   * only update transmission.
+  size_t nbnuobs = spectro_() ? spectro_->nSamples() : 0;
+  for (size_t ii=0; ii<nbnuobs; ++ii) {
+    Inu[ii] *= transmission_[ii];
+    transmission_[ii] *= exp(-aInu[ii]);
+  }
+}
+void Photon::Refined::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
+			       double const * aInu, double const * aQnu,
+			       double const * aUnu, double const * aVnu,
+			       double const * rQnu, double const * rUnu, double const * rVnu) {
+  parent_ -> transfer(Inu, Qnu, Unu, Vnu, aInu, aQnu, aUnu, aVnu, rQnu, rUnu, rVnu);
+}
 #ifdef GYOTO_USE_XERCES
 void Photon::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;
