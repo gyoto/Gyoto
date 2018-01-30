@@ -1377,8 +1377,8 @@ void Worldline::getCoord(double t, state_t &coord) {
   case 16:
     getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3],              // x
 	     &coord[4], &coord[5], &coord[6], &coord[7],             // k
-	     &coord[8], &coord[9], &coord[10], &coord[12],           // Ephi
-	     &coord[13], &coord[14], &coord[15], &coord[16]);        // Etheta
+	     &coord[8], &coord[9], &coord[10], &coord[11],           // Ephi
+	     &coord[12], &coord[13], &coord[14], &coord[15]);        // Etheta
     break;
   default:
     throwError("Inconsistent size for output vector");
