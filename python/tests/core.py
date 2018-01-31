@@ -143,17 +143,18 @@ class TestProperty(unittest.TestCase):
         p=s.property('Distance')
         self.assertIn('Distance: double with unit', s.describeProperty(p))
 
-class TestScreen(unittest.TestCase):
-    def test_getRayCoord(self):
+class TestPolar(unittest.TestCase):
+    def test_triad(self):
         met=gyoto.core.Metric("KerrBL")
         met.set("Spin",0.99)
+        met.set("Mass",4e6, "sunmass")
         s=gyoto.core.Screen()
         s.metric(met)
         s.distance(8., 'kpc')
         s.inclination(95,"°")
         s.PALN(numpy.pi)
         s.argument(-numpy.pi/2)
-        s.time(100e3,"yr")
+        s.time(8., 'kpc')
         coord=numpy.zeros(8, float)
         Ephi=numpy.zeros(4, float)
         Etheta=numpy.zeros(4, float)
@@ -174,3 +175,20 @@ class TestScreen(unittest.TestCase):
         self.assertAlmostEqual(met.ScalarProd(x, Etheta, Ephi), 0., 15)
         self.assertAlmostEqual(met.ScalarProd(x, Etheta, Etheta), 1., 15)
         self.assertAlmostEqual(met.ScalarProd(x, Ephi, Ephi), 1., 15)
+        ao = gyoto.core.Astrobj("Complex")
+        ao.rMax(0.)
+        ph = gyoto.core.Photon()
+        ph.parallelTransport(True)
+        ph.setInitialCondition(met, ao, coord, Ephi, Etheta);
+        cph=gyoto.core.vector_double()
+        ph.getCoord(10., cph)
+        coord=numpy.asarray(cph)
+        x = coord[0:4]
+        k = coord[4:8]
+        Ephi = coord[8:12]
+        Etheta = coord[12:16]
+        self.assertAlmostEqual(met.ScalarProd(x, k, Ephi), 0., 6)
+        self.assertAlmostEqual(met.ScalarProd(x, k, Etheta), 0., 6)
+        self.assertAlmostEqual(met.ScalarProd(x, Etheta, Ephi), 0., 6)
+        self.assertAlmostEqual(met.ScalarProd(x, Etheta, Etheta), 1., 6)
+        self.assertAlmostEqual(met.ScalarProd(x, Ephi, Ephi), 1., 6)
