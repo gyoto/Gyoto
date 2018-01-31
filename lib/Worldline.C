@@ -480,11 +480,17 @@ void Worldline::xFill(double tlim) {
   
   while (!stopcond) {
     mycount++;
-    ind+=dir;
     
     stopcond= state_ -> nextStep(coord);
     
-    if(metric_->isStopCondition(coord)) {
+    if (coord[0] == x0_[ind]) { // here, ind denotes previous step
+      stopcond=1;
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_DEBUG << "time did not evolve, break." << endl;
+#     endif
+      break;
+    }
+    if(metric_->isStopCondition(&coord[0])) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by metric"<<endl;
 #     endif
@@ -499,6 +505,7 @@ void Worldline::xFill(double tlim) {
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
     // store particle's trajectory for later use
+    ind +=dir;
     xStore(ind, coord);
     
     // Check stop condition and whether we need to expand the arrays
