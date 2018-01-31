@@ -1,3 +1,12 @@
+next unreleased ABI 7:0:0
+
+   * Changed API: for consistency, replace CutOffIneV by CutOff (in
+     Hz) in Spectrum::PowerLaw. New API supports unit, the user may
+     replace
+       <CutOffIneV> 1 2 </CutOffineV>
+     with
+       <CutOff unit='eV'> 1 2 </CutOff>
+
 1.2.0 2016/12/12 ABI 6:0:0
    * New functionality: the plug-in from which each subcontractor is
      registered is now tracked, so that it becomes possible to look
