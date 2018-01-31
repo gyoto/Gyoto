@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011, 2013 Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -27,6 +27,7 @@
 #ifndef __GyotoPowerLawSpectrum_H_ 
 #define __GyotoPowerLawSpectrum_H_ 
 #include <GyotoSpectrum.h>
+#include <string>
 
 namespace Gyoto {
   namespace Spectrum {
@@ -73,8 +74,10 @@ class Gyoto::Spectrum::PowerLaw : public Gyoto::Spectrum::Generic {
   void constant(double); ///< Set constant_
   double exponent() const; ///< Get exponent_
   void exponent(double); ///< Set exponent_
-  std::vector<double> cutoffinev() const; ///< Get cutoffs
-  void cutoffinev(std::vector<double> const &v); ///< Set cutoffs
+  std::vector<double> cutoff(std::string const &unit) const; ///< Get cutoffs, specifying unit
+  void cutoff(std::vector<double> const &v, std::string const &unit); ///< Set cutoffs, specifying unit
+  std::vector<double> cutoff() const; ///< Get cutoffs, in Hz
+  void cutoff(std::vector<double> const &v); ///< Set cutoffs, in Hz
 
   using Gyoto::Spectrum::Generic::operator();
   virtual double operator()(double nu) const;
