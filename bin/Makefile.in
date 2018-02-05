@@ -100,7 +100,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_MPI_TRUE@am__append_6 = gyoto-mpi-worker.@sovers@.1
 @HAVE_UDUNITS_TRUE@am__append_7 = \
 @HAVE_UDUNITS_TRUE@        example-fixed-star-KS.fits \
-@HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits
+@HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits \
+@HAVE_UDUNITS_TRUE@	example-polish-doughnut-hayward-wormhole.fits
 
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_8 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 subdir = bin
@@ -421,6 +422,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 pyexecdir = @pyexecdir@
 pythondir = @pythondir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sovers = @sovers@

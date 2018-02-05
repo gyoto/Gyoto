@@ -4,6 +4,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoHayward.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"

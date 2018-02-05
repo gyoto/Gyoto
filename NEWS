@@ -6,6 +6,7 @@ next unreleased ABI 7:0:0
        <CutOffIneV> 1 2 </CutOffineV>
      with
        <CutOff unit='eV'> 1 2 </CutOff>
+   * New Metric: Hayward
 
 1.2.0 2016/12/12 ABI 6:0:0
    * New functionality: the plug-in from which each subcontractor is

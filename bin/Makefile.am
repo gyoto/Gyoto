@@ -58,7 +58,8 @@ CHECK_RESULTS = \
 if HAVE_UDUNITS
 CHECK_RESULTS += \
         example-fixed-star-KS.fits \
-        example-polish-doughnut.fits
+        example-polish-doughnut.fits \
+	example-polish-doughnut-hayward-wormhole.fits
 endif
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)

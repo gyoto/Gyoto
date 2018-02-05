@@ -341,6 +341,7 @@ pluginname = @pluginname@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 soverdir = @soverdir@

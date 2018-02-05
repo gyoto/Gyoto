@@ -182,7 +182,8 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
 	libgyoto_stdplug_la-RezzollaZhidenko.lo \
-	libgyoto_stdplug_la-Star.lo libgyoto_stdplug_la-StarTrace.lo \
+	libgyoto_stdplug_la-Hayward.lo libgyoto_stdplug_la-Star.lo \
+	libgyoto_stdplug_la-StarTrace.lo \
 	libgyoto_stdplug_la-FixedStar.lo \
 	libgyoto_stdplug_la-InflateStar.lo \
 	libgyoto_stdplug_la-Torus.lo libgyoto_stdplug_la-OscilTorus.lo \
@@ -466,6 +467,7 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 pyexecdir = @pyexecdir@
 pythondir = @pythondir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sovers = @sovers@
@@ -509,7 +511,7 @@ soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C RezzollaZhidenko.C Star.C StarTrace.C \
+	ChernSimons.C RezzollaZhidenko.C Hayward.C Star.C StarTrace.C \
 	FixedStar.C InflateStar.C Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
@@ -699,6 +701,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo@am__quote@
@@ -818,6 +821,13 @@ libgyoto_stdplug_la-RezzollaZhidenko.lo: RezzollaZhidenko.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='RezzollaZhidenko.C' object='libgyoto_stdplug_la-RezzollaZhidenko.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-RezzollaZhidenko.lo `test -f 'RezzollaZhidenko.C' || echo '$(srcdir)/'`RezzollaZhidenko.C
+
+libgyoto_stdplug_la-Hayward.lo: Hayward.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Hayward.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Hayward.Tpo -c -o libgyoto_stdplug_la-Hayward.lo `test -f 'Hayward.C' || echo '$(srcdir)/'`Hayward.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Hayward.Tpo $(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Hayward.C' object='libgyoto_stdplug_la-Hayward.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Hayward.lo `test -f 'Hayward.C' || echo '$(srcdir)/'`Hayward.C
 
 libgyoto_stdplug_la-Star.lo: Star.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Star.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Star.Tpo -c -o libgyoto_stdplug_la-Star.lo `test -f 'Star.C' || echo '$(srcdir)/'`Star.C

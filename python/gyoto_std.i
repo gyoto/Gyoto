@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -60,6 +60,7 @@ GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
 GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
 GyotoSmPtrTypeMapClassDerived(Metric, ChernSimons)
 GyotoSmPtrTypeMapClassDerived(Metric, RezzollaZhidenko)
+GyotoSmPtrTypeMapClassDerived(Metric, Hayward)
 
 GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
@@ -112,6 +113,7 @@ GyotoSmPtrClassDerived(Metric, KerrKS)
 GyotoSmPtrClassDerived(Metric, Minkowski)
 GyotoSmPtrClassDerived(Metric, ChernSimons)
 GyotoSmPtrClassDerived(Metric, RezzollaZhidenko)
+GyotoSmPtrClassDerived(Metric, Hayward)
 
 GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
