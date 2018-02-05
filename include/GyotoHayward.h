@@ -1,7 +1,10 @@
 /**
- *  \file GyotoHayward.h
- *  \brief Hayward metric
+ * \file GyotoHayward.h
+ * \brief Metric of a regular rotating black hole or naked worm-hole
  *
+ * This is a regular rotating extension of Hayward's metric.
+ *
+ * See Lamy et al. (2018), Classical and Quantum Gravity, submitted.
  */
 
 /*
@@ -38,9 +41,6 @@ namespace Gyoto {
 #endif
 
 
-/// Default value for difftol_
-#define GYOTO_Hayward_DEFAULT_DIFFTOL 1e-2
-
 /**
  * \class Gyoto::Metric::Hayward
  * \brief Metric of a regular rotating black hole or naked worm-hole
@@ -61,16 +61,6 @@ class Gyoto::Metric::Hayward : public Metric::Generic {
   double a3_ ; ///< a2_*spin_
   double a4_ ; ///< a2_*a2_
   double b2_; ///< charge_*charge_
-
-  /// Numerical tuning parameter
-  /**
-   * Small values yield more accurate integration at the expanse of
-   * computing time.
-   */
-  double difftol_;
-  double rsink_;  ///< numerical horizon
-  double drhor_;  ///< horizon security
-  bool   generic_integrator_; ///< which integrator to use
   
   // Constructors - Destructor
   // -------------------------
@@ -81,103 +71,33 @@ class Gyoto::Metric::Hayward : public Metric::Generic {
 
   // Accessors
   // ---------
- public:
   void spin(const double spin); ///< Set spin
   double spin() const ; ///< Returns spin
-    void charge(const double charge); ///< Set charge
-    double charge() const ; ///< Returns charge
+  void charge(const double charge); ///< Set charge
+  double charge() const ; ///< Returns charge
 
-  double difftol() const; ///< Get difftol_
-  void difftol(double t); ///< Set difftol_
-
-  void horizonSecurity(double drhor);
-  double horizonSecurity() const;
-  void genericIntegrator(bool);
-  bool genericIntegrator() const ;
-
+  // Methods needed for PolishDoughnut
   virtual double getRms() const; 
-
   virtual double getRmb() const; 
-
   virtual double getSpecificAngularMomentum(double rr) const;
-  
   virtual double getPotential(double const pos[4], double l_cst) const;
 
+  // Actual space-time API
   void gmunu(double g[4][4], const double * pos) const ;
   double gmunu(const double * const x, int mu, int nu) const ;
-
-  /** 
-   * \brief g<SUP>&mu;,&nu;</SUP>
-   */
   void gmunu_up(double gup[4][4], const double * pos) const ;
   double gmunu_up(const double * const x, int mu, int nu) const ;
- 
   using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double pos[4]) const ;
   
+  // Optimized
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;
 
-  void nullifyCoord(double coord[8], double & tdot2) const;
-  void nullifyCoord(double coord[8]) const;
-
-  //  friend std::ostream& operator<<(std::ostream& , const Hayward& ) ;
-  //  std::ostream& print(std::ostream&) const ;
+  // Needed for ThinDisks
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
- public:
-  virtual void MakeCoord(const double coordin[8], const double cst[5], double coordout[8]) const ;
-  ///< Inverse function of MakeMomentumAndCst
-
-   ///< Computes pr, ptheta, E and L from rdot, thetadot, phidot, tdot
-  void MakeMomentum(const double coordin[8], const double cst[5], double coordout[8]) const;
-  ///< Transforms from Boyer-Lindquist coordinates [t,r,th,phi,tdot,rdot,thdot,phidot] to [t,r,th,phi,pt,pr,pth,pphi] where pt,pr... are generalized momenta.
-
- protected:
-
-  // outside the API
-  /* RK4 : y=[r,theta,phi,t,pr,ptheta], 
-     cst=[a,E,L,Q,1/Q],dy/dtau=F(y,cst), h=proper time step. 
-     For Hayward geodesic computation.
-   */
-  int myrk4(Worldline * line, const double coordin[8], double h, double res[8]) const; //external-use RK4
-  
- public:
-  int myrk4(const double coor[8], const double cst[5], double h, double res[8]) const;///< Internal-use RK4 proxy
-  int myrk4_adaptive(Gyoto::Worldline* line, const double coor[8], double lastnorm, double normref, double coor1[8], double h0, double& h1, double h1max=GYOTO_DEFAULT_DELTA_MAX) const; ///< Internal-use adaptive RK4 proxy
-  /**
-   * \brief Ensure conservation of the constants of motion
-   *
-   * Tweak thetadot if necessary.
-   */
- private:
-  int CheckCons(const double coor_init[8], const double cst[5], double coor_fin[8]) const;
-
-  /**
-   * \brief Normalize 4-velocity
-   *
-   * To 0 or -1. Changes rdot to allow norm conservation.
-   */
-  void Normalize4v(double coord[8], const double part_mass) const;
-
- public:
-  /** F function such as dy/dtau=F(y,cst)
-   */
-  using Metric::Generic::diff;
- private:
-  /** 
-   * \brief Used in RK4 proxies.
-   */
-  virtual int diff(const double y[8], const double cst[5], 
-		   double res[8]) const ;
-  /** Integrator. Computes the evolution of y (initcond=y(0)).
-   */
-  virtual void computeCst(const double coord[8], double cst[5]) const;
- public:
-  void setParticleProperties(Worldline* line, const double* coord) const;
-  virtual int isStopCondition(double const * const coord) const;
-  
   void observerTetrad(std::string const obskind,
 		      double const pos[4], double fourvel[4],
 		      double screen1[4], double screen2[4], 
