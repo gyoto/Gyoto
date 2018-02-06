@@ -94,14 +94,6 @@ class Gyoto::Metric::Hayward : public Metric::Generic {
   double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const ;
 
-  // Needed for ThinDisks
-  virtual void circularVelocity(double const pos[4], double vel [4],
-				double dir=1.) const ;
-
-  void observerTetrad(std::string const obskind,
-		      double const pos[4], double fourvel[4],
-		      double screen1[4], double screen2[4], 
-		      double screen3[4]) const;
 };
 
 #endif
