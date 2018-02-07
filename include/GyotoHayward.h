@@ -46,10 +46,22 @@ namespace Gyoto {
  * \class Gyoto::Metric::Hayward
  * \brief Metric of a regular rotating black hole or naked worm-hole
  *
- * This is a regular rotating extension of Hayward's metric.
+ * This is a regular rotating extension of Hayward's metric. 
+ *
+ * The metric reads: ds^2=-(1-2*M(r)*r/Sigma)*dt^2-(4*a*M(r)*sin^2(theta)/Sigma)*dt*dphi+(Sigma/Delta)*dr^2+(Sigma)*dtheta^2+sin^2(theta)*[r^2+a^2+2*a^2*r*M(r)*sin^2(theta)/Sigma]*dphi^2,
+ * where: 
+ * Sigma=r^2+a^2*cos^2(theta)
+ * Delta=r^2-2*M(r)*r+a^2
+ * M(r)=M*abs(r)^3/(abs(r)^3+2*m*b^2), m being the mass of the black hole seen at infinity and b a magnetic charge parameter.
  *
  * See Lamy et al. (2018), Classical and Quantum Gravity, submitted,
  * https://arxiv.org/abs/1802.01635
+ *
+ * See Hayward (2006) for the original nonrotating metric,
+ * https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.96.031103
+ *
+ * See Bambi & Modesto (2013) for a rotating (but singular) extension.
+ * https://www.sciencedirect.com/science/article/pii/S0370269313002505?via%3Dihub
  */
 class Gyoto::Metric::Hayward : public Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Hayward>;
