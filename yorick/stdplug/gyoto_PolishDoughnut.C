@@ -35,7 +35,7 @@ void ygyoto_PolishDoughnut_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) 
 
   static char const * knames[]={
     "unit",
-    "lambda", "komissarov", "centraldensity", "centraltempovervirial", "beta",
+    "lambda", "centralenthalpyperunitvolume", "centraltemperature", "beta",
     "spectraloversampling",
     "l0", "Wsurface", "Wcentre", "rcusp", "rcentre",
     YGYOTO_ASTROBJ_GENERIC_KW,
@@ -47,9 +47,8 @@ void ygyoto_PolishDoughnut_eval(SmartPointer<Astrobj::Generic>* OBJ_, int argc) 
 
   YGYOTO_WORKER_SET_UNIT;
   YGYOTO_WORKER_GETSET_DOUBLE2(lambda);
-  YGYOTO_WORKER_GETSET_LONG2(komissarov);
-  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(centralDensity);
-  YGYOTO_WORKER_GETSET_DOUBLE2(centralTempOverVirial);
+  YGYOTO_WORKER_GETSET_DOUBLE2_UNIT(centralEnthalpyPerUnitVolume);
+  YGYOTO_WORKER_GETSET_DOUBLE2(centralTemp);
   YGYOTO_WORKER_GETSET_DOUBLE2(beta);
   YGYOTO_WORKER_GETSET_LONG2(spectralOversampling);
   YGYOTO_WORKER_GET_DOUBLE(getL0);
