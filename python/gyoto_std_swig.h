@@ -34,3 +34,5 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
+#include "GyotoThermalSynchrotronSpectrum.h"
+#include "GyotoPowerLawSynchrotronSpectrum.h"

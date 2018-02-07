@@ -65,6 +65,8 @@ GyotoSmPtrTypeMapClassDerived(Metric, Hayward)
 GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
+GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalSynchrotron)
+GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind, SmartPointer<Metric::Generic> gg, double radius);
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind);
@@ -118,6 +120,8 @@ GyotoSmPtrClassDerived(Metric, Hayward)
 GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, ThermalBremsstrahlung, GyotoThermalBremsstrahlungSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, ThermalSynchrotron, GyotoThermalSynchrotronSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotronSpectrum.h)
 
 // Workaround cvar bug in Swig which makes help(gyoto_std) fail:
 %inline {

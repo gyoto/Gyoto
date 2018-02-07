@@ -38,6 +38,8 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
+	ThermalSynchrotronSpectrum.C \
+	PowerLawSynchrotronSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\

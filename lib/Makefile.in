@@ -190,6 +190,8 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-PowerLawSpectrum.lo \
 	libgyoto_stdplug_la-BlackBodySpectrum.lo \
 	libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.lo \
+	libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo \
+	libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo \
 	libgyoto_stdplug_la-ComplexAstrobj.lo \
 	libgyoto_stdplug_la-UniformSphere.lo \
 	libgyoto_stdplug_la-PageThorneDisk.lo \
@@ -467,7 +469,6 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 pyexecdir = @pyexecdir@
 pythondir = @pythondir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sovers = @sovers@
@@ -514,8 +515,9 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C Hayward.C Star.C StarTrace.C \
 	FixedStar.C InflateStar.C Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
-	ThermalBremsstrahlungSpectrum.C ComplexAstrobj.C \
-	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
+	ThermalBremsstrahlungSpectrum.C ThermalSynchrotronSpectrum.C \
+	PowerLawSynchrotronSpectrum.C ComplexAstrobj.C UniformSphere.C \
+	PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
 	ThinDiskIronLine.C DeformedTorus.C EquatorialHotSpot.C Jet.C \
 	StdPlug.C $(cfitsio_stdplug_sources)
 
@@ -713,11 +715,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PatternDiskBB.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PolishDoughnut.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ThermalSynchrotronSpectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ThinDiskIronLine.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-ThinDiskPL.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo@am__quote@
@@ -891,6 +895,20 @@ libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.lo: ThermalBremsstrahlungSpect
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ThermalBremsstrahlungSpectrum.C' object='libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ThermalBremsstrahlungSpectrum.lo `test -f 'ThermalBremsstrahlungSpectrum.C' || echo '$(srcdir)/'`ThermalBremsstrahlungSpectrum.C
+
+libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo: ThermalSynchrotronSpectrum.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-ThermalSynchrotronSpectrum.Tpo -c -o libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo `test -f 'ThermalSynchrotronSpectrum.C' || echo '$(srcdir)/'`ThermalSynchrotronSpectrum.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-ThermalSynchrotronSpectrum.Tpo $(DEPDIR)/libgyoto_stdplug_la-ThermalSynchrotronSpectrum.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ThermalSynchrotronSpectrum.C' object='libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ThermalSynchrotronSpectrum.lo `test -f 'ThermalSynchrotronSpectrum.C' || echo '$(srcdir)/'`ThermalSynchrotronSpectrum.C
+
+libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo: PowerLawSynchrotronSpectrum.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Tpo -c -o libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo `test -f 'PowerLawSynchrotronSpectrum.C' || echo '$(srcdir)/'`PowerLawSynchrotronSpectrum.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Tpo $(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='PowerLawSynchrotronSpectrum.C' object='libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.lo `test -f 'PowerLawSynchrotronSpectrum.C' || echo '$(srcdir)/'`PowerLawSynchrotronSpectrum.C
 
 libgyoto_stdplug_la-ComplexAstrobj.lo: ComplexAstrobj.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-ComplexAstrobj.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-ComplexAstrobj.Tpo -c -o libgyoto_stdplug_la-ComplexAstrobj.lo `test -f 'ComplexAstrobj.C' || echo '$(srcdir)/'`ComplexAstrobj.C

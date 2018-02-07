@@ -1,11 +1,11 @@
 /**
- * \file GyotoThermalBremsstrahlungSpectrum.h
- * \brief Thermal brems spectrum
+ * \file GyotoThermalSynchrotronSpectrum.h
+ * \brief Thermal synchrotron spectrum
  *
  */
 
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2018 Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -23,48 +23,49 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoThermalBremsstrahlungSpectrum_H_ 
-#define __GyotoThermalBremsstrahlungSpectrum_H_ 
+#ifndef __GyotoThermalSynchrotronSpectrum_H_ 
+#define __GyotoThermalSynchrotronSpectrum_H_ 
 #include "GyotoSpectrum.h"
 #include <GyotoBlackBodySpectrum.h>
 
 namespace Gyoto {
   namespace Spectrum {
-    class ThermalBremsstrahlung;
+    class ThermalSynchrotron;
   }
 }
 
 /**
- * \class Gyoto::Spectrum::ThermalBremsstrahlung
- * \brief Thermal brems spectrum
+ * \class Gyoto::Spectrum::ThermalSynchrotron
+ * \brief Thermal synchrotron spectrum
  *
  *
  *  Example XML entity:
  *  \code
- *   <Spectrum kind="ThermalBremsstrahlung">
+ *   <Spectrum kind="ThermalSynchrotron">
  *   </Spectrum>
  *  \endcode
  *
  */
-class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
-  friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalBremsstrahlung>;
+class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalSynchrotron>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
-  double cst_; ///< Scaling constant
   double T_; ///< Temperature
-  double Tm1_; ///< 1/T
-  double Tm05_; ///< 1/sqrt(T)
   double numberdensityCGS_; ///< Number density in CGS UNITS (careful)
+  double angle_B_pem_; ///< Angle between Bfield and emission direction (rad)
+  double cyclotron_freq_; ///< Cyclotron frequency (e*B / 2*pi*me*c)
+  bool angle_averaged_; ///< Boolean for angle averaging
+  double bessel_K2_; ///< Bessel K2 function
 
  public:
   GYOTO_OBJECT;
 
-  ThermalBremsstrahlung();
+  ThermalSynchrotron();
 
   /**
    * \brief Constructor setting T_ and cst_
    */
-  virtual ThermalBremsstrahlung * clone() const; ///< Cloner
+  virtual ThermalSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();
  /**
@@ -92,7 +93,15 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   void temperature(double tt);
   double numberdensityCGS() const;
   void numberdensityCGS(double rho);
-
+  double angle_B_pem() const;
+  void angle_B_pem(double rho);
+  double cyclotron_freq() const;
+  void cyclotron_freq(double rho);
+  bool angle_averaged() const;
+  void angle_averaged(bool ang);
+  double besselK2() const;
+  void besselK2(double bessel);
+  
  /**
    * Returns the emission coefficient j_nu in cgs units
    * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
@@ -107,16 +116,15 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
    */
   double alphanuCGS(double nu) const;
 
-  /**
-   * Returns the emission and absorption coef jnu and alphanu in cgs
+   /**
+   * Returns the emission and absorption coef in cgs
    *
    */
-  
   void radiativeQ(double jnu[], // output
-		  double alphanu[], // output
-		  double nu_ems[],
-		  size_t nbnu
-		  );
+		    double anu[], // output
+		    double nu_ems[],
+		    size_t nbnu
+		    ) ;
 
 };
 

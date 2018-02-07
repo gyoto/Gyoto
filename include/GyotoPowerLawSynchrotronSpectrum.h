@@ -1,11 +1,11 @@
 /**
- * \file GyotoThermalBremsstrahlungSpectrum.h
- * \brief Thermal brems spectrum
+ * \file GyotoPowerLawSynchrotronSpectrum.h
+ * \brief Powerlaw synchrotron spectrum
  *
  */
 
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2018 Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -23,48 +23,50 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoThermalBremsstrahlungSpectrum_H_ 
-#define __GyotoThermalBremsstrahlungSpectrum_H_ 
+#ifndef __GyotoPowerLawSynchrotronSpectrum_H_ 
+#define __GyotoPowerLawSynchrotronSpectrum_H_ 
 #include "GyotoSpectrum.h"
 #include <GyotoBlackBodySpectrum.h>
 
 namespace Gyoto {
   namespace Spectrum {
-    class ThermalBremsstrahlung;
+    class PowerLawSynchrotron;
   }
 }
 
 /**
- * \class Gyoto::Spectrum::ThermalBremsstrahlung
- * \brief Thermal brems spectrum
+ * \class Gyoto::Spectrum::PowerLawSynchrotron
+ * \brief Powerlaw synchrotron spectrum
  *
  *
  *  Example XML entity:
  *  \code
- *   <Spectrum kind="ThermalBremsstrahlung">
+ *   <Spectrum kind="PowerLawSynchrotron">
  *   </Spectrum>
  *  \endcode
  *
  */
-class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
-  friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalBremsstrahlung>;
+class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrum::PowerLawSynchrotron>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
-  double cst_; ///< Scaling constant
-  double T_; ///< Temperature
-  double Tm1_; ///< 1/T
-  double Tm05_; ///< 1/sqrt(T)
   double numberdensityCGS_; ///< Number density in CGS UNITS (careful)
+  double angle_B_pem_; ///< Angle between Bfield and emission direction (rad)
+  double cyclotron_freq_; ///< Cyclotron frequency (e*B / 2*pi*me*c)
+  double PLindex_; ///< Power law index: electron spectrum \propto gamma^-PLindex_
+  bool angle_averaged_; ///< Boolean for angle averaging
+    
+  
 
  public:
   GYOTO_OBJECT;
 
-  ThermalBremsstrahlung();
+  PowerLawSynchrotron();
 
   /**
    * \brief Constructor setting T_ and cst_
    */
-  virtual ThermalBremsstrahlung * clone() const; ///< Cloner
+  virtual PowerLawSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();
  /**
@@ -88,11 +90,17 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   // NB: the second argument, opacity in the Spectrum API
   // is useless here
 
-  double temperature() const;
-  void temperature(double tt);
   double numberdensityCGS() const;
   void numberdensityCGS(double rho);
-
+  double angle_B_pem() const;
+  void angle_B_pem(double rho);
+  double cyclotron_freq() const;
+  void cyclotron_freq(double rho);
+  double PLindex() const;
+  void PLindex(double ind);
+  bool angle_averaged() const;
+  void angle_averaged(bool ang);
+  
  /**
    * Returns the emission coefficient j_nu in cgs units
    * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
@@ -108,16 +116,15 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   double alphanuCGS(double nu) const;
 
   /**
-   * Returns the emission and absorption coef jnu and alphanu in cgs
+   * Returns the emission and absorption coef in cgs
    *
    */
-  
   void radiativeQ(double jnu[], // output
-		  double alphanu[], // output
+		  double anu[], // output
 		  double nu_ems[],
 		  size_t nbnu
-		  );
-
+		  ) ;
+  
 };
 
 #endif
