@@ -37,7 +37,7 @@ using namespace Gyoto ;
 using namespace Gyoto::Metric ;
 
 GYOTO_PROPERTY_START(Hayward,
-                     "Metric around a rotating black-hole, in spherical Boyer-Lindquist coordinates.")
+                     "Metric around a rotating black-hole, in spherical Boyer-Lindquist coordinates. Cf. Lamy et al. 2018, https://arxiv.org/abs/1802.01635")
 GYOTO_PROPERTY_DOUBLE(Hayward, Spin, spin,
                       "Spin parameter (adimensioned, 0).")
 GYOTO_PROPERTY_DOUBLE(Hayward, Charge, charge,

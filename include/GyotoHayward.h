@@ -4,7 +4,8 @@
  *
  * This is a regular rotating extension of Hayward's metric.
  *
- * See Lamy et al. (2018), Classical and Quantum Gravity, submitted.
+ * See Lamy et al. (2018), Classical and Quantum Gravity, submitted,
+ * https://arxiv.org/abs/1802.01635
  */
 
 /*
@@ -47,7 +48,8 @@ namespace Gyoto {
  *
  * This is a regular rotating extension of Hayward's metric.
  *
- * See Lamy et al. (2018), Classical and Quantum Gravity, submitted.
+ * See Lamy et al. (2018), Classical and Quantum Gravity, submitted,
+ * https://arxiv.org/abs/1802.01635
  */
 class Gyoto::Metric::Hayward : public Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Hayward>;
