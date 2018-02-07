@@ -1,5 +1,5 @@
 /*
-    Copyright 2017 Frederic Vincent
+    Copyright 2017-2018 Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -66,26 +66,33 @@ void Jet::mdotJet(double mdot) {mdotJet_=mdot;}
 double Jet::mdotJet()const{return mdotJet_;}
 void Jet::alfvenRadiusCoef(double coef) {alfvenRadiusCoef_=coef;}
 double Jet::alfvenRadiusCoef()const{return alfvenRadiusCoef_;}
-void Jet::expoPL(double index) {expoPL_=index;}
-double Jet::expoPL()const{return expoPL_;}
+void Jet::expoPL(double index) {
+  spectrumPLSynch_->PLindex(index);
+}
+double Jet::expoPL()const{return spectrumPLSynch_->PLindex();}
 
 //
 
 Jet::Jet() :
   Standard("Jet"), aa_(0.), baseJetHeight_(1.), baseJetRadiusOverHeight_(1.),
-  gammaMax_(1.), mdotJet_(1.), alfvenRadiusCoef_(1.), expoPL_(1.)
+  gammaMax_(1.), mdotJet_(1.), alfvenRadiusCoef_(1.)
 {
   GYOTO_DEBUG << endl;
+  spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
+
 }
 
 Jet::Jet(const Jet& o) :
   Standard(o), aa_(o.aa_), baseJetHeight_(o.baseJetHeight_),
   baseJetRadiusOverHeight_(o.baseJetRadiusOverHeight_),
   gammaMax_(o.gammaMax_), mdotJet_(o.mdotJet_),
-  alfvenRadiusCoef_(o.alfvenRadiusCoef_), expoPL_(o.expoPL_)
+  alfvenRadiusCoef_(o.alfvenRadiusCoef_),
+  spectrumPLSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
-  gg_->hook(this);
+  if (gg_) gg_->hook(this);
+  if (o.spectrumPLSynch_()) spectrumPLSynch_=o.spectrumPLSynch_->clone();
+
 }
 Jet* Jet::clone() const
 { return new Jet(*this); }
@@ -157,22 +164,43 @@ void Jet::radiativeQ(double Inu[], // output
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
-  // Synchrotron emission / absorption
+  // NONTHERMAL SYNCHROTRON
+  double jnu_synch_PL[nbnu], anu_synch_PL[nbnu];
   for (size_t ii=0; ii<nbnu; ++ii){
-    double nuem = nu_ems[ii];
-    double emis_synch_PL=emissionSynchro_PL_averaged(number_density,
-						     nuem,nu0),
-      abs_synch_PL=absorptionSynchro_PL_averaged(number_density,
-						 nuem,nu0);
-    
-    double delta_s = dsem*GYOTO_G_OVER_C_SQUARE_CGS*Mbh;
-    Inu[ii]=
-      emis_synch_PL*GYOTO_INU_CGS_TO_SI*delta_s*exp(-abs_synch_PL*delta_s);
-    Taunu[ii]=exp(-abs_synch_PL*delta_s);
-    //cout << "emis, abs, Inu, Taunu= " << emis_synch_PL << " " << abs_synch_PL << " " << Inu[ii] << " " << Taunu[ii] << endl;
-    // NB: abs_synch is in cgs (cm^-1) as well as delta_s (cm)
-  }
+    // Initializing to <0 value to create errors if not updated
+    jnu_synch_PL[ii]=-1.;
+    anu_synch_PL[ii]=-1.;
+  } 
+  spectrumPLSynch_->numberdensityCGS(number_density);
+  spectrumPLSynch_->angle_averaged(1); // impose angle-averaging
+  spectrumPLSynch_->angle_B_pem(0.); // so we don't care about angle
+  spectrumPLSynch_->cyclotron_freq(nu0);
 
+  spectrumPLSynch_->radiativeQ(jnu_synch_PL,anu_synch_PL,
+			       nu_ems,nbnu);
+
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  double delta_s =
+    dsem*GYOTO_G_CGS*Mbh*GYOTO_C2_CGS_M1;
+  for (size_t ii=0; ii<nbnu; ++ii){
+
+    double Inucur =
+      jnu_synch_PL[ii]*GYOTO_INU_CGS_TO_SI*delta_s\
+      * exp(- anu_synch_PL[ii] * delta_s),
+      Taunucur = exp(- anu_synch_PL[ii] * delta_s);
+    // NB: abs_tot is in cgs (cm^-1) as well as delta_s (cm)
+
+    if (Inucur<0.)
+      throwError("In PolishDoughnut::radiativeQ: Inu<0");
+    if (Inucur!=Inucur or Taunucur!=Taunucur)
+      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is nan");
+    if (Inucur==Inucur+1. or Taunucur==Taunucur+1.)
+      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is infinite");
+    
+    Inu[ii]=Inucur;
+    Taunu[ii]=Taunucur;
+    
+  }
 }
 
 double Jet::operator()(double const coord[4]) {
@@ -254,7 +282,8 @@ void Jet::getVelocity(double const pos[4], double vel[4])
 }
 
 bool Jet::isThreadSafe() const {
-  return Standard::isThreadSafe();
+  return Standard::isThreadSafe()
+    && (!spectrumPLSynch_ || spectrumPLSynch_->isThreadSafe());
 }
 
 void Jet::metric(SmartPointer<Metric::Generic> gg) {
@@ -344,99 +373,3 @@ void Jet::JetQuantitiesFromR(const double rr, double qty[2]) const{
   qty[1]=Gamma;
 }
 
-////// ******* %%%%%%%% ********* /////////
-////// ******* %%%%%%%% ********* /////////
-////// ******* %%%%%%%% ********* /////////
-
-//// THESE FUNCTIONS ARE COPIED FROM POLISH DOUGHNUTS: TO PUT IN
-//// ANOTHER CLASS:
-
-double Jet::emissionSynchro_PL_direction(double number_density_PL,
-					 double nuem, double nuc,
-					 double theta_mag)
-  const {
-  // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
-  // Putting g(mu)=1 and using (Y+ + Y_)=2 to get jnu and alphanu.
-  // NB: putting g(mu)=1 or 1/2 is not important, it boils down
-  // to redefining the % amount delta of PL energy wrt THER energy
-  double emis_synch =
-    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
-    *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
-    *number_density_PL*(expoPL_-1.)
-    *pow(3.*nuc*(expoPL_+1.)*sin(theta_mag)/(4.*nuem),0.5*(expoPL_-1.))
-    *exp(-0.5*(expoPL_+1.));
-  if (emis_synch!=emis_synch) {
-    //cout << "stuff= " << nuc << " " << theta_mag << " " << number_density_PL << endl;
-    throwError("In Jet::emissionSynchro_PL_direction: "
-	       "emissivity is nan");
-  }
-  if (emis_synch==emis_synch+1.)
-    throwError("In Jet::emissionSynchro_PL_direction: "
-	       "emissivity is infinite");
-  return emis_synch;
-}
-double Jet::absorptionSynchro_PL_direction(double number_density_PL,
-					   double nuem, double nuc,
-					   double theta_mag)
-  const {
-  // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
-  double abs_synch =
-    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
-    *nuc*sin(theta_mag)/(2.*GYOTO_C_CGS)
-    *number_density_PL*(expoPL_-1.)
-    *pow(3.*nuc*(expoPL_+2.)*sin(theta_mag)/(4.*nuem),0.5*expoPL_)
-    *exp(-0.5*(expoPL_+2.))
-    *(expoPL_+2.)
-    /(GYOTO_ELECTRON_MASS_CGS*nuem*nuem);
-  if (abs_synch!=abs_synch) {
-    throwError("In Jet::absorptionSynchro_PL_direction: "
-	       "abs is nan");
-  }
-  if (abs_synch==abs_synch+1.)
-    throwError("In Jet::absorptionSynchro_PL_direction: "
-	       "abs is infinite");
-  return abs_synch;
-}
-double Jet::emissionSynchro_PL_averaged(double number_density_PL,
-					double nuem, double nuc)
-  const {
-  double th0=0., thNm1=M_PI;
-  double hh=(thNm1-th0)/double(nstep_angint);
-  double emis_synch=0.;
-  for (int ii=1;ii<=2*nstep_angint-3;ii+=2){
-    double theta=th0+double(ii)/2.*hh;
-    emis_synch+=hh*emissionSynchro_PL_direction(number_density_PL,
-						nuem,nuc,theta)
-      *sin(theta);
-  }
-  if (emis_synch!=emis_synch) {
-    throwError("In Jet::emissionSynchro_PL_averaged: "
-	       "emissivity is nan");
-  }
-  if (emis_synch==emis_synch+1.)
-    throwError("In Jet::emissionSynchro_PL_averaged: "
-	       "emissivity is infinite");
-  return emis_synch/2.;
-  //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
-}
-double Jet::absorptionSynchro_PL_averaged(double number_density_PL,
-					  double nuem, double nuc)
-  const {
-  double th0=0., thNm1=M_PI;
-  double hh=(thNm1-th0)/double(nstep_angint);
-  double abs_synch=0.;
-  for (int ii=1;ii<=2*nstep_angint-3;ii+=2){
-    double theta=th0+double(ii)/2.*hh;
-    abs_synch+=hh*absorptionSynchro_PL_direction(number_density_PL,
-						 nuem,nuc,theta)
-      *sin(theta);
-  }
-  if (abs_synch!=abs_synch) {
-    throwError("In Jet::absorptionSynchro_PL_averaged: "
-	       "abs is nan");
-  }
-  if (abs_synch==abs_synch+1.)
-    throwError("In Jet::absorptionSynchro_PL_averaged: "
-	       "abs is infinite");
-  return abs_synch/2.;
-}

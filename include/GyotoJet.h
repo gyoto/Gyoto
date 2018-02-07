@@ -3,7 +3,8 @@
  * \brief Simple jet model from Zdziarski, Stawarz & Sikora (MNRAS,2017)
  *
  * This class implements model III of jets of the above paper.
- * It assumes synchrotron radiation emission by power-law electrons.
+ * It assumes angle-averaged synchrotron radiation 
+ * emission by power-law electrons.
  */
 
 /*
@@ -38,13 +39,16 @@ namespace Gyoto{
 
 //#include <GyotoMetric.h>
 #include <GyotoStandardAstrobj.h>
+#include <GyotoPowerLawSynchrotronSpectrum.h>
+
 
 /**
  * \class Gyoto::Astrobj::Jet
  * \brief Simple jet model from Zdziarski, Stawarz & Sikora (MNRAS,2017)
  *
  * This class implements model III of jets of the above paper.
- * It assumes synchrotron radiation emission by power-law electrons.
+ * It assumes angle-averaged synchrotron radiation 
+ * emission by power-law electrons.
  */
 
 class Gyoto::Astrobj::Jet
@@ -53,13 +57,13 @@ class Gyoto::Astrobj::Jet
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Jet>;
  private:
+  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_;
   double aa_; ///< Kerr spin
   double baseJetHeight_; ///< Height of the base of the jet (z value)
   double baseJetRadiusOverHeight_; ///< Ratio base cylindrical radius / base height
   double gammaMax_; ///< Max Lorentz factor in jet
   double mdotJet_; ///< Mass-flow rate
   double alfvenRadiusCoef_; ///< Ratio of Alfven radius to light-cylinder radius
-  double expoPL_; ///< Power-law index, ne(gamma) \propto gamma^{-p}
 
   // Constructors - Destructor
   // -------------------------
@@ -107,16 +111,6 @@ class Gyoto::Astrobj::Jet
   void JetQuantitiesFromZ(const double zz, double qty[3]) const;
   void JetQuantitiesFromR(const double rr, double qty[2]) const;
 
-  double emissionSynchro_PL_direction(double number_density_PL,
-				      double nuem, double nuc,
-				      double theta_mag) const;
-  double emissionSynchro_PL_averaged(double number_density_PL,
-				     double nuem, double nuc) const;
-  double absorptionSynchro_PL_direction(double number_density_PL,
-					double nuem, double nuc,
-					double theta_mag) const ;
-  double absorptionSynchro_PL_averaged(double number_density_PL,
-				       double nuem, double nuc) const;
 };
 
 #endif
