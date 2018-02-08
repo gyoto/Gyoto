@@ -160,7 +160,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
   
   for (size_t ii=0; ii< nbnu; ++ii){
     double nu = nu_ems[ii];
-    double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+    double BB  = (*spectrumBB_)(nu) ;
     double jnucur=0., anucur=0.;
     if (!angle_averaged_){
       jnucur = jnuCGS(nu);
@@ -176,7 +176,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
     }
     
     // OUTPUTS
-    jnu[ii]= jnucur ;
+    jnu[ii]= jnucur * GYOTO_JNU_CGS_TO_SI ;
     if (BB==0.){
       if (jnucur==0.) alphanu[ii]=0.;
       else throwError("In ThermalSynch: alphanu undefined!");

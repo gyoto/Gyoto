@@ -32,16 +32,17 @@ GYOTO_PROPERTY_START(Spectrum::ThermalBremsstrahlung,
 		     "Thermal bremsstrahlung emission")
 GYOTO_PROPERTY_END(Spectrum::ThermalBremsstrahlung, Generic::properties)
 
+// This awful constant is the constant part of the thermal brems j_nu
+static double const cst_ = 1/(4.*M_PI)
+    *(pow(2.,5)*M_PI*pow(GYOTO_ELEMENTARY_CHARGE_CGS,6))
+    /(3.*GYOTO_ELECTRON_MASS_CGS*pow(GYOTO_C_CGS,3))
+    *sqrt(2*M_PI/(3.*GYOTO_BOLTZMANN_CGS*GYOTO_ELECTRON_MASS_CGS));
+
 Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung()
 : Spectrum::Generic("ThermalBremsstrahlung"),
   spectrumBB_(NULL), T_(10000.), numberdensityCGS_(0.)
 {
   Tm1_=1./T_; Tm05_=sqrt(Tm1_);
-  // This awful constant is the constant part of the thermal brems j_nu
-  cst_ = 1/(4.*M_PI)
-    *(pow(2.,5)*M_PI*pow(GYOTO_ELEMENTARY_CHARGE_CGS,6))
-    /(3.*GYOTO_ELECTRON_MASS_CGS*pow(GYOTO_C_CGS,3))
-    *sqrt(2*M_PI/(3.*GYOTO_BOLTZMANN_CGS*GYOTO_ELECTRON_MASS_CGS));
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
 }
@@ -54,7 +55,8 @@ void Spectrum::ThermalBremsstrahlung::temperature(double tt) {
 double Spectrum::ThermalBremsstrahlung::numberdensityCGS() const { 
   return numberdensityCGS_; }
 void Spectrum::ThermalBremsstrahlung::numberdensityCGS(double rho) { 
-  numberdensityCGS_ = rho; }
+  numberdensityCGS_ = rho;
+}
   
 Spectrum::ThermalBremsstrahlung * Spectrum::ThermalBremsstrahlung::clone() const
 { return new Spectrum::ThermalBremsstrahlung(*this); }
@@ -132,15 +134,14 @@ void Spectrum::ThermalBremsstrahlung::radiativeQ(double jnu[], // output
   for (size_t ii=0; ii< nbnu; ++ii){
     
     double nu = nu_ems[ii];
-    double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
-    double jnucur=jnuCGS(nu);
+    double BB  = (*spectrumBB_)(nu);
     
-    jnu[ii]=jnucur;
+    jnu[ii]=this->jnuCGS(nu)*GYOTO_JNU_CGS_TO_SI;
     if (BB==0.){
-      if (jnucur==0.) {jnu[ii]=0.;alphanu[ii]=0.;}
+      if (jnu[ii]==0.) alphanu[ii]=0.;
       else throwError("In ThermalBrems: alphanu undefined!");
     }else
-      alphanu[ii]=jnucur/BB;
+      alphanu[ii]=jnu[ii]/BB;
     
   }
   

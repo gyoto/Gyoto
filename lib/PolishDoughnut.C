@@ -775,8 +775,6 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   }      
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
-  double delta_s =
-    dsem*GYOTO_G_CGS*Msgr*GYOTO_C2_CGS_M1;
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu_synch_ther[ii],
       anu_tot = anu_synch_ther[ii];
@@ -791,20 +789,16 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 
     // ***Final increment to intensity (in SI units)
 
-    double Inucur =
-      jnu_tot*GYOTO_INU_CGS_TO_SI*delta_s* exp(- anu_tot * delta_s),
-      Taunucur = exp(- anu_tot * delta_s);
-    // NB: abs_tot is in cgs (cm^-1) as well as delta_s (cm)
+    Taunu[ii] = exp(-anu_tot * dsem * gg_->unitLength());
+    Inu[ii] = anu_tot == 0 ? jnu_tot * dsem * gg_->unitLength() :
+      jnu_tot / anu_tot * (1. - Taunu[ii]);
 
-    if (Inucur<0.)
+    if (Inu[ii]<0.)
       throwError("In PolishDoughnut::radiativeQ: Inu<0");
-    if (Inucur!=Inucur or Taunucur!=Taunucur)
+    if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
       throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is nan");
-    if (Inucur==Inucur+1. or Taunucur==Taunucur+1.)
+    if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
       throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is infinite");
-    
-    Inu[ii]=Inucur;
-    Taunu[ii]=Taunucur;
     
   }
   

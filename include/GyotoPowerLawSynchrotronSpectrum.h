@@ -116,7 +116,7 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
   double alphanuCGS(double nu) const;
 
   /**
-   * Returns the emission and absorption coef in cgs
+   * Returns the emission and absorption coef in SI
    *
    */
   void radiativeQ(double jnu[], // output

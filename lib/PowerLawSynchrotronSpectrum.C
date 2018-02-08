@@ -136,8 +136,8 @@ void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
     }
     
     // OUTPUTS
-    jnu[ii]= jnucur ;
-    alphanu[ii]= anucur;
+    jnu[ii]= jnucur * GYOTO_JNU_CGS_TO_SI;
+    alphanu[ii]= anucur * 1e-2;
     
   }
 }

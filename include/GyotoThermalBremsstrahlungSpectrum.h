@@ -50,7 +50,6 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalBremsstrahlung>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
-  double cst_; ///< Scaling constant
   double T_; ///< Temperature
   double Tm1_; ///< 1/T
   double Tm05_; ///< 1/sqrt(T)
@@ -108,10 +107,9 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   double alphanuCGS(double nu) const;
 
   /**
-   * Returns the emission and absorption coef jnu and alphanu in cgs
+   * Returns the emission and absorption coef jnu and alphanu in SI
    *
    */
-  
   void radiativeQ(double jnu[], // output
 		  double alphanu[], // output
 		  double nu_ems[],
