@@ -181,7 +181,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
       if (jnucur==0.) alphanu[ii]=0.;
       else throwError("In ThermalSynch: alphanu undefined!");
     }else
-      alphanu[ii]=jnucur/BB;
+      alphanu[ii]=jnu[ii]/BB;
     
   }
 }
