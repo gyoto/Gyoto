@@ -787,12 +787,12 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       anu_tot += anu_brems[ii];
     }
 
-    // ***Final increment to intensity (in SI units)
-
-    Taunu[ii] = exp(-anu_tot * dsem * gg_->unitLength());
-    Inu[ii] = anu_tot == 0 ? jnu_tot * dsem * gg_->unitLength() :
-      jnu_tot / anu_tot * (1. - Taunu[ii]);
-
+    // expm1 is a precise implementation of exp(x)-1
+    double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
+    Taunu[ii] = em1+1.;
+    Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
+      -jnu_tot / anu_tot * em1; 
+    
     if (Inu[ii]<0.)
       throwError("In PolishDoughnut::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])

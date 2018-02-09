@@ -182,10 +182,15 @@ void Jet::radiativeQ(double Inu[], // output
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
 
-    Taunu[ii] = exp(- anu_synch_PL[ii] * dsem * gg_->unitLength());
-    Inu[ii] = anu_synch_PL[ii] == 0 ? jnu_synch_PL[ii] * dsem * gg_->unitLength() :
-      jnu_synch_PL[ii] / anu_synch_PL[ii] * (1. - Taunu[ii]);
- 
+    double jnu_tot = jnu_synch_PL[ii],
+      anu_tot = anu_synch_PL[ii];
+
+    // expm1 is a precise implementation of exp(x)-1
+    double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
+    Taunu[ii] = em1+1.;
+    Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
+      -jnu_tot / anu_tot * em1; 
+    
     if (Inu[ii]<0.)
       throwError("In PolishDoughnut::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
