@@ -111,9 +111,17 @@ double Hayward::getRmb() const {
 }
 
 double Hayward::getSpecificAngularMomentum(double rr) const {
-    // this is l = -u_phi/u_t for a circular equatorial 4-velocity
-    double aa=spin_, sqrtr=sqrt(rr);
-    return (rr*rr-2.*aa*sqrtr+aa*aa)/(pow(rr,1.5)-2.*sqrtr+aa);
+    // this is l = -u_phi/u_t for a circular equatorial 4-velocity 
+     double r2=rr*rr,r3=r2*rr, r5=r3*r2;
+     double aa=spin_, a2=aa*spin_, a3=a2*spin_;
+     double bb=charge_, b2=bb*charge_;
+     double md=r3+2.*b2_;
+     double m=r3/md;
+     double mdot=-3.*r5/md/md+3.*r2/md;
+     double sqrtr=sqrt(rr);
+     double sqrt1=sqrt(m-rr*mdot);
+         
+    return(((a2*rr+r3+2.*a2*m)*sqrt1*sqrtr-(a3+3.*spin_*r2)*m+(a3*rr+spin_*r3)*mdot)/(a2*rr*mdot+r3+2*sqrt1*spin_*m*sqrtr-(a2+2.*r2)*m));
 }
 
 double Hayward::getPotential(double const pos[4], double l_cst) const {
