@@ -1,7 +1,8 @@
 /**
  *  \file GyotoRezzollaZhidenko.h
  *  \brief Spherically-symmetric parametrized metric of Rezzolla\&Zhidenko 2014
- *
+ *         See the paper: PRD, 90, 084009
+ *         Only epsilon, a0, a1, a2, a3, b0, b1, b2, b3 are allowed non-zero
  */
 
 /*
@@ -38,10 +39,10 @@ class Gyoto::Metric::RezzollaZhidenko
 : public Gyoto::Metric::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Metric::RezzollaZhidenko>;
  private:
-  double epsilon_;
-  double rms_, rmb_;
-  double* aparam_;
-  double* bparam_;
+  double epsilon_; ///< horizon parameter, rH=2/(1+eps)
+  double rms_, rmb_; ///< Provide marginally stable and bound orbits if needed
+  double* aparam_; ///< The a-parameter vector [a0,a1,a2,a3] used in RZ14
+  double* bparam_; ///< The b-parameter vector [b0,b1,b2,b3] used in RZ14
  public:
   GYOTO_OBJECT;
   RezzollaZhidenko();
@@ -59,18 +60,15 @@ class Gyoto::Metric::RezzollaZhidenko
 
 
   double gmunu(const double * const x, int mu, int nu) const ;
-  int diff(const double y[8], const double cst[5], double res[8]) const ;
-  void circularVelocity(double const pos[4], double vel [4],
-			double dir=1.) const ;
   double N2(const double rr) const;
   double B2(const double rr) const;
   double Nprime(const double rr) const;
   double Bprime(const double rr) const;
   int christoffel(double dst[4][4][4], const double * pos) const ;
   int isStopCondition(double const * const coord) const;
-  double getRmb() const;
-  double getRms() const;
-  virtual double getPotential(double pos[4], double l_cst) const;
+  virtual double getRmb() const;
+  virtual double getRms() const;
+  virtual double getPotential(double const pos[4], double l_cst) const;
   virtual double getSpecificAngularMomentum(double rr) const;
 
     
