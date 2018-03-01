@@ -262,6 +262,9 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   double rmin=rintorus_, rmax = 1000.;
   //cout << "rmin max= " << rmin << " " << rmax << endl;
   r_centre_ = intersection.ridders(rmin, rmax) ;
+  //cout << "rmin center max= " << rmin << " " << r_centre_ << " " << rmax << endl;
+  if (r_centre_ < rmin or r_centre_ > rmax)
+    throwError("In PolishDoughnut::angmomrinner: bad r_centre_");
   double posc[4]={0.,r_centre_,M_PI/2.,0.};
   W_centre_  = gg_->getPotential(posc,l0_);
   DeltaWm1_ = 1./(W_centre_ - W_surface_);
