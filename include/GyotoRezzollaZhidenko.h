@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2013 Frederic Vincent
+    Copyright 2013, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -46,6 +46,7 @@ class Gyoto::Metric::RezzollaZhidenko
  public:
   GYOTO_OBJECT;
   RezzollaZhidenko();
+  RezzollaZhidenko(const RezzollaZhidenko & orig);
   virtual ~RezzollaZhidenko();
   virtual RezzollaZhidenko * clone() const ;
 

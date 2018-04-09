@@ -1,5 +1,5 @@
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2014, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -86,7 +86,8 @@ std::vector<double> RezzollaZhidenko::bparam() const {
 
 Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko()
   : Generic(GYOTO_COORDKIND_SPHERICAL, "RezzollaZhidenko"),
-    epsilon_(0.), rms_(0.), rmb_(0.)
+    epsilon_(0.), rms_(0.), rmb_(0.),
+    aparam_(NULL), bparam_(NULL)
 {
   GYOTO_DEBUG << endl;
   aparam_ = new double[GYOTO_NBPARAM_MAX];
@@ -94,6 +95,19 @@ Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko()
   for (int ii=0;ii<GYOTO_NBPARAM_MAX;ii++){
     aparam_[ii]=0.;
     bparam_[ii]=0.;
+  }
+}
+
+Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko(const RezzollaZhidenko & orig)
+  : Generic(GYOTO_COORDKIND_SPHERICAL, "RezzollaZhidenko"),
+    epsilon_(orig.epsilon_), rms_(orig.rms_), rmb_(orig.rms_), aparam_(NULL), bparam_(NULL)
+{
+  GYOTO_DEBUG << endl;
+  aparam_ = new double[GYOTO_NBPARAM_MAX];
+  bparam_ = new double[GYOTO_NBPARAM_MAX];
+  for (int ii=0;ii<GYOTO_NBPARAM_MAX;ii++){
+    aparam_[ii]=orig.aparam_[ii];
+    bparam_[ii]=orig.bparam_[ii];
   }
 }
 

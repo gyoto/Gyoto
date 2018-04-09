@@ -44,6 +44,7 @@ CHECK_RESULTS = \
         example-thin-disk-minkowski-spherical.fits \
         example-complex-astrobj.fits \
         example-fixed-star.fits \
+        example-fixed-star-RZ.fits \
         example-fixed-star-minkowski-cartesian.fits \
         example-fixed-star-minkowski-spherical.fits \
         example-startrace.fits \
