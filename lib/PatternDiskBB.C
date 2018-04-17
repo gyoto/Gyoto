@@ -21,8 +21,6 @@
 #include "GyotoProperty.h"
 #include "GyotoUtils.h"
 #include "GyotoFactoryMessenger.h"
-#include "GyotoKerrBL.h"
-#include "GyotoKerrKS.h"
 
 #include <iostream>
 #include <iomanip>
@@ -40,28 +38,15 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(PatternDiskBB)
 GYOTO_PROPERTY_BOOL(PatternDiskBB,
 		    SpectralEmission, BolometricEmission, spectralEmission)
-GYOTO_PROPERTY_DOUBLE(PatternDiskBB, Risco, risco)
 GYOTO_PROPERTY_END(PatternDiskBB, PatternDisk::properties)
 
 bool PatternDiskBB::spectralEmission() const {return SpectralEmission_;}
 void PatternDiskBB::spectralEmission(bool t) {SpectralEmission_=t;}
 
-double PatternDiskBB::risco() const {
-  if (risco_>0.) return risco_;
-  switch (gg_->coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    return static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> getRms();
-  default:
-    throwError("PatternDiskBB::getVelocity: bad COORDKIND");
-  }
-  return 0.; // avoid warning, never reached
-}
-void PatternDiskBB::risco(double r) {risco_=r;}
-
 PatternDiskBB::PatternDiskBB() :
   PatternDisk(),
   spectrumBB_(NULL),
-  SpectralEmission_(0), risco_(0.)
+  SpectralEmission_(0)
 {
   GYOTO_DEBUG << "PatternDiskBB Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -70,7 +55,7 @@ PatternDiskBB::PatternDiskBB() :
 PatternDiskBB::PatternDiskBB(const PatternDiskBB& o) :
   PatternDisk(o),
   spectrumBB_(NULL),
-  SpectralEmission_(o.SpectralEmission_), risco_(o.risco_)
+  SpectralEmission_(o.SpectralEmission_)
 {
   GYOTO_DEBUG << "PatternDiskBB Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -88,47 +73,13 @@ PatternDiskBB::~PatternDiskBB() {
   GYOTO_DEBUG << "PatternDiskBB Destruction" << endl;
 }
 
-double const * PatternDiskBB::getVelocity() const { return PatternDisk::getVelocity(); }
-
-void PatternDiskBB::getVelocity(double const pos[4], double vel[4]) {
-  // The only use of this reimplementation: ensure nothing happens below ISCO
-
-  double const * const rad=getGridRadius();
-  size_t i[3]; // {i_nu, i_phi, i_r}
-  getIndices(i, pos, 0.); //NB: last arg should be nu, don't care here
-  double rgridmin=rad[i[2]-1]; // this is the smallest radius used
-                          // when dealing with the current r value
-
-  if (rgridmin<risco()){
-    //default velocity, emission will be 0 there anyway
-    vel[0]=1.;
-    for (int ii=1;ii<4;ii++)
-      vel[ii]=0.;
-  }else{
-    PatternDisk::getVelocity(pos, vel);
-  }
-}
-
 double PatternDiskBB::emission(double nu, double dsem,
 			       double *,
 			       double co[8]) const{
-  // This reimplementation of emission has 2 goals, ensuring that
-  // nothing happens below ISCO, and allowing to compute BB emission
-  // when the PatternDisk structure contains temperature
-
   GYOTO_DEBUG << endl;
   
-  size_t i[3]; // {i_nu, i_phi, i_r}
-  getIndices(i, co, nu);
-  double const * const rad=getGridRadius();
-  double rgridmin=rad[i[2]-1], rgridmax=rad[i[2]];
-  // no emission in any case above rmax_:
-  if (rgridmax > rmax_ || rgridmin < risco()) return 0.; 
-
   double Iem=0.;
-  size_t naxes[3];
-  getIntensityNaxes(naxes);
-  size_t nnu=naxes[0], nphi=naxes[1];
+
   if (!SpectralEmission_){
     /*
       Here the intensity is assumed to be given by the emission
@@ -142,22 +93,16 @@ double PatternDiskBB::emission(double nu, double dsem,
      */
     double TT;
     TT = PatternDisk::emission(nu,dsem,co,co);
-    spectrumBB_->temperature(TT);
-    //    cout << "In pattern BB nu, T= " << nu << " " << TT << endl;
-    Iem=(*spectrumBB_)(nu);
+    if (TT==0.) Iem=0.; // typically: we are outside grid radial range
+    else{
+      spectrumBB_->temperature(TT);
+      Iem=(*spectrumBB_)(nu);
+    }
+    //cout << "In pattern BB nu, T, Bnu= " << nu << " " << TT << " " << Iem << endl;
   }
 
   if (!flag_radtransf_) return Iem;
   else throwError("In PatternDiskBB::emission: should be optically thick!");
   // The PatternDisk::emission function called above will return
   // nonsense for the temperature in case the object is optically thin.
-}
-
-void PatternDiskBB::metric(SmartPointer<Metric::Generic> gg) {
-  //Metric must be KerrBL or alike
-  string kin = gg->kind();
-  if ((kin != "KerrBL") && (kin != "ChernSimons"))
-    throwError
-      ("PatternDiskBB::metric(): metric must be KerrBL or CS");
-  ThinDisk::metric(gg);
 }

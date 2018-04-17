@@ -147,12 +147,14 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nr_=naxes[2])))
       throwError( "dimensions can't be null");
-    if (nr_==1 || nphi_==1)
-      throwError("In PatternDisk::copyIntensity: dimensions should be >1");
+    if (nr_==1)
+      throwError("In PatternDisk::copyIntensity: "
+		 "radial dimension should be >1");
     dr_ = (rout_ - rin_) / double(nr_-1);
     if (repeat_phi_==0.)
       throwError("In PatternDisk::copyIntensity: repeat_phi is 0!");
-    dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
+    if (nphi_>1)
+      dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emission_" << endl;
@@ -229,6 +231,8 @@ void PatternDisk::repeatPhi(size_t n) {
   repeat_phi_ = n;
   if ((nphi_-1)*repeat_phi_>0) 
     dphi_=(phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
+  GYOTO_WARNING << "PatternDisk: not tested for repeat_phi_>1; "
+    "check your results" << endl;
 }
 size_t PatternDisk::repeatPhi() const { return repeat_phi_; }
 
@@ -240,13 +244,13 @@ double PatternDisk::dnu() const { return dnu_; }
 
 void PatternDisk::phimin(double phimn) {
   phimin_ = phimn;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double((nphi_-1)*repeat_phi_);
 }
 double PatternDisk::phimin() const {return phimin_;}
 
 void PatternDisk::phimax(double phimx) {
   phimax_ = phimx;
-  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double((nphi_-1)*repeat_phi_);
 }
 double PatternDisk::phimax() const {return phimax_;}
 
@@ -361,9 +365,10 @@ void PatternDisk::fitsRead(string filename) {
 
   // update repeat_phi_, nphi_, dphi_
   nphi_ = naxes[1];
-  if (nphi_==1 || repeat_phi_==0)
-    throwError("In PatternDisk::fitsRead: nphi is 1 or repeat_phi is 0!");
-  dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
+  if (repeat_phi_==0)
+    throwError("In PatternDisk::fitsRead: repeat_phi is 0!");
+  if (nphi_>1)
+    dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 
   // update rin_, rout_, nr_, dr_
   nr_ = naxes[2];
@@ -594,48 +599,55 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
   phi -= Omega_*(t-t0_);
 
   while (phi<0) phi += 2.*M_PI;
-  if (dphi_==0.)
-    throwError("In PatternDisk::getIndices: dphi_ should not be 0 here!");
-  if (phi<phimin_) //Possible: any phi value is in the grid anyway
-    i[1]=0;
-  else if (phi>phimax_)
-    i[1]=nphi_-1;
-  else
-    i[1] = size_t(floor((phi-phimin_)/dphi_)+1) % nphi_;
+
+  if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+  // wrap phi if the disk is periodic with period repeat_phi_
+
+  if (nphi_>1){
+    if (phi<phimin_) //Possible: any phi value is in the grid anyway
+      i[1]=0;
+    else if (phi>phimax_)
+      i[1]=nphi_;
+    else {
+      i[1] = size_t(floor((phi-phimin_)/dphi_)+1); // % (nphi_-1);
+      if (i[1]==0 || i[1]==nphi_){
+	cerr << "iphi stuff= " << phi << " " << dphi_ << " " << nphi_ << " " << floor((phi-phimin_)/dphi_) << " " << i[1] << endl;
+	throwError("In PatternDisk:getIndices: bad i[1]");
+      }				
+    }
+  }else{
+    i[1] = 0;
+  }
 
   /*
     With this definition:
     phimin_+(i[1]-1)*dphi_ <= phi < phimin_+i[1]*dphi_ 
-    provided phi is not bigger than phimax_ nor smaller
-    than phimin_
+    provided phi is not <phimin_ or >phimax_
   */
-  //cerr << "Test inner Radius= " << innerRadius() << endl;
+  //cerr << "phi stuff: " << phimin_ << " " << phimax_ << " " << dphi_ << " " << nphi_ << endl;
   //cerr << "in indice --PHI: " << phimin_+(i[1]-1)*dphi_ << " " << phi << " " << phimin_+i[1]*dphi_  << endl;
+
   if (radius_) {
     GYOTO_DEBUG <<"radius_ != NULL" << endl;
     // if the radius_ vector is set, find closest value
-    if (r >= radius_[nr_-1]) i[2] = nr_-1;
+    if (r >= radius_[nr_-1]) i[2] = nr_;
     else {
       for(i[2]=0; r > radius_[i[2]]; ++i[2]){}
       //cerr << "in indice --RAD: " << radius_[i[2]-1] << " " << r << " " << radius_[i[2]] << endl;
       /*
 	With this definition:
 	radius_[i[2]-1] <= r < radius_[i[2]]
-	provided r<rmax (i[2] is always at least 1
-	because if ThinDisk returns Impact=1, then
-	r>rmin=radius_[0])
+	Special case: i[2]=0 if r < radius_[0]
        */
-      /*if (i[2]>0 && r-radius_[i[2]-1] < radius_[i[2]]) {
-	--i[2];
-	}*/
     }
   } else {
     GYOTO_DEBUG <<"radius_ == NULL, dr_==" << dr_ << endl;
     // radius_ is not set: assume linear repartition
     if (dr_==0.)
       throwError("In PatternDisk::getIndices: dr_ should not be 0 here!");
-    i[2] = size_t(floor((r-rin_)/dr_+0.5));
+    i[2] = size_t(floor((r-rin_)/dr_)+1);
     if (i[2] >= nr_) i[2] = nr_ - 1;
+    //cerr << "in indice no radius --RAD: " << rin_ + (i[2]-1)*dr_ << " " << r << " " <<  rin_ + (i[2])*dr_ << endl;
   }
 
 }
@@ -654,42 +666,97 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
     double rr = projectedRadius(pos);
     double phi = sphericalPhi(pos);
 
+    if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+
+    if (rr < rin_ || rr > rout_){
+      // Outside radial grid, emission is zero: put arbitrary velocity
+      vel[0]=1;vel[1]=0;vel[2]=0;vel[3]=0;
+      return;
+    }
+
     //cout << "in velo r phi= " << rr << " " << phi << endl;
     //cout << "and indices= " << i[0] << " " << i[1] << " " << i[2] << endl;
     
     double phiprime=0., rprime=0.;
-    if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
-      // Extreme cases no interpolation
-      rprime=velocity_[i[1]*nr_+i[2]];
-      phiprime=velocity_[nr_*nphi_+i[1]*nr_+i[2]];
+    if (nphi_==1){
+      // If axisym: 1D interpo in radius only
+      double rprimelow=velocity_[i[2]-1],
+	rprimehigh=velocity_[i[2]],
+	phiprimelow=velocity_[nr_+i[2]-1],
+	phiprimehigh=velocity_[nr_+i[2]];
+
+      double radlow, radhigh;
+      if (radius_){
+	radlow = radius_[i[2]-1];
+	radhigh = radius_[i[2]];
+      }else{
+	radlow = rin_ + double(i[2]-1)*dr_;
+	radhigh = rin_ + double(i[2])*dr_;
+      }
+
+      if (rr<radlow || rr>radhigh){
+	//cout << "r= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << endl;
+	throwError("In PatternDisk::getVelocity: "
+		   "bad radial interpolation");
+      }
+
+      rprime = rprimelow + (rr-radlow)/(radhigh-radlow)*(rprimehigh-rprimelow);
+      phiprime = phiprimelow
+	+ (rr-radlow)/(radhigh-radlow)*(phiprimehigh-phiprimelow);
     }else{
-      // Bilinear interpolation
+      // Bilinear interpolation in r,phi
       // Notation: X_{phi,r}
-      double phip00=velocity_[nr_*nphi_+(i[1]-1)*nr_+(i[2]-1)];
-      double phip10=velocity_[nr_*nphi_+    i[1]*nr_+(i[2]-1)];
-      double phip11=velocity_[nr_*nphi_+    i[1]*nr_+i[2]];
-      double phip01=velocity_[nr_*nphi_+(i[1]-1)*nr_+i[2]];
+      int iphil, iphiu;
+      double philow, phihigh;
+      if ((i[1]==0 || i[1]==nphi_) && repeat_phi_==1){
+	// then phi is below phimin or above phimax,
+	// i.e. phimax < phi[2pi] < phimin+2pi
+	// [I don't want to code the repeat_phi_>1 case...]
+	iphil = nphi_-1;
+	philow = phimin_+double(iphil)*dphi_;
+	iphiu = 0;
+	phihigh = phimin_ + 2.*M_PI;
+	if (phi<phimin_)
+	  phi+=2*M_PI; // to get phimax < phi < phimin+2pi
+      }else{ // standard case
+        iphil = i[1]-1;
+        philow = phimin_+double(iphil)*dphi_;
+        iphiu = i[1];
+        phihigh = phimin_+double(iphiu)*dphi_;
+      }
+
+      double radlow, radhigh;
+      if (radius_){
+	radlow = radius_[i[2]-1];
+	radhigh = radius_[i[2]];
+      }else{
+	radlow = rin_ + double(i[2]-1)*dr_;
+	radhigh = rin_ + double(i[2])*dr_;
+      }
+	    
+      double phip00=velocity_[nr_*nphi_+iphil*nr_+(i[2]-1)];
+      double phip10=velocity_[nr_*nphi_+iphiu*nr_+(i[2]-1)];
+      double phip11=velocity_[nr_*nphi_+iphiu*nr_+i[2]];
+      double phip01=velocity_[nr_*nphi_+iphil*nr_+i[2]];
       
-      double rp00=velocity_[(i[1]-1)*nr_+(i[2]-1)];
-      double rp10=velocity_[    i[1]*nr_+(i[2]-1)];
-      double rp11=velocity_[    i[1]*nr_+i[2]];
-      double rp01=velocity_[(i[1]-1)*nr_+i[2]];
+      double rp00=velocity_[iphil*nr_+(i[2]-1)];
+      double rp10=velocity_[iphiu*nr_+(i[2]-1)];
+      double rp11=velocity_[iphiu*nr_+i[2]];
+      double rp01=velocity_[iphil*nr_+i[2]];
 
       //cout << "velo bilin interpo, phip, rp: " << phip00 << " " << rp00 << " " << phip01 << " " << rp01 << " " << phip10 << " " << rp10 << " " << phip11 << " " << rp11 << endl;
 
-      double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
-	phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
 
-      //cout << "rin sup, phi inf sup, r phi: " << rinf << " " << rsup << " " << phiinf << " " << phisup << " " << rr << " " << phi << endl;
+      //cout << "rin sup, phi inf sup, r phi: " << radlow << " " << radhigh << " " << philow << " " << phihigh << " " << rr << " " << phi << endl;
 
-      if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
-	//cout << "r, phis= " << i[2] << " " <<  rinf << " " << rr << " " << rsup << " " << phiinf << " " << phi << " " << phisup << endl;
+      if (phi<philow || phi>phihigh || rr<radlow || rr>radhigh){
+	//cout << "r, phis= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << " " << philow << " " << phi << " " << phihigh << endl;
 	throwError("In PatternDisk::getVelocity: "
 		   "bad interpolation");
       }
 
-      double cr = (rr-rinf)/(rsup-rinf),
-	cp = (phi-phiinf)/(phisup-phiinf);
+      double cr = (rr-radlow)/(radhigh-radlow),
+	cp = (phi-philow)/(phihigh-philow);
 
       rprime=rp00 + cp*(rp10-rp00) + cr*(rp01-rp00)
 	+ cr*cp*(rp11-rp01+rp00-rp10);
@@ -703,12 +770,9 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
     switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       {
-	double pos2[4] = {pos[0], pos[1], pos[2], pos[3]};
-	pos2[1] = radius_ ? radius_[i[2]] : rin_+double(i[2])*dr_;
 	vel[1] = rprime;
 	vel[2] = 0.;
 	vel[3] = phiprime;
-	// vel[0] = gg_->SysPrimeToTdot(pos2, vel+1); // WHY this pos2 business?
 	//cout << "pos and vel= " << pos[1] << " " << pos[2] << " " << pos[3] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
 	vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
 	vel[1] *= vel[0];
@@ -726,8 +790,8 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 }
 
 double PatternDisk::emission(double nu, double dsem,
-				    double *,
-				    double co[8]) const{
+			     double *,
+			     double co[8]) const{
   //See Page & Thorne 74 Eqs. 11b, 14, 15. This is F(r).
   GYOTO_DEBUG << endl;
   size_t i[3]; // {i_nu, i_phi, i_r}
@@ -736,41 +800,91 @@ double PatternDisk::emission(double nu, double dsem,
   double rr = projectedRadius(co);
   double phi = sphericalPhi(co);
 
+  if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+
   //cout << "in emission r, phi= " << rr << " " << phi << endl;
   //cout << "and indices= " << i[0] << " " << i[1] << " " << i[2] << endl;
-  
+  //cout << "dphi= " << dphi_ << endl;
+  // No emission outside radius limits
+  //cerr << "r checks: " << rin_ << " " << rout_ << endl;
+  if (rr < rin_ || rr > rout_) return 0.;
   double Iem=0.;
 
   if (nnu_>1) throwError("In PatternDisk: multifrequency case not implemented");
   
-  if (i[1]==0 || i[1]==nphi_-1 || i[2]==nr_-1){
-    // Extreme cases no interpolation
-    Iem=emission_[i[1]*nr_+i[2]];
-    // NB: here and below there is no i[0] because the frequency
-    // dependence is not coded yet, nnu_ should be 1 (it is tested above),
-    // i[0] is always 0.
-    //cout << "In emission no interpo: " << Iem << endl;
+  if (nphi_==1){
+    // If axisym: 1D interpo in radius only
+    double Iemlow = emission_[i[2]-1],
+      Iemhigh = emission_[i[2]];
+
+    double radlow, radhigh;
+    if (radius_){
+      radlow = radius_[i[2]-1];
+      radhigh = radius_[i[2]];
+    }else{
+      radlow = rin_ + double(i[2]-1)*dr_;
+      radhigh = rin_ + double(i[2])*dr_;
+    }
+
+    if (rr<radlow || rr>radhigh){
+      //cout << "r= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << endl;
+      throwError("In PatternDisk::emission: "
+		 "bad radial interpolation");
+    }
+    
+    Iem = Iemlow + (rr-radlow)/(radhigh-radlow)*(Iemhigh-Iemlow);
+    
+    //cout << "In emission only rad: " << radlow << " " << radhigh << " " << Iemlow << " " << Iemhigh << " " << Iem << endl;
   }else{
     // Bilinear interpolation
     // Notation I_{phi,r}
-    double I00=emission_[(i[1]-1)*nr_+(i[2]-1)];
-    double I10=emission_[    i[1]*nr_+(i[2]-1)];
-    double I11=emission_[    i[1]*nr_+i[2]];
-    double I01=emission_[(i[1]-1)*nr_+i[2]];
+    //cout << "entering bilin em in pattern" << endl;
+    int iphil, iphiu;
+    double philow, phihigh;
+    if ((i[1]==0 || i[1]==nphi_) && repeat_phi_==1){
+      // then phi is below phimin or above phimax,
+      // i.e. phimax < phi[2pi] < phimin+2pi
+      // [I don't want to code the repeat_phi_>1 case...]
+      iphil = nphi_-1;
+      philow = phimin_+double(iphil)*dphi_;
+      iphiu = 0;
+      phihigh = phimin_ + 2.*M_PI;
+      if (phi<phimin_)
+	phi+=2*M_PI; // to get phimax < phi < phimin+2pi
+    }else{ // standard case
+      iphil = i[1]-1;
+      philow = phimin_+double(iphil)*dphi_;
+      iphiu = i[1];
+      phihigh = phimin_+double(iphiu)*dphi_;
+    }
+    //cout << "iphi: " << i[1] << " " << iphil << " " << iphiu << endl;
+
+    double radlow, radhigh;
+    if (radius_){
+      radlow = radius_[i[2]-1];
+      radhigh = radius_[i[2]];
+    }else{
+      radlow = rin_ + double(i[2]-1)*dr_;
+      radhigh = rin_ + double(i[2])*dr_;
+    }
+    
+    double I00=emission_[iphil*nr_+(i[2]-1)];
+    double I10=emission_[iphiu*nr_+(i[2]-1)];
+    double I11=emission_[iphiu*nr_+i[2]];
+    double I01=emission_[iphil*nr_+i[2]];
     //cout << "In emission Iem grid= " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
     
-    double rinf=radius_[i[2]-1], rsup=radius_[i[2]],
-      phiinf=phimin_+double(i[1]-1)*dphi_, phisup=phiinf+dphi_;
-
-    //cout << " In emission rin sup, phi inf sup, r phi: " << rinf << " " << rsup << " " << phiinf << " " << phisup << " " << rr << " " << phi << endl;
+    //cout << " In emission rin sup, phi inf sup, r phi: " << radlow << " " << radhigh << " " << philow << " " << phihigh << " " << rr << " " << phi << endl;
     
-    if (phi<phiinf || phi>phisup || rr<rinf || rr>rsup){
+    if (phi<philow || phi>phihigh || rr<radlow || rr>radhigh){
+      cout << "phi: " << philow << " " << phi << " " << phihigh << endl;
+      cout << "r: " << radlow << " " << rr << " " << radhigh << endl;
       throwError("In PatternDisk::emission: "
 		 "bad interpolation");
     }
     
-    double cr = (rr-rinf)/(rsup-rinf),
-      cp = (phi-phiinf)/(phisup-phiinf);
+    double cr = (rr-radlow)/(radhigh-radlow),
+      cp = (phi-philow)/(phihigh-philow);
     
     Iem = I00 + cp*(I10-I00) + cr*(I01-I00) + cr*cp*(I11-I01+I00-I10);
     //cout << "In emission I interpo= " << Iem << endl;
