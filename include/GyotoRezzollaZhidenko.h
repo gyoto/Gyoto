@@ -71,6 +71,8 @@ class Gyoto::Metric::RezzollaZhidenko
   virtual double getRms() const;
   virtual double getPotential(double const pos[4], double l_cst) const;
   virtual double getSpecificAngularMomentum(double rr) const;
+  virtual void circularVelocity(double const pos[4], double vel [4],
+				double dir=1.) const ;
 
     
 #endif

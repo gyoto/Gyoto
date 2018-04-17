@@ -296,3 +296,24 @@ int RezzollaZhidenko::isStopCondition(double const * const coord) const {
   double rsink = r0 + GYOTO_KERR_HORIZON_SECURITY;
   return coord[1] < rsink ;
 }
+
+void RezzollaZhidenko::circularVelocity(double const coor[4], double vel[4],
+					double dir) const {
+
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG<<"coor=["<<coor[0]<<", "<<coor[1]<<", "<<coor[2]<<", "<<coor[3]
+	     <<"], dir="<<dir<<endl;
+# endif
+  double sinth = sin(coor[2]), rr = coor[1]*sinth;// rr projected on equat plane
+  double coord[4] = {coor[0],rr,M_PI*0.5,coor[3]};
+
+  vel[1] = vel[2] = 0.;
+  double Np = Nprime(rr), NN=sqrt(N2(rr));
+  vel[3] = sqrt(Np*NN/rr); // this is Omega=dphi/dt
+
+  vel[0] = SysPrimeToTdot(coord, vel+1); // dt/dtau
+  vel[3] *= vel[0]; // dphi/dtau
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_ARRAY(vel,4);
+# endif
+}
