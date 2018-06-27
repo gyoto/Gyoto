@@ -8,7 +8,7 @@
  */
 
 /*
-    Copyright 2017 Frederic Vincent
+    Copyright 2017-2018 Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -44,10 +44,9 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::Jet
- * \brief Simple jet model from Zdziarski, Stawarz & Sikora (MNRAS,2017)
+ * \brief Simple jet model 
  *
- * This class implements model III of jets of the above paper.
- * It assumes angle-averaged synchrotron radiation 
+ * This jet assumes angle-averaged synchrotron radiation 
  * emission by power-law electrons.
  */
 
@@ -58,12 +57,12 @@ class Gyoto::Astrobj::Jet
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Jet>;
  private:
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_;
-  double aa_; ///< Kerr spin
-  double baseJetHeight_; ///< Height of the base of the jet (z value)
-  double baseJetRadiusOverHeight_; ///< Ratio base cylindrical radius / base height
-  double gammaMax_; ///< Max Lorentz factor in jet
-  double mdotJet_; ///< Mass-flow rate
-  double alfvenRadiusCoef_; ///< Ratio of Alfven radius to light-cylinder radius
+  double jetOuterOpeningAngle_; ///< Jet outer opening angle
+  double jetInnerOpeningAngle_; ///< Jet inner opening angle
+  double jetBaseHeight_; ///< Height of the base of the jet (z value)
+  double gammaJet_; ///< Constant Lorentz factor in jet
+  double baseNumberDensity_; ///< electron nb density at jet base (cgs)
+  double magneticParticlesEquipartitionRatio_; ///< Ratio of magnetic to particles energy density
 
   // Constructors - Destructor
   // -------------------------
@@ -81,16 +80,18 @@ class Gyoto::Astrobj::Jet
   // Accessors
   // ---------
  public:
-  void baseJetHeight(double hh);
-  double baseJetHeight()const;
-  void baseJetRadiusOverHeight(double par);
-  double baseJetRadiusOverHeight()const;
-  void gammaMax(double gam);
-  double gammaMax()const;
-  void mdotJet(double mdot);
-  double mdotJet()const;
-  void alfvenRadiusCoef(double coef);
-  double alfvenRadiusCoef()const;
+  void jetOuterOpeningAngle(double ang);
+  double jetOuterOpeningAngle() const;
+  void jetInnerOpeningAngle(double ang);
+  double jetInnerOpeningAngle() const;
+  void jetBaseHeight(double hh);
+  double jetBaseHeight() const;
+  void gammaJet(double gam);
+  double gammaJet() const;
+  void baseNumberDensity(double ne);
+  double baseNumberDensity()const;
+  void magneticParticlesEquipartitionRatio(double rr);
+  double magneticParticlesEquipartitionRatio()const;
   void expoPL(double index);
   double expoPL()const;
 
@@ -106,10 +107,8 @@ class Gyoto::Astrobj::Jet
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-  virtual void updateSpin() ;
-  virtual void tell(Gyoto::Hook::Teller *msg);
-  void JetQuantitiesFromZ(const double zz, double qty[3]) const;
-  void JetQuantitiesFromR(const double rr, double qty[2]) const;
+  //virtual void updateSpin() ;
+  //virtual void tell(Gyoto::Hook::Teller *msg);
 
 };
 

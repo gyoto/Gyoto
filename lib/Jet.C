@@ -39,33 +39,34 @@ using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
-/*
-  The formalism in this class is taken from the ZSS paper:
-  Zdziarski, Stawarz, Sikora, MNRAS 2017 (in prep at time of coding)
- */
-
 GYOTO_PROPERTY_START(Jet)
-GYOTO_PROPERTY_DOUBLE(Jet, BaseJetHeight, baseJetHeight)
-GYOTO_PROPERTY_DOUBLE(Jet, BaseJetRadiusOverHeight, baseJetRadiusOverHeight)
-GYOTO_PROPERTY_DOUBLE(Jet, GammaMax, gammaMax)
-GYOTO_PROPERTY_DOUBLE(Jet, MdotJet, mdotJet)
-GYOTO_PROPERTY_DOUBLE(Jet, AlfvenRadiusCoef, alfvenRadiusCoef)
+GYOTO_PROPERTY_DOUBLE(Jet, JetOuterOpeningAngle, jetOuterOpeningAngle)
+GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle)
+GYOTO_PROPERTY_DOUBLE(Jet, JetBaseHeight, jetBaseHeight)
+GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
+GYOTO_PROPERTY_DOUBLE(Jet, BaseNumberDensity, baseNumberDensity)
+GYOTO_PROPERTY_DOUBLE(Jet, MagneticParticlesEquipartitionRatio,
+		      magneticParticlesEquipartitionRatio)
 GYOTO_PROPERTY_DOUBLE(Jet, ExpoPL, expoPL)
 GYOTO_PROPERTY_END(Jet, Standard::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
 
 // ACCESSORS
-void Jet::baseJetHeight(double hh) {baseJetHeight_=hh;}
-double Jet::baseJetHeight()const{return baseJetHeight_;}
-void Jet::baseJetRadiusOverHeight(double par) {baseJetRadiusOverHeight_=par;}
-double Jet::baseJetRadiusOverHeight()const{return baseJetRadiusOverHeight_;}
-void Jet::gammaMax(double gam) {gammaMax_=gam;}
-double Jet::gammaMax()const{return gammaMax_;}
-void Jet::mdotJet(double mdot) {mdotJet_=mdot;}
-double Jet::mdotJet()const{return mdotJet_;}
-void Jet::alfvenRadiusCoef(double coef) {alfvenRadiusCoef_=coef;}
-double Jet::alfvenRadiusCoef()const{return alfvenRadiusCoef_;}
+void Jet::jetOuterOpeningAngle(double ang) {jetOuterOpeningAngle_=ang;}
+double Jet::jetOuterOpeningAngle()const{return jetOuterOpeningAngle_;}
+void Jet::jetInnerOpeningAngle(double ang) {jetInnerOpeningAngle_=ang;}
+double Jet::jetInnerOpeningAngle()const{return jetInnerOpeningAngle_;}
+void Jet::jetBaseHeight(double hh) {jetBaseHeight_=hh;}
+double Jet::jetBaseHeight()const{return jetBaseHeight_;}
+void Jet::gammaJet(double gam) {gammaJet_=gam;}
+double Jet::gammaJet()const{return gammaJet_;}
+void Jet::baseNumberDensity(double ne) {baseNumberDensity_=ne;}
+double Jet::baseNumberDensity()const{return baseNumberDensity_;}
+void Jet::magneticParticlesEquipartitionRatio(double rr) {
+  magneticParticlesEquipartitionRatio_=rr;}
+double Jet::magneticParticlesEquipartitionRatio()const{
+  return magneticParticlesEquipartitionRatio_;}
 void Jet::expoPL(double index) {
   spectrumPLSynch_->PLindex(index);
 }
@@ -74,8 +75,10 @@ double Jet::expoPL()const{return spectrumPLSynch_->PLindex();}
 //
 
 Jet::Jet() :
-  Standard("Jet"), aa_(0.), baseJetHeight_(1.), baseJetRadiusOverHeight_(1.),
-  gammaMax_(1.), mdotJet_(1.), alfvenRadiusCoef_(1.)
+  Standard("Jet"), jetOuterOpeningAngle_(0.785),
+  jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
+  gammaJet_(1.), baseNumberDensity_(1.),
+  magneticParticlesEquipartitionRatio_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
@@ -83,10 +86,11 @@ Jet::Jet() :
 }
 
 Jet::Jet(const Jet& o) :
-  Standard(o), aa_(o.aa_), baseJetHeight_(o.baseJetHeight_),
-  baseJetRadiusOverHeight_(o.baseJetRadiusOverHeight_),
-  gammaMax_(o.gammaMax_), mdotJet_(o.mdotJet_),
-  alfvenRadiusCoef_(o.alfvenRadiusCoef_),
+  Standard(o), jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
+  jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
+  jetBaseHeight_(o.jetBaseHeight_),
+  gammaJet_(o.gammaJet_), baseNumberDensity_(o.baseNumberDensity_),
+  magneticParticlesEquipartitionRatio_(o.magneticParticlesEquipartitionRatio_),
   spectrumPLSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
@@ -105,6 +109,7 @@ Jet::~Jet() {
 double Jet::emission(double nu, double,
 		     double *,
 		     double coord_obj[8]) const{
+  // basic implementation, no physics here, not used
   return 1.;
 }
 
@@ -128,38 +133,16 @@ void Jet::radiativeQ(double Inu[], // output
   default:
     throwError("In Jet::radiativeQ: Unknown coordinate system kind");
   }
-
-  double Mbh = gg_->mass()*1e3; // cgs BH mass
-  double MdotEdd = 1.26e38*Mbh/(GYOTO_SUN_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS);
-       // cgs Eddington accretion rate
-  double jetQ[3];
-  JetQuantitiesFromZ(zz,jetQ);
-  double rcyljet = jetQ[0],
-    rcyljetcgs = jetQ[0]*GYOTO_G_OVER_C_SQUARE_CGS*Mbh;
-  double Gamma = jetQ[1];
-  double number_density = mdotJet_*MdotEdd
-    /(2*M_PI*rcyljetcgs*rcyljetcgs*GYOTO_PROTON_MASS_CGS*GYOTO_C_CGS
-      *sqrt(Gamma*Gamma-1.));
+  
+  double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
+  double number_density = baseNumberDensity_
+    *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+  
   //cout << "jet nb dens= " << number_density << endl;
   
-  double aGamma = pow(baseJetHeight_,-0.5);
-  double ar = baseJetRadiusOverHeight_*pow(baseJetHeight_,0.5);
-  double sigma = 0.5*ar*aGamma;
-  double Bphi2 = 4.*M_PI * GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-    *number_density
-    *(gammaMax_/Gamma*(1.+sigma*sigma)-1.);
-
-  double rcylA = 5.; // TEST!! to be changed, with light cylinder exp
-  double jetQr[2];
-  JetQuantitiesFromR(rcylA,jetQr);
-  double zA=jetQr[0], GammaA=jetQr[1];
-  double Bphi2zA = 4.*M_PI * GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-    *number_density
-    *(gammaMax_/GammaA*(1.+sigma*sigma)-1.),
-    BphizA = sqrt(Bphi2zA);
-  double Bp2 = BphizA*GammaA*rcylA*rcylA/(rcyljet*rcyljet);
-
-  double BB = sqrt(Bphi2+Bp2);
+  double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
+		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+		   *number_density);
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
@@ -192,11 +175,11 @@ void Jet::radiativeQ(double Inu[], // output
       -jnu_tot / anu_tot * em1; 
     
     if (Inu[ii]<0.)
-      throwError("In PolishDoughnut::radiativeQ: Inu<0");
+      throwError("In Jet::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
-      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is nan");
+      throwError("In Jet::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
-      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is infinite");
+      throwError("In Jet::radiativeQ: Inu or Taunu is infinite");
     
   }
 }
@@ -217,14 +200,15 @@ double Jet::operator()(double const coord[4]) {
     throwError("In Jet::operator(): Unknown coordinate system kind");
   }
 
-  if  (fabs(zz) < baseJetHeight_) return 1.; // outside jet
+  if  (fabs(zz) < jetBaseHeight_) return 1.; // outside jet
 
-  double jetQ[3];
-  JetQuantitiesFromZ(zz, jetQ);
-  double rcyljet=jetQ[0];
+  double rcyljetout = zz*tan(jetOuterOpeningAngle_),
+    rcyljetin = zz*tan(jetInnerOpeningAngle_);
+
+  if  ((rcyl <  rcyljetout) and (rcyl >  rcyljetin)) return -1.; // inside jet
+  else return 1.; // outside jet
   //cout << "r, rjet, z, theta0, ht= " << rcyl << " " << rcyljet << " " << zz << " " << theta0 << " " << ht << endl;
   
-  return rcyl-rcyljet; // inside jet when <=0
 }
 
 void Jet::getVelocity(double const pos[4], double vel[4])
@@ -244,33 +228,18 @@ void Jet::getVelocity(double const pos[4], double vel[4])
     throwError("In Jet::getVelocity: Unknown coordinate system kind");
   }
 
-  double jetQ[3];
-  JetQuantitiesFromZ(zz, jetQ);
+  double Vr = sqrt(gammaJet_-1.)/gammaJet_;
 
-  double rcyljet=jetQ[0];
-  double Gamma=jetQ[1];
-  double dzOverdrho=jetQ[2];
-
-  double beta0 = M_PI/2.,
-    beta1 = (atan(dzOverdrho)-beta0)/rcyljet,
-    beta = beta0+beta1*rcyl;
-
-  double Gamma2=Gamma*Gamma, v2 = (Gamma2-1.)/Gamma2;
-  double grr = gg_->gmunu(pos,1,1), gthth=gg_->gmunu(pos,2,2);
-  double mycos = cos(pos[2]+beta), mycos2=mycos*mycos,
-    mysin=sin(pos[2]+beta), mysin2=mysin*mysin;
-  double Vtilde = sqrt(v2/(grr*mysin2 + gthth*mycos2));
-  double Vr = Vtilde*mysin, Vth = Vtilde*mycos;
-
+  // KerrBL-specific part
   double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
     uphiZAMO = -utZAMO*gtp/gpp;
   
-  vel[0] = Gamma*utZAMO;
-  vel[1] = Gamma*Vr;
-  vel[2] = Gamma*Vth;
-  vel[3] = Gamma*uphiZAMO;
+  vel[0] = gammaJet_*utZAMO;
+  vel[1] = gammaJet_*Vr;
+  vel[2] = 0.;
+  vel[3] = gammaJet_*uphiZAMO;
 
   //cout << "jet stuff= " << zz << " " << ht << " " << ar << " " << 1./theta0 << endl;
   //cout <<"beta stuff= " << dzOverdrho << " " << rcyl << " " << rcyljet << " " << beta0 << " " << beta1 << " " << beta << endl;
@@ -287,87 +256,30 @@ bool Jet::isThreadSafe() const {
 void Jet::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kin = gg->kind();
-  if (kin != "KerrBL" && kin != "KerrKS")
+  if (kin != "KerrBL")
     throwError
-      ("Jet::metric(): metric must be KerrBL or KerrKS");
+      ("Jet::metric(): metric must be KerrBL");
+  // NB: KerrBL needed for ZAMO velocity in getVelocity,
+  // could be generalized if needed
   Generic::metric(gg);
-  updateSpin();
-  gg->hook(this);
+  //updateSpin();
+  //gg->hook(this);
 }
 
-void Jet::updateSpin() {
-  if (!gg_) return;
-  switch (gg_->coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
-    break;
-  default:
-    throwError("Jet::updateSpin(): unknown COORDKIND");
-  }
-}
+// void Jet::updateSpin() {
+//   if (!gg_) return;
+//   switch (gg_->coordKind()) {
+//   case GYOTO_COORDKIND_SPHERICAL:
+//     aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+//     break;
+//   case GYOTO_COORDKIND_CARTESIAN:
+//     aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
+//     break;
+//   default:
+//     throwError("Jet::updateSpin(): unknown COORDKIND");
+//   }
+// }
 
-void Jet::tell(Hook::Teller* msg) {
-  if (msg==gg_) updateSpin();
-}
-
-void Jet::JetQuantitiesFromZ(const double zz, double qty[3]) const{
-  // Computes the jet quantities as a function z,
-  // ie rcyl(z), Gamma(z), dz/drcyl(z)
-
-  double aGamma = pow(baseJetHeight_,-0.5); // Gamma(z) = aGamma * sqrt{z}
-  double ar = baseJetRadiusOverHeight_*pow(baseJetHeight_,0.5);
-            // rcyl(z) = ar * sqrt{z} ;
-            // assuming rcyl(zbase) = baseJetRadiusOverHeight_*zbase
-  // [aGamma] = 1/sqrt{R} ; [ar] = sqrt{R} ; [ar*aGamma] = 1
-  double theta0 = 0.5*ar*aGamma/gammaMax_;
-  double ht = gammaMax_*gammaMax_/(aGamma*aGamma);
-  // NB: ht is such that baseJetHeight_ <= ht
-  // so the jet base is always in the parabola part of the jet shape
-  double rcyljet=0.;
-  double dzOverdrho=0.;
-  double Gamma=0.;
-  if (fabs(zz) <= ht) {
-    rcyljet = ar*pow(fabs(zz),0.5);
-    Gamma = aGamma*pow(fabs(zz),0.5);
-    dzOverdrho = 2*rcyljet*rcyljet/(ar*ar);
-    if (zz<0.) dzOverdrho*=-1.; // dz/drho<0 for z<0
-  }else{
-    rcyljet = theta0*(fabs(zz)+ht);
-    Gamma = gammaMax_;
-    dzOverdrho = 1./theta0;
-    if (zz<0.) dzOverdrho*=-1.;
-  }
-
-  qty[0]=rcyljet;
-  qty[1]=Gamma;
-  qty[2]=dzOverdrho;
-}
-
-void Jet::JetQuantitiesFromR(const double rr, double qty[2]) const{
-  // Computes the jet quantities as a function rcyl,
-  // ie z(rcyl), Gamma(rcyl)
-
-  double aGamma = pow(baseJetHeight_,-0.5);
-  double ar = baseJetRadiusOverHeight_*pow(baseJetHeight_,0.5);
-
-  double rt = ar*gammaMax_/aGamma;
-  double ht = gammaMax_*gammaMax_/(aGamma*aGamma);
-  double theta0 = 0.5*ar*aGamma/gammaMax_;
-
-  double zjet=0.;
-  double Gamma=0.;
-  if (rr <= rt) {
-    zjet = rr*rr/(ar*ar);
-    Gamma = aGamma*sqrt(zjet);
-  }else{
-    zjet = rr/theta0 - ht;
-    Gamma = gammaMax_;
-  }
-
-  qty[0]=zjet;
-  qty[1]=Gamma;
-}
-
+//void Jet::tell(Hook::Teller* msg) {
+  //if (msg==gg_) updateSpin();
+//}
