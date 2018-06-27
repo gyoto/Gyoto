@@ -75,43 +75,43 @@ double Spectrum::ThermalBremsstrahlung::operator()(double nu,
 }
 
 double Spectrum::ThermalBremsstrahlung::jnuCGS(double nu) const{
+  /*
+    This emission coefficient comes from Stepney&Guilbert (1983) eq.2-3
+    for most of it, plus Straub+12 for the 1/4pi*h/kT*exp() term.
+    It is valid both for nonrelativistic (kT/mc2 << 1) and relativistic
+    (kT/mc2 = or > 1) electrons. It implements only the electron-ion
+    Brems. I checked that it reduces in the case kT/mc2 << 1 to the
+    simple expression in Rybicki&Lightman and my notes, up to an
+    unexplained constant factor of order 1.1, so I consider it okay
+    and checked.
+   */
+  
   //std::cout << "in brems cst,ne,Te= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
-  double temp_e = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-  double jnu=0.;
-  if (temp_e < 0.01){
-    // Brems for non-relat emitter
-    jnu = cst_*Tm05_*numberdensityCGS_*numberdensityCGS_
-      *exp(-GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_);
-  } else {
-    // Brems for relat emitter
-    // Formula from Stepney&Guilbert (1983) eq.2-3; Svensson (1982) eqs.19-20
-    // TO BE DOUBLE-CHECKED
-    double Fee=0., Fei=0.;
-    if (temp_e < 1.) {
-      Fee = 20./(9.*sqrt(M_PI))*(44.- 3.*M_PI*M_PI)*pow(temp_e,3./2.)
-	*(1.+1.1*temp_e+temp_e*temp_e - 1.25*pow(temp_e,2.5));
-      Fei = 4.*sqrt(2.*temp_e / (M_PI*M_PI*M_PI))*(1.+1.781*pow(temp_e,1.34));
-    }else{
-      Fee = 24.*temp_e*(log(2.*exp(-GYOTO_EULER_MASCHERONI)*temp_e)+1.25);
-      Fei = 9.*temp_e / (2.*M_PI)*(log(1.123*temp_e + 0.42) + 1.5);
-    }
-    
-    double fee = numberdensityCGS_*numberdensityCGS_*GYOTO_C_CGS
-      *GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS
-      *GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS
-      *GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*GYOTO_ALPHA_F*Fee;
-    double fei = numberdensityCGS_*numberdensityCGS_*GYOTO_THOMSON_CGS
-      *GYOTO_C_CGS*GYOTO_ALPHA_F*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*Fei;
-    
-    double gaunt=0.;
-    double fact=T_*GYOTO_BOLTZMANN_CGS/(GYOTO_PLANCK_CGS*nu);
-    if (fact<=1.) gaunt=sqrt(3./M_PI*fact);
-    else gaunt=sqrt(3.)/M_PI*log(4./GYOTO_EULER_MASCHERONI*fact) ;
-    jnu = 1./(4.*M_PI)				
-      *GYOTO_PLANCK_OVER_BOLTZMANN*1./T_		
-      *exp(-GYOTO_PLANCK_OVER_BOLTZMANN*nu/T_)	
-      *(fei+fee)*gaunt;
+  double theta_e = T_*GYOTO_BOLTZMANN_CGS
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double Fei=numberdensityCGS_*numberdensityCGS_*GYOTO_THOMSON_CGS
+    *GYOTO_C_CGS*GYOTO_ALPHA_F*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS;
+  if (theta_e < 1.) {
+    Fei *= 4.*sqrt(2.*theta_e / (M_PI*M_PI*M_PI))*(1.+1.781*pow(theta_e,1.34));
+  }else{
+    Fei *= 9.*theta_e / (2.*M_PI)*(log(1.123*theta_e + 0.42) + 1.5);
   }
+
+  // Gaunt factor from Rybicki&Lightman
+  double gaunt=0.;
+  double fact=T_*GYOTO_BOLTZMANN_CGS/(GYOTO_PLANCK_CGS*nu);
+  if (fact<=1.) gaunt=sqrt(3./M_PI*fact);
+  else gaunt=sqrt(3.)/M_PI*log(4./exp(GYOTO_EULER_MASCHERONI)*fact) ;
+  // NB: in the above formula, I use the fact that the dzeta appearing
+  // in Fig. 5.2 of Rybicki&Lightman is exp(euler_cst)=exp(0.577)=1.781,
+  // this is unfortunately not clearly defined in RL...
+  // See eg Gayet70 for an independent reference.
+  
+  double jnu = 1./(4.*M_PI)				
+    *GYOTO_PLANCK_OVER_BOLTZMANN*Tm1_		
+    *exp(-GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)	
+    *Fei*gaunt;
   return jnu;
 }
 
