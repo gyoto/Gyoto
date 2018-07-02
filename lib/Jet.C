@@ -138,14 +138,14 @@ void Jet::radiativeQ(double Inu[], // output
   double number_density = baseNumberDensity_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
   
-  //cout << "jet nb dens= " << number_density << endl;
-  
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << nu0 << endl;
 
   // NONTHERMAL SYNCHROTRON
   double jnu_synch_PL[nbnu], anu_synch_PL[nbnu];
@@ -167,6 +167,7 @@ void Jet::radiativeQ(double Inu[], // output
 
     double jnu_tot = jnu_synch_PL[ii],
       anu_tot = anu_synch_PL[ii];
+    //cout << "jnu anu Snu ds= " << jnu_tot << " " << anu_tot << " " << jnu_tot/anu_tot << " " << dsem << endl;
 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
@@ -202,8 +203,8 @@ double Jet::operator()(double const coord[4]) {
 
   if  (fabs(zz) < jetBaseHeight_) return 1.; // outside jet
 
-  double rcyljetout = zz*tan(jetOuterOpeningAngle_),
-    rcyljetin = zz*tan(jetInnerOpeningAngle_);
+  double rcyljetout = fabs(zz*tan(jetOuterOpeningAngle_)),
+    rcyljetin = fabs(zz*tan(jetInnerOpeningAngle_));
 
   if  ((rcyl <  rcyljetout) and (rcyl >  rcyljetin)) return -1.; // inside jet
   else return 1.; // outside jet
@@ -228,7 +229,10 @@ void Jet::getVelocity(double const pos[4], double vel[4])
     throwError("In Jet::getVelocity: Unknown coordinate system kind");
   }
 
-  double Vr = sqrt(gammaJet_-1.)/gammaJet_;
+  // \vec{V} = V^r \partial_r, V = V^r \sqrt{g_rr}
+  // Gamma = 1/sqrt{1-V^2}, so:
+  double Vr = 1./sqrt(gg_->gmunu(pos,1,1))
+    *sqrt(gammaJet_*gammaJet_-1.)/gammaJet_;
 
   // KerrBL-specific part
   double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
@@ -241,11 +245,8 @@ void Jet::getVelocity(double const pos[4], double vel[4])
   vel[2] = 0.;
   vel[3] = gammaJet_*uphiZAMO;
 
-  //cout << "jet stuff= " << zz << " " << ht << " " << ar << " " << 1./theta0 << endl;
-  //cout <<"beta stuff= " << dzOverdrho << " " << rcyl << " " << rcyljet << " " << beta0 << " " << beta1 << " " << beta << endl;
-  //cout << "velo stuff= " << pos[1] << " " << pos[2] << " " << Vr << " " << Vth << " " << beta << endl;
+  //cout << "V= " << sqrt(gg_->gmunu(pos,1,1))*Vr << endl;
   //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
-  //cout << "4-vel= " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
 }
 
 bool Jet::isThreadSafe() const {
