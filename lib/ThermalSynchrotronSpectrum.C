@@ -92,38 +92,52 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
   double Theta_elec
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  // The following test is factorized in radiativeQ below
-  //double thetae_min_ther = 0.01;
-  //if (Theta_elec < thetae_min_ther) return 0.;
-  // Below this value, 0/0 problems arise. From mma it is clear
-  // that jnu goes quickly to 0 for thetae<0.01
+  //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
+
+  int useWZ00=0; // 1 to use WZ00, 0 to use Pandya+16
+  double emis_synch=0.;
   
-  double gamma0=0., chi0=0.;
-  double sth=sin(angle_B_pem_), cth=cos(angle_B_pem_);
-  if (Theta_elec<=0.08){
-    gamma0 = sqrt(1+2.*nu*Theta_elec/cyclotron_freq_
-		  *pow(1.+9.*nu*Theta_elec*sth*sth/(2.*cyclotron_freq_)
-		       ,-0.3333333333));
-    chi0 = sqrt((2.*Theta_elec*(gamma0*gamma0-1.))
-		/(gamma0*(3.*gamma0*gamma0-1.)));
+  if (useWZ00==1){
+    // Wardzinski & Zdziarski 2000
+    double gamma0=0., chi0=0.;
+    double sth=sin(angle_B_pem_), cth=cos(angle_B_pem_);
+    if (Theta_elec<=0.08){
+      gamma0 = sqrt(1+2.*nu*Theta_elec/cyclotron_freq_
+		    *pow(1.+9.*nu*Theta_elec*sth*sth/(2.*cyclotron_freq_)
+			 ,-0.3333333333));
+      chi0 = sqrt((2.*Theta_elec*(gamma0*gamma0-1.))
+		  /(gamma0*(3.*gamma0*gamma0-1.)));
+    }else{
+      gamma0 = sqrt(1.+pow(4.*nu*Theta_elec/(3.*cyclotron_freq_*sth)
+			   ,0.6666666666));
+      chi0 = sqrt(2.*Theta_elec/(3.*gamma0));
+    }
+    double tt = sqrt(gamma0*gamma0-1.)*sth,
+      nn = nu*(1.+tt*tt)/(cyclotron_freq_*gamma0);
+    double Z0 = pow((tt*exp(1./sqrt(1.+tt*tt)))/(1.+sqrt(1.+tt*tt)),2.*nn);
+    double K2 = bessel_K2_;
+    //std::cout << "bessel= " << K2 << std::endl;
+    double ne0 = numberdensityCGS_/Theta_elec*gamma0*sqrt(gamma0*gamma0-1.)/K2
+      *exp(-gamma0/Theta_elec);
+    // this is j_nu synchro:
+    emis_synch =
+      M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
+      /(2.*GYOTO_C_CGS)*sqrt(cyclotron_freq_*nu)*chi0*ne0
+      *(1.+2.*cth*cth/(sth*sth*gamma0*gamma0))
+      *pow(1.-(1.-1./(gamma0*gamma0))*cth*cth,0.25)
+      *Z0;
+    //std::cout << "stuff in emis synch ther= " << cyclotron_freq_ << " " << nu << " " << chi0 << " " << ne0 << " " << gamma0 << " " << Z0 << " " << angle_B_pem_ << " " << emis_synch << std::endl;
   }else{
-    gamma0 = sqrt(1.+pow(4.*nu*Theta_elec/(3.*cyclotron_freq_*sth)
-			 ,0.6666666666));
-    chi0 = sqrt(2.*Theta_elec/(3.*gamma0));
+    // Pandya, Zhang, Chandra, Gammie, 2016
+    double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+      xx = nu/nus,
+      Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*	\
+      pow(pow(xx,1./2.)+pow(2.,11./12.)*pow(xx,1./6.),2.);
+    emis_synch = numberdensityCGS_*					\
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js;
   }
-  double tt = sqrt(gamma0*gamma0-1.)*sth,
-    nn = nu*(1.+tt*tt)/(cyclotron_freq_*gamma0);
-  double Z0 = pow((tt*exp(1./sqrt(1.+tt*tt)))/(1.+sqrt(1.+tt*tt)),2.*nn);
-  double K2 = bessel_K2_;
-  double ne0 = numberdensityCGS_/Theta_elec*gamma0*sqrt(gamma0*gamma0-1.)/K2
-    *exp(-gamma0/Theta_elec);
-  // this is j_nu synchro:
-  double emis_synch =
-    M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
-    /(2.*GYOTO_C_CGS)*sqrt(cyclotron_freq_*nu)*chi0*ne0
-    *(1.+2.*cth*cth/(sth*sth*gamma0*gamma0))
-    *pow(1.-(1.-1./(gamma0*gamma0))*cth*cth,0.25)
-    *Z0;
 
   return emis_synch;
 }
@@ -165,12 +179,17 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
     if (!angle_averaged_){
       jnucur = jnuCGS(nu);
     }else{
-      double th0=0., thNm1=M_PI;
+      double th0=0.01, thNm1=M_PI-0.01; // sin(theta) must never be 0
       double hh=(thNm1-th0)/double(nstep_angint);
-      for (int jj=1;jj<=2*nstep_angint-3;jj+=2){
-	double theta=th0+double(jj)/2.*hh;
+      double theta=th0;
+      angle_B_pem(theta);
+      double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
+      for (int jj=1;jj<=nstep_angint;jj++){
+	theta=th0+double(jj)*hh;
 	angle_B_pem(theta);
-	jnucur+=0.5*hh*jnuCGS(nu)*sin(theta);
+	jnusinnext=jnuCGS(nu)*sin(theta);
+	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
+	jnusinprev=jnusinnext;
 	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }

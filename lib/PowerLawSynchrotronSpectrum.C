@@ -33,6 +33,9 @@ GYOTO_PROPERTY_START(Spectrum::PowerLawSynchrotron,
 GYOTO_PROPERTY_END(Spectrum::PowerLawSynchrotron, Generic::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
+#define usePMT83 0 // 1 to use PMT83 jnu and alphanu, 0 to use Pandya+16
+#define gamma_min 1.
+#define gamma_max DBL_MAX
 
 Spectrum::PowerLawSynchrotron::PowerLawSynchrotron()
 : Spectrum::Generic("PowerLawSynchrotron"),
@@ -79,35 +82,74 @@ double Spectrum::PowerLawSynchrotron::operator()(double nu,
 }
 
 double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
-  /* 
-     From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
-     Putting g(mu)=1 and using (Y+ + Y_)=2 to get jnu and alphanu.
-     NB: putting g(mu)=1 or 1/2 is not important, it boils down
-     to redefining the % amount delta of PL energy wrt THER energy
-  */
-  //std::cout << "PL synch stuff= " << cyclotron_freq_ << " " << angle_B_pem_ << " " << PLindex_ << " " << numberdensityCGS_ << " " << angle_averaged_ << std::endl;
-  double emis_synch =
-    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
-    *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
-    *numberdensityCGS_*(PLindex_-1.)
-    *pow(3.*cyclotron_freq_*(PLindex_+1.)
-	 *sin(angle_B_pem_)/(4.*nu),0.5*(PLindex_-1.))
-    *exp(-0.5*(PLindex_+1.));
+  double emis_synch = 0.;
+
+  if (usePMT83==1){
+    /* 
+       From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
+       Putting g(mu)=1 and using (Y+ + Y_)=2 to get jnu and alphanu.
+       NB: putting g(mu)=1 or 1/2 is not important, it boils down
+       to redefining the % amount delta of PL energy wrt THER energy
+    */
+    //std::cout << "PL synch stuff= " << cyclotron_freq_ << " " << angle_B_pem_ << " " << PLindex_ << " " << numberdensityCGS_ << " " << angle_averaged_ << std::endl;
+    emis_synch =
+      sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
+      *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
+      *numberdensityCGS_*(PLindex_-1.)
+      *pow(3.*cyclotron_freq_*(PLindex_+1.)
+	   *sin(angle_B_pem_)/(4.*nu),0.5*(PLindex_-1.))
+      *exp(-0.5*(PLindex_+1.));
+  }else{
+    // Pandya, Zhang, Chandra, Gammie, 2016
+    if (gamma_max<sqrt(nu/cyclotron_freq_))
+      throwError("In PLSynchro: increase gamma_max");
+    // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
+    
+    double sinth = sin(angle_B_pem_);
+    double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/	\
+      (2.*(PLindex_+1.)*(pow(gamma_min,1.-PLindex_) -
+			 pow(gamma_max,1.-PLindex_))) * \
+      tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *	\
+      pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.);
+    emis_synch = numberdensityCGS_*					\
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js;
+  }
   
   return emis_synch;
 }
 
 double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
-  // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
-  double abs_synch =
-    sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
-    *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
-    *numberdensityCGS_*(PLindex_-1.)
-    *pow(3.*cyclotron_freq_*(PLindex_+2.)*sin(angle_B_pem_)
-	 /(4.*nu),0.5*PLindex_)
-    *exp(-0.5*(PLindex_+2.))
-    *(PLindex_+2.)
-    /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
+  double abs_synch = 0.;
+    
+  if (usePMT83==1){
+    // From Petrosian & McTiernan 1983, Phys. Fluids 26 (10), eq. 32
+    abs_synch =
+      sqrt(3.)*M_PI*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS
+      *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
+      *numberdensityCGS_*(PLindex_-1.)
+      *pow(3.*cyclotron_freq_*(PLindex_+2.)*sin(angle_B_pem_)
+	   /(4.*nu),0.5*PLindex_)
+      *exp(-0.5*(PLindex_+2.))
+      *(PLindex_+2.)
+      /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
+  }else{
+    if (gamma_max<sqrt(nu/cyclotron_freq_))
+      throwError("In PLSynchro: increase gamma_max");
+    // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
+
+    double sinth = sin(angle_B_pem_);
+    double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/	\
+      (4.*(pow(gamma_min,1.-PLindex_) -
+			 pow(gamma_max,1.-PLindex_))) *			\
+      tgamma((3.*PLindex_+12.)/12.)*tgamma((3.*PLindex_+22.)/12.) *	\
+      pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.);
+    abs_synch = numberdensityCGS_*					\
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
+      (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
+      As;
+  }
   
   return abs_synch;
 }
@@ -124,14 +166,20 @@ void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
       jnucur = jnuCGS(nu);
       anucur = alphanuCGS(nu);
     }else{
-      double th0=0., thNm1=M_PI;
+      double th0=0.01, thNm1=M_PI-0.01; // avoiding sinth=0.
       double hh=(thNm1-th0)/double(nstep_angint);
-      for (int jj=1;jj<=2*nstep_angint-3;jj+=2){
-	double theta=th0+double(jj)/2.*hh;
+      double theta=th0;
+      angle_B_pem(theta);
+      double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
+      double anusinprev=alphanuCGS(nu)*sin(theta), anusinnext=anusinprev;
+      for (int jj=1;jj<=nstep_angint;jj++){
+	theta=th0+double(jj)/2.*hh;
 	angle_B_pem(theta);
-	jnucur+=0.5*hh*jnuCGS(nu)*sin(theta);
+	jnusinnext=jnuCGS(nu)*sin(theta);
+	anusinnext=alphanuCGS(nu)*sin(theta);
+	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
+	anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
 	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
-	anucur+=0.5*hh*alphanuCGS(nu)*sin(theta);
       }
     }
     
