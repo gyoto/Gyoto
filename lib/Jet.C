@@ -35,6 +35,12 @@
 #include <limits>
 #include <string>
 
+/* *** FOR HYPERGEOMETRIC FUNCTION *** */
+#include <complex>
+#include "MichelStoitsovHypergeometric.h"
+#include "MichelStoitsovHypergeometric.C"
+////////////////////////////////////////
+
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
@@ -45,9 +51,11 @@ GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle)
 GYOTO_PROPERTY_DOUBLE(Jet, JetBaseHeight, jetBaseHeight)
 GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
 GYOTO_PROPERTY_DOUBLE(Jet, BaseNumberDensity, baseNumberDensity)
+GYOTO_PROPERTY_DOUBLE(Jet, BaseTemperature, baseTemperature)
+GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(Jet, MagneticParticlesEquipartitionRatio,
 		      magneticParticlesEquipartitionRatio)
-GYOTO_PROPERTY_DOUBLE(Jet, ExpoPL, expoPL)
+GYOTO_PROPERTY_DOUBLE(Jet, KappaIndex, kappaIndex)
 GYOTO_PROPERTY_END(Jet, Standard::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
@@ -63,26 +71,32 @@ void Jet::gammaJet(double gam) {gammaJet_=gam;}
 double Jet::gammaJet()const{return gammaJet_;}
 void Jet::baseNumberDensity(double ne) {baseNumberDensity_=ne;}
 double Jet::baseNumberDensity()const{return baseNumberDensity_;}
+void Jet::baseTemperature(double tt) {baseTemperature_=tt;}
+double Jet::baseTemperature()const{return baseTemperature_;}
+void Jet::temperatureSlope(double ss) {temperatureSlope_=ss;}
+double Jet::temperatureSlope()const{return temperatureSlope_;}
 void Jet::magneticParticlesEquipartitionRatio(double rr) {
   magneticParticlesEquipartitionRatio_=rr;}
 double Jet::magneticParticlesEquipartitionRatio()const{
   return magneticParticlesEquipartitionRatio_;}
-void Jet::expoPL(double index) {
-  spectrumPLSynch_->PLindex(index);
+void Jet::kappaIndex(double index) {
+  spectrumKappaSynch_->kappaindex(index);
 }
-double Jet::expoPL()const{return spectrumPLSynch_->PLindex();}
+double Jet::kappaIndex()const{
+  return spectrumKappaSynch_->kappaindex();
+}
 
 //
 
 Jet::Jet() :
   Standard("Jet"), jetOuterOpeningAngle_(0.785),
   jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
-  gammaJet_(1.), baseNumberDensity_(1.),
+  gammaJet_(1.), baseNumberDensity_(1.), baseTemperature_(1e10),
+  temperatureSlope_(1.),
   magneticParticlesEquipartitionRatio_(1.)
 {
   GYOTO_DEBUG << endl;
-  spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
-
+  spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
 }
 
 Jet::Jet(const Jet& o) :
@@ -90,12 +104,14 @@ Jet::Jet(const Jet& o) :
   jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
   jetBaseHeight_(o.jetBaseHeight_),
   gammaJet_(o.gammaJet_), baseNumberDensity_(o.baseNumberDensity_),
+  baseTemperature_(o.baseTemperature_),
+  temperatureSlope_(o.temperatureSlope_),
   magneticParticlesEquipartitionRatio_(o.magneticParticlesEquipartitionRatio_),
-  spectrumPLSynch_(NULL)
+  spectrumKappaSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
-  if (o.spectrumPLSynch_()) spectrumPLSynch_=o.spectrumPLSynch_->clone();
+  if (o.spectrumKappaSynch_()) spectrumKappaSynch_=o.spectrumKappaSynch_->clone();
 
 }
 Jet* Jet::clone() const
@@ -133,10 +149,20 @@ void Jet::radiativeQ(double Inu[], // output
   default:
     throwError("In Jet::radiativeQ: Unknown coordinate system kind");
   }
-  
+
   double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
   double number_density = baseNumberDensity_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+  double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
+					    temperatureSlope_);
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  complex<double> aa=kappaIndex()-1./3., bb=kappaIndex()+1.,
+    cc=kappaIndex()+2./3., zed=-kappaIndex()*thetae;
+  const complex<double> FF = hyp_2F1(aa,bb,cc,zed);//Gauss hypergeometric
+  double hypergeom = FF.real();
+  //cout << "hypergeom stuff: " << " " << aa << " " << bb << " " << cc << " " << zed << " " << hypergeom << endl;
   
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
@@ -145,28 +171,31 @@ void Jet::radiativeQ(double Inu[], // output
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
-  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << nu0 << endl;
+  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
 
-  // NONTHERMAL SYNCHROTRON
-  double jnu_synch_PL[nbnu], anu_synch_PL[nbnu];
+  // KAPPA-DISTRIB SYNCHROTRON
+  double jnu_synch_kappa[nbnu], anu_synch_kappa[nbnu];
   for (size_t ii=0; ii<nbnu; ++ii){
     // Initializing to <0 value to create errors if not updated
-    jnu_synch_PL[ii]=-1.;
-    anu_synch_PL[ii]=-1.;
+    jnu_synch_kappa[ii]=-1.;
+    anu_synch_kappa[ii]=-1.;
   } 
-  spectrumPLSynch_->numberdensityCGS(number_density);
-  spectrumPLSynch_->angle_averaged(1); // impose angle-averaging
-  spectrumPLSynch_->angle_B_pem(0.); // so we don't care about angle
-  spectrumPLSynch_->cyclotron_freq(nu0);
-
-  spectrumPLSynch_->radiativeQ(jnu_synch_PL,anu_synch_PL,
-			       nu_ems,nbnu);
+  spectrumKappaSynch_->numberdensityCGS(number_density);
+  spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
+  spectrumKappaSynch_->angle_B_pem(0.); // so we don't care about angle
+  spectrumKappaSynch_->cyclotron_freq(nu0);
+  spectrumKappaSynch_->thetae(thetae);
+  spectrumKappaSynch_->hypergeometric(hypergeom);
+  
+  spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
+				  nu_ems,nbnu);
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
 
-    double jnu_tot = jnu_synch_PL[ii],
-      anu_tot = anu_synch_PL[ii];
+    double jnu_tot = jnu_synch_kappa[ii],
+      anu_tot = anu_synch_kappa[ii];
+
     //cout << "jnu anu Snu ds= " << jnu_tot << " " << anu_tot << " " << jnu_tot/anu_tot << " " << dsem << endl;
 
     // expm1 is a precise implementation of exp(x)-1
@@ -214,27 +243,10 @@ double Jet::operator()(double const coord[4]) {
 
 void Jet::getVelocity(double const pos[4], double vel[4])
 {
-  double rcyl=0.; // cylindrical radius
-  double zz=0.; // height, z coord
-  switch (gg_->coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    rcyl = pos[1]*sin(pos[2]);
-    zz   = pos[1]*cos(pos[2]);
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    rcyl = pow(pos[1]*pos[1]+pos[2]*pos[2], 0.5);
-    zz   = pos[3];
-    break;
-  default:
-    throwError("In Jet::getVelocity: Unknown coordinate system kind");
-  }
-
-  // \vec{V} = V^r \partial_r, V = V^r \sqrt{g_rr}
-  // Gamma = 1/sqrt{1-V^2}, so:
   double Vr = 1./sqrt(gg_->gmunu(pos,1,1))
     *sqrt(gammaJet_*gammaJet_-1.)/gammaJet_;
 
-  // KerrBL-specific part
+  // KerrBL-specific part -- to generalize if possible
   double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
@@ -251,7 +263,7 @@ void Jet::getVelocity(double const pos[4], double vel[4])
 
 bool Jet::isThreadSafe() const {
   return Standard::isThreadSafe()
-    && (!spectrumPLSynch_ || spectrumPLSynch_->isThreadSafe());
+    && (!spectrumKappaSynch_ || spectrumKappaSynch_->isThreadSafe());
 }
 
 void Jet::metric(SmartPointer<Metric::Generic> gg) {
@@ -263,24 +275,4 @@ void Jet::metric(SmartPointer<Metric::Generic> gg) {
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed
   Generic::metric(gg);
-  //updateSpin();
-  //gg->hook(this);
 }
-
-// void Jet::updateSpin() {
-//   if (!gg_) return;
-//   switch (gg_->coordKind()) {
-//   case GYOTO_COORDKIND_SPHERICAL:
-//     aa_ = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-//     break;
-//   case GYOTO_COORDKIND_CARTESIAN:
-//     aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
-//     break;
-//   default:
-//     throwError("Jet::updateSpin(): unknown COORDKIND");
-//   }
-// }
-
-//void Jet::tell(Hook::Teller* msg) {
-  //if (msg==gg_) updateSpin();
-//}
