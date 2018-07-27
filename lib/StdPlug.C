@@ -57,6 +57,7 @@
 #include "GyotoThermalBremsstrahlungSpectrum.h"
 #include "GyotoThermalSynchrotronSpectrum.h"
 #include "GyotoPowerLawSynchrotronSpectrum.h"
+#include "GyotoKappaDistributionSynchrotronSpectrum.h"
 
 using namespace Gyoto;
 
@@ -119,4 +120,6 @@ extern "C" void __GyotostdplugInit() {
 		     &(Spectrum::Subcontractor<Spectrum::ThermalSynchrotron>));
   Spectrum::Register("PowerLawSynchrotron", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLawSynchrotron>));
+  Spectrum::Register("KappaDistributionSynchrotron", 
+		     &(Spectrum::Subcontractor<Spectrum::KappaDistributionSynchrotron>));
 }
