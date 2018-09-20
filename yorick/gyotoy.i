@@ -162,6 +162,19 @@ func gyotoy_set_KerrBL_metric(spin, void)
   gyotoy_compute_and_draw;
 }
 
+func gyotoy_set_KerrKS_metric(spin, void)
+{
+  extern _gyotoy_metric, _gyotoy_particle, _gyotoy_txyz;
+  if (!is_numerical(spin)) spin = spin.get_value();
+
+  _gyotoy_metric = gyoto_KerrKS ( spin = spin );
+  if (_gyotoy_inhibit_redraw) return;
+  //if (catch(0x08)) return; // avoid breaking in case of v>c
+  _gyotoy_particle,metric=_gyotoy_metric,
+                   initcoord=_gyotoy_initcoord(1:4), _gyotoy_initcoord(5:7);
+  gyotoy_compute_and_draw;
+}
+
 func gyotoy_set_metric(fname, void)
 {
   extern _gyotoy_metric, _gyotoy_particle, _gyotoy_txyz, _gyotoy_metric_file;
@@ -876,7 +889,8 @@ func _gyotoy_metric_type(wdg, data)
 {
   type_id = wdg.get_active();
   if (type_id == 0) type = "kerrbl";
-  else if (type_id == 1) type = "file";
+  else if (type_id == 1) type = "kerrks";
+  else if (type_id == 2) type = "file";
 
   if (type=="file") {
     noop, _gyotoy.builder.get_object("spin").set_sensitive(0);
@@ -895,6 +909,14 @@ func _gyotoy_metric_type(wdg, data)
     noop, _gyotoy.builder.get_object("metric_file_label").set_visible(0);
     noop, _gyotoy.builder.get_object("metric_file").set_visible(0);
     gyotoy_set_KerrBL_metric, _gyotoy.builder.get_object("spin");
+  } else if (type=="kerrks") {
+    noop, _gyotoy.builder.get_object("spin").set_visible(1);
+    noop, _gyotoy.builder.get_object("spin").set_sensitive(1);
+    noop, _gyotoy.builder.get_object("spin_label").set_visible(1);
+    noop, _gyotoy.builder.get_object("metric_file").set_sensitive(0);
+    noop, _gyotoy.builder.get_object("metric_file_label").set_visible(0);
+    noop, _gyotoy.builder.get_object("metric_file").set_visible(0);
+    gyotoy_set_KerrKS_metric, _gyotoy.builder.get_object("spin");
   } else {
     error, "Unknown metric type";
   }
