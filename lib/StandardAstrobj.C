@@ -45,7 +45,7 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Standard,
   "Gyoto::Astrobj whose shape is defined by a scalar function.")
 GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue,
   "Value of the function below which to look more carefully.")
-GYOTO_PROPERTY_DOUBLE(Standard, DeltaInobj, deltaInObj,
+GYOTO_PROPERTY_DOUBLE(Standard, DeltaInObj, deltaInObj,
 		      "Value of the constant integration step "
 		      "inside the astrobj (geometrical units)")
 GYOTO_PROPERTY_END(Standard, Generic::properties)
@@ -217,6 +217,6 @@ void Standard::safetyValue(double val) {safety_value_ = val; }
 double Standard::safetyValue() const { return safety_value_; }
 
 double Standard::deltaInObj() const { return delta_inobj_; }
-void   Standard::deltaInObj(double val) {delta_inobj_ = val; }
+void   Standard::deltaInObj(double val) { delta_inobj_ = val; }
 
 double Standard::giveDelta(double *) { return deltaInObj(); }
