@@ -4,6 +4,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoHayward.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -33,3 +34,5 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
+#include "GyotoThermalSynchrotronSpectrum.h"
+#include "GyotoPowerLawSynchrotronSpectrum.h"

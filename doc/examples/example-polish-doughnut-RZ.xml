@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
-  <Metric kind = "KerrBL">
+
+  <Metric kind = "RezzollaZhidenko">
     <Mass unit="sunmass">4.31e6</Mass>
-    <Spin>0.9</Spin>
+    <Epsilon>0.01</Epsilon> Horizon parameter rH=2/(1+eps)
+    <AParam>0.01 0.01</AParam> RZ14 a-parameters [a0,a1,a2,a3];
+                             are zero if not provided
+    <BParam>0.01 0.01</BParam> same for RZ14 b-parameters
   </Metric>
+
+  Compare with Schwarzschild metric:
+  <!-- <Metric kind = "KerrBL"> -->
+  <!--   <Mass unit="sunmass">4.31e6</Mass> -->
+  <!--   <Spin>0.</Spin> -->
+  <!-- </Metric> -->
 
   <Screen>
     <Distance unit="kpc"> 8.33 </Distance>
@@ -40,7 +50,7 @@
     <AngleAveraged/>
     
     Constant angular momentum -u_phi / u_t, and inner radius
-    <AngMomRinner> 3.2 4.2 </AngMomRinner>
+    <AngMomRinner> 4. 6.2 </AngMomRinner>
 
     Typical SgrA* enthalpy hc = 9000 cgs; ne [cm^{-3}] ~ 700 * hc [cgs]
     <CentralEnthalpyPerUnitVolume unit="erg/cm3"> 

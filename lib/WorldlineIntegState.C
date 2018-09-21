@@ -30,6 +30,7 @@ using namespace std ;
 using namespace Gyoto;
 
 #ifdef GYOTO_HAVE_BOOST_INTEGRATORS
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/numeric/odeint/stepper/generation.hpp>
 using namespace boost::numeric::odeint;
 

@@ -1,9 +1,27 @@
 /**
  * \file GyotoJet.h
- * \brief Simple jet model from Zdziarski, Stawarz & Sikora (MNRAS,2017)
+ * \brief Simple jet model with kappa-distribution
+ * synchrotron emission from Pandya et al. (2016)
  *
- * This class implements model III of jets of the above paper.
- * It assumes synchrotron radiation emission by power-law electrons.
+ * This class implements a jet defined as the volume contained
+ * between the two conical surfaces defined by angles jetInnerOpeningAngle_
+ * and jetOuterOpeningAngle_, with apex located on the black hole rotation
+ * axis at altitude jetBaseHeight_ in units of M.
+ *
+ * The Lorentz factor is assumed constant at gammaJet_.
+ * The electron number density at the base of the jet is baseNumberDensity_,
+ * its z-evolution is dedictated by mass conservation.
+ * The electron temperature is baseTemperature_, its z-evolution is assumed
+ * to follow a power law z^temperatureSlope_. The magnetic field
+ * amplitude is defined by the magnetic-to-particles equipartition ratio,
+ * magneticParticlesEquipartitionRatio_.
+ * 
+ * The jet emits synchrotron radiation, assuming that the electrons
+ * follow a kappa distribution, ie the smooth gluing of a thermal
+ * distribution at low electron Lorentz factor, to a power-law distribution
+ * at high electron Lorentz factor. This distribution, as well as the
+ * resulting emission and absorption coefficients are taken from:
+ * Pandya et al., ApJ, 822, 34 (2016), section 5.3.3
  */
 
 /*
@@ -36,15 +54,33 @@ namespace Gyoto{
   namespace Astrobj { class Jet; }
 }
 
-//#include <GyotoMetric.h>
 #include <GyotoStandardAstrobj.h>
+#include <GyotoKappaDistributionSynchrotronSpectrum.h>
 
 /**
  * \class Gyoto::Astrobj::Jet
- * \brief Simple jet model from Zdziarski, Stawarz & Sikora (MNRAS,2017)
+ * \brief Simple jet model with kappa-distribution
+ * synchrotron emission from Pandya et al. (2016)
  *
- * This class implements model III of jets of the above paper.
- * It assumes synchrotron radiation emission by power-law electrons.
+ * This class implements a jet defined as the volume contained
+ * between the two conical surfaces defined by angles jetInnerOpeningAngle_
+ * and jetOuterOpeningAngle_, with apex located on the black hole rotation
+ * axis at altitude jetBaseHeight_ in units of M.
+ * 
+ * The Lorentz factor is assumed constant at gammaJet_.
+ * The electron number density at the base of the jet is baseNumberDensity_,
+ * its z-evolution is dedictated by mass conservation.
+ * The electron temperature is baseTemperature_, its z-evolution is assumed
+ * to follow a power law z^temperatureSlope_. The magnetic field
+ * amplitude is defined by the magnetic-to-particles equipartition ratio,
+ * magneticParticlesEquipartitionRatio_.
+ *
+ * The jet emits synchrotron radiation, assuming that the electrons
+ * follow a kappa distribution, ie the smooth gluing of a thermal
+ * distribution at low electron Lorentz factor, to a power-law distribution
+ * at high electron Lorentz factor. This distribution, as well as the
+ * resulting emission and absorption coefficients are taken from:
+ * Pandya et al., ApJ, 822, 34 (2016), section 5.3.3
  */
 
 class Gyoto::Astrobj::Jet
@@ -53,13 +89,15 @@ class Gyoto::Astrobj::Jet
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Jet>;
  private:
-  double aa_; ///< Kerr spin
-  double baseJetHeight_; ///< Height of the base of the jet (z value)
-  double baseJetRadiusOverHeight_; ///< Ratio base cylindrical radius / base height
-  double gammaMax_; ///< Max Lorentz factor in jet
-  double mdotJet_; ///< Mass-flow rate
-  double alfvenRadiusCoef_; ///< Ratio of Alfven radius to light-cylinder radius
-  double expoPL_; ///< Power-law index, ne(gamma) \propto gamma^{-p}
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_;
+  double jetOuterOpeningAngle_; ///< Jet outer opening angle (rad)
+  double jetInnerOpeningAngle_; ///< Jet inner opening angle (rad)
+  double jetBaseHeight_; ///< Height of the base of the jet (z value, M units)
+  double gammaJet_; ///< Constant Lorentz factor in jet
+  double baseNumberDensity_; ///< electron nb density at jet base (cgs)
+  double baseTemperature_; ///< electron temperature at jet base (K)
+  double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
+  double magneticParticlesEquipartitionRatio_; ///< Ratio of magnetic to particles energy density
 
   // Constructors - Destructor
   // -------------------------
@@ -77,18 +115,24 @@ class Gyoto::Astrobj::Jet
   // Accessors
   // ---------
  public:
-  void baseJetHeight(double hh);
-  double baseJetHeight()const;
-  void baseJetRadiusOverHeight(double par);
-  double baseJetRadiusOverHeight()const;
-  void gammaMax(double gam);
-  double gammaMax()const;
-  void mdotJet(double mdot);
-  double mdotJet()const;
-  void alfvenRadiusCoef(double coef);
-  double alfvenRadiusCoef()const;
-  void expoPL(double index);
-  double expoPL()const;
+  void jetOuterOpeningAngle(double ang);
+  double jetOuterOpeningAngle() const;
+  void jetInnerOpeningAngle(double ang);
+  double jetInnerOpeningAngle() const;
+  void jetBaseHeight(double hh);
+  double jetBaseHeight() const;
+  void gammaJet(double gam);
+  double gammaJet() const;
+  void baseNumberDensity(double ne);
+  double baseNumberDensity()const;
+  void baseTemperature(double tt);
+  double baseTemperature()const;
+  void temperatureSlope(double ss);
+  double temperatureSlope()const;
+  void magneticParticlesEquipartitionRatio(double rr);
+  double magneticParticlesEquipartitionRatio()const;
+  void kappaIndex(double index);
+  double kappaIndex()const;
 
  public:
   using Generic::metric;
@@ -102,21 +146,7 @@ class Gyoto::Astrobj::Jet
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
-  virtual void updateSpin() ;
-  virtual void tell(Gyoto::Hook::Teller *msg);
-  void JetQuantitiesFromZ(const double zz, double qty[3]) const;
-  void JetQuantitiesFromR(const double rr, double qty[2]) const;
 
-  double emissionSynchro_PL_direction(double number_density_PL,
-				      double nuem, double nuc,
-				      double theta_mag) const;
-  double emissionSynchro_PL_averaged(double number_density_PL,
-				     double nuem, double nuc) const;
-  double absorptionSynchro_PL_direction(double number_density_PL,
-					double nuem, double nuc,
-					double theta_mag) const ;
-  double absorptionSynchro_PL_averaged(double number_density_PL,
-				       double nuem, double nuc) const;
 };
 
 #endif

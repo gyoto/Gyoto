@@ -64,8 +64,7 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
    *
    */
   int SpectralEmission_;
-  double risco_; ///< ISCO radius (if non-Kerr metric, not computable directly)
-  //  double rmax_; ///< Maximal extension of the disk !!! see Astrobj::rmax_
+
   // Constructors - Destructor
   // -------------------------
  public:
@@ -84,20 +83,12 @@ class Gyoto::Astrobj::PatternDiskBB : public Astrobj::PatternDisk {
  public:
   bool spectralEmission() const;
   void spectralEmission(bool t);
-  double risco() const;
-  void risco(double r);
 
  public:
   using PatternDisk::emission;
   double emission(double nu_em, double dsem,
 		  state_t const &c_ph, double const c_obj[8]=NULL) const;
   
-  double const * getVelocity() const ;
-  void getVelocity(double const pos[4], double vel[4])  ;
-
-  using Generic::metric;
-  void metric(SmartPointer<Metric::Generic> gg); ///< Insures metric is KerrBL or alike
-
 };
 
 #endif

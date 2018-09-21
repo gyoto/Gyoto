@@ -73,8 +73,8 @@ if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   noop, sc.screen.spectro(
                   gyoto_SpectroUniform(kind="freqlog",
                                        nsamples=20,
-                                       band=[-6, 8],
-                                       unit="eV")
+                                       band=[10, 14],
+                                       unit="Hz")
                   );
   noop, sc.astrobj.opticallythin(1);
   write, format="%s\n", "done.";

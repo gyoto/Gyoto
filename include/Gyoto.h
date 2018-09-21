@@ -87,7 +87,7 @@
  *
  * The base distribution includes three plug-ins: the standard plug-in
  * (\c stdplug), a plug-in for using <A
- * HREF="http://http://www.lorene.obspm.fr/">LORENE</A>-based
+ * HREF="http://www.lorene.obspm.fr/">LORENE</A>-based
  * numerical metrics (\c lorene) and a plug-in for writing custom
  * astronomical objects or metrics in the <A
  * HREF="https://www.python.org/">Python</A> (2.7 or 3.x) interpreted

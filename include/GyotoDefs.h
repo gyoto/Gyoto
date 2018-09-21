@@ -483,6 +483,10 @@ namespace Gyoto {
 #define GYOTO_ATOMIC_MASS_UNIT_CGS 1.660537781e-24
 /// \brief Factor to convert I<SUB>&nu;</SUB> from c.g.s. to SI
 #define GYOTO_INU_CGS_TO_SI 0.001
+/// \brief Factor to convert J<SUB>&nu;</SUB> from c.g.s. to SI
+#define GYOTO_JNU_CGS_TO_SI (GYOTO_INU_CGS_TO_SI  * 100.)
+/// \brief Factor to convert alpha<SUB>&nu;</SUB> from c.g.s. to SI
+#define GYOTO_ANU_CGS_TO_SI 100.
 
 /// \brief Sun mass (kg)
 #define GYOTO_SUN_MASS    1.98843e30

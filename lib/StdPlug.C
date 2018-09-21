@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2017 Thibaut Paumard
+    Copyright 2011-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -23,6 +23,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoHayward.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -54,6 +55,9 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
+#include "GyotoThermalSynchrotronSpectrum.h"
+#include "GyotoPowerLawSynchrotronSpectrum.h"
+#include "GyotoKappaDistributionSynchrotronSpectrum.h"
 
 using namespace Gyoto;
 
@@ -64,6 +68,7 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
   Metric::Register("ChernSimons", &(Metric::Subcontractor<Metric::ChernSimons>));
   Metric::Register("RezzollaZhidenko", &(Metric::Subcontractor<Metric::RezzollaZhidenko>));
+  Metric::Register("Hayward", &(Metric::Subcontractor<Metric::Hayward>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
@@ -111,4 +116,10 @@ extern "C" void __GyotostdplugInit() {
 		     &(Spectrum::Subcontractor<Spectrum::BlackBody>));
   Spectrum::Register("ThermalBremsstrahlung", 
 		     &(Spectrum::Subcontractor<Spectrum::ThermalBremsstrahlung>));
+  Spectrum::Register("ThermalSynchrotron", 
+		     &(Spectrum::Subcontractor<Spectrum::ThermalSynchrotron>));
+  Spectrum::Register("PowerLawSynchrotron", 
+		     &(Spectrum::Subcontractor<Spectrum::PowerLawSynchrotron>));
+  Spectrum::Register("KappaDistributionSynchrotron", 
+		     &(Spectrum::Subcontractor<Spectrum::KappaDistributionSynchrotron>));
 }

@@ -33,11 +33,13 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C RezzollaZhidenko.C \
+	ChernSimons.C RezzollaZhidenko.C Hayward.C \
 	Star.C StarTrace.C FixedStar.C InflateStar.C \
 	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
+	ThermalSynchrotronSpectrum.C \
+	PowerLawSynchrotronSpectrum.C KappaDistributionSynchrotronSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\

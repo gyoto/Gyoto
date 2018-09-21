@@ -134,6 +134,13 @@ double Complex::deltaMax(double coord[8]) {
   return h1max;
 }
 
+double Complex::rMax() {
+  double rmax = elements_[0] -> rMax(), rmaxnew=rmax;
+  for (size_t i=1; i<cardinal_; ++i)
+    if (rmax < (rmaxnew=elements_[i] -> rMax())) rmax=rmaxnew;
+  return rmax;
+}
+
 int Complex::Impact(Photon* ph, size_t index, Properties *data)
 {
   int res=0, *impact = new int[cardinal_];

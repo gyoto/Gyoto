@@ -79,6 +79,20 @@ class TestRezzollaZhidenko(unittest.TestCase):
         gg.aparam(a)
         self.assertTrue((gg.aparam() == a))
 
+class TestHayward(unittest.TestCase):
+
+    def test_mass(self):
+        gg=gyoto.std.Hayward()
+        m=2.
+        gg.mass(m)
+        self.assertTrue((gg.mass() == m))
+
+    def test_charge(self):
+        gg=gyoto.std.Hayward()
+        b=0.5
+        gg.charge(b)
+        self.assertTrue((gg.charge() == b))
+
 class TestStar(unittest.TestCase):
 
     def test_setInitCoord(self):

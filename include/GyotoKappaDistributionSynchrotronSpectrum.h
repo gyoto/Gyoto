@@ -1,11 +1,11 @@
 /**
- * \file GyotoThermalBremsstrahlungSpectrum.h
- * \brief Thermal brems spectrum
+ * \file GyotoKappaDistributionSynchrotronSpectrum.h
+ * \brief Powerlaw synchrotron spectrum
  *
  */
 
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2018 Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -23,47 +23,50 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoThermalBremsstrahlungSpectrum_H_ 
-#define __GyotoThermalBremsstrahlungSpectrum_H_ 
+#ifndef __GyotoKappaDistributionSynchrotronSpectrum_H_ 
+#define __GyotoKappaDistributionSynchrotronSpectrum_H_ 
 #include "GyotoSpectrum.h"
 #include <GyotoBlackBodySpectrum.h>
 
 namespace Gyoto {
   namespace Spectrum {
-    class ThermalBremsstrahlung;
+    class KappaDistributionSynchrotron;
   }
 }
 
 /**
- * \class Gyoto::Spectrum::ThermalBremsstrahlung
- * \brief Thermal brems spectrum
+ * \class Gyoto::Spectrum::KappaDistributionSynchrotron
+ * \brief Kappa-distribution synchrotron spectrum from Pandya et al. (2016)
  *
  *
  *  Example XML entity:
  *  \code
- *   <Spectrum kind="ThermalBremsstrahlung">
+ *   <Spectrum kind="KappaDistributionSynchrotron">
  *   </Spectrum>
  *  \endcode
  *
  */
-class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
-  friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalBremsstrahlung>;
+class Gyoto::Spectrum::KappaDistributionSynchrotron : public Gyoto::Spectrum::Generic {
+  friend class Gyoto::SmartPointer<Gyoto::Spectrum::KappaDistributionSynchrotron>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
-  double T_; ///< Temperature
-  double Tm1_; ///< 1/T
-  double Tm05_; ///< 1/sqrt(T)
   double numberdensityCGS_; ///< Number density in CGS UNITS (careful)
+  double angle_B_pem_; ///< Angle between Bfield and emission direction (rad)
+  double cyclotron_freq_; ///< Cyclotron frequency (e*B / 2*pi*me*c)
+  double thetae_; ///< Dimensionless electron temperature
+  double kappaindex_; ///< Kappa distribution index
+  double hypergeometric_; ///< Hypergeometric function evaluation
+  bool angle_averaged_; ///< Boolean for angle averaging
 
  public:
   GYOTO_OBJECT;
 
-  ThermalBremsstrahlung();
+  KappaDistributionSynchrotron();
 
   /**
    * \brief Constructor setting T_ and cst_
    */
-  virtual ThermalBremsstrahlung * clone() const; ///< Cloner
+  virtual KappaDistributionSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();
  /**
@@ -87,11 +90,21 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   // NB: the second argument, opacity in the Spectrum API
   // is useless here
 
-  double temperature() const;
-  void temperature(double tt);
   double numberdensityCGS() const;
   void numberdensityCGS(double rho);
-
+  double angle_B_pem() const;
+  void angle_B_pem(double aa);
+  double cyclotron_freq() const;
+  void cyclotron_freq(double ff);
+  double thetae() const;
+  void thetae(double th);
+  double kappaindex() const;
+  void kappaindex(double ind);
+  double hypergeometric() const;
+  void hypergeometric(double hh);
+  bool angle_averaged() const;
+  void angle_averaged(bool ang);
+  
  /**
    * Returns the emission coefficient j_nu in cgs units
    * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
@@ -107,15 +120,15 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   double alphanuCGS(double nu) const;
 
   /**
-   * Returns the emission and absorption coef jnu and alphanu in SI
+   * Returns the emission and absorption coef in SI
    *
    */
   void radiativeQ(double jnu[], // output
-		  double alphanu[], // output
+		  double anu[], // output
 		  double const nu_ems[],
 		  size_t nbnu
-		  );
-
+		  ) ;
+  
 };
 
 #endif
