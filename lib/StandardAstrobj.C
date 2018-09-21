@@ -45,11 +45,15 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Standard,
   "Gyoto::Astrobj whose shape is defined by a scalar function.")
 GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue,
   "Value of the function below which to look more carefully.")
+GYOTO_PROPERTY_DOUBLE(Standard, DeltaInObj, deltaInObj,
+		      "Value of the constant integration step "
+		      "inside the astrobj (geometrical units)")
 GYOTO_PROPERTY_END(Standard, Generic::properties)
 
 Standard::Standard(string kin) :
   Generic(kin),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  critical_value_(DBL_MIN), safety_value_(DBL_MAX),
+  delta_inobj_(0.05)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -58,7 +62,8 @@ Standard::Standard(string kin) :
 
 Standard::Standard() :
   Generic(),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  critical_value_(DBL_MIN), safety_value_(DBL_MAX),
+  delta_inobj_(0.05)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -76,7 +81,8 @@ Standard::Standard(double radmax) :
 
 Standard::Standard(const Standard& orig) :
   Generic(orig), Functor::Double_constDoubleArray(orig),
-  critical_value_(orig.critical_value_), safety_value_(orig.safety_value_)
+  critical_value_(orig.critical_value_), safety_value_(orig.safety_value_),
+  delta_inobj_(orig.delta_inobj_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -209,4 +215,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 void Standard::safetyValue(double val) {safety_value_ = val; }
 double Standard::safetyValue() const { return safety_value_; }
 
-double Standard::giveDelta(double *) {return 0.05;}
+double Standard::deltaInObj() const { return delta_inobj_; }
+void   Standard::deltaInObj(double val) { delta_inobj_ = val; }
+
+double Standard::giveDelta(double *) { return deltaInObj(); }
