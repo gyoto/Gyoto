@@ -93,6 +93,7 @@ class Gyoto::Astrobj::Standard :
  protected:
   double critical_value_; ///< See operator()(double const coord[4])
   double safety_value_; ///< See operator()(double const coord[4])
+  double delta_inobj_; ///< Constant value of the integration step inside object, in units of the compact object's mass M
 
   // Constructors - Destructor
   // -------------------------
@@ -127,6 +128,14 @@ class Gyoto::Astrobj::Standard :
   virtual void safetyValue(double val) ; ///< Set Standard::safety_value_
   virtual double safetyValue() const ; ///< Get Standard::safety_value_
 
+  /**
+   *  Get the constant integration step inside the astrobj
+   *
+   *  \return delta_inobj_ in geometrical units
+   */
+  double deltaInObj() const; ///< Get Generic::delta_inobj_
+  void   deltaInObj(double val); ///< Set Generic::delta_inobj_
+
   // Outputs
   // -------
  public:
@@ -160,11 +169,14 @@ class Gyoto::Astrobj::Standard :
    *
    * Gives the requested integration step &delta;<SUB>t</SUB> (in
    * coordinate time t) between two neighbooring points along a
-   * portion of geodesic inside an astrobj
+   * portion of geodesic inside an astrobj; the current implementation
+   * only considers a constant delta, equal to Standard::deltaInobj()
    *
    * \param coord input coordinate at which &delta;<SUB>t</SUB> is given
    */
   virtual double giveDelta(double coord[8]);
+
+
 
 };
 
