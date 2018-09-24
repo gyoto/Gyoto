@@ -652,7 +652,10 @@ int main(int argc, char** argv) {
   }
 
 #if defined HAVE_MPI
-  if (MPI::Is_initialized() && !MPI::Is_finalized()) MPI_Finalize();
+  int started , stopped , error ;
+  error = MPI_Initialized ( & started ) ;
+  error = MPI_Finalized ( & stopped ) ;
+  if (started && !stopped) MPI_Finalize();
 #endif
 
   return 0;
