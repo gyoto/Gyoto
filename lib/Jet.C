@@ -37,6 +37,7 @@
 
 /* *** FOR HYPERGEOMETRIC FUNCTION *** */
 #include <complex>
+using namespace std;
 #include "MichelStoitsovHypergeometric.h"
 #include "MichelStoitsovHypergeometric.C"
 ////////////////////////////////////////
