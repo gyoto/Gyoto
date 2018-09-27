@@ -15,6 +15,9 @@
 /* Gyoto ABI version */
 #undef GYOTO_SOVERS
 
+/* Define to 1 if you have arblib */
+#undef GYOTO_USE_ARBLIB
+
 /* Define to 1 if you have cfitsio */
 #undef GYOTO_USE_CFITSIO
 

@@ -655,6 +655,10 @@ HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
 MAKE_S
+HAVE_ARBLIB_FALSE
+HAVE_ARBLIB_TRUE
+ARBLIB_LIBS
+ARBLIB_CFLAGS
 HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
@@ -887,6 +891,10 @@ with_xerces_libs
 with_cfitsio
 with_cfitsio_headers
 with_cfitsio_libs
+with_arblib
+with_arblib_headers
+with_arblib_libs
+with_arblib_ldflags
 with_lorene
 enable_doc
 '
@@ -916,6 +924,8 @@ XERCES_CFLAGS
 XERCES_LIBS
 CFITSIO_CFLAGS
 CFITSIO_LIBS
+ARBLIB_CFLAGS
+ARBLIB_LIBS
 MAKE_S
 HOME_LORENE'
 ac_subdirs_all='plugins/python'
@@ -1628,6 +1638,18 @@ Optional Packages:
                           location of cfitsio include files
   --with-cfitsio-libs=path
                           location of cfitsio library files
+  --with-arblib[=arblib-prefix]
+                          Force using arblib installed in a given prefix or
+                          force disable it.
+  --with-arblib-headers=path
+                          colon-separated list of directories of arblib
+                          include files and their dependencies
+  --with-arblib-libs=path colon-separated list of directories of arblib
+                          library files and their dependencies
+  --with-arblib-ldflags=-l<libname>
+                          linker flag for arblib (-lflint-arb on Debian
+                          derivatives, -larb on Arch Linux...) possibly with
+                          dependencies (e.g. "-larb -lflint").
   --with-lorene[=${HOME_LORENE}]
                           force using the optional LORENE library, possibly
                           specifying HOME_LORENE [default=${HOME_LORENE}]
@@ -1666,6 +1688,9 @@ Some influential environment variables:
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
               linker flags for CFITSIO, overriding pkg-config
+  ARBLIB_CFLAGS
+              C compiler flags for ARBLIB, overriding pkg-config
+  ARBLIB_LIBS linker flags for ARBLIB, overriding pkg-config
   MAKE_S      make command which does not print directories [[make -w]]
   HOME_LORENE path to Lorene build directory (see also --with-lorene)
 
@@ -20559,6 +20584,273 @@ fi
 
 
 
+## ARBLIB
+# Check for ARBLIB
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
+$as_echo_n "checking whether arblib should be used... " >&6; }
+arblib_headers=
+arblib_lib=
+arblib_ldflags=
+
+# Check whether --with-arblib was given.
+if test "${with_arblib+set}" = set; then :
+  withval=$with_arblib;
+   if test "x$with_arblib" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+elif test "x$with_arblib" != "xyes"; then :
+  arblib_headers=-I$with_arblib/include
+      arblib_lib=-L$with_arblib/lib
+      with_arblib=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+else
+  with_arblib=check
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+$as_echo "probe" >&6; }
+
+
+fi
+
+have_arblib=no
+if test "x$with_arblib" != "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib include path is provided" >&5
+$as_echo_n "checking whether arblib include path is provided... " >&6; }
+
+# Check whether --with-arblib-headers was given.
+if test "${with_arblib_headers+set}" = set; then :
+  withval=$with_arblib_headers; with_arblib=yes
+      arblib_headers=${with_arblib_headers/:/ -I}
+      case "x$arblib_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) arblib_headers=-I$arblib_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${arblib_headers}" >&5
+$as_echo "${arblib_headers}" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library path is provided" >&5
+$as_echo_n "checking whether arblib library path is provided... " >&6; }
+
+# Check whether --with-arblib-libs was given.
+if test "${with_arblib_libs+set}" = set; then :
+  withval=$with_arblib_libs; with_arblib=yes
+      arblib_lib=${with_arblib_libs/:/ -L}
+      case "x$arblib_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) arblib_lib=-L$arblib_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_lib" >&5
+$as_echo "$arblib_lib" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
+$as_echo_n "checking whether arblib library name is provided... " >&6; }
+
+# Check whether --with-arblib-ldflags was given.
+if test "${with_arblib_ldflags+set}" = set; then :
+  withval=$with_arblib_ldflags; with_arblib=yes
+      arblib_ldflags=$with_arblib_ldflags
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_arblib_ldflags" >&5
+$as_echo "$with_arblib_ldflags" >&6; }
+else
+  arblib_ldflags=-lflint-arb
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
+$as_echo "$arblib_ldflags" >&6; }
+fi
+
+
+   # Now check whether or not to use pkg-config for arblib
+   if test "x$arblib_headers" == "x" \
+       && test "x$arblib_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARBLIB" >&5
+$as_echo_n "checking for ARBLIB... " >&6; }
+
+if test -n "$ARBLIB_CFLAGS"; then
+    pkg_cv_ARBLIB_CFLAGS="$ARBLIB_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"arblib\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "arblib") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARBLIB_CFLAGS=`$PKG_CONFIG --cflags "arblib" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ARBLIB_LIBS"; then
+    pkg_cv_ARBLIB_LIBS="$ARBLIB_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"arblib\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "arblib") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARBLIB_LIBS=`$PKG_CONFIG --libs "arblib" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        ARBLIB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "arblib" 2>&1`
+        else
+	        ARBLIB_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "arblib" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$ARBLIB_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: arblib.pc not found" >&5
+$as_echo "$as_me: arblib.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: arblib.pc not found" >&5
+$as_echo "$as_me: arblib.pc not found" >&6;}
+
+
+else
+	ARBLIB_CFLAGS=$pkg_cv_ARBLIB_CFLAGS
+	ARBLIB_LIBS=$pkg_cv_ARBLIB_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} arblib"
+          have_arblib=yes
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$have_arblib" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for arblib (without pkg-config)" >&5
+$as_echo_n "checking for arblib (without pkg-config)... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $arblib_headers"
+      TMPLDFLAGS=$LDFLAGS
+      LDFLAGS="$TMPLDFLAGS $arblib_lib"
+      TMPLIBS=$LIBS
+      LIBS=$arblib_ldflags
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <acb_hypgeom.h>
+int
+main ()
+{
+double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
+  	 acb_t FF, aa, bb, cc, zed;
+	 acb_init(FF);
+	 acb_init(aa);
+	 acb_init(bb);
+	 acb_init(cc);
+	 acb_init(zed);
+	 acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+	 acb_set_d_d(bb,   kappaIndex+1.,     0.);
+	 acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+	 acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+	 slong prec=53;
+	 acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+	 hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+	 rad = mag_get_d(&acb_realref(FF)->rad);
+	 acb_clear(FF);
+	 acb_clear(aa);
+	 acb_clear(bb);
+	 acb_clear(cc);
+	 acb_clear(zed);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_arblib=yes
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      ARBLIB_LIBS="$arblib_lib $arblib_ldflags"
+      ARBLIB_CFLAGS="$arblib_headers"
+      pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
+      pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
+
+
+fi
+
+fi
+if test "x$have_arblib" == "xno"; then :
+  if test "x$with_arblib" == "xyes"; then :
+  as_fn_error $? "arblib requested but not found" "$LINENO" 5
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ARBLIB not found: Astrobj::Jet will not work !" >&5
+$as_echo "$as_me: WARNING: ARBLIB not found: Astrobj::Jet will not work !" >&2;}
+
+fi
+
+else
+  use_arblib=yes
+
+$as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_arblib" == "xyes"; then
+  HAVE_ARBLIB_TRUE=
+  HAVE_ARBLIB_FALSE='#'
+else
+  HAVE_ARBLIB_TRUE='#'
+  HAVE_ARBLIB_FALSE=
+fi
+
+
+
+
 ## LORENE
 # Check for LORENE
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LORENE" >&5
@@ -20916,6 +21208,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CFITSIO\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ARBLIB_TRUE}" && test -z "${HAVE_ARBLIB_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_ARBLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_LORENE_TRUE}" && test -z "${HAVE_LORENE_FALSE}"; then
@@ -23666,6 +23962,28 @@ $as_echo "$as_me: WARNING:
 
         The advanced integrators require the Boost library (>=1.53)
             and a C++ compiler that supports the c++11 standard.
+
+     " >&2;}
+
+fi
+if test "x$have_arblib" == "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+                         Building without ARBLIB
+
+                   *** Hypergeometric functions unavailable ***
+
+                      Astrobj::Jet requires ARBLIB.
+
+     " >&5
+$as_echo "$as_me: WARNING:
+
+                         Building without ARBLIB
+
+                   *** Hypergeometric functions unavailable ***
+
+                      Astrobj::Jet requires ARBLIB.
 
      " >&2;}
 

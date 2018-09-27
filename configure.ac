@@ -745,6 +745,147 @@ AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
 AC_SUBST([CFITSIO_LIBS])
 AC_SUBST([CFITSIO_CFLAGS])
 
+## ARBLIB
+# Check for ARBLIB
+AC_MSG_CHECKING(whether arblib should be used)
+arblib_headers=
+arblib_lib=
+arblib_ldflags=
+AC_ARG_WITH(
+  [arblib],
+  [AS_HELP_STRING( [--with-arblib[[=arblib-prefix]]], 
+     [Force using arblib installed in a given prefix or force disable it.])],
+  [
+   AS_IF([test "x$with_arblib" == "xno"],
+     [AC_MSG_RESULT(no)],
+     [test "x$with_arblib" != "xyes"],
+     [arblib_headers=-I$with_arblib/include
+      arblib_lib=-L$with_arblib/lib
+      with_arblib=yes
+      AC_MSG_RESULT(yes)],
+     [AC_MSG_RESULT(yes)])
+  ],
+  [with_arblib=check
+   AC_MSG_RESULT(probe)
+  ]
+)
+have_arblib=no
+AS_IF([test "x$with_arblib" != "xno"],
+  [
+   AC_MSG_CHECKING(whether arblib include path is provided)
+   AC_ARG_WITH([arblib-headers],
+     [AS_HELP_STRING([--with-arblib-headers=path],
+        [colon-separated list of directories of arblib include files and their dependencies])],
+     [with_arblib=yes
+      arblib_headers=${with_arblib_headers/:/ -I}
+      case "x$arblib_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) arblib_headers=-I$arblib_headers ;;
+      esac
+      AC_MSG_RESULT([${arblib_headers}])],
+     [AC_MSG_RESULT([no])])
+   AC_MSG_CHECKING(whether arblib library path is provided)
+   AC_ARG_WITH([arblib-libs],
+     [AS_HELP_STRING([--with-arblib-libs=path],
+        [colon-separated list of directories of arblib library files and their dependencies])],
+     [with_arblib=yes
+      arblib_lib=${with_arblib_libs/:/ -L}
+      case "x$arblib_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) arblib_lib=-L$arblib_lib ;;
+      esac
+      AC_MSG_RESULT([$arblib_lib])],
+     [AC_MSG_RESULT([no])])
+   AC_MSG_CHECKING(whether arblib library name is provided)
+   AC_ARG_WITH([arblib-ldflags],
+     [AS_HELP_STRING([--with-arblib-ldflags=-l<libname>],
+        [linker flag for arblib (-lflint-arb on Debian derivatives, -larb on Arch Linux...) possibly with dependencies (e.g. "-larb -lflint").])],
+     [with_arblib=yes
+      arblib_ldflags=$with_arblib_ldflags
+      AC_MSG_RESULT([$with_arblib_ldflags])],
+     [arblib_ldflags=-lflint-arb
+      AC_MSG_RESULT([$arblib_ldflags])])
+
+   # Now check whether or not to use pkg-config for arblib
+   AS_IF([test "x$arblib_headers" == "x" \
+       && test "x$arblib_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"],
+     [PKG_CHECK_MODULES([ARBLIB],
+         [arblib],
+	 [pkg_requires="${pkg_requires} arblib"
+          have_arblib=yes
+         ],
+	 [AC_MSG_NOTICE([arblib.pc not found])
+         ]
+      )
+     ],
+     [])
+
+   # Failing that, check without pkg-config
+   AS_IF([test "x$have_arblib" == "xno"],
+     [AC_MSG_CHECKING([for arblib (without pkg-config)])
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $arblib_headers"
+      TMPLDFLAGS=$LDFLAGS
+      LDFLAGS="$TMPLDFLAGS $arblib_lib"
+      TMPLIBS=$LIBS
+      LIBS=$arblib_ldflags
+      AC_TRY_LINK(
+        [#include <acb_hypgeom.h>],
+        [double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
+  	 acb_t FF, aa, bb, cc, zed;
+	 acb_init(FF);
+	 acb_init(aa);
+	 acb_init(bb);
+	 acb_init(cc);
+	 acb_init(zed);
+	 acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+	 acb_set_d_d(bb,   kappaIndex+1.,     0.);
+	 acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+	 acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+	 slong prec=53;
+	 acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+	 hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+	 rad = mag_get_d(&acb_realref(FF)->rad);
+	 acb_clear(FF);
+	 acb_clear(aa);
+	 acb_clear(bb);
+	 acb_clear(cc);
+	 acb_clear(zed);],
+        [have_arblib=yes
+         AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)])
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+      ARBLIB_LIBS="$arblib_lib $arblib_ldflags"
+      ARBLIB_CFLAGS="$arblib_headers"
+      pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
+      pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
+     ]
+   )
+  ],
+  []
+)
+AS_IF([test "x$have_arblib" == "xno"],
+  [AS_IF([test "x$with_arblib" == "xyes"],
+     [AC_MSG_ERROR([arblib requested but not found])
+     ],
+     [AC_MSG_WARN([ARBLIB not found: Astrobj::Jet will not work !])]
+   )
+  ],
+  [use_arblib=yes
+   AC_DEFINE([GYOTO_USE_ARBLIB],
+     [1],
+     [Define to 1 if you have arblib])
+  ]
+)
+AM_CONDITIONAL([HAVE_ARBLIB], [test "x$have_arblib" == "xyes"])
+AC_SUBST([ARBLIB_LIBS])
+AC_SUBST([ARBLIB_CFLAGS])
+
 ## LORENE
 # Check for LORENE
 AC_MSG_CHECKING([for LORENE])
@@ -939,6 +1080,19 @@ AS_IF([test "x$have_boost" == "xno"],
 
         The advanced integrators require the Boost library (>=1.53)
             and a C++ compiler that supports the c++11 standard.
+
+     ])
+  ])
+AS_IF([test "x$have_arblib" == "xno"],
+  [
+   AC_MSG_WARN(
+     [
+
+                         Building without ARBLIB
+
+                   *** Hypergeometric functions unavailable ***
+
+                      Astrobj::Jet requires ARBLIB.
 
      ])
   ])

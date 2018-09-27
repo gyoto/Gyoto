@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <Metric kind = "KerrBL">
+    <Mass unit="sunmass">4.1e6</Mass>
+    <Spin>0.9</Spin>
+  </Metric>
+
+  <Screen>
+    <Distance unit="kpc"> 8.1 </Distance>
+    <Time unit="yr"> 100e3 </Time> 27.169411e3
+    <FieldOfView unit="µas">
+      64.
+    </FieldOfView>
+    <Inclination unit="°"> 
+      135
+    </Inclination>  
+    <PALN> 3.1415  </PALN> 
+    <Argument> -1.5708 </Argument>
+    <Resolution>32</Resolution>
+    <Spectrometer kind="freqlog" nsamples="1">9.204 9.204</Spectrometer>
+  </Screen>
+
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "Jet">
+    <RadiativeQ/>
+    <DeltaInObj>0.2</DeltaInObj>
+    <RMax>4000.0</RMax>
+    <BaseNumberDensity>2.7e7</BaseNumberDensity>
+    <KappaIndex>5</KappaIndex>
+    <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
+    <JetOuterOpeningAngle>0.44</JetOuterOpeningAngle>
+    <BaseTemperature>9.2e9</BaseTemperature>
+    <TemperatureSlope>0.215</TemperatureSlope>
+    <JetBaseHeight>2.</JetBaseHeight>
+    <GammaJet>1.15</GammaJet>
+    <MagneticParticlesEquipartitionRatio>0.1</MagneticParticlesEquipartitionRatio>
+  </Astrobj>
+  <MinimumTime> -1e10 </MinimumTime>
+  <NThreads> 4 </NThreads>
+</Scenery>
+

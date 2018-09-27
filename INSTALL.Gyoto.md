@@ -91,6 +91,8 @@ Gyoto requires:
        http://www.unidata.ucar.edu/software/udunits/
    - boost >= 1.53 (required, contains the integrators). See [BUGS.md](BUGS.md).
        http://www.boost.org/
+   - arblib (optional, required for Astrobj::Jet)
+       http://arblib.org
    - an MPI implementation (tested with openmpi, optional). MPI uses
      boost features from boost.mpi, you must use the same version as
      boost.mpi is linked to.
@@ -146,6 +148,12 @@ You may need to pass some options or configuration variables. To list
 the available options:
 
     ./configure --help
+
+ARBLIB is known to be installed under various names depending on the
+Linux distribution. You may need to set the --with-arblib-ldflags
+variable to the correct name, e.g.
+
+    ./configure --with-arblib-ldflags=-larb
 
 The standard GNU INSTALL file is provided next to this file and documents
 the most standard and obscure features.

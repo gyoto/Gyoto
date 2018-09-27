@@ -62,6 +62,10 @@ CHECK_RESULTS += \
         example-polish-doughnut.fits \
 	example-polish-doughnut-hayward-wormhole.fits
 endif
+if HAVE_ARBLIB
+CHECK_RESULTS += example-jet.fits
+endif
+
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 

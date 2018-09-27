@@ -36,9 +36,9 @@
 #include <string>
 
 /* *** FOR HYPERGEOMETRIC FUNCTION *** */
-#include <complex>
-#include "MichelStoitsovHypergeometric.h"
-#include "MichelStoitsovHypergeometric.C"
+#ifdef GYOTO_USE_ARBLIB
+# include <acb_hypgeom.h>
+#endif
 ////////////////////////////////////////
 
 using namespace std;
@@ -158,11 +158,36 @@ void Jet::radiativeQ(double Inu[], // output
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  complex<double> aa=kappaIndex()-1./3., bb=kappaIndex()+1.,
-    cc=kappaIndex()+2./3., zed=-kappaIndex()*thetae;
-  const complex<double> FF = hyp_2F1(aa,bb,cc,zed);//Gauss hypergeometric
-  double hypergeom = FF.real();
-  //cout << "hypergeom stuff: " << " " << aa << " " << bb << " " << cc << " " << zed << " " << hypergeom << endl;
+  double hypergeom = 0.;
+# ifdef GYOTO_USE_ARBLIB
+  {
+    // See documentation: http://arblib.org/acb_hypgeom.html#c.acb_hypgeom_2f1
+    acb_t FF, aa, bb, cc, zed;
+    acb_init(FF);
+    acb_init(aa);
+    acb_init(bb);
+    acb_init(cc);
+    acb_init(zed);
+    acb_set_d_d(aa,   kappaIndex()-1./3.,  0.);
+    acb_set_d_d(bb,   kappaIndex()+1.,     0.);
+    acb_set_d_d(cc,   kappaIndex()+2./3.,  0.);
+    acb_set_d_d(zed, -kappaIndex()*thetae, 0.);
+    slong prec=53; // 53 for double precision
+    acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+    hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+    // uncertainty
+    // double rad = mag_get_d(&acb_realref(FF)->rad);
+    acb_clear(FF);
+    acb_clear(aa);
+    acb_clear(bb);
+    acb_clear(cc);
+    acb_clear(zed);
+  }
+# else
+  {
+    throwError("ARBLIB support not compiled in: Astrobj::Jet::radiativeQ() is not functional");
+  }
+# endif
   
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS

@@ -103,7 +103,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits \
 @HAVE_UDUNITS_TRUE@	example-polish-doughnut-hayward-wormhole.fits
 
-@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_8 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
+@HAVE_ARBLIB_TRUE@am__append_8 = example-jet.fits
+@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_9 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 subdir = bin
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
@@ -248,6 +249,8 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+ARBLIB_CFLAGS = @ARBLIB_CFLAGS@
+ARBLIB_LIBS = @ARBLIB_LIBS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -445,7 +448,7 @@ AM_LDFLAGS = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC) \
 	$(am__append_3)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) $(CXXFLAGS_EXEC)
 CLEANFILES = $(am__append_6) $(CHECK_RESULTS) $(CHECK_MPI_RESULTS) \
-	$(am__append_8)
+	$(am__append_9)
 dist_man_MANS = $(am__append_2) $(am__append_5)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
@@ -467,7 +470,8 @@ CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
 	example-moving-star-CS.fits example-page-thorne-disk-BL.fits \
 	example-page-thorne-disk-KS.fits \
 	example-page-thorne-disk-BL-with-basis.fits example-torus.fits \
-	example-torus-KS.fits example-oscil-torus.fits $(am__append_7)
+	example-torus-KS.fits example-oscil-torus.fits $(am__append_7) \
+	$(am__append_8)
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
 CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
