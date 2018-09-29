@@ -655,6 +655,11 @@ HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
 MAKE_S
+AEAE_CFLAGS
+HAVE_2F1_FALSE
+HAVE_2F1_TRUE
+HAVE_AEAE_FALSE
+HAVE_AEAE_TRUE
 HAVE_ARBLIB_FALSE
 HAVE_ARBLIB_TRUE
 ARBLIB_LIBS
@@ -895,6 +900,7 @@ with_arblib
 with_arblib_headers
 with_arblib_libs
 with_arblib_ldflags
+with_aeae
 with_lorene
 enable_doc
 '
@@ -1650,6 +1656,9 @@ Optional Packages:
                           linker flag for arblib (-lflint-arb on Debian
                           derivatives, -larb on Arch Linux...) possibly with
                           dependencies (e.g. "-larb -lflint").
+  --with-aeae[=aeae-prefix]
+                          Force using AEAE, optionally specifying full path to
+                          location of source code, or force disable it.
   --with-lorene[=${HOME_LORENE}]
                           force using the optional LORENE library, possibly
                           specifying HOME_LORENE [default=${HOME_LORENE}]
@@ -20586,11 +20595,20 @@ fi
 
 ## ARBLIB
 # Check for ARBLIB
+have_2f1=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
 $as_echo_n "checking whether arblib should be used... " >&6; }
 arblib_headers=
 arblib_lib=
 arblib_ldflags=
+
+# If AEAE if explicitely requested, skip ARBLIB checks.
+case "x$with_aeae" in
+     x)    ;;
+     xno)  ;;
+     x*)  with_arblib=no ;;
+esac
+
 
 # Check whether --with-arblib was given.
 if test "${with_arblib+set}" = set; then :
@@ -20826,14 +20844,12 @@ if test "x$have_arblib" == "xno"; then :
   if test "x$with_arblib" == "xyes"; then :
   as_fn_error $? "arblib requested but not found" "$LINENO" 5
 
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ARBLIB not found: Astrobj::Jet will not work !" >&5
-$as_echo "$as_me: WARNING: ARBLIB not found: Astrobj::Jet will not work !" >&2;}
-
 fi
 
 else
   use_arblib=yes
+   have_2f1=yes
+   with_aeae=no
 
 $as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
 
@@ -20846,6 +20862,122 @@ fi
 else
   HAVE_ARBLIB_TRUE='#'
   HAVE_ARBLIB_FALSE=
+fi
+
+
+
+
+## AEAE
+# Check for AEAE
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether aeae should be used" >&5
+$as_echo_n "checking whether aeae should be used... " >&6; }
+aeae_headers=
+
+# Check whether --with-aeae was given.
+if test "${with_aeae+set}" = set; then :
+  withval=$with_aeae;
+   if test "x$with_aeae" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+elif test "x$with_aeae" != "xyes"; then :
+  aeae_headers=$with_aeae
+      case "x$aeae_headers" in
+	   x\-I*) ;;
+	   x) ;;
+	   x*) aeae_headers=-I$aeae_headers ;;
+      esac
+      with_aeae=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+else
+  with_aeae=check
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+$as_echo "probe" >&6; }
+
+
+fi
+
+have_aeae=no
+if test "x$with_aeae" != "xno"; then :
+
+   if test "x$have_aeae" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for aeae" >&5
+$as_echo_n "checking for aeae... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $aeae_headers"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <complex>
+	 #include <iostream>
+	 #define SIGN(a) (((a) < 0) ? (-1) : (1))
+	 using namespace std;
+	 #include "complex_functions.H"
+	 #include "hyp_2F1.cpp"
+int
+main ()
+{
+double hypergeom = 0., kappaIndex=5., thetae=1;
+	 complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
+	 cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
+	 const complex<double> FF = hyp_2F1(aa,bb,cc,zed);
+	 hypergeom = FF.real();
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_aeae=yes
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      AEAE_CFLAGS="$aeae_headers"
+      pkg_cflags="${pkg_cflags} ${AEAE_CFLAGS}"
+
+
+fi
+
+fi
+if test "x$have_aeae" == "xno"; then :
+  if test "x$with_aeae" == "xyes"; then :
+  as_fn_error $? "aeae requested but not found" "$LINENO" 5
+
+fi
+
+else
+  use_aeae=yes
+   have_2f1=yes
+
+$as_echo "#define GYOTO_USE_AEAE 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_aeae" == "xyes"; then
+  HAVE_AEAE_TRUE=
+  HAVE_AEAE_FALSE='#'
+else
+  HAVE_AEAE_TRUE='#'
+  HAVE_AEAE_FALSE=
+fi
+
+ if test "x$have_2f1" == "xyes"; then
+  HAVE_2F1_TRUE=
+  HAVE_2F1_FALSE='#'
+else
+  HAVE_2F1_TRUE='#'
+  HAVE_2F1_FALSE=
 fi
 
 
@@ -21212,6 +21344,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ARBLIB_TRUE}" && test -z "${HAVE_ARBLIB_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_ARBLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_AEAE_TRUE}" && test -z "${HAVE_AEAE_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_AEAE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_2F1_TRUE}" && test -z "${HAVE_2F1_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_2F1\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_LORENE_TRUE}" && test -z "${HAVE_LORENE_FALSE}"; then
@@ -23966,24 +24106,24 @@ $as_echo "$as_me: WARNING:
      " >&2;}
 
 fi
-if test "x$have_arblib" == "xno"; then :
+if test "x$have_2f1" == "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
 
-                         Building without ARBLIB
+                         Building without 2F1
 
                    *** Hypergeometric functions unavailable ***
 
-                      Astrobj::Jet requires ARBLIB.
+                      Astrobj::Jet requires ARBLIB or AEAE.
 
      " >&5
 $as_echo "$as_me: WARNING:
 
-                         Building without ARBLIB
+                         Building without 2F1
 
                    *** Hypergeometric functions unavailable ***
 
-                      Astrobj::Jet requires ARBLIB.
+                      Astrobj::Jet requires ARBLIB or AEAE.
 
      " >&2;}
 

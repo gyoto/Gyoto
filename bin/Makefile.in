@@ -103,7 +103,7 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits \
 @HAVE_UDUNITS_TRUE@	example-polish-doughnut-hayward-wormhole.fits
 
-@HAVE_ARBLIB_TRUE@am__append_8 = example-jet.fits
+@HAVE_2F1_TRUE@am__append_8 = example-jet.fits
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_9 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 subdir = bin
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -246,6 +246,7 @@ am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+AEAE_CFLAGS = @AEAE_CFLAGS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -440,7 +441,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-ACLOCAL_AMFLAGS = -I m4 
+ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) \
 	-DPACKAGE_STRING="$(PACKAGE_STRING)"
 

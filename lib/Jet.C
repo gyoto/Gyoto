@@ -1,5 +1,5 @@
 /*
-    Copyright 2017-2018 Frederic Vincent
+    Copyright 2017-2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -36,9 +36,51 @@
 #include <string>
 
 /* *** FOR HYPERGEOMETRIC FUNCTION *** */
-#ifdef GYOTO_USE_ARBLIB
+#if defined GYOTO_USE_ARBLIB
 # include <acb_hypgeom.h>
+  static double _hypergeom (double kappaIndex, double thetae) {
+    // See documentation: http://arblib.org/acb_hypgeom.html#c.acb_hypgeom_2f1
+    acb_t FF, aa, bb, cc, zed;
+    acb_init(FF);
+    acb_init(aa);
+    acb_init(bb);
+    acb_init(cc);
+    acb_init(zed);
+    acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+    acb_set_d_d(bb,   kappaIndex+1.,     0.);
+    acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+    acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+    slong prec=53; // 53 for double precision
+    acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+    double hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+    // uncertainty
+    // double rad = mag_get_d(&acb_realref(FF)->rad);
+    acb_clear(FF);
+    acb_clear(aa);
+    acb_clear(bb);
+    acb_clear(cc);
+    acb_clear(zed);
+    return hypergeom;
+  }
+#elif defined GYOTO_USE_AEAE
+# include <complex>
+# include <iostream>
+# define SIGN(a) (((a) < 0) ? (-1) : (1))
+  using namespace std;
+# include "complex_functions.H"
+# include "hyp_2F1.cpp"
+  static double _hypergeom (double kappaIndex, double thetae) {
+    complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
+      cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
+    return hyp_2F1(aa,bb,cc,zed).real();
+  }
+#else
+  static double _hypergeom(double, double) {
+    Gyoto::throwError("Astrobj::Jet::radiativeQ() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
+    return 0.;
+  }
 #endif
+
 ////////////////////////////////////////
 
 using namespace std;
@@ -158,37 +200,8 @@ void Jet::radiativeQ(double Inu[], // output
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  double hypergeom = 0.;
-# ifdef GYOTO_USE_ARBLIB
-  {
-    // See documentation: http://arblib.org/acb_hypgeom.html#c.acb_hypgeom_2f1
-    acb_t FF, aa, bb, cc, zed;
-    acb_init(FF);
-    acb_init(aa);
-    acb_init(bb);
-    acb_init(cc);
-    acb_init(zed);
-    acb_set_d_d(aa,   kappaIndex()-1./3.,  0.);
-    acb_set_d_d(bb,   kappaIndex()+1.,     0.);
-    acb_set_d_d(cc,   kappaIndex()+2./3.,  0.);
-    acb_set_d_d(zed, -kappaIndex()*thetae, 0.);
-    slong prec=53; // 53 for double precision
-    acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
-    hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
-    // uncertainty
-    // double rad = mag_get_d(&acb_realref(FF)->rad);
-    acb_clear(FF);
-    acb_clear(aa);
-    acb_clear(bb);
-    acb_clear(cc);
-    acb_clear(zed);
-  }
-# else
-  {
-    throwError("ARBLIB support not compiled in: Astrobj::Jet::radiativeQ() is not functional");
-  }
-# endif
-  
+  double hypergeom = _hypergeom(kappaIndex(), thetae);
+
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
@@ -204,14 +217,14 @@ void Jet::radiativeQ(double Inu[], // output
     // Initializing to <0 value to create errors if not updated
     jnu_synch_kappa[ii]=-1.;
     anu_synch_kappa[ii]=-1.;
-  } 
+  }
   spectrumKappaSynch_->numberdensityCGS(number_density);
   spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
   spectrumKappaSynch_->angle_B_pem(0.); // so we don't care about angle
   spectrumKappaSynch_->cyclotron_freq(nu0);
   spectrumKappaSynch_->thetae(thetae);
   spectrumKappaSynch_->hypergeometric(hypergeom);
-  
+
   spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
 				  nu_ems,nbnu);
 
@@ -227,15 +240,15 @@ void Jet::radiativeQ(double Inu[], // output
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
     Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
-      -jnu_tot / anu_tot * em1; 
-    
+      -jnu_tot / anu_tot * em1;
+
     if (Inu[ii]<0.)
       throwError("In Jet::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
       throwError("In Jet::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
       throwError("In Jet::radiativeQ: Inu or Taunu is infinite");
-    
+
   }
 }
 
@@ -263,7 +276,7 @@ double Jet::operator()(double const coord[4]) {
   if  ((rcyl <  rcyljetout) and (rcyl >  rcyljetin)) return -1.; // inside jet
   else return 1.; // outside jet
   //cout << "r, rjet, z, theta0, ht= " << rcyl << " " << rcyljet << " " << zz << " " << theta0 << " " << ht << endl;
-  
+
 }
 
 void Jet::getVelocity(double const pos[4], double vel[4])
@@ -276,7 +289,7 @@ void Jet::getVelocity(double const pos[4], double vel[4])
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
     uphiZAMO = -utZAMO*gtp/gpp;
-  
+
   vel[0] = gammaJet_*utZAMO;
   vel[1] = gammaJet_*Vr;
   vel[2] = 0.;

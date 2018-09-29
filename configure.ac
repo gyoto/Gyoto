@@ -300,7 +300,7 @@ AC_ARG_ENABLE([deprecated],
      [AX_APPEND_COMPILE_FLAGS([-DGYOTO_NO_DEPRECATED], [CPPFLAGS])])],
   [AX_APPEND_COMPILE_FLAGS([-DGYOTO_NO_DEPRECATED], [CPPFLAGS])]
 )
-     
+
 
 # Guess *LD_LIBRARY_PATH variable for make check
 AC_SUBST([target_os])
@@ -442,7 +442,7 @@ UDUNITS_CFLAGS=
 UDUNITS_LIBS=
 AC_ARG_WITH(
   [udunits],
-  [AS_HELP_STRING( [--with-udunits[[=DIR]]], 
+  [AS_HELP_STRING( [--with-udunits[[=DIR]]],
      [Force using udunits2 installed in a given prefix or force disable it.])],
   [
    AS_IF([test "x$withval" == "xno"],
@@ -547,7 +547,7 @@ XERCES_CFLAGS=
 XERCES_LIBS=
 AC_ARG_WITH(
   [xerces],
-  [AS_HELP_STRING( [--with-xerces[[=xerces-prefix]]], 
+  [AS_HELP_STRING( [--with-xerces[[=xerces-prefix]]],
      [Force using xerces installed in a given prefix or force disable it.])],
   [
    AS_IF([test "x$with_xerces" == "xno"],
@@ -648,7 +648,7 @@ cfitsio_headers=
 cfitsio_lib=
 AC_ARG_WITH(
   [cfitsio],
-  [AS_HELP_STRING( [--with-cfitsio[[=cfitsio-prefix]]], 
+  [AS_HELP_STRING( [--with-cfitsio[[=cfitsio-prefix]]],
      [Force using cfitsio installed in a given prefix or force disable it.])],
   [
    AS_IF([test "x$with_cfitsio" == "xno"],
@@ -747,13 +747,22 @@ AC_SUBST([CFITSIO_CFLAGS])
 
 ## ARBLIB
 # Check for ARBLIB
+have_2f1=no
 AC_MSG_CHECKING(whether arblib should be used)
 arblib_headers=
 arblib_lib=
 arblib_ldflags=
+
+# If AEAE if explicitely requested, skip ARBLIB checks.
+case "x$with_aeae" in
+     x)    ;;
+     xno)  ;;
+     x*)  with_arblib=no ;;
+esac
+
 AC_ARG_WITH(
   [arblib],
-  [AS_HELP_STRING( [--with-arblib[[=arblib-prefix]]], 
+  [AS_HELP_STRING( [--with-arblib[[=arblib-prefix]]],
      [Force using arblib installed in a given prefix or force disable it.])],
   [
    AS_IF([test "x$with_arblib" == "xno"],
@@ -873,10 +882,12 @@ AS_IF([test "x$have_arblib" == "xno"],
   [AS_IF([test "x$with_arblib" == "xyes"],
      [AC_MSG_ERROR([arblib requested but not found])
      ],
-     [AC_MSG_WARN([ARBLIB not found: Astrobj::Jet will not work !])]
+     []
    )
   ],
   [use_arblib=yes
+   have_2f1=yes
+   with_aeae=no
    AC_DEFINE([GYOTO_USE_ARBLIB],
      [1],
      [Define to 1 if you have arblib])
@@ -885,6 +896,82 @@ AS_IF([test "x$have_arblib" == "xno"],
 AM_CONDITIONAL([HAVE_ARBLIB], [test "x$have_arblib" == "xyes"])
 AC_SUBST([ARBLIB_LIBS])
 AC_SUBST([ARBLIB_CFLAGS])
+
+## AEAE
+# Check for AEAE
+AC_MSG_CHECKING(whether aeae should be used)
+aeae_headers=
+AC_ARG_WITH(
+  [aeae],
+  [AS_HELP_STRING( [--with-aeae[[=aeae-prefix]]],
+     [Force using AEAE, optionally specifying full path to location of source code, or force disable it.])],
+  [
+   AS_IF([test "x$with_aeae" == "xno"],
+     [AC_MSG_RESULT(no)],
+     [test "x$with_aeae" != "xyes"],
+     [aeae_headers=$with_aeae
+      case "x$aeae_headers" in
+	   x\-I*) ;;
+	   x) ;;
+	   x*) aeae_headers=-I$aeae_headers ;;
+      esac
+      with_aeae=yes
+      AC_MSG_RESULT(yes)],
+     [AC_MSG_RESULT(yes)])
+  ],
+  [with_aeae=check
+   AC_MSG_RESULT(probe)
+  ]
+)
+have_aeae=no
+AS_IF([test "x$with_aeae" != "xno"],
+  [
+   AS_IF([test "x$have_aeae" == "xno"],
+     [AC_MSG_CHECKING([for aeae])
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $aeae_headers"
+      AC_TRY_LINK(
+        [#include <complex>
+	 #include <iostream>
+	 #define SIGN(a) (((a) < 0) ? (-1) : (1))
+	 using namespace std;
+	 #include "complex_functions.H"
+	 #include "hyp_2F1.cpp"],
+        [double hypergeom = 0., kappaIndex=5., thetae=1;
+	 complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
+	 cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
+	 const complex<double> FF = hyp_2F1(aa,bb,cc,zed);
+	 hypergeom = FF.real();
+	],
+        [have_aeae=yes
+         AC_MSG_RESULT(yes)],
+        [AC_MSG_RESULT(no)])
+      CPPFLAGS=$TMPCPPFLAGS
+      AEAE_CFLAGS="$aeae_headers"
+      pkg_cflags="${pkg_cflags} ${AEAE_CFLAGS}"
+     ]
+   )
+  ],
+  []
+)
+AS_IF([test "x$have_aeae" == "xno"],
+  [AS_IF([test "x$with_aeae" == "xyes"],
+     [AC_MSG_ERROR([aeae requested but not found])
+     ],
+     []
+   )
+  ],
+  [use_aeae=yes
+   have_2f1=yes
+   AC_DEFINE([GYOTO_USE_AEAE],
+     [1],
+     [Define to 1 if you have aeae])
+  ]
+)
+AM_CONDITIONAL([HAVE_AEAE], [test "x$have_aeae" == "xyes"])
+AM_CONDITIONAL([HAVE_2F1], [test "x$have_2f1" == "xyes"])
+AC_SUBST([AEAE_CFLAGS])
+
 
 ## LORENE
 # Check for LORENE
@@ -1083,16 +1170,16 @@ AS_IF([test "x$have_boost" == "xno"],
 
      ])
   ])
-AS_IF([test "x$have_arblib" == "xno"],
+AS_IF([test "x$have_2f1" == "xno"],
   [
    AC_MSG_WARN(
      [
 
-                         Building without ARBLIB
+                         Building without 2F1
 
                    *** Hypergeometric functions unavailable ***
 
-                      Astrobj::Jet requires ARBLIB.
+                      Astrobj::Jet requires ARBLIB or AEAE.
 
      ])
   ])

@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4 
+ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) \
 	-DPACKAGE_STRING="$(PACKAGE_STRING)"
 AM_LDFLAGS  = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC)
@@ -62,7 +62,7 @@ CHECK_RESULTS += \
         example-polish-doughnut.fits \
 	example-polish-doughnut-hayward-wormhole.fits
 endif
-if HAVE_ARBLIB
+if HAVE_2F1
 CHECK_RESULTS += example-jet.fits
 endif
 
