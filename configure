@@ -1679,15 +1679,22 @@ Optional Packages:
                           Force using arblib installed in a given prefix or
                           force disable it.
   --with-arblib-headers=path
-                          colon-separated list of directories of arblib
-                          include files and their dependencies
-  --with-arblib-libs=path colon-separated list of directories of arblib
-                          library files and their dependencies
+                          location of arblib include files as a
+                          colon-separated path
+                          ('--with-arblib-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-arblib-headers="-I/path1 ... -I/pathn")'
+  --with-arblib-libs=path location of arblib library files as a
+                          colon-separated path
+                          ('--with-arblib-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-arblib-libs="-L/path1
+                          ... -L/pathn")'
   --with-arblib-ldflags=-l<libname>
                           linker flag for arblib (-lflint-arb on Debian
                           derivatives, -larb on Arch Linux...) possibly with
                           dependencies (e.g. "-larb -lflint").
-  --with-aeae[=aeae-prefix]
+
+  --with-aeae[=/path/to/AEAE]
                           Force using AEAE, optionally specifying full path to
                           location of source code, or force disable it.
   --with-lorene[=${HOME_LORENE}]
@@ -20730,30 +20737,43 @@ fi
 ## ARBLIB
 # Check for ARBLIB
 have_2f1=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
-$as_echo_n "checking whether arblib should be used... " >&6; }
-arblib_headers=
-arblib_lib=
-arblib_ldflags=
-
 # If AEAE if explicitely requested, skip ARBLIB checks.
 case "x$with_aeae" in
      x)    ;;
      xno)  ;;
      x*)  with_arblib=no ;;
 esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
+$as_echo_n "checking whether arblib library name is provided... " >&6; }
+if test "x$with_arblib_ldflags" == "x"; then :
+  arblib_ldflags=-lflint-arb
+else
+  with_arblib=yes
+   arblib_ldflags=$with_arblib_ldflags
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
+$as_echo "$arblib_ldflags" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
+$as_echo_n "checking whether arblib should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_arblib
 
 
 # Check whether --with-arblib was given.
 if test "${with_arblib+set}" = set; then :
   withval=$with_arblib;
-   if test "x$with_arblib" == "xno"; then :
+   if test "x$withval" == "xno"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-elif test "x$with_arblib" != "xyes"; then :
-  arblib_headers=-I$with_arblib/include
-      arblib_lib=-L$with_arblib/lib
-      with_arblib=yes
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20762,30 +20782,31 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_arblib=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_arblib=no
-if test "x$with_arblib" != "xno"; then :
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib include path is provided" >&5
 $as_echo_n "checking whether arblib include path is provided... " >&6; }
 
 # Check whether --with-arblib-headers was given.
 if test "${with_arblib_headers+set}" = set; then :
-  withval=$with_arblib_headers; with_arblib=yes
-      arblib_headers=${with_arblib_headers/:/ -I}
-      case "x$arblib_headers" in
+  withval=$with_arblib_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
       	   x\-I*) ;;
 	   x) ;;
-	   x*) arblib_headers=-I$arblib_headers ;;
+	   x*) gy_headers=-I$gy_headers ;;
       esac
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${arblib_headers}" >&5
-$as_echo "${arblib_headers}" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20796,39 +20817,24 @@ $as_echo_n "checking whether arblib library path is provided... " >&6; }
 
 # Check whether --with-arblib-libs was given.
 if test "${with_arblib_libs+set}" = set; then :
-  withval=$with_arblib_libs; with_arblib=yes
-      arblib_lib=${with_arblib_libs/:/ -L}
-      case "x$arblib_lib" in
+  withval=$with_arblib_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
       	   x\-L*) ;;
 	   x) ;;
-	   x*) arblib_lib=-L$arblib_lib ;;
+	   x*) gy_lib=-L$gy_lib ;;
       esac
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_lib" >&5
-$as_echo "$arblib_lib" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
-$as_echo_n "checking whether arblib library name is provided... " >&6; }
 
-# Check whether --with-arblib-ldflags was given.
-if test "${with_arblib_ldflags+set}" = set; then :
-  withval=$with_arblib_ldflags; with_arblib=yes
-      arblib_ldflags=$with_arblib_ldflags
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_arblib_ldflags" >&5
-$as_echo "$with_arblib_ldflags" >&6; }
-else
-  arblib_ldflags=-lflint-arb
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
-$as_echo "$arblib_ldflags" >&6; }
-fi
-
-
-   # Now check whether or not to use pkg-config for arblib
-   if test "x$arblib_headers" == "x" \
-       && test "x$arblib_lib" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20906,21 +20912,22 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} arblib"
-          have_arblib=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_arblib" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for arblib (without pkg-config)" >&5
-$as_echo_n "checking for arblib (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARBLIB (without pkg-config)" >&5
+$as_echo_n "checking for ARBLIB (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$TMPCPPFLAGS $arblib_headers"
+      TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
-      LDFLAGS="$TMPLDFLAGS $arblib_lib"
       TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=$arblib_ldflags
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20953,7 +20960,7 @@ double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_arblib=yes
+  gy_have=yes
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20965,25 +20972,28 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      ARBLIB_LIBS="$arblib_lib $arblib_ldflags"
-      ARBLIB_CFLAGS="$arblib_headers"
+      ARBLIB_LIBS="$gy_lib -l$arblib_ldflags"
+      ARBLIB_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
       pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
 
-
 fi
 
 fi
-if test "x$have_arblib" == "xno"; then :
-  if test "x$with_arblib" == "xyes"; then :
+
+have_arblib=$gy_have
+with_arblib=$withval
+arblib_headers=$gy_headers
+arblib_lib=$gy_lib
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "arblib requested but not found" "$LINENO" 5
 
 fi
 
 else
   use_arblib=yes
-   have_2f1=yes
-   with_aeae=no
 
 $as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
 
@@ -21000,6 +21010,21 @@ fi
 
 
 
+
+
+
+
+# Check whether --with-arblib-ldflags was given.
+if test "${with_arblib_ldflags+set}" = set; then :
+  withval=$with_arblib_ldflags;
+fi
+
+if test "x$have_arblib" == "xyes"; then :
+  have_2f1=yes
+   with_aeae=no
+
+
+fi
 
 ## AEAE
 # Check for AEAE
@@ -21090,8 +21115,7 @@ if test "x$have_aeae" == "xno"; then :
 fi
 
 else
-  use_aeae=yes
-   have_2f1=yes
+  have_2f1=yes
 
 $as_echo "#define GYOTO_USE_AEAE 1" >>confdefs.h
 
