@@ -80,7 +80,6 @@
     return 0.;
   }
 #endif
-
 ////////////////////////////////////////
 
 using namespace std;

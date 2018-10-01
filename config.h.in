@@ -24,7 +24,10 @@
 /* Define to 1 if you have cfitsio */
 #undef GYOTO_USE_CFITSIO
 
-/* Define to 1 if you have Xerces */
+/* Define to 1 if you have udunits */
+#undef GYOTO_USE_UDUNITS
+
+/* Define to 1 if you have xerces */
 #undef GYOTO_USE_XERCES
 
 /* Defined if the requested minimum BOOST version is satisfied */
@@ -93,9 +96,6 @@
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
-
-/* Define to 1 if you have libudunits2 */
-#undef HAVE_UDUNITS
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H

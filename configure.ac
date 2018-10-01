@@ -435,315 +435,52 @@ pkg_requires=
 pkg_cflags=
 pkg_libs=
 
-AC_MSG_CHECKING([whether libudunits2 should be used])
-udunits_cppflags=
-udunits_ldflags=
-UDUNITS_CFLAGS=
-UDUNITS_LIBS=
-AC_ARG_WITH(
-  [udunits],
-  [AS_HELP_STRING( [--with-udunits[[=DIR]]],
-     [Force using udunits2 installed in a given prefix or force disable it.])],
-  [
-   AS_IF([test "x$withval" == "xno"],
-     [AC_MSG_RESULT(no)],
-     [test "x$withval" != "xyes"],
-     [udunits_cppflags=-I$withval/include
-      udunits_ldflags="-L$withval/lib -ludunits2"
-      with_udunits=yes
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(yes)])
-  ],
-  [with_udunits=check
-   AC_MSG_RESULT(probe)
+AC_ARG_WITH([udunits-inc],
+  [AS_HELP_STRING([(--with-udunits-inc=)],
+     [deprecated, use --with-udunits-headers])],
+  [with_udunits_headers=$withval
+   AC_MSG_WARN([--with-udunits-inc option is deprecated, use --with-udunits-headers instead])
   ]
 )
-have_udunits=no
-AS_IF([test "x$with_udunits" != "xno"],
-  [
-   AC_MSG_CHECKING(whether udunits2 include path is provided)
-   AC_ARG_WITH([udunits-inc],
-     [AS_HELP_STRING([--with-udunits-inc=DIR],
-        [path to base directory with UDUNITS headers])],
-     [with_udunits=yes
-      udunits_cppflags=-I${withval}
-      AC_MSG_RESULT([${withval}])],
-     [AC_MSG_RESULT([no])])
-   AC_MSG_CHECKING(whether udunits linker flags are provided)
-   AC_ARG_WITH([udunits-lib],
-     [AS_HELP_STRING([--with-udunits-lib=LDFLAGS],
-        [linker flags for udunits])],
-     [with_udunits=yes
-      udunits_ldflags="${withval}"
-      AC_MSG_RESULT([$withval])],
-     [AC_MSG_RESULT([no])])
 
-   # Now check whether or not to use pkg-config for udunits
-   AS_IF([test "x$udunits_cppflags" == "x" \
-       && test "x$udunits_ldflags" == "x" \
-       && test "x$PKG_CONFIG"  != "x"],
-     [PKG_CHECK_MODULES([UDUNITS],
-         [udunits],
-	 [pkg_requires="${pkg_requires} udunits"
-          have_udunits=yes
-         ],
-	 [AC_MSG_NOTICE([udunits.pc not found])
-         ]
-      )
-     ],
-     [])
-
-   # Failing that, check without pkg-config
-   AS_IF([test "x$have_udunits" == "xno"],
-     [AC_MSG_CHECKING([for udunits (without pkg-config)])
-      TMPCPPFLAGS=$CPPFLAGS
-      TMPCFLAGS=$CFLAGS
-      TMPLDFLAGS=$LDFLAGS
-      TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $udunits_cppflags"
-      LDFLAGS="$TMPLDFLAGS $udunits_ldflags"
-      LIBS=-ludunits2
-      AC_TRY_LINK(
-        [#include <udunits2.h>],
-        [ut_set_error_message_handler(ut_ignore);],
-        [have_udunits=yes
-         AC_MSG_RESULT(yes)],
-        [AC_MSG_RESULT(no)])
-      CPPFLAGS=$TMPCPPFLAGS
-      LDFLAGS=$TMPLDFLAGS
-      LIBS=$TMPLIBS
-      UDUNITS_LIBS="$udunits_ldflags -ludunits2"
-      UDUNITS_CFLAGS="$udunits_cppflags"
-      pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
-      pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
-     ])
-  ],
-  []
+AC_ARG_WITH([udunits-lib],
+  [AS_HELP_STRING([(--with-udunits-lib=)],
+     [deprecated, use --with-udunits-libs])],
+  [with_udunits_libs=${withval}
+   AC_MSG_WARN([--with-udunits-lib option is deprecated, use --with-udunits-libs instead])
+  ]
 )
-AM_CONDITIONAL(HAVE_UDUNITS, [test "x$have_udunits" != xno])
+
+
+GYOTO_ARG_LIB(udunits, udunits, -ludunits2,
+	      [#include <udunits2.h>],
+	      [ut_set_error_message_handler(ut_ignore);])
 AS_IF([test "x$have_udunits" == "xno"],
-  [
-   AS_IF([test "x$with_udunits" == "xyes"],
-     [AC_MSG_ERROR([
- ****************************************
- *** UDUNITS requested but not found! ***
- ****************************************])
-     ],
-     [FEATURES+="-nounits"]
-   )
-  ],
-  [use_udunits=yes
-   AC_DEFINE([HAVE_UDUNITS], [1], [Define to 1 if you have libudunits2])]
+  [FEATURES+="-nounits"]
 )
-AC_SUBST([UDUNITS_LIBS])
-AC_SUBST([UDUNITS_CFLAGS])
 
 ## XERCES
 # Check for Xerces-c
-AC_MSG_CHECKING([whether libxerces should be used])
-xerces_headers=
-xerces_lib=
-XERCES_CFLAGS=
-XERCES_LIBS=
-AC_ARG_WITH(
-  [xerces],
-  [AS_HELP_STRING( [--with-xerces[[=xerces-prefix]]],
-     [Force using xerces installed in a given prefix or force disable it.])],
-  [
-   AS_IF([test "x$with_xerces" == "xno"],
-     [AC_MSG_RESULT(no)],
-     [test "x$with_xerces" != "xyes"],
-     [xerces_headers=-I$with_xerces/include
-      xerces_lib=-L$with_xerces/lib
-      with_xerces=yes
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(yes)])
-  ],
-  [with_xerces=check
-   AC_MSG_RESULT(probe)
-  ]
-)
-have_xerces=no
-AS_IF([test "x$with_xerces" != "xno"],
-  [
-   AC_MSG_CHECKING(whether xerces include path is provided)
-   AC_ARG_WITH([xerces-headers],
-     [AS_HELP_STRING([--with-xerces-headers=path],
-        [location of xercesc include files (without trailing "/xercesc")])],
-     [with_xerces=yes
-      xerces_headers=-I${with_xerces_headers}
-      AC_MSG_RESULT([${with_xerces_headers}])],
-     [AC_MSG_RESULT([no])])
-   AC_MSG_CHECKING(whether xerces library path is provided)
-   AC_ARG_WITH([xerces-libs],
-     [AS_HELP_STRING([--with-xerces-libs=path],
-        [location of xercesc library files])],
-     [with_xerces=yes
-      xerces_lib=-L$with_xerces_libs
-      AC_MSG_RESULT([$with_xerces_libs])],
-     [AC_MSG_RESULT([no])])
-
-   # Now check whether or not to use pkg-config for xerces
-   AS_IF([test "x$xerces_headers" == "x" \
-       && test "x$xerces_lib" == "x" \
-       && test "x$PKG_CONFIG"  != "x"],
-     [PKG_CHECK_MODULES([XERCES],
-         [xerces-c],
-	 [pkg_requires="${pkg_requires} xerces-c"
-          have_xerces=yes
-         ],
-	 [AC_MSG_NOTICE([xerces-c.pc not found])
-         ]
-      )
-     ],
-     [])
-
-   # Failing that, check without pkg-config
-   AS_IF([test "x$have_xerces" == "xno"],
-     [AC_MSG_CHECKING([for xerces-c (without pkg-config)])
-      TMPCPPFLAGS=$CPPFLAGS
-      TMPCFLAGS=$CFLAGS
-      TMPLDFLAGS=$LDFLAGS
-      TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
-      LDFLAGS="$TMPLDFLAGS $xerces_lib"
-      LIBS=-lxerces-c
-      AC_TRY_LINK(
-        [#include <xercesc/util/PlatformUtils.hpp>],
-        [xercesc::XMLPlatformUtils::Initialize();],
-        [have_xerces=yes
-         AC_MSG_RESULT(yes)],
-        [AC_MSG_RESULT(no)])
-      CPPFLAGS=$TMPCPPFLAGS
-      LDFLAGS=$TMPLDFLAGS
-      LIBS=$TMPLIBS
-      XERCES_LIBS="$xerces_lib -lxerces-c"
-      XERCES_CFLAGS="$xerces_headers"
-      pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
-      pkg_libs="${pkg_libs} ${XERCES_LIBS}"
-     ])
-  ],
-  []
-)
+GYOTO_ARG_LIB(xerces, xerces-c, -lxerces-c,
+	      [#include <xercesc/util/PlatformUtils.hpp>],
+	      [xercesc::XMLPlatformUtils::Initialize();])
 AS_IF([test "x$have_xerces" == "xno"],
-  [
-   AS_IF([test "x$with_xerces" == "xyes"],
-     [AC_MSG_ERROR([xerces requested but not found])
-     ],
-     [FEATURES+="-noxml"]
-   )
+  [FEATURES+="-noxml"
    AS_IF([test "x$have_mpi" == "xyes"],
      [AC_MSG_ERROR([The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces.])])
-  ],
-  [use_xerces=yes
-   AC_DEFINE([GYOTO_USE_XERCES], [1], [Define to 1 if you have Xerces])]
+  ]
 )
-AC_SUBST([XERCES_LIBS])
-AC_SUBST([XERCES_CFLAGS])
 
 ## CFITSIO
 # Check for CFITSIO
-AC_MSG_CHECKING(whether libcfitsio should be used)
-cfitsio_headers=
-cfitsio_lib=
-AC_ARG_WITH(
-  [cfitsio],
-  [AS_HELP_STRING( [--with-cfitsio[[=cfitsio-prefix]]],
-     [Force using cfitsio installed in a given prefix or force disable it.])],
-  [
-   AS_IF([test "x$with_cfitsio" == "xno"],
-     [AC_MSG_RESULT(no)],
-     [test "x$with_cfitsio" != "xyes"],
-     [cfitsio_headers=-I$with_cfitsio/include
-      cfitsio_lib=-L$with_cfitsio/lib
-      with_cfitsio=yes
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(yes)])
-  ],
-  [with_cfitsio=check
-   AC_MSG_RESULT(probe)
-  ]
-)
-have_cfitsio=no
-AS_IF([test "x$with_cfitsio" != "xno"],
-  [
-   AC_MSG_CHECKING(whether cfitsio include path is provided)
-   AC_ARG_WITH([cfitsio-headers],
-     [AS_HELP_STRING([--with-cfitsio-headers=path],
-        [location of cfitsio include files])],
-     [with_cfitsio=yes
-      cfitsio_headers=-I${with_cfitsio_headers}
-      AC_MSG_RESULT([${with_cfitsio_headers}])],
-     [AC_MSG_RESULT([no])])
-   AC_MSG_CHECKING(whether cfitsio library path is provided)
-   AC_ARG_WITH([cfitsio-libs],
-     [AS_HELP_STRING([--with-cfitsio-libs=path],
-        [location of cfitsio library files])],
-     [with_cfitsio=yes
-      cfitsio_lib=-L$with_cfitsio_libs
-      AC_MSG_RESULT([$with_cfitsio_libs])],
-     [AC_MSG_RESULT([no])])
-
-   # Now check whether or not to use pkg-config for cfitsio
-   AS_IF([test "x$cfitsio_headers" == "x" \
-       && test "x$cfitsio_lib" == "x" \
-       && test "x$PKG_CONFIG"  != "x"],
-     [PKG_CHECK_MODULES([CFITSIO],
-         [cfitsio],
-	 [pkg_requires="${pkg_requires} cfitsio"
-          have_cfitsio=yes
-         ],
-	 [AC_MSG_NOTICE([cfitsio.pc not found])
-         ]
-      )
-     ],
-     [])
-
-   # Failing that, check without pkg-config
-   AS_IF([test "x$have_cfitsio" == "xno"],
-     [AC_MSG_CHECKING([for cfitsio (without pkg-config)])
-      TMPCPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
-      TMPLDFLAGS=$LDFLAGS
-      LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
-      TMPLIBS=$LIBS
-      LIBS=-lcfitsio
-      AC_TRY_LINK(
-        [#include <fitsio.h>
-         #include <string>],
-        [fitsfile* fptr=NULL; std::string file=""; int status=0;
-         fits_open_file(&fptr, file.c_str(), 0, &status);],
-        [have_cfitsio=yes
-         AC_MSG_RESULT(yes)],
-        [AC_MSG_RESULT(no)])
-      CPPFLAGS=$TMPCPPFLAGS
-      LDFLAGS=$TMPLDFLAGS
-      LIBS=$TMPLIBS
-      CFITSIO_LIBS="$cfitsio_lib -lcfitsio"
-      CFITSIO_CFLAGS="$cfitsio_headers"
-      pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
-      pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
-     ]
-   )
-  ],
-  []
-)
+GYOTO_ARG_LIB(cfitsio, cfitsio, -lcfitsio,
+	      [#include <fitsio.h>
+	       #include <string>],
+	      [fitsfile* fptr=NULL; std::string file=""; int status=0;
+	       fits_open_file(&fptr, file.c_str(), 0, &status);])
 AS_IF([test "x$have_cfitsio" == "xno"],
-  [AS_IF([test "x$with_cfitsio" == "xyes"],
-     [AC_MSG_ERROR([cfitsio requested but not found])
-     ],
-     [FEATURES+="-nofits"]
-   )
-  ],
-  [use_cfitsio=yes
-   AC_DEFINE([GYOTO_USE_CFITSIO],
-     [1],
-     [Define to 1 if you have cfitsio])
-  ]
+  [FEATURES+="-nofits"]
 )
-AM_CONDITIONAL([HAVE_CFITSIO], [test "x$have_cfitsio" == "xyes"])
-AC_SUBST([CFITSIO_LIBS])
-AC_SUBST([CFITSIO_CFLAGS])
 
 ## ARBLIB
 # Check for ARBLIB
