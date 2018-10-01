@@ -659,6 +659,8 @@ HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
 CFITSIO_CFLAGS
+HAVE_XERCES_FALSE
+HAVE_XERCES_TRUE
 XERCES_LIBS
 XERCES_CFLAGS
 HAVE_UDUNITS_FALSE
@@ -878,9 +880,11 @@ with_yorick_home
 with_yorick_site
 enable_debugging
 enable_pthreads
-with_udunits
 with_udunits_inc
 with_udunits_lib
+with_udunits
+with_udunits_headers
+with_udunits_libs
 with_xerces
 with_xerces_headers
 with_xerces_libs
@@ -1609,25 +1613,52 @@ Optional Packages:
                           yorick directory if it is under ${prefix}, else
                           ${prefix}/lib/yorick]
 
-  --with-udunits[=DIR]    Force using udunits2 installed in a given prefix or
+  (--with-udunits-inc=)   deprecated, use --with-udunits-headers
+  (--with-udunits-lib=)   deprecated, use --with-udunits-libs
+  --with-udunits[=udunits-prefix]
+                          Force using udunits installed in a given prefix or
                           force disable it.
-  --with-udunits-inc=DIR  path to base directory with UDUNITS headers
-  --with-udunits-lib=LDFLAGS
-                          linker flags for udunits
+  --with-udunits-headers=path
+                          location of udunits include files as a
+                          colon-separated path
+                          ('--with-udunits-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-udunits-headers="-I/path1 ... -I/pathn")'
+  --with-udunits-libs=path
+                          location of udunits library files as a
+                          colon-separated path
+                          ('--with-udunits-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-udunits-libs="-L/path1
+                          ... -L/pathn")'
   --with-xerces[=xerces-prefix]
                           Force using xerces installed in a given prefix or
                           force disable it.
   --with-xerces-headers=path
-                          location of xercesc include files (without trailing
-                          "/xercesc")
-  --with-xerces-libs=path location of xercesc library files
+                          location of xerces include files as a
+                          colon-separated path
+                          ('--with-xerces-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-xerces-headers="-I/path1 ... -I/pathn")'
+  --with-xerces-libs=path location of xerces library files as a
+                          colon-separated path
+                          ('--with-xerces-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-xerces-libs="-L/path1
+                          ... -L/pathn")'
   --with-cfitsio[=cfitsio-prefix]
                           Force using cfitsio installed in a given prefix or
                           force disable it.
   --with-cfitsio-headers=path
-                          location of cfitsio include files
+                          location of cfitsio include files as a
+                          colon-separated path
+                          ('--with-cfitsio-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-cfitsio-headers="-I/path1 ... -I/pathn")'
   --with-cfitsio-libs=path
-                          location of cfitsio library files
+                          location of cfitsio library files as a
+                          colon-separated path
+                          ('--with-cfitsio-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-cfitsio-libs="-L/path1
+                          ... -L/pathn")'
   --with-lorene[=${HOME_LORENE}]
                           force using the optional LORENE library, possibly
                           specifying HOME_LORENE [default=${HOME_LORENE}]
@@ -19894,12 +19925,38 @@ pkg_requires=
 pkg_cflags=
 pkg_libs=
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libudunits2 should be used" >&5
-$as_echo_n "checking whether libudunits2 should be used... " >&6; }
-udunits_cppflags=
-udunits_ldflags=
-UDUNITS_CFLAGS=
-UDUNITS_LIBS=
+
+# Check whether --with-udunits-inc was given.
+if test "${with_udunits_inc+set}" = set; then :
+  withval=$with_udunits_inc; with_udunits_headers=$withval
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-udunits-inc option is deprecated, use --with-udunits-headers instead" >&5
+$as_echo "$as_me: WARNING: --with-udunits-inc option is deprecated, use --with-udunits-headers instead" >&2;}
+
+
+fi
+
+
+
+# Check whether --with-udunits-lib was given.
+if test "${with_udunits_lib+set}" = set; then :
+  withval=$with_udunits_lib; with_udunits_libs=${withval}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-udunits-lib option is deprecated, use --with-udunits-libs instead" >&5
+$as_echo "$as_me: WARNING: --with-udunits-lib option is deprecated, use --with-udunits-libs instead" >&2;}
+
+
+fi
+
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits should be used" >&5
+$as_echo_n "checking whether udunits should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_udunits
+
 
 # Check whether --with-udunits was given.
 if test "${with_udunits+set}" = set; then :
@@ -19908,9 +19965,9 @@ if test "${with_udunits+set}" = set; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 elif test "x$withval" != "xyes"; then :
-  udunits_cppflags=-I$withval/include
-      udunits_ldflags="-L$withval/lib -ludunits2"
-      with_udunits=yes
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -19919,48 +19976,59 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_udunits=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_udunits=no
-if test "x$with_udunits" != "xno"; then :
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits2 include path is provided" >&5
-$as_echo_n "checking whether udunits2 include path is provided... " >&6; }
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
-# Check whether --with-udunits-inc was given.
-if test "${with_udunits_inc+set}" = set; then :
-  withval=$with_udunits_inc; with_udunits=yes
-      udunits_cppflags=-I${withval}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${withval}" >&5
-$as_echo "${withval}" >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits include path is provided" >&5
+$as_echo_n "checking whether udunits include path is provided... " >&6; }
+
+# Check whether --with-udunits-headers was given.
+if test "${with_udunits_headers+set}" = set; then :
+  withval=$with_udunits_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits linker flags are provided" >&5
-$as_echo_n "checking whether udunits linker flags are provided... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits library path is provided" >&5
+$as_echo_n "checking whether udunits library path is provided... " >&6; }
 
-# Check whether --with-udunits-lib was given.
-if test "${with_udunits_lib+set}" = set; then :
-  withval=$with_udunits_lib; with_udunits=yes
-      udunits_ldflags="${withval}"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
+# Check whether --with-udunits-libs was given.
+if test "${with_udunits_libs+set}" = set; then :
+  withval=$with_udunits_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for udunits
-   if test "x$udunits_cppflags" == "x" \
-       && test "x$udunits_ldflags" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20038,22 +20106,22 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} udunits"
-          have_udunits=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_udunits" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for udunits (without pkg-config)" >&5
-$as_echo_n "checking for udunits (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UDUNITS (without pkg-config)" >&5
+$as_echo_n "checking for UDUNITS (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
       TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $udunits_cppflags"
-      LDFLAGS="$TMPLDFLAGS $udunits_ldflags"
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-ludunits2
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20067,7 +20135,7 @@ ut_set_error_message_handler(ut_ignore);
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_udunits=yes
+  gy_have=yes
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20079,15 +20147,35 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LIBS="$udunits_ldflags -ludunits2"
-      UDUNITS_CFLAGS="$udunits_cppflags"
+      UDUNITS_LIBS="$gy_lib -l-ludunits2"
+      UDUNITS_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
       pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 fi
 
 fi
- if test "x$have_udunits" != xno; then
+
+have_udunits=$gy_have
+with_udunits=$withval
+udunits_headers=$gy_headers
+udunits_lib=$gy_lib
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
+  as_fn_error $? "udunits requested but not found" "$LINENO" 5
+
+fi
+
+else
+  use_udunits=yes
+
+$as_echo "#define GYOTO_USE_UDUNITS 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_udunits" == "xyes"; then
   HAVE_UDUNITS_TRUE=
   HAVE_UDUNITS_FALSE='#'
 else
@@ -20095,48 +20183,38 @@ else
   HAVE_UDUNITS_FALSE=
 fi
 
+
+
+
+
+
 if test "x$have_udunits" == "xno"; then :
-
-   if test "x$with_udunits" == "xyes"; then :
-  as_fn_error $? "
- ****************************************
- *** UDUNITS requested but not found! ***
- ****************************************" "$LINENO" 5
-
-else
   FEATURES+="-nounits"
 
 fi
 
-else
-  use_udunits=yes
-
-$as_echo "#define HAVE_UDUNITS 1" >>confdefs.h
-
-
-fi
-
-
-
 ## XERCES
 # Check for Xerces-c
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5
-$as_echo_n "checking whether libxerces should be used... " >&6; }
-xerces_headers=
-xerces_lib=
-XERCES_CFLAGS=
-XERCES_LIBS=
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether xerces should be used" >&5
+$as_echo_n "checking whether xerces should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_xerces
+
 
 # Check whether --with-xerces was given.
 if test "${with_xerces+set}" = set; then :
   withval=$with_xerces;
-   if test "x$with_xerces" == "xno"; then :
+   if test "x$withval" == "xno"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-elif test "x$with_xerces" != "xyes"; then :
-  xerces_headers=-I$with_xerces/include
-      xerces_lib=-L$with_xerces/lib
-      with_xerces=yes
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20145,25 +20223,31 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_xerces=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_xerces=no
-if test "x$with_xerces" != "xno"; then :
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether xerces include path is provided" >&5
 $as_echo_n "checking whether xerces include path is provided... " >&6; }
 
 # Check whether --with-xerces-headers was given.
 if test "${with_xerces_headers+set}" = set; then :
-  withval=$with_xerces_headers; with_xerces=yes
-      xerces_headers=-I${with_xerces_headers}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_xerces_headers}" >&5
-$as_echo "${with_xerces_headers}" >&6; }
+  withval=$with_xerces_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20174,19 +20258,24 @@ $as_echo_n "checking whether xerces library path is provided... " >&6; }
 
 # Check whether --with-xerces-libs was given.
 if test "${with_xerces_libs+set}" = set; then :
-  withval=$with_xerces_libs; with_xerces=yes
-      xerces_lib=-L$with_xerces_libs
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xerces_libs" >&5
-$as_echo "$with_xerces_libs" >&6; }
+  withval=$with_xerces_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for xerces
-   if test "x$xerces_headers" == "x" \
-       && test "x$xerces_lib" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20264,22 +20353,22 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} xerces-c"
-          have_xerces=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_xerces" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for xerces-c (without pkg-config)" >&5
-$as_echo_n "checking for xerces-c (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XERCES (without pkg-config)" >&5
+$as_echo_n "checking for XERCES (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
       TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
-      LDFLAGS="$TMPLDFLAGS $xerces_lib"
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-lxerces-c
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20293,7 +20382,7 @@ xercesc::XMLPlatformUtils::Initialize();
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_xerces=yes
+  gy_have=yes
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20305,25 +20394,24 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCES_LIBS="$xerces_lib -lxerces-c"
-      XERCES_CFLAGS="$xerces_headers"
+      XERCES_LIBS="$gy_lib -l-lxerces-c"
+      XERCES_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
       pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 fi
 
 fi
-if test "x$have_xerces" == "xno"; then :
 
-   if test "x$with_xerces" == "xyes"; then :
+have_xerces=$gy_have
+with_xerces=$withval
+xerces_headers=$gy_headers
+xerces_lib=$gy_lib
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "xerces requested but not found" "$LINENO" 5
 
-else
-  FEATURES+="-noxml"
-
-fi
-   if test "x$have_mpi" == "xyes"; then :
-  as_fn_error $? "The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces." "$LINENO" 5
 fi
 
 else
@@ -20332,27 +20420,52 @@ else
 $as_echo "#define GYOTO_USE_XERCES 1" >>confdefs.h
 
 
+
+fi
+ if test "x$have_xerces" == "xyes"; then
+  HAVE_XERCES_TRUE=
+  HAVE_XERCES_FALSE='#'
+else
+  HAVE_XERCES_TRUE='#'
+  HAVE_XERCES_FALSE=
 fi
 
 
 
+
+
+
+if test "x$have_xerces" == "xno"; then :
+  FEATURES+="-noxml"
+   if test "x$have_mpi" == "xyes"; then :
+  as_fn_error $? "The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces." "$LINENO" 5
+fi
+
+
+fi
+
 ## CFITSIO
 # Check for CFITSIO
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libcfitsio should be used" >&5
-$as_echo_n "checking whether libcfitsio should be used... " >&6; }
-cfitsio_headers=
-cfitsio_lib=
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether cfitsio should be used" >&5
+$as_echo_n "checking whether cfitsio should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_cfitsio
+
 
 # Check whether --with-cfitsio was given.
 if test "${with_cfitsio+set}" = set; then :
   withval=$with_cfitsio;
-   if test "x$with_cfitsio" == "xno"; then :
+   if test "x$withval" == "xno"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-elif test "x$with_cfitsio" != "xyes"; then :
-  cfitsio_headers=-I$with_cfitsio/include
-      cfitsio_lib=-L$with_cfitsio/lib
-      with_cfitsio=yes
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20361,25 +20474,31 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_cfitsio=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_cfitsio=no
-if test "x$with_cfitsio" != "xno"; then :
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether cfitsio include path is provided" >&5
 $as_echo_n "checking whether cfitsio include path is provided... " >&6; }
 
 # Check whether --with-cfitsio-headers was given.
 if test "${with_cfitsio_headers+set}" = set; then :
-  withval=$with_cfitsio_headers; with_cfitsio=yes
-      cfitsio_headers=-I${with_cfitsio_headers}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_cfitsio_headers}" >&5
-$as_echo "${with_cfitsio_headers}" >&6; }
+  withval=$with_cfitsio_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20390,19 +20509,24 @@ $as_echo_n "checking whether cfitsio library path is provided... " >&6; }
 
 # Check whether --with-cfitsio-libs was given.
 if test "${with_cfitsio_libs+set}" = set; then :
-  withval=$with_cfitsio_libs; with_cfitsio=yes
-      cfitsio_lib=-L$with_cfitsio_libs
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_cfitsio_libs" >&5
-$as_echo "$with_cfitsio_libs" >&6; }
+  withval=$with_cfitsio_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for cfitsio
-   if test "x$cfitsio_headers" == "x" \
-       && test "x$cfitsio_lib" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20480,37 +20604,38 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} cfitsio"
-          have_cfitsio=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_cfitsio" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cfitsio (without pkg-config)" >&5
-$as_echo_n "checking for cfitsio (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CFITSIO (without pkg-config)" >&5
+$as_echo_n "checking for CFITSIO (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
+      TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
-      LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
       TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-lcfitsio
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <fitsio.h>
-         #include <string>
+	       #include <string>
 int
 main ()
 {
 fitsfile* fptr=NULL; std::string file=""; int status=0;
-         fits_open_file(&fptr, file.c_str(), 0, &status);
+	       fits_open_file(&fptr, file.c_str(), 0, &status);
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_cfitsio=yes
+  gy_have=yes
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20522,21 +20647,23 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIO_LIBS="$cfitsio_lib -lcfitsio"
-      CFITSIO_CFLAGS="$cfitsio_headers"
+      CFITSIO_LIBS="$gy_lib -l-lcfitsio"
+      CFITSIO_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
       pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
 
-
 fi
 
 fi
-if test "x$have_cfitsio" == "xno"; then :
-  if test "x$with_cfitsio" == "xyes"; then :
+
+have_cfitsio=$gy_have
+with_cfitsio=$withval
+cfitsio_headers=$gy_headers
+cfitsio_lib=$gy_lib
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "cfitsio requested but not found" "$LINENO" 5
-
-else
-  FEATURES+="-nofits"
 
 fi
 
@@ -20558,6 +20685,13 @@ fi
 
 
 
+
+
+
+if test "x$have_cfitsio" == "xno"; then :
+  FEATURES+="-nofits"
+
+fi
 
 ## LORENE
 # Check for LORENE
@@ -20912,6 +21046,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_UDUNITS_TRUE}" && test -z "${HAVE_UDUNITS_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_UDUNITS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_XERCES_TRUE}" && test -z "${HAVE_XERCES_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_XERCES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then

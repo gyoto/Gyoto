@@ -102,6 +102,31 @@
 # endif
 #endif
 
+/** \def GYOTO_USE_UDUNITS
+ *  \brief Whether libudunits2 support is compiled in.
+ *
+ *  Foundation for the Gyoto::Units framework. Gyoto ought to build
+ *  and work without it, but with restricted unit conversion
+ *  capabilities.
+ */
+#undef GYOTO_USE_UDUNITS
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_USE_UDUNITS
+#  define GYOTO_USE_UDUNITS (undefined)
+# endif
+#endif
+
+/** \def HAVE_UDUNITS
+ *  \brief Whether libudunits2 support is compiled in.
+ *
+ *  Foundation for the Gyoto::Units framework. Gyoto ought to build
+ *  and work without it, but with restricted unit conversion
+ *  capabilities.
+ */
+#ifdef GYOTO_USE_UDUNITS
+# define HAVE_UDUNITS
+#endif
+
 /** \def GYOTO_USE_XERCES
     \brief Whether Xerces support (XML i/o) is compiled-in.
 
@@ -250,20 +275,6 @@
 #ifdef DOXYGEN_RUN
 # ifndef HAVE_SYS_TYPES_H
 #  define HAVE_SYS_TYPES_H (undefined)
-# endif
-#endif
-
-/** \def HAVE_UDUNITS
- *  \brief Whether libudunits2 support is compiled in.
- *
- *  Foundation for the Gyoto::Units framework. Gyoto ought to build
- *  and work without it, but with restricted unit conversion
- *  capabilities.
- */
-#undef HAVE_UDUNITS
-#ifdef DOXYGEN_RUN
-# ifndef HAVE_UDUNITS
-#  define HAVE_UDUNITS (undefined)
 # endif
 #endif
 
