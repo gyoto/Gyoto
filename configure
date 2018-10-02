@@ -20972,7 +20972,7 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      ARBLIB_LIBS="$gy_lib -l$arblib_ldflags"
+      ARBLIB_LIBS="$gy_lib $arblib_ldflags"
       ARBLIB_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
       pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
