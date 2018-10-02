@@ -20188,7 +20188,7 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LIBS="$gy_lib -l-ludunits2"
+      UDUNITS_LIBS="$gy_lib -ludunits2"
       UDUNITS_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
       pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
@@ -20435,7 +20435,7 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCES_LIBS="$gy_lib -l-lxerces-c"
+      XERCES_LIBS="$gy_lib -lxerces-c"
       XERCES_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
       pkg_libs="${pkg_libs} ${XERCES_LIBS}"
@@ -20688,7 +20688,7 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIO_LIBS="$gy_lib -l-lcfitsio"
+      CFITSIO_LIBS="$gy_lib -lcfitsio"
       CFITSIO_CFLAGS="$gy_headers"
       pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
       pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
