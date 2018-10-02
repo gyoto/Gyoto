@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2018 Frederic Vincent
+    Copyright 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -62,10 +62,7 @@ class Gyoto::Spectrum::KappaDistributionSynchrotron : public Gyoto::Spectrum::Ge
   GYOTO_OBJECT;
 
   KappaDistributionSynchrotron();
-
-  /**
-   * \brief Constructor setting T_ and cst_
-   */
+  KappaDistributionSynchrotron(const KappaDistributionSynchrotron &);
   virtual KappaDistributionSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();

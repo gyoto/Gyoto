@@ -1,5 +1,5 @@
 /*
-  Copyright 2018 Frederic Vincent
+  Copyright 2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -43,6 +43,19 @@ Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron()
   angle_B_pem_(0.), cyclotron_freq_(1.), thetae_(1.),
   kappaindex_(0.), angle_averaged_(0), hypergeometric_(1)
 {}
+Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron(const KappaDistributionSynchrotron &o)
+: Spectrum::Generic(o),
+  spectrumBB_(NULL),
+  numberdensityCGS_(o.numberdensityCGS_),
+  angle_B_pem_(o.angle_B_pem_),
+  cyclotron_freq_(o.cyclotron_freq_),
+  thetae_(o.thetae_),
+  kappaindex_(o.kappaindex_),
+  hypergeometric_(o.hypergeometric_),
+  angle_averaged_(o.angle_averaged_)
+{
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
+}
 
 double Spectrum::KappaDistributionSynchrotron::numberdensityCGS() const { 
   return numberdensityCGS_; }

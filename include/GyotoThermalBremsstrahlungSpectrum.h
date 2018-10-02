@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2014 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -59,10 +59,7 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   GYOTO_OBJECT;
 
   ThermalBremsstrahlung();
-
-  /**
-   * \brief Constructor setting T_ and cst_
-   */
+  ThermalBremsstrahlung(const ThermalBremsstrahlung &);
   virtual ThermalBremsstrahlung * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();

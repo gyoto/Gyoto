@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2018 Frederic Vincent
+    Copyright 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -61,10 +61,7 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
   GYOTO_OBJECT;
 
   ThermalSynchrotron();
-
-  /**
-   * \brief Constructor setting T_ and cst_
-   */
+  ThermalSynchrotron(const ThermalSynchrotron &);
   virtual ThermalSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();

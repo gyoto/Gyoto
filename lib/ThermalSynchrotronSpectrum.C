@@ -1,5 +1,5 @@
 /*
-  Copyright 2018 Frederic Vincent
+  Copyright 2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -42,6 +42,18 @@ Spectrum::ThermalSynchrotron::ThermalSynchrotron()
 {
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
+}
+Spectrum::ThermalSynchrotron::ThermalSynchrotron(const ThermalSynchrotron &o)
+: Spectrum::Generic(o),
+  T_(o.T_),
+  spectrumBB_(NULL),
+  numberdensityCGS_(o.numberdensityCGS_),
+  angle_B_pem_(o.angle_B_pem_),
+  cyclotron_freq_(o.cyclotron_freq_),
+  angle_averaged_(o.angle_averaged_),
+  bessel_K2_(o.bessel_K2_)
+{
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
 
 double Spectrum::ThermalSynchrotron::temperature() const { return T_; }
