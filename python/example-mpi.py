@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Example file for gyoto with MPI
 #
-# Copyright 2015 Thibaut Paumard
+# Copyright 2015-2018 Thibaut Paumard
 #
 # This file is part of Gyoto.
 #
@@ -105,7 +105,7 @@ import gyoto.core
 import gyoto.std
 
 a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
-sc=a.getScenery()
+sc=a.scenery()
 sc.nThreads(1)
 sc.astrobj().opticallyThin(False)
 

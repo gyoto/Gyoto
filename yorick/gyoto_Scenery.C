@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015 Thibaut Paumard
+    Copyright 2011-2015, 2018 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -419,7 +419,7 @@ extern "C" {
 
   // Constructor
   void Y_gyoto_Scenery(int argc) {
-    YGYOTO_CONSTRUCTOR_INIT1(Scenery, Scenery, Scenery);
+    YGYOTO_CONSTRUCTOR_INIT2(Scenery, Scenery, Scenery, scenery);
     gyoto_Scenery_eval(OBJ, argc);
   }
 

@@ -8,7 +8,7 @@
  *
  */
 /*
-    Copyright 2011-2014, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2014, 2016, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -79,7 +79,7 @@ namespace Gyoto {
  *  Gyoto::Factory * factory = new Gyoto::Factory("some/input/file.xml");
  *  const std::string kind = factory->kind();
  *  if (kind.compare("Scenery")) Gyoto::throwError("I wan't a Scenery");
- *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> getScenery();
+ *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = factory -> scenery();
  *  Gyoto::SmartPointer<Gyoto::Screen>  screen = scenery->screen();
  *  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> object = scenery->astrobj();
  *  Gyoto::SmartPointer<Gyoto::Metric::Generic> metric = scenery->metric();
@@ -87,7 +87,7 @@ namespace Gyoto {
  * \endcode or, for a single object and without checking the kind
  * (kind()) first:
  * \code
- *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = Factory("some/input/file.xml").getScenery();
+ *  Gyoto::SmartPointer<Gyoto::Scenery> scenery = Factory("some/input/file.xml").scenery();
  * \endcode
  *
  *
@@ -202,10 +202,10 @@ class Gyoto::Factory
 
   /// Find Scenery element, instantiate it and get it.
   /**
-   * Scenery must be the root element. getScenery() will call
+   * Scenery must be the root element. scenery() will call
    * metric(), astrobj() and screen().
    */
-  Gyoto::SmartPointer<Gyoto::Scenery> getScenery();
+  Gyoto::SmartPointer<Gyoto::Scenery> scenery();
 
   /// Find Metric element, instantiate it and get it.
   /**
@@ -233,7 +233,7 @@ class Gyoto::Factory
    * Photon may be either the root element or directly within the root
    * element.
    */
-  Gyoto::SmartPointer<Gyoto::Photon>  getPhoton();
+  Gyoto::SmartPointer<Gyoto::Photon>  photon();
 
   /// Find Photon element, instantiate it and get it.
   /**

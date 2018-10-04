@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013-2015 Thibaut Paumard
+    Copyright 2011-2015, 2018 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -290,7 +290,7 @@ extern "C" {
   void
   Y_gyoto_Photon(int argc)
   {
-    YGYOTO_CONSTRUCTOR_INIT1(Photon, Photon, Photon);
+    YGYOTO_CONSTRUCTOR_INIT2(Photon, Photon, Photon, photon);
     gyoto_Photon_eval(OBJ, argc);
   }
 

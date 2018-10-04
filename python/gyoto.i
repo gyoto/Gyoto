@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -743,6 +743,19 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 %include "GyotoConfig.h"
 %include "GyotoUtils.h"
 %include "GyotoFactory.h"
+
+// Backwards-compatibility code introduced 2018-10-04
+%extend Gyoto::Factory {
+  Gyoto::SmartPointer<Gyoto::Scenery> getScenery() {
+    GYOTO_WARNING << "Factory::getScenery() is deprecated, use Factory::scenery() instead\n";
+    return ($self)->scenery();
+  }
+  Gyoto::SmartPointer<Gyoto::Photon> getPhoton() {
+    GYOTO_WARNING << "Factory::getPhoton() is deprecated, use Factory::photon() instead\n";
+    return ($self)->photon();
+  }
+ };
+
 %include "GyotoFactoryMessenger.h"
 
  // SWIG fails on nested classes. Work around this limitation:

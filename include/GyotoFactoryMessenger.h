@@ -4,7 +4,7 @@
  */
 #ifdef GYOTO_USE_XERCES
 /*
-    Copyright 2011-2014, 2016 Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -136,10 +136,10 @@ class Gyoto::FactoryMessenger {
    * An Gyoto XML file may contain at most a single Photon section
    * and it may be present about anywhere in the XML tree. Individual
    * subcontractors should not try to interpret this section directly,
-   * but should call getPhoton() to find and interpret the Photon
+   * but should call photon() to find and interpret the Photon
    * section.
    */
-  SmartPointer<Photon>  getPhoton  () ;
+  SmartPointer<Photon>  photon  () ;
   ///< Build and get the Photon described in this XML file 
 
   /**

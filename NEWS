@@ -6,6 +6,11 @@ next unreleased ABI 7:0:0
        <CutOffIneV> 1 2 </CutOffineV>
      with
        <CutOff unit='eV'> 1 2 </CutOff>
+   * Changed API: for consistency, rename Factory::getScenery to
+     Factory::scenery and Factory::getPhoton to Factory::photon.
+   * Changed API: Factory::metric(), astrobj() etc. don't throw an error
+     anymore when then XML file does not contain the relevant entity but
+     return a NULL smartpointer instead
    * New Metric: Hayward
 
 1.2.0 2016/12/12 ABI 6:0:0

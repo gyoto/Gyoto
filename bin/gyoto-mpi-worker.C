@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2014, 2016, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
       broadcast(team, parfile, 0);
       curmsg = "In gyoto-mpi-worker.C: Error in Factory creation: ";
       curretval = 1;
-      sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
+      sc = Factory(const_cast<char*>(parfile.c_str())).scenery();
       sc -> mpi_team_    = &team;
      break;
     }

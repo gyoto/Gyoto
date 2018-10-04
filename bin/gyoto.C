@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
     }
 
     curmsg = "In gyoto.C: Error getting Scenery: ";
-    scenery = factory -> getScenery();
+    scenery = factory -> scenery();
 
     curmsg = "In gyoto.C: Error deleting Scenery: ";
     delete factory;
