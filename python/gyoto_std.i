@@ -18,6 +18,7 @@
  */
 %module(docstring="The Gyoto standard plug-in", package="gyoto") std
 %import gyoto.i
+%include "exception.i"
 %{
 
 #define GYOTO_NO_DEPRECATED
@@ -73,8 +74,23 @@ GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (const UniformSphere& orig);
 GyotoSmPtrClassDerived(Astrobj, UniformSphere)
 
+%inline {
+  class myCplxIdxExcept {};
+}
+
+%exception Gyoto::Astrobj::Complex::__getitem__ {
+  try {
+    $action ;
+  } catch (myCplxIdxExcept e) {
+    SWIG_exception_fail(SWIG_IndexError, "Index out of bounds");
+  }
+}
+
 %extend Gyoto::Astrobj::Complex {
-  Gyoto::Astrobj::Generic * __getitem__ (int i) {
+  Gyoto::Astrobj::Generic * __getitem__ (size_t i) {
+    if (i >= ($self)->getCardinal()) {
+      throw myCplxIdxExcept();
+    }
     Gyoto::Astrobj::Generic * res = ($self)->operator[](i);
     res -> incRefCount();
     return res;

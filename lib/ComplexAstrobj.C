@@ -99,14 +99,14 @@ void Complex::append(SmartPointer<Generic> e)
 
 SmartPointer<Generic>& Complex::operator[](size_t i)
 {
-  if (i > cardinal_)
+  if (i >= cardinal_)
     throwError("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
 
 SmartPointer<Generic> const& Complex::operator[](size_t i) const
 {
-  if (i > cardinal_)
+  if (i >= cardinal_)
     throwError("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
