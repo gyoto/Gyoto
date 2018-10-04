@@ -111,6 +111,11 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %define GyotoSmPtrClass(klass)
 %feature("ref") Gyoto:: klass "$this->incRefCount();";
 %feature("unref") Gyoto:: klass "$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%extend Gyoto::klass {
+  std::string __str__() {
+    return Gyoto::Factory($self).format();
+  }
+};
 %include Gyoto ## klass ## .h
 %enddef
 
@@ -163,6 +168,9 @@ Gyoto::SmartPointer<gtype>, gtype * {
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(address);
     if (res) res -> incRefCount();
     return res;
+  }
+  std::string __str__() {
+    return Gyoto::Factory($self).format();
   }
 };
 %include Gyoto ## klass ## .h
