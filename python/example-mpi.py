@@ -92,7 +92,7 @@
 # the right (ABI-compatible) version of gyoto is first in your PATH!
 import os
 if os.getenv('OMPI_COMM_WORLD_RANK', '0') != '0':
-    os.execlp("gyoto", "")
+    os.execlp("gyoto", " ")
 
 # 2- Let mpi4py initialize the MPI environment:
 import mpi4py.MPI

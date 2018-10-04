@@ -276,6 +276,4 @@ cplx.append(tr)
 cplx.append(sc.astrobj())
 sc.astrobj(cplx)
 
-cplx.rMax(100)
-
 print("All done, exiting")
