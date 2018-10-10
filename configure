@@ -20188,10 +20188,6 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LIBS="$gy_lib -ludunits2"
-      UDUNITS_CFLAGS="$gy_headers"
-      pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
-      pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 fi
 
@@ -20199,17 +20195,25 @@ fi
 
 have_udunits=$gy_have
 with_udunits=$withval
-udunits_headers=$gy_headers
-udunits_lib=$gy_lib
 
 if test "x$gy_have" == "xno"; then :
   if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "udunits requested but not found" "$LINENO" 5
 
 fi
+   udunits_headers=""
+   udunits_lib=""
+   UDUNITS_LIBS=""
+   UDUNITS_CFLAGS=""
 
 else
   use_udunits=yes
+   udunits_headers=$gy_headers
+   udunits_lib=$gy_lib
+   UDUNITS_LIBS="$gy_lib -ludunits2"
+   UDUNITS_CFLAGS="$gy_headers"
+   pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
+   pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 $as_echo "#define GYOTO_USE_UDUNITS 1" >>confdefs.h
 
@@ -20435,10 +20439,6 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCES_LIBS="$gy_lib -lxerces-c"
-      XERCES_CFLAGS="$gy_headers"
-      pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
-      pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 fi
 
@@ -20446,17 +20446,25 @@ fi
 
 have_xerces=$gy_have
 with_xerces=$withval
-xerces_headers=$gy_headers
-xerces_lib=$gy_lib
 
 if test "x$gy_have" == "xno"; then :
   if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "xerces requested but not found" "$LINENO" 5
 
 fi
+   xerces_headers=""
+   xerces_lib=""
+   XERCES_LIBS=""
+   XERCES_CFLAGS=""
 
 else
   use_xerces=yes
+   xerces_headers=$gy_headers
+   xerces_lib=$gy_lib
+   XERCES_LIBS="$gy_lib -lxerces-c"
+   XERCES_CFLAGS="$gy_headers"
+   pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
+   pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 $as_echo "#define GYOTO_USE_XERCES 1" >>confdefs.h
 
@@ -20688,10 +20696,6 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIO_LIBS="$gy_lib -lcfitsio"
-      CFITSIO_CFLAGS="$gy_headers"
-      pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
-      pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
 
 fi
 
@@ -20699,17 +20703,25 @@ fi
 
 have_cfitsio=$gy_have
 with_cfitsio=$withval
-cfitsio_headers=$gy_headers
-cfitsio_lib=$gy_lib
 
 if test "x$gy_have" == "xno"; then :
   if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "cfitsio requested but not found" "$LINENO" 5
 
 fi
+   cfitsio_headers=""
+   cfitsio_lib=""
+   CFITSIO_LIBS=""
+   CFITSIO_CFLAGS=""
 
 else
   use_cfitsio=yes
+   cfitsio_headers=$gy_headers
+   cfitsio_lib=$gy_lib
+   CFITSIO_LIBS="$gy_lib -lcfitsio"
+   CFITSIO_CFLAGS="$gy_headers"
+   pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
+   pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
 
 $as_echo "#define GYOTO_USE_CFITSIO 1" >>confdefs.h
 
@@ -20972,10 +20984,6 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      ARBLIB_LIBS="$gy_lib $arblib_ldflags"
-      ARBLIB_CFLAGS="$gy_headers"
-      pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
-      pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
 
 fi
 
@@ -20983,17 +20991,25 @@ fi
 
 have_arblib=$gy_have
 with_arblib=$withval
-arblib_headers=$gy_headers
-arblib_lib=$gy_lib
 
 if test "x$gy_have" == "xno"; then :
   if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "arblib requested but not found" "$LINENO" 5
 
 fi
+   arblib_headers=""
+   arblib_lib=""
+   ARBLIB_LIBS=""
+   ARBLIB_CFLAGS=""
 
 else
   use_arblib=yes
+   arblib_headers=$gy_headers
+   arblib_lib=$gy_lib
+   ARBLIB_LIBS="$gy_lib $arblib_ldflags"
+   ARBLIB_CFLAGS="$gy_headers"
+   pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
+   pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
 
 $as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
 
