@@ -527,6 +527,8 @@ AC_ARG_WITH([arblib-ldflags],
 AS_IF([test "x$have_arblib" == "xyes"],
   [have_2f1=yes
    with_aeae=no
+  ],
+  [arblib_ldflags=
   ]
 )
 
