@@ -121,6 +121,12 @@ AS_IF([test "x$gy_with" != "xno"],
         [$4],
 	[$5],
         [gy_have=yes
+         $1[]_headers=$gy_headers
+         $1[]_lib=$gy_lib
+         translit([$1], [a-z], [A-Z])[]_LIBS="$gy_lib $3"
+         translit([$1], [a-z], [A-Z])[]_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${translit([$1], [a-z], [A-Z])[]_CFLAGS}"
+         pkg_libs="${pkg_libs} ${translit([$1], [a-z], [A-Z])[]_LIBS}"
          AC_MSG_RESULT(yes)],
         [AC_MSG_RESULT(no)])
       CPPFLAGS=$TMPCPPFLAGS
@@ -146,12 +152,6 @@ AS_IF([test "x$gy_have" == "xno"],
    translit([$1], [a-z], [A-Z])[]_CFLAGS=""
   ],
   [use_$1=yes
-   $1[]_headers=$gy_headers
-   $1[]_lib=$gy_lib
-   translit([$1], [a-z], [A-Z])[]_LIBS="$gy_lib $3"
-   translit([$1], [a-z], [A-Z])[]_CFLAGS="$gy_headers"
-   pkg_cflags="${pkg_cflags} ${translit([$1], [a-z], [A-Z])[]_CFLAGS}"
-   pkg_libs="${pkg_libs} ${translit([$1], [a-z], [A-Z])[]_LIBS}"
    AC_DEFINE([GYOTO_USE_]translit([$1], [a-z], [A-Z]),
      [1],
      [Define to 1 if you have $1])

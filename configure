@@ -838,7 +838,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -976,7 +975,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1229,15 +1227,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1375,7 +1364,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1528,7 +1517,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -15992,7 +15980,7 @@ fi
 for ac_prog in python \
      python3 \
      python2 \
-                         python4.0                    python3.9                    python3.8                    python3.7                    python3.6                    python3.5                    python3.4                    python3.3                    python3.2                    python3.1                    python3.0                                                            python2.7
+                         python4.0                    python3.9                    python3.8                    python3.7                    python3.6                    python3.5                    python3.4                    python3.3                    python3.2                    python3.1                    python3.0                                                            python
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -20177,6 +20165,12 @@ ut_set_error_message_handler(ut_ignore);
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   gy_have=yes
+         udunits_headers=$gy_headers
+         udunits_lib=$gy_lib
+         UDUNITS_LIBS="$gy_lib -ludunits2"
+         UDUNITS_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
+         pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20208,12 +20202,6 @@ fi
 
 else
   use_udunits=yes
-   udunits_headers=$gy_headers
-   udunits_lib=$gy_lib
-   UDUNITS_LIBS="$gy_lib -ludunits2"
-   UDUNITS_CFLAGS="$gy_headers"
-   pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
-   pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 $as_echo "#define GYOTO_USE_UDUNITS 1" >>confdefs.h
 
@@ -20428,6 +20416,12 @@ xercesc::XMLPlatformUtils::Initialize();
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   gy_have=yes
+         xerces_headers=$gy_headers
+         xerces_lib=$gy_lib
+         XERCES_LIBS="$gy_lib -lxerces-c"
+         XERCES_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
+         pkg_libs="${pkg_libs} ${XERCES_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20459,12 +20453,6 @@ fi
 
 else
   use_xerces=yes
-   xerces_headers=$gy_headers
-   xerces_lib=$gy_lib
-   XERCES_LIBS="$gy_lib -lxerces-c"
-   XERCES_CFLAGS="$gy_headers"
-   pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
-   pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 $as_echo "#define GYOTO_USE_XERCES 1" >>confdefs.h
 
@@ -20685,6 +20673,12 @@ fitsfile* fptr=NULL; std::string file=""; int status=0;
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   gy_have=yes
+         cfitsio_headers=$gy_headers
+         cfitsio_lib=$gy_lib
+         CFITSIO_LIBS="$gy_lib -lcfitsio"
+         CFITSIO_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
+         pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20716,12 +20710,6 @@ fi
 
 else
   use_cfitsio=yes
-   cfitsio_headers=$gy_headers
-   cfitsio_lib=$gy_lib
-   CFITSIO_LIBS="$gy_lib -lcfitsio"
-   CFITSIO_CFLAGS="$gy_headers"
-   pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
-   pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
 
 $as_echo "#define GYOTO_USE_CFITSIO 1" >>confdefs.h
 
@@ -20973,6 +20961,12 @@ double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
   gy_have=yes
+         arblib_headers=$gy_headers
+         arblib_lib=$gy_lib
+         ARBLIB_LIBS="$gy_lib $arblib_ldflags"
+         ARBLIB_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
+         pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -21004,12 +20998,6 @@ fi
 
 else
   use_arblib=yes
-   arblib_headers=$gy_headers
-   arblib_lib=$gy_lib
-   ARBLIB_LIBS="$gy_lib $arblib_ldflags"
-   ARBLIB_CFLAGS="$gy_headers"
-   pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
-   pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
 
 $as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
 
