@@ -563,7 +563,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
       double ipct[16];
       if (has_ipct) impactcoords=&ipct[0];
 
-      // First send dummy result, using tag "give_tag".
+      // First send dummy result, using tag "give_task".
       // Manager will ignore the results and send first coordinates.
       mpi_team_->send(0, give_task, vect, nelt);
       while (true) {
@@ -1025,6 +1025,15 @@ void Gyoto::Scenery::mpiWorker() {
 
   Scenery::mpi_tag task=Scenery::give_task;
   Scenery::am_worker=true;
+
+  char name[MPI_MAX_PROCESSOR_NAME];
+  int namelen;
+  MPI_Get_processor_name(name, &namelen);
+
+  GYOTO_INFO << "Process with rank " << team.rank()
+	     << " running on " << name
+	     << " became a worker\n";
+
   while (task != Scenery::terminate) {
     sc->mpiTask(task);
     switch (task) {
@@ -1033,7 +1042,9 @@ void Gyoto::Scenery::mpiWorker() {
       broadcast(team, parfile, 0);
       sc = Factory(const_cast<char*>(parfile.c_str())).scenery();
       sc -> mpi_team_    = &team;
-      GYOTO_INFO << "Worker with rank " << team.rank() << " received scenery\n";
+      GYOTO_INFO << "Worker with rank " << team.rank()
+		 << " running on " << name
+		 << " received scenery\n";
      break;
     }
     case Scenery::raytrace:
@@ -1041,10 +1052,14 @@ void Gyoto::Scenery::mpiWorker() {
       break;
     case Scenery::terminate:
       sc = NULL;
-      GYOTO_INFO << "Worker with rank " << team.rank() << " terminating\n";
+      GYOTO_INFO << "Worker with rank " << team.rank()
+		 << " running on " << name
+		 << " terminating\n";
       break;
     default:
-      GYOTO_SEVERE << "unknown task " << task << endl;
+      GYOTO_SEVERE << "Worker with rank " << team.rank()
+		   << " running on " << name
+		   << " received unknown task " << task << endl;
     }
   }
 
