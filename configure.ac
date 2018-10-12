@@ -124,11 +124,19 @@ AC_MSG_RESULT($with_size__t)
 
 # PYTHON STUFF
 AC_ARG_WITH([python],
-	[AC_HELP_STRING([--with-python], [force (or disable) python support])],
-	[],
-	[with_python=optional])
+	[AC_HELP_STRING([--with-python@<:@=interpreter@:>@],
+	   [force (or disable) python support, possibly specifying interpreter])],
+	[
+	 case $with_python in
+	   yes | no) ;;
+	   *)
+	       PYTHON=`which $with_python` || AC_MSG_ERROR([$with_python: command not found])
+	       with_python=yes
+	 esac
+	],
+	[])
 
-PC_PROG_PYTHON([], [2.7], [4.0])
+PC_PROG_PYTHON([python3], [2.7], [4.0])
 PC_PYTHON_PROG_PYTHON_CONFIG
 PC_PYTHON_CHECK_HEADERS(
  [

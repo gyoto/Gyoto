@@ -1613,7 +1613,9 @@ Optional Packages:
                           consider size_t as the same as or distinct from
                           unsigned long (auto). Should normally be specified
                           only if cross-compiling.
-  --with-python           force (or disable) python support
+  --with-python[=interpreter]
+                          force (or disable) python support, possibly
+                          specifying interpreter
   --with-virtualenv       install to a Python virtualenv
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
@@ -15980,8 +15982,13 @@ $as_echo "$with_size__t" >&6; }
 # Check whether --with-python was given.
 if test "${with_python+set}" = set; then :
   withval=$with_python;
-else
-  with_python=optional
+	 case $with_python in
+	   yes | no) ;;
+	   *)
+	       PYTHON=`which $with_python` || as_fn_error $? "$with_python: command not found" "$LINENO" 5
+	       with_python=yes
+	 esac
+
 fi
 
 
@@ -15989,7 +15996,7 @@ fi
 
 
 
-for ac_prog in python \
+for ac_prog in python3 python \
      python3 \
      python2 \
                          python4.0                    python3.9                    python3.8                    python3.7                    python3.6                    python3.5                    python3.4                    python3.3                    python3.2                    python3.1                    python3.0                                                            python2.7
