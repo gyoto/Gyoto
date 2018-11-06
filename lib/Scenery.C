@@ -1012,6 +1012,7 @@ void Gyoto::Scenery::mpiTask(mpi_tag &tag) {
 }
 
 void Gyoto::Scenery::mpiWorker() {
+#ifdef HAVE_MPI
   MPI_Comm parent_c;
   MPI_Comm_get_parent(&parent_c);
 
@@ -1064,4 +1065,8 @@ void Gyoto::Scenery::mpiWorker() {
   }
 
   team.barrier();
+#else
+  throwError("Gyoto was compiled without MPI support, "
+	     "Gyoto::Scenery::mpiWorker() is unavailable.");
+#endif
 }
