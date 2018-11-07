@@ -224,8 +224,6 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
 		 " incorrect beaming argument");
     }
   }
-  else
-    {
-      return 0.;
-    }
+  // else
+  return 0.;
 }

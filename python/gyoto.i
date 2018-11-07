@@ -941,6 +941,7 @@ public:
 // Workaround cvar bug in Swig which makes help(gyoto) fail:
 %inline {
   namespace Gyoto {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int Gyoto::__class__ = 0;
 }

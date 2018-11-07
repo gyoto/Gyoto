@@ -142,6 +142,7 @@ GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotro
 // Workaround cvar bug in Swig which makes help(gyoto_std) fail:
 %inline {
   namespace GyotoStd {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int GyotoStd::__class__ = 0;
 }
