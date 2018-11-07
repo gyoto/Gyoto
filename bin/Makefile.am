@@ -132,7 +132,7 @@ check-lorene-compute: $(CHECK_ROTSTAR_RESULTS)
 check-lorene: check-lorene-clean check-lorene-compute
 
 check-lorene-mpi-clean:
-	rm -f $(CHECK_ROTSTAR_RESULTS)
+	rm -f $(CHECK_ROTSTAR_MPI_RESULTS)
 check-lorene-mpi-compute: $(CHECK_ROTSTAR_MPI_RESULTS)
 check-lorene-mpi: check-lorene-mpi-clean check-lorene-mpi-compute
 
