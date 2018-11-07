@@ -42,6 +42,15 @@ static int gyoto_verbosity=GYOTO_DEFAULT_VERBOSITY;
 static int gyoto_prev_verbosity=GYOTO_DEBUG_VERBOSITY;
 #endif
 
+#if defined GYOTO_USE_ARBLIB
+# include <acb_hypgeom.h>
+#elif defined GYOTO_USE_AEAE
+# include <complex>
+# include <iostream>
+# define SIGN(a) (((a) < 0) ? (-1) : (1))
+# include "complex_functions.H"
+# include "hyp_2F1.cpp"
+#endif
 
 void Gyoto::debug(int mode) {
   if (mode != gyoto_debug) {
@@ -266,3 +275,37 @@ double Gyoto::bessk(int nn,double xx) {
   return bk;
 }
 // End Bessel functions
+
+double Gyoto::hypergeom (double kappaIndex, double thetae) {
+#if defined GYOTO_USE_ARBLIB
+  // See documentation: http://arblib.org/acb_hypgeom.html#c.acb_hypgeom_2f1
+  acb_t FF, aa, bb, cc, zed;
+  acb_init(FF);
+  acb_init(aa);
+  acb_init(bb);
+  acb_init(cc);
+  acb_init(zed);
+  acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+  acb_set_d_d(bb,   kappaIndex+1.,     0.);
+  acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+  acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+  slong prec=53; // 53 for double precision
+  acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+  double hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+  // uncertainty
+  // double rad = mag_get_d(&acb_realref(FF)->rad);
+  acb_clear(FF);
+  acb_clear(aa);
+  acb_clear(bb);
+  acb_clear(cc);
+  acb_clear(zed);
+  return hypergeom;
+#elif defined GYOTO_USE_AEAE
+  complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
+    cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
+  return hyp_2F1(aa,bb,cc,zed).real();
+#else
+  Gyoto::throwError("Utils::_hypergeom() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
+  return 0.;
+#endif
+}

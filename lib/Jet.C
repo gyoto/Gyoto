@@ -35,53 +35,6 @@
 #include <limits>
 #include <string>
 
-/* *** FOR HYPERGEOMETRIC FUNCTION *** */
-#if defined GYOTO_USE_ARBLIB
-# include <acb_hypgeom.h>
-  static double _hypergeom (double kappaIndex, double thetae) {
-    // See documentation: http://arblib.org/acb_hypgeom.html#c.acb_hypgeom_2f1
-    acb_t FF, aa, bb, cc, zed;
-    acb_init(FF);
-    acb_init(aa);
-    acb_init(bb);
-    acb_init(cc);
-    acb_init(zed);
-    acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
-    acb_set_d_d(bb,   kappaIndex+1.,     0.);
-    acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
-    acb_set_d_d(zed, -kappaIndex*thetae, 0.);
-    slong prec=53; // 53 for double precision
-    acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
-    double hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
-    // uncertainty
-    // double rad = mag_get_d(&acb_realref(FF)->rad);
-    acb_clear(FF);
-    acb_clear(aa);
-    acb_clear(bb);
-    acb_clear(cc);
-    acb_clear(zed);
-    return hypergeom;
-  }
-#elif defined GYOTO_USE_AEAE
-# include <complex>
-# include <iostream>
-# define SIGN(a) (((a) < 0) ? (-1) : (1))
-  using namespace std;
-# include "complex_functions.H"
-# include "hyp_2F1.cpp"
-  static double _hypergeom (double kappaIndex, double thetae) {
-    complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
-      cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
-    return hyp_2F1(aa,bb,cc,zed).real();
-  }
-#else
-  static double _hypergeom(double, double) {
-    Gyoto::throwError("Astrobj::Jet::radiativeQ() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
-    return 0.;
-  }
-#endif
-////////////////////////////////////////
-
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
@@ -192,23 +145,34 @@ void Jet::radiativeQ(double Inu[], // output
   }
 
   double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
+
+  //rcyl=rcyljetbase;
+  //zz=2.; // TEST!!!
+  
   double number_density = baseNumberDensity_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+
   double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
 					    temperatureSlope_);
+
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  double hypergeom = _hypergeom(kappaIndex(), thetae);
+  double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
 
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
+  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_ << " " << BB << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_) << endl;
+  //throwError("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
   //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
+  //cout << "jet zz,rcyl,th,ph,ne,Te= " <<  zz << " " << rcyl << " " << coord_ph[2] << " " << coord_ph[3] << " " << number_density << " " << temperature << endl;
+  // Use that line for Compton study:
+  //cout <<  zz << " " << rcyl << " " << number_density << " " << temperature << endl;
 
   // KAPPA-DISTRIB SYNCHROTRON
   double jnu_synch_kappa[nbnu], anu_synch_kappa[nbnu];
@@ -223,7 +187,7 @@ void Jet::radiativeQ(double Inu[], // output
   spectrumKappaSynch_->cyclotron_freq(nu0);
   spectrumKappaSynch_->thetae(thetae);
   spectrumKappaSynch_->hypergeometric(hypergeom);
-
+  //cout << "jet stuff for kappa: " << nu_ems[0] << " " << number_density << " " << nu0 << " " << thetae << " " << BB << " " << temperature << " " << hypergeom << endl;
   spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
 				  nu_ems,nbnu);
 
@@ -233,7 +197,10 @@ void Jet::radiativeQ(double Inu[], // output
     double jnu_tot = jnu_synch_kappa[ii],
       anu_tot = anu_synch_kappa[ii];
 
-    //cout << "jnu anu Snu ds= " << jnu_tot << " " << anu_tot << " " << jnu_tot/anu_tot << " " << dsem << endl;
+    //cout << "in jet stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
+
+    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
+    //cout << "jet jnu anu kappa= " << jnu_tot << " " << anu_tot << endl; //x" " << jnu_tot/anu_tot << " " << dsem << endl;
 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());

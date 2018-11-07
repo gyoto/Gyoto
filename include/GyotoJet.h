@@ -97,7 +97,7 @@ class Gyoto::Astrobj::Jet
   double baseNumberDensity_; ///< electron nb density at jet base (cgs)
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
-  double magneticParticlesEquipartitionRatio_; ///< Ratio of magnetic to particles energy density
+  double magneticParticlesEquipartitionRatio_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
 
   // Constructors - Destructor
   // -------------------------
