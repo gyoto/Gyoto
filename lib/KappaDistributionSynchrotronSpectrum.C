@@ -35,7 +35,7 @@ GYOTO_PROPERTY_END(Spectrum::KappaDistributionSynchrotron, Generic::properties)
 
 
 
-#define nstep_angint 10 // for angle-averaging integration
+#define nstep_angint 100 // for angle-averaging integration
 
 Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron()
 : Spectrum::Generic("KappaDistributionSynchrotron"),
@@ -124,7 +124,7 @@ double Spectrum::KappaDistributionSynchrotron::jnuCGS(double nu) const{
     GYOTO_C_CGS*							\
     Js;
   
-  
+  //cout << "in kappa spec angleB jnu= " << angle_B_pem_ << " " << emis_synch << endl;
   return emis_synch;
 }
 
@@ -153,6 +153,8 @@ double Spectrum::KappaDistributionSynchrotron::alphanuCGS(double nu) const{
     (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
     As;
   
+  //cout << "in kappa spec angleB anu= " << angle_B_pem_ << " " << abs_synch << endl;
+
   return abs_synch;
 }
 

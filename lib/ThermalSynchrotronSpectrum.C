@@ -33,7 +33,7 @@ GYOTO_PROPERTY_START(Spectrum::ThermalSynchrotron,
 		     "Thermal synchrotron emission")
 GYOTO_PROPERTY_END(Spectrum::ThermalSynchrotron, Generic::properties)
 
-#define nstep_angint 10 // for angle-averaging integration
+#define nstep_angint 100 // for angle-averaging integration
 Spectrum::ThermalSynchrotron::ThermalSynchrotron()
 : Spectrum::Generic("ThermalSynchrotron"),
   spectrumBB_(NULL), T_(10000.), numberdensityCGS_(0.),
