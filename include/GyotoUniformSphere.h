@@ -98,10 +98,10 @@ class Gyoto::Astrobj::UniformSphere :
   bool isotropic_; ///< if 1, then emission just returns 1
   double alpha_; ///< such that nu*I_nu = nu^alpha_; note that Xray photon
               ///< index Gamma is: alpha_ = 2-Gamma
-  double numberDensity_; ///< number density of hotspot
+  double numberDensity_cgs_; ///< cgs-unit number density of hotspot
   double temperature_; ///< temperature of hotspot
-  double timeRef_; ///< reference time for Gaussian hotspot evolution
-  double timeSigma_; ///< temporal sigma for Gaussian hotspot evolution
+  double timeRef_M_; ///< M-unit reference time for Gaussian hotspot evolution
+  double timeSigma_M_; ///< M-unit temporal sigma for Gaussian hotspot evolution
   double magneticParticlesEquipartitionRatio_; ///< magnetic to thermal pressure
   double kappaIndex_; ///< hotspot synchrotron kappa-distribution index
   SmartPointer<Spectrum::Generic> spectrum_; ///< sphere emission law
@@ -168,13 +168,19 @@ class Gyoto::Astrobj::UniformSphere :
   double alpha() const ;
   void alpha(double);
   double numberDensity() const;
+  double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
+  void numberDensity(double dens, std::string const &unit);
   double temperature() const;
   void temperature(double tt);
   double timeRef() const;
+  double timeRef(std::string const &unit) const;
   void timeRef(double tt);
+  void timeRef(double tt, std::string const &unit);
   double timeSigma() const;
+  double timeSigma(std::string const &unit) const;
   void timeSigma(double tt);
+  void timeSigma(double tt, std::string const &unit);
   void magneticParticlesEquipartitionRatio(double rr);
   double magneticParticlesEquipartitionRatio() const;
   double kappaIndex() const;
