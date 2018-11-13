@@ -44,7 +44,7 @@ GYOTO_PROPERTY_DOUBLE(Jet, JetOuterOpeningAngle, jetOuterOpeningAngle)
 GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle)
 GYOTO_PROPERTY_DOUBLE(Jet, JetBaseHeight, jetBaseHeight)
 GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
-GYOTO_PROPERTY_DOUBLE(Jet, BaseNumberDensity, baseNumberDensity)
+GYOTO_PROPERTY_DOUBLE_UNIT(Jet, BaseNumberDensity, baseNumberDensity)
 GYOTO_PROPERTY_DOUBLE(Jet, BaseTemperature, baseTemperature)
 GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(Jet, MagneticParticlesEquipartitionRatio,
@@ -63,8 +63,49 @@ void Jet::jetBaseHeight(double hh) {jetBaseHeight_=hh;}
 double Jet::jetBaseHeight()const{return jetBaseHeight_;}
 void Jet::gammaJet(double gam) {gammaJet_=gam;}
 double Jet::gammaJet()const{return gammaJet_;}
-void Jet::baseNumberDensity(double ne) {baseNumberDensity_=ne;}
-double Jet::baseNumberDensity()const{return baseNumberDensity_;}
+double Jet::baseNumberDensity() const {
+  // Converts internal cgs central enthalpy to SI
+  double dens=baseNumberDensity_cgs_;
+# ifdef HAVE_UDUNITS
+  dens = Units::Converter("cm-3", "m-3")(dens);
+# else
+  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		<< endl ;
+# endif
+  return dens; }
+double Jet::baseNumberDensity(string const &unit) const
+{
+  double dens = baseNumberDensity();
+  if (unit != "") {
+# ifdef HAVE_UDUNITS
+    dens = Units::Converter("m-3", unit)(dens);
+# else
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  }
+  return dens;
+}
+void Jet::baseNumberDensity(double dens) {
+# ifdef HAVE_UDUNITS
+  dens = Units::Converter("m-3", "cm-3")(dens);
+# else
+  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		<< endl ;
+# endif
+  baseNumberDensity_cgs_=dens;
+}
+void Jet::baseNumberDensity(double dens, string const &unit) {
+  if (unit != "") {
+# ifdef HAVE_UDUNITS
+    dens = Units::Converter(unit, "m-3")(dens);
+# else
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  }
+  baseNumberDensity(dens);
+}
 void Jet::baseTemperature(double tt) {baseTemperature_=tt;}
 double Jet::baseTemperature()const{return baseTemperature_;}
 void Jet::temperatureSlope(double ss) {temperatureSlope_=ss;}
@@ -85,7 +126,7 @@ double Jet::kappaIndex()const{
 Jet::Jet() :
   Standard("Jet"), jetOuterOpeningAngle_(0.785),
   jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
-  gammaJet_(1.), baseNumberDensity_(1.), baseTemperature_(1e10),
+  gammaJet_(1.), baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
   temperatureSlope_(1.),
   magneticParticlesEquipartitionRatio_(1.)
 {
@@ -97,7 +138,7 @@ Jet::Jet(const Jet& o) :
   Standard(o), jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
   jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
   jetBaseHeight_(o.jetBaseHeight_),
-  gammaJet_(o.gammaJet_), baseNumberDensity_(o.baseNumberDensity_),
+  gammaJet_(o.gammaJet_), baseNumberDensity_cgs_(o.baseNumberDensity_cgs_),
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magneticParticlesEquipartitionRatio_(o.magneticParticlesEquipartitionRatio_),
@@ -149,7 +190,7 @@ void Jet::radiativeQ(double Inu[], // output
   //rcyl=rcyljetbase;
   //zz=2.; // TEST!!!
   
-  double number_density = baseNumberDensity_
+  double number_density = baseNumberDensity_cgs_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
 
   double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
@@ -163,7 +204,7 @@ void Jet::radiativeQ(double Inu[], // output
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
-  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_ << " " << BB << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_) << endl;
+  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
   //throwError("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB

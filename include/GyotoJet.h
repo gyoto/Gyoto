@@ -9,7 +9,7 @@
  * axis at altitude jetBaseHeight_ in units of M.
  *
  * The Lorentz factor is assumed constant at gammaJet_.
- * The electron number density at the base of the jet is baseNumberDensity_,
+ * The electron number density at the base of the jet is baseNumberDensity_cgs_,
  * its z-evolution is dedictated by mass conservation.
  * The electron temperature is baseTemperature_, its z-evolution is assumed
  * to follow a power law z^temperatureSlope_. The magnetic field
@@ -68,7 +68,7 @@ namespace Gyoto{
  * axis at altitude jetBaseHeight_ in units of M.
  * 
  * The Lorentz factor is assumed constant at gammaJet_.
- * The electron number density at the base of the jet is baseNumberDensity_,
+ * The electron number density at the base of the jet is baseNumberDensity_cgs_,
  * its z-evolution is dedictated by mass conservation.
  * The electron temperature is baseTemperature_, its z-evolution is assumed
  * to follow a power law z^temperatureSlope_. The magnetic field
@@ -94,7 +94,7 @@ class Gyoto::Astrobj::Jet
   double jetInnerOpeningAngle_; ///< Jet inner opening angle (rad)
   double jetBaseHeight_; ///< Height of the base of the jet (z value, M units)
   double gammaJet_; ///< Constant Lorentz factor in jet
-  double baseNumberDensity_; ///< electron nb density at jet base (cgs)
+  double baseNumberDensity_cgs_; ///< electron nb density at jet base (cgs)
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
   double magneticParticlesEquipartitionRatio_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
@@ -123,8 +123,10 @@ class Gyoto::Astrobj::Jet
   double jetBaseHeight() const;
   void gammaJet(double gam);
   double gammaJet() const;
+  double baseNumberDensity() const;
+  double baseNumberDensity(std::string const &unit) const;
   void baseNumberDensity(double ne);
-  double baseNumberDensity()const;
+  void baseNumberDensity(double dens, std::string const &unit);
   void baseTemperature(double tt);
   double baseTemperature()const;
   void temperatureSlope(double ss);
