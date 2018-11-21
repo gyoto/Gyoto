@@ -153,6 +153,11 @@ Gyoto::SmartPointer<gtype>, gtype * {
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
       Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
+    // Special for Uniform spectrometer:
+    // if 'res' can be cast to uniform spectrometer, set Kind.
+    if(dynamic_cast<Gyoto::Spectrometer::Uniform*>(res))
+      res->set("Kind", nm);
+    // end special case
     if (res) res -> incRefCount();
     return res;
   }
