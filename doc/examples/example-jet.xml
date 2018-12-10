@@ -20,8 +20,10 @@
     <Resolution>201</Resolution> Choose an odd integer, easier for
     spectrum computation by plot-Spectrum.py
     <Spectrometer kind="freqlog" nsamples="30">11. 18.</Spectrometer>
-    The Spectrometer above compute a spectrum at 30 values
+    The Spectrometer above computes a spectrum with 30 values
     of frequency between 1e11 and 1e18 Hz.
+    To compute just one image at 1.3mm, use the Spectro below
+    <!--<Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer>-->
   </Screen>
 
   <Quantities>Spectrum</Quantities>
