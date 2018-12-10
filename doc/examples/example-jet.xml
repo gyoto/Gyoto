@@ -1,42 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
+
+  <!-- <DeltaMaxOverR> 0.1 </DeltaMaxOverR> -->
+  Uncomment the line above to generate high-quality images.
+  Useless for spectra (increases computing time).
+  
   <Metric kind = "KerrBL">
     <Mass unit="sunmass">4.1e6</Mass>
-    <Spin>0.9</Spin>
+    <Spin>0.</Spin>
   </Metric>
 
   <Screen>
     <Distance unit="kpc"> 8.1 </Distance>
     <Time unit="yr"> 100e3 </Time> 27.169411e3
-    <FieldOfView unit="µas">
-      64.
-    </FieldOfView>
-    <Inclination unit="°"> 
-      135
-    </Inclination>  
-    <PALN> 3.1415  </PALN> 
-    <Argument> -1.5708 </Argument>
-    <Resolution>32</Resolution>
-    <Spectrometer kind="freqlog" nsamples="1">9.204 9.204</Spectrometer>
+    <FieldOfView unit="µas"> 500 </FieldOfView>
+    <Inclination unit="°"> 160 </Inclination> i = 180 - Inclination
+    <PALN> 3.1415  </PALN>  This rotates the Screen in its plane
+    <Argument> -1.5708 </Argument> This changes the phi position of the Screen 
+    <Resolution>201</Resolution> Choose an odd integer, easier for
+    spectrum computation by plot-Spectrum.py
+    <Spectrometer kind="freqlog" nsamples="30">11. 18.</Spectrometer>
+    The Spectrometer above compute a spectrum at 30 values
+    of frequency between 1e11 and 1e18 Hz.
   </Screen>
 
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "Jet">
     <RadiativeQ/>
-    <DeltaInObj>0.2</DeltaInObj>
-    <RMax>4000.0</RMax>
-    <BaseNumberDensity>2.7e7</BaseNumberDensity>
-    <KappaIndex>5</KappaIndex>
+    <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
     <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
-    <JetOuterOpeningAngle>0.44</JetOuterOpeningAngle>
-    <BaseTemperature>9.2e9</BaseTemperature>
-    <TemperatureSlope>0.215</TemperatureSlope>
-    <JetBaseHeight>2.</JetBaseHeight>
+    <JetBaseHeight>2.</JetBaseHeight> in M units
     <GammaJet>1.15</GammaJet>
-    <MagneticParticlesEquipartitionRatio>0.1</MagneticParticlesEquipartitionRatio>
+    <BaseNumberDensity unit="cm-3">5e7</BaseNumberDensity>
+    <BaseTemperature>3e10</BaseTemperature>
+    <TemperatureSlope>0.21</TemperatureSlope>
+    <MagneticParticlesEquipartitionRatio>0.005</MagneticParticlesEquipartitionRatio>
+    <KappaIndex>5.5</KappaIndex> 
+    <RMax>100.</RMax> in M units; photon discusses with Jet only below this
+    value, so be sure that the interesting part of the Jet in your
+    field of view is contained within this radius.
+    <DeltaInObj>0.2</DeltaInObj> This is a radiative transfer parameter inside
+    the Jet: the photon geodesic inside the Jet will be cut in small
+    steps of this size in M units to integrated the radiative transfer.
   </Astrobj>
-  <MinimumTime> -1e10 </MinimumTime>
-  <NThreads> 4 </NThreads>
+  
+  <MinimumTime> -1e10 </MinimumTime> Photon integration stops for times
+  smaller than that.
+  <NThreads> 8 </NThreads> Depends on your machine!
+
 </Scenery>
 
