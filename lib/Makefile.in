@@ -182,7 +182,8 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
 	libgyoto_stdplug_la-RezzollaZhidenko.lo \
-	libgyoto_stdplug_la-Hayward.lo libgyoto_stdplug_la-Star.lo \
+	libgyoto_stdplug_la-Hayward.lo libgyoto_stdplug_la-XmasS.lo \
+	libgyoto_stdplug_la-XmasSKS.lo libgyoto_stdplug_la-Star.lo \
 	libgyoto_stdplug_la-StarTrace.lo \
 	libgyoto_stdplug_la-FixedStar.lo \
 	libgyoto_stdplug_la-InflateStar.lo \
@@ -290,7 +291,9 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-ThinDiskPL.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-UniformSphere.Plo \
-	./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo
+	./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-XmasS.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Plo
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -572,9 +575,9 @@ soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C RezzollaZhidenko.C Hayward.C Star.C StarTrace.C \
-	FixedStar.C InflateStar.C Torus.C OscilTorus.C \
-	PowerLawSpectrum.C BlackBodySpectrum.C \
+	ChernSimons.C RezzollaZhidenko.C Hayward.C XmasS.C XmasSKS.C \
+	Star.C StarTrace.C FixedStar.C InflateStar.C Torus.C \
+	OscilTorus.C PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C ThermalSynchrotronSpectrum.C \
 	PowerLawSynchrotronSpectrum.C \
 	KappaDistributionSynchrotronSpectrum.C ComplexAstrobj.C \
@@ -789,6 +792,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-UniformSphere.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-XmasS.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -900,6 +905,20 @@ libgyoto_stdplug_la-Hayward.lo: Hayward.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Hayward.C' object='libgyoto_stdplug_la-Hayward.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Hayward.lo `test -f 'Hayward.C' || echo '$(srcdir)/'`Hayward.C
+
+libgyoto_stdplug_la-XmasS.lo: XmasS.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-XmasS.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-XmasS.Tpo -c -o libgyoto_stdplug_la-XmasS.lo `test -f 'XmasS.C' || echo '$(srcdir)/'`XmasS.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-XmasS.Tpo $(DEPDIR)/libgyoto_stdplug_la-XmasS.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='XmasS.C' object='libgyoto_stdplug_la-XmasS.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-XmasS.lo `test -f 'XmasS.C' || echo '$(srcdir)/'`XmasS.C
+
+libgyoto_stdplug_la-XmasSKS.lo: XmasSKS.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-XmasSKS.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Tpo -c -o libgyoto_stdplug_la-XmasSKS.lo `test -f 'XmasSKS.C' || echo '$(srcdir)/'`XmasSKS.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Tpo $(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='XmasSKS.C' object='libgyoto_stdplug_la-XmasSKS.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-XmasSKS.lo `test -f 'XmasSKS.C' || echo '$(srcdir)/'`XmasSKS.C
 
 libgyoto_stdplug_la-Star.lo: Star.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Star.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Star.Tpo -c -o libgyoto_stdplug_la-Star.lo `test -f 'Star.C' || echo '$(srcdir)/'`Star.C
@@ -1354,6 +1373,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-UniformSphere.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XmasS.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1467,6 +1488,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Torus.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-UniformSphere.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XillverReflection.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XmasS.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-XmasSKS.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
