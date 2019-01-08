@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013 Thibaut Paumard, Frederic Vincent
+    Copyright 2014, 2016, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -34,7 +34,7 @@
 // getpid()
 #include <sys/types.h>
 #include <unistd.h>
- 
+
 using namespace std;
 using namespace Gyoto;
 
@@ -50,7 +50,7 @@ namespace mpi = boost::mpi;
 #endif
 
 
-static std::string curmsg = "";
+static std::string curmsg = "In Gyoto MPI worker: ";
 static int curretval = 1;
 
 void gyotoErrorHandler( const Gyoto::Error e ) {
@@ -73,12 +73,6 @@ int main(int argc, char** argv) {
   mpi::environment env(argc, argv);
 
 
-  MPI_Comm parent_c;
-  MPI_Comm_get_parent(&parent_c);
-
-  mpi::communicator team=(parent_c==MPI_COMM_NULL)?mpi::communicator():
-    mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
-
   string pluglist= getenv("GYOTO_PLUGINS")?
     getenv("GYOTO_PLUGINS"):
     GYOTO_DEFAULT_PLUGINS;
@@ -87,38 +81,7 @@ int main(int argc, char** argv) {
   curretval = 1;
   Gyoto::Register::init(pluglist.c_str());
 
-  sc = new Scenery();
-  sc -> mpi_team_    = &team;
+  Gyoto::Scenery::mpiWorker();
 
-  Screen::Empty empty;
-
-  Scenery::mpi_tag task=Scenery::give_task;
-  Scenery::am_worker=true;
-  while (task != Scenery::terminate) {
-    sc->mpiTask(task);
-    switch (task) {
-    case Scenery::read_scenery: {
-      std::string parfile;
-      broadcast(team, parfile, 0);
-      curmsg = "In gyoto-mpi-worker.C: Error in Factory creation: ";
-      curretval = 1;
-      sc = Factory(const_cast<char*>(parfile.c_str())).getScenery();
-      sc -> mpi_team_    = &team;
-     break;
-    }
-    case Scenery::raytrace:
-      curmsg = "In gyoto-mpi-worker.C: Error in ray-tracing: ";
-      curretval = 1;
-      sc -> rayTrace(empty, NULL, NULL);
-      break;
-    case Scenery::terminate:
-      sc = NULL;
-      break;
-    default:
-      std::cerr << "unknown task " << task << endl;
-    }
-  }
-
-  team.barrier();
   return 0;
 }

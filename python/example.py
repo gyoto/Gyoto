@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Example file for gyoto
 #
-# Copyright 2014-2016 Thibaut Paumard
+# Copyright 2014-2018 Thibaut Paumard
 #
 # This file is part of Gyoto.
 #
@@ -36,7 +36,7 @@ scr.getObserverPos(pos)
 # Load Scenery
 
 a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
-sc=a.getScenery()
+sc=a.scenery()
 sc.nThreads(8)
 sc.astrobj().opticallyThin(False)
 
@@ -129,7 +129,7 @@ plt.show()
 
 # Another Scenery, with spectrum
 
-sc=gyoto.core.Factory("../doc/examples/example-polish-doughnut.xml").getScenery()
+sc=gyoto.core.Factory("../doc/examples/example-polish-doughnut.xml").scenery()
 sc.screen().resolution(32)
 res=sc.screen().resolution()
 ns=sc.screen().spectrometer().nSamples()
@@ -275,7 +275,5 @@ cplx=gyoto.std.ComplexAstrobj()
 cplx.append(tr)
 cplx.append(sc.astrobj())
 sc.astrobj(cplx)
-
-cplx.rMax(100)
 
 print("All done, exiting")

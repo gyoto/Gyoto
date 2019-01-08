@@ -1,5 +1,5 @@
 /*
-  Copyright 2018 Frederic Vincent
+  Copyright 2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -43,6 +43,17 @@ Spectrum::PowerLawSynchrotron::PowerLawSynchrotron()
   angle_B_pem_(0.), cyclotron_freq_(1.),
   PLindex_(0.), angle_averaged_(0)
 {}
+Spectrum::PowerLawSynchrotron::PowerLawSynchrotron(const PowerLawSynchrotron &o)
+: Spectrum::Generic(o),
+  spectrumBB_(NULL),
+  numberdensityCGS_(o.numberdensityCGS_),
+  angle_B_pem_(o.angle_B_pem_),
+  cyclotron_freq_(o.cyclotron_freq_),
+  PLindex_(o.PLindex_),
+  angle_averaged_(o.angle_averaged_)
+{
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
+}
 
 double Spectrum::PowerLawSynchrotron::numberdensityCGS() const { 
   return numberdensityCGS_; }

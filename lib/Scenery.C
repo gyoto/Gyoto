@@ -144,8 +144,8 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
-  screen_(NULL), delta_(o.delta_), 
-  quantities_(o.quantities_), ph_(o.ph_), 
+  screen_(NULL), delta_(o.delta_),
+  quantities_(o.quantities_), ph_(o.ph_),
   nthreads_(o.nthreads_), nprocesses_(0)
 #ifdef HAVE_MPI
   , mpi_team_(NULL)
@@ -164,7 +164,8 @@ Scenery::~Scenery() {
 # endif
   screen_ = NULL;
 # ifdef HAVE_MPI
-  if (!Scenery::am_worker) mpiTerminate();
+  if (!Scenery::am_worker && mpi_team_ && *mpi_team_ != mpi::communicator())
+    mpiTerminate();
 # endif
  }
 
@@ -280,7 +281,7 @@ static void * SceneryThreadWorker (void *arg) {
     }
 
     size_t lcnt = larg->cnt++;
- 
+
     ++(larg->ij);
 
 #ifdef HAVE_PTHREAD
@@ -289,7 +290,7 @@ static void * SceneryThreadWorker (void *arg) {
 #endif
 
     // Store current cell
-    data = *larg->data; 
+    data = *larg->data;
     size_t cell=lcnt;
     if (larg->is_pixel && data.alloc) cell=(ijb[1]-1)*larg->npix+ijb[0]-1;
     data += cell;
@@ -298,7 +299,7 @@ static void * SceneryThreadWorker (void *arg) {
     if (larg->is_pixel)
       (*larg->sc)(ijb[0], ijb[1], &data, impactcoords, ph);
     else (*larg->sc)(ad[0], ad[1], &data, ph);
-    
+
     ++count;
   }
 #ifdef HAVE_PTHREAD
@@ -398,7 +399,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     Quantity_t quantities = (am_worker || !data)?GYOTO_QUANTITY_NONE:*data;
     bool has_ipct=am_worker?false:bool(impactcoords);
     bool is_pixel=(ij.kind==Screen::pixel);
-    
+
     mpi::broadcast(*mpi_team_, quantities, 0);
     mpi::broadcast(*mpi_team_, has_ipct, 0);
     mpi::broadcast(*mpi_team_, is_pixel, 0);
@@ -496,12 +497,12 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 	int w;
 
 	// Wait for worker to ask for task.
-	// tag may be raytrace_done if worker has result to report, 
+	// tag may be raytrace_done if worker has result to report,
 	// give_task if worker has no data yet.
 	s = mpi_team_ -> recv(mpi::any_source, mpi::any_tag, vect, nelt);
 
 	w = s.source();
-	
+
 	size_t cs=cell[w]; // remember where to store results
 
 	// give new task or decrease working counter
@@ -577,7 +578,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
       double ipct[16];
       if (has_ipct) impactcoords=&ipct[0];
 
-      // First send dummy result, using tag "give_tag".
+      // First send dummy result, using tag "give_task".
       // Manager will ignore the results and send first coordinates.
       mpi_team_->send(0, give_task, vect, nelt);
       while (true) {
@@ -618,8 +619,8 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 
   struct timeval tim;
   double start, end;
-  gettimeofday(&tim, NULL);  
-  start=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);  
+  gettimeofday(&tim, NULL);
+  start=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);
 
 #ifdef HAVE_PTHREAD
   larg.mutex  = NULL;
@@ -656,8 +657,8 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
       pthread_join(threads[th], NULL);
 #endif
 
-  gettimeofday(&tim, NULL);  
-  end=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);  
+  gettimeofday(&tim, NULL);
+  end=double(tim.tv_sec)+(double(tim.tv_usec)/1000000.0);
 
   GYOTO_MSG << "\nRaytraced "<< ij.size()
 	    << " photons in " << end-start
@@ -825,7 +826,7 @@ void Scenery::requestedQuantitiesString(std::string const &squant) {
       quantities_ |= GYOTO_QUANTITY_USER4;
     else if (!strcmp(tk, "User5"))
       quantities_ |= GYOTO_QUANTITY_USER5;
-    else throwError("ScenerySubcontractor(): unknown quantity"); 
+    else throwError("ScenerySubcontractor(): unknown quantity");
     tk = strtok(NULL, " \t\n");
   }
 
@@ -1020,7 +1021,7 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   }
   if (nbchildren && nbchildren != -1) {
     // Actually requesting to spawn processes
-    char * exec = const_cast<char*>("gyoto-mpi-worker." GYOTO_SOVERS); 
+    char * exec = const_cast<char*>("gyoto-mpi-worker." GYOTO_SOVERS);
 
     MPI_Comm children_c;
     MPI_Comm_spawn(exec,
@@ -1031,7 +1032,7 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
     mpi_team_ = new mpi::communicator(mpi::intercommunicator (children_c, mpi::comm_take_ownership).merge(false));
   }
   if (nbchildren == -1) {
-    // Requesting to use processes already exising in WORLD
+    // Requesting to use processes already existing in WORLD
     int wsize=0;
     MPI_Comm_size(MPI_COMM_WORLD, &wsize);
     if (wsize > 1) {
@@ -1041,7 +1042,7 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   }
 #else
   GYOTO_WARNING << "No MPI in this Gyoto" << endl;
-#endif 
+#endif
 }
 
 void Gyoto::Scenery::mpiTerminate() {
@@ -1074,3 +1075,62 @@ void Gyoto::Scenery::mpiTask(mpi_tag &tag) {
 #endif
 }
 
+void Gyoto::Scenery::mpiWorker() {
+#ifdef HAVE_MPI
+  MPI_Comm parent_c;
+  MPI_Comm_get_parent(&parent_c);
+
+  mpi::communicator team=(parent_c==MPI_COMM_NULL)?mpi::communicator():
+    mpi::intercommunicator(parent_c,mpi::comm_take_ownership).merge(true);
+
+  Gyoto::SmartPointer<Gyoto::Scenery> sc = new Gyoto::Scenery();
+  sc -> mpi_team_ = &team;
+
+  Screen::Empty empty;
+
+  Scenery::mpi_tag task=Scenery::give_task;
+  Scenery::am_worker=true;
+
+  char name[MPI_MAX_PROCESSOR_NAME];
+  int namelen;
+  MPI_Get_processor_name(name, &namelen);
+
+  GYOTO_INFO << "Process with rank " << team.rank()
+	     << " running on " << name
+	     << " became a worker\n";
+
+  while (task != Scenery::terminate) {
+    sc->mpiTask(task);
+    switch (task) {
+    case Scenery::read_scenery: {
+      std::string parfile;
+      broadcast(team, parfile, 0);
+      sc = Factory(const_cast<char*>(parfile.c_str())).scenery();
+      sc -> mpi_team_    = &team;
+      GYOTO_INFO << "Worker with rank " << team.rank()
+		 << " running on " << name
+		 << " received scenery\n";
+     break;
+    }
+    case Scenery::raytrace:
+      sc -> rayTrace(empty, NULL, NULL);
+      break;
+    case Scenery::terminate:
+      sc = NULL;
+      GYOTO_INFO << "Worker with rank " << team.rank()
+		 << " running on " << name
+		 << " terminating\n";
+      break;
+    default:
+      GYOTO_SEVERE << "Worker with rank " << team.rank()
+		   << " running on " << name
+		   << " received unknown task " << task << endl;
+    }
+  }
+
+  team.barrier();
+#else
+  throwError("Gyoto was compiled without MPI support, "
+	     "Gyoto::Scenery::mpiWorker() is unavailable.");
+#endif
+}

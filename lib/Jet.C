@@ -35,12 +35,6 @@
 #include <limits>
 #include <string>
 
-/* *** FOR HYPERGEOMETRIC FUNCTION *** */
-#include <complex>
-#include "MichelStoitsovHypergeometric.h"
-#include "MichelStoitsovHypergeometric.C"
-////////////////////////////////////////
-
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
@@ -50,7 +44,7 @@ GYOTO_PROPERTY_DOUBLE(Jet, JetOuterOpeningAngle, jetOuterOpeningAngle)
 GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle)
 GYOTO_PROPERTY_DOUBLE(Jet, JetBaseHeight, jetBaseHeight)
 GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
-GYOTO_PROPERTY_DOUBLE(Jet, BaseNumberDensity, baseNumberDensity)
+GYOTO_PROPERTY_DOUBLE_UNIT(Jet, BaseNumberDensity, baseNumberDensity)
 GYOTO_PROPERTY_DOUBLE(Jet, BaseTemperature, baseTemperature)
 GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(Jet, MagneticParticlesEquipartitionRatio,
@@ -69,8 +63,49 @@ void Jet::jetBaseHeight(double hh) {jetBaseHeight_=hh;}
 double Jet::jetBaseHeight()const{return jetBaseHeight_;}
 void Jet::gammaJet(double gam) {gammaJet_=gam;}
 double Jet::gammaJet()const{return gammaJet_;}
-void Jet::baseNumberDensity(double ne) {baseNumberDensity_=ne;}
-double Jet::baseNumberDensity()const{return baseNumberDensity_;}
+double Jet::baseNumberDensity() const {
+  // Converts internal cgs central enthalpy to SI
+  double dens=baseNumberDensity_cgs_;
+# ifdef HAVE_UDUNITS
+  dens = Units::Converter("cm-3", "m-3")(dens);
+# else
+  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		<< endl ;
+# endif
+  return dens; }
+double Jet::baseNumberDensity(string const &unit) const
+{
+  double dens = baseNumberDensity();
+  if (unit != "") {
+# ifdef HAVE_UDUNITS
+    dens = Units::Converter("m-3", unit)(dens);
+# else
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  }
+  return dens;
+}
+void Jet::baseNumberDensity(double dens) {
+# ifdef HAVE_UDUNITS
+  dens = Units::Converter("m-3", "cm-3")(dens);
+# else
+  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		<< endl ;
+# endif
+  baseNumberDensity_cgs_=dens;
+}
+void Jet::baseNumberDensity(double dens, string const &unit) {
+  if (unit != "") {
+# ifdef HAVE_UDUNITS
+    dens = Units::Converter(unit, "m-3")(dens);
+# else
+    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
+		  << endl ;
+# endif
+  }
+  baseNumberDensity(dens);
+}
 void Jet::baseTemperature(double tt) {baseTemperature_=tt;}
 double Jet::baseTemperature()const{return baseTemperature_;}
 void Jet::temperatureSlope(double ss) {temperatureSlope_=ss;}
@@ -91,7 +126,7 @@ double Jet::kappaIndex()const{
 Jet::Jet() :
   Standard("Jet"), jetOuterOpeningAngle_(0.785),
   jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
-  gammaJet_(1.), baseNumberDensity_(1.), baseTemperature_(1e10),
+  gammaJet_(1.), baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
   temperatureSlope_(1.),
   magneticParticlesEquipartitionRatio_(1.)
 {
@@ -103,7 +138,7 @@ Jet::Jet(const Jet& o) :
   Standard(o), jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
   jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
   jetBaseHeight_(o.jetBaseHeight_),
-  gammaJet_(o.gammaJet_), baseNumberDensity_(o.baseNumberDensity_),
+  gammaJet_(o.gammaJet_), baseNumberDensity_cgs_(o.baseNumberDensity_cgs_),
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magneticParticlesEquipartitionRatio_(o.magneticParticlesEquipartitionRatio_),
@@ -151,27 +186,34 @@ void Jet::radiativeQ(double Inu[], // output
   }
 
   double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
-  double number_density = baseNumberDensity_
+
+  //rcyl=rcyljetbase;
+  //zz=2.; // TEST!!!
+  
+  double number_density = baseNumberDensity_cgs_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+
   double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
 					    temperatureSlope_);
+
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  complex<double> aa=kappaIndex()-1./3., bb=kappaIndex()+1.,
-    cc=kappaIndex()+2./3., zed=-kappaIndex()*thetae;
-  const complex<double> FF = hyp_2F1(aa,bb,cc,zed);//Gauss hypergeometric
-  double hypergeom = FF.real();
-  //cout << "hypergeom stuff: " << " " << aa << " " << bb << " " << cc << " " << zed << " " << hypergeom << endl;
-  
+  double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
+
   double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
+  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
+  //throwError("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
   //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
+  //cout << "jet zz,rcyl,th,ph,ne,Te= " <<  zz << " " << rcyl << " " << coord_ph[2] << " " << coord_ph[3] << " " << number_density << " " << temperature << endl;
+  // Use that line for Compton study:
+  //cout <<  zz << " " << rcyl << " " << number_density << " " << temperature << endl;
 
   // KAPPA-DISTRIB SYNCHROTRON
   double jnu_synch_kappa[nbnu], anu_synch_kappa[nbnu];
@@ -179,14 +221,14 @@ void Jet::radiativeQ(double Inu[], // output
     // Initializing to <0 value to create errors if not updated
     jnu_synch_kappa[ii]=-1.;
     anu_synch_kappa[ii]=-1.;
-  } 
+  }
   spectrumKappaSynch_->numberdensityCGS(number_density);
   spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
   spectrumKappaSynch_->angle_B_pem(0.); // so we don't care about angle
   spectrumKappaSynch_->cyclotron_freq(nu0);
   spectrumKappaSynch_->thetae(thetae);
   spectrumKappaSynch_->hypergeometric(hypergeom);
-  
+  //cout << "jet stuff for kappa: " << nu_ems[0] << " " << number_density << " " << nu0 << " " << thetae << " " << BB << " " << temperature << " " << hypergeom << endl;
   spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
 				  nu_ems,nbnu);
 
@@ -196,21 +238,24 @@ void Jet::radiativeQ(double Inu[], // output
     double jnu_tot = jnu_synch_kappa[ii],
       anu_tot = anu_synch_kappa[ii];
 
-    //cout << "jnu anu Snu ds= " << jnu_tot << " " << anu_tot << " " << jnu_tot/anu_tot << " " << dsem << endl;
+    //cout << "in jet stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
+
+    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
+    //cout << "jet jnu anu kappa= " << jnu_tot << " " << anu_tot << endl; //x" " << jnu_tot/anu_tot << " " << dsem << endl;
 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
     Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
-      -jnu_tot / anu_tot * em1; 
-    
+      -jnu_tot / anu_tot * em1;
+
     if (Inu[ii]<0.)
       throwError("In Jet::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
       throwError("In Jet::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
       throwError("In Jet::radiativeQ: Inu or Taunu is infinite");
-    
+
   }
 }
 
@@ -238,7 +283,7 @@ double Jet::operator()(double const coord[4]) {
   if  ((rcyl <  rcyljetout) and (rcyl >  rcyljetin)) return -1.; // inside jet
   else return 1.; // outside jet
   //cout << "r, rjet, z, theta0, ht= " << rcyl << " " << rcyljet << " " << zz << " " << theta0 << " " << ht << endl;
-  
+
 }
 
 void Jet::getVelocity(double const pos[4], double vel[4])
@@ -251,7 +296,7 @@ void Jet::getVelocity(double const pos[4], double vel[4])
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
     uphiZAMO = -utZAMO*gtp/gpp;
-  
+
   vel[0] = gammaJet_*utZAMO;
   vel[1] = gammaJet_*Vr;
   vel[2] = 0.;

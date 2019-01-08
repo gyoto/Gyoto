@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -111,6 +111,11 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %define GyotoSmPtrClass(klass)
 %feature("ref") Gyoto:: klass "$this->incRefCount();";
 %feature("unref") Gyoto:: klass "$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%extend Gyoto::klass {
+  std::string __str__() {
+    return Gyoto::Factory($self).format();
+  }
+};
 %include Gyoto ## klass ## .h
 %enddef
 
@@ -148,6 +153,11 @@ Gyoto::SmartPointer<gtype>, gtype * {
     Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
       Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
+    // Special for Uniform spectrometer:
+    // if 'res' can be cast to uniform spectrometer, set Kind.
+    if(dynamic_cast<Gyoto::Spectrometer::Uniform*>(res))
+      res->set("Kind", nm);
+    // end special case
     if (res) res -> incRefCount();
     return res;
   }
@@ -163,6 +173,9 @@ Gyoto::SmartPointer<gtype>, gtype * {
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(address);
     if (res) res -> incRefCount();
     return res;
+  }
+  std::string __str__() {
+    return Gyoto::Factory($self).format();
   }
 };
 %include Gyoto ## klass ## .h
@@ -743,6 +756,19 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 %include "GyotoConfig.h"
 %include "GyotoUtils.h"
 %include "GyotoFactory.h"
+
+// Backwards-compatibility code introduced 2018-10-04
+%extend Gyoto::Factory {
+  Gyoto::SmartPointer<Gyoto::Scenery> getScenery() {
+    GYOTO_WARNING << "Factory::getScenery() is deprecated, use Factory::scenery() instead\n";
+    return ($self)->scenery();
+  }
+  Gyoto::SmartPointer<Gyoto::Photon> getPhoton() {
+    GYOTO_WARNING << "Factory::getPhoton() is deprecated, use Factory::photon() instead\n";
+    return ($self)->photon();
+  }
+ };
+
 %include "GyotoFactoryMessenger.h"
 
  // SWIG fails on nested classes. Work around this limitation:
@@ -920,6 +946,7 @@ public:
 // Workaround cvar bug in Swig which makes help(gyoto) fail:
 %inline {
   namespace Gyoto {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int Gyoto::__class__ = 0;
 }

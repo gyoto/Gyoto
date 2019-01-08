@@ -49,6 +49,7 @@ GyotoSmPtrClassDerived(Astrobj, NeutronStarModelAtmosphere)
 // Workaround cvar bug in Swig which makes help(module) fail:
 %inline {
   namespace GyotoLorene {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int GyotoLorene::__class__ = 0;
 }

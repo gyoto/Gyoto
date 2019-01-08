@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Example file for gyoto with MPI
 #
-# Copyright 2015 Thibaut Paumard
+# Copyright 2015-2018 Thibaut Paumard
 #
 # This file is part of Gyoto.
 #
@@ -31,13 +31,14 @@
 # Multiple Data) which allows not caring too much about the details in
 # the high level program. We have a single 'manager' process that
 # takes care of handling input/output and distributes the work load
-# (ray-tracing of individual geodesics) to 'worker' processes,
-# instances of gyoto-mpi-worker.VERSION where VERSION is the ABI
-# version of Gyoto.
+# (ray-tracing of individual geodesics) to 'worker' processes. The
+# workers are processes that run the static method
+# Gyoto::Scenery::mpiWorker(). This can be done directly from Python
+# or by involing instances of gyoto-mpi-worker.VERSION where VERSION
+# is the ABI version of Gyoto.
 #
-# There are two basic scenarios supported in Gyoto to start the
-# manager and the workers, plus a cheat that works only under Open
-# MPI:
+# There are three basic scenarios supported in Gyoto to start the
+# manager and the workers:
 #
 # 1- mpirun starts only the rank 0, manager process, which is
 #    responsible for starting the workers processes using
@@ -46,10 +47,8 @@
 # 2- mpirun starts one instance of the manager process and NWORKER
 #    instances of the worker process;
 #
-# 3- only under Open MPI: mpirun/orterun starts NWORKERS+1 instances
-#    of the manager program, and all these instances except rank 0
-#    immediately transform themselves into worker processes using the
-#    execlp() system call, so we are back in scenario 2 above.
+# 3- mpirun starts NP instances of a process; rank 0 becomes the
+#    manager while rank > 0 invoke Scenery.mpiWorker().
 #
 ### Synopsis:
 #
@@ -58,56 +57,52 @@
 #
 # 1- mpirun -np 1 python example-mpi.py
 # 2- mpirun -np 1 python example-mpi.py : -np NWORKERS gyoto-mpi-worker.VERSION
-# 3- orterun -np <NWORKERS+1> python example-mpi.py
+# 3- mpirun -np <NWORKERS+1> python example-mpi.py
 #
 # where NWORKERS is the desired number of workers to use (e.g. 4) and
-# VERSION is the gyoto ABI version (e.g. 5 or 5-unreleased). In the
-# first form, the script will spawn 4 workers (instances of
-# gyoto-mpi-workers.VERSION). In the second form, the script will use
-# the NWORKERS instances launched by mpirun.
-#
-# The third version works only if the MPI environment is Open MPI
-# (hence the choice to use the command orterun instead of mpirun in
-# the example). In this case, the NWORKERS process with rank > 0 will
-# respawn themselves as gyoto-mpi-worker.VERSION using os.execlp().
+# VERSION is the gyoto ABI version (e.g. 5 or 5-unreleased).
 #
 ### Environment:
 #
-# The system must be able to find libgyoto, the plugins, and the
-# command-line utilities gyoto and gyoto-mpi-workers.VERSION,
-# therefore you may need to set PATH and LD_LIBRARY_PATH appropriately
-# or the like. Make sure the version of gyoto that is found first in
-# your path is the right version, i.e. that LD_LIBRARY_PATH and PATH
-# are set consistently.
+# The system must be able to find libgyoto, the plugins, and (in
+# scenario 1) the command-line utility gyoto-mpi-workers.VERSION.
+# Therefore you may need to set PATH and LD_LIBRARY_PATH appropriately
+# or the like.
 #
 ###
 
-# 1- Support scenario 3 above
-#
-# Check whether we are running under an OpenMPI environment and have a
-# rank > 0. In this case, respawn as gyoto, which will itself respawn
-# as the right gyoto-mpi-worker.VERSION using exactly the same
-# heuristics. Respawning as gyoto instead of gyoto-mpi-worker.VERSION
-# saves us from hard-coding VERSION, but is slightly unsafe. Make sure
-# the right (ABI-compatible) version of gyoto is first in your PATH!
-import os
-if os.getenv('OMPI_COMM_WORLD_RANK', '0') != '0':
-    os.execlp("gyoto", "")
-
-# 2- Let mpi4py initialize the MPI environment:
+# 1- Let mpi4py initialize the MPI environment:
 import mpi4py.MPI
 
-# 3- Prepare Gyoto::Scenery to ray-trace
+# 2- Prepare Gyoto::Scenery to ray-trace
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 import gyoto.core
 import gyoto.std
 
-a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
-sc=a.getScenery()
+sc=gyoto.core.Factory("../doc/examples/example-moving-star.xml").scenery()
 sc.nThreads(1)
 sc.astrobj().opticallyThin(False)
+
+# 3- Autodetect scenario
+# Spawn processes and clone scenery into them:
+world = mpi4py.MPI.COMM_WORLD
+if (world.size == 1):
+    # This is scenario 1
+    # We spawn 4 instances of gyoto-mpi-worker.VERSION
+    sc.mpiSpawn(4)
+else:
+    if (world.rank == 0):
+        # This is scenario 2 or 3, this process is the manager
+        print("Rank ", world.rank, " becoming manager")
+        sc.mpiSpawn(-1)
+    else:
+        # This is scenario 3, this process is a worker
+        print("Rank ", world.rank, " becoming worker")
+        sc.mpiWorker()
+        print("Rank ", world.rank, " terminating")
+        exit()
 
 # 4- Prepare storage for ray-traced quantities
 
@@ -128,32 +123,31 @@ ii=gyoto.core.Range(1, res, 1)
 jj=gyoto.core.Range(1, res, 1)
 grid=gyoto.core.Grid(ii, jj)
 
-# 6- Autodetect scenario 1 vs. scenarios 2/3
-# Spawn processes and clone scenery into them:
-world = mpi4py.MPI.COMM_WORLD
-if (world.size > 1 and world.rank == 0):
-    # This is scenario 2/3
-    # We assume that the other ranks are instances of
-    # gyoto-mpi-worker.VERSION and enrole them
-    sc.mpiSpawn(-1)
-else:
-    # This is scenario 1
-    # We spawn 4 instances of gyoto-mpi-worker.VERSION
-    sc.mpiSpawn(4)
 sc.mpiClone()
 
-# 7- Ray-trace
+# 6- Ray-trace
 sc.rayTrace(grid, aop)
 
-# 8- Terminate MPI workers
+# 7- Terminate MPI workers
+#
+# If the workers were spawned, this is done automatically when the
+# Scenery object sc is deleted (but it does not harm to do it by hand).
+#
+# If the processes were created by mpirun, this needs to be done
+# exactly once. Don't try to use the processes after calling
+# mpiTerminate().
+#
+# Note that the same workers, if not spawned, can be reused in
+# anorther Scenery. They should really be terminated only after the
+# last MPI ray-tracing has been perfomed.
 sc.mpiTerminate()
 
-# 9- Do something with the data
-#plt.imshow(intensity)
-#plt.show()
-#plt.imshow(time)
-#plt.show()
-#plt.imshow(distance)
-#plt.show()
+# 8- Do something with the data
+# plt.imshow(intensity)
+# plt.show()
+# plt.imshow(time)
+# plt.show()
+# plt.imshow(distance)
+# plt.show()
 
 print("All done, exiting")

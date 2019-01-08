@@ -108,4 +108,7 @@ double PatternDiskBB::emission(double nu, double dsem,
   else throwError("In PatternDiskBB::emission: should be optically thick!");
   // The PatternDisk::emission function called above will return
   // nonsense for the temperature in case the object is optically thin.
+
+  // Should never reach this
+  return 0.;
 }

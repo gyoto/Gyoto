@@ -66,7 +66,9 @@ std::string OscilTorus::perturbKind() const {
   case X:         return "X";
   case Plus:      return "Plus";
   case Breathing: return "Breathing";
+  default: throwError("Unknown kind");
   }
+  return "Should not reach this";
 }
 
 std::string OscilTorus::emittingArea() const {return emitting_area_;}

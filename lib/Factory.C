@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2016, 2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -264,8 +264,10 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-      if (!result->getSnapshotLength())
-	throwError("No Metric found");
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
       MetricDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     } else MetricDOM = root_;
@@ -298,8 +300,10 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-      if (!result->getSnapshotLength())
-	throwError("GYOTO error: an Astrobj MUST be specified");
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
@@ -316,7 +320,7 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
   return obj_;
 }
 
-SmartPointer<Gyoto::Photon> Factory::getPhoton(){
+SmartPointer<Gyoto::Photon> Factory::photon(){
     
   if (!photon_) {
     DOMXPathResult* result;
@@ -331,8 +335,10 @@ SmartPointer<Gyoto::Photon> Factory::getPhoton(){
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-      if (!result->getSnapshotLength())
-	throwError("GYOTO error: an Photon MUST be specified");
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
@@ -358,8 +364,10 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-      if (!result->getSnapshotLength())
-	throwError("GYOTO error: an Spectrum MUST be specified");
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
@@ -387,8 +395,10 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-      if (!result->getSnapshotLength())
-	throwError("GYOTO error: an Spectrometer MUST be specified");
+      if (!result->getSnapshotLength()) {
+	delete result;
+	return NULL;
+      }
       tmpEl = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
       delete result;
     }
@@ -404,7 +414,7 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
 
 /// Scenery
 
-SmartPointer<Scenery> Factory::getScenery () {
+SmartPointer<Scenery> Factory::scenery () {
   if (!scenery_) {
     DOMXPathResult* result;
     DOMElement *tmpEl;
@@ -435,8 +445,10 @@ SmartPointer<Gyoto::Screen> Factory::screen(){
 			  resolver_,
 			  DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
 			  NULL);
-    if (!result->getSnapshotLength())
-      throwError("No Screen found");
+    if (!result->getSnapshotLength()) {
+      delete result;
+      return NULL;
+    }
     
     ScreenDOM = static_cast< xercesc::DOMElement* >(result -> getNodeValue());
     
@@ -934,8 +946,8 @@ SmartPointer<Screen> FactoryMessenger::screen() {
   return employer_ -> screen ();
 }
 
-SmartPointer<Photon> FactoryMessenger::getPhoton() {
-  return employer_ -> getPhoton ();
+SmartPointer<Photon> FactoryMessenger::photon() {
+  return employer_ -> photon ();
 }
 
 SmartPointer<Astrobj::Generic> FactoryMessenger::astrobj() {

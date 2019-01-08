@@ -34,6 +34,8 @@ GYOTO_PROPERTY_DOUBLE_UNIT(PolishDoughnut, CentralEnthalpyPerUnitVolume, central
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut,
 		      CentralTemperature, centralTemp)
 GYOTO_PROPERTY_DOUBLE(PolishDoughnut, Beta, beta)
+GYOTO_PROPERTY_DOUBLE(PolishDoughnut, MagneticParticlesEquipartitionRatio,
+		      magneticParticlesEquipartitionRatio)
 GYOTO_PROPERTY_SIZE_T(PolishDoughnut,
 		      SpectralOversampling, spectralOversampling)
 GYOTO_PROPERTY_BOOL(PolishDoughnut,
@@ -89,6 +91,7 @@ PolishDoughnut::PolishDoughnut() :
   central_enthalpy_cgs_(1.),
   central_temperature_(1e10),
   beta_(0.),
+  magneticParticlesEquipartitionRatio_(-1.),
   spectral_oversampling_(10),
   angle_averaged_(0),
   deltaPL_(0.),
@@ -125,6 +128,7 @@ PolishDoughnut::PolishDoughnut(const PolishDoughnut& orig) :
   central_enthalpy_cgs_(orig.central_enthalpy_cgs_),
   central_temperature_(orig.central_temperature_),
   beta_(orig.beta_),
+  magneticParticlesEquipartitionRatio_(orig.magneticParticlesEquipartitionRatio_),
   spectral_oversampling_(orig.spectral_oversampling_),
   angle_averaged_(orig.angle_averaged_),
   deltaPL_(orig.deltaPL_),
@@ -349,6 +353,10 @@ void PolishDoughnut::centralTemp(double val)
 {central_temperature_=val;}
 double PolishDoughnut::beta() const { return beta_; }
 void PolishDoughnut::beta(double b) { beta_ = b; }
+void PolishDoughnut::magneticParticlesEquipartitionRatio(double rr) {
+  magneticParticlesEquipartitionRatio_=rr;}
+double PolishDoughnut::magneticParticlesEquipartitionRatio()const{
+  return magneticParticlesEquipartitionRatio_;}
 size_t PolishDoughnut::spectralOversampling() const
 { return spectral_oversampling_; }
 void PolishDoughnut::spectralOversampling(size_t val)
@@ -643,6 +651,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     double number_density_central =
       (enthalpy_c-kappa*pow(enthalpy_c,1.+CST_POLY_INDEX_M1))
       /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
+    //cout << "central nb density torus= " << number_density_central << endl;
     double magnetic_pressure = 0., fact_b=1.;
     // pm = b^2/fact_b
     if (!angle_averaged_){
@@ -655,6 +664,15 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       fact_b = 24.*M_PI;
     }
     bnorm = sqrt(fact_b*magnetic_pressure);
+    // Redefining bnorm if magneticParticlesEquipartitionRatio_ is defined;
+    // this is for compatibility with Jet.C
+    if (magneticParticlesEquipartitionRatio_!=-1.){
+      bnorm = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
+		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+		   *number_density);
+    }
+    //cout << "ne_c, ne, Bc, B= " << number_density_central << " " << number_density << " " << magneticParticlesEquipartitionRatio_ << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS * number_density_central)  << " " << bnorm << endl;
+    //throwError("test pol");
     double bphi = bnorm/sqrt(g_pp+2*l0_*g_tp+l0_*l0_*g_tt);
     //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
     // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
@@ -737,6 +755,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   } 
   
   // THERMAL SYNCHRO
+  //cout << "doughnut stuff= " << T_electron << " " <<  number_density << " " << theta_mag << " " << nuc << " " << bnorm << " " << besselK2 << endl;
   spectrumSynch_->temperature(T_electron);
   spectrumSynch_->numberdensityCGS(number_density);
   spectrumSynch_->angle_B_pem(theta_mag);
@@ -779,6 +798,8 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu_synch_ther[ii],
       anu_tot = anu_synch_ther[ii];
+    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
+    //cout << "torus jnu anu synch ther= " << jnu_tot << " " << anu_tot << endl;
     if (deltaPL_>0.){
       jnu_tot += jnu_synch_PL[ii];
       anu_tot += anu_synch_PL[ii];

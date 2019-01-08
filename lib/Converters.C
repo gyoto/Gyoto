@@ -102,7 +102,7 @@ Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
 #   ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(unit_);
 #   endif
-    if (!unit_) throwError("Error initializing Unit");
+    if (!unit_) throwError(string("Error initializing Unit: ")+unit);
   }
 }
 
@@ -115,7 +115,7 @@ Unit::Unit(char const * const unit) : unit_(NULL), kind_(unit) {
 #   ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(unit_);
 #   endif
-    if (!unit_) throwError("Error initializing Unit");
+    if (!unit_) throwError(string("Error initializing Unit: ")+unit);
   }
 }
 

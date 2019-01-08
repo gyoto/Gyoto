@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2018 Frederic Vincent
+  Copyright 2014-2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -45,6 +45,16 @@ Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung()
   Tm1_=1./T_; Tm05_=sqrt(Tm1_);
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
+}
+Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung(const ThermalBremsstrahlung &o)
+: Spectrum::Generic(o),
+  spectrumBB_(NULL),
+  T_(o.T_),
+  Tm1_(o.Tm1_),
+  Tm05_(o.Tm05_),
+  numberdensityCGS_(o.numberdensityCGS_)
+{
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
 
 double Spectrum::ThermalBremsstrahlung::temperature() const { return T_; }

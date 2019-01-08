@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2018 Frederic Vincent
+    Copyright 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -62,10 +62,7 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
   GYOTO_OBJECT;
 
   PowerLawSynchrotron();
-
-  /**
-   * \brief Constructor setting T_ and cst_
-   */
+  PowerLawSynchrotron(const PowerLawSynchrotron &);
   virtual PowerLawSynchrotron * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();

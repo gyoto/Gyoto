@@ -18,6 +18,7 @@
  */
 %module(docstring="The Gyoto standard plug-in", package="gyoto") std
 %import gyoto.i
+%include "exception.i"
 %{
 
 #define GYOTO_NO_DEPRECATED
@@ -54,6 +55,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, DirectionalDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrTypeMapClassDerived(Astrobj, EquatorialHotSpot)
 GyotoSmPtrTypeMapClassDerived(Astrobj, XillverReflection)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Jet)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -73,8 +75,23 @@ GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (const UniformSphere& orig);
 GyotoSmPtrClassDerived(Astrobj, UniformSphere)
 
+%inline {
+  class myCplxIdxExcept {};
+}
+
+%exception Gyoto::Astrobj::Complex::__getitem__ {
+  try {
+    $action ;
+  } catch (myCplxIdxExcept e) {
+    SWIG_exception_fail(SWIG_IndexError, "Index out of bounds");
+  }
+}
+
 %extend Gyoto::Astrobj::Complex {
-  Gyoto::Astrobj::Generic * __getitem__ (int i) {
+  Gyoto::Astrobj::Generic * __getitem__ (size_t i) {
+    if (i >= ($self)->getCardinal()) {
+      throw myCplxIdxExcept();
+    }
     Gyoto::Astrobj::Generic * res = ($self)->operator[](i);
     res -> incRefCount();
     return res;
@@ -108,6 +125,7 @@ GyotoSmPtrClassDerived(Astrobj, DirectionalDisk)
 GyotoSmPtrClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrClassDerived(Astrobj, EquatorialHotSpot)
 GyotoSmPtrClassDerived(Astrobj, XillverReflection)
+GyotoSmPtrClassDerived(Astrobj, Jet)
 
 
 GyotoSmPtrClassDerived(Metric, KerrBL)
@@ -126,6 +144,7 @@ GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotro
 // Workaround cvar bug in Swig which makes help(gyoto_std) fail:
 %inline {
   namespace GyotoStd {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int GyotoStd::__class__ = 0;
 }

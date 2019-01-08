@@ -655,10 +655,21 @@ HAVE_LORENE_FALSE
 HAVE_LORENE_TRUE
 HOME_LORENE
 MAKE_S
+AEAE_CFLAGS
+HAVE_2F1_FALSE
+HAVE_2F1_TRUE
+HAVE_AEAE_FALSE
+HAVE_AEAE_TRUE
+HAVE_ARBLIB_FALSE
+HAVE_ARBLIB_TRUE
+ARBLIB_LIBS
+ARBLIB_CFLAGS
 HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
 CFITSIO_CFLAGS
+HAVE_XERCES_FALSE
+HAVE_XERCES_TRUE
 XERCES_LIBS
 XERCES_CFLAGS
 HAVE_UDUNITS_FALSE
@@ -759,7 +770,6 @@ am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
-am__quote
 am__include
 DEPDIR
 OBJEXT
@@ -847,7 +857,8 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 PATH_SEPARATOR
-SHELL'
+SHELL
+am__quote'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -878,15 +889,22 @@ with_yorick_home
 with_yorick_site
 enable_debugging
 enable_pthreads
-with_udunits
 with_udunits_inc
 with_udunits_lib
+with_udunits
+with_udunits_headers
+with_udunits_libs
 with_xerces
 with_xerces_headers
 with_xerces_libs
 with_cfitsio
 with_cfitsio_headers
 with_cfitsio_libs
+with_arblib
+with_arblib_headers
+with_arblib_libs
+with_arblib_ldflags
+with_aeae
 with_lorene
 enable_doc
 '
@@ -916,6 +934,8 @@ XERCES_CFLAGS
 XERCES_LIBS
 CFITSIO_CFLAGS
 CFITSIO_LIBS
+ARBLIB_CFLAGS
+ARBLIB_LIBS
 MAKE_S
 HOME_LORENE'
 ac_subdirs_all='plugins/python'
@@ -1593,7 +1613,9 @@ Optional Packages:
                           consider size_t as the same as or distinct from
                           unsigned long (auto). Should normally be specified
                           only if cross-compiling.
-  --with-python           force (or disable) python support
+  --with-python[=interpreter]
+                          force (or disable) python support, possibly
+                          specifying interpreter
   --with-virtualenv       install to a Python virtualenv
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
@@ -1609,25 +1631,74 @@ Optional Packages:
                           yorick directory if it is under ${prefix}, else
                           ${prefix}/lib/yorick]
 
-  --with-udunits[=DIR]    Force using udunits2 installed in a given prefix or
+  (--with-udunits-inc=)   deprecated, use --with-udunits-headers
+  (--with-udunits-lib=)   deprecated, use --with-udunits-libs
+  --with-udunits[=udunits-prefix]
+                          Force using udunits installed in a given prefix or
                           force disable it.
-  --with-udunits-inc=DIR  path to base directory with UDUNITS headers
-  --with-udunits-lib=LDFLAGS
-                          linker flags for udunits
+  --with-udunits-headers=path
+                          location of udunits include files as a
+                          colon-separated path
+                          ('--with-udunits-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-udunits-headers="-I/path1 ... -I/pathn")'
+  --with-udunits-libs=path
+                          location of udunits library files as a
+                          colon-separated path
+                          ('--with-udunits-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-udunits-libs="-L/path1
+                          ... -L/pathn")'
   --with-xerces[=xerces-prefix]
                           Force using xerces installed in a given prefix or
                           force disable it.
   --with-xerces-headers=path
-                          location of xercesc include files (without trailing
-                          "/xercesc")
-  --with-xerces-libs=path location of xercesc library files
+                          location of xerces include files as a
+                          colon-separated path
+                          ('--with-xerces-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-xerces-headers="-I/path1 ... -I/pathn")'
+  --with-xerces-libs=path location of xerces library files as a
+                          colon-separated path
+                          ('--with-xerces-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-xerces-libs="-L/path1
+                          ... -L/pathn")'
   --with-cfitsio[=cfitsio-prefix]
                           Force using cfitsio installed in a given prefix or
                           force disable it.
   --with-cfitsio-headers=path
-                          location of cfitsio include files
+                          location of cfitsio include files as a
+                          colon-separated path
+                          ('--with-cfitsio-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-cfitsio-headers="-I/path1 ... -I/pathn")'
   --with-cfitsio-libs=path
-                          location of cfitsio library files
+                          location of cfitsio library files as a
+                          colon-separated path
+                          ('--with-cfitsio-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-cfitsio-libs="-L/path1
+                          ... -L/pathn")'
+  --with-arblib[=arblib-prefix]
+                          Force using arblib installed in a given prefix or
+                          force disable it.
+  --with-arblib-headers=path
+                          location of arblib include files as a
+                          colon-separated path
+                          ('--with-arblib-headers=/path1:...:/pathn') or list
+                          of preprocessor flags
+                          ('--with-arblib-headers="-I/path1 ... -I/pathn")'
+  --with-arblib-libs=path location of arblib library files as a
+                          colon-separated path
+                          ('--with-arblib-libs=/path1:...:/pathn') or list of
+                          preprocessor flags ('--with-arblib-libs="-L/path1
+                          ... -L/pathn")'
+  --with-arblib-ldflags=-l<libname>
+                          linker flag for arblib (-lflint-arb on Debian
+                          derivatives, -larb on Arch Linux...) possibly with
+                          dependencies (e.g. "-larb -lflint").
+
+  --with-aeae[=/path/to/AEAE]
+                          Force using AEAE, optionally specifying full path to
+                          location of source code, or force disable it.
   --with-lorene[=${HOME_LORENE}]
                           force using the optional LORENE library, possibly
                           specifying HOME_LORENE [default=${HOME_LORENE}]
@@ -1666,6 +1737,9 @@ Some influential environment variables:
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
               linker flags for CFITSIO, overriding pkg-config
+  ARBLIB_CFLAGS
+              C compiler flags for ARBLIB, overriding pkg-config
+  ARBLIB_LIBS linker flags for ARBLIB, overriding pkg-config
   MAKE_S      make command which does not print directories [[make -w]]
   HOME_LORENE path to Lorene build directory (see also --with-lorene)
 
@@ -2924,7 +2998,7 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-am__api_version='1.15'
+am__api_version='1.16'
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -3440,8 +3514,8 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
@@ -3492,7 +3566,7 @@ END
 Aborting the configuration process, to ensure you take notice of the issue.
 
 You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
+that behaves properly: <https://www.gnu.org/software/coreutils/>.
 
 If you want to complete the configuration process using your problematic
 'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
@@ -3609,45 +3683,45 @@ DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
-
-am_make=${MAKE-make}
-cat > confinc << 'END'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} supports the include directive" >&5
+$as_echo_n "checking whether ${MAKE-make} supports the include directive... " >&6; }
+cat > confinc.mk << 'END'
 am__doit:
-	@echo this is the am__doit target
+	@echo this is the am__doit target >confinc.out
 .PHONY: am__doit
 END
-# If we don't find an include directive, just comment out the code.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for style of include used by $am_make" >&5
-$as_echo_n "checking for style of include used by $am_make... " >&6; }
 am__include="#"
 am__quote=
-_am_result=none
-# First try GNU make style include.
-echo "include confinc" > confmf
-# Ignore all kinds of additional output from 'make'.
-case `$am_make -s -f confmf 2> /dev/null` in #(
-*the\ am__doit\ target*)
-  am__include=include
-  am__quote=
-  _am_result=GNU
-  ;;
-esac
-# Now try BSD make style include.
-if test "$am__include" = "#"; then
-   echo '.include "confinc"' > confmf
-   case `$am_make -s -f confmf 2> /dev/null` in #(
-   *the\ am__doit\ target*)
-     am__include=.include
-     am__quote="\""
-     _am_result=BSD
+# BSD make does it like this.
+echo '.include "confinc.mk" # ignored' > confmf.BSD
+# Other make implementations (GNU, Solaris 10, AIX) do it like this.
+echo 'include confinc.mk # ignored' > confmf.GNU
+_am_result=no
+for s in GNU BSD; do
+  { echo "$as_me:$LINENO: ${MAKE-make} -f confmf.$s && cat confinc.out" >&5
+   (${MAKE-make} -f confmf.$s && cat confinc.out) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+  case $?:`cat confinc.out 2>/dev/null` in #(
+  '0:this is the am__doit target') :
+    case $s in #(
+  BSD) :
+    am__include='.include' am__quote='"' ;; #(
+  *) :
+    am__include='include' am__quote='' ;;
+esac ;; #(
+  *) :
      ;;
-   esac
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $_am_result" >&5
-$as_echo "$_am_result" >&6; }
-rm -f confinc confmf
+esac
+  if test "$am__include" != "#"; then
+    _am_result="yes ($s style)"
+    break
+  fi
+done
+rm -f confinc.* confmf.*
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
+$as_echo "${_am_result}" >&6; }
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -15908,8 +15982,13 @@ $as_echo "$with_size__t" >&6; }
 # Check whether --with-python was given.
 if test "${with_python+set}" = set; then :
   withval=$with_python;
-else
-  with_python=optional
+	 case $with_python in
+	   yes | no) ;;
+	   *)
+	       PYTHON=`which $with_python` || as_fn_error $? "$with_python: command not found" "$LINENO" 5
+	       with_python=yes
+	 esac
+
 fi
 
 
@@ -15917,7 +15996,7 @@ fi
 
 
 
-for ac_prog in python \
+for ac_prog in python3 python \
      python3 \
      python2 \
                          python4.0                    python3.9                    python3.8                    python3.7                    python3.6                    python3.5                    python3.4                    python3.3                    python3.2                    python3.1                    python3.0                                                            python2.7
@@ -19894,12 +19973,38 @@ pkg_requires=
 pkg_cflags=
 pkg_libs=
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libudunits2 should be used" >&5
-$as_echo_n "checking whether libudunits2 should be used... " >&6; }
-udunits_cppflags=
-udunits_ldflags=
-UDUNITS_CFLAGS=
-UDUNITS_LIBS=
+
+# Check whether --with-udunits-inc was given.
+if test "${with_udunits_inc+set}" = set; then :
+  withval=$with_udunits_inc; with_udunits_headers=$withval
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-udunits-inc option is deprecated, use --with-udunits-headers instead" >&5
+$as_echo "$as_me: WARNING: --with-udunits-inc option is deprecated, use --with-udunits-headers instead" >&2;}
+
+
+fi
+
+
+
+# Check whether --with-udunits-lib was given.
+if test "${with_udunits_lib+set}" = set; then :
+  withval=$with_udunits_lib; with_udunits_libs=${withval}
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-udunits-lib option is deprecated, use --with-udunits-libs instead" >&5
+$as_echo "$as_me: WARNING: --with-udunits-lib option is deprecated, use --with-udunits-libs instead" >&2;}
+
+
+fi
+
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits should be used" >&5
+$as_echo_n "checking whether udunits should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_udunits
+
 
 # Check whether --with-udunits was given.
 if test "${with_udunits+set}" = set; then :
@@ -19908,9 +20013,9 @@ if test "${with_udunits+set}" = set; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 elif test "x$withval" != "xyes"; then :
-  udunits_cppflags=-I$withval/include
-      udunits_ldflags="-L$withval/lib -ludunits2"
-      with_udunits=yes
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -19919,48 +20024,59 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_udunits=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_udunits=no
-if test "x$with_udunits" != "xno"; then :
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits2 include path is provided" >&5
-$as_echo_n "checking whether udunits2 include path is provided... " >&6; }
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
-# Check whether --with-udunits-inc was given.
-if test "${with_udunits_inc+set}" = set; then :
-  withval=$with_udunits_inc; with_udunits=yes
-      udunits_cppflags=-I${withval}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${withval}" >&5
-$as_echo "${withval}" >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits include path is provided" >&5
+$as_echo_n "checking whether udunits include path is provided... " >&6; }
+
+# Check whether --with-udunits-headers was given.
+if test "${with_udunits_headers+set}" = set; then :
+  withval=$with_udunits_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
-   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits linker flags are provided" >&5
-$as_echo_n "checking whether udunits linker flags are provided... " >&6; }
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether udunits library path is provided" >&5
+$as_echo_n "checking whether udunits library path is provided... " >&6; }
 
-# Check whether --with-udunits-lib was given.
-if test "${with_udunits_lib+set}" = set; then :
-  withval=$with_udunits_lib; with_udunits=yes
-      udunits_ldflags="${withval}"
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $withval" >&5
-$as_echo "$withval" >&6; }
+# Check whether --with-udunits-libs was given.
+if test "${with_udunits_libs+set}" = set; then :
+  withval=$with_udunits_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for udunits
-   if test "x$udunits_cppflags" == "x" \
-       && test "x$udunits_ldflags" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20038,22 +20154,22 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} udunits"
-          have_udunits=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_udunits" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for udunits (without pkg-config)" >&5
-$as_echo_n "checking for udunits (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for UDUNITS (without pkg-config)" >&5
+$as_echo_n "checking for UDUNITS (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
       TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $udunits_cppflags"
-      LDFLAGS="$TMPLDFLAGS $udunits_ldflags"
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-ludunits2
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20067,7 +20183,13 @@ ut_set_error_message_handler(ut_ignore);
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_udunits=yes
+  gy_have=yes
+         udunits_headers=$gy_headers
+         udunits_lib=$gy_lib
+         UDUNITS_LIBS="$gy_lib -ludunits2"
+         UDUNITS_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
+         pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20079,15 +20201,33 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      UDUNITS_LIBS="$udunits_ldflags -ludunits2"
-      UDUNITS_CFLAGS="$udunits_cppflags"
-      pkg_cflags="${pkg_cflags} ${UDUNITS_CFLAGS}"
-      pkg_libs="${pkg_libs} ${UDUNITS_LIBS}"
 
 fi
 
 fi
- if test "x$have_udunits" != xno; then
+
+have_udunits=$gy_have
+with_udunits=$withval
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
+  as_fn_error $? "udunits requested but not found" "$LINENO" 5
+
+fi
+   udunits_headers=""
+   udunits_lib=""
+   UDUNITS_LIBS=""
+   UDUNITS_CFLAGS=""
+
+else
+  use_udunits=yes
+
+$as_echo "#define GYOTO_USE_UDUNITS 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_udunits" == "xyes"; then
   HAVE_UDUNITS_TRUE=
   HAVE_UDUNITS_FALSE='#'
 else
@@ -20095,48 +20235,38 @@ else
   HAVE_UDUNITS_FALSE=
 fi
 
+
+
+
+
+
 if test "x$have_udunits" == "xno"; then :
-
-   if test "x$with_udunits" == "xyes"; then :
-  as_fn_error $? "
- ****************************************
- *** UDUNITS requested but not found! ***
- ****************************************" "$LINENO" 5
-
-else
   FEATURES+="-nounits"
 
 fi
 
-else
-  use_udunits=yes
-
-$as_echo "#define HAVE_UDUNITS 1" >>confdefs.h
-
-
-fi
-
-
-
 ## XERCES
 # Check for Xerces-c
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libxerces should be used" >&5
-$as_echo_n "checking whether libxerces should be used... " >&6; }
-xerces_headers=
-xerces_lib=
-XERCES_CFLAGS=
-XERCES_LIBS=
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether xerces should be used" >&5
+$as_echo_n "checking whether xerces should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_xerces
+
 
 # Check whether --with-xerces was given.
 if test "${with_xerces+set}" = set; then :
   withval=$with_xerces;
-   if test "x$with_xerces" == "xno"; then :
+   if test "x$withval" == "xno"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-elif test "x$with_xerces" != "xyes"; then :
-  xerces_headers=-I$with_xerces/include
-      xerces_lib=-L$with_xerces/lib
-      with_xerces=yes
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20145,25 +20275,31 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_xerces=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_xerces=no
-if test "x$with_xerces" != "xno"; then :
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether xerces include path is provided" >&5
 $as_echo_n "checking whether xerces include path is provided... " >&6; }
 
 # Check whether --with-xerces-headers was given.
 if test "${with_xerces_headers+set}" = set; then :
-  withval=$with_xerces_headers; with_xerces=yes
-      xerces_headers=-I${with_xerces_headers}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_xerces_headers}" >&5
-$as_echo "${with_xerces_headers}" >&6; }
+  withval=$with_xerces_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20174,19 +20310,24 @@ $as_echo_n "checking whether xerces library path is provided... " >&6; }
 
 # Check whether --with-xerces-libs was given.
 if test "${with_xerces_libs+set}" = set; then :
-  withval=$with_xerces_libs; with_xerces=yes
-      xerces_lib=-L$with_xerces_libs
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_xerces_libs" >&5
-$as_echo "$with_xerces_libs" >&6; }
+  withval=$with_xerces_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for xerces
-   if test "x$xerces_headers" == "x" \
-       && test "x$xerces_lib" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20264,22 +20405,22 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} xerces-c"
-          have_xerces=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_xerces" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for xerces-c (without pkg-config)" >&5
-$as_echo_n "checking for xerces-c (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XERCES (without pkg-config)" >&5
+$as_echo_n "checking for XERCES (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
       TMPLIBS=$LIBS
-      CPPFLAGS="$TMPCPPFLAGS $xerces_headers"
-      LDFLAGS="$TMPLDFLAGS $xerces_lib"
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-lxerces-c
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -20293,7 +20434,13 @@ xercesc::XMLPlatformUtils::Initialize();
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_xerces=yes
+  gy_have=yes
+         xerces_headers=$gy_headers
+         xerces_lib=$gy_lib
+         XERCES_LIBS="$gy_lib -lxerces-c"
+         XERCES_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
+         pkg_libs="${pkg_libs} ${XERCES_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20305,26 +20452,23 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      XERCES_LIBS="$xerces_lib -lxerces-c"
-      XERCES_CFLAGS="$xerces_headers"
-      pkg_cflags="${pkg_cflags} ${XERCES_CFLAGS}"
-      pkg_libs="${pkg_libs} ${XERCES_LIBS}"
 
 fi
 
 fi
-if test "x$have_xerces" == "xno"; then :
 
-   if test "x$with_xerces" == "xyes"; then :
+have_xerces=$gy_have
+with_xerces=$withval
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "xerces requested but not found" "$LINENO" 5
 
-else
-  FEATURES+="-noxml"
-
 fi
-   if test "x$have_mpi" == "xyes"; then :
-  as_fn_error $? "The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces." "$LINENO" 5
-fi
+   xerces_headers=""
+   xerces_lib=""
+   XERCES_LIBS=""
+   XERCES_CFLAGS=""
 
 else
   use_xerces=yes
@@ -20332,27 +20476,52 @@ else
 $as_echo "#define GYOTO_USE_XERCES 1" >>confdefs.h
 
 
+
+fi
+ if test "x$have_xerces" == "xyes"; then
+  HAVE_XERCES_TRUE=
+  HAVE_XERCES_FALSE='#'
+else
+  HAVE_XERCES_TRUE='#'
+  HAVE_XERCES_FALSE=
 fi
 
 
 
+
+
+
+if test "x$have_xerces" == "xno"; then :
+  FEATURES+="-noxml"
+   if test "x$have_mpi" == "xyes"; then :
+  as_fn_error $? "The MPI feature set requires Xerces. Please reconfigure with --without-mpi or with --with-xerces." "$LINENO" 5
+fi
+
+
+fi
+
 ## CFITSIO
 # Check for CFITSIO
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether libcfitsio should be used" >&5
-$as_echo_n "checking whether libcfitsio should be used... " >&6; }
-cfitsio_headers=
-cfitsio_lib=
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether cfitsio should be used" >&5
+$as_echo_n "checking whether cfitsio should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_cfitsio
+
 
 # Check whether --with-cfitsio was given.
 if test "${with_cfitsio+set}" = set; then :
   withval=$with_cfitsio;
-   if test "x$with_cfitsio" == "xno"; then :
+   if test "x$withval" == "xno"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-elif test "x$with_cfitsio" != "xyes"; then :
-  cfitsio_headers=-I$with_cfitsio/include
-      cfitsio_lib=-L$with_cfitsio/lib
-      with_cfitsio=yes
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20361,25 +20530,31 @@ $as_echo "yes" >&6; }
 fi
 
 else
-  with_cfitsio=check
+  gy_with=check
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
 $as_echo "probe" >&6; }
 
 
 fi
 
-have_cfitsio=no
-if test "x$with_cfitsio" != "xno"; then :
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
 
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether cfitsio include path is provided" >&5
 $as_echo_n "checking whether cfitsio include path is provided... " >&6; }
 
 # Check whether --with-cfitsio-headers was given.
 if test "${with_cfitsio_headers+set}" = set; then :
-  withval=$with_cfitsio_headers; with_cfitsio=yes
-      cfitsio_headers=-I${with_cfitsio_headers}
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${with_cfitsio_headers}" >&5
-$as_echo "${with_cfitsio_headers}" >&6; }
+  withval=$with_cfitsio_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20390,19 +20565,24 @@ $as_echo_n "checking whether cfitsio library path is provided... " >&6; }
 
 # Check whether --with-cfitsio-libs was given.
 if test "${with_cfitsio_libs+set}" = set; then :
-  withval=$with_cfitsio_libs; with_cfitsio=yes
-      cfitsio_lib=-L$with_cfitsio_libs
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_cfitsio_libs" >&5
-$as_echo "$with_cfitsio_libs" >&6; }
+  withval=$with_cfitsio_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-   # Now check whether or not to use pkg-config for cfitsio
-   if test "x$cfitsio_headers" == "x" \
-       && test "x$cfitsio_lib" == "x" \
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
        && test "x$PKG_CONFIG"  != "x"; then :
 
 pkg_failed=no
@@ -20480,37 +20660,44 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 	pkg_requires="${pkg_requires} cfitsio"
-          have_cfitsio=yes
+          gy_have=yes
 
 fi
 
 fi
 
    # Failing that, check without pkg-config
-   if test "x$have_cfitsio" == "xno"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cfitsio (without pkg-config)" >&5
-$as_echo_n "checking for cfitsio (without pkg-config)... " >&6; }
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CFITSIO (without pkg-config)" >&5
+$as_echo_n "checking for CFITSIO (without pkg-config)... " >&6; }
       TMPCPPFLAGS=$CPPFLAGS
-      CPPFLAGS="$TMPCPPFLAGS $cfitsio_headers"
+      TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
-      LDFLAGS="$TMPLDFLAGS $cfitsio_lib"
       TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=-lcfitsio
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <fitsio.h>
-         #include <string>
+	       #include <string>
 int
 main ()
 {
 fitsfile* fptr=NULL; std::string file=""; int status=0;
-         fits_open_file(&fptr, file.c_str(), 0, &status);
+	       fits_open_file(&fptr, file.c_str(), 0, &status);
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_link "$LINENO"; then :
-  have_cfitsio=yes
+  gy_have=yes
+         cfitsio_headers=$gy_headers
+         cfitsio_lib=$gy_lib
+         CFITSIO_LIBS="$gy_lib -lcfitsio"
+         CFITSIO_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
+         pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 else
@@ -20522,23 +20709,23 @@ rm -f core conftest.err conftest.$ac_objext \
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
-      CFITSIO_LIBS="$cfitsio_lib -lcfitsio"
-      CFITSIO_CFLAGS="$cfitsio_headers"
-      pkg_cflags="${pkg_cflags} ${CFITSIO_CFLAGS}"
-      pkg_libs="${pkg_libs} ${CFITSIO_LIBS}"
-
 
 fi
 
 fi
-if test "x$have_cfitsio" == "xno"; then :
-  if test "x$with_cfitsio" == "xyes"; then :
+
+have_cfitsio=$gy_have
+with_cfitsio=$withval
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
   as_fn_error $? "cfitsio requested but not found" "$LINENO" 5
 
-else
-  FEATURES+="-nofits"
-
 fi
+   cfitsio_headers=""
+   cfitsio_lib=""
+   CFITSIO_LIBS=""
+   CFITSIO_CFLAGS=""
 
 else
   use_cfitsio=yes
@@ -20554,6 +20741,427 @@ fi
 else
   HAVE_CFITSIO_TRUE='#'
   HAVE_CFITSIO_FALSE=
+fi
+
+
+
+
+
+
+if test "x$have_cfitsio" == "xno"; then :
+  FEATURES+="-nofits"
+
+fi
+
+## ARBLIB
+# Check for ARBLIB
+have_2f1=no
+# If AEAE if explicitely requested, skip ARBLIB checks.
+case "x$with_aeae" in
+     x)    ;;
+     xno)  ;;
+     x*)  with_arblib=no ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
+$as_echo_n "checking whether arblib library name is provided... " >&6; }
+if test "x$with_arblib_ldflags" == "x"; then :
+  arblib_ldflags=-lflint-arb
+else
+  with_arblib=yes
+   arblib_ldflags=$with_arblib_ldflags
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
+$as_echo "$arblib_ldflags" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
+$as_echo_n "checking whether arblib should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_arblib
+
+
+# Check whether --with-arblib was given.
+if test "${with_arblib+set}" = set; then :
+  withval=$with_arblib;
+   if test "x$withval" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+else
+  gy_with=check
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+$as_echo "probe" >&6; }
+
+
+fi
+
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib include path is provided" >&5
+$as_echo_n "checking whether arblib include path is provided... " >&6; }
+
+# Check whether --with-arblib-headers was given.
+if test "${with_arblib_headers+set}" = set; then :
+  withval=$with_arblib_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether arblib library path is provided" >&5
+$as_echo_n "checking whether arblib library path is provided... " >&6; }
+
+# Check whether --with-arblib-libs was given.
+if test "${with_arblib_libs+set}" = set; then :
+  withval=$with_arblib_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARBLIB" >&5
+$as_echo_n "checking for ARBLIB... " >&6; }
+
+if test -n "$ARBLIB_CFLAGS"; then
+    pkg_cv_ARBLIB_CFLAGS="$ARBLIB_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"arblib\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "arblib") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARBLIB_CFLAGS=`$PKG_CONFIG --cflags "arblib" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$ARBLIB_LIBS"; then
+    pkg_cv_ARBLIB_LIBS="$ARBLIB_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"arblib\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "arblib") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_ARBLIB_LIBS=`$PKG_CONFIG --libs "arblib" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        ARBLIB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "arblib" 2>&1`
+        else
+	        ARBLIB_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "arblib" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$ARBLIB_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: arblib.pc not found" >&5
+$as_echo "$as_me: arblib.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: arblib.pc not found" >&5
+$as_echo "$as_me: arblib.pc not found" >&6;}
+
+
+else
+	ARBLIB_CFLAGS=$pkg_cv_ARBLIB_CFLAGS
+	ARBLIB_LIBS=$pkg_cv_ARBLIB_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} arblib"
+          gy_have=yes
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ARBLIB (without pkg-config)" >&5
+$as_echo_n "checking for ARBLIB (without pkg-config)... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
+      LIBS=$arblib_ldflags
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <acb_hypgeom.h>
+int
+main ()
+{
+double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
+  	 acb_t FF, aa, bb, cc, zed;
+	 acb_init(FF);
+	 acb_init(aa);
+	 acb_init(bb);
+	 acb_init(cc);
+	 acb_init(zed);
+	 acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+	 acb_set_d_d(bb,   kappaIndex+1.,     0.);
+	 acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+	 acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+	 slong prec=53;
+	 acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+	 hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+	 rad = mag_get_d(&acb_realref(FF)->rad);
+	 acb_clear(FF);
+	 acb_clear(aa);
+	 acb_clear(bb);
+	 acb_clear(cc);
+	 acb_clear(zed);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  gy_have=yes
+         arblib_headers=$gy_headers
+         arblib_lib=$gy_lib
+         ARBLIB_LIBS="$gy_lib $arblib_ldflags"
+         ARBLIB_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${ARBLIB_CFLAGS}"
+         pkg_libs="${pkg_libs} ${ARBLIB_LIBS}"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+
+fi
+
+fi
+
+have_arblib=$gy_have
+with_arblib=$withval
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
+  as_fn_error $? "arblib requested but not found" "$LINENO" 5
+
+fi
+   arblib_headers=""
+   arblib_lib=""
+   ARBLIB_LIBS=""
+   ARBLIB_CFLAGS=""
+
+else
+  use_arblib=yes
+
+$as_echo "#define GYOTO_USE_ARBLIB 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_arblib" == "xyes"; then
+  HAVE_ARBLIB_TRUE=
+  HAVE_ARBLIB_FALSE='#'
+else
+  HAVE_ARBLIB_TRUE='#'
+  HAVE_ARBLIB_FALSE=
+fi
+
+
+
+
+
+
+
+# Check whether --with-arblib-ldflags was given.
+if test "${with_arblib_ldflags+set}" = set; then :
+  withval=$with_arblib_ldflags;
+fi
+
+if test "x$have_arblib" == "xyes"; then :
+  have_2f1=yes
+   with_aeae=no
+
+else
+  arblib_ldflags=
+
+
+fi
+
+## AEAE
+# Check for AEAE
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether aeae should be used" >&5
+$as_echo_n "checking whether aeae should be used... " >&6; }
+aeae_headers=
+
+# Check whether --with-aeae was given.
+if test "${with_aeae+set}" = set; then :
+  withval=$with_aeae;
+   if test "x$with_aeae" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+elif test "x$with_aeae" != "xyes"; then :
+  aeae_headers=$with_aeae
+      case "x$aeae_headers" in
+	   x\-I*) ;;
+	   x) ;;
+	   x*) aeae_headers=-I$aeae_headers ;;
+      esac
+      with_aeae=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+else
+  with_aeae=check
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+$as_echo "probe" >&6; }
+
+
+fi
+
+have_aeae=no
+if test "x$with_aeae" != "xno"; then :
+
+   if test "x$have_aeae" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for aeae" >&5
+$as_echo_n "checking for aeae... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      CPPFLAGS="$TMPCPPFLAGS $aeae_headers"
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <complex>
+	 #include <iostream>
+	 #define SIGN(a) (((a) < 0) ? (-1) : (1))
+	 using namespace std;
+	 #include "complex_functions.H"
+	 #include "hyp_2F1.cpp"
+int
+main ()
+{
+double hypergeom = 0., kappaIndex=5., thetae=1;
+	 complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
+	 cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
+	 const complex<double> FF = hyp_2F1(aa,bb,cc,zed);
+	 hypergeom = FF.real();
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  have_aeae=yes
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      AEAE_CFLAGS="$aeae_headers"
+      pkg_cflags="${pkg_cflags} ${AEAE_CFLAGS}"
+
+
+fi
+
+fi
+if test "x$have_aeae" == "xno"; then :
+  if test "x$with_aeae" == "xyes"; then :
+  as_fn_error $? "aeae requested but not found" "$LINENO" 5
+
+fi
+
+else
+  have_2f1=yes
+
+$as_echo "#define GYOTO_USE_AEAE 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_aeae" == "xyes"; then
+  HAVE_AEAE_TRUE=
+  HAVE_AEAE_FALSE='#'
+else
+  HAVE_AEAE_TRUE='#'
+  HAVE_AEAE_FALSE=
+fi
+
+ if test "x$have_2f1" == "xyes"; then
+  HAVE_2F1_TRUE=
+  HAVE_2F1_FALSE='#'
+else
+  HAVE_2F1_TRUE='#'
+  HAVE_2F1_FALSE=
 fi
 
 
@@ -20914,8 +21522,24 @@ if test -z "${HAVE_UDUNITS_TRUE}" && test -z "${HAVE_UDUNITS_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_UDUNITS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${HAVE_XERCES_TRUE}" && test -z "${HAVE_XERCES_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_XERCES\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CFITSIO\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ARBLIB_TRUE}" && test -z "${HAVE_ARBLIB_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_ARBLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_AEAE_TRUE}" && test -z "${HAVE_AEAE_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_AEAE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_2F1_TRUE}" && test -z "${HAVE_2F1_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_2F1\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_LORENE_TRUE}" && test -z "${HAVE_LORENE_FALSE}"; then
@@ -21516,7 +22140,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
-AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
+AMDEP_TRUE="$AMDEP_TRUE" MAKE="${MAKE-make}"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout
@@ -22522,29 +23146,35 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
-  case $CONFIG_FILES in
-  *\'*) eval set x "$CONFIG_FILES" ;;
-  *)   set x $CONFIG_FILES ;;
-  esac
+  # TODO: see whether this extra hack can be removed once we start
+  # requiring Autoconf 2.70 or later.
+  case $CONFIG_FILES in #(
+  *\'*) :
+    eval set x "$CONFIG_FILES" ;; #(
+  *) :
+    set x $CONFIG_FILES ;; #(
+  *) :
+     ;;
+esac
   shift
-  for mf
+  # Used to flag and report bootstrapping failures.
+  am_rc=0
+  for am_mf
   do
     # Strip MF so we end up with the name of the file.
-    mf=`echo "$mf" | sed -e 's/:.*$//'`
-    # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named 'Makefile.in', but
-    # some people rename them; so instead we look at the file content.
-    # Grep'ing the first line is not enough: some people post-process
-    # each Makefile.in and add a new line on top of each file to say so.
-    # Grep'ing the whole file is not good either: AIX grep has a line
+    am_mf=`$as_echo "$am_mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile which includes
+    # dependency-tracking related rules and includes.
+    # Grep'ing the whole file directly is not great: AIX grep has a line
     # limit of 2048, but all sed's we know have understand at least 4000.
-    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
-      dirpart=`$as_dirname -- "$mf" ||
-$as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$mf" : 'X\(//\)[^/]' \| \
-	 X"$mf" : 'X\(//\)$' \| \
-	 X"$mf" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$mf" |
+    sed -n 's,^am--depfiles:.*,X,p' "$am_mf" | grep X >/dev/null 2>&1 \
+      || continue
+    am_dirpart=`$as_dirname -- "$am_mf" ||
+$as_expr X"$am_mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$am_mf" : 'X\(//\)[^/]' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$am_mf" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -22562,53 +23192,48 @@ $as_echo X"$mf" |
 	    q
 	  }
 	  s/.*/./; q'`
-    else
-      continue
-    fi
-    # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running 'make'.
-    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
-    test -z "$DEPDIR" && continue
-    am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "$am__include" && continue
-    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # Find all dependency output files, they are included files with
-    # $(DEPDIR) in their names.  We invoke sed twice because it is the
-    # simplest approach to changing $(DEPDIR) to its actual value in the
-    # expansion.
-    for file in `sed -n "
-      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
-      # Make sure the directory exists.
-      test -f "$dirpart/$file" && continue
-      fdir=`$as_dirname -- "$file" ||
-$as_expr X"$file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$file" : 'X\(//\)[^/]' \| \
-	 X"$file" : 'X\(//\)$' \| \
-	 X"$file" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$file" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+    am_filepart=`$as_basename -- "$am_mf" ||
+$as_expr X/"$am_mf" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X/"$am_mf" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)[^/].*/{
+	  /^X\/\(\/\/\)$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
+	  /^X\/\(\/\).*/{
 	    s//\1/
 	    q
 	  }
 	  s/.*/./; q'`
-      as_dir=$dirpart/$fdir; as_fn_mkdir_p
-      # echo "creating $dirpart/$file"
-      echo '# dummy' > "$dirpart/$file"
-    done
+    { echo "$as_me:$LINENO: cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles" >&5
+   (cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); } || am_rc=$?
   done
+  if test $am_rc -ne 0; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Something went wrong bootstrapping makefile fragments
+    for automatic dependency tracking.  Try re-running configure with the
+    '--disable-dependency-tracking' option to at least be able to build
+    the package (albeit without support for automatic dependency tracking).
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+  { am_dirpart=; unset am_dirpart;}
+  { am_filepart=; unset am_filepart;}
+  { am_mf=; unset am_mf;}
+  { am_rc=; unset am_rc;}
+  rm -f conftest-deps.mk
 }
  ;;
     "libtool":C)
@@ -23666,6 +24291,28 @@ $as_echo "$as_me: WARNING:
 
         The advanced integrators require the Boost library (>=1.53)
             and a C++ compiler that supports the c++11 standard.
+
+     " >&2;}
+
+fi
+if test "x$have_2f1" == "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
+
+                         Building without 2F1
+
+                   *** Hypergeometric functions unavailable ***
+
+                      Astrobj::Jet requires ARBLIB or AEAE.
+
+     " >&5
+$as_echo "$as_me: WARNING:
+
+                         Building without 2F1
+
+                   *** Hypergeometric functions unavailable ***
+
+                      Astrobj::Jet requires ARBLIB or AEAE.
 
      " >&2;}
 
