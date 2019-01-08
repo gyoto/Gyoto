@@ -85,7 +85,7 @@ protected:
  double central_enthalpy_cgs_; ///< Central enthalpy per unit volume in erg/cm3
  double central_temperature_; ///< T<SUB>center</SUB> in K
  double beta_; ///< P<SUB>gas</SUB>/P<SUB>magn</SUB> (careful not standard)
- double magneticParticlesEquipartitionRatio_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>) (careful, very different from above)
+ double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>) (careful, very different from above)
  double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
  double aa2_; ///< aa_<SUP>2</SUP>
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
@@ -147,8 +147,8 @@ public:
  double beta() const; ///< Get PolishDoughnut::beta_
  void   beta(double beta);///< Set PolishDoughnut::beta_
 
- void magneticParticlesEquipartitionRatio(double rr);
- double magneticParticlesEquipartitionRatio()const;
+ void magnetizationParameter(double rr);
+ double magnetizationParameter()const;
 
  void   spectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
  size_t spectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_

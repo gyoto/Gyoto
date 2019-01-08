@@ -37,7 +37,7 @@
     <BaseNumberDensity unit="cm-3">5e7</BaseNumberDensity>
     <BaseTemperature>3e10</BaseTemperature>
     <TemperatureSlope>0.21</TemperatureSlope>
-    <MagneticParticlesEquipartitionRatio>0.005</MagneticParticlesEquipartitionRatio>
+    <MagnetizationParameter>0.01</MagnetizationParameter>
     <KappaIndex>5.5</KappaIndex> 
     <RMax>100.</RMax> in M units; photon discusses with Jet only below this
     value, so be sure that the interesting part of the Jet in your
