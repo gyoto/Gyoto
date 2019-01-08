@@ -47,8 +47,8 @@ GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
 GYOTO_PROPERTY_DOUBLE_UNIT(Jet, BaseNumberDensity, baseNumberDensity)
 GYOTO_PROPERTY_DOUBLE(Jet, BaseTemperature, baseTemperature)
 GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
-GYOTO_PROPERTY_DOUBLE(Jet, MagneticParticlesEquipartitionRatio,
-		      magneticParticlesEquipartitionRatio)
+GYOTO_PROPERTY_DOUBLE(Jet, MagnetizationParameter,
+		      magnetizationParameter)
 GYOTO_PROPERTY_DOUBLE(Jet, KappaIndex, kappaIndex)
 GYOTO_PROPERTY_END(Jet, Standard::properties)
 
@@ -110,10 +110,10 @@ void Jet::baseTemperature(double tt) {baseTemperature_=tt;}
 double Jet::baseTemperature()const{return baseTemperature_;}
 void Jet::temperatureSlope(double ss) {temperatureSlope_=ss;}
 double Jet::temperatureSlope()const{return temperatureSlope_;}
-void Jet::magneticParticlesEquipartitionRatio(double rr) {
-  magneticParticlesEquipartitionRatio_=rr;}
-double Jet::magneticParticlesEquipartitionRatio()const{
-  return magneticParticlesEquipartitionRatio_;}
+void Jet::magnetizationParameter(double rr) {
+  magnetizationParameter_=rr;}
+double Jet::magnetizationParameter()const{
+  return magnetizationParameter_;}
 void Jet::kappaIndex(double index) {
   spectrumKappaSynch_->kappaindex(index);
 }
@@ -128,7 +128,7 @@ Jet::Jet() :
   jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
   gammaJet_(1.), baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
   temperatureSlope_(1.),
-  magneticParticlesEquipartitionRatio_(1.)
+  magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
@@ -141,7 +141,7 @@ Jet::Jet(const Jet& o) :
   gammaJet_(o.gammaJet_), baseNumberDensity_cgs_(o.baseNumberDensity_cgs_),
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
-  magneticParticlesEquipartitionRatio_(o.magneticParticlesEquipartitionRatio_),
+  magnetizationParameter_(o.magnetizationParameter_),
   spectrumKappaSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
@@ -201,10 +201,10 @@ void Jet::radiativeQ(double Inu[], // output
 
   double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
 
-  double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
-  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
+  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
   //throwError("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB

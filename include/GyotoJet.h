@@ -13,8 +13,8 @@
  * its z-evolution is dedictated by mass conservation.
  * The electron temperature is baseTemperature_, its z-evolution is assumed
  * to follow a power law z^temperatureSlope_. The magnetic field
- * amplitude is defined by the magnetic-to-particles equipartition ratio,
- * magneticParticlesEquipartitionRatio_.
+ * amplitude is defined by the magnetization parameter,
+ * magnetizationParameter_.
  * 
  * The jet emits synchrotron radiation, assuming that the electrons
  * follow a kappa distribution, ie the smooth gluing of a thermal
@@ -72,8 +72,8 @@ namespace Gyoto{
  * its z-evolution is dedictated by mass conservation.
  * The electron temperature is baseTemperature_, its z-evolution is assumed
  * to follow a power law z^temperatureSlope_. The magnetic field
- * amplitude is defined by the magnetic-to-particles equipartition ratio,
- * magneticParticlesEquipartitionRatio_.
+ * amplitude is defined by the magnetization parameter,
+ * magnetizationParameter_.
  *
  * The jet emits synchrotron radiation, assuming that the electrons
  * follow a kappa distribution, ie the smooth gluing of a thermal
@@ -97,7 +97,7 @@ class Gyoto::Astrobj::Jet
   double baseNumberDensity_cgs_; ///< electron nb density at jet base (cgs)
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
-  double magneticParticlesEquipartitionRatio_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
+  double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
 
   // Constructors - Destructor
   // -------------------------
@@ -131,8 +131,8 @@ class Gyoto::Astrobj::Jet
   double baseTemperature()const;
   void temperatureSlope(double ss);
   double temperatureSlope()const;
-  void magneticParticlesEquipartitionRatio(double rr);
-  double magneticParticlesEquipartitionRatio()const;
+  void magnetizationParameter(double rr);
+  double magnetizationParameter()const;
   void kappaIndex(double index);
   double kappaIndex()const;
 

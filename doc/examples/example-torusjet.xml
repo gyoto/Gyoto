@@ -38,7 +38,7 @@
       <BaseNumberDensity unit="cm-3">5e7</BaseNumberDensity>
       <BaseTemperature>3e10</BaseTemperature>
       <TemperatureSlope>0.21</TemperatureSlope>
-      <MagneticParticlesEquipartitionRatio>0.005</MagneticParticlesEquipartitionRatio>
+      <MagnetizationParameter>0.01</MagnetizationParameter>
       <KappaIndex>5.5</KappaIndex> 
       <RMax>100.</RMax> in M units; photon discusses with Jet only below this
       value, so be sure that the interesting part of the Jet in your
@@ -58,7 +58,7 @@
       For a central number density of nc=1.2e9 cm-3,
       the central enthalpy is: hc = 2e6
       <CentralTemperature>7e9</CentralTemperature>
-      <MagneticParticlesEquipartitionRatio>0.001</MagneticParticlesEquipartitionRatio>
+      <MagnetizationParameter>0.002</MagnetizationParameter>
       <OpticallyThin/>
       <RMax>100.</RMax>
       <DeltaInObj>0.2</DeltaInObj>

@@ -56,13 +56,6 @@ GYOTO_PROPERTY_DOUBLE(UniformSphere,
  "Maximum value of step/radius of sphere for photons.")
 GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha)
 GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, "Sphere radius (geometrical units).")
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, NumberDensity, numberDensity)
-GYOTO_PROPERTY_DOUBLE(UniformSphere, Temperature, temperature)
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, TimeRef, timeRef)
-GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, TimeSigma, timeSigma)
-GYOTO_PROPERTY_DOUBLE(UniformSphere, MagneticParticlesEquipartitionRatio,
-		      magneticParticlesEquipartitionRatio)
-GYOTO_PROPERTY_DOUBLE(UniformSphere, KappaIndex, kappaIndex)
 GYOTO_PROPERTY_END(UniformSphere, Standard::properties)
 
 
@@ -74,15 +67,8 @@ UniformSphere::UniformSphere(string kin) :
   // radius_(0.),
   isotropic_(0),
   alpha_(1),
-  numberDensity_cgs_(1.),
-  temperature_(1.),
-  timeRef_M_(1.),
-  timeSigma_M_(1.),
-  magneticParticlesEquipartitionRatio_(1.),
-  kappaIndex_(1.),
   spectrum_(NULL),
   opacity_(NULL),
-  spectrumKappaSynch_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
@@ -95,7 +81,6 @@ UniformSphere::UniformSphere(string kin) :
 
   spectrum(new Spectrum::BlackBody()); 
   opacity(new Spectrum::PowerLaw(0., 1.));
-  spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   opticallyThin(false);
 }
 
@@ -105,13 +90,7 @@ UniformSphere::UniformSphere(string kin,
   //radius_(rad),
   isotropic_(0),
   alpha_(1),
-  numberDensity_cgs_(1.),
-  temperature_(1.),
-  timeRef_M_(1.),
-  timeSigma_M_(1.),
-  kappaIndex_(1.),
-  magneticParticlesEquipartitionRatio_(1.),
-  spectrum_(NULL), opacity_(NULL), spectrumKappaSynch_(NULL),
+  spectrum_(NULL), opacity_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
 {
@@ -120,7 +99,6 @@ UniformSphere::UniformSphere(string kin,
 
   spectrum(new Spectrum::BlackBody()); 
   opacity(new Spectrum::PowerLaw(0., 1.));
-  spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   opticallyThin(false);
   gg_=met;
 
@@ -131,13 +109,7 @@ UniformSphere::UniformSphere(const UniformSphere& orig) :
   radius_(orig.radius_),
   isotropic_(orig.isotropic_),
   alpha_(orig.alpha_),
-  numberDensity_cgs_(orig.numberDensity_cgs_),
-  temperature_(orig.temperature_),
-  timeRef_M_(orig.timeRef_M_),
-  timeSigma_M_(orig.timeSigma_M_),
-  kappaIndex_(orig.kappaIndex_),
-  magneticParticlesEquipartitionRatio_(orig.magneticParticlesEquipartitionRatio_),
-  spectrum_(NULL), opacity_(NULL), spectrumKappaSynch_(NULL),
+  spectrum_(NULL), opacity_(NULL),
   dltmor_(orig.dltmor_),
   dltmod_(orig.dltmod_)
 
@@ -147,7 +119,6 @@ UniformSphere::UniformSphere(const UniformSphere& orig) :
 # endif
   if (orig.spectrum_()) spectrum_=orig.spectrum_->clone();
   if (orig.opacity_()) opacity_=orig.opacity_->clone();
-  if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
 }
 
 UniformSphere::~UniformSphere() {
@@ -229,80 +200,10 @@ double UniformSphere::emission(double nu_em, double dsem, state_t const &, doubl
   return (*spectrum_)(nu_em);
 }
 
-void UniformSphere::radiativeQ(double Inu[], // output
-			       double Taunu[], // output
-			       double const nu_ems[], size_t nbnu, // input
-			       double dsem,
-			       state_t const &coord_ph,
-			       double const coord_obj[8]) const {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-  double tcur=coord_ph[0]; //*GMoc3/60.; // in min
-  double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
-  double temperature = modulation*temperature_,
-    number_density = modulation*numberDensity_cgs_;
-  cout << "spot tcur, time_ref, time_sigma, modulation, number_density=" << tcur << " " << timeRef_M_ << " " << timeSigma_M_ << " " << modulation << " " << numberDensity_cgs_ << " " << temperature_ << " " << number_density << " " << temperature << " " << kappaIndex_ << " " << magneticParticlesEquipartitionRatio_ << endl;
-  double thetae = GYOTO_BOLTZMANN_CGS*temperature
-    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-  
-  double hypergeom = Gyoto::hypergeom(kappaIndex_, thetae);
-  
-  double BB = sqrt(8.*M_PI*magneticParticlesEquipartitionRatio_
-		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-		   *number_density);
-  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
-    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
-  
-  // Defining jnus, anus
-  double jnu_synch_kappa[nbnu], anu_synch_kappa[nbnu];
-  
-  for (size_t ii=0; ii<nbnu; ++ii){
-    // Initializing to <0 value to create errors if not updated
-    // [ exp(-anu*ds) will explose ]
-    jnu_synch_kappa[ii]=-1.;
-    anu_synch_kappa[ii]=-1.;
-  }
-  
-  // THERMAL SYNCHRO
-  spectrumKappaSynch_->kappaindex(kappaIndex_);
-  spectrumKappaSynch_->numberdensityCGS(number_density);
-  spectrumKappaSynch_->angle_averaged(1);
-  spectrumKappaSynch_->angle_B_pem(0.); // avg so we don't care
-  spectrumKappaSynch_->cyclotron_freq(nu0);
-  spectrumKappaSynch_->thetae(thetae);
-  spectrumKappaSynch_->hypergeometric(hypergeom);
-
-  spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
-				  nu_ems,nbnu);
-
-  // RETURNING TOTAL INTENSITY AND TRANSMISSION
-  for (size_t ii=0; ii<nbnu; ++ii){
-    double jnu_tot = jnu_synch_kappa[ii],
-      anu_tot = anu_synch_kappa[ii];
-    //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
-    //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
-
-    // expm1 is a precise implementation of exp(x)-1
-    double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
-    Taunu[ii] = em1+1.;
-    Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
-      -jnu_tot / anu_tot * em1;
-    
-    if (Inu[ii]<0.)
-      throwError("In UniformSphere::radiativeQ: Inu<0");
-    if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
-      throwError("In UniformSphere::radiativeQ: Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
-      throwError("In UniformSphere::radiativeQ: Inu or Taunu is infinite");
-    
-  }
-
-}
-
-void UniformSphere::processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
-					 double const coord_obj_hit[8], double dt,
-					 Properties* data) const {
+void UniformSphere::processHitQuantities(Photon* ph,
+					 state_t const &coord_ph_hit,
+					 double const coord_obj_hit[8],
+					 double dt, Properties* data) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -404,147 +305,6 @@ void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
 
 double UniformSphere::alpha() const { return alpha_; }
 void UniformSphere::alpha(double a) { alpha_ = a; }
-
-double UniformSphere::numberDensity() const {
-  // Converts internal cgs central enthalpy to SI
-  double dens=numberDensity_cgs_;
-# ifdef HAVE_UDUNITS
-  dens = Units::Converter("cm-3", "m-3")(dens);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  return dens; }
-double UniformSphere::numberDensity(string const &unit) const
-{
-  double dens = numberDensity();
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    dens = Units::Converter("m-3", unit)(dens);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  return dens;
-}
-void UniformSphere::numberDensity(double dens) {
-# ifdef HAVE_UDUNITS
-  dens = Units::Converter("m-3", "cm-3")(dens);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  numberDensity_cgs_=dens;
-}
-void UniformSphere::numberDensity(double dens, string const &unit) {
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    dens = Units::Converter(unit, "m-3")(dens);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  numberDensity(dens);
-}
-
-double UniformSphere::temperature() const { return temperature_; }
-void UniformSphere::temperature(double tt) { temperature_ = tt; }
-
-double UniformSphere::timeRef() const {
-  // Converts internal M-unit time to SI
-  double tt=timeRef_M_;
-# ifdef HAVE_UDUNITS
-  tt = Units::ToSeconds(tt,"geometrical_time",gg_);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  return tt; }
-double UniformSphere::timeRef(string const &unit) const
-{
-  double tt = timeRef();
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    tt = Units::Converter("s", unit)(tt);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  return tt;
-}
-void UniformSphere::timeRef(double tt) {
-# ifdef HAVE_UDUNITS
-  tt = Units::ToGeometricalTime(tt, "s", gg_);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  timeRef_M_ = tt; }
-void UniformSphere::timeRef(double tt, string const &unit) {
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    tt = Units::ToSeconds(tt,unit,gg_);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  timeRef(tt);
-}
-
-double UniformSphere::timeSigma() const {
-  // Converts internal M-unit time to SI
-  double tt=timeSigma_M_;
-# ifdef HAVE_UDUNITS
-  tt = Units::ToSeconds(tt,"geometrical_time",gg_);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  return tt; }
-double UniformSphere::timeSigma(string const &unit) const
-{
-  double tt = timeSigma();
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    tt = Units::Converter("s", unit)(tt);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  return tt;
-}
-void UniformSphere::timeSigma(double tt) {
-# ifdef HAVE_UDUNITS
-  tt = Units::ToGeometricalTime(tt, "s", gg_);
-# else
-  GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		<< endl ;
-# endif
-  timeSigma_M_ = tt; }
-void UniformSphere::timeSigma(double tt, string const &unit) {
-  if (unit != "") {
-# ifdef HAVE_UDUNITS
-    tt = Units::ToSeconds(tt,unit,gg_);
-# else
-    GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
-		  << endl ;
-# endif
-  }
-  timeSigma(tt);
-}
-
-void UniformSphere::magneticParticlesEquipartitionRatio(double rr) {
-  magneticParticlesEquipartitionRatio_=rr;}
-double UniformSphere::magneticParticlesEquipartitionRatio()const{
-  return magneticParticlesEquipartitionRatio_;}
-
-double UniformSphere::kappaIndex() const { return kappaIndex_; }
-void UniformSphere::kappaIndex(double ind) { kappaIndex_ = ind; }
 
 bool UniformSphere::isotropic() const { return isotropic_; }
 void UniformSphere::isotropic(bool a) { isotropic_ = a; }

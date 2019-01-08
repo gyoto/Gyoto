@@ -56,6 +56,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrTypeMapClassDerived(Astrobj, EquatorialHotSpot)
 GyotoSmPtrTypeMapClassDerived(Astrobj, XillverReflection)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Jet)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Blob)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -126,6 +127,7 @@ GyotoSmPtrClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrClassDerived(Astrobj, EquatorialHotSpot)
 GyotoSmPtrClassDerived(Astrobj, XillverReflection)
 GyotoSmPtrClassDerived(Astrobj, Jet)
+GyotoSmPtrClassDerived(Astrobj, Blob)
 
 
 GyotoSmPtrClassDerived(Metric, KerrBL)
