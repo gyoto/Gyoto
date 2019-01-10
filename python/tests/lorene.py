@@ -3,11 +3,8 @@ import unittest
 import gyoto.core
 import gyoto.std
 
-gyoto.core.requirePlugin("lorene", 1)
-
-if gyoto.core.havePlugin("lorene"):
+try:
     import gyoto.lorene
-
     class TestNeutronStar(unittest.TestCase):
 
         def test_NeutronStar(self):
@@ -52,8 +49,8 @@ if gyoto.core.havePlugin("lorene"):
             self.assertIsNotNone(ao.metric())
             ao.metric(None)
             self.assertIsNone(ao.metric())
-            
-else:
+
+except ImportError:            
     import warnings
     warnings.warn('Could not load plug-in "lorene"')
 
