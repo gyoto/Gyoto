@@ -60,7 +60,8 @@ if HAVE_UDUNITS
 CHECK_RESULTS += \
         example-fixed-star-KS.fits \
         example-polish-doughnut.fits \
-	example-polish-doughnut-hayward-wormhole.fits
+        example-polish-doughnut-hayward-wormhole.fits \
+        example-polish-doughnut-RZ.fits
 endif
 if HAVE_2F1
 CHECK_RESULTS += example-jet.fits

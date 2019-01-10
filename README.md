@@ -23,9 +23,9 @@ well as in the AUTHORS file in the package.
 
 ## Copyright information
 
-Gyoto is Copyright 2011-2015 Thibaut Paumard, Frédéric Vincent and
-Odele Straub (To ease reading on non-UTF8 systems, French accents are
-omitted in file headers).
+Gyoto is Copyright 2011-2019 Thibaut Paumard, Frédéric Vincent, Odele
+Straub and Frédéric Lamy (To ease reading on non-UTF8 systems, French
+accents are omitted in file headers).
 
 Gyoto is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -66,4 +66,4 @@ implementing them as a Gyoto plug-in. This, of course, requires
 knowledge of the C++ language. The [user
 manual](http://gyoto.obspm.fr/GyotoManual.pdf) contains detailed
 instructions.
-                        -- Thibaut Paumard, Thu Dec 08 2016.
+                        -- Thibaut Paumard, Thu, 10 Jan 2019.

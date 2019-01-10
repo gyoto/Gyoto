@@ -1,4 +1,4 @@
-next unreleased ABI 7:0:0
+1.3.0 2019/01/10 ABI 7:0:0
 
    * Changed API: for consistency, replace CutOffIneV by CutOff (in
      Hz) in Spectrum::PowerLaw. New API supports unit, the user may
@@ -11,7 +11,62 @@ next unreleased ABI 7:0:0
    * Changed API: Factory::metric(), astrobj() etc. don't throw an error
      anymore when then XML file does not contain the relevant entity but
      return a NULL smartpointer instead
+   * Support mpirun -np option for all MPI implementations (bypassing
+     MPI_Comm_spawn()).
    * New Metric: Hayward
+   * New Astrobjs: Blob, Jet, NeutronStar, NeutronStarAnalyticEmission,
+     NeutronStarModelAtmosphere, XillverReflection
+   * New Spectra: KappaDistributionSynchrotronSpectrum,
+     PowerLawSynchrotronSpectrum, ThermalSynchrotronSpectrum
+   * Python: combined the three Python modules in a package, renaming
+     them as:
+     + gyoto        -> gyoto.core
+     + gyoto_std    -> gyoto.std
+     + gyoto_lorene -> gyoto.lorene
+     The old names are still accessible but are deprecated and may be
+     removed in a future release.
+   * Python: provide namespaces, e.g. gyoto.astrobj to hold Astrobjs
+     from gyoto.core, gyoto.std and gyoto.lorene, to mimic C++
+     organization and as a convenience for users. Same goes for
+     gyoto.metric, gyoto.spectrum and gyoto.spectrometer.
+   * Python: gyoto.std and gyoto.lorene now take care of loading the
+     necessary Gyoto plug-ins.
+   * New optional dependency on ARBLIB or AEAE. See INSTAL.Gyoto.md.
+   * Improved configure script:
+     + It is now possible to specify the python interpreter in
+       --with-python:
+         ./configure --with-python=python2
+         ./configure --with-python=/usr/bin/python3.7
+     + Deprecate --with-udunits-(inc|lib) in favour of
+       --with-udunits-(headers|libs).
+     + In --with-*-(headers|lib), accept both colon-sparated paths and
+       list of flags.
+     See ./configure --help.
+   * Support KerrKS in gyotoy.
+   * Important code cleaning in PatternDisk
+     + PatternDisk: implement radial interpolation for axisym grid;
+       implement case when phi is out of phi-grid bounds; correction
+       of bugs with rin, rout, rmax; allows grid with nphi=1 (axisym)
+     + PatternDiskBB: remove risco and all calls to Kerr; can support
+       any metric now
+   * RezzollaZhidenko: implement circularVelocity
+   * PageThorne supports ChernSimons metric
+   * Major update in PolishDoughnut
+     + remove all code relative to outdated 2012 model
+     + remove call to getRms in angmomrinner
+     + call to external spectra (synchro ther, synchro PL, brems), so
+       remove all spectrum computation inside PolishDoughnut
+   * ThermalBremsstrahlungSpectrum: use a different model dpending on
+     temperature
+   * BlackBodySpectrum: add color correction
+   * Update fov orientation in Screen
+     + Rename Alpha0 and Delta0 to Dangle1 and Dangle2 to be useable
+       also in SphericalAngles
+     + Add Screen::azimuthal_fov_, the fov along the azimuthal
+       direction in the rest frame of the observer in SphericalAngles
+       (assumed to be 2*pi in the past).
+   * NumericalMetricLorene and NeutronStarModelAtm: adding normal
+     vector to surface
 
 1.2.0 2016/12/12 ABI 6:0:0
    * New functionality: the plug-in from which each subcontractor is
