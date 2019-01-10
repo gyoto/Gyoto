@@ -29,7 +29,6 @@
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "Jet">
-    <RadiativeQ/>
     <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
     <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
     <JetBaseHeight>2.</JetBaseHeight> in M units

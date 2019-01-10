@@ -50,8 +50,6 @@ GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax,
    "Maximum distance from the centre of mass (geometrical units).")
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift,
     "Whether to take redshift into account.")
-GYOTO_PROPERTY_BOOL(Generic, RadiativeQ, NoRadiativeQ, radiativeQ,
-    "Whether to use new treatement for radiative transfer (in progress).")
 GYOTO_PROPERTY_BOOL(Generic, ShowShadow, NoShowShadow, showshadow,
     "Whether to highlight the shadow region on the image.")
 GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
@@ -61,7 +59,7 @@ GYOTO_PROPERTY_END(Generic, Object::properties)
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -71,7 +69,7 @@ Generic::Generic(string kin) :
 Generic::Generic() :
   SmartPointee(), Object("Default"),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -81,7 +79,7 @@ Generic::Generic() :
 Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
   gg_(NULL), rmax_(radmax), flag_radtransf_(0),
-  radiativeq_(0), noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -92,7 +90,7 @@ Generic::Generic(const Generic& orig) :
   SmartPointee(orig), Object(orig),
   gg_(NULL),
   rmax_(orig.rmax_),
-  flag_radtransf_(orig.flag_radtransf_), radiativeq_(orig.radiativeq_),
+  flag_radtransf_(orig.flag_radtransf_),
   noredshift_(orig.noredshift_), shadow_(orig.shadow_)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -140,9 +138,6 @@ void Generic::setParameters(FactoryMessenger *fmp) {
 
 void Generic::opticallyThin(bool flag) {flag_radtransf_=flag;}
 bool Generic::opticallyThin() const {return flag_radtransf_;}
-
-void Generic::radiativeQ(bool flag) {radiativeq_=flag;}
-bool Generic::radiativeQ() const {return radiativeq_;}
 
 void Generic::showshadow(bool flag) {shadow_=flag;}
 bool Generic::showshadow() const {return shadow_;}
@@ -300,12 +295,8 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       }
       GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
       GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
-      if (radiativeq_) {
-	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem,
-		   coord_ph_hit, coord_obj_hit);
-      }else{
-	emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
-      }
+      radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem,
+		 coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
 #       ifdef HAVE_UDUNITS
@@ -314,11 +305,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #       endif
 	data->spectrum[ii*data->offset] += inc;
 
-	if (!radiativeq_){
-	  ph -> transmit(ii,transmission(nuem[ii],dsem,coord_ph_hit));
-	}else{
-	  ph -> transmit(ii,Taunu[ii]);
-	}
+	ph -> transmit(ii,Taunu[ii]);
 
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
@@ -381,8 +368,8 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
+  emission(Inu, nuem, nbnu, dsem, cph, co);
   for (size_t i=0; i< nbnu; ++i) {
-    Inu[i]=emission(nuem[i], dsem, cph, co);
     Taunu[i]=transmission(nuem[i], dsem, cph);
   }
 }

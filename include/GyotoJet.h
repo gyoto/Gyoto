@@ -140,9 +140,33 @@ class Gyoto::Astrobj::Jet
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic>);
     
-  virtual double emission(double nu_em, double dsem,
-			  double c_ph[8],double c_obj[8]=NULL) const;
   virtual double operator()(double const coord[4]) ;
+
+  /**
+   *\brief Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double emission(double nu_em, double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL)
+    const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],

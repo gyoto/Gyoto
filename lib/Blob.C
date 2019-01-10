@@ -93,6 +93,36 @@ Blob::~Blob() {
 string Blob::className() const { return  string("Blob"); }
 string Blob::className_l() const { return  string("blob"); }
 
+double Blob::transmission(double nuem, double dsem, double coord[8]) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord, coord);
+  return Taunu;
+}
+
+double Blob::emission(double nuem, double dsem, double *cph, double *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
+  return Inu;
+}
+
+void Blob::emission(double * Inu, double * nuem , size_t nbnu,
+		    double dsem, double *cph, double *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double * Taunu = new double[nbnu];
+  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+  delete [] Taunu;
+}
+
 void Blob::radiativeQ(double Inu[], // output
 			       double Taunu[], // output
 			       double nu_ems[], size_t nbnu, // input

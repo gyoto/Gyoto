@@ -33,7 +33,6 @@
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "PolishDoughnut">
-    <RadiativeQ/>
 
     Compute Bremsstrahlung spectrum?
     <!--<Bremsstrahlung/>-->
