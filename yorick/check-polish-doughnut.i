@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2014 Thibaut Paumard
+    Copyright 2012-2014, 2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -59,7 +59,7 @@ if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   write, format="%s", "Creating PolishDoughnut from file... ";
   pd = gyoto_Scenery(GYOTO_EXAMPLES_DIR+"example-polish-doughnut.xml").astrobj();
   write, format="%s\n", "done.";
-  
+
   write, format="%s\n", "Printing object:";
   write, format="%s\n", "-----------------------------";
   pd;
@@ -68,27 +68,34 @@ if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   write, format="%s", "Reading PolishDoughnut scenery... ";
   sc = gyoto_Scenery(GYOTO_EXAMPLES_DIR+"example-polish-doughnut.xml") ;
   write, format="%s\n", "done.";
-  
+
   write, format="%s", "Setting spectro... ";
   noop, sc.screen.spectro(
                   gyoto_SpectroUniform(kind="freqlog",
-                                       nsamples=20,
+                                       nsamples=2,
                                        band=[10, 14],
                                        unit="Hz")
                   );
   noop, sc.astrobj.opticallythin(1);
   write, format="%s\n", "done.";
-  
+
   write, format="%s", "Ray-tracing scenery... ";
   img = sc(,,"Spectrum")(,,avg);
   write, format="%s\n", "done.";
-  
+
   write, format="%s", "Displaying image... ";
   fma; pli, img;
   write, format="%s\n", "done.";
-  
+
   pause, 1000;
-  
+
+  noop, sc.screen.spectro(
+                  gyoto_SpectroUniform(kind="freqlog",
+                                       nsamples=10,
+                                       band=[10, 14],
+                                       unit="Hz")
+                  );
+
   write, format="%s", "Integrating one spectrum with radiative transfer...\n";
   s1 = sc(10, 15, "Spectrum[J.m-2.s-1.sr-1.Hz-1]");
   write, format="%s\n", "done.";
@@ -96,9 +103,9 @@ if (gyoto.haveUDUNITS() && gyoto.haveXerces()) {
   widths = sc.screen.spectro.widths();
   fma;
   logxy, 1, 1;
-  plg, (s1*widths), midpoints;
+  plg, (s1*widths), midpoints, color="red";
   xytitles, "Frequency [Hz]";
-  
+
   write, format="%s", "Integrating one bin spectrum with radiative transfer...\n";
   s2 = sc(10, 15, "BinSpectrum[J.m-2.s-1.sr-1]");
   write, format="%s\n", "done.";

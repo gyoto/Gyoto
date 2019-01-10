@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2012-2018 Frederic Vincent, Odele Straub, Thibaut Paumard
+  Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub, Thibaut Paumard
   This file is part of Gyoto.
   Gyoto is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -578,12 +578,45 @@ void PolishDoughnut::integrateEmission
   delete [] ii;
 }
 
+double PolishDoughnut::transmission(double nuem, double dsem, double coord[8]) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord, coord);
+  return Taunu;
+}
+
+double PolishDoughnut::emission(double nuem, double dsem, double *cph, double *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
+  return Inu;
+}
+
+void PolishDoughnut::emission(double * Inu, double * nuem , size_t nbnu,
+			 double dsem, double *cph, double *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double * Taunu = new double[nbnu];
+  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+  delete [] Taunu;
+}
+
 void PolishDoughnut::radiativeQ(double Inu[], // output
 				double Taunu[], // output
 				double nu_ems[], size_t nbnu, // input
 				double dsem,
 				double coord_ph[8],
 				double coord_obj[8]) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   // This function computes the emission and transmission
   // for the Komissarov model, with both thermal and
   // non-thermal electron populations, with proper emission

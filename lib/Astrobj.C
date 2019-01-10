@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2019 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -171,7 +171,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
   //  cout << "freqObs="<<freqObs<<endl;
   double ggredm1 = -gg_->ScalarProd(coord_ph_hit,coord_obj_hit+4,
-				    coord_ph_hit+4);// / 1.;  
+				    coord_ph_hit+4);// / 1.;
                                        //this is nu_em/nu_obs
                                        // for nuobs=1. Hz
   if (noredshift_) ggredm1=1.;
@@ -181,7 +181,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 
   if (data) {
 #if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "data requested. " 
+  GYOTO_DEBUG << "data requested. "
 	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
 	      << ", ggred=" << ggred
 	      << endl;
@@ -209,7 +209,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #endif
     if (data->intensity) {
       /*
-	Comment on intensity integration: 
+	Comment on intensity integration:
 	Eq of radiative transfer used:
 	dI_nu_em/ds_em = j_nu_em (assumes no absorption for
 	simplicity) where : nu_em is measured by the emitter, ds_em
@@ -256,7 +256,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	  << (ph -> getTransmission(size_t(-1))) << ")"
 	  << endl;
 #     endif
-      
+
     }
     if (data->binspectrum) {
       size_t nbounds = spr-> getNBoundaries();
@@ -264,6 +264,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       size_t const * const chaninds = spr -> getChannelIndices();
       double * I  = new double[nbnuobs];
       double * boundaries = new double[nbounds];
+
       for (size_t ii=0; ii<nbounds; ++ii)
 	boundaries[ii]=channels[ii]*ggredm1;
       integrateEmission(I, boundaries, chaninds, nbnuobs,
@@ -278,10 +279,13 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	       << "nuobs[" << ii << "]="<< channels[ii]
-	       << ", nuem=" << boundaries[ii] 
+	       << ", nuem=" << boundaries[ii]
 	       << ", binspectrum[" << ii+data->offset << "]="
 	       << data->binspectrum[ii*data->offset]<< endl;
 #       endif
+
+	if (!data->spectrum) // else it will be done in spectrum
+	  ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
       }
       delete [] I;
       delete [] boundaries;
@@ -297,7 +301,7 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
       GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
       GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
       if (radiativeq_) {
-	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem, 
+	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem,
 		   coord_ph_hit, coord_obj_hit);
       }else{
 	emission(Inu, nuem, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
@@ -309,18 +313,18 @@ void Generic::processHitQuantities(Photon* ph, double* coord_ph_hit,
 	  inc = (*data -> spectrum_converter_)(inc);
 #       endif
 	data->spectrum[ii*data->offset] += inc;
-	
+
 	if (!radiativeq_){
 	  ph -> transmit(ii,transmission(nuem[ii],dsem,coord_ph_hit));
 	}else{
 	  ph -> transmit(ii,Taunu[ii]);
 	}
-	 
+
 #       if GYOTO_DEBUG_ENABLED
 	GYOTO_DEBUG
 	  << "DEBUG: Generic::processHitQuantities(): "
 	  << "nuobs[" << ii << "]="<< nuobs[ii]
-	  << ", nuem=" << nuem[ii] 
+	  << ", nuem=" << nuem[ii]
 	  << ", dsem=" << dsem
 	  << ", Inu * GM/c2="
 	  << Inu[ii]
@@ -370,7 +374,7 @@ void Generic::emission(double * Inu, double * nuem , size_t nbnu,
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
 }
 
-void Generic::radiativeQ(double * Inu, double * Taunu, 
+void Generic::radiativeQ(double * Inu, double * Taunu,
 			 double * nuem , size_t nbnu,
 			 double dsem, double *cph, double *co) const
 {
@@ -409,7 +413,7 @@ double Generic::integrateEmission (double nu1, double nu2, double dsem,
 # endif
 
   do {
-    Iprev = Icur; 
+    Iprev = Icur;
     dnux2 *= 0.5;
     for (nu = nu1 + 0.5*dnux2; nu < nu2; nu += dnux2) {
       Icur += emission(nu, dsem, coord_ph, coord_obj) * dnux2;
@@ -496,9 +500,9 @@ void Astrobj::Properties::init(size_t nbnuobs) {
   if (distance)   *distance   = DBL_MAX;
   if (first_dmin){*first_dmin = DBL_MAX; first_dmin_found=0;}
   if (redshift)   *redshift   = 0.;
-  if (spectrum) for (size_t ii=0; ii<nbnuobs; ++ii) spectrum[ii*offset]=0.; 
+  if (spectrum) for (size_t ii=0; ii<nbnuobs; ++ii) spectrum[ii*offset]=0.;
   if (binspectrum) for (size_t ii=0; ii<nbnuobs; ++ii)
-		     binspectrum[ii*offset]=0.; 
+		     binspectrum[ii*offset]=0.;
   if (impactcoords) for (size_t ii=0; ii<16; ++ii) impactcoords[ii]=DBL_MAX;
   if (user1)      *user1=0.;
   if (user2)      *user2=0.;

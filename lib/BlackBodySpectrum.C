@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2012, 2014, 2017, 2019 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -57,6 +57,6 @@ void Spectrum::BlackBody::colorCorrection(double c) {
 
 double Spectrum::BlackBody::operator()(double nu) const {
   return  colorcorm4_*cst_*nu*nu*nu
-    /(exp(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)-1.);
+    /(expm1(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_));
 }
 

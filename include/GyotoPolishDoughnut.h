@@ -1,9 +1,9 @@
 /**
  * \file GyotoPolishDoughnut.h
  * \brief A magnetized toroidal accretion structure
- * 
+ *
  *  Latest reference: Vincent, F. H.; Yan, W.; Straub, O.;
- *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus 
+ *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus
  *  for modeling Sagittarius A* millimeter images and spectra</STRONG>,
  *  A&amp;A 574:A48.
  *
@@ -15,7 +15,8 @@
  */
 
 /*
-    Copyright (c) 2012-2018 Frederic Vincent, Odele Straub, Thibaut Paumard
+    Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub,
+                                       Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -33,8 +34,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoPolishDoughnut_H_ 
-#define __GyotoPolishDoughnut_H_ 
+#ifndef __GyotoPolishDoughnut_H_
+#define __GyotoPolishDoughnut_H_
 
 namespace Gyoto{
   namespace Astrobj { class PolishDoughnut; }
@@ -52,7 +53,7 @@ namespace Gyoto{
  * \brief A toroidal accretion structure
  *
  *  Latest reference: Vincent, F. H.; Yan, W.; Straub, O.;
- *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus 
+ *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus
  *  for modeling Sagittarius A* millimeter images and spectra</STRONG>,
  *  A&amp;A 574:A48.
  *
@@ -60,7 +61,7 @@ namespace Gyoto{
  *  Gourgoulhon, E.; &amp; Paumard, T. 2012, <STRONG>Modelling the
  *  black hole silhouette in Sagittarius A* with ion tori</STRONG>,
  *  A&amp;A 543:83.
- * 
+ *
  */
 class Gyoto::Astrobj::PolishDoughnut
 : public Astrobj::Standard,
@@ -68,7 +69,7 @@ class Gyoto::Astrobj::PolishDoughnut
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PolishDoughnut>;
 
- // Data : 
+ // Data :
  // -----
 protected:
  SmartPointer<Spectrum::ThermalBremsstrahlung> spectrumBrems_;
@@ -213,7 +214,33 @@ protected:
 				 size_t* chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
 
-  virtual void radiativeQ(double Inu[], double Taunu[], 
+
+  /**
+   *\brief Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double emission(double nu_em, double dsem, double coord_ph[8],
+			  double coord_obj[8]=NULL)
+    const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, double coord_ph[8],
+			double coord_obj[8]=NULL) const ;
+
+  virtual void radiativeQ(double Inu[], double Taunu[],
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const ;
@@ -267,7 +294,7 @@ protected:
  friend std::ostream& operator<<(std::ostream& , const PolishDoughnut& ) ;
 
  public:
- 
+
 
 };
 
