@@ -1,8 +1,13 @@
 /**
  * \file GyotoPolishDoughnut.h
- * \brief A toroïdal accretion structure
+ * \brief A magnetized toroidal accretion structure
  *
- *  Reference: Straub, O.; Vincent, F. H.; Abramowicz, M. A.;
+ *  Latest reference: Vincent, F. H.; Yan, W.; Straub, O.;
+ *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus
+ *  for modeling Sagittarius A* millimeter images and spectra</STRONG>,
+ *  A&amp;A 574:A48.
+ *
+ *  First reference: Straub, O.; Vincent, F. H.; Abramowicz, M. A.;
  *  Gourgoulhon, E.; &amp; Paumard, T. 2012, <STRONG>Modelling the
  *  black hole silhouette in Sagittarius A* with ion tori</STRONG>,
  *  A&amp;A 543:83.
@@ -10,7 +15,8 @@
  */
 
 /*
-    Copyright (c) 2012-2016 Frederic Vincent, Odele Straub, Thibaut Paumard
+    Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub,
+                                       Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -28,8 +34,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GyotoPolishDoughnut_H_ 
-#define __GyotoPolishDoughnut_H_ 
+#ifndef __GyotoPolishDoughnut_H_
+#define __GyotoPolishDoughnut_H_
 
 namespace Gyoto{
   namespace Astrobj { class PolishDoughnut; }
@@ -39,16 +45,23 @@ namespace Gyoto{
 #include <GyotoStandardAstrobj.h>
 #include <GyotoFunctors.h>
 #include <GyotoHooks.h>
-#include <GyotoBlackBodySpectrum.h>
+#include <GyotoThermalBremsstrahlungSpectrum.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
+#include <GyotoPowerLawSynchrotronSpectrum.h>
 
 /**
- * \brief A toroïdal accretion structure
+ * \brief A toroidal accretion structure
+ *
+ *  Latest reference: Vincent, F. H.; Yan, W.; Straub, O.;
+ *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus
+ *  for modeling Sagittarius A* millimeter images and spectra</STRONG>,
+ *  A&amp;A 574:A48.
  *
  *  Reference: Straub, O.; Vincent, F. H.; Abramowicz, M. A.;
  *  Gourgoulhon, E.; &amp; Paumard, T. 2012, <STRONG>Modelling the
  *  black hole silhouette in Sagittarius A* with ion tori</STRONG>,
  *  A&amp;A 543:83.
- * 
+ *
  */
 class Gyoto::Astrobj::PolishDoughnut
 : public Astrobj::Standard,
@@ -56,10 +69,12 @@ class Gyoto::Astrobj::PolishDoughnut
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::PolishDoughnut>;
 
- // Data : 
+ // Data :
  // -----
 protected:
- SmartPointer<Spectrum::BlackBody> spectrumBB_;
+ SmartPointer<Spectrum::ThermalBremsstrahlung> spectrumBrems_;
+ SmartPointer<Spectrum::ThermalSynchrotron> spectrumSynch_;
+ SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_;
  double l0_; ///< Angular momentum. Tied to PolishDoughnut::lambda_.
  double lambda_; ///< Adimentionned angular momentum
  double W_surface_; ///< Potential surface value. Tied to PolishDoughnut::lambda_.
@@ -68,20 +83,15 @@ protected:
  double r_centre_; ///< Central radius in geometrical units. Tied to PolishDoughnut::lambda_.
  double r_torusouter_ ; ///< Torus outer coordinate radius. Tied to PolishDoughnut::lambda_.
  double DeltaWm1_; ///< 1./(W_centre_ - W_surface_);
- double central_density_; ///< Central density in kg/L (same as g cm^-3)
- /*
-   WARNING! so far (jan. 2014) central_density_ is density_central
-   in standard Polish doughnut model, but it is
-   density_central*c2+pressure_central in Komissarov model
-  */
- double centraltemp_over_virial_; ///< T<SUB>center</SUB>/T<SUB>virial</SUB>
- double central_temperature_; /// T<SUB>center</SUB> in K
- double beta_; ///< P<SUB>magn</SUB>/P<SUB>gas</SUB>
+ double central_enthalpy_cgs_; ///< Central enthalpy per unit volume in erg/cm3
+ double central_temperature_; ///< T<SUB>center</SUB> in K
+ double beta_; ///< P<SUB>gas</SUB>/P<SUB>magn</SUB> (careful not standard)
+ double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>) (careful, very different from above)
  double aa_; ///< PolishDoughnut::gg_ spin, cached when setting PolishDoughnut::lambda_
  double aa2_; ///< aa_<SUP>2</SUP>
  size_t spectral_oversampling_;///< Oversampling used in integrateEmission()
- bool komissarov_; ///< 1 if Komissarov model is integrated
  bool angle_averaged_; ///< 1 if Komissarov model should be angle averaged
+ bool bremsstrahlung_; ///< 1 if Komissarov model should compute Brems radiation
 
  /// fraction of thermal energy in non-thermal electrons
  /**
@@ -89,8 +99,7 @@ protected:
   * the (trivial) non-thermal computations are skipped. Ther is thus
   * non need for an additional "nonthermal_" flag.
   */
- double deltaPL_;
- double expoPL_; ///< exponent of the non-thermal powerlaw = -expoPL_
+ double deltaPL_; ///< Fraction of electrons emitting powerlaw synchro
 
  bool adaf_; ///< true to switch to an ADAF model rather tha Polish doughnut
  double ADAFtemperature_; ///< ADAF central temperature
@@ -128,13 +137,10 @@ public:
  double lambda() const; ///< Get PolishDoughnut::lambda_
  void   lambda(double lambda); ///< Set PolishDoughnut::lambda_
 
- double centralDensity() const; ///< Get PolishDoughnut::central_density_
- double centralDensity(std::string const &unit) const; ///< Get PolishDoughnut::central_density_ in specified unit
- void   centralDensity(double density); ///< Set PolishDoughnut::central_density_
- void   centralDensity(double density, std::string const &unit); ///< Set PolishDoughnut::central_density_ in specified unit
-
- double centralTempOverVirial() const; ///< Get PolishDoughnut::centraltemp_over_virial_
- void   centralTempOverVirial(double val); ///< Set PolishDoughnut::centraltemp_over_virial_
+ double centralEnthalpyPerUnitVolume() const; ///< Get PolishDoughnut::central_enthalpy_cgs_
+ double centralEnthalpyPerUnitVolume(std::string const &unit) const; ///< Get PolishDoughnut::central_enthalpy_cgs_ in specified unit
+ void   centralEnthalpyPerUnitVolume(double density); ///< Set PolishDoughnut::central_enthalpy_cgs_
+ void   centralEnthalpyPerUnitVolume(double density, std::string const &unit); ///< Set PolishDoughnut::central_enthalpy_cgs_ in specified unit
 
  double centralTemp() const; ///< Get PolishDoughnut::central_temperature_
  void   centralTemp(double val); ///< Set PolishDoughnut::central_temperature_
@@ -142,20 +148,18 @@ public:
  double beta() const; ///< Get PolishDoughnut::beta_
  void   beta(double beta);///< Set PolishDoughnut::beta_
 
+ void magnetizationParameter(double rr);
+ double magnetizationParameter()const;
+
  void   spectralOversampling(size_t); ///< Set PolishDoughnut::spectral_oversampling_
  size_t spectralOversampling() const ; ///< Get PolishDoughnut::spectral_oversampling_
 
  bool changeCusp() const; ///< Get PolishDoughnut::komissarov_
  void changeCusp(bool t); ///< Set PolishDoughnut::komissarov_
- bool komissarov() const; ///< Get PolishDoughnut::komissarov_
- void komissarov(bool komis); ///< Set PolishDoughnut::komissarov_
+ bool bremsstrahlung() const; ///< Get PolishDoughnut::bremsstrahlung_
+ void bremsstrahlung(bool brems); ///< Set PolishDoughnut::bremsstrahlung_
  bool angleAveraged() const; ///< Get PolishDoughnut::angle_averaged_
-
- /**
-  * if komis, also sets komissarov_ to true
-  */
  void angleAveraged(bool komis); ///< Set PolishDoughnut::angle_averaged_
-
  void nonThermalDeltaExpo(std::vector<double> const &v);
  std::vector<double> nonThermalDeltaExpo() const;
  void angmomrinner(std::vector<double> const &v);
@@ -168,7 +172,6 @@ public:
 		   std::string const & name,
 		   std::string const & content,
 		   std::string const & unit);
-
 
  // Read only members, depend on lambda
  double getWsurface() const; ///< Get PolishDoughnut::W_surface_
@@ -211,69 +214,38 @@ protected:
 				 size_t* chaninds, size_t nbnu,
 				 double dsem, double *cph, double *co) const;
 
+
+  /**
+   *\brief Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double transmission(double nuem, double dsem, double coord[8]) const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
   virtual double emission(double nu_em, double dsem, double coord_ph[8],
-			  double coord_obj[8]) const;
+			  double coord_obj[8]=NULL)
+    const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
   virtual void emission(double Inu[], double nu_em[], size_t nbnu,
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ;
 
-  virtual void radiativeQ(double Inu[], double Taunu[], 
+  virtual void radiativeQ(double Inu[], double Taunu[],
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const ;
 
-  double emissionBrems(double nu_em, double nu_crit, 
-		       double numax, double T_electron,
-		       double n_e, double n_j,
-		       double amplification,
-		       double Cbrems,
-		       int comptonorder) const;
-  ///< Bremsstrahlung proxy for emission()
-  double emissionSynch(double nu_em, double nu_crit,
-		       double numax, double nu_0,
-		       double T_electron,
-		       double amplification,
-		       double Csynch, 
-		       double alpha1, double alpha2,
-		       double alpha3, double preff,
-		       int comptonorder) const;
-  double emissionSynchro_komissarov_direction(double Theta_elec, 
-					      double number_density,
-					      double nuem,
-					      double nuc, 
-					      double theta
-					      )  const;
-  double emissionSynchro_komissarov_averaged(double Theta_elec, 
-					     double number_density,
-					     double nuem,
-					     double nuc 
-					     ) const;
-  double emissionSynchro_komissarov_averaged_integ(double Theta_elec, 
-						   double number_density,
-						   double nuem,
-						   double nuc 
-						   ) const;
-  double emissionSynchro_komissarov_PL_direction(
-						 double number_density_PL,
-						 double nuem, double nuc,
-						 double theta_mag) const;
-  double emissionSynchro_komissarov_PL_averaged(
-						 double number_density_PL,
-						 double nuem, double nuc
-						) const;
-  double absorptionSynchro_komissarov_PL_direction(
-						   double number_density_PL,
-						   double nuem, double nuc,
-						   double theta_mag) const ;
-  double absorptionSynchro_komissarov_PL_averaged(
-						  double number_density_PL,
-						  double nuem, double nuc
-						  ) const;
-  ///< Synchrotron proxy for emission()
-  double transmission(double nuem, double dsem, double coord_ph[8]) const ;
-  double BBapprox(double nuem, double Te) const; ///< Approximated Black-Body function
-  static double funcxM(double alpha1, double alpha2, double alpha3, double xM);
-  ///< Mahadevan 96 fit function
+
  // PURELY INTERNAL TO ASTROBJ
  // --------------------------
  private:
@@ -299,35 +271,6 @@ protected:
   };
   friend class intersection_t;
 
- /**
-  * \class Gyoto::Astrobj::PolishDoughnut::transcendental_t
-  * \brief double transcendental(double) Functor class
-  *
-  * Implement former double transcendental(double, double*) function
-  * as a Gyoto::Functor::Double_Double_const subclass to access
-  * generic root-finding methods.
-  *
-  * This class is as a local variable in PolishDoughnut::emission()
-  */
-  class transcendental_t : public Gyoto::Functor::Double_Double_const {
-  public:
-   /**
-    * \brief Parameter array
-    *
-    * \code
-    *   double       rr = par[0] ;
-    *   double      n_e = par[1] ;
-    *   double       BB = par[2] ;
-    *   double       Te = par[3] ;
-    *   double   alpha1 = par[4] ;
-    *   double   alpha2 = par[5] ;
-    *   double   alpha3 = par[6] ;
-    * \endcode
-    */
-    double const * par;
-    const PolishDoughnut * papa;
-    virtual double operator() (double) const;
-  };
  intersection_t intersection; ///< double intersection(double) Functor
 
 /**
@@ -343,13 +286,6 @@ protected:
     virtual double operator() (double) const;
   };
 
- public:
- static double bessi0(double xx);///< Modified Bessel function I<SUB>0</SUB>
- static double bessi1(double xx);///< Modified Bessel function I<SUB>1</SUB>
- static double bessk0(double xx);///< Modified Bessel function K<SUB>0</SUB>
- static double bessk1(double xx);///< Modified Bessel function K<SUB>1</SUB>
- static double bessk(int nn, double xx);///< Modified Bessel function
-
  // Outputs
  // -------
  public:
@@ -358,7 +294,7 @@ protected:
  friend std::ostream& operator<<(std::ostream& , const PolishDoughnut& ) ;
 
  public:
- 
+
 
 };
 

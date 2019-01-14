@@ -659,25 +659,27 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
   stringstream ss;
+  GYOTO_DEBUG_EXPR(dates[0]);
+  GYOTO_DEBUG_EXPR(x0_[imin_]);
+  GYOTO_DEBUG_EXPR(x0_[imax_]);
 
 
   for (di=0; di<n_dates; ++di) {
     date = dates[di];
     if (date == x0_[imax_]) {
+      double pos2[8]={0.,0.,x2_[imax_],x3_[imax_],0.,0.,x2dot_[imax_],0.};
+      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL)
+	checkPhiTheta(pos2);
       if (x1)       x1[di] =    x1_[imax_];
-      if (x2)       x2[di] =    x2_[imax_];
-      if (x3)       x3[di] =    x3_[imax_];
+      if (x2)       x2[di] =   pos2[2];
+      if (x3)       x3[di] =   pos2[3];
       if (x0dot) x0dot[di] = x0dot_[imax_];
       if (x1dot) x1dot[di] = x1dot_[imax_];
-      if (x2dot) x2dot[di] = x2dot_[imax_];
+      if (x2dot) x2dot[di] =   pos2[6];
       if (x3dot) x3dot[di] = x3dot_[imax_];
-      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
-	double pos2[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
-	checkPhiTheta(pos2);
-	x2[di]=pos2[2];x3[di]=pos2[3];x2dot[di]=pos2[6];
-      }
       continue;
     } else if (date > x0_[imax_]) {
+      GYOTO_DEBUG << "Extending worldline towards future" << endl;
       curl=imax_;    // current imax_
       xFill(date);   // integrate, that changes imax_
       curh=imax_;    // new imax_
@@ -686,6 +688,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 	throwError(ss.str());
       }
     } else if (date < x0_[imin_]) {
+      GYOTO_DEBUG << "Extending worldline towards past" << endl;
       curh=x_size_-imin_; // trick if line is expanded during xFill()
       xFill(date);   // integrate, that changes imin_
       curh=x_size_-curh;
@@ -709,18 +712,16 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     }
 
     if (date == x0_[curl]) {
+      double pos2[8]={0.,0.,x2_[curl],x3_[curl],0.,0.,x2dot_[curl],0.};
+      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL)
+	checkPhiTheta(pos2);
       if (x1)       x1[di] =    x1_[curl];
-      if (x2)       x2[di] =    x2_[curl];
-      if (x3)       x3[di] =    x3_[curl];
+      if (x2)       x2[di] =   pos2[2];
+      if (x3)       x3[di] =   pos2[3];
       if (x0dot) x0dot[di] = x0dot_[curl];
       if (x1dot) x1dot[di] = x1dot_[curl];
-      if (x2dot) x2dot[di] = x2dot_[curl];
-      if (x3dot) x3dot[di] = x3dot_[curl];      
-      if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL){
-	double pos2[8]={0.,0.,x2[di],x3[di],0.,0.,x2dot[di],0.};
-	checkPhiTheta(pos2);
-	x2[di]=pos2[2];x3[di]=pos2[3];x2dot[di]=pos2[6];
-      }
+      if (x2dot) x2dot[di] =   pos2[6];
+      if (x3dot) x3dot[di] = x3dot_[curl];
       continue;
     }
 

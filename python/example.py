@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Example file for gyoto
 #
-# Copyright 2014-2016 Thibaut Paumard
+# Copyright 2014-2018 Thibaut Paumard
 #
 # This file is part of Gyoto.
 #
@@ -19,29 +19,24 @@
 # You should have received a copy of the GNU General Public License
 # along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 
-# Before loading the gyoto_std extension:
-#  - gyoto must be imported;
-#  - the stdplug Gyoto plug-in must be loaded. This normally happens
-#    automatically, unless the user has set her environment otherwise.
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
-import gyoto
-gyoto.requirePlugin("stdplug")
-import gyoto_std
+import gyoto.core
+import gyoto.std
 
 # Simple stuff
 
-scr=gyoto.Screen()
-gg=gyoto_std.KerrBL()
+scr=gyoto.core.Screen()
+gg=gyoto.std.KerrBL()
 scr.metric(gg)
 pos=numpy.zeros(4, float)
 scr.getObserverPos(pos)
 
 # Load Scenery
 
-a=gyoto.Factory("../doc/examples/example-moving-star.xml")
-sc=a.getScenery()
+a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
+sc=a.scenery()
 sc.nThreads(8)
 sc.astrobj().opticallyThin(False)
 
@@ -53,7 +48,7 @@ scr.coordToSky((0., 5., numpy.pi/2, 0), dest)
     
 # Trace and plot NULL geodesic:
 
-ph=gyoto.Photon()
+ph=gyoto.core.Photon()
 ph.setInitialCondition(sc.metric(), sc.astrobj(), sc.screen(), 0., 0.)
 ph.hit()
 n=ph.get_nelements()
@@ -73,9 +68,9 @@ plt.plot(t, r)
 plt.show()
 
 # Trace and plot timelike geodesic
-# We need to cast the object to a gyoto_std.Star:
+# We need to cast the object to a gyoto.std.Star:
 
-wl=gyoto_std.Star(sc.astrobj())
+wl=gyoto.std.Star(sc.astrobj())
 wl.xFill(1000)
 
 n=wl.get_nelements()
@@ -95,19 +90,19 @@ res=sc.screen().resolution()
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
-aop=gyoto.AstrobjProperties()
+aop=gyoto.core.AstrobjProperties()
 
 # Here we will use the low-level AstrobjProperties facilities. This is
 # one of a few Gyoto functionalities where NumPy arrays are not
 # directly supported. We use lower-level C-like arrays through the
-# gyoto.array_double and gyoto.array_unsigned_long classes. Beware
+# gyoto.core.array_double and gyoto.core.array_unsigned_long classes. Beware
 # that this type does not provide any safeguards, it is quite easy to
 # get it to SEGFAULT. As we develop Gyoto, we try to remove the need
-# for the gyoto.array_* classes in favor of NumPy arrays. Code that
+# for the gyoto.core.array_* classes in favor of NumPy arrays. Code that
 # uses this... ``feature'' therefore may break in future releases.
 #
 # To (indirectly) use NumPy arrays with a functionality that requires
-# gyoto.array_* arguments, create the arrays using numpy (see above:
+# gyoto.core.array_* arguments, create the arrays using numpy (see above:
 # `intensity', `time' and `distance' arrays) , then cast them using
 # the fromnumpyN static methods, where the digit N indicates the
 # dimensionality of the NumPy array. The underlying storage belongs to
@@ -115,13 +110,13 @@ aop=gyoto.AstrobjProperties()
 # array_double() variable (for anyting else that destroying it) past
 # the destruction of the corresponding NumPy variable.
 
-aop.intensity=gyoto.array_double.fromnumpy2(intensity)
-aop.time=gyoto.array_double.fromnumpy2(time)
-aop.distance=gyoto.array_double.fromnumpy2(distance)
+aop.intensity=gyoto.core.array_double.fromnumpy2(intensity)
+aop.time=gyoto.core.array_double.fromnumpy2(time)
+aop.distance=gyoto.core.array_double.fromnumpy2(distance)
 
-ii=gyoto.Range(1, res, 1)
-jj=gyoto.Range(1, res, 1)
-grid=gyoto.Grid(ii, jj, "\rj = ")
+ii=gyoto.core.Range(1, res, 1)
+jj=gyoto.core.Range(1, res, 1)
+grid=gyoto.core.Grid(ii, jj, "\rj = ")
 
 sc.rayTrace(grid, aop)
 
@@ -134,18 +129,18 @@ plt.show()
 
 # Another Scenery, with spectrum
 
-sc=gyoto.Factory("../doc/examples/example-polish-doughnut.xml").getScenery()
+sc=gyoto.core.Factory("../doc/examples/example-polish-doughnut.xml").scenery()
 sc.screen().resolution(32)
 res=sc.screen().resolution()
 ns=sc.screen().spectrometer().nSamples()
 spectrum=numpy.zeros((ns, res, res), dtype=float)
 
-ii=gyoto.Range(1, res, 1)
-jj=gyoto.Range(1, res, 1)
-grid=gyoto.Grid(ii, jj, "\rj = ")
+ii=gyoto.core.Range(1, res, 1)
+jj=gyoto.core.Range(1, res, 1)
+grid=gyoto.core.Grid(ii, jj, "\rj = ")
 
-aop=gyoto.AstrobjProperties()
-aop.spectrum=gyoto.array_double.fromnumpy3(spectrum)
+aop=gyoto.core.AstrobjProperties()
+aop.spectrum=gyoto.core.array_double.fromnumpy3(spectrum)
 aop.offset=res*res
 
 sc.rayTrace(grid, aop)
@@ -155,13 +150,13 @@ plt.show()
 
 # Another Scenery, with impact coords, created from within Python
 
-met=gyoto.Metric("KerrBL")
+met=gyoto.core.Metric("KerrBL")
 met.mass(4e6, "sunmass")
-ao=gyoto.Astrobj("PageThorneDisk")
+ao=gyoto.core.Astrobj("PageThorneDisk")
 ao.metric(met)
 ao.opticallyThin(False)
 ao.rMax(100)
-screen=gyoto.Screen()
+screen=gyoto.core.Screen()
 screen.distance(8, "kpc")
 screen.time(8, "kpc")
 screen.resolution(64)
@@ -169,7 +164,7 @@ screen.inclination(numpy.pi/4)
 screen.PALN(numpy.pi)
 screen.time(8, "kpc")
 screen.fieldOfView(100, "µas")
-sc=gyoto.Scenery()
+sc=gyoto.core.Scenery()
 sc.metric(met)
 sc.astrobj(ao)
 sc.screen(screen)
@@ -179,14 +174,14 @@ sc.nThreads(8)
 
 res=sc.screen().resolution()
 
-ii=gyoto.Range(1, res, 1)
-jj=gyoto.Range(1, res, 1)
-grid=gyoto.Grid(ii, jj, "\rj = ")
+ii=gyoto.core.Range(1, res, 1)
+jj=gyoto.core.Range(1, res, 1)
+grid=gyoto.core.Grid(ii, jj, "\rj = ")
 
 ipct=numpy.zeros((res, res, 16), dtype=float)
 
-aop=gyoto.AstrobjProperties()
-aop.impactcoords=gyoto.array_double.fromnumpy3(ipct)
+aop=gyoto.core.AstrobjProperties()
+aop.impactcoords=gyoto.core.array_double.fromnumpy3(ipct)
 aop.offset=res*res
 
 sc.rayTrace(grid, aop)
@@ -199,14 +194,14 @@ plt.show()
 N=10
 
 buf=numpy.linspace(screen.fieldOfView()*-0.5, screen.fieldOfView()*0.5, N)
-a=gyoto.Angles(buf)
-d=gyoto.RepeatAngle(screen.fieldOfView()*-0.5, N)
-bucket=gyoto.Bucket(a, d)
+a=gyoto.core.Angles(buf)
+d=gyoto.core.RepeatAngle(screen.fieldOfView()*-0.5, N)
+bucket=gyoto.core.Bucket(a, d)
 
 ipct=numpy.zeros((N, 16), dtype=float)
 
-aop=gyoto.AstrobjProperties()
-aop.impactcoords=gyoto.array_double.fromnumpy2(ipct)
+aop=gyoto.core.AstrobjProperties()
+aop.impactcoords=gyoto.core.array_double.fromnumpy2(ipct)
 aop.offset=N
 
 sc.rayTrace(bucket, aop)
@@ -218,21 +213,21 @@ plt.show()
 # range, Indices can hold arbitrary indices.
 
 ind=numpy.arange(1, res+1, dtype=numpy.uintp) # on 64bit arch...
-ii=gyoto.Indices(ind)
+ii=gyoto.core.Indices(ind)
 
 # Or:
-# ind=gyoto.array_size_t(res)
+# ind=gyoto.core.array_size_t(res)
 # for i in range(0, res):
 #   ind[i]=i+1
-# ii=gyoto.Indices(ind, res)
+# ii=gyoto.core.Indices(ind, res)
 
-jj=gyoto.Range(1, res, 1)
-bucket=gyoto.Bucket(ii, jj)
+jj=gyoto.core.Range(1, res, 1)
+bucket=gyoto.core.Bucket(ii, jj)
 
 ipct=numpy.zeros((res, 16), dtype=float)
 
-aop=gyoto.AstrobjProperties()
-aop.impactcoords=gyoto.array_double.fromnumpy2(ipct)
+aop=gyoto.core.AstrobjProperties()
+aop.impactcoords=gyoto.core.array_double.fromnumpy2(ipct)
 aop.offset=res
 
 sc.rayTrace(bucket, aop)
@@ -243,46 +238,42 @@ plt.show()
 
 # Any derived class can be instantiated from its name, as soon as the
 # corresponding plug-in has been loaded into Gyoto. The standard
-# plug-in is normally loaded automatically, but this can also be
-# forced with gyoto.requirePlugin():
-gyoto.requirePlugin('stdplug')
-tt=gyoto.Astrobj('Torus')
-kerr=gyoto.Metric('KerrBL')
+# plug-in is normally loaded automatically (and is always loaded when
+# gyoto.std is imported), but this can also be forced with
+# gyoto.core.requirePlugin():
+gyoto.core.requirePlugin('stdplug')
+tt=gyoto.core.Astrobj('Torus')
+kerr=gyoto.core.Metric('KerrBL')
 
 # Most properties that can be set in an XML file can also be accessed
 # from Python using the Property/Value mechanism:
 # Low-level access:
 p=tt.property("SmallRadius")
-p.type==gyoto.Property.double_t
-tt.set(p, gyoto.Value(0.2))
+p.type==gyoto.core.Property.double_t
+tt.set(p, gyoto.core.Value(0.2))
 tt.get(p) == 0.2
 # Higher-level:
 kerr.set("Spin", 0.95)
 kerr.get("Spin") == 0.95
 
 # However, we also have Python extensions around the standard Gyoto
-# plug-ins. Beware that the plug-in must be loaded into Gyoto before
-# importing the corresponding Python extension:
-gyoto.requirePlugin('stdplug')
-import gyoto_std
+# plug-ins.
+import gyoto.std
 # And if the lorene plug-in has been compiled:
-# gyoto.requirePlugin('lorene')
-# import gyoto_lorene
+# import gyoto.lorene
 
 # It then becomes possible to access the methods specific to derived
 # classes. They can be instantiated directly from the gyoto_* extension:
-tr2=gyoto_std.Torus()
+tr2=gyoto.std.Torus()
 # and we can cast a generic pointer (from the gyoto extension) to a
 # derived class:
-tr=gyoto_std.Torus(tt)
+tr=gyoto.std.Torus(tt)
 tt.get("SmallRadius") == tr.smallRadius()
 
 # Another example: using a complex (i.e. compound) Astrobj:
-cplx=gyoto_std.ComplexAstrobj()
+cplx=gyoto.std.ComplexAstrobj()
 cplx.append(tr)
 cplx.append(sc.astrobj())
 sc.astrobj(cplx)
-
-cplx.rMax(100)
 
 print("All done, exiting")

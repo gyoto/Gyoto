@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <Metric kind = "RezzollaZhidenko">
+    <Mass unit="sunmass">4.31e6</Mass>
+    <Epsilon>0.01</Epsilon> Horizon parameter rH=2/(1+eps)
+    <AParam>0.01 0.01</AParam> RZ14 a-parameters [a0,a1,a2,a3];
+                             are zero if not provided
+    <BParam>0.01 0.01</BParam> same for RZ14 b-parameters
+  </Metric>
+
+  Compare with Schwarzschild metric:
+  <!-- <Metric kind = "KerrBL"> -->
+  <!--   <Mass unit="sunmass">4.31e6</Mass> -->
+  <!--   <Spin>0.</Spin> -->
+  <!-- </Metric> -->
+
+  <Screen>
+    <Distance unit="kpc"> 8.33 </Distance>
+    Time of start of ray tracing
+    <Time unit="yr"> 100e3 </Time>
+    <FieldOfView unit="µas"> 300 </FieldOfView>
+    This inclination is 180° minus the standard disk
+    inclination (angle between spin vector and line of sight)
+    <Inclination unit="°"> 95 </Inclination>
+    <PALN> 3.1415  </PALN> 
+    <Argument> -1.5708 </Argument>
+    <Resolution>30</Resolution>
+    Compute a spectrum with 50 frequencies from 10^10 Hz to 10^18 Hz
+    <Spectrometer kind="freqlog" nsamples="5">10. 18.</Spectrometer>
+  </Screen>
+
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "PolishDoughnut">
+
+    Compute Bremsstrahlung spectrum?
+    <!--<Bremsstrahlung/>-->
+    
+    Compute non-thermal synchrotron spectrum
+    with a fraction delta of non-thermal electrons
+    and a power-law exponent?
+    <!--<NonThermalDeltaExpo>0.01 3.</NonThermalDeltaExpo>-->
+
+    The default is to compute only the thermal synchrotron spectrum.
+    
+    Compute synchrotron averaged over angle between
+    Bfield and direciton of emission?
+    <AngleAveraged/>
+    
+    Constant angular momentum -u_phi / u_t, and inner radius
+    <AngMomRinner> 4. 6.2 </AngMomRinner>
+
+    Typical SgrA* enthalpy hc = 9000 cgs; ne [cm^{-3}] ~ 700 * hc [cgs]
+    <CentralEnthalpyPerUnitVolume unit="erg/cm3"> 
+      9000
+    </CentralEnthalpyPerUnitVolume>
+
+    Typical SgrA* central temperature: 5e10K
+    <CentralTemperature>5.3e10</CentralTemperature> 
+    
+    beta = p_gas / p_mag
+    <Beta>10</Beta>
+    
+    <OpticallyThin/>
+    
+    RMax: caution, make sure the torus is smaller than that!
+    <RMax>100.</RMax>
+    
+  </Astrobj>
+
+  Computation stops for time less than following value
+  to prevent infinite integration
+  <MinimumTime> -1e10 </MinimumTime>
+  
+  Do we want to use multi-threading?
+  <NThreads> 1 </NThreads>
+
+</Scenery>
+

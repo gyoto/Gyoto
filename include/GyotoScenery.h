@@ -235,24 +235,23 @@ class Gyoto::Scenery
    * different number of workers are already running, terminate them
    * first. If nbchildren is 0, just terminate running workers.
    *
-   * It is not recommended to mix usage of MPI_COMM_WORLD processes
-   * and spawned processes in the same process. In other words:
-   *   - use only nbchlidren=-1 when the manager and workers have been
-   *     started with
-   *     \code
-   *     mpirun -np 1 manager : -np N gyoto-mpi-worker.version
-   *     \endcode
-   *   - use only nbchildren > 0 when only the manager has been
-   *     started with
-   *     \code
-   *     mpirun -np 1 manager
-   *     \endcode
+   * The approach of Gyoto to MPI is that a manager process (of rank 0
+   * within a given MPI communicator) will distribute ray-tracing
+   * tasks accross worker processes. Several scenarii are supported,
+   * including spawning instances of the gyoto-mpi-worker.version
+   * executable, where "version" matches the version component in the
+   * library name (typically a number, possibly followed by
+   * "unreleased").
+   *
+   * In all cases, the manager process needs to call this function,
+   * either with -1 if the worker processes are already running or
+   * &gt;1 if workers need to be spawned.
    *
    * \param[in] nbchildren number of processes to spawn.
    */
   void mpiSpawn(int nbchildren);
 
-  /// Terminate gyoto-mpi-worker processes
+  /// Terminate worker processes
   void mpiTerminate ();
 
   /// Send a copy of self to the mpi workers
@@ -268,6 +267,13 @@ class Gyoto::Scenery
 
   /// Send a tag to workers
   void mpiTask(mpi_tag &tag);
+
+  /// Become an MPI worker
+  /**
+   * Worker processes need to call this function after having called
+   * MPI_Init().
+   */
+  static void mpiWorker();
 
   // Constructors - Destructor
   // -------------------------

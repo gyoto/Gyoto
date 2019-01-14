@@ -1,5 +1,5 @@
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2014, 2018 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -86,7 +86,8 @@ std::vector<double> RezzollaZhidenko::bparam() const {
 
 Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko()
   : Generic(GYOTO_COORDKIND_SPHERICAL, "RezzollaZhidenko"),
-    epsilon_(0.), rms_(0.), rmb_(0.)
+    epsilon_(0.), rms_(0.), rmb_(0.),
+    aparam_(NULL), bparam_(NULL)
 {
   GYOTO_DEBUG << endl;
   aparam_ = new double[GYOTO_NBPARAM_MAX];
@@ -97,8 +98,22 @@ Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko()
   }
 }
 
+Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko(const RezzollaZhidenko & orig)
+  : Generic(GYOTO_COORDKIND_SPHERICAL, "RezzollaZhidenko"),
+    epsilon_(orig.epsilon_), rms_(orig.rms_), rmb_(orig.rms_), aparam_(NULL), bparam_(NULL)
+{
+  GYOTO_DEBUG << endl;
+  aparam_ = new double[GYOTO_NBPARAM_MAX];
+  bparam_ = new double[GYOTO_NBPARAM_MAX];
+  for (int ii=0;ii<GYOTO_NBPARAM_MAX;ii++){
+    aparam_[ii]=orig.aparam_[ii];
+    bparam_[ii]=orig.bparam_[ii];
+  }
+}
+
 // default copy constructor should be fine 
-RezzollaZhidenko * RezzollaZhidenko::clone() const { return new RezzollaZhidenko(*this); }
+RezzollaZhidenko * RezzollaZhidenko::clone() const {
+  return new RezzollaZhidenko(*this); }
 
 Gyoto::Metric::RezzollaZhidenko::~RezzollaZhidenko()
 {
@@ -120,7 +135,7 @@ double RezzollaZhidenko::getSpecificAngularMomentum(double rr) const {
   return sqrt(rr*rr*rr*Nprime(rr)/N3);
 }
 
-double RezzollaZhidenko::getPotential(double pos[4], double l_cst) const {
+double RezzollaZhidenko::getPotential(double const pos[4], double l_cst) const {
   double gtt = gmunu(pos,0,0);
   double gpp = gmunu(pos,3,3);
   if (gpp==0.) throwError("In RezzollaZhidenko: bad gpp");
@@ -131,14 +146,6 @@ double RezzollaZhidenko::getPotential(double pos[4], double l_cst) const {
 }
 
 double RezzollaZhidenko::N2(const double rr) const{
-  /*cout << "eps= " << epsilon_ << endl;
-  cout << "aa= " ;
-  for (int ii=0;ii<GYOTO_NBPARAM_MAX;ii++) cout << aparam_[ii] << " ";
-  cout << endl;
-  cout << "bb= " ;
-  for (int ii=0;ii<GYOTO_NBPARAM_MAX;ii++) cout << bparam_[ii] << " ";
-  cout << endl;*/
-
   /*
     RZ metric defines r0 as the event horizon location.
     It is related to epsilon through: epsilon = 2M/r0 - 1,
@@ -150,7 +157,7 @@ double RezzollaZhidenko::N2(const double rr) const{
     onemx2 = onemx*onemx, onemx3 = onemx2*onemx;
   double Atilde = aparam_[1]/(1.+aparam_[2]*xx/(1.+aparam_[3]*xx));
   double N2 = xx*(1.-epsilon_*onemx+(aparam_[0]-epsilon_)*onemx2
-		  *Atilde*onemx3);
+		  +Atilde*onemx3);
 
   return N2;
 }
@@ -167,23 +174,36 @@ double RezzollaZhidenko::B2(const double rr) const{
 }
 
 double RezzollaZhidenko::Nprime(const double rr) const{
+  /*
+    From RZ definition of N:
+    dN/dr = dN/dx * (r0/r^2)
+    dN/dx = 1/(2*N) * (A + x*dA/dx)
+    dA/dx = eps - 2*(a0-eps)*(1-x) - 3*Atilde*(1-x)^2 + (1-x)^3*{dAtilde/dx}
+    dAtilde/dx = -a1*a2 / (1 + (a2+a3)*x)^2 [assuming only a0 ... a3 != 0]
+   */
   double r0 = 2./(1.+epsilon_);
   double r2 = rr*rr;
   double xx = 1. - r0/rr, onemx = 1. - xx,
     onemx2 = onemx*onemx, onemx3 = onemx2*onemx;
   double Atilde = aparam_[1]/(1.+aparam_[2]*xx/(1.+aparam_[3]*xx));
   double AA = 1.-epsilon_*onemx+(aparam_[0]-epsilon_)*onemx2
-    *Atilde*onemx3;
-  double Atilde_der = -aparam_[1]*aparam_[2]/((1.+(aparam_[2]+aparam_[3])*xx)*(1.+(aparam_[2]+aparam_[3])*xx));
+    +Atilde*onemx3;
+  double Atilde_der = -aparam_[1]*aparam_[2]/
+    ((1.+(aparam_[2]+aparam_[3])*xx)*(1.+(aparam_[2]+aparam_[3])*xx));
   double A_der = epsilon_ - 2.*(aparam_[0]-epsilon_)*onemx-3.*Atilde*onemx2
     +Atilde_der*onemx3;
   double NN = sqrt(N2(rr));
+  double N_der = 1./(2.*NN)*(AA + xx*A_der);
   
-  return 1./(r2*NN)*(AA+xx*A_der);
+  return r0/r2 * N_der;
   
 }
 
 double RezzollaZhidenko::Bprime(const double rr) const{
+  /*
+    dB/dr = dB/dx * (r0/r^2)
+    dB/dx = -b0 - 2*(1-x)*Btilde + (1-x)^2*{dBtilde/dx}
+   */
   double r0 = 2./(1.+epsilon_);
   double r2 = rr*rr;
   double xx = 1. - r0/rr, onemx = 1. - xx,
@@ -191,8 +211,8 @@ double RezzollaZhidenko::Bprime(const double rr) const{
   double Btilde = bparam_[1]/(1.+bparam_[2]*xx/(1.+bparam_[3]*xx));
   double Btilde_der = -bparam_[1]*bparam_[2]/((1.+(bparam_[2]+bparam_[3])*xx)*(1.+(bparam_[2]+bparam_[3])*xx));
   double B_der = -bparam_[0] - 2.*Btilde*onemx + Btilde_der*onemx2;
-  
-  return 1./r2*B_der;
+
+  return r0/r2 * B_der;
   
 }
 
@@ -277,81 +297,22 @@ int RezzollaZhidenko::isStopCondition(double const * const coord) const {
   return coord[1] < rsink ;
 }
 
-int RezzollaZhidenko::diff(const double* coordGen, const double* cst, 
-		      double* res) const{
-  // OUTDATED TO BE CHECKED
-  double rsink=2.+GYOTO_DRHOR;
-  double r = coordGen[1] ; 
-
-  if (r < 0.) {
-    cerr << "r= " << r << endl;
-    throwError( "RezzollaZhidenko.C : r negative!!!!! the horizon"
-		" may have been crossed..." );
-  }
-
-  if (r < rsink) {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "Too close to horizon in RezzollaZhidenko::diff at r= " 
-		<< r << endl;
-#   endif
-    return 1;
-  }
-
-  double r2 = r*r ; 
-  double r3 = r2*r ;  
-
-  double ff       = 1.+r2*1.*(1.-sqrt(1.+4./(1.*r3)));
-  if (ff==0.) throwError("In RezzollaZhidenko::gmunu: ff is zero");
-  double fprime   = 6./(r2*sqrt(1.+4./(1.*r3)))
-    +2.*r*1.*(1.-sqrt(1.+4./(1.*r3))),
-    fprimef2      = fprime/(ff*ff);
-
-  double pr=coordGen[5];
-  
-  double EE=cst[1];
-  double E2=EE*EE;
-  double LL=cst[2];
-  double L2=LL*LL;
-
-  /*
-    ---> Spherically symmetric EOM
-  */
-  res[0] = EE/ff; // tdot
-  res[1] = ff*pr; // rdot
-  res[2] = 0.;    // thdot (planar motion)
-  res[3] = LL/r2; // phidot
-  
-  res[4] = 0.; // ptdot: pt = cst = -E
-  res[5] = 0.5*fprime*pr*pr-L2/r3+0.5*E2*fprimef2;// prdot
-  res[6]=  0.; // pthetadot
-  res[7] = 0.; // pphidot: pphi = cst = L
-  
-  return 0;
-}
-
 void RezzollaZhidenko::circularVelocity(double const coor[4], double vel[4],
-			      double dir) const {
-  if (keplerian_) {
-    // If keplerian_ is true, let the generic implementation return
-    // the Keplerian velocity instead of the true circular velocity
-    Generic::circularVelocity(coor, vel, dir);
-    return;
-  }
+					double dir) const {
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<<"coor=["<<coor[0]<<", "<<coor[1]<<", "<<coor[2]<<", "<<coor[3]
 	     <<"], dir="<<dir<<endl;
 # endif
-  double sinth = sin(coor[2]);
-  double coord[4] = {coor[0], coor[1]*sinth, M_PI*0.5, coor[3]};
+  double sinth = sin(coor[2]), rr = coor[1]*sinth;// rr projected on equat plane
+  double coord[4] = {coor[0],rr,M_PI*0.5,coor[3]};
 
   vel[1] = vel[2] = 0.;
-  double rr=coord[1], r2=rr*rr, r3=r2*rr;
+  double Np = Nprime(rr), NN=sqrt(N2(rr));
+  vel[3] = sqrt(Np*NN/rr); // this is Omega=dphi/dt
 
-  vel[3] = 1.; // to change
-  
-  vel[0] = SysPrimeToTdot(coor, vel+1);
-  vel[3] *= vel[0];
+  vel[0] = SysPrimeToTdot(coord, vel+1); // dt/dtau
+  vel[3] *= vel[0]; // dphi/dtau
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_ARRAY(vel,4);
 # endif

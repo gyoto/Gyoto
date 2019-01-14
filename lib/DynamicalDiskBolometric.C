@@ -72,6 +72,7 @@ double DynamicalDiskBolometric::emission(double nu_em, double dsem,
 					 double coord_obj[8]) const{
   throwError("In DynamicalDiskBolometric::emission: "
 	     "not implemented");
+  return 0.;
 }
 
 double DynamicalDiskBolometric::bolometricEmission(double dsem,

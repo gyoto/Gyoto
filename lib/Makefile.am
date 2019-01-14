@@ -1,7 +1,7 @@
-ACLOCAL_AMFLAGS = -I m4 
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS)
+ACLOCAL_AMFLAGS = -I m4
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS) $(ARBLIB_CFLAGS) $(AEAE_CFLAGS)
 AM_LDFLAGS  = $(XERCES_LIBS) -export-dynamic $(PTHREAD_LIBS) \
-	      $(UDUNITS_LIBS) $(CFITSIO_LIBS)
+	      $(UDUNITS_LIBS) $(CFITSIO_LIBS) $(ARBLIB_LIBS)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PKGLIBDIR=\"${pkglibdir}\"
 if HAVE_LOCALPKGLIBDIR
 AM_CXXFLAGS += -DGYOTO_LOCALPKGLIBDIR=\"${localpkglibdir}\"
@@ -33,21 +33,23 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C RezzollaZhidenko.C \
+	ChernSimons.C RezzollaZhidenko.C Hayward.C \
 	Star.C StarTrace.C FixedStar.C InflateStar.C \
 	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
+	ThermalSynchrotronSpectrum.C \
+	PowerLawSynchrotronSpectrum.C KappaDistributionSynchrotronSpectrum.C \
 	ComplexAstrobj.C UniformSphere.C \
 	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
-	DeformedTorus.C EquatorialHotSpot.C \
+	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C\
 	StdPlug.C
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
-	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
@@ -58,7 +60,9 @@ libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-versi
 if HAVE_LORENE
 sover_LTLIBRARIES += libgyoto-lorene.la
 endif
-libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C LorenePlug.C
+libgyoto_lorene_la_SOURCES = RotStar3_1.C NumericalMetricLorene.C \
+	NeutronStar.C NeutronStarAnalyticEmission.C \
+	NeutronStarModelAtmosphere.C LorenePlug.C
 libgyoto_lorene_la_LDFLAGS = -module -export-dynamic $(LORENELDFLAGS) $(AM_LDFLAGS) -avoid-version
 libgyoto_lorene_la_CPPFLAGS = $(AM_CPPFLAGS) $(LORENECPPFLAGS) -DGYOTO_PLUGIN=lorene
 

@@ -1,20 +1,20 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "SEPTEMBER 2016" Science "User Manuals"
+.TH GYOTO 1 "JANUARY 2019" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
 gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug\fR]
       [\fB\-\-no\-sigfpe\fR]
-      [\fB\-\-help\fR[=\fIclass\fR]] [\fB\-\-list\fR]
+      [\fB\-\-help\fR[=\fIclass\fR]] [\fB\-\-version\fR] [\fB\-\-list\fR]
       [\fB\-\-ispec\fR=\fIi0\fR:\fIi1\fR:\fIdi\fR] [\fB\-\-jspec\fR=\fIj0\fR:\fIj1\fR:\fIdj\fR]
       ([\fB\-\-imin\fR=\fIi0\fR] [\fB\-\-imax\fR=\fIi1\fR] [\fB\-\-di\fR=\fIdi\fR])
       ([\fB\-\-jmin\fR=\fIj0\fR] [\fB\-\-jmax\fR=\fIj1\fR] [\fB\-\-dj\fR=\fIdj\fR])
       [\fB\-\-time\fR=\fItobs\fR] [\fB\-\-tmin\fR=\fItmin\fR]
       [\fB\-\-fov\fR=\fIangle\fR] [\fB\-\-resolution\fR=\fInpix\fR] [\fB\-\-distance\fR=\fIdist\fR]
       [\fB\-\-paln\fR=\fIOmega\fR] [\fB\-\-inclination\fR=\fIi\fR] [\fB\-\-argument\fR=\fItheta\fR]
-      [\fB\-\-nthreads\fR=\fInth\fR] [\fB\-\-nprocesses\fR=\fInprocs\fR]
+      [\fB\-\-nthreads\fR=\fInth\fR] [\fB\-\-nprocesses\fR=\fInworkers\fR]
       [\fB\-\-plugins\fR=\fIpluglist\fR]
       [\fB\-\-impact-coords\fR[=\fIfname.fits\fR]]
       [\fB\-\-unit\fR[=\fIunit\fR]]
@@ -75,6 +75,13 @@ has only been specified.
 Print list of currently registered Astrobj, Metric etc., then exit the
 program. This occurs after loading \fIinput.xml\fR (if provided), so
 that any plug-in specified in the input file have already been loaded.
+.PD
+
+.PD 0
+.IP \fB\-\-version\fR
+.IP \fB\-V\fR
+Print the Gyoto version, ABI compatibility version, copyright
+information and exit.
 .PD
 
 .SS Setting the verbosity level
@@ -193,35 +200,50 @@ without POSIX threads support. Note that the metric and object are
 replicated for each thread which can lead to a decrease in performance
 if either is memory-intensive. Setting this option to 0 is equivalent
 to setting it to 1.
-.IP \fB\-\-nprocesses\fR=\fInprocs\fR
+.IP \fB\-\-nprocesses\fR=\fInworkers\fR
 .PD 0
-.IP \fB\-P\fInprocs\fR
+.IP \fB\-P\fInworkers\fR
 .PD
 Number of MPI processes to spawn for parallel ray-tracing, in addition
 to the main gyoto process which remains for managing the
 computation. Ignored if gyoto was compiled without MPI
-support. \fInprocs\fR is the number of workers spawned. \fB-P\fR0
+support. \fInworkers\fR is the number of workers spawned. The total
+number of processes is \fInprocs\fR=\fInworkers\fR+1.  \fB-P\fR0
 disables MPI multi-processing, while \fB\-P\fR1 uses two processes:
-the manager and one worker. If \fInprocs\fR is >0, \-\-nthreads is
+the manager and one worker. If \fInworkers\fR is >0, \-\-nthreads is
 ignored. Note that the MPI environment usually needs to be set-up
 using some variant of
 .BR mpirun (1).
-You should usually only launch one instance of \fBgyoto\fR, and either
-let it spawn its workers (using
-.BR MPI_Comm_spawn (3))
-or tell mpirun to do so:
+If \fBmpirun\fR starts several instances of \fBgyoto\fR,
+\fInworkers\fR must be >0, but its exact value is ignored as the set
+of processes used is exactly that launched by \fBmpirun\fR. In other
+words, Gyoto can be called in a number of ways that should be
+functionally equivalent:
+.
 .RS
+.IP \(bu 4
+let \fBmpirun\fR launch \fInprocs\fR instances of the \fBgyoto\fR
+executable:
 .IP
-\fBmpirun\fR \-np 1 \fBgyoto\fR \-P\fInprocs\fR \fIinput.xml\fR \fIoutput.fits\fR
+\fBmpirun\fR \-np \-P\fInprocs\fR \fBgyoto\fR \-P1 \fIinput.xml\fR
+\fIoutput.fits\fR
+.IP \(bu 4
+let \fBmpirun\fR launch 1 instance of the \fBgyoto\fR executable, and
+Gyoto spawn \fInworkers\fR worker processes:
 .IP
-\fBmpirun\fR \-np 1 \fBgyoto\fR \-P1\fR \fIinput.xml\fR \fIoutput.fits\fR : \-np \fInprocs\fR \fBgyoto-mpi-worker.version\fR
-.P
-However, under Open MPI, \fBgyoto\fR also supports the more traditional:
+\fBmpirun\fR \-np 1 \fBgyoto\fR \-P\fIworkers\fR \fIinput.xml\fR
+\fIoutput.fits\fR
+.IP \(bu 4
+let \fBmpirun\fR launch 1 instance of the \fBgyoto\fR executable, and
+\fInworkers\fR worker processes:
 .IP
-\fBmpirun\fR \-np \fInprocs\fR \fBgyoto\fR \fIinput.xml\fR \fIoutput.fits\fR
-.P
-In this case, this option (\fB\-\-nprocesses\fR/\fB\-P\fR) is ignored.
+\fBmpirun\fR \-np 1 \fBgyoto\fR \-P1\fR \fIinput.xml\fR \fIoutput.fits\fR : \\
+       \-np \fInworkers\fR \fBgyoto-mpi-worker.\fIversion\fR
+.IP
+where \fIversion\fR is the ABI compatibility version of \fBgyoto\fR
+(see \fBgyoto\fR \-\-version).
 .RE
+.
 .IP \fB\-\-impact\-coords\fR[=\fIimpactcoords.fits\fR]
 In some circumstances, you may want to perform several computations in
 which the computed geodesics end up being exactly identical. This is

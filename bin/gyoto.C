@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013, 2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -92,7 +92,7 @@ const option::Descriptor usage[] =
  {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\t\n\n"
                                         "Generic options:\t\n  -- \tStop option processing." },
  {HELP, 0,"h","help",option::Arg::Optional, "  --help[=<c>, -h<c>  \tWithout argument, print usage and exit. With argument, document class <c> (e.g. \"Screen\", \"Astrobj::Star\") and exit." },
- {VERSION, 0, "", "version", option::Arg::None, "  --version, -V  \tPrint the Gyoto version."},
+ {VERSION, 0, "V", "version", option::Arg::None, "  --version, -V  \tPrint the Gyoto version."},
  {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
  {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
 #if !defined HAVE_FENV_H
@@ -158,12 +158,20 @@ void gyotoErrorHandler( const Gyoto::Error e ) {
   exit (curretval);
 }
 
+static void gyotoVersion() {
+  cout << " Copyright (c) 2011-2019 Frédéric Vincent, Thibaut Paumard,\n"
+       << "                         Odele Straub and Frédéric Lamy.\n"
+       << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
+       << " We request that use of Gyoto in scientific publications be "
+       << " properly \n acknowledged. Please cite:\n"
+       << "  GYOTO: a new general relativistic ray-tracing code,\n"
+       << "  F. H. Vincent, T. Paumard, E. Gourgoulhon & G. Perrin 2011,\n"
+       << "  Classical and Quantum Gravity 28, 225011 (2011) "
+       << "[arXiv:1109.4769]"
+       << endl << endl;
+}
+
 int main(int argc, char** argv) {
-  // If we are no rank 0 in an OpenMPI context, respawn as gyoto-mpi-worker
-  if (getenv("OMPI_COMM_WORLD_RANK") &&
-      (string("0") != getenv("OMPI_COMM_WORLD_RANK")) ) {
-    execlp("gyoto-mpi-worker." GYOTO_SOVERS, (char *) NULL);
-  }
 
   // Set-up error reporter
   Gyoto::Error::setHandler ( &gyotoErrorHandler );
@@ -226,20 +234,10 @@ int main(int argc, char** argv) {
   if (parse.nonOptionsCount() > 0) parfile=strdup(parse.nonOptions()[0]);
   if (parse.nonOptionsCount() > 1) pixfile=strdup(parse.nonOptions()[1]);
 
-  // State copyright
-  if (options[VERSION]
-      ||(!options[LIST] && !options[HELP] && verbose() >= GYOTO_QUIET_VERBOSITY)) {
-    cout << " Copyright (c) 2011-2016 Frederic Vincent & Thibaut Paumard\n"
-	 << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
-	 << " We request that use of Gyoto in scientific publications be "
-	 << " properly \n acknowledged. Please cite:\n"
-	 << "  GYOTO: a new general relativistic ray-tracing code,\n"
-	 << "  F. H. Vincent, T. Paumard, E. Gourgoulhon & G. Perrin 2011,\n"
-	 << "  Classical and Quantum Gravity 28, 225011 (2011) "
-	 << "[arXiv:1109.4769]"
-	 << endl << endl;
+  if (options[VERSION]) {
+    gyotoVersion();
+    return 0;
   }
-  if (options[VERSION]) return 0;
 
   if (options[PLUGINS])
     pluglist = options[PLUGINS].last()->arg?options[PLUGINS].last()->arg:"";
@@ -264,7 +262,7 @@ int main(int argc, char** argv) {
     }
 
     curmsg = "In gyoto.C: Error getting Scenery: ";
-    scenery = factory -> getScenery();
+    scenery = factory -> scenery();
 
     curmsg = "In gyoto.C: Error deleting Scenery: ";
     delete factory;
@@ -395,13 +393,31 @@ int main(int argc, char** argv) {
     }
     // If WORLD size is more than 1, use processes from WORLD
     // instead of spawning new processes
-    int wsize=0;
+    int wsize=0, rank=0;
     MPI_Comm_size(MPI_COMM_WORLD, &wsize);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if (wsize > 1) {
-      scenery -> nProcesses(-1);
+      if (rank==0) {
+	GYOTO_INFO << "Process rank " << rank << " becoming manager\n";
+	scenery -> nProcesses(-1);
+      } else {
+	GYOTO_INFO << "Process rank " << rank << " becoming worker\n";
+	curmsg = "In gyoto.C: error in MPI worker: ";
+	Scenery::mpiWorker();
+	int started , stopped , error ;
+	error = MPI_Initialized ( & started ) ;
+	error = MPI_Finalized ( & stopped ) ;
+	if (started && !stopped) MPI_Finalize();
+	return 0;
+      }
     }
   }
 #endif
+
+  // State copyright
+  if (verbose() >= GYOTO_QUIET_VERBOSITY) {
+    gyotoVersion();
+  }
 
   {
     double tobs= screen -> time();
@@ -644,6 +660,11 @@ int main(int argc, char** argv) {
     GYOTO_DEBUG << "screen = NULL\n";
     screen = NULL;
 
+#if defined HAVE_MPI
+    GYOTO_DEBUG << "scenery->mpiTerminate()\n";
+    scenery->mpiTerminate();
+#endif
+
     GYOTO_DEBUG << "scenery = NULL\n";
     scenery = NULL;
 
@@ -652,7 +673,10 @@ int main(int argc, char** argv) {
   }
 
 #if defined HAVE_MPI
-  if (MPI::Is_initialized() && !MPI::Is_finalized()) MPI_Finalize();
+  int started , stopped , error ;
+  error = MPI_Initialized ( & started ) ;
+  error = MPI_Finalized ( & stopped ) ;
+  if (started && !stopped) MPI_Finalize();
 #endif
 
   return 0;

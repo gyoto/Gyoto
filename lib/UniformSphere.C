@@ -75,12 +75,12 @@ UniformSphere::UniformSphere(string kin) :
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
-
+  //cout << "in creaor " << Generic::radiativeQ() << endl;
   // also initial safety_value_ etc.
   radius(0.);
 
   spectrum(new Spectrum::BlackBody()); 
-  opacity(new Spectrum::PowerLaw(0., 1.)); 
+  opacity(new Spectrum::PowerLaw(0., 1.));
   opticallyThin(false);
 }
 
@@ -98,7 +98,7 @@ UniformSphere::UniformSphere(string kin,
   radius(rad);
 
   spectrum(new Spectrum::BlackBody()); 
-  opacity(new Spectrum::PowerLaw(0., 1.)); 
+  opacity(new Spectrum::PowerLaw(0., 1.));
   opticallyThin(false);
   gg_=met;
 
@@ -141,6 +141,9 @@ void UniformSphere::opacity(SmartPointer<Spectrum::Generic> sp) {
 
 
 double UniformSphere::operator()(double const coord[4]) {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   double coord_st[4] = {coord[0]};
   double coord_ph[4] = {coord[0]};
   double sintheta;
@@ -157,6 +160,7 @@ double UniformSphere::operator()(double const coord[4]) {
   default:
     throwError("unsupported coordkind");
   }
+  //cout << "rsp= " << sqrt(coord_st[1]*coord_st[1]+coord_st[2]*coord_st[2]+coord_st[3]*coord_st[3]) << endl;
   double dx = coord_ph[1]-coord_st[1];
   double dy = coord_ph[2]-coord_st[2];
   double dz = coord_ph[3]-coord_st[3];
@@ -182,6 +186,9 @@ double UniformSphere::deltaMax(double * coord) {
 }
 
 double UniformSphere::emission(double nu_em, double dsem, double *, double *) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   if (isotropic_){
     if (flag_radtransf_){
       return dsem;
@@ -196,6 +203,9 @@ double UniformSphere::emission(double nu_em, double dsem, double *, double *) co
 void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
 					 double* coord_obj_hit, double dt,
 					 Properties* data) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   if (alpha_==1) {
     // then I_nu \propto nu^0, standard case
     Generic::processHitQuantities(ph,coord_ph_hit,coord_obj_hit,dt,data);
@@ -241,6 +251,9 @@ void UniformSphere::processHitQuantities(Photon* ph, double* coord_ph_hit,
 }  
       
 double UniformSphere::transmission(double nuem, double dsem, double*) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   if (!flag_radtransf_) return 0.;
   double opac = (*opacity_)(nuem);
   
@@ -256,6 +269,9 @@ double UniformSphere::transmission(double nuem, double dsem, double*) const {
 
 double UniformSphere::integrateEmission(double nu1, double nu2, double dsem,
 			       double *, double *) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   if (flag_radtransf_)
     return spectrum_->integrate(nu1, nu2, opacity_(), dsem);
   return spectrum_->integrate(nu1, nu2);

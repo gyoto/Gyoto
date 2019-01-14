@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -30,8 +30,15 @@
 #include <fstream>
 #include <string>
 #if defined HAVE_BOOST_ARRAY_HPP
-#include <boost/array.hpp>
-#define GYOTO_ARRAY boost::array
+# include <boost/array.hpp>
+# define GYOTO_ARRAY boost::array
+# if defined HAVE_MPI
+#  include <boost/version.hpp>
+#  if BOOST_VERSION >= 106400 
+#   include <boost/serialization/boost_array.hpp>
+#   include <boost/serialization/array_wrapper.hpp>
+#  endif
+# endif
 #else
 template <typename T, size_t sz> class GYOTO_ARRAY {
  private:
@@ -172,6 +179,7 @@ class Gyoto::Screen
  private:
   double tobs_; ///< Observing date in s
   double fov_;  ///< Field-of-view in rad
+  double azimuthal_fov_; ///< Azimuthal field-of-view for Spherical Angles images. Maximal extent of image in the azimuthal b-angle direction.
   //  double tmin_;
   size_t npix_; ///< Resolution in pixels
 
@@ -211,8 +219,8 @@ class Gyoto::Screen
   double screen2_[4]; ///< Screen e2 vector
   double screen3_[4]; ///< Screen e3 vector (normal)
 
-  double alpha0_; ///< Screen orientation (0,0) is right towards the BH
-  double delta0_; ///< Screen orientation (0,0) is right towards the BH
+  double dangle1_; ///< Increment to first position angle of Screen; can be typically alpha if in Equatorial Angles, or a if in Spherical Angles
+  double dangle2_; ///< Increment to second position angle of Screen; can be typically delta if in Equatorial Angles, or b if in Spherical Angles
   SmartPointer<Metric::Generic> gg_; ///< The Metric in this end of the Universe
 
   /**
@@ -425,22 +433,28 @@ class Gyoto::Screen
   /// Set Screen::fov_ in specified unit
   void fieldOfView(double, const std::string &unit);
 
-  /// Set direction of the center of the field
-  void alpha0(double);
-  /// Set direction of the center of the field in specified unit
-  void alpha0(double, const std::string &unit);
-  /// Get direction of the center of the field
-  double alpha0() const;
-  /// Get direction of the center of the field in specified unit
-  double alpha0(std::string const &unit)const;
-  /// Set direction of the center of the field
-  void delta0(double);
-  /// Set direction of the center of the field in specified unit
-  void delta0(double, const std::string &unit);
-  /// Get direction of the center of the field
-  double delta0() const;
-  /// Get direction of the center of the field in specified unit
-  double delta0(std::string const &unit)const;
+  /// Get Screen::azimuthal_fov_
+  double azimuthalFieldOfView() const;
+
+  /// Set Screen::azimuthal_fov_
+  void azimuthalFieldOfView(double ff);
+
+  /// Set increment to first position angle
+  void dangle1(double);
+  /// Set increment to first position angle in specified unit
+  void dangle1(double, const std::string &unit);
+  /// Get increment to first position angle
+  double dangle1() const;
+  /// Get increment to first position angle in specified unit
+  double dangle1(std::string const &unit)const;
+  /// Set increment to second position angle
+  void dangle2(double);
+  /// Set increment to second position angle in specified unit
+  void dangle2(double, const std::string &unit);
+  /// Get increment to second position angle
+  double dangle2() const;
+  /// Get increment to second position angle in specified unit
+  double dangle2(std::string const &unit)const;
 
   /// Set Screen::anglekind_
   void anglekind(int);

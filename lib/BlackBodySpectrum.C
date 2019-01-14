@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2012, 2014, 2017, 2019 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -33,15 +33,17 @@ using namespace Gyoto;
 GYOTO_PROPERTY_START(Spectrum::BlackBody)
 GYOTO_PROPERTY_DOUBLE(Spectrum::BlackBody, Temperature, temperature)
 GYOTO_PROPERTY_DOUBLE(Spectrum::BlackBody, Scaling, scaling)
+GYOTO_PROPERTY_DOUBLE(Spectrum::BlackBody, ColorCorrection, colorCorrection)
 GYOTO_PROPERTY_END(Spectrum::BlackBody, Generic::properties)
 
 ///
 
 Spectrum::BlackBody::BlackBody() :
-  Spectrum::Generic("BlackBody"), T_(10000.),
+Spectrum::Generic("BlackBody"), T_(10000.), colorcor_(1.), colorcorm4_(1.),
   cst_(2.*GYOTO_PLANCK_OVER_C_SQUARE) {Tm1_=1./T_;}
 Spectrum::BlackBody::BlackBody(double T, double c) :
-  Spectrum::Generic("BlackBody"), T_(T), cst_(c) {Tm1_=1./T_;}
+  Spectrum::Generic("BlackBody"), T_(T), cst_(c), colorcor_(1.), colorcorm4_(1.)
+{Tm1_=1./T_;}
 Spectrum::BlackBody * Spectrum::BlackBody::clone() const
 { return new Spectrum::BlackBody(*this); }
 
@@ -49,9 +51,12 @@ double Spectrum::BlackBody::temperature() const { return T_; }
 void Spectrum::BlackBody::temperature(double c) { T_ = c; Tm1_=1./T_; }
 double Spectrum::BlackBody::scaling() const { return cst_; }
 void Spectrum::BlackBody::scaling(double c) { cst_ = c; }
+double Spectrum::BlackBody::colorCorrection() const { return colorcor_; }
+void Spectrum::BlackBody::colorCorrection(double c) {
+  colorcor_ = c; colorcorm4_ = 1./(c*c*c*c); T_*=c; Tm1_/=c;}
 
 double Spectrum::BlackBody::operator()(double nu) const {
-  return  cst_*nu*nu*nu
-    /(exp(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)-1.);
+  return  colorcorm4_*cst_*nu*nu*nu
+    /(expm1(GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_));
 }
 

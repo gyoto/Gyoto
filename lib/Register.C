@@ -228,6 +228,8 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(name);
     GYOTO_DEBUG_EXPR(errmode);
+    GYOTO_DEBUG_EXPR(name_);
+    GYOTO_DEBUG_EXPR(plugin_);
   GYOTO_ENDIF_DEBUG
 # endif
   bool any_plugin = (plugin == "");

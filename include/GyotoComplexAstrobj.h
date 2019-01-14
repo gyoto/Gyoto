@@ -101,6 +101,11 @@ class Gyoto::Astrobj::Complex : public Gyoto::Astrobj::Generic {
   virtual double deltaMax(double coord[8]);
 
   /**
+   * rMax loops over the elementary astrobjs rmax_ and returns the biggest
+   */
+  virtual double rMax();
+
+  /**
    *  Frees every SmartPointer<Astrobj::Generic> before freed the array itself.
    */
   virtual ~Complex() ; ///< Destructor

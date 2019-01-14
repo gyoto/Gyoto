@@ -10,6 +10,7 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 
+HOME_LORENE="@HOME_LORENE@"
 
 from setuptools import setup, Extension
 import platform
@@ -43,17 +44,41 @@ for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
         elif re.match('-l', comp):
             gyoto_libs.append(re.sub('^-l', '', comp))
 
-gyoto_module = Extension('_gyoto',
-                         sources=['gyoto_wrap.cxx'],
+gyoto_module = Extension('gyoto/_core',
+                         sources=['core_wrap.cxx'],
                          include_dirs=[numpy_include, '@abs_srcdir@'],
                          library_dirs=gyoto_lib_dirs,
                          libraries=gyoto_libs
                          )
 
+gyoto_std_module = Extension('gyoto/_std',
+                         sources=['std_wrap.cxx'],
+                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         library_dirs=gyoto_lib_dirs,
+                         libraries=gyoto_libs
+                         )
+
+gyoto_lorene_module = Extension('gyoto/_lorene',
+                         sources=['lorene_wrap.cxx'],
+                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         library_dirs=gyoto_lib_dirs,
+                         libraries=gyoto_libs
+                         )
+
+pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std", "gyoto_std",
+             "gyoto._namespaces", "gyoto.astrobj", "gyoto.metric",
+             "gyoto.spectrum", "gyoto.spectrometer"]
+extmodules= [gyoto_module, gyoto_std_module]
+
+if HOME_LORENE != "":
+    pymodules.append("gyoto.lorene")
+    pymodules.append("gyoto_lorene")
+    extmodules.append(gyoto_lorene_module)
+
 setup(name='@PACKAGE_NAME@',
       version='@PACKAGE_VERSION@',
       author_email='@PACKAGE_BUGREPORT@',
-      py_modules=["gyoto"],
-      ext_modules=[gyoto_module],
+      py_modules=pymodules,
+      ext_modules=extmodules,
       test_suite='tests'
      )

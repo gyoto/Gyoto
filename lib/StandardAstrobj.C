@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011, 2012, 2014, 2015, 2017 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -31,6 +31,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <string>
+#include <cstring>
 #include <float.h>
 #include <cmath>
 #include <sstream>
@@ -44,11 +45,15 @@ GYOTO_PROPERTY_START(Gyoto::Astrobj::Standard,
   "Gyoto::Astrobj whose shape is defined by a scalar function.")
 GYOTO_PROPERTY_DOUBLE(Standard, SafetyValue, safetyValue,
   "Value of the function below which to look more carefully.")
+GYOTO_PROPERTY_DOUBLE(Standard, DeltaInObj, deltaInObj,
+		      "Value of the constant integration step "
+		      "inside the astrobj (geometrical units)")
 GYOTO_PROPERTY_END(Standard, Generic::properties)
 
 Standard::Standard(string kin) :
   Generic(kin),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  critical_value_(DBL_MIN), safety_value_(DBL_MAX),
+  delta_inobj_(0.05)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -57,7 +62,8 @@ Standard::Standard(string kin) :
 
 Standard::Standard() :
   Generic(),
-  critical_value_(DBL_MIN), safety_value_(DBL_MAX)
+  critical_value_(DBL_MIN), safety_value_(DBL_MAX),
+  delta_inobj_(0.05)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -75,7 +81,8 @@ Standard::Standard(double radmax) :
 
 Standard::Standard(const Standard& orig) :
   Generic(orig), Functor::Double_constDoubleArray(orig),
-  critical_value_(orig.critical_value_), safety_value_(orig.safety_value_)
+  critical_value_(orig.critical_value_), safety_value_(orig.safety_value_),
+  delta_inobj_(orig.delta_inobj_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -134,8 +141,8 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 	return 0;
       }
       ph -> findValue(this, critical_value_, tmin, t2);
-    }
-    ph -> findValue(this, critical_value_, t2, t1);
+    } else tmin=t2;
+    ph -> findValue(this, critical_value_, tmin, t1);
   } else if (val2 > critical_value_)
     ph -> findValue(this, critical_value_, t1, t2);
 
@@ -143,21 +150,63 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
   ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
 		 cph+4, cph+5, cph+6, cph+7);
 
+  double coh[8] = {cph[0], cph[1], cph[2], cph[3]};
+  getVelocity(coh, coh+4);
+  bool current_is_inside = true; // by construction, t2 is always inside
+
   double delta=giveDelta(cph);
-  double coh[8];
+  double dt;
+  double coh_next[8], cph_next[8];
+  bool next_is_inside;
+
   while (cph[0]>t1){
-    ph -> getCoord(cph, 1, cph+1, cph+2, cph+3,
-		   cph+4, cph+5, cph+6, cph+7);
-    for (int ii=0;ii<4;ii++) 
-      coh[ii] = cph[ii];
-    
-    getVelocity(coh, coh+4);
-    //Next test to insure every point given to process
-    //is inside objetc. Not obvious as the worldline between
-    //t1 and t2 is not necessarily straight (at small r in particular)
-    if ((*this)(coh)<critical_value_)
-      processHitQuantities(ph, cph, coh, delta, data);
-    cph[0]-=delta;
+    // Warning: Impact must not extend the Worldline!
+    // never call get Coord with anything outside [t1, t2].
+    cph_next[0] = max(cph[0] - delta, t1);
+    ph -> getCoord(cph_next, 1, cph_next+1, cph_next+2, cph_next+3,
+		   cph_next+4, cph+5, cph_next+6, cph_next+7);
+
+    memcpy(coh_next, cph_next, 4*sizeof(cph_next[0]));
+    getVelocity(coh_next, coh_next+4);
+
+    next_is_inside = ((*this)(coh_next) <= critical_value_);
+
+    if (current_is_inside) {
+      if (next_is_inside) {
+	// Both points are inside
+	dt = cph[0]-cph_next[0];
+      } else {
+	// Late point in object, early outside
+	// Find date of surface crossing and update dt.
+	double t_out = cph_next[0];
+	ph -> findValue(this, critical_value_, *cph, t_out);
+	dt = cph[0] - t_out;
+      }
+    } else {
+      if (next_is_inside) {
+	// Early point in object, late point outside
+	// Place cph and coh inside, near surface; update dt
+	ph -> findValue(this, critical_value_, *cph_next, *cph);
+	ph -> getCoord(&t2, 1, cph+1, cph+2, cph+3,
+		       cph+4, cph+5, cph+6, cph+7);
+	memcpy(coh, cph, 4*sizeof(cph_next[0]));
+	getVelocity(coh, coh+4);
+	dt = cph[0]-cph_next[0];
+      } else {
+	// Two points outside
+	dt = 0.;
+      }
+    }
+
+    // dt == 0 means the two points are outside
+    if (dt != 0.)
+      processHitQuantities(ph, cph, coh, dt, data);
+
+    // Copy next to current
+    memcpy(cph, cph_next, 8*sizeof(cph[0]));
+    memcpy(coh, coh_next, 8*sizeof(coh[0]));
+    current_is_inside = next_is_inside;
+
   }
 
   return 1;
@@ -167,4 +216,7 @@ int Standard::Impact(Photon* ph, size_t index, Properties *data){
 void Standard::safetyValue(double val) {safety_value_ = val; }
 double Standard::safetyValue() const { return safety_value_; }
 
-double Standard::giveDelta(double *) {return 0.05;}
+double Standard::deltaInObj() const { return delta_inobj_; }
+void   Standard::deltaInObj(double val) { delta_inobj_ = val; }
+
+double Standard::giveDelta(double *) { return deltaInObj(); }

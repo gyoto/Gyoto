@@ -41,23 +41,20 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(ThinDiskPL)
-GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLSlope, PLSlope)
-GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLRho, PLRho)
-GYOTO_PROPERTY_DOUBLE(ThinDiskPL, PLRadRef, PLRadRef)
+GYOTO_PROPERTY_DOUBLE(ThinDiskPL, Slope, Slope)
+GYOTO_PROPERTY_DOUBLE(ThinDiskPL, Tinner, Tinner)
 GYOTO_PROPERTY_END(ThinDiskPL, ThinDisk::properties)
 
 // ACCESSORS
-void ThinDiskPL::PLSlope(double v) {PLSlope_=v;}
-double ThinDiskPL::PLSlope()const{return PLSlope_;}
-void ThinDiskPL::PLRho(double v) {PLRho_=v;}
-double ThinDiskPL::PLRho()const{return PLRho_;}
-void ThinDiskPL::PLRadRef(double v) {PLRadRef_=v;}
-double ThinDiskPL::PLRadRef()const{return PLRadRef_;}
+void ThinDiskPL::Slope(double alpha) {slope_=alpha;}
+double ThinDiskPL::Slope()const{return slope_;}
+void ThinDiskPL::Tinner(double TT) {Tinner_=TT;}
+double ThinDiskPL::Tinner()const{return Tinner_;}
 //
 
 ThinDiskPL::ThinDiskPL() :
   ThinDisk("ThinDiskPL"),
-  PLSlope_(0.), PLRho_(1.), PLRadRef_(1.),
+  slope_(0.), Tinner_(1.),
   spectrumBB_(NULL)
 {
   if (debug()) cerr << "DEBUG: ThinDiskPL Construction" << endl;
@@ -66,7 +63,7 @@ ThinDiskPL::ThinDiskPL() :
 
 ThinDiskPL::ThinDiskPL(const ThinDiskPL& o) :
   ThinDisk(o),
-  PLSlope_(o.PLSlope_), PLRho_(o.PLRho_), PLRadRef_(o.PLRadRef_),
+  slope_(o.slope_), Tinner_(o.Tinner_), 
   spectrumBB_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
@@ -86,40 +83,11 @@ ThinDiskPL::~ThinDiskPL() {
 }
 
 double ThinDiskPL::emission(double nu, double,
-				    double *,
-				    double coord_obj[8]) const{
-
-  //cout << "param= " << PLSlope_ << " " << PLRho_ << " " << PLRadRef_ 
-  //    << " " << getInnerRadius() << " " << getOuterRadius() << endl;
-
-  double Iem = emissionBB(nu,coord_obj);
-  /* Only BB emission so far, other ways of
-   computing emission from rho can be added */
-  
-  /*if (flag_radtransf_)
-    throwError("In ThinDiskPL::emission() "
-    "optically thin integration not provided");*/
-
-  return Iem;
-
-}
-
-double ThinDiskPL::emissionBB(double nu,
-			      double co[8]) const{
-
-  double rcur=projectedRadius(co);
-  double rho_si = PLRho_*pow(rcur/PLRadRef_,PLSlope_);
-  //Assuming: pressure = kappa*(mass density)^gamma, gamma=5/3 (eq of state)
-  // and: pressure = (mass density)*R/Mm*T (Mm = molar mass)
-  
-  double gamma=5./3.;
-  double Mm=6e-4;//Navogadro*Munit/gamma
-  double kappa=3e10;//pressure coef: p = kappa*rho^gamma, rho=mass density
-  
-  double cs2=kappa*gamma*pow(rho_si,gamma-1.);
-  double TT=Mm/GYOTO_GAS_CST*cs2;//Temperature in SI
-  //cout << "TT after rl= " << TT << endl;
-  //cout << "r,rho,T= " << rcross << " " << rho_si << " " << TT << endl;
+			    double *,
+			    double coord_obj[8]) const{  
+  double rcur=projectedRadius(coord_obj);
+  double TT = Tinner_*pow(rcur/rin_,slope_);
+  //  cout << "In ThinPL rin, slope, Tinner, TT= " << rin_ << " " << slope_ << " " << Tinner_ << " " << TT << endl;
   spectrumBB_->temperature(TT);
   return (*spectrumBB_)(nu);
 }

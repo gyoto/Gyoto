@@ -54,6 +54,9 @@ GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    specifyMarginalOrbits)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    HasSurface, HasNoSurface, hasSurface)
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
+		    HasAccelerationVector, HasNoAccelerationVector,
+		    hasAccelerationVector)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene, BosonStarCircular, NonBosonStarCircular, bosonstarcircular)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Horizon, horizon)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Time, initialTime)
@@ -76,6 +79,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
   mapet_(true),
   bosonstarcircular_(false),
   has_surface_(0),
+  has_acceleration_vector_(0),
   specify_marginalorbits_(0),
   horizon_(0.),
   r_refine_(0.),
@@ -91,6 +95,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
   nb_times_(0),
   nssurf_tab_(NULL),
   vsurf_tab_(NULL),
+  accel_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
   risco_(0.),
@@ -106,6 +111,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   mapet_(o.mapet_),
   bosonstarcircular_(o.bosonstarcircular_),
   has_surface_(o.has_surface_),
+  has_acceleration_vector_(o.has_acceleration_vector_),
   specify_marginalorbits_(o.specify_marginalorbits_),
   horizon_(o.horizon_),
   r_refine_(o.r_refine_),
@@ -121,6 +127,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   nb_times_(0),
   nssurf_tab_(NULL),
   vsurf_tab_(NULL),
+  accel_tab_(NULL),
   lorentz_tab_(NULL),
   hor_tab_(NULL),
   risco_(o.risco_),
@@ -153,6 +160,7 @@ void NumericalMetricLorene::free() {
   if (times_)      { delete [] times_;      times_=NULL;     }
   if (nssurf_tab_) { delete [] nssurf_tab_;      nssurf_tab_=NULL;     }
   if (vsurf_tab_) { delete [] vsurf_tab_;      vsurf_tab_=NULL;     }
+  if (accel_tab_) { delete [] accel_tab_;      accel_tab_=NULL;     }
   if (lorentz_tab_) { delete [] lorentz_tab_;      lorentz_tab_=NULL;     }
   if (hor_tab_) { delete [] hor_tab_;      hor_tab_=NULL;     }
 }
@@ -193,6 +201,8 @@ void NumericalMetricLorene::setMetricSource() {
     vsurf_tab_ = new Vector*[nb_times_] ;
     lorentz_tab_ = new Scalar*[nb_times_] ;
     hor_tab_ = new Valeur*[nb_times_] ;
+    if (has_acceleration_vector_)
+      accel_tab_ = new Vector*[nb_times_] ;
   }
 
   if (debug()) {
@@ -268,6 +278,10 @@ void NumericalMetricLorene::setMetricSource() {
       Mg3d* grid_surf = new Mg3d(resu) ;
       Valeur* ns_surf = new Valeur(*grid_surf, resu) ;
       nssurf_tab_[i-1] = ns_surf;
+      if (has_acceleration_vector_){
+	Vector* a_i = new Vector(*map, (*map).get_bvect_spher(), resu) ;
+	accel_tab_[i-1] = a_i ;
+      }
       Mg3d* grid_ah = new Mg3d(resu) ;
       Valeur* horizon = new Valeur(*grid_ah, resu) ;
       hor_tab_[i-1] = horizon;
@@ -298,6 +312,9 @@ void NumericalMetricLorene::setMetricSource() {
 Sym_tensor** NumericalMetricLorene::getGamcon_tab() const {
   GYOTO_DEBUG << endl;
   return gamcon_tab_;}
+Sym_tensor** NumericalMetricLorene::getGamcov_tab() const {
+  GYOTO_DEBUG << endl;
+  return gamcov_tab_;}
 Vector** NumericalMetricLorene::getShift_tab() const {
   GYOTO_DEBUG << endl;
   return shift_tab_;}
@@ -316,6 +333,9 @@ Valeur** NumericalMetricLorene::getNssurf_tab() const {
 Vector** NumericalMetricLorene::getVsurf_tab() const {  
   GYOTO_DEBUG << endl;
   return vsurf_tab_;}
+Vector** NumericalMetricLorene::getAccel_tab() const {  
+  GYOTO_DEBUG << endl;
+  return accel_tab_;}
 Scalar** NumericalMetricLorene::getLorentz_tab() const {
   GYOTO_DEBUG << endl;
   return lorentz_tab_;}
@@ -2127,6 +2147,15 @@ void NumericalMetricLorene::hasSurface(bool s) {
   if (filename_!=NULL){
     throwError("In NumericalMetricLorene::hasSurface "
 	       "please provide Surface information before File in XML");
+  }
+}
+
+bool NumericalMetricLorene::hasAccelerationVector() const {return  has_acceleration_vector_;}
+void NumericalMetricLorene::hasAccelerationVector(bool aa) {
+  has_acceleration_vector_ = aa;
+  if (filename_!=NULL){
+    throwError("In NumericalMetricLorene::hasAccelerationVector "
+	       "please provide Acceleration vector info before File in XML");
   }
 }
 

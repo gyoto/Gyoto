@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2014 Frederic Vincent
+    Copyright 2014 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -50,20 +50,16 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::ThermalBremsstrahlung>;
  protected:
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< blackbody emission
-  double cst_; ///< Scaling constant
   double T_; ///< Temperature
   double Tm1_; ///< 1/T
   double Tm05_; ///< 1/sqrt(T)
-  double massdensityCGS_; ///< Mass density in CGS UNITS (careful)
+  double numberdensityCGS_; ///< Number density in CGS UNITS (careful)
 
  public:
   GYOTO_OBJECT;
 
   ThermalBremsstrahlung();
-
-  /**
-   * \brief Constructor setting T_ and cst_
-   */
+  ThermalBremsstrahlung(const ThermalBremsstrahlung &);
   virtual ThermalBremsstrahlung * clone() const; ///< Cloner
 
   using Gyoto::Spectrum::Generic::operator();
@@ -90,8 +86,8 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
 
   double temperature() const;
   void temperature(double tt);
-  double massdensityCGS() const;
-  void massdensityCGS(double rho);
+  double numberdensityCGS() const;
+  void numberdensityCGS(double rho);
 
  /**
    * Returns the emission coefficient j_nu in cgs units
@@ -106,6 +102,16 @@ class Gyoto::Spectrum::ThermalBremsstrahlung : public Gyoto::Spectrum::Generic {
    * \param nu frequency in Hz
    */
   double alphanuCGS(double nu) const;
+
+  /**
+   * Returns the emission and absorption coef jnu and alphanu in SI
+   *
+   */
+  void radiativeQ(double jnu[], // output
+		  double alphanu[], // output
+		  double nu_ems[],
+		  size_t nbnu
+		  );
 
 };
 

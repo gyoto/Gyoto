@@ -4,7 +4,7 @@ To make your own,
 
 1- choose a cool name;
 2- copy this directory (plugins/null/) somewhere;
-3- edit configure.ac, lib/Makefile.ac and lib/InitPlug.C: replace any
+3- edit configure.ac, lib/Makefile.am and lib/InitPlug.C: replace any
    occurrence of "null" with your cool name;
 4- add new metrics and astrobjs as needed in lib/ and include/, the
    gyoto source code is also full of examples;

@@ -55,14 +55,16 @@ GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Time, time,
 			   "Observing date (seconds).")
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FieldOfView, fieldOfView,
 			   "Field-of-view of the camera, in angle or length (radians).")
+GYOTO_PROPERTY_DOUBLE(Screen, AzimuthalFieldOfView, azimuthalFieldOfView,
+		      "Azimuthal field-of-view of the camera, for Spherical Angles images.")
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, PALN, PALN,
 			   "Position angle of the line of nodes of the equatorial plane (radians).")
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Inclination, inclination,
 			   "Angle between the equatorial and sky planes (radians).")
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Argument, argument,
 			   "Angle between the line of nodes and the Ox axis (radians).")
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Alpha0, alpha0, "(radians)")
-GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Delta0, delta0, "(radians)")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Dangle1, dangle1, "(radians)")
+GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Dangle2, dangle2, "(radians)")
 GYOTO_PROPERTY_SIZE_T(Screen, Resolution, resolution,
 		      "Number of rows and columns.")
 GYOTO_PROPERTY_DOUBLE_UNIT(Screen, Distance, distance,
@@ -87,9 +89,10 @@ GYOTO_PROPERTY_END(Screen, Object::properties)
 // Default constructor
 Screen::Screen() : 
   //tobs_(0.), fov_(M_PI*0.1), tmin_(0.), npix_(1001),
-  tobs_(0.), fov_(M_PI*0.1), npix_(1001), mask_(NULL), mask_filename_(""),
+tobs_(0.), fov_(M_PI*0.1), azimuthal_fov_(2.*M_PI),
+  npix_(1001), mask_(NULL), mask_filename_(""),
   distance_(1.), dmax_(GYOTO_SCREEN_DMAX), anglekind_(equatorial_angles),
-  alpha0_(0.), delta0_(0.),
+  dangle1_(0.), dangle2_(0.),
   gg_(NULL), spectro_(NULL),
   freq_obs_(1.),
   observerkind_("ObserverAtInfinity")
@@ -109,12 +112,13 @@ Screen::Screen() :
 
 Screen::Screen(const Screen& o) :
   SmartPointee(o),
-  tobs_(o.tobs_), fov_(o.fov_), npix_(o.npix_), mask_(NULL),
+  tobs_(o.tobs_), fov_(o.fov_), azimuthal_fov_(o.azimuthal_fov_),
+  npix_(o.npix_), mask_(NULL),
   mask_filename_(o.mask_filename_),
   distance_(o.distance_),
   dmax_(o.dmax_),
   anglekind_(o.anglekind_),
-  alpha0_(o.alpha0_), delta0_(o.delta0_),
+  dangle1_(o.dangle1_), dangle2_(o.dangle2_),
   gg_(NULL), spectro_(NULL), freq_obs_(o.freq_obs_),
   observerkind_(o.observerkind_)
 {
@@ -462,17 +466,19 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
 # endif
   switch (anglekind_) {
-  case Screen::spherical_angles:
+  case Screen::spherical_angles:{
     /*
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
     xscr = double(i-1)*fov_/(2.*double(npix_-1));
-    yscr = M_PI-(double(j-1)*2.*M_PI/double(npix_-1));
+    yscr = M_PI-(double(j-1)*azimuthal_fov_/double(npix_-1));
+    
     // NB: here xscr and yscr are the spherical angles
     // a and b ; the b->pi-b transformation boils down
     // to performing X->-X, just as below for equat angles.
     break;
+  }
   case Screen::equatorial_angles:{
     /*
       GYOTO screen labelled by equatorial
@@ -502,16 +508,16 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   getRayCoord(xscr, yscr, coord); 
 }
 
-void Screen::getRayCoord(double alpha, double delta,
+void Screen::getRayCoord(double angle1, double angle2,
 		      double coord[]) const
 
 {
-  alpha+=alpha0_; delta+=delta0_; // Screen orientation
+  angle1+=dangle1_; angle2+=dangle2_; // Screen orientation
   double normtol=1e-10;
   int i; // dimension : 0, 1, 2
   double pos[4];
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "(alpha="<<alpha<<",delta="<<delta<<",coord)" << endl;
+  GYOTO_DEBUG << "(angle1="<<angle1<<",angle2="<<angle2<<",coord)" << endl;
 # endif
   getObserverPos(coord);
 
@@ -520,8 +526,8 @@ void Screen::getRayCoord(double alpha, double delta,
     coord[0] -= coord[1] - dmax_;
     double scale = coord[1] / dmax_;
     coord[1] = dmax_;
-    alpha *= scale;
-    delta *= scale;
+    angle1 *= scale;
+    angle2 *= scale;
   }
 
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
@@ -535,12 +541,12 @@ void Screen::getRayCoord(double alpha, double delta,
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
-    spherical_angle_a = alpha;
-    spherical_angle_b = delta;
+    spherical_angle_a = angle1;
+    spherical_angle_b = angle2;
     break;
   case rectilinear:
-    spherical_angle_a = atan(sqrt(alpha*alpha+delta*delta));
-    spherical_angle_b = atan2(delta, alpha);
+    spherical_angle_a = atan(sqrt(angle1*angle1+angle2*angle2));
+    spherical_angle_b = atan2(angle2, angle1);
     break;
   case equatorial_angles:
     /*
@@ -569,20 +575,20 @@ void Screen::getRayCoord(double alpha, double delta,
     // using boost multiprecision to avoid information loss in trigonometry
     {
       boost::multiprecision::cpp_dec_float_100
-	alpha100=alpha, delta100=delta, a, b;
-      a=acos(cos(alpha100)*cos(delta100));
-      b=atan2(tan(delta100),sin(alpha100));
+	angle1100=angle1, angle2100=angle2, a, b;
+      a=acos(cos(angle1100)*cos(angle2100));
+      b=atan2(tan(angle2100),sin(angle1100));
       spherical_angle_a=a.convert_to<double>();
       spherical_angle_b=b.convert_to<double>();
     }
 #else
-    if (abs(alpha)<1e-6 || abs(delta) < 1e-6) {
-      spherical_angle_a = sqrt(alpha*alpha+delta*delta);
+    if (abs(angle1)<1e-6 || abs(angle2) < 1e-6) {
+      spherical_angle_a = sqrt(angle1*angle1+angle2*angle2);
     } else {
-      spherical_angle_a = acos(cos(alpha)*cos(delta));
+      spherical_angle_a = acos(cos(angle1)*cos(angle2));
     }
     spherical_angle_b =
-		   (alpha==0. && delta==0.) ? 0. : atan2(tan(delta),sin(alpha));
+		   (angle1==0. && angle2==0.) ? 0. : atan2(tan(angle2),sin(angle1));
 #endif
     break;
   default:
@@ -602,7 +608,6 @@ void Screen::getRayCoord(double alpha, double delta,
   while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi[
   spherical_angle_a=s1tmp;
   spherical_angle_b=s2tmp;
-
 
   /* 
      Tangent vector of incident photon in observer's local frame
@@ -1030,13 +1035,16 @@ void Screen::fieldOfView(double fov, const string &unit) {
 }
 void Screen::fieldOfView(double fov) { fov_ = fov; }
 
-void Screen::alpha0(double alpha) { alpha0_ = alpha; }
-double Screen::alpha0() const { return alpha0_; }
-void Screen::delta0(double delta) { delta0_ = delta; }
-double Screen::delta0() const { return delta0_; }
+double Screen::azimuthalFieldOfView() const {return azimuthal_fov_;}
+void Screen::azimuthalFieldOfView(double fov) {azimuthal_fov_ = fov;}
 
-double Screen::alpha0(string const &unit) const {
-  double fov = alpha0();
+void Screen::dangle1(double aa) { dangle1_ = aa; }
+double Screen::dangle1() const { return dangle1_; }
+void Screen::dangle2(double bb) { dangle2_ = bb; }
+double Screen::dangle2() const { return dangle2_; }
+
+double Screen::dangle1(string const &unit) const {
+  double fov = dangle1();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
 # ifdef HAVE_UDUNITS
@@ -1051,7 +1059,7 @@ double Screen::alpha0(string const &unit) const {
   else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::alpha0(): unknown unit: \"" << unit << "\""
+    ss << "Screen::dangle1(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
     throwError(ss.str());
   }
@@ -1059,8 +1067,8 @@ double Screen::alpha0(string const &unit) const {
   return fov;
 }
 
-double Screen::delta0(string const &unit) const{
-  double fov = delta0();
+double Screen::dangle2(string const &unit) const{
+  double fov = dangle2();
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= distance_ / gg_ -> unitLength();
 # ifdef HAVE_UDUNITS
@@ -1075,7 +1083,7 @@ double Screen::delta0(string const &unit) const{
   else if (unit=="microarcsec") fov /= GYOTO_MUASRAD;
   else {
     stringstream ss;
-    ss << "Screen::delta0(): unknown unit: \"" << unit << "\""
+    ss << "Screen::dangle2(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
     throwError(ss.str());
   }
@@ -1083,7 +1091,7 @@ double Screen::delta0(string const &unit) const{
   return fov;
 }
 
-void Screen::alpha0(double fov, const string &unit) {
+void Screen::dangle1(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
 # ifdef HAVE_UDUNITS
@@ -1107,10 +1115,10 @@ void Screen::alpha0(double fov, const string &unit) {
     throwError(ss.str());
   }
 # endif
-  alpha0(fov);
+  dangle1(fov);
 }
 
-void Screen::delta0(double fov, const string &unit) {
+void Screen::dangle2(double fov, const string &unit) {
   if (unit=="" || unit=="rad") ;
   else if (unit=="geometrical") fov *= gg_ -> unitLength() / distance_ ;
 # ifdef HAVE_UDUNITS
@@ -1134,7 +1142,7 @@ void Screen::delta0(double fov, const string &unit) {
     throwError(ss.str());
   }
 # endif
-  delta0(fov);
+  dangle2(fov);
 }
 
 void Screen::anglekind(int kind) { anglekind_ = kind; }
@@ -1265,8 +1273,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 
   // Deal with fov later as we need Inclination
   double fov; string fov_unit; int fov_found=0;
-  double alpha0=0.; int alpha0_found=0; 
-  double delta0=0.; int delta0_found=0;
+  double dangle1=0.; int dangle1_found=0; 
+  double dangle2=0.; int dangle2_found=0;
 
   while (fmp->getNextParameter(&name, &content, &unit)) {
     tc = const_cast<char*>(content.c_str());
@@ -1303,11 +1311,11 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 						     plugin))
 		     (fmp->getChild(), plugin));
     }
-    else if (name=="Alpha0"){
-      alpha0 = atof(tc); alpha0_found=1; aunit=unit;
+    else if (name=="Dangle1"){
+      dangle1 = atof(tc); dangle1_found=1; aunit=unit;
     }
-    else if (name=="Delta0"){
-      delta0 = atof(tc); delta0_found=1; dunit=unit;
+    else if (name=="Dangle2"){
+      dangle2 = atof(tc); dangle2_found=1; dunit=unit;
     }
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||
@@ -1324,8 +1332,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
   // Must be processed after Position and Distance so pix_unit is
   // defined
   if (fov_found) scr -> fieldOfView ( fov, fov_unit );
-  if (alpha0_found) scr -> alpha0(alpha0, aunit);
-  if (delta0_found) scr -> delta0(delta0, dunit);
+  if (dangle1_found) scr -> dangle1(dangle1, aunit);
+  if (dangle2_found) scr -> dangle2(dangle2, dunit);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(scr->dMax());

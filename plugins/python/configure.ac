@@ -45,8 +45,11 @@ AC_SUBST([DYLIB_VAR])
 AC_SUBST([SYS])
 AC_SUBST([plugin_sfx])
 
-PKG_CONFIG_PATH+=../../lib
+AS_IF([test "x$PKG_CONFIG_PATH" != "x"],
+  [PKG_CONFIG_PATH=:$PKG_CONFIG_PATH])
+PKG_CONFIG_PATH=../../lib$PKG_CONFIG_PATH
 export PKG_CONFIG_PATH
+echo $PKG_CONFIG_PATH
 
 # Read Gyoto's pkg-config file
 PKG_CHECK_MODULES([Gyoto],
@@ -67,8 +70,20 @@ PKG_CHECK_MODULES([Gyoto],
 
 AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
 
-PC_INIT
-PC_PROG_PYTHON
+AC_ARG_WITH([python],
+	[AC_HELP_STRING([--with-python@<:@=interpreter@:>@],
+	   [force (or disable) python support, possibly specifying interpreter])],
+	[
+	 case $with_python in
+	   yes | no) ;;
+	   *)
+	       PYTHON=`which $with_python` || AC_MSG_ERROR([$with_python: command not found])
+	       with_python=yes
+	 esac
+	],
+	[])
+
+PC_PROG_PYTHON([python3], [2.7], [4.0])
 PC_PYTHON_PROG_PYTHON_CONFIG
 PC_PYTHON_CHECK_INCLUDES
 PC_PYTHON_CHECK_HEADERS

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  This scenery yields the throat of a naked rotating worm-hole.
+
+ <!--    <DeltaMax> 1e-2 </DeltaMax> -->
+ <DeltaMaxOverR> 1e3 </DeltaMaxOverR>
+    <MaxIter> 100000 </MaxIter>
+    <Metric kind = "Hayward">
+        <Mass unit="sunmass">4.31e6</Mass>
+        <Spin>0.9</Spin>
+        <Charge>1</Charge>
+    </Metric>
+    
+    <Screen>
+        <Distance unit="kpc"> 2e-7 </Distance>
+        <Time unit="yr"> 1e-5 </Time>
+        <FieldOfView unit="µas"> 1e9 </FieldOfView> <!-- 1500 -->
+        <!-- To get the same view as with observer close to BH, use
+         inclination = 180 - i [5° -> 175 ; 45° -> 135 ; 85° -> 95]
+         -->
+        <Inclination unit="°"> 80 </Inclination>
+        <PALN> 3.1415  </PALN>
+        <Argument> -1.5708 </Argument>
+        <Resolution>500</Resolution>
+        <Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer>
+    </Screen>
+    
+    <Quantities>Spectrum</Quantities>
+    
+    <Astrobj kind = "PolishDoughnut">
+        <KomissarovAngleAveraged/>
+        <AngMomRinner> 4 8.3 </AngMomRinner> <!-- 3.2 4.2 ; 4.29 8.54 ; Caution: if AngMomRinner is given, rinner should be in BL -->
+        <CentralDensity>9000</CentralDensity>
+        <!--
+         This is the central enthalpy, hc, in cgs unit [erg/cm^3] ;
+         electron number density is ne ~ hc / (mu*c^2) [cm^{-3}]
+         where mu is the atomic mass unit.
+         Thus: ne [cm^{-3}] ~ 700 * hc [cgs]
+         -->
+        <CentralTemperature>5.3e10</CentralTemperature>
+        <Beta>10</Beta> <!-- beta = p_gas/p_mag -->
+        <OpticallyThin/>
+        <RMax>300.</RMax>
+        <!-- CAUTION: make sure the torus is smaller ;
+         NB: it is important to specify RMax as the integ step is set
+         to maximum 1 for r<RMax (which means everywhere if RMax is
+         not set!) -->
+        <SafetyValue> 0. </SafetyValue>
+        Increase SafetyValue if you have trouble resolving the
+        surface of the doughnut. Increasing SafetyValue also
+        increases computation time. The default value is slightly
+        more conservative.
+    </Astrobj>
+    <MinimumTime> -1000. </MinimumTime>
+    <NThreads> 4 </NThreads>
+
+</Scenery>

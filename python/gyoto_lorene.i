@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
-%module(docstring="The Gyoto Lorene plug-in") gyoto_lorene
+%module(docstring="The Gyoto Lorene plug-in", package="gyoto") lorene
 %import gyoto.i
 
 %{
@@ -26,6 +26,10 @@
 
 #include "GyotoRotStar3_1.h"
 #include "GyotoNumericalMetricLorene.h"
+
+#include "GyotoNeutronStar.h"
+#include "GyotoNeutronStarAnalyticEmission.h"
+#include "GyotoNeutronStarModelAtmosphere.h"
 
 using namespace Gyoto;
 
@@ -38,9 +42,14 @@ using namespace Gyoto;
 GyotoSmPtrClassDerived(Metric, RotStar3_1)
 GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
 
+GyotoSmPtrClassDerived(Astrobj, NeutronStar)
+GyotoSmPtrClassDerived(Astrobj, NeutronStarAnalyticEmission)
+GyotoSmPtrClassDerived(Astrobj, NeutronStarModelAtmosphere)
+
 // Workaround cvar bug in Swig which makes help(module) fail:
 %inline {
   namespace GyotoLorene {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int GyotoLorene::__class__ = 0;
 }

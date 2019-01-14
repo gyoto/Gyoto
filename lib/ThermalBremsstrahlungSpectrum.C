@@ -1,5 +1,5 @@
 /*
-  Copyright 2014 Frederic Vincent
+  Copyright 2014-2018 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -27,30 +27,34 @@
 #endif
 using namespace Gyoto;
 
-/// Properties
-
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Spectrum::ThermalBremsstrahlung)
-GYOTO_PROPERTY_DOUBLE(Spectrum::ThermalBremsstrahlung, Temperature, temperature)
+GYOTO_PROPERTY_START(Spectrum::ThermalBremsstrahlung,
+		     "Thermal bremsstrahlung emission")
 GYOTO_PROPERTY_END(Spectrum::ThermalBremsstrahlung, Generic::properties)
 
-///
-
-
+// This awful constant is the constant part of the thermal brems j_nu
+static double const cst_ = 1/(4.*M_PI)
+    *(pow(2.,5)*M_PI*pow(GYOTO_ELEMENTARY_CHARGE_CGS,6))
+    /(3.*GYOTO_ELECTRON_MASS_CGS*pow(GYOTO_C_CGS,3))
+    *sqrt(2*M_PI/(3.*GYOTO_BOLTZMANN_CGS*GYOTO_ELECTRON_MASS_CGS));
 
 Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung()
 : Spectrum::Generic("ThermalBremsstrahlung"),
-  spectrumBB_(NULL), T_(10000.), massdensityCGS_(0.)
+  spectrumBB_(NULL), T_(10000.), numberdensityCGS_(0.)
 {
   Tm1_=1./T_; Tm05_=sqrt(Tm1_);
-  // This awful constant is the constant part of the thermal brems j_nu
-  cst_ = 1/(4.*M_PI)
-    *(pow(2.,5)*M_PI*pow(GYOTO_ELEMENTARY_CHARGE_CGS,6))
-    /(3.*GYOTO_ELECTRON_MASS_CGS*pow(GYOTO_C_CGS,3))
-    *sqrt(2*M_PI/(3.*GYOTO_BOLTZMANN_CGS*GYOTO_ELECTRON_MASS_CGS))
-    *1./pow(GYOTO_ATOMIC_MASS_UNIT_CGS,2);
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
+}
+Spectrum::ThermalBremsstrahlung::ThermalBremsstrahlung(const ThermalBremsstrahlung &o)
+: Spectrum::Generic(o),
+  spectrumBB_(NULL),
+  T_(o.T_),
+  Tm1_(o.Tm1_),
+  Tm05_(o.Tm05_),
+  numberdensityCGS_(o.numberdensityCGS_)
+{
+  if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
 
 double Spectrum::ThermalBremsstrahlung::temperature() const { return T_; }
@@ -58,10 +62,11 @@ void Spectrum::ThermalBremsstrahlung::temperature(double tt) {
   T_ = tt; Tm1_=1./T_; Tm05_=sqrt(Tm1_);
   spectrumBB_->temperature(T_);
 }
-double Spectrum::ThermalBremsstrahlung::massdensityCGS() const { 
-  return massdensityCGS_; }
-void Spectrum::ThermalBremsstrahlung::massdensityCGS(double rho) { 
-  massdensityCGS_ = rho; }
+double Spectrum::ThermalBremsstrahlung::numberdensityCGS() const { 
+  return numberdensityCGS_; }
+void Spectrum::ThermalBremsstrahlung::numberdensityCGS(double rho) { 
+  numberdensityCGS_ = rho;
+}
   
 Spectrum::ThermalBremsstrahlung * Spectrum::ThermalBremsstrahlung::clone() const
 { return new Spectrum::ThermalBremsstrahlung(*this); }
@@ -80,16 +85,74 @@ double Spectrum::ThermalBremsstrahlung::operator()(double nu,
 }
 
 double Spectrum::ThermalBremsstrahlung::jnuCGS(double nu) const{
-  return  cst_*Tm05_*massdensityCGS_*massdensityCGS_
-    *exp(-GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_);
+  /*
+    This emission coefficient comes from Stepney&Guilbert (1983) eq.2-3
+    for most of it, plus Straub+12 for the 1/4pi*h/kT*exp() term.
+    It is valid both for nonrelativistic (kT/mc2 << 1) and relativistic
+    (kT/mc2 = or > 1) electrons. It implements only the electron-ion
+    Brems. I checked that it reduces in the case kT/mc2 << 1 to the
+    simple expression in Rybicki&Lightman and my notes, up to an
+    unexplained constant factor of order 1.1, so I consider it okay
+    and checked.
+   */
+  
+  //std::cout << "in brems cst,ne,Te= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
+  double theta_e = T_*GYOTO_BOLTZMANN_CGS
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double Fei=numberdensityCGS_*numberdensityCGS_*GYOTO_THOMSON_CGS
+    *GYOTO_C_CGS*GYOTO_ALPHA_F*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS;
+  if (theta_e < 1.) {
+    Fei *= 4.*sqrt(2.*theta_e / (M_PI*M_PI*M_PI))*(1.+1.781*pow(theta_e,1.34));
+  }else{
+    Fei *= 9.*theta_e / (2.*M_PI)*(log(1.123*theta_e + 0.42) + 1.5);
+  }
+
+  // Gaunt factor from Rybicki&Lightman
+  double gaunt=0.;
+  double fact=T_*GYOTO_BOLTZMANN_CGS/(GYOTO_PLANCK_CGS*nu);
+  if (fact<=1.) gaunt=sqrt(3./M_PI*fact);
+  else gaunt=sqrt(3.)/M_PI*log(4./exp(GYOTO_EULER_MASCHERONI)*fact) ;
+  // NB: in the above formula, I use the fact that the dzeta appearing
+  // in Fig. 5.2 of Rybicki&Lightman is exp(euler_cst)=exp(0.577)=1.781,
+  // this is unfortunately not clearly defined in RL...
+  // See eg Gayet70 for an independent reference.
+  
+  double jnu = 1./(4.*M_PI)				
+    *GYOTO_PLANCK_OVER_BOLTZMANN*Tm1_		
+    *exp(-GYOTO_PLANCK_OVER_BOLTZMANN*nu*Tm1_)	
+    *Fei*gaunt;
+  return jnu;
 }
 
 double Spectrum::ThermalBremsstrahlung::alphanuCGS(double nu) const{
-  double BB=(*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+  double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+  double jnu = jnuCGS(nu);
   if (BB==0.){
-    throwError("In ThermalBrems: "
-	       "bad temperature");
+    if (jnu==0.) return 0.;
+    else throwError("In ThermalBrems: alphanu undefined!");
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
+}
+
+void Spectrum::ThermalBremsstrahlung::radiativeQ(double jnu[], // output
+						double alphanu[], // output
+						double nu_ems[],
+						size_t nbnu
+						) {
+  for (size_t ii=0; ii< nbnu; ++ii){
+    
+    double nu = nu_ems[ii];
+    double BB  = (*spectrumBB_)(nu);
+    
+    jnu[ii]=this->jnuCGS(nu)*GYOTO_JNU_CGS_TO_SI;
+    if (BB==0.){
+      if (jnu[ii]==0.) alphanu[ii]=0.;
+      else throwError("In ThermalBrems: alphanu undefined!");
+    }else
+      alphanu[ii]=jnu[ii]/BB;
+    
+  }
+  
 }

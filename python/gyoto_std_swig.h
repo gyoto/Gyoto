@@ -4,6 +4,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoHayward.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -27,8 +28,13 @@
 #include "GyotoDirectionalDisk.h"
 #include "GyotoDeformedTorus.h"
 #include "GyotoEquatorialHotSpot.h"
+#include "GyotoXillverReflection.h"
+#include "GyotoJet.h"
+#include "GyotoBlob.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoThermalBremsstrahlungSpectrum.h"
+#include "GyotoThermalSynchrotronSpectrum.h"
+#include "GyotoPowerLawSynchrotronSpectrum.h"

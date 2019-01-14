@@ -54,41 +54,16 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   double tinit_; ///< date of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
   int nb_times_; ///< Number of dates
+  int nnu_, nphi_, nr_; ///< Grid dimensions (assumed constant)
 
   /// Array of PatternDisk::emission_ arrays
   double ** emission_array_;
-
-  /// Array of PatternDisk::opacity_ arrays
-  double ** opacity_array_;
 
   /// Array of PatternDisk::velocity_ arrays
   double ** velocity_array_; ///< 
 
   /// Array of PatternDisk::radius_ arrays
   double ** radius_array_; ///< radius vector
-
-  /// Array of PatternDisk::dnu_ values
-  double * dnu_array_;
-
-  /// Array of PatternDisk::nu0_ values
-  double * nu0_array_;
-
-  /// Array of PatternDisk::nu1_ values
-  size_t * nnu_array_;
-
-
-  /// Array of PatternDisk::dphi_ values
-  double * dphi_array_;
-
-  /// Array of PatternDisk::nphi_ values
-  size_t * nphi_array_;
-
-
-  /// Array of PatternDisk::dr_ values
-  double * dr_array_;
-
-  /// Array of PatternDisk::nr_ values
-  size_t * nr_array_;
 
   // Constructors - Destructor
   // -------------------------
@@ -127,6 +102,8 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
    * \param iq Index of the date slice.
    */
   void copyQuantities(int iq) ;
+
+  void nullifyQuantities() ;
 
 
 };

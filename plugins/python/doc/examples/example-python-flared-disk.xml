@@ -25,7 +25,6 @@
     <OpticallyThin/>
     <InlineModule>
         import math
-        import gyoto
         class FlaredDisk:
             opening=0.2
             rin=4

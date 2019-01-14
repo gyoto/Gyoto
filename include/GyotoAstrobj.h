@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2017 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -223,7 +223,6 @@ class Gyoto::Astrobj::Generic
 
   bool flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
-  int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
   int shadow_; ///< 1 to highlight the shadow region in the image
   int noredshift_; ///< 1 to impose redshift factor g = 1
   // Constructors - Destructor
@@ -346,9 +345,6 @@ class Gyoto::Astrobj::Generic
   bool opticallyThin() const ;
   ///< Query whether object is optically thin.
 
-  void radiativeQ(bool flag);
-  bool radiativeQ() const ;
-
   void showshadow(bool flag);
   bool showshadow() const ;
 
@@ -421,6 +417,9 @@ class Gyoto::Astrobj::Generic
    * Photon (see Photon::transmit(size_t, double)). This must not be
    * done if data is NULL (see Astrobj::Complex::Impact() for an
    * explanation).
+   *
+   * Impact() may not extend the ph Worldline. The only two dates that
+   * are guaranteed to be defined are at indices index and index+1.
    *
    * \param ph   Gyoto::Photon aimed at the object;
    * \param index    Index of the last photon step;
@@ -527,7 +526,9 @@ class Gyoto::Astrobj::Generic
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const ; 
 
-  // Under development
+  /**
+   * \brief emission and transmission together
+   */
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],

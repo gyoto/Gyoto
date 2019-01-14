@@ -387,7 +387,7 @@ namespace Gyoto {
  *
  * E.g. in Gyoto::Photon::findMin(), Gyoto::Photon::findValue().
  */
-#define GYOTO_T_TOL 1e-4
+#define GYOTO_T_TOL 1e-4 //1e-7 //1e-4
 
 #define GYOTO_KERR_HORIZON_SECURITY 0.01
 
@@ -420,12 +420,18 @@ namespace Gyoto {
 #define GYOTO_C          299792458.
 /// \brief Celerity of light (cm/s)
 #define GYOTO_C_CGS 2.99792458e10
+/// \brief Celerity of light squared c^2 in cgs
+#define GYOTO_C2_CGS 8.98755178736817668096e+20
+/// \brief Inverse of celerity of light squared in cgs
+#define GYOTO_C2_CGS_M1 1.1126500560536184087938986e-21
 /// \brief Gravitational constant (SI = m^3 * kg^-1 * s-2)
 #define GYOTO_G 6.67428e-11
 /// \brief Gravitational constant (cgs: cm^3 * g^-1 * s-2)
 #define GYOTO_G_CGS 6.67428e-8
 /// \brief G/c^2=6.67428e-11/299792458.^2
 #define GYOTO_G_OVER_C_SQUARE 7.426138e-28
+/// \brief G/c^2 in cgs units
+#define GYOTO_G_OVER_C_SQUARE_CGS 7.426138e-29
 /// \brief Planck's constant (h) in SI (J.s=kg.m^2/s) 
 #define GYOTO_PLANCK 6.62606896e-34
 /// \brief Planck's constant (h) in c.g.s (g.cm^2/s) 
@@ -464,6 +470,10 @@ namespace Gyoto {
 #define GYOTO_ATOMIC_MASS_UNIT_CGS 1.660537781e-24
 /// \brief Factor to convert I<SUB>&nu;</SUB> from c.g.s. to SI
 #define GYOTO_INU_CGS_TO_SI 0.001
+/// \brief Factor to convert J<SUB>&nu;</SUB> from c.g.s. to SI
+#define GYOTO_JNU_CGS_TO_SI (GYOTO_INU_CGS_TO_SI  * 100.)
+/// \brief Factor to convert alpha<SUB>&nu;</SUB> from c.g.s. to SI
+#define GYOTO_ANU_CGS_TO_SI 100.
 
 /// \brief Sun mass (kg)
 #define GYOTO_SUN_MASS    1.98843e30
@@ -552,10 +562,10 @@ namespace Gyoto {
 # define getDelta           delta
 # define setDelta           delta
 # define getDelta           delta
-# define setDelta0          delta0
-# define getDelta0          delta0
-# define setAlpha0          alpha0
-# define getAlpha0          alpha0
+# define setDangle2         dangle2
+# define getDangle2         dangle2
+# define setDangle1         dangle1
+# define getDangle1         dangle1
 # define setAnglekind       anglekind
 # define getTmin            tMin
 # define setTmin            tMin

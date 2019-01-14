@@ -1,4 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4 
+ACLOCAL_AMFLAGS = -I m4
 AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) \
 	-DPACKAGE_STRING="$(PACKAGE_STRING)"
 AM_LDFLAGS  = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC)
@@ -44,6 +44,7 @@ CHECK_RESULTS = \
         example-thin-disk-minkowski-spherical.fits \
         example-complex-astrobj.fits \
         example-fixed-star.fits \
+        example-fixed-star-RZ.fits \
         example-fixed-star-minkowski-cartesian.fits \
         example-fixed-star-minkowski-spherical.fits \
         example-startrace.fits \
@@ -58,8 +59,14 @@ CHECK_RESULTS = \
 if HAVE_UDUNITS
 CHECK_RESULTS += \
         example-fixed-star-KS.fits \
-        example-polish-doughnut.fits
+        example-polish-doughnut.fits \
+        example-polish-doughnut-hayward-wormhole.fits \
+        example-polish-doughnut-RZ.fits
 endif
+if HAVE_2F1
+CHECK_RESULTS += example-jet.fits
+endif
+
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 
@@ -126,7 +133,7 @@ check-lorene-compute: $(CHECK_ROTSTAR_RESULTS)
 check-lorene: check-lorene-clean check-lorene-compute
 
 check-lorene-mpi-clean:
-	rm -f $(CHECK_ROTSTAR_RESULTS)
+	rm -f $(CHECK_ROTSTAR_MPI_RESULTS)
 check-lorene-mpi-compute: $(CHECK_ROTSTAR_MPI_RESULTS)
 check-lorene-mpi: check-lorene-mpi-clean check-lorene-mpi-compute
 

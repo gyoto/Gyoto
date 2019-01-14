@@ -36,7 +36,8 @@ GYOTO_C = $(shell ls @top_srcdir@/lib/*.C)
 GYOTO_OBJ = $(GYOTO_C:.C=.o)
 GYOTO_H = $(shell ls @top_srcdir@/include/*.h)
 
-MPIRUN = mpirun
+# Works with openmpi 3
+MPIRUN = mpirun -np 1 -oversubscribe
 
 PKG_NAME=gyoto
 PKG_I=@srcdir@/gyoto.i

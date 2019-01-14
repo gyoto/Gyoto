@@ -81,7 +81,7 @@ CPPFLAGS=-I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS)
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CFLAGS=$(CXXFLAGS)
 
-SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir .
+SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir swig_output
 
 export LDFLAGS
 export CFLAGS
@@ -89,12 +89,12 @@ export CPPFLAGS
 export CXXFLAGS
 export CC
 
-GYOTO_EXTENSIONS =  _gyoto$(PYTHON_EXTENSION_SUFFIX) \
-                    _gyoto_std$(PYTHON_EXTENSION_SUFFIX)
-GYOTO_PYFILES = gyoto.py gyoto_std.py
+GYOTO_EXTENSIONS =  gyoto/_core$(PYTHON_EXTENSION_SUFFIX) \
+                    gyoto/_std$(PYTHON_EXTENSION_SUFFIX)
+GYOTO_PYFILES = gyoto/core.py gyoto/std.py
 GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/numpy.i $(srcdir)/gyoto_swig.h $(srcdir)/gyoto_std_swig.h
-@HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += _gyoto_lorene$(PYTHON_EXTENSION_SUFFIX)
-@HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto_lorene.py
+@HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += gyoto/_lorene$(PYTHON_EXTENSION_SUFFIX)
+@HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
 all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
@@ -117,30 +117,38 @@ gyoto_doc.i: gyoto_doc.i.orig
 	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
 	          $< > $@
 
-_gyoto$(PYTHON_EXTENSION_SUFFIX): gyoto_wrap.cxx
+gyoto/_core$(PYTHON_EXTENSION_SUFFIX): core_wrap.cxx
 	$(PYTHON) setup.py build_ext
 
-_gyoto_std$(PYTHON_EXTENSION_SUFFIX): gyoto_std_wrap.cxx
-	$(PYTHON) setup_std.py build_ext
+gyoto/_std$(PYTHON_EXTENSION_SUFFIX): std_wrap.cxx
+	$(PYTHON) setup.py build_ext
 
-_gyoto_lorene$(PYTHON_EXTENSION_SUFFIX): gyoto_lorene_wrap.cxx
-	$(PYTHON) setup_lorene.py build_ext
+gyoto/_lorene$(PYTHON_EXTENSION_SUFFIX): lorene_wrap.cxx
+	$(PYTHON) setup.py build_ext
 
-gyoto.py gyoto_wrap.cxx: gyoto.i header.py gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(SWIG_CMD) -o gyoto_wrap.cxx $(srcdir)/gyoto.i
-	mv gyoto.py trailer.py
-	cat $(srcdir)/header.py trailer.py > gyoto.py
-	rm trailer.py
+gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
 
-gyoto_std.py gyoto_std_wrap.cxx: gyoto_std.i gyoto.i
-	$(SWIG_CMD) -o gyoto_std_wrap.cxx $(srcdir)/gyoto_std.i
-	mv gyoto_std.py gyoto_std_trailer.py
-	echo "# -*- coding: utf-8 -*-" > gyoto_std.py
-	cat gyoto_std_trailer.py >> gyoto_std.py
-	rm gyoto_std_trailer.py
+gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
 
-gyoto_lorene.py gyoto_lorene_wrap.cxx: gyoto_lorene.i gyoto.i
-	$(SWIG_CMD) -o gyoto_lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
+gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
+
+swig_output/core.py core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o core_wrap.cxx $(srcdir)/gyoto.i
+
+swig_output/std.py std_wrap.cxx: gyoto_std.i gyoto.i
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o std_wrap.cxx $(srcdir)/gyoto_std.i
+
+swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
 
 .PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 
@@ -152,12 +160,8 @@ install: all installdirs
 ifneq ($(VIRTUALENV),no)
 	$(VIRTUALENV) $(VIRTUALENV_FLAGS) $(DESTDIR)$(prefix) || $(VIRTUALENV) $(DESTDIR)$(prefix)
 	$(DESTDIR)$(prefix)/bin/python setup.py install --prefix=$(DESTDIR)$(prefix)
-	$(DESTDIR)$(prefix)/bin/python setup_std.py install --prefix=$(DESTDIR)$(prefix)
-@HAVE_LORENE_TRUE@	$(DESTDIR)$(prefix)/bin/python setup_lorene.py install --prefix=$(DESTDIR)$(prefix)
 else
 	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_installed.txt
-	$(PYTHON) setup_std.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_std_installed.txt
-@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_lorene_installed.txt
 endif
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
@@ -180,12 +184,10 @@ uninstall:
 # Just use the usual setup.py clean command
 clean:
 	$(PYTHON) setup.py clean
-	$(PYTHON) setup_std.py clean
-@HAVE_LORENE_TRUE@	$(PYTHON) setup_lorene.py clean
-	-rm -Rf build dist
-	-rm gyoto*.py gyoto*_wrap.cxx *.pyc gyoto_doc.i gyoto_doc.i.orig
+	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
+	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm doxygen_sqlite3.db gyoto_*installed.txt
-	-rm -f tests/*.pyc
+	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc
 	-rm -Rf _gyoto*.so Gyoto*.egg-info
 
 # Clean up the output of configure
@@ -204,7 +206,6 @@ dist:
 # Use the setup.py test command
 check:
 	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup.py test
-	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup_std.py test
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here

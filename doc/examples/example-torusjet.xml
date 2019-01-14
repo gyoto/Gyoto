@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  <!-- <DeltaMaxOverR> 0.1 </DeltaMaxOverR> -->
+  Uncomment the line above to generate high-quality images.
+  Useless for spectra (increases computing time).
+  
+  <Metric kind = "KerrBL">
+    <Mass unit="sunmass">4.1e6</Mass>
+    <Spin>0.</Spin>
+  </Metric>
+
+  <Screen>
+    <Distance unit="kpc"> 8.1 </Distance>
+    <Time unit="yr"> 100e3 </Time> 27.169411e3
+    <FieldOfView unit="µas"> 500 </FieldOfView>
+    <Inclination unit="°"> 160 </Inclination> i = 180 - Inclination
+    <PALN> 3.1415  </PALN>  This rotates the Screen in its plane
+    <Argument> -1.5708 </Argument> This changes the phi position of the Screen 
+    <Resolution>201</Resolution> Choose an odd integer, easier for
+    spectrum computation by plot-Spectrum.py
+    <Spectrometer kind="freqlog" nsamples="30">11. 18.</Spectrometer>
+    The Spectrometer above computes a spectrum with 30 values
+    of frequency between 1e11 and 1e18 Hz.
+    To compute just one image at 1.3mm, use the Spectro below
+    <!--<Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer>-->
+  </Screen>
+  
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "Complex">
+    <SubAstrobj kind = "Jet">
+
+      <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
+      <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
+      <JetBaseHeight>2.</JetBaseHeight> in M units
+      <GammaJet>1.15</GammaJet>
+      <BaseNumberDensity unit="cm-3">5e7</BaseNumberDensity>
+      <BaseTemperature>3e10</BaseTemperature>
+      <TemperatureSlope>0.21</TemperatureSlope>
+      <MagnetizationParameter>0.01</MagnetizationParameter>
+      <KappaIndex>5.5</KappaIndex> 
+      <RMax>100.</RMax> in M units; photon discusses with Jet only below this
+      value, so be sure that the interesting part of the Jet in your
+      field of view is contained within this radius.
+      <DeltaInObj>0.2</DeltaInObj> This is a radiative transfer parameter inside
+      the Jet: the photon geodesic inside the Jet will be cut in small
+      steps of this size in M units to integrated the radiative transfer.
+    </SubAstrobj>
+    <SubAstrobj kind = "PolishDoughnut">
+      <AngleAveraged/>
+      <AngMomRinner> 4. 8. </AngMomRinner> 
+      <CentralEnthalpyPerUnitVolume unit="erg/cm3">
+  	2000000
+      </CentralEnthalpyPerUnitVolume>
+      The central enthalpy (hc) is provided here.
+      For a central number density of nc=1.2e9 cm-3,
+      the central enthalpy is: hc = 2e6
+      <CentralTemperature>7e9</CentralTemperature>
+      <MagnetizationParameter>0.002</MagnetizationParameter>
+      <OpticallyThin/>
+      <RMax>100.</RMax>
+      <DeltaInObj>0.2</DeltaInObj>
+    </SubAstrobj>
+  </Astrobj>
+
+  <MinimumTime> -1e10 </MinimumTime> Photon integration stops for times
+  smaller than that.
+  <NThreads> 8 </NThreads> Depends on your machine!
+  
+</Scenery>
+

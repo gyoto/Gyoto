@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -44,7 +44,7 @@ using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(PageThorneDisk)
 // Since BlackbodyMdot also sets BlackBody, it's important to keep the
-// later after the former
+// latter after the former
 GYOTO_PROPERTY_DOUBLE(PageThorneDisk, BlackbodyMdot, BlackbodyMdot)
 GYOTO_PROPERTY_BOOL(PageThorneDisk, BlackBody, NonBlackBody, blackBody)
 GYOTO_PROPERTY_BOOL(PageThorneDisk, UniFlux, NonUniFlux, uniFlux)
@@ -122,7 +122,7 @@ void PageThorneDisk::updateSpin() {
 void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kin = gg->kind();
-  if (kin != "KerrBL" && kin != "KerrKS" && kin != "ChernSimons")
+  if (kin != "KerrBL" && kin != "KerrKS")
     throwError
       ("PageThorneDisk::metric(): metric must be KerrBL or KerrKS");
   ThinDisk::metric(gg);

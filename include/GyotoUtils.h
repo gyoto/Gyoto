@@ -38,7 +38,7 @@ namespace Gyoto {
    * \param mode 1 to turn on debug mode, 0 to turn it off.
    */
   void debug(int mode);
-
+  
   /// Get debug mode
   /**
    * \return >=1 if debug mode is on, else 0.
@@ -58,13 +58,13 @@ namespace Gyoto {
    * - GYOTO_DEBUG_VERBOSITY
    */
   void verbose(int mode);
-
+  
   /// Get verbosity level
   /**
    * See verbose(int mode).
    */
   int verbose();
-
+  
   /// Convert lengths (deprecated)
   /**
    * \deprecated Will be removed once it is not used anymore in Gyoto
@@ -81,7 +81,7 @@ namespace Gyoto {
   void convert(double * const x, const std::size_t nelem,
 	       const double mass_sun, const double distance_kpc,
 	       const std::string unit);
-
+  
   /// Interpret C string as double
   /**
    * Wrapper around std::atof() that also interprets DBL_MIN, DBL_MAX,
@@ -103,6 +103,21 @@ namespace Gyoto {
 
   /// Split string
   std::vector<std::string> split(std::string const &src, std::string const &delim);
+
+  /// Bessel function computation
+  /*
+    boost Bessel function as implemented in
+    #include <boost/math/special_functions/bessel.hpp> 
+    are 50% longer than the following, while the following
+    give results accurate at ~1e-6 which is more than enough.
+   */
+  double bessi0(double xx);///< Modified Bessel function I<SUB>0</SUB>
+  double bessi1(double xx);///< Modified Bessel function I<SUB>1</SUB>
+  double bessk0(double xx);///< Modified Bessel function K<SUB>0</SUB>
+  double bessk1(double xx);///< Modified Bessel function K<SUB>1</SUB>
+  double bessk(int nn, double xx);///< Modified Bessel function
+
+  double hypergeom (double kappaIndex, double thetae); ///< Gauss hypergeometric 2F1 term for kappa-distribution synchrotron
 }
 
 #endif

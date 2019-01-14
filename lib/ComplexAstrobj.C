@@ -99,14 +99,14 @@ void Complex::append(SmartPointer<Generic> e)
 
 SmartPointer<Generic>& Complex::operator[](size_t i)
 {
-  if (i > cardinal_)
+  if (i >= cardinal_)
     throwError("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
 
 SmartPointer<Generic> const& Complex::operator[](size_t i) const
 {
-  if (i > cardinal_)
+  if (i >= cardinal_)
     throwError("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
@@ -132,6 +132,13 @@ double Complex::deltaMax(double coord[8]) {
   for (size_t i=0; i<cardinal_; ++i)
     if (h1max> (tmp=elements_[i]->deltaMax(coord))) h1max=tmp;
   return h1max;
+}
+
+double Complex::rMax() {
+  double rmax = elements_[0] -> rMax(), rmaxnew=rmax;
+  for (size_t i=1; i<cardinal_; ++i)
+    if (rmax < (rmaxnew=elements_[i] -> rMax())) rmax=rmaxnew;
+  return rmax;
 }
 
 int Complex::Impact(Photon* ph, size_t index, Properties *data)

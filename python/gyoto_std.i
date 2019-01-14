@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2018 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -16,8 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
-%module(docstring="The Gyoto standard plug-in") gyoto_std
+%module(docstring="The Gyoto standard plug-in", package="gyoto") std
 %import gyoto.i
+%include "exception.i"
 %{
 
 #define GYOTO_NO_DEPRECATED
@@ -53,24 +54,45 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, DynamicalDisk3D)
 GyotoSmPtrTypeMapClassDerived(Astrobj, DirectionalDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrTypeMapClassDerived(Astrobj, EquatorialHotSpot)
+GyotoSmPtrTypeMapClassDerived(Astrobj, XillverReflection)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Jet)
+GyotoSmPtrTypeMapClassDerived(Astrobj, Blob)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
 GyotoSmPtrTypeMapClassDerived(Metric, Minkowski)
 GyotoSmPtrTypeMapClassDerived(Metric, ChernSimons)
 GyotoSmPtrTypeMapClassDerived(Metric, RezzollaZhidenko)
+GyotoSmPtrTypeMapClassDerived(Metric, Hayward)
 
 GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLaw)
 GyotoSmPtrTypeMapClassDerived(Spectrum, BlackBody)
 GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalBremsstrahlung)
+GyotoSmPtrTypeMapClassDerived(Spectrum, ThermalSynchrotron)
+GyotoSmPtrTypeMapClassDerived(Spectrum, PowerLawSynchrotron)
 
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind, SmartPointer<Metric::Generic> gg, double radius);
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (std::string kind);
 %ignore Gyoto::Astrobj::UniformSphere::UniformSphere (const UniformSphere& orig);
 GyotoSmPtrClassDerived(Astrobj, UniformSphere)
 
+%inline {
+  class myCplxIdxExcept {};
+}
+
+%exception Gyoto::Astrobj::Complex::__getitem__ {
+  try {
+    $action ;
+  } catch (myCplxIdxExcept e) {
+    SWIG_exception_fail(SWIG_IndexError, "Index out of bounds");
+  }
+}
+
 %extend Gyoto::Astrobj::Complex {
-  Gyoto::Astrobj::Generic * __getitem__ (int i) {
+  Gyoto::Astrobj::Generic * __getitem__ (size_t i) {
+    if (i >= ($self)->getCardinal()) {
+      throw myCplxIdxExcept();
+    }
     Gyoto::Astrobj::Generic * res = ($self)->operator[](i);
     res -> incRefCount();
     return res;
@@ -103,6 +125,9 @@ GyotoSmPtrClassDerived(Astrobj, DynamicalDisk3D)
 GyotoSmPtrClassDerived(Astrobj, DirectionalDisk)
 GyotoSmPtrClassDerived(Astrobj, DeformedTorus)
 GyotoSmPtrClassDerived(Astrobj, EquatorialHotSpot)
+GyotoSmPtrClassDerived(Astrobj, XillverReflection)
+GyotoSmPtrClassDerived(Astrobj, Jet)
+GyotoSmPtrClassDerived(Astrobj, Blob)
 
 
 GyotoSmPtrClassDerived(Metric, KerrBL)
@@ -110,14 +135,18 @@ GyotoSmPtrClassDerived(Metric, KerrKS)
 GyotoSmPtrClassDerived(Metric, Minkowski)
 GyotoSmPtrClassDerived(Metric, ChernSimons)
 GyotoSmPtrClassDerived(Metric, RezzollaZhidenko)
+GyotoSmPtrClassDerived(Metric, Hayward)
 
 GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, ThermalBremsstrahlung, GyotoThermalBremsstrahlungSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, ThermalSynchrotron, GyotoThermalSynchrotronSpectrum.h)
+GyotoSmPtrClassDerivedHdr(Spectrum, PowerLawSynchrotron, GyotoPowerLawSynchrotronSpectrum.h)
 
 // Workaround cvar bug in Swig which makes help(gyoto_std) fail:
 %inline {
   namespace GyotoStd {
-    extern int __class__=0;
+    extern int __class__;
   }
+  int GyotoStd::__class__ = 0;
 }
