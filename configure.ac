@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [1.2.0], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [1.3.0~rc1], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -26,7 +26,7 @@ AC_SUBST([VERBATIM], [])
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 # C: current; R: revision; A: age
 # Linux library name is: libgyoto.so.(C-A).A.R
-VERSINFO_C=6
+VERSINFO_C=7
 VERSINFO_R=0
 VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
