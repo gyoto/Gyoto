@@ -21,9 +21,9 @@
 
 begin_section, "PatternDisk Astrobj";
 
-opacity=array(double, 1, 2, 10);
-opacity(,1,1::2)=100.;
-opacity(,2,2::2)=100.;
+opacity=array(double, 1, 3, 11);
+opacity(,1::2,1::2)=100.;
+opacity(,2::2,2::2)=100.;
 
 intensity=opacity*0.+1.;
 
@@ -39,13 +39,13 @@ write, format="%s\n", "Printing PatternDisk:";
 pd;
 write, format="%s\n", " done.";
 
-screen = gyoto_Screen(metric=metric, resolution=64,
+screen = gyoto_Screen(metric=metric, resolution=128,
                       time=1000.*metric.unitlength()/GYOTO_C,
                       distance=100.*metric.unitlength(), fov=30./100.,
                       inclination=110./180.*pi, paln=pi);
 
 write, format="%s", "Attaching PatternDisk to scenery...";
-sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);
+sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd, nthreads=8);
 write, format="%s\n", " done.";
 
 if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
