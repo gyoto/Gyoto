@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2014 Thibaut Paumard
+    Copyright 2011-2014, 2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -21,9 +21,9 @@
 
 begin_section, "PatternDisk Astrobj";
 
-opacity=array(double, 1, 3, 11);
-opacity(,1::2,1::2)=100.;
-opacity(,2::2,2::2)=100.;
+opacity=array(double, 11, 3, 1);
+opacity(1::2, 1::2, )=100.;
+opacity(2::2, 2::2, )=100.;
 
 intensity=opacity*0.+1.;
 

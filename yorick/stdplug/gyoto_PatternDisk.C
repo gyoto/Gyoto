@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016 Thibaut Paumard
+    Copyright 2011-2014, 2016, 2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -75,7 +75,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, long(ddims[0]), long(ddims[1]), long(ddims[2])};
+      long dims[] = {3, long(ddims[2]), long(ddims[1]), long(ddims[0])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->getIntensity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
@@ -85,10 +85,10 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyIntensity(NULL, 0);
       else if (dims[0]==3) {
-	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3])};
+	size_t ddims[] = {size_t(dims[3]), size_t(dims[2]), size_t(dims[1])};
 	(*OBJ)->copyIntensity(in, ddims);
       } else
-	y_error("COPYINTENSITY must be nil, 0, or array(double, nnu, nphi, nr");
+	y_error("COPYINTENSITY must be nil, 0, or array(double, nr, nphi, nnu");
     }
   }
 
@@ -100,7 +100,7 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       if ((*rvset)++) y_error(rmsg);
       size_t ddims[3];
       (*OBJ) -> getIntensityNaxes(ddims);
-      long dims[] = {3, long(ddims[0]), long(ddims[1]), long(ddims[2])};
+      long dims[] = {3, long(ddims[2]), long(ddims[1]), long(ddims[0])};
       double * out = ypush_d(dims);
       memcpy(out, (*OBJ)->opacity(),
 	     dims[1]*dims[2]*dims[3]*sizeof(double));
@@ -110,10 +110,10 @@ void ygyoto_PatternDisk_eval(SmartPointer<Astrobj::Generic> *OBJ_, int argc) {
       double const * const in = ygeta_d(iarg, &ntot, dims);
       if (dims[0]==0 && ntot && *in==0) (*OBJ) -> copyOpacity(NULL, 0);
       else if (dims[0]==3) {
-	size_t ddims[] = {size_t(dims[1]), size_t(dims[2]), size_t(dims[3])};
+	size_t ddims[] = {size_t(dims[3]), size_t(dims[2]), size_t(dims[1])};
 	(*OBJ)->copyOpacity(in, ddims);
       } else
-	y_error("COPYOPACITY must be nil, 0, or array(double, nnu, nphi, nr");
+	y_error("COPYOPACITY must be nil, 0, or array(double, nr, nphi, nnu");
     }
   }
 
