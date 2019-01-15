@@ -46,7 +46,8 @@
    * Important code cleaning in PatternDisk
      + PatternDisk: implement radial interpolation for axisym grid;
        implement case when phi is out of phi-grid bounds; correction
-       of bugs with rin, rout, rmax; allows grid with nphi=1 (axisym)
+       of bugs with rin, rout, rmax; allows grid with nphi=1 (axisym);
+       transpose grid (In NumPy, grid is of dimension 1xNphixNr)
      + PatternDiskBB: remove risco and all calls to Kerr; can support
        any metric now
    * RezzollaZhidenko: implement circularVelocity
