@@ -39,13 +39,13 @@ write, format="%s\n", "Printing PatternDisk:";
 pd;
 write, format="%s\n", " done.";
 
-screen = gyoto_Screen(metric=metric, resolution=128,
+screen = gyoto_Screen(metric=metric, resolution=64,
                       time=1000.*metric.unitlength()/GYOTO_C,
                       distance=100.*metric.unitlength(), fov=30./100.,
                       inclination=110./180.*pi, paln=pi);
 
 write, format="%s", "Attaching PatternDisk to scenery...";
-sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd, nthreads=8);
+sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);
 write, format="%s\n", " done.";
 
 if (gyoto_haveXerces() && gyoto_haveCFITSIO()) {
