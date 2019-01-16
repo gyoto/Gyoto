@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2016, 2018-2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -237,7 +237,7 @@ class Gyoto::Scenery
    *
    * The approach of Gyoto to MPI is that a manager process (of rank 0
    * within a given MPI communicator) will distribute ray-tracing
-   * tasks accross worker processes. Several scenarii are supported,
+   * tasks across worker processes. Several scenarii are supported,
    * including spawning instances of the gyoto-mpi-worker.version
    * executable, where "version" matches the version component in the
    * library name (typically a number, possibly followed by
