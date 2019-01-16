@@ -1,5 +1,5 @@
 /*
-    Copyright © 2015-2016 Thibaut Paumard
+    Copyright © 2015-2017, 2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -79,7 +79,7 @@ PyObject * Gyoto::Python::PyImport_Gyoto() {
 }
 
 PyObject * Gyoto::Python::pGyotoSpectrum() {
-  PyObject * res = NULL;
+  static PyObject * res = NULL;
   static bool need_load = true;
   if (need_load) {
     need_load=false;
@@ -91,7 +91,7 @@ PyObject * Gyoto::Python::pGyotoSpectrum() {
 }
 
 PyObject * Gyoto::Python::pGyotoThinDisk() {
-  PyObject * res = NULL;
+  static PyObject * res = NULL;
   static bool need_load = true;
   if (need_load) {
     need_load=false;
@@ -103,7 +103,7 @@ PyObject * Gyoto::Python::pGyotoThinDisk() {
 }
 
 PyObject * Gyoto::Python::pGyotoMetric() {
-  PyObject * res = NULL;
+  static PyObject * res = NULL;
   static bool need_load = true;
   if (need_load) {
     need_load=false;
@@ -115,7 +115,7 @@ PyObject * Gyoto::Python::pGyotoMetric() {
 }
 
 PyObject * Gyoto::Python::pGyotoStandardAstrobj() {
-  PyObject * res = NULL;
+  static PyObject * res = NULL;
   static bool need_load = true;
   if (need_load) {
     need_load=false;
