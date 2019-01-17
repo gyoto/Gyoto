@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2013-2014, 2016 Thibaut Paumard
+    Copyright 2013-2014, 2016, 2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -145,7 +145,7 @@ class Gyoto::Spectrometer::Complex
    * \brief Main loop in the (templated) subcontractor
    *
    * In the case of Spectrometer::Complex, the setParameter() API is
-   * not sufficient: setParameters() needs acces to the
+   * not sufficient: setParameters() needs access to the
    * FactoryMessenger to instantiate children for the
    * SubSpectrometers.
    */

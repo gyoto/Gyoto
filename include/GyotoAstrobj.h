@@ -223,7 +223,6 @@ class Gyoto::Astrobj::Generic
 
   bool flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
-  int radiativeq_; ///< 1 to use the new radiativeQ function (under dvp)
   int shadow_; ///< 1 to highlight the shadow region in the image
   int noredshift_; ///< 1 to impose redshift factor g = 1
   // Constructors - Destructor
@@ -345,9 +344,6 @@ class Gyoto::Astrobj::Generic
    */
   bool opticallyThin() const ;
   ///< Query whether object is optically thin.
-
-  void radiativeQ(bool flag);
-  bool radiativeQ() const ;
 
   void showshadow(bool flag);
   bool showshadow() const ;
@@ -539,7 +535,9 @@ class Gyoto::Astrobj::Generic
 			double dsem, double coord_ph[8],
 			double coord_obj[8]=NULL) const = delete ; ///< Obsolete, update your code
 
-  // Under development
+  /**
+   * \brief emission and transmission together
+   */
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,

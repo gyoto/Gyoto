@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2017-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -600,7 +600,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
 
   while (phi<0) phi += 2.*M_PI;
 
-  if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+  if (repeat_phi_>1) phi=fmod((phi-phimin_),(phimax_-phimin_)/double(repeat_phi_))+phimin_;
   // wrap phi if the disk is periodic with period repeat_phi_
 
   if (nphi_>1){
@@ -666,7 +666,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
     double rr = projectedRadius(pos);
     double phi = sphericalPhi(pos);
 
-    if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+    if (repeat_phi_>1) phi=fmod(phi-phimin_,(phimax_-phimin_)/double(repeat_phi_))+phimin_;
 
     if (rr < rin_ || rr > rout_){
       // Outside radial grid, emission is zero: put arbitrary velocity
@@ -800,7 +800,7 @@ double PatternDisk::emission(double nu, double dsem,
   double rr = projectedRadius(co);
   double phi = sphericalPhi(co);
 
-  if (repeat_phi_>1) phi=fmod(phi,phimax_/double(repeat_phi_));
+  if (repeat_phi_>1) phi=fmod(phi-phimin_,(phimax_-phimin_)/double(repeat_phi_))+phimin_;
 
   //cout << "in emission r, phi= " << rr << " " << phi << endl;
   //cout << "and indices= " << i[0] << " " << i[1] << " " << i[2] << endl;

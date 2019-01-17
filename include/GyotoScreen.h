@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -322,7 +322,7 @@ class Gyoto::Screen
   /**
    * \brief Set freq_obs_
    * \param fo double: observing frequency (or wavelength) in "unit"
-   * \param unit string: unit in which fo is expressed, convertable to
+   * \param unit string: unit in which fo is expressed, convertible to
    * Herz or meters or energy.
    */
   void freqObs(double fo, const std::string &unit);
@@ -335,7 +335,7 @@ class Gyoto::Screen
   /**
    * \brief Get freq_obs_.
    * \param unit string: unit in which freq_obs_ should be returned is
-   * expressed, convertable to Herz or meters or energy.
+   * expressed, convertible to Herz or meters or energy.
    */
   double freqObs(const std::string &unit) const;
 

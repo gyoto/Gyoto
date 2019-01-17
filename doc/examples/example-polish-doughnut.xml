@@ -17,13 +17,12 @@
     <Argument> -1.5708 </Argument>
     <Resolution>30</Resolution>
     Compute a spectrum with 50 frequencies from 10^10 Hz to 10^18 Hz
-    <Spectrometer kind="freqlog" nsamples="50">10. 18.</Spectrometer>
+    <Spectrometer kind="freqlog" nsamples="5">10. 18.</Spectrometer>
   </Screen>
 
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "PolishDoughnut">
-    <RadiativeQ/>
 
     Compute Bremsstrahlung spectrum?
     <!--<Bremsstrahlung/>-->

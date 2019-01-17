@@ -19,17 +19,16 @@
     <Argument> -1.5708 </Argument> This changes the phi position of the Screen 
     <Resolution>201</Resolution> Choose an odd integer, easier for
     spectrum computation by plot-Spectrum.py
-    <Spectrometer kind="freqlog" nsamples="30">11. 18.</Spectrometer>
+    <!--<Spectrometer kind="freqlog" nsamples="30">11. 18.</Spectrometer>-->
     The Spectrometer above computes a spectrum with 30 values
     of frequency between 1e11 and 1e18 Hz.
     To compute just one image at 1.3mm, use the Spectro below
-    <!--<Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer>-->
+    <Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer>
   </Screen>
 
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "Jet">
-    <RadiativeQ/>
     <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
     <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
     <JetBaseHeight>2.</JetBaseHeight> in M units

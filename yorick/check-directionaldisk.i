@@ -32,7 +32,11 @@ intensity(,2,)=0.1*intensity(,1,);
 freq=array(double,nnu);
 cosi=array(double,ni);
 radius=indgen(nr)*5.;
-freq(1)+=100.; freq(2)+=10.; cosi+=0.5; 
+
+freqobs=1e18;
+freq(1)+=freqobs*100.; freq(2)+=freqobs/100.; // in decreasing order
+//cosi+=0.5;
+cosi(1)=0.3;cosi(2)=0.6;
 
 metric = gyoto_KerrBL(mass=4e6*GYOTO_SUN_MASS);
 
@@ -51,8 +55,9 @@ write, format="%s\n", " done.";
 
 screen = gyoto_Screen(metric=metric, resolution=64,
                       time=1000.*metric.unitlength()/GYOTO_C,
-                      distance=100.*metric.unitlength(), fov=30./100.,
-                      inclination=110./180.*pi, paln=pi);
+                      distance=100.*metric.unitlength(), fov=1.1,
+                      inclination=110./180.*pi, paln=pi,
+                      freqobs=freqobs);
 
 write, format="%s", "Attaching DirectionalDisk to scenery...";
 sc = gyoto_Scenery(metric=metric, screen=screen, astrobj=pd);

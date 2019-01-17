@@ -25,7 +25,7 @@
  */
 
 /*
-    Copyright 2017-2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2017-2019 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -140,9 +140,32 @@ class Gyoto::Astrobj::Jet
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic>);
     
+  virtual double operator()(double const coord[4]) ;
+
+  /**
+   *\brief Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual double transmission(double nuem, double dsem, double const coord[8]) const ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
   virtual double emission(double nu_em, double dsem,
 			  state_t const &c_ph,double const c_obj[8]=NULL) const;
-  virtual double operator()(double const coord[4]) ;
+
+  /**
+   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
+   *
+   * Wrapper around radiativeQ()
+   */
+  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
+			double dsem, state_t const &coord_ph,
+			double const coord_obj[8]=NULL) const ;
+
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,

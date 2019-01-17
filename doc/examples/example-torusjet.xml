@@ -30,7 +30,7 @@
 
   <Astrobj kind = "Complex">
     <SubAstrobj kind = "Jet">
-      <RadiativeQ/>
+
       <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
       <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
       <JetBaseHeight>2.</JetBaseHeight> in M units
@@ -48,7 +48,6 @@
       steps of this size in M units to integrated the radiative transfer.
     </SubAstrobj>
     <SubAstrobj kind = "PolishDoughnut">
-      <RadiativeQ/>
       <AngleAveraged/>
       <AngMomRinner> 4. 8. </AngMomRinner> 
       <CentralEnthalpyPerUnitVolume unit="erg/cm3">

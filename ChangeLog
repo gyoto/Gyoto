@@ -1,14 +1,898 @@
 commit unknown
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Mon, 12 Dec 2016 13:49:58 +0100
+Date:   Tue, 15 Jan 2019 10:50:23 +0100
+
+    Releasing 1.3.0
+
+commit 13474592c163ba4b0786dd8c085a1f92f2eec246
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 15 10:37:59 2019 +0100
+
+    Update Yorick interface for PatternDisk
+    
+    The PatternDisk smeantics have changed during this release cycle.
+    This commit updates the Yoric kinterface and test suite accordingly.
+
+commit 58b1289f5919f1761be4fd547a0343e87093b235
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 14 11:47:18 2019 +0100
+
+    Releasing 1.3.0~rc1
+
+commit 42baab26fe1d477b9d005bfd5b4875622091921a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 14 10:43:44 2019 +0100
+
+    Fix yorick/check-patterndisk.i
+    
+    This version works but PatternDisk seems a little buggy.
+
+commit ee722e43e1e631cd4ba868b83638580c0bbc65ab
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jan 14 09:11:52 2019 +0100
+
+    Update check-directional-disk.i which was outdated
+
+commit ca5f3aa59e2eef83a4add0dd80270a69549a579c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 10 18:42:45 2019 +0100
+
+    Remove RadiativeQ property. RadiativeQ is now always used.
+
+commit bd034eb860ba418ef7bbe8882731056287461e5e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 10 18:07:00 2019 +0100
+
+    Fix binSpectrum, in particular for PolishDoughnut
+    
+    Actually update the transmission in processHitQuantities when
+    computing only binspectrum;
+    
+    Add transmission() and the two vestions of emission() to
+    PolishDoughnut as wrappers around radiativeQ().
+
+commit f85b64c0e88ddc6ce0fa35793f714a1dad4b128f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 10 17:59:17 2019 +0100
+
+    Update doc for release 1.3.0
+
+commit b100123de9bbdc539b105531f464cfadd2b5c20e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 10 10:22:13 2019 +0100
+
+    Fix Python test suite when LORNE support is not compiled
+
+commit 80cd58097b39d243ec29c98c619b2c8ac8941b8c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 10 10:09:46 2019 +0100
+
+    Fix lib/Makefile.in
+
+commit b7e50dccc665fa50fba90bfd8b6c63f2d7b2b965
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jan 8 16:16:12 2019 +0100
+
+    Adding lib/Makefile.in for Blob
+
+commit d03d35fece48867997c03f87fa6fe0a4927b4a53
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jan 8 16:03:31 2019 +0100
+
+    Add new Astrobj Blob
+    
+        Synchrotron-emitting optically-thin sphere in timelike orbit
+
+commit 3adaa296a9f7776a5b991f913aeee2dd13a71a0c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jan 8 16:00:23 2019 +0100
+
+    In Jet PolishDoughnut: change name of magneticParticleEquipartitionRatio
+    to magnetizationParameter
+
+commit cf2e95a5d5e20901b1e27b786cdf94f86b6956fd
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Dec 10 16:23:42 2018 +0100
+
+    Updating example files for Jet and TorusJet
+
+commit 62f6982edf02683a2885dc0a47566db3c262e6dd
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Dec 10 15:15:44 2018 +0100
+
+    Adding example and plotting tools for the torus+jet paper
+
+commit 7c222f9c41fcc9ba0f4b49ae17a6a0c3b59adba5
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Nov 21 16:40:52 2018 +0100
+
+    python: set Kind when constructing Uniform spectrometer
+
+commit b0cd8993d588c14cd0ba06ac9dd791728b0c4237
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 21 14:49:32 2018 +0100
+
+    Expose Jet in python
+
+commit 42faa914cc66880250118399202450cd594388d4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 13 16:43:46 2018 +0100
+
+    UniformSphere: adding units to times and number density
+
+commit 980916599d745daecc8ac6cd8aca24a48fff146a
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 13 16:42:32 2018 +0100
+
+    Jet: adding units to number density
+
+commit d2c6b3afa33b44746aac0cc0f059565caaed57d8
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 7 14:11:38 2018 +0100
+
+    UniformSphere: adding hotspot machinery
+       Allows a uniform sphere to emit optically thin
+       kappa-distribution synchrotron at a density and temperature
+       varying as a temporal Gaussian around some specified value
+
+commit 985596ec7c7455686e5d24c45a0532e8d1b7bd25
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Nov 7 14:03:27 2018 +0100
+
+    Bugfix: fix rule check-lorene-mpi-clean
+    
+    This rule was removing the wrong files.
+
+commit 5c4bba5bdfcf69a357b722b28bcd2ba24d194fa0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Nov 7 12:25:55 2018 +0100
+
+    Fix GCC warnings
+    
+     + make sure all non-void functions always return a value in a manner that is obvious to the compiler
+    
+     + change python work-around to please the compiler.
+
+commit ab0272b566ffb142d52c5b926f4c27cb1fc319c9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 7 11:06:33 2018 +0100
+
+    In PolishDoughnut: add magneticParticlesEquipartitionRatio_
+       To be compatible with the same quantity in Jet.C for torus+jet simulation
+
+commit 398ce05af01d6cd3b8eb6f411bdbbe76345774f4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 7 11:04:03 2018 +0100
+
+    Utils.C and Jet.C: move hypergeometric function definition from Jet to Utils
+
+commit d69e102f6c43102cd2dffeb6dfd7aa946b2f21ab
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 7 10:18:05 2018 +0100
+
+    In lib/KappaDistributionSynchrotronSpectrum.C and lib/ThermalSynchrotronSpectrum.C: increase integration number of steps for angle-averaging
+
+commit d69fefc4eb5a96ff853bcfbcba2ae56ab5e4fb26
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Nov 6 17:46:39 2018 +0100
+
+    Bugfix: Some lines in Scenery lacked an HAVE_MPI protection
+
+commit d0543bf2b3795147ba01b071a1cc1adf8921c0d8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 12 13:44:29 2018 +0200
+
+    MPI: a little more info output (use -v10 to show)
+
+commit 7ae78b9563497cf62999a243fe1f7baaf2fae628
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 12 11:26:21 2018 +0200
+
+    fixup: change --with-python also in plugins/python
+
+commit 06bc28fdd99a29b15b940def5e9a5cb1b957d048
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 12 10:47:24 2018 +0200
+
+    configure.ac: improve --with-python, default to python3
+    
+    It is now possible to specify the python interpreter in --with-python:
+    
+    ./configure --with-python=python2
+    ./configure --with-python=/usr/bin/python3.7
+    
+    If not specified, the preference list is now:
+    
+    python3 python python2 python3.x ... python2.x ..
+
+commit bbf173384166bb4aa67598faa3b2eb301a576917
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 11 17:49:28 2018 +0200
+
+    Improve MPI support: gyoto can now be called like a SIMD process
+    
+    Also exposed in the Python interface.
+    
+    mpirun -np N gyoto ... now should work whatever the MPI implementation.
+
+commit 071b75ea41875e7c33ab86037784a9611cfce9fa
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 11 16:01:41 2018 +0200
+
+    Converters.C: adding unit in Error message
+
+commit 9d1fa3b75110b5840c9c0c075db9860c96e4f60d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 11 15:50:35 2018 +0200
+
+    configure: make sure pkg-config's variables are propagate to Makefiles
+
+commit b94ec8559aa774229aacc674ff3b0d21acaf8026
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Oct 10 12:26:22 2018 +0200
+
+    fixup (fix flint-arb being forecfully linked to)
+
+commit aeadc3303d33e7102bb60526320f68c1edc61baf
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Oct 10 12:04:19 2018 +0200
+
+    Bugfix: don't link with flint-arb when not available
+
+commit 4761a53ecfd5ce4dc59c345412e184f6b9aebbf1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 4 17:57:05 2018 +0200
+
+    python: make Astrobj::Complex iterable
+
+commit 88e8b32eec83e01243c240fc5349d30504ed16c0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 4 17:03:13 2018 +0200
+
+    python: extend core classes with __str__
+    
+    This way print() and str() yield the XML representation of an object:
+    
+      \#include gyoto.core as gy
+      sc=gy.Scenery()
+      print(sc)
+      string=str(sc)
+      print(string)
+
+commit e516da5188fc407a4b8df8e04066ea9be8d74d7b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 4 12:20:30 2018 +0200
+
+    minor: fix python examples for recent Gyoto and Python developments
+    
+    + Gyoto::Astrobj::Complex::rMax(double) has been removed
+    
+    + os.execlp now need a non-empty string as second argument, provide " " instead of ""
+
+commit 71e6a5494097ec0eaefd8997469d6e638993f620
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 4 12:03:09 2018 +0200
+
+    API: changes Factory get methods
+    
+      * Changed API: for consistency, rename Factory::getScenery to
+         Factory::scenery and Factory::getPhoton to Factory::photon.
+       * Changed API: Factory::metric(), astrobj() etc. don't throw an error
+         anymore when then XML file does not contain the relevant entity but
+         return a NULL smartpointer instead
+
+commit 84072b3bbc2e5faf3563c8f124f2c2b636325c7f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 2 17:42:25 2018 +0200
+
+    Fixup: only include array_wrapper for Boost versions that are known to have it
+
+commit bde7eb40c1fb14ea7c6e16c3c95cef69bd427b2f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 2 15:31:55 2018 +0200
+
+    Bugfix: implement copy constructor for various spectra
+    
+    All spectra that have a spectrumBB_ member need to clone it in their copy constructor.
+
+commit 0b3e37d414ffb42b1d23e27e30c42283b3d7533a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 2 08:26:52 2018 +0200
+
+    fixup: also fix ldflags for arblib
+
+commit 58326b158071bce62b425363be73cb8a8cf56c55
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 2 08:24:04 2018 +0200
+
+    bugfix: wrong ldflags when not using pkg-config
+
+commit 788638e8c08957e4f9e14916ff9d90ffacc309ad
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 2 08:24:04 2018 +0200
+
+    bugfix: wrong ldflags when not using pkg-config
+
+commit f608231588392b329ba5f0182f4bb02b9656be26
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Oct 1 16:35:07 2018 +0200
+
+    configure.ac: use GYOTO_ARG_LIB for ARBLIB
+
+commit fecff0f4f0d895d5851565d614b3ef365f476d04
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Oct 1 15:12:34 2018 +0200
+
+    configure.ac: simplify and uniformize
+    
+    Introduce an M4 macro (m4/gyoto.m4) for factorizing for between udunits,
+    xerces and cfitsio.
+    
+    Deprecate --with-udunits-(inc|lib) in favour of --with-udunits-(headers|libs).
+    
+    In --with-*-(headers|lib), accept both colon-sparated paths and list of flags.
+
+commit 1a5b5c199ec65643c6f6ebae0d864599db4de3e0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Sep 29 07:36:04 2018 +0200
+
+    Support AEAE in addition to ARBLIB for hypergeom in Astrobj::Jet
+
+commit e096aedacca6f3c49ce1020a8f54472acb207bba
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Sep 27 17:33:17 2018 +0200
+
+    Bugfix: add using namespace std before including Michel & Stoitsov lib
+
+commit f8e56e99af2bb8c9685c2d03c560daaf3a65d288
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Sep 27 14:55:37 2018 +0200
+
+    Remove Michel Stoitsov hypergeometric functions library and use ARBLIB instead.
+
+commit beef8559c2641d1bdf6365dbf22975d1ca416cba
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Sep 24 11:29:08 2018 +0200
+
+    Replace C++ MPI calls with their C equivalent
+
+commit 3733343050d8523a76dd292badb2e64b5478349c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Sep 21 10:42:07 2018 +0200
+
+    Typo in Standard for deltaInObj
+
+commit cfc7e79f55f556d883beb0953dbf5b3e193464e9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Sep 21 08:42:49 2018 +0200
+
+    Standard: add deltaInObj for integration step in object
+
+commit dabd6546a1711eb3b3fe9ab14508bc691b028d9d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Sep 20 10:19:34 2018 +0200
+
+    Fix plugins/python/configure when PKG_CONFIG_PATH is set
+
+commit 042ff579cbde0278f518819f418cd0a02dd6e592
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Sep 20 10:17:15 2018 +0200
+
+    Support KerrKS in gyotoy
+
+commit 87df6e9e3ed97871dd2f0440cc8b654bb0ac9566
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Sep 7 10:13:10 2018 +0200
+
+    In ComplexAstrobj add rMax()
+
+commit c85a3456770c61dcda77a72a158f7da118704a69
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 27 10:18:02 2018 +0200
+
+    In WolrdlineIntegState add <boost/serialization/array_wrapper.hpp>
+    
+       For some reason tycho needs it.
+
+commit 7c1481c195356c47b79702f149fc12eecdd7749f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 27 10:06:15 2018 +0200
+
+    Update Jet to use Kappa-distribution synchrotron
+
+commit 44e8f9b7e2173c7d26212f91ec14fa10c9aa2012
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 27 10:03:56 2018 +0200
+
+    Add Kappa-distribution synchrotron radiation
+    
+        Kappa-distribution is a mix of thermal distribution at
+    low Lorentz factor and power-law distribution at high Lorentz factor.
+    The formulas are from Pandya et al., ApJ, 822, 34 (2016)
+
+commit a78115cfa0d97f2223a206107bbaa2149abe99dd
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 27 10:01:54 2018 +0200
+
+    Add Michel-Stoitsov code for computing hypergeometric function
+
+commit 7e85934059012dd14bf21150fde135de34790129
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jul 16 10:27:36 2018 +0200
+
+    Thermal/PowerLaw Synchrotron: add Pandya et al. (2016) formula
+
+commit bd9aae89edff7deafbb96c675f2980742aed462c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jul 2 10:40:15 2018 +0200
+
+    In Jet: double-sided jet; typo in velocity
+
+commit 386190d7675d21032fd1e326ec7b65f0d3a70a0f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 27 18:55:31 2018 +0200
+
+    Jet: big code update and simplification
+
+commit 41d257b98224a8b81bb944ad075af0e2b5cf53e7
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 27 09:53:54 2018 +0200
+
+    ThermalBrems: code cleaning and typos
+
+commit 0e8ce8612156e8e856aef8f52e80a41c5c0ffa7f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 18 10:29:26 2018 +0200
+
+    Typo in webpage
+
+commit 5a7e6f04b4613b1ded4462d0618d5a807976b7e4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Apr 17 18:26:27 2018 +0200
+
+    Important code cleaning in PatternDisk
+    
+     PatternDisk: implement radial interpolation for axisym grid;
+                  implement case when phi is out of phi-grid bounds;
+                  correction of bugs with rin, rout, rmax;
+                  allows grid with nphi=1 (axisym)
+    
+     PatternDiskBB: remove risco and all calls to Kerr;
+                    can support any metric now
+
+commit c1d0b95d6b95037398dee5f009b4b7ac7b472030
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Apr 17 18:22:29 2018 +0200
+
+    RezzollaZhidenko: implement circularVelocity
+
+commit 4f0f1a3f0ac6f0e0771866631f5afc88924cb7a5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 11 11:25:10 2018 +0200
+
+    Unable PageThorne to allow ChernSimons metric
+
+commit f4d81f6efc710cd81af6c0d2ab773c83bcb2ce84
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Apr 9 11:40:11 2018 +0200
+
+    RezzollaZhidenko: add copy constructor and example
+
+commit 4bfc75e4f587472b622008f984175bc68a35b215
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Mar 1 11:45:15 2018 +0100
+
+    Update in Rezzolla-Zhidenko metric
+    
+    Correct some typos, remove diff and circularVelocity (useless),
+    add an example xml file.
+
+commit aab64a71ce72d118f4d1fee6d3bdb04f7db2249c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Mar 1 11:43:19 2018 +0100
+
+    Add a test after calculation of r_centre_ in doughnut
+
+commit 41711610bc6eecd23ce24cb96ca364ee8bbbc051
+Author: LamyFrederic <36230914+LamyFrederic@users.noreply.github.com>
+Date:   Tue Feb 13 18:52:11 2018 +0100
+
+    Update Hayward.C
+    
+    Modification of getSpecificAngularMomentum()
+
+commit b2b0991b7a384071966efc2b38e588ff7f61383d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Feb 9 10:27:15 2018 +0100
+
+    Update Inu and Taunu in Doughnut and Jet
+    
+    Use std::expm1 for small local optical depth
+
+commit 1cb1353de2e2e07c79a066d76237ae5f91c782ae
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 8 19:02:56 2018 +0100
+
+    Typo in ThermalSynchrotron
+
+commit f3e25dd8e5e5007c2d90a995288619a34ef57b7d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 8 09:24:54 2018 +0100
+
+    Bugfix: Hopefully fix cgs->SI convertion for previouos commit
+
+commit a5f71b68072172365d2695a86b2c2952e3c0b0e7
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 8 08:23:19 2018 +0100
+
+    Implement order 1 integration in PolishDoughnut and Jet and use SI in spectra::radiativeQ
+
+commit 6cd1095714f840b73a2e4382eb5b478cb0fd772a
+Author: LamyFrederic <36230914+LamyFrederic@users.noreply.github.com>
+Date:   Wed Feb 7 15:33:04 2018 +0100
+
+    Update GyotoHayward.h (#6)
+    
+    Expression of the metric + addition of references
+
+commit f17329cbd076710042f6aaf3ed1f774f7ff03f17
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 7 14:12:44 2018 +0100
+
+    Update in Jet
+    
+    Similarly to Doughnut, compute emission in
+    external Spectrum class
+
+commit 36eb73f98daaebe0d35b4f38368a954277f0e7f0
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 7 12:35:56 2018 +0100
+
+    Major update in PolishDoughnut
+    
+    - remove all code relative to outdated 2012 model
+    - remove call to getRms in angmomrinner
+    - call to external spectra (synchro ther, synchro PL, brems),
+      so remove all spectrum computation inside PolishDoughnut
+
+commit b906b92245cbfb0b4fe778417140191d7bd73297
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 7 12:32:47 2018 +0100
+
+    Major update in Spectrum
+    
+    - Add ThermalSynchrotron and PowerLawSynchrotron
+    - Add radiativeQ method to compute emission and absorption coef
+    - Edit ThermalBresstrahlung to use a different model
+    depending on temperature
+
+commit 3f1b16cfa51c64fedfeeb923a6e200456d1ae644
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 7 12:29:08 2018 +0100
+
+    Add bessel functions in Utils
+    
+    Much quicker than boost implementation,
+    and very accurate.
+
+commit 09b102b33427534a31bbb2dfdfa3ac8e59c98453
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Feb 7 10:32:13 2018 +0100
+
+    Add astro-ph link to Hayward
+
+commit 18951e9434295596a66f05810ab962a885733cf1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 6 10:39:48 2018 +0100
+
+    Remove Hayward::circularVelocity() and observerTetrad() which yield only Kerr approximations
+
+commit bf4b061a3bd998be33f83bfdf5b1dd56936c1c73
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Feb 5 21:53:01 2018 +0100
+
+    Remove unsused methods from Hayward metric
+
+commit 6d067d381fbba4a5c3bf8b5efa393faf818c3073
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Feb 5 20:15:03 2018 +0100
+
+    New Metric: Hayward
+
+commit 8d11cd22c20668155c5a6e9370599438b12a073a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 31 11:14:16 2018 +0100
+
+    Replace CutOffIneV by CutOff (in Hz) in Spectrum::PowerLaw
+    
+    Rationale: all Gyoto APIs should be in SI. Besides, Band in
+    Spectrometer is in Hz by default. Cut-off frequencies should be in
+    the same unit.
+    
+    The new interface supports unit, so it is still possible to use eV
+    but also any unit convertible to Hz, m or eV. The user may replace
+      <CutOffIneV> 1 2 </CutOffineV>
+    with
+      <CutOff unit='eV'> 1 2 </CutOff>
+    
+    In addition, document the properties.
+
+commit 41617e97b73a831e8df15935db816fc8972af9f5
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 30 10:51:14 2018 +0100
+
+    Bugfix: make PolishDoughnut::emission() and radiativeQ() equivalent
+    
+    Previously emission() worked only for komissarov_==false and
+    radiativeQ only for komissarov_==true.
+
+commit 41390244ecb74ca9942e2d65c11fb09cb166c453
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 30 00:12:24 2018 +0100
+
+    Bugfix: wrong allocated size for Inu in PolishDoughnut::integrateEmission
+
+commit 02ead454357ccdbc25c6cda8597eaeb139deaf8d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Dec 20 15:01:15 2017 +0100
+
+    Minor update in XillverReflection.
+    
+    Using timelampphizero in emission()
+
+commit 6765d38b27d398c1d8d5ea25b695329e18275585
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 19 17:30:56 2017 +0100
+
+    Add new astrobj XillverReflection
+    
+    This astrobj contains two fits table.
+    The first one gives the illumination over a thin
+    disk as a function of r and phi, that should be
+    computed externally for a lamp in Keplerian rotation
+    at some radius rlamp.
+    The second one is a direct translation of the
+    reflection spectra computed with Javier Garcia's
+    Xillver code, see https://hea-www.cfa.harvard.edu/~javier/xillver/.
+    The output is the ray-traced reflection spectrum,
+    with the self-consistent rotating lamp illumination.
+
+commit 763b6b3ac856bab0f9756be6f7c3bd7bf2eae1a5
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Nov 20 20:31:35 2017 +0100
+
+    Support Boost >= 1.64
+    
+    serialization/boost/array.hpp has been split in Boost 1.64. Load the various pieces as needed.
+
+commit c61f62e04e16878cd533a874ac012e5d19f7075d
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Fri Sep 29 17:07:49 2017 +0200
+
+    Correct typo in plugins/null/README
+
+commit ff466ea3b1f446a7628c1eaf34e69d2e91b7da2c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Sep 14 16:58:23 2017 +0200
+
+    Correct typo in example-page-thorne-disk-BL-with-basis
+
+commit d81327d1f7b876cc59e8312aac0741141b40fb87
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Sep 11 19:31:51 2017 +0200
+
+    Add color-correction to BlackBody
+    
+    Adding the parameter colorcor_ to the BlackBody spectrum
+    to model a color-corrected blackbody as defined
+    in Suleimanov+11, AA 527 A139
+
+commit 011db244f6a3fdcaf243b285d4e11061037a32dc
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Sep 4 15:53:38 2017 +0200
+
+    Code cleaning and more comments in NeutroStarModelAtmosphere
+
+commit f2b4abcd16bf437d0fa4fd2169efdf15072b25b4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Sep 4 15:23:13 2017 +0200
+
+    Expand description of FixedStar::rotating_
+
+commit c45bf44c99861f6f9aeaa13a1ef4ff9a25348ea5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Sep 4 15:18:26 2017 +0200
+
+    Typo in Screen copy constructor
+
+commit 067957197cc1003bba6a6ec269768b205f3568dc
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Sep 4 15:10:19 2017 +0200
+
+    Update fov orientation in Screen
+    
+    Rename Alpha0 and Delta0 to Dangle1 and Dangle2
+    to be useable also in SphericalAngles
+    
+    Add Screen::azimuthal_fov_, the fov along the azimuthal
+    direction in the rest frame of the observer in SphericalAngles
+    (assumed to be 2*pi in the past).
+
+commit 1dc1531f2016d33d837065aaab2d28e2da23c2c5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 21 17:08:58 2017 +0200
+
+    Add new astrobj Jet
+    
+    Implement the analytical jet model of Zdziarski, Stawarz & Sikora
+    (2017 ; in prep at the time of writing).
+    
+    This is a simple jet implementation that takes into account
+    a parabolic or conical jet geometry, and computes the
+    synchrotron radiation emitted by non-thermal electrons.
+
+commit 92da625a48200a7e4ebb9028c67763d68a3e82a7
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jul 21 17:07:07 2017 +0200
+
+    Add new quantities in GyotoDefs.h for cgs computations.
+
+commit f741b4730b416ee849958963836131b6f375cfbe
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jul 11 17:34:17 2017 +0200
+
+    In PatternDisk/PatternDiskBB/DynamicalDisk: updating code with python interface
+    In ThinDiskPL: code cleaning to fit today's needs
+
+commit ae8cde9acc8c14e821ab830eb3f2dcf6d4cff95d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 28 12:09:04 2017 +0200
+
+    n StandardAstrobj: small bug in integration inside object
+
+commit e0f158268fff8ac756bdf7fbf8e5c079b1d287e5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri May 5 11:36:52 2017 +0200
+
+    NumericalMetricLorene and NeutronStarModelAtm: adding normal vector to surface
+
+commit fba7ca3c160bf678f21f209d27b5a9b39a838c22
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu May 4 15:31:11 2017 +0200
+
+    Worldline::getCoord() must accept NULL pointers
+    
+    Fix bug that would segfault in case of spherical coordinates when only
+    some coordinates are requested.
+
+commit 4a29d45fd7fadc3fd7a4fc9eb011d39a9ffd78b8
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Thu May 4 15:27:33 2017 +0200
+
+    Handle case where Photon goes in and out of standard astrobj
+    
+    In Astrobj::Starard::Impact(), don't assume that the object is convex
+    relative to geodesics. Check whether each section of geodesic is
+    within the object.
+
+commit 7e4418934a19b4dbd2301293cdffd8075c5221d1
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Fri Apr 14 15:57:04 2017 +0200
+
+    Provide namespaces in Python
+    
+    Provide e.g. gyoto.astrobj to hold Astrobjs from gyoto.core, gyoto.std
+    and gyoto.lorene, to mimic C++ organization and as a convenience for
+    users. Same goes for gyoto.metric, gyoto.spectrum and
+    gyoto.spectrometer.
+
+commit 680d7a9a7157619e0583f9257c23c50eb94ff49d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Apr 14 15:14:23 2017 +0200
+
+    New astrobj NeutronStarModelAtmosphere, still in development
+
+commit c5e72a4363061b5345ca946a0c6c8ab5a6a441c1
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Apr 14 14:00:51 2017 +0200
+
+    Use absolute import in python/gyoto/__init__.py
+    
+    Python 3 requires it.
+
+commit 955f419d891f34867a2f71c90a0795491250e981
+Author: Frederic Vincent <fvincent@MacBook-Pro-de-Frederic.local>
+Date:   Fri Apr 14 12:01:49 2017 +0200
+
+    Split NeutronStar into a base plus NeutronStarAnalyticEmission
+    
+    In preparation for upcoming NeutronStarModelAtmosphere.
+    
+    Also re-ran autoreconf.
+
+commit 40b5d2626e4e316a6faaa249fa29b200d87cbfa5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 12 18:16:05 2017 +0200
+
+    Don't unconditionally init the registers in the Python extension
+    
+    The registers must be initialized only once. Loading the Python
+    extension (gyoto.core) from within the python plug-in had the side
+    effect of always re-initializing the registers.
+    
+    In addition, had some debug information in Register.C.
+
+commit 6d55fc0826daf10c877e40954b9413a40d1d4f8e
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Wed Apr 12 17:19:53 2017 +0200
+
+    Rename the Python extensions
+    
+    gyoto -> gyoto.core
+    gyoto_std -> gyoto.std
+    gyoto_lorene -> gyoto.lorene
+    
+    The old names are still accessible but are deprecated and may be
+    removed in a future release.
+    
+    The Python extension build system is also simplified.
+
+commit 475bae9fd3d33e00b65062f54ebe43aa47b89de5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 11 12:00:49 2017 +0200
+
+    Load the necessary plug-ins in gyoto_std and gyoto_lorene
+    
+    gyoto_std.py and gyoto_lorene.py take care of calling
+    gyoto.requirePlugin() as necessary before loading the Python bindings
+    for each plug-in. The examples and tests have been fixed to reflect
+    this simplification.
+
+commit 5f98133c9564a6874b3f3bb87f8562de01941476
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Tue Apr 11 09:36:20 2017 +0200
+
+    Add Astrobj::NeutronStar
+
+commit 736002e7a869c8c99a86c9d6599b44e09f492f49
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Feb 5 15:29:02 2017 +0100
+
+    gyotoy: prefer x11 over wayland
+    
+    Gyotoy embeds an Yorick X11 window in a Gtk widget. This does not work
+    if the Gtk window uses the Wayland backend. Use
+    gdk_set_allowed_backends() to specify that gyotoy prefers the x11
+    backend.
+    
+    This works only if gyotoy is started stand-alone.
+
+commit 498e42bc71a5451be5e226a2f3c9b0763d6a4bb2
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 14:24:15 2016 +0100
 
     Releasing 1.2.0
+
+commit 1561f09fa182726270c7861183354669fbdff76f
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 12:57:47 2016 +0100
+
+    Add --version option to gyoto command-line tool
 
 commit b3052c5f8663e4b6c49256b5041bcd67a91c2d85
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Mon Dec 12 12:57:47 2016 +0100
 
     Add --version option to gyoto command-line tool
+
+commit 340875ee303e950dfbd2bfd53d3b52846e2d1df5
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Mon Dec 12 10:45:37 2016 +0100
+
+    Support enroling MPI_COMM_WORLD in python/example-mpi.py
+    
+    Apply the same heuristics and algorithm as in bin/gyoto.C to support
+    mpirun starting the worker process itself.
 
 commit 6ca591a2660e1293b559af6c1e86015d7be0bd48
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -18,6 +902,12 @@ Date:   Mon Dec 12 10:45:37 2016 +0100
     
     Apply the same heuristics and algorithm as in bin/gyoto.C to support
     mpirun starting the worker process itself.
+
+commit abf51da9a8ced305f1c597cf2b9ac7d1f03f2805
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Dec 11 20:46:35 2016 +0100
+
+    Correctly handle empty stry case in OscilTorus::emittingArea()
 
 commit 87e8567f6c9bcd263a874bc1f11811556770c276
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -365,7 +1255,7 @@ Date:   Fri Oct 28 19:43:48 2016 +0200
     (cherry picked from commit 63b5bf61f21d0e1b425795737ec1d2bd3cf570c8)
     
     Conflicts:
-    	plugins/null/aclocal.m4
+            plugins/null/aclocal.m4
 
 commit 988ebdb08d4ba4c2d6caaf39ff5719731c3519ec
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -949,7 +1839,7 @@ commit 3d9babaf98453fab0c528d3e87e8ed44ff437f3e
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Wed Jun 17 21:36:28 2015 +0200
 
-    Replace	setParameters by __setitem__ in	python plug-in
+    Replace setParameters by __setitem__ in python plug-in
     
     Also adapt the examples to show a minimal example (BlackBody6000) and
     a maximal example (PowerLaw).
@@ -2664,7 +3554,7 @@ Date:   Tue Sep 9 11:22:24 2014 +0200
     Correct also the generic implementation of circularVelocity()
     
     Conflicts:
-    	lib/PolishDoughnut.C
+            lib/PolishDoughnut.C
 
 commit ecedb397dde61cf787c4bc2e86eea9c61e2a660e
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
@@ -3367,10 +4257,10 @@ commit 968b109cfe50da2bb14c7cbd717773624c04253b
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Wed Mar 12 15:26:34 2014 +0100
 
-    	* rename functions from setMass/getMass style to mass()/mass() style.
-    	  Are concerned the following (new names):
-    	    Metric::mass, Metric::coordKind, Metric::kind, Screen::coordKind,
-    	      KerrBL::spin, KerrKS::spin
+            * rename functions from setMass/getMass style to mass()/mass() style.
+              Are concerned the following (new names):
+                Metric::mass, Metric::coordKind, Metric::kind, Screen::coordKind,
+                  KerrBL::spin, KerrKS::spin
 
 commit d6ab1f233265dabe15a02075dedaa50b80021ecb
 Author: Thibaut Paumard <paumard@users.sourceforge.net>

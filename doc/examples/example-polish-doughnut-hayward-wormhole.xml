@@ -29,7 +29,6 @@
     <Quantities>Spectrum</Quantities>
     
     <Astrobj kind = "PolishDoughnut">
-        <RadiativeQ/>
         <KomissarovAngleAveraged/>
         <AngMomRinner> 4 8.3 </AngMomRinner> <!-- 3.2 4.2 ; 4.29 8.54 ; Caution: if AngMomRinner is given, rinner should be in BL -->
         <CentralDensity>9000</CentralDensity>

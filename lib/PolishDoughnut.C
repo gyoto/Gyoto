@@ -1,17 +1,22 @@
 /*
-  Copyright (c) 2012-2016, 2018 Frederic Vincent, Odele Straub, Thibaut Paumard
-  This file is part of Gyoto.
-  Gyoto is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  Gyoto is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
-  You should have received a copy of the GNU General Public License
-  along with Gyoto. If not, see <http://www.gnu.org/licenses/>.
-*/
+    Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub,
+                                       Thibaut Paumard
+
+    This file is part of Gyoto.
+
+    Gyoto is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Gyoto is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "GyotoUtils.h"
 #include "GyotoPolishDoughnut.h"
 #include "GyotoProperty.h"
@@ -576,12 +581,45 @@ void PolishDoughnut::integrateEmission
   delete [] ii;
 }
 
+double PolishDoughnut::transmission(double nuem, double dsem, state_t const &coord) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord, &coord[0]);
+  return Taunu;
+}
+
+double PolishDoughnut::emission(double nuem, double dsem, state_t const &cph, double const *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
+  return Inu;
+}
+
+void PolishDoughnut::emission(double * Inu, double * nuem , size_t nbnu,
+			 double dsem, state_t const &cph, double const *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double * Taunu = new double[nbnu];
+  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+  delete [] Taunu;
+}
+
 void PolishDoughnut::radiativeQ(double Inu[], // output
 				double Taunu[], // output
 				double const nu_ems[], size_t nbnu, // input
 				double dsem,
 				state_t const &coord_ph,
 				double const coord_obj[8]) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
   // This function computes the emission and transmission
   // for the Komissarov model, with both thermal and
   // non-thermal electron populations, with proper emission

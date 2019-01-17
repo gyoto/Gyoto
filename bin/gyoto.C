@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2013, 2016, 2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -92,7 +92,7 @@ const option::Descriptor usage[] =
  {UNKNOWN, 0, "", "",option::Arg::None, "\nUSAGE: gyoto [options] input.xml output.fits\t\n\n"
                                         "Generic options:\t\n  -- \tStop option processing." },
  {HELP, 0,"h","help",option::Arg::Optional, "  --help[=<c>, -h<c>  \tWithout argument, print usage and exit. With argument, document class <c> (e.g. \"Screen\", \"Astrobj::Star\") and exit." },
- {VERSION, 0, "", "version", option::Arg::None, "  --version, -V  \tPrint the Gyoto version."},
+ {VERSION, 0, "V", "version", option::Arg::None, "  --version, -V  \tPrint the Gyoto version."},
  {LIST, 0,"l","list",option::Arg::None, "  --list, -l  \tPrint the Gyoto register of Astrobj, Metrics etc." },
  {NOSIGFPE, 0, "", "no-sigfpe",option::Arg::None, "  --no-sigfpe \tDo not enable SIGFPE."
 #if !defined HAVE_FENV_H
@@ -159,7 +159,8 @@ void gyotoErrorHandler( const Gyoto::Error e ) {
 }
 
 static void gyotoVersion() {
-  cout << " Copyright (c) 2011-2016 Frederic Vincent & Thibaut Paumard\n"
+  cout << " Copyright (c) 2011-2019 Frédéric Vincent, Thibaut Paumard,\n"
+       << "                         Odele Straub and Frédéric Lamy.\n"
        << " GYOTO is distributed under the terms of the GPL v. 3 license.\n"
        << " We request that use of Gyoto in scientific publications be "
        << " properly \n acknowledged. Please cite:\n"

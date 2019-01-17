@@ -1,5 +1,5 @@
 /*
-    Copyright 2017-2018 Frederic Vincent & Thibaut Paumard
+    Copyright 2017-2019 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -157,11 +157,34 @@ Jet::~Jet() {
   if (gg_) gg_->unhook(this);
 }
 
-double Jet::emission(double nu, double,
-		     state_t const &,
-		     double const coord_obj[8]) const{
-  // basic implementation, no physics here, not used
-  return 1.;
+double Jet::transmission(double nuem, double dsem, state_t const &coord) const {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord, &coord[0]);
+  return Taunu;
+}
+
+double Jet::emission(double nuem, double dsem, state_t const &cph, double const *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double Inu, Taunu;
+  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
+  return Inu;
+}
+
+void Jet::emission(double * Inu, double * nuem , size_t nbnu,
+			 double dsem, state_t const &cph, double const *co) const
+{
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double * Taunu = new double[nbnu];
+  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+  delete [] Taunu;
 }
 
 void Jet::radiativeQ(double Inu[], // output
