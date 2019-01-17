@@ -219,7 +219,7 @@ protected:
    *
    * Wrapper around radiativeQ()
    */
-  virtual double transmission(double nuem, double dsem, double const coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB>

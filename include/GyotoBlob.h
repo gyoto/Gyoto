@@ -110,7 +110,7 @@ class Gyoto::Astrobj::Blob :
    *
    * Wrapper around radiativeQ()
    */
-  virtual double transmission(double nuem, double dsem, state_t const &coord[8]) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
 
   /**
    * \brief Specific intensity I<SUB>&nu;</SUB>
