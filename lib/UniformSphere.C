@@ -243,7 +243,7 @@ void UniformSphere::processHitQuantities(Photon* ph,
     
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;
@@ -251,7 +251,7 @@ void UniformSphere::processHitQuantities(Photon* ph,
   }
 }  
       
-double UniformSphere::transmission(double nuem, double dsem, state_t const &) const {
+double UniformSphere::transmission(double nuem, double dsem, state_t const &, double const *) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif

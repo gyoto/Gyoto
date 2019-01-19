@@ -214,31 +214,6 @@ protected:
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, state_t const &cph, double const *co) const;
 
-  /**
-   *\brief Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
-   *
-   * Wrapper around radiativeQ()
-   */
-  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
-
-  /**
-   * \brief Specific intensity I<SUB>&nu;</SUB>
-   *
-   * Wrapper around radiativeQ()
-   */
-  virtual double emission(double nu_em, double dsem, state_t const &coord_ph,
-			  double const coord_obj[8]=NULL)
-    const ;
-
-  /**
-   * \brief Specific intensity I<SUB>&nu;</SUB> for several values of &nu;<SUB>em</SUB>
-   *
-   * Wrapper around radiativeQ()
-   */
-  virtual void emission(double Inu[], double nu_em[], size_t nbnu,
-			double dsem, state_t const &coord_ph,
-			double const coord_obj[8]=NULL) const ;
-
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,

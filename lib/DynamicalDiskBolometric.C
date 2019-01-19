@@ -153,7 +153,7 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
 				    "unimplemented");
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;

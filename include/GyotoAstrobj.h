@@ -202,6 +202,17 @@ class Gyoto::Astrobj::Generic
 
   // Data : 
   // -----
+private:
+
+  /**
+   * \brief Whether some virtual methods are implemented
+   *
+   * The default implementations of some methods call
+   * one-another. This member is used internally to avoid infinite
+   * recursion.
+   */
+  int __defaultfeatures;
+
  protected:
 
   /**
@@ -594,8 +605,9 @@ class Gyoto::Astrobj::Generic
    * \param coord Photon coordinate
    * \param dsem geometrical length in geometrical units
    */
-  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &coord_ph, double const coord_obj[8]) const ;
      ///< Transmission: exp( &alpha;<SUB>&nu;</SUB> * ds<SUB>em</SUB> )
+  virtual double transmission(double nuem, double dsem, state_t const &coord) const = delete;  ///< Obsolete, update your code
   virtual double transmission(double nuem, double dsem, double coord[8]) const = delete;
   ///< Obsolete, update your code
 

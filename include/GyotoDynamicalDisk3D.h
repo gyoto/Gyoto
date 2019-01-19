@@ -142,7 +142,7 @@ class Gyoto::Astrobj::DynamicalDisk3D : public Astrobj::Disk3D {
 
   /// Interpolate transmission between grid dates.
   double transmission(double nu_em, double dsem,
-			  state_t const &cph) const;
+			  state_t const &cph, double const co[8]) const;
 
   void getVelocity(double const pos[4], double vel[4]);
   double const * getVelocity() const;

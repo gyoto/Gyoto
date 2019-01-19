@@ -271,7 +271,7 @@ class Gyoto::Astrobj::PatternDisk : public Astrobj::ThinDisk {
   using ThinDisk::emission;
   virtual double emission(double nu_em, double dsem,
 			  state_t const &c_ph, double const c_obj[8]=NULL) const;
-  virtual double transmission(double nu_em, double dsem, state_t const &coord) const;
+  virtual double transmission(double nu_em, double dsem, state_t const &, double const coord[8]) const;
 
   virtual void getVelocity(double const pos[4], double vel[4])  ;
 

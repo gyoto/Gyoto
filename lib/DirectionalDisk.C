@@ -517,6 +517,9 @@ double DirectionalDisk::emission(double nu, double,
     up = gg_->ScalarProd(&cp[0],co+4,&cp[4]);
   double cosi = fabs(-np/up);
   double tolcos = 0.005;
+  GYOTO_DEBUG_EXPR(cosi);
+  GYOTO_DEBUG_ARRAY(co, 8);
+  GYOTO_DEBUG_ARRAY(cp, 8);
   if (cosi>1.){
     if (fabs(cosi-1)>tolcos) throwError("In DirectionalDisk: bad cos!");
     cosi=1.;

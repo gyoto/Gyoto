@@ -34,6 +34,7 @@
 #include <cfloat>
 #include <cmath>
 #include <sstream>
+#include <limits>
 
 // NAMESPACES
 using namespace std;
@@ -58,6 +59,7 @@ GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
+  __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
@@ -68,6 +70,7 @@ Generic::Generic(string kin) :
 
 Generic::Generic() :
   SmartPointee(), Object("Default"),
+  __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
@@ -78,6 +81,7 @@ Generic::Generic() :
 
 Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
+  __defaultfeatures(0),
   gg_(NULL), rmax_(radmax), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
@@ -88,6 +92,7 @@ Generic::Generic(double radmax) :
 
 Generic::Generic(const Generic& orig) :
   SmartPointee(orig), Object(orig),
+  __defaultfeatures(orig.__defaultfeatures),
   gg_(NULL),
   rmax_(orig.rmax_),
   flag_radtransf_(orig.flag_radtransf_),
@@ -281,7 +286,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 #       endif
 
 	if (!data->spectrum) // else it will be done in spectrum
-	  ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit));
+	  ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit, coord_obj_hit));
       }
       delete [] I;
       delete [] boundaries;
@@ -350,6 +355,9 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	  }
 
 #         if GYOTO_DEBUG_ENABLED
+	  {
+	    double t=ph -> getTransmission(ii);
+	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
 	  GYOTO_DEBUG
 	    << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
@@ -359,9 +367,10 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	    << Inu[ii]
 	    << ", spectrum[" << ii*data->offset << "]="
 	    << data->spectrum[ii*data->offset]
-	    << ", transmission=" << ph -> getTransmission(ii)
-	    << ", optical depth=" << -log(ph -> getTransmission(ii))
+	    << ", transmission=" << t
+	    << ", optical depth=" << o
 	    << ", redshift=" << ggred << ")\n" << endl;
+	  }
 #         endif
 	}
 	delete [] Inu;
@@ -398,6 +407,9 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	  ph -> transmit(ii,Taunu[ii]);
 
 #         if GYOTO_DEBUG_ENABLED
+	  {
+	    double t = ph -> getTransmission(ii);
+	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
 	  GYOTO_DEBUG
 	    << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
@@ -407,9 +419,10 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	    << Inu[ii]
 	    << ", spectrum[" << ii*data->offset << "]="
 	    << data->spectrum[ii*data->offset]
-	    << ", transmission=" << ph -> getTransmission(ii)
-	    << ", optical depth=" << -log(ph -> getTransmission(ii))
+	    << ", transmission=" << t
+	    << ", optical depth=" << o
 	    << ", redshift=" << ggred << ")\n" << endl;
+	  }
 #         endif
 	}
 	delete [] Inu;
@@ -419,7 +432,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
     }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;
@@ -427,15 +440,79 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
   }
 }
 
-double Generic::transmission(double, double, state_t const &) const {
+/*
+  User code is free to provide any or none of the various versions of
+  emission(), transmission() and radiativeQ(). The default
+  implementations call one another to try and find user-provided
+  code. In order to avoid infinite recursion as well as for
+  efficiency, several of those methose set a flag in __defaultfeatures
+  if they are called to inform the other methods. This is what each
+  method will try:
+    - polarized radiativeQ:
+      + unpolarized radiativeQ;
+    - unpolarized radiativeQ:
+      + polarized radiativeQ;
+      + emission(double*, ...) and transmission;
+    - emission(double*, ...):
+      + unpolarized radiativeQ;
+      + polarized radiativeQ;
+      + emission(double, ...);
+    - emission(double, ...):
+      + emission(double*, ...);
+      + unpolarized radiativeQ;
+      + fall back to uniform, unit emission;
+    - transmission:
+      + unpolarized radiativeQ;
+      + fall-back to uniform, unit opacity.
+ */
+
+#define __default_radiativeQ_polar 1
+#define __default_radiativeQ       2
+#define __default_emission_vector  4
+double Generic::transmission(double nuem, double dsem, state_t const &coord_ph, double const coord_obj[8]) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
+  GYOTO_DEBUG_EXPR(__defaultfeatures);
 # endif
+  if ((!(__defaultfeatures & __default_radiativeQ)) ||
+      (!(__defaultfeatures & __default_radiativeQ_polar))) {
+    // We don't know (yet?) whether both radiativeQ are the default
+    // implementations. Let's call the unpolarized version, which will
+    // call the polarized version if the former is not reimplemented.
+    double Inu, Taunu;
+    radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord_ph, coord_obj);
+    return Taunu;
+    // If radiativeQ is also the default implementation, it will set
+    // __defaultfeatures and recurse back here
+  }
   return double(flag_radtransf_);
 }
 
-double Generic::emission(double , double dsem, state_t const &, double const *) const
+double Generic::emission(double nuem, double dsem, state_t const &cph, double const *co) const
 {
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG_EXPR(__defaultfeatures);
+# endif
+
+  if (!(__defaultfeatures & __default_emission_vector)) {
+    // We don't know (yet?) whether emission(double* ,...) is the
+    // default implementation, let's call it
+    double Inu;
+    emission(&Inu, &nuem , 1, dsem, cph, co);
+    return Inu;
+  } else if ((!(__defaultfeatures & __default_radiativeQ)) ||
+	     (!(__defaultfeatures & __default_radiativeQ_polar))) {
+    // emission(double*, ...) is the default implementation, but
+    // we don't know (yet?) about radiativeQ(); let's call it
+    double Inu, Taunu;
+    radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
+    return Inu;
+  }
+
+  // emission(double*, ...) and radiativeQ are the default
+  // implementations: we are on our own. Fall-back to uniform
+  // emission.
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
@@ -447,8 +524,58 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
 			 double dsem, state_t const &cph, double const *co) const
 {
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(flag_radtransf_);
+  GYOTO_DEBUG_EXPR(__defaultfeatures);
 # endif
+
+  // Inform emission(double, ...)  that emission(double *, ...)  is
+  // the default implementation and that it should not recurse back
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_emission_vector;
+
+  if (!(__defaultfeatures & __default_radiativeQ)) {
+    // We don't know (yet?) whether unpolarized radiativeQ is the
+    // default implementation, let's call it
+    double * Taunu = new double[nbnu];
+    radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
+    delete [] Taunu;
+    // If radiativeQ is the default implementation, it will recurse
+    // back here and we are going to skip to the next case below
+    return;
+  } else if (!(__defaultfeatures & __default_radiativeQ_polar)) {
+    // We don't know (yet?) whether polarized radiativeQ is the
+    // default implementation, let's call it
+    double * Taunu = new double[nbnu];
+    double * Qnu = new double[nbnu];
+    double * Unu = new double[nbnu];
+    double * Vnu = new double[nbnu];
+    double * alphaInu = new double[nbnu];
+    double * alphaQnu = new double[nbnu];
+    double * alphaUnu = new double[nbnu];
+    double * alphaVnu = new double[nbnu];
+    double * rQnu = new double[nbnu];
+    double * rUnu = new double[nbnu];
+    double * rVnu = new double[nbnu];
+    radiativeQ(Inu, Qnu, Unu, Vnu,
+	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
+	       rQnu, rUnu, rVnu,
+	       nuem , nbnu, dsem,
+	       cph, co);
+    // in all cases, clean up
+    delete [] Qnu;
+    delete [] Unu;
+    delete [] Vnu;
+    delete [] alphaInu;
+    delete [] alphaQnu;
+    delete [] alphaUnu;
+    delete [] alphaVnu;
+    delete [] rQnu;
+    delete [] rUnu;
+    delete [] rVnu;
+    delete [] Taunu;
+    return;
+  }
+
+  // If both radiativeQ() versions are the default implementations,
+  // fall back to emission(double, ...)
   for (size_t i=0; i< nbnu; ++i) Inu[i]=emission(nuem[i], dsem, cph, co);
 }
 
@@ -459,9 +586,62 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(flag_radtransf_);
 # endif
+  // Inform emission() and transmission() that radiativeQ is the
+  // default implementation and that they should not recurse back here
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_radiativeQ;
+
+  if (!(__defaultfeatures & __default_radiativeQ_polar)) {
+    // We don't know (yet?) whether polarized radiativeQ is the
+    // default implementation, let's call it
+    double * Qnu = new double[nbnu];
+    double * Unu = new double[nbnu];
+    double * Vnu = new double[nbnu];
+    double * alphaInu = new double[nbnu];
+    double * alphaQnu = new double[nbnu];
+    double * alphaUnu = new double[nbnu];
+    double * alphaVnu = new double[nbnu];
+    double * rQnu = new double[nbnu];
+    double * rUnu = new double[nbnu];
+    double * rVnu = new double[nbnu];
+    radiativeQ(Inu, Qnu, Unu, Vnu,
+	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
+	       rQnu, rUnu, rVnu,
+	       nuem , nbnu, dsem,
+	       cph, co);
+    if (!(__defaultfeatures & __default_radiativeQ_polar)) {
+      for (size_t i=0; i<nbnu; ++i) {
+	Taunu[i] = exp(-alphaInu[i]);
+      }
+    } else {
+      for (size_t i=0; i<nbnu; ++i) {
+	Taunu[i]=transmission(nuem[i], dsem, cph, co);
+      }
+    }
+    // in all cases, clean up
+    delete [] Qnu;
+    delete [] Unu;
+    delete [] Vnu;
+    delete [] alphaInu;
+    delete [] alphaQnu;
+    delete [] alphaUnu;
+    delete [] alphaVnu;
+    delete [] rQnu;
+    delete [] rUnu;
+    delete [] rVnu;
+    return;
+    // If polarized radiativeQ is not implemented, the default
+    // implementation will recurse here.
+  }
+
+  // Polarized radiativeQ for sure not implemented, fall-back to
+  // emission() and transmission().
+
+  // Call emission()
   emission(Inu, nuem, nbnu, dsem, cph, co);
+
+  // Call transmission()
   for (size_t i=0; i< nbnu; ++i)
-    Taunu[i]=transmission(nuem[i], dsem, cph);
+    Taunu[i]=transmission(nuem[i], dsem, cph, co);
 }
 
 void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
@@ -476,15 +656,23 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   // X, Xdot, Ephi, Etheta
   //
   // If this method is not reimplemented, the emission is not polarized.
-  // Compute the outpur from the non-polarized radiativeQ().
-  double Taunu[nbnu];
+
+  // Inform non-polarized radiativeQ() that this method is the default
+  // implementation and that they should not recurse back here
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_radiativeQ_polar;
+
+  // Compute the output from the non-polarized radiativeQ().
+  double * Taunu = new double[nbnu];
   radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
   for (size_t i=0; i<nbnu; ++i) {
     // Inu[i] = Inu[i];
     Qnu[i] = 0.;
     Unu[i] = 0.;
     Vnu[i] = 0.;
-    alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
+    GYOTO_DEBUG_EXPR(Taunu[i]);
+    if (Taunu[i]<0.1) alphaInu[i] = -std::numeric_limits<double>::infinity();
+    else alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
+    GYOTO_DEBUG_EXPR(alphaInu[i]);
     alphaQnu[i] = 0.; // Is everything else 0.?
     alphaUnu[i] = 0.;
     alphaVnu[i] = 0.;
@@ -492,6 +680,7 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     rUnu[i] = 0.;
     rVnu[i] = 0.;
   }
+  delete [] Taunu;
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,

@@ -107,7 +107,7 @@ double Torus::emission(double nu_em, double dsem, state_t const &, double const 
   return (*spectrum_)(nu_em);
 }
 
-double Torus::transmission(double nuem, double dsem, state_t const &) const {
+double Torus::transmission(double nuem, double dsem, state_t const &, double const *) const {
   if (!flag_radtransf_) return 0.;
   double opac = (*opacity_)(nuem);
   if (debug())

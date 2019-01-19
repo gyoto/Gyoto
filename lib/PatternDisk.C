@@ -898,12 +898,12 @@ double PatternDisk::emission(double nu, double dsem,
   return 0.;
 }
 
-double PatternDisk::transmission(double nu, double dsem, state_t const &co) const {
+double PatternDisk::transmission(double nu, double dsem, state_t const &, double const co[8]) const {
   GYOTO_DEBUG << endl;
   if (!flag_radtransf_) return 0.;
   if (!opacity_) return 1.;
   size_t i[3]; // {i_nu, i_phi, i_r}
-  getIndices(i, &co[0], nu);
+  getIndices(i, co, nu);
   // NB: opacity is not interpolated so far
   double opac = opacity_[i[1]*nr_+i[2]];
   GYOTO_DEBUG << "nu="<<nu <<", dsem="<<dsem << ", opacity="<<opac <<endl;

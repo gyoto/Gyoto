@@ -465,7 +465,7 @@ class Gyoto::Astrobj::Python::Standard
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, state_t const &cph, double const *co) const;
 
-  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &cph, double const *co) const ;
 
   /* Astrobj::Standard API */
   virtual double operator()(double const coord[4]) ;
@@ -531,7 +531,7 @@ class Gyoto::Astrobj::Python::ThinDisk
 				 size_t const * chaninds, size_t nbnu,
 				 double dsem, state_t const &cph, double const *co) const;
 
-  virtual double transmission(double nuem, double dsem, state_t const &coord) const ;
+  virtual double transmission(double nuem, double dsem, state_t const &cph ,double const *co) const ;
 
   /* Astrobj::ThinDisk API */
   virtual double operator()(double const coord[4]) ;

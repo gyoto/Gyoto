@@ -337,22 +337,25 @@ void Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 }
 
 double Gyoto::Astrobj::Python::ThinDisk::transmission
-(double nuem, double dsem, state_t const &coord) const {
+(double nuem, double dsem, state_t const &cph, double const * co) const {
   if (!pTransmission_)
-    return Astrobj::ThinDisk::transmission(nuem, dsem, coord);
+    return Astrobj::ThinDisk::transmission(nuem, dsem, cph, co);
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
-  npy_intp dims[] = {npy_intp(coord.size())};
+  npy_intp pdims[] = {npy_intp(cph.size())};
+  npy_intp odims[] = {8};
 
   PyObject * pNu = PyFloat_FromDouble(nuem);
   PyObject * pDs = PyFloat_FromDouble(dsem);
-  PyObject * pCp = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, const_cast<double*>(&coord[0]));
+  PyObject * pCp = PyArray_SimpleNewFromData(1, pdims, NPY_DOUBLE, const_cast<double*>(&cph[0]));
+  PyObject * pCo = PyArray_SimpleNewFromData(1, odims, NPY_DOUBLE, const_cast<double*>(co));
   PyObject * pR =
-    PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, NULL);
+    PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, pCo, NULL);
   double res = PyFloat_AsDouble(pR);
 
   Py_XDECREF(pR);
+  Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
   Py_XDECREF(pNu);
@@ -360,7 +363,7 @@ double Gyoto::Astrobj::Python::ThinDisk::transmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::emission()");
+    throwError("Error occurred in ThinDisk::transmission()");
   }
 
   PyGILState_Release(gstate);

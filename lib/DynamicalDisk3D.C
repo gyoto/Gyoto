@@ -435,7 +435,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
   return 0.; // avoid pedantic warning
 }
 
-double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &co) const {
+double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &cp, double const *co) const {
 
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
@@ -447,13 +447,13 @@ double DynamicalDisk3D::transmission(double nuem, double dsem, state_t const &co
 
   if (ifits==1 || ifits==nb_times_){
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits); //awful trick to avoid problems with constness of function transmission -> to improve
-    return transmission1date(nuem,dsem,co,&co[0]);
+    return transmission1date(nuem,dsem,cp,co);
   }else{
     double I1, I2;
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits-1);
-    I1=transmission1date(nuem,dsem,co,&co[0]);
+    I1=transmission1date(nuem,dsem,cp,co);
     const_cast<DynamicalDisk3D*>(this)->copyQuantities(ifits);
-    I2=transmission1date(nuem,dsem,co,&co[0]);
+    I2=transmission1date(nuem,dsem,cp,co);
     double t1 = tinit_+(ifits-2)*dt_;
     return I1+(I2-I1)/dt_*(time-t1);
   }

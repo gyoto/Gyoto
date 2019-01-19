@@ -581,36 +581,6 @@ void PolishDoughnut::integrateEmission
   delete [] ii;
 }
 
-double PolishDoughnut::transmission(double nuem, double dsem, state_t const &coord) const {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-  double Inu, Taunu;
-  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, coord, &coord[0]);
-  return Taunu;
-}
-
-double PolishDoughnut::emission(double nuem, double dsem, state_t const &cph, double const *co) const
-{
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-  double Inu, Taunu;
-  radiativeQ(&Inu, &Taunu, &nuem, 1, dsem, cph, co);
-  return Inu;
-}
-
-void PolishDoughnut::emission(double * Inu, double * nuem , size_t nbnu,
-			 double dsem, state_t const &cph, double const *co) const
-{
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-  double * Taunu = new double[nbnu];
-  radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
-  delete [] Taunu;
-}
-
 void PolishDoughnut::radiativeQ(double Inu[], // output
 				double Taunu[], // output
 				double const nu_ems[], size_t nbnu, // input

@@ -64,7 +64,7 @@ bool PageThorneDisk::uniFlux() const {return uniflux_;}
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
-  x0_(0.), x1_(0.), x2_(0.), x3_(0.), blackbody_(0), mdot_(0),
+  x0_(0.), x1_(0.), x2_(0.), x3_(0.), blackbody_(true), mdot_(0),
   uniflux_(0), spectrumBB_(NULL)
 {
   if (debug()) cerr << "DEBUG: PageThorneDisk Construction" << endl;
@@ -299,7 +299,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
     }
     /* update photon's transmission */
     ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit));
+		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;
