@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2018 Frederic Vincent, Thibaut Paumard
+  Copyright 2014-2015, 2018-2019 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -21,6 +21,7 @@
 #include "GyotoDefs.h"
 #include <cmath>
 #include <cstdlib> /* atof */
+#include <limits> /* infinity */
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
 #include "GyotoFactoryMessenger.h"
@@ -130,7 +131,10 @@ double Spectrum::ThermalBremsstrahlung::alphanuCGS(double nu) const{
   double jnu = jnuCGS(nu);
   if (BB==0.){
     if (jnu==0.) return 0.;
-    else GYOTO_ERROR("In ThermalBrems: alphanu undefined!");
+    else {
+      GYOTO_SEVERE << "In ThermalBrems: alphanu undefined!" << std::endl;
+      return std::numeric_limits<double>::infinity();
+    }
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
@@ -149,7 +153,10 @@ void Spectrum::ThermalBremsstrahlung::radiativeQ(double jnu[], // output
     jnu[ii]=this->jnuCGS(nu)*GYOTO_JNU_CGS_TO_SI;
     if (BB==0.){
       if (jnu[ii]==0.) alphanu[ii]=0.;
-      else GYOTO_ERROR("In ThermalBrems: alphanu undefined!");
+      else {
+	GYOTO_SEVERE << "In ThermalBrems: alphanu undefined!" << std::endl;
+	alphanu[ii] = std::numeric_limits<double>::infinity();
+      }
     }else
       alphanu[ii]=jnu[ii]/BB;
     
