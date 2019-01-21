@@ -356,7 +356,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
 
   if (r < 0.) {
     cerr << "r= " << r << endl;
-    throwError( "KerrBL.C : r negative!!!!! the horizon may have been crossed..." );
+    GYOTO_ERROR( "KerrBL.C : r negative!!!!! the horizon may have been crossed..." );
     
   }
 
@@ -375,7 +375,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   double costheta, sintheta;
   sincos(theta, &sintheta, &costheta);
   double costheta2=costheta*costheta;
-  if (sintheta==0.) throwError("sintheta==0");
+  if (sintheta==0.) GYOTO_ERROR("sintheta==0");
   double cotantheta=costheta/sintheta;
   double cotantheta2=cotantheta*cotantheta;
   double cotantheta3=cotantheta2*cotantheta;
@@ -386,7 +386,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   double ptheta=coordGen[6];
 
   double Sigma=r2+a2_*costheta2;
-  if (Sigma==0) throwError("In KerrBL::diff(): Sigma==0");
+  if (Sigma==0) GYOTO_ERROR("In KerrBL::diff(): Sigma==0");
   double Sigmam1=1./Sigma;
   double Sigmam2=Sigmam1*Sigmam1;
 
@@ -398,10 +398,10 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   double L2=L*L;
 
   double tmp1=(2.*Delta*Sigma);
-  if (tmp1==0)  throwError("In KerrBL::diff(): 2.*Delta*Sigma==0");
+  if (tmp1==0)  GYOTO_ERROR("In KerrBL::diff(): 2.*Delta*Sigma==0");
   double tmp1m1=1./tmp1;
 
-  if (Delta==0) throwError("In KerrBL::diff(): Delta==0");
+  if (Delta==0) GYOTO_ERROR("In KerrBL::diff(): Delta==0");
 
   //NB: equations of motion are independent of Carter constant in this
   //form. However, the dependency of the dynamic on this constant
@@ -425,7 +425,7 @@ int KerrBL::diff(const double* coordGen, const double* cst, double* res) const{
   res[4] = 0.;// ptdot: pt = cst = -E
   
   double tmp2=r2+a2_*costheta2;
-  if (tmp2==0) throwError("r2+a2*costheta2==0");
+  if (tmp2==0) GYOTO_ERROR("r2+a2*costheta2==0");
   double tmp2m2=1./(tmp2*tmp2);
   
   double tmp3=a2_+r*(-2.+r);
@@ -972,7 +972,7 @@ int KerrBL::CheckCons(const double coor_init[8], const double cst[5], double coo
 	return 1; // z-axis problem 
       }else{
 	if (fabs(argsqrt)>limargbis)
-	  throwError("In KerrBL::CheckCons Impossible to determine thetadot; "
+	  GYOTO_ERROR("In KerrBL::CheckCons Impossible to determine thetadot; "
 		     "maybe try to increase parameter limarg");
 	GYOTO_INFO << "KerrBL::CheckCons argsqrt= " << argsqrt << " at theta= " << coor_init[2] << ". Putting it to 0..." << endl;
 	argsqrt=0.;
@@ -1033,7 +1033,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
 	}
 	argrac=0.;
       }else{//if the quantity is <0 and "big", and we are not close to horizon --> error
-	throwError( "In KerrBL::Normalize4v impossible to normalize 0-mass particle outside horizon!" );
+	GYOTO_ERROR( "In KerrBL::Normalize4v impossible to normalize 0-mass particle outside horizon!" );
       }	  
     }
     
@@ -1063,7 +1063,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
 	}
 	argrac=0.;
       }else{
-	throwError( "In KerrBL::Normalize4v impossible to normalize massive particule outside horizon!" );
+	GYOTO_ERROR( "In KerrBL::Normalize4v impossible to normalize massive particule outside horizon!" );
       }
     }
     
@@ -1071,7 +1071,7 @@ void KerrBL::Normalize4v(double coord[8], const double part_mass) const {
     if (!valuepos) coord[5]*=-1.;
     
   }else{
-    throwError("In KerrBL::Normalize4v: negative mass!");
+    GYOTO_ERROR("In KerrBL::Normalize4v: negative mass!");
   }
 
 }
@@ -1192,12 +1192,12 @@ void KerrBL::observerTetrad(string const obskind,
   if (obskind=="ZAMO"){
     double fact = gtt*gpp - gtp*gtp;
     if (fact == 0.){
-      throwError("In KerrBL::observerTetrad: "
+      GYOTO_ERROR("In KerrBL::observerTetrad: "
 		 "bad values");
     }
     double ut2 = -gpp/fact;
     if (grr==0. || gthth==0. || gpp==0. || ut2<=0.){
-      throwError("In KerrBL::observerTetrad: "
+      GYOTO_ERROR("In KerrBL::observerTetrad: "
 		 "bad values");
     }
     double omega = -gtp/gpp;
@@ -1218,7 +1218,7 @@ void KerrBL::observerTetrad(string const obskind,
     double omega = 1./(pow(pos[1],1.5)+spin_);
     double ut2 = -1/(gtt+gpp*omega*omega+2.*gtp*omega);
     if (ut2 <= 0. || grr<=0. || gthth <=0.) {
-      throwError("In KerrBL::observerTetrad: "
+      GYOTO_ERROR("In KerrBL::observerTetrad: "
 		 "bad values");
     }
     double ut = sqrt(ut2);
@@ -1228,7 +1228,7 @@ void KerrBL::observerTetrad(string const obskind,
     
     double fact1 = (gtp+gpp*omega)/(gtt+gtp*omega),
       fact2 = gtt*fact1*fact1+gpp-2.*gtp*fact1;
-    if (fact2 <= 0.) throwError("In KerrBL::observerTetrad: "
+    if (fact2 <= 0.) GYOTO_ERROR("In KerrBL::observerTetrad: "
 				"bad values");
     double a2 = 1./sqrt(fact2), a1 = -a2*fact1;
     double e1[4] = {-a1,0.,0.,-a2};
@@ -1240,7 +1240,7 @@ void KerrBL::observerTetrad(string const obskind,
       screen3[ii]=e3[ii];
     }
   }else{
-    throwError("In KerrBL::observerTetrad "
+    GYOTO_ERROR("In KerrBL::observerTetrad "
 	       "unknown observer kind");
   }
   Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);

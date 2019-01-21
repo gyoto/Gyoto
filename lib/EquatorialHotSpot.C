@@ -57,7 +57,7 @@ void EquatorialHotSpot::beaming(std::string const &b) {
   if (b=="IsotropicBeaming") beaming_=IsotropicBeaming;
   else if (b=="NormalBeaming") beaming_=NormalBeaming;
   else if (b=="RadialBeaming") beaming_=RadialBeaming;
-  else throwError("Unknown beaming kind");
+  else GYOTO_ERROR("Unknown beaming kind");
 }
 std::string EquatorialHotSpot::beaming() const {
   string b;
@@ -65,7 +65,7 @@ std::string EquatorialHotSpot::beaming() const {
   case IsotropicBeaming: b="IsotropicBeaming"; break;
   case NormalBeaming:    b="NormalBeaming";    break;
   case RadialBeaming:    b="RadialBeaming";    break;
-  default: throwError("Unknown beaming kind");
+  default: GYOTO_ERROR("Unknown beaming kind");
   }
   return b;
 }
@@ -82,7 +82,7 @@ int EquatorialHotSpot::setParameter(string name, string content, string unit) {
     return ThinDisk::setParameter(name, content, unit);
   } else if (name=="Position") {
     if (FactoryMessenger::parseArray(content, coord, 4) != 4)
-      throwError("Worldline \"Position\" requires exactly 4 tokens");
+      GYOTO_ERROR("Worldline \"Position\" requires exactly 4 tokens");
     if (init_vel_) {
       setInitCoord(coord, init_vel_);
       delete[] init_vel_; init_vel_=NULL;
@@ -90,7 +90,7 @@ int EquatorialHotSpot::setParameter(string name, string content, string unit) {
     wait_pos_ = 0;
   } else if (name=="Velocity") {
     if (FactoryMessenger::parseArray(content, coord, 3) != 3)
-      throwError("Worldline \"Velocity\" requires exactly 3 tokens");
+      GYOTO_ERROR("Worldline \"Velocity\" requires exactly 3 tokens");
     if (wait_pos_) {
       if (init_vel_) delete [] init_vel_;
       init_vel_ = new double[3];
@@ -134,7 +134,7 @@ void EquatorialHotSpot::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 0;
   if (init_vel_) {
     delete[] init_vel_; init_vel_=NULL;
-    throwError("Worldline::setParameters(): "
+    GYOTO_ERROR("Worldline::setParameters(): "
 	       "Velocity was found but not Position");
   }
 }
@@ -170,7 +170,7 @@ void EquatorialHotSpot::metric(SmartPointer<Metric::Generic> gg) {
 }
 
 void EquatorialHotSpot::setInitialCondition(double coord[8]) {
-  if (!metric_) throwError("Please set metric before calling "
+  if (!metric_) GYOTO_ERROR("Please set metric before calling "
 			   "EquatorialHotSpot::setInitialCondition(double*)");
   Worldline::setInitialCondition(metric_, coord, 1);
 }
@@ -209,7 +209,7 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
     // emission gaussian width
     double sigma2=ds2/16.; // then 0 emission outside sizespot_ (4 sigma dist)
     if (fabs(cosalpha)>1.)
-      throwError("In EquatorialHotSpot::emission:"
+      GYOTO_ERROR("In EquatorialHotSpot::emission:"
 		 " impossible angle");
 
     switch (beaming_) {
@@ -220,7 +220,7 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
     case RadialBeaming:
       return (1.-cosalpha)*(1.-cosalpha)*exp(-d2/(2*sigma2));
     default:
-      throwError("In EquatorialHotSpot::emission:"
+      GYOTO_ERROR("In EquatorialHotSpot::emission:"
 		 " incorrect beaming argument");
     }
   }

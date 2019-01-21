@@ -58,7 +58,7 @@ int Star::setParameter(std::string name,
     return UniformSphere::setParameter(name, content, unit);
   } else if (name=="Position") {
     if (FactoryMessenger::parseArray(content, coord, 4) != 4)
-      throwError("Worldline \"Position\" requires exactly 4 tokens");
+      GYOTO_ERROR("Worldline \"Position\" requires exactly 4 tokens");
     if (init_vel_) {
       setInitCoord(coord, init_vel_);
       delete[] init_vel_; init_vel_=NULL;
@@ -66,7 +66,7 @@ int Star::setParameter(std::string name,
     wait_pos_ = 0;
   } else if (name=="Velocity") {
     if (FactoryMessenger::parseArray(content, coord, 3) != 3)
-      throwError("Worldline \"Velocity\" requires exactly 3 tokens");
+      GYOTO_ERROR("Worldline \"Velocity\" requires exactly 3 tokens");
     if (wait_pos_) {
       if (init_vel_) delete [] init_vel_;
       init_vel_ = new double[3];
@@ -100,7 +100,7 @@ void Star::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 0;
   if (init_vel_) {
     delete[] init_vel_; init_vel_=NULL;
-    throwError("Worldline::setParameters(): "
+    GYOTO_ERROR("Worldline::setParameters(): "
 	       "Velocity was found but not Position");
   }
 }
@@ -161,7 +161,7 @@ void Star::metric(SmartPointer<Metric::Generic> gg) {
 }
 
 void Star::setInitialCondition(double const coord[8]) {
-  if (!metric_) throwError("Please set metric before calling Star::setInitialCondition(double*)");
+  if (!metric_) GYOTO_ERROR("Please set metric before calling Star::setInitialCondition(double*)");
   Worldline::setInitialCondition(metric_, coord, 0);
 }
 

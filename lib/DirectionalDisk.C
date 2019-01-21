@@ -28,7 +28,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 #include <iostream>
 #include <iomanip>
@@ -151,7 +151,7 @@ void DirectionalDisk::copyIntensity(double const *const pattern, size_t const na
       if (radius_)   { delete [] radius_;   radius_  = NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (ni_=naxes[1]) * (nr_=naxes[2])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emission_" << endl;
@@ -171,9 +171,9 @@ void DirectionalDisk::copyGridRadius(double const *const rad, size_t nr) {
   }
   if (rad) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridRadius()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridRadius()");
     if (nr_ != nr)
-      throwError("emission_ and radius_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and radius_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate radius_;" << endl;
     radius_ = new double[nr_];
     GYOTO_DEBUG << "radius >> radius_" << endl;
@@ -190,9 +190,9 @@ void DirectionalDisk::copyGridCosi(double const *const cosi, size_t ni) {
   }
   if (cosi) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridCosi()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridCosi()");
     if (ni_ != ni)
-      throwError("emission_ and cosi_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and cosi_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate cosi_;" << endl;
     cosi_ = new double[ni_];
     GYOTO_DEBUG << "cosi >> cosi_" << endl;
@@ -209,9 +209,9 @@ void DirectionalDisk::copyGridFreq(double const *const freq, size_t nnu) {
   }
   if (freq) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridFreq()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridFreq()");
     if (nnu_ != nnu)
-      throwError("emission_ and freq_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and freq_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate freq_;" << endl;
     freq_ = new double[nnu_];
     GYOTO_DEBUG << "freq >> freq_" << endl;
@@ -227,7 +227,7 @@ void DirectionalDisk::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
   fitsRead(f);
 # else
-  throwError("This Gyoto has no FITS i/o");
+  GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 
@@ -245,7 +245,7 @@ double DirectionalDisk::lampaltitude() const {
 
 void DirectionalDisk::lampcutoffsinev(std::vector<double> const &v) {
   if (v.size() != 2)
-    throwError("In DirectionalDisk: Only 2 arguments to define lamp energy range");
+    GYOTO_ERROR("In DirectionalDisk: Only 2 arguments to define lamp energy range");
   minfreq_lampframe_ = v[0]*GYOTO_eV2Hz;
   maxfreq_lampframe_ = v[1]*GYOTO_eV2Hz;
 }
@@ -308,7 +308,7 @@ void DirectionalDisk::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != nnu_)
-     throwError("DirectionalDisk::readFile(): freq array not conformable");
+     GYOTO_ERROR("DirectionalDisk::readFile(): freq array not conformable");
    if (freq_) { delete [] freq_; freq_ = NULL; }
    freq_ = new double[nnu_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -336,7 +336,7 @@ void DirectionalDisk::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != ni_)
-     throwError("DirectionalDisk::readFile(): cosi array not conformable");
+     GYOTO_ERROR("DirectionalDisk::readFile(): cosi array not conformable");
    if (cosi_) { delete [] cosi_; cosi_ = NULL; }
    cosi_ = new double[ni_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -353,7 +353,7 @@ void DirectionalDisk::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != nr_)
-     throwError("DirectionalDisk::readFile(): radius array not conformable");
+     GYOTO_ERROR("DirectionalDisk::readFile(): radius array not conformable");
    if (radius_) { delete [] radius_; radius_ = NULL; }
    radius_ = new double[nr_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -369,7 +369,7 @@ void DirectionalDisk::fitsRead(string filename) {
 }
 
 void DirectionalDisk::fitsWrite(string filename) {
-  if (!emission_) throwError("DirectionalDisk::fitsWrite(filename): nothing to save!");
+  if (!emission_) GYOTO_ERROR("DirectionalDisk::fitsWrite(filename): nothing to save!");
   filename_ = filename;
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
@@ -397,7 +397,7 @@ void DirectionalDisk::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
 
   ////// SAVE FREQ HDU ///////
-  if (!freq_) throwError("DirectionalDisk::fitsWrite(filename): no freq to save!");
+  if (!freq_) GYOTO_ERROR("DirectionalDisk::fitsWrite(filename): no freq to save!");
   GYOTO_DEBUG << "saving freq_\n";
   fits_create_img(fptr, DOUBLE_IMG, 1, naxes, &status);
   fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -407,7 +407,7 @@ void DirectionalDisk::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
   
   ////// SAVE COSI HDU ///////
-  if (!cosi_) throwError("DirectionalDisk::fitsWrite(filename): no cosi to save!");
+  if (!cosi_) GYOTO_ERROR("DirectionalDisk::fitsWrite(filename): no cosi to save!");
   GYOTO_DEBUG << "saving cosi_\n";
   fits_create_img(fptr, DOUBLE_IMG, 1, naxes+1, &status);
   fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -417,7 +417,7 @@ void DirectionalDisk::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
   
   ////// SAVE RADIUS HDU ///////
-  if (!radius_) throwError("DirectionalDisk::fitsWrite(filename): no radius to save!");
+  if (!radius_) GYOTO_ERROR("DirectionalDisk::fitsWrite(filename): no radius to save!");
     GYOTO_DEBUG << "saving radius_\n";
     fits_create_img(fptr, DOUBLE_IMG, 1, naxes+2, &status);
     fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -449,7 +449,7 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In DirectionalDisk::getIndices: radius undefined!");
+    GYOTO_ERROR("In DirectionalDisk::getIndices: radius undefined!");
   }
 
   if (cosi_) {
@@ -461,7 +461,7 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In DirectionalDisk::getIndices: cosi undefined!");
+    GYOTO_ERROR("In DirectionalDisk::getIndices: cosi undefined!");
   }
 
   if (freq_) {
@@ -474,7 +474,7 @@ void DirectionalDisk::getIndices(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In DirectionalDisk::getIndices: freq undefined!");
+    GYOTO_ERROR("In DirectionalDisk::getIndices: freq undefined!");
   }
 
 }
@@ -499,7 +499,7 @@ double DirectionalDisk::emission(double nu, double,
   //cout << "Limits disk= " << minfreq_diskframe << " " << maxfreq_diskframe << endl;
   //cout << "Local nu= " << nu << endl;
   if (minfreq_diskframe < minfreq_computed_ || maxfreq_diskframe > maxfreq_computed_){
-    throwError("In DirectionalDisk::emission(): "
+    GYOTO_ERROR("In DirectionalDisk::emission(): "
 	       "bad freq value ; update LampCutOffsIneV in XML");
   }
 
@@ -510,7 +510,7 @@ double DirectionalDisk::emission(double nu, double,
   // Compute angle between photon direction and normal
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
   double normal_norm=gg_->ScalarProd(&cp[0],normal,normal);
-  if (normal_norm<=0.) throwError("In DirectionalDisk::emission"
+  if (normal_norm<=0.) GYOTO_ERROR("In DirectionalDisk::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
   double np = 1./normal_norm*gg_->ScalarProd(&cp[0],normal,&cp[4]),
@@ -521,7 +521,7 @@ double DirectionalDisk::emission(double nu, double,
   GYOTO_DEBUG_ARRAY(co, 8);
   GYOTO_DEBUG_ARRAY(cp, 8);
   if (cosi>1.){
-    if (fabs(cosi-1)>tolcos) throwError("In DirectionalDisk: bad cos!");
+    if (fabs(cosi-1)>tolcos) GYOTO_ERROR("In DirectionalDisk: bad cos!");
     cosi=1.;
   }
   //cout << "cosi= " << cosi << endl;
@@ -545,7 +545,7 @@ double DirectionalDisk::emission(double nu, double,
   if (nu<=freq_[nnu_-1] || nu>=freq_[0]) return 0.;
   // So here, ind[2] should be >0 and ind[0]<nnu_-1
   if (ind[2]==0 || ind[0]==nnu_-1){
-    throwError("In DirectionalDisk::emission "
+    GYOTO_ERROR("In DirectionalDisk::emission "
 	       "bad {nu,r} indices");
   }
 
@@ -579,7 +579,7 @@ double DirectionalDisk::emission(double nu, double,
     }else{
       // Trilinear interpol
       if (ind[1]==0){
-	throwError("In DirectionalDisk::emission "
+	GYOTO_ERROR("In DirectionalDisk::emission "
 		   "bad cosi indice");
       }
       size_t i1l=ind[1]-1, i1u=ind[1];
@@ -672,8 +672,8 @@ double DirectionalDisk::emission(double nu, double,
 
     //cout << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
 
-    //if (I00<I00min || I01<I01min || I10<I10min || I11<I11min) throwError("test");
-    //if (I00>I00max || I01>I01max || I10>I10max || I11>I11max) throwError("test");
+    //if (I00<I00min || I01<I01min || I10<I10min || I11<I11min) GYOTO_ERROR("test");
+    //if (I00>I00max || I01>I01max || I10>I10max || I11>I11max) GYOTO_ERROR("test");
     double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
       ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
     Iem = I00+(I10-I00)*rationu
@@ -689,6 +689,6 @@ void DirectionalDisk::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
   string kin = gg->kind();
   if (kin != "KerrBL")
-    throwError("DirectionalDisk::metric(): metric must be KerrBL");
+    GYOTO_ERROR("DirectionalDisk::metric(): metric must be KerrBL");
   ThinDisk::metric(gg);
 }

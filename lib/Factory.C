@@ -169,13 +169,13 @@ void DOMErrorReporter::warning(const SAXParseException&)
 void DOMErrorReporter::error(const SAXParseException& toCatch)
 {
     fSawErrors = true;
-    throwError(C(toCatch.getMessage()));
+    GYOTO_ERROR(C(toCatch.getMessage()));
 }
 
 void DOMErrorReporter::fatalError(const SAXParseException& toCatch)
 {
     fSawErrors = true;
-    throwError(C(toCatch.getMessage()));
+    GYOTO_ERROR(C(toCatch.getMessage()));
 }
 
 void DOMErrorReporter::resetErrors()
@@ -471,7 +471,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
   GYOTO_DEBUG << "Initializing XML stuff" << endl;
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Scenery"),         // root element name
@@ -494,7 +494,7 @@ Factory::Factory(SmartPointer<Screen> scr)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Screen"),         // root element name
@@ -514,7 +514,7 @@ Factory::Factory(SmartPointer<Metric::Generic> gg)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Metric"),         // root element name
@@ -533,7 +533,7 @@ Factory::Factory(SmartPointer<Astrobj::Generic> ao)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Astrobj"),         // root element name
@@ -552,7 +552,7 @@ Factory::Factory(SmartPointer<Spectrum::Generic> sp)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Spectrum"),         // root element name
@@ -572,7 +572,7 @@ Factory::Factory(SmartPointer<Photon> ph)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Photon"),          // root element name
@@ -592,7 +592,7 @@ Factory::Factory(SmartPointer<Spectrometer::Generic> sp)
 {
   XMLPlatformUtils::Initialize();
   impl_ = DOMImplementationRegistry::getDOMImplementation(X("Core"));
-  if (!impl_) throwError("Problem initializing DOMImplementation");
+  if (!impl_) GYOTO_ERROR("Problem initializing DOMImplementation");
   doc_ = impl_->createDocument(
                            0,                    // root element namespace URI.
                            X("Spectrometer"),          // root element name
@@ -606,7 +606,7 @@ Factory::Factory(SmartPointer<Spectrometer::Generic> sp)
 
 void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
   if (!gg && !gg_) return;
-  if (gg_ && gg && gg!= gg_) throwError("Inconsistent use of Metrics");
+  if (gg_ && gg && gg!= gg_) GYOTO_ERROR("Inconsistent use of Metrics");
   if (gg && !gg_el_) {
   
     gg_ = gg;
@@ -623,7 +623,7 @@ void Factory::metric(SmartPointer<Metric::Generic> gg, DOMElement *el) {
 void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
   GYOTO_DEBUG << endl;
   if (!ao && !obj_) return;
-  if (obj_ && ao && ao!= obj_) throwError("Inconsistent use of Astrobjs");
+  if (obj_ && ao && ao!= obj_) GYOTO_ERROR("Inconsistent use of Astrobjs");
   if (ao && !obj_el_) {
     GYOTO_DEBUG <<"obj_ = ao;" << endl;
     obj_ = ao;
@@ -644,7 +644,7 @@ void Factory::astrobj(SmartPointer<Astrobj::Generic> ao, DOMElement *el) {
 void Factory::screen(SmartPointer<Screen> scr, DOMElement *el) {
   if (!scr && !screen_) return;
   if (screen_ && scr && scr!= screen_)
-    throwError("Inconsistent use of Screens");
+    GYOTO_ERROR("Inconsistent use of Screens");
   
   screen_ = scr;
 

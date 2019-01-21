@@ -107,7 +107,7 @@ void FixedStar::getCartesian(double const * const , size_t const n_dates,
     }
     break;
   default:
-    throwError("unsupported coordkind");
+    GYOTO_ERROR("unsupported coordkind");
     xs=ys=zs=0.;
   }
   for (size_t i=0; i<n_dates; ++i) {
@@ -167,7 +167,7 @@ double FixedStar::rMax() {
       rmax_=3.*(sqrt(pos_[0]*pos_[0]+pos_[1]*pos_[1]+pos_[2]*pos_[2])+radius_);
       break;
     default:
-      throwError("unimplemented coordinate system in FixedStar");
+      GYOTO_ERROR("unimplemented coordinate system in FixedStar");
     } 
   }
   return rmax_;
@@ -179,7 +179,7 @@ void FixedStar::setPos(const double p[3])
 void FixedStar::position(std::vector<double> const &v) {
   GYOTO_DEBUG_EXPR(v.size());
   if (v.size() !=3)
-    throwError("FixedStar position needs exactly 3 tokens"); 
+    GYOTO_ERROR("FixedStar position needs exactly 3 tokens"); 
   for (int i=0; i<3; ++i) pos_[i]=v[i];
   radius(radius_);
 }

@@ -154,11 +154,11 @@ void Blob::radiativeQ(double Inu[], // output
       -jnu_tot / anu_tot * em1;
     
     if (Inu[ii]<0.)
-      throwError("In Blob::radiativeQ: Inu<0");
+      GYOTO_ERROR("In Blob::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
-      throwError("In Blob::radiativeQ: Inu or Taunu is nan");
+      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
-      throwError("In Blob::radiativeQ: Inu or Taunu is infinite");
+      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is infinite");
     
   }
 

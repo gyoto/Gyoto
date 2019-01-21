@@ -66,7 +66,7 @@ void Gyoto::Metric::Python::spherical(bool t) {
   if (PyErr_Occurred() || res == -1) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed setting \"spherical\" using __setattr__");
+    GYOTO_ERROR("Failed setting \"spherical\" using __setattr__");
   }
 
   PyGILState_Release(gstate);
@@ -76,7 +76,7 @@ void Gyoto::Metric::Python::spherical(bool t) {
 
 bool Gyoto::Metric::Python::spherical() const {
   if (coordKind() == GYOTO_COORDKIND_UNSPECIFIED)
-    throwError("coordKind unspecified");
+    GYOTO_ERROR("coordKind unspecified");
   return coordKind() == GYOTO_COORDKIND_SPHERICAL;
 }
 
@@ -97,7 +97,7 @@ void Gyoto::Metric::Python::mass(double m) {
   if (PyErr_Occurred() || res == -1) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed setting \"mass\" using __setattr__");
+    GYOTO_ERROR("Failed setting \"mass\" using __setattr__");
   }
 
   PyGILState_Release(gstate);
@@ -135,17 +135,17 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error while retrieving methods");
+    GYOTO_ERROR("Error while retrieving methods");
   }
 
   if (!pGmunu_) {
     PyGILState_Release(gstate);
-    throwError("Object does not implement required method \"__call__\"");
+    GYOTO_ERROR("Object does not implement required method \"__call__\"");
   }
 
   if (!pChristoffel_) {
     PyGILState_Release(gstate);
-    throwError("Object does not implement required method \"getVelocity\"");
+    GYOTO_ERROR("Object does not implement required method \"getVelocity\"");
   }
 
   Gyoto::Python::PyInstance_SetThis(pInstance_,
@@ -160,7 +160,7 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
 }
 
 void Metric::Python::gmunu(double g[4][4], const double * x) const {
-  if (!pGmunu_) throwError("gmunu method not loaded yet");
+  if (!pGmunu_) GYOTO_ERROR("gmunu method not loaded yet");
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp g_dims[] = {4, 4};
@@ -176,14 +176,14 @@ void Metric::Python::gmunu(double g[4][4], const double * x) const {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Metric::Python::gmunu");
+    GYOTO_ERROR("Error occurred in Metric::Python::gmunu");
   }
    
   PyGILState_Release(gstate);
 }
 
 int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
-  if (!pChristoffel_) throwError("christoffel method not loaded yet");
+  if (!pChristoffel_) GYOTO_ERROR("christoffel method not loaded yet");
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp d_dims[] = {4, 4, 4};
@@ -201,7 +201,7 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Metric::Python::gmunu");
+    GYOTO_ERROR("Error occurred in Metric::Python::gmunu");
   }
    
   PyGILState_Release(gstate);

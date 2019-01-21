@@ -119,7 +119,7 @@ double const * DynamicalDisk::getVelocity() const { return PatternDiskBB::getVel
 
 void DynamicalDisk::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
-    throwError("In DynamicalDisk::copyQuantities: incoherent value of iq");
+    GYOTO_ERROR("In DynamicalDisk::copyQuantities: incoherent value of iq");
 
   setEmission(emission_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
@@ -223,7 +223,7 @@ void DynamicalDisk::file(std::string const &fname) {
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(dirname_)) == NULL) {
-      throwError("In DynamicalDisk.C constructor : bad dirname_");
+      GYOTO_ERROR("In DynamicalDisk.C constructor : bad dirname_");
     }
     
     nb_times_=0;
@@ -242,7 +242,7 @@ void DynamicalDisk::file(std::string const &fname) {
       dirname_ << " " << nb_times_ << endl;
     
     if (nb_times_<1) 
-      throwError("In DynamicalDisk.C: bad nb_times_ value");
+      GYOTO_ERROR("In DynamicalDisk.C: bad nb_times_ value");
     
     emission_array_ = new double*[nb_times_] ;
     velocity_array_ = new double*[nb_times_] ;
@@ -263,7 +263,7 @@ void DynamicalDisk::file(std::string const &fname) {
 	nnu_=naxes[0],nphi_=naxes[1],nr_=naxes[2];
       }else{
 	if (nnu_!=naxes[0] || nphi_!=naxes[1] || nr_!=naxes[2]){
-	  throwError("In DynDisk::file: grid dimensions changing!");
+	  GYOTO_ERROR("In DynDisk::file: grid dimensions changing!");
 	}
       }
       //	nel = (nnu=naxes[0])*(nphi=naxes[1])*(nr=naxes[2]);
@@ -274,25 +274,25 @@ void DynamicalDisk::file(std::string const &fname) {
 	emission_array_[i-1] = new double[nel1];
 	for (size_t j=0;j<nel1;++j)
 	  emission_array_[i-1][j]=emtemp[j];
-      }else throwError("In DynmicalDisk::file: Emission must be supplied");
+      }else GYOTO_ERROR("In DynmicalDisk::file: Emission must be supplied");
       //save velocity
       if (getVelocity()){
 	double * veltemp = const_cast<double*>(getVelocity());
 	velocity_array_[i-1] = new double[nel2];
 	for (size_t j=0;j<nel2;++j)
 	  velocity_array_[i-1][j]=veltemp[j];
-      }else throwError("In DynmicalDisk::file: Velocity must be supplied");
+      }else GYOTO_ERROR("In DynmicalDisk::file: Velocity must be supplied");
       //save radius
       if (getGridRadius()){
       double * radtemp = const_cast<double*>(getGridRadius());
       radius_array_[i-1] = new double[nr_];
       for (size_t j=0;j<nr_;++j)
 	radius_array_[i-1][j]=radtemp[j];
-      }else throwError("In DynmicalDisk::file: Radius must be supplied");
+      }else GYOTO_ERROR("In DynmicalDisk::file: Radius must be supplied");
       //save other quantities
     }
 #else
-    throwError("This Gyoto has no FITS i/o");
+    GYOTO_ERROR("This Gyoto has no FITS i/o");
 #endif
 }
 

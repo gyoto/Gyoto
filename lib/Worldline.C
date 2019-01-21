@@ -344,7 +344,7 @@ void Worldline::metric(SmartPointer<Metric::Generic> gg) {
 
 void Worldline::tell(Gyoto::Hook::Teller* msg) {
   if (msg != metric_) {
-    throwError("Worldline::tell(): wrong Teller");
+    GYOTO_ERROR("Worldline::tell(): wrong Teller");
   }
   reInit();
 }
@@ -354,7 +354,7 @@ void Worldline::integrator(std::string const &type) {
 #ifdef GYOTO_HAVE_BOOST_INTEGRATORS
   else state_ = new IntegState::Boost(this, type);
 #else
-  else throwError("unrecognized integrator (recompile with boost?)");
+  else GYOTO_ERROR("unrecognized integrator (recompile with boost?)");
 #endif
 }
 
@@ -369,7 +369,7 @@ string Worldline::className_l() const { return  string("worldline"); }
 
 void Worldline::initCoord(std::vector<double> const &v) {
   if (v.size() != 8)
-    throwError("Worldline::initCoord() requires an 8-element vector");
+    GYOTO_ERROR("Worldline::initCoord() requires an 8-element vector");
   double c[8];
   for (size_t i=0; i<8; ++i) c[i]=v[i];
   setInitCoord(c);
@@ -431,10 +431,10 @@ void Worldline::setInitCoord(const double coord[8], int dir) {
 
 void Worldline::setInitCoord(double const pos[4], double const v[3], int dir) {
   if (!getMass())
-    throwError("Worldline::setInitCoord(pos, vel) "
+    GYOTO_ERROR("Worldline::setInitCoord(pos, vel) "
 	       "only makes sense for massive particles");
   if (!metric_)
-    throwError("Please set metric before calling "
+    GYOTO_ERROR("Please set metric before calling "
 	       "Worldline::setInitCoord(double pos[4], double vel[3])");
   double tdot0=metric_->SysPrimeToTdot(pos, v);
   GYOTO_DEBUG_EXPR(tdot0);
@@ -555,7 +555,7 @@ void Worldline::xFill(double tlim) {
     GYOTO_ENDIF_DEBUG
 #   endif
       }else{
-    throwError("In Worldline.C Unrecognized mass.");
+    GYOTO_ERROR("In Worldline.C Unrecognized mass.");
     //GYOTO_DEBUG<< "of unrecognized mass (!!) particule ....." << endl;
     //equations of geodesics written for a mass=1 star
   }
@@ -651,7 +651,7 @@ void Worldline::get_xyz(double *x, double *y, double *z) const {
       z[n-imin_]=x3_[n];
     }
     break;
-  default: Gyoto::throwError("in Worldline::get_xyz: Incompatible coordinate kind");
+  default: GYOTO_ERROR("in Worldline::get_xyz: Incompatible coordinate kind");
   }
 
 }
@@ -680,7 +680,7 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
     x1=x; x2=y; x3=z;
     break;
   default: 
-    Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+    GYOTO_ERROR("in Worldline::get_xyz: unknown coordinate kind");
     x1=x2=x3=NULL; // fix warning
   }
 
@@ -731,7 +731,7 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
       }
     }
     break;
-  default: Gyoto::throwError("in Worldline::get_xyz: unknown coordinate kind");
+  default: GYOTO_ERROR("in Worldline::get_xyz: unknown coordinate kind");
   }
 
   delete [] x0dot;
@@ -799,7 +799,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       curh=imax_;    // new imax_
       if (curl == curh || date > x0_[imax_]) {
 	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
-	throwError(ss.str());
+	GYOTO_ERROR(ss.str());
       }
     } else if (date < x0_[imin_]) {
       GYOTO_DEBUG << "Extending worldline towards past" << endl;
@@ -809,7 +809,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       curl=imin_;    // new imin_
       if (curl == curh || date < x0_[imin_]) {
 	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
-	throwError(ss.str());
+	GYOTO_ERROR(ss.str());
       }
     } else if (date >= x0_[curh]) {
       curl=curh;
@@ -1018,7 +1018,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = vel[0]*tdot;
       if (x2dot) x2dot[di] = vel[1]*tdot;
       if (x3dot) x3dot[di] = vel[2]*tdot;
-      if (parallel_transport_) throwError("TODO: implement parallel transport");
+      if (parallel_transport_) GYOTO_ERROR("TODO: implement parallel transport");
     } else {
       // Photon: don't be so elaborate, we certainly don't need it... yet
       if (x1)       x1[di] = bestl[ 1]*factl + besth[ 1]*facth;
@@ -1061,7 +1061,7 @@ void Worldline::getCoord(double *x0dest,
 			  double *x1dest, double *x2dest, double *x3dest)
 			 const {
   //if (sysco!=sys_)
-  //Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  //GYOTO_ERROR("At this point, coordinate conversion is not implemented");
   size_t ncomp=imax_-imin_+1;
   memcpy(x0dest, x0_+imin_, sizeof(double)*ncomp);
   memcpy(x1dest, x1_+imin_, sizeof(double)*ncomp);
@@ -1090,16 +1090,16 @@ void Worldline::checkPhiTheta(double coord[8]) const{
     }
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    throwError("Worldline::checkPhiTheta(): should not be called "
+    GYOTO_ERROR("Worldline::checkPhiTheta(): should not be called "
 	       "with cartesian-like coordinates");
   default:
-    throwError("Worldline::checkPhiTheta(): unknown COORDKIND");
+    GYOTO_ERROR("Worldline::checkPhiTheta(): unknown COORDKIND");
   }
 }
 
 void Worldline::get_dot(double *x0dest, double *x1dest, double *x2dest, double *x3dest) const {
   //  if (sysco!=sys_)
-  //  Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  //  GYOTO_ERROR("At this point, coordinate conversion is not implemented");
   size_t ncomp=imax_-imin_+1;
   memcpy(x0dest, x0dot_+imin_, sizeof(double)*ncomp);
   memcpy(x1dest, x1dot_+imin_, sizeof(double)*ncomp);
@@ -1126,7 +1126,7 @@ void Worldline::get_prime(double *x1dest, double *x2dest, double *x3dest) const 
   size_t n;
   double f;
   //if (sysco!=sys_)
-  //  Gyoto::throwError("At this point, coordinate conversion is not implemented");
+  //  GYOTO_ERROR("At this point, coordinate conversion is not implemented");
   for (n=imin_;n<=imax_;++n) {
     x1dest[n-imin_]=x1dot_[n]*(f=1./x0dot_[n]);
     x2dest[n-imin_]=x2dot_[n]*f;
@@ -1161,7 +1161,7 @@ void Worldline::save_txyz(char * filename) const {
       fichierxyz << setprecision(prec) << setw(width) << x3_[n] << endl;
     }
     break;
-  default: Gyoto::throwError("in Worldline::save_xyz: Incompatible coordinate kind");
+  default: GYOTO_ERROR("in Worldline::save_xyz: Incompatible coordinate kind");
   }
   
   fichierxyz.close();
@@ -1323,7 +1323,7 @@ void Worldline::setCst(double const * const cst, const size_t n) {
 
 void Worldline::getInitialCoord(state_t &coord) const {
   if (imax_<imin_)
-    throwError("Worldline::getInitialCoord(): initial coordinate not set yet");
+    GYOTO_ERROR("Worldline::getInitialCoord(): initial coordinate not set yet");
   getCoord(i0_, coord);
 }
 
@@ -1337,7 +1337,7 @@ void Worldline::getCoord(size_t index, state_t &coord) const {
   //GYOTO_DEBUG<< "index == " << index << endl;
   if (index<imin_ || index>imax_) {
     cerr << "Indices min curr max= " << imin_ << " " << index << " " << imax_ << endl;
-    throwError("Worldline::getCoord: bad index");
+    GYOTO_ERROR("Worldline::getCoord: bad index");
   }
   size_t sz=coord.size();
   if (sz==0) {
@@ -1388,7 +1388,7 @@ void Worldline::getCoord(double t, state_t &coord) {
 	     &coord[12], &coord[13], &coord[14], &coord[15]);        // Etheta
     break;
   default:
-    throwError("Inconsistent size for output vector");
+    GYOTO_ERROR("Inconsistent size for output vector");
   }
 }
 
@@ -1406,6 +1406,6 @@ void Worldline::getCartesianPos(size_t index, double dest[4]) const {
     dest[2] = x2_[index];
     dest[3] = x3_[index];
     break;
-  default: Gyoto::throwError("Worldline::getCartesianPos: Incompatible coordinate kind");
+  default: GYOTO_ERROR("Worldline::getCartesianPos: Incompatible coordinate kind");
   }
 }

@@ -175,7 +175,7 @@ void Jet::radiativeQ(double Inu[], // output
     zz   = coord_ph[3];
     break;
   default:
-    throwError("In Jet::radiativeQ: Unknown coordinate system kind");
+    GYOTO_ERROR("In Jet::radiativeQ: Unknown coordinate system kind");
   }
 
   double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
@@ -198,7 +198,7 @@ void Jet::radiativeQ(double Inu[], // output
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
   //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
-  //throwError("testjet");
+  //GYOTO_ERROR("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
@@ -243,11 +243,11 @@ void Jet::radiativeQ(double Inu[], // output
       -jnu_tot / anu_tot * em1;
 
     if (Inu[ii]<0.)
-      throwError("In Jet::radiativeQ: Inu<0");
+      GYOTO_ERROR("In Jet::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
-      throwError("In Jet::radiativeQ: Inu or Taunu is nan");
+      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
-      throwError("In Jet::radiativeQ: Inu or Taunu is infinite");
+      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is infinite");
 
   }
 }
@@ -265,7 +265,7 @@ double Jet::operator()(double const coord[4]) {
     zz   = coord[3];
     break;
   default:
-    throwError("In Jet::operator(): Unknown coordinate system kind");
+    GYOTO_ERROR("In Jet::operator(): Unknown coordinate system kind");
   }
 
   if  (fabs(zz) < jetBaseHeight_) return 1.; // outside jet
@@ -308,7 +308,7 @@ void Jet::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kin = gg->kind();
   if (kin != "KerrBL")
-    throwError
+    GYOTO_ERROR
       ("Jet::metric(): metric must be KerrBL");
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed

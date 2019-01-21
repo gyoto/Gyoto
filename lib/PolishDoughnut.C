@@ -177,9 +177,9 @@ double PolishDoughnut::getRcentre() const { return r_centre_; }
 double PolishDoughnut::lambda() const {
   if (!rochelobefilling_) {
     if (defangmomrinner_)
-      throwError("Lambda is not set because AngMomRinner is.");
+      GYOTO_ERROR("Lambda is not set because AngMomRinner is.");
     else
-      throwError("Lambda is not set yet.");
+      GYOTO_ERROR("Lambda is not set yet.");
   }
   return lambda_;
 }
@@ -189,7 +189,7 @@ void PolishDoughnut::lambda(double lam) {
     GYOTO_WARNING << "Setting Lambda overrides AngMomRinner previously set\n";
     defangmomrinner_=0;
   }
-  if (!gg_) throwError("Metric but be set before lambda in PolishDoughnut");
+  if (!gg_) GYOTO_ERROR("Metric but be set before lambda in PolishDoughnut");
   //Computing marginally stable and marginally bound radii:
   lambda_=lam;
   double rms = gg_->getRms();
@@ -238,7 +238,7 @@ void PolishDoughnut::lambda(double lam) {
   // Find torus outer radius
   double r3_min=r_centre_, r3_max=5000.;
   if (lambda_>0.99){
-    throwError("In PolishDoughnut: please use a value of"
+    GYOTO_ERROR("In PolishDoughnut: please use a value of"
 	       " lambda < 0.99, or else the outer radius"
 	       " finding algorithm may crash");
   }
@@ -250,7 +250,7 @@ void PolishDoughnut::lambda(double lam) {
   GYOTO_DEBUG_EXPR(r_torusouter_);
   GYOTO_ENDIF_DEBUG;
   if (r_torusouter_!=r_torusouter_ || r_torusouter_==r_torusouter_+1)
-    throwError("In PolishDoughnut::lambda(): bad r_torusouter_");
+    GYOTO_ERROR("In PolishDoughnut::lambda(): bad r_torusouter_");
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(lambda_);
   GYOTO_DEBUG_EXPR(l0_);
@@ -268,7 +268,7 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
     rochelobefilling_=0;
   }
   if (v.size() != 2)
-    throwError("Only 2 arguments to define l0 and rin");
+    GYOTO_ERROR("Only 2 arguments to define l0 and rin");
   l0_ = v[0];
   rintorus_ = v[1];
   r_cusp_=rintorus_; // NB: the cusp is most probably not at this radius; however we need to define it to avoid having cases where operator() returns "inside torus" when the photon actually is in the funnel at r<r_cusp_. Defining r_cusp_ that way is okay, we won't miss any part of the real torus.
@@ -280,7 +280,7 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   r_centre_ = intersection.ridders(rmin, rmax) ;
   //cout << "rmin center max= " << rmin << " " << r_centre_ << " " << rmax << endl;
   if (r_centre_ < rmin or r_centre_ > rmax)
-    throwError("In PolishDoughnut::angmomrinner: bad r_centre_");
+    GYOTO_ERROR("In PolishDoughnut::angmomrinner: bad r_centre_");
   double posc[4]={0.,r_centre_,M_PI/2.,0.};
   W_centre_  = gg_->getPotential(posc,l0_);
   DeltaWm1_ = 1./(W_centre_ - W_surface_);
@@ -301,9 +301,9 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
 std::vector<double> PolishDoughnut::angmomrinner() const {
   if (!defangmomrinner_) {
     if (rochelobefilling_)
-      throwError("AngMomRinner is not set because Lambda has been set.");
+      GYOTO_ERROR("AngMomRinner is not set because Lambda has been set.");
     else
-      throwError("AngMomRinner is not set yet.");
+      GYOTO_ERROR("AngMomRinner is not set yet.");
   }
   std::vector<double> v (2, 0.);
   v[0]=l0_; v[1]=rintorus_;
@@ -389,7 +389,7 @@ void PolishDoughnut::bremsstrahlung(bool brems)
 {bremsstrahlung_=brems;}
 void PolishDoughnut::nonThermalDeltaExpo(std::vector<double> const &v) {
   if (v.size() != 2)
-    throwError("nonThermalDeltaExpo must have exactly 2 elements");
+    GYOTO_ERROR("nonThermalDeltaExpo must have exactly 2 elements");
   deltaPL_= v[0];
   double expoPL = v[1];
   spectrumPLSynch_->PLindex(expoPL);
@@ -402,7 +402,7 @@ std::vector<double> PolishDoughnut::nonThermalDeltaExpo() const {
 
 void PolishDoughnut::adafparams(std::vector<double> const &v) {
   if (v.size() != 2)
-    throwError("ADAF must have exactly 2 elements");
+    GYOTO_ERROR("ADAF must have exactly 2 elements");
   adaf(true);
   ADAFtemperature_ = v[0];
   ADAFdensity_ = v[1];
@@ -457,12 +457,12 @@ void PolishDoughnut::tell(Hook::Teller * met) {
     if (defangmomrinner_) angmomrinner(angmomrinner());
     else if (rochelobefilling_) lambda(lambda());
   }
-  else throwError("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
+  else GYOTO_ERROR("BUG: PolishDoughnut::tell(Hook::Teller * met) called with"
 		  "wrong metric");
 }
 int PolishDoughnut::Impact(Photon *ph, size_t index,
 			   Astrobj::Properties *data) {
-  if (beta_==1.) throwError("Please set beta to != 1.");
+  if (beta_==1.) GYOTO_ERROR("Please set beta to != 1.");
   if (adaf_){
     // This is the Impact function for the Yuan+, Broderick+
     // ADAF model, this is actually no longer a Polish doughnut
@@ -531,7 +531,7 @@ void PolishDoughnut::getVelocity(double const pos[4], double vel[4])
     ss << "PolishDoughnut::getVelocity(pos=[";
     for (int i=0; i<3; ++i) ss << pos[i] << ", ";
     ss << pos[3] << "]): ut^2 is negative.";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
   vel[0] = sqrt(ut2);
   vel[1] = vel[2] = 0.;
@@ -601,7 +601,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     bnorm = 0., theta_mag=0.;
   if (adaf_){
     if (!angle_averaged_){
-      throwError("In PolishDoughnut: ADAF should be called"
+      GYOTO_ERROR("In PolishDoughnut: ADAF should be called"
 		 " only with angle averaging");
     }
     double zz = rr * fabs(cos(theta)), rcyl = rr * sin(theta);
@@ -630,7 +630,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 	if (ww!=0.) ww=fabs(ww);
 	else ww=w_tol;//can be the case if w at entrance in doughnut is exactly 0
       }else{
-	throwError("In PolishDoughnut::emission() w<0!");
+	GYOTO_ERROR("In PolishDoughnut::emission() w<0!");
       }
     }
     double enthalpy_c=central_enthalpy_cgs_; // Warning: central_density_ is here
@@ -687,7 +687,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 		   *number_density);
     }
     //cout << "ne_c, ne, Bc, B= " << number_density_central << " " << number_density << " " << magnetizationParameter_ << " " << sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS * number_density_central)  << " " << bnorm << endl;
-    //throwError("test pol");
+    //GYOTO_ERROR("test pol");
     double bphi = bnorm/sqrt(g_pp+2*l0_*g_tp+l0_*l0_*g_tt);
     //NB: in Komissarov it is 2 p_mag in the numerator, but he uses
     // p_mag = B^2/2, and here we use the cgs p_mag = B^2/24pi
@@ -702,13 +702,13 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
 	+vel[ii]*gg_->ScalarProd(&coord_ph[0],&coord_ph[4],vel);
     }
     double lnorm = gg_->ScalarProd(&coord_ph[0],photon_emframe,photon_emframe);
-    if (lnorm<=0.) throwError("In PolishDoughnut::radiativeq"
+    if (lnorm<=0.) GYOTO_ERROR("In PolishDoughnut::radiativeq"
 			      " photon_emframe should be spacelike");
     lnorm=sqrt(lnorm);
     double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,b4vec);
     theta_mag = acos(lscalb/(lnorm*bnorm));
     double sth = sin(theta_mag);//, cth = cos(theta_mag);
-    if (sth==0.) throwError("In PolishDoughnut::radiativeq: "
+    if (sth==0.) GYOTO_ERROR("In PolishDoughnut::radiativeq: "
 			    "theta_mag is zero leads to undefined emission");
 
     // doughnut's central temperature
@@ -831,11 +831,11 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       -jnu_tot / anu_tot * em1; 
     
     if (Inu[ii]<0.)
-      throwError("In PolishDoughnut::radiativeQ: Inu<0");
+      GYOTO_ERROR("In PolishDoughnut::radiativeQ: Inu<0");
     if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
-      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is nan");
+      GYOTO_ERROR("In PolishDoughnut::radiativeQ: Inu or Taunu is nan");
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
-      throwError("In PolishDoughnut::radiativeQ: Inu or Taunu is infinite");
+      GYOTO_ERROR("In PolishDoughnut::radiativeQ: Inu or Taunu is infinite");
     
   }
   

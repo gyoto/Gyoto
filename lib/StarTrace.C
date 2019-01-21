@@ -117,7 +117,7 @@ size_t StarTrace::xExpand(int dir) {
 
 void StarTrace::computeXYZ(size_t i)
 {
-  if (!gg_) throwError("Please set metric before calling computeXYZ");
+  if (!gg_) GYOTO_ERROR("Please set metric before calling computeXYZ");
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL: 
     x_[i]=x1_[i]*sin(x2_[i])*cos(x3_[i]);
@@ -129,7 +129,7 @@ void StarTrace::computeXYZ(size_t i)
     y_[i]=x2_[i];
     z_[i]=x3_[i];
     break;
-  default: Gyoto::throwError("in StarTrace::computeXYZ: Incompatible coordinate kind");
+  default: GYOTO_ERROR("in StarTrace::computeXYZ: Incompatible coordinate kind");
   }
 }
 
@@ -152,7 +152,7 @@ void StarTrace::computeXYZ()
       z_[n]=x3_[n];
     }
     break;
-  default: Gyoto::throwError("in StarTrace::computeXYZ(): Incompatible coordinate kind");
+  default: GYOTO_ERROR("in StarTrace::computeXYZ(): Incompatible coordinate kind");
   }
 }
 
@@ -222,7 +222,7 @@ double StarTrace::operator()(double const coord[]) {
     y=coord[2];
     z=coord[3];
     break;
-  default: Gyoto::throwError("in StarTrace::operator()(): Incompatible coordinate kind");
+  default: GYOTO_ERROR("in StarTrace::operator()(): Incompatible coordinate kind");
   }
   
   double tmp1;

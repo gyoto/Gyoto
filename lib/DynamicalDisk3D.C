@@ -141,7 +141,7 @@ double const * DynamicalDisk3D::getVelocity() const { return Disk3D::getVelocity
 
 void DynamicalDisk3D::copyQuantities(int iq) {
   if (iq<1 || iq>nb_times_)
-    throwError("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
+    GYOTO_ERROR("In DynamicalDisk3D::copyQuantities: incoherent value of iq");
   setEmissquant(emission_array_[iq-1]);
   if (absorption_array_) opacity(absorption_array_[iq-1]);
   setVelocity(velocity_array_[iq-1]);
@@ -165,11 +165,11 @@ void DynamicalDisk3D::getVelocity(double const pos[4], double vel[4]) {
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
+	risco=0., GYOTO_ERROR("In DynamicalDisk3D::getVelocity: bad metric");
       break;
       }
     default:
-      throwError("DynamicalDisk3D::getVelocity: bad COORDKIND");
+      GYOTO_ERROR("DynamicalDisk3D::getVelocity: bad COORDKIND");
       risco=0.;
     }
     
@@ -221,11 +221,11 @@ double DynamicalDisk3D::emission1date(double nu, double dsem,
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
+	risco=0., GYOTO_ERROR("In DynamicalDisk3D::getVelocity: bad metric");
     break;
     }
   default:
-    throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
+    GYOTO_ERROR("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
     risco=0.;
   }
@@ -367,11 +367,11 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
       else if (kin == "Minkowski")
 	risco = 6.;
       else
-	risco=0., throwError("In DynamicalDisk3D::getVelocity: bad metric");
+	risco=0., GYOTO_ERROR("In DynamicalDisk3D::getVelocity: bad metric");
     break;
     }
   default:
-    throwError("DynamicalDisk3D::emission1date(): bad COORDKIND"
+    GYOTO_ERROR("DynamicalDisk3D::emission1date(): bad COORDKIND"
 	       ", should be BL corrdinates");
     risco=0.;
   }
@@ -410,7 +410,7 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
     //   */
     //   if (jnu!=0.){
     // 	cout << "r= " << rcur << " " << emissq << " " << jnu << " " << BnuT << endl;
-    // 	throwError("In DynamicalDisk3D::"
+    // 	GYOTO_ERROR("In DynamicalDisk3D::"
     // 		   "transmission1date absorption coef. undefined!");
     //   }
     // }else{
@@ -427,11 +427,11 @@ double DynamicalDisk3D::transmission1date(double nu, double dsem,
       double alphanu=absq*pow(nu,-(PLindex_+4.)/2.);
       return exp(-alphanu*dsem*dist_unit);
     }else{
-      throwError("In DynamicalDisk3D: in non-BB optically thin case, "
+      GYOTO_ERROR("In DynamicalDisk3D: in non-BB optically thin case, "
 		 "opacity should be provided");
     }
   }
-  throwError("BUG: should not reach this point!");
+  GYOTO_ERROR("BUG: should not reach this point!");
   return 0.; // avoid pedantic warning
 }
 
@@ -466,7 +466,7 @@ void DynamicalDisk3D::metric(SmartPointer<Metric::Generic> gg) {
   //Metric must be KerrBL (see emission function)
   string kin = gg->kind();
   if (kin != "KerrBL" && kin != "Minkowski")
-    throwError
+    GYOTO_ERROR
       ("DynamicalDisk3D::metric(): metric must be KerrBL");
   Disk3D::metric(gg);
 }
@@ -480,7 +480,7 @@ void DynamicalDisk3D::file(std::string const &content) {
     DIR *dp;
     struct dirent *dirp;
     if((dp  = opendir(dirname_)) == NULL) {
-      throwError("In DynamicalDisk3D.C constructor : bad dirname_");
+      GYOTO_ERROR("In DynamicalDisk3D.C constructor : bad dirname_");
     }
     
     nb_times_=0;
@@ -499,7 +499,7 @@ void DynamicalDisk3D::file(std::string const &content) {
       dirname_ << " " << nb_times_ << endl;
     
     if (nb_times_<1) 
-      throwError("In DynamicalDisk3D.C: bad nb_times_ value");
+      GYOTO_ERROR("In DynamicalDisk3D.C: bad nb_times_ value");
 
     //check whether absorption is provided
     {
@@ -546,7 +546,7 @@ void DynamicalDisk3D::file(std::string const &content) {
 	for (size_t j=0;j<nel1;j++)
 	  emission_array_[i-1][j]=emtemp[j];
       }else {
-	throwError("In DynamicalDisk3D::file(fname): "
+	GYOTO_ERROR("In DynamicalDisk3D::file(fname): "
 		   "Emission must be supplied");
       }
 
@@ -559,7 +559,7 @@ void DynamicalDisk3D::file(std::string const &content) {
 	    absorption_array_[i-1][j]=abstemp[j];
 	  //cout << "SAVING ABS ARRAY" << endl;
 	}else{
-	  throwError("In DynamicalDisk3D::file(fname): "
+	  GYOTO_ERROR("In DynamicalDisk3D::file(fname): "
 		     "Absorption should be supplied here");
 	}
       }
@@ -571,7 +571,7 @@ void DynamicalDisk3D::file(std::string const &content) {
 	for (size_t j=0;j<nel2;j++)
 	  velocity_array_[i-1][j]=veltemp[j];
       }else{
-	throwError("In DynmicalDisk::file(fname): "
+	GYOTO_ERROR("In DynmicalDisk::file(fname): "
 		   "Velocity must be supplied");
       }
       
@@ -588,10 +588,10 @@ void DynamicalDisk3D::file(std::string const &content) {
 	  || nphi!=nphib
 	  || zmin()!=zminb || zmax()!=zmaxb || nz!=nzb
 	  || rin()!=rinb || rout()!=routb || nr!=nrb
-	  ) throwError("DynamicalDisk3D::file(fname) Grid is not constant!");
+	  ) GYOTO_ERROR("DynamicalDisk3D::file(fname) Grid is not constant!");
     }
 #else
-    throwError("This Gyoto has no FITS i/o"); 
+    GYOTO_ERROR("This Gyoto has no FITS i/o"); 
 #endif     
 }
 std::string DynamicalDisk3D::file() const {return dirname_;}

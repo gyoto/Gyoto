@@ -200,7 +200,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 #endif
     }
     if (data->impactcoords && data->impactcoords[0]==DBL_MAX) {
-      if (coord_ph_hit.size() > 8) throwError("ImpactCoords is incompatible with parallel transport");
+      if (coord_ph_hit.size() > 8) GYOTO_ERROR("ImpactCoords is incompatible with parallel transport");
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
       memcpy(data->impactcoords+8, &coord_ph_hit[0], 8 * sizeof(double));
     }
@@ -739,7 +739,7 @@ double Generic::deltaMax(double coord[8]) {
   double rr=0.,h1max;
 
   if (!gg_)
-    throwError("Please set metric before calling Astrobj::Generic::deltaMax()");
+    GYOTO_ERROR("Please set metric before calling Astrobj::Generic::deltaMax()");
 
   switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -749,7 +749,7 @@ double Generic::deltaMax(double coord[8]) {
     rr=sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]);
     break;
   default:
-    throwError("Incompatible coordinate kind in Astrobj.C");
+    GYOTO_ERROR("Incompatible coordinate kind in Astrobj.C");
   }
 
   if (rr<rMax()) h1max=1.; else h1max=rr*0.5;

@@ -149,7 +149,7 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
 
   if (r < 0.) {
     cerr << "r= " << r << endl;
-    throwError( "ChernSimons.C: r negative!!!!! the horizon"
+    GYOTO_ERROR( "ChernSimons.C: r negative!!!!! the horizon"
 		" may have been crossed..." );
   }
 
@@ -171,7 +171,7 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
   double costheta, sintheta;
   sincos(theta, &sintheta, &costheta);
   double costheta2=costheta*costheta;
-  if (sintheta==0.) throwError("sintheta==0");
+  if (sintheta==0.) GYOTO_ERROR("sintheta==0");
   double cotantheta=costheta/sintheta;
   double cotantheta2=cotantheta*cotantheta;
   double cotantheta3=cotantheta2*cotantheta;
@@ -184,7 +184,7 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
   double a3=a2*spin_;
 
   double Sigma=r2+a2*costheta2;
-  if (Sigma==0) throwError("In ChernSimons::diff(): Sigma==0");
+  if (Sigma==0) GYOTO_ERROR("In ChernSimons::diff(): Sigma==0");
   double Sigmam1=1./Sigma;
   double Sigmam2=Sigmam1*Sigmam1;
 
@@ -196,10 +196,10 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
   double L2=L*L;
 
   double tmp1=(2.*Delta*Sigma);
-  if (tmp1==0)  throwError("In ChernSimons::diff(): 2.*Delta*Sigma==0");
+  if (tmp1==0)  GYOTO_ERROR("In ChernSimons::diff(): 2.*Delta*Sigma==0");
   double tmp1m1=1./tmp1;
 
-  if (Delta==0) throwError("In ChernSimons::diff(): Delta==0");
+  if (Delta==0) GYOTO_ERROR("In ChernSimons::diff(): Delta==0");
 
   //NB: equations of motion are independent of Carter constant in this
   //form. However, the dependency of the dynamic on this constant
@@ -241,7 +241,7 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
   res[4] = 0.;// ptdot: pt = cst = -E
 
   double tmp2=r2+a2*costheta2;
-  if (tmp2==0) throwError("r2+a2*costheta2==0");
+  if (tmp2==0) GYOTO_ERROR("r2+a2*costheta2==0");
   double tmp2m2=1./(tmp2*tmp2);
 
   double tmp3=a2+r*(-2.+r);

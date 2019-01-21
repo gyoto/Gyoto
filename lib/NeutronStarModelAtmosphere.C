@@ -45,7 +45,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 
 #define LORENE_UNIT_ACCEL GYOTO_C*GYOTO_C/1e4
@@ -152,7 +152,7 @@ void NeutronStarModelAtmosphere::copyIntensity(double const *const pattern, size
       if (surfgrav_)   { delete [] surfgrav_;   surfgrav_  = NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (ni_=naxes[1]) * (nsg_=naxes[2])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     GYOTO_DEBUG << "allocate emission_;" << endl;
     emission_ = new double[nel];
     GYOTO_DEBUG << "pattern >> emission_" << endl;
@@ -174,9 +174,9 @@ void NeutronStarModelAtmosphere::copyGridSurfgrav(double const *const sg,
   }
   if (sg) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridSurfgrav()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridSurfgrav()");
     if (nsg_ != nsg)
-      throwError("emission_ and surfgrav_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and surfgrav_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate surfgrav_;" << endl;
     surfgrav_ = new double[nsg_];
     GYOTO_DEBUG << "surfgrav >> surfgrav_" << endl;
@@ -194,9 +194,9 @@ void NeutronStarModelAtmosphere::copyGridCosi(double const *const cosi, size_t n
   }
   if (cosi) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridCosi()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridCosi()");
     if (ni_ != ni)
-      throwError("emission_ and cosi_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and cosi_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate cosi_;" << endl;
     cosi_ = new double[ni_];
     GYOTO_DEBUG << "cosi >> cosi_" << endl;
@@ -214,9 +214,9 @@ void NeutronStarModelAtmosphere::copyGridFreq(double const *const freq,
   }
   if (freq) {
     if (!emission_) 
-      throwError("Please use copyIntensity() before copyGridFreq()");
+      GYOTO_ERROR("Please use copyIntensity() before copyGridFreq()");
     if (nnu_ != nnu)
-      throwError("emission_ and freq_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and freq_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate freq_;" << endl;
     freq_ = new double[nnu_];
     GYOTO_DEBUG << "freq >> freq_" << endl;
@@ -234,7 +234,7 @@ void NeutronStarModelAtmosphere::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
   fitsRead(f);
 # else
-  throwError("This Gyoto has no FITS i/o");
+  GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 
@@ -303,7 +303,7 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != nnu_)
-     throwError("NeutronStarModelAtmosphere::readFile(): freq array not conformable");
+     GYOTO_ERROR("NeutronStarModelAtmosphere::readFile(): freq array not conformable");
    if (freq_) { delete [] freq_; freq_ = NULL; }
    freq_ = new double[nnu_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -320,7 +320,7 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != ni_)
-     throwError("NeutronStarModelAtmosphere::readFile(): cosi array not conformable");
+     GYOTO_ERROR("NeutronStarModelAtmosphere::readFile(): cosi array not conformable");
    if (cosi_) { delete [] cosi_; cosi_ = NULL; }
    cosi_ = new double[ni_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -337,7 +337,7 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
      throwCfitsioError(status) ;
    if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
    if (size_t(naxes[0]) != nsg_)
-     throwError("NeutronStarModelAtmosphere::readFile(): surfgrav array not conformable");
+     GYOTO_ERROR("NeutronStarModelAtmosphere::readFile(): surfgrav array not conformable");
    if (surfgrav_) { delete [] surfgrav_; surfgrav_ = NULL; }
    surfgrav_ = new double[nsg_];
    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -354,7 +354,7 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
 
 void NeutronStarModelAtmosphere::fitsWrite(string filename) {
   GYOTO_DEBUG_EXPR(emission_);
-  if (!emission_) throwError("NeutronStarModelAtmosphere::fitsWrite(filename): nothing to save!");
+  if (!emission_) GYOTO_ERROR("NeutronStarModelAtmosphere::fitsWrite(filename): nothing to save!");
   filename_ = filename;
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
@@ -382,7 +382,7 @@ void NeutronStarModelAtmosphere::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
 
   ////// SAVE FREQ HDU ///////
-  if (!freq_) throwError("NeutronStarModelAtmosphere::fitsWrite(filename): no freq to save!");
+  if (!freq_) GYOTO_ERROR("NeutronStarModelAtmosphere::fitsWrite(filename): no freq to save!");
   GYOTO_DEBUG << "saving freq_\n";
   fits_create_img(fptr, DOUBLE_IMG, 1, naxes, &status);
   fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -392,7 +392,7 @@ void NeutronStarModelAtmosphere::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
   
   ////// SAVE COSI HDU ///////
-  if (!cosi_) throwError("NeutronStarModelAtmosphere::fitsWrite(filename): no cosi to save!");
+  if (!cosi_) GYOTO_ERROR("NeutronStarModelAtmosphere::fitsWrite(filename): no cosi to save!");
   GYOTO_DEBUG << "saving cosi_\n";
   fits_create_img(fptr, DOUBLE_IMG, 1, naxes+1, &status);
   fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -402,7 +402,7 @@ void NeutronStarModelAtmosphere::fitsWrite(string filename) {
   if (status) throwCfitsioError(status) ;
   
   ////// SAVE SURFGRAV HDU ///////
-  if (!surfgrav_) throwError("NeutronStarModelAtmosphere::fitsWrite(filename): no surfgrav to save!");
+  if (!surfgrav_) GYOTO_ERROR("NeutronStarModelAtmosphere::fitsWrite(filename): no surfgrav to save!");
     GYOTO_DEBUG << "saving surfgrav_\n";
     fits_create_img(fptr, DOUBLE_IMG, 1, naxes+2, &status);
     fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
@@ -422,15 +422,15 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
 				 double cosi, double nu) const {
   const Vector& a_i = *(gg_->getAccel_tab()[0]);
   double rr=co[1], th=co[2], phi=co[3];
-  if (rr==0.) throwError("In NeutronStarModelAtm.C::getIndices r is 0!");
+  if (rr==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::getIndices r is 0!");
   double rsinth = rr*sin(th);
-  if (rsinth==0.) throwError("In NeutronStarModelAtm.C::getIndices on z axis!");
+  if (rsinth==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::getIndices on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
     sm2 = sm1*sm1;
   double a_r = a_i(1).val_point(rr,th,phi),
     a_t = rr*a_i(2).val_point(rr,th,phi),
     a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
-  if (a_p!=0.) {throwError("In NeutronStarModelAtm::getIndices: "
+  if (a_p!=0.) {GYOTO_ERROR("In NeutronStarModelAtm::getIndices: "
 			   "For axisym spacetime phi-compo should be zero");}
   const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
   double grr=g_up_ij(1,1).val_point(rr,th,phi), 
@@ -438,7 +438,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
   double ar = a_r*grr, at = a_t*gtt; //contravariant 3-accel
 
   double accelvecNorm2 = grr*a_r*a_r + gtt*a_t*a_t; // squared norm of accel vector
-  if (accelvecNorm2<=0.) throwError("In NeutronStarModelAtmosphere::getIndices"
+  if (accelvecNorm2<=0.) GYOTO_ERROR("In NeutronStarModelAtmosphere::getIndices"
 				    " accel vector should be spacelike");
   double accelvecNorm = sqrt(accelvecNorm2);
 
@@ -463,7 +463,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
       }
     }
   } else {
-    throwError("In NeutronStarModelAtmosphere::getIndices: surfgrav undefined!");
+    GYOTO_ERROR("In NeutronStarModelAtmosphere::getIndices: surfgrav undefined!");
   }
 
   if (cosi_) {
@@ -476,7 +476,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In NeutronStarModelAtmosphere::getIndices: cosi undefined!");
+    GYOTO_ERROR("In NeutronStarModelAtmosphere::getIndices: cosi undefined!");
   }
 
   if (freq_) {
@@ -490,7 +490,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In NeutronStarModelAtmosphere::getIndices: freq undefined!");
+    GYOTO_ERROR("In NeutronStarModelAtmosphere::getIndices: freq undefined!");
   }
 
 }
@@ -545,9 +545,9 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
                       // a convergence to rstar better than rtol
   if (fabs(rstar-rr)>rtol) return 0.;
   
-  if (rr==0.) throwError("In NeutronStarModelAtm.C::emission r is 0!");
+  if (rr==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::emission r is 0!");
   double rsinth = rr*sin(th);
-  if (rsinth==0.) throwError("In NeutronStarModelAtm.C::emission on z axis!");
+  if (rsinth==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::emission on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
     sm2 = sm1*sm1;
 
@@ -565,7 +565,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   double a_r = a_i(1).val_point(rr,th,phi),
     a_t = rr*a_i(2).val_point(rr,th,phi),
     a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
-  if (a_p!=0.) {throwError("In NeutronStarModelAtm::emission: "
+  if (a_p!=0.) {GYOTO_ERROR("In NeutronStarModelAtm::emission: "
 			   "For axisym spacetime phi-compo should be zero");}
   const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
   double grr=g_up_ij(1,1).val_point(rr,th,phi), 
@@ -578,7 +578,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   //cout << "accel= " << a_r  << " " << a_t << " " << a_p << endl;
 
   double accelvecNorm2 = grr*a_r*a_r + gtt*a_t*a_t; // squared norm of accel vector
-  if (accelvecNorm2<=0.) throwError("In NeutronStarModelAtmosphere::emission"
+  if (accelvecNorm2<=0.) GYOTO_ERROR("In NeutronStarModelAtmosphere::emission"
 				    " accel vector should be spacelike");
   double accelvecNorm = sqrt(accelvecNorm2);
   // Surface gravity is that quantity, scaled to cgs units:
@@ -612,7 +612,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   if (cosi>1.){
     if (fabs(cosi-1)>tolcos){
       cout << "Bad cosi= " << cosi << endl;
-      throwError("In NeutronStarModelAtmosphere: bad cos!");
+      GYOTO_ERROR("In NeutronStarModelAtmosphere: bad cos!");
     }
     cosi=1.;
   }
@@ -621,7 +621,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     // inside the star!
     if (fabs(cosi)>tolcos){
       cout << "Bad cosi= " << cosi << endl;
-      //throwError("In NeutronStarModelAtmosphere: bad cos!");
+      //GYOTO_ERROR("In NeutronStarModelAtmosphere: bad cos!");
     }
     cosi=0.;
   }
@@ -639,7 +639,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   // Error if current surfgrav is not in provided range
   if (nsg_>1 && (sgloc<=surfgrav_[0] || sgloc>=surfgrav_[nsg_-1])){
     cout << "With surf grav= " << sgloc << endl;
-    throwError("In NeutronStarModelAtmosphere: bad value of surface gravity");
+    GYOTO_ERROR("In NeutronStarModelAtmosphere: bad value of surface gravity");
   }
   // No emission outside freq range
   if (nu<=freq_[nnu_-1] || nu>=freq_[0]) {
@@ -649,7 +649,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   
   // So here, ind[2] should be >0 and ind[0]<nnu_-1
   if (ind[2]==0 || ind[0]==nnu_-1){
-    throwError("In NeutronStarModelAtmosphere::emission "
+    GYOTO_ERROR("In NeutronStarModelAtmosphere::emission "
 	       "bad {nu,r} indices");
   }
 
@@ -705,7 +705,7 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     }else{
       // Trilinear interpol
       if (ind[1]==0){
-	throwError("In NeutronStarModelAtmosphere::emission "
+	GYOTO_ERROR("In NeutronStarModelAtmosphere::emission "
 		   "bad cosi indice");
       }
       size_t icosl=ind[1]-1, icosu=ind[1];

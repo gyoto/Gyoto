@@ -59,6 +59,7 @@
  */
 
 #include <string>
+#include "GyotoDefs.h"
 
 namespace Gyoto {
   class Error;
@@ -74,10 +75,10 @@ namespace Gyoto {
  *
  *  Every Gyoto method (either in the main Gyoto library or in a Gyoto
  *  plug-in) should check for possible error conditions and throw
- *  adequate Gyoto::Error exceptions through the
- *  Gyoto::throwError() function. For instance:
+ *  adequate Gyoto::Error exceptions through the GYOTO_ERROR macro
+ *  (which calls the Gyoto::throwError() function). For instance:
  *  \code
- *  if (error_condition) Gyoto::throwError("Useful error message");
+ *  if (error_condition) GYOTO_ERROR("Useful error message");
  *  \endcode
  *
  *  If the main code has set Gyoto::Error::handler_t error handler
@@ -180,7 +181,18 @@ class Gyoto::Error
 
 namespace Gyoto {
   /// Throw a Gyoto::Error
+  /**
+   * Most code should use the GYOTO_ERROR macro instead
+   */
   void throwError( std::string );
 }
+
+
+/// Throw a Gyoto::Error nicely
+/**
+ * Throw an Error, prepending current function name. Calls
+ * Gyoto::throwError(std::string).
+ */
+#define GYOTO_ERROR(msg) Gyoto::throwError(std::string(__FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in ")+ __PRETTY_FUNCTION__ + ": " + msg)
 
 #endif

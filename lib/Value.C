@@ -51,7 +51,7 @@ Value::~Value() {}
   Value::Value(t val) : type(Property::t_t), INIT_MEMBERS {T=val;} \
   Value::operator t() const {		                           \
     if (type!=Property::t_t)		                           \
-    throwError("This Value does not hold a " #t);                  \
+    GYOTO_ERROR("This Value does not hold a " #t);                  \
     return T;					                   \
   }
 
@@ -70,7 +70,7 @@ Value::operator long() const {
   case Property::size_t_t:
     return long(SizeT);
   default:
-    throwError("This Value does not hold a long (or unsigned long)");
+    GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
   return 0;
 }
@@ -84,7 +84,7 @@ Value::operator unsigned long() const {
   case Property::size_t_t:
     return (unsigned long)(SizeT);
   default:
-    throwError("This Value does not hold a long (or unsigned long)");
+    GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
   return 0;
 }
@@ -99,7 +99,7 @@ Value::operator size_t() const {
   case Property::size_t_t:
     return SizeT;
   default:
-    throwError("This Value does not hold a long (or unsigned long)");
+    GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
   return 0;
 }
@@ -116,7 +116,7 @@ Value::operator bool() const {
   case Property::size_t_t:
     return bool(SizeT);
   default:
-    throwError("This Value does not hold an integer");
+    GYOTO_ERROR("This Value does not hold an integer");
   }
   return 0;
 }

@@ -196,7 +196,7 @@ extern "C" {
 
       if (i_idx.isDouble() || j_idx.isDouble()) {
 	if (!i_idx.isDouble() || !j_idx.isDouble())
-	  throwError("i and j must be of same type (double or long)");
+	  GYOTO_ERROR("i and j must be of same type (double or long)");
 	is_double=true;
 	nelem=i_idx.getNElements();
 	long const *idims=i_idx.getDims();
@@ -205,13 +205,13 @@ extern "C" {
 	    nelem=j_idx.getNElements();
 	    idims=j_idx.getDims();
 	  }
-	  else throwError("alpha and delta must be conformable");
+	  else GYOTO_ERROR("alpha and delta must be conformable");
 	}
 	for (int m=1; m<=idims[0]; ++m) dims[++dims[0]]=idims[m];
       } else {
 	nelem=i_idx.getNElements()*j_idx.getNElements();
 	if ( (precompute + i_idx.getDims()[0]+j_idx.getDims()[0]) >= Y_DIMSIZE )
-	  throwError("Too many dimensions");
+	  GYOTO_ERROR("Too many dimensions");
 	long const *idims=i_idx.getDims();
 	for (int m=1; m<=idims[0];++m) dims[++dims[0]]=idims[m];
 	idims=j_idx.getDims();
@@ -288,7 +288,7 @@ extern "C" {
 
       if ( !precompute && ((rquant>=1)||has_sp||has_bsp) ) {
 	++dims[0];
-	if (dims[0] >=Y_DIMSIZE) throwError("Too many dimensions");
+	if (dims[0] >=Y_DIMSIZE) GYOTO_ERROR("Too many dimensions");
 	dims[dims[0]]=nk;
       }
 
@@ -468,7 +468,7 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
       quantities = scenery -> getRequestedQuantities();
       if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
 	SmartPointer<Spectrometer::Generic> spr=scenery->screen()->spectrometer();
-	if (!spr) throwError("Spectral quantity requested but "
+	if (!spr) GYOTO_ERROR("Spectral quantity requested but "
 			     "no spectrometer specified!");
 	nbnuobs = long(spr -> nSamples());
       }

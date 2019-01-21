@@ -87,7 +87,7 @@ Spectrum::ThermalSynchrotron * Spectrum::ThermalSynchrotron::clone() const
 { return new Spectrum::ThermalSynchrotron(*this); }
 
 double Spectrum::ThermalSynchrotron::operator()(double nu) const {
-  throwError("In ThermalSynch: "
+  GYOTO_ERROR("In ThermalSynch: "
 	     "Synchrotron emission not defined for optically thick case");
   return 0.;
 }
@@ -159,7 +159,7 @@ double Spectrum::ThermalSynchrotron::alphanuCGS(double nu) const{
   double jnu = jnuCGS(nu);
   if (BB==0.){
     if (jnu==0.) return 0.;
-    else throwError("In ThermalSynch: alphanu undefined!");
+    else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
@@ -210,7 +210,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
     jnu[ii]= jnucur * GYOTO_JNU_CGS_TO_SI ;
     if (BB==0.){
       if (jnucur==0.) alphanu[ii]=0.;
-      else throwError("In ThermalSynch: alphanu undefined!");
+      else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
     }else
       alphanu[ii]=jnu[ii]/BB;
     

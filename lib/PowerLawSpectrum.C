@@ -61,7 +61,7 @@ void Spectrum::PowerLaw::cutoff(std::vector<double> const &v, std::string const 
 }
 void Spectrum::PowerLaw::cutoff(std::vector<double> const &v) {
   if (v.size() != 2)
-    throwError("CutOff needs exactly two cut-off frequencies");
+    GYOTO_ERROR("CutOff needs exactly two cut-off frequencies");
   minfreq_ = v[0];
   maxfreq_ = v[1];
   if (minfreq_ > maxfreq_) {

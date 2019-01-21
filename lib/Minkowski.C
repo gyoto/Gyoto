@@ -109,7 +109,7 @@ int Minkowski::christoffel(double dst[4][4][4], const double pos[8]) const {
 // second form is given below, as an example.
 double Minkowski::gmunu(const double * pos, int mu, int nu) const {
   if (mu<0 || nu<0 || mu>3 || nu>3)
-    throwError ("Minkowski::gmunu: incorrect value for mu or nu");
+    GYOTO_ERROR ("Minkowski::gmunu: incorrect value for mu or nu");
 
   if (mu!=nu) return 0.;
   if (mu==0)  return -1.;
@@ -131,7 +131,7 @@ double Minkowski::gmunu(const double * pos, int mu, int nu) const {
     }
   }
 
-  throwError("BUG: this point should not be reached.");
+  GYOTO_ERROR("BUG: this point should not be reached.");
   return 0.;
   
 } 
@@ -173,7 +173,7 @@ double Minkowski::christoffel(const double pos[8], const int alpha, const int mm
     return 0;
   }
  
-  throwError("BUG: this point should not be reached.");
+  GYOTO_ERROR("BUG: this point should not be reached.");
   return 0.;
 
 }
@@ -183,7 +183,7 @@ void Minkowski::observerTetrad(string const obskind,
 			       double screen1[4], double screen2[4], 
 			       double screen3[4]) const{
   if (coordKind()!=GYOTO_COORDKIND_SPHERICAL){
-    throwError("In Minkowski::observerTetrad: "
+    GYOTO_ERROR("In Minkowski::observerTetrad: "
 	       "coordinates should be spherical-like");
   }
   if (obskind=="KeplerianObserver"){
@@ -194,7 +194,7 @@ void Minkowski::observerTetrad(string const obskind,
     double omega = 1./(pow(pos[1],1.5));
     double ut2 = -1/(gtt+gpp*omega*omega);
     if (ut2 <= 0. || grr<=0. || gthth <=0.) {
-      throwError("In Minkowski::observerTetrad: "
+      GYOTO_ERROR("In Minkowski::observerTetrad: "
 		 "bad values");
     }
     double ut = sqrt(ut2);
@@ -204,7 +204,7 @@ void Minkowski::observerTetrad(string const obskind,
     
     double fact1 = gpp*omega/gtt,
       fact2 = gtt*fact1*fact1+gpp;
-    if (fact2 <= 0.) throwError("In Minkowski::observerTetrad: "
+    if (fact2 <= 0.) GYOTO_ERROR("In Minkowski::observerTetrad: "
 				"bad values");
     double a2 = 1./sqrt(fact2), a1 = -a2*fact1;
     double e1[4] = {-a1,0.,0.,-a2};
@@ -216,7 +216,7 @@ void Minkowski::observerTetrad(string const obskind,
       screen3[ii]=e3[ii];
     }
   }else{
-    throwError("In Minkowski::observerTetrad "
+    GYOTO_ERROR("In Minkowski::observerTetrad "
 	       "unknown observer kind");
   }
   Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);

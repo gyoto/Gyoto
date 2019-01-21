@@ -59,7 +59,7 @@ void Uniform::fillProperty(Gyoto::FactoryMessenger *fmp,
     ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[0] << " "
        << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << band_[1];
     fmp -> setFullContent(ss.str());
-  } else throwError("Unsupported Property in Spectrometer::Uniform"); 
+  } else GYOTO_ERROR("Unsupported Property in Spectrometer::Uniform"); 
 }
 
 #ifdef GYOTO_USE_XERCES
@@ -72,7 +72,7 @@ void Gyoto::Spectrometer::Uniform::setParameters(FactoryMessenger* fmp) {
   string content = fmp -> getFullContent();
   double band[2];
   if (FactoryMessenger::parseArray(content, band, 2) != 2)
-    throwError("Spectromecter::Uniform requires exactly 2 tokens");
+    GYOTO_ERROR("Spectromecter::Uniform requires exactly 2 tokens");
 
   Uniform::band(band, unit, skind);
   nSamples(nsamples);
@@ -193,7 +193,7 @@ void Uniform::kind(std::string const &str) {
   else if (str == "wave"   ) s = WaveKind;
   else if (str == "wavelog") s = WaveLogKind;
   else {
-    throwError("unknown Spectrometer::Uniform kind"); s=NULL;
+    GYOTO_ERROR("unknown Spectrometer::Uniform kind"); s=NULL;
   }
 
   kindid_ = s;
@@ -209,13 +209,13 @@ void Uniform::nSamples(size_t n) {
 }
 
 void Uniform::band(std::vector<double>const &vnu) {
-  if (vnu.size() != 2) throwError("Band needs exactly two elements");
+  if (vnu.size() != 2) GYOTO_ERROR("Band needs exactly two elements");
   double nu[] = {vnu[0], vnu[1]};
   band(nu);
 }
 
 void Uniform::band(std::vector<double>const &vnu, std::string const &u) {
-  if (vnu.size() != 2) throwError("Band needs exactly two elements");
+  if (vnu.size() != 2) GYOTO_ERROR("Band needs exactly two elements");
   double nu[] = {vnu[0], vnu[1]};
   band(nu, u);
 }
@@ -246,7 +246,7 @@ std::vector<double> Uniform::band(std::string const &unit) const {
       for (size_t i=0; i<=1; ++i)
 	vnu[i] = pow(10., Units::FromMeters(log10(vnu[i]), unit));
   } else {
-    throwError("Uniform::band(string const &unit) at loss: "
+    GYOTO_ERROR("Uniform::band(string const &unit) at loss: "
 	       "please specify Spectrometer kind");
   }
 
@@ -284,7 +284,7 @@ void Uniform::band(double nu[2], string const &unit) {
       for (size_t i=0; i<=1; ++i)
 	band[i] = log10(Units::ToMeters(pow(10., nu[i]), unit));
   } else {
-    throwError("Uniform::band(double, string) at loss: "
+    GYOTO_ERROR("Uniform::band(double, string) at loss: "
 	       "please specify Spectrometer kind");
   }
 

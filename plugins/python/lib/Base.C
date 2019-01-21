@@ -238,7 +238,7 @@ void Base::module(const std::string &m) {
   if (!pName) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed translating string to Python");
+    GYOTO_ERROR("Failed translating string to Python");
   }
   Py_XDECREF(pModule_);
   pModule_ = PyImport_Import(pName);
@@ -246,7 +246,7 @@ void Base::module(const std::string &m) {
   if (PyErr_Occurred() || !pModule_) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed loading Python module");
+    GYOTO_ERROR("Failed loading Python module");
   }
   PyGILState_Release(gstate);
   if (class_ != "") klass(class_);
@@ -266,7 +266,7 @@ void Base::inlineModule(const std::string &m) {
   if (PyErr_Occurred() || !pModule_) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Failed loading inline Python module");
+    GYOTO_ERROR("Failed loading inline Python module");
   }
   PyGILState_Release(gstate);
   if (class_ != "") klass(class_);
@@ -308,7 +308,7 @@ void Base::klass(const std::string &f) {
 	if (!PyBytes_Check(tmp)) {
 	  Py_DECREF(tmp);
 	  PyGILState_Release(gstate);
-	  throwError("not a PyBytes string");
+	  GYOTO_ERROR("not a PyBytes string");
 	}
 
 	class_= PyBytes_AsString(tmp);
@@ -322,7 +322,7 @@ void Base::klass(const std::string &f) {
     } else if (nclass == 1) GYOTO_DEBUG << "single class in module: " << class_ << endl;
     else if (nclass == 0) {
       PyGILState_Release(gstate);
-      throwError("no class in Python module\n");
+      GYOTO_ERROR("no class in Python module\n");
     }
 
   }
@@ -332,12 +332,12 @@ void Base::klass(const std::string &f) {
     PyErr_Print();
     Py_XDECREF(pClass);
     PyGILState_Release(gstate);
-    throwError("Could not find class in module");
+    GYOTO_ERROR("Could not find class in module");
   }
   if (!PyCallable_Check(pClass)) {
     Py_DECREF(pClass);
     PyGILState_Release(gstate);
-    throwError("Class is not callable");
+    GYOTO_ERROR("Class is not callable");
   }
 
   pInstance_ = PyObject_CallObject(pClass, NULL);
@@ -346,7 +346,7 @@ void Base::klass(const std::string &f) {
     PyErr_Print();
     Py_XDECREF(pInstance_); pInstance_=NULL;
     PyGILState_Release(gstate);
-    throwError("Failed instantiating Python class");
+    GYOTO_ERROR("Failed instantiating Python class");
   }
 
   PyGILState_Release(gstate);
@@ -367,7 +367,7 @@ void Base::parameters(const std::vector<double> &p){
     if (PyErr_Occurred()) {
       PyErr_Print();
       PyGILState_Release(gstate);
-      throwError("Failed calling __setitem__");
+      GYOTO_ERROR("Failed calling __setitem__");
     }
 
   }
