@@ -9,7 +9,7 @@
  */
 
 /*
-    Copyright 2011 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2018-2019 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -95,8 +95,6 @@ class Gyoto::Astrobj::UniformSphere :
  protected:
   double radius_ ; ///< sphere radius [geometrical units]
   bool isotropic_; ///< if 1, then emission just returns 1
-  double alpha_; ///< such that nu*I_nu = nu^alpha_; note that Xray photon
-              ///< index Gamma is: alpha_ = 2-Gamma
   SmartPointer<Spectrum::Generic> spectrum_; ///< sphere emission law
   SmartPointer<Spectrum::Generic> opacity_; ///< if optically thin, opacity law
 
@@ -196,9 +194,6 @@ class Gyoto::Astrobj::UniformSphere :
   virtual double transmission(double nuem, double dsem, state_t const &, double const *) const ;
   ///< Transmission is determined by opacity_
 
-  void processHitQuantities(Photon* ph, state_t const &coord_ph_hit,
-			    double const * coord_obj_hit, double dt,
-			    Properties* data) const;
 };
 
 

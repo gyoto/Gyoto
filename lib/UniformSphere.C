@@ -1,5 +1,5 @@
 /*
-    Copyright 2011, 2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2015, 2018-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -54,7 +54,7 @@ GYOTO_PROPERTY_DOUBLE(UniformSphere,
 GYOTO_PROPERTY_DOUBLE(UniformSphere,
 		      DeltaMaxOverRadius, deltaMaxOverRadius,
  "Maximum value of step/radius of sphere for photons.")
-GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha)
+GYOTO_PROPERTY_DOUBLE(UniformSphere, Alpha, alpha, "Deprecated")
 GYOTO_PROPERTY_DOUBLE_UNIT(UniformSphere, Radius, radius, "Sphere radius (geometrical units).")
 GYOTO_PROPERTY_END(UniformSphere, Standard::properties)
 
@@ -66,7 +66,6 @@ UniformSphere::UniformSphere(string kin) :
   Astrobj::Standard(kin),
   // radius_(0.),
   isotropic_(0),
-  alpha_(1),
   spectrum_(NULL),
   opacity_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
@@ -89,7 +88,6 @@ UniformSphere::UniformSphere(string kin,
   Astrobj::Standard(kin),
   //radius_(rad),
   isotropic_(0),
-  alpha_(1),
   spectrum_(NULL), opacity_(NULL),
   dltmor_(GYOTO_USPH_DELTAMAX_OVER_RAD),
   dltmod_(GYOTO_USPH_DELTAMAX_OVER_DST)
@@ -108,7 +106,6 @@ UniformSphere::UniformSphere(const UniformSphere& orig) :
   Astrobj::Standard(orig),
   radius_(orig.radius_),
   isotropic_(orig.isotropic_),
-  alpha_(orig.alpha_),
   spectrum_(NULL), opacity_(NULL),
   dltmor_(orig.dltmor_),
   dltmod_(orig.dltmod_)
@@ -200,57 +197,6 @@ double UniformSphere::emission(double nu_em, double dsem, state_t const &, doubl
   return (*spectrum_)(nu_em);
 }
 
-void UniformSphere::processHitQuantities(Photon* ph,
-					 state_t const &coord_ph_hit,
-					 double const coord_obj_hit[8],
-					 double dt, Properties* data) const {
-# if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-# endif
-  if (alpha_==1) {
-    // then I_nu \propto nu^0, standard case
-    Generic::processHitQuantities(ph,coord_ph_hit,coord_obj_hit,dt,data);
-    return;
-  }
-
-  // Here nu*I_nu \propto nu^alpha, alpha!=1
-  // Emission is assumed to deliver
-  // then I_nu integrated over a band is \propto g^(4-alpha_)
-  // not simply g^3 as in the standard case 
-  double freqObs=ph->freqObs(); // this is a useless quantity, always 1
-  SmartPointer<Spectrometer::Generic> spr = ph -> spectrometer();
-  double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
-  double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
-				    &coord_ph_hit[4]);// / 1.; 
-  //this is nu_em/nu_obs
-  double ggred = 1./ggredm1;           //this is nu_obs/nu_em
-  double dsem = dlambda*ggredm1; // *1.
-  double inc =0.;
-  if (data) {
-    if (data->redshift) throwError("unimplemented");
-    if (data->time) throwError("unimplemented");
-    if (data->impactcoords) throwError("unimplemented");
-    if (data->user4) throwError("unimplemented");
-    if (data->binspectrum) throwError("unimplemented");
-    if (data->spectrum) throwError("unimplemented");
-    if (data->intensity) {
-      //Intensity increment :
-      inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
-	* (ph -> getTransmission(size_t(-1)))
-	* pow(ggred,4-alpha_);
-      *data->intensity += inc;
-    }
-    
-    /* update photon's transmission */
-    ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
-  } else {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "NO data requested!" << endl;
-#   endif
-  }
-}  
-      
 double UniformSphere::transmission(double nuem, double dsem, state_t const &, double const *) const {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -303,8 +249,10 @@ void UniformSphere::deltaMaxOverRadius(double f) {dltmor_=f;}
 double UniformSphere::deltaMaxOverDistance() const {return dltmod_;}
 void UniformSphere::deltaMaxOverDistance(double f) {dltmod_=f;}
 
-double UniformSphere::alpha() const { return alpha_; }
-void UniformSphere::alpha(double a) { alpha_ = a; }
+double UniformSphere::alpha() const { return 1.; }
+void UniformSphere::alpha(double a) {
+  if (a != 1.) throwError("property 'Alpha' is deprecated");
+}
 
 bool UniformSphere::isotropic() const { return isotropic_; }
 void UniformSphere::isotropic(bool a) { isotropic_ = a; }
