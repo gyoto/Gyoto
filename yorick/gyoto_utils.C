@@ -495,14 +495,14 @@ void ypush_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   Gyoto::Object * object = dynamic_cast<Gyoto::Object*> (smptee);
   Gyoto::Astrobj::Generic * ao=NULL;
 
-  if (!smptee) Gyoto::throwError("NULL SmartPointee*");
+  if (!smptee) GYOTO_ERROR("NULL SmartPointee*");
 
   // Some Astrobj (in particular Star) inherit twice from Object.
   if (!object && (ao=dynamic_cast<Gyoto::Astrobj::Generic*> (smptee)) )
     object = dynamic_cast<Gyoto::Object*> (ao);
 
   if (!object)
-    Gyoto::throwError("dynamic_cast from SmartPointee* to Object* failed");
+    GYOTO_ERROR("dynamic_cast from SmartPointee* to Object* failed");
 
   if (p.type == Gyoto::Property::double_t ||
       p.type == Gyoto::Property::vector_double_t)
@@ -577,14 +577,14 @@ void yget_property(Gyoto::SmartPointer<Gyoto::SmartPointee> ptr,
   Gyoto::Object * object = dynamic_cast<Gyoto::Object*> (smptee);
   Gyoto::Astrobj::Generic * ao=NULL;
 
-  if (!smptee) Gyoto::throwError("NULL SmartPointee*");
+  if (!smptee) GYOTO_ERROR("NULL SmartPointee*");
 
   // Some Astrobj (in particular Star) inherit twice from Object.
   if (!object && (ao=dynamic_cast<Gyoto::Astrobj::Generic*> (smptee)) )
     object = dynamic_cast<Gyoto::Object*> (ao);
 
   if (!object)
-    Gyoto::throwError("dynamic_cast from SmartPointee* to Object* failed");
+    GYOTO_ERROR("dynamic_cast from SmartPointee* to Object* failed");
 
   switch(p.type) {
   case Gyoto::Property::bool_t:

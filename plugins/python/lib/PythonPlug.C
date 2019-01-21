@@ -60,7 +60,7 @@ extern "C" void __GyotoPluginInit() {
   Py_XDECREF(PyImport_ImportModule("numpy"));
   if (PyErr_Occurred()) {
     PyErr_Print();
-    throwError("Failed imorting numpy");
+    GYOTO_ERROR("Failed imorting numpy");
   }
   Gyoto::eat_import_array();
 
@@ -71,6 +71,6 @@ extern "C" void __GyotoPluginInit() {
 
   if (PyErr_Occurred()) {
     PyErr_Print();
-    throwError("Failed");
+    GYOTO_ERROR("Failed");
   }
 }

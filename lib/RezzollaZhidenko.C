@@ -52,11 +52,11 @@ GYOTO_PROPERTY_ACCESSORS(RezzollaZhidenko, double, rmb_, rmb)
 void RezzollaZhidenko::aparam(std::vector<double> const &v) {
   size_t n = v.size();
   if (n>GYOTO_NBPARAM_MAX)
-    throwError("In RezzollaZhidenko: choose at most "
+    GYOTO_ERROR("In RezzollaZhidenko: choose at most "
 	       STRINGIFY(GYOTO_NBPARAM_MAX) " parameters");
   for (size_t i=0; i<n; ++i) {
     aparam_[i]=v[i];
-    if (aparam_[i]<0.) throwError("In RezzollaZhidenko: param < 0!");
+    if (aparam_[i]<0.) GYOTO_ERROR("In RezzollaZhidenko: param < 0!");
   }
   for (size_t i=n; i<GYOTO_NBPARAM_MAX; ++i) aparam_[i]=0.;
 }
@@ -68,11 +68,11 @@ std::vector<double> RezzollaZhidenko::aparam() const {
 void RezzollaZhidenko::bparam(std::vector<double> const &v) {
   size_t n = v.size();
   if (n>GYOTO_NBPARAM_MAX)
-    throwError("In RezzollaZhidenko: choose at most "
+    GYOTO_ERROR("In RezzollaZhidenko: choose at most "
 	       STRINGIFY(GYOTO_NBPARAM_MAX) " parameters");
   for (size_t i=0; i<n; ++i) {
     bparam_[i]=v[i];
-    if (bparam_[i]<0.) throwError("In RezzollaZhidenko: param < 0!");
+    if (bparam_[i]<0.) GYOTO_ERROR("In RezzollaZhidenko: param < 0!");
   }
   for (size_t i=n; i<GYOTO_NBPARAM_MAX; ++i) bparam_[i]=0.;
 }
@@ -138,7 +138,7 @@ double RezzollaZhidenko::getSpecificAngularMomentum(double rr) const {
 double RezzollaZhidenko::getPotential(double const pos[4], double l_cst) const {
   double gtt = gmunu(pos,0,0);
   double gpp = gmunu(pos,3,3);
-  if (gpp==0.) throwError("In RezzollaZhidenko: bad gpp");
+  if (gpp==0.) GYOTO_ERROR("In RezzollaZhidenko: bad gpp");
   double rr = pos[1];
   double NN2=N2(rr), NN = sqrt(NN2);
   double  Omega = -l_cst * gtt/gpp ;
@@ -218,7 +218,7 @@ double RezzollaZhidenko::Bprime(const double rr) const{
 
 double RezzollaZhidenko::gmunu(const double * pos, int mu, int nu) const {
   double rr = pos[1];
-  if (rr<=0.) throwError("In RezzollaZhidenko::gmunu: r<0!");
+  if (rr<=0.) GYOTO_ERROR("In RezzollaZhidenko::gmunu: r<0!");
 
   double sth2, cth2;
   sincos(pos[2], &sth2, &cth2);
@@ -243,7 +243,7 @@ int RezzollaZhidenko::christoffel(double dst[4][4][4], double const pos[4]) cons
   double rr = pos[1];
   double sth, cth;
   sincos(pos[2], &sth, &cth);
-  if (rr==0. || sth==0.) throwError("In RezzollaZhidenko::christoffel: "
+  if (rr==0. || sth==0.) GYOTO_ERROR("In RezzollaZhidenko::christoffel: "
 				    "bad coord");
   double NN2=N2(rr), NN = sqrt(NN2), BB2=B2(rr), BB=sqrt(BB2);
   double NNprime=Nprime(rr), BBprime=Bprime(rr);
@@ -281,7 +281,7 @@ int RezzollaZhidenko::christoffel(double dst[4][4][4], double const pos[4]) cons
 	  if(fabs(dst[a][mu][nu]-dstS[a][mu][nu])>1e-3) {
 	    cout << "at r,th= " << rr <<  " " << pos[2] << endl;
 	    cout << setprecision(20)<< a << " " << mu << " " << nu << " " << dst[a][mu][nu] << " " << dstS[a][mu][nu]<< endl;
-	    throwError("test RZ");
+	    GYOTO_ERROR("test RZ");
 	  }
 	}
       }

@@ -48,7 +48,7 @@ Spectrum::Generic * Spectrum::Generic::clone() const
   string msg = "Spectrum::clone() called: "
     "cloning unimplemented for Spectrum kind ";
   msg += kind_;
-  throwError(msg);
+  GYOTO_ERROR(msg);
   return const_cast<Spectrum::Generic*>(this);
               // avoid warning, we won't get to that point
 }

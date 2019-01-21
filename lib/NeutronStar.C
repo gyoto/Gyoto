@@ -91,7 +91,7 @@ void NeutronStar::metric(SmartPointer<Gyoto::Metric::Generic> met) {
     // The above cast will yield a null pointer if met is not a
     // NumericalMetricLorene. It's an error if smptr is null but met
     // is not.
-    throwError("NeutronStar::metric(): metric should "
+    GYOTO_ERROR("NeutronStar::metric(): metric should "
     "be a NumericalMetricLorene");
   }
   gg_ = smptr;
@@ -101,7 +101,7 @@ void NeutronStar::metric(SmartPointer<Gyoto::Metric::Generic> met) {
 double NeutronStar::operator()(double const coord[4]) {
   GYOTO_DEBUG << endl;
   if (gg_->coordKind() != GYOTO_COORDKIND_SPHERICAL){
-    throwError("In NeutronStar::operator(): so far only spherical coord");
+    GYOTO_ERROR("In NeutronStar::operator(): so far only spherical coord");
   }
 
   double rcur = coord[1], thcur=coord[2], phcur=coord[3];
@@ -117,8 +117,8 @@ void NeutronStar::getVelocity(double const pos[4], double uu[4]){
   GYOTO_DEBUG << endl;
   double rr=pos[1], th=pos[2], phi=pos[3];
   double rsinth = rr*sin(th);
-  if (rr==0.) throwError("In NeutronStar.C::computeVelSurf r is 0!");
-  if (rsinth==0.) throwError("In NeutronStar.C::computeVelSurf on z axis!");
+  if (rr==0.) GYOTO_ERROR("In NeutronStar.C::computeVelSurf r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NeutronStar.C::computeVelSurf on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
     sm2 = sm1*sm1, rsm1 = rm1*sm1;
 

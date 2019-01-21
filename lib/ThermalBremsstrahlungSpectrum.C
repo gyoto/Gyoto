@@ -72,7 +72,7 @@ Spectrum::ThermalBremsstrahlung * Spectrum::ThermalBremsstrahlung::clone() const
 { return new Spectrum::ThermalBremsstrahlung(*this); }
 
 double Spectrum::ThermalBremsstrahlung::operator()(double nu) const {
-  throwError("In ThermalBrems: "
+  GYOTO_ERROR("In ThermalBrems: "
 	     "Bremsstrahlung emission not defined for optically thick case");
   return 0.;
 }
@@ -130,7 +130,7 @@ double Spectrum::ThermalBremsstrahlung::alphanuCGS(double nu) const{
   double jnu = jnuCGS(nu);
   if (BB==0.){
     if (jnu==0.) return 0.;
-    else throwError("In ThermalBrems: alphanu undefined!");
+    else GYOTO_ERROR("In ThermalBrems: alphanu undefined!");
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
@@ -149,7 +149,7 @@ void Spectrum::ThermalBremsstrahlung::radiativeQ(double jnu[], // output
     jnu[ii]=this->jnuCGS(nu)*GYOTO_JNU_CGS_TO_SI;
     if (BB==0.){
       if (jnu[ii]==0.) alphanu[ii]=0.;
-      else throwError("In ThermalBrems: alphanu undefined!");
+      else GYOTO_ERROR("In ThermalBrems: alphanu undefined!");
     }else
       alphanu[ii]=jnu[ii]/BB;
     

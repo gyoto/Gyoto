@@ -246,7 +246,7 @@ int Photon::hit(Astrobj::Properties *data) {
       rr=sqrt(x1_[ind]*x1_[ind]+x2_[ind]*x2_[ind]+x3_[ind]*x3_[ind]);
       break;
     default:
-      throwError("Incompatible coordinate kind in Photon.C");
+      GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
     }
     if (rr<rmax)
       hitt = object_ -> Impact(this, ind, data);
@@ -287,7 +287,7 @@ int Photon::hit(Astrobj::Properties *data) {
     rr=sqrt(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3]);
     break;
   default:
-    throwError("Incompatible coordinate kind in Photon.C");
+    GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
   }
 
   state_->init(this, coord, delta_* dir);
@@ -377,7 +377,7 @@ int Photon::hit(Astrobj::Properties *data) {
       GYOTO_DEBUG << "imin_=" << imin_ << ", imax_=" << imax_
 		  << ", ind=" << ind << endl;
 #     endif
-      throwError("BUG: Photon.C: bad index evolution, "
+      GYOTO_ERROR("BUG: Photon.C: bad index evolution, "
 		 "ind should be equal to imin or imax");
     }
     //************************************
@@ -394,7 +394,7 @@ int Photon::hit(Astrobj::Properties *data) {
       rr=sqrt(x1_[ind]*x1_[ind]+x2_[ind]*x2_[ind]+x3_[ind]*x3_[ind]);
       break;
     default:
-      throwError("Incompatible coordinate kind in Photon.C");
+      GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
     }
 
 #   if GYOTO_DEBUG_ENABLED
@@ -560,7 +560,7 @@ double Photon::freqObs() const {
 double Photon::getTransmission(size_t i) const {
   if (i==size_t(-1)) return transmission_freqobs_;
   if (!spectro_() || i>=spectro_->nSamples())
-    throwError("Photon::getTransmission(): i > nsamples");
+    GYOTO_ERROR("Photon::getTransmission(): i > nsamples");
   return transmission_[i];
 }
 
@@ -583,7 +583,7 @@ double const * Photon::getTransmission() const { return transmission_; }
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }
   if (!spectro_() || i>=spectro_->nSamples())
-    throwError("Photon::getTransmission(): i > nsamples");
+    GYOTO_ERROR("Photon::getTransmission(): i > nsamples");
   transmission_[i] *= t;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i="<<i<< ", transmission="<<t<<"):"
@@ -604,7 +604,7 @@ void Photon::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 0;
   if (init_vel_) {
     delete[] init_vel_; init_vel_=NULL;
-    throwError("Worldline::setParameters(): "
+    GYOTO_ERROR("Worldline::setParameters(): "
 	       "Velocity was found but not Position");
   }
 }

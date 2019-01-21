@@ -66,7 +66,7 @@ Complex::~Complex()
 void Complex::append(SmartPointer<Generic> e)
 {
   GYOTO_DEBUG << "DEBUG: in Complex::append(SmartPointer<Generic> e)" << endl;
-  if (cardinal_+1 == 0) throwError("Complex::append(): OVERFLOW");
+  if (cardinal_+1 == 0) GYOTO_ERROR("Complex::append(): OVERFLOW");
   SmartPointer<Generic> * orig = elements_;
   elements_ = new SmartPointer<Generic> [cardinal_+1];
   for (size_t i=0; i< cardinal_; ++i) {
@@ -84,20 +84,20 @@ void Complex::append(SmartPointer<Generic> e)
 SmartPointer<Generic> & Complex::operator[](size_t i)
 {
   if (i > cardinal_)
-    throwError("Complex::operator[](size_t i): no such element");
+    GYOTO_ERROR("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
 
 SmartPointer<Generic> const & Complex::operator[](size_t i) const
 {
   if (i > cardinal_)
-    throwError("Complex::operator[](size_t i): no such element");
+    GYOTO_ERROR("Complex::operator[](size_t i): no such element");
   return elements_[i];
 }
 
 void Complex::remove(size_t i) {
   if (i >= cardinal_)
-    throwError("Complex::remove(size_t i): no such element");
+    GYOTO_ERROR("Complex::remove(size_t i): no such element");
   elements_[i]->unhook(this);
   SmartPointer<Generic> * orig = elements_;
   if (--cardinal_) elements_ = new SmartPointer<Generic> [cardinal_];

@@ -122,17 +122,17 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error while retrieving methods");
+    GYOTO_ERROR("Error while retrieving methods");
   }
 
   if (!pCall_) {
     PyGILState_Release(gstate);
-    throwError("Object does not implement required method \"__call__\"");
+    GYOTO_ERROR("Object does not implement required method \"__call__\"");
   }
 
   if (!pGetVelocity_) {
     PyGILState_Release(gstate);
-    throwError("Object does not implement required method \"getVelocity\"");
+    GYOTO_ERROR("Object does not implement required method \"getVelocity\"");
   }
 
   pEmission_overloaded_ = pEmission_ &&
@@ -151,7 +151,7 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
 }
 
 double Gyoto::Astrobj::Python::Standard::operator()(double const coord[4]) {
-  if (!pCall_) throwError("__call__ not loaded yet");
+  if (!pCall_) GYOTO_ERROR("__call__ not loaded yet");
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp dims[] = {4};
@@ -167,7 +167,7 @@ double Gyoto::Astrobj::Python::Standard::operator()(double const coord[4]) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::operator()()");
+    GYOTO_ERROR("Error occurred in Standard::operator()()");
   }
    
   PyGILState_Release(gstate);
@@ -193,7 +193,7 @@ void Gyoto::Astrobj::Python::Standard::getVelocity
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::getVelocity()");
+    GYOTO_ERROR("Error occurred in Standard::getVelocity()");
   }
    
   PyGILState_Release(gstate);
@@ -215,7 +215,7 @@ double Gyoto::Astrobj::Python::Standard::giveDelta(double coord[8]) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::giveDelta()");
+    GYOTO_ERROR("Error occurred in Standard::giveDelta()");
   }
    
   PyGILState_Release(gstate);
@@ -249,7 +249,7 @@ double Gyoto::Astrobj::Python::Standard::emission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::emission()");
+    GYOTO_ERROR("Error occurred in Standard::emission()");
   }
    
   PyGILState_Release(gstate);
@@ -288,7 +288,7 @@ void Gyoto::Astrobj::Python::Standard::emission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::emission()");
+    GYOTO_ERROR("Error occurred in Standard::emission()");
   }
    
   PyGILState_Release(gstate);
@@ -324,7 +324,7 @@ double Gyoto::Astrobj::Python::Standard::integrateEmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::integrateEmission()");
+    GYOTO_ERROR("Error occurred in Standard::integrateEmission()");
   }
    
   PyGILState_Release(gstate);
@@ -370,7 +370,7 @@ void Gyoto::Astrobj::Python::Standard::integrateEmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::integrateEmission()");
+    GYOTO_ERROR("Error occurred in Standard::integrateEmission()");
   }
    
   PyGILState_Release(gstate);
@@ -400,7 +400,7 @@ double Gyoto::Astrobj::Python::Standard::transmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in Standard::emission()");
+    GYOTO_ERROR("Error occurred in Standard::emission()");
   }
    
   PyGILState_Release(gstate);

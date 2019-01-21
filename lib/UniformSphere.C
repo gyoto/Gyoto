@@ -158,7 +158,7 @@ double UniformSphere::operator()(double const coord[4]) {
     coord_ph[3] = coord[1] * cos(coord[2]) ;
     break;
   default:
-    throwError("unsupported coordkind");
+    GYOTO_ERROR("unsupported coordkind");
   }
   //cout << "rsp= " << sqrt(coord_st[1]*coord_st[1]+coord_st[2]*coord_st[2]+coord_st[3]*coord_st[3]) << endl;
   double dx = coord_ph[1]-coord_st[1];
@@ -179,7 +179,7 @@ double UniformSphere::deltaMax(double * coord) {
     break;
   default:
     r=0.;
-    throwError("unsupported coordkind");
+    GYOTO_ERROR("unsupported coordkind");
   }
   if (rmax_!=DBL_MAX && r>rmax_) return r*0.5; 
   return max(dltmod_*sqrt((*this)(coord)), dltmor_*radius_);

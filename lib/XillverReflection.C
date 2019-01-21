@@ -40,7 +40,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 
 using namespace std;
@@ -149,7 +149,7 @@ void XillverReflection::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kin = gg->kind();
   if (kin != "KerrBL" && kin != "KerrKS")
-    throwError
+    GYOTO_ERROR
       ("Xillver::metric(): metric must be KerrBL or KerrKS");
   Generic::metric(gg);
   updateSpin();
@@ -166,7 +166,7 @@ void XillverReflection::updateSpin() {
     aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
     break;
   default:
-    throwError("Xillver::updateSpin(): unknown COORDKIND");
+    GYOTO_ERROR("Xillver::updateSpin(): unknown COORDKIND");
   }
 }
 
@@ -207,7 +207,7 @@ void XillverReflection::copyReflection(double const *const pattern,
       if (logxi_)   { delete [] logxi_;   logxi_  = NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (ni_=naxes[1]) * (nxi_=naxes[2])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     GYOTO_DEBUG << "allocate reflection_;" << endl;
     reflection_ = new double[nel];
     GYOTO_DEBUG << "pattern >> reflection_" << endl;
@@ -239,7 +239,7 @@ void XillverReflection::copyIllumination(double const *const pattern,
     }
 
     if (!(nel=(nr_ = naxes[0]) * (nphi_=naxes[1])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     GYOTO_DEBUG << "allocate illumination_;" << endl;
     illumination_ = new double[nel];
     GYOTO_DEBUG << "pattern >> illumination_" << endl;
@@ -260,9 +260,9 @@ void XillverReflection::copyGridReflLogxi(double const *const lxi,
   }
   if (lxi) {
     if (!reflection_) 
-      throwError("Please use copyReflection() before copyGridReflLogxi()");
+      GYOTO_ERROR("Please use copyReflection() before copyGridReflLogxi()");
     if (nxi_ != nxi)
-      throwError("reflection_ and logxi_ have inconsistent dimensions");
+      GYOTO_ERROR("reflection_ and logxi_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate logxi_;" << endl;
     logxi_ = new double[nxi_];
     GYOTO_DEBUG << "logxi >> logxi_" << endl;
@@ -280,9 +280,9 @@ void XillverReflection::copyGridReflIncl(double const *const incl, size_t ni) {
   }
   if (incl) {
     if (!reflection_) 
-      throwError("Please use copyReflection() before copyGridReflIncl()");
+      GYOTO_ERROR("Please use copyReflection() before copyGridReflIncl()");
     if (ni_ != ni)
-      throwError("reflection_ and incl_ have inconsistent dimensions");
+      GYOTO_ERROR("reflection_ and incl_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate incl_;" << endl;
     incl_ = new double[ni_];
     GYOTO_DEBUG << "incl >> incl_" << endl;
@@ -300,9 +300,9 @@ void XillverReflection::copyGridReflFreq(double const *const freq,
   }
   if (freq) {
     if (!reflection_) 
-      throwError("Please use copyReflection() before copyGridReflFreq()");
+      GYOTO_ERROR("Please use copyReflection() before copyGridReflFreq()");
     if (nnu_ != nnu)
-      throwError("reflection_ and freq_ have inconsistent dimensions");
+      GYOTO_ERROR("reflection_ and freq_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate freq_;" << endl;
     freq_ = new double[nnu_];
     GYOTO_DEBUG << "freq >> freq_" << endl;
@@ -320,9 +320,9 @@ void XillverReflection::copyGridIllumRadius(double const *const radius,
   }
   if (radius) {
     if (!illumination_) 
-      throwError("Please use copyIllumination() before copyGridIllumRadius()");
+      GYOTO_ERROR("Please use copyIllumination() before copyGridIllumRadius()");
     if (nr_ != nr)
-      throwError("illumination_ and radius_ have inconsistent dimensions");
+      GYOTO_ERROR("illumination_ and radius_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate radius_;" << endl;
     radius_ = new double[nr_];
     GYOTO_DEBUG << "radius >> radius_" << endl;
@@ -340,9 +340,9 @@ void XillverReflection::copyGridIllumPhi(double const *const phi,
   }
   if (phi) {
     if (!illumination_) 
-      throwError("Please use copyIllumination() before copyGridIllumPhi()");
+      GYOTO_ERROR("Please use copyIllumination() before copyGridIllumPhi()");
     if (nphi_ != nphi)
-      throwError("illumination_ and phi_ have inconsistent dimensions");
+      GYOTO_ERROR("illumination_ and phi_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate phi_;" << endl;
     phi_ = new double[nphi_];
     GYOTO_DEBUG << "phi >> phi_" << endl;
@@ -360,7 +360,7 @@ void XillverReflection::fileillumination(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
   fitsReadIllum(f);
 # else
-  throwError("This Gyoto has no FITS i/o");
+  GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 
@@ -371,7 +371,7 @@ double XillverReflection::timelampphizero() const{
 void XillverReflection::timelampphizero(double tt){
   if (lampradius_==0.)
     {
-      throwError("In Xillver::timelempphizero: "
+      GYOTO_ERROR("In Xillver::timelempphizero: "
 		 "update lampradius before timelampphizero.");
     }
   double lampperiod = 2*M_PI*(pow(lampradius_,1.5)+aa_);
@@ -390,7 +390,7 @@ void XillverReflection::filereflection(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
   fitsReadRefl(f);
 # else
-  throwError("This Gyoto has no FITS i/o");
+  GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 
@@ -462,7 +462,7 @@ void XillverReflection::fitsReadIllum(string filenameIllum) {
     throwCfitsioError(statusI) ;
   if (fits_get_img_size(fptrI, 1, naxesI, &statusI)) throwCfitsioError(statusI) ;
   if (size_t(naxesI[0]) != nr_)
-    throwError("XillverReflection::readFile(): radius array not conformable");
+    GYOTO_ERROR("XillverReflection::readFile(): radius array not conformable");
   if (radius_) { delete [] radius_; radius_ = NULL; }
   radius_ = new double[nr_];
   if (fits_read_subset(fptrI, TDOUBLE, fpixelI, naxesI, incI, 
@@ -479,7 +479,7 @@ void XillverReflection::fitsReadIllum(string filenameIllum) {
     throwCfitsioError(statusI) ;
   if (fits_get_img_size(fptrI, 1, naxesI, &statusI)) throwCfitsioError(statusI) ;
   if (size_t(naxesI[0]) != nphi_)
-    throwError("XillverReflection::readFile(): phi array not conformable");
+    GYOTO_ERROR("XillverReflection::readFile(): phi array not conformable");
   if (phi_) { delete [] phi_; phi_ = NULL; }
   phi_ = new double[nphi_];
   if (fits_read_subset(fptrI, TDOUBLE, fpixelI, naxesI, incI, 
@@ -556,7 +556,7 @@ void XillverReflection::fitsReadRefl(string filenameRefl) {
     throwCfitsioError(statusR) ;
   if (fits_get_img_size(fptrR, 1, naxesR, &statusR)) throwCfitsioError(statusR) ;
   if (size_t(naxesR[0]) != nnu_)
-    throwError("XillverReflection::readFile(): freq array not conformable");
+    GYOTO_ERROR("XillverReflection::readFile(): freq array not conformable");
   if (freq_) { delete [] freq_; freq_ = NULL; }
   freq_ = new double[nnu_];
   if (fits_read_subset(fptrR, TDOUBLE, fpixelR, naxesR, incR, 
@@ -573,7 +573,7 @@ void XillverReflection::fitsReadRefl(string filenameRefl) {
     throwCfitsioError(statusR) ;
   if (fits_get_img_size(fptrR, 1, naxesR, &statusR)) throwCfitsioError(statusR) ;
   if (size_t(naxesR[0]) != ni_)
-    throwError("XillverReflection::readFile(): incl array not conformable");
+    GYOTO_ERROR("XillverReflection::readFile(): incl array not conformable");
   if (incl_) { delete [] incl_; incl_ = NULL; }
   incl_ = new double[ni_];
   if (fits_read_subset(fptrR, TDOUBLE, fpixelR, naxesR, incR, 
@@ -590,7 +590,7 @@ void XillverReflection::fitsReadRefl(string filenameRefl) {
     throwCfitsioError(statusR) ;
   if (fits_get_img_size(fptrR, 1, naxesR, &statusR)) throwCfitsioError(statusR) ;
   if (size_t(naxesR[0]) != nxi_)
-    throwError("XillverReflection::readFile(): logxi array not conformable");
+    GYOTO_ERROR("XillverReflection::readFile(): logxi array not conformable");
   if (logxi_) { delete [] logxi_; logxi_ = NULL; }
   logxi_ = new double[nxi_];
   if (fits_read_subset(fptrR, TDOUBLE, fpixelR, naxesR, incR, 
@@ -608,7 +608,7 @@ void XillverReflection::fitsReadRefl(string filenameRefl) {
 void XillverReflection::fitsWriteIllum(string filenameIllumination
 				       ) {
   GYOTO_DEBUG_EXPR(illumination_);
-  if (!illumination_) throwError("XillverReflection::fitsWrite(filename): no illumination to save!");
+  if (!illumination_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): no illumination to save!");
   
   filenameIllum_ = filenameIllumination;
   char*     pixfileI   = const_cast<char*>(filenameIllum_.c_str());
@@ -637,7 +637,7 @@ void XillverReflection::fitsWriteIllum(string filenameIllumination
   if (statusI) throwCfitsioError(statusI) ;
 
   ////// SAVE ILLUM::RADIUS HDU ///////
-  if (!radius_) throwError("XillverReflection::fitsWrite(filename): "
+  if (!radius_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): "
 			   "no radius to save!");
   GYOTO_DEBUG << "saving radius_\n";
   fits_create_img(fptrI, DOUBLE_IMG, 1, naxesI, &statusI);
@@ -648,7 +648,7 @@ void XillverReflection::fitsWriteIllum(string filenameIllumination
   if (statusI) throwCfitsioError(statusI) ;
   
   ////// SAVE ILLUM::PHI HDU ///////
-  if (!phi_) throwError("XillverReflection::fitsWrite(filename): "
+  if (!phi_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): "
 			"no phi to save!");
   GYOTO_DEBUG << "saving phi_\n";
   fits_create_img(fptrI, DOUBLE_IMG, 1, naxesI+1, &statusI);
@@ -668,7 +668,7 @@ void XillverReflection::fitsWriteRefl(
 				      string filenameReflection) {
   GYOTO_DEBUG_EXPR(reflection_);
   
-  if (!reflection_) throwError("XillverReflection::fitsWrite(filename): no reflection to save!");
+  if (!reflection_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): no reflection to save!");
   
   filenameRefl_ = filenameReflection;
   char*     pixfileR   = const_cast<char*>(filenameRefl_.c_str());
@@ -697,7 +697,7 @@ void XillverReflection::fitsWriteRefl(
   if (statusR) throwCfitsioError(statusR) ;
 
   ////// SAVE REFL::FREQ HDU ///////
-  if (!freq_) throwError("XillverReflection::fitsWrite(filename): "
+  if (!freq_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): "
 			 "no freq to save!");
   GYOTO_DEBUG << "saving freq_\n";
   fits_create_img(fptrR, DOUBLE_IMG, 1, naxesR, &statusR);
@@ -708,7 +708,7 @@ void XillverReflection::fitsWriteRefl(
   if (statusR) throwCfitsioError(statusR) ;
   
   ////// SAVE REFL::INCL HDU ///////
-  if (!incl_) throwError("XillverReflection::fitsWrite(filename): "
+  if (!incl_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): "
 			 "no incl to save!");
   GYOTO_DEBUG << "saving incl_\n";
   fits_create_img(fptrR, DOUBLE_IMG, 1, naxesR+1, &statusR);
@@ -719,7 +719,7 @@ void XillverReflection::fitsWriteRefl(
   if (statusR) throwCfitsioError(statusR) ;
   
   ////// SAVE REFL::LOGXI HDU ///////
-  if (!logxi_) throwError("XillverReflection::fitsWrite(filename): "
+  if (!logxi_) GYOTO_ERROR("XillverReflection::fitsWrite(filename): "
 			  "no logxi to save!");
   GYOTO_DEBUG << "saving logxi_\n";
   fits_create_img(fptrR, DOUBLE_IMG, 1, naxesR+2, &statusR);
@@ -747,7 +747,7 @@ void XillverReflection::getIndicesRefl(size_t i[3], double const co[4],
       and i[2]>0
     */
   } else {
-    throwError("In XillverReflection::getIndicesRefl: logxi undefined!");
+    GYOTO_ERROR("In XillverReflection::getIndicesRefl: logxi undefined!");
   }
 
   if (incl_) {
@@ -761,7 +761,7 @@ void XillverReflection::getIndicesRefl(size_t i[3], double const co[4],
       */
     }
   } else {
-    throwError("In XillverReflection::getIndicesRefl: incl undefined!");
+    GYOTO_ERROR("In XillverReflection::getIndicesRefl: incl undefined!");
   }
 
   if (freq_) {
@@ -773,7 +773,7 @@ void XillverReflection::getIndicesRefl(size_t i[3], double const co[4],
       and i[0]>0
     */
   } else {
-    throwError("In XillverReflection::getIndicesRefl: freq undefined!");
+    GYOTO_ERROR("In XillverReflection::getIndicesRefl: freq undefined!");
   }
 }
 
@@ -781,7 +781,7 @@ void XillverReflection::getIndicesIllum(size_t i[2], double const co[4])
   const {
   double rr = projectedRadius(co),
     phi = co[3];
-  if (phi<=0. or phi>2*M_PI) throwError("In Xillver::getIndicesIllum: "
+  if (phi<=0. or phi>2*M_PI) GYOTO_ERROR("In Xillver::getIndicesIllum: "
 				       "phi value not in 0,2pi");
   if (phi<phi_[0]) phi+=2*M_PI; // this is to conveniently deal
         // with phi values between phimax and phimin, modulo 2pi
@@ -795,7 +795,7 @@ void XillverReflection::getIndicesIllum(size_t i[2], double const co[4])
       The case i[0]=0 is impossible here.
     */
   } else {
-    throwError("In XillverReflection::getIndicesIllum: radius undefined!");
+    GYOTO_ERROR("In XillverReflection::getIndicesIllum: radius undefined!");
   }
 
   if (phi_) {
@@ -811,7 +811,7 @@ void XillverReflection::getIndicesIllum(size_t i[2], double const co[4])
       */
     }
   } else {
-    throwError("In XillverReflection::getIndicesIllum: phi undefined!");
+    GYOTO_ERROR("In XillverReflection::getIndicesIllum: phi undefined!");
   }
   
 }
@@ -844,7 +844,7 @@ double XillverReflection::emission(double nu, double,
     cout << "tresc, tlamp, period, phi, philamp, dphi= "
 	 << timerescale << " " << timelampphizero_ << " " << lampperiod
 	 << " " << phi << " " << philamp << " " << dphi << endl;
-    throwError("In Xillver::emission: "
+    GYOTO_ERROR("In Xillver::emission: "
 	       "bad dphi");
   }
   while (dphi<0.){
@@ -856,7 +856,7 @@ double XillverReflection::emission(double nu, double,
   // Here 0<dphi<2pi, ready for interpolation
   //cout << "r, phi, philamp, dphi= " << rr << " " << phi << " " << philamp << " " << dphi << endl;
   if (dphi<0. or dphi>2*M_PI) {
-    throwError("In Xillver::emission: bad dphi after correction");
+    GYOTO_ERROR("In Xillver::emission: bad dphi after correction");
   }
   // Illumination indices of the current closest grid point
   size_t indIllum[2]; // {i_r, i_phi}
@@ -865,11 +865,11 @@ double XillverReflection::emission(double nu, double,
   
   // **** Bilinear interpo for illumination
   size_t iru=indIllum[0];
-  if (iru==0) throwError("In Xillver::emission: bad radius index");
+  if (iru==0) GYOTO_ERROR("In Xillver::emission: bad radius index");
   // indeed, iru=0 means rr<radius_[0] which is impossible here
   size_t irl=iru-1;
   size_t iphiu=indIllum[1];
-  if (iphiu==0) throwError("In Xillver==emission: bad phi index");
+  if (iphiu==0) GYOTO_ERROR("In Xillver==emission: bad phi index");
   size_t iphil=iphiu-1;
   if (dphi>phi_[nphi_-1]){
     iphil = nphi_-1;
@@ -903,13 +903,13 @@ double XillverReflection::emission(double nu, double,
   //cout << "logxi= " << logxi << endl;
   if (logxi<logxi_[0] or logxi>logxi_[nxi_-1]) {
     cout << "Illum and logxi= " << fluxillum << " " << logxi << endl;
-    throwError("In Xillver::emission: logxi out of bounds");
+    GYOTO_ERROR("In Xillver::emission: logxi out of bounds");
   }
 
   // **** Emission angle
   double normal[4]={0.,0.,-1.,0.}; // parallel to -d_theta (upwards)
   double normal_norm=gg_->ScalarProd(cp,normal,normal);
-  if (normal_norm<=0.) throwError("In XillverReflection::emission"
+  if (normal_norm<=0.) GYOTO_ERROR("In XillverReflection::emission"
 				  " normal should be spacelike");
   normal_norm=sqrt(normal_norm);
   double np = 1./normal_norm*gg_->ScalarProd(cp,normal,cp+4),
@@ -921,26 +921,26 @@ double XillverReflection::emission(double nu, double,
     incl = acos(cosi)*180./M_PI;
   //double tolcos = 0.005;
   //if (cosi>1.){
-  //  if (fabs(cosi-1)>tolcos) throwError("In XillverReflection: bad cos!");
+  //  if (fabs(cosi-1)>tolcos) GYOTO_ERROR("In XillverReflection: bad cos!");
   //  cosi=1.;
   //}
 
   // Frequency should not be outisde the range
   if (nu<=freq_[0] || nu>=freq_[nnu_-1]) {
     cout << "nu= " << nu << endl;
-    throwError("In Xillver::emission: freq outside range");
+    GYOTO_ERROR("In Xillver::emission: freq outside range");
   }
 					   
   // Reflection indices of the current closest grid point
   size_t ind[3]; // {i_nu, i_incl, i_xi}
   getIndicesRefl(ind, co, logxi, incl, nu);
   size_t inuu = ind[0];
-  if (inuu==0) throwError("In Xillver::emission: bad nu index");
+  if (inuu==0) GYOTO_ERROR("In Xillver::emission: bad nu index");
   size_t inul = inuu-1;
   size_t iiu = ind[1];
   size_t ixiu = ind[2];
   //cout << "illum, logxi: " << ixiu << " " << logxi << " " << logxi_[ixiu] << endl;
-  if (ixiu==0) throwError("In Xillver::emission: bad logxi index");
+  if (ixiu==0) GYOTO_ERROR("In Xillver::emission: bad logxi index");
   size_t ixil = ixiu-1;
   /*cout << "logxi: " << ixiu << " " << logxi_[ixil] << " " << logxi << " " << logxi_[ixiu] << endl;
   cout << "nu: " << inuu << " " << freq_[inul] << " " << nu << " " << freq_[inuu] << endl;
@@ -966,7 +966,7 @@ double XillverReflection::emission(double nu, double,
     //cout << "Refl bilin: " << I00 << " " << I01 << " " << I10 << " " << I11 << " " << reflectedintens << endl;
   }else{
     // Trilinear interpo general case
-    if (iiu==0) throwError("In Xillver::emission: bad incl index");
+    if (iiu==0) GYOTO_ERROR("In Xillver::emission: bad incl index");
     size_t iil = iiu-1;
 
     double I000 = reflection_[inul*ni_*nxi_+iil*nxi_+ixil], // I_{nu,incl,xi}

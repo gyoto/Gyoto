@@ -55,7 +55,7 @@ void OscilTorus::perturbKind(std::string const &k) {
   else {
     string errmsg="unknown perturbation kind: '";
     errmsg += k + "'";
-    throwError(errmsg.c_str());
+    GYOTO_ERROR(errmsg.c_str());
   }
   updateCachedValues();
 }
@@ -66,7 +66,7 @@ std::string OscilTorus::perturbKind() const {
   case X:         return "X";
   case Plus:      return "Plus";
   case Breathing: return "Breathing";
-  default: throwError("Unknown kind");
+  default: GYOTO_ERROR("Unknown kind");
   }
   return "Should not reach this";
 }
@@ -100,7 +100,7 @@ void OscilTorus::emittingArea(std::string const &f)  {
     }
     nbt_=tt_.size();
     emitting_area_ = f;
-  } else throwError("Unable to read " + f);
+  } else GYOTO_ERROR("Unable to read " + f);
 }
 
 Gyoto::Astrobj::OscilTorus::OscilTorus()
@@ -196,7 +196,7 @@ double OscilTorus::operator()(double const pos[4]) {
     uu = 1+w1_*x_bar*x_bar+w2_*y_bar*y_bar;
     break;
   default:
-    throwError("In OscilTorus.C::operator():"
+    GYOTO_ERROR("In OscilTorus.C::operator():"
 	       "Unrecognized perturbation kind");
   }
   // non-perturbed torus f
@@ -247,7 +247,7 @@ void OscilTorus::getVelocity(double const pos[4], double vel[4])
     vth = 2.*w2_*y_bar;
     break;
   default:
-    throwError("In OscilTorus.C::operator():"
+    GYOTO_ERROR("In OscilTorus.C::operator():"
 	       "Unrecognized perturbation kind");
   }
 
@@ -269,7 +269,7 @@ void OscilTorus::getVelocity(double const pos[4], double vel[4])
     ss << "OscilTorus::getVelocity(pos=[";
     for (int i=0; i<3; ++i) ss << pos[i] << ", ";
     ss << pos[3] << "]): u_t^2 is negative.";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 
   double u_t=-sqrt(u_t2);
@@ -309,7 +309,7 @@ void OscilTorus::computeXbYb(const double * pos, double & xb, double & yb){
   double beta2 = 2.*polyindex_*cs2
     /(c_*c_*ut_central2*Omegac_*Omegac_);
   if (beta2<=0.) {
-    throwError("In OscilTorus::computeXbYb(): "
+    GYOTO_ERROR("In OscilTorus::computeXbYb(): "
 	       "bad beta parameter");
   }
   double beta=sqrt(beta2);
@@ -329,7 +329,7 @@ void OscilTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
     return;
   }
   kerrbl_ = Gyoto::SmartPointer<Gyoto::Metric::KerrBL>(met);
-  if (!kerrbl_) throwError("OscilTorus::metric(): only KerrBL, please");
+  if (!kerrbl_) GYOTO_ERROR("OscilTorus::metric(): only KerrBL, please");
   if (gg_) gg_->unhook(this);
   Standard::metric(met);
   gg_->hook(this);
@@ -359,7 +359,7 @@ void OscilTorus::updateCachedValues() {
     +3.*aa*aa/(c_*c_);
 
   if (omr2_<=0. || omth2_<=0.) {
-    throwError("In OscilTorus::updateCachedValues(): "
+    GYOTO_ERROR("In OscilTorus::updateCachedValues(): "
 	       "bad epicyclic freq");
   }
   double alpha0 = sqrt(polyindex_*sqrt(omr2_)*sqrt(omth2_)/M_PI);
@@ -433,7 +433,7 @@ void OscilTorus::updateCachedValues() {
       break;
     }
   default:
-    throwError("In OscilTorus.C::setParameter():"
+    GYOTO_ERROR("In OscilTorus.C::setParameter():"
 	       "Unrecognized perturbation kind");
   }
 }
@@ -442,7 +442,7 @@ double OscilTorus::emission(double nu_em, double, double * cp,
 			      double *) const{
   //cout << "r,theta,rcosth= " << cp[1] << " " << cp[2] << " " << cp[1]*cos(cp[2]) << endl;
   if (flag_radtransf_)
-    throwError("Radiative transfer not implemented for OscilTorus.");
+    GYOTO_ERROR("Radiative transfer not implemented for OscilTorus.");
   if (with_cross_){
     /*
       If the torus mode under consideration (breathing - and +)
@@ -454,11 +454,11 @@ double OscilTorus::emission(double nu_em, double, double * cp,
       at impact time to modulate the emitted intensity.
      */
     if (mode_!=0) {
-      throwError("In OscilTorus.C::emission:"
+      GYOTO_ERROR("In OscilTorus.C::emission:"
 		 "mode=0 is required for area determination");
     }
     if (perturb_kind_==Vertical || perturb_kind_==X)
-      throwError("In OscilTorus::setParamter: bad perturbation kind");
+      GYOTO_ERROR("In OscilTorus::setParamter: bad perturbation kind");
 
     // Rescaled time and area determination
     double AA = Omegac_*sigma_; // cos modulation is 2pi/AA periodic
@@ -476,7 +476,7 @@ double OscilTorus::emission(double nu_em, double, double * cp,
       area=
 	area_[ii-1]+(myt-tt_[ii-1])*(area_[ii]-area_[ii-1])/(tt_[ii-1]-tt_[ii]);
     }
-    if (area<=0. || area!=area) throwError("In OscilTorus::emission:"
+    if (area<=0. || area!=area) GYOTO_ERROR("In OscilTorus::emission:"
 					  "bad area value");
     return 1./area;
   }else{

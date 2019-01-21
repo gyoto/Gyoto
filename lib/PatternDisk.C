@@ -27,7 +27,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 #include <iostream>
 #include <iomanip>
@@ -146,13 +146,13 @@ void PatternDisk::copyIntensity(double const *const pattern, size_t const naxes[
       if (radius_)   { delete [] radius_;   radius_  = NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nr_=naxes[2])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     if (nr_==1)
-      throwError("In PatternDisk::copyIntensity: "
+      GYOTO_ERROR("In PatternDisk::copyIntensity: "
 		 "radial dimension should be >1");
     dr_ = (rout_ - rin_) / double(nr_-1);
     if (repeat_phi_==0.)
-      throwError("In PatternDisk::copyIntensity: repeat_phi is 0!");
+      GYOTO_ERROR("In PatternDisk::copyIntensity: repeat_phi is 0!");
     if (nphi_>1)
       dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     GYOTO_DEBUG << "allocate emission_;" << endl;
@@ -175,7 +175,7 @@ void PatternDisk::copyOpacity(double const *const opac, size_t const naxes[3]) {
   }
   if (opac) {
     if (nnu_ != naxes[0] || nphi_ != naxes[1] || nr_ != naxes[2])
-      throwError("Please set intensity before opacity. "
+      GYOTO_ERROR("Please set intensity before opacity. "
 		 "The two arrays must have the same dimensions.");
     GYOTO_DEBUG << "allocate opacity_;" << endl;
     opacity_ = new double[nnu_ * nphi_ * nr_];
@@ -195,9 +195,9 @@ void PatternDisk::copyVelocity(double const *const velocity, size_t const naxes[
     delete [] velocity_; velocity_ = NULL;
   }
   if (velocity) {
-    if (!emission_) throwError("Please use copyIntensity() before copyVelocity()");
+    if (!emission_) GYOTO_ERROR("Please use copyIntensity() before copyVelocity()");
     if (nphi_ != naxes[0] || nr_ != naxes[1])
-      throwError("emission_ and velocity_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and velocity_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate velocity_;" << endl;
     velocity_ = new double[2*nphi_*nr_];
     GYOTO_DEBUG << "velocity >> velocity_" << endl;
@@ -213,9 +213,9 @@ void PatternDisk::copyGridRadius(double const *const rad, size_t nr) {
     delete [] radius_; radius_ = NULL;
   }
   if (rad) {
-    if (!emission_) throwError("Please use copyIntensity() before copyGridRadius()");
+    if (!emission_) GYOTO_ERROR("Please use copyIntensity() before copyGridRadius()");
     if (nr_ != nr)
-      throwError("emission_ and radius_ have inconsistent dimensions");
+      GYOTO_ERROR("emission_ and radius_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate velocity_;" << endl;
     radius_ = new double[nr_];
     GYOTO_DEBUG << "velocity >> velocity_" << endl;
@@ -366,7 +366,7 @@ void PatternDisk::fitsRead(string filename) {
   // update repeat_phi_, nphi_, dphi_
   nphi_ = naxes[1];
   if (repeat_phi_==0)
-    throwError("In PatternDisk::fitsRead: repeat_phi is 0!");
+    GYOTO_ERROR("In PatternDisk::fitsRead: repeat_phi is 0!");
   if (nphi_>1)
     dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 
@@ -402,7 +402,7 @@ void PatternDisk::fitsRead(string filename) {
     if (   size_t(naxes[0]) != nnu_
 	|| size_t(naxes[1]) != nphi_
 	|| size_t(naxes[2]) != nr_)
-      throwError("PatternDisk::readFile(): opacity array not conformable");
+      GYOTO_ERROR("PatternDisk::readFile(): opacity array not conformable");
     if (opacity_) { delete [] opacity_; opacity_ = NULL; }
     opacity_ = new double[nnu_ * nphi_ * nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -428,7 +428,7 @@ void PatternDisk::fitsRead(string filename) {
     if (   size_t(naxes[0]) != size_t(2)
 	|| size_t(naxes[1]) != nphi_
 	|| size_t(naxes[2]) != nr_)
-      throwError("PatternDisk::readFile(): velocity array not conformable");
+      GYOTO_ERROR("PatternDisk::readFile(): velocity array not conformable");
     if (velocity_) { delete [] velocity_; velocity_ = NULL; }
     velocity_ = new double[2 * nphi_ * nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -452,7 +452,7 @@ void PatternDisk::fitsRead(string filename) {
   } else {
     if (fits_get_img_size(fptr, 1, naxes, &status)) throwCfitsioError(status) ;
     if (size_t(naxes[0]) != nr_)
-      throwError("PatternDisk::readFile(): radius array not conformable");
+      GYOTO_ERROR("PatternDisk::readFile(): radius array not conformable");
     if (radius_) { delete [] radius_; radius_ = NULL; }
     radius_ = new double[nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -465,7 +465,7 @@ void PatternDisk::fitsRead(string filename) {
   }
 
    if (nr_ == 1.)
-     throwError("In PatternDisk::fitsRead: nr_ should not be 0 here!");
+     GYOTO_ERROR("In PatternDisk::fitsRead: nr_ should not be 0 here!");
    dr_ = (rout_-rin_) / double(nr_-1);
 
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
@@ -473,7 +473,7 @@ void PatternDisk::fitsRead(string filename) {
 }
 
 void PatternDisk::fitsWrite(string filename) {
-  if (!emission_) throwError("PatternDisk::fitsWrite(filename): nothing to save!");
+  if (!emission_) GYOTO_ERROR("PatternDisk::fitsWrite(filename): nothing to save!");
   filename_ = filename;
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
@@ -612,7 +612,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
       i[1] = size_t(floor((phi-phimin_)/dphi_)+1); // % (nphi_-1);
       if (i[1]==0 || i[1]==nphi_){
 	cerr << "iphi stuff= " << phi << " " << dphi_ << " " << nphi_ << " " << floor((phi-phimin_)/dphi_) << " " << i[1] << endl;
-	throwError("In PatternDisk:getIndices: bad i[1]");
+	GYOTO_ERROR("In PatternDisk:getIndices: bad i[1]");
       }				
     }
   }else{
@@ -644,7 +644,7 @@ void PatternDisk::getIndices(size_t i[3], double const co[4], double nu) const {
     GYOTO_DEBUG <<"radius_ == NULL, dr_==" << dr_ << endl;
     // radius_ is not set: assume linear repartition
     if (dr_==0.)
-      throwError("In PatternDisk::getIndices: dr_ should not be 0 here!");
+      GYOTO_ERROR("In PatternDisk::getIndices: dr_ should not be 0 here!");
     i[2] = size_t(floor((r-rin_)/dr_)+1);
     if (i[2] >= nr_) i[2] = nr_ - 1;
     //cerr << "in indice no radius --RAD: " << rin_ + (i[2]-1)*dr_ << " " << r << " " <<  rin_ + (i[2])*dr_ << endl;
@@ -656,7 +656,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
   //cerr << "In pattern get vel" << endl;
   if (velocity_) {
     if (dir_ != 1)
-      throwError("PatternDisk::getVelocity(): "
+      GYOTO_ERROR("PatternDisk::getVelocity(): "
 		 "dir_ should be 1 if velocity_ is provided");
     size_t i[3]; // {i_nu, i_phi, i_r}
     //cout << "in pattern getvel go to getIndices" << endl;
@@ -696,7 +696,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 
       if (rr<radlow || rr>radhigh){
 	//cout << "r= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << endl;
-	throwError("In PatternDisk::getVelocity: "
+	GYOTO_ERROR("In PatternDisk::getVelocity: "
 		   "bad radial interpolation");
       }
 
@@ -751,7 +751,7 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
 
       if (phi<philow || phi>phihigh || rr<radlow || rr>radhigh){
 	//cout << "r, phis= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << " " << philow << " " << phi << " " << phihigh << endl;
-	throwError("In PatternDisk::getVelocity: "
+	GYOTO_ERROR("In PatternDisk::getVelocity: "
 		   "bad interpolation");
       }
 
@@ -780,11 +780,11 @@ void PatternDisk::getVelocity(double const pos[4], double vel[4]) {
       }
       break;
     case GYOTO_COORDKIND_CARTESIAN:
-      throwError("PatternDisk::getVelocity(): metric must be in "
+      GYOTO_ERROR("PatternDisk::getVelocity(): metric must be in "
 		 "spherical coordinaites if velocity field is provided");
       break;
     default:
-      throwError("PatternDisk::getVelocity(): unknown COORDKIND");
+      GYOTO_ERROR("PatternDisk::getVelocity(): unknown COORDKIND");
     } 
   }else ThinDisk::getVelocity(pos, vel);
 }
@@ -810,7 +810,7 @@ double PatternDisk::emission(double nu, double dsem,
   if (rr < rin_ || rr > rout_) return 0.;
   double Iem=0.;
 
-  if (nnu_>1) throwError("In PatternDisk: multifrequency case not implemented");
+  if (nnu_>1) GYOTO_ERROR("In PatternDisk: multifrequency case not implemented");
   
   if (nphi_==1){
     // If axisym: 1D interpo in radius only
@@ -828,7 +828,7 @@ double PatternDisk::emission(double nu, double dsem,
 
     if (rr<radlow || rr>radhigh){
       //cout << "r= " << i[2] << " " <<  radlow << " " << rr << " " << radhigh << endl;
-      throwError("In PatternDisk::emission: "
+      GYOTO_ERROR("In PatternDisk::emission: "
 		 "bad radial interpolation");
     }
     
@@ -879,7 +879,7 @@ double PatternDisk::emission(double nu, double dsem,
     if (phi<philow || phi>phihigh || rr<radlow || rr>radhigh){
       cout << "phi: " << philow << " " << phi << " " << phihigh << endl;
       cout << "r: " << radlow << " " << rr << " " << radhigh << endl;
-      throwError("In PatternDisk::emission: "
+      GYOTO_ERROR("In PatternDisk::emission: "
 		 "bad interpolation");
     }
     
@@ -928,7 +928,7 @@ void PatternDisk::file(std::string const &f) {
 # ifdef GYOTO_USE_CFITSIO
   fitsRead(f);
 # else
-  throwError("This Gyoto has no FITS i/o");
+  GYOTO_ERROR("This Gyoto has no FITS i/o");
 # endif
 }
 

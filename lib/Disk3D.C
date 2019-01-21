@@ -28,7 +28,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 #include <iostream>
 #include <iomanip>
@@ -64,7 +64,7 @@ void Disk3D::file(std::string const &f) {
 #ifdef GYOTO_USE_CFITSIO
               fitsRead(f);
 #else
-              throwError("This Gyoto has no FITS i/o");
+              GYOTO_ERROR("This Gyoto has no FITS i/o");
 #endif
 }
 std::string Disk3D::file() const {return filename_;}
@@ -155,13 +155,13 @@ void Disk3D::copyEmissquant(double const *const pattern, size_t const naxes[4]) 
       if (velocity_) { delete [] velocity_; velocity_= NULL; }
     }
     if (!(nel=(nnu_ = naxes[0]) * (nphi_=naxes[1]) * (nz_=naxes[2]) * (nr_=naxes[3])))
-      throwError( "dimensions can't be null");
+      GYOTO_ERROR( "dimensions can't be null");
     if (nr_==1 || nz_==1 || nphi_==1)
-      throwError("In Disk3D::CopyEmissquant: dimensions should be >1");
+      GYOTO_ERROR("In Disk3D::CopyEmissquant: dimensions should be >1");
     dr_ = (rout_ - rin_) / double(nr_-1);
     dz_ = (zmax_ - zmin_) / double(nz_-1);
     if (repeat_phi_==0.)
-      throwError("In Disk3D::CopyEmissquant: repeat_phi is 0!");
+      GYOTO_ERROR("In Disk3D::CopyEmissquant: repeat_phi is 0!");
     //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
     dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
     GYOTO_DEBUG << "allocate emissquant_;" << endl;
@@ -187,7 +187,7 @@ void Disk3D::copyOpacity(double const *const opac, size_t const naxes[4]) {
   }
   if (opac) {
     if (nnu_ != naxes[0] || nphi_ != naxes[1] || nz_ != naxes[2] || nr_ != naxes[3])
-      throwError("Please set intensity before opacity. "
+      GYOTO_ERROR("Please set intensity before opacity. "
 		 "The two arrays must have the same dimensions.");
     GYOTO_DEBUG << "allocate opacity_;" << endl;
     opacity_ = new double[nnu_ * nphi_ * nz_ * nr_];
@@ -206,9 +206,9 @@ void Disk3D::copyVelocity(double const *const velocity, size_t const naxes[3]) {
     delete [] velocity_; velocity_ = NULL;
   }
   if (velocity) {
-    if (!emissquant_) throwError("Please use copyEmissquant() before copyVelocity()");
+    if (!emissquant_) GYOTO_ERROR("Please use copyEmissquant() before copyVelocity()");
     if (nphi_ != naxes[0] || nz_ != naxes[1] || nr_ != naxes[2])
-      throwError("emissquant_ and velocity_ have inconsistent dimensions");
+      GYOTO_ERROR("emissquant_ and velocity_ have inconsistent dimensions");
     GYOTO_DEBUG << "allocate velocity_;" << endl;
     velocity_ = new double[3*nphi_*nz_*nr_];
     GYOTO_DEBUG << "velocity >> velocity_" << endl;
@@ -372,11 +372,11 @@ void Disk3D::fitsRead(string filename) {
   if (CRPIX1 != 1) nu0_ -= dnu_*(CRPIX1 - 1.);
 
   if (naxes[1]*naxes[2]*naxes[3]==0.)
-    throwError("In Disk3D::fitsRead: dimensions can't be null!");
+    GYOTO_ERROR("In Disk3D::fitsRead: dimensions can't be null!");
   // update nphi_, dphi_
   nphi_ = naxes[1];
   if (nphi_==1)
-    throwError("In Disk3D::fitsRead: dimensions should be >1");
+    GYOTO_ERROR("In Disk3D::fitsRead: dimensions should be >1");
   //dphi_ = 2.*M_PI/double((nphi_-1.)*repeat_phi_);
   dphi_ = (phimax_-phimin_)/double((nphi_-1)*repeat_phi_);
 
@@ -384,7 +384,7 @@ void Disk3D::fitsRead(string filename) {
   nz_ = naxes[2];
   nr_ = naxes[3];
   if (nr_==1 || nz_==1)
-    throwError("In Disk3D::fitsRead: dimensions should be >1");
+    GYOTO_ERROR("In Disk3D::fitsRead: dimensions should be >1");
   dr_ = (rout_ - rin_) / double(nr_-1);
   dz_ = (zmax_ - zmin_) / double(nz_-1);
 
@@ -420,7 +420,7 @@ void Disk3D::fitsRead(string filename) {
 	|| size_t(naxes[1]) != nphi_
 	|| size_t(naxes[2]) != nz_
 	|| size_t(naxes[3]) != nr_ )
-      throwError("Disk3D::readFile(): opacity array not conformable");
+      GYOTO_ERROR("Disk3D::readFile(): opacity array not conformable");
     if (opacity_) { delete [] opacity_; opacity_ = NULL; }
     opacity_ = new double[nnu_ * nphi_ * nz_ * nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -444,7 +444,7 @@ void Disk3D::fitsRead(string filename) {
 	   || size_t(naxes[1]) != nphi_
 	   || size_t(naxes[2]) != nz_
 	   || size_t(naxes[3]) != nr_)
-      throwError("Disk3D::fitsRead(): velocity array not conformable");
+      GYOTO_ERROR("Disk3D::fitsRead(): velocity array not conformable");
     if (velocity_) { delete [] velocity_; velocity_ = NULL; }
     velocity_ = new double[3 * nphi_ * nz_ * nr_];
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 
@@ -459,7 +459,7 @@ void Disk3D::fitsRead(string filename) {
 }
 
 void Disk3D::fitsWrite(string filename) {
-  if (!emissquant_) throwError("Disk3D::fitsWrite(filename): nothing to save!");
+  if (!emissquant_) GYOTO_ERROR("Disk3D::fitsWrite(filename): nothing to save!");
   filename_ = filename;
   char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
@@ -618,7 +618,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
     }
     break;
   default:
-    throwError("Disk3D::getIndices(): unknown COORDKIND");
+    GYOTO_ERROR("Disk3D::getIndices(): unknown COORDKIND");
     phi=zz=rr=0.;
   }
 
@@ -626,7 +626,7 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
   phi -= omegaPattern_*(co[0]-tPattern_);
   //  cout << "in indeice" << endl;
   if (dphi_*dz_*dr_==0.)
-    throwError("In Disk3D::getIndices: dimensions can't be null!");
+    GYOTO_ERROR("In Disk3D::getIndices: dimensions can't be null!");
   //Phi indice
   while (phi<0) phi += 2.*M_PI;
   while (phi>2.*M_PI) phi -= 2.*M_PI;
@@ -643,13 +643,13 @@ void Disk3D::getIndices(size_t i[4], double const co[4], double nu) const {
   i[2] = size_t(floor((zz-zmin_)/dz_+0.5));
 
   if (i[2] == nz_) i[2] = nz_ - 1;
-  else if (i[2] > nz_) throwError("In Disk3D::getIndices() impossible indice value for z");
+  else if (i[2] > nz_) GYOTO_ERROR("In Disk3D::getIndices() impossible indice value for z");
 
   //r indice
   i[3] = size_t(floor((rr-rin_)/dr_+0.5));
 
   if (i[3] == nr_) i[3] = nr_ - 1;
-  else if (i[3] > nr_) throwError("In Disk3D::getIndices() impossible indice value for r");
+  else if (i[3] > nr_) GYOTO_ERROR("In Disk3D::getIndices() impossible indice value for r");
 
 }
 #endif
@@ -679,13 +679,13 @@ void Disk3D::getVelocity(double const pos[4], double vel[4]) {
       }
       break;
     case GYOTO_COORDKIND_CARTESIAN:
-      throwError("Disk3D::getVelocity(): metric must be in "
+      GYOTO_ERROR("Disk3D::getVelocity(): metric must be in "
 		 "spherical coordinates");
       break;
     default:
-      throwError("Disk3D::getVelocity(): unknown COORDKIND");
+      GYOTO_ERROR("Disk3D::getVelocity(): unknown COORDKIND");
     }
-  }else throwError("In Disk3D::getVelocity(): velocity_==NULL!");
+  }else GYOTO_ERROR("In Disk3D::getVelocity(): velocity_==NULL!");
 
 }
 

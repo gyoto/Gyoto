@@ -86,7 +86,7 @@ void Gyoto::convert(double * const x, const size_t nelem, const double mass_sun,
   else if (!unit.compare("arcsec"))     fact *=  6.48e5  / (distance*M_PI);
   else if (!unit.compare("mas"))        fact *=  6.48e8  / (distance*M_PI);
   else if (!unit.compare("uas"))        fact *=  6.48e11 / (distance*M_PI);
-  else throwError("Unknown unit.");
+  else GYOTO_ERROR("Unknown unit.");
 
   for (i=0; i<nelem; ++i) x[i] *= fact ;
 
@@ -111,7 +111,7 @@ double Gyoto::atof(const char * str)
     } else if (str[offset]=='I' && str[offset+1]=='N') {
       if (positive) retval = DBL_MIN;
       else retval = -DBL_MIN;
-    } else throwError("unrecognize double representation");
+    } else GYOTO_ERROR("unrecognize double representation");
   } else retval = std::atof(str);
 
   GYOTO_DEBUG << "==" << retval << endl;
@@ -128,7 +128,7 @@ void Gyoto::help(std::string class_name) {
   if (class_name=="Photon") {Photon().help(); return;}
   size_t pos=class_name.find("::");
   if (pos==0 || pos+2==class_name.size())
-    throwError("Not a valid class name: "+class_name);
+    GYOTO_ERROR("Not a valid class name: "+class_name);
   if (pos > 0 && pos != string::npos) {
     string nspace = class_name.substr(0, pos);
     class_name = class_name.substr(pos+2);
@@ -152,9 +152,9 @@ void Gyoto::help(std::string class_name) {
 	(NULL, plugins)->help();
       return;
     }
-    throwError("Unrecognized namespace: "+nspace);
+    GYOTO_ERROR("Unrecognized namespace: "+nspace);
   }
-  throwError("Help string not implemented (yet) for "+class_name);
+  GYOTO_ERROR("Help string not implemented (yet) for "+class_name);
 }
 
 std::vector<std::string> Gyoto::split(std::string const &src, std::string const &delim) {
@@ -263,7 +263,7 @@ double Gyoto::bessk1(double xx) {
 }
 double Gyoto::bessk(int nn,double xx) {
   double bk,bkm,bkp,tox;
-  if(nn< 2) throwError("In Utils::besselk n>2!");
+  if(nn< 2) GYOTO_ERROR("In Utils::besselk n>2!");
   tox=2.0/xx;
   bkm=bessk0(xx);
   bk=bessk1(xx);
@@ -305,7 +305,7 @@ double Gyoto::hypergeom (double kappaIndex, double thetae) {
     cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
   return hyp_2F1(aa,bb,cc,zed).real();
 #else
-  Gyoto::throwError("Utils::_hypergeom() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
+  GYOTO_ERROR("Utils::_hypergeom() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
   return 0.;
 #endif
 }

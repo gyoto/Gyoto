@@ -79,12 +79,12 @@ void Spectrum::Python::klass(const std::string &f) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error while retrieving methods");
+    GYOTO_ERROR("Error while retrieving methods");
   }
 
   if (!pCall_) {
     PyGILState_Release(gstate);
-    throwError("Object does not implement required method \"__call__\"");
+    GYOTO_ERROR("Object does not implement required method \"__call__\"");
   }
 
   pCall_overloaded_ = Gyoto::Python::PyCallable_HasVarArg(pCall_);
@@ -95,7 +95,7 @@ void Spectrum::Python::klass(const std::string &f) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error while setting this");
+    GYOTO_ERROR("Error while setting this");
   }
 
   PyGILState_Release(gstate);
@@ -106,7 +106,7 @@ void Spectrum::Python::klass(const std::string &f) {
 /* Gyoto::Spectrum::Generic API */
 
 double Spectrum::Python::operator()(double nu) const {
-  if (!pCall_) throwError("Python class not loaded yet");
+  if (!pCall_) GYOTO_ERROR("Python class not loaded yet");
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
   PyObject * pArgs = Py_BuildValue("(d)", nu);
@@ -114,7 +114,7 @@ double Spectrum::Python::operator()(double nu) const {
     PyErr_Print();
     Py_XDECREF(pArgs);
     PyGILState_Release(gstate);
-    throwError("Failed building argument list");
+    GYOTO_ERROR("Failed building argument list");
   }
 
   PyObject * pValue = PyObject_CallObject(pCall_, pArgs);
@@ -123,7 +123,7 @@ double Spectrum::Python::operator()(double nu) const {
     PyErr_Print();
     Py_XDECREF(pValue);
     PyGILState_Release(gstate);
-    throwError("Failed calling Python method __call__");
+    GYOTO_ERROR("Failed calling Python method __call__");
   }
 
   double res = PyFloat_AsDouble(pValue);
@@ -131,7 +131,7 @@ double Spectrum::Python::operator()(double nu) const {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error interpreting result as double");
+    GYOTO_ERROR("Error interpreting result as double");
   }
 
   PyGILState_Release(gstate);
@@ -149,7 +149,7 @@ double Spectrum::Python::operator()(double nu, double opacity, double ds) const 
     PyErr_Print();
     Py_XDECREF(pArgs);
     PyGILState_Release(gstate);
-    throwError("Failed building argument list");
+    GYOTO_ERROR("Failed building argument list");
   }
 
   PyObject * pValue = PyObject_CallObject(pCall_, pArgs);
@@ -158,7 +158,7 @@ double Spectrum::Python::operator()(double nu, double opacity, double ds) const 
     PyErr_Print();
     Py_XDECREF(pValue);
     PyGILState_Release(gstate);
-    throwError("Failed calling Python method __call__");
+    GYOTO_ERROR("Failed calling Python method __call__");
   }
 
   double res = PyFloat_AsDouble(pValue);
@@ -166,7 +166,7 @@ double Spectrum::Python::operator()(double nu, double opacity, double ds) const 
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error interpreting result as double");
+    GYOTO_ERROR("Error interpreting result as double");
   }
 
   PyGILState_Release(gstate);
@@ -185,7 +185,7 @@ double Spectrum::Python::integrate(double nu1, double nu2) {
     PyErr_Print();
     Py_XDECREF(pArgs);
     PyGILState_Release(gstate);
-    throwError("Failed building argument list");
+    GYOTO_ERROR("Failed building argument list");
   }
 
   PyObject * pValue = PyObject_CallObject(pIntegrate_, pArgs);
@@ -194,7 +194,7 @@ double Spectrum::Python::integrate(double nu1, double nu2) {
     PyErr_Print();
     Py_XDECREF(pValue);
     PyGILState_Release(gstate);
-    throwError("Failed calling Python method integrate");
+    GYOTO_ERROR("Failed calling Python method integrate");
   }
 
   double res = PyFloat_AsDouble(pValue);
@@ -202,7 +202,7 @@ double Spectrum::Python::integrate(double nu1, double nu2) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error interpreting result as double");
+    GYOTO_ERROR("Error interpreting result as double");
   }
 
   PyGILState_Release(gstate);

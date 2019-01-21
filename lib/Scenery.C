@@ -359,8 +359,8 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
    */
 
   if (!screen_) {
-    if (am_worker) throwError("No screen, have you called mpiClone()?");
-    else throwError("Scenery::rayTrace() needs a Screen to work on");
+    if (am_worker) GYOTO_ERROR("No screen, have you called mpiClone()?");
+    else GYOTO_ERROR("Scenery::rayTrace() needs a Screen to work on");
   }
   screen_->computeBaseVectors();
          // Necessary for KS integration, computes relation between
@@ -401,7 +401,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     mpi::broadcast(*mpi_team_, is_pixel, 0);
 
     if (quantities & (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_BINSPECTRUM)) {
-      if (!spr) throwError("Spectral quantity requested but "
+      if (!spr) GYOTO_ERROR("Spectral quantity requested but "
 			     "no spectrometer specified!");
       nbnuobs = spr -> nSamples();
     }
@@ -625,7 +625,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
       for (size_t th=0; th < nthreads_-1; ++th) {
 	if (pthread_create(threads+th, NULL,
 			   SceneryThreadWorker, static_cast<void*>(&larg)) < 0)
-	  throwError("Error creating thread");
+	  GYOTO_ERROR("Error creating thread");
       }
     }
   }
@@ -789,7 +789,7 @@ void Scenery::requestedQuantitiesString(std::string const &squant) {
       quantities_ |= GYOTO_QUANTITY_USER4;
     else if (!strcmp(tk, "User5"))
       quantities_ |= GYOTO_QUANTITY_USER5;
-    else throwError("ScenerySubcontractor(): unknown quantity");
+    else GYOTO_ERROR("ScenerySubcontractor(): unknown quantity");
     tk = strtok(NULL, " \t\n");
   }
 
@@ -938,13 +938,13 @@ void Gyoto::Scenery::mpiSpawn(int nbchildren) {
   nprocesses_=nbchildren;
 #ifdef HAVE_MPI
   int flagi=0, flagt=0;
-  if (MPI_Initialized(&flagi)) throwError("Error running MPI_Initialized()");
+  if (MPI_Initialized(&flagi)) GYOTO_ERROR("Error running MPI_Initialized()");
   if (!flagi) {
     GYOTO_WARNING << "MPI_Init not called yet: "
 		  << "not spawning processes" << endl;
     return;
   }
-  if (MPI_Finalized(&flagt)) throwError("Error running MPI_Finalized()");
+  if (MPI_Finalized(&flagt)) GYOTO_ERROR("Error running MPI_Finalized()");
   if (flagt) {
     GYOTO_WARNING << "MPI_Finalize already called: "
 		  << "not spawning processes" << endl;
@@ -1066,7 +1066,7 @@ void Gyoto::Scenery::mpiWorker() {
 
   team.barrier();
 #else
-  throwError("Gyoto was compiled without MPI support, "
+  GYOTO_ERROR("Gyoto was compiled without MPI support, "
 	     "Gyoto::Scenery::mpiWorker() is unavailable.");
 #endif
 }

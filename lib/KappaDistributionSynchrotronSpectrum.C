@@ -90,7 +90,7 @@ Spectrum::KappaDistributionSynchrotron * Spectrum::KappaDistributionSynchrotron:
 { return new Spectrum::KappaDistributionSynchrotron(*this); }
 
 double Spectrum::KappaDistributionSynchrotron::operator()(double nu) const {
-  throwError("In PLSynch: "
+  GYOTO_ERROR("In PLSynch: "
 	     "Synchrotron emission not defined for optically thick case");
   return 0.;
 }

@@ -234,7 +234,7 @@ int KerrKS::christoffel(double dst[4][4][4], const double * pos, double gup[4][4
 }
 
 double KerrKS::gmunu(const double * pos, int mu, int nu) const {
-  if (mu<0 || nu<0 || mu>3 || nu>3) throwError ("KerrKS::gmunu: incorrect value for mu or nu");
+  if (mu<0 || nu<0 || mu>3 || nu>3) GYOTO_ERROR ("KerrKS::gmunu: incorrect value for mu or nu");
   //double x=pos[0], y=pos[1], z=pos[2];
   double x=pos[1], y=pos[2], z=pos[3];
   double x2=x*x;

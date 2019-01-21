@@ -117,7 +117,7 @@ double ThinDisk::operator()(double const coord[4])  {
   case GYOTO_COORDKIND_CARTESIAN:
     return coord[3];
   default:
-    throwError("ThinDisk::Impact(): unknown COORDKIND");
+    GYOTO_ERROR("ThinDisk::Impact(): unknown COORDKIND");
     return 0.;
   }
 }
@@ -129,7 +129,7 @@ double ThinDisk::projectedRadius(double const coord[4]) const {
   case GYOTO_COORDKIND_CARTESIAN:
     return sqrt(coord[1]*coord[1]+coord[2]*coord[2]);
   default:
-    throwError("ThinDisk::projectedRadius(): unknown COORDKIND");
+    GYOTO_ERROR("ThinDisk::projectedRadius(): unknown COORDKIND");
     return 0.;
   }
 }
@@ -141,7 +141,7 @@ double ThinDisk::sphericalPhi(double const coord[4]) const {
   case GYOTO_COORDKIND_CARTESIAN:
     return atan2(coord[2], coord[1]);
   default:
-    throwError("ThinDisk::sphericalPhi(): unknown COORDKIND");
+    GYOTO_ERROR("ThinDisk::sphericalPhi(): unknown COORDKIND");
     return 0.;
   }
 }
@@ -168,7 +168,7 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
   if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL &&
       fabs(coord2[2]-coord1[2]) > M_PI)
-    throwError ("ThinDisk::Impact: fishy heuristic");
+    GYOTO_ERROR ("ThinDisk::Impact: fishy heuristic");
 
   double h1=operator()(coord1), h2=operator()(coord2);
   double r1=projectedRadius(coord1), r2=projectedRadius(coord2);

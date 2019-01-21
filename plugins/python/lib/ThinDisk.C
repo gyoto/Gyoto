@@ -109,7 +109,7 @@ void Gyoto::Astrobj::Python::ThinDisk::klass(const std::string &f) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error while retrieving methods");
+    GYOTO_ERROR("Error while retrieving methods");
   }
 
   pEmission_overloaded_ = pEmission_ &&
@@ -144,7 +144,7 @@ double Gyoto::Astrobj::Python::ThinDisk::operator()(double const coord[4]) {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::operator()()");
+    GYOTO_ERROR("Error occurred in ThinDisk::operator()()");
   }
 
   PyGILState_Release(gstate);
@@ -171,7 +171,7 @@ void Gyoto::Astrobj::Python::ThinDisk::getVelocity
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::getVelocity()");
+    GYOTO_ERROR("Error occurred in ThinDisk::getVelocity()");
   }
 
   PyGILState_Release(gstate);
@@ -204,7 +204,7 @@ double Gyoto::Astrobj::Python::ThinDisk::emission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::emission()");
+    GYOTO_ERROR("Error occurred in ThinDisk::emission()");
   }
 
   PyGILState_Release(gstate);
@@ -243,7 +243,7 @@ void Gyoto::Astrobj::Python::ThinDisk::emission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::emission()");
+    GYOTO_ERROR("Error occurred in ThinDisk::emission()");
   }
 
   PyGILState_Release(gstate);
@@ -279,7 +279,7 @@ double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::integrateEmission()");
+    GYOTO_ERROR("Error occurred in ThinDisk::integrateEmission()");
   }
 
   PyGILState_Release(gstate);
@@ -325,7 +325,7 @@ void Gyoto::Astrobj::Python::ThinDisk::integrateEmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::integrateEmission()");
+    GYOTO_ERROR("Error occurred in ThinDisk::integrateEmission()");
   }
 
   PyGILState_Release(gstate);
@@ -355,7 +355,7 @@ double Gyoto::Astrobj::Python::ThinDisk::transmission
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    throwError("Error occurred in ThinDisk::emission()");
+    GYOTO_ERROR("Error occurred in ThinDisk::transmission()");
   }
 
   PyGILState_Release(gstate);

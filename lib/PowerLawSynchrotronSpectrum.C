@@ -80,7 +80,7 @@ Spectrum::PowerLawSynchrotron * Spectrum::PowerLawSynchrotron::clone() const
 { return new Spectrum::PowerLawSynchrotron(*this); }
 
 double Spectrum::PowerLawSynchrotron::operator()(double nu) const {
-  throwError("In PLSynch: "
+  GYOTO_ERROR("In PLSynch: "
 	     "Synchrotron emission not defined for optically thick case");
   return 0.;
 }
@@ -113,7 +113,7 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
   }else{
     // Pandya, Zhang, Chandra, Gammie, 2016
     if (gamma_max<sqrt(nu/cyclotron_freq_))
-      throwError("In PLSynchro: increase gamma_max");
+      GYOTO_ERROR("In PLSynchro: increase gamma_max");
     // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
     
     double sinth = sin(angle_B_pem_);
@@ -147,7 +147,7 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
       /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
   }else{
     if (gamma_max<sqrt(nu/cyclotron_freq_))
-      throwError("In PLSynchro: increase gamma_max");
+      GYOTO_ERROR("In PLSynchro: increase gamma_max");
     // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
 
     double sinth = sin(angle_B_pem_);

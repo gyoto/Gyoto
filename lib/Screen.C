@@ -33,7 +33,7 @@
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 #endif
 
 #ifdef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
@@ -325,7 +325,7 @@ void Screen::setObserverPos(const double coord[4]) {
     }
     break;
   default:
-    throwError("Incompatible coordinate kind in Screen::setObserverCoord");
+    GYOTO_ERROR("Incompatible coordinate kind in Screen::setObserverCoord");
   }
   computeBaseVectors();
 }
@@ -344,7 +344,7 @@ void Screen::setFourVel(const double coord[4]) {
 
 void Screen::fourVel(std::vector<double> const &coord) {
   if (coord.size() != 4)
-    throwError("base screen vectors require 4 elements");
+    GYOTO_ERROR("base screen vectors require 4 elements");
   for (int ii=0;ii<4;ii++)
     fourvel_[ii]=coord[ii];
 }
@@ -356,7 +356,7 @@ std::vector<double> Screen::fourVel() const {
 
 void Screen::screenVector1(std::vector<double> const &coord) {
   if (coord.size() != 4)
-    throwError("base screen vectors require 4 elements");
+    GYOTO_ERROR("base screen vectors require 4 elements");
   for (int ii=0;ii<4;ii++)
     screen1_[ii]=coord[ii];
 }
@@ -368,7 +368,7 @@ std::vector<double> Screen::screenVector1() const {
 
 void Screen::screenVector2(std::vector<double> const &coord) {
   if (coord.size() != 4)
-    throwError("base screen vectors require 4 elements");
+    GYOTO_ERROR("base screen vectors require 4 elements");
   for (int ii=0;ii<4;ii++)
     screen2_[ii]=coord[ii];
 }
@@ -380,7 +380,7 @@ std::vector<double> Screen::screenVector2() const {
 
 void Screen::screenVector3(std::vector<double> const &coord) {
   if (coord.size() != 4)
-    throwError("base screen vectors require 4 elements");
+    GYOTO_ERROR("base screen vectors require 4 elements");
   for (int ii=0;ii<4;ii++)
     screen3_[ii]=coord[ii];
 }
@@ -435,7 +435,7 @@ void Screen::getObserverPos(double coord[]) const
   default:
     ss << "Incompatible coordinate kind in Screen::getObserverPos: "
        << coordkind;
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 }
 
@@ -494,7 +494,7 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
     // (cf InitialConditions.pdf)
   case Screen::rectilinear: {
     if (fov_ >= M_PI)
-      throwError("Rectilinear projection requires fov_ < M_PI");
+      GYOTO_ERROR("Rectilinear projection requires fov_ < M_PI");
     const double xfov=2.*tan(fov_*0.5);
     const double delta= xfov/double(npix_);
     yscr=delta*(double(j)-double(npix_+1)/2.);
@@ -503,7 +503,7 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
   }
   default:
     xscr=yscr=0.;
-    throwError("Unrecognized anglekind_");
+    GYOTO_ERROR("Unrecognized anglekind_");
   }
   getRayCoord(xscr, yscr, coord); 
 }
@@ -593,7 +593,7 @@ void Screen::getRayCoord(double angle1, double angle2,
     break;
   default:
     spherical_angle_a=spherical_angle_b=0.;
-    throwError("Unknown angle type");
+    GYOTO_ERROR("Unknown angle type");
   }
 
   // Move these two angles to [0,pi], [0,2pi]
@@ -639,7 +639,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  throwError("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayCoord: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -655,13 +655,13 @@ void Screen::getRayCoord(double angle1, double angle2,
     case GYOTO_COORDKIND_SPHERICAL:
       {
 	if (coord[2]==0. || coord[2]==M_PI)
-	  throwError("Please move Screen away from z-axis");
+	  GYOTO_ERROR("Please move Screen away from z-axis");
 
 	double rr=coord[1],
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  throwError("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayCoord: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -676,7 +676,7 @@ void Screen::getRayCoord(double angle1, double angle2,
       }
       break;
     default:
-      throwError("Incompatible coordinate kind in Screen::getRayCoord()");
+      GYOTO_ERROR("Incompatible coordinate kind in Screen::getRayCoord()");
       break;
     }
 
@@ -693,11 +693,11 @@ void Screen::getRayCoord(double angle1, double angle2,
 
     if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
       if (coord[2]==0. || coord[2]==M_PI)
-	throwError("Please move Screen away from z-axis");
+	GYOTO_ERROR("Please move Screen away from z-axis");
     }
 
     if (fourvel_[0]!=0. && observerkind_!="ObserverAtInfinity"){
-      throwError("In Screen:getRayCoord: "
+      GYOTO_ERROR("In Screen:getRayCoord: "
 		 " choose an implemented observer kind OR"
 		 " explicitly give the local tetrad in the XML");
     }
@@ -753,7 +753,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  fabs(gg_->ScalarProd(coord,screen2_,screen2_)-1.)>normtol ||
 	  fabs(gg_->ScalarProd(coord,screen3_,screen3_)-1.)>normtol){
 	cout << "norm= " << gg_->ScalarProd(coord,fourvel_,fourvel_) << " " << gg_->ScalarProd(coord,screen1_,screen1_) << " " << gg_->ScalarProd(coord,screen2_,screen2_) << " " << gg_->ScalarProd(coord,screen3_,screen3_) << endl;
-	throwError("In Screen:getRayCoord: observer's local"
+	GYOTO_ERROR("In Screen:getRayCoord: observer's local"
 		   " basis is not properly normalized");
       }
       
@@ -763,7 +763,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  fabs(gg_->ScalarProd(coord,screen1_,screen2_))>normtol ||
 	  fabs(gg_->ScalarProd(coord,screen1_,screen3_))>normtol ||
 	  fabs(gg_->ScalarProd(coord,screen2_,screen3_))>normtol)
-	throwError("In Screen:getRayCoord: observer's local"
+	GYOTO_ERROR("In Screen:getRayCoord: observer's local"
 		   " basis is not orthogonal");
      
       coord[4]=vel[0]*screen1_[0]
@@ -784,7 +784,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	+fourvel_[3];
     }
     if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
-      throwError("In Screen::getRayCoord: "
+      GYOTO_ERROR("In Screen::getRayCoord: "
 		 " tangent 4-vector to photon not properly normalized");
     }
     
@@ -833,9 +833,9 @@ void Screen::fitsReadMask(std::string const &filename) {
   }
   if (fits_get_img_size(fptr, 3, naxes, &status)) throwCfitsioError(status) ;
   if (naxes[0] != naxes[1])
-    throwError("Screen::fitsReadMask(): mask must be square");
+    GYOTO_ERROR("Screen::fitsReadMask(): mask must be square");
   //  if (naxes[2] > 1)
-  //    throwError("Screen::fitsReadMask(): mask must have only one plane");
+  //    GYOTO_ERROR("Screen::fitsReadMask(): mask must have only one plane");
   npix_=naxes[0];
   if (mask_) { delete[] mask_; mask_=NULL; mask_filename_="";}
   mask_ = new double[npix_*npix_];
@@ -854,8 +854,8 @@ void Screen::fitsReadMask(std::string const &filename) {
 void Screen::fitsWriteMask(string const &fname) {
   std::string filename = fname==""?mask_filename_:fname;
   if (filename=="") filename=mask_filename_;
-  if (filename=="") throwError("no filename specified");
-  if (!mask_) throwError("Screen::fitsWriteMask(filename): nothing to save!");
+  if (filename=="") GYOTO_ERROR("no filename specified");
+  if (!mask_) GYOTO_ERROR("Screen::fitsWriteMask(filename): nothing to save!");
   char*     pixfile   = const_cast<char*>(filename.c_str());
   fitsfile* fptr      = NULL;
   int       status    = 0;
@@ -885,7 +885,7 @@ void Screen::fitsWriteMask(string const &fname) {
 #endif
 
 bool Screen::operator()(size_t i, size_t j) {
-  if ( i<=0 || i> npix_ || j>npix_ || j<=0) throwError("wrong index");
+  if ( i<=0 || i> npix_ || j>npix_ || j<=0) GYOTO_ERROR("wrong index");
   if (!mask_) return true;
   return mask_[i-1+npix_*(j-1)];
 }
@@ -955,7 +955,7 @@ void Screen::coordToXYZ(const double pos[4], double xyz[3]) const {
     xyz[2] = pos[3];
     break;
   default:
-    throwError("Incompatible coordinate kind in Screen::coordToXYZ");
+    GYOTO_ERROR("Incompatible coordinate kind in Screen::coordToXYZ");
     break;
   }
 }
@@ -1001,7 +1001,7 @@ double Screen::fieldOfView(string const &unit) const {
     stringstream ss;
     ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   return fov;
@@ -1028,7 +1028,7 @@ void Screen::fieldOfView(double fov, const string &unit) {
     stringstream ss;
     ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   fieldOfView(fov);
@@ -1061,7 +1061,7 @@ double Screen::dangle1(string const &unit) const {
     stringstream ss;
     ss << "Screen::dangle1(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   return fov;
@@ -1085,7 +1085,7 @@ double Screen::dangle2(string const &unit) const{
     stringstream ss;
     ss << "Screen::dangle2(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   return fov;
@@ -1112,7 +1112,7 @@ void Screen::dangle1(double fov, const string &unit) {
     stringstream ss;
     ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   dangle1(fov);
@@ -1139,7 +1139,7 @@ void Screen::dangle2(double fov, const string &unit) {
     stringstream ss;
     ss << "Screen::fieldOfView(): unknown unit: \"" << unit << "\""
        << " (you may have more chance compiling gyoto with --with-udunits)";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 # endif
   dangle2(fov);
@@ -1150,7 +1150,7 @@ void Screen::anglekind(std::string const &skind) {
   if      (skind=="EquatorialAngles") anglekind_=equatorial_angles;
   else if (skind=="SphericalAngles")  anglekind_=spherical_angles;
   else if (skind=="Rectilinear")      anglekind_=rectilinear;
-  else throwError("Invalid string value for anglekind_");
+  else GYOTO_ERROR("Invalid string value for anglekind_");
 }
 
 std::string Screen::anglekind() const {
@@ -1165,7 +1165,7 @@ std::string Screen::anglekind() const {
     return "Rectilinear";
     break;
   default:
-    throwError("Invalid integer value for Screen::anglekind_");
+    GYOTO_ERROR("Invalid integer value for Screen::anglekind_");
   }
   return ""; // silence warning
 }
@@ -1190,20 +1190,20 @@ void Gyoto::Screen::mapPixUnit() {
   case UT_SUCCESS:
     break;
   case UT_EXISTS:
-    throwError("name \"pixel\" already registered");
+    GYOTO_ERROR("name \"pixel\" already registered");
     break;
   default:
-    throwError("error initializing \"pixel\" unit");
+    GYOTO_ERROR("error initializing \"pixel\" unit");
   }
   status = ut_map_symbol_to_unit("pix", UT_ASCII, pix);
   switch (status) {
   case UT_SUCCESS:
     break;
   case UT_EXISTS:
-    throwError("symbol \"pix\" already registered");
+    GYOTO_ERROR("symbol \"pix\" already registered");
     break;
   default:
-    throwError("error initializing \"pixel\" unit");
+    GYOTO_ERROR("error initializing \"pixel\" unit");
   }
   ut_free(pix);
 # if GYOTO_DEBUG_ENABLED
@@ -1214,7 +1214,7 @@ void Gyoto::Screen::unmapPixUnit() {
   ut_system * sys = Units::getSystem();
   if ((ut_unmap_name_to_unit(sys, "pixel", UT_ASCII) != UT_SUCCESS) ||
       (ut_unmap_symbol_to_unit(sys, "pix", UT_ASCII) != UT_SUCCESS))
-    throwError("Error unmapping \"pixel\" unit");
+    GYOTO_ERROR("Error unmapping \"pixel\" unit");
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "\"pix\" unit unmapped\n";
 # endif
@@ -1288,7 +1288,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     if      (name=="Time")     {tobs_tmp = atof(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {
       if (FactoryMessenger::parseArray(content, pos, 4) != 4)
-	throwError("Screen \"Position\" requires exactly 4 tokens");
+	GYOTO_ERROR("Screen \"Position\" requires exactly 4 tokens");
       scr -> setObserverPos (pos); 
     }
     else if (name=="KeplerianObserver" ||
@@ -1323,7 +1323,7 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     else if (name=="Mask")
       scr -> maskFile(content==""?"":fmp->fullPath(content));
     else if (scr->setParameter(name, content, unit))
-      throwError("no such Screen Property");
+      GYOTO_ERROR("no such Screen Property");
   }
 
   // Must be processed after Position
@@ -1350,9 +1350,9 @@ Screen::Coord2dSet::~Coord2dSet() {}
 
 GYOTO_ARRAY<size_t, 2> Screen::Coord2dSet::operator* () const {
   if (kind==pixel)
-    throwError("BUG: Coord2dSet of kind pixel should implement operator*");
+    GYOTO_ERROR("BUG: Coord2dSet of kind pixel should implement operator*");
   else
-    throwError("Coord2dSet of kind angle should not be dereferenced");
+    GYOTO_ERROR("Coord2dSet of kind angle should not be dereferenced");
   // avoid warning
   GYOTO_ARRAY<size_t, 2> a;
   return a;
@@ -1360,9 +1360,9 @@ GYOTO_ARRAY<size_t, 2> Screen::Coord2dSet::operator* () const {
 
 GYOTO_ARRAY<double, 2> Screen::Coord2dSet::angles () const {
   if (kind==Screen::angle)
-    throwError("BUG: Coord2dSet of kind angle should implement angles()");
+    GYOTO_ERROR("BUG: Coord2dSet of kind angle should implement angles()");
   else
-    throwError("angles() should not be called on Coord2dSet of kind pixel");
+    GYOTO_ERROR("angles() should not be called on Coord2dSet of kind pixel");
   // avoid warning
   GYOTO_ARRAY<double, 2> a;
   return a;
@@ -1411,18 +1411,18 @@ Screen::Coord1dSet::~Coord1dSet() {}
 
 size_t Screen::Coord1dSet::operator* () const {
   if (kind==pixel)
-    throwError("BUG: Coord1dSet of kind pixel should implement operator*");
+    GYOTO_ERROR("BUG: Coord1dSet of kind pixel should implement operator*");
   else
-    throwError("Coord1dSet of kind angle should not be dereferenced");
+    GYOTO_ERROR("Coord1dSet of kind angle should not be dereferenced");
   // avoid warning
   return 0;
 }
 
 double Screen::Coord1dSet::angle () const {
   if (kind==Screen::angle)
-    throwError("BUG: Coord1dSet of kind angle should implement angle()");
+    GYOTO_ERROR("BUG: Coord1dSet of kind angle should implement angle()");
   else
-    throwError("angle() should not be called on Coord1dSet of kind pixel");
+    GYOTO_ERROR("angle() should not be called on Coord1dSet of kind pixel");
   // avoid warning
   return 0.;
 }
@@ -1481,9 +1481,9 @@ Screen::Bucket::Bucket (Coord1dSet &alp, Coord1dSet &del)
   : Coord2dSet(alp.kind), alpha_(alp), delta_(del)
 {
   if (alp.kind != del.kind)
-    throwError("both specifiers must be of same kind");
+    GYOTO_ERROR("both specifiers must be of same kind");
   if (alp.size() != del.size())
-    throwError("alpha and delta should be of same size"); 
+    GYOTO_ERROR("alpha and delta should be of same size"); 
 }
 void Screen::Bucket::begin() {alpha_.begin(); delta_.begin();}
 bool Screen::Bucket::valid() {return alpha_.valid() && delta_.valid();}

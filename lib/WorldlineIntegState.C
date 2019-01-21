@@ -42,10 +42,10 @@ using namespace boost::numeric::odeint;
 # pragma STDC FENV_ACCESS ON
 # define DISABLE_SIGFPE							\
   fenv_t envp;								\
-  if (feholdexcept(&envp)) throwError("failed holding FPE")
+  if (feholdexcept(&envp)) GYOTO_ERROR("failed holding FPE")
 # define REENABLE_SIGFPE						\
-  if (feclearexcept(FE_ALL_EXCEPT)) throwError("failed clearing FPE");	\
-  if (fesetenv(&envp)) throwError("failed setting back FPE")
+  if (feclearexcept(FE_ALL_EXCEPT)) GYOTO_ERROR("failed clearing FPE");	\
+  if (fesetenv(&envp)) GYOTO_ERROR("failed setting back FPE")
 #else
 # define DISABLE_SIGFPE
 # define REENABLE_SIGFPE
@@ -188,7 +188,7 @@ Worldline::IntegState::Boost::Boost(Worldline*line, std::string type) :
   else if (type=="runge_kutta_fehlberg78") kind_=runge_kutta_fehlberg78;
   else if (type=="runge_kutta_dopri5") kind_=runge_kutta_dopri5;
   else if (type=="runge_kutta_cash_karp54_classic") kind_=runge_kutta_cash_karp54_classic;
-  else throwError("unknown integrator kind");
+  else GYOTO_ERROR("unknown integrator kind");
   Boost::init();
 }
 
@@ -211,7 +211,7 @@ void Worldline::IntegState::Boost::init()
     system=[](const std::array<double, 8> &/*x*/,
 		  std::array<double, 8> & /*dxdt*/,
 		  const double /* t*/ ){
-      throwError("Metric not set");
+      GYOTO_ERROR("Metric not set");
     };
   else
     system=[this, line, met](const std::array<double, 8> &x,
@@ -233,7 +233,7 @@ void Worldline::IntegState::Boost::init()
   else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_dopri5)
   else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54_classic)
 	 //else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(rosenbrock4)
-  else throwError("unknown stepper type");
+  else GYOTO_ERROR("unknown stepper type");
 };
 
 Worldline::IntegState::Boost *
@@ -278,8 +278,8 @@ int Worldline::IntegState::Boost::nextStep(double coord[8], double h1max) {
 	     abs(h1)<h1max);
   
     // Check and report two possible error conditions (possible bugs)
-    if (sgn*h1<0) throwError("h1 changed sign!");
-    if (abs(dt)>h1max) throwError("used step larger than provided");
+    if (sgn*h1<0) GYOTO_ERROR("h1 changed sign!");
+    if (abs(dt)>h1max) GYOTO_ERROR("used step larger than provided");
 
     // cres is still fail, redo with delta_min using the fixed-step integrator
     if (cres==controlled_step_result::fail) {
@@ -323,7 +323,7 @@ std::string Worldline::IntegState::Boost::kind() {
   if (kind_== Kind::runge_kutta_fehlberg78) return "runge_kutta_fehlberg78";
   if (kind_== Kind::runge_kutta_dopri5) return "runge_kutta_dopri5";
   if (kind_== Kind::runge_kutta_cash_karp54_classic) return "runge_kutta_cash_karp5";
-  throwError("unknown enum value");
+  GYOTO_ERROR("unknown enum value");
   return "error";
 } 
 #endif // GYOTO_HAVE_BOOST_INTEGRATORS

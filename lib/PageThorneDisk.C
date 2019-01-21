@@ -104,7 +104,7 @@ void PageThorneDisk::updateSpin() {
     aa_ = static_cast<SmartPointer<Metric::KerrKS> >(gg_) -> spin();
     break;
   default:
-    throwError("PageThorneDisk::getSpin(): unknown COORDKIND");
+    GYOTO_ERROR("PageThorneDisk::getSpin(): unknown COORDKIND");
   }
   aa2_=aa_*aa_;
   double z1 =1.+pow((1.-aa2_),1./3.)*(pow((1.+ aa_),1./3.)+pow((1.-aa_),1./3.));
@@ -123,7 +123,7 @@ void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
   if (gg_) gg_->unhook(this);
   string kin = gg->kind();
   if (kin != "KerrBL" && kin != "KerrKS")
-    throwError
+    GYOTO_ERROR
       ("PageThorneDisk::metric(): metric must be KerrBL or KerrKS");
   ThinDisk::metric(gg);
   updateSpin();
@@ -134,7 +134,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
 				    double *,
 				    double coord_obj[8]) const{
   if (!blackbody_) {
-    throwError("In PageThorneDisk::emission: "
+    GYOTO_ERROR("In PageThorneDisk::emission: "
 	       "blackbody is necessary to compute emission, "
 	       "else, use bolometricEmission");
   }
@@ -153,7 +153,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   spectrumBB_->temperature(TT);
   double Iem=(*spectrumBB_)(nu_em);
   //cout << "r T nu Iem = " << coord_obj[1] << " " << TT << " " << nu_em << " " << Iem << endl;
-  if (Iem < 0.) throwError("In PageThorneDisk::emission"
+  if (Iem < 0.) GYOTO_ERROR("In PageThorneDisk::emission"
 			   " blackbody emission is negative!");
   return Iem;
 }
@@ -178,7 +178,7 @@ double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
     xx=pow(coord_obj[1]*coord_obj[1]+coord_obj[2]*coord_obj[2]-aa2_, 0.25);
     break;
   default:
-    throwError("Unknown coordinate system kind");
+    GYOTO_ERROR("Unknown coordinate system kind");
     xx=0;
   }
   
@@ -270,7 +270,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
     GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
 		<< ") = " << dlambda << ", dsem=" << dsem << endl;
 #endif
-    if (data->intensity) throwError("unimplemented");
+    if (data->intensity) GYOTO_ERROR("unimplemented");
     if (data->user4) {
       inc = (bolometricEmission(freqObs*ggredm1, dsem, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
@@ -281,10 +281,10 @@ void PageThorneDisk::processHitQuantities(Photon* ph, double* coord_ph_hit,
 #endif
 
     }
-    if (data->binspectrum) throwError("unimplemented");
+    if (data->binspectrum) GYOTO_ERROR("unimplemented");
     if (data->spectrum)  {
       if (!blackbody_) {
-	throwError("In PageThorneDisk::process: "
+	GYOTO_ERROR("In PageThorneDisk::process: "
 		   "blackbody is necessary to compute spectrum");
       }
       for (size_t ii=0; ii<nbnuobs; ++ii) {

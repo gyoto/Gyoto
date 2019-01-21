@@ -74,7 +74,7 @@ Metric::Generic::Generic(Generic const &o):
 Metric::Generic * Metric::Generic::clone() const {
   string msg = "Metric::Generic::clone() called: cloning not supported for metric kind ";
   msg += kind();
-  throwError (msg);
+  GYOTO_ERROR (msg);
   return const_cast<Metric::Generic*>(this); // to avoid warning
 }
 
@@ -330,7 +330,7 @@ void Metric::Generic::circularVelocity(double const * coor, double* vel,
     ss << kind_
        << "::circularVelocity() is not implemented. "
        <<"Use \"<Keplerian/>\" for the Keplerian approximation.";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 
   if (coordkind_==GYOTO_COORDKIND_SPHERICAL) {
@@ -353,7 +353,7 @@ void Metric::Generic::circularVelocity(double const * coor, double* vel,
     vel[0] = SysPrimeToTdot(coor, vel+1);
     vel[1] *= vel[0];
     vel[2] *= vel[0];
-  } else throwError("Unknownn COORDKIND");
+  } else GYOTO_ERROR("Unknownn COORDKIND");
 }
 
 
@@ -388,7 +388,7 @@ void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
 	vel[2] = coord[7]*tauprime;
 	break;
   default:
-    Gyoto::throwError
+    GYOTO_ERROR
       ("Metric::Generic::cartesianVelocity: unknown coordinate kind");
   }
 }
@@ -512,7 +512,7 @@ void Metric::Generic::observerTetrad(string const obskind,
       fabs(ScalarProd(coord,screen2,screen2)-1.)>normtol ||
       fabs(ScalarProd(coord,screen3,screen3)-1.)>normtol){
     cout << "norm= " << ScalarProd(coord,fourvel,fourvel) << " " << ScalarProd(coord,screen1,screen1) << " " << ScalarProd(coord,screen2,screen2) << " " << ScalarProd(coord,screen3,screen3) << endl;
-    throwError("In Metric:observerTetrad: observer's local"
+    GYOTO_ERROR("In Metric:observerTetrad: observer's local"
 	       " basis is not properly normalized");
   }
   
@@ -522,31 +522,31 @@ void Metric::Generic::observerTetrad(string const obskind,
       fabs(ScalarProd(coord,screen1,screen2))>normtol ||
       fabs(ScalarProd(coord,screen1,screen3))>normtol ||
       fabs(ScalarProd(coord,screen2,screen3))>normtol){
-    throwError("In Metric:observerTetrad: observer's local"
+    GYOTO_ERROR("In Metric:observerTetrad: observer's local"
 	       " basis is not orthogonal");
   }
 }
 
 double Metric::Generic::getRmb() const{
-  throwError("In Metric::getRmb: should be implemented "
+  GYOTO_ERROR("In Metric::getRmb: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
 }
 
 double Metric::Generic::getRms() const{
-  throwError("In Metric::getRms: should be implemented "
+  GYOTO_ERROR("In Metric::getRms: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
 }
 
 double Metric::Generic::getSpecificAngularMomentum(double rr) const{
-  throwError("In Metric::getSpecificAngularMomentum: should be implemented "
+  GYOTO_ERROR("In Metric::getSpecificAngularMomentum: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
 }
 
 double Metric::Generic::getPotential(double const pos[4], double l_cst) const{
-  throwError("In Metric::getPotential: should be implemented "
+  GYOTO_ERROR("In Metric::getPotential: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
 }

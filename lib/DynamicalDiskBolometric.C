@@ -17,7 +17,7 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 #define throwCfitsioError(status) \
-    { fits_get_errstatus(status, ermsg); throwError(ermsg); }
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
 
 #include "GyotoPhoton.h"
 #include "GyotoDynamicalDiskBolometric.h"
@@ -70,7 +70,7 @@ DynamicalDiskBolometric::~DynamicalDiskBolometric() {
 double DynamicalDiskBolometric::emission(double nu_em, double dsem,
 					 double *,
 					 double coord_obj[8]) const{
-  throwError("In DynamicalDiskBolometric::emission: "
+  GYOTO_ERROR("In DynamicalDiskBolometric::emission: "
 	     "not implemented");
   return 0.;
 }
@@ -133,7 +133,7 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
     GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
 		<< ") = " << dlambda << ", dsem=" << dsem << endl;
 #endif
-    if (data->intensity) throwError("In DynamicalDiskBolometric::process: "
+    if (data->intensity) GYOTO_ERROR("In DynamicalDiskBolometric::process: "
 				    "unimplemented");
     else if (data->user4) {
       inc = (bolometricEmission(dsem, coord_obj_hit))
@@ -145,9 +145,9 @@ void DynamicalDiskBolometric::processHitQuantities(Photon* ph,
 #endif
 
     }
-    if (data->binspectrum) throwError("In DynamicalDiskBolometric::process: "
+    if (data->binspectrum) GYOTO_ERROR("In DynamicalDiskBolometric::process: "
 				      "unimplemented");
-    if (data->spectrum)  throwError("In DynamicalDiskBolometric::process: "
+    if (data->spectrum)  GYOTO_ERROR("In DynamicalDiskBolometric::process: "
 				    "unimplemented");
     /* update photon's transmission */
     ph -> transmit(size_t(-1),

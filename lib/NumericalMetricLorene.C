@@ -170,7 +170,7 @@ void NumericalMetricLorene::setMetricSource() {
   DIR *dp;
   struct dirent *dirp;
   if((dp  = opendir(filename_)) == NULL) {
-    throwError("In NumericalMetricLorene.C constructor : bad filename_");
+    GYOTO_ERROR("In NumericalMetricLorene.C constructor : bad filename_");
   }
 
   nb_times_=0;
@@ -187,7 +187,7 @@ void NumericalMetricLorene::setMetricSource() {
   closedir(dp);
 
   if (nb_times_<1) 
-    throwError("In NumericalMetricLorene.C: bad nb_times_ value");
+    GYOTO_ERROR("In NumericalMetricLorene.C: bad nb_times_ value");
 
   lapse_tab_ = new Scalar*[nb_times_] ; 
   shift_tab_ = new Vector*[nb_times_] ;
@@ -223,7 +223,7 @@ void NumericalMetricLorene::setMetricSource() {
     FILE* resu = fopen(stream_name.str().data(), "r") ;
     if (resu == 0x0) {
       cerr << "With file name: " << stream_name.str() << endl ;
-      throwError("NumericalMetricLorene.C: Problem opening file!");
+      GYOTO_ERROR("NumericalMetricLorene.C: Problem opening file!");
     }
     if (debug()) cout << "File read normally." << endl ;
     double cLor = GYOTO_C*1e-3*1e-4;
@@ -372,12 +372,12 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
     
     if (lKep!=lKep || lKep==lKep+1.){
     cerr << "At r= " << rr << endl;
-    throwError("In NML::getSpecificAngMom: lKep not defined here!"
+    GYOTO_ERROR("In NML::getSpecificAngMom: lKep not defined here!"
     " You are probably below the innermost circular orbit.");
     }
   */
 
-  if (nb_times_>1) throwError("In NML::getSpecificAngularMomentum:"
+  if (nb_times_>1) GYOTO_ERROR("In NML::getSpecificAngularMomentum:"
 			      "so far only stationary metric implemented");
 
   int indice_time=0;
@@ -385,7 +385,7 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
   double rm1 = 1./rr, rsm1 = rm1, rm2 = rm1*rm1, sm1 = 1.; // NB: sinth=1
   const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
   double B2 = g_ij(3,3).val_point(rr,th,ph); // no mistake here, B2 is g_pp_Lorene, but g_pp_Gyoto/(r2sinth2)
-  if (B2<=0.) throwError("In NML::getSpecificAngMom: bad B2");
+  if (B2<=0.) GYOTO_ERROR("In NML::getSpecificAngMom: bad B2");
   double BB = sqrt(B2);
   double Br = g_ij(3,3).dsdr().val_point(rr,th,ph)/(2.*BB);
   const Vector& shift = *(shift_tab_[indice_time]);
@@ -394,11 +394,11 @@ double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
     -rm2*sm1*shift(3).val_point(rr,th,ph);
   Scalar* lapse = lapse_tab_[indice_time];
   double NN = lapse -> val_point(rr,th,ph);
-  if (NN==0.) throwError("In NML::getSpecificAngMom: bad N");
+  if (NN==0.) GYOTO_ERROR("In NML::getSpecificAngMom: bad N");
   double Nr = lapse->dsdr().val_point(rr,th,ph);
   double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
     + 4.*Nr/NN*(Br/BB+rm1);
-  if (DD<0.) throwError("In NML::getSpecificAngMom: bad D");
+  if (DD<0.) GYOTO_ERROR("In NML::getSpecificAngMom: bad D");
   double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(rm1+Br/BB);
   
   // 3+1 l_Kep for any circular QI-coord spacetime:
@@ -556,7 +556,7 @@ int NumericalMetricLorene::diff(const double y[7],
   */
 
   if (indice_time<0 || indice_time>nb_times_-1) {
-    throwError("NumericalMetricLorene::diff: incoherent value of indice_time");
+    GYOTO_ERROR("NumericalMetricLorene::diff: incoherent value of indice_time");
   }
 
   //NB: here t=theta, not time!
@@ -564,8 +564,8 @@ int NumericalMetricLorene::diff(const double y[7],
   sincos(th, &sth, &cth);
   double rsinth = rr*sth,
     r2sinth2 = rsinth*rsinth, sinth2 = sth*sth;
-  if (rr==0.) throwError("In NumericalMetricLorene.C::diff r is 0!");
-  if (rsinth==0.) throwError("In NumericalMetricLorene.C::diff on z axis!");
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::diff r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::diff on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, r2 = rr*rr, rsm1 = 1./rsinth, 
     sm1 = 1./sth, sm2 = sm1*sm1, Vr=y[4], Vth=y[5], Vph=y[6];
 
@@ -609,7 +609,7 @@ int NumericalMetricLorene::diff(const double y[7],
     g_rp=g_ij(1,3).val_point(rr,th,phi),
     g_tp=g_ij(2,3).val_point(rr,th,phi);
   if (g_rt!=0. || g_rp!=0. || g_tp!=0.){
-    throwError("In NumericalMetricLorene.C: 3-metric should be diagonal");
+    GYOTO_ERROR("In NumericalMetricLorene.C: 3-metric should be diagonal");
   }
   //cout << "r= " << rr << endl;
   //cout << "metric= " << NN << " " << beta_r << " " << beta_t << " " << beta_p << endl;
@@ -682,12 +682,12 @@ int NumericalMetricLorene::diff(const double y[7],
   for (int ii=0;ii<7;ii++){
     if (res[ii]!=res[ii]){
       cout << "i, res[i]= " << ii << " " << res[ii] << endl;
-      throwError("In NumericalMetricLorene::diff(): "
+      GYOTO_ERROR("In NumericalMetricLorene::diff(): "
 		 "derivatives are nan");
     }
     if (res[ii]==res[ii]+1.){
       cout << "i, res[i]= " << ii << " " << res[ii] << endl;
-      throwError("In NumericalMetricLorene::diff(): "
+      GYOTO_ERROR("In NumericalMetricLorene::diff(): "
 		 "derivatives are inf");
     }
   }
@@ -822,11 +822,11 @@ int NumericalMetricLorene::myrk4(Worldline * line, const double coord[8],
     }
   }
   
-  if (tdot==0.) throwError("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
+  if (tdot==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
   double rprime=rdot/tdot, thprime=thdot/tdot,phprime=phdot/tdot;
-  if (rr==0.) throwError("In NumericalMetricLorene.C::myrk4_ada r is 0!");
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada r is 0!");
   if (rsinth==0.) 
-    throwError("In NumericalMetricLorene.C::myrk4_ada on z axis!");
+    GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada on z axis!");
 
   // Lapse and shift at tt:
   double NN, beta[3];
@@ -951,7 +951,7 @@ int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7],
 
     count++;
     if (count > 100){
-      throwError("NumericalMetricLorene: too many iterations in RK4");
+      GYOTO_ERROR("NumericalMetricLorene: too many iterations in RK4");
     }
     err=0.;
 
@@ -1118,11 +1118,11 @@ int NumericalMetricLorene::myrk4_adaptive(Worldline* line,
     }
   }
   
-  if (tdot==0.) throwError("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
+  if (tdot==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
   double rprime=rdot/tdot, thprime=thdot/tdot,phprime=phdot/tdot;
-  if (rr==0.) throwError("In NumericalMetricLorene.C::myrk4_ada r is 0!");
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada r is 0!");
   if (rsinth==0.) 
-    throwError("In NumericalMetricLorene.C::myrk4_ada on z axis!");
+    GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada on z axis!");
   
   // Lapse and shift at tt:
   double NN, beta[3];
@@ -1229,8 +1229,8 @@ void NumericalMetricLorene::computeNBeta(const double coord[4],
 {
   GYOTO_DEBUG << endl;
   double tt=coord[0], rr=coord[1],th=coord[2],rsinth = rr*sin(th),ph=coord[3];
-  if (rr==0.) throwError("In NumericalMetricLorene.C::computeNBeta r is 0!");
-  if (rsinth==0.) throwError("In NumericalMetricLorene.C::computeNBeta "
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::computeNBeta r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::computeNBeta "
 			     "on z axis!");
   double rm1 = 1./rr, rsm1 = 1./rsinth;
 
@@ -1362,14 +1362,14 @@ double NumericalMetricLorene::gmunu(const double pos[3],
     NB: 3-metric supposed to be conformally flat
    */
   if (indice_time<0 || indice_time>nb_times_-1) 
-    throwError("NumericalMetricLorene::gmunu: incoherent value of indice_time");
+    GYOTO_ERROR("NumericalMetricLorene::gmunu: incoherent value of indice_time");
   
   if ( mu<0 || mu>3 || nu<0 || nu>3)
-       throwError("In NumericalMetricLorene::gmunu bad indice value");
+       GYOTO_ERROR("In NumericalMetricLorene::gmunu bad indice value");
 
   double rr=pos[0], r2=rr*rr, th=pos[1], rsinth=rr*sin(th);
-  if (rr==0.) throwError("In NumericalMetricLorene.C::gmunu r is 0!");
-  if (rsinth==0.) throwError("In NumericalMetricLorene.C::gmunu on z axis!");
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::gmunu r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::gmunu on z axis!");
   double rm1=1./rr, r2sinth2=r2*sin(th)*sin(th), ph=pos[2];
 
   Scalar* lapse = (lapse_tab_[indice_time]);
@@ -1416,11 +1416,11 @@ double NumericalMetricLorene::gmunu(const double pos[3],
     {
       res = rsinth*g_ij(3,3).val_point(rr,th,ph)*shift(3).val_point(rr,th,ph);
     }
-  if (res!=res) throwError("NumericalMetricLorene::gmunu is nan!");
+  if (res!=res) GYOTO_ERROR("NumericalMetricLorene::gmunu is nan!");
   if (res==res+1.) {
     //cout << "r,th,ph= " << rr << " " << th << " " << ph << endl;
     //cout << "mu,nu,res= " << mu << " " << nu << " " << res << endl;
-    //throwError("NumericalMetricLorene::gmunu is inf!");
+    //GYOTO_ERROR("NumericalMetricLorene::gmunu is inf!");
   }
   return res; 
 }
@@ -1466,16 +1466,16 @@ double NumericalMetricLorene::gmunu_up_dr(const double pos[3],
     NB: 3-metric supposed to be conformally flat
    */
   if (indice_time<0 || indice_time>nb_times_-1) 
-    throwError("NumericalMetricLorene::gmunu_up_dr: "
+    GYOTO_ERROR("NumericalMetricLorene::gmunu_up_dr: "
 	       "incoherent value of indice_time");
   
   if ( (mu!=0 && mu!=3) || (nu!=0 && nu!=3))
-       throwError("In NumericalMetricLorene::gmunu_up_dr bad indice value");
+       GYOTO_ERROR("In NumericalMetricLorene::gmunu_up_dr bad indice value");
   // NB: so far only t and phi components are coded
 
   double rr=pos[0], th=pos[1], rsinth=rr*sin(th), ph=pos[2];
-  if (rr==0.) throwError("In NumericalMetricLorene.C::gmunu_up_dr r is 0!");
-  if (rsinth==0.) throwError("In NumericalMetricLorene.C::gmunu_up_dr "
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::gmunu_up_dr r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::gmunu_up_dr "
 			     "on z axis!");
   double rm1=1./rr, rsinthm1=1./(rsinth), rsinthm2=rsinthm1*rsinthm1;
 
@@ -1522,8 +1522,8 @@ double NumericalMetricLorene::gmunu_up_dr(const double pos[3],
     {
       res = lapse_valm2*rsinthm1*(-rm1*betap+betapdr-2.*betap*lapsedr*lapse_valm1);
     }
-  if (res!=res) throwError("NumericalMetricLorene::gmunu_up_dr is nan!");
-  if (res==res+1.) throwError("NumericalMetricLorene::gmunu_up_dr is inf!");
+  if (res!=res) GYOTO_ERROR("NumericalMetricLorene::gmunu_up_dr is nan!");
+  if (res==res+1.) GYOTO_ERROR("NumericalMetricLorene::gmunu_up_dr is inf!");
   return res; 
 }
 
@@ -1536,7 +1536,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
   // 4D christoffels: time interpolation
   GYOTO_DEBUG << endl;
   
-  if (nb_times_>1) throwError("In NML::christoffel:"
+  if (nb_times_>1) GYOTO_ERROR("In NML::christoffel:"
 			      "so far only stationary metric implemented");
 
   double tt = coord[0];
@@ -1579,7 +1579,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
   // CAUTION: here it assumed that the metric is stationary, axisymmetric,
   // and that the spacetime is circular (typically, rotating relativistic
   // stars framework)
-  if (coord[1]==0. || sin(coord[2])==0.) throwError("NML::christoffel:"
+  if (coord[1]==0. || sin(coord[2])==0.) GYOTO_ERROR("NML::christoffel:"
 						    " bad location");
 
   double rr=coord[1], th=coord[2], ph=coord[3], sinth=0., costh=0.;
@@ -1590,7 +1590,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
       Nr = lapse->dsdr().val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1600,7 +1600,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph),
       Nt = lapse->dsdt().val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1609,14 +1609,14 @@ double NumericalMetricLorene::christoffel(const double coord[4],
   } else if ((alpha==0 && mu==1 && nu==3) || (alpha==0 && mu==3 && nu==1)) {
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad laspe value");
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Krp = rsinth*kij(1,3).val_point(rr,th,ph);
     return -Krp/NN;
   } else if ((alpha==0 && mu==2 && nu==3) || (alpha==0 && mu==3 && nu==2)) {
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
     double Ktp = rr*rsinth*kij(2,3).val_point(rr,th,ph);
     return -Ktp/NN;
@@ -1674,7 +1674,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     double gamma_prp = 0.5*gpp
       *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
 	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     return beta_pr + gamma_prp*beta_p
       -NN*gpp*Krp+beta_p/NN*(Krp*beta_p-Nr);
   } else if ((alpha==3 && mu==2 && nu==0) || (alpha==3 && mu==0 && nu==2)) {
@@ -1693,7 +1693,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     double gamma_ptp = 0.5*gpp
       *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
 	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     return beta_pt + gamma_ptp*beta_p
       -NN*gpp*Ktp+beta_p/NN*(Ktp*beta_p-Nt);
   } else if (alpha==1 && mu==1 && nu==1) {
@@ -1745,7 +1745,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1758,7 +1758,7 @@ double NumericalMetricLorene::christoffel(const double coord[4],
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad lapse value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad lapse value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -1779,7 +1779,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
 
   double tt = coord[0];
 
-  if (nb_times_>1) throwError("In NML::christoffel all at once:"
+  if (nb_times_>1) GYOTO_ERROR("In NML::christoffel all at once:"
 			      "so far only stationary metric implemented");
 
   int it=nb_times_-1;
@@ -1839,7 +1839,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
   GYOTO_DEBUG << endl;
   double sinth=0., costh=0, rr=coord[1], th=coord[2], ph=coord[3];
   sincos(th, &sinth, &costh);
-  if (rr==0. || sinth==0.) throwError("NML::christoffel:"
+  if (rr==0. || sinth==0.) GYOTO_ERROR("NML::christoffel:"
 						    " bad location");
   double
     r2=rr*rr, rsinth=rr*sinth, rm1=1./rr, sm1=1./sinth,
@@ -1850,7 +1850,7 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
     double NN = lapse -> val_point(rr,th,ph),
       Nr = lapse->dsdr().val_point(rr,th,ph),
       Nt = lapse->dsdt().val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::christoffel: bad laspe value");
+    if (NN==0.) GYOTO_ERROR("In NML::christoffel: bad laspe value");
     const Vector& shift = *(shift_tab_[indice_time]);
     double beta_p = rsm1*shift(3).val_point(rr,th,ph);
     double beta_pr = rsm1*shift(3).dsdr().val_point(rr,th,ph)
@@ -1946,17 +1946,17 @@ double NumericalMetricLorene::christoffel3(const double coord[3],
   //Computation of 3D Christoffels from the metric : \Gamma^{ii}_{jj kk}
   //NB: 3-metric supposed to be conformally flat
   if (indice_time<0 || indice_time>nb_times_-1) 
-    throwError("NumericalMetricLorene::christoffel3: "
+    GYOTO_ERROR("NumericalMetricLorene::christoffel3: "
 	       "incoherent value of indice_time");
 
   if ( ii<1 || ii>3 || jj<1 || jj>3 || kk<1 || kk>3 )
-       throwError("In NumericalMetricLorene::christoffel3 bad indice value");
+       GYOTO_ERROR("In NumericalMetricLorene::christoffel3 bad indice value");
 
   double rr=coord[0], r2=rr*rr, th=coord[1], sinth=0., costh=0.;
   sincos(th, &sinth, &costh);
   double rsinth=rr*sinth;
-  if (rr==0.) throwError("In NumericalMetricLorene.C::christoffel3 r is 0!");
-  if (rsinth==0.) throwError("In NumericalMetricLorene.C::christoffel3 "
+  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::christoffel3 r is 0!");
+  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::christoffel3 "
 			     "on z axis!");
   double rm2=1./r2, rsm1 = 1./rsinth, sinth2=sinth*sinth,
 	 r2sinth2=r2*sinth2, ph=coord[2];
@@ -2014,9 +2014,9 @@ double NumericalMetricLorene::christoffel3(const double coord[3],
   //Other Christoffels are 0
 
   if (res!=res) {
-    throwError("NumericalMetricLorene::christoffel3 is nan!");
+    GYOTO_ERROR("NumericalMetricLorene::christoffel3 is nan!");
   }
-  if (res==res+1.) throwError("NumericalMetricLorene::christoffel3 is inf!");
+  if (res==res+1.) GYOTO_ERROR("NumericalMetricLorene::christoffel3 is inf!");
   return res; 
 }
 
@@ -2064,7 +2064,7 @@ double NumericalMetricLorene::computeHorizon(const double* pos) const{
     return rhor;
   }
 
-  throwError("In NumericalMetricLorene::computeHorizon: "
+  GYOTO_ERROR("In NumericalMetricLorene::computeHorizon: "
 	     "impossible case");
   return 0.;
   
@@ -2074,7 +2074,7 @@ double NumericalMetricLorene::computeHorizon(const double* pos,
 					     int indice_time) const{  
   GYOTO_DEBUG << endl;
   if (indice_time<0 || indice_time>nb_times_-1){
-    throwError("NumericalMetricLorene::computeHorizon"
+    GYOTO_ERROR("NumericalMetricLorene::computeHorizon"
 	       ": incoherent value of indice_time");
   }
   
@@ -2145,7 +2145,7 @@ bool NumericalMetricLorene::hasSurface() const {return  has_surface_;}
 void NumericalMetricLorene::hasSurface(bool s) {
   has_surface_ = s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::hasSurface "
+    GYOTO_ERROR("In NumericalMetricLorene::hasSurface "
 	       "please provide Surface information before File in XML");
   }
 }
@@ -2154,7 +2154,7 @@ bool NumericalMetricLorene::hasAccelerationVector() const {return  has_accelerat
 void NumericalMetricLorene::hasAccelerationVector(bool aa) {
   has_acceleration_vector_ = aa;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::hasAccelerationVector "
+    GYOTO_ERROR("In NumericalMetricLorene::hasAccelerationVector "
 	       "please provide Acceleration vector info before File in XML");
   }
 }
@@ -2169,7 +2169,7 @@ bool NumericalMetricLorene::specifyMarginalOrbits() const {
 void NumericalMetricLorene::specifyMarginalOrbits(bool s) {
   specify_marginalorbits_=s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::specifyMarginalOrbits "
+    GYOTO_ERROR("In NumericalMetricLorene::specifyMarginalOrbits "
 	       "please provide Marginal orbits information "
 	       "before File in XML");
   }
@@ -2182,7 +2182,7 @@ bool NumericalMetricLorene::mapEt() const {return  mapet_;}
 void NumericalMetricLorene::mapEt(bool s) {
   mapet_ = s;
   if (filename_!=NULL){
-    throwError("In NumericalMetricLorene::mapEt "
+    GYOTO_ERROR("In NumericalMetricLorene::mapEt "
 	       "please provide MapET/MapAF information before File in XML");
   }
 }
@@ -2200,7 +2200,7 @@ vector<double> NumericalMetricLorene::refineIntegStep() const {
 }
 void NumericalMetricLorene::refineIntegStep(vector<double> const &v) {
   if (v.size() != 2)
-      throwError("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
+      GYOTO_ERROR("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
   r_refine_  = v[0];
   h0_refine_ = v[1];
 }
@@ -2265,11 +2265,11 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     //double coorbis[4]={0.,double(ii*0.01),M_PI/2.,0.};
     double rr=coor[1], th=coor[2], sinth=sin(th), ph=coor[3];
     //double rr=coorbis[1], th=coorbis[2], sinth=sin(th), ph=coorbis[3];
-    if (rr<=0. || sinth==0.) throwError("In NML::circularv: bad coor");
+    if (rr<=0. || sinth==0.) GYOTO_ERROR("In NML::circularv: bad coor");
     double rsm1 = 1./(rr*sinth), rm2 = 1/(rr*rr), sm1 = 1./sinth;
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
     double B2 = g_ij(3,3).val_point(rr,th,ph);
-    if (B2<=0.) throwError("In NML::circularv: bad B2");
+    if (B2<=0.) GYOTO_ERROR("In NML::circularv: bad B2");
     double BB = sqrt(B2);
     double Br = g_ij(3,3).dsdr().val_point(rr,th,ph)/(2.*BB);
     const Vector& shift = *(shift_tab_[indice_time]);
@@ -2278,16 +2278,16 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
       -rm2*sm1*shift(3).val_point(rr,th,ph);
     Scalar* lapse = lapse_tab_[indice_time];
     double NN = lapse -> val_point(rr,th,ph);
-    if (NN==0.) throwError("In NML::circularv: bad N");
+    if (NN==0.) GYOTO_ERROR("In NML::circularv: bad N");
     double Nr = lapse->dsdr().val_point(rr,th,ph);
     double DD = B2*rr*rr/(NN*NN)*beta_p_r*beta_p_r
       + 4.*Nr/NN*(Br/BB+1./rr);
-    if (DD<0.) throwError("In NML::circularv: bad D");
+    if (DD<0.) GYOTO_ERROR("In NML::circularv: bad D");
     //    double g_tt = gmunu(coor,0,0), g_tp = gmunu(coor,0,3);
     double g_pp = gmunu(coor,3,3);
     //double g_tt = gmunu(coorbis,0,0), g_tp = gmunu(coorbis,0,3),
     //g_pp = gmunu(coorbis,3,3);
-    if (g_pp<=0.) throwError("In NML::circularv: bad g_pp");
+    if (g_pp<=0.) GYOTO_ERROR("In NML::circularv: bad g_pp");
     double Vzamo = 0.5*(-BB*rr/NN*beta_p_r+sqrt(DD))/(1./rr+Br/BB);
     double Omega = NN*Vzamo/sqrt(g_pp) - beta_p;
     double ut = 1./(NN*sqrt(1.-Vzamo*Vzamo));
@@ -2302,11 +2302,11 @@ void NumericalMetricLorene::circularVelocity(double const * coor,
     double norm = ScalarProd(coor,vel,vel);
     if (fabs(norm+1.)>normtol) {
       cerr << "At rr=" << coor[1] << endl;
-      throwError("In NML::circularv: bad norm");
+      GYOTO_ERROR("In NML::circularv: bad norm");
     }
     return;
   }
   
-  throwError("In NML::circularVelocity: circular velocity not implemented"
+  GYOTO_ERROR("In NML::circularVelocity: circular velocity not implemented"
 	     " for this particular metric");
 }

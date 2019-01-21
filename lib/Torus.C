@@ -136,7 +136,7 @@ double Torus::operator()(double const pos[4]) {
     drproj = sqrt(pos[1]*pos[1]+pos[2]*pos[2])-c_;
     break;
   default:
-    throwError("Torus::distance(): unknown coordinate system kind");
+    GYOTO_ERROR("Torus::distance(): unknown coordinate system kind");
     h=0.,drproj=0.;
   }
   return drproj*drproj + h*h;
@@ -162,7 +162,7 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
     pos2[3] = pos[3];
     break;
   default:
-    throwError("Torus::getVelocity(): unknown coordkind");
+    GYOTO_ERROR("Torus::getVelocity(): unknown coordkind");
   }
   gg_ -> circularVelocity(pos2, vel);
 }

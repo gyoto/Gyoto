@@ -102,7 +102,7 @@ double PatternDiskBB::emission(double nu, double dsem,
   }
 
   if (!flag_radtransf_) return Iem;
-  else throwError("In PatternDiskBB::emission: should be optically thick!");
+  else GYOTO_ERROR("In PatternDiskBB::emission: should be optically thick!");
   // The PatternDisk::emission function called above will return
   // nonsense for the temperature in case the object is optically thin.
 

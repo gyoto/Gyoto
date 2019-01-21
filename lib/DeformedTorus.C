@@ -31,7 +31,7 @@ GYOTO_PROPERTY_ACCESSORS(DeformedTorus, SmartPointer<Spectrum::Generic>,
 			 spectrum_, spectrum)
 GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, c_, largeRadius)
 GYOTO_PROPERTY_ACCESSORS_SPECIAL(DeformedTorus, double, param_beta_, beta,
-				 if (param_beta_>=1.) throwError("In DeformedTorus.C: beta should be << 1"); , )
+				 if (param_beta_>=1.) GYOTO_ERROR("In DeformedTorus.C: beta should be << 1"); , )
 GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double,
 			 param_beta_st_, betaSt)
 GYOTO_PROPERTY_ACCESSORS(DeformedTorus, double, param_eta_, eta)
@@ -48,7 +48,7 @@ void DeformedTorus::perturbKind(std::string const &k) {
   else {
     string errmsg="unknown perturbation kind: '";
     errmsg += k + "'";
-    throwError(errmsg.c_str());
+    GYOTO_ERROR(errmsg.c_str());
   }
 }
 std::string DeformedTorus::perturbKind() const {
@@ -60,7 +60,7 @@ std::string DeformedTorus::perturbKind() const {
   case RadialShear:         return "RadialShear";
   case VerticalShear:       return "VerticalShear";
   case PureShear:           return "PureShear";
-  default: throwError("Unknown perturbation kind");
+  default: GYOTO_ERROR("Unknown perturbation kind");
   }
   return "";
 }
@@ -157,7 +157,7 @@ double DeformedTorus::operator()(double const pos[4]) {
     b2=1./a1;
     break;
   default:
-    throwError("In DeformedTorus.C::operator():"
+    GYOTO_ERROR("In DeformedTorus.C::operator():"
 	       "Unrecognized perturbation kind");
   }
   double deforx = a1*x_bar+a2*y_bar+a3;
@@ -258,7 +258,7 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
     }
     break;
   default:
-    throwError("In DeformedTorus.C::operator():"
+    GYOTO_ERROR("In DeformedTorus.C::operator():"
 	       "Unrecognized perturbation kind");
   }
 
@@ -270,7 +270,7 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
     ss << "DeformedTorus::getVelocity(pos=[";
     for (int i=0; i<3; ++i) ss << pos[i] << ", ";
     ss << pos[3] << "]): u_t^2 is negative.";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
 
   double u_t=-sqrt(u_t2);
@@ -285,7 +285,7 @@ void DeformedTorus::getVelocity(double const pos[4], double vel[4])
 void DeformedTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 {
   if (met->kind() != "KerrBL")
-    throwError("DeformedTorus::metric(): only KerrBL, please");
+    GYOTO_ERROR("DeformedTorus::metric(): only KerrBL, please");
   //if (gg_) gg_ -> unhook(this);
   gg_ = SmartPointer<Metric::KerrBL>(met);
   Generic::gg_ = gg_;
@@ -316,7 +316,7 @@ void DeformedTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
 double DeformedTorus::emission(double nu_em, double, double *, 
 			      double *) const{
   if (flag_radtransf_)
-    throwError("Radiative transfer not implemented for DeformedTorus.");
+    GYOTO_ERROR("Radiative transfer not implemented for DeformedTorus.");
   //cout << "in flaring emission" << endl;
   //return (*spectrum_)(nu_em);
   return 1.;

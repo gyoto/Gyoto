@@ -108,7 +108,7 @@ void Object::set(Property const &p,
   GYOTO_DEBUG_EXPR(p.type);
   switch (p.type) {
   case Property::empty_t:
-    throwError("Attempt to set empty_t Property");
+    GYOTO_ERROR("Attempt to set empty_t Property");
     return;
   case Property::double_t:
     {
@@ -118,7 +118,7 @@ void Object::set(Property const &p,
 	(this->*setu)(val, unit);
       } else {
 	GYOTO_DEBUG << "double Property which does not support unit" << endl;
-	if (unit != "") throwError("Can't set this property with unit");
+	if (unit != "") GYOTO_ERROR("Can't set this property with unit");
 	set(p, val);
       }
     }
@@ -131,7 +131,7 @@ void Object::set(Property const &p,
 	(this->*setu)(val, unit);
       } else {
 	GYOTO_DEBUG << "vector<double> Property which does not support unit" << endl;
-	if (unit != "") throwError("Can't set this property with unit");
+	if (unit != "") GYOTO_ERROR("Can't set this property with unit");
 	set(p, val);
       }
     }
@@ -139,7 +139,7 @@ void Object::set(Property const &p,
   default:
     GYOTO_DEBUG<< "Not a double_t, vector_double_t or empty_t Property" << endl;
     if (unit != "")
-      throwError("Can't set this property with unit (not a double)");
+      GYOTO_ERROR("Can't set this property with unit (not a double)");
     set(p, val);
     return;
   }
@@ -153,7 +153,7 @@ void Object::set(Property const &p, Value val) {
       GYOTO_DEBUG <<"Setting property of type " #type << endl;	\
       Property::set_##type##_t set = p.setter.set_##type;	\
       GYOTO_DEBUG_EXPR(set);					\
-      if (!set) throwError("Can't set this Property");	\
+      if (!set) GYOTO_ERROR("Can't set this Property");	\
       (this->*set)(val);				\
     }							\
     break
@@ -171,14 +171,14 @@ void Object::set(Property const &p, Value val) {
   case Property::vector_double_t:
     {
       Property::set_vector_double_t set = p.setter.set_vdouble;
-      if (!set) throwError("Can't set this Property");
+      if (!set) GYOTO_ERROR("Can't set this Property");
       (this->*set)(val);
     }
     break;
   case Property::vector_unsigned_long_t:
     {
       Property::set_vector_unsigned_long_t set = p.setter.set_vulong;
-      if (!set) throwError("Can't set this Property");
+      if (!set) GYOTO_ERROR("Can't set this Property");
       (this->*set)(val);
     }
     break;
@@ -188,21 +188,21 @@ void Object::set(Property const &p, Value val) {
     ___local_case(spectrometer);
     ___local_case(screen);
   default:
-    throwError("Unimplemented Property type in Object::set");
+    GYOTO_ERROR("Unimplemented Property type in Object::set");
   }
 # undef ___local_case
 }
 
 void Object::set(std::string const &pname, Value val) {
   Property const * p = property(pname);
-  if (!p) throwError("No Property by that name");
+  if (!p) GYOTO_ERROR("No Property by that name");
   set(*p, ((p->type == Property::bool_t && pname == p->name_false)?
 	  Value(!val):val));
 }
 
 void Object::set(std::string const &pname, Value val, std::string const &unit) {
   Property const * p = property(pname);
-  if (!p) throwError("No Property by that name");
+  if (!p) GYOTO_ERROR("No Property by that name");
   set(*p, ((p->type == Property::bool_t && pname == p->name_false)?
 	  Value(!val):val), unit);
 }
@@ -213,19 +213,19 @@ Value Object::get(Property const &p,
   if (p.type == Property::double_t) {
     Property::get_double_unit_t getu = p.getter_unit.get_double;
     if (getu) return (this->*getu)(unit);
-    if (unit != "") throwError("Can't get this property with unit");
+    if (unit != "") GYOTO_ERROR("Can't get this property with unit");
     return get(p);
   }
 
   if (p.type == Property::vector_double_t) {
     Property::get_vector_double_unit_t getu = p.getter_unit.get_vdouble;
     if (getu) return (this->*getu)(unit);
-    if (unit != "") throwError("Can't get this property with unit");
+    if (unit != "") GYOTO_ERROR("Can't get this property with unit");
     return get(p);
   }
 
   if (unit != "")
-    throwError("Can't set this property with unit (not a double)");
+    GYOTO_ERROR("Can't set this property with unit (not a double)");
 
   return get(p);
 }
@@ -235,7 +235,7 @@ Value Object::get(Property const &p) const {
   case Property::type##_t:     \
     {			     \
     Property::get_##type##_t get = p.getter.get_##type;	\
-    if (!get) throwError("Can't get this Property");	\
+    if (!get) GYOTO_ERROR("Can't get this Property");	\
     val = Value((this->*get)());			\
     }							\
     break
@@ -243,7 +243,7 @@ Value Object::get(Property const &p) const {
   Gyoto::Value val;
   switch (p.type) {
   case Property::empty_t:
-    throwError("Can't get empty property");
+    GYOTO_ERROR("Can't get empty property");
     ___local_case(bool);
     ___local_case(double);
     ___local_case(long);
@@ -254,14 +254,14 @@ Value Object::get(Property const &p) const {
   case Property::vector_double_t:
     {
       Property::get_vector_double_t get = p.getter.get_vdouble;
-      if (!get) throwError("Can't get this Property");
+      if (!get) GYOTO_ERROR("Can't get this Property");
       val = (this->*get)();
     }
     break;
   case Property::vector_unsigned_long_t:
     {
       Property::get_vector_unsigned_long_t get = p.getter.get_vulong;
-      if (!get) throwError("Can't get this Property");
+      if (!get) GYOTO_ERROR("Can't get this Property");
       val = (this->*get)();
     }
     break;
@@ -271,7 +271,7 @@ Value Object::get(Property const &p) const {
     ___local_case(spectrometer);
     ___local_case(screen);
   default:
-    throwError("Unimplemented Property type in Object::get");
+    GYOTO_ERROR("Unimplemented Property type in Object::get");
   }
   return val;
 # undef ___local_case
@@ -279,7 +279,7 @@ Value Object::get(Property const &p) const {
 
 Value Object::get(std::string const &pname) const {
   Property const * p = property(pname);
-  if (!p) throwError("No Property by that name");
+  if (!p) GYOTO_ERROR("No Property by that name");
   Value res = get(*p);
   if (p->type == Property::bool_t && pname == p->name_false)
     return !bool(res);
@@ -288,7 +288,7 @@ Value Object::get(std::string const &pname) const {
 
 Value Object::get(std::string const &pname, std::string const &unit) const{
   Property const * p = property(pname);
-  if (!p) throwError("No Property by that name");
+  if (!p) GYOTO_ERROR("No Property by that name");
   Value res = get(*p, unit);
   if (p->type == Property::bool_t && pname == p->name_false)
     return !bool(res);
@@ -369,7 +369,7 @@ void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const
     }
     break;
   default:
-    throwError("Property type unimplemented in Object::fillProperty()");
+    GYOTO_ERROR("Property type unimplemented in Object::fillProperty()");
   }
 }
 
@@ -480,9 +480,9 @@ void Object::setParameter(Property const &p, string const &name,
     val = FactoryMessenger::parseArrayULong(content);
     break;
   case Property::metric_t:
-    throwError("Metric can't be set using setParameter()");
+    GYOTO_ERROR("Metric can't be set using setParameter()");
   default:
-    throwError("Property type unimplemented in Object::setParameter()");
+    GYOTO_ERROR("Property type unimplemented in Object::setParameter()");
   }
   set(p, val);
 }
@@ -515,10 +515,10 @@ int Object::setParameter(string name, string content, string unit) {
 	obj = SmartPointer<Spectrometer::Generic>(val);
 	break;
       default:
-	throwError(childname+" is not an object");
+	GYOTO_ERROR(childname+" is not an object");
       }
       if (obj) return obj -> setParameter(name, content, unit);
-      throwError(childname+" not set yet");
+      GYOTO_ERROR(childname+" not set yet");
     }
     return 1;
   }
@@ -576,7 +576,7 @@ std::string Object::describeProperty(Property const &p) const {
     out += "Gyoto::Spectrometer";
     break;
   default:
-    throwError("Property type unimplemented in Object::fillProperty()");
+    GYOTO_ERROR("Property type unimplemented in Object::fillProperty()");
   }
   return out;
 }

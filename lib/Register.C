@@ -124,7 +124,7 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
 	cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
       return;
     }
-    throwError(errors.c_str());
+    GYOTO_ERROR(errors.c_str());
   }
 
   // Find and execute init function
@@ -134,7 +134,7 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
     dlfunc = "__GyotoPluginInit";
     initfcn = (GyotoInitFcn*)dlsym(handle, dlfunc.c_str());
   }
-  if ( (err=dlerror()) ) throwError(err);
+  if ( (err=dlerror()) ) GYOTO_ERROR(err);
   GYOTO_DEBUG << "Calling plug-in init function " << dlfunc << endl;
   std::string tmp_name(GyotoRegisterCurrentPlugin);
   // In case nam is a file name, that's what we wan't to store
@@ -239,7 +239,7 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
   }
   if (next_) return next_ -> getSubcontractor(name, plugin, errmode);
   if (errmode) return NULL;
-  throwError ("Unregistered kind: "+name);
+  GYOTO_ERROR ("Unregistered kind: "+name);
   return NULL; // will never get there, avoid compilation warning
 }
 

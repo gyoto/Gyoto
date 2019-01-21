@@ -112,7 +112,7 @@ void RotStar3_1::fileName(char const * lorene_res) {
   filename_ = new char[strlen(lorene_res)+1];
   strcpy(filename_,lorene_res);
   FILE* resfile=fopen(lorene_res,"r");
-  if (!resfile) throwError(string("No such file or directory: ")+lorene_res);
+  if (!resfile) GYOTO_ERROR(string("No such file or directory: ")+lorene_res);
   Mg3d* mg = new Mg3d(resfile);
   Map_et* mps = new Map_et(*mg,resfile);
   Eos* p_eos = Eos::eos_from_file(resfile);
@@ -220,7 +220,7 @@ int RotStar3_1::diff(const double y[6], double res[6], int) const
   //LAPSE
   const Scalar & NNscal=star_ -> get_nn();
   double NN=NNscal.val_point(rr,th,phi);//, NN2=NN*NN;
-  if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
+  if (NN == 0.) GYOTO_ERROR("In RotStar3_1.C: NN==0!!");
   double Nr=NNscal.dsdr().val_point(rr,th,phi);
   double Nt=NNscal.dsdt().val_point(rr,th,phi);
 
@@ -316,7 +316,7 @@ int RotStar3_1::myrk4(const double coorin[6], double h, double res[6]) const
   //if (debug()) cout << "In RotStar::rk4" << endl;
 
   //Here the integration must be 3+1:
-  if (!integ_kind_) throwError("In RotStar3_1::myrk4: Impossible case");
+  if (!integ_kind_) GYOTO_ERROR("In RotStar3_1::myrk4: Impossible case");
   
   double k1[6], k2[6], k3[6], k4[6], coor_plus_halfk1[6], sixth_k1[6], 
     coor_plus_halfk2[6], third_k2[6], coor_plus_k3[6], third_k3[6], sixth_k4[6]; 
@@ -400,7 +400,7 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
     count++;
     //if (debug()) cout << "count in rk Rot= " << count << endl;
     if (count > 100){
-      throwError("RotStar: bad rk");
+      GYOTO_ERROR("RotStar: bad rk");
     }
     err=0.;
     myrk4(coord,h0,coordnew);
@@ -441,7 +441,7 @@ int RotStar3_1::myrk4_adaptive(const double coord[6], double, double normref, do
 	double g_tt=gmunu(pos,0,0), g_tp=gmunu(pos,0,3), g_rr=gmunu(pos,1,1), g_thth=gmunu(pos,2,2), g_pp=gmunu(pos,3,3);
 	//	if (debug()) cout << "time integ" << endl;
 	double ds2=g_tt+2.*g_tp*phprime+g_rr*rprime*rprime+g_thth*thprime*thprime+g_pp*phprime*phprime;
-	if (ds2>0) throwError("In RotStar3_1.C: impossible to compute timelike norm!");
+	if (ds2>0) GYOTO_ERROR("In RotStar3_1.C: impossible to compute timelike norm!");
 	if (tdot_used<=0.){//NB: default value of tdot_used has correct sign
 	  tdot_used=-sqrt(-1./ds2);
 	}else{
@@ -507,7 +507,7 @@ int RotStar3_1::myrk4_adaptive(Worldline* line, const double coord[8],
 
   const Scalar & NNscal=star_ -> get_nn();
   double NN=NNscal.val_point(rr,th,ph);//, NN2=NN*NN;
-  if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
+  if (NN == 0.) GYOTO_ERROR("In RotStar3_1.C: NN==0!!");
   const Scalar & omega_scal=star_ -> get_nphi();
   double omega=omega_scal.val_point(rr,th,ph);
   
@@ -557,7 +557,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
   //double phprime_init=coordin[5],dphpr=0.01;
   const Scalar & NNscal=star_ -> get_nn();
   double NN=NNscal.val_point(coordin[0],coordin[1],coordin[2]);//, NN2=NN*NN;
-  if (NN == 0.) throwError("In RotStar3_1.C: NN==0!!");
+  if (NN == 0.) GYOTO_ERROR("In RotStar3_1.C: NN==0!!");
   const Scalar & omega_scal=star_ -> get_nphi();
   double omega=omega_scal.val_point(coordin[0],coordin[1],coordin[2]);
   double phprime_init=NN*coordin[5]+omega,dphpr=0.01;
@@ -567,7 +567,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
     phdot=(cst_p_ph - g_tp/g_tt*cst_p_t)/(g_pp-g_tp*g_tp/g_tt); tdot_used=(cst_p_t - g_tp*phdot)/g_tt; phprime=phdot/tdot_used;//cf constants of motion
     //    if (debug()) cout << "tdot use in Normalize= " << tdot_used << endl;
   }else{
-    throwError("RotStar3_1.C: special case metric coef=0 to handle in Normalize4v...");
+    GYOTO_ERROR("RotStar3_1.C: special case metric coef=0 to handle in Normalize4v...");
   }
   if (fabs(phprime-phprime_init)>dphpr*fabs(phprime_init)){
     if (verbose() >= GYOTO_SEVERE_VERBOSITY)
@@ -584,7 +584,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
   cout << "-------> tdot= " << tdot_used << endl;
   double normaffich=ScalarProd(posin,fourvel,fourvel);
   cout << "cst motion in Normalize= " << normaffich << " " << cst_p_t << " " << cst_p_ph << endl;
-  if (fabs(normaffich)>1000. || normaffich!=normaffich) throwError("testrotstar --");
+  if (fabs(normaffich)>1000. || normaffich!=normaffich) GYOTO_ERROR("testrotstar --");
   */
   //  double rprime=coordin[3], thprime=coordin[4];
   double rprime=NN*coordin[3], thprime=NN*coordin[4];
@@ -675,7 +675,7 @@ double RotStar3_1::christoffel(const double coord[8], const int alpha,
    */
 
   //if (debug()) cout << "In RotStar::christo" << endl;
-  //Gyoto::throwError("RotStar3_1::christoffel: Not implemented yet");
+  //GYOTO_ERROR("RotStar3_1::christoffel: Not implemented yet");
 
   //24/05/10: stationary axisymmetric version
 

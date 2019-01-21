@@ -53,7 +53,7 @@ void Gyoto::Units::Init() {
 
   /* as symbol for arcsec */
   tmpu = ut_get_unit_by_name(SI, "arcsec");
-  if (!tmpu) throwError("error initializing arcsec unit");
+  if (!tmpu) GYOTO_ERROR("error initializing arcsec unit");
   ut_map_symbol_to_unit("as", UT_UTF8, tmpu);
   ut_free(tmpu); tmpu = NULL;
 
@@ -78,7 +78,7 @@ void Gyoto::Units::Init() {
 
   /* Jansky */
   tmpu = ut_parse(SI, "W.m-2.Hz-1", UT_UTF8);
-  if (!tmpu) throwError("Cannot initialize Jansky");
+  if (!tmpu) GYOTO_ERROR("Cannot initialize Jansky");
   tmpu2=ut_scale(1e-26, tmpu);
   ut_map_name_to_unit("Jansky", UT_UTF8, tmpu2);
   ut_map_symbol_to_unit("Jy", UT_UTF8, tmpu2);
@@ -102,7 +102,7 @@ Unit::Unit(const string &unit) : unit_(NULL), kind_(unit) {
 #   ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(unit_);
 #   endif
-    if (!unit_) throwError(string("Error initializing Unit: ")+unit);
+    if (!unit_) GYOTO_ERROR(string("Error initializing Unit: ")+unit);
   }
 }
 
@@ -115,7 +115,7 @@ Unit::Unit(char const * const unit) : unit_(NULL), kind_(unit) {
 #   ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(unit_);
 #   endif
-    if (!unit_) throwError(string("Error initializing Unit: ")+unit);
+    if (!unit_) GYOTO_ERROR(string("Error initializing Unit: ")+unit);
   }
 }
 
@@ -160,7 +160,7 @@ void Converter::reset(const Gyoto::Units::Unit &from,
       stringstream ss;
       ss << "Unsupported conversion: from \"" << string(from)
 	 << "\" to " << string(to) << "\"";
-      throwError(ss.str());
+      GYOTO_ERROR(ss.str());
     }
   } else reset();
 }
@@ -182,7 +182,7 @@ double Gyoto::Units::ToMeters(double val, const string &unit,
   if (unit=="" || unit=="m") return val ;
   if (unit=="geometrical") {
     if (gg) return val * gg -> unitLength();
-    else throwError("Metric required for geometrical -> meter conversion");
+    else GYOTO_ERROR("Metric required for geometrical -> meter conversion");
   }
 # ifdef HAVE_UDUNITS
   Unit from(unit);
@@ -205,7 +205,7 @@ double Gyoto::Units::ToMeters(double val, const string &unit,
   if (unit=="Mpc")         return val * GYOTO_KPC * 1e3;
   stringstream ss;
   ss << "Unsupported conversion: \"" << unit;
-  throwError(ss.str());
+  GYOTO_ERROR(ss.str());
   return 0;
 # endif
 }
@@ -215,7 +215,7 @@ double Gyoto::Units::FromMeters(double val, const string &unit,
   if ((unit=="") || (unit=="m")) return val ;
   if (unit=="geometrical") {
     if (gg) return val / gg -> unitLength();
-    else throwError("Metric required for meter -> geometrical conversion");
+    else GYOTO_ERROR("Metric required for meter -> geometrical conversion");
   }
 # ifdef HAVE_UDUNITS
   Unit to (unit);
@@ -238,7 +238,7 @@ double Gyoto::Units::FromMeters(double val, const string &unit,
   if (unit=="Mpc")         return val / GYOTO_KPC * 1e-3;
   stringstream ss;
   ss << "Unsupported conversion: \"" << unit;
-  throwError(ss.str());
+  GYOTO_ERROR(ss.str());
   return 0;
 # endif
 }
@@ -260,7 +260,7 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
 	"is deprecated and will be removed soon";
     if (gg) val *= gg -> unitLength() / GYOTO_C ;
     else
-      throwError("Metric required for geometrical_time -> second conversion");
+      GYOTO_ERROR("Metric required for geometrical_time -> second conversion");
   }
 # ifdef HAVE_UDUNITS
   else {
@@ -278,7 +278,7 @@ double Gyoto::Units::ToSeconds(double val, const string &unit,
     stringstream ss;
     ss << "Screen::time(): unknown unit \"" << unit << "\". Accepted units: "
        << "[s] geometrical min h d y";
-    throwError (ss.str());
+    GYOTO_ERROR (ss.str());
   }
 # endif
   return val;
@@ -294,7 +294,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
 	"is deprecated and will be removed soon";
     if (gg) val *= GYOTO_C / gg -> unitLength() ;
     else
-      throwError("Metric required for second -> geometrical_time conversion");
+      GYOTO_ERROR("Metric required for second -> geometrical_time conversion");
   }
 # ifdef HAVE_UDUNITS
   else {
@@ -312,7 +312,7 @@ double Gyoto::Units::FromSeconds(double val, const string &unit,
     stringstream ss;
     ss << "Screen::time(): unknown unit \"" << unit << "\". Accepted units: "
        << "[s] geometrical min h d y";
-    throwError (ss.str());
+    GYOTO_ERROR (ss.str());
   }
 # endif
   return val;
@@ -331,7 +331,7 @@ double Gyoto::Units::ToKilograms(double val, const string &unit)
     stringstream ss;
     ss << "Unsupported mass unit: \"" << unit
        << "\". Supported units: [kg] g sunmass";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
   return val;
 # endif
@@ -349,7 +349,7 @@ double Gyoto::Units::FromKilograms(double val, const string &unit)
     stringstream ss;
     ss << "Unsupported mass unit: \"" << unit
        << "\". Supported units: [kg] g sunmass";
-    throwError(ss.str());
+    GYOTO_ERROR(ss.str());
   }
   return val;
 # endif
@@ -358,28 +358,28 @@ double Gyoto::Units::FromKilograms(double val, const string &unit)
 double Gyoto::Units::ToGeometrical(double val, const string &unit,
 				   const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical") return val;
-  if (!gg) throwError("Need Metric to convert to geometrical units");
+  if (!gg) GYOTO_ERROR("Need Metric to convert to geometrical units");
   return ToMeters(val, unit) / gg->unitLength();
 }
 
 double Gyoto::Units::FromGeometrical(double val, const string &unit,
 				     const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical") return val;
-  if (!gg) throwError("Need Metric to convert from geometrical units");
+  if (!gg) GYOTO_ERROR("Need Metric to convert from geometrical units");
   return FromMeters(val * gg->unitLength(), unit);
 }
 
 double Gyoto::Units::ToGeometricalTime(double val, const string &unit,
 				   const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical_time") return val;
-  if (!gg) throwError("Need Metric to convert to geometrical units");
+  if (!gg) GYOTO_ERROR("Need Metric to convert to geometrical units");
   return ToSeconds(val, unit) / gg->unitLength() * GYOTO_C;
 }
 
 double Gyoto::Units::FromGeometricalTime(double val, const string &unit,
 				     const SmartPointer<Metric::Generic> &gg) {
   if (unit == "" || unit == "geometrical_time") return val;
-  if (!gg) throwError("Need Metric to convert from geometrical units");
+  if (!gg) GYOTO_ERROR("Need Metric to convert from geometrical units");
   return FromSeconds(val * gg->unitLength() / GYOTO_C, unit);
 }
 
@@ -400,12 +400,12 @@ double Gyoto::Units::ToHerz(double value, const string &unit) {
   stringstream ss;
   ss << "Units::ToHerz(): unknown unit \""
      << unit << "\".";
-  throwError (ss.str());
+  GYOTO_ERROR (ss.str());
 # else
   GYOTO_WARNING_UDUNITS(unit, "Hz");
   return value;
 # endif
-  throwError("unit conversion failed");
+  GYOTO_ERROR("unit conversion failed");
   return 0.;
 }
 
@@ -426,7 +426,7 @@ double Gyoto::Units::FromHerz(double value, const string &unit) {
   stringstream ss;
   ss << "Units::ToHerz(): unknown unit \""
      << unit << "\".";
-  throwError (ss.str());
+  GYOTO_ERROR (ss.str());
 # else
   GYOTO_WARNING_UDUNITS(unit, "Hz");
 # endif

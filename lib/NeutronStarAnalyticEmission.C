@@ -79,7 +79,7 @@ double NeutronStarAnalyticEmission::emission(double nu_em, double, double *,
 			      double *) const{
   GYOTO_DEBUG << endl;
   if (flag_radtransf_)
-    throwError("Radiative transfer not implemented for NeutronStarAnalyticEmission.");
+    GYOTO_ERROR("Radiative transfer not implemented for NeutronStarAnalyticEmission.");
 
   return (*spectrum_)(nu_em);
 }

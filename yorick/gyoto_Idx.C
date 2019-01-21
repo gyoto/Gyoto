@@ -70,17 +70,17 @@ long YGyoto::Idx::next() {
 }
 
 long YGyoto::Idx::range_min() const {
-  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  if (!(_is_range || _is_scalar)) GYOTO_ERROR("BUG: not a range");
   return _range[0];
 }
 
 long YGyoto::Idx::range_max() const {
-  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  if (!(_is_range || _is_scalar)) GYOTO_ERROR("BUG: not a range");
   return _range[1];
 }
 
 long YGyoto::Idx::range_dlt() const {
-  if (!(_is_range || _is_scalar)) throwError("BUG: not a range");
+  if (!(_is_range || _is_scalar)) GYOTO_ERROR("BUG: not a range");
   return _range[2];
 }
 
@@ -160,7 +160,7 @@ int YGyoto::Idx::getNDims() const {
   if (_is_range) return 1;
   if (_is_list) return 1;
   if (_is_scalar) return 0;
-  throwError("BUG: What does this YGyoto::Idx instance hold?");
+  GYOTO_ERROR("BUG: What does this YGyoto::Idx instance hold?");
   return 0;
 }
 
