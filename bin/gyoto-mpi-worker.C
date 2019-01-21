@@ -81,6 +81,7 @@ int main(int argc, char** argv) {
   curretval = 1;
   Gyoto::Register::init(pluglist.c_str());
 
+  curmsg = "gyoto-mpi-worker: ";
   Gyoto::Scenery::mpiWorker();
 
   return 0;
