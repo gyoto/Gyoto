@@ -188,7 +188,7 @@ clean:
 	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc
-	-rm -Rf _gyoto*.so Gyoto*.egg-info
+	-rm -Rf _gyoto*.so Gyoto*.egg-info _*.so
 
 # Clean up the output of configure
 distclean: clean 

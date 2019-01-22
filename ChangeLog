@@ -1,6 +1,59 @@
-commit unknown
-Author: Thibaut Paumard <paumard@users.sourceforge.net>
-Date:   Tue, 15 Jan 2019 10:50:23 +0100
+commit unknwonw
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 22 13:36:30 +0100
+
+    Releasing 1.3.1
+
+commit 30a7a026c8becc7ee39338a07a25302cf01a3673
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 22 13:29:16 2019 +0100
+
+    Remove python/_*.so in clean
+
+commit 7f5884c9c6ebaa76762ed5103a6ce46453e1caa2
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 21 23:55:49 2019 +0100
+
+    Fix in ThemalBremstrahlung: return infinity upon div by zero
+    
+    Instead of throwing an error. Returning infinity is better here as it
+    will correctly yield zero transmission.
+
+commit 09ccb9fb73fd491c9603a098a1a67aa3673dc5dc
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 21 19:01:04 2019 +0100
+
+    Fix error message prefix in gyoto-mpi-worker
+
+commit 5a728a93932d9154bca84d3028ba295161f9c937
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 21 17:33:02 2019 +0100
+
+    New macro GYOTO_ERROR around throwError
+    
+    This macro prepends the error message with __FILE__:__LINE__ in __PRETTY_FUNCTION__
+
+commit 7de5ee601f1ac18e95d4f2d11414976e0937d73e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 16 11:21:46 2019 +0100
+
+    Fix bug in Python plug-in
+
+commit 96e63e15264416d84915a65de25b122e8d31c604
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 16 10:38:17 2019 +0100
+
+    Fix typos in include files
+
+commit 8ff7bbc23b12cf094439b1e6e917298856091a37
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 15 11:26:44 2019 +0100
+
+    Make branch 'stable'$ identical to 'master'
+
+commit c015e577e3a9fb0f31ea41166b4f26818341396f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 15 11:20:10 2019 +0100
 
     Releasing 1.3.0
 
@@ -20,6 +73,20 @@ Date:   Mon Jan 14 11:47:18 2019 +0100
     Releasing 1.3.0~rc1
 
 commit 42baab26fe1d477b9d005bfd5b4875622091921a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 14 10:43:44 2019 +0100
+
+    Fix yorick/check-patterndisk.i
+    
+    This version works but PatternDisk seems a little buggy.
+
+commit bb242d0e656a1b0910882b63f6099cf154d8d790
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jan 14 11:47:18 2019 +0100
+
+    Releasing 1.3.0~rc1
+
+commit 42353a6513778fe7b7102f7e4f41842f520aacd0
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
 Date:   Mon Jan 14 10:43:44 2019 +0100
 
@@ -853,6 +920,19 @@ Author: Thibaut Paumard <paumard@users.sourceforge.net>
 Date:   Tue Apr 11 09:36:20 2017 +0200
 
     Add Astrobj::NeutronStar
+
+commit ed9c48d85dfc77334b25e68e55f0a03366314d08
+Author: Thibaut Paumard <paumard@users.sourceforge.net>
+Date:   Sun Feb 5 15:29:02 2017 +0100
+
+    gyotoy: prefer x11 over wayland
+    
+    Gyotoy embeds an Yorick X11 window in a Gtk widget. This does not work
+    if the Gtk window uses the Wayland backend. Use
+    gdk_set_allowed_backends() to specify that gyotoy prefers the x11
+    backend.
+    
+    This works only if gyotoy is started stand-alone.
 
 commit 736002e7a869c8c99a86c9d6599b44e09f492f49
 Author: Thibaut Paumard <paumard@users.sourceforge.net>
