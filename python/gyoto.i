@@ -950,3 +950,4 @@ public:
   }
   int Gyoto::__class__ = 0;
 }
+%include "GyotoGridData2D.h"

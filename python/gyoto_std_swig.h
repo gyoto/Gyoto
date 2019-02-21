@@ -31,6 +31,7 @@
 #include "GyotoXillverReflection.h"
 #include "GyotoJet.h"
 #include "GyotoBlob.h"
+#include "GyotoFlaredDiskSynchrotron.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"

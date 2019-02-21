@@ -42,6 +42,7 @@
 #include "GyotoEquatorialHotSpot.h"
 #include "GyotoJet.h"
 #include "GyotoBlob.h"
+#include "GyotoFlaredDiskSynchrotron.h"
 
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
@@ -112,6 +113,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::Blob>));
   Astrobj::Register("XillverReflection",
 		    &(Astrobj::Subcontractor<Astrobj::XillverReflection>));
+  Astrobj::Register("FlaredDiskSynchrotron",
+		    &(Astrobj::Subcontractor<Astrobj::FlaredDiskSynchrotron>));
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
