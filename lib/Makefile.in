@@ -177,7 +177,8 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-Disk3D.lo \
 	libgyoto_stdplug_la-DynamicalDisk3D.lo \
 	libgyoto_stdplug_la-DirectionalDisk.lo \
-	libgyoto_stdplug_la-XillverReflection.lo
+	libgyoto_stdplug_la-XillverReflection.lo \
+	libgyoto_stdplug_la-FlaredDiskSynchrotron.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
@@ -202,7 +203,6 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-DeformedTorus.lo \
 	libgyoto_stdplug_la-EquatorialHotSpot.lo \
 	libgyoto_stdplug_la-Jet.lo libgyoto_stdplug_la-Blob.lo \
-	libgyoto_stdplug_la-FlaredDiskSynchrotron.lo \
 	libgyoto_stdplug_la-StdPlug.lo $(am__objects_1)
 libgyoto_stdplug_la_OBJECTS = $(am_libgyoto_stdplug_la_OBJECTS)
 libgyoto_stdplug_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
@@ -527,13 +527,13 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	KappaDistributionSynchrotronSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C PageThorneDisk.C ThinDiskPL.C PolishDoughnut.C \
 	ThinDiskIronLine.C DeformedTorus.C EquatorialHotSpot.C Jet.C \
-	Blob.C FlaredDiskSynchrotron.C StdPlug.C \
-	$(cfitsio_stdplug_sources)
+	Blob.C StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
-	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C \
+	FlaredDiskSynchrotron.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -1000,13 +1000,6 @@ libgyoto_stdplug_la-Blob.lo: Blob.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Blob.lo `test -f 'Blob.C' || echo '$(srcdir)/'`Blob.C
 
-libgyoto_stdplug_la-FlaredDiskSynchrotron.lo: FlaredDiskSynchrotron.C
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-FlaredDiskSynchrotron.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Tpo -c -o libgyoto_stdplug_la-FlaredDiskSynchrotron.lo `test -f 'FlaredDiskSynchrotron.C' || echo '$(srcdir)/'`FlaredDiskSynchrotron.C
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Tpo $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FlaredDiskSynchrotron.C' object='libgyoto_stdplug_la-FlaredDiskSynchrotron.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FlaredDiskSynchrotron.lo `test -f 'FlaredDiskSynchrotron.C' || echo '$(srcdir)/'`FlaredDiskSynchrotron.C
-
 libgyoto_stdplug_la-StdPlug.lo: StdPlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-StdPlug.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Tpo -c -o libgyoto_stdplug_la-StdPlug.lo `test -f 'StdPlug.C' || echo '$(srcdir)/'`StdPlug.C
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Tpo $(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo
@@ -1069,6 +1062,13 @@ libgyoto_stdplug_la-XillverReflection.lo: XillverReflection.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='XillverReflection.C' object='libgyoto_stdplug_la-XillverReflection.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-XillverReflection.lo `test -f 'XillverReflection.C' || echo '$(srcdir)/'`XillverReflection.C
+
+libgyoto_stdplug_la-FlaredDiskSynchrotron.lo: FlaredDiskSynchrotron.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-FlaredDiskSynchrotron.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Tpo -c -o libgyoto_stdplug_la-FlaredDiskSynchrotron.lo `test -f 'FlaredDiskSynchrotron.C' || echo '$(srcdir)/'`FlaredDiskSynchrotron.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Tpo $(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FlaredDiskSynchrotron.C' object='libgyoto_stdplug_la-FlaredDiskSynchrotron.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FlaredDiskSynchrotron.lo `test -f 'FlaredDiskSynchrotron.C' || echo '$(srcdir)/'`FlaredDiskSynchrotron.C
 
 mostlyclean-libtool:
 	-rm -f *.lo

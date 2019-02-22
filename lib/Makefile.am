@@ -45,13 +45,13 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
 	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C\
-	FlaredDiskSynchrotron.C \
 	StdPlug.C
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
-	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C
+	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C \
+	FlaredDiskSynchrotron.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
