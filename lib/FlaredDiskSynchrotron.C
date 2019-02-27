@@ -214,9 +214,9 @@ void FlaredDiskSynchrotron::copyDensity(double const *const density,
     memcpy(density_, density, nel*sizeof(double));
   }
 
-  cout << "density stored= " << endl;
-  for (int ii=0;ii<30;ii++) cerr << density_[ii] << " " ;
-  cout << endl;
+  //cout << "density stored= " << endl;
+  //for (int ii=0;ii<30;ii++) cerr << density_[ii] << " " ;
+  //cout << endl;
 
 }
 
@@ -243,9 +243,9 @@ void FlaredDiskSynchrotron::copyVelocity(double const *const velocity,
     memcpy(velocity_, velocity, nel*sizeof(double));
   }
   
-  cout << "velo stored= " << endl;
-  for (int ii=0;ii<60;ii++) cerr << velocity_[ii] << " " ;
-  cout << endl;
+  //cout << "velo stored= " << endl;
+  //for (int ii=0;ii<60;ii++) cerr << velocity_[ii] << " " ;
+  //cout << endl;
 }
 
 double const * FlaredDiskSynchrotron::getVelocity() const { return velocity_; }
@@ -304,14 +304,30 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
     else throwCfitsioError(status) ;
   } else GridData2D::rmax(tmpd); // rmax_ found
 
+  GYOTO_DEBUG << "FlaredDiskSynchrotron::fitsRead(): read phimin_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO GridData2D phimin", &tmpd,
+  		NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+    else throwCfitsioError(status) ;
+  } else GridData2D::phimin(tmpd); // phimin_ found
+  
+  GYOTO_DEBUG << "FlaredDiskSynchrotron::fitsRead(): read phimax_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO GridData2D phimax", &tmpd,
+  		NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+    else throwCfitsioError(status) ;
+  } else GridData2D::phimax(tmpd); // phimax_ found
+
   // READ EXTENSIONS
 
   // Density
   vector<size_t> naxes_dens = GridData2D::fitsReadHDU(fptr,"GYOTO GridData2D DENSITY",
 						      density_);
-  cout << "density read= " << endl;
-  for (int ii=0;ii<30;ii++) cerr << density_[ii] << " " ;
-  cout << endl;
+  //cout << "density read= " << endl;
+  //for (int ii=0;ii<30;ii++) cerr << density_[ii] << " " ;
+  //cout << endl;
 
   // Velocity
   size_t length=2; // velocity is a 2-vector
@@ -325,12 +341,12 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
     throwError("In FlaredDiskSynchro: density and velocity dimensions "
 	       "do not agree");
   
-  cout << "velo read= " << endl;
+  /*cout << "velo read= " << endl;
   for (int ii=0;ii<60;ii++) cerr << velocity_[ii] << " " ;
   cout << endl;
 
   cout << "axes dens: " << naxes_dens[0] << " " << naxes_dens[1] << " " << naxes_dens[2] << endl;
-  cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;
+  cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;*/
 
   return naxes_velo;
 
@@ -387,43 +403,13 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
     throwError("In FlaredDiskSynchrotron::radiativeQ: r is not in grid!");
+  if (phi<0. or phi>2.*M_PI)
+    throwError("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 
-  size_t ind[3]; // {i_t, i_phi, i_r}
-  GridData2D::getIndices(ind, coord_ph[0], coord_ph[3], rcyl);
-  //cout << "in flared disk t,phi,r it,iphi,ir= " << coord_ph[0] << " " << coord_ph[3] << " " << rcyl << " " << ind[0] << " " << ind[1] << " " << ind[2] << endl;
-  size_t i2=ind[2], i1=ind[1], i0=ind[0], nr=GridData2D::nr(), nphi=GridData2D::nphi();
-  //cout << "density at indice= " << density_[i0*nr*nphi+i1*nr+i2] << endl;
-
-  double rho_interpo=0.;
-  if (GridData2D::nt()==1){
-    if (GridData2D::nphi()==1){
-      throwError("TBD");
-      // Linear in r
-      // TBD
-    }else{
-      // Bilinear in r,phi
-      size_t irl=ind[2], iru=ind[2]+1, iphil=ind[1], iphiu=ind[1]+1, it=ind[0];
-      double rho_ll = density_[it*nr*nphi+iphil*nr+irl], // rho_{phi,r}, l=lower index, u=upper index
-	rho_lu = density_[it*nr*nphi+iphil*nr+iru],
-	rho_ul = density_[it*nr*nphi+iphiu*nr+irl],
-	rho_uu = density_[it*nr*nphi+iphiu*nr+iru];
-      double phil = GridData2D::dphi()*iphil, phiu = GridData2D::dphi()*iphiu,
-	rl = GridData2D::rmin()+GridData2D::dr()*irl,
-	ru = GridData2D::rmin()+GridData2D::dr()*iru;
-      double ratiophi = (phi-phil)/(phiu-phil),
-	ratior = (rcyl-rl)/(ru-rl);
-      rho_interpo = rho_ll+(rho_ul-rho_ll)*ratiophi
-	+(rho_lu-rho_ll)*ratior
-	+(rho_uu-rho_lu-rho_ul+rho_ll)*ratiophi*ratior;
-      //cout << "interpo: " << phil << " " << phiu << " " << rl << " " << ru << " " << rho_ll << " " << rho_lu << " " << rho_ul << " " << rho_uu << " " << rho_interpo << endl;
-    }
-
-  }else{
-    // TBD
-    throwError("TBD");
-  }
+  //cout << "CALLING INTERPO FOR RHO" << endl;
+  double rho_interpo=GridData2D::interpolate(tt,phi,rcyl,density_);
   
   double number_density = rho_interpo*numberDensityMax_cgs_;
   double temperature = temperatureMax_;
@@ -490,10 +476,64 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 }
 
 void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
-  // returns the equatorial Keplerian velocity whatever z
-  double dir=1.; // assumes corotating disk
-  //cout << "in velo, r,z,rproj= " << pos[1] << " " << pos[1]*cos(pos[2]) << " " << pos[1]*sin(pos[2]) << endl;
-  gg_ -> circularVelocity(pos, vel, dir); 
+
+  double rcyl=0.; // cylindrical radius
+  double zz=0.; // height, z coord
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rcyl = pos[1]*sin(pos[2]);
+    zz   = pos[1]*cos(pos[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(pos[1]*pos[1]+pos[2]*pos[2], 0.5);
+    zz   = pos[3];
+    break;
+  default:
+    GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity: "
+		" Unknown coordinate system kind");
+  }
+
+  double tt = pos[0], phi = pos[3];
+  
+  if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
+    throwError("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
+  if (phi<0. or phi>2.*M_PI)
+    throwError("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
+  // NB: phi is always in grid, and t might be outside, assuming stationnary
+  // disk at t<tmin_ and t>tmax_
+
+  size_t nr = GridData2D::nr(), nphi = GridData2D::nphi(),
+    nt = GridData2D::nt(), nel = nt*nphi*nr-1;
+
+  // first half od velocity_ contains all values of dr/dt
+  // second hald contains all values of dphi/dt
+  //cout << "In VELO R: " << velocity_[0] << " " << velocity_[1] << " " << velocity_[nr-1] << " " << velocity_[nr] << " " << velocity_[nr*nphi-1] << endl;
+  //cout << "In VELO PHI: " << velocity_[0+nr*nphi] << " " << velocity_[1+nr*nphi] << " " << velocity_[nr-1+nr*nphi] << " " << velocity_[nr+nr*nphi] << " " << velocity_[nr*nphi-1+nr*nphi] << endl;
+  //cout << "CALLING INTERPO FOR DR/DT" << endl;
+  double drdt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_);
+  //cout << "CALLING INTERPO FOR DPHI/DT" << endl;
+  double dphidt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_+nel+1);
+
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    {
+      vel[1] = drdt_interpo;
+      vel[2] = 0.;
+      vel[3] = dphidt_interpo;
+      //cout << "IN FLARED: pos and vel= " << pos[1] << " " << pos[2] << " " << pos[3] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+      vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
+      vel[1] *= vel[0];
+      vel[3] *= vel[0];
+    }
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    GYOTO_ERROR("FlaredDiskSynchro::getVelocity(): metric must be in "
+		"spherical coordinates if velocity field is provided");
+    break;
+  default:
+    GYOTO_ERROR("FlaredDiskSynchro::getVelocity(): unknown COORDKIND");
+  }
+  
 }
 
 bool FlaredDiskSynchrotron::isThreadSafe() const {

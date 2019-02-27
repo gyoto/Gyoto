@@ -42,14 +42,18 @@ using namespace Gyoto;
 
 GridData2D::GridData2D() :
   dphi_(0.), nphi_(0), dr_(0.), nr_(0.), dt_(0.), nt_(0),
-  rmin_(0.), rmax_(DBL_MAX), tmin_(-DBL_MAX), tmax_(DBL_MAX)
+  rmin_(0.), rmax_(DBL_MAX),
+  phimin_(0.), phimax_(2.*M_PI),
+  tmin_(-DBL_MAX), tmax_(DBL_MAX)
 {
   GYOTO_DEBUG << endl;
 }
 
 GridData2D::GridData2D(const GridData2D&o):
   dphi_(o.dphi_), nphi_(o.nphi_), dr_(o.dr_), nr_(o.nr_), dt_(o.dt_), nt_(o.nt_),
-  rmin_(o.rmin_), rmax_(o.rmax_), tmin_(o.tmin_), tmax_(o.tmax_)
+  rmin_(o.rmin_), rmax_(o.rmax_),
+  phimin_(o.phimin_), phimax_(o.phimax_),
+  tmin_(o.tmin_), tmax_(o.tmax_)
 {
   GYOTO_DEBUG << endl;
 }
@@ -81,6 +85,22 @@ size_t GridData2D::nr() const {return nr_;}
 
 void GridData2D::dr(double dd) { dr_ = dd;}
 double GridData2D::dr() const {return dr_;}
+
+void GridData2D::phimin(double phimn) {
+  if (phimn<0. or phimn>2.*M_PI)
+    throwError("In GridData2D::phimin: bad phimin");
+  phimin_ = phimn;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
+}
+double GridData2D::phimin() const {return phimin_;}
+
+void GridData2D::phimax(double phimx) {
+  if (phimx<0. or phimx>2.*M_PI)
+    throwError("In GridData2D::phimax: bad phimax");
+  phimax_ = phimx;
+  if (nphi_>1) dphi_ = (phimax_-phimin_) / double(nphi_-1);
+}
+double GridData2D::phimax() const {return phimax_;}
 
 void GridData2D::dphi(double dd) { dphi_ = dd;}
 double GridData2D::dphi() const {return dphi_;}
@@ -135,9 +155,9 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
   
   // update nphi_, dphi_
   nphi_ = naxes[1];
-  if (nphi_>1) dphi_ = 2.*M_PI/double((nphi_-1));
+  if (nphi_>1) dphi_ = (phimax_ - phimin_)/double((nphi_-1));
 
-  // update rmin_, rmax_, nr_, dr_
+  // update nr_, dr_
   nr_ = naxes[0];
   if (nr_>1) dr_ = (rmax_-rmin_) / double(nr_-1);
 
@@ -236,6 +256,20 @@ void GridData2D::fitsWriteHDU(fitsfile* fptr,
 		     &rmax_, CNULL, &status); 
       if (status) throwCfitsioError(status) ;
     }
+
+    if (phimin_>0.) {
+      fits_write_key(fptr, TDOUBLE,
+		     const_cast<char*>("GYOTO GridData2D phimin"),
+		     &phimin_, CNULL, &status);
+      if (status) throwCfitsioError(status) ;
+    }
+
+    if (phimax_<2.*M_PI) {
+      fits_write_key(fptr, TDOUBLE,
+		     const_cast<char*>("GYOTO GridData2D phimax"),
+		     &phimax_, CNULL, &status); 
+      if (status) throwCfitsioError(status) ;
+    }
   }
 
   ////// SAVE SRC IN APPROPRIATE HDU ///////
@@ -268,15 +302,22 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
   //cout << "in getInd R: " << rmin_ << " " << rmax_ << " " << nr_ << " " << dr_ << endl;
   if (rmin_>0. && rmax_<DBL_MAX && nr_>0. && dr_>0.) { // >1 radii must be properly defined
     i[2] = size_t(floor((rr-rmin_)/dr_)); // index of closest grid point smaller than rr
-                                              // (and same for phi,t)
+                                          // (and same for phi,t)
   } else {
     GYOTO_ERROR("In GridData2D::getIndices: radius undefined!");
   }
+  // Then: rmin_ + dr_*i[2] < r < rmin_ + dr_*(i[2]+1)
 
-  //cout << "in getInd PHI: " << nphi_ << " " << dphi_ << endl;
+  //cout << "in getInd PHI: " << phimin_ << " " << phimax_ << " " << nphi_ << " " << dphi_ << endl;
   if (nphi_>0.) {  // necessary condition
-    if  (dphi_>0.) // then >1 phi values provided
-      i[1] = size_t(floor(phi/dphi_));
+    if  (dphi_>0.) {// then >1 phi values provided
+      if (phi<phimin_)
+	i[1]=nphi_-1; // then phimin_+dphi_*(nphi_-1) < phi < phimin_ (modulo 2pi)
+      else if (phi>phimax_)
+	i[1]=nphi_-1; // idem
+      else
+	i[1] = size_t(floor((phi-phimin_)/dphi_)); // then phimin_+dphi_*i[1] < phi < phimin_ +dphi_*(i[1]+1)
+    }
     else          // then 1 phi value only, axisym
       i[1] = 0;
   } else {
@@ -285,18 +326,112 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
 
   //cout << "in getInd T: " << tmin_ << " " << tmax_ << " " << nt_ << " " << dt_ << endl;
   if (nt_>0.) {                                // necessary condition
-    if (dt_>0. && tmin_>0. && tmax_<DBL_MAX)   // >1 time values provided
-      if (tt<tmin_) i[0]=0;                    // assuming stationnarity before tmin_
-      else if (tt>tmax_) i[0]=nt_-1;           //                        and after tmax_
+    if (dt_>0. && tmin_ > -DBL_MAX && tmax_<DBL_MAX) // >1 time values provided
+      if (tt<tmin_) i[0]=0;        // assuming stationnarity before tmin_
+      else if (tt>tmax_) i[0]=nt_-1;//                       and after tmax_
       else i[0] = size_t(floor((tt-tmin_)/dt_));
     else if (dt_==0. && tmin_==tmax_)          // only 1 time value, stationnary disk
       i[0]=0;
     else
-      GYOTO_ERROR("In GridData2D::getIndices: time undefined!");
+      GYOTO_ERROR("In GridData2D::getIndices: time badly defined!");
   } else {
     GYOTO_ERROR("In GridData2D::getIndices: time undefined!");
   }
 
+}
+
+double GridData2D::interpolate(double tt, double phi, double rcyl,
+			       double* const array) const{
+  size_t ind[3]; // {i_t, i_phi, i_r}
+  getIndices(ind, tt, phi, rcyl);
+
+  //cout << " TEST First slot= " << array[0] << " " << array[1] << " " << array[2] << endl;
+
+  double array_interpo=0.;
+
+  if (nphi_==1) // axisym
+    throwError("TBD axisym");
+
+  // From here on, >1 phi values
+
+  size_t iphil=-1, iphiu=-1;
+  double phil=-1., phiu=-1.;
+  // Special treatment for phi to deal with phi<phimin or >phimax (both valid)
+  if (phi<phimin_){
+    iphil=nphi_-1;
+    iphiu=0;
+    phil=phimax_-2*M_PI; // this a slightly <0 value
+    phiu=phimin_;
+    // Then: phil < phi < phiu as it should
+  }else if(phi>phimax_){
+    iphil=nphi_-1;
+    iphiu=0;
+    phil=phimax_; // this a slightly <0 value
+    phiu=phimin_+2.*M_PI;
+    // Then: phil < phi < phiu as it should
+  }else{
+    iphil=ind[1];
+    iphiu=ind[1]+1;
+    phil = phimin_+dphi_*iphil;
+    phiu = phimin_+dphi_*iphiu;
+  }
+  
+  if (nt_==1){
+    // Bilinear in r,phi
+    size_t irl=ind[2], iru=ind[2]+1, it=ind[0];
+    double array_ll = array[it*nr_*nphi_+iphil*nr_+irl], // array_{phi,r}, l=lower index, u=upper index
+      array_lu = array[it*nr_*nphi_+iphil*nr_+iru],
+      array_ul = array[it*nr_*nphi_+iphiu*nr_+irl],
+      array_uu = array[it*nr_*nphi_+iphiu*nr_+iru];
+    double rl = rmin_+dr_*irl,
+      ru = rmin_+dr_*iru;
+    double ratiophi = (phi-phil)/(phiu-phil),
+      ratior = (rcyl-rl)/(ru-rl);
+    array_interpo = array_ll+(array_ul-array_ll)*ratiophi
+      +(array_lu-array_ll)*ratior
+      +(array_uu-array_lu-array_ul+array_ll)*ratiophi*ratior;
+    //cout << "interpo stuff: " << endl;
+    //cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
+    //cout << "R: " << rl << " " << rcyl << " " << ru << endl;
+    //cout << "ARRAY at 4 corners (phi,r)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;
+  }else{
+    // Trilinear in r,phi,t
+    size_t irl=ind[2], iru=ind[2]+1, itl=ind[0], itu=ind[0]+1;
+    double array_lll = array[itl*nr_*nphi_+iphil*nr_+irl], // array_{t,phi,r}
+      array_llu = array[itl*nr_*nphi_+iphil*nr_+iru],
+      array_lul = array[itl*nr_*nphi_+iphiu*nr_+irl],
+      array_luu = array[itl*nr_*nphi_+iphiu*nr_+iru],
+      array_ull = array[itu*nr_*nphi_+iphil*nr_+irl],
+      array_ulu = array[itu*nr_*nphi_+iphil*nr_+iru],
+      array_uul = array[itu*nr_*nphi_+iphiu*nr_+irl],
+      array_uuu = array[itu*nr_*nphi_+iphiu*nr_+iru];
+
+    double rl = rmin_+dr_*irl,
+      ru = rmin_+dr_*iru,
+      tl = tmin_+dt_*itl,
+      tu = tmin_+dt_*itu;
+
+    double ratiot = (tt-tl)/(tu-tl),
+      ratiophi = (phi-phil)/(phiu-phil),
+      ratior = (rcyl-rl)/(ru-rl);
+
+    array_interpo = array_lll
+      + (array_ull-array_lll)*ratiot
+      + (array_lul-array_lll)*ratiophi
+      + (array_llu-array_lll)*ratiot
+      +(array_uul-array_lul-array_ull+array_lll)*ratiot*ratiophi
+      +(array_luu-array_lul-array_llu+array_lll)*ratiophi*ratior
+      +(array_ulu-array_llu-array_ull+array_lll)*ratiot*ratior
+      +(array_uuu-array_luu-array_ulu-array_uul
+	+array_ull+array_llu+array_lul-array_lll)*ratiot*ratiophi*ratior;
+    /*cout << "interpo stuff: " << endl;
+    cout << "T: " << tl << " " << tt << " " << tu << endl;
+    cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
+    cout << "R: " << rl << " " << rcyl << " " << ru << endl;
+    cout << "ARRAY at 8 corners (t,phi,r)=(lll,llu,lul,luu,ull,ulu,uul,uuu) + interpo: " << array_lll << " " << array_llu << " " << array_lul << " " << array_luu << " " << array_ull << " " << array_ulu << " " << array_uul << " " << array_uuu << " " << array_interpo << endl;*/
+  }
+  
+  return array_interpo;
 }
 
 

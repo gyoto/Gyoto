@@ -51,7 +51,8 @@ namespace Gyoto {
 class Gyoto::GridData2D
 {
  private:
-
+  double phimin_; ///< Minimum phi in grid
+  double phimax_; ///< Maximum phi in grid
   double dphi_; ///< &delta;&phi; between two grid columns
   size_t nphi_; ///< Grid size in the &phi; direction
   double dr_; ///< Radius step
@@ -79,6 +80,10 @@ class Gyoto::GridData2D
   size_t nr() const;
   void dr(double dd);
   double dr() const;
+  void phimin(double phimn);
+  double phimin() const;
+  void phimax(double phimx);
+  double phimax() const;
   void dphi(double dd);
   double dphi() const;
   void tmin(double tmn);
@@ -142,6 +147,9 @@ class Gyoto::GridData2D
 #endif
 
   void getIndices(size_t i[3], double const tt, double const phi, double const rr) const ;
+  double interpolate(double tt, double phi, double rr,
+		     double* const array) const ;
+    
 
 
 };
