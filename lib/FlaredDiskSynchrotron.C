@@ -45,6 +45,9 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(FlaredDiskSynchrotron)
 GYOTO_PROPERTY_FILENAME(FlaredDiskSynchrotron, File, file,
 			"File name of FITS file containing data")
+GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, TimeTranslation_inMunit,
+		      timeTranslation_inMunit,
+		      "Shift simulation times by this amount, in GM/c3 unit")
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, HoverR, hoverR,
 		      "Aspect ratio H/r of flared disk")
 GYOTO_PROPERTY_DOUBLE_UNIT(FlaredDiskSynchrotron, NumberDensityMax, numberDensityMax,
@@ -122,6 +125,16 @@ void FlaredDiskSynchrotron::hoverR(double const hor) {
 
 double FlaredDiskSynchrotron::hoverR() const {
   return hoverR_;
+}
+
+void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
+  if (filename_=="")
+    throwError("In FlaredDiskSynchrotron::timeTranslation: "
+	       "please call first fitsRead, ie put the File "
+	       "XML field before the TimeTranslation XML field");
+  double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
+  GridData2D::tmin(tmin+dt);
+  GridData2D::tmax(tmax+dt);
 }
 
 double FlaredDiskSynchrotron::numberDensityMax() const {
@@ -384,6 +397,7 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 		     double dsem,
 		     state_t const &coord_ph,
 		     double const coord_obj[8]) const {
+
   double rcyl=0.; // cylindrical radius
   double zz=0.; // height, z coord
   switch (gg_->coordKind()) {
@@ -412,7 +426,12 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   double rho_interpo=GridData2D::interpolate(tt,phi,rcyl,density_);
   
   double number_density = rho_interpo*numberDensityMax_cgs_;
-  double temperature = temperatureMax_;
+
+  double gamm1 = 2./3.; // gamma-1
+  // Polytrop: p = kappa*rho^gamma
+  // Perfect gas: p = (rho/mp)*k*T
+  // Thus: T \propto rho^{gamma-1}
+  double temperature = pow(rho_interpo,gamm1)*temperatureMax_;
 
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);

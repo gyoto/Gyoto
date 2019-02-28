@@ -89,6 +89,7 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   std::string file() const;
   void hoverR(double const hor) ;
   double hoverR() const;
+  void timeTranslation_inMunit(double const dt) ;
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
   void kappaIndex(double index);

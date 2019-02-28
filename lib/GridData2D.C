@@ -418,7 +418,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     array_interpo = array_lll
       + (array_ull-array_lll)*ratiot
       + (array_lul-array_lll)*ratiophi
-      + (array_llu-array_lll)*ratiot
+      + (array_llu-array_lll)*ratior
       +(array_uul-array_lul-array_ull+array_lll)*ratiot*ratiophi
       +(array_luu-array_lul-array_llu+array_lll)*ratiophi*ratior
       +(array_ulu-array_llu-array_ull+array_lll)*ratiot*ratior
@@ -428,6 +428,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     cout << "T: " << tl << " " << tt << " " << tu << endl;
     cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
     cout << "R: " << rl << " " << rcyl << " " << ru << endl;
+    cout << "ratiot,phi,r= " << ratiot << " " << ratiophi << " " << ratior << endl;
     cout << "ARRAY at 8 corners (t,phi,r)=(lll,llu,lul,luu,ull,ulu,uul,uuu) + interpo: " << array_lll << " " << array_llu << " " << array_lul << " " << array_luu << " " << array_ull << " " << array_ulu << " " << array_uul << " " << array_uuu << " " << array_interpo << endl;*/
   }
   
