@@ -376,7 +376,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     phiu = phimin_+dphi_*iphiu;
   }
   
-  if (nt_==1){
+  if (nt_==1 || tt<=tmin_ || tt>=tmax_){
     // Bilinear in r,phi
     size_t irl=ind[2], iru=ind[2]+1, it=ind[0];
     double array_ll = array[it*nr_*nphi_+iphil*nr_+irl], // array_{phi,r}, l=lower index, u=upper index
@@ -390,10 +390,11 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     array_interpo = array_ll+(array_ul-array_ll)*ratiophi
       +(array_lu-array_ll)*ratior
       +(array_uu-array_lu-array_ul+array_ll)*ratiophi*ratior;
-    //cout << "interpo stuff: " << endl;
-    //cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
-    //cout << "R: " << rl << " " << rcyl << " " << ru << endl;
-    //cout << "ARRAY at 4 corners (phi,r)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;
+    /*cout << "bilin interpo stuff: " << endl;
+    cout << "T: " << tmin_ << " " << tt << " " << tmax_ << " " << it << endl;
+    cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
+    cout << "R: " << rl << " " << rcyl << " " << ru << endl;
+    cout << "ARRAY at 4 corners (phi,r)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;*/
   }else{
     // Trilinear in r,phi,t
     size_t irl=ind[2], iru=ind[2]+1, itl=ind[0], itu=ind[0]+1;
@@ -424,7 +425,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
       +(array_ulu-array_llu-array_ull+array_lll)*ratiot*ratior
       +(array_uuu-array_luu-array_ulu-array_uul
 	+array_ull+array_llu+array_lul-array_lll)*ratiot*ratiophi*ratior;
-    /*cout << "interpo stuff: " << endl;
+    /*cout << "trilin interpo stuff: " << endl;
     cout << "T: " << tl << " " << tt << " " << tu << endl;
     cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
     cout << "R: " << rl << " " << rcyl << " " << ru << endl;
