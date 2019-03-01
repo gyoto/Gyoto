@@ -62,7 +62,8 @@ GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, KappaIndex, kappaIndex)
 GYOTO_PROPERTY_END(FlaredDiskSynchrotron, Standard::properties)
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron() :
-Standard("FlaredDiskSynchrotron"), filename_(""), hoverR_(0.),
+Standard("FlaredDiskSynchrotron"), GridData2D(),
+  filename_(""), hoverR_(0.),
   density_(NULL), velocity_(NULL),
   numberDensityMax_cgs_(1.), temperatureMax_(1.),
   magnetizationParameter_(1.)
@@ -72,7 +73,8 @@ Standard("FlaredDiskSynchrotron"), filename_(""), hoverR_(0.),
 }
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
-  Standard(o), filename_(o.filename_), hoverR_(o.hoverR_),
+  Standard(o), GridData2D(o),
+  filename_(o.filename_), hoverR_(o.hoverR_),
   density_(NULL), velocity_(NULL),
   numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_),
   magnetizationParameter_(o.magnetizationParameter_)

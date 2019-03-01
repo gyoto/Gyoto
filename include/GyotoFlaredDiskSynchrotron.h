@@ -89,6 +89,16 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   std::string file() const;
   void hoverR(double const hor) ;
   double hoverR() const;
+  /*
+    timeTranslation shifts the value of GridData2D::tmin_ and tmax_,
+    allowing to scan the full simulation without having to change
+    the value of the Screen observation time (which is typically
+    not provided in M unit in the XML). 
+    Choosing a negative timeTranslation, i.e. performing tmin_,tmax_-=dt, 
+    amounts to increasing the Screen observation time by the same value, 
+    tobs+=dt.
+
+   */
   void timeTranslation_inMunit(double const dt) ;
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
