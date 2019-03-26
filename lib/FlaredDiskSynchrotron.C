@@ -425,15 +425,26 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   // disk at t<tmin_ and t>tmax_
 
   //cout << "CALLING INTERPO FOR RHO" << endl;
-  double rho_interpo=GridData2D::interpolate(tt,phi,rcyl,density_);
-  
-  double number_density = rho_interpo*numberDensityMax_cgs_;
+
+  // Interpolating the density_ table, which contains
+  // Sigma/r (surface density divided by radius), normalized.
+  double Sigma_over_r_interpo=GridData2D::interpolate(tt,phi,rcyl,density_);
 
   double gamm1 = 2./3.; // gamma-1
   // Polytrop: p = kappa*rho^gamma
+  double HH = hoverR_*rcyl; // Height of the flared disk at the local rcyl
+  // 3D number density as a function of 2D surface density,
+  // for a polytropic disk. See notes for details:
+  double zfactor = 1.-zz*zz/(HH*HH),
+    number_density = Sigma_over_r_interpo*numberDensityMax_cgs_
+    *pow(zfactor,1./gamm1);
+  
+  // 3D temperature now, see notes for details.
   // Perfect gas: p = (rho/mp)*k*T
   // Thus: T \propto rho^{gamma-1}
-  double temperature = pow(rho_interpo,gamm1)*temperatureMax_;
+  double temperature = pow(Sigma_over_r_interpo,gamm1)*temperatureMax_*zfactor;
+
+  //cout << "stuff: " << Sigma_over_r_interpo << " " << hoverR_ << " " << rcyl << " " << zz << " " << HH << " " << zfactor << endl;
 
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
