@@ -97,7 +97,7 @@
  * with the Yorick plug-in (see \ref yorick_plugin_page).
  *
  * You can visit the 
- * <A HREF="gallery/index.html">Gyoto Picture Gallery</A> 
+ * <A HREF="gallery/index.html"><span style="color: #ff0000">Gyoto Picture Gallery</span></A> 
  * which displays some selected Gyoto computations.
  * 
  *
