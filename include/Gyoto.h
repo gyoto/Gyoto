@@ -96,6 +96,10 @@
  * A graphical user interface for tracing stellar orbits is provided
  * with the Yorick plug-in (see \ref yorick_plugin_page).
  *
+ * You can visit the 
+ * <A HREF="gallery/index.html">Gyoto Picture Gallery</A> 
+ * which displays some selected Gyoto computations.
+ * 
  *
  * \image html gyotoy_screenshot.png
  *
