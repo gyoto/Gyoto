@@ -96,8 +96,8 @@
  * A graphical user interface for tracing stellar orbits is provided
  * with the Yorick plug-in (see \ref yorick_plugin_page).
  *
- * To visit the 
- * <span style="color: #ff0000">Gyoto Picture Gallery</span>:
+ * To visit the code
+ * <span style="color: #ff0000"><b>Picture Gallery</b></span>:
  * click <A HREF="gallery/index.html">here</A>!
  * 
  *
