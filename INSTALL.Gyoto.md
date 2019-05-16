@@ -24,9 +24,11 @@ The most recent packages will install about everything in Gyoto with
 ### Ubuntu
 
 Gyoto is also part of Ubuntu at least since Raring (13.04). Updated
-versions are provided on our [personal package archive (PPA)]
-(https://launchpad.net/~paumard/+archive/ubuntu/gyoto/). Follow
-instructions on that page to add this PPA to your system.
+versions are sometimes provided on our [personal package archive
+(PPA)] (https://launchpad.net/~paumard/+archive/ubuntu/gyoto/). Check
+what version is available there compared to what is available for your
+version of Ubuntu and follow instructions on that page to add this PPA
+to your system.
 
 You can get a list of available packages with
 
@@ -60,6 +62,9 @@ The source code is available from
 [Github](https://github.com/gyoto/Gyoto):
 
     git clone git://github.com/gyoto/Gyoto.git
+
+(This obviously requires git to be installed on your system, on Debian
+and derivtives use 'sudo apt-get install git').
 
 Then the build process is, in a nutshell, after having installed the
 dependencies:
@@ -125,6 +130,14 @@ Gyoto requires:
      On some systems, LORENE must be built with -fPIC (GYOTO as well,
      but this is the default).
    - developers may need the GNU autotools: autoconf, automake, libtool.
+
+For Debian and its derivatives (incl. Ubuntu), you can install all
+those dependencies with:
+   sudo apt-get install build-essential yorick-dev yorick-yutils \
+	libxerces-c-dev libcfitsio-dev libudunits2-dev libboost-dev \
+	libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
+	python3-dev python3-setuptools swig3.0 python3-numpy doxygen \
+	pkg-config liblorene-dev lorene-codes-src gfortran g++
 
 ## 3- Fixing the timestamps
 
@@ -194,6 +207,10 @@ CFITIO are in `/opt/local`:
                 CPPFLAGS=-I/opt/local/include \
                 LDFLAGS=-L/opt/local/lib
 
+On Debian or Ubuntu, with all the dependencies installed as above,
+this should do:
+     ./configure --with-arblib \
+	--with-lorene=/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH`/lorene
 
 ## 5- Building Gyoto
 
