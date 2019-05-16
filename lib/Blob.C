@@ -94,11 +94,12 @@ string Blob::className() const { return  string("Blob"); }
 string Blob::className_l() const { return  string("blob"); }
 
 void Blob::radiativeQ(double Inu[], // output
-			       double Taunu[], // output
-			       double nu_ems[], size_t nbnu, // input
-			       double dsem,
-			       state_t const &coord_ph,
-			       double const coord_obj[8]) const {
+		      double Taunu[], // output
+		      double const nu_ems[], size_t nbnu, // input
+		      double dsem,
+		      state_t const &coord_ph,
+		      double const coord_obj[8]) const {
+
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif

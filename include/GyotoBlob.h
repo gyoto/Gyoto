@@ -106,7 +106,7 @@ class Gyoto::Astrobj::Blob :
   void kappaIndex(double);
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
-			  double nu_em[], size_t nbnu,
+			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
 
