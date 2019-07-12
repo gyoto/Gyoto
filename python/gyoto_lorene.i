@@ -39,6 +39,13 @@ using namespace Gyoto;
 %array_class(unsigned long, array_unsigned_long)
 %array_class(size_t, array_size_t)
 
+// This will be called upon extension initialization
+%init {
+#ifdef SWIGPYTHON
+  import_array();
+#endif
+ }
+
 GyotoSmPtrClassDerived(Metric, RotStar3_1)
 GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
 
