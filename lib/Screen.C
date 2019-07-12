@@ -512,7 +512,6 @@ void Screen::getRayCoord(double angle1, double angle2,
 		      double coord[]) const
 
 {
-  angle1+=dangle1_; angle2+=dangle2_; // Screen orientation
   double normtol=1e-10;
   int i; // dimension : 0, 1, 2
   double pos[4];
@@ -541,8 +540,8 @@ void Screen::getRayCoord(double angle1, double angle2,
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
-    spherical_angle_a = angle1;
-    spherical_angle_b = angle2;
+    spherical_angle_a = angle1+dangle1_;
+    spherical_angle_b = angle2+dangle2_;
     break;
   case rectilinear:
     spherical_angle_a = atan(sqrt(angle1*angle1+angle2*angle2));
@@ -621,7 +620,18 @@ void Screen::getRayCoord(double angle1, double angle2,
   double vel[3]={-sin(spherical_angle_a)*cos(spherical_angle_b),
 		 -sin(spherical_angle_a)*sin(spherical_angle_b),
 		 -cos(spherical_angle_a)};
-  
+
+  if (anglekind_ != spherical_angles) {
+    // Rotate around Y by dangle1, then around new X by dangle2
+    double c, s; sincos(dangle1_, &s, &c);
+    double vel_rot[3]={c*vel[0]+s*vel[2],
+		       vel[1],
+		       -s*vel[0]+c*vel[2]};
+    sincos(dangle2_, &s, &c);
+    vel[0]=vel_rot[0];
+    vel[1]=c*vel_rot[1]-s*vel_rot[2];
+    vel[2]=s*vel_rot[1]+c*vel_rot[2];
+  }
   // 4-vector tangent to photon geodesic
   
   if (fourvel_[0]==0. && observerkind_=="ObserverAtInfinity"){
