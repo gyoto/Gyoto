@@ -733,6 +733,14 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
                       ARGOUT_ARRAY1_2, ARGOUT_ARRAY1_3,
                              ARGOUT_ARRAY1_4);
   }
+  void observerTetrad(double const IN_ARRAY1_1[4], double const IN_ARRAY1_2[4],
+                      double ARGOUT_ARRAY1_1[4], double ARGOUT_ARRAY1_2[4],
+                      double ARGOUT_ARRAY1_3[4]) const {
+    ($self)-> observerTetrad(
+                      IN_ARRAY1_1, IN_ARRAY1_2,
+                      ARGOUT_ARRAY1_1, ARGOUT_ARRAY1_2,
+                             ARGOUT_ARRAY1_3);
+  }
 };
 GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)

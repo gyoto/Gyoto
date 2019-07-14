@@ -486,6 +486,23 @@ void KerrBL::circularVelocity(double const coor[4], double vel[4],
 # endif
 }
 
+void KerrBL::zamoVelocity(double const * coor, double* vel) const {
+  double g[4][4];
+  gmunu(g, coor);
+  double gtt = g[0][0],
+    //    grr      = g[1][1],
+    //    gthth    = g[2][2],
+    gpp      = g[3][3],
+    gtp      = g[0][3];
+  double fact = gtt*gpp - gtp*gtp;
+  double ut2 = -gpp/fact;
+  double omega = -gtp/gpp;
+  vel[0] = sqrt(ut2);
+  vel[1] = 0.;
+  vel[2] = 0.;
+  vel[3] = omega*vel[0];
+}
+
 //Runge Kutta to order 4
 int KerrBL::myrk4(Worldline * line, state_t const &coordin,
 		  double h, state_t &res) const
@@ -1178,70 +1195,42 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
   line -> setCst(cst,5);
 }
 
-void KerrBL::observerTetrad(string const obskind,
-			    double const pos[4], double fourvel[4],
+void KerrBL::observerTetrad(double const pos[4], double const fourvel[4],
 			    double screen1[4], double screen2[4], 
 			    double screen3[4]) const{
 
-  double gtt = gmunu(pos,0,0),
-    grr      = gmunu(pos,1,1),
-    gthth    = gmunu(pos,2,2),
-    gpp      = gmunu(pos,3,3),
-    gtp      = gmunu(pos,0,3);
+  double g[4][4];
+  gmunu(g, pos);
+  double gtt = g[0][0],
+    grr      = g[1][1],
+    gthth    = g[2][2],
+    gpp      = g[3][3],
+    gtp      = g[0][3],
+    rho2     = gtp-gtt*gpp;
+  double cst;
 
-  if (obskind=="ZAMO"){
-    double fact = gtt*gpp - gtp*gtp;
-    if (fact == 0.){
-      GYOTO_ERROR("In KerrBL::observerTetrad: "
-		 "bad values");
-    }
-    double ut2 = -gpp/fact;
-    if (grr==0. || gthth==0. || gpp==0. || ut2<=0.){
-      GYOTO_ERROR("In KerrBL::observerTetrad: "
-		 "bad values");
-    }
-    double omega = -gtp/gpp;
-    double ut = sqrt(ut2);
-    double fourv[4]={ut,0.,0.,omega*ut};
-    double e3[4] = {0.,-1./sqrt(grr),0.,0.};
-    double e2[4] = {0.,0.,-1./sqrt(gthth),0.};
-    double e1[4] = {0.,0.,0.,-1/sqrt(gpp)};
-    
-    for (int ii=0;ii<4;ii++){
-      fourvel[ii]=fourv[ii];
-      screen1[ii]=e1[ii];
-      screen2[ii]=e2[ii];
-      screen3[ii]=e3[ii];
-    }
-    
-  }else if (obskind=="KeplerianObserver"){
-    double omega = 1./(pow(pos[1],1.5)+spin_);
-    double ut2 = -1/(gtt+gpp*omega*omega+2.*gtp*omega);
-    if (ut2 <= 0. || grr<=0. || gthth <=0.) {
-      GYOTO_ERROR("In KerrBL::observerTetrad: "
-		 "bad values");
-    }
-    double ut = sqrt(ut2);
-    double fourv[4]={ut,0.,0.,omega*ut};
-    double e3[4] = {0.,-1./sqrt(grr),0.,0.};
-    double e2[4] = {0.,0.,-1./sqrt(gthth),0.};
-    
-    double fact1 = (gtp+gpp*omega)/(gtt+gtp*omega),
-      fact2 = gtt*fact1*fact1+gpp-2.*gtp*fact1;
-    if (fact2 <= 0.) GYOTO_ERROR("In KerrBL::observerTetrad: "
-				"bad values");
-    double a2 = 1./sqrt(fact2), a1 = -a2*fact1;
-    double e1[4] = {-a1,0.,0.,-a2};
-    
-    for (int ii=0;ii<4;ii++){
-      fourvel[ii]=fourv[ii];
-      screen1[ii]=e1[ii];
-      screen2[ii]=e2[ii];
-      screen3[ii]=e3[ii];
-    }
-  }else{
-    GYOTO_ERROR("In KerrBL::observerTetrad "
-	       "unknown observer kind");
-  }
-  Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
+  double const * const uu = fourvel;      // alias for fourvel
+  double ud[4]; dualOneForm(pos, uu, ud); // down form
+
+  // screen1 is ephi
+  cst = -1./sqrt(-(uu[0]*ud[0]+uu[3]*ud[3])*rho2);
+  screen1[0] = cst*ud[3];
+  screen1[1] = 0.;
+  screen1[2] = 0.;
+  screen1[3] = -cst*ud[0];
+
+  // screen2 is etheta
+  cst = -1./sqrt(gthth*(1.+ud[2]*uu[2]));
+  screen2[0] = cst*uu[0]*ud[2];
+  screen2[1] = cst*uu[1]*ud[2];
+  screen2[2] = cst*(1.+uu[2]*ud[2]);
+  screen2[3] = cst*uu[3]*ud[2];
+
+  // screen3 is er
+  cst = -1./sqrt(-grr*(1+ud[2]*uu[2])*(uu[0]*ud[0]+uu[3]*ud[3]));
+  screen3[0] = cst*uu[0]*ud[1];
+  screen3[1] = -cst*(uu[0]*ud[0]+uu[3]*ud[3]);
+  screen3[2] = 0.;
+  screen3[3] = cst*uu[3]*ud[1];
+
 }

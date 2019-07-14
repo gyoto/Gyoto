@@ -76,7 +76,7 @@ GYOTO_PROPERTY_DOUBLE_UNIT(Screen, FreqObs, freqObs,
 GYOTO_PROPERTY_STRING(Screen, AngleKind, anglekind,
 		      "\"EquatorialAngles\" (default), \"SphericalAngles\" or \"Rectilinear\".")
 GYOTO_PROPERTY_STRING(Screen, ObserverKind, observerKind,
-		      "\"ObserverAtInfinity\" (default), \"KeplerianObserver\" or \"ZAMO\".")
+		      "\"ObserverAtInfinity\" (default), \"KeplerianObserver\", \"ZAMO\", \"VelocitySpecified\" or \"FullySpecified\".")
 GYOTO_PROPERTY_FILENAME(Screen, Mask, maskFile,
 			"FITS file to use as mask.")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Screen, FourVelocity, fourVel, "4-velocity of observer.")
@@ -632,7 +632,7 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
   // 4-vector tangent to photon geodesic
   
-  if (fourvel_[0]==0. && observerkind_=="ObserverAtInfinity"){
+  if (observerkind_=="ObserverAtInfinity"){
     /* 
        ---> Observer local frame not given in XML <---
        Assume observer static at infinity ("standard Gyoto")
@@ -691,7 +691,7 @@ void Screen::getRayCoord(double angle1, double angle2,
     // 0-component of photon tangent 4-vector found by normalizing
     gg_ -> nullifyCoord(coord);
     
-  }else{    
+  } else {
     /* 
        ---> Observer local frame given in XML <---
        Express photon tangent 4-vector in the observer basis
@@ -704,98 +704,47 @@ void Screen::getRayCoord(double angle1, double angle2,
 	GYOTO_ERROR("Please move Screen away from z-axis");
     }
 
-    if (fourvel_[0]!=0. && observerkind_!="ObserverAtInfinity"){
-      GYOTO_ERROR("In Screen:getRayCoord: "
-		 " choose an implemented observer kind OR"
-		 " explicitly give the local tetrad in the XML");
-    }
+    // Implemented observer specifid in XML, local tetrad computed by Metric
+    const double fourpos[4]={coord[0],coord[1],coord[2],coord[3]};
+    double fourvel[4], screen1[4], screen2[4], screen3[4];
+    memcpy(fourvel, fourvel_, 4*sizeof(double));
+    memcpy(screen1, screen1_, 4*sizeof(double));
+    memcpy(screen2, screen2_, 4*sizeof(double));
+    memcpy(screen3, screen3_, 4*sizeof(double));
+    gg_ -> observerTetrad(observerkind_,fourpos,fourvel,screen1,
+			  screen2,screen3);
 
-    if (fourvel_[0]==0){
-      // Implemented observer specifid in XML, local tetrad computed by Metric
-      const double fourpos[4]={coord[0],coord[1],coord[2],coord[3]};
-      double fourvel[4], screen1[4], screen2[4], screen3[4];
-      gg_ -> observerTetrad(observerkind_,fourpos,fourvel,screen1,
-			    screen2,screen3);
+    /* Photon tagent 4-vector l defined by: l = p + fourvel_
+       where p gives the direction of the photon
+       in the observer's rest space (orthogonal to fourvel).
+       Here we choose the particular tangent 4-vector l
+       that satisfies l.fourvel_=-1
+       Then l = fourvel_ + (orthogonal proj of l onto rest space)
+       = fourvel_ + p
+       and p = vel[0]*screen1_ + vel[1]*screen2_ + vel[2]*screen3_
+       with p.p = 1, thus l.l = 0 as it should
+    */
 
-      /*cout << "Vectors in Screen: " << setprecision(17) << endl;
-      for (int ii=0;ii<4;ii++) cout << fourvel[ii] << " ";
-      cout << endl;
-      for (int ii=0;ii<4;ii++) cout << screen1[ii] << " ";
-      cout << endl;
-      for (int ii=0;ii<4;ii++) cout << screen2[ii] << " ";
-      cout << endl;
-      for (int ii=0;ii<4;ii++) cout << screen3[ii] << " ";
-      cout << endl;*/
-
-      /* Photon tagent 4-vector l defined by: l = p + fourvel_
-	 where p gives the direction of the photon
-	 in the observer's rest space (orthogonal to fourvel).
-	 Here we choose the particular tangent 4-vector l
-	 that satisfies l.fourvel_=-1
-	 Then l = fourvel_ + (orthogonal proj of l onto rest space)
-	 = fourvel_ + p
-	 and p = vel[0]*screen1_ + vel[1]*screen2_ + vel[2]*screen3_ 
-	 with p.p = 1, thus l.l = 0 as it should
-      */
-      
-      coord[4]=vel[0]*screen1[0]
-	+vel[1]*screen2[0]
-	+vel[2]*screen3[0]
-	+fourvel[0];
-      coord[5]=vel[0]*screen1[1]
-	+vel[1]*screen2[1]
-	+vel[2]*screen3[1]
-	+fourvel[1];
-      coord[6]=vel[0]*screen1[2]
-	+vel[1]*screen2[2]
-	+vel[2]*screen3[2]
-	+fourvel_[2];
-      coord[7]=vel[0]*screen1[3]
-	+vel[1]*screen2[3]
-	+vel[2]*screen3[3]
-	+fourvel[3];
-    }else{
-      // Local tetrad given by the user in the XML file. Check it.
-      if (fabs(gg_->ScalarProd(coord,fourvel_,fourvel_)+1.)>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen1_,screen1_)-1.)>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen2_,screen2_)-1.)>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen3_,screen3_)-1.)>normtol){
-	cout << "norm= " << gg_->ScalarProd(coord,fourvel_,fourvel_) << " " << gg_->ScalarProd(coord,screen1_,screen1_) << " " << gg_->ScalarProd(coord,screen2_,screen2_) << " " << gg_->ScalarProd(coord,screen3_,screen3_) << endl;
-	GYOTO_ERROR("In Screen:getRayCoord: observer's local"
-		   " basis is not properly normalized");
-      }
-      
-      if (fabs(gg_->ScalarProd(coord,fourvel_,screen1_))>normtol ||
-	  fabs(gg_->ScalarProd(coord,fourvel_,screen2_))>normtol ||
-	  fabs(gg_->ScalarProd(coord,fourvel_,screen3_))>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen1_,screen2_))>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen1_,screen3_))>normtol ||
-	  fabs(gg_->ScalarProd(coord,screen2_,screen3_))>normtol)
-	GYOTO_ERROR("In Screen:getRayCoord: observer's local"
-		   " basis is not orthogonal");
-     
-      coord[4]=vel[0]*screen1_[0]
-	+vel[1]*screen2_[0]
-	+vel[2]*screen3_[0]
-	+fourvel_[0];
-      coord[5]=vel[0]*screen1_[1]
-	+vel[1]*screen2_[1]
-	+vel[2]*screen3_[1]
-	+fourvel_[1];
-      coord[6]=vel[0]*screen1_[2]
-	+vel[1]*screen2_[2]
-	+vel[2]*screen3_[2]
-	+fourvel_[2];
-      coord[7]=vel[0]*screen1_[3]
-	+vel[1]*screen2_[3]
-	+vel[2]*screen3_[3]
-	+fourvel_[3];
-    }
-    if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
-      GYOTO_ERROR("In Screen::getRayCoord: "
-		 " tangent 4-vector to photon not properly normalized");
-    }
-    
+    coord[4]=vel[0]*screen1[0]
+      +vel[1]*screen2[0]
+      +vel[2]*screen3[0]
+      +fourvel[0];
+    coord[5]=vel[0]*screen1[1]
+      +vel[1]*screen2[1]
+      +vel[2]*screen3[1]
+      +fourvel[1];
+    coord[6]=vel[0]*screen1[2]
+      +vel[1]*screen2[2]
+      +vel[2]*screen3[2]
+      +fourvel_[2];
+    coord[7]=vel[0]*screen1[3]
+      +vel[1]*screen2[3]
+      +vel[2]*screen3[3]
+      +fourvel[3];
+  }
+  if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
+    GYOTO_ERROR("In Screen::getRayCoord: "
+		" tangent 4-vector to photon not properly normalized");
   }
 }
 

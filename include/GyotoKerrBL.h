@@ -118,6 +118,8 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
+  virtual void zamoVelocity(double const pos[4], double vel[4]) const ;
+
  public:
   virtual void MakeCoord(const double coordin[8], const double cst[5], double coordout[8]) const ;
   ///< Inverse function of MakeMomentumAndCst
@@ -170,10 +172,10 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   void setParticleProperties(Worldline* line, const double* coord) const;
   virtual int isStopCondition(double const * const coord) const;
   
-  void observerTetrad(std::string const obskind,
-		      double const pos[4], double fourvel[4],
-		      double screen1[4], double screen2[4], 
-		      double screen3[4]) const;
+  virtual void observerTetrad(double const pos[4], double const fourvel[4],
+			      double screen1[4], double screen2[4],
+			      double screen3[4]) const ;
+
 };
 
 #endif

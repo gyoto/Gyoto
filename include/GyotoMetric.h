@@ -339,6 +339,22 @@ class Gyoto::Metric::Generic
 				double dir=1.) const ;
 
   /**
+   * \brief Yield ZAMO velocity at a given position
+   *
+   * Give the velocity of a zero angular momentul observer (whatever
+   * is closest to "at rest").
+   *
+   * The default implementation assumes the ZAMO 3-velocity is
+   * null. This is correct in the simplest metrics (e.g. Scharzschild)
+   * but wrong in the general case (e.g. Kerr). Derived classes should
+   * reimplement it if needed.
+   *
+   * \param pos input: position,
+   * \param vel output: velocity,
+   */
+  virtual void zamoVelocity(double const pos[4], double vel[4]) const ;
+
+  /**
    * Set coord[4] so that the 4-velocity coord[4:7] is lightlike,
    * i.e. of norm 0. There may be up to two solutions. coord[4] is set
    * to the hightest. The lowest can be retrieved using
@@ -376,10 +392,18 @@ class Gyoto::Metric::Generic
   virtual double ScalarProd(const double pos[4],
 		    const double u1[4], const double u2[4]) const; ///< Scalar product
 
+  /**
+   * \brief Computes dual 1-form
+   * Compute the dual 1-form of 4-vector.
+   * \param IN_ARRAY1_1 4-position;
+   * \param IN_ARRAY1_2 quadrivector;
+   * \param[out] ARGOUT_ARRAY3 output 1-form
+   */
+  void dualOneForm(double const IN_ARRAY1_1[4], double const IN_ARRAY1_2[4], double ARGOUT_ARRAY1[4]) const ;
 
   /**
    * \brief Computes the orthonormal local tetrad of the observer
-   * 
+   *
    * \param obskind  input: kind of observer (eg: "ZAMO","KeplerianObserver"...)
    * \param pos      input: position,
    * \param fourvel output: observer 4-velocity (norm -1)
@@ -389,6 +413,19 @@ class Gyoto::Metric::Generic
    */
   virtual void observerTetrad(std::string const obskind,
 			      double const pos[4], double fourvel[4],
+			      double screen1[4], double screen2[4],
+			      double screen3[4]) const ;
+
+  /**
+   * \brief Computes the orthonormal local tetrad of the observer
+   *
+   * \param[in]  pos     position,
+   * \param[in]  fourvel observer 4-velocity (norm -1)
+   * \param[out] screen1 first vector in the screen plane
+   * \param[out] screen2 second vector in the screen plane
+   * \param[out] screen3 vector normal to the screen
+   */
+  virtual void observerTetrad(double const pos[4], double const fourvel[4],
 			      double screen1[4], double screen2[4],
 			      double screen3[4]) const ;
 

@@ -208,6 +208,20 @@ double Metric::Generic::ScalarProd(const double pos[4],
   return res;
 }
 
+void Metric::Generic::dualOneForm(double const IN_ARRAY1[4],
+				  double const IN_ARRAY2[4],
+				  double ARGOUT_ARRAY3[4]) const {
+  double g[4][4];
+  gmunu(g, IN_ARRAY1);
+  for (int nu=0; nu<4; nu++) {
+    ARGOUT_ARRAY3[nu]=0.;
+    for (int mu=0; mu<4; mu++) {
+      ARGOUT_ARRAY3[nu] += g[mu][nu]*IN_ARRAY2[mu];
+    }
+  }
+}
+
+
 /***************Geodesic most general integration**************/
 
 
@@ -363,6 +377,16 @@ void Metric::Generic::circularVelocity(double const * coor, double* vel,
   } else GYOTO_ERROR("Unknownn COORDKIND");
 }
 
+void Metric::Generic::zamoVelocity(double const * coor, double* vel) const {
+  static bool needwarning = true;
+  if (needwarning) {
+    GYOTO_WARNING <<
+      "Trivial implementation of Metric::Generic::zamoVelocity() may be wrong for you Metric\n";
+    needwarning = false;
+  }
+  vel [1] = vel [2] = vel [3] = 0.;
+  vel [0] = SysPrimeToTdot(coor, vel+1) ;
+}
 
 void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
   double tauprime;
@@ -508,8 +532,16 @@ void Metric::Generic::setParticleProperties(Worldline*, const double*) const {
 
 void Metric::Generic::observerTetrad(string const obskind,
 				     double const coord[4], double fourvel[4],
-				     double screen1[4], double screen2[4], 
+				     double screen1[4], double screen2[4],
 				     double screen3[4]) const{
+  if (obskind == "ZAMO") {
+    zamoVelocity(coord, fourvel);
+  } else if (obskind=="KeplerianObserver") {
+    circularVelocity(coord, fourvel);
+  }
+  if (obskind != "FullySpecified")
+    observerTetrad(coord, fourvel, screen1, screen2, screen3);
+
   // No general way to define the tetrad, should be defined
   // in specific metrics. Test below will obviously fail for
   // a machine-initialized tetrad.
@@ -532,6 +564,12 @@ void Metric::Generic::observerTetrad(string const obskind,
     GYOTO_ERROR("In Metric:observerTetrad: observer's local"
 	       " basis is not orthogonal");
   }
+}
+
+void Metric::Generic::observerTetrad(double const coord[4], double const fourvel[4],
+				     double screen1[4], double screen2[4],
+				     double screen3[4]) const{
+  GYOTO_ERROR("Metric::<ThisKind>::observerTetrad not implemented.");
 }
 
 double Metric::Generic::getRmb() const{
