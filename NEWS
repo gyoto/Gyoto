@@ -12,6 +12,7 @@ NEXT ABI
       * Screen: supports two new obskinds: VelocitySpecified and
         FullySpecified.
    * Screen: support changing camera orientation (with dangle1 and dangle2)
+   * Python: new module gyoto.animate to help writing Gyoto-based movies.
 
 1.3.1 2019/01/22 BUG
 

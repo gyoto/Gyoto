@@ -718,6 +718,9 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   void circularVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
     ($self)->circularVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
   }
+  void zamoVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
+    ($self)->zamoVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
+  }
   void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) {
     ($self)->gmunu(ARGOUT_ARRAY2, IN_ARRAY1);
   }
