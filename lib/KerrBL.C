@@ -1206,7 +1206,7 @@ void KerrBL::observerTetrad(double const pos[4], double const fourvel[4],
     gthth    = g[2][2],
     gpp      = g[3][3],
     gtp      = g[0][3],
-    rho2     = gtp-gtt*gpp;
+    rho2     = gtp*gtp-gtt*gpp;
   double cst;
 
   double const * const uu = fourvel;      // alias for fourvel
