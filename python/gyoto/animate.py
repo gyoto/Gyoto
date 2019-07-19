@@ -26,12 +26,16 @@ defaultTrajectory -- returns a default screen trajectory
 mk_video -- make a video
 
 '''
-from . import core, std
+try:
+    from . import core, std
+except ImportError:
+    from gyoto import core, std
 import numpy
 import os
 import matplotlib.pyplot as plt
 import matplotlib
 import argparse
+import warnings
 
 ### Helper functions
 
@@ -160,7 +164,7 @@ class orbiting_screen:
     def __call__(self, sc, k):
         t = self.t0+k*self.dt
         coord=core.vector_double(8)
-        self.trajectory.getCoord(t, coord)
+        self.trajectory.getCoord(t, coord, True)
         pos=[coord[i] for i in range(4)]
         vel=[coord[i] for i in range(4, 8)]
         screen=sc.screen()

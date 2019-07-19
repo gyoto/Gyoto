@@ -236,6 +236,7 @@ int Photon::hit(Astrobj::Properties *data) {
   //with small fixed step will be performed to determine more precisely
   //the surface point.
   state_t coord(parallel_transport_?16:8);
+  double tau;
   int dir=(tmin_>x0_[i0_])?1:-1;
   size_t ind=i0_;
   stopcond=0;
@@ -294,6 +295,7 @@ int Photon::hit(Astrobj::Properties *data) {
 
   // Set up integration
   getCoord(ind, coord);
+  tau=tau_[ind];
   switch (coordkind) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr=coord[1];
@@ -332,7 +334,7 @@ int Photon::hit(Astrobj::Properties *data) {
   while (!stopcond) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(&coord[0]);
-    stopcond  = state_ -> nextStep(coord, h1max);
+    stopcond  = state_ -> nextStep(coord, tau, h1max);
     if (!secondary_){ // to compute only primary image
       double sign = x1_[i0_]*cos(x2_[i0_]);
       if (coord[1]*cos(coord[2])*sign<0. && x1_[ind]*cos(x2_[ind])*sign<0.)
@@ -375,25 +377,7 @@ int Photon::hit(Astrobj::Properties *data) {
      
     ind +=dir;
     // store photon's trajectory for later use
-    x0_[ind] = coord[0];
-    x1_[ind] = coord[1];
-    x2_[ind] = coord[2];
-    x3_[ind] = coord[3];
-    x0dot_[ind] = coord[4];
-    x1dot_[ind] = coord[5];
-    x2dot_[ind] = coord[6];
-    x3dot_[ind] = coord[7];
-    if (parallel_transport_) {
-      ep0_[ind] = coord[8];
-      ep1_[ind] = coord[9];
-      ep2_[ind] = coord[10];
-      ep3_[ind] = coord[11];
-      et0_[ind] = coord[12];
-      et1_[ind] = coord[13];
-      et2_[ind] = coord[14];
-      et3_[ind] = coord[15];
-    }
-
+    xStore(ind, coord, tau);
 
     if (dir==1) ++imax_; else --imin_;
 

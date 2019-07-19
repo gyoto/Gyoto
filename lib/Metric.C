@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2019 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -538,6 +538,13 @@ void Metric::Generic::observerTetrad(string const obskind,
     zamoVelocity(coord, fourvel);
   } else if (obskind=="KeplerianObserver") {
     circularVelocity(coord, fourvel);
+  } else {
+    // Let's renormalize fourvel
+    double tdotin=fourvel[0];
+    double threevel[3]={fourvel[1]/tdotin,
+			fourvel[2]/tdotin,
+			fourvel[3]/tdotin};
+    fourvel[0]=SysPrimeToTdot(coord, threevel);
   }
   if (obskind != "FullySpecified")
     observerTetrad(coord, fourvel, screen1, screen2, screen3);
@@ -550,9 +557,13 @@ void Metric::Generic::observerTetrad(string const obskind,
       fabs(ScalarProd(coord,screen1,screen1)-1.)>normtol ||
       fabs(ScalarProd(coord,screen2,screen2)-1.)>normtol ||
       fabs(ScalarProd(coord,screen3,screen3)-1.)>normtol){
-    cout << "norm= " << ScalarProd(coord,fourvel,fourvel) << " " << ScalarProd(coord,screen1,screen1) << " " << ScalarProd(coord,screen2,screen2) << " " << ScalarProd(coord,screen3,screen3) << endl;
-    GYOTO_ERROR("In Metric:observerTetrad: observer's local"
-	       " basis is not properly normalized");
+    GYOTO_SEVERE << "In Metric:observerTetrad: observer's local "
+		  << "basis is not properly normalized "
+		  << "norm-(-1, 1, 1, 1)= "
+		  << ScalarProd(coord,fourvel,fourvel)+1. << " "
+		  << ScalarProd(coord,screen1,screen1)-1. << " "
+		  << ScalarProd(coord,screen2,screen2)-1. << " "
+		  << ScalarProd(coord,screen3,screen3)-1. << endl;
   }
   
   if (fabs(ScalarProd(coord,fourvel,screen1))>normtol ||
@@ -561,8 +572,8 @@ void Metric::Generic::observerTetrad(string const obskind,
       fabs(ScalarProd(coord,screen1,screen2))>normtol ||
       fabs(ScalarProd(coord,screen1,screen3))>normtol ||
       fabs(ScalarProd(coord,screen2,screen3))>normtol){
-    GYOTO_ERROR("In Metric:observerTetrad: observer's local"
-	       " basis is not orthogonal");
+    GYOTO_SEVERE << "In Metric:observerTetrad: observer's local "
+		 << "basis is not orthogonal" << endl;
   }
 }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2019 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -90,6 +90,7 @@ Worldline::Worldline(const Worldline& orig) :
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "sz="<<sz<<", imin_="<<imin_<<endl;
 # endif
+  memcpy(tau_+imin_, orig.tau_+imin_, sz);
   memcpy(x0_+imin_, orig.x0_+imin_, sz);
   memcpy(x1_+imin_, orig.x1_+imin_, sz);
   memcpy(x2_+imin_, orig.x2_+imin_, sz);
@@ -155,13 +156,14 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   for (i=i0_+dir; i>imin_ && i<imax_; i+=dir) x0_[i] = x0_[i-dir]+step;
   x0_[i]=d2;
 
-  orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_, ep0_, ep1_, ep2_, ep3_, et0_, et1_, et2_, et3_);
+  orig->getCoord(x0_, x_size_, x1_, x2_, x3_, x0dot_, x1dot_, x2dot_, x3dot_, ep0_, ep1_, ep2_, ep3_, et0_, et1_, et2_, et3_, tau_);
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
     {
       GYOTO_DEBUG << "(Worldline*, "<<i0<<", "<<dir<<", "<<step_max<<")"<<endl;
       GYOTO_DEBUG << "d1="<<d1<<", d2="<<d2<<endl;
+      GYOTO_DEBUG_ARRAY(tau_, x_size_);
       GYOTO_DEBUG_ARRAY(x0_, x_size_);
       GYOTO_DEBUG_ARRAY(x1_, x_size_);
       GYOTO_DEBUG_ARRAY(x2_, x_size_);
@@ -198,6 +200,7 @@ Worldline::~Worldline(){
   GYOTO_DEBUG << endl;
 # endif
   if (metric_) metric_ -> unhook(this);
+  delete[] tau_;
   delete[] x0_;
   delete[] x1_;
   delete[] x2_;
@@ -219,6 +222,7 @@ void Worldline::xAllocate(size_t sz)
   GYOTO_DEBUG_EXPR(sz);
 # endif
   x_size_ = sz ;
+  tau_ = new double[x_size_];
   x0_ = new double[x_size_];
   x1_ = new double[x_size_];
   x2_ = new double[x_size_];
@@ -253,6 +257,7 @@ size_t Worldline::xExpand(int dir) {
 	      << endl;
 # endif
 
+  xExpand(tau_, dir);
   xExpand(x0_, dir);
   xExpand(x1_, dir);
   xExpand(x2_, dir);
@@ -403,6 +408,7 @@ void Worldline::setInitCoord(const double coord[8], int dir,
   }
 
   imin_=imax_=i0_;
+  tau_[i0_]=0.;
   x0_[i0_]=coord[0];
   x1_[i0_]=coord[1];
   x2_[i0_]=coord[2];
@@ -495,8 +501,9 @@ void Worldline::reInit() {
 }
 
 
-void Worldline::xStore(size_t ind, state_t const &coord)
+void Worldline::xStore(size_t ind, state_t const &coord, double tau)
 {
+  tau_[ind]= tau;
   x0_[ind] = coord[0];
   x1_[ind] = coord[1];
   x2_[ind] = coord[2];
@@ -517,7 +524,7 @@ void Worldline::xStore(size_t ind, state_t const &coord)
   }
 }
 
-void Worldline::xFill(double tlim) {
+void Worldline::xFill(double tlim, bool proper) {
 
   int dir;
   stopcond=0;
@@ -526,11 +533,12 @@ void Worldline::xFill(double tlim) {
   // Check whether anything needs to be done,
   // Determine direction,
   // Allocate memory.
-  if (tlim > x0_[imax_]) {
+  double * time_ = proper?tau_:x0_;
+  if (tlim > time_[imax_]) {
     // integrate forward
     dir = 1;
     ind = (imax_==x_size_-1)?xExpand(1):imax_;
-  } else if (tlim < x0_[imin_]) {
+  } else if (tlim < time_[imin_]) {
     // integrate backward
     dir = -1;
     ind = (imin_==0)?xExpand(-1):imin_;
@@ -562,6 +570,7 @@ void Worldline::xFill(double tlim) {
 
   state_t coord(parallel_transport_?16:8);
   getCoord(ind, coord);
+  double tau=tau_[ind];
   
   GYOTO_DEBUG << "IntegState initialization" << endl;
   
@@ -575,7 +584,7 @@ void Worldline::xFill(double tlim) {
   while (!stopcond) {
     mycount++;
     
-    stopcond= state_ -> nextStep(coord);
+    stopcond= state_ -> nextStep(coord, tau);
     
     if (coord[0] == x0_[ind]) { // here, ind denotes previous step
       stopcond=1;
@@ -600,17 +609,17 @@ void Worldline::xFill(double tlim) {
     }
     // store particle's trajectory for later use
     ind +=dir;
-    xStore(ind, coord);
+    xStore(ind, coord, tau);
     
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
-      if (coord[0]>tlim) stopcond=1;
+      if (time_[ind] > tlim) stopcond=1;
       if ((!stopcond) & (ind==x_size_-1)) {
 	imax_=x_size_-1;
 	ind=xExpand(1);
       }
     } else {
-      if (coord[0]<tlim) {
+      if (time_[ind] < tlim) {
 	stopcond=1;
       }
       if ((!stopcond) & (ind==0)) {
@@ -632,6 +641,9 @@ size_t Worldline::getI0() const {return i0_;}
 
 void Worldline::get_t(double *dest) const
 { memcpy(dest, x0_+imin_, sizeof(double)*(imax_-imin_+1)); }
+
+void Worldline::get_tau(double *dest) const
+{ memcpy(dest, tau_+imin_, sizeof(double)*(imax_-imin_+1)); }
 
 void Worldline::get_xyz(double *x, double *y, double *z) const {
   size_t n;
@@ -746,7 +758,8 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 			 double * const x0dot, double * const x1dot,
 			 double * const x2dot, double * const x3dot,
 			 double * ep0, double * ep1, double * ep2, double * ep3,
-			 double * et0, double * et1, double * et2, double * et3)
+			 double * et0, double * et1, double * et2, double * et3,
+			 double * otime, bool proper)
 {
 
   size_t curl=imin_, curm, curh=imax_;
@@ -755,25 +768,29 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   size_t di=0; // current date index
   double date; // current date
 
+  double * time_ = proper?tau_:x0_;  // tau_ or x0_
+  double * otime_ = proper?x0_:tau_; // x0_ or tau_
+
   // For the interpolation
   int sz = parallel_transport_?16:8;
   state_t bestl(sz), besth(sz), resl(sz), resh(sz); // i/o for myrk4
-  double factl, facth;
+  double factl, facth, bestaul, bestauh, restaul, restauh;
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
   stringstream ss;
   GYOTO_DEBUG_EXPR(dates[0]);
-  GYOTO_DEBUG_EXPR(x0_[imin_]);
-  GYOTO_DEBUG_EXPR(x0_[imax_]);
+  GYOTO_DEBUG_EXPR(time_[imin_]);
+  GYOTO_DEBUG_EXPR(time_[imax_]);
 
 
   for (di=0; di<n_dates; ++di) {
     date = dates[di];
-    if (date == x0_[imax_]) {
+    if (date == time_[imax_]) {
       double pos2[8]={0.,0.,x2_[imax_],x3_[imax_],0.,0.,x2dot_[imax_],0.};
       if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL)
 	checkPhiTheta(pos2);
+      if (otime)     otime[di] = otime_[imax_];
       if (x1)       x1[di] =    x1_[imax_];
       if (x2)       x2[di] =   pos2[2];
       if (x3)       x3[di] =   pos2[3];
@@ -792,43 +809,44 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 	if (et3)     et3[di] =   et3_[imax_];
       }
       continue;
-    } else if (date > x0_[imax_]) {
+    } else if (date > time_[imax_]) {
       GYOTO_DEBUG << "Extending worldline towards future" << endl;
       curl=imax_;    // current imax_
-      xFill(date);   // integrate, that changes imax_
+      xFill(date, proper);   // integrate, that changes imax_
       curh=imax_;    // new imax_
-      if (curl == curh || date > x0_[imax_]) {
+      if (curl == curh || date > time_[imax_]) {
 	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
 	GYOTO_ERROR(ss.str());
       }
-    } else if (date < x0_[imin_]) {
+    } else if (date < time_[imin_]) {
       GYOTO_DEBUG << "Extending worldline towards past" << endl;
       curh=x_size_-imin_; // trick if line is expanded during xFill()
-      xFill(date);   // integrate, that changes imin_
+      xFill(date, proper);   // integrate, that changes imin_
       curh=x_size_-curh;
       curl=imin_;    // new imin_
-      if (curl == curh || date < x0_[imin_]) {
+      if (curl == curh || date < time_[imin_]) {
 	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
 	GYOTO_ERROR(ss.str());
       }
-    } else if (date >= x0_[curh]) {
+    } else if (date >= time_[curh]) {
       curl=curh;
       curh=imax_;
-    } else if (date < x0_[curl]) {
+    } else if (date < time_[curl]) {
       curh=curl;
       curl=imin_;
     }
 
     while (curh-curl>1) {
       curm = curl+(curh-curl)/2;
-      if (date >= x0_[curm]) curl = curm;
+      if (date >= time_[curm]) curl = curm;
       else curh = curm;
     }
 
-    if (date == x0_[curl]) {
+    if (date == time_[curl]) {
       double pos2[8]={0.,0.,x2_[curl],x3_[curl],0.,0.,x2dot_[curl],0.};
       if (metric_->coordKind() == GYOTO_COORDKIND_SPHERICAL)
 	checkPhiTheta(pos2);
+      if (otime)     otime[di] = otime_[curl];
       if (x1)       x1[di] =    x1_[curl];
       if (x2)       x2[di] =   pos2[2];
       if (x3)       x3[di] =   pos2[3];
@@ -851,13 +869,18 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 
     // Attempt to get closer to the specified date using the
     // integrator.
-    dtl=date-x0_[curl]; dth=date-x0_[curh];
-    Dt=(x0_[curh]-x0_[curl]); Dtm1=1./Dt;
-    tauprimel=1./x0dot_[curl]; tauprimeh=1./x0dot_[curh];
-    tausecond = (tauprimeh-tauprimel)*Dtm1;
-    // tauprime(dt)=tauprime(t0)+tausecond*dt
-    dtaul=tauprimel*dtl+0.5*tausecond*dtl*dtl;
-    dtauh=tauprimeh*dth+0.5*tausecond*dth*dth;
+    if (proper) {
+      dtaul=date-tau_[curl];
+      dtauh=date-tau_[curh];
+    } else {
+      dtl=date-x0_[curl]; dth=date-x0_[curh];
+      Dt=(x0_[curh]-x0_[curl]); Dtm1=1./Dt;
+      tauprimel=1./x0dot_[curl]; tauprimeh=1./x0dot_[curh];
+      tausecond = (tauprimeh-tauprimel)*Dtm1;
+      // tauprime(dt)=tauprime(t0)+tausecond*dt
+      dtaul=tauprimel*dtl+0.5*tausecond*dtl*dtl;
+      dtauh=tauprimeh*dth+0.5*tausecond*dth*dth;
+    }
 
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG
@@ -885,6 +908,8 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       bestl[14] =   et2_[curl];
       bestl[15] =   et3_[curl];
     }
+    bestaul=tau_[curl];
+    restaul=bestaul+dtaul;
     state_ -> doStep(bestl, dtaul, resl);
 
     // from above...
@@ -906,7 +931,34 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       besth[14] =   et2_[curh];
       besth[15] =   et3_[curh];
     }
+
+    bestauh=tau_[curh];
+    restauh=bestauh+dtauh;
     state_ -> doStep(besth, dtauh, resh);
+
+    if (proper) {
+      facth=dtaul/(bestauh-bestaul);
+      factl=1.-facth;
+      if (otime)     otime[di] = factl*resl[0]+facth*resh[0];
+      if (x1)       x1[di] = factl*resl[1]+facth*resh[1];
+      if (x2)       x2[di] = factl*resl[2]+facth*resh[2];
+      if (x3)       x3[di] = factl*resl[3]+facth*resh[3];
+      if (x0dot) x0dot[di] = factl*resl[4]+facth*resh[4];
+      if (x1dot) x1dot[di] = factl*resl[5]+facth*resh[5];
+      if (x2dot) x2dot[di] = factl*resl[6]+facth*resh[6];
+      if (x3dot) x3dot[di] = factl*resl[7]+facth*resh[7];
+      if (parallel_transport_) {
+	if (ep0)     ep0[di] =   factl*resl[ 8]+facth*resh[ 8];
+	if (ep1)     ep1[di] =   factl*resl[ 9]+facth*resh[ 9];
+	if (ep2)     ep2[di] =   factl*resl[10]+facth*resh[10];
+	if (ep3)     ep3[di] =   factl*resl[11]+facth*resh[11];
+	if (et0)     et0[di] =   factl*resl[12]+facth*resh[12];
+	if (et1)     et1[di] =   factl*resl[13]+facth*resh[13];
+	if (et2)     et2[di] =   factl*resl[14]+facth*resh[14];
+	if (et3)     et3[di] =   factl*resl[15]+facth*resh[15];
+      }
+      continue;
+    }
 
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_IF_DEBUG
@@ -926,31 +978,44 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     // Now sometimes we actually got further away. We have 4 dates
     // well estimated, take the 2 best, 1 above, 1 below.
     if (resl[0]<=date) {
-      if (resl[0] > bestl[0]) memcpy(&bestl[0], &resl[0], sz*sizeof(double));
+      if (resl[0] > bestl[0]) {
+	memcpy(&bestl[0], &resl[0], sz*sizeof(double));
+	bestaul=restaul;
+      }
     } else {
-      if (resl[0] < besth[0]) memcpy(&besth[0], &resl[0], sz*sizeof(double));
+      if (resl[0] < besth[0]) {
+	memcpy(&besth[0], &resl[0], sz*sizeof(double));
+	bestauh=restaul;
+      }
     }
 
     if (resh[0]<=date) {
-      if (resh[0] > bestl[0]) memcpy(&bestl[0], &resh[0], sz*sizeof(double));
+      if (resh[0] > bestl[0]) {
+	memcpy(&bestl[0], &resh[0], sz*sizeof(double));
+	bestaul=restauh;
+      }
     } else {
-      if (resh[0] < besth[0]) memcpy(&besth[0], &resh[0], sz*sizeof(double));
+      if (resh[0] < besth[0]) {
+	memcpy(&besth[0], &resh[0], sz*sizeof(double));
+	bestauh=restauh;
+      }
     }
 
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG
-	   << "x0_[curl]=" << x0_[curl]
-	   << ", bestl[0]=" << bestl[0]
-	   << ", date=" << date
-	   << ", besth[0]=" << besth[0]
-	   << ", x0_[curh]=" << x0_[curh]
-	   << ", besth[0]-bestl[0]=" << besth[0]-bestl[0]
-	   << ", Dt=" << Dt
-	   << ", (th-tl)/Dt=" << (besth[0]-bestl[0])*Dtm1 << endl;
+          << "x0_[curl]=" << x0_[curl]
+	  << ", bestl[0]=" << bestl[0]
+	  << ", date=" << date
+	  << ", besth[0]=" << besth[0]
+	  << ", x0_[curh]=" << x0_[curh]
+	  << ", besth[0]-bestl[0]=" << besth[0]-bestl[0]
+	  << ", Dt=" << Dt
+	  << ", (th-tl)/Dt=" << (besth[0]-bestl[0])*Dtm1 << endl;
 #   endif
 
     // Now interpolate as best we can
     if (bestl[0]==date) {
+      if (otime)     otime[di] = bestaul;
       if (x1)       x1[di] = bestl[1];
       if (x2)       x2[di] = bestl[2];
       if (x3)       x3[di] = bestl[3];
@@ -970,6 +1035,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       }
     }
     if (besth[0]==date) {
+      if (otime)     otime[di] = bestauh;
       if (x1)       x1[di] = besth[1];
       if (x2)       x2[di] = besth[2];
       if (x3)       x3[di] = besth[3];
@@ -991,6 +1057,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 
     dtl=date-bestl[0]; Dt=besth[0]-bestl[0]; Dtm1=1./Dt;
     facth=dtl*Dtm1; factl=1.-facth;
+    if (otime)       otime[di] = bestaul*factl + bestauh*facth;
     if (getMass()) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "massive particle, interpolating\n";
@@ -1168,7 +1235,7 @@ void Worldline::save_txyz(char * filename) const {
 }
 
 void Worldline::save_txyz(char * filename, const double t1, const double mass_sun, const double distance_kpc, const string unit, SmartPointer<Screen> sc) {
-  xFill(t1);
+  xFill(t1, false);
   size_t nelem = get_nelements(), n=0;
   double * t = new double [nelem];
   double * x = new double [nelem];
@@ -1366,30 +1433,34 @@ void Worldline::getCoord(size_t index, state_t &coord) const {
   }
 }
 
-void Worldline::getCoord(double t, state_t &coord) {
+void Worldline::getCoord(double t, state_t &coord, bool proper) {
   size_t sz=coord.size();
   if (sz==0) {
     sz = parallel_transport_?16:8;
     coord.resize(sz);
   }
-  coord[0]=t;
-  switch (sz) {
-  case 4:
-    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3], &coord[4]);  // x
-    break;
-  case 8:
-    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3],              // x
-	     &coord[4], &coord[5], &coord[6], &coord[7]);            // v or k
-    break;
-  case 16:
-    getCoord(&coord[0], 1, &coord[1], &coord[2], &coord[3],              // x
-	     &coord[4], &coord[5], &coord[6], &coord[7],             // k
-	     &coord[8], &coord[9], &coord[10], &coord[11],           // Ephi
-	     &coord[12], &coord[13], &coord[14], &coord[15]);        // Etheta
-    break;
-  default:
-    GYOTO_ERROR("Inconsistent size for output vector");
-  }
+  double otime;
+  double * x1=&coord[1];
+  double * x2=&coord[2];
+  double * x3=&coord[3];
+  double * x0dot=(sz>4)?&coord[4]:NULL;
+  double * x1dot=(sz>4)?&coord[5]:NULL;
+  double * x2dot=(sz>4)?&coord[6]:NULL;
+  double * x3dot=(sz>4)?&coord[7]:NULL;
+  double * ephi0=(sz>8)?&coord[8]:NULL;
+  double * ephi1=(sz>8)?&coord[9]:NULL;
+  double * ephi2=(sz>8)?&coord[10]:NULL;
+  double * ephi3=(sz>8)?&coord[11]:NULL;
+  double * etheta0=(sz>8)?&coord[12]:NULL;
+  double * etheta1=(sz>8)?&coord[13]:NULL;
+  double * etheta2=(sz>8)?&coord[14]:NULL;
+  double * etheta3=(sz>8)?&coord[15]:NULL;
+  getCoord(&t, 1, x1, x2, x3,                  // x
+	   x0dot, x1dot, x2dot, x3dot,         // k
+	   ephi0, ephi1, ephi2, ephi3,         // Ephi
+	   etheta0, etheta1, etheta2, etheta3, // Etheta
+	   &otime, proper);
+  coord[0] = proper?otime:t;
 }
 
 void Worldline::getCartesianPos(size_t index, double dest[4]) const {

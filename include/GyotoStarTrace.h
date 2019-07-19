@@ -128,7 +128,7 @@ class Gyoto::Astrobj::StarTrace :
   using Generic::metric;
   virtual void metric(SmartPointer<Metric::Generic> gg);
 
-  virtual void xStore(size_t ind, state_t const &coord) ;
+  virtual void xStore(size_t ind, state_t const &coord, double tau) ;
 
   // Accessors
   // ---------

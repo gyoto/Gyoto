@@ -156,9 +156,9 @@ void StarTrace::computeXYZ()
   }
 }
 
-void StarTrace::xStore(size_t ind, state_t const &coord)
+void StarTrace::xStore(size_t ind, state_t const &coord, double tau)
 {
-  Star::xStore(ind, coord);
+  Star::xStore(ind, coord, tau);
   computeXYZ(ind);
 }
 
@@ -207,8 +207,8 @@ double StarTrace::operator()(double const coord[]) {
   double d2 = DBL_MAX, tmp;
   double ncoord[4];
   memcpy(ncoord, coord, 4*sizeof(double));
-  xFill(tmin_);
-  xFill(tmax_);
+  xFill(tmin_, false);
+  xFill(tmax_, false);
 
   double x=0., y=0., z=0.;
   switch (gg_->coordKind()) {

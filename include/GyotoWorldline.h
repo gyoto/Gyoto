@@ -234,6 +234,7 @@ class Gyoto::Worldline
 
  protected:
   SmartPointer<Gyoto::Metric::Generic> metric_ ; ///< The Gyoto::Metric in this part of the universe
+  double* tau_; ///< proper time or affine parameter
   double* x0_;///< t or T
   double* x1_;///< r or x
   double* x2_;///< &theta; or y
@@ -642,14 +643,15 @@ class Gyoto::Worldline
    * (xi_), velocity (xidot_) and possibly other triad vectors (epi_
    * and eti_). coord is resized to the right number of elements.
    */
-  void getCoord(double date, Gyoto::state_t &dest); ///< Get coordinates+base vectors corresponding to date dest[0].
+  void getCoord(double date, Gyoto::state_t &dest, bool proper=false); ///< Get coordinates+base vectors corresponding to date dest[0].
 
   void getCartesianPos(size_t index, double dest[4]) const; ///< Get Cartesian expression of 4-position at index.
 
 
-  virtual void xStore(size_t ind, state_t const &coord) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, state_t const &coord, double tau) ; ///< Store coord at index ind
+  virtual void xStore(size_t ind, state_t const &coord) =delete; ///< Obsolete, update your code
   virtual void xStore(size_t ind, double const coord[8]) = delete; ///< Obsolete, update your code
-  virtual void xFill(double tlim) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
+  virtual void xFill(double tlim, bool proper=false) ; ///< Fill x0, x1... by integrating the Worldline from previously set inittial condition to time tlim
 
 
 
@@ -666,6 +668,10 @@ class Gyoto::Worldline
    */
   void get_t(double *dest) const;
 
+  /**
+   * \brief Get computed proper times or values of the affine parameter
+   */
+  void get_tau(double *dest) const;
   
   /// Get the 6 Cartesian coordinates for specific dates.
   /**
@@ -704,13 +710,25 @@ class Gyoto::Worldline
    * dates. The line will be integrated further as required. An error
    * will be thrown if it is not possible to reach a certain date.
    *
-   * \param dates the list of dates for which the coordinates are to
-   *                be computed;
-   * \param n_dates the number of dates to compute ;
-   * \param x1dest, x2dest, x3dest, x0dot, x1dot, x2dot, x3dot arrays
+   * \param[in] dates the list of dates for which the coordinates are to
+   *                be computed in proper time or affine parameter if
+   *                #proper is true or in coordinate time if #proper
+   *                is false (default);
+   * \param[in] n_dates the number of dates to compute ;
+   * \param[out] x1dest, x2dest, x3dest, x0dot, x1dot, x2dot, x3dot arrays
    *               in which to store the result. These pointer may be
    *               set to NULL to retrieve only part of the
    *               information. They must be pre-allocated.
+   * \param[out] ephi0, ephi1, ephi2, ephi3, etheta0, etheta1,
+   *               etheta2, etheta3 arrays in which to store the ephi
+   *               and etheta (parallel transport case). These pointer
+   *               may be set to NULL to retrieve only part of the
+   *               information. They must be pre-allocated.
+   * \param[out] otime array in which to store the other time:
+   *               coordinate time if #proper, else proper time or
+   *               affine parameter.
+   * \param[in] proper bool: whether #dates is proper time (or affine
+   *               parameter) or coordinate time.
    *
    */
   void getCoord(double const * const dates, size_t const n_dates,
@@ -719,7 +737,8 @@ class Gyoto::Worldline
 		double * const x0dot=NULL,  double * const x1dot=NULL,
 		double * const x2dot=NULL,  double * const x3dot=NULL,
 		double * ep0=NULL, double * ep1=NULL, double * ep2=NULL, double * ep3=NULL,
-		double * et0=NULL, double * et1=NULL, double * et2=NULL, double * et3=NULL) ;
+		double * et0=NULL, double * et1=NULL, double * et2=NULL, double * et3=NULL,
+		double * otime=NULL, bool proper=false) ;
 
   /**
    * \brief Get all computed positions
@@ -863,9 +882,10 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   /// Make one step.
   /**
    * \param[out] coord Next position-velocity;
+   * \param[out] tau   Next proper time or affine parameter
    * \param[in] h1max maximum step in case of adaptive integration
    */
-  virtual int nextStep(state_t &coord, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
+  virtual int nextStep(state_t &coord, double &tau, double h1max=GYOTO_DEFAULT_DELTA_MAX)=0;
   /// Obsolete, update your code
   virtual int nextStep(double *coord, double h1max=GYOTO_DEFAULT_DELTA_MAX) = delete;
 
@@ -891,7 +911,9 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
 
 /**
  * \class Gyoto::Worldline::IntegState::Legacy
- * \brief Home-brewed integrator
+ * \brief Obsolete: Home-brewed integrator
+ *
+ * Will be removed soon.
  *
  * The integrator used by this IntegState::Generic implementation is
  * actually implemented in Metric::Generic::myrk4_adaptive(). It does
@@ -915,7 +937,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
   void init(Worldline * line, const state_t &coord, const double delta);
   virtual std::string kind();
 
-  virtual int nextStep(state_t &coord, double h1max=1e6);
+  virtual int nextStep(state_t &coord, double &tau, double h1max=1e6);
 
   virtual void doStep(state_t const &coordin, 
 		      double step,
@@ -982,7 +1004,7 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   virtual ~Boost();
   virtual void init();
   virtual void init(Worldline * line, const state_t &coord, const double delta);
-  virtual int nextStep(state_t &coord, double h1max=1e6);
+  virtual int nextStep(state_t &coord, double &tau, double h1max=1e6);
   virtual void doStep(state_t const &coordin, 
 		      double step,
 		      state_t &coordout);

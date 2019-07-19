@@ -137,12 +137,24 @@ Worldline::IntegState::Legacy::clone(Worldline *newparent) const
 void
 Worldline::IntegState::Legacy::init(Worldline * line,
 				    const state_t &coord, const double delta) {
+  static bool need_warning = true;
+  if (need_warning) {
+    GYOTO_WARNING << "The Legacy integrator is deprecated and will be removed soon. "
+		  << "Please update your code to use the Boost integrators." << endl;
+    need_warning=false;
+  }
   Generic::init(line, coord, delta);
   coord_ = coord;
 
 }
 
-int Worldline::IntegState::Legacy::nextStep(state_t &coord, double h1max) {
+int Worldline::IntegState::Legacy::nextStep(state_t &coord, double &tau, double h1max) {
+  static bool need_warning=true;
+  if (need_warning) {
+    GYOTO_WARNING << "The Legacy integrator does not compute proper time." << endl;
+    need_warning=false;
+  }
+  tau=0.;
   if (parallel_transport_) GYOTO_ERROR("TODO: implement parallel transport");
   GYOTO_DEBUG << h1max << endl;
   int j;
@@ -152,7 +164,7 @@ int Worldline::IntegState::Legacy::nextStep(state_t &coord, double h1max) {
     if (gg_ -> myrk4_adaptive(line_,coord_,norm_,normref_,coord,delta_,h1, h1max)) return 1;
     delta_ = h1;
   }else{
-    if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1; 
+    if (gg_ -> myrk4(line_,coord_,delta_,coord)) return 1;
   }
   for (j=0;j<8;j++) coord_[j] = coord[j];
 
@@ -242,15 +254,15 @@ Worldline::IntegState::Boost::init(Worldline * line,
 
 }
 
-int Worldline::IntegState::Boost::nextStep(state_t &coord, double h1max) {
+int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h1max) {
   GYOTO_DEBUG << h1max << endl;
+  double dt=0;
   
   if (adaptive_) {
     double h1=delta_;
     double sgn=h1>0?1.:-1.;
     h1max=line_->deltaMax(&coord[0], h1max);
     double delta_min=line_->deltaMin();
-    double dt=0.;
 
     if (abs(h1)>h1max) h1=sgn*h1max;
     if (abs(h1)<delta_min) h1=sgn*delta_min;
@@ -272,7 +284,8 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double h1max) {
     // cres is still fail, redo with delta_min using the fixed-step integrator
     if (cres==controlled_step_result::fail) {
       GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
-      do_step_(coord, sgn*delta_min);
+      dt=sgn*delta_min;
+      do_step_(coord, dt);
     }
     // update adaptive step
     delta_=h1;
@@ -280,9 +293,11 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double h1max) {
     // non adaptive case
     // do_Step_ is a lambda function encapsulating a fixed-step integrator
     // from Boost
-    do_step_(coord, delta_);
+    dt=delta_;
+    do_step_(coord, dt);
   }
 
+  tau += dt;
   checkNorm(&coord[0]);
 
   return line_->stopcond;

@@ -129,7 +129,7 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
   YGYOTO_WORKER_GETSET_DOUBLE2( relTol );
   YGYOTO_WORKER_SETPARAMETER;
   YGYOTO_WORKER_RUN( reset() );
-  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg)) );
+  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg), false) );
 
   // save_txyz=filename, t1, mass_sun, distance_kpc, unit, screen
   if ((iarg=kiargs[++k])>=0) {

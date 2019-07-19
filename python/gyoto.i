@@ -588,10 +588,11 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(Worldline__IntegState__Boost) Gyoto::Worldline::IntegState::Boost;
 %rename(Worldline__IntegState__Legacy) Gyoto::Worldline::IntegState::Legacy;
 %ignore Gyoto::Worldline::getCoord(double const * const dates, size_t const n_dates,
-		double * const x1dest,
-		double * const x2dest, double * const x3dest,
-		double * const x0dot=NULL,  double * const x1dot=NULL,
-		double * const x2dot=NULL,  double * const x3dot=NULL) ;
+                                   double * const x1dest,
+                                   double * const x2dest, double * const x3dest,
+                                   double * const x0dot=NULL,  double * const x1dot=NULL,
+                                   double * const x2dot=NULL,  double * const x3dot=NULL,
+                                   double * const otime=NULL,  bool proper=false) ;
 %extend Gyoto::Worldline {
   void get_t(double * INPLACE_ARRAY1, size_t DIM1) {
     if (DIM1 != ($self)->get_nelements()) GYOTO_ERROR("wrong output array size");

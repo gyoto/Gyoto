@@ -107,7 +107,7 @@ void ygyoto_StarTrace_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   YGYOTO_WORKER_GETSET_DOUBLE2(TMax);
   YGYOTO_WORKER_GETSET_LONG2( maxiter );
   YGYOTO_WORKER_RUN( reset() );
-  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );
+  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset), false) );
  
   YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 

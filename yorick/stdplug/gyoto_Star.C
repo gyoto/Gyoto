@@ -115,7 +115,7 @@ void ygyoto_Star_eval(SmartPointer<Astrobj::Generic>* ao_, int argc) {
   YGYOTO_WORKER_GETSET_DOUBLE2( absTol );
   YGYOTO_WORKER_GETSET_DOUBLE2( relTol );
   YGYOTO_WORKER_RUN( reset() );
-  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset)) );
+  YGYOTO_WORKER_RUN( xFill(ygets_d(iarg+*rvset), false) );
  
   YGYOTO_WORKER_CALL_GENERIC(Astrobj);
 
