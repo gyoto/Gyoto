@@ -18,6 +18,7 @@ VideoWriter -- abstract interface with video library
 OpenCVVideoWriter -- implements VideoWriter using OpenCV-Python
 orbiting_screen -- a callable that can be used by rayTrace
 accelerating_tangential_screen -- idem
+growing_mass -- idem
 
 Function:
 rayTraceFrame -- mutates Gyoto scenery and raytrace it
@@ -171,6 +172,51 @@ class orbiting_screen:
         screen.setObserverPos(pos)
         screen.fourVel(vel)
 
+class growing_mass:
+    '''The mass of the central object changes
+
+    The Astrobj needs to be PatternDisk-like (it needs to have the
+    properties InnerRadius and OuterRadius).
+
+    '''
+    rin0=0.
+    rout0=28.
+    rmax0=50.
+    d0=28.
+    nframes=30
+    factor_first=100
+    factor_last=0.5
+
+    def __init__(self, scenery=None, **args):
+        if scenery is not None:
+            self.d0=scenery.screen().distance('geometrical')
+            ao=scenery.astrobj()
+            self.rin0=ao.get('InnerRadius', 'geometrical')
+            self.rout0=ao.get('OuterRadius', 'geometrical')
+            self.rmax0=ao.rMax()
+            scenery.screen().observerKind('ZAMO')
+        for key in args:
+            setattr(self, key, args[key])
+
+    def __call__(self, sc, k):
+        # factor=(((self.factor_last*k)
+        #          +(self.factor_first*(self.nframes-1-k)))
+        #         /(self.nframes-1))
+        # print(factor)
+        log2_first=numpy.log2(self.factor_first)
+        log2_last=numpy.log2(self.factor_last)
+        log2_k=(((log2_last*k)
+                 +(log2_first*(self.nframes-1-k)))
+                /(self.nframes-1))
+        factor=2.**log2_k
+        print(factor)
+        scr=sc.screen()
+        scr.distance(factor*self.d0, 'geometrical')
+        ao=sc.astrobj()
+        ao.set('InnerRadius', factor*self.rin0, 'geometrical')
+        ao.set('OuterRadius', factor*self.rout0, 'geometrical')
+        ao.rMax(factor*self.rmax0)
+
 ## Helper function for tracing one frame
 
 def rayTraceFrame(sc, func, k, width, height):
@@ -221,7 +267,7 @@ def defaultScenery():
     pd=std.PatternDisk()
     pd.copyIntensity(pintensity, pgridshape)
     pd.copyOpacity  (popacity, pgridshape)
-    pd.innerRadius(3)
+    pd.innerRadius(0)
     pd.outerRadius(28)
     pd.repeatPhi(8)
     pd.metric(metric)
@@ -232,7 +278,7 @@ def defaultScenery():
     screen.time(1000., "geometrical_time")
     screen.distance(28., "geometrical")
     # Standard 24x36 field of view after a 55mm objective
-    screen.fieldOfView(2.*numpy.arctan(18./55), 'degree')
+    screen.fieldOfView(2.*numpy.arctan(18./55), 'radians')
     screen.anglekind('Rectilinear')
     screen.inclination(95., "degree")
     screen.PALN(180., "degree")
@@ -280,9 +326,9 @@ def mk_video(scenery=None,
                 mutate the Scenery for each frame, for instance by
                 moving the camera, changing its field-of view etc..
                 func may also be a string, the name of one of the
-                built-in callables: orbiting_screen (default) or
-                accelerating_tangential_screen. Those options take
-                parameters below
+                built-in callables: orbiting_screen (default),
+                accelerating_tangential_screen or growing_mass. Those
+                options take parameters below
     orbit_trajectory -- 
                 only if func above is 'orbiting_screen', a
                 gyoto.std.Star instance or a string (XML file name) or
@@ -346,6 +392,8 @@ def mk_video(scenery=None,
         screen.dangle1(-45, 'degree')
         screen.fieldOfView(90, 'degree')
         func=accelerating_tangential_screen(scale=acceleration_maxvel/(nframes-1))
+    elif func == 'growing_mass':
+        func=growing_mass(sc)
     # else assume func is a callable
 
     # Override some values set on command-line
@@ -396,7 +444,9 @@ parser.add_argument('-o', '--output', type=str, default=None,
                     help='name of video file to save the movie in')
 parser.add_argument("-V", "--func", help="type of video to produce.",
                     type=str, default='orbiting_screen',
-                    choices=['orbiting_screen', 'accelerating_tangential_screen'])
+                    choices=['orbiting_screen',
+                             'accelerating_tangential_screen',
+                             'growing_mass'])
 parser.add_argument("-D", "--duration", help="movie duration in seconds",
                     type=float, default=10.)
 parser.add_argument("-f", "--fps", help="number of frames per second",
