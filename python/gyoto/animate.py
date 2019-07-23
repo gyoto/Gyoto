@@ -125,15 +125,16 @@ class accelerating_tangential_screen:
     '''The screen does not move but has increasing velocity
     
     Members:
-    dvel -- norm of velocity will be k*dvel. Should never reach 1!
+    maxvel -- norm of velocity for last frame. Should never reach 1!
     '''
-    dvel=1e-3
+
+    maxvel=0.99
 
     def __init__(self, **args):
         for key in args:
             setattr(self, key, args[key])
 
-    def __call__(self, sc, k):
+    def __call__(self, sc, k, nframes):
         pos=numpy.zeros(4)
         scr=sc.screen()
         metric=sc.metric()
@@ -143,7 +144,7 @@ class accelerating_tangential_screen:
         Gamma=-metric.ScalarProd(pos, ucirc, uzamo)
         Vzamo=ucirc/Gamma-uzamo           # ucirc as seen by zamo
         norm_circ=metric.ScalarProd(pos, Vzamo, Vzamo)
-        norm_wanted=k*self.scale
+        norm_wanted=self.maxvel*k/(nframes-1)
         Vzamo *= norm_wanted/numpy.sqrt(norm_circ)    # rescale velocity
         Gamma2 = 1./(1.-metric.ScalarProd(pos, Vzamo, Vzamo))
         assert Gamma2 >= 0, 'Gamma2 < 0! VzamoxVzamo='+str(metric.ScalarProd(pos, Vzamo, Vzamo))+', norm_wanted='+str(norm_wanted)+', norm_circ='+str(norm_circ)
@@ -155,15 +156,15 @@ class orbiting_screen:
     '''The screen follows an orbit
     '''
     t0=0.
-    dt=1.
+    t1=1000.
     trajectory=None
 
     def __init__(self, **args):
         for key in args:
             setattr(self, key, args[key])
 
-    def __call__(self, sc, k):
-        t = self.t0+k*self.dt
+    def __call__(self, sc, k, nframes):
+        t = self.t0+k*(self.t1-self.t0)/(nframes-1)
         coord=core.vector_double(8)
         self.trajectory.getCoord(t, coord, True)
         pos=[coord[i] for i in range(4)]
@@ -185,9 +186,8 @@ class growing_mass:
     rout0=28.
     rmax0=50.
     d0=28.
-    nframes=30
-    factor_first=100
-    factor_last=0.5
+    factor_first=100.
+    factor_last=0.1
 
     def __init__(self, scenery=None, **args):
         if scenery is not None:
@@ -203,7 +203,7 @@ class growing_mass:
         for key in args:
             setattr(self, key, args[key])
 
-    def __call__(self, sc, k):
+    def __call__(self, sc, k, nframes):
         # factor=(((self.factor_last*k)
         #          +(self.factor_first*(self.nframes-1-k)))
         #         /(self.nframes-1))
@@ -211,12 +211,13 @@ class growing_mass:
         log2_first=numpy.log2(self.factor_first)
         log2_last=numpy.log2(self.factor_last)
         log2_k=(((log2_last*k)
-                 +(log2_first*(self.nframes-1-k)))
-                /(self.nframes-1))
+                 +(log2_first*(nframes-1-k)))
+                /(nframes-1))
         factor=2.**log2_k
         sc.delta(factor*self.delta0)
         scr=sc.screen()
         scr.distance(factor*self.d0, 'geometrical')
+        print(factor, scr.distance('geometrical'))
         ao=sc.astrobj()
         ao.deltaMaxInsideRMax(factor*self.deltaMax0)
         ao.set('InnerRadius', factor*self.rin0, 'geometrical')
@@ -225,7 +226,7 @@ class growing_mass:
 
 ## Helper function for tracing one frame
 
-def rayTraceFrame(sc, func, k, width, height):
+def rayTraceFrame(sc, func, k, nframes, width, height):
     '''Ray-trace one frame of a Gyoto video
 
     Parameters:
@@ -240,7 +241,7 @@ def rayTraceFrame(sc, func, k, width, height):
     '''
     intensity=numpy.zeros((height, width))
     pintensity=core.array_double_fromnumpy2(intensity)
-    func(sc, k)
+    func(sc, k, nframes)
     res=sc.screen().resolution()
     ii=core.Range(res//2-width//2+1, res//2-width//2+width, 1)
     jj=core.Range(res//2-height//2+1, res//2-height//2+height, 1)
@@ -311,6 +312,8 @@ def mk_video(scenery=None,
              func="orbiting_screen",
              orbit_trajectory=None, orbit_t0=0., orbit_t1=1000.,
              acceleration_maxvel=0.99,
+             growth_factor_first=None,
+             growth_factor_last=None,
              duration=10, fps=3, width=128, height=72,
              dangle1=None, dangle2=None, fov=None,
              verbose=0, debug=False, nthreads=8,
@@ -319,6 +322,8 @@ def mk_video(scenery=None,
              backend=OpenCVVideoWriter,
              observerkind=None,
              plot=False,
+             frame_first=0,
+             frame_last=None
              ):
     '''Make video from a Gyoto Scenery
 
@@ -350,6 +355,12 @@ def mk_video(scenery=None,
                 only if func is 'accelerating_tangential_screen',
                 maximum velocity of the observer, in terms of c
                 (default: 0.99)
+    growth_factor_first --
+                only if func is 'growing_mass', scale factor for first
+                frame.
+    growth_factor_last --
+                only if func is 'growing_mass', scale factor for last
+                frame.
     duration -- duration pf the movie in seconds (default: 10.)
     fps      -- frames per second (default: 3)
     width    -- width of the movie in pixels (default: 128)
@@ -392,14 +403,18 @@ def mk_video(scenery=None,
         else:
             traj=std.Star(core.Factory(orbit_trajectory).astrobj())
             traj.metric(metric)
-        func=orbiting_screen(trajectory=traj, t0=orbit_t0, dt=orbit_t1/(nframes-1))
+        func=orbiting_screen(trajectory=traj, t0=orbit_t0, t1=orbit_t1)
     elif func == 'accelerating_tangential_screen':
         screen.observerKind('VelocitySpecified')
         screen.dangle1(-45, 'degree')
         screen.fieldOfView(90, 'degree')
-        func=accelerating_tangential_screen(scale=acceleration_maxvel/(nframes-1))
+        func=accelerating_tangential_screen(maxvel=acceleration_maxvel)
     elif func == 'growing_mass':
         func=growing_mass(sc)
+        if growth_factor_first is not None:
+            func.factor_first=growth_factor_first
+        if growth_factor_last is not None:
+            func.factor_last=growth_factor_last
     # else assume func is a callable
 
     # Override some values set on command-line
@@ -423,9 +438,11 @@ def mk_video(scenery=None,
     video=backend(output, fps, width, height)
 
     # Loop on frame number
-    for k in range(nframes):
+    if frame_last is None:
+        frame_last=nframes-1
+    for k in range(frame_first, frame_last+1):
         print(k, "/", nframes)
-        intensity=rayTraceFrame(sc, func, k, width, height)
+        intensity=rayTraceFrame(sc, func, k, nframes, width, height)
         frame=video.colorize(intensity)
         if plot:
             plt.imshow(frame)
