@@ -683,6 +683,16 @@ ExtendArrayNumPy(array_size_t, size_t);
 };
 %include "GyotoWorldline.h"
 
+%extend Gyoto::Screen {
+  // Support this syntax:
+  // pos = scr.getObserverPos()
+  void getObserverPos(double ARGOUT_ARRAY1[4]) {
+    ($self)->getObserverPos(ARGOUT_ARRAY1);
+  }
+  void getFourVel(double ARGOUT_ARRAY1[4]) {
+    ($self)->getFourVel(ARGOUT_ARRAY1);
+  }
+ };
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)
 %ignore Gyoto::Photon::Refined;

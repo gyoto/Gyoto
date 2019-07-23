@@ -71,7 +71,7 @@ class VideoWriter:
         '''
         if self.norm is None:
             if self.vmax==0:
-                self.vmax = im_float.max()
+                self.vmax = numpy.nanmax(im_float)
             if self.vmax != 0.:
                 self.norm=matplotlib.colors.Normalize(vmin=0., vmax=self.vmax, clip=True)
                 im_float = self.norm(im_float)
@@ -179,6 +179,8 @@ class growing_mass:
     properties InnerRadius and OuterRadius).
 
     '''
+    delta0=0.01
+    deltaMax0=1.
     rin0=0.
     rout0=28.
     rmax0=50.
@@ -189,8 +191,11 @@ class growing_mass:
 
     def __init__(self, scenery=None, **args):
         if scenery is not None:
-            self.d0=scenery.screen().distance('geometrical')
+            self.delta0=scenery.delta()
+            scr=scenery.screen()
+            self.d0=scr.distance('geometrical')
             ao=scenery.astrobj()
+            self.deltaMax0=ao.deltaMaxInsideRMax()
             self.rin0=ao.get('InnerRadius', 'geometrical')
             self.rout0=ao.get('OuterRadius', 'geometrical')
             self.rmax0=ao.rMax()
@@ -209,10 +214,11 @@ class growing_mass:
                  +(log2_first*(self.nframes-1-k)))
                 /(self.nframes-1))
         factor=2.**log2_k
-        print(factor)
+        sc.delta(factor*self.delta0)
         scr=sc.screen()
         scr.distance(factor*self.d0, 'geometrical')
         ao=sc.astrobj()
+        ao.deltaMaxInsideRMax(factor*self.deltaMax0)
         ao.set('InnerRadius', factor*self.rin0, 'geometrical')
         ao.set('OuterRadius', factor*self.rout0, 'geometrical')
         ao.rMax(factor*self.rmax0)

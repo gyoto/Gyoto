@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2019 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -232,6 +232,14 @@ private:
    */                                         
   double rmax_; ///< Maximum distance to the center of the coordinate system [geometrical units]
 
+  /**
+   * Maximum step for Photon integation when inside the sphere of
+   * radius #rmax_.
+   *
+   * #deltamaxinsidermax_ is in geometrical units.
+   */
+  double deltamaxinsidermax_; ///< Maximum Photon integration step inside #rmax_ [geometrical units]
+
   bool flag_radtransf_; ///< 1 if radiative transfer inside Astrobj, else 0
 
   int shadow_; ///< 1 to highlight the shadow region in the image
@@ -342,6 +350,8 @@ private:
    *  \param unit string...
    */
   virtual void rMax(double val, std::string const &unit); ///< Set maximal distance from center of coordinate system
+
+  GYOTO_OBJECT_ACCESSORS_UNIT(deltaMaxInsideRMax);
 
   /**
    * Set flag indicating that radiative transfer should be integrated,

@@ -49,6 +49,8 @@ GYOTO_PROPERTY_METRIC(Generic, Metric, metric,
    "The geometry of space-time at this end of the Universe.")
 GYOTO_PROPERTY_DOUBLE_UNIT(Generic, RMax, rMax,
    "Maximum distance from the centre of mass (geometrical units).")
+GYOTO_PROPERTY_DOUBLE_UNIT(Generic, DeltaMaxInsideRMax, deltaMaxInsideRMax,
+   "Maximum step for Photon integration inside RMax (geometrical units).")
 GYOTO_PROPERTY_BOOL(Generic, Redshift, NoRedshift, redshift,
     "Whether to take redshift into account.")
 GYOTO_PROPERTY_BOOL(Generic, ShowShadow, NoShowShadow, showshadow,
@@ -60,7 +62,7 @@ GYOTO_PROPERTY_END(Generic, Object::properties)
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
   __defaultfeatures(0),
-  gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
+  gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -71,7 +73,7 @@ Generic::Generic(string kin) :
 Generic::Generic() :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
-  gg_(NULL), rmax_(DBL_MAX), flag_radtransf_(0),
+  gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -82,7 +84,7 @@ Generic::Generic() :
 Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
-  gg_(NULL), rmax_(radmax), flag_radtransf_(0),
+  gg_(NULL), rmax_(radmax), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
 {
 #if GYOTO_DEBUG_ENABLED
@@ -95,6 +97,7 @@ Generic::Generic(const Generic& orig) :
   __defaultfeatures(orig.__defaultfeatures),
   gg_(NULL),
   rmax_(orig.rmax_),
+  deltamaxinsidermax_(orig.deltamaxinsidermax_),
   flag_radtransf_(orig.flag_radtransf_),
   noredshift_(orig.noredshift_), shadow_(orig.shadow_)
 {
@@ -132,6 +135,13 @@ double Generic::rMax(string const &unit) const {
 void Generic::rMax(double val) { rmax_=val; }
 void Generic::rMax(double val, string const &unit) {
   rMax(Units::ToGeometrical(val, unit, gg_)); }
+
+double Generic::deltaMaxInsideRMax() const { return deltamaxinsidermax_; }
+double Generic::deltaMaxInsideRMax(string const &unit) const {
+  return Units::FromGeometrical(deltaMaxInsideRMax(), unit, gg_); }
+void Generic::deltaMaxInsideRMax(double val) { deltamaxinsidermax_=val; }
+void Generic::deltaMaxInsideRMax(double val, string const &unit) {
+  deltaMaxInsideRMax(Units::ToGeometrical(val, unit, gg_)); }
 
 #ifdef GYOTO_USE_XERCES
 void Generic::setParameters(FactoryMessenger *fmp) {
@@ -752,7 +762,7 @@ double Generic::deltaMax(double coord[8]) {
     GYOTO_ERROR("Incompatible coordinate kind in Astrobj.C");
   }
 
-  if (rr<rMax()) h1max=1.; else h1max=rr*0.5;
+  if (rr<rMax()) h1max=deltamaxinsidermax_; else h1max=rr*0.5;
   return h1max;
 }
 
