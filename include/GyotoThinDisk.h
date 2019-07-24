@@ -84,6 +84,7 @@ class Gyoto::Astrobj::ThinDisk :
    */
   double thickness_; ///< disk thickness
   int dir_; ///< 1 for corotating (default), -1 for counterrotating.
+  unsigned int velocitykind_; ///< tag for VelocityKind
 
   // Constructors - Destructor
   // -------------------------
@@ -120,6 +121,8 @@ class Gyoto::Astrobj::ThinDisk :
   virtual void   dir(int); ///< Set dir_
   virtual bool   corotating() const; /// Get dir_==1
   virtual void   corotating(bool t); /// Set dir_=t?1:-1
+  virtual std::string velocityKind() const ; ///< Get VelocityKind
+  virtual void   velocityKind(std::string const&); ///< Set VelocityKind
 
   /**
    * A function which changes sign on the equatorial plane.

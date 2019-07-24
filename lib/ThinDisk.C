@@ -50,17 +50,24 @@ GYOTO_PROPERTY_DOUBLE_UNIT(ThinDisk, Thickness, thickness,
 			   "Geometrical thickness (geometrical units, 1e-3, for optical depth).")
 GYOTO_PROPERTY_BOOL(ThinDisk, CoRotating, CounterRotating, corotating,
 		    "Direction of rotation.")
+GYOTO_PROPERTY_STRING(ThinDisk, VelocityKind, velocityKind,
+		      "Keplerian (default) or ZAMO.")
 GYOTO_PROPERTY_END(ThinDisk, Generic::properties)
 
+#define ZAMO 1
+#define KEPLERIAN 0
+
 ThinDisk::ThinDisk(std::string kin) :
-  Generic(kin), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1)
+  Generic(kin), rin_(0.), rout_(DBL_MAX), thickness_(1e-3), dir_(1),
+  velocitykind_(KEPLERIAN)
 {
   GYOTO_DEBUG << "ThinDisk Construction" << endl;
 }
 
 ThinDisk::ThinDisk(const ThinDisk& o) :
   Generic(o), Functor::Double_constDoubleArray(o), rin_(o.rin_), rout_(o.rout_),
-  thickness_(o.thickness_), dir_(o.dir_)
+  thickness_(o.thickness_), dir_(o.dir_), velocitykind_(o.velocitykind_)
+
 {
   GYOTO_DEBUG << "ThinDisk Copy" << endl;
 }
@@ -105,6 +112,26 @@ void   ThinDisk::dir(int dir)          { dir_ = dir;  }
 void ThinDisk::corotating(bool t) { dir_ = (t?1:-1);}
 bool ThinDisk::corotating() const { return dir_ == 1; }
 
+void ThinDisk::velocityKind(string const &kind) {
+  if (kind == "ZAMO")
+    velocitykind_ = ZAMO;
+  else if (kind == "Keplerian")
+    velocitykind_ = KEPLERIAN;
+  else
+    throwError("unknown velocity kind");
+}
+string ThinDisk::velocityKind() const {
+  switch (velocitykind_) {
+  case ZAMO:
+    return "ZAMO";
+  case KEPLERIAN:
+    return "Keplerian";
+  default:
+    throwError("unknown velocity kind tag");
+  }
+  return "will not reach here, this line to avoid compiler warning"; 
+}
+
 double ThinDisk::operator()(double const coord[4])  {
   double theta;
   switch (gg_ -> coordKind()) {
@@ -147,7 +174,16 @@ double ThinDisk::sphericalPhi(double const coord[4]) const {
 }
 
 void ThinDisk::getVelocity(double const pos[4], double vel[4]) {
-  gg_ -> circularVelocity(pos, vel, dir_);
+  switch (velocitykind_) {
+  case KEPLERIAN:
+    gg_ -> circularVelocity(pos, vel, dir_);
+    break;
+  case ZAMO:
+    gg_ -> zamoVelocity(pos, vel);
+    break;
+  default:
+    throwError("unknown velocity kind tag");
+  }
 }
 
 int ThinDisk::Impact(Photon *ph, size_t index,

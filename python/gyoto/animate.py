@@ -135,10 +135,9 @@ class accelerating_tangential_screen:
             setattr(self, key, args[key])
 
     def __call__(self, sc, k, nframes):
-        pos=numpy.zeros(4)
         scr=sc.screen()
         metric=sc.metric()
-        scr.getObserverPos(pos)
+        pos=scr.getObserverPos()
         ucirc=metric.circularVelocity(pos)
         uzamo=metric.zamoVelocity(pos)
         Gamma=-metric.ScalarProd(pos, ucirc, uzamo)
@@ -272,6 +271,7 @@ def defaultScenery():
     intensity=opacity*0.+1.;
     pintensity=core.array_double_fromnumpy3(intensity)
     pd=std.PatternDisk()
+    pd.velocityKind('ZAMO')
     pd.copyIntensity(pintensity, pgridshape)
     pd.copyOpacity  (popacity, pgridshape)
     pd.innerRadius(0)
@@ -494,14 +494,21 @@ parser.add_argument("-p", "--plot", help="plot each frame",
                     dest='plot', action='store_true', default=False)
 parser.add_argument("-T", "--nthreads", help="number of threads to use",
                     type=int, default=8)
-parser.add_argument("--acceleration-maxvel", help="for acceleration video type, max velocity in terms of light velocity",
-                    dest='acceleration_maxvel', type=float, default=0.99)
 parser.add_argument("--orbit-t0", help="for orbit video type, initial time in geometrical units",
                     dest='orbit_t0', type=float, default=0)
 parser.add_argument("--orbit-t1", help="for orbit video type, final time in geometrical units",
                     dest='orbit_t1', type=float, default=1000)
+parser.add_argument("--acceleration-maxvel", help="for acceleration video type, max velocity in terms of light velocity",
+                    dest='acceleration_maxvel', type=float, default=0.99)
+parser.add_argument("--growth_factor_first", help="for growth video type, scale factor on first frame",
+                    dest='growth_factor_first', type=float, default=None)
+parser.add_argument("--growth-factor-last", help="for growth video type, scale factor on last frame",
+                    dest='growth_factor_last', type=float, default=None)
+
+def main():
+    args = parser.parse_args()
+    mk_video(**args.__dict__)
 
 # If called as script, process command line and produce video
 if (__name__ == "__main__"):
-    args = parser.parse_args()
-    mk_video(**args.__dict__)
+    main()

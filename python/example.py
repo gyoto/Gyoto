@@ -30,8 +30,7 @@ import gyoto.std
 scr=gyoto.core.Screen()
 gg=gyoto.std.KerrBL()
 scr.metric(gg)
-pos=numpy.zeros(4, float)
-scr.getObserverPos(pos)
+pos=scr.getObserverPos(pos)
 
 # Load Scenery
 
