@@ -736,7 +736,7 @@ void Screen::getRayCoord(double angle1, double angle2,
     coord[6]=vel[0]*screen1[2]
       +vel[1]*screen2[2]
       +vel[2]*screen3[2]
-      +fourvel_[2];
+      +fourvel[2];
     coord[7]=vel[0]*screen1[3]
       +vel[1]*screen2[3]
       +vel[2]*screen3[3]
@@ -744,7 +744,10 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
   if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
     GYOTO_SEVERE << "In Screen::getRayCoord: "
-		" tangent 4-vector to photon not properly normalized\n";
+		 << "tangent 4-vector to photon not properly normalized: "
+		 << "norm = "
+		 << gg_->ScalarProd(coord,coord+4,coord+4)
+		 << endl;
   }
 }
 

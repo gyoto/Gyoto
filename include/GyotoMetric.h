@@ -380,6 +380,30 @@ class Gyoto::Metric::Generic
   virtual void nullifyCoord(double coord[8], double& tdot2) const;
   ///< Set tdot (coord[4]) such that coord is light-like and return other possible tdot
 
+  /**
+   * \brief Normalize fourvelvel to -1
+   *
+   * First computes threevel as xiprime=xidot/x0dot for i in {1, 2,
+   * 3}, then computes x0dot using SyPrimeToTdot, then computes again
+   * xidot as xidot=xiprime*x0dot.
+   *
+   * \param[in,out] coord 8-position, coord[4-7] will be set according
+   * to the other elements;
+   */
+  virtual void normalizeFourVel(double coord[8]) const;
+
+  /**
+   * \brief Normalize fourvelvel to -1
+   *
+   * First computes threevel as xiprime=xidot/x0dot for i in {1, 2,
+   * 3}, then computes x0dot using SyPrimeToTdot, then computes again
+   * xidot as xidot=xiprime*x0dot.
+   *
+   * \param[in] pos 4-position;
+   * \param[in,out] fourvel 4-velocity, will be renormalized.
+   */
+  virtual void normalizeFourVel(double const pos[4], double fourvel[4]) const;
+
 
   /**
    * Compute the scalarproduct of the two quadrivectors u1 and u2 in

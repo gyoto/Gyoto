@@ -442,10 +442,9 @@ void Worldline::setInitCoord(double const pos[4], double const v[3], int dir) {
   if (!metric_)
     GYOTO_ERROR("Please set metric before calling "
 	       "Worldline::setInitCoord(double pos[4], double vel[3])");
-  double tdot0=metric_->SysPrimeToTdot(pos, v);
-  GYOTO_DEBUG_EXPR(tdot0);
   double coord[8]={pos[0], pos[1], pos[2], pos[3],
-		   tdot0, v[0]*tdot0, v[1]*tdot0, v[2]*tdot0};
+		   1., v[0], v[1], v[2]};
+  metric_ -> normalizeFourVel(coord);
   GYOTO_DEBUG_ARRAY(coord, 8);
   setInitCoord(coord, dir);
 }

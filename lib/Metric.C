@@ -195,6 +195,21 @@ void Metric::Generic::nullifyCoord(double coord[8], double& tdot2) const {
   coord[4]=(-b-sDelta)*am1;
 }
 
+void Metric::Generic::normalizeFourVel(double coord[8]) const {
+  normalizeFourVel(coord, coord+4);
+}
+
+void Metric::Generic::normalizeFourVel(double const pos[4],
+				       double fourvel[4]) const {
+  double tdotin=fourvel[0];
+  double threevel[3]={fourvel[1]/tdotin,
+		      fourvel[2]/tdotin,
+		      fourvel[3]/tdotin};
+  fourvel[0]=SysPrimeToTdot(pos, threevel);
+  for (int k = 0; k<3; ++k)
+    fourvel[k+1]=threevel[k]*fourvel[0];
+}
+
 double Metric::Generic::ScalarProd(const double pos[4],
 			  const double u1[4], const double u2[4]) const {
   double res=0.;
@@ -538,13 +553,8 @@ void Metric::Generic::observerTetrad(string const obskind,
     zamoVelocity(coord, fourvel);
   } else if (obskind=="KeplerianObserver") {
     circularVelocity(coord, fourvel);
-  } else {
-    // Let's renormalize fourvel
-    double tdotin=fourvel[0];
-    double threevel[3]={fourvel[1]/tdotin,
-			fourvel[2]/tdotin,
-			fourvel[3]/tdotin};
-    fourvel[0]=SysPrimeToTdot(coord, threevel);
+  } else if (obskind != "FullySpecified") {
+    normalizeFourVel(coord, fourvel);
   }
   if (obskind != "FullySpecified")
     observerTetrad(coord, fourvel, screen1, screen2, screen3);
