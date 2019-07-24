@@ -118,13 +118,13 @@ gyoto_doc.i: gyoto_doc.i.orig
 	          $< > $@
 
 gyoto/_core$(PYTHON_EXTENSION_SUFFIX): core_wrap.cxx
-	$(PYTHON) setup.py build_ext
+	$(PYTHON) setup.py build
 
 gyoto/_std$(PYTHON_EXTENSION_SUFFIX): std_wrap.cxx
-	$(PYTHON) setup.py build_ext
+	$(PYTHON) setup.py build
 
 gyoto/_lorene$(PYTHON_EXTENSION_SUFFIX): lorene_wrap.cxx
-	$(PYTHON) setup.py build_ext
+	$(PYTHON) setup.py build
 
 gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
 	$(MKDIR_P) `dirname $@`
