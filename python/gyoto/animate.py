@@ -114,6 +114,37 @@ class OpenCVVideoWriter(VideoWriter):
             self.video.release()
             self.video=None
 
+class PyAVVideoWriter(VideoWriter):
+    '''An implementation of VideoWriter that uses PyAV
+    '''
+    container=None
+    stream=None
+    fourcc=0
+
+    def __init__(self, filename, fps, width, height,
+                 codec_name='mpeg4', pix_fmt='yuv420p'):
+        import av
+        self.av=av
+        VideoWriter.__init__(self, filename, fps, width, height)
+        self.container = av.open(filename, mode='w')
+        self.stream = self.container.add_stream(codec_name, rate=fps)
+        self.stream.width = width
+        self.stream.height = height
+        self.stream.pix_fmt = pix_fmt
+
+    def write(self, frame):
+        avframe=self.av.VideoFrame.from_ndarray(frame[::-1,:,:], format='rgb24')
+        for packet in self.stream.encode(avframe):
+            self.container.mux(packet)
+
+    def close(self):
+        if self.container is not None:
+            for packet in self.stream.encode():
+                self.container.mux(packet)
+            self.container.close()
+            self.stream=None
+            self.container=None
+
 ## Two types of changes for the screen
 #
 # The rayTrace function below takes a callable as argument to mutate
@@ -186,7 +217,7 @@ class growing_mass:
     rmax0=50.
     d0=28.
     factor_first=100.
-    factor_last=0.1
+    factor_last=2.01/28.
 
     def __init__(self, scenery=None, **args):
         if scenery is not None:
@@ -198,6 +229,7 @@ class growing_mass:
             self.rin0=ao.get('InnerRadius', 'geometrical')
             self.rout0=ao.get('OuterRadius', 'geometrical')
             self.rmax0=ao.rMax()
+            self.factor_last=2.01/self.d0
             scenery.screen().observerKind('ZAMO')
         for key in args:
             setattr(self, key, args[key])
@@ -320,6 +352,7 @@ def mk_video(scenery=None,
              
              output=None,
              backend=OpenCVVideoWriter,
+             cmap=None,
              observerkind=None,
              plot=False,
              frame_first=0,
@@ -435,7 +468,20 @@ def mk_video(scenery=None,
     sc.nThreads(nthreads)
 
     # Open video
-    video=backend(output, fps, width, height)
+    if type(output) == str:
+        if backend == 'OpenCV':
+            backend=OpenCVVideoWriter
+        elif backend == 'PyAV':
+            backend=PyAVVideoWriter
+        video=backend(output, fps, width, height)
+    elif isinstance(output, VideoWriter):
+        video=output
+    else:
+        raise ValueError('output needs to be a string or VideoWriter')
+    if type(cmap) == str:
+        video.cmap=plt.cm.get_cmap(cmap)
+    elif cmap is not None:
+        video.cmap=cmap
 
     # Loop on frame number
     if frame_last is None:
@@ -465,6 +511,11 @@ parser.add_argument('-t', '--orbit-trajectory', type=str, default=None,
                     'describing the screen motion. Default: use built-in trajectory.')
 parser.add_argument('-o', '--output', type=str, default=None,
                     help='name of video file to save the movie in')
+parser.add_argument('-B', '--backend', type=str, default='OpenCV',
+                    choices=['OpenCV', 'PyAV'],
+                    help='name of backend to create video')
+parser.add_argument('-c', '--cmap', type=str, default='hot',
+                    help='name of pyplot color map')
 parser.add_argument("-V", "--func", help="type of video to produce.",
                     type=str, default='orbiting_screen',
                     choices=['orbiting_screen',
