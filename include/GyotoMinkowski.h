@@ -67,7 +67,7 @@ class Gyoto::Metric::Minkowski
   double gmunu(const double x[4], int mu, int nu) const ;
   double christoffel(const double coord[4],
 		     const int alpha, const int mu, const int nu) const ;
-  void observerTetrad(std::string const obskind,
+  void observerTetrad(obskind_t obskind,
 		      double const pos[4], double fourvel[4],
 		      double screen1[4], double screen2[4], 
 		      double screen3[4]) const;

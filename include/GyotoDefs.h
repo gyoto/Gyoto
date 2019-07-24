@@ -519,6 +519,24 @@ namespace Gyoto {
 
 //\}
 
+//\{
+/**
+ *\name Observer kind
+ */
+/// \brief Type for observer kind
+#define obskind_t unsigned int
+/// \brief ObserverAtInfinity
+#define GYOTO_OBSKIND_ATINFINITY         0
+/// \brief KeplerianObserver
+#define GYOTO_OBSKIND_KEPLERIAN          1
+/// \brief ZAMO
+#define GYOTO_OBSKIND_ZAMO               2
+/// \brief VelocitySpecified
+#define GYOTO_OBSKIND_VELOCITYSPECIFIED  3
+/// \brief FullySpecified
+#define GYOTO_OBSKIND_FULLYSPECIFIED     4
+//\}
+
 /// \brief Stringify macro content
 #define GYOTO_STRINGIFY(a) GYOTO_STRINGIFY_ARGUMENT(a)
 

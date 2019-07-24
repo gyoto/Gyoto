@@ -178,7 +178,7 @@ double Minkowski::christoffel(const double pos[8], const int alpha, const int mm
 
 }
 
-void Minkowski::observerTetrad(string const obskind,
+void Minkowski::observerTetrad(obskind_t obskind,
 			       double const pos[4], double fourvel[4],
 			       double screen1[4], double screen2[4], 
 			       double screen3[4]) const{
@@ -186,7 +186,7 @@ void Minkowski::observerTetrad(string const obskind,
     GYOTO_ERROR("In Minkowski::observerTetrad: "
 	       "coordinates should be spherical-like");
   }
-  if (obskind=="KeplerianObserver"){
+  if (obskind==GYOTO_OBSKIND_KEPLERIAN){
     double gtt = gmunu(pos,0,0),
       grr      = gmunu(pos,1,1),
       gthth    = gmunu(pos,2,2),
@@ -215,9 +215,6 @@ void Minkowski::observerTetrad(string const obskind,
       screen2[ii]=e2[ii];
       screen3[ii]=e3[ii];
     }
-  }else{
-    GYOTO_ERROR("In Minkowski::observerTetrad "
-	       "unknown observer kind");
   }
   Generic::observerTetrad(obskind,pos,fourvel,screen1,screen2,screen3);
 }

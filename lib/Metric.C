@@ -545,18 +545,18 @@ void Metric::Generic::setParticleProperties(Worldline*, const double*) const {
 # endif
 }
 
-void Metric::Generic::observerTetrad(string const obskind,
+void Metric::Generic::observerTetrad(obskind_t obskind,
 				     double const coord[4], double fourvel[4],
 				     double screen1[4], double screen2[4],
 				     double screen3[4]) const{
-  if (obskind == "ZAMO") {
+  if (obskind == GYOTO_OBSKIND_ZAMO) {
     zamoVelocity(coord, fourvel);
-  } else if (obskind=="KeplerianObserver") {
+  } else if (obskind== GYOTO_OBSKIND_KEPLERIAN) {
     circularVelocity(coord, fourvel);
-  } else if (obskind != "FullySpecified") {
+  } else if (obskind != GYOTO_OBSKIND_FULLYSPECIFIED) {
     normalizeFourVel(coord, fourvel);
   }
-  if (obskind != "FullySpecified")
+  if (obskind != GYOTO_OBSKIND_FULLYSPECIFIED)
     observerTetrad(coord, fourvel, screen1, screen2, screen3);
 
   // No general way to define the tetrad, should be defined

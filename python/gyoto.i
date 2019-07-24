@@ -738,7 +738,7 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
     ($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
   }
-  void observerTetrad(std::string const obskind,
+  void observerTetrad(obskind_t obskind,
                       double const IN_ARRAY1[4], double ARGOUT_ARRAY1_1[4],
                       double ARGOUT_ARRAY1_2[4], double ARGOUT_ARRAY1_3[4],
                       double ARGOUT_ARRAY1_4[4]) const {

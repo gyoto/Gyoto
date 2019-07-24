@@ -239,7 +239,7 @@ class Gyoto::Screen
    * \brief What kind of observer are we considering? (At infinity, ZAMO...)
    *
    */
-  std::string observerkind_;
+  obskind_t observerkind_;
 
  public:
   GYOTO_OBJECT;

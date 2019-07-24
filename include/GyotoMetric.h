@@ -435,7 +435,7 @@ class Gyoto::Metric::Generic
    * \param screen2 output: second vector in the screen plane
    * \param screen3 output: vector normal to the screen
    */
-  virtual void observerTetrad(std::string const obskind,
+  virtual void observerTetrad(obskind_t obskind,
 			      double const pos[4], double fourvel[4],
 			      double screen1[4], double screen2[4],
 			      double screen3[4]) const ;

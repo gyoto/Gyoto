@@ -95,7 +95,7 @@ tobs_(0.), fov_(M_PI*0.1), azimuthal_fov_(2.*M_PI),
   dangle1_(0.), dangle2_(0.),
   gg_(NULL), spectro_(NULL),
   freq_obs_(1.),
-  observerkind_("ObserverAtInfinity")
+  observerkind_(GYOTO_OBSKIND_ATINFINITY)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG_EXPR(dmax_);
@@ -331,10 +331,35 @@ void Screen::setObserverPos(const double coord[4]) {
 }
 
 void Screen::observerKind(const string &kind) {
-  observerkind_=kind;
+  if(kind == "ObserverAtInfinity")
+    observerkind_ = GYOTO_OBSKIND_ATINFINITY;
+  else if(kind == "KeplerianObserver")
+    observerkind_ = GYOTO_OBSKIND_KEPLERIAN;
+  else if(kind == "ZAMO")
+    observerkind_ = GYOTO_OBSKIND_ZAMO;
+  else if(kind == "VelocitySpecified")
+    observerkind_ = GYOTO_OBSKIND_VELOCITYSPECIFIED;
+  else if(kind == "FullySpecified")
+    observerkind_ = GYOTO_OBSKIND_FULLYSPECIFIED;
+  else
+    throwError("unknown observer kind");
 }
 string Screen::observerKind() const {
-  return observerkind_;
+  switch (observerkind_) {
+  case GYOTO_OBSKIND_ATINFINITY:
+    return "ObserverAtInfinity";
+  case GYOTO_OBSKIND_KEPLERIAN:
+    return "KeplerianObserver";
+  case GYOTO_OBSKIND_ZAMO:
+    return "ZAMO";
+  case GYOTO_OBSKIND_VELOCITYSPECIFIED:
+    return "VelocitySpecified";
+  case GYOTO_OBSKIND_FULLYSPECIFIED:
+    return "FullySpecified";
+  default:
+    throwError("unknown observer kind tag");
+  }
+  return "will not reach here, this line to avoid compiler warning";
 }
 
 void Screen::setFourVel(const double coord[4]) {
@@ -632,7 +657,7 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
   // 4-vector tangent to photon geodesic
   
-  if (observerkind_=="ObserverAtInfinity"){
+  if (observerkind_==GYOTO_OBSKIND_ATINFINITY){
     /* 
        ---> Observer local frame not given in XML <---
        Assume observer static at infinity ("standard Gyoto")
@@ -1285,11 +1310,6 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
       if (FactoryMessenger::parseArray(content, pos, 4) != 4)
 	GYOTO_ERROR("Screen \"Position\" requires exactly 4 tokens");
       scr -> setObserverPos (pos); 
-    }
-    else if (name=="KeplerianObserver" ||
-	     name=="ZAMO" ||
-	     name=="ObserverAtInfinity") {
-      scr -> observerKind(name);
     }
     else if (name=="Distance")    
       {

@@ -10,7 +10,8 @@ NEXT ABI
    	+ remove observerTetrad(obskind...);
    	+ implement observerTetrad(pos, fourvel, ...) for any fourvel.
       * Screen: supports two new obskinds: VelocitySpecified and
-        FullySpecified.
+        FullySpecified. obskind is now stored as and int and needs to
+	be specified as e.g. <ObserverKind>ZAMO</ObserverKind> in XML.
    * Screen: support changing camera orientation (with dangle1 and dangle2)
    * Python: new module gyoto.animate to help writing Gyoto-based movies.
 
