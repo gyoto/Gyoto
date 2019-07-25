@@ -358,7 +358,7 @@ def mk_video(scenery=None,
              frame_first=0,
              frame_last=None
              ):
-    '''Make video from a Gyoto Scenery
+    '''Make a video from a Gyoto Scenery
 
     Keyword arguments:
 
@@ -500,7 +500,55 @@ def mk_video(scenery=None,
 
 ### Define arguments
 
-parser = argparse.ArgumentParser(description=__doc__,
+parser = argparse.ArgumentParser(description=
+'''Make a video from a Gyoto Scenery
+
+Synopsys:
+gyoto mk-video --output=<out.avi> [--options...]
+
+Several types of videos are available and can be selected with
+--func. Currently, only the KerrBL Metric implements the methods
+needed for those various videos (zamoVelocity, circularVelocity and
+observerTetrad are needed). All parameters except --output have
+reasonable defaults. For even more advanced usage, see the module
+'gyoto.animate' in Python. This script requires one of the modules
+OpenCV-python or PyAV to be installed (see --backend option).
+
+gyoto mk-video --output=<out.avi> \\
+               --func=orbiting_screen \\
+              [--scenery=<scenery.xml>] \\
+              [--orbit-trajectory=<orbit.xml] \\
+              [--orbit-t0=<t0>] \\
+              [--orbit-t1=<t1>]
+
+will produce a video of the Scenery <scenery.xml> with the Screen
+(a.k.a. camera) orbiting the central object along the trajectory
+described in <trajectory.xml>. <trajectory.xml> may be a scenery file
+or a file produced by gyotoy and must contain a Star astrobj. The
+geodesic of this Star will be used as the camera trajectory.
+
+
+gyoto mk-video --output=<out.avi> \\
+               --func=accelerating_tangential_screen \\
+              [--scenery=<scenery.xml>] \\
+              [--acceleration-maxvel=<maxvel>]
+
+will produce a video where the Screen is fixed but changes velocity
+from 0 to maxvel*c. This is not an actual time sequence but helps
+vizualizing effects such as light aberration.
+
+gyoto mk-video --output=<out.avi> \\
+               --func=growing_mass \\
+              [--scenery=<scenery.xml>] \\
+              [--growth_factor_first=<ff>] \\
+              [--growth_factor_last=<fl>]
+
+will produce a video where the scale of the Scenery changes for each
+frame, from ff to fl. For this particular type of video, the Astrobj
+in the Scenery must be some kind of PatternDisk.
+
+
+''',
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
                                  prefix_chars='-+')
 parser.add_argument('-s', '--scenery', type=str, default=None,

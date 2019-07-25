@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "JANUARY 2019" Science "User Manuals"
+.TH GYOTO 1 "JULY 2019" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
@@ -20,7 +20,9 @@ gyoto [\fB\-\-silent\fR|\fB\-\-quiet\fR|\fB\-\-verbose\fR[=\fIN\fR]|\fB\-\-debug
       [\fB\-\-unit\fR[=\fIunit\fR]]
       [\fB\-\-parameter\fR=\fIPath::Name\fR[=\fIvalue\fR]]
       [\fB\-\-xmlwrite\fR=\fIoutput.xml\fR]
-      [\fB\-\-\fR] \fIinput.xml \fIoutput.fits
+      [\fB\-\-\fR] \fIinput.xml \fIoutput.fits\fR
+
+gyoto mk-video [\fIoptions\fR]
 .SH DESCRIPTION
 Gyoto is a framework for computing geodesics in curved
 space-times. The \fBgyoto\fR utility program uses this framework to
@@ -28,9 +30,17 @@ compute images of astronomical objects in the vicinity of compact
 objects (e.g. black-holes). Such images are distorted by strong
 gravitational lensing.
 
-\fBgyoto\fR takes a scenery description in XML format
-(\fIinput.xml\fR), computes this scenery using relativistic
+In the first form, \fBgyoto\fR takes a scenery description in XML
+format (\fIinput.xml\fR), computes this scenery using relativistic
 ray-tracing, and saves the result in FITS format.
+
+In the second form, \fBgyoto\fR produces a movie. See \fBgyoto
+mk-video \-\-help\fR for details. In particular, it can read a Scenery
+in XML format and a trajectory also in XML format (for instance
+produced with \fBgyotoy\fR(1), see below) and produce a movie as would
+be seen by an observer following this trajectory. The Gyoto plug-in
+\fIpython\fR and the Python module \fIOpenCV-Python\fR must be
+installed.
 
 A companion program, \fBgyotoy\fR(1), can be used to interactively
 visualize a single geodesic in any Gyoto metric (the trajectory of a

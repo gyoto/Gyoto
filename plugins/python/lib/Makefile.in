@@ -135,7 +135,7 @@ am__installdirs = "$(DESTDIR)$(soverdir)" \
 LTLIBRARIES = $(sover_LTLIBRARIES)
 libgyoto_@pluginname@_la_LIBADD =
 am_libgyoto_@pluginname@_la_OBJECTS = PythonPlug.lo Base.lo \
-	Spectrum.lo Metric.lo Standard.lo ThinDisk.lo
+	Spectrum.lo Metric.lo Standard.lo ThinDisk.lo mk_video.lo
 libgyoto_@pluginname@_la_OBJECTS =  \
 	$(am_libgyoto_@pluginname@_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -159,7 +159,8 @@ depcomp = $(SHELL) $(top_srcdir)/../../depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/Base.Plo ./$(DEPDIR)/Metric.Plo \
 	./$(DEPDIR)/PythonPlug.Plo ./$(DEPDIR)/Spectrum.Plo \
-	./$(DEPDIR)/Standard.Plo ./$(DEPDIR)/ThinDisk.Plo
+	./$(DEPDIR)/Standard.Plo ./$(DEPDIR)/ThinDisk.Plo \
+	./$(DEPDIR)/mk_video.Plo
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -370,7 +371,7 @@ AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \
 
 sover_LTLIBRARIES = libgyoto-@pluginname@.la
 libgyoto_@pluginname@_la_SOURCES = \
-	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C
+	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C mk_video.C
 
 
 # HEADERS: where they are, where to install them
@@ -460,6 +461,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Spectrum.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Standard.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ThinDisk.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_video.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -651,6 +653,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Spectrum.Plo
 	-rm -f ./$(DEPDIR)/Standard.Plo
 	-rm -f ./$(DEPDIR)/ThinDisk.Plo
+	-rm -f ./$(DEPDIR)/mk_video.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -704,6 +707,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Spectrum.Plo
 	-rm -f ./$(DEPDIR)/Standard.Plo
 	-rm -f ./$(DEPDIR)/ThinDisk.Plo
+	-rm -f ./$(DEPDIR)/mk_video.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

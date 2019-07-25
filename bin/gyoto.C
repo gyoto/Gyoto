@@ -48,6 +48,9 @@
 // ULONG_MAX
 #include <climits>
 
+// dlsym
+#include <dlfcn.h>
+
 using namespace std;
 using namespace Gyoto;
 
@@ -149,6 +152,12 @@ void sigint_handler(int sig)
   kill(getpid(), SIGINT);
 }
 
+#define ERROR_GENERIC          1
+#define ERROR_INITIALIZING     2
+#define ERROR_READING_SCENERY  3
+#define ERROR_RAYTRACING       4
+#define ERROR_MK_VIDEO 5
+
 static std::string curmsg = "";
 static int curretval = 1;
 
@@ -194,6 +203,34 @@ int main(int argc, char** argv) {
     GYOTO_DEFAULT_PLUGINS;
 
   argc-=(argc>0); argv+=(argc>0); // skip program name argv[0] if present
+
+  // if first argument is exactly mk-video, make a video!
+  if ( (argc>0) && (!strcmp(argv[0], "mk-video")) ) {
+    curmsg = "In gyoto.C: in mk-video: ";
+    curretval = ERROR_MK_VIDEO;
+    GYOTO_DEBUG << "trying to load python plugin\n";
+    void* handle=NULL;
+    int (*mk_video)(int, char**) = NULL;
+    Gyoto::Register::init(NULL);
+    std::vector< std::string > plugnames = {"python3",
+					    "python3.7", "python3.6", "python3.5",
+					    "python2.7",
+					    "python3.8", "python3.9"};
+    for (size_t k=0; k < plugnames.size(); ++k) {
+      GYOTO_DEBUG << "trying to load plug-in " << plugnames[k] << endl;
+      handle = loadPlugin(plugnames[k].c_str(), 2);
+      if (handle) {
+	GYOTO_DEBUG << "trying find symbol \"mk_video\" in plug-in " << plugnames[k] << endl;
+	mk_video = (int (*)(int, char**)) dlsym(handle, "mk_video");
+	if (mk_video) break;
+      }
+    }
+    if (!mk_video) GYOTO_ERROR("No Python plug-in containing mk_video() found");
+
+    return mk_video(argc, argv);
+  }
+
+  // else parse arguments
   option::Stats  stats(true, usage, argc, argv);
   option::Option* options = new option::Option[stats.options_max];
   option::Option* buffer  = new option::Option[stats.buffer_max];
@@ -242,7 +279,7 @@ int main(int argc, char** argv) {
   if (options[PLUGINS])
     pluglist = options[PLUGINS].last()->arg?options[PLUGINS].last()->arg:"";
   curmsg = "In gyoto.C: Error initializing libgyoto: ";
-  curretval = 1;
+  curretval = ERROR_INITIALIZING;
   Gyoto::Register::init(pluglist.c_str());
 
   SmartPointer<Scenery> scenery = NULL;
@@ -250,7 +287,7 @@ int main(int argc, char** argv) {
     Factory *factory =NULL;
     if (verbose() >= GYOTO_QUIET_VERBOSITY) cout << "Reading parameter file: " << parfile << endl;
     curmsg = "In gyoto.C: Error in Factory creation: ";
-    curretval = 1;
+    curretval = ERROR_READING_SCENERY;
     factory = new Factory(parfile);
 
     curmsg = "In gyoto.C: Error getting Kind: ";
@@ -279,7 +316,7 @@ int main(int argc, char** argv) {
   }
 
   curmsg = "In gyoto.C: Error initializing ray-tracing: ";
-  curretval = 2;
+  curretval = ERROR_RAYTRACING;
   SmartPointer<Screen>  screen = scenery->screen();
   string unit="";
 

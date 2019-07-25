@@ -50,7 +50,7 @@ void Gyoto::requirePlugin(std::string name, int nofail) {
   if (!havePlugin(name)) loadPlugin(name.c_str(), nofail);
 }
 
-void Gyoto::loadPlugin(char const*const nam, int nofail) {
+void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   string name(nam);
 
   // Determine file name
@@ -120,9 +120,9 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
   } else {
     GYOTO_DEBUG << "Failed loading " << dlfull << ".\n";
     if (nofail) {
-      if (verbose() >= GYOTO_DEFAULT_VERBOSITY)
+      if (nofail == 1 && verbose() >= GYOTO_DEFAULT_VERBOSITY)
 	cerr << "WARNING: unable to load optional plug-in " << dlfile << endl;
-      return;
+      return NULL;
     }
     GYOTO_ERROR(errors.c_str());
   }
@@ -144,6 +144,8 @@ void Gyoto::loadPlugin(char const*const nam, int nofail) {
   // In case nam is a file name, that's what we wan't to store
   GyotoRegisteredPlugins.insert(GyotoRegisteredPlugins.begin(), nam);
   GYOTO_DEBUG << "Done." << endl;
+
+  return handle;
 }
 
 void Gyoto::Register::init(char const *  cpluglist) {

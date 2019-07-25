@@ -10,7 +10,7 @@ AM_CXXFLAGS = $(Gyoto_CFLAGS) -DGYOTO_PREFIX=\"@prefix@\" \
 soverdir=@soverdir@
 sover_LTLIBRARIES = libgyoto-@pluginname@.la
 libgyoto_@pluginname@_la_SOURCES = \
-	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C
+	PythonPlug.C Base.C Spectrum.C Metric.C Standard.C ThinDisk.C mk_video.C
 
 if DEFAULT
 install-data-hook:

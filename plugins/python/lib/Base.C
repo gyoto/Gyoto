@@ -195,6 +195,7 @@ PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * source_code) {
   if (PyErr_Occurred() || !mod) {
     GYOTO_DEBUG << "failed importing object code as module!\n";
     Py_XDECREF(mod);
+    PyErr_Print();
     return NULL;
   }
 
