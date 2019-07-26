@@ -593,6 +593,10 @@ ExtendArrayNumPy(array_size_t, size_t);
                                    double * const x0dot=NULL,  double * const x1dot=NULL,
                                    double * const x2dot=NULL,  double * const x3dot=NULL,
                                    double * const otime=NULL,  bool proper=false) ;
+%ignore Gyoto::Worldline::getCartesian(double const * const dates, size_t const n_dates,
+                                       double * const x, double * const y,
+                                       double * const z, double * const xprime=NULL,
+                                       double * const yprime=NULL,  double * const zprime=NULL);
 %extend Gyoto::Worldline {
   void get_t(double * INPLACE_ARRAY1, size_t DIM1) {
     if (DIM1 != ($self)->get_nelements()) GYOTO_ERROR("wrong output array size");
@@ -737,23 +741,6 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   }
   void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
     ($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
-  }
-  void observerTetrad(obskind_t obskind,
-                      double const IN_ARRAY1[4], double ARGOUT_ARRAY1_1[4],
-                      double ARGOUT_ARRAY1_2[4], double ARGOUT_ARRAY1_3[4],
-                      double ARGOUT_ARRAY1_4[4]) const {
-    ($self)-> observerTetrad(obskind,
-                      IN_ARRAY1, ARGOUT_ARRAY1_1,
-                      ARGOUT_ARRAY1_2, ARGOUT_ARRAY1_3,
-                             ARGOUT_ARRAY1_4);
-  }
-  void observerTetrad(double const IN_ARRAY1_1[4], double const IN_ARRAY1_2[4],
-                      double ARGOUT_ARRAY1_1[4], double ARGOUT_ARRAY1_2[4],
-                      double ARGOUT_ARRAY1_3[4]) const {
-    ($self)-> observerTetrad(
-                      IN_ARRAY1_1, IN_ARRAY1_2,
-                      ARGOUT_ARRAY1_1, ARGOUT_ARRAY1_2,
-                             ARGOUT_ARRAY1_3);
   }
 };
 GyotoSmPtrClassGeneric(Metric)
