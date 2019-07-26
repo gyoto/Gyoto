@@ -1195,9 +1195,14 @@ void KerrBL::setParticleProperties(Worldline * line, const double* coord) const
   line -> setCst(cst,5);
 }
 
-void KerrBL::observerTetrad(double const pos[4], double const fourvel[4],
+void KerrBL::observerTetrad(double const pos[4], double fourvel[4],
 			    double screen1[4], double screen2[4], 
 			    double screen3[4]) const{
+  // following Krolik & Hawley 2004
+  // https://iopscience.iop.org/article/10.1086/427932/fulltext/
+
+  // First make sure FourVel is normalized
+  normalizeFourVel(pos, fourvel);
 
   double g[4][4];
   gmunu(g, pos);

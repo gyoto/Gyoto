@@ -223,6 +223,30 @@ double Metric::Generic::ScalarProd(const double pos[4],
   return res;
 }
 
+double Metric::Generic::norm(const double pos[4],
+			     const double u1[4]) const {
+  double norm2=ScalarProd(pos, u1, u1);
+  return ((norm2>0.)-(norm2<0.))*sqrt(abs(norm2));
+}
+
+void Metric::Generic::multiplyFourVect(double vect[4],
+				       double a) const {
+  for (int k=0; k<4; ++k) vect[k] *= a;
+}
+
+void Metric::Generic::addFourVect(double u1[4],
+				  double const u2[4]) const {
+  for (int k=0; k<4; ++k) u1[k] += u2[k];
+}
+
+void Metric::Generic::projectFourVect(double const pos[4],
+				      double u1[4],
+				      double const u2[4]) const {
+  double proj[4]={u2[0], u2[1], u2[2], u2[3]};
+  multiplyFourVect(proj, -ScalarProd(pos, u2, u1)/norm(pos, u2));
+  addFourVect(u1, proj);
+}
+
 void Metric::Generic::dualOneForm(double const IN_ARRAY1[4],
 				  double const IN_ARRAY2[4],
 				  double ARGOUT_ARRAY3[4]) const {
@@ -587,10 +611,91 @@ void Metric::Generic::observerTetrad(obskind_t obskind,
   }
 }
 
-void Metric::Generic::observerTetrad(double const coord[4], double const fourvel[4],
+void Metric::Generic::GramSchmidt(double const pos[4], double u0[4],
+				  double u1[4], double u2[4], double u3[4]) const {
+  // This is the Gram-Schmidt process according to
+  // https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+
+  // normalize u0
+  multiplyFourVect(u0, 1./abs(norm(pos, u0)));
+
+  // project u1 onto hyperplane othogonal to u0
+  // then normalize u1
+  projectFourVect(pos, u1, u0);
+  multiplyFourVect(u1, 1./abs(norm(pos, u1)));
+
+  // project u2 along u0, then along u1, then normalize it
+  projectFourVect(pos, u2, u0);
+  projectFourVect(pos, u2, u1);
+  multiplyFourVect(u2, 1./abs(norm(pos, u2)));
+
+
+  // project u3 along u0, u1 and u2 then normalize it
+  projectFourVect(pos, u3, u0);
+  projectFourVect(pos, u3, u1);
+  projectFourVect(pos, u3, u2);
+  multiplyFourVect(u3, 1./abs(norm(pos, u3)));
+
+}
+
+void Metric::Generic::observerTetrad(double const pos[4], double fourvel[4],
 				     double screen1[4], double screen2[4],
 				     double screen3[4]) const{
-  GYOTO_ERROR("Metric::<ThisKind>::observerTetrad not implemented.");
+  // following Krolik & Hawley 2004
+  // https://iopscience.iop.org/article/10.1086/427932/fulltext/
+  // Start with U, ephi, er, etheta and us Gram-Schmidt orthonormalization
+  // Warning, this is not really what Krolik & Hawley did.
+
+  switch(coordkind_) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    screen1[0]=0.;
+    screen1[1]=0.;
+    screen1[2]=0.;
+    screen1[3]=-1.;
+
+    screen2[0]=0.;
+    screen2[1]=0.;
+    screen2[2]=-1.;
+    screen2[3]=0.;
+
+    screen3[0]=0.;
+    screen3[1]=-1.;
+    screen3[2]=0.;
+    screen3[3]=0.;
+    break;
+
+  case GYOTO_COORDKIND_CARTESIAN:
+    {
+      double rp=sqrt(pos[1]*pos[1]+pos[2]*pos[2]);
+      double theta=atan2(rp, pos[3]);
+      double phi=atan2(pos[2], pos[1]);
+      double ct, st, cp, sp;
+      sincos(phi, &sp, &cp);
+      sincos(theta, &st, &ct);
+      screen1[0]=0.;
+      screen1[1]=sp;
+      screen1[2]=-cp;
+      screen1[3]=0.;
+
+      screen2[0]=0.;
+      screen2[1]=-ct*cp;
+      screen2[2]=-ct*sp;
+      screen2[3]=st;
+
+      screen3[0]=0.;
+      screen3[1]=-pos[1];
+      screen3[2]=-pos[2];
+      screen3[3]=-pos[3];
+    }
+    break;
+
+  default:
+    GYOTO_ERROR
+      ("Metric::Generic::observerTetrad: unknown coordinate kind");
+  }
+
+  GramSchmidt(pos, fourvel, screen2, screen3, screen1);
+
 }
 
 double Metric::Generic::getRmb() const{

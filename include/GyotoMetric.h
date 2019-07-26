@@ -417,6 +417,25 @@ class Gyoto::Metric::Generic
 		    const double u1[4], const double u2[4]) const; ///< Scalar product
 
   /**
+   * Compute the norm of the quadrivector u1 in
+   * this Metric, at point pos expressed in coordinate system sys.
+   * \param[in] pos 4-position;
+   * \param[in] u1 quadrivector;
+   * \return ||u1||
+   */
+  double norm(const double pos[4],
+		      const double u1[4]) const; ///< Scalar product
+
+  ///\brief multiply vector by scalar
+  void multiplyFourVect(double vect[4], double a) const;
+
+  ///\brief add second vector to first one
+  void addFourVect(double u1[4], double const u2[4]) const;
+
+  ///\brief project u1 orthogonally to u2 at pos
+  void projectFourVect(double const pos[4], double u1[4], double const u2[4]) const;
+
+  /**
    * \brief Computes dual 1-form
    * Compute the dual 1-form of 4-vector.
    * \param IN_ARRAY1_1 4-position;
@@ -449,10 +468,24 @@ class Gyoto::Metric::Generic
    * \param[out] screen2 second vector in the screen plane
    * \param[out] screen3 vector normal to the screen
    */
-  virtual void observerTetrad(double const pos[4], double const fourvel[4],
+  virtual void observerTetrad(double const pos[4], double fourvel[4],
 			      double screen1[4], double screen2[4],
 			      double screen3[4]) const ;
 
+  /**
+   * \brief Apply Gram-Schmidt orthonormalization to a basis
+   *
+   * On input, u0 to u3 must be four non-zero norm, independent
+   * 4-vectors. On output, they will form an orthonormal basis.
+   *
+   * \param[in]     pos position,
+   * \param[in,out] u0 basis vector
+   * \param[in,out] u1 basis vector
+   * \param[in,out] u2 basis vector
+   * \param[in,out] u3 basis vector
+   */
+  void GramSchmidt(double const pos[4], double u0[4],
+		   double u1[4], double u2[4], double u3[4]) const;
   // Outputs
 
   /**
