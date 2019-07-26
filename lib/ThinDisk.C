@@ -139,7 +139,12 @@ double ThinDisk::sphericalPhi(double const coord[4]) const {
   case GYOTO_COORDKIND_SPHERICAL:
     return coord[3];
   case GYOTO_COORDKIND_CARTESIAN:
-    return atan2(coord[2], coord[1]);
+    {
+      double res=atan2(coord[2], coord[1]);
+      while (res<.0) res += 2*M_PI;
+      while (res>2.*M_PI) res -= 2*M_PI;
+      return res;
+    }
   default:
     GYOTO_ERROR("ThinDisk::sphericalPhi(): unknown COORDKIND");
     return 0.;
