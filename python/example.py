@@ -85,6 +85,20 @@ plt.show()
 
 # Ray-trace scenery
 
+# For that, we can use the short-hand:
+import gyoto.util
+sc.requestedQuantitiesString('Intensity EmissionTime MinDistance')
+results=gyoto.util.rayTrace(sc)
+
+plt.imshow(results['Intensity'])
+plt.show()
+plt.imshow(results['EmissionTime'])
+plt.show()
+plt.imshow(results['MinDistance'])
+plt.show()
+
+# Or we can do it manually to understand how the Gyoto API works:
+
 res=sc.screen().resolution()
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)

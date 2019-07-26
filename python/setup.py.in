@@ -67,7 +67,7 @@ gyoto_lorene_module = Extension('gyoto/_lorene',
 
 pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std", "gyoto_std",
              "gyoto._namespaces", "gyoto.astrobj", "gyoto.metric",
-             "gyoto.spectrum", "gyoto.spectrometer", "gyoto.animate"]
+             "gyoto.spectrum", "gyoto.spectrometer", "gyoto.animate", "gyoto.util"]
 extmodules= [gyoto_module, gyoto_std_module]
 
 if HOME_LORENE != "":
