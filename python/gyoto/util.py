@@ -1,8 +1,18 @@
+'''Utility functions for Gyoto
+
+Coord1dSet  -- easily initialize a gyoto.core.Coord1dset
+rayTrace    -- a wrapper around gyoto.core.Scenery.rayTrace which
+               hides most of its complexity
+readScenery -- short hand for reading a Scenery XML file
+'''
+
+
 from gyoto import core
 import numpy
 import numbers
 
 def Coord1dSet(k, res, sz):
+    '''Easily initialize a gyoto.core.Coord1dset'''
     if (k is None):
         k=range(res//2-sz//2+1, res//2-sz//2+sz+1, 1)
     if type(k) is range:
@@ -197,3 +207,11 @@ def rayTrace(sc, coord2dset=None, width=None, height=None, fmt=''):
     sc.rayTrace(coord2dset, aop)
 
     return res
+
+def readScenery(filename):
+    '''Read Scenery from XML file'''
+    return core.Factory(filename).scenery()
+
+def writeObject(obj, filename):
+    '''Write Gyoto object (e.g. Scenery) to XML file'''
+    core.Factory(obj).write(filename)
