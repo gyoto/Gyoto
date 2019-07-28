@@ -242,9 +242,10 @@ void Metric::Generic::addFourVect(double u1[4],
 void Metric::Generic::projectFourVect(double const pos[4],
 				      double u1[4],
 				      double const u2[4]) const {
-  double proj[4]={u2[0], u2[1], u2[2], u2[3]};
-  multiplyFourVect(proj, -ScalarProd(pos, u2, u1)/norm(pos, u2));
-  addFourVect(u1, proj);
+  double n=1./norm(pos, u2);
+  double u[4]={u2[0]*n, u2[1]*n, u2[2]*n, u2[3]*n};
+  multiplyFourVect(u, -ScalarProd(pos, u, u1));
+  addFourVect(u1, u);
 }
 
 void Metric::Generic::dualOneForm(double const IN_ARRAY1[4],
@@ -416,15 +417,24 @@ void Metric::Generic::circularVelocity(double const * coor, double* vel,
   } else GYOTO_ERROR("Unknownn COORDKIND");
 }
 
-void Metric::Generic::zamoVelocity(double const * coor, double* vel) const {
-  static bool needwarning = true;
-  if (needwarning) {
-    GYOTO_WARNING <<
-      "Trivial implementation of Metric::Generic::zamoVelocity() may be wrong for you Metric\n";
-    needwarning = false;
-  }
+void Metric::Generic::zamoVelocity(double const * pos, double* vel) const {
+  double ephi[4] = {0., 0., 0., 1.};
   vel [1] = vel [2] = vel [3] = 0.;
-  vel [0] = SysPrimeToTdot(coor, vel+1) ;
+  vel [0] = 1.;
+
+  if (coordkind_==GYOTO_COORDKIND_CARTESIAN) {
+    // ephi in Cartesian
+    double phi=atan2(pos[2], pos[1]);
+    double cp, sp;
+    sincos(phi, &sp, &cp);
+    ephi[0]=0.;
+    ephi[1]=-sp;
+    ephi[2]=cp;
+    ephi[3]=0.;
+  }
+  cerr << "ici" << endl;
+  projectFourVect(pos, vel, ephi);
+  multiplyFourVect(vel, 1./fabs(norm(pos, vel)));
 }
 
 void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {

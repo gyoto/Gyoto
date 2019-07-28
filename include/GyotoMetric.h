@@ -342,12 +342,9 @@ class Gyoto::Metric::Generic
    * \brief Yield ZAMO velocity at a given position
    *
    * Give the velocity of a zero angular momentul observer (whatever
-   * is closest to "at rest").
-   *
-   * The default implementation assumes the ZAMO 3-velocity is
-   * null. This is correct in the simplest metrics (e.g. Scharzschild)
-   * but wrong in the general case (e.g. Kerr). Derived classes should
-   * reimplement it if needed.
+   * is closest to "at rest"). The default implementation simply
+   * projects (1, 0, 0, 0) othogonally along ephi and normalizes it,
+   * thus ensuring that vel is orthogonal to ephi.
    *
    * \param pos input: position,
    * \param vel output: velocity,
