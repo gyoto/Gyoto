@@ -432,7 +432,7 @@ void Metric::Generic::zamoVelocity(double const * pos, double* vel) const {
     ephi[2]=cp;
     ephi[3]=0.;
   }
-  cerr << "ici" << endl;
+
   projectFourVect(pos, vel, ephi);
   multiplyFourVect(vel, 1./fabs(norm(pos, vel)));
 }
