@@ -375,7 +375,7 @@ void Metric::Generic::cartesianVelocity(double const coord[8], double vel[3]) {
 	- r * phiprime * sintheta * sinphi;
       vel[1] = rprime * sintheta * sinphi
 	+ r * thetaprime * costheta * sinphi
-	+ r * phiprime * cosphi;
+	+ r * phiprime * sintheta * cosphi;
       vel[2] = rprime * costheta
 	- r * thetaprime * sintheta
 	;
