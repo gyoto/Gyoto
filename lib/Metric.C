@@ -242,9 +242,12 @@ void Metric::Generic::addFourVect(double u1[4],
 void Metric::Generic::projectFourVect(double const pos[4],
 				      double u1[4],
 				      double const u2[4]) const {
-  double n=1./norm(pos, u2);
-  double u[4]={u2[0]*n, u2[1]*n, u2[2]*n, u2[3]*n};
-  multiplyFourVect(u, -ScalarProd(pos, u, u1));
+  double n=norm(pos, u2);
+  double s=(n>0)-(n<0);
+  double absinvn=1./abs(n);
+  double u[4]={u2[0]*absinvn, u2[1]*absinvn,
+	       u2[2]*absinvn, u2[3]*absinvn};
+  multiplyFourVect(u, -s*ScalarProd(pos, u, u1));
   addFourVect(u1, u);
 }
 

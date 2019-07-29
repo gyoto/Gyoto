@@ -96,6 +96,124 @@ class TestMetric(unittest.TestCase):
         dst2=gg.christoffel((0, 6, 3.14, 0))
         self.assertEqual(tt, dst2[0, 0, 0])
 
+    def test_norm(self):
+        gg=gyoto.core.Metric('KerrBL')
+        gg.set('Spin', 0.95)
+        pos=numpy.asarray([0., 6., numpy.pi/2., 0.])
+        vel=gg.circularVelocity(pos)
+        self.assertAlmostEqual(gg.norm(pos, vel), -1.)
+
+    def test_GramSchmidt_BL(self):
+        gg=gyoto.core.Metric('KerrBL')
+        gg.set('Spin', 0.95)
+        pos=numpy.asarray([0., 6., numpy.pi/2., 0.])
+        fourvel=gg.circularVelocity(pos)
+        screen1=numpy.zeros(4)
+        screen2=numpy.zeros(4)
+        screen3=numpy.zeros(4)
+        screen1[0]=0.;
+        screen1[1]=0.;
+        screen1[2]=0.;
+        screen1[3]=-1.;
+        screen2[0]=0.;
+        screen2[1]=0.;
+        screen2[2]=-1.;
+        screen2[3]=0.;
+        screen3[0]=0.;
+        screen3[1]=-1.;
+        screen3[2]=0.;
+        screen3[3]=0.;
+        gg.GramSchmidt(pos, fourvel, screen2, screen3, screen1);
+        self.assertAlmostEqual(gg.norm(pos, fourvel), -1.)
+        self.assertAlmostEqual(gg.norm(pos, screen1), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen2), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen3), 1.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen1), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen2, screen3), 0.)
+
+    def test_GramSchmidt_KS(self):
+        gg=gyoto.core.Metric('KerrKS')
+        gg.set('Spin', 0.95)
+        pos=numpy.asarray([0., 6., 0. , 0.])
+        fourvel=gg.circularVelocity(pos)
+        screen1=numpy.zeros(4)
+        screen2=numpy.zeros(4)
+        screen3=numpy.zeros(4)
+        rp=numpy.sqrt(pos[1]*pos[1]+pos[2]*pos[2])
+        theta=numpy.arctan2(rp, pos[3])
+        phi=numpy.arctan2(pos[2], pos[1])
+        sp=numpy.sin(phi)
+        cp=numpy.cos(phi)
+        st=numpy.sin(theta)
+        ct=numpy.cos(theta)
+        screen1[0]=0.;
+        screen1[1]=sp;
+        screen1[2]=-cp;
+        screen1[3]=0.;
+        screen2[0]=0.;
+        screen2[1]=-ct*cp;
+        screen2[2]=-ct*sp;
+        screen2[3]=st;
+        screen3[0]=0.;
+        screen3[1]=-pos[1];
+        screen3[2]=-pos[2];
+        screen3[3]=-pos[3];
+        gg.GramSchmidt(pos, fourvel, screen2, screen3, screen1);
+        self.assertAlmostEqual(gg.norm(pos, fourvel), -1.)
+        self.assertAlmostEqual(gg.norm(pos, screen1), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen2), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen3), 1.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen1), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen2, screen3), 0.)
+
+    def test_obsereverTetrad_BL(self):
+        gg=gyoto.core.Metric('KerrBL')
+        gg.set('Spin', 0.95)
+        pos=numpy.asarray([0., 6., numpy.pi/2., 0.])
+        fourvel=gg.circularVelocity(pos)
+        screen1=numpy.zeros(4)
+        screen2=numpy.zeros(4)
+        screen3=numpy.zeros(4)
+        gg.observerTetrad(pos, fourvel, screen1, screen2, screen3)
+        self.assertAlmostEqual(gg.norm(pos, fourvel), -1.)
+        self.assertAlmostEqual(gg.norm(pos, screen1), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen2), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen3), 1.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen1), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen2, screen3), 0.)
+
+    def test_GramSchmidt_KS(self):
+        gg=gyoto.core.Metric('KerrKS')
+        gg.set('Spin', 0.95)
+        pos=numpy.asarray([0., 6., 0. , 0.])
+        fourvel=gg.circularVelocity(pos)
+        screen1=numpy.zeros(4)
+        screen2=numpy.zeros(4)
+        screen3=numpy.zeros(4)
+        gg.observerTetrad(pos, fourvel, screen1, screen2, screen3)
+        self.assertAlmostEqual(gg.norm(pos, fourvel), -1.)
+        self.assertAlmostEqual(gg.norm(pos, screen1), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen2), 1.)
+        self.assertAlmostEqual(gg.norm(pos, screen3), 1.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen1), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, fourvel, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen2), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen1, screen3), 0.)
+        self.assertAlmostEqual(gg.ScalarProd(pos, screen2, screen3), 0.)
+
 class TestValue(unittest.TestCase):
 
     def test_good(self):
