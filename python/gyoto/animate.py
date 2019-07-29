@@ -17,6 +17,7 @@ Classes:
 VideoWriter -- abstract interface with video library
 OpenCVVideoWriter -- implements VideoWriter using OpenCV-Python
 orbiting_screen -- a callable that can be used by rayTrace
+orbiting_screen_forward -- idem
 accelerating_tangential_screen -- idem
 growing_mass -- idem
 
@@ -183,7 +184,13 @@ class accelerating_tangential_screen:
         scr.fourVel(fourvel)
 
 class orbiting_screen:
-    '''The screen follows an orbit
+    '''The screen follows an orbit, camera looks along -er
+
+    members:
+    t0 -- proper time at movie start
+    t1 -- proper time at movie end
+    trajectory -- a gyoto.std.Star (or anything else that provides
+          getCoord(t, coord, proper).
     '''
     t0=0.
     t1=1000.
@@ -202,6 +209,91 @@ class orbiting_screen:
         screen=sc.screen()
         screen.setObserverPos(pos)
         screen.fourVel(vel)
+
+class orbiting_screen_forward:
+    '''The screen follows an orbit, camera looks forward
+
+    members:
+    t0 -- proper time at movie start
+    t1 -- proper time at movie end
+    trajectory -- a gyoto.std.Star (or anything else that provides
+          getCoord(t, coord, proper).
+    '''
+    t0=0.
+    t1=1000.
+    trajectory=None
+
+    def __init__(self, **args):
+        for key in args:
+            setattr(self, key, args[key])
+        self.metric=self.trajectory.metric()
+
+    def __call__(self, sc, k, nframes):
+        metric=sc.metric()
+        tau = self.t0+k*(self.t1-self.t0)/(nframes-1)
+        coord=core.vector_double(8)
+        self.trajectory.getCoord(tau, coord, True)
+        pos=numpy.asarray([coord[i] for i in range(4)])
+        vel=numpy.asarray([coord[i] for i in range(4, 8)])
+        screen=sc.screen()
+        screen.setObserverPos(pos)
+        screen.fourVel(vel)
+
+        # The 3 other elements of the tetrad are initialized as
+        # follows: front is along the 3-velocity; up is er; left is
+        # the external product up x front, thus (left, up, front) is
+        # direct.  Then we orthonormalise this tetrad. Obviously, this
+        # will fail if vel3c is along er.
+        #
+        # We convert everything to cartesian to compute the external
+        # product.
+        front=numpy.zeros(4)
+        metric.cartesianVelocity(coord, front[1:])
+        front /= numpy.sqrt((front*front).sum())
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            t=pos[0]
+            r=pos[1]
+            theta=pos[2]
+            phi=pos[3]
+            st=numpy.sin(theta)
+            ct=numpy.cos(theta)
+            sp=numpy.sin(phi)
+            cp=numpy.cos(phi)
+            posr=[pos[0], r*st*cp, r*st*sp, r*ct]
+        else:
+            posr=pos
+            r=numpy.sqrt(pos[1:]**2).sum()
+        up=numpy.concatenate(([0.], posr[1:]/r))
+        left=numpy.zeros(4)
+        left[1]=up[2]*front[3]-up[3]*front[2]
+        left[2]=up[3]*front[1]-up[1]*front[3]
+        left[3]=up[1]*front[2]-up[2]*front[1]
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+            er=posr/r
+            ephi=numpy.asarray([0., -sp, cp, 0.])
+            etheta=numpy.asarray([0., ct*cp, ct*sp, -st])
+            front=numpy.asarray([
+                0.,
+                (er*front).sum(),
+                (etheta*front).sum(),
+                (ephi*front).sum()
+            ])
+            up=numpy.asarray([
+                0.,
+                (er*up).sum(),
+                (etheta*up).sum(),
+                (ephi*up).sum()
+            ])
+            left=numpy.asarray([
+                0.,
+                (er*left).sum(),
+                (etheta*left).sum(),
+                (ephi*left).sum()
+            ])
+        metric.GramSchmidt(pos, vel, up, front, left);
+        screen.screenVector1(left)
+        screen.screenVector2(up)
+        screen.screenVector3(front)
 
 class growing_mass:
     '''The mass of the central object changes
@@ -372,17 +464,18 @@ def mk_video(scenery=None,
                 moving the camera, changing its field-of view etc..
                 func may also be a string, the name of one of the
                 built-in callables: orbiting_screen (default),
+                orbiting_screen_forward,
                 accelerating_tangential_screen or growing_mass. Those
                 options take parameters below
     orbit_trajectory -- 
-                only if func above is 'orbiting_screen', a
+                only if func above starts with 'orbiting_screen', a
                 gyoto.std.Star instance or a string (XML file name) or
                 None (in which case a default trajectory is used)
                 specifying the trajectory of the Screen.
-    orbit_t0 -- only if func above is 'orbiting_screen', time
+    orbit_t0 -- only if func above starts with 'orbiting_screen', time
                 coordinate of along the trajectory at the beginning of
                 the movie
-    orbit_t1 -- only if func above is 'orbiting_screen', time
+    orbit_t1 -- only if func above starts with 'orbiting_screen', time
                 coordinate of along the trajectory at the end of the
                 movie
     acceleration_maxvel --
@@ -428,7 +521,6 @@ def mk_video(scenery=None,
 
     # Select video type, init func callable
     if func == 'orbiting_screen':
-        screen.observerKind('VelocitySpecified')
         # Read or create trajectory
         if orbit_trajectory is None:
             traj=defaultTrajectory(screen)
@@ -437,7 +529,19 @@ def mk_video(scenery=None,
         else:
             traj=std.Star(core.Factory(orbit_trajectory).astrobj())
             traj.metric(metric)
+        screen.observerKind('VelocitySpecified')
         func=orbiting_screen(trajectory=traj, t0=orbit_t0, t1=orbit_t1)
+    elif func == 'orbiting_screen_forward':
+        # Read or create trajectory
+        if orbit_trajectory is None:
+            traj=defaultTrajectory(screen)
+        elif type(orbit_trajectory) is std.Star:
+            traj=orbit_trajectory
+        else:
+            traj=std.Star(core.Factory(orbit_trajectory).astrobj())
+            traj.metric(metric)
+        screen.observerKind('FullySpecified')
+        func=orbiting_screen_forward(trajectory=traj, t0=orbit_t0, t1=orbit_t1)
     elif func == 'accelerating_tangential_screen':
         screen.observerKind('VelocitySpecified')
         screen.dangle1(-45, 'degree')
@@ -526,7 +630,23 @@ will produce a video of the Scenery <scenery.xml> with the Screen
 (a.k.a. camera) orbiting the central object along the trajectory
 described in <trajectory.xml>. <trajectory.xml> may be a scenery file
 or a file produced by gyotoy and must contain a Star astrobj. The
-geodesic of this Star will be used as the camera trajectory.
+geodesic of this Star will be used as the camera trajectory. The
+Screen is pointing along -er, i.e. in the direction of the central object.
+
+
+gyoto mk-video --output=<out.avi> \\
+               --func=orbiting_screen_forward \\
+              [--scenery=<scenery.xml>] \\
+              [--orbit-trajectory=<orbit.xml] \\
+              [--orbit-t0=<t0>] \\
+              [--orbit-t1=<t1>]
+
+will produce a video of the Scenery <scenery.xml> with the Screen
+(a.k.a. camera) orbiting the central object along the trajectory
+described in <trajectory.xml>. <trajectory.xml> may be a scenery file
+or a file produced by gyotoy and must contain a Star astrobj. The
+geodesic of this Star will be used as the camera trajectory. The
+Screen is pointing in the direction of motion, i.e. looking forward.
 
 
 gyoto mk-video --output=<out.avi> \\
@@ -567,7 +687,7 @@ parser.add_argument('-c', '--cmap', type=str, default='hot',
                     help='name of pyplot color map')
 parser.add_argument("-V", "--func", help="type of video to produce.",
                     type=str, default='orbiting_screen',
-                    choices=['orbiting_screen',
+                    choices=['orbiting_screen', 'orbiting_screen_forward',
                              'accelerating_tangential_screen',
                              'growing_mass'])
 parser.add_argument("-D", "--duration", help="movie duration in seconds",
