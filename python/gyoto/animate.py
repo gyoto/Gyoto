@@ -240,10 +240,11 @@ class orbiting_screen_forward:
         screen.fourVel(vel)
 
         # The 3 other elements of the tetrad are initialized as
-        # follows: front is along the 3-velocity; up is er; left is
-        # the external product up x front, thus (left, up, front) is
-        # direct.  Then we orthonormalise this tetrad. Obviously, this
-        # will fail if vel3c is along er.
+        # follows: front is along the 3-velocity; up is er projected
+        # on the plane orthogonal to front; left is the external
+        # product up x front, thus (left, up, front) is direct.  Then
+        # we orthonormalise this tetrad. Obviously, this will fail if
+        # vel3c is along er.
         #
         # We convert everything to cartesian to compute the external
         # product.
@@ -264,6 +265,8 @@ class orbiting_screen_forward:
             posr=pos
             r=numpy.sqrt(pos[1:]**2).sum()
         up=numpy.concatenate(([0.], posr[1:]/r))
+        up -= (front*up).sum()*front
+        up /= numpy.sqrt((up*up).sum())
         left=numpy.zeros(4)
         left[1]=up[2]*front[3]-up[3]*front[2]
         left[2]=up[3]*front[1]-up[1]*front[3]
@@ -596,7 +599,7 @@ def mk_video(scenery=None,
         intensity=rayTraceFrame(sc, func, k, nframes, width, height)
         frame=video.colorize(intensity)
         if plot:
-            plt.imshow(frame)
+            plt.imshow(frame, origin='lower')
             plt.show()
         video.write(frame)
 
