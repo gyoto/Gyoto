@@ -16,6 +16,8 @@ rayTrace() in a loop and closes the video.
 Classes:
 VideoWriter -- abstract interface with video library
 OpenCVVideoWriter -- implements VideoWriter using OpenCV-Python
+PyAVVideoWriter -- implements VideoWriter using PyAV
+NullVideoWriter -- a VideoWriter that does not write anything
 orbiting_screen -- a callable that can be used by rayTrace
 orbiting_screen_forward -- idem
 accelerating_tangential_screen -- idem
@@ -95,7 +97,24 @@ class VideoWriter:
     def __del__(self):
         self.close()
 
-    
+class NullVideoWriter(VideoWriter):
+    '''A VideoWriter that does not write anything
+
+    Mostly useful during preparatory work in cunjunction with
+    plot=True.
+    '''
+    def write(self, frame):
+        '''Write frame to video
+
+        Frame is a numpy RGB image.
+        '''
+        pass
+
+    def close(self):
+        '''Close video
+        '''
+        pass
+
 class OpenCVVideoWriter(VideoWriter):
     '''An implementation of VideoWriter that uses OpenCV-python
     '''
@@ -216,11 +235,13 @@ class orbiting_screen_forward:
     members:
     t0 -- proper time at movie start
     t1 -- proper time at movie end
+    roll -- roll angle: left is rotated roll degrees towards up
     trajectory -- a gyoto.std.Star (or anything else that provides
           getCoord(t, coord, proper).
     '''
     t0=0.
     t1=1000.
+    roll=0.
     trajectory=None
 
     def __init__(self, **args):
@@ -264,13 +285,19 @@ class orbiting_screen_forward:
         else:
             posr=pos
             r=numpy.sqrt(pos[1:]**2).sum()
-        up=numpy.concatenate(([0.], posr[1:]/r))
-        up -= (front*up).sum()*front
-        up /= numpy.sqrt((up*up).sum())
-        left=numpy.zeros(4)
-        left[1]=up[2]*front[3]-up[3]*front[2]
-        left[2]=up[3]*front[1]-up[1]*front[3]
-        left[3]=up[1]*front[2]-up[2]*front[1]
+        up0=numpy.concatenate(([0.], posr[1:]/r))
+        up0 -= (front*up0).sum()*front
+        up0 /= numpy.sqrt((up0*up0).sum())
+        left0=numpy.zeros(4)
+        left0[1]=up0[2]*front[3]-up0[3]*front[2]
+        left0[2]=up0[3]*front[1]-up0[1]*front[3]
+        left0[3]=up0[1]*front[2]-up0[2]*front[1]
+        rollr=self.roll*numpy.pi/180
+        cr=numpy.cos(rollr)
+        sr=numpy.sin(rollr)
+        up=cr*up0-sr*left0
+        left=cr*left0+sr*up0
+
         if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
             er=posr/r
             ephi=numpy.asarray([0., -sp, cp, 0.])
@@ -576,11 +603,14 @@ def mk_video(scenery=None,
     sc.nThreads(nthreads)
 
     # Open video
-    if type(output) == str:
-        if backend == 'OpenCV':
-            backend=OpenCVVideoWriter
-        elif backend == 'PyAV':
-            backend=PyAVVideoWriter
+    if backend == 'OpenCV':
+        backend=OpenCVVideoWriter
+    elif backend == 'PyAV':
+        backend=PyAVVideoWriter
+    elif backend is None or backend == 'Null':
+        backend=NullVideoWriter
+
+    if type(output) == str or backend is NullVideoWriter:
         video=backend(output, fps, width, height)
     elif isinstance(output, VideoWriter):
         video=output
@@ -684,7 +714,7 @@ parser.add_argument('-t', '--orbit-trajectory', type=str, default=None,
 parser.add_argument('-o', '--output', type=str, default=None,
                     help='name of video file to save the movie in')
 parser.add_argument('-B', '--backend', type=str, default='OpenCV',
-                    choices=['OpenCV', 'PyAV'],
+                    choices=['OpenCV', 'PyAV', 'Null'],
                     help='name of backend to create video')
 parser.add_argument('-c', '--cmap', type=str, default='hot',
                     help='name of pyplot color map')
