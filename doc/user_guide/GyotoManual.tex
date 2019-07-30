@@ -367,21 +367,28 @@ interface. There is much more that \texttt{GYOTO} can be used for:
 computing spectra, performing model-fitting, computing movies,
 evaluating lensing effects etc.
 
-\subsection{Using the Python extensions}
+\subsection{Using the Python module}
 \label{sect:python}
 
-As of writting (January 2015), the Python extensions are fairly
-new. Some of the instructions below for loading the extensions or
-creating objects may change in future releases of the code.
+The Python module is constantly evolving and some details can change
+in future releases. It is documented in a Pythonic way, so
+help(object) is your friend.
 
-The Python layer is split into several extensions:
+The Python module is split into several submodules:
 \begin{description}
-\item[gyoto] expose the generic framework compiled in
+\item[gyoto.core] expose the generic framework compiled in
   \texttt{libgyoto};
-\item[gyoto\_std] expose the derived classes compiled in the
+\item[gyoto.std] expose the derived classes compiled in the
   standard plug-in, \texttt{libgyoto-stdplug};
-\item[gyoto\_lorene] expose the derived classes compiled in
-  the Lorene plug-in, \texttt{libgyoto-lorene}.
+\item[gyoto.lorene] expose the derived classes compiled in
+  the Lorene plug-in, \texttt{libgyoto-lorene};
+\item[gyoto.metric, gyoto.astrobj, gyoto.spectrometer, gyoto.spectrum]
+  regroup the various Metrics, Astrobjs, etc. from the various
+  extensions;
+\item[gyoto.util] contains a few high-level wrappers and helper
+  functions;
+\item[gyoto.animate] contains a frame-work for producing videos based
+  on Gyoto.
 \end{description}
 
 \subsubsection{Building and installing}
@@ -389,16 +396,17 @@ The Python layer is split into several extensions:
 How to build and install these extensions is documented in INSTALL. At
 the moment, this is not done automatically. The requisites are:
 \begin{itemize}
-\item Python (tested with 2.7 and 3.4), including the development
+\item Python (we use on recent Python 3, we support older releases
+  down to Python 2.7 on a best effot basis), including the development
   files;
 \item Swig (tested with 2.0.12 and 3.0.2);
 \item NumPy, installed with its development files for the specific
   Python interpreter you plan on using.
 \end{itemize}
-For instance, on Debian Wheezy, to use compile the \texttt{gyoto}
-extension for Python 3.4, you need the packages:
+For instance, on Debian Buster, to use compile the \texttt{gyoto}
+extension for Python 3.7, you need the packages:
 \begin{itemize}
-\item \texttt{python3.4-dev};
+\item \texttt{python3.7-dev};
 \item \texttt{python3-numpy};
 \item \texttt{swig} or \texttt{swig2.0}.
 \end{itemize}
@@ -406,15 +414,16 @@ Configure the Gyoto source tree specifying the Python interpreter (if
 you don't want to use the default on your system), build and install
 gyoto, then move to the \texttt{python/} subdirectory, build and install:
 \begin{code}
- $ ./configure PYTHON=/usr/bin/python3.4
+ $ ./configure PYTHON=/usr/bin/python3.7
  $ make
  $ sudo make install
  $ cd python
  $ make
  $ sudo make install
 \end{code}
-Depending on your system, you may need to add the directory where
-gyoto.py has been installed to your PYTHONPATH variable.
+Depending on your system, you may need to add the directory where the
+\texttt{gyoto/} directory containing \texttt{\_\_init\_\_.py} has been
+installed to your PYTHONPATH variable.
 
 \subsubsection{Using}
 
@@ -423,52 +432,60 @@ Python extension matches the C++ API very closely, so the C++
 reference in \texttt{doc/html/} is quite relevant. Most of it can also
 be accessed through the Python function '\texttt{help}'.
 
-The \texttt{gyoto} extension should be enough to perform ray-tracing
+The \texttt{gyoto.core} module should be enough to perform ray-tracing
 on anykind of objects, even located in plug-ins:
 
-Import the \texttt{gyoto} extension and load the standard plug-in into
-gyoto:
+Importing \texttt{gyoto}, \texttt{gyoto.core} or \texttt{gyoto.std}
+would normally load the standard plug-in for you, but this is how you
+would do it manually:
 \begin{code}
-  import gyoto
-  gyoto.requirePlugin("stdplug")
+  import gyoto.core
+  gyoto.core.requirePlugin("stdplug")
 \end{code}
 Get help on Gyoto:
 \begin{code}
-  help(gyoto)
+  help(gyoto.core)
 \end{code}
 Read scenery from XML:
 \begin{code}
-  a=gyoto.Factory("../doc/examples/example-moving-star.xml")
+  a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
   sc=a.scenery()
 \end{code}
+or:
+\begin{code}
+  import gyoto.util
+  sc=gyoto.util.readScenery("../doc/examples/example-moving-star.xml")
+\end{code}
+
 Create Astrobj by name, access property by name:
 \begin{code}
-  tr=gyoto.Astrobj('Torus')
-  p=tr.property('SmallRadius')
-  tr.set(p, gyoto.Value(0.5))
+  tr=gyoto.core.Astrobj('Torus')
+  tr.set('SmallRadius', 0.5)
 \end{code}
 
 To access methods of specific derived classes (for instance the Star
 API, which allows computing time-like geodesics), the python extension
 for a specific Gyoto plug-in must be imported:
 \begin{code}
-  import gyoto
-  gyoto.requirePlugin("stdplug")
-  import gyoto_std
-  st=gyoto_std.Star()
+  from gyoto import std
+  st=std.Star()
 \end{code}
-The three extensions are fully compatible with each other:
+The various submodules and extensions are fully compatible with each
+other:
 \begin{code}
-  sc=gyoto.Scenery()
-  st=gyoto_std.Star()
+  sc=gyoto.core.Scenery()
+  st=std.Star()
   sc.astrobj(st)
 \end{code}
 Pointers to the base classes can be up-cast to derived classes:
 \begin{code}
   ao = sc.astrobj() # ao contains a Gyoto::Astrobj::Generic * pointer
-  st = gyoto_std.Star(ao) # if conversion fails, error is thrown
+  st = std.Star(ao) # if conversion fails, error is thrown
 \end{code}
 
+The source directory contains several examples and test cases. The
+Python source for gyoto.util and gyoto.animate also provide rich
+examples, always more up-to-date than the present documentation.
 
 \subsection{Using the Yorick plug-in}
 \label{sect:yorick}
