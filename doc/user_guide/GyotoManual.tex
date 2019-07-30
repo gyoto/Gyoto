@@ -367,104 +367,6 @@ interface. There is much more that \texttt{GYOTO} can be used for:
 computing spectra, performing model-fitting, computing movies,
 evaluating lensing effects etc.
 
-\subsection{Using the Yorick plug-in}
-\label{sect:yorick}
-Yorick is a fairly easy to learn interpreted computer language. We
-provide a Yorick plug-in which exposes the \texttt{GYOTO}
-functionalities to this language. This plug-in is self documented: at
-the Yorick prompt, try:
-\begin{code}
- > #include "gyoto.i"
- > help, gyoto
-\end{code}
-
-A lot of the \texttt{GYOTO} test suite is written in Yorick, which
-provides many example code in the various \texttt{*.i} files in the
-\texttt{yorick/} directory of the \texttt{GYOTO} source tree. Another
-example is provided by the \texttt{gyotoy} graphical interface
-(Sect.~\ref{sect:gyotoy}).
-
-For Yorick basics, see:
-\begin{itemize}
-\item \url{https://github.com/dhmunro/yorick};
-\item \url{http://dhmunro.github.io/yorick-doc/};
-\item \url{http://yorick.sourceforge.net/};
-\item \url{http://www.maumae.net/yorick/doc/index.php}.
-\end{itemize}
-
-As a very minimalist example, here is how to ray-trace an XML
-scenery into a FITS file in Yorick:
-\begin{code}
- $ rlwrap yorick
-\end{code}
-%$
-This launches Yorick within the line-editing facility \texttt{rlwrap}
-(provided separately). Then, from the Yorick prompt:
-\begin{code}
- > #include "gyoto.i"
- > restore, gyoto;
- > sc = Scenery("input.xml");
- > data = sc(,,"Intensity");
- > fits_write, "output.fits", data;
-\end{code}
-or, in two lines:
-\begin{code}
- > #include "gyoto.i"
- > fits_write, "output.fits", gyoto.Scenery("input.xml")(,,"Intensity");
-\end{code}
-Likewise, to integrate the spectrum over the field-of-view:
-\begin{code}
- > #include "gyoto.i"
- > restore, gyoto;
- > sc = Scenery("input.xml");
- > data = sc(,,"Spectrum[mJy.pix-2]");
- > spectrum = data(sum, sum, );
- > freq = sc(screen=)(spectro=)(midpoints=, unit="Hz");
- > plg, spectrum, freq;
- > xytitles, "Frequency [Hz]", "Spectrum [mJy]";
-\end{code}
-
-MPI multi-processing is also available from within Yorick. To activate
-this functionality, you must call \texttt{gyoto.mpiInit} early in your
-script. Spawn the required number of processes using the
-\texttt{mpispawn} method, and don't forget to use the
-\texttt{mpiclone} method. Although not strictly necessary, it is also
-recommended to explicitely terminate helper processes that have been
-spawned in the background (using \texttt{mpispawn=0}, and to call
-\texttt{gyoto.mpiFinalize} at the very end of your script:
-\begin{code}
- > #include "gyoto.i"
- > restore, gyoto;
- > // call MPI_Init():
- > mpiInit;
- > sc = Scenery("input.xml");
- > // spawn helpers and send them the scenery
- > sc, mpispawn=12, mpiclone=;
- > // compute stuff
- > data =sc();
- > // shut down the helper processes
- > sc, mpispawn=0;
- > // shut down MPI
- > mpiFinalize;
- > quit;
-\end{code}
-
-The Yorick plug-in is not generated automatically. Therefore only a
-subset of the Gyoto API is exposed. However, all the properties of any
-object (most of what can be set in XML) can be read and written from
-Yorick, with the possibility of specifying a unit for properties that
-support it:
-\begin{code}
- > #include "gyoto.i"
- > restore, gyoto;
- > tr = Astrobj("Torus");
- > noop, tr.SmallRadius(0.5, unit="geometrical");
- > small_radius_in_meters=tr.SmallRadius(unit="m");
- > tr, SmallRadius=0.5, unit="geometrical", LargeRadius=5e6, unit="m";
- > large_radius_in_default_unit=tr(LargeRadius=);
-\end{code}
-
-
 \subsection{Using the Python extensions}
 \label{sect:python}
 
@@ -565,6 +467,108 @@ Pointers to the base classes can be up-cast to derived classes:
 \begin{code}
   ao = sc.astrobj() # ao contains a Gyoto::Astrobj::Generic * pointer
   st = gyoto_std.Star(ao) # if conversion fails, error is thrown
+\end{code}
+
+
+\subsection{Using the Yorick plug-in}
+\label{sect:yorick}
+Warning: the Yorick plug-in will not be udated with new features
+anymore and we plan on phasing it out has soon as gyotoy has been
+ported to Python. If in doubt, use Python instead.
+
+Yorick is a fairly easy to learn interpreted computer language. We
+provide a Yorick plug-in which exposes the \texttt{GYOTO}
+functionalities to this language. This plug-in is self documented: at
+the Yorick prompt, try:
+\begin{code}
+ > #include "gyoto.i"
+ > help, gyoto
+\end{code}
+
+A lot of the \texttt{GYOTO} test suite is written in Yorick, which
+provides many example code in the various \texttt{*.i} files in the
+\texttt{yorick/} directory of the \texttt{GYOTO} source tree. Another
+example is provided by the \texttt{gyotoy} graphical interface
+(Sect.~\ref{sect:gyotoy}).
+
+For Yorick basics, see:
+\begin{itemize}
+\item \url{https://github.com/dhmunro/yorick};
+\item \url{http://dhmunro.github.io/yorick-doc/};
+\item \url{http://yorick.sourceforge.net/};
+\item \url{http://www.maumae.net/yorick/doc/index.php}.
+\end{itemize}
+
+As a very minimalist example, here is how to ray-trace an XML
+scenery into a FITS file in Yorick:
+\begin{code}
+ $ rlwrap yorick
+\end{code}
+%$
+This launches Yorick within the line-editing facility \texttt{rlwrap}
+(provided separately). Then, from the Yorick prompt:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > sc = Scenery("input.xml");
+ > data = sc(,,"Intensity");
+ > fits_write, "output.fits", data;
+\end{code}
+or, in two lines:
+\begin{code}
+ > #include "gyoto.i"
+ > fits_write, "output.fits", gyoto.Scenery("input.xml")(,,"Intensity");
+\end{code}
+Likewise, to integrate the spectrum over the field-of-view:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > sc = Scenery("input.xml");
+ > data = sc(,,"Spectrum[mJy.pix-2]");
+ > spectrum = data(sum, sum, );
+ > freq = sc(screen=)(spectro=)(midpoints=, unit="Hz");
+ > plg, spectrum, freq;
+ > xytitles, "Frequency [Hz]", "Spectrum [mJy]";
+\end{code}
+
+MPI multi-processing is also available from within Yorick. To activate
+this functionality, you must call \texttt{gyoto.mpiInit} early in your
+script. Spawn the required number of processes using the
+\texttt{mpispawn} method, and don't forget to use the
+\texttt{mpiclone} method. Although not strictly necessary, it is also
+recommended to explicitely terminate helper processes that have been
+spawned in the background (using \texttt{mpispawn=0}, and to call
+\texttt{gyoto.mpiFinalize} at the very end of your script:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > // call MPI_Init():
+ > mpiInit;
+ > sc = Scenery("input.xml");
+ > // spawn helpers and send them the scenery
+ > sc, mpispawn=12, mpiclone=;
+ > // compute stuff
+ > data =sc();
+ > // shut down the helper processes
+ > sc, mpispawn=0;
+ > // shut down MPI
+ > mpiFinalize;
+ > quit;
+\end{code}
+
+The Yorick plug-in is not generated automatically. Therefore only a
+subset of the Gyoto API is exposed. However, all the properties of any
+object (most of what can be set in XML) can be read and written from
+Yorick, with the possibility of specifying a unit for properties that
+support it:
+\begin{code}
+ > #include "gyoto.i"
+ > restore, gyoto;
+ > tr = Astrobj("Torus");
+ > noop, tr.SmallRadius(0.5, unit="geometrical");
+ > small_radius_in_meters=tr.SmallRadius(unit="m");
+ > tr, SmallRadius=0.5, unit="geometrical", LargeRadius=5e6, unit="m";
+ > large_radius_in_default_unit=tr(LargeRadius=);
 \end{code}
 
 
