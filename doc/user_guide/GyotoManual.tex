@@ -48,6 +48,10 @@
 \newcommand{\Astrobj}{\texttt{Astrobj}}
 \newcommand{\Spectrum}{\texttt{Spectrum}}
 
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\atantwo}{atan2}
+\DeclareMathOperator{\proj}{proj}
+
 \graphicspath{{\GyotoSrcDir/doc/images/}}
 
 
@@ -60,7 +64,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated January 10, 2019}
+\Large{Updated July 31, 2019}
 %\today
 
 \vspace{4cm}
@@ -927,6 +931,335 @@ For the time being, only a simple example of numerical metric is implemented in 
 \end{sloppypar}
 
 The basic functions developed in \texttt{lib/RotStar3\_1.C} are similar to their Kerr counterparts, but here the metric is expressed in terms of the 3+1 quantities (lapse, shift, 3-metric, extrinsic curvature). The equation of geodesics expressed in the 3+1 formalism is given in~\citet{vincent12a} and implemented in \texttt{lib/RotStar3\_1.C}. However, it is possible to choose in the \texttt{XML} file whether the integration will be performed by using this 3+1 equation of geodesics, or by using the most general 4D equation of geodesics~\citep[see][for a comparison of the two methods]{vincent11a}.
+
+\section{Local tetrads: setting the Screen orientation}
+
+The orientation of the camera (implemented by the class
+\texttt{Gyoto::Screen} in C++ and gyoto.core.Screen in Python) is
+determined by a local tetrad of the observer composed of four 4-vectors
+$(\vec u, \vec e_l, \vec e_u, \vec e_f)$ which form an orthonormal
+local basis and where:
+\begin{description}
+\item[$\vec u$] is the 4-velocity of the observer;
+\item[$\vec e_l$] points to the left-hand side of the observer;
+\item[$\vec e_u$] points up;
+\item[$\vec e_f$] points front, i.e. in the direction where the
+  observer is looking.
+\end{description}
+
+In the following, $(\vec e_t, \vec e_r, \vec e_\theta, \vec
+e_\varphi)$ is the usual spherical local basis, which can also be
+defined for Cartesian coordinate systems $(t, x, y, z)$ such as
+\texttt{KerrKS} as follows:
+$$
+\begin{array}{rcl}
+  r & = & \sqrt{x^2+y^2+z^2} \\
+  r_p & = & \sqrt{x^2+y^2} \\
+  \theta & = & \atantwo(r_p, z) \\
+  \varphi & = & \atantwo(y, x) \\
+  \vec e_t & = & (1, 0, 0, 0) \\
+  \vec e_r & = &  (0, x/r, y/e, z/r) \\
+  \vec e_\theta & = &  (0, \cos \theta \cos \varphi, \cos \theta \sin\varphi, -\sin \theta)\\
+  \vec e_\varphi & = & (0, -\sin \varphi, \cos \varphi, 0)  \\
+\end{array}
+$$
+
+
+The Screen interface provides several ways to specify this tetrad with
+the concept of \texttt{ObserverKind} (XML entity), which can be set
+using the Screen method \texttt{observerKind()}:
+\begin{description}
+\item[\texttt{ObserverAtInfinity}] the default, does no special
+  treatment, which implicitly assumes $(\vec u, \vec e_l, \vec e_u,
+  \vec e_f) = (\vec e_t, -\vec e_\varphi, -\vec e_\theta, -\vec
+  e_r)$. In this case, the Screen orientation can be fine-tuned using
+  the XML entities \texttt{PALN}, \texttt{Dangle1} and
+  \texttt{Dangle2}, corresponding to the methods \texttt{PALN()},
+  \texttt{dangle1()} and \texttt{dangle2()}. This default is fine for
+  most cases, i.e. when the observer really is far from the the
+  central object (more than a few 10 geometrical units) and at rest.
+\item[\texttt{ZAMO}] is the natural extension of
+  \texttt{ObserverAtInfinity} in stronger field. $\vec u$ is first
+  computed using the Metric method \texttt{zamoVelocity} which returns
+  $\vec e_t$ projected in the hyperplane orthogonal to $\vec
+  e_\varphi$ and then normalized. This is the velocity of a
+  zero-angular-momentum observer. Then, the base $(\vec u, -\vec
+  e_\theta, -\vec e_r, -\vec e_\varphi)$ is orthonormalized into
+  $(\vec u, \vec e_u, \vec e_f, \vec e_l)$ using the Gram--Schmidt
+  process as implemented in the Metric method
+  \texttt{GramSchmidt}. The order of this orthonormalization matters
+  to get the same tetrad as propsed by Krolik, Hawley \& Hirose (2005,
+  ApJ:622:1008), implemented in \texttt{KerrBL}.
+\item[\texttt{VelocitySpecified}] applies the same process but using a
+  user-supplied, arbitrary 4-velocity using the XML entity
+  \texttt{FourVel} or the Screen method \texttt{fourVel}.
+\item[\texttt{FullySpecified}] is the most versatile, since the user
+  provides the four vectors using the XML entities \texttt{FourVel}
+  ($\vec u$), \texttt{ScreenVector1} ($\vec e_l$),
+  \texttt{ScreenVector2} ($\vec e_u$) and \texttt{ScreenVector3}
+  ($\vec e_f$) (the corresponding methods are the same, starting with
+  first letter in lower case). The user is then responsible for
+  providing a direct, orthonormal basis. For constructing this basis,
+  the user can use the helper functions described below.
+\end{description}
+
+In the rest of this section, we will use the Python API to document
+and demonstrate the use of the various helper methods that can be used
+to construct a local tetrad. Those lines can be translated to C++ in a
+trivial manner. Let \texttt{MetricKind} be a Metric kind
+(e.g. \texttt{KerrBL}, \texttt{KerrKS} or other), \texttt{AstrobjKind}
+be a kind of Astrobj, and $x0, x1, x2, x3$ be coordinates in this
+Metric.
+\begin{code}
+  from gyoto import core, util
+  import numpy
+  metric=core.Metric('MetricKind')    # take a metric
+  scr=core.Screen()                   # make a Screen
+  scr.metric(metric)                  
+  ao=core.Astrobj('AstobjKind')       # make astrobj
+  ao.metric(metric)
+  sc=core.Scenery()                   # make Scenery
+  sc.metric(metric)                   # assign metric
+  sc.astrobj(ao)                      # assign astrobj
+  sc.screen(scr)                      # assign screen
+  
+  pos=numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
+  scr.setObservPos(pos)               # set observer position
+  fourvel=numpy.zeros(4)              # NumPy array for 4-velocity
+\end{code}
+
+Now we can set the observer kind. The default would be:
+\begin{code}
+  scr.observerKind('ObserverAtInfinity')
+\end{code}
+which will not work close to the central object.
+
+\begin{code}
+  scr.observerKind('ZAMO')
+\end{code}
+would work, though. Nothing else would be required and one could then proceed with ray-tracing:
+
+\begin{code}
+  results=util.rayTrace(sc)
+\end{code}
+
+To try \texttt{ObserverKind==VelocitySpecified}, we need to get a
+4-velocity. Several methods can help with that, but in the general
+case it's up to the user:
+
+\begin{code}
+  metric.circularVelocity(pos, fourvel)
+\end{code}
+
+\texttt{circularVelocity} is defined by the Metrics to provide the
+velocity that a particle must have, at the position \texttt{pos}
+projected onto the equatorial plane, to be on a circular orbit. Such a
+velocity does not exist everywhere in the general case and only some
+Metrics provide this method. The Keplerian approximation is defined in
+the general case by:
+
+\begin{code}
+  metric.keplerian(True)
+  metric.circularVelocity(pos, fourvel)
+\end{code}
+
+but even in that case, the 4-velocity thus constructed does not always
+make sense.
+
+\begin{code}
+  metric.zamoVelocity(pos, fourvel)
+\end{code}
+
+Once the velocity vector has been set, one just needs to assign it to
+the Screen:
+
+\begin{code}
+  scr.observerKind('VelocitySpecified')
+  scr.fourVel(fourvel)
+  util.rayTrace(sc)
+\end{code}
+
+\texttt{zamoVelocity} is always defined. It provides a velocity with
+zero angular momentum (ZAMO stands for `zero angular momentum
+observer'). \texttt{KerrBL.zamoVelocity} is an optimised
+implementation, compatible with the generic one which projects $\vec
+e_t$ on the hyperplane orthogonal to $\vec e_\varphi$. The same could
+be implemented in Python like this:
+\begin{code}
+  ephi    = numpy.asarray([0., 0., 0., 1.])
+  fourvel = numpy.asarray([1., 0., 0., 0.])
+
+  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+      ephi    = numpy.asarray([0., 0., 0., 1.])
+  else:
+      phi=numpy.arctan2(pos[2], pos[1]);
+      cp=numpy.cos(phi)
+      sp=numpy.sin(phi)
+      ephi=numpy.asarray([0., -sp, cp, 0.])
+
+  metric.projectFourVect(pos, fourvel, ephi)
+  metric.multiplyFourVect(fourvel, 1./abs(metric.norm(pos, fourvel)))
+\end{code}
+
+The snippet above has introduced three methods:
+\begin{code}
+  metric.multiplyFourVect(fourvel, scalar) 
+\end{code}
+just multiplies each element of fourvel by \texttt{scalar}. This C++
+convenience method does the same as the more Pythonic:
+\begin{code}
+  fourvel *= scalar
+\end{code}
+where \texttt{fourvel} is a NumPy array and \texttt{scalar}
+a... scalar. Likewise, for adding two vectors, this:
+\begin{code}
+  metric.addFourVect(fourvel, v)
+\end{code}
+is equivalent to this:
+\begin{code}
+  fourvel += v
+\end{code}
+where \texttt{fourvel} and \texttt{v} are two NumPy arrays of 4 elements.
+
+\begin{code}
+  metric.norm(pos, fourvel)
+\end{code}
+\texttt{norm} returns the norm of a 4-vector:
+$\left\lVert\vec{v}\right\rVert=\sgn(\vec{v}\cdot\vec{v})\sqrt{\lvert\vec{v}\cdot\vec{v}\rvert}$. It
+could also be computed as:
+\begin{code}
+  n2=metric.ScalarProd(pos, fourvel, fourvel)
+  numpy.sign(n2)*numpy.sqrt(abs(n2))
+\end{code}
+where \texttt{ScalarProd} implements the scalar product.
+
+\begin{code}
+  metric.projectFourVect(pos, fourvel, ephi)
+\end{code}
+projects \texttt{fourvel} on the hyperplane orthogonal to
+\texttt{ephi} and returns the projected vector in place. The
+mathematical equivalent would be
+$$\proj_{\vec v}(\vec u) = \vec u - \sgn(\lVert v\rVert) (\vec u \cdot \frac{\vec v}{\lvert \lVert \vec v \rVert \rvert}) \frac{\vec v}{\lvert \lVert \vec v \rVert \rvert}$$
+
+\texttt{VelocitySpecified} instructs the Screen to build a local
+tetrad for a camera looking towards the origin. The same can be done
+with \texttt{FullySpecified} like this:
+
+\begin{code}
+  scr.observerKind('FullySpecified')
+  el=numpy.zeros(4)
+  eu=numpy.zeros(4)
+  ef=numpy.zeros(4)
+  metric.observerTetrad(pos, fourvel, el, eu, ef)
+  scr.fourVel(fourvel)
+  scr.screenVector1(el)
+  scr.screenVector2(eu)
+  scr.screenVector3(ef)
+\end{code}
+
+If \texttt{fourvel} has been set using
+\texttt{metric.zamoVelocity(pos, fourvel)}, this actually is
+equivalent to setting \texttt{ObserverKind} to \texttt{'ZAMO'}.
+
+The method \texttt{gyoto.animate.orbiting\_screen\_forward} provides a
+complete example where the local tetrad is computed in Python,
+orthonormalized using \texttt{metric.GramSchmidt} and passed to the
+Screen where the property \texttt{ObserverKind} has been set to
+\texttt{FullySpecified}. We comment on a simplified version below.
+
+The goal of this code is to set the camera such that it looks in the
+direction where the Screen is moving, so $\vec e_f$ is initialized as
+the 3-velocity $(0, \dot x^1 / \dot x^0, \dot x^2 / \dot x^0, \dot x^3
+/ \dot x^0)$. $\vec e_u$ is initialized as $\proj_u(\vec e_r)$ and
+normalized. It is therefore a vector pointing away from the central
+object, orthogonal to $e_f$ and normal (in the 3D Euclidian sense). We
+set $\vec e_l=\vec e_u \times \vec e_f$ where $\times$ denotes the 3D
+external (vector) product. Thus, $(\vec e_l, \vec e_u, \vec e_f)$
+would form an orthonormal basis of a Euclidian 3D space. We then use
+the Gram--Schmidt process to orthonormalize the tetrad $(\vec u, \vec
+e_l, \vec e_u, \vec e_f)$ in the metric sense. Most computations are
+done in Cartesian 3D coordinates, for the sake of computing the
+external product easily.
+
+\begin{code}
+  # pos and fourvel have been initialized previously
+  coord=numpy.concatenate((pos, fourvel))
+  ef=numpy.zeros(4)
+  # get Cartesian expression of 3-velocity into ef[1:]:
+  metric.cartesianVelocity(coord, ef[1:])
+  # normalize ef to 1 (in 3D):
+  ef /= numpy.sqrt((ef*ef).sum())
+
+  # get Cartesian expression of position in posc
+  # as well as spherical radius in r:
+  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+      t=pos[0]
+      r=pos[1]
+      theta=pos[2]
+      phi=pos[3]
+      st=numpy.sin(theta)
+      ct=numpy.cos(theta)
+      sp=numpy.sin(phi)
+      cp=numpy.cos(phi)
+      posc=[pos[0], r*st*cp, r*st*sp, r*ct]
+  else:
+      posc=pos
+      r=numpy.sqrt(pos[1:]**2).sum()
+
+  # Now initialize eu as er, but project it orthogonally to ef in 3D
+  # and then normalize it:    
+  eu=numpy.concatenate(([0.], posc[1:]/r))
+  eu -= (front*eu).sum()*front
+  eu /= numpy.sqrt((eu*eu).sum())
+
+  # Last vector is el, which we construct as the 3D vector product
+  # between eu and ef, computed in Cartesian coordinates:
+  el=numpy.zeros(4)
+  el[1]=eu[2]*ef[3]-eu[3]*ef[2]
+  el[2]=eu[3]*ef[1]-eu[1]*ef[3]
+  el[3]=eu[1]*ef[2]-eu[2]*ef[1]
+
+  # If the coordinate system is spherical, we need to convert back:
+  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+      er=posc/r
+      ephi=numpy.asarray([0., -sp, cp, 0.])
+      etheta=numpy.asarray([0., ct*cp, ct*sp, -st])
+      ef=numpy.asarray([
+        0.,
+        (er*ef).sum(),
+        (etheta*ef).sum(),
+        (ephi*ef).sum()
+      ])
+      eu=numpy.asarray([
+        0.,
+        (er*eu).sum(),
+        (etheta*eu).sum(),
+        (ephi*eu).sum()
+      ])
+      el=numpy.asarray([
+        0.,
+        (er*el).sum(),
+        (etheta*el).sum(),
+        (ephi*el).sum()
+      ])
+
+  # Our 3 vectors form an orthonormal basis in the Euclidian sense,
+  # but the tetrad still needs to be orthonormalized in the metric
+  # sense:
+  metric.GramSchmidt(pos, vel, eu, ef, el);
+
+  # Then we just need to attach the tetrad to the Screen:
+  scr.observerKind('FullySpecified')
+  scr.setObserverPos(pos)
+  scr.fourVel(fourvel)
+  scr.screenVector1(el)
+  scr.screenVector2(eu)
+  scr.screenVector3(ef)
+
+  # Perform ray-tracing as usual:
+  results=util.rayTrace(sc)
+ 
+\end{code}
 
 \section{Extending \GYOTO}
 
