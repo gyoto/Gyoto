@@ -202,6 +202,37 @@ class accelerating_tangential_screen:
         fourvel=Gamma*(uzamo+Vzamo)
         scr.fourVel(fourvel)
 
+class static_screen:
+    '''The screen does not move
+
+    This is meaningful when the astrobj itself is changing. The camera
+    will typically be far away, with ObserverKind set to
+    ObserverAtInfinity.
+
+    members:
+    tref -- reference time, read from sc.screen() the first time
+          __call__ is called
+    t0 -- coordinate time at movie start
+    t1 -- coordinate time at movie end
+    unit -- unit in which t0 and t1 are expressed
+    '''
+    tref=None
+    t0=0.
+    t1=1000.
+    unit='geometric'
+
+    def __init__(self, **args):
+        for key in args:
+            setattr(self, key, args[key])
+
+    def __call__(self, sc, k, nframes):
+        '''update time in screen
+        '''
+        if self.tref is None:
+            self.tref=sc.screen().time(self.unit)
+        t = self.t0+k*(self.t1-self.t0)/(nframes-1)
+        sc.screen().time(self.tref+t, self.unit)
+
 class orbiting_screen:
     '''The screen follows an orbit, camera looks along -er
 
@@ -466,6 +497,7 @@ def defaultTrajectory(screen):
 def mk_video(scenery=None,
              func="orbiting_screen",
              orbit_trajectory=None, orbit_t0=0., orbit_t1=1000.,
+             static_t0=0., static_t1=1000., static_unit='geometrical',
              acceleration_maxvel=0.99,
              growth_factor_first=None,
              growth_factor_last=None,
@@ -494,7 +526,7 @@ def mk_video(scenery=None,
                 moving the camera, changing its field-of view etc..
                 func may also be a string, the name of one of the
                 built-in callables: orbiting_screen (default),
-                orbiting_screen_forward,
+                orbiting_screen_forward, static_screen,
                 accelerating_tangential_screen or growing_mass. Those
                 options take parameters below
     orbit_trajectory -- 
@@ -502,12 +534,19 @@ def mk_video(scenery=None,
                 gyoto.std.Star instance or a string (XML file name) or
                 None (in which case a default trajectory is used)
                 specifying the trajectory of the Screen.
-    orbit_t0 -- only if func above starts with 'orbiting_screen', time
-                coordinate of along the trajectory at the beginning of
+    orbit_t0 -- only if func above starts with 'orbiting_screen',
+                proper time along the trajectory at the beginning of
                 the movie
-    orbit_t1 -- only if func above starts with 'orbiting_screen', time
-                coordinate of along the trajectory at the end of the
+    orbit_t1 -- only if func above starts with 'orbiting_screen',
+                proper time along the trajectory at the end of the
                 movie
+    static_t0-- only if func above is 'static_screen', coordinate
+                observing time offset at first frame
+    static_t0-- only if func above is 'static_screen', coordinate
+                observing time offset at last frame
+    static_unit --
+                only if func above is 'static_screen', unit in which
+                static_t0 and static_t1 are expressed ('geometrical').
     acceleration_maxvel --
                 only if func is 'accelerating_tangential_screen',
                 maximum velocity of the observer, in terms of c
@@ -561,6 +600,8 @@ def mk_video(scenery=None,
             traj.metric(metric)
         screen.observerKind('VelocitySpecified')
         func=orbiting_screen(trajectory=traj, t0=orbit_t0, t1=orbit_t1)
+    elif func == 'static_screen':
+        func=static_screen(unit=static_unit, t0=static_t0, t1=static_t1)
     elif func == 'orbiting_screen_forward':
         # Read or create trajectory
         if orbit_trajectory is None:
@@ -653,9 +694,22 @@ reasonable defaults. For even more advanced usage, see the module
 OpenCV-python or PyAV to be installed (see --backend option).
 
 gyoto mk-video --output=<out.avi> \\
+               --func=static_screen \\
+              [--scenery=<scenery.xml>] \\
+              [--static-unit=<time unit>] \\
+              [--static-t0=<t0>] \\
+              [--static-t1=<t1>]
+
+will produce a video of the Scenery <scenery.xml> with the Screen
+(a.k.a. camera) fixed, with observing (coordinate) time varying from
+Time+<t0> to Time+<t1> in <time unit>, where Time is the observing
+date specified in<scenery.xml>. This kind of video makes sense only if
+the astrobj in <scenery.xml> is time-variable.
+
+gyoto mk-video --output=<out.avi> \\
                --func=orbiting_screen \\
               [--scenery=<scenery.xml>] \\
-              [--orbit-trajectory=<orbit.xml] \\
+              [--orbit-trajectory=<orbit.xml>] \\
               [--orbit-t0=<t0>] \\
               [--orbit-t1=<t1>]
 
@@ -670,7 +724,7 @@ Screen is pointing along -er, i.e. in the direction of the central object.
 gyoto mk-video --output=<out.avi> \\
                --func=orbiting_screen_forward \\
               [--scenery=<scenery.xml>] \\
-              [--orbit-trajectory=<orbit.xml] \\
+              [--orbit-trajectory=<orbit.xml>] \\
               [--orbit-t0=<t0>] \\
               [--orbit-t1=<t1>]
 
@@ -722,7 +776,7 @@ parser.add_argument("-V", "--func", help="type of video to produce.",
                     type=str, default='orbiting_screen',
                     choices=['orbiting_screen', 'orbiting_screen_forward',
                              'accelerating_tangential_screen',
-                             'growing_mass'])
+                             'growing_mass', 'static_screen'])
 parser.add_argument("-D", "--duration", help="movie duration in seconds",
                     type=float, default=10.)
 parser.add_argument("-f", "--fps", help="number of frames per second",
@@ -751,6 +805,12 @@ parser.add_argument("--orbit-t0", help="for orbit video type, initial time in ge
                     dest='orbit_t0', type=float, default=0)
 parser.add_argument("--orbit-t1", help="for orbit video type, final time in geometrical units",
                     dest='orbit_t1', type=float, default=1000)
+parser.add_argument("--static-t0", help="for static video type, initial time offset",
+                    dest='static_t0', type=float, default=0)
+parser.add_argument("--static-t1", help="for static video type, final time offset",
+                    dest='static_t1', type=float, default=1000)
+parser.add_argument("--static-unit", dest="static_unit", help="unit for static-t0 and static-t1",
+                    type=str, default="geometrical")
 parser.add_argument("--acceleration-maxvel", help="for acceleration video type, max velocity in terms of light velocity",
                     dest='acceleration_maxvel', type=float, default=0.99)
 parser.add_argument("--growth_factor_first", help="for growth video type, scale factor on first frame",
