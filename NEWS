@@ -1,3 +1,17 @@
+1.3.2 2019/08/02 BUG
+   * Python:
+      + fix segfault in gyoto.std and gyoto.lorene
+      + Fixup: specify encoding in python/tests/core.py
+      + call setup.py build instead of build_ext
+      + new module gyoto.util containing rayTrace, readScenery, writeObject
+   * libgyoto:
+      + add time-did-not-evolve check in Worldline::xFill()
+      + Screen: dangle(1|2) now rotate the camera for anglekind != spherical
+      + ThinDisk::sphericalPhi: return value between 0 and 2 pi
+      + fix bug in Metric::Generic::cartesianVelocity
+   * doc: warn in the user guide that the Yorick plug-in should not be used
+   * Fix printing issues during ray-tracing, mostly visible in Python
+
 1.3.1 2019/01/22 BUG
 
    * Fix typos and minor bugs
