@@ -1,6 +1,104 @@
-commit unknwonw
+commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Tue Jan 22 13:36:30 +0100
+Date:   Fri, 02 Aug 2019 15:50:48 +0200
+
+    Releasing 1.3.2
+
+commit 2dd5b72560246688b3a75599423d507078dafb35
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Aug 2 14:54:31 2019 +0200
+
+    Fix printing issues during ray-tracing, mostly visible in Python
+    
+    - Make sure cout is flushed after Scenery::rayTrace finishes
+    - Screen::Grid now keeps a copy of the prefix string
+    - util.rayTrace fmt defaults to "\r j = "
+
+commit 956439e3288d367bc89f30fa3bf5dba19cbb5fbd
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jul 30 16:22:38 2019 +0200
+
+    doc: warn in the user guide that the Yorick plug-in should not be used
+    
+    The Yorick plug-in will not see new features. It's maintained for gyotoy only.
+
+commit 75c871959a20586b5cd4116f1cca5510a22a1f16
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jul 29 17:15:38 2019 +0200
+
+    Metric: fix bug in Generic::cartesianVelocity
+    
+    Was only correct in the equatorial plane
+
+commit d6c93d927498be9bbfedb57e76cd62c3a9445fb8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 26 22:51:13 2019 +0200
+
+    ThinDisk::sphericalPhi: return value between 0 and 2 pi
+
+commit 3c5b8c00dd1f031c08ad950c675043c15629e5a7
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 26 22:49:35 2019 +0200
+
+    gyoto.util: add readScenery and writeObject
+
+commit 4d88d3dfde2032a9b9badb9edf8ff1d773c0155d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 26 15:35:19 2019 +0200
+
+    python: new module gyoto.util containing rayTrace()
+    
+    rayTrace is a utility function to hide the complexity of calling Scenery.rayTrace
+
+commit 38812941bf5b1bb350616c25c8280ce9e1c4db11
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jul 24 13:48:40 2019 +0200
+
+    python: call setup.py build instead of build_ext
+
+commit 6664b5bb0bc49d2855f266619110a4e83146275e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Jul 13 00:31:35 2019 +0200
+
+    Screen.C: change definition of dangle(1|2) for anglekind != spherical
+    
+    Older definition only works for spherical angles (at most?)
+    
+    This definition actually rotates the camera.
+
+commit 765324d90d1f7df659a73ae32cfc244ec5b35cb6
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 12 10:06:34 2019 +0200
+
+    python: fix segfault in gyoto.lorene
+    
+    numpy was not properly initialized in gyoto_lorene.i
+
+commit dd9edd1ac4495c9c8a03400a0f91c9d3893baa5f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jul 11 21:10:46 2019 +0200
+
+    python: fix segfault in gyoto.std
+    
+    numpy was not properly initialized in gyoto_std.i
+
+commit 45632d45677d1b0f8a558eaf699454ae8135c5a6
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 31 17:59:12 2018 +0100
+
+    Bugfix: add time-did-not-evolve check in Worldline::xFill()
+    
+    Same test as in Photon::hit().
+
+commit 77d509f1726ff668fc74d1acb77ccc171ae1fea8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 25 11:31:02 2018 +0100
+
+    Fixup: specify encoding in python/tests/core.py
+
+commit 3534961b0a31f2e2975e3786391dc78407cd956f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jan 22 14:03:23 2019 +0100
 
     Releasing 1.3.1
 
