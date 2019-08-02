@@ -1383,9 +1383,18 @@ GYOTO_ARRAY<double, 2> Screen::Coord2dSet::angles () const {
 Screen::Grid::Grid(Coord1dSet &iset, Coord1dSet &jset,
 		   const char * const p)
   : Coord2dSet(pixel),
-    prefix_(p),
+    prefix_(NULL),
     iset_(iset), jset_(jset)
-{}
+{
+  if (p) {
+    size_t sz=strlen(p)+1;
+    prefix_ = new char[sz];
+    memcpy(prefix_, p, sz*sizeof(char));
+  }
+}
+Screen::Grid::~Grid(){
+  if (prefix_) delete[] prefix_;
+}
 
 GYOTO_ARRAY<size_t, 2> Screen::Grid::operator* () const {
 #if defined HAVE_BOOST_ARRAY_HPP

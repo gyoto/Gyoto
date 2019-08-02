@@ -648,7 +648,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
   GYOTO_MSG << "\nRaytraced "<< ij.size()
 	    << " photons in " << end-start
 	    << "s using " << (thread_safe?nthreads_:1) << " thread"
-	    << (thread_safe && nthreads_>1)?"s\n":"\n";
+	    << ((thread_safe && nthreads_>1)?"s":"") << endl;
 
 }
 

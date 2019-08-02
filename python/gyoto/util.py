@@ -31,7 +31,7 @@ def Coord1dSet(k, res, sz):
             k=core.Angles(k)
     return k
 
-def rayTrace(sc, coord2dset=None, width=None, height=None, fmt=''):
+def rayTrace(sc, coord2dset=None, width=None, height=None, fmt='\r j = '):
     '''Ray-trace scenery
 
     Synopsis:

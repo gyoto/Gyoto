@@ -681,11 +681,12 @@ class Gyoto::Screen
     protected:
     protected:
       /// If non-NULL, cout j each tims it is incremented.
-      const char * const prefix_;
+      char * prefix_;
       Coord1dSet &iset_;
       Coord1dSet &jset_;
     public:
       Grid(Coord1dSet &iset, Coord1dSet &jset, const char * const p=NULL);
+      virtual ~Grid();
       virtual Coord2dSet& operator++();
       virtual GYOTO_ARRAY<size_t, 2> operator*  () const;
       virtual void begin();
