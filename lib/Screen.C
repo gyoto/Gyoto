@@ -654,6 +654,14 @@ void Screen::getRayCoord(double angle1, double angle2,
     vel[0]=vel_rot[0];
     vel[1]=c*vel_rot[1]-s*vel_rot[2];
     vel[2]=s*vel_rot[1]+c*vel_rot[2];
+    if (observerkind_!=GYOTO_OBSKIND_ATINFINITY){
+      // Apply PALN
+      sincos(M_PI-euler_[0], &s, &c);
+      vel_rot[1]=vel[1];
+      vel_rot[2]=vel[2];
+      vel[0]=(c*vel_rot[0]-s*vel_rot[1]);
+      vel[1]=(s*vel_rot[0]+c*vel_rot[1]);
+    }
   }
   // 4-vector tangent to photon geodesic
   
