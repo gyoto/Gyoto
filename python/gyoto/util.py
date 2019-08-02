@@ -97,8 +97,8 @@ def rayTrace(sc, coord2dset=None, width=None, height=None, fmt='\r j = '):
     res = dict()
     aop=core.AstrobjProperties()
     aop.offset=nx*ny
-    print(aop.offset)
-    if sc.getSpectralQuantitiesCount():
+
+    if 'Spectrum' in sc.requestedQuantitiesString():
         nsamples=sc.screen().spectrometer().nSamples()
 
     if 'Intensity' in sc.requestedQuantitiesString():
