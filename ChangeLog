@@ -1,6 +1,12 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Fri, 02 Aug 2019 15:50:48 +0200
+Date:   Fri Aug 2 20:53:28 2019 +0200
+
+    Releasing 1.3.3
+
+commit 8f90c3fca9fb4aef2597dde57622a8457b7b85bd
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Aug 2 15:52:28 2019 +0200
 
     Releasing 1.3.2
 
