@@ -14,8 +14,8 @@ import numbers
 def Coord1dSet(k, res, sz):
     '''Easily initialize a gyoto.core.Coord1dset'''
     if (k is None):
-        k=range(res//2-sz//2+1, res//2-sz//2+sz+1, 1)
-    if type(k) is range:
+        k=core.Range(res//2-sz//2+1, res//2-sz//2+sz, 1)
+    elif type(k) is range:
         k=core.Range(k.start, k.stop-1, k.step)
     elif numpy.isscalar(k):
         if isinstance(k, numbers.Integral):
