@@ -34,24 +34,34 @@ def Coord1dSet(k, res, sz):
 def rayTrace(sc, coord2dset=None, width=None, height=None, fmt='\r j = '):
     '''Ray-trace scenery
 
-    Synopsis:
-    results=rayTrace(scenery)
+First form:
 
-    Input:
-    scenery -- a Gyoto Scenery object or XML file name.
+results=scenery.rayTrace([coord2dset [,width, height] [,fmt]])
 
-    Output:
-    results -- dict containing the various requested quantities as per
-               scenery.requestedQuantitiesString().
+optional parameters:
+coord2dset -- something to specify which part of the field to trace.
+           can be: None to trace all pixels (default)
+           a Coord2dSet instance
+width, height -- horizontal and vertical resolution (overrides what
+           is specified in scenery.screen().resolution()
+fmt     -- prefix to be written in front of the row number for
+           progress output
 
-    Keywords:
-    width, height -- width and height of the output image(s).
+Output:
+results -- dict containing the various requested quantities as per
+           scenery.requestedQuantitiesString().
 
-    TODO:
-    Support and debug various kinds of coord2dset to allow ray-tracing
-    only part of the Scenery.
+TODO:
+Support and debug various kinds of coord2dset to allow ray-tracing
+only part of the Scenery.
 
-    '''
+
+Second form:
+'''
+    if isinstance(width, core.AstrobjProperties):
+        core._core.Scenery_rayTrace(sc, coord2dset, width, height)
+        return
+
     # If needed, read sc
     if type(sc) is str:
         sc=core.Factory(sc).scenery()
@@ -97,7 +107,7 @@ def rayTrace(sc, coord2dset=None, width=None, height=None, fmt='\r j = '):
     res = dict()
     aop=core.AstrobjProperties()
     aop.offset=nx*ny
-    print(aop.offset)
+
     if sc.getSpectralQuantitiesCount():
         nsamples=sc.screen().spectrometer().nSamples()
 

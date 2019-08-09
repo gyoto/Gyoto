@@ -4,5 +4,11 @@ Note that importing "gyoto" is deprecated and may cease to work in a
 future release. Please update your code to import gyoto.core instead.
 
 """
-
+# For backwards compatibility, expose gyoto.core as gyoto
 from gyoto.core import *
+
+# Provide a Pythonic wrapper around Scenery.rayTrace.
+# The underlying C++-like interface remains accessible.
+from gyoto import core, util
+core.Scenery.rayTrace = util.rayTrace
+core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
