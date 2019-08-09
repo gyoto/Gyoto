@@ -30,8 +30,7 @@ import gyoto.std
 scr=gyoto.core.Screen()
 gg=gyoto.std.KerrBL()
 scr.metric(gg)
-pos=numpy.zeros(4, float)
-scr.getObserverPos(pos)
+pos=scr.getObserverPos()
 
 # Load Scenery
 
@@ -87,9 +86,8 @@ plt.show()
 # Ray-trace scenery
 
 # For that, we can use the short-hand:
-import gyoto.util
 sc.requestedQuantitiesString('Intensity EmissionTime MinDistance')
-results=gyoto.util.rayTrace(sc)
+results=sc.rayTrace()
 
 plt.imshow(results['Intensity'])
 plt.show()
