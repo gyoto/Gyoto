@@ -293,7 +293,7 @@ Second form:
 
 def Scenery_getitem(self, args):
     '''Shortcut for Scenery.rayTrace(i, j)
-'''+rayTrace.__doc__
+'''
     return self.rayTrace(*args)
 
 def readScenery(filename):

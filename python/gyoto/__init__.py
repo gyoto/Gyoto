@@ -11,5 +11,6 @@ from gyoto.core import *
 # The underlying C++-like interface remains accessible.
 from gyoto import core, util
 core.Scenery.rayTrace = util.rayTrace
-core.Scenery.__getitem__ = util.Scenery_getitem
 core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
+core.Scenery.__getitem__ = util.Scenery_getitem
+core.Scenery.__getitem__.__doc__ += core.Scenery.rayTrace.__doc__
