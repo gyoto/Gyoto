@@ -31,7 +31,7 @@ def Coord1dSet(k, res, sz):
             k=core.Angles(k)
     return k
 
-def rayTrace(sc, coord2dset=None, width=None, height=None, fmt='\r j = '):
+def rayTrace(sc, i=None, j=None, coord2dset=core.Grid, width=None, height=None, fmt='\r j = '):
     '''Ray-trace scenery
 
 First form:
@@ -58,8 +58,14 @@ only part of the Scenery.
 
 Second form:
 '''
-    if isinstance(width, core.AstrobjProperties):
-        core._core.Scenery_rayTrace(sc, coord2dset, width, height)
+    if isinstance(j, core.AstrobjProperties):
+        ij=i
+        aop=j
+        if not isinstance(coord2dset, type):
+            ipct=coord2dset
+        else:
+            ipct=None
+        core._core.Scenery_rayTrace(sc, i, j, ipct)
         return
 
     # If needed, read sc
@@ -80,28 +86,25 @@ Second form:
 
     # Prepare coord2dset
     nx=None
-    if type(coord2dset) is tuple or coord2dset is None:
-        if type(coord2dset) is tuple:
-            if len(coord2dset) != 2:
-                raise ValueError('if coord2dset is a tuple, it must have 2 items (i, j)')
-            j=coord2dset[0]
-            i=coord2dset[1]
-        else:
-            j=None
-            i=None
+    if isinstance(coord2dset, type):
+        if not issubclass(coord2dset, core.Coord2dSet):
+            raise TypeError("when coord2dset is a type, it must be a subclass of gyoto.core.Coord2dSet")
         if not isinstance(i, core.Coord1dSet):
             i=Coord1dSet(i, res, width)
         if not isinstance(j, core.Coord1dSet):
             j=Coord1dSet(j, res, height)
-        coord2dset=core.Grid(i, j, fmt)
+        try:
+            coord2dset=coord2dset(i, j, fmt)
+        except TypeError:
+            coord2dset=coord2dset(i, j)
         nx=i.size()
-        ny=j.size()
-    elif not isinstance(coord2dset, core.Coord2dSet):
-        raise ValueError('this type of 2D set not yet implemented')
-
-    if nx is None:
-        nx=coord2dset.size()
+        ntot=coord2dset.size()
+        ny=ntot//nx
+    elif isinstance(coord2dset, core.Coord2dSet):
+        nx=ntot=coord2dset.size()
         ny=1
+    else:
+        raise TypeError('coord2dset must be a gyoto.core.Coord2dSet subclass or instance')
 
     # Prepare arrays to store results
     res = dict()
