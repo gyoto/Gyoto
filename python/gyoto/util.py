@@ -167,113 +167,122 @@ Second form:
     else:
         raise TypeError('coord2dset must be a gyoto.core.Coord2dSet subclass or instance')
 
+    if isinstance(coord2dset, core.Grid):
+        dims=(ny, nx)
+        array_double_fromnumpy1or2=core.array_double_fromnumpy2
+        array_double_fromnumpy2or3=core.array_double_fromnumpy3
+    else:
+        dims=(ntot,)
+        array_double_fromnumpy1or2=core.array_double_fromnumpy1
+        array_double_fromnumpy2or3=core.array_double_fromnumpy2
+
     # Prepare arrays to store results
     res = dict()
     aop=core.AstrobjProperties()
-    aop.offset=nx*ny
+    aop.offset=ntot
 
     if 'Spectrum' in sc.requestedQuantitiesString():
         nsamples=sc.screen().spectrometer().nSamples()
 
     if 'Intensity' in sc.requestedQuantitiesString():
-        intensity=numpy.zeros((ny, nx))
-        pintensity=core.array_double_fromnumpy2(intensity)
+        intensity=numpy.zeros(dims)
+        pintensity=array_double_fromnumpy1or2(intensity)
         aop.intensity=pintensity
         res['Intensity']=intensity
 
     if 'EmissionTime' in sc.requestedQuantitiesString():
-        time=numpy.zeros((ny, nx))
-        ptime=core.array_double_fromnumpy2(time)
+        time=numpy.zeros(dims)
+        ptime=array_double_fromnumpy1or2(time)
         aop.time=ptime
         res['EmissionTime'] = time
 
     if 'MinDistance' in sc.requestedQuantitiesString():
-        distance=numpy.zeros((ny, nx))
-        pdistance=core.array_double_fromnumpy2(distance)
+        distance=numpy.zeros(dims)
+        pdistance=array_double_fromnumpy1or2(distance)
         aop.distance=pdistance
         res['MinDistance'] = distance
 
     if 'FirstDistMin' in sc.requestedQuantitiesString():
-        first_dmin=numpy.zeros((ny, nx))
-        pfirst_dmin=core.array_double_fromnumpy2(first_dmin)
+        first_dmin=numpy.zeros(dims)
+        pfirst_dmin=array_double_fromnumpy1or2(first_dmin)
         aop.first_dmin=pfirst_dmin
         res['FirstDistMin'] = first_dmin
 
     if 'Redshift' in sc.requestedQuantitiesString():
-        redshift=numpy.zeros((ny, nx))
-        predshift=core.array_double_fromnumpy2(redshift)
+        redshift=numpy.zeros(dims)
+        predshift=array_double_fromnumpy1or2(redshift)
         aop.redshift=predshift
         res['Redshift'] = redshift
 
     if 'ImpactCoords' in sc.requestedQuantitiesString():
-        impactcoords=numpy.zeros((ny, nx, 16))
-        pimpactcoords=core.array_double_fromnumpy3(impactcoords)
+        impactcoords=numpy.zeros(dims+(16,))
+        pimpactcoords=array_double_fromnumpy2or3(impactcoords)
         aop.impactcoords=pimpactcoords
         res['ImpactCoords'] = impactcoords
 
     if 'User1' in sc.requestedQuantitiesString():
-        user1=numpy.zeros((ny, nx))
-        puser1=core.array_double_fromnumpy2(user1)
+        user1=numpy.zeros(dims)
+        puser1=array_double_fromnumpy1or2(user1)
         aop.user1=puser1
         res['User1'] = user1
 
     if 'User1' in sc.requestedQuantitiesString():
-        impactcoords=numpy.zeros((ny, nx))
-        pimpactcoords=core.array_double_fromnumpy2(impactcoords)
+        impactcoords=numpy.zeros(dims)
+        pimpactcoords=array_double_fromnumpy1or2(impactcoords)
         aop.impactcoords=pimpactcoords
         res['User1'] = impactcoords
 
     if 'User2' in sc.requestedQuantitiesString():
-        user2=numpy.zeros((ny, nx))
-        puser2=core.array_double_fromnumpy2(user2)
+        user2=numpy.zeros(dims)
+        puser2=array_double_fromnumpy1or2(user2)
         aop.user2=puser2
         res['User2'] = user2
 
     if 'User3' in sc.requestedQuantitiesString():
-        user3=numpy.zeros((ny, nx))
-        puser3=core.array_double_fromnumpy2(user3)
+        user3=numpy.zeros(dims)
+        puser3=array_double_fromnumpy1or2(user3)
         aop.user3=puser3
         res['User3'] = user3
 
     if 'User4' in sc.requestedQuantitiesString():
-        user4=numpy.zeros((ny, nx))
-        puser4=core.array_double_fromnumpy2(user4)
+        user4=numpy.zeros(dims)
+        puser4=array_double_fromnumpy1or2(user4)
         aop.user4=puser4
         res['User4'] = user4
 
     if 'User5' in sc.requestedQuantitiesString():
-        user5=numpy.zeros((ny, nx))
-        puser5=core.array_double_fromnumpy2(user5)
+        user5=numpy.zeros(dims)
+        puser5=array_double_fromnumpy1or2(user5)
         aop.user5=puser5
         res['User5'] = user5
 
     if 'Spectrum' in sc.requestedQuantitiesString():
-        spectrum=numpy.zeros((nsamples, ny, nx))
-        pspectrum=core.array_double_fromnumpy3(spectrum)
+        spectrum=numpy.zeros((nsamples,)+dims)
+        pspectrum=array_double_fromnumpy2or3(spectrum)
         aop.spectrum=pspectrum
         res['Spectrum'] = spectrum
 
     if 'SpectrumStokesQ' in sc.requestedQuantitiesString():
-        stokesQ=numpy.zeros((nsamples, ny, nx))
-        pstokesQ=core.array_double_fromnumpy3(stokesQ)
+        stokesQ=numpy.zeros((nsamples,)+dims)
+        pstokesQ=array_double_fromnumpy2or3(stokesQ)
         aop.stokesQ=pstokesQ
         res['SpectrumStokesQ'] = stokesQ
 
     if 'SpectrumStokesU' in sc.requestedQuantitiesString():
-        stokesU=numpy.zeros((nsamples, ny, nx))
-        pstokesU=core.array_double_fromnumpy3(stokesU)
+        stokesU=numpy.zeros((nsamples,)+dims)
+        pstokesU=array_double_fromnumpy2or3(stokesU)
         aop.stokesU=pstokesU
         res['SpectrumStokesU'] = stokesU
 
     if 'SpectrumStokesV' in sc.requestedQuantitiesString():
-        stokesV=numpy.zeros((nsamples, ny, nx))
-        pstokesV=core.array_double_fromnumpy3(stokesV)
+        stokesV=numpy.zeros((nsamples,)+dims)
+        pstokesV=array_double_fromnumpy2or3(stokesV)
         aop.stokesV=pstokesV
         res['SpectrumStokesV'] = stokesV
 
     if 'BinSpectrum' in sc.requestedQuantitiesString():
-        binspectrum=numpy.zeros((nsamples, ny, nx))
-        pbinspectrum=core.array_double_fromnumpy3(binspectrum)
+        binspectrum=numpy.zeros((nsamples,)+dims)
+        pbinspectrum=array_double_fromnumpy2or3(binspectrum)
         aop.binspectrum=pbinspectrum
         res['BinSpectrum'] = binspectrum
 
@@ -283,8 +292,9 @@ Second form:
     return res
 
 def Scenery_getitem(self, args):
-    '''Shortcut for Scenery.rayTrace(i, j)'''
-    self.rayTrace(args[0], args[1])
+    '''Shortcut for Scenery.rayTrace(i, j)
+'''+rayTrace.__doc__
+    return self.rayTrace(*args)
 
 def readScenery(filename):
     '''Read Scenery from XML file'''
