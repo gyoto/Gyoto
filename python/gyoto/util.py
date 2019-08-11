@@ -75,6 +75,7 @@ if k is an array-like continging only integers:
             data=numpy.array([k+1], numpy.uint64)
             k=core.Indices(data)
         elif isinstance(k, numbers.Real):
+            data=numpy.array([k])
             k=core.Angles([k])
         else:
             raise ValueError('unknown scalar type')
@@ -84,6 +85,7 @@ if k is an array-like continging only integers:
             data += 1
             k=core.Indices(data)
         else:
+            data=numpy.asarray(k)
             k=core.Angles(k)
     return k, data
 
