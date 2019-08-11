@@ -913,6 +913,7 @@ void Screen::fitsWriteMask(string const &fname) {
 #endif
 
 bool Screen::operator()(size_t i, size_t j) {
+  GYOTO_DEBUG << "i=" << i << ", j=" << j << endl;
   if ( i<=0 || i> npix_ || j>npix_ || j<=0) GYOTO_ERROR("wrong index");
   if (!mask_) return true;
   return mask_[i-1+npix_*(j-1)];

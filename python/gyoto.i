@@ -824,6 +824,12 @@ public:
   virtual double angle() const ;
   virtual Coord1dSet& operator++()=0;
 };
+%extend Coord1dSet {
+  // Get value of coord set
+  size_t value() const {
+    return **($self);
+  }
+};
 
 class Coord2dSet {
 public:
@@ -900,6 +906,7 @@ public:
   size_t size();
   Coord1dSet& operator++();
   size_t operator*() const ;
+  size_t index() const ;
 };
 %extend Indices {
   Indices (size_t DIM1, size_t *IN_ARRAY1) {

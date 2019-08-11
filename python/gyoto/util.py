@@ -12,24 +12,64 @@ import numpy
 import numbers
 
 def Coord1dSet(k, res, sz):
-    '''Easily initialize a gyoto.core.Coord1dset'''
+    '''Easily initialize a gyoto.core.Coord1dset
+
+synopsis:
+set, data = Coord1dSet(k, res, sz)
+
+parameters:
+k   -- something to convert to Coord1dSet
+res -- Screen resolution
+sz  -- Screen size in that direction
+
+caveats:
+Gyoto indices start at 1. This function takes care of tranlating from
+the more standard Python 0-based indices to Gyoto 1-based indices.
+
+The instances of gyoto.core.Indices need to access a buffer that must
+be preallocated and survive as long as themselves. The second output
+(data) when ot None, is such a buffer. Make sure it remains in scope
+and is not destroyed as long as you need the first output (set).
+
+returns:
+if k is None:
+  data is None
+  set is a gyoto.core.Range() covering all pixels according to res and sz
+
+if k is a Python range:
+  data is None
+  set is the corresponding gyoto.core.Range
+
+if k is a scalar integer:
+  data is a NumPy array containing this scalar+1
+  set is a gyoto.core.Indices instances pointing to this array
+
+if k is an array-like continging only integers:
+  data is a NumPy array containing these integers+1
+  set is a gyoto.core.Indices instances pointing to this array
+
+    '''
+    data=None
     if (k is None):
-        k=range(res//2-sz//2+1, res//2-sz//2+sz+1, 1)
-    if type(k) is range:
-        k=core.Range(k.start, k.stop-1, k.step)
+        k=core.Range(res//2-sz//2+1, res//2-sz//2+sz, 1)
+    elif type(k) is range:
+        k=core.Range(k.start+1, k.stop, k.step)
     elif numpy.isscalar(k):
         if isinstance(k, numbers.Integral):
-            k=core.Indices([k])
+            data=numpy.array([k+1], numpy.uint64)
+            k=core.Indices(data)
         elif isinstance(k, numbers.Real):
             k=core.Angles([k])
         else:
             raise ValueError('unknown scalar type')
     else:
         if all([isinstance(n, numbers.Integral) for n in k]):
-            k=core.Indices(k)
+            data=numpy.asarray(k, dtype=numpy.uint64)
+            data += 1
+            k=core.Indices(data)
         else:
             k=core.Angles(k)
-    return k
+    return k, data
 
 def rayTrace(sc, i=None, j=None, coord2dset=core.Grid, width=None, height=None, fmt='\r j = '):
     '''Ray-trace scenery
@@ -39,9 +79,12 @@ First form:
 results=scenery.rayTrace([coord2dset [,width, height] [,fmt]])
 
 optional parameters:
-coord2dset -- something to specify which part of the field to trace.
-           can be: None to trace all pixels (default)
-           a Coord2dSet instance
+i       -- horizontal specification of the part of the field to trace
+           (see gyoto.util.Coord1dSet)
+j       -- vertical specification of the part of the field to trace
+           (see gyoto.util.Coord1dSet)
+coord2dset -- a Coord2dSet subclass. Default: gyoto.core.Grid. The other
+           value that makes sense is gyoto.core.Bucket.
 width, height -- horizontal and vertical resolution (overrides what
            is specified in scenery.screen().resolution()
 fmt     -- prefix to be written in front of the row number for
@@ -90,9 +133,9 @@ Second form:
         if not issubclass(coord2dset, core.Coord2dSet):
             raise TypeError("when coord2dset is a type, it must be a subclass of gyoto.core.Coord2dSet")
         if not isinstance(i, core.Coord1dSet):
-            i=Coord1dSet(i, res, width)
+            i, idata=Coord1dSet(i, res, width)
         if not isinstance(j, core.Coord1dSet):
-            j=Coord1dSet(j, res, height)
+            j, jdata=Coord1dSet(j, res, height)
         try:
             coord2dset=coord2dset(i, j, fmt)
         except TypeError:
