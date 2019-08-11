@@ -54,6 +54,22 @@ if k is an array-like continging only integers:
         k=core.Range(res//2-sz//2+1, res//2-sz//2+sz, 1)
     elif type(k) is range:
         k=core.Range(k.start+1, k.stop, k.step)
+    elif type(k) is slice:
+        start=k.start
+        if start is None:
+            start=0
+        elif start < 0:
+            start=res+start
+        start += 1
+        stop=k.stop
+        if stop is None:
+            stop=res
+        elif stop < 0:
+            stop=res+stop
+        step=k.step
+        if step is None:
+            step=1
+        k=core.Range(start, stop, step)
     elif numpy.isscalar(k):
         if isinstance(k, numbers.Integral):
             data=numpy.array([k+1], numpy.uint64)
@@ -263,6 +279,10 @@ Second form:
     sc.rayTrace(coord2dset, aop)
 
     return res
+
+def Scenery_getitem(self, args):
+    '''Shortcut for Scenery.rayTrace(i, j)'''
+    self.rayTrace(args[0], args[1])
 
 def readScenery(filename):
     '''Read Scenery from XML file'''
