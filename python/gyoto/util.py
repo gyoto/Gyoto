@@ -80,44 +80,52 @@ if k is an array-like containing only integers:
             k=core.Angles(k)
     return k
 
-def rayTrace(sc, i=None, j=None, coord2dset=core.Grid, width=None, height=None, fmt='\r j = '):
+def rayTrace(sc,
+             j=None, i=None,
+             coord2dset=core.Grid,
+             prefix='\r j = ',
+             height=None, width=None):
     '''Ray-trace scenery
 
 First form:
 
-results=scenery.rayTrace([coord2dset [,width, height] [,fmt]])
+results=scenery.rayTrace([j, i, [coord2dset [,prefix]]])
 
 optional parameters:
-i       -- horizontal specification of the part of the field to trace
-           (see gyoto.util.Coord1dSet)
 j       -- vertical specification of the part of the field to trace
+           (see gyoto.util.Coord1dSet)
+i       -- horizontal specification of the part of the field to trace
            (see gyoto.util.Coord1dSet)
 coord2dset -- a Coord2dSet subclass. Default: gyoto.core.Grid. The other
            value that makes sense is gyoto.core.Bucket.
-width, height -- horizontal and vertical resolution (overrides what
-           is specified in scenery.screen().resolution()
-fmt     -- prefix to be written in front of the row number for
+prefix  -- prefix to be written in front of the row number for
            progress output
+height, width -- vertical and horizontal resolution (overrides what
+           is specified in scenery.screen().resolution()
 
 Output:
 results -- dict containing the various requested quantities as per
            scenery.requestedQuantitiesString().
 
-TODO:
-Support and debug various kinds of coord2dset to allow ray-tracing
-only part of the Scenery.
+CAVEAT:
+This high level-wrapper is Pythonic and take the arguments as j, i,
+0-based indices whereas most Gyoto functions take them as i, j,
+1-based indices.
 
+TODO:
+Support impactcoords.
 
 Second form:
-'''
-    if isinstance(j, core.AstrobjProperties):
-        ij=i
-        aop=j
+
+    '''
+    if isinstance(i, core.AstrobjProperties):
+        ij=j
+        aop=i
         if not isinstance(coord2dset, type):
             ipct=coord2dset
         else:
             ipct=None
-        core._core.Scenery_rayTrace(sc, i, j, ipct)
+        core._core.Scenery_rayTrace(sc, ij, aop, ipct)
         return
 
     # If needed, read sc
@@ -146,7 +154,7 @@ Second form:
         if not isinstance(j, core.Coord1dSet):
             j=Coord1dSet(j, res, height)
         try:
-            coord2dset=coord2dset(i, j, fmt)
+            coord2dset=coord2dset(i, j, prefix)
         except TypeError:
             coord2dset=coord2dset(i, j)
         nx=i.size()
