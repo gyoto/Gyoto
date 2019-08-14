@@ -753,11 +753,12 @@ class Gyoto::Screen
     /// 1D specifier for an arbitrary pixel coordinate set.
     class Indices : public Coord1dSet {
     protected:
-      size_t const * const indices_;
+      size_t * indices_;
       size_t const sz_;
       size_t i_;
     public:
       Indices (size_t const*const buf, size_t sz);
+      ~Indices();
       void begin();
       bool valid();
       size_t size();
@@ -769,11 +770,12 @@ class Gyoto::Screen
     /// 1D specifier for an arbitrary angle coordinate set.
     class Angles : public Coord1dSet {
     protected:
-      double const * const buf_;
+      double * buf_;
       size_t const sz_;
       size_t i_;
     public:
       Angles (double const*const buf, size_t sz);
+      ~Angles();
       void begin();
       bool valid();
       size_t size();

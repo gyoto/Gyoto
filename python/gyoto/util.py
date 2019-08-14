@@ -15,7 +15,7 @@ def Coord1dSet(k, res, sz):
     '''Easily initialize a gyoto.core.Coord1dset
 
 synopsis:
-set, data = Coord1dSet(k, res, sz)
+set = Coord1dSet(k, res, sz)
 
 parameters:
 k   -- something to convert to Coord1dSet
@@ -26,27 +26,18 @@ caveats:
 Gyoto indices start at 1. This function takes care of tranlating from
 the more standard Python 0-based indices to Gyoto 1-based indices.
 
-The instances of gyoto.core.Indices need to access a buffer that must
-be preallocated and survive as long as themselves. The second output
-(data) when ot None, is such a buffer. Make sure it remains in scope
-and is not destroyed as long as you need the first output (set).
-
 returns:
 if k is None:
-  data is None
-  set is a gyoto.core.Range() covering all pixels according to res and sz
+  a gyoto.core.Range() covering all pixels according to res and sz
 
 if k is a Python range:
-  data is None
-  set is the corresponding gyoto.core.Range
+  the corresponding gyoto.core.Range
 
 if k is a scalar integer:
-  data is a NumPy array containing this scalar+1
-  set is a gyoto.core.Indices instances pointing to this array
+  a gyoto.core.Indices instance containing this value
 
-if k is an array-like continging only integers:
-  data is a NumPy array containing these integers+1
-  set is a gyoto.core.Indices instances pointing to this array
+if k is an array-like containing only integers:
+  the corresponding gyoto.core.Indices instance
 
     '''
     data=None
@@ -87,7 +78,7 @@ if k is an array-like continging only integers:
         else:
             data=numpy.asarray(k)
             k=core.Angles(k)
-    return k, data
+    return k
 
 def rayTrace(sc, i=None, j=None, coord2dset=core.Grid, width=None, height=None, fmt='\r j = '):
     '''Ray-trace scenery
@@ -151,9 +142,9 @@ Second form:
         if not issubclass(coord2dset, core.Coord2dSet):
             raise TypeError("when coord2dset is a type, it must be a subclass of gyoto.core.Coord2dSet")
         if not isinstance(i, core.Coord1dSet):
-            i, idata=Coord1dSet(i, res, width)
+            i=Coord1dSet(i, res, width)
         if not isinstance(j, core.Coord1dSet):
-            j, jdata=Coord1dSet(j, res, height)
+            j=Coord1dSet(j, res, height)
         try:
             coord2dset=coord2dset(i, j, fmt)
         except TypeError:

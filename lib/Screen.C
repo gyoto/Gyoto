@@ -1478,8 +1478,16 @@ size_t Screen::Range::index() const {return (cur_-mi_) / d_;}
 //////
 
 Screen::Indices::Indices (size_t const*const buf, size_t sz)
-  : Coord1dSet(pixel), indices_(buf), sz_(sz), i_(0)
-{}
+  : Coord1dSet(pixel), indices_(NULL), sz_(sz), i_(0)
+{
+  if (!buf) return;
+  indices_ = new size_t[sz];
+  memcpy(indices_, buf, sz*sizeof(size_t));
+}
+Screen::Indices::~Indices(){
+  if (!indices_) return;
+  delete[] indices_;
+}
 void Screen::Indices::begin() {i_=0;}
 bool Screen::Indices::valid() {return i_ < sz_;}
 size_t Screen::Indices::size(){return sz_;}
@@ -1491,8 +1499,16 @@ size_t Screen::Indices::index() const {return i_;}
 /////
 
 Screen::Angles::Angles (double const*const buf, size_t sz)
-  : Coord1dSet(Screen::angle), buf_(buf), sz_(sz), i_(0)
-{}
+  : Coord1dSet(Screen::angle), buf_(NULL), sz_(sz), i_(0)
+{
+  if (!buf) return;
+  buf_ = new double[sz];
+  memcpy(buf_, buf, sz*sizeof(double));
+}
+Screen::Angles::~Angles(){
+  if (!buf_) return;
+  delete[] buf_;
+}
 void Screen::Angles::begin() {i_=0;}
 bool Screen::Angles::valid() {return i_<sz_;}
 size_t Screen::Angles::size(){return sz_;}
