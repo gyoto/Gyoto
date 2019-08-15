@@ -40,6 +40,16 @@ using namespace Gyoto;
 #endif
  }
 
+// Worldline::getCartesian is enough
+%ignore Gyoto::Astrobj::Star::getCartesian(double const * const dates,
+                                           size_t const n_dates,
+                                           double * const x,
+                                           double * const y,
+                                           double * const z,
+                                           double * const xprime=NULL,
+                                           double * const yprime=NULL,
+                                           double * const zprime=NULL);
+
 // Typemaps to translate SmartPointer to specific classes
 GyotoSmPtrTypeMapClassDerived(Astrobj, UniformSphere)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Star)
