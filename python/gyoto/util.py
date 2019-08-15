@@ -145,6 +145,7 @@ Second form:
     sc.screen().resolution(res)
 
     # Prepare coord2dset
+    scalars=int(numpy.isscalar(i))+int(numpy.isscalar(j))
     nx=None
     if isinstance(coord2dset, type):
         if not issubclass(coord2dset, core.Coord2dSet):
@@ -166,7 +167,7 @@ Second form:
     else:
         raise TypeError('coord2dset must be a gyoto.core.Coord2dSet subclass or instance')
 
-    if isinstance(coord2dset, core.Grid):
+    if isinstance(coord2dset, core.Grid) and scalars is 0 :
         dims=(ny, nx)
         array_double_fromnumpy1or2=core.array_double_fromnumpy2
         array_double_fromnumpy2or3=core.array_double_fromnumpy3
@@ -287,6 +288,10 @@ Second form:
 
     # Perform the actual ray-tracing
     sc.rayTrace(coord2dset, aop)
+
+    if scalars is 2:
+        for key in res:
+            res[key]=res[key][0]
 
     return res
 
