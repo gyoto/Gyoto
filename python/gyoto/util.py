@@ -307,3 +307,19 @@ def readScenery(filename):
 def writeObject(obj, filename):
     '''Write Gyoto object (e.g. Scenery) to XML file'''
     core.Factory(obj).write(filename)
+
+### Pythonic extension of methods
+# Worldline
+# This version of  getCartesian accepts numpy arrays
+#   wl.getCartesian(t, x, y, z, [xprime, yprime, zprime])
+# in addition to to the raw level arrays and dimension
+def _Worldline_getCartesian(self, t, *arrays):
+    if isinstance(t, core.array_double):
+        core._core.Worldline_getCartesian(self, t, *arrays)
+    else:
+        core._core.Worldline_getCartesian(
+            self,
+            core.array_double_fromnumpy1(t),
+            t.size,
+            *[core.array_double_fromnumpy1(v) for v in arrays]
+            )
