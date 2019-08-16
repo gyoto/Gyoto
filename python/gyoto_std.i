@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2018 Thibaut Paumard
+    Copyright 2014-2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
