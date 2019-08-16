@@ -17,3 +17,5 @@ core.Scenery.__getitem__.__doc__ += core.Scenery.rayTrace.__doc__
 
 core.Worldline.getCartesian =  util._Worldline_getCartesian
 core.Worldline.getCartesian.__doc__ = core._core.Worldline_getCartesian.__doc__
+core.Worldline.getCoord =  util._Worldline_getCoord
+core.Worldline.getCoord.__doc__ = core._core.Worldline_getCoord.__doc__

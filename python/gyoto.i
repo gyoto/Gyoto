@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2018 Thibaut Paumard
+    Copyright 2014-2019 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -587,40 +587,10 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(Worldline__IntegState__Generic) Gyoto::Worldline::IntegState::Generic;
 %rename(Worldline__IntegState__Boost) Gyoto::Worldline::IntegState::Boost;
 %rename(Worldline__IntegState__Legacy) Gyoto::Worldline::IntegState::Legacy;
-%ignore Gyoto::Worldline::getCoord(double const * const dates, size_t const n_dates,
-                                   double * const x1dest,
-                                   double * const x2dest, double * const x3dest,
-                                   double * const x0dot=NULL,  double * const x1dot=NULL,
-                                   double * const x2dot=NULL,  double * const x3dot=NULL,
-                                   double * const otime=NULL,  bool proper=false) ;
 %extend Gyoto::Worldline {
   void get_t(double * INPLACE_ARRAY1, size_t DIM1) {
     if (DIM1 != ($self)->get_nelements()) GYOTO_ERROR("wrong output array size");
     ($self)->get_t(INPLACE_ARRAY1);
-  }
-  void getCoord(double * dates, size_t n_dates,
-		double * x1dest, size_t n1,
-		double * x2dest, size_t n2,
-                double * x3dest, size_t n3,
-		double * x0dot, size_t n0d,
-                double * x1dot, size_t n1d,
-		double * x2dot, size_t n2d,
-                double * x3dot, size_t n3d) {
-    if (n1 != n_dates || n2 != n_dates || n3 != n_dates ||
-        (x0dot && n0d != n_dates) ||
-        (x1dot && n1d != n_dates) ||
-        (x2dot && n2d != n_dates) ||
-        (x3dot && n3d != n_dates))
-      GYOTO_ERROR("wrong size for output array");
-    ($self)->getCoord(dates, n_dates, x1dest, x2dest, x3dest, x0dot, x1dot, x2dot, x3dot);
-  }
-  void getCoord(double * dates, size_t n_dates,
-		double * x1dest, size_t n1,
-		double * x2dest, size_t n2,
-                double * x3dest, size_t n3) {
-    if (n_dates != ($self)->get_nelements() || n1 != n_dates || n2 != n_dates || n3 != n_dates)
-      GYOTO_ERROR("wrong size for output array");
-    ($self)->getCoord(dates, x1dest, x2dest, x3dest);
   }
   void get_xyz(
 		double * x1dest, size_t n1,

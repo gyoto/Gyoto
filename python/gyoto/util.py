@@ -317,7 +317,25 @@ def _Worldline_getCartesian(self, t, *arrays):
     if isinstance(t, core.array_double):
         core._core.Worldline_getCartesian(self, t, *arrays)
     else:
+        sizes=numpy.asarray([v.size for v in arrays])
+        if not (sizes == t.size).all():
+            raise ValueError('all arrays must be the same size')
         core._core.Worldline_getCartesian(
+            self,
+            core.array_double_fromnumpy1(t),
+            t.size,
+            *[core.array_double_fromnumpy1(v) for v in arrays]
+            )
+
+# Same for getCoord
+def _Worldline_getCoord(self, t, *arrays):
+    if isinstance(t, core.array_double):
+        core._core.Worldline_getCoord(self, t, *arrays)
+    else:
+        sizes=numpy.asarray([v.size for v in arrays])
+        if not (sizes == t.size).all():
+            raise ValueError('all arrays must be the same size')
+        core._core.Worldline_getCoord(
             self,
             core.array_double_fromnumpy1(t),
             t.size,
