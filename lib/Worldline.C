@@ -243,6 +243,12 @@ void Worldline::xExpand(double* &x, int dir) {
   old=x;
   x=new double[nsize];
   for (i=imin_;i<=imax_;++i) x[i+offset]=old[i];
+  GYOTO_IF_DEBUG
+  GYOTO_DEBUG_EXPR(imin_);
+  GYOTO_DEBUG_EXPR(imin_+offset);
+  GYOTO_DEBUG_EXPR(old[imin_]);
+  GYOTO_DEBUG_EXPR(x[imin_+offset]);
+  GYOTO_ENDIF_DEBUG
   delete [] old;
 }
 
@@ -274,8 +280,7 @@ size_t Worldline::xExpand(int dir) {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "retval=" << retval
 	      << ", offset=" << offset
-	      << ", dir=" << dir
-	      << endl;
+		   << ", dir=" << dir;
 # endif
 
   x_size_*=2;
@@ -285,10 +290,11 @@ size_t Worldline::xExpand(int dir) {
   imax_+=offset;
 
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << ", xsize_=" << x_size_
-		    << ", imin_=" << imin_
-		    << ", i0_=" << i0_
-		    << ", imax_=" << imax_;
+  GYOTO_DEBUG << ", x_size_=" << x_size_
+	      << ", imin_=" << imin_
+	      << ", i0_=" << i0_
+	      << ", imax_=" << imax_
+	      << endl;
 # endif
 
   return retval;
@@ -533,6 +539,21 @@ void Worldline::xFill(double tlim, bool proper) {
   // Determine direction,
   // Allocate memory.
   double * time_ = proper?tau_:x0_;
+  GYOTO_IF_DEBUG
+  GYOTO_DEBUG << "x_size_=" << x_size_
+	      <<", imin_=" << imin_
+	      << ", i0_=" << i0_
+	      << ", imax_=" << imax_
+	      << ", tlim=" << tlim
+	      << ", time_[imin_]=" << time_[imin_]
+	      << ", time_[i0_]=" << time_[i0_]
+	      << ", time_[imax_]=" << time_[imax_]
+	      << ", proper=" << proper
+	      << ", (time_==tau_)=" << (time_==tau_)
+	      << endl;
+  GYOTO_DEBUG << "Possibly extending worldline" << endl;
+  GYOTO_ENDIF_DEBUG
+  size_t old_x_size=x_size_;
   if (tlim > time_[imax_]) {
     // integrate forward
     dir = 1;
@@ -542,6 +563,21 @@ void Worldline::xFill(double tlim, bool proper) {
     dir = -1;
     ind = (imin_==0)?xExpand(-1):imin_;
   } else return ; // nothing to do
+  if (x_size_ != old_x_size) {
+    time_ = proper?tau_:x0_;
+    old_x_size=x_size_;
+  }
+  GYOTO_DEBUG << "x_size_=" << x_size_
+	      <<", imin_=" << imin_
+	      << ", i0_=" << i0_
+	      << ", imax_=" << imax_
+	      << ", dir=" << dir << ", ind=" << ind << ", tlim=" << tlim
+	      << ", time_[imin_]=" << time_[imin_]
+	      << ", time_[i0_]=" << time_[i0_]
+	      << ", time_[imax_]=" << time_[imax_]
+	      << ", proper=" << proper
+	      << ", (time_==tau_)=" << (time_==tau_)
+	      << endl;
   
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG<< "Integrating worldline " ;
@@ -606,26 +642,31 @@ void Worldline::xFill(double tlim, bool proper) {
       stopcond=1;
       Error ( "***WARNING STOP: in Worldline.C unexplained stop !!!" );
     }
-    // store particle's trajectory for later use
-    ind +=dir;
-    xStore(ind, coord, tau);
-    
     // Check stop condition and whether we need to expand the arrays
     if (dir==1) {
-      if (time_[ind] > tlim) stopcond=1;
-      if ((!stopcond) & (ind==x_size_-1)) {
+      if ((proper?tau:coord[0]) > tlim) stopcond=1;
+      if (ind==x_size_-1) {
 	imax_=x_size_-1;
 	ind=xExpand(1);
       }
     } else {
-      if (time_[ind] < tlim) {
+      if ((proper?tau:coord[0]) < tlim) {
 	stopcond=1;
       }
-      if ((!stopcond) & (ind==0)) {
+      if (ind==0) {
 	imin_=0;
 	ind=xExpand(-1);
       }
     }
+    if (x_size_ != old_x_size) {
+      time_ = proper?tau_:x0_;
+      old_x_size=x_size_;
+    }
+
+    // store particle's trajectory for later use
+    GYOTO_DEBUG_EXPR(ind);
+    ind +=dir;
+    xStore(ind, coord, tau);
   }
   if (dir==1) imax_=ind; // tell when we actually stopped integrating
   else imin_=ind;
@@ -760,7 +801,6 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
 			 double * et0, double * et1, double * et2, double * et3,
 			 double * otime, bool proper)
 {
-
   size_t curl=imin_, curm, curh=imax_;
        // Current indices for the binary search. 
        // To avoid overflows, compute curm as curl+(curh-curl)/2
@@ -778,10 +818,11 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
   stringstream ss;
+  GYOTO_IF_DEBUG
   GYOTO_DEBUG_EXPR(dates[0]);
   GYOTO_DEBUG_EXPR(time_[imin_]);
   GYOTO_DEBUG_EXPR(time_[imax_]);
-
+  GYOTO_ENDIF_DEBUG
 
   for (di=0; di<n_dates; ++di) {
     date = dates[di];
@@ -811,7 +852,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     } else if (date > time_[imax_]) {
       GYOTO_DEBUG << "Extending worldline towards future" << endl;
       curl=imax_;    // current imax_
-      xFill(date, proper);   // integrate, that changes imax_
+      xFill(date, proper);   // integrate, that changes imax_, tau_, x0_...
+      time_ = proper?tau_:x0_;
+      otime_ = proper?x0_:tau_;
       curh=imax_;    // new imax_
       if (curl == curh || date > time_[imax_]) {
 	ss<<"Worldline::getCoord: can't get coordinates for date="<<date;
@@ -819,8 +862,29 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       }
     } else if (date < time_[imin_]) {
       GYOTO_DEBUG << "Extending worldline towards past" << endl;
+      GYOTO_DEBUG << "imin_=" << imin_ << ", i0_=" << i0_ << ", imax_=" << imax_ << endl;
       curh=x_size_-imin_; // trick if line is expanded during xFill()
       xFill(date, proper);   // integrate, that changes imin_
+      time_ = proper?tau_:x0_;
+      otime_ = proper?x0_:tau_;
+      GYOTO_IF_DEBUG
+      GYOTO_DEBUG_THIS << "imin_=" << imin_ << ", i0_=" << i0_ << ", imax_=" << imax_ << endl;
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+1]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+2]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+3]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+4]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+5]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+6]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+7]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imin_+8]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_-5]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_-4]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_-3]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_-2]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_-1]);
+      GYOTO_DEBUG_THIS_EXPR(time_[imax_]);
+      GYOTO_ENDIF_DEBUG
       curh=x_size_-curh;
       curl=imin_;    // new imin_
       if (curl == curh || date < time_[imin_]) {
