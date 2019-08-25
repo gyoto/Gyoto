@@ -329,7 +329,7 @@ def _Worldline_getCartesian(self, t, *arrays):
 
 # Same for getCoord
 def _Worldline_getCoord(self, t, *arrays):
-    if isinstance(t, core.array_double):
+    if isinstance(t, core.array_double) or numpy.isscalar(t) :
         core._core.Worldline_getCoord(self, t, *arrays)
     else:
         sizes=numpy.asarray([v.size for v in arrays])
