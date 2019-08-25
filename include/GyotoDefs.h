@@ -277,6 +277,20 @@ namespace Gyoto {
    */
 #define GYOTO_DEBUG_EXPR(a) GYOTO_DEBUG << #a << "=" << a << std::endl
 
+  /// Output expression value unconditionally
+  /**
+   * Output both code and value that code yield. For instance:
+   * \code
+   * int a=1, b=2;
+   * GYOTO_DEBUG_THIS_EXPR(a+b);
+   * \endcode
+   * will essentially output:
+   * \code
+   * DEBUG: <function signature>: a+b=3
+   * \endcode
+   */
+#define GYOTO_DEBUG_THIS_EXPR(a) GYOTO_DEBUG_THIS << #a << "=" << a << std::endl
+
   /// Output array content in debug mode
   /**
    * Output, only in debug, name and content of array.
@@ -301,9 +315,20 @@ namespace Gyoto {
       std::cerr << "," << a[_gyoto_debug_array_i] ;			\
     std::cerr << "]" << std::endl ;}
 
-  /// Display debug message
+  /// Display debug message (unconditionally)
   /**
-   * Message is deiplayed only if #GYOTO_DEBUG_MODE is true and is
+   * Message is prepended with the word "DEBUG:" and the signature of
+   * the function.
+   *
+   * \code
+   * GYOTO_DEBUG << "message" << endl;
+   * \endcode
+   */
+#define GYOTO_DEBUG_THIS std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "
+
+  /// Display debug message (in debug mode)
+  /**
+   * Message is displayed only if #GYOTO_DEBUG_MODE is true and is
    * prepended with the word "DEBUG:" and the signature of the
    * function.
    *
@@ -311,7 +336,7 @@ namespace Gyoto {
    * GYOTO_DEBUG << "message" << endl;
    * \endcode
    */
-#define GYOTO_DEBUG  if (GYOTO_DEBUG_MODE) std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "
+#define GYOTO_DEBUG  if (GYOTO_DEBUG_MODE) GYOTO_DEBUG_THIS
 
   /// Start debug-only block.
   /**
