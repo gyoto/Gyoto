@@ -64,7 +64,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated July 31, 2019}
+\Large{Updated September 5, 2019}
 %\today
 
 \vspace{4cm}
@@ -1011,60 +1011,58 @@ trivial manner. Let \texttt{MetricKind} be a Metric kind
 be a kind of Astrobj, and $x0, x1, x2, x3$ be coordinates in this
 Metric.
 \begin{code}
-  from gyoto import core, util
+  from gyoto import core
   import numpy
-  metric=core.Metric('MetricKind')    # take a metric
+  from matplotlib import pyplot as plt
+
+  metric=core.Metric('KerrBL')        # make and initialize a metric
+
   scr=core.Screen()                   # make a Screen
-  scr.metric(metric)                  
-  ao=core.Astrobj('AstobjKind')       # make astrobj
-  ao.metric(metric)
+  scr.metric(metric)
+  scr.resolution(32)
+  scr.fieldOfView(60, 'degree')
+  scr.anglekind('Rectilinear')
+
+  ao=core.Astrobj('ThinDisk')         # make an astrobj,
+  ao.metric(metric)                   # initialize it
+  ao.set('InnerRadius', 6.)
+  ao.rMax(200)
+
   sc=core.Scenery()                   # make Scenery
   sc.metric(metric)                   # assign metric
   sc.astrobj(ao)                      # assign astrobj
   sc.screen(scr)                      # assign screen
   
+  x0, x1, x2, x3=0., 15., numpy.pi/4, numpy.pi/4
   pos=numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
-  scr.setObservPos(pos)               # set observer position
+  scr.setObserverPos(pos)             # set observer position
   fourvel=numpy.zeros(4)              # NumPy array for 4-velocity
 \end{code}
 
-Now we can set the observer kind. The default would be:
+Now we can set the observer kind and ray-trace. The default would be:
 \begin{code}
   scr.observerKind('ObserverAtInfinity')
+  results=sc.rayTrace()
 \end{code}
-which will not work close to the central object.
+which will not work that close to the central object (15 geometrical
+units in this example).
 
 \begin{code}
   scr.observerKind('ZAMO')
+  results=sc.rayTrace()
 \end{code}
-would work, though. Nothing else would be required and one could then proceed with ray-tracing:
+would always work, though. ZAMO stands for `zero angular momentum
+observer'. One can display the intensity image:
 
 \begin{code}
-  results=util.rayTrace(sc)
+  plt.imshow(results['Intensity'], origin='bottom')
+  plt.show()
 \end{code}
 
 To try \texttt{ObserverKind==VelocitySpecified}, we need to get a
-4-velocity. Several methods can help with that, but in the general
-case it's up to the user:
-
-\begin{code}
-  metric.circularVelocity(pos, fourvel)
-\end{code}
-
-\texttt{circularVelocity} is defined by the Metrics to provide the
-velocity that a particle must have, at the position \texttt{pos}
-projected onto the equatorial plane, to be on a circular orbit. Such a
-velocity does not exist everywhere in the general case and only some
-Metrics provide this method. The Keplerian approximation is defined in
-the general case by:
-
-\begin{code}
-  metric.keplerian(True)
-  metric.circularVelocity(pos, fourvel)
-\end{code}
-
-but even in that case, the 4-velocity thus constructed does not always
-make sense.
+4-velocity. Several methods can help with that (see for instance
+\texttt{help(core.Metric.circularVelocity)}), but to continue with the
+same example we shall retrieve the velocity of a ZAMO with:
 
 \begin{code}
   metric.zamoVelocity(pos, fourvel)
@@ -1076,12 +1074,13 @@ the Screen:
 \begin{code}
   scr.observerKind('VelocitySpecified')
   scr.fourVel(fourvel)
-  util.rayTrace(sc)
+  results=sc.rayTrace()
+  plt.imshow(results['Intensity'], origin='bottom')
+  plt.show()
 \end{code}
 
 \texttt{zamoVelocity} is always defined. It provides a velocity with
-zero angular momentum (ZAMO stands for `zero angular momentum
-observer'). \texttt{KerrBL.zamoVelocity} is an optimised
+zero angular momentum. \texttt{KerrBL.zamoVelocity} is an optimised
 implementation, compatible with the generic one which projects $\vec
 e_t$ on the hyperplane orthogonal to $\vec e_\varphi$. The same could
 be implemented in Python like this:
@@ -1155,6 +1154,9 @@ with \texttt{FullySpecified} like this:
   scr.screenVector1(el)
   scr.screenVector2(eu)
   scr.screenVector3(ef)
+  results=sc.rayTrace()
+  plt.imshow(results['Intensity'], origin='bottom')
+  plt.show()
 \end{code}
 
 If \texttt{fourvel} has been set using
@@ -1170,18 +1172,22 @@ Screen where the property \texttt{ObserverKind} has been set to
 The goal of this code is to set the camera such that it looks in the
 direction where the Screen is moving, so $\vec e_f$ is initialized as
 the 3-velocity $(0, \dot x^1 / \dot x^0, \dot x^2 / \dot x^0, \dot x^3
-/ \dot x^0)$. $\vec e_u$ is initialized as $\proj_u(\vec e_r)$ and
+/ \dot x^0)$. $\vec e_u$ is initialized as $\proj_{e_f}(\vec e_r)$ and
 normalized. It is therefore a vector pointing away from the central
 object, orthogonal to $e_f$ and normal (in the 3D Euclidian sense). We
 set $\vec e_l=\vec e_u \times \vec e_f$ where $\times$ denotes the 3D
 external (vector) product. Thus, $(\vec e_l, \vec e_u, \vec e_f)$
 would form an orthonormal basis of a Euclidian 3D space. We then use
 the Gram--Schmidt process to orthonormalize the tetrad $(\vec u, \vec
-e_l, \vec e_u, \vec e_f)$ in the metric sense. Most computations are
+e_u, \vec e_f, \vec e_l)$ in the metric sense. Most computations are
 done in Cartesian 3D coordinates, for the sake of computing the
 external product easily.
 
 \begin{code}
+  pos=numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
+  fourvel=numpy.zeros(4)
+  metric.circularVelocity(pos, fourvel)
+
   # pos and fourvel have been initialized previously
   coord=numpy.concatenate((pos, fourvel))
   ef=numpy.zeros(4)
@@ -1209,7 +1215,7 @@ external product easily.
   # Now initialize eu as er, but project it orthogonally to ef in 3D
   # and then normalize it:    
   eu=numpy.concatenate(([0.], posc[1:]/r))
-  eu -= (front*eu).sum()*front
+  eu -= (ef*eu).sum()*ef
   eu /= numpy.sqrt((eu*eu).sum())
 
   # Last vector is el, which we construct as the 3D vector product
@@ -1246,7 +1252,7 @@ external product easily.
   # Our 3 vectors form an orthonormal basis in the Euclidian sense,
   # but the tetrad still needs to be orthonormalized in the metric
   # sense:
-  metric.GramSchmidt(pos, vel, eu, ef, el);
+  metric.GramSchmidt(pos, fourvel, eu, ef, el);
 
   # Then we just need to attach the tetrad to the Screen:
   scr.observerKind('FullySpecified')
@@ -1257,7 +1263,9 @@ external product easily.
   scr.screenVector3(ef)
 
   # Perform ray-tracing as usual:
-  results=util.rayTrace(sc)
+  results=sc.rayTrace()
+  plt.imshow(results['Intensity'], origin='bottom')
+  plt.show()
  
 \end{code}
 
