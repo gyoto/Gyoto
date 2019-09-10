@@ -467,15 +467,15 @@ namespace Gyoto {
 /// \brief Gravitational constant (cgs: cm^3 * g^-1 * s-2)
 #define GYOTO_G_CGS 6.67428e-8
 /// \brief G/c^2=6.67428e-11/299792458.^2
-#define GYOTO_G_OVER_C_SQUARE 7.426138e-28
+#define GYOTO_G_OVER_C_SQUARE 7.4261380161175445989e-28
 /// \brief G/c^2 in cgs units
-#define GYOTO_G_OVER_C_SQUARE_CGS 7.426138e-29
+#define GYOTO_G_OVER_C_SQUARE_CGS 7.4261380161175445989e-29
 /// \brief Planck's constant (h) in SI (J.s=kg.m^2/s) 
 #define GYOTO_PLANCK 6.62606896e-34
 /// \brief Planck's constant (h) in c.g.s (g.cm^2/s) 
 #define GYOTO_PLANCK_CGS 6.62606896e-27
 /// \brief h/c^2 in SI (kg.s)
-#define GYOTO_PLANCK_OVER_C_SQUARE 7.372496e-51
+#define GYOTO_PLANCK_OVER_C_SQUARE 7.3724959997591407964e-51
 /// \brief Boltzmann's constant (k) in SI (J/K)
 #define GYOTO_BOLTZMANN 1.3806504e-23
 /// \brief Boltzmann's constant (k) in cgs (erg/K)
@@ -483,7 +483,7 @@ namespace Gyoto {
 /// \brief Stefan-Boltzmann's constant (sigma) in cgs (erg/cm2/s/K4)
 #define GYOTO_STEFANBOLTZMANN_CGS 5.670373e-5
 /// \brief h/k (K.s = K/Hz)
-#define GYOTO_PLANCK_OVER_BOLTZMANN 4.7992373e-11
+#define GYOTO_PLANCK_OVER_BOLTZMANN 4.7992373449498869688e-11
 /// \brief ideal gas constant R in SI
 #define GYOTO_GAS_CST 8.3144621
 /// \brief ideal gas constant R in erg/(K mol)
