@@ -1,6 +1,133 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Fri Aug 3 09:10:24 2019 +0200
+Date:   Fri Sep 27 16:03:01 2019 +0200
+
+    Releasing 1.3.6
+
+commit 703ead1f392b1ff2c92fbba04d566c4f5b6dd2da
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Sep 27 16:02:00 2019 +0200
+
+    Fix copy constructor of RezzollaZhidenko and PolishDoughnut
+
+commit 3ee9b4e25f26c65ab162d64c61a5bcd66c86a78f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Sep 10 10:25:36 2019 +0200
+
+    GyotoDefs.h: give derived constants to machine precision
+    
+    Some constants like GYOTO_G_OVER_C_SQUARED where only given to the same
+    precision as the constant they derive from (GYOTO_G in this case).
+    
+    While it is correct that e.g. G is known only to 1e5, mixiin guses of GYOTO_G
+    and GYOTO_G_OVER_C_SQUARED both specified only to that precision leads to
+    additional errors. GYOTO_G_OVER_C_SQUARE, GYOTO_G_OVER_C_SQUARE_CGS,
+    GYOTO_PLANCK_OVER_C_SQUARE and GYOTO_PLANCK_OVER_BOLTZMANN are now given with
+    many more places so that GYOTO_G/GYOTO_G_OVER_C_SQUARE actually yields GYOTO_C^2.
+
+commit a60e859cfc4ecbf7768b519c7b59e565ac5676c8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Sep 27 14:37:09 2019 +0200
+
+    Fix example.py after changing Worldline.getCoord
+
+commit f277f6ebf3cc3810c7b56bd0b779540723272545
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 25 19:32:33 2019 +0200
+
+    gyoto.util: make getCoord(double t, stat_t coord) work again
+
+commit 0dda0c96b3d35725f8221a40305c727128480e5c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Aug 16 09:32:15 2019 +0200
+
+    Python: make sure Worldline.getCoord works both with NumPy and C arrays
+
+commit 3277ebedd6d095a6f85c928ced59a680f8e90337
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Aug 15 22:35:51 2019 +0200
+
+    Python: make sure Worldline.getCartesian works both with NumPy and C arrays
+
+commit 11b1a6016db823a39d42f993432a8271aee86ede
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Aug 15 09:01:36 2019 +0200
+
+    gyoto.util.rayTrace: return arrays or the right dimension
+    
+    if j and/or i are scalars, decrease dimension of output arrays
+
+commit e1209889d5511fe9061f7c25155578a44f76e73c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Aug 14 21:22:25 2019 +0200
+
+    gyoto.util.rayTrace: reorder parameters
+    
+    The order j, i is more Pythonic than i.j. This ways,
+      sc[j, i]['Quantity'] == sc[:,:]['Quantity'][j,i].
+    
+    Having height and width last allows writing:
+      sc[j, i, core.Bucket, None]
+    skipping height and width to remove progress output.
+
+commit c4af46c430bb0cd73c6230571d3530146b0f126d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Aug 14 14:31:42 2019 +0200
+
+    Gyoto::Screen::Coord1dSet: copy beffur in Indices and Angles
+    
+    Much safer in Python
+
+commit 6614509bccc4937123963c96011af8955fa04a51
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 14:07:43 2019 +0200
+
+    gyoto.util: improve doc comments
+
+commit f92a846193e3bd3cfa2adc5a04371d82b5158156
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 14:00:19 2019 +0200
+
+    gyoto.util.rayTrace/Scenery_getitem: improve dimensionality
+    
+    - Scenery_getitem accepts all rayTrace parameters
+    - return 1D array when the Coord2dSet is 1D
+
+commit 18d2c3dfd3cd53e228b8ed0c91572a6232c07d04
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 07:53:12 2019 +0200
+
+    gyoto.util: support angles in rayTrace
+
+commit 7852e47d204d4b6f87032abc36179a4cb23f479b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 07:45:42 2019 +0200
+
+    gyoto.core.Scenery: add __getitem__ method
+    
+    shortcut for rayTrace
+
+commit 7d86c285b0b9fb095bbcb102fb39fdc0f96e076d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 07:21:59 2019 +0200
+
+    gyoto.util.rayTrace: support indices, ranges and list of indices
+
+commit a0f2db907499a768e9d0c8322bd87386d5326b0a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Aug 11 06:21:56 2019 +0200
+
+    gyoto.util.rayTrace: accept paremeters i and j
+
+commit 049e1daad6fb52b9beb6be40f9778c733b9755c1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Aug 9 09:37:16 2019 +0200
+
+    python: install util.rayTrace as Scenery.rayTrace
+
+commit bb7ce60adc3c9f476dafb0429b35df57ae99fe0a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Aug 3 09:13:51 2019 +0200
 
     Releasing 1.3.5
 

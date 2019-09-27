@@ -61,6 +61,7 @@ theta=numpy.ndarray(n)
 phi=numpy.ndarray(n)
 
 # Call Gyoto method that takes these arrays as argument:
+ph.get_t(t)
 ph.getCoord(t, r, theta, phi)
 
 plt.plot(t, r)
