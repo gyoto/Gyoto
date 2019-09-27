@@ -41,6 +41,7 @@
 #include "GyotoThinDiskIronLine.h"
 #include "GyotoEquatorialHotSpot.h"
 #include "GyotoJet.h"
+#include "GyotoThickDisk.h"
 #include "GyotoBlob.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 
@@ -109,6 +110,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::DirectionalDisk>));
   Astrobj::Register("Jet",
 		    &(Astrobj::Subcontractor<Astrobj::Jet>));
+    Astrobj::Register("ThickDisk",
+		    &(Astrobj::Subcontractor<Astrobj::ThickDisk>));
   Astrobj::Register("Blob",
 		    &(Astrobj::Subcontractor<Astrobj::Blob>));
   Astrobj::Register("XillverReflection",
