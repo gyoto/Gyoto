@@ -1,6 +1,6 @@
 /**
  * \file GyotoJet.h
- * \brief Simple jet model with kappa-distribution
+ * \brief Simple jet model with thermal or kappa-distribution
  * synchrotron emission from Pandya et al. (2016)
  *
  * This class implements a jet defined as the volume contained
@@ -17,7 +17,7 @@
  * magnetizationParameter_.
  * 
  * The jet emits synchrotron radiation, assuming that the electrons
- * follow a kappa distribution, ie the smooth gluing of a thermal
+ * follow a thermal or kappa distribution, ie the smooth gluing of a thermal
  * distribution at low electron Lorentz factor, to a power-law distribution
  * at high electron Lorentz factor. This distribution, as well as the
  * resulting emission and absorption coefficients are taken from:
@@ -56,10 +56,11 @@ namespace Gyoto{
 
 #include <GyotoStandardAstrobj.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
 
 /**
  * \class Gyoto::Astrobj::Jet
- * \brief Simple jet model with kappa-distribution
+ * \brief Simple jet model with thermal or kappa-distribution
  * synchrotron emission from Pandya et al. (2016)
  *
  * This class implements a jet defined as the volume contained
@@ -76,7 +77,7 @@ namespace Gyoto{
  * magnetizationParameter_.
  *
  * The jet emits synchrotron radiation, assuming that the electrons
- * follow a kappa distribution, ie the smooth gluing of a thermal
+ * follow a thermal or kappa distribution, ie the smooth gluing of a thermal
  * distribution at low electron Lorentz factor, to a power-law distribution
  * at high electron Lorentz factor. This distribution, as well as the
  * resulting emission and absorption coefficients are taken from:
@@ -90,10 +91,12 @@ class Gyoto::Astrobj::Jet
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Jet>;
  private:
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_;
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_;
   double jetOuterOpeningAngle_; ///< Jet outer opening angle (rad)
   double jetInnerOpeningAngle_; ///< Jet inner opening angle (rad)
   double jetBaseHeight_; ///< Height of the base of the jet (z value, M units)
   double gammaJet_; ///< Constant Lorentz factor in jet
+  double jetVphiOverVr_; ///< this is (r*Vphi/Vr) where V is the jet velocity measured by the ZAMO
   double baseNumberDensity_cgs_; ///< electron nb density at jet base (cgs)
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
@@ -123,6 +126,8 @@ class Gyoto::Astrobj::Jet
   double jetBaseHeight() const;
   void gammaJet(double gam);
   double gammaJet() const;
+  void jetVphiOverVr(double alpha);
+  double jetVphiOverVr() const;
   double baseNumberDensity() const;
   double baseNumberDensity(std::string const &unit) const;
   void baseNumberDensity(double ne);
