@@ -37,6 +37,7 @@ namespace Gyoto{
 
 #include <GyotoStandardAstrobj.h>
 #include <GyotoSpectrum.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
 #include <GyotoUtils.h>
 
 /**
@@ -62,6 +63,7 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 
   SmartPointer<Spectrum::Generic> spectrum_; ///< Emission law
   SmartPointer<Spectrum::Generic> opacity_; ///< Absorption law
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_;  
 
   // Constructors - Destructor
   // -------------------------
@@ -160,6 +162,11 @@ class Gyoto::Astrobj::Torus : public Gyoto::Astrobj::Standard {
 				   state_t const &c_ph, double const c_obj[8]=NULL) const;
 
   virtual double transmission(double nuem, double dsem, state_t const &, double const *) const ;
+
+  virtual void radiativeQ(double Inu[], double Taunu[], 
+			  double const nu_em[], size_t nbnu,
+			  double dsem, state_t const &coord_ph,
+			  double const coord_obj[8]=NULL) const ;
   
 };
 

@@ -54,13 +54,16 @@ Torus::Torus() : Standard("Torus"),
   safety_value_ = 0.3;
   spectrum_ = new Spectrum::BlackBody(1000000.);
   opacity_ = new Spectrum::PowerLaw(0., 1.);
+  spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
+
 }
 
 Torus::Torus(const Torus& o)
   : Standard(o),
     c_(o.c_),
     spectrum_(o.spectrum_()?o.spectrum_->clone():NULL),
-    opacity_(o.opacity_()?o.opacity_->clone():NULL)
+    opacity_(o.opacity_()?o.opacity_->clone():NULL),
+    spectrumThermalSynch_(o.spectrumThermalSynch_()?o.spectrumThermalSynch_->clone():NULL)
 {}
 
 Torus::~Torus() {}
@@ -165,4 +168,79 @@ void Torus::getVelocity(double const pos[4], double vel[4]) {
     GYOTO_ERROR("Torus::getVelocity(): unknown coordkind");
   }
   gg_ -> circularVelocity(pos2, vel);
+}
+
+void Torus::radiativeQ(double Inu[], // output
+		       double Taunu[], // output
+		       double const nu_ems[], size_t nbnu, // input
+		       double dsem,
+		       state_t const &coord_ph,
+		       double const coord_obj[8]) const {
+  
+  double number_density = 4.8e5;
+
+  double temperature = 9.5e10;
+
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double magnetizationParameter = 0.01;
+
+  double BB = sqrt(4.*M_PI*magnetizationParameter
+		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+		   *number_density);
+
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
+  //cout << "jet zz,rcyl,th,ph,ne,Te= " <<  zz << " " << rcyl << " " << coord_ph[2] << " " << coord_ph[3] << " " << number_density << " " << temperature << endl;
+  // Use that line for Compton study:
+  //cout <<  zz << " " << rcyl << " " << number_density << " " << temperature << endl;
+
+  // Emission and absorption synchrotron coefs
+  double jnu_synch[nbnu], anu_synch[nbnu];
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initializing to <0 value to create errors if not updated
+    jnu_synch[ii]=-1.;
+    anu_synch[ii]=-1.;
+  }
+
+  // THERMAL SYNCHROTRON
+  spectrumThermalSynch_->temperature(temperature);
+  spectrumThermalSynch_->numberdensityCGS(number_density);
+  spectrumThermalSynch_->angle_averaged(1); // impose angle-averaging
+  spectrumThermalSynch_->angle_B_pem(0.);   // so we don't care about angle
+  spectrumThermalSynch_->cyclotron_freq(nu0);
+  double besselK2 = bessk(2, 1./thetae);
+  spectrumThermalSynch_->besselK2(besselK2);
+  
+  spectrumThermalSynch_->radiativeQ(jnu_synch,anu_synch,
+			nu_ems,nbnu);
+
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  for (size_t ii=0; ii<nbnu; ++ii){
+
+    double jnu_tot = jnu_synch[ii],
+      anu_tot = anu_synch[ii];
+
+    //cout << "in jet stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
+
+    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
+    //cout << "jet jnu anu kappa= " << jnu_tot << " " << anu_tot << endl; //x" " << jnu_tot/anu_tot << " " << dsem << endl;
+
+    // expm1 is a precise implementation of exp(x)-1
+    double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
+    Taunu[ii] = em1+1.;
+    Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
+      -jnu_tot / anu_tot * em1;
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Torus::radiativeQ: Inu<0");
+    if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
+      GYOTO_ERROR("In Torus::radiativeQ: Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
+      GYOTO_ERROR("In Torus::radiativeQ: Inu or Taunu is infinite");
+
+  }
 }
