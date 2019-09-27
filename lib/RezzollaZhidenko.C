@@ -99,7 +99,7 @@ Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko()
 }
 
 Gyoto::Metric::RezzollaZhidenko::RezzollaZhidenko(const RezzollaZhidenko & orig)
-  : Generic(GYOTO_COORDKIND_SPHERICAL, "RezzollaZhidenko"),
+  : Generic(orig),
     epsilon_(orig.epsilon_), rms_(orig.rms_), rmb_(orig.rms_), aparam_(NULL), bparam_(NULL)
 {
   GYOTO_DEBUG << endl;
