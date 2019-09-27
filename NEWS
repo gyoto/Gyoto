@@ -1,3 +1,7 @@
+1.3.6 2019/09/27 FTR
+   * Python: improve interface in gyoto.util
+   * GyotoDefs.h: give derived constants to machine precision
+
 1.3.5 2019/08/03 BUG
    * Python: support Python2.7 in gyoto.util.rayTrace
 
