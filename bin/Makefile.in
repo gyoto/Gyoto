@@ -98,15 +98,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_MPI_TRUE@am__append_4 = gyoto-mpi-worker.@sovers@
 @HAVE_MPI_TRUE@am__append_5 = gyoto-mpi-worker.@sovers@.1
 @HAVE_MPI_TRUE@am__append_6 = gyoto-mpi-worker.@sovers@.1
-@HAVE_UDUNITS_TRUE@am__append_7 = \
-@HAVE_UDUNITS_TRUE@        example-fixed-star-KS.fits \
-@HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits \
-@HAVE_UDUNITS_TRUE@        example-polish-doughnut-hayward-wormhole.fits \
-@HAVE_UDUNITS_TRUE@	example-torusjet.fits \
-@HAVE_UDUNITS_TRUE@        example-polish-doughnut-RZ.fits
-
-@HAVE_2F1_TRUE@am__append_8 = example-jet.fits
-@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_9 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
+@HAVE_2F1_FALSE@am__append_7 = example-jet.fits example-torusjet.fits
+@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@am__append_8 = $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 subdir = bin
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
@@ -453,7 +446,7 @@ AM_LDFLAGS = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC) \
 	$(am__append_3)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) $(CXXFLAGS_EXEC)
 CLEANFILES = $(am__append_6) $(CHECK_RESULTS) $(CHECK_MPI_RESULTS) \
-	$(am__append_9)
+	$(am__append_8)
 dist_man_MANS = $(am__append_2) $(am__append_5)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
@@ -464,25 +457,15 @@ gyoto_mpi_worker_@sovers@_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIO_CFLAGS)
 gyoto_mpi_worker_@sovers@_LDFLAGS = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynamic
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
-CHECK_RESULTS = example-thin-disk.fits example-thin-disk-KS.fits \
-	example-thin-disk-minkowski-cartesian.fits \
-	example-thin-disk-minkowski-spherical.fits \
-	example-complex-astrobj.fits example-fixed-star.fits \
-	example-fixed-star-RZ.fits \
-	example-fixed-star-minkowski-cartesian.fits \
-	example-fixed-star-minkowski-spherical.fits \
-	example-startrace.fits example-moving-star.fits \
-	example-moving-star-CS.fits example-page-thorne-disk-BL.fits \
-	example-page-thorne-disk-KS.fits \
-	example-page-thorne-disk-BL-with-basis.fits example-torus.fits \
-	example-torus-KS.fits example-oscil-torus.fits $(am__append_7) \
-	$(am__append_8)
+CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
+CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(am__append_7)
+CHECK_RESULTS = $(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
 CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
 CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
 CHECK_CMD = $(CHECK_ENV) $(CHECK_RAW_CMD)
-@BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 all: all-am
 
@@ -969,6 +952,10 @@ check-mpi-clean:
 
 clean-local:
 	-rm -rf .check-lorene
+
+echo-stuff:
+	echo $(CHECK_RESULTS_ALL)
+	echo $(CHECK_RESULTS)
 
 .PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check check-lorene-clean check-lorene-compute check-lorene check-lorene-mpi-clean check-lorene-mpi-compute check-lorene-mpi check
 
