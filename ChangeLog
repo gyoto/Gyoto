@@ -1,8 +1,30 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Tue Oct 22 12:52:37 2019 +0200
+Date:   Tue Oct 23 16:47:04 2019 +0200
 
-    Releasing 1.4.0
+    Releasing 1.4.1
+
+commit cc9d56c22497e93579c3c2487fc02adea859536f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Oct 23 16:41:43 2019 +0200
+
+    make check: use all files in doc/examples
+
+commit 1be1303f98b95386071479bd3398d29224e7f96e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Oct 23 15:29:25 2019 +0200
+
+    Scenery: bugfix in mpiWorker
+    
+    Fix computation of number of quantities to store.
+    
+    Previously, parenthesis were missing and the result was always 16.
+
+commit b0ae812addbd9b8ae4c6815484e5ff366bd05016
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 22 12:52:57 2019 +0200
+
+    Preparing to release 1.4.0
 
 commit eb1da8b77098bbb8ac8035312c3634079aea9e9c
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>

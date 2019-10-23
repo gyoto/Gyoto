@@ -1,3 +1,7 @@
+1.4.1 2019/10/23 BUG
+   * MPI: fix computation of number of quantities to evaluate
+   * check suite: use all files in doc/examples
+
 1.4.0 2019/10/22 ABI 8:0:0
    * Ongoing work to support polarization:
       * Support parallel transport of local tetrad
