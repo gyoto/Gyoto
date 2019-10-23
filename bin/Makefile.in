@@ -102,6 +102,7 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_UDUNITS_TRUE@        example-fixed-star-KS.fits \
 @HAVE_UDUNITS_TRUE@        example-polish-doughnut.fits \
 @HAVE_UDUNITS_TRUE@        example-polish-doughnut-hayward-wormhole.fits \
+@HAVE_UDUNITS_TRUE@	example-torusjet.fits \
 @HAVE_UDUNITS_TRUE@        example-polish-doughnut-RZ.fits
 
 @HAVE_2F1_TRUE@am__append_8 = example-jet.fits
