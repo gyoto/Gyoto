@@ -214,7 +214,7 @@ void GridData2D::fitsWriteHDU(fitsfile* fptr,
   int       status    = 0;
   long      fpixel [] = {1,1,1,1};
   long      ndim      = length?4:3;
-  long      naxes []  = {long(nr_),long(nphi_),long(nt_),length};
+  long      naxes []  = {long(nr_),long(nphi_),long(nt_),long(length)};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
   char *    CNULL     = NULL;
 
