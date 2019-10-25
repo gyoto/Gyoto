@@ -17008,7 +17008,7 @@ $as_echo "no" >&6; }
 fi
 
 
-if test "xyes" = "xyes" && $PYTHON_CONFIGURE --embed; then :
+if test "xyes" = "xyes" && $PYTHON_CONFIG --embed; then :
   PYTHON_EMBED_FLAG="--embed"
 else
   PYTHON_EMBED_FLAG=""

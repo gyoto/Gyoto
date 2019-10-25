@@ -175,7 +175,7 @@ m4_define([_PYTHON_BASENAME], [`basename $PYTHON`])
 m4_ifval([$1],
 	[AC_PATH_PROGS(PYTHON_CONFIG, [$1 _PYTHON_BASENAME-config])],
 	[AC_PATH_PROG(PYTHON_CONFIG, _PYTHON_BASENAME-config)])
-AS_IF([test "x$2" = "xyes" && $PYTHON_CONFIGURE --embed],
+AS_IF([test "x$2" = "xyes" && $PYTHON_CONFIG --embed],
 	[PYTHON_EMBED_FLAG="--embed"],
         [PYTHON_EMBED_FLAG=""])
 ]) # PC_PYTHON_PROG_PYTHON_CONFIG
