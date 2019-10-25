@@ -1,6 +1,38 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Tue Oct 23 16:47:04 2019 +0200
+Date:   Tue Oct 25 15:15:04 2019 +0200
+
+    Releasing 1.4.2
+
+commit ea20fb536aae58f008a282feaa12868e72ce78d9
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 25 14:33:14 2019 +0200
+
+    plugins/python: support Python 3.8
+    
+    With Python 3.8, modules are no longer link with libpython by default. Therefore
+    codes that are meant for embedding Python must pass --embed to python-configure
+    in order to get the complete set of flags to do so.
+
+commit d9fe7496b7172f28c22760627ff201ab5595c9e1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 24 12:29:08 2019 +0200
+
+    EquatorialHotSpot: fix "==" that was meant to be "="
+    
+    In XML backward compatibility code.
+
+commit 557f90287d0c4225f960ba035409ab7a85b8d01b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 24 12:26:10 2019 +0200
+
+    GridData2D: explicitly convert size_t to long
+    
+    Implicit narrowing conversion is an error for some compilers.
+
+commit 9f912f8233fc1cc42c05bd4338eec2fd8085a5fa
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Oct 23 16:48:04 2019 +0200
 
     Releasing 1.4.1
 

@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.69])
-AC_INIT([Gyoto], [1.4.1], [gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto], [1.4.2], [gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_SYSTEM
@@ -27,7 +27,7 @@ AC_SUBST([VERBATIM], [])
 # C: current; R: revision; A: age
 # Linux library name is: libgyoto.so.(C-A).A.R
 VERSINFO_C=8
-VERSINFO_R=0
+VERSINFO_R=1
 VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])

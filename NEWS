@@ -1,3 +1,8 @@
+1.4.2 2019/10/25 BUG
+   * plugins/python: support Python 3.8
+   * Astrobj::EquatorialHotSpot: fix XML compatibility code
+   * GridData2D: make one conversion explicit to please clang
+
 1.4.1 2019/10/23 BUG
    * MPI: fix computation of number of quantities to evaluate
    * check suite: use all files in doc/examples
