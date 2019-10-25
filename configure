@@ -16087,6 +16087,11 @@ $as_echo "no" >&6; }
 fi
 
 
+if test "x" = "xyes" && $PYTHON_CONFIGURE --embed; then :
+  PYTHON_EMBED_FLAG="--embed"
+else
+  PYTHON_EMBED_FLAG=""
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python includes" >&5
 $as_echo_n "checking for Python includes... " >&6; }
@@ -16094,7 +16099,7 @@ if ${pc_cv_python_includes+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_includes=`$PYTHON_CONFIG --includes 2>&5`
+    pc_cv_python_includes=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --includes 2>&5`
 else
     pc_cv_python_includes="-I$includedir/$_PYTHON_BASENAME"
 fi
@@ -16112,7 +16117,7 @@ if ${pc_cv_python_prefix+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_prefix=`$PYTHON_CONFIG --prefix 2>&5`
+    pc_cv_python_prefix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --prefix 2>&5`
 else
     ac_ext=py
 ac_compile='chmod +x conftest.$ac_ext >&5'
@@ -16158,7 +16163,7 @@ if ${pc_cv_python_exec_prefix+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_exec_prefix=`$PYTHON_CONFIG --exec-prefix 2>&5`
+    pc_cv_python_exec_prefix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --exec-prefix 2>&5`
 else
     ac_ext=py
 ac_compile='chmod +x conftest.$ac_ext >&5'
@@ -16210,7 +16215,7 @@ if ${pc_cv_python_includes+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_includes=`$PYTHON_CONFIG --includes 2>&5`
+    pc_cv_python_includes=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --includes 2>&5`
 else
     pc_cv_python_includes="-I$includedir/$_PYTHON_BASENAME"
 fi
@@ -16226,7 +16231,7 @@ if ${pc_cv_python_cflags+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_cflags=`$PYTHON_CONFIG --cflags 2>&5`
+    pc_cv_python_cflags=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --cflags 2>&5`
 else
     pc_cv_python_cflags=
 fi
@@ -16242,7 +16247,7 @@ if ${pc_cv_python_ldflags+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_ldflags=`$PYTHON_CONFIG --ldflags 2>&5`
+    pc_cv_python_ldflags=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --ldflags 2>&5`
 else
     pc_cv_python_ldflags=
 fi
@@ -16258,7 +16263,7 @@ if ${pc_cv_python_libs+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_libs=`$PYTHON_CONFIG --libs 2>&5`
+    pc_cv_python_libs=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --libs 2>&5`
 else
     pc_cv_python_libs="-l$_PYTHON_BASENAME"
 fi
@@ -16424,7 +16429,7 @@ if ${pc_cv_python_extension_suffix+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test -x "$PYTHON_CONFIG"; then
-     pc_cv_python_extension_suffix=`$PYTHON_CONFIG --extension-suffix 2>&5`
+     pc_cv_python_extension_suffix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --extension-suffix 2>&5`
 else
     pc_cv_python_extension_suffix=
 fi
