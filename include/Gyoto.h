@@ -1,5 +1,6 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2016, 2018-2019 Thibaut Paumard, Frédéric Vincent,
+                                   Éric Gourgoulhon 
 
     This file is part of Gyoto.
 
@@ -66,7 +67,7 @@
  * Gyoto aims at providing a framework for computing orbits and
  * ray-traced images in General relativity. It consists of a library
  * (libgyoto), utility programs, a plug-in for the Yorick programing
- * language, and an extension for the Python (2 and 3) programing
+ * language, and an extension for the Python 3 programing
  * language. Gyoto is known to run under Linux and Mac OS X. Please do
  * tell us if you manage to run Gyoto under a different OS. It should
  * compile and run with moderate effort on most UNIX-like systems.
@@ -79,18 +80,18 @@
  * writing_plugins_page). Custom Gyoto::Metric::Generic,
  * Gyoto::Astrobj::Generic and Gyoto::Spectrum::Generic classes can
  * also be written in the <A HREF="https://www.python.org/">Python</A>
- * (2.7 or 3.x) interpreted language using the \c python plug-in for
- * Gyoto, see below. Beware that a Python implementation of a custom
- * class will run significantly slower than the equivalent C++
- * implementation, but sometimes saving on development time is better
- * than saving on computing time.
+ * 3.x interpreted language using the \c python plug-in for Gyoto, see
+ * below. Beware that a Python implementation of a custom class will
+ * run significantly slower than the equivalent C++ implementation,
+ * but sometimes saving on development time is better than saving on
+ * computing time.
  *
  * The base distribution includes three plug-ins: the standard plug-in
  * (\c stdplug), a plug-in for using <A
  * HREF="http://www.lorene.obspm.fr/">LORENE</A>-based
  * numerical metrics (\c lorene) and a plug-in for writing custom
  * astronomical objects or metrics in the <A
- * HREF="https://www.python.org/">Python</A> (2.7 or 3.x) interpreted
+ * HREF="https://www.python.org/">Python</A> 3.x interpreted
  * language (\c python).
  *
  * A graphical user interface for tracing stellar orbits is provided

@@ -136,7 +136,7 @@ AC_ARG_WITH([python],
 	],
 	[])
 
-PC_PROG_PYTHON([python3], [2.7], [4.0])
+PC_PROG_PYTHON([python3], [3.0], [4.0])
 PC_PYTHON_PROG_PYTHON_CONFIG
 PC_PYTHON_CHECK_HEADERS(
  [
@@ -152,7 +152,7 @@ PC_PYTHON_CHECK_HEADERS(
 ],[PYTHON=""])
 AS_IF([test "x$with_python" = xno], [PYTHON=""])
 AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
-  [AC_MSG_ERROR([Python requested but no supported version found (>=2.7, <4.0)])])
+  [AC_MSG_ERROR([Python requested but no supported version found (>=3.0, <4.0)])])
 
 AC_ARG_WITH([virtualenv],
 	[AS_HELP_STRING([--with-virtualenv], [install to a Python virtualenv])],
