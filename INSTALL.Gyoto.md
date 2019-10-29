@@ -113,11 +113,12 @@ Gyoto requires:
      Yorick users will also need the yorick-yutils add-on
      (https://github.com/frigaut/yorick-yutils) and may need to install
      the yorick-dev package (in particulat Debian/Ubuntu users).
-   - Python (optional, provides an interface to the Python interpreted
-     language, allowing to write Gyoto scripts). Python 2.7 and 3.4
-     have been tested. For building the Python bindings, the Python
-     development files are naturally required (sometimes found in the
-     python-dev or python3-dev package), as well as NumPy and Swig-2.0:
+   - Python 3 (optional, provides an interface to the Python
+     interpreted language, allowing to write Gyoto scripts). Python
+     3.7 and 3.8 have been tested. For building the Python bindings,
+     the Python development files are naturally required (sometimes
+     found in the python-dev or python3-dev package), as well as NumPy
+     and Swig-2.0:
        https://www.python.org/
        http://www.numpy.org/
        http://www.swig.org/
