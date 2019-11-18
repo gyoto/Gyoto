@@ -91,6 +91,9 @@ class Gyoto::Photon
    */
   double * transmission_;
 
+  /// Nb of crossings of equatorial plane z=0, theta=pi/2
+  int nb_cross_eqplane_;
+
   // Constructors - Destructor
   // -------------------------
 
@@ -142,6 +145,11 @@ class Gyoto::Photon
   void freqObs(double);
   /// Get Photon::freq_obs__
   double freqObs() const;
+
+  /// Set Photon::nb_cross_eqplane_
+  void nb_cross_eqplane(int);
+  /// Get Photon::nb_cross_eqplane_
+  int nb_cross_eqplane() const;
 
 
   // Mutators / assignment

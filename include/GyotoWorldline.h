@@ -61,6 +61,8 @@ namespace Gyoto {
 			"Whether to stop Photon integration at 180° deflection.") \
     GYOTO_PROPERTY_BOOL(c, ParallelTransport, NoParallelTransport, _parallelTransport,	\
 			"Whether to perform parallel transport of a local triad (used for polarization).") \
+    GYOTO_PROPERTY_DOUBLE(c, MaxCrossEqplane, _maxCrossEqplane,	\
+			  "Maximum number of crossings of the equatorial plane allowed for this worldline") \
     GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol,				\
 			  "Relative tolerance for the adaptive step integrators.") \
     GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol,				\
@@ -106,6 +108,8 @@ namespace Gyoto {
   bool c::_parallelTransport() const {return parallelTransport();}	\
   void c::_adaptive(bool s) {adaptive(s);}				\
   bool c::_adaptive() const {return adaptive();}			\
+  void c::_maxCrossEqplane(double max){maxCrossEqplane(max);}	      	\
+  double c::_maxCrossEqplane()const{return maxCrossEqplane();}	     	\
   void c::_relTol(double f){relTol(f);}					\
   double c::_relTol()const{return relTol();}				\
   void c::_absTol(double f){absTol(f);}					\
@@ -176,6 +180,8 @@ namespace Gyoto {
   void _deltaMin(double h1);				\
   void _absTol(double);					\
   double _absTol()const;				\
+  void _maxCrossEqplane(double);       			\
+  double _maxCrossEqplane()const;			\
   void _relTol(double);					\
   double _relTol()const;				\
   void _deltaMax(double h1);				\
@@ -346,6 +352,14 @@ class Gyoto::Worldline
    */
   double reltol_;
 
+  /**
+   * \brief Maximum number of crossings of equatorial plane
+   *
+   * Used to determine how much higher-order image features
+   * should be kept.
+   */
+  double maxCrossEqplane_;
+
   // Constructors - Destructor
   // -------------------------
  public: 
@@ -484,6 +498,9 @@ class Gyoto::Worldline
   double absTol()const; ///< Get #abstol_
   void relTol(double); ///< Set #reltol_
   double relTol()const; ///< Get #reltol_
+
+  void maxCrossEqplane(double); ///< Set #maxCrosEqplane_
+  double maxCrossEqplane()const; ///< Get #maxCrossEqplane_
 
   /**
    * Get delta max at a given position

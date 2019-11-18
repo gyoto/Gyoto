@@ -44,7 +44,8 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 			 delta_max_(GYOTO_DEFAULT_DELTA_MAX),
 			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
 			 abstol_(GYOTO_DEFAULT_ABSTOL),
-			 reltol_(GYOTO_DEFAULT_RELTOL)
+			 reltol_(GYOTO_DEFAULT_RELTOL),
+			 maxCrossEqplane_(DBL_MAX)
 { 
   xAllocate();
 
@@ -71,6 +72,7 @@ Worldline::Worldline(const Worldline& orig) :
   delta_max_over_r_(orig.delta_max_over_r_),
   abstol_(orig.abstol_),
   reltol_(orig.reltol_),
+  maxCrossEqplane_(orig.maxCrossEqplane_),
   state_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
@@ -140,7 +142,8 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   delta_max_(orig->delta_max_),
   delta_max_over_r_(orig->delta_max_over_r_),
   abstol_(orig->abstol_),
-  reltol_(orig->reltol_)
+  reltol_(orig->reltol_),
+  maxCrossEqplane_(orig->maxCrossEqplane_)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -1424,6 +1427,9 @@ double Worldline::absTol() const {return abstol_;}
 void Worldline::absTol(double t) {abstol_=t; state_->init();}
 double Worldline::relTol() const {return reltol_;}
 void Worldline::relTol(double t) {reltol_=t; state_->init();}
+
+double Worldline::maxCrossEqplane() const {return maxCrossEqplane_;}
+void Worldline::maxCrossEqplane(double max) {maxCrossEqplane_=max;}
 
 double Worldline::deltaMax(double const pos[8], double h1max) const
 {

@@ -50,14 +50,14 @@ Photon::Photon() :
   Object("Photon"),
   object_(NULL),
   freq_obs_(1.), transmission_freqobs_(1.),
-  spectro_(NULL), transmission_(NULL)
+  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0)
  {}
 
 Photon::Photon(const Photon& o) :
   Worldline(o), SmartPointee(o),
   object_(NULL),
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
-  spectro_(NULL), transmission_(NULL)
+  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(o.nb_cross_eqplane_)
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
@@ -71,7 +71,8 @@ Photon::Photon(const Photon& o) :
   }
 }
 
-Photon * Photon::clone() const { return new Photon(*this); }
+Photon * Photon::clone() const {
+  return new Photon(*this); }
 
 bool Photon::isThreadSafe() const {
   // spectro_ is not a Property
@@ -85,7 +86,8 @@ Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   object_(orig->object_),
   freq_obs_(orig->freq_obs_),
   transmission_freqobs_(orig->transmission_freqobs_),
-  spectro_(orig->spectro_), transmission_(orig->transmission_)
+  spectro_(orig->spectro_), transmission_(orig->transmission_),
+  nb_cross_eqplane_(orig->nb_cross_eqplane_)
 {
 }
 
@@ -99,7 +101,7 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
-  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL)
+  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0)
 {
   setInitialCondition(met, obj, coord);
 }
@@ -110,7 +112,8 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
 	       double d_alpha, double d_delta):
   Worldline(), object_(obj), freq_obs_(screen->freqObs()),
   transmission_freqobs_(1.),
-  spectro_(NULL), transmission_(NULL)
+  spectro_(NULL), transmission_(NULL),
+  nb_cross_eqplane_(0)
 {
   double coord[8], Ephi[4], Etheta[4];
   screen -> getRayCoord(d_alpha, d_delta, coord);
@@ -211,7 +214,6 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 }
 
 int Photon::hit(Astrobj::Properties *data) {
-
   /*
     Ray-tracing of the photon until the object_ is hit. Radiative
     transfer inside the object_ may then be performed depending on
@@ -335,11 +337,54 @@ int Photon::hit(Astrobj::Properties *data) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
-    if (!secondary_){ // to compute only primary image
+    
+    if (maxCrossEqplane_<DBL_MAX){
+      double zsign=0.;
+      switch (coordkind) {
+      case GYOTO_COORDKIND_SPHERICAL:
+	//cout << "current z= " << coord[1]*cos(coord[2]) << endl;
+	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
+	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	//cout << "zsign= " << zsign << endl;
+	if (coord[1]*cos(coord[2])*zsign<0.){
+	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	}
+	break;
+      case GYOTO_COORDKIND_CARTESIAN:
+	zsign = x3_[i0_];
+	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	if (coord[3]*zsign<0.){
+	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	}
+	break;
+      default:
+	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
+      }
+	  
+      if (nb_cross_eqplane_ > maxCrossEqplane_) {
+	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
+	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
+	
+	if (data && data->spectrum){
+	  SmartPointer<Spectrometer::Generic> spr = spectrometer();
+	  size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
+	  for (size_t ii=0; ii<nbnuobs; ++ii) {
+	    data->spectrum[ii*data->offset] = 0.; // "cancel" this photon's contribution
+	  }
+	}
+	return 0;
+      }
+    }
+    
+    if (!secondary_){ // to compute only primary image (outdated, use MaxCrossEqplane above instead)
+      // Thin disk case
       double sign = x1_[i0_]*cos(x2_[i0_]);
       if (coord[1]*cos(coord[2])*sign<0. && x1_[ind]*cos(x2_[ind])*sign<0.)
-	return 0;
+       	return 0;
     }
+
     if (stopcond) {
 #     if GYOTO_DEBUG_ENABLED
       GYOTO_DEBUG << "stopcond set by integrator\n";
@@ -564,6 +609,15 @@ void Photon::freqObs(double fo) {
 double Photon::freqObs() const {
   GYOTO_DEBUG_EXPR(freq_obs_);
   return freq_obs_;
+}
+
+void Photon::nb_cross_eqplane(int nb) {
+  nb_cross_eqplane_=nb; 
+  GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
+}
+int Photon::nb_cross_eqplane() const {
+  GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
+  return nb_cross_eqplane_;
 }
 
 double Photon::getTransmission(size_t i) const {

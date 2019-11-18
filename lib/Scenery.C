@@ -693,6 +693,7 @@ void Scenery::operator() (
   GYOTO_DEBUG << "reset delta" << endl;
 # endif
   ph -> delta(delta_);
+  ph -> nb_cross_eqplane(0); // put to zero the nb of crossing of equat plane  
 
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "init nbnuobs" << endl;
@@ -985,6 +986,9 @@ double Scenery::absTol() const {return ph_.absTol();}
 void Scenery::absTol(double t) {ph_.absTol(t);}
 double Scenery::relTol() const {return ph_.relTol();}
 void Scenery::relTol(double t) {ph_.relTol(t);}
+
+double Scenery::maxCrossEqplane() const {return ph_.maxCrossEqplane();}
+void Scenery::maxCrossEqplane(double max) {ph_.maxCrossEqplane(max);}
 
 void Scenery::secondary(bool sec) { ph_.secondary(sec); }
 bool Scenery::secondary() const { return ph_.secondary(); }

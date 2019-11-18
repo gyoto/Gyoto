@@ -403,6 +403,11 @@ class Gyoto::Scenery
   /// Passed to #ph_
   double relTol()const;
 
+  /// Passed to #ph_
+  void maxCrossEqplane(double);
+  /// Passed to #ph_
+  double maxCrossEqplane()const;
+  
   void secondary (bool sec) ; ///< Set ph_.secondary_
   bool secondary () const ; ///< Get ph_.secondary_
 
