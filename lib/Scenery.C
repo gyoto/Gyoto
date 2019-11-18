@@ -411,7 +411,7 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
     }
     size_t nelt= getScalarQuantitiesCount(&quantities)
       +nbnuobs*getSpectralQuantitiesCount(&quantities)
-      +(quantities & GYOTO_QUANTITY_IMPACTCOORDS)?16:0;
+      +((quantities & GYOTO_QUANTITY_IMPACTCOORDS)?16:0);
     double * vect = new double[nelt];
     Astrobj::Properties *locdata = new Astrobj::Properties();
     size_t offset=1;

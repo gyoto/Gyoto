@@ -37,35 +37,13 @@ gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 export PATH := .:$(PATH)
 
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
-CHECK_RESULTS = \
-        example-thin-disk.fits \
-        example-thin-disk-KS.fits \
-        example-thin-disk-minkowski-cartesian.fits \
-        example-thin-disk-minkowski-spherical.fits \
-        example-complex-astrobj.fits \
-        example-fixed-star.fits \
-        example-fixed-star-RZ.fits \
-        example-fixed-star-minkowski-cartesian.fits \
-        example-fixed-star-minkowski-spherical.fits \
-        example-startrace.fits \
-        example-moving-star.fits \
-        example-moving-star-CS.fits \
-        example-page-thorne-disk-BL.fits \
-        example-page-thorne-disk-KS.fits \
-        example-page-thorne-disk-BL-with-basis.fits \
-        example-torus.fits \
-        example-torus-KS.fits \
-	example-oscil-torus.fits
-if HAVE_UDUNITS
-CHECK_RESULTS += \
-        example-fixed-star-KS.fits \
-        example-polish-doughnut.fits \
-        example-polish-doughnut-hayward-wormhole.fits \
-        example-polish-doughnut-RZ.fits
+CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
+CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS)
+if !HAVE_2F1
+CHECK_RESULTS_SKIP += example-jet.fits example-torusjet.fits
 endif
-if HAVE_2F1
-CHECK_RESULTS += example-jet.fits
-endif
+CHECK_RESULTS=$(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
@@ -117,7 +95,6 @@ export HOME_LORENE
 	cd .check-lorene && $(MAKE)
 	cd .check-lorene && ./nrotstar
 
-CHECK_ROTSTAR_RESULTS = example-movingstar-rotstar3_1.fits example-fixedstar-rotstar3_1.fits
 CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 
@@ -143,5 +120,9 @@ endif
 
 clean-local:
 	-rm -rf .check-lorene
+
+echo-stuff:
+	echo $(CHECK_RESULTS_ALL)
+	echo $(CHECK_RESULTS)
 
 .PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check check-lorene-clean check-lorene-compute check-lorene check-lorene-mpi-clean check-lorene-mpi-compute check-lorene-mpi check

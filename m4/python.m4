@@ -1,4 +1,5 @@
 # Copyright 2012, 2013, 2014 Brandon Invergo <brandon@invergo.net>
+# Copyright 2019 Thibaut Paumard <thibaut.paumard@obspm.fr>
 #
 # This file is part of pyconfigure.  This program is free
 # software; you can redistribute it and/or modify it under the
@@ -43,6 +44,7 @@
 #
 # 4. Looking for specific libs & functionality
 
+# 2019-10-25 Thibaut Paumard add support for --embed in Python >= 3.8
 
 ## ----------------------- ##
 ## 1. Language selection.  ##
@@ -160,9 +162,10 @@ m4_ifval([$1],
 ])# PC_PROG_PYTHON
   
 
-# PC_PYTHON_PROG_PYTHON_CONFIG(PROG-TO-CHECK-FOR)
+# PC_PYTHON_PROG_PYTHON_CONFIG(PROG-TO-CHECK-FOR,EMBED)
 # ----------------------------------------------
 # Find the python-config program
+# Set EMBED to 'yes' if embedding Python.
 AC_DEFUN([PC_PYTHON_PROG_PYTHON_CONFIG],
 [AC_REQUIRE([PC_PROG_PYTHON])[]dnl
 AC_ARG_VAR([PYTHON_CONFIG], [the Python-config program])
@@ -172,6 +175,9 @@ m4_define([_PYTHON_BASENAME], [`basename $PYTHON`])
 m4_ifval([$1],
 	[AC_PATH_PROGS(PYTHON_CONFIG, [$1 _PYTHON_BASENAME-config])],
 	[AC_PATH_PROG(PYTHON_CONFIG, _PYTHON_BASENAME-config)])
+AS_IF([test "x$2" = "xyes" && $PYTHON_CONFIG --embed],
+	[PYTHON_EMBED_FLAG="--embed"],
+        [PYTHON_EMBED_FLAG=""])
 ]) # PC_PYTHON_PROG_PYTHON_CONFIG
 
 
@@ -252,7 +258,7 @@ AC_DEFUN([PC_PYTHON_CHECK_PREFIX],
 dnl Try to get it with python-config otherwise do it from within Python
 AC_CACHE_CHECK([for Python prefix], [pc_cv_python_prefix],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_prefix=`$PYTHON_CONFIG --prefix 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_prefix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --prefix 2>&AS_MESSAGE_LOG_FD`
 else
     AC_LANG_PUSH(Python)[]dnl
     AC_LINK_IFELSE([AC_LANG_PROGRAM([dnl
@@ -277,7 +283,7 @@ AC_DEFUN([PC_PYTHON_CHECK_EXEC_PREFIX],
 dnl Try to get it with python-config otherwise do it from within Python
 AC_CACHE_CHECK([for Python exec-prefix], [pc_cv_python_exec_prefix],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_exec_prefix=`$PYTHON_CONFIG --exec-prefix 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_exec_prefix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --exec-prefix 2>&AS_MESSAGE_LOG_FD`
 else
     AC_LANG_PUSH(Python)[]dnl
     AC_LINK_IFELSE([AC_LANG_PROGRAM([dnl
@@ -305,7 +311,7 @@ AC_DEFUN([PC_PYTHON_CHECK_INCLUDES],
 dnl Try to find the headers location with python-config otherwise guess
 AC_CACHE_CHECK([for Python includes], [pc_cv_python_includes],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_includes=`$PYTHON_CONFIG --includes 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_includes=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --includes 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_includes="[-I$includedir/$_PYTHON_BASENAME]m4_ifdef(PYTHON_ABI_FLAGS,
     PYTHON_ABI_FLAGS,)"
@@ -334,7 +340,7 @@ AC_DEFUN([PC_PYTHON_CHECK_LIBS],
 dnl Try to find the lib flags with python-config otherwise guess
 AC_CACHE_CHECK([for Python libs], [pc_cv_python_libs],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_libs=`$PYTHON_CONFIG --libs 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_libs=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --libs 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_libs="[-l$_PYTHON_BASENAME]m4_ifdef(PYTHON_ABI_FLAGS, PYTHON_ABI_FLAGS,)"
 fi
@@ -368,7 +374,7 @@ AC_DEFUN([PC_PYTHON_CHECK_CFLAGS],
 dnl Try to find the CFLAGS with python-config otherwise give up
 AC_CACHE_CHECK([for Python CFLAGS], [pc_cv_python_cflags],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_cflags=`$PYTHON_CONFIG --cflags 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_cflags=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --cflags 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_cflags=
 fi
@@ -384,7 +390,7 @@ AC_DEFUN([PC_PYTHON_CHECK_LDFLAGS],
 dnl Try to find the LDFLAGS with python-config otherwise give up
 AC_CACHE_CHECK([for Python LDFLAGS], [pc_cv_python_ldflags],
 [if test -x "$PYTHON_CONFIG"; then
-    pc_cv_python_ldflags=`$PYTHON_CONFIG --ldflags 2>&AS_MESSAGE_LOG_FD`
+    pc_cv_python_ldflags=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --ldflags 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_ldflags=
 fi
@@ -400,7 +406,7 @@ AC_DEFUN([PC_PYTHON_CHECK_EXTENSION_SUFFIX],
 dnl Try to find the suffix with python-config otherwise give up
 AC_CACHE_CHECK([for Python extension suffix], [pc_cv_python_extension_suffix],
 [if test -x "$PYTHON_CONFIG"; then
-     pc_cv_python_extension_suffix=`$PYTHON_CONFIG --extension-suffix 2>&AS_MESSAGE_LOG_FD`
+     pc_cv_python_extension_suffix=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --extension-suffix 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_extension_suffix=
 fi
@@ -416,7 +422,7 @@ AC_DEFUN([PC_PYTHON_CHECK_ABI_FLAGS],
 dnl Try to find the ABI flags with python-config otherwise give up
 AC_CACHE_CHECK([for Python ABI flags], [pc_cv_python_abi_flags],
 [if test -x "$PYTHON_CONFIG"; then
-     pc_cv_python_abi_flags=`$PYTHON_CONFIG --abiflags 2>&AS_MESSAGE_LOG_FD`
+     pc_cv_python_abi_flags=`$PYTHON_CONFIG $PYTHON_EMBED_FLAG --abiflags 2>&AS_MESSAGE_LOG_FD`
 else
     pc_cv_python_abi_flags=
 fi

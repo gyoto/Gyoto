@@ -1,10 +1,36 @@
-NEXT ABI
+1.4.3 2019/10/25 BUG
+   * m4/python.m4: bugfix (actually support Python >=3.8)
+
+1.4.2 2019/10/25 BUG
+   * plugins/python: support Python 3.8
+   * Astrobj::EquatorialHotSpot: fix XML compatibility code
+   * GridData2D: make one conversion explicit to please clang
+
+1.4.1 2019/10/23 BUG
+   * MPI: fix computation of number of quantities to evaluate
+   * check suite: use all files in doc/examples
+
+1.4.0 2019/10/22 ABI 8:0:0
+   * Ongoing work to support polarization:
+      * Support parallel transport of local tetrad
+        + in many methods, double* coord_ph becomes state_t &coord_ph
+	+ Worldline: new APIs parallelTransport(), eAllocate(),
+	  eDeallocate(), eExpand()
+	+ Scenery: new API parallelTransport()
+	+ Screen: new API getRayTriad()
+      * Introduce polarized quantities (Inu and alphanu for each
+        component of the Stokes vector)
+        + Several methods take additional arguments
+	+ Photon: new method transfer()
+	+ Scenery: new API getSpectralQuantitiesCount()
    * Support computing Screen tetrad from arbitrary velocity
       * Metric:
       	+ new API zamoVelocity(), default assumes null 3-velocity.
-   	+ new method dualOneForm().
    	+ new API observerTetrad(in pos, in fourvel, out screen1,2,3),
-     	default throws an Error.
+     	  default throws an Error.
+   	+ new methods to help vector computations: dualOneForm(),
+   	  normalizeFourVel(), norm(), multiplyFourVect(),
+   	  addFourVect(), projectFourVect(), GramSchmidt()
       * KerrBL:
 	+ implement zamoVelocity();
    	+ remove observerTetrad(obskind...);
@@ -12,8 +38,35 @@ NEXT ABI
       * Screen: supports two new obskinds: VelocitySpecified and
         FullySpecified. obskind is now stored as and int and needs to
 	be specified as e.g. <ObserverKind>ZAMO</ObserverKind> in XML.
-   * Screen: support changing camera orientation (with dangle1 and dangle2)
+   * Astrobj:
+      * Generic: new property DeltaMaxInsideRMax
+      * New kinds FlaredDiskSynchrotron, ThickDisk
+      * Jet:
+        + support thermal distribution
+	+ new property JetVphiOverVr
+      * ThinDisk: new property VelocityKind
+      * Torus: add a Thermal Synchrotron spectrum
+      * UniformSphere: deprecate property Alpha
+   * Screen:
+     * support changing camera orientation (with dangle1 and dangle2)
+     * change type of observerkind_ to obskind_t
    * Python: new module gyoto.animate to help writing Gyoto-based movies.
+   * Command line: new task mk_video to help writing Gyoto-based movies.
+   * Register: loadPlugin() now returns a handle o the dlopen'ed plug-in.
+   * Star/StarTrace: allow expressing dates in proper or coordinate time.
+
+1.3.6 2019/09/27 FTR
+   * Python: improve interface in gyoto.util
+   * GyotoDefs.h: give derived constants to machine precision
+
+1.3.5 2019/08/03 BUG
+   * Python: support Python2.7 in gyoto.util.rayTrace
+
+1.3.4 2019/08/02 BUG
+   * Python: fix gyoto?util.rayTrace
+
+1.3.3 2019/08/02 BUG
+   * Python: install gyoto.util
 
 1.3.2 2019/08/02 BUG
    * Python:

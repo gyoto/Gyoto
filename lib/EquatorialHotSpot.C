@@ -78,7 +78,7 @@ int EquatorialHotSpot::setParameter(string name, string content, string unit) {
   double coord[8];
   char* tc = const_cast<char*>(content.c_str());
   if (name=="InitialCoordinate") {
-    name=="InitCoord";
+    name="InitCoord";
     return ThinDisk::setParameter(name, content, unit);
   } else if (name=="Position") {
     if (FactoryMessenger::parseArray(content, coord, 4) != 4)
