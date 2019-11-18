@@ -34,6 +34,7 @@
 #include <cmath>
 #include <limits>
 #include <string>
+#include <random>
 
 using namespace std;
 using namespace Gyoto;
@@ -200,12 +201,42 @@ void ThickDisk::radiativeQ(double Inu[], // output
   double temperature = temperatureAtInnerRadius_
     *pow(thickDiskInnerRadius_/rr, temperatureSlope_);
 
+  double r0 = 4., phi0 = 0., phi = coord_ph[3],
+    sigr = 2., sigp = M_PI/4.; // spin0: r0=9; spin08: r0=4
+  double gaussr = 1./(sqrt(2.*M_PI)*sigr)
+    * exp(-0.5*(rcyl-r0)*(rcyl-r0)/(sigr*sigr));
+  double dphi = fabs(phi-phi0), dphibis = fabs(phi-2.*M_PI-phi0);
+  if (dphi > dphibis){
+    dphi = dphibis;
+  }
+  double gaussp = 1./(sqrt(2.*M_PI)*sigp)
+    * exp(-0.5*dphi*dphi/(sigp*sigp));
+  double gauss2d = gaussr*gaussp;
+  double T0 = 1.6e11; // this is to be tuned: 4e11 too small, 6e11 looks good
+  double DeltaTemperature = T0*gauss2d;
+
+  //temperature+=DeltaTemperature;
+
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double BB = sqrt(4.*M_PI*magnetizationParameter_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
+
+  double B0 = 100.; // for ne_inner=5.5e4, B_inner=10.2G; B0=50 too small, B0=100 looks good 
+  double DeltaB = B0*gauss2d;
+
+  //BB += DeltaB;
+
+  // // Random generator: mersenne_twister_engine seeded with rd()
+  // std::random_device rd;
+  // std::mt19937 generator(rd());
+  // // Define a real uniform distribution within some bounds
+  // std::uniform_real_distribution<double> distribution(0.9,1.1);
+  // double randnb = distribution(generator); // draw a random number
+
+  
   //cout << "r ne B= " << coord_ph[1] << " " << number_density << " " << BB << endl;
   //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
   //GYOTO_ERROR("testjet");
@@ -310,7 +341,12 @@ double ThickDisk::operator()(double const coord[4]) {
 
 void ThickDisk::getVelocity(double const pos[4], double vel[4])
 {
-  double risco = gg_->getRms(); // prograde Kerr ISCO
+  
+  double risco = 0.;
+  if (gg_->kind()!="Minkowski")
+    risco=gg_->getRms(); // prograde Kerr ISCO
+  // let risco=0 if metric is Minko; then ISCO not defined
+
   if (pos[1] > risco){
     // Keplerian velocity above ISCO
     gg_ -> circularVelocity(pos, vel, 1);
