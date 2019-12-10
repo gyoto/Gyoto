@@ -337,28 +337,39 @@ int Photon::hit(Astrobj::Properties *data) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
+    //cout << "IN ph r= " << coord[1] << endl;
     
     if (maxCrossEqplane_<DBL_MAX){
       double zsign=0.;
+      double rlim=10.;
+      /* 
+	 The nb of crossings of equat plane is
+	 only tracked within a sphere of coordinate radius rlim.
+	 See the Appendix of Vincent+20 on M87 for a discussion.
+      */
       switch (coordkind) {
       case GYOTO_COORDKIND_SPHERICAL:
 	//cout << "current z= " << coord[1]*cos(coord[2]) << endl;
 	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
 	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
 	//cout << "zsign= " << zsign << endl;
-	if (coord[1]*cos(coord[2])*zsign<0.){
+	if (coord[1]*cos(coord[2])*zsign<0. && coord[1]<rlim){
 	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
 	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
 	}
 	break;
       case GYOTO_COORDKIND_CARTESIAN:
-	zsign = x3_[i0_];
-	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
-	if (coord[3]*zsign<0.){
-	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
-	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	{
+	  zsign = x3_[i0_];
+	  double rcart = sqrt(coord[1]*coord[1]
+			      +coord[2]*coord[2]+coord[3]*coord[3]); 
+	  if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	  if (coord[3]*zsign<0. && rcart<rlim){
+	    nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	    //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
 	}
 	break;
+	}
       default:
 	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
       }
