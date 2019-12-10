@@ -175,7 +175,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
 		     double dsem,
 		     state_t const &coord_ph,
 		     double const coord_obj[8]) const {
-
+  
   double rr, rcyl, theta, zz=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -238,7 +238,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
 
   
   //cout << "r ne B= " << coord_ph[1] << " " << number_density << " " << BB << endl;
-  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
+  //cout << "r, z, ne, B= " << coord_ph[1] << " " << zz << " " << number_density << " " << BB << endl;
   //GYOTO_ERROR("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
@@ -343,9 +343,14 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
 {
   
   double risco = 0.;
-  if (gg_->kind()!="Minkowski")
+  if (gg_->kind()!="Minkowski" && gg_->kind()!="Hayward")
     risco=gg_->getRms(); // prograde Kerr ISCO
   // let risco=0 if metric is Minko; then ISCO not defined
+  // let also risco=0 for Hayward as we would need to
+  // compute it numerically and give it in xml Metric field,
+  // not implemented so far
+  
+  //cout << "risco= " << risco << endl;
 
   if (pos[1] > risco){
     // Keplerian velocity above ISCO
