@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+  <DeltaMaxOverR> 0.1 </DeltaMaxOverR>
+
+  <Metric kind = "KerrBL"> Setup adapted to M87*
+    <Mass unit="sunmass">6.2e9</Mass>
+    <Spin>0.8</Spin>
+  </Metric>
+
+  <Screen> Setup adapted to M87*
+    <Distance unit="Mpc"> 16.9 </Distance>
+    <Time unit="Mpc"> 16.9 </Time> 27.169411e3
+    <FieldOfView unit="µas"> 80 </FieldOfView>
+    <Inclination unit="°"> 20 </Inclination> i = 180° - Inclination = 160°
+    <PALN unit="°"> 70 </PALN> Spin PA East of North = 180° - PALN = 110° [360°]
+    so Jet PA East of North is 290° as the jet is counter-aligned
+    <Resolution>50</Resolution>
+    <Spectrometer kind="freqlog" nsamples="1">11.36 11.36</Spectrometer> 
+  </Screen>
+  
+  <Quantities>Spectrum</Quantities>
+
+  <Astrobj kind = "ThickDisk">
+    <RadiativeQ/>
+    <ThickDiskOpeningAngle>1.1</ThickDiskOpeningAngle>
+    <ThickDiskInnerRadius>1.6</ThickDiskInnerRadius>
+    <VelocityBelowIsco>0.61 1.</VelocityBelowIsco> V, Vphi/V as observed by ZAMO
+    <NumberDensityAtInnerRadius unit="cm-3">7.8e5</NumberDensityAtInnerRadius>
+    <TemperatureAtInnerRadius>8e10</TemperatureAtInnerRadius>
+    <TemperatureSlope>1.</TemperatureSlope>
+    <MagnetizationParameter>0.1</MagnetizationParameter>
+    <RMax>30.</RMax>
+    <DeltaInObj>0.1</DeltaInObj>
+  </Astrobj>
+
+  <MinimumTime> -1e10 </MinimumTime>
+  <NThreads> 8 </NThreads>
+</Scenery>
+
