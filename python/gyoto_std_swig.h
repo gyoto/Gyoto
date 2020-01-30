@@ -15,6 +15,7 @@
 #include "GyotoTorus.h"
 #include "GyotoOscilTorus.h"
 #include "GyotoThinDisk.h"
+#include "GyotoThickDisk.h"
 #include "GyotoPageThorneDisk.h"
 #include "GyotoThinDiskPL.h"
 #include "GyotoPolishDoughnut.h"
