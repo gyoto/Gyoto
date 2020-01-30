@@ -75,6 +75,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, XillverReflection)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Jet)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Blob)
 GyotoSmPtrTypeMapClassDerived(Astrobj, FlaredDiskSynchrotron)
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThickDisk)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -147,6 +148,7 @@ GyotoSmPtrClassDerived(Astrobj, XillverReflection)
 GyotoSmPtrClassDerived(Astrobj, Jet)
 GyotoSmPtrClassDerived(Astrobj, Blob)
 GyotoSmPtrClassDerived(Astrobj, FlaredDiskSynchrotron)
+GyotoSmPtrClassDerived(Astrobj, ThickDisk)
 
 
 
