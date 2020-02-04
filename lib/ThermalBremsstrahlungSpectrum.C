@@ -1,5 +1,5 @@
 /*
-  Copyright 2014-2015, 2018-2019 Frederic Vincent, Thibaut Paumard
+  Copyright 2014-2015, 2018-2020 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -20,7 +20,6 @@
 #include "GyotoThermalBremsstrahlungSpectrum.h"
 #include "GyotoDefs.h"
 #include <cmath>
-#include <cstdlib> /* atof */
 #include <limits> /* infinity */
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"

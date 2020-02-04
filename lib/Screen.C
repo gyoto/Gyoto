@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2020 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -24,7 +24,6 @@
 #include "GyotoKerrBL.h"
 
 #include <iostream>
-#include <cstdlib>
 #include <cmath>
 #include <cstring>
 #include <string>
@@ -1314,7 +1313,8 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     GYOTO_DEBUG_EXPR(unit);
     GYOTO_ENDIF_DEBUG
 #   endif
-    if      (name=="Time")     {tobs_tmp = atof(tc); tunit=unit; tobs_found=1;}
+    if      (name=="Time")
+      {tobs_tmp = Gyoto::atof(tc); tunit=unit; tobs_found=1;}
     else if (name=="Position") {
       if (FactoryMessenger::parseArray(content, pos, 4) != 4)
 	GYOTO_ERROR("Screen \"Position\" requires exactly 4 tokens");
@@ -1322,12 +1322,12 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
     }
     else if (name=="Distance")    
       {
-	scr -> distance    ( atof(tc), unit );
+	scr -> distance    ( Gyoto::atof(tc), unit );
 	string dmax = fmp -> getAttribute("dmax");
-	if (dmax != "") scr -> dMax(atof(dmax.c_str()));
+	if (dmax != "") scr -> dMax(Gyoto::atof(dmax.c_str()));
       }
     else if (name=="FieldOfView") {
-      fov = atof(tc); fov_unit=unit; fov_found=1;
+      fov = Gyoto::atof(tc); fov_unit=unit; fov_found=1;
     }
     else if (name=="Spectrometer") {
       scr ->
@@ -1336,10 +1336,10 @@ SmartPointer<Screen> Screen::Subcontractor(FactoryMessenger* fmp) {
 		     (fmp->getChild(), plugin));
     }
     else if (name=="Dangle1"){
-      dangle1 = atof(tc); dangle1_found=1; aunit=unit;
+      dangle1 = Gyoto::atof(tc); dangle1_found=1; aunit=unit;
     }
     else if (name=="Dangle2"){
-      dangle2 = atof(tc); dangle2_found=1; dunit=unit;
+      dangle2 = Gyoto::atof(tc); dangle2_found=1; dunit=unit;
     }
     else if (name=="SphericalAngles" ||
 	     name=="EquatorialAngles" ||

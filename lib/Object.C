@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2016, 2019-2020 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -28,7 +28,6 @@
 #include "GyotoScreen.h"
 
 #include <iostream>
-#include <cstdlib>
 
 using namespace std ;
 using namespace Gyoto ;
@@ -465,7 +464,7 @@ void Object::setParameter(Property const &p, string const &name,
     val = size_t(strtoul(content.c_str(), NULL, 0));
     break;
   case Property::double_t:
-    val = atof(content.c_str());
+    val = Gyoto::atof(content.c_str());
     set(p, val, unit);
     return;
   case Property::filename_t:

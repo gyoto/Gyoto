@@ -1,5 +1,5 @@
 /*
-    Copyright 2013, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -106,7 +106,7 @@ int EquatorialHotSpot::setParameter(string name, string content, string unit) {
     GYOTO_WARNING << "<BeamAngle> " << content << "</BeamAngle>" << endl;
     GYOTO_WARNING <<" instead";
     beaming(name);
-    beamangle_=atof(content.c_str());
+    setParameter("BeamAngle", content, unit);
   } else return ThinDisk::setParameter(name, content, unit);
   return 0;
 }

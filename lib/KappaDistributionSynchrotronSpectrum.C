@@ -1,5 +1,5 @@
 /*
-  Copyright 2018 Frederic Vincent, Thibaut Paumard
+  Copyright 2018-2020 Frederic Vincent, Thibaut Paumard
 
   This file is part of Gyoto.
 
@@ -20,7 +20,6 @@
 #include "GyotoKappaDistributionSynchrotronSpectrum.h"
 #include "GyotoDefs.h"
 #include <cmath>
-#include <cstdlib> /* atof */
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
 #include "GyotoFactoryMessenger.h"

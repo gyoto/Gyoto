@@ -70,4 +70,11 @@ http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 
 * Take a coffee break.
 
+Coding rules:
+=============
+
+Don't use std::atof from cstdlib. Use Gyoto::atof instead. Gyoto::atof
+is a wrapper that ensures demical_point is "." and handles special
+values like DBL_MAX.
+
 Regards, Thibaut.

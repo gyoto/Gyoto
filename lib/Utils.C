@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2012, 2014-2016, 2018-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -22,6 +22,7 @@
 #include "GyotoPhoton.h"
 #include <cmath>
 #include <cstdlib>
+#include <clocale>
 
 #include "GyotoScenery.h"
 #include "GyotoSpectrum.h"
@@ -112,7 +113,12 @@ double Gyoto::atof(const char * str)
       if (positive) retval = DBL_MIN;
       else retval = -DBL_MIN;
     } else GYOTO_ERROR("unrecognize double representation");
-  } else retval = std::atof(str);
+  } else {
+    std::string loc(setlocale(LC_NUMERIC, NULL));
+    setlocale(LC_NUMERIC, "C");
+    retval = std::atof(str);
+    setlocale(LC_NUMERIC, loc.c_str());
+  }
 
   GYOTO_DEBUG << "==" << retval << endl;
 

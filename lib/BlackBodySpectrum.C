@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2012, 2014, 2017, 2019 Thibaut Paumard & Frederic Vincent
+    Copyright 2011-2012, 2014, 2017, 2019-2020 Thibaut Paumard & Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -20,7 +20,6 @@
 #include "GyotoBlackBodySpectrum.h"
 #include "GyotoDefs.h"
 #include <cmath>
-#include <cstdlib> /* atof */
 #ifdef GYOTO_USE_XERCES
 #include "GyotoFactory.h"
 #include "GyotoFactoryMessenger.h"

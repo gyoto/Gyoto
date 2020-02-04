@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2012, 2014, 2016, 2019-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -20,8 +20,6 @@
 #include "GyotoPowerLawSpectrum.h"
 #include "GyotoFactoryMessenger.h"
 #include "GyotoUtils.h"
-
-#include <cstdlib>
 
 #include <cmath>
 #ifdef GYOTO_USE_XERCES
