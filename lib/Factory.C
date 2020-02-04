@@ -28,6 +28,11 @@
 #include <libgen.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <locale>
+
+// Let's imbue 'C' locale to every stream to make sure decimal_point
+// is always actually a '.'
+static std::locale Cloc("C");
 
 #include "GyotoMetric.h"
 #include "GyotoAstrobj.h"
@@ -51,12 +56,18 @@ using namespace std;
 #define dfmt " %.16g "
 
 // support DBL_MIN, DBL_MAX, and put right format
-#define d2txt(txt, val) \
+#define d2txt(txt, val)					\
   if      (val== DBL_MAX) strcpy(txt,  "DBL_MAX");	\
   else if (val==-DBL_MAX) strcpy(txt, "-DBL_MAX");	\
   else if (val== DBL_MIN) strcpy(txt,  "DBL_MIN");	\
   else if (val==-DBL_MIN) strcpy(txt, "-DBL_MIN");	\
-  else sprintf( txt , dfmt, val)
+  else {						\
+    ostringstream ss;					\
+    ss.imbue(Cloc);					\
+    ss << setprecision(GYOTO_PREC)			\
+       << setw(GYOTO_WIDTH) << val;			\
+    strcpy(txt, ss.str().c_str());			\
+  }
 
 #define ifmt " %li "
 #define i2txt(txt, val) sprintf( txt, ifmt, val);
@@ -762,6 +773,7 @@ void Factory::setParameter(std::string name, double val[],
 			   size_t n, DOMElement *pel, FactoryMessenger **child){
 
   ostringstream ss;
+  ss.imbue(Cloc); // set local to 'C'
   ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
   for (size_t i=1; i<n; ++i) {
     ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
@@ -784,6 +796,7 @@ void Factory::setParameter(std::string name,
 
   if (n) {
     ostringstream ss;
+    ss.imbue(Cloc); // set local to 'C'
     ss << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[0];
     for (size_t i=1; i<n; ++i) {
       ss << " " << setprecision(GYOTO_PREC) << setw(GYOTO_WIDTH) << val[i];
@@ -805,6 +818,7 @@ void Factory::setParameter(std::string name,
 
   if (n) {
     ostringstream ss;
+    ss.imbue(Cloc); // set local to 'C'
     ss << val[0];
     for (size_t i=1; i<n; ++i) {
       ss << " " << val[i];
