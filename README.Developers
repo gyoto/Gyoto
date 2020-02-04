@@ -77,4 +77,18 @@ Don't use std::atof from cstdlib. Use Gyoto::atof instead. Gyoto::atof
 is a wrapper that ensures demical_point is "." and handles special
 values like DBL_MAX.
 
+On output (especially to XML), you should also make sure to use the
+'C' locale. If using C-style sprintf(), this can be done with:
+    #include <clocale>
+    std::string loc(setlocale(LC_NUMERIC, NULL));
+    setlocale(LC_NUMERIC, "C");
+    sprintf(txt, fmt, val);
+    setlocale(LC_NUMERIC, loc.c_str());
+If using C++-style streams:
+    #include <locale>
+    std::locale Cloc("C");
+    ostringstream ss;
+    ss.imbue(Cloc);
+    ss << val;
+
 Regards, Thibaut.
