@@ -270,9 +270,13 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
     Sigmam3=Sigmam2*Sigmam1,
     a2cthsth=a2_*cth*sth,
     rSigmam1=r*Sigmam1,
-    Deltam1Sigmam2=Deltam1*Sigmam2;
+    Deltam1Sigmam2=Deltam1*Sigmam2,
+    r2plusa2 = r2+a2_;
 
-  double term1=(a2_+2.*r2+a2_*c2th), term1m1=1./term1;
+  // These formulas are taken from Semerak, MNRAS, 308, 863 (1999)
+  // appendix A, and have been compared against the SageMath expressions
+  // for some particular spacetime point (not in the equatorial plane);
+  // they agree at machine precision
 
   dst[1][1][1]=(1.-r)*Deltam1+rSigmam1;
   dst[1][2][1]=dst[1][1][2]=-a2cthsth*Sigmam1;
@@ -280,35 +284,24 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
   dst[1][3][3]=-Delta*sth2*(r+(a2_*(-2.*r2+Sigma)*sth2)/Sigma2)/Sigma;
   dst[1][3][0]=dst[1][0][3]=spin_*Delta*(-2*r2+Sigma)*sth2*Sigmam3;
   dst[1][0][0]=-Delta*(-2.*r2+Sigma)*Sigmam3;
-  dst[2][1][1]=a2cthsth/(Delta*(r2+a2_*cth2));
+  dst[2][1][1]=a2cthsth*Deltam1*Sigmam1;
   dst[2][2][1]=dst[2][1][2]=rSigmam1;
   dst[2][2][2]=-a2cthsth*Sigmam1;
   dst[2][3][3]=
-    -((a2_+r2)*Sigma2+4.*a2_*r*Sigma*sth2+2.*a4_*r*sth4)*s2th*0.5*Sigmam3;
-  dst[2][0][3]=dst[2][3][0]=spin_*r*(Sigma+a2_*sth2)*s2th*Sigmam3;
+    -sth*cth*Sigmam3 * (Delta*Sigma2 + 2.*r*r2plusa2*r2plusa2);
+  dst[2][0][3]=dst[2][3][0]=spin_*r*r2plusa2*s2th*Sigmam3;
   dst[2][0][0]=-2.*a2cthsth*r*Sigmam3;
   dst[3][3][1]=dst[3][1][3]=
-    (2.*r*Sigma*((-2.+r)*r+a2_*cth2)+2.*a2_*(-2.*r2+Sigma)*sth2)
-    *Deltam1*Sigmam1*term1m1;
+    Deltam1*Sigmam2 * (r*Sigma*(Sigma-2.*r) + a2_*(Sigma-2.*r2)*sth2);
   dst[3][3][2]=dst[3][2][3]=
-    (2.*(a2_+r2)*Sigma2*(term1-4.*r)*ctgth+
-     a2_*r*s2th*(8.*(-1.+r)*r*Sigma+a2_*(8.*Sigma*cth2+4.*r2*sth2+a2_*s2th2)))
-    *0.5*Deltam1Sigmam2*term1m1;
+    Sigmam2*ctgth * (-(Sigma+Delta)*a2_*sth2 + r2plusa2*r2plusa2);
   dst[3][0][1]=dst[3][1][0]=spin_*(2.*r2-Sigma)*Deltam1Sigmam2;
-  dst[3][0][2]=dst[3][2][0]=
-    -4.*spin_*r*(a2_+(-2.+r)*r)*ctgth*Deltam1*Sigmam1*term1m1;
+  dst[3][0][2]=dst[3][2][0]=-2.*spin_*r*ctgth*Sigmam2;
   dst[0][3][1]=dst[0][1][3]=
-    (spin_*(-4.*r6+2.*r4*Sigma-4.*r2*Sigma2+a4_*(-2.*r2+Sigma)+ 
-	    3.*a2_*r2*(-2.*r2+Sigma)-a2_*(a2_+r2)*(2.*r2-Sigma)*c2th)*sth2)
-    *Deltam1Sigmam2*term1m1;
-  dst[0][3][2]=dst[0][2][3]=
-    (spin_*r*(2.*(a4_+2.*r*(2.+r)*Sigma+a2_*(r2+2*Sigma)-
-		  (4.*(a2_+r2)*Sigma*(2.*r+Sigma))*term1m1
-		  )*s2th-a2_*(a2_+r2)*s4th))
-    *0.25*Deltam1Sigmam2;
+    -spin_*sth2*Deltam1Sigmam2 * (2.*r2*r2plusa2 + Sigma*(r2-a2_));
+  dst[0][3][2]=dst[0][2][3]=Sigmam2*spin_*a2_*r*sth2*s2th;
   dst[0][0][1]=dst[0][1][0]=(a2_+r2)*(2.*r2-Sigma)*Deltam1Sigmam2;
-  dst[0][0][2]=dst[0][2][0]=
-    (a2_*r*(-a2_+r*(-r+(4.*Sigma)*term1m1))*s2th)*Deltam1Sigmam2;
+  dst[0][0][2]=dst[0][2][0]=-a2_*r*s2th*Sigmam2;
 
   return 0;
 } 
