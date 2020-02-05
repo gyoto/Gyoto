@@ -43,28 +43,21 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(PageThorneDisk)
-// Since BlackbodyMdot also sets BlackBody, it's important to keep the
-// latter after the former
-GYOTO_PROPERTY_DOUBLE(PageThorneDisk, BlackbodyMdot, BlackbodyMdot)
-GYOTO_PROPERTY_BOOL(PageThorneDisk, BlackBody, NonBlackBody, blackBody)
+GYOTO_PROPERTY_DOUBLE(PageThorneDisk, Mdot, mdot)
 GYOTO_PROPERTY_BOOL(PageThorneDisk, UniFlux, NonUniFlux, uniFlux)
 GYOTO_PROPERTY_END(PageThorneDisk, ThinDisk::properties)
 
-void PageThorneDisk::BlackbodyMdot(double v) {
-  blackbody_=true;
+void PageThorneDisk::mdot(double v) {
   mdot_=v;
 }
-double PageThorneDisk::BlackbodyMdot() const { return mdot_; }
-
-void PageThorneDisk::blackBody(bool t) {blackbody_=t;}
-bool PageThorneDisk::blackBody() const {return blackbody_;}
+double PageThorneDisk::mdot() const { return mdot_; }
 
 void PageThorneDisk::uniFlux(bool t) {uniflux_=t;}
 bool PageThorneDisk::uniFlux() const {return uniflux_;}
 
 PageThorneDisk::PageThorneDisk() :
   ThinDisk("PageThorneDisk"), aa_(0.), aa2_(0.),
-  x0_(0.), x1_(0.), x2_(0.), x3_(0.), blackbody_(true), mdot_(0),
+  x0_(0.), x1_(0.), x2_(0.), x3_(0.), mdot_(1.),
   uniflux_(0), spectrumBB_(NULL)
 {
   if (debug()) cerr << "DEBUG: PageThorneDisk Construction" << endl;
@@ -74,7 +67,7 @@ PageThorneDisk::PageThorneDisk() :
 PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   ThinDisk(o), aa_(o.aa_), aa2_(o.aa2_),
   x0_(o.x0_), x1_(o.x1_), x2_(o.x2_), x3_(o.x3_),
-  blackbody_(o.blackbody_), mdot_(o.mdot_), uniflux_(o.uniflux_), 
+  mdot_(o.mdot_), uniflux_(o.uniflux_), 
   spectrumBB_(NULL)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -133,25 +126,19 @@ void PageThorneDisk::metric(SmartPointer<Metric::Generic> gg) {
 double PageThorneDisk::emission(double nu_em, double dsem,
 				    state_t const &,
 				    double const coord_obj[8]) const{
-  if (!blackbody_) {
-    GYOTO_ERROR("In PageThorneDisk::emission: "
-	       "blackbody is necessary to compute emission, "
-	       "else, use bolometricEmission");
-  }
-
   double Ibolo=bolometricEmission(nu_em,dsem,coord_obj);
   /*
     From Ibolo, find T, then Bnu(T)
    */
-  double mass=gg_->mass()*1e3; // in cgs
+  /*double mass=gg_->mass()*1e3; // in cgs
   double c6=GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS
     *GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS;
   double g2m2=GYOTO_G_CGS*GYOTO_G_CGS*mass*mass;
-  Ibolo*=mdot_*c6/g2m2; // Ibolo in cgs
+  Ibolo*=mdot_*c6/g2m2; // Ibolo in cgs*/ // --> this is now done in boloEm 
   //F = sigma * T^4 (and F=pi*I)
   double TT=pow(Ibolo*M_PI/GYOTO_STEFANBOLTZMANN_CGS,0.25);
   spectrumBB_->temperature(TT);
-  double Iem=(*spectrumBB_)(nu_em);
+  double Iem=(*spectrumBB_)(nu_em); // in SI
   //cout << "r T nu Iem = " << coord_obj[1] << " " << TT << " " << nu_em << " " << Iem << endl;
   if (Iem < 0.) GYOTO_ERROR("In PageThorneDisk::emission"
 			   " blackbody emission is negative!");
@@ -196,23 +183,34 @@ double PageThorneDisk::bolometricEmission(double /* nuem */, double dsem,
       -3.*(x3_-aa_)*(x3_-aa_)/(x3_*(x3_-x1_)*(x3_-x2_))*log((xx-x3_)
 							    /(x0_-x3_))
        );
-  // f of Page&Thorne, in units M=1
-  
-  double Iem=ff/(4.*M_PI*M_PI*x2);
+  // f of Page&Thorne 1974 eq 15n, in units of 1/M
+
+  double Iem=ff/(4.*M_PI*M_PI*x2); // natural-units value
   /*
-    with Mdot=1 (NB: Mdot is a constant)
     Assuming isotropic emission: 
     flux at r = (I at r)* \int cos\theta dOmega = pi*I
-    thus intensity is only: 1/pi * flux
-    NB: this is frequency integrated (bolometric) intensity, not I_nu
-    NBB: the cgs value of I is c^6/G^2*Mdot/M^2 * Iem, it can be
-    recovered from the dimensionless Iem a posteriori if needed
+    thus intensity is only: 1/pi * flux;
+    the flux F(r) is given by eq 11b in Page-Thorne,
+    so it is F(r) = Mdot/(4pi) * 1/r * f 
+    (see eq 15d for why the exp term is 1/r).
+    So finally, indeed, Iem, the bolometric intensity, is given
+    by ff/(4.*M_PI*M_PI*x2)
   */
-  
+  if (gg_->mass()!=1. and mdot_!=1.){ // non-default values for M and Mdot
+    // the cgs value of I is c^6/G^2*Mdot/M^2 * Iem
+    double mass=gg_->mass()*1e3; // in cgs
+    double c6=GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS
+      *GYOTO_C_CGS*GYOTO_C_CGS*GYOTO_C_CGS;
+    double g2m2=GYOTO_G_CGS*GYOTO_G_CGS*mass*mass;
+    Iem*=mdot_*c6/g2m2; // this incorporates in particular
+    // the 1/M factor in Page-Thorne eq 15n which is not used
+    // in the definition of ff above
+  }
+
   if (flag_radtransf_) Iem *= dsem;
   GYOTO_DEBUG_EXPR(Iem);
   
-  return Iem;
+  return Iem*GYOTO_INU_CGS_TO_SI; // in SI
   
 }
 
@@ -284,10 +282,6 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
     }
     if (data->binspectrum) GYOTO_ERROR("unimplemented");
     if (data->spectrum)  {
-      if (!blackbody_) {
-	GYOTO_ERROR("In PageThorneDisk::process: "
-		   "blackbody is necessary to compute spectrum");
-      }
       for (size_t ii=0; ii<nbnuobs; ++ii) {
 	double nuem=nuobs[ii]*ggredm1;
 	inc = (emission(nuem, dsem, coord_ph_hit, coord_obj_hit))

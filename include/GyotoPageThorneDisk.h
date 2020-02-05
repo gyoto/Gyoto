@@ -73,7 +73,6 @@ class Gyoto::Astrobj::PageThorneDisk
   double x1_; ///< Value cached for bolometricEmission()
   double x2_; ///< Value cached for bolometricEmission()
   double x3_; ///< Value cached for bolometricEmission()
-  int blackbody_; ///< Flag for computing BB flux (for spectra)
   double mdot_; ///< accretion rate (for BB spectrum computation)
   bool uniflux_; ///< Flag for uniform flux = 1
   SmartPointer<Spectrum::BlackBody> spectrumBB_; ///< disk black body
@@ -99,11 +98,9 @@ class Gyoto::Astrobj::PageThorneDisk
   virtual void metric(SmartPointer<Metric::Generic>);
   ///< Set metric, checking that it is either KerrBL or KerrKS
 
-  /// Set #mdot_ to v, and #blackbody_ to true
-  void BlackbodyMdot(double v);
-  double BlackbodyMdot() const;
-  void blackBody(bool t) ;
-  bool blackBody() const ;
+  /// Set #mdot_ to v
+  void mdot(double v);
+  double mdot() const;
   void uniFlux(bool t) ;
   bool uniFlux() const ;
 
