@@ -378,7 +378,7 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
       Vr = (1-Vphi_over_V)*V / sqrt(grr);
     
     vel[0] = Gamma*utZAMO;
-    vel[1] = Gamma*Vr;
+    vel[1] = -Gamma*Vr; // minus sign coz matter is going towards BH
     vel[2] = 0.;
     vel[3] = Gamma*(uphiZAMO + Vphi);
 
