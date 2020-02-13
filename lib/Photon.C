@@ -388,6 +388,8 @@ int Photon::hit(Astrobj::Properties *data) {
 	return 0;
       }
     }
+
+    if (data->user5) *data->user5=nb_cross_eqplane_;
     
     if (!secondary_){ // to compute only primary image (outdated, use MaxCrossEqplane above instead)
       // Thin disk case
