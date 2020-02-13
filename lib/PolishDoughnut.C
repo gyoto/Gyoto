@@ -106,6 +106,7 @@ PolishDoughnut::PolishDoughnut() :
   magnetizationParameter_(-1.),
   spectral_oversampling_(10),
   angle_averaged_(0),
+  bremsstrahlung_(false),
   deltaPL_(0.),
   adaf_(0),
   ADAFtemperature_(0.),
