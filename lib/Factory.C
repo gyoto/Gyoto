@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018 Thibaut Paumard
+    Copyright 2011-2016, 2018-2020 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -476,7 +476,7 @@ Factory::Factory(SmartPointer<Scenery> sc)
   : reporter_(NULL), parser_(NULL), resolver_(NULL),
     gg_el_(NULL), obj_el_(NULL), ph_el_(NULL),
     scenery_(sc), gg_(sc->metric()),
-    screen_(sc->screen()), obj_(sc->astrobj()),
+    screen_(NULL), obj_(sc->astrobj()),
     photon_(NULL), spectro_(NULL), filename_("")
 {
   GYOTO_DEBUG << "Initializing XML stuff" << endl;
@@ -657,14 +657,15 @@ void Factory::screen(SmartPointer<Screen> scr, DOMElement *el) {
   if (screen_ && scr && scr!= screen_)
     GYOTO_ERROR("Inconsistent use of Screens");
   
-  screen_ = scr;
+  if (scr && !screen_) {
+    screen_ = scr;
 
-  DOMElement * scr_el = doc_->createElement(X("Screen"));
-  el->appendChild(scr_el);
+    DOMElement * scr_el = doc_->createElement(X("Screen"));
+    el->appendChild(scr_el);
 
-  FactoryMessenger fm(this, scr_el);
-  scr -> fillElement(&fm);
-
+    FactoryMessenger fm(this, scr_el);
+    scr -> fillElement(&fm);
+  }
 }
 
 void Factory::write(const char* const goutputfile) {
