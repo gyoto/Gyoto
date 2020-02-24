@@ -160,7 +160,7 @@ Scenery * Scenery::clone() const { return new Scenery(*this); }
 
 Scenery::~Scenery() {
 # if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "freeing screen\n";
+  GYOTO_DEBUG << "Destroying Scenery\n";
 # endif
   screen_ = NULL;
 # ifdef HAVE_MPI
