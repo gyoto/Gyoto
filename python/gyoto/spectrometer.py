@@ -11,3 +11,4 @@ from gyoto.core import Spectrometer as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexSpectrometer
+Uniform=UniformSpectrometer
