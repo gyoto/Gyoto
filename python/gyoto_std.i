@@ -108,12 +108,11 @@ GyotoSmPtrClassDerived(Astrobj, UniformSphere)
 }
 
 %extend Gyoto::Astrobj::Complex {
-  Gyoto::Astrobj::Generic * __getitem__ (size_t i) {
+  Gyoto::SmartPointer<Gyoto::Astrobj::Generic> __getitem__ (size_t i) {
     if (i >= ($self)->getCardinal()) {
       throw myCplxIdxExcept();
     }
-    Gyoto::Astrobj::Generic * res = ($self)->operator[](i);
-    res -> incRefCount();
+    Gyoto::SmartPointer<Gyoto::Astrobj::Generic> res = ($self)->operator[](i);
     return res;
   }
  };

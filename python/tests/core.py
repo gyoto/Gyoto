@@ -3,8 +3,103 @@
 import unittest
 import gyoto.core
 import numpy
+import gyoto.metric, gyoto.astrobj, gyoto.spectrum, gyoto.spectrometer
+import inspect
 
 gyoto.core.requirePlugin('stdplug')
+
+class TestSmartPointer(unittest.TestCase):
+    def test_simple_classes(self):
+        for classname in ('Scenery', 'Screen', 'Photon'):
+            cls=getattr(gyoto.core, classname)
+            obj=cls()
+            self.assertEqual(obj.getRefCount(), 1)
+            clone=obj.clone()
+            self.assertEqual(obj.getRefCount(), 1)
+            self.assertEqual(clone.getRefCount(), 1)
+            rep=obj.__str__()
+            self.assertEqual(obj.getRefCount(), 1)
+
+    def test_base_classes(self):
+        '''Test reference counting
+
+        All constructors, cloners and destructors must implement and
+        decrement the reference counter correctly.
+
+        '''
+        for gnspace in ('Metric', 'Astrobj', 'Spectrum', 'Spectrometer'):
+            pnspace=gnspace.lower()
+            nspace=getattr(gyoto, pnspace)
+            generic=getattr(nspace, 'Generic')
+            for classname, cls in inspect.getmembers(nspace):
+                # Skip abstract classes
+                if (classname in ('Generic',
+                                  gnspace,
+                                  'StandardAstrobj',
+                                  'UniformSphere')
+                    or not inspect.isclass(cls)):
+                    continue
+                # The XML name of ComplexAstrobj et al. is 'Complex'
+                if 'Complex' in classname:
+                    classname='Complex'
+                # The XML name of UniformSpectrometer is 'wave'
+                if classname in ('UniformSpectrometer', 'Uniform'):
+                    classname='wave'
+                # Construct instance from default constructor
+                obj=cls()
+                self.assertEqual(obj.getRefCount(), 1)
+                # Cast to base class
+                gen=generic(obj)
+                self.assertEqual(obj.getRefCount(), 2)
+                # Destroy one reference
+                del gen
+                self.assertEqual(obj.getRefCount(), 1)
+                # Clone
+                clone=obj.clone()
+                self.assertEqual(obj.getRefCount(), 1)
+                self.assertEqual(clone.getRefCount(), 1)
+                # Print
+                rep=obj.__str__()
+                self.assertEqual(obj.getRefCount(), 1)
+                # Clean
+                del rep
+                del clone
+                del obj
+                # Construct instance from XML name
+                gen=generic(classname)
+                self.assertEqual(gen.getRefCount(), 1)
+                # Cast to derived class
+                obj=cls(gen)
+                self.assertEqual(gen.getRefCount(), 2)
+                # Destroy one isntance
+                del obj
+                self.assertEqual(gen.getRefCount(), 1)
+                # Clean
+                del gen
+                # Construct instance from XML name, setting plugin list
+                gen=generic(classname, [])
+                self.assertEqual(gen.getRefCount(), 1)
+                # Clean
+                del gen
+
+    def test_complex_classes(self):
+        '''Test that adding, retrieving, deleting members updates refCount
+        '''
+        for cls in (gyoto.astrobj.Complex, gyoto.spectrometer.Complex):
+            cplx=cls()
+            cplx1=cls()
+            self.assertEqual(cplx.getRefCount(), 1)
+            self.assertEqual(cplx1.getRefCount(), 1)
+            cplx.append(cplx1)
+            self.assertEqual(cplx1.getRefCount(), 2)
+            cplx2=cplx[0]
+            self.assertEqual(cplx1.getRefCount(), 3)
+            del cplx2
+            self.assertEqual(cplx1.getRefCount(), 2)
+            cplx.remove(0)
+            self.assertEqual(cplx1.getRefCount(), 1)
+            del cplx1
+            del cplx
 
 class TestUnit(unittest.TestCase):
 
