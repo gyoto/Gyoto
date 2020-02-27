@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2013-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -61,7 +61,10 @@ DynamicalDisk3D::DynamicalDisk3D() :
   nb_times_(1),
   PLindex_(3),
   novel_(0),
-  floortemperature_(0)
+  floortemperature_(0),
+  emission_array_(NULL),
+  velocity_array_(NULL),
+  absorption_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -77,7 +80,10 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   nb_times_(o.nb_times_),
   PLindex_(o.PLindex_),
   novel_(o.novel_),
-  floortemperature_(o.floortemperature_)
+  floortemperature_(o.floortemperature_),
+  emission_array_(NULL),
+  velocity_array_(NULL),
+  absorption_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
@@ -132,9 +138,9 @@ bool DynamicalDisk3D::isThreadSafe() const {
 
 DynamicalDisk3D::~DynamicalDisk3D() {
   GYOTO_DEBUG << "DynamicalDisk3D Destruction" << endl;
-  delete [] emission_array_;
+  if (emission_array_) delete [] emission_array_;
   if (absorption_array_) delete [] absorption_array_;
-  delete [] velocity_array_;
+  if (velocity_array_) delete [] velocity_array_;
 }
 
 double const * DynamicalDisk3D::getVelocity() const { return Disk3D::getVelocity(); }

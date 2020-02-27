@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2019, 2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -216,7 +216,10 @@ double Blob::timeRef() const {
   // Converts internal M-unit time to SI
   double tt=timeRef_M_;
 # ifdef HAVE_UDUNITS
-  tt = Units::ToSeconds(tt,"geometrical_time",gg_);
+  if (gg_)
+    tt = Units::ToSeconds(tt,"geometrical_time",gg_);
+  else
+    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
 # else
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;
@@ -246,7 +249,10 @@ void Blob::timeRef(double tt) {
 void Blob::timeRef(double tt, string const &unit) {
   if (unit != "") {
 # ifdef HAVE_UDUNITS
-    tt = Units::ToSeconds(tt,unit,gg_);
+    if (gg_)
+      tt = Units::ToSeconds(tt,unit,gg_);
+  else
+    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
 # else
     GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		  << endl ;
@@ -259,7 +265,10 @@ double Blob::timeSigma() const {
   // Converts internal M-unit time to SI
   double tt=timeSigma_M_;
 # ifdef HAVE_UDUNITS
-  tt = Units::ToSeconds(tt,"geometrical_time",gg_);
+  if (gg_)
+    tt = Units::ToSeconds(tt,"geometrical_time",gg_);
+  else
+    GYOTO_SEVERE << "Cannot convert to seconds as metric is not set!" << endl;
 # else
   GYOTO_WARNING << "Units ignored, please recompile Gyoto with --with-udunits"
 		<< endl ;

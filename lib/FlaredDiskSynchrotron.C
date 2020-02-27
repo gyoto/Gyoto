@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 Frederic Vincent & Thibaut Paumard
+    Copyright 2019-2020 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -131,9 +131,10 @@ double FlaredDiskSynchrotron::hoverR() const {
 
 void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
   if (filename_=="")
-    throwError("In FlaredDiskSynchrotron::timeTranslation: "
-	       "please call first fitsRead, ie put the File "
-	       "XML field before the TimeTranslation XML field");
+    GYOTO_SEVERE <<
+      "In FlaredDiskSynchrotron::timeTranslation: "
+      "please call first fitsRead, ie put the File "
+      "XML field before the TimeTranslation XML field" << std::endl;
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
   GridData2D::tmin(tmin+dt);
   GridData2D::tmax(tmax+dt);
