@@ -1,5 +1,5 @@
 /*
-    Copyright 2011 Thibaut Paumard
+    Copyright 2011-2012, 2014, 2020 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -31,7 +31,9 @@ Gyoto::SmartPointee::SmartPointee() :
 #endif
 }
 
-Gyoto::SmartPointee::~SmartPointee() {}
+Gyoto::SmartPointee::~SmartPointee() {
+  GYOTO_DEBUG << typeid(*this).name() << ": refCount=" << refCount << std::endl;
+}
 
 Gyoto::SmartPointee::SmartPointee(const SmartPointee&o) :
   refCount (0)
@@ -46,6 +48,7 @@ void Gyoto::SmartPointee::incRefCount () {
  pthread_mutex_lock(&mutex_);
 #endif
  refCount++;
+ GYOTO_DEBUG << typeid(*this).name() << ": refCount=" << refCount << std::endl;
 #ifdef HAVE_PTHREAD
  pthread_mutex_unlock(&mutex_);
 #endif
@@ -54,9 +57,11 @@ int Gyoto::SmartPointee::decRefCount () {
 #ifdef HAVE_PTHREAD
  pthread_mutex_lock(&mutex_);
  int n = --refCount;
+ GYOTO_DEBUG << typeid(*this).name() << ": refCount=" << refCount << std::endl;
  pthread_mutex_unlock(&mutex_);
  return n;
 #else
+ GYOTO_DEBUG << typeid(*this).name() << ": refCount=" << refCount-1 << std::endl;
  return --refCount;
 #endif
 }

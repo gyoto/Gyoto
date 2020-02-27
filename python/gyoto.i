@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2019 Thibaut Paumard
+    Copyright 2014-2020 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -109,8 +109,10 @@ Gyoto::SmartPointer<gtype>, gtype * {
 // Include header for a class deriving from SmartPointee, providing
 // the ref and unref features
 %define GyotoSmPtrClass(klass)
-%feature("ref") Gyoto:: klass "$this->incRefCount();";
-%feature("unref") Gyoto:: klass "$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%feature("ref") Gyoto:: klass "$this->incRefCount();//ref";
+%feature("unref") Gyoto:: klass "$this->decRefCount(); if (!$this->getRefCount()) delete $this;//unref";
+// clone() method returns a new object with refCount 0
+%newobject Gyoto :: klass :: clone;
 %extend Gyoto::klass {
   std::string __str__() {
     return Gyoto::Factory($self).format();
@@ -132,8 +134,9 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %rename(init ## klass ## Register) Gyoto::klass::initRegister;
 %rename(get ## klass ## Subcontractor) Gyoto::klass::getSubcontractor;
 %rename(klass) Gyoto::klass::Generic;
-%feature("ref") Gyoto:: klass ::Generic"$this->incRefCount();";
-%feature("unref") Gyoto:: klass ::Generic"$this->decRefCount(); if (!$this->getRefCount()) delete $this;";
+%feature("ref") Gyoto:: klass ::Generic"$this->incRefCount();//ref Generic";
+%feature("unref") Gyoto:: klass ::Generic"$this->decRefCount(); if (!$this->getRefCount()) delete $this;//unref Generic";
+%newobject Gyoto :: klass :: Generic :: clone;
 // Need to mark the base classes as "notabstract" to extend them with
 // a down-cast constructor
 %feature("notabstract") Gyoto::klass::Generic;
@@ -150,29 +153,56 @@ Gyoto::SmartPointer<gtype>, gtype * {
 %extend Gyoto::klass::Generic {
   Generic(std::string nm) {
     std::vector<std::string> plugin;
-    Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
-      Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
-    Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
+    Gyoto::klass::Generic * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
+        Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+      res = (Gyoto::klass::Generic *)(pres);
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
     // Special for Uniform spectrometer:
     // if 'res' can be cast to uniform spectrometer, set Kind.
     if(dynamic_cast<Gyoto::Spectrometer::Uniform*>(res))
       res->set("Kind", nm);
     // end special case
-    if (res) res -> incRefCount();
     return res;
   }
   Generic(std::string nm, std::vector<std::string> plugin) {
     GYOTO_DEBUG_EXPR(plugin.size());
-    Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
-      Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
-    Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(pres);
-    if (res) res -> incRefCount();
+    Gyoto::klass::Generic * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
+        Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+      res = (Gyoto::klass::Generic *)(pres);
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
+    // Special for Uniform spectrometer:
+    // if 'res' can be cast to uniform spectrometer, set Kind.
+    if(dynamic_cast<Gyoto::Spectrometer::Uniform*>(res))
+      res->set("Kind", nm);
+    // end special case
     return res;
   }
   Generic(long address) {
     Gyoto::klass::Generic * res = (Gyoto::klass::Generic *)(address);
-    if (res) res -> incRefCount();
+    // Should be done by ref feature:
+    // if (res) res -> incRefCount();
     return res;
+  }
+  Generic(Gyoto::klass::Generic *orig) {
+    return orig;
   }
   std::string __str__() {
     return Gyoto::Factory($self).format();
@@ -189,6 +219,7 @@ Gyoto::SmartPointer<gtype>, gtype * {
 // e.g. cplx=gyoto_std.ComplexAstrobj(sc.strobj())
 %define GyotoSmPtrClassDerivedPtrHdr(nspace, klass, nick, hdr)
 %rename(nick) Gyoto::nspace::klass;
+%newobject Gyoto :: nspace:: klass :: clone;
 %feature("notabstract") Gyoto::nspace::klass;
 %extend  Gyoto::nspace::klass {
   klass(Gyoto::nspace::Generic * base) {
@@ -198,7 +229,8 @@ Gyoto::SmartPointer<gtype>, gtype * {
   }
   klass(long address) {
     Gyoto::nspace::klass * res = (Gyoto::nspace::klass *)(address);
-    if (res) res -> incRefCount();
+    // Should be done by ref feature:
+    // if (res) res -> incRefCount();
     return res;
   }
  };
@@ -538,6 +570,7 @@ ExtendArrayNumPy(array_size_t, size_t);
 %include "GyotoDefs.h"
 
 // Expose the Gyoto::Error class
+// Not a SmartPointee
 %extend Gyoto::Error {
   const char *__str__() {
     return *($self);
@@ -549,6 +582,8 @@ ExtendArrayNumPy(array_size_t, size_t);
 // Expose the SmartPointer API
 %ignore Gyoto::SmartPointer::operator();
 %rename(assign) Gyoto::SmartPointer::operator=;
+%feature("ref") Gyoto::SmartPointee "$this->incRefCount();//ref SmartPointee";
+%feature("unref") Gyoto::SmartPointee "$this->decRefCount(); if (!$this->getRefCount()) delete $this;//unref SmartPointee";
 %include "GyotoSmartPointer.h"
 
 // Expose Gyoto::Register::list as gyoto.listRegister
@@ -557,14 +592,19 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(listRegister) Gyoto::Register::list;
 %include GyotoRegister.h
 
+
+// Not a SmartPointee
 %rename(Functor__Double_constDoubleArray) Gyoto::Functor::Double_constDoubleArray;
 %rename(Functor__Double_Double_const) Gyoto::Functor::Double_Double_const;
 %include "GyotoFunctors.h"
 
+// Not a SmartPointee
 %include "GyotoHooks.h"
 
+// Not a SmartPointee
 %include "GyotoWIP.h"
 
+// Worldline: not a SmartPointee
 %immutable Gyoto::Value::type;
 %rename(assign) Gyoto::Value::operator=;
 %rename(toDouble) Gyoto::Value::operator double;
@@ -699,10 +739,25 @@ GyotoSmPtrClassGeneric(Metric)
 GyotoSmPtrClassGeneric(Spectrum)
 GyotoSmPtrClassGeneric(Spectrometer)
 
+
+%inline {
+  class myCplxSpectroIdxExcept {};
+}
+
+%exception Gyoto::Spectrometer::Complex::__getitem__ {
+  try {
+    $action ;
+  } catch (myCplxSpectroIdxExcept e) {
+    SWIG_exception_fail(SWIG_IndexError, "Index out of bounds");
+  }
+}
+
 %extend Gyoto::Spectrometer::Complex {
-  Gyoto::Spectrometer::Generic * __getitem__ (int i) {
-    Gyoto::Spectrometer::Generic * res = ($self)->operator[](i);
-    if (res) res -> incRefCount();
+  Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> __getitem__ (size_t i) {
+    if (i >= ($self)->getCardinal()) {
+      throw myCplxSpectroIdxExcept();
+    }
+    Gyoto::SmartPointer<Gyoto::Spectrometer::Generic> res = ($self)->operator[](i);
     return res;
   }
  };
@@ -714,8 +769,13 @@ GyotoSmPtrClassGeneric(Spectrometer)
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Complex, ComplexSpectrometer, GyotoComplexSpectrometer.h)
 GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUniformSpectrometer.h)
 
+// Not a class
 %include "GyotoConfig.h"
+
+// Not a class
 %include "GyotoUtils.h"
+
+// Not a SmartPointee
 %include "GyotoFactory.h"
 
 // Backwards-compatibility code introduced 2018-10-04
@@ -730,6 +790,7 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
   }
  };
 
+// Not a SmartPointee
 %include "GyotoFactoryMessenger.h"
 
  // SWIG fails on nested classes. Work around this limitation:
@@ -901,15 +962,25 @@ public:
   double angle() const ;
 };
 
+// Not a SmartPointee
 %ignore Gyoto::Property::Property;
 %include "GyotoProperty.h"
 
+// Units and Converters are SmartPointee
 %extend Gyoto::Units::Unit {
   const char *__str__() {
     return (std::string(*($self))).c_str();
   }
 };
+%feature("ref") Gyoto::Units::Unit "$this->incRefCount();//ref Unit";
+%feature("unref") Gyoto::Units::Unit "$this->decRefCount(); if (!$this->getRefCount()) delete $this;//unref Unit";
+%feature("ref") Gyoto::Units::Converter "$this->incRefCount();//ref Converter";
+%feature("unref") Gyoto::Units::Converter "$this->decRefCount(); if (!$this->getRefCount()) delete $this;//unref Converter";
 %include "GyotoConverters.h"
+
+// not a SmartPointee
+%include "GyotoGridData2D.h"
+
 
 // Workaround cvar bug in Swig which makes help(gyoto) fail:
 %inline {
@@ -918,4 +989,3 @@ public:
   }
   int Gyoto::__class__ = 0;
 }
-%include "GyotoGridData2D.h"
