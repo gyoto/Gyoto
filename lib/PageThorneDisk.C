@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2014, 2016, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -71,7 +71,7 @@ PageThorneDisk::PageThorneDisk(const PageThorneDisk& o) :
   spectrumBB_(NULL)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
-  gg_->hook(this);
+  if (gg_) gg_->hook(this);
 }
 PageThorneDisk* PageThorneDisk::clone() const
 { return new PageThorneDisk(*this); }
