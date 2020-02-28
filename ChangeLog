@@ -1,6 +1,161 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Tue Oct 25 16:57:04 2019 +0200
+Date:   Fri Feb 28 18:40:08 2020 +0100
+
+    Releasing 1.4.4
+
+commit 8042b896850ed0e28d56101d0c574bd530b3bbb9
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Feb 28 14:03:20 2020 +0100
+
+    Fix typo refered -> referred
+    
+    (cherry picked from commit 034ca81045cd4c1c07a1fab649f0ec52508fca4b)
+
+commit 68b22662b0188f8cd882180438006a1052276313
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 14:09:39 2020 +0100
+
+    Python: rework refernce counting issues
+    
+    Add test suite for reference counting, modify interface to fix issues
+    
+    (cherry picked from commit ec066ab7ba73a88e5fcd0165abf127f9170ee1c3)
+
+commit a81fed23d0e2eb6adc2d78623c06652b481a5aac
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 13:31:53 2020 +0100
+
+    Python: add gyoto.spectrometer.Uniform = gyoto.spectrometer.UniformSpectrometer
+    
+    (cherry picked from commit 6530372e2cef1261ae32d70dbf06a5131db4b5c0)
+
+commit 03e9aff1c4dc12f25ad0b649a01eb78c0c9aee15
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 13:10:01 2020 +0100
+
+    Fix classes so cloning always works
+    
+    Some classes where expecting to be somehow initialized.
+    Cloning/printing should always work.
+    Turn some errors into severe warnings.
+    
+    (cherry picked from commit 0c3183059db190e0c67057c71e71d0d44d9a5ec7)
+
+commit 0c33673c9d7d6106ed0f0444316c7fbb6f582632
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Feb 24 14:32:37 2020 +0100
+
+    Scenery: correct small typo in print in destructor
+    
+    (cherry picked from commit 95204b829f0628f99550e5363f15f8928400bd3c)
+
+commit 3c3084ed67e37b62690abc983e55bb6ec0109735
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 18 20:09:09 2020 +0100
+
+    Factory.C: print Screen section only once
+    
+    (cherry picked from commit 7c46c94d8c26ba0c577587cb37c510d6899167f2)
+
+commit f7ce04b1000032b91aeecb760edcf82622e099e9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 13 14:03:15 2020 +0100
+
+    PolishDoughnut: put default bremsstrahlung_ to False
+    
+    (cherry picked from commit a4bd341888388e167eb92116c2419c5a33312e9e)
+
+commit 542208a412c72bf37343178224c893d7ca698c8a
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 5 16:39:19 2020 +0100
+
+    KerrBL: replace christoffels by exactly equivalent expressions, easier to read, tested with SageMath
+    
+    (cherry picked from commit 6cad755646222a729ba9446813d2dd7e37de7479)
+
+commit bbdbb5abcfe76c7e4941babcc837d5b0da1a0a6b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 5 16:24:23 2020 +0100
+
+    ThickDisk: bug in radial velocity below ISCO corrected
+    
+    (cherry picked from commit 4a58ba6a77d5b2a703cfe7c96a697ca9e635c249)
+
+commit fd48e486da4f560f130b06fb37942a4bc6c55956
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 4 16:05:51 2020 +0100
+
+    Always use C locale when writing doubles to XML
+    
+    (cherry picked from commit abb343d1e0719329257ca1620d6c276cfa954075)
+
+commit 6bfeedf07d04e14b4061a474b8bb4c153bec63d1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 4 15:20:23 2020 +0100
+
+    Set LC_NUMERIC to 'C' before calling std::atof
+    
+    Gyoto always assumes that decimal_point is '.' and ignore whatever the locale
+    says. We always set LC_NUMERIC to 'C' in Gyoto::atof. All instances of std::atof
+    in Gyoto should be replaced by calls to Gyoto::atof.
+    
+    (cherry picked from commit bf5b09fc8b1cf5006582cf52bee9a3a77eafb5bc)
+
+commit 3fc34ec5e5a1bfba54f62c9f19acea1c909ed21c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 30 13:36:55 2020 +0100
+
+    Expose ThickDisk to python
+    
+    (cherry picked from commit 4ade08e5e87451c0f99810b2520ac397bebed951)
+
+commit 8d9d12407e9371be212b2a720e478c20459f2593
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 23 10:49:52 2020 +0100
+
+    Adding doc/example/example-thick-disk.xml
+    
+    (cherry picked from commit 21e2b8a6b574c81070c95875a55185d843af2e1f)
+
+commit 9313b41c336e83e2dd745ceaa802bc59028203cf
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Thu Jan 23 10:21:42 2020 +0100
+
+    Small corrections in the install instructions
+    
+    (cherry picked from commit c63cb8fdba455df51b3144ae486b8ee66d0d17ff)
+
+commit ee17672a27e99b814e5e1ced1dd13668ee71545b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Dec 18 14:13:47 2019 +0100
+
+    null plugin: load "null", not "obspm".
+    
+    (cherry picked from commit 8b76d5495ed53d0f593bc9832c1c4ebcfad4a85f)
+
+commit 1a14943931b87d3b252e7674bbc437c1c7cfe183
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 29 14:03:00 2019 +0100
+
+    Drop Python 2.7 support
+    
+    It was lost a some point during summer 2019, and we don't plan on reintroducing it.
+    
+    (cherry picked from commit 0fe9301eea584980861576ee8f5b911ea47a893e)
+
+commit ee6f8e57ad603d2cfe56e0db5eee18a2aaf9bba1
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Nov 18 16:25:43 2019 +0100
+
+    In ThickDisk.C: adding basic stuff for quick-check
+    of non-axisymmetric structures
+    
+    (cherry picked from commit 00e81b108d634a36f44f3a6ebcda95a905454e09)
+
+commit 8cd0d5857b92ab43830852a6b29f14a5c5dc514d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 25 16:59:04 2019 +0200
 
     Releasing 1.4.3
 

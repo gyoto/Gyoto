@@ -1,3 +1,12 @@
+1.4.4 2020/02/28 BUG
+   * Officially drop Python 2.7 support
+   * Astrobj::ThickDisk:
+      + Expose in Python
+      + Minor bugfixes
+      + Provide example
+   * Python: fix reference counting issues
+   * Various minor bug fixes
+
 1.4.3 2019/10/25 BUG
    * m4/python.m4: bugfix (actually support Python >=3.8)
 
