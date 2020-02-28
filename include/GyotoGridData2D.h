@@ -6,7 +6,7 @@
  */
 
 /*
-  Copyright (c) 2019 Frederic Vincent, Thibaut Paumard
+  Copyright (c) 2019-2020 Frederic Vincent, Thibaut Paumard
   
   This file is part of Gyoto.
   
@@ -107,7 +107,7 @@ class Gyoto::GridData2D
    * \brief Creates a FITS file with dummy primary HDU
    *
    *
-   * Opens a new fits file refered to by a fitsfile pointer
+   * Opens a new fits file referred to by a fitsfile pointer
    * and fills the primary HDU by a single pixel equal to 0.
    * Returns the fitsfile pointer to the new FITS file.
    *
@@ -117,7 +117,7 @@ class Gyoto::GridData2D
   fitsfile* fitsCreate(std::string filename);
 
   /**
-   * \brief Closes a fits file refered to by a fitsfile pointer
+   * \brief Closes a fits file referred to by a fitsfile pointer
    *
    *
    * \param fptr fitsfile pointer to FITS file to be closed
