@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -777,7 +777,7 @@ GYOTO_GETSUBCONTRACTOR(Astrobj)
 Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
-  redshift(NULL),
+  redshift(NULL), nbcrosseqplane(NULL),
   spectrum(NULL), stokesQ(NULL), stokesU(NULL), stokesV(NULL),
   binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
@@ -791,7 +791,7 @@ Astrobj::Properties::Properties() :
 Astrobj::Properties::Properties( double * I, double * t) :
   intensity(I), time(t), distance(NULL),
   first_dmin(NULL), first_dmin_found(0),
-  redshift(NULL),
+  redshift(NULL), nbcrosseqplane(NULL),
   spectrum(NULL), stokesQ(NULL), stokesU(NULL), stokesV(NULL),
   binspectrum(NULL), offset(1), impactcoords(NULL),
   user1(NULL), user2(NULL), user3(NULL), user4(NULL), user5(NULL)
@@ -803,11 +803,12 @@ Astrobj::Properties::Properties( double * I, double * t) :
 {}
 
 void Astrobj::Properties::init(size_t nbnuobs) {
-  if (intensity)  *intensity  = 0.;
-  if (time)       *time       = DBL_MAX;
-  if (distance)   *distance   = DBL_MAX;
-  if (first_dmin){*first_dmin = DBL_MAX; first_dmin_found=0;}
-  if (redshift)   *redshift   = 0.;
+  if (intensity)      *intensity  = 0.;
+  if (time)           *time       = DBL_MAX;
+  if (distance)       *distance   = DBL_MAX;
+  if (first_dmin){    *first_dmin = DBL_MAX; first_dmin_found=0;}
+  if (redshift)       *redshift   = 0.;
+  if (nbcrosseqplane) *nbcrosseqplane   = 0.;
   if (spectrum) for (size_t ii=0; ii<nbnuobs; ++ii) spectrum[ii*offset]=0.;
   if (stokesQ)  for (size_t ii=0; ii<nbnuobs; ++ii) stokesQ [ii*offset]=0.;
   if (stokesU)  for (size_t ii=0; ii<nbnuobs; ++ii) stokesU [ii*offset]=0.;
@@ -815,11 +816,11 @@ void Astrobj::Properties::init(size_t nbnuobs) {
   if (binspectrum) for (size_t ii=0; ii<nbnuobs; ++ii)
 		     binspectrum[ii*offset]=0.;
   if (impactcoords) for (size_t ii=0; ii<16; ++ii) impactcoords[ii]=DBL_MAX;
-  if (user1)      *user1=0.;
-  if (user2)      *user2=0.;
-  if (user3)      *user3=0.;
-  if (user4)      *user4=0.;
-  if (user5)      *user5=0.;
+  if (user1)          *user1=0.;
+  if (user2)          *user2=0.;
+  if (user3)          *user3=0.;
+  if (user4)          *user4=0.;
+  if (user5)          *user5=0.;
 }
 
 #ifdef HAVE_UDUNITS
@@ -855,22 +856,23 @@ void Astrobj::Properties::binSpectrumConverter(string unit) {
 #endif
 
 Astrobj::Properties& Astrobj::Properties::operator+=(ptrdiff_t ofset) {
-  if (intensity)    intensity    += ofset;
-  if (time)         time         += ofset;
-  if (distance)     distance     += ofset;
-  if (first_dmin)   first_dmin   += ofset;
-  if (redshift)     redshift     += ofset;
-  if (spectrum)     spectrum     += ofset;
-  if (stokesQ)      stokesQ      += ofset;
-  if (stokesU)      stokesU      += ofset;
-  if (stokesV)      stokesV      += ofset;
-  if (binspectrum)  binspectrum  += ofset;
-  if (impactcoords) impactcoords += 16*ofset;
-  if (user1)        user1        += ofset;
-  if (user2)        user2        += ofset;
-  if (user3)        user3        += ofset;
-  if (user4)        user4        += ofset;
-  if (user5)        user5        += ofset;
+  if (intensity)      intensity      += ofset;
+  if (time)           time           += ofset;
+  if (distance)       distance       += ofset;
+  if (first_dmin)     first_dmin     += ofset;
+  if (redshift)       redshift       += ofset;
+  if (nbcrosseqplane) nbcrosseqplane += ofset;
+  if (spectrum)       spectrum       += ofset;
+  if (stokesQ)        stokesQ        += ofset;
+  if (stokesU)        stokesU        += ofset;
+  if (stokesV)        stokesV        += ofset;
+  if (binspectrum)    binspectrum    += ofset;
+  if (impactcoords)   impactcoords   += 16*ofset;
+  if (user1)          user1          += ofset;
+  if (user2)          user2          += ofset;
+  if (user3)          user3          += ofset;
+  if (user4)          user4          += ofset;
+  if (user5)          user5          += ofset;
   return *this;
 }
 
@@ -882,22 +884,23 @@ Astrobj::Properties& Astrobj::Properties::operator++() {
 Astrobj::Properties::operator Quantity_t () const {
   Quantity_t res=GYOTO_QUANTITY_NONE;
 
-  if (intensity)    res |= GYOTO_QUANTITY_INTENSITY;
-  if (time)         res |= GYOTO_QUANTITY_EMISSIONTIME;
-  if (distance)     res |= GYOTO_QUANTITY_MIN_DISTANCE;
-  if (first_dmin)   res |= GYOTO_QUANTITY_FIRST_DMIN;
-  if (redshift)     res |= GYOTO_QUANTITY_REDSHIFT;
-  if (spectrum)     res |= GYOTO_QUANTITY_SPECTRUM;
-  if (stokesQ)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_Q;
-  if (stokesU)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_U;
-  if (stokesV)      res |= GYOTO_QUANTITY_SPECTRUM_STOKES_V;
-  if (binspectrum)  res |= GYOTO_QUANTITY_BINSPECTRUM;
-  if (impactcoords) res |= GYOTO_QUANTITY_IMPACTCOORDS;
-  if (user1)        res |= GYOTO_QUANTITY_USER1;
-  if (user2)        res |= GYOTO_QUANTITY_USER2;
-  if (user3)        res |= GYOTO_QUANTITY_USER3;
-  if (user4)        res |= GYOTO_QUANTITY_USER4;
-  if (user5)        res |= GYOTO_QUANTITY_USER5;
+  if (intensity)      res |= GYOTO_QUANTITY_INTENSITY;
+  if (time)           res |= GYOTO_QUANTITY_EMISSIONTIME;
+  if (distance)       res |= GYOTO_QUANTITY_MIN_DISTANCE;
+  if (first_dmin)     res |= GYOTO_QUANTITY_FIRST_DMIN;
+  if (redshift)       res |= GYOTO_QUANTITY_REDSHIFT;
+  if (nbcrosseqplane) res |= GYOTO_QUANTITY_NBCROSSEQPLANE;
+  if (spectrum)       res |= GYOTO_QUANTITY_SPECTRUM;
+  if (stokesQ)        res |= GYOTO_QUANTITY_SPECTRUM_STOKES_Q;
+  if (stokesU)        res |= GYOTO_QUANTITY_SPECTRUM_STOKES_U;
+  if (stokesV)        res |= GYOTO_QUANTITY_SPECTRUM_STOKES_V;
+  if (binspectrum)    res |= GYOTO_QUANTITY_BINSPECTRUM;
+  if (impactcoords)   res |= GYOTO_QUANTITY_IMPACTCOORDS;
+  if (user1)          res |= GYOTO_QUANTITY_USER1;
+  if (user2)          res |= GYOTO_QUANTITY_USER2;
+  if (user3)          res |= GYOTO_QUANTITY_USER3;
+  if (user4)          res |= GYOTO_QUANTITY_USER4;
+  if (user5)          res |= GYOTO_QUANTITY_USER5;
 
   return res;
 }

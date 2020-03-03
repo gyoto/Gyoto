@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2019 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018-2020 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -579,6 +579,15 @@ int main(int argc, char** argv) {
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Redshift"),
+		     CNULL, &status);
+    }
+    if (quantities & GYOTO_QUANTITY_NBCROSSEQPLANE) {
+      if (debug())
+	cerr << "DEBUG: gyoto.C: NBCROSSEQPLANE requested\n";
+      data->nbcrosseqplane=vect+offset*(curquant++);
+      sprintf(keyname, fmt, curquant);
+      fits_write_key(fptr, TSTRING, keyname,
+		     const_cast<char*>("NbCrossEqPlane"),
 		     CNULL, &status);
     }
     if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {

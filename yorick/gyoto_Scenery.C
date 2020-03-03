@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015, 2018 Thibaut Paumard & Frédéric Vincent
+    Copyright 2011-2015, 2018-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -495,6 +495,8 @@ void Y_gyoto_Scenery_rayTrace(int argc) {
       data.first_dmin=vect+offset*(curquant++);
     if (quantities & GYOTO_QUANTITY_REDSHIFT)
       data.redshift=vect+offset*(curquant++);
+    if (quantities & GYOTO_QUANTITY_NBCROSSEQPLANE)
+      data.nbcrosseqplane=vect+offset*(curquant++);
     if (quantities & GYOTO_QUANTITY_USER1)
       data.user1=vect+offset*(curquant++);
     if (quantities & GYOTO_QUANTITY_USER2)

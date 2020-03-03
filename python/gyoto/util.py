@@ -214,6 +214,12 @@ Second form:
         aop.redshift=predshift
         res['Redshift'] = redshift
 
+    if 'NbCrossEqPlane' in sc.requestedQuantitiesString():
+        nbcrosseqplane=numpy.zeros(dims)
+        pnbcrosseqplane=array_double_fromnumpy1or2(nbcrosseqplane)
+        aop.nbcrosseqplane=pnbcrosseqplane
+        res['NbCrossEqPlane'] = nbcrosseqplane
+
     if 'ImpactCoords' in sc.requestedQuantitiesString():
         impactcoords=numpy.zeros(dims+(16,))
         pimpactcoords=array_double_fromnumpy2or3(impactcoords)

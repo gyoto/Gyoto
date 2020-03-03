@@ -3,7 +3,7 @@
  * \brief Gyoto ubiquitous macros and typedefs
  */
 /*
-    Copyright 2011, 2018 Thibaut Paumard
+    Copyright 2011-2015, 2017-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -77,47 +77,49 @@ namespace Gyoto {
 
   /* Generic */
 
-#define GYOTO_QUANTITY_NONE           0
+#define GYOTO_QUANTITY_NONE                  0
 
   /// Intensity: I<SUB>&nu;</SUB> at Scenery::freq_obs_.
-#define GYOTO_QUANTITY_INTENSITY      1
+#define GYOTO_QUANTITY_INTENSITY             1<<0
   /// EmissionTime: Emission date.
-#define GYOTO_QUANTITY_EMISSIONTIME   2
+#define GYOTO_QUANTITY_EMISSIONTIME          1<<1
   /// MinDistance: Behaves like minimal distance between Photon and Astrobj.
   /**
    * Not always exactly a distance, though. 
    */
-#define GYOTO_QUANTITY_MIN_DISTANCE   4
+#define GYOTO_QUANTITY_MIN_DISTANCE          1<<2
   /// FirstDmin: First Photon-Astrobj distance local minimum while integrating back in time.
-#define GYOTO_QUANTITY_FIRST_DMIN     8
+#define GYOTO_QUANTITY_FIRST_DMIN            1<<3
   /// Redshift: &nu;<SUB>obs</SUB>/&nu;<SUB>em</SUB>.
-#define GYOTO_QUANTITY_REDSHIFT      16
+#define GYOTO_QUANTITY_REDSHIFT              1<<4
   /// ImpactCoords: Astrobj and Photon 8-coordinates at emission.
   /**
    * A 16-element vector. See Gyoto::Quantity_t.
    */ 
-#define GYOTO_QUANTITY_IMPACTCOORDS  32
+#define GYOTO_QUANTITY_IMPACTCOORDS          1<<5
   /// Spectrum: I<SUB>&nu;</SUB> at each frequency in Scenery::screen_->getMidpoints().
-#define GYOTO_QUANTITY_SPECTRUM      64
+#define GYOTO_QUANTITY_SPECTRUM              1<<6
   /// SpectrumStokesQ
-#define GYOTO_QUANTITY_SPECTRUM_STOKES_Q     128
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_Q     1<<7
   /// SpectrumStokesU
-#define GYOTO_QUANTITY_SPECTRUM_STOKES_U     256
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_U     1<<8
   /// SpectrumStokesV
-#define GYOTO_QUANTITY_SPECTRUM_STOKES_V     512
+#define GYOTO_QUANTITY_SPECTRUM_STOKES_V     1<<9
   /// Spectrum: &int;<SUB>&nu;<SUB>1</SUB></SUB><SUP>&nu;<SUB>2</SUB></SUP>I<SUB>&nu;</SUB> d&nu; in each frequency channel in Scenery::screen_.
-#define GYOTO_QUANTITY_BINSPECTRUM 1024
+#define GYOTO_QUANTITY_BINSPECTRUM           1<<10
+  /// NbCrossEqPlane: number of equatorial plane crossings
+#define GYOTO_QUANTITY_NBCROSSEQPLANE        1<<11
   /* Astrobj-specific */
   /// User1: Gyoto::Astrobj specific Gyoto::Quantity_t
-#define GYOTO_QUANTITY_USER1        32768
+#define GYOTO_QUANTITY_USER1                 1<<31
   /// User2: Gyoto::Astrobj specific Gyoto::Quantity_t
-#define GYOTO_QUANTITY_USER2        16384
+#define GYOTO_QUANTITY_USER2                 1<<30
   /// User3: Gyoto::Astrobj specific Gyoto::Quantity_t
-#define GYOTO_QUANTITY_USER3         8192
+#define GYOTO_QUANTITY_USER3                 1<<29
   /// User4: Gyoto::Astrobj specific Gyoto::Quantity_t
-#define GYOTO_QUANTITY_USER4         4096
+#define GYOTO_QUANTITY_USER4                 1<<28
   /// User5: Gyoto::Astrobj specific Gyoto::Quantity_t
-#define GYOTO_QUANTITY_USER5         2048
+#define GYOTO_QUANTITY_USER5                 1<<27
   /// Bitwise or of all spectral quantities
 #define GYOTO_QUANTITY_SPECTRAL (GYOTO_QUANTITY_SPECTRUM | GYOTO_QUANTITY_SPECTRUM_STOKES_Q | GYOTO_QUANTITY_SPECTRUM_STOKES_U | GYOTO_QUANTITY_SPECTRUM_STOKES_V | GYOTO_QUANTITY_BINSPECTRUM)
   /// Bitwise or of all the Stokes parameters

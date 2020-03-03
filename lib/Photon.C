@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -339,7 +339,7 @@ int Photon::hit(Astrobj::Properties *data) {
     stopcond  = state_ -> nextStep(coord, tau, h1max);
     //cout << "IN ph r= " << coord[1] << endl;
     
-    if (maxCrossEqplane_<DBL_MAX){
+    if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
       double zsign=0.;
       double rlim=10.;
       /* 
@@ -373,7 +373,11 @@ int Photon::hit(Astrobj::Properties *data) {
       default:
 	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
       }
+
+      GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
 	  
+      if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
+
       if (nb_cross_eqplane_ > maxCrossEqplane_) {
 	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
 	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
@@ -389,8 +393,6 @@ int Photon::hit(Astrobj::Properties *data) {
       }
     }
 
-    if (data->user5) *data->user5=nb_cross_eqplane_;
-    
     if (!secondary_){ // to compute only primary image (outdated, use MaxCrossEqplane above instead)
       // Thin disk case
       double sign = x1_[i0_]*cos(x2_[i0_]);

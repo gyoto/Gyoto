@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2019 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2020 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -681,6 +681,11 @@ class Gyoto::Astrobj::Properties : public Gyoto::SmartPointee {
    * for emission lines computation)
    */
   double *redshift; ///< GYOTO_QUANTITY_REDSHIFT    : RedShift
+
+  /**
+   * Numbere of times the geodesic crosses the equatorial plane
+   */
+  double *nbcrosseqplane; ///< GYOTO_QUANTITY_NBCROSSEQPLANE    : nuùber of equatorial plane crossings
 
   /**
    * I<SUB>&nu;</SUB> (&nu;) (observed specific intensity)
