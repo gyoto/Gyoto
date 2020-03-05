@@ -66,7 +66,7 @@ Standard("FlaredDiskSynchrotron"), GridData2D(),
   filename_(""), hoverR_(0.),
   density_(NULL), velocity_(NULL),
   numberDensityMax_cgs_(1.), temperatureMax_(1.),
-  magnetizationParameter_(1.)
+  magnetizationParameter_(1.), dt_(0.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
@@ -77,7 +77,7 @@ FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   filename_(o.filename_), hoverR_(o.hoverR_),
   density_(NULL), velocity_(NULL),
   numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_),
-  magnetizationParameter_(o.magnetizationParameter_)
+  magnetizationParameter_(o.magnetizationParameter_), dt_(o.dt_)
 {
   GYOTO_DEBUG << endl;
   size_t ncells = 0;
@@ -136,8 +136,13 @@ void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
       "please call first fitsRead, ie put the File "
       "XML field before the TimeTranslation XML field" << std::endl;
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
-  GridData2D::tmin(tmin+dt);
-  GridData2D::tmax(tmax+dt);
+  GridData2D::tmin(tmin-dt_+dt);
+  GridData2D::tmax(tmax-dt_+dt);
+  dt_=dt;
+}
+
+double FlaredDiskSynchrotron::timeTranslation_inMunit() const {
+  return dt_;
 }
 
 double FlaredDiskSynchrotron::numberDensityMax() const {

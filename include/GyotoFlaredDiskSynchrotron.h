@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2019-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -67,14 +67,15 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
    * the first FITS dimention is d&phi;/dt, the second dr/dt.
    */
   double * velocity_; ///< velocity(r, &phi;)
-  // Constructors - Destructor
-  // -------------------------
   double magnetizationParameter_; ///< (B<SUP>2</SUP>/(4 pi)) / (n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
+  double dt_;///< time translation
 
  public:
   GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
   
+  // Constructors - Destructor
+  // -------------------------
   FlaredDiskSynchrotron(); ///< Standard constructor
   
   FlaredDiskSynchrotron(const FlaredDiskSynchrotron& ) ;///< Copy constructor
@@ -100,6 +101,7 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
 
    */
   void timeTranslation_inMunit(double const dt) ;
+  double timeTranslation_inMunit() const ;
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
   void kappaIndex(double index);
