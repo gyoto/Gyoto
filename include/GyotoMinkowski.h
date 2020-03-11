@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2014 Thibaut Paumard
+    Copyright 2014, 2015, 2019-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -71,6 +71,10 @@ class Gyoto::Metric::Minkowski
 		      double const pos[4], double fourvel[4],
 		      double screen1[4], double screen2[4], 
 		      double screen3[4]) const;
+
+  // We reimplement diff to be able to integrate Newton's law of motion
+  virtual int diff(state_t const &x, state_t &dxdt, double mass) const ;
+
 };
 
 #endif

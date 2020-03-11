@@ -1,5 +1,5 @@
 /*
-    Copyright 2014 Thibaut Paumard
+    Copyright 2014, 2015, 2019-2020 Thibaut Paumard & Frédéric Vincent
 
     This file is part of Gyoto.
 
@@ -225,4 +225,76 @@ void Minkowski::spherical(bool t) {
 
 bool Minkowski::spherical() const {
   return coordKind() == GYOTO_COORDKIND_SPHERICAL;
+}
+
+int Minkowski::diff(const state_t &x,
+		    state_t &dxdt,
+		    double mass) const {
+  // Check input
+  if (x.size()<8) GYOTO_ERROR("x should have at least 8 elements");
+  if (x.size() != dxdt.size())
+    GYOTO_ERROR("x.size() should be the same as dxdt.size()");
+
+  // If not Keplerian or if null geodesic, use generic implementation
+  if (!keplerian_ || !mass)
+    return Generic::diff(x, dxdt, mass);
+
+  // We are computing a Keplerian, time-like geodesic.
+
+  // There is no parallel transport for time-like geodesics!
+  if (x.size() > 8) GYOTO_ERROR("No parallel transport for time-like geodesics");
+
+  // x[4:8] is actually dx[0:4]/dt
+  dxdt[0]=x[4];
+  dxdt[1]=x[5];
+  dxdt[2]=x[6];
+  dxdt[3]=x[7];
+
+  // Now the actual equation of motion: d²x/dt²=-ur/r²
+
+  if (coordKind() == GYOTO_COORDKIND_CARTESIAN) {
+    double r3=pow(x[1]*x[1]+x[2]*x[2]+x[3]*x[3], 1.5);
+    if (r3==0) return 1;
+
+    // First tdotdot
+    /*
+    Newton's law is yields:,
+     xi'' = -xi / r³ for 1 <= i <= 3 (1)
+    We also have
+     xi'  = xidot/tdot
+     xi'' = d(xidot/tdot)/dt = d(xidot/tdot)/dtau / tdot
+     xi'' = (xidotdot*tdot - tdotdot*xidot) / tdot³
+    thus we can rewrite Newton's law (1) as
+     xidotdot*tdot - tdotdot*xidot = -xi * tdot³ / r³ for i in 1..3 (2)
+    We also know that the norm of the quadri velocity is -1:
+     -tdot² + sum(xidot²) = -1    (3)
+    Derivating (3), it comes:
+     tdot*tdotdot = sum(xidot*xidotdot) (4)
+    Multiplying (2) by xidot and summing over 1..3:
+     tdot*sum(xidot*xidotdot)-tdotdot*sum(xidot²)=-(tdot³/r³)*sum(xi*xidot)
+    Thanks to (4), we can replace sum(xidot*xidotdot) by tdot*tdotdot,
+    and then factorize tdotdot on the left-hand side:
+     tdotdot*(tdot²-sum(xidot²))=-(tdot³/r³)*sum(xi*xidot)
+    We recognize (4) and finally:
+     tdotdot=-(tdot³/r³)*sum(xi*xidot)
+     */
+    double tdot=x[4];
+    double tdot3=tdot*tdot*tdot;
+    dxdt[4]=-tdot3*(x[1]*x[5]+x[2]*x[6]+x[3]*x[7])/r3;
+
+    // Then the rest
+    /*
+      We use (2) again to get xidotdot:
+      xidotdot=(-xi*tdot³/r³+tdotdot*xidot)/tdot
+     */
+    for (int i=1; i<4; ++i)
+      dxdt[i+4]=(-x[i]*tdot3/r3+x[i+4]*dxdt[4])/x[4];
+  } else {
+    GYOTO_ERROR("unimplemented for spherical coordinates");
+  }
+
+  // This should conserve norm
+  dxdt[4] = (x[5]*dxdt[5]+x[6]*dxdt[6]+x[7]*dxdt[7])/x[4];
+
+  return 0;
 }
