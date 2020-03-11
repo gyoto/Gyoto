@@ -135,7 +135,7 @@ int RotStar3_1::integKind() const { return integ_kind_; }
 bool RotStar3_1::genericIntegrator() const {return !integ_kind_;}
 void RotStar3_1::genericIntegrator(bool t) {integ_kind_=!t;}
 
-int RotStar3_1::diff(state_t const &coord, state_t &res) const
+int RotStar3_1::diff(state_t const &coord, state_t &res, double /* mass */) const
 {
   //4-DIMENSIONAL INTEGRATION
   //NB: this diff is only called by Generic::RK4

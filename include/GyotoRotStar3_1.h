@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2014, 2016, 2018 Frederic Vincent & Thibaut Paumard
+    Copyright 2011-2014, 2016, 2018, 2020 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -107,7 +107,7 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
   /**
    * \brief F function such as dy/dtau=F(y,cst)
    */
-  int diff(state_t const &coord, state_t &res) const ;
+  int diff(state_t const &coord, state_t &res, double mass) const ;
 
   /**
    * \brief Alternate version of diff(const double coord[8], double res[8]) const

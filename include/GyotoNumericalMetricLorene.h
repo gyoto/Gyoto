@@ -6,7 +6,7 @@
  */
 
 /*
- *   Copyright (c) 2014-2016, 2018 Frederic Vincent, Thibaut Paumard
+ *   Copyright (c) 2014-2018, 2020 Frederic Vincent, Thibaut Paumard
  *
  *
  */
@@ -215,7 +215,7 @@ class Gyoto::Metric::NumericalMetricLorene
    * F function such as d(coord)/d(tau)=F(coord)
    */
   //using Generic::diff;
-  virtual int diff(state_t const &coord, state_t &res) const;
+  virtual int diff(state_t const &coord, state_t &res, double mass) const;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
 

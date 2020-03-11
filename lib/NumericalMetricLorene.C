@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2014-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -444,7 +444,9 @@ void NumericalMetricLorene::setTimes(double time, int ii) {
   GYOTO_DEBUG << endl;
   times_[ii]=time;}
 
-int NumericalMetricLorene::diff(state_t const &coord, state_t &res) const{
+int NumericalMetricLorene::diff(state_t const &coord,
+				state_t &res,
+				double mass) const{
   double rhor=computeHorizon(&coord[0]);
   if (coord[1]<rhor && rhor>0.) {
     GYOTO_DEBUG << "rr, rhor= " << coord[1] << " " << rhor << endl;
@@ -452,7 +454,7 @@ int NumericalMetricLorene::diff(state_t const &coord, state_t &res) const{
     return 1; 
   }
 
-  return Generic::diff(coord,res);
+  return Generic::diff(coord, res, mass);
 }
 
 int NumericalMetricLorene::diff(double tt, 

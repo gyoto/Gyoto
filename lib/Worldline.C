@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2017-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -31,6 +31,13 @@
 using namespace std;
 using namespace Gyoto;
 
+#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
+# define _GYOTO_DEFAULT_INTEGRATOR "runge_kutta_fehlberg78"
+#else
+# define _GYOTO_DEFAULT_INTEGRATOR "Legacy"
+#endif
+
+
 Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 			 et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
                          stopcond(0), metric_(NULL),
@@ -45,16 +52,11 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 			 delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
 			 abstol_(GYOTO_DEFAULT_ABSTOL),
 			 reltol_(GYOTO_DEFAULT_RELTOL),
-			 maxCrossEqplane_(DBL_MAX)
+			 maxCrossEqplane_(DBL_MAX),
+			 state_(NULL)
 { 
   xAllocate();
-
-#ifdef GYOTO_HAVE_BOOST_INTEGRATORS
-  state_ = new Worldline::IntegState::Boost(this, "runge_kutta_fehlberg78");
-#else
-  state_ = new Worldline::IntegState::Legacy(this);
-#endif
-  state_ -> init();
+  integrator(_GYOTO_DEFAULT_INTEGRATOR);
 }
 
 Worldline::Worldline(const Worldline& orig) :
@@ -122,7 +124,6 @@ Worldline::Worldline(const Worldline& orig) :
     init_vel_ = new double [3];
     memcpy(init_vel_, orig.init_vel_, 3*sizeof(double));
   }
-  state_ -> init();
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif
@@ -143,7 +144,8 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
   delta_max_over_r_(orig->delta_max_over_r_),
   abstol_(orig->abstol_),
   reltol_(orig->reltol_),
-  maxCrossEqplane_(orig->maxCrossEqplane_)
+  maxCrossEqplane_(orig->maxCrossEqplane_),
+  state_(NULL)
 {
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -192,7 +194,6 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
     memcpy(init_vel_, orig->init_vel_, 3*sizeof(double));
   }
   */
-  state_ -> init();
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done\n";
 # endif
@@ -504,8 +505,8 @@ void Worldline::reInit() {
       }
       metric_ -> setParticleProperties(this,&coord[0]);
     }
-    state_ -> init();
   }
+  state_ -> init();
 }
 
 

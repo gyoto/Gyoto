@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -24,6 +24,7 @@
 #include "GyotoFactoryMessenger.h"
 #include "GyotoConverters.h"
 #include "GyotoProperty.h"
+#include "GyotoWorldline.h"
 #include <cmath>
 #include <string>
 #include <sstream>
@@ -308,7 +309,8 @@ diff is such as : Y_dot=diff(Y)
 The general equation of geodesics is used.
  */
 int Metric::Generic::diff(const state_t &x,
-			  state_t &dxdt) const {
+			  state_t &dxdt,
+			  double /* mass */) const {
   if (x.size()<8) GYOTO_ERROR("x should have at least 8 elements");
   if (x.size() != dxdt.size()) GYOTO_ERROR("x.size() should be the same as dxdt.size()");
   if (x[4]<1e-6) return 1;
@@ -336,7 +338,7 @@ int Metric::Generic::diff(const state_t &x,
  */
 
 //int Metric::Generic::myrk4(const double y[6], const double* cst , double h, double* res) const{
-int Metric::Generic::myrk4(Worldline * /* line */ , const state_t &coord, double h, state_t &res) const{
+int Metric::Generic::myrk4(Worldline * line, const state_t &coord, double h, state_t &res) const{
   //cout << "In Metric::Generic::myrk4" << endl;
   size_t sz = coord.size();
   state_t k1(sz) ;
@@ -350,8 +352,9 @@ int Metric::Generic::myrk4(Worldline * /* line */ , const state_t &coord, double
   state_t coord_plus_k3(sz) ;
   state_t third_k3(sz) ;
   state_t sixth_k4(sz) ;
-  
-  if (diff(coord, k1)) return 1 ; 
+  double mass=line->getMass();
+
+  if (diff(coord, k1, mass)) return 1 ;
   
   for (int i=0;i<8;i++) {
     k1[i]=h*k1[i];
@@ -359,21 +362,21 @@ int Metric::Generic::myrk4(Worldline * /* line */ , const state_t &coord, double
     sixth_k1[i]=1./6.*k1[i];
   }
   
-  if (diff(coord_plus_halfk1,k2)) return 1 ; 
+  if (diff(coord_plus_halfk1, k2, mass)) return 1 ;
   for (int i=0;i<8;i++) {
     k2[i]=h*k2[i];
     coord_plus_halfk2[i]=coord[i]+0.5*k2[i];
     third_k2[i]=1./3.*k2[i];
   }
 	
-  if (diff(coord_plus_halfk2,k3)) return 1 ;
+  if (diff(coord_plus_halfk2, k3, mass)) return 1 ;
   for (int i=0;i<8;i++) {
     k3[i]=h*k3[i];
     coord_plus_k3[i]=coord[i]+k3[i];
     third_k3[i]=1./3.*k3[i];
   }
 
-  if (diff(coord_plus_k3,k4)) return 1 ; 
+  if (diff(coord_plus_k3, k4, mass)) return 1 ;
   for (int i=0;i<8;i++) {
     k4[i]=h*k4[i];
     sixth_k4[i]=1./6.*k4[i];
@@ -485,12 +488,12 @@ int Metric::Generic::myrk4_adaptive(Worldline* line, state_t const &coord, doubl
   double S=0.9;
   double errmin=1e-6;
   double factnorm=2.;
-
+  double mass=line->getMass();
 
   h1max=deltaMax(coord.data(), h1max);
  
   //cout << "1st diff" << endl;
-  diff(coord,dcoord) ;
+  diff(coord, dcoord, mass) ;
 
   for (int i = 0;i<8;i++) delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
 

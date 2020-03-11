@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright 2011-2016 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -569,8 +569,9 @@ class Gyoto::Metric::Generic
   /**
    * \brief F function such as dx/dt=F(x,cst)
    */
-  virtual int diff(state_t const &x, state_t &dxdt) const ;
+  virtual int diff(state_t const &x, state_t &dxdt, double mass) const ;
   /// Obsolete, update your code
+  virtual int diff(state_t const &x, state_t &dxdt)  const = delete;
   virtual int diff(const double y[8], double res[8]) const = delete ;
 
   /**
