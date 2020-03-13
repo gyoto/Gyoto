@@ -293,8 +293,5 @@ int Minkowski::diff(const state_t &x,
     GYOTO_ERROR("unimplemented for spherical coordinates");
   }
 
-  // This should conserve norm
-  dxdt[4] = (x[5]*dxdt[5]+x[6]*dxdt[6]+x[7]*dxdt[7])/x[4];
-
   return 0;
 }
