@@ -112,119 +112,107 @@ class TestStar(unittest.TestCase):
 
 class TestMinkowski(unittest.TestCase):
 
+    def _compute_r_norm(self, met, st, pos, v, tmax=1e6):
+        t, x, y, z, tdot, xdot, ydot, zdot=self._compute_orbit(met, st, pos, v, tmax)
+        if met.spherical():
+            r=x
+        else:
+            r=numpy.sqrt(x**2+y**2+z**2)
+        n=t.size
+        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
+                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
+                            for  i in range(n)])
+        return r, norm
+
+    def _compute_orbit(self, met, st, pos, v, tmax=1e6):
+        st.initCoord(numpy.append(pos, v))
+        st.xFill(tmax)
+        n=st.get_nelements()
+        t=numpy.ndarray(n)
+        x=numpy.ndarray(n)
+        y=numpy.ndarray(n)
+        z=numpy.ndarray(n)
+        tdot=numpy.ndarray(n)
+        xdot=numpy.ndarray(n)
+        ydot=numpy.ndarray(n)
+        zdot=numpy.ndarray(n)
+        st.get_t(t)
+        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
+        return t, x, y, z, tdot, xdot, ydot, zdot
+
     def test_Keplerian(self):
         met=gyoto.std.Minkowski()
         met.keplerian(True)
         st=gyoto.std.Star()
         st.metric(met)
 
+        # Cartesian coordinates
+        # particlae is at x=1000:
         pos=[0., 1000., 0., 0.]
         v=met.circularVelocity(pos)
-        st.initCoord(numpy.append(pos, v))
-        st.xFill(1e6)
-        n=st.get_nelements()
-        t=numpy.ndarray(n)
-        x=numpy.ndarray(n)
-        y=numpy.ndarray(n)
-        z=numpy.ndarray(n)
-        tdot=numpy.ndarray(n)
-        xdot=numpy.ndarray(n)
-        ydot=numpy.ndarray(n)
-        zdot=numpy.ndarray(n)
-        st.get_t(t)
-        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
-        r=numpy.sqrt(x**2+y**2+z**2)
-        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
-                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
-                            for  i in range(n)])
+        r, norm=self._compute_r_norm(met, st, pos, v)
         self.assertLess( numpy.abs(r-1000.).max(), 1e-6)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
+        # same velocity at z=1000:
         pos=[0., 0., 0., 1000.]
-        st.initCoord(numpy.append(pos, v))
-        st.xFill(1e6)
-        n=st.get_nelements()
-        t=numpy.ndarray(n)
-        x=numpy.ndarray(n)
-        y=numpy.ndarray(n)
-        z=numpy.ndarray(n)
-        tdot=numpy.ndarray(n)
-        xdot=numpy.ndarray(n)
-        ydot=numpy.ndarray(n)
-        zdot=numpy.ndarray(n)
-        st.get_t(t)
-        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
-        r=numpy.sqrt(x**2+y**2+z**2)
-        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
-                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
-                            for  i in range(n)])
+        r, norm=self._compute_r_norm(met, st, pos, v)
         self.assertLess( numpy.abs(r-1000.).max(), 1e-6)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
+        # same velocity at x=z=1000/sqrt(2)
         pos=[0., 1000./numpy.sqrt(2.), 0., 1000./numpy.sqrt(2.)]
-        st.initCoord(numpy.append(pos, v))
-        st.xFill(1e6)
-        n=st.get_nelements()
-        t=numpy.ndarray(n)
-        x=numpy.ndarray(n)
-        y=numpy.ndarray(n)
-        z=numpy.ndarray(n)
-        tdot=numpy.ndarray(n)
-        xdot=numpy.ndarray(n)
-        ydot=numpy.ndarray(n)
-        zdot=numpy.ndarray(n)
-        st.get_t(t)
-        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
-        r=numpy.sqrt(x**2+y**2+z**2)
-        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
-                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
-                            for  i in range(n)])
+        r, norm=self._compute_r_norm(met, st, pos, v)
         self.assertLess( numpy.abs(r-1000.).max(), 1e-6)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
+        # a elliptical orbit
         pos=[0., 1000., 0., 0.]
         v3=[0, 0.015, 0]
         tdot=met.SysPrimeToTdot(pos, v3)
         v=[tdot, v3[0]*tdot, v3[1]*tdot, v3[2]/tdot]
-        st.initCoord(numpy.append(pos, v))
-        st.xFill(1e6)
-        n=st.get_nelements()
-        t=numpy.ndarray(n)
-        x=numpy.ndarray(n)
-        y=numpy.ndarray(n)
-        z=numpy.ndarray(n)
-        tdot=numpy.ndarray(n)
-        xdot=numpy.ndarray(n)
-        ydot=numpy.ndarray(n)
-        zdot=numpy.ndarray(n)
-        st.get_t(t)
-        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
-        r=numpy.sqrt(x**2+y**2+z**2)
-        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
-                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
-                            for  i in range(n)])
+        r, norm=self._compute_r_norm(met, st, pos, v)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
-
+        # circular orbit starting at x=3
         pos=[0., 3., 0., 0.]
         v=met.circularVelocity(pos)
         st.deltaMaxOverR(0.1)
+        r, norm=self._compute_r_norm(met, st, pos, v, tmax=50.)
+        self.assertLess( numpy.abs(r-3.).max(), 1e-6)
+        self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
+
+        # Spherical coordinates
+        st=gyoto.std.Star()
+        st.metric(met)
+        met.spherical(True)
+
+        # again starting at x=1000
+        pos=[0., 1000., numpy.pi*0.5, 0.]
+        v=met.circularVelocity(pos)
+        r, norm=self._compute_r_norm(met, st, pos, v)
+        self.assertLess( numpy.abs(r-1000.).max(), 1e-6)
+        self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
+
+        # elliptical orbit
+        v[3] = v[3]/2.
+        r, norm=self._compute_r_norm(met, st, pos, v)
+        self.assertLess( numpy.abs(norm+1.).max(), 1e-3 )
+
+        # circular orbit starting at x=z=1000/sqrt(2)
+        pos=[0., 1000., numpy.pi/2., 0.]
+        v=met.circularVelocity(pos)
+        pos[2]=numpy.pi/4.
+        v[3]=v[3]/numpy.sin(numpy.pi/4.)
+        r, norm=self._compute_r_norm(met, st, pos, v)
+        self.assertLess( numpy.abs(r-1000.).max(), 1e-6)
+        self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
+
+        # circular orbit starting at x=3
+        pos=[0., 3., numpy.pi*0.5, 0.]
+        st.deltaMaxOverR(0.1)
         st.initCoord(numpy.append(pos, v))
-        st.xFill(1e2)
-        n=st.get_nelements()
-        t=numpy.ndarray(n)
-        x=numpy.ndarray(n)
-        y=numpy.ndarray(n)
-        z=numpy.ndarray(n)
-        tdot=numpy.ndarray(n)
-        xdot=numpy.ndarray(n)
-        ydot=numpy.ndarray(n)
-        zdot=numpy.ndarray(n)
-        st.get_t(t)
-        st.getCoord(t, x, y, z, tdot, xdot, ydot, zdot)
-        r=numpy.sqrt(x**2+y**2+z**2)
-        norm=numpy.asarray([met.norm([t[i], x[i], y[i], z[i]],
-                                     [tdot[i], xdot[i], ydot[i], zdot[i]])
-                            for  i in range(n)])
+        v=met.circularVelocity(pos)
+        r, norm=self._compute_r_norm(met, st, pos, v, tmax=50.)
         self.assertLess( numpy.abs(r-3.).max(), 1e-6)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )

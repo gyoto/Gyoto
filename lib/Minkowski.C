@@ -227,37 +227,78 @@ bool Minkowski::spherical() const {
   return coordKind() == GYOTO_COORDKIND_SPHERICAL;
 }
 
-int Minkowski::diff(const state_t &x,
+int Minkowski::diff(const state_t &xi,
 		    state_t &dxdt,
 		    double mass) const {
   // Check input
-  if (x.size()<8) GYOTO_ERROR("x should have at least 8 elements");
-  if (x.size() != dxdt.size())
+  if (xi.size()<8) GYOTO_ERROR("x should have at least 8 elements");
+  if (xi.size() != dxdt.size())
     GYOTO_ERROR("x.size() should be the same as dxdt.size()");
 
   // If not Keplerian or if null geodesic, use generic implementation
   if (!keplerian_ || !mass)
-    return Generic::diff(x, dxdt, mass);
+    return Generic::diff(xi, dxdt, mass);
 
   // We are computing a Keplerian, time-like geodesic.
 
   // There is no parallel transport for time-like geodesics!
-  if (x.size() > 8) GYOTO_ERROR("No parallel transport for time-like geodesics");
+  if (xi.size() > 8) GYOTO_ERROR("No parallel transport for time-like geodesics");
 
   // x[4:8] is actually dx[0:4]/dt
-  dxdt[0]=x[4];
-  dxdt[1]=x[5];
-  dxdt[2]=x[6];
-  dxdt[3]=x[7];
+  dxdt[0]=xi[4];
+  dxdt[1]=xi[5];
+  dxdt[2]=xi[6];
+  dxdt[3]=xi[7];
 
   // Now the actual equation of motion: d²x/dt²=-ur/r²
 
-  if (coordKind() == GYOTO_COORDKIND_CARTESIAN) {
-    double r3=pow(x[1]*x[1]+x[2]*x[2]+x[3]*x[3], 1.5);
-    if (r3==0) return 1;
+  double t, x, y, z, tdot, xdot, ydot, zdot,
+    r, theta, phi, rdot, thetadot, phidot,
+    tdotdot, xdotdot, ydotdot, zdotdot,
+    rdotdot, thetadotdot, phidotdot, r3, tdot3;
+  double sth, cth, sph, cph;
 
-    // First tdotdot
-    /*
+  t=xi[0]; tdot=xi[4];
+
+  // Convert to Cartesian
+
+  switch (coordKind()) {
+  case GYOTO_COORDKIND_CARTESIAN:
+    x=xi[1];
+    y=xi[2];
+    z=xi[3];
+    xdot=xi[5];
+    ydot=xi[6];
+    zdot=xi[7];
+    r3=pow(x*x+y*y+z*z, 1.5);
+    break;
+  case GYOTO_COORDKIND_SPHERICAL:
+    r=xi[1];
+    theta=xi[2];
+    phi=xi[3];
+    rdot=xi[5];
+    thetadot=xi[6];
+    phidot=xi[7];
+    r3=r*r*r;
+    sincos(theta, &sth, &cth);
+    sincos(phi, &sph, &cph);
+    x=r*sth*cph;
+    y=r*sth*sph;
+    z=r*cth;
+    xdot=rdot*sth*cph+r*thetadot*cth*cph-r*phidot*sth*sph;
+    ydot=rdot*sth*sph+r*thetadot*cth*sph+r*phidot*sth*cph;
+    zdot=rdot*cth-r*thetadot*sth;
+    break;
+  default:
+    GYOTO_ERROR("unimplemented COORDKIND");
+  }
+
+  if (r3==0) return 1;
+
+  // Compute second derivatives according to Newton
+
+  // First tdotdot
+  /*
     Newton's law is yields:,
      xi'' = -xi / r³ for 1 <= i <= 3 (1)
     We also have
@@ -278,20 +319,47 @@ int Minkowski::diff(const state_t &x,
     We recognize (4) and finally:
      tdotdot=-(tdot³/r³)*sum(xi*xidot)
      */
-    double tdot=x[4];
-    double tdot3=tdot*tdot*tdot;
-    dxdt[4]=-tdot3*(x[1]*x[5]+x[2]*x[6]+x[3]*x[7])/r3;
+  tdot3=tdot*tdot*tdot;
+  tdotdot=-tdot3*(x*xdot+y*ydot+z*zdot)/r3;
 
-    // Then the rest
-    /*
-      We use (2) again to get xidotdot:
-      xidotdot=(-xi*tdot³/r³+tdotdot*xidot)/tdot
-     */
-    for (int i=1; i<4; ++i)
-      dxdt[i+4]=(-x[i]*tdot3/r3+x[i+4]*dxdt[4])/x[4];
-  } else {
-    GYOTO_ERROR("unimplemented for spherical coordinates");
+  // Then the rest
+  /*
+    We use (2) again to get xidotdot:
+    xidotdot=(-xi*tdot³/r³+tdotdot*xidot)/tdot
+  */
+  xdotdot=(-x*tdot3/r3+tdotdot*xdot)/tdot;
+  ydotdot=(-y*tdot3/r3+tdotdot*ydot)/tdot;
+  zdotdot=(-z*tdot3/r3+tdotdot*zdot)/tdot;
+
+
+  // Convert back to COORDKIND
+
+  dxdt[4]=tdotdot;
+  switch (coordKind()) {
+  case GYOTO_COORDKIND_CARTESIAN:
+    dxdt[5]=xdotdot;
+    dxdt[6]=ydotdot;
+    dxdt[7]=zdotdot;
+    break;
+  case GYOTO_COORDKIND_SPHERICAL:
+    rdotdot=(xdotdot*x+ydotdot*y+zdotdot*z
+	     +xdot*xdot+ydot*ydot+zdot*zdot
+	     -rdot*rdot)/r;
+    thetadotdot=(
+		 (z*rdotdot-zdotdot*r)
+		 -((z*rdot-zdot*r)*(2.*rdot*r*r*r-zdot*z*r*r-z*z*rdot*r)
+		   /(r*r*r*r-z*z*r*r))
+		 )
+      *pow(r*r*r*r-z*z*r*r, -0.5);
+    phidotdot=((ydotdot*x-y*xdotdot)*(x*x+y*y)
+	       -2.*(ydot*x-y*xdot)*(x*xdot+y*ydot))
+      /((x*x+y*y)*(x*x+y*y));
+    dxdt[5]=rdotdot;
+    dxdt[6]=thetadotdot;
+    dxdt[7]=phidotdot;
+    break;
+  default:
+    GYOTO_ERROR("unimplemented COORDKIND");
   }
-
   return 0;
 }
