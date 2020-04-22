@@ -315,3 +315,18 @@ double Gyoto::hypergeom (double kappaIndex, double thetae) {
   return 0.;
 #endif
 }
+
+// Coordinate transforms
+void Gyoto::cartesianToSpherical(double const cpos[3], double spos[3]) {
+  spos[0]=sqrt(cpos[0]*cpos[0]+cpos[1]*cpos[1]+cpos[2]*cpos[2]);
+  spos[1]=acos(cpos[2]/spos[0]);
+  spos[2]=atan2(cpos[1],cpos[0]);
+}
+
+void Gyoto::sphericalToCartesian(double const spos[3], double cpos[3]) {
+  double c1, s1; sincos(spos[1], &s1, &c1);
+  double c2, s2; sincos(spos[2], &s2, &c2);
+  cpos[0] = spos[0]*s1*c2;
+  cpos[1] = spos[0]*s1*s2;
+  cpos[2] = spos[0]*c1;
+}

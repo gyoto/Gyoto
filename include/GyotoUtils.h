@@ -118,6 +118,11 @@ namespace Gyoto {
   double bessk(int nn, double xx);///< Modified Bessel function
 
   double hypergeom (double kappaIndex, double thetae); ///< Gauss hypergeometric 2F1 term for kappa-distribution synchrotron
+
+  /// Tranform from Cartesian 3-position to spherical 3-position
+  void cartesianToSpherical(double const cpos[3], double spos[3]);
+  /// Tranform from spherical 3-position to Cartesian 3-position
+  void sphericalToCartesian(double const spos[3], double cpos[3]);
 }
 
 #endif
