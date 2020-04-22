@@ -316,9 +316,21 @@ class Gyoto::Scenery
   void astrobj(SmartPointer<Astrobj::Generic>); ///< Set ph_.obj_
 
 
+  /**
+   * \brief Get clone of template Photon
+   */
   SmartPointer<Photon> clonePhoton() const; ///< Clone the internal Photon
-  SmartPointer<Photon> clonePhoton(size_t i, size_t j); ///< Clone the internal Photon
-  SmartPointer<Photon> clonePhoton(double a, double d); ///< Clone the internal Photon
+
+  /**
+   * \brief Get clone of template Photon, intitializing it to pixel
+   */
+  SmartPointer<Photon> clonePhoton(size_t i, size_t j);
+
+  /**
+   * \brief Get clone of template Photon, intitializing it to direction
+   */
+  SmartPointer<Photon> clonePhoton(double a, double d);
+
   void updatePhoton(); ///< Update values in cached Photon
 
   double delta() const ; ///< Get default step in geometrical units
