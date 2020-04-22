@@ -60,6 +60,7 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 }
 
 Worldline::Worldline(const Worldline& orig) :
+  stopcond(orig.stopcond),
   ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
   et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
   metric_(NULL),
