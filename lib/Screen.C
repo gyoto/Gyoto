@@ -544,11 +544,24 @@ void Screen::getRayCoord(double angle1, double angle2,
 # endif
   getObserverPos(coord);
 
-  if (coord[1] > dmax_) {
+  double robs = distance_ / gg_->unitLength();
+
+  if (robs > dmax_) {
     // scale
-    coord[0] -= coord[1] - dmax_;
-    double scale = coord[1] / dmax_;
-    coord[1] = dmax_;
+    coord[0] -= robs - dmax_;
+    double scale = robs / dmax_;
+    switch(gg_->coordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      coord[1] = dmax_;
+      break;
+    case GYOTO_COORDKIND_CARTESIAN:
+      coord[1] /= scale;
+      coord[2] /= scale;
+      coord[3] /= scale;
+      break;
+    default:
+      throwError("Unimplemented coordkind");
+    }
     angle1 *= scale;
     angle2 *= scale;
   }
@@ -940,14 +953,45 @@ void Screen::computeBaseVectors() {
 
 }
 
-void Screen::coordToSky(const double pos[4], double skypos[3]) const {
+void Screen::coordToSky(const double pos[4], double skypos[3],
+			bool geometrical) const {
   double xyz[3];
   coordToXYZ(pos, xyz);
-  double ul = gg_ -> unitLength();
+  double ul = geometrical?1.:gg_ -> unitLength();
 
   skypos[0]=(xyz[0]*ex_[0]+xyz[1]*ey_[0]+xyz[2]*ez_[0]) * ul;
   skypos[1]=(xyz[0]*ex_[1]+xyz[1]*ey_[1]+xyz[2]*ez_[1]) * ul;
   skypos[2]=(xyz[0]*ex_[2]+xyz[1]*ey_[2]+xyz[2]*ez_[2]) * ul;
+}
+
+void Screen::skyToCoord(const double skypos[3], double pos[4],
+			bool geometrical) const {
+  // convert from m to ug
+  double ulm1 = geometrical?1.:1./gg_ -> unitLength();
+  double alpha=skypos[0]*ulm1, delta=skypos[1]*ulm1, zobs=skypos[2]*ulm1;
+
+  // rotate from sky frame to BH frame in Cartesian coordinates
+  double ca, sa; sincos(euler_[0], &sa, &ca);
+  double cb, sb; sincos(euler_[1], &sb, &cb);
+  double cc, sc; sincos(euler_[2], &sc, &cc);
+  double xyz[3];
+  xyz[0]=(-cb*sa*sc+ca*cc)*alpha+(ca*cb*sc+cc*sa)*delta+sb*sc*zobs;
+  xyz[1]=(-cb*cc*sa-ca*sc)*alpha+(ca*cb*cc-sa*sc)*delta+cc*sb*zobs;
+  xyz[2]=sa*sb*alpha-ca*sb*delta+cb*zobs;
+
+  // possibly convert to spherical
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_CARTESIAN:
+    pos[1]=xyz[0];
+    pos[2]=xyz[1];
+    pos[3]=xyz[2];
+    break;
+  case GYOTO_COORDKIND_SPHERICAL:
+    cartesianToSpherical(xyz, pos+1);
+    break;
+  default:
+    GYOTO_ERROR("Unimplemented coordinate kind in Screen::skyToCoord");
+  }
 }
 
 std::ostream & Screen::printBaseVectors(std::ostream &o) const {

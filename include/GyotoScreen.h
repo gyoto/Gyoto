@@ -576,8 +576,21 @@ class Gyoto::Screen
    */
   void getRayCoord(const size_t i, const size_t j, double dest[8]) const;
   
-  void coordToSky(const double pos[4], double dest[3]) const;
-  ///< Convert 4-position to 3-sky position
+  /** \brief Convert metric 4-position to sky 3-position
+   *
+   * \param[in] pos 4-position in metric coordinates.
+   * \param[in] dest 3-position in plane of the sky: Cartesian East, North, front.
+   * \param[in] geometrical: if true, #dest will be in geometrical units instead of meters.
+   */
+  void coordToSky(const double pos[4], double dest[3], bool geometrical=false) const;
+
+  /** \brief Convert sky 3-position to metric 4-position
+   *
+   * \param[in] sky 3-position in plane of the sky.
+   * \param[in] dest 4-position in metric coordinates (dest[0] is not modified).
+   * \param[in] geometrical: set to true if #sky is in geometrical units instead of meters.
+   */
+  void skyToCoord(const double sky[3], double dest[4], bool geometrical=false) const;
 
   void coordToXYZ(const double pos[4], double dest[3]) const;
   ///< Convert 4-position to 3-cartesian coordinates
