@@ -319,9 +319,43 @@ def writeObject(obj, filename):
 # This version of  getCartesian accepts numpy arrays
 #   wl.getCartesian(t, x, y, z, [xprime, yprime, zprime])
 # in addition to to the raw level arrays and dimension
-def _Worldline_getCartesian(self, t, *arrays):
+def _Worldline_getCartesian(self, t=None, *arrays):
+    # if no time provided, return all computed coordinates
+    if t is None:
+        n=self.get_nelements()
+        t=numpy.empty(n)
+        self.get_t(t)
+        x=numpy.empty(n)
+        y=numpy.empty(n)
+        z=numpy.empty(n)
+        xprime=numpy.empty(n)
+        yprime=numpy.empty(n)
+        zprime=numpy.empty(n)
+        _Worldline_getCartesian(self, t, x, y, z, xprime, yprime, zprime)
+        return t, x, y, z, xprime, yprime, zprime
+    # if t is provided, return 8-coord for this time. t can be index or time.
+    if numpy.isscalar(t) and not len(arrays):
+        if numpy.issubdtype(type(t), numpy.integer):
+            n=self.get_nelements()
+            ta=numpy.empty(n)
+            self.get_t(ta)
+            if t >= 0:
+                t=ta[t]
+            else:
+                t=ta[n+t]
+        ta=numpy.full(1, t)
+        x=numpy.empty(1)
+        y=numpy.empty(1)
+        z=numpy.empty(1)
+        xprime=numpy.empty(1)
+        yprime=numpy.empty(1)
+        zprime=numpy.empty(1)
+        _Worldline_getCartesian(self, ta, x, y, z, xprime, yprime, zprime)
+        return numpy.asarray([t, x[0], y[0], z[0], xprime[0], yprime[0], zprime[0]])
+    # if t is a gyoto.core.array_double, call low-level C++ function
     if isinstance(t, core.array_double):
         core._core.Worldline_getCartesian(self, t, *arrays)
+    # else fill pre-allocated arrays
     else:
         sizes=numpy.asarray([v.size for v in arrays])
         if not (sizes == t.size).all():
@@ -335,8 +369,44 @@ def _Worldline_getCartesian(self, t, *arrays):
 
 # Same for getCoord
 def _Worldline_getCoord(self, t, *arrays):
+    # if no time provided, return all computed coordinates
+    if t is None:
+        n=self.get_nelements()
+        t=numpy.empty(n)
+        self.get_t(t)
+        x=numpy.empty(n)
+        y=numpy.empty(n)
+        z=numpy.empty(n)
+        tdot=numpy.empty(n)
+        xdot=numpy.empty(n)
+        ydot=numpy.empty(n)
+        zdot=numpy.empty(n)
+        _Worldline_getCoord(self, t, x, y, z, tdot, xdot, ydot, zdot)
+        return t, x, y, z, tdot, xdot, ydot, zdot
+    # if t is provided, return 8-coord for this time. t can be index or time.
+    if numpy.isscalar(t) and not len(arrays):
+        if numpy.issubdtype(type(t), numpy.integer):
+            n=self.get_nelements()
+            ta=numpy.empty(n)
+            self.get_t(ta)
+            if t >= 0:
+                t=ta[t]
+            else:
+                t=ta[n+t]
+        ta=numpy.full(1, t)
+        x=numpy.empty(1)
+        y=numpy.empty(1)
+        z=numpy.empty(1)
+        tdot==numpy.empty(1)
+        xdot=numpy.empty(1)
+        ydot=numpy.empty(1)
+        zdot=numpy.empty(1)
+        _Worldline_getCoord(self, ta, x, y, z, tdot, xdot, ydot, zdot)
+        return numpy.asarray([t, x[0], y[0], z[0], tdot[0], xdot[0], ydot[0], zdot[0]])
+    # if t is a gyoto.core.array_double, call low-level C++ function
     if isinstance(t, core.array_double) or numpy.isscalar(t) :
         core._core.Worldline_getCoord(self, t, *arrays)
+    # else fill pre-allocated arrays
     else:
         sizes=numpy.asarray([v.size for v in arrays])
         if not (sizes == t.size).all():
