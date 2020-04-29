@@ -337,7 +337,7 @@ int Photon::hit(Astrobj::Properties *data) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
-    //cout << "IN ph r= " << coord[1] << endl;
+    //cout << "IN ph z= " << coord[1]*cos(coord[2]) << endl;
     
     if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
       double zsign=0.;
@@ -382,13 +382,13 @@ int Photon::hit(Astrobj::Properties *data) {
 	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
 	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
 	
-	if (data && data->spectrum){
-	  SmartPointer<Spectrometer::Generic> spr = spectrometer();
-	  size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
-	  for (size_t ii=0; ii<nbnuobs; ++ii) {
-	    data->spectrum[ii*data->offset] = 0.; // "cancel" this photon's contribution
-	  }
-	}
+	// if (data && data->spectrum){
+	//   SmartPointer<Spectrometer::Generic> spr = spectrometer();
+	//   size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
+	//   for (size_t ii=0; ii<nbnuobs; ++ii) {
+	//     data->spectrum[ii*data->offset] = 0.; // "cancel" this photon's contribution
+	//   }
+	// }
 	return 0;
       }
     }
