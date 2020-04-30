@@ -337,7 +337,7 @@ int Photon::hit(Astrobj::Properties *data) {
     // Next step along photon's worldline
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
-    //cout << "IN ph z= " << coord[1]*cos(coord[2]) << endl;
+    //cout << "IN ph r, z= " << coord[1] << " " << coord[1]*cos(coord[2]) << endl;
     
     if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
       double zsign=0.;
@@ -378,7 +378,13 @@ int Photon::hit(Astrobj::Properties *data) {
 	  
       if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
 
-      if (nb_cross_eqplane_ > maxCrossEqplane_) {
+      if (nb_cross_eqplane_ == maxCrossEqplane_
+	  && object_ -> Impact(this, ind, NULL) == 0) {
+	// Update 200430 FV: compute geodesic until (1) it reaches
+	// maxcross and (2) it leaves the object (NB: the NULL in place
+	// of data is there to insure that quantities will not be updated).
+	// Keep the amount of flux accumulated so far and stop integration.
+	
 	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
 	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
 	
