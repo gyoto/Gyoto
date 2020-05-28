@@ -45,7 +45,9 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(EquatorialHotSpot, "Equatorial hot spot with beaming")
 GYOTO_PROPERTY_DOUBLE(EquatorialHotSpot, SpotRadSize, spotRadSize)
 GYOTO_PROPERTY_STRING(EquatorialHotSpot, BeamingKind, beaming,
-		      "One of: IsotropicBeaming, NormalBeaming, RadialBeaming")
+		      "One of: IsotropicBeaming, NormalBeaming, RadialBeaming, "
+		      "IsotropicConstant (emission is isotropic and constant"
+		      "equals to 1)")
 GYOTO_PROPERTY_DOUBLE(EquatorialHotSpot, BeamAngle, beamAngle)
 GYOTO_WORLDLINE_PROPERTY_END(EquatorialHotSpot, ThinDisk::properties)
 
@@ -57,6 +59,7 @@ void EquatorialHotSpot::beaming(std::string const &b) {
   if (b=="IsotropicBeaming") beaming_=IsotropicBeaming;
   else if (b=="NormalBeaming") beaming_=NormalBeaming;
   else if (b=="RadialBeaming") beaming_=RadialBeaming;
+  else if (b=="IsotropicConstant") beaming_=IsotropicConstant;
   else GYOTO_ERROR("Unknown beaming kind");
 }
 std::string EquatorialHotSpot::beaming() const {
@@ -65,6 +68,7 @@ std::string EquatorialHotSpot::beaming() const {
   case IsotropicBeaming: b="IsotropicBeaming"; break;
   case NormalBeaming:    b="NormalBeaming";    break;
   case RadialBeaming:    b="RadialBeaming";    break;
+  case IsotropicConstant: b="IsotropicConstant"; break;
   default: GYOTO_ERROR("Unknown beaming kind");
   }
   return b;
@@ -195,26 +199,35 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
     dify=(rr*sin(phi)-yspot);
   double d2 = difx*difx+dify*dify;
   double ds2=sizespot_*sizespot_;
-  if (d2 < ds2){
-    // computing the angle (normal,photon tangent)
-    double gthth=gg_->gmunu(&coord_ph[0],2,2);
-    double pth=coord_ph[6];
-    double uemitter[4];
-    const_cast<EquatorialHotSpot*>(this)
-      ->getVelocity(&coord_ph[0],uemitter);
-    double pscalu=fabs(gg_->ScalarProd(&coord_ph[0],&coord_ph[4],
-				       uemitter));
-    double cosalpha = 1./pscalu*sqrt(gthth)*fabs(pth); // = |cos(alpha)|
+  if (d2 < 16*ds2){ // we are within 4*rspot,
+                    // same as in Schnittman & Bertschinger 2004
 
-    // emission gaussian width
-    double sigma2=ds2/16.; // then 0 emission outside sizespot_ (4 sigma dist)
-    if (fabs(cosalpha)>1.)
-      GYOTO_ERROR("In EquatorialHotSpot::emission:"
-		 " impossible angle");
+    // computing the angle (normal,photon tangent)
+    double cosalpha=0.;
+    if (beaming_ == NormalBeaming or beaming_ == RadialBeaming){
+      double gthth=gg_->gmunu(&coord_ph[0],2,2);
+      double pth=coord_ph[6];
+      double uemitter[4];
+      const_cast<EquatorialHotSpot*>(this)
+	->getVelocity(&coord_ph[0],uemitter);
+      double pscalu=fabs(gg_->ScalarProd(&coord_ph[0],&coord_ph[4],
+					 uemitter));
+      if (pscalu==0.) GYOTO_ERROR("Undefined cosalpha!");
+      cosalpha = 1./pscalu*sqrt(gthth)*fabs(pth); // = |cos(alpha)|
+
+      if (fabs(cosalpha)>1.)
+	GYOTO_ERROR("cosalpha>1!");
+    }
+      
+    // emission Gaussian width
+    double sigma2=ds2 ; // following choice of Schnittman & Bertschinger 2004:
+                        // sigma = Rspot
 
     switch (beaming_) {
     case IsotropicBeaming:
       return exp(-d2/(2*sigma2));
+    case IsotropicConstant:
+      return 1.;
     case NormalBeaming:
       return cosalpha*cosalpha*exp(-d2/(2*sigma2));
     case RadialBeaming:

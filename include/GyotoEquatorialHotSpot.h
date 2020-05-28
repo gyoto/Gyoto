@@ -42,7 +42,8 @@ class Gyoto::Astrobj::EquatorialHotSpot
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::EquatorialHotSpot>;
  private:
   double sizespot_;
-  enum beaming_t {IsotropicBeaming=0, NormalBeaming=1, RadialBeaming=2};
+  enum beaming_t {IsotropicBeaming=0, NormalBeaming=1,
+		  RadialBeaming=2, IsotropicConstant=3};
   beaming_t beaming_;
   double beamangle_;
  public:
