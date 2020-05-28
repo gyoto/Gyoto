@@ -338,67 +338,6 @@ int Photon::hit(Astrobj::Properties *data) {
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
     //cout << "IN ph r, z= " << coord[1] << " " << coord[1]*cos(coord[2]) << endl;
-    
-    if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
-      double zsign=0.;
-      double rlim=10.;
-      /* 
-	 The nb of crossings of equat plane is
-	 only tracked within a sphere of coordinate radius rlim.
-	 See the Appendix of Vincent+20 on M87 for a discussion.
-      */
-      switch (coordkind) {
-      case GYOTO_COORDKIND_SPHERICAL:
-	//cout << "current z= " << coord[1]*cos(coord[2]) << endl;
-	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
-	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
-	//cout << "zsign= " << zsign << endl;
-	if (coord[1]*cos(coord[2])*zsign<0. && coord[1]<rlim){
-	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
-	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
-	}
-	break;
-      case GYOTO_COORDKIND_CARTESIAN:
-	{
-	  zsign = x3_[i0_];
-	  double rcart = sqrt(coord[1]*coord[1]
-			      +coord[2]*coord[2]+coord[3]*coord[3]); 
-	  if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
-	  if (coord[3]*zsign<0. && rcart<rlim){
-	    nb_cross_eqplane_+=1; // equatorial plane has been just crossed
-	    //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
-	}
-	break;
-	}
-      default:
-	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
-      }
-
-      GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
-	  
-      if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
-
-      if (nb_cross_eqplane_ == maxCrossEqplane_
-	  && object_ -> Impact(this, ind, NULL) == 0) {
-	// Update 200430 FV: compute geodesic until (1) it reaches
-	// maxcross and (2) it leaves the object (NB: the NULL in place
-	// of data is there to insure that quantities will not be updated).
-	// Keep the amount of flux accumulated so far and stop integration.
-	
-	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
-	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
-	
-	// if (data && data->spectrum){
-	//   SmartPointer<Spectrometer::Generic> spr = spectrometer();
-	//   size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
-	//   for (size_t ii=0; ii<nbnuobs; ++ii) {
-	//     data->spectrum[ii*data->offset] = 0.; // "cancel" this photon's contribution
-	//   }
-	// }
-	return 0;
-      }
-    }
-
     if (!secondary_){ // to compute only primary image (outdated, use MaxCrossEqplane above instead)
       // Thin disk case
       double sign = x1_[i0_]*cos(x2_[i0_]);
@@ -554,6 +493,67 @@ int Photon::hit(Astrobj::Properties *data) {
       }
     }
     //************************************
+
+    if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
+      double zsign=0.;
+      double rlim=10.;
+      /* 
+	 The nb of crossings of equat plane is
+	 only tracked within a sphere of coordinate radius rlim.
+	 See the Appendix of Vincent+20 on M87 for a discussion.
+      */
+      switch (coordkind) {
+      case GYOTO_COORDKIND_SPHERICAL:
+	//cout << "current z= " << coord[1]*cos(coord[2]) << endl;
+	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
+	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	//cout << "zsign= " << zsign << endl;
+	if (coord[1]*cos(coord[2])*zsign<0. && coord[1]<rlim){
+	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	  //cout << "at r= " << coord[1] << endl;
+	}
+	break;
+      case GYOTO_COORDKIND_CARTESIAN:
+	{
+	  zsign = x3_[i0_];
+	  double rcart = sqrt(coord[1]*coord[1]
+			      +coord[2]*coord[2]+coord[3]*coord[3]); 
+	  if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	  if (coord[3]*zsign<0. && rcart<rlim){
+	    nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	    //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	}
+	break;
+	}
+      default:
+	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
+      }
+
+      GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
+	  
+      if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
+
+      if (nb_cross_eqplane_ == maxCrossEqplane_
+	  && object_ -> Impact(this, ind, NULL) == 0) {
+	// Update 200430 FV: compute geodesic until (1) it reaches
+	// maxcross and (2) it leaves the object (NB: the NULL in place
+	// of data is there to insure that quantities will not be updated).
+	// Keep the amount of flux accumulated so far and stop integration.
+	
+	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
+	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
+	
+	// if (data && data->spectrum){
+	//   SmartPointer<Spectrometer::Generic> spr = spectrometer();
+	//   size_t nbnuobs = spr() ? spr -> nSamples() : 0 ;
+	//   for (size_t ii=0; ii<nbnuobs; ++ii) {
+	//     data->spectrum[ii*data->offset] = 0.; // "cancel" this photon's contribution
+	//   }
+	// }
+	return 0;
+      }
+    }    
 
   }
   // End of stopcond loop
