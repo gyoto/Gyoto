@@ -39,8 +39,9 @@ metric=kerrbl;
 res=128; // resolution of the output image
 scr=Screen(inclination=pi/2, paln=pi, argument=pi/2,
            metric=metric, resolution=res, anglekind="Rectilinear");
-scr,distance=2, unit="m"; // camera is at 1m from the BH
+scr,distance=2, unit="m"; // camera is at 2m from the BH
 scr, fov=pi/2.;
+// scr, fov=2.*atan(36./100.); // ~40°, 36mm film behind a 50mm lense
 
 // Use an empty Astrobj, just set rmax to 10 meters:
 ao=Astrobj("Complex", rmax=10./metric.unitlength());
@@ -53,6 +54,9 @@ sc=Scenery(metric=metric, astrobj=ao, screen=scr, nthreads=8);
 // download file:
 //   http://farm1.staticflickr.com/192/456185667_adde9d2f8e_o_d.jpg
 //painter=gyoto.painters.mk_panorama(img=jpeg_read("456185645_e56abcc2cd_o.jpg")(,,::-1));
+// Or a more conventional picture:
+//   https://i.pinimg.com/236x/19/53/11/195311bdb5b029cb72214b95833e6dcf.jpg
+//painter=gyoto.painters.mk_picture(img=jpeg_read("195311bdb5b029cb72214b95833e6dcf.jpg")(,,::-1), fov=2.*atan(36./100.))
 // To use a p-mode-like pattern:
 painter=gyoto.painters.mk_p_mode(ntheta=80, nphi=80);
 
@@ -62,11 +66,15 @@ painter=gyoto.painters.mk_p_mode(ntheta=80, nphi=80);
 // region or to call matte_paint repeatedly (e.g. on distinct
 // painters, of to fiddle with yaw, pitch & roll), we can precompute
 // ipct:
+nx=res
 ny=res*10/16; // use a 16/10 aspect ratio
+x1=(res-nx)/2+1;
+x2=res+1-x1;
 y1=(res-ny)/2+1;
 y2=res+1-y1;
-ipct=sc(,y1:y2,impactcoords=);
+ipct=sc(x1:x2,y1:y2,impactcoords=);
 //ipct=fits_read("ipct.fits");
+//bg=matte_paint(ipct, painter, kind=metric.coordkind());
 bg=matte_paint(ipct, painter, kind=metric.coordkind(), yaw=-1.62, roll=-0.32);
 
 ///// Fourth, display the image:

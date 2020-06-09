@@ -32,7 +32,7 @@ Complex::Complex() :
   elements_(NULL),
   step_max_(GYOTO_DEFAULT_DELTA)
 {
-
+  rmax_=0.; // By default rMax is computed from the sub-astrobjs
 }
 
 Complex::Complex(const Complex& o) :
@@ -135,8 +135,8 @@ double Complex::deltaMax(double coord[8]) {
 }
 
 double Complex::rMax() {
-  double rmax = elements_[0] -> rMax(), rmaxnew=rmax;
-  for (size_t i=1; i<cardinal_; ++i)
+  double rmax = Generic::rMax(), rmaxnew=0.;
+  for (size_t i=0; i<cardinal_; ++i)
     if (rmax < (rmaxnew=elements_[i] -> rMax())) rmax=rmaxnew;
   return rmax;
 }

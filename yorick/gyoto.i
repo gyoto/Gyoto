@@ -1029,7 +1029,7 @@ func gyoto_rotation(axis, angle)
 
 func gyoto_painters_picture_eval(theta_spherical, phi_spherical, mask=) {
   // see http://mathworld.wolfram.com/GnomonicProjection.html
-  use, img, phi1, lambda0;
+  use, img, fov, phi1, lambda0;
   dmatte=dimsof(img);
   ndims=dmatte(1);
   nx=dmatte(-1);
@@ -1117,7 +1117,7 @@ func gyoto_painters_mk_picture(img=, fov=, phi1=, lambda0=)
   if (is_void(fov)) fov=2.*atan(36./100.);
   if (is_void(phi1)) phi1=0.;
   if (is_void(lambda0)) lambda0=0.;
-  return closure(save(img, h_fov, v_fov, phi1, lambda0,
+  return closure(save(img, fov, h_fov, v_fov, phi1, lambda0,
                       painter_eval=gyoto.painters.picture_eval),
                  painter_eval);
 }
