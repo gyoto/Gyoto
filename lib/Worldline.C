@@ -1459,6 +1459,16 @@ void Worldline::setCst(double const * const cst, const size_t n) {
   for (size_t ii=0;ii<n;ii++) cst_[ii]=cst[ii];
 }
 
+void Worldline::constantsOfMotion(std::vector<double> const cstv) {
+  setCst(cstv.data(), cstv.size());
+}
+
+std::vector<double> Worldline::constantsOfMotion() const {
+  std::vector<double> out ;
+  out.assign(cst_, cst_+cst_n_);
+  return out;
+}
+
 void Worldline::getInitialCoord(state_t &coord) const {
   if (imax_<imin_)
     GYOTO_ERROR("Worldline::getInitialCoord(): initial coordinate not set yet");

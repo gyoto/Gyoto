@@ -595,7 +595,12 @@ class Gyoto::Worldline
 
   /**
    * Return pointer to array holding the previously set
-   * Metric-specific constants of motion
+   * Metric-specific constants of motion.
+   *
+   * This function returns a pointer to the actual storage location
+   * and should be handled with care. std::vector<double>
+   * Worldline:constantsOfMotion() const provides a convenient way to
+   * retrieve a copy of the content.
    */
   double const * getCst() const ; ///< Returns the worldline's cst of motion (if any)
 
@@ -603,8 +608,29 @@ class Gyoto::Worldline
   /**
    * The will (re)allocate Worldline::cst_, copy cst into it, and set
    * Worldline::cst_n_.
+   *
+   * This is the same as void
+   * Worldline:constantsOfMotion(std::vector<double> const cstv) using
+   * a C-style array instead of a vector.
    */
   void setCst(double const * cst, size_t const ncsts) ;
+
+  /// Set Metric-specific constants of motion
+  /**
+   * The will (re)allocate Worldline::cst_, copy cst into it, and set
+   * Worldline::cst_n_.
+   *
+   * This is the same as getCst using a vector instead of a C-style array.
+   */
+  void constantsOfMotion(std::vector<double> const cstv) ;
+
+  /// Return a copy of the Metric-specific constants of motion
+  /**
+   * This funtion return a copy of the constants of motion. getCst()
+   * can be used to retrieve a pointer to the actual array used
+   * internally which is slightly more efficient for read-only access.
+   */
+  std::vector<double> constantsOfMotion() const ;
 
   /// Set or re-set the initial condition prior to integration.
   /**
