@@ -247,6 +247,29 @@ GyotoSmPtrClassDerivedPtrHdr(nspace, klass, klass, hdr)
 GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
 %enddef
 
+// Add things for all metrics
+%define GyotoSmPtrClassDerivedMetric(klass)
+%extend Gyoto::Metric::klass {
+  // Support this syntax:
+  // vel = gg.circularVelocity(pos)
+  // in addition of gg.circularVelocity(pos, vel)
+  // Same for gmunu and christoffel
+  void circularVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
+    Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->circularVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
+  }
+  void zamoVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
+    Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->zamoVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
+  }
+  void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) {
+    Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->gmunu(ARGOUT_ARRAY2, IN_ARRAY1);
+  }
+  void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
+    Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
+  }
+};
+  GyotoSmPtrClassDerived(Metric, klass)
+%enddef
+
 // ******** INCLUDES ******** //
 // Include any file that is needed to compile the wrappers
 %{

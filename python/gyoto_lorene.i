@@ -46,8 +46,8 @@ using namespace Gyoto;
 #endif
  }
 
-GyotoSmPtrClassDerived(Metric, RotStar3_1)
-GyotoSmPtrClassDerived(Metric, NumericalMetricLorene)
+GyotoSmPtrClassDerivedMetric(RotStar3_1)
+GyotoSmPtrClassDerivedMetric(NumericalMetricLorene)
 
 GyotoSmPtrClassDerived(Astrobj, NeutronStar)
 GyotoSmPtrClassDerived(Astrobj, NeutronStarAnalyticEmission)

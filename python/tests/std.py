@@ -2,6 +2,7 @@ import numpy
 import unittest
 import gyoto.core
 import gyoto.std
+import inspect
 
 class TestChernSimons(unittest.TestCase):
 
@@ -216,3 +217,15 @@ class TestMinkowski(unittest.TestCase):
         r, norm=self._compute_r_norm(met, st, pos, v, tmax=50.)
         self.assertLess( numpy.abs(r-3.).max(), 1e-6)
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
+
+class TestStdMetric(unittest.TestCase):
+    def test_christoffel(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)):
+                continue
+            try:
+                gyoto.metric.check_christoffel(cls)
+            except AssertionError as e:
+                self.fail(e.__str__())

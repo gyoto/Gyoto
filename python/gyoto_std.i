@@ -151,12 +151,12 @@ GyotoSmPtrClassDerived(Astrobj, ThickDisk)
 
 
 
-GyotoSmPtrClassDerived(Metric, KerrBL)
-GyotoSmPtrClassDerived(Metric, KerrKS)
-GyotoSmPtrClassDerived(Metric, Minkowski)
-GyotoSmPtrClassDerived(Metric, ChernSimons)
-GyotoSmPtrClassDerived(Metric, RezzollaZhidenko)
-GyotoSmPtrClassDerived(Metric, Hayward)
+GyotoSmPtrClassDerivedMetric(KerrBL)
+GyotoSmPtrClassDerivedMetric(KerrKS)
+GyotoSmPtrClassDerivedMetric(Minkowski)
+GyotoSmPtrClassDerivedMetric(ChernSimons)
+GyotoSmPtrClassDerivedMetric(RezzollaZhidenko)
+GyotoSmPtrClassDerivedMetric(Hayward)
 
 GyotoSmPtrClassDerivedHdr(Spectrum, PowerLaw, GyotoPowerLawSpectrum.h)
 GyotoSmPtrClassDerivedHdr(Spectrum, BlackBody, GyotoBlackBodySpectrum.h)
