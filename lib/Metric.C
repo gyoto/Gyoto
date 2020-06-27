@@ -284,6 +284,11 @@ void Metric::Generic::gmunu(double g[4][4], const double x[4]) const {
   }
 }
 
+void Metric::Generic::gmunu_up(double gup[4][4], const double x[4]) const {
+  double g[4][4];
+  gmunu(g, x);
+  Gyoto::matrix4Invert(gup, g);
+}
 
 double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
   double dst[4][4][4];

@@ -123,6 +123,15 @@ namespace Gyoto {
   void cartesianToSpherical(double const cpos[3], double spos[3]);
   /// Tranform from spherical 3-position to Cartesian 3-position
   void sphericalToCartesian(double const spos[3], double cpos[3]);
+
+  /// Invert 4x4 matrix
+  /**
+   * \param[in] IN_ARRAY2 the 4×4 matrix to invert
+   * \param[out] ARGOUT_ARRAY2 the invert matrix of IN_ARRAY2
+   */
+  // Keep argument names for doxygen!
+  void matrix4Invert(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY2[4][4]);
+
 }
 
 #endif

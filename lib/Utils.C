@@ -330,3 +330,66 @@ void Gyoto::sphericalToCartesian(double const spos[3], double cpos[3]) {
   cpos[1] = spos[0]*s1*s2;
   cpos[2] = spos[0]*c1;
 }
+
+// Matrix inversion
+void Gyoto::matrix4Invert(double Am1[4][4], double const A[4][4]) {
+  // Invert 4×4 matrix using Gauss pivot
+  double tmp[4][4];
+  int i, j, jj, jl;
+  double fact;
+
+  // Initialize Am1 as identity matrix
+  // copy A into tmp
+  for (j=0; j<4; ++j) {
+    for (i=0; i<4; ++i) {
+      Am1[i][j] = (i==j);
+      tmp[i][j] = A[i][j];
+    }
+  }
+
+  // Turn tmp in upper diagonal matrix with ones on the diagonal
+  for (j=0; j<4; ++j) {
+    // exchange row j with later row with largest coeff in column j
+    // (to deal with case of zero or small value on the diagonal
+    fact=tmp[j][j];
+    jl=j;
+    for (jj=j+1; jj<4; ++jj) {
+      if (fabs(tmp[j][jj])>fabs(fact)) {
+	jl=jj;
+	fact=tmp[j][jj];
+      }
+    }
+    fact=1./fact;
+    if (jl!=j) {
+      double c;
+      for (i=j; i<4; ++i) {
+	c=tmp[i][jl];
+	tmp[i][jl]=tmp[i][j];
+	tmp[i][j]=c*fact;
+      }
+      for (i=0; i<4; ++i) {
+	c=Am1[i][jl];
+	Am1[i][jl]=Am1[i][j];
+	Am1[i][j]=c*fact;
+      }
+    } else {
+      for (i=j; i<4; ++i) tmp[i][j] *= fact;
+      for (i=0; i<4; ++i) Am1[i][j] *= fact;
+    }
+    // subtract this row times of factor to each later row
+    for (jj = j+1; jj < 4; ++jj) {
+      fact = tmp[j][jj];
+      for (i=j+1; i<4; ++i) tmp[i][jj] -= fact*tmp[i][j];
+      for (i=0; i<4; ++i) Am1[i][jj] -= fact*Am1[i][j];
+    }
+  }
+
+  // Cancel upper triangle to get finally the identity matrix
+  for (j=3; j>=0; --j) {
+    for (jj = j-1; jj >= 0; --jj) {
+      fact = tmp[j][jj];
+      for (i=0; i<4; ++i) tmp[i][jj] -= fact*tmp[i][j];
+      for (i=0; i<4; ++i) Am1[i][jj] -= fact*Am1[i][j];
+    }
+  }
+}

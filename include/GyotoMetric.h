@@ -508,7 +508,13 @@ class Gyoto::Metric::Generic
    */
   virtual void gmunu(double g[4][4], double const pos[4]) const;
 
-
+  /**
+   * \brief Metric contravariant coefficients
+   *
+   * The default implementation inverts the covariant coefficients matrix.
+   **/
+  // Keep argument names for doxygen!
+  virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   /**
    * \brief Chistoffel symbol
