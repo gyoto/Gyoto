@@ -94,6 +94,24 @@ class TestHayward(unittest.TestCase):
         gg.charge(b)
         self.assertTrue((gg.charge() == b))
 
+    def test_gmunu(self):
+        metric=gyoto.std.Hayward()
+        I=numpy.zeros((4,4))
+        for i in range(4):
+            I[i,i]=1.
+        for r in (-2, 0.5, 6):
+            pos=(10, r, numpy.pi/4, numpy.pi/3)
+            g=metric.gmunu(pos)
+            gup=metric.gmunu_up(pos)
+            ggup=numpy.linalg.multi_dot((g, gup))
+            for mu in range(4):
+                for nu in range(4):
+                    self.assertAlmostEqual(metric.gmunu(pos, mu, nu), g[mu, nu])
+                    self.assertAlmostEqual(metric.gmunu_up(pos, mu, nu), gup[mu, nu], 7,
+                                           "mu: {}, nu: {}".format(mu, nu))
+                    self.assertAlmostEqual(ggup[mu, nu],I[mu,nu])
+
+
 class TestStar(unittest.TestCase):
 
     def test_setInitCoord(self):
@@ -263,6 +281,20 @@ class TestStdMetric(unittest.TestCase):
                     self.assertAlmostEqual(metric.gmunu(pos, mu, nu), g[mu, nu], 7, classname)
 
     def test_gmunu_up(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)):
+                continue
+            metric=self.metric(cls)
+            pos=self.pos(metric)
+            gup=metric.gmunu_up(pos)
+            for mu in range(4):
+                for nu in range(4):
+                    self.assertAlmostEqual(metric.gmunu_up(pos, mu, nu), gup[mu, nu], 7,
+                                           "class: {}, mu: {}, nu: {}".format(classname, mu, nu))
+
+    def test_gmunu_gmunu_up(self):
         nspace=gyoto.std
         I=numpy.zeros((4,4))
         for i in range(4):

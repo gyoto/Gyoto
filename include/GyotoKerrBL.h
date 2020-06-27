@@ -102,7 +102,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    * \brief g<SUP>&mu;,&nu;</SUP>
    */
   void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
-  double gmunu_up(const double * const x, int mu, int nu) const ;
+  double gmunu_up(double const x[4], int mu, int nu) const ;
  
   using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double pos[4]) const ;

@@ -87,6 +87,8 @@ class Gyoto::Metric::KerrKS
 
   void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
 
+
+  using Gyoto::Metric::Generic::gmunu_up;
   /**
    *\brief The inverse matrix of gmunu
    */ 

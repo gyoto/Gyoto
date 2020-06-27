@@ -166,6 +166,15 @@ class Gyoto::Metric::Generic
   double mass_;     ///< Mass yielding geometrical unit (in kg).
   int coordkind_; ///< Kind of coordinates (cartesian-like, spherical-like, unspecified)
 
+  /**
+   * \brief Whether some virtual methods are implemented
+   *
+   * The default implementations of some methods call
+   * one-another. This member is used internally to avoid infinite
+   * recursion.
+   */
+  int __defaultfeatures;
+
  protected:
   double delta_min_; ///< Minimum integration step for the adaptive integrator
   double delta_max_; ///< Maximum integration step for the adaptive integrator
@@ -508,6 +517,18 @@ class Gyoto::Metric::Generic
    */
   // Keep argument names for swig!
   virtual void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const;
+
+  /**
+   * \brief Metric contravariant coefficients
+   *
+   * The default implementation calls Metric:: gmunu_up(double g[4][4], const double * pos) const
+   *
+   * \param x  4-position at which to compute the coefficient;
+   * \param mu 1st index of coefficient, 0&le;&mu;&le;3;
+   * \param nu 2nd index of coefficient, 0&le;&nu;&le;3;
+   * \return Metric coefficient g<SUP>&mu;,&nu;</SUP> at point x
+   */
+  virtual double gmunu_up(double const x[4], int mu, int nu) const;
 
   /**
    * \brief Metric contravariant coefficients

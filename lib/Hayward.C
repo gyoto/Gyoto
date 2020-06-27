@@ -319,7 +319,7 @@ double Hayward::gmunu_up(const double * pos, int mu, int nu) const
     {
       double u=1./r, u2=u*u, u3=u2*u, u4=u3*u, u5=u4*u, u6=u5*u, u7=u6*u;
       
-      if ((mu==0) && (nu==0)) return -(2.*a4_*b2_*u7*cth2+2.*a2b2*u5*cth2+a4_*u4*cth2+2.*a2b2*u5+2.*a2_*u3*sth2+a2_*u2*cth2+2.*b2_*u3+a2_*u2+1.)/(2.*a2b2*u5+2.*b2_*u3+a2_*u2+2.*u+1.)/(a2_*u2*cth2+1.);
+      if ((mu==0) && (nu==0)) return -(2.*a4_*b2_*u7*cth2+2.*a2b2*u5*cth2+a4_*u4*cth2+2.*a2b2*u5+2.*a2_*u3*sth2+a2_*u2*cth2+2.*b2_*u3+a2_*u2+1.)/(2.*a2b2*u5+2.*b2_*u3+a2_*u2-2.*u+1.)/(a2_*u2*cth2+1.);
       if ((mu==1) && (nu==1)) return (2.*a2b2*u5+2.*b2_*u3+a2_*u2-2.*u+1.)/(a2_*u2*cth2+1.)/(2.*b2_*u3+1.);
       if ((mu==2) && (nu==2)) return u2/(a2_*u2*cth2+1.);
       if ((mu==3) && (nu==3)) return (2.*a2b2*u5*cth2+2.*b2_*u3+a2_*u2*cth2-2.*u+1.)*u2/(2.*a4_*b2_*u7*cth2+2.*a2b2*u5*cth2+a4_*u4*cth2+2.*a2b2*u5+2.*a2_*u3*sth2+a2_*u2*cth2-2.*a2_*u3+2.*b2_*u3+a2_*u2-2.*u+1.)/(sth2);

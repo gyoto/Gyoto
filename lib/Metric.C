@@ -50,9 +50,27 @@ GYOTO_PROPERTY_DOUBLE(Metric::Generic, DeltaMaxOverR, deltaMaxOverR,
 GYOTO_PROPERTY_END(Metric::Generic, Object::properties)
 
 ///
+/*
+  User code is free to provide any or none of the various versions of
+  gmunu_up(). The default implementations call one another to try and
+  find user-provided code, but a default implementation needs to be
+  triggered if none are provided.  In order to avoid infinite
+  recursion as well as for efficiency, several of those methose set a
+  flag in __defaultfeatures if they are called to inform the other
+  methods. This is what each method will try:
+
+    - coefficient gmunu_up:
+      + matrix gmunu_up;
+    - matrix gmunu_up:
+      + coefficient gmunu_up
+      + fall back to inverting gmunu matrix.
+ */
+
+#define __default_gmunu_up_coef 1
 
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
   SmartPointee(), Object(name), mass_(1.), coordkind_(coordkind),
+  __defaultfeatures(0),
   delta_min_(GYOTO_DEFAULT_DELTA_MIN),
   delta_max_(GYOTO_DEFAULT_DELTA_MAX),
   delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
@@ -68,6 +86,7 @@ Metric::Generic::Generic(const int coordkind, const std::string &name) :
 
 Metric::Generic::Generic(Generic const &o):
   SmartPointee(o), Object(o), mass_(o.mass_), coordkind_(o.coordkind_),
+  __defaultfeatures(o.__defaultfeatures),
   delta_min_(o.delta_min_), delta_max_(o.delta_max_),
   delta_max_over_r_(o.delta_max_over_r_), keplerian_(o.keplerian_)
 {}
@@ -284,10 +303,26 @@ void Metric::Generic::gmunu(double g[4][4], const double x[4]) const {
   }
 }
 
-void Metric::Generic::gmunu_up(double gup[4][4], const double x[4]) const {
+double Metric::Generic::gmunu_up(const double x[4], int mu, int nu) const {
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_gmunu_up_coef;
   double g[4][4];
-  gmunu(g, x);
-  Gyoto::matrix4Invert(gup, g);
+  gmunu_up(g, x);
+  return g[mu][nu];
+}
+
+void Metric::Generic::gmunu_up(double gup[4][4], const double x[4]) const {
+  if (!(__defaultfeatures & __default_gmunu_up_coef)) {
+    int mu, nu;
+    for (mu=0; mu<4; ++mu) {
+      gup[mu][mu]=gmunu_up(x, mu, mu);
+      for (nu=mu+1; nu<4; ++nu)
+	gup[mu][nu]=gup[nu][mu]=gmunu_up(x, mu, nu);
+    }
+  } else {
+    double g[4][4];
+    gmunu(g, x);
+    Gyoto::matrix4Invert(gup, g);
+  }
 }
 
 double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
