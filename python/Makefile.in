@@ -142,11 +142,11 @@ swig_output/core.py core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h
 	$(MKDIR_P) swig_output
 	$(SWIG_CMD) -o core_wrap.cxx $(srcdir)/gyoto.i
 
-swig_output/std.py std_wrap.cxx: gyoto_std.i gyoto.i
+swig_output/std.py std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(MKDIR_P) swig_output
 	$(SWIG_CMD) -o std_wrap.cxx $(srcdir)/gyoto_std.i
 
-swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i
+swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(MKDIR_P) swig_output
 	$(SWIG_CMD) -o lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
 
