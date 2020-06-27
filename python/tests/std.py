@@ -219,6 +219,25 @@ class TestMinkowski(unittest.TestCase):
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
 class TestStdMetric(unittest.TestCase):
+    def pos(self, metric):
+        if metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL:
+            pos=(10, 6., numpy.pi/4, numpy.pi/3)
+        else:
+            pos=(10, 6, 2, 4.)
+        return pos
+
+    def metric(self, cls):
+        metric=cls()
+        try:
+            metric.spin(0.5)
+        except AttributeError:
+            pass
+        try:
+            metric.dzetaCS(0.5)
+        except AttributeError:
+            pass
+        return metric
+
     def test_christoffel(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
@@ -229,3 +248,31 @@ class TestStdMetric(unittest.TestCase):
                 gyoto.metric.check_christoffel(cls)
             except AssertionError as e:
                 self.fail(e.__str__())
+
+    def test_gmunu(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)):
+                continue
+            metric=self.metric(cls)
+            pos=self.pos(metric)
+            g=metric.gmunu(pos)
+            for mu in range(4):
+                for nu in range(4):
+                    self.assertAlmostEqual(metric.gmunu(pos, mu, nu), g[mu, nu], 7, classname)
+
+    def test_gmunu_up(self):
+        nspace=gyoto.std
+        I=numpy.zeros((4,4))
+        for i in range(4):
+            I[i,i]=1.
+        for classname, cls in inspect.getmembers(nspace):
+            if (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)):
+                continue
+            metric=cls()
+            pos=self.pos(metric)
+            g=metric.gmunu(pos)
+            gup=metric.gmunu_up(pos)
+            self.assertAlmostEqual(numpy.abs(numpy.linalg.multi_dot((g, gup))-I).max(), 0.)

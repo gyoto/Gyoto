@@ -95,6 +95,12 @@ double ChernSimons::gmunu(const double * pos, int mu, int nu) const {
   return 0.;
 }
 
+void ChernSimons::gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const {
+  // Let's make sure the Generic version is called, not the KerrBL one
+  Generic::gmunu(ARGOUT_ARRAY2, IN_ARRAY1);
+}
+
+
 double ChernSimons::gmunu_up(const double * pos, int mu, int nu) const {
   double r = pos[1];
   double sth2, cth2;

@@ -502,18 +502,19 @@ class Gyoto::Metric::Generic
    *
    * The default implementation calls double gmunu(const double * x, int mu, int nu) const.
    *
-   * \param[out] g  4x4 array to store the coeefficients
-   * \param[in] x  4-position at which to compute the coefficients;
+   * \param[out] ARGOUT_ARRAY2 (g) 4x4 array to store the coeefficients
+   * \param[in] IN_ARRAY1  (x) 4-position at which to compute the coefficients;
    * \return Metric coefficient g<SUB>&mu;,&nu;</SUB> at point x 
    */
-  virtual void gmunu(double g[4][4], double const pos[4]) const;
+  // Keep argument names for swig!
+  virtual void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const;
 
   /**
    * \brief Metric contravariant coefficients
    *
    * The default implementation inverts the covariant coefficients matrix.
    **/
-  // Keep argument names for doxygen!
+  // Keep argument names for swig!
   virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   /**

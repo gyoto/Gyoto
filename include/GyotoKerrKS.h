@@ -83,15 +83,14 @@ class Gyoto::Metric::KerrKS
   void horizonSecurity(double drhor);
   double horizonSecurity() const;
   
-  double gmunu(const double x[4],
-		       int alpha, int beta) const ;
+  double gmunu(double const x[4], int alpha, int beta) const ;
 
-  void gmunu(double g[4][4], const double pos[4]) const;
+  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
 
   /**
    *\brief The inverse matrix of gmunu
    */ 
-  void gmunu_up(double gup[4][4], const double pos[4]) const;
+  void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   /**
    * \brief The derivatives of gmunu

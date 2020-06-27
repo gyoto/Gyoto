@@ -99,9 +99,9 @@ class Gyoto::Metric::Hayward : public Metric::Generic {
 				  double dir) const;
 
   // Actual space-time API
-  void gmunu(double g[4][4], const double * pos) const ;
-  double gmunu(const double * const x, int mu, int nu) const ;
-  void gmunu_up(double gup[4][4], const double * pos) const ;
+  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+  double gmunu(double const x[4], int mu, int nu) const ;
+  void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   double gmunu_up(const double * const x, int mu, int nu) const ;
   using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double pos[4]) const ;

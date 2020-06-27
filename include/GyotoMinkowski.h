@@ -60,7 +60,7 @@ class Gyoto::Metric::Minkowski
   Minkowski();
   virtual Minkowski* clone() const ;
 
-  void gmunu(double g[4][4], const double x[4]) const ;
+  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   int christoffel(double dst[4][4][4], const double x[4]) const ;
 
   // Those two are implemented as examples.

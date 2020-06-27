@@ -129,7 +129,7 @@ namespace Gyoto {
    * \param[in] IN_ARRAY2 the 4×4 matrix to invert
    * \param[out] ARGOUT_ARRAY2 the invert matrix of IN_ARRAY2
    */
-  // Keep argument names for doxygen!
+  // Keep argument names for swig!
   void matrix4Invert(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY2[4][4]);
 
 }

@@ -95,13 +95,13 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   
   virtual double getPotential(double const pos[4], double l_cst) const;
 
-  void gmunu(double g[4][4], const double * pos) const ;
-  double gmunu(const double * const x, int mu, int nu) const ;
+  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+  double gmunu(double const x[4], int mu, int nu) const ;
 
   /** 
    * \brief g<SUP>&mu;,&nu;</SUP>
    */
-  void gmunu_up(double gup[4][4], const double * pos) const ;
+  void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   double gmunu_up(const double * const x, int mu, int nu) const ;
  
   using Generic::christoffel;

@@ -49,7 +49,11 @@ class Gyoto::Metric::ChernSimons
   void dzetaCS(double d);
   double dzetaCS() const;
 
-  double gmunu(const double * const x, int mu, int nu) const ;
+  // need to reimplement both, else KerrBL version can be called!
+  void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const;
+  double gmunu(double const x[4], int mu, int nu) const ;
+
+  using Gyoto::Metric::Generic::gmunu_up;
   double gmunu_up(const double * const x, int mu, int nu) const ;
   int diff(const double y[8], const double cst[5], double res[8]) const ;
   void circularVelocity(double const pos[4], double vel [4],

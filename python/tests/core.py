@@ -175,11 +175,8 @@ class TestMetric(unittest.TestCase):
         gg=gyoto.core.Metric('KerrBL')
         tt=gg.gmunu((0, 6, 3.14, 0), 0, 0)
         self.assertAlmostEqual(tt, -0.6666666666666667)
-        dst=numpy.zeros((4, 4), float)
-        gg.gmunu(dst, (0, 6, 3.14, 0))
+        dst=gg.gmunu((0, 6, 3.14, 0))
         self.assertEqual(tt, dst[0, 0])
-        dst2=gg.gmunu((0, 6, 3.14, 0))
-        self.assertEqual(tt, dst2[0, 0])
 
     def test_christoffel(self):
         gg=gyoto.core.Metric('KerrBL')
