@@ -262,8 +262,9 @@ class TestStdMetric(unittest.TestCase):
             if (not inspect.isclass(cls)
                 or not issubclass(cls, gyoto.core.Metric)):
                 continue
+            m=self.metric(cls)
             try:
-                gyoto.metric.check_christoffel(cls)
+                gyoto.metric.check_christoffel(m)
             except AssertionError as e:
                 self.fail(e.__str__())
 

@@ -117,13 +117,15 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
             raise ValueError('Unknown coordinate kind')
 
     for pos in poslist:
-        G=metric.christoffel(pos)
+        retval, G=metric.christoffel(pos)
+        if retval:
+            self.fail('error in christoffel')
         Gn=christoffel_numerical(metric, pos, epsilon)
         for a in range(4):
             for m in range(4):
                 for n in range(4):
                     e=numpy.abs(G[a, m, n]-Gn[a, m, n])
-                    assert e <= abstol, "absolute error {} larger than {} at {} for alpha={}, mu={}, nu={}".format(e, abstol, pos, a, m, n)
+                    assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e, abstol, pos, metric.kind(), a, m, n)
                     avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
                     if avg > abstol:
-                        assert e/avg <= reltol, "relative error {} larger than {} at {} for alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, a, m, n)
+                        assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)

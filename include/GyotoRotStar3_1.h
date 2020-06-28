@@ -124,8 +124,10 @@ class Gyoto::Metric::RotStar3_1 : public Gyoto::Metric::Generic {
    */
   void Normalize4v(const double coordin[6], double coordout[6], const double cst[2], double& tdot_used) const;
 
+  using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
 
+  using Generic::christoffel;
   double christoffel(const double coord[8], const int alpha, const int mu, 
 		     const int nu) const ;
 

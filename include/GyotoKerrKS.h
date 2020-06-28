@@ -102,7 +102,7 @@ class Gyoto::Metric::KerrKS
   void jacobian(double dst[4][4][4], const double x[4]) const ;
 
   using Generic::christoffel;
-  int christoffel(double dst[4][4][4], const double x[4]) const ;
+  int christoffel(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;
   int christoffel(double dst[4][4][4], const double pos[4], double gup[4][4], double jac[4][4][4]) const ;
 
   virtual void circularVelocity(double const pos[4], double vel [4],

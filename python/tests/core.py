@@ -183,10 +183,9 @@ class TestMetric(unittest.TestCase):
         tt=gg.christoffel((0, 6, 3.14, 0), 0, 0, 0)
         self.assertAlmostEqual(tt, 0)
         dst=numpy.zeros((4, 4, 4), float)
-        gg.christoffel(dst, (0, 6, 3.14, 0))
+        retval, dst=gg.christoffel((0, 6, 3.14, 0))
         self.assertEqual(tt, dst[0, 0, 0])
-        dst2=gg.christoffel((0, 6, 3.14, 0))
-        self.assertEqual(tt, dst2[0, 0, 0])
+        self.assertEqual(retval, 0)
 
     def test_norm(self):
         gg=gyoto.core.Metric('KerrBL')

@@ -557,7 +557,7 @@ class Gyoto::Metric::Generic
    *
    * \return 1 on error, 0 otherwise
    */  
-  virtual int christoffel(double dst[4][4][4], const double coord[4]) const ;
+  virtual int christoffel(double ARGOUT_ARRAY3[4][4][4], const double coord[4]) const ;
 
 
 

@@ -260,9 +260,6 @@ GyotoSmPtrClassDerivedHdr(nspace, klass, Gyoto ## klass ## .h)
   void zamoVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
     Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->zamoVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
   }
-  void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
-    Gyoto::SmartPointer<Gyoto::Metric::Generic>($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
-  }
 };
   GyotoSmPtrClassDerived(Metric, klass)
 %enddef
@@ -747,9 +744,6 @@ GyotoSmPtrClassDerivedPtrHdr(Astrobj, Standard, StandardAstrobj, GyotoStandardAs
   }
   void zamoVelocity(double const IN_ARRAY1[4], double ARGOUT_ARRAY1[4]) {
     ($self)->zamoVelocity(IN_ARRAY1, ARGOUT_ARRAY1);
-  }
-  void christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) {
-    ($self)->christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
   }
 };
 GyotoSmPtrClassGeneric(Metric)
