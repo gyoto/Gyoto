@@ -183,9 +183,9 @@ class Gyoto::Metric::NumericalMetricLorene
 		     const int alpha, 
 		     const int mu, const int nu,
 		     const int indice_time) const;
-  virtual int christoffel(double ARGOUT_ARRAY3[4][4][4],
+  virtual int christoffel(double dst[4][4][4],
 			  const double coord[4]) const;
-  int christoffel(double ARGOUT_ARRAY3[4][4][4],
+  int christoffel(double dst[4][4][4],
 		  const double coord[4],
 		  const int indice_time) const;
   /**

@@ -446,7 +446,7 @@ class Gyoto::Metric::Generic
    * Compute the dual 1-form of 4-vector.
    * \param IN_ARRAY1_1 4-position;
    * \param IN_ARRAY1_2 quadrivector;
-   * \param[out] ARGOUT_ARRAY3 output 1-form
+   * \param[out] ARGOUT_ARRAY1 output 1-form
    */
   void dualOneForm(double const IN_ARRAY1_1[4], double const IN_ARRAY1_2[4], double ARGOUT_ARRAY1[4]) const ;
 
@@ -557,7 +557,7 @@ class Gyoto::Metric::Generic
    *
    * \return 1 on error, 0 otherwise
    */  
-  virtual int christoffel(double ARGOUT_ARRAY3[4][4][4], const double coord[4]) const ;
+  virtual int christoffel(double dst[4][4][4], const double coord[4]) const ;
 
 
 

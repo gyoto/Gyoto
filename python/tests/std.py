@@ -262,11 +262,21 @@ class TestStdMetric(unittest.TestCase):
             if (not inspect.isclass(cls)
                 or not issubclass(cls, gyoto.core.Metric)):
                 continue
-            m=self.metric(cls)
+            metric=self.metric(cls)
             try:
-                gyoto.metric.check_christoffel(m)
+                gyoto.metric.check_christoffel(metric)
             except AssertionError as e:
                 self.fail(e.__str__())
+            pos=self.pos(metric)
+            G=metric.christoffel(pos)
+            G2=numpy.ones((4,4,4))
+            retval=metric.christoffel(G2, pos)
+            self.assertEqual(retval, 0, 'christoffel errors out')
+            for a in range(4):
+                for mu in range(4):
+                    for nu in range(4):
+                        self.assertAlmostEqual(metric.christoffel(pos, a, mu, nu), G[a, mu, nu], 7, classname)
+                        self.assertAlmostEqual(metric.christoffel(pos, a, mu, nu), G2[a, mu, nu], 7, classname)
 
     def test_gmunu(self):
         nspace=gyoto.std

@@ -67,7 +67,7 @@ class Gyoto::Metric::RezzollaZhidenko
   double Nprime(const double rr) const;
   double Bprime(const double rr) const;
   using Generic::christoffel;
-  int christoffel(double ARGOUT_ARRAY3[4][4][4], double const pos[4]) const ;
+  int christoffel(double dst[4][4][4], double const pos[4]) const ;
   int isStopCondition(double const * const coord) const;
   virtual double getRmb() const;
   virtual double getRms() const;
