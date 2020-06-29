@@ -334,24 +334,31 @@ def _Worldline_getCartesian(self, t=None, *arrays):
         _Worldline_getCartesian(self, t, x, y, z, xprime, yprime, zprime)
         return t, x, y, z, xprime, yprime, zprime
     # if t is provided, return 8-coord for this time. t can be index or time.
-    if numpy.isscalar(t) and not len(arrays):
-        if numpy.issubdtype(type(t), numpy.integer):
-            n=self.get_nelements()
-            ta=numpy.empty(n)
-            self.get_t(ta)
-            if t >= 0:
-                t=ta[t]
-            else:
-                t=ta[n+t]
-        ta=numpy.full(1, t)
-        x=numpy.empty(1)
-        y=numpy.empty(1)
-        z=numpy.empty(1)
-        xprime=numpy.empty(1)
-        yprime=numpy.empty(1)
-        zprime=numpy.empty(1)
-        _Worldline_getCartesian(self, ta, x, y, z, xprime, yprime, zprime)
-        return numpy.asarray([t, x[0], y[0], z[0], xprime[0], yprime[0], zprime[0]])
+    if not len(arrays):
+        scalarcase=False
+        if numpy.isscalar(t):
+            scalarcase=True
+            if numpy.issubdtype(type(t), numpy.integer):
+                n=self.get_nelements()
+                ta=numpy.empty(n)
+                self.get_t(ta)
+                if t >= 0:
+                    t=ta[t]
+                else:
+                    t=ta[n+t]
+            t=numpy.full(1, t)
+        n=t.size
+        x=numpy.empty(n)
+        y=numpy.empty(n)
+        z=numpy.empty(n)
+        xprime=numpy.empty(n)
+        yprime=numpy.empty(n)
+        zprime=numpy.empty(n)
+        _Worldline_getCartesian(self, t, x, y, z, xprime, yprime, zprime)
+        if scalarcase:
+            return numpy.asarray([t, x[0], y[0], z[0], xprime[0], yprime[0], zprime[0]])
+        else:
+            return t, x, y, z, xp, yp, zp
     # if t is a gyoto.core.array_double, call low-level C++ function
     if isinstance(t, core.array_double):
         core._core.Worldline_getCartesian(self, t, *arrays)
@@ -397,7 +404,7 @@ def _Worldline_getCoord(self, t, *arrays):
         x=numpy.empty(1)
         y=numpy.empty(1)
         z=numpy.empty(1)
-        tdot==numpy.empty(1)
+        tdot=numpy.empty(1)
         xdot=numpy.empty(1)
         ydot=numpy.empty(1)
         zdot=numpy.empty(1)
