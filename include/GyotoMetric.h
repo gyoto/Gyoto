@@ -539,6 +539,22 @@ class Gyoto::Metric::Generic
   virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   /**
+   * \brief Derivatives of the metric covariant coefficients
+   *
+   * The default implementation evaluates them numerically. The gmunu
+   * matrix is assumed to be symmetrical but no other assumptions are
+   * made at the moment.
+   **/
+  // Keep argument names for swig!
+  virtual void jacobian(double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
+
+  /**
+   * \brief gmunu_up() and jacobian() in one go
+   **/
+  // Keep argument names for swig!
+  virtual void gmunu_up_and_jacobian(double ARGOUT_ARRAY2[4][4], double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
+
+  /**
    * \brief Chistoffel symbol
    *
    * Value of Christoffel symbol

@@ -53,6 +53,11 @@ class Gyoto::Metric::ChernSimons
   void gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const;
   double gmunu(double const x[4], int mu, int nu) const ;
 
+  // Wrap the Generic version else the KerrBL can be called
+  double christoffel(const double coord[4],
+		     const int alpha, const int mu, const int nu) const;
+  int christoffel(double dst[4][4][4], double const x[4]) const ;
+
   void gmunu_up(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const;
   double gmunu_up(double const x[4], int mu, int nu) const ;
   int diff(const double y[8], const double cst[5], double res[8]) const ;

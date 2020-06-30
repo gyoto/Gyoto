@@ -100,51 +100,25 @@ void ChernSimons::gmunu(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) c
   Generic::gmunu(ARGOUT_ARRAY2, IN_ARRAY1);
 }
 
-void ChernSimons::gmunu_up(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const {
+int ChernSimons::christoffel(double ARGOUT_ARRAY3[4][4][4], double const IN_ARRAY1[4]) const {
   // Let's make sure the Generic version is called, not the KerrBL one
-  Generic::gmunu_up(ARGOUT_ARRAY2, IN_ARRAY1);
+  return Generic::christoffel(ARGOUT_ARRAY3, IN_ARRAY1);
 }
 
+double ChernSimons::christoffel(const double coord[4], const int alpha,
+				const int mu, const int nu) const {
+  return Generic::christoffel(coord, alpha, mu, nu);
+}
+
+void ChernSimons::gmunu_up(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY1[4]) const {
+  double g[4][4];
+  gmunu(g, IN_ARRAY1);
+  matrix4CircularInvert(ARGOUT_ARRAY2, g);
+  return;
+}
 
 double ChernSimons::gmunu_up(const double * pos, int mu, int nu) const {
-  double r = pos[1];
-  double sth2, cth2;
-  sincos(pos[2], &sth2, &cth2);
-  sth2*=sth2; cth2*=cth2;
-  double r2=r*r;
-  double a2=spin_*spin_;
-  double sigma=r2+a2*cth2;
-  double delta=r2-2.*r+a2;
-  double xi=(r2+a2)*(r2+a2)-a2*delta*sth2;
-
-  if ((mu==0) && (nu==0)) {
-    double gtt=-(1.-2.*r/sigma);
-    double gtp=-2*spin_*r*sth2/sigma+
-      5./8.*dzetaCS_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
-    double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
-    double det=gtp*gtp-gtt*gpp;
-    return -gpp/det;
-  }
-  if ((mu==1) && (nu==1)) return delta/sigma;
-  if ((mu==2) && (nu==2)) return 1./sigma;
-  if ((mu==3) && (nu==3)) {
-    double gtt=-(1.-2.*r/sigma);
-    double gtp=-2*spin_*r*sth2/sigma+
-      5./8.*dzetaCS_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
-    double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
-    double det=gtp*gtp-gtt*gpp;
-    return -gtt/det;
-  }
-  if (((mu==0) && (nu==3)) || ((mu==3) && (nu==0))){
-    double gtt=-(1.-2.*r/sigma);
-    double gtp=-2*spin_*r*sth2/sigma+
-      5./8.*dzetaCS_*spin_/(r2*r2)*(1.+12./7.*1./r+27./10.*1./r2)*sth2;
-    double gpp=(r2+a2+2.*r*a2*sth2/sigma)*sth2;
-    double det=gtp*gtp-gtt*gpp;
-    return gtp/det;
-  }
-
-  return 0.;
+  return Generic::gmunu_up(pos, mu, nu);
 }
 
 int ChernSimons::diff(const double* coordGen, const double* cst,

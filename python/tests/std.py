@@ -264,7 +264,7 @@ class TestStdMetric(unittest.TestCase):
                 continue
             metric=self.metric(cls)
             try:
-                gyoto.metric.check_christoffel(metric)
+                gyoto.metric.check_christoffel(metric, poslist=(self.pos(metric),), epsilon=1e-7)
             except AssertionError as e:
                 self.fail(e.__str__())
             pos=self.pos(metric)
@@ -277,6 +277,22 @@ class TestStdMetric(unittest.TestCase):
                     for nu in range(4):
                         self.assertAlmostEqual(metric.christoffel(pos, a, mu, nu), G[a, mu, nu], 7, classname)
                         self.assertAlmostEqual(metric.christoffel(pos, a, mu, nu), G2[a, mu, nu], 7, classname)
+
+    def test_jacobian(self):
+        nspace=gyoto.std
+        for classname, cls in inspect.getmembers(nspace):
+            if (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)):
+                continue
+            metric=self.metric(cls)
+            pos=self.pos(metric)
+            jac=metric.jacobian(pos)
+            jacn=gyoto.metric.jacobian_numerical(metric, pos, epsilon=1e-7)
+            for a in range(4):
+                for m in range(4):
+                    for n in range(4):
+                        self.assertAlmostEqual(jac[a,m,n],
+                                               jacn[a,m,n], 7, classname)
 
     def test_gmunu(self):
         nspace=gyoto.std
@@ -300,10 +316,17 @@ class TestStdMetric(unittest.TestCase):
             metric=self.metric(cls)
             pos=self.pos(metric)
             gup=metric.gmunu_up(pos)
+            gup2, jac=metric.gmunu_up_and_jacobian(pos)
+            g=metric.gmunu(pos)
+            gup3=numpy.linalg.inv(g)
             for mu in range(4):
                 for nu in range(4):
                     self.assertAlmostEqual(metric.gmunu_up(pos, mu, nu), gup[mu, nu], 7,
-                                           "class: {}, mu: {}, nu: {}".format(classname, mu, nu))
+                                           "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'coef/matrix'))
+                    self.assertAlmostEqual(gup3[mu, nu], gup2[mu, nu], 7,
+                                           "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'inv(g)/*_and_jacobian'))
+                    self.assertAlmostEqual(gup2[mu, nu], gup[mu, nu], 7,
+                                           "class: {}, mu: {}, nu: {} ({})".format(classname, mu, nu, 'matrix/*_and_jacobian'))
 
     def test_gmunu_gmunu_up(self):
         nspace=gyoto.std

@@ -393,3 +393,23 @@ void Gyoto::matrix4Invert(double Am1[4][4], double const A[4][4]) {
     }
   }
 }
+
+
+void Gyoto::matrix4CircularInvert(double Am1[4][4], double const A[4][4]) {
+  // Works for a metric where gtr, gttheta and grtheta are 0 (and symmetrical...)
+  double a=A[0][0], b=A[1][1], c=A[2][2], d=A[3][3], t=A[0][3];
+  double t2=t*t;
+  double X=d-t2/a;
+  double aX=a*X;
+
+  Am1[0][0]=(aX+t2)/(a*aX);
+  Am1[1][1]=1./b;
+  Am1[2][2]=1./c;
+  Am1[3][3]=1/X;
+  Am1[0][3]=Am1[3][0]=-t/aX;
+  Am1[0][1]=Am1[1][0]=0.;
+  Am1[0][2]=Am1[2][0]=0.;
+  Am1[1][2]=Am1[2][1]=0.;
+  Am1[1][3]=Am1[3][1]=0.;
+  Am1[2][3]=Am1[3][2]=0.;
+}

@@ -132,6 +132,17 @@ namespace Gyoto {
   // Keep argument names for swig!
   void matrix4Invert(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY2[4][4]);
 
+  /// Invert 4x4 circular spacetime metric 
+  /**
+   * A circular spacetime metric (in the right coordinate system)
+   *   - is symmetrical (like all metric matrices);
+   *   - has only 6 non-zero element: the diagonal and the corners.
+   *
+   * \param[in] IN_ARRAY2 the 4×4 matrix to invert
+   * \param[out] ARGOUT_ARRAY2 the invert matrix of IN_ARRAY2
+   */
+  // Keep argument names for swig!
+  void matrix4CircularInvert(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY2[4][4]);
 }
 
 #endif

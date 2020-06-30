@@ -14,6 +14,33 @@ del _namespaces
 import gyoto.core
 import numpy
 
+def jacobian_numerical(metric, pos, epsilon=1e-6):
+    '''Estimate the Jacobian matrix of a metric numerically
+
+    This function is intended for debugging using. For production,
+    using the method gyoto.core.Metric.jacobian is preferred.
+
+    If `metric' is an instance of a subclass of gyoto.core.Metric,
+    jacobian_numerical(metric, pos) should yield the same as
+    metric.jacobian(pos) within numerical errors.
+
+    Keyword arguments:
+    metric -- the gyoto.core.Metric instance to work on
+    pos -- the coordinates at which to estimate the Christoffel symbols
+    epsilon -- the step for estimating of the derivatives (default 1e-6)
+
+    '''
+    delta=numpy.empty((4, 4, 4))
+    posa = numpy.asarray(pos)
+    posb = posa.copy()
+    ga = metric.gmunu(posa)
+    for alpha in range(4):
+        posb[alpha] += epsilon
+        gb =  metric.gmunu(posb)
+        delta[alpha, :, :] = (gb-ga)/epsilon
+        posb[alpha]=posa[alpha]
+    return delta
+
 def christoffel_numerical(metric, pos, epsilon=1e-6):
     '''Estimate the Christoffel symbols of a metric numerically
 
@@ -37,16 +64,8 @@ def christoffel_numerical(metric, pos, epsilon=1e-6):
 
     '''
     Gamma=numpy.empty((4, 4, 4))
-    delta=numpy.empty((4, 4, 4))
-    for alpha in range(4):
-        posi = numpy.asarray(pos)
-        posi[alpha] -= 0.5*epsilon
-        ga = metric.gmunu(posi)
-        posi[alpha] += epsilon
-        gb =  metric.gmunu(posi)
-        delta[alpha, :, :] = (gb-ga)/epsilon
-    g=metric.gmunu(pos)
-    gup=numpy.linalg.inv(g)
+    delta=jacobian_numerical(metric, pos, epsilon=epsilon)
+    gup=metric.gmunu_up(pos)
     for i in range(4):
         for k in range(4):
             for l in range(4):
@@ -123,7 +142,7 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
             for m in range(4):
                 for n in range(4):
                     e=numpy.abs(G[a, m, n]-Gn[a, m, n])
-                    assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e, abstol, pos, metric.kind(), a, m, n)
+                    assert e <= abstol, "absolute error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}, val={}".format(e, abstol, pos, metric.kind(), a, m, n, G[a, m, n])
                     avg=numpy.abs(0.5*(G[a, m, n]-Gn[a, m, n]))
                     if avg > abstol:
                         assert e/avg <= reltol, "relative error {} larger than {} at {} for kind={}, alpha={}, mu={}, nu={}".format(e/avg, reltol, pos, metric.kind(), a, m, n)

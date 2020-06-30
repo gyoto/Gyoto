@@ -99,7 +99,7 @@ class Gyoto::Metric::KerrKS
    *
    * Used in the test suite
    */
-  void jacobian(double dst[4][4][4], const double x[4]) const ;
+  void jacobian(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;
 
   using Generic::christoffel;
   int christoffel(double dst[4][4][4], const double x[4]) const ;

@@ -67,6 +67,11 @@ GYOTO_PROPERTY_END(Metric::Generic, Object::properties)
  */
 
 #define __default_gmunu_up_coef 1
+#define __default_gmunu_up_matrix 2
+#define __default_jacobian 4
+#define __default_gmunu_up_and_jacobian 8
+#define __default_christoffel_coef 16
+#define __default_christoffel_matrix 32
 
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
   SmartPointee(), Object(name), mass_(1.), coordkind_(coordkind),
@@ -311,33 +316,137 @@ double Metric::Generic::gmunu_up(const double x[4], int mu, int nu) const {
 }
 
 void Metric::Generic::gmunu_up(double gup[4][4], const double x[4]) const {
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_gmunu_up_matrix;
   if (!(__defaultfeatures & __default_gmunu_up_coef)) {
+    // if gmunu_up(x, mu, nu) is not the default (or we don't know), use it
     int mu, nu;
     for (mu=0; mu<4; ++mu) {
       gup[mu][mu]=gmunu_up(x, mu, mu);
       for (nu=mu+1; nu<4; ++nu)
 	gup[mu][nu]=gup[nu][mu]=gmunu_up(x, mu, nu);
     }
+  } else if (!(__defaultfeatures & __default_gmunu_up_and_jacobian)){
+    // if gmunu_up_and_jacobian is not the default (or we don't know), use it
+    double jac[4][4][4];
+    gmunu_up_and_jacobian(gup, jac, x);
   } else {
+    // else call g and invert it
     double g[4][4];
     gmunu(g, x);
     Gyoto::matrix4Invert(gup, g);
   }
 }
 
+void Metric::Generic::jacobian(double jac[4][4][4], const double x0[4]) const {
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_jacobian;
+
+  if (__defaultfeatures & __default_gmunu_up_and_jacobian) {
+    // If gmunu_up_and_jacobian is the default, do the same
+    // thing. This saves computing gmunu_up needlessly.
+    double g0[4][4], gx[4][4], h=1e-7, x[4]={x0[0], x0[1], x0[2], x0[3]};
+
+    gmunu(g0, x0);
+    for (int alpha=0; alpha<4; ++alpha) {
+      x[alpha]=x0[alpha]+h;
+      gmunu(gx, x);
+      for (int mu=0; mu<4;mu++) {
+	jac[alpha][mu][mu] = (gx[mu][mu]-g0[mu][mu])/h;
+	for (int nu=mu+1; nu<4;nu++) {
+	  jac[alpha][nu][mu] = jac[alpha][mu][nu] = (gx[mu][nu]-g0[mu][nu])/h;
+	}
+      }
+      x[alpha]=x0[alpha];
+    }
+
+  } else {
+    double gup[4][4];
+    gmunu_up_and_jacobian(gup, jac, x0) ;
+  }
+}
+
+void Metric::Generic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], const double x0[4]) const {
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_gmunu_up_and_jacobian;
+
+  double g0[4][4];
+  if ( ((__defaultfeatures & __default_gmunu_up_coef)
+	&&(__defaultfeatures & __default_gmunu_up_matrix))
+       || (__defaultfeatures & __default_jacobian) ) {
+    // If (all gmunu_up flavors) or (jacobian) is the default
+    // implementation , we will need the covariant metric coefficient
+    // matrix at this point.
+    gmunu(g0, x0);
+  }
+
+  if ((__defaultfeatures & __default_gmunu_up_coef)
+	&&(__defaultfeatures & __default_gmunu_up_matrix)) {
+    // If all flavors of gmunu_up are default implementations,
+    // don't call them: invert g0.
+    Gyoto::matrix4Invert(gup, g0);
+  } else {
+    gmunu_up(gup, x0);
+  }
+
+  if (__defaultfeatures & __default_jacobian) {
+    // If jacobian is the default implementation, derive g numerically.
+    double gx[4][4], h=1e-7, x[4]={x0[0], x0[1], x0[2], x0[3]};
+
+    for (int alpha=0; alpha<4; ++alpha) {
+      x[alpha]=x0[alpha]+h;
+      gmunu(gx, x);
+      for (int mu=0; mu<4;mu++) {
+	jac[alpha][mu][mu] = (gx[mu][mu]-g0[mu][mu])/h;
+	for (int nu=mu+1; nu<4;nu++) {
+	  jac[alpha][nu][mu] = jac[alpha][mu][nu] = (gx[mu][nu]-g0[mu][nu])/h;
+	}
+      }
+      x[alpha]=x0[alpha];
+    }
+
+    return;
+    
+  } else {
+    jacobian(jac, x0);
+  }
+
+ }
+
 double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_christoffel_coef;
   double dst[4][4][4];
   christoffel(dst, x);
   return dst[alpha][mu][nu];
+
 }
 
 int Metric::Generic::christoffel(double dst[4][4][4], const double * x) const {
-  int alpha, mu, nu;
-  for (alpha=0; alpha<4; ++alpha) {
-    for (mu=0; mu<4; ++mu) {
-      dst[alpha][mu][mu]=christoffel(x, alpha, mu, mu);
-      for (nu=mu+1; nu<4; ++nu)
-	dst[alpha][mu][nu]=dst[alpha][nu][mu]=christoffel(x, alpha, mu, nu);
+  const_cast<Generic*>(this)->__defaultfeatures |= __default_christoffel_matrix;
+  int a, mu, nu, i;
+  if (__defaultfeatures & __default_christoffel_coef) {
+    // if christoffel(x, a, mu, nu) is the default implementation,
+    // rely on gmunu_up_and_jacobian
+    double gup[4][4], jac[4][4][4];
+    gmunu_up_and_jacobian(gup, jac, x);
+    // computing Gamma^a_mu_nu
+    for (a=0; a<4; ++a) {
+      for (mu=0; mu<4; ++mu) {
+	for (nu=mu; nu<4; ++nu) {
+	  dst[a][mu][nu]=0.;
+	  for (i=0; i<4; ++i) {
+	    dst[a][mu][nu]+=0.5*gup[i][a]*
+	      (jac[mu][i][nu]+jac[nu][mu][i]-jac[i][mu][nu]);
+	  }
+	  if (mu!=nu) dst[a][nu][mu] = dst[a][mu][nu];
+	}
+      }
+    }
+  } else {
+    // else get the coefficients one by one
+    for (a=0; a<4; ++a) {
+      for (mu=0; mu<4; ++mu) {
+	dst[a][mu][mu]=christoffel(x, a, mu, mu);
+	for (nu=mu+1; nu<4; ++nu)
+	  dst[a][mu][nu]=dst[a][nu][mu]=christoffel(x, a, mu, nu);
+      }
     }
   }
   return 0;
