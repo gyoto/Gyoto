@@ -18,6 +18,7 @@
  */
 
 // include Metric headers
+#include "GyotoComplexMetric.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
@@ -66,6 +67,7 @@ using namespace Gyoto;
 
 extern "C" void __GyotostdplugInit() {
   // Register Metrics
+  Metric::Register("Complex",   &(Metric::Subcontractor<Metric::Complex>));
   Metric::Register("KerrBL", &(Metric::Subcontractor<Metric::KerrBL>));
   Metric::Register("KerrKS", &(Metric::Subcontractor<Metric::KerrKS>));
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));

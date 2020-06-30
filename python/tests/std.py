@@ -256,11 +256,15 @@ class TestStdMetric(unittest.TestCase):
             pass
         return metric
 
+    def invalid(self, classname, cls):
+        return (not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Metric)
+                or "Complex" in classname)
+
     def test_christoffel(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
-            if (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)):
+            if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
             try:
@@ -281,8 +285,7 @@ class TestStdMetric(unittest.TestCase):
     def test_jacobian(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
-            if (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)):
+            if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
             pos=self.pos(metric)
@@ -297,8 +300,7 @@ class TestStdMetric(unittest.TestCase):
     def test_gmunu(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
-            if (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)):
+            if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
             pos=self.pos(metric)
@@ -310,8 +312,7 @@ class TestStdMetric(unittest.TestCase):
     def test_gmunu_up(self):
         nspace=gyoto.std
         for classname, cls in inspect.getmembers(nspace):
-            if (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)):
+            if (self.invalid(classname, cls)):
                 continue
             metric=self.metric(cls)
             pos=self.pos(metric)
@@ -334,8 +335,7 @@ class TestStdMetric(unittest.TestCase):
         for i in range(4):
             I[i,i]=1.
         for classname, cls in inspect.getmembers(nspace):
-            if (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)):
+            if (self.invalid(classname, cls)):
                 continue
             metric=cls()
             pos=self.pos(metric)

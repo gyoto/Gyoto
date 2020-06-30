@@ -150,6 +150,30 @@ GyotoSmPtrClassDerived(Astrobj, FlaredDiskSynchrotron)
 GyotoSmPtrClassDerived(Astrobj, ThickDisk)
 
 
+%exception Gyoto::Metric::Complex::__getitem__ {
+  try {
+    $action ;
+  } catch (myCplxIdxExcept e) {
+    SWIG_exception_fail(SWIG_IndexError, "Index out of bounds");
+  }
+}
+
+%extend Gyoto::Metric::Complex {
+  Gyoto::SmartPointer<Gyoto::Metric::Generic> __getitem__ (size_t i) {
+    if (i >= ($self)->getCardinal()) {
+      throw myCplxIdxExcept();
+    }
+    Gyoto::SmartPointer<Gyoto::Metric::Generic> res = ($self)->operator[](i);
+    return res;
+  }
+ };
+%extend Gyoto::Metric::Complex {
+  void __setitem__(int i, Gyoto::Metric::Generic * p) {
+    ($self)->operator[](i)=p;
+  }
+ };
+GyotoSmPtrClassDerivedPtrHdr(Metric, Complex, ComplexMetric, GyotoComplexMetric.h)
+
 
 GyotoSmPtrClassDerivedMetric(KerrBL)
 GyotoSmPtrClassDerivedMetric(KerrKS)

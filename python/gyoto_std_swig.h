@@ -1,4 +1,5 @@
 // include Metric headers
+#include "GyotoComplexMetric.h"
 #include "GyotoKerrBL.h"
 #include "GyotoKerrKS.h"
 #include "GyotoMinkowski.h"
