@@ -171,3 +171,10 @@ void Complex::setParameters(FactoryMessenger *fmp) {
   GYOTO_DEBUG << "done" << std::endl;
 }
 #endif
+
+int Complex::isStopCondition(double const coord[8]) const {
+  for (size_t k=0; k<cardinal_; ++k)
+    if (elements_[k]-> isStopCondition(coord))
+      return 1;
+  return 0;
+}

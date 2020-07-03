@@ -96,8 +96,10 @@ class Gyoto::Metric::Complex
   ///< Retrieve a const version of the i-th element.
 
  public:
+  using Generic::gmunu;
   void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   void jacobian(double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
+  int isStopCondition(double const coord[8]) const;
 
 };
 

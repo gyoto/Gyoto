@@ -246,20 +246,27 @@ class TestStdMetric(unittest.TestCase):
 
     def metric(self, cls):
         metric=cls()
+        # All Kerr-like: use non-zero spin
         try:
             metric.spin(0.5)
         except AttributeError:
             pass
+        # Chern-Simons: non-zero dzeta
         try:
             metric.dzetaCS(0.5)
+        except AttributeError:
+            pass
+        # Complex: add two metrics
+        try:
+            metric.append(gyoto.std.KerrBL())
+            metric.append(gyoto.std.KerrBL())
         except AttributeError:
             pass
         return metric
 
     def invalid(self, classname, cls):
         return (not inspect.isclass(cls)
-                or not issubclass(cls, gyoto.core.Metric)
-                or "Complex" in classname)
+                or not issubclass(cls, gyoto.core.Metric))
 
     def test_christoffel(self):
         nspace=gyoto.std
@@ -337,7 +344,7 @@ class TestStdMetric(unittest.TestCase):
         for classname, cls in inspect.getmembers(nspace):
             if (self.invalid(classname, cls)):
                 continue
-            metric=cls()
+            metric=self.metric(cls)
             pos=self.pos(metric)
             g=metric.gmunu(pos)
             gup=metric.gmunu_up(pos)
