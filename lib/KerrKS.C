@@ -104,133 +104,123 @@ void KerrKS::gmunu(double g[4][4], const double * pos) const {
   for (int mu=1; mu<4;  ++mu) g[mu][mu]+=1.;
 }
 
+// The thee macros below are used two or three times each to optimally implement
+// gmunu_up, jacobian, and gmunu_up_and_jacobian
+
+// intermediate results
+#define _COMMON_TERMS \
+  double						\
+    x=pos[1], y=pos[2], z=pos[3],				\
+    x2=x*x, y2=y*y, z2=z*z, a2z2=a2_*z2,		\
+    x2_y2_z2=x2+y2+z2,					\
+    tau=x2_y2_z2-a2_,					\
+    rho2=tau*tau+4.*a2z2, rho=sqrt(rho2),		\
+    r2=0.5*(tau+rho),					\
+    r=sqrt(r2), r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,	\
+    rx_ay=r*x+spin_*y, ry_ax=r*y-spin_*x,		\
+    f=2.*r3/(r4+a2_*z2);//, fr2=f*r2;
+
+// gmunu_up
+#define _FILL_GMUNU_UP							\
+  {									\
+    double frac = f/							\
+      (-fr2*(rx_ay*rx_ay + ry_ax*ry_ax)+ r2_a2*r2_a2 *(-r2 +fr2 -f*z2));\
+    double kup[4]=							\
+    {									\
+      -r*r2_a2,								\
+      r*rx_ay,								\
+      r*ry_ax,								\
+      r2_a2*z								\
+    };									\
+    for (mu=0; mu<4; ++mu) {						\
+      for (nu=0; nu<=mu;++nu) {						\
+        gup[mu][nu]=gup[nu][mu]=frac*kup[mu]*kup[nu];			\
+      }									\
+    }									\
+    gup[0][0] -= 1.;							\
+    for (mu=1; mu<4; ++mu) gup[mu][mu] += 1.;				\
+  }
+
+// jacobian
+#define _FILL_JACOBIAN					\
+  {							\
+  double k[4]=						\
+    {							\
+     1.,						\
+     rx_ay/r2_a2,					\
+     ry_ax/r2_a2,					\
+     z/r						\
+    };							\
+  double								\
+  a4=a2_*a2_,								\
+    r4_a2z2=r4+a2z2,							\
+    temp=-(2.*r3*(r4-3.*a2z2))/(r4_a2z2*r4_a2z2*rho),			\
+    temp2=(a4+2.*r2*x2_y2_z2 - a2_* (x2_y2_z2 - 4.* z2 + rho));		\
+  double df[4]=								\
+    {									\
+     0.,								\
+     x*temp,								\
+     y*temp,								\
+     -((4.*r*z*(2.* a4*a2_ + (a2_ + 2.*r2)*x2_y2_z2*x2_y2_z2 +		\
+		a4*(-3.*x2 - 3.*y2 + z2 - 2.*rho) +			\
+		a2_*(x2 + y2 - z2)*rho))/(rho*temp2*temp2))		\
+    };									\
+  double								\
+  frac1=1./(r2_a2*r2_a2*rho),						\
+    frac2=z/(r2_a2*r*rho),						\
+    frac3=-z/(r*rho);							\
+  double dk[4][4]=							\
+    {									\
+      /* d/dt */								\
+      {0., 0., 0., 0.},							\
+      /* d/dx */							\
+      {									\
+       0.,								\
+       (r3*(x2+rho)-rx_ay*x*(x2+y2+z2+rho)+a2_*(rx_ay*x+r*(x2+rho)))*frac1, \
+       (x*(r3*y+a2_*(ry_ax+r*y)-ry_ax*(x2+y2+z2))-(spin_*r2_a2+ry_ax*x)*rho)*frac1, \
+       x*frac3								\
+      },								\
+      /* d/dy */								\
+      {									\
+       0.,								\
+       (a2_*(rx_ay+r*x)*y+r2_a2*spin_*rho-y*(-r3*x+rx_ay*(x2+y2+z2+rho)))*frac1, \
+       (r3*(y2+rho)-ry_ax*y*(x2+y2+z2+rho)+a2_*(ry_ax*y+r*(y2+rho)))*frac1, \
+       y*frac3								\
+      },								\
+      /* d/dz */							\
+      {									\
+       0.,								\
+       ((a2_-r2)*x-2*spin_*r*y)*frac2,					\
+       ((a2_-r2)*y+2*spin_*r*x)*frac2,					\
+       (2.*r2- (z2*(a2_ + x2 + y2 + z2 + rho))/rho)/(2.*r3)		\
+      }									\
+    };									\
+      for(a=0; a<4; ++a)						\
+	for (mu=0; mu<4; ++mu)						\
+	  for (nu=0; nu<=mu;++nu)					\
+	    jac[a][mu][nu]=jac[a][nu][mu]=df[a]*k[mu]*k[nu]+f*dk[a][mu]*k[nu]+f*k[mu]*dk[a][nu]; \
+  }
+
+
 void KerrKS::gmunu_up(double gup[4][4], const double * pos) const {
- double jac[4][4][4], dst[4][4][4];
- christoffel(dst, pos, gup, jac);
+  size_t mu, nu;
+  _COMMON_TERMS;
+  double fr2=f*r2;
+  _FILL_GMUNU_UP;
 }
 
 void KerrKS::jacobian(double jac[4][4][4], const double * pos) const {
- double gup[4][4], dst[4][4][4];
- christoffel(dst, pos, gup, jac);
-}
-
-int KerrKS::christoffel(double dst[4][4][4], const double * pos) const {
- double gup[4][4], jac[4][4][4];
- return christoffel(dst, pos, gup, jac);
-}
-
-int KerrKS::christoffel(double dst[4][4][4], const double * pos, double gup[4][4], double jac[4][4][4]) const {
   size_t a, mu, nu, i;
-  double
-    x=pos[1], y=pos[2], z=pos[3],
-    x2=x*x, y2=y*y, z2=z*z, a2z2=a2_*z2,
-    x2_y2_z2=x2+y2+z2,
-    tau=x2_y2_z2-a2_,
-    rho2=tau*tau+4.*a2z2, rho=sqrt(rho2),
-    r2=0.5*(tau+rho),
-    r=sqrt(r2), r3=r2*r, r4=r2*r2, r2_a2=r2+a2_,
-    rx_ay=r*x+spin_*y, ry_ax=r*y-spin_*x,
-    f=2.*r3/(r4+a2_*z2), fr2=f*r2;
+  _COMMON_TERMS;
+  _FILL_JACOBIAN;
+}
 
-  // computing gup[mu][up]=g^mu^nu
-  {
-    double frac = f/
-      (-fr2*(rx_ay*rx_ay + ry_ax*ry_ax)+ r2_a2*r2_a2 *(-r2 +fr2 -f*z2));
-    double kup[4]=
-      {
-	-r*r2_a2,
-	r*rx_ay,
-	r*ry_ax,
-	r2_a2*z
-      };
-    for (mu=0; mu<4; ++mu) {
-      for (nu=0; nu<=mu;++nu) {
-	gup[mu][nu]=gup[nu][mu]=frac*kup[mu]*kup[nu];
-      }
-    }
-    gup[0][0] -= 1.;
-    for (mu=1; mu<4; ++mu) gup[mu][mu] += 1.; 
-  }
-
-  // computing jac[a][mu][nu]=dg_mu_nu/dx^a
-  {
-    double k[4]=
-      {
-	1.,
-	rx_ay/r2_a2,
-	ry_ax/r2_a2,
-	z/r
-      };
-    
-    double
-      a4=a2_*a2_,
-      r4_a2z2=r4+a2z2,
-      temp=-(2.*r3*(r4-3.*a2z2))/(r4_a2z2*r4_a2z2*rho),
-      temp2=(a4+2.*r2*x2_y2_z2 - a2_* (x2_y2_z2 - 4.* z2 + rho));
-
-    double df[4]=
-      {
-	0.,
-	x*temp,	
-	y*temp,	
-	-((4.*r*z*(2.* a4*a2_ + (a2_ + 2.*r2)*x2_y2_z2*x2_y2_z2 + 
-		   a4*(-3.*x2 - 3.*y2 + z2 - 2.*rho) + 
-		   a2_*(x2 + y2 - z2)*rho))/(rho*temp2*temp2))
-      };
-
-    double
-      frac1=1./(r2_a2*r2_a2*rho),
-      frac2=z/(r2_a2*r*rho),
-      frac3=-z/(r*rho);
-    double dk[4][4]=
-      {
-	// d/dt
-	{0., 0., 0., 0.},
-	// d/dx
-	{
-	  0.,
-	  (r3*(x2+rho)-rx_ay*x*(x2+y2+z2+rho)+a2_*(rx_ay*x+r*(x2+rho)))*frac1,
-	  (x*(r3*y+a2_*(ry_ax+r*y)-ry_ax*(x2+y2+z2))-(spin_*r2_a2+ry_ax*x)*rho)*frac1,
-	  x*frac3
-	},
-	// d/dy
-	{
-	  0.,
-	  (a2_*(rx_ay+r*x)*y+r2_a2*spin_*rho-y*(-r3*x+rx_ay*(x2+y2+z2+rho)))*frac1,
-	  (r3*(y2+rho)-ry_ax*y*(x2+y2+z2+rho)+a2_*(ry_ax*y+r*(y2+rho)))*frac1,
-	  y*frac3
-
-	},
-	// d/dz
-	{
-	  0.,
-	  ((a2_-r2)*x-2*spin_*r*y)*frac2,
-	  ((a2_-r2)*y+2*spin_*r*x)*frac2,
-	  (2.*r2- (z2*(a2_ + x2 + y2 + z2 + rho))/rho)/(2.*r3)
-	}
-      };
-    
-    for(a=0; a<4; ++a)
-      for (mu=0; mu<4; ++mu)
-	for (nu=0; nu<=mu;++nu)
-	  jac[a][mu][nu]=jac[a][nu][mu]=df[a]*k[mu]*k[nu]+f*dk[a][mu]*k[nu]+f*k[mu]*dk[a][nu];
-    
-  }
-
-  // computing Gamma^a_mu_nu
-  for (a=0; a<4; ++a) {
-    for (mu=0; mu<4; ++mu) {
-      for (nu=0; nu<4; ++nu) {
-	dst[a][mu][nu]=0.;
-        for (i=0; i<4; ++i) {
-	  dst[a][mu][nu]+=0.5*gup[i][a]*
-	    (jac[mu][i][nu]+jac[nu][mu][i]-jac[i][mu][nu]);
-	}
-      }
-    }
-  }
-
-  return 0;
+void KerrKS::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], const double * pos) const {
+  size_t a, mu, nu, i;
+  _COMMON_TERMS;
+  double fr2=f*r2;
+  _FILL_GMUNU_UP;
+  _FILL_JACOBIAN;
 }
 
 double KerrKS::gmunu(const double * pos, int mu, int nu) const {

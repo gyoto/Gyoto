@@ -83,27 +83,25 @@ class Gyoto::Metric::KerrKS
   void horizonSecurity(double drhor);
   double horizonSecurity() const;
   
-  double gmunu(double const x[4], int alpha, int beta) const ;
+  virtual double gmunu(double const x[4], int alpha, int beta) const ;
 
-  void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+  virtual void gmunu(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
 
 
   using Gyoto::Metric::Generic::gmunu_up;
   /**
    *\brief The inverse matrix of gmunu
    */ 
-  void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
+  virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const;
 
   /**
    * \brief The derivatives of gmunu
    *
    * Used in the test suite
    */
-  void jacobian(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;
+  virtual void jacobian(double ARGOUT_ARRAY3[4][4][4], const double x[4]) const ;
 
-  using Generic::christoffel;
-  int christoffel(double dst[4][4][4], const double x[4]) const ;
-  int christoffel(double dst[4][4][4], const double pos[4], double gup[4][4], double jac[4][4][4]) const ;
+  virtual void gmunu_up_and_jacobian(double ARGOUT_ARRAY2[4][4], double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
 
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;

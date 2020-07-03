@@ -10,6 +10,7 @@ import gyoto._namespaces as _namespaces
 from gyoto.core import Metric as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
+Complex=ComplexMetric
 
 import gyoto.core
 import numpy
