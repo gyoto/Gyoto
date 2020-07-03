@@ -137,7 +137,7 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig->adaptive_), secondary_(orig->secondary_),
   parallel_transport_(orig->parallel_transport_),
-  delta_(orig->delta_), tmin_(orig->tmin_), cst_n_(orig->cst_n_),
+  delta_(orig->delta_), tmin_(orig->tmin_), cst_(NULL), cst_n_(orig->cst_n_),
   wait_pos_(orig->wait_pos_), init_vel_(NULL),
   maxiter_(orig->maxiter_),
   delta_min_(orig->delta_min_),
