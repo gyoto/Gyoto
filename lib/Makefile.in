@@ -197,6 +197,7 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-ComplexAstrobj.lo \
 	libgyoto_stdplug_la-UniformSphere.lo \
 	libgyoto_stdplug_la-ComplexMetric.lo \
+	libgyoto_stdplug_la-Shift.lo \
 	libgyoto_stdplug_la-PageThorneDisk.lo \
 	libgyoto_stdplug_la-ThinDiskPL.lo \
 	libgyoto_stdplug_la-PolishDoughnut.lo \
@@ -288,6 +289,7 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo \
@@ -587,10 +589,10 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	ThermalBremsstrahlungSpectrum.C ThermalSynchrotronSpectrum.C \
 	PowerLawSynchrotronSpectrum.C \
 	KappaDistributionSynchrotronSpectrum.C ComplexAstrobj.C \
-	UniformSphere.C ComplexMetric.C PageThorneDisk.C ThinDiskPL.C \
-	PolishDoughnut.C ThinDiskIronLine.C DeformedTorus.C \
-	EquatorialHotSpot.C Jet.C Blob.C ThickDisk.C StdPlug.C \
-	$(cfitsio_stdplug_sources)
+	UniformSphere.C ComplexMetric.C Shift.C PageThorneDisk.C \
+	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C \
+	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C ThickDisk.C \
+	StdPlug.C $(cfitsio_stdplug_sources)
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
@@ -794,6 +796,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo@am__quote@ # am--include-marker
@@ -1021,6 +1024,13 @@ libgyoto_stdplug_la-ComplexMetric.lo: ComplexMetric.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='ComplexMetric.C' object='libgyoto_stdplug_la-ComplexMetric.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ComplexMetric.lo `test -f 'ComplexMetric.C' || echo '$(srcdir)/'`ComplexMetric.C
+
+libgyoto_stdplug_la-Shift.lo: Shift.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Shift.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Shift.Tpo -c -o libgyoto_stdplug_la-Shift.lo `test -f 'Shift.C' || echo '$(srcdir)/'`Shift.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Shift.Tpo $(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Shift.C' object='libgyoto_stdplug_la-Shift.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Shift.lo `test -f 'Shift.C' || echo '$(srcdir)/'`Shift.C
 
 libgyoto_stdplug_la-PageThorneDisk.lo: PageThorneDisk.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-PageThorneDisk.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-PageThorneDisk.Tpo -c -o libgyoto_stdplug_la-PageThorneDisk.lo `test -f 'PageThorneDisk.C' || echo '$(srcdir)/'`PageThorneDisk.C
@@ -1392,6 +1402,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo
@@ -1510,6 +1521,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSpectrum.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-PowerLawSynchrotronSpectrum.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StdPlug.Plo

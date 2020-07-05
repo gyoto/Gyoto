@@ -175,6 +175,7 @@ GyotoSmPtrClassDerived(Astrobj, ThickDisk)
 GyotoSmPtrClassDerivedPtrHdr(Metric, Complex, ComplexMetric, GyotoComplexMetric.h)
 
 
+GyotoSmPtrClassDerivedMetric(Shift)
 GyotoSmPtrClassDerivedMetric(KerrBL)
 GyotoSmPtrClassDerivedMetric(KerrKS)
 GyotoSmPtrClassDerivedMetric(Minkowski)

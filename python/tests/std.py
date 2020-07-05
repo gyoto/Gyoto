@@ -262,6 +262,10 @@ class TestStdMetric(unittest.TestCase):
             metric.append(gyoto.std.KerrBL())
         except AttributeError:
             pass
+        # Shift: add a submetric
+        if (cls == gyoto.std.Shift):
+            metric.subMetric(gyoto.std.KerrKS())
+            metric.offset((1., 1., 1., 1.))
         return metric
 
     def invalid(self, classname, cls):
