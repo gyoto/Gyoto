@@ -229,8 +229,8 @@ class Gyoto::Metric::Generic
   // ---------------------
   virtual Generic * clone() const ; ///< Virtual copy constructor
 
-  void mass(const double);        ///< Set mass used in unitLength()
-  void mass(const double, const std::string &unit);        ///< Set mass used in unitLength()
+  virtual void mass(const double);        ///< Set mass used in unitLength()
+  virtual void mass(const double, const std::string &unit);        ///< Set mass used in unitLength()
 
   // Accessors
 
