@@ -170,6 +170,21 @@ class Gyoto::Metric::NumericalMetricLorene
 
   double gmunu(const double x[3], int indice_time, int mu, int nu) const ;
 
+  virtual void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
+
+  void gmunu_up(double gup[4][4], const double x[4], int indice_time) const ;
+
+  void gmunu_di(const double pos[4],
+		double gmunudr[4][4],
+		double gmunudth[4][4]) const ;
+  
+  void gmunu_di(const double pos[4],
+		int indice_time,
+		double gmunudr[4][4],
+		double gmunudth[4][4]) const ;
+
+  virtual void jacobian(double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const ;
+
   /**
    * \brief r derivative of contravariant 4-metric
    */

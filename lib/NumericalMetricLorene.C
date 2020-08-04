@@ -1319,6 +1319,303 @@ void NumericalMetricLorene::computeNBeta(const double coord[4],
 
 }
 
+void NumericalMetricLorene::jacobian(double jac[4][4][4],
+				     const double x0[4]
+				     ) const
+{
+  // Compute jac[alpha][mu][nu] = \partial_alpha(g_{mu,nu})]
+
+  // Special case alpha=0, derivative wrt t, TO BE CODED
+
+  // d/dr and d/dth
+  double gmunudr[4][4], gmunudth[4][4];
+  gmunu_di(x0,gmunudr,gmunudth);
+
+  // alpha=1 (d/dr) redirect to gmunu_dr
+  // alpha=1 (d/dtheta) redirect to gmunu_dth
+  // alpha=3 (d/dphi) is zero
+  for (int mu=0; mu<4; ++mu){
+    for (int nu=0; nu<4; ++nu){
+      jac[1][mu][nu]=gmunudr[mu][nu];
+      jac[2][mu][nu]=gmunudth[mu][nu];
+      jac[3][mu][nu]=0.;
+    }
+  }
+
+}
+
+void NumericalMetricLorene::gmunu_di(const double pos[4],
+				     double gmunudr[4][4],
+				     double gmunudth[4][4]
+				     ) const
+{
+  GYOTO_DEBUG << endl;
+  double tt=pos[0];
+  int it=nb_times_-1;
+  while(tt<times_[it] && it>=0){ //ASSUMES backward integration, to generalize
+    it--;
+  }
+
+  double pos3[3]={pos[1],pos[2],pos[3]};
+  if (it==nb_times_-1) {
+    double gmunudrnbt[4][4], gmunudthnbt[4][4];
+    gmunu_di(pos3,nb_times_-1,gmunudrnbt,gmunudthnbt);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gmunudr[mu][nu]=gmunudrnbt[mu][nu];
+	gmunudth[mu][nu]=gmunudthnbt[mu][nu];
+	//use metric nb nb_times_-1
+	//for all times > max(metric times)
+      }
+    }
+
+  }
+  if (it==-1) {
+    double gmunudr0[4][4], gmunudth0[4][4];
+    gmunu_di(pos3,0,gmunudr0,gmunudth0);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gmunudr[mu][nu]=gmunudr0[mu][nu];
+	gmunudth[mu][nu]=gmunudth0[mu][nu];
+	//use metric nb 0
+	//for all times > max(metric times)
+      }
+    }
+  }
+  if (it==nb_times_-2 || it==0){ //linear inter for extremal-1 points
+    double t1=times_[it], t2=times_[it+1];
+    double gmunudr1[4][4], gmunudr2[4][4],
+      gmunudth1[4][4], gmunudth2[4][4];
+    gmunu_di(pos3,it,gmunudr1,gmunudth1);
+    gmunu_di(pos3,it+1,gmunudr2,gmunudth2);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gmunudr[mu][nu]=(gmunudr1[mu][nu] - gmunudr2[mu][nu])/(t1-t2)*(tt-t1)
+	  + gmunudr1[mu][nu];
+	gmunudth[mu][nu]=(gmunudth1[mu][nu] - gmunudth2[mu][nu])/(t1-t2)*(tt-t1)
+	  + gmunudth1[mu][nu];
+      }
+    }    
+  }
+  //Else : use 3rd order interp
+  double gmunudr1[4][4], gmunudr2[4][4], gmunudr3[4][4], gmunudr4[4][4],
+    gmunudth1[4][4], gmunudth2[4][4], gmunudth3[4][4], gmunudth4[4][4];
+  gmunu_di(pos3,it-1,gmunudr1,gmunudth1);
+  gmunu_di(pos3,it,gmunudr2,gmunudth2);
+  gmunu_di(pos3,it+1,gmunudr3,gmunudth3);
+  gmunu_di(pos3,it+2,gmunudr4,gmunudth4);
+
+  for (int mu=0;mu<4;++mu){
+    for (int nu=0;nu<4;++nu){
+      double y1=gmunudr1[mu][nu],
+	y2=gmunudr2[mu][nu],
+	y3=gmunudr3[mu][nu],
+	y4=gmunudr4[mu][nu];
+      double values[4]={y1,y2,y3,y4};
+      gmunudr[mu][nu] = Interpol3rdOrder(tt,it,values);
+
+      y1=gmunudth1[mu][nu];
+      y2=gmunudth2[mu][nu];
+      y3=gmunudth3[mu][nu];
+      y4=gmunudth4[mu][nu];
+      double values2[4]={y1,y2,y3,y4};
+      gmunudth[mu][nu] = Interpol3rdOrder(tt,it,values2);
+    }
+  }    
+}
+
+void NumericalMetricLorene::gmunu_di(const double pos[4],
+				     int indice_time,
+				     double gmunudr[4][4],
+				     double gmunudth[4][4]
+				     ) const
+{
+  // This provides gmunu_dr and gmunu_dth for all mu,nu
+  if (indice_time<0 || indice_time>nb_times_-1) 
+    GYOTO_ERROR("NumericalMetricLorene::gmunu_di: "
+		"incoherent value of indice_time");
+
+  double rr=pos[0], r2=rr*rr, th=pos[1], costh=cos(th), sinth=sin(th),
+    sinth2=sinth*sinth, rsinth=rr*sin(th), ph=pos[2];
+  Scalar* lapse = (lapse_tab_[indice_time]);
+  double lapse_val = lapse->val_point(rr,th,ph), // lapse value
+    lapsedr = lapse->dsdr().val_point(rr,th,ph), // d(lapse)/dr
+    lapsedth = lapse->dsdt().val_point(rr,th,ph); // d(lapse)/dtheta
+
+  const Vector& shift = *(shift_tab_[indice_time]);
+  double betap = shift(3).val_point(rr,th,ph), // omega
+    betapdr = shift(3).dsdr().val_point(rr,th,ph), // domega/dr
+    betapdth = shift(3).dsdt().val_point(rr,th,ph); // domega/dtheta
+
+  const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
+  double g_rr = g_ij(1,1).val_point(rr,th,ph), // gamma_rr
+    g_rrdr = g_ij(1,1).dsdr().val_point(rr,th,ph), // d(gamma_rr)/dr
+    g_rrdth = g_ij(1,1).dsdt().val_point(rr,th,ph), // d(gamma_rr)/dtheta
+    g_thth = g_ij(2,2).val_point(rr,th,ph), // idem for gamma_thth
+    g_ththdr = g_ij(2,2).dsdr().val_point(rr,th,ph),
+    g_ththdth = g_ij(2,2).dsdt().val_point(rr,th,ph),
+    g_pp = g_ij(3,3).val_point(rr,th,ph), // idem for gamma_pp
+    g_ppdr = g_ij(3,3).dsdr().val_point(rr,th,ph),
+    g_ppdth = g_ij(3,3).dsdt().val_point(rr,th,ph);
+
+  // Okay here we have all possible metric quantities and derivatives
+
+  // g_{t,mu}
+  gmunudr[0][0] = -2.*lapsedr*lapse_val + 2.*(betapdr - betap/rr)*betap*g_pp
+    + betap*betap*g_ppdr + 2.*betap*betap/rsinth*g_pp;
+  gmunudr[1][0] = gmunudr[0][1] = 0.;
+  gmunudr[2][0] = gmunudr[0][2] = 0.;
+  gmunudr[0][3] = gmunudr[3][0] = (betapdr - betap/rr)*g_pp*rsinth
+    + betap*g_ppdr*rsinth + 2.*betap*g_pp*sinth;
+
+  gmunudth[0][0] = -2.*lapsedth*lapse_val
+    + 2.*(-costh/sinth*betap + betapdth)*betap*g_pp
+    + betap*betap*g_ppdth + 2.*betap*betap*g_pp*costh/sinth;
+  gmunudth[1][0] = gmunudth[0][1] = 0.;
+  gmunudth[2][0] = gmunudth[0][2] = 0.;
+  gmunudth[0][3] = gmunudth[3][0] = (-costh/sinth*betap + betapdth)*g_pp*rsinth
+    + betap*g_ppdth*rsinth + 2.*betap*g_pp*rr*costh;
+
+  // g_{i,mu}
+  
+  gmunudr[1][1] = g_rrdr;
+  gmunudr[1][0] = gmunudr[0][1] = 0.;
+  gmunudr[1][2] = gmunudr[2][1] = 0.;
+  gmunudr[1][3] = gmunudr[3][1] = 0.;
+
+  gmunudth[1][1] = g_rrdth;
+  gmunudth[1][0] = gmunudth[0][1] = 0.;
+  gmunudth[1][2] = gmunudth[2][1] = 0.;
+  gmunudth[1][3] = gmunudth[3][1] = 0.;
+
+  gmunudr[2][2] = r2*g_ththdr+ 2.*rr*g_thth;
+  gmunudr[2][0] = gmunudr[0][2] = 0.;
+  gmunudr[2][3] = gmunudr[3][2] = 0.;
+
+  gmunudth[2][2] = r2*g_ththdth;
+  gmunudth[2][0] = gmunudth[0][2] = 0.;
+  gmunudth[2][3] = gmunudth[3][2] = 0.;
+
+  gmunudr[3][3] = (g_ppdr*rr + 2.*g_pp)*rr*sinth2;
+
+  gmunudth[3][3] = r2*sinth*(g_ppdth*sinth + 2.*g_pp*costh);
+      
+}
+
+
+void NumericalMetricLorene::gmunu_up(double gup[4][4], const double x[4]
+				     ) const
+{
+  GYOTO_DEBUG << endl;
+  double tt=x[0];
+  int it=nb_times_-1;
+  while(tt<times_[it] && it>=0){ //ASSUMES backward integration, to generalize
+    it--;
+  }
+
+  double pos3[3]={x[1],x[2],x[3]};
+  if (it==nb_times_-1) {
+    double gupnbt[4][4];
+    gmunu_up(gupnbt,pos3,nb_times_-1);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gup[mu][nu]=gupnbt[mu][nu];
+	//use metric nb nb_times_-1
+	//for all times > max(metric times)
+      }
+    }
+
+  }
+  if (it==-1) {
+    double gup0[4][4];
+    gmunu_up(gup0,pos3,0);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gup[mu][nu]=gup0[mu][nu];
+	//use metric nb 0
+	//for all times > max(metric times)
+      }
+    }
+
+  }
+  if (it==nb_times_-2 || it==0){ //linear inter for extremal-1 points
+    double t1=times_[it], t2=times_[it+1];
+    double gup1[4][4], gup2[4][4];
+    gmunu_up(gup1,pos3,it);
+    gmunu_up(gup2,pos3,it+1);
+    for (int mu=0;mu<4;++mu){
+      for (int nu=0;nu<4;++nu){
+	gup[mu][nu]=(gup1[mu][nu] - gup2[mu][nu])/(t1-t2)*(tt-t1)
+	  + gup1[mu][nu];
+      }
+    }    
+  }
+  //Else : use 3rd order interp
+  double gup1[4][4], gup2[4][4], gup3[4][4], gup4[4][4];
+  gmunu_up(gup1,pos3,it-1);
+  gmunu_up(gup2,pos3,it);
+  gmunu_up(gup3,pos3,it+1);
+  gmunu_up(gup4,pos3,it+2);
+
+  for (int mu=0;mu<4;++mu){
+    for (int nu=0;nu<4;++nu){
+      double y1=gup1[mu][nu],
+	y2=gup2[mu][nu],
+	y3=gup3[mu][nu],
+	y4=gup4[mu][nu];
+      double values[4]={y1,y2,y3,y4};
+      gup[mu][nu] = Interpol3rdOrder(tt,it,values);
+    }
+  }    
+}
+
+void NumericalMetricLorene::gmunu_up(double gup[4][4], const double x[4],
+				     int indice_time
+				     ) const
+{
+  // Contravariant metric coefs
+  if (indice_time<0 || indice_time>nb_times_-1) 
+    GYOTO_ERROR("NumericalMetricLorene::gmunu_up: "
+		"incoherent value of indice_time");
+
+  double rr=x[0], r2=rr*rr, th=x[1], costh=cos(th), sinth=sin(th),
+    sinth2=sinth*sinth, rsinth=rr*sin(th), ph=x[2];
+  Scalar* lapse = (lapse_tab_[indice_time]);
+  double lapse_val = lapse->val_point(rr,th,ph); // lapse value
+  double lapsem2 = 1./(lapse_val*lapse_val);
+
+  const Vector& shift = *(shift_tab_[indice_time]);
+  double betap = shift(3).val_point(rr,th,ph); // omega
+
+  const Sym_tensor& g_up_ij = *(gamcov_tab_[indice_time]);
+  double g_up_rr = g_up_ij(1,1).val_point(rr,th,ph), // gamma^rr
+    g_up_thth = g_up_ij(2,2).val_point(rr,th,ph), // idem for gamma^thth
+    g_up_pp = g_up_ij(3,3).val_point(rr,th,ph); // idem for gamma^pp
+
+  // Okay here we have all possible metric quantities
+
+  // g^{t,mu}
+
+  gup[0][0] = -lapsem2;
+  gup[0][1] = gup[1][0] = 0.;
+  gup[0][2] = gup[2][0] = 0.;
+  gup[0][3] = gup[3][0] = betap/rsinth*lapsem2;
+  // remember that betap is in Lorene orthonormal basis
+  // and that betap=-omega
+
+  // g^{i,mu}
+
+  gup[1][1] = g_up_rr;
+  gup[1][2] = gup[2][1] = 0.;
+  gup[1][3] = gup[3][1] = 0.;
+
+  gup[2][2] = g_up_thth*1./r2;
+  gup[2][3] = gup[3][2] = 0.;
+
+  gup[3][3] = 1./(r2*sinth2) * (-betap*betap*lapsem2 + g_up_pp);
+  
+}
+  
 
 double NumericalMetricLorene::gmunu(const double pos[4], 
 				     int mu, 
