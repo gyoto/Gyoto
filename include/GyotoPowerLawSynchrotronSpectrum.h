@@ -105,12 +105,30 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
    * \param nu frequency in Hz
    */
   double jnuCGS(double nu) const;
+
+  /**
+   * Returns the emission coefficient j_nu in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   * \param gamma_min minimum value of gamma to consider for the PL
+   */
+  double jnuCGS(double nu, double gamma_min) const;
+
  /**
    * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
    *
    * \param nu frequency in Hz
    */
   double alphanuCGS(double nu) const;
+
+  /**
+   * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   * \param gamma_min minimum value of gamma to consider for the PL
+   */
+  double alphanuCGS(double nu, gamma_min) const;
 
   /**
    * Returns the emission and absorption coef in SI
@@ -122,6 +140,16 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
 		  size_t nbnu
 		  ) ;
   
+  /**
+   * Returns the emission and absorption coef in SI
+   *
+   */
+  void radiativeQ(double jnu[], // output
+      double anu[], // output
+      double gamma_min,
+      double const nu_ems[],
+      size_t nbnu
+      ) ;
 };
 
 #endif
