@@ -82,7 +82,7 @@ using namespace boost::numeric::odeint;
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
 Worldline::IntegState::Generic::Generic(Worldline *parent) :
-  SmartPointee(), line_(parent), gg_(NULL) {};
+  SmartPointee(), line_(parent), gg_(NULL), integ_31_(false) {};
 void
 Worldline::IntegState::Generic::init(){
   if (!line_) return;
@@ -117,9 +117,17 @@ void Worldline::IntegState::Generic::checkNorm(double coord[8])
       "in Worldline::IntegState.C: "
       "norm is drifting"
       " - with norm,normref= " << norm_ << " " 
-		 << normref_ << " -- x1,x2,x3= " << coord[1] 
-		 << " " << coord[2] << " " << coord[3] << " " << endl;
+  		 << normref_ << " -- x1,x2,x3= " << coord[1] 
+  		 << " " << coord[2] << " " << coord[3] << " " << endl;
   }
+}
+
+void Worldline::IntegState::Generic::integ31(bool integ) {
+  integ_31_=integ;
+}
+
+bool Worldline::IntegState::Generic::integ31() const{
+  return integ_31_;
 }
 
 /// Legacy
@@ -221,13 +229,23 @@ void Worldline::IntegState::Boost::init()
 	      const double /* t*/ ){
       GYOTO_ERROR("Metric not set");
     };
-  else
-    system=[this, line, met, mass](const state_t &x,
-				   state_t &dxdt,
-				   const double t)
-      {
-	line->stopcond=met->diff(x, dxdt, mass);
-      };
+  else{
+    if (integ_31_==false){
+      system=[this, line, met, mass](const state_t &x,
+				     state_t &dxdt,
+				     const double t)
+	{
+	  line->stopcond=met->diff(x, dxdt, mass);
+	};
+    }else{
+      system=[this, line, met, mass](const state_t &x,
+				     state_t &dxdt,
+				     const double t)
+	{
+	  line->stopcond=met->diff31(x, dxdt, mass); // time must be passed
+	};
+    }
+  }
 
   if (line->getImin() > line->getImax() || !met) return;
 
@@ -255,8 +273,28 @@ Worldline::IntegState::Boost::init(Worldline * line,
 int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h1max) {
   if (!gg_) init();
   GYOTO_DEBUG << h1max << endl;
-  double dt=0;
-  
+  double dt=0, dtau=0;
+
+  // Transform to proper vector depending on integration kind (4D/3+1)
+  state_t xx;
+  double told = coord[0];
+  if (integ_31_==false) xx = coord;
+  else{
+    double rr=coord[1], th=coord[2], ph=coord[3],
+      tdot=coord[4], rdot=coord[5], thdot=coord[6], phdot=coord[7];
+    if (tdot==0.) GYOTO_ERROR("In WlI::nextStep tdot is 0!");
+    double rprime=rdot/tdot, thprime=thdot/tdot, phprime=phdot/tdot;
+    double NN, beta[3];
+    gg_->computeNBeta(&coord[0],NN,beta);
+    double betar=beta[0], betat=beta[1], betap=beta[2];
+    
+    double Vr = 1./NN*(rprime+betar), Vth = 1./NN*(thprime+betat),
+      Vph = 1./NN*(phprime+betap);
+    // Photon's energy as measured by Eulerian observer:
+    double EE = tdot*NN;
+    xx = {EE,rr,th,ph,Vr,Vth,Vph};
+  }
+
   if (adaptive_) {
     double h1=delta_;
     double sgn=h1>0?1.:-1.;
@@ -271,10 +309,16 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     do {
       // try_step_ is a lambda function encapsulating
       // the actual adaptive-step integrator from boost
-      cres=try_step_(coord, dt, h1);
+      cres=try_step_(xx, dt, h1);
     } while (abs(h1)>=delta_min &&
 	     cres==controlled_step_result::fail &&
 	     abs(h1)<h1max);
+
+    // At this point, if a successful step was found, xx is updated,
+    // dt is the increment of the integration variable (typically
+    // affine parameter, proper time, or coordinate time) over the
+    // successful step, and h1 is the proposed step size for
+    // the next iteration.
   
     // Check and report two possible error conditions (possible bugs)
     if (sgn*h1<0) GYOTO_ERROR("h1 changed sign!");
@@ -284,19 +328,44 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     if (cres==controlled_step_result::fail) {
       GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
       dt=sgn*delta_min;
-      do_step_(coord, dt);
+      do_step_(xx, dt);
     }
     // update adaptive step
     delta_=h1;
+
   } else {
     // non adaptive case
     // do_Step_ is a lambda function encapsulating a fixed-step integrator
     // from Boost
     dt=delta_;
-    do_step_(coord, dt);
+    do_step_(xx, dt);
   }
 
-  tau += dt;
+  // Transform back to original vector coord
+  if (integ_31_==false) {
+    coord = xx;
+    dtau = dt;
+  }else{
+    double tnew = told+dt, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
+      Vr=xx[4], Vth=xx[5], Vph=xx[6];
+    double NN, beta[3];
+    double newpos[4]={tnew,rr,th,ph};
+    gg_->computeNBeta(newpos,NN,beta);
+    double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
+    
+    double rprime=NN*Vr-beta_r,
+      thprime=NN*Vth-beta_t,
+      phprime=NN*Vph-beta_p,
+      tdotnew = EE/NN,
+      rdot = rprime*tdotnew,
+      thdot = thprime*tdotnew,
+      phdot = phprime*tdotnew;
+    
+    coord = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
+    dtau = NN/EE*dt; // affine parameter increment
+  }
+
+  tau += dtau;
   checkNorm(&coord[0]);
 
   return line_->stopcond;
@@ -308,8 +377,50 @@ void Worldline::IntegState::Boost::doStep(state_t const &coordin,
   if (!gg_) init();
   coordout = coordin;
 
+  // Transform to proper vector depending on integration kind (4D/3+1)
+  state_t xx;
+  double told = coordout[0];
+
+  if (integ_31_==false) xx = coordout;
+  else{
+    double rr=coordout[1], th=coordout[2], ph=coordout[3],
+      tdot=coordout[4], rdot=coordout[5], thdot=coordout[6], phdot=coordout[7];
+    if (tdot==0.) GYOTO_ERROR("In WlI::nextStep tdot is 0!");
+    double rprime=rdot/tdot, thprime=thdot/tdot, phprime=phdot/tdot;
+    double NN, beta[3];
+    gg_->computeNBeta(&coordout[0],NN,beta);
+    double betar=beta[0], betat=beta[1], betap=beta[2];
+    
+    double Vr = 1./NN*(rprime+betar), Vth = 1./NN*(thprime+betat),
+      Vph = 1./NN*(phprime+betap);
+    // Photon's energy as measured by Eulerian observer:
+    double EE = tdot*NN;
+    xx = {EE,rr,th,ph,Vr,Vth,Vph};
+  }
+
   // We call the Boost stepper
-  do_step_(coordout, step);
+  do_step_(xx, step);
+
+  // Transform back to original vector coord
+  if (integ_31_==false) coordout = xx;
+  else{
+    double tnew = told+step, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
+      Vr=xx[4], Vth=xx[5], Vph=xx[6];
+    double NN, beta[3];
+    double newpos[4]={tnew,rr,th,ph};
+    gg_->computeNBeta(newpos,NN,beta);
+    double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
+    
+    double rprime=NN*Vr-beta_r,
+      thprime=NN*Vth-beta_t,
+      phprime=NN*Vph-beta_p,
+      tdotnew = EE/NN,
+      rdot = rprime*tdotnew,
+      thdot = thprime*tdotnew,
+      phdot = phprime*tdotnew;
+    
+    coordout = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
+  }
 }
 
 std::string Worldline::IntegState::Boost::kind() {

@@ -676,7 +676,7 @@ void Scenery::operator() (
 			  Astrobj::Properties *data, double * impactcoords,
 			  Photon *ph
 			  ) {
-
+  //cout << "ij= " << i << " " << j << endl;
   double coord[8], Ephi[4], Etheta[4];
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
@@ -1000,6 +1000,9 @@ void Scenery::maxCrossEqplane(double max) {ph_.maxCrossEqplane(max);}
 
 void Scenery::secondary(bool sec) { ph_.secondary(sec); }
 bool Scenery::secondary() const { return ph_.secondary(); }
+
+void Scenery::integ31(bool integ) { ph_.integ31(integ); }
+bool Scenery::integ31() const { return ph_.integ31(); }
 
 void Scenery::parallelTransport(bool pt) { ph_.parallelTransport(pt); }
 bool Scenery::parallelTransport() const { return ph_.parallelTransport(); }

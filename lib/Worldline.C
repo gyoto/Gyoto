@@ -42,7 +42,8 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 			 et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
                          stopcond(0), metric_(NULL),
                          imin_(1), i0_(0), imax_(0), adaptive_(1),
-			 secondary_(1), parallel_transport_(false),
+			 secondary_(1), 
+			 parallel_transport_(false),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
@@ -1398,6 +1399,12 @@ bool Worldline::adaptive() const { return adaptive_; }
 
 void Worldline::secondary(bool sec) { secondary_ = sec; }
 bool Worldline::secondary() const { return secondary_; }
+
+void Worldline::integ31(bool integ) {
+  state_->integ31(integ);
+  reInit();
+}
+bool Worldline::integ31() const{ return state_->integ31(); }
 
 void Worldline::parallelTransport(bool pt) {
   bool reinit = pt && !parallel_transport_;

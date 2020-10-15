@@ -165,6 +165,11 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
    */
   virtual int diff(const double y[8], const double cst[5], 
 		   double res[8]) const ;
+  virtual int diff31(state_t const &x, state_t &dxdt, double mass) const ;
+  /**
+   * Compute lapse and shift at given coordinates
+   */
+  virtual void computeNBeta(const double coord[4],double &NN,double beta[3]) const;//Compute lapse and shift at coord
   /** Integrator. Computes the evolution of y (initcond=y(0)).
    */
   virtual void computeCst(const double coord[8], double cst[5]) const;

@@ -555,6 +555,12 @@ class Gyoto::Metric::Generic
   virtual void gmunu_up_and_jacobian(double ARGOUT_ARRAY2[4][4], double ARGOUT_ARRAY3[4][4][4], const double IN_ARRAY1[4]) const;
 
   /**
+   * \brief Computes lapse scalar and shift vector at coord.
+   *
+   **/
+  virtual void computeNBeta(const double coord[4],double &NN,double beta[3]) const;
+
+  /**
    * \brief Chistoffel symbol
    *
    * Value of Christoffel symbol
@@ -617,6 +623,11 @@ class Gyoto::Metric::Generic
   /// Obsolete, update your code
   virtual int diff(state_t const &x, state_t &dxdt)  const = delete;
   virtual int diff(const double y[8], double res[8]) const = delete ;
+
+  /**
+   * \brief F function such as dx/dt=F(x,cst) for 3+1 case
+   */
+  virtual int diff31(state_t const &x, state_t &dxdt, double mass) const ;
 
   /**
    * \brief Set Metric-specific constants of motion. Used e.g. in KerrBL.

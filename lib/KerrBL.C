@@ -334,6 +334,107 @@ double KerrBL::ScalarProd(const double* pos,
   
 }
 
+void KerrBL::computeNBeta(const double coord[4],
+			  double &NN,double beta[3]) const
+{
+  // Expressions from Eric's BH notes
+  double rr=coord[1], r2=rr*rr, th=coord[2], cost=cos(th),
+    cost2=cost*cost, sint=sin(th), sint2=sint*sint,
+    spin2=spin_*spin_;
+  double Delta = r2 - 2.*rr + spin2,
+    rho2 = r2+spin2*cost2,
+    B2 = r2 +  spin2 + 2*spin2*rr*sint2 / rho2;
+
+  NN = sqrt(Delta/B2);
+  beta[0]=0.;
+  beta[1]=0.;
+  beta[2]=-2.*spin_*rr / (rho2*(r2+spin2) + 2.*spin2*rr*sint2);
+}
+
+int KerrBL::diff31(const state_t &x,
+		   state_t &dxdt,
+		   double /* mass */) const {
+  // Expressions from Eric's BH notes (N,beta,gamma)
+  // and KerrBL Sage notebook (Kij)
+  double EE=x[0], rr=x[1], r2=rr*rr, th=x[2], cost=cos(th), sint=sin(th),
+    cost2=cost*cost, sint2=sint*sint,
+    Vr=x[4], Vth=x[5], Vph=x[6],
+    spin2=spin_*spin_;
+  double Delta = r2 - 2.*rr + spin2,
+    Delta_r = 2.*(rr - 1.),
+    rho2 = r2+spin2*cost2,
+    rho4 = rho2*rho2,
+    B2 = r2 +  spin2 + 2*spin2*rr*sint2 / rho2,
+    B2_squared = B2*B2,
+    B2_r = 2.*rr + 2.*spin2*sint2*(spin2*cost2 - r2)/rho4,
+    B2_t = 4.*spin2*rr*sint*cost*(spin2+r2)/rho4; 
+  double NN = sqrt(Delta/B2),
+    N_r = 0.5/NN*(Delta_r*B2 - Delta*B2_r)/B2_squared,
+    N_t = -0.5/NN*Delta*B2_t/B2_squared,
+    num = -2.*spin_*rr,
+    deno = rho2*(r2+spin2) + 2.*spin2*rr*sint2,
+    betap = num/deno,
+    deno2 = deno*deno,
+    num_r = -2.*spin_,
+    deno_r = 4.*r2*rr + 2.*spin2*(sint2 + rr*(1.+cost2)),
+    deno_t = -2.*spin2*cost*sint*Delta,
+    betap_r = (num_r*deno - num*deno_r)/deno2,
+    betap_t = -(num*deno_t)/deno2,
+    gamma_rr = rho2/Delta,
+    gammarr = 1./gamma_rr,
+    gamma_tt = rho2,
+    gammatt = 1./gamma_tt,
+    gamma_pp = B2*sint2,
+    gammapp = 1./gamma_pp,
+    Krp = spin_*sint2*(3*r2*r2+spin2*r2+spin2*(r2-spin2)*cost2) / (rho2*rho2*sqrt(Delta*B2)),
+    Kyp = 2.*rr*spin2*spin_*sint2*cost*sqrt(Delta)/(rho2*rho2*sqrt(B2)),
+    // Kyp is for y=cost as used in Eric's Sage notebook
+    Ktp = -sint*Kyp;
+
+  // 3 christo
+
+  double rho2_r = 2.*rr,
+    rho2_t = -2.*spin2*sint*cost,
+    gamma_rr_r = (rho2_r*Delta - rho2*Delta_r)/(Delta*Delta),
+    gamma_rr_t = rho2_t/Delta,
+    gamma_tt_r = rho2_r,
+    gamma_tt_t = rho2_t,
+    gamma_pp_r = B2_r*sint2,
+    gamma_pp_t = B2_t*sint2 + 2.*cost*sint*B2,
+    Grrr = 0.5*gammarr*gamma_rr_r,
+    Grrt = 0.5*gammarr*gamma_rr_t,
+    Grtt = -0.5*gammarr*gamma_tt_r,
+    Grpp = -0.5*gammarr*gamma_pp_r,
+    Gttt = 0.5*gammatt*gamma_tt_t,
+    Gtpp = -0.5*gammatt*gamma_pp_t,
+    Gtrr = -0.5*gammatt*gamma_rr_t,
+    Gtrt = 0.5*gammatt*gamma_tt_r,
+    Gprp = 0.5*gammapp*gamma_pp_r,
+    Gptp = 0.5*gammapp*gamma_pp_t;
+
+  double Christo_r=Vr*Vr*Grrr+2.*Grrt*Vr*Vth+Grtt*Vth*Vth+Grpp*Vph*Vph,
+    Christo_th=Gtrr*Vr*Vr+2.*Gtrt*Vr*Vth+Gttt*Vth*Vth+Gtpp*Vph*Vph,
+    Christo_ph=2.*Gprp*Vr*Vph+2.*Gptp*Vth*Vph;
+
+  double prefact=1./NN*Vr*N_r+1./NN*Vth*N_t-2.*Krp*Vr*Vph-2.*Ktp*Vth*Vph;
+  double Vrdot = NN*(Vr*prefact+2.*gammarr*Krp*Vph-Christo_r)-gammarr*N_r,
+    Vthdot = NN*(Vth*prefact+2.*gammatt*Ktp*Vph-Christo_th)-gammatt*N_t,
+    Vphdot = NN*(Vph*prefact+2.*gammapp*(Krp*Vr+Ktp*Vth)-Christo_ph)
+    -Vr*betap_r-Vth*betap_t; // dot=d/dt here
+    
+    
+  dxdt[0] = EE*NN*2.*(Krp*Vr*Vph+Ktp*Vth*Vph) - EE*(Vr*N_r+Vth*N_t);
+  dxdt[1] = NN*Vr;
+  dxdt[2] = NN*Vth;
+  dxdt[3] = NN*Vph-betap;
+  dxdt[4] = Vrdot;
+  dxdt[5] = Vthdot;
+  dxdt[6] = Vphdot;
+
+  return 0;
+    
+}
+
 /*For integration of KerrBL geodesics.
 diff is such that : y_dot=diff(y,cst) where cst are constants of motion (mu,E,L,Q in KerrBL)
 and y contains [r,theta,phi,t,pr,ptheta] (pr and ptheta are canonical momentum)

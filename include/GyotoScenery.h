@@ -423,6 +423,9 @@ class Gyoto::Scenery
   void secondary (bool sec) ; ///< Set ph_.secondary_
   bool secondary () const ; ///< Get ph_.secondary_
 
+  void integ31(bool integ); ///< Set WorldlinIntegState integ_31_
+  bool integ31() const ; ///< Get WorldlinIntegState integ_31_
+
   void parallelTransport (bool pt) ; ///< Set ph_.parallel_transport_
   bool parallelTransport () const ; ///< Get ph_.parallel_transport_
 

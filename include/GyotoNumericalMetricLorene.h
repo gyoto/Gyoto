@@ -160,7 +160,7 @@ class Gyoto::Metric::NumericalMetricLorene
   /**
    * Compute lapse and shift at given coordinates
    */
-  void computeNBeta(const double coord[4],double &NN,double beta[3]) const;//Compute lapse and shift at coord
+  virtual void computeNBeta(const double coord[4],double &NN,double beta[3]) const;//Compute lapse and shift at coord
 
   /**
    * 4-Metric
@@ -233,6 +233,7 @@ class Gyoto::Metric::NumericalMetricLorene
   virtual int diff(state_t const &coord, state_t &res, double mass) const;
   int diff(double tt, const double y[7], double res[7]) const ;
   virtual int diff(const double y[7], double res[7], int indice_time) const ;
+  virtual int diff31(state_t const &x, state_t &dxdt, double mass) const ;
 
   /**
    * \brief Yield circular velocity at a given position

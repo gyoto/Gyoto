@@ -349,8 +349,7 @@ double NumericalMetricLorene::getRms() const {
 }  
 double NumericalMetricLorene::getRmb() const {
   GYOTO_DEBUG << endl;
-  return rmb_;}  
-
+  return rmb_;}
 
 double NumericalMetricLorene::getSpecificAngularMomentum(double rr) const {
   // Computes the Keplerian specific angular momentum \ell = -u_phi / u_t
@@ -455,6 +454,12 @@ int NumericalMetricLorene::diff(state_t const &coord,
   }
 
   return Generic::diff(coord, res, mass);
+}
+
+int NumericalMetricLorene::diff31(const state_t &x,
+			  state_t &dxdt,
+			  double /* mass */) const {
+  return diff(0.,&x[0],&dxdt[0]); // first slot should be time!!
 }
 
 int NumericalMetricLorene::diff(double tt, 

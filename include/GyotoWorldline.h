@@ -57,11 +57,13 @@ namespace Gyoto {
  */
 #define GYOTO_WORLDLINE_PROPERTIES(c)					\
   Gyoto::Property("Gyoto::Worldline", "Time-like or null geodesic."),	\
+    GYOTO_PROPERTY_BOOL(c, Integ31, Integ4D, _integ31,			\
+			"Whether to integrate the 3+1 or 4D equation of geodesics.") \
     GYOTO_PROPERTY_BOOL(c, HighOrderImages, PrimaryOnly, _secondary,	\
 			"Whether to stop Photon integration at 180° deflection.") \
-    GYOTO_PROPERTY_BOOL(c, ParallelTransport, NoParallelTransport, _parallelTransport,	\
+    GYOTO_PROPERTY_BOOL(c, ParallelTransport, NoParallelTransport, _parallelTransport, \
 			"Whether to perform parallel transport of a local triad (used for polarization).") \
-    GYOTO_PROPERTY_DOUBLE(c, MaxCrossEqplane, _maxCrossEqplane,	\
+    GYOTO_PROPERTY_DOUBLE(c, MaxCrossEqplane, _maxCrossEqplane,		\
 			  "Maximum number of crossings of the equatorial plane allowed for this worldline") \
     GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol,				\
 			  "Relative tolerance for the adaptive step integrators.") \
@@ -102,6 +104,8 @@ namespace Gyoto {
    GYOTO_WORLDLINE macro.
 */
 #define GYOTO_WORLDLINE_ACCESSORS(c)					\
+  void c::_integ31(bool s) {integ31(s);}		                \
+  bool c::_integ31() const {return integ31();}                          \
   void c::_secondary(bool s) {secondary(s);}				\
   bool c::_secondary() const {return secondary();}			\
   void c::_parallelTransport(bool s) {parallelTransport(s);}		\
@@ -170,6 +174,8 @@ namespace Gyoto {
   bool _adaptive () const ;				\
   void _secondary (bool sec) ;				\
   bool _secondary () const ;				\
+  void _integ31 (bool sec) ;			\
+  bool _integ31 () const ;			\
   void _parallelTransport (bool sec) ;			\
   bool _parallelTransport () const ;			\
   void _maxiter (size_t miter) ;			\
@@ -477,6 +483,19 @@ class Gyoto::Worldline
    * \brief Describe the integrator used by #state_
    */
   std::string integrator() const ;
+
+  /**
+   * \brief Set the integrator kind to 3+1 or 4D
+   *
+   * Initialize #state_ to use the required geodesic equation.
+   *
+   */
+  void integ31(bool integ);
+
+  /**
+   * \brief Get the kind of geodesic equation integrated by #state_
+   */
+  bool integ31() const ;
 
   /**
    * \brief Get #delta_min_
@@ -858,6 +877,8 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * when calling nestStep().
    */
   Worldline * line_;
+  // add 31 flag
+  bool integ_31_; ///< Whether to integrate the 3+1 equation of geodesics instead of the 4D one.
   double delta_; ///< Integration step (current in case of #adaptive_).
   bool adaptive_; ///< Whether to use an adaptive step
   bool parallel_transport_; ///< Whether to parallel-transport base vectors
@@ -921,6 +942,12 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
    * \brief Return the integrator kind
    */
   virtual std::string kind()=0;
+
+  /**
+   * \brief Defines the kind of geodesic equation to integrate (3+1, 4D)
+   */
+  void integ31(bool integ);
+  bool integ31() const ;
 
   /// Make one step.
   /**

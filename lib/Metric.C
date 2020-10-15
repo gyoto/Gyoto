@@ -410,6 +410,12 @@ void Metric::Generic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4
 
  }
 
+void Metric::Generic::computeNBeta(const double coord[4],
+					 double &NN,double beta[3]) const
+{
+  throwError("In Metric::computeNBeta not implemented");
+}
+
 double Metric::Generic::christoffel(const double * x, int alpha, int mu, int nu) const {
   const_cast<Generic*>(this)->__defaultfeatures |= __default_christoffel_coef;
   double dst[4][4][4];
@@ -480,6 +486,12 @@ int Metric::Generic::diff(const state_t &x,
 	  dxdt[alpha+v*4] -= dst[alpha][i][j]*x[4+i]*x[v*4+j];
   }
   return 0;
+}
+
+int Metric::Generic::diff31(const state_t &x,
+			  state_t &dxdt,
+			  double /* mass */) const {
+  throwError("In Metric::diff31 not implemented");
 }
 
 /*Runge Kutta to order 4
