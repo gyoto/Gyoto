@@ -50,6 +50,15 @@ GYOTO_PROPERTY_DOUBLE(OscilTorus,CentralDensity, centralDensity,
 		      "Central density.")
 GYOTO_PROPERTY_STRING(OscilTorus,PerturbKind, perturbKind,
 		      "One of: Radial Vertical X Plus Breathing")
+/*
+  Nomenclature note: an old nomencalture is sometimes used in my
+  notes, refering to "minus" and "plus" modes. This is due to the
+  expression of the eigenfreq for these modes that differ by a sign.
+  However, this is not the proper nomenclature and one should use
+  Blaes et al. (2006) naming, so:
+  old minus mode --> plus mode
+  old plus mode  --> breathing mode
+ */
 GYOTO_PROPERTY_DOUBLE(OscilTorus, PerturbIntens, perturbIntens,
 		      "Perturbations intensity.")
 GYOTO_PROPERTY_FILENAME(OscilTorus, EmittingArea, emittingArea,
