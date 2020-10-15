@@ -316,8 +316,18 @@ double Jet::operator()(double const coord[4]) {
   double hjetin = rcyl/tan(jetInnerOpeningAngle_),
     hjetout = rcyl/tan(jetOuterOpeningAngle_);
 
-  double distance = (zz - hjetin)*(zz - hjetout); // <0 inside jet sheath
+  // double distance = (zz - hjetin)*(zz - hjetout); // <0 inside jet sheath
 
+  // if (zz < jetBaseHeight_) // remove part below jet basis
+  //   distance = fabs(distance) + (jetBaseHeight_ - zz);
+
+  //double distance = (zz - jetBaseHeight_ - hjetin)
+  //  *(zz - jetBaseHeight_ - hjetout); // <0 inside jet sheath
+
+  double rcyljetin = zz*tan(jetInnerOpeningAngle_),
+    rcyljetout = zz*tan(jetOuterOpeningAngle_);
+
+  double distance = (rcyl - rcyljetin)*(rcyl - rcyljetout);
   if (zz < jetBaseHeight_) // remove part below jet basis
     distance = fabs(distance) + (jetBaseHeight_ - zz);
 
@@ -329,22 +339,25 @@ void Jet::getVelocity(double const pos[4], double vel[4])
 {
   double rr = pos[1];
   double Vjet = sqrt(gammaJet_*gammaJet_-1.)/gammaJet_;
-  double Vr = Vjet/(sqrt(gg_->gmunu(pos,1,1)
-			 +jetVphiOverVr_*jetVphiOverVr_/(rr*rr)*gg_->gmunu(pos,3,3)));
-  double Vphi = jetVphiOverVr_/rr*Vr;
+  //double Vr = Vjet/(sqrt(gg_->gmunu(pos,1,1)
+  //			 +jetVphiOverVr_*jetVphiOverVr_/(rr*rr)*gg_->gmunu(pos,3,3)));
+  //double Vphi = jetVphiOverVr_/rr*Vr;
   //cout << "NEW STUFF" << endl;
   //cout << "V2= " << gg_->gmunu(pos,1,1) * Vr*Vr + gg_->gmunu(pos,3,3) * Vphi*Vphi<< " " << (gammaJet_*gammaJet_-1.)/(gammaJet_*gammaJet_) << endl;
 
   // KerrBL-specific part -- to generalize if possible
   double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
+    grr = gg_->gmunu(pos,1,1),
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
     uphiZAMO = -utZAMO*gtp/gpp;
+  double Vphi = jetVphiOverVr_*Vjet/sqrt(gpp),
+    Vr = sqrt(1-jetVphiOverVr_*jetVphiOverVr_)*Vjet / sqrt(grr);
   //cout << "ZAMO=" << gtt*utZAMO*utZAMO + 2*gtp*utZAMO*uphiZAMO + gpp*uphiZAMO*uphiZAMO << endl;
 
   // Paper def:
   vel[0] = gammaJet_*utZAMO;
-  vel[1] = gammaJet_*Vr;
+  vel[1] = -gammaJet_*Vr;
   vel[2] = 0.;
   //vel[3] = gammaJet_*uphiZAMO;
   vel[3] = gammaJet_*(uphiZAMO+Vphi);
