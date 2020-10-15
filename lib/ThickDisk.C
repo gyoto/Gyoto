@@ -238,7 +238,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
 
   
   //cout << "r ne B= " << coord_ph[1] << " " << number_density << " " << BB << endl;
-  //cout << "r, z, ne, B= " << coord_ph[1] << " " << zz << " " << number_density << " " << BB << endl;
+  //cout << "IN DISK r, z, ne, B= " << coord_ph[1] << " " << zz << " " << number_density << " " << BB << endl;
   //GYOTO_ERROR("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
@@ -306,8 +306,6 @@ void ThickDisk::radiativeQ(double Inu[], // output
 }
 
 double ThickDisk::operator()(double const coord[4]) {
-  //cout << "photon at r,z= " << coord[1] << " " << coord[1]*cos(coord[2]) << endl;
-
   // zpos: modulus of altitude above equatorial plane
   // rproj: radius projected in the equatorial plane
   double zpos=0., rproj=0.;
@@ -335,6 +333,8 @@ double ThickDisk::operator()(double const coord[4]) {
       * tan(M_PI/2. - thickDiskOpeningAngle_) ; // altitude of disk at rproj
   // zdisk is fixed at zero rproj <= rinner,
   // then the distance to the disk is always positive
+
+  //  cout << "in disk distance, zpos, zdisk= " << zpos << " " << zdisk << endl;
   
   return zpos - zdisk; // >0 outside, <0 inside flared disk
 }
@@ -380,7 +380,8 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
     double Gamma = 1./sqrt(1.-V*V);
     double Vphi_over_V = Vphi_over_V_; // this is Vphi/V in a unit-vector basis (er,ephi)
     double Vphi = Vphi_over_V*V / sqrt(gpp),
-      Vr = (1-Vphi_over_V)*V / sqrt(grr);
+      Vr = sqrt(1-Vphi_over_V*Vphi_over_V)*V / sqrt(grr);
+      //Vr = (1-Vphi_over_V)*V / sqrt(grr);
     
     vel[0] = Gamma*utZAMO;
     vel[1] = -Gamma*Vr; // minus sign coz matter is going towards BH
