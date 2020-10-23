@@ -35,7 +35,7 @@ namespace Gyoto{
 
 #include <GyotoMetric.h>
 #include <GyotoStar.h>
-#include <GyotoPowerLawSynchrotronSpectrum.h>
+#include <GyotoKappaDistributionSynchrotronSpectrum.h>
 #include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
@@ -59,13 +59,13 @@ class Gyoto::Astrobj::Plasmoid :
   // -----
  private:
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
-  double temperature_ini_; ///< initial temperature of plasmoid before reconnection
-  double temperature_rec_; ///< temperature of plasmoid after reconnection
+  double timeRef_; ///< time of reconnection event
+  double temperatureInitial_; ///< initial temperature of plasmoid before reconnection
+  double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
-  double powerIndex_; ///< plasmoid synchrotron power law distribution index
-  SmartPointer<Spectrum::ThermalSynchrotronSpectrum> spectrumLowThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
-  SmartPointer<Spectrum::ThermalSynchrotronSpectrum> spectrumHighThermalSynch_; // thermal-distribution synchrotron spectrum at high Temperature
-  SmartPointer<Spectrum::PowerLawSynchrotronSpectrum> spectrumPowerLawSynch_; // power law distribution synchrotron spectrum
+  double kappaIndexMin_; ///< minimum value, i.e. value after heating of Kappa Index
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // power law distribution synchrotron spectrum
 
   // Constructors - Destructor
   // -------------------------
@@ -94,14 +94,18 @@ class Gyoto::Astrobj::Plasmoid :
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
   void numberDensity(double dens, std::string const &unit);
-  double temperature_ini() const;
-  void temperature_ini(double tt);
-  double temperature_rec() const;
-  void temperature_rec(double tt);
+  double temperatureInitial() const;
+  void temperatureInitial(double tt);
+  double temperatureReconnection() const;
+  void temperatureReconnection(double tt);
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
+  void kappaIndex(double kk);
   double kappaIndex() const;
-  void kappaIndex(double);
+  double timeRef() const;
+  double timeRef(std::string const &unit) const;
+  void timeRef(double tt);
+  void timeRef(double tt, std::string const &unit);
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,

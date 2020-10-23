@@ -40,7 +40,7 @@ Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron()
 : Spectrum::Generic("KappaDistributionSynchrotron"),
   numberdensityCGS_(0.),
   angle_B_pem_(0.), cyclotron_freq_(1.), thetae_(1.),
-  kappaindex_(0.), angle_averaged_(0), hypergeometric_(1)
+  kappaindex_(0.), angle_averaged_(0), hypergeometric_(1), gamma_max_(DBL_MAX)
 {}
 Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron(const KappaDistributionSynchrotron &o)
 : Spectrum::Generic(o),
@@ -51,7 +51,8 @@ Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron(const Kappa
   thetae_(o.thetae_),
   kappaindex_(o.kappaindex_),
   hypergeometric_(o.hypergeometric_),
-  angle_averaged_(o.angle_averaged_)
+  angle_averaged_(o.angle_averaged_),
+  gamma_max_(o.gamma_max_)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
@@ -84,6 +85,10 @@ bool Spectrum::KappaDistributionSynchrotron::angle_averaged() const {
   return angle_averaged_; }
 void Spectrum::KappaDistributionSynchrotron::angle_averaged(bool ang) { 
   angle_averaged_ = ang; }
+double Spectrum::KappaDistributionSynchrotron::gamma_max() const { 
+  return gamma_max_; }
+void Spectrum::KappaDistributionSynchrotron::gamma_max(double gammaMax) { 
+  gamma_max_ = gammaMax; }
   
 Spectrum::KappaDistributionSynchrotron * Spectrum::KappaDistributionSynchrotron::clone() const
 { return new Spectrum::KappaDistributionSynchrotron(*this); }
@@ -106,23 +111,25 @@ double Spectrum::KappaDistributionSynchrotron::jnuCGS(double nu) const{
   // Pandya, Zhang, Chandra, Gammie, 2016
 
   //cout << "in kappa jnu stuff: " << cyclotron_freq_ << " " << thetae_ << " " << kappaindex_ << endl;
-  
-  double sinth = sin(angle_B_pem_),
-    nuk = cyclotron_freq_*pow(thetae_*kappaindex_,2.)*sinth,
-    Xk = nu/nuk,
-    Js_low = pow(Xk,1./3.)*sinth*4.*M_PI*tgamma(kappaindex_-4./3.)/ \
-    (pow(3.,7./3.)*tgamma(kappaindex_-2.)),
-    Js_high = pow(Xk,-(kappaindex_-2.)/2.)*sinth*pow(3.,(kappaindex_-1.)/2.)* \
-    (kappaindex_-1.)*(kappaindex_-2.)/4.*tgamma(kappaindex_/4.-1./3.)* \
-    tgamma(kappaindex_/4.+4./3.),
-    expo = 3.*pow(kappaindex_,-3./2.),
-    Js = pow(pow(Js_low,-expo) + pow(Js_high,-expo),-1./expo);
-  
-  double emis_synch = numberdensityCGS_*				\
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*							\
-    Js;
-  
+  double emis_synch=0.;
+  if (sqrt(nu/cyclotron_freq_)<gamma_max_)
+  {
+    double sinth = sin(angle_B_pem_),
+      nuk = cyclotron_freq_*pow(thetae_*kappaindex_,2.)*sinth,
+      Xk = nu/nuk,
+      Js_low = pow(Xk,1./3.)*sinth*4.*M_PI*tgamma(kappaindex_-4./3.)/ \
+      (pow(3.,7./3.)*tgamma(kappaindex_-2.)),
+      Js_high = pow(Xk,-(kappaindex_-2.)/2.)*sinth*pow(3.,(kappaindex_-1.)/2.)* \
+      (kappaindex_-1.)*(kappaindex_-2.)/4.*tgamma(kappaindex_/4.-1./3.)* \
+      tgamma(kappaindex_/4.+4./3.),
+      expo = 3.*pow(kappaindex_,-3./2.),
+      Js = pow(pow(Js_low,-expo) + pow(Js_high,-expo),-1./expo);
+    
+    emis_synch = numberdensityCGS_*				\
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*							\
+      Js;
+  }
   //cout << "in kappa spec angleB jnu= " << angle_B_pem_ << " " << emis_synch << endl;
   return emis_synch;
 }
@@ -132,28 +139,29 @@ double Spectrum::KappaDistributionSynchrotron::alphanuCGS(double nu) const{
   // Pandya, Zhang, Chandra, Gammie, 2016
 
   //cout << "in kappa anu stuff: " << cyclotron_freq_ << " " << thetae_ << " " << kappaindex_ << " " << hypergeometric_ << endl;
-
-  double sinth = sin(angle_B_pem_),
-    nuk = cyclotron_freq_*pow(thetae_*kappaindex_,2.)*sinth,
-    Xk = nu/nuk,
-    As_low = pow(Xk,-2./3.)*pow(3.,1./6.)*10./41.* \
-    2.*M_PI/pow(thetae_*kappaindex_,10./3.-kappaindex_) * \
-    (kappaindex_-1.)*(kappaindex_-2.)*kappaindex_/(3.*kappaindex_-1.) * \
-    tgamma(5./3.)*hypergeometric_,
-    As_high = pow(Xk,-(1.+kappaindex_)/2.)*pow(M_PI,3./2.)/3. * \
-    (kappaindex_-1.)*(kappaindex_-2.)*kappaindex_/pow(thetae_*kappaindex_,3.)* \
-    (2.*tgamma(2.+kappaindex_/2.)/(2.+kappaindex_)-1.)* \
-    (pow(3./kappaindex_,19./4.)+3./5.),
-    expo = pow(-7./4.+8./5.*kappaindex_,-43./50.),
-    As = pow(pow(As_low,-expo) + pow(As_high,-expo),-1./expo);
-  
-  double abs_synch = numberdensityCGS_*					\
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
-    (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
-    As;
-  
+  double abs_synch = 0.;
+  if (sqrt(nu/cyclotron_freq_)<gamma_max_)
+  {
+    double sinth = sin(angle_B_pem_),
+      nuk = cyclotron_freq_*pow(thetae_*kappaindex_,2.)*sinth,
+      Xk = nu/nuk,
+      As_low = pow(Xk,-2./3.)*pow(3.,1./6.)*10./41.* \
+      2.*M_PI/pow(thetae_*kappaindex_,10./3.-kappaindex_) * \
+      (kappaindex_-1.)*(kappaindex_-2.)*kappaindex_/(3.*kappaindex_-1.) * \
+      tgamma(5./3.)*hypergeometric_,
+      As_high = pow(Xk,-(1.+kappaindex_)/2.)*pow(M_PI,3./2.)/3. * \
+      (kappaindex_-1.)*(kappaindex_-2.)*kappaindex_/pow(thetae_*kappaindex_,3.)* \
+      (2.*tgamma(2.+kappaindex_/2.)/(2.+kappaindex_)-1.)* \
+      (pow(3./kappaindex_,19./4.)+3./5.),
+      expo = pow(-7./4.+8./5.*kappaindex_,-43./50.),
+      As = pow(pow(As_low,-expo) + pow(As_high,-expo),-1./expo);
+    
+    abs_synch = numberdensityCGS_*					\
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
+      (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
+      As;
+  }
   //cout << "in kappa spec angleB anu= " << angle_B_pem_ << " " << abs_synch << endl;
-
   return abs_synch;
 }
 
@@ -189,6 +197,5 @@ void Spectrum::KappaDistributionSynchrotron::radiativeQ(double jnu[], // output
     // OUTPUTS
     jnu[ii]= jnucur * GYOTO_JNU_CGS_TO_SI;
     alphanu[ii]= anucur * GYOTO_ANU_CGS_TO_SI;
-    
   }
 }

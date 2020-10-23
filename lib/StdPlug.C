@@ -45,6 +45,7 @@
 #include "GyotoJet.h"
 #include "GyotoThickDisk.h"
 #include "GyotoBlob.h"
+#include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 
 #include "GyotoPatternDisk.h"
@@ -118,6 +119,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::ThickDisk>));
   Astrobj::Register("Blob",
 		    &(Astrobj::Subcontractor<Astrobj::Blob>));
+  Astrobj::Register("Plasmoid",
+		    &(Astrobj::Subcontractor<Astrobj::Plasmoid>));
   Astrobj::Register("XillverReflection",
 		    &(Astrobj::Subcontractor<Astrobj::XillverReflection>));
   Astrobj::Register("FlaredDiskSynchrotron",

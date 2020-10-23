@@ -44,7 +44,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ComplexAstrobj.C UniformSphere.C \
 	ComplexMetric.C Shift.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
-	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C ThickDisk.C\
+	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C Plasmoid.C ThickDisk.C\
 	StdPlug.C
 
 # those files need cfitsio for some functionality
