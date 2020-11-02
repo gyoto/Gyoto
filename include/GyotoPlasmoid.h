@@ -35,7 +35,7 @@ namespace Gyoto{
 
 #include <GyotoMetric.h>
 #include <GyotoStar.h>
-#include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#include <GyotoPowerLawSynchrotronSpectrum.h>
 #include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
@@ -60,12 +60,11 @@ class Gyoto::Astrobj::Plasmoid :
  private:
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
   double timeRef_; ///< time of reconnection event
-  double temperatureInitial_; ///< initial temperature of plasmoid before reconnection
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
-  double kappaIndexMin_; ///< minimum value, i.e. value after heating of Kappa Index
+  double PLIndex_; ///< PL Index
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
-  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // power law distribution synchrotron spectrum
+  //SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // thermal-distribution synchrotron spectrum at low Temperature
 
   // Constructors - Destructor
   // -------------------------
@@ -94,14 +93,12 @@ class Gyoto::Astrobj::Plasmoid :
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
   void numberDensity(double dens, std::string const &unit);
-  double temperatureInitial() const;
-  void temperatureInitial(double tt);
   double temperatureReconnection() const;
   void temperatureReconnection(double tt);
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
-  void kappaIndex(double kk);
-  double kappaIndex() const;
+  void PLIndex(double kk);
+  double PLIndex() const;
   double timeRef() const;
   double timeRef(std::string const &unit) const;
   void timeRef(double tt);
