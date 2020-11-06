@@ -101,8 +101,8 @@ void Plasmoid::radiativeQ(double Inu[], // output
 # endif
   double tcur=coord_ph[0]; //*GMoc3/60.; // in min
 
-  double timeRef_=-20;
-  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
+  double timeRef_=-40.;
+  double vrec_cgs = 0.01*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
   double t_inj=radius("cm")/vrec_cgs/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
   cout << "t_inj=" << t_inj << endl;
 
@@ -115,7 +115,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double tempRec=temperatureReconnection_;
   double thetae_rec = GYOTO_BOLTZMANN_CGS*temperatureReconnection_
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); //Dimentionless temperature of the population of e- after the reconnection
-  //double gamma_min=3.*thetae_rec;
+  double gamma_min=3.*thetae_rec;
 
   
   double BB = sqrt(8.*M_PI*magnetizationParameter_
@@ -126,9 +126,10 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
   double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
   double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.)/8.*M_PI)/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
+  cout << "AA=" << AA << ", B=" << BB << endl;
 
-  //double gamma_max = DBL_MAX;
-  //double gamma_max_0 = DBL_MAX;
+  double gamma_max = DBL_MAX;
+  double gamma_max_0 = DBL_MAX;
  
   // COMPUTE VALUES IN FUNCTION OF PHASE
   if (tcur<=timeRef_)
@@ -145,7 +146,6 @@ void Plasmoid::radiativeQ(double Inu[], // output
   {
     // evolution of the number densities
     number_density_rec=n_dot*t_inj*60.;
-    cout << "n/n0=" << number_density_rec/numberDensity_cgs_ << endl;
     //number_density_ini=numberDensity_cgs_ - number_density_rec;
     
     thetae_rec=thetae_rec*pow(1+AA*thetae_rec*(tcur-(t_inj+timeRef_))*60.,-1.);
@@ -156,6 +156,9 @@ void Plasmoid::radiativeQ(double Inu[], // output
     gamma_max = max(gamma_max_0*pow(1+AA*gamma_max_0*(tcur-(t_inj+timeRef_)),-1.),gamma_min);
     */
   }
+  
+  //cout << "n/n0=" << number_density_rec/numberDensity_cgs_ << endl;
+  //cout << "thetae=" << thetae_rec <<endl;
 
   // Defining jnus, anus
   double jnu_synch[nbnu];
@@ -191,6 +194,9 @@ void Plasmoid::radiativeQ(double Inu[], // output
   spectrumThermalSynch_->cyclotron_freq(nu0);
   spectrumThermalSynch_->angle_averaged(1);
   spectrumThermalSynch_->besselK2(besselK2);
+
+  spectrumThermalSynch_->radiativeQ(jnu_synch,anu_synch,
+                        nu_ems,nbnu);
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){

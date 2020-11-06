@@ -99,10 +99,10 @@ class Gyoto::Astrobj::Plasmoid :
   double magnetizationParameter() const;
   void PLIndex(double kk);
   double PLIndex() const;
-  double timeRef() const;
+  /*double timeRef() const;
   double timeRef(std::string const &unit) const;
   void timeRef(double tt);
-  void timeRef(double tt, std::string const &unit);
+  void timeRef(double tt, std::string const &unit);*/
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
