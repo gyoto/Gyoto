@@ -59,7 +59,7 @@ class Gyoto::Astrobj::Plasmoid :
   // -----
  private:
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
-  double timeRef_; ///< time of reconnection event
+  //double timeRef_; ///< time of reconnection event
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
   double PLIndex_; ///< PL Index

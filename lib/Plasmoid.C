@@ -99,18 +99,18 @@ void Plasmoid::radiativeQ(double Inu[], // output
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
-  double tcur=coord_ph[0]; //*GMoc3/60.; // in min
+  double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
 
-  double timeRef_=-40.;
-  double vrec_cgs = 0.01*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
+  double timeRef_=-20.;
+  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
   double t_inj=radius("cm")/vrec_cgs/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
-  cout << "t_inj=" << t_inj << endl;
+  //cout << "t_inj=" << t_inj << endl;
 
   //double number_density_ini=numberDensity_cgs_; // number density of e- which follow the initial thermal distribution, before the reconnection
   double number_density_rec=0.; // number density of e- which follow the kappa distribution after the reconnection
 
   double n_dot=numberDensity_cgs_*vrec_cgs/radius("cm"); //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
-  cout << "n_dot=" << n_dot << endl;
+  //cout << "n_dot=" << n_dot << endl;
 
   double tempRec=temperatureReconnection_;
   double thetae_rec = GYOTO_BOLTZMANN_CGS*temperatureReconnection_
@@ -118,15 +118,15 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double gamma_min=3.*thetae_rec;
 
   
-  double BB = sqrt(8.*M_PI*magnetizationParameter_
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
            *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
            *numberDensity_cgs_); // Magnetic field
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
   double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
-  double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.)/8.*M_PI)/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
-  cout << "AA=" << AA << ", B=" << BB << endl;
+  double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
+  //cout << "AA=" << AA << ", B=" << BB << endl;
 
   double gamma_max = DBL_MAX;
   double gamma_max_0 = DBL_MAX;
