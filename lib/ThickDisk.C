@@ -58,6 +58,13 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VelocityBelowIsco, velocityBelowIsco,
 			     "this provides the ZAMO-observed velocity norm V"
 			     " (first quantity) and the ratio Vphi/V"
 			     " in a unit-vector basis (second quantity)")
+GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VelocityBelowIscoInterpol,
+			     velocityBelowIscoInterpol,
+			     "this provides the ZAMO-observed velocity norm V"
+			     " (first quantity), and interpolates the ratio"
+			     " Vphi/V between 1 at ISCO, and 0 at some"
+			     " provided radius (second quantity,"
+			     " typically the horizon)")
 GYOTO_PROPERTY_END(ThickDisk, Standard::properties)
 
 // ACCESSORS
@@ -129,6 +136,16 @@ std::vector<double> ThickDisk::velocityBelowIsco() const {
   v[1] = Vphi_over_V_;
   return v;
 }
+void ThickDisk::velocityBelowIscoInterpol(std::vector<double> const &v) {
+  veloZAMONorm_ = v[0];
+  radius_interpol_vphi_ = v[1];
+}
+std::vector<double> ThickDisk::velocityBelowIscoInterpol() const {
+  std::vector<double> v (2, 0.);
+  v[0] = veloZAMONorm_;
+  v[1] = radius_interpol_vphi_;
+  return v;
+}
 
 //
 
@@ -139,7 +156,8 @@ ThickDisk::ThickDisk() :
   temperatureSlope_(1.),
   magnetizationParameter_(1.),
   veloZAMONorm_(0.5),
-  Vphi_over_V_(1.)
+  Vphi_over_V_(1.),
+  radius_interpol_vphi_(-1.)
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -154,6 +172,7 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   magnetizationParameter_(o.magnetizationParameter_),
   veloZAMONorm_(o.veloZAMONorm_),
   Vphi_over_V_(o.Vphi_over_V_),
+  radius_interpol_vphi_(o.radius_interpol_vphi_),
   spectrumThermalSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
@@ -375,13 +394,17 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
     double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
       uphiZAMO = -utZAMO*gtp/gpp;
     //cout << "ZAMO=" << gtt*utZAMO*utZAMO + 2*gtp*utZAMO*uphiZAMO + gpp*uphiZAMO*uphiZAMO << endl;
-    
+
     double V = veloZAMONorm_; // velo norm as observed by ZAMO
     double Gamma = 1./sqrt(1.-V*V);
-    double Vphi_over_V = Vphi_over_V_; // this is Vphi/V in a unit-vector basis (er,ephi)
+    double Vphi_over_V = Vphi_over_V_; // no interpolation, fix Vphi/V
+    if (radius_interpol_vphi_!=-1.){ // interpolate Vphi/V if radius_* provided
+      double rr = pos[1];
+      Vphi_over_V = (rr-radius_interpol_vphi_)/(risco-radius_interpol_vphi_);
+    }
+
     double Vphi = Vphi_over_V*V / sqrt(gpp),
       Vr = sqrt(1-Vphi_over_V*Vphi_over_V)*V / sqrt(grr);
-      //Vr = (1-Vphi_over_V)*V / sqrt(grr);
     
     vel[0] = Gamma*utZAMO;
     vel[1] = -Gamma*Vr; // minus sign coz matter is going towards BH
