@@ -52,6 +52,7 @@ class Gyoto::Metric::NumericalMetricLorene
  private:
   char* filename_; ///< Lorene .d data file(s) path
   bool mapet_; ///< Kind of Lorene mapping: 'false' for Map_af, 'true' for Map_et
+  bool axisymCirc_; ///< True if sacetime is axisymmetric and circular
   bool bosonstarcircular_; ///< 1 to implement the circular velocity of a boson star
   int has_surface_; ///< 1 if the metric source has a surface
   int has_acceleration_vector_; ///< 1 if the metric source provides an
@@ -111,6 +112,8 @@ class Gyoto::Metric::NumericalMetricLorene
   void specifyMarginalOrbits(bool s);
   bool mapEt() const;
   void mapEt(bool s);
+  bool axisymCirc() const;
+  void axisymCirc(bool s);
   std::vector<double> refineIntegStep() const;
   void refineIntegStep(std::vector<double> const&);
 

@@ -49,6 +49,7 @@ using namespace Gyoto::Metric;
 
 GYOTO_PROPERTY_START(NumericalMetricLorene)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene, MapEt, MapAf, mapEt)
+GYOTO_PROPERTY_BOOL(NumericalMetricLorene, AxisymCirc, NoAxisymCirc, axisymCirc)
 GYOTO_PROPERTY_BOOL(NumericalMetricLorene,
 		    SpecifyMarginalOrbits, DontSpecifyMarginalOrbits,
 		    specifyMarginalOrbits)
@@ -77,6 +78,7 @@ NumericalMetricLorene::NumericalMetricLorene() :
   Generic(GYOTO_COORDKIND_SPHERICAL, "NumericalMetricLorene"),
   filename_(NULL),
   mapet_(true),
+  axisymCirc_(false),
   bosonstarcircular_(false),
   has_surface_(0),
   has_acceleration_vector_(0),
@@ -109,6 +111,7 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   Generic(GYOTO_COORDKIND_SPHERICAL,"NumericalMetricLorene"),
   filename_(NULL),
   mapet_(o.mapet_),
+  axisymCirc_(o.axisymCirc_),
   bosonstarcircular_(o.bosonstarcircular_),
   has_surface_(o.has_surface_),
   has_acceleration_vector_(o.has_acceleration_vector_),
@@ -584,146 +587,218 @@ int NumericalMetricLorene::diff(const double y[7],
    */
   //clock_t t1=clock();
 
-  //LAPSE
-  Scalar* lapse = lapse_tab_[indice_time];
-  double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
-    N_dr = lapse->dsdr().val_point(rr,th,phi), 
-    N_dt = lapse->dsdt().val_point(rr,th,phi),
-    N_dp = sth*lapse->stdsdp().val_point(rr,th,phi); // stdsdp is 1/sin(th)*d/dphi
-  //SHIFT
-  const Vector& shift = *(shift_tab_[indice_time]);
-  double betar = shift(1).val_point(rr,th,phi),
-    betat = rm1*shift(2).val_point(rr,th,phi),
-    betar_dr = shift(1).dsdr().val_point(rr,th,phi),
-    betar_dt = shift(1).dsdt().val_point(rr,th,phi),
-    betar_dp = sth*shift(1).stdsdp().val_point(rr,th,phi),
-    betat_dr = rm1*shift(2).dsdr().val_point(rr,th,phi)
-    -rm2*shift(2).val_point(rr,th,phi),
-    betat_dt = rm1*shift(2).dsdt().val_point(rr,th,phi),
-    betat_dp = sth*rm1*shift(2).stdsdp().val_point(rr,th,phi),
-    betap = rsm1*shift(3).val_point(rr,th,phi),
-    betap_dr = rsm1*shift(3).dsdr().val_point(rr,th,phi)
-    -rm2*sm1*shift(3).val_point(rr,th,phi),
-    betap_dt = rsm1*shift(3).dsdt().val_point(rr,th,phi)
-    -cth*sm2*rm1*shift(3).val_point(rr,th,phi),
-    betap_dp = rm1*shift(3).stdsdp().val_point(rr,th,phi);
+  if (!axisymCirc_){
+    // GENERAL SPACETIME WITH NO SYMMETRY
+    
+    //LAPSE
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
+      N_dr = lapse->dsdr().val_point(rr,th,phi), 
+      N_dt = lapse->dsdt().val_point(rr,th,phi),
+      N_dp = sth*lapse->stdsdp().val_point(rr,th,phi); // stdsdp is 1/sin(th)*d/dphi
+    //SHIFT
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double betar = shift(1).val_point(rr,th,phi),
+      betat = rm1*shift(2).val_point(rr,th,phi),
+      betar_dr = shift(1).dsdr().val_point(rr,th,phi),
+      betar_dt = shift(1).dsdt().val_point(rr,th,phi),
+      betar_dp = sth*shift(1).stdsdp().val_point(rr,th,phi),
+      betat_dr = rm1*shift(2).dsdr().val_point(rr,th,phi)
+      -rm2*shift(2).val_point(rr,th,phi),
+      betat_dt = rm1*shift(2).dsdt().val_point(rr,th,phi),
+      betat_dp = sth*rm1*shift(2).stdsdp().val_point(rr,th,phi),
+      betap = rsm1*shift(3).val_point(rr,th,phi),
+      betap_dr = rsm1*shift(3).dsdr().val_point(rr,th,phi)
+      -rm2*sm1*shift(3).val_point(rr,th,phi),
+      betap_dt = rsm1*shift(3).dsdt().val_point(rr,th,phi)
+      -cth*sm2*rm1*shift(3).val_point(rr,th,phi),
+      betap_dp = rm1*shift(3).stdsdp().val_point(rr,th,phi);
+    
+    //3-METRIC DERIVATIVES (for Christo)
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
+    double g_rr_dr = g_ij(1,1).dsdr().val_point(rr,th,phi),
+      g_rr_dt = g_ij(1,1).dsdt().val_point(rr,th,phi),
+      g_rr_dp = sth*g_ij(1,1).stdsdp().val_point(rr,th,phi),
+      g_tt_dr = r2*g_ij(2,2).dsdr().val_point(rr,th,phi)
+      +2.*rr*g_ij(2,2).val_point(rr,th,phi),
+      g_tt_dt = r2*g_ij(2,2).dsdt().val_point(rr,th,phi),
+      g_tt_dp = sth*r2*g_ij(2,2).stdsdp().val_point(rr,th,phi),
+      g_pp_Lorene  = g_ij(3,3).val_point(rr,th,phi),
+      g_pp_dr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)
+      +2.*rr*sinth2*g_pp_Lorene,
+      g_pp_dt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
+      +2.*cth*sth*r2*g_pp_Lorene,
+      g_pp_dp = sth*r2sinth2*g_ij(3,3).stdsdp().val_point(rr,th,phi),
+      g_rt_dr = rr*g_ij(1,2).dsdr().val_point(rr,th,phi)
+      +g_ij(1,2).val_point(rr,th,phi),
+      g_rt_dt = rr*g_ij(1,2).dsdt().val_point(rr,th,phi),
+      g_rt_dp = rsinth*g_ij(1,2).stdsdp().val_point(rr,th,phi),
+      g_rp_dr = rsinth*g_ij(1,3).dsdr().val_point(rr,th,phi)
+      + sth*g_ij(1,3).val_point(rr,th,phi),
+      g_rp_dt = rsinth*g_ij(1,3).dsdt().val_point(rr,th,phi)
+      + rr*cth*g_ij(1,3).val_point(rr,th,phi),
+      g_rp_dp = sth*rsinth*g_ij(1,3).stdsdp().val_point(rr,th,phi),
+      g_tp_dr = rr*rsinth*g_ij(2,3).dsdr().val_point(rr,th,phi)
+      + 2.*rsinth*g_ij(2,3).val_point(rr,th,phi),
+      g_tp_dt = rr*rsinth*g_ij(2,3).dsdt().val_point(rr,th,phi)
+      + r2*cth*g_ij(2,3).val_point(rr,th,phi),
+      g_tp_dp = r2sinth2*g_ij(2,3).stdsdp().val_point(rr,th,phi);   
+    
+    //INVERSE 3-METRIC
+    //NB: these are gamma^ij, not g^ij
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+      gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
+      gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi),
+      grt=rm1*g_up_ij(1,2).val_point(rr,th,phi),
+      grp=rsm1*g_up_ij(1,3).val_point(rr,th,phi),
+      gtp=rm1*rsm1*g_up_ij(2,3).val_point(rr,th,phi);
+    
+    //EXTRINSIC CURVATURE
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double K_rr = kij(1,1).val_point(rr,th,phi),
+      K_tt = r2*kij(2,2).val_point(rr,th,phi),
+      K_pp = rsinth*rsinth*kij(3,3).val_point(rr,th,phi),
+      K_rt = rr*kij(1,2).val_point(rr,th,phi),
+      K_rp = rsinth*kij(1,3).val_point(rr,th,phi), 
+      K_tp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
+    
+    //3-CHRISTOFFELS
+    double Grrr = 0.5*grr*g_rr_dr+0.5*grt*(2.*g_rt_dr-g_rr_dt)
+      + 0.5*grp*(2.*g_rp_dr-g_rr_dp),
+      Grrt = 0.5*grr*g_rr_dt+0.5*grt*g_tt_dr
+      +0.5*grp*(g_tp_dr+g_rp_dt-g_rt_dp),
+      Grtt = 0.5*grr*(2.*g_rt_dt-g_tt_dr)
+      +0.5*grt*g_tt_dt+0.5*grp*(2.*g_tp_dt-g_tt_dp),
+      Grpp = 0.5*grr*(2.*g_rp_dp-g_pp_dr)+0.5*grt*(2.*g_tp_dp-g_pp_dt)
+      +0.5*grp*g_pp_dp,
+      Grrp = 0.5*grr*g_rr_dp+0.5*grt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*grp*g_pp_dr,
+      Grtp = 0.5*grr*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*grt*g_tt_dp
+      + 0.5*grp*g_pp_dt,
+      Gtrr = 0.5*grt*g_rr_dr+0.5*gtt*(2.*g_rt_dr-g_rr_dt)
+      + 0.5*gtp*(2.*g_rp_dr-g_rr_dp),
+      Gtrt = 0.5*grt*g_rr_dt+0.5*gtt*g_tt_dr
+      +0.5*gtp*(g_tp_dr+g_rp_dt-g_rt_dp),
+      Gttt = 0.5*grt*(2.*g_rt_dt-g_tt_dr)
+      +0.5*gtt*g_tt_dt+0.5*gtp*(2.*g_tp_dt-g_tt_dp),
+      Gtpp = 0.5*grt*(2.*g_rp_dp-g_pp_dr)+0.5*gtt*(2.*g_tp_dp-g_pp_dt)
+      +0.5*gtp*g_pp_dp,
+      Gtrp = 0.5*grt*g_rr_dp+0.5*gtt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gtp*g_pp_dr,
+      Gttp = 0.5*grt*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtt*g_tt_dp
+      + 0.5*gtp*g_pp_dt,
+      Gprr = 0.5*grp*g_rr_dr+0.5*gtp*(2.*g_rt_dr-g_rr_dt)
+      + 0.5*gpp*(2.*g_rp_dr-g_rr_dp),
+      Gprt = 0.5*grp*g_rr_dt+0.5*gtp*g_tt_dr
+      +0.5*gpp*(g_tp_dr+g_rp_dt-g_rt_dp),
+      Gptt = 0.5*grp*(2.*g_rt_dt-g_tt_dr)
+      +0.5*gtp*g_tt_dt+0.5*gpp*(2.*g_tp_dt-g_tt_dp),
+      Gppp = 0.5*grp*(2.*g_rp_dp-g_pp_dr)+0.5*gtp*(2.*g_tp_dp-g_pp_dt)
+      +0.5*gpp*g_pp_dp,
+      Gprp = 0.5*grp*g_rr_dp+0.5*gtp*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gpp*g_pp_dr,
+      Gptp = 0.5*grp*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtp*g_tt_dp
+      + 0.5*gpp*g_pp_dt;
+    
+    // 3+1 GEODESIC EQUATION
+    double factor = NNm1*(Vr*N_dr+Vth*N_dt+Vph*N_dp)
+      - K_rr*Vr*Vr-K_tt*Vth*Vth-K_pp*Vph*Vph 
+      - 2.*K_rt*Vr*Vth-2.*K_rp*Vr*Vph-2.*K_tp*Vth*Vph,
+      KV_r = K_rr*Vr+K_rt*Vth+K_rp*Vph,
+      KV_t = K_rt*Vr+K_tt*Vth+K_tp*Vph,
+      KV_p = K_rp*Vr+K_tp*Vth+K_pp*Vph;
+    
+    res[0] = EE*NN*(K_rr*Vr*Vr+K_tt*Vth*Vth+K_pp*Vph*Vph
+		    +2.*(K_rt*Vr*Vth+K_rp*Vr*Vph+K_tp*Vth*Vph)) 
+      - EE*(Vr*N_dr+Vth*N_dt+Vph*N_dp);
+    res[1] = NN*Vr-betar;
+    res[2] = NN*Vth-betat;
+    res[3] = NN*Vph-betap;
+    res[4] = NN*(Vr*factor
+		 + 2.*grr*KV_r + 2.*grt*KV_t + 2.*grp*KV_p 
+		 - Grrr*Vr*Vr-2.*Grrt*Vr*Vth-Grtt*Vth*Vth-Grpp*Vph*Vph
+		 - 2.*Grrp*Vr*Vph - 2.*Grtp*Vth*Vph) 
+      - grr*N_dr - grt*N_dt - grp*N_dp
+      - Vr*betar_dr - Vth*betar_dt - Vph*betar_dp;
+    res[5] = NN*(Vth*factor
+		 +2.*grt*KV_r + 2.*gtt*KV_t + 2.*gtp*KV_p
+		 - Gttt*Vth*Vth-Gtpp*Vph*Vph-Gtrr*Vr*Vr-2.*Gtrt*Vr*Vth
+		 - 2.*Gtrp*Vr*Vph - 2.*Gttp*Vth*Vph) 
+      - grt*N_dr - gtt*N_dt - gtp*N_dp
+      - Vr*betat_dr - Vth*betat_dt - Vph*betat_dp;
+    res[6] = NN*(Vph*factor
+		 +2.*grp*KV_r+2.*gtp*KV_t + 2.*gpp*KV_p
+		 - Gprr*Vr*Vr - 2.*Gprt*Vr*Vth - Gptt*Vth*Vth - Gppp*Vph*Vph
+		 - 2*Vph*(Vr*Gprp+Vth*Gptp))
+      - grp*N_dr - gtp*N_dt - gpp*N_dp
+      - Vr*betap_dr - Vth*betap_dt - Vph*betap_dp;
+  }else{
+    // AXISYMMETRIC CIRCULAR SPACETIME
 
-  //3-METRIC DERIVATIVES (for Christo)
-  const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
-  double g_rr_dr = g_ij(1,1).dsdr().val_point(rr,th,phi),
-    g_rr_dt = g_ij(1,1).dsdt().val_point(rr,th,phi),
-    g_rr_dp = sth*g_ij(1,1).stdsdp().val_point(rr,th,phi),
-    g_tt_dr = r2*g_ij(2,2).dsdr().val_point(rr,th,phi)
-    +2.*rr*g_ij(2,2).val_point(rr,th,phi),
-    g_tt_dt = r2*g_ij(2,2).dsdt().val_point(rr,th,phi),
-    g_tt_dp = sth*r2*g_ij(2,2).stdsdp().val_point(rr,th,phi),
-    g_pp_Lorene  = g_ij(3,3).val_point(rr,th,phi),
-    g_pp_dr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)
-    +2.*rr*sinth2*g_pp_Lorene,
-    g_pp_dt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
-    +2.*cth*sth*r2*g_pp_Lorene,
-    g_pp_dp = sth*r2sinth2*g_ij(3,3).stdsdp().val_point(rr,th,phi),
-    g_rt_dr = rr*g_ij(1,2).dsdr().val_point(rr,th,phi)
-    +g_ij(1,2).val_point(rr,th,phi),
-    g_rt_dt = rr*g_ij(1,2).dsdt().val_point(rr,th,phi),
-    g_rt_dp = rsinth*g_ij(1,2).stdsdp().val_point(rr,th,phi),
-    g_rp_dr = rsinth*g_ij(1,3).dsdr().val_point(rr,th,phi)
-    + sth*g_ij(1,3).val_point(rr,th,phi),
-    g_rp_dt = rsinth*g_ij(1,3).dsdt().val_point(rr,th,phi)
-    + rr*cth*g_ij(1,3).val_point(rr,th,phi),
-    g_rp_dp = sth*rsinth*g_ij(1,3).stdsdp().val_point(rr,th,phi),
-    g_tp_dr = rr*rsinth*g_ij(2,3).dsdr().val_point(rr,th,phi)
-    + 2.*rsinth*g_ij(2,3).val_point(rr,th,phi),
-    g_tp_dt = rr*rsinth*g_ij(2,3).dsdt().val_point(rr,th,phi)
-    + r2*cth*g_ij(2,3).val_point(rr,th,phi),
-    g_tp_dp = r2sinth2*g_ij(2,3).stdsdp().val_point(rr,th,phi);   
+    //LAPSE
+    Scalar* lapse = lapse_tab_[indice_time];
+    double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
+      N_dr = lapse->dsdr().val_point(rr,th,phi), 
+      N_dt = lapse->dsdt().val_point(rr,th,phi);
+    
+    //SHIFT
+    const Vector& shift = *(shift_tab_[indice_time]);
+    double betap = rsm1*shift(3).val_point(rr,th,phi),
+      betap_dr = rsm1*shift(3).dsdr().val_point(rr,th,phi)
+      -rm2*sm1*shift(3).val_point(rr,th,phi),
+      betap_dt = rsm1*shift(3).dsdt().val_point(rr,th,phi)
+      -cth*sm2*rm1*shift(3).val_point(rr,th,phi);
+    
+    //3-METRIC DERIVATIVES (for Christo)
+    const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
+    double g_rr_dr = g_ij(1,1).dsdr().val_point(rr,th,phi),
+      g_rr_dt = g_ij(1,1).dsdt().val_point(rr,th,phi),
+      g_tt_dr = r2*g_ij(2,2).dsdr().val_point(rr,th,phi)
+      +2.*rr*g_ij(2,2).val_point(rr,th,phi),
+      g_tt_dt = r2*g_ij(2,2).dsdt().val_point(rr,th,phi),
+      g_pp_Lorene  = g_ij(3,3).val_point(rr,th,phi),
+      g_pp_dr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)
+      +2.*rr*sinth2*g_pp_Lorene,
+      g_pp_dt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
+      +2.*cth*sth*r2*g_pp_Lorene;
+    
+    //INVERSE 3-METRIC
+    //NB: these are gamma^ij, not g^ij
+    const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
+    double grr=g_up_ij(1,1).val_point(rr,th,phi), 
+      gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
+      gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi);
+    
+    //EXTRINSIC CURVATURE
+    const Sym_tensor& kij = *(kij_tab_[indice_time]);
+    double K_rp = rsinth*kij(1,3).val_point(rr,th,phi), 
+      K_tp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
+    
+    //3-CHRISTOFFELS
+    double Grrr = 0.5*grr*g_rr_dr,
+      Grrt = 0.5*grr*g_rr_dt,
+      Grtt = 0.5*grr*(-g_tt_dr),
+      Grpp = 0.5*grr*(-g_pp_dr),
+      Gtrr = 0.5*gtt*(-g_rr_dt),
+      Gtrt = 0.5*gtt*g_tt_dr,
+      Gttt = 0.5*gtt*g_tt_dt,
+      Gtpp = 0.5*gtt*(-g_pp_dt),
+      Gprp = 0.5*gpp*g_pp_dr,
+      Gptp = 0.5*gpp*g_pp_dt;
 
-  //INVERSE 3-METRIC
-  //NB: these are gamma^ij, not g^ij
-  const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
-  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
-    gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
-    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi),
-    grt=rm1*g_up_ij(1,2).val_point(rr,th,phi),
-    grp=rsm1*g_up_ij(1,3).val_point(rr,th,phi),
-    gtp=rm1*rsm1*g_up_ij(2,3).val_point(rr,th,phi);
-
-  //EXTRINSIC CURVATURE
-  const Sym_tensor& kij = *(kij_tab_[indice_time]);
-  double K_rr = kij(1,1).val_point(rr,th,phi),
-    K_tt = r2*kij(2,2).val_point(rr,th,phi),
-    K_pp = rsinth*rsinth*kij(3,3).val_point(rr,th,phi),
-    K_rt = rr*kij(1,2).val_point(rr,th,phi),
-    K_rp = rsinth*kij(1,3).val_point(rr,th,phi), 
-    K_tp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
-
-  //3-CHRISTOFFELS
-  double Grrr = 0.5*grr*g_rr_dr+0.5*grt*(2.*g_rt_dr-g_rr_dt)
-    + 0.5*grp*(2.*g_rp_dr-g_rr_dp),
-    Grrt = 0.5*grr*g_rr_dt+0.5*grt*g_tt_dr
-    +0.5*grp*(g_tp_dr+g_rp_dt-g_rt_dp),
-    Grtt = 0.5*grr*(2.*g_rt_dt-g_tt_dr)
-    +0.5*grt*g_tt_dt+0.5*grp*(2.*g_tp_dt-g_tt_dp),
-    Grpp = 0.5*grr*(2.*g_rp_dp-g_pp_dr)+0.5*grt*(2.*g_tp_dp-g_pp_dt)
-    +0.5*grp*g_pp_dp,
-    Grrp = 0.5*grr*g_rr_dp+0.5*grt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*grp*g_pp_dr,
-    Grtp = 0.5*grr*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*grt*g_tt_dp
-    + 0.5*grp*g_pp_dt,
-    Gtrr = 0.5*grt*g_rr_dr+0.5*gtt*(2.*g_rt_dr-g_rr_dt)
-    + 0.5*gtp*(2.*g_rp_dr-g_rr_dp),
-    Gtrt = 0.5*grt*g_rr_dt+0.5*gtt*g_tt_dr
-    +0.5*gtp*(g_tp_dr+g_rp_dt-g_rt_dp),
-    Gttt = 0.5*grt*(2.*g_rt_dt-g_tt_dr)
-    +0.5*gtt*g_tt_dt+0.5*gtp*(2.*g_tp_dt-g_tt_dp),
-    Gtpp = 0.5*grt*(2.*g_rp_dp-g_pp_dr)+0.5*gtt*(2.*g_tp_dp-g_pp_dt)
-    +0.5*gtp*g_pp_dp,
-    Gtrp = 0.5*grt*g_rr_dp+0.5*gtt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gtp*g_pp_dr,
-    Gttp = 0.5*grt*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtt*g_tt_dp
-    + 0.5*gtp*g_pp_dt,
-    Gprr = 0.5*grp*g_rr_dr+0.5*gtp*(2.*g_rt_dr-g_rr_dt)
-    + 0.5*gpp*(2.*g_rp_dr-g_rr_dp),
-    Gprt = 0.5*grp*g_rr_dt+0.5*gtp*g_tt_dr
-    +0.5*gpp*(g_tp_dr+g_rp_dt-g_rt_dp),
-    Gptt = 0.5*grp*(2.*g_rt_dt-g_tt_dr)
-    +0.5*gtp*g_tt_dt+0.5*gpp*(2.*g_tp_dt-g_tt_dp),
-    Gppp = 0.5*grp*(2.*g_rp_dp-g_pp_dr)+0.5*gtp*(2.*g_tp_dp-g_pp_dt)
-    +0.5*gpp*g_pp_dp,
-    Gprp = 0.5*grp*g_rr_dp+0.5*gtp*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gpp*g_pp_dr,
-    Gptp = 0.5*grp*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtp*g_tt_dp
-    + 0.5*gpp*g_pp_dt;
-
-  // 3+1 GEODESIC EQUATION
-  double factor = NNm1*(Vr*N_dr+Vth*N_dt+Vph*N_dp)
-    - K_rr*Vr*Vr-K_tt*Vth*Vth-K_pp*Vph*Vph 
-    - 2.*K_rt*Vr*Vth-2.*K_rp*Vr*Vph-2.*K_tp*Vth*Vph,
-    KV_r = K_rr*Vr+K_rt*Vth+K_rp*Vph,
-    KV_t = K_rt*Vr+K_tt*Vth+K_tp*Vph,
-    KV_p = K_rp*Vr+K_tp*Vth+K_pp*Vph;
-
-  res[0] = EE*NN*(K_rr*Vr*Vr+K_tt*Vth*Vth+K_pp*Vph*Vph
-		  +2.*(K_rt*Vr*Vth+K_rp*Vr*Vph+K_tp*Vth*Vph)) 
-    - EE*(Vr*N_dr+Vth*N_dt+Vph*N_dp);
-  res[1] = NN*Vr-betar;
-  res[2] = NN*Vth-betat;
-  res[3] = NN*Vph-betap;
-  res[4] = NN*(Vr*factor
-	       + 2.*grr*KV_r + 2.*grt*KV_t + 2.*grp*KV_p 
-	       - Grrr*Vr*Vr-2.*Grrt*Vr*Vth-Grtt*Vth*Vth-Grpp*Vph*Vph
-	       - 2.*Grrp*Vr*Vph - 2.*Grtp*Vth*Vph) 
-    - grr*N_dr - grt*N_dt - grp*N_dp
-    - Vr*betar_dr - Vth*betar_dt - Vph*betar_dp;
-  res[5] = NN*(Vth*factor
-	       +2.*grt*KV_r + 2.*gtt*KV_t + 2.*gtp*KV_p
-	       - Gttt*Vth*Vth-Gtpp*Vph*Vph-Gtrr*Vr*Vr-2.*Gtrt*Vr*Vth
-	       - 2.*Gtrp*Vr*Vph - 2.*Gttp*Vth*Vph) 
-    - grt*N_dr - gtt*N_dt - gtp*N_dp
-    - Vr*betat_dr - Vth*betat_dt - Vph*betat_dp;
-  res[6] = NN*(Vph*factor
-	       +2.*grp*KV_r+2.*gtp*KV_t + 2.*gpp*KV_p
-	       - Gprr*Vr*Vr - 2.*Gprt*Vr*Vth - Gptt*Vth*Vth - Gppp*Vph*Vph
-	       - 2*Vph*(Vr*Gprp+Vth*Gptp))
-    - grp*N_dr - gtp*N_dt - gpp*N_dp
-    - Vr*betap_dr - Vth*betap_dt - Vph*betap_dp;
+    double factor = NNm1*(Vr*N_dr+Vth*N_dt) - 2.*K_rp*Vr*Vph-2.*K_tp*Vth*Vph;
+    
+    res[0] = EE*(2.*NN*(K_rp*Vr*Vph+K_tp*Vth*Vph) - (Vr*N_dr+Vth*N_dt));
+    res[1] = NN*Vr;
+    res[2] = NN*Vth;
+    res[3] = NN*Vph-betap;
+    res[4] = NN*(Vr*factor+2.*grr*(K_rp*Vph) 
+		 - Grrr*Vr*Vr-2.*Grrt*Vr*Vth-Grtt*Vth*Vth
+		 -Grpp*Vph*Vph) - grr*N_dr;
+    res[5] = NN*(Vth*factor+2.*gtt*(K_tp*Vph) 
+		 - Gttt*Vth*Vth-Gtpp*Vph*Vph
+		 -Gtrr*Vr*Vr-2.*Gtrt*Vr*Vth) - gtt*N_dt;
+    res[6] = NN*(Vph*factor+2.*gpp*(K_rp*Vr+K_tp*Vth) 
+		 - 2*Vph*(Vr*Gprp+Vth*Gptp)) - Vr*betap_dr-Vth*betap_dt;
+  }
 
   for (int ii=0;ii<7;ii++){
     if (res[ii]!=res[ii]){
@@ -2537,6 +2612,11 @@ void NumericalMetricLorene::mapEt(bool s) {
     GYOTO_ERROR("In NumericalMetricLorene::mapEt "
 	       "please provide MapET/MapAF information before File in XML");
   }
+}
+
+bool NumericalMetricLorene::axisymCirc() const {return  axisymCirc_;}
+void NumericalMetricLorene::axisymCirc(bool s) {
+  axisymCirc_ = s;
 }
 
 double NumericalMetricLorene::initialTime() const {return initial_time_;}
