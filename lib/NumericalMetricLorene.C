@@ -549,9 +549,9 @@ int NumericalMetricLorene::diff(const double y[7],
     3+1 diff function WITH ENERGY INTEG, computing the derivatives of
     the 7-vector : y=[E,r,th,ph,Vr,Vth,Vph] (see CQG 3+1 paper for
     definition) Calls metric nb indice_time among the various Lorene
-    metric at hand
+    metric at hand.
 
-    ASSUMED: AXISYMMETRY
+    This diff is the most general possible, there is no symmetry assumption.
    */
 
   /*
@@ -572,7 +572,8 @@ int NumericalMetricLorene::diff(const double y[7],
   if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::diff r is 0!");
   if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::diff on z axis!");
   double rm1 = 1./rr, rm2 = rm1*rm1, r2 = rr*rr, rsm1 = 1./rsinth, 
-    sm1 = 1./sth, sm2 = sm1*sm1, Vr=y[4], Vth=y[5], Vph=y[6];
+    sm1 = 1./sth, sm2 = sm1*sm1;
+  double Vr=y[4], Vth=y[5], Vph=y[6];
 
   /*
     Important remark!  Lorene uses the orthonormal spherical tetrad
@@ -583,107 +584,147 @@ int NumericalMetricLorene::diff(const double y[7],
    */
   //clock_t t1=clock();
 
-  double myth=th; // TEST
   //LAPSE
   Scalar* lapse = lapse_tab_[indice_time];
-  //double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
-  double NN = lapse -> val_point(rr,myth,phi), NNm1 = 1./NN,
-    Nr = lapse->dsdr().val_point(rr,th,phi), 
-    Nt = lapse->dsdt().val_point(rr,th,phi);
+  double NN = lapse -> val_point(rr,th,phi), NNm1 = 1./NN,
+    N_dr = lapse->dsdr().val_point(rr,th,phi), 
+    N_dt = lapse->dsdt().val_point(rr,th,phi),
+    N_dp = sth*lapse->stdsdp().val_point(rr,th,phi); // stdsdp is 1/sin(th)*d/dphi
   //SHIFT
   const Vector& shift = *(shift_tab_[indice_time]);
-  //double beta_r = shift(1).val_point(rr,th,phi),
-  double beta_r = shift(1).val_point(rr,myth,phi),
-    beta_t = rm1*shift(2).val_point(rr,th,phi),
-    beta_r_r = shift(1).dsdr().val_point(rr,th,phi),
-    beta_r_t = shift(1).dsdt().val_point(rr,th,phi),
-    beta_t_r = rm1*shift(2).dsdr().val_point(rr,th,phi)
+  double betar = shift(1).val_point(rr,th,phi),
+    betat = rm1*shift(2).val_point(rr,th,phi),
+    betar_dr = shift(1).dsdr().val_point(rr,th,phi),
+    betar_dt = shift(1).dsdt().val_point(rr,th,phi),
+    betar_dp = sth*shift(1).stdsdp().val_point(rr,th,phi),
+    betat_dr = rm1*shift(2).dsdr().val_point(rr,th,phi)
     -rm2*shift(2).val_point(rr,th,phi),
-    beta_t_t = rm1*shift(2).dsdt().val_point(rr,th,phi),
-    beta_p = rsm1*shift(3).val_point(rr,th,phi),
-    beta_p_r = rsm1*shift(3).dsdr().val_point(rr,th,phi)
+    betat_dt = rm1*shift(2).dsdt().val_point(rr,th,phi),
+    betat_dp = sth*rm1*shift(2).stdsdp().val_point(rr,th,phi),
+    betap = rsm1*shift(3).val_point(rr,th,phi),
+    betap_dr = rsm1*shift(3).dsdr().val_point(rr,th,phi)
     -rm2*sm1*shift(3).val_point(rr,th,phi),
-    beta_p_t = rsm1*shift(3).dsdt().val_point(rr,th,phi)
-    -cth*sm2*rm1*shift(3).val_point(rr,th,phi);
+    betap_dt = rsm1*shift(3).dsdt().val_point(rr,th,phi)
+    -cth*sm2*rm1*shift(3).val_point(rr,th,phi),
+    betap_dp = rm1*shift(3).stdsdp().val_point(rr,th,phi);
 
-  //cout << "betar= " << beta_r << endl;
-
-  //3-METRIC (assumed diagonal)
+  //3-METRIC DERIVATIVES (for Christo)
   const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
-  double g_rt=g_ij(1,2).val_point(rr,th,phi),
-    g_rp=g_ij(1,3).val_point(rr,th,phi),
-    g_tp=g_ij(2,3).val_point(rr,th,phi);
-  if (g_rt!=0. || g_rp!=0. || g_tp!=0.){
-    GYOTO_ERROR("In NumericalMetricLorene.C: 3-metric should be diagonal");
-  }
-  //cout << "r= " << rr << endl;
-  //cout << "metric= " << NN << " " << beta_r << " " << beta_t << " " << beta_p << endl;
-  //cout << "betar= " << beta_r << " " << NN << " " << Vr << " " <<  NN*Vr-beta_r << endl;
-  //cout << rr << " " << NN*Vr-beta_r << endl;
-  //cout << g_ij(1,1).val_point(rr,th,phi) << " " << g_ij(2,2).val_point(rr,th,phi) << " " << g_ij(3,3).val_point(rr,th,phi) << endl;
+  double g_rr_dr = g_ij(1,1).dsdr().val_point(rr,th,phi),
+    g_rr_dt = g_ij(1,1).dsdt().val_point(rr,th,phi),
+    g_rr_dp = sth*g_ij(1,1).stdsdp().val_point(rr,th,phi),
+    g_tt_dr = r2*g_ij(2,2).dsdr().val_point(rr,th,phi)
+    +2.*rr*g_ij(2,2).val_point(rr,th,phi),
+    g_tt_dt = r2*g_ij(2,2).dsdt().val_point(rr,th,phi),
+    g_tt_dp = sth*r2*g_ij(2,2).stdsdp().val_point(rr,th,phi),
+    g_pp_Lorene  = g_ij(3,3).val_point(rr,th,phi),
+    g_pp_dr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)
+    +2.*rr*sinth2*g_pp_Lorene,
+    g_pp_dt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
+    +2.*cth*sth*r2*g_pp_Lorene,
+    g_pp_dp = sth*r2sinth2*g_ij(3,3).stdsdp().val_point(rr,th,phi),
+    g_rt_dr = rr*g_ij(1,2).dsdr().val_point(rr,th,phi)
+    +g_ij(1,2).val_point(rr,th,phi),
+    g_rt_dt = rr*g_ij(1,2).dsdt().val_point(rr,th,phi),
+    g_rt_dp = rsinth*g_ij(1,2).stdsdp().val_point(rr,th,phi),
+    g_rp_dr = rsinth*g_ij(1,3).dsdr().val_point(rr,th,phi)
+    + sth*g_ij(1,3).val_point(rr,th,phi),
+    g_rp_dt = rsinth*g_ij(1,3).dsdt().val_point(rr,th,phi)
+    + rr*cth*g_ij(1,3).val_point(rr,th,phi),
+    g_rp_dp = sth*rsinth*g_ij(1,3).stdsdp().val_point(rr,th,phi),
+    g_tp_dr = rr*rsinth*g_ij(2,3).dsdr().val_point(rr,th,phi)
+    + 2.*rsinth*g_ij(2,3).val_point(rr,th,phi),
+    g_tp_dt = rr*rsinth*g_ij(2,3).dsdt().val_point(rr,th,phi)
+    + r2*cth*g_ij(2,3).val_point(rr,th,phi),
+    g_tp_dp = r2sinth2*g_ij(2,3).stdsdp().val_point(rr,th,phi);   
 
-  // Metrics for christoffels
-  double g_rrr = g_ij(1,1).dsdr().val_point(rr,th,phi),
-    g_rrt = g_ij(1,1).dsdt().val_point(rr,th,phi),
-    g_tt  = g_ij(2,2).val_point(rr,th,phi),
-    g_ttr = r2*g_ij(2,2).dsdr().val_point(rr,th,phi)+2.*rr*g_tt,
-    g_ttt = r2*g_ij(2,2).dsdt().val_point(rr,th,phi),
-    g_pp  = g_ij(3,3).val_point(rr,th,phi),
-    g_ppr = r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,phi)+2.*rr*sinth2*g_pp,
-    g_ppt = r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,phi)
-    +2.*cth*sth*r2*g_pp;
-  
   //INVERSE 3-METRIC
+  //NB: these are gamma^ij, not g^ij
   const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]);
-  //  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
-  double grr=g_up_ij(1,1).val_point(rr,myth,phi), 
+  double grr=g_up_ij(1,1).val_point(rr,th,phi), 
     gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi),
-    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi); //NB: these are gamma^ij, not g^ij
-
-  //rr=0.19;th=M_PI/2.;phi=0.;
-  //cout << setprecision(10) << "coef met= " << " " << lapse -> val_point(rr,th,phi) << " " << shift(1).val_point(rr,th,phi) << " " << g_up_ij(1,1).val_point(rr,th,phi) << " " << shift(3).val_point(rr,th,phi) << endl;
+    gpp=rm2*sm2*g_up_ij(3,3).val_point(rr,th,phi),
+    grt=rm1*g_up_ij(1,2).val_point(rr,th,phi),
+    grp=rsm1*g_up_ij(1,3).val_point(rr,th,phi),
+    gtp=rm1*rsm1*g_up_ij(2,3).val_point(rr,th,phi);
 
   //EXTRINSIC CURVATURE
   const Sym_tensor& kij = *(kij_tab_[indice_time]);
-  double Krr = kij(1,1).val_point(rr,th,phi),
-    Ktt = r2*kij(2,2).val_point(rr,th,phi),
-    Kpp = rsinth*rsinth*kij(3,3).val_point(rr,th,phi),
-    Krt = rr*kij(1,2).val_point(rr,th,phi),
-    Krp = rsinth*kij(1,3).val_point(rr,th,phi), 
-    Ktp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
-  //  cout << Krr << " " << Ktt << " " << Kpp << " " << Krt << " " << Krp << " " << Ktp << endl;
+  double K_rr = kij(1,1).val_point(rr,th,phi),
+    K_tt = r2*kij(2,2).val_point(rr,th,phi),
+    K_pp = rsinth*rsinth*kij(3,3).val_point(rr,th,phi),
+    K_rt = rr*kij(1,2).val_point(rr,th,phi),
+    K_rp = rsinth*kij(1,3).val_point(rr,th,phi), 
+    K_tp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
+
   //3-CHRISTOFFELS
-  double Grrr = 0.5*grr*g_rrr,
-    Grrt = 0.5*grr*g_rrt,
-    Grtt = -0.5*grr*g_ttr,
-    Grpp = -0.5*grr*g_ppr,
-    Gttt = 0.5*gtt*g_ttt,
-    Gtpp = -0.5*gtt*g_ppt,
-    Gtrr = -0.5*gtt*g_rrt,
-    Gtrt = 0.5*gtt*g_ttr,
-    Gprp = 0.5*gpp*g_ppr,
-    Gptp = 0.5*gpp*g_ppt;
+  double Grrr = 0.5*grr*g_rr_dr+0.5*grt*(2.*g_rt_dr-g_rr_dt)
+    + 0.5*grp*(2.*g_rp_dr-g_rr_dp),
+    Grrt = 0.5*grr*g_rr_dt+0.5*grt*g_tt_dr
+    +0.5*grp*(g_tp_dr+g_rp_dt-g_rt_dp),
+    Grtt = 0.5*grr*(2.*g_rt_dt-g_tt_dr)
+    +0.5*grt*g_tt_dt+0.5*grp*(2.*g_tp_dt-g_tt_dp),
+    Grpp = 0.5*grr*(2.*g_rp_dp-g_pp_dr)+0.5*grt*(2.*g_tp_dp-g_pp_dt)
+    +0.5*grp*g_pp_dp,
+    Grrp = 0.5*grr*g_rr_dp+0.5*grt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*grp*g_pp_dr,
+    Grtp = 0.5*grr*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*grt*g_tt_dp
+    + 0.5*grp*g_pp_dt,
+    Gtrr = 0.5*grt*g_rr_dr+0.5*gtt*(2.*g_rt_dr-g_rr_dt)
+    + 0.5*gtp*(2.*g_rp_dr-g_rr_dp),
+    Gtrt = 0.5*grt*g_rr_dt+0.5*gtt*g_tt_dr
+    +0.5*gtp*(g_tp_dr+g_rp_dt-g_rt_dp),
+    Gttt = 0.5*grt*(2.*g_rt_dt-g_tt_dr)
+    +0.5*gtt*g_tt_dt+0.5*gtp*(2.*g_tp_dt-g_tt_dp),
+    Gtpp = 0.5*grt*(2.*g_rp_dp-g_pp_dr)+0.5*gtt*(2.*g_tp_dp-g_pp_dt)
+    +0.5*gtp*g_pp_dp,
+    Gtrp = 0.5*grt*g_rr_dp+0.5*gtt*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gtp*g_pp_dr,
+    Gttp = 0.5*grt*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtt*g_tt_dp
+    + 0.5*gtp*g_pp_dt,
+    Gprr = 0.5*grp*g_rr_dr+0.5*gtp*(2.*g_rt_dr-g_rr_dt)
+    + 0.5*gpp*(2.*g_rp_dr-g_rr_dp),
+    Gprt = 0.5*grp*g_rr_dt+0.5*gtp*g_tt_dr
+    +0.5*gpp*(g_tp_dr+g_rp_dt-g_rt_dp),
+    Gptt = 0.5*grp*(2.*g_rt_dt-g_tt_dr)
+    +0.5*gtp*g_tt_dt+0.5*gpp*(2.*g_tp_dt-g_tt_dp),
+    Gppp = 0.5*grp*(2.*g_rp_dp-g_pp_dr)+0.5*gtp*(2.*g_tp_dp-g_pp_dt)
+    +0.5*gpp*g_pp_dp,
+    Gprp = 0.5*grp*g_rr_dp+0.5*gtp*(g_rt_dp+g_tp_dr-g_rp_dt)+0.5*gpp*g_pp_dr,
+    Gptp = 0.5*grp*(g_rt_dp + g_rp_dt - g_tp_dr) + 0.5*gtp*g_tt_dp
+    + 0.5*gpp*g_pp_dt;
 
-  double factor = NNm1*(Vr*Nr+Vth*Nt)-Krr*Vr*Vr-Ktt*Vth*Vth-Kpp*Vph*Vph 
-    - 2.*Krt*Vr*Vth-2.*Krp*Vr*Vph-2.*Ktp*Vth*Vph;
+  // 3+1 GEODESIC EQUATION
+  double factor = NNm1*(Vr*N_dr+Vth*N_dt+Vph*N_dp)
+    - K_rr*Vr*Vr-K_tt*Vth*Vth-K_pp*Vph*Vph 
+    - 2.*K_rt*Vr*Vth-2.*K_rp*Vr*Vph-2.*K_tp*Vth*Vph,
+    KV_r = K_rr*Vr+K_rt*Vth+K_rp*Vph,
+    KV_t = K_rt*Vr+K_tt*Vth+K_tp*Vph,
+    KV_p = K_rp*Vr+K_tp*Vth+K_pp*Vph;
 
-  res[0] = EE*NN*(Krr*Vr*Vr+Ktt*Vth*Vth+Kpp*Vph*Vph
-		  +2.*(Krt*Vr*Vth+Krp*Vr*Vph+Ktp*Vth*Vph)) 
-    - EE*(Vr*Nr+Vth*Nt);
-  res[1] = NN*Vr-beta_r;
-  res[2] = NN*Vth-beta_t;
-  res[3] = NN*Vph-beta_p;
-  res[4] = NN*(Vr*factor+2.*grr*(Krr*Vr+Krt*Vth+Krp*Vph) 
-	       - Grrr*Vr*Vr-2.*Grrt*Vr*Vth-Grtt*Vth*Vth-Grpp*Vph*Vph) 
-    - grr*Nr-Vr*beta_r_r-Vth*beta_r_t;
-  res[5] = NN*(Vth*factor+2.*gtt*(Krt*Vr+Ktt*Vth+Ktp*Vph) 
-	       - Gttt*Vth*Vth-Gtpp*Vph*Vph-Gtrr*Vr*Vr-2.*Gtrt*Vr*Vth) 
-    - gtt*Nt-Vr*beta_t_r-Vth*beta_t_t;
-  res[6] = NN*(Vph*factor+2.*gpp*(Krp*Vr+Ktp*Vth+Kpp*Vph) 
-	       - 2*Vph*(Vr*Gprp+Vth*Gptp)) 
-    - Vr*beta_p_r-Vth*beta_p_t;
+  res[0] = EE*NN*(K_rr*Vr*Vr+K_tt*Vth*Vth+K_pp*Vph*Vph
+		  +2.*(K_rt*Vr*Vth+K_rp*Vr*Vph+K_tp*Vth*Vph)) 
+    - EE*(Vr*N_dr+Vth*N_dt+Vph*N_dp);
+  res[1] = NN*Vr-betar;
+  res[2] = NN*Vth-betat;
+  res[3] = NN*Vph-betap;
+  res[4] = NN*(Vr*factor
+	       + 2.*grr*KV_r + 2.*grt*KV_t + 2.*grp*KV_p 
+	       - Grrr*Vr*Vr-2.*Grrt*Vr*Vth-Grtt*Vth*Vth-Grpp*Vph*Vph
+	       - 2.*Grrp*Vr*Vph - 2.*Grtp*Vth*Vph) 
+    - grr*N_dr - grt*N_dt - grp*N_dp
+    - Vr*betar_dr - Vth*betar_dt - Vph*betar_dp;
+  res[5] = NN*(Vth*factor
+	       +2.*grt*KV_r + 2.*gtt*KV_t + 2.*gtp*KV_p
+	       - Gttt*Vth*Vth-Gtpp*Vph*Vph-Gtrr*Vr*Vr-2.*Gtrt*Vr*Vth
+	       - 2.*Gtrp*Vr*Vph - 2.*Gttp*Vth*Vph) 
+    - grt*N_dr - gtt*N_dt - gtp*N_dp
+    - Vr*betat_dr - Vth*betat_dt - Vph*betat_dp;
+  res[6] = NN*(Vph*factor
+	       +2.*grp*KV_r+2.*gtp*KV_t + 2.*gpp*KV_p
+	       - Gprr*Vr*Vr - 2.*Gprt*Vr*Vth - Gptt*Vth*Vth - Gppp*Vph*Vph
+	       - 2*Vph*(Vr*Gprp+Vth*Gptp))
+    - grp*N_dr - gtp*N_dt - gpp*N_dp
+    - Vr*betap_dr - Vth*betap_dt - Vph*betap_dp;
 
-  //  cout << beta_p << endl;
   for (int ii=0;ii<7;ii++){
     if (res[ii]!=res[ii]){
       cout << "i, res[i]= " << ii << " " << res[ii] << endl;
@@ -1878,9 +1919,18 @@ double NumericalMetricLorene::christoffel(const double coord[4],
 					  const int indice_time) const
 {
   // 4D christoffels: actual computation on a given time slice
-  // CAUTION: here it assumed that the metric is stationary, axisymmetric,
-  // and that the spacetime is circular (typically, rotating relativistic
-  // stars framework)
+
+  /* 
+                     !!! *** CAUTION *** !!!
+
+     Here (and here only in this class) it is assumed that the metric
+     is STATIONARY, AXISYM, and that the spacetime is CIRCULAR
+     (typically, rotating relativistic stars framework).
+
+     For other spacetimes, the 3+1 integration should be used (which
+     is completely general), not the 4D one.
+  */
+  
   if (coord[1]==0. || sin(coord[2])==0.) GYOTO_ERROR("NML::christoffel:"
 						    " bad location");
 
