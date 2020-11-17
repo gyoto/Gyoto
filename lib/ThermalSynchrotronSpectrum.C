@@ -201,7 +201,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
 	jnusinnext=jnuCGS(nu)*sin(theta);
 	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
 	jnusinprev=jnusinnext;
-	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
+	//NB: averaged jnu is: 1/4pi * \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
     
