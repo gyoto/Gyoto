@@ -20,6 +20,7 @@
 #include "GyotoUtils.h"
 #include "GyotoPlasmoid.h"
 #include "GyotoPhoton.h"
+#include "GyotoWorldline.h"
 #include "GyotoFactoryMessenger.h"
 
 #include <iostream>
@@ -37,6 +38,11 @@ using namespace Gyoto::Astrobj;
 /// Properties
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Plasmoid, "Synchrotron-emitting orbiting plasmoid heated by magnetic reconnection")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitPosition, initPosition,
+           "(t,r,theta,phi) initial position of plasmoid")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitVelocity, initVelocity,
+           "(dr/dt,dtheta/dt,dphi/dt) initial 3-velocity "
+           "of plasmoid")
 GYOTO_PROPERTY_DOUBLE_UNIT(Plasmoid, NumberDensity, numberDensity,
                "cgs number density, constant through plasmoid")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, TemperatureReconnection, temperatureReconnection,
@@ -46,10 +52,12 @@ GYOTO_PROPERTY_DOUBLE(Plasmoid, MagnetizationParameter,
               "magnetization parameter")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, PLIndex, PLIndex,
 		      "PL index of kappa-synchrotron")
-GYOTO_PROPERTY_END(Plasmoid, Star::properties)
+GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 
 Plasmoid::Plasmoid() :
-  Star(),
+  UniformSphere("Plasmoid"),
+  gg_(NULL),
+  flag_("None"),
   numberDensity_cgs_(1.),
   temperatureReconnection_(1.),
   magnetizationParameter_(1.),
@@ -66,7 +74,9 @@ Plasmoid::Plasmoid() :
 }
 
 Plasmoid::Plasmoid(const Plasmoid& orig) :
-  Star(orig),
+  UniformSphere(orig),
+  gg_(orig.gg_),
+  flag_(orig.flag_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   temperatureReconnection_(orig.temperatureReconnection_),
   magnetizationParameter_(orig.magnetizationParameter_),
@@ -222,6 +232,76 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
 }
 
+void Plasmoid::motionType(std::string const type){
+  if (type=="Helicoidal" || type=="Equatorial")
+  {
+    flag_=type;
+  }
+  else
+    GYOTO_ERROR("In Plasmoid::motonType: motion nor recognized, please enter a valid motion type (Helicoidal or Equatorial)");
+}
+
+SmartPointer<Metric::Generic> Plasmoid::metric() const { return gg_; }
+
+void Plasmoid::metric(SmartPointer<Metric::Generic> gg) {
+  UniformSphere::metric(gg);
+  gg_=gg;
+}
+
+void Plasmoid::initPosition(std::vector<double> const &v) {
+  pos_[0] = v[0];
+  pos_[1] = v[1];
+  pos_[2] = v[2];
+  pos_[3] = v[3];
+}
+
+std::vector<double> Plasmoid::initPosition() const {
+  std::vector<double> v (4, 0.);
+  v[0] = pos_[0];
+  v[1] = pos_[1];
+  v[2] = pos_[2];
+  v[3] = pos_[3];
+  return v;
+}
+
+void Plasmoid::initVelocity(std::vector<double> const &v) {
+  vel_[0] = 1.;
+  vel_[1] = v[0];
+  vel_[2] = v[1];
+  vel_[3] = v[2];
+}
+
+std::vector<double> Plasmoid::initVelocity() const {
+  std::vector<double> v (3, 0.);
+  v[0] = vel_[1];
+  v[1] = vel_[2];
+  v[2] = vel_[3];
+  return v;
+}
+
+void Plasmoid::initCoord(std::vector<double> const &v) {
+  pos_[0] = v[0];
+  pos_[1] = v[1];
+  pos_[2] = v[2];
+  pos_[3] = v[3];
+  vel_[0] = v[4];
+  vel_[1] = v[5];
+  vel_[2] = v[6];
+  vel_[3] = v[7];
+}
+
+std::vector<double> Plasmoid::initCoord() const {
+  std::vector<double> v (8, 0.);
+  v[0] = pos_[0];
+  v[1] = pos_[1];
+  v[2] = pos_[2];
+  v[3] = pos_[3];
+  v[4] = vel_[0];
+  v[5] = vel_[1];
+  v[6] = vel_[2];
+  v[7] = vel_[3];
+  return v;
+}
 
 double Plasmoid::numberDensity() const {
   // Converts internal cgs central enthalpy to SI
@@ -287,3 +367,103 @@ void Plasmoid::PLIndex(double kk) {
     
 double Plasmoid::PLIndex() const {
     return PLIndex_; }
+
+void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
+          double * const x, double * const y, double * const z, 
+          double * const xprime, double * const yprime, double * const zprime){
+  // this yields the position of the center of the UnifSphere
+  // at time t
+
+  if (n_dates!=1)
+    GYOTO_ERROR("In Plasmoid::getCartesian n_dates!=1");
+
+  if (flag_=="None")
+      GYOTO_ERROR("In Plasmoid::getCartesian Motion not defined; motionType('Helicoidal' or 'Equatorial'");
+
+  double tt=dates[0];
+  //double x1, x2, x3, x0dot, x1dot, x2dot, x3dot;
+  std::vector<double> pos_ini (4, 0.);
+  double pos[4], vel[4];
+  
+  double r, theta, phi; // spherical coordinates
+  
+  if (flag_=="Helicoidal") // Helicoidal ejection
+  {
+    pos_ini = initPosition();
+    for (int ii=0; ii<4;ii++)
+    {
+      pos[ii]=pos_ini[ii]; // Convertion of the position vector
+    }
+
+    getVelocity(pos, vel);
+
+    r = pos[1]+vel[1]*tt;
+    theta = pos[2];
+    phi = vel[3]*(tt-pow(pos[1]/vel[1],2.)/tt); // result of integrale of vphi over time
+
+  }
+  else // Equatorial motion (Keplerian orbit)
+  {
+    pos_ini = initPosition();
+    for (int ii=0; ii<4;ii++)
+    {
+      pos[ii]=pos_ini[ii]; // Convertion of the position vector
+    }
+
+    if (pos_ini[2]!=M_PI/2.)
+      cout << "Warning input theta value incompatible with 'Equatorial' motion. Theta fixed to pi/2." << endl;
+    getVelocity(pos, vel);
+
+    r = pos[1];
+    theta = M_PI/2.;
+    phi = pos[3] + vel[3]*tt;
+
+  }
+  // Convertion into cartesian coordinates
+  x[0] = r*sin(theta)*cos(phi);
+  y[0] = r*sin(theta)*sin(phi);
+  z[0] = r*cos(theta);
+
+  if (xprime!=NULL && yprime!=NULL && zprime!=NULL)
+  {
+    xprime[0] = r*sin(theta)*sin(phi)*vel[2];
+    yprime[0] = -r*sin(theta)*cos(phi)*vel[2];
+    zprime[0] = 0.;
+  }
+}
+
+void Plasmoid::getVelocity(double const pos[4], double vel[4]){
+  if (!gg_)
+    GYOTO_ERROR("In Plasmoid::getVelocity Metric not set");
+  if (flag_=="None")
+    GYOTO_ERROR("In Plasmoid::getVelocity Motion not defined; motionType('Helicoidal' or 'Equatorial'");
+  
+  if (flag_=="Helicoidal") // Helicoidal case
+  {
+    std::vector<double> pos_ini (4, 0.), vel_ini (3, 0.);
+    double pos[4];
+    pos_ini = initPosition();
+    for (int ii=0; ii<4;ii++)
+    {
+      pos[ii]=pos_ini[ii]; // Convertion of the position vector
+    }
+    vel_ini=initVelocity();
+
+    vel[0] = 1.;
+    vel[1] = vel_ini[0];
+    vel[2] = 0.;
+    vel[3] = vel_ini[2]*pow(pos_ini[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
+    gg_->normalizeFourVel(pos, vel);
+
+  }
+  else // Equatorial case
+  {
+    std::vector<double> vel_ini (3, 0.);
+    vel_ini=initVelocity();
+    vel[0] = 1.;
+    vel[1] = vel_ini[0];
+    vel[2] = vel_ini[1];
+    vel[3] = vel_ini[2];
+    //gg_->circularVelocity(pos, vel);
+  }
+}

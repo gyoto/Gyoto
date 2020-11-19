@@ -34,7 +34,7 @@ namespace Gyoto{
 }
 
 #include <GyotoMetric.h>
-#include <GyotoStar.h>
+#include <GyotoUniformSphere.h>
 #include <GyotoPowerLawSynchrotronSpectrum.h>
 #include <GyotoThermalSynchrotronSpectrum.h>
 
@@ -46,18 +46,21 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::Plasmoid
- * \brief Plasmoid sphere formed by magnetic reconnection following a Star orbit, emitting synchrotron,
- * with two distributions of electrons:
- * one thermal at "low" temperature and one kappa at "high" temperature
+ * \brief Plasmoid Plasmoid of plasma emitting synchrotron, following 
+ * a trajectory specified in getVelocity (non-geodesic a priori)
  *
  */
 class Gyoto::Astrobj::Plasmoid :
-  public Gyoto::Astrobj::Star {
+  public Gyoto::Astrobj::UniformSphere{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Plasmoid>;
   
   // Data : 
   // -----
  private:
+  SmartPointer<Metric::Generic> gg_; // metric
+  double pos_[4]; // 4-position of the plasmoid in spherical coordinates
+  double vel_[4]; // 4-velocity of the plasmoid in spherical coordinates
+  std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
   //double timeRef_; ///< time of reconnection event
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
@@ -89,6 +92,15 @@ class Gyoto::Astrobj::Plasmoid :
   virtual std::string className_l() const ; ///< "inflate_star"
 
  public:
+  void motionType(std::string const type);
+  SmartPointer<Metric::Generic> metric() const;
+  void metric(SmartPointer<Metric::Generic> gg);
+  void initPosition(std::vector<double> const &v);
+  std::vector<double> initPosition() const;
+  void initVelocity(std::vector<double> const &v);
+  std::vector<double> initVelocity() const;
+  void initCoord(std::vector<double> const &v);
+  std::vector<double> initCoord() const;
   double numberDensity() const;
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
@@ -108,6 +120,14 @@ class Gyoto::Astrobj::Plasmoid :
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
+
+  void getCartesian(double const * const dates, size_t const n_dates,
+          double * const x, double * const y,
+          double * const z, double * const xprime=NULL,
+          double * const yprime=NULL,
+          double * const zprime=NULL);
+
+  void getVelocity(double const pos[4], double vel[4]);
 
 };
 
