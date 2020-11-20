@@ -265,10 +265,10 @@ std::vector<double> Plasmoid::initPosition() const {
 }
 
 void Plasmoid::initVelocity(std::vector<double> const &v) {
-  vel_[0] = 1.;
   vel_[1] = v[0];
   vel_[2] = v[1];
   vel_[3] = v[2];
+  vel_[0] = 1.;
 }
 
 std::vector<double> Plasmoid::initVelocity() const {
@@ -382,41 +382,28 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
 
   double tt=dates[0];
   //double x1, x2, x3, x0dot, x1dot, x2dot, x3dot;
-  std::vector<double> pos_ini (4, 0.);
-  double pos[4], vel[4];
+  double vel[4];
   
   double r, theta, phi; // spherical coordinates
   
   if (flag_=="Helicoidal") // Helicoidal ejection
   {
-    pos_ini = initPosition();
-    for (int ii=0; ii<4;ii++)
-    {
-      pos[ii]=pos_ini[ii]; // Convertion of the position vector
-    }
+    getVelocity(pos_, vel);
 
-    getVelocity(pos, vel);
-
-    r = pos[1]+vel[1]*tt;
-    theta = pos[2];
-    phi = vel[3]*(tt-pow(pos[1]/vel[1],2.)/tt); // result of integrale of vphi over time
+    r = pos_[1]+vel[1]*tt;
+    theta = pos_[2];
+    phi = vel[3]*(tt-pow(pos_[1]/vel[1],2.)/tt); // result of integrale of vphi over time
 
   }
   else // Equatorial motion (Keplerian orbit)
   {
-    pos_ini = initPosition();
-    for (int ii=0; ii<4;ii++)
-    {
-      pos[ii]=pos_ini[ii]; // Convertion of the position vector
-    }
-
-    if (pos_ini[2]!=M_PI/2.)
+    if (pos_[2]!=M_PI/2.)
       cout << "Warning input theta value incompatible with 'Equatorial' motion. Theta fixed to pi/2." << endl;
-    getVelocity(pos, vel);
+    getVelocity(pos_, vel);
 
-    r = pos[1];
+    r = pos_[1];
     theta = M_PI/2.;
-    phi = pos[3] + vel[3]*tt;
+    phi = pos_[3] + vel[3]*tt;
 
   }
   // Convertion into cartesian coordinates
@@ -440,30 +427,22 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
   
   if (flag_=="Helicoidal") // Helicoidal case
   {
-    std::vector<double> pos_ini (4, 0.), vel_ini (3, 0.);
-    double pos[4];
-    pos_ini = initPosition();
-    for (int ii=0; ii<4;ii++)
-    {
-      pos[ii]=pos_ini[ii]; // Convertion of the position vector
-    }
-    vel_ini=initVelocity();
-
     vel[0] = 1.;
-    vel[1] = vel_ini[0];
+    vel[1] = vel_[0];
     vel[2] = 0.;
-    vel[3] = vel_ini[2]*pow(pos_ini[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
+    vel[3] = vel_[2]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
     gg_->normalizeFourVel(pos, vel);
 
   }
   else // Equatorial case
   {
+    /*
     std::vector<double> vel_ini (3, 0.);
     vel_ini=initVelocity();
     vel[0] = 1.;
     vel[1] = vel_ini[0];
     vel[2] = vel_ini[1];
-    vel[3] = vel_ini[2];
-    //gg_->circularVelocity(pos, vel);
+    vel[3] = vel_ini[2];*/
+    gg_->circularVelocity(pos, vel);
   }
 }
