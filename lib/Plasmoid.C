@@ -373,6 +373,8 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
           double * const xprime, double * const yprime, double * const zprime){
   // this yields the position of the center of the UnifSphere
   // at time t
+  // vel_ is the initial 3-velocity dxi/dt
+  // vel is the 4-velocity dxnu/dtau
 
   if (n_dates!=1)
     GYOTO_ERROR("In Plasmoid::getCartesian n_dates!=1");
@@ -381,18 +383,15 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
       GYOTO_ERROR("In Plasmoid::getCartesian Motion not defined; motionType('Helicoidal' or 'Equatorial'");
 
   double tt=dates[0];
-  //double x1, x2, x3, x0dot, x1dot, x2dot, x3dot;
-  double vel[4];
+  double pos_t[4], vel[4];
   
   double r, theta, phi; // spherical coordinates
   
   if (flag_=="Helicoidal") // Helicoidal ejection
   {
-    getVelocity(pos_, vel);
-
-    r = pos_[1]+vel[1]*tt;
+    r = pos_[1]+vel_[0]*(tt-pos_[0]); // Update r(t) to get the correct vphi
     theta = pos_[2];
-    phi = vel[3]*(tt-pow(pos_[1]/vel[1],2.)/tt); // result of integrale of vphi over time
+    phi = pos_[3] + pos_[1]*pos_[1]*vel_[3]/vel[0]*(pow(pos_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
 
   }
   else // Equatorial motion (Keplerian orbit)
@@ -403,7 +402,7 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
 
     r = pos_[1];
     theta = M_PI/2.;
-    phi = pos_[3] + vel[3]*tt;
+    phi = pos_[3] + vel[3]/vel[0]*(tt-pos_[0]);
 
   }
   // Convertion into cartesian coordinates
@@ -427,22 +426,27 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
   
   if (flag_=="Helicoidal") // Helicoidal case
   {
-    vel[0] = 1.;
-    vel[1] = vel_[0];
-    vel[2] = 0.;
-    vel[3] = vel_[2]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
-    gg_->normalizeFourVel(pos, vel);
+    if (pos[1]>pos_[1])
+    {
+    	vel[0] = 1.;
+		vel[1] = vel_[1];
+		vel[2] = 0.;
+    	vel[3] = vel_[3]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
+    }
+    else
+    {
+    	vel[3] = 0.;
+    	vel[0] = 1.;
+		vel[1] = 0.;
+		vel[2] = 0.;
+    }
+
+    //vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
+	gg_->normalizeFourVel(pos, vel);
 
   }
   else // Equatorial case
   {
-    /*
-    std::vector<double> vel_ini (3, 0.);
-    vel_ini=initVelocity();
-    vel[0] = 1.;
-    vel[1] = vel_ini[0];
-    vel[2] = vel_ini[1];
-    vel[3] = vel_ini[2];*/
     gg_->circularVelocity(pos, vel);
   }
 }
