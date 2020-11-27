@@ -62,6 +62,7 @@ Plasmoid::Plasmoid() :
   temperatureReconnection_(1.),
   magnetizationParameter_(1.),
   PLIndex_(3.5),
+  posSet(false),
   spectrumThermalSynch_(NULL)
   //spectrumPLSynch_(NULL)
 {
@@ -81,6 +82,7 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   temperatureReconnection_(orig.temperatureReconnection_),
   magnetizationParameter_(orig.magnetizationParameter_),
   PLIndex_(orig.PLIndex_),
+  posSet(orig.posSet),
   //spectrumPLSynch_(NULL)
   spectrumThermalSynch_(NULL)
 {
@@ -110,8 +112,8 @@ void Plasmoid::radiativeQ(double Inu[], // output
   GYOTO_DEBUG << endl;
 # endif
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
+  double t0 = pos_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
-  double timeRef_=-20.;
   double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
   double t_inj=radius("cm")/vrec_cgs/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
   //cout << "t_inj=" << t_inj << endl;
@@ -142,14 +144,14 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double gamma_max_0 = DBL_MAX;
  
   // COMPUTE VALUES IN FUNCTION OF PHASE
-  if (tcur<=timeRef_)
+  if (tcur<=t0)
   {
     //number_density_ini=numberDensity_cgs_;
     number_density_rec=0.;
   }
-  else if (tcur<=timeRef_+t_inj) // HEATING TIME
+  else if (tcur<=t0+t_inj) // HEATING TIME
   {
-    number_density_rec=n_dot*(tcur-timeRef_)*60.;
+    number_density_rec=n_dot*(tcur-t0)*60.;
     //number_density_ini=numberDensity_cgs_ - number_density_rec;
   }
   else // COOLING TIME
@@ -158,12 +160,12 @@ void Plasmoid::radiativeQ(double Inu[], // output
     number_density_rec=n_dot*t_inj*60.;
     //number_density_ini=numberDensity_cgs_ - number_density_rec;
     
-    thetae_rec=thetae_rec*pow(1+AA*thetae_rec*(tcur-(t_inj+timeRef_))*60.,-1.);
+    thetae_rec=thetae_rec*pow(1+AA*thetae_rec*(tcur-(t_inj+t0))*60.,-1.);
     tempRec=thetae_rec*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS/GYOTO_BOLTZMANN_CGS;
 
     /*
     gamma_max_0 = 1.e10; //pow(DBL_MIN*(4.*M_PI*(1.-pow(DBL_MAX,1.-(kappaIndex-1.))))/((kappaIndex-1.)-1.),-1./(kappaIndex-1.));
-    gamma_max = max(gamma_max_0*pow(1+AA*gamma_max_0*(tcur-(t_inj+timeRef_)),-1.),gamma_min);
+    gamma_max = max(gamma_max_0*pow(1+AA*gamma_max_0*(tcur-(t_inj+t0)),-1.),gamma_min);
     */
   }
   
@@ -238,7 +240,7 @@ void Plasmoid::motionType(std::string const type){
     flag_=type;
   }
   else
-    GYOTO_ERROR("In Plasmoid::motonType: motion nor recognized, please enter a valid motion type (Helicoidal or Equatorial)");
+    GYOTO_ERROR("In Plasmoid::motonType: motion not recognized, please enter a valid motion type (Helicoidal or Equatorial)");
 }
 
 SmartPointer<Metric::Generic> Plasmoid::metric() const { return gg_; }
@@ -253,6 +255,7 @@ void Plasmoid::initPosition(std::vector<double> const &v) {
   pos_[1] = v[1];
   pos_[2] = v[2];
   pos_[3] = v[3];
+  posSet=true;
 }
 
 std::vector<double> Plasmoid::initPosition() const {
@@ -265,10 +268,26 @@ std::vector<double> Plasmoid::initPosition() const {
 }
 
 void Plasmoid::initVelocity(std::vector<double> const &v) {
+  if (!posSet)
+  	GYOTO_ERROR("In Plasmoid::initVelocity initial Position not defined");
   vel_[1] = v[0];
   vel_[2] = v[1];
   vel_[3] = v[2];
   vel_[0] = 1.;
+
+  double sum = 0;
+  double g[4][4];
+
+  gg_->gmunu(g, pos_);
+
+  for (int i=0;i<4;++i) {
+    for (int j=0;j<4;++j) {
+      sum+=g[i][j]*vel_[i]*vel_[j];
+    }
+  }
+  if (sum>=0)
+ 	GYOTO_ERROR("In Plasmoid::initVelocity Initial Velocity over C");
+
 }
 
 std::vector<double> Plasmoid::initVelocity() const {
@@ -389,9 +408,10 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
   
   if (flag_=="Helicoidal") // Helicoidal ejection
   {
-    r = pos_[1]+vel_[0]*(tt-pos_[0]); // Update r(t) to get the correct vphi
+    r = pos_[1]+vel_[1]*(tt-pos_[0]); // Update r(t) to get the correct vphi
     theta = pos_[2];
-    phi = pos_[3] + pos_[1]*pos_[1]*vel_[3]/vel[0]*(pow(pos_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
+    phi = pos_[3] + pos_[1]*pos_[1]*vel_[3]/vel_[1]*(pow(pos_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
+    //cout << phi << endl;
 
   }
   else // Equatorial motion (Keplerian orbit)
@@ -426,22 +446,10 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
   
   if (flag_=="Helicoidal") // Helicoidal case
   {
-    if (pos[1]>pos_[1])
-    {
-    	vel[0] = 1.;
-		vel[1] = vel_[1];
-		vel[2] = 0.;
-    	vel[3] = vel_[3]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
-    }
-    else
-    {
-    	vel[3] = 0.;
-    	vel[0] = 1.;
-		vel[1] = 0.;
-		vel[2] = 0.;
-    }
-
-    //vel[0] = gg_->SysPrimeToTdot(pos, vel+1);
+  	vel[0] = 1.;
+	vel[1] = vel_[1];
+	vel[2] = 0.;
+	vel[3] = vel_[3]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
 	gg_->normalizeFourVel(pos, vel);
 
   }
@@ -450,3 +458,19 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
     gg_->circularVelocity(pos, vel);
   }
 }
+
+/*
+double Plasmoid::operator()(double const coord[4]) {
+	// This function allow to artificily suppress the Plasmoid if tau < t0
+	// by returning an infine distance between the photon and the Plasmoid
+	double dist;
+
+	if (coord[0]>pos_[0])
+	{
+		dist = UniformSphere::operator()(coord);
+		//cout << dist << endl;
+		return dist;
+	}
+	
+	return DBL_MAX;
+}*/

@@ -59,15 +59,15 @@ class Gyoto::Astrobj::Plasmoid :
  private:
   SmartPointer<Metric::Generic> gg_; // metric
   double pos_[4]; // 4-position of the plasmoid in spherical coordinates
-  double vel_[4]; // 4-velocity of the plasmoid in spherical coordinates
+  double vel_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
-  //double timeRef_; ///< time of reconnection event
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
   double PLIndex_; ///< PL Index
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
   //SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // thermal-distribution synchrotron spectrum at low Temperature
+  bool posSet;
 
   // Constructors - Destructor
   // -------------------------
@@ -111,10 +111,6 @@ class Gyoto::Astrobj::Plasmoid :
   double magnetizationParameter() const;
   void PLIndex(double kk);
   double PLIndex() const;
-  /*double timeRef() const;
-  double timeRef(std::string const &unit) const;
-  void timeRef(double tt);
-  void timeRef(double tt, std::string const &unit);*/
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
@@ -128,6 +124,10 @@ class Gyoto::Astrobj::Plasmoid :
           double * const zprime=NULL);
 
   void getVelocity(double const pos[4], double vel[4]);
+
+
+public:
+  //double operator()(double const coord[4]);
 
 };
 
