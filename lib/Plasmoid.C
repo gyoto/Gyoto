@@ -116,7 +116,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
   double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
   double t_inj=radius("cm")/vrec_cgs/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
-  cout << "tcur=" << tcur << ", t0=" << t0 << ", t_inj=" << t_inj << endl;
+  //cout << "tcur=" << tcur << ", t0=" << t0 << ", t_inj=" << t_inj << endl;
 
   //double number_density_ini=numberDensity_cgs_; // number density of e- which follow the initial thermal distribution, before the reconnection
   double number_density_rec=0.; // number density of e- which follow the kappa distribution after the reconnection
