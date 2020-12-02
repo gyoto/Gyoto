@@ -125,10 +125,6 @@ class Gyoto::Astrobj::Plasmoid :
 
   void getVelocity(double const pos[4], double vel[4]);
 
-
-public:
-  //double operator()(double const coord[4]);
-
 };
 
 
