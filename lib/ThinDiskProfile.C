@@ -43,6 +43,7 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(ThinDiskProfile)
 GYOTO_PROPERTY_END(ThinDiskProfile, ThinDisk::properties)
 
+#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
 
 ThinDiskProfile::ThinDiskProfile() :
   ThinDisk("ThinDiskProfile")
@@ -72,11 +73,9 @@ double ThinDiskProfile::emission(double nu, double,
 			    double const coord_obj[8]) const{
   double rr = coord_obj[1];
   // Gralla+20 model for M87
-  double spin=0.94, a2=spin*spin;
+  double spin=SPIN, a2=spin*spin;
   double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2),
-    z1 = 1. + pow(1.-a2,1./3.)*(pow(1.+spin,1./3.) + pow(1.-spin,1./3.)),
-    z2 = sqrt(3.*a2 + z1*z1),
-    risco = 3. + z2 - sqrt((3.-z1)*(3.+z1+2.*z2));
+    risco=gg_->getRms();
 
   // Choose profile here:
   double gamma=-3./2., mu=rminus, sigG=1./2.;
@@ -99,31 +98,22 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
   // not implemented so far
 
   //cout << "in velo, r isco= " << pos[1] << " " << risco << endl;
-  
-  if (pos[1] > risco){
+  double rr = pos[1];
+  if (rr > risco){
     // Keplerian velocity above ISCO
     gg_ -> circularVelocity(pos, vel, 1);
   }else{
-    double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
-      gtp = gg_->gmunu(pos,0,3), grr = gg_->gmunu(pos,1,1);
-    double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
-      uphiZAMO = -utZAMO*gtp/gpp;
-
-    double V = 0.61; // velo norm as observed by ZAMO
-    double Gamma = 1./sqrt(1.-V*V);
-    double rr = pos[1];
-    double rhor=1.6;
-    double Vphi_over_V = (rr-rhor)/(risco-rhor);
-
-    double Vphi = Vphi_over_V*V / sqrt(gpp),
-      Vr = sqrt(1-Vphi_over_V*Vphi_over_V)*V / sqrt(grr);
-    
-    vel[0] = Gamma*utZAMO;
-    vel[1] = -Gamma*Vr; // minus sign coz matter is going towards BH
+    // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
+    // initally from Cunnigham 1975
+    double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+      gamma_ms = sqrt(1.-2./(3.*risco)),
+      delta = rr*rr - 2.*rr + SPIN*SPIN,
+      hh = (2.*rr - SPIN*lambda_ms)/delta;
+    vel[0] = gamma_ms*(1.+2./rr*(1.+hh));
+    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5);
     vel[2] = 0.;
-    vel[3] = Gamma*(uphiZAMO + Vphi);
+    vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
 
-    //cout << "V2= " << gg_->gmunu(pos,1,1)*Vr*Vr + gg_->gmunu(pos,3,3)*Vphi*Vphi << endl;
     //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
   }
 
