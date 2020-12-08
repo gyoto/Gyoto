@@ -62,8 +62,6 @@ GYOTO_PROPERTY_BOOL(NumericalMetricLorene, BosonStarCircular, NonBosonStarCircul
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Horizon, horizon)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Time, initialTime)
 GYOTO_PROPERTY_DOUBLE(NumericalMetricLorene, Rico, rico)
-GYOTO_PROPERTY_VECTOR_DOUBLE(NumericalMetricLorene,
-			     RefineIntegStep, refineIntegStep)
 // Keep File last here, so it is processed last in fillElement() 
 // (just before the generic Properties, that is
 GYOTO_PROPERTY_FILENAME(NumericalMetricLorene, File, directory)
@@ -84,9 +82,6 @@ NumericalMetricLorene::NumericalMetricLorene() :
   has_acceleration_vector_(0),
   specify_marginalorbits_(0),
   horizon_(0.),
-  r_refine_(0.),
-  h0_refine_(0.),
-  refine_(0),
   initial_time_(0.),
   lapse_tab_(NULL),
   shift_tab_(NULL),
@@ -117,9 +112,6 @@ NumericalMetricLorene::NumericalMetricLorene(const NumericalMetricLorene&o) :
   has_acceleration_vector_(o.has_acceleration_vector_),
   specify_marginalorbits_(o.specify_marginalorbits_),
   horizon_(o.horizon_),
-  r_refine_(o.r_refine_),
-  h0_refine_(o.h0_refine_),
-  refine_(o.refine_),
   initial_time_(o.initial_time_),
   lapse_tab_(NULL),
   shift_tab_(NULL),
@@ -596,23 +588,28 @@ int NumericalMetricLorene::diff(const double y[7],
       N_dr = lapse->dsdr().val_point(rr,th,phi), 
       N_dt = lapse->dsdt().val_point(rr,th,phi),
       N_dp = sth*lapse->stdsdp().val_point(rr,th,phi); // stdsdp is 1/sin(th)*d/dphi
+    //cout << "at r th ph= " << rr << " " << th << " " << phi << endl; 
+    //cout << "lapse= " << NN << " " << N_dr << " " << N_dt << " " << N_dp << endl;
     //SHIFT
     const Vector& shift = *(shift_tab_[indice_time]);
     double betar = shift(1).val_point(rr,th,phi),
-      betat = rm1*shift(2).val_point(rr,th,phi),
       betar_dr = shift(1).dsdr().val_point(rr,th,phi),
       betar_dt = shift(1).dsdt().val_point(rr,th,phi),
       betar_dp = sth*shift(1).stdsdp().val_point(rr,th,phi),
+      betat_Lorene = shift(2).val_point(rr,th,phi),
+      betat = rm1*betat_Lorene,
       betat_dr = rm1*shift(2).dsdr().val_point(rr,th,phi)
-      -rm2*shift(2).val_point(rr,th,phi),
+      -rm2*betat_Lorene,
       betat_dt = rm1*shift(2).dsdt().val_point(rr,th,phi),
       betat_dp = sth*rm1*shift(2).stdsdp().val_point(rr,th,phi),
-      betap = rsm1*shift(3).val_point(rr,th,phi),
+      betap_Lorene = shift(3).val_point(rr,th,phi),
+      betap = rsm1*betap_Lorene,
       betap_dr = rsm1*shift(3).dsdr().val_point(rr,th,phi)
-      -rm2*sm1*shift(3).val_point(rr,th,phi),
+      -rm2*sm1*betap_Lorene,
       betap_dt = rsm1*shift(3).dsdt().val_point(rr,th,phi)
-      -cth*sm2*rm1*shift(3).val_point(rr,th,phi),
+      -cth*sm2*rm1*betap_Lorene,
       betap_dp = rm1*shift(3).stdsdp().val_point(rr,th,phi);
+    //cout << "shift= " << betar << " " << betat << " " << betap << endl;
     
     //3-METRIC DERIVATIVES (for Christo)
     const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
@@ -633,16 +630,21 @@ int NumericalMetricLorene::diff(const double y[7],
       +g_ij(1,2).val_point(rr,th,phi),
       g_rt_dt = rr*g_ij(1,2).dsdt().val_point(rr,th,phi),
       g_rt_dp = rsinth*g_ij(1,2).stdsdp().val_point(rr,th,phi),
+      g_rp_Lorene = g_ij(1,3).val_point(rr,th,phi),
       g_rp_dr = rsinth*g_ij(1,3).dsdr().val_point(rr,th,phi)
-      + sth*g_ij(1,3).val_point(rr,th,phi),
+      + sth*g_rp_Lorene,
       g_rp_dt = rsinth*g_ij(1,3).dsdt().val_point(rr,th,phi)
-      + rr*cth*g_ij(1,3).val_point(rr,th,phi),
+      + rr*cth*g_rp_Lorene,
       g_rp_dp = sth*rsinth*g_ij(1,3).stdsdp().val_point(rr,th,phi),
+      g_tp_Lorene = g_ij(2,3).val_point(rr,th,phi), 
       g_tp_dr = rr*rsinth*g_ij(2,3).dsdr().val_point(rr,th,phi)
-      + 2.*rsinth*g_ij(2,3).val_point(rr,th,phi),
+      + 2.*rsinth*g_tp_Lorene,
       g_tp_dt = rr*rsinth*g_ij(2,3).dsdt().val_point(rr,th,phi)
-      + r2*cth*g_ij(2,3).val_point(rr,th,phi),
-      g_tp_dp = r2sinth2*g_ij(2,3).stdsdp().val_point(rr,th,phi);   
+      + r2*cth*g_tp_Lorene,
+      g_tp_dp = r2sinth2*g_ij(2,3).stdsdp().val_point(rr,th,phi);
+
+    //cout << "gamma Lorene= " << g_ij(1,1).val_point(rr,th,phi) << " " << g_ij(2,2).val_point(rr,th,phi) << " " << g_ij(3,3).val_point(rr,th,phi) << " " << g_ij(1,2).val_point(rr,th,phi) << " " << g_ij(1,3).val_point(rr,th,phi) << " " << g_ij(2,3).val_point(rr,th,phi) << endl;
+    //cout << "gamma= " << g_ij(1,1).val_point(rr,th,phi) << " " << r2*g_ij(2,2).val_point(rr,th,phi) << " " << r2sinth2*g_ij(3,3).val_point(rr,th,phi) << " " << rr*g_ij(1,2).val_point(rr,th,phi) << " " << rsinth*g_ij(1,3).val_point(rr,th,phi) << " " << rr*rsinth*g_ij(2,3).val_point(rr,th,phi) << endl;
     
     //INVERSE 3-METRIC
     //NB: these are gamma^ij, not g^ij
@@ -653,6 +655,7 @@ int NumericalMetricLorene::diff(const double y[7],
       grt=rm1*g_up_ij(1,2).val_point(rr,th,phi),
       grp=rsm1*g_up_ij(1,3).val_point(rr,th,phi),
       gtp=rm1*rsm1*g_up_ij(2,3).val_point(rr,th,phi);
+    //cout << "gamma= " << grr << " " << gtt << " " << gpp << " " << grt << " " << gtp << " " << grp << endl;
     
     //EXTRINSIC CURVATURE
     const Sym_tensor& kij = *(kij_tab_[indice_time]);
@@ -662,6 +665,7 @@ int NumericalMetricLorene::diff(const double y[7],
       K_rt = rr*kij(1,2).val_point(rr,th,phi),
       K_rp = rsinth*kij(1,3).val_point(rr,th,phi), 
       K_tp = rr*rsinth*kij(2,3).val_point(rr,th,phi);
+    //cout << "Kij= " << K_rr << " " << K_tt << " " << K_pp << " " << K_rp << " " << K_rt << " " << K_tp << endl;
     
     //3-CHRISTOFFELS
     double Grrr = 0.5*grr*g_rr_dr+0.5*grt*(2.*g_rt_dr-g_rr_dt)
@@ -699,16 +703,15 @@ int NumericalMetricLorene::diff(const double y[7],
       + 0.5*gpp*g_pp_dt;
     
     // 3+1 GEODESIC EQUATION
-    double factor = NNm1*(Vr*N_dr+Vth*N_dt+Vph*N_dp)
-      - K_rr*Vr*Vr-K_tt*Vth*Vth-K_pp*Vph*Vph 
-      - 2.*K_rt*Vr*Vth-2.*K_rp*Vr*Vph-2.*K_tp*Vth*Vph,
+    double VN_d = Vr*N_dr+Vth*N_dt+Vph*N_dp,
+      KV2 = K_rr*Vr*Vr+K_tt*Vth*Vth+K_pp*Vph*Vph
+      +2.*(K_rt*Vr*Vth+K_rp*Vr*Vph+K_tp*Vth*Vph),
+      factor = NNm1*VN_d - KV2,
       KV_r = K_rr*Vr+K_rt*Vth+K_rp*Vph,
       KV_t = K_rt*Vr+K_tt*Vth+K_tp*Vph,
       KV_p = K_rp*Vr+K_tp*Vth+K_pp*Vph;
     
-    res[0] = EE*NN*(K_rr*Vr*Vr+K_tt*Vth*Vth+K_pp*Vph*Vph
-		    +2.*(K_rt*Vr*Vth+K_rp*Vr*Vph+K_tp*Vth*Vph)) 
-      - EE*(Vr*N_dr+Vth*N_dt+Vph*N_dp);
+    res[0] = EE*(NN*KV2 - VN_d);
     res[1] = NN*Vr-betar;
     res[2] = NN*Vth-betat;
     res[3] = NN*Vph-betap;
@@ -842,509 +845,6 @@ int NumericalMetricLorene::diff(const double y[7],
   return 0;
 }
 
-int NumericalMetricLorene::myrk4(double tt, const double coorin[7], 
-				 double h, double res[7]) const
-{
-  GYOTO_DEBUG << endl;
-
-  /*
-    3+1 RK4, WITH ENERGY INTEG. Called by the 3+1 RK4_ada.
-   */
-
-  double k1[7], k2[7], k3[7], k4[7], coor_plus_halfk1[7], sixth_k1[7], 
-    coor_plus_halfk2[7], third_k2[7], coor_plus_k3[7], 
-    third_k3[7], sixth_k4[7]; 
-
-  if(diff(tt,coorin,k1)) return 1;
-  /*  cout << "res diff= " ;
-  for (int ii=0;ii<7;ii++) cout << k1[ii] << " ";
-  cout << endl;*/
-	  
-  for (int i=0;i<7;i++) {
-    k1[i]=h*k1[i];
-    coor_plus_halfk1[i]=coorin[i]+0.5*k1[i];
-    reverseR(tt+0.5*h,coor_plus_halfk1);
-    sixth_k1[i]=1./6.*k1[i];
-  }
-
-  if(diff(tt+h/2.,coor_plus_halfk1,k2)) return 1;
-
-  for (int i=0;i<7;i++) {
-    k2[i]=h*k2[i];
-    coor_plus_halfk2[i]=coorin[i]+0.5*k2[i];
-    reverseR(tt+0.5*h,coor_plus_halfk2);
-    third_k2[i]=1./3.*k2[i];
-  }
-
-  if(diff(tt+h/2.,coor_plus_halfk2,k3)) return 1;
-
-  for (int i=0;i<7;i++) {
-    k3[i]=h*k3[i];
-    coor_plus_k3[i]=coorin[i]+k3[i];
-    reverseR(tt+h,coor_plus_k3);
-    third_k3[i]=1./3.*k3[i];
-  }
-
-  if(diff(tt+h,coor_plus_k3,k4)) return 1;
-
-  for (int i=0;i<7;i++) {
-    k4[i]=h*k4[i];
-    sixth_k4[i]=1./6.*k4[i];
-  }
-
-  for (int i=0;i<7;i++) {
-    res[i]=coorin[i]+sixth_k1[i]+third_k2[i]+third_k3[i]+sixth_k4[i];
-  }
-  reverseR(tt+h,res);
-  
-  return 0;
-}
-
-//Non adaptive Runge Kutta (called by WorldlineIntegState if fixed step)
-int NumericalMetricLorene::myrk4(Worldline * line, state_t const &coord, 
-				 double h, state_t &res) const{
-  GYOTO_DEBUG << endl;
-  double tt=coord[0], rr=coord[1],
-    th=coord[2],rsinth = rr*sin(th), ph=coord[3],
-    tdot=coord[4], rdot=coord[5],thdot=coord[6],phdot=coord[7];
-
-  //Check p_phi conservation:
-  double const * const cst = line -> getCst();
-  double cst_p_ph = cst[1];
-  double pphi_err=fabs(cst_p_ph-(gmunu(coord.data(),0,3)*tdot + gmunu(coord.data(),3,3)
-				   *phdot))/fabs(cst_p_ph)*100.; 
-  double pphi_err_tol=GYOTO_NML_PPHI_TOL;
-  /*
-    Next test done on pphi/tdot as pphi propto
-    tdot and tdot can diverge close to horizon.
-    Just check that pphi/tdot is close to zero.
-   */
-  if (pphi_err/fabs(tdot)>pphi_err_tol){
-    GYOTO_SEVERE << "tdot: " << fabs(tdot) << endl;
-    if (verbose() >= GYOTO_SEVERE_VERBOSITY){
-      cerr << "***WARNING: in NumericalMetricLorene::myrk4: p_phi is drifting"
-	" - with error p_phi,x1,x2,x3= " << pphi_err << " %, at " <<
-	rr << " " << th << " " << ph << endl;
-    }
-  }
-
-  //Check p_t conservation if stationary
-  if (nb_times_==1){
-    double cst_p_t = cst[2];
-    double pt_err=fabs(cst_p_t-(gmunu(&coord[0],0,0)*tdot + gmunu(&coord[0],0,3)
-				*phdot))/fabs(cst_p_t)*100.; 
-    double pt_err_tol=1.;//in percent
-    if (pt_err>pt_err_tol){
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY){
-	cout << "***WARNING: in NumericalMetricLorene::myrk4: p_t is drifting"
-	  " - with error p_t,x1,x2,x3= " << pt_err << " %, at " <<
-	  rr << " " << th << " " << ph << endl;
-      }
-    }
-  }
-  
-  if (tdot==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
-  double rprime=rdot/tdot, thprime=thdot/tdot,phprime=phdot/tdot;
-  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada r is 0!");
-  if (rsinth==0.) 
-    GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada on z axis!");
-
-  // Lapse and shift at tt:
-  double NN, beta[3];
-  computeNBeta(&coord[0],NN,beta);
-  double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
-
-  double Vr = 1./NN*(rprime+beta_r), Vth = 1./NN*(thprime+beta_t),
-    Vph = 1./NN*(phprime+beta_p);
-  // Photon's energy as measured by Eulerian observer:
-  double EE = tdot*NN;
-
-  double coor[7]={EE,rr,th,ph,Vr,Vth,Vph};
-  double coornew[7];
-
-  double tdot_used=tdot;//, tdot_bef=tdot;
-
-  if (myrk4(tt,coor,h,coornew))
-    return 1;
-
-  double tnow = tt+h, rnow=coornew[1], thnow=coornew[2], phnow=coornew[3];
-  double posend[4]={tnow,rnow,thnow,phnow};
-  //Lapse and shift at tnow:
-  computeNBeta(posend,NN,beta);
-  beta_r=beta[0];
-  beta_t=beta[1];
-  beta_p=beta[2];
-
-  rprime=NN*coornew[4]-beta_r;
-  thprime=NN*coornew[5]-beta_t;
-  phprime=NN*coornew[6]-beta_p;
-
-  double EEend = coornew[0];
-
-  tdot_used = EEend/NN;
-
-  if (tdot_used<0.) 
-    GYOTO_SEVERE << "In NumericalMetricLorene.C: WARNING TDOT IS <0" << endl;
-  
-  rdot=rprime*tdot_used;
-  thdot=thprime*tdot_used;
-  phdot=phprime*tdot_used;
-  res[0]=tnow;
-  res[1]=coornew[1];
-  res[2]=coornew[2];
-  res[3]=coornew[3];
-  res[4]=tdot_used;
-  res[5]=rdot;
-  res[6]=thdot;
-  res[7]=phdot;
-  
-  return 0;
-}
-
-//3+1 SPATIAL ADAPTIVE RK4 WITH ENERGY INTEGRATION
-int NumericalMetricLorene::myrk4_adaptive(double tt, const double coord[7], 
-					  double, double normref, 
-					  double coordnew[7], 
-					  const double cst[2], 
-					  double& tdot_used, 
-					  double h0, double& h1, 
-					  double& hused,
-					  double h1max) const{
-  GYOTO_DEBUG << endl;
-  /*
-    3+1 RK4_ada, for internal use only 
-    (not called directly by WorldlineIntegState).
-    coord=[E,r,th,ph,Vr,Vth,Vph]
-    This function is called by the 4D RK4_ada below.
-  */
-  
-  double delta0[7], dcoord[7];
-  
-  //Standard RK4 parameters:
-  double delta0min=1e-15;
-  double S=0.9;
-  double errmin=1e-6;
-  double sigh1=1.;
-
-  h1max=deltaMax(coord, h1max);
-
-  /* ***Parameter to fine tuned (mainly for spacetimes with horizon) *** */
-  /*
-    eps:     defines the quality of RK4 integration
-             it must be low enough to ensure proper integration
-	     but high enough to prevent from too long integration
-
-    stepmin: minimum allowed RK4 step, below which integration is stopped
-             important parameter for spacetimes with horizon
-	     must be low enough to prevent stopping before hitting
-	     and high enough to prevent from too long integration
-
-    rhormax: is above the largest value of apparent horizon radius
-             for all envolved metrics
-	     the stepmin condition is only read for r<rhormax
-
-    NB: don't forget that the Coconut resolutions (time res, spectral res)
-        are also crucial parameters for tracing horizon properly
-   */
-  double eps=0.005; //"std" value is 0.0001
-  double stepmin=1e-8;//1e-6;
-  double rhormax=0.2;
-  /* ****************************************************************** */
- 
-  if (diff(tt,coord,dcoord)) return 1;
-
-  for (int i = 0;i<7;i++) {
-    delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
-  }
-
-  double hbis=0.5*h0;
-  double coordhalf[7];
-  double coord2[7];
-  double delta1[7];
-  
-  double err;
-  int count=0;
-  int zaxis=0;
-  double thetatol=1e-5; //launch z-axis pb if theta is below
-
-  /* WHILE LOOP FOR STEP DETERMINATION */
-  while (1){
-
-    count++;
-    if (count > 100){
-      GYOTO_ERROR("NumericalMetricLorene: too many iterations in RK4");
-    }
-    err=0.;
-
-    int step1=myrk4(tt,coord,h0,coordnew);
-    int step21=myrk4(tt,coord,hbis,coordhalf);
-    int step22=myrk4(tt+hbis,coordhalf,hbis,coord2);
-    
-    while (step1 || step21 || step22) {
-      /*
-	If here, then NumColStar::myrk4 returned 1, which means that one step
-	of integration computed above leads to sub-app. horizon
-	location.
-	Divide integration step by 10.
-	Stop condition if step less than stepmin value.
-       */
-      h0/=10.;hbis/=10.; 
-      //Update delta0 with new h0
-      for (int i = 0;i<7;i++) {
-	delta0[i]=delta0min+eps*(fabs(h0*dcoord[i]));
-      }
-      if (debug()){
-	cout << "Step divided to " << h0 << endl;
-      }
-      if (fabs(h0)<stepmin) {
-	//if (debug()){
-	  cout
-	    << "Stop condition: at t,r= " 
-	    << tt << " " << coord[1] 
-	    << ", due to too small integration step" 
-	    << " after dividing step: too close to horizon." << endl;
-	  //}
-	return 1;
-      }
-      step1=myrk4(tt,coord,h0,coordnew);
-      step21=myrk4(tt,coord,hbis,coordhalf);
-      step22=myrk4(tt+hbis,coordhalf,hbis,coord2);
-    } // End step computation     
-    
- 
-    /* *** Special zaxis treatment  *** */
-    if (fabs(fmod(fabs(coordnew[2])+M_PI/2, M_PI)-M_PI/2) < thetatol){ 
-      //checks whether theta is close to 0[pi]
-      //launch z-axis special treatment if yes
-      zaxis=1;
-      h0*=1.1; hbis*=1.1;
-      if (myrk4(tt,coord,h0,coordnew) 
-	  || myrk4(tt,coord,hbis,coordhalf)
-	  || myrk4(tt+hbis,coordhalf,hbis,coord2)) return 1;
-# if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG << endl << "!!!!NOTE!!!!: Passing close to z-axis at theta= "
-		  << coord[2] << " and r= " << coord[1]
-		  << ", jumping ahead with h0= " << h0 << endl;
-# endif
-    } //End zaxis
-
-    /* *** Error determination  *** */
-    if (!zaxis){
-      for (int i = 0;i<7;i++){
-	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i]))
-	  err=fabs(delta1[i]/delta0[i]);
-      }
-    }else{ /* z-axis pb case : forget phi coordinate, which is a
-	      function of 1/sin(theta) Indeed phidotdot is a function
-	      of Gprp and Gptp, Christoffels that are themselves
-	      function of 1/sin(theta) terms.  NB: this special
-	      treatment is used very rarely (only for i=N/2) 
-	      so it's not a pb for the overall RK4
-	    */
-      for (int i = 0;i<3;i++){
-	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i]))
-	  err=fabs(delta1[i]/delta0[i]);
-      }
-      for (int i = 4;i<7;i++){
-	delta1[i]=coord2[i]-coordnew[i];
-	if (err<fabs(delta1[i]/delta0[i]))
-	  err=fabs(delta1[i]/delta0[i]);
-      }
-    } //End of err determination
-
-    /* *** Final treatment depending on err *** */
-    if (err>1) { 
-      h0=S*h0*pow(err,-0.25);
-      hbis=0.5*h0;
-    }else{
-      double rr=coord[1];
-      if (fabs(h0)<stepmin && rr<rhormax) {
-	/*
-	  Stop condition if used step smaller than stepmin,
-	  and r less than ~ max value of app. horizon.
-	  This means that the geodesic is "accumulating"
-	  close to an horizon.
-	 */
-	GYOTO_DEBUG
-	  << "Stop condition: at t,r= " 
-	  << tt << " " << rr
-	  << ", due to too small integration step. "
-	  " Too close to horizon." << endl;
-	return 1;
-      }
-      //pour éviter les explosions:
-      h1=(err > errmin ? S*h0*pow(err,-0.2) : 4.*h0);
-      if (h1<0.) sigh1=-1.;//why sigh1 and fabs(h1)? because otherwise
-			   //if h1<0 (possible here if backwards
-			   //integration), h1 is < h1min, so h1 is
-			   //always set to h1min...
-      if (fabs(h1)<delta_min_) h1=sigh1*delta_min_;
-      if (fabs(h1)>h1max) h1=sigh1*h1max;
-      hused=h0;
-      break;
-    }
- 
-  }
-  /* END OF WHILE LOOP FOR STEP DETERMINATION */
-  
-  return 0;
-} //End spatial ada RK with E integ
-
-//Main adaptive RK4
-int NumericalMetricLorene::myrk4_adaptive(Worldline* line, 
-					  state_t const &coord, 
-					  double lastnorm, double normref, 
-					  state_t &coordnew, double h0, 
-					  double& h1,
-					  double h1max) const
-{
-  GYOTO_DEBUG << endl;
-  double tt=coord[0], rr=coord[1],th=coord[2],rsinth = rr*sin(th),ph=coord[3],
-    tdot=coord[4], rdot=coord[5],thdot=coord[6],phdot=coord[7];
-  
-  //Check p_phi conservation:
-  double const * const cst = line -> getCst();
-  double cst_p_ph = cst[1];
-  double pphi_err=fabs(cst_p_ph-(gmunu(&coord[0],0,3)*tdot + gmunu(&coord[0],3,3)
-				 *phdot))/fabs(cst_p_ph)*100.; 
-  double pphi_err_tol=GYOTO_NML_PPHI_TOL;
-  /*
-    Next test done on pphi/tdot as pphi propto
-    tdot and tdot can diverge close to horizon.
-    Just check that pphi/tdot is close to zero.
-  */
-  if (pphi_err/fabs(tdot)>pphi_err_tol){
-    if (verbose() >= GYOTO_SEVERE_VERBOSITY){
-      cerr << "***WARNING: in NumericalMetricLorene::myrk4_adaptive:"
-	" p_phi is drifting"
-	" - with error p_phi,x1,x2,x3= " << pphi_err << " %, at " <<
-	rr << " " << th << " " << ph << endl;
-    }
-  }
-  
-  //Check p_t conservation if stationary
-  if (nb_times_==1){
-    double cst_p_t = cst[2];
-    double pt_err=fabs(cst_p_t-(gmunu(&coord[0],0,0)*tdot + gmunu(&coord[0],0,3)
-				*phdot))/fabs(cst_p_t)*100.; 
-    double pt_err_tol=1.;//in percent
-    if (pt_err>pt_err_tol){
-      if (verbose() >= GYOTO_SEVERE_VERBOSITY){
-	cerr << "***WARNING: in NumericalMetricLorene::myrk4: p_t is drifting"
-	  " - with error p_t,x1,x2,x3= " << pt_err << " %, at " <<
-	  rr << " " << th << " " << ph << endl;
-      }
-    }
-  }
-  
-  if (tdot==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada tdot is 0!");
-  double rprime=rdot/tdot, thprime=thdot/tdot,phprime=phdot/tdot;
-  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada r is 0!");
-  if (rsinth==0.) 
-    GYOTO_ERROR("In NumericalMetricLorene.C::myrk4_ada on z axis!");
-  
-  // Lapse and shift at tt:
-  double NN, beta[3];
-  computeNBeta(&coord[0],NN,beta);
-  double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
-  
-  double Vr = 1./NN*(rprime+beta_r), Vth = 1./NN*(thprime+beta_t),
-    Vph = 1./NN*(phprime+beta_p);
-  // Photon's energy as measured by Eulerian observer:
-  double EE = tdot*NN;
-  double coor[7]={EE,rr,th,ph,Vr,Vth,Vph};
-  double coornew[7];
-  double hused=1000.;
-  
-  if (tdot<0. && h0>0.) h0*=-1.;//to integrate backwards if tdot<0
-  
-  double tdot_used=tdot;//, tdot_bef=tdot;
-  
-  //to debug:
-  int it=nb_times_-1;
-  while(tt<times_[it] && it>=0){ //ASSUMES backward integration, to generalize
-    it--;
-  }
-
-  if (refine_){
-    /*
-      Refined integration:
-      if asked in the XML, the integration step is
-      imposed below the value h0_refine_.
-     */
-    double h0tmp=h0;
-    if (rr<r_refine_ && fabs(h0)>fabs(h0_refine_)) h0=h0_refine_;
-    if (h0*h0tmp<0.) h0*=-1;
-  }
-
-  if (myrk4_adaptive(tt,coor,lastnorm,normref,coornew,
-		     cst,tdot_used,h0,h1,hused, h1max)) {
-    return 1;
-  }
-  
-  double tnow = tt+hused, rnow=coornew[1], thnow=coornew[2], phnow=coornew[3];
-  
-  double posend[4]={tnow,rnow,thnow,phnow};
-  
-  //Lapse and shift at tnow:
-  computeNBeta(posend,NN,beta);
-  beta_r=beta[0];
-  beta_t=beta[1];
-  beta_p=beta[2];
-  
-  rprime=NN*coornew[4]-beta_r;
-  thprime=NN*coornew[5]-beta_t;
-  phprime=NN*coornew[6]-beta_p;
-  
-  double EEend = coornew[0];
-
-  tdot_used = EEend/NN;
-  if (tdot_used<0.) 
-    GYOTO_SEVERE << "In NumericalMetricLorene.C: WARNING TDOT IS <0" << endl;
-  
-  rdot=rprime*tdot_used;
-  thdot=thprime*tdot_used;
-  phdot=phprime*tdot_used;
-
-  coordnew[0]=tnow;
-  coordnew[1]=coornew[1];
-  coordnew[2]=coornew[2];
-  coordnew[3]=coornew[3];
-  coordnew[4]=tdot_used;
-  coordnew[5]=rdot;
-  coordnew[6]=thdot;
-  coordnew[7]=phdot;
-
-  return 0;
-}
-
-void NumericalMetricLorene::reverseR(double tt, double coord[7]) const{
-  GYOTO_DEBUG << endl;
-  if (coord[1]<0.) {
-    double rhor=computeHorizon(coord);
-    if (rhor==0.){
-      // then no horizon, r=0 is allowed, e.g. boson star case
-      // r vector -> - itself
-
-      //reverse spatial vector
-      coord[1]*=-1.;
-      coord[2]=M_PI-coord[2];
-      coord[3]=M_PI+coord[3];
-
-      //reverse derivative
-      double pos[4]={tt,coord[1],coord[2],coord[3]};
-      double NN, beta[3];
-      computeNBeta(pos,NN,beta);
-
-      double beta_r=beta[0], beta_t=beta[1];
-      coord[4]=-coord[4]+2.*beta_r/NN;
-      coord[5]=-coord[5]+2.*beta_t/NN;	
-    }
-  } 
-}
-
 void NumericalMetricLorene::computeNBeta(const double coord[4],
 					 double &NN,double beta[3]) const
 {
@@ -1359,8 +859,6 @@ void NumericalMetricLorene::computeNBeta(const double coord[4],
   while(tt<times_[it] && it>=0){ //ASSUMES backward integration, to generalize
     it--;
   }
-
-  // if (rr<0.187) it=1305; // TEST!!! 
 
   int ind_nb=it;
   if (it==-1) ind_nb=0;
@@ -2363,90 +1861,6 @@ int NumericalMetricLorene::christoffel(double dst[4][4][4],
     return 0;
 }
 
-double NumericalMetricLorene::christoffel3(const double coord[3],
-					    const int indice_time, 
-					    const int ii, 
-					    const int jj, 
-					    const int kk) const
-{
-  GYOTO_DEBUG << endl;
-  //Computation of 3D Christoffels from the metric : \Gamma^{ii}_{jj kk}
-  //NB: 3-metric supposed to be conformally flat
-  if (indice_time<0 || indice_time>nb_times_-1) 
-    GYOTO_ERROR("NumericalMetricLorene::christoffel3: "
-	       "incoherent value of indice_time");
-
-  if ( ii<1 || ii>3 || jj<1 || jj>3 || kk<1 || kk>3 )
-       GYOTO_ERROR("In NumericalMetricLorene::christoffel3 bad indice value");
-
-  double rr=coord[0], r2=rr*rr, th=coord[1], sinth=0., costh=0.;
-  sincos(th, &sinth, &costh);
-  double rsinth=rr*sinth;
-  if (rr==0.) GYOTO_ERROR("In NumericalMetricLorene.C::christoffel3 r is 0!");
-  if (rsinth==0.) GYOTO_ERROR("In NumericalMetricLorene.C::christoffel3 "
-			     "on z axis!");
-  double rm2=1./r2, rsm1 = 1./rsinth, sinth2=sinth*sinth,
-	 r2sinth2=r2*sinth2, ph=coord[2];
-  
-  Scalar* lapse = (lapse_tab_[indice_time]);
-
-  Scalar lapseder = lapse->dsdr() ;
-  lapseder.std_spectral_base() ;
-  
-  const Vector& shift = *(shift_tab_[indice_time]);
-  
-  const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]) ;
-
-  const Sym_tensor& g_up_ij = *(gamcon_tab_[indice_time]) ;
-
-  double res=0.;
-
-  if ((ii==1) && (jj==1) && (kk==1)) {
-    res = 0.5*g_up_ij(1,1).val_point(rr,th,ph)
-      *g_ij(1,1).dsdr().val_point(rr,th,ph);
-  }else if(((ii==1) && (jj==1) && (kk==2)) || ((ii==1) && (jj==2) && (kk==1))){
-    res = 0.5*g_up_ij(1,1).val_point(rr,th,ph)
-      *g_ij(1,1).dsdt().val_point(rr,th,ph);
-  }else if((ii==1) && (jj==2) && (kk==2)){
-    res = -0.5*g_up_ij(1,1).val_point(rr,th,ph)
-      *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph) 
-	+ 2.*rr*g_ij(2,2).val_point(rr,th,ph));
-  }else if((ii==1) && (jj==3) && (kk==3)){
-    res = -0.5*g_up_ij(1,1).val_point(rr,th,ph)
-      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
-	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-  }else if((ii==2) && (jj==2) && (kk==2)){
-    res = 0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-      *(r2*g_ij(2,2).dsdt().val_point(rr,th,ph));
-  }else if((ii==2) && (jj==3) && (kk==3)){
-    res = -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
-  }else if((ii==2) && (jj==1) && (kk==1)){
-    res = -0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-      *g_ij(1,1).dsdt().val_point(rr,th,ph);
-  }else if(((ii==2) && (jj==1) && (kk==2)) || ((ii==2) && (jj==2) && (kk==1))){
-    res = 0.5*rm2*g_up_ij(2,2).val_point(rr,th,ph)
-      *(r2*g_ij(2,2).dsdr().val_point(rr,th,ph)
-	+2.*rr*g_ij(2,2).val_point(rr,th,ph));
-  }else if(((ii==3) && (jj==1) && (kk==3)) || ((ii==3) && (jj==3) && (kk==1))){
-    res = 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
-      *(r2sinth2*g_ij(3,3).dsdr().val_point(rr,th,ph)
-	+2.*rr*sinth2*g_ij(3,3).val_point(rr,th,ph));
-  }else if(((ii==3) && (jj==2) && (kk==3)) || ((ii==3) && (jj==3) && (kk==2))){
-    res = 0.5*rsm1*rsm1*g_up_ij(3,3).val_point(rr,th,ph)
-      *(r2sinth2*g_ij(3,3).dsdt().val_point(rr,th,ph)
-	+2.*costh*sinth*r2*g_ij(3,3).val_point(rr,th,ph));
-  }
-  //Other Christoffels are 0
-
-  if (res!=res) {
-    GYOTO_ERROR("NumericalMetricLorene::christoffel3 is nan!");
-  }
-  if (res==res+1.) GYOTO_ERROR("NumericalMetricLorene::christoffel3 is inf!");
-  return res; 
-}
-
 double NumericalMetricLorene::computeHorizon(const double* pos) const{
   GYOTO_DEBUG << endl;
   if (!hor_tab_ && !horizon_)
@@ -2463,8 +1877,6 @@ double NumericalMetricLorene::computeHorizon(const double* pos) const{
     while(tt<times[it] && it>=0){ //ASSUMES backward integration, to generalize
       it--;
     }
-
-    //    if (pos[1]<0.187) it=1305; // TEST!!!! 
 
     double rhor;
     if (it==nb_times_-1){
@@ -2536,27 +1948,6 @@ double NumericalMetricLorene::Interpol3rdOrder(double tt,
   return P1234;
 }
 
-void NumericalMetricLorene::setParticleProperties(Worldline * line, 
-						  const double* coord) const
-{ 
-  GYOTO_DEBUG << endl;
-  double cst[3];
-  //norm (ALWAYS conserved here)
-  cst[0]=ScalarProd(coord,coord+4,coord+4);
-  double tdot=coord[4], phdot=coord[7];
-  //p_phi (ALWAYS conserved here)
-  cst[1]=gmunu(coord,0,3)*tdot + gmunu(coord,3,3)*phdot;
-  if (nb_times_==1){
-    //p_t (ONLY conserved for stationary case)
-    cst[2]=gmunu(coord,0,0)*tdot + gmunu(coord,0,3)*phdot;
-  }
-  else{
-    // p_t is never 0, put it to 0 when not conserved
-    cst[2]=0.;
-  }
-  line -> setCst(cst,3);
-}
-
 void NumericalMetricLorene::directory(std::string const &dir) {
   char const * const cdir=dir.c_str();
   filename_ = new char[strlen(cdir)+1];
@@ -2625,18 +2016,6 @@ void NumericalMetricLorene::initialTime(double t0) {initial_time_=t0;}
 double NumericalMetricLorene::horizon() const {return horizon_;}
 void NumericalMetricLorene::horizon(double r0) {horizon_=r0;}
 
-vector<double> NumericalMetricLorene::refineIntegStep() const {
-  vector<double> v (2, r_refine_); // set both elements to r_refine_
-  v[1] = h0_refine_;               // then set the second one to h0_refine_
-  return v;
-}
-void NumericalMetricLorene::refineIntegStep(vector<double> const &v) {
-  if (v.size() != 2)
-      GYOTO_ERROR("NumericalMetricLorene \"RefineIntegStep\" requires exactly 2 tokens");
-  r_refine_  = v[0];
-  h0_refine_ = v[1];
-}
-  
 void NumericalMetricLorene::circularVelocity(double const * coord, 
 					     double* vel,
 					     double dir) const {

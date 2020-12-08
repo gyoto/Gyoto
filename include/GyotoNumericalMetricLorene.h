@@ -59,9 +59,6 @@ class Gyoto::Metric::NumericalMetricLorene
                                 ///< acceleration vector
   int specify_marginalorbits_; ///< 1 if marginal orbits are specified in file
   double horizon_; ///< Value of horizon (or any innermost limit)
-  double r_refine_; ///< Refine integration below this r
-  double h0_refine_; ///< Imposed integration step for refined integration
-  int refine_; ///< 1 if refined integration needed
   double initial_time_; ///< Time at which (first) metric is given
   Lorene::Scalar** lapse_tab_;
   Lorene::Vector** shift_tab_;
@@ -114,8 +111,6 @@ class Gyoto::Metric::NumericalMetricLorene
   void mapEt(bool s);
   bool axisymCirc() const;
   void axisymCirc(bool s);
-  std::vector<double> refineIntegStep() const;
-  void refineIntegStep(std::vector<double> const&);
 
   Lorene::Vector** getShift_tab() const;
   Lorene::Scalar** getLapse_tab() const;
@@ -140,26 +135,6 @@ class Gyoto::Metric::NumericalMetricLorene
   virtual double getSpecificAngularMomentum(double rr) const;
   virtual double getPotential(double const pos[4], double l_cst) const;
   
-  /**
-   * Runge-Kutta integrator at order 4
-   */
-  virtual int myrk4(double tt, const double coord[7], double h, double res[7]) const;
-  virtual int myrk4(Worldline* line, state_t const &coord, 
-	    double h, state_t &res) const;
-
-  /**
-   * Adaptive Runge-Kutta
-   */
-  int myrk4_adaptive(Gyoto::Worldline* line, state_t const &coord, double lastnorm, double normref, state_t &coordnew, double h0, double& h1, double h1max) const;
-
-  int myrk4_adaptive(double tt, const double coor[7], double lastnorm, double normref, double coornew[7], const double cst[2], double& tdot_used, double h0, double& h1, double& hused, double h1max) const;
-  ///< With energy integration also, coor=[E,r,th,ph,dE/dt,Vr,Vth,Vph]
-
-  /**
-   * Reverse spatial vector if going through 0, without horizon
-   */
-  void reverseR(double tt, double coord[7]) const;
-
   /**
    * Compute lapse and shift at given coordinates
    */
@@ -206,13 +181,7 @@ class Gyoto::Metric::NumericalMetricLorene
   int christoffel(double dst[4][4][4],
 		  const double coord[4],
 		  const int indice_time) const;
-  /**
-   * \brief 3-Christoffels
-   */
-  double christoffel3(const double coord[3], const int indice_time,
-		      const int ii, const int jj, const int kk) const ;
 
-  void setParticleProperties(Worldline * line, const double coord[8]) const;
 
   /**
    * \brief 3rd order interpolation routine
