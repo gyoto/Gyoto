@@ -69,9 +69,6 @@ class Gyoto::Astrobj::ThickDisk
   double temperatureAtInnerRadius_; ///< electron temperature at inner radius (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
   double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
-  double veloZAMONorm_; ///< ZAMO-observed velocity norm below ISCO
-  double Vphi_over_V_; ///< Vphi/V where V is the ZAMO-observed velocity below ISCO expressed in a unit-vector basis
-  double radius_interpol_vphi_; ///< radius at which Vphi/V reaches zero (typically the horizon); Vphi/V is interpolated between 1 at ISCO and 0 at this radius
 
   // Constructors - Destructor
   // -------------------------
@@ -103,10 +100,6 @@ class Gyoto::Astrobj::ThickDisk
   double temperatureSlope()const;
   void magnetizationParameter(double rr);
   double magnetizationParameter()const;
-  void velocityBelowIsco(std::vector<double> const &v);
-  std::vector<double> velocityBelowIsco() const;
-  void velocityBelowIscoInterpol(std::vector<double> const &v);
-  std::vector<double> velocityBelowIscoInterpol() const;
   
  public:
   using Generic::metric;

@@ -54,17 +54,6 @@ GYOTO_PROPERTY_DOUBLE(ThickDisk,
 GYOTO_PROPERTY_DOUBLE(ThickDisk, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(ThickDisk, MagnetizationParameter,
 		      magnetizationParameter)
-GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VelocityBelowIsco, velocityBelowIsco,
-			     "this provides the ZAMO-observed velocity norm V"
-			     " (first quantity) and the ratio Vphi/V"
-			     " in a unit-vector basis (second quantity)")
-GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VelocityBelowIscoInterpol,
-			     velocityBelowIscoInterpol,
-			     "this provides the ZAMO-observed velocity norm V"
-			     " (first quantity), and interpolates the ratio"
-			     " Vphi/V between 1 at ISCO, and 0 at some"
-			     " provided radius (second quantity,"
-			     " typically the horizon)")
 GYOTO_PROPERTY_END(ThickDisk, Standard::properties)
 
 // ACCESSORS
@@ -126,27 +115,6 @@ void ThickDisk::magnetizationParameter(double rr) {
   magnetizationParameter_=rr;}
 double ThickDisk::magnetizationParameter()const{
   return magnetizationParameter_;}
-void ThickDisk::velocityBelowIsco(std::vector<double> const &v) {
-  veloZAMONorm_ = v[0];
-  Vphi_over_V_ = v[1];
-}
-std::vector<double> ThickDisk::velocityBelowIsco() const {
-  std::vector<double> v (2, 0.);
-  v[0] = veloZAMONorm_;
-  v[1] = Vphi_over_V_;
-  return v;
-}
-void ThickDisk::velocityBelowIscoInterpol(std::vector<double> const &v) {
-  veloZAMONorm_ = v[0];
-  radius_interpol_vphi_ = v[1];
-}
-std::vector<double> ThickDisk::velocityBelowIscoInterpol() const {
-  std::vector<double> v (2, 0.);
-  v[0] = veloZAMONorm_;
-  v[1] = radius_interpol_vphi_;
-  return v;
-}
-
 //
 
 ThickDisk::ThickDisk() :
@@ -154,10 +122,7 @@ ThickDisk::ThickDisk() :
   thickDiskInnerRadius_(2.),
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
-  magnetizationParameter_(1.),
-  veloZAMONorm_(0.5),
-  Vphi_over_V_(1.),
-  radius_interpol_vphi_(-1.)
+  magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -170,9 +135,6 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  veloZAMONorm_(o.veloZAMONorm_),
-  Vphi_over_V_(o.Vphi_over_V_),
-  radius_interpol_vphi_(o.radius_interpol_vphi_),
   spectrumThermalSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
@@ -371,72 +333,29 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
   
   //cout << "risco= " << risco << endl;
 
-  if (pos[1] > risco){
+  double rr = pos[1];
+  if (rr > risco){
     // Keplerian velocity above ISCO
     gg_ -> circularVelocity(pos, vel, 1);
-    //double gtt=gg_->gmunu(pos,0,0),
-    //  ut = sqrt(-1./gtt);
-    // TEST
-    //vel[0]=ut;
-    //vel[1]=0.;
-    //vel[2]=0.;
-    //vel[3]=0.;
-    //cout << "u2= " << gg_ -> ScalarProd(pos,vel,vel) << endl;
   }else{
-
-    // Fix velo at velo_Kep(ISCO):
-    //double posisco[4]={0.,risco,M_PI/2.,0.};
-    //gg_ -> circularVelocity(posisco, vel, 1);
-
-    // Choose velo:
-    double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
-      gtp = gg_->gmunu(pos,0,3), grr = gg_->gmunu(pos,1,1);
-    double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
-      uphiZAMO = -utZAMO*gtp/gpp;
-    //cout << "ZAMO=" << gtt*utZAMO*utZAMO + 2*gtp*utZAMO*uphiZAMO + gpp*uphiZAMO*uphiZAMO << endl;
-
-    double V = veloZAMONorm_; // velo norm as observed by ZAMO
-    double Gamma = 1./sqrt(1.-V*V);
-    double Vphi_over_V = Vphi_over_V_; // no interpolation, fix Vphi/V
-    if (radius_interpol_vphi_!=-1.){ // interpolate Vphi/V if radius_* provided
-      double rr = pos[1];
-      Vphi_over_V = (rr-radius_interpol_vphi_)/(risco-radius_interpol_vphi_);
-    }
-
-    double Vphi = Vphi_over_V*V / sqrt(gpp),
-      Vr = sqrt(1-Vphi_over_V*Vphi_over_V)*V / sqrt(grr);
-    
-    vel[0] = Gamma*utZAMO;
-    vel[1] = -Gamma*Vr; // minus sign coz matter is going towards BH
+    // Formulas from Cunnigham 1975 insuring continuity of 4-vel at isco
+    // This is KerrBL specific, check that the metric is KerrBL;
+    // no clear prescription for other metrics
+    string kin = gg_->kind();
+    if (kin != "KerrBL")
+      GYOTO_ERROR("ThickDisk: KerrBL needed below ISCO!");
+    double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+    double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+      gamma_ms = sqrt(1.-2./(3.*risco)),
+      delta = rr*rr - 2.*rr + SPIN*SPIN,
+      hh = (2.*rr - SPIN*lambda_ms)/delta;
+    vel[0] = gamma_ms*(1.+2./rr*(1.+hh));
+    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5);
     vel[2] = 0.;
-    vel[3] = Gamma*(uphiZAMO + Vphi);
+    vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
 
-    //cout << "V2= " << gg_->gmunu(pos,1,1)*Vr*Vr + gg_->gmunu(pos,3,3)*Vphi*Vphi << endl;
     //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
-    
-    
-    // TEST
-    //vel[0]=1.;
-    //vel[1]=0.;
-    //vel[2]=0.;
-    //vel[3]=0.;
 
-    
-    // // radial plunge below ISCO
-    // // this is to be generalized!
-    // double ur=1.;
-    // double gtt=gg_->gmunu(pos,0,0),
-    //   grr=gg_->gmunu(pos,1,1);
-    // double ut2=(-1.-grr*ur*ur)/gtt;
-    // if (ut2 <0.) {
-    //   cerr << "At r,th= " << pos[1] << " " << pos[2] << endl;
-    //   throwError("In ThickDisk::getVelocity "
-    // 		 " velocity ill-defined here, change ur?");
-    // }
-    // vel[0]=1.; // TEST sqrt(ut2); 
-    // vel[1]=0.; // TEST ur;
-    // vel[2]=0.;
-    // vel[3]=0.;
   }
 }
 
