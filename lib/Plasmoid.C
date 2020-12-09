@@ -112,10 +112,10 @@ void Plasmoid::radiativeQ(double Inu[], // output
   GYOTO_DEBUG << endl;
 # endif
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
-  double t0 = pos_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
+  double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
   double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
-  double t_inj=radius("cm")/vrec_cgs/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
+  double t_inj=radius("cm")/(10.*vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
   //cout << "tcur=" << tcur << ", t0=" << t0 << ", t_inj=" << t_inj << endl;
 
   //double number_density_ini=numberDensity_cgs_; // number density of e- which follow the initial thermal distribution, before the reconnection
@@ -232,12 +232,12 @@ void Plasmoid::radiativeQ(double Inu[], // output
 }
 
 void Plasmoid::motionType(std::string const type){
-  if (type=="Helicoidal" || type=="Equatorial")
+  if (type=="Helical" || type=="Equatorial")
   {
     flag_=type;
   }
   else
-    GYOTO_ERROR("In Plasmoid::motonType: motion not recognized, please enter a valid motion type (Helicoidal or Equatorial)");
+    GYOTO_ERROR("In Plasmoid::motonType: motion not recognized, please enter a valid motion type (Helical or Equatorial)");
 }
 
 SmartPointer<Metric::Generic> Plasmoid::metric() const { return gg_; }
@@ -248,38 +248,38 @@ void Plasmoid::metric(SmartPointer<Metric::Generic> gg) {
 }
 
 void Plasmoid::initPosition(std::vector<double> const &v) {
-  pos_[0] = v[0];
-  pos_[1] = v[1];
-  pos_[2] = v[2];
-  pos_[3] = v[3];
+  posIni_[0] = v[0];
+  posIni_[1] = v[1];
+  posIni_[2] = v[2];
+  posIni_[3] = v[3];
   posSet=true;
 }
 
 std::vector<double> Plasmoid::initPosition() const {
   std::vector<double> v (4, 0.);
-  v[0] = pos_[0];
-  v[1] = pos_[1];
-  v[2] = pos_[2];
-  v[3] = pos_[3];
+  v[0] = posIni_[0];
+  v[1] = posIni_[1];
+  v[2] = posIni_[2];
+  v[3] = posIni_[3];
   return v;
 }
 
 void Plasmoid::initVelocity(std::vector<double> const &v) {
   if (!posSet)
   	GYOTO_ERROR("In Plasmoid::initVelocity initial Position not defined");
-  vel_[1] = v[0];
-  vel_[2] = v[1];
-  vel_[3] = v[2];
-  vel_[0] = 1.;
+  fourveldt_[1] = v[0];
+  fourveldt_[2] = v[1];
+  fourveldt_[3] = v[2];
+  fourveldt_[0] = 1.;
 
   double sum = 0;
   double g[4][4];
 
-  gg_->gmunu(g, pos_);
+  gg_->gmunu(g, posIni_);
 
   for (int i=0;i<4;++i) {
     for (int j=0;j<4;++j) {
-      sum+=g[i][j]*vel_[i]*vel_[j];
+      sum+=g[i][j]*fourveldt_[i]*fourveldt_[j];
     }
   }
   if (sum>=0)
@@ -289,33 +289,33 @@ void Plasmoid::initVelocity(std::vector<double> const &v) {
 
 std::vector<double> Plasmoid::initVelocity() const {
   std::vector<double> v (3, 0.);
-  v[0] = vel_[1];
-  v[1] = vel_[2];
-  v[2] = vel_[3];
+  v[0] = fourveldt_[1];
+  v[1] = fourveldt_[2];
+  v[2] = fourveldt_[3];
   return v;
 }
 
 void Plasmoid::initCoord(std::vector<double> const &v) {
-  pos_[0] = v[0];
-  pos_[1] = v[1];
-  pos_[2] = v[2];
-  pos_[3] = v[3];
-  vel_[0] = v[4];
-  vel_[1] = v[5];
-  vel_[2] = v[6];
-  vel_[3] = v[7];
+  posIni_[0] = v[0];
+  posIni_[1] = v[1];
+  posIni_[2] = v[2];
+  posIni_[3] = v[3];
+  fourveldt_[0] = v[4];
+  fourveldt_[1] = v[5];
+  fourveldt_[2] = v[6];
+  fourveldt_[3] = v[7];
 }
 
 std::vector<double> Plasmoid::initCoord() const {
   std::vector<double> v (8, 0.);
-  v[0] = pos_[0];
-  v[1] = pos_[1];
-  v[2] = pos_[2];
-  v[3] = pos_[3];
-  v[4] = vel_[0];
-  v[5] = vel_[1];
-  v[6] = vel_[2];
-  v[7] = vel_[3];
+  v[0] = posIni_[0];
+  v[1] = posIni_[1];
+  v[2] = posIni_[2];
+  v[3] = posIni_[3];
+  v[4] = fourveldt_[0];
+  v[5] = fourveldt_[1];
+  v[6] = fourveldt_[2];
+  v[7] = fourveldt_[3];
   return v;
 }
 
@@ -389,37 +389,37 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
           double * const xprime, double * const yprime, double * const zprime){
   // this yields the position of the center of the UnifSphere
   // at time t
-  // vel_ is the initial 3-velocity dxi/dt
+  // fourveldt_ is the initial 3-velocity dxi/dt
   // vel is the 4-velocity dxnu/dtau
 
   if (n_dates!=1)
     GYOTO_ERROR("In Plasmoid::getCartesian n_dates!=1");
 
   if (flag_=="None")
-      GYOTO_ERROR("In Plasmoid::getCartesian Motion not defined; motionType('Helicoidal' or 'Equatorial'");
+      GYOTO_ERROR("In Plasmoid::getCartesian Motion not defined; motionType('Helical' or 'Equatorial'");
 
   double tt=dates[0];
   
   double r, theta, phi; // spherical coordinates
   double vel[4];
   
-  if (flag_=="Helicoidal") // Helicoidal ejection
+  if (flag_=="Helical") // Helical ejection
   {
-    r = pos_[1]+vel_[1]*(tt-pos_[0]);
-    theta = pos_[2];
-    phi = pos_[3] + pos_[1]*pos_[1]*vel_[3]/vel_[1]*(pow(pos_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
+    r = posIni_[1]+fourveldt_[1]*(tt-posIni_[0]);
+    theta = posIni_[2];
+    phi = posIni_[3] + posIni_[1]*posIni_[1]*fourveldt_[3]/fourveldt_[1]*(pow(posIni_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
     //cout << phi << endl;
 
   }
   else // Equatorial motion (Keplerian orbit)
   {
-    if (pos_[2]!=M_PI/2.)
+    if (posIni_[2]!=M_PI/2.)
       cout << "Warning input theta value incompatible with 'Equatorial' motion. Theta fixed to pi/2." << endl;
-    getVelocity(pos_, vel);
+    getVelocity(posIni_, vel);
 
-    r = pos_[1];
+    r = posIni_[1];
     theta = M_PI/2.;
-    phi = pos_[3] + vel[3]/vel[0]*(tt-pos_[0]);
+    phi = posIni_[3] + vel[3]/vel[0]*(tt-posIni_[0]);
 
   }
   // Convertion into cartesian coordinates
@@ -439,14 +439,14 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
   if (!gg_)
     GYOTO_ERROR("In Plasmoid::getVelocity Metric not set");
   if (flag_=="None")
-    GYOTO_ERROR("In Plasmoid::getVelocity Motion not defined; motionType('Helicoidal' or 'Equatorial'");
+    GYOTO_ERROR("In Plasmoid::getVelocity Motion not defined; motionType('Helical' or 'Equatorial'");
   
-  if (flag_=="Helicoidal") // Helicoidal case
+  if (flag_=="Helical") // Helical case
   {
   	vel[0] = 1.;
-	vel[1] = vel_[1];
+	vel[1] = fourveldt_[1];
 	vel[2] = 0.;
-	vel[3] = vel_[3]*pow(pos_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
+	vel[3] = fourveldt_[3]*pow(posIni_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
 	gg_->normalizeFourVel(pos, vel);
 
   }

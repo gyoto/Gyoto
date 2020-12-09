@@ -58,8 +58,8 @@ class Gyoto::Astrobj::Plasmoid :
   // -----
  private:
   SmartPointer<Metric::Generic> gg_; // metric
-  double pos_[4]; // 4-position of the plasmoid in spherical coordinates
-  double vel_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
+  double posIni_[4]; // 4-position of the plasmoid in spherical coordinates
+  double fourveldt_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
