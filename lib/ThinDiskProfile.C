@@ -150,7 +150,7 @@ void ThinDiskProfile::processHitQuantities(Photon* ph,
       if (max_cross_eqplane==DBL_MAX) cout << "WARNING: in ThinDiskProfile::process: max_cross_eqplane is DBL_MAX and probably should not be" << endl;
       int nb_cross_eqplane = ph->nb_cross_eqplane();
       double fudge_Gralla=1.;
-      if (nb_cross_eqplane>0) fudge_Gralla=1.5;
+      //if (nb_cross_eqplane>0) fudge_Gralla=1.5;
       inc = fudge_Gralla
 	* (emission(ggredm1, dsem, coord_ph_hit, coord_obj_hit))
 	* (ph -> getTransmission(size_t(-1)))
