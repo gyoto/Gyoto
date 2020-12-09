@@ -446,7 +446,7 @@ AM_LDFLAGS = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC) \
 	$(am__append_3)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) $(CXXFLAGS_EXEC)
 CLEANFILES = $(am__append_6) $(CHECK_RESULTS) $(CHECK_MPI_RESULTS) \
-	$(am__append_8)
+	$(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS) $(am__append_8)
 dist_man_MANS = $(am__append_2) $(am__append_5)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
@@ -459,9 +459,12 @@ gyoto_mpi_worker_@sovers@_LDFLAGS = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynami
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
-CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(am__append_7)
+CHECK_WIP_RESULTS := $(filter %-wip.fits, $(CHECK_RESULTS_ALL))
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS) \
+	$(am__append_7)
 CHECK_RESULTS = $(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
+CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
 CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
 CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
@@ -901,10 +904,22 @@ check-nompi-clean:
 check-mpi-clean:
 	rm -f $(CHECK_MPI_RESULTS)
 
+check-wip-nompi-clean:
+	rm -f $(CHECK_WIP_RESULTS)
+
+check-wip-mpi-clean:
+	rm -f $(CHECK_WIP_MPI_RESULTS)
+
 @BUILD_GYOTO_TRUE@$(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 @BUILD_GYOTO_TRUE@	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@$(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
+@BUILD_GYOTO_TRUE@	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+@BUILD_GYOTO_TRUE@$(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
+@BUILD_GYOTO_TRUE@	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+@BUILD_GYOTO_TRUE@$(CHECK_WIP_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
 @BUILD_GYOTO_TRUE@	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@check-nompi-compute: $(CHECK_RESULTS)
@@ -913,7 +928,14 @@ check-mpi-clean:
 @BUILD_GYOTO_TRUE@check-mpi-compute: $(CHECK_MPI_RESULTS)
 @BUILD_GYOTO_TRUE@check-mpi: check-mpi-clean check-mpi-compute
 
+@BUILD_GYOTO_TRUE@check-wip-nompi-compute: $(CHECK_WIP_RESULTS)
+@BUILD_GYOTO_TRUE@check-wip-nompi: check-wip-nompi-clean check-wip-nompi-compute
+
+@BUILD_GYOTO_TRUE@check-wip-mpi-compute: $(CHECK_WIP_MPI_RESULTS)
+@BUILD_GYOTO_TRUE@check-wip-mpi: check-wip-mpi-clean check-wip-mpi-compute
+
 @BUILD_GYOTO_TRUE@check: check-nompi
+@BUILD_GYOTO_TRUE@check-wip: check-wip-nompi
 
 # make check-lorene check-lorene-mpi
 # Will

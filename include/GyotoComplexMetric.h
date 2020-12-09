@@ -28,6 +28,7 @@
 #define __GyotoComplexMetric_H_
 
 #include <GyotoMetric.h>
+#include <GyotoWIP.h>
 
 namespace Gyoto {
   namespace Metric { class Complex; }
@@ -43,7 +44,7 @@ namespace Gyoto {
  */
 
 class Gyoto::Metric::Complex
-: public Gyoto::Metric::Generic
+  : public Gyoto::Metric::Generic, Gyoto::WIP
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Complex>;
 

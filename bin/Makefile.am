@@ -39,14 +39,17 @@ export PATH := .:$(PATH)
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
-CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS)
+CHECK_WIP_RESULTS := $(filter %-wip.fits, $(CHECK_RESULTS_ALL))
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS)
 if !HAVE_2F1
 CHECK_RESULTS_SKIP += example-jet.fits example-torusjet.fits
 endif
 CHECK_RESULTS=$(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
+CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
+CLEANFILES += $(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS)
 
 MPIRUN = mpirun
 
@@ -60,11 +63,23 @@ check-nompi-clean:
 check-mpi-clean:
 	rm -f $(CHECK_MPI_RESULTS)
 
+check-wip-nompi-clean:
+	rm -f $(CHECK_WIP_RESULTS)
+
+check-wip-mpi-clean:
+	rm -f $(CHECK_WIP_MPI_RESULTS)
+
 if BUILD_GYOTO
 $(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
+	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+$(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
+	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+$(CHECK_WIP_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
 	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 check-nompi-compute: $(CHECK_RESULTS)
@@ -73,7 +88,14 @@ check-nompi: check-nompi-clean check-nompi-compute
 check-mpi-compute: $(CHECK_MPI_RESULTS)
 check-mpi: check-mpi-clean check-mpi-compute
 
+check-wip-nompi-compute: $(CHECK_WIP_RESULTS)
+check-wip-nompi: check-wip-nompi-clean check-wip-nompi-compute
+
+check-wip-mpi-compute: $(CHECK_WIP_MPI_RESULTS)
+check-wip-mpi: check-wip-mpi-clean check-wip-mpi-compute
+
 check: check-nompi
+check-wip: check-wip-nompi
 
 if HAVE_LORENE
 # make check-lorene check-lorene-mpi

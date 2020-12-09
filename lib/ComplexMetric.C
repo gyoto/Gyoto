@@ -29,6 +29,7 @@ using namespace Gyoto;
 using namespace Gyoto::Metric;
 
 Complex::Complex() :
+  WIP("Gyoto::Metric::Complex"),
   Generic(GYOTO_COORDKIND_UNSPECIFIED, "Complex"),
   cardinal_(0),
   elements_(NULL)
