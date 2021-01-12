@@ -105,7 +105,7 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
    *
    * \param nu frequency in Hz
    */
-  double jnuCGS(double nu) const;
+  double jnuCGS(double nu, double* stokesQ=NULL, double* stokesU=NULL, double* stokesV=NULL) const;
  /**
    * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
    *

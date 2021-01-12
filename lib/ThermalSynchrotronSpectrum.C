@@ -98,7 +98,7 @@ double Spectrum::ThermalSynchrotron::operator()(double nu,
   return jnuCGS(nu)*dsCGS*exp(-alphanuCGS(nu)*dsCGS)*GYOTO_INU_CGS_TO_SI;
 }
 
-double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
+double Spectrum::ThermalSynchrotron::jnuCGS(double nu, double* stokesQ, double* stokesU, double* stokesV) const{
   //std::cout << "in jnu brems= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
   double Theta_elec
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
@@ -142,12 +142,34 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
     // Pandya, Zhang, Chandra, Gammie, 2016
     double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
       xx = nu/nus,
-      Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*	\
+      Js_I = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*	\
       pow(pow(xx,1./2.)+pow(2.,11./12.)*pow(xx,1./6.),2.);
     emis_synch = numberdensityCGS_*					\
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
       GYOTO_C_CGS*\
-      Js;
+      Js_I;
+
+      if (stokesQ!=NULL){
+        double Js_Q = -exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*  \
+      pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
+        *stokesQ = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_Q;
+      }
+      if (stokesQ!=NULL){
+        *stokesU = 0.;
+      }
+      if (stokesV!=NULL){
+        double Js_V = -exp(-pow(xx,1./3.))*(37.-87.*sin(angle_B_pem_-28./25.))/(100.*(Theta_elec+1.))*\
+      pow(1.+(pow(Theta_elec,3./5.)/25.+7./10.)*pow(xx,9./25.),5./3.);
+        *stokesV = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_V;
+      }
+
+
   }
 
   return emis_synch;
