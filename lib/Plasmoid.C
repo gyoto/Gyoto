@@ -46,7 +46,9 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitVelocity, initVelocity,
 GYOTO_PROPERTY_DOUBLE_UNIT(Plasmoid, NumberDensity, numberDensity,
                "cgs number density, constant through plasmoid")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, TemperatureReconnection, temperatureReconnection,
-               "Temperature de reconnection")
+               "Temperature of the plama at the end of the injection/heating phase")
+GYOTO_PROPERTY_DOUBLE(Plasmoid, TemperatureIni, temperatureIni,
+               "Temperature of the plama before reconnection")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, MagnetizationParameter,
               magnetizationParameter,
               "magnetization parameter")
@@ -60,6 +62,7 @@ Plasmoid::Plasmoid() :
   flag_("None"),
   numberDensity_cgs_(1.),
   temperatureReconnection_(1.),
+  temperatureIni_(1.),
   magnetizationParameter_(1.),
   PLIndex_(3.5),
   posSet(false),
@@ -80,6 +83,7 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   flag_(orig.flag_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   temperatureReconnection_(orig.temperatureReconnection_),
+  temperatureIni_(orig.temperatureIni_),
   magnetizationParameter_(orig.magnetizationParameter_),
   PLIndex_(orig.PLIndex_),
   posSet(orig.posSet),
@@ -114,20 +118,19 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
   double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
-  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
-  double t_inj=radius("cm")/(10.*vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
-  //cout << "tcur=" << tcur << ", t0=" << t0 << ", t_inj=" << t_inj << endl;
+  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5); //0.1 v_A
+  double t_inj=radius("cm")/(vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection
+  //cout << "t_inj, v_rec :" << t_inj << ", " << vrec_cgs/GYOTO_C_CGS << "c" << endl;
 
-  //double number_density_ini=numberDensity_cgs_; // number density of e- which follow the initial thermal distribution, before the reconnection
-  double number_density_rec=0.; // number density of e- which follow the kappa distribution after the reconnection
-
+  double number_density_rec=0.; // number density of "reconnected" e-
   double n_dot=numberDensity_cgs_*vrec_cgs/radius("cm"); //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
-  //cout << "n_dot=" << n_dot << endl;
 
-  double tempRec=temperatureReconnection_;
+  double temperature=temperatureIni_; // temperature depends on tcur
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); //Dimentionless temperature of the population of e- at time tcur
   double thetae_rec = GYOTO_BOLTZMANN_CGS*temperatureReconnection_
-    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); //Dimentionless temperature of the population of e- after the reconnection
-  double gamma_min=3.*thetae_rec;
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+  //double gamma_min=3.*thetae_rec;
 
   
   double BB = sqrt(4.*M_PI*magnetizationParameter_
@@ -138,10 +141,10 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
   double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
   double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
-  //cout << "AA=" << AA << ", B=" << BB << endl;
+  //cout << "AA=" << AA << endl;
 
-  double gamma_max = DBL_MAX;
-  double gamma_max_0 = DBL_MAX;
+  //double gamma_max = DBL_MAX;
+  //double gamma_max_0 = DBL_MAX;
  
   // COMPUTE VALUES IN FUNCTION OF PHASE
   if (tcur<=t0)
@@ -151,23 +154,23 @@ void Plasmoid::radiativeQ(double Inu[], // output
   else if (tcur<=t0+t_inj) // HEATING TIME
   {
     number_density_rec=n_dot*(tcur-t0)*60.;
+
+    temperature=(temperatureReconnection_ - temperatureIni_)*tcur/t_inj; // linear increase of T thanks to ohmic heating
+    thetae=GYOTO_BOLTZMANN_CGS*temperature/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // computation of thetae from temperature
   }
   else // COOLING TIME
   {
     // evolution of the number densities
     number_density_rec=n_dot*t_inj*60.;
     
-    thetae_rec=thetae_rec*pow(1+AA*thetae_rec*(tcur-(t_inj+t0))*60.,-1.);
-    tempRec=thetae_rec*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS/GYOTO_BOLTZMANN_CGS;
+    thetae=thetae_rec*pow(1+3.*AA*thetae_rec*(tcur-(t_inj+t0))*60.,-1.);
+    temperature=thetae_rec*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS/GYOTO_BOLTZMANN_CGS;
 
     /*
     gamma_max_0 = 1.e10; //pow(DBL_MIN*(4.*M_PI*(1.-pow(DBL_MAX,1.-(kappaIndex-1.))))/((kappaIndex-1.)-1.),-1./(kappaIndex-1.));
     gamma_max = max(gamma_max_0*pow(1+AA*gamma_max_0*(tcur-(t_inj+t0)),-1.),gamma_min);
     */
   }
-  
-  //cout << "n/n0=" << number_density_rec/numberDensity_cgs_ << endl;
-  //cout << "thetae=" << thetae_rec <<endl;
 
   // Defining jnus, anus
   double jnu_synch[nbnu];
@@ -194,10 +197,10 @@ void Plasmoid::radiativeQ(double Inu[], // output
                   nu_ems,nbnu);
   */
   
-  double besselK2 = Gyoto::bessk(2,thetae_rec);
+  double besselK2 = Gyoto::bessk(2,thetae);
 
   // THERMAL SYNCHRO
-  spectrumThermalSynch_->temperature(tempRec);
+  spectrumThermalSynch_->temperature(temperature);
   spectrumThermalSynch_->numberdensityCGS(number_density_rec);
   spectrumThermalSynch_->angle_B_pem(0.);
   spectrumThermalSynch_->cyclotron_freq(nu0);
@@ -389,7 +392,7 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
           double * const xprime, double * const yprime, double * const zprime){
   // this yields the position of the center of the UnifSphere
   // at time t
-  // fourveldt_ is the initial 3-velocity dxi/dt
+  // fourveldt_ is the initial 4-velocity dxi/dt
   // vel is the 4-velocity dxnu/dtau
 
   if (n_dates!=1)
@@ -408,7 +411,6 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
     r = posIni_[1]+fourveldt_[1]*(tt-posIni_[0]);
     theta = posIni_[2];
     phi = posIni_[3] + posIni_[1]*posIni_[1]*fourveldt_[3]/fourveldt_[1]*(pow(posIni_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
-    //cout << phi << endl;
 
   }
   else // Equatorial motion (Keplerian orbit)

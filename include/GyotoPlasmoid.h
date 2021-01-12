@@ -46,7 +46,7 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::Plasmoid
- * \brief Plasmoid Plasmoid of plasma emitting synchrotron, following 
+ * \brief Plasmoid Sphere of plasma emitting synchrotron, following 
  * a trajectory specified in getVelocity (non-geodesic a priori)
  *
  */
@@ -62,6 +62,7 @@ class Gyoto::Astrobj::Plasmoid :
   double fourveldt_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
+  double temperatureIni_; ///< temperature of plasmoid before reconnection
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
   double PLIndex_; ///< PL Index
@@ -107,6 +108,8 @@ class Gyoto::Astrobj::Plasmoid :
   void numberDensity(double dens, std::string const &unit);
   double temperatureReconnection() const;
   void temperatureReconnection(double tt);
+  double temperatureIni() const;
+  void temperatureIni(double tt);
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
   void PLIndex(double kk);
