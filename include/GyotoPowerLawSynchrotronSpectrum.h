@@ -110,13 +110,13 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
    *
    * \param nu frequency in Hz
    */
-  double jnuCGS(double nu, double* stokesQ=NULL, double* stokesU=NULL, double* stokesV=NULL) const;
+  double jnuCGS(double nu) const;
  /**
    * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
    *
    * \param nu frequency in Hz
    */
-  double alphanuCGS(double nu, double* stokesQ=NULL, double* stokesU=NULL, double* stokesV=NULL) const;
+  double alphanuCGS(double nu) const;
 
   /**
    * Returns the emission and absorption coef in SI

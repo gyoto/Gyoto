@@ -98,14 +98,23 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
   void angle_averaged(bool ang);
   double besselK2() const;
   void besselK2(double bessel);
-  
+ 
  /**
    * Returns the emission coefficient j_nu in cgs units
    * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
    *
    * \param nu frequency in Hz
    */
-  double jnuCGS(double nu, double* stokesQ=NULL, double* stokesU=NULL, double* stokesV=NULL) const;
+  double jnuCGS(double nu) const;
+ 
+ /**
+   * Returns the 4 emission Stokes coefficient IQUV in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   */
+  double* jnuStokesCGS(double nu) const;
+
  /**
    * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
    *
@@ -113,7 +122,14 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
    */
   double alphanuCGS(double nu) const;
 
-   /**
+ /**
+   * Returns the 4 absorption Stokes coefficient IQUV in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   */
+  double* alphanuStokesCGS(double nu) const;
+
+ /**
    * Returns the emission and absorption coef in SI
    *
    */
@@ -121,7 +137,16 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
 		    double anu[], // output
 		    double const nu_ems[],
 		    size_t nbnu
-		    ) ;
+        ) ;
+  /**
+  *
+  * Return the 4 emission and absorption Stockes coefficient in SI
+  */
+  void radiativeQ(double jnu[][4], // output
+        double anu[][4], // output
+        double const nu_ems[],
+        size_t nbnu
+        ) ;
 
 };
 
