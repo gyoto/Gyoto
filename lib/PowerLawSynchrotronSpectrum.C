@@ -102,7 +102,7 @@ double Spectrum::PowerLawSynchrotron::operator()(double nu,
   return jnuCGS(nu)*dsCGS*exp(-alphanuCGS(nu)*dsCGS)*GYOTO_INU_CGS_TO_SI;
 }
 
-double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
+double Spectrum::PowerLawSynchrotron::jnuCGS(double nu, double* stokesQ, double* stokesU, double* stokesV) const{
   double emis_synch = 0.;
 
   if (usePMT83==1){
@@ -127,7 +127,7 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
     // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
     
     double sinth = sin(angle_B_pem_);
-    double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/	\
+    double Js_I = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/	\
       (2.*(PLindex_+1.)*(pow(gamma_min_,1.-PLindex_) -
 			 pow(gamma_max_,1.-PLindex_))) * \
       tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *	\
@@ -135,13 +135,31 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
     emis_synch = numberdensityCGS_*					\
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
       GYOTO_C_CGS*\
-      Js;
+      Js_I;
+
+      if (stokesQ!=NULL){
+        double Js_Q = -Js_I*(PLindex_+1.)/(PLindex_+7./3.);
+        *stokesQ = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_Q;
+      }
+      if (stokesU!=NULL){
+        *stokesU = 0.;
+      }
+      if (stokesV!=NULL){
+        double Js_V = -Js_I*171./250.*pow(PLindex_,0.5)/tan(angle_B_pem_)*pow(nu/(3.*cyclotron_freq_*sinth),-0.5);
+        *stokesV = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_V;
+      }
   }
   
   return emis_synch;
 }
 
-double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
+double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu, double* stokesQ, double* stokesU, double* stokesV) const{
   double abs_synch = 0.;
     
   if (usePMT83==1){
@@ -170,6 +188,25 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
       (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
       As;
+
+    if (stokesQ!=NULL){
+        double Js_Q = -Js_I*3./4.*pow(PLindex_-1.,43./500.);
+        *stokesQ = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_Q;
+      }
+      if (stokesU!=NULL){
+        *stokesU = 0.;
+      }
+      if (stokesV!=NULL){
+        double Js_V = -Js_I*7./4.*pow(0.71*PLindex_+22./625.,197./500.)*\
+          pow(pow(sinth,-48./25.)-1.,64./125.)*pow(nu/(cyclotron_freq_*sinth),-0.5);
+        *stokesV = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js_V;
+      }
   }
   
   return abs_synch;
