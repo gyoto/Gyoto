@@ -46,7 +46,7 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::Plasmoid
- * \brief Plasmoid Sphere of plasma emitting synchrotron, following 
+ * \brief Plasmoid Shere of plasma emitting synchrotron, following 
  * a trajectory specified in getVelocity (non-geodesic a priori)
  *
  */
@@ -62,13 +62,13 @@ class Gyoto::Astrobj::Plasmoid :
   double fourveldt_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
-  double temperatureIni_; ///< temperature of plasmoid before reconnection
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
   double PLIndex_; ///< PL Index
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
   //SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // thermal-distribution synchrotron spectrum at low Temperature
   bool posSet;
+  double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
 
   // Constructors - Destructor
   // -------------------------
@@ -77,8 +77,8 @@ class Gyoto::Astrobj::Plasmoid :
 
  /**
   * Create Plasmoid object with undefined initial conditions. One needs to
-  * set the coordinate system, the metric, and the initial position
-  * and velocity before integrating the orbit. setInititialCondition()
+  * set the coordinate system, the metric, the type of motion, and the initial position
+  * and velocity before integrating the orbit. initCoord()
   * can be used for that.
   */
   Plasmoid(); ///< Default constructor
@@ -108,17 +108,17 @@ class Gyoto::Astrobj::Plasmoid :
   void numberDensity(double dens, std::string const &unit);
   double temperatureReconnection() const;
   void temperatureReconnection(double tt);
-  double temperatureIni() const;
-  void temperatureIni(double tt);
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
   void PLIndex(double kk);
   double PLIndex() const;
+  void radiusMax(double rr);
+  double radiusMax() const;
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
-			  double const coord_obj[8]=NULL) const ;
+			  double const coord_obj[8]=NULL) const;
 
   void getCartesian(double const * const dates, size_t const n_dates,
           double * const x, double * const y,
@@ -127,6 +127,9 @@ class Gyoto::Astrobj::Plasmoid :
           double * const zprime=NULL);
 
   void getVelocity(double const pos[4], double vel[4]);
+
+  int Impact(Gyoto::Photon* ph, size_t index,
+         Astrobj::Properties *data=NULL);
 
 };
 

@@ -148,46 +148,9 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
       GYOTO_C_CGS*\
       Js;
-    }
+  }
 
   return emis_synch;
-}
-
-double* Spectrum::ThermalSynchrotron::jnuStokesCGS(double nu) const{
-  //std::cout << "in jnu brems= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
-  double Theta_elec
-    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-
-  //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;  
-  
-  // Pandya, Zhang, Chandra, Gammie, 2016
-  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
-    xx = nu/nus;
-
-  static double jnuStokes[4]={0.};
-
-  double Js_I = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
-    pow(pow(xx,1./2.)+pow(2.,11./12.)*pow(xx,1./6.),2.);
-  jnuStokes[0] = numberdensityCGS_*         \
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*\
-    Js_I; // Stokes I
-
-  double Js_Q = -exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*  \
-    pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
-  jnuStokes[1] = numberdensityCGS_*         \
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*Js_Q; //Stokes Q
-  
-  jnuStokes[2] = 0.; // Stokes U
-
-  double Js_V = -exp(-pow(xx,1./3.))*(37.-87.*sin(angle_B_pem_-28./25.))/(100.*(Theta_elec+1.))*\
-    pow(1.+(pow(Theta_elec,3./5.)/25.+7./10.)*pow(xx,9./25.),5./3.);
-  jnuStokes[3] = numberdensityCGS_*         \
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*Js_V; // Stokes V
-
-  return jnuStokes;
 }
 
 double Spectrum::ThermalSynchrotron::alphanuCGS(double nu) const{
@@ -199,23 +162,6 @@ double Spectrum::ThermalSynchrotron::alphanuCGS(double nu) const{
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
-}
-
-double* Spectrum::ThermalSynchrotron::alphanuStokesCGS(double nu) const{
-  double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
-  double* jnuStokes=jnuStokesCGS(nu);
-  static double alphanuStokes[4]={0.};
-  if (BB==0.){
-    if (jnuStokes[0]==0.) return alphanuStokes;
-    else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
-  }
-  
-  
-  for (int ii=0; ii<4; ii++){
-    alphanuStokes[ii]=jnuStokes[ii]/BB; // Kirchhoff's law
-  }
-  
-  return alphanuStokes;
 }
 
 void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
@@ -268,72 +214,4 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
       alphanu[ii]=jnu[ii]/BB;
     
   }
-}
-
-void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[][4], // output
-            double alphanu[][4], // output
-            double const nu_ems[],
-            size_t nbnu
-            ) {
-  double Theta_elec
-    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-  
-  double thetae_min_ther = 0.01;
-  if (Theta_elec < thetae_min_ther) {
-    // Below this value, 0/0 problems arise. From mma it is clear
-    // that jnu goes quickly to 0 for thetae<0.01
-    for (size_t ii=0; ii< nbnu; ++ii){
-      for (int jj=0; jj<4; jj++){
-        jnu[ii][jj]=0.;
-        alphanu[ii][jj]=0.;
-      }
-    }
-    return;
-  }
-  
-  for (size_t ii=0; ii< nbnu; ++ii){
-    double nu = nu_ems[ii];
-    double BB  = (*spectrumBB_)(nu) ;
-    double* jnucur;
-    if (!angle_averaged_){
-      jnucur = jnuStokesCGS(nu);
-    }else{
-      double th0=0.01, thNm1=M_PI-0.01; // sin(theta) must never be 0
-      double hh=(thNm1-th0)/double(nstep_angint);
-      double theta=th0;
-      angle_B_pem(theta);
-
-      double* jnusinprev=jnuStokesCGS(nu), *jnusinnext=jnuStokesCGS(nu);
-      for (int kk=0;kk<4;kk++){
-        jnusinprev[kk]*=sin(theta);
-        jnusinnext[kk]=jnusinprev[kk];
-      }
-
-      for (int jj=1;jj<=nstep_angint;jj++){
-        theta=th0+double(jj)*hh;
-        angle_B_pem(theta);
-        jnusinnext=jnuStokesCGS(nu);
-        for (int kk=0;kk<4;kk++){
-          jnusinnext[kk]*=sin(theta);
-          jnucur[kk]+=0.5*0.5*hh*(jnusinprev[kk]+jnusinnext[kk]);
-          jnusinprev[kk]=jnusinnext[kk];
-        }        
-        //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
-      }
-    }
-      
-    
-    // OUTPUTS
-    for (int kk=0;kk<4;kk++){jnu[ii][kk]= jnucur[kk] * GYOTO_JNU_CGS_TO_SI ;}
-    if (BB==0.){
-      if (jnucur[0]==0.){
-        for (int kk=0;kk<4;kk++){alphanu[ii][kk]=0.;}
-      }
-      else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
-    }else{
-      for (int kk=0;kk<4;kk++){alphanu[ii][kk]=jnu[ii][kk]/BB;}
-    }
-    
-  }
-  
 }
