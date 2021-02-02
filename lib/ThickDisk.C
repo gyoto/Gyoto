@@ -333,30 +333,63 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
   
   //cout << "risco= " << risco << endl;
 
-  double rr = pos[1];
-  if (rr > risco){
-    // Keplerian velocity above ISCO
+  // Simply project onto the equat plane the current point,
+  // and use the standard thin-disk velocity there
+  double rcyl = pos[1]*sin(pos[2]); // cylindrical radius
+  if (rcyl > risco){
+    // Keplerian velocity corresponding to cyl radius when above ISCO
     gg_ -> circularVelocity(pos, vel, 1);
   }else{
-    // Formulas from Cunnigham 1975 insuring continuity of 4-vel at isco
-    // This is KerrBL specific, check that the metric is KerrBL;
-    // no clear prescription for other metrics
+    // When cyl radius is below ISCO:
+    // Impose that geodesic constant E keeps its value at rcyl=risco,
+    // and linearly interpolate L between its value at rcyl=risco
+    // and O at the horizon.
+    // See FV notes BelowISCO.pdf for details.
+    
     string kin = gg_->kind();
     if (kin != "KerrBL")
       GYOTO_ERROR("ThickDisk: KerrBL needed below ISCO!");
     double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-    double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
-      gamma_ms = sqrt(1.-2./(3.*risco)),
-      delta = rr*rr - 2.*rr + SPIN*SPIN,
-      hh = (2.*rr - SPIN*lambda_ms)/delta;
-    vel[0] = gamma_ms*(1.+2./rr*(1.+hh));
-    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5);
+    // metric coef at the actual point of emission
+    double guptt = gg_->gmunu_up(pos,0,0), guptp = gg_->gmunu_up(pos,0,3),
+      guppp = gg_->gmunu_up(pos,3,3), gtt = gg_->gmunu(pos,0,0),
+      gtp = gg_->gmunu(pos,0,3), gpp = gg_->gmunu(pos,3,3),
+      grr=gg_->gmunu(pos,1,1);
+    // compute geodesic constants E, L at the point P with same z as
+    // the point of emission, but with rcyl=risco
+    double zz = pos[1]*cos(pos[2]);
+    double theta_P = atan2(risco,zz);
+    double r_P = sqrt(risco*risco + zz*zz);
+    double pos_P[4] = {pos[0],r_P,theta_P,pos[3]};
+    double vel_P[4];
+    // Compute Keplerian 4vel at point P
+    gg_ -> circularVelocity(pos_P, vel_P, 1);
+    // Metric coef at point P
+    double gtt_P = gg_->gmunu(pos_P,0,0), gtp_P = gg_->gmunu(pos_P,0,3),
+      gpp_P = gg_->gmunu(pos_P,3,3);
+    // E and L at this point P
+    double Ems = -gtt_P*vel_P[0]-gtp_P*vel_P[3],
+      Lms = gtp_P*vel_P[0] + gpp_P*vel_P[3];
+    // We assume that E keeps the same value Ems for all rcyl<risco
+    // and that L is linearly interpolated between 0 at horizon
+    // and Lms ar risco
+    double rhor = 1. + sqrt(1. - SPIN*SPIN), Lhor = 0.; 
+    double Linterp = Lhor + (rcyl - rhor)/(risco - rhor)*(Lms-Lhor);
+    // u^t and u^phi at the emission point assuming same E=Ems and L=Linterp
+    double ut = -Ems*guptt + Linterp*guptp, up = -Ems*guptp + Linterp*guppp;
+    vel[0] = ut;
+    vel[1] = -sqrt((-1.-gtt*ut*ut-gpp*up*up-2.*gtp*ut*up)/grr);
     vel[2] = 0.;
-    vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
-
-    //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
-
+    vel[3] = up;
+    double u2 = gg_->ScalarProd(pos,vel,vel);
+    double tol=1e-5;
+    if (fabs(u2+1.)>tol) {
+      cerr << setprecision(10) << "u2= " << u2 << " " << fabs(u2+1.) << endl;
+      throwError("In ThickDisk: 4vel below "
+		 "ISCO not properly normalized!");
+    }
   }
+  //  cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
 }
 
 bool ThickDisk::isThreadSafe() const {
