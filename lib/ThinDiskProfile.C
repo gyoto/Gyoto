@@ -110,8 +110,8 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
       delta = rr*rr - 2.*rr + SPIN*SPIN,
       hh = (2.*rr - SPIN*lambda_ms)/delta;
 
-    vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is -Ems*g^{tt} + Lms*g^{tp}
-    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+    vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
     vel[2] = 0.;
     vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
 
