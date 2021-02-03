@@ -44,6 +44,7 @@
 #include "GyotoEquatorialHotSpot.h"
 #include "GyotoJet.h"
 #include "GyotoThickDisk.h"
+#include "GyotoSphericalAccretion.h"
 #include "GyotoBlob.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskProfile.h"
@@ -117,6 +118,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::Jet>));
   Astrobj::Register("ThickDisk",
 		    &(Astrobj::Subcontractor<Astrobj::ThickDisk>));
+  Astrobj::Register("SphericalAccretion",
+		    &(Astrobj::Subcontractor<Astrobj::SphericalAccretion>));
   Astrobj::Register("ThinDiskProfile",
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskProfile>));
   Astrobj::Register("Blob",
