@@ -56,7 +56,7 @@ GYOTO_PROPERTY_DOUBLE(Plasmoid, RadiusMax, radiusMax,
 		      "Maximun radius of the Plasmoid")
 GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 
-Plasmoid::Plasmoid() :
+Plasmoid::Plasmoid() :  
   UniformSphere("Plasmoid"),
   gg_(NULL),
   flag_("None"),
@@ -92,6 +92,16 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
 {
   //if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
+
+  if(orig.posIni_){
+	  double *posIni= new double[4];
+	  memcpy(posIni_,orig.posIni_, 4*sizeof(double));
+  }
+
+  if(orig.fourveldt_){
+	  double* fourveldt= new double[4];
+	  memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
+  }
 }
 
 
@@ -487,11 +497,11 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
     double tcur = p1[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; //tcur in min
 
 
-	if (tcur<=t0) radius(radiusMin);
+	/*if (tcur<=t0) radius(radiusMin);
 	else if (tcur<=t0+t_inj) radius(radiusMin+(radiusMax_-radiusMin)*(tcur-t0)/t_inj);
-	else radius(radiusMax_);
+	else radius(radiusMax_);*/
 	
-	//radius(radiusMax_);
+	radius(radiusMax_);
 
 	return Standard::Impact(ph, index, data);
 }
