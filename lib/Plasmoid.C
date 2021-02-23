@@ -88,6 +88,7 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   PLIndex_(orig.PLIndex_),
   posSet_(orig.posSet_),
   radiusMax_(orig.radiusMax_),
+  varyRadius_(orig.varyRadius_),
   //spectrumPLSynch_(NULL)
   spectrumThermalSynch_(NULL)
 {
@@ -411,7 +412,7 @@ double Plasmoid::radiusMax() const {
 void Plasmoid::Radius(std::string vary) {
   if (vary=="Constant" || vary=="Varying") varyRadius_=vary;
   else
-    GYOTO_ERROR("In Plasmoid::Radius: operation on radius not recognized, please enter a valid operation (Constant or Varying)");
+    GYOTO_ERROR("In Plasmoid::Radius operation on radius not recognized, please enter a valid operation (Constant or Varying)");
 }
 
 void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
@@ -495,25 +496,25 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
 
 	double radiusMin = 0.2;
 	double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
-    double t_inj=radiusMax_*GYOTO_G_OVER_C_SQUARE_CGS*gg_->mass()*1.e3/(vrec_cgs)/60.; //in min;
-    double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
+  double t_inj=radiusMax_*GYOTO_G_OVER_C_SQUARE_CGS*gg_->mass()*1.e3/(vrec_cgs)/60.; //in min;
+  double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
-    size_t sz = ph -> parallelTransport()?16:8;
-    state_t p1(sz);
-    ph->getCoord(index, p1);
-    double tcur = p1[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; //tcur in min
+  size_t sz = ph -> parallelTransport()?16:8;
+  state_t p1(sz);
+  ph->getCoord(index, p1);
+  double tcur = p1[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; //tcur in min
 
   
-  if (varyRadius_=="None")
-    GYOTO_ERROR("In Plasmoid::Impact operation on radius (Constant or Varying) not set. Use Radius(std::string)");
-
-  if (varyRadius_=="Varying")
+  if (varyRadius_== "Varying")
   {
     if (tcur<=t0) radius(radiusMin);
     else if (tcur<=t0+t_inj) radius(radiusMin+(radiusMax_-radiusMin)*(tcur-t0)/t_inj);
     else radius(radiusMax_);
   }
-	else radius(radiusMax_);
+	else if (varyRadius_== "Constant") radius(radiusMax_);
+  else{
+    GYOTO_ERROR("In Plasmoid::Impact operation on radius not recognized. Use Radius('Constant' or 'Varying')");
+  }
 
 	return Standard::Impact(ph, index, data);
 }
