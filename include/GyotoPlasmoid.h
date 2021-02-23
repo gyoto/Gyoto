@@ -67,8 +67,9 @@ class Gyoto::Astrobj::Plasmoid :
   double PLIndex_; ///< PL Index
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
   //SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // thermal-distribution synchrotron spectrum at low Temperature
-  bool posSet;
+  bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
+  std::string varyRadius_;
 
   // Constructors - Destructor
   // -------------------------
@@ -114,6 +115,7 @@ class Gyoto::Astrobj::Plasmoid :
   double PLIndex() const;
   void radiusMax(double rr);
   double radiusMax() const;
+  void Radius(std::string vary);
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,

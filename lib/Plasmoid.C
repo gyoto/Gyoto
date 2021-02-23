@@ -64,8 +64,9 @@ Plasmoid::Plasmoid() :
   temperatureReconnection_(1.),
   magnetizationParameter_(1.),
   PLIndex_(3.5),
-  posSet(false),
+  posSet_(false),
   radiusMax_(1.),
+  varyRadius_("None"),
   spectrumThermalSynch_(NULL)
   //spectrumPLSynch_(NULL)
 {
@@ -85,7 +86,7 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   temperatureReconnection_(orig.temperatureReconnection_),
   magnetizationParameter_(orig.magnetizationParameter_),
   PLIndex_(orig.PLIndex_),
-  posSet(orig.posSet),
+  posSet_(orig.posSet_),
   radiusMax_(orig.radiusMax_),
   //spectrumPLSynch_(NULL)
   spectrumThermalSynch_(NULL)
@@ -177,7 +178,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
     /*
     gamma_max_0 = 1.e10; //pow(DBL_MIN*(4.*M_PI*(1.-pow(DBL_MAX,1.-(kappaIndex-1.))))/((kappaIndex-1.)-1.),-1./(kappaIndex-1.));
-    gamma_max = max(gamma_max_0*pow(1+AA*gamma_max_0*(tcur-(t_inj+t0)),-1.),gamma_min);
+    gamma_max = max(gamma_max_0*pow(1.+AA*gamma_max_0*(tcur-(t_inj+t0)),-1.),gamma_min);
     */
   }
   //cout << radius() << endl;
@@ -265,7 +266,7 @@ void Plasmoid::initPosition(std::vector<double> const &v) {
   posIni_[1] = v[1];
   posIni_[2] = v[2];
   posIni_[3] = v[3];
-  posSet=true;
+  posSet_=true;
 }
 
 std::vector<double> Plasmoid::initPosition() const {
@@ -278,7 +279,7 @@ std::vector<double> Plasmoid::initPosition() const {
 }
 
 void Plasmoid::initVelocity(std::vector<double> const &v) {
-  if (!posSet)
+  if (!posSet_)
   	GYOTO_ERROR("In Plasmoid::initVelocity initial Position not defined");
   fourveldt_[1] = v[0];
   fourveldt_[2] = v[1];
@@ -407,6 +408,12 @@ double Plasmoid::radiusMax() const {
 	return radiusMax_;
 }
 
+void Plasmoid::Radius(std::string vary) {
+  if (vary=="Constant" || vary=="Varying") varyRadius_=vary;
+  else
+    GYOTO_ERROR("In Plasmoid::Radius: operation on radius not recognized, please enter a valid operation (Constant or Varying)");
+}
+
 void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
           double * const x, double * const y, double * const z, 
           double * const xprime, double * const yprime, double * const zprime){
@@ -496,12 +503,17 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
     ph->getCoord(index, p1);
     double tcur = p1[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; //tcur in min
 
+  
+  if (varyRadius_=="None")
+    GYOTO_ERROR("In Plasmoid::Impact operation on radius (Constant or Varying) not set. Use Radius(std::string)");
 
-	if (tcur<=t0) radius(radiusMin);
-	else if (tcur<=t0+t_inj) radius(radiusMin+(radiusMax_-radiusMin)*(tcur-t0)/t_inj);
+  if (varyRadius_=="Varying")
+  {
+    if (tcur<=t0) radius(radiusMin);
+    else if (tcur<=t0+t_inj) radius(radiusMin+(radiusMax_-radiusMin)*(tcur-t0)/t_inj);
+    else radius(radiusMax_);
+  }
 	else radius(radiusMax_);
-	
-	//radius(radiusMax_);
 
 	return Standard::Impact(ph, index, data);
 }
