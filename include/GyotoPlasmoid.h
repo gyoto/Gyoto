@@ -36,7 +36,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoUniformSphere.h>
 #include <GyotoPowerLawSynchrotronSpectrum.h>
-#include <GyotoThermalSynchrotronSpectrum.h>
+//#include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -58,15 +58,15 @@ class Gyoto::Astrobj::Plasmoid :
   // -----
  private:
   SmartPointer<Metric::Generic> gg_; // metric
-  double posIni_[4]; // 4-position of the plasmoid in spherical coordinates
-  double fourveldt_[4]; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
+  double* posIni_; // 4-position of the plasmoid in spherical coordinates
+  double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
   double PLIndex_; ///< PL Index
-  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // thermal-distribution synchrotron spectrum at low Temperature
-  //SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // thermal-distribution synchrotron spectrum at low Temperature
+  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchLow_; // Power Law-distribution synchrotron spectrum at low gamma (eq at a thermal distribution until gammachange see radiativeQ)
+  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchHigh_; // Power Law-distribution synchrotron spectrum at low gamma
   bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;
@@ -122,6 +122,12 @@ class Gyoto::Astrobj::Plasmoid :
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const;
 
+  virtual void radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[],
+              double alphaInu[], double alphaQnu[], double alphaUnu[], double alphaVnu[],
+              double rQnu[], double rUnu[], double rVnu[],
+              double const nu_ems[], size_t nbnu, double dsem,
+              state_t const &coord_ph, double const coord_obj[8]) const;
+
   void getCartesian(double const * const dates, size_t const n_dates,
           double * const x, double * const y,
           double * const z, double * const xprime=NULL,
@@ -132,6 +138,9 @@ class Gyoto::Astrobj::Plasmoid :
 
   int Impact(Gyoto::Photon* ph, size_t index,
          Astrobj::Properties *data=NULL);
+
+ private:
+  void Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const;
 
 };
 
