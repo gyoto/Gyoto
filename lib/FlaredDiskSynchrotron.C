@@ -1,5 +1,5 @@
 /*
-    Copyright 2019-2020 Frederic Vincent & Thibaut Paumard
+    Copyright 2019-2021 Frederic Vincent & Thibaut Paumard & Nicolas Aimar
 
     This file is part of Gyoto.
 
@@ -59,14 +59,17 @@ GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, MagnetizationParameter,
 		      "Standard magnetization parameter (B^2/4pi) / (rho*c^2) "
 		      "where rho is mass density")
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, KappaIndex, kappaIndex)
+GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, PolytropicIndex, polytropicIndex)
+GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, dt, dt)
 GYOTO_PROPERTY_END(FlaredDiskSynchrotron, Standard::properties)
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron() :
 Standard("FlaredDiskSynchrotron"), GridData2D(),
-  filename_(""), hoverR_(0.),
-  density_(NULL), velocity_(NULL),
+  filename_(""), hoverR_(0.), time_array_(NULL),
+  density_(NULL), velocity_(NULL), Bvector_(NULL),
   numberDensityMax_cgs_(1.), temperatureMax_(1.),
-  magnetizationParameter_(1.), dt_(0.)
+  magnetizationParameter_(1.), deltat_(0.), flag_(false),
+  gamm1_(5./3.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
@@ -74,10 +77,11 @@ Standard("FlaredDiskSynchrotron"), GridData2D(),
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   Standard(o), GridData2D(o),
-  filename_(o.filename_), hoverR_(o.hoverR_),
-  density_(NULL), velocity_(NULL),
+  filename_(o.filename_), hoverR_(o.hoverR_), time_array_(NULL),
+  density_(NULL), velocity_(NULL), Bvector_(NULL),
   numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_),
-  magnetizationParameter_(o.magnetizationParameter_), dt_(o.dt_)
+  magnetizationParameter_(o.magnetizationParameter_), deltat_(o.deltat_), flag_(o.flag_),
+  gamm1_(o.gamm1_)
 {
   GYOTO_DEBUG << endl;
   size_t ncells = 0;
@@ -89,6 +93,14 @@ FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   if (o.velocity_) {
     velocity_ = new double[ncells = 2 * nt * nphi * nr];
     memcpy(velocity_, o.velocity_, ncells * sizeof(double));
+  }
+  if (o.Bvector_) {
+    Bvector_= new double[ncells = 4* nt * nphi * nr];
+    memcpy(Bvector_,o.Bvector_, ncells * sizeof(double));
+  }
+  if (o.time_array_) {
+    time_array_ = new double[nt];
+    memcpy(time_array_,o.time_array_, nt*sizeof(double));
   }
   if (o.spectrumKappaSynch_()) spectrumKappaSynch_=o.spectrumKappaSynch_->clone();
 }
@@ -130,18 +142,26 @@ double FlaredDiskSynchrotron::hoverR() const {
 }
 
 void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
-  // Note: fitsRead() also uses dt_ to translate tmin_ and tmax_, so
+  // Note: fitsRead() also uses deltat_ to translate tmin_ and tmax_, so
   // it is fine to set File after TimeTranslation_inMunit.  Since we
   // don't record the original tmin_ and tmax_ values, we must remove
   // any previous translation though.
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
-  GridData2D::tmin(tmin-dt_+dt);
-  GridData2D::tmax(tmax-dt_+dt);
-  dt_=dt;
+  GridData2D::tmin(tmin-deltat_+dt);
+  GridData2D::tmax(tmax-deltat_+dt);
+  deltat_=dt;
+  if (GridData2D::nt()==0)
+    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation nt not yet defined");
+  int nt = GridData2D::nt();
+  if (!time_array_)
+    GYOTO_ERROR("In FlaredDiskSynchrotron::timeTranslation time_array_ not defined. Please use FlaredDiskSynchrotron::file(string) before this function");
+  for (int ii=0;ii<nt;ii++){
+    time_array_[ii]+=dt;
+  }
 }
 
 double FlaredDiskSynchrotron::timeTranslation_inMunit() const {
-  return dt_;
+  return deltat_;
 }
 
 double FlaredDiskSynchrotron::numberDensityMax() const {
@@ -192,6 +212,10 @@ void FlaredDiskSynchrotron::temperatureMax(double tt) {temperatureMax_=tt;}
 
 double FlaredDiskSynchrotron::temperatureMax() const{return temperatureMax_;}
 
+void FlaredDiskSynchrotron::polytropicIndex(double gamma) {gamm1_=gamma-1;}
+
+double FlaredDiskSynchrotron::polytropicIndex() const {return gamm1_;}
+
 void FlaredDiskSynchrotron::magnetizationParameter(double rr) {
   magnetizationParameter_=rr;}
 
@@ -204,6 +228,10 @@ void FlaredDiskSynchrotron::kappaIndex(double index) {
 
 double FlaredDiskSynchrotron::kappaIndex()const{
   return spectrumKappaSynch_->kappaindex();
+}
+
+void FlaredDiskSynchrotron::dt(double dd) {
+  GridData2D::dt(dd);
 }
 
 void FlaredDiskSynchrotron::copyDensity(double const *const density,
@@ -271,6 +299,54 @@ void FlaredDiskSynchrotron::copyVelocity(double const *const velocity,
 double const * FlaredDiskSynchrotron::getVelocity() const { return velocity_; }
 
 
+void FlaredDiskSynchrotron::copyBvector(double const *const Bvector,
+           size_t const naxes[3]) {
+  GYOTO_DEBUG << endl;
+  
+  if (Bvector_) {
+    GYOTO_DEBUG << "delete [] Bvector_;\n";
+    delete [] Bvector_; Bvector_ = NULL;
+  }
+  size_t nt=GridData2D::nt(), nphi=GridData2D::nphi(), nr=GridData2D::nr();
+  if (Bvector) {
+    if (!density_) GYOTO_ERROR("Please use copyDensity() before copyBvector()");
+    if (nt != naxes[2] || nphi != naxes[1] || nr != naxes[0])
+      GYOTO_ERROR("density_ and Bvector_ have inconsistent dimensions");
+    GYOTO_DEBUG << "allocate Bvector_;" << endl;
+    size_t nel = 4*nt*nphi*nr;
+    Bvector_ = new double[nel];
+    GYOTO_DEBUG << "Bvector >> Bvector_" << endl;
+    memcpy(Bvector_, Bvector, nel*sizeof(double));
+    flag_=true;
+  }
+  
+  //cout << "velo stored= " << endl;
+  //for (int ii=0;ii<60;ii++) cerr << velocity_[ii] << " " ;
+  //cout << endl;
+}
+
+double const * FlaredDiskSynchrotron::getBvector() const { return Bvector_; }
+
+void FlaredDiskSynchrotron::copyTimeArray(double const *const time_array, size_t const ntimes) {
+  GYOTO_DEBUG << endl;
+  
+  if (time_array_) {
+    GYOTO_DEBUG << "delete [] time_array_;\n";
+    delete [] time_array_; time_array_ = NULL;
+  }
+  size_t nt=GridData2D::nt();
+  if (time_array) {
+    if (nt != ntimes)
+      GYOTO_ERROR("the given ntimes and nt from FITS file are inconsistent");
+    GYOTO_DEBUG << "allocate time_array_;" << endl;
+    time_array_ = new double[ntimes];
+    GYOTO_DEBUG << "time_array >> time_array_" << endl;
+    memcpy(time_array_, time_array, ntimes*sizeof(double));
+  }
+}
+
+double const * FlaredDiskSynchrotron::getTimeArray() const { return time_array_; }
+
 #ifdef GYOTO_USE_CFITSIO
 vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   // Remove first char if it is "!"
@@ -290,7 +366,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status) ;
 
   ////// READ FITS KEYWORDS COMMON TO ALL TABLES ///////
-  // These are: tmin, tmax, rmin, rmax
+  // These are: tmin, tmax, rmin, rmax, phimin, phimax
 
   GYOTO_DEBUG << "FlaredDiskSynchrotron::fitsRead(): read tmin_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO GridData2D tmin", &tmpd,
@@ -298,7 +374,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (status) {
     if (status == KEY_NO_EXIST) status = 0; // not fatal
     else throwCfitsioError(status) ;
-  } else GridData2D::tmin(tmpd+dt_); // tmin_ found
+  } else GridData2D::tmin(tmpd+deltat_); // tmin_ found
 
   GYOTO_DEBUG << "FlaredDiskSynchrotron::fitsRead(): read tmax_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO GridData2D tmax", &tmpd,
@@ -306,7 +382,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (status) {
     if (status == KEY_NO_EXIST) status = 0; // not fatal
     else throwCfitsioError(status) ;
-  } else GridData2D::tmax(tmpd+dt_); // tmax_ found
+  } else GridData2D::tmax(tmpd+deltat_); // tmax_ found
 
   GYOTO_DEBUG << "FlaredDiskSynchrotron::fitsRead(): read rmin_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO GridData2D rmin", &tmpd,
@@ -345,6 +421,7 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   // Density
   vector<size_t> naxes_dens = GridData2D::fitsReadHDU(fptr,"GYOTO GridData2D DENSITY",
 						      density_);
+
   //cout << "density read= " << endl;
   //for (int ii=0;ii<30;ii++) cerr << density_[ii] << " " ;
   //cout << endl;
@@ -358,15 +435,40 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
   if (naxes_dens[0]!=naxes_velo[0] ||
       naxes_dens[1]!=naxes_velo[1] ||
       naxes_dens[2]!=naxes_velo[2])
-    throwError("In FlaredDiskSynchro: density and velocity dimensions "
-	       "do not agree");
+    throwError("In FlaredDiskSynchro: density and velocity, dimensions "
+         "do not agree");
+
+  // 4-vector B
+  fits_movnam_hdu(fptr, ANY_HDU, "GYOTO GridData2D BVECTOR", 0, &status);
+  if (status==0){ // read only if the HDU exist
+    flag_=true;
+    size_t lengthB=4; // Bvector is a 4-vector
+    vector<size_t> naxes_Bvec = GridData2D::fitsReadHDU(fptr,"GYOTO GridData2D BVECTOR",
+                    Bvector_,
+                    lengthB);
+
+    if (naxes_dens[0]!=naxes_velo[0] || naxes_dens[0]!=naxes_Bvec[0] ||
+        naxes_dens[1]!=naxes_velo[1] || naxes_dens[1]!=naxes_Bvec[1] ||
+        naxes_dens[2]!=naxes_velo[2] || naxes_dens[2]!=naxes_Bvec[2])
+      throwError("In FlaredDiskSynchro: density and B4vector dimensions "
+  	       "do not agree");
+  }       
+
+  // Time array
+  vector<size_t> naxes_time = GridData2D::fitsReadHDU(fptr,"GYOTO GridData2D TIMEARRAY",
+                  time_array_);
   
+  if (naxes_time[0]!=naxes_dens[2])
+    GYOTO_ERROR("In FlaredDiskSynchro: ntimes differ from density array and time_array");
   /*cout << "velo read= " << endl;
   for (int ii=0;ii<60;ii++) cerr << velocity_[ii] << " " ;
-  cout << endl;
+  cout << endl;*/
 
-  cout << "axes dens: " << naxes_dens[0] << " " << naxes_dens[1] << " " << naxes_dens[2] << endl;
-  cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;*/
+  GridData2D::nr(naxes_dens[0]);
+  GridData2D::nphi(naxes_dens[1]);
+  GridData2D::nt(naxes_dens[2]);
+  //cout << "axes dens: " << naxes_dens[0] << " " << naxes_dens[1] << " " << naxes_dens[2] << endl;
+  //cout << "axes velo: " << naxes_velo[0] << " " << naxes_velo[1] << " " << naxes_velo[2] << " " << naxes_velo[3] << endl;
 
   return naxes_velo;
 
@@ -391,6 +493,8 @@ double FlaredDiskSynchrotron::operator()(double const coord[4]) {
     GYOTO_ERROR("FlaredDiskSynchrotron::operator(): unknown COORDKIND");
   }
   
+  //cout << coord[0] << ", " << coord[1] << ", "  << coord[2] << ", " << coord[3] << endl;
+
   if (rproj < GridData2D::rmin() or rproj > GridData2D::rmax())
     return 1.; // outside disk
   
@@ -433,21 +537,20 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 
   // Interpolating the density_ table, which contains
   // Sigma/r (surface density divided by radius), normalized.
-  double Sigma_over_r_interpo=GridData2D::interpolate(tt,phi,rcyl,density_);
+  double Sigma_over_r_interpo=GridData2D::interpolate(tt,phi,rcyl,density_,time_array_);
 
-  double gamm1 = 2./3.; // gamma-1
   // Polytrop: p = kappa*rho^gamma
   double HH = hoverR_*rcyl; // Height of the flared disk at the local rcyl
   // 3D number density as a function of 2D surface density,
   // for a polytropic disk. See notes for details:
   double zfactor = 1.-zz*zz/(HH*HH),
     number_density = Sigma_over_r_interpo*numberDensityMax_cgs_
-    *pow(zfactor,1./gamm1);
+    *pow(zfactor,1./gamm1_);
   
   // 3D temperature now, see notes for details.
   // Perfect gas: p = (rho/mp)*k*T
   // Thus: T \propto rho^{gamma-1}
-  double temperature = pow(Sigma_over_r_interpo,gamm1)*temperatureMax_*zfactor;
+  double temperature = pow(Sigma_over_r_interpo,gamm1_)*temperatureMax_*zfactor;
 
   //cout << "stuff: " << Sigma_over_r_interpo << " " << hoverR_ << " " << rcyl << " " << zz << " " << HH << " " << zfactor << endl;
 
@@ -456,9 +559,53 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 
   double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
 
-  double BB = sqrt(4.*M_PI*magnetizationParameter_
-		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-		   *number_density);
+  double BB=0;
+  double theta_mag=0.;
+
+  if (flag_){ // magnetic field defined in FITS data
+    size_t nr = GridData2D::nr(), nphi = GridData2D::nphi(),
+    nt = GridData2D::nt(), nel = nt*nphi*nr-1;
+
+    double Bt=GridData2D::interpolate(tt, phi, rcyl, Bvector_, time_array_),
+    Br=GridData2D::interpolate(tt, phi, rcyl, Bvector_+nel+1, time_array_),
+    Btheta=GridData2D::interpolate(tt, phi, rcyl, Bvector_+2*(nel+1), time_array_),
+    Bphi=GridData2D::interpolate(tt, phi, rcyl, Bvector_+3*(nel+1), time_array_);
+
+    double b4vec[4]={Bt,Br,Btheta,Bphi}; // B 4-vector in BL frame
+    cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
+    if (Br!=Br)
+      GYOTO_ERROR("Nan ! ! !");
+
+    double vel[4]; // 4-velocity of emitter
+    const_cast<FlaredDiskSynchrotron*>(this)->getVelocity(coord_obj, vel);
+    gg_->projectFourVect(&coord_ph[0],b4vec,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+    double bnorm = gg_->norm(&coord_ph[0],b4vec);
+    double photon_emframe[4]; // photon tgt vector projected in comoving frame
+    for (int ii=0;ii<4;ii++){
+      photon_emframe[ii]=coord_ph[ii+4]
+  +vel[ii]*gg_->ScalarProd(&coord_ph[0],&coord_ph[4],vel);
+    }
+    double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+    double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,b4vec);
+    theta_mag = acos(lscalb/(lnorm*bnorm));
+
+    double sth = sin(theta_mag);//, cth = cos(theta_mag);
+    if (sth==0.) GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: "
+          "theta_mag is zero leads to undefined emission");
+
+    spectrumKappaSynch_->angle_averaged(0);
+
+    //cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
+    BB = sqrt(pow(b4vec[1],2.)+pow(b4vec[2],2.)+pow(b4vec[3],2.)); // norm of the 3-vector B
+    
+  }
+  else{
+    spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
+
+    BB = sqrt(4.*M_PI*magnetizationParameter_
+       *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+       *number_density);
+  }
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
@@ -475,11 +622,11 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
     jnu_synch_kappa[ii]=-1.;
     anu_synch_kappa[ii]=-1.;
   }
+
   spectrumKappaSynch_->numberdensityCGS(number_density);
-  spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
-  spectrumKappaSynch_->angle_B_pem(0.); // so we don't care about angle
   spectrumKappaSynch_->cyclotron_freq(nu0);
   spectrumKappaSynch_->thetae(thetae);
+  spectrumKappaSynch_->angle_B_pem(theta_mag); // so we don't care about angle
   spectrumKappaSynch_->hypergeometric(hypergeom);
   //cout << "jet stuff for kappa: " << nu_ems[0] << " " << number_density << " " << nu0 << " " << thetae << " " << BB << " " << temperature << " " << hypergeom << endl;
   spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
@@ -504,8 +651,9 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 
     if (Inu[ii]<0.)
       GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: Inu<0");
-    if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii])
+    if (Inu[ii]!=Inu[ii] or Taunu[ii]!=Taunu[ii]){
       GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: Inu or Taunu is nan");
+    }
     if (Inu[ii]==Inu[ii]+1. or Taunu[ii]==Taunu[ii]+1.)
       GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: Inu or Taunu is infinite");
 
@@ -534,8 +682,8 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
   
   if (rcyl<GridData2D::rmin() || rcyl>GridData2D::rmax())
     throwError("In FlaredDiskSynchrotron::getVelocity: r is not in grid!");
-  if (phi<0. or phi>2.*M_PI)
-    throwError("In FlaredDiskSynchrotron::radiativeQ: phi is not in 0,2pi!");
+  if (phi<0. or phi>2*M_PI)
+    throwError("In FlaredDiskSynchrotron::getVelocity phi is not in 0;2pi!");
   // NB: phi is always in grid, and t might be outside, assuming stationnary
   // disk at t<tmin_ and t>tmax_
 
@@ -547,9 +695,9 @@ void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
   //cout << "In VELO R: " << velocity_[0] << " " << velocity_[1] << " " << velocity_[nr-1] << " " << velocity_[nr] << " " << velocity_[nr*nphi-1] << endl;
   //cout << "In VELO PHI: " << velocity_[0+nr*nphi] << " " << velocity_[1+nr*nphi] << " " << velocity_[nr-1+nr*nphi] << " " << velocity_[nr+nr*nphi] << " " << velocity_[nr*nphi-1+nr*nphi] << endl;
   //cout << "CALLING INTERPO FOR DR/DT" << endl;
-  double drdt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_);
+  double drdt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_,time_array_);
   //cout << "CALLING INTERPO FOR DPHI/DT" << endl;
-  double dphidt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_+nel+1);
+  double dphidt_interpo=GridData2D::interpolate(tt,phi,rcyl,velocity_+nel+1,time_array_);
 
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
