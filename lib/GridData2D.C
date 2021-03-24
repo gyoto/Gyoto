@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2019-2021 Frederic Vincent, Thibaut Paumard, Nicolas Aimar
 
     This file is part of Gyoto.
 
@@ -44,7 +44,7 @@ GridData2D::GridData2D() :
   dphi_(0.), nphi_(0), dr_(0.), nr_(0.), dt_(0.), nt_(0),
   rmin_(0.), rmax_(DBL_MAX),
   phimin_(0.), phimax_(2.*M_PI),
-  tmin_(-DBL_MAX), tmax_(DBL_MAX)
+  tmin_(-DBL_MAX), tmax_(DBL_MAX), constant_(false)
 {
   GYOTO_DEBUG << endl;
 }
@@ -53,7 +53,7 @@ GridData2D::GridData2D(const GridData2D&o):
   dphi_(o.dphi_), nphi_(o.nphi_), dr_(o.dr_), nr_(o.nr_), dt_(o.dt_), nt_(o.nt_),
   rmin_(o.rmin_), rmax_(o.rmax_),
   phimin_(o.phimin_), phimax_(o.phimax_),
-  tmin_(o.tmin_), tmax_(o.tmax_)
+  tmin_(o.tmin_), tmax_(o.tmax_), constant_(o.constant_)
 {
   GYOTO_DEBUG << endl;
 }
@@ -107,13 +107,13 @@ double GridData2D::dphi() const {return dphi_;}
 
 void GridData2D::tmin(double tmn) {
   tmin_ = tmn;
-  if (nt_>1) dt_ = (tmax_-tmin_) / double(nt_-1);
+  if (nt_>1 && constant_) dt_ = (tmax_-tmin_) / double(nt_-1);
 }
 double GridData2D::tmin() const {return tmin_;}
 
 void GridData2D::tmax(double tmx) {
   tmax_ = tmx;
-  if (nt_>1) dt_ = (tmax_-tmin_) / double(nt_-1);
+  if (nt_>1 && constant_) dt_ = (tmax_-tmin_) / double(nt_-1);
 }
 double GridData2D::tmax() const {return tmax_;}
 
@@ -122,6 +122,13 @@ size_t GridData2D::nt() const {return nt_;}
 
 void GridData2D::nphi(size_t nn) { nphi_ = nn;}
 size_t GridData2D::nphi() const {return nphi_;}
+
+void GridData2D::dt(double dd) { 
+  dt_ = dd;
+  constant_=true;
+}
+
+double GridData2D::dt() const {return dt_;}
 
 
 #ifdef GYOTO_USE_CFITSIO
@@ -141,44 +148,71 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
   ////// READ REQUIRED EXTENSION ///////
-  
-  GYOTO_DEBUG << "GridData2D::fitsRead(): search " << extname << " HDU" << endl;
-  if (fits_movnam_hdu(fptr, ANY_HDU,
-  		      const_cast<char*>(extname.c_str()),
-  		      0, &status))
-    throwCfitsioError(status) ;
-  GYOTO_DEBUG << "GridData2D::fitsRead(): get image size" << endl;
-  if (fits_get_img_size(fptr, ndim, naxes, &status)) throwCfitsioError(status) ;
-  // update nt_, dt_
-  nt_ = naxes[2];
-  if (nt_>1) dt_ = (tmax_-tmin_)/double((nt_-1));
-  
-  // update nphi_, dphi_
-  nphi_ = naxes[1];
-  if (nphi_>1) dphi_ = (phimax_ - phimin_)/double((nphi_-1));
+  if (extname!="GYOTO GridData2D TIMEARRAY"){
+    GYOTO_DEBUG << "GridData2D::fitsRead(): search " << extname << " HDU" << endl;
+    if (fits_movnam_hdu(fptr, ANY_HDU,
+    		      const_cast<char*>(extname.c_str()),
+    		      0, &status))
+      throwCfitsioError(status) ;
+    GYOTO_DEBUG << "GridData2D::fitsRead(): get image size" << endl;
+    if (fits_get_img_size(fptr, ndim, naxes, &status)) throwCfitsioError(status) ;
+    // update nt_, dt_
+    nt_ = naxes[2];
+    if (nt_>1 && constant_) dt_ = (tmax_-tmin_)/double((nt_-1));
+    
+    // update nphi_, dphi_
+    nphi_ = naxes[1];
+    if (nphi_>1) dphi_ = (phimax_ - phimin_)/double((nphi_-1));
 
-  // update nr_, dr_
-  nr_ = naxes[0];
-  if (nr_>1) dr_ = (rmax_-rmin_) / double(nr_-1);
+    // update nr_, dr_
+    nr_ = naxes[0];
+    if (nr_>1) dr_ = (rmax_-rmin_) / double(nr_-1);
 
-  if (dest) { delete [] dest; dest = NULL; }
-  dest = new double[nt_ * nphi_ * nr_ * (length?length:1)];
-  for (int ii=0;ii<nt_ * nphi_ * nr_ * (length?length:1);ii++)
-    dest[ii]=0.;
-  if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
-  		       0,dest,&anynul,&status)) {
-    GYOTO_DEBUG << " error, trying to free pointer" << endl;
-    delete [] dest; dest=NULL;
-    throwCfitsioError(status) ;
+    if (dest) { delete [] dest; dest = NULL; }
+    dest = new double[nt_ * nphi_ * nr_ * (length?length:1)];
+    for (int ii=0;ii<nt_ * nphi_ * nr_ * (length?length:1);ii++)
+      dest[ii]=0.;
+    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
+    		       0,dest,&anynul,&status)) {
+      GYOTO_DEBUG << " error, trying to free pointer" << endl;
+      delete [] dest; dest=NULL;
+      throwCfitsioError(status) ;
+    }
+    GYOTO_DEBUG << " done." << endl;
+
+    vector<size_t> dims(ndim, nr_);
+    dims[1] = nphi_;
+    dims[2] = nt_;
+    if (length) dims[3]=length;
+
+    return dims;
   }
-  GYOTO_DEBUG << " done." << endl;
+  else{ // Read TIME_ARRAY
+    long naxe[] = {1}, inc[]={1};
+    GYOTO_DEBUG << "GridData2D::fitsRead(): search " << extname << " HDU" << endl;
+    if (fits_movnam_hdu(fptr, ANY_HDU,
+              const_cast<char*>(extname.c_str()),
+              0, &status))
+      throwCfitsioError(status) ;
+    GYOTO_DEBUG << "GridData2D::fitsRead(): get image size" << endl;
+    if (fits_get_img_size(fptr, 1, naxe, &status)) throwCfitsioError(status) ;
+    
 
-  vector<size_t> dims(ndim, nr_);
-  dims[1] = nphi_;
-  dims[2] = nt_;
-  if (length) dims[3]=length;
+    if (dest) { delete [] dest; dest = NULL; }
+    dest = new double[nt_];
+    for (int ii=0;ii<nt_;ii++)
+      dest[ii]=0.;
+    if (fits_read_subset(fptr, TDOUBLE, fpixel, naxe, inc,
+               0,dest,&anynul,&status)) {
+      GYOTO_DEBUG << " error, trying to free pointer" << endl;
+      delete [] dest; dest=NULL;
+      throwCfitsioError(status) ;
+    }
+    GYOTO_DEBUG << " done." << endl;
 
-  return dims;
+    vector<size_t> dims(1, nt_);
+    return dims;
+  }
 }
 
 fitsfile* GridData2D::fitsCreate(string filename){
@@ -273,16 +307,26 @@ void GridData2D::fitsWriteHDU(fitsfile* fptr,
   }
 
   ////// SAVE SRC IN APPROPRIATE HDU ///////
-
-  fits_create_img(fptr, DOUBLE_IMG, ndim, naxes, &status);
-  std::stringstream ss;
-  ss << "GYOTO GridData2D " << extname;
+  if (extname!="TIMEARRAY"){
+    fits_create_img(fptr, DOUBLE_IMG, ndim, naxes, &status);
+    std::stringstream ss;
+    ss << "GYOTO GridData2D " << extname;
+    fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
+       const_cast<char*>(ss.str().c_str()),
+       CNULL, &status);
+    fits_write_pix(fptr, TDOUBLE, fpixel, nt_*nphi_*nr_*(length?length:1), src, &status);
+    if (status) throwCfitsioError(status) ;
+  }else{
+    long naxe [] = {long(nt_)}, fpix []={1};
+    fits_create_img(fptr, DOUBLE_IMG, 1, naxe, &status);
+    std::stringstream ss;
+    ss << "GYOTO GridData2D " << extname;
   fits_write_key(fptr, TSTRING, const_cast<char*>("EXTNAME"),
-		 const_cast<char*>(ss.str().c_str()),
-		 CNULL, &status);
-  fits_write_pix(fptr, TDOUBLE, fpixel, nt_*nphi_*nr_*(length?length:1), src, &status);
+     const_cast<char*>(ss.str().c_str()),
+     CNULL, &status);
+  fits_write_pix(fptr,TDOUBLE, fpix, nt_, src, &status);
   if (status) throwCfitsioError(status) ;
-    //}
+  }
 
 }
 
@@ -297,9 +341,10 @@ void GridData2D::fitsClose(fitsfile* fptr) {
 }
 #endif
 
-void GridData2D::getIndices(size_t i[3], double const tt, double const phi, double const rr) const {
+void GridData2D::getIndices(size_t i[3], double const tt, double const phi, double const rr, double* const time_array) const {
   // rr is the radius projected in the equaotiral plane
   //cout << "in getInd R: " << rmin_ << " " << rmax_ << " " << nr_ << " " << dr_ << endl;
+
   if (rmin_>0. && rmax_<DBL_MAX && nr_>0. && dr_>0.) { // >1 radii must be properly defined
     i[2] = size_t(floor((rr-rmin_)/dr_)); // index of closest grid point smaller than rr
                                           // (and same for phi,t)
@@ -312,11 +357,11 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
   if (nphi_>0.) {  // necessary condition
     if  (dphi_>0.) {// then >1 phi values provided
       if (phi<phimin_)
-	i[1]=nphi_-1; // then phimin_+dphi_*(nphi_-1) < phi < phimin_ (modulo 2pi)
+	      i[1]=nphi_-1; // then phimin_+dphi_*(nphi_-1) < phi < phimin_ (modulo 2pi)
       else if (phi>phimax_)
-	i[1]=nphi_-1; // idem
+	      i[1]=nphi_-1; // idem
       else
-	i[1] = size_t(floor((phi-phimin_)/dphi_)); // then phimin_+dphi_*i[1] < phi < phimin_ +dphi_*(i[1]+1)
+	      i[1] = size_t(floor((phi-phimin_)/dphi_)); // then phimin_+dphi_*i[1] < phi < phimin_ +dphi_*(i[1]+1)
     }
     else          // then 1 phi value only, axisym
       i[1] = 0;
@@ -326,10 +371,20 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
 
   //cout << "in getInd T: " << tmin_ << " " << tmax_ << " " << nt_ << " " << dt_ << endl;
   if (nt_>0.) {                                // necessary condition
-    if (dt_>0. && tmin_ > -DBL_MAX && tmax_<DBL_MAX) // >1 time values provided
+    if (tmin_ > -DBL_MAX && tmax_<DBL_MAX) // >1 time values provided
       if (tt<tmin_) i[0]=0;        // assuming stationnarity before tmin_
       else if (tt>tmax_) i[0]=nt_-1;//                       and after tmax_
-      else i[0] = size_t(floor((tt-tmin_)/dt_));
+      else {
+        if (dt_>0. && constant_){
+          i[0] = size_t(floor((tt-tmin_)/dt_));
+        }else{
+          size_t i_t=0;
+          while (tt>time_array[i_t] && tt>time_array[i_t+1] && i_t<nt_-1) { // search of i_t
+            i_t+=1;
+          }
+          i[0]=i_t;
+        }
+      }
     else if (dt_==0. && tmin_==tmax_)          // only 1 time value, stationnary disk
       i[0]=0;
     else
@@ -341,10 +396,11 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
 }
 
 double GridData2D::interpolate(double tt, double phi, double rcyl,
-			       double* const array) const{
+			       double* const array, double* const time_array) const{
   size_t ind[3]; // {i_t, i_phi, i_r}
-  getIndices(ind, tt, phi, rcyl);
+  getIndices(ind, tt, phi, rcyl, time_array);
 
+  //cout << ind[0] << " " << ind[1] << " " << ind[2] << endl;
   //cout << " TEST First slot= " << array[0] << " " << array[1] << " " << array[2] << endl;
 
   double array_interpo=0.;
@@ -353,6 +409,9 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     throwError("TBD axisym");
 
   // From here on, >1 phi values
+
+  if (!time_array)
+    GYOTO_ERROR("In GridData2D::interpolate time_array not defined");
 
   size_t iphil=-1, iphiu=-1;
   double phil=-1., phiu=-1.;
@@ -409,8 +468,8 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
 
     double rl = rmin_+dr_*irl,
       ru = rmin_+dr_*iru,
-      tl = tmin_+dt_*itl,
-      tu = tmin_+dt_*itu;
+      tl = time_array[itl],
+      tu = time_array[itu];
 
     double ratiot = (tt-tl)/(tu-tl),
       ratiophi = (phi-phil)/(phiu-phil),
