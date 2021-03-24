@@ -37,6 +37,7 @@ namespace Gyoto{
 #include <GyotoUniformSphere.h>
 #include <GyotoPowerLawSynchrotronSpectrum.h>
 //#include <GyotoThermalSynchrotronSpectrum.h>
+#include <GyotoKappaDistributionSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -67,6 +68,7 @@ class Gyoto::Astrobj::Plasmoid :
   double PLIndex_; ///< PL Index
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchLow_; // Power Law-distribution synchrotron spectrum at low gamma (eq at a thermal distribution until gammachange see radiativeQ)
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchHigh_; // Power Law-distribution synchrotron spectrum at low gamma
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_;
   bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;

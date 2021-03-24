@@ -69,9 +69,9 @@ Plasmoid::Plasmoid() :
   fourveldt_(NULL),
   radiusMax_(1.),
   varyRadius_("None"),
-  //spectrumThermalSynch_(NULL),
   spectrumPLSynchHigh_(NULL),
-  spectrumPLSynchLow_(NULL)
+  spectrumPLSynchLow_(NULL),
+  spectrumkappa_(NULL)
 {
   kind_="Plasmoid";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -79,6 +79,10 @@ Plasmoid::Plasmoid() :
 # endif
   spectrumPLSynchHigh_ = new Spectrum::PowerLawSynchrotron();
   spectrumPLSynchLow_ = new Spectrum::PowerLawSynchrotron();
+  spectrumkappa_ = new Spectrum::KappaDistributionSynchrotron();
+
+  posIni_= new double[4];
+  fourveldt_= new double[4];
 }
 
 Plasmoid::Plasmoid(const Plasmoid& orig) :
@@ -95,10 +99,12 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   radiusMax_(orig.radiusMax_),
   varyRadius_(orig.varyRadius_),
   spectrumPLSynchHigh_(NULL),
-  spectrumPLSynchLow_(NULL)
+  spectrumPLSynchLow_(NULL),
+  spectrumkappa_(NULL)
 {
   if (orig.spectrumPLSynchHigh_()) spectrumPLSynchHigh_=orig.spectrumPLSynchHigh_->clone();
   if (orig.spectrumPLSynchLow_()) spectrumPLSynchLow_=orig.spectrumPLSynchLow_->clone();
+  if (orig.spectrumkappa_()) spectrumkappa_=orig.spectrumkappa_->clone();
 
   if(orig.posIni_){
 	  posIni_= new double[4];
@@ -147,9 +153,6 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
   double thetae_rec = GYOTO_BOLTZMANN_CGS*temperatureReconnection_
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); //Dimentionless temperature of the population of e- after the reconnection
-  if (thetae_rec<20.)
-    GYOTO_ERROR("In radiativeQ : Theta too low, the model of the distribution is no valid, please increase temperatureReconnection(double)");
-
   
   double BB = sqrt(4.*M_PI*magnetizationParameter_
            *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
@@ -162,7 +165,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   //cout << "AA=" << AA << ", B=" << BB << endl;
 
   double gamma_max = DBL_MAX;
-  double gamma_change=2.*thetae_rec;
+  double gamma_change=4.*thetae_rec;
  
   // COMPUTE VALUES IN FUNCTION OF PHASE
   if (tcur<=t0)
@@ -182,10 +185,9 @@ void Plasmoid::radiativeQ(double Inu[], // output
     gamma_change = gamma_change*pow(1.+AA*gamma_change*(tcur-(t_inj+t0)*60.),-1.);
 
   }
-
   // Defining jnus, anus
-  double jnu_synch_pl_low[nbnu], jnu_synch_pl_high[nbnu];
-  double anu_synch_pl_low[nbnu], anu_synch_pl_high[nbnu];
+  double jnu_synch_pl_low[nbnu], jnu_synch_pl_high[nbnu], jnu[nbnu];
+  double anu_synch_pl_low[nbnu], anu_synch_pl_high[nbnu], anu[nbnu];
   
   for (size_t ii=0; ii<nbnu; ++ii){
     // Initializing to <0 value to create errors if not updated
@@ -194,6 +196,8 @@ void Plasmoid::radiativeQ(double Inu[], // output
     anu_synch_pl_low[ii]=-1.;
     jnu_synch_pl_high[ii]=-1.;
     anu_synch_pl_high[ii]=-1.;
+    jnu[ii]=-1.;
+    anu[ii]=-1.;
   }
 
   
@@ -202,7 +206,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   spectrumPLSynchLow_->angle_averaged(1);
   spectrumPLSynchLow_->angle_B_pem(0.); // avg so we don't care
   spectrumPLSynchLow_->cyclotron_freq(nu0);
-  spectrumPLSynchLow_->numberdensityCGS(0.13*number_density_rec);
+  spectrumPLSynchLow_->numberdensityCGS(number_density_rec);
   spectrumPLSynchLow_->gamma_min(1.);
   spectrumPLSynchLow_->gamma_max(gamma_change);
   
@@ -215,20 +219,40 @@ void Plasmoid::radiativeQ(double Inu[], // output
   spectrumPLSynchHigh_->angle_averaged(1);
   spectrumPLSynchHigh_->angle_B_pem(0.); // avg so we don't care
   spectrumPLSynchHigh_->cyclotron_freq(nu0);
-  spectrumPLSynchHigh_->numberdensityCGS(0.87*number_density_rec);
+  spectrumPLSynchHigh_->numberdensityCGS(number_density_rec);
   spectrumPLSynchHigh_->gamma_min(gamma_change);
   spectrumPLSynchHigh_->gamma_max(gamma_max);
   
   spectrumPLSynchHigh_->radiativeQ(jnu_synch_pl_high,anu_synch_pl_high,
                   nu_ems,nbnu);
+  
+  /*
+  // Kappa SYNCHRO HIGH
+  double hypergeom = Gyoto::hypergeom(PLIndex_+1., thetae_rec);
+
+  spectrumkappa_->kappaindex(PLIndex_+1.);
+  spectrumkappa_->angle_averaged(1);
+  spectrumkappa_->angle_B_pem(0.); // avg so we don't care
+  spectrumkappa_->cyclotron_freq(nu0);
+  spectrumkappa_->numberdensityCGS(number_density_rec);
+  spectrumkappa_->thetae(thetae_rec);
+  spectrumkappa_->hypergeometric(hypergeom);
+  
+  spectrumkappa_->radiativeQ(jnu,anu,
+                  nu_ems,nbnu);
+  */
+
+
+
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu_synch_pl_low[ii] + jnu_synch_pl_high[ii],
       anu_tot = anu_synch_pl_low[ii] + anu_synch_pl_high[ii];
+    //double jnu_tot = jnu[ii], anu_tot = anu[ii];
+
     //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
     //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
-
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
