@@ -126,6 +126,8 @@ size_t GridData2D::nphi() const {return nphi_;}
 void GridData2D::dt(double dd) { 
   dt_ = dd;
   constant_=true;
+  if (dt_==0.)
+    constant_=false;
 }
 
 double GridData2D::dt() const {return dt_;}
