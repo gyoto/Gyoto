@@ -76,6 +76,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Jet)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Blob)
 GyotoSmPtrTypeMapClassDerived(Astrobj, FlaredDiskSynchrotron)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThickDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskProfile)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -148,6 +149,7 @@ GyotoSmPtrClassDerived(Astrobj, Jet)
 GyotoSmPtrClassDerived(Astrobj, Blob)
 GyotoSmPtrClassDerived(Astrobj, FlaredDiskSynchrotron)
 GyotoSmPtrClassDerived(Astrobj, ThickDisk)
+GyotoSmPtrClassDerived(Astrobj, ThinDiskProfile)
 
 
 %exception Gyoto::Metric::Complex::__getitem__ {

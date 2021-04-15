@@ -17,6 +17,7 @@
 #include "GyotoTorus.h"
 #include "GyotoOscilTorus.h"
 #include "GyotoThinDisk.h"
+#include "GyotoThinDiskProfile.h"
 #include "GyotoThickDisk.h"
 #include "GyotoPageThorneDisk.h"
 #include "GyotoThinDiskPL.h"
