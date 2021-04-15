@@ -43,7 +43,7 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(ThinDiskProfile)
 GYOTO_PROPERTY_END(ThinDiskProfile, ThinDisk::properties)
 
-#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
+//#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
 
 ThinDiskProfile::ThinDiskProfile() :
   ThinDisk("ThinDiskProfile")
@@ -71,6 +71,11 @@ ThinDiskProfile::~ThinDiskProfile() {
 double ThinDiskProfile::emission(double nu, double,
 			    state_t const &,
 			    double const coord_obj[8]) const{
+  string kin = gg_->kind();
+  if (kin != "KerrBL")
+    GYOTO_ERROR("ThinDiskProfile: KerrBL needed!");
+  double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+  
   double rr = coord_obj[1];
   // Gralla+20 model for M87
   double spin=SPIN, a2=spin*spin;
@@ -88,6 +93,11 @@ double ThinDiskProfile::emission(double nu, double,
 
 void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
 {
+
+  string kin = gg_->kind();
+  if (kin != "KerrBL")
+    GYOTO_ERROR("ThinDiskProfile: KerrBL needed!");
+  double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
   
   double risco = 0.;
   if (gg_->kind()!="Minkowski" && gg_->kind()!="Hayward")
