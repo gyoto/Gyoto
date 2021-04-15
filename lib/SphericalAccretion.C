@@ -171,6 +171,8 @@ void SphericalAccretion::radiativeQ(double Inu[], // output
   double number_density = numberDensityAtInnerRadius_cgs_
     *(sphericalAccretionInnerRadius_*sphericalAccretionInnerRadius_)/(rr*rr);
 
+  //cout << "Spherical r, z, rho= " << rcyl << " " << zz << " " << number_density << endl;
+
   double temperature = temperatureAtInnerRadius_
     *pow(sphericalAccretionInnerRadius_/rr, temperatureSlope_);
 
@@ -265,10 +267,27 @@ void SphericalAccretion::getVelocity(double const pos[4], double vel[4])
   vel[1] = -sqrt((-1.-guptt)*guprr);
   vel[2] = 0;
   vel[3] = -guptp;
+
+  // CHECKS
   
+  double tol=1e-5;
+  
+  // DEBUG: compare to Falcke+00 shadow paper formulas //////////////////
+  // double spin=0.8;
+  // double delta=rr*rr - 2.*rr + spin*spin;
+  // double theta=pos[2];
+  // double AA = (rr*rr + spin*spin)*(rr*rr + spin*spin) - spin*spin*delta*sin(theta)*sin(theta);
+  // double vr_F00 = -delta*sqrt(2.*rr*(rr*rr + spin*spin))/AA,
+  //   Omega_F00 = 2.*spin*rr/AA;
+  // if (fabs(vr_F00-vel[1]/vel[0])>tol or fabs(Omega_F00-vel[3]/vel[0])>tol)
+  //   throwError("In SphericalAccretion::getVelo different from Falcke+00");
+  // --> perfect agreement 210211
+  ////////////////////////////////////////////////////////////////////////
+
+  // Check 4vel normalization
   double u2 = gg_->ScalarProd(pos,vel,vel);
   //cout << "4vel,u2= " << rr << " " << pos[2] << " " << gtt << " " << grr << " " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << " " << u2 << endl;
-  double tol=1e-5;
+
   if (fabs(u2+1.)>tol or u2!=u2) {
     cerr << " *** 4-velocity squared norm= " << u2 << endl;
     throwError("In SphericalAccretion: 4vel "
