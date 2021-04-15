@@ -743,6 +743,21 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
   }
 
   getCoord(dates, n_dates, x1, x2, x3, x0dot, x1dot, x2dot, x3dot);
+
+  // for (di=0; di<n_dates; ++di) {
+  //   double xcur=x1[di], ycur=x2[di], zcur=x3[di], xpcur=x1dot[di]/x0dot[di],
+  //     ypcur=x2dot[di]/x0dot[di],
+  //     zpcur=x3dot[di]/x0dot[di],
+  //     rcur=sqrt(xcur*xcur+ycur*ycur+zcur*zcur),
+  //     costhcur=zcur/rcur, sinthcur=sqrt(1-costhcur*costhcur),
+  //     cosphcur=xcur/(rcur*sinthcur), sinphcur=ycur/(rcur*sinthcur),
+  //     rpcur=xpcur*sinthcur*cosphcur + ypcur*sinphcur*sinthcur + zpcur*costhcur,
+  //     phpcur=(ypcur*cosphcur - xpcur*sinphcur)/(rcur*sinthcur),
+  //     dtKS_over_dtau=x0dot[di],
+  //     gpp=rcur*rcur*sinthcur*sinthcur,
+  //     Lcst=gpp*phpcur*dtKS_over_dtau;
+  //     cout << "LL= " << Lcst << endl;
+  // }
   
   switch(coordkind) {
   case GYOTO_COORDKIND_SPHERICAL: 
