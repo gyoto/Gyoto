@@ -998,6 +998,7 @@ public:
 
 // not a SmartPointee
 %include "GyotoGridData2D.h"
+%include "GyotoFitsRW.h"
 
 
 // Workaround cvar bug in Swig which makes help(gyoto) fail:

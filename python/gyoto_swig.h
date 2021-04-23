@@ -19,6 +19,7 @@
 #include "GyotoWIP.h"
 #include "GyotoConverters.h"
 #include "GyotoGridData2D.h"
+#include "GyotoFitsRW.h"
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
