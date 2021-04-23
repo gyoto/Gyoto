@@ -31,6 +31,11 @@
 #include <sstream>
 #include <string.h>
 
+#ifdef GYOTO_USE_CFITSIO
+#define throwCfitsioError(status) \
+    { fits_get_errstatus(status, ermsg); GYOTO_ERROR(ermsg); }
+#endif
+
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
@@ -50,35 +55,36 @@ GYOTO_PROPERTY_DOUBLE(Plasmoid, TemperatureReconnection, temperatureReconnection
 GYOTO_PROPERTY_DOUBLE(Plasmoid, MagnetizationParameter,
               magnetizationParameter,
               "magnetization parameter")
-GYOTO_PROPERTY_DOUBLE(Plasmoid, PLIndex, PLIndex,
+GYOTO_PROPERTY_DOUBLE(Plasmoid, KappaIndex, kappaIndex,
 		      "PL index of kappa-synchrotron")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, RadiusMax, radiusMax,
 		      "Maximun radius of the Plasmoid")
 GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 
-Plasmoid::Plasmoid() :  
+Plasmoid::Plasmoid() : 
+  FitsRW(), 
   UniformSphere("Plasmoid"),
   gg_(NULL),
   flag_("None"),
   numberDensity_cgs_(1.),
   temperatureReconnection_(1.),
   magnetizationParameter_(1.),
-  PLIndex_(3.5),
+  KappaIndex_(3.5),
   posSet_(false),
   posIni_(NULL),
   fourveldt_(NULL),
   radiusMax_(1.),
   varyRadius_("None"),
-  spectrumPLSynchHigh_(NULL),
-  spectrumPLSynchLow_(NULL),
+  filename_("None"),
+  jnu_array_(NULL),
+  anu_array_(NULL),
+  freq_array_(NULL),
   spectrumkappa_(NULL)
 {
   kind_="Plasmoid";
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done." << endl;
 # endif
-  spectrumPLSynchHigh_ = new Spectrum::PowerLawSynchrotron();
-  spectrumPLSynchLow_ = new Spectrum::PowerLawSynchrotron();
   spectrumkappa_ = new Spectrum::KappaDistributionSynchrotron();
 
   posIni_= new double[4];
@@ -86,24 +92,25 @@ Plasmoid::Plasmoid() :
 }
 
 Plasmoid::Plasmoid(const Plasmoid& orig) :
+  FitsRW(orig),
   UniformSphere(orig),
   gg_(orig.gg_),
   flag_(orig.flag_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   temperatureReconnection_(orig.temperatureReconnection_),
   magnetizationParameter_(orig.magnetizationParameter_),
-  PLIndex_(orig.PLIndex_),
+  KappaIndex_(orig.KappaIndex_),
   posSet_(orig.posSet_),
   posIni_(NULL),
   fourveldt_(NULL),
   radiusMax_(orig.radiusMax_),
   varyRadius_(orig.varyRadius_),
-  spectrumPLSynchHigh_(NULL),
-  spectrumPLSynchLow_(NULL),
+  filename_(orig.filename_),
+  jnu_array_(NULL),
+  anu_array_(NULL),
+  freq_array_(NULL),
   spectrumkappa_(NULL)
 {
-  if (orig.spectrumPLSynchHigh_()) spectrumPLSynchHigh_=orig.spectrumPLSynchHigh_->clone();
-  if (orig.spectrumPLSynchLow_()) spectrumPLSynchLow_=orig.spectrumPLSynchLow_->clone();
   if (orig.spectrumkappa_()) spectrumkappa_=orig.spectrumkappa_->clone();
 
   if(orig.posIni_){
@@ -115,6 +122,22 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
 	  fourveldt_= new double[4];
 	  memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
   }
+
+  size_t ncells=0;
+  size_t nnu=FitsRW::nnu(), nt=FitsRW::nt();
+  ncells=nnu*nt;
+  if (orig.jnu_array_){
+    jnu_array_ = new double[ncells];
+    memcpy(jnu_array_,orig.jnu_array_, ncells*sizeof(double));
+  }
+  if (orig.anu_array_){
+    anu_array_ = new double[ncells];
+    memcpy(anu_array_,orig.anu_array_, ncells*sizeof(double));
+  }
+  if (orig.freq_array_){
+    freq_array_ = new double[nnu];
+    memcpy(freq_array_,orig.freq_array_, nnu*sizeof(double));
+  }
 }
 
 
@@ -122,6 +145,9 @@ Plasmoid* Plasmoid::clone() const { return new Plasmoid(*this); }
 
 Plasmoid::~Plasmoid() {
   if (debug()) cerr << "DEBUG: Plasmoid::~Plasmoid()\n";
+  if (jnu_array_) delete [] jnu_array_;
+  if (anu_array_) delete [] anu_array_;
+  if (freq_array_) delete [] freq_array_;
 }
 
 string Plasmoid::className() const { return  string("Plasmoid"); }
@@ -138,6 +164,9 @@ void Plasmoid::radiativeQ(double Inu[], // output
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
+  if (filename_=="None")
+      GYOTO_ERROR("In Plamsoid RadiativeQ : filename_ not defined, please use file(string)");
+
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
   double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
@@ -160,96 +189,54 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
-  double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
-  double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
+  //double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
+  //double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
   //cout << "AA=" << AA << ", B=" << BB << endl;
 
-  double gamma_max = DBL_MAX;
-  double gamma_change=4.*thetae_rec;
  
-  // COMPUTE VALUES IN FUNCTION OF PHASE
-  if (tcur<=t0)
-  {
-    number_density_rec=0.;
-  }
-  else if (tcur<=t0+t_inj) // HEATING TIME
-  {
-    number_density_rec=n_dot*(tcur-t0)*60.;
-  }
-  else // COOLING TIME
-  {
-    // evolution of the number densities
-    number_density_rec=n_dot*t_inj*60.;
-    
-    gamma_max = gamma_max*pow(1.+AA*gamma_max*(tcur-(t_inj+t0)*60.),-1.);
-    gamma_change = gamma_change*pow(1.+AA*gamma_change*(tcur-(t_inj+t0)*60.),-1.);
 
-  }
   // Defining jnus, anus
-  double jnu_synch_pl_low[nbnu], jnu_synch_pl_high[nbnu], jnu[nbnu];
-  double anu_synch_pl_low[nbnu], anu_synch_pl_high[nbnu], anu[nbnu];
+  double jnu[nbnu];
+  double anu[nbnu];
   
   for (size_t ii=0; ii<nbnu; ++ii){
     // Initializing to <0 value to create errors if not updated
     // [ exp(-anu*ds) will explose ]
-    jnu_synch_pl_low[ii]=-1.;
-    anu_synch_pl_low[ii]=-1.;
-    jnu_synch_pl_high[ii]=-1.;
-    anu_synch_pl_high[ii]=-1.;
     jnu[ii]=-1.;
     anu[ii]=-1.;
   }
 
-  
-  //PL SYNCHRO LOW
-  spectrumPLSynchLow_->PLindex(-2.);
-  spectrumPLSynchLow_->angle_averaged(1);
-  spectrumPLSynchLow_->angle_B_pem(0.); // avg so we don't care
-  spectrumPLSynchLow_->cyclotron_freq(nu0);
-  spectrumPLSynchLow_->numberdensityCGS(number_density_rec);
-  spectrumPLSynchLow_->gamma_min(1.);
-  spectrumPLSynchLow_->gamma_max(gamma_change);
-  
-  spectrumPLSynchLow_->radiativeQ(jnu_synch_pl_low,anu_synch_pl_low,
-                  nu_ems,nbnu);
-  
+    // COMPUTE VALUES IN FUNCTION OF PHASE
+  if (tcur<=t0+t_inj){ // HEATING TIME
+    number_density_rec=max(n_dot*(tcur-t0)*60.,0.);
+    // Kappa SYNCHRO
+    double hypergeom = Gyoto::hypergeom(KappaIndex_, thetae_rec);
 
-  // PL SYNCHRO HIGH
-  spectrumPLSynchHigh_->PLindex(PLIndex_);
-  spectrumPLSynchHigh_->angle_averaged(1);
-  spectrumPLSynchHigh_->angle_B_pem(0.); // avg so we don't care
-  spectrumPLSynchHigh_->cyclotron_freq(nu0);
-  spectrumPLSynchHigh_->numberdensityCGS(number_density_rec);
-  spectrumPLSynchHigh_->gamma_min(gamma_change);
-  spectrumPLSynchHigh_->gamma_max(gamma_max);
-  
-  spectrumPLSynchHigh_->radiativeQ(jnu_synch_pl_high,anu_synch_pl_high,
-                  nu_ems,nbnu);
-  
-  /*
-  // Kappa SYNCHRO HIGH
-  double hypergeom = Gyoto::hypergeom(PLIndex_+1., thetae_rec);
-
-  spectrumkappa_->kappaindex(PLIndex_+1.);
-  spectrumkappa_->angle_averaged(1);
-  spectrumkappa_->angle_B_pem(0.); // avg so we don't care
-  spectrumkappa_->cyclotron_freq(nu0);
-  spectrumkappa_->numberdensityCGS(number_density_rec);
-  spectrumkappa_->thetae(thetae_rec);
-  spectrumkappa_->hypergeometric(hypergeom);
-  
-  spectrumkappa_->radiativeQ(jnu,anu,
-                  nu_ems,nbnu);
-  */
-
-
-
+    spectrumkappa_->kappaindex(KappaIndex_);
+    spectrumkappa_->angle_averaged(1);
+    spectrumkappa_->angle_B_pem(0.); // avg so we don't care
+    spectrumkappa_->cyclotron_freq(nu0);
+    spectrumkappa_->numberdensityCGS(number_density_rec);
+    spectrumkappa_->thetae(thetae_rec);
+    spectrumkappa_->hypergeometric(hypergeom);
+    
+    spectrumkappa_->radiativeQ(jnu,anu,
+                    nu_ems,nbnu);
+    //cout << jnu[0] << endl;
+  }
+  else{ // COOLING TIME
+    double tt=(tcur-(t_inj+t0))*60.;
+    for (size_t ii=0; ii<nbnu; ++ii){
+      jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
+      anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
+      //cout << jnu[ii] << endl;
+    }
+    //cout << "cooling" << endl;
+  }
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
-    double jnu_tot = jnu_synch_pl_low[ii] + jnu_synch_pl_high[ii],
-      anu_tot = anu_synch_pl_low[ii] + anu_synch_pl_high[ii];
-    //double jnu_tot = jnu[ii], anu_tot = anu[ii];
+    double jnu_tot = jnu[ii], anu_tot = anu[ii];
 
     //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
     //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
@@ -417,11 +404,11 @@ void Plasmoid::magnetizationParameter(double rr) {
 double Plasmoid::magnetizationParameter()const{
     return magnetizationParameter_; }
   
-void Plasmoid::PLIndex(double kk) {
-    PLIndex_=kk; }
+void Plasmoid::kappaIndex(double kk) {
+    KappaIndex_=kk; }
     
-double Plasmoid::PLIndex() const {
-    return PLIndex_; }
+double Plasmoid::kappaIndex() const {
+    return KappaIndex_; }
 
 void Plasmoid::radiusMax(double rr) {
 	if (rr<0.2)
@@ -546,6 +533,113 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
 
 
 
+void Plasmoid::file(std::string const &f) {
+  # ifdef GYOTO_USE_CFITSIO
+    fitsRead(f);
+  # else
+    GYOTO_ERROR("This Gyoto has no FITS i/o");
+  # endif
+}
+
+#ifdef GYOTO_USE_CFITSIO
+vector<size_t> Plasmoid::fitsRead(string filename) {
+  // Remove first char if it is "!"
+  if (filename.substr(0,1)=="!")
+    filename.erase(0,1);
+
+  GYOTO_MSG << "Plasmoid reading FITS file: " << filename << endl;
+
+  filename_ = filename;
+  char*     pixfile   = const_cast<char*>(filename_.c_str());
+  fitsfile* fptr      = NULL;
+  int       status    = 0;
+  double    tmpd;
+  char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
+
+  GYOTO_DEBUG << "Plasmoid::fitsRead: opening file" << endl;
+  if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status);
+
+  ////// READ FITS KEYWORDS COMMON TO ALL TABLES ///////
+  // These are: tmin, tmax, numin, numax
+  
+  fits_movnam_hdu(fptr, ANY_HDU, "GYOTO FitsRW KEYS", 0, &status);
+
+  GYOTO_DEBUG << "FitsRW::fitsRead(): read tmin_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW tmin", &tmpd,
+    NULL, &status);
+  if (status) {
+      if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  } else FitsRW::tmin(tmpd); // tmin_ found
+
+  GYOTO_DEBUG << "FitsRW::fitsRead(): read tmax_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW tmax", &tmpd,
+    NULL, &status);
+  if (status) {
+      if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  } else FitsRW::tmax(tmpd); // tmax_ found
+
+  GYOTO_DEBUG << "FitsRW::fitsRead(): read numin_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW numin", &tmpd,
+    NULL, &status);
+  if (status) {
+      if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  } else FitsRW::numin(tmpd); // numin_ found
+
+  GYOTO_DEBUG << "FitsRW::fitsRead(): read numax_" << endl;
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW numax", &tmpd,
+    NULL, &status);
+  if (status) {
+      if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  } else FitsRW::numax(tmpd); // rmax_ found
+
+  // READ EXTENSIONS
+  vector<size_t> naxes_jnu = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW Jnu",
+                  jnu_array_);
+
+  vector<size_t> naxes_anu = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW Anu",
+                  anu_array_);
+
+  if (naxes_jnu[0]!=naxes_anu[0] || naxes_jnu[1]!=naxes_anu[1])
+    throwError("In Plasmoid: jnu_array_ and anu_array_ dimensions "
+         "do not agree");
+
+  // freq array
+  vector<size_t> naxes_freq = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW FREQUENCY",
+                  freq_array_);
+  
+  if (naxes_freq[0]!=naxes_jnu[0])
+    GYOTO_ERROR("In Plasmoid: nnu differ from jnu_array_ and freq_array");
+  
+  /*cout << "jnu read= " << endl;
+  for (int ii=0;ii<60;ii++) cerr << jnu_array_[ii] << " " ;
+  cout << endl;*/
+
+  FitsRW::nnu(naxes_jnu[0]);
+  FitsRW::nt(naxes_jnu[1]);
+
+  return naxes_anu;
+
+}
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -561,8 +655,8 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
               double alphaInu[], double alphaQnu[], double alphaUnu[], double alphaVnu[], // output
               double rQnu[], double rUnu[], double rVnu[], // outut
               double const nu_ems[], size_t nbnu, double dsem,
-              state_t const &coord_ph, double const coord_obj[8]) const {
-
+              state_t const &coord_ph, double const coord_obj[8]) const {}
+/*
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 # endif
@@ -643,7 +737,7 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
   
 
   // PL SYNCHRO HIGH
-  spectrumPLSynchHigh_->PLindex(PLIndex_);
+  spectrumPLSynchHigh_->PLindex(KappaIndex_);
   spectrumPLSynchHigh_->angle_averaged(1);
   spectrumPLSynchHigh_->angle_B_pem(0.); // avg so we don't care
   spectrumPLSynchHigh_->cyclotron_freq(nu0);
@@ -784,3 +878,4 @@ void Plasmoid::Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], doubl
   }
 
 }
+*/

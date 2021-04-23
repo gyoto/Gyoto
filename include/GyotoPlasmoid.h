@@ -33,11 +33,16 @@ namespace Gyoto{
   namespace Astrobj { class Plasmoid; }
 }
 
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <GyotoMetric.h>
 #include <GyotoUniformSphere.h>
-#include <GyotoPowerLawSynchrotronSpectrum.h>
-//#include <GyotoThermalSynchrotronSpectrum.h>
+#include <GyotoFitsRW.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#ifdef GYOTO_USE_CFITSIO
+#include <fitsio.h>
+#endif
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -52,6 +57,7 @@ namespace Gyoto{
  *
  */
 class Gyoto::Astrobj::Plasmoid :
+  public FitsRW,
   public Gyoto::Astrobj::UniformSphere{
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Plasmoid>;
   
@@ -65,13 +71,16 @@ class Gyoto::Astrobj::Plasmoid :
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
   double temperatureReconnection_; ///< temperature of plasmoid after reconnection
   double magnetizationParameter_; ///< magnetization parameter
-  double PLIndex_; ///< PL Index
-  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchLow_; // Power Law-distribution synchrotron spectrum at low gamma (eq at a thermal distribution until gammachange see radiativeQ)
-  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynchHigh_; // Power Law-distribution synchrotron spectrum at low gamma
-  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_;
+  double KappaIndex_; ///< KappaIndex
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_; //Compute jnu and anu during the injection phase (increasing n_e)
   bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;
+  // FITS FILE Quantities
+  std::string filename_;
+  double* freq_array_;
+  double* jnu_array_;
+  double* anu_array_;
 
   // Constructors - Destructor
   // -------------------------
@@ -113,8 +122,8 @@ class Gyoto::Astrobj::Plasmoid :
   void temperatureReconnection(double tt);
   void magnetizationParameter(double rr);
   double magnetizationParameter() const;
-  void PLIndex(double kk);
-  double PLIndex() const;
+  void kappaIndex(double kk);
+  double kappaIndex() const;
   void radiusMax(double rr);
   double radiusMax() const;
   void Radius(std::string vary);
@@ -141,7 +150,11 @@ class Gyoto::Astrobj::Plasmoid :
   int Impact(Gyoto::Photon* ph, size_t index,
          Astrobj::Properties *data=NULL);
 
- private:
+  void file(std::string const &f);
+
+  std::vector<size_t> fitsRead(std::string filename);
+
+  private:
   void Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const;
 
 };
