@@ -41,10 +41,22 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(ThickDisk)
-GYOTO_PROPERTY_DOUBLE(ThickDisk, ThickDiskOpeningAngle, thickDiskOpeningAngle,
-		      "Angle between spin axis and disk surface, so "
-		      "if it is pi/2, the disk is razor-thin")
+GYOTO_PROPERTY_DOUBLE(ThickDisk, ThickDiskZGaussianSigma,
+		      thickDiskZGaussianSigma,"The standard deviation "
+		      "of the Gaussian G modulating the density "
+		      "with altitude z out of the equatorial plane, "
+		      "divided by the cylindrical radius. So "
+		      "G(z) = exp(-z^2 / 2*(rcyl*thickDiskZGaussianSigma_)^2)")
 GYOTO_PROPERTY_DOUBLE(ThickDisk, ThickDiskInnerRadius, thickDiskInnerRadius)
+GYOTO_PROPERTY_BOOL(ThickDisk, UseSelfAbsorption, NoUseSelfAbsorption,
+		    useSelfAbsorption)
+// GYOTO_PROPERTY_BOOL(ThickDisk,
+// 		    AngleAveraged, NoAngleAveraged,
+// 		    angleAveraged)
+GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VeloParam, veloParam,
+			     "The two coef alpha and beta such that "
+			     "u^r = u^r_circ + (1-alpha)*(u^r_rad - u^r_circ)"
+			     " and similarly for Omega and beta.")
 GYOTO_PROPERTY_DOUBLE_UNIT(ThickDisk,
 			   NumberDensityAtInnerRadius,
 			   numberDensityAtInnerRadius)
@@ -57,13 +69,39 @@ GYOTO_PROPERTY_DOUBLE(ThickDisk, MagnetizationParameter,
 GYOTO_PROPERTY_END(ThickDisk, Standard::properties)
 
 // ACCESSORS
-void ThickDisk::thickDiskOpeningAngle(double ang) {
-  if (ang > M_PI/2.) throwError("In ThickDisk::thickDiskOpeningAngle "
-				"opening angle should be <pi/2 rad"); 
-  thickDiskOpeningAngle_=ang;}
-double ThickDisk::thickDiskOpeningAngle()const{return thickDiskOpeningAngle_;}
+void ThickDisk::thickDiskZGaussianSigma(double sig) {
+  thickDiskZGaussianSigma_=sig;}
+double ThickDisk::thickDiskZGaussianSigma() const {
+  return thickDiskZGaussianSigma_;}
 void ThickDisk::thickDiskInnerRadius(double hh) {thickDiskInnerRadius_=hh;}
 double ThickDisk::thickDiskInnerRadius()const{return thickDiskInnerRadius_;}
+bool ThickDisk::useSelfAbsorption() const {return use_selfabsorption_;}
+void ThickDisk::useSelfAbsorption(bool abs) {use_selfabsorption_=abs;}
+void ThickDisk::veloParam(std::vector<double> const &v) {
+  size_t nn = v.size();
+  if (nn!=2)
+    GYOTO_ERROR("In ThickDisk: choose exactly 2 velocity parameters");
+  alpha_veloparam_ = v[0];
+  beta_veloparam_  = v[1];
+  if (alpha_veloparam_<0. || alpha_veloparam_>1.
+      || beta_veloparam_<0. || beta_veloparam_>1.){
+    GYOTO_ERROR("In ThickDisk: velocity parameters should be "
+		"between 0 and 1!");
+  }
+}
+std::vector<double> ThickDisk::veloParam() const {
+  std::vector<double> v(2, 0.);
+  v[0] = alpha_veloparam_;
+  v[1] = beta_veloparam_;
+  return v;
+}
+// bool ThickDisk::angleAveraged() const
+// {return angle_averaged_;}
+// void ThickDisk::angleAveraged(bool ang)
+// {
+//   angle_averaged_=ang;
+//   spectrumThermalSynch_->angle_averaged(ang);
+// }
 double ThickDisk::numberDensityAtInnerRadius() const {
   // Converts internal cgs central enthalpy to SI
   double dens=numberDensityAtInnerRadius_cgs_;
@@ -118,8 +156,12 @@ double ThickDisk::magnetizationParameter()const{
 //
 
 ThickDisk::ThickDisk() :
-  Standard("ThickDisk"), thickDiskOpeningAngle_(0.785),
+  Standard("ThickDisk"),
   thickDiskInnerRadius_(2.),
+  thickDiskZGaussianSigma_(1.),
+  use_selfabsorption_(1),
+  alpha_veloparam_(1.),
+  beta_veloparam_(1.),
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
   magnetizationParameter_(1.)
@@ -129,8 +171,12 @@ ThickDisk::ThickDisk() :
 }
 
 ThickDisk::ThickDisk(const ThickDisk& o) :
-  Standard(o), thickDiskOpeningAngle_(o.thickDiskOpeningAngle_),
+  Standard(o), 
   thickDiskInnerRadius_(o.thickDiskInnerRadius_),
+  thickDiskZGaussianSigma_(o.thickDiskZGaussianSigma_),
+  use_selfabsorption_(o.use_selfabsorption_),
+  alpha_veloparam_(o.alpha_veloparam_),
+  beta_veloparam_(o.beta_veloparam_),
   numberDensityAtInnerRadius_cgs_(o.numberDensityAtInnerRadius_cgs_),
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
@@ -178,8 +224,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
 
   double number_density = numberDensityAtInnerRadius_cgs_
     *(thickDiskInnerRadius_*thickDiskInnerRadius_)/(rr*rr);
-  double zsigma = rcyl;
-
+  double zsigma = thickDiskZGaussianSigma_*rcyl;
   double  expofact_zscaling = exp(-zz*zz/(2.*zsigma*zsigma)); // simple Gaussian modulation around z=0; RIAF model (Broderick+11) use zsigma=rcyl
   number_density *= expofact_zscaling;
   //cout << "z/r fact, dens= " << expofact_zscaling << " " << number_density << endl;
@@ -276,11 +321,16 @@ void ThickDisk::radiativeQ(double Inu[], // output
 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
-    Taunu[ii] = em1+1.;
-    Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
-      -jnu_tot / anu_tot * em1;
-    //Taunu[ii] = 1.;
-    //Inu[ii] = jnu_tot * dsem * gg_->unitLength() ;
+    if (use_selfabsorption_){
+      // with self absorption
+      Taunu[ii] = em1+1.;
+      Inu[ii] = anu_tot == 0. ? jnu_tot * dsem * gg_->unitLength() :
+	-jnu_tot / anu_tot * em1;
+    }else{
+      // no absorption
+      Taunu[ii] = 1.;
+      Inu[ii] = jnu_tot * dsem * gg_->unitLength() ;
+    }
     //cout << "unit length= " << gg_->unitLength() << " " << jnu_tot * gg_->unitLength() <<  endl;
 
     if (Inu[ii]<0.)
@@ -352,7 +402,7 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
   // u_\mu = (u_t,0,0,u_phi) = -u_t (-1,0,0,ll)
   // with ll = rcyl^{3/2}/(rcyl+1.)
   
-  double mycst=1; // Gold+20 choice, Keplerian is alpha=-2, 
+  double mycst=1; // Gold+20 choice, Keplerian is mycst=-2, 
   // see Appendix of 2021 M87 paper.
   double ll=pow(rcyl,1.5)/(rcyl+mycst);
   double u_t_minus=sqrt(-1./(guptt - 2.*guptp*ll + guppp*ll*ll));
@@ -378,12 +428,15 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
 
   // MIXED VELOCITY
 
-  double alpha=1., beta=1.;
+  double alpha=alpha_veloparam_, beta=beta_veloparam_;
 
   vel[1] = vel_circ[1] + (1-alpha)*(vel_rad[1]-vel_circ[1]);
   vel[2] = 0.;
   double Omega = Omega_circ + (1-beta)*(Omega_rad-Omega_circ);
-  vel[0] = sqrt(-(1. + grr*vel[1]*vel[1])/(gtt + 2*Omega*gtp + Omega*Omega*gpp));
+  double normfact = gtt + 2*Omega*gtp + Omega*Omega*gpp;
+  if (normfact>0) throwError("In ThickDisk::getVelocity: velocity "
+			     "prescription non physical.");
+  vel[0] = sqrt(-(1. + grr*vel[1]*vel[1])/normfact);
   vel[3] = Omega*vel[0];
 
   //cout << "at rcyl, th-pi/2= " << rcyl << " " << fabs(pos[2]-M_PI/2.) << " u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;

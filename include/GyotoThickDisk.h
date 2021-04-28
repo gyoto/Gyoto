@@ -1,8 +1,8 @@
 /**
  * \file GyotoThickDisk.h
- * \brief A thick accretion disk described by its opening
- * angle between the BH spin axis and the disk surface,
- * and its inner radius. 
+ * \brief A thick accretion disk described by its 
+ * inner radius and the fwhm of the Gaussian factor affecting
+ * the density out of the equatorial plane. 
  * 
  * Density is assumed to follow a r^{-2} law while temperature
  * is a power law with a specified slope.
@@ -46,9 +46,9 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::ThickDisk
- * \brief A thick accretion disk described by its opening
- * angle between the BH spin axis and the disk surface,
- * and its inner radius. 
+ * \brief A thick accretion disk described by its 
+ * inner radius and the fwhm of the Gaussian factor affecting
+ * the density out of the equatorial plane. 
  * 
  * Density is assumed to follow a r^{-2} law while temperature
  * is a power law with a specified slope.
@@ -63,8 +63,11 @@ class Gyoto::Astrobj::ThickDisk
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThickDisk>;
  private:
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_;
-  double thickDiskOpeningAngle_; ///< ThickDisk opening angle (rad)
   double thickDiskInnerRadius_; ///< Inner disk radius in M units
+  double thickDiskZGaussianSigma_; ///< Stdev of the Gaussian modulating the density along z in units of cylindrical radius
+  bool use_selfabsorption_; ///< True if selfabs is used in radiative transfer
+  double alpha_veloparam_; ///< alpha such that u^r = u^r_circ + (1-alpha)*(u^r_rad - u^r_circ)
+  double beta_veloparam_; ///< beta such that Omega = Omega_circ + (1-beta)*(Omega_rad - Omega_circ)
   double numberDensityAtInnerRadius_cgs_; ///< electron nb density at inner radius (cgs)
   double temperatureAtInnerRadius_; ///< electron temperature at inner radius (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
@@ -86,10 +89,14 @@ class Gyoto::Astrobj::ThickDisk
   // Accessors
   // ---------
  public:
-  void thickDiskOpeningAngle(double ang);
-  double thickDiskOpeningAngle() const;
   void thickDiskInnerRadius(double hh);
   double thickDiskInnerRadius() const;
+  void thickDiskZGaussianSigma(double sig);
+  double thickDiskZGaussianSigma() const;
+  void useSelfAbsorption(bool abs) ;
+  bool useSelfAbsorption() const;
+  void veloParam(std::vector<double> const &v);
+  std::vector<double> veloParam() const;
   double numberDensityAtInnerRadius() const;
   double numberDensityAtInnerRadius(std::string const &unit) const;
   void numberDensityAtInnerRadius(double ne);
