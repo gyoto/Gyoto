@@ -287,7 +287,7 @@ vector<size_t> FitsRW::fitsReadHDU(fitsfile* fptr,
 
 void FitsRW::getIndices(size_t i[2], double const nu, double const tt, double* const freq_array) const {
 
-  //cout << "tmin, tmax, numin, numax= " << tmin_ << "," << tmax_ << "," << numin_ << "," << numax_ << endl;
+  //cout << "tmin, tmax, tt, numin, numax, nu= " << tmin_ << "," << tmax_ << "," << tt << "," << numin_ << "," << numax_ << "," << nu << endl;
   if (tmin_>-DBL_MAX && tmax_<DBL_MAX && nt_>0. && dt_>0.) { // >1 time must be properly defined
     if (tt<tmin_) i[1]=0;         // assuming stationnarity before tmin_
     else if (tt>tmax_) i[1]=nt_-1;//                       and after tmax_
@@ -314,7 +314,7 @@ double FitsRW::interpolate(double nu, double tt, double* const array, double* co
   if (!freq_array)
     GYOTO_ERROR("In FitsRW::interpolate freq_array not defined");
 
-  size_t ind[2]; // {i_t, i_phi, i_r}
+  size_t ind[2]; // {i_t, i_nu}
   getIndices(ind, nu , tt, freq_array);
 
   //cout << ind[0] << " " << ind[1] << endl;
@@ -336,10 +336,9 @@ double FitsRW::interpolate(double nu, double tt, double* const array, double* co
     +(array_lu-array_ll)*rationu
     +(array_uu-array_lu-array_ul+array_ll)*rationu*ratiot;
   /*cout << "bilin interpo stuff: " << endl;
-  cout << "T: " << tmin_ << " " << tt << " " << tmax_ << " " << it << endl;
-  cout << "PHI: " << phil << " " << phi << " " << phiu << endl;
-  cout << "R: " << rl << " " << rcyl << " " << ru << endl;
-  cout << "ARRAY at 4 corners (phi,r)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;*/
+  cout << "T: " << tl << " " << tt << " " << tu << endl;
+  cout << "NU: " << nul << " " << nu << " " << nuu << endl;
+  cout << "ARRAY at 4 corners (tt,nu)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;*/
   
   return array_interpo;
 }
