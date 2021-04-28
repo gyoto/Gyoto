@@ -187,13 +187,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
            *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
            *numberDensity_cgs_); // Magnetic field
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
-    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
-
-  //double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
-  //double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
-  //cout << "AA=" << AA << ", B=" << BB << endl;
-
- 
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq 
 
   // Defining jnus, anus
   double jnu[nbnu];
@@ -222,10 +216,10 @@ void Plasmoid::radiativeQ(double Inu[], // output
     
     spectrumkappa_->radiativeQ(jnu,anu,
                     nu_ems,nbnu);
-    //cout << jnu[0] << endl;
+    //cout << spectrumkappa_->angle_B_pem() << endl;
   }
   else{ // COOLING TIME
-    double tt=(tcur-(t_inj+t0))*60.;
+    double tt=(tcur-(t_inj+t0))*60.; // in sec
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
       anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
@@ -237,6 +231,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu[ii], anu_tot = anu[ii];
+    //cout << jnu_tot << ", " << anu_tot << ", t=" << tcur << endl;
 
     //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
     //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
@@ -562,7 +557,8 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
   ////// READ FITS KEYWORDS COMMON TO ALL TABLES ///////
   // These are: tmin, tmax, numin, numax
   
-  fits_movnam_hdu(fptr, ANY_HDU, "GYOTO FitsRW KEYS", 0, &status);
+  string extname = "GYOTO FitsRW KEYS";
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(extname.c_str()), 0, &status);
 
   GYOTO_DEBUG << "FitsRW::fitsRead(): read tmin_" << endl;
   fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW tmin", &tmpd,
