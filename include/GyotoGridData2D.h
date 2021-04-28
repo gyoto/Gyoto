@@ -97,8 +97,6 @@ class Gyoto::GridData2D
   size_t nphi() const;
   void dt(double dd);
   double dt() const;
-  void timeStep(std::string const dtconst);
-  std::string timeStep() const;
 
 #ifdef GYOTO_USE_CFITSIO
 
