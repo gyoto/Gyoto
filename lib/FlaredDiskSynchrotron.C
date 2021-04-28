@@ -111,6 +111,7 @@ FlaredDiskSynchrotron::~FlaredDiskSynchrotron() {
   GYOTO_DEBUG << endl;
   if (density_) delete [] density_;
   if (velocity_) delete [] velocity_;
+  if (time_array_) delete [] time_array_;
 }
 
 void FlaredDiskSynchrotron::file(std::string const &f) {
@@ -142,10 +143,6 @@ double FlaredDiskSynchrotron::hoverR() const {
 }
 
 void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
-  // Note: fitsRead() also uses deltat_ to translate tmin_ and tmax_, so
-  // it is fine to set File after TimeTranslation_inMunit.  Since we
-  // don't record the original tmin_ and tmax_ values, we must remove
-  // any previous translation though.
   double tmin=GridData2D::tmin(), tmax=GridData2D::tmax();
   GridData2D::tmin(tmin-deltat_+dt);
   GridData2D::tmax(tmax-deltat_+dt);
@@ -452,6 +449,10 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
         naxes_dens[2]!=naxes_velo[2] || naxes_dens[2]!=naxes_Bvec[2])
       throwError("In FlaredDiskSynchro: density and B4vector dimensions "
   	       "do not agree");
+
+  /*cout << "B4vector read= " << endl;
+  for (int ii=0;ii<4*naxes_Bvec[1]*naxes_Bvec[2];ii++) cerr << Bvector_[ii] << " " ;
+  cout << endl;*/
   }       
 
   // Time array
@@ -566,15 +567,14 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
     size_t nr = GridData2D::nr(), nphi = GridData2D::nphi(),
     nt = GridData2D::nt(), nel = nt*nphi*nr-1;
 
+    //cout << "CALLING INTERPO FOR B" << endl;
     double Bt=GridData2D::interpolate(tt, phi, rcyl, Bvector_, time_array_),
     Br=GridData2D::interpolate(tt, phi, rcyl, Bvector_+nel+1, time_array_),
     Btheta=GridData2D::interpolate(tt, phi, rcyl, Bvector_+2*(nel+1), time_array_),
     Bphi=GridData2D::interpolate(tt, phi, rcyl, Bvector_+3*(nel+1), time_array_);
 
     double b4vec[4]={Bt,Br,Btheta,Bphi}; // B 4-vector in BL frame
-    cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
-    if (Br!=Br)
-      GYOTO_ERROR("Nan ! ! !");
+    //cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
 
     double vel[4]; // 4-velocity of emitter
     const_cast<FlaredDiskSynchrotron*>(this)->getVelocity(coord_obj, vel);
@@ -592,11 +592,16 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
     double sth = sin(theta_mag);//, cth = cos(theta_mag);
     if (sth==0.) GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: "
           "theta_mag is zero leads to undefined emission");
-
+    if (sth!=sth) GYOTO_ERROR("In FlaredDiskSynchrotron::radiativeQ: "
+          "theta_mag is nan");
     spectrumKappaSynch_->angle_averaged(0);
 
     //cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
     BB = sqrt(pow(b4vec[1],2.)+pow(b4vec[2],2.)+pow(b4vec[3],2.)); // norm of the 3-vector B
+    /*BB = sqrt(4.*M_PI*magnetizationParameter_
+       *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+       *number_density);*/
+    //cout << "BB=" << BB << ", theta_mag=" << theta_mag << endl;
     
   }
   else{
@@ -632,11 +637,13 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
   spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,
 				  nu_ems,nbnu);
 
+
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
 
     double jnu_tot = jnu_synch_kappa[ii],
       anu_tot = anu_synch_kappa[ii];
+      //cout << jnu_tot << ", " << anu_tot << endl;
 
     //cout << "in jet stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
 
