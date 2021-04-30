@@ -332,6 +332,16 @@ int Photon::hit(Astrobj::Properties *data) {
     integration in case of a bug]
    */
 
+  // Parameters for image order tracking:
+  bool theta_has_changed=false; // flag checking the change of theta coordinate
+  // needed for tracking various orders of the image if max_cross_eqplane_
+  // is set
+  bool theta_is_increasing=true; // 1: if theta is increasing along integration,
+  // ie from Screen towards Object; 0: means theta is decreasing. Flag
+  // needed for tracking various orders of the image if max_cross_eqplane_
+  // is set. Default value here, will be updated later.
+  int nb_theta_turningpoints=0; // keeping track of turning points
+
   double h1max=DBL_MAX;
   while (!stopcond) {
     // Next step along photon's worldline
@@ -495,36 +505,70 @@ int Photon::hit(Astrobj::Properties *data) {
     //************************************
 
     if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
+      // Keeping track of theta turning points for
+      // various order images
       double zsign=0.;
-      double rlim=10.;
-      /* 
-	 The nb of crossings of equat plane is
-	 only tracked within a sphere of coordinate radius rlim.
-	 See the Appendix of Vincent+20 on M87 for a discussion.
-      */
+      double rlim=DBL_MAX; // keep track of theta turning points
+      // only below rlim; theta can change slope at large
+      // distances; this is not the kind of turning point we track.
       switch (coordkind) {
       case GYOTO_COORDKIND_SPHERICAL:
-	//cout << "current z= " << coord[1]*cos(coord[2]) << endl;
+
+	//cout << "new theta= " << coord[2] << endl;
+	// *** z sign change tracking
 	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
 	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
 	//cout << "zsign= " << zsign << endl;
 	if (coord[1]*cos(coord[2])*zsign<0. && coord[1]<rlim){
 	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
 	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
-	  //cout << "at r= " << coord[1] << endl;
+	  //cout << "at rc,z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
 	}
+
+	// *** theta turning points tracking
+	if (!theta_has_changed){
+	  // theta has not yet changed
+	  // just keep track of it starting to change
+	  // and update theta_is_increasing accordingly
+	  if (x2_[i0_]!=coord[2]){
+	    theta_has_changed=true;
+	    if (coord[2]<x2_[i0_]) theta_is_increasing=false;
+	    //cout << setprecision(20) << "first change theta: " << coord[2] << " " << x2_[i0_] << " " << theta_is_increasing << endl;
+	  }
+	  //cout << "theta_is_increasing init= " << theta_is_increasing;
+	}else{
+	  // theta is now changing
+	  // keep track of turning points
+	  //cout << "checking: " << coord[2] << " " << x2_[ind-dir] << endl;
+	  if ((theta_is_increasing && coord[2]<x2_[ind-dir])
+	      || (!theta_is_increasing && coord[2]>x2_[ind-dir])){
+	    // so here theta was increasing in the past of the integration
+	    // and it now starts to decrease, or the other way round:
+	    // we have a new turning point
+	    theta_is_increasing = !theta_is_increasing;
+	    if (coord[1]<rlim){
+	      nb_theta_turningpoints+=1;
+	      //nb_cross_eqplane_+=1; 
+	      //cout << "***updating nbth to " << nb_theta_turningpoints << endl;
+	      //cout << "at rc,z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+	    }
+	  }
+
+	}
+
 	break;
       case GYOTO_COORDKIND_CARTESIAN:
 	{
-	  zsign = x3_[i0_];
-	  double rcart = sqrt(coord[1]*coord[1]
-			      +coord[2]*coord[2]+coord[3]*coord[3]); 
-	  if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
-	  if (coord[3]*zsign<0. && rcart<rlim){
-	    nb_cross_eqplane_+=1; // equatorial plane has been just crossed
-	    //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
-	}
-	break;
+	  throwError("to be implemented");
+	  // theta_is_increasing = x3_[i0_];
+	  // double rcart = sqrt(coord[1]*coord[1]
+	  // 		      +coord[2]*coord[2]+coord[3]*coord[3]); 
+	  // if (nb_cross_eqplane_>0) theta_is_increasing *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
+	  // if (coord[3]*theta_is_increasing<0. && rcart<rlim){
+	  //   nb_cross_eqplane_+=1; // equatorial plane has been just crossed
+	  //   //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
+	  //}
+	  break;
 	}
       default:
 	GYOTO_ERROR("Incompatible coordinate kind in Photon.C");
@@ -534,12 +578,15 @@ int Photon::hit(Astrobj::Properties *data) {
 	  
       if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
 
-      if (nb_cross_eqplane_ == maxCrossEqplane_
-	  && object_ -> Impact(this, ind, NULL) == 0) {
+      if (nb_cross_eqplane_ == maxCrossEqplane_ &&
+	  nb_theta_turningpoints == maxCrossEqplane_){
+	  // && object_ -> Impact(this, ind, NULL) == 0) {
+	
 	// Update 200430 FV: compute geodesic until (1) it reaches
 	// maxcross and (2) it leaves the object (NB: the NULL in place
 	// of data is there to insure that quantities will not be updated).
 	// Keep the amount of flux accumulated so far and stop integration.
+	// Update 210401 FV: outdated with theta turning points implementation
 	
 	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
 	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
