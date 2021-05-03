@@ -182,6 +182,8 @@ void Spectrum::KappaDistributionSynchrotron::radiativeQ(double jnu[], // output
 	anusinnext=alphanuCGS(nu)*sin(theta);
 	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
 	anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
+	jnusinprev=jnusinnext;
+	anusinprev=anusinnext;
 	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
