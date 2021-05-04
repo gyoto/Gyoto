@@ -182,7 +182,13 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double n_dot=numberDensity_cgs_*vrec_cgs/rmax_cgs; //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
   
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB_
-    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq 
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  double sigma_thomson=8.*M_PI*pow(GYOTO_ELECTRON_CLASSICAL_RADIUS_CGS,2.)/3.; // Thomson's cross section 
+  double AA = (4./3.*sigma_thomson*GYOTO_C_CGS*pow(BB_,2.))/(8.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); // Coefficient of integration from [D. Ball et al., 2020] for cooling
+
+  double thetaRec=thetaRec_;
+  double hypergeom = Gyoto::hypergeom(kappaIndex_, thetaRec);
 
   // Defining jnus, anus
   double jnu[nbnu];
@@ -197,28 +203,25 @@ void Plasmoid::radiativeQ(double Inu[], // output
 
   // COMPUTE VALUES IN FUNCTION OF PHASE
   if (tcur<=t0+t_inj){ // HEATING PHASE
-    number_density_rec=max(n_dot*(tcur-t0)*60.,0.);
-    // Kappa SYNCHRO
-    double hypergeom = Gyoto::hypergeom(kappaIndex_, thetaRec_);
-
-    spectrumkappa_->kappaindex(kappaIndex_);
-    spectrumkappa_->angle_averaged(1);
-    spectrumkappa_->angle_B_pem(0.); // avg so we don't care
-    spectrumkappa_->cyclotron_freq(nu0);
-    spectrumkappa_->numberdensityCGS(number_density_rec);
-    spectrumkappa_->thetae(thetaRec_);
-    spectrumkappa_->hypergeometric(hypergeom);
-    
-    spectrumkappa_->radiativeQ(jnu,anu,
-                    nu_ems,nbnu);
+    number_density_rec=max(n_dot*(tcur-t0)*60.,0.);    
   }
   else{ // COOLING PHASE
-    double tt=(tcur-(t_inj+t0))*60.; // in sec
-    for (size_t ii=0; ii<nbnu; ++ii){
-      jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
-      anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
-    }
+    number_density_rec=numberDensity_cgs_;
+    thetaRec=thetaRec_*pow(1.+AA*3.*thetaRec_*(tcur-(t_inj+t0))*60.,-1.);
+
+    hypergeom = Gyoto::hypergeom(kappaIndex_, thetaRec);
   }
+
+  spectrumkappa_->kappaindex(kappaIndex_);
+  spectrumkappa_->angle_averaged(1);
+  spectrumkappa_->angle_B_pem(0.); // avg so we don't care
+  spectrumkappa_->cyclotron_freq(nu0);
+  spectrumkappa_->numberdensityCGS(number_density_rec);
+  spectrumkappa_->thetae(thetaRec);
+  spectrumkappa_->hypergeometric(hypergeom);
+  
+  spectrumkappa_->radiativeQ(jnu,anu,
+                  nu_ems,nbnu);
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
