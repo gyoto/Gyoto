@@ -120,6 +120,8 @@ class Gyoto::FitsRW
         std::string extname,
           double* src);
 
+  void fitsWriteParams(fitsfile* fptr, double n_e, double theta, double kappa, double BB);
+
   virtual std::vector<size_t> fitsReadHDU(fitsfile* fptr,
             std::string extname,
             double *& dest);

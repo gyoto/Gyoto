@@ -168,6 +168,40 @@ void FitsRW::fitsClose(fitsfile* fptr) {
   fptr = NULL;
 }
 
+void FitsRW::fitsWriteParams(fitsfile* fptr, double n_e, double theta, double kappa, double BB){
+  int       status    = 0;
+  char *    CNULL     = NULL;
+  char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
+  string    ss        = "GYOTO FitsRW KEYS";
+
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(ss.c_str()), 0, &status);
+
+  if (n_e>0.){
+    fits_write_key(fptr, TDOUBLE, const_cast<char*>("GYOTO FitsRW ne"), &n_e, CNULL, &status);
+    if (status) throwCfitsioError(status) ;
+  }else
+    GYOTO_ERROR("In fitsWriteParams : n_e<0");
+
+  if (theta>0.){
+    fits_write_key(fptr, TDOUBLE, const_cast<char*>("GYOTO FitsRW theta"), &theta, CNULL, &status);
+    if (status) throwCfitsioError(status) ;
+  }else
+    GYOTO_ERROR("In fitsWriteParams : theta<0");
+
+  if (kappa>0.){
+    fits_write_key(fptr, TDOUBLE, const_cast<char*>("GYOTO FitsRW kappa"), &kappa, CNULL, &status);
+    if (status) throwCfitsioError(status) ;
+  }else
+    GYOTO_ERROR("In fitsWriteParams : kappa<0");
+
+  if (BB>0.){
+    fits_write_key(fptr, TDOUBLE, const_cast<char*>("GYOTO FitsRW BB"), &BB, CNULL, &status);
+    if (status) throwCfitsioError(status) ;
+  }else
+    GYOTO_ERROR("In fitsWriteParams : BB<0");
+}
+
 void FitsRW::fitsWriteHDU(fitsfile* fptr,
             string const extname,
             double* const src) {
@@ -298,10 +332,13 @@ void FitsRW::getIndices(size_t i[2], double const nu, double const tt, double* c
 
   if (nnu_>0.) {
     if (numin_ > 0. && numax_<DBL_MAX){
-      i[0]=0;
-      while (freq_array[i[0]+1]<nu){
-        i[0]+=1;
-      }
+      if (numax_>nu && numin_<nu){
+          i[0]=0;
+        while (freq_array[i[0]+1]<nu){
+          i[0]+=1;
+        }
+      }else
+        GYOTO_ERROR("In FitsRW::getIndices: frequency out of boundary!");
     }else
       GYOTO_ERROR("In FitsRW::getIndices: frequencies badly defined!");
   } else {
