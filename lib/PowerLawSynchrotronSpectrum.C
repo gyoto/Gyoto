@@ -194,12 +194,14 @@ void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
       double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
       double anusinprev=alphanuCGS(nu)*sin(theta), anusinnext=anusinprev;
       for (int jj=1;jj<=nstep_angint;jj++){
-	theta=th0+double(jj)/2.*hh;
+	theta=th0+double(jj)*hh;
 	angle_B_pem(theta);
 	jnusinnext=jnuCGS(nu)*sin(theta);
 	anusinnext=alphanuCGS(nu)*sin(theta);
 	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
 	anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
+  jnusinprev=jnusinnext;
+  anusinprev=anusinnext;
 	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
