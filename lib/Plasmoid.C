@@ -50,11 +50,11 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitVelocity, initVelocity,
            "of plasmoid")
 GYOTO_PROPERTY_DOUBLE_UNIT(Plasmoid, NumberDensity, numberDensity,
                "cgs number density, constant through plasmoid")
-GYOTO_PROPERTY_DOUBLE(Plasmoid, TemperatureReconnection, temperatureReconnection,
-               "Temperature de reconnection")
-GYOTO_PROPERTY_DOUBLE(Plasmoid, MagnetizationParameter,
-              magnetizationParameter,
-              "magnetization parameter")
+GYOTO_PROPERTY_DOUBLE(Plasmoid, ThetaRec, thetaRec,
+               "Dimensionless Temperature of reconnexion")
+GYOTO_PROPERTY_DOUBLE(Plasmoid, BNormCGS,
+              BNormCGS,
+              "magnetic field strenght")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, KappaIndex, kappaIndex,
 		      "PL index of kappa-synchrotron")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, RadiusMax, radiusMax,
@@ -67,9 +67,9 @@ Plasmoid::Plasmoid() :
   gg_(NULL),
   flag_("None"),
   numberDensity_cgs_(1.),
-  temperatureReconnection_(1.),
-  magnetizationParameter_(1.),
-  KappaIndex_(3.5),
+  thetaRec_(1.),
+  BB_(1.),
+  kappaIndex_(3.5),
   posSet_(false),
   posIni_(NULL),
   fourveldt_(NULL),
@@ -97,9 +97,9 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   gg_(orig.gg_),
   flag_(orig.flag_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
-  temperatureReconnection_(orig.temperatureReconnection_),
-  magnetizationParameter_(orig.magnetizationParameter_),
-  KappaIndex_(orig.KappaIndex_),
+  thetaRec_(orig.thetaRec_),
+  BB_(orig.BB_),
+  kappaIndex_(orig.kappaIndex_),
   posSet_(orig.posSet_),
   posIni_(NULL),
   fourveldt_(NULL),
@@ -170,23 +170,18 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
   double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
+  double magnetizationParameter=pow(BB_,2.)/(4.*M_PI*GYOTO_PROTON_MASS_CGS
+    * GYOTO_C_CGS * GYOTO_C_CGS*numberDensity_cgs_);
+  
   double rmax_cgs = radiusMax_*GYOTO_G_OVER_C_SQUARE_CGS*gg_->mass()*1.e3;
-  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
+  double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter/(magnetizationParameter+1),0.5);
   double t_inj=rmax_cgs/(vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
-  //cout << "tcur=" << tcur << ", t0=" << t0 << ", t_inj=" << t_inj << endl;
 
   double number_density_rec=0.; // number density of e- which follow the kappa distribution after the reconnection
 
   double n_dot=numberDensity_cgs_*vrec_cgs/rmax_cgs; //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
-  //cout << "n_dot=" << n_dot << endl;
-
-  double thetae_rec = GYOTO_BOLTZMANN_CGS*temperatureReconnection_
-    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS); //Dimentionless temperature of the population of e- after the reconnection
   
-  double BB = sqrt(4.*M_PI*magnetizationParameter_
-           *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-           *numberDensity_cgs_); // Magnetic field
-  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB_
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq 
 
   // Defining jnus, anus
@@ -200,41 +195,35 @@ void Plasmoid::radiativeQ(double Inu[], // output
     anu[ii]=-1.;
   }
 
-    // COMPUTE VALUES IN FUNCTION OF PHASE
-  if (tcur<=t0+t_inj){ // HEATING TIME
+  // COMPUTE VALUES IN FUNCTION OF PHASE
+  if (tcur<=t0+t_inj){ // HEATING PHASE
     number_density_rec=max(n_dot*(tcur-t0)*60.,0.);
     // Kappa SYNCHRO
-    double hypergeom = Gyoto::hypergeom(KappaIndex_, thetae_rec);
+    double hypergeom = Gyoto::hypergeom(kappaIndex_, thetaRec_);
 
-    spectrumkappa_->kappaindex(KappaIndex_);
+    spectrumkappa_->kappaindex(kappaIndex_);
     spectrumkappa_->angle_averaged(1);
     spectrumkappa_->angle_B_pem(0.); // avg so we don't care
     spectrumkappa_->cyclotron_freq(nu0);
     spectrumkappa_->numberdensityCGS(number_density_rec);
-    spectrumkappa_->thetae(thetae_rec);
+    spectrumkappa_->thetae(thetaRec_);
     spectrumkappa_->hypergeometric(hypergeom);
     
     spectrumkappa_->radiativeQ(jnu,anu,
                     nu_ems,nbnu);
-    //cout << spectrumkappa_->angle_B_pem() << endl;
   }
-  else{ // COOLING TIME
+  else{ // COOLING PHASE
     double tt=(tcur-(t_inj+t0))*60.; // in sec
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
       anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
-      //cout << jnu[ii] << endl;
     }
-    //cout << "cooling" << endl;
   }
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu[ii], anu_tot = anu[ii];
-    //cout << jnu_tot << ", " << anu_tot << ", t=" << tcur << endl;
 
-    //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
-    //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
@@ -387,23 +376,23 @@ void Plasmoid::numberDensity(double dens, string const &unit) {
   numberDensity(dens);
 }
 
-double Plasmoid::temperatureReconnection() const {
-    return temperatureReconnection_;}
+double Plasmoid::thetaRec() const {
+    return thetaRec_;}
 
-void Plasmoid::temperatureReconnection(double tt) {
-    temperatureReconnection_=tt;}
+void Plasmoid::thetaRec(double tt) {
+    thetaRec_=tt;}
   
-void Plasmoid::magnetizationParameter(double rr) {
-    magnetizationParameter_=rr; }
+void Plasmoid::BNormCGS(double rr) {
+    BB_=rr; }
 
-double Plasmoid::magnetizationParameter()const{
-    return magnetizationParameter_; }
+double Plasmoid::BNormCGS()const{
+    return BB_; }
   
 void Plasmoid::kappaIndex(double kk) {
-    KappaIndex_=kk; }
+    kappaIndex_=kk; }
     
 double Plasmoid::kappaIndex() const {
-    return KappaIndex_; }
+    return kappaIndex_; }
 
 void Plasmoid::radiusMax(double rr) {
 	if (rr<0.2)
@@ -501,7 +490,9 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
 	// before calling the StandardAstrobj function
 
 	double radiusMin = 0.2;
-	double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter_/(magnetizationParameter_+1),0.5);
+  double magnetizationParameter=pow(BB_,2.)/(4.*M_PI*GYOTO_PROTON_MASS_CGS
+    * GYOTO_C_CGS * GYOTO_C_CGS*numberDensity_cgs_);
+	double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter/(magnetizationParameter+1),0.5);
   double t_inj=radiusMax_*GYOTO_G_OVER_C_SQUARE_CGS*gg_->mass()*1.e3/(vrec_cgs)/60.; //in min;
   double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
@@ -591,6 +582,46 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
       if (status == KEY_NO_EXIST) status = 0; // not fatal
       else throwCfitsioError(status) ;
   } else FitsRW::numax(tmpd); // rmax_ found
+
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW ne", &tmpd,
+    NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  }
+  if (tmpd!=numberDensity_cgs_)
+    GYOTO_ERROR("The number densities set by the user and the one of the fits file are differents");
+
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW theta", &tmpd,
+    NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  }
+  if (tmpd!=thetaRec_)
+    GYOTO_ERROR("The theta value set by the user and the one of the fits file are differents");
+
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW kappa", &tmpd,
+    NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  }
+  if (tmpd!=kappaIndex_)
+    GYOTO_ERROR("The kappa index set by the user and the one of the fits file are differents");
+
+  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW BB", &tmpd,
+    NULL, &status);
+  if (status) {
+    if (status == KEY_NO_EXIST) status = 0; // not fatal
+      else throwCfitsioError(status) ;
+  }
+  if (tmpd<0.9*BB_ || tmpd>1.1*BB_){
+    cerr << "BB= " << BB_ << endl;
+    cerr << "BB_fits= " << tmpd << endl;
+    GYOTO_ERROR("The Magnetic field strenght set by the user (MagnetizationParameter) and the one of the fits file are differents");
+  }
+
 
   // READ EXTENSIONS
   vector<size_t> naxes_jnu = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW Jnu",
@@ -733,7 +764,7 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
   
 
   // PL SYNCHRO HIGH
-  spectrumPLSynchHigh_->PLindex(KappaIndex_);
+  spectrumPLSynchHigh_->PLindex(kappaIndex_);
   spectrumPLSynchHigh_->angle_averaged(1);
   spectrumPLSynchHigh_->angle_B_pem(0.); // avg so we don't care
   spectrumPLSynchHigh_->cyclotron_freq(nu0);

@@ -40,6 +40,7 @@ namespace Gyoto{
 #include <GyotoUniformSphere.h>
 #include <GyotoFitsRW.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+//#include <GyotoThermalSynchrotronSpectrum.h>
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
 #endif
@@ -69,9 +70,9 @@ class Gyoto::Astrobj::Plasmoid :
   double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
   double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
-  double temperatureReconnection_; ///< temperature of plasmoid after reconnection
-  double magnetizationParameter_; ///< magnetization parameter
-  double KappaIndex_; ///< KappaIndex
+  double thetaRec_; ///< dimensionless temperature of plasmoid after reconnection
+  double BB_; ///< magnetization parameter
+  double kappaIndex_; ///< KappaIndex
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_; //Compute jnu and anu during the injection phase (increasing n_e)
   bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
@@ -118,10 +119,10 @@ class Gyoto::Astrobj::Plasmoid :
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
   void numberDensity(double dens, std::string const &unit);
-  double temperatureReconnection() const;
-  void temperatureReconnection(double tt);
-  void magnetizationParameter(double rr);
-  double magnetizationParameter() const;
+  double thetaRec() const;
+  void thetaRec(double tt);
+  void BNormCGS(double rr);
+  double BNormCGS() const;
   void kappaIndex(double kk);
   double kappaIndex() const;
   void radiusMax(double rr);
