@@ -113,7 +113,7 @@ void Blob::radiativeQ(double Inu[], // output
   
   double hypergeom = Gyoto::hypergeom(kappaIndex_, thetae);
   
-  double BB = sqrt(8.*M_PI*magnetizationParameter_
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
