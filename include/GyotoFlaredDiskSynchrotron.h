@@ -55,6 +55,7 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   double hoverR_; ///< Value of aspect ratio H/R of flared disk, where R is the radius projected in the equatorial plane and H the altitude above the equatorial plane
   double numberDensityMax_cgs_; ///< Maximum cgs value of number density
   double temperatureMax_; ///< Maximum temperature in K
+  double BMax_cgs_; ///< Maximun strenght of the 3 veceor magnetic field
   /**
    * An array of dimensionality double[nr_][nphi_][nt_]. In FITS
    * format, the first dimension is t, the second phi, and the third
@@ -118,6 +119,8 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   double temperatureMax() const;
   void polytropicIndex(double gamma);
   double polytropicIndex() const;
+  void betaAtMax(double beta);
+  double Bmax() const;
   void dt(double dd);
   void copyDensity(double const *const density,
 		   size_t const naxes[3]);

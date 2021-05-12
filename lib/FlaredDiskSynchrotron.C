@@ -54,6 +54,8 @@ GYOTO_PROPERTY_DOUBLE_UNIT(FlaredDiskSynchrotron, NumberDensityMax, numberDensit
 		      "Maximum value of nb density in SI")
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, TemperatureMax, temperatureMax,
 		      "Maximum value of temperature in K")
+GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, BetaAtMax, betaAtMax, 
+          "Value of Beta at Maximum nb density")
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, MagnetizationParameter,
 		      magnetizationParameter,
 		      "Standard magnetization parameter (B^2/4pi) / (rho*c^2) "
@@ -67,9 +69,9 @@ FlaredDiskSynchrotron::FlaredDiskSynchrotron() :
 Standard("FlaredDiskSynchrotron"), GridData2D(),
   filename_(""), hoverR_(0.), time_array_(NULL),
   density_(NULL), velocity_(NULL), Bvector_(NULL),
-  numberDensityMax_cgs_(1.), temperatureMax_(1.),
-  magnetizationParameter_(1.), deltat_(0.), flag_(false),
-  gamm1_(5./3.)
+  numberDensityMax_cgs_(0.), temperatureMax_(0.),
+  BMax_cgs_(0.), magnetizationParameter_(1.), 
+  deltat_(0.), flag_(false), gamm1_(5./3.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
@@ -81,7 +83,7 @@ FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   density_(NULL), velocity_(NULL), Bvector_(NULL),
   numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_),
   magnetizationParameter_(o.magnetizationParameter_), deltat_(o.deltat_), flag_(o.flag_),
-  gamm1_(o.gamm1_)
+  gamm1_(o.gamm1_), BMax_cgs_(o.BMax_cgs_)
 {
   GYOTO_DEBUG << endl;
   size_t ncells = 0;
@@ -212,6 +214,18 @@ double FlaredDiskSynchrotron::temperatureMax() const{return temperatureMax_;}
 void FlaredDiskSynchrotron::polytropicIndex(double gamma) {gamm1_=gamma-1;}
 
 double FlaredDiskSynchrotron::polytropicIndex() const {return gamm1_;}
+
+void FlaredDiskSynchrotron::betaAtMax(double beta){
+  if (numberDensityMax_cgs_==0. || temperatureMax_==0.)
+    GYOTO_ERROR("In betaAtMax: Please set numberdensityCGS and TemperatureMax before betaAtMax.");
+
+  if (beta==0.)
+    GYOTO_ERROR("In betaAtMax: beta could not be zero!");
+
+  BMax_cgs_=sqrt(8.*M_PI*numberDensityMax_cgs_*GYOTO_BOLTZMANN_CGS*temperatureMax_/beta);
+}
+
+double FlaredDiskSynchrotron::Bmax() const {return BMax_cgs_;}
 
 void FlaredDiskSynchrotron::magnetizationParameter(double rr) {
   magnetizationParameter_=rr;}
@@ -436,7 +450,8 @@ vector<size_t> FlaredDiskSynchrotron::fitsRead(string filename) {
          "do not agree");
 
   // 4-vector B
-  fits_movnam_hdu(fptr, ANY_HDU, "GYOTO GridData2D BVECTOR", 0, &status);
+  string name="GYOTO GridData2D BVECTOR";
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(name.c_str()), 0, &status);
   if (status==0){ // read only if the HDU exist
     flag_=true;
     size_t lengthB=4; // Bvector is a 4-vector
@@ -574,17 +589,14 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
     Bphi=GridData2D::interpolate(tt, phi, rcyl, Bvector_+3*(nel+1), time_array_);
 
     double b4vec[4]={Bt,Br,Btheta,Bphi}; // B 4-vector in BL frame
-    //cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
-
     double vel[4]; // 4-velocity of emitter
     const_cast<FlaredDiskSynchrotron*>(this)->getVelocity(coord_obj, vel);
     gg_->projectFourVect(&coord_ph[0],b4vec,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
-    double bnorm = gg_->norm(&coord_ph[0],b4vec);
     double photon_emframe[4]; // photon tgt vector projected in comoving frame
     for (int ii=0;ii<4;ii++){
-      photon_emframe[ii]=coord_ph[ii+4]
-  +vel[ii]*gg_->ScalarProd(&coord_ph[0],&coord_ph[4],vel);
+      photon_emframe[ii]=coord_ph[ii+4]+vel[ii]*gg_->ScalarProd(&coord_ph[0],&coord_ph[4],vel);
     }
+    double bnorm = gg_->norm(&coord_ph[0],b4vec);
     double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
     double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,b4vec);
     theta_mag = acos(lscalb/(lnorm*bnorm));
@@ -597,11 +609,8 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
     spectrumKappaSynch_->angle_averaged(0);
 
     //cout << "4 composant of B: " << b4vec[0] << "," << b4vec[1] << "," << b4vec[2] << "," << b4vec[3] << endl;
-    BB = sqrt(pow(b4vec[1],2.)+pow(b4vec[2],2.)+pow(b4vec[3],2.)); // norm of the 3-vector B
-    /*BB = sqrt(4.*M_PI*magnetizationParameter_
-       *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-       *number_density);*/
-    //cout << "BB=" << BB << ", theta_mag=" << theta_mag << endl;
+    BB = BMax_cgs_*sqrt(pow(b4vec[1],2.)+pow(b4vec[2],2.)+pow(b4vec[3],2.)); // norm of the 3-vector B
+    
     
   }
   else{
