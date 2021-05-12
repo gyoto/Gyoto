@@ -29,14 +29,12 @@ GYOTO_PROPERTY_END(Spectrum::PowerLawSynchrotron, Generic::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
 #define usePMT83 0 // 1 to use PMT83 jnu and alphanu, 0 to use Pandya+16
-#define gamma_min 1.
-#define gamma_max DBL_MAX
 
 Spectrum::PowerLawSynchrotron::PowerLawSynchrotron()
 : Spectrum::Generic("PowerLawSynchrotron"),
   numberdensityCGS_(0.),
   angle_B_pem_(0.), cyclotron_freq_(1.),
-  PLindex_(0.), angle_averaged_(0)
+  PLindex_(0.), angle_averaged_(0), gamma_min_(1.), gamma_max_(DBL_MAX)
 {}
 Spectrum::PowerLawSynchrotron::PowerLawSynchrotron(const PowerLawSynchrotron &o)
 : Spectrum::Generic(o),
@@ -45,7 +43,9 @@ Spectrum::PowerLawSynchrotron::PowerLawSynchrotron(const PowerLawSynchrotron &o)
   angle_B_pem_(o.angle_B_pem_),
   cyclotron_freq_(o.cyclotron_freq_),
   PLindex_(o.PLindex_),
-  angle_averaged_(o.angle_averaged_)
+  angle_averaged_(o.angle_averaged_),
+  gamma_min_(o.gamma_min_),
+  gamma_max_(o.gamma_max_)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
@@ -70,6 +70,19 @@ bool Spectrum::PowerLawSynchrotron::angle_averaged() const {
   return angle_averaged_; }
 void Spectrum::PowerLawSynchrotron::angle_averaged(bool ang) { 
   angle_averaged_ = ang; }
+double Spectrum::PowerLawSynchrotron::gamma_min() const{
+  return gamma_min_;
+}
+void Spectrum::PowerLawSynchrotron::gamma_min(double gmin){
+  gamma_min_=gmin;
+}
+double Spectrum::PowerLawSynchrotron::gamma_max() const{
+  return gamma_max_;
+}
+void Spectrum::PowerLawSynchrotron::gamma_max(double gmax){
+  gamma_max_=gmax;
+}
+
   
 Spectrum::PowerLawSynchrotron * Spectrum::PowerLawSynchrotron::clone() const
 { return new Spectrum::PowerLawSynchrotron(*this); }
@@ -107,14 +120,14 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
       *exp(-0.5*(PLindex_+1.));
   }else{
     // Pandya, Zhang, Chandra, Gammie, 2016
-    if (gamma_max<sqrt(nu/cyclotron_freq_))
+    if (gamma_max_<sqrt(nu/cyclotron_freq_))
       GYOTO_ERROR("In PLSynchro: increase gamma_max");
-    // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
+    // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
     
     double sinth = sin(angle_B_pem_);
     double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/  \
-      (2.*(PLindex_+1.)*(pow(gamma_min,1.-PLindex_) -
-       pow(gamma_max,1.-PLindex_))) * \
+      (2.*(PLindex_+1.)*(pow(gamma_min_,1.-PLindex_) -
+       pow(gamma_max_,1.-PLindex_))) * \
       tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *  \
       pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.);
     emis_synch = numberdensityCGS_*         \
@@ -141,14 +154,14 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
       *(PLindex_+2.)
       /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
   }else{
-    if (gamma_max<sqrt(nu/cyclotron_freq_))
+    if (gamma_max_<sqrt(nu/cyclotron_freq_))
       GYOTO_ERROR("In PLSynchro: increase gamma_max");
-    // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
+    // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
 
     double sinth = sin(angle_B_pem_);
     double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/ \
-      (4.*(pow(gamma_min,1.-PLindex_) -
-       pow(gamma_max,1.-PLindex_))) *     \
+      (4.*(pow(gamma_min_,1.-PLindex_) -
+       pow(gamma_max_,1.-PLindex_))) *     \
       tgamma((3.*PLindex_+12.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
       pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.);
     abs_synch = numberdensityCGS_*          \

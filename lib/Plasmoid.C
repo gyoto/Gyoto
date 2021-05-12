@@ -822,8 +822,9 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
     // Trouver une securite !!!!
   }
 }
+*/
 
-void Plasmoid::Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const{
+void Plasmoid::Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const{}/*
   double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
   
   double aI=alphanu[0], aV=alphanu[3];
