@@ -1,18 +1,14 @@
 /*
   Copyright 2018-2020 Frederic Vincent, Thibaut Paumard
-
   This file is part of Gyoto.
-
   Gyoto is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-
   Gyoto is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -28,7 +24,7 @@ using namespace Gyoto;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Spectrum::PowerLawSynchrotron,
-		     "Powerlaw synchrotron emission")
+         "Powerlaw synchrotron emission")
 GYOTO_PROPERTY_END(Spectrum::PowerLawSynchrotron, Generic::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
@@ -80,12 +76,12 @@ Spectrum::PowerLawSynchrotron * Spectrum::PowerLawSynchrotron::clone() const
 
 double Spectrum::PowerLawSynchrotron::operator()(double nu) const {
   GYOTO_ERROR("In PLSynch: "
-	     "Synchrotron emission not defined for optically thick case");
+       "Synchrotron emission not defined for optically thick case");
   return 0.;
 }
 double Spectrum::PowerLawSynchrotron::operator()(double nu, 
-						double , 
-						double ds) const{
+            double , 
+            double ds) const{
   double dsCGS = ds*100.; // ds should be given in SI
   // Returns intensity increment in SI:
   return jnuCGS(nu)*dsCGS*exp(-alphanuCGS(nu)*dsCGS)*GYOTO_INU_CGS_TO_SI;
@@ -107,7 +103,7 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
       *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
       *numberdensityCGS_*(PLindex_-1.)
       *pow(3.*cyclotron_freq_*(PLindex_+1.)
-	   *sin(angle_B_pem_)/(4.*nu),0.5*(PLindex_-1.))
+     *sin(angle_B_pem_)/(4.*nu),0.5*(PLindex_-1.))
       *exp(-0.5*(PLindex_+1.));
   }else{
     // Pandya, Zhang, Chandra, Gammie, 2016
@@ -116,12 +112,12 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
     // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
     
     double sinth = sin(angle_B_pem_);
-    double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/	\
+    double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/  \
       (2.*(PLindex_+1.)*(pow(gamma_min,1.-PLindex_) -
-			 pow(gamma_max,1.-PLindex_))) * \
-      tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *	\
+       pow(gamma_max,1.-PLindex_))) * \
+      tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *  \
       pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.);
-    emis_synch = numberdensityCGS_*					\
+    emis_synch = numberdensityCGS_*         \
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
       GYOTO_C_CGS*\
       Js;
@@ -140,7 +136,7 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
       *cyclotron_freq_*sin(angle_B_pem_)/(2.*GYOTO_C_CGS)
       *numberdensityCGS_*(PLindex_-1.)
       *pow(3.*cyclotron_freq_*(PLindex_+2.)*sin(angle_B_pem_)
-	   /(4.*nu),0.5*PLindex_)
+     /(4.*nu),0.5*PLindex_)
       *exp(-0.5*(PLindex_+2.))
       *(PLindex_+2.)
       /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
@@ -150,14 +146,14 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
     // Ensure gamma_min^2 < nu/nu0 < gamma_max^2
 
     double sinth = sin(angle_B_pem_);
-    double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/	\
+    double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/ \
       (4.*(pow(gamma_min,1.-PLindex_) -
-			 pow(gamma_max,1.-PLindex_))) *			\
-      tgamma((3.*PLindex_+12.)/12.)*tgamma((3.*PLindex_+22.)/12.) *	\
+       pow(gamma_max,1.-PLindex_))) *     \
+      tgamma((3.*PLindex_+12.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
       pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.);
-    abs_synch = numberdensityCGS_*					\
-      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
-      (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
+    abs_synch = numberdensityCGS_*          \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
+      (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*       \
       As;
   }
   
@@ -165,10 +161,10 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
 }
 
 void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
-						double alphanu[], // output
-						double const nu_ems[],
-						size_t nbnu
-						) {
+            double alphanu[], // output
+            double const nu_ems[],
+            size_t nbnu
+            ) {
   for (size_t ii=0; ii< nbnu; ++ii){
     double nu = nu_ems[ii];
     double jnucur=0., anucur=0.;
@@ -183,15 +179,15 @@ void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
       double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
       double anusinprev=alphanuCGS(nu)*sin(theta), anusinnext=anusinprev;
       for (int jj=1;jj<=nstep_angint;jj++){
-	theta=th0+double(jj)/2.*hh;
-	angle_B_pem(theta);
-	jnusinnext=jnuCGS(nu)*sin(theta);
-	anusinnext=alphanuCGS(nu)*sin(theta);
-	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
-	anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
-	jnusinprev=jnusinnext;
-	anusinprev=anusinnext;
-	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
+  theta=th0+double(jj)/2.*hh;
+  angle_B_pem(theta);
+  jnusinnext=jnuCGS(nu)*sin(theta);
+  anusinnext=alphanuCGS(nu)*sin(theta);
+  jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
+  anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
+  jnusinprev=jnusinnext;
+  anusinprev=anusinnext;
+  //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
     

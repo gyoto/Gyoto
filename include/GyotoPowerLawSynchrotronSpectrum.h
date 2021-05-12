@@ -55,6 +55,8 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
   double cyclotron_freq_; ///< Cyclotron frequency (e*B / 2*pi*me*c)
   double PLindex_; ///< Power law index: electron spectrum \propto gamma^-PLindex_
   bool angle_averaged_; ///< Boolean for angle averaging
+  double gamma_min_;
+  double gamma_max_;
     
   
 
@@ -97,6 +99,10 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
   void PLindex(double ind);
   bool angle_averaged() const;
   void angle_averaged(bool ang);
+  double gamma_min() const;
+  void gamma_min(double gmin);
+  double gamma_max() const;
+  void gamma_max(double gmax);
   
  /**
    * Returns the emission coefficient j_nu in cgs units

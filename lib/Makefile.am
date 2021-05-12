@@ -25,7 +25,7 @@ libgyoto@FEATURES@_la_SOURCES =  \
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
-	GridData2D.C
+	GridData2D.C FitsRW.C
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
@@ -44,8 +44,9 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ComplexAstrobj.C UniformSphere.C \
 	ComplexMetric.C Shift.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
-	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C ThickDisk.C\
+	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C Plasmoid.C ThickDisk.C\
 	ThinDiskProfile.C SphericalAccretion.C StdPlug.C
+
 
 # those files need cfitsio for some functionality
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \

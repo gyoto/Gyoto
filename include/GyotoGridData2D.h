@@ -6,7 +6,7 @@
  */
 
 /*
-  Copyright (c) 2019-2020 Frederic Vincent, Thibaut Paumard
+  Copyright (c) 2019-2021 Frederic Vincent, Thibaut Paumard, Nicolas Aimar
   
   This file is part of Gyoto.
   
@@ -59,10 +59,11 @@ class Gyoto::GridData2D
   size_t nr_; ///< Grid size in the r direction
   double rmin_; ///< Minimum r in grid
   double rmax_; ///< Maximum r in grid
-  double dt_; ///< Time step
+  double dt_; ///< Time step, if not constant would be ignored
   size_t nt_; ///< Grid size in the t direction
   double tmin_; ///< Minimum t in grid
   double tmax_; ///< Maximum t in grid
+  bool constant_;
   //NB: phimin, phimax are always assumed to be 0, 2pi
 
  public:
@@ -94,6 +95,8 @@ class Gyoto::GridData2D
   size_t nt() const;
   void nphi(size_t nn);
   size_t nphi() const;
+  void dt(double dd);
+  double dt() const;
 
 #ifdef GYOTO_USE_CFITSIO
 
@@ -146,9 +149,9 @@ class Gyoto::GridData2D
 
 #endif
 
-  void getIndices(size_t i[3], double const tt, double const phi, double const rr) const ;
+  void getIndices(size_t i[3], double const tt, double const phi, double const rr, double* const time_array) const ;
   double interpolate(double tt, double phi, double rr,
-		     double* const array) const ;
+		     double* const array, double* const time_array) const ;
     
 
 

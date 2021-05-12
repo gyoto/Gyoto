@@ -1,18 +1,14 @@
 /*
   Copyright 2018-2020 Frederic Vincent, Thibaut Paumard
-
   This file is part of Gyoto.
-
   Gyoto is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-
   Gyoto is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -29,7 +25,7 @@ using namespace std;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Spectrum::KappaDistributionSynchrotron,
-		     "Powerlaw synchrotron emission")
+         "Powerlaw synchrotron emission")
 GYOTO_PROPERTY_END(Spectrum::KappaDistributionSynchrotron, Generic::properties)
 
 
@@ -90,12 +86,12 @@ Spectrum::KappaDistributionSynchrotron * Spectrum::KappaDistributionSynchrotron:
 
 double Spectrum::KappaDistributionSynchrotron::operator()(double nu) const {
   GYOTO_ERROR("In PLSynch: "
-	     "Synchrotron emission not defined for optically thick case");
+       "Synchrotron emission not defined for optically thick case");
   return 0.;
 }
 double Spectrum::KappaDistributionSynchrotron::operator()(double nu, 
-						double , 
-						double ds) const{
+            double , 
+            double ds) const{
   double dsCGS = ds*100.; // ds should be given in SI
   // Returns intensity increment in SI:
   return jnuCGS(nu)*dsCGS*exp(-alphanuCGS(nu)*dsCGS)*GYOTO_INU_CGS_TO_SI;
@@ -118,9 +114,9 @@ double Spectrum::KappaDistributionSynchrotron::jnuCGS(double nu) const{
     expo = 3.*pow(kappaindex_,-3./2.),
     Js = pow(pow(Js_low,-expo) + pow(Js_high,-expo),-1./expo);
   
-  double emis_synch = numberdensityCGS_*				\
+  double emis_synch = numberdensityCGS_*        \
     GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*							\
+    GYOTO_C_CGS*              \
     Js;
   
   //cout << "in kappa spec angleB jnu= " << angle_B_pem_ << " " << emis_synch << endl;
@@ -147,9 +143,9 @@ double Spectrum::KappaDistributionSynchrotron::alphanuCGS(double nu) const{
     expo = pow(-7./4.+8./5.*kappaindex_,-43./50.),
     As = pow(pow(As_low,-expo) + pow(As_high,-expo),-1./expo);
   
-  double abs_synch = numberdensityCGS_*					\
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/		\
-    (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*				\
+  double abs_synch = numberdensityCGS_*         \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
+    (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*       \
     As;
   
   //cout << "in kappa spec angleB anu= " << angle_B_pem_ << " " << abs_synch << endl;
@@ -158,10 +154,10 @@ double Spectrum::KappaDistributionSynchrotron::alphanuCGS(double nu) const{
 }
 
 void Spectrum::KappaDistributionSynchrotron::radiativeQ(double jnu[], // output
-						double alphanu[], // output
-						double const nu_ems[],
-						size_t nbnu
-						) {
+            double alphanu[], // output
+            double const nu_ems[],
+            size_t nbnu
+            ) {
   for (size_t ii=0; ii< nbnu; ++ii){
     double nu = nu_ems[ii];
     double jnucur=0., anucur=0.;
@@ -176,15 +172,15 @@ void Spectrum::KappaDistributionSynchrotron::radiativeQ(double jnu[], // output
       double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
       double anusinprev=alphanuCGS(nu)*sin(theta), anusinnext=anusinprev;
       for (int jj=1;jj<=nstep_angint;jj++){
-	theta=th0+double(jj)/2.*hh;
-	angle_B_pem(theta);
-	jnusinnext=jnuCGS(nu)*sin(theta);
-	anusinnext=alphanuCGS(nu)*sin(theta);
-	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
-	anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
-	jnusinprev=jnusinnext;
-	anusinprev=anusinnext;
-	//NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
+  theta=th0+double(jj)/2.*hh;
+  angle_B_pem(theta);
+  jnusinnext=jnuCGS(nu)*sin(theta);
+  anusinnext=alphanuCGS(nu)*sin(theta);
+  jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
+  anucur+=0.5*0.5*hh*(anusinprev+anusinnext);
+  jnusinprev=jnusinnext;
+  anusinprev=anusinnext;
+  //NB: averaged jnu is: \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
     

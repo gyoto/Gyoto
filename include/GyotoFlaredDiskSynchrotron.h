@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2019-2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2019-2021 Frederic Vincent, Thibaut Paumard, Nicolas Aimar
 
     This file is part of Gyoto.
 
@@ -52,9 +52,10 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
  private:
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_;
   std::string filename_; ///< Optional FITS file name containing the arrays
-  double hoverR_; ///< Value of aspect ratio H/R of flared disk, where R is the radius projected in the equatorial plane and H the altitude abiove the equatorial plane
+  double hoverR_; ///< Value of aspect ratio H/R of flared disk, where R is the radius projected in the equatorial plane and H the altitude above the equatorial plane
   double numberDensityMax_cgs_; ///< Maximum cgs value of number density
   double temperatureMax_; ///< Maximum temperature in K
+  double BMax_cgs_; ///< Maximun strenght of the 3 veceor magnetic field
   /**
    * An array of dimensionality double[nr_][nphi_][nt_]. In FITS
    * format, the first dimension is t, the second phi, and the third
@@ -64,11 +65,15 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
     /**
    * An array of dimensionality double[nr_][nphi_][nt_][2]. In FITS format,
    * the second dimension is phi, and the third r. The first plane in
-   * the first FITS dimention is d&phi;/dt, the second dr/dt.
+   * the first FITS dimention is dr/dt, the second d&phi;/dt.
    */
   double * velocity_; ///< velocity(r, &phi;)
+  double * Bvector_; ///<  4vector of the magnetic field
+  double * time_array_; /// 1D Vector containing the times values of each time steps (dt not constant)
   double magnetizationParameter_; ///< (B<SUP>2</SUP>/(4 pi)) / (n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
-  double dt_;///< time translation
+  double deltat_;///< time translation
+  double gamm1_; /// polytropic index - 1
+  bool flag_; /// flag for a fixed magnetic field or average
 
  public:
   GYOTO_OBJECT;
@@ -112,12 +117,22 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   void numberDensityMax(double dens, std::string const &unit);
   void temperatureMax(double tt);
   double temperatureMax() const;
+  void polytropicIndex(double gamma);
+  double polytropicIndex() const;
+  void betaAtMax(double beta);
+  double Bmax() const;
+  void dt(double dd);
   void copyDensity(double const *const density,
 		   size_t const naxes[3]);
   double const * getDensity() const;
   void copyVelocity(double const *const velocity,
 		    size_t const naxes[3]);
   double const * getVelocity() const;
+  void copyBvector(double const *const Bvector,
+        size_t const naxes[3]);
+  double const * getBvector() const;
+  void copyTimeArray(double const *const time_array, size_t const ntimes);
+  double const * getTimeArray() const;
  public:
   using Generic::metric;
   std::vector<size_t> fitsRead(std::string filename) ;
