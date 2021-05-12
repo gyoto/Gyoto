@@ -75,7 +75,7 @@ Gyoto requires:
    - boost >= 1.53 (required, contains the integrators). See [BUGS.md](BUGS.md).
        http://www.boost.org/
    - an implementation of the Gauss hypergeometric function 2F1
-     (optional, required for Astrobj::Jet), one of:
+     (optional, required for all Astrobj using KappaDistributionSynchrotronSpectrum), one of:
      + ARBLIB: http://arblib.org (in that case, compile and install
        ARBLIB and its dependencies and use the --with-arblib*
        configure options);
