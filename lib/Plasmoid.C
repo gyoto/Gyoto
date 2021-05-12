@@ -215,8 +215,8 @@ void Plasmoid::radiativeQ(double Inu[], // output
   else{ // COOLING PHASE
     double tt=(tcur-(t_inj+t0))*60.; // in sec
     for (size_t ii=0; ii<nbnu; ++ii){
-      jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
-      anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
+      jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_)*4.*M_PI;
+      anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_)*4.*M_PI;
     }
   }
 
