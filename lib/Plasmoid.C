@@ -64,7 +64,6 @@ GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 Plasmoid::Plasmoid() : 
   FitsRW(), 
   UniformSphere("Plasmoid"),
-  gg_(NULL),
   flag_("None"),
   numberDensity_cgs_(1.),
   thetaRec_(1.),
@@ -94,7 +93,6 @@ Plasmoid::Plasmoid() :
 Plasmoid::Plasmoid(const Plasmoid& orig) :
   FitsRW(orig),
   UniformSphere(orig),
-  gg_(orig.gg_),
   flag_(orig.flag_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   thetaRec_(orig.thetaRec_),

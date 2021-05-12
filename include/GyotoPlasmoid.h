@@ -65,7 +65,6 @@ class Gyoto::Astrobj::Plasmoid :
   // Data : 
   // -----
  private:
-  SmartPointer<Metric::Generic> gg_; // metric
   double* posIni_; // 4-position of the plasmoid in spherical coordinates
   double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
   std::string flag_; // type of motion "helicoidal" or "equatorial"
