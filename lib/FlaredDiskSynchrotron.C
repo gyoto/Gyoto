@@ -70,7 +70,7 @@ Standard("FlaredDiskSynchrotron"), GridData2D(),
   filename_(""), hoverR_(0.), time_array_(NULL),
   density_(NULL), velocity_(NULL), Bvector_(NULL),
   numberDensityMax_cgs_(0.), temperatureMax_(0.),
-  BMax_cgs_(0.), magnetizationParameter_(1.), 
+  BMax_cgs_(0.), beta_(1.), magnetizationParameter_(1.), 
   deltat_(0.), flag_(false), gamm1_(5./3.)
 {
   GYOTO_DEBUG << endl;
@@ -81,7 +81,7 @@ FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   Standard(o), GridData2D(o),
   filename_(o.filename_), hoverR_(o.hoverR_), time_array_(NULL),
   density_(NULL), velocity_(NULL), Bvector_(NULL),
-  numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_),
+  numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_), beta_(o.beta_),
   magnetizationParameter_(o.magnetizationParameter_), deltat_(o.deltat_), flag_(o.flag_),
   gamm1_(o.gamm1_), BMax_cgs_(o.BMax_cgs_)
 {
@@ -157,6 +157,8 @@ void FlaredDiskSynchrotron::timeTranslation_inMunit(double const dt) {
   for (int ii=0;ii<nt;ii++){
     time_array_[ii]+=dt;
   }
+  if (GridData2D::tmin()>0)
+    cout << "\nWARNING : tmin is positive, in most cases the stationnary boundary condition will be applied. You should decrease more timeTranslation_inMunit until at least " << -tmin << "\n" << endl;
 }
 
 double FlaredDiskSynchrotron::timeTranslation_inMunit() const {
@@ -194,6 +196,7 @@ void FlaredDiskSynchrotron::numberDensityMax(double dens) {
 		<< endl ;
 # endif
   numberDensityMax_cgs_=dens;
+  BMax_cgs_=sqrt(8.*M_PI*numberDensityMax_cgs_*GYOTO_BOLTZMANN_CGS*temperatureMax_/beta_);
 }
 void FlaredDiskSynchrotron::numberDensityMax(double dens, string const &unit) {
   if (unit != "") {
@@ -207,7 +210,10 @@ void FlaredDiskSynchrotron::numberDensityMax(double dens, string const &unit) {
   numberDensityMax(dens);
 }
 
-void FlaredDiskSynchrotron::temperatureMax(double tt) {temperatureMax_=tt;}
+void FlaredDiskSynchrotron::temperatureMax(double tt) {
+  temperatureMax_=tt;
+  BMax_cgs_=sqrt(8.*M_PI*numberDensityMax_cgs_*GYOTO_BOLTZMANN_CGS*temperatureMax_/beta_);
+}
 
 double FlaredDiskSynchrotron::temperatureMax() const{return temperatureMax_;}
 
@@ -216,16 +222,13 @@ void FlaredDiskSynchrotron::polytropicIndex(double gamma) {gamm1_=gamma-1;}
 double FlaredDiskSynchrotron::polytropicIndex() const {return gamm1_;}
 
 void FlaredDiskSynchrotron::betaAtMax(double beta){
-  if (numberDensityMax_cgs_==0. || temperatureMax_==0.)
-    GYOTO_ERROR("In betaAtMax: Please set numberdensityCGS and TemperatureMax before betaAtMax.");
-
-  if (beta==0.)
-    GYOTO_ERROR("In betaAtMax: beta could not be zero!");
-
-  BMax_cgs_=sqrt(8.*M_PI*numberDensityMax_cgs_*GYOTO_BOLTZMANN_CGS*temperatureMax_/beta);
+  if (beta<=0.)
+    GYOTO_ERROR("In betaAtMax: beta must be >0!");
+  beta_=beta;
+  BMax_cgs_=sqrt(8.*M_PI*numberDensityMax_cgs_*GYOTO_BOLTZMANN_CGS*temperatureMax_/beta_);
 }
 
-double FlaredDiskSynchrotron::Bmax() const {return BMax_cgs_;}
+double FlaredDiskSynchrotron::betaAtMax() const {return beta_;}
 
 void FlaredDiskSynchrotron::magnetizationParameter(double rr) {
   magnetizationParameter_=rr;}
@@ -263,6 +266,7 @@ void FlaredDiskSynchrotron::copyDensity(double const *const density,
     GridData2D::nt(naxes[2]);
     GridData2D::nphi(naxes[1]);
     GridData2D::nr(naxes[0]);
+    //cout << naxes[0] << "," << naxes[1] << "," << naxes[2] << endl;
     if (!(nel=naxes[0] * naxes[1] * naxes[2]))
       GYOTO_ERROR( "dimensions can't be null");
 
