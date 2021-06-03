@@ -7,6 +7,7 @@
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
 #include "GyotoHayward.h"
+#include "GyotoSchwarzschildHarmonic.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"

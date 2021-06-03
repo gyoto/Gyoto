@@ -145,23 +145,49 @@ double UniformSphere::operator()(double const coord[4]) {
   double coord_ph[4] = {coord[0]};
   double sintheta;
   getCartesian(coord_st, 1, coord_st+1, coord_st+2, coord_st+3);
+
+  // Special treatment for SchwarzschildHarmonic: define star
+  // as a sphere of radius r_BL=R_star and not r_harmonic=R_star,
+  // in order to ease comparison between coordinate systems.
+  if (gg_->kind()=="SchwarzschildHarmonic"){
+    double r_st = sqrt(coord_st[1]*coord_st[1]+coord_st[2]*coord_st[2]+coord_st[3]*coord_st[3]);
+    double theta = acos(coord_st[3]/r_st), phi = atan(coord_st[2]/coord_st[1]);
+    coord_st[1]+= sin(theta)*cos(phi);
+    coord_st[2]+= sin(theta)*sin(phi);
+    coord_st[3]+= cos(theta);
+  }
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_CARTESIAN:
     memcpy(coord_ph+1, coord+1, 3*sizeof(double));
     break;
   case GYOTO_COORDKIND_SPHERICAL:
-    coord_ph[1] = coord[1] * (sintheta=sin(coord[2])) * cos(coord[3]);
-    coord_ph[2] = coord[1] * sintheta * sin(coord[3]);
-    coord_ph[3] = coord[1] * cos(coord[2]) ;
+    coord_ph[1] = (coord[1]) * (sintheta=sin(coord[2])) * cos(coord[3]);
+    coord_ph[2] = (coord[1]) * sintheta * sin(coord[3]);
+    coord_ph[3] = (coord[1]) * cos(coord[2]) ;
+    
+    // Special treatment for SchwarzschildHarmonic: define star
+    // as a sphere of radius r_BL=R_star and not r_harmonic=R_star,
+    // in order to ease comparison between coordinate systems.
+    if (gg_->kind()=="SchwarzschildHarmonic"){
+      coord_ph[1] = (coord[1]+1.) * sintheta * cos(coord[3]);
+      coord_ph[2] = (coord[1]+1.) * sintheta * sin(coord[3]);
+      coord_ph[3] = (coord[1]+1.) * cos(coord[2]) ;
+    }
     break;
   default:
     GYOTO_ERROR("unsupported coordkind");
   }
-  //cout << "rsp= " << sqrt(coord_st[1]*coord_st[1]+coord_st[2]*coord_st[2]+coord_st[3]*coord_st[3]) << endl;
+  //cout << "testcoord: " << coord_ph[1] << " " << coord_st[1] << " " << coord_ph[1] - coord_st[1] <<  endl;
   double dx = coord_ph[1]-coord_st[1];
   double dy = coord_ph[2]-coord_st[2];
   double dz = coord_ph[3]-coord_st[3];
+  //cout << "unif= " << dx*dx << " " << dy*dy << " " << dz*dz << endl;
 
+  //double rstar = sqrt(coord_st[1]*coord_st[1] + coord_st[2]*coord_st[2] +coord_st[3]*coord_st[3]);
+  //cout << "tph, rph, thph, phph= " << coord[0]<< " " << coord[1] << " " << coord[2] << " " << coord[3] << " " << endl;
+  //cout << "tst, rst, thst, phst= " << coord_st[0]<< " " << r_st << " " << theta << " " << phi << endl;
+  //cout << "d2 Rstar= " << dx*dx + dy*dy + dz*dz << " " << radius_*radius_<< endl;
+  //cout << "trthph ph + st, rsp= " << coord[0] << " " << coord[1] << " " << coord[2] << " " << coord[3] << " ; " << coord_st[0] << " " << rstar << " " << acos(coord_st[3]/rstar) << " " << atan(coord_st[2]/coord_st[1]) << " " << dx*dx + dy*dy + dz*dz << endl;
   return dx*dx + dy*dy + dz*dz;
 }
 
@@ -190,6 +216,7 @@ double UniformSphere::emission(double nu_em, double dsem, state_t const &, doubl
     if (flag_radtransf_){
       return dsem;
     }else{
+      //cout << "returning 1 in unif sph" << endl;
       return 1.;
     }
   }
