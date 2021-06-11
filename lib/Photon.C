@@ -341,6 +341,7 @@ int Photon::hit(Astrobj::Properties *data) {
   // needed for tracking various orders of the image if max_cross_eqplane_
   // is set. Default value here, will be updated later.
   int nb_theta_turningpoints=0; // keeping track of turning points
+  int geodesic_order=0; // will be changed to 1 when the geodesic becomes 1st-order, then to 2 when it becomes second-order.
 
   double h1max=DBL_MAX;
   while (!stopcond) {
@@ -519,7 +520,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	zsign = x1_[i0_]*cos(x2_[i0_]); // sign of first z position
 	if (nb_cross_eqplane_>0) zsign *= pow(-1,nb_cross_eqplane_); // update it when crossing equatorial plane
 	//cout << "zsign= " << zsign << endl;
-	if (coord[1]*cos(coord[2])*zsign<0. && coord[1]<rlim){
+	if (coord[1]*cos(coord[2])*zsign<0.){ // && coord[1]<rlim){
 	  nb_cross_eqplane_+=1; // equatorial plane has been just crossed
 	  //cout << "***updating nbcross to " << nb_cross_eqplane_ << endl;
 	  //cout << "at rc,z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
@@ -546,8 +547,18 @@ int Photon::hit(Astrobj::Properties *data) {
 	    // and it now starts to decrease, or the other way round:
 	    // we have a new turning point
 	    theta_is_increasing = !theta_is_increasing;
-	    if (coord[1]<rlim){
+	    if (coord[1]<rlim &&
+	      	nb_theta_turningpoints==nb_cross_eqplane_-1){
+	      // eqplane should be crossed before the theta turning point
 	      nb_theta_turningpoints+=1;
+	      if (nb_theta_turningpoints==1) {
+		//cout << "geod becomes n=1 at rc, z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+		geodesic_order=1;
+	      }
+	      if (nb_theta_turningpoints==2){
+		//cout << "geod becomes n=2 at rc, z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+		geodesic_order=2;
+	      }
 	      //nb_cross_eqplane_+=1; 
 	      //cout << "***updating nbth to " << nb_theta_turningpoints << endl;
 	      //cout << "at rc,z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
@@ -576,8 +587,25 @@ int Photon::hit(Astrobj::Properties *data) {
 
       GYOTO_DEBUG_EXPR(nb_cross_eqplane_);
 	  
-      if (data->nbcrosseqplane) *data->nbcrosseqplane=nb_cross_eqplane_;
+      if (data->nbcrosseqplane && nb_cross_eqplane_==nb_theta_turningpoints)
+	*data->nbcrosseqplane=nb_cross_eqplane_;
 
+      if (data->user1 &&
+	  geodesic_order==0) {
+	*data->user1=data->spectrum[0]; // User1 keep tracks of Spectrum until the geodesic becomes of order 1
+	//cout << "saving order 0 spectrum of " << *data->user1 << " at rc,z=" << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+      }
+      if (data->user2 &&
+	  geodesic_order==1) {
+	*data->user2=data->spectrum[0]-*data->user1;
+	//cout << "saving order 1 spectrum of " << *data->user2 << " at rc,z=" << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+      }
+      if (data->user3 &&
+	  geodesic_order==2) {
+	*data->user3=data->spectrum[0]-*data->user1-*data->user2;
+	//cout << "saving order 2 spectrum of " << *data->user3 << " at rc,z=" << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
+      }
+      
       if (nb_cross_eqplane_ == maxCrossEqplane_ &&
 	  nb_theta_turningpoints == maxCrossEqplane_){
 	  // && object_ -> Impact(this, ind, NULL) == 0) {
@@ -587,9 +615,11 @@ int Photon::hit(Astrobj::Properties *data) {
 	// of data is there to insure that quantities will not be updated).
 	// Keep the amount of flux accumulated so far and stop integration.
 	// Update 210401 FV: outdated with theta turning points implementation
+
+	//cout << "STOP nbcross, nbturn= " << nb_cross_eqplane_  << " " << nb_theta_turningpoints << endl;
 	
 	//cout << "nbcross, max= " << nb_cross_eqplane_ << " " << maxCrossEqplane_ << endl;
-	//cout << "stop photon at z= " << coord[1]*cos(coord[2]) << endl;
+	//cout << "stop photon at rc, z= " << coord[1]*sin(coord[2]) << " " << coord[1]*cos(coord[2]) << endl;
 	
 	// if (data && data->spectrum){
 	//   SmartPointer<Spectrometer::Generic> spr = spectrometer();
