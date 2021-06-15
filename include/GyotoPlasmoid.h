@@ -72,6 +72,7 @@ class Gyoto::Astrobj::Plasmoid :
   double thetaRec_; ///< dimensionless temperature of plasmoid after reconnection
   double BB_; ///< magnetization parameter
   double kappaIndex_; ///< KappaIndex
+  double t_inj_; ///< Injection time
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_; //Compute jnu and anu during the injection phase (increasing n_e)
   bool posSet_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
@@ -127,6 +128,8 @@ class Gyoto::Astrobj::Plasmoid :
   void radiusMax(double rr);
   double radiusMax() const;
   void Radius(std::string vary);
+  double injectionTime() const;
+  void injectionTime(double tt);
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,

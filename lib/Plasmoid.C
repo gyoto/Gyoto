@@ -44,21 +44,22 @@ using namespace Gyoto::Astrobj;
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Plasmoid, "Synchrotron-emitting orbiting plasmoid heated by magnetic reconnection")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitPosition, initPosition,
-           "(t,r,theta,phi) initial position of plasmoid")
+              "(t,r,theta,phi) initial position of plasmoid")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Plasmoid, InitVelocity, initVelocity,
-           "(dr/dt,dtheta/dt,dphi/dt) initial 3-velocity "
-           "of plasmoid")
+              "(dr/dt,dtheta/dt,dphi/dt) initial 3-velocity "
+              "of plasmoid")
 GYOTO_PROPERTY_DOUBLE_UNIT(Plasmoid, NumberDensity, numberDensity,
-               "cgs number density, constant through plasmoid")
+              "cgs number density, constant through plasmoid")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, ThetaRec, thetaRec,
-               "Dimensionless Temperature of reconnexion")
-GYOTO_PROPERTY_DOUBLE(Plasmoid, BNormCGS,
-              BNormCGS,
+              "Dimensionless Temperature of reconnexion")
+GYOTO_PROPERTY_DOUBLE(Plasmoid, BNormCGS,BNormCGS,
               "magnetic field strenght")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, KappaIndex, kappaIndex,
-		      "PL index of kappa-synchrotron")
+		         "PL index of kappa-synchrotron")
 GYOTO_PROPERTY_DOUBLE(Plasmoid, RadiusMax, radiusMax,
-		      "Maximun radius of the Plasmoid")
+		          "Maximun radius of the Plasmoid")
+GYOTO_PROPERTY_DOUBLE(Plasmoid, InjectionTime, injectionTime,
+              "Time during electrons are injected in the Plasmoid")
 GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 
 Plasmoid::Plasmoid() : 
@@ -69,6 +70,7 @@ Plasmoid::Plasmoid() :
   thetaRec_(1.),
   BB_(1.),
   kappaIndex_(3.5),
+  t_inj_(1.),
   posSet_(false),
   posIni_(NULL),
   fourveldt_(NULL),
@@ -98,6 +100,7 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   thetaRec_(orig.thetaRec_),
   BB_(orig.BB_),
   kappaIndex_(orig.kappaIndex_),
+  t_inj_(orig.t_inj_),
   posSet_(orig.posSet_),
   posIni_(NULL),
   fourveldt_(NULL),
@@ -168,16 +171,16 @@ void Plasmoid::radiativeQ(double Inu[], // output
   double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
   double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
 
-  double magnetizationParameter=pow(BB_,2.)/(4.*M_PI*GYOTO_PROTON_MASS_CGS
+  /*double magnetizationParameter=pow(BB_,2.)/(4.*M_PI*GYOTO_PROTON_MASS_CGS
     * GYOTO_C_CGS * GYOTO_C_CGS*numberDensity_cgs_);
   
   double rmax_cgs = radiusMax_*GYOTO_G_OVER_C_SQUARE_CGS*gg_->mass()*1.e3;
   double vrec_cgs = 0.1*GYOTO_C_CGS*pow(magnetizationParameter/(magnetizationParameter+1),0.5);
-  double t_inj=rmax_cgs/(vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]
+  double t_inj=rmax_cgs/(vrec_cgs)/60.; //in min; //injection time, i.e. time during e- are heated and accelerated due to the reconnection, see [D. Ball et al., 2018]*/
 
   double number_density_rec=0.; // number density of e- which follow the kappa distribution after the reconnection
 
-  double n_dot=numberDensity_cgs_*vrec_cgs/rmax_cgs; //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
+  double n_dot=numberDensity_cgs_/(t_inj_*60.);//vrec_cgs/rmax_cgs; //"Reconnection rate", see [D. Ball et al., 2020] (ie Psaltis paper)
   
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB_
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq 
@@ -194,7 +197,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   }
 
   // COMPUTE VALUES IN FUNCTION OF PHASE
-  if (tcur<=t0+t_inj){ // HEATING PHASE
+  if (tcur<=t0+t_inj_){ // HEATING PHASE
     number_density_rec=max(n_dot*(tcur-t0)*60.,0.);
     // Kappa SYNCHRO
     double hypergeom = Gyoto::hypergeom(kappaIndex_, thetaRec_);
@@ -211,7 +214,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
                     nu_ems,nbnu);
   }
   else{ // COOLING PHASE
-    double tt=(tcur-(t_inj+t0))*60.; // in sec
+    double tt=(tcur-(t_inj_+t0))*60.; // in sec
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
       anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
@@ -406,6 +409,14 @@ void Plasmoid::Radius(std::string vary) {
   if (vary=="Constant" || vary=="Varying") varyRadius_=vary;
   else
     GYOTO_ERROR("In Plasmoid::Radius operation on radius not recognized, please enter a valid operation (Constant or Varying)");
+}
+
+double Plasmoid::injectionTime() const {
+  return t_inj_;
+}
+
+void Plasmoid::injectionTime(double tt) {
+  t_inj_=tt;
 }
 
 void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
@@ -614,11 +625,8 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
     if (status == KEY_NO_EXIST) status = 0; // not fatal
       else throwCfitsioError(status) ;
   }
-  if (tmpd<0.9*BB_ || tmpd>1.1*BB_){
-    cerr << "BB= " << BB_ << endl;
-    cerr << "BB_fits= " << tmpd << endl;
-    GYOTO_ERROR("The Magnetic field strenght set by the user (MagnetizationParameter) and the one of the fits file are differents");
-  }
+  if (tmpd!=BB_ )
+    GYOTO_ERROR("The Magnetic field strenght set by the user and the one of the fits file are differents");
 
 
   // READ EXTENSIONS
