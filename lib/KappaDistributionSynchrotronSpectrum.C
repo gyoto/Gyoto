@@ -172,7 +172,7 @@ void Spectrum::KappaDistributionSynchrotron::radiativeQ(double jnu[], // output
       double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
       double anusinprev=alphanuCGS(nu)*sin(theta), anusinnext=anusinprev;
       for (int jj=1;jj<=nstep_angint;jj++){
-  theta=th0+double(jj)/2.*hh;
+  theta=th0+double(jj)*hh;
   angle_B_pem(theta);
   jnusinnext=jnuCGS(nu)*sin(theta);
   anusinnext=alphanuCGS(nu)*sin(theta);
