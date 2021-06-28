@@ -67,9 +67,14 @@ class Gyoto::Astrobj::Plasmoid :
  private:
   double* posIni_; // 4-position of the plasmoid in spherical coordinates
   double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
-  std::string flag_; // type of motion "helical" or "equatorial"
+  std::string flag_; // type of motion "helicoidal" or "equatorial"
+  double numberDensity_cgs_; ///< cgs-unit number density of plasmoid
+  double thetaRec_; ///< dimensionless temperature of plasmoid after reconnection
+  double BB_; ///< magnetization parameter
+  double kappaIndex_; ///< KappaIndex
+  double t_inj_; ///< Injection time
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumkappa_; //Compute jnu and anu during the injection phase (increasing n_e)
   bool posSet_;
-  double t_inj_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;
   // FITS FILE Quantities
@@ -110,9 +115,21 @@ class Gyoto::Astrobj::Plasmoid :
   std::vector<double> initVelocity() const;
   void initCoord(std::vector<double> const &v);
   std::vector<double> initCoord() const;
+  double numberDensity() const;
+  double numberDensity(std::string const &unit) const;
+  void numberDensity(double ne);
+  void numberDensity(double dens, std::string const &unit);
+  double thetaRec() const;
+  void thetaRec(double tt);
+  void BNormCGS(double rr);
+  double BNormCGS() const;
+  void kappaIndex(double kk);
+  double kappaIndex() const;
   void radiusMax(double rr);
   double radiusMax() const;
   void Radius(std::string vary);
+  double injectionTime() const;
+  void injectionTime(double tt);
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
