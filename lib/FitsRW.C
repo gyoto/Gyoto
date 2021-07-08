@@ -168,7 +168,7 @@ void FitsRW::fitsClose(fitsfile* fptr) {
   fptr = NULL;
 }
 
-void FitsRW::fitsWriteParams(fitsfile* fptr, double n_e, double theta, double kappa, double BB){
+void FitsRW::fitsWriteParams(fitsfile* fptr, double n_e, double theta, double kappa, double BB, double t_inj){
   int       status    = 0;
   char *    CNULL     = NULL;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
@@ -200,6 +200,12 @@ void FitsRW::fitsWriteParams(fitsfile* fptr, double n_e, double theta, double ka
     if (status) throwCfitsioError(status) ;
   }else
     GYOTO_ERROR("In fitsWriteParams : BB<0");
+
+  if (t_inj>0.){
+    fits_write_key(fptr, TDOUBLE, const_cast<char*>("GYOTO FitsRW t_inj"), &t_inj, CNULL, &status);
+    if (status) throwCfitsioError(status) ;
+  }else
+    GYOTO_ERROR("In fitsWriteParams : t_inj<0");
 }
 
 void FitsRW::fitsWriteHDU(fitsfile* fptr,
@@ -359,6 +365,9 @@ double FitsRW::interpolate(double nu, double tt, double* const array, double* co
 
   double array_interpo=0.;
 
+  if (tt>tmax_)
+    GYOTO_ERROR("In FitsRW::interpolate t>tmax");
+
   // Bilinear in nu,tt
   size_t inul=ind[0], inuu=ind[0]+1, itl=ind[1], itu=ind[1]+1;
   double array_ll = array[itl*nnu_+inul], // array_{nu,tt}, l=lower index, u=upper index
@@ -376,6 +385,5 @@ double FitsRW::interpolate(double nu, double tt, double* const array, double* co
   cout << "T: " << tl << " " << tt << " " << tu << endl;
   cout << "NU: " << nul << " " << nu << " " << nuu << endl;
   cout << "ARRAY at 4 corners (tt,nu)=(ll,lu,ul,uu) + interpo: " << array_ll << " " << array_lu << " " << array_ul << " " << array_uu << " " << array_interpo << endl;*/
-  
   return array_interpo;
 }

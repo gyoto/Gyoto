@@ -44,7 +44,7 @@ GridData2D::GridData2D() :
   dphi_(0.), nphi_(0), dr_(0.), nr_(0.), dt_(0.), nt_(0),
   rmin_(0.), rmax_(DBL_MAX),
   phimin_(0.), phimax_(2.*M_PI),
-  tmin_(-DBL_MAX), tmax_(DBL_MAX), constant_(false)
+  tmin_(-DBL_MAX), tmax_(DBL_MAX)
 {
   GYOTO_DEBUG << endl;
 }
@@ -53,7 +53,7 @@ GridData2D::GridData2D(const GridData2D&o):
   dphi_(o.dphi_), nphi_(o.nphi_), dr_(o.dr_), nr_(o.nr_), dt_(o.dt_), nt_(o.nt_),
   rmin_(o.rmin_), rmax_(o.rmax_),
   phimin_(o.phimin_), phimax_(o.phimax_),
-  tmin_(o.tmin_), tmax_(o.tmax_), constant_(o.constant_)
+  tmin_(o.tmin_), tmax_(o.tmax_)
 {
   GYOTO_DEBUG << endl;
 }
@@ -107,13 +107,13 @@ double GridData2D::dphi() const {return dphi_;}
 
 void GridData2D::tmin(double tmn) {
   tmin_ = tmn;
-  if (nt_>1 && constant_) dt_ = (tmax_-tmin_) / double(nt_-1);
+  if (nt_>1) dt_ = (tmax_-tmin_) / double(nt_-1);
 }
 double GridData2D::tmin() const {return tmin_;}
 
 void GridData2D::tmax(double tmx) {
   tmax_ = tmx;
-  if (nt_>1 && constant_) dt_ = (tmax_-tmin_) / double(nt_-1);
+  if (nt_>1) dt_ = (tmax_-tmin_) / double(nt_-1);
 }
 double GridData2D::tmax() const {return tmax_;}
 
@@ -122,15 +122,6 @@ size_t GridData2D::nt() const {return nt_;}
 
 void GridData2D::nphi(size_t nn) { nphi_ = nn;}
 size_t GridData2D::nphi() const {return nphi_;}
-
-void GridData2D::dt(double dd) { 
-  dt_ = dd;
-  constant_=true;
-  if (dt_<= 0.)
-    constant_=false;
-}
-
-double GridData2D::dt() const {return dt_;}
 
 
 #ifdef GYOTO_USE_CFITSIO
@@ -160,7 +151,7 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
     if (fits_get_img_size(fptr, ndim, naxes, &status)) throwCfitsioError(status) ;
     // update nt_, dt_
     nt_ = naxes[2];
-    if (nt_>1 && constant_) dt_ = (tmax_-tmin_)/double((nt_-1));
+    if (nt_>1) dt_ = (tmax_-tmin_)/double((nt_-1));
     
     // update nphi_, dphi_
     nphi_ = naxes[1];
@@ -377,7 +368,7 @@ void GridData2D::getIndices(size_t i[3], double const tt, double const phi, doub
       if (tt<tmin_) i[0]=0;        // assuming stationnarity before tmin_
       else if (tt>tmax_) i[0]=nt_-1;//                       and after tmax_
       else {
-        if (dt_>0. && constant_){
+        if (!time_array){
           i[0] = size_t(floor((tt-tmin_)/dt_));
         }else{
           size_t i_t=0;
@@ -411,9 +402,6 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     throwError("TBD axisym");
 
   // From here on, >1 phi values
-
-  if (!time_array)
-    GYOTO_ERROR("In GridData2D::interpolate time_array not defined");
 
   size_t iphil=-1, iphiu=-1;
   double phil=-1., phiu=-1.;
@@ -470,8 +458,14 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
 
     double rl = rmin_+dr_*irl,
       ru = rmin_+dr_*iru,
+      tl = 0, tu = 0;
+    if (!time_array){
       tl = time_array[itl],
       tu = time_array[itu];
+    }else{
+      tl = tmin_+dt_*itl;
+      tu = rmin_+dt_*itu;
+    }
 
     double ratiot = (tt-tl)/(tu-tl),
       ratiophi = (phi-phil)/(phiu-phil),

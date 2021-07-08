@@ -62,7 +62,6 @@ GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, MagnetizationParameter,
 		      "where rho is mass density")
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, KappaIndex, kappaIndex)
 GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, PolytropicIndex, polytropicIndex)
-GYOTO_PROPERTY_DOUBLE(FlaredDiskSynchrotron, dt, dt)
 GYOTO_PROPERTY_END(FlaredDiskSynchrotron, Standard::properties)
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron() :
@@ -242,10 +241,6 @@ void FlaredDiskSynchrotron::kappaIndex(double index) {
 
 double FlaredDiskSynchrotron::kappaIndex()const{
   return spectrumKappaSynch_->kappaindex();
-}
-
-void FlaredDiskSynchrotron::dt(double dd) {
-  GridData2D::dt(dd);
 }
 
 void FlaredDiskSynchrotron::copyDensity(double const *const density,

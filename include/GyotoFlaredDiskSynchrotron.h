@@ -122,7 +122,6 @@ class Gyoto::Astrobj::FlaredDiskSynchrotron
   double polytropicIndex() const;
   void betaAtMax(double beta);
   double betaAtMax() const;
-  void dt(double dd);
   void copyDensity(double const *const density,
 		   size_t const naxes[3]);
   double const * getDensity() const;

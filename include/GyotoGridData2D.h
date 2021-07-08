@@ -63,7 +63,6 @@ class Gyoto::GridData2D
   size_t nt_; ///< Grid size in the t direction
   double tmin_; ///< Minimum t in grid
   double tmax_; ///< Maximum t in grid
-  bool constant_;
   //NB: phimin, phimax are always assumed to be 0, 2pi
 
  public:
@@ -95,8 +94,6 @@ class Gyoto::GridData2D
   size_t nt() const;
   void nphi(size_t nn);
   size_t nphi() const;
-  void dt(double dd);
-  double dt() const;
 
 #ifdef GYOTO_USE_CFITSIO
 
@@ -149,9 +146,9 @@ class Gyoto::GridData2D
 
 #endif
 
-  void getIndices(size_t i[3], double const tt, double const phi, double const rr, double* const time_array) const ;
+  void getIndices(size_t i[3], double const tt, double const phi, double const rr, double* const time_array=NULL) const ;
   double interpolate(double tt, double phi, double rr,
-		     double* const array, double* const time_array) const ;
+		     double* const array, double* const time_array=NULL) const ;
     
 
 
