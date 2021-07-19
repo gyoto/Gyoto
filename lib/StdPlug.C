@@ -50,6 +50,7 @@
 #include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskProfile.h"
+#include "GyotoThinDiskGridIntensity.h"
 
 #include "GyotoPatternDisk.h"
 #include "GyotoPatternDiskBB.h"
@@ -133,6 +134,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::XillverReflection>));
   Astrobj::Register("FlaredDiskSynchrotron",
 		    &(Astrobj::Subcontractor<Astrobj::FlaredDiskSynchrotron>));
+  Astrobj::Register("ThinDiskGridIntensity",
+		    &(Astrobj::Subcontractor<Astrobj::ThinDiskGridIntensity>));
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
