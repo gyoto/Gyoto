@@ -38,6 +38,7 @@
 #include "GyotoBlob.h"
 #include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
+#include "GyotoThinDiskGridIntensity.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
