@@ -49,7 +49,7 @@ GYOTO_PROPERTY_FILENAME(ThinDiskGridIntensity, File, file,
 GYOTO_PROPERTY_DOUBLE(ThinDiskGridIntensity, TimeTranslation_inMunit,
 		      timeTranslation_inMunit,
 		      "Shift simulation times by this amount, in GM/c3 unit")
-GYOTO_PROPERTY_DOUBLE(ThinDiskGridIntensity, dt, dt)
+//GYOTO_PROPERTY_DOUBLE(ThinDiskGridIntensity, dt, dt)
 GYOTO_PROPERTY_END(ThinDiskGridIntensity, ThinDisk::properties)
 
 ThinDiskGridIntensity::ThinDiskGridIntensity() :
@@ -121,9 +121,9 @@ double ThinDiskGridIntensity::timeTranslation_inMunit() const {
   return deltat_;
 }
 
-void ThinDiskGridIntensity::dt(double dd) {
+/*void ThinDiskGridIntensity::dt(double dd) {
   GridData2D::dt(dd);
-}
+}*/
 
 void ThinDiskGridIntensity::copyIntensity(double const *const intensity,
 					  size_t const naxes[3]) {

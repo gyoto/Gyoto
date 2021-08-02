@@ -89,7 +89,7 @@ class Gyoto::Astrobj::ThinDiskGridIntensity
    */
   void timeTranslation_inMunit(double const dt) ;
   double timeTranslation_inMunit() const ;
-  void dt(double dd);
+  //void dt(double dd);
   void copyIntensity(double const *const intensity,
 		     size_t const naxes[3]);
   double const * getIntensity() const;
