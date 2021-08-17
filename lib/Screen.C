@@ -1305,17 +1305,17 @@ void Screen::fillProperty(Gyoto::FactoryMessenger *fmp,
       child -> setSelfAttribute("unit", "geometrical");
     } else {
       string unit = "m";
-      if (     d >= GYOTO_KPC*1e3   ) { d /= (1000.*GYOTO_KPC); unit = "Mpc"; }
-      else if (d >= GYOTO_KPC       ) { d /= GYOTO_KPC;         unit = "kpc"; }
-      else if (d >= GYOTO_KPC*1e-3  ) { d /= (GYOTO_KPC*1e-3);  unit = "pc"; }
-      else if (d >= GYOTO_LIGHT_YEAR) { d /= GYOTO_LIGHT_YEAR;  unit = "ly"; }
+      if (     d >= GYOTO_KPC*1e3   ) { unit = "Mpc"; d = Units::FromMeters(d, unit, gg_);}
+      else if (d >= GYOTO_KPC       ) { unit = "kpc"; d = Units::FromMeters(d, unit, gg_);}
+      else if (d >= GYOTO_KPC*1e-3  ) { unit = "pc";  d = Units::FromMeters(d, unit, gg_);}
+      else if (d >= GYOTO_LIGHT_YEAR) { unit = "ly";  d = Units::FromMeters(d, unit, gg_);}
       else if (d >= GYOTO_ASTRONOMICAL_UNIT)
-	{ d /= GYOTO_ASTRONOMICAL_UNIT; unit = "AU"; }
+	{ unit = "AU"; d = Units::FromMeters(d, unit, gg_);}
       else if (d >= GYOTO_SUN_RADIUS)
-	{ d /= GYOTO_SUN_RADIUS;  unit = "sunradius"; }
-      else if (d >= 1e3)              { d *= 1e-3;              unit = "km";}
+	{ unit = "sunradius"; d = Units::FromMeters(d, unit, gg_);}
+      else if (d >= 1e3)              { unit = "km";  d = Units::FromMeters(d, unit, gg_);}
       else if (d >= 1.) ;//           { d *= 1.;                unit = "m";}
-      else if (d >= 1e-2)             { d *= 1e2;               unit = "cm";}
+      else if (d >= 1e-2)             { unit = "cm";  d = Units::FromMeters(d, unit, gg_);}
       //else ;                        { d *= 1.;                unit = "m";}
       fmp -> setParameter ("Distance", &d, 1, &child);
       child -> setSelfAttribute("unit", unit);
