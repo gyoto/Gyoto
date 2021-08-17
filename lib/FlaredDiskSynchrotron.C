@@ -113,6 +113,7 @@ FlaredDiskSynchrotron::~FlaredDiskSynchrotron() {
   if (density_) delete [] density_;
   if (velocity_) delete [] velocity_;
   if (time_array_) delete [] time_array_;
+  if (Bvector_) delete [] Bvector_;
 }
 
 void FlaredDiskSynchrotron::file(std::string const &f) {
@@ -218,7 +219,7 @@ double FlaredDiskSynchrotron::temperatureMax() const{return temperatureMax_;}
 
 void FlaredDiskSynchrotron::polytropicIndex(double gamma) {gamm1_=gamma-1;}
 
-double FlaredDiskSynchrotron::polytropicIndex() const {return gamm1_;}
+double FlaredDiskSynchrotron::polytropicIndex() const {return gamm1_+1;}
 
 void FlaredDiskSynchrotron::betaAtMax(double beta){
   if (beta<=0.)
