@@ -48,6 +48,7 @@ PatternDiskBB::PatternDiskBB() :
   spectrumBB_(NULL),
   SpectralEmission_(0)
 {
+  kind_= "PatternDiskBB";
   GYOTO_DEBUG << "PatternDiskBB Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
 }
