@@ -60,7 +60,11 @@ DynamicalDisk::DynamicalDisk() :
   velocity_array_(NULL),
   radius_array_(NULL)
 {
+  kind_="DynamicalDisk";
   GYOTO_DEBUG << "DynamicalDisk Construction" << endl;
+  std::string str = "";
+  dirname_ = new char[str.length() + 1];
+  strcpy(dirname_, str.c_str());
 }
 
 DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
@@ -302,3 +306,9 @@ double DynamicalDisk::tinit()const{return tinit_;}
 void DynamicalDisk::dt(double t) {dt_=t;}
 double DynamicalDisk::dt()const{return dt_;}
 
+void DynamicalDisk::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const{
+  if (p.name == "File"){
+    fmp->setParameter("File", dirname_ );
+  }
+  else ThinDisk::fillProperty(fmp, p);
+}

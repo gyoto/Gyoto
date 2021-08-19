@@ -88,6 +88,9 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   void dt(double t);
   double dt()const;
 
+  // fillProperty is overridden to set only the directory 
+  void fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const;
+
   using PatternDiskBB::emission;
   virtual double emission(double nu_em, double dsem,
 			  state_t const &c_ph, double const c_obj[8]=NULL) const;
