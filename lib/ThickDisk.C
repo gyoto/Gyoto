@@ -255,9 +255,11 @@ void ThickDisk::radiativeQ(double Inu[], // output
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
 
-  //cout << "at r z= " << rcyl << " " << zz << endl;
-  //cout << "B= " << BB << endl;
-  //cout << "beta= " << 8.*M_PI*number_density*GYOTO_BOLTZMANN_CGS*temperature/(BB*BB) << endl;
+  /*if (zz<0.1){
+    cout << "at r rcyl z= " << rr << " " << rcyl << " " << zz << endl;
+    cout << "ne,T,B= " << number_density << " " << temperature << " " << BB << endl;
+    cout << "beta= " << 8.*M_PI*number_density*GYOTO_BOLTZMANN_CGS*temperature/(BB*BB) << endl;
+    }*/
 
   double B0 = 100.; // for ne_inner=5.5e4, B_inner=10.2G; B0=50 too small, B0=100 looks good 
   double DeltaB = B0*gauss2d;
@@ -299,7 +301,8 @@ void ThickDisk::radiativeQ(double Inu[], // output
   //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
   //cout << "nu passed to synchro= " << nu_ems[0] << endl;
 
-  if (number_density==0.) {
+  //if (number_density==0.) {
+  if (number_density<numberDensityAtInnerRadius_cgs_/1e10) { // CHECK THAT
     // Can happen due to strongly-killing z-expo factor
     // if zsigma is small. Then leads to 0/0 in synchro stuff. TBC
     for (size_t ii=0; ii<nbnu; ++ii){
