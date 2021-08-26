@@ -140,6 +140,7 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
     //std::cout << "stuff in emis synch ther= " << cyclotron_freq_ << " " << nu << " " << chi0 << " " << ne0 << " " << gamma0 << " " << Z0 << " " << angle_B_pem_ << " " << emis_synch << std::endl;
   }else{
     // Pandya, Zhang, Chandra, Gammie, 2016
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
     double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
       xx = nu/nus,
       Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)*	\
@@ -153,6 +154,53 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
   return emis_synch;
 }
 
+double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
+  //std::cout << "in jnu brems= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
+  double Theta_elec
+    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
+
+  double emis_synch=0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+    xx = nu/nus,
+    Js = -exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
+    pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
+  emis_synch = numberdensityCGS_*         \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+    GYOTO_C_CGS*\
+    Js;
+
+  return emis_synch;
+}
+
+double Spectrum::ThermalSynchrotron::jUnuCGS(double nu) const{
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  return 0.;
+}
+
+double Spectrum::ThermalSynchrotron::jVnuCGS(double nu) const{
+  //std::cout << "in jnu brems= " << cst_ << " " <<  numberdensityCGS_ << " " << T_ << std::endl;
+  double Theta_elec
+    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
+
+  double emis_synch=0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+    xx = nu/nus,
+    Js = exp(-pow(xx,1./3.))*cos(angle_B_pem_)/Theta_elec* \
+    (M_PI/3.+M_PI/3.*pow(xx,1./3.)+2./300.*sqrt(xx)+2.*M_PI/19.*pow(xx,2./3.));
+  emis_synch = numberdensityCGS_*         \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+    GYOTO_C_CGS*\
+    Js;
+
+  return emis_synch;
+}
+
 double Spectrum::ThermalSynchrotron::alphanuCGS(double nu) const{
   double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
   double jnu = jnuCGS(nu);
@@ -162,6 +210,79 @@ double Spectrum::ThermalSynchrotron::alphanuCGS(double nu) const{
   }
   // Kirchhoff's law:
   return jnuCGS(nu)/BB;
+}
+
+double Spectrum::ThermalSynchrotron::alphaQnuCGS(double nu) const{
+  double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+  double jnu = jQnuCGS(nu);
+  if (BB==0.){
+    if (jnu==0.) return 0.;
+    else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
+  }
+  // Kirchhoff's law:
+  return jQnuCGS(nu)/BB;
+}
+
+double Spectrum::ThermalSynchrotron::alphaUnuCGS(double nu) const{
+  double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+  double jnu = jUnuCGS(nu);
+  if (BB==0.){
+    if (jnu==0.) return 0.;
+    else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
+  }
+  // Kirchhoff's law:
+  return jUnuCGS(nu)/BB;
+}
+
+double Spectrum::ThermalSynchrotron::alphaVnuCGS(double nu) const{
+  double BB  = (*spectrumBB_)(nu)/GYOTO_INU_CGS_TO_SI; // B_nu in cgs
+  double jnu = jVnuCGS(nu);
+  if (BB==0.){
+    if (jnu==0.) return 0.;
+    else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
+  }
+  // Kirchhoff's law:
+  return jVnuCGS(nu)/BB;
+}
+
+double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
+  double Theta_elec
+    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double rho_Q=0;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+    xx = nu/nus,
+    f0=2.011*exp(-19.78*pow(xx,-0.5175))-cos(39.89*pow(xx,-0.5))*exp(-70.16*pow(xx,-0.6))-0.011*exp(-1.69*pow(xx,-0.5)),
+    fm=f0+(0.011*exp(-1.69*pow(xx,-0.5))-0.003135*pow(xx,4./3.))*1./2.*(1.+tanh(10*log(0.6648*pow(xx,-0.5))));
+    
+    rho_Q=numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*pow(cyclotron_freq_,2.)*pow(sin(angle_B_pem_),2.)/ \
+    (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
+    fm*(bessk(1., pow(Theta_elec,-1))/bessk(2., pow(Theta_elec,-1))+6.*Theta_elec);
+
+  return rho_Q;
+}
+
+double Spectrum::ThermalSynchrotron::rUnuCGS(double nu) const{
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  return 0.;
+}
+
+double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
+  double Theta_elec
+    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double rho_V=0;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+    xx = nu/nus,
+    DeltaJ5=0.4379*log(1.+1.3414*pow(xx,-0.7515));
+
+    rho_V=2.*numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*cyclotron_freq_/ \
+    (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,2.))* \
+    (bessk(0., pow(Theta_elec,-1.))-DeltaJ5)/bessk(2., pow(Theta_elec,-1.))*cos(angle_B_pem_);
+
+  return rho_V;
 }
 
 void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
@@ -196,12 +317,12 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
       angle_B_pem(theta);
       double jnusinprev=jnuCGS(nu)*sin(theta), jnusinnext=jnusinprev;
       for (int jj=1;jj<=nstep_angint;jj++){
-	theta=th0+double(jj)*hh;
-	angle_B_pem(theta);
-	jnusinnext=jnuCGS(nu)*sin(theta);
-	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
-	jnusinprev=jnusinnext;
-	//NB: averaged jnu is: 1/4pi * \int jnu dOmega = 1/2 * \int jnu*sinth dth
+      	theta=th0+double(jj)*hh;
+      	angle_B_pem(theta);
+      	jnusinnext=jnuCGS(nu)*sin(theta);
+      	jnucur+=0.5*0.5*hh*(jnusinprev+jnusinnext);
+      	jnusinprev=jnusinnext;
+      	//NB: averaged jnu is: 1/4pi * \int jnu dOmega = 1/2 * \int jnu*sinth dth
       }
     }
     
@@ -212,6 +333,130 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
       else GYOTO_ERROR("In ThermalSynch: alphanu undefined!");
     }else
       alphanu[ii]=jnu[ii]/BB;
+    
+  }
+}
+
+
+void Spectrum::ThermalSynchrotron::radiativeQ(double jInu[], double jQnu[], double jUnu[], double jVnu[], // Output
+        double aInu[], double aQnu[], double aUnu[], double aVnu[], // Output
+        double rQnu[], double rUnu[], double rVnu[], // Output
+        double const nu_ems[],
+        size_t nbnu ){
+
+  double Theta_elec
+    = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+  
+  double thetae_min_ther = 0.01;
+  if (Theta_elec < thetae_min_ther) {
+    // Below this value, 0/0 problems arise. From mma it is clear
+    // that jnu goes quickly to 0 for thetae<0.01
+    for (size_t ii=0; ii< nbnu; ++ii){
+      jInu[ii]=0.;
+      jQnu[ii]=0.;
+      jUnu[ii]=0.;
+      jVnu[ii]=0.;
+      aInu[ii]=0.;
+      aQnu[ii]=0.;
+      aUnu[ii]=0.;
+      aVnu[ii]=0.;
+      rQnu[ii]=0.;
+      rUnu[ii]=0.;
+      rVnu[ii]=0.;
+    }
+    return;
+  }
+  
+  for (size_t ii=0; ii< nbnu; ++ii){
+    double nu = nu_ems[ii];
+    double jInucur=0., jQnucur=0.,jUnucur=0.,jVnucur=0.;
+    double aInucur=0., aQnucur=0., aUnucur=0., aVnucur=0.;
+    double rQnucur=0., rUnucur=0., rVnucur=0.; 
+    if (!angle_averaged_){
+      jInucur = jnuCGS(nu);
+      jQnucur = jQnuCGS(nu);
+      jUnucur = jUnuCGS(nu);
+      jVnucur = jVnuCGS(nu);
+      aInucur = alphanuCGS(nu);
+      aQnucur = alphaQnuCGS(nu);
+      aUnucur = alphaUnuCGS(nu);
+      aVnucur = alphaVnuCGS(nu);
+      rQnucur = rQnuCGS(nu);
+      rUnucur = rUnuCGS(nu);
+      rVnucur = rVnuCGS(nu);
+    }else{
+      double th0=0.01, thNm1=M_PI-0.01; // sin(theta) must never be 0
+      double hh=(thNm1-th0)/double(nstep_angint);
+      double theta=th0;
+      angle_B_pem(theta);
+
+      double jInusinprev=jnuCGS(nu)*sin(theta), jInusinnext=jInusinprev;
+      double jQnusinprev=jQnuCGS(nu)*sin(theta), jQnusinnext=jQnusinprev;
+      double jUnusinprev=jUnuCGS(nu)*sin(theta), jUnusinnext=jUnusinprev;
+      double jVnusinprev=jVnuCGS(nu)*sin(theta), jVnusinnext=jVnusinprev;
+      double aInusinprev=alphanuCGS(nu)*sin(theta), aInusinnext=aInusinprev;
+      double aQnusinprev=alphaQnuCGS(nu)*sin(theta), aQnusinnext=aQnusinprev;
+      double aUnusinprev=alphaUnuCGS(nu)*sin(theta), aUnusinnext=aUnusinprev;
+      double aVnusinprev=alphaVnuCGS(nu)*sin(theta), aVnusinnext=aVnusinprev;
+      double rQnusinprev=rQnuCGS(nu)*sin(theta), rQnusinnext=rQnusinprev;
+      double rUnusinprev=rUnuCGS(nu)*sin(theta), rUnusinnext=rUnusinprev;
+      double rVnusinprev=rVnuCGS(nu)*sin(theta), rVnusinnext=rVnusinprev;
+
+      for (int jj=1;jj<=nstep_angint;jj++){
+        theta=th0+double(jj)*hh;
+        angle_B_pem(theta);
+
+        jInusinnext=jnuCGS(nu)*sin(theta);
+        jQnusinnext=jQnuCGS(nu)*sin(theta);
+        jUnusinnext=jUnuCGS(nu)*sin(theta);
+        jVnusinnext=jVnuCGS(nu)*sin(theta);
+        aInusinnext=alphanuCGS(nu)*sin(theta);
+        aQnusinnext=alphaQnuCGS(nu)*sin(theta);
+        aUnusinnext=alphaUnuCGS(nu)*sin(theta);
+        aVnusinnext=alphaVnuCGS(nu)*sin(theta);
+        rQnusinnext=rQnuCGS(nu)*sin(theta);
+        rUnusinnext=rUnuCGS(nu)*sin(theta);
+        rVnusinnext=rVnuCGS(nu)*sin(theta);
+
+        jInucur+=0.5*0.5*hh*(jInusinprev+jInusinnext);
+        jQnucur+=0.5*0.5*hh*(jQnusinprev+jQnusinnext);
+        jUnucur+=0.5*0.5*hh*(jUnusinprev+jUnusinnext);
+        jVnucur+=0.5*0.5*hh*(jVnusinprev+jVnusinnext);
+        aInucur+=0.5*0.5*hh*(aInusinprev+aInusinnext);
+        aQnucur+=0.5*0.5*hh*(aQnusinprev+aQnusinnext);
+        aUnucur+=0.5*0.5*hh*(aUnusinprev+aUnusinnext);
+        aVnucur+=0.5*0.5*hh*(aVnusinprev+aVnusinnext);
+        rQnucur+=0.5*0.5*hh*(rQnusinprev+rQnusinnext);
+        rUnucur+=0.5*0.5*hh*(rUnusinprev+rUnusinnext);
+        rVnucur+=0.5*0.5*hh*(rVnusinprev+rVnusinnext);
+
+        jInusinprev=jInusinnext;
+        jQnusinprev=jQnusinnext;
+        jUnusinprev=jUnusinnext;
+        jVnusinprev=jVnusinnext;
+        aInusinprev=aInusinnext;
+        aQnusinprev=aQnusinnext;
+        aUnusinprev=aUnusinnext;
+        aVnusinprev=aVnusinnext;
+        rQnusinprev=rQnusinnext;
+        rUnusinprev=rUnusinnext;
+        rVnusinprev=rVnusinnext;
+        //NB: averaged jnu is: 1/4pi * \int jnu dOmega = 1/2 * \int jnu*sinth dth
+      }
+    }
+    
+    // OUTPUTS
+    jInu[ii]=jInucur * GYOTO_JNU_CGS_TO_SI;
+    jQnu[ii]=jQnucur * GYOTO_JNU_CGS_TO_SI;
+    jUnu[ii]=jUnucur * GYOTO_JNU_CGS_TO_SI;
+    jVnu[ii]=jVnucur * GYOTO_JNU_CGS_TO_SI;
+    aInu[ii]=aInucur * GYOTO_ANU_CGS_TO_SI;
+    aQnu[ii]=aQnucur * GYOTO_ANU_CGS_TO_SI;
+    aUnu[ii]=aUnucur * GYOTO_ANU_CGS_TO_SI;
+    aVnu[ii]=aVnucur * GYOTO_ANU_CGS_TO_SI;
+    rQnu[ii]=rQnucur * GYOTO_ANU_CGS_TO_SI;
+    rUnu[ii]=rUnucur * GYOTO_ANU_CGS_TO_SI;
+    rVnu[ii]=rVnucur * GYOTO_ANU_CGS_TO_SI;
     
   }
 }
