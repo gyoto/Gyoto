@@ -140,9 +140,6 @@ class Gyoto::Astrobj::Plasmoid :
 
   std::vector<size_t> fitsRead(std::string filename);
 
-  private:
-  void Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const;
-
 };
 
 
