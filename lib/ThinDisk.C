@@ -243,7 +243,8 @@ int ThinDisk::Impact(Photon *ph, size_t index,
       : sqrt(1.+(vel[0]*vel[0]+vel[1]*vel[1])/(vel[2]*vel[2]))*thickness_;
   }
 
-  if (data) {
+  int store_impact_coord=0; // put to 1 if storing coord is needed
+  if (data && store_impact_coord==1) {
     //Store impact time in user1
     if (data->user1) *data->user1=coord_ph_hit[0];
     if (data->user2) *data->user2=coord_ph_hit[1];
