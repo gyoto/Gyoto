@@ -693,6 +693,138 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   delete [] Taunu;
 }
 
+void Generic::Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const{
+  Omatrix(Onu, alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], Xhi, dsem);
+}
+
+void Generic::Omatrix(double Onu[4][4], double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const{
+	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
+	*		of the Mueller Matrix containing the absorption and Faraday coefficients
+	*/
+	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
+  
+  double aI=alphaInu, aV=alphaVnu;
+  double aQ=alphaQnu*cos(2*Xhi)+alphaUnu*sin(2*Xhi);
+  double aU=alphaUnu*cos(2*Xhi)-alphaQnu*sin(2*Xhi);
+  double rQ=rQnu*cos(2*Xhi)+rUnu*sin(2*Xhi);
+  double rU=rUnu*cos(2*Xhi)-rQnu*sin(2*Xhi);
+  double rV=rVnu;
+
+  alphasqrt = aQ*aQ+aU*aU+aV*aV;
+  rsqrt = rQ*rQ+rU*rU+rV*rV;
+  lambda1 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alphasqrt-rsqrt,2.)/2.,0.5);
+  lambda2 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alphasqrt-rsqrt,2.)/2.,0.5);
+  Theta = pow(lambda1,2)+pow(lambda2,2);
+  sigma = (aQ*rQ+aU*rU+aV*rV)/abs(aQ*rQ+aU*rU+aV*rV);
+
+  double M1[4][4]={0}, M2[4][4]={0}, M3[4][4]={0}, M4[4][4]={0};
+
+  // Fill of M1
+  for (int ii=0;ii<4;ii++){
+    M1[ii][ii]=1.;
+  }
+
+  // Fill of M2
+  M2[0][1]=lambda2*aQ-sigma*lambda1*rQ;
+  M2[0][2]=lambda2*aU-sigma*lambda1*rU;
+  M2[0][3]=lambda2*aV-sigma*lambda1*rV;
+  M2[1][0]=M2[0][1];
+  M2[1][2]=sigma*lambda1*aV+lambda2*rV;
+  M2[1][3]=-sigma*lambda1*aU-lambda2*rU;
+  M2[2][0]=M2[0][2];
+  M2[2][1]=-M2[1][2];
+  M2[2][3]=sigma*lambda1*aQ+lambda2*rQ;
+  M2[3][0]=M2[0][3];
+  M2[3][1]=-M2[1][3];
+  M2[3][2]=-M2[2][3];
+
+  // Fill of M3
+  M3[0][1]=lambda1*aQ+sigma*lambda2*rQ;
+  M3[0][2]=lambda1*aU+sigma*lambda2*rU;
+  M3[0][3]=lambda1*aV+sigma*lambda2*rV;
+  M3[1][0]=M3[0][1];
+  M3[1][2]=-sigma*lambda2*aV+lambda1*rV;
+  M3[1][3]=sigma*lambda2*aU-lambda1*rU;
+  M3[2][0]=M3[0][2];
+  M3[2][1]=-M3[1][2];
+  M3[2][3]=-sigma*lambda2*aQ+lambda1*rQ;
+  M3[3][0]=M3[0][3];
+  M3[3][1]=-M3[1][3];
+  M3[3][2]=-M3[2][3];
+
+  // Fill of M4
+  M4[0][0]= (alphasqrt+rsqrt)/2.;
+  M4[0][1]=aV*rU-aU*rV;
+  M4[0][2]=aQ*rV-aV*rQ;
+  M4[0][3]=aU*rQ-aQ*rU;
+  M4[1][0]=-M4[0][1];
+  M4[1][1]=pow(aQ,2)+pow(rQ,2)-(alphasqrt+rsqrt)/2.;
+  M4[1][2]=aQ*aU+rQ*rU;
+  M4[1][3]=aV*aQ+rV*rQ;
+  M4[2][0]=-M4[0][2];
+  M4[2][1]=M4[1][2];
+  M4[2][2]=pow(aU,2)+pow(rU,2)-(alphasqrt+rsqrt)/2.;
+  M4[2][3]=aU*aV+rU*rV;
+  M4[3][0]=-M4[0][3];
+  M4[3][1]=M4[1][3];
+  M4[3][2]=M4[2][3];
+  M4[3][3]=pow(aV,2)+pow(rV,2)-(alphasqrt+rsqrt)/2.;
+
+  // Filling O matrix, output
+  for (int ii=0;ii<4;ii++){
+    for (int jj=0;jj<4;jj++){
+      Onu[ii][jj]=exp(-aI*dsem*gg_->unitLength())*(\
+        (cosh(lambda1*dsem*gg_->unitLength())+cos(lambda2*dsem*gg_->unitLength()))*M1[ii][jj]/2. \
+        -sin(lambda2*dsem*gg_->unitLength())*M2[ii][jj]/Theta \
+        -sinh(lambda1*dsem*gg_->unitLength())*M3[ii][jj]/Theta \
+        +(cosh(lambda1*dsem*gg_->unitLength())-cos(lambda2*dsem*gg_->unitLength()))*M4[ii][jj]/Theta);
+    }
+  }
+
+}
+
+double Generic::getXhi(double const Bfourvect[8], state_t const &cph, double const vel[4]) const{
+	double Xhi=0;
+	if (cph.size()<=8)
+		GYOTO_ERROR("Impossible to compute the Xhi angle without Ephi and Etheta !");
+	if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
+		GYOTO_ERROR("In GetXhi: compute of Xhi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
+
+	double * Ephi = new double[4];
+	double * Etheta = new double[4];
+	double * Bproj = new double[4];
+	memcpy(Bproj, Bfourvect, 4.*sizeof(double));
+
+	for (int ii=0;ii<4;ii++){
+		Ephi[ii]=cph[ii+8];
+		Etheta[ii]=cph[ii+12];
+	}
+	// Projection into the rest frame of the emitter
+	gg_->projectFourVect(&cph[0],Bproj,vel);
+	gg_->projectFourVect(&cph[0],Ephi,vel);
+	gg_->projectFourVect(&cph[0],Etheta,vel);
+	double photon_emframe[4]; // photon tgt vector projected in comoving frame; is it k projected ortho to u ?
+	double Bperp[4]; // projection orthogonally to k (photon_emframe) of Bproj
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=cph[ii+4]+vel[ii]*gg_->ScalarProd(&cph[0],&cph[4],vel);
+    Bperp[ii]=Bproj[ii]-gg_->ScalarProd(&cph[0],Bproj,photon_emframe);
+  }
+  double BperpEtheta=gg_->ScalarProd(&cph[0],Bperp,Etheta),
+  	BperpEphi=gg_->ScalarProd(&cph[0],Bperp,Ephi);
+
+	double cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.)),
+ 		sgn=-BperpEtheta*BperpEphi/abs(BperpEtheta*BperpEphi);
+
+ 	Xhi=sgn*acos(cos2Xhi)/2.;
+
+ 	delete [] Bproj;
+ 	delete [] Ephi;
+ 	delete [] Etheta;
+
+	return Xhi;
+}
+
 void Generic::integrateEmission(double * I, double const * boundaries,
 				size_t const * chaninds, size_t nbnu,
 				double dsem, state_t const &cph, double const *co) const
