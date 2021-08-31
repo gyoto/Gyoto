@@ -42,6 +42,7 @@ namespace Gyoto{
 #include <GyotoObject.h>
 
 #include <float.h>
+//#include <Eigen/Dense>
 
 /**
  * \class Gyoto::Photon
@@ -77,6 +78,12 @@ class Gyoto::Photon
    */
   double transmission_freqobs_;
 
+  /// Integrated optical transmission matrix (polarization)
+  /**
+   * At Photon::freq_obs_, between current position and observer.
+   */
+  double *transmissionMatrix_freqobs_;
+
   /// Observer's spectrometer
   /**
    * Conveying observation frequencies for quantities Spectrum and
@@ -93,6 +100,13 @@ class Gyoto::Photon
 
   /// Nb of crossings of equatorial plane z=0, theta=pi/2
   int nb_cross_eqplane_;
+
+  /// Integrated optical transmission matrix (polarization)
+  /**
+   * For each frequency in Photon::spectro_->getMidpoints(), between
+   * current position and observer.
+   */
+  double * transmissionMatrix_;
 
   // Constructors - Destructor
   // -------------------------
@@ -274,6 +288,8 @@ class Gyoto::Photon
  public:
   /// Set transmission to 1 for each channel as well as scalar transmission
   void resetTransmission() ;
+  /// Set transmission matrix to identity matrix for each frequency
+  void resetTransmissionMatrix();
 
   /// Get transmission
   /**
@@ -284,6 +300,16 @@ class Gyoto::Photon
    * Photon::freq_obs_.
    */ 
   double getTransmission(size_t i) const ;
+
+  /// Get transmission matrix
+  /**
+   * Get either Photon::transmission_freqobs_ (with i=-1) or
+   * Photon::transmission_[i].
+   *
+   * \param i channel number of the requested frequency, -1 for
+   * Photon::freq_obs_.
+   */ 
+  double * getTransmissionMatrix(size_t i) const ;
 
   /// Get maximum transmission;
   /**
@@ -299,6 +325,11 @@ class Gyoto::Photon
    * getTansmission()[i] == getTransmission(size_t i)
    */
   double const * getTransmission() const ;
+  /// Get Photon::transmissionMatrix_
+  /**
+   * getTansmissionMatrix()[i] == getTransmissionMatrix(size_t i)
+   */
+  double const * getTransmissionMatrix() const ;
 
   /// Update transmission in a given channel
   /**
@@ -309,15 +340,15 @@ class Gyoto::Photon
    */
   virtual void transmit(size_t i, double t);
 
-  /// Perform one step of radiative transfer
-  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
-			double const * aInu, double const * aQnu,
-			double const * aUnu, double const * aVnu,
-			double const * rQnu, double const * rUnu, double const * rVnu) ;
+  /// Update transmission matrix
+  virtual void transfer(double const * aInu, double const * aQnu, double const * aUnu, double const * aVnu,
+			double const * rQnu, double const * rUnu, double const * rVnu,
+      double Xhi, double const dsem) ;
 
  private:
   /// Allocate Photon::transmission_
   void _allocateTransmission();
+  void _allocateTransmissionMatrix();
 
  public:
   class Refined;
@@ -353,10 +384,10 @@ class Gyoto::Photon::Refined : public Gyoto::Photon {
   ///< Constructor
   virtual void transmit(size_t i, double t);
   ///< Update transmission both in *this and in *parent_
-  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
-			double const * aInu, double const * aQnu,
+  virtual void transfer(double const * aInu, double const * aQnu,
 			double const * aUnu, double const * aVnu,
-			double const * rQnu, double const * rUnu, double const * rVnu) ;
+			double const * rQnu, double const * rUnu, double const * rVnu,
+      double Xhi, double const dsem) ;
   ///< Perform one step of radiative transfer
 };
 
