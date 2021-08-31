@@ -570,10 +570,9 @@ private:
   virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 			  double *alphaInu, double *alphaQnu,
 			  double *alphaUnu, double *alphaVnu,
-			  double *rQnu, double *rUnu, double *rVnu,
+			  double *rQnu, double *rUnu, double *rVnu, double* Xhi,
 			  double const *nuem , size_t nbnu, double dsem,
-			  state_t const &cph,
-			  double const *co) const ;
+			  state_t const &cph, double const *co) const ;
 
   /**
    * Compute the integral of emission() from &nu;<SUB>1</SUB> to
@@ -621,7 +620,6 @@ private:
   virtual double transmission(double nuem, double dsem, double coord[8]) const = delete;
   ///< Obsolete, update your code
 
-  protected:
   /**
    * Omatrix() computes the exponential of the Mueller matrix 
    * which contains the absorption and Faraday coefficients 

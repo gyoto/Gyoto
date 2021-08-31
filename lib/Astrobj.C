@@ -315,6 +315,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	double * rUnu         = new double[nbnuobs];
 	double * rVnu         = new double[nbnuobs];
 	double * nuem         = new double[nbnuobs];
+	double Xhi = 0;
 
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  nuem[ii]=nuobs[ii]*ggredm1;
@@ -323,12 +324,11 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
 	radiativeQ(Inu, Qnu, Unu, Vnu,
 		   alphaInu, alphaQnu, alphaUnu, alphaVnu,
-		   rQnu, rUnu, rVnu,
+		   rQnu, rUnu, rVnu, &Xhi,
 		   nuem, nbnuobs, dsem,
 		   coord_ph_hit, coord_obj_hit);
-	ph -> transfer (Inu, Qnu, Unu, Vnu,
-			alphaInu, alphaQnu, alphaUnu, alphaVnu,
-			rQnu, rUnu, rVnu);
+	ph -> transfer (alphaInu, alphaQnu, alphaUnu, alphaVnu,
+			rQnu, rUnu, rVnu, Xhi, dsem);
 	double ggred3 = ggred*ggred*ggred;
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  if (data-> spectrum) {
@@ -564,9 +564,10 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
     double * rQnu = new double[nbnu];
     double * rUnu = new double[nbnu];
     double * rVnu = new double[nbnu];
+    double Xhi=0;
     radiativeQ(Inu, Qnu, Unu, Vnu,
 	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu,
+	       rQnu, rUnu, rVnu, &Xhi,
 	       nuem , nbnu, dsem,
 	       cph, co);
     // in all cases, clean up
@@ -613,9 +614,10 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     double * rQnu = new double[nbnu];
     double * rUnu = new double[nbnu];
     double * rVnu = new double[nbnu];
+    double Xhi=0.;
     radiativeQ(Inu, Qnu, Unu, Vnu,
 	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu,
+	       rQnu, rUnu, rVnu, &Xhi,
 	       nuem , nbnu, dsem,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
@@ -656,10 +658,10 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 
 void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
                          double *alphaInu, double *alphaQnu,
-			 double *alphaUnu, double *alphaVnu,
-                         double *rQnu, double *rUnu, double *rVnu,
+			 									 double *alphaUnu, double *alphaVnu,
+                         double *rQnu, double *rUnu, double *rVnu, double* Xhi,
 			 double const *nuem , size_t nbnu, double dsem,
-                         state_t const &cph,
+       state_t const &cph,
 			 double const *co) const
 {
   // cph has 16 elements, 4 elements for each one of
@@ -690,6 +692,7 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     rUnu[i] = 0.;
     rVnu[i] = 0.;
   }
+  *Xhi=0.;
   delete [] Taunu;
 }
 
