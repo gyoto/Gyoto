@@ -46,6 +46,7 @@ using namespace boost::math;
 
 using namespace std;
 using namespace Gyoto;
+using namespace Eigen;
 
 GYOTO_PROPERTY_START(Photon)
 GYOTO_PROPERTY_ASTROBJ(Photon, Astrobj, astrobj)
@@ -57,7 +58,7 @@ Photon::Photon() :
   object_(NULL),
   freq_obs_(1.), transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(NULL)
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
  {}
 
 Photon::Photon(const Photon& o) :
@@ -65,7 +66,7 @@ Photon::Photon(const Photon& o) :
   object_(NULL),
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
   spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(o.nb_cross_eqplane_),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(NULL)
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(o.transmissionMatrix_freqobs_)
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
@@ -74,17 +75,10 @@ Photon::Photon(const Photon& o) :
   if (o.spectro_()) {
     spectro_ = o.spectro_ -> clone();
     _allocateTransmission();
-    //_allocateTransmissionMatrix();
+    _allocateTransmissionMatrix();
     if (size_t nsamples = spectro_->nSamples()){
       memcpy(transmission_, o.getTransmission(), nsamples*sizeof(double));
-      cout << "TEST" << endl;
-      int nel = nsamples*4*4;
-      double *test= new double[nsamples*4*4]();
-      double *test2 = new double[nsamples*4*4]();
-      memcpy(test,o.transmissionMatrix_, nel*sizeof(double));
-      cout << "TEST copy" << endl;
-
-      memcpy(transmissionMatrix_freqobs_,o.getTransmissionMatrix(-1), 4*4*sizeof(double));
+      memcpy(transmissionMatrix_,o.getTransmissionMatrix(), nsamples*sizeof(Matrix4d));
     }
   }
 }
@@ -122,7 +116,7 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
   Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(NULL)
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
 {
   setInitialCondition(met, obj, coord);
 }
@@ -136,7 +130,7 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
   spectro_(NULL), transmission_(NULL),
   nb_cross_eqplane_(0),
   transmissionMatrix_(NULL),
-  transmissionMatrix_freqobs_(NULL)
+  transmissionMatrix_freqobs_()
 {
   double coord[8], Ephi[4], Etheta[4];
   screen -> getRayCoord(d_alpha, d_delta, coord);
@@ -164,12 +158,6 @@ void Photon::_allocateTransmission() {
 }
 
 void Photon::_allocateTransmissionMatrix() {
-  if (transmissionMatrix_freqobs_){
-    delete [] transmissionMatrix_freqobs_;
-    transmissionMatrix_freqobs_ = NULL;
-  }
-  transmissionMatrix_freqobs_ = new double[4*4]();
-
   if (transmissionMatrix_){
     delete [] transmissionMatrix_;
     transmissionMatrix_ = NULL;
@@ -177,7 +165,7 @@ void Photon::_allocateTransmissionMatrix() {
   if (spectro_()){
     size_t nsamples = spectro_->nSamples();
     if (nsamples) {
-      transmissionMatrix_ = new double[nsamples*4*4]();
+      transmissionMatrix_ = new Matrix4d[nsamples]();
     }
     resetTransmissionMatrix();
   }
@@ -192,18 +180,17 @@ void Photon::resetTransmission() {
 }
 
 void Photon::resetTransmissionMatrix() {
-  if (spectro_() && transmissionMatrix_ && transmissionMatrix_freqobs_) {
+  if (spectro_() && transmissionMatrix_ && &transmissionMatrix_freqobs_) {
     size_t nsamples = spectro_->nSamples();
+    Matrix4d identity;
+    identity << 1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+    transmissionMatrix_freqobs_ = identity;
     for (size_t i = 0; i < nsamples; ++i){
-      for (size_t j = 0; j < 4; j++){
-        for (size_t k = 0; k < 4; k++){
-          if (j==k){
-            transmissionMatrix_[i*nsamples+j*4+k] = 1.;
-            transmissionMatrix_freqobs_[j*4+k] = 1.;
-          }
-        }
-      }
-    } 
+      transmissionMatrix_[i]=identity;
+    }
   }
 }
 
@@ -226,6 +213,7 @@ void Photon::metric(SmartPointer<Metric::Generic> met) {
 void Photon::spectrometer(SmartPointer<Spectrometer::Generic> spr) {
   spectro_=spr;
   _allocateTransmission();
+  _allocateTransmissionMatrix();
 }
 SmartPointer<Spectrometer::Generic> Photon::spectrometer() const { return spectro_; }
 
@@ -1148,12 +1136,11 @@ double Photon::getTransmission(size_t i) const {
   return transmission_[i];
 }
 
-double * Photon::getTransmissionMatrix(size_t i) const {
+Matrix4d Photon::getTransmissionMatrix(size_t i) const {
   if (i==size_t(-1)) return transmissionMatrix_freqobs_;
-  int nsamples = spectro_->nSamples();
-  if (!spectro_() || i>=nsamples)
+  if (!spectro_() || i>=spectro_->nSamples())
     GYOTO_ERROR("Photon::getTransmission(): i > nsamples");
-  return transmissionMatrix_+(i*nsamples);
+  return transmissionMatrix_[i];
 }
 
 double Photon::getTransmissionMax() const {
@@ -1172,7 +1159,7 @@ double Photon::getTransmissionMax() const {
 }
 
 double const * Photon::getTransmission() const { return transmission_; }
-double const * Photon::getTransmissionMatrix() const { return transmissionMatrix_; }
+Matrix4d const * Photon::getTransmissionMatrix() const { return transmissionMatrix_; }
 
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }
@@ -1195,11 +1182,11 @@ void Photon::transfer(double const * aInu, double const * aQnu, double const * a
   // Update the transfer function.
 
   size_t nbnuobs = spectro_() ? spectro_->nSamples() : 0;
-  double Onu[4][4]={};
+  Matrix4d Onu;
 
   for (size_t ii=0; ii<nbnuobs; ++ii) {
     object_->Omatrix(Onu, aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rQnu[ii], rUnu[ii], rVnu[ii], Xhi, dsem);
-    //transmissionMatrix_[ii]=matrixProduct(Onu, transmissionMatrix_[ii]);
+    transmissionMatrix_[ii]*=Onu;
   }
 }
 void Photon::Refined::transfer(double const * aInu, double const * aQnu,

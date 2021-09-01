@@ -42,7 +42,7 @@ namespace Gyoto{
 #include <GyotoObject.h>
 
 #include <float.h>
-//#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 /**
  * \class Gyoto::Photon
@@ -82,7 +82,7 @@ class Gyoto::Photon
   /**
    * At Photon::freq_obs_, between current position and observer.
    */
-  double *transmissionMatrix_freqobs_;
+  Eigen::Matrix4d transmissionMatrix_freqobs_;
 
   /// Observer's spectrometer
   /**
@@ -106,7 +106,7 @@ class Gyoto::Photon
    * For each frequency in Photon::spectro_->getMidpoints(), between
    * current position and observer.
    */
-  double * transmissionMatrix_;
+  Eigen::Matrix4d * transmissionMatrix_;
 
   // Constructors - Destructor
   // -------------------------
@@ -309,7 +309,7 @@ class Gyoto::Photon
    * \param i channel number of the requested frequency, -1 for
    * Photon::freq_obs_.
    */ 
-  double * getTransmissionMatrix(size_t i) const ;
+  Eigen::Matrix4d getTransmissionMatrix(size_t i) const ;
 
   /// Get maximum transmission;
   /**
@@ -329,7 +329,7 @@ class Gyoto::Photon
   /**
    * getTansmissionMatrix()[i] == getTransmissionMatrix(size_t i)
    */
-  double const * getTransmissionMatrix() const ;
+  Eigen::Matrix4d const * getTransmissionMatrix() const ;
 
   /// Update transmission in a given channel
   /**

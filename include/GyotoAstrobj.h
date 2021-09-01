@@ -39,6 +39,7 @@
 #include <GyotoSmartPointer.h>
 #include <GyotoConverters.h>
 #include <GyotoObject.h>
+#include <eigen3/Eigen/Dense>
 
 namespace Gyoto{
   class Photon;
@@ -625,14 +626,14 @@ private:
    * which contains the absorption and Faraday coefficients 
    * and is used in the polarized radiative transfer equation.
    * 
-   * \param Onu[4][4] output matrix (must be allocated previously)
+   * \param Onu output matrix (must be allocated previously)
    * \param alphanu[4] array containing the 4 absorption coefficients in the Stokes basis (I,Q,U,V)
    * \param rnu[3] array containing the 3 Faraday coefficients in the Stokes basis (Q,U,V)
    * \param Xhi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
    * \param dsem geometrical length in geometrical units
    */
-  void Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const;
-  void Omatrix(double Onu[4][4], double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+  void Omatrix(Eigen::Matrix4d Onu, double alphanu[4], double rnu[3], double Xhi, double dsem) const;
+  void Omatrix(Eigen::Matrix4d Onu, double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const;
   
   /**

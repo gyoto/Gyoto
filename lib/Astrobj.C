@@ -40,6 +40,7 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+using namespace Eigen;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
@@ -696,11 +697,11 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   delete [] Taunu;
 }
 
-void Generic::Omatrix(double Onu[4][4], double alphanu[4], double rnu[3], double Xhi, double dsem) const{
+void Generic::Omatrix(Matrix4d Onu, double alphanu[4], double rnu[3], double Xhi, double dsem) const{
   Omatrix(Onu, alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], Xhi, dsem);
 }
 
-void Generic::Omatrix(double Onu[4][4], double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+void Generic::Omatrix(Matrix4d Onu, double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const{
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
@@ -721,70 +722,65 @@ void Generic::Omatrix(double Onu[4][4], double alphaInu, double alphaQnu, double
   Theta = pow(lambda1,2)+pow(lambda2,2);
   sigma = (aQ*rQ+aU*rU+aV*rV)/abs(aQ*rQ+aU*rU+aV*rV);
 
-  double M1[4][4]={0}, M2[4][4]={0}, M3[4][4]={0}, M4[4][4]={0};
+  Matrix4d M1, M2, M3, M4;
 
   // Fill of M1
   for (int ii=0;ii<4;ii++){
-    M1[ii][ii]=1.;
+    M1(ii,ii)=1.;
   }
 
   // Fill of M2
-  M2[0][1]=lambda2*aQ-sigma*lambda1*rQ;
-  M2[0][2]=lambda2*aU-sigma*lambda1*rU;
-  M2[0][3]=lambda2*aV-sigma*lambda1*rV;
-  M2[1][0]=M2[0][1];
-  M2[1][2]=sigma*lambda1*aV+lambda2*rV;
-  M2[1][3]=-sigma*lambda1*aU-lambda2*rU;
-  M2[2][0]=M2[0][2];
-  M2[2][1]=-M2[1][2];
-  M2[2][3]=sigma*lambda1*aQ+lambda2*rQ;
-  M2[3][0]=M2[0][3];
-  M2[3][1]=-M2[1][3];
-  M2[3][2]=-M2[2][3];
+  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
+  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
+  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
+  M2(1,0)=M2(0,1);
+  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
+  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
+  M2(2,0)=M2(0,2);
+  M2(2,1)=-M2(1,2);
+  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
+  M2(3,0)=M2(0,3);
+  M2(3,1)=-M2(1,3);
+  M2(3,2)=-M2(2,3);
 
   // Fill of M3
-  M3[0][1]=lambda1*aQ+sigma*lambda2*rQ;
-  M3[0][2]=lambda1*aU+sigma*lambda2*rU;
-  M3[0][3]=lambda1*aV+sigma*lambda2*rV;
-  M3[1][0]=M3[0][1];
-  M3[1][2]=-sigma*lambda2*aV+lambda1*rV;
-  M3[1][3]=sigma*lambda2*aU-lambda1*rU;
-  M3[2][0]=M3[0][2];
-  M3[2][1]=-M3[1][2];
-  M3[2][3]=-sigma*lambda2*aQ+lambda1*rQ;
-  M3[3][0]=M3[0][3];
-  M3[3][1]=-M3[1][3];
-  M3[3][2]=-M3[2][3];
+  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
+  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
+  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
+  M3(1,0)=M3(0,1);
+  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
+  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
+  M3(2,0)=M3(0,2);
+  M3(2,1)=-M3(1,2);
+  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
+  M3(3,0)=M3(0,3);
+  M3(3,1)=-M3(1,3);
+  M3(3,2)=-M3(2,3);
 
   // Fill of M4
-  M4[0][0]= (alphasqrt+rsqrt)/2.;
-  M4[0][1]=aV*rU-aU*rV;
-  M4[0][2]=aQ*rV-aV*rQ;
-  M4[0][3]=aU*rQ-aQ*rU;
-  M4[1][0]=-M4[0][1];
-  M4[1][1]=pow(aQ,2)+pow(rQ,2)-(alphasqrt+rsqrt)/2.;
-  M4[1][2]=aQ*aU+rQ*rU;
-  M4[1][3]=aV*aQ+rV*rQ;
-  M4[2][0]=-M4[0][2];
-  M4[2][1]=M4[1][2];
-  M4[2][2]=pow(aU,2)+pow(rU,2)-(alphasqrt+rsqrt)/2.;
-  M4[2][3]=aU*aV+rU*rV;
-  M4[3][0]=-M4[0][3];
-  M4[3][1]=M4[1][3];
-  M4[3][2]=M4[2][3];
-  M4[3][3]=pow(aV,2)+pow(rV,2)-(alphasqrt+rsqrt)/2.;
+  M4(0,0)= (alphasqrt+rsqrt)/2.;
+  M4(0,1)=aV*rU-aU*rV;
+  M4(0,2)=aQ*rV-aV*rQ;
+  M4(0,3)=aU*rQ-aQ*rU;
+  M4(1,0)=-M4(0,1);
+  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alphasqrt+rsqrt)/2.;
+  M4(1,2)=aQ*aU+rQ*rU;
+  M4(1,3)=aV*aQ+rV*rQ;
+  M4(2,0)=-M4(0,2);
+  M4(2,1)=M4(1,2);
+  M4(2,2)=pow(aU,2)+pow(rU,2)-(alphasqrt+rsqrt)/2.;
+  M4(2,3)=aU*aV+rU*rV;
+  M4(3,0)=-M4(0,3);
+  M4(3,1)=M4(1,3);
+  M4(3,2)=M4(2,3);
+  M4(3,3)=pow(aV,2)+pow(rV,2)-(alphasqrt+rsqrt)/2.;
 
   // Filling O matrix, output
-  for (int ii=0;ii<4;ii++){
-    for (int jj=0;jj<4;jj++){
-      Onu[ii][jj]=exp(-aI*dsem*gg_->unitLength())*(\
-        (cosh(lambda1*dsem*gg_->unitLength())+cos(lambda2*dsem*gg_->unitLength()))*M1[ii][jj]/2. \
-        -sin(lambda2*dsem*gg_->unitLength())*M2[ii][jj]/Theta \
-        -sinh(lambda1*dsem*gg_->unitLength())*M3[ii][jj]/Theta \
-        +(cosh(lambda1*dsem*gg_->unitLength())-cos(lambda2*dsem*gg_->unitLength()))*M4[ii][jj]/Theta);
-    }
-  }
-
+  Onu=exp(-aI*dsem*gg_->unitLength())*(\
+        (cosh(lambda1*dsem*gg_->unitLength())+cos(lambda2*dsem*gg_->unitLength()))*M1/2. \
+        -sin(lambda2*dsem*gg_->unitLength())*M2/Theta \
+        -sinh(lambda1*dsem*gg_->unitLength())*M3/Theta \
+        +(cosh(lambda1*dsem*gg_->unitLength())-cos(lambda2*dsem*gg_->unitLength()))*M4/Theta);
 }
 
 double Generic::getXhi(double const Bfourvect[8], state_t const &cph, double const vel[4]) const{
