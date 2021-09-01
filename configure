@@ -668,6 +668,10 @@ HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
 CFITSIO_CFLAGS
+HAVE_EIGEN_FALSE
+HAVE_EIGEN_TRUE
+EIGEN_LIBS
+EIGEN_CFLAGS
 HAVE_XERCES_FALSE
 HAVE_XERCES_TRUE
 XERCES_LIBS
@@ -770,7 +774,6 @@ am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
-am__quote
 am__include
 DEPDIR
 OBJEXT
@@ -858,7 +861,8 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 PATH_SEPARATOR
-SHELL'
+SHELL
+am__quote'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -897,6 +901,9 @@ with_udunits_libs
 with_xerces
 with_xerces_headers
 with_xerces_libs
+with_eigen
+with_eigen_headers
+with_eigen_libs
 with_cfitsio
 with_cfitsio_headers
 with_cfitsio_libs
@@ -932,6 +939,8 @@ UDUNITS_CFLAGS
 UDUNITS_LIBS
 XERCES_CFLAGS
 XERCES_LIBS
+EIGEN_CFLAGS
+EIGEN_LIBS
 CFITSIO_CFLAGS
 CFITSIO_LIBS
 ARBLIB_CFLAGS
@@ -1662,6 +1671,18 @@ Optional Packages:
                           ('--with-xerces-libs=/path1:...:/pathn') or list of
                           preprocessor flags ('--with-xerces-libs="-L/path1
                           ... -L/pathn")'
+  --with-eigen[=eigen-prefix]
+                          Force using eigen installed in a given prefix or
+                          force disable it.
+  --with-eigen-headers=path
+                          location of eigen include files as a colon-separated
+                          path ('--with-eigen-headers=/path1:...:/pathn') or
+                          list of preprocessor flags
+                          ('--with-eigen-headers="-I/path1 ... -I/pathn")'
+  --with-eigen-libs=path  location of eigen library files as a colon-separated
+                          path ('--with-eigen-libs=/path1:...:/pathn') or list
+                          of preprocessor flags ('--with-eigen-libs="-L/path1
+                          ... -L/pathn")'
   --with-cfitsio[=cfitsio-prefix]
                           Force using cfitsio installed in a given prefix or
                           force disable it.
@@ -1733,6 +1754,9 @@ Some influential environment variables:
   XERCES_CFLAGS
               C compiler flags for XERCES, overriding pkg-config
   XERCES_LIBS linker flags for XERCES, overriding pkg-config
+  EIGEN_CFLAGS
+              C compiler flags for EIGEN, overriding pkg-config
+  EIGEN_LIBS  linker flags for EIGEN, overriding pkg-config
   CFITSIO_CFLAGS
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
@@ -2998,7 +3022,7 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-am__api_version='1.15'
+am__api_version='1.16'
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -3514,8 +3538,8 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
@@ -3566,7 +3590,7 @@ END
 Aborting the configuration process, to ensure you take notice of the issue.
 
 You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
+that behaves properly: <https://www.gnu.org/software/coreutils/>.
 
 If you want to complete the configuration process using your problematic
 'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
@@ -3683,45 +3707,45 @@ DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
-
-am_make=${MAKE-make}
-cat > confinc << 'END'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} supports the include directive" >&5
+$as_echo_n "checking whether ${MAKE-make} supports the include directive... " >&6; }
+cat > confinc.mk << 'END'
 am__doit:
-	@echo this is the am__doit target
+	@echo this is the am__doit target >confinc.out
 .PHONY: am__doit
 END
-# If we don't find an include directive, just comment out the code.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for style of include used by $am_make" >&5
-$as_echo_n "checking for style of include used by $am_make... " >&6; }
 am__include="#"
 am__quote=
-_am_result=none
-# First try GNU make style include.
-echo "include confinc" > confmf
-# Ignore all kinds of additional output from 'make'.
-case `$am_make -s -f confmf 2> /dev/null` in #(
-*the\ am__doit\ target*)
-  am__include=include
-  am__quote=
-  _am_result=GNU
-  ;;
-esac
-# Now try BSD make style include.
-if test "$am__include" = "#"; then
-   echo '.include "confinc"' > confmf
-   case `$am_make -s -f confmf 2> /dev/null` in #(
-   *the\ am__doit\ target*)
-     am__include=.include
-     am__quote="\""
-     _am_result=BSD
+# BSD make does it like this.
+echo '.include "confinc.mk" # ignored' > confmf.BSD
+# Other make implementations (GNU, Solaris 10, AIX) do it like this.
+echo 'include confinc.mk # ignored' > confmf.GNU
+_am_result=no
+for s in GNU BSD; do
+  { echo "$as_me:$LINENO: ${MAKE-make} -f confmf.$s && cat confinc.out" >&5
+   (${MAKE-make} -f confmf.$s && cat confinc.out) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+  case $?:`cat confinc.out 2>/dev/null` in #(
+  '0:this is the am__doit target') :
+    case $s in #(
+  BSD) :
+    am__include='.include' am__quote='"' ;; #(
+  *) :
+    am__include='include' am__quote='' ;;
+esac ;; #(
+  *) :
      ;;
-   esac
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $_am_result" >&5
-$as_echo "$_am_result" >&6; }
-rm -f confinc confmf
+esac
+  if test "$am__include" != "#"; then
+    _am_result="yes ($s style)"
+    break
+  fi
+done
+rm -f confinc.* confmf.*
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
+$as_echo "${_am_result}" >&6; }
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -20505,6 +20529,257 @@ fi
 
 fi
 
+## EIGEN
+# Check for EIGEN
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether eigen should be used" >&5
+$as_echo_n "checking whether eigen should be used... " >&6; }
+gy_headers=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_eigen
+
+
+# Check whether --with-eigen was given.
+if test "${with_eigen+set}" = set; then :
+  withval=$with_eigen;
+   if test "x$withval" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+elif test "x$withval" != "xyes"; then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+fi
+
+else
+  gy_with=check
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+$as_echo "probe" >&6; }
+
+
+fi
+
+
+gy_have=no
+if test "x$gy_with" != "xno"; then :
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether eigen include path is provided" >&5
+$as_echo_n "checking whether eigen include path is provided... " >&6; }
+
+# Check whether --with-eigen-headers was given.
+if test "${with_eigen_headers+set}" = set; then :
+  withval=$with_eigen_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+      	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+$as_echo "${gy_headers}" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether eigen library path is provided" >&5
+$as_echo_n "checking whether eigen library path is provided... " >&6; }
+
+# Check whether --with-eigen-libs was given.
+if test "${with_eigen_libs+set}" = set; then :
+  withval=$with_eigen_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+$as_echo "$gy_lib" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"; then :
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EIGEN" >&5
+$as_echo_n "checking for EIGEN... " >&6; }
+
+if test -n "$EIGEN_CFLAGS"; then
+    pkg_cv_EIGEN_CFLAGS="$EIGEN_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"eigen3\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "eigen3") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_EIGEN_CFLAGS=`$PKG_CONFIG --cflags "eigen3" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$EIGEN_LIBS"; then
+    pkg_cv_EIGEN_LIBS="$EIGEN_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"eigen3\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "eigen3") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_EIGEN_LIBS=`$PKG_CONFIG --libs "eigen3" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        EIGEN_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "eigen3" 2>&1`
+        else
+	        EIGEN_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "eigen3" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$EIGEN_PKG_ERRORS" >&5
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: eigen3.pc not found" >&5
+$as_echo "$as_me: eigen3.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: eigen3.pc not found" >&5
+$as_echo "$as_me: eigen3.pc not found" >&6;}
+
+
+else
+	EIGEN_CFLAGS=$pkg_cv_EIGEN_CFLAGS
+	EIGEN_LIBS=$pkg_cv_EIGEN_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	pkg_requires="${pkg_requires} eigen3"
+          gy_have=yes
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$gy_have" == "xno"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EIGEN (without pkg-config)" >&5
+$as_echo_n "checking for EIGEN (without pkg-config)... " >&6; }
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
+      LIBS=
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <Eigen/Dense>
+int
+main ()
+{
+Eigen::MatrixXd m(2,2);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  gy_have=yes
+         eigen_headers=$gy_headers
+         eigen_lib=$gy_lib
+         EIGEN_LIBS="$gy_lib "
+         EIGEN_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${EIGEN_CFLAGS}"
+         pkg_libs="${pkg_libs} ${EIGEN_LIBS}"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+
+fi
+
+fi
+
+have_eigen=$gy_have
+with_eigen=$withval
+
+if test "x$gy_have" == "xno"; then :
+  if test "x$gy_with" == "xyes"; then :
+  as_fn_error $? "eigen requested but not found" "$LINENO" 5
+
+fi
+   eigen_headers=""
+   eigen_lib=""
+   EIGEN_LIBS=""
+   EIGEN_CFLAGS=""
+
+else
+  use_eigen=yes
+
+$as_echo "#define GYOTO_USE_EIGEN 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_eigen" == "xyes"; then
+  HAVE_EIGEN_TRUE=
+  HAVE_EIGEN_FALSE='#'
+else
+  HAVE_EIGEN_TRUE='#'
+  HAVE_EIGEN_FALSE=
+fi
+
+
+
+
+
+
+if test "x$have_ceigen" == "xno"; then :
+  FEATURES+="-noeigen"
+
+fi
+
 ## CFITSIO
 # Check for CFITSIO
 
@@ -21531,6 +21806,10 @@ if test -z "${HAVE_XERCES_TRUE}" && test -z "${HAVE_XERCES_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_XERCES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${HAVE_EIGEN_TRUE}" && test -z "${HAVE_EIGEN_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_EIGEN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CFITSIO\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -22145,7 +22424,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
-AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
+AMDEP_TRUE="$AMDEP_TRUE" MAKE="${MAKE-make}"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout
@@ -23151,29 +23430,35 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
-  case $CONFIG_FILES in
-  *\'*) eval set x "$CONFIG_FILES" ;;
-  *)   set x $CONFIG_FILES ;;
-  esac
+  # TODO: see whether this extra hack can be removed once we start
+  # requiring Autoconf 2.70 or later.
+  case $CONFIG_FILES in #(
+  *\'*) :
+    eval set x "$CONFIG_FILES" ;; #(
+  *) :
+    set x $CONFIG_FILES ;; #(
+  *) :
+     ;;
+esac
   shift
-  for mf
+  # Used to flag and report bootstrapping failures.
+  am_rc=0
+  for am_mf
   do
     # Strip MF so we end up with the name of the file.
-    mf=`echo "$mf" | sed -e 's/:.*$//'`
-    # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named 'Makefile.in', but
-    # some people rename them; so instead we look at the file content.
-    # Grep'ing the first line is not enough: some people post-process
-    # each Makefile.in and add a new line on top of each file to say so.
-    # Grep'ing the whole file is not good either: AIX grep has a line
+    am_mf=`$as_echo "$am_mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile which includes
+    # dependency-tracking related rules and includes.
+    # Grep'ing the whole file directly is not great: AIX grep has a line
     # limit of 2048, but all sed's we know have understand at least 4000.
-    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
-      dirpart=`$as_dirname -- "$mf" ||
-$as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$mf" : 'X\(//\)[^/]' \| \
-	 X"$mf" : 'X\(//\)$' \| \
-	 X"$mf" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$mf" |
+    sed -n 's,^am--depfiles:.*,X,p' "$am_mf" | grep X >/dev/null 2>&1 \
+      || continue
+    am_dirpart=`$as_dirname -- "$am_mf" ||
+$as_expr X"$am_mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$am_mf" : 'X\(//\)[^/]' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$am_mf" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -23191,53 +23476,48 @@ $as_echo X"$mf" |
 	    q
 	  }
 	  s/.*/./; q'`
-    else
-      continue
-    fi
-    # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running 'make'.
-    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
-    test -z "$DEPDIR" && continue
-    am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "$am__include" && continue
-    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # Find all dependency output files, they are included files with
-    # $(DEPDIR) in their names.  We invoke sed twice because it is the
-    # simplest approach to changing $(DEPDIR) to its actual value in the
-    # expansion.
-    for file in `sed -n "
-      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
-      # Make sure the directory exists.
-      test -f "$dirpart/$file" && continue
-      fdir=`$as_dirname -- "$file" ||
-$as_expr X"$file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$file" : 'X\(//\)[^/]' \| \
-	 X"$file" : 'X\(//\)$' \| \
-	 X"$file" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$file" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+    am_filepart=`$as_basename -- "$am_mf" ||
+$as_expr X/"$am_mf" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X/"$am_mf" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)[^/].*/{
+	  /^X\/\(\/\/\)$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
+	  /^X\/\(\/\).*/{
 	    s//\1/
 	    q
 	  }
 	  s/.*/./; q'`
-      as_dir=$dirpart/$fdir; as_fn_mkdir_p
-      # echo "creating $dirpart/$file"
-      echo '# dummy' > "$dirpart/$file"
-    done
+    { echo "$as_me:$LINENO: cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles" >&5
+   (cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); } || am_rc=$?
   done
+  if test $am_rc -ne 0; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Something went wrong bootstrapping makefile fragments
+    for automatic dependency tracking.  Try re-running configure with the
+    '--disable-dependency-tracking' option to at least be able to build
+    the package (albeit without support for automatic dependency tracking).
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+  { am_dirpart=; unset am_dirpart;}
+  { am_filepart=; unset am_filepart;}
+  { am_mf=; unset am_mf;}
+  { am_rc=; unset am_rc;}
+  rm -f conftest-deps.mk
 }
  ;;
     "libtool":C)

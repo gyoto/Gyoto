@@ -5822,7 +5822,7 @@ esac
 fi
 
 : ${AR=ar}
-: ${AR_FLAGS=cru}
+: ${AR_FLAGS=cr}
 
 
 
@@ -7543,8 +7543,8 @@ int forced_loaded() { return 2;}
 _LT_EOF
       echo "$LTCC $LTCFLAGS -c -o conftest.o conftest.c" >&5
       $LTCC $LTCFLAGS -c -o conftest.o conftest.c 2>&5
-      echo "$AR cru libconftest.a conftest.o" >&5
-      $AR cru libconftest.a conftest.o 2>&5
+      echo "$AR cr libconftest.a conftest.o" >&5
+      $AR cr libconftest.a conftest.o 2>&5
       echo "$RANLIB libconftest.a" >&5
       $RANLIB libconftest.a 2>&5
       cat > conftest.c << _LT_EOF
@@ -8374,6 +8374,10 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
+## CAVEAT EMPTOR:
+## There is no encapsulation within the following macros, do not change
+## the running order or otherwise move them around unless you know exactly
+## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -8617,6 +8621,12 @@ lt_prog_compiler_static=
       ecc*)
 	lt_prog_compiler_wl='-Wl,'
 	lt_prog_compiler_pic='-KPIC'
+	lt_prog_compiler_static='-static'
+        ;;
+      # flang / f18. f95 an alias for gfortran or flang on Debian
+      flang* | f18* | f95*)
+	lt_prog_compiler_wl='-Wl,'
+	lt_prog_compiler_pic='-fPIC'
 	lt_prog_compiler_static='-static'
         ;;
       # icc used to be incompatible with GCC.

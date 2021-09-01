@@ -24,6 +24,9 @@
 /* Define to 1 if you have cfitsio */
 #undef GYOTO_USE_CFITSIO
 
+/* Define to 1 if you have eigen */
+#undef GYOTO_USE_EIGEN
+
 /* Define to 1 if you have udunits */
 #undef GYOTO_USE_UDUNITS
 
