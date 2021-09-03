@@ -581,7 +581,7 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     double * alphaInu = new double[nbnu];
     Matrix4d * Onu = new Matrix4d[nbnu];
     radiativeQ(Inu, Qnu, Unu, Vnu,
-	       Onu,nuem , nbnu, dsem,
+	       Onu, nuem , nbnu, dsem,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
@@ -647,7 +647,7 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     if (Taunu[i]<0.1) alphaInu[i] = -std::numeric_limits<double>::infinity();
     else alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
     GYOTO_DEBUG_EXPR(alphaInu[i]);
-    Onu[i]=identity*alphaInu[i];
+    Onu[i]=identity*alphaInu[i]; //Default transmission matrix with all polarisation set to 0, MUST be reimplemented
   }
   delete [] Taunu;
   delete [] alphaInu;
