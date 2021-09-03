@@ -308,15 +308,8 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	double * Qnu          = new double[nbnuobs];
 	double * Unu          = new double[nbnuobs];
 	double * Vnu          = new double[nbnuobs];
-	double * alphaInu     = new double[nbnuobs];
-	double * alphaQnu     = new double[nbnuobs];
-	double * alphaUnu     = new double[nbnuobs];
-	double * alphaVnu     = new double[nbnuobs];
-	double * rQnu         = new double[nbnuobs];
-	double * rUnu         = new double[nbnuobs];
-	double * rVnu         = new double[nbnuobs];
 	double * nuem         = new double[nbnuobs];
-	double Xhi = 0;
+	Matrix4d * Onu        = new Matrix4d[nbnuobs];
 
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  nuem[ii]=nuobs[ii]*ggredm1;
@@ -324,12 +317,9 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
 	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
 	radiativeQ(Inu, Qnu, Unu, Vnu,
-		   alphaInu, alphaQnu, alphaUnu, alphaVnu,
-		   rQnu, rUnu, rVnu, &Xhi,
-		   nuem, nbnuobs, dsem,
+		   Onu, nuem, nbnuobs, dsem,
 		   coord_ph_hit, coord_obj_hit);
-	ph -> transfer (alphaInu, alphaQnu, alphaUnu, alphaVnu,
-			rQnu, rUnu, rVnu, Xhi, dsem);
+	ph -> transfert(Inu, Qnu, Unu, Vnu, Onu);
 	double ggred3 = ggred*ggred*ggred;
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  if (data-> spectrum) {
@@ -388,13 +378,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	delete [] Qnu;
 	delete [] Unu;
 	delete [] Vnu;
-	delete [] alphaInu;
-	delete [] alphaQnu;
-	delete [] alphaUnu;
-	delete [] alphaVnu;
-	delete [] rQnu;
-	delete [] rUnu;
-	delete [] rVnu;
+	delete [] Onu;
 	delete [] nuem;
       } else { // No polarization
 	double * Inu          = new double[nbnuobs];
@@ -558,31 +542,17 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
     double * Qnu = new double[nbnu];
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
-    double * alphaInu = new double[nbnu];
-    double * alphaQnu = new double[nbnu];
-    double * alphaUnu = new double[nbnu];
-    double * alphaVnu = new double[nbnu];
-    double * rQnu = new double[nbnu];
-    double * rUnu = new double[nbnu];
-    double * rVnu = new double[nbnu];
+    Matrix4d * Onu = new Matrix4d[nbnu];
     double Xhi=0;
     radiativeQ(Inu, Qnu, Unu, Vnu,
-	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu, &Xhi,
-	       nuem , nbnu, dsem,
+	       Onu, nuem , nbnu, dsem,
 	       cph, co);
     // in all cases, clean up
     delete [] Qnu;
     delete [] Unu;
     delete [] Vnu;
-    delete [] alphaInu;
-    delete [] alphaQnu;
-    delete [] alphaUnu;
-    delete [] alphaVnu;
-    delete [] rQnu;
-    delete [] rUnu;
-    delete [] rVnu;
     delete [] Taunu;
+    delete [] Onu;
     return;
   }
 
@@ -609,25 +579,18 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
     double * alphaInu = new double[nbnu];
-    double * alphaQnu = new double[nbnu];
-    double * alphaUnu = new double[nbnu];
-    double * alphaVnu = new double[nbnu];
-    double * rQnu = new double[nbnu];
-    double * rUnu = new double[nbnu];
-    double * rVnu = new double[nbnu];
-    double Xhi=0.;
+    Matrix4d * Onu = new Matrix4d[nbnu];
     radiativeQ(Inu, Qnu, Unu, Vnu,
-	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu, &Xhi,
-	       nuem , nbnu, dsem,
+	       Onu,nuem , nbnu, dsem,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i] = exp(-alphaInu[i]);
+      	alphaInu[i]=Onu[i](0,0);
+				Taunu[i] = exp(-alphaInu[i]);
       }
     } else {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i]=transmission(nuem[i], dsem, cph, co);
+				Taunu[i]=transmission(nuem[i], dsem, cph, co);
       }
     }
     // in all cases, clean up
@@ -635,12 +598,7 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     delete [] Unu;
     delete [] Vnu;
     delete [] alphaInu;
-    delete [] alphaQnu;
-    delete [] alphaUnu;
-    delete [] alphaVnu;
-    delete [] rQnu;
-    delete [] rUnu;
-    delete [] rVnu;
+    delete [] Onu;
     return;
     // If polarized radiativeQ is not implemented, the default
     // implementation will recurse here.
@@ -658,12 +616,9 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 }
 
 void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
-                         double *alphaInu, double *alphaQnu,
-			 									 double *alphaUnu, double *alphaVnu,
-                         double *rQnu, double *rUnu, double *rVnu, double* Xhi,
+       Matrix4d *Onu,
 			 double const *nuem , size_t nbnu, double dsem,
-       state_t const &cph,
-			 double const *co) const
+       state_t const &cph, double const *co) const
 {
   // cph has 16 elements, 4 elements for each one of
   // X, Xdot, Ephi, Etheta
@@ -676,6 +631,12 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
   // Compute the output from the non-polarized radiativeQ().
   double * Taunu = new double[nbnu];
+  double * alphaInu = new double[nbnu];
+  Matrix4d identity;
+  identity << 1, 0, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 1, 0,
+              0, 0, 0, 1;
   radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
   for (size_t i=0; i<nbnu; ++i) {
     // Inu[i] = Inu[i];
@@ -686,26 +647,23 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     if (Taunu[i]<0.1) alphaInu[i] = -std::numeric_limits<double>::infinity();
     else alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
     GYOTO_DEBUG_EXPR(alphaInu[i]);
-    alphaQnu[i] = 0.; // Is everything else 0.?
-    alphaUnu[i] = 0.;
-    alphaVnu[i] = 0.;
-    rQnu[i] = 0.;
-    rUnu[i] = 0.;
-    rVnu[i] = 0.;
+    Onu[i]=identity*alphaInu[i];
   }
-  *Xhi=0.;
   delete [] Taunu;
+  delete [] alphaInu;
 }
 
-void Generic::Omatrix(Matrix4d Onu, double alphanu[4], double rnu[3], double Xhi, double dsem) const{
-  Omatrix(Onu, alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], Xhi, dsem);
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const{
+  
+  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], Xhi, dsem);
 }
 
-void Generic::Omatrix(Matrix4d Onu, double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const{
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
+	Matrix4d Onu;
 	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
@@ -781,9 +739,11 @@ void Generic::Omatrix(Matrix4d Onu, double alphaInu, double alphaQnu, double alp
         -sin(lambda2*dsem*gg_->unitLength())*M2/Theta \
         -sinh(lambda1*dsem*gg_->unitLength())*M3/Theta \
         +(cosh(lambda1*dsem*gg_->unitLength())-cos(lambda2*dsem*gg_->unitLength()))*M4/Theta);
+
+  return Onu;
 }
 
-double Generic::getXhi(double const Bfourvect[8], state_t const &cph, double const vel[4]) const{
+double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
 	double Xhi=0;
 	if (cph.size()<=8)
 		GYOTO_ERROR("Impossible to compute the Xhi angle without Ephi and Etheta !");
