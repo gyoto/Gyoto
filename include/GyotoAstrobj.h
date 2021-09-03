@@ -569,10 +569,7 @@ private:
 			  double dsem, double coord_ph[8],
 			  double coord_obj[8]=NULL) const = delete ; 
   virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
-			  double *alphaInu, double *alphaQnu,
-			  double *alphaUnu, double *alphaVnu,
-			  double *rQnu, double *rUnu, double *rVnu, double* Xhi,
-			  double const *nuem , size_t nbnu, double dsem,
+			  Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
 			  state_t const &cph, double const *co) const ;
 
   /**
@@ -632,8 +629,8 @@ private:
    * \param Xhi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
    * \param dsem geometrical length in geometrical units
    */
-  void Omatrix(Eigen::Matrix4d Onu, double alphanu[4], double rnu[3], double Xhi, double dsem) const;
-  void Omatrix(Eigen::Matrix4d Onu, double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const;
   
   /**
