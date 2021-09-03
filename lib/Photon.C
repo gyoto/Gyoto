@@ -1176,25 +1176,40 @@ void Photon::Refined::transmit(size_t i, double t) {
   if (i==size_t(-1)) transmission_freqobs_ = parent_->transmission_freqobs_;
 }
 
-void Photon::transfer(double const * aInu, double const * aQnu, double const * aUnu, double const * aVnu,
-		    double const * rQnu, double const * rUnu, double const * rVnu,
-        double Xhi, double const dsem) {
-  // Update the transfer function.
+void Photon::transmit(size_t i, Matrix4d mat){
+  if (i==size_t(-1)) { transmissionMatrix_freqobs_ *= mat; return; }
+  if (!spectro_() || i>=spectro_->nSamples())
+    GYOTO_ERROR("Photon::getTransmissionMatrix(): i > nsamples");
+  transmissionMatrix_[i] *= mat;
+}
+void Photon::Refined::transmit(size_t i, Matrix4d mat) {
+  parent_ -> transmit(i, mat);
+}
 
+void Photon::transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
+  // Apply transfer function to I, Q, U and V, then update the transfer function.
+  // For the prototype,
+  //   * just apply the transmission to Inu;
+  //   * only update transmission.
   size_t nbnuobs = spectro_() ? spectro_->nSamples() : 0;
-  Matrix4d Onu;
-
+  Matrix4d Tau;
   for (size_t ii=0; ii<nbnuobs; ++ii) {
-    object_->Omatrix(Onu, aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rQnu[ii], rUnu[ii], rVnu[ii], Xhi, dsem);
-    transmissionMatrix_[ii]*=Onu;
+    Tau=transmissionMatrix_[ii];
+    Vector4d Stokes(Inu[ii],Qnu[ii],Unu[ii],Vnu[ii]);
+    Vector4d StokesOut;
+    StokesOut=Tau*Stokes;
+    Inu[ii]=StokesOut(0);
+    Qnu[ii]=StokesOut(1);
+    Unu[ii]=StokesOut(2);
+    Vnu[ii]=StokesOut(3);
+    transmit(ii, Onu[ii]);
   }
 }
-void Photon::Refined::transfer(double const * aInu, double const * aQnu,
-			       double const * aUnu, double const * aVnu,
-			       double const * rQnu, double const * rUnu, double const * rVnu,
-             double Xhi, double const dsem) {
-  parent_ -> transfer(aInu, aQnu, aUnu, aVnu, rQnu, rUnu, rVnu, Xhi, dsem);
+
+void Photon::Refined::transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
+  parent_ -> transfert(Inu, Qnu, Unu, Vnu, Onu);
 }
+
 #ifdef GYOTO_USE_XERCES
 void Photon::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;

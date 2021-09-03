@@ -340,10 +340,16 @@ class Gyoto::Photon
    */
   virtual void transmit(size_t i, double t);
 
-  /// Update transmission matrix
-  virtual void transfer(double const * aInu, double const * aQnu, double const * aUnu, double const * aVnu,
-			double const * rQnu, double const * rUnu, double const * rVnu,
-      double Xhi, double const dsem) ;
+  /// Update transmission matrix in a given channel
+  /**
+   * getTransmissionMatrix(size_t i) *= mat.
+   *
+   * \param i channel number. -1 for Matrix Photon::transmissionMatrix_freqobs_.
+   * \param mat transmission Matrix of this fluid element.
+   */
+  virtual void transmit(size_t i, Eigen::Matrix4d mat);
+  virtual void transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
+  ///< Perform one step of polarized radiative transfert and update transmission matrix
 
  private:
   /// Allocate Photon::transmission_
@@ -384,11 +390,10 @@ class Gyoto::Photon::Refined : public Gyoto::Photon {
   ///< Constructor
   virtual void transmit(size_t i, double t);
   ///< Update transmission both in *this and in *parent_
-  virtual void transfer(double const * aInu, double const * aQnu,
-			double const * aUnu, double const * aVnu,
-			double const * rQnu, double const * rUnu, double const * rVnu,
-      double Xhi, double const dsem) ;
-  ///< Perform one step of radiative transfer
+  virtual void transmit(size_t i, Eigen::Matrix4d mat);
+  ///< Update transmission Matrix both in *this and in *parent_
+  virtual void transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
+  ///< Perform one step of polarized radiative transfert and update transmission matrix
 };
 
 
