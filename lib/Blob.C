@@ -33,6 +33,7 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+using namespace Eigen;
 
 /// Properties
 #include "GyotoProperty.h"
@@ -314,3 +315,87 @@ double Blob::magnetizationParameter()const{
 
 double Blob::kappaIndex() const { return kappaIndex_; }
 void Blob::kappaIndex(double ind) { kappaIndex_ = ind; }
+
+void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Matrix4d Onu[],
+              double const nu_ems[], size_t nbnu, double dsem,
+              state_t const &coord_ph, double const coord_obj[8]) const{
+  # if GYOTO_DEBUG_ENABLED
+  GYOTO_DEBUG << endl;
+# endif
+  double tcur=coord_ph[0]; //*GMoc3/60.; // in min
+  double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
+  double temperature = modulation*temperature_,
+    number_density = modulation*numberDensity_cgs_;
+  //cout << "spot tcur, time_ref, time_sigma, modulation, number_density=" << tcur << " " << timeRef_M_ << " " << timeSigma_M_ << " " << modulation << " " << numberDensity_cgs_ << " " << temperature_ << " " << number_density << " " << temperature << " " << kappaIndex_ << " " << magnetizationParameter_ << endl;
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+  
+  double hypergeom = Gyoto::hypergeom(kappaIndex_, thetae);
+  
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
+       *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+       *number_density);
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+  
+  double B4vect[4]={0.,BB,0.,0.}; // For the test, magnetic field is set radial
+  double Xhi=getXhi(B4vect, coord_ph, coord_obj+4);
+
+  // Defining jnus, anus
+  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
+  
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initializing to <0 value to create errors if not updated
+    // [ exp(-anu*ds) will explose ]
+    jInu[ii]=-1.;
+    jQnu[ii]=-1.;
+    jUnu[ii]=-1.;
+    jVnu[ii]=-1.;
+    aInu[ii]=-1.;
+    aQnu[ii]=-1.;
+    aUnu[ii]=-1.;
+    aVnu[ii]=-1.;
+    rotQnu[ii]=-1.;
+    rotUnu[ii]=-1.;
+    rotVnu[ii]=-1.;
+  }
+  
+  // THERMAL SYNCHRO
+  spectrumKappaSynch_->kappaindex(kappaIndex_);
+  spectrumKappaSynch_->numberdensityCGS(number_density);
+  spectrumKappaSynch_->angle_averaged(1);
+  spectrumKappaSynch_->angle_B_pem(0.); // avg so we don't care
+  spectrumKappaSynch_->cyclotron_freq(nu0);
+  spectrumKappaSynch_->thetae(thetae);
+  spectrumKappaSynch_->hypergeometric(hypergeom);
+
+  spectrumKappaSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+                                  aInu, aQnu, aUnu, aVnu,
+                                  rotQnu, rotUnu, rotVnu, nu_ems,nbnu);
+
+  Matrix4d Omat;
+  Matrix4d rot;
+    rot << 1.,       0.,           0.   , 0.,
+           0.,  cos(2.*Xhi), sin(2.*Xhi), 0.,
+           0., -sin(2.*Xhi), cos(2.*Xhi), 0.,
+           0.,       0.,           0.   , 1.;
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  for (size_t ii=0; ii<nbnu; ++ii){
+    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
+    Vector4d jStokes;
+    jStokes(0)=jInu[ii];
+    jStokes(1)=jQnu[ii];
+    jStokes(2)=jUnu[ii];
+    jStokes(3)=jVnu[ii];
+    jStokes = rot * jStokes; // apply the rotation matrix on Js with an angle of -Xhi
+    Vector4d Stokes(Omat*jStokes*dsem*gg_->unitLength());
+    
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+  }
+}
