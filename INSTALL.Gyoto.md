@@ -109,6 +109,8 @@ Gyoto requires:
      On some systems, LORENE must be built with -fPIC (GYOTO as well,
      but this is the default).
    - developers may need the GNU autotools: autoconf, automake, libtool.
+   - Eigen3 (required for the polarisation):
+       https://packages.debian.org/fr/sid/libeigen3-dev
 
 For Debian and its derivatives (incl. Ubuntu), you can install all
 those dependencies with:
@@ -117,7 +119,7 @@ those dependencies with:
     libxerces-c-dev libcfitsio-dev libudunits2-dev libboost-dev \
     libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
     python3-dev python3-setuptools swig3.0 python3-numpy python3-matplotlib \
-    doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++
+    doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++ libeigen3-dev
 
 ## 2- Downloading the source code
 
@@ -154,7 +156,7 @@ pulling again from github in the future.
 
 Alternatively, you could recreate the autotools-generated files using
 `autoreconf`. This requires the development tools autoconf, automake,
-libtool, and is really necessary only for developpers who modfied the
+libtool, and is really necessary only for developpers who modified the
 the build system (configure.ac, */Makefile.am...)
 
 ## 4- Configuring Gyoto
