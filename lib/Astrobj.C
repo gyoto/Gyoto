@@ -743,9 +743,24 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   return Onu;
 }
 
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const{
+	Matrix4d rot;
+    rot << 1.,       0.    ,        0.   , 0.,
+           0.,  cos(2.*Xhi), -sin(2.*Xhi), 0.,
+           0.,  sin(2.*Xhi),  cos(2.*Xhi), 0.,
+           0.,       0.    ,        0.   , 1.; // See RadiativeTransfertVadeMecum.pdf
+  Vector4d jStokes;
+    jStokes(0)=jInu;
+    jStokes(1)=jQnu;
+    jStokes(2)=jUnu;
+    jStokes(3)=jVnu;
+    jStokes = rot * jStokes;
+    return jStokes;
+}
+
 double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
 	double Xhi=0;
-	if (cph.size()<=8)
+	if (cph.size()!=16)
 		GYOTO_ERROR("Impossible to compute the Xhi angle without Ephi and Etheta !");
 	if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
 		GYOTO_ERROR("In GetXhi: compute of Xhi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
@@ -773,7 +788,7 @@ double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double con
   	BperpEphi=gg_->ScalarProd(&cph[0],Bperp,Ephi);
 
 	double cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.)),
- 		sgn=-BperpEtheta*BperpEphi/abs(BperpEtheta*BperpEphi);
+ 		sgn=-BperpEtheta*BperpEphi<0.?-1.:1.;
 
  	Xhi=sgn*acos(cos2Xhi)/2.;
 

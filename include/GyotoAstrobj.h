@@ -634,6 +634,12 @@ private:
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const;
   
   /**
+   * Apply the rotation matrix with angle Xhi to the emission Stokes vector
+   * constructed in the fonction from the individual coefficients
+   */
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const;
+
+  /**
    * Get Xhi angle.
    * Return the angle between the parallel transported observer polarization basis (Ephi,Etheta)
    * and the Stokes basis in the rest frame of the emitter.
