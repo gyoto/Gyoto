@@ -510,34 +510,48 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
 #endif
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Eigen::Matrix4d Onu[], // outut
               double const nu_ems[], size_t nbnu, double dsem,
               state_t const &coord_ph, double const coord_obj[8]) const {
+
+  // Only for quick test !!!
+
+  // Defining jnus, anus
+  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
   
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initializing to <0 value to create errors if not updated
+    // [ exp(-anu*ds) will explose ]
+    jInu[ii]=1.e-10;
+    jQnu[ii]=1.e-10;
+    jUnu[ii]=0.;
+    jVnu[ii]=1.e-10;
+    aInu[ii]=1.e-10;
+    aQnu[ii]=1.e-10;
+    aUnu[ii]=0.;
+    aVnu[ii]=1.e-10;
+    rotQnu[ii]=1.e-10;
+    rotUnu[ii]=0.;
+    rotVnu[ii]=1.e-10;
+  }
+  double Xhi=0.;
+  Eigen::Matrix4d Omat;
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  for (size_t ii=0; ii<nbnu; ++ii){
+    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
+    Eigen::Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], -Xhi); // apply the rotation matrix on Js with an angle of -Xhi
+    Eigen::Vector4d Stokes(Omat*jStokes*dsem*gg_->unitLength());
+
+    cout << Omat << "\n" << endl;
+    
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+  }  
 }
 
 
