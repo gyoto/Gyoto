@@ -632,11 +632,15 @@ private:
   Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const;
   Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double sin2Xhi, double cos2Xhi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Xhi, double cos2Xhi, double dsem) const;
   
   /**
    * Apply the rotation matrix with angle Xhi to the emission Stokes vector
    * constructed in the fonction from the individual coefficients
    */
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Xhi, double cos2Xhi) const;
   Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const;
 
   /**
@@ -649,6 +653,16 @@ private:
    * \param vel Fluid velocity at the photon coordinate
    */
   double getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const;
+  /**
+   * Get the cosinus and sinus of 2*Xhi angle.
+   * Xhi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
+   * and the Stokes basis in the rest frame of the emitter.
+   * 
+   * \param Bfourvect 4-vector magnetic field NOT projected in the rest frame of the emitter
+   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)=16
+   * \param vel Fluid velocity at the photon coordinate
+   */
+  void getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Xhi, double* cos2Xhi) const;
 
 };
 
