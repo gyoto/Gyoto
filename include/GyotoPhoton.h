@@ -348,7 +348,7 @@ class Gyoto::Photon
    * \param mat transmission Matrix of this fluid element.
    */
   virtual void transmit(size_t i, Eigen::Matrix4d mat);
-  virtual void transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
+  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
   ///< Perform one step of polarized radiative transfert and update transmission matrix
 
  private:
@@ -392,7 +392,7 @@ class Gyoto::Photon::Refined : public Gyoto::Photon {
   ///< Update transmission both in *this and in *parent_
   virtual void transmit(size_t i, Eigen::Matrix4d mat);
   ///< Update transmission Matrix both in *this and in *parent_
-  virtual void transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
+  virtual void transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Eigen::Matrix4d * Onu);
   ///< Perform one step of polarized radiative transfert and update transmission matrix
 };
 

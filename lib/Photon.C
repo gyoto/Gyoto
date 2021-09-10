@@ -1144,18 +1144,32 @@ Matrix4d Photon::getTransmissionMatrix(size_t i) const {
 }
 
 double Photon::getTransmissionMax() const {
-  double transmax=transmission_freqobs_;
-  if (spectro_()) {
-    transmax=0.;
-    size_t i=0, imax= spectro_->nSamples();
-    for (i=0; i < imax; ++i)
-      if (transmission_[i] > transmax)
-	transmax = transmission_[i];
+  double transmax = 0.;
+  if (parallel_transport_){
+    transmax=transmissionMatrix_freqobs_(0,0);
+    if (spectro_()) {
+      transmax=0.;
+      size_t i=0, imax= spectro_->nSamples();
+      for (i=0; i < imax; ++i){
+        Matrix4d mat=transmissionMatrix_[i];
+        if (mat(0,0)>transmax)
+          transmax=mat(0,0);
+      }
+    }
+  }else{
+    transmax=transmission_freqobs_;
+    if (spectro_()) {
+      transmax=0.;
+      size_t i=0, imax= spectro_->nSamples();
+      for (i=0; i < imax; ++i)
+        if (transmission_[i] > transmax)
+  	transmax = transmission_[i];
+    }
+  # ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(transmax);
+  # endif
+    return transmax;
   }
-# ifdef GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(transmax);
-# endif
-  return transmax;
 }
 
 double const * Photon::getTransmission() const { return transmission_; }
@@ -1186,7 +1200,7 @@ void Photon::Refined::transmit(size_t i, Matrix4d mat) {
   parent_ -> transmit(i, mat);
 }
 
-void Photon::transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
+void Photon::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
   // Apply transfer function to I, Q, U and V, then update the transfer function.
   // For the prototype,
   //   * just apply the transmission to Inu;
@@ -1206,8 +1220,8 @@ void Photon::transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, M
   }
 }
 
-void Photon::Refined::transfert(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
-  parent_ -> transfert(Inu, Qnu, Unu, Vnu, Onu);
+void Photon::Refined::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
+  parent_ -> transfer(Inu, Qnu, Unu, Vnu, Onu);
 }
 
 #ifdef GYOTO_USE_XERCES
