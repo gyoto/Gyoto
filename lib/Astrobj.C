@@ -319,7 +319,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	radiativeQ(Inu, Qnu, Unu, Vnu,
 		   Onu, nuem, nbnuobs, dsem,
 		   coord_ph_hit, coord_obj_hit);
-	ph -> transfert(Inu, Qnu, Unu, Vnu, Onu);
+	ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
 	double ggred3 = ggred*ggred*ggred;
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  if (data-> spectrum) {
@@ -644,8 +644,11 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     Unu[i] = 0.;
     Vnu[i] = 0.;
     GYOTO_DEBUG_EXPR(Taunu[i]);
-    if (Taunu[i]<0.1) alphaInu[i] = -std::numeric_limits<double>::infinity();
-    else alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
+    if (Taunu[i]<1e-6){
+    	//alphaInu[i] = std::numeric_limits<double>::infinity(); // Cause floatting point exception
+    	alphaInu[i] = 1.e300; // something very big 
+    }
+    else alphaInu[i] = -log(Taunu[i])/(dsem*gg_->unitLength());
     GYOTO_DEBUG_EXPR(alphaInu[i]);
     Onu[i]=identity*alphaInu[i]; //Default transmission matrix with all polarisation set to 0, MUST be reimplemented
   }
@@ -655,11 +658,22 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
 Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const{
   
-  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], Xhi, dsem);
+  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin(2.*Xhi), cos(2.*Xhi), dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double sin2Xhi, double cos2Xhi, double dsem) const{
+
+	return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin2Xhi, cos2Xhi, dsem);
 }
 
 Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const{
+
+	return Omatrix(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu, sin(2.*Xhi), cos(2.*Xhi), dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Xhi, double cos2Xhi, double dsem) const{
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
@@ -667,10 +681,10 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
-  double aQ=alphaQnu*cos(2*Xhi)+alphaUnu*sin(2*Xhi);
-  double aU=alphaUnu*cos(2*Xhi)-alphaQnu*sin(2*Xhi);
-  double rQ=rQnu*cos(2*Xhi)+rUnu*sin(2*Xhi);
-  double rU=rUnu*cos(2*Xhi)-rQnu*sin(2*Xhi);
+  double aQ=alphaQnu*cos2Xhi+alphaUnu*sin2Xhi;
+  double aU=alphaUnu*cos2Xhi-alphaQnu*sin2Xhi;
+  double rQ=rQnu*cos2Xhi+rUnu*sin2Xhi;
+  double rU=rUnu*cos2Xhi-rQnu*sin2Xhi;
   double rV=rVnu;
 
   alphasqrt = aQ*aQ+aU*aU+aV*aV;
@@ -680,14 +694,30 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   Theta = pow(lambda1,2)+pow(lambda2,2);
   sigma = (aQ*rQ+aU*rU+aV*rV)/abs(aQ*rQ+aU*rU+aV*rV);
 
+  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+
+  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
+  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite, one of the coefficient is to large !");
+
+  Matrix4d zero;
+  zero <<  0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0;
   Matrix4d M1, M2, M3, M4;
 
   // Fill of M1
+  M1 = zero;
   for (int ii=0;ii<4;ii++){
     M1(ii,ii)=1.;
   }
+  //cout << "M1 :\n" << M1 << endl;
 
   // Fill of M2
+  M2 = zero;
   M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
   M2(0,2)=lambda2*aU-sigma*lambda1*rU;
   M2(0,3)=lambda2*aV-sigma*lambda1*rV;
@@ -700,8 +730,10 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   M2(3,0)=M2(0,3);
   M2(3,1)=-M2(1,3);
   M2(3,2)=-M2(2,3);
+  //cout << "M2 :\n" << M2 << endl;
 
   // Fill of M3
+  M3 = zero;
   M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
   M3(0,2)=lambda1*aU+sigma*lambda2*rU;
   M3(0,3)=lambda1*aV+sigma*lambda2*rV;
@@ -714,8 +746,10 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   M3(3,0)=M3(0,3);
   M3(3,1)=-M3(1,3);
   M3(3,2)=-M3(2,3);
+	//cout << "M3 :\n" << M3 << endl;
 
   // Fill of M4
+  M4 = zero;
   M4(0,0)= (alphasqrt+rsqrt)/2.;
   M4(0,1)=aV*rU-aU*rV;
   M4(0,2)=aQ*rV-aV*rQ;
@@ -732,23 +766,38 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   M4(3,1)=M4(1,3);
   M4(3,2)=M4(2,3);
   M4(3,3)=pow(aV,2)+pow(rV,2)-(alphasqrt+rsqrt)/2.;
+	//cout << "M4 :\n" << M4 << endl;
+
+  GYOTO_DEBUG
+  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
+  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
+  	<< "alphasqrt : " << alphasqrt << "\n"
+  	<< "rsqrt : " << rsqrt << "\n"
+  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
+  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
+
 
   // Filling O matrix, output
-  Onu=exp(-aI*dsem*gg_->unitLength())*(\
-        (cosh(lambda1*dsem*gg_->unitLength())+cos(lambda2*dsem*gg_->unitLength()))*M1/2. \
-        -sin(lambda2*dsem*gg_->unitLength())*M2/Theta \
-        -sinh(lambda1*dsem*gg_->unitLength())*M3/Theta \
-        +(cosh(lambda1*dsem*gg_->unitLength())-cos(lambda2*dsem*gg_->unitLength()))*M4/Theta);
-
+  Onu=exp(-aI*dsem*gg_->unitLength())*\
+  			((coshlb1+coslb2)*M1/2. \
+        -sinlb2*M2/Theta \
+        -sinhlb1*M3/Theta \
+        +(coshlb1-coslb2)*M4/Theta);
   return Onu;
 }
 
+
 Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const{
+	return rotateJs(jInu, jQnu, jUnu, jVnu, sin(2.*Xhi),  cos(2.*Xhi));
+}
+
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Xhi, double cos2Xhi) const{
 	Matrix4d rot;
-    rot << 1.,       0.    ,        0.   , 0.,
-           0.,  cos(2.*Xhi), -sin(2.*Xhi), 0.,
-           0.,  sin(2.*Xhi),  cos(2.*Xhi), 0.,
-           0.,       0.    ,        0.   , 1.; // See RadiativeTransfertVadeMecum.pdf
+    rot << 1.,     0.  ,     0.  , 0.,
+           0.,  cos2Xhi, -sin2Xhi, 0.,
+           0.,  sin2Xhi,  cos2Xhi, 0.,
+           0.,     0.  ,     0.  , 1.; // See RadiativeTransfertVadeMecum.pdf
   Vector4d jStokes;
     jStokes(0)=jInu;
     jStokes(1)=jQnu;
@@ -760,6 +809,14 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
 
 double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
 	double Xhi=0;
+	double sin2Xhi, cos2Xhi;
+	getSinCos2Xhi(Bfourvect, cph, vel, &sin2Xhi, &cos2Xhi);
+ 	Xhi=atan2(sin2Xhi,cos2Xhi)/2.;
+
+	return Xhi;
+}
+
+void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Xhi, double* cos2Xhi) const{
 	if (cph.size()!=16)
 		GYOTO_ERROR("Impossible to compute the Xhi angle without Ephi and Etheta !");
 	if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
@@ -787,16 +844,12 @@ double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double con
   double BperpEtheta=gg_->ScalarProd(&cph[0],Bperp,Etheta),
   	BperpEphi=gg_->ScalarProd(&cph[0],Bperp,Ephi);
 
-	double cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.)),
- 		sgn=-BperpEtheta*BperpEphi<0.?-1.:1.;
-
- 	Xhi=sgn*acos(cos2Xhi)/2.;
+	*cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
+	*sin2Xhi=-2*(BperpEtheta*BperpEphi)/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
 
  	delete [] Bproj;
  	delete [] Ephi;
  	delete [] Etheta;
-
-	return Xhi;
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,
