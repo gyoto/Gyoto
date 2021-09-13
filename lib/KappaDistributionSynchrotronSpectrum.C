@@ -25,7 +25,7 @@ using namespace std;
 
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Spectrum::KappaDistributionSynchrotron,
-         "Powerlaw synchrotron emission")
+         "Kappa synchrotron emission")
 GYOTO_PROPERTY_END(Spectrum::KappaDistributionSynchrotron, Generic::properties)
 
 
@@ -290,7 +290,7 @@ double Spectrum::KappaDistributionSynchrotron::rQnuCGS(double nu) const{
     Xk = nu/nuk,
     rho_kappa=0;
     if (Xk<0.1)
-      GYOTO_ERROR("In KappaSynchro: Xk too low to compute rhoQ with these formula");
+      GYOTO_ERROR("Xk too low to compute rhoQ with these formula");
     switch(int(kappaindex_*10))
     {
       case 35:
@@ -310,7 +310,7 @@ double Spectrum::KappaDistributionSynchrotron::rQnuCGS(double nu) const{
           (1-exp(-pow(Xk,0.84)/8.)-sin(3.*Xk/8.)*exp(-9./4.*pow(Xk,0.541)));
           break;
       default:
-        GYOTO_ERROR("In KappaSynchro: Faraday coefficients not defined for values of kappa different of 3.5, 4., 4.5, 5.");
+        GYOTO_ERROR("Faraday coefficients not defined for values of kappa different of 3.5, 4., 4.5, 5.");
     }
   rho_Q=-numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_*sinth,2.)/ \
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
@@ -333,7 +333,7 @@ double Spectrum::KappaDistributionSynchrotron::rVnuCGS(double nu) const{
     Xk = nu/nuk,
     rho_kappa=0;
     if (Xk<0.1)
-      GYOTO_ERROR("In KappaSynchro: Xk too low to compute rhoQ with these formula");
+      GYOTO_ERROR("Xk too low to compute rhoQ with these formula");
     switch(int(kappaindex_*10))
     {
       case 35:
@@ -357,9 +357,9 @@ double Spectrum::KappaDistributionSynchrotron::rVnuCGS(double nu) const{
           (1-0.17*log(1.+0.313*pow(Xk,-0.5)));
           break;
       default:
-        GYOTO_ERROR("In KappaSynchro: Faraday coefficients not defined for values of kappa different of 3.5, 4., 4.5, 5.");
+        GYOTO_ERROR("Faraday coefficients not defined for values of kappa different of 3.5, 4., 4.5, 5.");
     }
-  rho_V=2.*numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*cyclotron_freq_*cos(angle_B_pem_)*bessk(0.,1./thetae_)/ \
+  rho_V=2.*numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*cyclotron_freq_*cos(angle_B_pem_)*bessk0(1./thetae_)/ \
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,2.)*bessk(2.,1./thetae_))* \
     rho_kappa;
 
