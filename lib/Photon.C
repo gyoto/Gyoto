@@ -1168,8 +1168,8 @@ double Photon::getTransmissionMax() const {
   # ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(transmax);
   # endif
-    return transmax;
   }
+  return transmax;
 }
 
 double const * Photon::getTransmission() const { return transmission_; }
