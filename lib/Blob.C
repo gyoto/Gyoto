@@ -321,7 +321,7 @@ void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Ma
               state_t const &coord_ph, double const coord_obj[8]) const{
   # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
-# endif
+  # endif
   double tcur=coord_ph[0]; //*GMoc3/60.; // in min
   double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
   double temperature = modulation*temperature_,
@@ -338,8 +338,7 @@ void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Ma
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
   
-  double B4vect[4]={0.,BB,0.,0.}; // For the test, magnetic field is set radial
-  double Xhi=getXhi(B4vect, coord_ph, coord_obj+4);
+  double Xhi=0.;
 
   // Defining jnus, anus
   double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
@@ -347,19 +346,19 @@ void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Ma
   double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
   
   for (size_t ii=0; ii<nbnu; ++ii){
-    // Initializing to <0 value to create errors if not updated
-    // [ exp(-anu*ds) will explose ]
+    // Initializing to values to create errors if not updated
+    // [ cosh and sinh will explose ]
     jInu[ii]=-1.;
     jQnu[ii]=-1.;
     jUnu[ii]=-1.;
     jVnu[ii]=-1.;
-    aInu[ii]=-1.;
-    aQnu[ii]=-1.;
-    aUnu[ii]=-1.;
-    aVnu[ii]=-1.;
-    rotQnu[ii]=-1.;
-    rotUnu[ii]=-1.;
-    rotVnu[ii]=-1.;
+    aInu[ii]=1.;
+    aQnu[ii]=1.;
+    aUnu[ii]=1.;
+    aVnu[ii]=1.;
+    rotQnu[ii]=1.;
+    rotUnu[ii]=1.;
+    rotVnu[ii]=1.;
   }
   
   // THERMAL SYNCHRO

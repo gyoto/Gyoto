@@ -536,7 +536,7 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
     rotUnu[ii]=0.;
     rotVnu[ii]=1.e-10;
   }
-  double Xhi=0.;
+  double Xhi=M_PI/2.;
   Eigen::Matrix4d Omat;
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
