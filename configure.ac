@@ -159,14 +159,14 @@ AC_ARG_WITH([virtualenv],
 	[],
 	[with_virtualenv=no])
 AS_IF([test "x$with_virtualenv" != xno],
-	    AC_CHECK_PROGS([VIRTUALENV], [virtualenv virtualenv3 virtualenv2], [no])
-	    AS_IF([test "x$VIRTUALENV" = xno],
+	    [AC_CHECK_PROGS([VIRTUALENV], [virtualenv virtualenv3 virtualenv2], [no])]
+	    [AS_IF([test "x$VIRTUALENV" = xno],
 	    [AC_MSG_FAILURE(
-		[--with-virtualenv given but virtualenv could not be found])]),
-	AC_SUBST([VIRTUALENV], [no]))
+		[--with-virtualenv given but virtualenv could not be found])])],
+	[AC_SUBST([VIRTUALENV], [no])])
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
 
-AX_PKG_SWIG(2.0)
+AX_PKG_SWIG([2.0])
 
 # DONE WITH PYTHON STUFF
 
@@ -184,7 +184,7 @@ AS_IF([test "x$enable_c__11" != "xno"],
 AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
   [AC_MSG_ERROR([C++11 requested but not found])])
 
-AC_ARG_WITH(mpi, [AS_HELP_STRING([--with-mpi],
+AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],
     [compile with MPI (parallelization) support. If none is found,
     MPI is not used. Default: auto])
 ],,[with_mpi=auto])
