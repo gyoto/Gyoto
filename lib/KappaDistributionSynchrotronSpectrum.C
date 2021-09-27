@@ -168,7 +168,7 @@ double Spectrum::KappaDistributionSynchrotron::jVnuCGS(double nu) const{
     pow(Xk,-7./20.)*pow(Xk,1./3.)*sinth*4.*M_PI*tgamma(kappaindex_-4./3.)/ \
     (pow(3.,7./3.)*tgamma(kappaindex_-2.)),
     Js_high = pow(7./8.,2.)*pow(pow(sinth,-5./2.)-1.,11./25.)*pow(kappaindex_, -11./25.)/thetae_*\
-    pow(Xk,-1./2.)*(pow(4./5.,2.)+kappaindex_/50.)*pow(Xk,-(kappaindex_-2.)/2.)*sinth*pow(3.,(kappaindex_-1.)/2.)* \
+    pow(Xk,-1./2.)*pow(Xk,-(kappaindex_-2.)/2.)*sinth*pow(3.,(kappaindex_-1.)/2.)* \
     (kappaindex_-1.)*(kappaindex_-2.)/4.*tgamma(kappaindex_/4.-1./3.)* \
     tgamma(kappaindex_/4.+4./3.),
     expo = 3.*pow(kappaindex_,-3./2.),
@@ -229,7 +229,7 @@ double Spectrum::KappaDistributionSynchrotron::alphaQnuCGS(double nu) const{
     As_high = pow(Xk,-(1.+kappaindex_)/2.)*pow(M_PI,3./2.)/3. * \
     (kappaindex_-1.)*(kappaindex_-2.)*kappaindex_/pow(thetae_*kappaindex_,3.)* \
     (2.*tgamma(2.+kappaindex_/2.)/(2.+kappaindex_)-1.)* \
-    (-pow(21.,2.)*pow(kappaindex_,-pow(12./5.,2.))+11./20.),
+    (pow(21.,2.)*pow(kappaindex_,-pow(12./5.,2.))+11./20.),
     expo = 7./5.*pow(kappaindex_,-23./20.),
     As = pow(pow(As_low,-expo) + pow(As_high,-expo),-1./expo);
   
