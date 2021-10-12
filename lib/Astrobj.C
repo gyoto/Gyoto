@@ -469,6 +469,9 @@ double Generic::transmission(double nuem, double dsem, state_t const &coord_ph, 
   GYOTO_DEBUG_EXPR(flag_radtransf_);
   GYOTO_DEBUG_EXPR(__defaultfeatures);
 # endif
+  //cout << (__defaultfeatures & __default_radiativeQ) << endl;
+  //cout << (__defaultfeatures & __default_radiativeQ_polar) << endl;
+  //cout << __defaultfeatures << "," << __default_radiativeQ << "," << __default_radiativeQ_polar << endl;
   if ((!(__defaultfeatures & __default_radiativeQ)) ||
       (!(__defaultfeatures & __default_radiativeQ_polar))) {
     // We don't know (yet?) whether both radiativeQ are the default
@@ -825,9 +828,11 @@ void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, doubl
 	double * Ephi = new double[4];
 	double * Etheta = new double[4];
 	double * Bproj = new double[4];
-	memcpy(Bproj, Bfourvect, 4.*sizeof(double));
+	memcpy(Bproj, Bfourvect, 4*sizeof(double));
+	double photon_emframe[4]; // photon tgt vector projected in comoving frame; is it k projected ortho to u ?
 
 	for (int ii=0;ii<4;ii++){
+		photon_emframe[ii]=cph[ii+4]; // copy of photon velocity
 		Ephi[ii]=cph[ii+8];
 		Etheta[ii]=cph[ii+12];
 	}
@@ -835,14 +840,17 @@ void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, doubl
 	gg_->projectFourVect(&cph[0],Bproj,vel);
 	gg_->projectFourVect(&cph[0],Ephi,vel);
 	gg_->projectFourVect(&cph[0],Etheta,vel);
-	double photon_emframe[4]; // photon tgt vector projected in comoving frame; is it k projected ortho to u ?
-	double Bperp[4]; // projection orthogonally to k (photon_emframe) of Bproj
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=cph[ii+4]+vel[ii]*gg_->ScalarProd(&cph[0],&cph[4],vel);
-    Bperp[ii]=Bproj[ii]-gg_->ScalarProd(&cph[0],Bproj,photon_emframe);
-  }
-  double BperpEtheta=gg_->ScalarProd(&cph[0],Bperp,Etheta),
-  	BperpEphi=gg_->ScalarProd(&cph[0],Bperp,Ephi);
+  gg_->projectFourVect(&cph[0], photon_emframe, vel);
+
+  gg_->projectFourVect(&cph[0], Bproj, photon_emframe); // projection orthogonally to k (photon_emframe) of Bproj
+  
+	/*cout << "photon_emframe: " << photon_emframe[0] << "," << photon_emframe[1] << "," << photon_emframe[2] << "," << photon_emframe[3] << endl;
+	cout << "Bproj: " << Bproj[0] << "," << Bproj[1] << "," << Bproj[2] << "," << Bproj[3] << endl;
+	cout << "Ephi: " << Ephi[0] << "," << Ephi[1] << "," << Ephi[2] << "," << Ephi[3] << endl;*/
+
+
+  double BperpEtheta=gg_->ScalarProd(&cph[0],Bproj,Etheta),
+  	BperpEphi=gg_->ScalarProd(&cph[0],Bproj,Ephi);
 
 	*cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
 	*sin2Xhi=-2*(BperpEtheta*BperpEphi)/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
