@@ -269,10 +269,13 @@ int Photon::hit(Astrobj::Properties *data) {
    */
   //tmin_=-1000.;//DEBUG //NB: integration stops when t < Worldline::tmin_
 
-  transmission_freqobs_=1.;
+  /*transmission_freqobs_=1.;
   size_t nsamples;
   if (spectro_() && (nsamples = spectro_->nSamples()))
     for (size_t ii=0; ii<nsamples; ++ii) transmission_[ii]=1.;
+  */
+  resetTransmission();
+  resetTransmissionMatrix();
 
   double rmax=object_ -> rMax();
   int coordkind = metric_ -> coordKind();
