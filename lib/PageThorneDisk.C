@@ -281,80 +281,74 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
 
     }
     if (data->binspectrum) GYOTO_ERROR("unimplemented");
+
     if (data->spectrum)  {
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	double nuem=nuobs[ii]*ggredm1;
-	inc = (emission(nuem, dsem, coord_ph_hit, coord_obj_hit))
-	  * (ph -> getTransmission(size_t(-1)))
-	  * ggred*ggred*ggred; // Inu/nu^3 invariant
-	data->spectrum[ii*data->offset] += inc;
-	//cout << "in spec stored= " << ggred << " " << inc << endl;
+      	double nuem=nuobs[ii]*ggredm1;
+      	inc = (emission(nuem, dsem, coord_ph_hit, coord_obj_hit))
+      	  * (ph -> getTransmission(size_t(-1)))
+      	  * ggred*ggred*ggred; // Inu/nu^3 invariant
+      	data->spectrum[ii*data->offset] += inc;
+      	//cout << "in spec stored= " << ggred << " " << inc << endl;
+        //cout << "transmission : " << ph -> getTransmission(size_t(-1)) << endl;
       }
     }
-    /*if (data->stokesQ||data->stokesU||data->stokesV) {
+    if (data->stokesQ||data->stokesU||data->stokesV) {
+      //ggred=1.;
       if (!ph -> parallelTransport())
         GYOTO_ERROR("parallelTransport not true, impossible to compute polarisation");
-  // Compute polarization
-  double * Inu          = new double[nbnuobs];
-  double * Qnu          = new double[nbnuobs];
-  double * Unu          = new double[nbnuobs];
-  double * Vnu          = new double[nbnuobs];
-  double * nuem         = new double[nbnuobs];
-  Eigen::Matrix4d * Onu        = new Eigen::Matrix4d[nbnuobs];
+      // Compute polarization
+      double * Inu          = new double[nbnuobs];
+      double * Qnu          = new double[nbnuobs];
+      double * Unu          = new double[nbnuobs];
+      double * Vnu          = new double[nbnuobs];
+      double * nuem         = new double[nbnuobs];
+      Eigen::Matrix4d * Onu        = new Eigen::Matrix4d[nbnuobs];
 
-
-  for (size_t ii=0; ii<nbnuobs; ++ii) {
-    nuem[ii]=nuobs[ii]*ggredm1;
-  }
-  radiativeQ(Inu, Qnu, Unu, Vnu,
-       Onu, nuem, nbnuobs, dsem,
-       coord_ph_hit, coord_obj_hit);
-  ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
-  double ggred3 = ggred*ggred*ggred;
-  for (size_t ii=0; ii<nbnuobs; ++ii) {
-    if (data-> spectrum) {
-      inc = Inu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-      if (data -> spectrum_converter_)
-        inc = (*data -> spectrum_converter_)(inc);
-#           endif
-      data->spectrum[ii*data->offset] += inc;
+      for (size_t ii=0; ii<nbnuobs; ++ii) {
+        nuem[ii]=nuobs[ii]*ggredm1;
+      }
+      radiativeQ(Inu, Qnu, Unu, Vnu,
+           Onu, nuem, nbnuobs, dsem,
+           coord_ph_hit, coord_obj_hit);
+      ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
+      double ggred3 = ggred*ggred*ggred;
+      for (size_t ii=0; ii<nbnuobs; ++ii) {
+        if (data-> stokesQ) {
+          inc = Qnu[ii] * ggred3;
+    #           ifdef HAVE_UDUNITS
+          if (data -> spectrum_converter_)
+            inc = (*data -> spectrum_converter_)(inc);
+    #           endif
+          data->stokesQ [ii*data->offset] += inc;
+        }
+        if (data-> stokesU) {
+          inc = Unu[ii] * ggred3;
+    #           ifdef HAVE_UDUNITS
+          if (data -> spectrum_converter_)
+            inc = (*data -> spectrum_converter_)(inc);
+    #           endif
+          data->stokesU [ii*data->offset] += inc;
+        }
+        if (data-> stokesV) {
+          inc = Vnu[ii] * ggred3;
+    #           ifdef HAVE_UDUNITS
+          if (data -> spectrum_converter_)
+            inc = (*data -> spectrum_converter_)(inc);
+    #           endif
+          data->stokesV [ii*data->offset] += inc;
+        }
+      }
+      delete [] Inu;
+      delete [] Qnu;
+      delete [] Unu;
+      delete [] Vnu;
+      delete [] Onu;
+      delete [] nuem;
     }
-    if (data-> stokesQ) {
-      inc = Qnu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-      if (data -> spectrum_converter_)
-        inc = (*data -> spectrum_converter_)(inc);
-#           endif
-      data->stokesQ [ii*data->offset] += inc;
-    }
-    if (data-> stokesU) {
-      inc = Unu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-      if (data -> spectrum_converter_)
-        inc = (*data -> spectrum_converter_)(inc);
-#           endif
-      data->stokesU [ii*data->offset] += inc;
-    }
-    if (data-> stokesV) {
-      inc = Vnu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-      if (data -> spectrum_converter_)
-        inc = (*data -> spectrum_converter_)(inc);
-#           endif
-      data->stokesV [ii*data->offset] += inc;
-    }
-  }
-  delete [] Inu;
-  delete [] Qnu;
-  delete [] Unu;
-  delete [] Vnu;
-  delete [] Onu;
-  delete [] nuem;
-      }*/
     /* update photon's transmission */
-    ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
+    ph -> transmit(size_t(-1),0); // We force the transmission to be zero because optically thick
+                                  // and radiativeQ(polar) implemented which break the flag loop in Generic
   } else {
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "NO data requested!" << endl;
@@ -372,23 +366,26 @@ void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *V
   /**
    * Polarisation vector oriented parallel to the disk plane and normal to direction of propagation 
    */
-  /*
-  Eigen::Matrix4d Omat;
-  double B4vect[4]={0.,0.,1.,0.};
-  double cos2Xhi, sin2xhi;
-
   double vel[4]; // 4-velocity of emitter
   gg_->circularVelocity(co, vel);
-  //getSinCos2Xhi(B4vect, cph, vel, &sin2xhi, &cos2Xhi);
-
+  
+  Eigen::Matrix4d Omat;
+  Omat << 0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0;
+  double B4vect[4]={0.,0.,1.,0.};
+  double Xhi=getXhi(B4vect, cph, vel);
+  //cout << Xhi << endl;
 
   for (size_t ii=0; ii<nbnu; ++ii) {
     // Unpolarized quantities
-    Inu[ii]=emission(nuem[ii], dsem, cph);
-
-    // Polarized quantity from electron scattering from semi-infinite slab
-    Qnu[ii]=0.;
-    Unu[ii]=0.;
-    Vnu[ii]=0.; // Not treated
-  }*/
+    double I=emission(nuem[ii], dsem, cph, co);
+    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Xhi);
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+  }
 }
