@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2020 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018-2021 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
