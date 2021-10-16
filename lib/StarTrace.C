@@ -42,7 +42,7 @@ GYOTO_PROPERTY_DOUBLE(StarTrace, TMax, TMax,
 		      "Date defining end of the trace (geometrical_time).")
 GYOTO_PROPERTY_END(StarTrace, Star::properties)
 
-StarTrace::StarTrace() : Star()
+StarTrace::StarTrace() : Star(), tmin_(0.), tmax_(0.)
 {
   Generic::kind_="StarTrace";
   xAllocateXYZ();
