@@ -1,0 +1,28 @@
+std:
+
+remove glue from .i files by using the right argument names directly
+test all the base methods on all the derived classes
+...
+
+
+lorene:
+check that both version of gmunu return the same value
+check that both version of gmunu_up return the same value
+check that gmunu and gmunu_up are the inverse of each-other
+remove glue from .i files by using the right argument names directly
+test all the base methods on all the derived classes
+...
+
+
+python:
+
+add testsuite for python plug-in
+make python plug-in API consistent?
+check that both version of gmunu return the same value
+check that both version of gmunu_up return the same value
+check that gmunu and gmunu_up are the inverse of each-other
+remove glue from .i files by using the right argument names directly
+test all the base methods on all the derived classes
+...
+
+

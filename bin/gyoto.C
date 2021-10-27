@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2020 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2016, 2018-2021 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -527,8 +527,8 @@ int main(int argc, char** argv) {
     if (status) return status;
 
     // Allocate space for the output data
-    data = new Astrobj::Properties();
-    data->alloc=true;
+    ::data = new Astrobj::Properties();
+    ::data->alloc=true;
 
     size_t curquant=0;
     size_t offset=res*res;
@@ -545,28 +545,28 @@ int main(int argc, char** argv) {
     char * CNULL=NULL;
 
     if (quantities & GYOTO_QUANTITY_INTENSITY) {
-      data->intensity=vect+offset*(curquant++);
+      ::data->intensity=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Intensity"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_EMISSIONTIME) {
-      data->time=vect+offset*(curquant++);
+      ::data->time=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("EmissionTime"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_MIN_DISTANCE) {
-      data->distance=vect+offset*(curquant++);
+      ::data->distance=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("MinDistance"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_FIRST_DMIN) {
-      data->first_dmin=vect+offset*(curquant++);
+      ::data->first_dmin=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("FirstDistMin"),
@@ -575,7 +575,7 @@ int main(int argc, char** argv) {
     if (quantities & GYOTO_QUANTITY_REDSHIFT) {
       if (debug())
 	cerr << "DEBUG: gyoto.C: REDSHIFT requested\n";
-      data->redshift=vect+offset*(curquant++);
+      ::data->redshift=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Redshift"),
@@ -584,7 +584,7 @@ int main(int argc, char** argv) {
     if (quantities & GYOTO_QUANTITY_NBCROSSEQPLANE) {
       if (debug())
 	cerr << "DEBUG: gyoto.C: NBCROSSEQPLANE requested\n";
-      data->nbcrosseqplane=vect+offset*(curquant++);
+      ::data->nbcrosseqplane=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("NbCrossEqPlane"),
@@ -593,39 +593,39 @@ int main(int argc, char** argv) {
     if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {
       // Allocate if requested AND not provided
       cerr << "gyoto.C: allocating data->impactcoords" << endl;
-      data->impactcoords = impactcoords = new double [res*res*16];
+      ::data->impactcoords = impactcoords = new double [res*res*16];
       ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
     }
     if (quantities & GYOTO_QUANTITY_USER1) {
-      data->user1=vect+offset*(curquant++);
+      ::data->user1=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("User1"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_USER2) {
-      data->user2=vect+offset*(curquant++);
+      ::data->user2=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("User2"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_USER3) {
-      data->user3=vect+offset*(curquant++);
+      ::data->user3=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("User3"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_USER4) {
-      data->user4=vect+offset*(curquant++);
+      ::data->user4=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("User4"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_USER5) {
-      data->user5=vect+offset*(curquant++);
+      ::data->user5=vect+offset*(curquant++);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("User5"),
@@ -633,50 +633,50 @@ int main(int argc, char** argv) {
     }
     double * curvect=vect+offset*curquant;
     if (quantities & GYOTO_QUANTITY_SPECTRUM) {
-      data->spectrum=curvect;
+      ::data->spectrum=curvect;
       curvect += offset*nbnuobs;
       ++curquant;
-      data->offset=int(offset);
+      ::data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("Spectrum"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_Q) {
-      data->stokesQ=curvect;
+      ::data->stokesQ=curvect;
       curvect += offset*nbnuobs;
       ++curquant;
-      data->offset=int(offset);
+      ::data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("SpectrumStokesQ"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_U) {
-      data->stokesU=curvect;
+      ::data->stokesU=curvect;
       curvect += offset*nbnuobs;
       ++curquant;
-      data->offset=int(offset);
+      ::data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("SpectrumStokesU"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_SPECTRUM_STOKES_V) {
-      data->stokesV=curvect;
+      ::data->stokesV=curvect;
       curvect += offset*nbnuobs;
       ++curquant;
-      data->offset=int(offset);
+      ::data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("SpectrumStokesV"),
 		     CNULL, &status);
     }
     if (quantities & GYOTO_QUANTITY_BINSPECTRUM) {
-      data->binspectrum=curvect;
+      ::data->binspectrum=curvect;
       curvect += offset*nbnuobs;
       ++curquant;
-      data->offset=int(offset);
+      ::data->offset=int(offset);
       sprintf(keyname, fmt, curquant);
       fits_write_key(fptr, TSTRING, keyname,
 		     const_cast<char*>("BinSpectrum"),
@@ -697,7 +697,7 @@ int main(int argc, char** argv) {
     if (verbose() >= GYOTO_QUIET_VERBOSITY)
       cout << "j = " << 1 << "/" << (jmax-jmin)/dj+1 << flush;
 
-    scenery -> rayTrace(grid, data, ipctdims[0]?impactcoords:NULL);
+    scenery -> rayTrace(grid, ::data, ipctdims[0]?impactcoords:NULL);
 
     curmsg = "In gyoto.C: Error while saving: ";
     if (verbose() >= GYOTO_QUIET_VERBOSITY)

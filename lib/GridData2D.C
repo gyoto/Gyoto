@@ -436,6 +436,9 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
       ru = rmin_+dr_*iru;
     double ratiophi = (phi-phil)/(phiu-phil),
       ratior = (rcyl-rl)/(ru-rl);
+    if (ratiophi<0. || ratior<0.)
+      GYOTO_ERROR("One ratio is negative (over t, phi or r) !");
+
     array_interpo = array_ll+(array_ul-array_ll)*ratiophi
       +(array_lu-array_ll)*ratior
       +(array_uu-array_lu-array_ul+array_ll)*ratiophi*ratior;
@@ -459,7 +462,7 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     double rl = rmin_+dr_*irl,
       ru = rmin_+dr_*iru,
       tl = 0, tu = 0;
-    if (!time_array){
+    if (time_array){
       tl = time_array[itl],
       tu = time_array[itu];
     }else{
@@ -470,6 +473,8 @@ double GridData2D::interpolate(double tt, double phi, double rcyl,
     double ratiot = (tt-tl)/(tu-tl),
       ratiophi = (phi-phil)/(phiu-phil),
       ratior = (rcyl-rl)/(ru-rl);
+    if (ratiot<0. || ratiophi<0. || ratior<0.)
+      GYOTO_ERROR("One ratio is negative (over t, phi or r) !");
 
     array_interpo = array_lll
       + (array_ull-array_lll)*ratiot
