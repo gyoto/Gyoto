@@ -51,9 +51,13 @@ GYOTO_PROPERTY_DOUBLE(SphericalAccretion,
 GYOTO_PROPERTY_DOUBLE(SphericalAccretion, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(SphericalAccretion, MagnetizationParameter,
 		      magnetizationParameter)
+GYOTO_PROPERTY_BOOL(SphericalAccretion, UseSelfAbsorption, NoUseSelfAbsorption,
+		    useSelfAbsorption)
 GYOTO_PROPERTY_END(SphericalAccretion, Standard::properties)
 
 // ACCESSORS
+bool SphericalAccretion::useSelfAbsorption() const {return use_selfabsorption_;}
+void SphericalAccretion::useSelfAbsorption(bool abs) {use_selfabsorption_=abs;}
 void SphericalAccretion::sphericalAccretionInnerRadius(double hh) {sphericalAccretionInnerRadius_=hh;}
 double SphericalAccretion::sphericalAccretionInnerRadius()const{return sphericalAccretionInnerRadius_;}
 double SphericalAccretion::numberDensityAtInnerRadius() const {
@@ -114,7 +118,8 @@ SphericalAccretion::SphericalAccretion() :
   sphericalAccretionInnerRadius_(2.),
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
-  magnetizationParameter_(1.)
+  magnetizationParameter_(1.),
+  use_selfabsorption_(1)
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -127,7 +132,8 @@ SphericalAccretion::SphericalAccretion(const SphericalAccretion& o) :
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  use_selfabsorption_(o.use_selfabsorption_)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -214,8 +220,13 @@ void SphericalAccretion::radiativeQ(double Inu[], // output
   for (size_t ii=0; ii<nbnu; ++ii){
 
     double jnu_tot = jnu_synch[ii],
-      anu_tot = anu_synch[ii];
-    //cout << "anu, jnu= " << anu_tot <<  " " << jnu_tot << endl;
+      anu_tot=0.; // will stay 0 if use_selfabsorption_=False
+    if (use_selfabsorption_)
+      anu_tot = anu_synch[ii]; // else is updated
+
+    //if (nu_ems[ii]>1e9){
+    //  cout << "anu, jnu= " << anu_tot <<  " " << jnu_tot << endl;
+    //}
 
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
