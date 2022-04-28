@@ -33,22 +33,31 @@ GYOTO_PROPERTY_THREAD_UNSAFE(Metric::Python)
 Gyoto::Metric::Python::Python()
 : Generic(GYOTO_COORDKIND_CARTESIAN, "Python"),
   Base(),
-  pGmunu_(NULL), pChristoffel_(NULL), pGetPotential_(NULL)
+  pGmunu_(NULL), pChristoffel_(NULL), pGetRmb_(NULL), pGetRms_(NULL),
+  pGetSpecificAngularMomentum_(NULL), pGetPotential_(NULL)
 {}
 
 Gyoto::Metric::Python::Python(const Python& o)
 : Generic(o),
   Base(o),
-  pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_),
+  pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_), pGetRmb_(o.pGetRmb_),
+  pGetRms_(o.pGetRms_),
+  pGetSpecificAngularMomentum_(o.pGetSpecificAngularMomentum_),
   pGetPotential_(o.pGetPotential_)
 {
   Py_XINCREF(pGmunu_);
   Py_XINCREF(pChristoffel_);
+  Py_XINCREF(pGetRmb_);
+  Py_XINCREF(pGetRms_);
+  Py_XINCREF(pGetSpecificAngularMomentum_);
   Py_XINCREF(pGetPotential_);
 }
 
 Gyoto::Metric::Python::~Python() {
   Py_XDECREF(pGetPotential_);
+  Py_XDECREF(pGetSpecificAngularMomentum_);
+  Py_XDECREF(pGetRms_);
+  Py_XDECREF(pGetRmb_);
   Py_XDECREF(pChristoffel_);
   Py_XDECREF(pGmunu_);
 }
@@ -121,10 +130,13 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
 
   PyGILState_STATE gstate = PyGILState_Ensure();
   Py_XDECREF(pGetPotential_); pGetPotential_=NULL;
+  Py_XDECREF(pGetSpecificAngularMomentum_); pGetSpecificAngularMomentum_=NULL;
+  Py_XDECREF(pGetRms_); pGetRms_=NULL;
+  Py_XDECREF(pGetRmb_); pGetRmb_=NULL;
   Py_XDECREF(pChristoffel_); pChristoffel_=NULL;
   Py_XDECREF(pGmunu_); pGmunu_=NULL;
   PyGILState_Release(gstate);
-  
+
   Python::Base::klass(f);
   if (!pModule_) return;
 
@@ -135,9 +147,15 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "gmunu");
   pChristoffel_ =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "christoffel");
+  pGetRmb_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "getRmb");
+  pGetRms_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "getRms");
+  pGetSpecificAngularMomentum_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "getSpecificAngularMomentum");
   pGetPotential_=
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "getPotential");
-  
+
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
@@ -170,7 +188,7 @@ void Metric::Python::gmunu(double g[4][4], const double * x) const {
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp g_dims[] = {4, 4};
-  
+
   PyObject * pG = PyArray_SimpleNewFromData(2, g_dims, NPY_DOUBLE, g);
   PyObject * pX = PyArray_SimpleNewFromData(1, g_dims, NPY_DOUBLE, const_cast<double*>(x));
   PyObject * pR = PyObject_CallFunctionObjArgs(pGmunu_, pG, pX, NULL);
@@ -184,7 +202,7 @@ void Metric::Python::gmunu(double g[4][4], const double * x) const {
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::Python::gmunu");
   }
-   
+ 
   PyGILState_Release(gstate);
 }
 
@@ -193,13 +211,13 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp d_dims[] = {4, 4, 4};
-  
+
   PyObject * pD = PyArray_SimpleNewFromData(3, d_dims, NPY_DOUBLE, dst);
   PyObject * pX = PyArray_SimpleNewFromData(1, d_dims, NPY_DOUBLE, const_cast<double*>(x));
   PyObject * pR = PyObject_CallFunctionObjArgs(pChristoffel_, pD, pX, NULL);
 
   double r = PyFloat_AsDouble(pR);
-  
+
   Py_XDECREF(pR);
   Py_XDECREF(pX);
   Py_XDECREF(pD);
@@ -209,10 +227,84 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::Python::gmunu");
   }
-   
+ 
   PyGILState_Release(gstate);
 
   return r;
+}
+
+double Metric::Python::getRmb
+()
+  const {
+  if (!pGetRmb_)
+    return Metric::Generic::getRmb();
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pGetRmb_, NULL);
+  double res = PyFloat_AsDouble(pR);
+
+  Py_XDECREF(pR);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::getRmb()");
+  }
+
+  PyGILState_Release(gstate);
+  return res;
+}
+
+double Metric::Python::getRms
+()
+  const {
+  if (!pGetRms_)
+    return Metric::Generic::getRms();
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pGetRms_, NULL);
+  double res = PyFloat_AsDouble(pR);
+
+  Py_XDECREF(pR);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::getRms()");
+  }
+
+  PyGILState_Release(gstate);
+  return res;
+}
+
+double Metric::Python::getSpecificAngularMomentum
+(double rr)
+  const {
+  if (!pGetSpecificAngularMomentum_)
+    return Metric::Generic::getSpecificAngularMomentum(rr);
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  PyObject * pRr = PyFloat_FromDouble(rr);
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pGetSpecificAngularMomentum_, pRr, NULL);
+  double res = PyFloat_AsDouble(pR);
+
+  Py_XDECREF(pR);
+  Py_XDECREF(pRr);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::getSpecificAngularMomentum()");
+  }
+
+  PyGILState_Release(gstate);
+  return res;
 }
 
 double Metric::Python::getPotential
@@ -230,7 +322,7 @@ double Metric::Python::getPotential
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetPotential_, pPo, pCs, NULL);
   double res = PyFloat_AsDouble(pR);
-  
+
   Py_XDECREF(pR);
   Py_XDECREF(pCs);
   Py_XDECREF(pPo);
@@ -240,7 +332,7 @@ double Metric::Python::getPotential
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::getPotential()");
   }
-   
+
   PyGILState_Release(gstate);
   return res;
 }

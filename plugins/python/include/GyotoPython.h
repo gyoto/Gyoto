@@ -80,7 +80,7 @@
  * that it is running in Gyoto. It simply exposes an interface that is
  * being called. However, Gyoto sets a few attributes in each
  * method. Most notably, if the "gyoto" python extension is available,
- * Gyoto will the the attribute "this" to the C++ instance that
+ * Gyoto will set the attribute "this" to the C++ instance that
  * created the Python class instance, so that the Python code can
  * access C++-side information.
  *
@@ -362,7 +362,10 @@ class Gyoto::Spectrum::Python
  * \brief Metric coded in Python
  *
  * Loader for Python Metric classes. It interfaces with a Python class
- * which must implement at least the methods detailed below.
+ * which must implement at least the gmunu and christoffel methods.
+ *
+ * Other methods are optional: getRmb, getRms, getSpecificAngularMomentum,
+ * getPotential.
  *
  * Use &lt;Cartesian&gt; or &lt;/Spherical&gt; to select the coordinate system
  * kind.
@@ -389,6 +392,21 @@ class Gyoto::Metric::Python
    * \brief Reference to the christoffel method
    */
   PyObject * pChristoffel_;
+
+  /**
+   * \brief Reference to the getRmb method
+   */
+  PyObject * pGetRmb_;
+
+  /**
+   * \brief Reference to the getRms method
+   */
+  PyObject * pGetRms_;
+
+  /**
+   * \brief Reference to the  method getSpecificAngularMomentum
+   */
+  PyObject * pGetSpecificAngularMomentum_;
 
   /**
    * \brief Reference to the getPotential method
@@ -424,6 +442,9 @@ class Gyoto::Metric::Python
   int christoffel(double dst[4][4][4], const double * x) const ;
 
   // Little more
+  double getRmb() const;
+  double getRms() const;
+  double getSpecificAngularMomentum(double rr) const;
   double getPotential(double const pos[4], double l_cst) const;
 
 };
