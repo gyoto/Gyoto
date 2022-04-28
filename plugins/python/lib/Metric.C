@@ -33,19 +33,22 @@ GYOTO_PROPERTY_THREAD_UNSAFE(Metric::Python)
 Gyoto::Metric::Python::Python()
 : Generic(GYOTO_COORDKIND_CARTESIAN, "Python"),
   Base(),
-  pGmunu_(NULL), pChristoffel_(NULL)
+  pGmunu_(NULL), pChristoffel_(NULL), pGetPotential_(NULL)
 {}
 
 Gyoto::Metric::Python::Python(const Python& o)
 : Generic(o),
   Base(o),
-  pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_)
+  pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_),
+  pGetPotential_(o.pGetPotential_)
 {
   Py_XINCREF(pGmunu_);
   Py_XINCREF(pChristoffel_);
+  Py_XINCREF(pGetPotential_);
 }
 
 Gyoto::Metric::Python::~Python() {
+  Py_XDECREF(pGetPotential_);
   Py_XDECREF(pChristoffel_);
   Py_XDECREF(pGmunu_);
 }
@@ -117,6 +120,7 @@ std::string Metric::Python::klass() const {return Python::Base::klass();}
 void Gyoto::Metric::Python::klass(const std::string &f) {
 
   PyGILState_STATE gstate = PyGILState_Ensure();
+  Py_XDECREF(pGetPotential_); pGetPotential_=NULL;
   Py_XDECREF(pChristoffel_); pChristoffel_=NULL;
   Py_XDECREF(pGmunu_); pGmunu_=NULL;
   PyGILState_Release(gstate);
@@ -131,7 +135,9 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "gmunu");
   pChristoffel_ =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "christoffel");
-
+  pGetPotential_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "getPotential");
+  
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
@@ -140,12 +146,12 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
 
   if (!pGmunu_) {
     PyGILState_Release(gstate);
-    GYOTO_ERROR("Object does not implement required method \"__call__\"");
+    GYOTO_ERROR("Object does not implement required method \"gmunu\"");
   }
 
   if (!pChristoffel_) {
     PyGILState_Release(gstate);
-    GYOTO_ERROR("Object does not implement required method \"getVelocity\"");
+    GYOTO_ERROR("Object does not implement required method \"christoffel\"");
   }
 
   Gyoto::Python::PyInstance_SetThis(pInstance_,
@@ -208,3 +214,34 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
 
   return r;
 }
+
+double Metric::Python::getPotential
+(double const pos[4], double l_cst)
+  const {
+  if (!pGetPotential_)
+    return Metric::Generic::getPotential(pos, l_cst);
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  npy_intp dims_pos[] = {4};
+
+  PyObject * pPo = PyArray_SimpleNewFromData(1, dims_pos, NPY_DOUBLE, const_cast<double*>(pos));
+  PyObject * pCs = PyFloat_FromDouble(l_cst);
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pGetPotential_, pPo, pCs, NULL);
+  double res = PyFloat_AsDouble(pR);
+  
+  Py_XDECREF(pR);
+  Py_XDECREF(pCs);
+  Py_XDECREF(pPo);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::getPotential()");
+  }
+   
+  PyGILState_Release(gstate);
+  return res;
+}
+

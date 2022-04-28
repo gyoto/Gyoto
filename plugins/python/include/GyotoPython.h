@@ -390,6 +390,11 @@ class Gyoto::Metric::Python
    */
   PyObject * pChristoffel_;
 
+  /**
+   * \brief Reference to the getPotential method
+   */
+  PyObject * pGetPotential_;
+
  public:
   GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
@@ -417,6 +422,9 @@ class Gyoto::Metric::Python
   // The minimal Gyoto::Metric API:
   void gmunu(double g[4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * x) const ;
+
+  // Little more
+  double getPotential(double const pos[4], double l_cst) const;
 
 };
 
