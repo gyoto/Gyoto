@@ -216,18 +216,19 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
   PyObject * pX = PyArray_SimpleNewFromData(1, d_dims, NPY_DOUBLE, const_cast<double*>(x));
   PyObject * pR = PyObject_CallFunctionObjArgs(pChristoffel_, pD, pX, NULL);
 
-  double r = PyFloat_AsDouble(pR);
-
-  Py_XDECREF(pR);
   Py_XDECREF(pX);
   Py_XDECREF(pD);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::Python::christoffel");
   }
- 
+
+  double r = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
+
   PyGILState_Release(gstate);
 
   return r;
@@ -243,17 +244,18 @@ double Metric::Python::getRmb
 
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetRmb_, NULL);
-  double res = PyFloat_AsDouble(pR);
-
-  Py_XDECREF(pR);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::getRmb()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -267,17 +269,18 @@ double Metric::Python::getRms
 
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetRms_, NULL);
-  double res = PyFloat_AsDouble(pR);
-
-  Py_XDECREF(pR);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::getRms()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -292,18 +295,20 @@ double Metric::Python::getSpecificAngularMomentum
   PyObject * pRr = PyFloat_FromDouble(rr);
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetSpecificAngularMomentum_, pRr, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pRr);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::getSpecificAngularMomentum()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -321,19 +326,20 @@ double Metric::Python::getPotential
   PyObject * pCs = PyFloat_FromDouble(l_cst);
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetPotential_, pPo, pCs, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pCs);
   Py_XDECREF(pPo);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Metric::getPotential()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
-
