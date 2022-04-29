@@ -1,5 +1,5 @@
 /*
-    Copyright 2015 Thibaut Paumard
+    Copyright 2015, 2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -60,7 +60,7 @@ extern "C" void __GyotoPluginInit() {
   Py_XDECREF(PyImport_ImportModule("numpy"));
   if (PyErr_Occurred()) {
     PyErr_Print();
-    GYOTO_ERROR("Failed imorting numpy");
+    GYOTO_ERROR("Failed importing numpy");
   }
   Gyoto::eat_import_array();
 

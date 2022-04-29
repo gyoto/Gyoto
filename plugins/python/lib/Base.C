@@ -1,5 +1,5 @@
 /*
-    Copyright © 2015-2017, 2019 Thibaut Paumard
+    Copyright © 2015-2017, 2019, 2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -184,8 +184,9 @@ PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * source_code) {
   PyObject * object_code=Py_CompileString(new_source_code, "<inline>", Py_file_input);
   Py_DECREF(pCode);
   if (PyErr_Occurred() || !object_code) {
-  GYOTO_DEBUG << "failed compiling inline code!\n";
+    GYOTO_DEBUG << "failed compiling inline code!\n";
     Py_XDECREF(object_code);
+    PyErr_Print();
     return NULL;
   }
 
