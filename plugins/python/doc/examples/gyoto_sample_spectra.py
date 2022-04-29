@@ -71,7 +71,7 @@ class PowerLaw:
 
     def __setitem__(self, key, value):
         '''
-        This is how Gyoto sends the <Parameter/> XML entity:
+        This is how Gyoto sends the <Parameters/> XML entity:
         spectrum[i]=value
         i=0: set constant
         i=1: set exponent

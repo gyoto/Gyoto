@@ -225,7 +225,7 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
   if (PyErr_Occurred()) {
     PyErr_Print();
     PyGILState_Release(gstate);
-    GYOTO_ERROR("Error occurred in Metric::Python::gmunu");
+    GYOTO_ERROR("Error occurred in Metric::Python::christoffel");
   }
  
   PyGILState_Release(gstate);

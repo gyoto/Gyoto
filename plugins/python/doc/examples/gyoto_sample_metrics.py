@@ -131,13 +131,34 @@ class Minkowski:
         return 0
 
 class KerrBL:
-    '''A wrapper around KerrBL to test Python implementation of some methods
+    '''A Python implementation of Gyoto::Metric::KerrBL
 
-    Note: not fully tested.
+    Parameters: (spin,)
 
+    The various methods are essentially cut-and-paste from the C++ class.
+
+    Only gmunu and christoffel absolutely need to be implemented, but
+    various Astrobj require more. See below.
+
+    This is for educational and testing purposes. For all practical uses,
+    the C++ implementation is much faster.
     '''
-    def __init__(self):
-        self.spin = 0.
+
+    spin=0.
+
+    def __setitem__(self, key, value):
+        '''Set parameters
+
+        Optional, mandatory to handle parameters
+
+        This is how Gyoto sends the <Parameters/> XML entity:
+        metric[key]=value
+        key=0: set spin
+        '''
+        if (key==0):
+            self.spin = value
+        else:
+            raise IndexError
 
     def __setattr__(self, key, value):
         '''Set attributes.
@@ -171,23 +192,26 @@ class KerrBL:
         # First, actually store the attribute. This is what would
         # happen if we did not overload __setattr__.
         self.__dict__[key]=value
-        # Then, if key is "this", ensure this knows a valid coordKind.
+        # Then, if key is "this", ensure `this' knows a valid coordKind.
         if (key == "this"):
             self.this.set("Spherical", True)
 
     def gmunu(self, g, x):
-        ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
+        ''' Gyoto::Metric::Generic::gmunu(double g[4], const double pos[4])
 
         Mandatory.
 
         C++ will send two NumPy arrays.
 
+        Note that the user will not be able to call this method directly but
+        through self.this.gmunu which has a different calling sequence:
+          g=self.this.gmunu(x)
         '''
         spin_=self.spin
         a2_=spin_**2
         r=x[1]
         sth2=math.sin(x[2])**2
-        cth2=math.sin(x[2])**2
+        cth2=math.cos(x[2])**2
         r2=r*r
         sigma=r2+a2_*cth2
         delta=r2-2.*r+a2_
@@ -209,18 +233,21 @@ class KerrBL:
 
         C++ will send two NumPy arrays.
 
+        Like gmunu, the call will actually be:
+          dst=metric.gmunu(x)
+        where `metric' is self.this.
+
         '''
         for alpha in range(0, 4):
             for mu in range(0, 4):
                 for nu in range(0, 4):
                     dst[alpha][mu][nu]=0.
 
-
         spin_=self.spin
         a2_=spin_**2
         r=x[1]
-        sth2=math.sin(x[2])**2
-        cth2=math.sin(x[2])**2
+        sth=math.sin(x[2])
+        cth=math.cos(x[2])
         sth2 = sth*sth
         cth2 = cth*cth
         sth4=sth2*sth2
@@ -270,10 +297,10 @@ class KerrBL:
     def getRms(self):
         aa=self.spin;
         a2_=aa*aa
-        z1 = 1. + (1. - a2_)**(1./3.)*(1. + aa)**(1./3.) + (1. - aa)**(1./3.);
-        z2 = (3.*a2_ + z1*z1)**(1./2.);
+        z1 = 1. + pow((1. - a2_),1./3.)*(pow((1. + aa),1./3.) + pow((1. - aa),1./3.))
+        z2 = pow(3.*a2_ + z1*z1,1./2.);
 
-        return (3. + z2 - ((3. - z1)*(3. + z1 + 2.*z2))**(1./2.));
+        return (3. + z2 - pow((3. - z1)*(3. + z1 + 2.*z2),1./2.));
 
     def getRmb(self):
         spin_=self.spin
@@ -283,3 +310,20 @@ class KerrBL:
         aa=self.spin
         sqrtr=math.sqrt(rr);
         return (rr*rr-2.*aa*sqrtr+aa*aa)/(rr**1.5-2.*sqrtr+aa);
+
+    def getPotential(self, pos, l_cst):
+        # this is W = -ln(|u_t|) for a circular equatorial 4-velocity
+        # Don't try to call directly gmunu from `self',
+        # Call it through `this', a pointer to the C++ instance of
+        # Gyoto::Metric::Python
+        # Note that the calling sequence is not gmunu(self, gg, pos)
+        gg=self.this.gmunu(pos)
+        gtt = gg[0,0];
+        gtp = gg[0,3];
+        gpp = gg[3,3];
+        Omega = -(gtp + l_cst * gtt)/(gpp + l_cst * gtp) ;
+  
+        W = (0.5 * math.log(abs(gtt + 2. * Omega * gtp + Omega*Omega * gpp))
+             - math.log(abs(gtt + Omega * gtp))) ;
+
+        return  W ;
