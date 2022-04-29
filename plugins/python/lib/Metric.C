@@ -34,7 +34,8 @@ Gyoto::Metric::Python::Python()
 : Generic(GYOTO_COORDKIND_CARTESIAN, "Python"),
   Base(),
   pGmunu_(NULL), pChristoffel_(NULL), pGetRmb_(NULL), pGetRms_(NULL),
-  pGetSpecificAngularMomentum_(NULL), pGetPotential_(NULL)
+  pGetSpecificAngularMomentum_(NULL), pGetPotential_(NULL),
+  pIsStopCondition_(NULL)
 {}
 
 Gyoto::Metric::Python::Python(const Python& o)
@@ -43,7 +44,9 @@ Gyoto::Metric::Python::Python(const Python& o)
   pGmunu_(o.pGmunu_), pChristoffel_(o.pChristoffel_), pGetRmb_(o.pGetRmb_),
   pGetRms_(o.pGetRms_),
   pGetSpecificAngularMomentum_(o.pGetSpecificAngularMomentum_),
-  pGetPotential_(o.pGetPotential_)
+  pGetPotential_(o.pGetPotential_),
+  pIsStopCondition_(o.pIsStopCondition_)
+
 {
   Py_XINCREF(pGmunu_);
   Py_XINCREF(pChristoffel_);
@@ -51,9 +54,11 @@ Gyoto::Metric::Python::Python(const Python& o)
   Py_XINCREF(pGetRms_);
   Py_XINCREF(pGetSpecificAngularMomentum_);
   Py_XINCREF(pGetPotential_);
+  Py_XINCREF(pIsStopCondition_);
 }
 
 Gyoto::Metric::Python::~Python() {
+  Py_XDECREF(pIsStopCondition_);
   Py_XDECREF(pGetPotential_);
   Py_XDECREF(pGetSpecificAngularMomentum_);
   Py_XDECREF(pGetRms_);
@@ -155,6 +160,8 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "getSpecificAngularMomentum");
   pGetPotential_=
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "getPotential");
+  pIsStopCondition_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "isStopCondition");
 
   if (PyErr_Occurred()) {
     PyErr_Print();
@@ -338,6 +345,36 @@ double Metric::Python::getPotential
   }
 
   double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
+  PyGILState_Release(gstate);
+
+  return res;
+}
+
+int Metric::Python::isStopCondition
+(double const coord[8])
+  const {
+  if (!pIsStopCondition_)
+    return Metric::Generic::isStopCondition(coord);
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  npy_intp dims_coord[] = {8};
+
+  PyObject * pPo = PyArray_SimpleNewFromData(1, dims_coord, NPY_DOUBLE, const_cast<double*>(coord));
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pIsStopCondition_, pPo, NULL);
+
+  Py_XDECREF(pPo);
+
+  if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::isStopCondition()");
+  }
+
+  int res = PyLong_AsLong(pR);
   Py_XDECREF(pR);
   PyGILState_Release(gstate);
 

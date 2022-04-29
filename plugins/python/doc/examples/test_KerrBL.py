@@ -31,15 +31,17 @@ kerrp.set("Class", "KerrBL")
 kerrc.spin(0.5)
 kerrp.set("Parameters", (0.5,))
 
-# Test a few methods
+# Test getRms
 Rmsp=kerrp.getRms()
 Rmsc=kerrc.getRms()
 assert (Rmsp==Rmsc), "Rms is different"
 
+# Test getRmb
 Rmbp=kerrp.getRmb()
 Rmbc=kerrc.getRmb()
 assert (Rmbp==Rmbc), "Rmb is different"
 
+# Test getSpecificAngularMomentum
 samp=kerrp.getSpecificAngularMomentum(10.)
 samc=kerrc.getSpecificAngularMomentum(10.)
 assert (samp==samc), "Specific angular momentum is different"
@@ -59,6 +61,12 @@ assert (chp==chc).all(), "christoffel is different"
 # Test getPotential
 Wp=kerrp.getPotential([0, 10, 1, 1.], 10.)
 Wc=kerrc.getPotential([0, 10, 1, 1.], 10.)
-assert (Wp==Wc), "Potential is different"
+assert (Wp==Wc), "getPotential is different"
+
+
+# Test isStopCondition
+Wp=kerrp.isStopCondition([0, 10, 1, 1., 0., 0., 0., 0])
+Wc=kerrc.isStopCondition([0, 10, 1, 1., 0., 0., 0., 0])
+assert (Wp==Wc), "isStopCondition is different"
 
 print ("All tests passed successfully")

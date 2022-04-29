@@ -413,6 +413,11 @@ class Gyoto::Metric::Python
    */
   PyObject * pGetPotential_;
 
+  /**
+   * \brief Reference to the isStopCondition method
+   */
+  PyObject * pIsStopCondition_;
+
  public:
   GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
@@ -446,6 +451,7 @@ class Gyoto::Metric::Python
   double getRms() const;
   double getSpecificAngularMomentum(double rr) const;
   double getPotential(double const pos[4], double l_cst) const;
+  int isStopCondition(double const coord[8]) const;
 
 };
 

@@ -145,6 +145,8 @@ class KerrBL:
     '''
 
     spin=0.
+    drhor=gyoto.core.GYOTO_KERR_HORIZON_SECURITY
+    rsink=2.+gyoto.core.GYOTO_KERR_HORIZON_SECURITY
 
     def __setitem__(self, key, value):
         '''Set parameters
@@ -153,10 +155,13 @@ class KerrBL:
 
         This is how Gyoto sends the <Parameters/> XML entity:
         metric[key]=value
-        key=0: set spin
+        key=0: set spin (0.)
+        key=1: set drhor, thickness of sink layer around horizon (0.01)
         '''
         if (key==0):
             self.spin = value
+        elif (key==1):
+            self.drhor = value
         else:
             raise IndexError
 
@@ -166,28 +171,11 @@ class KerrBL:
         Optional.
 
         C++ will set several attributes. By overloading __setattr__,
-        one can react when that occurs, in particular to make sure `this'
-        knows the coordinate kind as in this example.
+        one can react when that occurs, in particular to make sure
+        `this' knows the coordinate kind as in this example.
 
-        Attributes set by the C++ layer:
-
-          this: if the Python extension "gyoto.core" can be imported, it
-                will be set to a gyoto.core.Metric instance pointing to the
-                C++-side instance. If the "gyoto.core" extension cannot be
-                loaded, this will be set to None.
-
-          spherical: when the spherical(bool t) method is called in
-                the C++ layer, it sets the spherical attribute in the
-                Python side.
-
-          mass: when the mass(double m) method is called in the C++
-                side, it sets the spherical attribute in the Python
-                side.
-
-        This example initializes coordKind in the C++ side if it is
-        not already set, since this Minkowski class can work in
-        either.
-
+        In addition, update self.rsink each time self.spin or
+        self.drhor change.
         '''
         # First, actually store the attribute. This is what would
         # happen if we did not overload __setattr__.
@@ -195,6 +183,11 @@ class KerrBL:
         # Then, if key is "this", ensure `this' knows a valid coordKind.
         if (key == "this"):
             self.this.set("Spherical", True)
+        elif key in ("spin", "drhor"):
+            if self.spin > 1:
+                self.rsink=drhor
+            else:
+                self.rsink=1.+math.sqrt(1.-self.spin**2)+self.drhor
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double g[4], const double pos[4])
@@ -327,3 +320,6 @@ class KerrBL:
              - math.log(abs(gtt + Omega * gtp))) ;
 
         return  W ;
+
+    def isStopCondition(self, coord):
+        return coord[1] < self.rsink

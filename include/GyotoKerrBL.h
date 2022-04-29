@@ -175,7 +175,7 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   virtual void computeCst(const double coord[8], double cst[5]) const;
  public:
   void setParticleProperties(Worldline* line, const double* coord) const;
-  virtual int isStopCondition(double const * const coord) const;
+  virtual int isStopCondition(double const coord[8]) const;
   
   virtual void observerTetrad(double const pos[4], double fourvel[4],
 			      double screen1[4], double screen2[4],
