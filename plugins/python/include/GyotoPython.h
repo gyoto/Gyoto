@@ -418,6 +418,11 @@ class Gyoto::Metric::Python
    */
   PyObject * pIsStopCondition_;
 
+  /**
+   * \brief Reference to the circularVelocity method
+   */
+  PyObject * pCircularVelocity_;
+
  public:
   GYOTO_OBJECT;
   GYOTO_OBJECT_THREAD_SAFETY;
@@ -452,6 +457,8 @@ class Gyoto::Metric::Python
   double getSpecificAngularMomentum(double rr) const;
   double getPotential(double const pos[4], double l_cst) const;
   int isStopCondition(double const coord[8]) const;
+  void circularVelocity(double const pos[4], double vel[4],
+			double dir=1.) const ;
 
 };
 

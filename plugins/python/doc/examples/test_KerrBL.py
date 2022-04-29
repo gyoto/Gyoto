@@ -7,8 +7,7 @@
 # plug-in name depends on the running interpreter. Default to basename
 # of Python executable, then python3, then python.
 import gyoto.core, gyoto.std
-import sys
-import os.path
+import sys, os.path, importlib, gyoto_sample_metrics
 
 try:
     gyoto.core.requirePlugin(os.path.basename(sys.executable))
@@ -68,5 +67,24 @@ assert (Wp==Wc), "getPotential is different"
 Wp=kerrp.isStopCondition([0, 10, 1, 1., 0., 0., 0., 0])
 Wc=kerrc.isStopCondition([0, 10, 1, 1., 0., 0., 0., 0])
 assert (Wp==Wc), "isStopCondition is different"
+
+# Test circularVelocity
+kerrp.keplerian(False)
+kerrc.keplerian(False)
+vp=kerrp.circularVelocity([0, 10, 1, 1.])
+vc=kerrc.circularVelocity([0, 10, 1, 1.])
+assert (vp==vc).all(), "isStopCondition is different"
+
+vp=numpy.ndarray(4, dtype=float)
+vc=numpy.ndarray(4, dtype=float)
+kerrp.circularVelocity([0, 10, 1, 1.], vp)
+kerrc.circularVelocity([0, 10, 1, 1.], vc)
+assert (vp==vc).all(), "isStopCondition is different"
+
+vp=numpy.ndarray(4, dtype=float)
+vc=numpy.ndarray(4, dtype=float)
+kerrp.circularVelocity([0, 10, 1, 1.], vp, -1)
+kerrc.circularVelocity([0, 10, 1, 1.], vc, -1)
+assert (vp==vc).all(), "isStopCondition is different"
 
 print ("All tests passed successfully")

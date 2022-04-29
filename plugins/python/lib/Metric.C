@@ -35,7 +35,7 @@ Gyoto::Metric::Python::Python()
   Base(),
   pGmunu_(NULL), pChristoffel_(NULL), pGetRmb_(NULL), pGetRms_(NULL),
   pGetSpecificAngularMomentum_(NULL), pGetPotential_(NULL),
-  pIsStopCondition_(NULL)
+  pIsStopCondition_(NULL), pCircularVelocity_(NULL)
 {}
 
 Gyoto::Metric::Python::Python(const Python& o)
@@ -45,7 +45,8 @@ Gyoto::Metric::Python::Python(const Python& o)
   pGetRms_(o.pGetRms_),
   pGetSpecificAngularMomentum_(o.pGetSpecificAngularMomentum_),
   pGetPotential_(o.pGetPotential_),
-  pIsStopCondition_(o.pIsStopCondition_)
+  pIsStopCondition_(o.pIsStopCondition_),
+  pCircularVelocity_(o.pCircularVelocity_)
 
 {
   Py_XINCREF(pGmunu_);
@@ -55,9 +56,11 @@ Gyoto::Metric::Python::Python(const Python& o)
   Py_XINCREF(pGetSpecificAngularMomentum_);
   Py_XINCREF(pGetPotential_);
   Py_XINCREF(pIsStopCondition_);
+  Py_XINCREF(pCircularVelocity_);
 }
 
 Gyoto::Metric::Python::~Python() {
+  Py_XDECREF(pCircularVelocity_);
   Py_XDECREF(pIsStopCondition_);
   Py_XDECREF(pGetPotential_);
   Py_XDECREF(pGetSpecificAngularMomentum_);
@@ -162,6 +165,8 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "getPotential");
   pIsStopCondition_=
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "isStopCondition");
+  pCircularVelocity_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "circularVelocity");
 
   if (PyErr_Occurred()) {
     PyErr_Print();
@@ -379,4 +384,35 @@ int Metric::Python::isStopCondition
   PyGILState_Release(gstate);
 
   return res;
+}
+
+void Metric::Python::circularVelocity(double const pos[4], double vel[4],
+				      double dir) const
+{
+  if (!pCircularVelocity_ || keplerian_) {
+    Metric::Generic::circularVelocity(pos, vel, dir);
+    return;
+  }
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+
+  npy_intp dims[] = {4};
+
+  PyObject * pP = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, const_cast<double*>(pos));
+  PyObject * pV = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, vel);
+  PyObject * pD = PyFloat_FromDouble(dir);
+  PyObject * pR = PyObject_CallFunctionObjArgs(pCircularVelocity_, pP, pV, pD, NULL);
+
+  Py_XDECREF(pR);
+  Py_XDECREF(pD);
+  Py_XDECREF(pV);
+  Py_XDECREF(pP);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::Python::circularVelocity");
+  }
+
+  PyGILState_Release(gstate);
 }

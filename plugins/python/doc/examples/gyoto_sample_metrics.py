@@ -323,3 +323,19 @@ class KerrBL:
 
     def isStopCondition(self, coord):
         return coord[1] < self.rsink
+
+    def circularVelocity(self, coor, vel, d):
+        '''Velocity of a particle in circular motion at point
+
+        Note: this is called only if this->keplerian_ is False.
+        '''
+
+        sinth = math.sin(coor[2]);
+        coord = [coor[0], coor[1]*sinth, math.pi*0.5, coor[3]];
+
+        vel[1] = vel[2] = 0.;
+        #vel[3] = 1./((d*pow(coord[1], 1.5) + spin_)*sinth);
+        vel[3] = 1./((d*pow(coord[1], 1.5) + self.spin));
+
+        vel[0] = self.this.SysPrimeToTdot(coor, vel[1:]);
+        vel[3] *= vel[0];
