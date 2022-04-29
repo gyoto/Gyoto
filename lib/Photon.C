@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020, 2022 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -29,7 +29,6 @@
 
 #include <boost/math/special_functions/ellint_1.hpp>
 #include <boost/math/special_functions/jacobi_elliptic.hpp>
-using namespace boost::math;
 
 #include <iostream>
 #include <fstream>
@@ -46,6 +45,9 @@ using namespace boost::math;
 
 using namespace std;
 using namespace Gyoto;
+
+// don't add e.g. "using namespace boost::math"
+// it is not compatible with "using namespace std" in the general case
 
 GYOTO_PROPERTY_START(Photon)
 GYOTO_PROPERTY_ASTROBJ(Photon, Astrobj, astrobj)
@@ -465,7 +467,7 @@ int Photon::hit(Astrobj::Properties *data) {
     
     if (compute_Mino==1){ // compute_Mino may have been changed to zero if
                           // Carter cst is <0
-      KK = 1./sqrt(1-uratio)*(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-ellint_1(sqrt(-uratio/(1-uratio)),0.)); // using Abramowitz&Stegun formula, this is
+      KK = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),0.)); // using Abramowitz&Stegun formula, this is
       // KK = F(pi/2 | uratio)
       G_theta_1libration = 4.*KK/(spin*sqrt(-uminus)); // Eq. 35 of GL20a
       sign_o = (x2dot_[i0_] > 0) - (x2dot_[i0_] < 0); // this is the sign of the theta component of the photon momentum at the observer
@@ -476,7 +478,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	argasin=1.;
       if (-1-argasin>0. && -1-argasin<mytol)
 	argasin=-1.;
-      double Fobs = 1./sqrt(1-uratio)*(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin))); // using Abramowitz&Stegun formula, this is F(arcsin(cos(theta_obs)/sqrt(uplus) | uratio)
+      double Fobs = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin))); // using Abramowitz&Stegun formula, this is F(arcsin(cos(theta_obs)/sqrt(uplus) | uratio)
 
       // Computing F(arcsin(cos(theta_turning)/sqrt(uplus) | uratio):
       double theta_turn=acos(sign_o*sqrt(uplus)); // first turning point encountered along backwards integration
@@ -485,7 +487,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	argasin=1.;
       if (-1-argasin>0. && -1-argasin<mytol)
 	argasin=-1.;
-      double Fturn = 1./sqrt(1-uratio)*(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
+      double Fturn = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
 
       // From these two elliptic integrals, get the value of G_theta
       // at the first turning point:
@@ -766,9 +768,9 @@ int Photon::hit(Astrobj::Properties *data) {
 	    throwError("Bad radial potential params");
 	  
 	  double F2radial_cur = 2./sqrt(r31*r42)
-	    *ellint_1(sqrt(kradial),asin(x2radial_cur)),
+	    *boost::math::ellint_1(sqrt(kradial),asin(x2radial_cur)),
 	    F2radial_prev = 2./sqrt(r31*r42)
-	    *ellint_1(sqrt(kradial),asin(x2radial_prev));
+	    *boost::math::ellint_1(sqrt(kradial),asin(x2radial_prev));
 	  double sign_radial_s_cur = (coord[5] > 0) - (coord[5] < 0);
 	  double sign_radial_s_prev = (x1dot_[ind-dir] > 0)
 	    - (x1dot_[ind-dir] < 0);
@@ -777,7 +779,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	    sign_radial_s = sign_radial_s_cur;
 	    dI_radial = sign_radial_s*(F2radial_prev - F2radial_cur);
 	  }else{
-	    double F2radial_turn = 0.; //2./sqrt(r31*r42)*ellint_1(sqrt(kradial),0.); // at r=r4quartic, x2radial is zero, and asin(0)=0, hence the 0 in second slot, which leads to ellint1=0
+	    double F2radial_turn = 0.; //2./sqrt(r31*r42)*boost::math::ellint_1(sqrt(kradial),0.); // at r=r4quartic, x2radial is zero, and asin(0)=0, hence the 0 in second slot, which leads to ellint1=0
 	    dI_radial = 2.*sign_radial_s_cur*F2radial_turn - sign_radial_s_cur*(F2radial_prev + F2radial_cur);
 	  }
 	  if (dI_radial<0.) throwError("radial integral should increase");
@@ -790,8 +792,8 @@ int Photon::hit(Astrobj::Properties *data) {
 	  if (-1-argasin>0. && -1-argasin<mytol)
 	    argasin=-1.;
 	  double F_obs = 1./sqrt(1-uratio)
-	    *(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)
-	      -ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
+	    *(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)
+	      -boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
 	  double G_theta_eqplane_0turnings=(-sign_o*F_obs)
 	    *(1./(spin*sqrt(-uminus))),
 	    G_theta_eqplane_1turnings=(2.*KK-sign_o*F_obs)
@@ -804,9 +806,9 @@ int Photon::hit(Astrobj::Properties *data) {
 	  // only the req_* matter.
 	  // Crossing after zero turning point:
 	  double jacobi_elliptic_sine =
-	    jacobi_sn(sqrt(kradial),
+	    boost::math::jacobi_sn(sqrt(kradial),
 		      0.5*sqrt(r31*r42)*G_theta_eqplane_0turnings
-		      - ellint_1(sqrt(kradial),asin(sqrt(r31/r41)))),
+		      - boost::math::ellint_1(sqrt(kradial),asin(sqrt(r31/r41)))),
 	    jacobi_elliptic_sine_squared =
 	    jacobi_elliptic_sine*jacobi_elliptic_sine,
 	    req_0turnings = (r4quartic*r31
@@ -815,9 +817,9 @@ int Photon::hit(Astrobj::Properties *data) {
 
 	  // crossing after 1 turning
 	  jacobi_elliptic_sine =
-	    jacobi_sn(sqrt(kradial),
+	    boost::math::jacobi_sn(sqrt(kradial),
 		      0.5*sqrt(r31*r42)*G_theta_eqplane_1turnings
-		      - ellint_1(sqrt(kradial),asin(sqrt(r31/r41))));
+		      - boost::math::ellint_1(sqrt(kradial),asin(sqrt(r31/r41))));
 	  jacobi_elliptic_sine_squared =
 	    jacobi_elliptic_sine*jacobi_elliptic_sine;
 	  double  req_1turnings =
@@ -826,9 +828,9 @@ int Photon::hit(Astrobj::Properties *data) {
 
 	  // crossing after 2 turnings
 	  jacobi_elliptic_sine =
-	    jacobi_sn(sqrt(kradial),
+	    boost::math::jacobi_sn(sqrt(kradial),
 		      0.5*sqrt(r31*r42)*G_theta_eqplane_2turnings
-		      - ellint_1(sqrt(kradial),asin(sqrt(r31/r41))));
+		      - boost::math::ellint_1(sqrt(kradial),asin(sqrt(r31/r41))));
 	  jacobi_elliptic_sine_squared =
 	    jacobi_elliptic_sine*jacobi_elliptic_sine;
 	  double req_2turnings =
@@ -847,14 +849,14 @@ int Photon::hit(Astrobj::Properties *data) {
 	  argasin=1.;
 	if (-1-argasin>0. && -1-argasin<mytol)
 	  argasin=-1.;
-	double Fs_cur = 1./sqrt(1-uratio)*(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
+	double Fs_cur = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));
 	// Computing elliptic integral F at previous point
 	argasin=cos(x2_[ind-dir])/sqrt(uplus);
 	if (argasin-1>0. && argasin-1<mytol)
 	  argasin=1.;
 	if (-1-argasin>0. && -1-argasin<mytol)
 	  argasin=-1.;
-	double Fs_prev = 1./sqrt(1-uratio)*(ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));//ellint_1(uratio,asin(argasin));
+	double Fs_prev = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.-asin(argasin)));//boost::math::ellint_1(uratio,asin(argasin));
 
 	// From the two Fs compute the increment of G_theta
 	double sign_s_cur = (coord[6] > 0) - (coord[6] < 0);
