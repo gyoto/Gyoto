@@ -3,6 +3,9 @@
 using namespace std ;
 using namespace Gyoto ;
 
+Property::Property()
+  : name(""), type(empty_t), parent(NULL) {}
+
 Property::Property(Property const * const ancestors)
   : name(""), type(empty_t), parent(ancestors) {}
 

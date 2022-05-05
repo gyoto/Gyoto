@@ -830,6 +830,9 @@ class Gyoto::Property
   /// If #type is #empty_t, link to another Property list
   Property const * const  parent;
   
+  /// Default constructor
+  Property();
+
   /// Constructor for #type==#empty_t
   Property(Property const * const ancestor);
 
