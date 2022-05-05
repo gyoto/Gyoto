@@ -19,12 +19,71 @@
  */
 
 #include "GyotoPython.h"
+#include "GyotoValue.h"
+#include "GyotoProperty.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
 
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#define NO_IMPORT_ARRAY
+#define PY_ARRAY_UNIQUE_SYMBOL GyotoPython_ARRAY_API
+#include <numpy/arrayobject.h>
 
 using namespace Gyoto;
 using namespace Gyoto::Python;
 using namespace std;
+
+class Proxy:
+  public Gyoto::Object {
+public:
+  void set_double(double);
+};
+
+
+PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
+  PyObject * pVal = NULL;
+  switch (val.type) {
+  case Property::bool_t:
+    pVal = PyBool_FromLong(val);
+    break;
+  case Property::long_t:
+    pVal = PyLong_FromLong(val);
+    break;
+  case Property::unsigned_long_t:
+  case Property::size_t_t:
+    pVal = PyLong_FromUnsignedLong(val);
+    break;
+  case Property::double_t:
+    pVal = PyFloat_FromDouble(val);
+    break;
+  case Property::filename_t:
+  case Property::string_t:
+    pVal = PyUnicode_FromString(std::string(val).c_str());
+    break;
+  case Property::vector_double_t:
+    {
+      std::vector<double> vval = val;
+      npy_intp dims[] = {vval.size()};
+
+      pVal = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, vval.data());
+    }
+    break;
+  case Property::vector_unsigned_long_t:
+    {
+      std::vector<unsigned long> vval = val;
+      npy_intp dims[] = {vval.size()};
+
+      pVal = PyArray_SimpleNewFromData(1, dims, NPY_ULONG, vval.data());
+    }
+    break;
+  case Property::metric_t:
+  default:
+    GYOTO_ERROR("Type not implemented in Python::Metric::PyObject_FromGyotoValue()");
+  }
+  return pVal;
+}
 
 PyObject * Gyoto::Python::PyInstance_GetMethod
 (PyObject* pInstance, const char *name) {
@@ -207,19 +266,27 @@ PyObject * Gyoto::Python::PyModule_NewFromPythonCode(const char * source_code) {
 // Birth and death
 Base::Base()
   : module_(""), inline_module_(""), class_(""),   parameters_(),
-  pModule_(NULL), pInstance_(NULL)
+    pModule_(NULL), pInstance_(NULL),
+    pProperties_(NULL), pSet_(NULL), pGet_(NULL)
 {}
 
 Base::Base(const Base& o)
 : module_(o.module_), inline_module_(o.inline_module_),
   class_(o.class_), parameters_(o.parameters_),
-  pModule_(o.pModule_), pInstance_(o.pInstance_)
+  pModule_(o.pModule_), pInstance_(o.pInstance_),
+  pProperties_(o.pProperties_), pSet_(o.pSet_), pGet_(o.pGet_)
 {
   Py_XINCREF(pModule_);
   Py_XINCREF(pInstance_);
+  Py_XINCREF(pProperties_);
+  Py_XINCREF(pSet_);
+  Py_XINCREF(pGet_);
 }
 
 Base::~Base() {
+  Py_XDECREF(pGet_);
+  Py_XDECREF(pSet_);
+  Py_XDECREF(pProperties_);
   Py_XDECREF(pInstance_);
   Py_XDECREF(pModule_);
 }
@@ -284,6 +351,9 @@ void Base::klass(const std::string &f) {
   
   PyGILState_STATE gstate = PyGILState_Ensure();
   
+  Py_XDECREF(pProperties_); pProperties_=NULL;
+  Py_XDECREF(pGet_); pGet_=NULL;
+  Py_XDECREF(pSet_); pSet_=NULL;
   Py_XDECREF(pInstance_); pInstance_=NULL;
 
   if (class_ == ""){
@@ -321,8 +391,9 @@ void Base::klass(const std::string &f) {
     if (nclass>1) {
       GYOTO_DEBUG << "several classes in module" << endl;
       class_ = "";
-    } else if (nclass == 1) GYOTO_DEBUG << "single class in module: " << class_ << endl;
-    else if (nclass == 0) {
+    } else if (nclass == 1) {
+      GYOTO_DEBUG << "single class in module: " << class_ << endl;
+    } else if (nclass == 0) {
       PyGILState_Release(gstate);
       GYOTO_ERROR("no class in Python module\n");
     }
@@ -351,6 +422,52 @@ void Base::klass(const std::string &f) {
     GYOTO_ERROR("Failed instantiating Python class");
   }
 
+  pSet_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "set");
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error getting set method");
+  }
+
+  pGet_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "get");
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pGet_); pGet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error getting set method");
+  }
+
+  pProperties_ = NULL;
+  if (PyObject_HasAttrString(pInstance_, "properties"))
+    pProperties_ = PyObject_GetAttrString(pInstance_, "properties");
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pProperties_); pInstance_=NULL;
+    Py_XDECREF(pGet_); pGet_=NULL;
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error getting properties member");
+  }
+  if (pProperties_) {
+    if (!PyDict_Check(pProperties_)) {
+      Py_XDECREF(pProperties_); pInstance_=NULL;
+      Py_XDECREF(pGet_); pGet_=NULL;
+      Py_XDECREF(pSet_); pSet_=NULL;
+      Py_XDECREF(pInstance_); pInstance_=NULL;
+      PyGILState_Release(gstate);
+      GYOTO_ERROR("'properties' is not a dict'");
+    }
+  }
+
   PyGILState_Release(gstate);
   GYOTO_DEBUG << "Done instantiating Python class " << f << endl;
 }
@@ -376,4 +493,135 @@ void Base::parameters(const std::vector<double> &p){
 
   PyGILState_Release(gstate);
   GYOTO_DEBUG << "done.\n";
+}
+
+bool Base::hasPythonProperty(std::string const &key) const {
+  if (!pProperties_) return false;
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject * pKey = PyUnicode_FromString(key.c_str());
+
+  GYOTO_DEBUG_EXPR(key);
+  GYOTO_DEBUG_EXPR(pKey);
+  GYOTO_DEBUG_EXPR(pProperties_);
+
+  int key_in_props = PyDict_Contains(pProperties_, pKey);
+
+  Py_XDECREF(pKey);
+  PyGILState_Release(gstate);
+
+  GYOTO_DEBUG_EXPR(key_in_props);
+
+  if (key_in_props==-1) GYOTO_ERROR("Error checking for key in Python properties");
+  return key_in_props;
+
+}
+
+int Base::pythonPropertyType(std::string const &key) const {
+  GYOTO_DEBUG_EXPR(key);
+  if (!pProperties_) GYOTO_ERROR("no properties");
+  if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject * pKey = PyUnicode_FromString(key.c_str());
+
+  GYOTO_DEBUG_EXPR(pKey);
+  GYOTO_DEBUG_EXPR(pProperties_);
+
+  PyObject * pType = PyDict_GetItem(pProperties_, pKey);
+  std::string stype=PyUnicode_AsUTF8(pType);
+  Py_XDECREF(pType);
+  GYOTO_DEBUG_EXPR(stype);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in pythonPropertyType()");
+  }
+  PyGILState_Release(gstate);
+
+  int type;
+  if (stype=="double") {
+    type=Property::double_t;
+  } else {
+    GYOTO_ERROR("unimplemeted Python property type");
+  }
+
+  return type;
+}
+
+void Base::setPythonProperty(std::string const &key, Value val) {
+
+  GYOTO_DEBUG_EXPR(key);
+  GYOTO_DEBUG_EXPR(val.type);
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject * pKey = PyUnicode_FromString(key.c_str());
+
+  GYOTO_DEBUG_EXPR(pKey);
+  GYOTO_DEBUG_EXPR(pProperties_);
+
+  PyObject * pVal = PyObject_FromGyotoValue(val);
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pSet_, pKey, pVal, NULL);
+
+    Py_XDECREF(pR);
+    Py_XDECREF(pKey);
+    Py_XDECREF(pVal);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred while setting property");
+  }
+
+  PyGILState_Release(gstate);
+}
+
+Value Base::getPythonProperty(std::string const &key) const {
+  GYOTO_DEBUG_EXPR(key);
+  if (!pProperties_) GYOTO_ERROR("no properties");
+  if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
+  if (!pGet_) GYOTO_ERROR("get(key) method not implemented");
+
+  PyGILState_STATE gstate = PyGILState_Ensure();
+  PyObject * pKey = PyUnicode_FromString(key.c_str());
+
+  GYOTO_DEBUG_EXPR(pKey);
+  GYOTO_DEBUG_EXPR(pProperties_);
+
+  PyObject * pVal =
+    PyObject_CallFunctionObjArgs(pGet_, pKey, NULL);
+
+  if (PyErr_Occurred()) {
+    Py_XDECREF(pVal);
+
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred while calling get() in getPythonProperty()");
+  }
+
+  PyObject * pType = PyDict_GetItem(pProperties_, pKey);
+  std::string stype=PyUnicode_AsUTF8(pType);
+  Value val;
+
+  if (stype=="double") {
+    val = PyFloat_AsDouble(pVal);
+  } else {
+    Py_XDECREF(pVal);
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("unimplemented data type for Python propertiy");
+  }
+
+  Py_XDECREF(pVal);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in getPythonProperty()");
+  }
+
+  PyGILState_Release(gstate);
+
+  return val;
+
 }

@@ -1,6 +1,10 @@
 #include "GyotoPython.h"
 #include "GyotoProperty.h"
 #include "GyotoError.h"
+#include "GyotoValue.h"
+#include "GyotoSpectrometer.h"
+#include "GyotoScreen.h"
+#include "GyotoFactoryMessenger.h"
 
 #include <Python.h>
 
@@ -11,6 +15,7 @@
 
 using namespace Gyoto;
 using namespace Gyoto::Metric;
+using namespace Gyoto::Python;
 using namespace std;
 
 GYOTO_PROPERTY_START(Gyoto::Metric::Python,
@@ -415,4 +420,84 @@ void Metric::Python::circularVelocity(double const pos[4], double vel[4],
   }
 
   PyGILState_Release(gstate);
+}
+
+void Metric::Python::set(std::string const &key, Value val) {
+  if (hasPythonProperty(key)) {
+    GYOTO_DEBUG << "Python key " << key << " exists" << endl;
+    setPythonProperty(key, val);
+  } else {
+    GYOTO_DEBUG << "Python key " << key << " does not exist" << endl;
+    Generic::set(key, val);
+  }
+}
+
+void Metric::Python::set(Property const &p, Value val, std::string const &unit) {
+  GYOTO_DEBUG_EXPR(p.name);
+  if (hasPythonProperty(p.name)) {
+    GYOTO_DEBUG << "Python key " << p.name << " exists" << endl;
+    if (unit!="") GYOTO_ERROR("units not implemented");
+    setPythonProperty(p.name, val);
+  } else {
+    GYOTO_DEBUG << "Python key " << p.name << " does not exist" << endl;
+    Generic::set(p, val, unit);
+  }
+}
+
+
+void Metric::Python::set(Property const &p, Value val){
+  std::string key=p.name;
+  GYOTO_DEBUG_EXPR(key);
+  if (!hasPythonProperty(key)) {
+    GYOTO_DEBUG << "calling Generic::set" << endl;
+    Generic::set(p, val);
+    return;
+  }
+  setPythonProperty(key, val);
+}
+
+Value Metric::Python::get(std::string const &key) const {
+  GYOTO_DEBUG_EXPR(key);
+  if (!hasPythonProperty(key)) {
+    GYOTO_DEBUG << "calling Generic::get" << endl;
+    return Generic::get(key);
+  }
+  return getPythonProperty(key);
+}
+
+int Metric::Python::setParameter(string name, string content, string unit) {
+  GYOTO_DEBUG_EXPR(name);
+  GYOTO_DEBUG_EXPR(content);
+  GYOTO_DEBUG_EXPR(unit);
+  if (hasPythonProperty(name)) {
+    Property p(NULL);
+    p.name=name;
+    p.type=pythonPropertyType(name);
+    GYOTO_DEBUG << "Calling setParameters" << endl;
+    setParameter(p, name, content, unit);
+    return 0;
+  }
+
+  return Generic::setParameter(name, content, unit);
+}
+
+void Metric::Python::fillElement(Gyoto::FactoryMessenger *fmp) const {
+  Generic::fillElement(fmp);
+  if (pProperties_) {
+    Py_ssize_t pos=0;
+    PyObject *pKey, *pVal;
+    while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
+      GYOTO_DEBUG_EXPR(pKey);
+      GYOTO_DEBUG_EXPR(PyUnicode_Check(pKey));
+      std::string key=PyUnicode_AsUTF8(pKey);
+      GYOTO_DEBUG_EXPR(pVal);
+      GYOTO_DEBUG_EXPR(PyUnicode_Check(pVal));
+      std::string stype=PyUnicode_AsUTF8(pVal);
+      if (stype=="double") {
+	fmp->setParameter(key, double(getPythonProperty(key)));
+      } else {
+	GYOTO_ERROR("property type not implemented in fillElement()");
+      }
+    }
+  }
 }

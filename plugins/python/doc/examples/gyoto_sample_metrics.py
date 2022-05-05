@@ -20,14 +20,34 @@
    interface do so by providing the following methods:
 
    gmunu(self, dst, pos): mandatory;
-   christoffel(self, dst, pos): mandatory
+   christoffel(self, dst, pos): mandatory;
    getRms(self): optional
    getRmb(self): optional
    getSpecificAngularMomentum(self, rr): optional
    getPotential(self, pos, l_cst): optional
-   __setattr__(self, key, value): optional
-   __setitem__(self, key, value): optional
+   __setattr__(self, key, value): optional, useful to react
+     when the C++ Metric object sets attributes:
+          this: if the Python extension "gyoto.core" can be imported,
+                it will be set to a gyoto.core.Metric instance
+                pointing to the C++-side instance. If the "gyoto.core"
+                extension cannot be loaded, this will be set to None.
 
+          spherical: when the spherical(bool t) method is called in
+                the C++ layer, it sets the spherical attribute in the
+                Python side.
+
+          mass: when the mass(double m) method is called in the C++
+                side, it sets the spherical attribute in the Python
+                side.
+   __setitem__(self, key, value): optional, mandatory to support the
+     "Parameters" Property to set arbitrary parameters for this
+     metric.
+   set(self, key, val) and get(self, key): optional, both need to be
+     implemented in order to support additional "Properties" with
+     arbitrary names. In addition, member self.properties must be set
+     to a dictionary listing key:datatype pairs, where both key and
+     datatype are strings. As of writing, only "double" is supported
+     as a datatype.
 '''
 
 import math
@@ -133,7 +153,12 @@ class Minkowski:
 class KerrBL:
     '''A Python implementation of Gyoto::Metric::KerrBL
 
-    Parameters: (spin,)
+    Spin and HorizonSecurity may be set either using the Parameters
+    Property, as in:
+        <Parameters> O.5 0.01 </Parameters>
+    or using two distinct ad hoc "properties":
+        <Spin> 0.5 </Spin>
+        <HorizonSecurity> 0.01 </HorizonSecurity>
 
     The various methods are essentially cut-and-paste from the C++ class.
 
@@ -142,7 +167,12 @@ class KerrBL:
 
     This is for educational and testing purposes. For all practical uses,
     the C++ implementation is much faster.
+
     '''
+
+    # This is needed to support setting Spin and HorizonSecurity by name
+    # in addition to the set and get methods
+    properties={"Spin":"double", "HorizonSecurity":"double"}
 
     spin=0.
     drhor=gyoto.core.GYOTO_KERR_HORIZON_SECURITY
@@ -151,7 +181,7 @@ class KerrBL:
     def __setitem__(self, key, value):
         '''Set parameters
 
-        Optional, mandatory to handle parameters
+        Optional, one way to handle parameters
 
         This is how Gyoto sends the <Parameters/> XML entity:
         metric[key]=value
@@ -162,6 +192,39 @@ class KerrBL:
             self.spin = value
         elif (key==1):
             self.drhor = value
+        else:
+            raise IndexError
+
+    def set(self, key, value):
+        '''Set parameters by name
+
+        Optional, one way to handle parameters
+
+        This is how Gyoto sends custom  XML entities, e.g.
+          <MyEntity>value</MyEntity>
+        metric.set("MyEntity", value)
+
+        Here:
+        key="Spin": set spin (0.)
+        key="HorizonSecurity": set drhor, thickness of sink layer
+             around horizon (0.01)
+        '''
+        if (key=="Spin"):
+            self.spin = value
+        elif (key=="HorizonSecurity"):
+            self.drhor = value
+        else:
+            raise IndexError
+
+    def get(self, key):
+        '''Get parameters by name
+
+        Optional, mandatory if "properties" and "set" are defined.
+        '''
+        if (key=="Spin"):
+            return self.spin
+        elif (key=="HorizonSecurity"):
+            return self.drhor
         else:
             raise IndexError
 

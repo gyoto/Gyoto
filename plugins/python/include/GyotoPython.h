@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2016 Thibaut Paumard
+    Copyright 2015-2016, 2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -102,6 +102,8 @@ namespace Gyoto {
 
   namespace Python {
     class Base;
+    /// Convert Gyoto Value to Python Object
+    PyObject * PyObject_FromGyotoValue(const Gyoto::Value&);
 
     /// Return new reference to method, or NULL if method not found.
     PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
@@ -152,14 +154,24 @@ namespace Gyoto {
  *
  * \brief Base class for classes in the Python plug-in.
  *
- * All classes have those three Properties:
+ * All derived C++ classes (Gyoto::Metric::Python,
+ * Gyoto::Spectrum::Python, Gyoto::Astrobj::Python::Standard and
+ * Gyoto::Astrobj::Python::Thindisk have those three Properties:
  * - Module (string): the module in which the Python class is
  *   implemented;
  * - Class (string): the name of the Python class, in module Module,
  *   to interface with;
- * - Parameters (vector<double>): list of parameters for this
+ * - Parameters (vector<double>): optional list of parameters for this
  *   class. These parameters are passed one by one to the Python
  *   instance using __setitem__ with numerical keys.
+ *
+ * Those C++ classes wrap around Python classes that implement certain
+ * methods. Those Python classes may accepts parameters through the
+ * Parameters property described above by implementing __setitem__, or
+ * by providing:
+ * - member "properties", a dict in the form {name: dtype} where name
+ *     is the property name and dtype the corresponding datatype.
+ * - methods set(self, key, value) and get(self, key).
  *
  * All the Gyoto instances of the classes descending from
  * Gyoto::Python::Base expose themselves to the Python instance they
@@ -213,6 +225,21 @@ class Gyoto::Python::Base {
    * \brief Reference to the python instance once it has been instantiated.
    */
   PyObject * pInstance_;
+
+  /**
+   * \brief Reference to the properties member
+   */
+  PyObject * pProperties_;
+
+  /**
+   * \brief Reference to the (optional) Set method
+   */
+  PyObject * pSet_;
+
+  /**
+   * \brief Reference to the (optional) Get method
+   */
+  PyObject * pGet_;
 
  public:
   Base();
@@ -269,6 +296,11 @@ class Gyoto::Python::Base {
    * __setitem__ method with numerical keys.
    */
   virtual void parameters(const std::vector<double>&);
+
+  virtual bool hasPythonProperty(std::string const &key) const ;
+  virtual void setPythonProperty(std::string const &key, Value val);
+  virtual Value getPythonProperty(std::string const &key) const;
+  virtual int pythonPropertyType(std::string const &key) const;
 
 };
 
@@ -446,6 +478,16 @@ class Gyoto::Metric::Python
   virtual void parameters(const std::vector<double>&);
   using Gyoto::Metric::Generic::mass;
   virtual void mass(double m);
+
+  // Set/get properties
+  using Gyoto::Metric::Generic::set;
+  virtual void set(std::string const &pname, Value val);
+  virtual void set(Property const &p, Value val);
+  virtual void set(Property const &p, Value val, std::string const &unit);
+  virtual Value get(std::string const &pname) const;
+  using Gyoto::Metric::Generic::setParameter;
+  virtual int setParameter(std::string name, std::string content, std::string unit);
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 
   // The minimal Gyoto::Metric API:
   void gmunu(double g[4][4], const double * x) const ;
