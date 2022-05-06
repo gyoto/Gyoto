@@ -92,6 +92,8 @@
 #include <GyotoMetric.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoThinDisk.h>
+#include <GyotoProperty.h>
+#include <GyotoValue.h>
 #include <Python.h>
 
 namespace Gyoto {
@@ -102,6 +104,7 @@ namespace Gyoto {
 
   namespace Python {
     class Base;
+    template <class O> class Object;
     /// Convert Gyoto Value to Python Object
     PyObject * PyObject_FromGyotoValue(const Gyoto::Value&);
 
@@ -304,7 +307,105 @@ class Gyoto::Python::Base {
 
 };
 
+/**
+ * \class Gyoto::Python::Object
+ *
+ * \brief Class template to implement parts of the Gyoto::Object API
+ *
+ **/
+template <class O>
+class Gyoto::Python::Object
+  : public O, public Gyoto::Python::Base
+{
+public:
+  Object() : O(), Gyoto::Python::Base() {}
+  Object(const Object& o) : O(o), Base(o) {}
+  virtual ~Object() {};
 
+  using Gyoto::Metric::Generic::set;
+
+  virtual void set(std::string const &key, Value val) {
+    if (hasPythonProperty(key)) {
+      GYOTO_DEBUG << "Python key " << key << " exists" << std::endl;
+      setPythonProperty(key, val);
+    } else {
+      GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
+      O::set(key, val);
+    }
+  }
+
+  virtual void set(Property const &p, Value val){
+    std::string key=p.name;
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::set" << std::endl;
+      O::set(p, val);
+      return;
+    }
+    setPythonProperty(key, val);
+  }
+
+  virtual void set(Property const &p, Value val, std::string const &unit) {
+    GYOTO_DEBUG_EXPR(p.name);
+    if (hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "Python key " << p.name << " exists" << std::endl;
+      if (unit!="") GYOTO_ERROR("units not implemented");
+      setPythonProperty(p.name, val);
+    } else {
+      GYOTO_DEBUG << "Python key " << p.name << " does not exist" << std::endl;
+      O::set(p, val, unit);
+    }
+  }
+
+  using O::get;
+
+  virtual Value get(std::string const &key) const {
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(key);
+    }
+    return getPythonProperty(key);
+  }
+
+  using O::setParameter;
+
+  virtual int setParameter(std::string name, std::string content, std::string unit) {
+    GYOTO_DEBUG_EXPR(name);
+    GYOTO_DEBUG_EXPR(content);
+    GYOTO_DEBUG_EXPR(unit);
+    if (hasPythonProperty(name)) {
+      Property p(NULL);
+      p.name=name;
+      p.type=pythonPropertyType(name);
+      GYOTO_DEBUG << "Calling setParameters" << std::endl;
+      setParameter(p, name, content, unit);
+      return 0;
+    }
+    return O::setParameter(name, content, unit);
+  }
+
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const {
+    O::fillElement(fmp);
+    if (pProperties_) {
+      Py_ssize_t pos=0;
+      PyObject *pKey, *pVal;
+      while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
+	GYOTO_DEBUG_EXPR(pKey);
+	GYOTO_DEBUG_EXPR(PyUnicode_Check(pKey));
+	std::string key=PyUnicode_AsUTF8(pKey);
+	GYOTO_DEBUG_EXPR(pVal);
+	GYOTO_DEBUG_EXPR(PyUnicode_Check(pVal));
+	std::string stype=PyUnicode_AsUTF8(pVal);
+	if (stype=="double") {
+	  fmp->setParameter(key, double(getPythonProperty(key)));
+	} else {
+	  GYOTO_ERROR("property type not implemented in fillElement()");
+	}
+      }
+    }
+  }
+};
 
 /**
  * \class Gyoto::Spectrum::Python
@@ -408,8 +509,7 @@ class Gyoto::Spectrum::Python
  * \include gyoto_sample_metrics.py
  */
 class Gyoto::Metric::Python
-: public Gyoto::Metric::Generic,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Metric::Generic>
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Python>;
 
@@ -478,16 +578,6 @@ class Gyoto::Metric::Python
   virtual void parameters(const std::vector<double>&);
   using Gyoto::Metric::Generic::mass;
   virtual void mass(double m);
-
-  // Set/get properties
-  using Gyoto::Metric::Generic::set;
-  virtual void set(std::string const &pname, Value val);
-  virtual void set(Property const &p, Value val);
-  virtual void set(Property const &p, Value val, std::string const &unit);
-  virtual Value get(std::string const &pname) const;
-  using Gyoto::Metric::Generic::setParameter;
-  virtual int setParameter(std::string name, std::string content, std::string unit);
-  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const ;
 
   // The minimal Gyoto::Metric API:
   void gmunu(double g[4][4], const double * x) const ;

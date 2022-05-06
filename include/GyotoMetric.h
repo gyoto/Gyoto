@@ -221,6 +221,7 @@ class Gyoto::Metric::Generic
   
   // Constructors - Destructor
   // -------------------------
+  Generic();
   Generic(const int coordkind, const std::string &name); ///< Constructor setting Generic::coordkind_ and kind_
   Generic(Generic const &o); ///< Copy constructor
   virtual ~Generic() ;                        ///< Destructor
