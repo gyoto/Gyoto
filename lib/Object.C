@@ -46,6 +46,11 @@ Gyoto::Object::Object():kind_(""), plugins_() {}
 Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugins_(o.plugins_) {}
 Gyoto::Object::~Object() {}
 
+// Output
+
+string Gyoto::Object::kind() const {return kind_;}
+void Gyoto::Object::kind(const string src) { kind_ = src;}
+
 bool Object::isThreadSafe() const {
   /**
    * The default behaviour is to consider that everything is

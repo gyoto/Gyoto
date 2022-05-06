@@ -121,9 +121,6 @@ Metric::Generic::~Generic(){
 
 // Output
 
-const string Metric::Generic::kind() const {return kind_;}
-void Metric::Generic::kind(const string src) { kind_ = src;}
-
 /***************Definition of the physical scene**************/
 
 void Metric::Generic::mass(const double mas)        {

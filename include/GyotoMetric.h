@@ -197,14 +197,6 @@ class Gyoto::Metric::Generic
 
  protected:
   /**
-   * \brief Set kind_
-   *
-   * kind(const std::string) is protected because, for most Metrics,
-   * it should not be changed in runtime.
-   */
-  void kind(const std::string); ///< Set kind_
-
-  /**
    * \brief Set coordkind_
    *
    * coordkind(int coordkind) is protected because, for most Metrics,
@@ -216,7 +208,6 @@ class Gyoto::Metric::Generic
  public:
   GYOTO_OBJECT;
 
-  const std::string kind() const; ///< Get kind_
   int getRefCount();
   
   // Constructors - Destructor

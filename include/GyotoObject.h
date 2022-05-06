@@ -442,6 +442,19 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
     * Describe all properties that this instance supports.
     */
    void help() const ;
+
+protected:
+  /**
+   * \brief Set kind_
+   *
+   * kind(const std::string) is protected because, for most Objects,
+   * it should not be changed in runtime.
+   */
+  virtual void kind(const std::string); ///< Set kind_
+
+public:
+  virtual std::string kind() const; ///< Get kind_
+
 };
 
 #endif
