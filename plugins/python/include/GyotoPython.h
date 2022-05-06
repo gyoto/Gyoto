@@ -94,6 +94,8 @@
 #include <GyotoThinDisk.h>
 #include <GyotoProperty.h>
 #include <GyotoValue.h>
+#include <GyotoScreen.h>
+#include <GyotoFactoryMessenger.h>
 #include <Python.h>
 
 namespace Gyoto {
@@ -322,7 +324,7 @@ public:
   Object(const Object& o) : O(o), Base(o) {}
   virtual ~Object() {};
 
-  using Gyoto::Metric::Generic::set;
+  using O::set;
 
   virtual void set(std::string const &key, Value val) {
     if (hasPythonProperty(key)) {
@@ -421,8 +423,7 @@ public:
  * \include gyoto_sample_spectra.py
  */
 class Gyoto::Spectrum::Python
-: public Gyoto::Spectrum::Generic,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Spectrum::Generic>
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Python>;
  protected:
@@ -604,8 +605,7 @@ class Gyoto::Metric::Python
  * \include gyoto_sample_standard.py
  */
 class Gyoto::Astrobj::Python::Standard
-: public Gyoto::Astrobj::Standard,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Astrobj::Standard>
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::Standard>;
 
@@ -670,8 +670,7 @@ class Gyoto::Astrobj::Python::Standard
  * \include gyoto_sample_thindisks.py
  */
 class Gyoto::Astrobj::Python::ThinDisk
-: public Gyoto::Astrobj::ThinDisk,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Astrobj::ThinDisk>
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::ThinDisk>;
 

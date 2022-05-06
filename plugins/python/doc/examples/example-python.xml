@@ -36,12 +36,14 @@
     <Spectrum kind="Python">
       <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
-      <Parameters>0.001 0.</Parameters>
+      <Constant>0.001</Constant>
+      <Exponent>0.</Exponent>
     </Spectrum>
     <Opacity kind="Python">
       <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
-      <Parameters>0.001 0.</Parameters>
+      <Constant>0.001</Constant>
+      <Exponent>0.</Exponent>
     </Opacity>
     <OpticallyThin/>
   </Astrobj>

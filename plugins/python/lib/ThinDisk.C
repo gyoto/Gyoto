@@ -29,14 +29,17 @@ GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::ThinDisk)
 
 // Birth and death
 Gyoto::Astrobj::Python::ThinDisk::ThinDisk()
-: Astrobj::ThinDisk("Python::ThinDisk"),
+: Gyoto::Python::Object<Astrobj::ThinDisk>(),
   pEmission_(NULL), pIntegrateEmission_(NULL), pTransmission_(NULL),
   pCall_(NULL), pGetVelocity_(NULL),
   pEmission_overloaded_(false), pIntegrateEmission_overloaded_(false)
-{}
+{
+  kind("Python::ThinDisk");
+}
 
 Gyoto::Astrobj::Python::ThinDisk::ThinDisk(const ThinDisk& o)
-  : Astrobj::ThinDisk(o),
+  :
+  Gyoto::Python::Object<Astrobj::ThinDisk>(o),
   pEmission_(o.pEmission_), pIntegrateEmission_(o.pIntegrateEmission_),
   pTransmission_(o.pTransmission_), pCall_(o.pCall_),
   pGetVelocity_(o.pGetVelocity_),

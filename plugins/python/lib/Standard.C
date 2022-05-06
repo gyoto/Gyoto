@@ -32,14 +32,16 @@ GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::Standard)
 
 // Birth and death
 Gyoto::Astrobj::Python::Standard::Standard()
-: Astrobj::Standard("Python::Standard"),
+: Gyoto::Python::Object<Astrobj::Standard>(),
   pEmission_(NULL), pIntegrateEmission_(NULL), pTransmission_(NULL),
   pCall_(NULL), pGetVelocity_(NULL), pGiveDelta_(NULL),
   pEmission_overloaded_(false), pIntegrateEmission_overloaded_(false)
-{}
+{
+  kind("Python::Standard");
+}
 
 Gyoto::Astrobj::Python::Standard::Standard(const Standard& o)
-  : Astrobj::Standard(o),
+  : Gyoto::Python::Object<Astrobj::Standard>(o),
   pEmission_(o.pEmission_), pIntegrateEmission_(o.pIntegrateEmission_),
   pTransmission_(o.pTransmission_), pCall_(o.pCall_),
   pGetVelocity_(o.pGetVelocity_), pGiveDelta_(o.pGiveDelta_),
