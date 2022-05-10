@@ -67,7 +67,8 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
       std::vector<double> vval = val;
       npy_intp dims[] = {vval.size()};
 
-      pVal = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, vval.data());
+      pVal = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
+      for (npy_intp k=0; k<dims[0]; ++k) *(double*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
     }
     break;
   case Property::vector_unsigned_long_t:
@@ -75,7 +76,8 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
       std::vector<unsigned long> vval = val;
       npy_intp dims[] = {vval.size()};
 
-      pVal = PyArray_SimpleNewFromData(1, dims, NPY_ULONG, vval.data());
+      pVal = PyArray_SimpleNew(1, dims, NPY_ULONG);
+      for (npy_intp k=0; k<dims[0]; ++k) *(unsigned long*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
     }
     break;
   case Property::metric_t:
@@ -542,6 +544,8 @@ int Base::pythonPropertyType(std::string const &key) const {
   int type;
   if (stype=="double") {
     type=Property::double_t;
+  } else if (stype=="vector_double") {
+    type=Property::vector_double_t;
   } else {
     GYOTO_ERROR("unimplemeted Python property type");
   }
@@ -550,6 +554,8 @@ int Base::pythonPropertyType(std::string const &key) const {
 }
 
 void Base::setPythonProperty(std::string const &key, Value val) {
+
+  if (!pSet_) GYOTO_ERROR("self(self, key, val) method not implemented");
 
   GYOTO_DEBUG_EXPR(key);
   GYOTO_DEBUG_EXPR(val.type);
@@ -561,6 +567,15 @@ void Base::setPythonProperty(std::string const &key, Value val) {
   GYOTO_DEBUG_EXPR(pProperties_);
 
   PyObject * pVal = PyObject_FromGyotoValue(val);
+
+  if (PyErr_Occurred()) {
+    Py_XDECREF(pKey);
+    Py_XDECREF(pVal);
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred while setting property");
+  }
+
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pSet_, pKey, pVal, NULL);
 
@@ -581,7 +596,7 @@ Value Base::getPythonProperty(std::string const &key) const {
   GYOTO_DEBUG_EXPR(key);
   if (!pProperties_) GYOTO_ERROR("no properties");
   if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
-  if (!pGet_) GYOTO_ERROR("get(key) method not implemented");
+  if (!pGet_) GYOTO_ERROR("get(self, key) method not implemented");
 
   PyGILState_STATE gstate = PyGILState_Ensure();
   PyObject * pKey = PyUnicode_FromString(key.c_str());
@@ -606,6 +621,28 @@ Value Base::getPythonProperty(std::string const &key) const {
 
   if (stype=="double") {
     val = PyFloat_AsDouble(pVal);
+  } else if (stype=="vector_double") {
+    PyArray_Descr* pd = PyArray_DescrFromType(NPY_DOUBLE);
+    PyObject * pArr = PyArray_FromAny(pVal, pd, 0, 0, NPY_ARRAY_CARRAY, NULL);
+    //    Py_XDECREF(pd); // PyArray_FromAny steals a reference to *pd
+
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pVal);
+      Py_XDECREF(pArr);
+
+      PyErr_Print();
+      PyGILState_Release(gstate);
+      GYOTO_ERROR("Error occurred while calling get() in getPythonProperty()");
+    }
+
+    double *buffer=(double*)PyArray_DATA((PyArrayObject*)pArr);
+    npy_intp sz = PyArray_Size(pArr);
+
+    std::vector<double> vec(sz);
+    for (npy_intp k=0; k<sz; ++k) vec[k]=buffer[k];
+    val=vec;
+
+    Py_XDECREF(pArr);
   } else {
     Py_XDECREF(pVal);
     PyGILState_Release(gstate);

@@ -16,17 +16,25 @@
    sp=gyoto.core.Astrobj("Python::Standard")
    sp.set("Module", "gyoto_sample_standard")
    sp.set("Class", "FixedStar")
-   sp.set("Parameters", (0., 0., 0.))
+   sp.set("Position", (0., 0., 0.))
+   sp.set("Radius", 1.)
 
    Classes that aim at implementing the Gyoto::Astrobj::Standard
-   interface do so by providing the following methods:
+   interface do so by providing the following methods and variable:
 
    __call__: required
    getVelocity: required
-   giveDelta, emission, integrateEmission, transmission, __setitem__:
-              optional.
+   giveDelta, emission, integrateEmission, transmission, set, get,
+     properties: optional.
    emission and integrateEmission can be overloaded by using the
    varargs argument.
+
+   Ad-hoc properties are declared in member properties which is a
+   dict in the form:
+     properties = { Key1: type1, Key2: type2}
+   where Keyi and typei are strings.
+
+   They are then handled by set(self, key, val) and get(self, key).
 
 '''
 
@@ -37,25 +45,78 @@ import gyoto.core
 class FixedStar:
     ''' Sample class for Astrobj::Python::Standard
     '''
-    def __init__(self):
-        '''Initialize instance
 
-        Needed here to make a non-static array data member.
+    properties={"Position": "vector_double", "Radius": "double"}
+    '''Properties handled by set() and get()
+    '''
+
+    position=numpy.zeros(3, dtype=float)
+    '''3 coordinates of the center of the star
+    '''
+
+    radius=1.
+    '''Radius of the Star in geometrical units
+    '''
+
+    def set(self, key, val):
+        '''Set parameters as ad hoc entities
+
+        Python:
+          instance.set("Position", (x1, x2, x3))
+          instance.set("Radius", radius)
+
+        XML:
+          <Position> x1 x2 x3 </Position>
+          <Radius> radius </Radius>
+
+        Setting Radius actually sets CriticalValue and SafetyValue
+        (Properties of Astrobj::Standard).
+
         '''
-        self.pos = numpy.zeros((4), float)
+        if (key=="Position"):
+            self.position = val
+        elif key == "Radius":
+            self.radius = val
+        # Note: since we set attributes here, __setattr__(self, key,
+        # val) defined below will be called and implements useful side
+        # effects.
 
-    def __setitem__(self, key, value):
-        '''Set parameters
+    def get(self, key):
+        '''Retrieve properties
 
-        Here, the parameters will be the 3 space coordinates of the
-        center of the blob.
-
+        Optional, but simple to implement and very usefull. Required
+        to write back to XML, which is used for MPI parallelization.
         '''
-        if key in (0, 1, 2):
-            self.pos[key+1]=value
-        else:
-            raise IndexError
-        self.coord_st=self.to_cartesian(self.pos)
+        if key == "Position":
+            return self.position
+        if key == "Radius":
+            return self.radius
+
+    def __setattr__(self, key, val):
+        '''Set attributes
+
+        Optional, but allows reacting when attributes (self.xxx)
+        change. In particular, Gyoto will set self.this to the C++
+        class instance upon initialization.
+        '''
+        # First, actually store the attribute. This is what would
+        # happen if we did not overload __setattr__.
+        self.__dict__[key]=val
+        if key == "this":
+            # Then, if key is "this", trigger the side effects of
+            # setting position and radius. This will reenter
+            # __setattr__ with the following cases.
+            self.position=self.position
+            self.radius=self.radius
+        elif key == "position":
+            # when position is set, cache Cartesian expression
+            pos=numpy.zeros(4, dtype=float)
+            pos[1:]=val
+            self.coord_st=self.to_cartesian(pos)
+        elif key == "radius":
+            # Update two properties from the Gyoto::Standard interface
+            self.this.set("CriticalValue", val**2)
+            self.this.set("SafetyValue", val**2*1.1+0.1)
 
     def to_cartesian(self, coord):
         '''Helper function, not in the API

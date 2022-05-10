@@ -26,7 +26,7 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::Standard,
 GYOTO_PROPERTY_DOUBLE(Gyoto::Astrobj::Python::Standard,
 		       CriticalValue, criticalValue,
       "The object is defined by __call__ < this value")
-GYOTO_PROPERTY_END(Astrobj::Python::Standard, Generic::properties)
+GYOTO_PROPERTY_END(Astrobj::Python::Standard, Astrobj::Standard::properties)
 
 GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::Standard)
 

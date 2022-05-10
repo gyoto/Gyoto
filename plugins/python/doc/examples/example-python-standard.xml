@@ -25,12 +25,25 @@
   <Astrobj kind = "Python::Standard">
     <Module>gyoto_sample_standard</Module>
     <Class>FixedStar</Class>
-    <CriticalValue> 12 </CriticalValue>
-    <SafetyValue> 15 </SafetyValue>
 
-    For this object, the 3 first parameters give the position, the
-    last parameter give Cartesian (0) or spherical (non-zero).
-    <Parameters> 0 0 0 </Parameters>
+    Standard objects define a potential of some sort through method
+    __call__, below CriticalValue is inside the object, above is
+    outside. SafetyValue must be slighlty above CriticalValue, a
+    minimum of __call__ is searched when the potential is below
+    SafetyValue to check whether the object has been crossed.
+    <!--CriticalValue> 9. </CriticalValue-->
+    <!--SafetyValue> 11. </SafetyValue-->
+
+    In this PythonImplementation of the FixedStar (like in the
+    eponymous C++ implementation), CriticalValue and SafetyValue are
+    both set when setting the convenience, ad-hoc property Radius
+    defined in Python. The other Python-defined property is the 3
+    space coordinates of the center of the FixedStar.
+    <Position> 0. 0. 0. </Position>
+    <Radius> 3. </Radius>
+
+    Gyoto::Astrobj::Python::Standard also support the rest of the
+    Gyoto::Astrobj::Standard Properties:
     <OpticallyThin/>
     <RMax>20.</RMax>
   </Astrobj>

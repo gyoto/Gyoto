@@ -401,6 +401,8 @@ public:
 	std::string stype=PyUnicode_AsUTF8(pVal);
 	if (stype=="double") {
 	  fmp->setParameter(key, double(getPythonProperty(key)));
+	} else if (stype=="vector_double") {
+	  fmp->setParameter(key, getPythonProperty(key).operator std::vector<double>());
 	} else {
 	  GYOTO_ERROR("property type not implemented in fillElement()");
 	}
