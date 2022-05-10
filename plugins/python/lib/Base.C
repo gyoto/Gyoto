@@ -80,6 +80,15 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
       for (npy_intp k=0; k<dims[0]; ++k) *(unsigned long*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
     }
     break;
+  case Property::spectrum_t:
+    {
+      GYOTO_DEBUG_THIS_EXPR(val.type);
+      pVal = PyObject_CallFunction(pGyotoSpectrum(), "l", (long)(Gyoto::Spectrum::Generic*)Gyoto::SmartPointer<Gyoto::Spectrum::Generic>(val));
+    }
+    break;
+  case Property::empty_t:
+    pVal = Py_None;
+    break;
   case Property::metric_t:
   default:
     GYOTO_ERROR("Type not implemented in Python::Metric::PyObject_FromGyotoValue()");
@@ -541,11 +550,13 @@ int Base::pythonPropertyType(std::string const &key) const {
   }
   PyGILState_Release(gstate);
 
-  int type;
+  int type=Property::empty_t;
   if (stype=="double") {
     type=Property::double_t;
   } else if (stype=="vector_double") {
     type=Property::vector_double_t;
+  } else if (stype=="spectrum") {
+    type=Property::spectrum_t;
   } else {
     GYOTO_ERROR("unimplemeted Python property type");
   }
@@ -643,10 +654,23 @@ Value Base::getPythonProperty(std::string const &key) const {
     val=vec;
 
     Py_XDECREF(pArr);
+  } else if (stype=="spectrum"){
+    PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pAddr);
+      Py_XDECREF(pVal);
+      PyErr_Print();
+      PyGILState_Release(gstate);
+      GYOTO_ERROR("Error occurred in getPythonProperty()");
+    }
+    long address = PyLong_AsLong(pAddr);
+    Py_XDECREF(pAddr);
+
+    val = Gyoto::SmartPointer<Gyoto::Spectrum::Generic>((Gyoto::Spectrum::Generic*) (address));
   } else {
     Py_XDECREF(pVal);
     PyGILState_Release(gstate);
-    GYOTO_ERROR("unimplemented data type for Python propertiy");
+    GYOTO_ERROR("unimplemented data type for Python property");
   }
 
   Py_XDECREF(pVal);

@@ -41,6 +41,7 @@
     space coordinates of the center of the FixedStar.
     <Position> 0. 0. 0. </Position>
     <Radius> 3. </Radius>
+    <!--Spectrum kind="BlackBody"/-->
 
     Gyoto::Astrobj::Python::Standard also support the rest of the
     Gyoto::Astrobj::Standard Properties:

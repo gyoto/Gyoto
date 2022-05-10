@@ -46,7 +46,9 @@ class FixedStar:
     ''' Sample class for Astrobj::Python::Standard
     '''
 
-    properties={"Position": "vector_double", "Radius": "double"}
+    properties={"Position": "vector_double",
+                "Radius": "double",
+                "Spectrum": "spectrum"}
     '''Properties handled by set() and get()
     '''
 
@@ -57,6 +59,8 @@ class FixedStar:
     radius=1.
     '''Radius of the Star in geometrical units
     '''
+
+    spectrum=gyoto.core.Spectrum("BlackBody")
 
     def set(self, key, val):
         '''Set parameters as ad hoc entities
@@ -73,10 +77,13 @@ class FixedStar:
         (Properties of Astrobj::Standard).
 
         '''
+        print(key, val)
         if (key=="Position"):
             self.position = val
         elif key == "Radius":
             self.radius = val
+        elif key == "Spectrum":
+            self.spectrum = val
         # Note: since we set attributes here, __setattr__(self, key,
         # val) defined below will be called and implements useful side
         # effects.
@@ -91,6 +98,8 @@ class FixedStar:
             return self.position
         if key == "Radius":
             return self.radius
+        if key == "Spectrum":
+            return self.spectrum
 
     def __setattr__(self, key, val):
         '''Set attributes

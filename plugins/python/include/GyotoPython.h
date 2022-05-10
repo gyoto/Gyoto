@@ -327,6 +327,8 @@ public:
   using O::set;
 
   virtual void set(std::string const &key, Value val) {
+    GYOTO_DEBUG_EXPR(key);
+    GYOTO_DEBUG_EXPR(val.type);
     if (hasPythonProperty(key)) {
       GYOTO_DEBUG << "Python key " << key << " exists" << std::endl;
       setPythonProperty(key, val);
