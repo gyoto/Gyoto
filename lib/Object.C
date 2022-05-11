@@ -316,6 +316,9 @@ Property const * Object::property(std::string const pname) const {
 
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  GYOTO_DEBUG_EXPR(fmp);
+  GYOTO_DEBUG_EXPR(p.name);
+  GYOTO_DEBUG_EXPR(p.type);
   FactoryMessenger * childfmp=NULL;
   string name=p.name;
   switch (p.type) {

@@ -48,7 +48,8 @@ class FixedStar:
 
     properties={"Position": "vector_double",
                 "Radius": "double",
-                "Spectrum": "spectrum"}
+                "Spectrum": "spectrum",
+                "Opacity": "spectrum"}
     '''Properties handled by set() and get()
     '''
 
@@ -61,6 +62,7 @@ class FixedStar:
     '''
 
     spectrum=gyoto.core.Spectrum("BlackBody")
+    opacity=gyoto.core.Spectrum("PowerLaw")
 
     def set(self, key, val):
         '''Set parameters as ad hoc entities
@@ -77,13 +79,14 @@ class FixedStar:
         (Properties of Astrobj::Standard).
 
         '''
-        print(key, val)
         if (key=="Position"):
             self.position = val
         elif key == "Radius":
             self.radius = val
         elif key == "Spectrum":
             self.spectrum = val
+        elif key == "Opacity":
+            self.opacity = val
         # Note: since we set attributes here, __setattr__(self, key,
         # val) defined below will be called and implements useful side
         # effects.
@@ -100,6 +103,8 @@ class FixedStar:
             return self.radius
         if key == "Spectrum":
             return self.spectrum
+        if key == "Opacity":
+            return self.opacity
 
     def __setattr__(self, key, val):
         '''Set attributes
@@ -156,7 +161,7 @@ class FixedStar:
         dx = coord_ph[1]-coord_st[1]
         dy = coord_ph[2]-coord_st[2]
         dz = coord_ph[3]-coord_st[3]
-        return math.sqrt(dx*dx + dy*dy + dz*dz)
+        return dx*dx + dy*dy + dz*dz
 
     def getVelocity(self, coord, vel):
         ''' Velocity field
@@ -172,4 +177,14 @@ class FixedStar:
 
         Optional
         '''
-        return 1.
+        if self.this.opticallyThin():
+            return self.spectrum(nuem, self.opacity(nuem), dsem)
+        return self.spectrum(nuem)
+
+    def transmission(self, nuem, dsem, cph, co):
+        if (not self.this.opticallyThin()):
+            return 0.
+        opac=self.opacity(nuem)
+        if opac == 0.:
+            return 1.
+        return math.exp(-opac*dsem)

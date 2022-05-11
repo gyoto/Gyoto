@@ -372,6 +372,23 @@ public:
     return getPythonProperty(key);
   }
 
+  Value get(Property const &p,
+	    std::string const &unit) const {
+    if (!hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(p, unit);
+    }
+    return getPythonProperty(p.name);
+  }
+
+  Value get(Property const &p) const {
+    if (!hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(p);
+    }
+    return getPythonProperty(p.name);
+  }
+
   using O::setParameter;
 
   virtual int setParameter(std::string name, std::string content, std::string unit) {
@@ -382,7 +399,7 @@ public:
       Property p(NULL);
       p.name=name;
       p.type=pythonPropertyType(name);
-      GYOTO_DEBUG << "Calling setParameters" << std::endl;
+      GYOTO_DEBUG << "Calling setParameter(p, name, content, unit)" << std::endl;
       setParameter(p, name, content, unit);
       return 0;
     }
@@ -395,21 +412,76 @@ public:
       Py_ssize_t pos=0;
       PyObject *pKey, *pVal;
       while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
-	GYOTO_DEBUG_EXPR(pKey);
-	GYOTO_DEBUG_EXPR(PyUnicode_Check(pKey));
 	std::string key=PyUnicode_AsUTF8(pKey);
-	GYOTO_DEBUG_EXPR(pVal);
-	GYOTO_DEBUG_EXPR(PyUnicode_Check(pVal));
 	std::string stype=PyUnicode_AsUTF8(pVal);
-	if (stype=="double") {
-	  fmp->setParameter(key, double(getPythonProperty(key)));
-	} else if (stype=="vector_double") {
-	  fmp->setParameter(key, getPythonProperty(key).operator std::vector<double>());
-	} else {
-	  GYOTO_ERROR("property type not implemented in fillElement()");
-	}
+	Property::type_e type = Property::typeFromString(stype);
+	const Property p (key, type);
+	this->fillProperty(fmp, p);
       }
     }
+  }
+
+
+  void setParameters(Gyoto::FactoryMessenger *fmp)  {
+    std::string name="", content="", unit="";
+    FactoryMessenger * child = NULL;
+    if (fmp)
+      while (fmp->getNextParameter(&name, &content, &unit)) {
+	GYOTO_DEBUG << "Setting '" << name << "' to '" << content
+		    << "' (unit='"<<unit<<"')" << std::endl;
+	const Property * prop =NULL;
+	bool need_delete= false;
+	if (hasPythonProperty(name)) {
+	  need_delete=true;
+	  prop = new Property(name, pythonPropertyType(name));
+	} else {
+	  need_delete=false;
+	  prop = this->property(name);
+	}
+	if (!prop) {;
+	  GYOTO_DEBUG << "'" << name << "' not found, calling setParameter()"
+		      << std::endl;
+	  // The specific setParameter() implementation may well know
+	  // this entity
+	  setParameter(name, content, unit);
+	} else {
+	  GYOTO_DEBUG << "'" << name << "' found "<< std::endl;
+	  std::vector<std::string> plugins;
+	  switch (prop->type) {
+	  case Property::metric_t:
+	    set(*prop, fmp->metric());
+	    break;
+	  case Property::astrobj_t:
+	    set(*prop, fmp->astrobj());
+	    break;
+	  case Property::screen_t:
+	    set(*prop, fmp->screen());
+	    break;
+	  case Property::spectrum_t:
+	    content = fmp -> getAttribute("kind");
+	    child = fmp -> getChild();
+	    plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	    set(*prop, (*Spectrum::getSubcontractor(content, plugins))(child, plugins) );
+	    delete child;
+	    break;
+	  case Property::spectrometer_t:
+	    content = fmp -> getAttribute("kind");
+	    child = fmp -> getChild();
+	    plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	    set(*prop, (*Spectrometer::getSubcontractor(content, plugins))(child, plugins) );
+	    delete child;
+	    break;
+	  case Property::filename_t:
+	    content = fmp->fullPath(content);
+	    // no 'break;' here, we need to proceed
+	  default:
+	    setParameter(*prop, name, content, unit);
+	    break;
+	  }
+	}
+	if (need_delete) delete prop;
+      }
+    GYOTO_DEBUG << "Done processing parameters" << std::endl;
   }
 };
 

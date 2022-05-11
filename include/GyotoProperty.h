@@ -947,6 +947,15 @@ class Gyoto::Property
 	   get_spectrometer_t get_spectrometer,
 	   std::string doc);
 
+  /// Constructor setting only #name and #type
+  /**
+   * Used in the Python plug-in to provide peudo-properties
+   */
+  Property(std::string name, int type);
+
+  /// Get Property::type_e value from name
+  static type_e typeFromString(std::string stype);
+
 };
 
 /// \cond INTERNAL

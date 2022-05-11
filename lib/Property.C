@@ -1,10 +1,14 @@
 #include "GyotoProperty.h"
+#include "GyotoError.h"
 
 using namespace std ;
 using namespace Gyoto ;
 
 Property::Property()
   : name(""), type(empty_t), parent(NULL) {}
+
+Property::Property(std::string n, int t)
+  : name(n), type(t), parent(NULL) {}
 
 Property::Property(Property const * const ancestors)
   : name(""), type(empty_t), parent(ancestors) {}
@@ -101,3 +105,16 @@ Property::Property(string n,
 }
 
 Property::operator bool() const { return type != empty_t || name != ""; }
+
+Property::type_e Property::typeFromString(std::string stype) {
+  if (stype=="double") {
+    return Property::double_t;
+  } else if (stype=="vector_double") {
+    return Property::vector_double_t;
+  } else if (stype=="spectrum") {
+    return Property::spectrum_t;
+  } else {
+    GYOTO_ERROR("unimplemeted Python property type");
+  }
+  return Property::empty_t; // avoid warning, will never reach here
+}

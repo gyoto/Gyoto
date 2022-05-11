@@ -82,7 +82,7 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
     break;
   case Property::spectrum_t:
     {
-      GYOTO_DEBUG_THIS_EXPR(val.type);
+      GYOTO_DEBUG_EXPR(val.type);
       pVal = PyObject_CallFunction(pGyotoSpectrum(), "l", (long)(Gyoto::Spectrum::Generic*)Gyoto::SmartPointer<Gyoto::Spectrum::Generic>(val));
     }
     break;
@@ -550,18 +550,7 @@ int Base::pythonPropertyType(std::string const &key) const {
   }
   PyGILState_Release(gstate);
 
-  int type=Property::empty_t;
-  if (stype=="double") {
-    type=Property::double_t;
-  } else if (stype=="vector_double") {
-    type=Property::vector_double_t;
-  } else if (stype=="spectrum") {
-    type=Property::spectrum_t;
-  } else {
-    GYOTO_ERROR("unimplemeted Python property type");
-  }
-
-  return type;
+  return Property::typeFromString(stype);
 }
 
 void Base::setPythonProperty(std::string const &key, Value val) {
@@ -629,10 +618,14 @@ Value Base::getPythonProperty(std::string const &key) const {
   PyObject * pType = PyDict_GetItem(pProperties_, pKey);
   std::string stype=PyUnicode_AsUTF8(pType);
   Value val;
+  Property::type_e type=Property::typeFromString(stype);
 
-  if (stype=="double") {
+  switch (type) {
+  case Property::double_t:
     val = PyFloat_AsDouble(pVal);
-  } else if (stype=="vector_double") {
+    break;
+  case Property::vector_double_t:
+    {
     PyArray_Descr* pd = PyArray_DescrFromType(NPY_DOUBLE);
     PyObject * pArr = PyArray_FromAny(pVal, pd, 0, 0, NPY_ARRAY_CARRAY, NULL);
     //    Py_XDECREF(pd); // PyArray_FromAny steals a reference to *pd
@@ -654,7 +647,10 @@ Value Base::getPythonProperty(std::string const &key) const {
     val=vec;
 
     Py_XDECREF(pArr);
-  } else if (stype=="spectrum"){
+    }
+    break;
+  case Property::spectrum_t:
+    {
     PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
     if (PyErr_Occurred()) {
       Py_XDECREF(pAddr);
@@ -667,7 +663,9 @@ Value Base::getPythonProperty(std::string const &key) const {
     Py_XDECREF(pAddr);
 
     val = Gyoto::SmartPointer<Gyoto::Spectrum::Generic>((Gyoto::Spectrum::Generic*) (address));
-  } else {
+    }
+    break;
+  default:
     Py_XDECREF(pVal);
     PyGILState_Release(gstate);
     GYOTO_ERROR("unimplemented data type for Python property");
