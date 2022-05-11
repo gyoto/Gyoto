@@ -65,7 +65,7 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
   case Property::vector_double_t:
     {
       std::vector<double> vval = val;
-      npy_intp dims[] = {vval.size()};
+      npy_intp dims[] = {npy_intp(vval.size())};
 
       pVal = PyArray_SimpleNew(1, dims, NPY_DOUBLE);
       for (npy_intp k=0; k<dims[0]; ++k) *(double*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
@@ -74,7 +74,7 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
   case Property::vector_unsigned_long_t:
     {
       std::vector<unsigned long> vval = val;
-      npy_intp dims[] = {vval.size()};
+      npy_intp dims[] = {npy_intp(vval.size())};
 
       pVal = PyArray_SimpleNew(1, dims, NPY_ULONG);
       for (npy_intp k=0; k<dims[0]; ++k) *(unsigned long*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
