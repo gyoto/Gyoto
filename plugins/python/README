@@ -5,3 +5,25 @@ example for packaging Gyoto plug-ins.
 It is currently in development. The purpose is to be able to define
 some objects (e.g. spectra online in python instead of having to write
 a new C++ class each time.
+
+Coding your new Metric, Astrobj or Spectrum class in Python is
+efficient in terms of human resources, while coding it in C++ is much
+more efficient in terms of computing resources.
+
+The content of plugins/python/doc/examples should give enough
+resources to get started. The gyoto_sample_*.py modules contain
+documentation about how to code a class in Python while the test*.py
+scripts give an idea of how to instanciate and use such classes using
+the Python bindings. One can also directly load the provided XML files
+into the stand-alonoe gyoto executable by using the --plugins
+option. Note that multi-threading is not efficient when using a Python
+metric in particular, but MPI parallelization works quite well, so you
+command line could look something like:
+
+  mpirun -np 4 gyoto --plugins=python3,stdplug -P-1 input.xml \!output.fits
+
+For more information or for information on writing your new class in
+C++, please refer to Sect. 9 of the Gyoto manual, available as
+doc/user_guide/GyotoManual.pdf once Gyoto has been built on your
+system, or at https://gyoto.obspm.fr/GyotoManual.pdf
+
