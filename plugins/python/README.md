@@ -36,15 +36,15 @@ Gyoto. Several possibilities exist to load it explicitly:
 
 * set the GYOTO_PLUGINS environment variable, not forgetting to also
   list the other desired default plugins, e.g.:
-  '''export GYOTO_PLUGINS=stdplug,python3,nofail:lorene'''
+  ```export GYOTO_PLUGINS=stdplug,python3,nofail:lorene```
 
 * use the `--plugins' option of the gyoto command-line tool, e.g.:
-  '''gyoto --plugins=stdplug,python3,nofail:lorene ...'''
+  ```gyoto --plugins=stdplug,python3,nofail:lorene ...```
 
 * in Python, use gyoto.core.requirePlugin('python3')
 
 * in XML, set the plugin property:
-  '''<Metric kind="Python" plugin="python3">'''
+  ```<Metric kind="Python" plugin="python3">```
 
 The content of plugins/python/doc/examples should give enough
 resources to get started. The gyoto_sample_*.py modules contain
@@ -56,9 +56,9 @@ option. Note that multi-threading is not efficient when using a Python
 metric in particular, but MPI parallelization works quite well, so the
 command line could look something like:
 
-'''
+```
 mpirun -np 4 gyoto --plugins=python3,stdplug -P-1 input.xml \!output.fits
-'''
+```
 
 For more information or for information on writing new classes in C++,
 please refer to Sect. 9 of the Gyoto manual, available as
