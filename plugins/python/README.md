@@ -41,7 +41,7 @@ Gyoto. Several possibilities exist to load it explicitly:
 * use the `--plugins' option of the gyoto command-line tool, e.g.:
   ```gyoto --plugins=stdplug,python3,nofail:lorene ...```
 
-* in Python, use gyoto.core.requirePlugin('python3')
+* in Python, use ```gyoto.core.requirePlugin('python3')```
 
 * in XML, set the plugin property:
   ```<Metric kind="Python" plugin="python3">```
