@@ -52,10 +52,14 @@ GYOTO_PROPERTY_DOUBLE(Blob, MagnetizationParameter,
 		      "magnetization parameter")
 GYOTO_PROPERTY_DOUBLE(Blob, KappaIndex, kappaIndex,
 		      "PL index of kappa-synchrotron")
-GYOTO_PROPERTY_END(Blob, Star::properties)
+GYOTO_PROPERTY_END(Blob, UniformSphere::properties)
 
 Blob::Blob() :
-  Star(),
+  UniformSphere("Blob"),
+  flag_("Equatorial"),
+  posSet_(false),
+  posIni_(NULL),
+  fourveldt_(NULL),
   numberDensity_cgs_(1.),
   temperature_(1.),
   timeRef_M_(1.),
@@ -69,10 +73,17 @@ Blob::Blob() :
   GYOTO_DEBUG << "done." << endl;
 # endif
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
+
+  posIni_= new double[4];
+  fourveldt_= new double[4];
 }
 
 Blob::Blob(const Blob& orig) :
-  Star(orig),
+  UniformSphere(orig),
+  flag_(orig.flag_),
+  posSet_(orig.posSet_),
+  posIni_(NULL),
+  fourveldt_(NULL),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   temperature_(orig.temperature_),
   timeRef_M_(orig.timeRef_M_),
@@ -82,6 +93,16 @@ Blob::Blob(const Blob& orig) :
   spectrumKappaSynch_(NULL)
 {
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
+
+  if(orig.posIni_){
+    posIni_= new double[4];
+    memcpy(posIni_,orig.posIni_, 4*sizeof(double));
+  }
+
+  if(orig.fourveldt_){
+    fourveldt_= new double[4];
+    memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
+  }
 }
 
 Blob* Blob::clone() const { return new Blob(*this); }
@@ -104,6 +125,7 @@ void Blob::radiativeQ(double Inu[], // output
   GYOTO_DEBUG << endl;
 # endif
   double tcur=coord_ph[0]; //*GMoc3/60.; // in min
+  cout << "tcur=" << tcur << endl;
   double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
   double temperature = modulation*temperature_,
     number_density = modulation*numberDensity_cgs_;
@@ -314,3 +336,156 @@ double Blob::magnetizationParameter()const{
 
 double Blob::kappaIndex() const { return kappaIndex_; }
 void Blob::kappaIndex(double ind) { kappaIndex_ = ind; }
+
+void Blob::motionType(std::string const type){
+  if (type=="Helical" || type=="Equatorial")
+  {
+    flag_=type;
+  }
+  else
+    GYOTO_ERROR("In Blob::motonType: motion not recognized, please enter a valid motion type (Helical or Equatorial)");
+}
+
+void Blob::setPosition(std::vector<double> const &v) {
+  posIni_[0] = v[0];
+  posIni_[1] = v[1];
+  posIni_[2] = v[2];
+  posIni_[3] = v[3];
+  posSet_=true;
+}
+
+/*std::vector<double> Blob::initPosition() const {
+  std::vector<double> v (4, 0.);
+  v[0] = posIni_[0];
+  v[1] = posIni_[1];
+  v[2] = posIni_[2];
+  v[3] = posIni_[3];
+  return v;
+}*/
+
+void Blob::setVelocity(std::vector<double> const &v) {
+  if (!posSet_)
+    GYOTO_ERROR("In Blob::initVelocity initial Position not defined");
+  fourveldt_[1] = v[0];
+  fourveldt_[2] = v[1];
+  fourveldt_[3] = v[2];
+  fourveldt_[0] = 1.;
+
+  double sum = 0;
+  double g[4][4];
+
+  gg_->gmunu(g, posIni_);
+
+  for (int i=0;i<4;++i) {
+    for (int j=0;j<4;++j) {
+      sum+=g[i][j]*fourveldt_[i]*fourveldt_[j];
+    }
+  }
+  if (sum>=0)
+  GYOTO_ERROR("In Blob::initVelocity Initial Velocity over C");
+
+}
+
+/*std::vector<double> Blob::initVelocity() const {
+  std::vector<double> v (3, 0.);
+  v[0] = fourveldt_[1];
+  v[1] = fourveldt_[2];
+  v[2] = fourveldt_[3];
+  return v;
+}*/
+
+void Blob::initCoord(std::vector<double> const &v) {
+  posIni_[0] = v[0];
+  posIni_[1] = v[1];
+  posIni_[2] = v[2];
+  posIni_[3] = v[3];
+  fourveldt_[0] = v[4];
+  fourveldt_[1] = v[5];
+  fourveldt_[2] = v[6];
+  fourveldt_[3] = v[7];
+}
+
+std::vector<double> Blob::initCoord() const {
+  std::vector<double> v (8, 0.);
+  v[0] = posIni_[0];
+  v[1] = posIni_[1];
+  v[2] = posIni_[2];
+  v[3] = posIni_[3];
+  v[4] = fourveldt_[0];
+  v[5] = fourveldt_[1];
+  v[6] = fourveldt_[2];
+  v[7] = fourveldt_[3];
+  return v;
+}
+
+void Blob::getCartesian(double const * const dates, size_t const n_dates,
+          double * const x, double * const y, double * const z, 
+          double * const xprime, double * const yprime, double * const zprime){
+  // this yields the position of the center of the UnifSphere
+  // at time t
+  // fourveldt_ is the initial 3-velocity dxi/dt
+  // vel is the 4-velocity dxnu/dtau
+
+  if (n_dates!=1)
+    GYOTO_ERROR("In Blob::getCartesian n_dates!=1");
+
+  if (flag_=="None")
+      GYOTO_ERROR("In Blob::getCartesian Motion not defined; motionType('Helical' or 'Equatorial'");
+
+  double tt=dates[0];
+  
+  double r, theta, phi; // spherical coordinates
+  double vel[4];
+  
+  if (flag_=="Helical") // Helical ejection
+  {
+    r = posIni_[1]+fourveldt_[1]*(tt-posIni_[0]);
+    theta = posIni_[2];
+    phi = posIni_[3] + posIni_[1]*posIni_[1]*fourveldt_[3]/fourveldt_[1]*(pow(posIni_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
+    //cout << phi << endl;
+
+  }
+  else // Equatorial motion (Keplerian orbit)
+  {
+    if (posIni_[2]!=M_PI/2.)
+      cout << "Warning input theta value incompatible with 'Equatorial' motion. Theta fixed to pi/2." << endl;
+    getVelocity(posIni_, vel);
+
+    r = posIni_[1];
+    theta = M_PI/2.;
+    phi = posIni_[3] + vel[3]/vel[0]*(tt-posIni_[0]);
+
+  }
+  // Convertion into cartesian coordinates
+  x[0] = r*sin(theta)*cos(phi);
+  y[0] = r*sin(theta)*sin(phi);
+  z[0] = r*cos(theta);
+
+  if (xprime!=NULL && yprime!=NULL && zprime!=NULL)
+  {
+    xprime[0] = r*sin(theta)*sin(phi)*vel[2];
+    yprime[0] = -r*sin(theta)*cos(phi)*vel[2];
+    zprime[0] = 0.;
+  }
+}
+
+void Blob::getVelocity(double const pos[4], double vel[4]){
+  if (!gg_)
+    GYOTO_ERROR("In Blob::getVelocity Metric not set");
+  if (flag_=="None")
+    GYOTO_ERROR("In Blob::getVelocity Motion not defined; motionType('Helical' or 'Equatorial'");
+  
+  if (flag_=="Helical") // Helical case
+  {
+    vel[0] = 1.;
+  vel[1] = fourveldt_[1];
+  vel[2] = 0.;
+  vel[3] = fourveldt_[3]*pow(posIni_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
+  gg_->normalizeFourVel(pos, vel);
+
+  }
+  else // Equatorial case
+  {
+    gg_->circularVelocity(pos, vel);
+  }
+}
