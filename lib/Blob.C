@@ -125,7 +125,6 @@ void Blob::radiativeQ(double Inu[], // output
   GYOTO_DEBUG << endl;
 # endif
   double tcur=coord_ph[0]; //*GMoc3/60.; // in min
-  cout << "tcur=" << tcur << endl;
   double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
   double temperature = modulation*temperature_,
     number_density = modulation*numberDensity_cgs_;
@@ -354,15 +353,6 @@ void Blob::setPosition(std::vector<double> const &v) {
   posSet_=true;
 }
 
-/*std::vector<double> Blob::initPosition() const {
-  std::vector<double> v (4, 0.);
-  v[0] = posIni_[0];
-  v[1] = posIni_[1];
-  v[2] = posIni_[2];
-  v[3] = posIni_[3];
-  return v;
-}*/
-
 void Blob::setVelocity(std::vector<double> const &v) {
   if (!posSet_)
     GYOTO_ERROR("In Blob::initVelocity initial Position not defined");
@@ -385,14 +375,6 @@ void Blob::setVelocity(std::vector<double> const &v) {
   GYOTO_ERROR("In Blob::initVelocity Initial Velocity over C");
 
 }
-
-/*std::vector<double> Blob::initVelocity() const {
-  std::vector<double> v (3, 0.);
-  v[0] = fourveldt_[1];
-  v[1] = fourveldt_[2];
-  v[2] = fourveldt_[3];
-  return v;
-}*/
 
 void Blob::initCoord(std::vector<double> const &v) {
   posIni_[0] = v[0];
@@ -442,7 +424,6 @@ void Blob::getCartesian(double const * const dates, size_t const n_dates,
     r = posIni_[1]+fourveldt_[1]*(tt-posIni_[0]);
     theta = posIni_[2];
     phi = posIni_[3] + posIni_[1]*posIni_[1]*fourveldt_[3]/fourveldt_[1]*(pow(posIni_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
-    //cout << phi << endl;
 
   }
   else // Equatorial motion (Keplerian orbit)

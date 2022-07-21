@@ -326,7 +326,7 @@ void Plasmoid::getCartesian(double const * const dates, size_t const n_dates,
     r = posIni_[1]+fourveldt_[1]*(tt-posIni_[0]);
     theta = posIni_[2];
     phi = posIni_[3] + posIni_[1]*posIni_[1]*fourveldt_[3]/fourveldt_[1]*(pow(posIni_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
-    //cout << phi << endl;
+    //cout << "t, r, theta, phi = " << tt << ", " << r << ", " << theta << ", " << phi << endl;
 
   }
   else // Equatorial motion (Keplerian orbit)
