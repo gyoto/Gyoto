@@ -783,7 +783,7 @@ void Worldline::getCartesian(double const * const dates, size_t const n_dates,
 	if (yprime)
 	  yprime[di] = rprime * sintheta * sinphi
 	    + r * thetaprime * costheta * sinphi
-	    + r * phiprime * cosphi;
+	    + r * phiprime * sintheta * cosphi;
 	if (zprime)
 	  zprime[di] = rprime * costheta
 	    - r * thetaprime * sintheta
