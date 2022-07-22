@@ -184,6 +184,11 @@ class Gyoto::Astrobj::Star :
 		double * const z, double * const xprime=NULL,
 		double * const yprime=NULL,  double * const zprime=NULL) ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
+  
+  virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
+       Eigen::Matrix4d *Onu,
+       double const *nuem , size_t nbnu, double dsem,
+       state_t const &cph, double const *co) const;
 
 };
 
