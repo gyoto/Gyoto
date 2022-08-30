@@ -200,33 +200,87 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
        Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
        state_t const &cph, double const *co) const {
   /**
-   * Polarisation vector oriented parallel to the disk plane and normal to direction of propagation 
+   * This function serve as an exemple and a test for the polarisation.
+   * We define a vertical magnetic field and force a keplerian velocity.
    */
   double vel[4]; // 4-velocity of emitter
   gg_->circularVelocity(co, vel);
   
-  if (cph.size()==16) {
-    // Polarised case
-    Eigen::Matrix4d Omat;
-    double B4vect[4]={0.,0.,1.,0.};
-    double Xhi=getXhi(B4vect, cph, vel);
-    //cout << Xhi << endl;
+  // Check the size of the photon coordinate : 8 means no polarisation, 16 means polarisation.
+  if (cph.size()==16) { // POLARISED CASE
 
-    for (size_t ii=0; ii<nbnu; ++ii) {
-      // Unpolarized quantities
-      double I=emission(nuem[ii], dsem, cph, co);
-      Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Xhi);
-      Omat = Omatrix(0., 0., 0., 0., 0., 0., 0., Xhi, dsem);
+    Eigen::Matrix4d Omat;
+    double B4vect[4];
+
+    // Defining the vertical magnetic field
+    switch (gg_ -> coordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      B4vect[0]=B4vect[1]=B4vect[3]=0.;
+      B4vect[2]=1.;
+      break;
+    case GYOTO_COORDKIND_CARTESIAN:
+      B4vect[0]=B4vect[1]=B4vect[2]=0.;
+      B4vect[3]=1.;
+      break;
+    default:
+      GYOTO_ERROR("Incompatible coordinate kind in Star.C");
+    }
+
+    // Computing the angle between the parallel transported observer polarisation basis and local emission basis.
+    double Xhi=getXhi(B4vect, cph, vel);
+
+    // Defining absoprtion and rotation coefficients for the transmission matrix
+    double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+    double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
+    
+    for (size_t ii=0; ii<nbnu; ++ii){
+      // Set them to zero as we consider no absorption
+      aInu[ii]=0.;
+      aQnu[ii]=0.;
+      aUnu[ii]=0.;
+      aVnu[ii]=0.;
+      rotQnu[ii]=0.;
+      rotUnu[ii]=0.;
+      rotVnu[ii]=0.;
+
+      // Polarized quantities emitted
+      double jI = emission(nuem[ii], dsem, cph, co);
+      double jQ = 0.05*jI; //Here we set a fraction of linear polarization of 5%
+      double jU = 0.;
+      double jV = 0.;
+
+      Eigen::Vector4d Jstokes=rotateJs(jI, jQ, jU, jV, -Xhi); // Applying the rotation by the -Xhi angle
+
+      // Computing the transmission matrix
+      Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
+
+      // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
+      Eigen::Vector4d Stokes=Omat*Jstokes;
+
+      // Filling the outputs
       Inu[ii] = Stokes(0);
       Qnu[ii] = Stokes(1);
       Unu[ii] = Stokes(2);
       Vnu[ii] = Stokes(3);
       Onu[ii] = Omat;
     }
-  } else {
-    // Non Polarised case
+
+  } else { // NON POLARISED CASE
+
+    // Onu is the transmission matrix which contains in particular the non-polarised transmission
+    // So we need to update it.
+    Eigen::Matrix4d identity;
+    identity << 1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+
     for (size_t ii=0; ii<nbnu; ++ii) {
+      // If RadiativeQ(non-polarised) is implemented, it should be called instead of emission and transmission.
       Inu[ii] = emission(nuem[ii], dsem, cph, co);
+      double Tau = transmission(nuem[ii], dsem, cph, co);
+      Onu[ii] = Tau*identity;
     }
   }
+
 }
