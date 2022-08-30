@@ -195,8 +195,7 @@ double Star::rMax() {
   }
   return rmax_;
 }
-  
-  
+
 void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
        Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
        state_t const &cph, double const *co) const {
@@ -206,23 +205,28 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   double vel[4]; // 4-velocity of emitter
   gg_->circularVelocity(co, vel);
   
-  Eigen::Matrix4d Omat;
-  Omat << 0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0;
-  double B4vect[4]={0.,0.,1.,0.};
-  double Xhi=getXhi(B4vect, cph, vel);
-  //cout << Xhi << endl;
+  if (cph.size()==16) {
+    // Polarised case
+    Eigen::Matrix4d Omat;
+    double B4vect[4]={0.,0.,1.,0.};
+    double Xhi=getXhi(B4vect, cph, vel);
+    //cout << Xhi << endl;
 
-  for (size_t ii=0; ii<nbnu; ++ii) {
-    // Unpolarized quantities
-    double I=emission(nuem[ii], dsem, cph, co);
-    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Xhi);
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
+    for (size_t ii=0; ii<nbnu; ++ii) {
+      // Unpolarized quantities
+      double I=emission(nuem[ii], dsem, cph, co);
+      Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Xhi);
+      Omat = Omatrix(0., 0., 0., 0., 0., 0., 0., Xhi, dsem);
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
+  } else {
+    // Non Polarised case
+    for (size_t ii=0; ii<nbnu; ++ii) {
+      Inu[ii] = emission(nuem[ii], dsem, cph, co);
+    }
   }
 }

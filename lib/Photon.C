@@ -1213,8 +1213,7 @@ void Photon::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Ma
   for (size_t ii=0; ii<nbnuobs; ++ii) {
     Tau=transmissionMatrix_[ii];
     Vector4d Stokes(Inu[ii],Qnu[ii],Unu[ii],Vnu[ii]);
-    Vector4d StokesOut;
-    StokesOut=Tau*Stokes;
+    Vector4d StokesOut = Tau*Stokes;
     Inu[ii]=StokesOut(0);
     Qnu[ii]=StokesOut(1);
     Unu[ii]=StokesOut(2);
