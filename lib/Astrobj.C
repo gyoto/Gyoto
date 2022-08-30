@@ -695,7 +695,7 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   lambda1 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alphasqrt-rsqrt,2.)/2.,0.5);
   lambda2 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alphasqrt-rsqrt,2.)/2.,0.5);
   Theta = pow(lambda1,2)+pow(lambda2,2);
-  sigma = (aQ*rQ+aU*rU+aV*rV)/abs(aQ*rQ+aU*rU+aV*rV);
+  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
 
   double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
   	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
@@ -781,6 +781,7 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
 
 
+  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
   // Filling O matrix, output
   Onu=exp(-aI*dsem*gg_->unitLength())*\
   			((coshlb1+coslb2)*M1/2. \
@@ -821,7 +822,7 @@ double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double con
 
 void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Xhi, double* cos2Xhi) const{
 	if (cph.size()!=16)
-		GYOTO_ERROR("Impossible to compute the Xhi angle without Ephi and Etheta !");
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in Star.C) ");
 	if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
 		GYOTO_ERROR("In GetXhi: compute of Xhi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
 
