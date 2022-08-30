@@ -567,7 +567,39 @@ private:
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const = delete ; 
+			  double coord_obj[8]=NULL) const = delete ;
+  /**
+   * \brief Compute the increment of Stokes parameters and transmission matrix. Polarised version of RadiaveQ
+   * 
+   * First function to be called for radiative quantities. 
+   * If exist, i.e. implemented in an Astrobj, return the Stokes parameters emitted by the small
+   * volume of length dsem.
+   * 
+   * Warning : 
+   *  - Magnetic field line must be defined to compute the rotation angle Xhi 
+   *    between the emission basis and observer parallel transported basis.
+   * 
+   *  - The non polarized case must also be implemented in this function to avoid error.
+   * 
+   * See exemple in Star.C.
+   * 
+   * \param Inu[nbnu] Output increment of intensity (must be set to a previously allocated
+   *        array of doubles)
+   * \param Qnu[nbnu] Output increment of Stokes parameter Q (must be set to a previously allocated
+   *        array of doubles)
+   * \param Unu[nbnu] Output increment of Stokes parameter U (must be set to a previously allocated
+   *        array of doubles)
+   * \param Vnu[nbnu] Output increment of Stokes parameter V (must be set to a previously allocated
+   *        array of doubles)
+   * \param Onu[nbnu] Output transmission (Eigen) matrix (must be set to a previously allocated
+   *        array of Matrix4d)
+   * \param nu_em[nbnu] Frequencies at emission
+   * \param nbnu Size of nu_em[], Inu[], Qnu[], Unu[], Vnu[], and Onu[]
+   * \param dsem Length over which to integrate inside the object
+   * \param cph Photon coordinate
+   * \param co Emitter coordinate at current photon position
+   * \return Increment of the Stokes parameters (I,Q,U,V) and local Transmission matrix (O).
+   */
   virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 			  Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
 			  state_t const &cph, double const *co) const ;
