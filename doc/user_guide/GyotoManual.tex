@@ -1308,16 +1308,18 @@ remain API-and ABI-compatible with the latest official release.
 The `python' plug-in allows writting derived classes
 in Python rather than C++.
 
-This is the easiest approach and lets you set-up your new
-objects in just a few lines of code, without the need for setting-up a
-plug-in, compiling it frequently during your deverlopment
-cycle. However, there is a cost in terms of code execution speed. This
-code is usually negligible to moderate for classes implementing the
-\Astrobj\ and \Spectrum\ interfaces, but it is major for classes
-implementing the \Metric\ interface. This is because the \Metric\
-methods are evaluated several times per iteration when iterating
-geodesics, while the \Astrobj\ and \Spectrum\ methods are evaluated
-less frequently.
+This is the easiest approach and lets you set-up your new objects in
+just a few lines of code, without the need for setting-up a plug-in,
+compiling it frequently during your development cycle. However, there
+is a cost in terms of code execution time. This cost is usually
+negligible to moderate for classes implementing the \Astrobj\ and
+\Spectrum\ interfaces, but it is major for classes implementing the
+\Metric\ interface. This is because the \Metric\ methods are evaluated
+several times per iteration when integrating geodesics, while the
+\Astrobj\ and \Spectrum\ methods are evaluated less frequently. Like
+the rest of Gyoto, the python plug-in supports MPI parallelisation
+which helps maintaining decent computing time. Mutli-threading is not
+efficient in this context.
 
 To use your Python classes, simply load the Python plug-in, for
 instance by setting the \texttt{GYOTO\_PLUGINS} environment variable
