@@ -546,7 +546,7 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
     Matrix4d * Onu = new Matrix4d[nbnu];
-    double Xhi=0;
+    double Chi=0;
     radiativeQ(Inu, Qnu, Unu, Vnu,
 	       Onu, nuem , nbnu, dsem,
 	       cph, co);
@@ -588,8 +588,7 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
-      	alphaInu[i]=Onu[i](0,0);
-				Taunu[i] = exp(-alphaInu[i]);
+				Taunu[i] = Onu[i](0,0);
       }
     } else {
       for (size_t i=0; i<nbnu; ++i) {
@@ -659,24 +658,24 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   delete [] alphaInu;
 }
 
-Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const{
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const{
   
-  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin(2.*Xhi), cos(2.*Xhi), dsem);
+  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin(2.*Chi), cos(2.*Chi), dsem);
 }
 
-Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double sin2Xhi, double cos2Xhi, double dsem) const{
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double sin2Chi, double cos2Chi, double dsem) const{
 
-	return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin2Xhi, cos2Xhi, dsem);
-}
-
-Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
-        double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const{
-
-	return Omatrix(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu, sin(2.*Xhi), cos(2.*Xhi), dsem);
+	return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin2Chi, cos2Chi, dsem);
 }
 
 Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
-        double rQnu, double rUnu, double rVnu, double sin2Xhi, double cos2Xhi, double dsem) const{
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem) const{
+
+	return Omatrix(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu, sin(2.*Chi), cos(2.*Chi), dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
@@ -684,10 +683,10 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
-  double aQ=alphaQnu*cos2Xhi+alphaUnu*sin2Xhi;
-  double aU=alphaUnu*cos2Xhi-alphaQnu*sin2Xhi;
-  double rQ=rQnu*cos2Xhi+rUnu*sin2Xhi;
-  double rU=rUnu*cos2Xhi-rQnu*sin2Xhi;
+  double aQ=alphaQnu*cos2Chi+alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi-alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi+rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi-rQnu*sin2Chi;
   double rV=rVnu;
 
   alphasqrt = aQ*aQ+aU*aU+aV*aV;
@@ -792,15 +791,15 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 }
 
 
-Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const{
-	return rotateJs(jInu, jQnu, jUnu, jVnu, sin(2.*Xhi),  cos(2.*Xhi));
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Chi) const{
+	return rotateJs(jInu, jQnu, jUnu, jVnu, sin(2.*Chi),  cos(2.*Chi));
 }
 
-Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Xhi, double cos2Xhi) const{
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Chi, double cos2Chi) const{
 	Matrix4d rot;
     rot << 1.,     0.  ,     0.  , 0.,
-           0.,  cos2Xhi, -sin2Xhi, 0.,
-           0.,  sin2Xhi,  cos2Xhi, 0.,
+           0.,  cos2Chi, -sin2Chi, 0.,
+           0.,  sin2Chi,  cos2Chi, 0.,
            0.,     0.  ,     0.  , 1.; // See RadiativeTransfertVadeMecum.pdf
   Vector4d jStokes;
     jStokes(0)=jInu;
@@ -811,20 +810,18 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
     return jStokes;
 }
 
-double Generic::getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
-	double Xhi=0;
-	double sin2Xhi, cos2Xhi;
-	getSinCos2Xhi(Bfourvect, cph, vel, &sin2Xhi, &cos2Xhi);
- 	Xhi=atan2(sin2Xhi,cos2Xhi)/2.;
+double Generic::getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
+	double Chi=0;
+	double sin2Chi, cos2Chi;
+	getSinCos2Chi(Bfourvect, cph, vel, &sin2Chi, &cos2Chi);
+ 	Chi=atan2(sin2Chi,cos2Chi)/2.;
 
-	return Xhi;
+	return Chi;
 }
 
-void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Xhi, double* cos2Xhi) const{
+void Generic::getSinCos2Chi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const{
 	if (cph.size()!=16)
-		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in Star.C) ");
-	if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
-		GYOTO_ERROR("In GetXhi: compute of Xhi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
 
 	double * Ephi = new double[4];
 	double * Etheta = new double[4];
@@ -833,32 +830,233 @@ void Generic::getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, doubl
 	double photon_emframe[4]; // photon tgt vector projected in comoving frame; is it k projected ortho to u ?
 
 	for (int ii=0;ii<4;ii++){
-		photon_emframe[ii]=cph[ii+4]; // copy of photon velocity
-		Ephi[ii]=cph[ii+8];
-		Etheta[ii]=cph[ii+12];
-	}
-	// Projection into the rest frame of the emitter
-	gg_->projectFourVect(&cph[0],Bproj,vel);
-	gg_->projectFourVect(&cph[0],Ephi,vel);
-	gg_->projectFourVect(&cph[0],Etheta,vel);
-  gg_->projectFourVect(&cph[0], photon_emframe, vel);
+    photon_emframe[ii]=cph[ii+4]; // photon wave vector
+    Ephi[ii]=cph[ii+8]; // polarization basis vector 1
+    Etheta[ii]=cph[ii+12]; // polarization basis vector 2
+  }
 
-  gg_->projectFourVect(&cph[0], Bproj, photon_emframe); // projection orthogonally to k (photon_emframe) of Bproj
+  // Check that wave vector, Ephi and Etheta are orthogonal:
+  double test_tol=1e-2;
+  if (fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe))>test_tol){
+      //or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol
+      //or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
+      //or fabs(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe))>test_tol){
+    cerr << "Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe)) << endl;
+    throwError("Polarization basis is not properly parallel transported!");
+  }
+
+  // *** Projection into the rest frame of the emitter ***
   
-	/*cout << "photon_emframe: " << photon_emframe[0] << "," << photon_emframe[1] << "," << photon_emframe[2] << "," << photon_emframe[3] << endl;
-	cout << "Bproj: " << Bproj[0] << "," << Bproj[1] << "," << Bproj[2] << "," << Bproj[3] << endl;
-	cout << "Ephi: " << Ephi[0] << "," << Ephi[1] << "," << Ephi[2] << "," << Ephi[3] << endl;*/
+  // NB: projectFourVect(pos, res, u) projects the initial res
+  // orthogonally to u; so res is modified in the process.
+  
+  gg_->projectFourVect(&cph[0], photon_emframe, vel); // so from here on,
+  // photon_emframe contains the projection orthogonal to u of the
+  // wave vector. Hence the name: photon tangent vector in the rest
+  // frame of the emitter, the space orthogonal to its 4vel.
+  // Normalizing this projection (which is not by default):
+  double norm=sqrt(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe));
+  gg_->multiplyFourVect(photon_emframe,1./norm); // normalize basis vector
+  // Check that the tetrad components are well normalized (assuming
+  // a rotating emitter)
+  double gtt=gg_->gmunu(&cph[0],0,0), grr=gg_->gmunu(&cph[0],1,1),
+    gthth=gg_->gmunu(&cph[0],2,2), gpp=gg_->gmunu(&cph[0],3,3),
+    Kr_tetrad=sqrt(grr)*photon_emframe[1],
+    Kth_tetrad=sqrt(gthth)*photon_emframe[2],
+    Kp_tetrad=sqrt(-gtt*gpp)*(photon_emframe[3]*vel[0]-photon_emframe[0]*vel[3]);
+  //cout << "K.K in tetrad formalism= " << Kr_tetrad*Kr_tetrad + Kth_tetrad*Kth_tetrad + Kp_tetrad*Kp_tetrad << endl;
+  
+  gg_->projectFourVect(&cph[0],Bproj,vel); // Here we project the
+  // magnetic 4vector orthogonal to u.
+  // Normalize it:
+  norm=sqrt(gg_->ScalarProd(&cph[0],Bproj,Bproj));
+  gg_->multiplyFourVect(Bproj,1./norm);
+  //cout << "Bproj BL compo= " << Bproj[0] << " " << Bproj[1] << " " << Bproj[2] << " " << Bproj[3] << endl;
+  // Check the tetrd components:
+  double Br_tetrad=sqrt(grr)*Bproj[1],
+    Bth_tetrad=sqrt(gthth)*Bproj[2],
+    Bp_tetrad=sqrt(-gtt*gpp)*(Bproj[3]*vel[0]-Bproj[0]*vel[3]);
+  //cout << "Tetrad Bproj compo= " << Br_tetrad << " " << Bth_tetrad << " " << Bp_tetrad << endl;
+  //cout << "B.B in tetrad formalism= " << Kr_tetrad*Kr_tetrad + Kth_tetrad*Kth_tetrad + Kp_tetrad*Kp_tetrad << endl;
+  
+  //gg_->projectFourVect(&cph[0],Ephi,vel); // Same for first polar basis vector
 
+  // Modify the polarization basis vectors by adding to them a multiple
+  // of the wavevector, which does not  affect the polarization (gauge freedom,
+  // see Eric's notes on optics). This allows to obtain a well-defined
+  // orthonormal triad in the emitter's rest frame, see FV rad transfer
+  // notes for details.
+  double * tmp = new double[4];
+  for (int ii=0;ii<4;ii++){
+    tmp[ii]=cph[ii+4]; // initialize to wave vector
+  }
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well defined because the denominator cannot be zero,
+  // it is the scalar prod of a timelike by a null vector
+  gg_->addFourVect(Ephi, tmp); // At this point, Ephi lives in the rest frame
+  // of the emitter and is orthogonal to photon_emframe.
+  norm=sqrt(gg_->ScalarProd(&cph[0],Ephi,Ephi));
+  gg_->multiplyFourVect(Ephi,1./norm); // normalize basis vector
+  if (fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,vel))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol){
+    throwError("Bad transformation of the polarization basis Ephi!");
+  }
 
+  // Same game for the second polarization basis vector:
+  //gg_->projectFourVect(&cph[0],Etheta,vel); // and for second basis vector
+  for (int ii=0;ii<4;ii++){
+    tmp[ii]=cph[ii+4]; // initialize to wave vector
+  }
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Etheta,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); 
+  gg_->addFourVect(Etheta, tmp);
+  norm=sqrt(gg_->ScalarProd(&cph[0],Etheta,Etheta));
+  gg_->multiplyFourVect(Etheta,1./norm); // normalize basis vector
+  if (fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,vel))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,Ephi))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe)-1.)>test_tol){
+    //cout << "K.K= " << gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe) << endl;
+    throwError("Bad transformation of the polarization basis Etheta!");
+  }
+  
+  // So at this point, all vectors have been projected
+  // in the rest frame of the emitter, orthogonal to its 4vel,
+  // and we have a well-defined "observer's" orthonormal basis
+  // (Ephi, Etheta, photon_emframe). We now need to define
+  // the magnetic-field related basis in the rest frame,
+  // and compute the rotation angle between the two.
+  
+  gg_->projectFourVect(&cph[0], Bproj, photon_emframe); // projection
+  // orthogonally to photon_emframe of Bproj.
+  // This is the second vector of the "emitter's magnetic basis"
+  // (polarization vector, Bproj, K), where Bproj is what we have
+  // just computed, ie the projection orth to the rest-frame
+  // wave vector (K) of the rest-frame magnetic field, and the
+  // polarization vector is along K*Bproj (* is a cross product here)
+  // and completes the triad.
+  // Check that it is still normal to 4vel:
+  //cout << "Bperp.u= " << gg_->ScalarProd(&cph[0],Bproj,vel) << endl;
+  // Normalize it:
+  norm=sqrt(gg_->ScalarProd(&cph[0],Bproj,Bproj));
+  gg_->multiplyFourVect(Bproj,1./norm); 
+  // Check the tetrd components:
+  double Bperp_r_tetrad=sqrt(grr)*Bproj[1],
+    Bperp_th_tetrad=sqrt(gthth)*Bproj[2],
+    Bperp_p_tetrad=sqrt(-gtt*gpp)*(Bproj[3]*vel[0]-Bproj[0]*vel[3]);
+  // For checking, find the same compo from tetrad Euclidian computation:
+  double KdotB=Kr_tetrad*Br_tetrad+Kth_tetrad*Bth_tetrad+Kp_tetrad*Bp_tetrad,
+    Bperp_r_tetrad_BIS=Br_tetrad - KdotB*Kr_tetrad,
+    Bperp_th_tetrad_BIS=Bth_tetrad - KdotB*Kth_tetrad,
+    Bperp_p_tetrad_BIS=Bp_tetrad - KdotB*Kp_tetrad,
+    Bperp_norm=sqrt(Bperp_r_tetrad_BIS*Bperp_r_tetrad_BIS+Bperp_th_tetrad_BIS*Bperp_th_tetrad_BIS+Bperp_p_tetrad_BIS*Bperp_p_tetrad_BIS);
+  //cout << "Comparing tetrad components of B perp= " << endl;
+  //cout << "First: " << Bperp_r_tetrad << " " << Bperp_th_tetrad << " " << Bperp_p_tetrad << endl;
+  //cout << "Thenn: " << 1./Bperp_norm*Bperp_r_tetrad_BIS << " " << 1./Bperp_norm*Bperp_th_tetrad_BIS << " " << 1./Bperp_norm*Bperp_p_tetrad_BIS << endl;
+  
+  //cout << "photon_emframe: " << photon_emframe[0] << "," << photon_emframe[1] << "," << photon_emframe[2] << "," << photon_emframe[3] << endl;
+  //cout << "Bproj: " << Bproj[0] << "," << Bproj[1] << "," << Bproj[2] << "," << Bproj[3] << endl;
+  //cout << "Ephi: " << Ephi[0] << "," << Ephi[1] << "," << Ephi[2] << "," << Ephi[3] << endl;
+
+  // Finally compute the scalar products between Bproj and the
+  // observer's polarization basis vectors
   double BperpEtheta=gg_->ScalarProd(&cph[0],Bproj,Etheta),
-  	BperpEphi=gg_->ScalarProd(&cph[0],Bproj,Ephi);
+    BperpEphi=gg_->ScalarProd(&cph[0],Bproj,Ephi);
+  // and deduce the angle chi between the polarization basis and
+  // the projected magnetic field, which is the final quantity of interest
+  // (see FV rad transfer notes for details on the formulas).
+  *cos2Chi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))
+    /(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
+  *sin2Chi=-2*(BperpEtheta*BperpEphi)/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
 
-	*cos2Xhi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
-	*sin2Xhi=-2*(BperpEtheta*BperpEphi)/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
+  // For a check let's compare cos(chi) computed in BL and tetrad:
+  double Eth_r_tetrad=sqrt(grr)*Etheta[1],
+    Eth_th_tetrad=sqrt(gthth)*Etheta[2],
+    Eth_p_tetrad=sqrt(-gtt*gpp)*(Etheta[3]*vel[0]-Etheta[0]*vel[3]);
+  double Ephi_r_tetrad=sqrt(grr)*Ephi[1],
+    Ephi_th_tetrad=sqrt(gthth)*Ephi[2],
+    Ephi_p_tetrad=sqrt(-gtt*gpp)*(Ephi[3]*vel[0]-Ephi[0]*vel[3]);
+  Bperp_norm=sqrt(Bperp_r_tetrad*Bperp_r_tetrad+Bperp_th_tetrad*Bperp_th_tetrad+Bperp_p_tetrad*Bperp_p_tetrad);
+  //cout << "In Astrobj At position: " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
+  //cout << "cos chi = " << BperpEtheta << " " << 1./Bperp_norm*(Bperp_r_tetrad*Eth_r_tetrad + Bperp_th_tetrad*Eth_th_tetrad + Bperp_p_tetrad*Eth_p_tetrad) << endl;
+
+  // Define the polarization vector in tetrad formalism:
+  double polar_vec[3]={Kth_tetrad*Bperp_p_tetrad - Kp_tetrad*Bperp_th_tetrad,
+		       -Kr_tetrad*Bperp_p_tetrad+Kp_tetrad*Bperp_r_tetrad,
+		       Kr_tetrad*Bperp_th_tetrad-Kth_tetrad*Bperp_r_tetrad};
+  //cout << "Check prod scal: " << polar_vec[0]*Bperp_r_tetrad+polar_vec[1]*Bperp_th_tetrad+polar_vec[2]*Bperp_p_tetrad << " " << polar_vec[0]*Kr_tetrad+polar_vec[1]*Kth_tetrad+polar_vec[2]*Kp_tetrad << " " << polar_vec[0]*polar_vec[0]+polar_vec[1]*polar_vec[1]+polar_vec[2]*polar_vec[2] << endl;
+
+  //cout << "P.Etheta= " << polar_vec[0]*Eth_r_tetrad + polar_vec[1]*Eth_th_tetrad + polar_vec[2]*Eth_p_tetrad << endl;
+  //cout << "Bperp.Etheta= " << Bperp_r_tetrad*Eth_r_tetrad + Bperp_th_tetrad*Eth_th_tetrad + Bperp_p_tetrad*Eth_p_tetrad << endl;
+
+  //cout << "P.Ephi= " << polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad << endl;
+  //cout << "Bperp.Ephi= " << Bperp_r_tetrad*Ephi_r_tetrad + Bperp_th_tetrad*Ephi_th_tetrad + Bperp_p_tetrad*Ephi_p_tetrad << endl;
 
  	delete [] Bproj;
  	delete [] Ephi;
  	delete [] Etheta;
+}
+
+double Generic::getChi(double const basis1[4], double const basis2[4], double const basis3[4], state_t const &cph, double const vel[4]) const{
+	double Chi=0;
+	double sin2Chi, cos2Chi;
+	getSinCos2Chi(basis1, basis2, basis3, cph, vel, &sin2Chi, &cos2Chi);
+ 	Chi=atan2(sin2Chi,cos2Chi)/2.;
+
+	return Chi;
+}
+
+void Generic::getSinCos2Chi(double const basis1[4], double const basis2[4], double const basis3[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const{
+	/**
+	 * Compute the angle between the emission basis provided by the user and the parallel transported observer polarisation basis.
+	*/
+
+	if (cph.size()!=16)
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
+
+	double * Ephi = new double[4];
+	double * Etheta = new double[4];
+	double * photon_emframe = new double[4];
+	double * e1 = new double[4];
+	double * e2 = new double[4];
+	double * e3 = new double[4];
+
+	for (int ii=0;ii<4;ii++){
+		photon_emframe[ii]=cph[ii+4]; // copy of photon velocity
+		Ephi[ii]=cph[ii+8];
+		Etheta[ii]=cph[ii+12];
+		e1[ii]=basis1[ii];
+		e2[ii]=basis2[ii];
+		e3[ii]=basis3[ii];
+	}
+	// Projection into the rest frame of the emitter
+	gg_->projectFourVect(&cph[0], Ephi, vel);
+	gg_->projectFourVect(&cph[0], Etheta, vel);
+  gg_->projectFourVect(&cph[0], photon_emframe, vel);
+  gg_->projectFourVect(&cph[0], e1, vel);
+  gg_->projectFourVect(&cph[0], e2, vel);
+  gg_->projectFourVect(&cph[0], e3, vel);
+
+
+  // Check that the third vector of the basis is colinear to k projected along vel
+  if(gg_->ScalarProd(&cph[0], photon_emframe, e3) != gg_->norm(&cph[0],photon_emframe)*gg_->norm(&cph[0],e3))
+  	GYOTO_ERROR("The third vector of the provided basis is not colinear to the photon tangent vector projected in the rest frame of the emitter.");
+  
+
+  double e2Etheta=gg_->ScalarProd(&cph[0],e2,Etheta),
+  	e2Ephi=gg_->ScalarProd(&cph[0],e2,Ephi);
+
+	*cos2Chi=(pow(e2Etheta,2.)-pow(e2Ephi,2.))/(pow(e2Etheta,2.)+pow(e2Ephi,2.));
+	*sin2Chi=-2*(e2Etheta*e2Ephi)/(pow(e2Etheta,2.)+pow(e2Ephi,2.));
+
+  delete [] photon_emframe;
+ 	delete [] Ephi;
+ 	delete [] Etheta;
+ 	delete [] e1;
+ 	delete [] e2;
+ 	delete [] e3;
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,
