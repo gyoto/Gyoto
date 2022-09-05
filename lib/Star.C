@@ -216,7 +216,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     switch (gg_ -> coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       B4vect[0]=B4vect[1]=B4vect[3]=0.;
-      B4vect[2]=1.;
+      B4vect[2]=-1.;
       break;
     case GYOTO_COORDKIND_CARTESIAN:
       B4vect[0]=B4vect[1]=B4vect[2]=0.;
@@ -227,7 +227,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
 
     // Computing the angle between the parallel transported observer polarisation basis and local emission basis.
-    double Xhi=getXhi(B4vect, cph, vel);
+    double Chi=getChi(B4vect, cph, vel);
 
     // Defining absoprtion and rotation coefficients for the transmission matrix
     double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
@@ -249,10 +249,10 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       double jU = 0.;
       double jV = 0.;
 
-      Eigen::Vector4d Jstokes=rotateJs(jI, jQ, jU, jV, -Xhi); // Applying the rotation by the -Xhi angle
+      Eigen::Vector4d Jstokes=rotateJs(jI, jQ, jU, jV, -Chi); // Applying the rotation by the -Chi angle
 
       // Computing the transmission matrix
-      Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
+      Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
 
       // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
       Eigen::Vector4d Stokes=Omat*Jstokes;
@@ -263,6 +263,8 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       Unu[ii] = Stokes(2);
       Vnu[ii] = Stokes(3);
       Onu[ii] = Omat;
+      //cout << Omat << endl;
+      //cout << "Tau= " << Onu[ii](0,0) << endl;
     }
 
   } else { // NON POLARISED CASE
@@ -279,6 +281,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       // If RadiativeQ(non-polarised) is implemented, it should be called instead of emission and transmission.
       Inu[ii] = emission(nuem[ii], dsem, cph, co);
       double Tau = transmission(nuem[ii], dsem, cph, co);
+      //cout << "Tau= " << Tau << endl;
       Onu[ii] = Tau*identity;
     }
   }
