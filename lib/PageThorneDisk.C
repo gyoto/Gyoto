@@ -370,18 +370,18 @@ void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *V
   gg_->circularVelocity(co, vel);
   
   Eigen::Matrix4d Omat;
-  Omat << 0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0,
-          0, 0, 0, 0;
+  Omat << 1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1;
   double B4vect[4]={0.,0.,1.,0.};
-  double Xhi=getXhi(B4vect, cph, vel);
-  //cout << Xhi << endl;
+  double Chi=getChi(B4vect, cph, vel);
+  //cout << Chi << endl;
 
   for (size_t ii=0; ii<nbnu; ++ii) {
     // Unpolarized quantities
     double I=emission(nuem[ii], dsem, cph, co);
-    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Xhi);
+    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
     Inu[ii] = Stokes(0);
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);

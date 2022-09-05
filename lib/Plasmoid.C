@@ -536,12 +536,12 @@ void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[]
     rotUnu[ii]=0.;
     rotVnu[ii]=1.e-10;
   }
-  double Xhi=M_PI/2.;
+  double Chi=M_PI/2.;
   Eigen::Matrix4d Omat;
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
-    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
-    Eigen::Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], -Xhi); // apply the rotation matrix on Js with an angle of -Xhi
+    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], -Chi); // apply the rotation matrix on Js with an angle of -Chi
     Eigen::Vector4d Stokes(Omat*jStokes*dsem*gg_->unitLength());
 
     cout << Omat << "\n" << endl;

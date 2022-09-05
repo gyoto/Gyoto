@@ -338,7 +338,7 @@ void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Ma
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
   
-  double Xhi=0.;
+  double Chi=0.;
 
   // Defining jnus, anus
   double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
@@ -377,8 +377,8 @@ void Blob::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Ma
   Matrix4d Omat;
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
-    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Xhi, dsem);
-    Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], -Xhi); // apply the rotation matrix on Js with an angle of -Xhi
+    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], -Chi); // apply the rotation matrix on Js with an angle of -Chi
     Vector4d Stokes(Omat*jStokes*dsem*gg_->unitLength());
     
     Inu[ii] = Stokes(0);
