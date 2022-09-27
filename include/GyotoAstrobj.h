@@ -576,12 +576,13 @@ private:
    * volume of length dsem.
    * 
    * Warning : 
-   *  - Magnetic field line must be defined to compute the rotation angle Chi 
-   *    between the emission basis and observer parallel transported basis.
+   *  - The basis used to determine the Stokes coefficients is different from the observer parallel transported polarisation basis.
+   *    One should use getChi function to compute the angle between these two basis.
    * 
    *  - The non polarized case must also be implemented in this function to avoid error.
    * 
-   * See exemple in Star.C.
+   * See exemple in SimplePolarStar.C.
+   * 
    * 
    * \param Inu[nbnu] Output increment of intensity (must be set to a previously allocated
    *        array of doubles)
@@ -678,23 +679,23 @@ private:
   /**
    * Get Chi angle.
    * Return the angle between the parallel transported observer polarization basis (Ephi,Etheta)
-   * and the Stokes basis in the rest frame of the emitter.
+   * and the Stokes basis in the rest frame of the emitter defined by the 4-vector magnetic/electric field.
    * 
-   * \param Bfourvect 4-vector magnetic field NOT projected in the rest frame of the emitter
-   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)=16
+   * \param fourvect 4-vector magnetic/electric field depending on elec (false/true)
+   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
    * \param vel Fluid velocity at the photon coordinate
    */
-  double getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const;
+  double getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec=false) const;
   /**
    * Get the cosinus and sinus of 2*Chi angle.
    * Chi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
-   * and the Stokes basis in the rest frame of the emitter.
+   * and the Stokes basis in the rest frame of the emitter defined by the 4-vector magnetic/electric field.
    * 
-   * \param Bfourvect 4-vector magnetic field NOT projected in the rest frame of the emitter
-   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)=16
+   * \param fourvect 4-vector magnetic/electric field depending on elec (false/true)
+   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
    * \param vel Fluid velocity at the photon coordinate
    */
-  void getSinCos2Chi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const;
+  void getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec=false) const;
 
 };
 

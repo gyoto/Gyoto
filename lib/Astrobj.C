@@ -592,11 +592,11 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i] = Onu[i](0,0);
+	      Taunu[i] = Onu[i](0,0);
       }
     } else {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i]=transmission(nuem[i], dsem, cph, co);
+	      Taunu[i]=transmission(nuem[i], dsem, cph, co);
       }
     }
     // in all cases, clean up
@@ -687,10 +687,10 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
-  double aQ=alphaQnu*cos2Chi+alphaUnu*sin2Chi;
-  double aU=alphaUnu*cos2Chi-alphaQnu*sin2Chi;
-  double rQ=rQnu*cos2Chi+rUnu*sin2Chi;
-  double rU=rUnu*cos2Chi-rQnu*sin2Chi;
+  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
   double rV=rVnu;
 
   alphasqrt = aQ*aQ+aU*aU+aV*aV;
@@ -813,31 +813,12 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
     return jStokes;
 }
 
-// double Generic::getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
-// 	double Chi=0;
-// 	double sin2Chi, cos2Chi;
-// 	getSinCos2Chi(Bfourvect, cph, vel, &sin2Chi, &cos2Chi);
-//  	Chi=atan2(sin2Chi,cos2Chi)/2.;
-
-// 	return Chi;
-// }
-
-void Generic::getSinCos2Chi(double const Bfourvect[4], state_t const &cph,
-			    double const vel[4], double* sin2Chi,
-			    double* cos2Chi) const{
-  throwError("outdated");
-}
-
-double Generic::getChi(double const Bfourvect[4],
-		     state_t const &cph,
-		     double const vel[4]) const{
+double Generic::getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec) const{
 
   int locprint=0; // for debuging internally
   
   if (cph.size()!=16)
     GYOTO_ERROR("Impossible to compute the Chi angle without Ephi and Etheta !");
-  if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
-    GYOTO_ERROR("In GetChi: compute of Chi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
   
   double Ephi[4];
   double Etheta[4];
@@ -880,6 +861,7 @@ double Generic::getChi(double const Bfourvect[4],
 				   photon_tgvec_orthu,
 				   photon_tgvec_orthu));
   gg_->multiplyFourVect(photon_tgvec_orthu,1./norm);
+
   // For testing, Sch tetrad compo of photon tgvec (assumes rotating emitter).
   // Not needed except for tests.
   double gtt=gg_->gmunu(&cph[0],0,0), grr=gg_->gmunu(&cph[0],1,1),
@@ -891,29 +873,38 @@ double Generic::getChi(double const Bfourvect[4],
   if (locprint==1)
     cout << "Tetrad K compo= " << Kr_tetrad << " " << Kth_tetrad << " " << Kp_tetrad << endl;
 
-  /* ***PART TWO: B FIELD VECTOR */
-  // Provided vector Bfourvect must be orthogonal to 4-velocity, check it:
-  if (fabs(gg_->ScalarProd(&cph[0],Bfourvect,vel))>1e-6){
-    cerr << "B.vel= " << gg_->ScalarProd(&cph[0],Bfourvect,vel) << endl;
-    throwError("B field should be normal to 4-velocity of emitter!");
-  }
-  // Project Bfourvect orthogonally to K and normalize
-  double Bproj[4];
+
+
+  /* ***PART TWO: FIELD VECTOR (could be B or E depending on elec) */
+  double Vectproj[4];
   for (int ii=0;ii<4;ii++)
-    Bproj[ii] = Bfourvect[ii]; // initialize.
-  gg_->projectFourVect(&cph[0], Bproj, photon_tgvec_orthu); // project.
-  norm=sqrt(gg_->ScalarProd(&cph[0],Bproj,Bproj));
-  gg_->multiplyFourVect(Bproj,1./norm); 
-  // For checking only: Sch tetrad compo of Bproj:
-  double Br_tetrad=sqrt(grr)*Bproj[1],
-    Bth_tetrad=sqrt(gthth)*Bproj[2],
-    Bp_tetrad=sqrt(-gtt*gpp)*(Bproj[3]*vel[0]-Bproj[0]*vel[3]);
+    Vectproj[ii] = fourvect[ii]; // initialize.
+  // Check if vector fourvect is already orthogonal to 4-velocity:
+  if (fabs(gg_->ScalarProd(&cph[0],Vectproj,vel))>1e-6){
+    gg_->projectFourVect(&cph[0],Vectproj,vel); // Here we project the
+	  // magnetic 4vector orthogonal to u.
+	  // Normalize it:
+	  norm=sqrt(gg_->ScalarProd(&cph[0],Vectproj,Vectproj));
+	  if (norm<=0.)
+	  	GYOTO_ERROR("Magnetic field vector is null.");
+	  gg_->multiplyFourVect(Vectproj,1./norm);
+  }
+  // Project fourvect orthogonally to K and normalize
+  gg_->projectFourVect(&cph[0], Vectproj, photon_tgvec_orthu); // project.
+  norm=sqrt(gg_->ScalarProd(&cph[0],Vectproj,Vectproj));
+  gg_->multiplyFourVect(Vectproj,1./norm); 
+  // For checking only: Sch tetrad compo of Vectproj:
+  double Br_tetrad=sqrt(grr)*Vectproj[1],
+    Bth_tetrad=sqrt(gthth)*Vectproj[2],
+    Bp_tetrad=sqrt(-gtt*gpp)*(Vectproj[3]*vel[0]-Vectproj[0]*vel[3]);
   if (locprint==1)
     cout << "Tetrad B compo= " << Br_tetrad << " " << Bth_tetrad << " " << Bp_tetrad << endl;
 
+
+
   /* ***PART THREE: NORTH AND WEST SCREEN DIRECTIONS */
   // Modify the polarization basis vectors by adding to them a multiple
-  // of the wavevector, which does not  affect the EVPA.
+  // of the wavevector, which does not affect the EVPA.
   // This allows to obtain a well-defined
   // orthonormal triad in the emitter's rest frame, see FV rad transfer
   // notes for details.
@@ -973,20 +964,22 @@ double Generic::getChi(double const Bfourvect[4],
   // and we have a well-defined "observer's" orthonormal basis
   // (Ephi_prime, Etheta_prime, photon_tgvec_orthu).
 
+
+
   /* ***PART FOUR: POLAR ANGLE IN (NORTH,WEST) BASIS */
 
-  // Compute angles between Bproj and North,West
-  double Bproj_North=gg_->ScalarProd(&cph[0],Bproj,Etheta_prime),
-    Bproj_West=gg_->ScalarProd(&cph[0],Bproj,Ephi_prime);
-  //cout << "Brpoj.North, Bproj.West= " << Bproj_North << " " << Bproj_West << endl;
+  // Compute angles between Vectproj and North,West
+  double Vectproj_North=gg_->ScalarProd(&cph[0],Vectproj,Etheta_prime),
+    Vectproj_West=gg_->ScalarProd(&cph[0],Vectproj,Ephi_prime);
+  //cout << "Brpoj.North, Vectproj.West= " << Vectproj_North << " " << Vectproj_West << endl;
 
-  // Angle East of North between North direction and Bproj
-  double angle_North_Bproj=-atan2(Bproj_West,Bproj_North);
-  // Then EVPA is 90° between Bproj and polar, + the angle above
-  double EVPA=M_PI/2.+angle_North_Bproj;
-  //cout << "EVPA in Astrobj= " << EVPA*180./M_PI << endl;
-
-  //cout << "angle North,Bproj EVPA= " << angle_North_Bproj*180./M_PI << " " << EVPA*180./M_PI << endl;
+  // Angle East of North between North direction and Vectproj
+  double EVPA=-atan2(Vectproj_West,Vectproj_North);
+  if (!elec){ // fourvect is the magnetic field 
+  	// Then EVPA is 90° between Vectproj and polar, + the angle above
+	  EVPA+=M_PI/2.;
+	  //cout << "EVPA in Astrobj= " << EVPA*180./M_PI << endl;
+  }
 
   // For checking only: Define the polarization vector in tetrad formalism:
   double polar_vec[3]={Kth_tetrad*Bp_tetrad - Kp_tetrad*Bth_tetrad,
@@ -998,11 +991,20 @@ double Generic::getChi(double const Bfourvect[4],
     polar_dot_West = polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad;
   //cout << "polar vec = " << polar_dot_North << "*North + " << polar_dot_West << "*West." << endl;
 
-  double Bproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
-    Bproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
-  //cout << "Bproj vec = " << Bproj_dot_North << "*North + " << Bproj_dot_West << "*West." << endl;
+  double Vectproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
+    Vectproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
+  //cout << "Vectproj vec = " << Vectproj_dot_North << "*North + " << Vectproj_dot_West << "*West." << endl;
 
   return EVPA;
+}
+
+void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec) const{
+	if (cph.size()!=16)
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
+
+	double Chi = getChi(fourvect, cph, vel, elec);
+	*sin2Chi = sin(2.*Chi);
+	*cos2Chi =cos(2.*Chi);
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,
