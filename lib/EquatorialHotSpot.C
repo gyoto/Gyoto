@@ -184,6 +184,7 @@ void EquatorialHotSpot::getVelocity(double const pos[4], double vel[4]) {
   const_cast<EquatorialHotSpot*>(this)
     ->getCoord(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
   gg_ -> circularVelocity(coord_spot, vel, dir_);
+  //cout << "equat Omega= " << vel[3]/vel[0] << endl;
 }
 
 double EquatorialHotSpot::emission(double nu_em, double dsem,
@@ -194,6 +195,7 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
     ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
   //above: nasty trick to deal with constness of emission
   double xspot=coord_spot[1], yspot=coord_spot[2];
+  //cout << "spot is at xy= " << xspot << " " << yspot << endl;
   double rr=coord_obj[1], phi=coord_obj[3];
   double difx=(rr*cos(phi)-xspot),
     dify=(rr*sin(phi)-yspot);
@@ -239,4 +241,87 @@ double EquatorialHotSpot::emission(double nu_em, double dsem,
   }
   // else
   return 0.;
+}
+
+void EquatorialHotSpot::radiativeQ(double *Inu, double *Qnu, double *Unu,
+				   double *Vnu,
+				   Eigen::Matrix4d *Onu,
+				   double const *nuem , size_t nbnu,
+				   double dsem,
+				   state_t const &cph,
+				   double const *co) const {
+  // polarized radiativeQ
+
+  double vel[4]; // 4-velocity of emitter
+  gg_->circularVelocity(co, vel);
+  
+  //double gtt=gg_->gmunu(&cph[0],0,0);
+  //vel[0]=1./sqrt(-gtt);vel[1]=0.;vel[2]=0.;vel[3]=0.;
+  //cout << "4vel test norm= " << gg_->ScalarProd(&cph[0],vel,vel) << endl;
+  
+  Eigen::Matrix4d Omat;
+  Omat << 1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1;
+
+  // CHOOSE BFIELD GEOMETRY
+
+  // VERTICAL
+  double B4vect[4]={0.,0.,-1.,0.};
+
+  // RADIAL
+  //double B4vect[4]={0.,1.,0.,0.};
+
+  // AZIMUTHAL or RADIAL-AZIMUTHAL
+  //double gtt=gg_->gmunu(&cph[0],0,0),
+  //  gpp=gg_->gmunu(&cph[0],3,3),
+  //  Bp=1.,
+  //  Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]),
+  //  B4vect[4]={Bt,1.,0.,Bp}; // rad and azim
+  //  B4vect[4]={Bt,0.,0.,1.}; // pure azim
+  
+  double Chi=getChi(B4vect, cph, vel); // this is EVPA
+
+  for (size_t ii=0; ii<nbnu; ++ii) {
+    // INTENSITY
+    double I=emission(nuem[ii], dsem, cph, co);
+    if (I>0.){
+      //cout << "In Hotspot at coord= " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
+      //cout << "*** EVPA *** chi(rad), chi(deg) and cos chi= " << Chi << " " << Chi*180./M_PI << " " << cos(Chi) << endl;
+    }
+
+    // Q and U
+    // See Eq. 44 of my VadeMecum notes, with beta=0 in their notation
+    // (no circular polarization). Alpha in these notes is the EVPA:
+    double QQ = I*cos(2.*Chi), 
+      UU = I*sin(2.*Chi);
+    if (I>0.){
+      //cout << "QU em EVPA= " << QQ << " " << UU << " " << 0.5*atan2(UU,QQ)*180./M_PI << endl;
+    }
+    // Carefully debug the radiative transfer
+    //Eigen::Vector4d Stokes=rotateJs(I, QQ, UU, 0., Chi);
+
+    // Here there is no radiative transfer, just store the
+    // I,Q,U computed above.
+    Inu[ii] = I; //Stokes(0);
+    Qnu[ii] = QQ; //Stokes(1);
+    Unu[ii] = UU; //Stokes(2);
+    Vnu[ii] = 0.; //Stokes(3);
+    Onu[ii] = Omat;
+  }
+}
+
+
+void EquatorialHotSpot::radiativeQ(double Inu[], // output
+				   double Taunu[], // output
+				   double const nu_ems[], size_t nbnu, // input
+				   double dsem,
+				   state_t const &coord_ph,
+				   double const coord_obj[8]) const {
+  // unpolarized radiativeQ
+  for (size_t ii=0; ii<nbnu; ++ii) {
+    Inu[ii]=emission(nu_ems[ii], dsem, coord_ph, coord_obj);
+    Taunu[ii]=1.;
+  }
 }
