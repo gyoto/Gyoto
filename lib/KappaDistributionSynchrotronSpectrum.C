@@ -138,7 +138,7 @@ double Spectrum::KappaDistributionSynchrotron::jQnuCGS(double nu) const{
     (kappaindex_-1.)*(kappaindex_-2.)/4.*tgamma(kappaindex_/4.-1./3.)* \
     tgamma(kappaindex_/4.+4./3.),
     expo = 3.7*pow(kappaindex_,-8./5.),
-    Js = -pow(pow(Js_low,-expo) + pow(Js_high,-expo),-1./expo);
+    Js = pow(pow(Js_low,-expo) + pow(Js_high,-expo),-1./expo);
   
   double emis_synch = numberdensityCGS_*        \
     GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
@@ -312,7 +312,7 @@ double Spectrum::KappaDistributionSynchrotron::rQnuCGS(double nu) const{
       default:
         GYOTO_ERROR("Faraday coefficients not defined for values of kappa different of 3.5, 4., 4.5, 5.");
     }
-  rho_Q=-numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_*sinth,2.)/ \
+  rho_Q=numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_*sinth,2.)/ \
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
     rho_kappa;
 

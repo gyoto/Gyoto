@@ -165,7 +165,7 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
     xx = nu/nus,
-    Js = -exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
+    Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
     pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
   emis_synch = numberdensityCGS_*         \
     GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
@@ -256,7 +256,7 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
     f0=2.011*exp(-19.78*pow(xx,-0.5175))-cos(39.89*pow(xx,-0.5))*exp(-70.16*pow(xx,-0.6))-0.011*exp(-1.69*pow(xx,-0.5)),
     fm=f0+(0.011*exp(-1.69*pow(xx,-0.5))-0.003135*pow(xx,4./3.))*1./2.*(1.+tanh(10*log(0.6648*pow(xx,-0.5))));
     
-    rho_Q=-numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*pow(cyclotron_freq_,2.)*pow(sin(angle_B_pem_),2.)/ \
+    rho_Q=numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*pow(cyclotron_freq_,2.)*pow(sin(angle_B_pem_),2.)/ \
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
     fm*(bessk(1., pow(Theta_elec,-1))/bessk(2., pow(Theta_elec,-1))+6.*Theta_elec);
 

@@ -152,7 +152,7 @@ double Spectrum::PowerLawSynchrotron::jQnuCGS(double nu) const{
        pow(gamma_max_,1.-PLindex_))) * \
       tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *  \
       pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.)* \
-      (-1.)*(PLindex_+1.)/(PLindex_+7./3.);
+      (PLindex_+1.)/(PLindex_+7./3.);
   emis_synch = numberdensityCGS_*         \
     GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
     GYOTO_C_CGS*\
@@ -236,7 +236,7 @@ double Spectrum::PowerLawSynchrotron::alphaQnuCGS(double nu) const{
      pow(gamma_max_,1.-PLindex_))) *     \
     tgamma((3.*PLindex_+2.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
     pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.)* \
-    -pow(17./500.*PLindex_-43./1250.,43./500.) ;
+    pow(17./500.*PLindex_-43./1250.,43./500.) ;
   abs_synch = numberdensityCGS_*          \
     GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
     (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*       \
@@ -287,7 +287,7 @@ double Spectrum::PowerLawSynchrotron::rQnuCGS(double nu) const{
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*cyclotron_freq_*sinth)*(PLindex_-1.)* \
     pow(pow(gamma_min_,1.-PLindex_)-pow(gamma_max_,1.-PLindex_),-1.);
 
-  rho_Q=-rho_per*pow(cyclotron_freq_*sinth/nu,3.)*pow(gamma_min_,2.-PLindex_)* \
+  rho_Q=rho_per*pow(cyclotron_freq_*sinth/nu,3.)*pow(gamma_min_,2.-PLindex_)* \
     (1.-pow(2.*cyclotron_freq_*pow(gamma_min_,2.)*sinth/3./nu,PLindex_/2.-1.));
 
   return rho_Q;
