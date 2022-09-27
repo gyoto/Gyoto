@@ -245,17 +245,18 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
       // Polarized quantities emitted
       double jI = emission(nuem[ii], dsem, cph, co);
-      double jQ = 0.05*jI; //Here we set a fraction of linear polarization of 5%
+      double jQ = jI; // We assume 100% of linear polarisation
       double jU = 0.;
       double jV = 0.;
 
-      Eigen::Vector4d Jstokes=rotateJs(jI, jQ, jU, jV, -Chi); // Applying the rotation by the -Chi angle
+      Eigen::Vector4d Jstokes=rotateJs(jI, jQ, jU, jV, Chi); // Applying the rotation by the -Chi angle
+      //cout << "jI, jU, jU/jI, cos2Chi : " << Jstokes(0) << ", " << Jstokes(2) << ", " << Jstokes(2)/Jstokes(0) << ", " << sin(2.*Chi) << endl;
 
       // Computing the transmission matrix
       Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
 
       // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-      Eigen::Vector4d Stokes=Omat*Jstokes;
+      Eigen::Vector4d Stokes=Omat*Jstokes*dsem;
 
       // Filling the outputs
       Inu[ii] = Stokes(0);

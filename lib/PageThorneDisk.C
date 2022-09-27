@@ -390,7 +390,6 @@ void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *V
     //B4vect[4]={Bt,1.,0.,1.}; // rad and azim
   //  B4vect[4]={Bt,0.,0.,1.}; // pure azim
   double Chi=getChi(B4vect, cph, vel);
-  //cout << Chi << endl;
 
   for (size_t ii=0; ii<nbnu; ++ii) {
     // Unpolarized quantities
@@ -400,17 +399,13 @@ void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *V
       //cout << "In Page at coord= " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
       //cout << "*** EVPA *** chi(rad), chi(deg) and cos chi= " << Chi << " " << Chi*180./M_PI << " " << cos(Chi) << endl;
     }
-    double QQ = I*cos(2.*Chi), 
-      UU = I*sin(2.*Chi);
-    //cout << "QU= "<< QQ << " " << UU << endl;
-
     // Carefully debug the radiative transfer before applying rotation
     // Here without radiative transfer, just storing the I, Q, U
-    //Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
-    Inu[ii] = I; //Stokes(0);
-    Qnu[ii] = QQ; //Stokes(1);
-    Unu[ii] = UU; //Stokes(2);
-    Vnu[ii] = 0.; //Stokes(3);
+    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
   }
 }
