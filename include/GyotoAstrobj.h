@@ -576,7 +576,7 @@ private:
    * volume of length dsem.
    * 
    * Warning : 
-   *  - Magnetic field line must be defined to compute the rotation angle Xhi 
+   *  - Magnetic field line must be defined to compute the rotation angle Chi 
    *    between the emission basis and observer parallel transported basis.
    * 
    *  - The non polarized case must also be implemented in this function to avoid error.
@@ -658,25 +658,25 @@ private:
    * \param Onu output matrix (must be allocated previously)
    * \param alphanu[4] array containing the 4 absorption coefficients in the Stokes basis (I,Q,U,V)
    * \param rnu[3] array containing the 3 Faraday coefficients in the Stokes basis (Q,U,V)
-   * \param Xhi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
+   * \param Chi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
    * \param dsem geometrical length in geometrical units
    */
-  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double Xhi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const;
   Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
-        double rQnu, double rUnu, double rVnu, double Xhi, double dsem) const;
-  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double sin2Xhi, double cos2Xhi, double dsem) const;
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double sin2Chi, double cos2Chi, double dsem) const;
   Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
-        double rQnu, double rUnu, double rVnu, double sin2Xhi, double cos2Xhi, double dsem) const;
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
   
   /**
-   * Apply the rotation matrix with angle Xhi to the emission Stokes vector
+   * Apply the rotation matrix with angle Chi to the emission Stokes vector
    * constructed in the fonction from the individual coefficients
    */
-  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Xhi, double cos2Xhi) const;
-  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Xhi) const;
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Chi, double cos2Chi) const;
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Chi) const;
 
   /**
-   * Get Xhi angle.
+   * Get Chi angle.
    * Return the angle between the parallel transported observer polarization basis (Ephi,Etheta)
    * and the Stokes basis in the rest frame of the emitter.
    * 
@@ -684,17 +684,17 @@ private:
    * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)=16
    * \param vel Fluid velocity at the photon coordinate
    */
-  double getXhi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const;
+  double getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const;
   /**
-   * Get the cosinus and sinus of 2*Xhi angle.
-   * Xhi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
+   * Get the cosinus and sinus of 2*Chi angle.
+   * Chi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
    * and the Stokes basis in the rest frame of the emitter.
    * 
    * \param Bfourvect 4-vector magnetic field NOT projected in the rest frame of the emitter
    * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)=16
    * \param vel Fluid velocity at the photon coordinate
    */
-  void getSinCos2Xhi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Xhi, double* cos2Xhi) const;
+  void getSinCos2Chi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const;
 
 };
 

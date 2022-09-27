@@ -167,6 +167,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 #endif
+  //  cout << "flagra= " << flag_radtransf_ << endl;
   /*
       NB: freqObs is the observer's frequency chosen in
       Screen::getRayCoord for the actual computation of the geodesic ;
@@ -359,8 +360,10 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	  {
 	    double t=ph -> getTransmission(ii);
 	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
-	  GYOTO_DEBUG
-	    << "DEBUG: Generic::processHitQuantities(): "
+	    GYOTO_DEBUG
+	      //  cout
+	      << "xyz= " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
+	      << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
 	    << ", nuem=" << nuem[ii]
 	    << ", dsem=" << dsem
@@ -371,6 +374,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	    << ", transmission=" << t
 	    << ", optical depth=" << o
 	    << ", redshift=" << ggred << ")\n" << endl;
+	    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
 	  }
 #         endif
 	}
@@ -588,11 +592,11 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
-				Taunu[i] = Onu[i](0,0);
+	Taunu[i] = Onu[i](0,0);
       }
     } else {
       for (size_t i=0; i<nbnu; ++i) {
-				Taunu[i]=transmission(nuem[i], dsem, cph, co);
+	Taunu[i]=transmission(nuem[i], dsem, cph, co);
       }
     }
     // in all cases, clean up
@@ -779,7 +783,6 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
   	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
 
-
   Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
   // Filling O matrix, output
   Onu=exp(-aI*dsem*gg_->unitLength())*\
@@ -810,253 +813,196 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
     return jStokes;
 }
 
-double Generic::getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
-	double Chi=0;
-	double sin2Chi, cos2Chi;
-	getSinCos2Chi(Bfourvect, cph, vel, &sin2Chi, &cos2Chi);
- 	Chi=atan2(sin2Chi,cos2Chi)/2.;
+// double Generic::getChi(double const Bfourvect[4], state_t const &cph, double const vel[4]) const{
+// 	double Chi=0;
+// 	double sin2Chi, cos2Chi;
+// 	getSinCos2Chi(Bfourvect, cph, vel, &sin2Chi, &cos2Chi);
+//  	Chi=atan2(sin2Chi,cos2Chi)/2.;
 
-	return Chi;
+// 	return Chi;
+// }
+
+void Generic::getSinCos2Chi(double const Bfourvect[4], state_t const &cph,
+			    double const vel[4], double* sin2Chi,
+			    double* cos2Chi) const{
+  throwError("outdated");
 }
 
-void Generic::getSinCos2Chi(double const Bfourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const{
-	if (cph.size()!=16)
-		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
+double Generic::getChi(double const Bfourvect[4],
+		     state_t const &cph,
+		     double const vel[4]) const{
 
-	double * Ephi = new double[4];
-	double * Etheta = new double[4];
-	double * Bproj = new double[4];
-	memcpy(Bproj, Bfourvect, 4*sizeof(double));
-	double photon_emframe[4]; // photon tgt vector projected in comoving frame; is it k projected ortho to u ?
-
-	for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=cph[ii+4]; // photon wave vector
+  int locprint=0; // for debuging internally
+  
+  if (cph.size()!=16)
+    GYOTO_ERROR("Impossible to compute the Chi angle without Ephi and Etheta !");
+  if (gg_ -> coordKind()!=GYOTO_COORDKIND_SPHERICAL)
+    GYOTO_ERROR("In GetChi: compute of Chi not defined for non spherical metric"); // Do the previous calculation are valid for cartesian coordkind ?
+  
+  double Ephi[4];
+  double Etheta[4];
+  double photon_tgvec[4];
+  
+  for (int ii=0;ii<4;ii++){
+    photon_tgvec[ii]=cph[ii+4]; // photon wave vector
     Ephi[ii]=cph[ii+8]; // polarization basis vector 1
     Etheta[ii]=cph[ii+12]; // polarization basis vector 2
   }
 
+  //cout << "In Astrobj at r th ph= " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
+
   // Check that wave vector, Ephi and Etheta are orthogonal:
-  double test_tol=1e-2;
+  double test_tol=1e-3;
   if (fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe))>test_tol){
-      //or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol
-      //or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
-      //or fabs(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe))>test_tol){
-    cerr << "Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe)) << endl;
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec))>test_tol){
+    cerr << "Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << endl;
     throwError("Polarization basis is not properly parallel transported!");
   }
 
   // *** Projection into the rest frame of the emitter ***
-  
+
+  /* *** PART ONE: WAVE VECTOR */
   // NB: projectFourVect(pos, res, u) projects the initial res
   // orthogonally to u; so res is modified in the process.
-  
-  gg_->projectFourVect(&cph[0], photon_emframe, vel); // so from here on,
-  // photon_emframe contains the projection orthogonal to u of the
-  // wave vector. Hence the name: photon tangent vector in the rest
-  // frame of the emitter, the space orthogonal to its 4vel.
+  double photon_tgvec_orthu[4];
+  for (int ii=0;ii<4;ii++)
+    photon_tgvec_orthu[ii] = photon_tgvec[ii]; // initialize.
+  gg_->projectFourVect(&cph[0], photon_tgvec_orthu, vel); // project.
+  // So from here on,
+  // photon_tgvec_orthu contains the projection orthogonal to u of the
+  // wave vector. 
   // Normalizing this projection (which is not by default):
-  double norm=sqrt(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe));
-  gg_->multiplyFourVect(photon_emframe,1./norm); // normalize basis vector
-  // Check that the tetrad components are well normalized (assuming
-  // a rotating emitter)
+  double norm=sqrt(gg_->ScalarProd(&cph[0],
+				   photon_tgvec_orthu,
+				   photon_tgvec_orthu));
+  gg_->multiplyFourVect(photon_tgvec_orthu,1./norm);
+  // For testing, Sch tetrad compo of photon tgvec (assumes rotating emitter).
+  // Not needed except for tests.
   double gtt=gg_->gmunu(&cph[0],0,0), grr=gg_->gmunu(&cph[0],1,1),
     gthth=gg_->gmunu(&cph[0],2,2), gpp=gg_->gmunu(&cph[0],3,3),
-    Kr_tetrad=sqrt(grr)*photon_emframe[1],
-    Kth_tetrad=sqrt(gthth)*photon_emframe[2],
-    Kp_tetrad=sqrt(-gtt*gpp)*(photon_emframe[3]*vel[0]-photon_emframe[0]*vel[3]);
-  //cout << "K.K in tetrad formalism= " << Kr_tetrad*Kr_tetrad + Kth_tetrad*Kth_tetrad + Kp_tetrad*Kp_tetrad << endl;
-  
-  gg_->projectFourVect(&cph[0],Bproj,vel); // Here we project the
-  // magnetic 4vector orthogonal to u.
-  // Normalize it:
+    Kr_tetrad=sqrt(grr)*photon_tgvec_orthu[1],
+    Kth_tetrad=sqrt(gthth)*photon_tgvec_orthu[2],
+    Kp_tetrad=sqrt(-gtt*gpp)*(photon_tgvec_orthu[3]*vel[0]
+			      -photon_tgvec_orthu[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad K compo= " << Kr_tetrad << " " << Kth_tetrad << " " << Kp_tetrad << endl;
+
+  /* ***PART TWO: B FIELD VECTOR */
+  // Provided vector Bfourvect must be orthogonal to 4-velocity, check it:
+  if (fabs(gg_->ScalarProd(&cph[0],Bfourvect,vel))>1e-6){
+    cerr << "B.vel= " << gg_->ScalarProd(&cph[0],Bfourvect,vel) << endl;
+    throwError("B field should be normal to 4-velocity of emitter!");
+  }
+  // Project Bfourvect orthogonally to K and normalize
+  double Bproj[4];
+  for (int ii=0;ii<4;ii++)
+    Bproj[ii] = Bfourvect[ii]; // initialize.
+  gg_->projectFourVect(&cph[0], Bproj, photon_tgvec_orthu); // project.
   norm=sqrt(gg_->ScalarProd(&cph[0],Bproj,Bproj));
-  gg_->multiplyFourVect(Bproj,1./norm);
-  //cout << "Bproj BL compo= " << Bproj[0] << " " << Bproj[1] << " " << Bproj[2] << " " << Bproj[3] << endl;
-  // Check the tetrd components:
+  gg_->multiplyFourVect(Bproj,1./norm); 
+  // For checking only: Sch tetrad compo of Bproj:
   double Br_tetrad=sqrt(grr)*Bproj[1],
     Bth_tetrad=sqrt(gthth)*Bproj[2],
     Bp_tetrad=sqrt(-gtt*gpp)*(Bproj[3]*vel[0]-Bproj[0]*vel[3]);
-  //cout << "Tetrad Bproj compo= " << Br_tetrad << " " << Bth_tetrad << " " << Bp_tetrad << endl;
-  //cout << "B.B in tetrad formalism= " << Kr_tetrad*Kr_tetrad + Kth_tetrad*Kth_tetrad + Kp_tetrad*Kp_tetrad << endl;
-  
-  //gg_->projectFourVect(&cph[0],Ephi,vel); // Same for first polar basis vector
+  if (locprint==1)
+    cout << "Tetrad B compo= " << Br_tetrad << " " << Bth_tetrad << " " << Bp_tetrad << endl;
 
+  /* ***PART THREE: NORTH AND WEST SCREEN DIRECTIONS */
   // Modify the polarization basis vectors by adding to them a multiple
-  // of the wavevector, which does not  affect the polarization (gauge freedom,
-  // see Eric's notes on optics). This allows to obtain a well-defined
+  // of the wavevector, which does not  affect the EVPA.
+  // This allows to obtain a well-defined
   // orthonormal triad in the emitter's rest frame, see FV rad transfer
   // notes for details.
-  double * tmp = new double[4];
-  for (int ii=0;ii<4;ii++){
-    tmp[ii]=cph[ii+4]; // initialize to wave vector
+  // Formula: Ephi -> Ephi - (Ephi.u)/(k.u) k
+  double Ephi_prime[4], tmp[4];
+  for (int ii=0;ii<4;ii++) {
+    tmp[ii]=cph[ii+4];
+    Ephi_prime[ii]=Ephi[ii]; // initialize.
   }
-  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well defined because the denominator cannot be zero,
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)
+			/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well
+  // defined because the denominator cannot be zero,
   // it is the scalar prod of a timelike by a null vector
-  gg_->addFourVect(Ephi, tmp); // At this point, Ephi lives in the rest frame
-  // of the emitter and is orthogonal to photon_emframe.
-  norm=sqrt(gg_->ScalarProd(&cph[0],Ephi,Ephi));
-  gg_->multiplyFourVect(Ephi,1./norm); // normalize basis vector
-  if (fabs(gg_->ScalarProd(&cph[0],Ephi,photon_emframe))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Ephi,vel))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol){
+  gg_->addFourVect(Ephi_prime, tmp);
+  // At this point, Ephi_prime lives in the rest frame
+  // of the emitter and is orthogonal to photon_tgvec_orthu.
+  // It is by construction a unit vector.
+  if (fabs(gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,vel))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime)-1.)>test_tol){
+    cerr << "Prod scal Ephi: " << gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,vel) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime) << endl;
     throwError("Bad transformation of the polarization basis Ephi!");
   }
+  // For checking only: Sch tetrad compo of Ephi:
+  double Ephi_r_tetrad=sqrt(grr)*Ephi_prime[1],
+    Ephi_th_tetrad=sqrt(gthth)*Ephi_prime[2],
+    Ephi_p_tetrad=sqrt(-gtt*gpp)*(Ephi_prime[3]*vel[0]-Ephi_prime[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad Ephi compo= " << Ephi_r_tetrad << " " << Ephi_th_tetrad << " " << Ephi_p_tetrad << endl;
+  
 
   // Same game for the second polarization basis vector:
-  //gg_->projectFourVect(&cph[0],Etheta,vel); // and for second basis vector
+  double Etheta_prime[4];
   for (int ii=0;ii<4;ii++){
-    tmp[ii]=cph[ii+4]; // initialize to wave vector
+    tmp[ii]=cph[ii+4]; 
+    Etheta_prime[ii]=Etheta[ii]; // initialize.
   }
   gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Etheta,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); 
-  gg_->addFourVect(Etheta, tmp);
-  norm=sqrt(gg_->ScalarProd(&cph[0],Etheta,Etheta));
-  gg_->multiplyFourVect(Etheta,1./norm); // normalize basis vector
-  if (fabs(gg_->ScalarProd(&cph[0],Etheta,photon_emframe))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta,vel))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta,Ephi))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe)-1.)>test_tol){
-    //cout << "K.K= " << gg_->ScalarProd(&cph[0],photon_emframe,photon_emframe) << endl;
+  gg_->addFourVect(Etheta_prime, tmp);
+  if (fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Etheta_prime)-1.)>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu)-1.)>test_tol){
+    //cout << "K.K= " << gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu) << endl;
     throwError("Bad transformation of the polarization basis Etheta!");
   }
-  
+  // For checking only: Sch tetrad compo of Etheta:
+  double Etheta_r_tetrad=sqrt(grr)*Etheta_prime[1],
+    Etheta_th_tetrad=sqrt(gthth)*Etheta_prime[2],
+    Etheta_p_tetrad=sqrt(-gtt*gpp)*(Etheta_prime[3]*vel[0]-Etheta_prime[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad Etheta compo= " << Etheta_r_tetrad << " " << Etheta_th_tetrad << " " << Etheta_p_tetrad << endl;
+
   // So at this point, all vectors have been projected
   // in the rest frame of the emitter, orthogonal to its 4vel,
   // and we have a well-defined "observer's" orthonormal basis
-  // (Ephi, Etheta, photon_emframe). We now need to define
-  // the magnetic-field related basis in the rest frame,
-  // and compute the rotation angle between the two.
-  
-  gg_->projectFourVect(&cph[0], Bproj, photon_emframe); // projection
-  // orthogonally to photon_emframe of Bproj.
-  // This is the second vector of the "emitter's magnetic basis"
-  // (polarization vector, Bproj, K), where Bproj is what we have
-  // just computed, ie the projection orth to the rest-frame
-  // wave vector (K) of the rest-frame magnetic field, and the
-  // polarization vector is along K*Bproj (* is a cross product here)
-  // and completes the triad.
-  // Check that it is still normal to 4vel:
-  //cout << "Bperp.u= " << gg_->ScalarProd(&cph[0],Bproj,vel) << endl;
-  // Normalize it:
-  norm=sqrt(gg_->ScalarProd(&cph[0],Bproj,Bproj));
-  gg_->multiplyFourVect(Bproj,1./norm); 
-  // Check the tetrd components:
-  double Bperp_r_tetrad=sqrt(grr)*Bproj[1],
-    Bperp_th_tetrad=sqrt(gthth)*Bproj[2],
-    Bperp_p_tetrad=sqrt(-gtt*gpp)*(Bproj[3]*vel[0]-Bproj[0]*vel[3]);
-  // For checking, find the same compo from tetrad Euclidian computation:
-  double KdotB=Kr_tetrad*Br_tetrad+Kth_tetrad*Bth_tetrad+Kp_tetrad*Bp_tetrad,
-    Bperp_r_tetrad_BIS=Br_tetrad - KdotB*Kr_tetrad,
-    Bperp_th_tetrad_BIS=Bth_tetrad - KdotB*Kth_tetrad,
-    Bperp_p_tetrad_BIS=Bp_tetrad - KdotB*Kp_tetrad,
-    Bperp_norm=sqrt(Bperp_r_tetrad_BIS*Bperp_r_tetrad_BIS+Bperp_th_tetrad_BIS*Bperp_th_tetrad_BIS+Bperp_p_tetrad_BIS*Bperp_p_tetrad_BIS);
-  //cout << "Comparing tetrad components of B perp= " << endl;
-  //cout << "First: " << Bperp_r_tetrad << " " << Bperp_th_tetrad << " " << Bperp_p_tetrad << endl;
-  //cout << "Thenn: " << 1./Bperp_norm*Bperp_r_tetrad_BIS << " " << 1./Bperp_norm*Bperp_th_tetrad_BIS << " " << 1./Bperp_norm*Bperp_p_tetrad_BIS << endl;
-  
-  //cout << "photon_emframe: " << photon_emframe[0] << "," << photon_emframe[1] << "," << photon_emframe[2] << "," << photon_emframe[3] << endl;
-  //cout << "Bproj: " << Bproj[0] << "," << Bproj[1] << "," << Bproj[2] << "," << Bproj[3] << endl;
-  //cout << "Ephi: " << Ephi[0] << "," << Ephi[1] << "," << Ephi[2] << "," << Ephi[3] << endl;
+  // (Ephi_prime, Etheta_prime, photon_tgvec_orthu).
 
-  // Finally compute the scalar products between Bproj and the
-  // observer's polarization basis vectors
-  double BperpEtheta=gg_->ScalarProd(&cph[0],Bproj,Etheta),
-    BperpEphi=gg_->ScalarProd(&cph[0],Bproj,Ephi);
-  // and deduce the angle chi between the polarization basis and
-  // the projected magnetic field, which is the final quantity of interest
-  // (see FV rad transfer notes for details on the formulas).
-  *cos2Chi=(pow(BperpEtheta,2.)-pow(BperpEphi,2.))
-    /(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
-  *sin2Chi=-2*(BperpEtheta*BperpEphi)/(pow(BperpEtheta,2.)+pow(BperpEphi,2.));
+  /* ***PART FOUR: POLAR ANGLE IN (NORTH,WEST) BASIS */
 
-  // For a check let's compare cos(chi) computed in BL and tetrad:
-  double Eth_r_tetrad=sqrt(grr)*Etheta[1],
-    Eth_th_tetrad=sqrt(gthth)*Etheta[2],
-    Eth_p_tetrad=sqrt(-gtt*gpp)*(Etheta[3]*vel[0]-Etheta[0]*vel[3]);
-  double Ephi_r_tetrad=sqrt(grr)*Ephi[1],
-    Ephi_th_tetrad=sqrt(gthth)*Ephi[2],
-    Ephi_p_tetrad=sqrt(-gtt*gpp)*(Ephi[3]*vel[0]-Ephi[0]*vel[3]);
-  Bperp_norm=sqrt(Bperp_r_tetrad*Bperp_r_tetrad+Bperp_th_tetrad*Bperp_th_tetrad+Bperp_p_tetrad*Bperp_p_tetrad);
-  //cout << "In Astrobj At position: " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
-  //cout << "cos chi = " << BperpEtheta << " " << 1./Bperp_norm*(Bperp_r_tetrad*Eth_r_tetrad + Bperp_th_tetrad*Eth_th_tetrad + Bperp_p_tetrad*Eth_p_tetrad) << endl;
+  // Compute angles between Bproj and North,West
+  double Bproj_North=gg_->ScalarProd(&cph[0],Bproj,Etheta_prime),
+    Bproj_West=gg_->ScalarProd(&cph[0],Bproj,Ephi_prime);
+  //cout << "Brpoj.North, Bproj.West= " << Bproj_North << " " << Bproj_West << endl;
 
-  // Define the polarization vector in tetrad formalism:
-  double polar_vec[3]={Kth_tetrad*Bperp_p_tetrad - Kp_tetrad*Bperp_th_tetrad,
-		       -Kr_tetrad*Bperp_p_tetrad+Kp_tetrad*Bperp_r_tetrad,
-		       Kr_tetrad*Bperp_th_tetrad-Kth_tetrad*Bperp_r_tetrad};
-  //cout << "Check prod scal: " << polar_vec[0]*Bperp_r_tetrad+polar_vec[1]*Bperp_th_tetrad+polar_vec[2]*Bperp_p_tetrad << " " << polar_vec[0]*Kr_tetrad+polar_vec[1]*Kth_tetrad+polar_vec[2]*Kp_tetrad << " " << polar_vec[0]*polar_vec[0]+polar_vec[1]*polar_vec[1]+polar_vec[2]*polar_vec[2] << endl;
+  // Angle East of North between North direction and Bproj
+  double angle_North_Bproj=-atan2(Bproj_West,Bproj_North);
+  // Then EVPA is 90° between Bproj and polar, + the angle above
+  double EVPA=M_PI/2.+angle_North_Bproj;
+  //cout << "EVPA in Astrobj= " << EVPA*180./M_PI << endl;
 
-  //cout << "P.Etheta= " << polar_vec[0]*Eth_r_tetrad + polar_vec[1]*Eth_th_tetrad + polar_vec[2]*Eth_p_tetrad << endl;
-  //cout << "Bperp.Etheta= " << Bperp_r_tetrad*Eth_r_tetrad + Bperp_th_tetrad*Eth_th_tetrad + Bperp_p_tetrad*Eth_p_tetrad << endl;
+  //cout << "angle North,Bproj EVPA= " << angle_North_Bproj*180./M_PI << " " << EVPA*180./M_PI << endl;
 
-  //cout << "P.Ephi= " << polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad << endl;
-  //cout << "Bperp.Ephi= " << Bperp_r_tetrad*Ephi_r_tetrad + Bperp_th_tetrad*Ephi_th_tetrad + Bperp_p_tetrad*Ephi_p_tetrad << endl;
+  // For checking only: Define the polarization vector in tetrad formalism:
+  double polar_vec[3]={Kth_tetrad*Bp_tetrad - Kp_tetrad*Bth_tetrad,
+  		       -Kr_tetrad*Bp_tetrad+Kp_tetrad*Br_tetrad,
+  		       Kr_tetrad*Bth_tetrad-Kth_tetrad*Br_tetrad};
+  if (locprint==1)
+    cout << "polar vector = KxB= in triad "<< polar_vec[0] << " " << polar_vec[1] << " " << polar_vec[2] << endl;
+  double polar_dot_North=polar_vec[0]*Etheta_r_tetrad + polar_vec[1]*Etheta_th_tetrad + polar_vec[2]*Etheta_p_tetrad,
+    polar_dot_West = polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad;
+  //cout << "polar vec = " << polar_dot_North << "*North + " << polar_dot_West << "*West." << endl;
 
- 	delete [] Bproj;
- 	delete [] Ephi;
- 	delete [] Etheta;
-}
+  double Bproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
+    Bproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
+  //cout << "Bproj vec = " << Bproj_dot_North << "*North + " << Bproj_dot_West << "*West." << endl;
 
-double Generic::getChi(double const basis1[4], double const basis2[4], double const basis3[4], state_t const &cph, double const vel[4]) const{
-	double Chi=0;
-	double sin2Chi, cos2Chi;
-	getSinCos2Chi(basis1, basis2, basis3, cph, vel, &sin2Chi, &cos2Chi);
- 	Chi=atan2(sin2Chi,cos2Chi)/2.;
-
-	return Chi;
-}
-
-void Generic::getSinCos2Chi(double const basis1[4], double const basis2[4], double const basis3[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi) const{
-	/**
-	 * Compute the angle between the emission basis provided by the user and the parallel transported observer polarisation basis.
-	*/
-
-	if (cph.size()!=16)
-		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
-
-	double * Ephi = new double[4];
-	double * Etheta = new double[4];
-	double * photon_emframe = new double[4];
-	double * e1 = new double[4];
-	double * e2 = new double[4];
-	double * e3 = new double[4];
-
-	for (int ii=0;ii<4;ii++){
-		photon_emframe[ii]=cph[ii+4]; // copy of photon velocity
-		Ephi[ii]=cph[ii+8];
-		Etheta[ii]=cph[ii+12];
-		e1[ii]=basis1[ii];
-		e2[ii]=basis2[ii];
-		e3[ii]=basis3[ii];
-	}
-	// Projection into the rest frame of the emitter
-	gg_->projectFourVect(&cph[0], Ephi, vel);
-	gg_->projectFourVect(&cph[0], Etheta, vel);
-  gg_->projectFourVect(&cph[0], photon_emframe, vel);
-  gg_->projectFourVect(&cph[0], e1, vel);
-  gg_->projectFourVect(&cph[0], e2, vel);
-  gg_->projectFourVect(&cph[0], e3, vel);
-
-
-  // Check that the third vector of the basis is colinear to k projected along vel
-  if(gg_->ScalarProd(&cph[0], photon_emframe, e3) != gg_->norm(&cph[0],photon_emframe)*gg_->norm(&cph[0],e3))
-  	GYOTO_ERROR("The third vector of the provided basis is not colinear to the photon tangent vector projected in the rest frame of the emitter.");
-  
-
-  double e2Etheta=gg_->ScalarProd(&cph[0],e2,Etheta),
-  	e2Ephi=gg_->ScalarProd(&cph[0],e2,Ephi);
-
-	*cos2Chi=(pow(e2Etheta,2.)-pow(e2Ephi,2.))/(pow(e2Etheta,2.)+pow(e2Ephi,2.));
-	*sin2Chi=-2*(e2Etheta*e2Ephi)/(pow(e2Etheta,2.)+pow(e2Ephi,2.));
-
-  delete [] photon_emframe;
- 	delete [] Ephi;
- 	delete [] Etheta;
- 	delete [] e1;
- 	delete [] e2;
- 	delete [] e3;
+  return EVPA;
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,
