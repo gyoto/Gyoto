@@ -1,5 +1,5 @@
 /*
-    Copyright 2015-2016 Thibaut Paumard
+    Copyright 2015-2016, 2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -80,7 +80,7 @@
  * that it is running in Gyoto. It simply exposes an interface that is
  * being called. However, Gyoto sets a few attributes in each
  * method. Most notably, if the "gyoto" python extension is available,
- * Gyoto will the the attribute "this" to the C++ instance that
+ * Gyoto will set the attribute "this" to the C++ instance that
  * created the Python class instance, so that the Python code can
  * access C++-side information.
  *
@@ -92,6 +92,10 @@
 #include <GyotoMetric.h>
 #include <GyotoStandardAstrobj.h>
 #include <GyotoThinDisk.h>
+#include <GyotoProperty.h>
+#include <GyotoValue.h>
+#include <GyotoScreen.h>
+#include <GyotoFactoryMessenger.h>
 #include <Python.h>
 
 namespace Gyoto {
@@ -102,6 +106,9 @@ namespace Gyoto {
 
   namespace Python {
     class Base;
+    template <class O> class Object;
+    /// Convert Gyoto Value to Python Object
+    PyObject * PyObject_FromGyotoValue(const Gyoto::Value&);
 
     /// Return new reference to method, or NULL if method not found.
     PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
@@ -152,14 +159,24 @@ namespace Gyoto {
  *
  * \brief Base class for classes in the Python plug-in.
  *
- * All classes have those three Properties:
+ * All derived C++ classes (Gyoto::Metric::Python,
+ * Gyoto::Spectrum::Python, Gyoto::Astrobj::Python::Standard and
+ * Gyoto::Astrobj::Python::Thindisk have those three Properties:
  * - Module (string): the module in which the Python class is
  *   implemented;
  * - Class (string): the name of the Python class, in module Module,
  *   to interface with;
- * - Parameters (vector<double>): list of parameters for this
+ * - Parameters (vector<double>): optional list of parameters for this
  *   class. These parameters are passed one by one to the Python
  *   instance using __setitem__ with numerical keys.
+ *
+ * Those C++ classes wrap around Python classes that implement certain
+ * methods. Those Python classes may accepts parameters through the
+ * Parameters property described above by implementing __setitem__, or
+ * by providing:
+ * - member "properties", a dict in the form {name: dtype} where name
+ *     is the property name and dtype the corresponding datatype.
+ * - methods set(self, key, value) and get(self, key).
  *
  * All the Gyoto instances of the classes descending from
  * Gyoto::Python::Base expose themselves to the Python instance they
@@ -213,6 +230,21 @@ class Gyoto::Python::Base {
    * \brief Reference to the python instance once it has been instantiated.
    */
   PyObject * pInstance_;
+
+  /**
+   * \brief Reference to the properties member
+   */
+  PyObject * pProperties_;
+
+  /**
+   * \brief Reference to the (optional) Set method
+   */
+  PyObject * pSet_;
+
+  /**
+   * \brief Reference to the (optional) Get method
+   */
+  PyObject * pGet_;
 
  public:
   Base();
@@ -270,9 +302,188 @@ class Gyoto::Python::Base {
    */
   virtual void parameters(const std::vector<double>&);
 
+  virtual bool hasPythonProperty(std::string const &key) const ;
+  virtual void setPythonProperty(std::string const &key, Value val);
+  virtual Value getPythonProperty(std::string const &key) const;
+  virtual int pythonPropertyType(std::string const &key) const;
+
 };
 
+/**
+ * \class Gyoto::Python::Object
+ *
+ * \brief Class template to implement parts of the Gyoto::Object API
+ *
+ **/
+template <class O>
+class Gyoto::Python::Object
+  : public O, public Gyoto::Python::Base
+{
+public:
+  Object() : O(), Gyoto::Python::Base() {}
+  Object(const Object& o) : O(o), Base(o) {}
+  virtual ~Object() {};
 
+  using O::set;
+
+  virtual void set(std::string const &key, Value val) {
+    GYOTO_DEBUG_EXPR(key);
+    GYOTO_DEBUG_EXPR(val.type);
+    if (hasPythonProperty(key)) {
+      GYOTO_DEBUG << "Python key " << key << " exists" << std::endl;
+      setPythonProperty(key, val);
+    } else {
+      GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
+      O::set(key, val);
+    }
+  }
+
+  virtual void set(Property const &p, Value val){
+    std::string key=p.name;
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::set" << std::endl;
+      O::set(p, val);
+      return;
+    }
+    setPythonProperty(key, val);
+  }
+
+  virtual void set(Property const &p, Value val, std::string const &unit) {
+    GYOTO_DEBUG_EXPR(p.name);
+    if (hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "Python key " << p.name << " exists" << std::endl;
+      if (unit!="") GYOTO_ERROR("units not implemented");
+      setPythonProperty(p.name, val);
+    } else {
+      GYOTO_DEBUG << "Python key " << p.name << " does not exist" << std::endl;
+      O::set(p, val, unit);
+    }
+  }
+
+  using O::get;
+
+  virtual Value get(std::string const &key) const {
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(key);
+    }
+    return getPythonProperty(key);
+  }
+
+  Value get(Property const &p,
+	    std::string const &unit) const {
+    if (!hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(p, unit);
+    }
+    return getPythonProperty(p.name);
+  }
+
+  Value get(Property const &p) const {
+    if (!hasPythonProperty(p.name)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(p);
+    }
+    return getPythonProperty(p.name);
+  }
+
+  using O::setParameter;
+
+  virtual int setParameter(std::string name, std::string content, std::string unit) {
+    GYOTO_DEBUG_EXPR(name);
+    GYOTO_DEBUG_EXPR(content);
+    GYOTO_DEBUG_EXPR(unit);
+    if (hasPythonProperty(name)) {
+      Property p(NULL);
+      p.name=name;
+      p.type=pythonPropertyType(name);
+      GYOTO_DEBUG << "Calling setParameter(p, name, content, unit)" << std::endl;
+      setParameter(p, name, content, unit);
+      return 0;
+    }
+    return O::setParameter(name, content, unit);
+  }
+
+  virtual void fillElement(Gyoto::FactoryMessenger *fmp) const {
+    O::fillElement(fmp);
+    if (pProperties_) {
+      Py_ssize_t pos=0;
+      PyObject *pKey, *pVal;
+      while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
+	std::string key=PyUnicode_AsUTF8(pKey);
+	std::string stype=PyUnicode_AsUTF8(pVal);
+	Property::type_e type = Property::typeFromString(stype);
+	const Property p (key, type);
+	this->fillProperty(fmp, p);
+      }
+    }
+  }
+
+
+  void setParameters(Gyoto::FactoryMessenger *fmp)  {
+    std::string name="", content="", unit="";
+    FactoryMessenger * child = NULL;
+    if (fmp)
+      while (fmp->getNextParameter(&name, &content, &unit)) {
+	GYOTO_DEBUG << "Setting '" << name << "' to '" << content
+		    << "' (unit='"<<unit<<"')" << std::endl;
+	const Property * prop =NULL;
+	bool need_delete= false;
+	if (hasPythonProperty(name)) {
+	  need_delete=true;
+	  prop = new Property(name, pythonPropertyType(name));
+	} else {
+	  need_delete=false;
+	  prop = this->property(name);
+	}
+	if (!prop) {;
+	  GYOTO_DEBUG << "'" << name << "' not found, calling setParameter()"
+		      << std::endl;
+	  // The specific setParameter() implementation may well know
+	  // this entity
+	  setParameter(name, content, unit);
+	} else {
+	  GYOTO_DEBUG << "'" << name << "' found "<< std::endl;
+	  std::vector<std::string> plugins;
+	  switch (prop->type) {
+	  case Property::metric_t:
+	    set(*prop, fmp->metric());
+	    break;
+	  case Property::astrobj_t:
+	    set(*prop, fmp->astrobj());
+	    break;
+	  case Property::screen_t:
+	    set(*prop, fmp->screen());
+	    break;
+	  case Property::spectrum_t:
+	    content = fmp -> getAttribute("kind");
+	    child = fmp -> getChild();
+	    plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	    set(*prop, (*Spectrum::getSubcontractor(content, plugins))(child, plugins) );
+	    delete child;
+	    break;
+	  case Property::spectrometer_t:
+	    content = fmp -> getAttribute("kind");
+	    child = fmp -> getChild();
+	    plugins = Gyoto::split(fmp -> getAttribute("plugin"), ",");
+	    set(*prop, (*Spectrometer::getSubcontractor(content, plugins))(child, plugins) );
+	    delete child;
+	    break;
+	  case Property::filename_t:
+	    content = fmp->fullPath(content);
+	    // no 'break;' here, we need to proceed
+	  default:
+	    setParameter(*prop, name, content, unit);
+	    break;
+	  }
+	}
+	if (need_delete) delete prop;
+      }
+    GYOTO_DEBUG << "Done processing parameters" << std::endl;
+  }
+};
 
 /**
  * \class Gyoto::Spectrum::Python
@@ -288,8 +499,7 @@ class Gyoto::Python::Base {
  * \include gyoto_sample_spectra.py
  */
 class Gyoto::Spectrum::Python
-: public Gyoto::Spectrum::Generic,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Spectrum::Generic>
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrum::Python>;
  protected:
@@ -362,7 +572,10 @@ class Gyoto::Spectrum::Python
  * \brief Metric coded in Python
  *
  * Loader for Python Metric classes. It interfaces with a Python class
- * which must implement at least the methods detailed below.
+ * which must implement at least the gmunu and christoffel methods.
+ *
+ * Other methods are optional: getRmb, getRms, getSpecificAngularMomentum,
+ * getPotential.
  *
  * Use &lt;Cartesian&gt; or &lt;/Spherical&gt; to select the coordinate system
  * kind.
@@ -373,8 +586,7 @@ class Gyoto::Spectrum::Python
  * \include gyoto_sample_metrics.py
  */
 class Gyoto::Metric::Python
-: public Gyoto::Metric::Generic,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Metric::Generic>
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Python>;
 
@@ -389,6 +601,36 @@ class Gyoto::Metric::Python
    * \brief Reference to the christoffel method
    */
   PyObject * pChristoffel_;
+
+  /**
+   * \brief Reference to the getRmb method
+   */
+  PyObject * pGetRmb_;
+
+  /**
+   * \brief Reference to the getRms method
+   */
+  PyObject * pGetRms_;
+
+  /**
+   * \brief Reference to the  method getSpecificAngularMomentum
+   */
+  PyObject * pGetSpecificAngularMomentum_;
+
+  /**
+   * \brief Reference to the getPotential method
+   */
+  PyObject * pGetPotential_;
+
+  /**
+   * \brief Reference to the isStopCondition method
+   */
+  PyObject * pIsStopCondition_;
+
+  /**
+   * \brief Reference to the circularVelocity method
+   */
+  PyObject * pCircularVelocity_;
 
  public:
   GYOTO_OBJECT;
@@ -418,6 +660,15 @@ class Gyoto::Metric::Python
   void gmunu(double g[4][4], const double * x) const ;
   int christoffel(double dst[4][4][4], const double * x) const ;
 
+  // Little more
+  double getRmb() const;
+  double getRms() const;
+  double getSpecificAngularMomentum(double rr) const;
+  double getPotential(double const pos[4], double l_cst) const;
+  int isStopCondition(double const coord[8]) const;
+  void circularVelocity(double const pos[4], double vel[4],
+			double dir=1.) const ;
+
 };
 
 /**
@@ -430,8 +681,7 @@ class Gyoto::Metric::Python
  * \include gyoto_sample_standard.py
  */
 class Gyoto::Astrobj::Python::Standard
-: public Gyoto::Astrobj::Standard,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Astrobj::Standard>
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::Standard>;
 
@@ -496,8 +746,7 @@ class Gyoto::Astrobj::Python::Standard
  * \include gyoto_sample_thindisks.py
  */
 class Gyoto::Astrobj::Python::ThinDisk
-: public Gyoto::Astrobj::ThinDisk,
-  public Gyoto::Python::Base
+  : public Gyoto::Python::Object<Gyoto::Astrobj::ThinDisk>
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Python::ThinDisk>;
 

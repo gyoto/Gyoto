@@ -125,8 +125,6 @@ Generic::~Generic() {
 SmartPointer<Metric::Generic> Generic::metric() const { return gg_; }
 void Generic::metric(SmartPointer<Metric::Generic> gg) {gg_=gg;}
 
-const string Generic::kind() const { return kind_; }
-
 double Generic::rMax() { return rmax_; }
 double Generic::rMax() const { return rmax_; }
 double Generic::rMax(string const &unit) {

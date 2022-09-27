@@ -48,6 +48,7 @@ namespace Gyoto{
 class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinDiskProfile>;
  private:
+  bool circular_motion_; ///< True if motion is circular, else radial fall
  protected:
 
   // Constructors - Destructor
@@ -66,6 +67,8 @@ class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
+  bool circularMotion() const;
+  void circularMotion(bool circ);
 
  public:
   virtual double emission(double nu_em, double dsem,

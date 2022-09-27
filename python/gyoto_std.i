@@ -78,6 +78,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Plasmoid)
 GyotoSmPtrTypeMapClassDerived(Astrobj, FlaredDiskSynchrotron)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskGridIntensity)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThickDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskProfile)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
@@ -154,6 +155,7 @@ GyotoSmPtrClassDerived(Astrobj, Plasmoid)
 GyotoSmPtrClassDerived(Astrobj, FlaredDiskSynchrotron)
 GyotoSmPtrClassDerived(Astrobj, ThinDiskGridIntensity)
 GyotoSmPtrClassDerived(Astrobj, ThickDisk)
+GyotoSmPtrClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrClassDerived(Astrobj, ThinDiskProfile)
 
 

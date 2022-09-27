@@ -20,6 +20,7 @@
 #include "GyotoThinDisk.h"
 #include "GyotoThinDiskProfile.h"
 #include "GyotoThickDisk.h"
+#include "GyotoSphericalAccretion.h"
 #include "GyotoPageThorneDisk.h"
 #include "GyotoThinDiskPL.h"
 #include "GyotoPolishDoughnut.h"

@@ -23,12 +23,14 @@ GYOTO_PROPERTY_END(Gyoto::Spectrum::Python,
 GYOTO_PROPERTY_THREAD_UNSAFE(Gyoto::Spectrum::Python)
 
 Spectrum::Python::Python()
-: Generic("Python"), Base(),
+: Python::Object<Generic>(),
   pCall_(NULL), pIntegrate_(NULL), pCall_overloaded_(false)
-{}
+{
+  kind("Python");
+}
 
 Spectrum::Python::Python(const Python&o)
-  : Generic(o), Base(o),
+  : Python::Object<Generic>(o),
     pCall_(o.pCall_), pIntegrate_(o.pIntegrate_),
     pCall_overloaded_(o.pCall_overloaded_)
 {

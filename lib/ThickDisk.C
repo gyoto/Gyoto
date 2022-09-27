@@ -60,6 +60,7 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(ThickDisk, VeloParam, veloParam,
 GYOTO_PROPERTY_DOUBLE_UNIT(ThickDisk,
 			   NumberDensityAtInnerRadius,
 			   numberDensityAtInnerRadius)
+GYOTO_PROPERTY_DOUBLE(ThickDisk, DensitySlope, densitySlope)
 GYOTO_PROPERTY_DOUBLE(ThickDisk,
 		      TemperatureAtInnerRadius,
 		      temperatureAtInnerRadius)
@@ -145,6 +146,8 @@ void ThickDisk::numberDensityAtInnerRadius(double dens, string const &unit) {
   }
   numberDensityAtInnerRadius(dens);
 }
+void ThickDisk::densitySlope(double ss) {densitySlope_=ss;}
+double ThickDisk::densitySlope()const{return densitySlope_;}
 void ThickDisk::temperatureAtInnerRadius(double tt) {temperatureAtInnerRadius_=tt;}
 double ThickDisk::temperatureAtInnerRadius()const{return temperatureAtInnerRadius_;}
 void ThickDisk::temperatureSlope(double ss) {temperatureSlope_=ss;}
@@ -164,6 +167,7 @@ ThickDisk::ThickDisk() :
   beta_veloparam_(1.),
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
+  densitySlope_(2.),
   magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
@@ -180,6 +184,7 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   numberDensityAtInnerRadius_cgs_(o.numberDensityAtInnerRadius_cgs_),
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
+  densitySlope_(o.densitySlope_),
   magnetizationParameter_(o.magnetizationParameter_),
   spectrumThermalSynch_(NULL)
 {
@@ -223,14 +228,20 @@ void ThickDisk::radiativeQ(double Inu[], // output
   }
 
   double number_density = numberDensityAtInnerRadius_cgs_
-    *(thickDiskInnerRadius_*thickDiskInnerRadius_)/(rr*rr);
+    *pow(thickDiskInnerRadius_/rr, densitySlope_);
+    //*(thickDiskInnerRadius_*thickDiskInnerRadius_)/(rr*rr);
+    //*pow(thickDiskInnerRadius_/rr,3.);
+  //cout << "nb density before expo= " << number_density << endl;
   double zsigma = thickDiskZGaussianSigma_*rcyl;
   double  expofact_zscaling = exp(-zz*zz/(2.*zsigma*zsigma)); // simple Gaussian modulation around z=0; RIAF model (Broderick+11) use zsigma=rcyl
+  //cout << "ne before expo= " << rr << " " <<thickDiskInnerRadius_ << " " <<  numberDensityAtInnerRadius_cgs_ << " " << number_density << endl;
   number_density *= expofact_zscaling;
+  
   //cout << "z/r fact, dens= " << expofact_zscaling << " " << number_density << endl;
   //cout << "ThickDisk r, z, rho= " << rcyl << " " << zz << " " << number_density << endl;
   double temperature = temperatureAtInnerRadius_
     *pow(thickDiskInnerRadius_/rr, temperatureSlope_);
+    //*pow(thickDiskInnerRadius_/rr, 2.);
 
   double r0 = 4., phi0 = 0., phi = coord_ph[3],
     sigr = 2., sigp = M_PI/4.; // spin0: r0=9; spin08: r0=4
@@ -265,6 +276,8 @@ void ThickDisk::radiativeQ(double Inu[], // output
   double DeltaB = B0*gauss2d;
 
   //BB += DeltaB;
+  //if (fabs(coord_ph[1]*cos(coord_ph[2]))<0.5)
+  //cout << "thickdisk stuff= " << coord_ph[1] << " " << zz << " " << number_density << " " << BB << " " << thetae << endl;
 
   // // Random generator: mersenne_twister_engine seeded with rd()
   // std::random_device rd;
@@ -294,7 +307,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
   spectrumThermalSynch_->temperature(temperature);
   spectrumThermalSynch_->numberdensityCGS(number_density);
   spectrumThermalSynch_->angle_averaged(1.); // impose angle-averaging
-  spectrumThermalSynch_->angle_B_pem(0.);   // so we don't care about angle
+  spectrumThermalSynch_->angle_B_pem(M_PI/2.);   // so we don't care about angle
   spectrumThermalSynch_->cyclotron_freq(nu0);
   double besselK2 = bessk(2, 1./thetae);
   spectrumThermalSynch_->besselK2(besselK2);
@@ -320,7 +333,13 @@ void ThickDisk::radiativeQ(double Inu[], // output
     double jnu_tot = jnu_synch[ii],
       anu_tot = anu_synch[ii];
 
+    //if (rcyl<1.5 && fabs(zz)<0.01) jnu_tot=3e-15; // TEST!!
+
     //cout << "in disk stuff: " << zz << " " << rcyl << " " << nu_ems[0]  << " " << number_density << " " << nu0 << " " << temperature << " " << thetae << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
+    //if (nu_ems[ii]>1e9)
+    //  cout << dsem << " " << nu_ems[ii] << " " << jnu_tot << " " << anu_tot << endl;
+    //if (nu_ems[ii]>1e9 && fabs(coord_ph[1]*cos(coord_ph[2]))<0.5)
+    //  cout << "disk nu jnu anu in cgs= " <<nu_ems[ii] << " " << jnu_tot*10. << " " << anu_tot*0.01 << endl;
 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());

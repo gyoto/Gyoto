@@ -73,6 +73,16 @@ GYOTO_PROPERTY_END(Metric::Generic, Object::properties)
 #define __default_christoffel_coef 16
 #define __default_christoffel_matrix 32
 
+Metric::Generic::Generic() :
+  SmartPointee(), Object("anonymous metric"), mass_(1.), coordkind_(GYOTO_COORDKIND_UNSPECIFIED),
+  __defaultfeatures(0),
+  delta_min_(GYOTO_DEFAULT_DELTA_MIN),
+  delta_max_(GYOTO_DEFAULT_DELTA_MAX),
+  delta_max_over_r_(GYOTO_DEFAULT_DELTA_MAX_OVER_R),
+  keplerian_(false)
+{
+}
+
 Metric::Generic::Generic(const int coordkind, const std::string &name) :
   SmartPointee(), Object(name), mass_(1.), coordkind_(coordkind),
   __defaultfeatures(0),
@@ -110,9 +120,6 @@ Metric::Generic::~Generic(){
 }
 
 // Output
-
-const string Metric::Generic::kind() const {return kind_;}
-void Metric::Generic::kind(const string src) { kind_ = src;}
 
 /***************Definition of the physical scene**************/
 

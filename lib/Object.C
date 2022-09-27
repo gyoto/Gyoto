@@ -46,6 +46,11 @@ Gyoto::Object::Object():kind_(""), plugins_() {}
 Gyoto::Object::Object(Object const &o):kind_(o.kind_), plugins_(o.plugins_) {}
 Gyoto::Object::~Object() {}
 
+// Output
+
+string Gyoto::Object::kind() const {return kind_;}
+void Gyoto::Object::kind(const string src) { kind_ = src;}
+
 bool Object::isThreadSafe() const {
   /**
    * The default behaviour is to consider that everything is
@@ -193,6 +198,7 @@ void Object::set(Property const &p, Value val) {
 }
 
 void Object::set(std::string const &pname, Value val) {
+  GYOTO_DEBUG_EXPR(pname);
   Property const * p = property(pname);
   if (!p) GYOTO_ERROR("No Property by that name");
   set(*p, ((p->type == Property::bool_t && pname == p->name_false)?
@@ -310,6 +316,9 @@ Property const * Object::property(std::string const pname) const {
 
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
+  GYOTO_DEBUG_EXPR(fmp);
+  GYOTO_DEBUG_EXPR(p.name);
+  GYOTO_DEBUG_EXPR(p.type);
   FactoryMessenger * childfmp=NULL;
   string name=p.name;
   switch (p.type) {
@@ -449,7 +458,10 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 
 void Object::setParameter(Property const &p, string const &name,
 			  string const & content, string const & unit) {
+  GYOTO_DEBUG_EXPR(name);
   Value val;
+  GYOTO_DEBUG_EXPR(p.type);
+  GYOTO_DEBUG_EXPR(Property::double_t);
   switch (p.type) {
   case Property::bool_t:
     val = (name==p.name);
@@ -465,6 +477,7 @@ void Object::setParameter(Property const &p, string const &name,
     break;
   case Property::double_t:
     val = Gyoto::atof(content.c_str());
+    GYOTO_DEBUG << "calling set(p, val, unit)" << std::endl;
     set(p, val, unit);
     return;
   case Property::filename_t:
@@ -483,6 +496,7 @@ void Object::setParameter(Property const &p, string const &name,
   default:
     GYOTO_ERROR("Property type unimplemented in Object::setParameter()");
   }
+  GYOTO_DEBUG << "calling set" << std::endl;
   set(p, val);
 }
 

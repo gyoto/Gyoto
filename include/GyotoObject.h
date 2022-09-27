@@ -234,28 +234,28 @@ class Gyoto::Object
   virtual ~Object();
 
   /// Set Value of a Property
-  void set(Property const &p, Value val);
+  virtual void set(Property const &p, Value val);
 
   /// Set Value (expressed in unit) of a Property
-  void set(Property const &p, Value val, std::string const &unit);
+  virtual void set(Property const &p, Value val, std::string const &unit);
 
   /// Set Value of a Property
-  void set(std::string const &pname, Value val);
+  virtual void set(std::string const &pname, Value val);
 
   /// Set Value (expressed in unit) of a Property
-  void set(std::string const &pname, Value val, std::string const &unit);
+  virtual void set(std::string const &pname, Value val, std::string const &unit);
 
   /// Get Value of a Property
-  Value get(Property const &p) const;
+  virtual Value get(Property const &p) const;
 
   /// Get Value of a Property
-  Value get(std::string const &pname) const;
+  virtual Value get(std::string const &pname) const;
 
   /// Get Value of a Property, converted to unit
-  Value get(Property const &p, std::string const &unit) const;
+  virtual Value get(Property const &p, std::string const &unit) const;
 
   /// Get Value of a Property, converted to unit
-  Value get(std::string const &pname, std::string const &unit) const;
+  virtual Value get(std::string const &pname, std::string const &unit) const;
 
   /// Find property by name
   /**
@@ -442,6 +442,19 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
     * Describe all properties that this instance supports.
     */
    void help() const ;
+
+protected:
+  /**
+   * \brief Set kind_
+   *
+   * kind(const std::string) is protected because, for most Objects,
+   * it should not be changed in runtime.
+   */
+  virtual void kind(const std::string); ///< Set kind_
+
+public:
+  virtual std::string kind() const; ///< Get kind_
+
 };
 
 #endif

@@ -41,18 +41,25 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(ThinDiskProfile)
+GYOTO_PROPERTY_BOOL(ThinDiskProfile, CircularMotion, NoCircularMotion,
+		    circularMotion)
 GYOTO_PROPERTY_END(ThinDiskProfile, ThinDisk::properties)
 
 //#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
 
+bool ThinDiskProfile::circularMotion() const {return circular_motion_;}
+void ThinDiskProfile::circularMotion(bool circ) {circular_motion_=circ;}
+
 ThinDiskProfile::ThinDiskProfile() :
-  ThinDisk("ThinDiskProfile")
+  ThinDisk("ThinDiskProfile"),
+  circular_motion_(1)
 {
   if (debug()) cerr << "DEBUG: ThinDiskProfile Construction" << endl;
 }
 
 ThinDiskProfile::ThinDiskProfile(const ThinDiskProfile& o) :
-  ThinDisk(o)
+  ThinDisk(o),
+  circular_motion_(o.circular_motion_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
@@ -88,7 +95,7 @@ double ThinDiskProfile::emission(double nu, double,
   
   double tmp = gamma+asinh((rr-mu)/sigG);
   double emiss = exp(-0.5*tmp*tmp)/sqrt((rr-mu)*(rr-mu)+sigG*sigG);
-  return 1e-6*emiss; // 1e-6 just for getting a reasonable flux
+  return 1e-5*emiss; // 1e-6 just for getting a reasonable flux
 }
 
 void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
@@ -109,25 +116,53 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
 
   //cout << "in velo, r isco= " << pos[1] << " " << risco << endl;
   double rr = pos[1];
-  if (rr > risco){
-    // Keplerian velocity above ISCO
-    gg_ -> circularVelocity(pos, vel, 1);
-  }else{
-    // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-    // initally from Cunnigham 1975
-    double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
-      gamma_ms = sqrt(1.-2./(3.*risco)),
-      delta = rr*rr - 2.*rr + SPIN*SPIN,
-      hh = (2.*rr - SPIN*lambda_ms)/delta;
+  //cout << "circ=" << circular_motion_ <<endl;
+  if (circular_motion_) {
+    // CIRCULAR ROTATION
+      if (rr > risco){
+	// Keplerian velocity above ISCO
+	gg_ -> circularVelocity(pos, vel, 1);
+      }else{
+	// See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
+	// initally from Cunnigham 1975
+	double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+	gamma_ms = sqrt(1.-2./(3.*risco)),
+	delta = rr*rr - 2.*rr + SPIN*SPIN,
+	hh = (2.*rr - SPIN*lambda_ms)/delta;
+	
+	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	vel[2] = 0.;
+	vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
+	
+	//cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
+      }
+    }else{
+    // RADIAL FALL
+    double gtt = gg_->gmunu(pos,0,0),
+      grr = gg_->gmunu(pos,1,1),
+      guptt = gg_->gmunu_up(pos,0,0),
+      guptp = gg_->gmunu_up(pos,0,3),
+      guprr = gg_->gmunu_up(pos,1,1);
+    
+    // 4-vel obtained by imposing: u_t=-1, u_phi=0, u^theta=0
+    // see FV notes SphericalVelocity.pdf for details
+    vel[0] = -guptt;
+    vel[1] = -sqrt((-1.-guptt)*guprr);
+    vel[2] = 0;
+    vel[3] = -guptp;
 
-    vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-    vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-    vel[2] = 0.;
-    vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
-
-    //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
+    double tol=1e-5;
+    double u2 = gg_->ScalarProd(pos,vel,vel);
+    //cout << "4vel,u2= " << rr << " " << pos[2] << " " << gtt << " " << grr << " " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << " " << u2 << endl;
+    
+    if (fabs(u2+1.)>tol or u2!=u2) {
+      cerr << " *** 4-velocity squared norm= " << u2 << endl;
+      throwError("In ThinDiskProfile: 4vel "
+		 "is not properly normalized!");
+    }
   }
-
+  
   //cout << "4vel= " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3]<< endl;
 }
 

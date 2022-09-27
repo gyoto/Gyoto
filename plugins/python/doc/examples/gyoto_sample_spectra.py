@@ -19,11 +19,12 @@
    val=sp(3e8/2e-6)
 
    Classes that aim at implementing the Gyoto::Spectrum::Generic
-   interface do so by providing the following methods:
+   interface do so by providing the following members and methods:
 
    __call__(self, nu): mandatory;
    __setitem__: optional;
-   integrate: optional.
+   integrate: optional;
+   properties, set, get: optional.
 
 '''
 
@@ -69,21 +70,24 @@ class PowerLaw:
     constant=0.
     exponent=0.
 
+    properties={"Constant": "double", "Exponent": "double"}
+
     def __setitem__(self, key, value):
         '''
-        This is how Gyoto sends the <Parameter/> XML entity:
+        This is how Gyoto sends the <Parameters/> XML entity:
         spectrum[i]=value
         i=0: set constant
         i=1: set exponent
         '''
-        if (key==0):
+        if (key==0 or key == "Constant"):
             self.constant = value
-        elif (key==1):
+        elif (key==1 or key == "Exponent"):
             self.exponent = value
         else:
             raise IndexError
+    set=__setitem__
 
-    def __getitem__(self, key, value):
+    def get(self, key):
         '''
         Implementing this is absolutely not necessary (Gyoto does not
         use it, as of now), but we can: it allows retrieving the
@@ -92,9 +96,9 @@ class PowerLaw:
         spectrum[0] == spectrum.constant
         spectrum[1] == spectrum.exponent
         '''
-        if (key==0):
+        if (key==0 or key=="Constant"):
             return self.constant
-        elif (key==1):
+        elif (key==1 or key=="Exponent"):
             return self.exponent
         else:
             raise IndexError
