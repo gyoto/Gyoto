@@ -127,6 +127,7 @@ double PageThorneDisk::emission(double nu_em, double dsem,
 				    state_t const &,
 				    double const coord_obj[8]) const{
   double Ibolo=bolometricEmission(nu_em,dsem,coord_obj);
+  //cout << "In page Ibolo= "<<Ibolo << endl;
   /*
     From Ibolo, find T, then Bnu(T)
    */
@@ -142,6 +143,9 @@ double PageThorneDisk::emission(double nu_em, double dsem,
   //cout << "r T nu Iem = " << coord_obj[1] << " " << TT << " " << nu_em << " " << Iem << endl;
   if (Iem < 0.) GYOTO_ERROR("In PageThorneDisk::emission"
 			   " blackbody emission is negative!");
+  // TESTING:
+  //double rr=coord_obj[1];
+  //Iem = 1./rr; // TEST !!!!!!!!
   return Iem;
 }
 
@@ -236,6 +240,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
   double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
 				    &coord_ph_hit[4]);// / 1.; 
                                        //this is nu_em/nu_obs
+  if (noredshift_) ggredm1=1.;
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
   if (uniflux_) ggred=1.;
   double dsem = dlambda*ggredm1; // *1.
@@ -368,24 +373,44 @@ void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *V
    */
   double vel[4]; // 4-velocity of emitter
   gg_->circularVelocity(co, vel);
+  //double gtt=gg_->gmunu(&cph[0],0,0);// TEST!!
+  //vel[0]=1./sqrt(-gtt);vel[1]=0.;vel[2]=0.;vel[3]=0.;
   
   Eigen::Matrix4d Omat;
   Omat << 1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
           0, 0, 0, 1;
-  double B4vect[4]={0.,0.,1.,0.};
+
+  double B4vect[4]={0.,0.,-1.,0.}; // vertical
+  //double B4vect[4]={0.,1.,0.,0.}; // radial
+  //double gtt=gg_->gmunu(&cph[0],0,0),
+  //  gpp=gg_->gmunu(&cph[0],3,3),
+  //  Bt=(-gpp*vel[3])/(gtt*vel[0]),
+    //B4vect[4]={Bt,1.,0.,1.}; // rad and azim
+  //  B4vect[4]={Bt,0.,0.,1.}; // pure azim
   double Chi=getChi(B4vect, cph, vel);
   //cout << Chi << endl;
 
   for (size_t ii=0; ii<nbnu; ++ii) {
     // Unpolarized quantities
     double I=emission(nuem[ii], dsem, cph, co);
-    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
+    //cout << "in page I= " << I << endl;
+    if (I>0.){
+      //cout << "In Page at coord= " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
+      //cout << "*** EVPA *** chi(rad), chi(deg) and cos chi= " << Chi << " " << Chi*180./M_PI << " " << cos(Chi) << endl;
+    }
+    double QQ = I*cos(2.*Chi), 
+      UU = I*sin(2.*Chi);
+    //cout << "QU= "<< QQ << " " << UU << endl;
+
+    // Carefully debug the radiative transfer before applying rotation
+    // Here without radiative transfer, just storing the I, Q, U
+    //Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
+    Inu[ii] = I; //Stokes(0);
+    Qnu[ii] = QQ; //Stokes(1);
+    Unu[ii] = UU; //Stokes(2);
+    Vnu[ii] = 0.; //Stokes(3);
     Onu[ii] = Omat;
   }
 }
