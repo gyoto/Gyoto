@@ -219,7 +219,7 @@ void SphericalAccretion::radiativeQ(double Inu[], // output
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
 
-    double jnu_tot = jnu_synch[ii],
+    double jnu_tot = jnu_synch[ii], // 1./(rr*rr),
       anu_tot=0.; // will stay 0 if use_selfabsorption_=False
     if (use_selfabsorption_)
       anu_tot = anu_synch[ii]; // else is updated
@@ -281,7 +281,7 @@ void SphericalAccretion::getVelocity(double const pos[4], double vel[4])
 
   // CHECKS
   
-  double tol=1e-5;
+  double tol=1e-4;
   
   // DEBUG: compare to Falcke+00 shadow paper formulas //////////////////
   // double spin=0.8;
