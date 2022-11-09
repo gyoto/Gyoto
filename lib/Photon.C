@@ -409,7 +409,7 @@ int Photon::hit(Astrobj::Properties *data) {
     uplus=0., uminus=0., uratio=0., eta=0., lambda=0., spin2=0., nn_Mino=0., Einit=0., Linit=0., spin=0.;
   double mytol=1e-6; // it must be possible to decrease this tolerance
   // by using a finer AbsTol and RelTol in xml (checked for one case).
-  if ((maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane) && compute_Mino==1){ // The first two conditions ensure that we are interesting in computing image orders; then we compute here everything that is constant along the null geodesic
+  if ((maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)) && compute_Mino==1){ // The first two conditions ensure that we are interesting in computing image orders; then we compute here everything that is constant along the null geodesic
     string kin = metric_->kind(); // check that we are in Kerr for Mino computation
     if (kin != "KerrBL")
       GYOTO_ERROR("Photon::hit: KerrBL needed for Mino time computation!");
@@ -679,7 +679,7 @@ int Photon::hit(Astrobj::Properties *data) {
     //*****************************
     // *** Image order tracking ***
     //*****************************
-    if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
+    if (maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)){
 
       if (compute_Mino==1){
 	/*
