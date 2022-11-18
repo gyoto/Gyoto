@@ -227,6 +227,11 @@ void ThickDisk::radiativeQ(double Inu[], // output
     GYOTO_ERROR("In ThickDisk::radiativeQ(): Unknown coordinate system kind");
   }
 
+  if (rr<thickDiskInnerRadius_) {
+    GYOTO_WARNING << "ThickDisk should typically have an inner radius at the "
+      "horizon, here r<rin!" << endl;
+  }
+
   double number_density = numberDensityAtInnerRadius_cgs_
     *pow(thickDiskInnerRadius_/rr, densitySlope_);
     //*(thickDiskInnerRadius_*thickDiskInnerRadius_)/(rr*rr);
