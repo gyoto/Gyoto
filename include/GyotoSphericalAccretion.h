@@ -64,6 +64,7 @@ class Gyoto::Astrobj::SphericalAccretion
   bool use_selfabsorption_; ///< True if selfabs is used in radiative transfer
   double sphericalAccretionInnerRadius_; ///< Inner radius of flow in M units
   double numberDensityAtInnerRadius_cgs_; ///< electron nb density at inner radius (cgs)
+  double densitySlope_; ///< electron density \propto r^{-densitySlope_}
   double temperatureAtInnerRadius_; ///< electron temperature at inner radius (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
   double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
@@ -92,6 +93,8 @@ class Gyoto::Astrobj::SphericalAccretion
   double numberDensityAtInnerRadius(std::string const &unit) const;
   void numberDensityAtInnerRadius(double ne);
   void numberDensityAtInnerRadius(double dens, std::string const &unit);
+  void densitySlope(double ss);
+  double densitySlope()const;
   void temperatureAtInnerRadius(double tt);
   double temperatureAtInnerRadius()const;
   void temperatureSlope(double ss);
