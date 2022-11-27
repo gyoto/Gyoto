@@ -169,12 +169,12 @@ Second form:
 
     if isinstance(coord2dset, core.Grid) and scalars is 0 :
         dims=(ny, nx)
-        array_double_fromnumpy1or2=core.array_double_fromnumpy2
-        array_double_fromnumpy2or3=core.array_double_fromnumpy3
+        array_double_fromnumpy1or2=core.array_double.fromnumpy2
+        array_double_fromnumpy2or3=core.array_double.fromnumpy3
     else:
         dims=(ntot,)
-        array_double_fromnumpy1or2=core.array_double_fromnumpy1
-        array_double_fromnumpy2or3=core.array_double_fromnumpy2
+        array_double_fromnumpy1or2=core.array_double.fromnumpy1
+        array_double_fromnumpy2or3=core.array_double.fromnumpy2
 
     # Prepare arrays to store results
     res = dict()
@@ -369,9 +369,9 @@ def _Worldline_getCartesian(self, t=None, *arrays):
             raise ValueError('all arrays must be the same size')
         core._core.Worldline_getCartesian(
             self,
-            core.array_double_fromnumpy1(t),
+            core.array_double.fromnumpy1(t),
             t.size,
-            *[core.array_double_fromnumpy1(v) for v in arrays]
+            *[core.array_double.fromnumpy1(v) for v in arrays]
             )
 
 # Same for getCoord
@@ -420,7 +420,7 @@ def _Worldline_getCoord(self, t, *arrays):
             raise ValueError('all arrays must be the same size')
         core._core.Worldline_getCoord(
             self,
-            core.array_double_fromnumpy1(t),
+            core.array_double.fromnumpy1(t),
             t.size,
-            *[core.array_double_fromnumpy1(v) for v in arrays]
+            *[core.array_double.fromnumpy1(v) for v in arrays]
             )
