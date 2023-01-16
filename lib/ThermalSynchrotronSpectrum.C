@@ -37,7 +37,7 @@ Spectrum::ThermalSynchrotron::ThermalSynchrotron()
 : Spectrum::Generic("ThermalSynchrotron"),
   spectrumBB_(NULL), T_(10000.), numberdensityCGS_(0.),
   angle_B_pem_(0.), cyclotron_freq_(1.),
-  angle_averaged_(0), bessel_K2_(1.)
+  angle_averaged_(0), bessel_K2_(1.), useVos(1.)
 {
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -50,7 +50,8 @@ Spectrum::ThermalSynchrotron::ThermalSynchrotron(const ThermalSynchrotron &o)
   angle_B_pem_(o.angle_B_pem_),
   cyclotron_freq_(o.cyclotron_freq_),
   angle_averaged_(o.angle_averaged_),
-  bessel_K2_(o.bessel_K2_)
+  bessel_K2_(o.bessel_K2_),
+  useVos(o.useVos)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
@@ -138,6 +139,19 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
       *pow(1.-(1.-1./(gamma0*gamma0))*cth*cth,0.25)
       *Z0;
     //std::cout << "stuff in emis synch ther= " << cyclotron_freq_ << " " << nu << " " << chi0 << " " << ne0 << " " << gamma0 << " " << Z0 << " " << angle_B_pem_ << " " << emis_synch << std::endl;
+  }else if (useVos==1){
+    // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
+    if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
+      emis_synch=0;
+    else{
+      double EE=4.80320680e-10,S3=1.73205090765888,
+        ME=9.1093826e-28, CL=2.99792458e10;
+
+      double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
+        xx=nu/nuc;
+      double I_I=2.5651*(1 + 1.92*pow(xx,-1./3.) + 0.9977*pow(xx,-2./3.)) * exp(-1.8899 * pow(xx,1./3.));
+      emis_synch=numberdensityCGS_*EE*EE*nu/2./S3/CL/Theta_elec/Theta_elec*I_I;
+    }
   }else{
     // Pandya, Zhang, Chandra, Gammie, 2016
     // Marszewski, Prather, Joshi, Pandya, Gammie 2021
@@ -162,15 +176,30 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
   //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
 
   double emis_synch=0.;
-  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
-  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
-    xx = nu/nus,
-    Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
-    pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
-  emis_synch = numberdensityCGS_*         \
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*\
-    Js;
+  if (useVos==1){
+    // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
+    if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
+      emis_synch=0;
+    else{
+      double EE=4.80320680e-10,S3=1.73205090765888,
+        ME=9.1093826e-28, CL=2.99792458e10;
+
+      double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
+        xx=nu/nuc;
+      double I_Q=2.5651*(1 + 0.93193*pow(xx,-1./3.) + 0.499873*pow(xx,-2./3.)) * exp(-1.8899 * pow(xx,1./3.));
+      emis_synch=numberdensityCGS_*EE*EE*nu/2./S3/CL/Theta_elec/Theta_elec*I_Q;
+    }
+  }else{
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+    double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+      xx = nu/nus,
+      Js = exp(-pow(xx,1./3.))*sqrt(2.)*M_PI/27.*sin(angle_B_pem_)* \
+      pow(pow(xx,1./2.)+((7.*pow(Theta_elec,24./25.)+35.)/(10.*pow(Theta_elec,24./25.)+75.))*pow(2.,11./12.)*pow(xx,1./6.),2.);
+    emis_synch = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js;
+  }
 
   return emis_synch;
 }
@@ -188,15 +217,30 @@ double Spectrum::ThermalSynchrotron::jVnuCGS(double nu) const{
   //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
 
   double emis_synch=0.;
-  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
-  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
-    xx = nu/nus,
-    Js = exp(-pow(xx,1./3.))*cos(angle_B_pem_)/Theta_elec* \
-    (M_PI/3.+M_PI/3.*pow(xx,1./3.)+2./300.*sqrt(xx)+2.*M_PI/19.*pow(xx,2./3.));
-  emis_synch = numberdensityCGS_*         \
-    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
-    GYOTO_C_CGS*\
-    Js;
+  if (useVos==1){
+    // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
+    if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
+      emis_synch=0;
+    else{
+      double EE=4.80320680e-10,S3=1.73205090765888,
+        ME=9.1093826e-28,CL=2.99792458e10;
+
+      double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
+        xx=nu/nuc;
+      double I_V=(1.81348/xx+3.42319*pow(xx,-2./3.)+0.0292545*pow(xx,-0.5)+2.03773*pow(xx,-1./3.)) * exp(-1.8899 * pow(xx,1./3.));
+      emis_synch=2.*numberdensityCGS_*EE*EE*nu/tan(angle_B_pem_)/3./S3/CL/Theta_elec/Theta_elec/Theta_elec*I_V;
+    }
+  }else{
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+    double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+      xx = nu/nus,
+      Js = exp(-pow(xx,1./3.))*cos(angle_B_pem_)/Theta_elec* \
+      (M_PI/3.+M_PI/3.*pow(xx,1./3.)+2./300.*sqrt(xx)+2.*M_PI/19.*pow(xx,2./3.));
+    emis_synch = numberdensityCGS_*         \
+      GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+      GYOTO_C_CGS*\
+      Js;
+  }
 
   return emis_synch;
 }
@@ -250,16 +294,31 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double rho_Q=0;
-  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
-  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
-    xx = nu/nus,
-    f0=2.011*exp(-19.78*pow(xx,-0.5175))-cos(39.89*pow(xx,-0.5))*exp(-70.16*pow(xx,-0.6))-0.011*exp(-1.69*pow(xx,-0.5)),
-    fm=f0+(0.011*exp(-1.69*pow(xx,-0.5))-0.003135*pow(xx,4./3.))*1./2.*(1.+tanh(10*log(0.6648*pow(xx,-0.5))));
-    
-    rho_Q=numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*pow(cyclotron_freq_,2.)*pow(sin(angle_B_pem_),2.)/ \
-    (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
-    fm*(bessk(1., pow(Theta_elec,-1))/bessk(2., pow(Theta_elec,-1))+6.*Theta_elec);
+  if (useVos==1){
+    if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
+      rho_Q=0;
+    else{
+      double EE=4.80320680e-10,S3=1.73205090765888,
+        ME=9.1093826e-28, CL=2.99792458e10, S2=1.41421356237310;
 
+      double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
+        omega0=2.*M_PI*cyclotron_freq_,
+        Xe=Theta_elec*sqrt(S2*sin(angle_B_pem_)*(1.e3*omega0/2./M_PI/nu));
+      double extraterm=(0.011*exp(-Xe/47.2)-pow(2.,-1./3.)/pow(3.,23./6.)*M_PI*1.e4*pow(Xe+1.e-16,-8./3.))*(0.5+0.5*tanh((log(Xe)-log(120.))/0.1)),
+        jffunc=2.011*exp(-pow(Xe,1.035)/4.7)-cos(Xe*0.5)*exp(-pow(Xe,1.2)/2.73)-0.011*exp(-Xe/47.2)+extraterm;
+      rho_Q=2.*M_PI*nu/2./CL*wp2*omega0*omega0/pow(2.*M_PI*nu,4)*jffunc*(Theta_elec/(2.*Theta_elec*Theta_elec)+6.*Theta_elec)*sin(angle_B_pem_)*sin(angle_B_pem_);
+    }
+  }else{
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+    double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+      xx = nu/nus,
+      f0=2.011*exp(-19.78*pow(xx,-0.5175))-cos(39.89*pow(xx,-0.5))*exp(-70.16*pow(xx,-0.6))-0.011*exp(-1.69*pow(xx,-0.5)),
+      fm=f0+(0.011*exp(-1.69*pow(xx,-0.5))-0.003135*pow(xx,4./3.))*1./2.*(1.+tanh(10*log(0.6648*pow(xx,-0.5))));
+      
+      rho_Q=numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*pow(cyclotron_freq_,2.)*pow(sin(angle_B_pem_),2.)/ \
+      (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
+      fm*(bessk1(pow(Theta_elec,-1))/bessk(2., pow(Theta_elec,-1))+6.*Theta_elec);
+  }
   return rho_Q;
 }
 
@@ -273,15 +332,32 @@ double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double rho_V=0;
-  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
-  double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
-    xx = nu/nus,
-    DeltaJ5=0.4379*log(1.+1.3414*pow(xx,-0.7515));
+  if (useVos==1){
+    double EE=4.80320680e-10,S3=1.73205090765888,
+      ME=9.1093826e-28, CL=2.99792458e10, S2=1.41421356237310;
+
+    double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
+      omega0=2.*M_PI*cyclotron_freq_,
+      Xe=Theta_elec*sqrt(S2*sin(angle_B_pem_)*(1.e3*omega0/2./M_PI/nu)),
+      Je=0.43793091*log(1.+0.00185777*pow(Xe,1.50316886));
+
+    if (Theta_elec>3.0){
+      rho_V=2.*M_PI*nu/CL*wp2*omega0/pow(2.*M_PI*nu,3)*((-log(1./Theta_elec/2.)-0.5772)-Je)/(2*Theta_elec*Theta_elec)*cos(angle_B_pem_);
+    }else if (0.2<Theta_elec and Theta_elec<=3.0){
+      rho_V=2.*M_PI*nu/CL*wp2*omega0/pow(2.*M_PI*nu,3)*(bessk0(1./Theta_elec)-Je)/bessk(2.,1./Theta_elec)*cos(angle_B_pem_);
+    }else{
+      rho_V=2.*M_PI*nu/CL*wp2*omega0/pow(2.*M_PI*nu,3)*cos(angle_B_pem_);
+    }
+  }else{
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+    double nus = 2./9.*cyclotron_freq_*Theta_elec*Theta_elec*sin(angle_B_pem_),
+      xx = nu/nus,
+      DeltaJ5=0.4379*log(1.+1.3414*pow(xx,-0.7515));
 
     rho_V=2.*numberdensityCGS_*pow(GYOTO_ELEMENTARY_CHARGE_CGS,2.)*cyclotron_freq_/ \
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,2.))* \
-    (bessk(0., pow(Theta_elec,-1.))-DeltaJ5)/bessk(2., pow(Theta_elec,-1.))*cos(angle_B_pem_);
-
+    (bessk0(pow(Theta_elec,-1.))-DeltaJ5)/bessk(2., pow(Theta_elec,-1.))*cos(angle_B_pem_);
+  }
   return rho_V;
 }
 
@@ -384,6 +460,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jInu[], double jQnu[], doub
       rQnucur = rQnuCGS(nu);
       rUnucur = rUnuCGS(nu);
       rVnucur = rVnuCGS(nu);
+      //std::cout << "jQ/jI :" << jQnucur/jInucur << std::endl; 
     }else{
       double th0=0.01, thNm1=M_PI-0.01; // sin(theta) must never be 0
       double hh=(thNm1-th0)/double(nstep_angint);
