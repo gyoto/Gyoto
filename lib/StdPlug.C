@@ -33,6 +33,7 @@
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
+#include "GyotoFreeStar.h"
 #include "GyotoInflateStar.h"
 #include "GyotoTorus.h"
 #include "GyotoDeformedTorus.h"
@@ -87,6 +88,7 @@ extern "C" void __GyotostdplugInit() {
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
   Astrobj::Register("StarTrace", &(Astrobj::Subcontractor<Astrobj::StarTrace>));
   Astrobj::Register("FixedStar", &(Astrobj::Subcontractor<Astrobj::FixedStar>));
+  Astrobj::Register("FreeStar", &(Astrobj::Subcontractor<Astrobj::FreeStar>));
   Astrobj::Register("InflateStar",      &(Astrobj::Subcontractor<Astrobj::InflateStar>));
   Astrobj::Register("Torus",     &(Astrobj::Subcontractor<Astrobj::Torus>));
   Astrobj::Register("OscilTorus",

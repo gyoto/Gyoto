@@ -14,6 +14,7 @@
 #include "GyotoStar.h"
 #include "GyotoStarTrace.h"
 #include "GyotoFixedStar.h"
+#include "GyotoFreeStar.h"
 #include "GyotoInflateStar.h"
 #include "GyotoTorus.h"
 #include "GyotoOscilTorus.h"
