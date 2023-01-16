@@ -61,6 +61,7 @@ class Gyoto::Astrobj::SphericalAccretion
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::SphericalAccretion>;
  private:
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_;
+  bool use_selfabsorption_; ///< True if selfabs is used in radiative transfer
   double sphericalAccretionInnerRadius_; ///< Inner radius of flow in M units
   double numberDensityAtInnerRadius_cgs_; ///< electron nb density at inner radius (cgs)
   double temperatureAtInnerRadius_; ///< electron temperature at inner radius (K)
@@ -83,6 +84,8 @@ class Gyoto::Astrobj::SphericalAccretion
   // Accessors
   // ---------
  public:
+  void useSelfAbsorption(bool abs) ;
+  bool useSelfAbsorption() const;
   void sphericalAccretionInnerRadius(double hh);
   double sphericalAccretionInnerRadius() const;
   double numberDensityAtInnerRadius() const;

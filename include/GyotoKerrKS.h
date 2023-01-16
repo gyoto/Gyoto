@@ -106,7 +106,7 @@ class Gyoto::Metric::KerrKS
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 
-  virtual int isStopCondition(double const * const coord) const;
+  virtual int isStopCondition(double const coord[8]) const;
 
   virtual int setParameter(std::string name,
 			   std::string content,

@@ -5,9 +5,9 @@
   system, in flat space-time. Computation uses the spherical
   coordinates.
 
-  <Metric kind = "Minkowski">
+  <Metric kind = "KerrBL">
+    <Spin> 0. </Spin>
     <Mass unit="sunmass"> 4e6 </Mass>
-    <Cartesian/>
   </Metric>
 
   <Screen>
@@ -25,12 +25,34 @@
   <Astrobj kind = "Python::Standard">
     <Module>gyoto_sample_standard</Module>
     <Class>FixedStar</Class>
-    <CriticalValue> 12 </CriticalValue>
-    <SafetyValue> 15 </SafetyValue>
 
-    For this object, the 3 first parameters give the position, the
-    last parameter give Cartesian (0) or spherical (non-zero).
-    <Parameters> 0 0 0 </Parameters>
+    Standard objects define a potential of some sort through method
+    __call__, below CriticalValue is inside the object, above is
+    outside. SafetyValue must be slighlty above CriticalValue, a
+    minimum of __call__ is searched when the potential is below
+    SafetyValue to check whether the object has been crossed.
+    <!--CriticalValue> 9. </CriticalValue-->
+    <!--SafetyValue> 11. </SafetyValue-->
+
+    In this Python implementation of the FixedStar (like in the
+    eponymous C++ implementation), CriticalValue and SafetyValue are
+    both set when setting the convenience, ad-hoc property Radius
+    defined in Python. The other Python-defined properties are the 3
+    space coordinates of the center of the FixedStar, a spectrum and
+    an opacity.
+    <Position> 0. 0. 0. </Position>
+    <Radius> 12. </Radius>
+    <Spectrum kind="PowerLaw">
+      <Exponent> 0 </Exponent>
+      <Constant> 0.001 </Constant>
+    </Spectrum>
+    <Opacity kind="PowerLaw">
+      <Exponent> 0 </Exponent>
+      <Constant> 0.01 </Constant>
+    </Opacity>
+
+    Gyoto::Astrobj::Python::Standard also support the rest of the
+    Gyoto::Astrobj::Standard Properties:
     <OpticallyThin/>
     <RMax>20.</RMax>
   </Astrobj>
@@ -47,5 +69,8 @@
     Intensity[erg.cm-2.s-1.sr-1.Hz-1]
     Intensity[mJy.sr-1]
     Intensity[Jy.sr-1]
+
+  <DeltaMaxOverR>0.01</DeltaMaxOverR>
+  <!--DeltaMax>0.1</DeltaMax-->
 
 </Scenery>

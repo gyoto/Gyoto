@@ -1,3 +1,24 @@
+Unrelease : 
+    * New Astrobj::Plasmoid:
+        Uniform sphere of Plasma with a constant or linear increase of the radius.
+        Two types of orbits : 
+          - Circular in the equatorial plane
+          - Helical (constant polar angle)
+        j_nu and a_nu are read in fits file.
+    * New class : FitsRW:
+        Class which generates fits file from outputs of simulations
+          for the Astrobj::Plasmoid
+    * KappaDistributionSynchrotronSpectrum: correction of the calculation of j_nu and a_nu
+    * PowerLawSynchrotronSpectrum: correction of the calculation of j_nu and a_nu
+    * Astrobj::FlaredDiskSynchrotron:
+      + Corrections for MPI
+      + Correction API : return the correct Polytropic Index
+      + Add the possibility to have a non constant time step (for the input simulated disk)
+    * GridData2D : 
+      + Possibility to provide the time array for non constant time step (optional)
+      + Add security check
+        
+
 1.4.4 2020/02/28 BUG
    * Officially drop Python 2.7 support
    * Astrobj::ThickDisk:

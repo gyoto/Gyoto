@@ -76,6 +76,7 @@ PYTHON_INCLUDES = @PYTHON_INCLUDES@
 PYTHON_LDFLAGS = @PYTHON_LDFLAGS@
 PYTHON_LIBS = @PYTHON_LIBS@
 PYTHON_PREFIX = @PYTHON_PREFIX@
+PYTHON_BUILD_DIR = build/lib.`python3 -c "import distutils.util,sys ; print('{}-{}.{}'.format(distutils.util.get_platform(), sys.version_info.major, sys.version_info.minor))"`
 
 CPPFLAGS=-I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
@@ -97,7 +98,15 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
-all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
+all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS) directories setup-check
+
+setup-check:
+	mkdir -p $(PYTHON_BUILD_DIR)
+	cp -rf tests $(PYTHON_BUILD_DIR)
+
+directories:
+	mkdir -p dist
+	mkdir -p Gyoto.egg-info
 
 ../doc/xml/index.xml:
 	cd ../doc; $(MAKE) doxygen.stamp
@@ -186,9 +195,10 @@ clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
-	-rm doxygen_sqlite3.db gyoto_*installed.txt
+	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc
 	-rm -Rf _gyoto*.so Gyoto*.egg-info _*.so
+	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/
 
 # Clean up the output of configure
 distclean: clean 
@@ -205,7 +215,7 @@ dist:
 
 # Use the setup.py test command
 check:
-	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=@srcdir@:$$PYTHONPATH $(PYTHON) -B setup.py test
+	cd $(PYTHON_BUILD_DIR) ; LD_LIBRARY_PATH=../../../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -B -m unittest tests/*.py
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here

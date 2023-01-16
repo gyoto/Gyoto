@@ -332,8 +332,6 @@ private:
    */
   virtual double deltaMax(double coord[8]);
 
-  const std::string kind() const; ///< Get the kind of the Astrobj (e.g. "Star")
-
   /**
    *  Set maximal distance from center of coordinate system at which a
    *  Photon may hit the object.

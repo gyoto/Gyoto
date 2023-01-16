@@ -141,13 +141,12 @@ class Gyoto::Spectrum::Generic
  public:
   GYOTO_OBJECT;
 
+  Generic();
   Generic(const std::string kind); ///< Set kind in constructor
   Generic(const Spectrum::Generic &);
   virtual Generic * clone() const; ///< Cloner
 
   virtual ~Generic() ; ///< Destructor: does nothing.
-
-  const std::string kind() const; ///< Get spectrum kind
 
   virtual double operator()(double nu) const =0;
           ///< I_nu = mySpectrum(nu), nu in Hz. Assumes optically thick regime.

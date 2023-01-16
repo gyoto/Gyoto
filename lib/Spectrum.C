@@ -39,6 +39,8 @@ GYOTO_PROPERTY_END(Spectrum::Generic, Object::properties)
 
 ///
 
+Spectrum::Generic::Generic()
+: SmartPointee(), Object() {}
 Spectrum::Generic::Generic(const string kin)
 : SmartPointee(), Object(kin) {}
 Spectrum::Generic::Generic(const Generic& o)
@@ -53,7 +55,6 @@ Spectrum::Generic * Spectrum::Generic::clone() const
               // avoid warning, we won't get to that point
 }
 Spectrum::Generic::~Generic() { GYOTO_DEBUG << endl; }
-const string Spectrum::Generic::kind() const { return kind_; }
 
 double Spectrum::Generic::integrate(double nu1, double nu2) {
   double nu;

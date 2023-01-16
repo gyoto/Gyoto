@@ -1,5 +1,5 @@
 /*
-    Copyright 2015 Thibaut Paumard
+    Copyright 2015, 2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -27,7 +27,9 @@
 
 using namespace Gyoto;
 
+#if PY_VERSION_HEX < 0x03070000
 static PyThreadState* mainPyThread=NULL;
+#endif
 
 namespace Gyoto {
   // import_array is actually a MACRO which returns a value.
@@ -60,14 +62,16 @@ extern "C" void __GyotoPluginInit() {
   Py_XDECREF(PyImport_ImportModule("numpy"));
   if (PyErr_Occurred()) {
     PyErr_Print();
-    GYOTO_ERROR("Failed imorting numpy");
+    GYOTO_ERROR("Failed importing numpy");
   }
   Gyoto::eat_import_array();
 
+# if PY_VERSION_HEX < 0x03070000
   if (!PyEval_ThreadsInitialized()) {
     PyEval_InitThreads();
     mainPyThread = PyEval_SaveThread();
   }
+# endif
 
   if (PyErr_Occurred()) {
     PyErr_Print();

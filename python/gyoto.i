@@ -333,6 +333,11 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Standard)
 GyotoSmPtrTypeMapClass(Screen);
 GyotoSmPtrTypeMapClass(Scenery);
 GyotoSmPtrTypeMapClass(Photon);
+%extend Gyoto::SmartPointee {
+  long getPointer() {
+    return long($self);
+  }
+ };
 GyotoSmPtrTypeMapClass(SmartPointee);
 
 GyotoSmPtrTypeMapClassDerived(Spectrometer, Complex);
@@ -348,20 +353,24 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 // In: cast from target language representations for all the supported
 // types.
 %typemap(in) Gyoto::Value {
-  int res=0;
+  int res=-1;
   void *argp=0;
-  res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Value, 0);
-  if (SWIG_IsOK(res)) {
-    Gyoto::Value * temp = reinterpret_cast< Gyoto::Value * >(argp);
-    $1 = *temp;
-    if (SWIG_IsNewObj(res)) delete temp;
-  }
 
   if (!SWIG_IsOK(res)) {
     res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Metric__Generic, 0);
     if (SWIG_IsOK(res)) {
       Gyoto::SmartPointer<Gyoto::Metric::Generic> temp = reinterpret_cast< Gyoto::Metric::Generic * >(argp);
-      $1 = Gyoto::Value(temp);
+      if(temp) $1 = Gyoto::Value(temp);
+      else $1 = Gyoto::Value();
+    }
+  }
+
+  if (!SWIG_IsOK(res)) {
+    res=SWIG_ConvertPtr($input, &argp, SWIGTYPE_p_Gyoto__Value, 0);
+    if (SWIG_IsOK(res)) {
+      Gyoto::Value * temp = reinterpret_cast< Gyoto::Value * >(argp);
+      $1 = *temp;
+      if (SWIG_IsNewObj(res)) delete temp;
     }
   }
 

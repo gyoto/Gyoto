@@ -1,7 +1,0 @@
-This is a python plug-in for Gyoto. It is part of Gyoto and has the
-same copyright (GPL v3+). It is packaged in a subdirectory as an
-example for packaging Gyoto plug-ins.
-
-It is currently in development. The purpose is to be able to define
-some objects (e.g. spectra online in python instead of having to write
-a new C++ class each time.

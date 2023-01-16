@@ -26,20 +26,22 @@ GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::Standard,
 GYOTO_PROPERTY_DOUBLE(Gyoto::Astrobj::Python::Standard,
 		       CriticalValue, criticalValue,
       "The object is defined by __call__ < this value")
-GYOTO_PROPERTY_END(Astrobj::Python::Standard, Generic::properties)
+GYOTO_PROPERTY_END(Astrobj::Python::Standard, Astrobj::Standard::properties)
 
 GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::Standard)
 
 // Birth and death
 Gyoto::Astrobj::Python::Standard::Standard()
-: Astrobj::Standard("Python::Standard"),
+: Gyoto::Python::Object<Astrobj::Standard>(),
   pEmission_(NULL), pIntegrateEmission_(NULL), pTransmission_(NULL),
   pCall_(NULL), pGetVelocity_(NULL), pGiveDelta_(NULL),
   pEmission_overloaded_(false), pIntegrateEmission_overloaded_(false)
-{}
+{
+  kind("Python::Standard");
+}
 
 Gyoto::Astrobj::Python::Standard::Standard(const Standard& o)
-  : Astrobj::Standard(o),
+  : Gyoto::Python::Object<Astrobj::Standard>(o),
   pEmission_(o.pEmission_), pIntegrateEmission_(o.pIntegrateEmission_),
   pTransmission_(o.pTransmission_), pCall_(o.pCall_),
   pGetVelocity_(o.pGetVelocity_), pGiveDelta_(o.pGiveDelta_),
@@ -239,21 +241,23 @@ double Gyoto::Astrobj::Python::Standard::emission
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pNu, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
-  
-  Py_XDECREF(pR);
+
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
   Py_XDECREF(pNu);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Standard::emission()");
   }
-   
+ 
+  double res = PyFloat_AsDouble(pR);  
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -315,9 +319,7 @@ double Gyoto::Astrobj::Python::Standard::integrateEmission
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pN1, pN2, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
-  
-  Py_XDECREF(pR);
+
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
@@ -325,12 +327,16 @@ double Gyoto::Astrobj::Python::Standard::integrateEmission
   Py_XDECREF(pN1);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in Standard::integrateEmission()");
   }
    
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -395,21 +401,23 @@ double Gyoto::Astrobj::Python::Standard::transmission
   PyObject * pCo = PyArray_SimpleNewFromData(1, odims, NPY_DOUBLE, const_cast<double*>(co));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
-  
-  Py_XDECREF(pR);
+
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
   Py_XDECREF(pNu);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
-    GYOTO_ERROR("Error occurred in Standard::emission()");
+    GYOTO_ERROR("Error occurred in Standard::transmission()");
   }
    
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 

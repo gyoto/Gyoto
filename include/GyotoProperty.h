@@ -830,6 +830,9 @@ class Gyoto::Property
   /// If #type is #empty_t, link to another Property list
   Property const * const  parent;
   
+  /// Default constructor
+  Property();
+
   /// Constructor for #type==#empty_t
   Property(Property const * const ancestor);
 
@@ -943,6 +946,15 @@ class Gyoto::Property
 	   set_spectrometer_t set_spectrometer,
 	   get_spectrometer_t get_spectrometer,
 	   std::string doc);
+
+  /// Constructor setting only #name and #type
+  /**
+   * Used in the Python plug-in to provide peudo-properties
+   */
+  Property(std::string name, int type);
+
+  /// Get Property::type_e value from name
+  static type_e typeFromString(std::string stype);
 
 };
 

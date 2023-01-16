@@ -29,14 +29,17 @@ GYOTO_PROPERTY_THREAD_UNSAFE(Astrobj::Python::ThinDisk)
 
 // Birth and death
 Gyoto::Astrobj::Python::ThinDisk::ThinDisk()
-: Astrobj::ThinDisk("Python::ThinDisk"),
+: Gyoto::Python::Object<Astrobj::ThinDisk>(),
   pEmission_(NULL), pIntegrateEmission_(NULL), pTransmission_(NULL),
   pCall_(NULL), pGetVelocity_(NULL),
   pEmission_overloaded_(false), pIntegrateEmission_overloaded_(false)
-{}
+{
+  kind("Python::ThinDisk");
+}
 
 Gyoto::Astrobj::Python::ThinDisk::ThinDisk(const ThinDisk& o)
-  : Astrobj::ThinDisk(o),
+  :
+  Gyoto::Python::Object<Astrobj::ThinDisk>(o),
   pEmission_(o.pEmission_), pIntegrateEmission_(o.pIntegrateEmission_),
   pTransmission_(o.pTransmission_), pCall_(o.pCall_),
   pGetVelocity_(o.pGetVelocity_),
@@ -136,18 +139,20 @@ double Gyoto::Astrobj::Python::ThinDisk::operator()(double const coord[4]) {
   PyObject * pCoord = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE,
 						const_cast<double*>(coord));
   PyObject * pR = PyObject_CallFunctionObjArgs(pCall_, pCoord, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pCoord);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in ThinDisk::operator()()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -194,21 +199,23 @@ double Gyoto::Astrobj::Python::ThinDisk::emission
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pNu, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
   Py_XDECREF(pNu);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in ThinDisk::emission()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -270,9 +277,7 @@ double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pN1, pN2, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
@@ -280,12 +285,16 @@ double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
   Py_XDECREF(pN1);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in ThinDisk::integrateEmission()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }
 
@@ -352,20 +361,22 @@ double Gyoto::Astrobj::Python::ThinDisk::transmission
   PyObject * pCo = PyArray_SimpleNewFromData(1, odims, NPY_DOUBLE, const_cast<double*>(co));
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, pCo, NULL);
-  double res = PyFloat_AsDouble(pR);
 
-  Py_XDECREF(pR);
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
   Py_XDECREF(pDs);
   Py_XDECREF(pNu);
 
   if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in ThinDisk::transmission()");
   }
 
+  double res = PyFloat_AsDouble(pR);
+  Py_XDECREF(pR);
   PyGILState_Release(gstate);
+
   return res;
 }

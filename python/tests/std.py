@@ -2,6 +2,7 @@ import numpy
 import unittest
 import gyoto.core
 import gyoto.std
+import gyoto.metric
 import inspect
 
 class TestChernSimons(unittest.TestCase):
