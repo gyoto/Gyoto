@@ -73,6 +73,7 @@ class Gyoto::Astrobj::ThickDisk
   double temperatureSlope_; ///< electron temperature \propto r^{-temperatureSlope_}
   double densitySlope_; ///< electron density \propto r^{-densitySlope_}
   double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
+  std::string magneticConfig_; ///< Specify the magnetic field configuration for polarisation
 
   // Constructors - Destructor
   // -------------------------
@@ -110,6 +111,8 @@ class Gyoto::Astrobj::ThickDisk
   double densitySlope()const;
   void magnetizationParameter(double rr);
   double magnetizationParameter()const;
+  void magneticConfiguration(std::string config);
+  std::string magneticConfiguration() const;
   
  public:
   using Generic::metric;
@@ -122,6 +125,14 @@ class Gyoto::Astrobj::ThickDisk
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
   virtual void getVelocity(double const pos[4], double vel[4]) ;
+
+  virtual void radiativeQ(double *Inu, double *Qnu, double *Unu,
+      double *Vnu,
+      Eigen::Matrix4d *Onu,
+      double const *nuem , size_t nbnu,
+      double dsem,
+      state_t const &cph,
+      double const *co) const;
 
 };
 
