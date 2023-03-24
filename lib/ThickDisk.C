@@ -168,7 +168,8 @@ ThickDisk::ThickDisk() :
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
   densitySlope_(2.),
-  magnetizationParameter_(1.)
+  magnetizationParameter_(1.),
+  magneticConfig_("None")
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -186,7 +187,8 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   temperatureSlope_(o.temperatureSlope_),
   densitySlope_(o.densitySlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  magneticConfig_(o.magneticConfig_)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -405,73 +407,122 @@ double ThickDisk::operator()(double const coord[4]) {
 
 void ThickDisk::getVelocity(double const pos[4], double vel[4])
 {
-  double rcyl = pos[1]*sin(pos[2]);// cylindrical radius of current location
+  bool test=true;
+  if (!test){
+    double vel_circ[4], vel_rad[4];
+    double rcyl = pos[1]*sin(pos[2]);// cylindrical radius of current location
 
-  double vel_circ[4], vel_rad[4];
+    double rr = pos[1];
+    double gtt = gg_->gmunu(pos,0,0),
+      grr = gg_->gmunu(pos,1,1),
+      gpp = gg_->gmunu(pos,3,3),
+      gtp = gg_->gmunu(pos,0,3),
+      guptt = gg_->gmunu_up(pos,0,0),
+      guptp = gg_->gmunu_up(pos,0,3),
+      guppp = gg_->gmunu_up(pos,3,3),
+      guprr = gg_->gmunu_up(pos,1,1);
+    
+    // CIRCULAR VELOCITY
+    
+    // u_\mu = (u_t,0,0,u_phi) = -u_t (-1,0,0,ll)
+    // with ll = rcyl^{3/2}/(rcyl+1.)
+    
+    double mycst=1; // Gold+20 choice, Keplerian is mycst=-2, 
+    // see Appendix of 2021 M87 paper.
+    double ll=pow(rcyl,1.5)/(rcyl+mycst);
+    double u_t_minus=sqrt(-1./(guptt - 2.*guptp*ll + guppp*ll*ll));
+    double u_t = -u_t_minus, u_phi = u_t_minus*ll;
+    
+    vel_circ[0] = guptt*u_t + guptp*u_phi;
+    vel_circ[1] = 0.;
+    vel_circ[2] = 0.;
+    vel_circ[3] = guptp*u_t + guppp*u_phi;
+    
+    double Omega_circ = vel_circ[3]/vel_circ[0];
+    
+    // RADIAL VELOCITY
+    
+    // 4-vel obtained by imposing: u_t=-1, u_phi=0, u^theta=0
+    // see FV notes SphericalVelocity.pdf for details
+    vel_rad[0] = -guptt;
+    vel_rad[1] = -sqrt((-1.-guptt)*guprr);
+    vel_rad[2] = 0;
+    vel_rad[3] = -guptp;
 
-  double rr = pos[1];
-  double gtt = gg_->gmunu(pos,0,0),
-    grr = gg_->gmunu(pos,1,1),
-    gpp = gg_->gmunu(pos,3,3),
-    gtp = gg_->gmunu(pos,0,3),
-    guptt = gg_->gmunu_up(pos,0,0),
-    guptp = gg_->gmunu_up(pos,0,3),
-    guppp = gg_->gmunu_up(pos,3,3),
-    guprr = gg_->gmunu_up(pos,1,1);
-  
-  // CIRCULAR VELOCITY
-  
-  // u_\mu = (u_t,0,0,u_phi) = -u_t (-1,0,0,ll)
-  // with ll = rcyl^{3/2}/(rcyl+1.)
-  
-  double mycst=1; // Gold+20 choice, Keplerian is mycst=-2, 
-  // see Appendix of 2021 M87 paper.
-  double ll=pow(rcyl,1.5)/(rcyl+mycst);
-  double u_t_minus=sqrt(-1./(guptt - 2.*guptp*ll + guppp*ll*ll));
-  double u_t = -u_t_minus, u_phi = u_t_minus*ll;
-  
-  vel_circ[0] = guptt*u_t + guptp*u_phi;
-  vel_circ[1] = 0.;
-  vel_circ[2] = 0.;
-  vel_circ[3] = guptp*u_t + guppp*u_phi;
-  
-  double Omega_circ = vel_circ[3]/vel_circ[0];
-  
-  // RADIAL VELOCITY
-  
-  // 4-vel obtained by imposing: u_t=-1, u_phi=0, u^theta=0
-  // see FV notes SphericalVelocity.pdf for details
-  vel_rad[0] = -guptt;
-  vel_rad[1] = -sqrt((-1.-guptt)*guprr);
-  vel_rad[2] = 0;
-  vel_rad[3] = -guptp;
+    double Omega_rad = vel_rad[3]/vel_rad[0];
 
-  double Omega_rad = vel_rad[3]/vel_rad[0];
+    // MIXED VELOCITY
 
-  // MIXED VELOCITY
+    double alpha=alpha_veloparam_, beta=beta_veloparam_;
 
-  double alpha=alpha_veloparam_, beta=beta_veloparam_;
+    vel[1] = vel_circ[1] + (1-alpha)*(vel_rad[1]-vel_circ[1]);
+    vel[2] = 0.;
+    double Omega = Omega_circ + (1-beta)*(Omega_rad-Omega_circ);
+    double normfact = gtt + 2*Omega*gtp + Omega*Omega*gpp;
+    if (normfact>0) throwError("In ThickDisk::getVelocity: velocity "
+  			     "prescription non physical.");
+    vel[0] = sqrt(-(1. + grr*vel[1]*vel[1])/normfact);
+    vel[3] = Omega*vel[0];
 
-  vel[1] = vel_circ[1] + (1-alpha)*(vel_rad[1]-vel_circ[1]);
-  vel[2] = 0.;
-  double Omega = Omega_circ + (1-beta)*(Omega_rad-Omega_circ);
-  double normfact = gtt + 2*Omega*gtp + Omega*Omega*gpp;
-  if (normfact>0) throwError("In ThickDisk::getVelocity: velocity "
-			     "prescription non physical.");
-  vel[0] = sqrt(-(1. + grr*vel[1]*vel[1])/normfact);
-  vel[3] = Omega*vel[0];
-
-  //cout << "at rcyl, th-pi/2= " << rcyl << " " << fabs(pos[2]-M_PI/2.) << " u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
-  double tol=0.03, normcur=gg_->ScalarProd(pos,vel,vel) ;
-  //cout << "4vel at r z= " << pos[1]*sin(pos[2]) << " " << pos[1]*cos(pos[2]) << " " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << " " << normcur << endl; // gg_->ScalarProd(pos,vel,vel)
-  
-  if ((fabs(normcur+1.)>tol) ||
-      (normcur!=normcur) ||
-      (normcur==normcur+1)) {
-    cerr << setprecision(10) << "at rcyl th= " << rcyl << " " << pos[2] << ", u2= " << normcur << endl;
-    throwError("In ThickDisk: 4vel not properly normalized!");
+    //cout << "at rcyl, th-pi/2= " << rcyl << " " << fabs(pos[2]-M_PI/2.) << " u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
+    double tol=0.03, normcur=gg_->ScalarProd(pos,vel,vel) ;
+    //cout << "4vel at r z= " << pos[1]*sin(pos[2]) << " " << pos[1]*cos(pos[2]) << " " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << " " << normcur << endl; // gg_->ScalarProd(pos,vel,vel)
+    
+    if ((fabs(normcur+1.)>tol) ||
+        (normcur!=normcur) ||
+        (normcur==normcur+1)) {
+      cerr << setprecision(10) << "at rcyl th= " << rcyl << " " << pos[2] << ", u2= " << normcur << endl;
+      throwError("In ThickDisk: 4vel not properly normalized!");
+    }
   }
-  
+  else
+  {
+    double rr = pos[1], theta=pos[2];
+    double Risco = 6.;
+    double a = 0.;
+    if (rr>Risco){
+      double sth2=sin(theta)*sin(theta),
+      cth2=cos(theta)*cos(theta),
+      rho2=rr*rr+a*a*cth2,
+      a2=a*a,
+      r2=rr*rr,
+      DD=1.-2./rr+a2/r2,
+      mu= 1. +a2*cth2/r2;
+
+      double g_tt = -(1.-2./(rr*mu)),
+      g_tp = -2.*a*sth2/(rr*mu),
+      g_pp = r2*sth2*(1.+a2/r2+2.*a2*sth2/(r2*rr*mu));
+
+      /*if (g_tt!=gg_->gmunu(pos,0,0)
+          or g_tp!=gg_->gmunu(pos,0,3)
+          or g_pp!=gg_->gmunu(pos,3,3)){
+        cout << "g_tt : " << g_tt << ", " << gg_->gmunu(pos,0,0) << endl;
+        cout << "g_tp : " << g_tp << ", " << gg_->gmunu(pos,0,3) << endl;
+        cout << "g_pp : " << g_pp << ", " << gg_->gmunu(pos,3,3) << endl;
+        GYOTO_ERROR("metric set by hand not equal to real metric.");
+      }*/
+
+      double omega = 1./(pow(rr,1.5)+a),
+      m1oA2=g_tt+2.*omega*g_tp+omega*omega*g_pp,
+      AA=sqrt(-1./m1oA2);
+
+      vel[0]=AA;
+      vel[1]=0.;
+      vel[2]=0.;
+      vel[3]=AA*omega;
+    }else{
+      double vel_cov[4]={0.,0.,0.,0.};
+      vel_cov[0]=-1./sqrt(-gg_->gmunu_up(pos,0,0));
+      vel_cov[1]=0.;
+      vel_cov[2]=0.;
+      vel_cov[3]=0.;
+
+      vel[0]=gg_->gmunu_up(pos,0,0)*vel_cov[0];
+      vel[1]=0.;
+      vel[2]=0.;
+      vel[3]=gg_->gmunu_up(pos,0,3)*vel_cov[3];
+    }
+  }
 }
 
 bool ThickDisk::isThreadSafe() const {
@@ -488,4 +539,296 @@ void ThickDisk::metric(SmartPointer<Metric::Generic> gg) {
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed
   Generic::metric(gg);
+}
+
+void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
+           double *Vnu,
+           Eigen::Matrix4d *Onu,
+           double const *nuem , size_t nbnu,
+           double dsem,
+           state_t const &coord_ph,
+           double const *co) const {
+  // polarized radiativeQ
+  double rr, rcyl, theta, zz=0.;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr = coord_ph[1];
+    rcyl = coord_ph[1]*sin(coord_ph[2]);
+    theta = coord_ph[2];
+    zz   = coord_ph[1]*cos(coord_ph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
+    rr = sqrt(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
+        +coord_ph[3]*coord_ph[3]);
+    theta   = acos(coord_ph[3]/rr);
+    zz   = coord_ph[3];
+    break;
+  default:
+    GYOTO_ERROR("In ThickDisk::radiativeQ(): Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  //cout << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+
+
+  double number_density = numberDensityAtInnerRadius_cgs_
+    *pow(rr, densitySlope_);
+  //cout << "nb density before expo= " << number_density << endl;
+  double zsigma = thickDiskZGaussianSigma_*rr;
+  double expofact_zscaling = exp(-zz*zz/(2.*zsigma*zsigma)); // simple Gaussian modulation around z=0; RIAF model (Broderick+11) use zsigma=rcyl
+  //cout << "ne before expo= " << rr << " " <<thickDiskInnerRadius_ << " " <<  numberDensityAtInnerRadius_cgs_ << " " << number_density << endl;
+  number_density *= expofact_zscaling;
+  if (rr<thickDiskInnerRadius_) number_density=0.;
+  
+
+  double thetae = 200.*pow(rr, temperatureSlope_);
+  double temperature = GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*thetae/GYOTO_BOLTZMANN_CGS;
+
+
+  double BB0 = 100.; // Gauss
+  double BB = BB0*pow(rr,-1.);
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
+  
+  // CHOOSE BFIELD GEOMETRY
+  double B4vect[4]={0.,0.,0.,0.};
+  double B_1=0.,B_2=0.,B_3=0;
+  double spin = 0.;
+  double gtt = gg_->gmunu(&coord_ph[0],0,0),
+         grr = gg_->gmunu(&coord_ph[0],1,1),
+         gthth = gg_->gmunu(&coord_ph[0],2,2),
+         gpp = gg_->gmunu(&coord_ph[0],3,3);
+  double dx1=0.025,
+         dx2=0.025;
+
+  if (magneticConfig_=="None")
+    GYOTO_ERROR("Specify the magnetic field configuration");
+  if (magneticConfig_=="Vertical"){
+    double g_det = M_PI*M_PI*pow(rr,6)*pow(sin(theta),2);
+
+    double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
+           F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
+           F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
+           F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det);
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det);
+    B_3 = 0.;
+  }
+  else if (magneticConfig_=="Radial"){
+    double g_det = M_PI*M_PI*pow(rr,6)*pow(sin(theta),2);
+    double F11 = 1.-cos(theta-dx2*M_PI),
+           F12 = 1.-cos(theta+dx2*M_PI),
+           F21 = 1.-cos(theta-dx2*M_PI),
+           F22 = 1.-cos(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
+    B_3 = 0.;
+  }
+  else if (magneticConfig_=="Toroidal"){
+    /*double gtt=gg_->gmunu(&coord_ph[0],0,0),
+      gpp=gg_->gmunu(&coord_ph[0],3,3),
+      Bp=1.,
+      Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
+    B4vect[0]=Bt;
+    B4vect[3]=Bp;*/
+    B_1 = 0.;
+    B_2 = 0.;
+    B_3 = 1.;
+  }
+  else
+    GYOTO_ERROR("Unknown magnetic field configuration");
+
+  // compute contravariant velocity in KS' from BL
+  double dtKS_drBL   = 2. * rr / (rr*rr - 2.*rr + spin*spin);
+  double dphiKS_drBL = spin / (rr*rr - 2.*rr + spin*spin);
+  double Ucon_KSm[4]={0.,0.,0.,0.};
+  Ucon_KSm[0]=vel[0]+vel[1]*dtKS_drBL;
+  Ucon_KSm[1]=vel[1]/rr;
+  Ucon_KSm[2]=vel[2]/M_PI;
+  Ucon_KSm[3]=vel[3]+vel[1]*dphiKS_drBL;
+
+  // Compute KS' metric
+  double gcov_ksm[4][4];
+  double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+  double gcov_ks[4][4];
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      gcov_ks[mu][nu]=0.;
+
+  gcov_ks[0][0] = -1. + 2. * rr / rho2 ;
+  gcov_ks[0][1] = 2. * rr / rho2 ;
+  gcov_ks[0][3] = -2. * spin * rr * sin(theta)*sin(theta) / rho2;
+  gcov_ks[1][0] = gcov_ks[0][1];
+  gcov_ks[1][1] = 1. + 2. * rr / rho2 ;
+  gcov_ks[1][3] = -spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2);
+  gcov_ks[2][2] = rho2 ;
+  gcov_ks[3][0] = gcov_ks[0][3];
+  gcov_ks[3][1] = gcov_ks[1][3];
+  gcov_ks[3][3] = sin(theta)*sin(theta) * (rho2 + spin * spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2));
+
+  // convert from ks metric to a modified one using Jacobian
+  double dxdX[4][4];
+  double hslope=0.;
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      dxdX[mu][nu]=0.;
+
+  dxdX[0][0] = 1.;
+  dxdX[1][1] = rr;
+  dxdX[2][2] = M_PI  + hslope*2*M_PI*cos(2*theta); 
+  dxdX[3][3] = 1.;
+
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      gcov_ksm[mu][nu] = 0;
+      for (int lam = 0; lam < 4; ++lam) {
+        for (int kap = 0; kap < 4; ++kap) {
+          gcov_ksm[mu][nu] += gcov_ks[lam][kap] * dxdX[lam][mu] * dxdX[kap][nu];
+        }
+      }
+    }
+  }
+
+  // Compute covariante velocity in KS'
+  double Ucov_KSm[4]={0.,0.,0.,0.};
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      Ucov_KSm[mu] += gcov_ksm[mu][nu]*Ucon_KSm[nu];
+    }
+  }
+
+  // Copute Magnetic field in KS'
+  double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
+    B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
+    B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
+    B3=(B_3+B0*Ucon_KSm[3])/Ucon_KSm[0];
+
+  // Conversion Magnetic field from KS' -> BL
+  double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
+  B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
+  B4vect[1]=B1*rr;
+  B4vect[2]=B2*M_PI;
+  B4vect[3]=B3-B1*spin*rr/Delta;
+  
+  double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+  gg_->multiplyFourVect(B4vect,1./norm);
+
+  double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+
+  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4];
+  }
+  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
+  double bnorm = gg_->norm(&coord_ph[0],B4vect);
+  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
+  double theta_mag = acos(lscalb/(lnorm*bnorm));
+
+  
+  Eigen::Matrix4d Omat;
+  Omat << 1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1;
+
+ // Defining emission, absoprtion and rotation coefficients for the transmission matrix
+  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
+  
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initialze them to -1 to create error if not updated
+    jInu[ii]=-1.;
+    jQnu[ii]=-1.;
+    jUnu[ii]=-1.;
+    jVnu[ii]=-1.;
+    aInu[ii]=-1.;
+    aQnu[ii]=-1.;
+    aUnu[ii]=-1.;
+    aVnu[ii]=-1.;
+    rotQnu[ii]=-1.;
+    rotUnu[ii]=-1.;
+    rotVnu[ii]=-1.;
+  }
+
+  double besselK2 = bessk(2, 1./thetae);
+  //cout << "In ThickDisk: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << besselK2 << " " << theta_mag << endl;
+
+  // THERMAL SYNCHROTRON
+  spectrumThermalSynch_->temperature(temperature);
+  spectrumThermalSynch_->numberdensityCGS(number_density);
+  spectrumThermalSynch_->angle_averaged(0); // impose angle-averaging
+  spectrumThermalSynch_->angle_B_pem(theta_mag);   // so we don't care about angle
+  spectrumThermalSynch_->cyclotron_freq(nu0);
+  spectrumThermalSynch_->besselK2(besselK2);
+  //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
+  //cout << "nu passed to synchro= " << nuem[0] << endl;
+
+  //if (number_density==0.) {
+  if (number_density<1.e4) { // CHECK THAT
+    // Can happen due to strongly-killing z-expo factor
+    // if zsigma is small. Then leads to 0/0 in synchro stuff. TBC
+    for (size_t ii=0; ii<nbnu; ++ii){
+      jInu[ii]=0.;
+      jQnu[ii]=0.;
+      jUnu[ii]=0.;
+      jVnu[ii]=0.;
+      aInu[ii]=0.;
+      aQnu[ii]=0.;
+      aUnu[ii]=0.;
+      aVnu[ii]=0.;
+      rotQnu[ii]=0.;
+      rotUnu[ii]=0.;
+      rotVnu[ii]=0.;
+    }
+  }else{
+    spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+                                      aInu, aQnu, aUnu, aVnu,
+                                      rotQnu, rotUnu, rotVnu, nuem, nbnu);
+  }
+
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  for (size_t ii=0; ii<nbnu; ++ii) {
+    //cout << "In ThickDisk: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
+    //cout << "In ThickDisk: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
+    //cout << "In ThickDisk: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    //cout << Jstokes << endl;
+    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    //cout << Omat << endl;
+    // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
+    Eigen::Vector4d Stokes=Omat*Jstokes;
+    //cout << Stokes << endl;
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+
+    //cout << "In ThickDisk: Inu, Qnu, Unu, Vnu, dsem, LP: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu or Taunu is infinite");
+  }
+}
+
+void ThickDisk::magneticConfiguration(string config){
+  magneticConfig_=config;
+}
+
+string ThickDisk::magneticConfiguration() const{
+  return magneticConfig_;
 }

@@ -35,6 +35,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoStar.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -62,6 +63,8 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter_; ///< magnetization parameter
   double kappaIndex_; ///< hotspot synchrotron kappa-distribution index
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
+  std::string magneticConfig_;
 
   // Constructors - Destructor
   // -------------------------
@@ -104,6 +107,8 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter() const;
   double kappaIndex() const;
   void kappaIndex(double);
+  void magneticConfiguration(std::string config);
+  std::string magneticConfiguration() const;
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,

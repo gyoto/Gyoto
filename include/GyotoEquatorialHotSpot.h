@@ -29,6 +29,9 @@
 #include <GyotoAstrobj.h>
 #include <GyotoThinDisk.h>
 #include <GyotoWorldline.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
+#include <string>
+
 
 namespace Gyoto {
   namespace Astrobj {
@@ -40,12 +43,16 @@ class Gyoto::Astrobj::EquatorialHotSpot
 : public Gyoto::Astrobj::ThinDisk,
   public Gyoto::Worldline {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::EquatorialHotSpot>;
+
  private:
   double sizespot_;
   enum beaming_t {IsotropicBeaming=0, NormalBeaming=1,
 		  RadialBeaming=2, IsotropicConstant=3};
   beaming_t beaming_;
   double beamangle_;
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
+  std::string magneticConfig_; ///< Specify the magnetic field configuration for polarisation
+
  public:
   GYOTO_OBJECT;
   GYOTO_WORLDLINE;
@@ -65,6 +72,9 @@ class Gyoto::Astrobj::EquatorialHotSpot
 
   void beamAngle(double t);
   double beamAngle() const;
+
+  void magneticConfiguration(std::string config);
+  std::string magneticConfiguration() const;
 
   //
 

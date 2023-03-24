@@ -682,7 +682,7 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
 	Matrix4d Onu;
-	double alphasqrt, rsqrt, lambda1, lambda2, Theta, sigma;
+	double alpha2, r2, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
   double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
@@ -691,12 +691,21 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   double rU=rUnu*cos2Chi+rQnu*sin2Chi;
   double rV=rVnu;
 
-  alphasqrt = aQ*aQ+aU*aU+aV*aV;
-  rsqrt = rQ*rQ+rU*rU+rV*rV;
-  lambda1 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alphasqrt-rsqrt,2.)/2.,0.5);
-  lambda2 = pow(pow(pow(alphasqrt-rsqrt,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alphasqrt-rsqrt,2.)/2.,0.5);
+  alpha2 = aQ*aQ+aU*aU+aV*aV;
+  r2 = rQ*rQ+rU*rU+rV*rV;
+  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,2.)/2.,0.5);
+  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,2.)/2.,0.5);
   Theta = pow(lambda1,2)+pow(lambda2,2);
   sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
+
+  GYOTO_DEBUG
+  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
+  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
+  	<< "alpha2 : " << alpha2 << "\n"
+  	<< "r2 : " << r2 << "\n"
+  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
+  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
 
   double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
   	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
@@ -704,7 +713,7 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   	sinlb2=sin(lambda2*dsem*gg_->unitLength());
 
   if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
-  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite, one of the coefficient is to large !");
+  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
 
   Matrix4d zero;
   zero <<  0, 0, 0, 0,
@@ -754,32 +763,23 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 
   // Fill of M4
   M4 = zero;
-  M4(0,0)= (alphasqrt+rsqrt)/2.;
+  M4(0,0)= (alpha2+r2)/2.;
   M4(0,1)=aV*rU-aU*rV;
   M4(0,2)=aQ*rV-aV*rQ;
   M4(0,3)=aU*rQ-aQ*rU;
   M4(1,0)=-M4(0,1);
-  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alphasqrt+rsqrt)/2.;
+  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
   M4(1,2)=aQ*aU+rQ*rU;
   M4(1,3)=aV*aQ+rV*rQ;
   M4(2,0)=-M4(0,2);
   M4(2,1)=M4(1,2);
-  M4(2,2)=pow(aU,2)+pow(rU,2)-(alphasqrt+rsqrt)/2.;
+  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
   M4(2,3)=aU*aV+rU*rV;
   M4(3,0)=-M4(0,3);
   M4(3,1)=M4(1,3);
   M4(3,2)=M4(2,3);
-  M4(3,3)=pow(aV,2)+pow(rV,2)-(alphasqrt+rsqrt)/2.;
+  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
 	//cout << "M4 :\n" << M4 << endl;
-
-  GYOTO_DEBUG
-  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
-  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
-  	<< "alphasqrt : " << alphasqrt << "\n"
-  	<< "rsqrt : " << rsqrt << "\n"
-  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
-  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
-  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
 
   Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
   // Filling O matrix, output
@@ -835,10 +835,12 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   if (fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Ephi,Ephi)-1.)>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta,Etheta)-1.)>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec))>test_tol){
-    cerr << "Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << endl;
+      or fabs(gg_->norm(&cph[0],Ephi)-1.)>test_tol
+      or fabs(gg_->norm(&cph[0],Etheta)-1.)>test_tol){
+      //or fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec))>test_tol){
+    cerr << "(Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << "\n" 
+         << "(Ephi.Ephi, Etheta.Etheta, K.K)= " << fabs(gg_->norm(&cph[0],Ephi)) << " " << fabs(gg_->norm(&cph[0],Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec)) << endl;
+         //<< "K: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
     throwError("Polarization basis is not properly parallel transported!");
   }
 
@@ -855,9 +857,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   // photon_tgvec_orthu contains the projection orthogonal to u of the
   // wave vector. 
   // Normalizing this projection (which is not by default):
-  double norm=sqrt(gg_->ScalarProd(&cph[0],
-				   photon_tgvec_orthu,
-				   photon_tgvec_orthu));
+  double norm=gg_->norm(&cph[0],photon_tgvec_orthu);
   gg_->multiplyFourVect(photon_tgvec_orthu,1./norm);
 
   // For testing, Sch tetrad compo of photon tgvec (assumes rotating emitter).
@@ -875,22 +875,31 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
 
   /* ***PART TWO: FIELD VECTOR (could be B or E depending on elec) */
   double Vectproj[4];
+  norm=gg_->norm(&cph[0],fourvect);
+  if (norm<=test_tol)
+  	GYOTO_ERROR("norm of magnetic (or electric) vector is zero");
   for (int ii=0;ii<4;ii++)
-    Vectproj[ii] = fourvect[ii]; // initialize.
+    Vectproj[ii] = fourvect[ii]/norm; // initialize (normalised)
   // Check if vector fourvect is already orthogonal to 4-velocity:
   if (fabs(gg_->ScalarProd(&cph[0],Vectproj,vel))>1e-6){
     gg_->projectFourVect(&cph[0],Vectproj,vel); // Here we project the
 	  // magnetic 4vector orthogonal to u.
 	  // Normalize it:
-	  norm=sqrt(gg_->ScalarProd(&cph[0],Vectproj,Vectproj));
-	  if (norm<=0.)
+	  norm=gg_->norm(&cph[0],Vectproj);
+	  double gtt=gg_->gmunu(&cph[0],0,0),
+      grr = gg_->gmunu(&cph[0],1,1),
+      gthth = gg_->gmunu(&cph[0],2,2),
+      gpp=gg_->gmunu(&cph[0],3,3);
+	  //cout << "norm, r, gtt, grr, gthth, gpp: " << norm << "," << cph[1] << "," << gtt << "," << grr << "," << gthth << "," << gpp << endl;
+	  if (norm<=test_tol)
 	  	GYOTO_ERROR("Magnetic field vector is null.");
 	  gg_->multiplyFourVect(Vectproj,1./norm);
   }
+
   // Project fourvect orthogonally to K and normalize
   gg_->projectFourVect(&cph[0], Vectproj, photon_tgvec_orthu); // project.
-  norm=sqrt(gg_->ScalarProd(&cph[0],Vectproj,Vectproj));
-  gg_->multiplyFourVect(Vectproj,1./norm); 
+  norm=gg_->norm(&cph[0],Vectproj);
+  gg_->multiplyFourVect(Vectproj,1./norm);
   // For checking only: Sch tetrad compo of Vectproj:
   double Br_tetrad=sqrt(grr)*Vectproj[1],
     Bth_tetrad=sqrt(gthth)*Vectproj[2],
@@ -912,8 +921,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     tmp[ii]=cph[ii+4];
     Ephi_prime[ii]=Ephi[ii]; // initialize.
   }
-  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)
-			/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well
   // defined because the denominator cannot be zero,
   // it is the scalar prod of a timelike by a null vector
   gg_->addFourVect(Ephi_prime, tmp);
@@ -922,7 +930,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   // It is by construction a unit vector.
   if (fabs(gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,vel))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime)-1.)>test_tol){
+      or fabs(gg_->norm(&cph[0],Ephi_prime)-1.)>test_tol){
     cerr << "Prod scal Ephi: " << gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,vel) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime) << endl;
     throwError("Bad transformation of the polarization basis Ephi!");
   }
@@ -945,9 +953,10 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   if (fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime))>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Etheta_prime)-1.)>test_tol
-      or fabs(gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu)-1.)>test_tol){
-    //cout << "K.K= " << gg_->ScalarProd(&cph[0],photon_tgvec_orthu,photon_tgvec_orthu) << endl;
+      or fabs(gg_->norm(&cph[0],Etheta_prime))-1.>test_tol
+      or fabs(gg_->norm(&cph[0],photon_tgvec_orthu))-1.>test_tol){
+  	cerr << "Prod scal Etheta: " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime)) << " " << 
+  	fabs(gg_->norm(&cph[0],Etheta_prime)-1.) << " " << fabs(gg_->norm(&cph[0],photon_tgvec_orthu)-1.) << endl;
     throwError("Bad transformation of the polarization basis Etheta!");
   }
   // For checking only: Sch tetrad compo of Etheta:
@@ -992,6 +1001,11 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   double Vectproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
     Vectproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
   //cout << "Vectproj vec = " << Vectproj_dot_North << "*North + " << Vectproj_dot_West << "*West." << endl;
+
+  if (EVPA!=EVPA)
+    GYOTO_ERROR("In Astrobj::getChi(): EVPA is nan");
+  if (EVPA==EVPA+1.)
+    GYOTO_ERROR("In Astrobj::getChi(): EVPA is infinite");
 
   return EVPA;
 }

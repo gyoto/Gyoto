@@ -56,6 +56,7 @@ class Gyoto::Spectrum::ThermalSynchrotron : public Gyoto::Spectrum::Generic {
   double cyclotron_freq_; ///< Cyclotron frequency (e*B / 2*pi*me*c)
   bool angle_averaged_; ///< Boolean for angle averaging
   double bessel_K2_; ///< Bessel K2 function
+  int useVos;
 
  public:
   GYOTO_OBJECT;

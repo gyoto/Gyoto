@@ -147,16 +147,18 @@ void EquatorialHotSpot::setParameters(FactoryMessenger* fmp) {
 
 Gyoto::Astrobj::EquatorialHotSpot::EquatorialHotSpot()
   : ThinDisk("EquatorialHotSpot"), Worldline(), 
-    sizespot_(0.), beaming_(IsotropicBeaming), beamangle_(0.)
+    sizespot_(0.), beaming_(IsotropicBeaming), beamangle_(0.), spectrumThermalSynch_(NULL), magneticConfig_("None")
 {
   GYOTO_DEBUG  << "Building EquatorialHotSpot";
+  spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
 }
 
 Gyoto::Astrobj::EquatorialHotSpot::EquatorialHotSpot(const EquatorialHotSpot &o)
   : ThinDisk(o), Worldline(o),
-    sizespot_(o.sizespot_), beaming_(o.beaming_), beamangle_(o.beamangle_)
+    sizespot_(o.sizespot_), beaming_(o.beaming_), beamangle_(o.beamangle_), spectrumThermalSynch_(NULL), magneticConfig_(o.magneticConfig_)
 {
   GYOTO_DEBUG  << "Copying EquatorialHotSpot";
+  if (o.spectrumThermalSynch_()) spectrumThermalSynch_=o.spectrumThermalSynch_->clone();
 }
 EquatorialHotSpot * EquatorialHotSpot::clone() const { 
   return new EquatorialHotSpot(*this); }
@@ -253,11 +255,9 @@ void EquatorialHotSpot::radiativeQ(double *Inu, double *Qnu, double *Unu,
   // polarized radiativeQ
 
   double vel[4]; // 4-velocity of emitter
-  gg_->circularVelocity(co, vel);
-  
-  //double gtt=gg_->gmunu(&cph[0],0,0);
-  //vel[0]=1./sqrt(-gtt);vel[1]=0.;vel[2]=0.;vel[3]=0.;
-  //cout << "4vel test norm= " << gg_->ScalarProd(&cph[0],vel,vel) << endl;
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
   
   Eigen::Matrix4d Omat;
   Omat << 1, 0, 0, 0,
@@ -265,37 +265,143 @@ void EquatorialHotSpot::radiativeQ(double *Inu, double *Qnu, double *Unu,
           0, 0, 1, 0,
           0, 0, 0, 1;
 
-  // CHOOSE BFIELD GEOMETRY
-
-  // VERTICAL
-  double B4vect[4]={0.,0.,-1.,0.};
-
-  // RADIAL
-  //double B4vect[4]={0.,1.,0.,0.};
-
-  // AZIMUTHAL or RADIAL-AZIMUTHAL
-  //double gtt=gg_->gmunu(&cph[0],0,0),
-  //  gpp=gg_->gmunu(&cph[0],3,3),
-  //  Bp=1.,
-  //  Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]),
-  //  B4vect[4]={Bt,1.,0.,Bp}; // rad and azim
-  //  B4vect[4]={Bt,0.,0.,1.}; // pure azim
+ // Defining emission, absoprtion and rotation coefficients for the transmission matrix
+  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
   
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initialze them to -1 to create error if not updated
+    jInu[ii]=-1.;
+    jQnu[ii]=-1.;
+    jUnu[ii]=-1.;
+    jVnu[ii]=-1.;
+    aInu[ii]=-1.;
+    aQnu[ii]=-1.;
+    aUnu[ii]=-1.;
+    aVnu[ii]=-1.;
+    rotQnu[ii]=-1.;
+    rotUnu[ii]=-1.;
+    rotVnu[ii]=-1.;
+  }
+
+  // CHOOSE BFIELD GEOMETRY
+  double B4vect[4]={0.,0.,0.,0.};
+  if (magneticConfig_=="None")
+    GYOTO_ERROR("Specify the magnetic field configuration");
+  if (magneticConfig_=="Vertical"){
+    B4vect[2]=-1;
+  }
+  else if (magneticConfig_=="Radial"){
+    B4vect[1]=1;
+  }
+  else if (magneticConfig_=="Toroidal"){
+    double gtt=gg_->gmunu(&cph[0],0,0),
+      gpp=gg_->gmunu(&cph[0],3,3),
+      Bp=1.,
+      Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
+    B4vect[0]=Bt;
+    B4vect[3]=Bp;
+  }
+  else if (magneticConfig_=="Radial-Azimuthal"){
+    double gtt=gg_->gmunu(&cph[0],0,0),
+      gpp=gg_->gmunu(&cph[0],3,3),
+      Bp=1.,
+      Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
+    B4vect[0]=Bt;
+    B4vect[1]=1.;
+    B4vect[3]=Bp;
+  }
+  else
+    GYOTO_ERROR("Unknown magnetic field configuration");
+  
+  double B0 = 100.; // Gauss
+  double norm=sqrt(gg_->ScalarProd(&cph[0], B4vect, B4vect));
+  gg_->multiplyFourVect(B4vect,1./norm);
+
   double Chi=getChi(B4vect, cph, vel); // this is EVPA
 
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*B0
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  gg_->projectFourVect(&cph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=cph[ii+4]+vel[ii]*gg_->ScalarProd(&cph[0],&cph[4],vel);
+  }
+  double bnorm = gg_->norm(&cph[0],B4vect);
+  double lnorm = gg_->norm(&cph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&cph[0],photon_emframe,B4vect);
+  double theta_mag = acos(lscalb/(lnorm*bnorm));
+  
+
+  double n0 = 6e6; // cm-3
+  double Theta0=200; // Dimensionless temperature
+
+  double coord_spot[4]={co[0]};
+  const_cast<EquatorialHotSpot*>(this)
+    ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
+  //above: nasty trick to deal with constness of emission
+  double xspot=coord_spot[1], yspot=coord_spot[2];
+  //cout << "spot is at xy= " << xspot << " " << yspot << endl;
+  double rr=co[1], phi=co[3];
+  double difx=(rr*cos(phi)-xspot),
+    dify=(rr*sin(phi)-yspot);
+  double d2 = difx*difx+dify*dify;
+  double ds2=sizespot_*sizespot_;
+
+  double number_density=n0/3.*exp(-d2/(2.*ds2)),
+  Theta=Theta0*exp(-d2/(2.*ds2))*pow(rr,-0.84);
+
+  if (number_density<1e5) number_density=0.;
+  double temperature=GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*Theta/GYOTO_BOLTZMANN_CGS;
+
+  
+  double bessK2 = bessk(2, 1./Theta);
+  //cout << "In EquatorialHotSpot: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << B0 << " " << nu0 << " " << bessK2 << " " << theta_mag << endl;
+
+  // THERMAL SYNCHRO
+  spectrumThermalSynch_->numberdensityCGS(number_density);
+  spectrumThermalSynch_->temperature(temperature);
+  spectrumThermalSynch_->besselK2(bessK2);
+  spectrumThermalSynch_->angle_averaged(0);
+  spectrumThermalSynch_->angle_B_pem(theta_mag);
+  spectrumThermalSynch_->cyclotron_freq(nu0);
+
+  spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+                                    aInu, aQnu, aUnu, aVnu,
+                                    rotQnu, rotUnu, rotVnu, nuem, nbnu);
+
+
   for (size_t ii=0; ii<nbnu; ++ii) {
-    // INTENSITY
-    double I=emission(nuem[ii], dsem, cph, co);
-    if (I>0.){
-      //cout << "In Hotspot at coord= " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
-      //cout << "*** EVPA *** chi(rad), chi(deg) and cos chi= " << Chi << " " << Chi*180./M_PI << " " << cos(Chi) << endl;
-    }
-    Eigen::Vector4d Stokes=rotateJs(I, I, 0., 0., Chi);
+    //cout << "d2, ds2:" << ", " << d2 << ", " << ds2 << endl;
+    //cout << "In EquatorialHotSpot: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
+    //cout << "In EquatorialHotSpot: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
+    //cout << "In EquatorialHotSpot: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    //cout << Jstokes << endl;
+    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    //cout << Omat << endl;
+    // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
+    Eigen::Vector4d Stokes=Omat*Jstokes;
+    //cout << Stokes << endl;
     Inu[ii] = Stokes(0);
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Blob::radiativeQ: Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is infinite");
+
+    //cout << "In EquatorialHotSpot: Inu, Qnu, Unu, Vnu, dsem: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << endl;
+    //cout << "Onu :" << endl;
+    //cout << Omat << endl;
   }
 }
 
@@ -311,4 +417,12 @@ void EquatorialHotSpot::radiativeQ(double Inu[], // output
     Inu[ii]=emission(nu_ems[ii], dsem, coord_ph, coord_obj);
     Taunu[ii]=1.;
   }
+}
+
+void EquatorialHotSpot::magneticConfiguration(string config){
+  magneticConfig_=config;
+}
+
+string EquatorialHotSpot::magneticConfiguration() const{
+  return magneticConfig_;
 }
