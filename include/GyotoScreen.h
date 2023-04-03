@@ -551,7 +551,7 @@ class Gyoto::Screen
    * \param[out] dest position-velocity of the observer Photon. Preallocated.
    * 
    */
-  void getRayCoord(double x, double y, double dest[8]) const;
+  void getRayCoord(double x, double y, double dest[8], double* spherical_angle_a=NULL, double* spherical_angle_b=NULL) const;
 
   /// Get polarization triad
   /**
@@ -563,7 +563,7 @@ class Gyoto::Screen
    * 
    */
   void getRayTriad(double coord[8],
-		   double Ephi[4], double Etheta[4]) const;
+		   double Ephi[4], double Etheta[4], const double spherical_angle_a, const double spherical_angle_b) const;
 
   /// Get 8-coordinate of Photon hitting screen pixel
   /**
@@ -574,7 +574,7 @@ class Gyoto::Screen
    * \param[out] dest position-velocity of the Photon. Preallocated.
    * 
    */
-  void getRayCoord(const size_t i, const size_t j, double dest[8]) const;
+  void getRayCoord(const size_t i, const size_t j, double dest[8], double* spherical_angle_a=NULL, double* spherical_angle_b=NULL) const;
   
   /** \brief Convert metric 4-position to sky 3-position
    *
