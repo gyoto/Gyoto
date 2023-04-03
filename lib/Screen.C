@@ -484,7 +484,10 @@ void Screen::getScreen3(double output[]) const{
 void Screen::spectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=spr; }
 SmartPointer<Spectrometer::Generic> Screen::spectrometer() const { return spectro_; }
 
-void Screen::getRayCoord(const size_t i, const size_t j, double coord[], double* spherical_angle_a, double* spherical_angle_b) const {
+void Screen::getRayTriad(const size_t i, const size_t j,
+			 double coord[],
+			 bool compute_polar_basis,
+			 double Ephi[4], double Etheta[4]) const {
   double xscr, yscr;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
@@ -529,11 +532,14 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[], double*
     xscr=yscr=0.;
     GYOTO_ERROR("Unrecognized anglekind_");
   }
-  getRayCoord(xscr, yscr, coord); 
+  getRayTriad(xscr, yscr, coord,
+	      compute_polar_basis, Ephi, Etheta); 
 }
 
-void Screen::getRayCoord(double angle1, double angle2,
-			 double coord[], double* spherical_angle_a, double* spherical_angle_b) const
+void Screen::getRayTriad(double angle1, double angle2,			 
+			 double coord[],
+			 bool compute_polar_basis,
+			 double Ephi[4], double Etheta[4]) const
 
 {
   double normtol=1e-10;
@@ -567,8 +573,8 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
 
   coord[4]=coord[5]=coord[6]=coord[7]=0.;//initializing 4-velocity
-  //double spherical_angle_a,
-  //  spherical_angle_b;
+  double spherical_angle_a,
+    spherical_angle_b;
   
   switch (anglekind_) {
   case spherical_angles:
@@ -576,12 +582,12 @@ void Screen::getRayCoord(double angle1, double angle2,
       GYOTO screen labelled by spherical
       angles a and b (see Fig. in user guide)
      */
-    *spherical_angle_a = angle1+dangle1_;
-    *spherical_angle_b = angle2+dangle2_;
+    spherical_angle_a = angle1+dangle1_;
+    spherical_angle_b = angle2+dangle2_;
     break;
   case rectilinear:
-    *spherical_angle_a = atan(sqrt(angle1*angle1+angle2*angle2));
-    *spherical_angle_b = atan2(angle2, angle1);
+    spherical_angle_a = atan(sqrt(angle1*angle1+angle2*angle2));
+    spherical_angle_b = atan2(angle2, angle1);
     break;
   case equatorial_angles:
     /*
@@ -613,26 +619,26 @@ void Screen::getRayCoord(double angle1, double angle2,
 	angle1100=angle1, angle2100=angle2, a, b;
       a=acos(cos(angle1100)*cos(angle2100));
       b=atan2(tan(angle2100),sin(angle1100));
-      *spherical_angle_a=a.convert_to<double>();
-      *spherical_angle_b=b.convert_to<double>();
+      spherical_angle_a=a.convert_to<double>();
+      spherical_angle_b=b.convert_to<double>();
     }
 #else
     if (abs(angle1)<1e-6 || abs(angle2) < 1e-6) {
-      *spherical_angle_a = sqrt(angle1*angle1+angle2*angle2);
+      spherical_angle_a = sqrt(angle1*angle1+angle2*angle2);
     } else {
-      *spherical_angle_a = acos(cos(angle1)*cos(angle2));
+      spherical_angle_a = acos(cos(angle1)*cos(angle2));
     }
-    *spherical_angle_b =
+    spherical_angle_b =
 		   (angle1==0. && angle2==0.) ? 0. : atan2(tan(angle2),sin(angle1));
 #endif
     break;
   default:
-    *spherical_angle_a=*spherical_angle_b=0.;
+    spherical_angle_a=spherical_angle_b=0.;
     GYOTO_ERROR("Unknown angle type");
   }
 
   // Move these two angles to [0,pi], [0,2pi]
-  double s1tmp=*spherical_angle_a, s2tmp=*spherical_angle_b;
+  double s1tmp=spherical_angle_a, s2tmp=spherical_angle_b;
   while (s1tmp>M_PI) s1tmp-=2.*M_PI;
   while (s1tmp<-M_PI) s1tmp+=2.*M_PI;//then s1 in [-pi,pi]
   if (s1tmp<0.) {
@@ -641,8 +647,8 @@ void Screen::getRayCoord(double angle1, double angle2,
   }
   while (s2tmp>=2.*M_PI) s2tmp-=2.*M_PI;
   while (s2tmp<0.) s2tmp+=2.*M_PI;//then s2 in [0,2pi[
-  *spherical_angle_a=s1tmp;
-  *spherical_angle_b=s2tmp;
+  spherical_angle_a=s1tmp;
+  spherical_angle_b=s2tmp;
 
   /* 
      Tangent vector of incident photon in observer's local frame
@@ -653,9 +659,9 @@ void Screen::getRayCoord(double angle1, double angle2,
 
   //NB: following minus signs because the photon doesn't leave the screen, but
   //is heading towards it!
-  double vel[3]={-sin(*spherical_angle_a)*cos(*spherical_angle_b),
-		 -sin(*spherical_angle_a)*sin(*spherical_angle_b),
-		 -cos(*spherical_angle_a)};
+  double vel[3]={-sin(spherical_angle_a)*cos(spherical_angle_b),
+		 -sin(spherical_angle_a)*sin(spherical_angle_b),
+		 -cos(spherical_angle_a)};
   if (anglekind_ != spherical_angles) {
     // Rotate around Y by dangle1, then around new X by dangle2
     double c, s; sincos(dangle1_, &s, &c);
@@ -692,7 +698,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  GYOTO_ERROR("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayTriad: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -714,7 +720,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  GYOTO_ERROR("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayTriad: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -729,7 +735,7 @@ void Screen::getRayCoord(double angle1, double angle2,
       }
       break;
     default:
-      GYOTO_ERROR("Incompatible coordinate kind in Screen::getRayCoord()");
+      GYOTO_ERROR("Incompatible coordinate kind in Screen::getRayTriad()");
       break;
     }
 
@@ -788,34 +794,76 @@ void Screen::getRayCoord(double angle1, double angle2,
       +fourvel[3];
   }
   if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
-    GYOTO_SEVERE << "In Screen::getRayCoord: "
+    GYOTO_SEVERE << "In Screen::getRayTriad: "
 		 << "tangent 4-vector to photon not properly normalized: "
 		 << "norm = "
 		 << gg_->ScalarProd(coord,coord+4,coord+4)
 		 << endl;
   }
-}
 
-void Screen::getRayTriad(double coord[8],
-			 double Ephi[4], double Etheta[4], 
-       const double spherical_angle_a, const double spherical_angle_b) const {
-  // Defining polarization vectors
-  double e1[4], e2[4], e3[4];
-  for (size_t ii=0; ii<4; ++ii){
-    e1[ii]=e2[ii]=e3[ii]=0;
-  }
-  e1[3] = -1./sqrt(gg_->gmunu(coord,3,3));
-  e2[2] = -1./sqrt(gg_->gmunu(coord,2,2));
-  e3[1] = -1./sqrt(gg_->gmunu(coord,1,1));
-
-  for (size_t ii=0; ii<4; ++ii){
-    Ephi[ii] = (-pow(sin(spherical_angle_b),2.)*(1-cos(spherical_angle_a))-cos(spherical_angle_a))*e1[ii] \
-    + sin(spherical_angle_b)*cos(spherical_angle_b)*(1-cos(spherical_angle_a))*e2[ii] \
-    + cos(spherical_angle_b)*sin(spherical_angle_a)*e3[ii];
-    
-    Etheta[ii] = -sin(spherical_angle_b)*cos(spherical_angle_b)*(1.-cos(spherical_angle_a))*e1[ii] \
-    + (pow(cos(spherical_angle_b),2.)*(1.-cos(spherical_angle_a))+cos(spherical_angle_a))*e2[ii] \
-    - sin(spherical_angle_b)*sin(spherical_angle_a)*e3[ii];
+  if (compute_polar_basis==true){
+    switch (gg_ -> coordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      {
+	double ca, sa; sincos(spherical_angle_a, &sa, &ca);
+	double cb, sb; sincos(spherical_angle_b, &sb, &cb);
+	double Ephi_screenBasis[3] = {-sb*sb*(1-ca)-ca,
+				      sb*cb*(1-ca),
+				      cb*sa};
+	double Etheta_screenBasis[3] = {sb*cb*(1-ca),
+					-(cb*cb*(1-ca)+ca),
+					sb*sa};
+	
+	double cp, sp; sincos(euler_[0], &sp, &cp);
+	
+	if (observerkind_==GYOTO_OBSKIND_ATINFINITY){
+	  double grr=gg_->gmunu(coord,1,1), 
+	    gthth=gg_->gmunu(coord,2,2), gphph=gg_->gmunu(coord,3,3);
+	  // Ephi
+	  Ephi[0]=0.;
+	  Ephi[1]=-Ephi_screenBasis[2]/sqrt(grr);      
+	  Ephi[2]=(-sp*Ephi_screenBasis[0]
+		   +cp*Ephi_screenBasis[1])/sqrt(gthth);
+	  Ephi[3]=( cp*Ephi_screenBasis[0]
+		    +sp*Ephi_screenBasis[1])/sqrt(gphph);
+	  // Etheta
+	  Etheta[0]=0.;
+	  Etheta[1]=-Etheta_screenBasis[2]/sqrt(grr);
+	  Etheta[2]=(-sp*Etheta_screenBasis[0]
+		     +cp*Etheta_screenBasis[1])/sqrt(gthth);
+	  Etheta[3]=( cp*Etheta_screenBasis[0]
+		      +sp*Etheta_screenBasis[1])/sqrt(gphph);
+	}else{
+	  throwError("Observer should be at infinity");
+	}
+      
+	// double k_phi = gg_->gmunu(coord,3,3)*coord[7]
+	// 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
+	//                      // of tangent vector to null geodesic
+	// double ktheta = coord[6];
+	// double rr = coord[1];
+	// double sth=sin(coord[2]);
+	// if (sth==0.)
+	// 	GYOTO_ERROR("Please move Screen away from z-axis");
+	// double rsm1 = 1./(rr*sth);
+	
+	// double sp=sin(euler_[0]);
+	// double cp=cos(euler_[0]);
+	// // Ephi
+	// Ephi[0]=0.;
+	// Ephi[1]=-k_phi*rsm1;      
+	// Ephi[2]=sp/rr;
+	// Ephi[3]=-cp*rsm1;
+	// // Etheta
+	// Etheta[0]=0.;
+	// Etheta[1]=rr*ktheta;
+	// Etheta[2]=cp/rr;
+	// Etheta[3]=sp*rsm1;
+	break;
+      }
+    default:
+      GYOTO_ERROR("Non implemented coord kind for polarization");
+    }
   }
 }
 

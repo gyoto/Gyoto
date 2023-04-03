@@ -134,10 +134,13 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
   transmissionMatrix_(NULL),
   transmissionMatrix_freqobs_()
 {
-  double coord[8], Ephi[4], Etheta[4], angle_a, angle_b;
-  screen -> getRayCoord(d_alpha, d_delta, coord, &angle_a, &angle_b);
-  if (parallel_transport_)
-    screen -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
+  double coord[8], Ephi[4], Etheta[4];
+  bool compute_polar_basis=false;
+  if (parallel_transport_) compute_polar_basis=true;
+  screen -> getRayTriad(d_alpha, d_delta,
+			coord,
+			compute_polar_basis,
+			Ephi, Etheta);
   Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   spectrometer(screen);
 }
@@ -233,10 +236,13 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 const double d_alpha,
 				 const double d_delta)
 {
-  double coord[8], Ephi[4], Etheta[4], angle_a, angle_b;
-  screen -> getRayCoord(d_alpha, d_delta, coord, &angle_a, &angle_b);
-  if (parallel_transport_)
-    screen -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
+  double coord[8], Ephi[4], Etheta[4];
+  bool compute_polar_basis=false;
+  if (parallel_transport_) compute_polar_basis=true;
+  screen -> getRayTriad(d_alpha, d_delta,
+			coord,
+			compute_polar_basis,
+			Ephi, Etheta);
   Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   if (obj) object_=obj;
 

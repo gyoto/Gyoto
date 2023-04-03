@@ -41,7 +41,7 @@ sc.astrobj().opticallyThin(False)
 
 scr=sc.screen()
 dest=numpy.zeros(8, float)
-scr.getRayCoord(1,1,dest)
+scr.getRayTriad(1,1,dest)
 dest=numpy.ndarray(3, float)
 scr.coordToSky((0., 5., numpy.pi/2, 0), dest)
     
