@@ -323,20 +323,20 @@ void Scenery::updatePhoton(){
 
 SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
   updatePhoton();
-  double coord[8], Ephi[4], Etheta[4];
-  screen_ -> getRayCoord(size_t(1),size_t(1), coord);
+  double coord[8], Ephi[4], Etheta[4], angle_a, angle_b;
+  screen_ -> getRayCoord(size_t(1),size_t(1), coord, &angle_a, &angle_b);
   if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+    screen_ -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
   ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
 
 SmartPointer<Photon> Scenery::clonePhoton(double a, double b) {
   updatePhoton();
-  double coord[8], Ephi[4], Etheta[4];
-  screen_ -> getRayCoord(a, b, coord);
+  double coord[8], Ephi[4], Etheta[4], angle_a, angle_b;
+  screen_ -> getRayCoord(a, b, coord, &angle_a, &angle_b);
   if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+    screen_ -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
   ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
@@ -720,9 +720,10 @@ void Scenery::operator() (
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
-    screen_ -> getRayCoord(i,j, coord);
+    double angle_a, angle_b;
+    screen_ -> getRayCoord(i,j, coord, &angle_a, &angle_b);
     if (ph -> parallelTransport())
-      screen_ -> getRayTriad(coord, Ephi, Etheta);
+      screen_ -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
     ph -> setInitCoord(coord, 0, Ephi, Etheta);
     ph -> hit(data);
   }
@@ -747,9 +748,10 @@ void Scenery::operator() (
   // Always reset delta
   ph -> delta(delta_);
 
-  screen_ -> getRayCoord(a, d, coord);
+  double angle_a, angle_b;
+  screen_ -> getRayCoord(a, d, coord, &angle_a, &angle_b);
   if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+    screen_ -> getRayTriad(coord, Ephi, Etheta, angle_a, angle_b);
   ph -> setInitCoord(coord, 0, Ephi, Etheta);
   ph -> hit(data);
 
