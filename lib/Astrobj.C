@@ -988,6 +988,10 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
 	  //cout << "EVPA in Astrobj= " << EVPA*180./M_PI << endl;
   }
 
+  // EVPA defined modulo pi and should lie in [-pi/2, pi/2], but the angle
+  // above is defined in [-pi/2,3pi/2]
+  if (EVPA>M_PI/2.) EVPA -= M_PI;
+
   // For checking only: Define the polarization vector in tetrad formalism:
   double polar_vec[3]={Kth_tetrad*Bp_tetrad - Kp_tetrad*Bth_tetrad,
   		       -Kr_tetrad*Bp_tetrad+Kp_tetrad*Br_tetrad,
@@ -1006,6 +1010,8 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     GYOTO_ERROR("In Astrobj::getChi(): EVPA is nan");
   if (EVPA==EVPA+1.)
     GYOTO_ERROR("In Astrobj::getChi(): EVPA is infinite");
+  if (EVPA>M_PI/2. or EVPA<-M_PI/2.)
+    GYOTO_ERROR("Bad domain for EVPA");
 
   return EVPA;
 }
