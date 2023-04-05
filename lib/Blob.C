@@ -327,37 +327,208 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
            Eigen::Matrix4d *Onu,
            double const *nuem , size_t nbnu,
            double dsem,
-           state_t const &cph,
+           state_t const &coord_ph,
            double const *co) const {
+  
   // polarized radiativeQ
-  double rr, theta, phi, xx, yy, zz=0.;
+  double rr, rcyl, theta, phi, xx, yy, zz=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
-    rr = cph[1];
-    theta = cph[2];
-    phi = cph[3];
-    xx = rr*sin(theta)*cos(phi);
-    yy = rr*sin(theta)*sin(phi);
-    zz = rr*cos(theta);
+    rr = coord_ph[1];
+    theta = coord_ph[2];
+    phi = coord_ph[3];
+    
+    rcyl = rr*sin(theta);
+    xx = rcyl*cos(phi);
+    yy = rcyl*sin(phi);
+    zz   = rr*cos(theta);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]+cph[3]*cph[3]);
-    theta = acos(cph[3]/rr);
-    phi = atan(cph[2]/cph[1]);
-    xx = cph[1];
-    yy = cph[2];
-    zz = cph[3];
+    rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
+    rr = sqrt(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
+        +coord_ph[3]*coord_ph[3]);
+    theta   = acos(coord_ph[3]/rr);
+    xx = coord_ph[1];
+    yy = coord_ph[2];
+    zz   = coord_ph[3];
     break;
   default:
-    GYOTO_ERROR("In ThickDisk::radiativeQ(): Unknown coordinate system kind");
+    GYOTO_ERROR("In Blob::radiativeQ(): Unknown coordinate system kind");
   }
 
-  double vel[4], pos[4]; // 4-velocity of emitter
+  double vel[4]; // 4-velocity of emitter
   for (int ii=0;ii<4;ii++){
     vel[ii]=co[ii+4];
-    pos[ii]=co[ii];
   }
   //cout << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+
+  double n0 = 6e6; // cm-3
+  double Theta0=200.; // Dimensionless temperature
+  double BB0=100.; // mf in G
+
+  double coord_spot[4]={co[0]};
+  const_cast<Blob*>(this)
+    ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
+  //above: nasty trick to deal with constness of emission
+  double xspot=coord_spot[1], yspot=coord_spot[2], zspot=coord_spot[3];
+
+  double difx=(xx-xspot), dify=(yy-yspot), difz=(zz-zspot);
+  double d2 = difx*difx+dify*dify+difz*difz;
+  double ds2=radius_*radius_; //1.5*1.5;
+  //cout << "d2, ds2:" << ", " << d2 << ", " << ds2 << endl;
+
+  double expo_fact=exp(-d2/(2.*ds2));
+  double number_density=n0/3.*expo_fact,
+    Theta=Theta0*pow(rr,-0.84)*expo_fact;
+  if (number_density<1e5) number_density=0.; // assumed by Vos+22
+  
+  double BB = BB0*pow(rr,-1.);  // NOT SPECIFIED IN PAPER???
+
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  double temperature=GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*Theta/GYOTO_BOLTZMANN_CGS;
+  
+  // CHOOSE BFIELD GEOMETRY
+  double B4vect[4]={0.,0.,0.,0.};
+  double B_1=0.,B_2=0.,B_3=0;
+  double spin = 0.;
+  double gtt = gg_->gmunu(&coord_ph[0],0,0),
+         grr = gg_->gmunu(&coord_ph[0],1,1),
+         gthth = gg_->gmunu(&coord_ph[0],2,2),
+         gpp = gg_->gmunu(&coord_ph[0],3,3);
+  double dx1=0.025,
+         dx2=0.025;
+
+  if (magneticConfig_=="None")
+    GYOTO_ERROR("Specify the magnetic field configuration");
+  if (magneticConfig_=="Vertical"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+
+    double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
+           F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
+           F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
+           F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det);
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det);
+    B_3 = 0.;
+  }
+  else if (magneticConfig_=="Radial"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+    double F11 = 1.-cos(theta-dx2*M_PI),
+           F12 = 1.-cos(theta+dx2*M_PI),
+           F21 = 1.-cos(theta-dx2*M_PI),
+           F22 = 1.-cos(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
+    B_3 = 0.;
+  }
+  else if (magneticConfig_=="Toroidal"){
+    /*double gtt=gg_->gmunu(&coord_ph[0],0,0),
+      gpp=gg_->gmunu(&coord_ph[0],3,3),
+      Bp=1.,
+      Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
+    B4vect[0]=Bt;
+    B4vect[3]=Bp;*/
+    B_1 = 0.;
+    B_2 = 0.;
+    B_3 = 1.;
+  }
+  else
+    GYOTO_ERROR("Unknown magnetic field configuration");
+
+  // compute contravariant velocity in KS' from BL
+  double dtKS_drBL   = 2. * rr / (rr*rr - 2.*rr + spin*spin);
+  double dphiKS_drBL = spin / (rr*rr - 2.*rr + spin*spin);
+  double Ucon_KSm[4]={0.,0.,0.,0.};
+  Ucon_KSm[0]=vel[0]+vel[1]*dtKS_drBL;
+  Ucon_KSm[1]=vel[1]/rr;
+  Ucon_KSm[2]=vel[2]/M_PI;
+  Ucon_KSm[3]=vel[3]+vel[1]*dphiKS_drBL;
+
+  // Compute KS' metric
+  double gcov_ksm[4][4];
+  double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+  double gcov_ks[4][4];
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      gcov_ks[mu][nu]=0.;
+
+  gcov_ks[0][0] = -1. + 2. * rr / rho2 ;
+  gcov_ks[0][1] = 2. * rr / rho2 ;
+  gcov_ks[0][3] = -2. * spin * rr * sin(theta)*sin(theta) / rho2;
+  gcov_ks[1][0] = gcov_ks[0][1];
+  gcov_ks[1][1] = 1. + 2. * rr / rho2 ;
+  gcov_ks[1][3] = -spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2);
+  gcov_ks[2][2] = rho2 ;
+  gcov_ks[3][0] = gcov_ks[0][3];
+  gcov_ks[3][1] = gcov_ks[1][3];
+  gcov_ks[3][3] = sin(theta)*sin(theta) * (rho2 + spin * spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2));
+
+  // convert from ks metric to a modified one using Jacobian
+  double dxdX[4][4];
+  double hslope=0.;
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      dxdX[mu][nu]=0.;
+
+  dxdX[0][0] = 1.;
+  dxdX[1][1] = rr;
+  dxdX[2][2] = M_PI  + hslope*2*M_PI*cos(2*theta); 
+  dxdX[3][3] = 1.;
+
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      gcov_ksm[mu][nu] = 0;
+      for (int lam = 0; lam < 4; ++lam) {
+        for (int kap = 0; kap < 4; ++kap) {
+          gcov_ksm[mu][nu] += gcov_ks[lam][kap] * dxdX[lam][mu] * dxdX[kap][nu];
+        }
+      }
+    }
+  }
+
+  // Compute covariante velocity in KS'
+  double Ucov_KSm[4]={0.,0.,0.,0.};
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      Ucov_KSm[mu] += gcov_ksm[mu][nu]*Ucon_KSm[nu];
+    }
+  }
+
+  // Copute Magnetic field in KS'
+  //cout << "r sth, velBL, ucov KS'= " << co[1] << " " << sin(co[2]) << " " << vel[0] << " " << vel[3] << " " << Ucov_KSm[1] << " " << Ucov_KSm[2] << " " << Ucov_KSm[3] << endl;
+  //throwError("test disk");
+  double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
+    B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
+    B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
+    B3=(B_3+B0*Ucon_KSm[3])/Ucon_KSm[0];
+
+  // Conversion Magnetic field from KS' -> BL
+  double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
+  B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
+  B4vect[1]=B1*rr;
+  B4vect[2]=B2*M_PI;
+  B4vect[3]=B3-B1*spin*rr/Delta;
+  
+  double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+  gg_->multiplyFourVect(B4vect,1./norm);
+
+  double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+  //cout << "At r,th Chi= " << coord_ph[1] << " " << coord_ph[2] << " " << Chi << endl;
+
+  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4];
+  }
+  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
+  double bnorm = gg_->norm(&coord_ph[0],B4vect);
+  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
+  double theta_mag = acos(lscalb/(lnorm*bnorm));
+
   
   Eigen::Matrix4d Omat;
   Omat << 1, 0, 0, 0,
@@ -385,143 +556,25 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     rotVnu[ii]=-1.;
   }
 
-  // CHOOSE BFIELD GEOMETRY
-  double B4vect[4]={0.,0.,0.,0.};
-  double B0=0.,B1=0.,B2=0.,B3=0;
-  double spin = 0.;
-  if (magneticConfig_=="None")
-    GYOTO_ERROR("Specify the magnetic field configuration");
-  if (magneticConfig_=="Vertical"){
-    double dx1=0.025,
-      dx2=0.025;
-    double gtt=gg_->gmunu(&cph[0],0,0),
-      grr = gg_->gmunu(&cph[0],1,1),
-      gthth = gg_->gmunu(&cph[0],2,2),
-      gpp=gg_->gmunu(&cph[0],3,3);
-    double g_det = gtt+grr+gthth+gpp;
-    double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
-           F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
-           F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
-           F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
-    double B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
-           B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
-           B_3 = 0.;
+  double besselK2 = bessk(2, 1./Theta);
+  //cout << "In Blob: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << besselK2 << " " << theta_mag << endl;
 
-    
-    B0=B_1*grr*vel[1]+B_2*gthth*vel[2]+B_3*gpp*vel[3];
-    B1=(B_1+B0*vel[1])/vel[0];
-    B2=(B_2+B0*vel[2])/vel[0];
-    B3=(B_3+B0*vel[3])/vel[0];
-
-    double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
-
-    B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
-    B4vect[1]=B1*rr;
-    B4vect[2]=B2*M_PI;
-    B4vect[3]=B3-B1*spin*rr/Delta;
-  }
-  else if (magneticConfig_=="Radial"){
-    double dx1=0.025,
-      dx2=0.025;
-    double gtt=gg_->gmunu(&cph[0],0,0),
-      grr = gg_->gmunu(&cph[0],1,1),
-      gthth = gg_->gmunu(&cph[0],2,2),
-      gpp=gg_->gmunu(&cph[0],3,3);
-    double g_det = gtt+grr+gthth+gpp;
-    double F11 = 1.-cos(theta-dx2*M_PI),
-           F12 = 1.-cos(theta+dx2*M_PI),
-           F21 = 1.-cos(theta-dx2*M_PI),
-           F22 = 1.-cos(theta+dx2*M_PI);
-    double B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
-           B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
-           B_3 = 0.;
-
-    B0=B_1*grr*vel[1]+B_2*gthth*vel[2]+B_3*gpp*vel[3];
-    B1=(B_1+B0*vel[1])/vel[0];
-    B2=(B_2+B0*vel[2])/vel[0];
-    B3=(B_3+B0*vel[3])/vel[0];
-
-    double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
-
-    B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
-    B4vect[1]=B1*rr;
-    B4vect[2]=B2*M_PI;
-    B4vect[3]=B3-B1*spin*rr/Delta;
-  }
-  else if (magneticConfig_=="Toroidal"){
-    double gtt=gg_->gmunu(&cph[0],0,0),
-      gpp=gg_->gmunu(&cph[0],3,3),
-      Bp=1.,
-      Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
-    B4vect[0]=Bt;
-    B4vect[3]=Bp;
-  }
-  else
-    GYOTO_ERROR("Unknown magnetic field configuration");
-  
-  double BB0 = 100.; // Gauss
-  double norm=gg_->norm(&cph[0], B4vect);
-  gg_->multiplyFourVect(B4vect,1./norm);
-  //cout << "B4vect: " << B4vect[0] << " " << B4vect[1] << " " << B4vect[2] << " " << B4vect[3] << endl;
-
-
-  double Chi=getChi(B4vect, cph, vel); // this is EVPA
-
-  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
-  gg_->projectFourVect(&cph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=cph[ii+4];
-  }
-  //cout << "photon_emframe: " << photon_emframe[0] << " " << photon_emframe[1] << " " << photon_emframe[2] << " " << photon_emframe[3] << endl;
-  gg_->projectFourVect(&cph[0],photon_emframe,vel);
-  double bnorm = gg_->norm(&cph[0],B4vect);
-  double lnorm = gg_->norm(&cph[0],photon_emframe);
-  double lscalb = gg_->ScalarProd(&cph[0],photon_emframe,B4vect);
-  double theta_mag = acos(lscalb/(lnorm*bnorm));
-  //cout << "r, theta, phi: " << rr << " " << theta << " " << phi << endl;
-  //cout << "B4vect: " << B4vect[0] << " " << B4vect[1] << " " << B4vect[2] << " " << B4vect[3] << endl;
-  //cout << "photon_emframe: " << photon_emframe[0] << " " << photon_emframe[1] << " " << photon_emframe[2] << " " << photon_emframe[3] << endl;
-  //cout << "bnorm, lnorm, lscalb, lscalb/(lnorm*bnorm): " << bnorm << " " << lnorm << " " << lscalb << " " << lscalb/(lnorm*bnorm) << endl;
-  //cout << " " << endl;
-  
-
-  double n0 = 6e6; // cm-3
-  double Theta0=200.; // Dimensionless temperature
-
-  double coord_spot[4]={co[0]};
-  const_cast<Blob*>(this)
-    ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
-  //above: nasty trick to deal with constness of emission
-  double xspot=coord_spot[1], yspot=coord_spot[2], zspot=coord_spot[3];
-
-  double difx=(xx-xspot), dify=(yy-yspot), difz=(zz-zspot);
-  double d2 = difx*difx+dify*dify+difz*difz;
-  double ds2=1.5*1.5;
-  //cout << "d2, ds2:" << ", " << d2 << ", " << ds2 << endl;
-
-  double number_density=n0/3.*exp(-d2/(2.*ds2)),
-  Theta=Theta0*pow(rr,-0.84);
-  double BB = BB0*pow(rr,-1.);
-
-  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
-    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
-
-  double temperature=GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*Theta/GYOTO_BOLTZMANN_CGS;
-
-  
-  double bessK2 = bessk(2, 1./Theta);
-  //cout << "In Blob: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << B0 << " " << nu0 << " " << bessK2 << " " << theta_mag << endl;
-
-  // THERMAL SYNCHRO
-  spectrumThermalSynch_->numberdensityCGS(number_density);
+  // THERMAL SYNCHROTRON
   spectrumThermalSynch_->temperature(temperature);
-  spectrumThermalSynch_->besselK2(bessK2);
-  spectrumThermalSynch_->angle_averaged(0);
-  spectrumThermalSynch_->angle_B_pem(theta_mag);
+  spectrumThermalSynch_->numberdensityCGS(number_density);
+  spectrumThermalSynch_->angle_averaged(0); // impose angle-averaging
+  spectrumThermalSynch_->angle_B_pem(theta_mag);   // so we don't care about angle
   spectrumThermalSynch_->cyclotron_freq(nu0);
+  spectrumThermalSynch_->besselK2(besselK2);
+  //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
+  //cout << "nu passed to synchro= " << nuem[0] << endl;
 
-  if (number_density<1.e5) {
+  //if (number_density==0.) {
+  //if (number_density<1.e4) {
+  if (number_density<0.) {//numberDensityAtInnerRadius_cgs_/1e20) { // CHECK THAT !!!!**** INDEED CHECK THAT CAREFULLY ****!!!!
+    
+    // Can happen due to strongly-killing z-expo factor
+    // if zsigma is small. Then leads to 0/0 in synchro stuff. TBC
     for (size_t ii=0; ii<nbnu; ++ii){
       jInu[ii]=0.;
       jQnu[ii]=0.;
@@ -536,13 +589,13 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
       rotVnu[ii]=0.;
     }
   }else{
-  spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
-                                    aInu, aQnu, aUnu, aVnu,
-                                    rotQnu, rotUnu, rotVnu, nuem, nbnu);
+    spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+                                      aInu, aQnu, aUnu, aVnu,
+                                      rotQnu, rotUnu, rotVnu, nuem, nbnu);
   }
 
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii) {
-    
     //cout << "In Blob: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In Blob: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In Blob: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
@@ -559,16 +612,14 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
 
-    if (Inu[ii]<0.)
-      GYOTO_ERROR("In Blob::radiativeQ: Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is infinite");
+    //cout << "In Blob: Inu, Qnu, Unu, Vnu, dsem, LP: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
 
-    //cout << "In Blob: Inu, Qnu, Unu, Vnu, dsem: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << endl;
-    //cout << "Onu :" << endl;
-    //cout << Omat << endl;
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is infinite");
   }
 }
 
