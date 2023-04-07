@@ -374,7 +374,8 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   double difx=(xx-xspot), dify=(yy-yspot), difz=(zz-zspot);
   double d2 = difx*difx+dify*dify+difz*difz;
-  double ds2=radius_*radius_; //1.5*1.5;
+  double blobsize=1.5; // NB: the spot size is 1.5M in Vos+, but the density is a Gaussian extending to few blobsize, so it is necessary to take radius_~3*blobsize, or else UniformSphere::operator() would not hit outside of blobsize if we would take radius_=blobsize. So radius_ is never used here, but it is used in the operator() function.
+  double ds2=blobsize*blobsize; //radius_*radius_; //1.5*1.5;
   //cout << "d2, ds2:" << ", " << d2 << ", " << ds2 << endl;
 
   double expo_fact=exp(-d2/(2.*ds2));
@@ -562,8 +563,8 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   // THERMAL SYNCHROTRON
   spectrumThermalSynch_->temperature(temperature);
   spectrumThermalSynch_->numberdensityCGS(number_density);
-  spectrumThermalSynch_->angle_averaged(0); // impose angle-averaging
-  spectrumThermalSynch_->angle_B_pem(theta_mag);   // so we don't care about angle
+  spectrumThermalSynch_->angle_averaged(0); //  no angle avg of course
+  spectrumThermalSynch_->angle_B_pem(theta_mag);   
   spectrumThermalSynch_->cyclotron_freq(nu0);
   spectrumThermalSynch_->besselK2(besselK2);
   //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
@@ -612,7 +613,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
 
-    //cout << "In Blob: Inu, Qnu, Unu, Vnu, dsem, LP: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
+    //cout << "In Blob: r,th,ph, Inu, Qnu, Unu, Vnu, dsem, LP: " << rr << " " << theta << " " << phi << " " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
 
     if (Inu[ii]<0.)
       GYOTO_ERROR("In Blob::radiativeQ(): Inu<0");
