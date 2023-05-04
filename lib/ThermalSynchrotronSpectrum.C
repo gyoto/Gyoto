@@ -144,8 +144,8 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
     else{
-      double EE=4.80320680e-10,S3=1.73205090765888,
-        ME=9.1093826e-28, CL=2.99792458e10;
+      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
 
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
@@ -181,8 +181,8 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
     else{
-      double EE=4.80320680e-10,S3=1.73205090765888,
-        ME=9.1093826e-28, CL=2.99792458e10;
+      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
 
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
@@ -222,9 +222,9 @@ double Spectrum::ThermalSynchrotron::jVnuCGS(double nu) const{
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
     else{
-      double EE=4.80320680e-10,S3=1.73205090765888,
-        ME=9.1093826e-28,CL=2.99792458e10;
-
+      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
+      
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
       double I_V=(1.81348/xx+3.42319*pow(xx,-2./3.)+0.0292545*pow(xx,-0.5)+2.03773*pow(xx,-1./3.)) * exp(-1.8899 * pow(xx,1./3.));
@@ -298,8 +298,8 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       rho_Q=0;
     else{
-      double EE=4.80320680e-10,S3=1.73205090765888,
-        ME=9.1093826e-28, CL=2.99792458e10, S2=1.41421356237310;
+      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS, S2=1.41421356237310;
 
       double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
         omega0=2.*M_PI*cyclotron_freq_,
@@ -333,8 +333,8 @@ double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
 
   double rho_V=0;
   if (useVos==1){
-    double EE=4.80320680e-10,S3=1.73205090765888,
-      ME=9.1093826e-28, CL=2.99792458e10, S2=1.41421356237310;
+    double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS, S2=1.41421356237310;
 
     double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
       omega0=2.*M_PI*cyclotron_freq_,
