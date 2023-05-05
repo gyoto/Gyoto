@@ -666,6 +666,9 @@ private:
   Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double sin2Chi, double cos2Chi, double dsem) const;
   Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
         double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
+
+  Eigen::Matrix4d Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
   
   /**
    * Apply the rotation matrix with angle Chi to the emission Stokes vector

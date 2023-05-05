@@ -358,9 +358,9 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	  {
 	    double t=ph -> getTransmission(ii);
 	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
+	    //cout << " r th I Q U V= " << coord_ph_hit[1] << " " << coord_ph_hit[2]*180./M_PI << " " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset] << " " << data->stokesV[ii*data->offset] << endl;
 	    GYOTO_DEBUG
-	      //  cout
-	      << "xyz= " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
+	      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
 	      << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
 	    << ", nuem=" << nuem[ii]
@@ -369,6 +369,8 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	    << Inu[ii]
 	    << ", spectrum[" << ii*data->offset << "]="
 	    << data->spectrum[ii*data->offset]
+	      << ", sotkesQ[" << ii*data->offset << "]="
+	      << data->stokesQ[ii*data->offset]
 	    << ", transmission=" << t
 	    << ", optical depth=" << o
 	    << ", redshift=" << ggred << ")\n" << endl;
@@ -690,11 +692,12 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
   double rU=rUnu*cos2Chi+rQnu*sin2Chi;
   double rV=rVnu;
+  aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
 
   alpha2 = aQ*aQ+aU*aU+aV*aV;
   r2 = rQ*rQ+rU*rU+rV*rV;
-  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,2.)/2.,0.5);
-  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,2.)/2.,0.5);
+  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
+  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
   Theta = pow(lambda1,2)+pow(lambda2,2);
   sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
 
@@ -791,6 +794,131 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   return Onu;
 }
 
+Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
+	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
+	*		of the Mueller Matrix containing the absorption and Faraday coefficients
+	*/
+  Matrix4d Pnu;
+  double alpha2, r2, lambda1, lambda2, Theta, sigma;
+  
+  double aI=alphaInu, aV=alphaVnu;
+  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
+  double rV=rVnu;
+  aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+
+  alpha2 = aQ*aQ+aU*aU+aV*aV;
+  r2 = rQ*rQ+rU*rU+rV*rV;
+  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
+  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
+  Theta = pow(lambda1,2)+pow(lambda2,2);
+  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
+
+  double f1=1./(aI*aI - lambda1*lambda1), f2=1./(aI*aI + lambda2*lambda2);
+
+  GYOTO_DEBUG
+  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
+  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
+  	<< "alpha2 : " << alpha2 << "\n"
+  	<< "r2 : " << r2 << "\n"
+  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
+  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
+
+  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+
+  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
+  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
+
+  Matrix4d zero;
+  zero <<  0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0;
+  Matrix4d M1, M2, M3, M4;
+
+  // Fill of M1
+  M1 = zero;
+  for (int ii=0;ii<4;ii++){
+    M1(ii,ii)=1.;
+  }
+  //cout << "M1 :\n" << M1 << endl;
+
+  // Fill of M2
+  M2 = zero;
+  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
+  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
+  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
+  M2(1,0)=M2(0,1);
+  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
+  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
+  M2(2,0)=M2(0,2);
+  M2(2,1)=-M2(1,2);
+  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
+  M2(3,0)=M2(0,3);
+  M2(3,1)=-M2(1,3);
+  M2(3,2)=-M2(2,3);
+  //cout << "M2 :\n" << M2 << endl;
+
+  // Fill of M3
+  M3 = zero;
+  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
+  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
+  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
+  M3(1,0)=M3(0,1);
+  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
+  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
+  M3(2,0)=M3(0,2);
+  M3(2,1)=-M3(1,2);
+  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
+  M3(3,0)=M3(0,3);
+  M3(3,1)=-M3(1,3);
+  M3(3,2)=-M3(2,3);
+	//cout << "M3 :\n" << M3 << endl;
+
+  // Fill of M4
+  M4 = zero;
+  M4(0,0)= (alpha2+r2)/2.;
+  M4(0,1)=aV*rU-aU*rV;
+  M4(0,2)=aQ*rV-aV*rQ;
+  M4(0,3)=aU*rQ-aQ*rU;
+  M4(1,0)=-M4(0,1);
+  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
+  M4(1,2)=aQ*aU+rQ*rU;
+  M4(1,3)=aV*aQ+rV*rQ;
+  M4(2,0)=-M4(0,2);
+  M4(2,1)=M4(1,2);
+  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
+  M4(2,3)=aU*aV+rU*rV;
+  M4(3,0)=-M4(0,3);
+  M4(3,1)=M4(1,3);
+  M4(3,2)=M4(2,3);
+  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
+	//cout << "M4 :\n" << M4 << endl;
+
+  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
+  // Filling O matrix, output
+  Pnu=-lambda1*f1*M3/Theta	 
+    +aI*f1/2.*(M1 + 2.*M4/Theta) 
+    -lambda2*f2*M2/Theta	 // typo in Monika's paper minus not plus
+    +aI*f2/2.*(M1 - 2.*M4/Theta)      
+    -exp(-aI*dsem*gg_->unitLength())* 
+    (
+     (-lambda1*f1*M3/Theta + aI*f1/2.*(M1 + 2.*M4/Theta)) * coshlb1
+     +(-lambda2*f2*M2/Theta + aI*f2/2.*(M1 - 2.*M4/Theta)) * coslb2
+     +(-aI*f2*M2/Theta - lambda2*f2/2.*(M1 - 2.*M4/Theta)) * sinlb2
+     -(aI*f1*M3/Theta - lambda1*f1/2.*((M1 + 2.*M4/Theta))) * sinhlb1
+     );
+
+  return Pnu;
+}
+
 
 Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Chi) const{
 	return rotateJs(jInu, jQnu, jUnu, jVnu, sin(2.*Chi),  cos(2.*Chi));
@@ -808,6 +936,7 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
     jStokes(2)=jUnu;
     jStokes(3)=jVnu;
     jStokes = rot * jStokes;
+    jStokes(2)*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
     return jStokes;
 }
 
