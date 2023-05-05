@@ -244,6 +244,8 @@ void ThickDisk::radiativeQ(double Inu[], // output
   double temperature = temperatureAtInnerRadius_
     *pow(thickDiskInnerRadius_/rr, temperatureSlope_);
     //*pow(thickDiskInnerRadius_/rr, 2.);
+  //cout << "params in disk= " << thickDiskInnerRadius_ << " " << densitySlope_<< " " << temperatureSlope_ << " " << temperatureAtInnerRadius_ << " " <<  thickDiskZGaussianSigma_ << " " << magneticConfig_ << " " << endl;
+  //throwError("test disk");
 
   double r0 = 4., phi0 = 0., phi = coord_ph[3],
     sigr = 2., sigp = M_PI/4.; // spin0: r0=9; spin08: r0=4
@@ -582,15 +584,19 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double expofact_zscaling = exp(-zz*zz/(2.*zsigma*zsigma)); // simple Gaussian modulation around z=0; RIAF model (Broderick+11) use zsigma=rcyl
   //cout << "ne before expo= " << rr << " " <<thickDiskInnerRadius_ << " " <<  numberDensityAtInnerRadius_cgs_ << " " << number_density << endl;
   number_density *= expofact_zscaling;
-  if (rr<thickDiskInnerRadius_) number_density=0.;
+
+  //number_density=6e5; // TEST
+  
+  if (rr<thickDiskInnerRadius_) number_density=0.; //1e-3; //0.; //ACTUALLY IPOLE USES density=1e-3 BELOW ISCO; their rmin is 1.05*rhor
   
 
   double thetae = 200.*pow(rr, temperatureSlope_);
+  //thetae=200.; // TEST
   double temperature = GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*thetae/GYOTO_BOLTZMANN_CGS;
-
 
   double BB0 = 100.; // Gauss
   double BB = BB0*pow(rr,-1.);
+  //BB = 100.; // TEST
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
@@ -610,7 +616,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   if (magneticConfig_=="None")
     GYOTO_ERROR("Specify the magnetic field configuration");
   if (magneticConfig_=="Vertical"){
-    double g_det = M_PI*M_PI*pow(rr,6)*pow(sin(theta),2);
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
 
     double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
            F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
@@ -621,7 +627,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     B_3 = 0.;
   }
   else if (magneticConfig_=="Radial"){
-    double g_det = M_PI*M_PI*pow(rr,6)*pow(sin(theta),2);
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
     double F11 = 1.-cos(theta-dx2*M_PI),
            F12 = 1.-cos(theta+dx2*M_PI),
            F21 = 1.-cos(theta-dx2*M_PI),
@@ -704,6 +710,8 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
 
   // Copute Magnetic field in KS'
+  //cout << "r sth, velBL, ucov KS'= " << co[1] << " " << sin(co[2]) << " " << vel[0] << " " << vel[3] << " " << Ucov_KSm[1] << " " << Ucov_KSm[2] << " " << Ucov_KSm[3] << endl;
+  //throwError("test disk");
   double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
     B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
     B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
@@ -720,6 +728,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   gg_->multiplyFourVect(B4vect,1./norm);
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+  //cout << "At r,th Chi= " << coord_ph[1] << " " << coord_ph[2] << " " << Chi << endl;
 
   // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
   gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
@@ -733,8 +742,10 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
   double theta_mag = acos(lscalb/(lnorm*bnorm));
 
+  if (theta_mag<0. or theta_mag>M_PI) throwError("ThickDisk: bad B angle");
+
   
-  Eigen::Matrix4d Omat;
+  Eigen::Matrix4d Omat, Pmat;
   Omat << 1, 0, 0, 0,
           0, 1, 0, 0,
           0, 0, 1, 0,
@@ -766,15 +777,17 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   // THERMAL SYNCHROTRON
   spectrumThermalSynch_->temperature(temperature);
   spectrumThermalSynch_->numberdensityCGS(number_density);
-  spectrumThermalSynch_->angle_averaged(0); // impose angle-averaging
-  spectrumThermalSynch_->angle_B_pem(theta_mag);   // so we don't care about angle
+  spectrumThermalSynch_->angle_averaged(0); // no angle avg of course
+  spectrumThermalSynch_->angle_B_pem(theta_mag); 
   spectrumThermalSynch_->cyclotron_freq(nu0);
   spectrumThermalSynch_->besselK2(besselK2);
   //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
   //cout << "nu passed to synchro= " << nuem[0] << endl;
 
   //if (number_density==0.) {
-  if (number_density<1.e4) { // CHECK THAT
+  //if (number_density<1.e4) {
+  if (number_density<0.) {//numberDensityAtInnerRadius_cgs_/1e20) { // CHECK THAT !!!!**** INDEED CHECK THAT CAREFULLY ****!!!!
+    
     // Can happen due to strongly-killing z-expo factor
     // if zsigma is small. Then leads to 0/0 in synchro stuff. TBC
     for (size_t ii=0; ii<nbnu; ++ii){
@@ -801,12 +814,18 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     //cout << "In ThickDisk: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In ThickDisk: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In ThickDisk: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    //cout << "RADSTUFF: " << "r= " << coord_ph[1] << " " << ", th= " << coord_ph[2]*180./M_PI << " Rad transf stuff: " << jInu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jQnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jUnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jVnu[ii]/(nuem[ii]*nuem[ii])*10. << " " << nuem[ii]*aInu[ii]*0.01 << ", " << nuem[ii]*aQnu[ii]*0.01 << ", " << nuem[ii]*aUnu[ii]*0.01 << ", " << nuem[ii]*aVnu[ii]*0.01 << " " << nuem[ii]*rotQnu[ii]*0.01 << ", " << nuem[ii]*rotUnu[ii]*0.01 << ", " << nuem[ii]*rotVnu[ii]*0.01 << endl;
+    Eigen::Vector4d JstokesDs=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength(), Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
     //cout << Jstokes << endl;
     Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
     //cout << Omat << endl;
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-    Eigen::Vector4d Stokes=Omat*Jstokes;
+    Eigen::Vector4d StokesFirst=Omat*JstokesDs,
+      StokesMonika=Pmat*Jstokes, // Monika's version
+      Stokes=StokesFirst; //StokesMonika; //StokesFirst;
+    //cout << "StokesFirst= " << StokesFirst << endl;
+    //cout << "StokesMonika= " << StokesMonika << endl;
     //cout << Stokes << endl;
     Inu[ii] = Stokes(0);
     Qnu[ii] = Stokes(1);
@@ -814,7 +833,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
 
-    //cout << "In ThickDisk: Inu, Qnu, Unu, Vnu, dsem, LP: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
+    //cout << "In ThickDisk: r,th,ph, Inu, Qnu, Unu, Vnu, dsem, LP: " << coord_ph[1] << " " << coord_ph[2] << " " << coord_ph[3] << " " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
 
     if (Inu[ii]<0.)
       GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu<0");
