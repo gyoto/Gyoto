@@ -356,10 +356,13 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 
 #         if GYOTO_DEBUG_ENABLED
 	  {
-	    double t=ph -> getTransmission(ii);
+	    //double t=ph -> getTransmission(ii);
+	    Matrix4d mat=ph -> getTransmissionMatrix(ii);
+	    double t=mat(0,0);
 	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
 	    //cout << " r th I Q U V= " << coord_ph_hit[1] << " " << coord_ph_hit[2]*180./M_PI << " " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset] << " " << data->stokesV[ii*data->offset] << endl;
 	    GYOTO_DEBUG
+	      //  cout
 	      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
 	      << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
@@ -988,6 +991,9 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   // Normalizing this projection (which is not by default):
   double norm=gg_->norm(&cph[0],photon_tgvec_orthu);
   gg_->multiplyFourVect(photon_tgvec_orthu,1./norm);
+  
+  //cout << "kk: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
+  //cout << "KK: " << photon_tgvec_orthu[0] << " " << photon_tgvec_orthu[1] << " " << photon_tgvec_orthu[2] << " " << photon_tgvec_orthu[3] << endl;
 
   // For testing, Sch tetrad compo of photon tgvec (assumes rotating emitter).
   // Not needed except for tests.
@@ -1005,10 +1011,12 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   /* ***PART TWO: FIELD VECTOR (could be B or E depending on elec) */
   double Vectproj[4];
   norm=gg_->norm(&cph[0],fourvect);
+  //cout << "BB, norm: " << fourvect[0] << " " << fourvect[1] << " " << fourvect[2] << " " << fourvect[3] << " ---- " << norm << endl;
   if (norm<=test_tol)
   	GYOTO_ERROR("norm of magnetic (or electric) vector is zero");
   for (int ii=0;ii<4;ii++)
     Vectproj[ii] = fourvect[ii]/norm; // initialize (normalised)
+  //cout << "Check normalization to u: " << fabs(gg_->ScalarProd(&cph[0],Vectproj,vel)) << endl;
   // Check if vector fourvect is already orthogonal to 4-velocity:
   if (fabs(gg_->ScalarProd(&cph[0],Vectproj,vel))>1e-6){
     gg_->projectFourVect(&cph[0],Vectproj,vel); // Here we project the
@@ -1077,8 +1085,10 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     tmp[ii]=cph[ii+4]; 
     Etheta_prime[ii]=Etheta[ii]; // initialize.
   }
+  //cout << "North: " << Etheta[0] << " " << Etheta[1] << " " << Etheta[2] << " " << Etheta[3] << endl;
   gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Etheta,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); 
   gg_->addFourVect(Etheta_prime, tmp);
+  //cout << "North prime: " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
   if (fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel))>test_tol
       or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime))>test_tol
@@ -1108,6 +1118,8 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   double Vectproj_North=gg_->ScalarProd(&cph[0],Vectproj,Etheta_prime),
     Vectproj_West=gg_->ScalarProd(&cph[0],Vectproj,Ephi_prime);
   //cout << "Brpoj.North, Vectproj.West= " << Vectproj_North << " " << Vectproj_West << endl;
+  //cout << "Bproj: " << Vectproj[0] << " " << Vectproj[1] << " " << Vectproj[2] << " " << Vectproj[3] << endl;
+  //cout << "North: " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
 
   // Angle East of North between North direction and Vectproj
   double EVPA=-atan2(Vectproj_West,Vectproj_North);
