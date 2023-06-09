@@ -38,6 +38,7 @@ namespace Gyoto{
 #include <GyotoUniformSphere.h>
 #include <GyotoSpectrum.h>
 #include <GyotoWorldline.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -97,6 +98,8 @@ class Gyoto::Astrobj::Star :
   
   // Data : 
   // -----
+ private:
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
 
   // Constructors - Destructor
   // -------------------------
