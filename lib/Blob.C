@@ -111,7 +111,7 @@ void Blob::radiativeQ(double Inu[], // output
   GYOTO_DEBUG << endl;
 # endif
   double tcur=coord_ph[0]; //*GMoc3/60.; // in min
-  double modulation = 1; //exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
+  double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
   double temperature = modulation*temperature_,
     number_density = modulation*numberDensity_cgs_;
   //cout << "spot tcur, time_ref, time_sigma, modulation, number_density=" << tcur << " " << timeRef_M_ << " " << timeSigma_M_ << " " << modulation << " " << numberDensity_cgs_ << " " << temperature_ << " " << number_density << " " << temperature << " " << kappaIndex_ << " " << magnetizationParameter_ << endl;
@@ -150,8 +150,8 @@ void Blob::radiativeQ(double Inu[], // output
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
-    double jnu_tot = 1., // TEST jnu_synch_kappa[ii],
-      anu_tot = 0.; // TEST anu_synch_kappa[ii];
+    double jnu_tot = jnu_synch_kappa[ii],
+      anu_tot = anu_synch_kappa[ii];
     //cout << "At r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
     //cout << "in unif stuff: " << number_density << " " << nu0 << " " << thetae << " " << hypergeom << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
 
@@ -496,7 +496,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     spectrumKappaSynch_->angle_averaged(0);
     //cout << "In Blob: sin theta (k,B) = " << sin(theta_mag) << endl;
     spectrumKappaSynch_->angle_B_pem(theta_mag);
-    //spectrumKappaSynch_->angle_B_pem(0.5); // TEST!!
+    //spectrumKappaSynch_->angle_B_pem(0.785); // TEST!!
     spectrumKappaSynch_->cyclotron_freq(nu0);
     spectrumKappaSynch_->thetae(Theta);
     spectrumKappaSynch_->hypergeometric(hypergeom);
