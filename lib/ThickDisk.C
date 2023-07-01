@@ -71,7 +71,8 @@ GYOTO_PROPERTY_END(ThickDisk, Standard::properties)
 
 // Global variable to put to 1 to use the formalism
 // of Vos+22 to which we compare Gyoto in the polarization paper.
-// Put it to 0 to use our formalism.
+// For debugging/code comparison only.
+// For standard use, put it to 0 to use Gyoto formalism.
 #define USE_IPOLE_FORMALISM 0
 
 // ACCESSORS
