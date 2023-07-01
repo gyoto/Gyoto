@@ -695,7 +695,7 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
   double rU=rUnu*cos2Chi+rQnu*sin2Chi;
   double rV=rVnu;
-  aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+  //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
 
   alpha2 = aQ*aQ+aU*aU+aV*aV;
   r2 = rQ*rQ+rU*rU+rV*rV;
@@ -811,7 +811,7 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
   double rU=rUnu*cos2Chi+rQnu*sin2Chi;
   double rV=rVnu;
-  aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+  //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
 
   alpha2 = aQ*aQ+aU*aU+aV*aV;
   r2 = rQ*rQ+rU*rU+rV*rV;
@@ -939,7 +939,7 @@ Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, d
     jStokes(2)=jUnu;
     jStokes(3)=jVnu;
     jStokes = rot * jStokes;
-    jStokes(2)*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+    //jStokes(2)*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
     return jStokes;
 }
 
@@ -1037,6 +1037,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   gg_->projectFourVect(&cph[0], Vectproj, photon_tgvec_orthu); // project.
   norm=gg_->norm(&cph[0],Vectproj);
   gg_->multiplyFourVect(Vectproj,1./norm);
+  //cout << "Bproj= " << Vectproj[0] << " " << Vectproj[1] << " " << Vectproj[2] << " " << Vectproj[3] << endl;
   // For checking only: Sch tetrad compo of Vectproj:
   double Br_tetrad=sqrt(grr)*Vectproj[1],
     Bth_tetrad=sqrt(gthth)*Vectproj[2],
@@ -1109,6 +1110,11 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
   // in the rest frame of the emitter, orthogonal to its 4vel,
   // and we have a well-defined "observer's" orthonormal basis
   // (Ephi_prime, Etheta_prime, photon_tgvec_orthu).
+
+  //cout << "Etheta (North): " << Etheta[0] << " " << Etheta[1] << " " << Etheta[2] << " " << Etheta[3] << endl;
+  //cout << "Etheta prime (North): " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
+  //cout << "Ephi (West): " << Ephi[0] << " " << Ephi[1] << " " << Ephi[2] << " " << Ephi[3] << endl;
+  //cout << "Ephi prime (West): " << Ephi_prime[0] << " " << Ephi_prime[1] << " " << Ephi_prime[2] << " " << Ephi_prime[3] << endl;
 
 
 

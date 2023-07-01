@@ -810,9 +810,9 @@ void Screen::getRayTriad(double angle1, double angle2,
 	double Ephi_screenBasis[3] = {-sb*sb*(1-ca)-ca,
 				      sb*cb*(1-ca),
 				      cb*sa};
-	double Etheta_screenBasis[3] = {sb*cb*(1-ca),
-					-(cb*cb*(1-ca)+ca),
-					sb*sa};
+	double Etheta_screenBasis[3] = {-sb*cb*(1-ca),
+					(cb*cb*(1-ca)+ca),
+					-sb*sa};
 	
 	double cp, sp; sincos(euler_[0], &sp, &cp);
 	
@@ -833,6 +833,9 @@ void Screen::getRayTriad(double angle1, double angle2,
 		     +cp*Etheta_screenBasis[1])/sqrt(gthth);
 	  Etheta[3]=( cp*Etheta_screenBasis[0]
 		      +sp*Etheta_screenBasis[1])/sqrt(gphph);
+	  //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
+	  //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
+	  //throwError("test Eth");
 	}else{
 	  throwError("Observer should be at infinity");
 	}
@@ -861,6 +864,7 @@ void Screen::getRayTriad(double angle1, double angle2,
 	// Etheta[3]=sp*rsm1;
 	break;
       }
+      
     default:
       GYOTO_ERROR("Non implemented coord kind for polarization");
     }
