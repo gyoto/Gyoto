@@ -32,12 +32,18 @@ GYOTO_PROPERTY_START(Spectrum::ThermalSynchrotron,
 		     "Thermal synchrotron emission")
 GYOTO_PROPERTY_END(Spectrum::ThermalSynchrotron, Generic::properties)
 
+// Global variable to put to 1 to use the formalism
+// of Vos+22 to which we compare Gyoto in the polarization paper.
+// For debugging/code comparison only.
+// For standard use, put it to 0 to use Gyoto formalism (Marszewski+21).
+#define USE_IPOLE_FORMALISM 0
+
 #define nstep_angint 100 // for angle-averaging integration
 Spectrum::ThermalSynchrotron::ThermalSynchrotron()
 : Spectrum::Generic("ThermalSynchrotron"),
   spectrumBB_(NULL), T_(10000.), numberdensityCGS_(0.),
   angle_B_pem_(0.), cyclotron_freq_(1.),
-  angle_averaged_(0), bessel_K2_(1.), useVos(1.)
+  angle_averaged_(0), bessel_K2_(1.)
 {
   // A BB spectrum is needed to compute alpha_nu=j_nu/BB
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -50,8 +56,7 @@ Spectrum::ThermalSynchrotron::ThermalSynchrotron(const ThermalSynchrotron &o)
   angle_B_pem_(o.angle_B_pem_),
   cyclotron_freq_(o.cyclotron_freq_),
   angle_averaged_(o.angle_averaged_),
-  bessel_K2_(o.bessel_K2_),
-  useVos(o.useVos)
+  bessel_K2_(o.bessel_K2_)
 {
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();
 }
@@ -139,7 +144,7 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
       *pow(1.-(1.-1./(gamma0*gamma0))*cth*cth,0.25)
       *Z0;
     //std::cout << "stuff in emis synch ther= " << cyclotron_freq_ << " " << nu << " " << chi0 << " " << ne0 << " " << gamma0 << " " << Z0 << " " << angle_B_pem_ << " " << emis_synch << std::endl;
-  }else if (useVos==1){
+  }else if (USE_IPOLE_FORMALISM==1){
     // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
@@ -176,7 +181,7 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
   //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
 
   double emis_synch=0.;
-  if (useVos==1){
+  if (USE_IPOLE_FORMALISM==1){
     // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
@@ -217,7 +222,7 @@ double Spectrum::ThermalSynchrotron::jVnuCGS(double nu) const{
   //std::cout << "in synch ther thetate ne nu0= " << Theta_elec << " " << numberdensityCGS_ << " " << cyclotron_freq_ << std::endl;
 
   double emis_synch=0.;
-  if (useVos==1){
+  if (USE_IPOLE_FORMALISM==1){
     // ipole https://github.com/moscibrodzka/ipole/blob/ipole-v2.0/model_radiation.c
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       emis_synch=0;
@@ -294,7 +299,7 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double rho_Q=0;
-  if (useVos==1){
+  if (USE_IPOLE_FORMALISM==1){
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       rho_Q=0;
     else{
@@ -319,6 +324,7 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
       (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,3.))* \
       fm*(bessk1(pow(Theta_elec,-1))/bessk(2., pow(Theta_elec,-1))+6.*Theta_elec);
   }
+  //return 0.;
   return rho_Q;
 }
 
@@ -332,7 +338,7 @@ double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
     = T_*GYOTO_BOLTZMANN_CGS/(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double rho_V=0;
-  if (useVos==1){
+  if (USE_IPOLE_FORMALISM==1){
     double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
         ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS, S2=1.41421356237310;
 
@@ -358,6 +364,7 @@ double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
     (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*pow(nu,2.))* \
     (bessk0(pow(Theta_elec,-1.))-DeltaJ5)/bessk(2., pow(Theta_elec,-1.))*cos(angle_B_pem_);
   }
+  //return 0.;
   return rho_V;
 }
 
