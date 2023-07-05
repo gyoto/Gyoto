@@ -64,7 +64,8 @@ class Gyoto::Astrobj::Blob :
   double kappaIndex_; ///< hotspot synchrotron kappa-distribution index
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
-  std::string magneticConfig_;
+  std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
+  std::string electronDistrib_; // Electron distribution (thermal, kappa)
 
   // Constructors - Destructor
   // -------------------------
@@ -85,6 +86,9 @@ class Gyoto::Astrobj::Blob :
   virtual ~Blob() ;                        ///< Destructor
   
  public:
+  void electronDistribution(const std::string &kind);
+  std::string electronDistribution() const;
+  
   virtual std::string className() const ; ///< "Blob"
   virtual std::string className_l() const ; ///< "inflate_star"
 

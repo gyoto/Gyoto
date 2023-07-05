@@ -53,6 +53,8 @@ GYOTO_PROPERTY_DOUBLE(Blob, MagnetizationParameter,
 		      "magnetization parameter")
 GYOTO_PROPERTY_DOUBLE(Blob, KappaIndex, kappaIndex,
 		      "PL index of kappa-synchrotron")
+GYOTO_PROPERTY_STRING(Blob, ElectronDistribution, electronDistribution,
+		      "\"Thermal\" (default), or \"Kappa\".")
 GYOTO_PROPERTY_END(Blob, Star::properties)
 
 Blob::Blob() :
@@ -65,7 +67,8 @@ Blob::Blob() :
   kappaIndex_(1.),
   magneticConfig_("None"),
   spectrumKappaSynch_(NULL),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  electronDistrib_("Thermal")
 {
   kind_="Blob";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -85,7 +88,8 @@ Blob::Blob(const Blob& orig) :
   magnetizationParameter_(orig.magnetizationParameter_),
   magneticConfig_(orig.magneticConfig_),
   spectrumKappaSynch_(NULL),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  electronDistrib_(orig.electronDistrib_)
 {
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
@@ -95,6 +99,18 @@ Blob* Blob::clone() const { return new Blob(*this); }
 
 Blob::~Blob() {
   if (debug()) cerr << "DEBUG: Blob::~Blob()\n";
+}
+
+void Blob::electronDistribution(const string &kind) {
+  if(kind == "Thermal")
+    electronDistrib_ = "Thermal";
+  else if(kind == "Kappa")
+    electronDistrib_ = "Kappa";
+  else
+    throwError("unknown electron distribution!");
+}
+string Blob::electronDistribution() const {
+  return electronDistrib_;
 }
 
 string Blob::className() const { return  string("Blob"); }
@@ -136,7 +152,7 @@ void Blob::radiativeQ(double Inu[], // output
     anu_synch_kappa[ii]=-1.;
   }
   
-  // THERMAL SYNCHRO
+  // KAPPA SYNCHRO
   spectrumKappaSynch_->kappaindex(kappaIndex_);
   spectrumKappaSynch_->numberdensityCGS(number_density);
   spectrumKappaSynch_->angle_averaged(1);
@@ -331,6 +347,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
            double const *co) const {
   
   // polarized radiativeQ
+  
   double rr, rcyl, theta, phi, xx, yy, zz=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
@@ -360,7 +377,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   for (int ii=0;ii<4;ii++){
     vel[ii]=co[ii+4];
   }
-  //cout << "blob velo= " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
+  //cout << "***blob velo in orthonorm frame= " << vel[0] << " " << vel[1] << " " << coord_ph[1]*vel[2] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*vel[3] << endl;
 
   double coord_spot[4]={co[0]};
   const_cast<Blob*>(this)
@@ -381,7 +398,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double temperature = temperature_*expo_fact;
   double BB = sqrt(4.*M_PI*magnetizationParameter_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-		   *number_density)*expo_fact; // equipartition mf
+		   *number_density); // *expo_fact --> already in ne!; // equipartition mf
   
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
@@ -390,7 +407,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
   double hypergeom = Gyoto::hypergeom(kappaIndex_, Theta);
-  
+      
   // CHOOSE BFIELD GEOMETRY
   // Note: Bfield is simply a normalized spacelike vector, we only
   // need its direction, the norm is computed independently.
@@ -418,6 +435,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     double omega=vel[3]/vel[0], omega2 = omega*omega;
     double Bt2 = gpp/gtt*omega2/(gtt+gpp*omega2),
       Bp2 = gtt/gpp*1./(gtt+gpp*omega2);
+    //cout << "Btor stuff: " << omega2 << " " << Bt2 << " " << Bt2/Bp2 << endl;
     if (Bt2<0. or Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
     B4vect[0]=sqrt(Bt2);
     B4vect[3]=sqrt(Bp2);
@@ -434,7 +452,8 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   gg_->multiplyFourVect(B4vect,1./norm);
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
-  //cout << "At r,x,y,z= " << coord_ph[1] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << endl;
+  //cout << "At r,phi,x,y,z= " << coord_ph[1] << " " << coord_ph[3] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << ", tan 2chi= " << tan(2.*Chi) << endl;
+  //cout << endl;
 
   // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
   gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
@@ -474,23 +493,25 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     rotVnu[ii]=-1.;
   }
 
-  int use_kappa_synch=1; // put 0 to switch to thermal synch
-  if (use_kappa_synch==0){
+  if (electronDistrib_=="Thermal"){
     // THERMAL SYNCHROTRON
     double besselK2 = bessk(2, 1./Theta);
     //cout << "In Blob: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << besselK2 << " " << theta_mag << endl;
     spectrumThermalSynch_->temperature(temperature);
     spectrumThermalSynch_->numberdensityCGS(number_density);
     spectrumThermalSynch_->angle_averaged(0); //  no angle avg of course
-    spectrumThermalSynch_->angle_B_pem(theta_mag);   
+    spectrumThermalSynch_->angle_B_pem(theta_mag);
+    //spectrumThermalSynch_->angle_B_pem(0.785); // TEST!!
     spectrumThermalSynch_->cyclotron_freq(nu0);
     spectrumThermalSynch_->besselK2(besselK2);
     //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
     spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
 				      aInu, aQnu, aUnu, aVnu,
 				      rotQnu, rotUnu, rotVnu, nuem, nbnu);
-  }else{
+  }else if (electronDistrib_=="Kappa"){
     // KAPPA SYNCHRO
+    //double hypergeom = Gyoto::hypergeom(kappaIndex_, 10.); // TEST
+    //cout << "In Blob: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << hypergeom << " " << theta_mag << endl;
     spectrumKappaSynch_->kappaindex(kappaIndex_);
     spectrumKappaSynch_->numberdensityCGS(number_density);
     spectrumKappaSynch_->angle_averaged(0);
@@ -504,6 +525,8 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     spectrumKappaSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
 				    aInu, aQnu, aUnu, aVnu,
 				    rotQnu, rotUnu, rotVnu, nuem, nbnu);
+  }else{
+    GYOTO_ERROR("Unknown electron distribution");
   }
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
@@ -521,6 +544,9 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     Inu[ii] = Stokes(0);
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);
+    //cout << "Q and U and U/Q= " << Qnu[ii] << " " << Unu[ii] << " " << Unu[ii]/Qnu[ii] << endl;
+    //cout << endl;
+    
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
 
