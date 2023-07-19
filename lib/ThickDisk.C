@@ -779,32 +779,36 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     /* GYOTO B FORMALISM */
     /*********************/
     
-    if (magneticConfig_!="Vertical"){
-      GYOTO_ERROR("Not implemented Bfield orientation");
-    }
-    // Assuming B = (B^t,0,0,B^phi) and B_phi=1
-    // Then in Sch, B must have a (positive) squared norm smaller
-    // than 1/rmax^2 where rmax is the maximum radius where ThickDisk is called.
     double gtt = gg_->gmunu(&coord_ph[0],0,0),
       grr = gg_->gmunu(&coord_ph[0],1,1),
       gthth = gg_->gmunu(&coord_ph[0],2,2),
       gtp = gg_->gmunu(&coord_ph[0],0,3),
       gpp = gg_->gmunu(&coord_ph[0],3,3);
 
-    //double Bphi=1./gpp, Bnorm2 = 0.1*1./(rmax_*rmax_);
-    //cout << "in B formalism: " << rmax_ << " " << (Bnorm2*gpp-1.)/(gtt*gpp) << endl;
-    //double  Bt = sqrt((Bnorm2*gpp-1.)/(gtt*gpp));
-    //cout << "at r= " << rr << " delta=" << gtp*gtp + gtt*(1-gpp) << endl;
-    //double Bt = (-gtp - sqrt(gtp*gtp + gtt*(1-gpp)))/gtt;
-    //cout << "Bt: " << Bt << " " << gtt*Bt*Bt + gpp + 2.*gtp*Bt << endl;
+    // SCHWARZSCHILD EXPRESSION SO FAR!!!
+    if (magneticConfig_=="Vertical"){
+      double Br = cos(coord_ph[2])/sqrt(grr),
+	Bth = -sin(coord_ph[2])/sqrt(gthth); // along +ez
+      
+      B4vect[1]=Br;
+      B4vect[2]=Bth;
+    }else if(magneticConfig_=="Radial"){
+      double Br = 1./sqrt(grr); // along +er
+      
+      B4vect[1]=Br;
+    }else if(magneticConfig_=="Toroidal"){
+      if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
+      double omega=vel[3]/vel[0], omega2 = omega*omega;
+      double Bt2 = gpp/gtt*omega2/(gtt+gpp*omega2),
+	Bp2 = gtt/gpp*1./(gtt+gpp*omega2);
+      //cout << "Btor stuff: " << omega2 << " " << Bt2 << " " << Bt2/Bp2 << endl;
+      if (Bt2<0. or Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+      B4vect[0]=sqrt(Bt2);
+      B4vect[3]=sqrt(Bp2);
+    }else{
+      GYOTO_ERROR("Not implemented Bfield orientation");
+    }
 
-    double Br = cos(coord_ph[2])/sqrt(grr),
-      Bth = -sin(coord_ph[2])/sqrt(gthth); // along +ez
-
-    B4vect[0]=0.;
-    B4vect[1]=Br;
-    B4vect[2]=Bth;
-    B4vect[3]=0.;
   }
   //cout << "B squared norm:" << gg_->ScalarProd(&coord_ph[0], B4vect, B4vect) << endl;
   double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
@@ -855,7 +859,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
 
   double besselK2 = bessk(2, 1./thetae);
-  //cout << "In ThickDisk: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << besselK2 << " " << theta_mag << endl;
+  //if (fabs(zz)<10.) cout << "In ThickDisk: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << besselK2 << " " << theta_mag << endl;
 
   // THERMAL SYNCHROTRON
   spectrumThermalSynch_->temperature(temperature);
@@ -869,7 +873,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   //if (number_density==0.) {
   //if (number_density<1.e4) {
-  if (number_density<numberDensityAtInnerRadius_cgs_/1e10) { // CHECK THAT !!!!**** INDEED CHECK THAT CAREFULLY ****!!!!
+  if (number_density<numberDensityAtInnerRadius_cgs_/1e10) {
     
     // Can happen due to strongly-killing z-expo factor
     // if zsigma is small. Then leads to 0/0 in synchro stuff. TBC
@@ -894,7 +898,7 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii) {
-    //cout << "In ThickDisk: rr, jInu, jQnu, jUnu, jVnu: " << rr <<  " " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
+    //if (fabs(zz)<10.) cout << "In ThickDisk: rr, jInu, jQnu, jUnu, jVnu: " << rr <<  " " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In ThickDisk: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In ThickDisk: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     //cout << "RADSTUFF: " << "r= " << coord_ph[1] << " " << ", th= " << coord_ph[2]*180./M_PI << " Rad transf stuff: " << jInu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jQnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jUnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jVnu[ii]/(nuem[ii]*nuem[ii])*10. << " " << nuem[ii]*aInu[ii]*0.01 << ", " << nuem[ii]*aQnu[ii]*0.01 << ", " << nuem[ii]*aUnu[ii]*0.01 << ", " << nuem[ii]*aVnu[ii]*0.01 << " " << nuem[ii]*rotQnu[ii]*0.01 << ", " << nuem[ii]*rotUnu[ii]*0.01 << ", " << nuem[ii]*rotVnu[ii]*0.01 << endl;
