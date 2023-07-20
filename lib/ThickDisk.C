@@ -778,6 +778,9 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     /*********************/
     /* GYOTO B FORMALISM */
     /*********************/
+
+    // Define B by requiring: B.B=1 (we care only about B direction),
+    // and B.u=0 (B defined in emitter's frame).
     
     double gtt = gg_->gmunu(&coord_ph[0],0,0),
       grr = gg_->gmunu(&coord_ph[0],1,1),
@@ -785,7 +788,9 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
       gtp = gg_->gmunu(&coord_ph[0],0,3),
       gpp = gg_->gmunu(&coord_ph[0],3,3);
 
-    // SCHWARZSCHILD EXPRESSION SO FAR!!!
+    // So far only circular velocity case is implemented
+    if (vel[1]!=0 or vel[2]!=0) GYOTO_ERROR("mf config only defined for circular velocity so far");
+
     if (magneticConfig_=="Vertical"){
       double Br = cos(coord_ph[2])/sqrt(grr),
 	Bth = -sin(coord_ph[2])/sqrt(gthth); // along +ez
@@ -797,14 +802,18 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
       
       B4vect[1]=Br;
     }else if(magneticConfig_=="Toroidal"){
+      // Only case where a bit of computation is needed
+      // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
       if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
       double omega=vel[3]/vel[0], omega2 = omega*omega;
-      double Bt2 = gpp/gtt*omega2/(gtt+gpp*omega2),
-	Bp2 = gtt/gpp*1./(gtt+gpp*omega2);
-      //cout << "Btor stuff: " << omega2 << " " << Bt2 << " " << Bt2/Bp2 << endl;
-      if (Bt2<0. or Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
-      B4vect[0]=sqrt(Bt2);
-      B4vect[3]=sqrt(Bp2);
+      double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
+      double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
+      if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+      double Bp = sqrt(Bp2);
+      double Bt = -Bp*Afact;
+
+      B4vect[0]=Bt;
+      B4vect[3]=Bp;
     }else{
       GYOTO_ERROR("Not implemented Bfield orientation");
     }
@@ -812,7 +821,8 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
   //cout << "B squared norm:" << gg_->ScalarProd(&coord_ph[0], B4vect, B4vect) << endl;
   double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
-  gg_->multiplyFourVect(B4vect,1./norm);
+  if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+  // gg_->multiplyFourVect(B4vect,1./norm);
   //cout << "B norm= " << norm << endl;
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
