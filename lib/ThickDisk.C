@@ -789,17 +789,26 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
       gpp = gg_->gmunu(&coord_ph[0],3,3);
 
     // So far only circular velocity case is implemented
-    if (vel[1]!=0 or vel[2]!=0) GYOTO_ERROR("mf config only defined for circular velocity so far");
+    if (vel[2]!=0) GYOTO_ERROR("mf config only defined for utheta=0");
 
     if (magneticConfig_=="Vertical"){
-      double Br = cos(coord_ph[2])/sqrt(grr),
-	Bth = -sin(coord_ph[2])/sqrt(gthth); // along +ez
-      
+      double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+	alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+      double Bt = -alphafact*Afact,
+	Br = alphafact*cos(coord_ph[2])/sqrt(grr), // cos(coord_ph[2])/sqrt(grr)
+	Bth = -alphafact*sin(coord_ph[2])/sqrt(gthth); // -sin(coord_ph[2])/sqrt(gthth) --> along +ez
+
+      B4vect[0]=Bt;
       B4vect[1]=Br;
       B4vect[2]=Bth;
-    }else if(magneticConfig_=="Radial"){
-      double Br = 1./sqrt(grr); // along +er
       
+    }else if(magneticConfig_=="Radial"){
+      double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
+	alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+      double Bt = -alphafact*Afact,
+	Br = alphafact/sqrt(grr);//1./sqrt(grr); // along +er
+
+      B4vect[0]=Bt;
       B4vect[1]=Br;
     }else if(magneticConfig_=="Toroidal"){
       // Only case where a bit of computation is needed
