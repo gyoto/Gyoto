@@ -35,6 +35,7 @@ namespace Gyoto{
 #include <GyotoMetric.h>
 #include <GyotoStar.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#include <GyotoPowerLawSynchrotronSpectrum.h>
 #include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
@@ -63,6 +64,7 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter_; ///< magnetization parameter
   double kappaIndex_; ///< hotspot synchrotron kappa-distribution index
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
+  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
   std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
   std::string electronDistrib_; // Electron distribution (thermal, kappa)
