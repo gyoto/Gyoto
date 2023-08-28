@@ -356,9 +356,13 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
            double const *co) const {
 
   string kin = gg_->kind();
-  if (kin != "KerrBL") GYOTO_ERROR("Blob should be in Kerr!");
-  double spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-  if (spin!=0.) GYOTO_ERROR("Blob should be in Schwarzschild!");
+  if (kin != "KerrBL" and kin != "Minkowski") GYOTO_ERROR("Blob should be in Kerr or Minko!");
+  double spin = 0.;
+  if (kin == "KerrBL"){
+    // Check that Kerr spin is 0 (mf formulas below are so far in Sch only)
+    spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+    if (spin!=0.) GYOTO_ERROR("Blob should be in Schwarzschild!");
+  }
 
   double mynuem[1]; // TEST!!!
   mynuem[0]=1.36e14; //nuem[0];
