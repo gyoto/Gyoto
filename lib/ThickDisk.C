@@ -654,7 +654,13 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     /*********************/
     
     double B_1=0.,B_2=0.,B_3=0;
-    double spin = 0.; // ONLY VALID FOR SCH, MAKE A TEST
+    
+    //double spin = 0.; // ONLY VALID FOR SCH, MAKE A TEST
+    string kin = gg_->kind();
+    if (kin != "KerrBL") GYOTO_ERROR("ThickDisk in Ipole formalism should be in Kerr!");
+    double spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+    if (spin!=0.) GYOTO_ERROR("ThickDisk in Ipole formalism should be in Schwarzschild!");
+    
     double gtt = gg_->gmunu(&coord_ph[0],0,0),
       grr = gg_->gmunu(&coord_ph[0],1,1),
       gthth = gg_->gmunu(&coord_ph[0],2,2),
@@ -830,8 +836,14 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
   //cout << "B squared norm:" << gg_->ScalarProd(&coord_ph[0], B4vect, B4vect) << endl;
   double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
-  if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
-  // gg_->multiplyFourVect(B4vect,1./norm);
+
+  if (USE_IPOLE_FORMALISM==0){
+    // Gyoto B formalism gives a unit vector
+    if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+  }else{
+    // Ipole B formalism does not
+    gg_->multiplyFourVect(B4vect,1./norm);
+  }
   //cout << "B norm= " << norm << endl;
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
