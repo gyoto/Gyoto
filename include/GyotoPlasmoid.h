@@ -119,10 +119,6 @@ class Gyoto::Astrobj::Plasmoid :
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const;
 
-  virtual void radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Eigen::Matrix4d Onu[],
-              double const nu_ems[], size_t nbnu, double dsem,
-              state_t const &coord_ph, double const coord_obj[8]) const;
-
   void getCartesian(double const * const dates, size_t const n_dates,
           double * const x, double * const y,
           double * const z, double * const xprime=NULL,

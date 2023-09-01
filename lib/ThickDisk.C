@@ -788,6 +788,12 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     // Define B by requiring: B.B=1 (we care only about B direction),
     // and B.u=0 (B defined in emitter's frame).
     
+    if (magneticConfig_!="Vertical"){
+      GYOTO_ERROR("Not implemented Bfield orientation");
+    }
+    // Assuming B = (B^t,0,0,B^phi) and B_phi=1
+    // Then in Sch, B must have a (positive) squared norm smaller
+    // than 1/rmax^2 where rmax is the maximum radius where ThickDisk is called.
     double gtt = gg_->gmunu(&coord_ph[0],0,0),
       grr = gg_->gmunu(&coord_ph[0],1,1),
       gthth = gg_->gmunu(&coord_ph[0],2,2),

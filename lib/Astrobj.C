@@ -1027,9 +1027,10 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
       grr = gg_->gmunu(&cph[0],1,1),
       gthth = gg_->gmunu(&cph[0],2,2),
       gpp=gg_->gmunu(&cph[0],3,3);
-	  //cout << "norm, r, gtt, grr, gthth, gpp: " << norm << "," << cph[1] << "," << gtt << "," << grr << "," << gthth << "," << gpp << endl;
-	  if (norm<=test_tol)
+	  if (fabs(norm)<=test_tol){
+	  	cout << "norm, r, gtt, grr, gthth, gpp: " << norm << "," << cph[1] << "," << gtt << "," << grr << "," << gthth << "," << gpp << endl;
 	  	GYOTO_ERROR("Magnetic field vector is null.");
+	  }
 	  gg_->multiplyFourVect(Vectproj,1./norm);
   }
 

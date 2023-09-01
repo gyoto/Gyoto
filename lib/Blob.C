@@ -400,60 +400,35 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
   //cout << "***blob velo in orthonorm frame= " << vel[0] << " " << vel[1] << " " << coord_ph[1]*vel[2] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*vel[3] << endl;
 
-  double coord_spot[4]={co[0]};
-  const_cast<Blob*>(this)
-    ->getCartesian(coord_spot, 1, coord_spot+1, coord_spot+2, coord_spot+3);
-  //above: nasty trick to deal with constness of emission
-  double xspot=coord_spot[1], yspot=coord_spot[2], zspot=coord_spot[3];
+  double tcur=coord_ph[0]; //*GMoc3/60.; // in min
+  double modulation = exp(-pow((tcur-timeRef_M_)/timeSigma_M_,2));
+  double temperature = modulation*temperature_,
+    number_density = modulation*numberDensity_cgs_;
+  //cout << "spot tcur, time_ref, time_sigma, modulation, number_density=" << tcur << " " << timeRef_M_ << " " << timeSigma_M_ << " " << modulation << " " << numberDensity_cgs_ << " " << temperature_ << " " << number_density << " " << temperature << " " << kappaIndex_ << " " << magnetizationParameter_ << endl;
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
 
-  double difx=(xx-xspot), dify=(yy-yspot), difz=(zz-zspot);
-  double d2 = difx*difx+dify*dify+difz*difz; // square coord distance between photon and blob's center
-  
-  double blobsize=radius_/3.; // NB: radius_ contains the "blob extension" ie the maximum extension over which Photon::hit returns 1 and emission is computed. This is assumed to coincide with the 3sigma extension of the Gaussian from the blob's center. So the blob's radius stricto sensu is radius_/3.
-  double ds2=blobsize*blobsize;
-
-  double expo_fact=exp(-d2/(2.*ds2)); // Gaussian modulation with sigma corresponding to radius_/3
-
-  double number_density, temperature, BB, Theta;
-  if (USE_IPOLE_FORMALISM==0){
-    /*******************/
-    /* GYOTO FORMALISM */
-    /*******************/
-    // Modulate density, temperature and mf with this Gaussian
-    number_density=numberDensity_cgs_*expo_fact;
-    temperature = temperature_*expo_fact;
-    BB = sqrt(4.*M_PI*magnetizationParameter_
-	      *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
-	      *number_density); // *expo_fact --> already in ne!; // equipartition mf
-  
-
-    
-    Theta = GYOTO_BOLTZMANN_CGS*temperature
-      /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
-  }else{
-    /*******************/
-    /* IPOLE FORMALISM */
-    /*******************/
-    //number_density=6e6/3.*expo_fact;
-    double n0=6e6, theta0=200, B0=100;
-    number_density=n0*expo_fact;
-    theta = theta0*expo_fact;
-    //theta = 50*expo_fact;
-    BB=B0*expo_fact;
-    //BB=50*expo_fact;
-    temperature=GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS*theta/GYOTO_BOLTZMANN_CGS;
-  }
-
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
+       *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+       *number_density);
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
+  double Theta = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
   double hypergeom = Gyoto::hypergeom(kappaIndex_, Theta);
-      
+  
   // CHOOSE BFIELD GEOMETRY
   // Note: Bfield is simply a normalized spacelike vector, we only
   // need its direction, the norm is computed independently.
 
   double B4vect[4]={0.,0.,0.,0.};
+  double gtt = gg_->gmunu(&coord_ph[0],0,0),
+    grr = gg_->gmunu(&coord_ph[0],1,1),
+    gthth = gg_->gmunu(&coord_ph[0],2,2),
+    gtp = gg_->gmunu(&coord_ph[0],0,3),
+    gpp = gg_->gmunu(&coord_ph[0],3,3);
 
   if (USE_IPOLE_FORMALISM==0){
     /*********************/
@@ -633,9 +608,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
-  //cout << endl;
-  //cout << "At r,phi,x,y,z= " << coord_ph[1] << " " << coord_ph[3] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << ", tan 2chi= " << tan(2.*Chi) << endl;
-  //cout << endl;
+  //cout << "At r,x,y,z= " << coord_ph[1] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << endl;
 
   // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
   gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
@@ -654,9 +627,10 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double bnorm = gg_->norm(&coord_ph[0],B4vect);
   double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
   double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
-  double theta_mag = acos(lscalb/(lnorm*bnorm)); // acos is in 0,pi, which is appropriate for theta_mag.
-  //cout << "thetaB=" << theta_mag << endl;
-  //cout << endl;
+  double theta_mag = acos(lscalb/(lnorm*bnorm));
+
+  if (theta_mag<0. or theta_mag>M_PI) throwError("Blob: bad B angle");
+
   
   Eigen::Matrix4d Omat;
   Omat << 1, 0, 0, 0,

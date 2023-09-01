@@ -170,6 +170,7 @@ void Plasmoid::radiativeQ(double Inu[], // output
   }
   else{ // COOLING PHASE
     double tt=(tcur-t0)*60.; // in sec
+    cout << tt/60. << endl;
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
       anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
@@ -180,7 +181,8 @@ void Plasmoid::radiativeQ(double Inu[], // output
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu[ii], anu_tot = anu[ii];
-
+    cout << "theta=" << coord_obj[2]*180./M_PI << endl;
+    cout << "jnu, anu, nu_em = " << jnu_tot << ", " << anu_tot << ", " << nu_ems[ii] << endl; 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
@@ -508,66 +510,3 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
 
 }
 #endif
-
-
-void Plasmoid::radiativeQ(double Inu[], double Qnu[], double Unu[], double Vnu[], Eigen::Matrix4d Onu[], // outut
-              double const nu_ems[], size_t nbnu, double dsem,
-              state_t const &coord_ph, double const coord_obj[8]) const {
-
-  // Only for quick test !!!
-
-  // Defining jnus, anus
-  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
-  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
-  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
-  
-  for (size_t ii=0; ii<nbnu; ++ii){
-    // Initializing to <0 value to create errors if not updated
-    // [ exp(-anu*ds) will explose ]
-    jInu[ii]=1.e-10;
-    jQnu[ii]=1.e-10;
-    jUnu[ii]=0.;
-    jVnu[ii]=1.e-10;
-    aInu[ii]=1.e-10;
-    aQnu[ii]=1.e-10;
-    aUnu[ii]=0.;
-    aVnu[ii]=1.e-10;
-    rotQnu[ii]=1.e-10;
-    rotUnu[ii]=0.;
-    rotVnu[ii]=1.e-10;
-  }
-
-  // Defining the vertical magnetic field
-  double B4vect[4];
-  switch (gg_ -> coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    B4vect[0]=B4vect[1]=B4vect[3]=0.;
-    B4vect[2]=-1.;
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    B4vect[0]=B4vect[1]=B4vect[2]=0.;
-    B4vect[3]=1.;
-    break;
-  default:
-    GYOTO_ERROR("Incompatible coordinate kind in Star.C");
-  }
-
-  double Chi=getChi(B4vect, coord_ph, coord_obj+4);
-  Eigen::Matrix4d Omat;
-  // RETURNING TOTAL INTENSITY AND TRANSMISSION
-  for (size_t ii=0; ii<nbnu; ++ii){
-    Omat=Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    Eigen::Vector4d jStokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi); // apply the rotation matrix on Js with the angle Chi
-    Eigen::Vector4d Stokes(Omat*jStokes*dsem*gg_->unitLength());
-    
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
-  }  
-}
-
-
-
-

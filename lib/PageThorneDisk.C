@@ -287,7 +287,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
     }
     if (data->binspectrum) GYOTO_ERROR("unimplemented");
 
-    if (data->spectrum)  {
+    if (data->spectrum and !ph -> parallelTransport())  {
       for (size_t ii=0; ii<nbnuobs; ++ii) {
       	double nuem=nuobs[ii]*ggredm1;
       	inc = (emission(nuem, dsem, coord_ph_hit, coord_obj_hit))
@@ -298,7 +298,7 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
         //cout << "transmission : " << ph -> getTransmission(size_t(-1)) << endl;
       }
     }
-    if (data->stokesQ||data->stokesU||data->stokesV) {
+    if (data->spectrum||data->stokesQ||data->stokesU||data->stokesV) {
       //ggred=1.;
       if (!ph -> parallelTransport())
         GYOTO_ERROR("parallelTransport not true, impossible to compute polarisation");
@@ -319,6 +319,14 @@ void PageThorneDisk::processHitQuantities(Photon* ph, state_t const &coord_ph_hi
       ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
       double ggred3 = ggred*ggred*ggred;
       for (size_t ii=0; ii<nbnuobs; ++ii) {
+        if (data-> spectrum) {
+          inc = Inu[ii] * ggred3;
+    #           ifdef HAVE_UDUNITS
+          if (data -> spectrum_converter_)
+            inc = (*data -> spectrum_converter_)(inc);
+    #           endif
+          data->spectrum [ii*data->offset] += inc;
+        }
         if (data-> stokesQ) {
           inc = Qnu[ii] * ggred3;
     #           ifdef HAVE_UDUNITS
@@ -368,44 +376,48 @@ void PageThorneDisk::tell(Hook::Teller* msg) {
 void PageThorneDisk::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
        Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
        state_t const &cph, double const *co) const {
-  /**
-   * Polarisation vector oriented parallel to the disk plane and normal to direction of propagation 
-   */
+
   double vel[4]; // 4-velocity of emitter
   gg_->circularVelocity(co, vel);
-  //double gtt=gg_->gmunu(&cph[0],0,0);// TEST!!
-  //vel[0]=1./sqrt(-gtt);vel[1]=0.;vel[2]=0.;vel[3]=0.;
   
   Eigen::Matrix4d Omat;
-  Omat << 1, 0, 0, 0,
-          0, 1, 0, 0,
-          0, 0, 1, 0,
-          0, 0, 0, 1;
+  Omat << 0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0;
 
-  double B4vect[4]={0.,0.,-1.,0.}; // vertical
-  //double B4vect[4]={0.,1.,0.,0.}; // radial
-  //double gtt=gg_->gmunu(&cph[0],0,0),
-  //  gpp=gg_->gmunu(&cph[0],3,3),
-  //  Bt=(-gpp*vel[3])/(gtt*vel[0]),
-    //B4vect[4]={Bt,1.,0.,1.}; // rad and azim
-  //  B4vect[4]={Bt,0.,0.,1.}; // pure azim
-  double Chi=getChi(B4vect, cph, vel);
+  double B4vect[4]={0.,0.,0.,0.};
+  // Toroidal Magnetic fielde dik
+  double gtt = gg_->gmunu(&cph[0],0,0),
+       grr = gg_->gmunu(&cph[0],1,1),
+       gthth = gg_->gmunu(&cph[0],2,2),
+       gpp = gg_->gmunu(&cph[0],3,3);
+  double omega=vel[3]/vel[0], omega2 = omega*omega;
+  double Bt2 = gpp/gtt*omega2/(gtt+gpp*omega2),
+    Bp2 = gtt/gpp*1./(gtt+gpp*omega2);
+  if (Bt2<0. or Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+  B4vect[0]=sqrt(Bt2);
+  B4vect[3]=sqrt(Bp2);
+
+  double norm=sqrt(gg_->ScalarProd(&cph[0], B4vect, B4vect));
+  gg_->multiplyFourVect(B4vect,1./norm);
+
+  double Chi=getChi(B4vect, cph, vel); // this is EVPA
 
   for (size_t ii=0; ii<nbnu; ++ii) {
-    // Unpolarized quantities
-    double I=emission(nuem[ii], dsem, cph, co);
-    //cout << "in page I= " << I << endl;
-    if (I>0.){
-      //cout << "In Page at coord= " << cph[0] << " " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
-      //cout << "*** EVPA *** chi(rad), chi(deg) and cos chi= " << Chi << " " << Chi*180./M_PI << " " << cos(Chi) << endl;
-    }
-    // Carefully debug the radiative transfer before applying rotation
-    // Here without radiative transfer, just storing the I, Q, U
-    Eigen::Vector4d Stokes=rotateJs(I, 0.05*I, 0., 0., Chi);
+    Eigen::Vector4d Stokes=rotateJs(1., 1., 0., 0., Chi);
+
     Inu[ii] = Stokes(0);
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is infinite");
   }
 }
