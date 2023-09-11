@@ -39,6 +39,7 @@
 #include <GyotoSmartPointer.h>
 #include <GyotoConverters.h>
 #include <GyotoObject.h>
+#include <GyotoMagneticFieldConfig.h>
 #include <eigen3/Eigen/Dense>
 
 namespace Gyoto{
@@ -197,6 +198,7 @@ namespace Gyoto{
 class Gyoto::Astrobj::Generic
 : public Gyoto::SmartPointee,
   public Gyoto::Object
+  public Gyoto::Object::MagneticFieldConfig
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 
