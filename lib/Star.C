@@ -442,6 +442,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       }
     }
   }
-  else
-    GYOTO_WARNING << "Polarised radiativeQ of Star is not implemented" << endl;
+  else{
+    // TO BE DONE
+  }
 }
