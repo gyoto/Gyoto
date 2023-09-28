@@ -61,7 +61,7 @@ GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
 GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :
-  SmartPointee(), Object(kin), MagneticFieldConfig(),
+  SmartPointee(), Object(kin),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
@@ -72,7 +72,7 @@ Generic::Generic(string kin) :
 }
 
 Generic::Generic() :
-  SmartPointee(), Object("Default"), MagneticFieldConfig(),
+  SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
@@ -83,7 +83,7 @@ Generic::Generic() :
 }
 
 Generic::Generic(double radmax) :
-  SmartPointee(), Object("Default"), MagneticFieldConfig(),
+  SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(radmax), deltamaxinsidermax_(1.), flag_radtransf_(0),
   noredshift_(0), shadow_(0)
@@ -94,7 +94,7 @@ Generic::Generic(double radmax) :
 }
 
 Generic::Generic(const Generic& orig) :
-  SmartPointee(orig), Object(orig), MagneticFieldConfig(orig),
+  SmartPointee(orig), Object(orig),
   __defaultfeatures(orig.__defaultfeatures),
   gg_(NULL),
   rmax_(orig.rmax_),
