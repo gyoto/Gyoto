@@ -700,10 +700,6 @@ private:
    */
   void getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec=false) const;
 
-  void computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const;
-
-  void computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const;
-
 };
 
 /**
