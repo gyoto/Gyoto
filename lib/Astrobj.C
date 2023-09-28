@@ -1173,6 +1173,234 @@ void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double
 	*cos2Chi =cos(2.*Chi);
 }
 
+void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
+	
+	double rr, rcyl, theta, zz=0.;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr = cph[1];
+    rcyl = cph[1]*sin(cph[2]);
+    theta = cph[2];
+    zz   = cph[1]*cos(cph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
+    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
+        +cph[3]*cph[3]);
+    theta   = acos(cph[3]/rr);
+    zz   = cph[3];
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
+
+  /*********************/
+  /* GYOTO B FORMALISM */
+  /*********************/
+
+  // Define B by requiring: B.B=1 (we care only about B direction),
+  // and B.u=0 (B defined in emitter's frame).
+
+  double gtt = gg_->gmunu(&cph[0],0,0),
+    grr = gg_->gmunu(&cph[0],1,1),
+    gthth = gg_->gmunu(&cph[0],2,2),
+    gtp = gg_->gmunu(&cph[0],0,3),
+    gpp = gg_->gmunu(&cph[0],3,3);
+
+  // So far only circular velocity case is implemented
+  if (vel[2]>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("mf config only defined for utheta=0");
+
+  if (magneticConfig=="Vertical"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    double Bt = -alphafact*Afact,
+  Br = alphafact*cos(cph[2])/sqrt(grr), // cos(cph[2])/sqrt(grr)
+  Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+    B4vect[2]=Bth;
+    
+  }else if(magneticConfig=="Radial"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    double Bt = -alphafact*Afact,
+  Br = alphafact/sqrt(grr); // along +er
+
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+  }else if(magneticConfig=="Toroidal"){
+    // Only case where a bit of computation is needed
+    // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
+    if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
+    double omega=vel[3]/vel[0], omega2 = omega*omega;
+    double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
+    double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
+    if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+    double Bp = sqrt(Bp2);
+    double Bt = -Bp*Afact;
+
+    B4vect[0]=Bt;
+    B4vect[3]=Bp;
+  }else{
+    GYOTO_ERROR("Not implemented Bfield orientation");
+  }
+
+  return;
+}
+
+void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const{
+	
+	double rr, rcyl, theta, zz=0.;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr = cph[1];
+    rcyl = cph[1]*sin(cph[2]);
+    theta = cph[2];
+    zz   = cph[1]*cos(cph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
+    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
+        +cph[3]*cph[3]);
+    theta   = acos(cph[3]/rr);
+    zz   = cph[3];
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect_ipole : Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  
+  /*********************/
+  /* IPOLE B FORMALISM */
+  /*********************/
+  
+  double B_1=0.,B_2=0.,B_3=0;
+  
+  double gtt = gg_->gmunu(&cph[0],0,0),
+    grr = gg_->gmunu(&cph[0],1,1),
+    gthth = gg_->gmunu(&cph[0],2,2),
+    gpp = gg_->gmunu(&cph[0],3,3);
+  double dx1=0.025,
+    dx2=0.025;
+  
+  if (magneticConfig=="None")
+    GYOTO_ERROR("Specify the magnetic field configuration");
+  if (magneticConfig=="Vertical"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+    
+    double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
+  F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
+  F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
+  F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det);
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det);
+    B_3 = 0.;
+  }
+  else if (magneticConfig=="Radial"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+    double F11 = 1.-cos(theta-dx2*M_PI),
+    F12 = 1.-cos(theta+dx2*M_PI),
+    F21 = 1.-cos(theta-dx2*M_PI),
+    F22 = 1.-cos(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
+    B_3 = 0.;
+  }
+  else if (magneticConfig=="Toroidal"){
+    B_1 = 0.;
+    B_2 = 0.;
+    B_3 = 1.;
+  }
+  else
+    GYOTO_ERROR("Unknown magnetic field configuration");
+
+  // compute contravariant velocity in KS' from BL
+  double dtKS_drBL   = 2. * rr / (rr*rr - 2.*rr + spin*spin);
+  double dphiKS_drBL = spin / (rr*rr - 2.*rr + spin*spin);
+  double Ucon_KSm[4]={0.,0.,0.,0.};
+  Ucon_KSm[0]=vel[0]+vel[1]*dtKS_drBL;
+  Ucon_KSm[1]=vel[1]/rr;
+  Ucon_KSm[2]=vel[2]/M_PI;
+  Ucon_KSm[3]=vel[3]+vel[1]*dphiKS_drBL;
+  
+  // Compute KS' metric
+  double gcov_ksm[4][4];
+  double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+  double gcov_ks[4][4];
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      gcov_ks[mu][nu]=0.;
+  
+  gcov_ks[0][0] = -1. + 2. * rr / rho2 ;
+  gcov_ks[0][1] = 2. * rr / rho2 ;
+  gcov_ks[0][3] = -2. * spin * rr * sin(theta)*sin(theta) / rho2;
+  gcov_ks[1][0] = gcov_ks[0][1];
+  gcov_ks[1][1] = 1. + 2. * rr / rho2 ;
+  gcov_ks[1][3] = -spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2);
+  gcov_ks[2][2] = rho2 ;
+  gcov_ks[3][0] = gcov_ks[0][3];
+  gcov_ks[3][1] = gcov_ks[1][3];
+  gcov_ks[3][3] = sin(theta)*sin(theta) * (rho2 + spin * spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2));
+  
+  // convert from ks metric to a modified one using Jacobian
+  double dxdX[4][4];
+  double hslope=0.;
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+  dxdX[mu][nu]=0.;
+  
+  dxdX[0][0] = 1.;
+  dxdX[1][1] = rr;
+  dxdX[2][2] = M_PI  + hslope*2*M_PI*cos(2*theta); 
+  dxdX[3][3] = 1.;
+  
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      gcov_ksm[mu][nu] = 0;
+      for (int lam = 0; lam < 4; ++lam) {
+        for (int kap = 0; kap < 4; ++kap) {
+          gcov_ksm[mu][nu] += gcov_ks[lam][kap] * dxdX[lam][mu] * dxdX[kap][nu];
+        }
+      }
+    }
+  }
+  
+  // Compute covariante velocity in KS'
+  double Ucov_KSm[4]={0.,0.,0.,0.};
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      Ucov_KSm[mu] += gcov_ksm[mu][nu]*Ucon_KSm[nu];
+    }
+  }
+  
+  // Copute Magnetic field in KS'
+  double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
+    B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
+    B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
+    B3=(B_3+B0*Ucon_KSm[3])/Ucon_KSm[0];
+  
+  // Conversion Magnetic field from KS' -> BL
+  double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
+  B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
+  B4vect[1]=B1*rr;
+  B4vect[2]=B2*M_PI;
+  B4vect[3]=B3-B1*spin*rr/Delta;
+  // end of ipole Bfield formalism
+
+  return;
+}
+
 void Generic::integrateEmission(double * I, double const * boundaries,
 				size_t const * chaninds, size_t nbnu,
 				double dsem, state_t const &cph, double const *co) const
