@@ -19,15 +19,15 @@ metric.mass(4e6, "sunmass");
 # Get pointers in a format that Gyoto undestands.
 # Warning: here we assume that size_t is the same as uint64.
 gridshape=numpy.asarray( (1, 3, 11) , numpy.uint64)
-pgridshape=gyoto.core.array_size_t_fromnumpy1(gridshape)
+pgridshape=gyoto.core.array_size_t.fromnumpy1(gridshape)
 
 opacity=numpy.zeros(gridshape)
-popacity=gyoto.core.array_double_fromnumpy3(opacity)
+popacity=gyoto.core.array_double.fromnumpy3(opacity)
 opacity[:, 0::2, 0::2]=100.
 opacity[:, 1::2, 1::2]=100.
 
 intensity=opacity*0.+1.;
-pintensity=gyoto.core.array_double_fromnumpy3(intensity)
+pintensity=gyoto.core.array_double.fromnumpy3(intensity)
 
 # Create PatternDisk, attach grids, set some parameters
 pd=gyoto.std.PatternDisk()
@@ -80,11 +80,11 @@ for k in range (3):
     assert pgridshape2[k]==pgridshape[k], "shape of grid changed"
 bufsize=gridshape.prod()
 # compare intensity
-buf=gyoto.core.array_double_frompointer(pd2.getIntensity())
+buf=gyoto.core.array_double.frompointer(pd2.getIntensity())
 for k in range(bufsize):
     assert buf[k] == pintensity[k], "Intensity changed"
 # compare opacity
-buf=gyoto.core.array_double_frompointer(pd2.opacity())
+buf=gyoto.core.array_double.frompointer(pd2.opacity())
 for k in range(bufsize):
     assert buf[k] == popacity[k], "Opacity changed"
 
@@ -94,7 +94,7 @@ jj=gyoto.core.Range(1, screen.resolution(), 1)
 grid=gyoto.core.Grid(ii, jj)
 aop=gyoto.core.AstrobjProperties()
 frame=numpy.zeros((screen.resolution(), screen.resolution()))
-pframe=gyoto.core.array_double_fromnumpy2(frame)
+pframe=gyoto.core.array_double.fromnumpy2(frame)
 aop.intensity=pframe
 sc.rayTrace(grid, aop)
 plt.imshow(frame, origin='lower')

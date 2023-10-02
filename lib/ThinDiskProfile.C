@@ -43,26 +43,47 @@ using namespace Gyoto::Astrobj;
 GYOTO_PROPERTY_START(ThinDiskProfile)
 GYOTO_PROPERTY_BOOL(ThinDiskProfile, CircularMotion, NoCircularMotion,
 		    circularMotion)
+GYOTO_PROPERTY_VECTOR_DOUBLE(ThinDiskProfile, Model_param, model_param,
+			     "Parameters useful for the disk, max number NPAR_MAX")
 GYOTO_PROPERTY_END(ThinDiskProfile, ThinDisk::properties)
 
 //#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
+#define NPAR_MAX 10 // Max allowed number of parameters
 
 bool ThinDiskProfile::circularMotion() const {return circular_motion_;}
 void ThinDiskProfile::circularMotion(bool circ) {circular_motion_=circ;}
 
+void ThinDiskProfile::model_param(std::vector<double> const &v) {
+  size_t n = v.size();
+  if (n>NPAR_MAX) throwError("Too many parameters in model_param");
+  for (size_t i=0; i<n; ++i) model_param_[i]=v[i];
+}
+std::vector<double> ThinDiskProfile::model_param() const {
+  std::vector<double> v(NPAR_MAX, 0.);
+  for (size_t i=0; i<NPAR_MAX; ++i) v[i]=model_param_[i];
+  return v;
+}
+
 ThinDiskProfile::ThinDiskProfile() :
   ThinDisk("ThinDiskProfile"),
-  circular_motion_(1)
+  circular_motion_(1),
+  model_param_(NULL)
 {
-  if (debug()) cerr << "DEBUG: ThinDiskProfile Construction" << endl;
+  GYOTO_DEBUG << endl;
+  model_param_ = new double[NPAR_MAX];
+  for (int ii=0;ii<NPAR_MAX;ii++) model_param_[ii]=0.;
 }
 
 ThinDiskProfile::ThinDiskProfile(const ThinDiskProfile& o) :
   ThinDisk(o),
-  circular_motion_(o.circular_motion_)
+  circular_motion_(o.circular_motion_),
+  model_param_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
+
+  model_param_ = new double[NPAR_MAX];
+  for (int ii=0;ii<NPAR_MAX;ii++) model_param_[ii]=o.model_param_[ii];
 }
 ThinDiskProfile* ThinDiskProfile::clone() const
 { return new ThinDiskProfile(*this); }
@@ -72,30 +93,58 @@ bool ThinDiskProfile::isThreadSafe() const {
 }
 
 ThinDiskProfile::~ThinDiskProfile() {
-  if (debug()) cerr << "DEBUG: ThinDiskProfile Destruction" << endl;
+  GYOTO_DEBUG << endl;
+  delete [] model_param_;
 }
 
 double ThinDiskProfile::emission(double nu, double,
 			    state_t const &,
 			    double const coord_obj[8]) const{
-  string kin = gg_->kind();
-  if (kin != "KerrBL")
-    GYOTO_ERROR("ThinDiskProfile: KerrBL needed!");
-  double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-  
-  double rr = coord_obj[1];
-  // Gralla+20 model for M87
-  double spin=SPIN, a2=spin*spin;
-  double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2),
-    risco=gg_->getRms();
+  string emission_model = "Thermal_Synchrotron"; // should be in: "Gralla_et_al", "Thermal_Synchrotron"
 
-  // Choose profile here:
-  double gamma=-3./2., mu=rminus, sigG=1./2.;
-  //double gamma=-3., mu=risco-0.33, sigG=0.25;
+  double rr = coord_obj[1],
+    emiss=0.; // model-dependent emission defined below
+
+  if (emission_model == "Gralla_et_al"){
+    // Emission from Gralla et al 2020
+    // ****************************** //
+    // Here model_param must contain:
+    // model_param = [gamma, mu, sigG]
+    
+    // This model is Kerr specific
+    string kin = gg_->kind();      
+    if (kin != "KerrBL")
+      GYOTO_ERROR("ThinDiskProfile: KerrBL needed!");
+    double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin(),
+      a2 = SPIN*SPIN;
+      
+    double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2),
+      risco=gg_->getRms();
+    
+    // Choose profile here:
+    double gamma=model_param_[0],
+      mu=model_param_[1],
+      sigG=model_param_[2];
+    //double gamma=-3./2., mu=rminus, sigG=1./2.;
+    //double gamma=-3., mu=risco-0.33, sigG=0.25;
+    
+    double tmp = gamma+asinh((rr-mu)/sigG);
+    emiss = 1e-5*exp(-0.5*tmp*tmp)/sqrt((rr-mu)*(rr-mu)+sigG*sigG);
+    // the 1e-5 is just there to get a reasonable flux for M87
+  }
   
-  double tmp = gamma+asinh((rr-mu)/sigG);
-  double emiss = exp(-0.5*tmp*tmp)/sqrt((rr-mu)*(rr-mu)+sigG*sigG);
-  return 1e-5*emiss; // 1e-6 just for getting a reasonable flux
+  if (emission_model == "Thermal_Synchrotron"){
+    // Emission from Vincent+22 thick disk paper synchrotron formula
+    // ****************************** //
+    // Here model_param must contain:
+    // model_param = [zeta, rin]
+    double zeta = model_param_[0],
+      rin = model_param_[1]; //1.+sqrt(1-SPIN*SPIN);
+    emiss = 1e-3*exp(-zeta*rr/rin);
+    // the 1e-3 is just there to get a reasonable flux for M87
+  }
+  
+  return emiss;
 }
 
 void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
