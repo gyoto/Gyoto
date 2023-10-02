@@ -48,6 +48,7 @@ namespace Gyoto{
 class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinDiskProfile>;
  private:
+  double* model_param_; ///< A vector containing an arbitrary number of parameters necessary to compute the disk image
   bool circular_motion_; ///< True if motion is circular, else radial fall
  protected:
 
@@ -69,6 +70,9 @@ class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
  public:
   bool circularMotion() const;
   void circularMotion(bool circ);
+
+  void model_param(std::vector<double> const &v);
+  std::vector<double> model_param() const;
 
  public:
   virtual double emission(double nu_em, double dsem,

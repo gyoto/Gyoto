@@ -424,7 +424,7 @@ def rayTraceFrame(sc, func, k, nframes, width, height):
       The raytraced intensity as a NumPy array
     '''
     intensity=numpy.zeros((height, width))
-    pintensity=core.array_double_fromnumpy2(intensity)
+    pintensity=core.array_double.fromnumpy2(intensity)
     func(sc, k, nframes)
     res=max(width, height)
     sc.screen().resolution(res)
@@ -449,13 +449,13 @@ def defaultScenery():
     metric = core.Metric("KerrBL")
     metric.mass(4e6, "sunmass");
     gridshape=numpy.asarray( (1, 3, 11) , numpy.uint64)
-    pgridshape=core.array_size_t_fromnumpy1(gridshape)
+    pgridshape=core.array_size_t.fromnumpy1(gridshape)
     opacity=numpy.zeros(gridshape)
-    popacity=core.array_double_fromnumpy3(opacity)
+    popacity=core.array_double.fromnumpy3(opacity)
     opacity[:, 0::2, 0::2]=100.
     opacity[:, 1::2, 1::2]=100.
     intensity=opacity*0.+1.;
-    pintensity=core.array_double_fromnumpy3(intensity)
+    pintensity=core.array_double.fromnumpy3(intensity)
     pd=std.PatternDisk()
     pd.velocityKind('ZAMO')
     pd.copyIntensity(pintensity, pgridshape)

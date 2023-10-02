@@ -117,11 +117,23 @@ PyObject * Gyoto::Python::PyInstance_GetMethod
 bool Gyoto::Python::PyCallable_HasVarArg(PyObject * pMethod) {
   static PyObject * pGetArgSpec = NULL;
 
-  if (!pGetArgSpec) {
+  if (!pGetArgSpec) { // search for getfullargspec
+    PyObject * pName = PyUnicode_FromString("inspect");
+    PyObject * pModule = PyImport_Import(pName);
+    Py_XDECREF(pName); pName=NULL;
+    pGetArgSpec = PyObject_GetAttrString(pModule, "getfullargspec");
+  }
+
+  if (!pGetArgSpec) { // getargspec deprecated since Python 3.0, removed in 3.11
     PyObject * pName = PyUnicode_FromString("inspect");
     PyObject * pModule = PyImport_Import(pName);
     Py_XDECREF(pName); pName=NULL;
     pGetArgSpec = PyObject_GetAttrString(pModule, "getargspec");
+  }
+
+  if (!pGetArgSpec) {
+    PyErr_Print();
+    GYOTO_ERROR("Failed finding method getargspec or getfullargspec in module inspect");
   }
 
   PyObject * pArgSpec =

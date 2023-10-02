@@ -45,6 +45,7 @@ GYOTO_PROPERTY_DOUBLE(SphericalAccretion, SphericalAccretionInnerRadius, spheric
 GYOTO_PROPERTY_DOUBLE_UNIT(SphericalAccretion,
 			   NumberDensityAtInnerRadius,
 			   numberDensityAtInnerRadius)
+GYOTO_PROPERTY_DOUBLE(SphericalAccretion, DensitySlope, densitySlope)
 GYOTO_PROPERTY_DOUBLE(SphericalAccretion,
 		      TemperatureAtInnerRadius,
 		      temperatureAtInnerRadius)
@@ -103,6 +104,8 @@ void SphericalAccretion::numberDensityAtInnerRadius(double dens, string const &u
   }
   numberDensityAtInnerRadius(dens);
 }
+void SphericalAccretion::densitySlope(double ss) {densitySlope_=ss;}
+double SphericalAccretion::densitySlope()const{return densitySlope_;}
 void SphericalAccretion::temperatureAtInnerRadius(double tt) {temperatureAtInnerRadius_=tt;}
 double SphericalAccretion::temperatureAtInnerRadius()const{return temperatureAtInnerRadius_;}
 void SphericalAccretion::temperatureSlope(double ss) {temperatureSlope_=ss;}
@@ -118,6 +121,7 @@ SphericalAccretion::SphericalAccretion() :
   sphericalAccretionInnerRadius_(2.),
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
+  densitySlope_(2.),
   magnetizationParameter_(1.),
   use_selfabsorption_(1)
 {
@@ -131,6 +135,7 @@ SphericalAccretion::SphericalAccretion(const SphericalAccretion& o) :
   numberDensityAtInnerRadius_cgs_(o.numberDensityAtInnerRadius_cgs_),
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
+  densitySlope_(o.densitySlope_),
   magnetizationParameter_(o.magnetizationParameter_),
   spectrumThermalSynch_(NULL),
   use_selfabsorption_(o.use_selfabsorption_)
@@ -175,7 +180,8 @@ void SphericalAccretion::radiativeQ(double Inu[], // output
   }
 
   double number_density = numberDensityAtInnerRadius_cgs_
-    *(sphericalAccretionInnerRadius_*sphericalAccretionInnerRadius_)/(rr*rr);
+    *pow(sphericalAccretionInnerRadius_/rr, densitySlope_);
+    //*(sphericalAccretionInnerRadius_*sphericalAccretionInnerRadius_)/(rr*rr);
 
   //cout << "Spherical r, z, rho= " << rcyl << " " << zz << " " << number_density << endl;
 

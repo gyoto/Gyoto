@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2020 Thibaut Paumard
+    Copyright 2014-2022 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -995,8 +995,8 @@ public:
 
 // Units and Converters are SmartPointee
 %extend Gyoto::Units::Unit {
-  const char *__str__() {
-    return (std::string(*($self))).c_str();
+  std::string __str__() {
+    return (std::string(*($self)));
   }
 };
 %feature("ref") Gyoto::Units::Unit "$this->incRefCount();//ref Unit";
