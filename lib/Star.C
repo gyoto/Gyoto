@@ -442,6 +442,21 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       }
     }
   }
-  else
-    GYOTO_WARNING << "Polarised radiativeQ of Star is not implemented" << endl;
+  else{
+    // NON TESTING POLARISED RADIATIVEQ TO BE DONE
+    Eigen::Matrix4d identity;
+    identity << 1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+
+    for (size_t ii=0; ii<nbnu; ++ii) {
+      Inu[ii] = emission(nuem[ii], dsem, cph, co);
+      double Tau = transmission(nuem[ii], dsem, cph, co);
+      Qnu[ii] = 0.;
+      Unu[ii] = 0.;
+      Vnu[ii] = 0.;
+      Onu[ii] = Tau*identity;
+    }
+  }
 }
