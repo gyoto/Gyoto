@@ -170,7 +170,6 @@ void Plasmoid::radiativeQ(double Inu[], // output
   }
   else{ // COOLING PHASE
     double tt=(tcur-t0)*60.; // in sec
-    cout << tt/60. << endl;
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
       anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
@@ -181,8 +180,6 @@ void Plasmoid::radiativeQ(double Inu[], // output
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii){
     double jnu_tot = jnu[ii], anu_tot = anu[ii];
-    cout << "theta=" << coord_obj[2]*180./M_PI << endl;
-    cout << "jnu, anu, nu_em = " << jnu_tot << ", " << anu_tot << ", " << nu_ems[ii] << endl; 
     // expm1 is a precise implementation of exp(x)-1
     double em1=std::expm1(-anu_tot * dsem * gg_->unitLength());
     Taunu[ii] = em1+1.;
