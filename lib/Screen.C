@@ -484,7 +484,10 @@ void Screen::getScreen3(double output[]) const{
 void Screen::spectrometer(SmartPointer<Spectrometer::Generic> spr) { spectro_=spr; }
 SmartPointer<Spectrometer::Generic> Screen::spectrometer() const { return spectro_; }
 
-void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
+void Screen::getRayTriad(const size_t i, const size_t j,
+			 double coord[],
+			 bool compute_polar_basis,
+			 double Ephi[4], double Etheta[4]) const {
   double xscr, yscr;
 # if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "(i=" << i << ", j=" << j << ", coord)" << endl;
@@ -529,11 +532,14 @@ void Screen::getRayCoord(const size_t i, const size_t j, double coord[]) const {
     xscr=yscr=0.;
     GYOTO_ERROR("Unrecognized anglekind_");
   }
-  getRayCoord(xscr, yscr, coord); 
+  getRayTriad(xscr, yscr, coord,
+	      compute_polar_basis, Ephi, Etheta); 
 }
 
-void Screen::getRayCoord(double angle1, double angle2,
-			 double coord[]) const
+void Screen::getRayTriad(double angle1, double angle2,			 
+			 double coord[],
+			 bool compute_polar_basis,
+			 double Ephi[4], double Etheta[4]) const
 
 {
   double normtol=1e-10;
@@ -692,7 +698,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  GYOTO_ERROR("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayTriad: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -714,7 +720,7 @@ void Screen::getRayCoord(double angle1, double angle2,
 	  rinf=20.; // this rinf is just a very crude test
                	    // I take rinf=10*rhor in Sch metric
 	if (rr<rinf)
-	  GYOTO_ERROR("In Screen::getRayCoord: "
+	  GYOTO_ERROR("In Screen::getRayTriad: "
 		     "observer is not at spatial infinity "
 		     "and should be");
 
@@ -729,7 +735,7 @@ void Screen::getRayCoord(double angle1, double angle2,
       }
       break;
     default:
-      GYOTO_ERROR("Incompatible coordinate kind in Screen::getRayCoord()");
+      GYOTO_ERROR("Incompatible coordinate kind in Screen::getRayTriad()");
       break;
     }
 
@@ -788,47 +794,80 @@ void Screen::getRayCoord(double angle1, double angle2,
       +fourvel[3];
   }
   if (fabs(gg_->ScalarProd(coord,coord+4,coord+4))>normtol){
-    GYOTO_SEVERE << "In Screen::getRayCoord: "
+    GYOTO_SEVERE << "In Screen::getRayTriad: "
 		 << "tangent 4-vector to photon not properly normalized: "
 		 << "norm = "
 		 << gg_->ScalarProd(coord,coord+4,coord+4)
 		 << endl;
   }
-}
 
-void Screen::getRayTriad(double coord[8],
-			 double Ephi[4], double Etheta[4]) const {
-  // Defining polarization vectors
-  int coordkind=gg_ -> coordKind();
-  switch (coordkind) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    {
-      double k_phi = gg_->gmunu(coord,3,3)*coord[7]
-	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
-                           // of tangent vector to null geodesic
-      double ktheta = coord[6];
-      double rr = coord[1];
-      double sth=sin(coord[2]);
-      if (sth==0.)
-	GYOTO_ERROR("Please move Screen away from z-axis");
-      double rsm1 = 1./(rr*sth);
-
-      double sp=sin(euler_[0]);
-      double cp=cos(euler_[0]);
-      // Ephi
-      Ephi[0]=0.;
-      Ephi[1]=-k_phi*rsm1;      
-      Ephi[2]=sp/rr;
-      Ephi[3]=-cp*rsm1;
-      // Etheta
-      Etheta[0]=0.;
-      Etheta[1]=rr*ktheta;
-      Etheta[2]=cp/rr;
-      Etheta[3]=sp*rsm1;
-      break;
+  if (compute_polar_basis==true){
+    switch (gg_ -> coordKind()) {
+    case GYOTO_COORDKIND_SPHERICAL:
+      {
+	double ca, sa; sincos(spherical_angle_a, &sa, &ca);
+	double cb, sb; sincos(spherical_angle_b, &sb, &cb);
+	double Ephi_screenBasis[3] = {-sb*sb*(1-ca)-ca,
+				      sb*cb*(1-ca),
+				      cb*sa};
+	double Etheta_screenBasis[3] = {-sb*cb*(1-ca),
+					(cb*cb*(1-ca)+ca),
+					-sb*sa};
+	
+	double cp, sp; sincos(euler_[0], &sp, &cp);
+	
+	if (observerkind_==GYOTO_OBSKIND_ATINFINITY){
+	  double grr=gg_->gmunu(coord,1,1), 
+	    gthth=gg_->gmunu(coord,2,2), gphph=gg_->gmunu(coord,3,3);
+	  // Ephi
+	  Ephi[0]=0.;
+	  Ephi[1]=-Ephi_screenBasis[2]/sqrt(grr);      
+	  Ephi[2]=(-sp*Ephi_screenBasis[0]
+		   +cp*Ephi_screenBasis[1])/sqrt(gthth);
+	  Ephi[3]=( cp*Ephi_screenBasis[0]
+		    +sp*Ephi_screenBasis[1])/sqrt(gphph);
+	  // Etheta
+	  Etheta[0]=0.;
+	  Etheta[1]=-Etheta_screenBasis[2]/sqrt(grr);
+	  Etheta[2]=(-sp*Etheta_screenBasis[0]
+		     +cp*Etheta_screenBasis[1])/sqrt(gthth);
+	  Etheta[3]=( cp*Etheta_screenBasis[0]
+		      +sp*Etheta_screenBasis[1])/sqrt(gphph);
+	  //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
+	  //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
+	  //throwError("test Eth");
+	}else{
+	  throwError("Observer should be at infinity");
+	}
+      
+	// double k_phi = gg_->gmunu(coord,3,3)*coord[7]
+	// 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
+	//                      // of tangent vector to null geodesic
+	// double ktheta = coord[6];
+	// double rr = coord[1];
+	// double sth=sin(coord[2]);
+	// if (sth==0.)
+	// 	GYOTO_ERROR("Please move Screen away from z-axis");
+	// double rsm1 = 1./(rr*sth);
+	
+	// double sp=sin(euler_[0]);
+	// double cp=cos(euler_[0]);
+	// // Ephi
+	// Ephi[0]=0.;
+	// Ephi[1]=-k_phi*rsm1;      
+	// Ephi[2]=sp/rr;
+	// Ephi[3]=-cp*rsm1;
+	// // Etheta
+	// Etheta[0]=0.;
+	// Etheta[1]=rr*ktheta;
+	// Etheta[2]=cp/rr;
+	// Etheta[3]=sp*rsm1;
+	break;
+      }
+      
+    default:
+      GYOTO_ERROR("Non implemented coord kind for polarization");
     }
-  default:
-    GYOTO_ERROR("Non implemented coord kind for polarization");
   }
 }
 

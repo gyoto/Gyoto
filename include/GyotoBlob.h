@@ -33,8 +33,10 @@ namespace Gyoto{
 }
 
 #include <GyotoMetric.h>
-#include <GyotoUniformSphere.h>
+#include <GyotoStar.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
+#include <GyotoPowerLawSynchrotronSpectrum.h>
+#include <GyotoThermalSynchrotronSpectrum.h>
 
 #ifdef GYOTO_USE_XERCES
 #include <GyotoRegister.h>
@@ -49,7 +51,7 @@ namespace Gyoto{
  *
  */
 class Gyoto::Astrobj::Blob :
-  public Gyoto::Astrobj::UniformSphere {
+  public Gyoto::Astrobj::Star {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Blob>;
   
   // Data : 
@@ -62,10 +64,10 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter_; ///< magnetization parameter
   double kappaIndex_; ///< hotspot synchrotron kappa-distribution index
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
-  double* posIni_; // 4-position of the plasmoid in spherical coordinates
-  double* fourveldt_; // 4-velocity of the plasmoid in spherical coordinates (dxi/dt, not dtau) 
-  std::string flag_; // type of motion "helical" or "equatorial"
-  bool posSet_;
+  SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
+  SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
+  std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
+  std::string electronDistrib_; // Electron distribution (thermal, kappa)
 
   // Constructors - Destructor
   // -------------------------
@@ -86,6 +88,9 @@ class Gyoto::Astrobj::Blob :
   virtual ~Blob() ;                        ///< Destructor
   
  public:
+  void electronDistribution(const std::string &kind);
+  std::string electronDistribution() const;
+  
   virtual std::string className() const ; ///< "Blob"
   virtual std::string className_l() const ; ///< "inflate_star"
 
@@ -108,27 +113,19 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter() const;
   double kappaIndex() const;
   void kappaIndex(double);
-  void motionType(std::string const type);
-  void setPosition(std::vector<double> const &v);
-  //std::vector<double> initPosition() const;
-  void setVelocity(std::vector<double> const &v);
-  //std::vector<double> initVelocity() const;
-  void initCoord(std::vector<double> const &v);
-  std::vector<double> initCoord() const;
+  void magneticConfiguration(std::string config);
+  std::string magneticConfiguration() const;
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const ;
 
+  virtual void radiativeQ(double Inu[], double Qnu[], double Unu[], 
+              double Vnu[], Eigen::Matrix4d Onu[],
+              double const nu_ems[], size_t nbnu, double dsem,
+              state_t const &coord_ph, double const coord_obj[8]) const;
 
-  void getCartesian(double const * const dates, size_t const n_dates,
-          double * const x, double * const y,
-          double * const z, double * const xprime=NULL,
-          double * const yprime=NULL,
-          double * const zprime=NULL);
-
-  void getVelocity(double const pos[4], double vel[4]);
 };
 
 

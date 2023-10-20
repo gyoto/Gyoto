@@ -40,6 +40,7 @@
 using namespace std;
 using namespace Gyoto;
 using namespace Gyoto::Astrobj;
+using namespace Eigen;
 
 Register::Entry* Gyoto::Astrobj::Register_ = NULL;
 
@@ -164,6 +165,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
 #endif
+  //  cout << "flagra= " << flag_radtransf_ << endl;
   /*
       NB: freqObs is the observer's frequency chosen in
       Screen::getRayCoord for the actual computation of the geodesic ;
@@ -305,14 +307,8 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	double * Qnu          = new double[nbnuobs];
 	double * Unu          = new double[nbnuobs];
 	double * Vnu          = new double[nbnuobs];
-	double * alphaInu     = new double[nbnuobs];
-	double * alphaQnu     = new double[nbnuobs];
-	double * alphaUnu     = new double[nbnuobs];
-	double * alphaVnu     = new double[nbnuobs];
-	double * rQnu         = new double[nbnuobs];
-	double * rUnu         = new double[nbnuobs];
-	double * rVnu         = new double[nbnuobs];
 	double * nuem         = new double[nbnuobs];
+	Matrix4d * Onu        = new Matrix4d[nbnuobs];
 
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  nuem[ii]=nuobs[ii]*ggredm1;
@@ -320,13 +316,9 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
 	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
 	radiativeQ(Inu, Qnu, Unu, Vnu,
-		   alphaInu, alphaQnu, alphaUnu, alphaVnu,
-		   rQnu, rUnu, rVnu,
-		   nuem, nbnuobs, dsem,
+		   Onu, nuem, nbnuobs, dsem,
 		   coord_ph_hit, coord_obj_hit);
-	ph -> transfer (Inu, Qnu, Unu, Vnu,
-			alphaInu, alphaQnu, alphaUnu, alphaVnu,
-			rQnu, rUnu, rVnu);
+	ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
 	double ggred3 = ggred*ggred*ggred;
 	for (size_t ii=0; ii<nbnuobs; ++ii) {
 	  if (data-> spectrum) {
@@ -364,10 +356,15 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 
 #         if GYOTO_DEBUG_ENABLED
 	  {
-	    double t=ph -> getTransmission(ii);
+	    //double t=ph -> getTransmission(ii);
+	    Matrix4d mat=ph -> getTransmissionMatrix(ii);
+	    double t=mat(0,0);
 	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
-	  GYOTO_DEBUG
-	    << "DEBUG: Generic::processHitQuantities(): "
+	    //cout << " r th I Q U V= " << coord_ph_hit[1] << " " << coord_ph_hit[2]*180./M_PI << " " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset] << " " << data->stokesV[ii*data->offset] << endl;
+	    GYOTO_DEBUG
+	      //  cout
+	      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
+	      << "DEBUG: Generic::processHitQuantities(): "
 	    << "nuobs[" << ii << "]="<< nuobs[ii]
 	    << ", nuem=" << nuem[ii]
 	    << ", dsem=" << dsem
@@ -375,9 +372,12 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	    << Inu[ii]
 	    << ", spectrum[" << ii*data->offset << "]="
 	    << data->spectrum[ii*data->offset]
+	      << ", sotkesQ[" << ii*data->offset << "]="
+	      << data->stokesQ[ii*data->offset]
 	    << ", transmission=" << t
 	    << ", optical depth=" << o
 	    << ", redshift=" << ggred << ")\n" << endl;
+	    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
 	  }
 #         endif
 	}
@@ -385,13 +385,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 	delete [] Qnu;
 	delete [] Unu;
 	delete [] Vnu;
-	delete [] alphaInu;
-	delete [] alphaQnu;
-	delete [] alphaUnu;
-	delete [] alphaVnu;
-	delete [] rQnu;
-	delete [] rUnu;
-	delete [] rVnu;
+	delete [] Onu;
 	delete [] nuem;
       } else { // No polarization
 	double * Inu          = new double[nbnuobs];
@@ -482,6 +476,9 @@ double Generic::transmission(double nuem, double dsem, state_t const &coord_ph, 
   GYOTO_DEBUG_EXPR(flag_radtransf_);
   GYOTO_DEBUG_EXPR(__defaultfeatures);
 # endif
+  //cout << (__defaultfeatures & __default_radiativeQ) << endl;
+  //cout << (__defaultfeatures & __default_radiativeQ_polar) << endl;
+  //cout << __defaultfeatures << "," << __default_radiativeQ << "," << __default_radiativeQ_polar << endl;
   if ((!(__defaultfeatures & __default_radiativeQ)) ||
       (!(__defaultfeatures & __default_radiativeQ_polar))) {
     // We don't know (yet?) whether both radiativeQ are the default
@@ -555,30 +552,17 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
     double * Qnu = new double[nbnu];
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
-    double * alphaInu = new double[nbnu];
-    double * alphaQnu = new double[nbnu];
-    double * alphaUnu = new double[nbnu];
-    double * alphaVnu = new double[nbnu];
-    double * rQnu = new double[nbnu];
-    double * rUnu = new double[nbnu];
-    double * rVnu = new double[nbnu];
+    Matrix4d * Onu = new Matrix4d[nbnu];
+    double Chi=0;
     radiativeQ(Inu, Qnu, Unu, Vnu,
-	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu,
-	       nuem , nbnu, dsem,
+	       Onu, nuem , nbnu, dsem,
 	       cph, co);
     // in all cases, clean up
     delete [] Qnu;
     delete [] Unu;
     delete [] Vnu;
-    delete [] alphaInu;
-    delete [] alphaQnu;
-    delete [] alphaUnu;
-    delete [] alphaVnu;
-    delete [] rQnu;
-    delete [] rUnu;
-    delete [] rVnu;
     delete [] Taunu;
+    delete [] Onu;
     return;
   }
 
@@ -605,24 +589,17 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
     double * alphaInu = new double[nbnu];
-    double * alphaQnu = new double[nbnu];
-    double * alphaUnu = new double[nbnu];
-    double * alphaVnu = new double[nbnu];
-    double * rQnu = new double[nbnu];
-    double * rUnu = new double[nbnu];
-    double * rVnu = new double[nbnu];
+    Matrix4d * Onu = new Matrix4d[nbnu];
     radiativeQ(Inu, Qnu, Unu, Vnu,
-	       alphaInu, alphaQnu, alphaUnu, alphaVnu,
-	       rQnu, rUnu, rVnu,
-	       nuem , nbnu, dsem,
+	       Onu, nuem , nbnu, dsem,
 	       cph, co);
     if (!(__defaultfeatures & __default_radiativeQ_polar)) {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i] = exp(-alphaInu[i]);
+	      Taunu[i] = Onu[i](0,0);
       }
     } else {
       for (size_t i=0; i<nbnu; ++i) {
-	Taunu[i]=transmission(nuem[i], dsem, cph, co);
+	      Taunu[i]=transmission(nuem[i], dsem, cph, co);
       }
     }
     // in all cases, clean up
@@ -630,12 +607,7 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
     delete [] Unu;
     delete [] Vnu;
     delete [] alphaInu;
-    delete [] alphaQnu;
-    delete [] alphaUnu;
-    delete [] alphaVnu;
-    delete [] rQnu;
-    delete [] rUnu;
-    delete [] rVnu;
+    delete [] Onu;
     return;
     // If polarized radiativeQ is not implemented, the default
     // implementation will recurse here.
@@ -653,12 +625,9 @@ void Generic::radiativeQ(double * Inu, double * Taunu,
 }
 
 void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
-                         double *alphaInu, double *alphaQnu,
-			 double *alphaUnu, double *alphaVnu,
-                         double *rQnu, double *rUnu, double *rVnu,
+       Matrix4d *Onu,
 			 double const *nuem , size_t nbnu, double dsem,
-                         state_t const &cph,
-			 double const *co) const
+       state_t const &cph, double const *co) const
 {
   // cph has 16 elements, 4 elements for each one of
   // X, Xdot, Ephi, Etheta
@@ -671,6 +640,12 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
   // Compute the output from the non-polarized radiativeQ().
   double * Taunu = new double[nbnu];
+  double * alphaInu = new double[nbnu];
+  Matrix4d identity;
+  identity << 1, 0, 0, 0,
+              0, 1, 0, 0,
+              0, 0, 1, 0,
+              0, 0, 0, 1;
   radiativeQ(Inu, Taunu, nuem, nbnu, dsem, cph, co);
   for (size_t i=0; i<nbnu; ++i) {
     // Inu[i] = Inu[i];
@@ -678,17 +653,752 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     Unu[i] = 0.;
     Vnu[i] = 0.;
     GYOTO_DEBUG_EXPR(Taunu[i]);
-    if (Taunu[i]<0.1) alphaInu[i] = -std::numeric_limits<double>::infinity();
-    else alphaInu[i] = -log(Taunu[i]); // should we divide by dsem?
+    if (Taunu[i]<1e-6){
+    	//alphaInu[i] = std::numeric_limits<double>::infinity(); // Cause floatting point exception
+    	alphaInu[i] = 1.e300; // something very big 
+    }
+    else alphaInu[i] = -log(Taunu[i])/(dsem*gg_->unitLength());
     GYOTO_DEBUG_EXPR(alphaInu[i]);
-    alphaQnu[i] = 0.; // Is everything else 0.?
-    alphaUnu[i] = 0.;
-    alphaVnu[i] = 0.;
-    rQnu[i] = 0.;
-    rUnu[i] = 0.;
-    rVnu[i] = 0.;
+    Onu[i]=identity*alphaInu[i]; //Default transmission matrix with all polarisation set to 0, MUST be reimplemented
   }
   delete [] Taunu;
+  delete [] alphaInu;
+}
+
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const{
+  
+  return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin(2.*Chi), cos(2.*Chi), dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double sin2Chi, double cos2Chi, double dsem) const{
+
+	return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin2Chi, cos2Chi, dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem) const{
+
+	return Omatrix(alphaInu, alphaQnu, alphaUnu, alphaVnu, rQnu, rUnu, rVnu, sin(2.*Chi), cos(2.*Chi), dsem);
+}
+
+Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
+	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
+	*		of the Mueller Matrix containing the absorption and Faraday coefficients
+	*/
+	Matrix4d Onu;
+	double alpha2, r2, lambda1, lambda2, Theta, sigma;
+  
+  double aI=alphaInu, aV=alphaVnu;
+  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
+  double rV=rVnu;
+  //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+
+  alpha2 = aQ*aQ+aU*aU+aV*aV;
+  r2 = rQ*rQ+rU*rU+rV*rV;
+  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
+  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
+  Theta = pow(lambda1,2)+pow(lambda2,2);
+  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
+
+  GYOTO_DEBUG
+  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
+  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
+  	<< "alpha2 : " << alpha2 << "\n"
+  	<< "r2 : " << r2 << "\n"
+  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
+  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
+
+  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+
+  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
+  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
+
+  Matrix4d zero;
+  zero <<  0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0;
+  Matrix4d M1, M2, M3, M4;
+
+  // Fill of M1
+  M1 = zero;
+  for (int ii=0;ii<4;ii++){
+    M1(ii,ii)=1.;
+  }
+  //cout << "M1 :\n" << M1 << endl;
+
+  // Fill of M2
+  M2 = zero;
+  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
+  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
+  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
+  M2(1,0)=M2(0,1);
+  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
+  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
+  M2(2,0)=M2(0,2);
+  M2(2,1)=-M2(1,2);
+  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
+  M2(3,0)=M2(0,3);
+  M2(3,1)=-M2(1,3);
+  M2(3,2)=-M2(2,3);
+  //cout << "M2 :\n" << M2 << endl;
+
+  // Fill of M3
+  M3 = zero;
+  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
+  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
+  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
+  M3(1,0)=M3(0,1);
+  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
+  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
+  M3(2,0)=M3(0,2);
+  M3(2,1)=-M3(1,2);
+  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
+  M3(3,0)=M3(0,3);
+  M3(3,1)=-M3(1,3);
+  M3(3,2)=-M3(2,3);
+	//cout << "M3 :\n" << M3 << endl;
+
+  // Fill of M4
+  M4 = zero;
+  M4(0,0)= (alpha2+r2)/2.;
+  M4(0,1)=aV*rU-aU*rV;
+  M4(0,2)=aQ*rV-aV*rQ;
+  M4(0,3)=aU*rQ-aQ*rU;
+  M4(1,0)=-M4(0,1);
+  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
+  M4(1,2)=aQ*aU+rQ*rU;
+  M4(1,3)=aV*aQ+rV*rQ;
+  M4(2,0)=-M4(0,2);
+  M4(2,1)=M4(1,2);
+  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
+  M4(2,3)=aU*aV+rU*rV;
+  M4(3,0)=-M4(0,3);
+  M4(3,1)=M4(1,3);
+  M4(3,2)=M4(2,3);
+  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
+	//cout << "M4 :\n" << M4 << endl;
+
+  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
+  // Filling O matrix, output
+  Onu=exp(-aI*dsem*gg_->unitLength())*\
+  			((coshlb1+coslb2)*M1/2. \
+        -sinlb2*M2/Theta \
+        -sinhlb1*M3/Theta \
+        +(coshlb1-coslb2)*M4/Theta);
+  return Onu;
+}
+
+Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const{
+	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
+	*		of the Mueller Matrix containing the absorption and Faraday coefficients
+	*/
+  Matrix4d Pnu;
+  double alpha2, r2, lambda1, lambda2, Theta, sigma;
+  
+  double aI=alphaInu, aV=alphaVnu;
+  double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
+  double aU=alphaUnu*cos2Chi+alphaQnu*sin2Chi;
+  double rQ=rQnu*cos2Chi-rUnu*sin2Chi;
+  double rU=rUnu*cos2Chi+rQnu*sin2Chi;
+  double rV=rVnu;
+  //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+
+  alpha2 = aQ*aQ+aU*aU+aV*aV;
+  r2 = rQ*rQ+rU*rU+rV*rV;
+  lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
+  lambda2 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)-pow(alpha2-r2,1.)/2.,0.5);
+  Theta = pow(lambda1,2)+pow(lambda2,2);
+  sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
+
+  double f1=1./(aI*aI - lambda1*lambda1), f2=1./(aI*aI + lambda2*lambda2);
+
+  GYOTO_DEBUG
+  	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
+  	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
+  	<< "alpha2 : " << alpha2 << "\n"
+  	<< "r2 : " << r2 << "\n"
+  	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
+  	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
+
+  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+
+  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
+  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
+
+  Matrix4d zero;
+  zero <<  0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0,
+           0, 0, 0, 0;
+  Matrix4d M1, M2, M3, M4;
+
+  // Fill of M1
+  M1 = zero;
+  for (int ii=0;ii<4;ii++){
+    M1(ii,ii)=1.;
+  }
+  //cout << "M1 :\n" << M1 << endl;
+
+  // Fill of M2
+  M2 = zero;
+  M2(0,1)=lambda2*aQ-sigma*lambda1*rQ;
+  M2(0,2)=lambda2*aU-sigma*lambda1*rU;
+  M2(0,3)=lambda2*aV-sigma*lambda1*rV;
+  M2(1,0)=M2(0,1);
+  M2(1,2)=sigma*lambda1*aV+lambda2*rV;
+  M2(1,3)=-sigma*lambda1*aU-lambda2*rU;
+  M2(2,0)=M2(0,2);
+  M2(2,1)=-M2(1,2);
+  M2(2,3)=sigma*lambda1*aQ+lambda2*rQ;
+  M2(3,0)=M2(0,3);
+  M2(3,1)=-M2(1,3);
+  M2(3,2)=-M2(2,3);
+  //cout << "M2 :\n" << M2 << endl;
+
+  // Fill of M3
+  M3 = zero;
+  M3(0,1)=lambda1*aQ+sigma*lambda2*rQ;
+  M3(0,2)=lambda1*aU+sigma*lambda2*rU;
+  M3(0,3)=lambda1*aV+sigma*lambda2*rV;
+  M3(1,0)=M3(0,1);
+  M3(1,2)=-sigma*lambda2*aV+lambda1*rV;
+  M3(1,3)=sigma*lambda2*aU-lambda1*rU;
+  M3(2,0)=M3(0,2);
+  M3(2,1)=-M3(1,2);
+  M3(2,3)=-sigma*lambda2*aQ+lambda1*rQ;
+  M3(3,0)=M3(0,3);
+  M3(3,1)=-M3(1,3);
+  M3(3,2)=-M3(2,3);
+	//cout << "M3 :\n" << M3 << endl;
+
+  // Fill of M4
+  M4 = zero;
+  M4(0,0)= (alpha2+r2)/2.;
+  M4(0,1)=aV*rU-aU*rV;
+  M4(0,2)=aQ*rV-aV*rQ;
+  M4(0,3)=aU*rQ-aQ*rU;
+  M4(1,0)=-M4(0,1);
+  M4(1,1)=pow(aQ,2)+pow(rQ,2)-(alpha2+r2)/2.;
+  M4(1,2)=aQ*aU+rQ*rU;
+  M4(1,3)=aV*aQ+rV*rQ;
+  M4(2,0)=-M4(0,2);
+  M4(2,1)=M4(1,2);
+  M4(2,2)=pow(aU,2)+pow(rU,2)-(alpha2+r2)/2.;
+  M4(2,3)=aU*aV+rU*rV;
+  M4(3,0)=-M4(0,3);
+  M4(3,1)=M4(1,3);
+  M4(3,2)=M4(2,3);
+  M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
+	//cout << "M4 :\n" << M4 << endl;
+
+  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
+  // Filling O matrix, output
+  Pnu=-lambda1*f1*M3/Theta	 
+    +aI*f1/2.*(M1 + 2.*M4/Theta) 
+    -lambda2*f2*M2/Theta	 // typo in Monika's paper minus not plus
+    +aI*f2/2.*(M1 - 2.*M4/Theta)      
+    -exp(-aI*dsem*gg_->unitLength())* 
+    (
+     (-lambda1*f1*M3/Theta + aI*f1/2.*(M1 + 2.*M4/Theta)) * coshlb1
+     +(-lambda2*f2*M2/Theta + aI*f2/2.*(M1 - 2.*M4/Theta)) * coslb2
+     +(-aI*f2*M2/Theta - lambda2*f2/2.*(M1 - 2.*M4/Theta)) * sinlb2
+     -(aI*f1*M3/Theta - lambda1*f1/2.*((M1 + 2.*M4/Theta))) * sinhlb1
+     );
+
+  return Pnu;
+}
+
+
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Chi) const{
+	return rotateJs(jInu, jQnu, jUnu, jVnu, sin(2.*Chi),  cos(2.*Chi));
+}
+
+Vector4d Generic::rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Chi, double cos2Chi) const{
+	Matrix4d rot;
+    rot << 1.,     0.  ,     0.  , 0.,
+           0.,  cos2Chi, -sin2Chi, 0.,
+           0.,  sin2Chi,  cos2Chi, 0.,
+           0.,     0.  ,     0.  , 1.; // See RadiativeTransfertVadeMecum.pdf
+  Vector4d jStokes;
+    jStokes(0)=jInu;
+    jStokes(1)=jQnu;
+    jStokes(2)=jUnu;
+    jStokes(3)=jVnu;
+    jStokes = rot * jStokes;
+    //jStokes(2)*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
+    return jStokes;
+}
+
+double Generic::getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec) const{
+
+  int locprint=0; // for debuging internally
+  
+  if (cph.size()!=16)
+    GYOTO_ERROR("Impossible to compute the Chi angle without Ephi and Etheta !");
+  
+  double Ephi[4];
+  double Etheta[4];
+  double photon_tgvec[4];
+  
+  for (int ii=0;ii<4;ii++){
+    photon_tgvec[ii]=cph[ii+4]; // photon wave vector
+    Ephi[ii]=cph[ii+8]; // polarization basis vector 1
+    Etheta[ii]=cph[ii+12]; // polarization basis vector 2
+  }
+
+  //cout << "In Astrobj at r th ph= " << cph[1] << " " << cph[2] << " " << cph[3] << endl;
+
+  // Check that wave vector, Ephi and Etheta are orthogonal:
+  double test_tol=1e-3;
+  if (fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec))>test_tol
+      or fabs(gg_->norm(&cph[0],Ephi)-1.)>test_tol
+      or fabs(gg_->norm(&cph[0],Etheta)-1.)>test_tol){
+      //or fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec))>test_tol){
+    cerr << "(Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << "\n" 
+         << "(Ephi.Ephi, Etheta.Etheta, K.K)= " << fabs(gg_->norm(&cph[0],Ephi)) << " " << fabs(gg_->norm(&cph[0],Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec)) << endl;
+         //<< "K: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
+    throwError("Polarization basis is not properly parallel transported!");
+  }
+
+  // *** Projection into the rest frame of the emitter ***
+
+  /* *** PART ONE: WAVE VECTOR */
+  // NB: projectFourVect(pos, res, u) projects the initial res
+  // orthogonally to u; so res is modified in the process.
+  double photon_tgvec_orthu[4];
+  for (int ii=0;ii<4;ii++)
+    photon_tgvec_orthu[ii] = photon_tgvec[ii]; // initialize.
+  gg_->projectFourVect(&cph[0], photon_tgvec_orthu, vel); // project.
+  // So from here on,
+  // photon_tgvec_orthu contains the projection orthogonal to u of the
+  // wave vector. 
+  // Normalizing this projection (which is not by default):
+  double norm=gg_->norm(&cph[0],photon_tgvec_orthu);
+  gg_->multiplyFourVect(photon_tgvec_orthu,1./norm);
+  
+  //cout << "kk: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
+  //cout << "KK: " << photon_tgvec_orthu[0] << " " << photon_tgvec_orthu[1] << " " << photon_tgvec_orthu[2] << " " << photon_tgvec_orthu[3] << endl;
+
+  // For testing, Sch tetrad compo of photon tgvec (assumes rotating emitter).
+  // Not needed except for tests.
+  double gtt=gg_->gmunu(&cph[0],0,0), grr=gg_->gmunu(&cph[0],1,1),
+    gthth=gg_->gmunu(&cph[0],2,2), gpp=gg_->gmunu(&cph[0],3,3),
+    Kr_tetrad=sqrt(grr)*photon_tgvec_orthu[1],
+    Kth_tetrad=sqrt(gthth)*photon_tgvec_orthu[2],
+    Kp_tetrad=sqrt(-gtt*gpp)*(photon_tgvec_orthu[3]*vel[0]
+			      -photon_tgvec_orthu[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad K compo= " << Kr_tetrad << " " << Kth_tetrad << " " << Kp_tetrad << endl;
+
+
+
+  /* ***PART TWO: FIELD VECTOR (could be B or E depending on elec) */
+  double Vectproj[4];
+  norm=gg_->norm(&cph[0],fourvect);
+  //cout << "BB, norm: " << fourvect[0] << " " << fourvect[1] << " " << fourvect[2] << " " << fourvect[3] << " ---- " << norm << endl;
+  if (norm<=test_tol)
+  	GYOTO_ERROR("norm of magnetic (or electric) vector is zero");
+  for (int ii=0;ii<4;ii++)
+    Vectproj[ii] = fourvect[ii]/norm; // initialize (normalised)
+  //cout << "Check normalization to u: " << fabs(gg_->ScalarProd(&cph[0],Vectproj,vel)) << endl;
+  // Check if vector fourvect is already orthogonal to 4-velocity:
+  if (fabs(gg_->ScalarProd(&cph[0],Vectproj,vel))>1e-6){
+    gg_->projectFourVect(&cph[0],Vectproj,vel); // Here we project the
+	  // magnetic 4vector orthogonal to u.
+	  // Normalize it:
+	  norm=gg_->norm(&cph[0],Vectproj);
+	  double gtt=gg_->gmunu(&cph[0],0,0),
+      grr = gg_->gmunu(&cph[0],1,1),
+      gthth = gg_->gmunu(&cph[0],2,2),
+      gpp=gg_->gmunu(&cph[0],3,3);
+	  if (fabs(norm)<=test_tol){
+	  	cout << "norm, r, gtt, grr, gthth, gpp: " << norm << "," << cph[1] << "," << gtt << "," << grr << "," << gthth << "," << gpp << endl;
+	  	GYOTO_ERROR("Magnetic field vector is null.");
+	  }
+	  gg_->multiplyFourVect(Vectproj,1./norm);
+  }
+
+  // Project fourvect orthogonally to K and normalize
+  gg_->projectFourVect(&cph[0], Vectproj, photon_tgvec_orthu); // project.
+  norm=gg_->norm(&cph[0],Vectproj);
+  gg_->multiplyFourVect(Vectproj,1./norm);
+  //cout << "Bproj= " << Vectproj[0] << " " << Vectproj[1] << " " << Vectproj[2] << " " << Vectproj[3] << endl;
+  // For checking only: Sch tetrad compo of Vectproj:
+  double Br_tetrad=sqrt(grr)*Vectproj[1],
+    Bth_tetrad=sqrt(gthth)*Vectproj[2],
+    Bp_tetrad=sqrt(-gtt*gpp)*(Vectproj[3]*vel[0]-Vectproj[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad B compo= " << Br_tetrad << " " << Bth_tetrad << " " << Bp_tetrad << endl;
+
+
+
+  /* ***PART THREE: NORTH AND WEST SCREEN DIRECTIONS */
+  // Modify the polarization basis vectors by adding to them a multiple
+  // of the wavevector, which does not affect the EVPA.
+  // This allows to obtain a well-defined
+  // orthonormal triad in the emitter's rest frame, see FV rad transfer
+  // notes for details.
+  // Formula: Ephi -> Ephi - (Ephi.u)/(k.u) k
+  double Ephi_prime[4], tmp[4];
+  for (int ii=0;ii<4;ii++) {
+    tmp[ii]=cph[ii+4];
+    Ephi_prime[ii]=Ephi[ii]; // initialize.
+  }
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Ephi,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); // this is well
+  // defined because the denominator cannot be zero,
+  // it is the scalar prod of a timelike by a null vector
+  gg_->addFourVect(Ephi_prime, tmp);
+  // At this point, Ephi_prime lives in the rest frame
+  // of the emitter and is orthogonal to photon_tgvec_orthu.
+  // It is by construction a unit vector.
+  if (fabs(gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Ephi_prime,vel))>test_tol
+      or fabs(gg_->norm(&cph[0],Ephi_prime)-1.)>test_tol){
+    cerr << "Prod scal Ephi: " << gg_->ScalarProd(&cph[0],Ephi_prime,photon_tgvec_orthu) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,vel) << " " << gg_->ScalarProd(&cph[0],Ephi_prime,Ephi_prime) << endl;
+    throwError("Bad transformation of the polarization basis Ephi!");
+  }
+  // For checking only: Sch tetrad compo of Ephi:
+  double Ephi_r_tetrad=sqrt(grr)*Ephi_prime[1],
+    Ephi_th_tetrad=sqrt(gthth)*Ephi_prime[2],
+    Ephi_p_tetrad=sqrt(-gtt*gpp)*(Ephi_prime[3]*vel[0]-Ephi_prime[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad Ephi compo= " << Ephi_r_tetrad << " " << Ephi_th_tetrad << " " << Ephi_p_tetrad << endl;
+  
+
+  // Same game for the second polarization basis vector:
+  double Etheta_prime[4];
+  for (int ii=0;ii<4;ii++){
+    tmp[ii]=cph[ii+4]; 
+    Etheta_prime[ii]=Etheta[ii]; // initialize.
+  }
+  //cout << "North: " << Etheta[0] << " " << Etheta[1] << " " << Etheta[2] << " " << Etheta[3] << endl;
+  gg_->multiplyFourVect(tmp,-gg_->ScalarProd(&cph[0],Etheta,vel)/gg_->ScalarProd(&cph[0],tmp,vel)); 
+  gg_->addFourVect(Etheta_prime, tmp);
+  //cout << "North prime: " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
+  if (fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel))>test_tol
+      or fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime))>test_tol
+      or fabs(gg_->norm(&cph[0],Etheta_prime))-1.>test_tol
+      or fabs(gg_->norm(&cph[0],photon_tgvec_orthu))-1.>test_tol){
+  	cerr << "Prod scal Etheta: " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,photon_tgvec_orthu)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,vel)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta_prime,Ephi_prime)) << " " << 
+  	fabs(gg_->norm(&cph[0],Etheta_prime)-1.) << " " << fabs(gg_->norm(&cph[0],photon_tgvec_orthu)-1.) << endl;
+    throwError("Bad transformation of the polarization basis Etheta!");
+  }
+  // For checking only: Sch tetrad compo of Etheta:
+  double Etheta_r_tetrad=sqrt(grr)*Etheta_prime[1],
+    Etheta_th_tetrad=sqrt(gthth)*Etheta_prime[2],
+    Etheta_p_tetrad=sqrt(-gtt*gpp)*(Etheta_prime[3]*vel[0]-Etheta_prime[0]*vel[3]);
+  if (locprint==1)
+    cout << "Tetrad Etheta compo= " << Etheta_r_tetrad << " " << Etheta_th_tetrad << " " << Etheta_p_tetrad << endl;
+
+  // So at this point, all vectors have been projected
+  // in the rest frame of the emitter, orthogonal to its 4vel,
+  // and we have a well-defined "observer's" orthonormal basis
+  // (Ephi_prime, Etheta_prime, photon_tgvec_orthu).
+
+  //cout << "Etheta (North): " << Etheta[0] << " " << Etheta[1] << " " << Etheta[2] << " " << Etheta[3] << endl;
+  //cout << "Etheta prime (North): " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
+  //cout << "Ephi (West): " << Ephi[0] << " " << Ephi[1] << " " << Ephi[2] << " " << Ephi[3] << endl;
+  //cout << "Ephi prime (West): " << Ephi_prime[0] << " " << Ephi_prime[1] << " " << Ephi_prime[2] << " " << Ephi_prime[3] << endl;
+
+
+
+  /* ***PART FOUR: POLAR ANGLE IN (NORTH,WEST) BASIS */
+
+  // Compute angles between Vectproj and North,West
+  double Vectproj_North=gg_->ScalarProd(&cph[0],Vectproj,Etheta_prime),
+    Vectproj_West=gg_->ScalarProd(&cph[0],Vectproj,Ephi_prime);
+  //cout << "Brpoj.North, Vectproj.West= " << Vectproj_North << " " << Vectproj_West << endl;
+  //cout << "Bproj: " << Vectproj[0] << " " << Vectproj[1] << " " << Vectproj[2] << " " << Vectproj[3] << endl;
+  //cout << "North: " << Etheta_prime[0] << " " << Etheta_prime[1] << " " << Etheta_prime[2] << " " << Etheta_prime[3] << endl;
+
+  // Angle East of North between North direction and Vectproj
+  double EVPA=-atan2(Vectproj_West,Vectproj_North);
+  if (!elec){ // fourvect is the magnetic field 
+  	// Then EVPA is 90° between Vectproj and polar, + the angle above
+	  EVPA+=M_PI/2.;
+	  //cout << "EVPA in Astrobj= " << EVPA*180./M_PI << endl;
+  }
+
+  // EVPA defined modulo pi and should lie in [-pi/2, pi/2], but the angle
+  // above is defined in [-pi/2,3pi/2]
+  if (EVPA>M_PI/2.) EVPA -= M_PI;
+
+  // For checking only: Define the polarization vector in tetrad formalism:
+  double polar_vec[3]={Kth_tetrad*Bp_tetrad - Kp_tetrad*Bth_tetrad,
+  		       -Kr_tetrad*Bp_tetrad+Kp_tetrad*Br_tetrad,
+  		       Kr_tetrad*Bth_tetrad-Kth_tetrad*Br_tetrad};
+  if (locprint==1)
+    cout << "polar vector = KxB= in triad "<< polar_vec[0] << " " << polar_vec[1] << " " << polar_vec[2] << endl;
+  double polar_dot_North=polar_vec[0]*Etheta_r_tetrad + polar_vec[1]*Etheta_th_tetrad + polar_vec[2]*Etheta_p_tetrad,
+    polar_dot_West = polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad;
+  //cout << "polar vec = " << polar_dot_North << "*North + " << polar_dot_West << "*West." << endl;
+
+  double Vectproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
+    Vectproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
+  //cout << "Vectproj vec = " << Vectproj_dot_North << "*North + " << Vectproj_dot_West << "*West." << endl;
+
+  if (EVPA!=EVPA)
+    GYOTO_ERROR("In Astrobj::getChi(): EVPA is nan");
+  if (EVPA==EVPA+1.)
+    GYOTO_ERROR("In Astrobj::getChi(): EVPA is infinite");
+  if (EVPA>M_PI/2. or EVPA<-M_PI/2.)
+    GYOTO_ERROR("Bad domain for EVPA");
+
+  return EVPA;
+}
+
+void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec) const{
+	if (cph.size()!=16)
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
+
+	double Chi = getChi(fourvect, cph, vel, elec);
+	*sin2Chi = sin(2.*Chi);
+	*cos2Chi =cos(2.*Chi);
+}
+
+void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
+
+	double rr, rcyl, theta, zz=0.;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr = cph[1];
+    rcyl = cph[1]*sin(cph[2]);
+    theta = cph[2];
+    zz   = cph[1]*cos(cph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
+    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
+        +cph[3]*cph[3]);
+    theta   = acos(cph[3]/rr);
+    zz   = cph[3];
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
+
+  /*********************/
+  /* GYOTO B FORMALISM */
+  /*********************/
+
+  // Define B by requiring: B.B=1 (we care only about B direction),
+  // and B.u=0 (B defined in emitter's frame).
+
+  double gtt = gg_->gmunu(&cph[0],0,0),
+    grr = gg_->gmunu(&cph[0],1,1),
+    gthth = gg_->gmunu(&cph[0],2,2),
+    gtp = gg_->gmunu(&cph[0],0,3),
+    gpp = gg_->gmunu(&cph[0],3,3);
+
+  // So far only circular velocity case is implemented
+  if (vel[2]>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("mf config only defined for utheta=0");
+
+  if (magneticConfig=="Vertical"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    double Bt = -alphafact*Afact,
+  Br = alphafact*cos(cph[2])/sqrt(grr), // cos(cph[2])/sqrt(grr)
+  Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+    B4vect[2]=Bth;
+
+  }else if(magneticConfig=="Radial"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    double Bt = -alphafact*Afact,
+  Br = alphafact/sqrt(grr); // along +er
+
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+  }else if(magneticConfig=="Toroidal"){
+    // Only case where a bit of computation is needed
+    // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
+    if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
+    double omega=vel[3]/vel[0], omega2 = omega*omega;
+    double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
+    double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
+    if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+    double Bp = sqrt(Bp2);
+    double Bt = -Bp*Afact;
+
+    B4vect[0]=Bt;
+    B4vect[3]=Bp;
+  }else{
+    GYOTO_ERROR("Not implemented Bfield orientation");
+  }
+
+  return;
+}
+
+void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const{
+
+	double rr, rcyl, theta, zz=0.;
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rr = cph[1];
+    rcyl = cph[1]*sin(cph[2]);
+    theta = cph[2];
+    zz   = cph[1]*cos(cph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
+    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
+        +cph[3]*cph[3]);
+    theta   = acos(cph[3]/rr);
+    zz   = cph[3];
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect_ipole : Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+
+  /*********************/
+  /* IPOLE B FORMALISM */
+  /*********************/
+
+  double B_1=0.,B_2=0.,B_3=0;
+
+  double gtt = gg_->gmunu(&cph[0],0,0),
+    grr = gg_->gmunu(&cph[0],1,1),
+    gthth = gg_->gmunu(&cph[0],2,2),
+    gpp = gg_->gmunu(&cph[0],3,3);
+  double dx1=0.025,
+    dx2=0.025;
+
+  if (magneticConfig=="None")
+    GYOTO_ERROR("Specify the magnetic field configuration");
+  if (magneticConfig=="Vertical"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+
+    double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
+  F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
+  F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
+  F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det);
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det);
+    B_3 = 0.;
+  }
+  else if (magneticConfig=="Radial"){
+    double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
+    double F11 = 1.-cos(theta-dx2*M_PI),
+    F12 = 1.-cos(theta+dx2*M_PI),
+    F21 = 1.-cos(theta-dx2*M_PI),
+    F22 = 1.-cos(theta+dx2*M_PI);
+    B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
+    B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
+    B_3 = 0.;
+  }
+  else if (magneticConfig=="Toroidal"){
+    B_1 = 0.;
+    B_2 = 0.;
+    B_3 = 1.;
+  }
+  else
+    GYOTO_ERROR("Unknown magnetic field configuration");
+
+  // compute contravariant velocity in KS' from BL
+  double dtKS_drBL   = 2. * rr / (rr*rr - 2.*rr + spin*spin);
+  double dphiKS_drBL = spin / (rr*rr - 2.*rr + spin*spin);
+  double Ucon_KSm[4]={0.,0.,0.,0.};
+  Ucon_KSm[0]=vel[0]+vel[1]*dtKS_drBL;
+  Ucon_KSm[1]=vel[1]/rr;
+  Ucon_KSm[2]=vel[2]/M_PI;
+  Ucon_KSm[3]=vel[3]+vel[1]*dphiKS_drBL;
+
+  // Compute KS' metric
+  double gcov_ksm[4][4];
+  double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+  double gcov_ks[4][4];
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+      gcov_ks[mu][nu]=0.;
+
+  gcov_ks[0][0] = -1. + 2. * rr / rho2 ;
+  gcov_ks[0][1] = 2. * rr / rho2 ;
+  gcov_ks[0][3] = -2. * spin * rr * sin(theta)*sin(theta) / rho2;
+  gcov_ks[1][0] = gcov_ks[0][1];
+  gcov_ks[1][1] = 1. + 2. * rr / rho2 ;
+  gcov_ks[1][3] = -spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2);
+  gcov_ks[2][2] = rho2 ;
+  gcov_ks[3][0] = gcov_ks[0][3];
+  gcov_ks[3][1] = gcov_ks[1][3];
+  gcov_ks[3][3] = sin(theta)*sin(theta) * (rho2 + spin * spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2));
+
+  // convert from ks metric to a modified one using Jacobian
+  double dxdX[4][4];
+  double hslope=0.;
+  for(int mu=0;mu<4;mu++)
+    for(int nu=0;nu<4;nu++)
+  dxdX[mu][nu]=0.;
+
+  dxdX[0][0] = 1.;
+  dxdX[1][1] = rr;
+  dxdX[2][2] = M_PI  + hslope*2*M_PI*cos(2*theta); 
+  dxdX[3][3] = 1.;
+
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      gcov_ksm[mu][nu] = 0;
+      for (int lam = 0; lam < 4; ++lam) {
+        for (int kap = 0; kap < 4; ++kap) {
+          gcov_ksm[mu][nu] += gcov_ks[lam][kap] * dxdX[lam][mu] * dxdX[kap][nu];
+        }
+      }
+    }
+  }
+
+  // Compute covariante velocity in KS'
+  double Ucov_KSm[4]={0.,0.,0.,0.};
+  for(int mu=0;mu<4;mu++){
+    for(int nu=0;nu<4;nu++){
+      Ucov_KSm[mu] += gcov_ksm[mu][nu]*Ucon_KSm[nu];
+    }
+  }
+
+  // Copute Magnetic field in KS'
+  double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
+    B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
+    B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
+    B3=(B_3+B0*Ucon_KSm[3])/Ucon_KSm[0];
+
+  // Conversion Magnetic field from KS' -> BL
+  double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
+  B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
+  B4vect[1]=B1*rr;
+  B4vect[2]=B2*M_PI;
+  B4vect[3]=B3-B1*spin*rr/Delta;
+  // end of ipole Bfield formalism
+
+  return;
 }
 
 void Generic::integrateEmission(double * I, double const * boundaries,

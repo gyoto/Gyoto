@@ -39,6 +39,7 @@
 #include <GyotoSmartPointer.h>
 #include <GyotoConverters.h>
 #include <GyotoObject.h>
+#include <eigen3/Eigen/Dense>
 
 namespace Gyoto{
   class Photon;
@@ -564,14 +565,43 @@ private:
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double nu_em[], size_t nbnu,
 			  double dsem, double coord_ph[8],
-			  double coord_obj[8]=NULL) const = delete ; 
+			  double coord_obj[8]=NULL) const = delete ;
+  /**
+   * \brief Compute the increment of Stokes parameters and transmission matrix. Polarised version of RadiaveQ
+   * 
+   * First function to be called for radiative quantities. 
+   * If exist, i.e. implemented in an Astrobj, return the Stokes parameters emitted by the small
+   * volume of length dsem.
+   * 
+   * Warning : 
+   *  - The basis used to determine the Stokes coefficients is different from the observer parallel transported polarisation basis.
+   *    One should use getChi function to compute the angle between these two basis.
+   * 
+   *  - The non polarized case must also be implemented in this function to avoid error.
+   * 
+   * See exemple in SimplePolarStar.C.
+   * 
+   * 
+   * \param Inu[nbnu] Output increment of intensity (must be set to a previously allocated
+   *        array of doubles)
+   * \param Qnu[nbnu] Output increment of Stokes parameter Q (must be set to a previously allocated
+   *        array of doubles)
+   * \param Unu[nbnu] Output increment of Stokes parameter U (must be set to a previously allocated
+   *        array of doubles)
+   * \param Vnu[nbnu] Output increment of Stokes parameter V (must be set to a previously allocated
+   *        array of doubles)
+   * \param Onu[nbnu] Output transmission (Eigen) matrix (must be set to a previously allocated
+   *        array of Matrix4d)
+   * \param nu_em[nbnu] Frequencies at emission
+   * \param nbnu Size of nu_em[], Inu[], Qnu[], Unu[], Vnu[], and Onu[]
+   * \param dsem Length over which to integrate inside the object
+   * \param cph Photon coordinate
+   * \param co Emitter coordinate at current photon position
+   * \return Increment of the Stokes parameters (I,Q,U,V) and local Transmission matrix (O).
+   */
   virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
-			  double *alphaInu, double *alphaQnu,
-			  double *alphaUnu, double *alphaVnu,
-			  double *rQnu, double *rUnu, double *rVnu,
-			  double const *nuem , size_t nbnu, double dsem,
-			  state_t const &cph,
-			  double const *co) const ;
+			  Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu, double dsem,
+			  state_t const &cph, double const *co) const ;
 
   /**
    * Compute the integral of emission() from &nu;<SUB>1</SUB> to
@@ -618,6 +648,59 @@ private:
   virtual double transmission(double nuem, double dsem, state_t const &coord) const = delete;  ///< Obsolete, update your code
   virtual double transmission(double nuem, double dsem, double coord[8]) const = delete;
   ///< Obsolete, update your code
+
+  /**
+   * Omatrix() computes the exponential of the Mueller matrix 
+   * which contains the absorption and Faraday coefficients 
+   * and is used in the polarized radiative transfer equation.
+   * 
+   * \param Onu output matrix (must be allocated previously)
+   * \param alphanu[4] array containing the 4 absorption coefficients in the Stokes basis (I,Q,U,V)
+   * \param rnu[3] array containing the 3 Faraday coefficients in the Stokes basis (Q,U,V)
+   * \param Chi angle of rotation between the parallel transported observer polarization basis and the Stokes basis
+   * \param dsem geometrical length in geometrical units
+   */
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double Chi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphanu[4], double rnu[3], double sin2Chi, double cos2Chi, double dsem) const;
+  Eigen::Matrix4d Omatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
+
+  Eigen::Matrix4d Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, double alphaVnu,
+        double rQnu, double rUnu, double rVnu, double sin2Chi, double cos2Chi, double dsem) const;
+  
+  /**
+   * Apply the rotation matrix with angle Chi to the emission Stokes vector
+   * constructed in the fonction from the individual coefficients
+   */
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double sin2Chi, double cos2Chi) const;
+  Eigen::Vector4d rotateJs(double jInu, double jQnu, double jUnu, double jVnu, double Chi) const;
+
+  /**
+   * Get Chi angle.
+   * Return the angle between the parallel transported observer polarization basis (Ephi,Etheta)
+   * and the Stokes basis in the rest frame of the emitter defined by the 4-vector magnetic/electric field.
+   * 
+   * \param fourvect 4-vector magnetic/electric field depending on elec (false/true)
+   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
+   * \param vel Fluid velocity at the photon coordinate
+   */
+  double getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec=false) const;
+  /**
+   * Get the cosinus and sinus of 2*Chi angle.
+   * Chi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
+   * and the Stokes basis in the rest frame of the emitter defined by the 4-vector magnetic/electric field.
+   * 
+   * \param fourvect 4-vector magnetic/electric field depending on elec (false/true)
+   * \param cph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
+   * \param vel Fluid velocity at the photon coordinate
+   */
+  void getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec=false) const;
+
+  void computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const;
+
+  void computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const;
 
 };
 

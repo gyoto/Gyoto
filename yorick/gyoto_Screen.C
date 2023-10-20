@@ -155,8 +155,13 @@ extern "C" {
       long dims[] = {1,8};
       yarg_drop(1);
       double * coord=ypush_d(dims);
+      double Ephi[4], Etheta[4];
+      bool compute_polar_basis=false;
 	
-      (*OBJ)->getRayCoord(pos[0], pos[1], coord);
+      (*OBJ)->getRayTriad(pos[0], pos[1], 
+			  coord,
+			  compute_polar_basis,
+			  Ephi, Etheta);
     }
       
     YGYOTO_WORKER_XMLWRITE;

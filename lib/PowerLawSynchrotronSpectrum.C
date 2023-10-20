@@ -139,6 +139,55 @@ double Spectrum::PowerLawSynchrotron::jnuCGS(double nu) const{
   return emis_synch;
 }
 
+double Spectrum::PowerLawSynchrotron::jQnuCGS(double nu) const{
+  double emis_synch = 0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+  
+  double sinth = sin(angle_B_pem_);
+  double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/  \
+      (2.*(PLindex_+1.)*(pow(gamma_min_,1.-PLindex_) -
+       pow(gamma_max_,1.-PLindex_))) * \
+      tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *  \
+      pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.)* \
+      (PLindex_+1.)/(PLindex_+7./3.);
+  emis_synch = numberdensityCGS_*         \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+    GYOTO_C_CGS*\
+    Js;
+  
+  return emis_synch;
+}
+
+double Spectrum::PowerLawSynchrotron::jUnuCGS(double nu) const{
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  return 0.;
+}
+
+double Spectrum::PowerLawSynchrotron::jVnuCGS(double nu) const{
+  double emis_synch = 0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+  
+  double sinth = sin(angle_B_pem_);
+  double Js = pow(3.,PLindex_/2.)*(PLindex_-1.)*sinth/  \
+    (2.*(PLindex_+1.)*(pow(gamma_min_,1.-PLindex_) -
+     pow(gamma_max_,1.-PLindex_))) * \
+    tgamma((3.*PLindex_-1.)/12.)*tgamma((3.*PLindex_+19.)/12.) *  \
+    pow(nu/(cyclotron_freq_*sinth),(1.-PLindex_)/2.)* \
+    (171./250.*pow(PLindex_,49./100.)/tan(angle_B_pem_)*pow(nu/(3.*cyclotron_freq_*sinth),-0.5));
+  emis_synch = numberdensityCGS_*         \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS*cyclotron_freq_/ \
+    GYOTO_C_CGS*\
+    Js;
+  
+  return emis_synch;
+}
+
 double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
   double abs_synch = 0.;
     
@@ -154,6 +203,7 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
       *(PLindex_+2.)
       /(GYOTO_ELECTRON_MASS_CGS*nu*nu);
   }else{
+    // Marszewski, Prather, Joshi, Pandya, Gammie 2021
     if (gamma_max_<sqrt(nu/cyclotron_freq_))
       GYOTO_ERROR("In PLSynchro: increase gamma_max");
     // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
@@ -162,7 +212,7 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
     double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/ \
       (4.*(pow(gamma_min_,1.-PLindex_) -
        pow(gamma_max_,1.-PLindex_))) *     \
-      tgamma((3.*PLindex_+12.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
+      tgamma((3.*PLindex_+2.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
       pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.);
     abs_synch = numberdensityCGS_*          \
       GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
@@ -171,6 +221,101 @@ double Spectrum::PowerLawSynchrotron::alphanuCGS(double nu) const{
   }
   
   return abs_synch;
+}
+
+double Spectrum::PowerLawSynchrotron::alphaQnuCGS(double nu) const{
+  double abs_synch = 0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+
+  double sinth = sin(angle_B_pem_);
+  double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/ \
+    (4.*(pow(gamma_min_,1.-PLindex_) -
+     pow(gamma_max_,1.-PLindex_))) *     \
+    tgamma((3.*PLindex_+2.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
+    pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.)* \
+    pow(17./500.*PLindex_-43./1250.,43./500.) ;
+  abs_synch = numberdensityCGS_*          \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
+    (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*       \
+    As;
+  
+  return abs_synch;
+}
+
+double Spectrum::PowerLawSynchrotron::alphaUnuCGS(double nu) const{
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  return 0.;
+}
+
+double Spectrum::PowerLawSynchrotron::alphaVnuCGS(double nu) const{
+  double abs_synch = 0.;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+
+  double sinth = sin(angle_B_pem_);
+  double As = pow(3.,(PLindex_+1.)/2.)*(PLindex_-1.)/ \
+    (4.*(pow(gamma_min_,1.-PLindex_) -
+     pow(gamma_max_,1.-PLindex_))) *     \
+    tgamma((3.*PLindex_+2.)/12.)*tgamma((3.*PLindex_+22.)/12.) * \
+    pow(nu/(cyclotron_freq_*sinth),-(PLindex_+2.)/2.)* \
+    pow(71./100.*PLindex_+22./625.,197./500.)*pow(31./10.*pow(sinth,-48./25.)-31./10.,64./125.)*pow(nu/cyclotron_freq_/sinth,-0.5)*\
+    cos(angle_B_pem_)/abs(cos(angle_B_pem_));
+  abs_synch = numberdensityCGS_*          \
+    GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/    \
+    (nu*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS)*       \
+    As;
+  
+  return abs_synch;
+}
+
+double Spectrum::PowerLawSynchrotron::rQnuCGS(double nu) const{
+  double rho_Q=0;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+  if (gamma_min_>1.e2)
+    GYOTO_ERROR("In PLSynchro: gamma_min too high to compute rho_Q with these formula");
+
+  double sinth = sin(angle_B_pem_);
+  double rho_per=numberdensityCGS_*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/ \
+    (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*cyclotron_freq_*sinth)*(PLindex_-1.)* \
+    pow(pow(gamma_min_,1.-PLindex_)-pow(gamma_max_,1.-PLindex_),-1.);
+
+  rho_Q=rho_per*pow(cyclotron_freq_*sinth/nu,3.)*pow(gamma_min_,2.-PLindex_)* \
+    (1.-pow(2.*cyclotron_freq_*pow(gamma_min_,2.)*sinth/3./nu,PLindex_/2.-1.));
+
+  return rho_Q;
+}
+
+double Spectrum::PowerLawSynchrotron::rUnuCGS(double nu) const{
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  return 0.;
+}
+
+double Spectrum::PowerLawSynchrotron::rVnuCGS(double nu) const{
+  double rho_V=0;
+  // Marszewski, Prather, Joshi, Pandya, Gammie 2021
+  if (gamma_max_<sqrt(nu/cyclotron_freq_))
+    GYOTO_ERROR("In PLSynchro: increase gamma_max");
+  // Ensure gamma_min_^2 < nu/nu0 < gamma_max_^2
+  if (gamma_min_>1.e2)
+    GYOTO_ERROR("In PLSynchro: gamma_min too high to compute rho_Q with these formula");
+
+  double sinth = sin(angle_B_pem_);
+  double rho_per=numberdensityCGS_*GYOTO_ELEMENTARY_CHARGE_CGS*GYOTO_ELEMENTARY_CHARGE_CGS/ \
+    (GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS*cyclotron_freq_*sinth)*(PLindex_-1.)* \
+    pow(pow(gamma_min_,1.-PLindex_)-pow(gamma_max_,1.-PLindex_),-1.);
+
+  rho_V=2.*rho_per*(PLindex_+2.)/(PLindex_+1.)*pow(cyclotron_freq_*sinth/nu,2.)*\
+  pow(gamma_min_,-(PLindex_+1.))*log(gamma_min_)*(1./tan(angle_B_pem_));
+
+  return rho_V;
 }
 
 void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
@@ -207,6 +352,105 @@ void Spectrum::PowerLawSynchrotron::radiativeQ(double jnu[], // output
     // OUTPUTS
     jnu[ii]= jnucur * GYOTO_JNU_CGS_TO_SI;
     alphanu[ii]= anucur * GYOTO_ANU_CGS_TO_SI;
+    
+  }
+}
+
+void Spectrum::PowerLawSynchrotron::radiativeQ(double jInu[], double jQnu[], double jUnu[], double jVnu[], // Output
+        double aInu[], double aQnu[], double aUnu[], double aVnu[], // Output
+        double rQnu[], double rUnu[], double rVnu[], // Output
+        double const nu_ems[],
+        size_t nbnu ){  
+  for (size_t ii=0; ii< nbnu; ++ii){
+    double nu = nu_ems[ii];
+    double jInucur=0., jQnucur=0.,jUnucur=0.,jVnucur=0.;
+    double aInucur=0., aQnucur=0., aUnucur=0., aVnucur=0.;
+    double rQnucur=0., rUnucur=0., rVnucur=0.; 
+    if (!angle_averaged_){
+      jInucur = jnuCGS(nu);
+      jQnucur = jQnuCGS(nu);
+      jUnucur = jUnuCGS(nu);
+      jVnucur = jVnuCGS(nu);
+      aInucur = alphanuCGS(nu);
+      aQnucur = alphaQnuCGS(nu);
+      aUnucur = alphaUnuCGS(nu);
+      aVnucur = alphaVnuCGS(nu);
+      rQnucur = rQnuCGS(nu);
+      rUnucur = rUnuCGS(nu);
+      rVnucur = rVnuCGS(nu);
+    }else{
+      double th0=0.01, thNm1=M_PI-0.01; // sin(theta) must never be 0
+      double hh=(thNm1-th0)/double(nstep_angint);
+      double theta=th0;
+      angle_B_pem(theta);
+
+      double jInusinprev=jnuCGS(nu)*sin(theta), jInusinnext=jInusinprev;
+      double jQnusinprev=jQnuCGS(nu)*sin(theta), jQnusinnext=jQnusinprev;
+      double jUnusinprev=jUnuCGS(nu)*sin(theta), jUnusinnext=jUnusinprev;
+      double jVnusinprev=jVnuCGS(nu)*sin(theta), jVnusinnext=jVnusinprev;
+      double aInusinprev=alphanuCGS(nu)*sin(theta), aInusinnext=aInusinprev;
+      double aQnusinprev=alphaQnuCGS(nu)*sin(theta), aQnusinnext=aQnusinprev;
+      double aUnusinprev=alphaUnuCGS(nu)*sin(theta), aUnusinnext=aUnusinprev;
+      double aVnusinprev=alphaVnuCGS(nu)*sin(theta), aVnusinnext=aVnusinprev;
+      double rQnusinprev=rQnuCGS(nu)*sin(theta), rQnusinnext=rQnusinprev;
+      double rUnusinprev=rUnuCGS(nu)*sin(theta), rUnusinnext=rUnusinprev;
+      double rVnusinprev=rVnuCGS(nu)*sin(theta), rVnusinnext=rVnusinprev;
+
+      for (int jj=1;jj<=nstep_angint;jj++){
+        theta=th0+double(jj)*hh;
+        angle_B_pem(theta);
+
+        jInusinnext=jnuCGS(nu)*sin(theta);
+        jQnusinnext=jQnuCGS(nu)*sin(theta);
+        jUnusinnext=jUnuCGS(nu)*sin(theta);
+        jVnusinnext=jVnuCGS(nu)*sin(theta);
+        aInusinnext=alphanuCGS(nu)*sin(theta);
+        aQnusinnext=alphaQnuCGS(nu)*sin(theta);
+        aUnusinnext=alphaUnuCGS(nu)*sin(theta);
+        aVnusinnext=alphaVnuCGS(nu)*sin(theta);
+        rQnusinnext=rQnuCGS(nu)*sin(theta);
+        rUnusinnext=rUnuCGS(nu)*sin(theta);
+        rVnusinnext=rVnuCGS(nu)*sin(theta);
+
+        jInucur+=0.5*0.5*hh*(jInusinprev+jInusinnext);
+        jQnucur+=0.5*0.5*hh*(jQnusinprev+jQnusinnext);
+        jUnucur+=0.5*0.5*hh*(jUnusinprev+jUnusinnext);
+        jVnucur+=0.5*0.5*hh*(jVnusinprev+jVnusinnext);
+        aInucur+=0.5*0.5*hh*(aInusinprev+aInusinnext);
+        aQnucur+=0.5*0.5*hh*(aQnusinprev+aQnusinnext);
+        aUnucur+=0.5*0.5*hh*(aUnusinprev+aUnusinnext);
+        aVnucur+=0.5*0.5*hh*(aVnusinprev+aVnusinnext);
+        rQnucur+=0.5*0.5*hh*(rQnusinprev+rQnusinnext);
+        rUnucur+=0.5*0.5*hh*(rUnusinprev+rUnusinnext);
+        rVnucur+=0.5*0.5*hh*(rVnusinprev+rVnusinnext);
+
+        jInusinprev=jInusinnext;
+        jQnusinprev=jQnusinnext;
+        jUnusinprev=jUnusinnext;
+        jVnusinprev=jVnusinnext;
+        aInusinprev=aInusinnext;
+        aQnusinprev=aQnusinnext;
+        aUnusinprev=aUnusinnext;
+        aVnusinprev=aVnusinnext;
+        rQnusinprev=rQnusinnext;
+        rUnusinprev=rUnusinnext;
+        rVnusinprev=rVnusinnext;
+        //NB: averaged jnu is: 1/4pi * \int jnu dOmega = 1/2 * \int jnu*sinth dth
+      }
+    }
+    
+    // OUTPUTS
+    jInu[ii]=jInucur * GYOTO_JNU_CGS_TO_SI;
+    jQnu[ii]=jQnucur * GYOTO_JNU_CGS_TO_SI;
+    jUnu[ii]=jUnucur * GYOTO_JNU_CGS_TO_SI;
+    jVnu[ii]=jVnucur * GYOTO_JNU_CGS_TO_SI;
+    aInu[ii]=aInucur * GYOTO_ANU_CGS_TO_SI;
+    aQnu[ii]=aQnucur * GYOTO_ANU_CGS_TO_SI;
+    aUnu[ii]=aUnucur * GYOTO_ANU_CGS_TO_SI;
+    aVnu[ii]=aVnucur * GYOTO_ANU_CGS_TO_SI;
+    rQnu[ii]=rQnucur * GYOTO_ANU_CGS_TO_SI;
+    rUnu[ii]=rUnucur * GYOTO_ANU_CGS_TO_SI;
+    rVnu[ii]=rVnucur * GYOTO_ANU_CGS_TO_SI;
     
   }
 }

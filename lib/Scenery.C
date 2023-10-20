@@ -324,9 +324,12 @@ void Scenery::updatePhoton(){
 SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
   updatePhoton();
   double coord[8], Ephi[4], Etheta[4];
-  screen_ -> getRayCoord(size_t(1),size_t(1), coord);
-  if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  bool compute_polar_basis=false;
+  if (ph_ . parallelTransport()) compute_polar_basis=true;
+  screen_ -> getRayTriad(size_t(1),size_t(1),
+			 coord,
+			 compute_polar_basis,
+			 Ephi, Etheta);
   ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
@@ -334,9 +337,12 @@ SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
 SmartPointer<Photon> Scenery::clonePhoton(double a, double b) {
   updatePhoton();
   double coord[8], Ephi[4], Etheta[4];
-  screen_ -> getRayCoord(a, b, coord);
-  if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  bool compute_polar_basis=false;
+  if (ph_ . parallelTransport()) compute_polar_basis=true;
+  screen_ -> getRayTriad(a, b,
+			 coord,
+			 compute_polar_basis,
+			 Ephi, Etheta);
   ph_ . setInitCoord(coord, 0, Ephi, Etheta);
   return ph_.clone();
 }
@@ -678,6 +684,8 @@ void Scenery::operator() (
 			  ) {
   //cout << "ij= " << i << " " << j << endl;
   double coord[8], Ephi[4], Etheta[4];
+  bool compute_polar_basis=false;
+  if (ph_ . parallelTransport()) compute_polar_basis=true;
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
 
@@ -720,9 +728,11 @@ void Scenery::operator() (
 #   if GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG << "impactcoords not set" << endl;
 #   endif
-    screen_ -> getRayCoord(i,j, coord);
-    if (ph -> parallelTransport())
-      screen_ -> getRayTriad(coord, Ephi, Etheta);
+    
+    screen_ -> getRayTriad(i,j,
+			   coord,
+			   compute_polar_basis,
+			   Ephi, Etheta);
     ph -> setInitCoord(coord, 0, Ephi, Etheta);
     ph -> hit(data);
   }
@@ -735,6 +745,8 @@ void Scenery::operator() (
 			  ) {
 
   double coord[8], Ephi[4], Etheta[4];
+  bool compute_polar_basis=false;
+  if (ph_ . parallelTransport()) compute_polar_basis=true;
   SmartPointer<Spectrometer::Generic> spr = screen_->spectrometer();
   size_t nbnuobs = spr() ? spr -> nSamples() : 0;
 
@@ -747,9 +759,10 @@ void Scenery::operator() (
   // Always reset delta
   ph -> delta(delta_);
 
-  screen_ -> getRayCoord(a, d, coord);
-  if (ph_ . parallelTransport())
-    screen_ -> getRayTriad(coord, Ephi, Etheta);
+  screen_ -> getRayTriad(a, d,
+			 coord,
+			 compute_polar_basis,
+			 Ephi, Etheta);
   ph -> setInitCoord(coord, 0, Ephi, Etheta);
   ph -> hit(data);
 

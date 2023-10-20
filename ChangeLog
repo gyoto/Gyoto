@@ -1,3 +1,10 @@
+commit 63653d748143f6a10aee1eb2544009283314e9e9
+Merge: f06bba3 0799cee
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Oct 2 16:35:29 2023 +0200
+
+    Releasing Polarised version of Gyoto 1.5.0
+
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
 Date:   Fri Feb 28 18:40:08 2020 +0100

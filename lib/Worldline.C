@@ -1169,7 +1169,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x1dot) x1dot[di] = vel[0]*tdot;
       if (x2dot) x2dot[di] = vel[1]*tdot;
       if (x3dot) x3dot[di] = vel[2]*tdot;
-      if (parallel_transport_) GYOTO_ERROR("TODO: implement parallel transport");
+      if (parallel_transport_) GYOTO_ERROR("Parallel transport not implemented for massive particles.");
     } else {
       // Photon: don't be so elaborate, we certainly don't need it... yet
       if (x1)       x1[di] = bestl[ 1]*factl + besth[ 1]*facth;

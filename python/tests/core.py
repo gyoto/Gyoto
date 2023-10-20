@@ -372,8 +372,12 @@ class TestPolar(unittest.TestCase):
 
         fov=4.85e-10 # fov in rad for typical Sgr conditions
         #s.getRayCoord(0.,0., coord)
-        s.getRayCoord(fov/2.,fov/2., coord)
-        s.getRayTriad(coord, Ephi, Etheta)
+        compute_polar_basis=True
+        s.getRayTriad(fov/2.,fov/2.,
+                      coord,
+                      compute_polar_basis,
+                      Ephi, Etheta)
+        #s.getRayTriad(coord, Ephi, Etheta)
         x = coord[0:4]
         k = coord[4:8]
         #print("")

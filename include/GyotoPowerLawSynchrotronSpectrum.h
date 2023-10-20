@@ -111,22 +111,90 @@ class Gyoto::Spectrum::PowerLawSynchrotron : public Gyoto::Spectrum::Generic {
    * \param nu frequency in Hz
    */
   double jnuCGS(double nu) const;
+  /**
+   * Returns the Stokes Q emission coefficient j_nu in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   */
+  double jQnuCGS(double nu) const;
+  /**
+   * Returns the Stokes U emission coefficient j_nu in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   */
+  double jUnuCGS(double nu) const;
+  /**
+   * Returns the Stokes V emission coefficient j_nu in cgs units
+   * i.e. erg cm^-3 s^-1 ster^-1 Hz^-1
+   *
+   * \param nu frequency in Hz
+   */
+  double jVnuCGS(double nu) const;
+
  /**
    * Returns the absorption coefficient alpha_nu in cgs units [cm^-1]
    *
    * \param nu frequency in Hz
    */
   double alphanuCGS(double nu) const;
+  /**
+   * Returns the Stokes Q absorption coefficient alpha_nu in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   */
+  double alphaQnuCGS(double nu) const;
+  /**
+   * Returns the Stokes U absorption coefficient alpha_nu in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   */
+  double alphaUnuCGS(double nu) const;
+  /**
+   * Returns the Stokes V absorption coefficient alpha_nu in cgs units [cm^-1]
+   *
+   * \param nu frequency in Hz
+   */
+  double alphaVnuCGS(double nu) const;
 
   /**
+   * Returns the Stokes Q Faraday rotation coefficient in cgs units [cm^-1]
+   * 
+   *  \param nu frequency in Hz
+   */
+  double rQnuCGS(double nu) const;
+  /**
+   * Returns the Stokes U Faraday rotation coefficient in cgs units [cm^-1]
+   * 
+   *  \param nu frequency in Hz
+   */
+  double rUnuCGS(double nu) const;
+  /**
+   * Returns the Stokes V Faraday rotation coefficient in cgs units [cm^-1]
+   * 
+   *  \param nu frequency in Hz
+   */
+  double rVnuCGS(double nu) const;
+
+   /**
    * Returns the emission and absorption coef in SI
    *
    */
   void radiativeQ(double jnu[], // output
-		  double anu[], // output
-		  double const nu_ems[],
-		  size_t nbnu
-		  ) ;
+        double anu[], // output
+        double const nu_ems[],
+        size_t nbnu
+        ) ;
+  /**
+   * Returns the emission, absorption and Fraday rotation coef in SI for the 4 Stokes parameters
+   *
+   */
+  void radiativeQ(double jInu[], double jQnu[], double jUnu[], double jVnu[],
+        double aInu[], double aQnu[], double aUnu[], double aVnu[],
+        double rQnu[], double rUnu[], double rVnu[],
+        double const nu_ems[],
+        size_t nbnu );
   
 };
 

@@ -188,7 +188,6 @@ am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-SchwarzschildHarmonic.lo \
 	libgyoto_stdplug_la-Star.lo libgyoto_stdplug_la-StarTrace.lo \
 	libgyoto_stdplug_la-FixedStar.lo \
-	libgyoto_stdplug_la-FreeStar.lo \
 	libgyoto_stdplug_la-InflateStar.lo \
 	libgyoto_stdplug_la-Torus.lo libgyoto_stdplug_la-OscilTorus.lo \
 	libgyoto_stdplug_la-PowerLawSpectrum.lo \
@@ -280,7 +279,6 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo \
-	./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo \
@@ -363,6 +361,8 @@ am__define_uniq_tagged_files = \
   unique=`for i in $$list; do \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
+ETAGS = etags
+CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(srcdir)/gyoto-uninstalled.pc.in $(srcdir)/gyoto.pc.in \
 	$(top_srcdir)/depcomp
@@ -393,6 +393,7 @@ CCDEPMODE = @CCDEPMODE@
 CFITSIO_CFLAGS = @CFITSIO_CFLAGS@
 CFITSIO_LIBS = @CFITSIO_LIBS@
 CFLAGS = @CFLAGS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
@@ -414,6 +415,8 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+EIGEN_CFLAGS = @EIGEN_CFLAGS@
+EIGEN_LIBS = @EIGEN_LIBS@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FEATURES = @FEATURES@
@@ -566,7 +569,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS) $(ARBLIB_CFLAGS) $(AEAE_CFLAGS)
+AM_CPPFLAGS = -I@top_srcdir@/include $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(BOOST_CPPFLAGS) $(CFITSIO_CFLAGS) $(ARBLIB_CFLAGS) $(AEAE_CFLAGS) $(EIGEN_CFLAGS)
 AM_LDFLAGS = $(XERCES_LIBS) -export-dynamic $(PTHREAD_LIBS) \
 	$(UDUNITS_LIBS) $(CFITSIO_LIBS) $(ARBLIB_LIBS) $(am__append_2)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) -DGYOTO_PKGLIBDIR=\"${pkglibdir}\" \
@@ -597,10 +600,9 @@ libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C Hayward.C \
 	SchwarzschildHarmonic.C Star.C StarTrace.C FixedStar.C \
-	FreeStar.C InflateStar.C Torus.C OscilTorus.C \
-	PowerLawSpectrum.C BlackBodySpectrum.C \
-	ThermalBremsstrahlungSpectrum.C ThermalSynchrotronSpectrum.C \
-	PowerLawSynchrotronSpectrum.C \
+	InflateStar.C Torus.C OscilTorus.C PowerLawSpectrum.C \
+	BlackBodySpectrum.C ThermalBremsstrahlungSpectrum.C \
+	ThermalSynchrotronSpectrum.C PowerLawSynchrotronSpectrum.C \
 	KappaDistributionSynchrotronSpectrum.C ComplexAstrobj.C \
 	UniformSphere.C ComplexMetric.C Shift.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C \
@@ -796,7 +798,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo@am__quote@ # am--include-marker
@@ -968,13 +969,6 @@ libgyoto_stdplug_la-FixedStar.lo: FixedStar.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FixedStar.C' object='libgyoto_stdplug_la-FixedStar.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FixedStar.lo `test -f 'FixedStar.C' || echo '$(srcdir)/'`FixedStar.C
-
-libgyoto_stdplug_la-FreeStar.lo: FreeStar.C
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-FreeStar.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-FreeStar.Tpo -c -o libgyoto_stdplug_la-FreeStar.lo `test -f 'FreeStar.C' || echo '$(srcdir)/'`FreeStar.C
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-FreeStar.Tpo $(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FreeStar.C' object='libgyoto_stdplug_la-FreeStar.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FreeStar.lo `test -f 'FreeStar.C' || echo '$(srcdir)/'`FreeStar.C
 
 libgyoto_stdplug_la-InflateStar.lo: InflateStar.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-InflateStar.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-InflateStar.Tpo -c -o libgyoto_stdplug_la-InflateStar.lo `test -f 'InflateStar.C' || echo '$(srcdir)/'`InflateStar.C
@@ -1327,6 +1321,7 @@ cscopelist-am: $(am__tagged_files)
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
+
 distdir: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) distdir-am
 
@@ -1452,7 +1447,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
-	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo
@@ -1578,7 +1572,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
-	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Hayward.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo

@@ -45,6 +45,7 @@
 
 using namespace std;
 using namespace Gyoto;
+using namespace Eigen;
 
 // don't add e.g. "using namespace boost::math"
 // it is not compatible with "using namespace std" in the general case
@@ -58,14 +59,16 @@ Photon::Photon() :
   Object("Photon"),
   object_(NULL),
   freq_obs_(1.), transmission_freqobs_(1.),
-  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0)
+  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
  {}
 
 Photon::Photon(const Photon& o) :
   Worldline(o), SmartPointee(o),
   object_(NULL),
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
-  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(o.nb_cross_eqplane_)
+  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(o.nb_cross_eqplane_),
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(o.transmissionMatrix_freqobs_)
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
@@ -74,8 +77,11 @@ Photon::Photon(const Photon& o) :
   if (o.spectro_()) {
     spectro_ = o.spectro_ -> clone();
     _allocateTransmission();
-    if (size_t nsamples = spectro_->nSamples())
+    _allocateTransmissionMatrix();
+    if (size_t nsamples = spectro_->nSamples()){
       memcpy(transmission_, o.getTransmission(), nsamples*sizeof(double));
+      memcpy(transmissionMatrix_,o.getTransmissionMatrix(), nsamples*sizeof(Matrix4d));
+    }
   }
 }
 
@@ -95,7 +101,9 @@ Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   freq_obs_(orig->freq_obs_),
   transmission_freqobs_(orig->transmission_freqobs_),
   spectro_(orig->spectro_), transmission_(orig->transmission_),
-  nb_cross_eqplane_(orig->nb_cross_eqplane_)
+  nb_cross_eqplane_(orig->nb_cross_eqplane_),
+  transmissionMatrix_(orig->transmissionMatrix_),
+  transmissionMatrix_freqobs_(orig->transmissionMatrix_freqobs_)
 {
 }
 
@@ -109,7 +117,8 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
-  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0)
+  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
+  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
 {
   setInitialCondition(met, obj, coord);
 }
@@ -121,12 +130,17 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
   Worldline(), object_(obj), freq_obs_(screen->freqObs()),
   transmission_freqobs_(1.),
   spectro_(NULL), transmission_(NULL),
-  nb_cross_eqplane_(0)
+  nb_cross_eqplane_(0),
+  transmissionMatrix_(NULL),
+  transmissionMatrix_freqobs_()
 {
   double coord[8], Ephi[4], Etheta[4];
-  screen -> getRayCoord(d_alpha, d_delta, coord);
-  if (parallel_transport_)
-    screen -> getRayTriad(coord, Ephi, Etheta);
+  bool compute_polar_basis=false;
+  if (parallel_transport_) compute_polar_basis=true;
+  screen -> getRayTriad(d_alpha, d_delta,
+			coord,
+			compute_polar_basis,
+			Ephi, Etheta);
   Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   spectrometer(screen);
 }
@@ -148,11 +162,40 @@ void Photon::_allocateTransmission() {
   }
 }
 
+void Photon::_allocateTransmissionMatrix() {
+  if (transmissionMatrix_){
+    delete [] transmissionMatrix_;
+    transmissionMatrix_ = NULL;
+  }
+  if (spectro_()){
+    size_t nsamples = spectro_->nSamples();
+    if (nsamples) {
+      transmissionMatrix_ = new Matrix4d[nsamples]();
+    }
+    resetTransmissionMatrix();
+  }
+}
+
 void Photon::resetTransmission() {
   transmission_freqobs_ = 1.;
   if (spectro_() && transmission_) {
     size_t nsamples = spectro_->nSamples();
     for (size_t i = 0; i < nsamples; ++i) transmission_[i] = 1.;
+  }  
+}
+
+void Photon::resetTransmissionMatrix() {
+  if (spectro_() && transmissionMatrix_ && &transmissionMatrix_freqobs_) {
+    size_t nsamples = spectro_->nSamples();
+    Matrix4d identity;
+    identity << 1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+    transmissionMatrix_freqobs_ = identity;
+    for (size_t i = 0; i < nsamples; ++i){
+      transmissionMatrix_[i]=identity;
+    }
   }
 }
 
@@ -175,6 +218,7 @@ void Photon::metric(SmartPointer<Metric::Generic> met) {
 void Photon::spectrometer(SmartPointer<Spectrometer::Generic> spr) {
   spectro_=spr;
   _allocateTransmission();
+  _allocateTransmissionMatrix();
 }
 SmartPointer<Spectrometer::Generic> Photon::spectrometer() const { return spectro_; }
 
@@ -193,9 +237,12 @@ void Photon::setInitialCondition(SmartPointer<Metric::Generic> met,
 				 const double d_delta)
 {
   double coord[8], Ephi[4], Etheta[4];
-  screen -> getRayCoord(d_alpha, d_delta, coord);
-  if (parallel_transport_)
-    screen -> getRayTriad(coord, Ephi, Etheta);
+  bool compute_polar_basis=false;
+  if (parallel_transport_) compute_polar_basis=true;
+  screen -> getRayTriad(d_alpha, d_delta,
+			coord,
+			compute_polar_basis,
+			Ephi, Etheta);
   Worldline::setInitialCondition(met, coord, -1, Ephi, Etheta);
   if (obj) object_=obj;
 
@@ -230,10 +277,13 @@ int Photon::hit(Astrobj::Properties *data) {
    */
   //tmin_=-1000.;//DEBUG //NB: integration stops when t < Worldline::tmin_
 
-  transmission_freqobs_=1.;
+  /*transmission_freqobs_=1.;
   size_t nsamples;
   if (spectro_() && (nsamples = spectro_->nSamples()))
     for (size_t ii=0; ii<nsamples; ++ii) transmission_[ii]=1.;
+  */
+  resetTransmission();
+  resetTransmissionMatrix();
 
   double rmax=object_ -> rMax();
   int coordkind = metric_ -> coordKind();
@@ -409,7 +459,7 @@ int Photon::hit(Astrobj::Properties *data) {
     uplus=0., uminus=0., uratio=0., eta=0., lambda=0., spin2=0., nn_Mino=0., Einit=0., Linit=0., spin=0.;
   double mytol=1e-6; // it must be possible to decrease this tolerance
   // by using a finer AbsTol and RelTol in xml (checked for one case).
-  if ((maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane) && compute_Mino==1){ // The first two conditions ensure that we are interesting in computing image orders; then we compute here everything that is constant along the null geodesic
+  if ((maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)) && compute_Mino==1){ // The first two conditions ensure that we are interesting in computing image orders; then we compute here everything that is constant along the null geodesic
     string kin = metric_->kind(); // check that we are in Kerr for Mino computation
     if (kin != "KerrBL")
       GYOTO_ERROR("Photon::hit: KerrBL needed for Mino time computation!");
@@ -679,7 +729,7 @@ int Photon::hit(Astrobj::Properties *data) {
     //*****************************
     // *** Image order tracking ***
     //*****************************
-    if (maxCrossEqplane_<DBL_MAX || data->nbcrosseqplane){
+    if (maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)){
 
       if (compute_Mino==1){
 	/*
@@ -1097,22 +1147,45 @@ double Photon::getTransmission(size_t i) const {
   return transmission_[i];
 }
 
+Matrix4d Photon::getTransmissionMatrix(size_t i) const {
+  if (i==size_t(-1)) return transmissionMatrix_freqobs_;
+  if (!spectro_() || i>=spectro_->nSamples())
+    GYOTO_ERROR("Photon::getTransmission(): i > nsamples");
+  return transmissionMatrix_[i];
+}
+
 double Photon::getTransmissionMax() const {
-  double transmax=transmission_freqobs_;
-  if (spectro_()) {
-    transmax=0.;
-    size_t i=0, imax= spectro_->nSamples();
-    for (i=0; i < imax; ++i)
-      if (transmission_[i] > transmax)
-	transmax = transmission_[i];
+  double transmax = 0.;
+  if (parallel_transport_){
+    transmax=transmissionMatrix_freqobs_(0,0);
+    if (spectro_()) {
+      transmax=0.;
+      size_t i=0, imax= spectro_->nSamples();
+      for (i=0; i < imax; ++i){
+        Matrix4d mat=transmissionMatrix_[i];
+        if (mat(0,0)>transmax)
+          transmax=mat(0,0);
+      }
+    }
+  }else{
+    transmax=transmission_freqobs_;
+    if (spectro_()) {
+      transmax=0.;
+      size_t i=0, imax= spectro_->nSamples();
+      for (i=0; i < imax; ++i)
+        if (transmission_[i] > transmax)
+  	transmax = transmission_[i];
+    }
+  # ifdef GYOTO_DEBUG_ENABLED
+    GYOTO_DEBUG_EXPR(transmax);
+  # endif
   }
-# ifdef GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG_EXPR(transmax);
-# endif
   return transmax;
 }
 
 double const * Photon::getTransmission() const { return transmission_; }
+Matrix4d const * Photon::getTransmissionMatrix() const { return transmissionMatrix_; }
+
 void Photon::transmit(size_t i, double t) {
   if (i==size_t(-1)) { transmission_freqobs_ *= t; return; }
   if (!spectro_() || i>=spectro_->nSamples())
@@ -1128,26 +1201,39 @@ void Photon::Refined::transmit(size_t i, double t) {
   if (i==size_t(-1)) transmission_freqobs_ = parent_->transmission_freqobs_;
 }
 
-void Photon::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
-		      double const * aInu, double const * aQnu,
-		      double const * aUnu, double const * aVnu,
-		      double const * rQnu, double const * rUnu, double const * rVnu) {
+void Photon::transmit(size_t i, Matrix4d mat){
+  if (i==size_t(-1)) { transmissionMatrix_freqobs_ *= mat; return; }
+  if (!spectro_() || i>=spectro_->nSamples())
+    GYOTO_ERROR("Photon::getTransmissionMatrix(): i > nsamples");
+  transmissionMatrix_[i] *= mat;
+}
+void Photon::Refined::transmit(size_t i, Matrix4d mat) {
+  parent_ -> transmit(i, mat);
+}
+
+void Photon::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
   // Apply transfer function to I, Q, U and V, then update the transfer function.
   // For the prototype,
   //   * just apply the transmission to Inu;
   //   * only update transmission.
   size_t nbnuobs = spectro_() ? spectro_->nSamples() : 0;
+  Matrix4d Tau;
   for (size_t ii=0; ii<nbnuobs; ++ii) {
-    Inu[ii] *= transmission_[ii];
-    transmission_[ii] *= exp(-aInu[ii]);
+    Tau=transmissionMatrix_[ii];
+    Vector4d Stokes(Inu[ii],Qnu[ii],Unu[ii],Vnu[ii]);
+    Vector4d StokesOut = Tau*Stokes;
+    Inu[ii]=StokesOut(0);
+    Qnu[ii]=StokesOut(1);
+    Unu[ii]=StokesOut(2);
+    Vnu[ii]=StokesOut(3);
+    transmit(ii, Onu[ii]);
   }
 }
-void Photon::Refined::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu,
-			       double const * aInu, double const * aQnu,
-			       double const * aUnu, double const * aVnu,
-			       double const * rQnu, double const * rUnu, double const * rVnu) {
-  parent_ -> transfer(Inu, Qnu, Unu, Vnu, aInu, aQnu, aUnu, aVnu, rQnu, rUnu, rVnu);
+
+void Photon::Refined::transfer(double * Inu, double * Qnu, double * Unu, double * Vnu, Matrix4d * Onu){
+  parent_ -> transfer(Inu, Qnu, Unu, Vnu, Onu);
 }
+
 #ifdef GYOTO_USE_XERCES
 void Photon::setParameters(FactoryMessenger* fmp) {
   wait_pos_ = 1;

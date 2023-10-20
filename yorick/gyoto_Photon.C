@@ -63,7 +63,8 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
       //TODO: support polarization (v.size()==16)
     } else {          // Setting initcoord
       long ptot=1;
-      double coord[8];
+      double coord[8], Ephi[4], Etheta[4];
+      bool compute_polar_basis=false;
 
       if (yarg_number(iarg)) { // initcoord=coord or initcoord=pos, vel
 	double *pos=ygeta_d(iarg, &ptot, 0);
@@ -94,12 +95,18 @@ void ygyoto_Photon_generic_eval(Gyoto::SmartPointer<Gyoto::Photon>* ph,
 	  double da = ygets_d(piargs[0]+*rvset);
 	  double dd = ygets_d(piargs[1]+*rvset);
 	  if (debug()) cerr << "screen, dalpha="<<da <<", ddelta="<<dd <<endl;
-	  sc -> getRayCoord(da, dd, coord);
+	  sc -> getRayTriad(da, dd, 
+			    coord,
+			    compute_polar_basis,
+			    Ephi, Etheta);
 	} else {
 	  size_t i = ygets_l(piargs[0]+*rvset);
 	  size_t j = ygets_l(piargs[1]+*rvset);
 	  if (debug()) cerr << "screen, i="<<i <<", j="<<j << endl;
-	  sc -> getRayCoord(i, j, coord);
+	  sc -> getRayTriad(i, j, 
+			    coord,
+			    compute_polar_basis,
+			    Ephi, Etheta);
 	}
 	(*ph) -> spectrometer(sc->spectrometer());
       }

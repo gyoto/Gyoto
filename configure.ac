@@ -479,6 +479,15 @@ AS_IF([test "x$have_xerces" == "xno"],
   ]
 )
 
+## EIGEN
+# Check for EIGEN
+GYOTO_ARG_LIB(eigen, eigen3, ,
+              [#include <Eigen/Dense>],
+              [Eigen::MatrixXd m(2,2);])
+AS_IF([test "x$have_ceigen" == "xno"],
+  [FEATURES+="-noeigen"]
+)
+
 ## CFITSIO
 # Check for CFITSIO
 GYOTO_ARG_LIB(cfitsio, cfitsio, -lcfitsio,

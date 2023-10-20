@@ -541,7 +541,7 @@ class Gyoto::Screen
    */
   void getScreen3(double dest[4]) const;
 
-  /// Get 8-coordinate of Photon hitting screen from a given direction
+  /// Get 8-coordinate of Photon hitting screen from a given direction and polarization basis if needed
   /**
    * Similar to Screen::getObserverPos() but will return in addition
    * the 4-velocity of a photon corresponding to the sky direction
@@ -549,32 +549,32 @@ class Gyoto::Screen
    * \param[in] x    RA (d_alpha*cos(delta)) offset in radians;
    * \param[in] y    Dec offset (d_delta) in radians; 
    * \param[out] dest position-velocity of the observer Photon. Preallocated.
-   * 
-   */
-  void getRayCoord(double x, double y, double dest[8]) const;
-
-  /// Get polarization triad
-  /**
-   * Computes the polarization triad (Ephi,Etheta,k) from the
-   * tangent to photon geodesic k.
-   * \param[in] coord Photon coordinate + tangent vector (double[8])
+   * \param[in] compute_polar_basis True if polarization basis Ephi,Etheta is needed
    * \param[out] Ephi first polarisation direction. Preallocated. Default: NULL.
    * \param[out] Etheta second polarisation direction. Preallocated. Default: NULL.
    * 
    */
-  void getRayTriad(double coord[8],
-		   double Ephi[4], double Etheta[4]) const;
+  void getRayTriad(double x, double y,
+		   double dest[8],
+		   bool compute_polar_basis=false,
+		   double Ephi[4]=NULL, double Etheta[4]=NULL) const;
 
-  /// Get 8-coordinate of Photon hitting screen pixel
+  /// Get 8-coordinate of Photon hitting screen pixel and polarization basis if needed
   /**
    * Similar to Screen::getObserverPos() but will return in addition
    * the 4-velocity of a photon corresponding to the sky direction
    * given by x and y.
-   * \param[in] i, j pixel coordinates   
+   * \param[in] i, j pixel coordinates  
    * \param[out] dest position-velocity of the Photon. Preallocated.
+   * \param[in] compute_polar_basis True if polarization basis Ephi,Etheta is needed
+   * \param[out] Ephi first polarisation direction. Preallocated. Default: NULL.
+   * \param[out] Etheta second polarisation direction. Preallocated. Default: NULL.
    * 
    */
-  void getRayCoord(const size_t i, const size_t j, double dest[8]) const;
+  void getRayTriad(const size_t i, const size_t j,
+		   double dest[8],
+		   bool compute_polar_basis=false,
+		   double Ephi[4]=NULL, double Etheta[4]=NULL) const;
   
   /** \brief Convert metric 4-position to sky 3-position
    *
