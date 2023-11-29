@@ -162,9 +162,9 @@ bool Generic::redshift() const {return !noredshift_;}
 void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 				     double const * coord_obj_hit, double dt,
 				     Properties* data) const {
-#if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << endl;
-#endif
+	#if GYOTO_DEBUG_ENABLED
+	  GYOTO_DEBUG << endl;
+	#endif
   //  cout << "flagra= " << flag_radtransf_ << endl;
   /*
       NB: freqObs is the observer's frequency chosen in
@@ -190,83 +190,83 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
   double inc =0.;
 
   if (data) {
-#if GYOTO_DEBUG_ENABLED
-  GYOTO_DEBUG << "data requested. "
+		#if GYOTO_DEBUG_ENABLED
+  		GYOTO_DEBUG << "data requested. "
 	      << "freqObs=" << freqObs << ", ggredm1=" << ggredm1
 	      << ", ggred=" << ggred
 	      << endl;
-#endif
+		#endif
 
     if (data->redshift) {
       *data->redshift=ggred;
-#if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG_EXPR(*data->redshift);
-#endif
+			#if GYOTO_DEBUG_ENABLED
+				GYOTO_DEBUG_EXPR(*data->redshift);
+			#endif
     }
     if (data->time) {
       *data->time=coord_ph_hit[0];
-#if GYOTO_DEBUG_ENABLED
-      GYOTO_DEBUG_EXPR(*data->time);
-#endif
+			#if GYOTO_DEBUG_ENABLED
+				GYOTO_DEBUG_EXPR(*data->time);
+			#endif
     }
     if (data->impactcoords && data->impactcoords[0]==DBL_MAX) {
       if (coord_ph_hit.size() > 8) GYOTO_ERROR("ImpactCoords is incompatible with parallel transport");
       memcpy(data->impactcoords, coord_obj_hit, 8 * sizeof(double));
       memcpy(data->impactcoords+8, &coord_ph_hit[0], 8 * sizeof(double));
     }
-#if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
-		<< ") = " << dlambda << ", dsem=" << dsem << endl;
-#endif
+		#if GYOTO_DEBUG_ENABLED
+	    GYOTO_DEBUG << "dlambda = (dt="<< dt << ")/(tdot="<< coord_ph_hit[4]
+				<< ") = " << dlambda << ", dsem=" << dsem << endl;
+		#endif
     if (data->intensity) {
       /*
-	Comment on intensity integration:
-	Eq of radiative transfer used:
-	dI_nu_em/ds_em = j_nu_em (assumes no absorption for
-	simplicity) where : nu_em is measured by the emitter, ds_em
-	is the proper length measured by the emitter corresponding
-	to an increase dlambda of the parameter of the null
-	worldline of the photon ; We have (see manual for demo) :
-	ds_em = dlambda*nu_em
+			Comment on intensity integration:
+			Eq of radiative transfer used:
+			dI_nu_em/ds_em = j_nu_em (assumes no absorption for
+			simplicity) where : nu_em is measured by the emitter, ds_em
+			is the proper length measured by the emitter corresponding
+			to an increase dlambda of the parameter of the null
+			worldline of the photon ; We have (see manual for demo) :
+			ds_em = dlambda*nu_em
 
-	BUT: dlambda is depending on the choice of freqObs (defined
-	above) ; indeed we have: dlambda(freqObs) * freqObs = cst
-	(i.e. independent of the choice of freqObs). Thus, for
-	spectra computations where the observed frequency varies, we
-	have to use the dlambda corresponding to the physical
-	frequency chosen by the user, dlambda(nuobs), instead of
-	dlambda(freqObs).  The conversion is easy : dlambda(nuobs) =
-	dlambda(freqObs)*freqObs/nuobs Thus: ds_em =
-	dlambda(nuobs)*nu_em = dlambda(freqObs)*freqObs*ggredm1
+			BUT: dlambda is depending on the choice of freqObs (defined
+			above) ; indeed we have: dlambda(freqObs) * freqObs = cst
+			(i.e. independent of the choice of freqObs). Thus, for
+			spectra computations where the observed frequency varies, we
+			have to use the dlambda corresponding to the physical
+			frequency chosen by the user, dlambda(nuobs), instead of
+			dlambda(freqObs).  The conversion is easy : dlambda(nuobs) =
+			dlambda(freqObs)*freqObs/nuobs Thus: ds_em =
+			dlambda(nuobs)*nu_em = dlambda(freqObs)*freqObs*ggredm1
 
-	Then, j_nu_em is computed by the emission() function of the
-	Astrobj [NB: with rad. transfer emission() computes
-	j_nu*dsem, without rad. transfer it computes I_nu, thus
-	the result is always homogenous to intensity] Finally:
-	I_nu_obs = I_nu_em*(nu_obs/nu_em)^3
+			Then, j_nu_em is computed by the emission() function of the
+			Astrobj [NB: with rad. transfer emission() computes
+			j_nu*dsem, without rad. transfer it computes I_nu, thus
+			the result is always homogenous to intensity] Finally:
+			I_nu_obs = I_nu_em*(nu_obs/nu_em)^3
       */
 
       //Intensity increment :
       GYOTO_DEBUG_EXPR(freqObs);
       GYOTO_DEBUG_EXPR(freqObs*ggredm1);
-	inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
-	  * (ph -> getTransmission(size_t(-1)))
-	  * ggred*ggred*ggred; // I_nu/nu^3 invariant
-#     ifdef HAVE_UDUNITS
-      if (data -> intensity_converter_)
-	inc = (*data -> intensity_converter_)(inc);
-#     endif
+			inc = (emission(freqObs*ggredm1, dsem, coord_ph_hit, coord_obj_hit))
+	  	* (ph -> getTransmission(size_t(-1)))
+	  	* ggred*ggred*ggred; // I_nu/nu^3 invariant
+			#ifdef HAVE_UDUNITS
+			  if (data -> intensity_converter_)
+				inc = (*data -> intensity_converter_)(inc);
+			#endif
       *data->intensity += inc;
 
-#     if GYOTO_DEBUG_ENABLED
-	GYOTO_DEBUG
-	  << "intensity +=" << *data->intensity
-	  << "= emission((dsem=" << dsem << "))="
-	  << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
-	  << ")*(ggred=" << ggred << ")^3*(transmission="
-	  << (ph -> getTransmission(size_t(-1))) << ")"
-	  << endl;
-#     endif
+			#if GYOTO_DEBUG_ENABLED
+				GYOTO_DEBUG
+				  << "intensity +=" << *data->intensity
+				  << "= emission((dsem=" << dsem << "))="
+				  << (emission(freqObs*ggredm1,dsem,coord_ph_hit, coord_obj_hit))
+				  << ")*(ggred=" << ggred << ")^3*(transmission="
+				  << (ph -> getTransmission(size_t(-1))) << ")"
+				  << endl;
+			#endif
 
     }
     if (data->binspectrum) {
@@ -277,168 +277,169 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
       double * boundaries = new double[nbounds];
 
       for (size_t ii=0; ii<nbounds; ++ii)
-	boundaries[ii]=channels[ii]*ggredm1;
-      integrateEmission(I, boundaries, chaninds, nbnuobs,
-			dsem, coord_ph_hit, coord_obj_hit);
+				boundaries[ii]=channels[ii]*ggredm1;
+      integrateEmission(I, boundaries, chaninds, nbnuobs, dsem, coord_ph_hit, coord_obj_hit);
       for (size_t ii=0; ii<nbnuobs; ++ii) {
-	inc = I[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred*ggred;
-#       ifdef HAVE_UDUNITS
-	if (data -> binspectrum_converter_)
-	  inc = (*data -> binspectrum_converter_)(inc);
-#       endif
-	data->binspectrum[ii*data->offset] += inc ;
-#       if GYOTO_DEBUG_ENABLED
-	GYOTO_DEBUG
-	       << "nuobs[" << ii << "]="<< channels[ii]
-	       << ", nuem=" << boundaries[ii]
-	       << ", binspectrum[" << ii+data->offset << "]="
-	       << data->binspectrum[ii*data->offset]<< endl;
-#       endif
+				inc = I[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred*ggred;
+				#ifdef HAVE_UDUNITS
+					if (data -> binspectrum_converter_)
+				  	inc = (*data -> binspectrum_converter_)(inc);
+				#endif
+				data->binspectrum[ii*data->offset] += inc ;
+				#if GYOTO_DEBUG_ENABLED
+					GYOTO_DEBUG
+		        << "nuobs[" << ii << "]="<< channels[ii]
+		        << ", nuem=" << boundaries[ii]
+		        << ", binspectrum[" << ii+data->offset << "]="
+		        << data->binspectrum[ii*data->offset]<< endl;
+				#endif
 
-	if (!data->spectrum) // else it will be done in spectrum
-	  ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit, coord_obj_hit));
+				if (!data->spectrum) // else it will be done in spectrum
+				  ph -> transmit(ii,transmission(nuobs[ii]*ggredm1,dsem,coord_ph_hit, coord_obj_hit));
       }
       delete [] I;
       delete [] boundaries;
     }
     if (data->spectrum||data->stokesQ||data->stokesU||data->stokesV) {
       if (ph -> parallelTransport()) { // Compute polarization
-	double * Inu          = new double[nbnuobs];
-	double * Qnu          = new double[nbnuobs];
-	double * Unu          = new double[nbnuobs];
-	double * Vnu          = new double[nbnuobs];
-	double * nuem         = new double[nbnuobs];
-	Matrix4d * Onu        = new Matrix4d[nbnuobs];
+				double * Inu          = new double[nbnuobs];
+				double * Qnu          = new double[nbnuobs];
+				double * Unu          = new double[nbnuobs];
+				double * Vnu          = new double[nbnuobs];
+				double * nuem         = new double[nbnuobs];
+				Matrix4d * Onu        = new Matrix4d[nbnuobs];
 
-	for (size_t ii=0; ii<nbnuobs; ++ii) {
-	  nuem[ii]=nuobs[ii]*ggredm1;
-	}
-	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
-	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
-	radiativeQ(Inu, Qnu, Unu, Vnu,
-		   Onu, nuem, nbnuobs, dsem,
-		   coord_ph_hit, coord_obj_hit);
-	ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
-	double ggred3 = ggred*ggred*ggred;
-	for (size_t ii=0; ii<nbnuobs; ++ii) {
-	  if (data-> spectrum) {
-	    inc = Inu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-	    if (data -> spectrum_converter_)
-	      inc = (*data -> spectrum_converter_)(inc);
-#           endif
-	    data->spectrum[ii*data->offset] += inc;
-	  }
-	  if (data-> stokesQ) {
-	    inc = Qnu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-	    if (data -> spectrum_converter_)
-	      inc = (*data -> spectrum_converter_)(inc);
-#           endif
-	    data->stokesQ [ii*data->offset] += inc;
-	  }
-	  if (data-> stokesU) {
-	    inc = Unu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-	    if (data -> spectrum_converter_)
-	      inc = (*data -> spectrum_converter_)(inc);
-#           endif
-	    data->stokesU [ii*data->offset] += inc;
-	  }
-	  if (data-> stokesV) {
-	    inc = Vnu[ii] * ggred3;
-#           ifdef HAVE_UDUNITS
-	    if (data -> spectrum_converter_)
-	      inc = (*data -> spectrum_converter_)(inc);
-#           endif
-	    data->stokesV [ii*data->offset] += inc;
-	  }
+				for (size_t ii=0; ii<nbnuobs; ++ii) {
+				  nuem[ii]=nuobs[ii]*ggredm1;
+				}
+				GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
+				GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
+				radiativeQ(Inu, Qnu, Unu, Vnu,
+				  Onu, nuem, nbnuobs, dsem,
+				  coord_ph_hit, coord_obj_hit);
+				ph -> transfer(Inu, Qnu, Unu, Vnu, Onu);
+				double ggred3 = ggred*ggred*ggred;
+				for (size_t ii=0; ii<nbnuobs; ++ii) {
+				  if (data-> spectrum) {
+				    inc = Inu[ii] * ggred3;
+						#ifdef HAVE_UDUNITS
+				    	if (data -> spectrum_converter_)
+				      	inc = (*data -> spectrum_converter_)(inc);
+						#endif
+				    data->spectrum[ii*data->offset] += inc;
+				  }
+				  if (data-> stokesQ) {
+				    inc = Qnu[ii] * ggred3;
+						#ifdef HAVE_UDUNITS
+				    	if (data -> spectrum_converter_)
+				      	inc = (*data -> spectrum_converter_)(inc);
+						#endif
+				    data->stokesQ [ii*data->offset] += inc;
+				  }
+				  if (data-> stokesU) {
+				    inc = Unu[ii] * ggred3;
+						#ifdef HAVE_UDUNITS
+				    	if (data -> spectrum_converter_)
+				      	inc = (*data -> spectrum_converter_)(inc);
+						#endif
+				    data->stokesU [ii*data->offset] += inc;
+				  }
+				  if (data-> stokesV) {
+				    inc = Vnu[ii] * ggred3;
+						#ifdef HAVE_UDUNITS
+				    	if (data -> spectrum_converter_)
+				      	inc = (*data -> spectrum_converter_)(inc);
+						#endif
+				    data->stokesV [ii*data->offset] += inc;
+				  }
 
-#         if GYOTO_DEBUG_ENABLED
-	  {
-	    //double t=ph -> getTransmission(ii);
-	    Matrix4d mat=ph -> getTransmissionMatrix(ii);
-	    double t=mat(0,0);
-	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
-	    //cout << " r th I Q U V= " << coord_ph_hit[1] << " " << coord_ph_hit[2]*180./M_PI << " " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset] << " " << data->stokesV[ii*data->offset] << endl;
-	    GYOTO_DEBUG
-	      //  cout
-	      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
-	      << "DEBUG: Generic::processHitQuantities(): "
-	    << "nuobs[" << ii << "]="<< nuobs[ii]
-	    << ", nuem=" << nuem[ii]
-	    << ", dsem=" << dsem
-	    << ", Inu * GM/c2="
-	    << Inu[ii]
-	    << ", spectrum[" << ii*data->offset << "]="
-	    << data->spectrum[ii*data->offset]
-	      << ", sotkesQ[" << ii*data->offset << "]="
-	      << data->stokesQ[ii*data->offset]
-	    << ", transmission=" << t
-	    << ", optical depth=" << o
-	    << ", redshift=" << ggred << ")\n" << endl;
-	    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
-	  }
-#         endif
-	}
-	delete [] Inu;
-	delete [] Qnu;
-	delete [] Unu;
-	delete [] Vnu;
-	delete [] Onu;
-	delete [] nuem;
+					#if GYOTO_DEBUG_ENABLED
+				  {
+				    //double t=ph -> getTransmission(ii);
+				    Matrix4d mat=ph -> getTransmissionMatrix(ii);
+				  	double t=mat(0,0);
+				    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
+				    //cout << " r th I Q U V= " << coord_ph_hit[1] << " " << coord_ph_hit[2]*180./M_PI << " " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset] << " " << data->stokesV[ii*data->offset] << endl;
+				    GYOTO_DEBUG
+				      //  cout
+				      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
+				      << "DEBUG: Generic::processHitQuantities(): "
+				    << "nuobs[" << ii << "]="<< nuobs[ii]
+				    << ", nuem=" << nuem[ii]
+				    << ", dsem=" << dsem
+				    << ", Inu * GM/c2="
+				    << Inu[ii]
+				    << ", spectrum[" << ii*data->offset << "]="
+				    << data->spectrum[ii*data->offset]
+				      << ", sotkesQ[" << ii*data->offset << "]="
+				      << data->stokesQ[ii*data->offset]
+				    << ", transmission=" << t
+				    << ", optical depth=" << o
+				    << ", redshift=" << ggred << ")\n" << endl;
+				    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
+				  }
+					#endif
+				}
+				delete [] Inu;
+				delete [] Qnu;
+				delete [] Unu;
+				delete [] Vnu;
+				delete [] Onu;
+				delete [] nuem;
       } else { // No polarization
-	double * Inu          = new double[nbnuobs];
-	double * Taunu        = new double[nbnuobs];
-	double * nuem         = new double[nbnuobs];
+				double * Inu          = new double[nbnuobs];
+				double * Taunu        = new double[nbnuobs];
+				double * nuem         = new double[nbnuobs];
 
-	for (size_t ii=0; ii<nbnuobs; ++ii) {
-	  nuem[ii]=nuobs[ii]*ggredm1;
-	}
-	GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
-	GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
-	radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem,
-		   coord_ph_hit, coord_obj_hit);
-	for (size_t ii=0; ii<nbnuobs; ++ii) {
-	  inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
-#         ifdef HAVE_UDUNITS
-	  if (data -> spectrum_converter_)
-	    inc = (*data -> spectrum_converter_)(inc);
-#         endif
-	  data->spectrum[ii*data->offset] += inc;
-	  ph -> transmit(ii,Taunu[ii]);
+				for (size_t ii=0; ii<nbnuobs; ++ii) {
+				  nuem[ii]=nuobs[ii]*ggredm1;
+				}
+				GYOTO_DEBUG_ARRAY(nuobs, nbnuobs);
+				GYOTO_DEBUG_ARRAY(nuem, nbnuobs);
+				radiativeQ(Inu, Taunu, nuem, nbnuobs, dsem,
+					   coord_ph_hit, coord_obj_hit);
+				for (size_t ii=0; ii<nbnuobs; ++ii) {
+				  inc = Inu[ii] * ph -> getTransmission(ii) * ggred*ggred*ggred;
+					#ifdef HAVE_UDUNITS
+				  	if (data -> spectrum_converter_)
+				    	inc = (*data -> spectrum_converter_)(inc);
+					#endif
+				  data->spectrum[ii*data->offset] += inc;
+				  ph -> transmit(ii,Taunu[ii]);
 
-#         if GYOTO_DEBUG_ENABLED
-	  {
-	    double t = ph -> getTransmission(ii);
-	    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
-	  GYOTO_DEBUG
-	    << "DEBUG: Generic::processHitQuantities(): "
-	    << "nuobs[" << ii << "]="<< nuobs[ii]
-	    << ", nuem=" << nuem[ii]
-	    << ", dsem=" << dsem
-	    << ", Inu * GM/c2="
-	    << Inu[ii]
-	    << ", spectrum[" << ii*data->offset << "]="
-	    << data->spectrum[ii*data->offset]
-	    << ", transmission=" << t
-	    << ", optical depth=" << o
-	    << ", redshift=" << ggred << ")\n" << endl;
-	  }
-#         endif
-	}
-	delete [] Inu;
-	delete [] Taunu;
-	delete [] nuem;
+					#if GYOTO_DEBUG_ENABLED
+				  {
+				    double t = ph -> getTransmission(ii);
+				    double o = t>0?-log(t):(-std::numeric_limits<double>::infinity());
+				  GYOTO_DEBUG
+				    << "DEBUG: Generic::processHitQuantities(): "
+				    << "nuobs[" << ii << "]="<< nuobs[ii]
+				    << ", nuem=" << nuem[ii]
+				    << ", dsem=" << dsem
+				    << ", Inu * GM/c2="
+				    << Inu[ii]
+				    << ", spectrum[" << ii*data->offset << "]="
+				    << data->spectrum[ii*data->offset]
+				    << ", transmission=" << t
+				    << ", optical depth=" << o
+				    << ", redshift=" << ggred << ")\n" << endl;
+				  }
+					#endif
+				}
+				delete [] Inu;
+				delete [] Taunu;
+				delete [] nuem;
       }
     }
-    /* update photon's transmission */
-    ph -> transmit(size_t(-1),
-		   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
+    if (data->redshift||data->time||data->impactcoords||data->intensity||data->binspectrum){
+	    /* update photon's transmission */
+	    ph -> transmit(size_t(-1),
+			   transmission(freqObs*ggredm1, dsem,coord_ph_hit, coord_obj_hit));
+	  }
   } else {
-#   if GYOTO_DEBUG_ENABLED
-    GYOTO_DEBUG << "NO data requested!" << endl;
-#   endif
+		#if GYOTO_DEBUG_ENABLED
+    	GYOTO_DEBUG << "NO data requested!" << endl;
+		#endif
   }
 }
 
@@ -973,7 +974,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     cerr << "(Ephi.Etheta, Ephi.K, Etheta.K)= " << fabs(gg_->ScalarProd(&cph[0],Ephi,Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],Ephi,photon_tgvec)) << " " << fabs(gg_->ScalarProd(&cph[0],Etheta,photon_tgvec)) << "\n" 
          << "(Ephi.Ephi, Etheta.Etheta, K.K)= " << fabs(gg_->norm(&cph[0],Ephi)) << " " << fabs(gg_->norm(&cph[0],Etheta)) << " " << fabs(gg_->ScalarProd(&cph[0],photon_tgvec,photon_tgvec)) << endl;
          //<< "K: " << photon_tgvec[0] << " " << photon_tgvec[1] << " " << photon_tgvec[2] << " " << photon_tgvec[3] << endl;
-    throwError("Polarization basis is not properly parallel transported!");
+    throwError("Polarization basis is not properly parallel transported!\n Reduce the tolerance values of integration steps (relTol or absTol) or deltaMaxOverR.");
   }
 
   // *** Projection into the rest frame of the emitter ***
@@ -1226,6 +1227,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     B4vect[0]=Bt;
     B4vect[1]=Br;
     B4vect[2]=Bth;
+    B4vect[3]=0.;
 
   }else if(magneticConfig=="Radial"){
     double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
@@ -1235,6 +1237,8 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
 
     B4vect[0]=Bt;
     B4vect[1]=Br;
+    B4vect[2]=0.;
+    B4vect[3]=0.;
   }else if(magneticConfig=="Toroidal"){
     // Only case where a bit of computation is needed
     // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
@@ -1247,6 +1251,8 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     double Bt = -Bp*Afact;
 
     B4vect[0]=Bt;
+    B4vect[1]=0.;
+    B4vect[2]=0.;
     B4vect[3]=Bp;
   }else{
     GYOTO_ERROR("Not implemented Bfield orientation");

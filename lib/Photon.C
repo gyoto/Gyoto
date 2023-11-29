@@ -1156,16 +1156,13 @@ Matrix4d Photon::getTransmissionMatrix(size_t i) const {
 
 double Photon::getTransmissionMax() const {
   double transmax = 0.;
-  if (parallel_transport_){
-    transmax=transmissionMatrix_freqobs_(0,0);
-    if (spectro_()) {
-      transmax=0.;
-      size_t i=0, imax= spectro_->nSamples();
-      for (i=0; i < imax; ++i){
-        Matrix4d mat=transmissionMatrix_[i];
-        if (mat(0,0)>transmax)
-          transmax=mat(0,0);
-      }
+  if (parallel_transport_ and spectro_()){
+    transmax=0.;
+    size_t i=0, imax= spectro_->nSamples();
+    for (i=0; i < imax; ++i){
+      Matrix4d mat=transmissionMatrix_[i];
+      if (mat(0,0)>transmax)
+        transmax=mat(0,0);
     }
   }else{
     transmax=transmission_freqobs_;
@@ -1174,7 +1171,7 @@ double Photon::getTransmissionMax() const {
       size_t i=0, imax= spectro_->nSamples();
       for (i=0; i < imax; ++i)
         if (transmission_[i] > transmax)
-  	transmax = transmission_[i];
+  	      transmax = transmission_[i];
     }
   # ifdef GYOTO_DEBUG_ENABLED
     GYOTO_DEBUG_EXPR(transmax);
