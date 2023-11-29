@@ -35,7 +35,7 @@ sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ChernSimons.C RezzollaZhidenko.C Hayward.C SchwarzschildHarmonic.C \
-	Star.C StarTrace.C FixedStar.C FreeStar.C InflateStar.C \
+	Star.C StarTrace.C FixedStar.C InflateStar.C \
 	Torus.C OscilTorus.C \
 	PowerLawSpectrum.C BlackBodySpectrum.C \
 	ThermalBremsstrahlungSpectrum.C \
@@ -44,7 +44,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ComplexAstrobj.C UniformSphere.C \
 	ComplexMetric.C Shift.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
-	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C Plasmoid.C ThickDisk.C\
+	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C Plasmoid.C FreeStar.C ThickDisk.C\
 	ThinDiskProfile.C SphericalAccretion.C StdPlug.C
 
 

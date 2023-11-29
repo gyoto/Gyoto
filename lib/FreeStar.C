@@ -39,7 +39,11 @@ using namespace Gyoto::Astrobj;
 
 /// Properties
 GYOTO_PROPERTY_START(Gyoto::Astrobj::FreeStar,
- "UniformSphere with a user defined orbit (not time-like.")
+ "UniformSphere with a user defined orbit (not time-like).")
+GYOTO_PROPERTY_VECTOR_DOUBLE(FreeStar, InitPosition, initPosition,
+              "(t,r,theta,phi) initial position of freeStar")
+GYOTO_PROPERTY_VECTOR_DOUBLE(FreeStar, InitVelocity, initVelocity,
+              "(dr/dt,dtheta/dt,dphi/dt) initial 3-velocity of freeStar")
 GYOTO_PROPERTY_END(FreeStar, UniformSphere::properties)
 
 FreeStar::FreeStar() : 
