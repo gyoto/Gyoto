@@ -1407,6 +1407,186 @@ void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticCo
   return;
 }
 
+double Generic::interp1d(double const x, double const y0, double const y1) const{
+	return y0+x*(y1-y0);
+}
+
+double Generic::interpNd(int const N, double* const Xq, double** const X, double* const Y, std::string const *cond_limit) const{
+  double res=0.;
+  int n=N;
+  int len = pow(2,N);
+  double* Xdim, *Xsub_dim;
+  Xdim = new double[len];
+  memcpy(Xdim, Y, sizeof(double)*len);
+  while (n!=0)
+  {
+  	int arr_len = pow(2,n-1);
+      Xsub_dim = new double[arr_len];
+      double t = (Xq[N-n]-X[0][N-n])/(X[2*(N-n)+1][N-n]-X[0][N-n]);
+      if (t<0. or t>1.){
+      	if (cond_limit[n-1]!="Constant" and cond_limit[n-1]!="Linear"){
+      		GYOTO_ERROR("In interpNd : Query position out of interpolation boundaries.");
+      	}else if (cond_limit[n-1]=="Constant"){
+      		if (t<0.)
+      			t=0.;
+      		else
+      			t=1.;
+      	}
+      }
+          
+      for (int i=0; i<arr_len; i++){
+      	Xsub_dim[i] = interp1d(t, Xdim[2*i], Xdim[2*i+1]);
+      }
+      delete [] Xdim;
+      Xdim = new double[arr_len];
+      memcpy(Xdim, Xsub_dim, sizeof(double)*arr_len);
+      n-=1;
+      res = Xsub_dim[0];
+      delete [] Xsub_dim;
+  }
+  return res;
+}
+
+int Generic::getIndice(double &xq, std::string const cond_limit, double const X_params[3], double* const X) const{
+	int ind, n_x;
+	double x_min, x_max, dx;
+	n_x = floor(X_params[2]);
+	x_min = X_params[0];
+  x_max = X_params[1];
+	dx    = (x_max - x_min)/(n_x-1);
+
+
+	if (xq<x_min or xq>x_max){
+		// Query value out of boundary, check limit condition
+		if (cond_limit == "None")
+			GYOTO_ERROR("In getIndice : query value out of boundaries (with None boundary condition).");
+		else if (cond_limit == "Periodic"){
+			if (xq > x_max)
+				xq = std::fmod(xq, x_max) + x_min; // equivalent of (xq % x_max) + x_min for double
+			else
+				xq = std::fmod(xq, x_max) + x_min + x_max;
+			ind = int(floor((xq-x_min)/dx));
+		}
+		else if (cond_limit == "Constant" or cond_limit=="Linear"){
+			if (xq<x_min){
+				return 0;
+			}
+			else{
+				return n_x-2;
+			}
+		}
+		else if (cond_limit == "Null")
+			return -1;
+		else
+			GYOTO_ERROR("In getIndice : unknown boundary condition");
+	}else{
+		if (X!=NULL){
+			// Array is furnished by the user
+			int i_x=0;
+	    while (xq>X[i_x] && xq>X[i_x+1] && i_x<n_x-1) { // search of i_x
+	      i_x+=1;
+	    }
+	    ind=i_x;
+		}else{
+			// Array not furnished, assumed to be linearly spaced
+			ind = int(floor((xq-x_min)/dx));
+		}
+	}
+	return ind;
+}
+
+double Generic::interpolate(int const N, double* const array, double* const Xq, double** const X, int* const X_lengths, std::string const *cond_limits) const{
+
+	int indices[N];
+	for (int ii=0; ii<N; ii++){
+		double len_X = X_lengths[ii]; // avoid warning during compilation
+		double params[3] = {X[ii][0], X[ii][X_lengths[ii]-1], len_X};
+		indices[ii] = getIndice(Xq[ii], cond_limits[ii], params, X[ii]);
+	}
+
+	int len = pow(2.,N);
+	double** X_array = new double*[len];
+	for (int ii=0; ii<len; ii++){
+		X_array[ii] = new double[N];
+	}
+
+	double* Y_array = new	double[len];
+	for (int ii=0;ii<len; ii++){
+		int ind_X = ii;
+		int tab_indX[N];
+		for (int n=N-1; n>=0; n--){
+			tab_indX[n] = ind_X/pow(2.,n);
+      ind_X-=tab_indX[n]*pow(2.,n);
+      if (indices[n]!=-1){
+      	X_array[ii][n]=X[n][indices[n]+tab_indX[n]];
+
+      }else{
+      	return 0.; // "Null" bondary condition
+      }
+		}
+
+		int ind_Y = 0;
+		for (int n=0; n<N; n++){ // To be optimize
+			int prod_len = 1;
+      for (int jj=n+1; jj<N; jj++){
+      	prod_len *= X_lengths[jj];
+      }
+      ind_Y += (indices[n]+tab_indX[n])*prod_len;
+		}
+		Y_array[ii]=array[ind_Y];
+	}
+
+	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+
+}
+
+double Generic::interpolate(int const N, double* const array, double* const Xq, double** const X_params, std::string const *cond_limits) const{
+
+	int indices[N];
+	for (int ii=0; ii<N; ii++){
+		double params[3] = {X_params[ii][0], X_params[ii][1], X_params[ii][2]};
+		indices[ii] = getIndice(Xq[ii], cond_limits[ii], params, NULL);
+	}
+
+	int len = pow(2.,N);
+	double** X_array = new double*[len];
+	for (int ii=0; ii<len; ii++){
+		X_array[ii] = new double[N];
+	}
+	double* Y_array = new	double[len];
+	for (int ii=0;ii<len; ii++){
+		
+		int ind_X = ii;
+		int tab_indX[N];
+		for (int n=N-1; n>=0; n--){
+			tab_indX[n] = ind_X/pow(2.,n);
+      ind_X-=tab_indX[n]*pow(2.,n);
+      if (indices[n]!=-1){
+      	int nx = X_params[n][2];
+      	double xmin = X_params[n][0],
+      				 xmax = X_params[n][1],
+    					 dx = (xmax - xmin)/(nx-1);
+      	X_array[ii][n]= xmin+(indices[n]+tab_indX[n])*dx;
+      }else{
+      	return 0.; // "Null" bondary condition
+      }
+		}
+
+		int ind_Y = 0;
+		for (int n=0; n<N; n++){ // To be optimize
+			int prod_len = 1;
+      for (int jj=n+1; jj<N; jj++){
+      	prod_len *= X_params[jj][2];
+      }
+      ind_Y += (indices[n]+tab_indX[n])*prod_len;
+		}
+		Y_array[ii]=array[ind_Y];
+	}
+
+	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+
+}
+
 void Generic::integrateEmission(double * I, double const * boundaries,
 				size_t const * chaninds, size_t nbnu,
 				double dsem, state_t const &cph, double const *co) const

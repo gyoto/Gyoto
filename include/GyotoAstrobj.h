@@ -697,10 +697,67 @@ private:
    * \param vel Fluid velocity at the photon coordinate
    */
   void getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec=false) const;
-
+  /**
+   * Compute the magnetic field 4-vector at a given position and a given configuration
+   * 
+   * \param B4vect the output 4-vector magnetic field
+   * \param magneticConfig string which determine the wanted configuration ('Radial', 'Azimuthal', 'Vertical')
+   * \param co coordinate of the object which also contain its velocity
+   * \param cph coordinate of the photon
+   */
   void computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const;
 
   void computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const;
+  /**
+   * N-dimensional linear interpolation function
+   * 
+   * \param N number of dimensions
+   * \param array array that should be interpolated. This array has to be a 1D array with the first dimension evolving the slowest
+   * \param Xq query position at which the interpolation should be done. 1D array with N elements.
+   * \param X 2D array containing the range of all the axes (for exemple : radius, \theta, \varphi) at which the array is knwon. Should be built as a pointer of pointers.
+   * \param X_params 1D array that contain the length of each axes.
+   * \param cond_limits 1D array of strings that set the boundary conditions that will be applied to each axes
+   */
+  double interpolate(int const N, double* const array, double* const Xq, double** const X, int* const X_params, std::string const *cond_limits) const;
+  /**
+   * N-dimensional linear interpolation function
+   * 
+   * \param N number of dimensions
+   * \param array array that should be interpolated. This array has to be a 1D array with the first dimension evolving the slowest
+   * \param Xq query position at which the interpolation should be done. 1D array with N elements.
+   * \param X_params[N][3] 2D array that contain the minimum value, the maximum value and the length of each axes. The axes will be assumed to be linearly spaced.
+   * \param cond_limits 1D array of strings that set the boundary conditions that will be applied to each axes.
+   */
+  double interpolate(int const N, double* const array, double* const Xq, double** const X_params, std::string const *cond_limits) const;
+
+  private :
+  /**
+   * Function which returns the 1D linear interpolation.
+   * 
+   * \param x the x query position along the linear function [0,1].
+   * \param y0 the value of the array to be interpolated at the low position.
+   * \param y1 the value of the array to be interpolated at the high position.
+   */
+  double interp1d(double const x, double const y0, double const y1) const;
+  /**
+   * Function which returns the N- dimension interpolation on an N-dimensional cube
+   * 
+   * \param N number of dimensions
+   * \param Xq query position at which the interpolation should be done. 1D array with N elements.
+   * \param X[2**N][N] 2D array that contains for the 2**N points of the N dimensional cube the associated axes values.
+   * \param Y[2**N] 1D array that contain the value of the array to be interpolated at each points of the N-dimensional cube.
+   * \param cond_limit 1D array of strings that set the boundary conditions that will be applied to each axes.
+   */
+  double interpNd(int const N, double* const Xq, double** const X, double* const Y, std::string const *cond_limit) const;
+  /**
+   * Function that return the closest indice of the query value on an axis.
+   * 
+   * \param xq query value on the axis. Could be modified in case of periodic boundary condition.
+   * \param cond_limit boundary conditions that will be applied to the axis.
+   * \param X_params[3] array which contain the minimum value, the maximum value and the length of the axe.
+   * \param X (optional) array which contains the value of the axis points. Usefull for not linearly spaced axis.
+   */
+  int getIndice(double &xq, std::string const cond_limit, double const X_params[3], double* const X=NULL) const;
 
 };
 
