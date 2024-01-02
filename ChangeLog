@@ -1,13 +1,1748 @@
-commit 63653d748143f6a10aee1eb2544009283314e9e9
-Merge: f06bba3 0799cee
-Author: naimar-pro <nicolas.aimar@obspm.fr>
-Date:   Mon Oct 2 16:35:29 2023 +0200
-
-    Releasing Polarised version of Gyoto 1.5.0
-
 commit unknown
+Author:naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue, 02 Jan 2024 12:14:45 +0100
+
+    Release GYOTO 2.0.0
+
+commit a38226d53fc5a98318c7150e2a2b3511f09d97dc
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Dec 13 20:03:48 2023 +0100
+
+    Adding an N-dimensional linear interpolation function
+
+commit 1bd8594917d99993a4948162ef7684cd58441102
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Nov 29 16:32:45 2023 +0100
+
+    Optimization update photon transmission
+
+commit 771dbaca5ccb9d836b9562a1a29de85437a371df
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Nov 29 14:22:25 2023 +0100
+
+    Patch FreeStar to pass make check
+
+commit 41a76a925a3eaca6ea052f6a246d875d1cfae130
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Nov 17 12:07:49 2023 +0100
+
+    Update the polar exemple notebook
+
+commit f68ab972b0a9bb0d4daa94420d89244b299bb258
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Nov 14 16:26:06 2023 +0100
+
+    Add a jupyter notebook as an exemple for the Polarization
+
+commit 2a51c49c48c0b504a39d0561c03a7bef78cbd63a
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Oct 20 17:18:21 2023 +0200
+
+    comment printing stuff
+
+commit 111084fa0ca4249680149da1658b19183995fbe9
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Oct 2 17:16:22 2023 +0200
+
+    Releasing Polarised version of Gyoto
+
+commit f06bba3aeb00f764a6b82dff255b9c96ffb1a6be
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Oct 2 16:08:13 2023 +0200
+
+    Computation of 4-vector magnetic field in Astrobj::Generic to avoid multiple implementation and cleanning
+
+commit e48b108a02dd1567f462e2d2a187a9df61bf493e
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Sat Sep 2 01:36:24 2023 +0200
+
+    Cleaning stuff for merging with master
+    + resolving conflicts
+
+commit 8d9150ef08fe43103e21ab0b9c50e91ff5b67b13
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Aug 28 10:43:51 2023 +0200
+
+    Blob: update to allow Minkowski metric while still checking that spin=0 for Kerr
+
+commit f84f89d28460f0dedcdff8108cdaf17b467774ce
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Aug 28 10:00:58 2023 +0200
+
+    Blob: add power-law distribution and start implementing ipole formalism in case needed for checks
+
+commit ac12a26d5cc83821b480f49ef3393f544959fdfe
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Aug 28 09:50:38 2023 +0200
+
+    ThickDisk: check that spin is zero when IPOLE formalism used.
+
+commit 6a1f836bb1180fe5abf91ec81e382adc5003c184
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Aug 25 06:56:07 2023 +0200
+
+    ThickDisk: adding magnetic field config for radial 4-velocity
+
+commit e159c6ef4662a90dc05f24d5b6462cb949d1da2f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jul 20 12:08:04 2023 +0200
+
+    ThickDisk: magnetic field config coded whatever spin for circular velocity
+
+commit 68e7ec46eb9b83801763df0f0c0588fb3b03423c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jul 19 16:15:47 2023 +0200
+
+    ThickDisk: adding all 3 magnetic field config as in Blob
+
+commit 27f4645607799a0bdd94bb7b339cab36daf4a0e3
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jul 5 17:45:38 2023 -0400
+
+    Blob: electronDistribution keyword and B definition
+          - add electronDistribution_ property to be able to easily switch
+          - remove the exponential modulation of the B field in polarized radiativeQ, given that B is defined from density, which is already modulated.
+
+commit c62628a7c00a33904606c48736e99436620d90af
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Sat Jul 1 14:39:51 2023 -0400
+
+    Astrobj/Screen: correct by in Etheta definition.
+    
+    Astrobj: remove multiplication by -1 of Stokes U params, the need was coming from the bug below.
+    Screen: multiply by -1 the definiton of Etheta in getRayTriad, previous implementation was wrong.
+
+commit e2df962cd725da918a82c6586514e254689f35f8
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Sat Jul 1 14:38:31 2023 -0400
+
+    ThickDisk: update a comment on USE_IPOLE_FORMALISM variable
+
+commit 91be34264e3c8a615707dede541297db74a3b6bc
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Sat Jul 1 14:36:37 2023 -0400
+
+    ThermalSynchrotron: replacing useVos parameter by USE_IPOLE_FORMALISM global variable
+
+commit 8a93f502d1057aa9dcef9ee1bbc3fb137944385c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Jun 27 15:01:32 2023 +0200
+
+    Blob: reimplement non-polarized Blob time modulation that was removed by mistake.
+
+commit 747677a45719b60ab564b039d7f54b18cd1a46be
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jun 16 17:09:55 2023 +0200
+
+    Blob: adding proper magnetic field and removing Vos formalism.
+
+commit 2e1caaa948e814d8ac7e3d4e53817296bca19eb9
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Jun 9 14:20:10 2023 +0200
+
+    Config pour tester l abscence des coefficients de rotation et Stokes V
+
+commit 3b2c806f11847b418800f0966c4c6aa9c1c5dbc2
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jun 2 15:16:10 2023 +0200
+
+    ThickDisk: global variable USE_IPOLE_FORMALISM to switch properly between ipole and Vincent+22 formalisms
+
+commit f9dd8e8ffa14892cb687d0003bbc8b351439e033
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jun 2 15:10:30 2023 +0200
+
+    Astrobj.C: in polarized processHitQuantities, properly define transmission
+
+commit 54ec22ee84faed9e56060f0a9f81b2d7d08d89f9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri May 5 13:58:20 2023 +0200
+
+    ThickDisk: correct typo in g_det, remove floor on number_density
+
+commit f7c5406d084e99abf61dcb499bc1cf504bd9f17b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri May 5 13:55:23 2023 +0200
+
+    Astrobj modifs on Stokes U, Pmatrix, Omatrix
+            -Stokes U: multiply by -1 all coefs to comply with IAU convention
+            -Omatrix: correct typo in Lambda1, Lambda2
+            -add Pmatrix following Moscibrodzka+19 ipole paper, not used, to debug
+
+commit 321f480d86ba155dfcd715dfab19fbee1ab1837c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu May 4 07:48:55 2023 +0200
+
+    ThermalSynchrotron: using Gyoto constants rather than ipole constants
+                        For electron mass, charge, and c
+
+commit 2a977551dd62a45f939276c0ea7d276f7295dd44
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Apr 7 08:28:40 2023 +0200
+
+    Blob: take care of Gaussian radial extension from Vos+ model
+
+commit 64db65289e61309e8d0ae5f5c7499ebaa4bc766b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 5 19:01:40 2023 +0200
+
+    Blob: using the same setup as in ThickDisk for comparison to Vos+
+
+commit 71903cc106db3b2bfdc1cd7e5a230aa9d01caf92
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 5 18:59:37 2023 +0200
+
+    Astrobj: EVPA in -90,90
+
+commit 014487ff3db8058b2832940d75f7c75643c1ed90
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Apr 3 17:03:50 2023 +0200
+
+    Screen::getRayCoord updated to getRayTriad
+                        - getRayCoord takes a bool that checks whether parallel transport is ON or not
+                        - polar basis Ephi and Etheta is dealt with in getRayCoord
+                        - getRayCoord is renamed getRayTriad
+                        - so the 2 previous functions getRayCoord and getRayTriad are now replaced by getRayTriad that takes care of all cases
+                        - few updates in yorick and python plugins to take care of this change.
+
+commit 0799260b0d1a7e32b2d3f4bff92e097803b2681d
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Apr 3 13:27:15 2023 +0200
+
+    UNFINISHED correction of computation of polarisation basis at screen. Change the prototype of function GetRayTriad(). Segmentation error for unpolarised case
+
+commit 0799ceecbcdc167c4bbb68bae07d8e34084ea4a1
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Mar 24 15:45:49 2023 +0100
+
+    ThinDiskProfile: add model parameters
+                     Adding to class the vector model_param containing an
+                     arbitrary number of params used to define the emitted
+                     intensity.
+
+commit b2cde36d7696877e2824686f714eee41ee40bd62
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jan 17 00:04:31 2023 +0100
+
+    Update Makefile
+
+commit 6a172fee0a8e4eae5a2591ceea9d528dd5258c02
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jan 16 23:00:19 2023 +0100
+
+    Add new astrob FreeStar
+
+commit 2d7cecc3553ff62fc183bae89c84a3d52180a472
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jan 16 17:02:37 2023 +0100
+
+    Change name to be more coherent to their function and sanity checks
+
+commit eadaa8c385386bc0a889ac1d9add45c58e5ba8a9
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jan 16 16:59:41 2023 +0100
+
+    add computation of coefficients identical to ipole for tests (with flag)
+
+commit aa3b1828e03b205e3086dc98fdeb94ccfd0a6300
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jan 16 16:58:00 2023 +0100
+
+    Change the polarize RadiaveQ for comparison with Vos+22 (adding flag for tthese tests
+
+commit 4392d340d97c1707c112e1011188ce7b952f243e
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Fri Feb 28 18:40:08 2020 +0100
+Date:   Sun Nov 27 19:07:36 2022 +0100
+
+    Use getfullargspec instead of getargspec
+    
+    getargspec was deprecated since Python 3.0 and removed in Python3.11
+
+commit fbf249429d6e7d8ed6499a3c9f5d6c4a5ab7b0ad
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Nov 27 19:02:19 2022 +0100
+
+    Replace _from by .from in several places in the Python examples and helpers
+    
+    The right form is .from... That _from used to work is a bug.
+
+commit 028802f4d524546b6b440e56ca850efc89c5312d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Nov 26 18:32:40 2022 +0100
+
+    FIx: Converting Unit to Python string was failing on arm64, mipsel and s390x
+
+commit 3933fb1a1c633548ae2fa3e3e92baa1a77d664f6
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Nov 18 17:12:26 2022 +0100
+
+    SphericalAccretion: adding a density slope parameter
+
+commit 7e0f82576aa3878a5979e2339de190de17d591c4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Nov 18 17:10:04 2022 +0100
+
+    ThickDisk: adding test that inner radius is put at the horizon,
+    which is effectively assumed given that the operator() function
+    returns -1.
+
+commit 26477aad0b11f5fc5f1107b29b90612d6b1124e6
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Nov 9 18:30:58 2022 +0100
+
+    Photon::hit: Fix segfault when data is NULL
+
+commit b59a1708bbd826859d7f6e87cec65fb704d0fc22
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Nov 9 10:46:13 2022 +0100
+
+    SphericalAccretion: decrease tolerance norm of 4-velocity
+
+commit 25e1dc5a86397323959bb61ce6c37c6bd02d6415
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Sep 27 16:49:46 2022 +0200
+
+    invert sign of Q and U coefficients to be in the correct convention
+
+commit 7967af2308737924bb0cc80200bb27008e2ee9f0
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Sep 27 15:47:55 2022 +0200
+
+    * Correction in the compuation of the O matrix to follow the correct convention
+    * Changing the prototype of getChi (and getSinCosChi): the four vector provided could be the magnetic filed vector (by default) or the electric field (set the flag elec to true)
+      It still returns the EVPA i.e. Chi
+
+commit d3f1545fa51e36fefc8852e45481939fd1b372db
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Sep 27 15:46:45 2022 +0200
+
+    Use of rotateJs instead of manual computation of Stokes emission coefficients
+
+commit 408e28f10aa1336cc1d3078102a811bb17c6343a
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Sep 27 06:45:45 2022 +0200
+
+    In EquatorialHotspot: add polarized radiativeQ
+
+commit 7719146baddf493c8086b9931247e2c036b0cded
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Sep 27 06:44:58 2022 +0200
+
+    In PageThorne: polarized radiativeQ update
+
+commit b04bec915a21ab6fcebf274c48232894af8d17fd
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Sep 27 06:43:34 2022 +0200
+
+    In Astrobj: rewrite getChi and Xhi->Chi in Astrobj.h
+
+commit d1a3d7449baffa6d2a0f1df2bd6228870de8197e
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 5 16:25:13 2022 +0200
+
+    compute correctly the tetrad (K,Ephi,Etetha) to be orthonormal for the compute of Chi & multiple sanity checks
+
+commit 26cb11acdff41c8004fe7b30d0a235de9959b266
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 5 16:22:00 2022 +0200
+
+    change name of variable Xhi->Chi
+
+commit 15a5bde9e0ff5ba106af0ca86791707a697ed761
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 5 16:20:59 2022 +0200
+
+    change name of variable Xhi->Chi
+
+commit 86ca542a599a5ae980c3ab1679f1b4473b27fe8f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Aug 31 17:41:48 2022 +0200
+
+    Mention MPI in the context of the Python plug-in in the Manual
+
+commit ee38dc77ff37f9fae8bddfd168018eda70dd53ca
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 30 18:05:26 2022 +0200
+
+    Change RadiativeQ(polarised) to serve as exemple
+
+commit ebd0921120da7bfb4fdcff50f9c8633ad8ebd19f
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 30 18:04:31 2022 +0200
+
+    Add comment for documentation for polarised RadiativeQ
+
+commit 751722043b52f654f3548403bce0211d40c788ec
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 30 15:47:01 2022 +0200
+
+    corrections for tests
+
+commit e4d45914cee0690c1849e5eb32ead8c8077f2491
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 30 15:44:27 2022 +0200
+
+    Add sanity check and better error message
+
+commit 963641e1a6ef9f921a9f02f3639d35f375209249
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 30 15:43:17 2022 +0200
+
+    Changing the error message to be more explicit
+
+commit 95e7b2ac97499292114003cddbe5a891fe8d3e2e
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Jul 22 15:33:31 2022 +0200
+
+    implement the polarised RadiativeQ for test
+
+commit 3931796a11549ed7851e980aee24f5256878e201
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 22 10:16:52 2022 +0200
+
+    Fix yprime in Worldline::getCartesian
+
+commit 8cf8e267fca1910444df8f62fc90e6481ed16f32
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Jul 21 14:10:04 2022 +0200
+
+    cleaning and comments
+
+commit 5add30728d9d9159dd51b4dcd905fb743702cc2b
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jul 18 14:21:35 2022 +0200
+
+    helical motion for hot spot
+
+commit afe2aee360f8b340936c9acf3665e721307225e3
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jul 5 15:21:58 2022 +0200
+
+    Update NEWS: contain the add of the Plasmoid & dependences + modification of FlareDiskSynchrotron + corrections in Kappa & PL
+
+commit 1481f0a140a4f66b33a7319f9b94f4147d4225ab
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jun 3 16:37:37 2022 +0200
+
+    fixup
+
+commit 0a7892c9ecb29bf55b19e37d84b5732865af7062
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jun 3 16:36:25 2022 +0200
+
+    fix plugins\python\README.md
+
+commit e1809ba46017e97aa57bf5dc86985e99a5f3d2de
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jun 3 16:34:42 2022 +0200
+
+    readd plugins/python/README.md
+
+commit 289004597171d2c1c11762bde0bcaa4418386f62
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jun 3 16:32:22 2022 +0200
+
+    Improve */python/README.md
+
+commit bcc244f7163962b28025a248bdeeaf4dffbc4f6e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jun 1 10:23:48 2022 +0200
+
+    add python/README.md
+
+commit abcd541f2ef46305501409fcefdcfff3a2ef65ac
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue May 31 11:33:58 2022 +0200
+
+    Update plugins/python/README
+
+commit 29ce8fa8e87ce08417a023700e8878c7e0fa43c4
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed May 11 14:30:36 2022 +0200
+
+    Fix deprecation and other warnings in Python plug-in
+
+commit e2a8e7e0eb74d7be2c47d2923dc2f1ad93523e77
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed May 11 14:09:27 2022 +0200
+
+    Fully support ad-hoc properties of type "spectrum" in Python plug-in
+
+commit bcf47eca895206f358bd38c741c3e846b21f8395
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue May 10 23:23:12 2022 +0200
+
+    Python plug-in start supporting spectrum properties (not from XML yet)
+
+commit 8bf307a2325a2601206c2a31c5cbb3c41d7d562e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue May 10 11:40:10 2022 +0200
+
+    Support vector_double properties in Python plug-in
+
+commit 3ef64888b0f965e0898219eb92e73ad284aede1f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue May 10 10:33:40 2022 +0200
+
+    Document depencency of AngMomRinner on Spin in Polishdoughnut example
+
+commit 8be7b59bec59524ae112fcd99d2e54c47beb25a6
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri May 6 10:20:47 2022 +0200
+
+    Python plug-in: support ad-hoc properties in all classes
+
+commit 70fdd3877e712c82275343bb7db3a246a6d55be2
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri May 6 10:19:50 2022 +0200
+
+    Provide kind() accessors in Object
+    
+    setter is protected
+
+commit 22bc45bb999038d426480e2a36f6fe400bcdfc5e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri May 6 08:20:46 2022 +0200
+
+    Python plug-in: move Object API implementation from Meric to template
+    
+    So it will be reusable in the other classes.
+
+commit 10b4e359c4eccb2b6082b729475503532958ed94
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu May 5 20:15:25 2022 +0200
+
+    Support ad hoc properties in Python plug-in
+
+commit cbed6fd8e852b6ab01c3453b1d70696ca8a2e8fa
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu May 5 19:20:09 2022 +0200
+
+    Make Object::get and Object::set virtual
+    
+    In order to override them in Python plug-in
+
+commit bb1818751d5256031f19c7b7fb87cc0c551db617
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon May 2 17:50:40 2022 +0200
+
+    Fix Python build system
+    
+    make check: skip setup.py to call tests, run them from built tree
+    
+    make clean: prepare in make all so they are not created by root in make install and can be deleted by user in make clean.
+
+commit ec48528e18c48882508a30cc93f498b4b5df48c0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 18:33:36 2022 +0200
+
+    Implement Gyoto::Metric::Python::circularVelocity
+
+commit 73e2cf04af65a72b9889af26c891f75d8a6458fa
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 17:19:50 2022 +0200
+
+    Implement Gyoto::Python::Metric::isStopCondition
+
+commit 93d6c9f053c2bc7adb2aa5afb8d7917197323df2
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 16:16:00 2022 +0200
+
+    Don't use boost and std namespaces in the same translation unit
+    
+    Don't do this:
+    using namespace std
+    using namespace boost::math
+    
+    This causes ambiguous statements when new Boost functions make it into std.
+
+commit 1e27f5b365456b1fa13deb59ceecf5daeeba777b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 16:01:15 2022 +0200
+
+    Improve error message handling in Python plug-in
+
+commit add2f058ffa36f00fd7fff5680802c751359ce31
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 13:08:21 2022 +0200
+
+    Improve error message handling in Gyoto::Python::Metric
+
+commit 559de7171a8e187988a55c8821a188bedcf4d311
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Apr 29 11:40:32 2022 +0200
+
+    Debug and complement the Python KerrBL implementation
+
+commit 0ea007dc98227d7ba355f13544f0fb917cb2a7e6
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Apr 28 22:44:42 2022 +0200
+
+    Add Metric::Python::getRms, getRmb, pGetSpecificAngularMomentum
+
+commit 0945db4ea8aabeb51dbfb7b5ea8e9f050e76cf47
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Apr 28 17:06:09 2022 +0200
+
+    Implement Python:Metric:getPotential()
+
+commit f739ba902a1ab3946b67f422778661010e30442e
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jan 31 16:12:08 2022 +0100
+
+    ThickDisk: adding slopes for density and temperature profiles
+
+commit 29db4705154e72c3f7de4254b94f10c1566538c3
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jan 31 16:10:26 2022 +0100
+
+    ThinDiskProfile: adding a flag for switching circular motion / radial fall
+
+commit b0088229ee6f8d8c9f505a4eacb4f3d64696706c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jan 31 14:42:49 2022 +0100
+
+    SphericalAccretion: flag for self absorption
+                        UseSelfAbsorption allows to switch on and off absorption
+                        Expose the astrobj in python
+
+commit 61bf9895519f1e96c71e4126cc56767be19cfbce
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Oct 27 17:13:06 2021 +0200
+
+    Correction error in calcul of tl & tu and adding security check on ratio in the interpolation
+
+commit e1157d168d7f1ae2b1f3ab40a235d2128ab4e25c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Oct 16 12:43:42 2021 +0200
+
+    StarTrace: always initialise tmin_ and tmax_ to finite value (0.)
+
+commit 64ff9c800833c188ce0e3af8be1ee0af9b5cf6fd
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 15 19:04:03 2021 +0200
+
+    Support swig4.0 in configure
+
+commit 6cb39e0e7b881efe593c3da30addff3722bad4a1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 15 19:00:57 2021 +0200
+
+    Fix year in gyoto.C
+
+commit d5b9cfbe80c1e52a4db358c645da1c177d74c507
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 15 18:52:03 2021 +0200
+
+    Support GCC 11
+    
+    GCC 11 implements C++17, which introduced std::data, breaking some
+    code that uses `data' as a variable name together with "using namespace
+    std".
+
+commit 9e07b64b2f5b46b14f46428668987670d0667a9c
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Oct 12 14:57:05 2021 +0200
+
+    update for the test of polarisation
+
+commit c60c3c387a61558f8b31ab81274eb88a6630ccfb
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Oct 12 14:56:27 2021 +0200
+
+    Use of the reset functions at beginning of hit
+
+commit 7b63a435d4b1cd4e53f781832d3e72695af20922
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Oct 12 14:54:00 2021 +0200
+
+    correction calcul of Xhi
+
+commit bcd14d8aef71ac9a92a258b604701d4cb78e7dfc
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 27 15:05:08 2021 +0200
+
+    small corrections in formula
+
+commit 3a95dc1d81505ad1ee6eb7b6a8366ce256e28254
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Sep 22 16:35:39 2021 +0200
+
+    testing PTdisk for polarisation (not complete)
+
+commit b30339da1275821ea2d1e4f76a1b5be2ec56082b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Sep 21 15:45:06 2021 +0200
+
+    Adapt for autoreconf 2.70
+    
+    Thus fix bug:
+    https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=978831
+
+commit 201a18c48b142a984394f7a495e54bc17a698e31
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Sep 21 14:37:49 2021 +0200
+
+    python/tests: share a TODO list
+
+commit be149c6435cea280be0a363fada94ca4f4659e2b
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 13 11:44:04 2021 +0200
+
+    changes for testing polarisation
+
+commit 88205443a7b0af5914ed9fe3151a170c2c3d4e64
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 13 11:43:12 2021 +0200
+
+    minnor correction
+
+commit 2ece55a32649d69c149a4265ee5fe4f4bb677cae
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Sep 13 11:42:13 2021 +0200
+
+    use the correct bessel function for fixing an issue + update comments
+
+commit f3c1decd1df7dec86267fe9633871bbc1c031d19
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 10 15:58:51 2021 +0200
+
+    Quick Tests
+
+commit 886c8be39d12a022cd8cb9617f7efe083677ccd1
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 10 15:58:01 2021 +0200
+
+    rename function from transfert to transfer and update the getTransmissionMax() to account for the polarisation
+
+commit 41770fd41ff7a25ce38e2cf98f322538e1194183
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 10 15:54:05 2021 +0200
+
+    Add 2 new prototypes for Omatrix
+    Add a new function that return sin2Xhi and cos2Xhi
+    rename of transfer function
+    Add security to the computation of Omatrix to avoid nan/inf
+    Add the function rotateJs
+
+commit f4325684283fd1db8ea268000b86c8ef33c2f7c8
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 10 15:52:17 2021 +0200
+
+    Add 2 new prototype for Omatrix and one new for the compute of Xhi
+
+commit c95b8a698b344942dcb31d0760877e259cb90d06
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Sep 9 10:32:17 2021 +0200
+
+    use of rotaeJs in polar radiativeQ of Blob
+
+commit 5a0b43f609802722e62d7cbbf9ad3b5e5ee72742
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Sep 9 10:31:13 2021 +0200
+
+    Add function rotateJs in Astrobj::Generic
+
+commit 04fb21a909f33d1bb9fa738e74ec6ea113994595
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Sep 8 11:32:04 2021 +0200
+
+    update the installing instructions with the Eigen3 library
+
+commit 571e83897845ce52904f09e011fdb57f17fadacb
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Sat Sep 4 01:31:48 2021 +0200
+
+    add comment
+
+commit 97d9ead6c45653830301540fd99ba6d6a6b25d85
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Sat Sep 4 01:31:00 2021 +0200
+
+    change prototype of radiativeQ
+
+commit d5a0782f1553940f4ce0fbb192c981707d9cfccc
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 3 13:27:18 2021 +0200
+
+    complete transmit and transfert functions
+
+commit 14369158235cb2e0357522240f8cca13f5b61e82
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 3 11:31:56 2021 +0200
+
+    Changes prototypes of polar radiativeQ which return the O matrix instead of coefficients
+    Adapt the rest of the code with these changes
+
+commit f462150a3d57066cfe13964d5a5b35f3a047cb4f
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 3 11:29:36 2021 +0200
+
+    Add temporary implementation of polar radiativeQ with arbitrary magnetic field config
+
+commit 9ccdee0cc8ba496139ff23fd574072718251b330
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Sep 3 11:28:22 2021 +0200
+
+    remove temporary implementation of polar radiativeQ, not adapted for Plasmoid Object
+
+commit 7169787f1708e142454443b04c5e9b85db4e11db
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Sep 1 16:36:56 2021 +0200
+
+    Adding the eigen library in the compilation
+
+commit 0e669f29b650672e9dec2ffcf63d4e466335fe2b
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Sep 1 16:35:25 2021 +0200
+
+    update Photon and Astrobj with Eigen library; use of Matrix4d type instead of 4x4 arrays
+
+commit 4c6b5171557fa28e66d9a2d2ae60df4e43e40b5a
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 31 16:19:43 2021 +0200
+
+    Adding the transmissionMatrix Table and transmissionMatrix_freqobs and all the allocate/reset/get functions
+
+commit 5da7e6ad013ef0e8ae9f1a8f14ba835a69356333
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 31 16:11:31 2021 +0200
+
+    Changes for Polarisation:
+    -Prototype of polarised version of RadiativeQ change to also return Xhi
+    -Prototype of transfert delete the arguments Inu, Qnu, Unu, and Vnu (to avoid to compute them twice with RadiativeQ)
+    This function ONLY update the transmisssion Matrix
+    -in ProcessHItQuantities : update the call of previous functions
+    -Omatrix and getXhi are now public to be used by Photon.C
+
+commit 924124b3a1bf41f8177f5ef60d09a3f2bb1893b7
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Aug 26 16:36:39 2021 +0200
+
+    Delete the temporary definion of the Omatrix, moved to Astrobj::Generic
+
+commit f8ab21384fa3be5feaa4c206dbf992a483ca6921
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Aug 26 16:34:45 2021 +0200
+
+    Adding to Generic the computation of the Omatrix and the Xhi angle for polarization
+
+commit 520b8ec186a8f8797973b8ca970674b8145c0f15
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Aug 26 16:31:44 2021 +0200
+
+    In the 3 SynchroSpectrum, adding the Polarized RadiativeQ and the functions to compute all the Stokes coefficients
+
+commit 7793aa053b4f25df34a8d1a95b1fa905cd28bbf3
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Aug 26 15:31:37 2021 +0200
+
+    Photon: big update of image order tracking
+            Take care of image order tracking along two lines,
+            (i) either the already implemented tracking of theta turning points
+            (ii) or the Kerr-specific Mino time computation (rather involved in
+            terms of formalism)
+            Both methods agree, but are tested only at low inclination so far.
+
+commit 2b3409fd6380be1666db2a1ef47eb13f1bcee0b5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Aug 26 15:29:01 2021 +0200
+
+    ThickDisk: taking care of very low density
+               Rather than using a special treatment only when density=0,
+               use it for density=max/1e10
+
+commit 9da85e5fd46786b7583316ddcdf8e45d03113760
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Aug 26 15:21:31 2021 +0200
+
+    ThinDisk: adding a flag to store impact coords
+              user1, user2, user3 were used for all ThinDisks
+              but I need these quantities for image order tracking.
+              All these quantities should be renamed anyway if kept.
+
+commit c7954b558ef47a722c3c0b0a335dd73b5e7a5b99
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Aug 19 16:21:13 2021 +0200
+
+    add the kind of object in constructor for a proper copy in XML
+
+commit c6a6881d9578d13a7f71d5b027c6399d8f0f580e
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Aug 19 16:19:54 2021 +0200
+
+    Corrections for MPI : overload of FillElement() to account the directory and not the filename, add the kind of the object for a proper copy in child XML and better initialisation of direname_
+
+commit d86d25a8ed6f0d8ca4ec73f32ebe0f89c52fb162
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 17 17:56:32 2021 +0200
+
+    Correction of conversion approximation of the distance in fillProperty. Now use the Units::FromMeter
+
+commit 7274beaa8f51c8af61b2fec65e3213d3f8f73c1b
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Aug 17 10:27:50 2021 +0200
+
+    Correction "get" polytrpicIndex: return the correct value + freeing memory Bvector in destructor
+
+commit 1bee404f897fcab0c1029f4b4249ffacbd8324b6
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Aug 2 11:43:56 2021 +0200
+
+    Correction compilation error : there is no function dt in GridData2D, the dt in computated in tmin tmax and nt
+
+commit a14def517e649dc612b167c3eae40e7199498772
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Jul 19 15:12:20 2021 +0200
+
+    New class ThinDiskGridIntensity
+        First commit of a class meant to manage equatorial disks
+        in Kerr with an intensity profile specified in a 2D grid,
+        managed through GridData2D
+
+commit 95c7465cb2d3a5ecc5bf87c4dccd81cbad54c572
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Jul 8 20:31:43 2021 +0200
+
+    time_array is now an optional argument or retrocompatibility. By default, the time step is constant
+
+commit 13e0bec0dcb2996a6856e7ffc5ac9f7873ec8928
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jun 28 15:44:59 2021 +0200
+
+    Plasmoid V1.1.1 : correction of impact function which was not using the correct injection time
+
+commit 1c8e98acb485e09fc2e3f5da95307b75134f848c
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Jun 28 11:06:27 2021 +0200
+
+    Plasmoid Version 1.2 : jnu and anu computed thanks to PIC sim during both heating and cooling phases
+
+commit 23d7fce3fd5ceea5f97648967546909236053237
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Jun 18 15:46:29 2021 +0200
+
+    Correction of the step factor in the integration over theta of jnu and anu
+
+commit a91806819ec0a13a8f1dc5407fc8b73e061f40a7
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jun 15 15:15:27 2021 +0200
+
+    Plasmoid V1.1: t_inj is now a free paramater
+
+commit 0ac8ad72fe91b183b4f14f7ace7f669cce50dd4f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Jun 11 07:53:21 2021 +0200
+
+    Photon.C: update again higher-order image tracking
+              - image order changes when an equatorial plane crossing is followed by a theta turning point (allows to get rid of coordinte-related turning points)
+              - keep track of the various image orders in user1, user2, user3
+
+commit d8bc8e62b6060727fdae302d9d7086b729368c61
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Jun 4 15:39:08 2021 +0200
+
+    Remove the correction of 4pi in Plasmoid object. The correction is apply in the data before GYOTO
+
+commit 65a12f73bb1920f1f869b66351daa7bd747e1d58
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jun 3 18:33:14 2021 +0200
+
+    Adding Metric SchwarzschildHarmonic
+           Schwarzschild metric in harmonic coordinates
+
+commit 138554ba7f3508be85ffd6a80760224cde144d08
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Jun 2 15:36:57 2021 +0200
+
+    Correction to pass all test of make check (pb with betaAtMax)
+
+commit 7e0f86d1023c2d14628dfb2b71a4e4077c0eff6b
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 16:18:23 2021 +0200
+
+    Delete unused variable
+
+commit 2f3c7694be5c6a4e6b01939b26748dad2739ec3d
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 15:54:45 2021 +0200
+
+    Update Notes about the need of hypergeometric function (not only Jet)
+
+commit 882cc9343d40b962a5e52d971728c9c3f0885997
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 14:44:50 2021 +0200
+
+    Spectrum PowerLaw gamma_min and gamma_max are now private variables which could be changed
+
+commit 739c77c73ab84293945e5baf116b9d480b81c86c
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 13:09:25 2021 +0200
+
+    correction calculation of B from 8pi->4pi
+
+commit 18930399da8547f5f0ab824b46e6c867ffa1cc76
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 13:07:59 2021 +0200
+
+    restore of Makefile.in
+
+commit 15b08d0b536bc63d91f59e3ab734e8592bb29aef
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 11:28:36 2021 +0200
+
+    Add correction *4pi for jnu and anu from PIC data
+
+commit 243f607a832cf9170d907d55fc545fb196bee1e9
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed May 12 11:19:02 2021 +0200
+
+    [Complete feature] FlaredDiskSynchrotron, magnetic field could be read and angle_B_perm_ could be computed (not only averaged)
+
+commit 7488c28330f6c3d9f8498d6fa34ba4fb98d10be2
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue May 4 19:48:36 2021 +0200
+
+    model kappa-Psaltis complete
+
+commit 26d3057eaf4d096fd80b106f35adcaf4be7f5c30
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue May 4 17:11:53 2021 +0200
+
+    Correct integration over theta
+
+commit 7ee3bd815aaa59bdd45c5d1d54f7d89b13ffc813
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue May 4 17:10:48 2021 +0200
+
+    adding function writeParams and security on freq_array
+
+commit fa61ca380d4f0eb01eefa075fdfa19676ed51cc4
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue May 4 17:08:57 2021 +0200
+
+    Update python Interface; Complete PIC/Plasmoid model
+
+commit 602f3808483d7a364a51581d61d4bd900a052953
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon May 3 17:34:37 2021 +0200
+
+    PowerLaw- and KappaSynchrotron: fixed bug in averaging jnu and anu
+              Param jnusinprev was not updated
+
+commit d48e5349a331aa67827281961d0419e1602fe446
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Apr 30 08:29:17 2021 +0200
+
+    Photon.C: update higher-order image tracking
+              - implement theta turning points counting
+              - remove condition on leaving object (not adapted to ThickDisk and object dependent)
+              - remove rlim
+              - current implementation depends only on geometry
+
+commit e1ae1d41439af037d17115c34d3e5b6b641ce4ca
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 28 17:42:01 2021 +0200
+
+    ThickDisk: adding accessors
+               - thickDiskZGaussianSigma for the Gaussian modulation in z
+               - veloParam for the alpha and beta parameters used to define the mixed circular-radial 4-velocity
+               - useSelfAbsorption to switch on or off the absorption
+
+commit e626f51782ed5b173cd201be2dd731c7a45cde4a
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Apr 28 17:22:29 2021 +0200
+
+    updated Makefile.in
+
+commit f1067b314bd47e216507cebac7bec8fc48f313b5
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Apr 28 17:19:44 2021 +0200
+
+    Correct a segmentation fault ! ! !
+
+commit 503b0fc6d6a42b18e7943d19b16845a80abaf7b7
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Apr 28 17:17:50 2021 +0200
+
+    change from string to char* for moving to HUD name
+
+commit 04e28a637683ab5bb8f3777d4f083cb1b814ef0a
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Apr 28 17:13:35 2021 +0200
+
+    updates comments
+
+commit febb607b6ed849e4cd3c11082e05c3d45f6293b8
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Apr 28 17:12:35 2021 +0200
+
+    removing the functions TimeStep which was causing crashes
+
+commit cb3b5ec7375f58e9e1971da2fb053eadea342866
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Apr 23 17:33:59 2021 +0200
+
+    adding new Object FitsRW
+
+commit 9cfeafe03d328742411ef55f793a6dc56babb131
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Apr 23 17:32:50 2021 +0200
+
+    change the treament of the cooling : jnu and anu are now read from fits files (results of PIC simulations
+
+commit 31e66773a17a7b8307a448c45b3626c04cee9469
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Apr 23 17:30:58 2021 +0200
+
+    adding new object FitsRW used by Pasmoid to read jnu and anu from fits file for cooloing
+
+commit 1273a716a8e8a6f76a53e3b6b142080676d63bc9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 21 07:56:34 2021 +0200
+
+    ThickDisk: big update
+               - matter is everywhere
+               - adding vertical Gaussian dependence of density
+               - velocity is a combination of circular and radial profiles
+
+commit 797f1edcb366caef4fba071f9f07fe52d8a2abda
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Apr 15 13:51:45 2021 +0200
+
+    Expose ThinDiskProfile in python
+
+commit 2cf1912ad41da3a7b414e41e4758bc5643dd3ee6
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Apr 15 13:50:30 2021 +0200
+
+    ThinDiskProfile: properly deal with the necessity to be in KerrBL
+
+commit 14a2c8a6ca7afce2846f57bc3f6691509a353acb
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Apr 15 13:49:18 2021 +0200
+
+    Worldline: add possibility to cout the conserved angular momentum
+
+commit 247bcc3ead55dadfdd6d9c646b2c86cdace1e10d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Apr 15 13:47:44 2021 +0200
+
+    SphericalAccretion: comments and checks
+
+commit 0ab565f266a66a5cfc7c3632206c8dd581741cf4
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Mar 31 11:48:52 2021 +0200
+
+    mise a jour GridData2D 31/03/2021 : correction bug prototype de fonction
+
+commit dbd834552784f031e83179c12000ffda576ff2a3
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Mar 24 16:51:48 2021 +0100
+
+    change spectrum 2PL (not working)
+
+commit 92e0c6fd204a73e8f269de5cba0cb203a64e7625
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Mar 24 16:49:50 2021 +0100
+
+    Ajout lecture/ecriture B4Vector Time_array
+
+commit 639579c4789fd03ca71dda5e151de3df15c5446d
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Mar 24 16:48:25 2021 +0100
+
+    ajout gestion pas de temps non constant
+
+commit 4c9d5daab757c526668baa26e8a420bdfb2f4cb4
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Mar 15 16:45:10 2021 +0100
+
+    Change the distribution into two PowerLaw
+
+commit da5b07150bcdfe0626eb1ed1a2edf5fd5ce13096
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Mar 15 11:17:17 2021 +0100
+
+    Pushing configure to solve autotools-related bug
+
+commit 9d6fe2b3929dc259943d344851a77875ad684110
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Feb 23 14:11:52 2021 +0100
+
+    correction for selection Varying/Constant radius
+
+commit a3e61e45e23217d282823be9944634b3997885da
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Feb 23 10:27:53 2021 +0100
+
+    adding variable and functions to selecte if the radius is constant or varying
+
+commit 2fae5c09c677a3ab4aae69994510cfa22cc1495b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 11 09:44:54 2021 +0100
+
+    ThickDisk: update getVelocity profile
+
+commit 6a0ed236fd2ea835884b20bb39ce03f9d2e39bd4
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Feb 5 10:38:05 2021 +0100
+
+    model with time varying Radius
+
+commit 3b514a07a5d84467ec4c66d9babf035b9356f80d
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Feb 5 10:35:44 2021 +0100
+
+    Correction errors for multithreading, model with constant Radius
+
+commit 820745281edd6a020792c15869aedbbc47ee1fb7
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 3 14:58:00 2021 +0100
+
+    New Astrobj: SphericalAccretion
+
+commit 080b0f165c047973dd82d776d13756b3375b6eb6
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Feb 2 15:18:36 2021 +0100
+
+    ThinDiskProfile typo correction
+
+commit cdc7837c6d5c62f8073ea2bbfd2e317bc16b7909
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Feb 2 15:15:57 2021 +0100
+
+    ThinDiskProfile: comment in formula
+
+commit 2f04bc6a84014a8831301d1a552c10e783433326
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Feb 2 13:55:06 2021 +0100
+
+    ThickDisk: change velocity prescription below ISCO
+
+commit a0e6e61010bafc562513ef8423b70ae319d2b947
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Jan 27 10:43:34 2021 +0100
+
+    Radius of Plasmoid now increase linearly until radiusMax_ during the injection phase
+
+commit 38a1446c9af771f730e73faa8fa9a34157ec6729
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Jan 13 17:19:37 2021 +0100
+
+    restore previous jnuCGS & alphanuCGS and add two new fonction returning the 4 Stokes coefficients for emission & absorption. Moreover, create an overloading of RadiativeQ to compute the 4 Stokes coefficients
+
+commit 28700e3dd3b0d560c7976dbddf084b6dcf27aa49
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Jan 13 11:48:02 2021 +0100
+
+    Adding the computaton of the polarization throught Stokes values placed in arguments of jnuCGS and alphanuCGS
+
+commit 3c75bf753c84d158233d017af0938b407cfcc005
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Jan 13 11:45:48 2021 +0100
+
+    correction of the name of a variable for Stokes values
+
+commit 810178c1b611c83462277c11ea1ce502785925d0
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jan 12 15:30:55 2021 +0100
+
+    Adding the possibility to ask the QUV stokes parameters for jnu
+
+commit f13a01a074c317ee648e51cda6179ee739388470
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jan 12 15:28:54 2021 +0100
+
+    Adding a linear increase of the temperature during heating phase
+
+commit a989692dd418b3e6f687379a151c1b9c2b8cda4f
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Dec 9 14:56:49 2020 +0100
+
+    t_inj=L/v_A istead of L/v_rec & rename posIni_ + fourveldt_
+
+commit c0ac154e8086a53d819fb91a87b50d507059f232
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Dec 9 12:04:11 2020 +0100
+
+    Mark Metric::Complex as WIP
+
+commit 8d63f98b69fd3b9398e7c55f4e46f703fcbf0f76
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Dec 9 11:35:47 2020 +0100
+
+    fixup: Run autoreconf
+
+commit a189fe797016e882060c486971879d410927f2e9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Dec 9 07:46:01 2020 +0100
+
+    ThinDiskProfile: commenting fudge factor for later use
+
+commit fd758413c510a2c126d7528cf5f236f19d46e80f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 8 20:24:08 2020 +0100
+
+    ThickDisk: allow only Cunningham75 4-velocity below ISCO
+
+commit 3eeeb1048245e6d6e7cd3d97b13e9d824e0fc8b9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 8 15:28:22 2020 +0100
+
+    NumericalMetricLorene: big code cleaning, removing outdated functions
+
+commit 35bcbe84b84aabbeee61942d5b1d9b011b5093eb
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Dec 4 19:14:02 2020 +0100
+
+    ThinDiskProfile: Cunningham75 profile below ISCO
+
+commit 42eaaafbb6fdd9bbdc53ef44506a0e8a9ff838ab
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Dec 2 14:58:26 2020 +0100
+
+    comment cout
+
+commit faeb6590394676f1529cad25ef40a5fd9225932d
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Wed Dec 2 14:49:40 2020 +0100
+
+    model Plasmoid thermal (Psaltis) finished
+
+commit 46da544b95eb9889f0c425851d3d70d1e1af8888
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Nov 30 10:07:52 2020 +0100
+
+    New Astrobj ThinDiskProfile
+        Useful to implement some particular equatorial disk emission profile, typically for comparison with other models.
+
+commit 2b8e88280032179636d8dc118f795b7f81c74ec5
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Nov 27 11:14:56 2020 +0100
+
+    correctif 27/11
+
+commit 6f7771f772d7f2b5f29ebaf059a05283b3dc2635
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Nov 26 10:21:15 2020 +0100
+
+    search of pb v>c
+
+commit 2a6d59d71d4079e2eb73c2a92feef7e9b8dfba54
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Nov 20 09:47:43 2020 +0100
+
+    patch getCartesian getVelocity for Plasmoid
+
+commit 2f7b56adc72f5240f338bdb8203f8caa76fdf87f
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Thu Nov 19 15:05:21 2020 +0100
+
+    Change inherit from Star to UniformSphere for Plasmoid and allow Helicoidal motion
+
+commit 76e62c87d390980d7d035f50d9f43790f2bd9cb9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 17 11:56:00 2020 +0100
+
+    NumericalMetricLorene: special treatment for axisym circular spacetimes
+    
+                           3+1 integration is handled in an optimized way
+                           for axisym circular spacetimes, if the flag
+                           axisymCirc_ is True.
+
+commit 52bc19cd940ad58504805e7dea2ef0e23c1e4eeb
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 17 10:47:00 2020 +0100
+
+    NumericalMetricLorene: implementing the general 3+1 geodesic equation
+    
+                           The previous assumptions on axisymmetry and
+                           spacetime circularity are removed.
+
+commit e1e76aea4c81e99415ba0cd114c95b1b102aa57b
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 17 10:45:52 2020 +0100
+
+    THermalSynchroSpec: typo in a comment
+
+commit f7b870a648e9830f52e9779e206ded1cdd7c2ae9
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Nov 10 16:04:11 2020 +0100
+
+    correctif Plasmoid synch thermique
+
+commit a81d46308f502730a3c0191386058a771727d094
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Nov 10 07:32:25 2020 +0100
+
+    ThickDisk: add interpolation of velocity between ISCO and horizon
+
+commit 6903c576b521ce07d5ce3cfd11283a0158243dbd
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Fri Nov 6 10:08:44 2020 +0100
+
+    Plasmoid Psaltis model
+
+commit e573c40ae1132989b8f52d3f5f54d5752395f617
+Author: naimar <nicolas.aimar@obspm.fr>
+Date:   Mon Nov 2 14:57:52 2020 +0100
+
+    Plasmoid identique a Psaltis
+
+commit a1edc607f9716ae890bfb33dfe6e75dfc570f63d
+Author: naimar <nicolas.aimar@obspm.fr>
+Date:   Fri Oct 23 17:09:19 2020 +0200
+
+    Adding new AstrObj Plasmoid and update KappaDistribution
+
+commit 7be125a2b0bcc76deb6bf11c6084e22a740d5794
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 15 18:16:29 2020 +0200
+
+    3+1 Integration update
+    
+        Update Worldline and WorldlineIntegState to support the 3+1 integration
+        through boost by adding the integ31 flag.
+        Add Metric::diff31 (fails if no sub-implementation), KerrBL::diff31
+        (for testing), and NML::diff31.
+
+commit 7f56a2db38b7fe4720d432d8a16923042299f320
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 15 18:10:46 2020 +0200
+
+    In Jet.C: correct operator() distance, and jet velocity
+
+commit e697da5c80216920a2bbfa345da49ce5c51bd97d
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 15 18:08:16 2020 +0200
+
+    In ThickDisk::getVelocity: correct expression of Vr below ISCO
+
+commit 1b7ab88497f61858e5238bdcb5a68eba41cd6744
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Oct 15 18:04:01 2020 +0200
+
+    In OscilTorus: adding comment on mode naming convention
+
+commit 33838435a9c7167516fab7442b5730f163ddb0b6
+Author: naimar <nicolas.aimar@obspm.fr>
+Date:   Tue Oct 13 14:32:07 2020 +0200
+
+    adding object Plasmoid and update PowerLowSynchrotron with overloading operators
+
+commit ba196ce61a4ee05c5cced41db72f421067347caa
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Aug 4 16:28:33 2020 +0200
+
+    NumericalMetricLorene: start implement jacobian for Complex metrics
+
+commit eee30ba6285534587af30cbbcf539873312de7b1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Jul 5 19:03:48 2020 +0200
+
+    Add Shift metric
+
+commit b4431863609a42de00d15a00334f9f6ef5d47965
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Jul 5 17:58:36 2020 +0200
+
+    Metric: make void Generic::mass(value [, unit]) virtual
+
+commit 0218989eaa971978deef85b0308f4b17d18d9f47
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 3 17:37:02 2020 +0200
+
+    KerrKS: optimize gmunu_up, jacobian and gmunu_up_and_jacobian
+    
+    Remove the specific version of christoffel that used to compute the jacobian etc.
+    
+    Test Metric::Complex with KerrKS.
+
+commit 14c83f86abc38305dd84039f77eb2fa7d7e79524
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 3 11:22:58 2020 +0200
+
+    ComplexMetric: add isStopCondition, usingGeneric::Gmunu, add test suite
+
+commit b94adba8c46eaf3afe0a4c968c77cc03881dae2d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jul 3 10:02:27 2020 +0200
+
+    bugfix: set cst_ to NULL in Worldline::Worldline(orig, i0, dir_step_max)
+    
+    Else this pointer can be erroneously freed later in the destructor.
+
+commit c9f2499be14d35fc176605dd6a9c97065cd648f1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jun 30 23:16:50 2020 +0200
+
+    Add Metric::Complex
+    
+    Allows summing metrics.
+    
+    The covariant coefficients and Jacobian are summed, while the contravariant
+    coefficients are determined by inverting the covariant matrix.
+
+commit d1c5672f0a08d8ec956ab71057c830a251f4ef9c
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jun 30 17:11:33 2020 +0200
+
+    Metric: add gmunu_up_and_jacobian, provide default (numerical) christoffel
+    
+    Metric:
+        * new interfaces jacobian and gmunu_up_and_jacobian
+        * jacobbian has a default numerical implementation
+        * this provides a default implementation for christoffel
+    Tests: test all flavors of gmunu*, jacobian and christoffel for all std metrics
+    Util: new function matrix4CircularInvert
+    ChernSimons:
+        * wrap Generic::christoffel (previously erroneously called KerrBL)
+        * rewrite gmunu_up based on matrix4CircularInvert (previusly buggy)
+    KerrKS: more Pythonic jacobian()
+
+commit 6acdba2e09bec979b7d680218a1c44756ec7a903
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jun 29 12:00:06 2020 +0200
+
+    Python: revert Python changes from a2518c722bb7ddb555622d2b8e22eaf3cf452db8
+    
+    Revert most of recent commit. Since christoffel returns an int, it's
+    currently best to keep the two flavors
+      G=metric.cristoffel(pos)
+    and
+      retval=metric.christoffel(G, pos)
+
+commit 1d599727da0fc7037bf1a03d1aa3ae2109750362
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jun 29 11:26:14 2020 +0200
+
+    Python: improve Worldline.getCartesian
+
+commit a2518c722bb7ddb555622d2b8e22eaf3cf452db8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Jun 28 11:55:06 2020 +0200
+
+    Python: remove christoffel glue and make interface more Pythonic
+    
+    This is a Python API breaking change in that the signature is now:
+    
+      retval, Gamma=metric.christoffel(pos)
+    
+    where it used to be either
+      Gamma=metric.christoffel(pos)
+    or
+      retval=metric.christoffel(Gamma, pos)
+    
+    This change should increase the maintainability of the Python bindings.
+
+commit b60801c6cc8efa256b2b0620753760a356df2aac
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Jun 28 00:45:45 2020 +0200
+
+    Metric: ensure both versions of gmunu_up return the same thing
+    
+    + fix Hayward::gmunu_up(pos, mu, nu) which had a wrong sign
+    + make sure both flavours of gmunu_up are consistently callable in a
+      pythonic manner for all metrics in stdplug
+    + make the two generic flavours call each other and default to
+      inverting gmunu
+    + test that the two flavours in every stdplug metric do the same
+      thing
+
+commit d9c7b7c846e381a93fe588fdb49cc2350a641a2f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Jun 27 22:57:00 2020 +0200
+
+    Metric: ensure consistency between gmunu versions and gmunu_up
+    
+    Add tests for all metrics in stdplug to check that both versions of
+    gmunu are equivalent and the inverse of gmunu_up. Make sure all
+    these methods are callable from Python in a Python and consistent
+    fashion. Add a flavour of gmunu to ChernSimons for which the KerrBL
+    implementation was previously exposed.
+
+commit 62e471fd11fa3cce9abd28450db0fc63dce9c56e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Jun 27 22:48:11 2020 +0200
+
+    python/: rebuild gyoto.std and gyoto.lorene when the header files change
+
+commit ea0810d1e4d29695c2f11d191f8c2e829f1a9d8d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Jun 27 10:37:12 2020 +0200
+
+    Metric: add generic gmunu_up based on matrix inversion
+    
+    Util.C: add Gyoto::matrix4Inverse()
+    Metric.C: add gmunu_up()
+
+commit f502336101db12af79a0f4083d77d4c4fa573268
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jun 25 16:21:33 2020 +0200
+
+    Python: nicer syntax for gmunu and christoffel, test Christoffels
+    
+    A more Pythonic syntax was already in place for Metric::Generic::gmunu
+    (and others). Here we make sure this nicer syntax remains available
+    in metrics that reimplement these methods.
+    
+    Add two functions (christoffel_numerical and check_christoffel) in
+    gyoto.metric to ease testing of Christoffel symbols.
+    
+    Use check_christoffel to test all the metrics in stdplug and
+    RotStar3_1 in lorene.
+
+commit 721fc608e04de72495596a4c31ab4f2d7a0b16af
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jun 22 15:11:43 2020 +0200
+
+    Worldline: add constantsOfMotion() to access cst_ from Python
+
+commit 0a6e0c9c7e50da33321e0c07de35cc22d9c6180f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jun 9 11:02:56 2020 +0200
+
+    Remove unused Newton.C
+
+commit 2a9fe687358e9e4547937b0a8ccdbfc24a676e63
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jun 9 10:54:21 2020 +0200
+
+    CompexAstrobj: fix rMax for cardinal_= 0; yorick: fix matte-painting
+
+commit caa895b6c069c2ac92ac496227c16fc9597c7635
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Apr 22 11:45:59 2020 +0200
+
+    python: improve Worldline::getCoord/getCartesian interface
+    
+    add possibility to not pass any parameters (in which case all coordinates a returned)
+    
+    add possibility to pass scalar t (in which case single coordinate is returned.
+    
+    t can be integer index or real date.
+
+commit 0787af17941474777f3b8ca209aa3665fc1002ba
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Apr 22 11:19:01 2020 +0200
+
+    Worldline: copy stopcond in copy constructor
+
+commit ed2ba5697f556e487cce865b6220a8a3e41435f7
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Apr 22 11:18:36 2020 +0200
+
+    some documentation
+
+commit 9df8f53ab66e6ca7035df80ac754b6f6927c32d4
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Apr 22 11:18:01 2020 +0200
+
+    Utils: imlement cartesianToSpherical/sphericalToCartesian
+
+commit 6cb5b5577e806d6103280e65705474022187c215
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Apr 22 11:15:29 2020 +0200
+
+    small improvement in Screen
+      + support dmax in Cartesian case;
+      + support geometrical units in coordToSky;
+      + implement skyToCoord.
+
+commit b0f8fc294baed86ace601a364df1f25ce65836fa
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu May 28 19:27:15 2020 +0200
+
+    EquatorialHotspot: using the same definition for Gaussian emission as Schnittman and Bertschinger
+
+commit 08770964dd44ca52f9e9e7f35c9afe6215264892
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu May 28 19:02:42 2020 +0200
+
+    Photon.C: adain updating maxCrossEqPlane treatment
+
+commit 46fbbc440dd78714719eaec52fab3426441508a4
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Apr 30 17:38:03 2020 +0200
+
+    Photon::maxCrossEqPlane update.
+    
+            Geodesics are cut after maxCross hittings of equat plane
+            AND once they have left the astrobj.
+
+commit 93bd12ad7a36e2dc4bff4bcd9bc5691a9a6e0f49
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Apr 29 15:57:16 2020 +0200
+
+    Update Photon.C maxCrossEqplane treatment.
+    
+           Before the pixel flux was put to zero when the nb of crossings
+           of the equat plane reached maxCross, now the flux is let unchanged,
+           the geodesic is just cut.
+
+commit b1efae64f510c07e9519d093ad5bd0aa19a5cc71
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Mar 19 11:18:00 2020 +0100
+
+    Minkowski::diff: implement Newtonian motion in spherical coordinates
+    
+    Change variables to use Cartesian coordinates.
+
+commit a5205f4cc28040c0f9dd9436730687d1c20f0929
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Mar 13 13:53:17 2020 +0100
+
+    Minkowski::diff(): remove useless recalculation of dxdt[4]
+
+commit d02e6d4dd1d4376856627521ce6b252b09cd7e26
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Mar 11 14:03:41 2020 +0100
+
+    Minkowski: reimplement diff() to integrate Newton's law of motion
+    
+    If keplerian_ is true, integrate Newton's law instead of geodesic equation for
+    massive particles.
+    
+    Only implemented in Cartesian coordinates so far.
+
+commit 9a8e1db041d75183f3f1a8af6be97a7579bf71fe
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Mar 11 13:40:35 2020 +0100
+
+    Worldline::diff: new parameter double mass
+    
+    This will allow derived classes to use a distinct equation of motion for massive
+    particles and photons.
+    
+    Since the mass is not known in the Worldline base constructor, state_->init()
+    cannot be called there. This call was moved to nextStep() and doStep().
+
+commit c1a8ab247a3a2e98631a6a5eda584b47a3535674
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Mar 5 19:22:54 2020 +0100
+
+    FlaredDiskSynchrotron: use dt_ in fitsRead
+    
+    So it does not matter whether File or TimeTranslation_inMunit is set first.
+
+commit 7a824ad1a58ff7c3fe683f1e611d8b5fc6bb6db8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Mar 5 17:12:43 2020 +0100
+
+    FlaredDiskSynchrotron: add missing accessor
+
+commit 227beb2ee81421282d6de01f81596e994468b8cd
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Mar 3 15:53:52 2020 +0100
+
+    Add NbCrossEqPlane quantity
+    
+    Was stored in User5 since a few commits
+
+commit c93a8f26693b9fa7ca4187270810733d5d053d2b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Feb 28 20:19:43 2020 +0100
 
     Releasing 1.4.4
 
@@ -159,6 +1894,161 @@ Date:   Mon Nov 18 16:25:43 2019 +0100
     of non-axisymmetric structures
     
     (cherry picked from commit 00e81b108d634a36f44f3a6ebcda95a905454e09)
+
+commit 034ca81045cd4c1c07a1fab649f0ec52508fca4b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Feb 28 14:03:20 2020 +0100
+
+    Fix typo refered -> referred
+
+commit ec066ab7ba73a88e5fcd0165abf127f9170ee1c3
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 14:09:39 2020 +0100
+
+    Python: rework refernce counting issues
+    
+    Add test suite for reference counting, modify interface to fix issues
+
+commit 6530372e2cef1261ae32d70dbf06a5131db4b5c0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 13:31:53 2020 +0100
+
+    Python: add gyoto.spectrometer.Uniform = gyoto.spectrometer.UniformSpectrometer
+
+commit 0c3183059db190e0c67057c71e71d0d44d9a5ec7
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Feb 27 13:10:01 2020 +0100
+
+    Fix classes so cloning always works
+    
+    Some classes where expecting to be somehow initialized.
+    Cloning/printing should always work.
+    Turn some errors into severe warnings.
+
+commit 95204b829f0628f99550e5363f15f8928400bd3c
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Feb 24 14:32:37 2020 +0100
+
+    Scenery: correct small typo in print in destructor
+
+commit 7c46c94d8c26ba0c577587cb37c510d6899167f2
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 18 20:09:09 2020 +0100
+
+    Factory.C: print Screen section only once
+
+commit eb73bc1792b7b0584f99ec716689af9cdc271771
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 13 15:03:45 2020 +0100
+
+    Photon: adding nb of eqplane crossings in data->user5
+
+commit a4bd341888388e167eb92116c2419c5a33312e9e
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Feb 13 14:03:15 2020 +0100
+
+    PolishDoughnut: put default bremsstrahlung_ to False
+
+commit b6a45021b464ea8c58fca0fea73f5fe44d7f78c5
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 5 16:44:32 2020 +0100
+
+    PageThorne: add mdot field in xml for cgs-unit computations
+
+commit 6cad755646222a729ba9446813d2dd7e37de7479
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 5 16:39:19 2020 +0100
+
+    KerrBL: replace christoffels by exactly equivalent expressions, easier to read, tested with SageMath
+
+commit 4a58ba6a77d5b2a703cfe7c96a697ca9e635c249
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Feb 5 16:24:23 2020 +0100
+
+    ThickDisk: bug in radial velocity below ISCO corrected
+
+commit abb343d1e0719329257ca1620d6c276cfa954075
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 4 16:05:51 2020 +0100
+
+    Always use C locale when writing doubles to XML
+
+commit bf5b09fc8b1cf5006582cf52bee9a3a77eafb5bc
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Feb 4 15:20:23 2020 +0100
+
+    Set LC_NUMERIC to 'C' before calling std::atof
+    
+    Gyoto always assumes that decimal_point is '.' and ignore whatever the locale
+    says. We always set LC_NUMERIC to 'C' in Gyoto::atof. All instances of std::atof
+    in Gyoto should be replaced by calls to Gyoto::atof.
+
+commit 4ade08e5e87451c0f99810b2520ac397bebed951
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 30 13:36:55 2020 +0100
+
+    Expose ThickDisk to python
+
+commit 21e2b8a6b574c81070c95875a55185d843af2e1f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Thu Jan 23 10:49:52 2020 +0100
+
+    Adding doc/example/example-thick-disk.xml
+
+commit c63cb8fdba455df51b3144ae486b8ee66d0d17ff
+Author: Eric Gourgoulhon <eric.gourgoulhon@obspm.fr>
+Date:   Thu Jan 23 10:21:42 2020 +0100
+
+    Small corrections in the install instructions
+
+commit 8b76d5495ed53d0f593bc9832c1c4ebcfad4a85f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Dec 18 14:13:47 2019 +0100
+
+    null plugin: load "null", not "obspm".
+
+commit 218919ce8496c7f69c73023252ebd1f3b57d3feb
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 10 13:23:18 2019 +0100
+
+    Hayward: code cleaning
+    
+             removed getRms and getRmb that were copied from KerrBL and thus wrong
+             added circularVelocity
+             in ThickDisk: imposing isco radius to 0 fro Hayward (not clean, but ok)
+
+commit ef60b15023ea5a23e3c6aa89a1ea22528a9341fa
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 10 11:52:50 2019 +0100
+
+    Photon.C: restrain equatorial plane crossing counting
+    to the inner spacetime
+
+commit 0fe9301eea584980861576ee8f5b911ea47a893e
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 29 14:03:00 2019 +0100
+
+    Drop Python 2.7 support
+    
+    It was lost a some point during summer 2019, and we don't plan on reintroducing it.
+
+commit 029c0ad4b47b391a6e8c0ddecdc2efc32f49778e
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Nov 18 16:51:52 2019 +0100
+
+    Implement maximum equatorial plane crossings
+    
+              Adding a flag that counts the number of crossings
+              of equatorial plane (theta=pi/2 in BL coordinates)
+              and cancel photons that cross the equatorial plane
+              more than some specific number specified in XML.
+
+commit 00e81b108d634a36f44f3a6ebcda95a905454e09
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Nov 18 16:25:43 2019 +0100
+
+    In ThickDisk.C: adding basic stuff for quick-check
+    of non-axisymmetric structures
 
 commit 8cd0d5857b92ab43830852a6b29f14a5c5dc514d
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>

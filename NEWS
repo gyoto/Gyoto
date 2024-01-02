@@ -1,4 +1,20 @@
-Unrelease : 
+2.0.0 2024/01/02 ABI 9:0:0 
+    * Adding the ability to compute polarization quantities:
+        * Implement all polarized synchrotron radiative transfer coefficients 
+          for Thermal, PowerLaw and Kappa distributions
+        * Compute of the transmission matrix
+        * Calcul of the polarization angle in the observer
+          polarization basis parallel transported and projected
+          in the rest frame of the emitter
+        * Adding the eigen3 library
+    * various bugfix
+    * New common definition of magnetic field configuration accessible by all Astrobj
+    * New N-dimensonnal linear interpolation function with configurable boundary conditions
+    * New Astrobj::FreeStar:
+        Similar to the Star object expect it does not follow a time-like geodesic.
+        The Trajectory is define by the user through the initial position and velocity
+    * Astrobj::Blob:
+        + electronDistribution_
     * New Astrobj::Plasmoid:
         Uniform sphere of Plasma with a constant or linear increase of the radius.
         Two types of orbits : 

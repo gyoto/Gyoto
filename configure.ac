@@ -9,11 +9,11 @@ dnl notice and this notice are preserved.  This file is offered as-is,
 dnl without any warranty.
 
 
-AC_PREREQ([2.69])
-AC_INIT([Gyoto], [1.4.4], [gyoto@sympa.obspm.fr])
+AC_PREREQ([2.71])
+AC_INIT([Gyoto],[2.0.0],[gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([include/GyotoKerrKS.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -26,8 +26,8 @@ AC_SUBST([VERBATIM], [])
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 # C: current; R: revision; A: age
 # Linux library name is: libgyoto.so.(C-A).A.R
-VERSINFO_C=8
-VERSINFO_R=2
+VERSINFO_C=9
+VERSINFO_R=0
 VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
@@ -72,13 +72,9 @@ AC_ARG_WITH([fenv],
    [with_fenv=auto])
 AS_IF([test "x$with_fenv" != xno],
   [AC_MSG_CHECKING([for fenv.h])
-   AC_TRY_LINK(
-     [#include <fenv.h>],
-     [feenableexcept(FE_DIVBYZERO);],
-     [AC_DEFINE([HAVE_FENV_H], [1], [Define to 1 to use fenv.h.])
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <fenv.h>]], [[feenableexcept(FE_DIVBYZERO);]])],[AC_DEFINE([HAVE_FENV_H], [1], [Define to 1 to use fenv.h.])
       HAVE_FENV_H=1
-      AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(no)])
+      AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
   ])
 AS_IF([test "x$with_fenv" = xyes && test "x$HAVE_FENV_H" != x1],
   [AC_MSG_ERROR(fenv.h required but not usable")])
@@ -97,8 +93,7 @@ AC_ARG_WITH([size_t],
 )
 
 AS_IF([test "x$with_size__t" = xauto],
-  [AC_TRY_RUN(
-     [
+  [AC_RUN_IFELSE([AC_LANG_SOURCE([[
       #include <sys/types.h>
       typedef void (* set_size_t_t) (size_t val);
       typedef void (* set_unsigned_long_t) (unsigned long);
@@ -110,9 +105,7 @@ AS_IF([test "x$with_size__t" = xauto],
         if (size_t_value != 25) return 1;
         return 0;
       }
-     ],
-     [with_size__t="same"],
-     [with_size__t="distinct"])
+     ]])],[with_size__t="same"],[with_size__t="distinct"],[])
   ]
 )
 
@@ -124,8 +117,7 @@ AC_MSG_RESULT($with_size__t)
 
 # PYTHON STUFF
 AC_ARG_WITH([python],
-	[AC_HELP_STRING([--with-python@<:@=interpreter@:>@],
-	   [force (or disable) python support, possibly specifying interpreter])],
+	[AS_HELP_STRING([--with-python@<:@=interpreter@:>@],[force (or disable) python support, possibly specifying interpreter])],
 	[
 	 case $with_python in
 	   yes | no) ;;
@@ -255,7 +247,7 @@ AS_IF([test "x$have_mpi" == xyes],
 [ AC_SUBST(MPICXX)
   AC_DEFINE([HAVE_MPI], [1], [Define to 1 if you have MPI])],
 [ AS_IF([test "x$with_mpi" == xyes],
-  [ AC_ERROR([MPI requested but not found])
+  [ AC_MSG_ERROR(MPI requested but not found)
   ],
   [FEATURES+="-nompi"
    MPICXX=""])
@@ -278,8 +270,7 @@ AC_CHECK_PROGS([KPSEWHICH], [kpsewhich])
 AX_APPEND_COMPILE_FLAGS([-rdynamic], [LDFLAGS])
 
 AC_ARG_ENABLE([native],
-  [AC_HELP_STRING([--enable-native],
-     [append "-march=native" to CXXFLAGS if supported])],
+  [AS_HELP_STRING([--enable-native],[append "-march=native" to CXXFLAGS if supported])],
   [AS_IF([test "x$enable_native" = "xyes"],
      [AX_APPEND_COMPILE_FLAGS([[-march=native]])])])
 
@@ -354,8 +345,7 @@ yorick_exe=yorick
 YORICK=
 AC_MSG_CHECKING([whether to use yorick])
 AC_ARG_WITH([yorick],
-  [AC_HELP_STRING([--with-yorick[[=yorick-executable]]],
-     [force using yorick and optionnally specify which one [default=yorick,
+  [AS_HELP_STRING([--with-yorick[[=yorick-executable]]],[force using yorick and optionnally specify which one [default=yorick,
       only if found]])],
   [AS_IF([test "x$with_yorick" == "xno"],
      [AC_MSG_RESULT([no])],
@@ -381,8 +371,7 @@ AS_IF([test "x$YORICK" != "x"],
    Y_INST_HOME=
    Y_INST_SITE=
    AC_ARG_WITH([yorick-home],
-     [AC_HELP_STRING([--with-yorick-home=DIR],
-        [architecture-dependent Yorick files [default: the
+     [AS_HELP_STRING([--with-yorick-home=DIR],[architecture-dependent Yorick files [default: the
          yorick directory if it is under ${exec_prefix}, else
          ${exec_prefix}/lib/yorick]])],
      [Y_INST_HOME=${with_yorick_home}
@@ -399,8 +388,7 @@ AS_IF([test "x$YORICK" != "x"],
 
    AC_MSG_CHECKING([install path for Yorick platform-independent files])
    AC_ARG_WITH([yorick-site],
-     [AC_HELP_STRING([--with-yorick-site=DIR],
-        [architecture-independent Yorick files
+     [AS_HELP_STRING([--with-yorick-site=DIR],[architecture-independent Yorick files
 	 [default: the yorick directory if it is under ${prefix}, else
 	  ${prefix}/lib/yorick]])
      ],
@@ -582,22 +570,18 @@ AS_IF([test "x$with_aeae" != "xno"],
      [AC_MSG_CHECKING([for aeae])
       TMPCPPFLAGS=$CPPFLAGS
       CPPFLAGS="$TMPCPPFLAGS $aeae_headers"
-      AC_TRY_LINK(
-        [#include <complex>
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <complex>
 	 #include <iostream>
 	 #define SIGN(a) (((a) < 0) ? (-1) : (1))
 	 using namespace std;
 	 #include "complex_functions.H"
-	 #include "hyp_2F1.cpp"],
-        [double hypergeom = 0., kappaIndex=5., thetae=1;
+	 #include "hyp_2F1.cpp"]], [[double hypergeom = 0., kappaIndex=5., thetae=1;
 	 complex<double> aa=kappaIndex-1./3., bb=kappaIndex+1.,
 	 cc=kappaIndex+2./3., zed=-kappaIndex*thetae;
 	 const complex<double> FF = hyp_2F1(aa,bb,cc,zed);
 	 hypergeom = FF.real();
-	],
-        [have_aeae=yes
-         AC_MSG_RESULT(yes)],
-        [AC_MSG_RESULT(no)])
+	]])],[have_aeae=yes
+         AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
       CPPFLAGS=$TMPCPPFLAGS
       AEAE_CFLAGS="$aeae_headers"
       pkg_cflags="${pkg_cflags} ${AEAE_CFLAGS}"
