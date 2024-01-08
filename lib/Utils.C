@@ -44,6 +44,7 @@ static int gyoto_prev_verbosity=GYOTO_DEBUG_VERBOSITY;
 #endif
 
 #if defined GYOTO_USE_ARBLIB
+# include <acb.h>
 # include <acb_hypgeom.h>
 #elif defined GYOTO_USE_AEAE
 # include <complex>
