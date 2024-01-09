@@ -367,6 +367,9 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
 
   tau += dtau;
   checkNorm(&coord[0]);
+  if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
+     line_->checkPhiTheta(&coord[0]);
+  }
 
   return line_->stopcond;
 }

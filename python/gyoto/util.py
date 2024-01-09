@@ -231,13 +231,7 @@ Second form:
         puser1=array_double_fromnumpy1or2(user1)
         aop.user1=puser1
         res['User1'] = user1
-
-    if 'User1' in sc.requestedQuantitiesString():
-        impactcoords=numpy.zeros(dims)
-        pimpactcoords=array_double_fromnumpy1or2(impactcoords)
-        aop.impactcoords=pimpactcoords
-        res['User1'] = impactcoords
-
+    
     if 'User2' in sc.requestedQuantitiesString():
         user2=numpy.zeros(dims)
         puser2=array_double_fromnumpy1or2(user2)

@@ -758,6 +758,7 @@ void Scenery::operator() (
   }
   // Always reset delta
   ph -> delta(delta_);
+  ph -> nb_cross_eqplane(0); // put to zero the nb of crossing of equat plane 
 
   screen_ -> getRayTriad(a, d,
 			 coord,
@@ -765,7 +766,14 @@ void Scenery::operator() (
 			 Ephi, Etheta);
   ph -> setInitCoord(coord, 0, Ephi, Etheta);
   ph -> hit(data);
-
+  
+  // Check
+  //double nbcross = 0.;
+  //std::ofstream outfile;
+  //std::string filename;
+  //outfile.open((filename, "%s", "./Geodebug"+std::string(to_string(nbcross))+".txt"), std::ios_base::app); // append instead of overwrite
+  //outfile << coord[1] << "     " << coord[2] << "\n"; 
+  //outfile.close();
 }
 
 SmartPointer<Photon> Scenery::clonePhoton() const {
