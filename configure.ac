@@ -504,7 +504,8 @@ AS_IF([test "x$with_arblib_ldflags" == "x"],
 )
 AC_MSG_RESULT([$arblib_ldflags])
 GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
-	      [#include <acb_hypgeom.h>],
+	      [#include <acb.h>
+	       #include <acb_hypgeom.h>],
 	      [double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
   	 acb_t FF, aa, bb, cc, zed;
 	 acb_init(FF);
