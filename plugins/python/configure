@@ -826,6 +826,7 @@ enable_shared
 enable_static
 with_pic
 enable_fast_install
+with_aix_soname
 enable_dependency_tracking
 with_gnu_ld
 with_sysroot
@@ -1497,6 +1498,9 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-pic[=PKGS]       try to use only PIC/non-PIC objects [default=use
                           both]
+  --with-aix-soname=aix|svr4|both
+                          shared library versioning (aka "SONAME") variant to
+                          provide on AIX, [default=aix].
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
@@ -3708,8 +3712,8 @@ esac
 
 
 
-macro_version='2.4.2'
-macro_revision='1.3337'
+macro_version='2.4.7'
+macro_revision='2.4.7'
 
 
 
@@ -8719,14 +8723,14 @@ then :
     *)
       enable_shared=no
       # Look at the argument we got.  We use all the common list separators.
-      lt_save_ifs="$IFS"; IFS="${IFS}$PATH_SEPARATOR,"
+      lt_save_ifs=$IFS; IFS=$IFS$PATH_SEPARATOR,
       for pkg in $enableval; do
-	IFS="$lt_save_ifs"
+	IFS=$lt_save_ifs
 	if test "X$pkg" = "X$p"; then
 	  enable_shared=yes
 	fi
       done
-      IFS="$lt_save_ifs"
+      IFS=$lt_save_ifs
       ;;
     esac
 else $as_nop
@@ -8751,14 +8755,14 @@ then :
     *)
      enable_static=no
       # Look at the argument we got.  We use all the common list separators.
-      lt_save_ifs="$IFS"; IFS="${IFS}$PATH_SEPARATOR,"
+      lt_save_ifs=$IFS; IFS=$IFS$PATH_SEPARATOR,
       for pkg in $enableval; do
-	IFS="$lt_save_ifs"
+	IFS=$lt_save_ifs
 	if test "X$pkg" = "X$p"; then
 	  enable_static=yes
 	fi
       done
-      IFS="$lt_save_ifs"
+      IFS=$lt_save_ifs
       ;;
     esac
 else $as_nop
@@ -8783,22 +8787,20 @@ then :
     *)
       pic_mode=default
       # Look at the argument we got.  We use all the common list separators.
-      lt_save_ifs="$IFS"; IFS="${IFS}$PATH_SEPARATOR,"
+      lt_save_ifs=$IFS; IFS=$IFS$PATH_SEPARATOR,
       for lt_pkg in $withval; do
-	IFS="$lt_save_ifs"
+	IFS=$lt_save_ifs
 	if test "X$lt_pkg" = "X$lt_p"; then
 	  pic_mode=yes
 	fi
       done
-      IFS="$lt_save_ifs"
+      IFS=$lt_save_ifs
       ;;
     esac
 else $as_nop
   pic_mode=default
 fi
 
-
-test -z "$pic_mode" && pic_mode=default
 
 
 
@@ -8816,20 +8818,74 @@ then :
     *)
       enable_fast_install=no
       # Look at the argument we got.  We use all the common list separators.
-      lt_save_ifs="$IFS"; IFS="${IFS}$PATH_SEPARATOR,"
+      lt_save_ifs=$IFS; IFS=$IFS$PATH_SEPARATOR,
       for pkg in $enableval; do
-	IFS="$lt_save_ifs"
+	IFS=$lt_save_ifs
 	if test "X$pkg" = "X$p"; then
 	  enable_fast_install=yes
 	fi
       done
-      IFS="$lt_save_ifs"
+      IFS=$lt_save_ifs
       ;;
     esac
 else $as_nop
   enable_fast_install=yes
 fi
 
+
+
+
+
+
+
+
+  shared_archive_member_spec=
+case $host,$enable_shared in
+power*-*-aix[5-9]*,yes)
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking which variant of shared library versioning to provide" >&5
+printf %s "checking which variant of shared library versioning to provide... " >&6; }
+
+# Check whether --with-aix-soname was given.
+if test ${with_aix_soname+y}
+then :
+  withval=$with_aix_soname; case $withval in
+    aix|svr4|both)
+      ;;
+    *)
+      as_fn_error $? "Unknown argument to --with-aix-soname" "$LINENO" 5
+      ;;
+    esac
+    lt_cv_with_aix_soname=$with_aix_soname
+else $as_nop
+  if test ${lt_cv_with_aix_soname+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  lt_cv_with_aix_soname=aix
+fi
+
+    with_aix_soname=$lt_cv_with_aix_soname
+fi
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_aix_soname" >&5
+printf "%s\n" "$with_aix_soname" >&6; }
+  if test aix != "$with_aix_soname"; then
+    # For the AIX way of multilib, we name the shared archive member
+    # based on the bitwidth used, traditionally 'shr.o' or 'shr_64.o',
+    # and 'shr.imp' or 'shr_64.imp', respectively, for the Import File.
+    # Even when GNU compilers ignore OBJECT_MODE but need '-maix64' flag,
+    # the AIX toolchain works better with OBJECT_MODE set (default 32).
+    if test 64 = "${OBJECT_MODE-32}"; then
+      shared_archive_member_spec=shr_64
+    else
+      shared_archive_member_spec=shr
+    fi
+  fi
+  ;;
+*)
+  with_aix_soname=aix
+  ;;
+esac
 
 
 
@@ -9158,6 +9214,10 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
+## CAVEAT EMPTOR:
+## There is no encapsulation within the following macros, do not change
+## the running order or otherwise move them around unless you know exactly
+## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -19068,6 +19128,7 @@ enable_shared='`$ECHO "$enable_shared" | $SED "$delay_single_quote_subst"`'
 enable_static='`$ECHO "$enable_static" | $SED "$delay_single_quote_subst"`'
 pic_mode='`$ECHO "$pic_mode" | $SED "$delay_single_quote_subst"`'
 enable_fast_install='`$ECHO "$enable_fast_install" | $SED "$delay_single_quote_subst"`'
+shared_archive_member_spec='`$ECHO "$shared_archive_member_spec" | $SED "$delay_single_quote_subst"`'
 SHELL='`$ECHO "$SHELL" | $SED "$delay_single_quote_subst"`'
 ECHO='`$ECHO "$ECHO" | $SED "$delay_single_quote_subst"`'
 PATH_SEPARATOR='`$ECHO "$PATH_SEPARATOR" | $SED "$delay_single_quote_subst"`'
@@ -20040,6 +20101,9 @@ pic_mode=$pic_mode
 
 # Whether or not to optimize for fast installation.
 fast_install=$enable_fast_install
+
+# Shared archive member basename,for filename based shared library versioning on AIX.
+shared_archive_member_spec=$shared_archive_member_spec
 
 # Shell to use when invoking shell scripts.
 SHELL=$lt_SHELL

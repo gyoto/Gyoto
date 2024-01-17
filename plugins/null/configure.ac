@@ -9,6 +9,7 @@ AC_INIT([gyoto-null],[0.0.0],[gyoto@sympa.obspm.fr])
 AC_CONFIG_SRCDIR([include/GyotoNull.h])
 AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
+AC_CONFIG_MACRO_DIRS([m4])
 LT_INIT
 
 # Checks for programs.
