@@ -21917,9 +21917,9 @@ fi
 
 
 
-if test "x$have_ceigen" == "xno"
+if test "x$have_eigen" == "xno"
 then :
-  FEATURES+="-noeigen"
+  as_fn_error $? "The Eigen library is required for building Gyoto." "$LINENO" 5
 
 fi
 

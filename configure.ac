@@ -472,8 +472,8 @@ AS_IF([test "x$have_xerces" == "xno"],
 GYOTO_ARG_LIB(eigen, eigen3, [],
               [#include <Eigen/Dense>],
               [Eigen::MatrixXd m(2,2);])
-AS_IF([test "x$have_ceigen" == "xno"],
-  [FEATURES+="-noeigen"]
+AS_IF([test "x$have_eigen" == "xno"],
+  [AC_MSG_ERROR([The Eigen library is required for building Gyoto.])]
 )
 
 ## CFITSIO

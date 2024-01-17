@@ -66,6 +66,8 @@ Gyoto requires:
    - a C++ compiler. GCC 4.9 and above work very well. Several
      features require the C++11 standard. Clang/LLVM is discouraged,
      see [BUGS.md](BUGS.md).
+   - Eigen (required):
+       https://eigen.tuxfamily.org/
    - xercesc-3 (recommended, required for the executable):
        http://xerces.apache.org/xerces-c/
    - cfitsio   (required for the executable and some of the Astrobj):
@@ -109,8 +111,6 @@ Gyoto requires:
      On some systems, LORENE must be built with -fPIC (GYOTO as well,
      but this is the default).
    - developers may need the GNU autotools: autoconf, automake, libtool.
-   - Eigen3 (required for the polarisation):
-       https://packages.debian.org/fr/sid/libeigen3-dev
 
 For Debian and its derivatives (incl. Ubuntu), you can install all
 those dependencies with:
