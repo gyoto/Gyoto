@@ -1739,9 +1739,9 @@ Optional Packages:
                           preprocessor flags ('--with-arblib-libs="-L/path1
                           ... -L/pathn")'
   --with-arblib-ldflags=-l<libname>
-                          linker flag for arblib (-lflint-arb on Debian
-                          derivatives, -larb on Arch Linux...) possibly with
-                          dependencies (e.g. "-larb -lflint").
+                          linker flag for arblib (usually -lflint on recent
+                          systems, sometimes -lflint-arb or -larb) possibly
+                          with dependencies (e.g. "-larb -lflint").
 
   --with-aeae[=/path/to/AEAE]
                           Force using AEAE, optionally specifying full path to
@@ -7267,11 +7267,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -7313,11 +7313,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -21120,6 +21120,7 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether udunits should be used" >&5
 printf %s "checking whether udunits should be used... " >&6; }
 gy_headers=
+gy_default_cppflags=
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -21292,6 +21293,10 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for UDUNITS (without pkg-config)" >&5
 printf %s "checking for UDUNITS (without pkg-config)... " >&6; }
+      if test "x$gy_header" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
@@ -21383,6 +21388,7 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether xerces should be used" >&5
 printf %s "checking whether xerces should be used... " >&6; }
 gy_headers=
+gy_default_cppflags=
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -21555,6 +21561,10 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for XERCES (without pkg-config)" >&5
 printf %s "checking for XERCES (without pkg-config)... " >&6; }
+      if test "x$gy_header" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
@@ -21651,6 +21661,7 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether eigen should be used" >&5
 printf %s "checking whether eigen should be used... " >&6; }
 gy_headers=
+gy_default_cppflags=
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -21823,6 +21834,10 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for EIGEN (without pkg-config)" >&5
 printf %s "checking for EIGEN (without pkg-config)... " >&6; }
+      if test "x$gy_header" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
@@ -21914,6 +21929,7 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether cfitsio should be used" >&5
 printf %s "checking whether cfitsio should be used... " >&6; }
 gy_headers=
+gy_default_cppflags=
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -22086,6 +22102,10 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CFITSIO (without pkg-config)" >&5
 printf %s "checking for CFITSIO (without pkg-config)... " >&6; }
+      if test "x$gy_header" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
@@ -22186,18 +22206,136 @@ esac
 printf %s "checking whether arblib library name is provided... " >&6; }
 if test "x$with_arblib_ldflags" == "x"
 then :
-  arblib_ldflags=-lflint-arb
+  arblib_ldflags=
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
 else $as_nop
   with_arblib=yes
    arblib_ldflags=$with_arblib_ldflags
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
+printf "%s\n" "$arblib_ldflags" >&6; }
 
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
-printf "%s\n" "$arblib_ldflags" >&6; }
+if test "x$arblib_ldflags" == "x"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing acb_init" >&5
+printf %s "checking for library containing acb_init... " >&6; }
+if test ${ac_cv_search_acb_init+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+namespace conftest {
+  extern "C" int acb_init ();
+}
+int
+main (void)
+{
+return conftest::acb_init ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' flint flint-arb arb
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"
+then :
+  ac_cv_search_acb_init=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_acb_init+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_acb_init+y}
+then :
+
+else $as_nop
+  ac_cv_search_acb_init=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_acb_init" >&5
+printf "%s\n" "$ac_cv_search_acb_init" >&6; }
+ac_res=$ac_cv_search_acb_init
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  arblib_ldflags=$ac_cv_search_acb_init
+fi
+
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib header directory is provided" >&5
+printf %s "checking whether arblib header directory is provided... " >&6; }
+if test "x$with_arblib_headers" == "x"
+then :
+  arblib_headers=
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+else $as_nop
+  with_arblib=yes
+   arblib_headers=$with_arblib_headers
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_headers" >&5
+printf "%s\n" "$arblib_headers" >&6; }
+
+fi
+arglib_default_cppflags=
+if test "x$arblib_headers" == "x"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: looking for arblib headers in default locations" >&5
+printf "%s\n" "$as_me: looking for arblib headers in default locations" >&6;}
+fi
+          for ac_header in acb.h
+do :
+  ac_fn_cxx_check_header_compile "$LINENO" "acb.h" "ac_cv_header_acb_h" "$ac_includes_default"
+if test "x$ac_cv_header_acb_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_ACB_H 1" >>confdefs.h
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib headers found without additional flags" >&5
+printf "%s\n" "$as_me: arblib headers found without additional flags" >&6;}
+else $as_nop
+  { ac_cv_header_acb_h=; unset ac_cv_header_acb_h;}
+    TMPCPPFLAGS=$CPPFLAGS
+    CPPFLAGS="$TMPCPPFLAGS -I/usr/include/flint/"
+           for ac_header in acb.h
+do :
+  ac_fn_cxx_check_header_compile "$LINENO" "acb.h" "ac_cv_header_acb_h" "$ac_includes_default"
+if test "x$ac_cv_header_acb_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_ACB_H 1" >>confdefs.h
+ arglib_default_cppflags=-I/usr/include/flint/
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib headers found in /usr/include/flint/" >&5
+printf "%s\n" "$as_me: arblib headers found in /usr/include/flint/" >&6;}
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib not found in default locations" >&5
+printf "%s\n" "$as_me: arblib not found in default locations" >&6;}
+    CPPFLAGS=$TMPCPPFLAGS
+fi
+
+done
+
+fi
+
+done
+{ ac_cv_header_acb_h=; unset ac_cv_header_acb_h;}
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
 printf %s "checking whether arblib should be used... " >&6; }
 gy_headers=
+gy_default_cppflags=$arglib_default_cppflags
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -22370,6 +22508,10 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ARBLIB (without pkg-config)" >&5
 printf %s "checking for ARBLIB (without pkg-config)... " >&6; }
+      if test "x$gy_header" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS
@@ -22379,7 +22521,8 @@ printf %s "checking for ARBLIB (without pkg-config)... " >&6; }
       LIBS=$arblib_ldflags
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <acb_hypgeom.h>
+#include <acb.h>
+	       #include <acb_hypgeom.h>
 int
 main (void)
 {

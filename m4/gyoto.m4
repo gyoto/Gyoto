@@ -24,6 +24,7 @@ dnl    $2: name of the library as known by pkg_config (think $2.pc)
 dnl    $3: linker flag to link with this library (e.g. `-lfoo')
 dnl    $4: set of include directives to test for this library (for AC_TRY_LINK)
 dnl    $5: main body to test for this library (for AC_TRY_LINK)
+dnl    $6: default for libname_headers
 dnl Outputs:
 dnl    Where $1 is `libname':
 dnl    have_libname: yes if found, no otherwise
@@ -38,6 +39,7 @@ AC_DEFUN([GYOTO_ARG_LIB],
 [
 AC_MSG_CHECKING([whether $1 should be used])
 gy_headers=
+gy_default_cppflags=$6
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -110,6 +112,8 @@ AS_IF([test "x$gy_with" != "xno"],
    # Failing that, check without pkg-config
    AS_IF([test "x$gy_have" == "xno"],
      [AC_MSG_CHECKING([for ]translit([$1], [a-z], [A-Z])[ (without pkg-config)])
+      AS_IF([test "x$gy_header" == "x"],
+        [gy_headers=$gy_default_cppflags])
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS
       TMPLDFLAGS=$LDFLAGS

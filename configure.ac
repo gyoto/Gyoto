@@ -469,7 +469,7 @@ AS_IF([test "x$have_xerces" == "xno"],
 
 ## EIGEN
 # Check for EIGEN
-GYOTO_ARG_LIB(eigen, eigen3, ,
+GYOTO_ARG_LIB(eigen, eigen3, [],
               [#include <Eigen/Dense>],
               [Eigen::MatrixXd m(2,2);])
 AS_IF([test "x$have_ceigen" == "xno"],
@@ -498,11 +498,37 @@ case "x$with_aeae" in
 esac
 AC_MSG_CHECKING(whether arblib library name is provided)
 AS_IF([test "x$with_arblib_ldflags" == "x"],
-  [arblib_ldflags=-lflint-arb],
+  [arblib_ldflags=
+  AC_MSG_RESULT([no])],
   [with_arblib=yes
-   arblib_ldflags=$with_arblib_ldflags]
+   arblib_ldflags=$with_arblib_ldflags
+   AC_MSG_RESULT([$arblib_ldflags])]
 )
-AC_MSG_RESULT([$arblib_ldflags])
+AS_IF([test "x$arblib_ldflags" == "x"],
+  [AC_SEARCH_LIBS([acb_init], [flint flint-arb arb], [arblib_ldflags=$ac_cv_search_acb_init], [])]
+)
+AC_MSG_CHECKING(whether arblib header directory is provided)
+AS_IF([test "x$with_arblib_headers" == "x"],
+  [arblib_headers=
+  AC_MSG_RESULT([no])],
+  [with_arblib=yes
+   arblib_headers=$with_arblib_headers
+   AC_MSG_RESULT([$arblib_headers])]
+)
+arglib_default_cppflags=
+AS_IF([test "x$arblib_headers" == "x"],
+  [AC_MSG_NOTICE([looking for arblib headers in default locations])])
+   AC_CHECK_HEADERS([acb.h], [AC_MSG_NOTICE([arblib headers found without additional flags])],
+   [AS_UNSET(ac_cv_header_acb_h)
+    TMPCPPFLAGS=$CPPFLAGS
+    CPPFLAGS="$TMPCPPFLAGS -I/usr/include/flint/"
+    AC_CHECK_HEADERS([acb.h],
+     [arglib_default_cppflags=-I/usr/include/flint/
+      AC_MSG_NOTICE([arblib headers found in /usr/include/flint/])],
+     [AC_MSG_NOTICE([arblib not found in default locations])
+    CPPFLAGS=$TMPCPPFLAGS])]
+)
+AS_UNSET(ac_cv_header_acb_h)
 GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
 	      [#include <acb.h>
 	       #include <acb_hypgeom.h>],
@@ -525,10 +551,11 @@ GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
 	 acb_clear(aa);
 	 acb_clear(bb);
 	 acb_clear(cc);
-	 acb_clear(zed);])
+	 acb_clear(zed);],
+	 [$arglib_default_cppflags])
 AC_ARG_WITH([arblib-ldflags],
   [AS_HELP_STRING([--with-arblib-ldflags=-l<libname>],
-     [linker flag for arblib (-lflint-arb on Debian derivatives, -larb on Arch Linux...) possibly with dependencies (e.g. "-larb -lflint").])]
+     [linker flag for arblib (usually -lflint on recent systems, sometimes -lflint-arb or -larb) possibly with dependencies (e.g. "-larb -lflint").])]
 )
 AS_IF([test "x$have_arblib" == "xyes"],
   [have_2f1=yes

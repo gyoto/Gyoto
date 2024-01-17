@@ -33,6 +33,9 @@
 /* Define to 1 if you have xerces */
 #undef GYOTO_USE_XERCES
 
+/* Define to 1 if you have the <acb.h> header file. */
+#undef HAVE_ACB_H
+
 /* Defined if the requested minimum BOOST version is satisfied */
 #undef HAVE_BOOST
 
