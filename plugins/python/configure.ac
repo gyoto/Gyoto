@@ -1,11 +1,11 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
-AC_INIT([gyoto-python], [0.0.0], [gyoto@sympa.obspm.fr])
+AC_PREREQ([2.71])
+AC_INIT([gyoto-python],[0.0.0],[gyoto@sympa.obspm.fr])
 AC_CONFIG_SRCDIR([include/GyotoPython.h])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 LT_INIT
 
@@ -71,8 +71,7 @@ PKG_CHECK_MODULES([Gyoto],
 AS_IF([test "x$gyoto_MPICXX" != "x"], [CXX="$gyoto_MPICXX"])
 
 AC_ARG_WITH([python],
-	[AC_HELP_STRING([--with-python@<:@=interpreter@:>@],
-	   [force (or disable) python support, possibly specifying interpreter])],
+	[AS_HELP_STRING([--with-python@<:@=interpreter@:>@],[force (or disable) python support, possibly specifying interpreter])],
 	[
 	 case $with_python in
 	   yes | no) ;;

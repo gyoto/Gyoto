@@ -1,13 +1,13 @@
 # Whenever this file is edited, reprocess it with autoreconf, then re-run ./configure
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.71])
 
 # Choose a good name: replace `null' with your own name.
 # Also change the e-mail address to your own.
-AC_INIT([gyoto-null], [0.0.0], [gyoto@sympa.obspm.fr])
+AC_INIT([gyoto-null],[0.0.0],[gyoto@sympa.obspm.fr])
 # Below, give the name of some file that will stay in you source tree.
 AC_CONFIG_SRCDIR([include/GyotoNull.h])
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 LT_INIT
 

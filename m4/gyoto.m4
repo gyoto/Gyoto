@@ -22,8 +22,8 @@ dnl    $1: lower case name of the library. The various "with" options
 dnl        will use it: --with-$1, --with-$1-headers and --with-$1-libs
 dnl    $2: name of the library as known by pkg_config (think $2.pc)
 dnl    $3: linker flag to link with this library (e.g. `-lfoo')
-dnl    $4: set of include directives to test for this library (for AC_TRY_LINK)
-dnl    $5: main body to test for this library (for AC_TRY_LINK)
+dnl    $4: set of include directives to test for this library (for AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[],[]))
+dnl    $5: main body to test for this library (for AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[],[]))
 dnl    $6: default for libname_headers
 dnl Outputs:
 dnl    Where $1 is `libname':
@@ -121,18 +121,14 @@ AS_IF([test "x$gy_with" != "xno"],
       CPPFLAGS="$TMPCPPFLAGS $gy_headers"
       LDFLAGS="$TMPLDFLAGS $gy_lib"
       LIBS=$3
-      AC_TRY_LINK(
-        [$4],
-	[$5],
-        [gy_have=yes
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[$4]], [[$5]])],[gy_have=yes
          $1[]_headers=$gy_headers
          $1[]_lib=$gy_lib
          translit([$1], [a-z], [A-Z])[]_LIBS="$gy_lib $3"
          translit([$1], [a-z], [A-Z])[]_CFLAGS="$gy_headers"
          pkg_cflags="${pkg_cflags} ${translit([$1], [a-z], [A-Z])[]_CFLAGS}"
          pkg_libs="${pkg_libs} ${translit([$1], [a-z], [A-Z])[]_LIBS}"
-         AC_MSG_RESULT(yes)],
-        [AC_MSG_RESULT(no)])
+         AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)])
       CPPFLAGS=$TMPCPPFLAGS
       LDFLAGS=$TMPLDFLAGS
       LIBS=$TMPLIBS
