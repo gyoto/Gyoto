@@ -1,3 +1,10 @@
+2.0.1 2024/01/17 BUG
+    * Update build system
+        * ARBLIB is included in flint >= 3, fix includes and configure.ac accordingly
+        * Update autotools
+        * Error out when Eigen is not found at configure-time
+    * Various bug fixes
+
 2.0.0 2024/01/02 ABI 9:0:0 
     * Adding the ability to compute polarization quantities:
         * Implement all polarized synchrotron radiative transfer coefficients 

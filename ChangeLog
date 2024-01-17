@@ -1,8 +1,72 @@
 commit unknown
-Author:naimar-pro <nicolas.aimar@obspm.fr>
-Date:   Tue, 02 Jan 2024 12:14:45 +0100
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed, 17 Jan 2024 23:00:47 +0100
 
-    Release GYOTO 2.0.0
+    Releasing 2.0.1
+
+commit 38c25deba22a28a54e57dcd456fbb9f3877ea3cb
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 21:54:49 2024 +0100
+
+    Fix Python warning "is" with a literal
+
+commit fa9c4f0109359946271687189b5eb0dcb570c099
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 21:49:39 2024 +0100
+
+    Update autotools
+
+commit 8f3cd0f6a3825b1cc661083f1b9dc1cd1a7ada08
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 21:38:45 2024 +0100
+
+    Update configure.ac and gyoto.m4
+
+commit 31f883e3b66a2e0439f1a637491e7fd75173de6d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 21:26:51 2024 +0100
+
+    Eigen is required.
+    
+    Docuùent it more clearly in INSTALL.Gyoto.md and error out of configure if not found.
+
+commit f95342829c01aff99cf3a8f746f184a3d53dc19f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 21:11:03 2024 +0100
+
+    Update configure for flint3
+    
+    Look for ARBLIB in -lflint, -lflint-arb and -larb.
+    
+    If --with-arblib-headers is not provided, look for acb.h in /usr/include/flint if not in default path.
+    
+    Modified GYOTO_ARG_LIB to allow that.
+
+commit f95e7e35648beea99101992045a254c0640ad51e
+Author: Doug Torrance <dtorrance@piedmont.edu>
+Date:   Wed Jan 17 14:19:39 2024 -0500
+
+    Include acb.h (necessary for building with FLINT 3) (#16)
+
+commit de00106652e3089cdf6c27a311b95a5d376d9398
+Author: Irene Urso <irene.urso@obspm.fr>
+Date:   Tue Jan 9 19:57:05 2024 +0100
+
+    lib/ThinDiskProfile.C: Rezzolla-Zhidenko metric + Generalised synchrotron emission
+    lib/Scenery.C: bug fix
+    lib/WorldlineIntegState.C: bug fix
+    python/gyoto/util.py: bug fix
+    
+    ThinDiskProfile: getVelocity for the Rezzolla-Zhidenko metric (cf. Rezzolla&Zhidenko2014) + Emission generalised (cf. eq B4 in Vincent+2022)
+    Scenery: reinitialisation of nb_cross_eqplane in operator(a,d)
+    WorldlineIntegState: reset theta in [0;pi] in Boost::nextStep
+    util: second condition for User1 removed in rayTrace
+
+commit bb0497357e8794b751c7c60e4a1201add7897887
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Tue Jan 2 13:51:31 2024 +0100
+
+    Realease GYOTO 2.0.0
 
 commit a38226d53fc5a98318c7150e2a2b3511f09d97dc
 Author: naimar-pro <nicolas.aimar@obspm.fr>
