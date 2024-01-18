@@ -76,7 +76,6 @@ PYTHON_INCLUDES = @PYTHON_INCLUDES@
 PYTHON_LDFLAGS = @PYTHON_LDFLAGS@
 PYTHON_LIBS = @PYTHON_LIBS@
 PYTHON_PREFIX = @PYTHON_PREFIX@
-PYTHON_BUILD_DIR = build/lib.`python3 -c "import distutils.util,sys ; print('{}-{}.{}'.format(distutils.util.get_platform(), sys.version_info.major, sys.version_info.minor))"`
 
 CPPFLAGS=-I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
@@ -101,8 +100,7 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS) directories setup-check
 
 setup-check:
-	mkdir -p $(PYTHON_BUILD_DIR)
-	cp -rf tests $(PYTHON_BUILD_DIR)
+	cp -f build/lib.*/gyoto/*.so gyoto/
 
 directories:
 	mkdir -p dist
@@ -159,7 +157,7 @@ swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_
 	$(MKDIR_P) swig_output
 	$(SWIG_CMD) -o lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
 
-.PHONY: all install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
+.PHONY: all setup-check install uninstall distclean info install-html html install-pdf pdf install-dvi dvi install-ps ps clean dist check installdirs
 
 
 # Since installing to a virtualenv is all the rage these days, support it here. If the VIRTUALENV
@@ -196,9 +194,9 @@ clean:
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
 	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
-	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc
+	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc gyoto/*.so
 	-rm -Rf _gyoto*.so Gyoto*.egg-info _*.so
-	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/
+	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
 
 # Clean up the output of configure
 distclean: clean 
@@ -215,7 +213,7 @@ dist:
 
 # Use the setup.py test command
 check:
-	cd $(PYTHON_BUILD_DIR) ; LD_LIBRARY_PATH=../../../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -B -m unittest tests/*.py
+	LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) setup.py test
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here
