@@ -579,7 +579,7 @@ private:
    * 
    *  - The non polarized case must also be implemented in this function to avoid error.
    * 
-   * See exemple in SimplePolarStar.C.
+   * See example in SimplePolarStar.C.
    * 
    * 
    * \param Inu[nbnu] Output increment of intensity (must be set to a previously allocated
@@ -714,7 +714,7 @@ private:
    * \param N number of dimensions
    * \param array array that should be interpolated. This array has to be a 1D array with the first dimension evolving the slowest
    * \param Xq query position at which the interpolation should be done. 1D array with N elements.
-   * \param X 2D array containing the range of all the axes (for exemple : radius, \theta, \varphi) at which the array is knwon. Should be built as a pointer of pointers.
+   * \param X 2D array containing the range of all the axes (for example : radius, \theta, \varphi) at which the array is knwon. Should be built as a pointer of pointers.
    * \param X_params 1D array that contain the length of each axes.
    * \param cond_limits 1D array of strings that set the boundary conditions that will be applied to each axes
    */

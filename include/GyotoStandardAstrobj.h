@@ -168,7 +168,7 @@ class Gyoto::Astrobj::Standard :
    * \brief Maximum &delta; inside object
    *
    * Gives the requested integration step &delta;<SUB>t</SUB> (in
-   * coordinate time t) between two neighbooring points along a
+   * coordinate time t) between two neighboring points along a
    * portion of geodesic inside an astrobj; the current implementation
    * only considers a constant delta, equal to Standard::deltaInobj()
    *

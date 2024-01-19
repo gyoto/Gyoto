@@ -1167,7 +1167,7 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
 
 void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double const vel[4], double* sin2Chi, double* cos2Chi, bool elec) const{
 	if (cph.size()!=16)
-		GYOTO_ERROR("Ephi and Etheta not defined. Enable parrallel transport or implement the non polarised case in polarised RadiativeQ (see exemple in SimplePolarStar.C) ");
+		GYOTO_ERROR("Ephi and Etheta not defined. Enable parallel transport or implement the non polarised case in polarised RadiativeQ (see example in SimplePolarStar.C) ");
 
 	double Chi = getChi(fourvect, cph, vel, elec);
 	*sin2Chi = sin(2.*Chi);

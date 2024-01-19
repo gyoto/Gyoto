@@ -645,7 +645,7 @@ class Gyoto::Worldline
 
   /// Return a copy of the Metric-specific constants of motion
   /**
-   * This funtion return a copy of the constants of motion. getCst()
+   * This function return a copy of the constants of motion. getCst()
    * can be used to retrieve a pointer to the actual array used
    * internally which is slightly more efficient for read-only access.
    */
