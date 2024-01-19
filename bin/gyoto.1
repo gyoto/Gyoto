@@ -1,7 +1,7 @@
 .\" Process this file with
 .\" groff -man -Tascii foo.1
 .\"
-.TH GYOTO 1 "JULY 2019" Science "User Manuals"
+.TH GYOTO 1 "January 2024" Science "User Manuals"
 .SH NAME
 Gyoto \- the General relativitY Orbit Tracer of Observatoire de Paris
 .SH SYNOPSIS
@@ -40,7 +40,8 @@ in XML format and a trajectory also in XML format (for instance
 produced with \fBgyotoy\fR(1), see below) and produce a movie as would
 be seen by an observer following this trajectory. The Gyoto plug-in
 \fIpython\fR and the Python module \fIOpenCV-Python\fR must be
-installed.
+installed. The Python flavor to use can be controlled through the
+GYOTO_PYTHON environment variable.
 
 A companion program, \fBgyotoy\fR(1), can be used to interactively
 visualize a single geodesic in any Gyoto metric (the trajectory of a
@@ -382,6 +383,10 @@ fails, it looks in PREFIX/lib/gyoto/ and finally in
 PREFIX/lib/gyoto/SOVERS/ where PREFIX and SOVERS are two compile-time
 options. PREFIX usually is /usr/local or /usr. At the time of writing,
 SOVERS is 0.0.0.
+.IP GYOTO_PYTHON
+The name of the Python plug-in to use for mk\-video (typically either
+"python3" or a more specific version such as "python3.12"). By default
+several names are tried.
 .SH EXIT STATUS
 \fBgyoto\fR returns \fB0\fR upon success, \fB1\fR if unable to parse
 the command line or to interpret \fIinput.xml\fR, and a CFITSIO error

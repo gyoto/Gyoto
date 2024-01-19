@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2021 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2024 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -212,10 +212,14 @@ int main(int argc, char** argv) {
     void* handle=NULL;
     int (*mk_video)(int, char**) = NULL;
     Gyoto::Register::init(NULL);
-    std::vector< std::string > plugnames = {"python3",
-					    "python3.7", "python3.6", "python3.5",
-					    "python2.7",
-					    "python3.8", "python3.9"};
+    std::vector< std::string > plugnames =
+      getenv("GYOTO_PYTHON") ?
+      std::vector< std::string > {getenv("GYOTO_PYTHON")} :
+      std::vector< std::string > {"python3",
+	"python3.19", "python3.18", "python3.17", "python3.16", "python3.15",
+	"python3.14", "python3.13", "python3.12", "python3.11", "python3.10",
+	"python3.9", "python3.8", "python3.7", "python3.6", "python3.5"};
+    GYOTO_DEBUG_EXPR(plugnames.size());
     for (size_t k=0; k < plugnames.size(); ++k) {
       GYOTO_DEBUG << "trying to load plug-in " << plugnames[k] << endl;
       handle = loadPlugin(plugnames[k].c_str(), 2);
