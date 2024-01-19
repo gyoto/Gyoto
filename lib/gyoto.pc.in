@@ -33,4 +33,4 @@ Requires: @pkg_requires@
 Conflicts:
 Libs: -L${libdir} -lgyoto@FEATURES@ -ldl @pkg_libs@ @PTHREAD_LIBS@
 Libs.private:
-Cflags: @CXXFLAGS@ -I${includedir}/Gyoto @pkg_cflags@ @PTHREAD_CFLAGS@ @BOOST_CPPFLAGS@
+Cflags: -I${includedir}/Gyoto @pkg_cflags@ @PTHREAD_CFLAGS@ @BOOST_CPPFLAGS@
