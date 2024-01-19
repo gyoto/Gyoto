@@ -1,3 +1,9 @@
+2.0.2 2024/01/19 PKG
+    * Update citations and copyright in AUTHORS and README.md
+    * Fix typos
+    * Bugfixes in packaging material
+    * Allow specifying Python interpreter for "gyoto mk-video..." 
+
 2.0.1 2024/01/17 BUG
     * Update build system
         * ARBLIB is included in flint >= 3, fix includes and configure.ac accordingly

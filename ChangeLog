@@ -1,6 +1,51 @@
 commit unknown
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Wed, 17 Jan 2024 23:00:47 +0100
+Date:   Fri, 19 Jan 2024 17:45:07 +0100
+
+    Releasing 2.0.2
+
+commit 8930000c1be754b985b2bbe78dd5615a0601ea12
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 16:32:21 2024 +0100
+
+    Update citations and copyright
+
+commit d807210ac24dddb823a896bb35c881b0c8a4bc1f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 15:58:45 2024 +0100
+
+    Fix typos
+
+commit 5a276eba656d3aa7c91df4bf1033a4d140f8cfb5
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 15:40:38 2024 +0100
+
+    Remove CXXFLAGS from Cflags in gyoto.pc
+    
+    Those flags are needed to compile Gyoto itself, not codes based on Gyoto, and
+    may contain information that breaks reproducible builds on Debian.
+
+commit f65c4b60b4ef1d8af9f4010eafcbaeff20958538
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 15:11:22 2024 +0100
+
+    Fix libtool/autotools links
+    
+    Copy libtool/autotools stuff in the gyoto base source, and link to this version
+    in plugins/python and plugins/null.
+
+commit 9e89c85ceeddfc13a18c0e851fecafe49f78d74a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Jan 18 17:14:44 2024 +0100
+
+    Fix python test
+    
+    Come back to calling python3 setup.py test from python/, trying to call the
+    tests from build/lib.xxx leads to madness
+
+commit 5dc86a16c41ea474f1f42404fb3d431d2b25ddb7
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 17 23:02:13 2024 +0100
 
     Releasing 2.0.1
 

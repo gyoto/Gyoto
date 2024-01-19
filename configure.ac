@@ -10,7 +10,7 @@ dnl without any warranty.
 
 
 AC_PREREQ([2.71])
-AC_INIT([Gyoto],[2.0.0],[gyoto@sympa.obspm.fr])
+AC_INIT([Gyoto],[2.0.2],[gyoto@sympa.obspm.fr])
 gyoto_test_CXXFLAGS=${CXXFLAGS+set}
 gyoto_test_CPPFLAGS=${CPPFLAGS+set}
 AC_CANONICAL_TARGET
