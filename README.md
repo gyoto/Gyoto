@@ -14,6 +14,15 @@ acknowledged. Please cite:
     T. Paumard, E. Gourgoulhon & G. Perrin, Classical and Quantum
     Gravity 28, 225011 (2011) [arXiv:1109.4769]
 
+    GYOTO 2.0: a polarized relativistic ray-tracing code, N. Aimar,
+    T. Paumard, F. H.Vincent, É. Gourgoulhon, G. Perrin, Classical nd
+    Quantum Graviry, submitted (2024) [arXiv:2311.18802]
+
+    Gyoto, T. Paumard, F. H. Vincent, N. Aimar, O. Straub, F. Lamy,
+    I. Urso, É. Gourgoulhon & G. Perrin, Zenodo,
+    https://zenodo.org/doi/10.5281/zenodo.2540651 (2024) (or cite the
+    version you are using, see Zenodo ecord).
+
 We also request that Gyoto modifications, extensions or plug-ins
 leading to a scientific publication be made public as free software
 reasonably fast (within one year after publication of the scientific
@@ -23,9 +32,10 @@ well as in the AUTHORS file in the package.
 
 ## Copyright information
 
-Gyoto is Copyright 2011-2019 Thibaut Paumard, Frédéric Vincent, Odele
-Straub and Frédéric Lamy (To ease reading on non-UTF8 systems, French
-accents are omitted in file headers).
+Gyoto is Copyright 2011-2024 Thibaut Paumard, Frédéric Vincent,
+Nicolas Aimar, Odele Straub, Frédéric Lamy and Irene Urso (To ease
+reading on non-UTF8 systems, French accents are omitted in file
+headers).
 
 Gyoto is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
