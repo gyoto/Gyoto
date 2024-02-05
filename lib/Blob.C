@@ -354,18 +354,6 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
            double dsem,
            state_t const &coord_ph,
            double const *co) const {
-
-  string kin = gg_->kind();
-  if (kin != "KerrBL" and kin != "Minkowski") GYOTO_ERROR("Blob should be in Kerr or Minko!");
-  double spin = 0.;
-  if (kin == "KerrBL"){
-    // Check that Kerr spin is 0 (mf formulas below are so far in Sch only)
-    spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-    if (spin!=0.) GYOTO_ERROR("Blob should be in Schwarzschild!");
-  }
-
-  double mynuem[1]; // TEST!!!
-  mynuem[0]=1.36e14; //nuem[0];
   
   // polarized radiativeQ
   
@@ -494,7 +482,6 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     spectrumThermalSynch_->numberdensityCGS(number_density);
     spectrumThermalSynch_->angle_averaged(0); //  no angle avg of course
     spectrumThermalSynch_->angle_B_pem(theta_mag);
-    //spectrumThermalSynch_->angle_B_pem(0.785); // TEST!!
     spectrumThermalSynch_->cyclotron_freq(nu0);
     spectrumThermalSynch_->besselK2(besselK2);
     //cout << "for anu jnu: " << coord_ph[1] << " " << zz << " " << temperature << " " << number_density << " " << nu0 << " " << thetae << " " << besselK2 << endl;
@@ -503,14 +490,12 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
 				      rotQnu, rotUnu, rotVnu, nuem, nbnu);
   }else if (electronDistrib_=="Kappa"){
     // KAPPA SYNCHRO
-    //double hypergeom = Gyoto::hypergeom(kappaIndex_, 10.); // TEST
     //cout << "In Blob: ne, temperature, BB, nu0, besselK2, theta_mag: " << number_density << " " << temperature << " " << BB << " " << nu0 << " " << hypergeom << " " << theta_mag << endl;
     spectrumKappaSynch_->kappaindex(kappaIndex_);
     spectrumKappaSynch_->numberdensityCGS(number_density);
-    spectrumKappaSynch_->angle_averaged(0); // TEST!!
+    spectrumKappaSynch_->angle_averaged(0);
     //cout << "In Blob: sin theta (k,B) = " << sin(theta_mag) << endl;
     spectrumKappaSynch_->angle_B_pem(theta_mag);
-    //spectrumKappaSynch_->angle_B_pem(0.785); // TEST!!
     spectrumKappaSynch_->cyclotron_freq(nu0);
     spectrumKappaSynch_->thetae(Theta);
     spectrumKappaSynch_->hypergeometric(hypergeom);
@@ -518,13 +503,11 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     spectrumKappaSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
 				    aInu, aQnu, aUnu, aVnu,
 				    rotQnu, rotUnu, rotVnu, nuem, nbnu);
-    //rotQnu, rotUnu, rotVnu, mynuem, nbnu); // TEST!!!
   }else if (electronDistrib_ == "PL"){
     spectrumPLSynch_->numberdensityCGS(number_density);
     spectrumPLSynch_->angle_averaged(0);
     //cout << "In Blob: sin theta (k,B) = " << sin(theta_mag) << endl;
     spectrumPLSynch_->angle_B_pem(theta_mag);
-    //spectrumPLSynch_->angle_B_pem(0.785); // TEST!!
     spectrumPLSynch_->cyclotron_freq(nu0);
     spectrumPLSynch_->PLindex(kappaIndex_-1);
     
