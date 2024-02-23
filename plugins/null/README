@@ -4,21 +4,22 @@ To make your own,
 
 1- choose a cool name;
 2- copy this directory (plugins/null/) somewhere;
-3- edit configure.ac, lib/Makefile.am and lib/InitPlug.C: replace any
+3- enter into this directory;
+4- edit configure.ac, lib/Makefile.am and lib/InitPlug.C: replace any
    occurrence of "null" with your cool name;
-4- add new metrics and astrobjs as needed in lib/ and include/, the
+5- add new metrics and astrobjs as needed in lib/ and include/, the
    gyoto source code is also full of examples;
-5- edit lib/InitPlug.C to register your new classes (rename it to
+6- edit lib/InitPlug.C to register your new classes (rename it to
    CoolPlug.C if you wish);
-6- add the name of the required C++ source files to the
+7- add the name of the required C++ source files to the
    libgyoto_null_la_SOURCES variable in lib/Makefile.am (this variable
    should have been renamed to libgyoto_<cool-name>_la_SOURCES by
    now);
-7- run autoreconf (whenever you edit any configure.ac or Makefile.am
+8- run autoreconf (whenever you edit any configure.ac or Makefile.am
    file), then ./configure, make, make install...
-8- if installing to default directories (/usr/local/lib), you may need
+9- if installing to default directories (/usr/local/lib), you may need
    to run 'sudo ldconfig'
-9- You can now start using your plug-in by loading it with any of the
+10- You can now start using your plug-in by loading it with any of the
    available methods:
      - In XML: <Astrobj plugin="null" kind="null"/>
      - On the command line: gyoto -pstdplug,null ...
