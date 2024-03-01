@@ -132,7 +132,7 @@ Jet::Jet() :
   jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
   gammaJet_(1.), jetVphiOverVr_(0.),
   baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
-  temperatureSlope_(1.),
+  temperatureSlope_(1.), magneticConfig_("None"),
   magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
@@ -150,6 +150,7 @@ Jet::Jet(const Jet& o) :
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
+  magneticConfig_(o.magneticConfig_),
   spectrumKappaSynch_(NULL),
   spectrumThermalSynch_(NULL)
 {
@@ -404,4 +405,203 @@ void Jet::metric(SmartPointer<Metric::Generic> gg) {
   // NB: KerrBL needed for ZAMO velocity in getVelocity,
   // could be generalized if needed
   Generic::metric(gg);
+}
+
+void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
+           double *Vnu,
+           Eigen::Matrix4d *Onu,
+           double const *nuem , size_t nbnu,
+           double dsem,
+           state_t const &coord_ph,
+           double const *co) const {
+  
+  // polarized radiativeQ
+  double rcyl=0.; // cylindrical radius
+  double zz=0.; // height, z coord
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    rcyl = coord_ph[1]*sin(coord_ph[2]);
+    zz   = coord_ph[1]*cos(coord_ph[2]);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
+    zz   = coord_ph[3];
+    break;
+  default:
+    GYOTO_ERROR("In Jet::radiativeQ: Unknown coordinate system kind");
+  }
+
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+
+  double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
+
+  //cout << "rcyl, rcylB, zz= " << rcyl << " " << rcyljetbase << " " << zz << endl;
+
+  //rcyl=rcyljetbase;
+  //zz=2.; // TEST!!!
+  
+  double number_density = baseNumberDensity_cgs_
+    *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+
+  double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
+					    temperatureSlope_);
+
+  double thetae = GYOTO_BOLTZMANN_CGS*temperature
+    /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
+
+  double BB = sqrt(4.*M_PI*magnetizationParameter_
+		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
+		   *number_density);
+  //cout << "r, z, dens, T, B= " << rcyl << " " << zz << " " << number_density << " " << temperature << " " << BB << endl;
+  //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
+  //GYOTO_ERROR("testjet");
+
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+
+  //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
+  //cout << "jet zz,rcyl,th,ph,ne,Te= " <<  zz << " " << rcyl << " " << coord_ph[2] << " " << coord_ph[3] << " " << number_density << " " << temperature << endl;
+  // Use that line for Compton study:
+  //cout <<  "jet emis: " << zz << " " << rcyl << " " << number_density << " " << temperature << endl;
+
+  // CHOOSE BFIELD GEOMETRY
+  // Note: Bfield is simply a normalized spacelike vector, we only
+  // need its direction, the norm is computed independently.
+
+  double B4vect[4]={0.,0.,0.,0.};
+  computeB4vect(B4vect, magneticConfig_, co, coord_ph);
+    
+  //cout << "***BL mf in orthonorm frame= "<< B4vect[0]  << " " << B4vect[1]  << " " << coord_ph[1]*B4vect[2]  << " " << coord_ph[1]*abs(sin(coord_ph[2]))*B4vect[3]  << endl;
+
+  //cout << "***k photon in orthonorm frame= " << coord_ph[4] << " " << coord_ph[5] << " " << coord_ph[1]*coord_ph[6] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*coord_ph[7] << endl;
+  
+  double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+  //cout << "norm= " << norm << endl;
+  
+  if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+
+  double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+  //cout << "At r,x,y,z= " << coord_ph[1] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << endl;
+
+  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4];
+  }
+
+  // Angle between mf and K in emitter's frame. B is already in this frame,
+  // it is by construction normal to u. We still need to project k
+  // normal to u, this is K = k + (k.u) u. Then:
+  // cos(thetaB) = (K / |K|) . (B / |B|)
+  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
+  //cout << "***K photon proj in orthonorm frame= " << photon_emframe[0] << " " << photon_emframe[1] << " " << coord_ph[1]*photon_emframe[2] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*photon_emframe[3] << endl;
+  //cout << endl;
+  double bnorm = gg_->norm(&coord_ph[0],B4vect);
+  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
+  double theta_mag = acos(lscalb/(lnorm*bnorm));
+
+  if (theta_mag<0. or theta_mag>M_PI) throwError("Jet: bad B angle");
+
+  
+  Eigen::Matrix4d Omat;
+  Omat << 1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          0, 0, 0, 1;
+
+ // Defining emission, absoprtion and rotation coefficients for the transmission matrix
+  double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+  double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+  double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
+  
+  for (size_t ii=0; ii<nbnu; ++ii){
+    // Initialze them to -1 to create error if not updated
+    jInu[ii]=-1.;
+    jQnu[ii]=-1.;
+    jUnu[ii]=-1.;
+    jVnu[ii]=-1.;
+    aInu[ii]=-1.;
+    aQnu[ii]=-1.;
+    aUnu[ii]=-1.;
+    aVnu[ii]=-1.;
+    rotQnu[ii]=-1.;
+    rotUnu[ii]=-1.;
+    rotVnu[ii]=-1.;
+  }
+
+  if (kappaIndex()!=default_kappaindex){
+    // KAPPA-DISTRIB SYNCHROTRON
+    spectrumKappaSynch_->kappaindex(kappaIndex());
+    spectrumKappaSynch_->numberdensityCGS(number_density);
+    spectrumKappaSynch_->angle_averaged(0);
+    spectrumKappaSynch_->angle_B_pem(theta_mag);
+    spectrumKappaSynch_->cyclotron_freq(nu0);
+    spectrumKappaSynch_->thetae(thetae);
+    double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
+    spectrumKappaSynch_->hypergeometric(hypergeom);
+
+    spectrumKappaSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+				    aInu, aQnu, aUnu, aVnu,
+				    rotQnu, rotUnu, rotVnu, nuem, nbnu);
+  }else{
+    // THERMAL SYNCHROTRON
+    double besselK2 = bessk(2, 1./thetae);
+    spectrumThermalSynch_->temperature(temperature);
+    spectrumThermalSynch_->numberdensityCGS(number_density);
+    spectrumThermalSynch_->angle_averaged(0); //  no angle avg of course
+    spectrumThermalSynch_->angle_B_pem(theta_mag);
+    spectrumThermalSynch_->cyclotron_freq(nu0);
+    spectrumThermalSynch_->besselK2(besselK2);
+    spectrumThermalSynch_->radiativeQ(jInu, jQnu, jUnu, jVnu,
+				      aInu, aQnu, aUnu, aVnu,
+				      rotQnu, rotUnu, rotVnu, nuem, nbnu);
+  }
+
+  // RETURNING TOTAL INTENSITY AND TRANSMISSION
+  for (size_t ii=0; ii<nbnu; ++ii) {
+
+    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
+    //cout << "at rcyl,z= " << rcyl << " " << zz << endl;
+    //cout << "jet jnu anu kappa= " << jnu_tot << " " << anu_tot << endl; //x" " << jnu_tot/anu_tot << " " << dsem << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    //cout << Jstokes << endl;
+    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    //cout << Omat << endl;
+    // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
+    Eigen::Vector4d Stokes=Omat*Jstokes;
+    //cout << Stokes << endl;
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    //cout << "Q and U and U/Q= " << Qnu[ii] << " " << Unu[ii] << " " << Unu[ii]/Qnu[ii] << endl;
+    //cout << endl;
+    
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+
+    //cout << "in jet stuff: " << zz << " " << rcyl << " " << nu_ems[0]  << " " << number_density << " " << nu0 << " " << temperature << " " << thetae << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
+
+    
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Jet::radiativeQ: Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is infinite");
+
+  }
+}
+
+void Jet::magneticConfiguration(string config){
+  magneticConfig_=config;
+}
+
+string Jet::magneticConfiguration() const{
+  return magneticConfig_;
 }
