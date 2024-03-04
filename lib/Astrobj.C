@@ -666,6 +666,25 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   delete [] alphaInu;
 }
 
+double Generic::get_theta_mag(double const fourvect[4], state_t const &coord_ph, double const vel[4]) const{
+	// Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  double B4vect[4];
+  for (int ii=0; ii<4; ii++){
+  	B4vect[ii] = fourvect[ii]; // Copy content of fourvect because of const
+  }
+
+  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4];
+  }
+  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
+  double bnorm = gg_->norm(&coord_ph[0],B4vect);
+  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
+  return acos(lscalb/(lnorm*bnorm));
+}
+
 Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const{
   
   return Omatrix(alphanu[0], alphanu[1], alphanu[2], alphanu[3], rnu[0], rnu[1], rnu[2], sin(2.*Chi), cos(2.*Chi), dsem);
@@ -1254,6 +1273,11 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     B4vect[1]=0.;
     B4vect[2]=0.;
     B4vect[3]=Bp;
+  }else if(magneticConfig=="Poloidal"){
+  	B4vect[0]=0.;
+  	B4vect[1]=0.;
+  	B4vect[2]=1./sqrt(gthth);
+  	B4vect[3]=0.;
   }else{
     GYOTO_ERROR("Not implemented Bfield orientation");
   }
@@ -1451,10 +1475,12 @@ int Generic::getIndice(double &xq, std::string const cond_limit, double const X_
 	int ind, n_x;
 	double x_min, x_max, dx;
 	n_x = floor(X_params[2]);
+	if (n_x==1)
+		return 0;
 	x_min = X_params[0];
   x_max = X_params[1];
 	dx    = (x_max - x_min)/(n_x-1);
-
+	//cout << "xq, x_min, x_max, dx, n_x : " << xq << ", " << x_min << ", " << x_max << ", " << dx << ", " << n_x << endl;
 
 	if (xq<x_min or xq>x_max){
 		// Query value out of boundary, check limit condition
@@ -1535,7 +1561,6 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		}
 		Y_array[ii]=array[ind_Y];
 	}
-
 	return interpNd(N, Xq, X_array, Y_array, cond_limits);
 
 }
@@ -1555,7 +1580,6 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 	}
 	double* Y_array = new	double[len];
 	for (int ii=0;ii<len; ii++){
-		
 		int ind_X = ii;
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){

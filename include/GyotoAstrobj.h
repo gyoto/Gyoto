@@ -375,7 +375,7 @@ private:
    * Return a Gyoto::Quantity_t suitable as input to
    * Gyoto::Scenery::setRequestedQuantities() to set de default
    * quantities to compute for this object. The default of these
-   * defaults GYOTO_QUANTITY_INTENSITY.
+   * defaults GYOTO_QUANTITY_INTEget_theta_mag(double const B4vect[4], state_t const &coord_ph, double const vel[4]) constNSITY.
    */
   virtual Gyoto::Quantity_t getDefaultQuantities();
   ///< Which quantities to compute if know was requested
@@ -687,6 +687,15 @@ private:
    * \param vel Fluid velocity at the photon coordinate
    */
   double getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec=false) const;
+
+  /**
+   * Get angle between the magnetic field and the photon direction.
+   * 
+   * \param fourvect 4-vector magnetic field
+   * \param coord_ph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
+   * \param vel Fluid velocity at the photon coordinate
+   */
+  double get_theta_mag(double const fourvect[4], state_t const &coord_ph, double const vel[4]) const;
   /**
    * Get the cosinus and sinus of 2*Chi angle.
    * Chi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
