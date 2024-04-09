@@ -1079,6 +1079,9 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
 		      double step,
 		      state_t &coordout);
   virtual std::string kind();
+
+  private:
+    bool checkBasis(state_t const &coord) const;
   
 };
 #endif /// GYOTO_HAVE_BOOST_INTEGRATORS

@@ -306,6 +306,7 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     controlled_step_result cres;
     GYOTO_DEBUG << h1 << endl;
 
+    state_t xx_old = xx;
     do {
       // try_step_ is a lambda function encapsulating
       // the actual adaptive-step integrator from boost
@@ -329,6 +330,54 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
       GYOTO_SEVERE << "delta_min is too large: " << delta_min << endl;
       dt=sgn*delta_min;
       do_step_(xx, dt);
+    }
+
+    if (parallel_transport_){
+      if (integ_31_==true){
+        double tnew = told+dt, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
+          Vr=xx[4], Vth=xx[5], Vph=xx[6];
+        double NN, beta[3];
+        double newpos[4]={tnew,rr,th,ph};
+        gg_->computeNBeta(newpos,NN,beta);
+        double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
+        
+        double rprime=NN*Vr-beta_r,
+          thprime=NN*Vth-beta_t,
+          phprime=NN*Vph-beta_p,
+          tdotnew = EE/NN,
+          rdot = rprime*tdotnew,
+          thdot = thprime*tdotnew,
+          phdot = phprime*tdotnew;
+        
+        state_t new_coord = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
+
+        bool ortho = checkBasis(new_coord);
+        double h2 = dt;
+        while (!ortho && abs(h2)>=delta_min){
+          new_coord = coord; // Going back to the initial position to perform half the previous (failed) step integration
+          h2/=2.;
+          do_step_(new_coord, h2);
+          ortho = checkBasis(new_coord);
+        }
+        if (abs(h2)<delta_min){
+            cout << "h2= " << h2 << endl;
+            GYOTO_ERROR("h2 < delta_min");
+        }
+
+      }else {
+        bool ortho = checkBasis(xx);
+        double h2 = dt;
+        while (!ortho && abs(h2)>=delta_min){
+          xx = xx_old; // Going back to the initial position to perform half the previous (failed) step integration
+          h2/=2.;
+          do_step_(xx, h2);
+          ortho = checkBasis(xx);
+        }
+        if (abs(h2)<delta_min){
+            cout << "h2= " << h2 << endl;
+            GYOTO_ERROR("h2 < delta_min");
+        }
+      } 
     }
     // update adaptive step
     delta_=h1;
@@ -434,4 +483,27 @@ std::string Worldline::IntegState::Boost::kind() {
   GYOTO_ERROR("unknown enum value");
   return "error";
 } 
+
+bool Worldline::IntegState::Boost::checkBasis(state_t const &coord) const {
+  double Ephi[4];
+  double Etheta[4];
+  double photon_tgvec[4];
+  
+  for (int ii=0;ii<4;ii++){
+    photon_tgvec[ii]=coord[ii+4]; // photon wave vector
+    Ephi[ii]=coord[ii+8]; // polarization basis vector 1
+    Etheta[ii]=coord[ii+12]; // polarization basis vector 2
+  }
+
+  // Check that wave vector, Ephi and Etheta are orthogonal:
+  double test_tol=GYOTO_DEFAULT_ABSTOL;
+  if (fabs(gg_->ScalarProd(&coord[0],Ephi,Etheta))>test_tol
+      or fabs(gg_->ScalarProd(&coord[0],Ephi,photon_tgvec))>test_tol
+      or fabs(gg_->ScalarProd(&coord[0],Etheta,photon_tgvec))>test_tol
+      or fabs(gg_->norm(&coord[0],Ephi)-1.)>test_tol
+      or fabs(gg_->norm(&coord[0],Etheta)-1.)>test_tol){
+    return false;
+  }
+  return true;
+}
 #endif // GYOTO_HAVE_BOOST_INTEGRATORS
