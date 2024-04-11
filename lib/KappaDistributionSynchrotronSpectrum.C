@@ -67,7 +67,7 @@ void Spectrum::KappaDistributionSynchrotron::cyclotron_freq(double freq) {
 double Spectrum::KappaDistributionSynchrotron::thetae() const { 
   return thetae_; }
 void Spectrum::KappaDistributionSynchrotron::thetae(double th) { 
-  thetae_ = th; }
+  thetae_ = max(th, 0.005); }
 double Spectrum::KappaDistributionSynchrotron::kappaindex() const { 
   return kappaindex_; }
 void Spectrum::KappaDistributionSynchrotron::kappaindex(double ind) { 
