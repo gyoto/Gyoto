@@ -364,19 +364,21 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 				      //  cout
 				      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
 				      << "DEBUG: Generic::processHitQuantities(): "
-				    << "nuobs[" << ii << "]="<< nuobs[ii]
-				    << ", nuem=" << nuem[ii]
-				    << ", dsem=" << dsem
-				    << ", Inu * GM/c2="
-				    << Inu[ii]
-				    << ", spectrum[" << ii*data->offset << "]="
-				    << data->spectrum[ii*data->offset]
-				      << ", sotkesQ[" << ii*data->offset << "]="
-				      << data->stokesQ[ii*data->offset]
-				    << ", transmission=" << t
-				    << ", optical depth=" << o
-				    << ", redshift=" << ggred << ")\n" << endl;
-				    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
+              << "nuobs[" << ii << "]="<< nuobs[ii]
+              << ", nuem=" << nuem[ii]
+              << ", dsem=" << dsem
+              << ", Inu * GM/c2="
+              << Inu[ii]
+              << ", spectrum[" << ii*data->offset << "]="
+              << data->spectrum[ii*data->offset]
+              if (data-> stokesQ){
+                GYOTO_DEBUG << ", stokesQ[" << ii*data->offset << "]="
+                << data->stokesQ[ii*data->offset]
+              }
+              GYOTO_DEBUG << ", transmission=" << t
+              << ", optical depth=" << o
+              << ", redshift=" << ggred << ")\n" << endl;
+              //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
 				  }
 					#endif
 				}
@@ -1446,10 +1448,11 @@ double Generic::interpNd(int const N, double* const Xq, double** const X, double
   {
   	int arr_len = pow(2,n-1);
       Xsub_dim = new double[arr_len];
-      double t = (Xq[N-n]-X[0][N-n])/(X[2*(N-n)+1][N-n]-X[0][N-n]);
+      int indx = (N-n)==0 ? 1:(pow(2.,(N-n))+1);
+      double t = (Xq[N-n]-X[0][N-n])/(X[indx][N-n]-X[0][N-n]);
       if (t<0. or t>1.){
-      	if (cond_limit[n-1]!="Constant" and cond_limit[n-1]!="Linear"){
-      		GYOTO_ERROR("In interpNd : Query position out of interpolation boundaries.");
+      	if (cond_limit[N-n]=="None"){
+      		GYOTO_ERROR("In interpNd : Query position of dimension out of interpolation boundaries.");
       	}else if (cond_limit[n-1]=="Constant"){
       		if (t<0.)
       			t=0.;
@@ -1545,10 +1548,10 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
       ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	X_array[ii][n]=X[n][indices[n]+tab_indX[n]];
-
       }else{
       	return 0.; // "Null" bondary condition
       }
+        //cout << "X_array[" << ii << "][" << n << "] = " << X_array[ii][n] << endl;
 		}
 
 		int ind_Y = 0;
@@ -1560,6 +1563,7 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
       ind_Y += (indices[n]+tab_indX[n])*prod_len;
 		}
 		Y_array[ii]=array[ind_Y];
+    //cout << "Y_array[" << ii << "] = " << Y_array[ii] << endl;
 	}
 	return interpNd(N, Xq, X_array, Y_array, cond_limits);
 
