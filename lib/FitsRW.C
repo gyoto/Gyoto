@@ -58,24 +58,31 @@ fitsfile* FitsRW::fitsCreate(string const filename) const{
   char*     fitsname   = const_cast<char*>(filename.c_str());
   int       status    = 0;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  long      fpixel[]  = {1};
+  long      fpixel[2]  = {1,1};
   fitsfile* fptr; // pointer to FITS file
   char *    CNULL     = NULL;
   
-  fits_create_file(&fptr, fitsname, &status);
+  if (remove(fitsname) == 0) {
+    cout << "Existing file removed" << endl;
+  } else {
+    cout << "No existing file to remove" << endl;
+  }
   
-  long      naxes [] = {1};
+  fits_create_file(&fptr, fitsname, &status);
+  long      naxes [2] = {1, 1};
   // Create the primary extension containing a zero pixel
   fits_create_img(fptr, DOUBLE_IMG, 1, naxes, &status);
-  double src[1] = {0.};
-  fits_write_pix(fptr, TDOUBLE, fpixel, 1, src, &status);
+  if (status) throwCfitsioError(status);
+  short pixel_value = 0;
+  // Write the pixel value to the image
+  fits_write_pix(fptr, TSHORT, fpixel, 1, &pixel_value, &status);
   if (status) throwCfitsioError(status);
 
   return fptr;
 }
 
 fitsfile* FitsRW::fitsOpen(string const filename) const{
-  //GYOTO_MSG << "FitsRW opening FITS file " << filename << endl;
+  GYOTO_DEBUG << "FitsRW opening FITS file " << filename << endl;
 
   fitsfile* fptr; // pointer to FITS file
   int       status    = 0;
@@ -103,7 +110,11 @@ void FitsRW::fitsWriteKey(fitsfile* const fptr, std::string const key, double va
   char *    CNULL     = NULL;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
-  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(hdu.c_str()), 0, &status);
+  if (hdu=="PRIMARY"){
+    fits_movabs_hdu(fptr, 1, NULL, &status);
+  }else{
+    fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(hdu.c_str()), 0, &status);
+  }
   fits_update_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &value, CNULL, &status); // Updates if key already exists, appends if not
   if (status) throwCfitsioError(status) ;
 }
@@ -149,6 +160,7 @@ double* FitsRW::fitsReadHDUData(fitsfile* const fptr, string const extname) cons
   fits_get_img_size(fptr, ndim, naxes, &status);
   if (status) throwCfitsioError(status) ;
 
+  GYOTO_DEBUG << "FitsRW::fitsReadHDUData(): allocation array" << endl;
   double* dest = new double[naxes[0]];
   fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 0, dest, &anynul, &status);
   if (status) {
