@@ -179,7 +179,8 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-DirectionalDisk.lo \
 	libgyoto_stdplug_la-XillverReflection.lo \
 	libgyoto_stdplug_la-FlaredDiskSynchrotron.lo \
-	libgyoto_stdplug_la-ThinDiskGridIntensity.lo
+	libgyoto_stdplug_la-ThinDiskGridIntensity.lo \
+	libgyoto_stdplug_la-SimBridge.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
@@ -299,6 +300,7 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo \
@@ -615,7 +617,7 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
 	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C \
-	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C
+	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C SimBridge.C 
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -818,6 +820,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo@am__quote@ # am--include-marker
@@ -1231,6 +1234,13 @@ libgyoto_stdplug_la-ThinDiskGridIntensity.lo: ThinDiskGridIntensity.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ThinDiskGridIntensity.lo `test -f 'ThinDiskGridIntensity.C' || echo '$(srcdir)/'`ThinDiskGridIntensity.C
 
+libgyoto_stdplug_la-SimBridge.lo: SimBridge.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-SimBridge.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Tpo -c -o libgyoto_stdplug_la-SimBridge.lo `test -f 'SimBridge.C' || echo '$(srcdir)/'`SimBridge.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Tpo $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimBridge.C' object='libgyoto_stdplug_la-SimBridge.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-SimBridge.lo `test -f 'SimBridge.C' || echo '$(srcdir)/'`SimBridge.C
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1474,6 +1484,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo
@@ -1600,6 +1611,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-StarTrace.Plo

@@ -41,6 +41,7 @@
 #include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskGridIntensity.h"
+#include "GyotoSimBridge.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
