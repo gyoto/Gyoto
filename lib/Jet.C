@@ -1,5 +1,5 @@
 /*
-    Copyright 2017-2019 Frederic Vincent & Thibaut Paumard
+    Copyright 2017-2024 Frederic Vincent, Thibaut Paumard, Paloma Thévenet
 
     This file is part of Gyoto.
 
@@ -40,11 +40,18 @@ using namespace Gyoto;
 using namespace Gyoto::Astrobj;
 
 GYOTO_PROPERTY_START(Jet)
-GYOTO_PROPERTY_DOUBLE(Jet, JetOuterOpeningAngle, jetOuterOpeningAngle)
-GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle)
-GYOTO_PROPERTY_DOUBLE(Jet, JetBaseHeight, jetBaseHeight)
-GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet)
-GYOTO_PROPERTY_DOUBLE(Jet, JetVphiOverVr, jetVphiOverVr,"this is (r*Vphi/Vr) where V is the jet velocity measured by the ZAMO")
+GYOTO_PROPERTY_BOOL(Jet, Parabolic, NonParabolic, parabolic,
+		    "Chose whether the jet sheath has a parabolic shape or if not it will be a conical shape.")
+GYOTO_PROPERTY_BOOL(Jet, Outflowing, NonOutflowing, outflowing,
+		    "Is the jet outflowing or inflowing?")
+GYOTO_PROPERTY_DOUBLE(Jet, JetStagnationRadius, jetStagnationRadius, "The jet is outflowing above this radius, inflowing below")
+GYOTO_PROPERTY_DOUBLE(Jet, JetShapeInnerParabolaParam, jetShapeInnerParabolaParam, "Such that the jet (sheath) inner boundary's shape follows: z = jetShapeInnerParabolaParam_ * rcyl^2, where rcyl is the cylindrical radius; the smaller this param, the more open the jet; for parabolic jet")
+GYOTO_PROPERTY_DOUBLE(Jet, JetShapeOuterParabolaParam, jetShapeOuterParabolaParam, "Such that the jet (sheath) outer boundary's shape follows: z = jetShapeOuterParabolaParam_ * rcyl^2, where rcyl is the cylindrical radius; the smaller this param, the more open the jet; for parabolic jet")
+GYOTO_PROPERTY_DOUBLE(Jet, JetInnerOpeningAngle, jetInnerOpeningAngle,"Jet sheath wall inner BL-theta opening angle; for conical jet")
+GYOTO_PROPERTY_DOUBLE(Jet, JetOuterOpeningAngle, jetOuterOpeningAngle,"Jet sheath wall outer BL-theta opening angle; for conical jet")
+GYOTO_PROPERTY_DOUBLE(Jet, JetInnerRadius, jetInnerRadius, "Jet basis")
+GYOTO_PROPERTY_DOUBLE(Jet, GammaJet, gammaJet, "Constant jet Lorentz factor")
+GYOTO_PROPERTY_DOUBLE(Jet, JetVphiOverVr, jetVphiOverVr,"this is V^(phi)/V^(r), ratio of phi to r component of jet velocity as observed by ZAMO, expressed in an orthonormal basis")
 GYOTO_PROPERTY_DOUBLE_UNIT(Jet, BaseNumberDensity, baseNumberDensity)
 GYOTO_PROPERTY_DOUBLE(Jet, BaseTemperature, baseTemperature)
 GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
@@ -57,16 +64,59 @@ GYOTO_PROPERTY_END(Jet, Standard::properties)
 #define default_kappaindex -1 // default (absurd value) kappa index
 
 // ACCESSORS
-void Jet::jetOuterOpeningAngle(double ang) {jetOuterOpeningAngle_=ang;}
+// chose parabolic or not (=conical)
+void Jet::parabolic(bool parabol) {parabolic_=parabol;}
+bool Jet::parabolic() const { return parabolic_; }
+// chose outflowing or not (=inflowing)
+void Jet::outflowing(bool out) {outflowing_=out;}
+bool Jet::outflowing() const { return outflowing_; }
+// for parabolic:
+void Jet::jetShapeInnerParabolaParam(double param) {
+  jetShapeInnerParabolaParam_=param;
+  if (jetShapeOuterParabolaParam_ != -1.){ // default parabola value is -1
+    if (jetShapeOuterParabolaParam_ > jetShapeInnerParabolaParam_)
+      GYOTO_ERROR("The outer parabola parameter cannot be bigger "
+		  "than the inner one");
+  }  
+}
+double Jet::jetShapeInnerParabolaParam() const {return jetShapeInnerParabolaParam_;}
+void Jet::jetShapeOuterParabolaParam(double param) {
+  jetShapeOuterParabolaParam_=param;
+  if (jetShapeInnerParabolaParam_ != -1.){ // default parabola value is -1
+    if (jetShapeOuterParabolaParam_ > jetShapeInnerParabolaParam_)
+      GYOTO_ERROR("The outer parabola parameter cannot be bigger "
+		  "than the inner one");
+  }  
+}
+double Jet::jetShapeOuterParabolaParam() const {return jetShapeOuterParabolaParam_;}
+// for conical:
+void Jet::jetOuterOpeningAngle(double ang) {
+  jetOuterOpeningAngle_=ang;
+  if (jetInnerOpeningAngle_ != -1.){ // default angle value is -1
+    if (jetOuterOpeningAngle_ < jetInnerOpeningAngle_)
+    GYOTO_ERROR("The outer opening angle cannot be smaller "
+		"than the inner opening angle");
+  }
+}
 double Jet::jetOuterOpeningAngle()const{return jetOuterOpeningAngle_;}
-void Jet::jetInnerOpeningAngle(double ang) {jetInnerOpeningAngle_=ang;}
+void Jet::jetInnerOpeningAngle(double ang) {
+  jetInnerOpeningAngle_=ang;
+  if (jetOuterOpeningAngle_ != -1.){ // default angle value is -1
+    if (jetOuterOpeningAngle_ < jetInnerOpeningAngle_)
+      GYOTO_ERROR("The outer opening angle cannot be smaller "
+		  "than the inner opening angle");
+  }
+}
 double Jet::jetInnerOpeningAngle()const{return jetInnerOpeningAngle_;}
-void Jet::jetBaseHeight(double hh) {jetBaseHeight_=hh;}
-double Jet::jetBaseHeight()const{return jetBaseHeight_;}
-void Jet::gammaJet(double gam) {gammaJet_=gam;}
-double Jet::gammaJet()const{return gammaJet_;}
+// for both:
+void Jet::jetStagnationRadius(double stag) {jetStagnationRadius_=stag;}
+double Jet::jetStagnationRadius() const {return jetStagnationRadius_;}
+void Jet::jetInnerRadius(double hh) {jetInnerRadius_=hh;}
+double Jet::jetInnerRadius()const{return jetInnerRadius_;}
 void Jet::jetVphiOverVr(double alpha) {jetVphiOverVr_=alpha;}
 double Jet::jetVphiOverVr()const{return jetVphiOverVr_;}
+void Jet::gammaJet(double gam) {gammaJet_=gam;}
+double Jet::gammaJet()const{return gammaJet_;}
 double Jet::baseNumberDensity() const {
   // Converts internal cgs central enthalpy to SI
   double dens=baseNumberDensity_cgs_;
@@ -128,8 +178,12 @@ double Jet::kappaIndex()const{
 //
 
 Jet::Jet() :
-  Standard("Jet"), jetOuterOpeningAngle_(0.785),
-  jetInnerOpeningAngle_(0.5), jetBaseHeight_(2.),
+  Standard("Jet"),
+  parabolic_(1), outflowing_(1), jetShapeInnerParabolaParam_(-1.),
+  jetShapeOuterParabolaParam_(-1.),
+  jetOuterOpeningAngle_(-1.),
+  jetInnerOpeningAngle_(-1.), jetInnerRadius_(2.),
+  jetStagnationRadius_(0.),
   gammaJet_(1.), jetVphiOverVr_(0.),
   baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
   temperatureSlope_(1.), magneticConfig_("None"),
@@ -142,9 +196,15 @@ Jet::Jet() :
 }
 
 Jet::Jet(const Jet& o) :
-  Standard(o), jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
+  Standard(o),
+  parabolic_(o.parabolic_),
+  outflowing_(o.outflowing_),
+  jetShapeInnerParabolaParam_(o.jetShapeInnerParabolaParam_),
+  jetShapeOuterParabolaParam_(o.jetShapeOuterParabolaParam_),
+  jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
   jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
-  jetBaseHeight_(o.jetBaseHeight_),
+  jetInnerRadius_(o.jetInnerRadius_),
+  jetStagnationRadius_(o.jetStagnationRadius_),
   gammaJet_(o.gammaJet_), jetVphiOverVr_(o.jetVphiOverVr_),
   baseNumberDensity_cgs_(o.baseNumberDensity_cgs_),
   baseTemperature_(o.baseTemperature_),
@@ -176,31 +236,58 @@ void Jet::radiativeQ(double Inu[], // output
 		     double const coord_obj[8]) const {
   double rcyl=0.; // cylindrical radius
   double zz=0.; // height, z coord
+  double rr=0.; // spherical radius
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
+    rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
     zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
     zz   = coord_ph[3];
+    rr = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
+	     +coord_ph[3]*coord_ph[3], 0.5);
     break;
   default:
     GYOTO_ERROR("In Jet::radiativeQ: Unknown coordinate system kind");
   }
 
-  double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
+  double rcyljetbase = 0.;
+  if (parabolic_==0){ // conical jet
+    rcyljetbase = jetInnerRadius_*tan(jetOuterOpeningAngle_);
+    //cout << "rcyl stuff: " << jetInnerRadius_ << " " << tan(jetOuterOpeningAngle_) << " " << rcyljetbase << endl;
+  }else{ // parabolic jet
+    // We want the cylindrical radius of the jet base, knowing that the
+    // jet base is at spherical radius jetInnerRadius_, and that
+    // abs(z) = jetShapeOuterParabolaParam_ * rcyl^2.
+    // We have: jetInnerRadius_^2 = rcyljetbase^2 + zjetbase^2
+    //                     = zjetbase/jetShapeOuterParabolaParam_ + zjetbase^2
+    // So we get a second order equation with discriminant:
+    // Delta = 1/jetShapeOuterParabolaParam_^2 + 4*jetInnerRadius_^2
+    double discri = 1./(jetShapeOuterParabolaParam_*jetShapeOuterParabolaParam_) + 4*jetInnerRadius_*jetInnerRadius_;
+    if (discri<0) GYOTO_ERROR("Bad discriminant!");
+    double  zjetbase = 0.5*(-1/jetShapeOuterParabolaParam_ + sqrt(discri));
+    rcyljetbase = sqrt(zjetbase/jetShapeOuterParabolaParam_);
+  }
 
-  //cout << "rcyl, rcylB, zz= " << rcyl << " " << rcyljetbase << " " << zz << endl;
+  //cout << "In emission t, rcyl, zz= " << coord_ph[0]<< " " << rcyl << " " << zz << endl;
 
   //rcyl=rcyljetbase;
   //zz=2.; // TEST!!!
   
   double number_density = baseNumberDensity_cgs_
-    *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
+    *(rcyljetbase*rcyljetbase)/(rcyl*rcyl); // using cylindrical radius here by conservation of mass in jet
 
-  double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
+  double temperature = baseTemperature_*pow(jetInnerRadius_/rr,
 					    temperatureSlope_);
+  // NB: Vincent+19 torus+jet Sgr model considers a T(z) rather than
+  // a T(r), see below. I don't see why (in 2024), so I prefer to consider
+  // a T(r) power law. The difference on the image is small anyway.
+  //baseTemperature_*pow(jetInnerRadius_/fabs(zz),
+  //		    temperatureSlope_); // 2019 version
+
+  //cout << "ne T= " << jetInnerRadius_ << " " << jetOuterOpeningAngle_ << " " << baseNumberDensity_cgs_ << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << temperature << endl;
 
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
     /(GYOTO_ELECTRON_MASS_CGS*GYOTO_C2_CGS);
@@ -287,12 +374,15 @@ double Jet::operator()(double const coord[4]) {
   //cout << "photon at r,z= " << coord[1] << " " << coord[1]*cos(coord[2]) << endl;
   double rcyl=0.; // cylindrical radius
   double zz=0.; // height, z coord, positive
+  double rr=0.; // spherical radius
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
+    rr = coord[1];
     rcyl = coord[1]*sin(coord[2]);
     zz   = fabs(coord[1]*cos(coord[2]));
     break;
   case GYOTO_COORDKIND_CARTESIAN:
+    rr = pow(coord[1]*coord[1]+coord[2]*coord[2]+coord[3]*coord[3], 0.5);
     rcyl = pow(coord[1]*coord[1]+coord[2]*coord[2], 0.5);
     zz   = fabs(coord[3]);
     break;
@@ -300,37 +390,56 @@ double Jet::operator()(double const coord[4]) {
     GYOTO_ERROR("In Jet::operator(): Unknown coordinate system kind");
   }
 
-  // if (fabs(zz) < jetBaseHeight_) return 1.; // outside jet
-  
-  // double rcyljetout = fabs(zz*tan(jetOuterOpeningAngle_)),
-  //   rcyljetin = fabs(zz*tan(jetInnerOpeningAngle_));
+  /*
+         *** Jet sheath geometry ***
 
-  // //double radbase=10.; // TO BE PARAM
-  // //double rcyljetout = radbase
-  // //  + fabs((zz-jetBaseHeight_)*tan(jetOuterOpeningAngle_)),
-  // //  rcyljetin = radbase + fabs((zz-jetBaseHeight_)*tan(jetInnerOpeningAngle_));
-  
-  // if  ((rcyl <  rcyljetout) and (rcyl >  rcyljetin)) return -1.; // inside jet
-  // else return 1.; // outside jet
-  // //cout << "r, rjet, z, theta0, ht= " << rcyl << " " << rcyljet << " " << zz << " " << theta0 << " " << ht << endl;
+	 *** 1. Conical
 
-  double hjetin = rcyl/tan(jetInnerOpeningAngle_),
-    hjetout = rcyl/tan(jetOuterOpeningAngle_);
+	 In the 2D plane (cylindrical radius rcyl, altitude above equat plane z)
+	 we consider two lines: one with BL angle theta=jetInnerOpeningAngle_,
+	 and one with BL angle theta=jetOuterOpeningAngle_. Ther oigin is at
+	 (0,0) in this plane. The jet sheath is in between these two lines,
+	 removing the region with BL r<jetInnerRadius_ (typically chosen
+	 at the horizon). The distance function implemented here isas always
+	 such that distance<0 inside the sheath. So considering some point 
+	 P(rcyl,z) along a geodesic, we return:
+	       distance = (rcyl - rcyljetin)*(rcyl - rcyljetout),
+	 where rcyljetin is the cylindrical radius of the inner jet sheath 
+	 boundary at the altiude z of point P, and idem for the outer one.
+	 This distance is negative iff inside the sheath, 
+	 and below jetInnerRadius_ we switch to simply
+	       distance(r<jetInnerRadius_) = jetInnerRadius_ - r
+	 which is obviously positive and thus excluded.
+	 The distance function is not continuous at r=jetInnerRadius_
+	 but we dont care.
 
-  // double distance = (zz - hjetin)*(zz - hjetout); // <0 inside jet sheath
+	 *** 2. Parabolic
 
-  // if (zz < jetBaseHeight_) // remove part below jet basis
-  //   distance = fabs(distance) + (jetBaseHeight_ - zz);
+	 Exactly similar but we consider parabolas 
+	      z = jetShapeInnerParabolaParam_ * rcyl²
+	 and 
+	      z = jetShapeOuterParabolaParam_ * rcyl²
+	 so the jet sheath is in between the two parabolas.
+	 The distance function is defined in the exact same way.
+   */
 
-  //double distance = (zz - jetBaseHeight_ - hjetin)
-  //  *(zz - jetBaseHeight_ - hjetout); // <0 inside jet sheath
-
-  double rcyljetin = zz*tan(jetInnerOpeningAngle_),
+  double rcyljetin=-1., rcyljetout=-1.; // stupid initialization for debugging
+  if (parabolic_==true){
+    rcyljetin = sqrt(zz/jetShapeInnerParabolaParam_);
+    rcyljetout = sqrt(zz/jetShapeOuterParabolaParam_);
+    //cout << "rcyl in out= " << zz << " " << rcyljetin << " " << rcyljetout << endl;
+  }else{
+    rcyljetin = zz*tan(jetInnerOpeningAngle_);
     rcyljetout = zz*tan(jetOuterOpeningAngle_);
+  }
+
+  //if (rr<5.)
+  //  cout << "at point " << rcyl << " " << zz << " the jet boundaries are " << rcyljetin << " " << rcyljetout << endl;
 
   double distance = (rcyl - rcyljetin)*(rcyl - rcyljetout);
-  if (zz < jetBaseHeight_) // remove part below jet basis
-    distance = fabs(distance) + (jetBaseHeight_ - zz);
+ 
+  if (rr < jetInnerRadius_) // remove part below jet basis
+    distance = jetInnerRadius_ - rr; 
 
   return distance;
   
@@ -338,7 +447,7 @@ double Jet::operator()(double const coord[4]) {
 
 void Jet::getVelocity(double const pos[4], double vel[4])
 {
-  double rr = pos[1];
+  double rr = pos[1], theta = pos[2], rcyl = rr*sin(theta); // MAKE IT INDEP OF COORD KIND
   double Vjet = sqrt(gammaJet_*gammaJet_-1.)/gammaJet_;
   //double Vr = Vjet/(sqrt(gg_->gmunu(pos,1,1)
   //			 +jetVphiOverVr_*jetVphiOverVr_/(rr*rr)*gg_->gmunu(pos,3,3)));
@@ -348,46 +457,89 @@ void Jet::getVelocity(double const pos[4], double vel[4])
 
   // KerrBL-specific part -- to generalize if possible
   double gpp = gg_->gmunu(pos,3,3), gtt = gg_->gmunu(pos,0,0),
+    gthth = gg_->gmunu(pos,2,2),
     grr = gg_->gmunu(pos,1,1),
     gtp = gg_->gmunu(pos,0,3);
   double utZAMO = sqrt(-gpp/(gtt*gpp-gtp*gtp)),
     uphiZAMO = -utZAMO*gtp/gpp;
-  double Vphi = jetVphiOverVr_*Vjet/sqrt(gpp),
-    Vr = sqrt(1-jetVphiOverVr_*jetVphiOverVr_)*Vjet / sqrt(grr);
-  //cout << "ZAMO=" << gtt*utZAMO*utZAMO + 2*gtp*utZAMO*uphiZAMO + gpp*uphiZAMO*uphiZAMO << endl;
 
-  // Paper def:
+  // Lets now define the velo of the jet V as measured by the ZAMO
+  double Vphi=0., Vr=0., Vth=0.;
+  if (parabolic_==true){
+    // rvel and thvel are the components of the velocity vector along the
+    // parabolic jet sheath in the absence of phi motion, in the orthonormal
+    // (e_r = \partial_r/sqrt(grr), e_theta = \partial_th/sqrt(gthth)) frame
+    // associated to BL coordinates
+    double rvel = sin(theta) + 2.*jetShapeInnerParabolaParam_*rcyl*cos(theta),
+      thvel = cos(theta) - 2.*jetShapeInnerParabolaParam_*rcyl*sin(theta);
+    // Unitary vector u along parabolic sheath in the absence of phi motion
+    double ur = rvel/sqrt(rvel*rvel + thvel*thvel),
+      uth = thvel/sqrt(rvel*rvel + thvel*thvel);
+    // so: u = u^(r) e_r + u^(th) e_theta is a unit vector along the velocity
+    // field lines. The parentheses (r) and (theta) remind that we are
+    // in the orthonormal basis.
+
+    // Let's add a phi degree of liberty to the motion. So we go from
+    // the unit vector u to a unit vector u':
+    // u' = (u + alpha*e_phi) / sqrt(1+alpha^2)
+    //    = u^(r)/sqrt(1+alpha^2) e_r + u^th/sqrt(1+alpha^2) e_th
+    //                                + alpha/sqrt(1+alpha^2) e_phi
+    // We want to parametrize this by the ratio:
+    // V^(phi) / V^(r) = alpha / u^(r)
+    // Below I call u^(phi) = alpha.
+    double uph = jetVphiOverVr_ * ur;
+    // Then the unit vector u' reads in components:
+    double tmp = sqrt(1+uph*uph), uprimer = ur/tmp, uprimeth = uth/tmp,
+      uprimeph = uph/tmp;
+    // Now the velocity reads, in the coordinate basis (\partial_mu)
+    
+    Vr = Vjet*uprimer/sqrt(grr);
+    Vth = Vjet*uprimeth/sqrt(gthth);
+    Vphi = Vjet*uprimeph/sqrt(gpp);
+    
+    // It is obvious to see that if jetVphiOverVr_=0, we find the
+    // correct velocity in the orthonormal basis: Vjet * (ur e_r + uth e_th)
+    //cout << "V sum= " << Vr*Vr/grr + Vth*Vth/gthth + Vphi*Vphi/gpp << " " << Vjet*Vjet << endl;
+  }else{
+    // Here in the absence of phi motion, we simply want a velo along e_r,
+    // so: V = Vjet e_r, and adding a phi dependence leads to
+    // V = V^(r) e_r + V^(phi) e_phi, and we parametrize using
+    // alpha = V^(phi)/V^(r), with (V^(r))^2 + (V^(phi))^2 = 1;
+    // These relations immediately lead to (keeping in mind that
+    // V^r = V^(r)/sqrt(grr) and similarly for phi):
+    
+    Vr = Vjet / (sqrt(grr) * sqrt(1+jetVphiOverVr_*jetVphiOverVr_));
+    Vphi = jetVphiOverVr_/sqrt(1+jetVphiOverVr_*jetVphiOverVr_) \
+      * Vjet/sqrt(gpp);
+    
+    // If jetVphiOverVr_=0, V is purely radial as it should for conical case
+  }
+
+  // The 4-velo is then defined by the standard formula:
+  // u = gamma * (u_zamo + V):
+  
   vel[0] = gammaJet_*utZAMO;
-  vel[1] = -gammaJet_*Vr;
-  vel[2] = 0.;
-  //vel[3] = gammaJet_*uphiZAMO;
+  if (outflowing_==1){ // outflow
+    if (rr > jetStagnationRadius_){ // outflow above stagnation
+                                    //(at zero radius by default,
+                                    //so pure outflow if not set by user)
+      vel[1] = gammaJet_*Vr;
+      vel[2] = gammaJet_*Vth;
+    }else{ // inflow below stagnation
+      vel[1] = -gammaJet_*Vr;
+      vel[2] = -gammaJet_*Vth;
+    }
+  }else{ // pure inflow
+    vel[1] = -gammaJet_*Vr;
+    vel[2] = -gammaJet_*Vth;
+  }
   vel[3] = gammaJet_*(uphiZAMO+Vphi);
 
   double u2 = gg_->ScalarProd(pos,vel,vel);
   double tol = 1e-6;
-  if (fabs(u2+1)>tol) throwError("In Jett::getVelo: bad jet velocity");
+  //cout << "vel norm= " << fabs(u2+1) << endl;
+  if (fabs(u2+1)>tol or u2!=u2) throwError("In Jett::getVelo: bad jet velocity");
 
-  // TEST
-  //vel[0] = 1.;
-  //vel[1] = 0.;
-  //vel[2] = 0.;
-  //vel[3] = 0.;
-  // June 2019 def:
-  /*double gammar = 1., gammaphi = 1.5,
-    ur = sqrt(gammar*gammar-1.)/gammar,
-    uphi = 1./pos[1]*sqrt(gammaphi*gammaphi-1.)/gammaphi,
-    grr = gg_->gmunu(pos,1,1),
-    aa = gtt, bb = 2.*gtp*uphi, cc = 1.+gpp*uphi*uphi+grr*ur*ur,
-    Delta = bb*bb-4.*aa*cc,
-    ut1 = (-bb - sqrt(Delta))/(2.*aa),
-    ut2 = (-bb + sqrt(Delta))/(2.*aa);
-  vel[0]=ut1;
-  vel[1]=ur;
-  vel[2]=0.;
-  vel[3]=uphi;*/
-
-  //cout << "V2= " << gg_->gmunu(pos,1,1)*Vr*Vr + gg_->gmunu(pos,3,3)*Vphi*Vphi << endl;
-  //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
 }
 
 bool Jet::isThreadSafe() const {
@@ -418,14 +570,18 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
   // polarized radiativeQ
   double rcyl=0.; // cylindrical radius
   double zz=0.; // height, z coord
+  double rr=0.; // spherical radius  
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
+    rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
     zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
     zz   = coord_ph[3];
+    rr = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
+	     +coord_ph[3]*coord_ph[3], 0.5);
     break;
   default:
     GYOTO_ERROR("In Jet::radiativeQ: Unknown coordinate system kind");
@@ -436,7 +592,23 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
     vel[ii]=co[ii+4];
   }
 
-  double rcyljetbase = jetBaseHeight_*tan(jetOuterOpeningAngle_);
+  double rcyljetbase = 0.;
+  if (parabolic_==0){ // conical jet
+    rcyljetbase = jetInnerRadius_*tan(jetOuterOpeningAngle_);
+    //cout << "rcyl stuff: " << jetInnerRadius_ << " " << tan(jetOuterOpeningAngle_) << " " << rcyljetbase << endl;
+  }else{ // parabolic jet
+    // We want the cylindrical radius of the jet base, knowing that the
+    // jet base is at spherical radius jetInnerRadius_, and that
+    // abs(z) = jetShapeOuterParabolaParam_ * rcyl^2.
+    // We have: jetInnerRadius_^2 = rcyljetbase^2 + zjetbase^2
+    //                     = zjetbase/jetShapeOuterParabolaParam_ + zjetbase^2
+    // So we get a second order equation with discriminant:
+    // Delta = 1/jetShapeOuterParabolaParam_^2 + 4*jetInnerRadius_^2
+    double discri = 1./(jetShapeOuterParabolaParam_*jetShapeOuterParabolaParam_) + 4*jetInnerRadius_*jetInnerRadius_;
+    if (discri<0) GYOTO_ERROR("Bad discriminant!");
+    double  zjetbase = 0.5*(-1/jetShapeOuterParabolaParam_ + sqrt(discri));
+    rcyljetbase = sqrt(zjetbase/jetShapeOuterParabolaParam_);
+  }
 
   //cout << "rcyl, rcylB, zz= " << rcyl << " " << rcyljetbase << " " << zz << endl;
 
@@ -446,7 +618,7 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double number_density = baseNumberDensity_cgs_
     *(rcyljetbase*rcyljetbase)/(rcyl*rcyl);
 
-  double temperature = baseTemperature_*pow(jetBaseHeight_/fabs(zz),
+  double temperature = baseTemperature_*pow(jetInnerRadius_/rr,
 					    temperatureSlope_);
 
   double thetae = GYOTO_BOLTZMANN_CGS*temperature
