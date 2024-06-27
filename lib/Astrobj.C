@@ -370,10 +370,10 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
               << ", Inu * GM/c2="
               << Inu[ii]
               << ", spectrum[" << ii*data->offset << "]="
-              << data->spectrum[ii*data->offset]
+              << data->spectrum[ii*data->offset];
               if (data-> stokesQ){
                 GYOTO_DEBUG << ", stokesQ[" << ii*data->offset << "]="
-                << data->stokesQ[ii*data->offset]
+                << data->stokesQ[ii*data->offset];
               }
               GYOTO_DEBUG << ", transmission=" << t
               << ", optical depth=" << o
@@ -1450,6 +1450,8 @@ double Generic::interpNd(int const N, double* const Xq, double** const X, double
       Xsub_dim = new double[arr_len];
       int indx = (N-n)==0 ? 1:(pow(2.,(N-n))+1);
       double t = (Xq[N-n]-X[0][N-n])/(X[indx][N-n]-X[0][N-n]);
+      if (X[indx][N-n]-X[0][N-n]==0.) // At this point, this should only happen if dimension N-n is of length 1 with "Constant" boundary condition
+        t = 0.;
       if (t<0. or t>1.){
       	if (cond_limit[N-n]=="None"){
       		GYOTO_ERROR("In interpNd : Query position of dimension out of interpolation boundaries.");
@@ -1478,7 +1480,9 @@ int Generic::getIndice(double &xq, std::string const cond_limit, double const X_
 	int ind, n_x;
 	double x_min, x_max, dx;
 	n_x = floor(X_params[2]);
-	if (n_x==1)
+	if (n_x==1 && (cond_limit=="Linear" || cond_limit=="Periodic"))
+    GYOTO_ERROR("In getIndice : Cannot compute 'Linear' or 'Periodic' boundary condition for dimension of length 1.");
+  else if (n_x==1)
 		return 0;
 	x_min = X_params[0];
   x_max = X_params[1];
@@ -1545,6 +1549,8 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+      if (X_lengths[n]==1)
+        tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
       ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	X_array[ii][n]=X[n][indices[n]+tab_indX[n]];
@@ -1588,6 +1594,8 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+      if (X_params[n][2]==1)
+        tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
       ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	int nx = X_params[n][2];
