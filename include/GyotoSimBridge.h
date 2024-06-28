@@ -50,7 +50,7 @@ namespace Gyoto{
  * The coordinate system could be spherical or cartesian (thus the names of quantities which depends on the coordinate system, like the velocity, are labeled with numbers from 0 to 3 
  * instead of {t, r, \theta, \phi} or {t, x, y z}).
  * 
- * To make the interpolation, the user have to provide the arrays of the grid for each dimensions with the following labels in the FITS files :
+ * To make the interpolation, the user has to provide the arrays of the grid for each dimensions with the following labels in the FITS files :
  * - 'X0' for the time
  * - 'X1' for radius or X (in spherical or cartesian coordinate system)
  * - 'X2' for \theta or Y (in spherical or cartesian coordinate system)
@@ -63,16 +63,16 @@ namespace Gyoto{
  * 
  * If the numerical simulation is not 3D, the grid in the FITS files still must be 3D.
  * The dimension not simulated has only one point, i.e. the point of the simulation.
- * For exemple, one wants to make images of a 2D disk in the equatorial plane from GRMHD simulation.
+ * For exeample, one wants to make images of a 2D disk in the equatorial plane from GRMHD simulation.
  * If the coordinate system is spherical, then the 'X2' array which correspond to the polar angle \theta constains only one value: PI/2.
  * If the coordinate system is cartezian, then the 'X3' array which correspond to the Z axis constains only one value: 0.
  * 
  * 
  * For GRMHD simulations, the required physical quantities (in the FITS files) are 'NUMBERDENSITY', 'TEMPERATURE' and the velocity (see below).
- * In this case, the user have to set to true the flag 'temperature(bool)'.
+ * In this case, the user has to set to true the flag 'temperature(bool)'.
  * 
  * The code will try to read the magnetic field components 'B0', 'B1", 'B2', 'B3'.
- * If not provided, the user can specify the a magnetic field configuration which will be defined everywhere thanks to the function magneticConfiguration(std::string).
+ * If not provided, the user can specify the magnetic field configuration which will be defined everywhere thanks to the function magneticConfiguration(std::string).
  * The possible arguments are "None", "Toroidal", "Radial", "Vertical".
  * If both the magnetic field is not in the FITS files and the magneticConfiguration is to "None" (by default), the radiative coefficients will be averaged over pitch angle.
  * Although, if the magnetic field is not provided in FITS files, the user MUST set the magnetization parameter to define the magnetic field strength with the function magnetization(double).
@@ -85,10 +85,15 @@ namespace Gyoto{
  * 
  * Either from GRMHD and (GR)PIC simulations, the velocity could be the 3D velocity (in the emitter frame) or the 4-velocity.
  * The names for the velocity components are 'VELOCITY0', 'VELOCITY1', VELOCITY2', 'VELOCITY3'.
- * If 'VELOCITY0' is not provided, the code assume that the 3 other components (which are mendatory) are the 3D velocity in the emitter frame 
+ * If 'VELOCITY0' is not provided, the code assumes that the 3 other components (which are mandatory) are the 3D velocity in the emitter frame 
  * and will compute the 4-velocity from the metric.
  * 
  *
+ * The geometry of the emitting region is a sphere with the radius being either the maximum radius of the simulation or the maximum radius of integration set by rMax(double).
+ * It is highly recommended to NOT use this object as it is and create a new Astrobj that inherits from SimBridge which redefines the operator() function
+ * to specify a custom (more appropriate) geometry of the emitting region.
+ * Another way to reduce the computation time is to properly set the rmax_.
+ * 
  */
 class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::SimBridge>;
@@ -98,7 +103,7 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
-  ///< emission law
+
  private:
   std::string dirname_; ///< FITS files directory
   std::string fname_; ///< FITS files prefix (without the number neither the extension, i.e. '.fits')
@@ -110,24 +115,22 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   
   std::string magneticConfig_; ///< Magnetic field geometry (toroidal, vertical) if magnetic field not present in FITS files
   double magnetizationParameter_; ///< magnetization parameter if magnetic field not present in FITS files
-
-  double openingAngle_; ///< angle that define the geometry of the object FOR testing purpose only.
   
-  double floortemperature_; ///< 
+  double floortemperature_; ///< Set minimum of temperature
 
   //Number of dimensions (maximum 4D : [t, r, theta, phi] or [t, x, y, z]). When the number of dimension is lower than 4, the array of the complement dimension(s) is of length 1 (in the FITS files headers).
-  double* time_array_;
-  double* x1_array_;
-  double* x2_array_;
-  double* x3_array_;
-  double* nu_array_;
-  int ntime_;
-  int nx1_;
-  int nx2_;
-  int nx3_;
-  int nnu_; // optional
+  double* time_array_; ///< array containing the time evolution of each FITS files
+  double* x1_array_; ///< First spatial dimension array (radius in spherical, X in Cartesian)
+  double* x2_array_; ///< Second spatial dimension array (\theta in spherical, Y in Cartesian)
+  double* x3_array_; ///< Third spatial dimension array (\phi in spherical, Z in Cartesian)
+  double* nu_array_; ///< frequency array if quantities in FITS files are radiative coefficients
+  int ntime_; ///< length of time_array_
+  int nx1_; ///< length of x1_array_
+  int nx2_; ///< length of x2_array_
+  int nx3_; ///< length of x3_array_
+  int nnu_; ///< ///< length of nu_array_, optional
 
-  std::string* boundCond_;
+  std::string* boundCond_; ///< Table of string which store the boundary conditions of all dimensions.
 
   // Constructors - Destructor
   // -------------------------
@@ -147,28 +150,28 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   // Accessors
   // ---------
  public:
-  void directory(std::string const &d);
-  std::string directory() const;
-  void filename(std::string d);
-  std::string filename() const;
-  void PLindex(double pl);
-  double PLindex()const;
-  void gammaMin(double gmin);
-  double gammaMin() const;
-  void gammaMax(double gmax);
-  double gammaMax() const;
-  void temperature(bool t);
-  bool temperature() const;
-  void floorTemperature(double t);
-  double floorTemperature()const;
-  void magneticConfiguration(std::string config);
-  std::string magneticConfiguration() const;
-  void magnetization(double ss);
-  double magnetization() const;
-  void boundaryConditions(std::string x0BC, std::string x1BC, std::string x2BC, std::string x3BC, std::string freqBC="None"); ///< the array of string must contain 4 strings even if the number of dimensions is lower than 4.
-  std::string* boundaryConditions() const;
-  void emissionType(std::string const &kind);
-  std::string emissionType() const;
+  void directory(std::string const &d); ///< Set the directory where the FITS files are stored
+  std::string directory() const; ///< Get the directory where the FITS files will be searched
+  void filename(std::string d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
+  std::string filename() const; ///< Get the FITS filename prefix
+  void PLindex(double pl); ///< Set the power law index when the emission is set to "Power-Law" or "Kappa"
+  double PLindex()const; ///< Get the power law index of the electron distribution function
+  void gammaMin(double gmin); ///< Set the minimum gamma factor when the emission is set to "Power-Law" or "Kappa"
+  double gammaMin() const; ///< Get the minimum gamma factor of the electron distribution function
+  void gammaMax(double gmax); ///< Set the maximum gamma factor when the emission is set to "Power-Law" or "Kappa"
+  double gammaMax() const; ///< Get the maximum gamma factor of the electron distribution function
+  void temperature(bool t); ///< Set the flag to select the type of quantities in FITS files (GRMHD or GRPIC outputs)
+  bool temperature() const; ///< Get the flag which select the type of quantities in FITS files
+  void floorTemperature(double t); ///< Set the minimum of temperature (GRMHD case)
+  double floorTemperature()const; ///< get the minimum of temperature (GRMHD case)
+  void magneticConfiguration(std::string config); ///< Set the magnetic field configuration wanted if it is not founded in the FITS file (GRMHD case) 
+  std::string magneticConfiguration() const; ///< Get the magnetic field configuration set by user.
+  void magnetization(double ss); ///< Set the magnetization parameter to define magnetic field strength if not founded in FITS files (GRMHD case)
+  double magnetization() const; ///< Get magnetization paramater
+  void boundaryConditions(std::string x0BC, std::string x1BC, std::string x2BC, std::string x3BC, std::string freqBC="None"); ///< Set the boundary condition of all axis.
+  std::string* boundaryConditions() const; ///< Get the boundary condition array
+  void emissionType(std::string const &kind); ///< Set the emission type ("BlackBody", or synchrotron "Thermal", "Power-Law" or "Kappa").
+  std::string emissionType() const; ///< Get emission type
 
   virtual void radiativeQ(double Inu[], double Taunu[], double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph, double const coord_obj[8]=NULL) const ;
@@ -180,9 +183,6 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   virtual void getVelocity(double const pos[4], double vel[4]);
 
   virtual double operator()(double const coord[4]);
-
-  void openingAngle(double angle);
-  double openingAngle() const;
 
 };
 
