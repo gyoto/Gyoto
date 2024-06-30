@@ -262,13 +262,6 @@ protected:
  // Outputs
  // -------
  public:
-
- /// Display
- friend std::ostream& operator<<(std::ostream& , const PolishDoughnut& ) ;
-
- public:
-
-
 };
 
 #endif
