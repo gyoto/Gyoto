@@ -1197,12 +1197,25 @@ void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double
 
 void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
 
-	double rr, rcyl, theta, zz=0.;
+	/*********************/
+  /* GYOTO B FORMALISM */
+  /*********************/
+
+  // Define B by requiring: B.B=1 (we care only about B direction),
+  // and B.u=0 (B defined in emitter's frame).
+  
+  double rr, rcyl, theta, phi, zz=0.;
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = cph[1];
     rcyl = cph[1]*sin(cph[2]);
     theta = cph[2];
+    phi = cph[3];
     zz   = cph[1]*cos(cph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
@@ -1210,24 +1223,13 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
         +cph[3]*cph[3]);
     theta   = acos(cph[3]/rr);
+    phi = atan2(cph[2], cph[1]);
     zz   = cph[3];
     break;
   default:
     GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
   }
 
-  double vel[4]; // 4-velocity of emitter
-  for (int ii=0;ii<4;ii++){
-    vel[ii]=co[ii+4];
-  }
-  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
-
-  /*********************/
-  /* GYOTO B FORMALISM */
-  /*********************/
-
-  // Define B by requiring: B.B=1 (we care only about B direction),
-  // and B.u=0 (B defined in emitter's frame).
 
   double gtt = gg_->gmunu(&cph[0],0,0),
     grr = gg_->gmunu(&cph[0],1,1),
@@ -1235,31 +1237,34 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     gtp = gg_->gmunu(&cph[0],0,3),
     gpp = gg_->gmunu(&cph[0],3,3);
 
-  // So far only circular velocity case is implemented
+  // So far only velocity with case is implemented
   if (vel[2]>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("mf config only defined for utheta=0");
 
+  double Bt, Br, Bth, Bp;
   if (magneticConfig=="Vertical"){
     double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
   alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    double Bt = -alphafact*Afact,
-  Br = alphafact*cos(cph[2])/sqrt(grr), // cos(cph[2])/sqrt(grr)
-  Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+    Bt = -alphafact*Afact;
+    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
+    Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+    Bp = 0;
 
-    B4vect[0]=Bt;
-    B4vect[1]=Br;
-    B4vect[2]=Bth;
-    B4vect[3]=0.;
+  }else if (magneticConfig=="Vertical"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    Bt = -alphafact*Afact;
+    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
+    Bth = alphafact*sin(cph[2])/sqrt(gthth); // sin([2])/sqrt(gthth) --> along -ez
+    Bp = 0;
 
   }else if(magneticConfig=="Radial"){
     double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
   alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    double Bt = -alphafact*Afact,
-  Br = alphafact/sqrt(grr); // along +er
+    Bt = -alphafact*Afact,
+    Br = alphafact/sqrt(grr); // along +er
+    Bth = 0.;
+    Bp = 0.;
 
-    B4vect[0]=Bt;
-    B4vect[1]=Br;
-    B4vect[2]=0.;
-    B4vect[3]=0.;
   }else if(magneticConfig=="Toroidal"){
     // Only case where a bit of computation is needed
     // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
@@ -1268,21 +1273,44 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
     double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
     if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
-    double Bp = sqrt(Bp2);
-    double Bt = -Bp*Afact;
+    Bp = sqrt(Bp2);
+    Bt = -Bp*Afact;
+    Br = 0.;
+    Bth = 0.;
 
-    B4vect[0]=Bt;
-    B4vect[1]=0.;
-    B4vect[2]=0.;
-    B4vect[3]=Bp;
   }else if(magneticConfig=="Poloidal"){
-  	B4vect[0]=0.;
-  	B4vect[1]=0.;
-  	B4vect[2]=1./sqrt(gthth);
-  	B4vect[3]=0.;
+  	Bt=0.;
+  	Br=0.;
+  	Bth=1./sqrt(gthth);
+  	Bp=0.;
+
+  }else if(magneticConfig=="Poloidal-n"){
+  	Bt=0.;
+  	Br=0.;
+  	Bth=-1./sqrt(gthth);
+  	Bp=0.;
   }else{
     GYOTO_ERROR("Not implemented Bfield orientation");
   }
+
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+    B4vect[2]=Bth;
+    B4vect[3]=Bp;
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    B4vect[0]=Bt;
+    B4vect[1]=Br*sin(theta)*cos(phi)+Bth*cos(theta)*cos(phi)-Bp*sin(phi);
+    B4vect[2]=Br*sin(theta)*sin(phi)+Bth*cos(theta)*sin(phi)+Bp*cos(phi);
+    B4vect[3]=Br*cos(theta)-Bth*sin(theta);
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
+  }
+    
+
 
   return;
 }
