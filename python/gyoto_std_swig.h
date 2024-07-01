@@ -42,6 +42,7 @@
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskGridIntensity.h"
 #include "GyotoSimBridge.h"
+#include "GyotoSim2DEquatDisk.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"

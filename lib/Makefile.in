@@ -180,7 +180,8 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-XillverReflection.lo \
 	libgyoto_stdplug_la-FlaredDiskSynchrotron.lo \
 	libgyoto_stdplug_la-ThinDiskGridIntensity.lo \
-	libgyoto_stdplug_la-SimBridge.lo
+	libgyoto_stdplug_la-FitsRW.lo libgyoto_stdplug_la-SimBridge.lo \
+	libgyoto_stdplug_la-Sim2DEquatDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
@@ -226,7 +227,7 @@ am_libgyoto@FEATURES@_la_OBJECTS = Value.lo Property.lo Object.lo \
 	WorldlineIntegState.lo Error.lo Screen.lo Spectrum.lo \
 	Spectrometer.lo ComplexSpectrometer.lo UniformSpectrometer.lo \
 	StandardAstrobj.lo ThinDisk.lo Converters.lo Functors.lo \
-	Hooks.lo GridData2D.lo FitsRW.lo
+	Hooks.lo GridData2D.lo
 libgyoto@FEATURES@_la_OBJECTS = $(am_libgyoto@FEATURES@_la_OBJECTS)
 libgyoto@FEATURES@_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
@@ -250,17 +251,17 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/ComplexSpectrometer.Plo ./$(DEPDIR)/Converters.Plo \
 	./$(DEPDIR)/Error.Plo ./$(DEPDIR)/Factory.Plo \
-	./$(DEPDIR)/FitsRW.Plo ./$(DEPDIR)/Functors.Plo \
-	./$(DEPDIR)/GridData2D.Plo ./$(DEPDIR)/Hooks.Plo \
-	./$(DEPDIR)/Metric.Plo ./$(DEPDIR)/Object.Plo \
-	./$(DEPDIR)/Photon.Plo ./$(DEPDIR)/Property.Plo \
-	./$(DEPDIR)/Register.Plo ./$(DEPDIR)/Scenery.Plo \
-	./$(DEPDIR)/Screen.Plo ./$(DEPDIR)/SmartPointer.Plo \
-	./$(DEPDIR)/Spectrometer.Plo ./$(DEPDIR)/Spectrum.Plo \
-	./$(DEPDIR)/StandardAstrobj.Plo ./$(DEPDIR)/ThinDisk.Plo \
-	./$(DEPDIR)/UniformSpectrometer.Plo ./$(DEPDIR)/Utils.Plo \
-	./$(DEPDIR)/Value.Plo ./$(DEPDIR)/WIP.Plo \
-	./$(DEPDIR)/Worldline.Plo ./$(DEPDIR)/WorldlineIntegState.Plo \
+	./$(DEPDIR)/Functors.Plo ./$(DEPDIR)/GridData2D.Plo \
+	./$(DEPDIR)/Hooks.Plo ./$(DEPDIR)/Metric.Plo \
+	./$(DEPDIR)/Object.Plo ./$(DEPDIR)/Photon.Plo \
+	./$(DEPDIR)/Property.Plo ./$(DEPDIR)/Register.Plo \
+	./$(DEPDIR)/Scenery.Plo ./$(DEPDIR)/Screen.Plo \
+	./$(DEPDIR)/SmartPointer.Plo ./$(DEPDIR)/Spectrometer.Plo \
+	./$(DEPDIR)/Spectrum.Plo ./$(DEPDIR)/StandardAstrobj.Plo \
+	./$(DEPDIR)/ThinDisk.Plo ./$(DEPDIR)/UniformSpectrometer.Plo \
+	./$(DEPDIR)/Utils.Plo ./$(DEPDIR)/Value.Plo \
+	./$(DEPDIR)/WIP.Plo ./$(DEPDIR)/Worldline.Plo \
+	./$(DEPDIR)/WorldlineIntegState.Plo \
 	./$(DEPDIR)/libgyoto_lorene_la-LorenePlug.Plo \
 	./$(DEPDIR)/libgyoto_lorene_la-NeutronStar.Plo \
 	./$(DEPDIR)/libgyoto_lorene_la-NeutronStarAnalyticEmission.Plo \
@@ -279,6 +280,7 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk3D.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-FitsRW.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo \
@@ -300,6 +302,7 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo \
@@ -591,7 +594,7 @@ libgyoto@FEATURES@_la_SOURCES = \
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
-	GridData2D.C FitsRW.C
+	GridData2D.C
 
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
@@ -617,7 +620,7 @@ libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
 	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C \
-	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C SimBridge.C 
+	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C FitsRW.C SimBridge.C Sim2DEquatDisk.C
 
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 libgyoto_stdplug_la_LDFLAGS = -module -export-dynamic $(AM_LDFLAGS) -avoid-version
@@ -759,7 +762,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Converters.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Error.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Factory.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FitsRW.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Functors.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/GridData2D.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Hooks.Plo@am__quote@ # am--include-marker
@@ -799,6 +801,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk3D.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FitsRW.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo@am__quote@ # am--include-marker
@@ -820,6 +823,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo@am__quote@ # am--include-marker
@@ -1234,12 +1238,26 @@ libgyoto_stdplug_la-ThinDiskGridIntensity.lo: ThinDiskGridIntensity.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-ThinDiskGridIntensity.lo `test -f 'ThinDiskGridIntensity.C' || echo '$(srcdir)/'`ThinDiskGridIntensity.C
 
+libgyoto_stdplug_la-FitsRW.lo: FitsRW.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-FitsRW.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-FitsRW.Tpo -c -o libgyoto_stdplug_la-FitsRW.lo `test -f 'FitsRW.C' || echo '$(srcdir)/'`FitsRW.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-FitsRW.Tpo $(DEPDIR)/libgyoto_stdplug_la-FitsRW.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='FitsRW.C' object='libgyoto_stdplug_la-FitsRW.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-FitsRW.lo `test -f 'FitsRW.C' || echo '$(srcdir)/'`FitsRW.C
+
 libgyoto_stdplug_la-SimBridge.lo: SimBridge.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-SimBridge.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Tpo -c -o libgyoto_stdplug_la-SimBridge.lo `test -f 'SimBridge.C' || echo '$(srcdir)/'`SimBridge.C
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Tpo $(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='SimBridge.C' object='libgyoto_stdplug_la-SimBridge.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-SimBridge.lo `test -f 'SimBridge.C' || echo '$(srcdir)/'`SimBridge.C
+
+libgyoto_stdplug_la-Sim2DEquatDisk.lo: Sim2DEquatDisk.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Sim2DEquatDisk.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Tpo -c -o libgyoto_stdplug_la-Sim2DEquatDisk.lo `test -f 'Sim2DEquatDisk.C' || echo '$(srcdir)/'`Sim2DEquatDisk.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Tpo $(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Sim2DEquatDisk.C' object='libgyoto_stdplug_la-Sim2DEquatDisk.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Sim2DEquatDisk.lo `test -f 'Sim2DEquatDisk.C' || echo '$(srcdir)/'`Sim2DEquatDisk.C
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1423,7 +1441,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/Converters.Plo
 	-rm -f ./$(DEPDIR)/Error.Plo
 	-rm -f ./$(DEPDIR)/Factory.Plo
-	-rm -f ./$(DEPDIR)/FitsRW.Plo
 	-rm -f ./$(DEPDIR)/Functors.Plo
 	-rm -f ./$(DEPDIR)/GridData2D.Plo
 	-rm -f ./$(DEPDIR)/Hooks.Plo
@@ -1463,6 +1480,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk3D.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FitsRW.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo
@@ -1484,6 +1502,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo
@@ -1550,7 +1569,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/Converters.Plo
 	-rm -f ./$(DEPDIR)/Error.Plo
 	-rm -f ./$(DEPDIR)/Factory.Plo
-	-rm -f ./$(DEPDIR)/FitsRW.Plo
 	-rm -f ./$(DEPDIR)/Functors.Plo
 	-rm -f ./$(DEPDIR)/GridData2D.Plo
 	-rm -f ./$(DEPDIR)/Hooks.Plo
@@ -1590,6 +1608,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDisk3D.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-DynamicalDiskBolometric.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-EquatorialHotSpot.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FitsRW.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FixedStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FlaredDiskSynchrotron.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-FreeStar.Plo
@@ -1611,6 +1630,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-RezzollaZhidenko.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SchwarzschildHarmonic.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Shift.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Sim2DEquatDisk.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SimBridge.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-SphericalAccretion.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Star.Plo

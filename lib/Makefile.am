@@ -25,7 +25,7 @@ libgyoto@FEATURES@_la_SOURCES =  \
 	WorldlineIntegState.C Error.C Screen.C Spectrum.C		\
 	Spectrometer.C ComplexSpectrometer.C UniformSpectrometer.C \
 	StandardAstrobj.C ThinDisk.C Converters.C Functors.C Hooks.C \
-	GridData2D.C FitsRW.C
+	GridData2D.C
 libgyoto@FEATURES@_la_LIBS = $(XERCES_LIBS)
 libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 
@@ -52,7 +52,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 cfitsio_stdplug_sources = PatternDisk.C PatternDiskBB.C \
 	DynamicalDisk.C DynamicalDiskBolometric.C \
 	Disk3D.C DynamicalDisk3D.C DirectionalDisk.C XillverReflection.C \
-	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C SimBridge.C 
+	FlaredDiskSynchrotron.C ThinDiskGridIntensity.C FitsRW.C SimBridge.C Sim2DEquatDisk.C
 EXTRA_libgyoto_stdplug_la_SOURCES = $(cfitsio_stdplug_sources)
 
 libgyoto_stdplug_la_SOURCES  +=	$(cfitsio_stdplug_sources)
