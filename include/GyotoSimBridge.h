@@ -57,7 +57,7 @@ namespace Gyoto{
  * - 'X3' for \phi or Z (in spherical or cartesian coordinate system)
  * - 'FREQ' for the frequency array (in case the quantities are radiative coefficients like for (GR)PIC simulations) (Optional)
  * 
- * The grid DOES NOT need to be regularly spaced.
+ * The grid DOES NOT need to be regularly spaced, but MUST NOT chanfe from time to time.
  * Each FITS file should contain in the header of the primary HDU the length of each grid arrays and the time of the FITS file.
  * 
  * 
@@ -118,12 +118,14 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   
   double floortemperature_; ///< Set minimum of temperature
 
+  protected:
   //Number of dimensions (maximum 4D : [t, r, theta, phi] or [t, x, y, z]). When the number of dimension is lower than 4, the array of the complement dimension(s) is of length 1 (in the FITS files headers).
   double* time_array_; ///< array containing the time evolution of each FITS files
   double* x1_array_; ///< First spatial dimension array (radius in spherical, X in Cartesian)
   double* x2_array_; ///< Second spatial dimension array (\theta in spherical, Y in Cartesian)
   double* x3_array_; ///< Third spatial dimension array (\phi in spherical, Z in Cartesian)
   double* nu_array_; ///< frequency array if quantities in FITS files are radiative coefficients
+
   int ntime_; ///< length of time_array_
   int nx1_; ///< length of x1_array_
   int nx2_; ///< length of x2_array_
