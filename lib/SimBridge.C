@@ -300,18 +300,8 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   
   double tcur=coord_ph[0]; // in M units # TBC
   
-  int index; //index of files to be loaded (index and index+1)
-  int nfile; // 1 if ntime=1, 2 otherwise
-  if (ntime_==1){
-    index=0;
-    nfile = 1;
-  }else{
-    nfile = 2;
-    if (tcur<time_array_[0])
-      index=0; // Set index at 0, the output of the interpolation will be defined by the boundary conditions
-    if (tcur>time_array_[ntime_-1])
-      index=ntime_-2; // Set index at ntime_-1, the output of the interpolation will be defined by the boundary conditions
-  }
+  int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
+  int index=getIndex(tcur); //index of files to be loaded (index and index+1)
 
   // Creating arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
@@ -690,18 +680,8 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   
   double tcur=pos[0]; // in M units # TBC
   
-  int index; //index of files to be loaded (index and index+1)
-  int nfile;
-  if (ntime_==1){
-    index=0;
-    nfile = 1;
-  }else{
-    nfile = 2;
-    if (tcur<time_array_[0])
-      index=0; // Set index at 0, the output of the interpolation will be defined by the boundary conditions
-    if (tcur>time_array_[ntime_-1])
-      index=ntime_-2; // Set index at ntime_-1, the output of the interpolation will be defined by the boundary conditions
-  }
+  int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
+  int index=getIndex(tcur); //index of files to be loaded (index and index+1)
 
   // Creating the velocity arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
@@ -806,4 +786,22 @@ double SimBridge::operator()(double const coord[4]) {
   }
   distance = rr - rmax_;
   return distance;
+}
+
+int SimBridge::getIndex(double const tcur) const {
+  if (ntime_==1){
+    return 0;
+  }else{
+    if (tcur<time_array_[0])
+      return 0; // Set index at 0, the output of the interpolation will be defined by the boundary conditions
+    else if (tcur>time_array_[ntime_-1])
+       return ntime_-2; // Set index at ntime_-1, the output of the interpolation will be defined by the boundary conditions
+    else{
+      int ii=0;
+      while (tcur > time_array_[ii] and ii<ntime_-1){
+        ii+=1;
+      }
+      return ii - 1;
+    }
+  }
 }

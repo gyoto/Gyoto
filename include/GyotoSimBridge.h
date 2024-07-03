@@ -186,6 +186,9 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
 
   virtual double operator()(double const coord[4]);
 
+  private:
+  int getIndex(double const tcur) const;
+
 };
 
 #endif
