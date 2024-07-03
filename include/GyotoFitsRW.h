@@ -42,8 +42,9 @@ namespace Gyoto {
 #endif
 
 /**
- * \class Gyoto::GridData2D
- * \brief Class for reading data stored in a 2D grid
+ * \class Gyoto::FitsRW
+ * \brief Class for reading or writing data in FITS file.
+ * The data stored should be 1D array(s).
  *        
  *        
  */
@@ -99,12 +100,44 @@ class Gyoto::FitsRW
    */
   void fitsWriteHDUData(fitsfile* const fptr, std::string const extname, double* const src, long const nelements) const;
 
+  /**
+   * \brief Writes a key in the header of a given HDU (by default "PRIMARY")
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be stored
+   * \param value Value of the key to be stored
+   * \param hdu HDU where to store the key, by default "PRIMARY"
+   */
   void fitsWriteKey(fitsfile* const fptr, std::string const key, double value, std::string const hdu="PRIMARY") const;
 
+  /**
+   * \brief Read 1D array in FITS files
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param extname Name of extension to be read
+   */
   double* fitsReadHDUData(fitsfile* const fptr, std::string const extname) const;
 
+  /**
+   * \brief Read a specific key of the HDU with a specific 'extname'
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be read
+   * \param hdu HDU extname where to search for the key
+   */
   double fitsReadKey(fitsfile* const fptr, std::string const key, std::string const hdu) const;
-
+  
+  /**
+   * \brief Read a specific key of the HDU defined by its number (by default 1 equivalent ot the "PRIMARY" HDU)
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be read
+   * \param hdu_num HDU number where to search for the key
+   */
   double fitsReadKey(fitsfile* const fptr, std::string const key, int const hdu_num=1) const;
 
   #endif
