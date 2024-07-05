@@ -479,6 +479,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     X[2] = x2_array_;
     X[3] = x3_array_;
 
+    //cout << "Xq : " << Xq[0] << ", " << Xq[1] << ", " << Xq[2] << ", " << Xq[3] << endl;
     double number_density = max(interpolate(4, density_array, Xq, X, X_params, boundCond_), 0.); // prevent negative values
     double temperature    = max(interpolate(4, temperature_array, Xq, X, X_params, boundCond_),floortemperature_);
     //cout << "ne, Te at (t,r,theta, phi) : "  << number_density << ", " << temperature << ", (" << tcur << "," << x1 << "," << x2 << "," << x3  << ")" << endl;
@@ -686,13 +687,12 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   // Creating the velocity arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
   double** velocity_array = new double*[4];
-  for (int ii=0; ii<4; ii++){
+  for (int ii=0; ii<3; ii++){
     velocity_array[ii] = new double[nfile*ncells];
   }
 
   // Reading FITS File
   double* tmp;
-  bool vel4=true;
   double time_interpo[nfile];
   for (int ii=0; ii<nfile; ii++){
       ostringstream stream_name ;
@@ -714,21 +714,14 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
       GYOTO_ERROR("In SimBridge RadiativeQ : size of arrays in FITS file different from initial file");
     
     time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
-    try{
-      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY0");
-      memcpy(velocity_array[0]+ii*ncells, tmp, ncells*sizeof(double));
-      delete[] tmp;
-    } catch (...) {
-      vel4 = false;
-    }
     tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY1");
-    memcpy(velocity_array[1]+ii*ncells, tmp, ncells*sizeof(double));
+    memcpy(velocity_array[0]+ii*ncells, tmp, ncells*sizeof(double));
     delete[] tmp;
     tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY2");
-    memcpy(velocity_array[2]+ii*ncells, tmp, ncells*sizeof(double));
+    memcpy(velocity_array[1]+ii*ncells, tmp, ncells*sizeof(double));
     delete[] tmp;
     tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY3");
-    memcpy(velocity_array[3]+ii*ncells, tmp, ncells*sizeof(double));
+    memcpy(velocity_array[2]+ii*ncells, tmp, ncells*sizeof(double));
     delete[] tmp;
 
     FitsRW::fitsClose(fptr);
@@ -743,21 +736,17 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   X[2] = x2_array_;
   X[3] = x3_array_;
 
-  if (vel4)
-    vel[0] = interpolate(4, velocity_array[0], Xq, X, X_params, boundCond_);
-  else
-    vel[0] = 1;
-  vel[1] = interpolate(4, velocity_array[1], Xq, X, X_params, boundCond_);
-  vel[2] = interpolate(4, velocity_array[2], Xq, X, X_params, boundCond_);
-  vel[3] = interpolate(4, velocity_array[3], Xq, X, X_params, boundCond_);
+  vel[0] = 1.;
+  vel[1] = interpolate(4, velocity_array[0], Xq, X, X_params, boundCond_);
+  vel[2] = interpolate(4, velocity_array[1], Xq, X, X_params, boundCond_);
+  vel[3] = interpolate(4, velocity_array[2], Xq, X, X_params, boundCond_);
   //cout << "vel : " << vel[0] << ", "  << vel[1] << ", "  << vel[2] << ", "  << vel[3] << endl;
 
   delete[] X;
 
-  if (!vel4)
-    gg_->normalizeFourVel(pos, vel);
+  gg_->normalizeFourVel(pos, vel);
 
-  for (int ii=0; ii<4; ii++){
+  for (int ii=0; ii<3; ii++){
     if (velocity_array[ii]){
       delete [] velocity_array[ii];
       velocity_array[ii] = NULL;

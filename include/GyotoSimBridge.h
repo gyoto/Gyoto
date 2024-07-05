@@ -83,10 +83,9 @@ namespace Gyoto{
  * In that case, the frequency array MUST be set (even with only one value).
  * 
  * 
- * Either from GRMHD and (GR)PIC simulations, the velocity could be the 3D velocity (in the emitter frame) or the 4-velocity.
- * The names for the velocity components are 'VELOCITY0', 'VELOCITY1', VELOCITY2', 'VELOCITY3'.
- * If 'VELOCITY0' is not provided, the code assumes that the 3 other components (which are mandatory) are the 3D velocity in the emitter frame 
- * and will compute the 4-velocity from the metric.
+ * Either from GRMHD and (GR)PIC simulations, the velocity MUST be the 3D velocity.
+ * The names for the velocity components are 'VELOCITY1', VELOCITY2', 'VELOCITY3'.
+ * The code will NOT search for 'VELOCITY0'! The 4-velocity will be computed with the metric from the metric.
  * 
  *
  * The geometry of the emitting region is a sphere with the radius being either the maximum radius of the simulation or the maximum radius of integration set by rMax(double).
