@@ -153,7 +153,7 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
  public:
   void directory(std::string const &d); ///< Set the directory where the FITS files are stored
   std::string directory() const; ///< Get the directory where the FITS files will be searched
-  void filename(std::string d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
+  void filename(std::string const &d); ///< Set the prefix of the FITS filenames, it should be followed by a 4-digit number (filled by zeros)
   std::string filename() const; ///< Get the FITS filename prefix
   void PLindex(double pl); ///< Set the power law index when the emission is set to "Power-Law" or "Kappa"
   double PLindex()const; ///< Get the power law index of the electron distribution function
@@ -165,12 +165,12 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   bool temperature() const; ///< Get the flag which select the type of quantities in FITS files
   void floorTemperature(double t); ///< Set the minimum of temperature (GRMHD case)
   double floorTemperature()const; ///< get the minimum of temperature (GRMHD case)
-  void magneticConfiguration(std::string config); ///< Set the magnetic field configuration wanted if it is not founded in the FITS file (GRMHD case) 
+  void magneticConfiguration(std::string const &config); ///< Set the magnetic field configuration wanted if it is not founded in the FITS file (GRMHD case) 
   std::string magneticConfiguration() const; ///< Get the magnetic field configuration set by user.
   void magnetization(double ss); ///< Set the magnetization parameter to define magnetic field strength if not founded in FITS files (GRMHD case)
   double magnetization() const; ///< Get magnetization paramater
-  void boundaryConditions(std::string x0BC, std::string x1BC, std::string x2BC, std::string x3BC, std::string freqBC="None"); ///< Set the boundary condition of all axis.
-  std::string* boundaryConditions() const; ///< Get the boundary condition array
+  void boundaryConditions(std::string const &sbc); ///< Set the boundary condition of all axis.
+  std::string boundaryConditions() const; ///< Get the boundary condition array
   void emissionType(std::string const &kind); ///< Set the emission type ("BlackBody", or synchrotron "Thermal", "Power-Law" or "Kappa").
   std::string emissionType() const; ///< Get emission type
 

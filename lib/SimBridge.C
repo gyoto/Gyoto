@@ -31,12 +31,16 @@ using namespace Gyoto::Astrobj;
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(SimBridge)
 GYOTO_PROPERTY_STRING(SimBridge, Directory, directory)
+GYOTO_PROPERTY_STRING(SimBridge, Filename, filename)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMin, gammaMin)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMax, gammaMax)
 GYOTO_PROPERTY_BOOL(SimBridge, TemperatureGrid, IntensityGrid, temperature)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
 GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType)
+GYOTO_PROPERTY_STRING(SimBridge, MagneticConfiguration, magneticConfiguration)
+GYOTO_PROPERTY_STRING(SimBridge, BoundaryConditions, boundaryConditions)
+GYOTO_PROPERTY_DOUBLE(SimBridge, Magnetization, magnetization)
 GYOTO_PROPERTY_END(SimBridge, Standard::properties)
 
 
@@ -66,7 +70,8 @@ SimBridge::SimBridge() :
   boundCond_(NULL),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  spectrumBB_(NULL)
 {
   boundCond_ = new string[5];
   boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]="None";
@@ -74,6 +79,7 @@ SimBridge::SimBridge() :
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
+  spectrumBB_ = new Spectrum::BlackBody();
 }
 
 SimBridge::SimBridge(const SimBridge& orig) :
@@ -102,7 +108,8 @@ SimBridge::SimBridge(const SimBridge& orig) :
   boundCond_(NULL),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
-  spectrumThermalSynch_(NULL)
+  spectrumThermalSynch_(NULL),
+  spectrumBB_(NULL)
 {
   if (orig.boundCond_){
     boundCond_  = new string[5];
@@ -138,12 +145,13 @@ SimBridge::SimBridge(const SimBridge& orig) :
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
   if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
+  if (orig.spectrumBB_()) spectrumBB_=orig.spectrumBB_->clone();
 }
 
 SimBridge* SimBridge::clone() const { return new SimBridge(*this); }
 
 SimBridge::~SimBridge() {
-  if (debug()) cerr << "DEBUG: SimBridge::~SimBridge()\n";
+  if (debug()) cout << "DEBUG: SimBridge::~SimBridge()\n";
   if (boundCond_) delete [] boundCond_;
 
   if (time_array_) delete[] time_array_;
@@ -164,7 +172,7 @@ std::string SimBridge::directory() const{
   return dirname_;
 }
 
-void SimBridge::filename(std::string f){
+void SimBridge::filename(std::string const &f){
   fname_=f;
   if (dirname_=="None")
     GYOTO_ERROR("Please set the directory before the filenames");
@@ -174,34 +182,51 @@ void SimBridge::filename(std::string f){
   stream_name << dirname_ << fname_ << setw(4) << setfill('0') << 0 << ".fits" ;
       
   string filename = stream_name.str();
-  GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
+  cout << "Reading FITS file: " << filename << endl ;
   
   fitsfile* fptr = NULL;
   
   fptr = FitsRW::fitsOpen(filename);
 
+  double* tmp;
+
   ntime_        = FitsRW::fitsReadKey(fptr, "NB_X0");
   time_array_   = new double[ntime_];
-  time_array_   = FitsRW::fitsReadHDUData(fptr, "X0");
+  tmp = FitsRW::fitsReadHDUData(fptr, "X0");
+  std::memcpy(time_array_, tmp, ntime_ * sizeof(double));
+  delete[] tmp;
 
   nx1_          = FitsRW::fitsReadKey(fptr, "NB_X1");
   x1_array_     = new double[nx1_];
-  x1_array_     = FitsRW::fitsReadHDUData(fptr, "X1");
+  tmp = FitsRW::fitsReadHDUData(fptr, "X1");
+  std::memcpy(x1_array_, tmp, nx1_ * sizeof(double));
+  delete[] tmp;
 
   nx2_          = FitsRW::fitsReadKey(fptr, "NB_X2");
   x2_array_     = new double[nx2_];
-  x2_array_     = FitsRW::fitsReadHDUData(fptr, "X2");
+  tmp = FitsRW::fitsReadHDUData(fptr, "X2");
+  std::memcpy(x2_array_, tmp, nx2_ * sizeof(double));
+  delete[] tmp;
 
   nx3_         = FitsRW::fitsReadKey(fptr, "NB_X3");
   x3_array_    = new double[nx3_];
-  x3_array_    = FitsRW::fitsReadHDUData(fptr, "X3");
+  tmp = FitsRW::fitsReadHDUData(fptr, "X3");
+  std::memcpy(x3_array_, tmp, nx3_ * sizeof(double));
+  delete[] tmp;
 
-  try{
+
+  int status = 0;
+  string key = "NB_FREQ";
+  double tmpd;
+  int* tmpi;
+  fits_movabs_hdu(fptr, 1, tmpi, &status);
+  fits_read_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &tmpd, NULL, &status);
+  if(status==0){
     nnu_       = FitsRW::fitsReadKey(fptr, "NB_FREQ");
     nu_array_  = new double[nnu_];
-    nu_array_  = FitsRW::fitsReadHDUData(fptr, "FREQ");
-  }catch(...){
-    GYOTO_DEBUG << "No frequency founded in FITS file." << endl;
+    tmp = FitsRW::fitsReadHDUData(fptr, "FREQ");
+    std::memcpy(nu_array_, tmp, nnu_ * sizeof(double));
+    delete[] tmp;
   }
   FitsRW::fitsClose(fptr);
 }
@@ -245,7 +270,7 @@ double SimBridge::floorTemperature()const{
   return floortemperature_;
 }
 
-void SimBridge::magneticConfiguration(string config){
+void SimBridge::magneticConfiguration(string const &config){
   magneticConfig_=config;
 }
 string SimBridge::magneticConfiguration() const{
@@ -260,15 +285,32 @@ double SimBridge::magnetization() const{
   return magnetizationParameter_;
 }
 
-void SimBridge::boundaryConditions(std::string x0BC, std::string x1BC, std::string x2BC, std::string x3BC, std::string freqBC){
-  boundCond_[0] = x0BC;
-  boundCond_[1] = x1BC;
-  boundCond_[2] = x2BC;
-  boundCond_[3] = x3BC;
-  boundCond_[4] = freqBC;
+void SimBridge::boundaryConditions(string const &sbc){
+  std::string token;
+  std::istringstream tokenStream(sbc);
+  int wordCount = 0;
+
+  while (std::getline(tokenStream, token, ' ') && wordCount < 5) {
+    std::istringstream commaStream(token);
+    while (std::getline(commaStream, token, ',') && wordCount < 5) {
+      if (!token.empty()) {
+        switch (wordCount) {
+          case 0: boundCond_[0] = token; break;
+          case 1: boundCond_[1] = token; break;
+          case 2: boundCond_[2] = token; break;
+          case 3: boundCond_[3] = token; break;
+          case 4: boundCond_[4] = token; break;
+        }
+        ++wordCount;
+      }
+    }
+  }
 }
-std::string * SimBridge::boundaryConditions() const{
-  return boundCond_;
+std::string SimBridge::boundaryConditions() const{
+  std::string list;
+  for (int ii=0;ii<5;ii++)
+    list += boundCond_[ii];
+  return list;
 }
 
 void SimBridge::emissionType(std::string const &kind){
@@ -281,7 +323,7 @@ void SimBridge::emissionType(std::string const &kind){
   else if (kind == "BB")
     emission_ = "BlackBody";
   else
-    throwError("unknown electron distribution!");
+    GYOTO_ERROR("unknown electron distribution!");
 }
 
 std::string SimBridge::emissionType() const{
@@ -305,23 +347,31 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
   // Creating arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
-  double* density_array       = new double[nfile*ncells];
-  double* temperature_array   = new double[nfile*ncells];
-  
-  double** magneticfield_array = new double*[4];
-  for (int ii=0; ii<4; ii++){
-    magneticfield_array[ii] = new double[nfile*ncells];
-  }
-
-  double** emission_array      = new double*[4];
-  double** absorption_array    = new double*[4];
-  double** rotation_array      = new double*[3];
-  for (int ii=0; ii<4; ii++){
-    emission_array[ii]   = new double[nfile*ncells];
-    absorption_array[ii] = new double[nfile*ncells];
-  }
-  for (int ii=0; ii<3; ii++){
-    rotation_array[ii] = new double[nfile*ncells];
+  double* density_array=NULL;
+  double* temperature_array=NULL;
+  double** magneticfield_array=NULL;
+  double** emission_array=NULL;
+  double** absorption_array=NULL;
+  double** rotation_array=NULL;
+  if (temperature_){
+    density_array = new double[nfile*ncells];
+    temperature_array = new double[nfile*ncells];
+    
+    magneticfield_array = new double*[4];
+    for (int ii=0; ii<4; ii++){
+      magneticfield_array[ii] = new double[nfile*ncells];
+    }
+  } else {
+    emission_array = new double*[4];
+    absorption_array = new double*[4];
+    rotation_array = new double*[3];
+    for (int ii=0; ii<4; ii++){
+      emission_array[ii]   = new double[nfile*ncells];
+      absorption_array[ii] = new double[nfile*ncells];
+    }
+    for (int ii=0; ii<3; ii++){
+      rotation_array[ii] = new double[nfile*ncells];
+    }
   }
 
   // Opening and reading Files
@@ -359,7 +409,10 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       tmp = FitsRW::fitsReadHDUData(fptr, "TEMPERATURE");
       std::memcpy(temperature_array + ii * ncells, tmp, ncells * sizeof(double));
       delete[] tmp;
-      try {
+      int status;
+      string extname="B0";
+      fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(extname.c_str()), 0, &status);
+      if (status==0) {
         for (int jj = 0; jj < 4; jj++) {
           std::ostringstream hdu_name;
           hdu_name << "B" << jj;
@@ -367,7 +420,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
           std::memcpy(magneticfield_array[jj] + ii * ncells, tmp, ncells * sizeof(double));
           delete[] tmp;
         }
-      } catch (...) {
+      } else{
         // Free magnetic field arrays if not found in FITS files and if ii == 0
         if (magneticfield_array && ii == 0) {
           for (int jj = 0; jj < 4; jj++) {
@@ -513,6 +566,10 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       theta_mag = 0.; // Average so we don't care
       BB = sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS*number_density);
     }
+    X[0] = NULL;
+    X[1] = NULL;
+    X[2] = NULL;
+    X[3] = NULL;
     delete[] X;
   
     double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
@@ -595,7 +652,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       X[2] = x2_array_;
       X[3] = x3_array_;
       X[4] = nu_array_;
-      std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], "None"};
+      std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4]};
 
       jInu[ii]=interpolate(5, emission_array[0],   Xq, X, X_params, cond_limits);
       jQnu[ii]=interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits);
@@ -609,6 +666,11 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       rotUnu[ii]=interpolate(5, rotation_array[1], Xq, X, X_params, cond_limits);
       rotVnu[ii]=interpolate(5, rotation_array[2], Xq, X, X_params, cond_limits);
 
+      X[0] = NULL;
+      X[1] = NULL;
+      X[2] = NULL;
+      X[3] = NULL;
+      X[4] = NULL;
       delete[] X;
     }
   }
@@ -636,25 +698,44 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
 
   // Freeing arrays
-  delete[] density_array;
-  delete[] temperature_array;
+  if(density_array) delete[] density_array;
+  if(temperature_array) delete[] temperature_array;
 
-  for (int ii = 0; ii < 4; ++ii) {
-    if (magneticfield_array) {
-      delete[] magneticfield_array[ii];
-    }
-    delete[] emission_array[ii];
-    delete[] absorption_array[ii];
-  }
   if (magneticfield_array) {
+    for (int ii = 0; ii < 4; ++ii) {
+      if (magneticfield_array[ii]) {
+        delete[] magneticfield_array[ii];
+      }
+    }
     delete[] magneticfield_array;
   }
-  delete[] emission_array;
-  delete[] absorption_array;
-  for (int ii = 0; ii < 3; ++ii) {
-    delete[] rotation_array[ii];
+  
+  if (emission_array) {
+    for (int ii = 0; ii < 4; ++ii) {
+      if (emission_array[ii]) {
+        delete[] emission_array[ii];
+      }
+    }
+    delete[] emission_array;
   }
-  delete[] rotation_array;
+
+  if (absorption_array) {
+    for (int ii = 0; ii < 4; ++ii) {
+      if (absorption_array[ii]) {
+        delete[] absorption_array[ii];
+      }
+    }
+    delete[] absorption_array;
+  }
+
+  if (rotation_array) {
+    for (int ii = 0; ii < 3; ++ii) {
+      if (rotation_array[ii]) {
+        delete[] rotation_array[ii];
+      }
+    }
+    delete[] rotation_array;
+  }
 }
 
 void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], size_t nbnu,
@@ -686,7 +767,7 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
 
   // Creating the velocity arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
-  double** velocity_array = new double*[4];
+  double** velocity_array = new double*[3];
   for (int ii=0; ii<3; ii++){
     velocity_array[ii] = new double[nfile*ncells];
   }
@@ -695,7 +776,7 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   double* tmp;
   double time_interpo[nfile];
   for (int ii=0; ii<nfile; ii++){
-      ostringstream stream_name ;
+    ostringstream stream_name ;
     stream_name << dirname_ << fname_ << setw(4) << setfill('0') << index+ii << ".fits" ;
         
     string filename = stream_name.str();
@@ -742,6 +823,10 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
   vel[3] = interpolate(4, velocity_array[2], Xq, X, X_params, boundCond_);
   //cout << "vel : " << vel[0] << ", "  << vel[1] << ", "  << vel[2] << ", "  << vel[3] << endl;
 
+  X[0] = NULL;
+  X[1] = NULL;
+  X[2] = NULL;
+  X[3] = NULL;
   delete[] X;
 
   gg_->normalizeFourVel(pos, vel);

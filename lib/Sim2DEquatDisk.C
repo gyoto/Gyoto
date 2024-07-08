@@ -34,6 +34,7 @@ using namespace Gyoto::Astrobj;
 /// Properties
 #include "GyotoProperty.h"
 GYOTO_PROPERTY_START(Sim2DEquatDisk, "Synchrotron-emitting orbiting blob of plasma")
+GYOTO_PROPERTY_DOUBLE(Sim2DEquatDisk, HoverR, HoverR)
 GYOTO_PROPERTY_END(Sim2DEquatDisk, SimBridge::properties)
 
 Sim2DEquatDisk::Sim2DEquatDisk() : 
