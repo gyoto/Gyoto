@@ -1599,7 +1599,14 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		Y_array[ii]=array[ind_Y];
     //cout << "Y_array[" << ii << "] = " << Y_array[ii] << endl;
 	}
-	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+	double result = interpNd(N, Xq, X_array, Y_array, cond_limits);
+  delete[] Y_array;
+  for (int ii=0; ii<len; ii++){
+    delete[] X_array[ii];
+  }
+  delete[] X_array;
+
+  return result;
 
 }
 
@@ -1647,7 +1654,14 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		Y_array[ii]=array[ind_Y];
 	}
 
-	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+	double result = interpNd(N, Xq, X_array, Y_array, cond_limits);
+  delete[] Y_array;
+  for (int ii=0; ii<len; ii++){
+    delete[] X_array[ii];
+  }
+  delete[] X_array;
+
+  return result;
 
 }
 
