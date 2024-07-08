@@ -4,15 +4,18 @@
  * synchrotron emission from Pandya et al. (2016)
  *
  * This class implements a jet defined as the volume contained
- * between the two conical surfaces defined by angles jetInnerOpeningAngle_
- * and jetOuterOpeningAngle_, with apex located on the black hole rotation
- * axis at altitude jetBaseHeight_ in units of M.
+ * between the two conical/parabolic surfaces defined either 
+ * by the angles jetInnerOpeningAngle_
+ * and jetOuterOpeningAngle_, or by the parabola parameter such that
+ * z = param * rcyl^2. The apex of the cone/parabola is at (0,0).
+ * The region below jetInnerRadius_ is removed, so this quantity is
+ * the "base of the jet".
  *
  * The Lorentz factor is assumed constant at gammaJet_.
  * The electron number density at the base of the jet is baseNumberDensity_cgs_,
- * its z-evolution is dedictated by mass conservation.
- * The electron temperature is baseTemperature_, its z-evolution is assumed
- * to follow a power law z^temperatureSlope_. The magnetic field
+ * its r-evolution is dedictated by mass conservation.
+ * The electron temperature is baseTemperature_, its r-evolution is assumed
+ * to follow a power law r^temperatureSlope_. The magnetic field
  * amplitude is defined by the magnetization parameter,
  * magnetizationParameter_.
  * 
@@ -25,7 +28,7 @@
  */
 
 /*
-    Copyright 2017-2019 Frederic Vincent, Thibaut Paumard
+    Copyright 2017-2024 Frederic Vincent, Thibaut Paumard, Paloma Thévenet
 
     This file is part of Gyoto.
 
@@ -92,11 +95,22 @@ class Gyoto::Astrobj::Jet
  private:
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_;
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_;
-  double jetOuterOpeningAngle_; ///< Jet outer opening angle (rad)
-  double jetInnerOpeningAngle_; ///< Jet inner opening angle (rad)
-  double jetBaseHeight_; ///< Height of the base of the jet (z value, M units)
-  double gammaJet_; ///< Constant Lorentz factor in jet
-  double jetVphiOverVr_; ///< this is (r*Vphi/Vr) where V is the jet velocity measured by the ZAMO
+  
+  bool parabolic_; ///< True when the jet sheath has a parabolic shape; if false the shape will be conical (following Vincent+19 torus+jet paper)
+
+  bool outflowing_; ///< True when the jet is outflowing. Else, inflowing.
+  
+  double jetShapeInnerParabolaParam_; ///< The jet shape inner boundary follows z = jetShapeInnerParabolaParam_ * rcyl^2, where rcyl is the cylindrical radius; used when parabolic_=True
+  double jetShapeOuterParabolaParam_; ///< The jet shape outer boundary follows z = jetShapeOuterParabolaParam_ * rcyl^2, where rcyl is the cylindrical radius; used when parabolic_=True
+
+  double jetOuterOpeningAngle_; ///< Jet outer opening angle (rad); used when parabolic_=False
+  double jetInnerOpeningAngle_; ///< Jet inner opening angle (rad); used when parabolic_=False
+
+  double jetVphiOverVr_; ///< ratio V^(phi)/V^(r) in orthonormal basis where V is ZAMO-measured jet velocity
+
+  double jetStagnationRadius_; ///< Jet outflowing above, inflowing below
+  double jetInnerRadius_; ///< Jet inner radius, or "base of the jet", used for scaling the thermo quantities.
+  double gammaJet_; ///< Constant Lorentz factor in jet (same def for parabolic and conical jet)
   double baseNumberDensity_cgs_; ///< electron nb density at jet base (cgs)
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
@@ -119,16 +133,30 @@ class Gyoto::Astrobj::Jet
   // Accessors
   // ---------
  public:
+  void parabolic(bool parabol);
+  bool parabolic() const ;
+
+  void outflowing(bool out);
+  bool outflowing() const ;
+  
+  void jetShapeInnerParabolaParam(double param);
+  double jetShapeInnerParabolaParam() const;
+  void jetShapeOuterParabolaParam(double param);
+  double jetShapeOuterParabolaParam() const;
+
   void jetOuterOpeningAngle(double ang);
   double jetOuterOpeningAngle() const;
   void jetInnerOpeningAngle(double ang);
   double jetInnerOpeningAngle() const;
-  void jetBaseHeight(double hh);
-  double jetBaseHeight() const;
+
+  void jetStagnationRadius(double param);
+  double jetStagnationRadius() const;
+  void jetVphiOverVr(double alpha);
+  double jetVphiOverVr()const;
+  void jetInnerRadius(double hh);
+  double jetInnerRadius() const;
   void gammaJet(double gam);
   double gammaJet() const;
-  void jetVphiOverVr(double alpha);
-  double jetVphiOverVr() const;
   double baseNumberDensity() const;
   double baseNumberDensity(std::string const &unit) const;
   void baseNumberDensity(double ne);
