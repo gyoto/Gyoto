@@ -72,11 +72,22 @@ class Gyoto::Astrobj::Plasmoid :
   double t_inj_;
   double radiusMax_; // Maximun radius of the Plasmoid in geometrical units
   std::string varyRadius_;
+  //std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
+  double beta_; //ratio between poloidal and toroidal magnetic field inside the plasmoid
   // FITS FILE Quantities
   std::string filename_;
+  double** emis_polar_array_;
+  double** abs_polar_array_;
+  double** rot_polar_array_;
   double* freq_array_;
-  double* jnu_array_;
-  double* anu_array_;
+  double* time_array_;
+  double* angle_array_;
+
+  int nb_time_;
+  int nb_freq_;
+  int nb_angle_;
+
+  SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_;
 
   // Constructors - Destructor
   // -------------------------
@@ -113,11 +124,18 @@ class Gyoto::Astrobj::Plasmoid :
   void radiusMax(double rr);
   double radiusMax() const;
   void Radius(std::string vary);
+  void beta(double beta);
+  double beta() const;
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,
 			  double dsem, state_t const &coord_ph,
 			  double const coord_obj[8]=NULL) const;
+
+  virtual void radiativeQ(double Inu[], double Qnu[], double Unu[], 
+              double Vnu[], Eigen::Matrix4d Onu[],
+              double const nu_ems[], size_t nbnu, double dsem,
+              state_t const &coord_ph, double const coord_obj[8]) const;
 
   void getCartesian(double const * const dates, size_t const n_dates,
           double * const x, double * const y,
@@ -132,7 +150,7 @@ class Gyoto::Astrobj::Plasmoid :
 
   void file(std::string const &f);
 
-  std::vector<size_t> fitsRead(std::string filename);
+  void fitsRead(std::string filename);
 
 };
 

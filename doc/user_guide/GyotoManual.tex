@@ -1359,6 +1359,15 @@ sub-directory of the source code distribution.
 \subsection{Writing a C++ plug-in}
 \label{sect:plug-in}
 
+The Gyoto source code contains several examples of plug-ins. One of
+them is minimalistic and its only purpose is to illustrate how to
+build a plug-in, including an autoconf-based build system that parses
+\texttt{gyoto.pc}. It is a good starting point for writing your own
+plug-in. See the content of the subdirectory \texttt{plugins/null/},
+in particular the \texttt{README} file. Note that the autoreconf, 
+./configure, make and make install steps have to be done in the plug-in 
+repository, not in the Gyoto parent directory.
+
 A plug-in is merely a shared library which contains the object code
 for your new objects, plus a special initialisation function. It is
 loaded into memory using \texttt{dlopen()} by the function
@@ -1430,13 +1439,6 @@ sense (i.e. when Gyoto is not itself installed under \texttt{/usr/local}).
 useful build-time information such as the install prefix and the
 plug-in suffix. This file gets installed in the standard location, by
 default \texttt{/usr/local/lib/pkgconfig/gyoto.pc}.
-
-The Gyoto source code contains several examples of plug-ins. One of
-them is minimalistic and its only purpose is to illustrate how to
-build a plug-in, including an autoconf-based build system that parses
-\texttt{gyoto.pc}. It is a good starting point for writing your own
-plug-in. See the content of the subdirectory \texttt{plugins/null/},
-in particular the \texttt{README} file.
 
 \subsection{Adding a new metric (\Metric)}
 

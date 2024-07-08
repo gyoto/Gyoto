@@ -364,19 +364,21 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
 				      //  cout
 				      << "rxyz= " << coord_ph_hit[1] << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*cos(coord_ph_hit[3]) << " " << coord_ph_hit[1]*sin(coord_ph_hit[2])*sin(coord_ph_hit[3]) << " " << coord_ph_hit[1]*cos(coord_ph_hit[2]) << " "
 				      << "DEBUG: Generic::processHitQuantities(): "
-				    << "nuobs[" << ii << "]="<< nuobs[ii]
-				    << ", nuem=" << nuem[ii]
-				    << ", dsem=" << dsem
-				    << ", Inu * GM/c2="
-				    << Inu[ii]
-				    << ", spectrum[" << ii*data->offset << "]="
-				    << data->spectrum[ii*data->offset]
-				      << ", sotkesQ[" << ii*data->offset << "]="
-				      << data->stokesQ[ii*data->offset]
-				    << ", transmission=" << t
-				    << ", optical depth=" << o
-				    << ", redshift=" << ggred << ")\n" << endl;
-				    //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
+              << "nuobs[" << ii << "]="<< nuobs[ii]
+              << ", nuem=" << nuem[ii]
+              << ", dsem=" << dsem
+              << ", Inu * GM/c2="
+              << Inu[ii]
+              << ", spectrum[" << ii*data->offset << "]="
+              << data->spectrum[ii*data->offset];
+              if (data-> stokesQ){
+                GYOTO_DEBUG << ", stokesQ[" << ii*data->offset << "]="
+                << data->stokesQ[ii*data->offset];
+              }
+              GYOTO_DEBUG << ", transmission=" << t
+              << ", optical depth=" << o
+              << ", redshift=" << ggred << ")\n" << endl;
+              //cout << "I, Q, U obs= " << data->spectrum[ii*data->offset] << " " << data->stokesQ[ii*data->offset] << " " << data->stokesU[ii*data->offset]<< endl;
 				  }
 					#endif
 				}
@@ -664,6 +666,25 @@ void Generic::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   }
   delete [] Taunu;
   delete [] alphaInu;
+}
+
+double Generic::get_theta_mag(double const fourvect[4], state_t const &coord_ph, double const vel[4]) const{
+	// Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
+  double B4vect[4];
+  for (int ii=0; ii<4; ii++){
+  	B4vect[ii] = fourvect[ii]; // Copy content of fourvect because of const
+  }
+
+  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
+  double photon_emframe[4]; // photon tgt vector projected in comoving frame
+  for (int ii=0;ii<4;ii++){
+    photon_emframe[ii]=coord_ph[ii+4];
+  }
+  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
+  double bnorm = gg_->norm(&coord_ph[0],B4vect);
+  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
+  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
+  return acos(lscalb/(lnorm*bnorm));
 }
 
 Matrix4d Generic::Omatrix(double alphanu[4], double rnu[3], double Chi, double dsem) const{
@@ -1176,12 +1197,25 @@ void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double
 
 void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
 
-	double rr, rcyl, theta, zz=0.;
+	/*********************/
+  /* GYOTO B FORMALISM */
+  /*********************/
+
+  // Define B by requiring: B.B=1 (we care only about B direction),
+  // and B.u=0 (B defined in emitter's frame).
+  
+  double rr, rcyl, theta, phi, zz=0.;
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=co[ii+4];
+  }
+  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = cph[1];
     rcyl = cph[1]*sin(cph[2]);
     theta = cph[2];
+    phi = cph[3];
     zz   = cph[1]*cos(cph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
@@ -1189,24 +1223,13 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
         +cph[3]*cph[3]);
     theta   = acos(cph[3]/rr);
+    phi = atan2(cph[2], cph[1]);
     zz   = cph[3];
     break;
   default:
     GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
   }
 
-  double vel[4]; // 4-velocity of emitter
-  for (int ii=0;ii<4;ii++){
-    vel[ii]=co[ii+4];
-  }
-  //cout << "vel : " << vel[0] << "," << vel[1] << "," << vel[2] << "," << vel[3] << endl;
-
-  /*********************/
-  /* GYOTO B FORMALISM */
-  /*********************/
-
-  // Define B by requiring: B.B=1 (we care only about B direction),
-  // and B.u=0 (B defined in emitter's frame).
 
   double gtt = gg_->gmunu(&cph[0],0,0),
     grr = gg_->gmunu(&cph[0],1,1),
@@ -1214,31 +1237,34 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     gtp = gg_->gmunu(&cph[0],0,3),
     gpp = gg_->gmunu(&cph[0],3,3);
 
-  // So far only circular velocity case is implemented
+  // So far only velocity with case is implemented
   if (vel[2]>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("mf config only defined for utheta=0");
 
+  double Bt, Br, Bth, Bp;
   if (magneticConfig=="Vertical"){
     double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
   alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    double Bt = -alphafact*Afact,
-  Br = alphafact*cos(cph[2])/sqrt(grr), // cos(cph[2])/sqrt(grr)
-  Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+    Bt = -alphafact*Afact;
+    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
+    Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+    Bp = 0;
 
-    B4vect[0]=Bt;
-    B4vect[1]=Br;
-    B4vect[2]=Bth;
-    B4vect[3]=0.;
+  }else if (magneticConfig=="Vertical"){
+    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+    Bt = -alphafact*Afact;
+    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
+    Bth = alphafact*sin(cph[2])/sqrt(gthth); // sin([2])/sqrt(gthth) --> along -ez
+    Bp = 0;
 
   }else if(magneticConfig=="Radial"){
     double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
   alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    double Bt = -alphafact*Afact,
-  Br = alphafact/sqrt(grr); // along +er
+    Bt = -alphafact*Afact,
+    Br = alphafact/sqrt(grr); // along +er
+    Bth = 0.;
+    Bp = 0.;
 
-    B4vect[0]=Bt;
-    B4vect[1]=Br;
-    B4vect[2]=0.;
-    B4vect[3]=0.;
   }else if(magneticConfig=="Toroidal"){
     // Only case where a bit of computation is needed
     // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
@@ -1247,16 +1273,44 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
     double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
     if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
-    double Bp = sqrt(Bp2);
-    double Bt = -Bp*Afact;
+    Bp = sqrt(Bp2);
+    Bt = -Bp*Afact;
+    Br = 0.;
+    Bth = 0.;
 
-    B4vect[0]=Bt;
-    B4vect[1]=0.;
-    B4vect[2]=0.;
-    B4vect[3]=Bp;
+  }else if(magneticConfig=="Poloidal"){
+  	Bt=0.;
+  	Br=0.;
+  	Bth=1./sqrt(gthth);
+  	Bp=0.;
+
+  }else if(magneticConfig=="Poloidal-n"){
+  	Bt=0.;
+  	Br=0.;
+  	Bth=-1./sqrt(gthth);
+  	Bp=0.;
   }else{
     GYOTO_ERROR("Not implemented Bfield orientation");
   }
+
+  switch (gg_->coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    B4vect[0]=Bt;
+    B4vect[1]=Br;
+    B4vect[2]=Bth;
+    B4vect[3]=Bp;
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    B4vect[0]=Bt;
+    B4vect[1]=Br*sin(theta)*cos(phi)+Bth*cos(theta)*cos(phi)-Bp*sin(phi);
+    B4vect[2]=Br*sin(theta)*sin(phi)+Bth*cos(theta)*sin(phi)+Bp*cos(phi);
+    B4vect[3]=Br*cos(theta)-Bth*sin(theta);
+    break;
+  default:
+    GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
+  }
+    
+
 
   return;
 }
@@ -1422,10 +1476,13 @@ double Generic::interpNd(int const N, double* const Xq, double** const X, double
   {
   	int arr_len = pow(2,n-1);
       Xsub_dim = new double[arr_len];
-      double t = (Xq[N-n]-X[0][N-n])/(X[2*(N-n)+1][N-n]-X[0][N-n]);
+      int indx = (N-n)==0 ? 1:(pow(2.,(N-n))+1);
+      double t = (Xq[N-n]-X[0][N-n])/(X[indx][N-n]-X[0][N-n]);
+      if (X[indx][N-n]-X[0][N-n]==0.) // At this point, this should only happen if dimension N-n is of length 1 with "Constant" boundary condition
+        t = 0.;
       if (t<0. or t>1.){
-      	if (cond_limit[n-1]!="Constant" and cond_limit[n-1]!="Linear"){
-      		GYOTO_ERROR("In interpNd : Query position out of interpolation boundaries.");
+      	if (cond_limit[N-n]=="None"){
+      		GYOTO_ERROR("In interpNd : Query position of dimension out of interpolation boundaries.");
       	}else if (cond_limit[n-1]=="Constant"){
       		if (t<0.)
       			t=0.;
@@ -1451,10 +1508,14 @@ int Generic::getIndice(double &xq, std::string const cond_limit, double const X_
 	int ind, n_x;
 	double x_min, x_max, dx;
 	n_x = floor(X_params[2]);
+	if (n_x==1 && (cond_limit=="Linear" || cond_limit=="Periodic"))
+    GYOTO_ERROR("In getIndice : Cannot compute 'Linear' or 'Periodic' boundary condition for dimension of length 1.");
+  else if (n_x==1)
+		return 0;
 	x_min = X_params[0];
   x_max = X_params[1];
 	dx    = (x_max - x_min)/(n_x-1);
-
+	//cout << "xq, x_min, x_max, dx, n_x : " << xq << ", " << x_min << ", " << x_max << ", " << dx << ", " << n_x << endl;
 
 	if (xq<x_min or xq>x_max){
 		// Query value out of boundary, check limit condition
@@ -1516,13 +1577,15 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+      if (X_lengths[n]==1)
+        tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
       ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	X_array[ii][n]=X[n][indices[n]+tab_indX[n]];
-
       }else{
       	return 0.; // "Null" bondary condition
       }
+        //cout << "X_array[" << ii << "][" << n << "] = " << X_array[ii][n] << endl;
 		}
 
 		int ind_Y = 0;
@@ -1534,9 +1597,16 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
       ind_Y += (indices[n]+tab_indX[n])*prod_len;
 		}
 		Y_array[ii]=array[ind_Y];
+    //cout << "Y_array[" << ii << "] = " << Y_array[ii] << endl;
 	}
+	double result = interpNd(N, Xq, X_array, Y_array, cond_limits);
+  delete[] Y_array;
+  for (int ii=0; ii<len; ii++){
+    delete[] X_array[ii];
+  }
+  delete[] X_array;
 
-	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+  return result;
 
 }
 
@@ -1555,11 +1625,12 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 	}
 	double* Y_array = new	double[len];
 	for (int ii=0;ii<len; ii++){
-		
 		int ind_X = ii;
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+      if (X_params[n][2]==1)
+        tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
       ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	int nx = X_params[n][2];
@@ -1583,7 +1654,14 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		Y_array[ii]=array[ind_Y];
 	}
 
-	return interpNd(N, Xq, X_array, Y_array, cond_limits);
+	double result = interpNd(N, Xq, X_array, Y_array, cond_limits);
+  delete[] Y_array;
+  for (int ii=0; ii<len; ii++){
+    delete[] X_array[ii];
+  }
+  delete[] X_array;
+
+  return result;
 
 }
 

@@ -61,6 +61,8 @@
 #include "GyotoDynamicalDisk3D.h"
 #include "GyotoDirectionalDisk.h"
 #include "GyotoXillverReflection.h"
+#include "GyotoSimBridge.h"
+#include "GyotoSim2DEquatDisk.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -138,6 +140,11 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::FlaredDiskSynchrotron>));
   Astrobj::Register("ThinDiskGridIntensity",
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskGridIntensity>));
+  Astrobj::Register("SimBridge",
+                &(Astrobj::Subcontractor<Astrobj::SimBridge>));
+  Astrobj::Register("Sim2DEquatDisk",
+                &(Astrobj::Subcontractor<Astrobj::Sim2DEquatDisk>));
+
   // Register Spectra
   Spectrum::Register("PowerLaw", 
 		     &(Spectrum::Subcontractor<Spectrum::PowerLaw>));
