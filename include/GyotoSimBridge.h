@@ -107,6 +107,7 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   std::string dirname_; ///< FITS files directory
   std::string fname_; ///< FITS files prefix (without the number neither the extension, i.e. '.fits')
   bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
+  bool BinFile_; ///< Define if the magnetic field is saved in FITS file or not
   std::string emission_; // Type of emission : Black Body or synchrotron from electron distribution (thermal, PL, kappa)
   double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
   double gammaMin_; ///< minimum value of gamma for power law energy density

@@ -57,6 +57,7 @@ SimBridge::SimBridge() :
   PLindex_(1.),
   floortemperature_(0.),
   temperature_(true),
+  BinFile_(true),
   ntime_(1),
   nx1_(1),
   nx2_(1),
@@ -94,6 +95,7 @@ SimBridge::SimBridge(const SimBridge& orig) :
   gammaMax_(orig.gammaMax_),
   PLindex_(orig.PLindex_),
   floortemperature_(orig.floortemperature_),
+  BinFile_(orig.BinFile_),
   temperature_(orig.temperature_),
   ntime_(orig.ntime_),
   nx1_(orig.nx1_),
@@ -182,7 +184,7 @@ void SimBridge::filename(std::string const &f){
   stream_name << dirname_ << fname_ << setw(4) << setfill('0') << 0 << ".fits" ;
       
   string filename = stream_name.str();
-  cout << "Reading FITS file: " << filename << endl ;
+  GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
   
   fitsfile* fptr = NULL;
   
@@ -228,6 +230,8 @@ void SimBridge::filename(std::string const &f){
     std::memcpy(nu_array_, tmp, nnu_ * sizeof(double));
     delete[] tmp;
   }
+
+  BinFile_ = FitsRW::fitsReadKey(fptr, "BINFILE");
   FitsRW::fitsClose(fptr);
 }
 
@@ -357,9 +361,11 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     density_array = new double[nfile*ncells];
     temperature_array = new double[nfile*ncells];
     
-    magneticfield_array = new double*[4];
-    for (int ii=0; ii<4; ii++){
-      magneticfield_array[ii] = new double[nfile*ncells];
+    if (BinFile_){
+      magneticfield_array = new double*[4];
+      for (int ii=0; ii<4; ii++){
+        magneticfield_array[ii] = new double[nfile*ncells];
+      }
     }
   } else {
     emission_array = new double*[4];
@@ -409,28 +415,14 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       tmp = FitsRW::fitsReadHDUData(fptr, "TEMPERATURE");
       std::memcpy(temperature_array + ii * ncells, tmp, ncells * sizeof(double));
       delete[] tmp;
-      int status;
-      string extname="B0";
-      fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(extname.c_str()), 0, &status);
-      if (status==0) {
+      
+      if (BinFile_) {
         for (int jj = 0; jj < 4; jj++) {
           std::ostringstream hdu_name;
           hdu_name << "B" << jj;
           tmp = FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str());
           std::memcpy(magneticfield_array[jj] + ii * ncells, tmp, ncells * sizeof(double));
           delete[] tmp;
-        }
-      } else{
-        // Free magnetic field arrays if not found in FITS files and if ii == 0
-        if (magneticfield_array && ii == 0) {
-          for (int jj = 0; jj < 4; jj++) {
-            if (magneticfield_array[jj]) {
-              delete[] magneticfield_array[jj];
-              magneticfield_array[jj] = nullptr;
-            }
-          }
-          delete[] magneticfield_array;
-          magneticfield_array = nullptr;
         }
       }
     }else{
@@ -538,13 +530,13 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     //cout << "ne, Te at (t,r,theta, phi) : "  << number_density << ", " << temperature << ", (" << tcur << "," << x1 << "," << x2 << "," << x3  << ")" << endl;
 
     int avg=0; // flag for magnetic field average for synchrotron
-    if (magneticfield_array==NULL && magneticConfig_=="None")
+    if (!BinFile_ && magneticConfig_=="None")
       avg = 1;
     
     double B4vect[4]={0.,0.,0.,0.};
     double theta_mag, BB;
     if (!avg){
-      if (magneticfield_array){
+      if (BinFile_){
         B4vect[0] = interpolate(4, magneticfield_array[0], Xq, X, X_params, boundCond_);
         B4vect[1] = interpolate(4, magneticfield_array[1], Xq, X, X_params, boundCond_);
         B4vect[2] = interpolate(4, magneticfield_array[2], Xq, X, X_params, boundCond_);
