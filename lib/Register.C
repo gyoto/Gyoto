@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2017, 2019, 2024 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -229,18 +229,53 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
 # if GYOTO_DEBUG_ENABLED
   GYOTO_IF_DEBUG
     GYOTO_DEBUG_EXPR(name);
-    GYOTO_DEBUG_EXPR(errmode);
     GYOTO_DEBUG_EXPR(name_);
+    GYOTO_DEBUG_EXPR(plugin);
     GYOTO_DEBUG_EXPR(plugin_);
+    GYOTO_DEBUG_EXPR(errmode);
   GYOTO_ENDIF_DEBUG
 # endif
   bool any_plugin = (plugin == "");
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG_EXPR(any_plugin);
+  GYOTO_ENDIF_DEBUG
+# endif
   if (name_==name && (any_plugin || (plugin_ == plugin))) {
     if (any_plugin) plugin=plugin_;
     return subcontractor_;
   }
-  if (next_) return next_ -> getSubcontractor(name, plugin, errmode);
-  if (errmode) return NULL;
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG_EXPR(next_);
+  GYOTO_ENDIF_DEBUG
+# endif
+  if (next_) {
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+      GYOTO_DEBUG << "recursing\n" ;
+    GYOTO_ENDIF_DEBUG
+#   endif
+    return next_ -> getSubcontractor(name, plugin, errmode);
+  }
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG << name << " not found in plug-in \"" << plugin << "\"\n" ;
+  GYOTO_ENDIF_DEBUG
+# endif
+  if (errmode) {
+#   if GYOTO_DEBUG_ENABLED
+    GYOTO_IF_DEBUG
+      GYOTO_DEBUG << "returning\n" ;
+    GYOTO_ENDIF_DEBUG
+#   endif
+    return NULL;
+  }
+# if GYOTO_DEBUG_ENABLED
+  GYOTO_IF_DEBUG
+    GYOTO_DEBUG << "throwing error\n" ;
+  GYOTO_ENDIF_DEBUG
+# endif
   GYOTO_ERROR ("Unregistered kind: "+name);
   return NULL; // will never get there, avoid compilation warning
 }

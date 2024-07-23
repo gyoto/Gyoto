@@ -10,7 +10,7 @@
  */
 
 /*
-    Copyright 2011-2016, 2018-2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2016, 2018-2020, 2022, 2024 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -78,19 +78,24 @@ namespace Gyoto {
       return gg;
     }
 
-    /// Query the Metric register
+    /// Query the Metric register Metric::Register_
     /**
      * Query the Metric register to get the Metric::Subcontractor_t
-     * correspondig to a given kind name. This function is normally
-     * called only from the Factory. If plugin is specified, only a
-     * subcontractor matching both name and plugin will be returned,
-     * loading the plug-in if necessary. If plugin is the empty
-     * string, then the first subcontractor matching name will be
-     * returned, and the name of the plug-in it belongs to will be
-     * returned in plugin upon output.
+     * corresponding to a given kind name. This function is normally
+     * called only from the Factory. If \p plugin is not empty, all
+     * the plug-ins listed there will be first loaded using
+     * Gyoto::requirePlugin(), then a subcontractor matching both \p
+     * name and and one element of \p plugin will be searched for. If
+     * \p plugin is an empty vector, then the first subcontractor
+     * matching \p name will be returned, and the name of the plug-in
+     * it belongs to will be returned in \p plugin upon output.
      *
-     * \param[in] name e.g. "KerrBL"
-     * \param[inout] plugin e.g. "stdplug".
+     * This function is defined using the #GYOTO_GETSUBCONTRACTOR
+     * macro.
+     *
+     * \param[in] name e.g. "KerrBL".
+     * \param[inout] plugin vector of strings listing plug-ins to look
+     *        for \p name in.
      * \param[in] errmode int=0. If errmode==0, failure to find a
      *        registered Metric by that name is an error. Else, simply
      *        return NULL pointer in that case.
@@ -122,7 +127,7 @@ namespace Gyoto {
      */
      void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
 
-     /// Empty the Metric register.
+     /// Empty the Metric register Metric::Register_
      /**
       *  This must be called once. It is called by
       *  Gyoto::Register::init().
