@@ -313,7 +313,7 @@ void SimBridge::boundaryConditions(string const &sbc){
 std::string SimBridge::boundaryConditions() const{
   std::string list;
   for (int ii=0;ii<5;ii++)
-    list += boundCond_[ii];
+    list += boundCond_[ii] + " ";
   return list;
 }
 
