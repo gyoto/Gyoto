@@ -6,7 +6,7 @@
  *
  */
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2016, 2024 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -97,23 +97,29 @@ namespace Gyoto{
     ///< A function to build instances of a specific Astrobj::Generic sub-class
 
     /**
-     * \brief Query the Spectrometer register
+     * \brief Query the Spectrometer register Spectrometer::Register_
      *
-     * Get the Spectrometer::Subcontractor_t correspondig to a given
-     * kind name. This function is normally called only from the
-     * Gyoto::Factory. If plugin is specified, only a
-     * subcontractor matching both name and plugin will be returned,
-     * loading the plug-in if necessary. If plugin is the empty
-     * string, then the first subcontractor matching name will be
-     * returned, and the name of the plug-in it belongs to will be
-     * returned in plugin upon output.
+     * Query the Spectrometer register to get the
+     * Metric::Subcontractor_t correspondig to a given kind name. This
+     * function is normally called only from the Factory. If \p plugin
+     * is not empty, all the plug-ins listed there will be first
+     * loaded using Gyoto::requirePlugin(), then a subcontractor
+     * matching both \p name and and one element of \p plugin will be
+     * searched for. If \p plugin is an empty vector, then the first
+     * subcontractor matching \p name will be returned, and the name
+     * of the plug-in it belongs to will be returned in \p plugin upon
+     * output.
+     *
+     * This function is defined using the #GYOTO_GETSUBCONTRACTOR
+     * macro.
      *
      * \param[in] name Name of the subclass to build, e.g. "Complex"
      *            or "wave".
-     * \param[inout] plugin e.g. "stdplug".
+     * \param[inout] plugin vector of strings listing plug-ins to look
+     *            for \p name in.
      * \param errmode[in] If name is not registered,
-     *             getSubcontractor() return NULL errmode==1, throws a
-     *             Gyoto::Error if errmode==0.
+     *            getSubcontractor() returns NULL if errmode==1 and
+     *            throws a Gyoto::Error if errmode==0.
      * \return pointer to the corresponding subcontractor.
      */
     Gyoto::Spectrometer::Subcontractor_t* getSubcontractor(std::string name,
@@ -149,7 +155,8 @@ namespace Gyoto{
     extern Gyoto::Register::Entry * Register_;
 
      /**
-      * \brief Initialize the Spectrometer register
+      * \brief Initialize the Spectrometer register Spectrometer::Register_
+      *
       *  This must be called once. It initializes Register_ and
       *  registers the standard kinds (Uniform and Complex).
       */

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2016, 2019, 2024 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -140,15 +140,21 @@ public:
   /**
    * \brief Get subcontractor for a given name
    * 
-   * Search through the register for an Entry matching name and return
-   * the corresponding subcontractor. If plugin is specified, only a
-   * subcontractor matching both name and plugin will be returned.
-   * Note that Gyoto::Entry::getSubcontractor() will not load the
-   * plug-in for you, contrary to
-   * e.g. Gyoto::Metric::getSubcontractor(). If plugin is the empty
-   * string, then the first subcontractor matching name will be
-   * returned, and the name of the plug-in it belongs to will be
-   * returned in plugin upon output.
+   * Search through the register (i.e. this Entry and its descendants)
+   * for an Entry matching \p name and return the corresponding
+   * subcontractor. If \p plugin is specified, only a subcontractor
+   * matching both \p name and \p plugin will be returned. If \p
+   * plugin is the empty string, then the first subcontractor matching
+   * \p name will be returned, and the name of the plug-in it belongs
+   * to will be returned in \p plugin upon output.
+   *
+   * \note
+   * Gyoto::Register::Entry::getSubcontractor() has two notable
+   * differences compared to the getSubcontractor() methods defined
+   * using #GYOTO_GETSUBCONTRACTOR
+   * (e.g. Gyoto::Metric::getSubcontractor()):
+   * - it will not load \p plugin;
+   * - \p plugin is a scalar string and not a vector of strings.
    *
    * \param[in] name Name of the kind to look for.
    * \param[inout] plugin e.g. "stdplug".
@@ -161,6 +167,33 @@ public:
 
 };
 
+/**
+ * \def GYOTO_GETSUBCONTRACTOR(space)
+ *
+ * \brief Defines the getSubcontractor() function for namespace \p
+ * space.
+ *
+ * This macro is called for instance to define
+ * Gyoto::Metric::getSubcontractor(). A function defined this way will:
+ * - load any plug-in listed in \p plugin using requirePlugin();
+ * - if \p plugin is empty, look for a subcontractor matching \p name
+ *   in the relevant register,
+ *   - if a match is found, insert the name of the corresponding plug-in
+ *     in \p plugin and return a pointer to the matching
+ *     subcontractor;
+ *   - else,
+ *     - if \p errmode is 1, return NULL;
+ *     - if \p errmode is 0, throw a Gyoto::Error;
+ * - else, look for a subcontractor matching \p name and one element of
+ *   \p plugin in the relevant register,
+ *   - if a match is found, return the subcontractor;
+ *   - else,
+ *     - if \p errmode is 1, return NULL;
+ *     - if \p errmode is 0, throw a Gyoto::Error.
+ *
+ * \param[in] space a Gyoto namespace such as Metric, Astrobj,
+ * Spectrum or Spectrometer.
+ */
 #define GYOTO_GETSUBCONTRACTOR(space)		\
   Gyoto::space::Subcontractor_t*					\
   Gyoto::space::getSubcontractor(std::string name, std::vector<std::string> &plugin, int errmode) { \
@@ -175,7 +208,9 @@ public:
   sctr =								\
     (Subcontractor_t*)Gyoto::space::Register_				\
     -> getSubcontractor(name, plg, errmode);				\
-  plugin.push_back(plg);						\
+  if (sctr) plugin.push_back(plg);					\
+  else if (!errmode) throwError ("Kind not found in any plug-in: "+name); \
+  return sctr;								\
   }									\
   for (size_t i=plugin.size()-1; i>=0 && sctr == NULL; --i) {		\
     sctr=								\

@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011, 2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2018-2020, 2022, 2024 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -113,8 +113,6 @@ class Gyoto::Metric::KerrBL : public Metric::Generic {
   void nullifyCoord(double coord[8], double & tdot2) const;
   void nullifyCoord(double coord[8]) const;
 
-  //  friend std::ostream& operator<<(std::ostream& , const KerrBL& ) ;
-  //  std::ostream& print(std::ostream&) const ;
   virtual void circularVelocity(double const pos[4], double vel [4],
 				double dir=1.) const ;
 

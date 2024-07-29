@@ -62,10 +62,17 @@ Plasmoid::Plasmoid() :
   radiusMax_(1.),
   varyRadius_("None"),
   filename_("None"),
-  jnu_array_(NULL),
-  anu_array_(NULL),
+  emis_polar_array_(NULL),
+  abs_polar_array_(NULL),
+  rot_polar_array_(NULL),
+  beta_(1.),
+  t_inj_(1.),
+  nb_time_(0.),
+  nb_freq_(0.),
+  nb_angle_(0.),
+  time_array_(NULL),
   freq_array_(NULL),
-  t_inj_(1.)
+  angle_array_(NULL)
 {
   kind_="Plasmoid";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -74,6 +81,20 @@ Plasmoid::Plasmoid() :
 
   posIni_= new double[4];
   fourveldt_= new double[4];
+
+  emis_polar_array_ = new double*[4];
+  abs_polar_array_  = new double*[4];
+  rot_polar_array_  = new double*[3];
+  
+  int ncells_coefs = nb_time_*nb_freq_*nb_angle_;
+  for (int ii=0; ii<4; ii++){
+    emis_polar_array_[ii] = new double[ncells_coefs];
+    abs_polar_array_[ii] = new double[ncells_coefs];
+    if (ii<3)
+      rot_polar_array_[ii] = new double[ncells_coefs];
+  }
+
+  spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
 }
 
 Plasmoid::Plasmoid(const Plasmoid& orig) :
@@ -86,10 +107,17 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
   radiusMax_(orig.radiusMax_),
   varyRadius_(orig.varyRadius_),
   filename_(orig.filename_),
-  jnu_array_(NULL),
-  anu_array_(NULL),
+  emis_polar_array_(NULL),
+  abs_polar_array_(NULL),
+  rot_polar_array_(NULL),
+  beta_(orig.beta_),
+  t_inj_(orig.t_inj_),
+  nb_time_(orig.nb_time_),
+  nb_freq_(orig.nb_freq_),
+  nb_angle_(orig.nb_angle_),
+  time_array_(NULL),
   freq_array_(NULL),
-  t_inj_(orig.t_inj_)
+  angle_array_(NULL)
 {
 
   if(orig.posIni_){
@@ -101,22 +129,48 @@ Plasmoid::Plasmoid(const Plasmoid& orig) :
 	  fourveldt_= new double[4];
 	  memcpy(fourveldt_,orig.fourveldt_, 4*sizeof(double));
   }
+  
+  int ncells_coefs = nb_time_*nb_freq_*nb_angle_;
+  if (orig.emis_polar_array_){
+    emis_polar_array_ = new double*[4];
+    for (int ii=0; ii<4; ii++){
+      emis_polar_array_[ii] = new double[ncells_coefs];
+      memcpy(emis_polar_array_[ii],orig.emis_polar_array_[ii], ncells_coefs*sizeof(double));
+    }
+  }
 
-  size_t ncells=0;
-  size_t nnu=FitsRW::nnu(), nt=FitsRW::nt();
-  ncells=nnu*nt;
-  if (orig.jnu_array_){
-    jnu_array_ = new double[ncells];
-    memcpy(jnu_array_,orig.jnu_array_, ncells*sizeof(double));
+  if (orig.abs_polar_array_){
+    abs_polar_array_ = new double*[4];
+    for (int ii=0; ii<4; ii++){
+      abs_polar_array_[ii] = new double[ncells_coefs];
+      memcpy(abs_polar_array_[ii],orig.abs_polar_array_[ii], ncells_coefs*sizeof(double));
+    }
   }
-  if (orig.anu_array_){
-    anu_array_ = new double[ncells];
-    memcpy(anu_array_,orig.anu_array_, ncells*sizeof(double));
+
+  if (orig.rot_polar_array_){
+    rot_polar_array_ = new double*[3];
+    for (int ii=0; ii<3; ii++){
+      rot_polar_array_[ii] = new double[ncells_coefs];
+      memcpy(rot_polar_array_[ii],orig.rot_polar_array_[ii], ncells_coefs*sizeof(double));
+    }
   }
-  if (orig.freq_array_){
-    freq_array_ = new double[nnu];
-    memcpy(freq_array_,orig.freq_array_, nnu*sizeof(double));
+
+  if(orig.time_array_){
+    time_array_= new double[nb_time_];
+    memcpy(time_array_,orig.time_array_, nb_time_*sizeof(double));
   }
+
+  if(orig.freq_array_){
+    freq_array_= new double[nb_freq_];
+    memcpy(freq_array_,orig.freq_array_, nb_freq_*sizeof(double));
+  }
+
+  if(orig.angle_array_){
+    angle_array_= new double[nb_angle_];
+    memcpy(angle_array_,orig.angle_array_, nb_angle_*sizeof(double));
+  }
+
+  if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
 }
 
 
@@ -124,9 +178,6 @@ Plasmoid* Plasmoid::clone() const { return new Plasmoid(*this); }
 
 Plasmoid::~Plasmoid() {
   if (debug()) cerr << "DEBUG: Plasmoid::~Plasmoid()\n";
-  if (jnu_array_) delete [] jnu_array_;
-  if (anu_array_) delete [] anu_array_;
-  if (freq_array_) delete [] freq_array_;
 }
 
 string Plasmoid::className() const { return  string("Plasmoid"); }
@@ -145,9 +196,14 @@ void Plasmoid::radiativeQ(double Inu[], // output
 # endif
   if (filename_=="None")
       GYOTO_ERROR("In Plamsoid RadiativeQ : filename_ not defined, please use file(string)");
+  
+  double tcur=coord_ph[0]; // in M units
+  double t0 = posIni_[0];  // t0 M units
 
-  double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; // in min
-  double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
+  double vel[4]; // 4-velocity of emitter
+  for (int ii=0;ii<4;ii++){
+    vel[ii]=coord_obj[ii+4];
+  }
 
   // Defining jnus, anus
   double jnu[nbnu];
@@ -160,19 +216,68 @@ void Plasmoid::radiativeQ(double Inu[], // output
     anu[ii]=-1.;
   }
 
+  int X_params[3] = {nb_time_, nb_freq_, nb_angle_};
+  double** X;
+  X = new double*[3];
+  X[0] = time_array_;
+  X[1] = freq_array_;
+  X[2] = angle_array_;
+
+  std::string cond_limits[3] = {"Linear", "Linear", "Constant"}; // time, frequency, theta_mag
+  double theta_mag = 10.; // avg
+  if (nb_angle_ != 1.){ // Meaning the coefficients are not averaged over pitch angle
+    cond_limits[2] = "None";
+    double B4vect[4]={0.,0.,0.,0.};
+    double Btor[4]={0.,0.,0.,0.};
+    double Bpol[4]={0.,0.,0.,0.};
+    computeB4vect(Btor, "Toroidal", coord_obj, coord_ph);
+    computeB4vect(Bpol, "Poloidal", coord_obj, coord_ph);    
+    for (int i=0;i<4;i++){
+      B4vect[i] = Btor[i]/(beta_+1) + Bpol[i]*beta_/(beta_+1);
+    }
+    double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+    if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+    //gg_->multiplyFourVect(B4vect,1./norm);
+    //computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+    theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+  }
+
+  // KAPPA SYNCHRO
+  double jnu_synch_kappa[nbnu], anu_synch_kappa[nbnu];
+  double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*15.
+    /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
+  cout << "nu0 : " << nu0 << endl;
+  double hypergeom = Gyoto::hypergeom(4., 50.);
+  spectrumKappaSynch_->kappaindex(4.);
+  spectrumKappaSynch_->angle_averaged(1);
+  spectrumKappaSynch_->angle_B_pem(theta_mag); // avg so we don't care
+  spectrumKappaSynch_->cyclotron_freq(nu0);
+  spectrumKappaSynch_->thetae(50.);
+  spectrumKappaSynch_->hypergeometric(hypergeom);
+
   
+
   // COMPUTE VALUES IN FUNCTION OF PHASE
-  if (tcur<=t0){ // HEATING PHASE
+  if (tcur<=t0){
     for (size_t ii=0; ii<nbnu; ++ii){
       jnu[ii]=0;
       anu[ii]=0;
     }
   }
-  else{ // COOLING PHASE
-    double tt=(tcur-t0)*60.; // in sec
+  else{
+    double tt=(tcur-t0); // in M unit
     for (size_t ii=0; ii<nbnu; ++ii){
-      jnu[ii]=FitsRW::interpolate(nu_ems[ii], tt, jnu_array_, freq_array_);
-      anu[ii]=FitsRW::interpolate(nu_ems[ii], tt, anu_array_, freq_array_);
+      double Xq[3] = {tt, nu_ems[ii], theta_mag};
+      jnu[ii]=interpolate(3, emis_polar_array_[0], Xq, X, X_params, cond_limits);
+      anu[ii]=interpolate(3, abs_polar_array_[0],  Xq, X, X_params, cond_limits);
+      if ((tt-t_inj_)<1.){
+        double ne = min(5.e6,5.e6*tt/t_inj_);
+        spectrumKappaSynch_->numberdensityCGS(ne);
+        spectrumKappaSynch_->radiativeQ(jnu_synch_kappa,anu_synch_kappa,nu_ems,nbnu);
+        cout << "tt, nu_em, theta_mag : " << tt << ", " << nu_ems[ii] << ", " << theta_mag << endl;
+        cout << "Compare jnu : " << jnu[ii] << ", " << jnu_synch_kappa[ii] << endl;
+        cout << "Compare anu : " << anu[ii] << ", " << anu_synch_kappa[ii] << endl;
+      }
     }
   }
 
@@ -195,6 +300,140 @@ void Plasmoid::radiativeQ(double Inu[], // output
     
   }
 
+}
+
+void Plasmoid::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
+           Eigen::Matrix4d *Onu, double const *nuem , size_t nbnu,
+           double dsem, state_t const &coord_ph, double const *coord_obj) const {
+  cout << "Hello !" << endl;
+  if (coord_ph.size()!=16){
+    // Onu is the transmission matrix which contains in particular the non-polarised transmission
+    // So we need to update it.
+    Eigen::Matrix4d identity;
+    identity << 1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+
+    double* Taunu;
+    Taunu = new double[nbnu];
+    for (size_t ii=0; ii<nbnu; ++ii) {
+      radiativeQ(Inu, Taunu, nuem, nbnu, dsem, coord_ph, coord_obj);
+      Onu[ii] = Taunu[ii]*identity;
+    }
+  } else {
+    if (filename_=="None")
+      GYOTO_ERROR("In Plamsoid RadiativeQ : filename_ not defined, please use file(string)");
+
+    cout << "Hello !" << endl;
+    double tcur=coord_ph[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C; // in sec
+    double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C;  // t0 in sec
+
+    double vel[4]; // 4-velocity of emitter
+    for (int ii=0;ii<4;ii++){
+      vel[ii]=coord_obj[ii+4];
+    }
+
+    double B4vect[4]={0.,0.,0.,0.};
+    double Btor[4]={0.,0.,0.,0.};
+    double Bpol[4]={0.,0.,0.,0.};
+    computeB4vect(Btor, "Toroidal", coord_obj, coord_ph);
+    computeB4vect(Bpol, "Poloidal", coord_obj, coord_ph);    
+    for (int i=0;i<4;i++){
+      B4vect[i] = Btor[i]/pow(beta_*beta_+1.,0.5) + Bpol[i]*beta_/pow(beta_*beta_+1.,0.5);
+    }
+    double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+    if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+    //gg_->multiplyFourVect(B4vect,1./norm);
+    //computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+
+    double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+
+    double theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+
+    if (theta_mag<0. or theta_mag>M_PI) throwError("Blob: bad B angle");
+
+    // Setup interpolation parameters
+    int X_params[3] = {nb_time_, nb_freq_, nb_angle_};
+    double** X;
+    X = new double*[3];
+    X[0] = time_array_;
+    X[1] = freq_array_;
+    X[2] = angle_array_;
+    std::string cond_limits[3] = {"Linear", "Linear", "None"}; // time, frequency, theta_mag
+
+    // Defining emission, absoprtion and rotation coefficients for the transmission matrix
+    double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
+    double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
+    double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
+    
+    cout << "Hello !" << endl;
+    for (size_t ii=0; ii<nbnu; ++ii){
+      // Initialze them to -1 to create error if not updated
+      jInu[ii]=-1.;
+      jQnu[ii]=-1.;
+      jUnu[ii]=-1.;
+      jVnu[ii]=-1.;
+      aInu[ii]=-1.;
+      aQnu[ii]=-1.;
+      aUnu[ii]=-1.;
+      aVnu[ii]=-1.;
+      rotQnu[ii]=-1.;
+      rotUnu[ii]=-1.;
+      rotVnu[ii]=-1.;
+    }
+
+    if (tcur<=t0){
+      for (size_t ii=0; ii<nbnu; ++ii){
+        jInu[ii]=0.;
+        jQnu[ii]=0.;
+        jUnu[ii]=0.;
+        jVnu[ii]=0.;
+        aInu[ii]=0.;
+        aQnu[ii]=0.;
+        aUnu[ii]=0.;
+        aVnu[ii]=0.;
+        rotQnu[ii]=0.;
+        rotUnu[ii]=0.;
+        rotVnu[ii]=0.;
+      }
+    }
+    else{
+      double tt=(tcur-t0); // in sec
+      for (size_t ii=0; ii<nbnu; ++ii){
+        double Xq[3] = {tt, nuem[ii], theta_mag};
+        jInu[ii]=interpolate(3, emis_polar_array_[0],  Xq, X, X_params, cond_limits);
+        jQnu[ii]=interpolate(3, emis_polar_array_[1],  Xq, X, X_params, cond_limits);
+        jUnu[ii]=interpolate(3, emis_polar_array_[2],  Xq, X, X_params, cond_limits);
+        jVnu[ii]=interpolate(3, emis_polar_array_[3],  Xq, X, X_params, cond_limits);
+        aInu[ii]=interpolate(3, abs_polar_array_[0],   Xq, X, X_params, cond_limits);
+        aQnu[ii]=interpolate(3, abs_polar_array_[1],   Xq, X, X_params, cond_limits);
+        aUnu[ii]=interpolate(3, abs_polar_array_[2],   Xq, X, X_params, cond_limits);
+        aVnu[ii]=interpolate(3, abs_polar_array_[3],   Xq, X, X_params, cond_limits);
+        rotQnu[ii]=interpolate(3, rot_polar_array_[0], Xq, X, X_params, cond_limits);
+        rotUnu[ii]=interpolate(3, rot_polar_array_[1], Xq, X, X_params, cond_limits);
+        rotVnu[ii]=interpolate(3, rot_polar_array_[2], Xq, X, X_params, cond_limits);
+      }
+    }
+
+    for (size_t ii=0; ii<nbnu; ++ii) {
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Vector4d Stokes=Omat*Jstokes;
+    Inu[ii] = Stokes(0);
+    Qnu[ii] = Stokes(1);
+    Unu[ii] = Stokes(2);
+    Vnu[ii] = Stokes(3);
+    Onu[ii] = Omat;
+
+    if (Inu[ii]<0.)
+      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
+      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
+      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu or Taunu is infinite");
+    }
+  }
 }
 
 void Plasmoid::motionType(std::string const type){
@@ -358,14 +597,20 @@ void Plasmoid::getVelocity(double const pos[4], double vel[4]){
   if (flag_=="None")
     GYOTO_ERROR("In Plasmoid::getVelocity Motion not defined; motionType('Helical' or 'Equatorial'");
   
-  if (flag_=="Helical") // Helical case
+  if (flag_=="Helical") // Nathanail+20
   {
   	vel[0] = 1.;
-	vel[1] = fourveldt_[1];
-	vel[2] = 0.;
-	vel[3] = fourveldt_[3]*pow(posIni_[1]/pos[1],2.); // conservation of the Newtonian angular momentum [Ball et al. 2020]
-	gg_->normalizeFourVel(pos, vel);
-
+  	vel[1] = fourveldt_[1];
+  	vel[2] = 0.;
+  	vel[3] = fourveldt_[3];
+  	gg_->normalizeFourVel(pos, vel);
+  }
+  else if (flag_=="Helical-Ejection"){ // El Mellah+23
+    vel[0] = 1.;
+    vel[1] = max(0.8,fourveldt_[1]*pow(pos[1]/posIni_[1],0.5));
+    vel[2] = 0.;
+    vel[3] = fourveldt_[3];
+    gg_->normalizeFourVel(pos, vel);
   }
   else // Equatorial case
   {
@@ -380,20 +625,19 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
 	// which increase linearly during the injection phase
 	// before calling the StandardAstrobj function
 
-	double radiusMin = 0.2;
-  double t0 = posIni_[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.;  // t0 in min
+	double radiusMin = 0.4;
+  double t0 = posIni_[0];  // t0 in M unit
 
   size_t sz = ph -> parallelTransport()?16:8;
   state_t p1(sz);
   ph->getCoord(index, p1);
-  double tcur = p1[0]*GYOTO_G_OVER_C_SQUARE*gg_->mass()/GYOTO_C/60.; //tcur in min
+  double tcur = p1[0]; //tcur in M unit
 
   
   if (varyRadius_== "Varying")
   {
     if (tcur<=t0) radius(radiusMin);
-    else if (tcur<=t0+t_inj_) radius(radiusMin+(radiusMax_-radiusMin)*(tcur-t0)/t_inj_);
-    else radius(radiusMax_);
+    else radius(radiusMin+0.001*(tcur-t0)); // Nathanail+20
   }
 	else if (varyRadius_== "Constant") radius(radiusMax_);
   else{
@@ -402,8 +646,6 @@ int Plasmoid::Impact(Photon* ph, size_t index, Properties *data){
 
 	return Standard::Impact(ph, index, data);
 }
-
-
 
 
 void Plasmoid::file(std::string const &f) {
@@ -415,7 +657,7 @@ void Plasmoid::file(std::string const &f) {
 }
 
 #ifdef GYOTO_USE_CFITSIO
-vector<size_t> Plasmoid::fitsRead(string filename) {
+void Plasmoid::fitsRead(string filename) {
   // Remove first char if it is "!"
   if (filename.substr(0,1)=="!")
     filename.erase(0,1);
@@ -423,87 +665,44 @@ vector<size_t> Plasmoid::fitsRead(string filename) {
   GYOTO_MSG << "Plasmoid reading FITS file: " << filename << endl;
 
   filename_ = filename;
-  char*     pixfile   = const_cast<char*>(filename_.c_str());
   fitsfile* fptr      = NULL;
-  int       status    = 0;
-  double    tmpd;
-  char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-
-  GYOTO_DEBUG << "Plasmoid::fitsRead: opening file" << endl;
-  if (fits_open_file(&fptr, pixfile, 0, &status)) throwCfitsioError(status);
-
-  ////// READ FITS KEYWORDS COMMON TO ALL TABLES ///////
-  // These are: tmin, tmax, numin, numax
   
-  string extname = "GYOTO FitsRW KEYS";
-  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>(extname.c_str()), 0, &status);
+  fptr = FitsRW::fitsOpen(filename);
 
-  GYOTO_DEBUG << "FitsRW::fitsRead(): read tmin_" << endl;
-  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW tmin", &tmpd,
-    NULL, &status);
-  if (status) {
-      if (status == KEY_NO_EXIST) status = 0; // not fatal
-      else throwCfitsioError(status) ;
-  } else FitsRW::tmin(tmpd); // tmin_ found
+  nb_time_   = FitsRW::fitsReadKey(fptr, "NB_TIME");
+  nb_freq_   = FitsRW::fitsReadKey(fptr, "NB_FREQ");
+  nb_angle_  = FitsRW::fitsReadKey(fptr, "NB_ANGL");
+  t_inj_     = FitsRW::fitsReadKey(fptr, "T_INJ");
 
-  GYOTO_DEBUG << "FitsRW::fitsRead(): read tmax_" << endl;
-  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW tmax", &tmpd,
-    NULL, &status);
-  if (status) {
-      if (status == KEY_NO_EXIST) status = 0; // not fatal
-      else throwCfitsioError(status) ;
-  } else FitsRW::tmax(tmpd); // tmax_ found
+  //time_array_ = new double[nb_time_];
+  //freq_array_ = new double[nb_freq_];
+  //angle_array_= new double[nb_angle_];
 
-  GYOTO_DEBUG << "FitsRW::fitsRead(): read numin_" << endl;
-  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW numin", &tmpd,
-    NULL, &status);
-  if (status) {
-      if (status == KEY_NO_EXIST) status = 0; // not fatal
-      else throwCfitsioError(status) ;
-  } else FitsRW::numin(tmpd); // numin_ found
+  emis_polar_array_[0] = FitsRW::fitsReadHDUData(fptr, "J_I");
+  emis_polar_array_[1] = FitsRW::fitsReadHDUData(fptr, "J_Q");
+  emis_polar_array_[2] = FitsRW::fitsReadHDUData(fptr, "J_U");
+  emis_polar_array_[3] = FitsRW::fitsReadHDUData(fptr, "J_V");
+  abs_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_I");
+  abs_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_Q");
+  abs_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_U");
+  abs_polar_array_[3]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_V");
+  rot_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "R_Q");
+  rot_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "R_U");
+  rot_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "R_V");
+  time_array_          = FitsRW::fitsReadHDUData(fptr, "TIME");
+  freq_array_          = FitsRW::fitsReadHDUData(fptr, "FREQUENCY");
+  angle_array_         = FitsRW::fitsReadHDUData(fptr, "ANGLE");
 
-  GYOTO_DEBUG << "FitsRW::fitsRead(): read numax_" << endl;
-  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW numax", &tmpd,
-    NULL, &status);
-  if (status) {
-      if (status == KEY_NO_EXIST) status = 0; // not fatal
-      else throwCfitsioError(status) ;
-  } else FitsRW::numax(tmpd); // rmax_ found
-
-  GYOTO_DEBUG << "FitsRW::fitsRead(): read t_inj" << endl;
-  fits_read_key(fptr, TDOUBLE, "GYOTO FitsRW t_inj", &tmpd,
-    NULL, &status);
-  if (status){
-    throwCfitsioError(status) ;
-  }
-  else t_inj_=tmpd; // t_inj_ found
-
-  // READ EXTENSIONS
-  vector<size_t> naxes_jnu = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW Jnu",
-                  jnu_array_);
-
-  vector<size_t> naxes_anu = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW Anu",
-                  anu_array_);
-
-  if (naxes_jnu[0]!=naxes_anu[0] || naxes_jnu[1]!=naxes_anu[1])
-    throwError("In Plasmoid: jnu_array_ and anu_array_ dimensions "
-         "do not agree");
-
-  // freq array
-  vector<size_t> naxes_freq = FitsRW::fitsReadHDU(fptr,"GYOTO FitsRW FREQUENCY",
-                  freq_array_);
-  
-  if (naxes_freq[0]!=naxes_jnu[0])
-    GYOTO_ERROR("In Plasmoid: nnu differ from jnu_array_ and freq_array");
-  
-  /*cout << "jnu read= " << endl;
-  for (int ii=0;ii<60;ii++) cerr << jnu_array_[ii] << " " ;
-  cout << endl;*/
-
-  FitsRW::nnu(naxes_jnu[0]);
-  FitsRW::nt(naxes_jnu[1]);
-
-  return naxes_anu;
+  FitsRW::fitsClose(fptr);
+  return;
 
 }
 #endif
+
+void Plasmoid::beta(double beta){
+  beta_=beta;
+}
+
+double Plasmoid::beta() const{
+  return beta_;
+}

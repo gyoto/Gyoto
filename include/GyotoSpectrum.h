@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2016 Thibaut Paumard
+    Copyright 2011-2016, 2022, 2024 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -51,9 +51,8 @@ namespace Gyoto{
     typedef Gyoto::SmartPointer<Gyoto::Spectrum::Generic>
       Subcontractor_t(Gyoto::FactoryMessenger* fmp, std::vector<std::string> const &);
 
+    /// Subcontractor template
     /**
-     * \brief Subcontractor template
-     *
      * Instead of reimplementing the wheel, your subcontractor can simply be
      * Gyoto::Spectrum::Subcontractor<MyKind>
      *
@@ -83,19 +82,24 @@ namespace Gyoto{
      */
     void Register(std::string kind, Gyoto::Spectrum::Subcontractor_t* scp);
 
-    /// Query the Spectrum register
+    /// Query the Spectrum register Spectrum::Register_
     /**
-     * Query the Spectrum register to get the Metric::Subcontractor_t
+     * Query the Spectrum register to get the Spectrum::Subcontractor_t
      * correspondig to a given kind name. This function is normally
-     * called only from the Factory. If plugin is specified, only a
-     * subcontractor matching both name and plugin will be returned,
-     * loading the plug-in if necessary. If plugin is the empty
-     * string, then the first subcontractor matching name will be
-     * returned, and the name of the plug-in it belongs to will be
-     * returned in plugin upon output.
+     * called only from the Factory. If \p plugin is not empty, all
+     * the plug-ins listed there will be first loaded using
+     * Gyoto::requirePlugin(), then a subcontractor matching both \p
+     * name and and one element of \p plugin will be searched for. If
+     * \p plugin is an empty vector, then the first subcontractor
+     * matching \p name will be returned, and the name of the plug-in
+     * it belongs to will be returned in \p plugin upon output.
+     *
+     * This function is defined using the #GYOTO_GETSUBCONTRACTOR
+     * macro.
      *
      * \param[in] name e.g. "PowerLaw"
-     * \param[inout] plugin e.g. "stdplug".
+     * \param[inout] plugin  vector of strings listing plug-ins to look
+     *        for \p name in.
      * \param[in] errmode int=0. If errmode==0, failure to find a
      *        registered Spectrum by that name is an error. Else, simply
      *        return NULL pointer in that case.
@@ -113,7 +117,7 @@ namespace Gyoto{
      */
     extern Register::Entry* Register_;
 
-    /// Empty the Spectrum register.
+    /// Empty the Spectrum register Spectrum::Register_
     /**
      *  This must be called once. It is called by
      *  Gyoto::Register::init().

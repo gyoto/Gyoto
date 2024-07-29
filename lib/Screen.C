@@ -802,71 +802,83 @@ void Screen::getRayTriad(double angle1, double angle2,
   }
 
   if (compute_polar_basis==true){
-    switch (gg_ -> coordKind()) {
-    case GYOTO_COORDKIND_SPHERICAL:
+    double ca, sa; sincos(spherical_angle_a, &sa, &ca);
+    double cb, sb; sincos(spherical_angle_b, &sb, &cb);
+    double co, so; sincos(euler_[0], &so, &co); // changing name from p (for paln) to o (for Omega) to not confuse with phi
+    double Ephi_screenBasis[3] = {-sb*sb*(1-ca)-ca, sb*cb*(1-ca), cb*sa};
+    double Etheta_screenBasis[3] = {-sb*cb*(1-ca), (cb*cb*(1-ca)+ca), -sb*sa};
+    if (observerkind_==GYOTO_OBSKIND_ATINFINITY){
+      switch (gg_ -> coordKind()) {
+      case GYOTO_COORDKIND_SPHERICAL:
       {
-	double ca, sa; sincos(spherical_angle_a, &sa, &ca);
-	double cb, sb; sincos(spherical_angle_b, &sb, &cb);
-	double Ephi_screenBasis[3] = {-sb*sb*(1-ca)-ca,
-				      sb*cb*(1-ca),
-				      cb*sa};
-	double Etheta_screenBasis[3] = {-sb*cb*(1-ca),
-					(cb*cb*(1-ca)+ca),
-					-sb*sa};
-	
-	double cp, sp; sincos(euler_[0], &sp, &cp);
-	
-	if (observerkind_==GYOTO_OBSKIND_ATINFINITY){
-	  double grr=gg_->gmunu(coord,1,1), 
-	    gthth=gg_->gmunu(coord,2,2), gphph=gg_->gmunu(coord,3,3);
-	  // Ephi
-	  Ephi[0]=0.;
-	  Ephi[1]=-Ephi_screenBasis[2]/sqrt(grr);      
-	  Ephi[2]=(-sp*Ephi_screenBasis[0]
-		   +cp*Ephi_screenBasis[1])/sqrt(gthth);
-	  Ephi[3]=( cp*Ephi_screenBasis[0]
-		    +sp*Ephi_screenBasis[1])/sqrt(gphph);
-	  // Etheta
-	  Etheta[0]=0.;
-	  Etheta[1]=-Etheta_screenBasis[2]/sqrt(grr);
-	  Etheta[2]=(-sp*Etheta_screenBasis[0]
-		     +cp*Etheta_screenBasis[1])/sqrt(gthth);
-	  Etheta[3]=( cp*Etheta_screenBasis[0]
-		      +sp*Etheta_screenBasis[1])/sqrt(gphph);
-	  //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
-	  //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
-	  //throwError("test Eth");
-	}else{
-	  throwError("Observer should be at infinity");
-	}
-      
-	// double k_phi = gg_->gmunu(coord,3,3)*coord[7]
-	// 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
-	//                      // of tangent vector to null geodesic
-	// double ktheta = coord[6];
-	// double rr = coord[1];
-	// double sth=sin(coord[2]);
-	// if (sth==0.)
-	// 	GYOTO_ERROR("Please move Screen away from z-axis");
-	// double rsm1 = 1./(rr*sth);
-	
-	// double sp=sin(euler_[0]);
-	// double cp=cos(euler_[0]);
-	// // Ephi
-	// Ephi[0]=0.;
-	// Ephi[1]=-k_phi*rsm1;      
-	// Ephi[2]=sp/rr;
-	// Ephi[3]=-cp*rsm1;
-	// // Etheta
-	// Etheta[0]=0.;
-	// Etheta[1]=rr*ktheta;
-	// Etheta[2]=cp/rr;
-	// Etheta[3]=sp*rsm1;
-	break;
+        double grr=gg_->gmunu(coord,1,1), 
+          gthth=gg_->gmunu(coord,2,2), gphph=gg_->gmunu(coord,3,3);
+        // Ephi
+        Ephi[0]=0.;
+        Ephi[1]=-Ephi_screenBasis[2]/sqrt(grr);      
+        Ephi[2]=(-so*Ephi_screenBasis[0]
+          +co*Ephi_screenBasis[1])/sqrt(gthth);
+        Ephi[3]=( co*Ephi_screenBasis[0]
+            +so*Ephi_screenBasis[1])/sqrt(gphph);
+        // Etheta
+        Etheta[0]=0.;
+        Etheta[1]=-Etheta_screenBasis[2]/sqrt(grr);
+        Etheta[2]=(-so*Etheta_screenBasis[0]
+            +co*Etheta_screenBasis[1])/sqrt(gthth);
+        Etheta[3]=( co*Etheta_screenBasis[0]
+              +so*Etheta_screenBasis[1])/sqrt(gphph);
+        //cout << "In Screen init Ephi= " << Ephi[0] << " " << Ephi[1] << " " << coord[1]*Ephi[2] << " " << coord[1]*abs(sin(coord[2]))*Ephi[3] << endl;
+        //cout << "In Screen init Etheta= " << Etheta[0] << " " << Etheta[1] << " " << coord[1]*Etheta[2] << " " << coord[1]*abs(sin(coord[2]))*Etheta[3] << endl;
+        //throwError("test Eth");
+          
+        // double k_phi = gg_->gmunu(coord,3,3)*coord[7]
+        // 	+ gg_->gmunu(coord,0,3)*coord[4]; // phi covariant compo
+        //                      // of tangent vector to null geodesic
+        // double ktheta = coord[6];
+        // double rr = coord[1];
+        // double sth=sin(coord[2]);
+        // if (sth==0.)
+        // 	GYOTO_ERROR("Please move Screen away from z-axis");
+        // double rsm1 = 1./(rr*sth);
+        
+        // double sp=sin(euler_[0]);
+        // double cp=cos(euler_[0]);
+        // // Ephi
+        // Ephi[0]=0.;
+        // Ephi[1]=-k_phi*rsm1;      
+        // Ephi[2]=sp/rr;
+        // Ephi[3]=-cp*rsm1;
+        // // Etheta
+        // Etheta[0]=0.;
+        // Etheta[1]=rr*ktheta;
+        // Etheta[2]=cp/rr;
+        // Etheta[3]=sp*rsm1;
+        break;
       }
-      
-    default:
-      GYOTO_ERROR("Non implemented coord kind for polarization");
+      case GYOTO_COORDKIND_CARTESIAN:
+      {        
+        double rr = sqrt(coord[1]*coord[1] + coord[2]*coord[2] +coord[3]*coord[3]),
+          theta = acos(coord[3]/rr),
+          phi = atan2(coord[2],coord[1]);
+        double ct, st; sincos(theta, &st, &ct);
+        double cp, sp; sincos(phi, &sp, &cp);
+
+        Ephi[0]=0.;
+        Ephi[1]=(Ephi_screenBasis[0]*(-co*sp-so*ct*cp)+Ephi_screenBasis[1]*(-so*sp+co*ct*cp)-Ephi_screenBasis[2]*st*cp);      
+        Ephi[2]=(Ephi_screenBasis[0]*(co*cp-so*ct*sp)+Ephi_screenBasis[1]*(so*cp+co*ct*sp)-Ephi_screenBasis[2]*st*sp);
+        Ephi[3]=(Ephi_screenBasis[0]*st*so-Ephi_screenBasis[1]*st*co-Ephi_screenBasis[2]*ct);
+        // Etheta
+        Etheta[0]=0.;
+        Etheta[1]=(Etheta_screenBasis[0]*(-co*sp-so*ct*cp)+Etheta_screenBasis[1]*(-so*sp+co*ct*cp)-Etheta_screenBasis[2]*st*cp);      
+        Etheta[2]=(Etheta_screenBasis[0]*(co*cp-so*ct*sp)+Etheta_screenBasis[1]*(so*cp+co*ct*sp)-Etheta_screenBasis[2]*st*sp);
+        Etheta[3]=(Etheta_screenBasis[0]*st*so-Etheta_screenBasis[1]*st*co-Etheta_screenBasis[2]*ct);
+        break;
+      }
+      default:
+        GYOTO_ERROR("Non implemented coord kind for polarization");
+      }
+    }else{
+      throwError("Observer should be at infinity");
     }
   }
 }

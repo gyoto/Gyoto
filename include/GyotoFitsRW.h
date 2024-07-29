@@ -42,44 +42,19 @@ namespace Gyoto {
 #endif
 
 /**
- * \class Gyoto::GridData2D
- * \brief Class for reading data stored in a 2D grid
+ * \class Gyoto::FitsRW
+ * \brief Class for reading or writing data in FITS file.
+ * The data stored should be 1D array(s).
  *        
  *        
  */
 class Gyoto::FitsRW
 {
-  private:
-
-  size_t nnu_; //number of frequency lines in FITS File
-  double numin_;
-  double numax_;
-  size_t nt_; //number of time steps in FITS File
-  double dt_;
-  double tmin_;
-  double tmax_;
-
  public:
   FitsRW(); ///< Constructor
   FitsRW(const FitsRW&); ///< Copy constructor
   virtual FitsRW* clone() const ;
   virtual ~FitsRW() ;        ///< Destructor
-
-  // Accessors
-  void numin(double numn);
-  double numin() const;
-  void numax(double numx);
-  double numax() const;
-  void nnu(size_t nn);
-  size_t nnu() const;
-  void tmin(double tmn);
-  double tmin() const;
-  void tmax(double tmx);
-  double tmax() const;
-  void nt(size_t nn);
-  size_t nt() const;
-  void dt(double dd);
-  double dt() const;
 
 #ifdef GYOTO_USE_CFITSIO
 
@@ -94,7 +69,15 @@ class Gyoto::FitsRW
    * \param filename Name of fits file to be created
    *
    */
-  fitsfile* fitsCreate(std::string filename);
+  fitsfile* fitsCreate(std::string const filename) const;
+  /**
+   * \brief Open a fits file 
+   *
+   *
+   * \param filename name of the FITS file to be open
+   *
+   */
+  fitsfile* fitsOpen(std::string const filename) const;
 
   /**
    * \brief Closes a fits file referred to by a fitsfile pointer
@@ -103,33 +86,61 @@ class Gyoto::FitsRW
    * \param fptr fitsfile pointer to FITS file to be closed
    *
    */
-  void fitsClose(fitsfile* fptr);
+  void fitsClose(fitsfile* fptr) const;
 
   /**
-   * \brief Writes specific HDU in FITS files
+   * \brief Writes 1D array in FITS files
    *
    *
    * \param fptr fitsfile pointer to FITS file
    * \param extname Name of extension to be written
    * \param src Data to be written in extension
-   * 
-   * \Brief Data has shape {nnu_,nt_}
-   *
+   * \param ndim numer of axes of src
+   * \param len of each axes
    */
-  void fitsWriteHDU(fitsfile* fptr,
-        std::string extname,
-          double* src);
+  void fitsWriteHDUData(fitsfile* const fptr, std::string const extname, double* const src, long const nelements) const;
 
-  void fitsWriteParams(fitsfile* fptr, double n_e, double theta, double kappa, double BB, double t_inj);
+  /**
+   * \brief Writes a key in the header of a given HDU (by default "PRIMARY")
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be stored
+   * \param value Value of the key to be stored
+   * \param hdu HDU where to store the key, by default "PRIMARY"
+   */
+  void fitsWriteKey(fitsfile* const fptr, std::string const key, double value, std::string const hdu="PRIMARY") const;
 
-  virtual std::vector<size_t> fitsReadHDU(fitsfile* fptr,
-            std::string extname,
-            double *& dest);
+  /**
+   * \brief Read 1D array in FITS files
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param extname Name of extension to be read
+   */
+  double* fitsReadHDUData(fitsfile* const fptr, std::string const extname) const;
+
+  /**
+   * \brief Read a specific key of the HDU with a specific 'extname'
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be read
+   * \param hdu HDU extname where to search for the key
+   */
+  double fitsReadKey(fitsfile* const fptr, std::string const key, std::string const hdu) const;
+  
+  /**
+   * \brief Read a specific key of the HDU defined by its number (by default 1 equivalent ot the "PRIMARY" HDU)
+   *
+   *
+   * \param fptr fitsfile pointer to FITS file
+   * \param key Name of the key to be read
+   * \param hdu_num HDU number where to search for the key
+   */
+  double fitsReadKey(fitsfile* const fptr, std::string const key, int const hdu_num=1) const;
 
   #endif
-
-  void getIndices(size_t i[2], double const nu, double const tt, double* const freq_array) const ;
-  double interpolate(double nu, double tt, double* const array, double* const freq_array) const ;
 
 };
 

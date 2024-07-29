@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2011-2020 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2024 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -84,19 +84,24 @@ namespace Gyoto{
     }
     ///< A template for Subcontractor_t functions
 
-    /// Query the Astrobj register
+    /// Query the Astrobj register Astrobj::Register_
    /**
      * Query the Astrobj register to get the Astrobj::Subcontractor_t
-     * corresponding to a given kind name. This function is normally
-     * called only from the Factory. If plugin is specified, only a
-     * subcontractor matching both name and plugin will be returned,
-     * loading the plug-in if necessary. If plugin is the empty
-     * string, then the first subcontractor matching name will be
-     * returned, and the name of the plug-in it belongs to will be
-     * returned in plugin upon output.
+     * correspondig to a given kind name. This function is normally
+     * called only from the Factory. If \p plugin is not empty, all
+     * the plug-ins listed there will be first loaded using
+     * Gyoto::requirePlugin(), then a subcontractor matching both \p
+     * name and and one element of \p plugin will be searched for. If
+     * \p plugin is an empty vector, then the first subcontractor
+     * matching \p name will be returned, and the name of the plug-in
+     * it belongs to will be returned in \p plugin upon output.
      *
-     * \param[in] name e.g. "Star"
-     * \param[inout] plugin e.g. "stdplug".
+     * This function is defined using the #GYOTO_GETSUBCONTRACTOR
+     * macro.
+     *
+     * \param[in] name e.g. "Star".
+     * \param[inout] plugin vector of strings listing plug-ins to look
+     *        for \p name in.
      * \param[in] errmode 1 to return NULL in case of failure instead of
      * throwing an Error.
      * \return pointer to the corresponding subcontractor.
@@ -117,7 +122,7 @@ namespace Gyoto{
       *  This must be called once.
       */
     void initRegister(); 
-    ///< Empty the Astrobj register
+    ///< Empty the Astrobj register Astrobj::Register_
 
     /**
      * Register a new Astrobj::Generic sub-class so that the
@@ -375,7 +380,7 @@ private:
    * Return a Gyoto::Quantity_t suitable as input to
    * Gyoto::Scenery::setRequestedQuantities() to set de default
    * quantities to compute for this object. The default of these
-   * defaults GYOTO_QUANTITY_INTENSITY.
+   * defaults GYOTO_QUANTITY_INTEget_theta_mag(double const B4vect[4], state_t const &coord_ph, double const vel[4]) constNSITY.
    */
   virtual Gyoto::Quantity_t getDefaultQuantities();
   ///< Which quantities to compute if know was requested
@@ -687,6 +692,15 @@ private:
    * \param vel Fluid velocity at the photon coordinate
    */
   double getChi(double const fourvect[4], state_t const &cph, double const vel[4], bool elec=false) const;
+
+  /**
+   * Get angle between the magnetic field and the photon direction.
+   * 
+   * \param fourvect 4-vector magnetic field
+   * \param coord_ph Photon coordinate, must contain the Ephi and Etheta vectors i.e. size(cph)==16
+   * \param vel Fluid velocity at the photon coordinate
+   */
+  double get_theta_mag(double const fourvect[4], state_t const &coord_ph, double const vel[4]) const;
   /**
    * Get the cosinus and sinus of 2*Chi angle.
    * Chi being the angle between the parallel transported observer polarization basis (Ephi,Etheta)
