@@ -15,8 +15,8 @@
  */
 
 /*
-    Copyright (c) 2012-2016, 2018-2019 Frederic Vincent, Odele Straub,
-                                       Thibaut Paumard
+    Copyright (c) 2012-2016, 2018-2019, 2024 Frederic Vincent, Odele Straub,
+                                             Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -258,17 +258,6 @@ protected:
     const PolishDoughnut * papa;
     virtual double operator() (double) const;
   };
-
- // Outputs
- // -------
- public:
-
- /// Display
- friend std::ostream& operator<<(std::ostream& , const PolishDoughnut& ) ;
-
- public:
-
-
 };
 
 #endif

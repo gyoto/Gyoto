@@ -5,7 +5,7 @@
  */
 
 /*
-    Copyright 2011-2019 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2020, 2023-2024 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -599,7 +599,6 @@ class Gyoto::Screen
   ///< Compute base vectors according to projection parameters
 
   /// Display
-  //  friend std::ostream& operator<<(std::ostream& , const Screen& ) ;
   std::ostream& print(std::ostream&) const ; ///< Debug helper
   std::ostream& printBaseVectors(std::ostream&) const ; ///< Debug helper
 
