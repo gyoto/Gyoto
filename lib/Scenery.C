@@ -571,6 +571,30 @@ void Scenery::rayTrace(Screen::Coord2dSet & ij,
 		(*data->spectrum_converter_)(locdata->spectrum[c]):
 # endif
 		locdata->spectrum[c];
+    if (data->stokesQ)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->stokesQ[cs+c*data->offset]=
+# ifdef GYOTO_USE_UDUNITS
+		data->spectrum_converter_?
+		(*data->spectrum_converter_)(locdata->stokesQ[c]):
+# endif
+		locdata->stokesQ[c];
+    if (data->stokesU)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->stokesU[cs+c*data->offset]=
+# ifdef GYOTO_USE_UDUNITS
+		data->spectrum_converter_?
+		(*data->spectrum_converter_)(locdata->stokesU[c]):
+# endif
+		locdata->stokesU[c];
+    if (data->stokesV)
+	    for (size_t c=0; c<nbnuobs; ++c)
+	      data->stokesV[cs+c*data->offset]=
+# ifdef GYOTO_USE_UDUNITS
+		data->spectrum_converter_?
+		(*data->spectrum_converter_)(locdata->stokesV[c]):
+# endif
+		locdata->stokesV[c];
 	  if (data->binspectrum)
 	    for (size_t c=0; c<nbnuobs; ++c)
 	      data->binspectrum[cs+c*data->offset]=
