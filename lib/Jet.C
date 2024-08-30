@@ -465,13 +465,17 @@ void Jet::getVelocity(double const pos[4], double vel[4])
 
   // Lets now define the velo of the jet V as measured by the ZAMO
   double Vphi=0., Vr=0., Vth=0.;
-  if (parabolic_==true){
+  if (parabolic_==true){ // See FV 2024 notes for details on equations.
+    double sz = 1., zz = rr*cos(theta);
+    if (zz<0.) sz = -1.; // sz is the sign of z.
     // rvel and thvel are the components of the velocity vector along the
     // parabolic jet sheath in the absence of phi motion, in the orthonormal
     // (e_r = \partial_r/sqrt(grr), e_theta = \partial_th/sqrt(gthth)) frame
     // associated to BL coordinates
-    double rvel = sin(theta) + 2.*jetShapeInnerParabolaParam_*rcyl*cos(theta),
-      thvel = cos(theta) - 2.*jetShapeInnerParabolaParam_*rcyl*sin(theta);
+    double rvel = sin(theta) + 2.*sz*jetShapeInnerParabolaParam_*rcyl*cos(theta),
+      thvel = cos(theta) - 2.*sz*jetShapeInnerParabolaParam_*rcyl*sin(theta);
+    // See FV 2024 notes for the sz trick that allows to deal with both
+    // z>0 and z<0 parts of jet
     // Unitary vector u along parabolic sheath in the absence of phi motion
     double ur = rvel/sqrt(rvel*rvel + thvel*thvel),
       uth = thvel/sqrt(rvel*rvel + thvel*thvel);
