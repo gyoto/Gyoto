@@ -87,6 +87,7 @@ export LDFLAGS
 export CFLAGS
 export CPPFLAGS
 export CXXFLAGS
+export CXX
 export CC
 
 GYOTO_EXTENSIONS =  gyoto/_core$(PYTHON_EXTENSION_SUFFIX) \
