@@ -214,7 +214,7 @@ dist:
 
 # Use the setup.py test command
 check:
-	LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) setup.py test
+	LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
 
 # setup.py might complain if a directory doesn't exist so just in case, make the directory
 # here

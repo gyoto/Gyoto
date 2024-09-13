@@ -79,6 +79,5 @@ setup(name='@PACKAGE_NAME@',
       version='@PACKAGE_VERSION@',
       author_email='@PACKAGE_BUGREPORT@',
       py_modules=pymodules,
-      ext_modules=extmodules,
-      test_suite='tests'
+      ext_modules=extmodules
      )
