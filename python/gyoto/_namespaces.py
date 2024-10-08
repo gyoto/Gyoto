@@ -15,9 +15,13 @@ def make_namespace(Generic, _globals):
     
     _requirePlugin("lorene", True)
     if _havePlugin("lorene"):
-        import gyoto.lorene as _lorene
-        _modules.append(_lorene)
-        
+        try:
+            import gyoto.lorene as _lorene
+            _modules.append(_lorene)
+        except ImportError:            
+            import warnings
+            warnings.warn('Could not load plug-in "lorene"')
+    
     res = []
     
     for _mod in _modules:
