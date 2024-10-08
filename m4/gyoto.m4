@@ -74,7 +74,7 @@ AS_IF([test "x$gy_with" != "xno"],
      [gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -112,7 +112,7 @@ AS_IF([test "x$gy_with" != "xno"],
    # Failing that, check without pkg-config
    AS_IF([test "x$gy_have" == "xno"],
      [AC_MSG_CHECKING([for ]translit([$1], [a-z], [A-Z])[ (without pkg-config)])
-      AS_IF([test "x$gy_header" == "x"],
+      AS_IF([test "x$gy_headers" == "x"],
         [gy_headers=$gy_default_cppflags])
       TMPCPPFLAGS=$CPPFLAGS
       TMPCFLAGS=$CFLAGS

@@ -27,14 +27,14 @@
 /* Define to 1 if you have eigen */
 #undef GYOTO_USE_EIGEN
 
+/* Define to 1 if you have flint */
+#undef GYOTO_USE_FLINT
+
 /* Define to 1 if you have udunits */
 #undef GYOTO_USE_UDUNITS
 
 /* Define to 1 if you have xerces */
 #undef GYOTO_USE_XERCES
-
-/* Define to 1 if you have the <acb.h> header file. */
-#undef HAVE_ACB_H
 
 /* Defined if the requested minimum BOOST version is satisfied */
 #undef HAVE_BOOST

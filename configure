@@ -691,6 +691,10 @@ HAVE_ARBLIB_FALSE
 HAVE_ARBLIB_TRUE
 ARBLIB_LIBS
 ARBLIB_CFLAGS
+HAVE_FLINT_FALSE
+HAVE_FLINT_TRUE
+FLINT_LIBS
+FLINT_CFLAGS
 HAVE_CFITSIO_FALSE
 HAVE_CFITSIO_TRUE
 CFITSIO_LIBS
@@ -939,6 +943,9 @@ with_eigen_libs
 with_cfitsio
 with_cfitsio_headers
 with_cfitsio_libs
+with_flint
+with_flint_headers
+with_flint_libs
 with_arblib
 with_arblib_headers
 with_arblib_libs
@@ -975,6 +982,8 @@ EIGEN_CFLAGS
 EIGEN_LIBS
 CFITSIO_CFLAGS
 CFITSIO_LIBS
+FLINT_CFLAGS
+FLINT_LIBS
 ARBLIB_CFLAGS
 ARBLIB_LIBS
 MAKE_S
@@ -1731,6 +1740,18 @@ Optional Packages:
                           ('--with-cfitsio-libs=/path1:...:/pathn') or list of
                           preprocessor flags ('--with-cfitsio-libs="-L/path1
                           ... -L/pathn")'
+  --with-flint[=flint-prefix]
+                          Force using flint installed in a given prefix or
+                          force disable it.
+  --with-flint-headers=path
+                          location of flint include files as a colon-separated
+                          path ('--with-flint-headers=/path1:...:/pathn') or
+                          list of preprocessor flags
+                          ('--with-flint-headers="-I/path1 ... -I/pathn")'
+  --with-flint-libs=path  location of flint library files as a colon-separated
+                          path ('--with-flint-libs=/path1:...:/pathn') or list
+                          of preprocessor flags ('--with-flint-libs="-L/path1
+                          ... -L/pathn")'
   --with-arblib[=arblib-prefix]
                           Force using arblib installed in a given prefix or
                           force disable it.
@@ -1795,6 +1816,9 @@ Some influential environment variables:
               C compiler flags for CFITSIO, overriding pkg-config
   CFITSIO_LIBS
               linker flags for CFITSIO, overriding pkg-config
+  FLINT_CFLAGS
+              C compiler flags for FLINT, overriding pkg-config
+  FLINT_LIBS  linker flags for FLINT, overriding pkg-config
   ARBLIB_CFLAGS
               C compiler flags for ARBLIB, overriding pkg-config
   ARBLIB_LIBS linker flags for ARBLIB, overriding pkg-config
@@ -21943,7 +21967,7 @@ then :
   withval=$with_udunits_headers; gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -22067,7 +22091,7 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for UDUNITS (without pkg-config)" >&5
 printf %s "checking for UDUNITS (without pkg-config)... " >&6; }
-      if test "x$gy_header" == "x"
+      if test "x$gy_headers" == "x"
 then :
   gy_headers=$gy_default_cppflags
 fi
@@ -22211,7 +22235,7 @@ then :
   withval=$with_xerces_headers; gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -22335,7 +22359,7 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for XERCES (without pkg-config)" >&5
 printf %s "checking for XERCES (without pkg-config)... " >&6; }
-      if test "x$gy_header" == "x"
+      if test "x$gy_headers" == "x"
 then :
   gy_headers=$gy_default_cppflags
 fi
@@ -22484,7 +22508,7 @@ then :
   withval=$with_eigen_headers; gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -22608,7 +22632,7 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for EIGEN (without pkg-config)" >&5
 printf %s "checking for EIGEN (without pkg-config)... " >&6; }
-      if test "x$gy_header" == "x"
+      if test "x$gy_headers" == "x"
 then :
   gy_headers=$gy_default_cppflags
 fi
@@ -22752,7 +22776,7 @@ then :
   withval=$with_cfitsio_headers; gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -22876,7 +22900,7 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for CFITSIO (without pkg-config)" >&5
 printf %s "checking for CFITSIO (without pkg-config)... " >&6; }
-      if test "x$gy_header" == "x"
+      if test "x$gy_headers" == "x"
 then :
   gy_headers=$gy_default_cppflags
 fi
@@ -22967,30 +22991,353 @@ then :
 
 fi
 
-## ARBLIB
-# Check for ARBLIB
+## FLINT / ARBLIB
+# ARBLIB was included in FLINT in 2023.
+#
+# Eventually we will be able to remove the ARBLIB part below and keep
+# only FLINT and possibly AEAE.
+#
+# Check for FLINT
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether flint provides arblib..." >&5
+printf "%s\n" "$as_me: checking whether flint provides arblib..." >&6;}
 have_2f1=no
-# If AEAE if explicitely requested, skip ARBLIB checks.
+# If AEAE is explicitely requested, skip FLINT and ARBLIB checks.
 case "x$with_aeae" in
      x)    ;;
      xno)  ;;
-     x*)  with_arblib=no ;;
+     x*)  with_arblib=no
+	  with_flint=no
+	  ;;
 esac
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
+# If ARBLIB is explicitely requested, skip FLINT checks.
+case "x$with_arblib" in
+     x)    ;;
+     xno)  ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_headers" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_libs" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_ldflags" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether flint should be used" >&5
+printf %s "checking whether flint should be used... " >&6; }
+gy_headers=
+gy_default_cppflags=
+gy_lib=
+gy_CFLAGS=
+gy_LIBS=
+gy_with=$with_flint
+
+
+# Check whether --with-flint was given.
+if test ${with_flint+y}
+then :
+  withval=$with_flint;
+   if test "x$withval" == "xno"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+elif test "x$withval" != "xyes"
+then :
+  gy_headers=-I$withval/include
+      gy_lib=-L$withval/lib
+      gy_with=yes
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+fi
+
+else $as_nop
+  gy_with=check
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: probe" >&5
+printf "%s\n" "probe" >&6; }
+
+
+fi
+
+
+gy_have=no
+if test "x$gy_with" != "xno"
+then :
+
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether flint include path is provided" >&5
+printf %s "checking whether flint include path is provided... " >&6; }
+
+# Check whether --with-flint-headers was given.
+if test ${with_flint_headers+y}
+then :
+  withval=$with_flint_headers; gy_with=yes
+      gy_headers=${withval/:/ -I}
+      case "x$gy_headers" in
+	   x\-I*) ;;
+	   x) ;;
+	   x*) gy_headers=-I$gy_headers ;;
+      esac
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${gy_headers}" >&5
+printf "%s\n" "${gy_headers}" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether flint library path is provided" >&5
+printf %s "checking whether flint library path is provided... " >&6; }
+
+# Check whether --with-flint-libs was given.
+if test ${with_flint_libs+y}
+then :
+  withval=$with_flint_libs; gy_with=yes
+      gy_lib=${withval/:/ -L}
+      case "x$gy_lib" in
+      	   x\-L*) ;;
+	   x) ;;
+	   x*) gy_lib=-L$gy_lib ;;
+      esac
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gy_lib" >&5
+printf "%s\n" "$gy_lib" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+   # Now check whether or not to use pkg-config for this library
+   if test "x$gy_headers" == "x" \
+       && test "x$gy_lib" == "x" \
+       && test "x$PKG_CONFIG"  != "x"
+then :
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FLINT" >&5
+printf %s "checking for FLINT... " >&6; }
+
+if test -n "$FLINT_CFLAGS"; then
+    pkg_cv_FLINT_CFLAGS="$FLINT_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"flint\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "flint") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_FLINT_CFLAGS=`$PKG_CONFIG --cflags "flint" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$FLINT_LIBS"; then
+    pkg_cv_FLINT_LIBS="$FLINT_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"flint\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "flint") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_FLINT_LIBS=`$PKG_CONFIG --libs "flint" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        FLINT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "flint" 2>&1`
+        else
+	        FLINT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "flint" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$FLINT_PKG_ERRORS" >&5
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: flint.pc not found" >&5
+printf "%s\n" "$as_me: flint.pc not found" >&6;}
+
+
+elif test $pkg_failed = untried; then
+     	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: flint.pc not found" >&5
+printf "%s\n" "$as_me: flint.pc not found" >&6;}
+
+
+else
+	FLINT_CFLAGS=$pkg_cv_FLINT_CFLAGS
+	FLINT_LIBS=$pkg_cv_FLINT_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	pkg_requires="${pkg_requires} flint"
+          gy_have=yes
+
+fi
+
+fi
+
+   # Failing that, check without pkg-config
+   if test "x$gy_have" == "xno"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for FLINT (without pkg-config)" >&5
+printf %s "checking for FLINT (without pkg-config)... " >&6; }
+      if test "x$gy_headers" == "x"
+then :
+  gy_headers=$gy_default_cppflags
+fi
+      TMPCPPFLAGS=$CPPFLAGS
+      TMPCFLAGS=$CFLAGS
+      TMPLDFLAGS=$LDFLAGS
+      TMPLIBS=$LIBS
+      CPPFLAGS="$TMPCPPFLAGS $gy_headers"
+      LDFLAGS="$TMPLDFLAGS $gy_lib"
+      LIBS=-lflint
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <flint/acb.h>
+	       #include <flint/acb_hypgeom.h>
+int
+main (void)
+{
+double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
+  	 acb_t FF, aa, bb, cc, zed;
+	 acb_init(FF);
+	 acb_init(aa);
+	 acb_init(bb);
+	 acb_init(cc);
+	 acb_init(zed);
+	 acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+	 acb_set_d_d(bb,   kappaIndex+1.,     0.);
+	 acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+	 acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+	 slong prec=53;
+	 acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+	 hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+	 rad = mag_get_d(&acb_realref(FF)->rad);
+	 acb_clear(FF);
+	 acb_clear(aa);
+	 acb_clear(bb);
+	 acb_clear(cc);
+	 acb_clear(zed);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"
+then :
+  gy_have=yes
+         flint_headers=$gy_headers
+         flint_lib=$gy_lib
+         FLINT_LIBS="$gy_lib -lflint"
+         FLINT_CFLAGS="$gy_headers"
+         pkg_cflags="${pkg_cflags} ${FLINT_CFLAGS}"
+         pkg_libs="${pkg_libs} ${FLINT_LIBS}"
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+      CPPFLAGS=$TMPCPPFLAGS
+      LDFLAGS=$TMPLDFLAGS
+      LIBS=$TMPLIBS
+
+fi
+
+fi
+
+have_flint=$gy_have
+with_flint=$withval
+
+if test "x$gy_have" == "xno"
+then :
+  if test "x$gy_with" == "xyes"
+then :
+  as_fn_error $? "flint requested but not found" "$LINENO" 5
+
+fi
+   flint_headers=""
+   flint_lib=""
+   FLINT_LIBS=""
+   FLINT_CFLAGS=""
+
+else $as_nop
+  use_flint=yes
+
+printf "%s\n" "#define GYOTO_USE_FLINT 1" >>confdefs.h
+
+
+
+fi
+ if test "x$have_flint" == "xyes"; then
+  HAVE_FLINT_TRUE=
+  HAVE_FLINT_FALSE='#'
+else
+  HAVE_FLINT_TRUE='#'
+  HAVE_FLINT_FALSE=
+fi
+
+
+
+
+
+
+if test "x$have_flint" == "xyes"
+then :
+  have_2f1=yes
+   with_aeae=no
+   with_arblib=no
+
+fi
+
+## ARBLIB
+#
+# Debian 12 (bookworm), published in 2024, still had acb.h
+# etc. directly under /usr/include/ and a separate libflint-arb library.
+# Once it is obsolete, we can probably get rid of this.
+#
+if test "x$have_2f1" == "xno"
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib library name is provided" >&5
 printf %s "checking whether arblib library name is provided... " >&6; }
-if test "x$with_arblib_ldflags" == "x"
+   if test "x$with_arblib_ldflags" == "x"
 then :
   arblib_ldflags=
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 else $as_nop
   with_arblib=yes
-   arblib_ldflags=$with_arblib_ldflags
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
+      arblib_ldflags=$with_arblib_ldflags
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_ldflags" >&5
 printf "%s\n" "$arblib_ldflags" >&6; }
 
 fi
-if test "x$arblib_ldflags" == "x"
+   if test "x$arblib_ldflags" == "x"
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing acb_init" >&5
 printf %s "checking for library containing acb_init... " >&6; }
@@ -23052,65 +23399,13 @@ fi
 
 
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib header directory is provided" >&5
-printf %s "checking whether arblib header directory is provided... " >&6; }
-arglib_default_cppflags=
-if test "x$with_arblib_headers" == "x"
-then :
-  arblib_headers=
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-else $as_nop
-  with_arblib=yes
-   arblib_headers=$with_arblib_headers
-   arglib_default_cppflags=-I$with_arblib_headers
-   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $arblib_headers" >&5
-printf "%s\n" "$arblib_headers" >&6; }
 
 fi
-if test "x$arblib_headers" == "x"
-then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: looking for arblib headers in default locations" >&5
-printf "%s\n" "$as_me: looking for arblib headers in default locations" >&6;}
-fi
-          for ac_header in acb.h
-do :
-  ac_fn_cxx_check_header_compile "$LINENO" "acb.h" "ac_cv_header_acb_h" "$ac_includes_default"
-if test "x$ac_cv_header_acb_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ACB_H 1" >>confdefs.h
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib headers found without additional flags" >&5
-printf "%s\n" "$as_me: arblib headers found without additional flags" >&6;}
-else $as_nop
-  { ac_cv_header_acb_h=; unset ac_cv_header_acb_h;}
-    TMPCPPFLAGS=$CPPFLAGS
-    CPPFLAGS="$TMPCPPFLAGS -I/usr/include/flint/"
-           for ac_header in acb.h
-do :
-  ac_fn_cxx_check_header_compile "$LINENO" "acb.h" "ac_cv_header_acb_h" "$ac_includes_default"
-if test "x$ac_cv_header_acb_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ACB_H 1" >>confdefs.h
- arglib_default_cppflags=-I/usr/include/flint/
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib headers found in /usr/include/flint/" >&5
-printf "%s\n" "$as_me: arblib headers found in /usr/include/flint/" >&6;}
-else $as_nop
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: arblib not found in default locations" >&5
-printf "%s\n" "$as_me: arblib not found in default locations" >&6;}
-    CPPFLAGS=$TMPCPPFLAGS
-fi
-
-done
-
-fi
-
-done
-{ ac_cv_header_acb_h=; unset ac_cv_header_acb_h;}
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether arblib should be used" >&5
 printf %s "checking whether arblib should be used... " >&6; }
 gy_headers=
-gy_default_cppflags=$arglib_default_cppflags
+gy_default_cppflags=
 gy_lib=
 gy_CFLAGS=
 gy_LIBS=
@@ -23159,7 +23454,7 @@ then :
   withval=$with_arblib_headers; gy_with=yes
       gy_headers=${withval/:/ -I}
       case "x$gy_headers" in
-      	   x\-I*) ;;
+	   x\-I*) ;;
 	   x) ;;
 	   x*) gy_headers=-I$gy_headers ;;
       esac
@@ -23283,7 +23578,7 @@ fi
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for ARBLIB (without pkg-config)" >&5
 printf %s "checking for ARBLIB (without pkg-config)... " >&6; }
-      if test "x$gy_header" == "x"
+      if test "x$gy_headers" == "x"
 then :
   gy_headers=$gy_default_cppflags
 fi
@@ -23298,11 +23593,12 @@ fi
 /* end confdefs.h.  */
 #include <acb.h>
 	       #include <acb_hypgeom.h>
+
 int
 main (void)
 {
 double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
-  	 acb_t FF, aa, bb, cc, zed;
+	 acb_t FF, aa, bb, cc, zed;
 	 acb_init(FF);
 	 acb_init(aa);
 	 acb_init(bb);
@@ -23908,6 +24204,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CFITSIO_TRUE}" && test -z "${HAVE_CFITSIO_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CFITSIO\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_FLINT_TRUE}" && test -z "${HAVE_FLINT_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_FLINT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ARBLIB_TRUE}" && test -z "${HAVE_ARBLIB_FALSE}"; then

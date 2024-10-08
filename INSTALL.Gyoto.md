@@ -145,12 +145,10 @@ be installed with anaconda: one may install most of them with
                                  udunits2 boost libflint libboost-mpi
 
 Assuming conda is activated, the configure script (see below) should
-pick them automatically, except ARBLIB as of writing. The installation
-prefix still defaults to /usr/local, though, and one might want to
-change that e.g. with:
+pick them automatically. The installation prefix still defaults to
+/usr/local, though, and one might want to change that e.g. with:
 
-    ./configure --prefix=$CONDA_PREFIX \
-                --with-arblib-headers=$CONDA_PREFIX/include/flint/
+    ./configure --prefix=$CONDA_PREFIX
 
 It should be fine to use swig and doxygen from outside Anaconda, and
 LORENE (if needed) should be compiled with the Anaconda-provided

@@ -487,52 +487,44 @@ AS_IF([test "x$have_cfitsio" == "xno"],
   [FEATURES+="-nofits"]
 )
 
-## ARBLIB
-# Check for ARBLIB
+## FLINT / ARBLIB
+# ARBLIB was included in FLINT in 2023.
+#
+# Eventually we will be able to remove the ARBLIB part below and keep
+# only FLINT and possibly AEAE.
+#
+# Check for FLINT
+AC_MSG_NOTICE(checking whether flint provides arblib...)
 have_2f1=no
-# If AEAE if explicitely requested, skip ARBLIB checks.
+# If AEAE is explicitely requested, skip FLINT and ARBLIB checks.
 case "x$with_aeae" in
      x)    ;;
      xno)  ;;
-     x*)  with_arblib=no ;;
+     x*)  with_arblib=no
+	  with_flint=no
+	  ;;
 esac
-AC_MSG_CHECKING(whether arblib library name is provided)
-AS_IF([test "x$with_arblib_ldflags" == "x"],
-  [arblib_ldflags=
-  AC_MSG_RESULT([no])],
-  [with_arblib=yes
-   arblib_ldflags=$with_arblib_ldflags
-   AC_MSG_RESULT([$arblib_ldflags])]
-)
-AS_IF([test "x$arblib_ldflags" == "x"],
-  [AC_SEARCH_LIBS([acb_init], [flint flint-arb arb], [arblib_ldflags=$ac_cv_search_acb_init], [])]
-)
-AC_MSG_CHECKING(whether arblib header directory is provided)
-arglib_default_cppflags=
-AS_IF([test "x$with_arblib_headers" == "x"],
-  [arblib_headers=
-  AC_MSG_RESULT([no])],
-  [with_arblib=yes
-   arblib_headers=$with_arblib_headers
-   arglib_default_cppflags=-I$with_arblib_headers
-   AC_MSG_RESULT([$arblib_headers])]
-)
-AS_IF([test "x$arblib_headers" == "x"],
-  [AC_MSG_NOTICE([looking for arblib headers in default locations])])
-   AC_CHECK_HEADERS([acb.h], [AC_MSG_NOTICE([arblib headers found without additional flags])],
-   [AS_UNSET(ac_cv_header_acb_h)
-    TMPCPPFLAGS=$CPPFLAGS
-    CPPFLAGS="$TMPCPPFLAGS -I/usr/include/flint/"
-    AC_CHECK_HEADERS([acb.h],
-     [arglib_default_cppflags=-I/usr/include/flint/
-      AC_MSG_NOTICE([arblib headers found in /usr/include/flint/])],
-     [AC_MSG_NOTICE([arblib not found in default locations])
-    CPPFLAGS=$TMPCPPFLAGS])]
-)
-AS_UNSET(ac_cv_header_acb_h)
-GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
-	      [#include <acb.h>
-	       #include <acb_hypgeom.h>],
+# If ARBLIB is explicitely requested, skip FLINT checks.
+case "x$with_arblib" in
+     x)    ;;
+     xno)  ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_headers" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_libs" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+case "x$with_arblib_ldflags" in
+     x)    ;;
+     x*)  with_flint=no ;;
+esac
+GYOTO_ARG_LIB(flint, flint, -lflint,
+	      [#include <flint/acb.h>
+	       #include <flint/acb_hypgeom.h>],
 	      [double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
   	 acb_t FF, aa, bb, cc, zed;
 	 acb_init(FF);
@@ -553,9 +545,62 @@ GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
 	 acb_clear(bb);
 	 acb_clear(cc);
 	 acb_clear(zed);],
-	 [$arglib_default_cppflags])
+	 [])
+AS_IF([test "x$have_flint" == "xyes"],
+  [have_2f1=yes
+   with_aeae=no
+   with_arblib=no
+  ],
+  [
+  ]
+)
+
+## ARBLIB
+#
+# Debian 12 (bookworm), published in 2024, still had acb.h
+# etc. directly under /usr/include/ and a separate libflint-arb library.
+# Once it is obsolete, we can probably get rid of this.
+#
+AS_IF([test "x$have_2f1" == "xno"],
+  [AC_MSG_CHECKING(whether arblib library name is provided)
+   AS_IF([test "x$with_arblib_ldflags" == "x"],
+     [arblib_ldflags=
+      AC_MSG_RESULT([no])],
+     [with_arblib=yes
+      arblib_ldflags=$with_arblib_ldflags
+      AC_MSG_RESULT([$arblib_ldflags])]
+   )
+   AS_IF([test "x$arblib_ldflags" == "x"],
+     [AC_SEARCH_LIBS([acb_init], [flint flint-arb arb], [arblib_ldflags=$ac_cv_search_acb_init], [])]
+   )]
+)
+GYOTO_ARG_LIB(arblib, arblib, $arblib_ldflags,
+	      [#include <acb.h>
+	       #include <acb_hypgeom.h>
+	       ],
+	      [double hypergeom = 0., rad=0., kappaIndex=5., thetae=1;
+	 acb_t FF, aa, bb, cc, zed;
+	 acb_init(FF);
+	 acb_init(aa);
+	 acb_init(bb);
+	 acb_init(cc);
+	 acb_init(zed);
+	 acb_set_d_d(aa,   kappaIndex-1./3.,  0.);
+	 acb_set_d_d(bb,   kappaIndex+1.,     0.);
+	 acb_set_d_d(cc,   kappaIndex+2./3.,  0.);
+	 acb_set_d_d(zed, -kappaIndex*thetae, 0.);
+	 slong prec=53;
+	 acb_hypgeom_2f1(FF, aa, bb, cc, zed, ACB_HYPGEOM_2F1_AC, prec);
+	 hypergeom = arf_get_d(&acb_realref(FF)->mid, ARF_RND_NEAR);
+	 rad = mag_get_d(&acb_realref(FF)->rad);
+	 acb_clear(FF);
+	 acb_clear(aa);
+	 acb_clear(bb);
+	 acb_clear(cc);
+	 acb_clear(zed);],
+	 [])
 AC_ARG_WITH([arblib-ldflags],
-  [AS_HELP_STRING([--with-arblib-ldflags=-l<libname>],
+    [AS_HELP_STRING([--with-arblib-ldflags=-l<libname>],
      [linker flag for arblib (usually -lflint on recent systems, sometimes -lflint-arb or -larb) possibly with dependencies (e.g. "-larb -lflint").])]
 )
 AS_IF([test "x$have_arblib" == "xyes"],

@@ -89,15 +89,15 @@
 # endif
 #endif
 
-/** \def GYOTO_USE_AEAE
- *  \brief Whether aeae support is compiled-in.
+/** \def GYOTO_USE_FLINT
+ *  \brief Whether flint support is compiled-in.
  *
- *  One of ARBLIB or AEAE is necessary for Astrobj::Jet.
+ *  One of FLIT, ARBLIB or AEAE is necessary for Astrobj::Jet.
  */
-#undef GYOTO_USE_AEAE
+#undef GYOTO_USE_FLINT
 #ifdef DOXYGEN_RUN
-# ifndef GYOTO_USE_AEAE
-#  define GYOTO_USE_AEAE (undefined)
+# ifndef GYOTO_USE_FLINT
+#  define GYOTO_USE_FLINT (undefined)
 # endif
 #endif
 
@@ -110,6 +110,18 @@
 #ifdef DOXYGEN_RUN
 # ifndef GYOTO_USE_ARBLIB
 #  define GYOTO_USE_ARBLIB (undefined)
+# endif
+#endif
+
+/** \def GYOTO_USE_AEAE
+ *  \brief Whether aeae support is compiled-in.
+ *
+ *  One of ARBLIB or AEAE is necessary for Astrobj::Jet.
+ */
+#undef GYOTO_USE_AEAE
+#ifdef DOXYGEN_RUN
+# ifndef GYOTO_USE_AEAE
+#  define GYOTO_USE_AEAE (undefined)
 # endif
 #endif
 
