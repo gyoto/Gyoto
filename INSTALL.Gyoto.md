@@ -77,22 +77,27 @@ Gyoto requires:
    - boost >= 1.53 (required, contains the integrators). See [BUGS.md](BUGS.md).
        http://www.boost.org/
    - an implementation of the Gauss hypergeometric function 2F1
-     (optional, required for all Astrobj using KappaDistributionSynchrotronSpectrum), one of:
+     (optional, required for all Astrobj using
+     KappaDistributionSynchrotronSpectrum), one of:
      + ARBLIB: http://arblib.org (in that case, compile and install
        ARBLIB and its dependencies and use the --with-arblib*
        configure options);
+       (As of 2023, ARBLIB has been merged in flint:
+       https://flintlib.org/)
      + AEAE: http://cpc.cs.qub.ac.uk/summaries/AEAE_v1_0.html (in that
        case unpack the AEAE source code somewhere and use the
        --with-aeae configure option).
    - an MPI implementation (tested with openmpi, optional). MPI uses
      boost features from boost.mpi, you must use the same version as
      boost.mpi is linked to.
-   - Yorick    (optional, provides an interface to the Yorick
+   - Yorick    (deprecated, provides an interface to the Yorick
      interpreted language, allowing to write Gyoto scripts):
        http://yorick.sourceforge.net/
      Yorick users will also need the yorick-yutils add-on
      (https://github.com/frigaut/yorick-yutils) and may need to install
      the yorick-dev package (in particulat Debian/Ubuntu users).
+     Yorick support is considered depracated and will be removed in
+     the future.
    - Python 3 (optional, provides an interface to the Python
      interpreted language, allowing to write Gyoto scripts). Python
      3.7 and 3.8 have been tested. For building the Python bindings,
@@ -106,6 +111,11 @@ Gyoto requires:
      likely to change in future releases. Be ready to adapt your
      scripts, or contact us is stability of the API is important for
      you.
+     If using Anaconda, see "Note fore Anaconda users" below.
+   - Doxygen (required to build the Python interface, else optional):
+       https://www.doxygen.nl/
+     Doxygen is used to build documentation from header files. This
+     documentation gets included in the Python interface.
    - LORENE (optional, the libgyoto-lorene plug-in can be built later):
        https://www.lorene.obspm.fr/
      On some systems, LORENE must be built with -fPIC (GYOTO as well,
@@ -120,6 +130,32 @@ those dependencies with:
     libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
     python3-dev python3-setuptools swig3.0 python3-numpy python3-matplotlib \
     doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++ libeigen3-dev
+
+Note for Anaconda user:
+
+Anaconda is a distribution of software packages that is popular
+particularly for its Python packages. The various components used for
+building Gyoto listed above interact with each other. It is therefore
+advised to avoid mixing package sources. Gyoto can be built using a
+version of Python installed through Anaconda. In this case the C
+and C++ compilers and libraries should also, in as much as possible,
+be installed with anaconda: one may install most of them with
+
+    conda install -c conda-forge cxx-compiler eigen xerces-c cfitsio \
+                                 udunits2 boost libflint libboost-mpi
+
+Assuming conda is activated, the configure script (see below) should
+pick them automatically, except ARBLIB as of writing. The installation
+prefix still defaults to /usr/local, though, and one might want to
+change that e.g. with:
+
+    ./configure --prefix=$CONDA_PREFIX \
+                --with-arblib-headers=$CONDA_PREFIX/include/flint/
+
+It should be fine to use swig and doxygen from outside Anaconda, and
+LORENE (if needed) should be compiled with the Anaconda-provided
+compilere before compiling Gyoto.
+
 
 ## 2- Downloading the source code
 
@@ -201,6 +237,11 @@ the CC and CXX environment variables accordingly during the configure
 step:
 
     CC=gcc-4.8 CXX=g++-4.8 ./configure
+
+To select a Python 3 interpreter different than the default on your
+system, set both the PYTHON and PYTHON_CONFIG variables:
+
+    PYTHON=/path/to/python3 PYTHON_CONFIG=/path/to/python3-config ./configure
 
 Example: assume you want to install in `${HOME}/mysoft`, that LORENE is
 in `${HOME}/mysoft/Lorene` (but `HOME_LORENE` is not set), and Xerces and
