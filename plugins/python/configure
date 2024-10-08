@@ -13346,11 +13346,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++11 features" >&5
 printf %s "checking for $CXX option to enable C++11 features... " >&6; }
-if test ${ac_cv_prog_cxx_11+y}
+if test ${ac_cv_prog_cxx_cxx11+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_11=no
+  ac_cv_prog_cxx_cxx11=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -13392,11 +13392,11 @@ if test x$ac_prog_cxx_stdcxx = xno
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CXX option to enable C++98 features" >&5
 printf %s "checking for $CXX option to enable C++98 features... " >&6; }
-if test ${ac_cv_prog_cxx_98+y}
+if test ${ac_cv_prog_cxx_cxx98+y}
 then :
   printf %s "(cached) " >&6
 else $as_nop
-  ac_cv_prog_cxx_98=no
+  ac_cv_prog_cxx_cxx98=no
 ac_save_CXX=$CXX
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -18079,25 +18079,25 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        Gyoto_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gyoto" 2>&1`
+                Gyoto_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gyoto" 2>&1`
         else
-	        Gyoto_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gyoto" 2>&1`
+                Gyoto_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gyoto" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$Gyoto_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$Gyoto_PKG_ERRORS" >&5
 
-	as_fn_error $? "gyoto.pc not found or not functional!
+        as_fn_error $? "gyoto.pc not found or not functional!
                   Check PKG_CONFIG_PATH or call the guru" "$LINENO" 5
 
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	as_fn_error $? "gyoto.pc not found or not functional!
+        as_fn_error $? "gyoto.pc not found or not functional!
                   Check PKG_CONFIG_PATH or call the guru" "$LINENO" 5
 
 else
-	Gyoto_CFLAGS=$pkg_cv_Gyoto_CFLAGS
-	Gyoto_LIBS=$pkg_cv_Gyoto_LIBS
+        Gyoto_CFLAGS=$pkg_cv_Gyoto_CFLAGS
+        Gyoto_LIBS=$pkg_cv_Gyoto_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 

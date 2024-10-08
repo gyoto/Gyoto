@@ -508,14 +508,15 @@ AS_IF([test "x$arblib_ldflags" == "x"],
   [AC_SEARCH_LIBS([acb_init], [flint flint-arb arb], [arblib_ldflags=$ac_cv_search_acb_init], [])]
 )
 AC_MSG_CHECKING(whether arblib header directory is provided)
+arglib_default_cppflags=
 AS_IF([test "x$with_arblib_headers" == "x"],
   [arblib_headers=
   AC_MSG_RESULT([no])],
   [with_arblib=yes
    arblib_headers=$with_arblib_headers
+   arglib_default_cppflags=-I$with_arblib_headers
    AC_MSG_RESULT([$arblib_headers])]
 )
-arglib_default_cppflags=
 AS_IF([test "x$arblib_headers" == "x"],
   [AC_MSG_NOTICE([looking for arblib headers in default locations])])
    AC_CHECK_HEADERS([acb.h], [AC_MSG_NOTICE([arblib headers found without additional flags])],
