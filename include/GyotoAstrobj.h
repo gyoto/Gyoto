@@ -35,11 +35,12 @@
 #include <iomanip>
 #include <string>
 
+#include <Eigen/Dense>
+
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
 #include <GyotoConverters.h>
 #include <GyotoObject.h>
-#include <eigen3/Eigen/Dense>
 
 namespace Gyoto{
   class Photon;

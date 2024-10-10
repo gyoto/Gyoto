@@ -28,6 +28,10 @@
 #ifndef __GyotoPhoton_H_ 
 #define __GyotoPhoton_H_ 
 
+#include <float.h>
+
+#include <Eigen/Dense>
+
 #include "GyotoFunctors.h"
 
 namespace Gyoto{
@@ -40,9 +44,6 @@ namespace Gyoto{
 #include <GyotoScreen.h>
 #include <GyotoWorldline.h>
 #include <GyotoObject.h>
-
-#include <float.h>
-#include <eigen3/Eigen/Dense>
 
 /**
  * \class Gyoto::Photon
