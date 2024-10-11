@@ -27,8 +27,10 @@
 #include "GyotoKerrBL.h"
 #include "GyotoValue.h"
 
-#include <boost/math/special_functions/ellint_1.hpp>
-#include <boost/math/special_functions/jacobi_elliptic.hpp>
+#if defined HAVE_BOOST_ARRAY_HPP
+# include <boost/math/special_functions/ellint_1.hpp>
+# include <boost/math/special_functions/jacobi_elliptic.hpp>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -517,6 +519,7 @@ int Photon::hit(Astrobj::Properties *data) {
     
     if (compute_Mino==1){ // compute_Mino may have been changed to zero if
                           // Carter cst is <0
+#    if defined HAVE_BOOST_ARRAY_HPP
       KK = 1./sqrt(1-uratio)*(boost::math::ellint_1(sqrt(-uratio/(1-uratio)),M_PI/2.)-boost::math::ellint_1(sqrt(-uratio/(1-uratio)),0.)); // using Abramowitz&Stegun formula, this is
       // KK = F(pi/2 | uratio)
       G_theta_1libration = 4.*KK/(spin*sqrt(-uminus)); // Eq. 35 of GL20a
@@ -552,7 +555,9 @@ int Photon::hit(Astrobj::Properties *data) {
       // is not, it means that there is a theta crossing far away from
       // the BH and I don't want to take it into account. See FV notes on
       // image-order tracking for details on these "useless turning points".
-      
+#    else  // defined HAVE_BOOST_ARRAY_HPP
+      GYOTO_ERROR("compute_Mino=1 requires Boost special functions");
+#    endif  // defined HAVE_BOOST_ARRAY_HPP
     }
 
   }
@@ -732,6 +737,7 @@ int Photon::hit(Astrobj::Properties *data) {
     if (maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)){
 
       if (compute_Mino==1){
+#      if defined HAVE_BOOST_ARRAY_HPP
 	/*
 	  DETERMINE GEODESIC ORDER BY MEANS OF MINO TIME
 	  (specific to Kerr)
@@ -941,6 +947,9 @@ int Photon::hit(Astrobj::Properties *data) {
 	}
 
 	//cout <<"geodesic order= " << geodesic_order << endl;
+#      else  // defined HAVE_BOOST_ARRAY_HPP
+        GYOTO_ERROR("compute_Mino=1 requires Boost special functions");
+#      endif  // defined HAVE_BOOST_ARRAY_HPP
 	
       }else{
 

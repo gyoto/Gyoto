@@ -198,6 +198,10 @@ AS_IF([test "x$with_boost" != "xno"],
         [AC_MSG_WARN([Boost.odeint not found])
 	 have_boost=partial],
         [])
+      BOOST_FIND_HEADER([boost/math/special_functions/ellint_1.hpp],
+        [AC_MSG_WARN([Boost spectial functions not found])
+	 have_boost=partial],
+        [])
      ])
    ],
    [have_boost=no]

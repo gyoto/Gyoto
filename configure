@@ -18831,6 +18831,38 @@ ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ex
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 fi
 
+      if test x"$boost_cv_inc_path" = xno; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost spectial functions not found" >&5
+printf "%s\n" "$as_me: WARNING: Boost spectial functions not found" >&2;}
+	 have_boost=partial
+else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+boost_save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
+ac_fn_cxx_check_header_compile "$LINENO" "boost/math/special_functions/ellint_1.hpp" "ac_cv_header_boost_math_special_functions_ellint_1_hpp" "$ac_includes_default"
+if test "x$ac_cv_header_boost_math_special_functions_ellint_1_hpp" = xyes
+then :
+
+printf "%s\n" "#define HAVE_BOOST_MATH_SPECIAL_FUNCTIONS_ELLINT_1_HPP 1" >>confdefs.h
+
+else $as_nop
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Boost spectial functions not found" >&5
+printf "%s\n" "$as_me: WARNING: Boost spectial functions not found" >&2;}
+	 have_boost=partial
+fi
+
+CPPFLAGS=$boost_save_CPPFLAGS
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+fi
+
 
 fi
 
@@ -26858,7 +26890,7 @@ then :
 
                 *** The Python extension will not be built! ***
 
-      Gyoto can still be used as a C++ library and through the gyoto executable.
+      Gyoto may still be usable as a library and through the gyoto executable.
      " >&5
 printf "%s\n" "$as_me: WARNING:
 
@@ -26866,7 +26898,7 @@ printf "%s\n" "$as_me: WARNING:
 
                 *** The Python extension will not be built! ***
 
-      Gyoto can still be used as a C++ library and through the gyoto executable.
+      Gyoto may still be usable as a library and through the gyoto executable.
      " >&2;}
 
 fi
@@ -26880,7 +26912,7 @@ then :
 
                 *** The gyoto executable will not be built! ***
 
-      Gyoto can still be used as a C++ library and through the Python extension
+      Gyoto may still be usable as a library and through the Python extension
         (although without XML support and/or without certain object types).
      " >&5
 printf "%s\n" "$as_me: WARNING:
@@ -26889,7 +26921,7 @@ printf "%s\n" "$as_me: WARNING:
 
                 *** The gyoto executable will not be built! ***
 
-      Gyoto can still be used as a C++ library and through the Python extension
+      Gyoto may still be usable as a library and through the Python extension
         (although without XML support and/or without certain object types).
      " >&2;}
 

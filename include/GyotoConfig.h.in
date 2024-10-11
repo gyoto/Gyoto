@@ -314,14 +314,14 @@
 # endif
 #endif
 
-/** \def HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
- *  \brief Whether support for arbitrary precision arithmetics is present
+/** \def HAVE_BOOST
+ *  \brief Whether Boost is available
  *
  */
-#undef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+#undef HAVE_BOOST
 #ifdef DOXYGEN_RUN
-# ifndef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
-#  define HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP (undefined)
+# ifndef HAVE_BOOST
+#  define HAVE_BOOST (undefined)
 # endif
 #endif
 
@@ -333,6 +333,28 @@
 #ifdef DOXYGEN_RUN
 # ifndef HAVE_BOOST_ARRAY_HPP
 #  define HAVE_BOOST_ARRAY_HPP (undefined)
+# endif
+#endif
+
+/** \def HAVE_BOOST_ARRAY_HPP
+ *  \brief Whether Boost spectial functions are available
+ *
+ */
+#undef HAVE_BOOST_ARRAY_HPP
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_BOOST_ARRAY_HPP
+#  define HAVE_BOOST_ARRAY_HPP (undefined)
+# endif
+#endif
+
+/** \def HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+ *  \brief Whether support for arbitrary precision arithmetics is present
+ *
+ */
+#undef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+#ifdef DOXYGEN_RUN
+# ifndef HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP
+#  define HAVE_BOOST_MULTIPRECISION_CPP_DEC_FLOAT_HPP (undefined)
 # endif
 #endif
 

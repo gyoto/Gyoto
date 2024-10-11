@@ -42,6 +42,9 @@
 /* Define to 1 if you have <boost/array.hpp> */
 #undef HAVE_BOOST_ARRAY_HPP
 
+/* Define to 1 if you have <boost/math/special_functions/ellint_1.hpp> */
+#undef HAVE_BOOST_MATH_SPECIAL_FUNCTIONS_ELLINT_1_HPP
+
 /* Define to 1 if you have <boost/mpi/environment.hpp> */
 #undef HAVE_BOOST_MPI_ENVIRONMENT_HPP
 
