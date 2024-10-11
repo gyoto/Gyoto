@@ -158,8 +158,6 @@ AS_IF([test "x$with_virtualenv" != xno],
 	[AC_SUBST([VIRTUALENV], [no])])
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
 
-AX_PKG_SWIG([2.0])
-
 # DONE WITH PYTHON STUFF
 
 # Checks for programs.
@@ -264,6 +262,7 @@ AC_CHECK_PROGS([DOXYGEN], [doxygen])
 AC_CHECK_PROGS([PDFLATEX], [pdflatex])
 AC_CHECK_PROGS([BIBTEX], [bibtex])
 AC_CHECK_PROGS([KPSEWHICH], [kpsewhich])
+AX_PKG_SWIG([2.0])
 
 # Provide additional defaults for user variables
 
@@ -827,7 +826,16 @@ AS_IF([test "x$YORICK" != "x"],
 		   [chmod a+x gyoto])
   ]
 )
-AS_IF([test "x$PYTHON" != "x"],
+missing_for_python=""
+AS_IF([test "x$PYTHON" = x],
+  [missing_for_python="$missing_for_python PYTHON"])
+AS_IF([test "x$PYTHON_CONFIG" = x],
+  [missing_for_python="$missing_for_python PYTHON-CONFIG"])
+AS_IF([test "x$DOXYGEN" = x],
+  [missing_for_python="$missing_for_python DOXYGEN"])
+AS_IF([test "x$SWIG" = x],
+  [missing_for_python="$missing_for_python SWIG"])
+AS_IF([test "x$missing_for_python" = "x"],
   [
    AC_CONFIG_FILES([python/Makefile python/setup.py])
   ]
@@ -841,6 +849,19 @@ AC_OUTPUT
 
 ########################## SUMMARY ############################
 
+AS_IF([test "x$missing_for_python" != "x"],
+  [
+   AC_MSG_WARN(
+     [
+
+                   Building without$missing_for_python.
+
+                *** The Python extension will not be built! ***
+
+      Gyoto may still be usable as a library and through the gyoto executable.
+     ])
+  ])
+
 AS_IF([test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ],
   [
    AC_MSG_WARN(
@@ -850,10 +871,11 @@ AS_IF([test "x$have_xerces" == "xno" || test "x$have_cfitsio" == "xno" ],
 
                 *** The gyoto executable will not be built! ***
 
-      Gyoto can still be used as a C++ library and through the Yorick plug-in
+      Gyoto may still be usable as a library and through the Python extension
         (although without XML support and/or without certain object types).
      ])
   ])
+
 AS_IF([test "x$have_udunits" == "xno"],
   [
    AC_MSG_WARN(
@@ -865,6 +887,7 @@ AS_IF([test "x$have_udunits" == "xno"],
 
      ])
   ])
+
 AS_IF([test "x$have_boost" == "xno"],
   [
    AC_MSG_WARN(
@@ -879,6 +902,7 @@ AS_IF([test "x$have_boost" == "xno"],
 
      ])
   ])
+
 AS_IF([test "x$have_2f1" == "xno"],
   [
    AC_MSG_WARN(
@@ -886,9 +910,9 @@ AS_IF([test "x$have_2f1" == "xno"],
 
                          Building without 2F1
 
-                   *** Hypergeometric functions unavailable ***
+               *** Hypergeometric functions unavailable ***
 
-                      Astrobj::Jet requires ARBLIB or AEAE.
+               Astrobj::Jet requires FLINT, ARBLIB or AEAE.
 
      ])
   ])
