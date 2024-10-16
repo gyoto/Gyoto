@@ -1,7 +1,19 @@
 /**
  * \file GyotoBlob.h
- * \brief Blob of plasma following a Star orbit, emitting synchrotron,
- * with Gaussian time-evolving density and temperature
+ * \brief Spherical blob of plasma following a Star orbit, 
+ * emitting synchrotron radiation that can be modulated in time
+ * or in space.
+ *
+ * The blob's volume is defined by that of the Star, see the Star::radius_
+ * keyword. 
+ *
+ * The emission of the blob can be modulated by a temporal
+ * Gaussian defined by its peak time timeRef_ and temporal sigma timeSigma_
+ * (careful with the units of these). It can also be modulated by a
+ * spatial Gaussian such that the Star::radius_ keyword is interpreted
+ * as the 3-sigma spatial extension of the blob. 
+ *
+ * The electron distribution function can be thermal, kappa or power-law.
  *
  */
 
@@ -57,6 +69,8 @@ class Gyoto::Astrobj::Blob :
   // Data : 
   // -----
  private:
+  bool time_gauss_modulated_; ///< True if blob emission time-modulated by a Gaussian with parameters timeRef_M_ and timeSigma_M_
+  bool space_gauss_modulated_; ///< True if blob emitting volume is a Gaussian with 3-sigma extension coinciding with the Star's radius_
   double numberDensity_cgs_; ///< cgs-unit number density of hotspot
   double temperature_; ///< temperature of hotspot
   double timeRef_M_; ///< M-unit reference time for Gaussian hotspot evolution
@@ -95,6 +109,11 @@ class Gyoto::Astrobj::Blob :
   virtual std::string className_l() const ; ///< "inflate_star"
 
  public:
+
+  bool timeGaussianModulated() const;
+  void timeGaussianModulated(bool timemod) ;
+  bool spaceGaussianModulated() const;
+  void spaceGaussianModulated(bool spacemod) ;
   double numberDensity() const;
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
