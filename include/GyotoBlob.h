@@ -1,16 +1,19 @@
 /**
  * \file GyotoBlob.h
- * \brief Spherical blob of plasma following a Star orbit, 
+ * \brief Spherical blob of plasma following some (geodesic or not) orbit, 
  * emitting synchrotron radiation that can be modulated in time
  * or in space.
  *
- * The blob's volume is defined by that of the Star, see the Star::radius_
+ * The blob's orbit can be circular equatorial (defined by the user-provided constant Omega=dphi/dt),
+ * or helical (constant v^r, v^phi found from Newtonian ang mom assumed constant).
+ *
+ * The blob's volume is defined by that of the background UniformSphere, see the UniformSphere::radius_
  * keyword. 
  *
  * The emission of the blob can be modulated by a temporal
  * Gaussian defined by its peak time timeRef_ and temporal sigma timeSigma_
  * (careful with the units of these). It can also be modulated by a
- * spatial Gaussian such that the Star::radius_ keyword is interpreted
+ * spatial Gaussian such that the UniformSphere::radius_ keyword is interpreted
  * as the 3-sigma spatial extension of the blob. 
  *
  * The electron distribution function can be thermal, kappa or power-law.
@@ -45,7 +48,7 @@ namespace Gyoto{
 }
 
 #include <GyotoMetric.h>
-#include <GyotoStar.h>
+#include <GyotoUniformSphere.h>
 #include <GyotoKappaDistributionSynchrotronSpectrum.h>
 #include <GyotoPowerLawSynchrotronSpectrum.h>
 #include <GyotoThermalSynchrotronSpectrum.h>
@@ -58,19 +61,22 @@ namespace Gyoto{
 
 /**
  * \class Gyoto::Astrobj::Blob
- * \brief Blob of plasma following a Star orbit, emitting synchrotron,
- * with Gaussian time-evolving density and temperature
+ * \brief Blob of plasma following a given orbit, emitting synchrotron,
+ * with Gaussian density and temperature
  *
  */
 class Gyoto::Astrobj::Blob :
-  public Gyoto::Astrobj::Star {
+  public Gyoto::Astrobj::UniformSphere {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Blob>;
   
   // Data : 
   // -----
  private:
   bool time_gauss_modulated_; ///< True if blob emission time-modulated by a Gaussian with parameters timeRef_M_ and timeSigma_M_
-  bool space_gauss_modulated_; ///< True if blob emitting volume is a Gaussian with 3-sigma extension coinciding with the Star's radius_
+  bool space_gauss_modulated_; ///< True if blob emitting volume is a Gaussian with 3-sigma extension coinciding with the blob's radius_
+  double* init4Coord_; ///< Initial 4-coordinate of the Blob, eg (t,r,theta,phi)
+  double* init3Velo_; ///< Initial 3-velocity of the Blob, eg (dr/dt, dtheta/dt, dphi/dt)
+  std::string blobMotionType_; ///< Type of motion of the Blob, "Equatorial" is circular constant Omega in equatorial plane; "Helical" if at constant theta, with v^r=cst, and v^phi \propto 1/r^2 (constancy of Newtonian ang mom)
   double numberDensity_cgs_; ///< cgs-unit number density of hotspot
   double temperature_; ///< temperature of hotspot
   double timeRef_M_; ///< M-unit reference time for Gaussian hotspot evolution
@@ -104,6 +110,9 @@ class Gyoto::Astrobj::Blob :
  public:
   void electronDistribution(const std::string &kind);
   std::string electronDistribution() const;
+
+  void blobMotionType(const std::string &kind) ;
+  std::string blobMotionType() const ;
   
   virtual std::string className() const ; ///< "Blob"
   virtual std::string className_l() const ; ///< "inflate_star"
@@ -114,6 +123,10 @@ class Gyoto::Astrobj::Blob :
   void timeGaussianModulated(bool timemod) ;
   bool spaceGaussianModulated() const;
   void spaceGaussianModulated(bool spacemod) ;
+  void init4Coord(std::vector<double> const &v) ;
+  std::vector<double> init4Coord() const ;
+  void init3Velo(std::vector<double> const &v);
+  std::vector<double> init3Velo() const ;
   double numberDensity() const;
   double numberDensity(std::string const &unit) const;
   void numberDensity(double ne);
@@ -144,6 +157,13 @@ class Gyoto::Astrobj::Blob :
               double Vnu[], Eigen::Matrix4d Onu[],
               double const nu_ems[], size_t nbnu, double dsem,
               state_t const &coord_ph, double const coord_obj[8]) const;
+  
+  void getVelocity(double const pos[4], double vel[4]);
+  
+  void getCartesian(double const * const dates, size_t const n_dates,
+		    double * const x, double * const y, double * const z, 
+		    double * const xprime=NULL, double * const yprime=NULL, double * const zprime=NULL);
+  
 
 };
 

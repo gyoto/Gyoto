@@ -45,6 +45,12 @@ GYOTO_PROPERTY_BOOL(Blob,
 GYOTO_PROPERTY_BOOL(Blob,
 		    SpaceGaussianModulated, NoSpaceGaussianModulated,
 		    spaceGaussianModulated)
+GYOTO_PROPERTY_VECTOR_DOUBLE(Blob, Init4Coord, init4Coord,
+			     "Initial 4-position vector of the Blob, eg (t,r,theta,phi)")
+GYOTO_PROPERTY_VECTOR_DOUBLE(Blob, Init3Velo, init3Velo,
+			     "Initial coordinate 3-velocity of the Blob, eg (dr/dt,dtheta/dt,dphi/dt).")
+GYOTO_PROPERTY_STRING(Blob, BlobMotionType, blobMotionType,
+		      "\"Equatorial\" (default), or \"Helical\".")
 GYOTO_PROPERTY_DOUBLE_UNIT(Blob, NumberDensity, numberDensity,
 			   "cgs number density, constant through blob")
 GYOTO_PROPERTY_DOUBLE(Blob, Temperature, temperature,
@@ -62,14 +68,17 @@ GYOTO_PROPERTY_DOUBLE(Blob, KappaIndex, kappaIndex,
 		      "PL index of kappa-synchrotron")
 GYOTO_PROPERTY_STRING(Blob, ElectronDistribution, electronDistribution,
 		      "\"Thermal\" (default), or \"Kappa\".")
-GYOTO_PROPERTY_END(Blob, Star::properties)
+GYOTO_PROPERTY_END(Blob, UniformSphere::properties)
 
 #define USE_IPOLE_FORMALISM 0
 
 Blob::Blob() :
-  Star(),
+UniformSphere("Blob"),
   time_gauss_modulated_(false),
   space_gauss_modulated_(false),
+  init4Coord_(NULL),
+  init3Velo_(NULL),
+  blobMotionType_("Equatorial"),
   numberDensity_cgs_(1.),
   temperature_(1.),
   timeRef_M_(1.),
@@ -89,12 +98,23 @@ Blob::Blob() :
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
+
+  init4Coord_ = new double[4];
+  init3Velo_ = new double[3];
+  for (int ii=0;ii<3;ii++){
+    init4Coord_[ii]=0.;
+    init3Velo_[ii]=0.;
+  }
+  init4Coord_[3]=0.;
 }
 
 Blob::Blob(const Blob& orig) :
-  Star(orig),
+  UniformSphere(orig),
   time_gauss_modulated_(orig.time_gauss_modulated_),
   space_gauss_modulated_(orig.space_gauss_modulated_),
+  init4Coord_(NULL),
+  init3Velo_(NULL),
+  blobMotionType_(orig.blobMotionType_),
   numberDensity_cgs_(orig.numberDensity_cgs_),
   temperature_(orig.temperature_),
   timeRef_M_(orig.timeRef_M_),
@@ -110,6 +130,14 @@ Blob::Blob(const Blob& orig) :
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
   if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
+
+  init4Coord_ = new double[4];
+  init3Velo_ = new double[3];
+  for (int ii=0;ii<3;ii++){
+    init4Coord_[ii]=orig.init4Coord_[ii];
+    init3Velo_[ii]=orig.init3Velo_[ii];
+  }
+  init4Coord_[3]=orig.init4Coord_[3];
 }
 
 Blob* Blob::clone() const { return new Blob(*this); }
@@ -130,6 +158,46 @@ bool Blob::spaceGaussianModulated() const
 void Blob::spaceGaussianModulated(bool spacemod)
 {
   space_gauss_modulated_=spacemod;
+}
+
+void Blob::init4Coord(std::vector<double> const &v) {
+  size_t n = v.size();
+  if (n!=4)
+    GYOTO_ERROR("Initial coordinate should have 4 entries.");
+  for (size_t i=0; i<n; ++i) {
+    init4Coord_[i]=v[i];
+  }
+}
+std::vector<double> Blob::init4Coord() const {
+  std::vector<double> v(4, 0.);
+  for (size_t i=0; i<4; ++i) v[i]=init4Coord_[i];
+  return v;
+}
+
+void Blob::init3Velo(std::vector<double> const &v) {
+  size_t n = v.size();
+  if (n!=3)
+    GYOTO_ERROR("Initial velocity should have 3 entries.");
+  for (size_t i=0; i<n; ++i) {
+    init3Velo_[i]=v[i];
+  }
+}
+std::vector<double> Blob::init3Velo() const {
+  std::vector<double> v(3, 0.);
+  for (size_t i=0; i<3; ++i) v[i]=init3Velo_[i];
+  return v;
+}
+
+void Blob::blobMotionType(const string &kind) {
+  if(kind == "Equatorial")
+    blobMotionType_ = "Equatorial";
+  else if (kind == "Helical")
+    blobMotionType_ = "Helical";
+  else
+    throwError("unknown blob motion type!");
+}
+string Blob::blobMotionType() const {
+  return blobMotionType_;
 }
 
 void Blob::electronDistribution(const string &kind) {
@@ -470,15 +538,6 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
            state_t const &coord_ph,
            double const *co) const {
 
-  string kin = gg_->kind();
-  if (kin != "KerrBL" and kin != "Minkowski") GYOTO_ERROR("Blob should be in Kerr or Minko!");
-  double spin = 0.;
-  if (kin == "KerrBL"){
-    // Check that Kerr spin is 0 (mf formulas below are so far in Sch only)
-    spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-    if (spin!=0.) GYOTO_ERROR("Blob should be in Schwarzschild!");
-  }
-
   // polarized radiativeQ
   
   double rr, rcyl, theta, phi, xx, yy, zz=0.;
@@ -581,165 +640,22 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     /*********************/
     /* GYOTO B FORMALISM */
     /*********************/
+
+    computeB4vect(B4vect, magneticConfig_, co, coord_ph);
     
-    double gtt = gg_->gmunu(&coord_ph[0],0,0),
-      grr = gg_->gmunu(&coord_ph[0],1,1),
-      gthth = gg_->gmunu(&coord_ph[0],2,2),
-      gtp = gg_->gmunu(&coord_ph[0],0,3),
-      gpp = gg_->gmunu(&coord_ph[0],3,3);
-    
-    // SCHWARZSCHILD EXPRESSION SO FAR!!!
-    if (magneticConfig_=="Vertical"){
-      double Br = cos(coord_ph[2])/sqrt(grr),
-	Bth = -sin(coord_ph[2])/sqrt(gthth); // along +ez
-      
-      B4vect[1]=Br;
-      B4vect[2]=Bth;
-    }else if(magneticConfig_=="Radial"){
-      double Br = 1./sqrt(grr); // along +er
-      
-      B4vect[1]=Br;
-    }else if(magneticConfig_=="Toroidal"){
-      if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
-      double omega=vel[3]/vel[0], omega2 = omega*omega;
-      double Bt2 = gpp/gtt*omega2/(gtt+gpp*omega2),
-	Bp2 = gtt/gpp*1./(gtt+gpp*omega2);
-      //cout << "Btor stuff: " << omega2 << " " << Bt2 << " " << Bt2/Bp2 << endl;
-      if (Bt2<0. or Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
-      B4vect[0]=sqrt(Bt2);
-      B4vect[3]=sqrt(Bp2);
-    }else{
-      GYOTO_ERROR("Not implemented Bfield orientation");
-    }
   }else{
     /*********************/
     /* IPOLE B FORMALISM */
     /*********************/
-    
-    double B_1=0.,B_2=0.,B_3=0;
-    //double spin = 0.; // ONLY VALID FOR SCH
-    double gtt = gg_->gmunu(&coord_ph[0],0,0),
-      grr = gg_->gmunu(&coord_ph[0],1,1),
-      gthth = gg_->gmunu(&coord_ph[0],2,2),
-      gpp = gg_->gmunu(&coord_ph[0],3,3);
-    double dx1=0.025,
-      dx2=0.025;
-    
-    if (magneticConfig_=="None")
-      GYOTO_ERROR("Specify the magnetic field configuration");
-    if (magneticConfig_=="Vertical"){
-      double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
-      
-      double F11 = exp(log(rr)-dx1)*sin(theta-dx2*M_PI),
-	F12 = exp(log(rr)-dx1)*sin(theta+dx2*M_PI),
-	F21 = exp(log(rr)+dx1)*sin(theta-dx2*M_PI),
-	F22 = exp(log(rr)+dx1)*sin(theta+dx2*M_PI);
-      B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det);
-      B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det);
-      B_3 = 0.;
-    }
-    else if (magneticConfig_=="Radial"){
-      double g_det = sqrt(M_PI*M_PI*pow(rr,6)*pow(sin(theta),2));
-      double F11 = 1.-cos(theta-dx2*M_PI),
-	F12 = 1.-cos(theta+dx2*M_PI),
-	F21 = 1.-cos(theta-dx2*M_PI),
-	F22 = 1.-cos(theta+dx2*M_PI);
-      B_1 = -(F11-F12+F21-F22)/(2.*dx2*g_det),
-	B_2 =  (F11+F12-F21-F22)/(2.*dx1*g_det),
-	B_3 = 0.;
-    }
-    else if (magneticConfig_=="Toroidal"){
-      /*double gtt=gg_->gmunu(&coord_ph[0],0,0),
-	gpp=gg_->gmunu(&coord_ph[0],3,3),
-	Bp=1.,
-	Bt=(-gpp*Bp*vel[3])/(gtt*vel[0]);
-	B4vect[0]=Bt;
-	B4vect[3]=Bp;*/
-      B_1 = 0.;
-      B_2 = 0.;
-      B_3 = 1.;
-    }
-    else
-      GYOTO_ERROR("Unknown magnetic field configuration");
 
-    // compute contravariant velocity in KS' from BL
-    double dtKS_drBL   = 2. * rr / (rr*rr - 2.*rr + spin*spin);
-    double dphiKS_drBL = spin / (rr*rr - 2.*rr + spin*spin);
-    double Ucon_KSm[4]={0.,0.,0.,0.};
-    Ucon_KSm[0]=vel[0]+vel[1]*dtKS_drBL;
-    Ucon_KSm[1]=vel[1]/rr;
-    Ucon_KSm[2]=vel[2]/M_PI;
-    Ucon_KSm[3]=vel[3]+vel[1]*dphiKS_drBL;
-    
-    // Compute KS' metric
-    double gcov_ksm[4][4];
-    double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
-    double gcov_ks[4][4];
-    for(int mu=0;mu<4;mu++)
-      for(int nu=0;nu<4;nu++)
-	gcov_ks[mu][nu]=0.;
-    
-    gcov_ks[0][0] = -1. + 2. * rr / rho2 ;
-    gcov_ks[0][1] = 2. * rr / rho2 ;
-    gcov_ks[0][3] = -2. * spin * rr * sin(theta)*sin(theta) / rho2;
-    gcov_ks[1][0] = gcov_ks[0][1];
-    gcov_ks[1][1] = 1. + 2. * rr / rho2 ;
-    gcov_ks[1][3] = -spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2);
-    gcov_ks[2][2] = rho2 ;
-    gcov_ks[3][0] = gcov_ks[0][3];
-    gcov_ks[3][1] = gcov_ks[1][3];
-    gcov_ks[3][3] = sin(theta)*sin(theta) * (rho2 + spin * spin * sin(theta)*sin(theta) * (1. + 2. * rr / rho2));
-    
-    // convert from ks metric to a modified one using Jacobian
-    double dxdX[4][4];
-    double hslope=0.;
-    for(int mu=0;mu<4;mu++)
-      for(int nu=0;nu<4;nu++)
-	dxdX[mu][nu]=0.;
-    
-    dxdX[0][0] = 1.;
-    dxdX[1][1] = rr;
-    dxdX[2][2] = M_PI  + hslope*2*M_PI*cos(2*theta); 
-    dxdX[3][3] = 1.;
-    
-    for(int mu=0;mu<4;mu++){
-      for(int nu=0;nu<4;nu++){
-	gcov_ksm[mu][nu] = 0;
-	for (int lam = 0; lam < 4; ++lam) {
-	  for (int kap = 0; kap < 4; ++kap) {
-	    gcov_ksm[mu][nu] += gcov_ks[lam][kap] * dxdX[lam][mu] * dxdX[kap][nu];
-	  }
-	}
-      }
-    }
-    
-    // Compute covariant velocity in KS'
-    double Ucov_KSm[4]={0.,0.,0.,0.};
-    for(int mu=0;mu<4;mu++){
-      for(int nu=0;nu<4;nu++){
-	Ucov_KSm[mu] += gcov_ksm[mu][nu]*Ucon_KSm[nu];
-      }
-    }
-    
-    // Copute Magnetic field in KS'
-    //cout << "r sth, velBL, ucov KS'= " << co[1] << " " << sin(co[2]) << " " << vel[0] << " " << vel[3] << " " << Ucov_KSm[1] << " " << Ucov_KSm[2] << " " << Ucov_KSm[3] << endl;
-    //throwError("test disk");
-    double B0=B_1*Ucov_KSm[1]+B_2*Ucov_KSm[2]+B_3*Ucov_KSm[3],
-      B1=(B_1+B0*Ucon_KSm[1])/Ucon_KSm[0],
-      B2=(B_2+B0*Ucon_KSm[2])/Ucon_KSm[0],
-      B3=(B_3+B0*Ucon_KSm[3])/Ucon_KSm[0];
-    
-    // Conversion Magnetic field from KS' -> BL
-    double Delta = pow(rr,2)-2.*rr+pow(spin,2.);
-    B4vect[0]=B0-B1*2.*pow(rr,2)/Delta;
-    B4vect[1]=B1*rr;
-    B4vect[2]=B2*M_PI;
-    B4vect[3]=B3-B1*spin*rr/Delta;
-    // end of ipole Bfield formalism    
+    string kin = gg_->kind();
+    if (kin != "KerrBL") GYOTO_ERROR("Blob should be in Kerr for ipole formalism!");
+    double spin = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+
+    computeB4vect_ipole(B4vect, magneticConfig_, co, coord_ph, spin);
+
   }
-
-  /////////////////// END CHOOSE BFIELD GEOMETRY ////////////////////
-    
+  
   //cout << "***BL mf in orthonorm frame= "<< B4vect[0]  << " " << B4vect[1]  << " " << coord_ph[1]*B4vect[2]  << " " << coord_ph[1]*abs(sin(coord_ph[2]))*B4vect[3]  << endl;
 
   //cout << "***k photon in orthonorm frame= " << coord_ph[4] << " " << coord_ph[5] << " " << coord_ph[1]*coord_ph[6] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*coord_ph[7] << endl;
@@ -761,24 +677,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   //cout << "At r,phi,x,y,z= " << coord_ph[1] << " " << coord_ph[3] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << ", tan 2chi= " << tan(2.*Chi) << endl;
   //cout << endl;
 
-  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
-  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=coord_ph[ii+4];
-  }
-
-  // Angle between mf and K in emitter's frame. B is already in this frame,
-  // it is by construction normal to u. We still need to project k
-  // normal to u, this is K = k + (k.u) u. Then:
-  // cos(thetaB) = (K / |K|) . (B / |B|)
-  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
-  //cout << "***K photon proj in orthonorm frame= " << photon_emframe[0] << " " << photon_emframe[1] << " " << coord_ph[1]*photon_emframe[2] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*photon_emframe[3] << endl;
-  //cout << endl;
-  double bnorm = gg_->norm(&coord_ph[0],B4vect);
-  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
-  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
-  double theta_mag = acos(lscalb/(lnorm*bnorm)); // acos is in 0,pi, which is appropriate for theta_mag.
+  double theta_mag = get_theta_mag(B4vect, coord_ph, vel);
   //cout << "thetaB=" << theta_mag << endl;
   //cout << endl;
   
@@ -889,3 +788,79 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
   }
 }
 
+void Blob::getCartesian(double const * const dates, size_t const n_dates,
+			double * const x, double * const y, double * const z, 
+			double * const xprime, double * const yprime, double * const zprime){
+
+  // this yields the position of the center of the UnifSphere
+  // at time t
+  // fourveldt_ is the initial 3-velocity dxi/dt
+  // vel is the 4-velocity dxnu/dtau
+
+  if (n_dates!=1)
+    GYOTO_ERROR("In Blob::getCartesian n_dates!=1");
+
+  double tt=dates[0];
+  
+  double r, theta, phi; // spherical coordinates
+  double vel[4];
+  
+  if (blobMotionType_=="Helical") // Helical ejection
+    {
+      r = init4Coord_[1]+init3Velo_[0]*(tt-init4Coord_[0]); // careful: init4Coord_[1] is r, but init3Velo_[0] is dr/dt
+      theta = init4Coord_[2];
+      phi = init4Coord_[3] + init4Coord_[1]*init4Coord_[1]*init3Velo_[2]/init3Velo_[0]*(pow(init4Coord_[1],-1.)-pow(r,-1.)); // result of integrale of vphi over time
+      //cout << "t, r, theta, phi = " << tt << ", " << r << ", " << theta << ", " << phi << endl;
+      
+    }
+  else if (blobMotionType_=="Equatorial") // Equatorial orbit
+    {
+      if (init4Coord_[2]!=M_PI/2.)
+	cout << "Warning input theta value incompatible with 'Equatorial' motion. Theta fixed to pi/2." << endl;
+      
+      r = init4Coord_[1];
+      theta = M_PI/2.;
+      phi = init4Coord_[3] + init3Velo_[2]*(tt-init4Coord_[0]);
+      
+    }
+  else{
+    GYOTO_ERROR("Unrecognized type of motion.");
+  }
+
+  // Convertion into cartesian coordinates
+  x[0] = r*sin(theta)*cos(phi);
+  y[0] = r*sin(theta)*sin(phi);
+  z[0] = r*cos(theta);
+
+  if (xprime!=NULL && yprime!=NULL && zprime!=NULL)
+  {
+    xprime[0] = r*sin(theta)*sin(phi)*vel[2];
+    yprime[0] = -r*sin(theta)*cos(phi)*vel[2];
+    zprime[0] = 0.;
+  }
+}
+
+void Blob::getVelocity(double const pos[4], double vel[4]){
+
+  if (!gg_)
+    GYOTO_ERROR("In Blob::getVelocity Metric not set");
+
+  vel[0] = 1.; // put u^t to 1 as initilization, it will be computed in normalizeFourVel below
+
+  if (blobMotionType_=="Equatorial"){
+    vel[1] = 0.;
+    vel[2] = 0.;
+    vel[3] = init3Velo_[2]; // dphi/dt here, will be multiplied by dt/dtau in normalizeFourVel below
+  }else if (blobMotionType_=="Helical"){
+    vel[1] = init3Velo_[0];
+    vel[2] = 0.;
+    double r0 = init4Coord_[1], rr = pos[1];
+    //cout << "in blob velo t, r0, r= " << pos[0] << " " << r0 << " " << rr << endl;
+    vel[3] = init3Velo_[2] * r0*r0 / (rr*rr); // assuming conservation of Newtonian ang mom
+  }
+
+  //cout << "Blob 3vel= " << vel[1] << " " << vel[3] << endl;
+  
+  gg_->normalizeFourVel(pos, vel);
+
+}
