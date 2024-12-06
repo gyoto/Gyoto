@@ -123,7 +123,7 @@ void FitsRW::fitsWriteHDUData(fitsfile* const fptr, string const extname, double
   GYOTO_MSG << "FitsRW writing HDU " << extname << endl;
   if (!src) GYOTO_ERROR("FitsRW::fitsWrite: nothing to save!");
   int       status    = 0;
-  int       ndim      = 1;
+  int const ndim      = 1;
   long      naxes[ndim] = {nelements};
   long      fpixel[1] = {1};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
@@ -144,8 +144,8 @@ double* FitsRW::fitsReadHDUData(fitsfile* const fptr, string const extname) cons
   int       anynul    = 0;
   int       ndim      = 1;
   long      naxes[ndim];
-  long      fpixel[ndim] = {1};
-  long      inc[ndim] = {1};
+  long      fpixel[ndim]; fpixel[0] = {1};
+  long      inc[ndim];    inc[0] = {1};
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
   
   ////// READ REQUIRED EXTENSION ///////
