@@ -610,6 +610,12 @@ int Photon::hit(Astrobj::Properties *data) {
 #     endif
       break;
     }
+    if (!(coord[1]==coord[1])) {
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_SEVERE << "coord[1] is not a number, break"<<endl;
+#     endif
+      break;
+    }
 
     if ( ++count > maxiter_ ) {
       GYOTO_SEVERE << "Photon::hit: too many iterations ("<<count<<" vs. "

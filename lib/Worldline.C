@@ -642,6 +642,12 @@ void Worldline::xFill(double tlim, bool proper) {
       //xStore(ind, coord);
       break;
     }
+    if (!(coord[1]==coord[1])) {
+#     if GYOTO_DEBUG_ENABLED
+      GYOTO_SEVERE << "coord[1] is not a number, break"<<endl;
+#     endif
+      break;
+    }
     
     //if (stopcond && debug()) cout << "stopcond from integrator" << endl;
     if (mycount==maxiter_) {

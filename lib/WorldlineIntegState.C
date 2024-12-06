@@ -272,7 +272,7 @@ Worldline::IntegState::Boost::init(Worldline * line,
 
 int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h1max) {
   if (!gg_) init();
-  GYOTO_DEBUG << h1max << endl;
+  GYOTO_DEBUG_EXPR(h1max);
   double dt=0, dtau=0;
 
   // Transform to proper vector depending on integration kind (4D/3+1)
@@ -304,7 +304,7 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     if (abs(h1)>h1max) h1=sgn*h1max;
     if (abs(h1)<delta_min) h1=sgn*delta_min;
     controlled_step_result cres;
-    GYOTO_DEBUG << h1 << endl;
+    GYOTO_DEBUG_EXPR(h1);
 
     state_t xx_old = xx;
     do {

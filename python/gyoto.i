@@ -662,6 +662,10 @@ ExtendArrayNumPy(array_size_t, size_t);
     if (DIM1 != ($self)->get_nelements()) GYOTO_ERROR("wrong output array size");
     ($self)->get_t(INPLACE_ARRAY1);
   }
+  void get_tau(double * INPLACE_ARRAY1, size_t DIM1) {
+    if (DIM1 != ($self)->get_nelements()) GYOTO_ERROR("wrong output array size");
+    ($self)->get_tau(INPLACE_ARRAY1);
+  }
   void get_xyz(
 		double * x1dest, size_t n1,
 		double * x2dest, size_t n2,
