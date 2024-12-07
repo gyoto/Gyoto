@@ -334,6 +334,7 @@ extern "C" {
   Y_gyoto_MPI_Init(int argc)
   {
 #if defined HAVE_MPI
+    // Prepare argument for MPI_Init
     long int mpiargcl=0;
     char **mpiargv=NULL;
     long index=-1;
@@ -343,7 +344,23 @@ extern "C" {
       if (!yarg_nil(0)) mpiargv=ygeta_q(0, &mpiargcl, NULL);
     }
     int mpiargc=mpiargcl;
-    ypush_long(MPI_Init(&mpiargc, &mpiargv));
+    GYOTO_DEBUG_EXPR(mpiargc);
+    GYOTO_DEBUG_EXPR(mpiargv);
+    for (long int k=0; k<mpiargc; ++k)
+      GYOTO_DEBUG_EXPR(mpiargv[k]);
+
+    // In OpenMPI 5, MPI_Init triggers FPE exceptions.
+    // Ignore FPE exceptions for this call..
+# if defined HAVE_FENV_H
+    fenv_t envp;
+    feholdexcept(&envp);
+# endif
+    long int status = MPI_Init(&mpiargc, &mpiargv);
+# if defined HAVE_FENV_H
+    fesetenv(&envp);
+# endif
+    ypush_long(status);
+
     if (index>=0) {
       long dims[]={1, mpiargc};
       ystring_t * out=ypush_q(dims);

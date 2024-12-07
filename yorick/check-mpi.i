@@ -39,7 +39,7 @@ if (MPI_Initialized()) error, "MPI should not be initialized yet";
 done;
 
 doing, "Calling MPI_Init";
-if (MPI_Init() && have_mpi) error, "MPI INIT FAILED";
+if (MPI_Init("yorick") && have_mpi) error, "MPI INIT FAILED";
 done;
 
 doing, "Calling MPI_Initiliazed again";
