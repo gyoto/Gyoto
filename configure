@@ -1632,11 +1632,11 @@ Optional Features:
                           SONAME)
   --enable-localpkglibdir[=PKGLIBDIR]
                           additional directory to look for plug-ins
-                          [/usr/local/lib/gyoto, only if PREFIX is not
-                          /usr/local]. If specified, Gyoto will look for
-                          additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS
-                          and LOCALPKGLIBDIR before looking in
-                          PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR
+                          [/usr/local/lib/gyoto, only if PREFIX is /usr]. If
+                          specified, Gyoto will look for additional plug-ins
+                          in LOCALPKGLIBDIR/GYOTO_SOVERS and LOCALPKGLIBDIR
+                          before looking in PKGLIBDIR/GYOTO_SOVERS and
+                          PKGLIBDIR
   --disable-c++11         disable C++11 features (including advanced
                           integrators)
   --enable-static-boost   Prefer the static boost libraries over the shared
@@ -17526,7 +17526,7 @@ if test ${enable_localpkglibdir+y}
 then :
   enableval=$enable_localpkglibdir;
 else $as_nop
-  if test x${prefix} == xNONE || test "x${prefix}" == x/usr/local
+  if test x${prefix} == xNONE || test "x${prefix}" != x/usr
 then :
   enable_localpkglibdir=no
 else $as_nop

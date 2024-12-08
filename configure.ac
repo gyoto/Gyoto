@@ -57,9 +57,9 @@ AS_IF([test "x$enable_release" != "xyes"],
 #  Default /usr/local/lib/gyoto, only if ${prefix} is not /usr/local
 AC_ARG_ENABLE([localpkglibdir],
   [AS_HELP_STRING([--enable-localpkglibdir[[=PKGLIBDIR]]],
-     [additional directory to look for plug-ins [/usr/local/lib/gyoto, only if PREFIX is not /usr/local]. If specified, Gyoto will look for additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS and  LOCALPKGLIBDIR before looking in PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR])],
+     [additional directory to look for plug-ins [/usr/local/lib/gyoto, only if PREFIX is /usr]. If specified, Gyoto will look for additional plug-ins in LOCALPKGLIBDIR/GYOTO_SOVERS and  LOCALPKGLIBDIR before looking in PKGLIBDIR/GYOTO_SOVERS and PKGLIBDIR])],
   [],
-  [AS_IF([test x${prefix} == xNONE || test "x${prefix}" == x/usr/local],
+  [AS_IF([test x${prefix} == xNONE || test "x${prefix}" != x/usr],
      [enable_localpkglibdir=no],
      [enable_localpkglibdir=yes])])
 AS_IF([test x$enable_localpkglibdir != "xno"],
