@@ -911,6 +911,7 @@ enable_dependency_tracking
 with_gnu_ld
 with_sysroot
 enable_libtool_lock
+with_sosuffix
 enable_release
 enable_localpkglibdir
 with_fenv
@@ -1659,6 +1660,8 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-sosuffix=SOSUFFIX
+                          add SOSUFFIX to the soname of the library.
   --without-fenv          do not use fenv.h (see BUGS.md)
   --with-size_t=same|distinct|auto
                           consider size_t as the same as or distinct from
@@ -17489,9 +17492,22 @@ fi
 done
 
 
-## Ensure local build does not have a release soname by default
+## Optional addition to the SONAME
 #
 FEATURES=""
+
+# Check whether --with-sosuffix was given.
+if test ${with_sosuffix+y}
+then :
+  withval=$with_sosuffix; if test "x$with_sosuffix" != "xno"
+then :
+  FEATURES+="$with_sosuffix"
+fi
+fi
+
+
+## Ensure local build does not have a release soname by default
+#
 # Check whether --enable-release was given.
 if test ${enable_release+y}
 then :

@@ -36,9 +36,17 @@ AC_SUBST([VERSINFO])
 #
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
 
-## Ensure local build does not have a release soname by default
+## Optional addition to the SONAME
 #
 FEATURES=""
+AC_ARG_WITH([sosuffix],
+  [AS_HELP_STRING([--with-sosuffix=SOSUFFIX],
+     [add SOSUFFIX to the soname of the library.])],
+     [AS_IF([test "x$with_sosuffix" != "xno"],	
+        [FEATURES+="$with_sosuffix"])])
+
+## Ensure local build does not have a release soname by default
+#
 AC_ARG_ENABLE([release],
   [AS_HELP_STRING([--enable-release],
      [enable a release build (remove -unreleased from SONAME)])])
