@@ -188,6 +188,15 @@ uninstall:
 	-rm -rvf $(DESTDIR)$(pkgpythondir)
 	-cat gyoto_*installed.txt | xargs rm
 	-rmdir $(DESTDIR)$(pkgincludedir)
+	echo -n "************************************************************"
+	echo -n '                 !!! Warning !!!'
+	echo -n 'make uninstall sometimes leaves empty directories behind'
+	echo -n 'in /usr/local/lib/python3.11/dist-packages/ or equivalent.'
+	echo -n 'This cause subsequent setuptools-based operations (in Gyoto'
+	echo -n 'as well as any other Python source package) to fail.'
+	echo -n 'Better check for yourself!'
+	echo -n "************************************************************"
+
 
 
 # Just use the usual setup.py clean command

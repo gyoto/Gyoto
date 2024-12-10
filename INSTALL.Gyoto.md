@@ -57,6 +57,14 @@ its MPI variant, then Gyoto with the same variant:
 If Gyoto is not packaged for your system or if you prefer to build
 from source, read on.
 
+First a word of caution: after having installed and uninstalled Gyoto
+from source with "make uninstall", empty directories may remain in a
+Python dist-packages directory (typically
+/usr/local/lib/python3.??/dist-packages/), which causes subsequent
+installation of Python packages from source to fail (Gyoto and any
+other setuptools-based package). Make sure to remove such empty
+directories.
+
 The first step is to install the dependencies. Please refer to
 [BUGS.md](BUGS.md) for known bugs in some versions of the following
 dependencies.

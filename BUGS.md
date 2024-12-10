@@ -4,6 +4,17 @@ This file is to list known bugs in Gyoto or its dependencies that
 significantly affect Gyoto but are not easy to fix or workaround in
 Gyoto.
 
+## Partial uninstallation of Python extension
+
+After having installed and uninstalled Gyoto from source with "make
+uninstall", empty directories may remain in a Python dist-packages
+directory (typically /usr/local/lib/python3.??/dist-packages/), which
+causes subsequent installation of Python packages from source to fail
+(Gyoto and any other setuptools-based package). Make sure to remove
+such empty directories.
+
+                        -- Thibaut Paumard, Mon Dec 09 2024.
+
 ## Boost.multiprecision 1.62.0 (other nearby versions presumably affected):
 
 A bug makes multiprecision acos() never return in some
