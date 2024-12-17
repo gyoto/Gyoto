@@ -186,6 +186,7 @@ void Generic::processHitQuantities(Photon * ph, state_t const &coord_ph_hit,
                                        // for nuobs=1. Hz
   if (noredshift_) ggredm1=1.;
   double ggred = 1./ggredm1;           //this is nu_obs/nu_em
+  //cout << "gred= " << ggred << endl;
   double dsem = dlambda*ggredm1; // * 1Hz ?
   double inc =0.;
 
@@ -1197,7 +1198,7 @@ void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double
 
 void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
 
-	/*********************/
+  /*********************/
   /* GYOTO B FORMALISM */
   /*********************/
 
@@ -1237,24 +1238,19 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     gtp = gg_->gmunu(&cph[0],0,3),
     gpp = gg_->gmunu(&cph[0],3,3);
 
-  // So far only velocity with case is implemented
-  if (vel[2]>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("mf config only defined for utheta=0");
+  if (vel[2]>GYOTO_DEFAULT_ABSTOL and magneticConfig!="Vertical")
+    GYOTO_ERROR("mf config only defined for utheta=0"); // uth!=0 is only
+                   // handled so far for vertical mf, TBD for other cases
 
   double Bt, Br, Bth, Bp;
   if (magneticConfig=="Vertical"){
-    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
+    // Write: B = Bt \partial_t + alphafact*(costh \partial_r/\sqrt{grr} - sinth \partial_th/sqrt{gthth}), and the following relations are found immediately
+    // by imposing B.B=1, B.u=0
+    double Afact = (vel[1]*sqrt(grr)*cos(theta) - vel[2]*sqrt(gthth)*sin(theta))/(vel[0]*gtt+vel[3]*gtp),
   alphafact = sqrt(1./(1.+gtt*Afact*Afact));
     Bt = -alphafact*Afact;
     Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
     Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
-    Bp = 0;
-
-  }else if (magneticConfig=="Vertical"){
-    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp) * cos(theta),
-  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    Bt = -alphafact*Afact;
-    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
-    Bth = alphafact*sin(cph[2])/sqrt(gthth); // sin([2])/sqrt(gthth) --> along -ez
     Bp = 0;
 
   }else if(magneticConfig=="Radial"){
