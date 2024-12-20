@@ -1,5 +1,5 @@
 /*
-    Copyright 2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2020, 2024 Frederic Vincent, Thibaut Paumard, Irene Urso
 
     This file is part of Gyoto.
 
@@ -42,17 +42,41 @@ using namespace Gyoto::Astrobj;
 using namespace Gyoto::Metric;
 
 GYOTO_PROPERTY_START(ThinDiskProfile)
-GYOTO_PROPERTY_BOOL(ThinDiskProfile, CircularMotion, NoCircularMotion,
-		    circularMotion)
 GYOTO_PROPERTY_VECTOR_DOUBLE(ThinDiskProfile, Model_param, model_param,
 			     "Parameters useful for the disk, max number NPAR_MAX")
+GYOTO_PROPERTY_STRING(ThinDiskProfile, MotionKind, motionKind,
+		      "Keplerian or Radial or Mixed (subkeplerian) velocity of the disk")
 GYOTO_PROPERTY_END(ThinDiskProfile, ThinDisk::properties)
 
 //#define SPIN 0.94 // Kerr spin parameter for Kerr-specific formulas...
 #define NPAR_MAX 10 // Max allowed number of parameters
+#define CIRCULAR 0
+#define RADIAL 1
+#define MIXED 2
 
-bool ThinDiskProfile::circularMotion() const {return circular_motion_;}
-void ThinDiskProfile::circularMotion(bool circ) {circular_motion_=circ;}
+void ThinDiskProfile::motionKind(string const &kind) {
+  if (kind == "Circular")
+    motionkind_ = CIRCULAR;
+  else if (kind == "Radial")
+    motionkind_ = RADIAL;
+  else if (kind == "Mixed")
+    motionkind_ = MIXED;
+  else
+    throwError("unknown velocity kind");
+}
+string ThinDiskProfile::motionKind() const {
+  switch (motionkind_) {
+  case CIRCULAR:
+    return "Circular";
+  case RADIAL:
+    return "Radial";
+  case MIXED:
+    return "Mixed";
+  default:
+    throwError("unknown velocity kind tag");
+  }
+  return "will not reach here, this line to avoid compiler warning"; 
+}
 
 void ThinDiskProfile::model_param(std::vector<double> const &v) {
   size_t n = v.size();
@@ -67,7 +91,7 @@ std::vector<double> ThinDiskProfile::model_param() const {
 
 ThinDiskProfile::ThinDiskProfile() :
   ThinDisk("ThinDiskProfile"),
-  circular_motion_(1),
+  motionkind_(CIRCULAR),
   model_param_(NULL)
 {
   GYOTO_DEBUG << endl;
@@ -77,7 +101,7 @@ ThinDiskProfile::ThinDiskProfile() :
 
 ThinDiskProfile::ThinDiskProfile(const ThinDiskProfile& o) :
   ThinDisk(o),
-  circular_motion_(o.circular_motion_),
+  motionkind_(o.motionkind_),
   model_param_(NULL)
 {
   if (o.gg_()) gg_=o.gg_->clone();
@@ -99,7 +123,7 @@ ThinDiskProfile::~ThinDiskProfile() {
 }
 
 double ThinDiskProfile::emission(double nu, double,
-			    state_t const &,
+			    state_t const &coord_ph,
 			    double const coord_obj[8]) const{
   string emission_model = "Thermal_Synchrotron"; // should be in: "Gralla_et_al", "Thermal_Synchrotron"
 
@@ -164,7 +188,17 @@ double ThinDiskProfile::emission(double nu, double,
      // Power laws for n_e, Theta_e, B propto r^-2, r^-1, r^-1
      //emiss = norm*nu/230*exp(-zeta*pow(230,-1./3)*pow(nu,1./3.)*rr/rin);
      // Power laws for n_e, Theta_e, B propto r^-alpha, r^-beta, r^-gamma
-     emiss = norm*nu*1e-9/230*pow(rr,-indx1)*exp(-zeta*pow(230,-1./3)*pow(nu*1e-9,1./3.)*pow(rr/rin,indx2/3.));
+     //emiss = norm*nu*1e-9/230*pow(rr,-indx1)*exp(-zeta*pow(230,-1./3)*pow(nu*1e-9,1./3.)*pow(rr/rin,indx2/3.));
+     // theta_mag = angle between magnetic field vector and photon tgt vector in the rest frame of the emitter
+     double vel[4]; // 4-velocity of emitter
+     for (int ii=0;ii<4;ii++){
+       vel[ii]=coord_obj[ii+4];
+     }
+     double theta_mag;
+     double B4vect[4]={0.,0.,0.,0.};
+     computeB4vect(B4vect, "Vertical", coord_obj, coord_ph); // !!! Double definition in Astrobj.C
+     theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+     emiss = norm*nu*1e-9/230*pow(rr,-indx1)*exp(-zeta*pow(230,-1./3)*pow(sin(theta_mag),-1./3)*pow(nu*1e-9,1./3.)*pow(rr/rin,indx2/3.));
      //cout << setprecision(16);
      //cout << "emiss " << emiss << endl; 
     
@@ -179,104 +213,152 @@ double ThinDiskProfile::emission(double nu, double,
 }
 
 void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
-{
-
+{  
   string kin = gg_->kind();
+  double gtt = gg_->gmunu(pos,0,0),
+         grr = gg_->gmunu(pos,1,1),
+         gpp = gg_->gmunu(pos,3,3),
+         gtp = gg_->gmunu(pos,0,3),
+         guptt = gg_->gmunu_up(pos,0,0),
+         guptp = gg_->gmunu_up(pos,0,3),
+         guppp = gg_->gmunu_up(pos,3,3),
+         guprr = gg_->gmunu_up(pos,1,1);
   
+  double rr = pos[1];
   double risco = 0.;
-  if (gg_->kind()!="Minkowski" && gg_->kind()!="Hayward")
+  if (kin!="Minkowski" && kin!="Hayward")
     risco=gg_->getRms(); // prograde Kerr ISCO
   // let risco=0 if metric is Minko; then ISCO not defined
   // let also risco=0 for Hayward as we would need to
   // compute it numerically and give it in xml Metric field,
   // not implemented so far
-
-  //cout << "in velo, r isco= " << pos[1] << " " << risco << endl;
-  double rr = pos[1];
-  //cout << "circ=" << circular_motion_ <<endl;
-  if (circular_motion_) {
-    // CIRCULAR ROTATION
-      if (rr > risco){
-	// Keplerian velocity above ISCO
-	gg_ -> circularVelocity(pos, vel, 1);
+  //cout << "In getVelocity: r, isco= " << pos[1] << ", " << risco << endl;
+  
+  //cout << "Motionkind : " << motionkind_ << endl;
+  
+  if (kin!="KerrBL" && kin!="RezzollaZhidenko") {
+    GYOTO_ERROR("ThinDiskProfile: KerrBL or RezzollaZhidenko needed!");
+  }else{ 
+    // Equatorial motion: u_\mu = (u_t,u_r,0,u_phi)
+    // u_t=-E, u_phi=L
+    double vel_rad[4], vel_circ[4], vel_mix[4];
+    double Omega_circ, Omega_rad, Omega_mix;
+    double xi = 1.; 
+    if (motionkind_==MIXED) {
+      if (kin!="RezzollaZhidenko"){
+        cout << "WARNING: mixed velocity with a SUBkeplerian motion only implemented for the RZ metric! Here Circular+Radial (xi=1)" << endl;
       }else{
-       if (kin == "KerrBL"){
-         double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-	 // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	 // initally from Cunnigham 1975
-	 double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
-	 gamma_ms = sqrt(1.-2./(3.*risco)),
-	 delta = rr*rr - 2.*rr + SPIN*SPIN,
-	 hh = (2.*rr - SPIN*lambda_ms)/delta;
-	
-	 vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	 vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	 vel[2] = 0.;
-	 vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
-	
-	 //cout << "u2 = " << gg_->ScalarProd(pos,vel,vel) << endl;
-	} else if (kin == "RezzollaZhidenko") {
-	// See formulas in Cárdenas, Godfrey, Yunes & Lohfink 2019, Eqs 11 and 12 for E and L
-	// initally from Cunnigham 1975
-	  double N2ms = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> N2(risco);
-	  double Nprimems = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> Nprime(risco);
-	  double g00 = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> gmunu(pos,0,0);
-	  double grr = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> gmunu(pos,1,1);
-	  double gpp = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> gmunu(pos,3,3);
-	  double NNms = sqrt(N2ms); 
-	  double Ems = sqrt(pow(NNms,3)/(NNms-risco*Nprimems));
-	  double Lms = sqrt(pow(risco,3)*Nprimems/(NNms-risco*Nprimems));
-	  
-	  vel[0] = -Ems/g00; // this is: -Ems*(g_{00}^{-1})
-	  vel[2] = 0.; // this is: 0.
-	  vel[3] = Lms/pow(rr,2); // this is: Lms/r**2
-	  vel[1] = -sqrt(-pow(grr,-1)*(1.+g00*pow(vel[0],2)+gpp*pow(vel[3],2))); 
-	  // this is: -sqrt{-(g_{rr}^{-1})*(1 + g_{00}*(u^t)^2 + g_{pp}*(u^p)^2)}
-	  
-	  // Velocity to see the discontinuity for n=0
-	  //vel[1] = 0.; 
-	  //vel[2] = 0.;
-	  //vel[3] = 0.;
-	  //vel[0] = sqrt(-pow(g00,-1));
-
-	  // Check the normalisation of the 4-velocity
-	  double tol=1e-5;
-	  double u2 = gg_->ScalarProd(pos,vel,vel);
-	  if (fabs(u2+1.)>tol or u2!=u2) {
-	  cerr << " *** 4-velocity squared norm= " << u2 << endl;
-	  throwError("In ThinDiskProfile: 4vel RezzollaZhidenko is not properly normalized!");
-	  }
-	} else {
-	  GYOTO_ERROR("ThinDiskProfile: KerrBL or RezzollaZhidenko needed!");
-	}
+        xi = 0.7; // Subkeplerian parameter: 1 for a geodesic circular motion
+        // cout << "Subkeplerian parameter: " << xi << endl;
       }
-    }else{
+    }
+    double E, L, ll; // ll=L/E
+    
     // RADIAL FALL
-    double gtt = gg_->gmunu(pos,0,0),
-      grr = gg_->gmunu(pos,1,1),
-      guptt = gg_->gmunu_up(pos,0,0),
-      guptp = gg_->gmunu_up(pos,0,3),
-      guprr = gg_->gmunu_up(pos,1,1);
+    // u_\mu = (u_t,u_r,0,0)
+    // with u_t=-1 (null radial velocity at infinity) and u_r obtained by unit normalisation
+    vel_rad[0] = -guptt;
+    vel_rad[1] = -sqrt((-1.-guptt)/grr);
+    vel_rad[2] = 0;
+    vel_rad[3] = -guptp; 
+    Omega_rad = vel_rad[3]/vel_rad[0];
     
-    // 4-vel obtained by imposing: u_t=-1, u_phi=0, u^theta=0
-    // see FV notes SphericalVelocity.pdf for details
-    vel[0] = -guptt;
-    vel[1] = -sqrt((-1.-guptt)*guprr);
-    vel[2] = 0;
-    vel[3] = -guptp;
-
+    // (SUB)KEPLERIAN ROTATION
+    // u_\mu = (u_t,0,0,u_phi) = -u_t (-1,0,0,ll)
+    // ll = ll_kep for a circular geodesic motion
+    // ll = xi*ll_kep for a sub-keplerian non-geodesic motion
+    if (rr > risco){
+      if (kin=="KerrBL"){
+        double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+        // See formulas in Gralla, Lupsasca & Marrone 2020
+        E = (pow(rr,1.5)-2.*sqrt(rr)+SPIN)/(pow(rr,0.75)*sqrt(pow(rr,1.5)-3.*sqrt(rr)+2.*SPIN)); 
+        L = (pow(rr,2)-2.*SPIN*sqrt(rr)+SPIN*SPIN)/(pow(rr,0.75)*sqrt(pow(rr,1.5)-3.*sqrt(rr)+2.*SPIN));
+        //ll = (pow(rr,2)-2.*SPIN*sqrt(rr)+SPIN*SPIN)/(sqrt(rr)*(rr-2.)+SPIN);
+      } else if (kin=="RezzollaZhidenko"){
+        double N2 = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> N2(rr);
+        double N = sqrt(N2);
+        double Nprime = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> Nprime(rr);
+        // See paper on photon rings degeneracy (IU+2024)
+        E = sqrt(pow(N,3)/(N-pow(xi,2)*rr*Nprime));
+        L = xi*sqrt(pow(rr,3)*Nprime/(N-pow(xi,2)*rr*Nprime));
+        //ll = xi*sqrt(pow(rr,3.)*Nprime/pow(N,3));
+      }
+      
+      double u_t = -E, u_phi = L;
+      vel_circ[0] = guptt*u_t + guptp*u_phi;
+      vel_circ[1] = 0.; 
+      vel_circ[2] = 0;
+      vel_circ[3] = guptp*u_t + guppp*u_phi;
+      Omega_circ = vel_circ[3]/vel_circ[0];
+      
+    }else{
+      // From Cunnigham 1975
+      if (kin=="KerrBL"){
+        double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+        E = (pow(risco,1.5)-2.*pow(risco,0.5)+SPIN)/(pow(risco,0.75)*sqrt(pow(risco,1.5)-3.*pow(risco,0.5)+2.*SPIN)); 
+        L = (pow(risco,2)-2.*SPIN*sqrt(risco)+SPIN*SPIN)/(pow(risco,0.75)*sqrt(pow(risco,1.5)-3.*sqrt(risco)+2.*SPIN));
+        //ll = (pow(risco,2)-2.*SPIN*sqrt(risco)+SPIN*SPIN)/(sqrt(risco)*(risco-2.)+SPIN);
+      } else if (kin=="RezzollaZhidenko"){
+        //cout << "RZ" << endl;
+        double N2ms = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> N2(risco);
+        double Nms = sqrt(N2ms);
+        double Nprimems = static_cast<SmartPointer<Metric::RezzollaZhidenko> >(gg_) -> Nprime(risco);
+        E = sqrt(pow(Nms,3)/(Nms-pow(xi,2)*risco*Nprimems));
+        L = xi*sqrt(pow(risco,3)*Nprimems/(Nms-pow(xi,2)*risco*Nprimems));
+        //ll = xi*sqrt(pow(risco,3.)*Nprimems/pow(Nms,3));
+      }
+      
+      double u_t = -E, u_phi = L;
+      vel_circ[0] = guptt*u_t + guptp*u_phi;
+      vel_circ[3] = guptp*u_t + guppp*u_phi; 
+      double circnorm = -pow(grr,-1)*(1.+gtt*pow(vel_circ[0],2)+gpp*pow(vel_circ[3],2)+2.*gtp*vel_circ[0]*vel_circ[3]);
+      if (circnorm<0 && abs(circnorm)<1e-10){
+        cout << setprecision(18);
+        //cout << "Circular 4-velocity normalisation factor: " << circnorm << endl;
+        circnorm*=-1;
+      }
+      vel_circ[1] = -sqrt(circnorm); 
+      vel_circ[2] = 0;
+      Omega_circ = vel_circ[3]/vel_circ[0];
+      
+    }
+    
+    // MIXED VELOCITY (SUBKEPLERIAN+RADIAL)
+    // cf. Cárdenas-Avendaño et al. 2023, APPENDIX B4
+    double beta_r, beta_phi;
+    if (motionkind_==CIRCULAR) {
+      beta_r = 1., beta_phi = 1.;
+    } else if  (motionkind_==CIRCULAR) {
+      beta_r = 0., beta_phi = 0.;
+    } else if (motionkind_==MIXED) {
+      beta_r = 0.8, beta_phi = 0.8;
+    } 
+    
+    Omega_mix = Omega_circ+(1.-beta_phi)*(Omega_rad-Omega_circ);
+    
+    vel[1] = vel_circ[1]+(1.-beta_r)*(vel_rad[1]-vel_circ[1]);
+    vel[2] = 0.;
+    vel[0] = sqrt((1.+grr*pow(vel[1],2))/(-gtt-pow(Omega_mix,2)*gpp-2.*Omega_mix*gtp));
+    vel[3] = Omega_mix*vel[0];
+    
+    // Check the normalisation of the 4-velocity
     double tol=1e-5;
-    double u2 = gg_->ScalarProd(pos,vel,vel);
-    //cout << "4vel,u2= " << rr << " " << pos[2] << " " << gtt << " " << grr << " " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << " " << u2 << endl;
-    
-    if (fabs(u2+1.)>tol or u2!=u2) {
-      cerr << " *** 4-velocity squared norm= " << u2 << endl;
-      throwError("In ThinDiskProfile: 4vel "
-		 "is not properly normalized!");
+    double u2_rad = gg_->ScalarProd(pos,vel_rad,vel_rad);
+    double u2_circ = gg_->ScalarProd(pos,vel_circ,vel_circ);
+    double u2 = gg_->ScalarProd(pos,vel_circ,vel_circ);
+    if (fabs(u2_rad+1.)>tol or u2_rad!=u2_rad) { 
+      cerr << " *** Radial 4-velocity squared norm = " << u2_rad << endl;
+      throwError("In ThinDiskProfile: Radial 4vel is not properly normalized!");
+    } else if (fabs(u2_circ+1.)>tol or u2_circ!=u2_circ) { 
+      cerr << " *** Circular 4-velocity squared norm = " << u2_circ << endl;
+      throwError("In ThinDiskProfile: Circular 4vel is not properly normalized!");
+    } else if (fabs(u2+1.)>tol or u2!=u2) { 
+      cerr << " *** 4-velocity squared norm = " << u2 << endl;
+      throwError("In ThinDiskProfile: 4vel is not properly normalized!");
     }
   }
   
-  //cout << "4vel= " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3]<< endl;
+  //cout << "4vel = " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3]<< endl;
 }
 
 void ThinDiskProfile::processHitQuantities(Photon* ph,

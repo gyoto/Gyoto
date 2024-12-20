@@ -7,7 +7,7 @@
  */
 
 /*
-    Copyright 2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2020, 2024 Frederic Vincent, Thibaut Paumard, Irene Urso
 
     This file is part of Gyoto.
 
@@ -49,9 +49,8 @@ class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::ThinDiskProfile>;
  private:
   double* model_param_; ///< A vector containing an arbitrary number of parameters necessary to compute the disk image
-  bool circular_motion_; ///< True if motion is circular, else radial fall
  protected:
-
+  unsigned int motionkind_; ///< tag for MotionKind
   // Constructors - Destructor
   // -------------------------
  public:
@@ -68,8 +67,8 @@ class Gyoto::Astrobj::ThinDiskProfile : public Astrobj::ThinDisk {
   // Accessors
   // ---------
  public:
-  bool circularMotion() const;
-  void circularMotion(bool circ);
+  virtual std::string motionKind() const ; ///< Get MotionKind
+  virtual void motionKind(std::string const&); ///< Set MotionKind
 
   void model_param(std::vector<double> const &v);
   std::vector<double> model_param() const;
