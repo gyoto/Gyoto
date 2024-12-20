@@ -1,5 +1,5 @@
 /*
-    Copyright 2024 Aimar Nicolas
+    Copyright 2024 Aimar Nicolas, Irene Urso
 
     Gyoto is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 #include "GyotoSimBridge.h"
 #include "GyotoFactoryMessenger.h"
+#include "GyotoKerrBL.h"
 
 #ifdef GYOTO_USE_CFITSIO
 #include <fitsio.h>
@@ -35,6 +36,7 @@ GYOTO_PROPERTY_STRING(SimBridge, Filename, filename)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMin, gammaMin)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMax, gammaMax)
 GYOTO_PROPERTY_BOOL(SimBridge, TemperatureGrid, IntensityGrid, temperature)
+GYOTO_PROPERTY_BOOL(SimBridge, CircularMotion, NoCircularMotion, circularMotion)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
 GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType)
@@ -58,6 +60,7 @@ SimBridge::SimBridge() :
   floortemperature_(0.),
   temperature_(true),
   BinFile_(true),
+  circularmotion_(false),
   ntime_(1),
   nx1_(1),
   nx2_(1),
@@ -97,6 +100,7 @@ SimBridge::SimBridge(const SimBridge& orig) :
   floortemperature_(orig.floortemperature_),
   BinFile_(orig.BinFile_),
   temperature_(orig.temperature_),
+  circularmotion_(orig.circularmotion_),
   ntime_(orig.ntime_),
   nx1_(orig.nx1_),
   nx2_(orig.nx2_),
@@ -197,24 +201,32 @@ void SimBridge::filename(std::string const &f){
   tmp = FitsRW::fitsReadHDUData(fptr, "X0");
   std::memcpy(time_array_, tmp, ntime_ * sizeof(double));
   delete[] tmp;
-
+  //cout << "ntime_" << ntime_ << endl;
+  //cout << "time array: " << time_array_[0] << " - " << time_array_[ntime_-1] << endl;
+  
   nx1_          = FitsRW::fitsReadKey(fptr, "NB_X1");
   x1_array_     = new double[nx1_];
   tmp = FitsRW::fitsReadHDUData(fptr, "X1");
   std::memcpy(x1_array_, tmp, nx1_ * sizeof(double));
   delete[] tmp;
+  //cout << "nx1_" << nx1_ << endl;
+  //cout << "x1 array: " << x1_array_[0] << " - " << x1_array_[nx1_-1] << endl;
 
   nx2_          = FitsRW::fitsReadKey(fptr, "NB_X2");
   x2_array_     = new double[nx2_];
   tmp = FitsRW::fitsReadHDUData(fptr, "X2");
   std::memcpy(x2_array_, tmp, nx2_ * sizeof(double));
   delete[] tmp;
+  //cout << "nx2_" << nx2_ << endl;
+  //cout << "x2 array: " << x2_array_[0] << " - " << x2_array_[nx2_-1] << endl;
 
   nx3_         = FitsRW::fitsReadKey(fptr, "NB_X3");
   x3_array_    = new double[nx3_];
   tmp = FitsRW::fitsReadHDUData(fptr, "X3");
   std::memcpy(x3_array_, tmp, nx3_ * sizeof(double));
   delete[] tmp;
+  //cout << "nx3_" << nx3_ << endl;
+  //cout << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
 
 
   int status = 0;
@@ -230,6 +242,8 @@ void SimBridge::filename(std::string const &f){
     std::memcpy(nu_array_, tmp, nnu_ * sizeof(double));
     delete[] tmp;
   }
+  //cout << "nnu_" << nnu_ << endl;
+  //cout << "nu array: " << nu_array_[0] << " - " << nu_array_[nnu_-1] << endl;
 
   BinFile_ = FitsRW::fitsReadKey(fptr, "BINFILE");
   FitsRW::fitsClose(fptr);
@@ -265,6 +279,13 @@ void SimBridge::temperature(bool t){
 }
 bool SimBridge::temperature() const{
   return temperature_;
+}
+
+void SimBridge::circularMotion(bool t){
+  circularmotion_=t;
+}
+bool SimBridge::circularMotion() const{
+  return circularmotion_;
 }
 
 void SimBridge::floorTemperature(double t){
@@ -345,10 +366,11 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
   
   double tcur=coord_ph[0]; // in M units # TBC
-  
   int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
+  //cout << "tcur: " << tcur << endl;
   int index=getIndex(tcur); //index of files to be loaded (index and index+1)
-
+  //cout << "index: " << index << endl;
+  
   // Creating arrays
   long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
   double* density_array=NULL;
@@ -389,7 +411,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
         
     string filename = stream_name.str();
     GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
-    
+    //cout << "Reading FITS file: " << filename << endl ;
     fitsfile* fptr = NULL;
     
     fptr = FitsRW::fitsOpen(filename);
@@ -486,12 +508,20 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       }      
     }
     FitsRW::fitsClose(fptr);
+    
+    //cout << "Emission array" << endl;
+    //for (int ii=0; ii<ncells; ii++){
+    //  cout << emission_array[0][ii] << " ";
+    //}
+    //cout << endl;
   } // End of reading FITS files. At this point, the relevent arrays should be filled.
 
   double x1 = coord_ph[1], x2 = coord_ph[2], x3 = coord_ph[3];
   double pos[4] = {tcur, x1, x2, x3};
   double vel[4];
+  //cout << "pos: " << tcur << " " << x1 << " " << x2*180/3.141592 << " " << x3*180/3.141592 << endl;
   const_cast<SimBridge*>(this)->getVelocity(pos, vel);
+  //cout << "vel: " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
 
   // Defining emission, absoprtion and rotation coefficients for the transmission matrix
   double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
@@ -637,6 +667,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     for (size_t ii=0; ii<nbnu; ++ii){
       double Xq[5] = {tcur, x1, x2, x3, nuem[ii]};
       int X_params[5] = {nfile, nx1_, nx2_, nx3_, nnu_};
+      //cout << "coord: " << Xq[0] << " " << Xq[1] << " " << Xq[2] << " " << Xq[3] << " " << Xq[4] << endl;
       double** X;
       X = new double*[5];
       X[0] = time_interpo;
@@ -645,7 +676,8 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       X[3] = x3_array_;
       X[4] = nu_array_;
       std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4]};
-
+      //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << endl;
+      
       jInu[ii]=interpolate(5, emission_array[0],   Xq, X, X_params, cond_limits);
       jQnu[ii]=interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits);
       jUnu[ii]=interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits);
@@ -668,24 +700,27 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   }
   
   for (size_t ii=0; ii<nbnu; ++ii) {
-    //cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
-    //cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
-    //cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
+    cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
+    cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
+    cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
     Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
     Eigen::Vector4d Stokes=Omat*Jstokes;
+    //cout << "Jstokes: " << Jstokes << endl;
     Inu[ii] = Stokes(0);
+    //cout << "Inu: " << Inu[ii] << endl;
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);
     Vnu[ii] = Stokes(3);
     Onu[ii] = Omat;
+    //cout << "In SimBridge: Onu: " << Omat << endl;
 
     if (Inu[ii]<0.)
-      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In Plasmoid::radiativeQ(): Inu or Taunu is infinite");
+      GYOTO_ERROR("In SimBridge::radiativeQ(): Inu<0");
+    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0)) 
+      GYOTO_ERROR("In SimBridge::radiativeQ(): Inu or Taunu is nan");
+    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.) 
+      GYOTO_ERROR("In SimBridge::radiativeQ(): Inu or Taunu is infinite");
   }
 
 
@@ -749,87 +784,117 @@ void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], s
 }
 
 void SimBridge::getVelocity(double const pos[4], double vel[4]){
-  if (dirname_=="None")
-      GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
+  if (circularmotion_){
+    if (gg_->kind()!="KerrBL") {
+    GYOTO_ERROR("SimBridge: KerrBL needed to compute velocity!");
+    // ONLY FOR SPHERICAL COORDINATES!!!
+    }else{ 
+      double rr=pos[1]; // radius
+      double risco=gg_->getRms();
+      //cout << "rr: " << rr << ", risco: " << risco << endl;
+      if (rr > risco){
+	// Keplerian velocity above ISCO
+	gg_ -> circularVelocity(pos, vel, 1);
+      }else{
+        // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
+	// initally from Cunnigham 1975
+        double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+        double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+        gamma_ms = sqrt(1.-2./(3.*risco)),
+	delta = rr*rr - 2.*rr + SPIN*SPIN,
+	hh = (2.*rr - SPIN*lambda_ms)/delta;
+	
+	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	vel[2] = 0.;
+	vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);	
+      }
+    }
+  }else{
+    if (dirname_=="None")
+        GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
   
-  double tcur=pos[0]; // in M units # TBC
+    double tcur=pos[0]; // in M units # TBC
   
-  int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
-  int index=getIndex(tcur); //index of files to be loaded (index and index+1)
+    int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
+    int index=getIndex(tcur); //index of files to be loaded (index and index+1)
 
-  // Creating the velocity arrays
-  long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
-  double** velocity_array = new double*[3];
-  for (int ii=0; ii<3; ii++){
-    velocity_array[ii] = new double[nfile*ncells];
-  }
+    // Creating the velocity arrays
+    long ncells = nx1_*nx2_*nx3_; // Number of cells for each time
+    double** velocity_array = new double*[3];
+    for (int ii=0; ii<3; ii++){
+      velocity_array[ii] = new double[nfile*ncells];
+    }
 
-  // Reading FITS File
-  double* tmp;
-  double time_interpo[nfile];
-  for (int ii=0; ii<nfile; ii++){
-    ostringstream stream_name ;
-    stream_name << dirname_ << fname_ << setw(4) << setfill('0') << index+ii << ".fits" ;
+    // Reading FITS File
+    double* tmp;
+    double time_interpo[nfile];
+    for (int ii=0; ii<nfile; ii++){
+      ostringstream stream_name ;
+      stream_name << dirname_ << fname_ << setw(4) << setfill('0') << index+ii << ".fits" ;
         
-    string filename = stream_name.str();
-    GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
+      string filename = stream_name.str();
+      GYOTO_DEBUG << "Reading FITS file: " << filename << endl ;
     
-    fitsfile* fptr = NULL;
+      fitsfile* fptr = NULL;
     
-    fptr = FitsRW::fitsOpen(filename);
+      fptr = FitsRW::fitsOpen(filename);
 
-    int ntime = FitsRW::fitsReadKey(fptr, "NB_X0");
-    int nx1   = FitsRW::fitsReadKey(fptr, "NB_X1");
-    int nx2   = FitsRW::fitsReadKey(fptr, "NB_X2");
-    int nx3   = FitsRW::fitsReadKey(fptr, "NB_X3");
+      int ntime = FitsRW::fitsReadKey(fptr, "NB_X0");
+      int nx1   = FitsRW::fitsReadKey(fptr, "NB_X1");
+      int nx2   = FitsRW::fitsReadKey(fptr, "NB_X2");
+      int nx3   = FitsRW::fitsReadKey(fptr, "NB_X3");
 
-    if (ntime!=ntime_ || nx1!=nx1_ || nx2!=nx2_ || nx3!=nx3_)
-      GYOTO_ERROR("In SimBridge RadiativeQ : size of arrays in FITS file different from initial file");
+      if (ntime!=ntime_ || nx1!=nx1_ || nx2!=nx2_ || nx3!=nx3_)
+        GYOTO_ERROR("In SimBridge RadiativeQ : size of arrays in FITS file different from initial file");
     
-    time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
-    tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY1");
-    memcpy(velocity_array[0]+ii*ncells, tmp, ncells*sizeof(double));
-    delete[] tmp;
-    tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY2");
-    memcpy(velocity_array[1]+ii*ncells, tmp, ncells*sizeof(double));
-    delete[] tmp;
-    tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY3");
-    memcpy(velocity_array[2]+ii*ncells, tmp, ncells*sizeof(double));
-    delete[] tmp;
+      time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
+    
+      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY1");
+      memcpy(velocity_array[0]+ii*ncells, tmp, ncells*sizeof(double));
+      delete[] tmp;
+      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY2");
+      memcpy(velocity_array[1]+ii*ncells, tmp, ncells*sizeof(double));
+      delete[] tmp;
+      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY3");
+      memcpy(velocity_array[2]+ii*ncells, tmp, ncells*sizeof(double));
+      delete[] tmp;
 
-    FitsRW::fitsClose(fptr);
-  }
+      FitsRW::fitsClose(fptr);
+    }
 
-  double Xq[4] = {pos[0], pos[1], pos[2], pos[3]};
-  int X_params[4] = {nfile, nx1_, nx2_, nx3_};
-  double** X;
-  X = new double*[4];
-  X[0] = time_interpo;
-  X[1] = x1_array_;
-  X[2] = x2_array_;
-  X[3] = x3_array_;
+    double Xq[4] = {pos[0], pos[1], pos[2], pos[3]};
+    int X_params[4] = {nfile, nx1_, nx2_, nx3_};
+    double** X;
+    X = new double*[4];
+    X[0] = time_interpo;
+    X[1] = x1_array_;
+    X[2] = x2_array_;
+    X[3] = x3_array_;
 
-  vel[0] = 1.;
-  vel[1] = interpolate(4, velocity_array[0], Xq, X, X_params, boundCond_);
-  vel[2] = interpolate(4, velocity_array[1], Xq, X, X_params, boundCond_);
-  vel[3] = interpolate(4, velocity_array[2], Xq, X, X_params, boundCond_);
-  //cout << "vel : " << vel[0] << ", "  << vel[1] << ", "  << vel[2] << ", "  << vel[3] << endl;
+    vel[0] = 1.;
+    vel[1] = interpolate(4, velocity_array[0], Xq, X, X_params, boundCond_);
+    vel[2] = interpolate(4, velocity_array[1], Xq, X, X_params, boundCond_);
+    vel[3] = interpolate(4, velocity_array[2], Xq, X, X_params, boundCond_);
+    //cout << "vel : " << vel[0] << ", "  << vel[1] << ", "  << vel[2] << ", "  << vel[3] << endl;
 
-  X[0] = NULL;
-  X[1] = NULL;
-  X[2] = NULL;
-  X[3] = NULL;
-  delete[] X;
+    X[0] = NULL;
+    X[1] = NULL;
+    X[2] = NULL;
+    X[3] = NULL;
+    delete[] X;
 
-  gg_->normalizeFourVel(pos, vel);
+    gg_->normalizeFourVel(pos, vel);
 
-  for (int ii=0; ii<3; ii++){
-    if (velocity_array[ii]){
-      delete [] velocity_array[ii];
-      velocity_array[ii] = NULL;
+    for (int ii=0; ii<3; ii++){
+      if (velocity_array[ii]){
+        delete [] velocity_array[ii];
+        velocity_array[ii] = NULL;
+      }
     }
   }
 }
+  
 
 double SimBridge::operator()(double const coord[4]) {
   double rr=0.; // radius

@@ -6,7 +6,7 @@
  */
 
 /*
-    Copyright 2024 Aimar Nicolas
+    Copyright 2024 Aimar Nicolas, Irene Urso
 
     Gyoto is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -107,6 +107,7 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   std::string dirname_; ///< FITS files directory
   std::string fname_; ///< FITS files prefix (without the number neither the extension, i.e. '.fits')
   bool temperature_; ///< 1 if temperature is given in fits data file, 0 if emission coef is directly given
+  bool circularmotion_; ///< 1 if velocity is given in fits data file, 0 if circularmotion is directly given
   bool BinFile_; ///< Define if the magnetic field is saved in FITS file or not
   std::string emission_; // Type of emission : Black Body or synchrotron from electron distribution (thermal, PL, kappa)
   double PLindex_; ///< power law index such that density_elec(E) &prop; E<SUP>-p</SUP>
@@ -164,6 +165,8 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   double gammaMax() const; ///< Get the maximum gamma factor of the electron distribution function
   void temperature(bool t); ///< Set the flag to select the type of quantities in FITS files (GRMHD or GRPIC outputs)
   bool temperature() const; ///< Get the flag which select the type of quantities in FITS files
+  void circularMotion(bool t); ///< Set the flag to select the type of quantities in FITS files (GRMHD or GRPIC outputs)
+  bool circularMotion() const; ///< Get the flag which select the type of quantities in FITS files
   void floorTemperature(double t); ///< Set the minimum of temperature (GRMHD case)
   double floorTemperature()const; ///< get the minimum of temperature (GRMHD case)
   void magneticConfiguration(std::string const &config); ///< Set the magnetic field configuration wanted if it is not founded in the FITS file (GRMHD case) 

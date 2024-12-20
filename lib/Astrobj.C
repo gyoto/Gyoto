@@ -1573,9 +1573,11 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+			if (tab_indX[n]!=0 && tab_indX[n]!=1)
+			  GYOTO_ERROR("Astrobj: offset non-binary in interpolate");
+      ind_X-=tab_indX[n]*pow(2.,n);
       if (X_lengths[n]==1)
         tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
-      ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	X_array[ii][n]=X[n][indices[n]+tab_indX[n]];
       }else{
@@ -1625,9 +1627,11 @@ double Generic::interpolate(int const N, double* const array, double* const Xq, 
 		int tab_indX[N];
 		for (int n=N-1; n>=0; n--){
 			tab_indX[n] = ind_X/pow(2.,n);
+			if (tab_indX[n]!=0 && tab_indX[n]!=1)
+			  GYOTO_ERROR("Astrobj: offset non-binary in interpolate");
+      ind_X-=tab_indX[n]*pow(2.,n);
       if (X_params[n][2]==1)
         tab_indX[n]=0.; // if dimension contains only one element, force to use the only valid value; avoid nan, or arbitrary values
-      ind_X-=tab_indX[n]*pow(2.,n);
       if (indices[n]!=-1){
       	int nx = X_params[n][2];
       	double xmin = X_params[n][0],
