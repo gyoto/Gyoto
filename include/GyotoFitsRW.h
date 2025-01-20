@@ -118,7 +118,7 @@ class Gyoto::FitsRW
    * \param fptr fitsfile pointer to FITS file
    * \param extname Name of extension to be read
    */
-  double* fitsReadHDUData(fitsfile* const fptr, std::string const extname) const;
+  double* fitsReadHDUData(fitsfile* const fptr, std::string const extname, double* dest, long expectedSize) const;
 
   /**
    * \brief Read a specific key of the HDU with a specific 'extname'

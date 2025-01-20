@@ -139,7 +139,7 @@ void FitsRW::fitsWriteHDUData(fitsfile* const fptr, string const extname, double
 
 }
 
-double* FitsRW::fitsReadHDUData(fitsfile* const fptr, string const extname) const{
+double* FitsRW::fitsReadHDUData(fitsfile* const fptr, string const extname, double* dest = nullptr, long expectedSize = 0) const{
   int       status    = 0;
   int       anynul    = 0;
   int       ndim      = 1;
@@ -160,15 +160,27 @@ double* FitsRW::fitsReadHDUData(fitsfile* const fptr, string const extname) cons
   fits_get_img_size(fptr, ndim, naxes, &status);
   if (status) throwCfitsioError(status) ;
 
-  GYOTO_DEBUG << "FitsRW::fitsReadHDUData(): allocation array" << endl;
-  double* dest = new double[naxes[0]];
-  fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, 0, dest, &anynul, &status);
-  if (status) {
-    GYOTO_DEBUG << " error reading array, freeing memory" << endl;
-    delete [] dest; dest=NULL;
-    throwCfitsioError(status) ;
+  if (dest != nullptr && naxes[0] != expectedSize) {
+        GYOTO_ERROR("FitsRW::fitsReadHDUData(): unexpected array size.");
   }
-  GYOTO_DEBUG << " done." << endl;
+
+  bool needToAllocate = (dest == nullptr);
+  if (needToAllocate) {
+      GYOTO_DEBUG << "FitsRW::fitsReadHDUData(): allocating array" << endl;
+      dest = new double[naxes[0]];
+  }
+
+  GYOTO_DEBUG << "FitsRW::fitsReadHDUData(): reading data" << endl;
+  fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc, nullptr, dest, &anynul, &status);
+  if (status) {
+      GYOTO_DEBUG << " error reading array" << endl;
+      if (needToAllocate) {
+          delete[] dest;
+      }
+      throwCfitsioError(status);
+  }
+
+    GYOTO_DEBUG << " done." << endl;
 
   return dest;
 }

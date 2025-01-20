@@ -678,20 +678,20 @@ void Plasmoid::fitsRead(string filename) {
   //freq_array_ = new double[nb_freq_];
   //angle_array_= new double[nb_angle_];
 
-  emis_polar_array_[0] = FitsRW::fitsReadHDUData(fptr, "J_I");
-  emis_polar_array_[1] = FitsRW::fitsReadHDUData(fptr, "J_Q");
-  emis_polar_array_[2] = FitsRW::fitsReadHDUData(fptr, "J_U");
-  emis_polar_array_[3] = FitsRW::fitsReadHDUData(fptr, "J_V");
-  abs_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_I");
-  abs_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_Q");
-  abs_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_U");
-  abs_polar_array_[3]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_V");
-  rot_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "R_Q");
-  rot_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "R_U");
-  rot_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "R_V");
-  time_array_          = FitsRW::fitsReadHDUData(fptr, "TIME");
-  freq_array_          = FitsRW::fitsReadHDUData(fptr, "FREQUENCY");
-  angle_array_         = FitsRW::fitsReadHDUData(fptr, "ANGLE");
+  emis_polar_array_[0] = FitsRW::fitsReadHDUData(fptr, "J_I", nullptr, 0);
+  emis_polar_array_[1] = FitsRW::fitsReadHDUData(fptr, "J_Q", nullptr, 0);
+  emis_polar_array_[2] = FitsRW::fitsReadHDUData(fptr, "J_U", nullptr, 0);
+  emis_polar_array_[3] = FitsRW::fitsReadHDUData(fptr, "J_V", nullptr, 0);
+  abs_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_I", nullptr, 0);
+  abs_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_Q", nullptr, 0);
+  abs_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_U", nullptr, 0);
+  abs_polar_array_[3]  = FitsRW::fitsReadHDUData(fptr, "ALPHA_V", nullptr, 0);
+  rot_polar_array_[0]  = FitsRW::fitsReadHDUData(fptr, "R_Q", nullptr, 0);
+  rot_polar_array_[1]  = FitsRW::fitsReadHDUData(fptr, "R_U", nullptr, 0);
+  rot_polar_array_[2]  = FitsRW::fitsReadHDUData(fptr, "R_V", nullptr, 0);
+  time_array_          = FitsRW::fitsReadHDUData(fptr, "TIME", nullptr, 0);
+  freq_array_          = FitsRW::fitsReadHDUData(fptr, "FREQUENCY", nullptr, 0);
+  angle_array_         = FitsRW::fitsReadHDUData(fptr, "ANGLE", nullptr, 0);
 
   FitsRW::fitsClose(fptr);
   return;
