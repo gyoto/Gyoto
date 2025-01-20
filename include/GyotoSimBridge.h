@@ -119,6 +119,10 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   
   double floortemperature_; ///< Set minimum of temperature
 
+  int emisInFile_[4]; ///< Flag that specify which emission coefficients are in the FITS files
+  int absInFile_[4]; ///< Flag that specify which absorption coefficients are in the FITS files
+  int rotInFile_[3]; ///< Flag that specify which rotation coefficients are in the FITS files
+
   protected:
   //Number of dimensions (maximum 4D : [t, r, theta, phi] or [t, x, y, z]). When the number of dimension is lower than 4, the array of the complement dimension(s) is of length 1 (in the FITS files headers).
   double* time_array_; ///< array containing the time evolution of each FITS files
@@ -163,8 +167,6 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   double gammaMin() const; ///< Get the minimum gamma factor of the electron distribution function
   void gammaMax(double gmax); ///< Set the maximum gamma factor when the emission is set to "Power-Law" or "Kappa"
   double gammaMax() const; ///< Get the maximum gamma factor of the electron distribution function
-  void temperature(bool t); ///< Set the flag to select the type of quantities in FITS files (GRMHD or GRPIC outputs)
-  bool temperature() const; ///< Get the flag which select the type of quantities in FITS files
   void circularMotion(bool t); ///< Set the flag to select the type of quantities in FITS files (GRMHD or GRPIC outputs)
   bool circularMotion() const; ///< Get the flag which select the type of quantities in FITS files
   void floorTemperature(double t); ///< Set the minimum of temperature (GRMHD case)

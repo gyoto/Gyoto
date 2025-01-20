@@ -35,7 +35,6 @@ GYOTO_PROPERTY_STRING(SimBridge, Directory, directory)
 GYOTO_PROPERTY_STRING(SimBridge, Filename, filename)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMin, gammaMin)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMax, gammaMax)
-GYOTO_PROPERTY_BOOL(SimBridge, TemperatureGrid, IntensityGrid, temperature)
 GYOTO_PROPERTY_BOOL(SimBridge, CircularMotion, NoCircularMotion, circularMotion)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
@@ -152,6 +151,13 @@ SimBridge::SimBridge(const SimBridge& orig) :
   if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
   if (orig.spectrumBB_()) spectrumBB_=orig.spectrumBB_->clone();
+
+  for (int ii=0; ii<4; ii++){
+    emisInFile_[ii]=orig.emisInFile_[ii];
+    absInFile_[ii]=orig.absInFile_[ii];
+    if (ii!=3)
+      rotInFile_[ii]=orig.rotInFile_[ii];
+  }
 }
 
 SimBridge* SimBridge::clone() const { return new SimBridge(*this); }
@@ -198,35 +204,27 @@ void SimBridge::filename(std::string const &f){
 
   ntime_        = FitsRW::fitsReadKey(fptr, "NB_X0");
   time_array_   = new double[ntime_];
-  tmp = FitsRW::fitsReadHDUData(fptr, "X0");
-  std::memcpy(time_array_, tmp, ntime_ * sizeof(double));
-  delete[] tmp;
-  //cout << "ntime_" << ntime_ << endl;
-  //cout << "time array: " << time_array_[0] << " - " << time_array_[ntime_-1] << endl;
+  FitsRW::fitsReadHDUData(fptr, "X0", time_array_, ntime_);
+  GYOTO_DEBUG << "ntime_" << ntime_ << endl;
+  GYOTO_DEBUG << "time array: " << time_array_[0] << " - " << time_array_[ntime_-1] << endl;
   
   nx1_          = FitsRW::fitsReadKey(fptr, "NB_X1");
   x1_array_     = new double[nx1_];
-  tmp = FitsRW::fitsReadHDUData(fptr, "X1");
-  std::memcpy(x1_array_, tmp, nx1_ * sizeof(double));
-  delete[] tmp;
-  //cout << "nx1_" << nx1_ << endl;
-  //cout << "x1 array: " << x1_array_[0] << " - " << x1_array_[nx1_-1] << endl;
+  FitsRW::fitsReadHDUData(fptr, "X1", x1_array_, nx1_);
+  GYOTO_DEBUG << "nx1_" << nx1_ << endl;
+  GYOTO_DEBUG << "x1 array: " << x1_array_[0] << " - " << x1_array_[nx1_-1] << endl;
 
   nx2_          = FitsRW::fitsReadKey(fptr, "NB_X2");
   x2_array_     = new double[nx2_];
-  tmp = FitsRW::fitsReadHDUData(fptr, "X2");
-  std::memcpy(x2_array_, tmp, nx2_ * sizeof(double));
-  delete[] tmp;
-  //cout << "nx2_" << nx2_ << endl;
-  //cout << "x2 array: " << x2_array_[0] << " - " << x2_array_[nx2_-1] << endl;
+  FitsRW::fitsReadHDUData(fptr, "X2", x2_array_, nx2_);
+  GYOTO_DEBUG << "nx2_" << nx2_ << endl;
+  GYOTO_DEBUG << "x2 array: " << x2_array_[0] << " - " << x2_array_[nx2_-1] << endl;
 
   nx3_         = FitsRW::fitsReadKey(fptr, "NB_X3");
   x3_array_    = new double[nx3_];
-  tmp = FitsRW::fitsReadHDUData(fptr, "X3");
-  std::memcpy(x3_array_, tmp, nx3_ * sizeof(double));
-  delete[] tmp;
-  //cout << "nx3_" << nx3_ << endl;
-  //cout << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
+  FitsRW::fitsReadHDUData(fptr, "X3", x3_array_, nx3_);
+  GYOTO_DEBUG << "nx3_" << nx3_ << endl;
+  GYOTO_DEBUG << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
 
 
   int status = 0;
@@ -238,14 +236,53 @@ void SimBridge::filename(std::string const &f){
   if(status==0){
     nnu_       = FitsRW::fitsReadKey(fptr, "NB_FREQ");
     nu_array_  = new double[nnu_];
-    tmp = FitsRW::fitsReadHDUData(fptr, "FREQ");
-    std::memcpy(nu_array_, tmp, nnu_ * sizeof(double));
-    delete[] tmp;
+    FitsRW::fitsReadHDUData(fptr, "FREQ", nu_array_, nnu_);
+    GYOTO_DEBUG << "nnu_" << nnu_ << endl;
+    GYOTO_DEBUG << "nu array: " << nu_array_[0] << " - " << nu_array_[nnu_-1] << endl;
   }
-  //cout << "nnu_" << nnu_ << endl;
-  //cout << "nu array: " << nu_array_[0] << " - " << nu_array_[nnu_-1] << endl;
+  
 
   BinFile_ = FitsRW::fitsReadKey(fptr, "BINFILE");
+
+  // Filling the flags
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("J_I"), 0, &status);
+  if (status==0){
+    emisInFile_[0]=1;
+    temperature_=false;
+  } else {
+    emisInFile_[0]=0;
+  }
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("J_Q"), 0, &status);
+  emisInFile_[1]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("J_U"), 0, &status);
+  emisInFile_[2]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("J_V"), 0, &status);
+  emisInFile_[3]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("ALPHA_I"), 0, &status);
+  absInFile_[0]=status?0:1;
+  
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("ALPHA_Q"), 0, &status);
+  absInFile_[1]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("ALPHA_U"), 0, &status);
+  absInFile_[2]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("ALPHA_V"), 0, &status);
+  absInFile_[3]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("R_Q"), 0, &status);
+  rotInFile_[0]=status?0:1;
+  
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("R_U"), 0, &status);
+  rotInFile_[1]=status?0:1;
+
+  fits_movnam_hdu(fptr, ANY_HDU, const_cast<char*>("R_V"), 0, &status);
+  rotInFile_[2]=status?0:1;
+
   FitsRW::fitsClose(fptr);
 }
 
@@ -272,13 +309,6 @@ void SimBridge::gammaMax(double gmax){
 }
 double SimBridge::gammaMax() const{
   return gammaMax_;
-}
-
-void SimBridge::temperature(bool t){
-  temperature_=t;
-}
-bool SimBridge::temperature() const{
-  return temperature_;
 }
 
 void SimBridge::circularMotion(bool t){
@@ -394,11 +424,21 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     absorption_array = new double*[4];
     rotation_array = new double*[3];
     for (int ii=0; ii<4; ii++){
-      emission_array[ii]   = new double[nfile*ncells];
-      absorption_array[ii] = new double[nfile*ncells];
+      if (emisInFile_[ii]){
+        emission_array[ii] = new double[nfile*ncells];
+      }else{
+        emission_array[ii] = nullptr;
+      }
+
+      if (absInFile_[ii]) {absorption_array[ii] = new double[nfile*ncells];}
+      else {absorption_array[ii] = nullptr;}
     }
     for (int ii=0; ii<3; ii++){
-      rotation_array[ii] = new double[nfile*ncells];
+      if (rotInFile_[ii]){
+        rotation_array[ii] = new double[nfile*ncells];
+      }else{
+        rotation_array[ii] = nullptr;
+      }
     }
   }
 
@@ -426,25 +466,24 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
     time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
 
+    double* emplacement;
+
     if (temperature_){
       // The arrays stored in the FITS files are density and temperature + eventually magnetic field
       // Read NUMBERDENSITY
-      tmp = FitsRW::fitsReadHDUData(fptr, "NUMBERDENSITY");
-      std::memcpy(density_array + ii * ncells, tmp, ncells * sizeof(double));
-      delete[] tmp;
+      emplacement = density_array + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "NUMBERDENSITY", emplacement, ncells);
 
       // Read TEMPERATURE
-      tmp = FitsRW::fitsReadHDUData(fptr, "TEMPERATURE");
-      std::memcpy(temperature_array + ii * ncells, tmp, ncells * sizeof(double));
-      delete[] tmp;
+      emplacement = temperature_array + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "TEMPERATURE", emplacement, ncells);
       
       if (BinFile_) {
         for (int jj = 0; jj < 4; jj++) {
           std::ostringstream hdu_name;
           hdu_name << "B" << jj;
-          tmp = FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str());
-          std::memcpy(magneticfield_array[jj] + ii * ncells, tmp, ncells * sizeof(double));
-          delete[] tmp;
+          emplacement = magneticfield_array[jj] + ii * ncells;
+          FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str(), emplacement, ncells);
         }
       }
     }else{
@@ -454,63 +493,55 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       if (nu_array_==NULL)
         GYOTO_ERROR("In SimBridge RadiativeQ : frequency array is not set");
       
-      tmp = FitsRW::fitsReadHDUData(fptr, "J_I");
-      memcpy(emission_array[0]+ii*ncells, tmp, ncells*sizeof(double));
-      delete[] tmp;
-      try {
-        tmp = FitsRW::fitsReadHDUData(fptr, "J_Q");
-        memcpy(emission_array[1]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "J_U");
-        memcpy(emission_array[2]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "J_V");
-        memcpy(emission_array[3]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-      } catch (...) {
-        memset(emission_array[1], 0, nfile*ncells*sizeof(double));
-        memset(emission_array[2], 0, nfile*ncells*sizeof(double));
-        memset(emission_array[3], 0, nfile*ncells*sizeof(double));
+      if (emisInFile_[0]){
+        emplacement = emission_array[0] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_I", emplacement, ncells);
       }
-      try{
-        tmp = FitsRW::fitsReadHDUData(fptr, "ALPHA_I");
-        memcpy(absorption_array[0]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-      } catch (...) {
-        memset(absorption_array[0], 0, nfile*ncells*sizeof(double));
+      if (emisInFile_[1]){
+        emplacement = emission_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_Q", emplacement, ncells);
       }
-      try{
-        tmp = FitsRW::fitsReadHDUData(fptr, "ALPHA_Q");
-        memcpy(absorption_array[1]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "ALPHA_U");
-        memcpy(absorption_array[2]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "ALPHA_V");
-        memcpy(absorption_array[3]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "R_Q");
-        memcpy(rotation_array[1]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "R_U");
-        memcpy(rotation_array[2]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-        tmp = FitsRW::fitsReadHDUData(fptr, "R_V");
-        memcpy(rotation_array[3]+ii*ncells, tmp, ncells*sizeof(double));
-        delete[] tmp;
-      } catch (...) {
-        memset(absorption_array[1], 0, nfile*ncells*sizeof(double));
-        memset(absorption_array[2], 0, nfile*ncells*sizeof(double));
-        memset(absorption_array[3], 0, nfile*ncells*sizeof(double));
-        memset(rotation_array[0],   0, nfile*ncells*sizeof(double));
-        memset(rotation_array[1],   0, nfile*ncells*sizeof(double));
-        memset(rotation_array[2],   0, nfile*ncells*sizeof(double));
-      }      
+      if (emisInFile_[2]){
+        emplacement = emission_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_U", emplacement, ncells);
+      }
+      if (emisInFile_[3]){
+        emplacement = emission_array[3] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_V", emplacement, ncells);
+      }
+      if (absInFile_[0]){
+        emplacement = absorption_array[0] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_I", emplacement, ncells);
+      }
+      if (absInFile_[1]){
+        emplacement = absorption_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_Q", emplacement, ncells);
+      }
+      if (absInFile_[2]){
+        emplacement = absorption_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_U", emplacement, ncells);
+      }
+      if (absInFile_[3]){
+        emplacement = absorption_array[3] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_V", emplacement, ncells);
+      }
+      if (rotInFile_[0]){
+        emplacement = rotation_array[0] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_Q", emplacement, ncells);
+      }
+      if (rotInFile_[1]){
+        emplacement = rotation_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_U", emplacement, ncells);
+      }
+      if (rotInFile_[2]){
+        emplacement = rotation_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_V", emplacement, ncells);
+      }
     }
     FitsRW::fitsClose(fptr);
     
     //cout << "Emission array" << endl;
-    //for (int ii=0; ii<ncells; ii++){
+    //for (int ii=1000; ii<1100; ii++){
     //  cout << emission_array[0][ii] << " ";
     //}
     //cout << endl;
@@ -524,6 +555,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   //cout << "vel: " << vel[0] << " " << vel[1] << " " << vel[2] << " " << vel[3] << endl;
 
   // Defining emission, absoprtion and rotation coefficients for the transmission matrix
+  GYOTO_DEBUG << " Initializing radiative coefficients arrays." << endl;
   double jInu[nbnu], jQnu[nbnu], jUnu[nbnu], jVnu[nbnu];
   double aInu[nbnu], aQnu[nbnu], aUnu[nbnu], aVnu[nbnu];
   double rotQnu[nbnu], rotUnu[nbnu], rotVnu[nbnu];
@@ -665,6 +697,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
   }else{
     for (size_t ii=0; ii<nbnu; ++ii){
+      GYOTO_DEBUG << "Setup arguments for the interpolation of radiative coefficients." << endl;
       double Xq[5] = {tcur, x1, x2, x3, nuem[ii]};
       int X_params[5] = {nfile, nx1_, nx2_, nx3_, nnu_};
       //cout << "coord: " << Xq[0] << " " << Xq[1] << " " << Xq[2] << " " << Xq[3] << " " << Xq[4] << endl;
@@ -678,18 +711,23 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4]};
       //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << endl;
       
+      GYOTO_DEBUG << "Perform the interpolation of radiative coefficients." << endl;
       jInu[ii]=interpolate(5, emission_array[0],   Xq, X, X_params, cond_limits);
-      jQnu[ii]=interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits);
-      jUnu[ii]=interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits);
-      jVnu[ii]=interpolate(5, emission_array[3],   Xq, X, X_params, cond_limits);
-      aInu[ii]=interpolate(5, absorption_array[0], Xq, X, X_params, cond_limits);
-      aQnu[ii]=interpolate(5, absorption_array[1], Xq, X, X_params, cond_limits);
-      aUnu[ii]=interpolate(5, absorption_array[2], Xq, X, X_params, cond_limits);
-      aVnu[ii]=interpolate(5, absorption_array[3], Xq, X, X_params, cond_limits);
-      rotQnu[ii]=interpolate(5, rotation_array[0], Xq, X, X_params, cond_limits);
-      rotUnu[ii]=interpolate(5, rotation_array[1], Xq, X, X_params, cond_limits);
-      rotVnu[ii]=interpolate(5, rotation_array[2], Xq, X, X_params, cond_limits);
+      GYOTO_DEBUG << "Interpolating polarized emission coefficients." << endl;
+      jQnu[ii]=emisInFile_[1]?interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits):0.;
+      jUnu[ii]=emisInFile_[2]?interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits):0.;
+      jVnu[ii]=emisInFile_[3]?interpolate(5, emission_array[3],   Xq, X, X_params, cond_limits):0.;
+      GYOTO_DEBUG << "Interpolating polarized absorption coefficients." << endl;
+      aInu[ii]=absInFile_[0]?interpolate(5, absorption_array[0], Xq, X, X_params, cond_limits):0.;
+      aQnu[ii]=absInFile_[1]?interpolate(5, absorption_array[1], Xq, X, X_params, cond_limits):0.;
+      aUnu[ii]=absInFile_[2]?interpolate(5, absorption_array[2], Xq, X, X_params, cond_limits):0.;
+      aVnu[ii]=absInFile_[3]?interpolate(5, absorption_array[3], Xq, X, X_params, cond_limits):0.;
+      GYOTO_DEBUG << "Interpolating polarized rotation coefficients." << endl;
+      rotQnu[ii]=rotInFile_[0]?interpolate(5, rotation_array[0], Xq, X, X_params, cond_limits):0.;
+      rotUnu[ii]=rotInFile_[1]?interpolate(5, rotation_array[1], Xq, X, X_params, cond_limits):0.;
+      rotVnu[ii]=rotInFile_[2]?interpolate(5, rotation_array[2], Xq, X, X_params, cond_limits):0.;
 
+      GYOTO_DEBUG << "Freeing interpolation arrays." << endl;
       X[0] = NULL;
       X[1] = NULL;
       X[2] = NULL;
@@ -699,10 +737,11 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
   }
   
+  GYOTO_DEBUG << "SimBridge::RadiativeQ: Compute radiative increment" << endl;
   for (size_t ii=0; ii<nbnu; ++ii) {
-    cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
-    cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
-    cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
+    //cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
+    //cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
+    //cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
     Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
     Eigen::Vector4d Stokes=Omat*Jstokes;
@@ -723,7 +762,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       GYOTO_ERROR("In SimBridge::radiativeQ(): Inu or Taunu is infinite");
   }
 
-
+  GYOTO_DEBUG << "Freeing interpolation arrays." << endl;
   // Freeing arrays
   if(density_array) delete[] density_array;
   if(temperature_array) delete[] temperature_array;
@@ -736,7 +775,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
     delete[] magneticfield_array;
   }
-  
+
   if (emission_array) {
     for (int ii = 0; ii < 4; ++ii) {
       if (emission_array[ii]) {
@@ -763,6 +802,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
     delete[] rotation_array;
   }
+  GYOTO_DEBUG << "Done." << endl;
 }
 
 void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], size_t nbnu,
@@ -789,25 +829,26 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     GYOTO_ERROR("SimBridge: KerrBL needed to compute velocity!");
     // ONLY FOR SPHERICAL COORDINATES!!!
     }else{ 
+      GYOTO_DEBUG << "SimBridge: Circular motion in KerrBL." << endl;
       double rr=pos[1]; // radius
       double risco=gg_->getRms();
       //cout << "rr: " << rr << ", risco: " << risco << endl;
       if (rr > risco){
-	// Keplerian velocity above ISCO
-	gg_ -> circularVelocity(pos, vel, 1);
+	      // Keplerian velocity above ISCO
+	      gg_ -> circularVelocity(pos, vel, 1);
       }else{
         // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	// initally from Cunnigham 1975
+        // initally from Cunnigham 1975
         double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
         double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
         gamma_ms = sqrt(1.-2./(3.*risco)),
-	delta = rr*rr - 2.*rr + SPIN*SPIN,
-	hh = (2.*rr - SPIN*lambda_ms)/delta;
-	
-	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	vel[2] = 0.;
-	vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);	
+        delta = rr*rr - 2.*rr + SPIN*SPIN,
+        hh = (2.*rr - SPIN*lambda_ms)/delta;
+        
+        vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+        vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+        vel[2] = 0.;
+        vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
       }
     }
   }else{
@@ -850,15 +891,12 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     
       time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
     
-      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY1");
-      memcpy(velocity_array[0]+ii*ncells, tmp, ncells*sizeof(double));
-      delete[] tmp;
-      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY2");
-      memcpy(velocity_array[1]+ii*ncells, tmp, ncells*sizeof(double));
-      delete[] tmp;
-      tmp = FitsRW::fitsReadHDUData(fptr, "VELOCITY3");
-      memcpy(velocity_array[2]+ii*ncells, tmp, ncells*sizeof(double));
-      delete[] tmp;
+      double* emplacement = velocity_array[0] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY1", emplacement, ncells);
+      emplacement = velocity_array[1] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY2", emplacement, ncells);
+      emplacement = velocity_array[2] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY3", emplacement, ncells);
 
       FitsRW::fitsClose(fptr);
     }
@@ -893,6 +931,7 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
       }
     }
   }
+  GYOTO_DEBUG << "SimBridge: Done." <<endl;
 }
   
 
