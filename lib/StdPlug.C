@@ -27,7 +27,7 @@
 #include "GyotoRezzollaZhidenko.h"
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
-#include "BHheader.h"
+#include "BGheader.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
