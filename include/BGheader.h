@@ -29,12 +29,15 @@
 #include <GyotoSmartPointer.h>
 #include <GyotoObject.h>
 #include <GyotoAstrobj.h>
-#include <GyotoRegister.h>
 #include <GyotoHooks.h>
 #include <GyotoDefs.h>
 #include "GyotoWorldline.h"
-
 #include <GyotoMetric.h> // Include Gyoto Metric base class
+
+#ifdef GYOTO_USE_XERCES
+#include <GyotoRegister.h>
+#endif
+
 
 namespace Gyoto {
   namespace Metric { class BG; }
