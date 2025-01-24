@@ -44,7 +44,6 @@ GYOTO_PROPERTY_STRING(SimBridge, BoundaryConditions, boundaryConditions)
 GYOTO_PROPERTY_DOUBLE(SimBridge, Magnetization, magnetization)
 GYOTO_PROPERTY_END(SimBridge, Standard::properties)
 
-
 SimBridge::SimBridge() :
   Standard("SimBridge"),
   FitsRW(),
@@ -541,7 +540,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     FitsRW::fitsClose(fptr);
     
     //cout << "Emission array" << endl;
-    //for (int ii=1000; ii<1100; ii++){
+    //for (int ii=0; ii<ncells; ii++){
     //  cout << emission_array[0][ii] << " ";
     //}
     //cout << endl;
@@ -712,7 +711,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << endl;
       
       GYOTO_DEBUG << "Perform the interpolation of radiative coefficients." << endl;
-      jInu[ii]=interpolate(5, emission_array[0],   Xq, X, X_params, cond_limits);
+      jInu[ii]=interpolate(5, emission_array[0], Xq, X, X_params, cond_limits);
       GYOTO_DEBUG << "Interpolating polarized emission coefficients." << endl;
       jQnu[ii]=emisInFile_[1]?interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits):0.;
       jUnu[ii]=emisInFile_[2]?interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits):0.;
@@ -742,11 +741,11 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     //cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength(); 
     Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
     Eigen::Vector4d Stokes=Omat*Jstokes;
     //cout << "Jstokes: " << Jstokes << endl;
-    Inu[ii] = Stokes(0);
+    Inu[ii] = Stokes(0); 
     //cout << "Inu: " << Inu[ii] << endl;
     Qnu[ii] = Stokes(1);
     Unu[ii] = Stokes(2);
@@ -825,30 +824,37 @@ void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], s
 
 void SimBridge::getVelocity(double const pos[4], double vel[4]){
   if (circularmotion_){
-    if (gg_->kind()!="KerrBL") {
-    GYOTO_ERROR("SimBridge: KerrBL needed to compute velocity!");
-    // ONLY FOR SPHERICAL COORDINATES!!!
-    }else{ 
-      GYOTO_DEBUG << "SimBridge: Circular motion in KerrBL." << endl;
+    if (gg_->coordKind()!=GYOTO_COORDKIND_SPHERICAL) {
+      GYOTO_ERROR("SimBridge: Spherical coordinates needed to compute circular velocity!");
+    }
+    else if (gg_->kind()!="Minkowski" && gg_->kind()!="KerrBL") {
+      GYOTO_ERROR("SimBridge: circular velocity only implemented for Minkowski or KerrBL!");
+    }
+    else{ 
+      GYOTO_DEBUG << "SimBridge: Circular motion in Minkowski or KerrBL." << endl;
+      double risco = 0.; // Warning: v>c below 1M in Minkowski
+      if (gg_->kind()!="Minkowski")
+        risco=gg_->getRms();
       double rr=pos[1]; // radius
-      double risco=gg_->getRms();
       //cout << "rr: " << rr << ", risco: " << risco << endl;
       if (rr > risco){
-	      // Keplerian velocity above ISCO
-	      gg_ -> circularVelocity(pos, vel, 1);
+	// Keplerian velocity above ISCO
+	gg_ -> circularVelocity(pos, vel, 1);
       }else{
-        // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-        // initally from Cunnigham 1975
-        double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-        double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
-        gamma_ms = sqrt(1.-2./(3.*risco)),
-        delta = rr*rr - 2.*rr + SPIN*SPIN,
-        hh = (2.*rr - SPIN*lambda_ms)/delta;
-        
-        vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-        vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-        vel[2] = 0.;
-        vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
+        if (gg_->kind()=="KerrBL"){
+          // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
+	  // initally from Cunnigham 1975
+          double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+          double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+          gamma_ms = sqrt(1.-2./(3.*risco)),
+	  delta = rr*rr - 2.*rr + SPIN*SPIN,
+	  hh = (2.*rr - SPIN*lambda_ms)/delta;
+	
+	  vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	  vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	  vel[2] = 0.;
+	  vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
+	}	
       }
     }
   }else{
