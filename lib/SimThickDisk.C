@@ -17,7 +17,7 @@
  */
 
 #include "GyotoUtils.h"
-#include "GyotoSim2DEquatDisk.h"
+#include "GyotoSimThickDisk.h"
 
 #include <iostream>
 #include <cmath>
@@ -33,44 +33,44 @@ using namespace Gyoto::Astrobj;
 
 /// Properties
 #include "GyotoProperty.h"
-GYOTO_PROPERTY_START(Sim2DEquatDisk, "Synchrotron-emitting orbiting blob of plasma")
-GYOTO_PROPERTY_DOUBLE(Sim2DEquatDisk, HoverR, HoverR)
-GYOTO_PROPERTY_END(Sim2DEquatDisk, SimBridge::properties)
+GYOTO_PROPERTY_START(SimThickDisk, "Synchrotron-emitting orbiting blob of plasma")
+GYOTO_PROPERTY_DOUBLE(SimThickDisk, HoverR, HoverR)
+GYOTO_PROPERTY_END(SimThickDisk, SimBridge::properties)
 
-Sim2DEquatDisk::Sim2DEquatDisk() : 
+SimThickDisk::SimThickDisk() : 
   Astrobj::SimBridge(),
   HoverR_(0.)
 {
-  kind_="Sim2DEquatDisk";
+  kind_="SimThickDisk";
 # ifdef GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << "done." << endl;
 # endif
 }
 
-Sim2DEquatDisk::Sim2DEquatDisk(const Sim2DEquatDisk& orig) : 
+SimThickDisk::SimThickDisk(const SimThickDisk& orig) : 
   Astrobj::SimBridge(orig),
   HoverR_(orig.HoverR_)
 {
 }
 
-Sim2DEquatDisk* Sim2DEquatDisk::clone() const { return new Sim2DEquatDisk(*this); }
+SimThickDisk* SimThickDisk::clone() const { return new SimThickDisk(*this); }
 
-Sim2DEquatDisk::~Sim2DEquatDisk() {
-  if (debug()) cerr << "DEBUG: Sim2DEquatDisk::~Sim2DEquatDisk()\n";
+SimThickDisk::~SimThickDisk() {
+  if (debug()) cerr << "DEBUG: SimThickDisk::~SimThickDisk()\n";
 }
 
-string Sim2DEquatDisk::className() const { return  string("Sim2DEquatDisk"); }
-string Sim2DEquatDisk::className_l() const { return  string("sim2dequatdisk"); }
+string SimThickDisk::className() const { return  string("SimThickDisk"); }
+string SimThickDisk::className_l() const { return  string("SimThickDisk"); }
 
-void Gyoto::Astrobj::Sim2DEquatDisk::HoverR(double hh){
+void Gyoto::Astrobj::SimThickDisk::HoverR(double hh){
   HoverR_=hh;
 }
 
-double Gyoto::Astrobj::Sim2DEquatDisk::HoverR() const{
+double Gyoto::Astrobj::SimThickDisk::HoverR() const{
     return HoverR_;
 }
 
-double Sim2DEquatDisk::operator()(double const coord[4]) {
+double SimThickDisk::operator()(double const coord[4]) {
   // zpos: modulus of altitude above equatorial plane
   // rproj: radius projected in the equatorial plane
   double zpos=0., rproj=0.;
@@ -89,4 +89,25 @@ double Sim2DEquatDisk::operator()(double const coord[4]) {
   }
   double zdisk = HoverR_*rproj; 
   return zpos - zdisk; // >0 outside, <0 inside flared disk 
+}
+
+void SimThickDisk::filename(std::string const &f){
+  SimBridge::filename(f);
+
+  double theta_lim, xmax, ymax, zmax, rproj_max;
+  switch (gg_ -> coordKind()) {
+  case GYOTO_COORDKIND_SPHERICAL:
+    theta_lim = abs(x2_array_[0]);
+    HoverR(theta_lim);
+    break;
+  case GYOTO_COORDKIND_CARTESIAN:
+    xmax = max(abs(x1_array_[0]), abs(x1_array_[nx1_-1]));
+    ymax = max(abs(x2_array_[0]), abs(x2_array_[nx2_-1]));
+    zmax = max(abs(x3_array_[0]), abs(x3_array_[nx3_-1]));
+    rproj_max = sqrt(xmax*xmax+ymax*ymax);
+    HoverR(zmax/rproj_max);
+    break;
+  default:
+    GYOTO_ERROR("SimBridge::operator(): unknown COORDKIND");
+  }
 }

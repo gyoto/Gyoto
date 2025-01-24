@@ -1,5 +1,5 @@
 /**
- * \file GyotoSim2DEquatDisk.h
+ * \file GyotoSimThickDisk.h
  *
  */
 
@@ -22,11 +22,11 @@
  */
 
 
-#ifndef __GyotoSim2DEquatDisk_H_ 
-#define __GyotoSim2DEquatDisk_H_ 
+#ifndef __GyotoSimThickDisk_H_ 
+#define __GyotoSimThickDisk_H_ 
 
 namespace Gyoto{
-  namespace Astrobj { class Sim2DEquatDisk; }
+  namespace Astrobj { class SimThickDisk; }
 }
 
 #include <GyotoSimBridge.h>
@@ -37,9 +37,9 @@ namespace Gyoto{
 
 #include <string>
 
-class Gyoto::Astrobj::Sim2DEquatDisk :
+class Gyoto::Astrobj::SimThickDisk :
   public Gyoto::Astrobj::SimBridge {
-  friend class Gyoto::SmartPointer<Gyoto::Astrobj::Sim2DEquatDisk>;
+  friend class Gyoto::SmartPointer<Gyoto::Astrobj::SimThickDisk>;
 
   private:
   double HoverR_; ///< parameter which define the height of the disk depending on radius : h = HoverR * radius.
@@ -47,20 +47,22 @@ class Gyoto::Astrobj::Sim2DEquatDisk :
   public:
   GYOTO_OBJECT; // This object has a (non-inherited) Property list
 
-  Sim2DEquatDisk(); ///< Default constructor
+  SimThickDisk(); ///< Default constructor
   
-  Sim2DEquatDisk(const Sim2DEquatDisk& orig); ///< Copy constructor
-  Sim2DEquatDisk * clone() const ;
+  SimThickDisk(const SimThickDisk& orig); ///< Copy constructor
+  SimThickDisk * clone() const ;
 
-  ~Sim2DEquatDisk() ;                        ///< Destructor
+  ~SimThickDisk() ;                        ///< Destructor
 
-  virtual std::string className() const ; ///< "Sim2DEquatDisk"
-  virtual std::string className_l() const ; ///< "sim2dequatdisk"
+  virtual std::string className() const ; ///< "SimThickDisk"
+  virtual std::string className_l() const ; ///< "SimThickDisk"
 
   void HoverR(double hh);
   double HoverR() const;
 
   virtual double operator()(double const coord[4]);
+
+  void filename(std::string const &d); ///< Overload of the SimBridge function to set the default HoverR from FITS files
 
 
 };

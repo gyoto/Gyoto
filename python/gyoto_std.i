@@ -82,7 +82,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, ThickDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskProfile)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SimBridge)
-GyotoSmPtrTypeMapClassDerived(Astrobj, Sim2DEquatDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, SimThickDisk)
 GyotoSmPtrTypeMapClassDerived(Astrobj, Sim2DThinDisk)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
@@ -163,7 +163,7 @@ GyotoSmPtrClassDerived(Astrobj, ThickDisk)
 GyotoSmPtrClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrClassDerived(Astrobj, ThinDiskProfile)
 GyotoSmPtrClassDerived(Astrobj, SimBridge)
-GyotoSmPtrClassDerived(Astrobj, Sim2DEquatDisk)
+GyotoSmPtrClassDerived(Astrobj, SimThickDisk)
 GyotoSmPtrClassDerived(Astrobj, Sim2DThinDisk)
 
 
