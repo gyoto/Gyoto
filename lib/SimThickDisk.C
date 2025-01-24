@@ -94,6 +94,9 @@ double SimThickDisk::operator()(double const coord[4]) {
 void SimThickDisk::filename(std::string const &f){
   SimBridge::filename(f);
 
+  if (!gg_)
+    GYOTO_ERROR("Define the metric in the Astrobj before giving the filename.");
+  
   double theta_lim, xmax, ymax, zmax, rproj_max;
   switch (gg_ -> coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
