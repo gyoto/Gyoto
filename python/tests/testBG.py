@@ -23,22 +23,17 @@ class TestBGMetric(unittest.TestCase):
         
     def test_metric_components(self):
         """Test metric tensor components at a specific point"""
-        pos = gyoto.core.array_double(4)
-        pos[0] = 0.
-        pos[1] = 50.
-        pos[2] = np.pi/2
-        pos[3] = 0.
+        pos = [0., 50., np.pi/2, 0.]
         
-        g = gyoto.core.array_double(16)  # 4x4 matrix flattened
-        self.metric.gmunu(g, pos)
-        
-        # Test all non-zero components with 6 decimal places
-        self.assertAlmostEqual(g[0], -1.0, places=6)          # g[0,0]
-        self.assertAlmostEqual(g[3], 0.027285, places=5)      # g[0,3]
-        self.assertAlmostEqual(g[5], 1.0, places=6)           # g[1,1]
-        self.assertAlmostEqual(g[10], 2500.0, places=4)       # g[2,2]
-        self.assertAlmostEqual(g[12], 0.027285, places=5)     # g[3,0]
-        self.assertAlmostEqual(g[15], 2500.0, places=4)       # g[3,3]
+        # Test individual components using gmunu(pos, mu, nu)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.0, places=6)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.027285, places=5)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.0, places=6)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.0, places=4)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.027285, places=5)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.0, places=4)
 
+if __name__ == '__main__':
+    unittest.main()
 if __name__ == '__main__':
     unittest.main()
