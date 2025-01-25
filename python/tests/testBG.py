@@ -26,12 +26,12 @@ class TestBGMetric(unittest.TestCase):
         pos = [0., 50., np.pi/2, 0.]
         
         # Test individual components - keeping 6 significant figures
-        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.00000, places=5)     # exact
-        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.027285, places=7)     # 6 sig figs
-        self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.00000, places=5)      # exact
-        self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.00, places=2)      # exact
-        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.027285, places=7)     # 6 sig figs
-        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.00, places=2)      # 6 sig figs
+        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.00000, places=5)    # exact
+        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.0272848, places=7)   # 6 sig figs
+        self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.00000, places=5)     # exact
+        self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.00, places=2)     # exact
+        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.0272848, places=7)   # 6 sig figs
+        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.00, places=2)     # 6 sig figs
 
 if __name__ == '__main__':
     unittest.main()
