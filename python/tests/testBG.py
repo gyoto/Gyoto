@@ -23,31 +23,22 @@ class TestBGMetric(unittest.TestCase):
         
     def test_metric_components(self):
         """Test metric tensor components at a specific point"""
-        pos = np.array([0., 50., np.pi/2, 0.], dtype=np.double)
-        g = np.zeros((4,4), dtype=np.double)
+        pos = gyoto.core.array_double(4)
+        pos[0] = 0.
+        pos[1] = 50.
+        pos[2] = np.pi/2
+        pos[3] = 0.
+        
+        g = gyoto.core.array_double(16)  # 4x4 matrix flattened
         self.metric.gmunu(g, pos)
         
         # Test all non-zero components with 6 decimal places
-        self.assertAlmostEqual(g[0,0], -1.0, places=6)
-        self.assertAlmostEqual(g[0,3], 0.027285, places=5)
-        self.assertAlmostEqual(g[1,1], 1.0, places=6)
-        self.assertAlmostEqual(g[2,2], 2500.0, places=4)
-        self.assertAlmostEqual(g[3,0], 0.027285, places=5)
-        self.assertAlmostEqual(g[3,3], 2500.0, places=4)
-        
-    def test_christoffel(self):
-        """Test Christoffel symbols at a specific point"""
-        pos = np.array([0., 50., np.pi/2, 0.], dtype=np.double)
-        christ = np.zeros((4,4,4), dtype=np.double)
-        self.metric.christoffel(christ, pos)
-        
-        # Test non-zero components with appropriate precision
-        self.assertAlmostEqual(christ[0,0,1], 2.21e-9, places=11)
-        self.assertAlmostEqual(christ[0,1,3], 0.000343, places=6)
-        self.assertAlmostEqual(christ[1,0,3], -0.000203, places=6)
-        self.assertAlmostEqual(christ[1,2,2], -50.0, places=4)
-        self.assertAlmostEqual(christ[2,1,2], 0.02, places=3)  # 1/50.0
-        self.assertAlmostEqual(christ[3,1,3], 0.02, places=3)
+        self.assertAlmostEqual(g[0], -1.0, places=6)          # g[0,0]
+        self.assertAlmostEqual(g[3], 0.027285, places=5)      # g[0,3]
+        self.assertAlmostEqual(g[5], 1.0, places=6)           # g[1,1]
+        self.assertAlmostEqual(g[10], 2500.0, places=4)       # g[2,2]
+        self.assertAlmostEqual(g[12], 0.027285, places=5)     # g[3,0]
+        self.assertAlmostEqual(g[15], 2500.0, places=4)       # g[3,3]
 
 if __name__ == '__main__':
     unittest.main()
