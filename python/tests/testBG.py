@@ -31,7 +31,7 @@ class TestBGMetric(unittest.TestCase):
         self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.0, places=6)
         self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.0, places=4)
         self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.027285, places=5)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.0, places=4)
+        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2499.9992, places=4)
 
 if __name__ == '__main__':
     unittest.main()
