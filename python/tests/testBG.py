@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import numpy as np  # Added this import
 import gyoto.core
 import gyoto.std
 
@@ -47,7 +48,6 @@ class TestBGMetric(unittest.TestCase):
         self.assertAlmostEqual(christ[1][2][2], -50.0, places=4)
         self.assertAlmostEqual(christ[2][1][2], 0.02, places=3)  # 1/50.0
         self.assertAlmostEqual(christ[3][1][3], 0.02, places=3)
-        # ... other Christoffel symbols with appropriate precision
 
 if __name__ == '__main__':
     unittest.main()
