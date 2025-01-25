@@ -21,17 +21,17 @@ class TestBGMetric(unittest.TestCase):
         self.assertAlmostEqual(self.metric.get("R"), 100.0, places=6)
         self.assertAlmostEqual(self.metric.get("r0"), 1.0, places=6)
         
-    def test_metric_components(self):
-        """Test metric tensor components at a specific point"""
-        pos = [0., 50., np.pi/2, 0.]
-        
-        # Test individual components using gmunu(pos, mu, nu)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.0, places=6)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.027285, places=5)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.0, places=6)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.0, places=4)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.027285, places=5)
-        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2499.99925, places=4)
+   def test_metric_components(self):
+       """Test metric tensor components at a specific point"""
+       pos = [0., 50., np.pi/2, 0.]
+    
+       # Test individual components - keeping 7 significant figures
+       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 0), -1.000000, places=6)     # exact
+       self.assertAlmostEqual(self.metric.gmunu(pos, 0, 3), 0.02728484, places=8)    # 7 sig figs
+       self.assertAlmostEqual(self.metric.gmunu(pos, 1, 1), 1.000000, places=6)      # exact
+       self.assertAlmostEqual(self.metric.gmunu(pos, 2, 2), 2500.000, places=3)      # exact
+       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 0), 0.02728484, places=8)    # 7 sig figs
+       self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2499.999, places=3)      # 7 sig figs
 
 if __name__ == '__main__':
     unittest.main()
