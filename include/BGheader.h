@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2024 Frederic Vincent, Thibaut Paumard, Filipe Costa, José Natário
+    Copyright 2025 Frederic Vincent, Thibaut Paumard, Filipe Costa
 
     This file is part of Gyoto.
 
