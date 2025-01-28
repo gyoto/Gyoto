@@ -22,7 +22,7 @@ class TestBGMetric(unittest.TestCase):
        self.assertAlmostEqual(self.metric.get("r0"), 1.0, places=6)
        
    def test_metric_components(self):
-       """Test metric tensor components at a specific point"""
+       """Test metric tensor components at a specific point, against independently computed values"""
        pos = [0., 50., np.pi/2, 0.]
        
        # Test individual components - keeping 6 significant figures
@@ -34,7 +34,7 @@ class TestBGMetric(unittest.TestCase):
        self.assertAlmostEqual(self.metric.gmunu(pos, 3, 3), 2500.00, places=2)     # 6 sig figs
 
    def test_christoffel(self):
-       """Test Christoffel symbols at a specific point"""
+       """Test Christoffel symbols at a specific point, against independently computed values"""
        pos = [0., 50., np.pi/2, 0.]
        
        # Test individual Christoffel components with 6 significant figures
