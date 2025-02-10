@@ -1019,7 +1019,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	  break;
 	case GYOTO_COORDKIND_CARTESIAN:
 	  {
-	    throwError("to be implemented");
+	    GYOTO_ERROR("In Photon: image order tracking not implemented for cartesian coordinates.");
 
 	    break;
 	  }

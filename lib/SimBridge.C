@@ -36,6 +36,7 @@ GYOTO_PROPERTY_STRING(SimBridge, Filename, filename)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMin, gammaMin)
 GYOTO_PROPERTY_DOUBLE(SimBridge, GammaMax, gammaMax)
 GYOTO_PROPERTY_BOOL(SimBridge, CircularMotion, NoCircularMotion, circularMotion)
+GYOTO_PROPERTY_BOOL(SimBridge, CunninghamVel, NoCunninghamVel, cunninghamVel)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
 GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType)
@@ -59,6 +60,7 @@ SimBridge::SimBridge() :
   temperature_(true),
   BinFile_(true),
   circularmotion_(false),
+  cunninghamvel_(false),
   ntime_(1),
   nx1_(1),
   nx2_(1),
@@ -99,6 +101,7 @@ SimBridge::SimBridge(const SimBridge& orig) :
   BinFile_(orig.BinFile_),
   temperature_(orig.temperature_),
   circularmotion_(orig.circularmotion_),
+  cunninghamvel_(orig.cunninghamvel_),
   ntime_(orig.ntime_),
   nx1_(orig.nx1_),
   nx2_(orig.nx2_),
@@ -315,6 +318,13 @@ void SimBridge::circularMotion(bool t){
 }
 bool SimBridge::circularMotion() const{
   return circularmotion_;
+}
+
+void SimBridge::cunninghamVel(bool t){
+  cunninghamvel_=t;
+}
+bool SimBridge::cunninghamVel() const{
+  return cunninghamvel_;
 }
 
 void SimBridge::floorTemperature(double t){
@@ -824,37 +834,40 @@ void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], s
 
 void SimBridge::getVelocity(double const pos[4], double vel[4]){
   if (circularmotion_){
-    if (gg_->coordKind()!=GYOTO_COORDKIND_SPHERICAL) {
-      GYOTO_ERROR("SimBridge: Spherical coordinates needed to compute circular velocity!");
-    }
-    else if (gg_->kind()!="Minkowski" && gg_->kind()!="KerrBL") {
-      GYOTO_ERROR("SimBridge: circular velocity only implemented for Minkowski or KerrBL!");
-    }
-    else{ 
-      GYOTO_DEBUG << "SimBridge: Circular motion in Minkowski or KerrBL." << endl;
-      double risco = 0.; // Warning: v>c below 1M in Minkowski
-      if (gg_->kind()!="Minkowski")
-        risco=gg_->getRms();
-      double rr=pos[1]; // radius
-      //cout << "rr: " << rr << ", risco: " << risco << endl;
-      if (rr > risco){
-	// Keplerian velocity above ISCO
-	gg_ -> circularVelocity(pos, vel, 1);
-      }else{
-        if (gg_->kind()=="KerrBL"){
-          // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
-	  // initally from Cunnigham 1975
-          double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
-          double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
-          gamma_ms = sqrt(1.-2./(3.*risco)),
-	  delta = rr*rr - 2.*rr + SPIN*SPIN,
-	  hh = (2.*rr - SPIN*lambda_ms)/delta;
+    GYOTO_DEBUG << "SimBridge: computing keplerian velocity." << endl;
+    double risco = 0.; // Warning: v>c below 1M in Minkowski
+    if (gg_->kind()!="Minkowski" && gg_->kind()!="Hayward")
+      risco=gg_->getRms();
+    // let risco=0 if metric is Minko; then ISCO not defined
+    // let also risco=0 for Hayward as we would need to compute it numerically and give it in xml Metric field; not implemented so far
+    double rr=pos[1]; // radius
+    //cout << "rr: " << rr << ", risco: " << risco << endl;
+    if (rr > risco){
+      // Keplerian velocity above ISCO
+      gg_ -> circularVelocity(pos, vel, 1);
+    }else{
+      if (cunninghamvel_ && gg_->kind()=="KerrBL"){
+        // See formulas in Gralla, Lupsasca & Marrone 2020, Eqs B8-B14
+	// initally from Cunnigham 1975
+        double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin();
+        double lambda_ms = (risco*risco - 2.*SPIN*sqrt(risco) + SPIN*SPIN)/(pow(risco,1.5) - 2.*sqrt(risco) + SPIN),
+        gamma_ms = sqrt(1.-2./(3.*risco)),
+	delta = rr*rr - 2.*rr + SPIN*SPIN,
+	hh = (2.*rr - SPIN*lambda_ms)/delta;
 	
-	  vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
-	  vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
-	  vel[2] = 0.;
-	  vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
-	}	
+	vel[0] = gamma_ms*(1.+2./rr*(1.+hh)); // this is: -Ems*g^{tt} + Lms*g^{tp}
+	vel[1] = -sqrt(2./(3.*risco))*pow(risco/rr-1.,1.5); // this is: -sqrt{(-1 - g_{tt}*u^t - g_{pp}*u^p - 2*g_{tp}*u^t*u^p)/grr}
+	vel[2] = 0.;
+        vel[3] = gamma_ms/(rr*rr)*(lambda_ms+SPIN*hh);
+      }else{
+        cout << "WARNING: Radial motion below the radius of the ISCO for the keplerian rotation! Cunningham prescription only implemented for the Kerr metric." << endl;
+        double grr = gg_->gmunu(pos,1,1),
+               guptt = gg_->gmunu_up(pos,0,0),
+               guptp = gg_->gmunu_up(pos,0,3);
+        vel[0] = -guptt;
+        vel[1] = -sqrt((-1.-guptt)/grr);
+        vel[2] = 0;
+        vel[3] = -guptp;
       }
     }
   }else{
