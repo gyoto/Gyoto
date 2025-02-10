@@ -63,7 +63,7 @@
 #include "GyotoXillverReflection.h"
 #include "GyotoSimBridge.h"
 #include "GyotoSimThickDisk.h"
-#include "GyotoSim2DThinDisk.h"
+#include "GyotoSimThinDisk.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"
@@ -145,8 +145,8 @@ extern "C" void __GyotostdplugInit() {
                 &(Astrobj::Subcontractor<Astrobj::SimBridge>));
   Astrobj::Register("SimThickDisk",
                 &(Astrobj::Subcontractor<Astrobj::SimThickDisk>));
-  Astrobj::Register("Sim2DThinDisk",
-                &(Astrobj::Subcontractor<Astrobj::Sim2DThinDisk>));
+  Astrobj::Register("SimThinDisk",
+                &(Astrobj::Subcontractor<Astrobj::SimThinDisk>));
 
   // Register Spectra
   Spectrum::Register("PowerLaw", 

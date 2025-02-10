@@ -43,7 +43,7 @@
 #include "GyotoThinDiskGridIntensity.h"
 #include "GyotoSimBridge.h"
 #include "GyotoSimThickDisk.h"
-#include "GyotoSim2DThinDisk.h"
+#include "GyotoSimThinDisk.h"
 
 // include Spectrum headers
 #include "GyotoPowerLawSpectrum.h"

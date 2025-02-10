@@ -83,7 +83,7 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDiskProfile)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SimBridge)
 GyotoSmPtrTypeMapClassDerived(Astrobj, SimThickDisk)
-GyotoSmPtrTypeMapClassDerived(Astrobj, Sim2DThinDisk)
+GyotoSmPtrTypeMapClassDerived(Astrobj, SimThinDisk)
 
 GyotoSmPtrTypeMapClassDerived(Metric, KerrBL)
 GyotoSmPtrTypeMapClassDerived(Metric, KerrKS)
@@ -164,7 +164,7 @@ GyotoSmPtrClassDerived(Astrobj, SphericalAccretion)
 GyotoSmPtrClassDerived(Astrobj, ThinDiskProfile)
 GyotoSmPtrClassDerived(Astrobj, SimBridge)
 GyotoSmPtrClassDerived(Astrobj, SimThickDisk)
-GyotoSmPtrClassDerived(Astrobj, Sim2DThinDisk)
+GyotoSmPtrClassDerived(Astrobj, SimThinDisk)
 
 
 %exception Gyoto::Metric::Complex::__getitem__ {
