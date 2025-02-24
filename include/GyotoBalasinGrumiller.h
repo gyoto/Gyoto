@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2025 Frederic Vincent, Thibaut Paumard, Filipe Costa
+    Copyright 2025 Filipe Costa, Frédéric Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -17,8 +17,8 @@
     along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __BGheader_H_
-#define __BGheader_H_
+#ifndef __BalasinGrumillerheader_H_
+#define __BalasinGrumillerheader_H_
 
 #include <iostream> // for basic I/O
 #include <cmath>    // for mathematical functions
@@ -40,11 +40,11 @@
 
 
 namespace Gyoto {
-  namespace Metric { class BG; }
+  namespace Metric { class BalasinGrumiller; }
 }
 
 /**
- * \class Gyoto::Metric::BG
+ * \class Gyoto::Metric::BalasinGrumiller
  * \brief Balasin-Grumiller solution in spherical coordinates, under the suggested approximation
  * \nu=0.
  *
@@ -64,17 +64,17 @@ namespace Gyoto {
  * V0, R, r0 can be specified through the associated XML file. 
  */
 
-class Gyoto::Metric::BG : public Gyoto::Metric::Generic 
+class Gyoto::Metric::BalasinGrumiller : public Gyoto::Metric::Generic 
 {
-friend class Gyoto::SmartPointer<Gyoto::Metric::BG>;
+friend class Gyoto::SmartPointer<Gyoto::Metric::BalasinGrumiller>;
 protected:
  double V0value_ ; 
  double Rvalue_ ;
  double r0value_ ;
 public:
 GYOTO_OBJECT;
-BG(); 
-virtual BG* clone() const ;
+BalasinGrumiller(); 
+virtual BalasinGrumiller* clone() const ;
 
  // Mutators / assignment
   // ---------------------

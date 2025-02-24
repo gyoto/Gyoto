@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2025 Frederic Vincent, Thibaut Paumard, Filipe Costa
+    Copyright 2025 Filipe Costa, Frédéric Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -25,7 +25,7 @@
 
 #include "GyotoUtils.h"
 #include "GyotoWorldline.h"
-#include "BGheader.h"
+#include "GyotoBalasinGrumiller.h"
 #include "GyotoError.h"
 #include "GyotoProperty.h"
 #include <cmath>
@@ -35,43 +35,43 @@ using namespace Gyoto ;
 using namespace Gyoto::Metric ;
 
 // **** Section I - Contructor, metric and Christoffel symbols ******
-GYOTO_PROPERTY_START(BG, "your custom description")
-GYOTO_PROPERTY_DOUBLE(BG, V0, V0value,
+GYOTO_PROPERTY_START(BalasinGrumiller, "your custom description")
+GYOTO_PROPERTY_DOUBLE(BalasinGrumiller, V0, V0value,
 		      "V0 (adimensioned, 0.000733333).")
-GYOTO_PROPERTY_DOUBLE(BG, R, Rvalue, "R (kpc, 100).")
-GYOTO_PROPERTY_DOUBLE(BG, r0, r0value, "r0 (kpc, 1).")
-GYOTO_PROPERTY_END(BG, Generic::properties)
+GYOTO_PROPERTY_DOUBLE(BalasinGrumiller, R, Rvalue, "R (kpc, 100).")
+GYOTO_PROPERTY_DOUBLE(BalasinGrumiller, r0, r0value, "r0 (kpc, 1).")
+GYOTO_PROPERTY_END(BalasinGrumiller, Generic::properties)
 
-BG::BG()
-  : Gyoto::Metric::Generic(GYOTO_COORDKIND_SPHERICAL, "BG"),
+BalasinGrumiller::BalasinGrumiller()
+  : Gyoto::Metric::Generic(GYOTO_COORDKIND_SPHERICAL, "BalasinGrumiller"),
 V0value_(0.000733333), Rvalue_(100.), r0value_(1.) {
   } 
 
 //cloner
-BG* BG::clone() const { return new BG(*this); }
+BalasinGrumiller* BalasinGrumiller::clone() const { return new BalasinGrumiller(*this); }
 
 // Mutators
-void BG::V0value(const double a) {
+void BalasinGrumiller::V0value(const double a) {
   V0value_=a;
  tellListeners();
 }
 
-void BG::Rvalue(const double a) {
+void BalasinGrumiller::Rvalue(const double a) {
   Rvalue_=a;
  tellListeners();
 }
 
-void BG::r0value(const double a) {
+void BalasinGrumiller::r0value(const double a) {
   r0value_=a;
  tellListeners();
 }
 
 // Accessors
-double BG::V0value() const { return V0value_ ; }
-double BG::Rvalue() const { return Rvalue_ ; }
-double BG::r0value() const { return r0value_ ; }
+double BalasinGrumiller::V0value() const { return V0value_ ; }
+double BalasinGrumiller::Rvalue() const { return Rvalue_ ; }
+double BalasinGrumiller::r0value() const { return r0value_ ; }
 
-void BG::gmunu(double g[4][4], const double * pos) const
+void BalasinGrumiller::gmunu(double g[4][4], const double * pos) const
 {
 double r = pos[1]; // Extract radial coordinate
 double theta = pos[2]; // Extract theta coordinate
@@ -103,7 +103,7 @@ g[3][3] = r * r * sin(theta) * sin(theta)-W*W; // sin(theta)^2
 
 }
 
-int BG::christoffel(double dst[4][4][4], const double pos[8]) const {
+int BalasinGrumiller::christoffel(double dst[4][4][4], const double pos[8]) const {
 //  GYOTO_DEBUG<<endl;
   size_t alpha, mu, nu;
   for (alpha=0; alpha<4; ++alpha)

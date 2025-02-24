@@ -4,7 +4,7 @@
 [arXiv:2312.12302] --> 
 
 <Scenery>
-  <Metric kind="BG">
+  <Metric kind="BalasinGrumiller">
      <Mass unit="sunmass"> 2.09063e16 </Mass> 
      Note: Mass sets the length unit used (e.g., in the r-coordinate). We choose
      lengths to be measured in kpc, corresponding to 2.09063e16 solar masses)

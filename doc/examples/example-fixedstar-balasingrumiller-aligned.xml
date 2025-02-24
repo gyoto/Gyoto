@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<!-- This file generates Fig. 4(d) of Costa-Natário Phys. Rev. D 110, 064056 (2024)
+<!-- This file generates Fig. 4(b) of Costa-Natário Phys. Rev. D 110, 064056 (2024)
 [arXiv:2312.12302] --> 
 
 <Scenery>
-  <Metric kind="BG">
+  <Metric kind="BalasinGrumiller">
      <Mass unit="sunmass"> 2.09063e16 </Mass> 
      Note: Mass sets the length unit used (e.g., in the r-coordinate). We choose
      lengths to be measured in kpc, corresponding to 2.09063e16 solar masses)
@@ -17,21 +17,21 @@
   <Screen>
     <Distance unit="kpc"> 1e5 </Distance>
     <Time unit="kpc"> 1.5e6 </Time>
-    <FieldOfView unit="microas"> 4e8 </FieldOfView>
+    <FieldOfView unit="as"> 1e2 </FieldOfView>
     Note: "microas" can be written "µas" in UTF-8 locales. We use the
     ASCII version here as automated systems are not always configured
     with a UTF-8 locales by default.
     <Inclination unit="degree"> 90 </Inclination>
     "degree" can be written "°" in UTF-8 locales.
     <PALN> 0 </PALN>
-    <Dangle1 unit="as"> -60 </Dangle1>
-    <Argument> 0 </Argument>
+    <Dangle1 unit="as"> 1.2e2 </Dangle1>
+    <Argument unit="as"> 0 </Argument>
     <Resolution> 400 </Resolution>
   </Screen>
 
   <Astrobj kind = "FixedStar">
     <Radius> 20 </Radius>
-    <Position> 1e6 1.5707963267948966 1.57244  </Position>
+    <Position> 1e6 1.5707963267948966 1.5707963267948966  </Position>
     <UseGenericImpact/>
     <Spectrum kind="PowerLaw">
       <Exponent> 0 </Exponent>
@@ -45,7 +45,6 @@
   </Astrobj>
 
   <Delta> 1e0 </Delta>
-  <DeltaMaxOverR> 0.001 </DeltaMaxOverR>
   <MinimumTime> 0. </MinimumTime>
   <Quantities>
     Intensity
