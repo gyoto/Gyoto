@@ -13,6 +13,9 @@ The development team at Observatoire de Paris also includes:
  Éric Gourgoulhon [2]
  Guy Perrin [1]
 
+The implementation of the Balasin-Grumiller metric has been written by
+Filipe Costa [3,4]
+
 Affiliations:
 
  [1] Laboratoire d'études spatiales et d'instrumentation en
@@ -23,3 +26,9 @@ Affiliations:
  [2] Laboratoire Univers et théories (LUTH), Observatoire de Paris,
      CNRS, Université Paris Diderot
      5 place Jules Janssen, F-92190 MEUDON, FRANCE
+
+[3] Centro de Matemática (CMAT), Universidade do Minho, 
+    4710-057 BRAGA, PORTUGAL 
+
+[4] CAMGSD, Departamento de Matemática, Instituto Superior 
+    Técnico, 1049-001 LISBOA, PORTUGAL
