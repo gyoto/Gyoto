@@ -196,7 +196,7 @@ double ThinDiskProfile::emission(double nu, double,
      }
      double theta_mag;
      double B4vect[4]={0.,0.,0.,0.};
-     computeB4vect(B4vect, "Vertical", coord_obj, coord_ph); // !!! Double definition in Astrobj.C
+     computeB4vect(B4vect, "Vertical", coord_obj, coord_ph); 
      theta_mag = get_theta_mag(B4vect, coord_ph, vel);
      emiss = norm*nu*1e-9/230*pow(rr,-indx1)*exp(-zeta*pow(230,-1./3)*pow(sin(theta_mag),-1./3)*pow(nu*1e-9,1./3.)*pow(rr/rin,indx2/3.));
      //cout << setprecision(16);
@@ -337,7 +337,7 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
     double beta_r, beta_phi;
     if (motionkind_==CIRCULAR) {
       beta_r = 1., beta_phi = 1.;
-    } else if  (motionkind_==CIRCULAR) {
+    } else if  (motionkind_==RADIAL) {
       beta_r = 0., beta_phi = 0.;
     } else if (motionkind_==MIXED) {
       beta_r = 0.8, beta_phi = 0.8;
@@ -431,6 +431,16 @@ void ThinDiskProfile::processHitQuantities(Photon* ph,
        double fudge_Gralla=1.;
        //cout << "nb cross fudge " << nb_cross_eqplane << endl;
        if (nb_cross_eqplane>0) fudge_Gralla=1.5;
+       
+       /*double vel[4]; // 4-velocity of emitter
+       for (int ii=0;ii<4;ii++){
+         vel[ii]=coord_obj_hit[ii+4];
+       }
+       double theta_mag;
+       double B4vect[4]={0.,0.,0.,0.};
+       computeB4vect(B4vect, "Radial", coord_obj_hit, coord_ph_hit); 
+       theta_mag = get_theta_mag(B4vect, coord_ph_hit, vel);*/
+       
        for (size_t ii=0; ii<nbnuobs; ++ii) {
          inc = fudge_Gralla
  	  * (emission(nuem[ii], dsem, coord_ph_hit, coord_obj_hit))
@@ -438,10 +448,15 @@ void ThinDiskProfile::processHitQuantities(Photon* ph,
  	  * ggred*ggred*ggred; // I/nu^3 invariant
          *data->spectrum += inc; // data->spectrum[ii*data->offset] += inc  !Error
        }
- #if GYOTO_DEBUG_ENABLED
-       GYOTO_DEBUG_EXPR(*data->spectrum);
- #endif
-     }
+       #if GYOTO_DEBUG_ENABLED
+         GYOTO_DEBUG_EXPR(*data->spectrum);
+       #endif
+     } else if (data->redshift) {
+       *data->redshift=ggred;
+       #if GYOTO_DEBUG_ENABLED
+         GYOTO_DEBUG_EXPR(*data->redshift);
+       #endif
+    }
        else GYOTO_ERROR("unimplemented data");
    }
  }

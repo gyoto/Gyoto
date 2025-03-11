@@ -452,7 +452,10 @@ void Worldline::IntegState::Boost::doStep(state_t const &coordin,
 
   // We call the Boost stepper
   do_step_(xx, step);
-
+  if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL){
+    line_->checkPhiTheta(&xx[0]);
+  }
+  
   // Transform back to original vector coord
   if (integ_31_==false) coordout = xx;
   else{

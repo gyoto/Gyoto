@@ -150,8 +150,8 @@ int SimThinDisk::Impact(Photon *ph, size_t index,
 
   if (gg_ -> coordKind() == GYOTO_COORDKIND_SPHERICAL &&
       fabs(coord2[2]-coord1[2]) > M_PI)
-    GYOTO_ERROR ("ThinDisk::Impact: fishy heuristic");
-
+    GYOTO_ERROR ("SimThinDisk::Impact: fishy heuristic");
+  
   double h1=operator()(&coord1[0]), h2=operator()(&coord2[0]);
   double r1=projectedRadius(&coord1[0]), r2=projectedRadius(&coord2[0]);
 
@@ -166,7 +166,6 @@ int SimThinDisk::Impact(Photon *ph, size_t index,
     tlow = coord2[0]; thigh = coord1[0];
   }
   ph -> findValue(this, 0., tlow, thigh);
-
   ph -> getCoord(thigh, coord_ph_hit);
 
   if ((rcross=projectedRadius(&coord_ph_hit[0])) < rin_ ||
