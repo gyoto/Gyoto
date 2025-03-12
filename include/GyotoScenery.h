@@ -407,6 +407,11 @@ class Gyoto::Scenery
   void deltaMaxOverR(double t);
 
   /// Passed to #ph_
+  double normTol() const;
+  /// Passed to #ph_
+  void normTol(double normtol);
+
+  /// Passed to #ph_
   void absTol(double);
   /// Passed to #ph_
   double absTol()const;

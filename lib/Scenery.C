@@ -1039,6 +1039,8 @@ double Scenery::absTol() const {return ph_.absTol();}
 void Scenery::absTol(double t) {ph_.absTol(t);}
 double Scenery::relTol() const {return ph_.relTol();}
 void Scenery::relTol(double t) {ph_.relTol(t);}
+double Scenery::normTol() const {return ph_.normTol();}
+void Scenery::normTol(double normtol) {ph_.normTol(normtol);}
 
 double Scenery::maxCrossEqplane() const {return ph_.maxCrossEqplane();}
 void Scenery::maxCrossEqplane(double max) {ph_.maxCrossEqplane(max);}

@@ -60,5 +60,6 @@
   The subscript "²" requires a UTF-8 locale. A normal "2" can be used instead.
 
   <NProcesses>5</NProcesses>
+  <NormTol>2e-3</NormTol>
 
 </Scenery>

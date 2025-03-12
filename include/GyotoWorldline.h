@@ -4,7 +4,7 @@
  */
 
 /*
-    Copyright 2011-2018 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2025 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -69,6 +69,8 @@ namespace Gyoto {
 			  "Relative tolerance for the adaptive step integrators.") \
     GYOTO_PROPERTY_DOUBLE(c, AbsTol, _absTol,				\
 			  "Absolute tolerance for the adaptive step integrators.") \
+    GYOTO_PROPERTY_DOUBLE(c, NormTol, _normTol,				\
+			  "Tolerance on 4-velocity norm variations.")	\
     GYOTO_PROPERTY_DOUBLE(c, DeltaMaxOverR, _deltaMaxOverR,		\
 			  "Maximum value of step/distance from center of mass.") \
     GYOTO_PROPERTY_DOUBLE(c, DeltaMax, _deltaMax, "Maximum step (geometrical units).")	\
@@ -122,6 +124,8 @@ namespace Gyoto {
   double c::_deltaMin()const{return deltaMin();}			\
   void c::_deltaMax(double f){deltaMax(f);}				\
   double c::_deltaMax()const{return deltaMax();}			\
+  void c::_normTol(double f){normTol(f);}				\
+  double c::_normTol()const{return normTol();}				\
   void c::_deltaMaxOverR(double f){deltaMaxOverR(f);}			\
   double c::_deltaMaxOverR()const{return deltaMaxOverR();}		\
   void c::_delta(double f){delta(f);}					\
@@ -174,8 +178,8 @@ namespace Gyoto {
   bool _adaptive () const ;				\
   void _secondary (bool sec) ;				\
   bool _secondary () const ;				\
-  void _integ31 (bool sec) ;			\
-  bool _integ31 () const ;			\
+  void _integ31 (bool sec) ;				\
+  bool _integ31 () const ;				\
   void _parallelTransport (bool sec) ;			\
   bool _parallelTransport () const ;			\
   void _maxiter (size_t miter) ;			\
@@ -184,6 +188,8 @@ namespace Gyoto {
   std::string _integrator() const ;			\
   double _deltaMin() const;				\
   void _deltaMin(double h1);				\
+  double _normTol() const;				\
+  void _normTol(double normtol);			\
   void _absTol(double);					\
   double _absTol()const;				\
   void _maxCrossEqplane(double);       			\
@@ -359,6 +365,17 @@ class Gyoto::Worldline
   double reltol_;
 
   /**
+   * \brief Tolerance on 4-velocity norm variations
+   *
+   * SEVERE warnings are triggered when the norm varies too much, more
+   * specifically when
+   * \code
+   * fabs(norm_-normref_)/(coord[4]*coord[4])>normtol_).
+   * \endcode
+   */
+  double normtol_;
+
+  /**
    * \brief Maximum number of crossings of equatorial plane
    *
    * Used to determine how much higher-order image features
@@ -512,7 +529,8 @@ class Gyoto::Worldline
    */
   double deltaMax() const;
 
-
+  double normTol() const; ///< Get #normtol_
+  void normTol(double normtol); ///< Set #normtol_
   void absTol(double); ///< Set #abstol_
   double absTol()const; ///< Get #abstol_
   void relTol(double); ///< Set #reltol_

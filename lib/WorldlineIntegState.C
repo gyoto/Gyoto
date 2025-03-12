@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2015, 2018-2020 Frederic Vincent, Thibaut Paumard
+    Copyright 2011-2015, 2018-2020, 2025 Frederic Vincent, Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -105,16 +105,16 @@ void Worldline::IntegState::Generic::checkNorm(double coord[8])
 {
   norm_=gg_ -> ScalarProd(coord,coord+4,coord+4);
 
-  double normtol=.001;
   /* 
      NB: following test done for norm/tdot
      as tdot can diverge close to horizon (it's the case for
      NS integration eg where geodesic can come close to horizon)
      Then just check that norm/tdot does not diverge.
    */
-  if (fabs(norm_-normref_)/(coord[4]*coord[4])>normtol) {
+  if (fabs(norm_-normref_)/(coord[4]*coord[4])>line_->normTol()) {
     GYOTO_SEVERE << 
-      "in Worldline::IntegState.C: "
+      __FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in " <<
+      __PRETTY_FUNCTION__  << ": "
       "norm is drifting"
       " - with norm,normref= " << norm_ << " " 
   		 << normref_ << " -- x1,x2,x3= " << coord[1] 
