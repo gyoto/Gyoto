@@ -499,6 +499,7 @@ int Metric::Generic::diff31(const state_t &x,
 			  state_t &dxdt,
 			  double /* mass */) const {
   throwError("In Metric::diff31 not implemented");
+  return 1; // Should never be reached but silence compile-time warning 
 }
 
 /*Runge Kutta to order 4

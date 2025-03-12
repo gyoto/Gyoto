@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 Thibaut Paumard
+    Copyright 2019, 2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -33,22 +33,31 @@
 #include <iostream>
 extern "C" int mk_video(int argc, char ** argv) {
   GYOTO_DEBUG << " in mk_video()" << std::endl;
-  wchar_t * wargv[argc];
-  size_t sz;
-  for (int k=0; k<argc; ++k) {
-    wargv[k] = Py_DecodeLocale(argv[k], &sz);
-  }
-  GYOTO_DEBUG << " setting argv" << std::endl;
-  PySys_SetArgv(argc, wargv);
-  GYOTO_DEBUG << " done" << std::endl;
+
+  PyStatus status;
+  PyConfig config;
   std::string code =
     "import gyoto.animate\n"
     "gyoto.animate.main()\n";
-  GYOTO_DEBUG << "trying to run Python code: " << std::endl << code ;
-  PyRun_SimpleString(code.c_str());
-  GYOTO_DEBUG << "back to mk_video" << std::endl;
-  for (int k=0; k<argc; ++k) {
-    PyMem_RawFree(wargv[k]);
-  }
-  return 0;
+  int retval;
+
+  GYOTO_DEBUG << "initializing Python" << std::endl ;
+  PyConfig_InitIsolatedConfig(&config);
+  status = PyConfig_SetBytesArgv(&config, argc, argv);
+  if (PyStatus_Exception(status)) goto exception;
+  status = Py_InitializeFromConfig(&config);
+  if (PyStatus_Exception(status)) goto exception;
+  PyConfig_Clear(&config);
+
+  GYOTO_DEBUG << "running Python code" << std::endl << code ;
+  retval = PyRun_SimpleString(code.c_str());
+  GYOTO_DEBUG << "exiting mk_video" << std::endl;
+
+  return retval;
+
+exception:
+  GYOTO_DEBUG << "something went wrong" << std::endl ;
+  PyConfig_Clear(&config);
+  if (PyStatus_IsError(status)) GYOTO_ERROR(status.err_msg);
+  return status.exitcode;
 }
