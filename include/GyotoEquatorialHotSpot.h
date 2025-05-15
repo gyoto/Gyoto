@@ -51,7 +51,6 @@ class Gyoto::Astrobj::EquatorialHotSpot
   beaming_t beaming_;
   double beamangle_;
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
-  std::string magneticConfig_; ///< Specify the magnetic field configuration for polarisation
 
  public:
   GYOTO_OBJECT;
@@ -72,9 +71,6 @@ class Gyoto::Astrobj::EquatorialHotSpot
 
   void beamAngle(double t);
   double beamAngle() const;
-
-  void magneticConfiguration(std::string config);
-  std::string magneticConfiguration() const;
 
   //
 

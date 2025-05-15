@@ -40,7 +40,6 @@ GYOTO_PROPERTY_BOOL(SimBridge, CunninghamVel, NoCunninghamVel, cunninghamVel)
 GYOTO_PROPERTY_DOUBLE(SimBridge, PLindex, PLindex)
 GYOTO_PROPERTY_DOUBLE(SimBridge, FloorTemperature, floorTemperature)
 GYOTO_PROPERTY_STRING(SimBridge, EmissionType, emissionType)
-GYOTO_PROPERTY_STRING(SimBridge, MagneticConfiguration, magneticConfiguration)
 GYOTO_PROPERTY_STRING(SimBridge, BoundaryConditions, boundaryConditions)
 GYOTO_PROPERTY_DOUBLE(SimBridge, Magnetization, magnetization)
 GYOTO_PROPERTY_END(SimBridge, Standard::properties)
@@ -50,7 +49,6 @@ SimBridge::SimBridge() :
   FitsRW(),
   dirname_("None"),
   fname_("data"),
-  magneticConfig_("None"),
   magnetizationParameter_(1.),
   emission_("None"),
   gammaMin_(1.),
@@ -91,7 +89,6 @@ SimBridge::SimBridge(const SimBridge& orig) :
   FitsRW(orig),
   dirname_(orig.dirname_),
   fname_(orig.fname_),
-  magneticConfig_(orig.magneticConfig_),
   magnetizationParameter_(orig.magnetizationParameter_),
   emission_(orig.emission_),
   gammaMin_(orig.gammaMin_),
@@ -332,13 +329,6 @@ void SimBridge::floorTemperature(double t){
 }
 double SimBridge::floorTemperature()const{
   return floortemperature_;
-}
-
-void SimBridge::magneticConfiguration(string const &config){
-  magneticConfig_=config;
-}
-string SimBridge::magneticConfiguration() const{
-  return magneticConfig_;
 }
 
 void SimBridge::magnetization(double ss){

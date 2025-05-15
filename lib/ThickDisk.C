@@ -174,8 +174,7 @@ ThickDisk::ThickDisk() :
   numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
   temperatureSlope_(1.),
   densitySlope_(2.),
-  magnetizationParameter_(1.),
-  magneticConfig_("None")
+  magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -196,8 +195,7 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   temperatureSlope_(o.temperatureSlope_),
   densitySlope_(o.densitySlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  spectrumThermalSynch_(NULL),
-  magneticConfig_(o.magneticConfig_)
+  spectrumThermalSynch_(NULL)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -789,12 +787,4 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
       GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu or Taunu is infinite");
   }
-}
-
-void ThickDisk::magneticConfiguration(string config){
-  magneticConfig_=config;
-}
-
-string ThickDisk::magneticConfiguration() const{
-  return magneticConfig_;
 }

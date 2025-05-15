@@ -251,6 +251,8 @@ private:
 
   int shadow_; ///< 1 to highlight the shadow region in the image
   int noredshift_; ///< 1 to impose redshift factor g = 1
+
+  std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
   // Constructors - Destructor
   // -------------------------
  public:
@@ -773,6 +775,18 @@ private:
    * \param X (optional) array which contains the value of the axis points. Usefull for not linearly spaced axis.
    */
   int getIndice(double &xq, std::string const cond_limit, double const X_params[3], double* const X=NULL) const;
+
+  /**
+   * Function that set the magnetic field configuration (mostly used, but not limited, for polarization computation) 
+   * 
+   * \param config string defining the magnetic field configuration to set
+   */
+  void magneticConfiguration(const std::string &config);
+
+  /**
+   * Function that get the magnetic field configuration (mostly used, but not limited, for polarization computation) 
+   */
+  std::string magneticConfiguration() const;
 
 };
 

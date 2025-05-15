@@ -85,7 +85,6 @@ UniformSphere("Blob"),
   timeSigma_M_(1.),
   magnetizationParameter_(1.),
   kappaIndex_(1.),
-  magneticConfig_("None"),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
@@ -121,7 +120,6 @@ Blob::Blob(const Blob& orig) :
   timeSigma_M_(orig.timeSigma_M_),
   kappaIndex_(orig.kappaIndex_),
   magnetizationParameter_(orig.magnetizationParameter_),
-  magneticConfig_(orig.magneticConfig_),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
@@ -363,14 +361,6 @@ void Blob::timeSigma(double tt, string const &unit) {
 # endif
   }
   timeSigma(tt);
-}
-
-void Blob::magneticConfiguration(string config){
-  magneticConfig_=config;
-}
-
-string Blob::magneticConfiguration() const{
-  return magneticConfig_;
 }
 
 void Blob::magnetizationParameter(double rr) {

@@ -86,7 +86,6 @@ class Gyoto::Astrobj::Blob :
   SmartPointer<Spectrum::KappaDistributionSynchrotron> spectrumKappaSynch_; // kappa-distribution synchrotron spectrum
   SmartPointer<Spectrum::PowerLawSynchrotron> spectrumPLSynch_; // PL-distribution synchrotron spectrum
   SmartPointer<Spectrum::ThermalSynchrotron> spectrumThermalSynch_; // Thermal distribution synchrotron spectrum
-  std::string magneticConfig_; // Magnetic field geometry (toroidal, vertical)
   std::string electronDistrib_; // Electron distribution (thermal, kappa)
 
   // Constructors - Destructor
@@ -145,8 +144,6 @@ class Gyoto::Astrobj::Blob :
   double magnetizationParameter() const;
   double kappaIndex() const;
   void kappaIndex(double);
-  void magneticConfiguration(std::string config);
-  std::string magneticConfiguration() const;
   
   virtual void radiativeQ(double Inu[], double Taunu[], 
 			  double const nu_em[], size_t nbnu,

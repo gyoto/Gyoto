@@ -115,7 +115,6 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   double gammaMin_; ///< minimum value of gamma for power law energy density
   double gammaMax_; ///< maximum value of gamma for power law energy density
   
-  std::string magneticConfig_; ///< Magnetic field geometry (toroidal, vertical) if magnetic field not present in FITS files
   double magnetizationParameter_; ///< magnetization parameter if magnetic field not present in FITS files
   
   double floortemperature_; ///< Set minimum of temperature
@@ -174,8 +173,6 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   bool cunninghamVel() const; ///< Get the flag which select the velocity prescription below risco
   void floorTemperature(double t); ///< Set the minimum of temperature (GRMHD case)
   double floorTemperature()const; ///< get the minimum of temperature (GRMHD case)
-  void magneticConfiguration(std::string const &config); ///< Set the magnetic field configuration wanted if it is not founded in the FITS file (GRMHD case) 
-  std::string magneticConfiguration() const; ///< Get the magnetic field configuration set by user.
   void magnetization(double ss); ///< Set the magnetization parameter to define magnetic field strength if not founded in FITS files (GRMHD case)
   double magnetization() const; ///< Get magnetization paramater
   void boundaryConditions(std::string const &sbc); ///< Set the boundary condition of all axis.

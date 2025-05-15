@@ -147,7 +147,7 @@ void EquatorialHotSpot::setParameters(FactoryMessenger* fmp) {
 
 Gyoto::Astrobj::EquatorialHotSpot::EquatorialHotSpot()
   : ThinDisk("EquatorialHotSpot"), Worldline(), 
-    sizespot_(0.), beaming_(IsotropicBeaming), beamangle_(0.), spectrumThermalSynch_(NULL), magneticConfig_("None")
+    sizespot_(0.), beaming_(IsotropicBeaming), beamangle_(0.), spectrumThermalSynch_(NULL)
 {
   GYOTO_DEBUG  << "Building EquatorialHotSpot";
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -155,7 +155,7 @@ Gyoto::Astrobj::EquatorialHotSpot::EquatorialHotSpot()
 
 Gyoto::Astrobj::EquatorialHotSpot::EquatorialHotSpot(const EquatorialHotSpot &o)
   : ThinDisk(o), Worldline(o),
-    sizespot_(o.sizespot_), beaming_(o.beaming_), beamangle_(o.beamangle_), spectrumThermalSynch_(NULL), magneticConfig_(o.magneticConfig_)
+    sizespot_(o.sizespot_), beaming_(o.beaming_), beamangle_(o.beamangle_), spectrumThermalSynch_(NULL)
 {
   GYOTO_DEBUG  << "Copying EquatorialHotSpot";
   if (o.spectrumThermalSynch_()) spectrumThermalSynch_=o.spectrumThermalSynch_->clone();
@@ -417,12 +417,4 @@ void EquatorialHotSpot::radiativeQ(double Inu[], // output
     Inu[ii]=emission(nu_ems[ii], dsem, coord_ph, coord_obj);
     Taunu[ii]=1.;
   }
-}
-
-void EquatorialHotSpot::magneticConfiguration(string config){
-  magneticConfig_=config;
-}
-
-string EquatorialHotSpot::magneticConfiguration() const{
-  return magneticConfig_;
 }

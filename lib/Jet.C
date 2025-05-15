@@ -186,8 +186,7 @@ Jet::Jet() :
   jetStagnationRadius_(0.),
   gammaJet_(1.), jetVphiOverVr_(0.),
   baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
-  temperatureSlope_(1.), magneticConfig_("None"),
-  magnetizationParameter_(1.)
+  temperatureSlope_(1.), magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_   = new Spectrum::KappaDistributionSynchrotron();
@@ -210,7 +209,6 @@ Jet::Jet(const Jet& o) :
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  magneticConfig_(o.magneticConfig_),
   spectrumKappaSynch_(NULL),
   spectrumThermalSynch_(NULL)
 {
@@ -772,12 +770,4 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
       GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is infinite");
 
   }
-}
-
-void Jet::magneticConfiguration(string config){
-  magneticConfig_=config;
-}
-
-string Jet::magneticConfiguration() const{
-  return magneticConfig_;
 }

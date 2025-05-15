@@ -58,13 +58,14 @@ GYOTO_PROPERTY_BOOL(Generic, ShowShadow, NoShowShadow, showshadow,
     "Whether to highlight the shadow region on the image.")
 GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
     "Whether the object should be considered optically thin or thick.")
+GYOTO_PROPERTY_STRING(Generic, MagneticConfiguration, magneticConfiguration, "Define the magnetic field configuration if needed.")
 GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -75,7 +76,7 @@ Generic::Generic() :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -86,7 +87,7 @@ Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(radmax), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0)
+  noredshift_(0), shadow_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -100,7 +101,7 @@ Generic::Generic(const Generic& orig) :
   rmax_(orig.rmax_),
   deltamaxinsidermax_(orig.deltamaxinsidermax_),
   flag_radtransf_(orig.flag_radtransf_),
-  noredshift_(orig.noredshift_), shadow_(orig.shadow_)
+  noredshift_(orig.noredshift_), shadow_(orig.shadow_), magneticConfig_(orig.magneticConfig_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -1455,6 +1456,14 @@ void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticCo
   // end of ipole Bfield formalism
 
   return;
+}
+
+void Generic::magneticConfiguration(const string &config) {
+  magneticConfig_ = config;
+}
+
+string Generic::magneticConfiguration() const {
+  return magneticConfig_;
 }
 
 double Generic::interp1d(double const x, double const y0, double const y1) const{

@@ -115,7 +115,6 @@ class Gyoto::Astrobj::Jet
   double baseTemperature_; ///< electron temperature at jet base (K)
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
   double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
-  std::string magneticConfig_; ///< Magnetic field configuration
 
   // Constructors - Destructor
   // -------------------------
@@ -169,8 +168,6 @@ class Gyoto::Astrobj::Jet
   double magnetizationParameter()const;
   void kappaIndex(double index);
   double kappaIndex()const;
-  void magneticConfiguration(std::string config);
-  std::string magneticConfiguration() const;
 
  public:
   using Generic::metric;
