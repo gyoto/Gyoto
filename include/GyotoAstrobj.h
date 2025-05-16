@@ -747,6 +747,18 @@ private:
    */
   double interpolate(int const N, double* const array, double* const Xq, double** const X_params, std::string const *cond_limits) const;
 
+  /**
+   * Function that set the magnetic field configuration (mostly used, but not limited, for polarization computation) 
+   * 
+   * \param config string defining the magnetic field configuration to set
+   */
+  void magneticConfiguration(const std::string &config);
+
+  /**
+   * Function that get the magnetic field configuration (mostly used, but not limited, for polarization computation) 
+   */
+  std::string magneticConfiguration() const;
+
   private :
   /**
    * Function which returns the 1D linear interpolation.
@@ -775,18 +787,6 @@ private:
    * \param X (optional) array which contains the value of the axis points. Usefull for not linearly spaced axis.
    */
   int getIndice(double &xq, std::string const cond_limit, double const X_params[3], double* const X=NULL) const;
-
-  /**
-   * Function that set the magnetic field configuration (mostly used, but not limited, for polarization computation) 
-   * 
-   * \param config string defining the magnetic field configuration to set
-   */
-  void magneticConfiguration(const std::string &config);
-
-  /**
-   * Function that get the magnetic field configuration (mostly used, but not limited, for polarization computation) 
-   */
-  std::string magneticConfiguration() const;
 
 };
 
