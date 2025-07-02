@@ -148,11 +148,6 @@ class Gyoto::Astrobj::PageThorneDisk
    */
   virtual void tell(Gyoto::Hook::Teller *msg);
 
-  virtual void radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
-       Eigen::Matrix4d *Onu,
-       double const *nuem , size_t nbnu, double dsem,
-       state_t const &cph, double const *co) const;
-
 };
 
 #endif
