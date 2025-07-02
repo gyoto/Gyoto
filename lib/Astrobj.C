@@ -710,7 +710,8 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
-	Matrix4d Onu;
+	Matrix4d Onu, zero=Matrix4d::Zero();
+  Matrix4d M1, M2, M3, M4;
 	double alpha2, r2, lambda1, lambda2, Theta, sigma;
   
   double aI=alphaInu, aV=alphaVnu;
@@ -728,6 +729,12 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   Theta = pow(lambda1,2)+pow(lambda2,2);
   sigma = (aQ*rQ+aU*rU+aV*rV) < 0 ? -1. : 1.;
 
+
+  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+  
   GYOTO_DEBUG
   	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
   	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
@@ -735,22 +742,14 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   	<< "r2 : " << r2 << "\n"
   	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
   	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
-  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
-
-  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
-  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
-  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
-  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
-
-  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
-  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
-
-  Matrix4d zero;
-  zero <<  0, 0, 0, 0,
-           0, 0, 0, 0,
-           0, 0, 0, 0,
-           0, 0, 0, 0;
-  Matrix4d M1, M2, M3, M4;
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << "\n"
+    << "coshL1, sinhL1 : " << coshlb1 << ", " << sinhlb1 << "\n"
+    << "cosL2, sinL2 : " << coslb2 << ", " << sinlb2 << endl;
+  
+  if (isinf(coshlb1) || isinf(sinhlb1)){
+  	GYOTO_DEBUG << "In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !" << endl;
+    return zero;
+  }
 
   // Fill of M1
   M1 = zero;
@@ -811,13 +810,28 @@ Matrix4d Generic::Omatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
 	//cout << "M4 :\n" << M4 << endl;
 
-  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
+  if (Theta==0.)
+    return Matrix4d::Identity();
+  
   // Filling O matrix, output
   Onu=exp(-aI*dsem*gg_->unitLength())*\
   			((coshlb1+coslb2)*M1/2. \
         -sinlb2*M2/Theta \
         -sinhlb1*M3/Theta \
         +(coshlb1-coslb2)*M4/Theta);
+  
+  if ((Onu.array().isNaN()).any()){
+    // Most probably comes from cosh and sinh close to inf which results in a NaN for Onu
+    // Physically this means absorption is high and there is no transmission
+    return zero;
+  } 
+  
+  double eps = 1.e-12;
+  if ((Onu.array().abs() > 1.0 + eps).any()){
+    GYOTO_DEBUG << "O matrix contains coefficient with |O(i,j)| > 1\n O =\n" << Onu << endl;
+    GYOTO_ERROR("Unphysical value in O matrix: |O(i,j)| > 1. Check radiative coefficients' computation.");
+  }
+  
   return Onu;
 }
 
@@ -826,8 +840,7 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 	/** Function which compute the O matrix (see RadiativeTransfertVadeMecum) which represent the exponential
 	*		of the Mueller Matrix containing the absorption and Faraday coefficients
 	*/
-  Matrix4d Pnu;
-  double alpha2, r2, lambda1, lambda2, Theta, sigma;
+  Matrix4d Pnu, P;
   
   double aI=alphaInu, aV=alphaVnu;
   double aQ=alphaQnu*cos2Chi-alphaUnu*sin2Chi;
@@ -837,6 +850,38 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   double rV=rVnu;
   //aU*=-1.; rU*=-1.; // changing sign of Stokes U to comply with IAU sign convention, see Gyoto polar paper for details.
 
+  Matrix4d Kmat;
+  Matrix4d I = Matrix4d::Identity();
+  Kmat << aI,  aQ,  aU,  aV,
+          aQ,  aI,  rV, -rU,
+          aU, -rV,  aI,  rQ,
+          aV,  rU, -rQ,  aI;
+
+  if (aI * dsem*gg_->unitLength() > 100.){
+    // Optically Thick regime, use approximation
+    GYOTO_DEBUG << "Medium fully optically thick, approximation P ≈ K⁻¹" << endl;;
+    P = Kmat.fullPivLu().solve(I);
+  } else if ((Kmat * dsem*gg_->unitLength()).norm() < 1.e-3){
+    // Optically Thin regime, use approximation. Precise at O(ds^2)
+    GYOTO_DEBUG << "Medium fully optically thin, approximation P ≈ ds ⋅ (I - 1/2 K ds)" << endl;;
+    P = dsem*gg_->unitLength() * (I - 0.5 * Kmat * dsem*gg_->unitLength());
+  } else {
+    // General case, exact formula
+    // Use of Eigen calculus of the exponetial of the matrice
+    GYOTO_DEBUG << "Intermediate regime: computing exact exponential" << endl;;
+    P = Kmat.fullPivLu().solve(I - (-Kmat * dsem*gg_->unitLength()).exp());
+  }
+
+  if (P(0,0) < 0.) {
+    GYOTO_DEBUG << "[WARNING] P(0,0) < 0: " << P(0,0)
+              << " — ignored cell" << endl;
+    return Matrix4d::Zero();
+  } else {
+    return P;
+  }
+
+  /*
+  double alpha2, r2, lambda1, lambda2, Theta, sigma;
   alpha2 = aQ*aQ+aU*aU+aV*aV;
   r2 = rQ*rQ+rU*rU+rV*rV;
   lambda1 = pow(pow(pow(alpha2-r2,2.)/4.+pow(aQ*rQ+aU*rU+aV*rV,2.),0.5)+pow(alpha2-r2,1.)/2.,0.5);
@@ -846,22 +891,25 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
 
   double f1=1./(aI*aI - lambda1*lambda1), f2=1./(aI*aI + lambda2*lambda2);
 
-  GYOTO_DEBUG
+    double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
+  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
+  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
+  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
+
+  cout
   	<< "alphaS : " << aI << ", " << aQ << ", " << aU << ", " << aV << "\n"
   	<< "rhoS   : " << rQ << ", " << rU << ", " << rV << "\n"
   	<< "alpha2 : " << alpha2 << "\n"
   	<< "r2 : " << r2 << "\n"
   	<< "lambda : " << lambda1 << ", " << lambda2 << "\n"
   	<< "Theta, sigma : " << Theta << ", " << sigma << "\n"
-  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << endl;
+  	<< "dsem*gg_ : " << dsem*gg_->unitLength() << "\n"
+    << "coshL1, sinhL1 : " << coshlb1 << ", " << sinhlb1 << "\n"
+    << "cosL2, sinL2 : " << coslb2 << ", " << sinlb2 << "\n"
+    << "f1, f2 : " << f1 << ", " << f2 << endl;
 
-  double coshlb1=cosh(lambda1*dsem*gg_->unitLength()),
-  	sinhlb1=sinh(lambda1*dsem*gg_->unitLength()),
-  	coslb2=cos(lambda2*dsem*gg_->unitLength()),
-  	sinlb2=sin(lambda2*dsem*gg_->unitLength());
-
-  if (coshlb1==coshlb1+1. || sinhlb1==sinhlb1+1.)
-  	GYOTO_ERROR("In Omatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !");
+  if (isinf(coshlb1) || isinf(sinhlb1)) //Should not be the case as the optically thick regime use another approximation
+  	GYOTO_ERROR("In Pmatrix : the cosh or sinh is infinite or NaN, at least one of the coefficient is to large/low !"); 
 
   Matrix4d zero;
   zero <<  0, 0, 0, 0,
@@ -929,12 +977,12 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
   M4(3,3)=pow(aV,2)+pow(rV,2)-(alpha2+r2)/2.;
 	//cout << "M4 :\n" << M4 << endl;
 
-  Theta = (Theta==0.)?1.:Theta; // Theta equal zero means all coefficients are zero thus the O matrix is Identity and Theta should be 1.  
+  Theta = (Theta==0.)?DBL_MIN:Theta; 
   // Filling O matrix, output
   Pnu=-lambda1*f1*M3/Theta	 
     +aI*f1/2.*(M1 + 2.*M4/Theta) 
     -lambda2*f2*M2/Theta	 // typo in Monika's paper minus not plus
-    +aI*f2/2.*(M1 - 2.*M4/Theta)      
+    +aI*f2/2.*(M1 - 2.*M4/Theta) 
     -exp(-aI*dsem*gg_->unitLength())* 
     (
      (-lambda1*f1*M3/Theta + aI*f1/2.*(M1 + 2.*M4/Theta)) * coshlb1
@@ -942,8 +990,9 @@ Matrix4d Generic::Pmatrix(double alphaInu, double alphaQnu, double alphaUnu, dou
      +(-aI*f2*M2/Theta - lambda2*f2/2.*(M1 - 2.*M4/Theta)) * sinlb2
      -(aI*f1*M3/Theta - lambda1*f1/2.*((M1 + 2.*M4/Theta))) * sinhlb1
      );
-
-  return Pnu;
+  
+  cout << "Pnu:\n" << Pnu << endl;
+  return P;*/
 }
 
 
@@ -1239,9 +1288,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     gtp = gg_->gmunu(&cph[0],0,3),
     gpp = gg_->gmunu(&cph[0],3,3);
 
-  if (vel[2]>GYOTO_DEFAULT_ABSTOL and magneticConfig!="Vertical")
-    GYOTO_ERROR("mf config only defined for utheta=0"); // uth!=0 is only
-                   // handled so far for vertical mf, TBD for other cases
+
 
   double Bt, Br, Bth, Bp;
   if (magneticConfig=="Vertical"){
@@ -1262,7 +1309,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     Bth = 0.;
     Bp = 0.;
 
-  }else if(magneticConfig=="Toroidal"){
+  }else if(magneticConfig=="Toroidal"){ 
     // Only case where a bit of computation is needed
     // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
     if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
@@ -1276,15 +1323,17 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     Bth = 0.;
 
   }else if(magneticConfig=="Poloidal"){
-  	Bt=0.;
+    double Afact = 1./(gtt*vel[0]*vel[0]+gthth*vel[2]*vel[2]);
+  	Bt=sqrt(gthth*vel[2]*vel[2]*Afact/gtt);
   	Br=0.;
-  	Bth=1./sqrt(gthth);
+  	Bth=sqrt(Afact*gtt*vel[0]*vel[0]/gthth);
   	Bp=0.;
 
   }else if(magneticConfig=="Poloidal-n"){
-  	Bt=0.;
+    double Afact = 1./(gtt*vel[0]*vel[0]+gthth*vel[2]*vel[2]);
+  	Bt=sqrt(gthth*vel[2]*vel[2]*Afact/gtt);
   	Br=0.;
-  	Bth=-1./sqrt(gthth);
+  	Bth=-sqrt(Afact*gtt*vel[0]*vel[0]/gthth);
   	Bp=0.;
   }else{
     GYOTO_ERROR("Not implemented Bfield orientation");

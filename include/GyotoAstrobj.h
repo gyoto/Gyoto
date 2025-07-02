@@ -36,6 +36,7 @@
 #include <string>
 
 #include <Eigen/Dense>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include <GyotoDefs.h>
 #include <GyotoSmartPointer.h>
