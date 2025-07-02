@@ -1,8 +1,572 @@
-commit unknown
+commit 1081365f0a62c60921ee87ea5842fcc6de3dee34
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Wed Jul 2 16:08:25 2025 +0100
+
+    Remove ad-hoc polarized radiativeQ function as it was for testing purpose only
+
+commit edbf1f21fbdfa30af251794dec8be473d1135f05
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Wed Jul 2 16:06:57 2025 +0100
+
+    Correction of the computation of polarized radiative transfer increments
+
+commit 85e9d7d5e5dc56899ba810e9df95fda4767a0ff8
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Wed Jul 2 16:05:53 2025 +0100
+
+    Correction of the computation of O and P matrices for polarized radiative transfer and addition of a lot of safety checks + remove restriction of utheta=0 for computation of magnetic field configurations
+
+commit 8bf5b8ce8ad5aff21640f63fc69af9885adaa1a1
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri May 16 13:24:42 2025 +0100
+
+    Correction: change declaration of magneticConfiguration functions from private to public
+
+commit fa02c5ffb576302b6cf491fcdcf55df957de5f6b
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Thu May 15 17:44:34 2025 +0100
+
+    Define Functions to Set and Get the magnetic field configuration (magneticConfig_) in Astrobj::Generic so that it is available for all Astrobj and clean repetitive occurence.
+
+
+commit 5f88633231b1275f982bfd7aa2139000a52e0ea9
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
-Date:   Fri, 19 Jan 2024 17:45:07 +0100
+Date:   Wed Mar 12 13:47:27 2025 +0100
+
+    plugins/python: fix deprecation warning
+    
+    Stop using PySys_SetArgv, use PyConfig_SetBytesArgv instead.
+
+commit bc4b46045ea6f47ce19376f0006d2312ffa09902
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Mar 12 10:43:16 2025 +0100
+
+    Worldine: new property NormTol
+    
+    Allow setting the norm variation above which SEVERE warnings are issued
+
+commit 39d391d2ae3cfa087bb5e83c28afe9d5ace925f1
+Author: iurso <ireneurso99@gmail.com>
+Date:   Tue Mar 11 17:49:27 2025 +0100
+
+    Fix bugs in WorldlineIntegState and ThinDiskProfile
+
+commit 3af66e890b87e3f8e17330339c892a286ffbd76b
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Feb 24 14:12:26 2025 +0100
+
+    Code cleaning after Balasin-Grumiller metric contribution
+    
+    * Rename metric from BG to BalasinGrumiller
+    * Rename various files
+    * Merge testBG.py with std.py test file
+    * Update autoconf files
+
+commit 5139f8ddde35afe60c90e45c2f9b0b0847a9e287
+Author: LFilipeCosta <filipezola@gmail.com>
+Date:   Mon Feb 24 10:55:06 2025 +0000
+
+    Add Balasin-Grumiller metric implementation (#27)
+    
+    * Register BG metric and include header
+    
+    * Include BG metric in SOURCES
+    
+    * Add files via upload
+    
+    * Update AUTHORS
+    
+    * Add files via upload
+    
+    * Add BG header file
+    
+    * Correct name error in BG header in StdPlug.C
+    
+    * Correct typos in BG registration in StdPlug.C
+    
+    * Correct typo in registration of BG metric in StdPlug.C
+    
+    * Correct example-BG-star_4c.xml
+    
+    * Correct example-BG-star_Multiple_Images.xml
+    
+    * Correct example-BG-star_aligned.xml
+    
+    * Update BGheader.h
+    
+    * unit test file for BG metric
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update testBG.py
+    
+    * Update BGheader.h
+    
+    * Update BG.C
+    
+    * Update AUTHORS
+    
+    * Update testBG.py
+
+commit bf36c46a3c7fffed99acb7522601c5e75212ff0f
+Author: iurso <ireneurso99@gmail.com>
+Date:   Mon Feb 10 14:49:16 2025 +0100
+
+    Change name of class Sim2DThinDisk to SimThinDisk
+
+commit da5ae12b83fb43d3e004a64c72f839b697826851
+Author: iurso <ireneurso99@gmail.com>
+Date:   Mon Feb 10 14:46:18 2025 +0100
+
+    Change name of class Sim2DThinDisk to SimThinDisk
+
+commit 3dbf8663a4137ea84e0ed121551463148565ac89
+Author: iurso <ireneurso99@gmail.com>
+Date:   Mon Feb 10 14:31:20 2025 +0100
+
+    SimBridge: extend internal circular velocity to all axisymmetric metrics
+
+commit c52cbfdd2d87613621282e55e34dc5dcd73d361e
+Author: iurso <ireneurso99@gmail.com>
+Date:   Mon Feb 10 13:12:17 2025 +0100
+
+    ThinDiskProfile: extend getVelocity to all axisymmetric metrics
+
+commit 1acbb5f3a8e0f2a25ee26b633134866544da18e0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Wed Jan 29 10:36:14 2025 +0100
+
+    update numpy.i to 2.2.2
+
+commit f556df2b5c2de74f13a5082abff6407840eddb03
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jan 24 16:54:41 2025 +0000
+
+    Add check for SimThinkDisk
+
+commit 3e02bbb57f106ad3b5c126b803e573e63818ff8e
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jan 24 15:04:56 2025 +0000
+
+    Changing name of class Sim2DEquatDisk to SimThickDisk
+
+commit bc8e8f97f4646934b931ae11e810ced9e1dc77f2
+Author: iurso <ireneurso99@gmail.com>
+Date:   Fri Jan 24 15:05:00 2025 +0100
+
+    SimBridge: extend circular velocity to the Minkowski class
+
+commit 06177c88adbadf2ae7da3ae6a1f98f702b1d032f
+Author: iurso <ireneurso99@gmail.com>
+Date:   Fri Jan 24 14:46:55 2025 +0100
+
+    Add new Astrobj which inherites from SimBridge: Sim2DThinDisk: geometrically thin equatorial disk
+
+commit 16b9cb79830cdec930ee73445884e73e8051b6f4
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jan 20 19:18:42 2025 +0000
+
+    Change of the prototype of the function fitsReadHDUData, adding a pointer where to store the data with a default null pointer
+
+commit 9f52d043d9eb5d5ba85ee94c82ce94de05c985cf
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jan 20 19:17:12 2025 +0000
+
+    Optimization of the class including 1) remove the memory copy for the data 2) introduce flags to interpolate only quantities that are stored in fits files
+
+commit 0e26b1486b6d33db674aa23d9b0c60e926829815
+Author: Irene Urso <irene.urso@obspm.fr>
+Date:   Fri Dec 20 18:06:15 2024 +0100
+
+    SimBridge: add possibility to compute internally a circular velocity
+    Astrobj: correct bug in interpolate
+
+commit c410af09464a260479a99215e459b91f4cb6f2a8
+Author: Irene Urso <irene.urso@obspm.fr>
+Date:   Fri Dec 20 17:46:11 2024 +0100
+
+    ThinDiskProfile: synchrotron pitch angle in emission + keplerian/radial/mixed(subkeplerian+radial) velocity
+
+commit 16379ca0dfa3bc1d6c33c06a606672788d2e6104
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 17 09:36:35 2024 +0100
+
+    Blob: adding helical conical and cylindrical
+          - remove the older Helical motion kind
+          - add HelicalCylindrical and HelicalConical that implement either helical mf lines with conical geometry (this was the previous simple "helical" keyword), or a helical mf lines with cylindrical geometry.
+          - see FV 2024 notes for details
+
+commit f888093866d11551063e11fd623f1d7c889424cc
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Tue Dec 17 09:31:05 2024 +0100
+
+    Astrobj: adding vertical B field with nonzero utheta
+
+commit 9fbdd7dcddda239edee19519a13d38979df877eb
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Dec 10 09:39:45 2024 +0100
+
+    Add warnings about make uninstall leaving empty directories in Python path
+
+commit 74a1bd863b5f2855044b656314297d85e346ef41
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Dec 8 10:36:53 2024 +0100
+
+    Enable localpkglibdir only if prefix is /usr
+
+commit cdecf4a7326a67802c4d3cb0dc91b9a1875b7e65
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sun Dec 8 10:13:29 2024 +0100
+
+    Add --with-sosuffix option to configure
+
+commit fd670b1646860e9ecf144ee1c90ec1ac66ffd0f8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Sat Dec 7 11:08:46 2024 +0100
+
+    Ignore floating-point exceptions while calling MPI_Init
+
+commit 01ec0717b57bc623a765887a33d321ed5f0a7645
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Dec 6 16:54:55 2024 +0100
+
+    Variable-sized objects may not be initialized
+    
+    Either use a const variable for the size, or set the array values
+    after creation.
+
+commit 2d5c3fbda3760dda5361e4f34c55b9679e87cea9
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Dec 6 08:40:47 2024 +0100
+
+    Break on NaNs and expose get_tau in Python
+
+commit 361f09e2f59c65e1afb60c3e3db16abcc0e64652
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Mon Oct 21 19:07:22 2024 +0200
+
+    Blob: important change of class structure.
+          - remove inheritance from Star, inheritage from UniformSphere only
+          - defining equatorial circular (not only Keplerian), or helical motions
+          - adding keywords: init4Coord and init3Velo for initial condition
+          - adding functions getVelocity (no longer deriving from Star) and getCartesian (used by UniformSphere)
+          - calling computeB4vec and get_theta_mag
+
+commit 627d10bba0bdcfaf2d015a5acb1be9b25fd8a2a9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Oct 16 16:12:13 2024 +0200
+
+    Blob: making polarized and non-polarized versions of radiativeQ similar
+          - adding keywords to deal with time and spatial Gaussian modulations
+          - allowing thermal/kappa/PL synchrotron in both
+
+commit d703ab52afc5483c334d7e4780b80fbf55d03c7a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 11 22:49:28 2024 +0200
+
+    Support building without Boost again
+
+commit 0f29751e2d641f2abd1ab75bdbaa32ca0b367f73
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 11 22:48:35 2024 +0200
+
+    Fix Eigen support
+    
+    Forgot to update makefiles in previous commit
+
+commit 68b97ed902e1ee56fc776687091000608a1e94e8
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Oct 11 08:55:29 2024 +0200
+
+    Better detection of Python prerequisites in configure
+    
+    Don't try to build the Python extension if swig or doxygen are missing,
+    and warn the user.
+
+commit eac37878e45123cdc28745732d38abd5c6473aab
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Thu Oct 10 17:32:07 2024 +0200
+
+    Fix Eigen include path
+    
+    The #include directive should not contain th eigen3/ prefix since it is included
+    in the Cflags variable of the pkg-config file eigen3.pc.
+
+commit 3b699edf97507074eb2c64e584a74b3524d10e71
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 8 18:02:47 2024 +0200
+
+    Better support for arblib included in flint
+
+commit 2b0c307f812ed21eb3a8347bb704bec3f7cbd3cd
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 8 13:45:14 2024 +0200
+
+    Improve INSTALL.Gyoto.md: Python, Anaconda and more
+    
+    Add information in INSTALL.Gyoto.md:
+    + ARBLIB is now part of flint;
+    + Yorick is deprecated;
+    + Use Anaconda consistently;
+    + PYTHON_CONFIG is required when setting PYTHON.
+
+commit a8f03d5aad8e69ccfb389f5323135552330b25e0
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 8 13:41:55 2024 +0200
+
+    Actually support ./configure --with-arglib-headers=...
+
+commit c18b4be71462c9ae941e86c4f7655177b63eb44f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Oct 8 13:34:12 2024 +0200
+
+    python: allow loading _namespaces when lorene is partly built
+    
+    Fix a bug where gyoto._namespaces could not be imported when the lorene plug-in
+    existed but the gyoto.lorene extension was not available.
+
+commit 94969913f20388c60b86bef6310b385072fa9c23
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Sep 13 17:22:18 2024 +0200
+
+    setuptools don't support test_suite anymore, call unittest explicitly
+
+commit 26d3dba85d53d82467a38afcdad5b853199a95e1
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Sep 13 10:57:38 2024 +0200
+
+    Export CXX in python/Makefile.in, needed for python >= 3.12
+
+commit 7a2fecf9c2e7602ff2cc2c3ba964dbf1ee7cefc9
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Fri Aug 30 10:10:47 2024 +0200
+
+    In Jet: add forgotten factor in getVelocity
+
+commit 2477f3bfbfdda0bf9fd1e15d137a63b019ad5174
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Aug 23 10:28:36 2024 +0200
+
+    Add storage of polarized quantities within MPI
+
+commit 994b63f6bd4bc23b26d5a8f8400a938191ac1c15
+Author: Colin Watson <cjwatson@ubuntu.com>
+Date:   Mon Jul 29 07:40:26 2024 +0100
+
+    Remove undefined operator<< declaration for PolishDoughnut (#17)
+    
+    On current Debian systems this resulted in `undefined symbol:
+    _ZN5Gyoto7AstrobjlsERSoRKNS0_14PolishDoughnutE` while running tests.
+    
+    Fixes: https://bugs.debian.org/1066788
+
+commit 8b789405c7b2658d89df4240f97bc00222892e5f
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Mon Jul 29 08:33:59 2024 +0200
+
+    Remove operator<< declaration
+    
+    The operator was never defined and this spurious declaration starts causing issues.
+
+commit 96ff8602950dfd5859cfb6832b561434a502e65d
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Tue Jul 23 14:36:48 2024 +0200
+
+    Fix bug in GYOTO_GETSUBCONTRACTOR
+    
+    The macro contained a bug which triggered a segfault instead of returning  NULL or throuwing an error when no match could be found.
+
+commit 70c22cce4105c08887fc10afe986cd6f777238c2
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Tue Jul 23 10:43:35 2024 +0200
+
+    In SimBridge : correction of bug for multiprocessing
+
+commit 33b9dd634c5d53a6a401f8e1dc28ba65ece346a8
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jul 12 11:38:55 2024 +0200
+
+    In SimBridge : add a flag for reading the magnetic field in the FITS files or not
+
+commit dfb6c3731d48a4334985e42e85a9a297e201736e
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jul 8 12:02:21 2024 +0200
+
+    In Astrobj, correction of memory leak issue in interpolation function : deleteing dynamical arrays after usage
+
+commit 75476be80df922d237ed61df42f986ab9b64663d
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jul 8 12:01:06 2024 +0200
+
+    In SimBridge and Sim2DEquatDisk, complete GYOTO_PROPERTIES
+
+commit c188717db243a9ba9bdb2c951ac30f92475dd403
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jul 5 10:39:15 2024 +0200
+
+    In Screen : add computation of screen polarisation basis vector in cartesian coordinate system
+
+commit b25e47da46e3624f83da6770de733a0fe2900340
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jul 5 10:38:04 2024 +0200
+
+    SimBridge : the velocity read in FITS file is always the 3D velocity to avoid interpolation errors leading to a norm of the 4-velocity not equal to -1
+
+commit df035bf373e2b67ed151f3dfc235e55ae3b85ac5
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Wed Jul 3 15:00:21 2024 +0200
+
+    Update FitsRW documentation
+
+commit f1d76250a85e1db8350b5443db6ac8ea9dc15cf6
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Wed Jul 3 12:18:58 2024 +0200
+
+    In SimBridge : correction to read the correct files (time index).
+
+commit baf84dcbabc5fcd75b0d4f56fc9a902939fb8f4d
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Tue Jul 2 10:58:43 2024 +0200
+
+    Correction of a bug with the new astrobj Sim2DEquatDisk
+
+commit dcf2f82c935173e79a0df0276d03296e6828b532
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jul 1 17:47:54 2024 +0200
+
+    SimBridge : Update documentation and set  grid arrays to protected to be accessible from child classes
+
+commit 0f1db5cbf42d8daba1fd0671b8ce179bc38d5ded
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jul 1 17:46:10 2024 +0200
+
+    Add new Astrobj which inherites from SimBridge : Sim2DEquatDisk and consists of a disk with a given opening angle
+
+commit d158526ee6b6c4ef2f178ac4dd444d9cc9b43afe
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jul 1 17:43:47 2024 +0200
+
+    Astrobj : Adapt computation of magnetic field configuration for cartesian coordinate
+
+commit 4d60051eae28344fba085bdf3d02a26fa9b9714d
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Jun 28 16:34:36 2024 +0200
+
+    SimBridge : Manage case when there is only one file (i.e. one time) + Adding documentation and comments; the geometry is set to a sphere of radius rmax
+
+commit e65cbea817fad01064a733e7be9c88c789471101
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Thu Jun 27 13:49:54 2024 +0200
+
+    Correction NDinterpolation : proper treatment when length of a dimension is 1
+
+commit 435f9a4e1e2ab0bb2ef6e5c03d8d5b6721a45f3f
+Author: Frederic Vincent <frederic.vincent@obspm.fr>
+Date:   Wed Jun 26 06:36:08 2024 +0200
+
+    In Jet: Code cleaning and new stuff:
+              - adding parabolic sheath shape
+              - adding stagnation surface
+
+commit acdb4853aaa06a85cb6137a0e8cc3ae48b5d72f7
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jun 24 18:40:13 2024 +0200
+
+    Adding new Astrobj : SimBridge which inherite from StandardAstrobj. This object generate images from numerical simulations data saved in FITS files. The number of dimension is arbitrary from 1D to 3D (spatial dimensions).
+
+commit 66edf3ce4c021d3f42093e98200c0367671b9168
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jun 24 18:27:27 2024 +0200
+
+    Correction for reading the PRIMARY HDU + adding security tests
+
+commit 0a1b24fbaa40551af92f43ed1c2b340fbb2d0e9b
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Jun 24 18:24:56 2024 +0200
+
+    Correction of the computation of the index in the ND interpolation + correction of and error occuring in DEBUG if StokesQ not asked by the user
+
+commit 7dbf4ab043887e900e5af5fac2f5a49c0ad2b0b1
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Thu Apr 11 16:59:20 2024 +0100
+
+    Correction : set mimnimal value for Theta to 0.005 to avoid NaN for rho_V
+
+commit 6e799cccbcd3eaaa49870ceab91b7a055645899f
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Tue Apr 9 17:54:19 2024 +0100
+
+    In WorldlineIntegState : - add function to check orthogonality of polarization basis
+                             - Refine integration step if orthogonality of polarization basis is not checked
+
+commit 75f646e9ab7b745e61315efaa2796fa32b0d008b
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Thu Apr 4 14:03:44 2024 +0100
+
+    Plasmoid : Add computation of the polarization.
+
+commit f866a04a696e2c32fb3928c943cba455a3a854a8
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Thu Apr 4 14:01:25 2024 +0100
+
+    Change global FitsRW object to be generalized. This object should be used to write or read FITS file containing 1D array(s) (N dimensionnal arrays have to be reshape in 1D array with dimensions length stored in headers)
+
+commit da36efba611aa3aef220a9fe7f8a85e6ce2dbf30
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Mon Mar 4 14:10:50 2024 +0000
+
+    Adding get_theta_mag function which compute the angle between magnetic field and photon vectors
+    In interpolate : manage case array has only one element
+
+commit ed7464a4aad8ede457bf329db7de9ee34aaf0af2
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Mar 1 13:45:13 2024 +0000
+
+    Adding polar radiativeQ for Jet
+
+commit 2225e89a5b4860d8030a167b7e1d2e5967991dc5
+Author: naimar-pro <nicolas.aimar64@gmail.com>
+Date:   Fri Feb 23 15:58:05 2024 +0000
+
+    Update doc for building new plugins
+
+commit 5facbbaced58d0f8612cd1b96a86837b1b28823c
+Author: naimar-pro <nicolas.aimar@obspm.fr>
+Date:   Mon Feb 5 14:48:05 2024 +0100
+
+    Remove polar Blob restriction to Schwarzchild metric only
+
+commit d7dfa50402c40a2f2bf1aef33fc7e98283f35b3a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 20:00:52 2024 +0100
 
     Releasing 2.0.2
+
+commit db619ef4b81a07c33a0aeb4494cfd0524e4be69a
+Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
+Date:   Fri Jan 19 19:51:19 2024 +0100
+
+    Allow selecting Python interpreter for mk-video with GYOTO_PYTHON variable
 
 commit 8930000c1be754b985b2bbe78dd5615a0601ea12
 Author: Thibaut Paumard <thibaut.paumard@obspm.fr>
