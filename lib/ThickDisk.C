@@ -760,31 +760,29 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
     //cout << "In ThickDisk: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In ThickDisk: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
     //cout << "RADSTUFF: " << "r= " << coord_ph[1] << " " << ", th= " << coord_ph[2]*180./M_PI << " Rad transf stuff: " << jInu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jQnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jUnu[ii]/(nuem[ii]*nuem[ii])*10. << ", " << jVnu[ii]/(nuem[ii]*nuem[ii])*10. << " " << nuem[ii]*aInu[ii]*0.01 << ", " << nuem[ii]*aQnu[ii]*0.01 << ", " << nuem[ii]*aUnu[ii]*0.01 << ", " << nuem[ii]*aVnu[ii]*0.01 << " " << nuem[ii]*rotQnu[ii]*0.01 << ", " << nuem[ii]*rotUnu[ii]*0.01 << ", " << nuem[ii]*rotVnu[ii]*0.01 << endl;
-    Eigen::Vector4d JstokesDs=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength(), Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
-    //cout << Jstokes << endl;
-    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
-    //cout << Omat << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
+    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-    Eigen::Vector4d StokesFirst=Omat*JstokesDs,
-      StokesMonika=Pmat*Jstokes, // Monika's version
-      Stokes=StokesFirst; //StokesMonika; //StokesFirst;
-    //cout << "StokesFirst= " << StokesFirst << endl;
-    //cout << "StokesMonika= " << StokesMonika << endl;
-    //cout << Stokes << endl;
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
+    Eigen::Vector4d Stokes=Pmat*Jstokes;
 
-    //cout << "In ThickDisk: r,th,ph, Inu, Qnu, Unu, Vnu, dsem, LP: " << coord_ph[1] << " " << coord_ph[2] << " " << coord_ph[3] << " " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
-
+    if (Stokes(0) <=0.){
+      Inu[ii] = Qnu[ii] =  Unu[ii] = Vnu[ii] = 0.;
+      Onu[ii] = Eigen::Matrix4d::Identity();
+    } else {
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
+    
     if (Inu[ii]<0.)
       GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In ThickDisk::radiativeQ(): Inu or Taunu is infinite");
+    if (isnan(Inu[ii]) or isnan(Qnu[ii]) or isnan(Unu[ii]) or isnan(Vnu[ii]) or isnan(Onu[ii](0,0)))
+      GYOTO_ERROR("In ThickDisk::radiativeQ(): Snu or Taunu is nan");
+    if (isinf(Inu[ii]) or isinf(Qnu[ii]) or isinf(Unu[ii]) or isinf(Vnu[ii]) or isinf(Onu[ii](0,0)))
+      GYOTO_ERROR("In ThickDisk::radiativeQ(): Snu or Taunu is infinite");
   }
 }

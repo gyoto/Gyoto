@@ -741,24 +741,30 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     //cout << "In SimBridge: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In SimBridge: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In SimBridge: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength(); 
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
     Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    Eigen::Vector4d Stokes=Omat*Jstokes;
-    //cout << "Jstokes: " << Jstokes << endl;
-    Inu[ii] = Stokes(0); 
-    //cout << "Inu: " << Inu[ii] << endl;
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
-    //cout << "In SimBridge: Onu: " << Omat << endl;
+    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
 
+    // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
+    Eigen::Vector4d Stokes=Pmat*Jstokes;
+
+    if (Stokes(0) <=0.){
+      Inu[ii] = Qnu[ii] =  Unu[ii] = Vnu[ii] = 0.;
+      Onu[ii] = Eigen::Matrix4d::Identity();
+    } else {
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
+    
     if (Inu[ii]<0.)
       GYOTO_ERROR("In SimBridge::radiativeQ(): Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0)) 
-      GYOTO_ERROR("In SimBridge::radiativeQ(): Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.) 
-      GYOTO_ERROR("In SimBridge::radiativeQ(): Inu or Taunu is infinite");
+    if (isnan(Inu[ii]) or isnan(Qnu[ii]) or isnan(Unu[ii]) or isnan(Vnu[ii]) or isnan(Onu[ii](0,0)))
+      GYOTO_ERROR("In SimBridge::radiativeQ(): Snu or Taunu is nan");
+    if (isinf(Inu[ii]) or isinf(Qnu[ii]) or isinf(Unu[ii]) or isinf(Vnu[ii]) or isinf(Onu[ii](0,0)))
+      GYOTO_ERROR("In Simbridge::radiativeQ(): Snu or Taunu is infinite");
   }
 
   GYOTO_DEBUG << "Freeing interpolation arrays." << endl;

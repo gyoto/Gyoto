@@ -324,16 +324,7 @@ void EquatorialHotSpot::radiativeQ(double *Inu, double *Qnu, double *Unu,
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*B0
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
-  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
-  gg_->projectFourVect(&cph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=cph[ii+4]+vel[ii]*gg_->ScalarProd(&cph[0],&cph[4],vel);
-  }
-  double bnorm = gg_->norm(&cph[0],B4vect);
-  double lnorm = gg_->norm(&cph[0],photon_emframe);
-  double lscalb = gg_->ScalarProd(&cph[0],photon_emframe,B4vect);
-  double theta_mag = acos(lscalb/(lnorm*bnorm));
+  double theta_mag = get_theta_mag(B4vect, cph, vel);
   
 
   double n0 = 6e6; // cm-3
@@ -375,33 +366,30 @@ void EquatorialHotSpot::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
 
   for (size_t ii=0; ii<nbnu; ++ii) {
-    //cout << "d2, ds2:" << ", " << d2 << ", " << ds2 << endl;
-    //cout << "In EquatorialHotSpot: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
-    //cout << "In EquatorialHotSpot: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
-    //cout << "In EquatorialHotSpot: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
-    //cout << Jstokes << endl;
-    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    //cout << Omat << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
+    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-    Eigen::Vector4d Stokes=Omat*Jstokes;
-    //cout << Stokes << endl;
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
+    Eigen::Vector4d Stokes=Pmat*Jstokes;
 
+    if (Stokes(0) <=0.){
+      Inu[ii] = Qnu[ii] =  Unu[ii] = Vnu[ii] = 0.;
+      Onu[ii] = Eigen::Matrix4d::Identity();
+    } else {
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
+    
     if (Inu[ii]<0.)
-      GYOTO_ERROR("In Blob::radiativeQ: Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In Blob::radiativeQ: Inu or Taunu is infinite");
-
-    //cout << "In EquatorialHotSpot: Inu, Qnu, Unu, Vnu, dsem: " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << endl;
-    //cout << "Onu :" << endl;
-    //cout << Omat << endl;
+      GYOTO_ERROR("In EquatorialHotSpot::radiativeQ(): Inu<0");
+    if (isnan(Inu[ii]) or isnan(Qnu[ii]) or isnan(Unu[ii]) or isnan(Vnu[ii]) or isnan(Onu[ii](0,0)))
+      GYOTO_ERROR("In EquatorialHotSpot::radiativeQ(): Snu or Taunu is nan");
+    if (isinf(Inu[ii]) or isinf(Qnu[ii]) or isinf(Unu[ii]) or isinf(Vnu[ii]) or isinf(Onu[ii](0,0)))
+      GYOTO_ERROR("In EquatorialHotSpot::radiativeQ(): Snu or Taunu is infinite");
   }
 }
 

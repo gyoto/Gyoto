@@ -765,39 +765,33 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii) {
-    
-    // if (jInu[ii] > 2.5e-17){
-    //   cout << "In Blob: ne, temperature, BB, theta_mag, Gauss modul: " << number_density << " " << temperature << " " << BB << " " << theta_mag << " " << total_modulation << endl;
-    //   cout << "In Blob nuem jnu= " << 1.36e14/nuem[ii] << " " << jInu[ii]  << endl;
-    // }
-    //cout << "In Blob nuem jnu= " << 1.36e14/nuem[ii] << " " << jInu[ii]  << endl;
     //cout << "In Blob: jInu, jQnu, jUnu, jVnu: " << jInu[ii] << ", " << jQnu[ii] << ", " << jUnu[ii] << ", " << jVnu[ii] << endl;
     //cout << "In Blob: aInu, aQnu, aUnu, aVnu: " << aInu[ii] << ", " << aQnu[ii] << ", " << aUnu[ii] << ", " << aVnu[ii] << endl;
     //cout << "In Blob: rQnu, rUnu, rVnu: " << rotQnu[ii] << ", " << rotUnu[ii] << ", " << rotVnu[ii] << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
-    //cout << Jstokes << endl;
-    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    //cout << Omat << endl;
+    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
+    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
+
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-    Eigen::Vector4d Stokes=Omat*Jstokes;
-    //cout << Stokes << endl;
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    //cout << "Q and U and U/Q= " << Qnu[ii] << " " << Unu[ii] << " " << Unu[ii]/Qnu[ii] << endl;
-    //cout << endl;
+    Eigen::Vector4d Stokes=Pmat*Jstokes;
+
+    if (Stokes(0) <=0.){
+      Inu[ii] = Qnu[ii] =  Unu[ii] = Vnu[ii] = 0.;
+      Onu[ii] = Eigen::Matrix4d::Identity();
+    } else {
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
     
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
-
-    //cout << "In Blob: r,th,ph, Inu, Qnu, Unu, Vnu, dsem, LP: " << rr << " " << theta << " " << phi << " " << Inu[ii] << ", " << Qnu[ii] << ", " << Unu[ii] << ", " << Vnu[ii] << ", " << dsem << ", " << pow(Qnu[ii]*Qnu[ii]+Unu[ii]*Unu[ii],0.5)/Inu[ii] << endl;
-
     if (Inu[ii]<0.)
       GYOTO_ERROR("In Blob::radiativeQ(): Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In Blob::radiativeQ(): Inu or Taunu is infinite");
+    if (isnan(Inu[ii]) or isnan(Qnu[ii]) or isnan(Unu[ii]) or isnan(Vnu[ii]) or isnan(Onu[ii](0,0)))
+      GYOTO_ERROR("In Blob::radiativeQ(): Snu or Taunu is nan");
+    if (isinf(Inu[ii]) or isinf(Qnu[ii]) or isinf(Unu[ii]) or isinf(Vnu[ii]) or isinf(Onu[ii](0,0)))
+      GYOTO_ERROR("In Blob::radiativeQ(): Snu or Taunu is infinite");
   }
 }
 

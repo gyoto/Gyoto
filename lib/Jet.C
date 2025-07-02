@@ -738,36 +738,29 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   // RETURNING TOTAL INTENSITY AND TRANSMISSION
   for (size_t ii=0; ii<nbnu; ++ii) {
+  Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi);
+    Eigen::Matrix4d Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
+    Eigen::Matrix4d Pmat = Pmatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], sin(2.*Chi), cos(2.*Chi), dsem);
 
-    //cout << "at r,th= " << coord_ph[1] << " " << coord_ph[2] << endl;
-    //cout << "at rcyl,z= " << rcyl << " " << zz << endl;
-    //cout << "jet jnu anu kappa= " << jnu_tot << " " << anu_tot << endl; //x" " << jnu_tot/anu_tot << " " << dsem << endl;
-    Eigen::Vector4d Jstokes=rotateJs(jInu[ii], jQnu[ii], jUnu[ii], jVnu[ii], Chi)*dsem*gg_->unitLength();
-    //cout << Jstokes << endl;
-    Omat = Omatrix(aInu[ii], aQnu[ii], aUnu[ii], aVnu[ii], rotQnu[ii], rotUnu[ii], rotVnu[ii], Chi, dsem);
-    //cout << Omat << endl;
     // Computing the increment of the Stokes parameters. Equivalent to dInu=exp(-anu*dsem)*jnu*dsem in the non-polarised case.
-    Eigen::Vector4d Stokes=Omat*Jstokes;
-    //cout << Stokes << endl;
-    Inu[ii] = Stokes(0);
-    Qnu[ii] = Stokes(1);
-    Unu[ii] = Stokes(2);
-    //cout << "Q and U and U/Q= " << Qnu[ii] << " " << Unu[ii] << " " << Unu[ii]/Qnu[ii] << endl;
-    //cout << endl;
+    Eigen::Vector4d Stokes=Pmat*Jstokes;
+
+    if (Stokes(0) <=0.){
+      Inu[ii] = Qnu[ii] =  Unu[ii] = Vnu[ii] = 0.;
+      Onu[ii] = Eigen::Matrix4d::Identity();
+    } else {
+      Inu[ii] = Stokes(0);
+      Qnu[ii] = Stokes(1);
+      Unu[ii] = Stokes(2);
+      Vnu[ii] = Stokes(3);
+      Onu[ii] = Omat;
+    }
     
-    Vnu[ii] = Stokes(3);
-    Onu[ii] = Omat;
-
-    //cout << "in jet stuff: " << zz << " " << rcyl << " " << nu_ems[0]  << " " << number_density << " " << nu0 << " " << temperature << " " << thetae << " " << jnu_tot << " " << anu_tot << " " << dsem << endl;
-
-    
-
     if (Inu[ii]<0.)
-      GYOTO_ERROR("In Jet::radiativeQ: Inu<0");
-    if (Inu[ii]!=Inu[ii] or Onu[ii](0,0)!=Onu[ii](0,0))
-      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is nan");
-    if (Inu[ii]==Inu[ii]+1. or Onu[ii](0,0)==Onu[ii](0,0)+1.)
-      GYOTO_ERROR("In Jet::radiativeQ: Inu or Taunu is infinite");
-
+      GYOTO_ERROR("In Jet::radiativeQ(): Inu<0");
+    if (isnan(Inu[ii]) or isnan(Qnu[ii]) or isnan(Unu[ii]) or isnan(Vnu[ii]) or isnan(Onu[ii](0,0)))
+      GYOTO_ERROR("In Jet::radiativeQ(): Snu or Taunu is nan");
+    if (isinf(Inu[ii]) or isinf(Qnu[ii]) or isinf(Unu[ii]) or isinf(Vnu[ii]) or isinf(Onu[ii](0,0)))
+      GYOTO_ERROR("In Jet::radiativeQ(): Snu or Taunu is infinite");
   }
 }
