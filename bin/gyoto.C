@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2024 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2025 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -596,7 +596,7 @@ int main(int argc, char** argv) {
     }
     if ((quantities & GYOTO_QUANTITY_IMPACTCOORDS || ipct) && !ipctdims[0] ) {
       // Allocate if requested AND not provided
-      cerr << "gyoto.C: allocating data->impactcoords" << endl;
+      GYOTO_DEBUG << "allocating data->impactcoords" << endl;
       ::data->impactcoords = impactcoords = new double [res*res*16];
       ipcttime = tobs * GYOTO_C / scenery -> metric() -> unitLength();
     }

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2012, 2014-2015, 2018 Thibaut Paumard, Frederic Vincent
+    Copyright 2011-2025 Thibaut Paumard, Frederic Vincent
 
     This file is part of Gyoto.
 
@@ -231,6 +231,11 @@ int ThinDisk::Impact(Photon *ph, size_t index,
 
   if ((rcross=projectedRadius(&coord_ph_hit[0])) < rin_ ||
       rcross > rout_) return 0;
+
+  GYOTO_DEBUG << "This Photon hits the disk:\n";
+  GYOTO_DEBUG_EXPR(rcross);
+  GYOTO_DEBUG_EXPR(rin_);
+  GYOTO_DEBUG_EXPR(rout_);
 
   for (int i=0;i<4;i++) coord_obj_hit[i]=coord_ph_hit[i];
   getVelocity(coord_obj_hit, coord_obj_hit+4);
