@@ -1,3 +1,6 @@
+NEXT BUG
+    * Make it an error when an unknown parameter is found in an XML file
+
 2.0.2 2024/01/19 PKG
     * Update citations and copyright in AUTHORS and README.md
     * Fix typos

@@ -1,5 +1,5 @@
 /*
-    Copyright 2016, 2018-2020 Frederic Vincent & Thibaut Paumard
+    Copyright 2016, 2018-2020, 2025 Frederic Vincent & Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -463,7 +463,7 @@ void OscilTorus::updateCachedValues() {
       break;
     }
   default:
-    GYOTO_ERROR("In OscilTorus.C::setParameter():"
+    GYOTO_ERROR("In OscilTorus.C::updateCachedValues():"
 	       "Unrecognized perturbation kind");
   }
 }
@@ -488,7 +488,7 @@ double OscilTorus::emission(double nu_em, double, state_t const &cp,
 		 "mode=0 is required for area determination");
     }
     if (perturb_kind_==Vertical || perturb_kind_==X)
-      GYOTO_ERROR("In OscilTorus::setParamter: bad perturbation kind");
+      GYOTO_ERROR("In OscilTorus::emission: bad perturbation kind");
 
     // Rescaled time and area determination
     double AA = Omegac_*sigma_; // cos modulation is 2pi/AA periodic

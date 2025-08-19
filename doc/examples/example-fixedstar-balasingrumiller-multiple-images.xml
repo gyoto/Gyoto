@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
-<!-- This file generates Fig. 4(d) of Costa-Natário Phys. Rev. D 110, 064056 (2024)
-[arXiv:2312.12302] --> 
-
 <Scenery>
+
+  This file generates Fig. 4(d) of Costa-Natário Phys. Rev. D 110,
+  064056 (2024) [arXiv:2312.12302] when Astrobj::Radius is set to
+  20. A value of 70 is better for automated tests.
+
   <Metric kind="BalasinGrumiller">
      <Mass unit="sunmass"> 2.09063e16 </Mass> 
      Note: Mass sets the length unit used (e.g., in the r-coordinate). We choose
@@ -11,7 +13,6 @@
      <V0> 0.000733333 </V0> (Flat velocity value in geometrized units)
      <R> 100.0 </R> (R parameter in kpc)
      <r0> 1.0 </r0> ("bulge radius" r0 in kpc)
-     <Spherical/>
   </Metric>
 
   <Screen>
@@ -30,9 +31,9 @@
   </Screen>
 
   <Astrobj kind = "FixedStar">
-    <Radius> 20 </Radius>
+    <!-- Radius> 20 </Radius -->
+    <Radius> 70 </Radius>
     <Position> 1e6 1.5707963267948966 1.57244  </Position>
-    <UseGenericImpact/>
     <Spectrum kind="PowerLaw">
       <Exponent> 0 </Exponent>
       <Constant> 0.001 </Constant>

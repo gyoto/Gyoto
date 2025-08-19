@@ -31,7 +31,7 @@
   <Astrobj kind = "Jet">
     <JetOuterOpeningAngle>0.41</JetOuterOpeningAngle>
     <JetInnerOpeningAngle>0.35</JetInnerOpeningAngle>
-    <JetBaseHeight>2.</JetBaseHeight> in M units
+    <JetInnerRadius>2.</JetInnerRadius> in M units
     <GammaJet>1.15</GammaJet>
     <BaseNumberDensity unit="cm-3">5e7</BaseNumberDensity>
     <BaseTemperature>3e10</BaseTemperature>

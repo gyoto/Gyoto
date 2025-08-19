@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016, 2019-2020 Thibaut Paumard
+    Copyright 2014-2016, 2019-2020, 2022, 2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -415,7 +415,12 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 		    << endl;
 	// The specific setParameter() implementation may well know
 	// this entity
-	setParameter(name, content, unit);
+	if (setParameter(name, content, unit) ) {
+	  std::string msg ("Property '");
+	  msg += name;
+	  msg += "' not found";
+	  GYOTO_ERROR (msg);
+	}
       } else {
 	GYOTO_DEBUG << "'" << name << "' found "<< endl;
 	std::vector<std::string> plugins;

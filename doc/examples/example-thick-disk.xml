@@ -21,10 +21,9 @@
   <Quantities>Spectrum</Quantities>
 
   <Astrobj kind = "ThickDisk">
-    <RadiativeQ/>
-    <ThickDiskOpeningAngle>1.1</ThickDiskOpeningAngle>
+    <UseSelfAbsorption/>
     <ThickDiskInnerRadius>1.6</ThickDiskInnerRadius>
-    <VelocityBelowIsco>0.61 1.</VelocityBelowIsco> V, Vphi/V as observed by ZAMO
+    <VeloParam>0.61 1.</VeloParam>
     <NumberDensityAtInnerRadius unit="cm-3">7.8e5</NumberDensityAtInnerRadius>
     <TemperatureAtInnerRadius>8e10</TemperatureAtInnerRadius>
     <TemperatureSlope>1.</TemperatureSlope>

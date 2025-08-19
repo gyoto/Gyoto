@@ -11,7 +11,6 @@
      <V0> 0.000733333 </V0> (Flat velocity value in geometrized units)
      <R> 100.0 </R> (R parameter in kpc)
      <r0> 1.0 </r0> ("bulge radius" r0 in kpc)
-     <Spherical/>
   </Metric>
 
   <Screen>
@@ -33,7 +32,6 @@
   <Astrobj kind = "FixedStar">
     <Radius> 20 </Radius>
     <Position> 1e6 1.5698 1.5707963267948966  </Position>
-    <UseGenericImpact/>
     <Spectrum kind="PowerLaw">
       <Exponent> 0 </Exponent>
       <Constant> 0.001 </Constant>

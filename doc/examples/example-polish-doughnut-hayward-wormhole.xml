@@ -29,9 +29,9 @@
     <Quantities>Spectrum</Quantities>
     
     <Astrobj kind = "PolishDoughnut">
-        <KomissarovAngleAveraged/>
+        <AngleAveraged/>
         <AngMomRinner> 4 8.3 </AngMomRinner> <!-- 3.2 4.2 ; 4.29 8.54 ; Caution: if AngMomRinner is given, rinner should be in BL -->
-        <CentralDensity>9000</CentralDensity>
+        <CentralEnthalpyPerUnitVolume>9000</CentralEnthalpyPerUnitVolume>
         <!--
          This is the central enthalpy, hc, in cgs unit [erg/cm^3] ;
          electron number density is ne ~ hc / (mu*c^2) [cm^{-3}]
