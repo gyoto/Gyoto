@@ -58,6 +58,7 @@ GYOTO_PROPERTY_DOUBLE(Jet, TemperatureSlope, temperatureSlope)
 GYOTO_PROPERTY_DOUBLE(Jet, MagnetizationParameter,
 		      magnetizationParameter)
 GYOTO_PROPERTY_DOUBLE(Jet, KappaIndex, kappaIndex, "Index of kappa-distribution synchrotron; leave non-specified to use thermal synchrotron")
+GYOTO_PROPERTY_DOUBLE(Jet, Alpha, alpha, "Parameter that define the fraction of the 'toroidal' configuration compared to the 'parabolic' one for the magnetic field when magneticConfig_=='Combined'")
 GYOTO_PROPERTY_END(Jet, Standard::properties)
 
 #define nstep_angint 10 // for angle-averaging integration
@@ -174,6 +175,14 @@ void Jet::kappaIndex(double index) {
 double Jet::kappaIndex()const{
   return spectrumKappaSynch_->kappaindex();
 }
+void Jet::alpha(double alpha){
+  if (alpha<0. or alpha>1.0)
+    GYOTO_ERROR("alpha value out of range, should be between 0. and 1.");
+  alpha_=alpha;
+}
+double Jet::alpha() const{
+  return alpha_;
+}
 
 //
 
@@ -186,7 +195,7 @@ Jet::Jet() :
   jetStagnationRadius_(0.),
   gammaJet_(1.), jetVphiOverVr_(0.),
   baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
-  temperatureSlope_(1.), magnetizationParameter_(1.)
+  temperatureSlope_(1.), magnetizationParameter_(1.), alpha_(0.)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_   = new Spectrum::KappaDistributionSynchrotron();
@@ -209,6 +218,7 @@ Jet::Jet(const Jet& o) :
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
+  alpha_(o.alpha_),
   spectrumKappaSynch_(NULL),
   spectrumThermalSynch_(NULL)
 {
@@ -267,6 +277,7 @@ void Jet::radiativeQ(double Inu[], // output
     if (discri<0) GYOTO_ERROR("Bad discriminant!");
     double  zjetbase = 0.5*(-1/jetShapeOuterParabolaParam_ + sqrt(discri));
     rcyljetbase = sqrt(zjetbase/jetShapeOuterParabolaParam_);
+    cout << rcyljetbase << endl;
   }
 
   //cout << "In emission t, rcyl, zz= " << coord_ph[0]<< " " << rcyl << " " << zz << endl;
@@ -300,6 +311,37 @@ void Jet::radiativeQ(double Inu[], // output
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
 
+  bool avg = magneticConfig_=="None"?true:false;
+  double theta_mag=0.;
+  if (!avg){
+    double vel[4]; // 4-velocity of emitter
+    for (int ii=0;ii<4;ii++){
+      vel[ii]=coord_obj[ii+4];
+    }
+    double B4vect[4]={0.,0.,0.,0.};
+    if (magneticConfig_=="Combined"){
+      // B = alpha_*Btor + (1-alpha_)*Bparab
+      double Bparab[4], Btor[4];
+      computeB4vect(Bparab, "Parabolic", coord_obj, coord_ph, 1.0);
+      computeB4vect(Btor, "Toroidal", coord_obj, coord_ph);
+
+      double gtt = gg_->gmunu(&coord_ph[0],0,0), gtp = gg_->gmunu(&coord_ph[0],0,3);
+      double Afact=sqrt(pow(alpha_,2.)+pow(1.-alpha_,2.)+2.*alpha_*(1.-alpha_)*(gtt*Bparab[0]*Btor[0]+gtp*Bparab[0]*Btor[3])); // normalisation factor that include cross-terms from the two configuration
+      B4vect[0] = (alpha_*Btor[0] + (1.-alpha_)*Bparab[0]) / Afact;
+      B4vect[1] = (alpha_*Btor[1] + (1.-alpha_)*Bparab[1]) / Afact;
+      B4vect[2] = (alpha_*Btor[2] + (1.-alpha_)*Bparab[2]) / Afact;
+      B4vect[3] = (alpha_*Btor[3] + (1.-alpha_)*Bparab[3]) / Afact;
+    }else{
+      computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+    }
+    double norm=sqrt(gg_->ScalarProd(&coord_ph[0], B4vect, B4vect));
+    if (fabs(norm-1.)>GYOTO_DEFAULT_ABSTOL) GYOTO_ERROR("Bad mf normalization");
+    
+    theta_mag = get_theta_mag(B4vect,coord_ph, vel);
+    if (theta_mag<0. or theta_mag>M_PI) throwError("Jet: bad B angle");
+  }
+  
+
   //cout << "jet stuff= " << coord_ph[1] << " " << coord_ph[2] << " " << zz << " " << rcyljetbase << " " << rcyl << " " << number_density << " " << thetae << " " << temperatureSlope_ << " " << nu0 << endl;
   //cout << "jet zz,rcyl,th,ph,ne,Te= " <<  zz << " " << rcyl << " " << coord_ph[2] << " " << coord_ph[3] << " " << number_density << " " << temperature << endl;
   // Use that line for Compton study:
@@ -316,8 +358,8 @@ void Jet::radiativeQ(double Inu[], // output
   if (kappaIndex()!=default_kappaindex){
     // KAPPA-DISTRIB SYNCHROTRON
     spectrumKappaSynch_->numberdensityCGS(number_density);
-    spectrumKappaSynch_->angle_averaged(1); // impose angle-averaging
-    spectrumKappaSynch_->angle_B_pem(0.); // so we don't care about angle
+    spectrumKappaSynch_->angle_averaged(avg); // impose angle-averaging
+    spectrumKappaSynch_->angle_B_pem(theta_mag); // so we don't care about angle
     spectrumKappaSynch_->cyclotron_freq(nu0);
     spectrumKappaSynch_->thetae(thetae);
     double hypergeom = Gyoto::hypergeom(kappaIndex(), thetae);
@@ -329,8 +371,8 @@ void Jet::radiativeQ(double Inu[], // output
     // THERMAL SYNCHROTRON
     spectrumThermalSynch_->temperature(temperature);
     spectrumThermalSynch_->numberdensityCGS(number_density);
-    spectrumThermalSynch_->angle_averaged(1); // impose angle-averaging
-    spectrumThermalSynch_->angle_B_pem(0.);   // so we don't care about angle
+    spectrumThermalSynch_->angle_averaged(avg); // impose angle-averaging
+    spectrumThermalSynch_->angle_B_pem(theta_mag);   // so we don't care about angle
     spectrumThermalSynch_->cyclotron_freq(nu0);
     double besselK2 = bessk(2, 1./thetae);
     spectrumThermalSynch_->besselK2(besselK2);
@@ -631,7 +673,6 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
 		   *number_density);
   //cout << "r, z, dens, T, B= " << rcyl << " " << zz << " " << number_density << " " << temperature << " " << BB << endl;
   //cout << "r, z, ne, nebase, B, Bbase= " << coord_ph[1] << " " << zz << " " << number_density << " " << baseNumberDensity_cgs_ << " " << BB << " " << sqrt(8.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*baseNumberDensity_cgs_) << endl;
-  //GYOTO_ERROR("testjet");
 
   double nu0 = GYOTO_ELEMENTARY_CHARGE_CGS*BB
     /(2.*M_PI*GYOTO_ELECTRON_MASS_CGS*GYOTO_C_CGS); // cyclotron freq
@@ -646,7 +687,27 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
   // need its direction, the norm is computed independently.
 
   double B4vect[4]={0.,0.,0.,0.};
-  computeB4vect(B4vect, magneticConfig_, co, coord_ph);
+  if (magneticConfig_=="Combined"){
+    if (gg_->coordKind()!=GYOTO_COORDKIND_SPHERICAL)
+      GYOTO_ERROR("Combined magnetic field defined only with spherical coordinate.");
+    // B = alpha_*Btor + (1-alpha_)*Bparab
+    double Bparab[4], Btor[4];
+    //cout << "vel: " << vel[0] << ", " << vel[1] << ", " << vel[2] << ", " << vel[3] << endl; 
+    computeB4vect(Bparab, "Parabolic", co, coord_ph, 0.75); // value of 0.75 to parametrize the parabolic jet from https://arxiv.org/pdf/2304.13603
+    //cout << "Bparab: " << Bparab[0] << ", " << Bparab[1] << ", " << Bparab[2] << ", " << Bparab[3] << endl;
+    computeB4vect(Btor, "Toroidal", co, coord_ph);
+    //cout << "Btor: " << Btor[0] << ", " << Btor[1] << ", " << Btor[2] << ", " << Btor[3] << endl; 
+
+    double gtt = gg_->gmunu(&coord_ph[0],0,0), gtp = gg_->gmunu(&coord_ph[0],0,3);
+    double Afact=sqrt(pow(alpha_,2.)+pow(1.-alpha_,2.)+2.*alpha_*(1.-alpha_)*(gtt*Bparab[0]*Btor[0]+gtp*Bparab[0]*Btor[3])); // normalisation factor that include cross-terms from the two configuration
+    B4vect[0] = (alpha_*Btor[0] + (1.-alpha_)*Bparab[0]) / Afact;
+    B4vect[1] = (alpha_*Btor[1] + (1.-alpha_)*Bparab[1]) / Afact;
+    B4vect[2] = (alpha_*Btor[2] + (1.-alpha_)*Bparab[2]) / Afact;
+    B4vect[3] = (alpha_*Btor[3] + (1.-alpha_)*Bparab[3]) / Afact;
+  }else{
+    computeB4vect(B4vect, magneticConfig_, co, coord_ph);
+  }
+  
     
   //cout << "***BL mf in orthonorm frame= "<< B4vect[0]  << " " << B4vect[1]  << " " << coord_ph[1]*B4vect[2]  << " " << coord_ph[1]*abs(sin(coord_ph[2]))*B4vect[3]  << endl;
 
@@ -659,25 +720,7 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
 
   double Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
   //cout << "At r,x,y,z= " << coord_ph[1] << " " << coord_ph[1]*sin(coord_ph[2])*cos(coord_ph[3]) << " " << coord_ph[1]*sin(coord_ph[2])*sin(coord_ph[3]) << " " << coord_ph[1]*cos(coord_ph[2]) << " ; Chi=" << Chi << endl;
-
-  // Computing the angle theta_mag between the magnetic field vector and photon tgt vector in the rest frame of the emitter
-  gg_->projectFourVect(&coord_ph[0],B4vect,vel); //Projection of the 4-vector B to 4-velocity to be in the rest frame of the emitter
-  double photon_emframe[4]; // photon tgt vector projected in comoving frame
-  for (int ii=0;ii<4;ii++){
-    photon_emframe[ii]=coord_ph[ii+4];
-  }
-
-  // Angle between mf and K in emitter's frame. B is already in this frame,
-  // it is by construction normal to u. We still need to project k
-  // normal to u, this is K = k + (k.u) u. Then:
-  // cos(thetaB) = (K / |K|) . (B / |B|)
-  gg_->projectFourVect(&coord_ph[0],photon_emframe,vel);
-  //cout << "***K photon proj in orthonorm frame= " << photon_emframe[0] << " " << photon_emframe[1] << " " << coord_ph[1]*photon_emframe[2] << " " << coord_ph[1]*abs(sin(coord_ph[2]))*photon_emframe[3] << endl;
-  //cout << endl;
-  double bnorm = gg_->norm(&coord_ph[0],B4vect);
-  double lnorm = gg_->norm(&coord_ph[0],photon_emframe);
-  double lscalb = gg_->ScalarProd(&coord_ph[0],photon_emframe,B4vect);
-  double theta_mag = acos(lscalb/(lnorm*bnorm));
+  double theta_mag = get_theta_mag(B4vect,coord_ph, vel);
 
   if (theta_mag<0. or theta_mag>M_PI) throwError("Jet: bad B angle");
 

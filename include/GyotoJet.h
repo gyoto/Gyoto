@@ -116,6 +116,8 @@ class Gyoto::Astrobj::Jet
   double temperatureSlope_; ///< electron temperature \propto z^temperatureSlope_
   double magnetizationParameter_; ///< P<SUB>magn</SUB>/(n<SUB>e</SUB> m<SUB>p</SUB> c<SUP>2</SUP>)
 
+  double alpha_; ///< parameter that define the fraction of the 'toroidal' configuration compared to the 'parabolic' one for the magnetic field when magneticConfig_=='Combined'
+  
   // Constructors - Destructor
   // -------------------------
  public:
@@ -168,6 +170,8 @@ class Gyoto::Astrobj::Jet
   double magnetizationParameter()const;
   void kappaIndex(double index);
   double kappaIndex()const;
+  void alpha(double alpha);
+  double alpha()const;
 
  public:
   using Generic::metric;
