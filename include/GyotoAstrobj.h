@@ -719,11 +719,12 @@ private:
    * Compute the magnetic field 4-vector at a given position and a given configuration
    * 
    * \param B4vect the output 4-vector magnetic field
-   * \param magneticConfig string which determine the wanted configuration ('Radial', 'Azimuthal', 'Vertical')
+   * \param magneticConfig string which determine the wanted configuration ('Radial', 'Azimuthal', 'Vertical', 'Poloidal')
    * \param co coordinate of the object which also contain its velocity
    * \param cph coordinate of the photon
+   * \param par (optional) parameter for some specific configurations
    */
-  void computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const;
+  void computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double const par=0.75) const;
 
   void computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const;
   /**

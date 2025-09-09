@@ -1246,7 +1246,7 @@ void Generic::getSinCos2Chi(double const fourvect[4], state_t const &cph, double
 	*cos2Chi =cos(2.*Chi);
 }
 
-void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph) const{
+void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double const par) const{
 
   /*********************/
   /* GYOTO B FORMALISM */
@@ -1255,7 +1255,8 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
   // Define B by requiring: B.B=1 (we care only about B direction),
   // and B.u=0 (B defined in emitter's frame).
   
-  double rr, rcyl, theta, phi, zz=0.;
+  double rr, rcyl, theta, phi, xx, yy, zz=0.;
+  double gtt, grr, gthth, gpp, gtp, gxx, gyy, gzz, gxy, gxz, gyz, gtx, gty, gtz;
   double vel[4]; // 4-velocity of emitter
   for (int ii=0;ii<4;ii++){
     vel[ii]=co[ii+4];
@@ -1268,95 +1269,200 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     theta = cph[2];
     phi = cph[3];
     zz   = cph[1]*cos(cph[2]);
+    gtt = gg_->gmunu(&cph[0],0,0);
+    grr = gg_->gmunu(&cph[0],1,1);
+    gthth = gg_->gmunu(&cph[0],2,2);
+    gtp = gg_->gmunu(&cph[0],0,3);
+    gpp = gg_->gmunu(&cph[0],3,3);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
-    rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
-        +cph[3]*cph[3]);
-    theta   = acos(cph[3]/rr);
-    phi = atan2(cph[2], cph[1]);
+    xx = cph[1];
+    yy = cph[2];
     zz   = cph[3];
+    rcyl = pow(xx*xx+yy*yy, 0.5);
+    rr = sqrt(xx*xx+yy*yy+zz*zz);
+    theta   = acos(zz/rr);
+    phi = atan2(cph[2], cph[1]);
+    gtt = gg_->gmunu(&cph[0],0,0);
+    gxx = gg_->gmunu(&cph[0],1,1);
+    gyy = gg_->gmunu(&cph[0],2,2);
+    gzz = gg_->gmunu(&cph[0],3,3);
+    gtx = gg_->gmunu(&cph[0],0,1);
+    gty = gg_->gmunu(&cph[0],0,2);
+    gtz = gg_->gmunu(&cph[0],0,3);
+    gxy = gg_->gmunu(&cph[0],1,2);
+    gxz = gg_->gmunu(&cph[0],1,3);
+    gyz = gg_->gmunu(&cph[0],2,3);
     break;
   default:
     GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
   }
 
 
-  double gtt = gg_->gmunu(&cph[0],0,0),
-    grr = gg_->gmunu(&cph[0],1,1),
-    gthth = gg_->gmunu(&cph[0],2,2),
-    gtp = gg_->gmunu(&cph[0],0,3),
-    gpp = gg_->gmunu(&cph[0],3,3);
+  // VERTICAL configurations
+  if (magneticConfig=="Vertical" or magneticConfig=="Vertical-n"){
+    if (gg_->coordKind()==GYOTO_COORDKIND_SPHERICAL) {
+      // Spherical coordinates case 
+      // Write: B = Bt \partial_t + alphafact*(costh \partial_r/\sqrt{grr} - sinth \partial_th/sqrt{gthth}), and the following relations are found immediately
+      // by imposing B.B=1, B.u=0
+      double Afact = (vel[1]*sqrt(grr)*cos(theta) - vel[2]*sqrt(gthth)*sin(theta))/(vel[0]*gtt+vel[3]*gtp),
+        alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+      B4vect[0] = -alphafact*Afact;
+      B4vect[1] = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
+      B4vect[2] = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
+      B4vect[3] = 0;
+ 
+    }else{
+      // Cartesian coordinates case
+      double Bx=0., By=0., Bz=1.,
+        Afact = -(vel[0]*(gtx*Bx+gty*By+gtz*Bz) + vel[1]*(gxx*Bx+gxy*By+gxz*Bz) + vel[2]*(gxy*Bx+gyy*By+gyz*Bz) + vel[3]*(gxz*Bx+gyz*By+gzz*Bz)) / (gtt*vel[0]+gtx*vel[1]+gty*vel[2]+gtz*vel[3]),
+        alpha = 1./sqrt(gtt*Afact*Afact+gxx*Bx*Bx+gyy*By*By+gzz*Bz*Bz+2.*(gtx*Bx*Afact+gty*By*Afact+gtz*Bz*Afact+gxy*Bx*By+gxz*Bx*Bz+gyz*By*Bz));
+      B4vect[0] = alpha*Afact;
+      B4vect[1] = alpha*Bx;
+      B4vect[2] = alpha*By;
+      B4vect[3] = alpha*Bz;
+    }
+    if (magneticConfig=="Vertical-n"){
+      B4vect[0]*=-1;
+      B4vect[1]*=-1.;
+      B4vect[2]*=-1.;
+      B4vect[3]*=-1.;
+    }
+    
+  // RADIAL configurations
+  }else if(magneticConfig=="Radial" or magneticConfig=="Radial-n"){
+    if (gg_->coordKind()==GYOTO_COORDKIND_SPHERICAL) {
+      // Spherical coordinates case 
+      double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
+        alphafact = sqrt(1./(1.+gtt*Afact*Afact));
+      B4vect[0] = -alphafact*Afact,
+      B4vect[1] = alphafact/sqrt(grr); // along +er
+      B4vect[2] = 0.;
+      B4vect[3] = 0.;
+      
+    } else {
+      // Cartesian coordinates case
+      // define B=(alpha*B^t, alpha*B^x, alpha*B^y, alpha*B^z) then compute B^t and alpha from B.u=0 and B.B=1
+      // with B^x=x, B^y=y and B^z=z
+      double Bx=xx, By=yy, Bz=zz,
+        Afact = -(vel[0]*(gtx*Bx+gty*By+gtz*Bz) + vel[1]*(gxx*Bx+gxy*By+gxz*Bz) + vel[2]*(gxy*Bx+gyy*By+gyz*Bz) + vel[3]*(gxz*Bx+gyz*By+gzz*Bz)) / (gtt*vel[0]+gtx*vel[1]+gty*vel[2]+gtz*vel[3]),
+        alpha = 1./sqrt(gtt*Afact*Afact+gxx*Bx*Bx+gyy*By*By+gzz*Bz*Bz+2.*(gtx*Bx*Afact+gty*By*Afact+gtz*Bz*Afact+gxy*Bx*By+gxz*Bx*Bz+gyz*By*Bz));
+      B4vect[0] = alpha*Afact;
+      B4vect[1] = alpha*Bx;
+      B4vect[2] = alpha*By;
+      B4vect[3] = alpha*Bz;
+    }
+    if (magneticConfig=="Radial-n"){
+      B4vect[0]*=-1;
+      B4vect[1]*=-1.;
+      B4vect[2]*=-1.;
+      B4vect[3]*=-1.;
+    }
+    
+  // TOROIDAL configurations
+  }else if(magneticConfig=="Toroidal" or magneticConfig=="Toroidal-n"){
+    if (gg_->coordKind()==GYOTO_COORDKIND_SPHERICAL) {
+      // Spherical coordinates case 
+      // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
+      if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
+      double omega=vel[3]/vel[0], omega2 = omega*omega;
+      double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
+      double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
+      if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
+      B4vect[3] = sqrt(Bp2);
+      B4vect[0] = -B4vect[3]*Afact;
+      B4vect[1] = 0.;
+      B4vect[2] = 0.;
+    } else {
+      // Cartesian coordinates case
+      // define B=(alpha*B^t, -alpha*yy, alpha*xx, 0) then compute B^t and alpha from B.u=0 and B.B=1
+      double Afact = -(vel[0]*(xx*gty-yy*gtx) + vel[1]*(xx*gxy-yy*gxx) + vel[2]*(xx*gyy-yy*gxy) + vel[3]*(xx*gyz-yy*gxz)) / (gtt*vel[0]+gtx*vel[1]+gty*vel[2]+gtz*vel[3]),
+        alpha = 1./sqrt(gtt*Afact*Afact+gxx*yy*yy+gyy*xx*xx+2.*(gty*xx*Afact-gtx*yy*Afact-gxy*xx*yy));
+      B4vect[0] = alpha*Afact;
+      B4vect[1] = -alpha*yy;
+      B4vect[2] = alpha*xx;
+      B4vect[3] = 0.;
+    }
+    if (magneticConfig=="Toroidal-n"){
+      B4vect[0]*=-1;
+      B4vect[1]*=-1.;
+      B4vect[2]*=-1.;
+      B4vect[3]*=-1.;
+    }
+    
+  // POLOIDAL configurations
+  }else if(magneticConfig=="Poloidal" or magneticConfig=="Poloidal-n"){
+    if (gg_->coordKind()==GYOTO_COORDKIND_SPHERICAL) {
+      // Spherical coordinates case 
+      double Afact = 1./(gtt*vel[0]*vel[0]+gthth*vel[2]*vel[2]);
+      B4vect[0]=sqrt(gthth*vel[2]*vel[2]*Afact/gtt);
+      B4vect[1]=0.;
+      B4vect[2]=sqrt(Afact*gtt*vel[0]*vel[0]/gthth);
+      B4vect[3]=0.;
+    } else {
+      // Cartesian coordinates case
+      // define B=(alpha*B^t, alpha*B^x, alpha*B^y, alpha*B^z) then compute B^t and alpha from B.u=0 and B.B=1
+      // with B^x=xz/(r*rcyl), B^y=yz/(r*rcyl) and B^z=-rcyl/r
+      double Bx=xx*zz/(rr*rcyl), By=yy*zz/(rr*rcyl), Bz=-rcyl/rr,
+        Afact = -(vel[0]*(gtx*Bx+gty*By+gtz*Bz) + vel[1]*(gxx*Bx+gxy*By+gxz*Bz) + vel[2]*(gxy*Bx+gyy*By+gyz*Bz) + vel[3]*(gxz*Bx+gyz*By+gzz*Bz)) / (gtt*vel[0]+gtx*vel[1]+gty*vel[2]+gtz*vel[3]),
+        alpha = 1./sqrt(gtt*Afact*Afact+gxx*Bx*Bx+gyy*By*By+gzz*Bz*Bz+2.*(gtx*Bx*Afact+gty*By*Afact+gtz*Bz*Afact+gxy*Bx*By+gxz*Bx*Bz+gyz*By*Bz));
+      B4vect[0] = alpha*Afact;
+      B4vect[1] = alpha*Bx;
+      B4vect[2] = alpha*By;
+      B4vect[3] = alpha*Bz;
+    }
+    if (magneticConfig=="Poloidal-n"){
+      B4vect[0]*=-1;
+      B4vect[1]*=-1.;
+      B4vect[2]*=-1.;
+      B4vect[3]*=-1.;
+    }
 
+  // PARABOLIC configurations
+  }else if(magneticConfig=="Parabolic" or magneticConfig=="Parabolic-n"){
+    if (gg_->coordKind()==GYOTO_COORDKIND_SPHERICAL) {
+      // Spherical coordinates case 
+      // Kolos 2023, https://arxiv.org/pdf/2304.13603
+      // Magnetic configuration built from the potential A = A_phi = r^w (1 - abs(cos(theta)))
+      // non zero components of F_\mu\nu are:
+      // F_r\phi = w r^(w-1) (1 - abs(cos(thta)))
+      // T_\theta\phi = r^w sin(theta) sgn(cos(theta))
+      // We obtain the componant of B using B^mu = 1/2 \epsilon^{\mu\nu\alpha\beta} u_\nu F_\alpha\beta = 1/2 \epsilon^{\mu\alpha\beta}_\nu u^\nu F_\alpha\beta
+      
+      if (par<0 or par>1.25)
+        GYOTO_ERROR("Parameter for the parabolic configuration should be between 0 and 1,25.");
+      
+      double fourvect[4]={0.,0.,0.,0.};
+      double sgn = theta==M_PI/2.?1.:cos(theta)/abs(cos(theta));
+      double u_t = gtt*vel[0], u_r=grr*vel[1], u_theta=gthth*vel[2];
 
+      fourvect[0]=0.5*u_r*sgn*pow(rr, par-2) - u_theta*par*pow(rr, par-3)*(1.-abs(cos(theta)))/sin(theta);
+      fourvect[1]=-0.5*u_t*sgn*pow(rr, par-2);
+      fourvect[2]=theta==0.?0.:0.5*u_t*(1.-abs(cos(theta)))/sin(theta)*pow(rr, par-3)*par; // if theta=0 => B^theta=0
+      
+      // we need to normalize
+      double norm=sqrt(gg_->ScalarProd(&cph[0], fourvect, fourvect));
+      B4vect[0]=fourvect[0]/norm;
+      B4vect[1]=fourvect[1]/norm;
+      B4vect[2]=fourvect[2]/norm;
+      B4vect[3]=fourvect[3]/norm; // should be 0.
+      
+    } else {
+      // Cartesian coordinates case
+      GYOTO_ERROR("This magnetic field configuration is not defined in Cartesian coordinates.");
+    }
+    if (magneticConfig=="Parabolic-n"){
+      B4vect[0]*=-1;
+      B4vect[1]*=-1.;
+      B4vect[2]*=-1.;
+      B4vect[3]*=-1.;
+    }
 
-  double Bt, Br, Bth, Bp;
-  if (magneticConfig=="Vertical"){
-    // Write: B = Bt \partial_t + alphafact*(costh \partial_r/\sqrt{grr} - sinth \partial_th/sqrt{gthth}), and the following relations are found immediately
-    // by imposing B.B=1, B.u=0
-    double Afact = (vel[1]*sqrt(grr)*cos(theta) - vel[2]*sqrt(gthth)*sin(theta))/(vel[0]*gtt+vel[3]*gtp),
-  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    Bt = -alphafact*Afact;
-    Br = alphafact*cos(cph[2])/sqrt(grr); // cos(cph[2])/sqrt(grr)
-    Bth = -alphafact*sin(cph[2])/sqrt(gthth); // -sin([2])/sqrt(gthth) --> along +ez
-    Bp = 0;
-
-  }else if(magneticConfig=="Radial"){
-    double Afact = vel[1]*sqrt(grr)/(vel[0]*gtt+vel[3]*gtp),
-  alphafact = sqrt(1./(1.+gtt*Afact*Afact));
-    Bt = -alphafact*Afact,
-    Br = alphafact/sqrt(grr); // along +er
-    Bth = 0.;
-    Bp = 0.;
-
-  }else if(magneticConfig=="Toroidal"){ 
-    // Only case where a bit of computation is needed
-    // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
-    if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
-    double omega=vel[3]/vel[0], omega2 = omega*omega;
-    double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
-    double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
-    if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
-    Bp = sqrt(Bp2);
-    Bt = -Bp*Afact;
-    Br = 0.;
-    Bth = 0.;
-
-  }else if(magneticConfig=="Poloidal"){
-    double Afact = 1./(gtt*vel[0]*vel[0]+gthth*vel[2]*vel[2]);
-  	Bt=sqrt(gthth*vel[2]*vel[2]*Afact/gtt);
-  	Br=0.;
-  	Bth=sqrt(Afact*gtt*vel[0]*vel[0]/gthth);
-  	Bp=0.;
-
-  }else if(magneticConfig=="Poloidal-n"){
-    double Afact = 1./(gtt*vel[0]*vel[0]+gthth*vel[2]*vel[2]);
-  	Bt=sqrt(gthth*vel[2]*vel[2]*Afact/gtt);
-  	Br=0.;
-  	Bth=-sqrt(Afact*gtt*vel[0]*vel[0]/gthth);
-  	Bp=0.;
-  }else{
+  }
+  
+  else{
     GYOTO_ERROR("Not implemented Bfield orientation");
   }
-
-  switch (gg_->coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    B4vect[0]=Bt;
-    B4vect[1]=Br;
-    B4vect[2]=Bth;
-    B4vect[3]=Bp;
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    B4vect[0]=Bt;
-    B4vect[1]=Br*sin(theta)*cos(phi)+Bth*cos(theta)*cos(phi)-Bp*sin(phi);
-    B4vect[2]=Br*sin(theta)*sin(phi)+Bth*cos(theta)*sin(phi)+Bp*cos(phi);
-    B4vect[3]=Br*cos(theta)-Bth*sin(theta);
-    break;
-  default:
-    GYOTO_ERROR("In Astrobj::Generic::computeB4vect : Unknown coordinate system kind");
-  }
-    
-
 
   return;
 }
