@@ -277,7 +277,6 @@ void Jet::radiativeQ(double Inu[], // output
     if (discri<0) GYOTO_ERROR("Bad discriminant!");
     double  zjetbase = 0.5*(-1/jetShapeOuterParabolaParam_ + sqrt(discri));
     rcyljetbase = sqrt(zjetbase/jetShapeOuterParabolaParam_);
-    cout << rcyljetbase << endl;
   }
 
   //cout << "In emission t, rcyl, zz= " << coord_ph[0]<< " " << rcyl << " " << zz << endl;
