@@ -130,12 +130,14 @@ class Gyoto::Astrobj::SimBridge : public Gyoto::Astrobj::Standard, public FitsRW
   double* x2_array_; ///< Second spatial dimension array (\theta in spherical, Y in Cartesian)
   double* x3_array_; ///< Third spatial dimension array (\phi in spherical, Z in Cartesian)
   double* nu_array_; ///< frequency array if quantities in FITS files are radiative coefficients
+  double* pitchAngle_array_;
 
   int ntime_; ///< length of time_array_
   int nx1_; ///< length of x1_array_
   int nx2_; ///< length of x2_array_
   int nx3_; ///< length of x3_array_
   int nnu_; ///< ///< length of nu_array_, optional
+  int npitch_; ///< ///< length of pitchAngle_array_, optional
 
   std::string* boundCond_; ///< Table of string which store the boundary conditions of all dimensions.
 

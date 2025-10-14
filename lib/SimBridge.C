@@ -64,19 +64,21 @@ SimBridge::SimBridge() :
   nx2_(1),
   nx3_(1),
   nnu_(0),
+  npitch_(0),
   time_array_(NULL),
   x1_array_(NULL),
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
+  pitchAngle_array_(NULL),
   boundCond_(NULL),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
   spectrumBB_(NULL)
 {
-  boundCond_ = new string[5];
-  boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]="None";
+  boundCond_ = new string[6];
+  boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]=boundCond_[5]="None";
 
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
@@ -104,11 +106,13 @@ SimBridge::SimBridge(const SimBridge& orig) :
   nx2_(orig.nx2_),
   nx3_(orig.nx3_),
   nnu_(orig.nnu_),
+  npitch_(orig.npitch_),
   time_array_(NULL),
   x1_array_(NULL),
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
+  pitchAngle_array_(NULL),
   boundCond_(NULL),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
@@ -116,8 +120,8 @@ SimBridge::SimBridge(const SimBridge& orig) :
   spectrumBB_(NULL)
 {
   if (orig.boundCond_){
-    boundCond_  = new string[5];
-    for (int ii=0; ii<5; ii++){
+    boundCond_  = new string[6];
+    for (int ii=0; ii<6; ii++){
       boundCond_[ii] = orig.boundCond_[ii];
     }
   }
@@ -146,6 +150,11 @@ SimBridge::SimBridge(const SimBridge& orig) :
     memcpy(nu_array_, orig.nu_array_, nnu_*sizeof(double));
   }
 
+  if (orig.pitchAngle_array_){
+    pitchAngle_array_ = new double[npitch_];
+    memcpy(pitchAngle_array_, orig.pitchAngle_array_, npitch_*sizeof(double));
+  }
+
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
   if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
@@ -170,6 +179,7 @@ SimBridge::~SimBridge() {
   if (x2_array_) delete[] x2_array_;
   if (x3_array_) delete[] x3_array_;
   if (nu_array_) delete[] nu_array_;
+  if (pitchAngle_array_) delete[] pitchAngle_array_;
 
 } 
 
@@ -201,6 +211,7 @@ void SimBridge::filename(std::string const &f){
 
   double* tmp;
 
+  // Reading grid from FITS file
   ntime_        = FitsRW::fitsReadKey(fptr, "NB_X0");
   time_array_   = new double[ntime_];
   FitsRW::fitsReadHDUData(fptr, "X0", time_array_, ntime_);
@@ -225,7 +236,7 @@ void SimBridge::filename(std::string const &f){
   GYOTO_DEBUG << "nx3_" << nx3_ << endl;
   GYOTO_DEBUG << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
 
-
+  // Reading frequency array if it exist in FITS file
   int status = 0;
   string key = "NB_FREQ";
   double tmpd;
@@ -239,8 +250,20 @@ void SimBridge::filename(std::string const &f){
     GYOTO_DEBUG << "nnu_" << nnu_ << endl;
     GYOTO_DEBUG << "nu array: " << nu_array_[0] << " - " << nu_array_[nnu_-1] << endl;
   }
-  
 
+  // Reading pitch angle array if it exist in FITS file
+  key = "NB_PITCH_ANGLE";
+  fits_movabs_hdu(fptr, 1, tmpi, &status);
+  fits_read_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &tmpd, NULL, &status);
+  if(status==0){
+    npitch_            = FitsRW::fitsReadKey(fptr, "NB_PITCH_ANGLE");
+    pitchAngle_array_  = new double[npitch_];
+    FitsRW::fitsReadHDUData(fptr, "PITCH_ANGLE", pitchAngle_array_, npitch_);
+    GYOTO_DEBUG << "npitch_" << npitch_ << endl;
+    GYOTO_DEBUG << "pitch angle array: " << pitchAngle_array_[0] << " - " << pitchAngle_array_[npitch_-1] << endl;
+  }
+  
+  // Check if FITS file contains magnetic field and set the associated flag
   BinFile_ = FitsRW::fitsReadKey(fptr, "BINFILE");
 
   // Filling the flags
@@ -344,9 +367,9 @@ void SimBridge::boundaryConditions(string const &sbc){
   std::istringstream tokenStream(sbc);
   int wordCount = 0;
 
-  while (std::getline(tokenStream, token, ' ') && wordCount < 5) {
+  while (std::getline(tokenStream, token, ' ') && wordCount < 6) {
     std::istringstream commaStream(token);
-    while (std::getline(commaStream, token, ',') && wordCount < 5) {
+    while (std::getline(commaStream, token, ',') && wordCount < 6) {
       if (!token.empty()) {
         switch (wordCount) {
           case 0: boundCond_[0] = token; break;
@@ -354,15 +377,17 @@ void SimBridge::boundaryConditions(string const &sbc){
           case 2: boundCond_[2] = token; break;
           case 3: boundCond_[3] = token; break;
           case 4: boundCond_[4] = token; break;
+          case 5: boundCond_[5] = token; break;
         }
         ++wordCount;
       }
     }
   }
 }
+
 std::string SimBridge::boundaryConditions() const{
   std::string list;
-  for (int ii=0;ii<5;ii++)
+  for (int ii=0;ii<6;ii++)
     list += boundCond_[ii] + " ";
   return list;
 }
@@ -394,7 +419,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   if (dirname_=="None")
       GYOTO_ERROR("In SimBridge RadiativeQ : dirname_ not defined, please use directory(string)");
   
-  double tcur=coord_ph[0]; // in M units # TBC
+  double tcur=coord_ph[0]; // in M units
   int nfile=ntime_==1?1:2; // 1 if ntime=1, 2 otherwise
   //cout << "tcur: " << tcur << endl;
   int index=getIndex(tcur); //index of files to be loaded (index and index+1)
@@ -424,17 +449,17 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     rotation_array = new double*[3];
     for (int ii=0; ii<4; ii++){
       if (emisInFile_[ii]){
-        emission_array[ii] = new double[nfile*ncells];
+        emission_array[ii] = new double[nfile*ncells*nnu_*npitch_];
       }else{
         emission_array[ii] = nullptr;
       }
 
-      if (absInFile_[ii]) {absorption_array[ii] = new double[nfile*ncells];}
+      if (absInFile_[ii]) {absorption_array[ii] = new double[nfile*ncells*nnu_*npitch_];}
       else {absorption_array[ii] = nullptr;}
     }
     for (int ii=0; ii<3; ii++){
       if (rotInFile_[ii]){
-        rotation_array[ii] = new double[nfile*ncells];
+        rotation_array[ii] = new double[nfile*ncells*nnu_*npitch_];
       }else{
         rotation_array[ii] = nullptr;
       }
@@ -465,24 +490,24 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
     time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
 
-    double* emplacement;
+    double* array;
 
     if (temperature_){
       // The arrays stored in the FITS files are density and temperature + eventually magnetic field
       // Read NUMBERDENSITY
-      emplacement = density_array + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "NUMBERDENSITY", emplacement, ncells);
+      array = density_array + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "NUMBERDENSITY", array, ncells);
 
       // Read TEMPERATURE
-      emplacement = temperature_array + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "TEMPERATURE", emplacement, ncells);
+      array = temperature_array + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "TEMPERATURE", array, ncells);
       
       if (BinFile_) {
         for (int jj = 0; jj < 4; jj++) {
           std::ostringstream hdu_name;
           hdu_name << "B" << jj;
-          emplacement = magneticfield_array[jj] + ii * ncells;
-          FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str(), emplacement, ncells);
+          array = magneticfield_array[jj] + ii * ncells;
+          FitsRW::fitsReadHDUData(fptr, hdu_name.str().c_str(), array, ncells);
         }
       }
     }else{
@@ -493,48 +518,48 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
         GYOTO_ERROR("In SimBridge RadiativeQ : frequency array is not set");
       
       if (emisInFile_[0]){
-        emplacement = emission_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_I", emplacement, ncells);
+        array = emission_array[0] + ii * ncells*nnu_*npitch_;
+        FitsRW::fitsReadHDUData(fptr, "J_I", array, ncells*nnu_*npitch_);
       }
       if (emisInFile_[1]){
-        emplacement = emission_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_Q", emplacement, ncells);
+        array = emission_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_Q", array, ncells*nnu_*npitch_);
       }
       if (emisInFile_[2]){
-        emplacement = emission_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_U", emplacement, ncells);
+        array = emission_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_U", array, ncells*nnu_*npitch_);
       }
       if (emisInFile_[3]){
-        emplacement = emission_array[3] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "J_V", emplacement, ncells);
+        array = emission_array[3] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "J_V", array, ncells*nnu_*npitch_);
       }
       if (absInFile_[0]){
-        emplacement = absorption_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_I", emplacement, ncells);
+        array = absorption_array[0] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_I", array, ncells*nnu_*npitch_);
       }
       if (absInFile_[1]){
-        emplacement = absorption_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_Q", emplacement, ncells);
+        array = absorption_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_Q", array, ncells*nnu_*npitch_);
       }
       if (absInFile_[2]){
-        emplacement = absorption_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_U", emplacement, ncells);
+        array = absorption_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_U", array, ncells*nnu_*npitch_);
       }
       if (absInFile_[3]){
-        emplacement = absorption_array[3] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "ALPHA_V", emplacement, ncells);
+        array = absorption_array[3] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "ALPHA_V", array, ncells*nnu_*npitch_);
       }
       if (rotInFile_[0]){
-        emplacement = rotation_array[0] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_Q", emplacement, ncells);
+        array = rotation_array[0] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_Q", array, ncells*nnu_*npitch_);
       }
       if (rotInFile_[1]){
-        emplacement = rotation_array[1] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_U", emplacement, ncells);
+        array = rotation_array[1] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_U", array, ncells*nnu_*npitch_);
       }
       if (rotInFile_[2]){
-        emplacement = rotation_array[2] + ii * ncells;
-        FitsRW::fitsReadHDUData(fptr, "R_V", emplacement, ncells);
+        array = rotation_array[2] + ii * ncells;
+        FitsRW::fitsReadHDUData(fptr, "R_V", array, ncells*nnu_*npitch_);
       }
     }
     FitsRW::fitsClose(fptr);
@@ -696,35 +721,46 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     }
   }else{
     for (size_t ii=0; ii<nbnu; ++ii){
+      // Compute the pitch angle
+      double B4vect[4]={0.,0.,0.,0.};
+      double theta_mag=0.;
+      if (magneticConfig_!="None"){
+        computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+        theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+      } else if (npitch_!=1) GYOTO_ERROR("Magnetic field configuration not set, cannot compute the pitch angle.");
+
+      
+
       GYOTO_DEBUG << "Setup arguments for the interpolation of radiative coefficients." << endl;
-      double Xq[5] = {tcur, x1, x2, x3, nuem[ii]};
-      int X_params[5] = {nfile, nx1_, nx2_, nx3_, nnu_};
-      //cout << "coord: " << Xq[0] << " " << Xq[1] << " " << Xq[2] << " " << Xq[3] << " " << Xq[4] << endl;
+      double Xq[6] = {tcur, x1, x2, x3, nuem[ii], theta_mag};
+      int X_params[6] = {nfile, nx1_, nx2_, nx3_, nnu_, npitch_};
+      //cout << "coord: " << Xq[0] << " " << Xq[1] << " " << Xq[2] << " " << Xq[3] << " " << Xq[4] << " " << Xq[5] << endl;
       double** X;
-      X = new double*[5];
+      X = new double*[6];
       X[0] = time_interpo;
       X[1] = x1_array_;
       X[2] = x2_array_;
       X[3] = x3_array_;
       X[4] = nu_array_;
-      std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4]};
+      X[5] = pitchAngle_array_;
+      std::string cond_limits[6] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4], boundCond_[5]};
       //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << endl;
       
       GYOTO_DEBUG << "Perform the interpolation of radiative coefficients." << endl;
       jInu[ii]=interpolate(5, emission_array[0], Xq, X, X_params, cond_limits);
       GYOTO_DEBUG << "Interpolating polarized emission coefficients." << endl;
-      jQnu[ii]=emisInFile_[1]?interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits):0.;
-      jUnu[ii]=emisInFile_[2]?interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits):0.;
-      jVnu[ii]=emisInFile_[3]?interpolate(5, emission_array[3],   Xq, X, X_params, cond_limits):0.;
+      jQnu[ii]=emisInFile_[1]?interpolate(6, emission_array[1],   Xq, X, X_params, cond_limits):0.;
+      jUnu[ii]=emisInFile_[2]?interpolate(6, emission_array[2],   Xq, X, X_params, cond_limits):0.;
+      jVnu[ii]=emisInFile_[3]?interpolate(6, emission_array[3],   Xq, X, X_params, cond_limits):0.;
       GYOTO_DEBUG << "Interpolating polarized absorption coefficients." << endl;
-      aInu[ii]=absInFile_[0]?interpolate(5, absorption_array[0], Xq, X, X_params, cond_limits):0.;
-      aQnu[ii]=absInFile_[1]?interpolate(5, absorption_array[1], Xq, X, X_params, cond_limits):0.;
-      aUnu[ii]=absInFile_[2]?interpolate(5, absorption_array[2], Xq, X, X_params, cond_limits):0.;
-      aVnu[ii]=absInFile_[3]?interpolate(5, absorption_array[3], Xq, X, X_params, cond_limits):0.;
+      aInu[ii]=absInFile_[0]?interpolate(6, absorption_array[0], Xq, X, X_params, cond_limits):0.;
+      aQnu[ii]=absInFile_[1]?interpolate(6, absorption_array[1], Xq, X, X_params, cond_limits):0.;
+      aUnu[ii]=absInFile_[2]?interpolate(6, absorption_array[2], Xq, X, X_params, cond_limits):0.;
+      aVnu[ii]=absInFile_[3]?interpolate(6, absorption_array[3], Xq, X, X_params, cond_limits):0.;
       GYOTO_DEBUG << "Interpolating polarized rotation coefficients." << endl;
-      rotQnu[ii]=rotInFile_[0]?interpolate(5, rotation_array[0], Xq, X, X_params, cond_limits):0.;
-      rotUnu[ii]=rotInFile_[1]?interpolate(5, rotation_array[1], Xq, X, X_params, cond_limits):0.;
-      rotVnu[ii]=rotInFile_[2]?interpolate(5, rotation_array[2], Xq, X, X_params, cond_limits):0.;
+      rotQnu[ii]=rotInFile_[0]?interpolate(6, rotation_array[0], Xq, X, X_params, cond_limits):0.;
+      rotUnu[ii]=rotInFile_[1]?interpolate(6, rotation_array[1], Xq, X, X_params, cond_limits):0.;
+      rotVnu[ii]=rotInFile_[2]?interpolate(6, rotation_array[2], Xq, X, X_params, cond_limits):0.;
 
       GYOTO_DEBUG << "Freeing interpolation arrays." << endl;
       X[0] = NULL;
@@ -732,6 +768,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       X[2] = NULL;
       X[3] = NULL;
       X[4] = NULL;
+      X[5] = NULL;
       delete[] X;
     }
   }
@@ -906,12 +943,12 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     
       time_interpo[ii] = FitsRW::fitsReadKey(fptr, "TIME");
     
-      double* emplacement = velocity_array[0] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY1", emplacement, ncells);
-      emplacement = velocity_array[1] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY2", emplacement, ncells);
-      emplacement = velocity_array[2] + ii * ncells;
-      FitsRW::fitsReadHDUData(fptr, "VELOCITY3", emplacement, ncells);
+      double* array = velocity_array[0] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY1", array, ncells);
+      array = velocity_array[1] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY2", array, ncells);
+      array = velocity_array[2] + ii * ncells;
+      FitsRW::fitsReadHDUData(fptr, "VELOCITY3", array, ncells);
 
       FitsRW::fitsClose(fptr);
     }
