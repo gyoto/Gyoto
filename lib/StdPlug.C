@@ -25,6 +25,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoKonoplyaRezzollaZhidenko.h"
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
 #include "GyotoBalasinGrumiller.h"
@@ -85,6 +86,7 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
   Metric::Register("ChernSimons", &(Metric::Subcontractor<Metric::ChernSimons>));
   Metric::Register("RezzollaZhidenko", &(Metric::Subcontractor<Metric::RezzollaZhidenko>));
+  Metric::Register("KonoplyaRezzollaZhidenko", &(Metric::Subcontractor<Metric::KonoplyaRezzollaZhidenko>));
   Metric::Register("Hayward", &(Metric::Subcontractor<Metric::Hayward>));
   Metric::Register("SchwarzschildHarmonic", &(Metric::Subcontractor<Metric::SchwarzschildHarmonic>));
   Metric::Register("BalasinGrumiller", &(Metric::Subcontractor<Metric::BalasinGrumiller>));

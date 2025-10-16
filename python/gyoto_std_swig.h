@@ -6,6 +6,7 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoKonoplyaRezzollaZhidenko.h"
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
 

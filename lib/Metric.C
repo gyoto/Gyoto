@@ -198,7 +198,7 @@ double Metric::Generic::SysPrimeToTdot(const double pos[4], const double v[3]) c
     }
   }
   if (sum>=0) {
-    GYOTO_WARNING << "v>c\n";
+    GYOTO_WARNING << "r = " << pos[1] << " and " << "v>c\n";
     return 0.;
   }
   return pow(-sum, -0.5);
