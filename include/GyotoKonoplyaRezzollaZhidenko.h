@@ -1,9 +1,13 @@
 /**
  *  \file GyotoKonoplyaRezzollaZhidenko.h
- *  \brief Axisymmetric parametrized metric of Konoplya\&Rezzolla\&Zhidenko 2016
+ *  \brief Axisymmetric parametrised metric of Konoplya\&Rezzolla\&Zhidenko 2016
  *         See the paper: PRD, 93, 064015
- *         Kerr metric retrieved for the functions given in Table 1 of Cárdenas-Avendaño & Held 2024 (PRD 109, 064052)
- *         Only delta deformations parameters of Ni et al. JCAP09(2016)014 are allowed non-zero
+ *         Kerr metric retrieved for the functions given in Table 1 of Cárdenas-Avendaño & Held PRD109(2024)064052
+ *         when all the horizon and asymptotics deformation parameters are set to zero
+ *         For the time being we allow non-zero values for :
+ *         Horizon deformations parameters of Ni et al. JCAP09(2016)014
+ *         Asymptotics physical deformations parameters of eq. B26-B27 in Cárdenas-Avendaño & Held PRD109(2024)064052
+ *         Only one deformation parameter at a time
  */
 
 /*
@@ -45,7 +49,8 @@ class Gyoto::Metric::KonoplyaRezzollaZhidenko
   double spin3_;
   double spin4_;
   double rms_; ///< Provide marginally stable orbits if needed
-  double* deltaparam_; ///< The ẟ-parameter vector [δ1,ẟ2,ẟ3,ẟ4,ẟ5,ẟ6] used in Ni et al. JCAP09(2016)014
+  double* deltashorizon_; ///< The ẟ-parameter vector [δ1,ẟ2,ẟ3,ẟ4,ẟ5,ẟ6]=[a01,w01,w21,b01,b21,->a21&k21] used in Ni et al. JCAP09(2016)014
+  double* deltasasymptotics_; ///< The parameter vector [δepsilon0,ẟw00,ẟa00,ẟb00] used in Cárdenas-Avendaño & Held PRD109(2024)064052
  public:
   GYOTO_OBJECT;
   KonoplyaRezzollaZhidenko();
@@ -57,22 +62,21 @@ class Gyoto::Metric::KonoplyaRezzollaZhidenko
   void spin(const double val); ///< Set spin
   double spin() const ; ///< Returns spin
   GYOTO_OBJECT_ACCESSORS(double, rms);
-  void deltaparam(std::vector<double> const &v);
-  std::vector<double> deltaparam() const;
+  void deltashorizon(std::vector<double> const &v);
+  std::vector<double> deltashorizon() const;
+  void deltasasymptotics(std::vector<double> const &v);
+  std::vector<double> deltasasymptotics() const;
 
 
   using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
+  void gmunu_up(double ARGOUT_ARRAY2[4][4], const double IN_ARRAY1[4]) const ;
   double gmunu_up(double const x[4], int mu, int nu) const ;
-  double epsilon0Function() const;
-  double getr0() const;
-  double k00Function(const double r0) const;
-  double k22Function(const double r0) const;
-  double k23Function(const double r0) const;
-  double k21Function(const double r0) const;
-  double a20Function(const double r0) const;
-  double a21Function(const double r0) const;
-  double w00Function(const double r0) const;
+  double Definer0() const;
+  enum class AsymptoticParameter {epsilon0, k00, w00, a20, a00, b00, epsilon2, b20, w20, k20};
+  double DefineAsymptoticParameters(AsymptoticParameter, const double r0) const;
+  enum class HorizonParameter {a01, a21, k21, k22, k23, w01, w21, b01, b21};
+  double DefineHorizonParameters(HorizonParameter, const double r0) const;
   double N2(const double rr, const double th) const;
   double B(const double rr,  const double th) const;
   double Sigma(const double rr,  const double th) const;
