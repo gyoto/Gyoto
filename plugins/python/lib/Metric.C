@@ -366,19 +366,31 @@ double Metric::Python::getPotential
 int Metric::Python::isStopCondition
 (double const coord[8])
   const {
+  /* This method, part of the Gyoto::Metric::Generic API, wraps around the
+     Python method of same same in a Python class.
+   */
+
+  // If this method was not found is the Python class, then the
+  // pIsStopCondition_ pointer is null.
   if (!pIsStopCondition_)
     return Metric::Generic::isStopCondition(coord);
 
+  // All functions need to claim the GIL state.
   PyGILState_STATE gstate = PyGILState_Ensure();
 
+  // Wrap the coord input argument as a Python array.
   npy_intp dims_coord[] = {8};
-
   PyObject * pPo = PyArray_SimpleNewFromData(1, dims_coord, NPY_DOUBLE, const_cast<double*>(coord));
+
+  // Execute the Python isStopCondition method. This creates a new
+  // Python object *pR to hold tge result.
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIsStopCondition_, pPo, NULL);
 
+  // Release the Python array holding the coord input argument.
   Py_XDECREF(pPo);
 
+  // Check for errors.
   if (PyErr_Occurred()) {
     Py_XDECREF(pR);
     PyErr_Print();
@@ -386,10 +398,29 @@ int Metric::Python::isStopCondition
     GYOTO_ERROR("Error occurred in Metric::isStopCondition()");
   }
 
-  int res = PyLong_AsLong(pR);
+  // Interpret the result depending on its Python type.
+  int res = 0;
+  if (PyLong_Check(pR)) {
+    GYOTO_DEBUG << "Python code returned a Long, return it unchanged.\n";
+    res =  PyLong_AsLong(pR);
+  } else {
+    GYOTO_DEBUG << "Python code did not return a Long, return truth value.\n";
+    res = PyObject_IsTrue(pR);
+  }
+
+  // Check for errors.
+  if (PyErr_Occurred()) {
+    Py_XDECREF(pR);
+    PyErr_Print();
+    PyGILState_Release(gstate);
+    GYOTO_ERROR("Error occurred in Metric::isStopCondition()");
+  }
+
+  // Release all temporary Python objects as well as the GIL.
   Py_XDECREF(pR);
   PyGILState_Release(gstate);
 
+  // Return the result.
   return res;
 }
 
