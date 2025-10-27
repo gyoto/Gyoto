@@ -34,8 +34,9 @@ else:
     except:
         pass
 
-gyoto_lib_dirs=['../lib/.libs']
+gyoto_lib_dirs=['@abs_srcdir@/../lib/.libs']
 gyoto_libs=['gyoto@FEATURES@']
+gyoto_ldflags=[]
 for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
     libspec=re.split('[ \t]', libspec)
     for comp in libspec:
@@ -43,26 +44,44 @@ for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
             gyoto_lib_dirs.append(re.sub('^-L', '', comp))
         elif re.match('-l', comp):
             gyoto_libs.append(re.sub('^-l', '', comp))
+        else:
+            gyoto_ldflags.append(comp)
+
+gyoto_inc_dirs=[numpy_include, '@abs_srcdir@', '@abs_srcdir@/../include']
+gyoto_cflags=[]
+for flags in ('@CXXFLAGS@', '@CFITSIO_CFLAGS@', '@XERCES_CFLAGS@', '@UDUNITS_CFLAGS@', '@EIGEN_CFLAGS@', '@BOOST_CPPFLAGS@'):
+    flags=re.split('[ \t]', flags)
+    for comp in flags:
+        if re.match('-I', comp):
+            gyoto_inc_dirs.append(re.sub('^-I', '', comp))
+        else:
+            gyoto_cflags.append(comp)
 
 gyoto_module = Extension('gyoto/_core',
                          sources=['core_wrap.cxx'],
-                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
-                         libraries=gyoto_libs
+                         libraries=gyoto_libs,
+                         extra_compile_args=gyoto_cflags,
+                         extra_link_args=gyoto_ldflags
                          )
 
 gyoto_std_module = Extension('gyoto/_std',
                          sources=['std_wrap.cxx'],
-                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
-                         libraries=gyoto_libs
+                         libraries=gyoto_libs,
+                         extra_compile_args=gyoto_cflags,
+                         extra_link_args=gyoto_ldflags
                          )
 
 gyoto_lorene_module = Extension('gyoto/_lorene',
                          sources=['lorene_wrap.cxx'],
-                         include_dirs=[numpy_include, '@abs_srcdir@'],
+                         include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
-                         libraries=gyoto_libs
+                         libraries=gyoto_libs,
+                         extra_compile_args=gyoto_cflags,
+                         extra_link_args=gyoto_ldflags
                          )
 
 pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std", "gyoto_std",

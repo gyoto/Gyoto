@@ -99,7 +99,7 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
-all: $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS) directories setup-check
+all: $(GYOTO_PYFILES) build-stamp directories
 
 setup-check:
 	cp -f build/lib.*/gyoto/*.so gyoto/
@@ -126,14 +126,9 @@ gyoto_doc.i: gyoto_doc.i.orig
 	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
 	          $< > $@
 
-gyoto/_core$(PYTHON_EXTENSION_SUFFIX): core_wrap.cxx
-	$(PYTHON) setup.py build
-
-gyoto/_std$(PYTHON_EXTENSION_SUFFIX): std_wrap.cxx
-	$(PYTHON) setup.py build
-
-gyoto/_lorene$(PYTHON_EXTENSION_SUFFIX): lorene_wrap.cxx
-	$(PYTHON) setup.py build
+build-stamp: core_wrap.cxx std_wrap.cxx lorene_wrap.cxx
+	$(PYTHON) -m build
+	touch build-stamp
 
 gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
 	$(MKDIR_P) `dirname $@`
@@ -168,9 +163,9 @@ swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_
 install: all installdirs
 ifneq ($(VIRTUALENV),no)
 	$(VIRTUALENV) $(VIRTUALENV_FLAGS) $(DESTDIR)$(prefix) || $(VIRTUALENV) $(DESTDIR)$(prefix)
-	$(DESTDIR)$(prefix)/bin/python setup.py install --prefix=$(DESTDIR)$(prefix)
+	$(DESTDIR)$(prefix)/bin/python -m pip install --prefix=$(DESTDIR)$(prefix)
 else
-	$(PYTHON) setup.py install --prefix=$(DESTDIR)$(prefix) --record=gyoto_installed.txt
+	$(PYTHON) -m pip install --prefix=$(DESTDIR)$(prefix) --record=gyoto_installed.txt .
 endif
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
@@ -203,7 +198,7 @@ uninstall:
 clean:
 	$(PYTHON) setup.py clean
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
-	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
+	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig build-stamp
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc gyoto/*.so
 	-rm -Rf _gyoto*.so Gyoto*.egg-info _*.so
