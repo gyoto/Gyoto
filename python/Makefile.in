@@ -14,9 +14,7 @@
 # directory will be included
 DISTFILES = PKG-INFO Makefile.in configure setup.py install-sh
 
-ifndef DESTDIR
-override DESTDIR = /
-endif
+DESTDIR =
 VPATH = @srcdir@
 SED = @SED@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
