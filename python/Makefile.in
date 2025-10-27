@@ -158,7 +158,13 @@ install-data: all
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
 install-python: all
-	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --root=$(DESTDIR) dist/*.whl
+ifdef DESTDIR
+	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore \
+		--ignore-installed --root=$(DESTDIR) dist/*.whl
+else
+	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore \
+		--force-reinstall dist/*.whl
+endif
 
 install: install-data install-python
 
