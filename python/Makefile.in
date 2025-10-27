@@ -1,11 +1,24 @@
 # Makefile.in
 #
 # Copyright © 2012, 2013 Brandon Invergo <brandon@invergo.net>
+# Copyright © 2014-2025 Thibaut Paumard <thibaut.paumard@obsppm.fr>
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
+#
+# Some `source' files of the Gyoto Python extension are
+# generated. They can be built with a single call to make:
+#   make src
+#
+# From then on, standard Python commands can be used to build, test
+# and install the extension. Conventional targets are provided to wrap
+# around such tools: make all, make check, make install, make
+# uninstall.
+#
+
+
 
 # This Makefile contains targets that fail if run in parallel
 .NOTPARALLEL:
@@ -15,6 +28,11 @@
 DISTFILES = PKG-INFO Makefile.in configure setup.py install-sh
 
 DESTDIR =
+ifdef DESTDIR
+DESTDIRFLAG = --ignore-installed --root=$(DESTDIR)
+else
+DESTDIRFLAG = --force-reinstall
+endif
 VPATH = @srcdir@
 SED = @SED@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -88,22 +106,23 @@ export CXXFLAGS
 export CXX
 export CC
 
-GYOTO_EXTENSIONS =  gyoto/_core$(PYTHON_EXTENSION_SUFFIX) \
-                    gyoto/_std$(PYTHON_EXTENSION_SUFFIX)
-GYOTO_PYFILES = gyoto/core.py gyoto/std.py
+GYOTO_PYFILES = src/gyoto/core.py src/gyoto/std.py
+GYOTO_CXXFILES = src/core_wrap.cxx src/std_wrap.cxx
 GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/numpy.i $(srcdir)/gyoto_swig.h $(srcdir)/gyoto_std_swig.h
-@HAVE_LORENE_TRUE@GYOTO_EXTENSIONS += gyoto/_lorene$(PYTHON_EXTENSION_SUFFIX)
-@HAVE_LORENE_TRUE@GYOTO_PYFILES += gyoto/lorene.py
+@HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
+@HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
-all: $(GYOTO_PYFILES) build-stamp directories
+all: build.stamp
+
+src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+
+build.stamp: src
+	$(PYTHON) -m build --wheel
+	touch build.stamp
 
 setup-check:
 	cp -f build/lib.*/gyoto/*.so gyoto/
-
-directories:
-	mkdir -p dist
-	mkdir -p Gyoto.egg-info
 
 ../doc/xml/index.xml:
 	cd ../doc; $(MAKE) doxygen.stamp
@@ -123,46 +142,37 @@ gyoto_doc.i: gyoto_doc.i.orig
 	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
 	          $< > $@
 
-build-stamp: core_wrap.cxx std_wrap.cxx lorene_wrap.cxx
-	$(PYTHON) -m build
-	touch build-stamp
-
-gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
+src/gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
-gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
+src/gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
-gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
+src/gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
-swig_output/core.py core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+swig_output/core.py src/core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o core_wrap.cxx $(srcdir)/gyoto.i
+	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/gyoto.i
 
-swig_output/std.py std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+swig_output/std.py src/std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o std_wrap.cxx $(srcdir)/gyoto_std.i
+	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/gyoto_std.i
 
-swig_output/lorene.py lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+swig_output/lorene.py src/lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
 	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
+	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
 
 install-data: all
 	$(MKDIR_P) $(DESTDIR)$(pkgincludedir)
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
 install-python: all
-ifdef DESTDIR
-	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore \
-		--ignore-installed --root=$(DESTDIR) dist/*.whl
-else
-	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore \
-		--force-reinstall dist/*.whl
-endif
+	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --no-deps --upgrade \
+		 $(DESTDIRFLAG) --target=$(pythondir) dist/*.whl
 
 install: install-data install-python
 
@@ -180,11 +190,11 @@ uninstall: uninstall-data uninstall-python
 
 # Just use the usual setup.py clean command
 clean:
-	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_EXTENSIONS)
-	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig build-stamp
+	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig build.stamp
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
-	-rm -f tests/*.pyc *_wrap.cxx gyoto/*.pyc gyoto/*.so
-	-rm -Rf _gyoto*.so Gyoto*.egg-info _*.so
+	-rm -f tests/*.pyc *_wrap.cxx
+	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
 
 # Clean up the output of configure
@@ -196,4 +206,4 @@ distclean: clean
 check:
 	LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
 
-.PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check
+.PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src

@@ -135,6 +135,10 @@ AC_ARG_WITH([python],
 	 esac
 	],
 	[])
+AC_ARG_WITH([python-install-scheme],
+	[AS_HELP_STRING([--with-python-install-scheme=scheme],[select install scheme for python excteion, e.g. posix_prefix, posix_local, or posix_user])],
+	[],
+	[with_python_install_scheme=auto])
 
 PC_PROG_PYTHON([python3], [3.0], [4.0])
 PC_PYTHON_PROG_PYTHON_CONFIG
@@ -144,8 +148,17 @@ PC_PYTHON_CHECK_HEADERS(
   PC_PYTHON_CHECK_CFLAGS
   PC_PYTHON_CHECK_LDFLAGS
   PC_PYTHON_CHECK_LIBS
-  PC_PYTHON_CHECK_SITE_DIR
-  PC_PYTHON_SITE_PACKAGE_DIR
+  PC_PYTHON_CHECK_PREFIX
+  AS_IF([test x$with_python_install_scheme == xauto],
+    [AS_IF([test $prefix == $pc_cv_python_prefix],
+      [with_python_install_scheme=posix_prefix],
+      [with_python_install_scheme=posix_local])
+  ])
+  dnl PC_PYTHON_CHECK_SITE_DIR
+  dnl PC_PYTHON_SITE_PACKAGE_DIR
+  pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$with_python_install_scheme\"))"`
+  AC_SUBST([pythondir])
+  AC_SUBST([pkgpythondir], [\${pythondir}/$PACKAGE_NAME])
   PC_PYTHON_CHECK_EXEC_DIR
   PC_PYTHON_CHECK_EXTENSION_SUFFIX
   PC_PYTHON_CHECK_EXEC_DIR
@@ -849,7 +862,7 @@ AS_IF([test "x$SWIG" = x],
   [missing_for_python="$missing_for_python SWIG"])
 AS_IF([test "x$missing_for_python" = "x"],
   [
-   AC_CONFIG_FILES([python/Makefile python/setup.py])
+   AC_CONFIG_FILES([python/Makefile python/setup.py python/pyproject.toml])
   ]
 )
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],

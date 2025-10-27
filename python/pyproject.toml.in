@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "@PACKAGE_NAME@"
+version = "@PACKAGE_VERSION@"
+authors = [
+    {name = "Thibaut Paumard", email = "thibaut.paumard@obspm.fr"}
+]
+      
+[tool.setuptools.packages.find]
+where = ["src"]

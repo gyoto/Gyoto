@@ -52,6 +52,17 @@ its MPI variant, then Gyoto with the same variant:
     sudo port install Boost +openmpi
     sudo port install Gyoto +openmpi
 
+To get Python support, choose one of the versions available from
+MacPorts (port search python3) and install the corresponding Gyoto
+subport, for instance for Python 3.14:
+    sudo port install py314-gyoto
+
+You will need to install all of the Python packages that you need for
+this specific version of Python, either using MacPorts or PIP:
+    sudo port install py314-<somepackage>
+    sudo port install py314-pip
+    python3.14 -m pip install <somepackage>
+
 ## 1- Building from source: installing the dependencies
 
 If Gyoto is not packaged for your system or if you prefer to build
@@ -106,14 +117,17 @@ Gyoto requires:
      the yorick-dev package (in particulat Debian/Ubuntu users).
      Yorick support is considered depracated and will be removed in
      the future.
+     
    - Python 3 (optional, provides an interface to the Python
      interpreted language, allowing to write Gyoto scripts). Python
-     3.7 and 3.8 have been tested. For building the Python bindings,
+     3.9 to 3.14 have been tested. For building the Python bindings,
      the Python development files are naturally required (sometimes
-     found in the python-dev or python3-dev package), as well as NumPy
-     and Swig-2.0:
+     found in the python-dev or python3-dev package), as well as the
+     Python packages Numpy, Build and PIP, and Swig:
        https://www.python.org/
        http://www.numpy.org/
+       https://build.pypa.io/
+       https://pip.pypa.io/
        http://www.swig.org/
      Note that although fairly complete, the Python interface is
      likely to change in future releases. Be ready to adapt your
@@ -136,7 +150,8 @@ those dependencies with:
     sudo apt-get install build-essential yorick-dev yorick-yutils \
     libxerces-c-dev libcfitsio-dev libudunits2-dev libboost-dev \
     libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
-    python3-dev python3-setuptools swig3.0 python3-numpy python3-matplotlib \
+    python3-dev python3-setuptools swig3.0 python3-numpy python3-build \
+    python3-pip python3-matplotlib \
     doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++ libeigen3-dev
 
 Note for Anaconda user:

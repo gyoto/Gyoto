@@ -44,7 +44,7 @@ for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
             gyoto_lib_dirs.append(re.sub('^-L', '', comp))
         elif re.match('-l', comp):
             gyoto_libs.append(re.sub('^-l', '', comp))
-        else:
+        elif comp != '':
             gyoto_ldflags.append(comp)
 
 gyoto_inc_dirs=[numpy_include, '@abs_srcdir@', '@abs_srcdir@/../include']
@@ -54,11 +54,11 @@ for flags in ('@CXXFLAGS@', '@CFITSIO_CFLAGS@', '@XERCES_CFLAGS@', '@UDUNITS_CFL
     for comp in flags:
         if re.match('-I', comp):
             gyoto_inc_dirs.append(re.sub('^-I', '', comp))
-        else:
+        elif comp != '':
             gyoto_cflags.append(comp)
 
 gyoto_module = Extension('gyoto/_core',
-                         sources=['core_wrap.cxx'],
+                         sources=['src/core_wrap.cxx'],
                          include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
                          libraries=gyoto_libs,
@@ -67,7 +67,7 @@ gyoto_module = Extension('gyoto/_core',
                          )
 
 gyoto_std_module = Extension('gyoto/_std',
-                         sources=['std_wrap.cxx'],
+                         sources=['src/std_wrap.cxx'],
                          include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
                          libraries=gyoto_libs,
@@ -76,7 +76,7 @@ gyoto_std_module = Extension('gyoto/_std',
                          )
 
 gyoto_lorene_module = Extension('gyoto/_lorene',
-                         sources=['lorene_wrap.cxx'],
+                         sources=['src/lorene_wrap.cxx'],
                          include_dirs=gyoto_inc_dirs,
                          library_dirs=gyoto_lib_dirs,
                          libraries=gyoto_libs,
@@ -84,19 +84,15 @@ gyoto_lorene_module = Extension('gyoto/_lorene',
                          extra_link_args=gyoto_ldflags
                          )
 
-pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std", "gyoto_std",
+pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std",
              "gyoto._namespaces", "gyoto.astrobj", "gyoto.metric",
              "gyoto.spectrum", "gyoto.spectrometer", "gyoto.animate", "gyoto.util"]
 extmodules= [gyoto_module, gyoto_std_module]
 
 if HOME_LORENE != "":
     pymodules.append("gyoto.lorene")
-    pymodules.append("gyoto_lorene")
     extmodules.append(gyoto_lorene_module)
 
-setup(name='@PACKAGE_NAME@',
-      version='@PACKAGE_VERSION@',
-      author_email='@PACKAGE_BUGREPORT@',
-      py_modules=pymodules,
+setup(py_modules=pymodules,
       ext_modules=extmodules
      )
