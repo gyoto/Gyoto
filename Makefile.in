@@ -417,7 +417,6 @@ pdfdir = @pdfdir@
 pkg_cflags = @pkg_cflags@
 pkg_libs = @pkg_libs@
 pkg_requires = @pkg_requires@
-pkgpythondir = @pkgpythondir@
 plugin_sfx = @plugin_sfx@
 prefix = @prefix@
 program_transform_name = @program_transform_name@

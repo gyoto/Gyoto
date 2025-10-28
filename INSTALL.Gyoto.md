@@ -115,9 +115,9 @@ Gyoto requires:
      Yorick users will also need the yorick-yutils add-on
      (https://github.com/frigaut/yorick-yutils) and may need to install
      the yorick-dev package (in particulat Debian/Ubuntu users).
-     Yorick support is considered depracated and will be removed in
+     Yorick support is considered deprecated and will be removed in
      the future.
-     
+
    - Python 3 (optional, provides an interface to the Python
      interpreted language, allowing to write Gyoto scripts). Python
      3.9 to 3.14 have been tested. For building the Python bindings,

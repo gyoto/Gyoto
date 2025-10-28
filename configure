@@ -746,11 +746,10 @@ BOOST_ROOT
 HAVE_CXX11
 VIRTUALENV_FLAGS
 VIRTUALENV
+pythondir
 PYTHON_EXTENSION_SUFFIX
 pyexecdir
 PYTHON_EXEC_PREFIX
-pkgpythondir
-pythondir
 PYTHON_PREFIX
 PYTHON_LIBS
 PYTHON_LDFLAGS
@@ -913,6 +912,7 @@ with_fenv
 with_size_t
 with_python
 with_python_install_scheme
+with_pythondir
 with_virtualenv
 enable_c__11
 with_mpi
@@ -1667,8 +1667,13 @@ Optional Packages:
                           force (or disable) python support, possibly
                           specifying interpreter
   --with-python-install-scheme=scheme
-                          select install scheme for python excteion, e.g.
-                          posix_prefix, posix_local, or posix_user
+                          select install scheme for Python modules, e.g.
+                          posix_prefix, posix_local, or posix_user. By
+                          default, posix_prefix if \${prefix} matches the
+                          Python prefix, else posix_local.
+  --with-pythondir=path   specify directory to install Python modules to. If
+                          not specified, find out based on
+                          --with-python-install-scheme.
   --with-virtualenv       install to a Python virtualenv
   --with-mpi              compile with MPI (parallelization) support. If none
                           is found, MPI is not used. Default: auto
@@ -18080,15 +18085,6 @@ then :
 fi
 
 
-# Check whether --with-python-install-scheme was given.
-if test ${with_python_install_scheme+y}
-then :
-  withval=$with_python_install_scheme;
-else case e in #(
-  e) with_python_install_scheme=auto ;;
-esac
-fi
-
 
 
 
@@ -18403,22 +18399,7 @@ fi
 printf "%s\n" "$pc_cv_python_prefix" >&6; }
 PYTHON_PREFIX=$pc_cv_python_prefix
 
-  if test x$with_python_install_scheme == xauto
-then :
-  if test $prefix == $pc_cv_python_prefix
-then :
-  with_python_install_scheme=posix_prefix
-else case e in #(
-  e) with_python_install_scheme=posix_local ;;
-esac
-fi
-
-fi
-      pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$with_python_install_scheme\"))"`
-
-  pkgpythondir=\${pythondir}/$PACKAGE_NAME
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python extension module directory" >&5
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python extension module directory" >&5
 printf %s "checking for Python extension module directory... " >&6; }
 if test ${pc_cv_python_exec_dir+y}
 then :
@@ -18608,6 +18589,62 @@ if test "x$with_python" = xyes && test "x$PYTHON" = x
 then :
   as_fn_error $? "Python requested but no supported version found (>=3.0, <4.0)" "$LINENO" 5
 fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking which install scheme to use for Python modules" >&5
+printf %s "checking which install scheme to use for Python modules... " >&6; }
+
+# Check whether --with-python-install-scheme was given.
+if test ${with_python_install_scheme+y}
+then :
+  withval=$with_python_install_scheme;
+else case e in #(
+  e) if test x$PYTHON != x
+then :
+  if test $prefix == $pc_cv_python_prefix
+then :
+  with_python_install_scheme=posix_prefix
+else case e in #(
+  e) with_python_install_scheme=posix_local ;;
+esac
+fi
+
+else case e in #(
+  e) with_python_install_scheme=none ;;
+esac
+fi
+
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_python_install_scheme" >&5
+printf "%s\n" "$with_python_install_scheme" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking where to install Python modules" >&5
+printf %s "checking where to install Python modules... " >&6; }
+
+# Check whether --with-pythondir was given.
+if test ${with_pythondir+y}
+then :
+  withval=$with_pythondir;
+else case e in #(
+  e) if test x$PYTHON != x
+then :
+  with_pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$with_python_install_scheme\"))"`
+
+else case e in #(
+  e) with_pythondir=nowhere ;;
+esac
+fi
+
+ ;;
+esac
+fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_pythondir" >&5
+printf "%s\n" "$with_pythondir" >&6; }
+pythondir=${with_pythondir}
+
 
 
 # Check whether --with-virtualenv was given.

@@ -65,7 +65,6 @@ pythondir = @pythondir@
 pyexecdir = @pyexecdir@
 pkgdatadir = $(datadir)/@PACKAGE_NAME@
 pkgincludedir = $(includedir)/@PACKAGE_NAME@
-pkgpythondir = @pkgpythondir@
 pkgpyexecdir = @pkgpyexecdir@
 PYTHONPATH = $(pythondir)$(PATH_SEPARATOR)$(DESTDIR)$(pythondir)
 SWIG=@SWIG@
