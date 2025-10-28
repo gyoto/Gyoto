@@ -98,6 +98,12 @@ CFLAGS=$(CXXFLAGS)
 
 SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir swig_output
 
+WHEEL := dist/gyoto-$(PACKAGE_VERSION)-$(shell $(PYTHON) -c \
+'from packaging import tags; import sysconfig; tag = next(tags.sys_tags()); \
+tag_interpreter=tag.interpreter; tag_abi=tag.abi; \
+tag_platform=sysconfig.get_platform().replace("-", "_"); \
+print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
+
 export LDFLAGS
 export CFLAGS
 export CPPFLAGS
@@ -112,16 +118,18 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
-all: build.stamp
+all wheel: $(WHEEL) 
 
 src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 
-build.stamp: src
+$(WHEEL): src
 	$(PYTHON) -m build --wheel
-	touch build.stamp
 
-setup-check:
-	cp -f build/lib.*/gyoto/*.so gyoto/
+testbed: testbed/stamp
+
+testbed/stamp: $(WHEEL)
+	$(MAKE) install-python pythondir=testbed
+	touch tesbed/stamp
 
 ../doc/xml/index.xml:
 	cd ../doc; $(MAKE) doxygen.stamp
@@ -171,7 +179,7 @@ install-data: all
 
 install-python: all
 	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --no-deps --upgrade \
-		 $(DESTDIRFLAG) --target=$(pythondir) dist/*.whl
+		 $(DESTDIRFLAG) --target=$(pythondir) $(WHEEL)
 
 install: install-data install-python
 
@@ -190,10 +198,10 @@ uninstall: uninstall-data uninstall-python
 # Just use the usual setup.py clean command
 clean:
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
-	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig build.stamp
+	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc *_wrap.cxx
-	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so
+	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so testbed
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
 
 # Clean up the output of configure
@@ -202,7 +210,7 @@ distclean: clean
 	-rm -v $(builddir)/Makefile
 
 # Use unittest
-check:
-	LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
+check: testbed/stamp
+	PYTHONPATH=testbed:$$PYTHONPATH LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
 
-.PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src
+.PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src wheel testbed
