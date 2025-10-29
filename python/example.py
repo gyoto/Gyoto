@@ -19,11 +19,32 @@
 # You should have received a copy of the GNU General Public License
 # along with Gyoto.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+import os
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 import gyoto.core
 import gyoto.std
+
+# Parse command line and optionally switch to PDF output
+
+pdfname=None
+for param in sys.argv:
+    sparam=param.split("=")
+    if os.path.basename(sparam[0])==os.path.basename(__file__):
+        pass
+    elif sparam[0]=="--pdf":
+        if len(sparam)==2:
+            pdfname=sparam[1]
+        else:
+            raise ValueError('--pdf argument excpects a filename, e.g. --pdf=output.pdf')
+    else:
+        raise ValueError(f'unknown argument: {sparam[0]}')
+
+pdf=None if pdfname is None else PdfPages(pdfname)
+
 
 # Simple stuff
 
@@ -65,7 +86,11 @@ ph.get_t(t)
 ph.getCoord(t, r, theta, phi)
 
 plt.plot(t, r)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
 
 # Trace and plot timelike geodesic
 # We need to cast the object to a gyoto.std.Star:
@@ -82,7 +107,12 @@ z=numpy.ndarray(n)
 wl.get_xyz(x, y, z)
 
 plt.plot(x, y)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Ray-trace scenery
 
@@ -91,11 +121,26 @@ sc.requestedQuantitiesString('Intensity EmissionTime MinDistance')
 results=sc.rayTrace()
 
 plt.imshow(results['Intensity'])
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 plt.imshow(results['EmissionTime'])
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 plt.imshow(results['MinDistance'])
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Or we can do it manually to understand how the Gyoto API works:
 
@@ -134,11 +179,26 @@ grid=gyoto.core.Grid(ii, jj, "\rj = ")
 sc.rayTrace(grid, aop)
 
 plt.imshow(intensity)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 plt.imshow(time)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 plt.imshow(distance)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Another Scenery, with spectrum
 
@@ -159,7 +219,12 @@ aop.offset=res*res
 sc.rayTrace(grid, aop)
 
 plt.imshow(spectrum[1,:,:])
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Another Scenery, with impact coords, created from within Python
 
@@ -200,7 +265,12 @@ aop.offset=res*res
 sc.rayTrace(grid, aop)
 
 plt.imshow(ipct[:,:,0], interpolation="nearest", vmin=-100, vmax=0)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Trace one line of the above using alpha and delta
 
@@ -219,7 +289,12 @@ aop.offset=N
 
 sc.rayTrace(bucket, aop)
 plt.plot(buf, ipct[:,0])
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Trace the diagonal of the above using i and j. The Range and Indices
 # definitions below are equivalent.  Range is more efficient for a
@@ -247,7 +322,12 @@ sc.rayTrace(bucket, aop)
 
 t=numpy.clip(ipct[:,0], a_min=-200, a_max=0)
 plt.plot(t)
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 
 # Any derived class can be instantiated from its name, as soon as the
 # corresponding plug-in has been loaded into Gyoto. The standard
@@ -290,3 +370,5 @@ cplx.append(sc.astrobj())
 sc.astrobj(cplx)
 
 print("All done, exiting")
+if pdf is not None:
+    pdf.close()

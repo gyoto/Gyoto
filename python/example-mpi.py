@@ -90,11 +90,14 @@ sc.astrobj().opticallyThin(False)
 world = mpi4py.MPI.COMM_WORLD
 if (world.size == 1):
     # This is scenario 1
+    print(f"*** {__file__} detected scenario 1 ***")
     # We spawn 4 instances of gyoto-mpi-worker.VERSION
+    print("Spawning 4 workers")
     sc.mpiSpawn(4)
 else:
     if (world.rank == 0):
         # This is scenario 2 or 3, this process is the manager
+        print(f"*** {__file__} detected scenario 2 or 3, this process is the manager ***")
         print("Rank ", world.rank, " becoming manager")
         sc.mpiSpawn(-1)
     else:

@@ -104,6 +104,10 @@ tag_interpreter=tag.interpreter; tag_abi=tag.abi; \
 tag_platform=sysconfig.get_platform().replace("-", "_").replace(".", "_"); \
 print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 
+CHECK_ENV = @DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=testbed:$$PYTHONPATH
+
+MPIRUN = mpirun
+
 export LDFLAGS
 export CFLAGS
 export CPPFLAGS
@@ -118,61 +122,39 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
-all wheel: $(WHEEL) 
+### High level entry points
 
+## Generate source files for python -m build
+# See low level targets below for details
 src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+
+## Default target: build wheel file using python -m build
+all wheel: $(WHEEL)
 
 $(WHEEL): $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	$(PYTHON) -m build --wheel
 
+## make check: prepare testbed, call unittest, run example files
 testbed: testbed/stamp
 
 testbed/stamp: $(WHEEL)
 	$(MAKE) install-python pythondir=testbed
 	touch testbed/stamp
 
-../doc/xml/index.xml:
-	cd ../doc; $(MAKE) doxygen.stamp
+unittest: testbed/stamp
+	$(CHECK_ENV) $(PYTHON) -m unittest discover -s tests -p "*.py"
 
-gyoto_doc.i.orig: ../doc/xml/index.xml
-	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
+check: testbed/stamp unittest
+	$(CHECK_ENV) $(PYTHON) example.py --pdf=example.pdf
+	$(CHECK_ENV) $(PYTHON) example-patterndisk.py --pdf=example-patterndisk.pdf
 
-gyoto_doc.i: gyoto_doc.i.orig
-	$(SED) -e 's/Gyoto::Screen::Angles/Angles/' \
-	       -e 's/Gyoto::Screen::Bucket/Bucket/' \
-	       -e 's/Gyoto::Screen::Coord1dSet/Coord1dSet/' \
-	       -e 's/Gyoto::Screen::Coord2dSet/Coord2dSet/' \
-	       -e 's/Gyoto::Screen::Empty/Empty/' \
-	       -e 's/Gyoto::Screen::Grid/Grid/' \
-	       -e 's/Gyoto::Screen::Indices/Indices/' \
-	       -e 's/Gyoto::Screen::Range/Range/' \
-	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
-	          $< > $@
+check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
+	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) example-mpi.py
 
-src/gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
-	$(MKDIR_P) `dirname $@`
-	cat $^ > $@
+../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@:
+	$(MAKE) -C ../bin
 
-src/gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
-	$(MKDIR_P) `dirname $@`
-	cat $^ > $@
-
-src/gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
-	$(MKDIR_P) `dirname $@`
-	cat $^ > $@
-
-swig_output/core.py src/core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/gyoto.i
-
-swig_output/std.py src/std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/gyoto_std.i
-
-swig_output/lorene.py src/lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
-
+## install: use pip for the Python module, copy include files in the right place
 install-data: all
 	$(MKDIR_P) $(DESTDIR)$(pkgincludedir)
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
@@ -187,6 +169,7 @@ endif
 
 install: install-data install-python
 
+## uninstall: remove the include files, but leave the Python module alone
 uninstall-data:
 	-cd $(DESTDIR)$(pkgincludedir) ; \
 	   for file in $(GYOTO_SWIGFILES) numpy.i gyoto_swig.h ; do \
@@ -204,7 +187,59 @@ uninstall-python:
 
 uninstall: uninstall-data uninstall-python
 
-# Just use the usual setup.py clean command
+### Low level targets to generate each source file
+
+## Step 1: generate a Swig include file containing the documentation
+
+# Doxygen needs to run to produce the documentation in XML format
+../doc/xml/index.xml:
+	cd ../doc; $(MAKE) doxygen.stamp
+
+# Run doxy2swig to turn this XML doc to a Swig include file
+gyoto_doc.i.orig: ../doc/xml/index.xml
+	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
+
+# Rework a little bit this Swig file
+gyoto_doc.i: gyoto_doc.i.orig
+	$(SED) -e 's/Gyoto::Screen::Angles/Angles/' \
+	       -e 's/Gyoto::Screen::Bucket/Bucket/' \
+	       -e 's/Gyoto::Screen::Coord1dSet/Coord1dSet/' \
+	       -e 's/Gyoto::Screen::Coord2dSet/Coord2dSet/' \
+	       -e 's/Gyoto::Screen::Empty/Empty/' \
+	       -e 's/Gyoto::Screen::Grid/Grid/' \
+	       -e 's/Gyoto::Screen::Indices/Indices/' \
+	       -e 's/Gyoto::Screen::Range/Range/' \
+	       -e 's/Gyoto::Screen::RepeatAngle/RepeatAngle/' \
+	          $< > $@
+
+## Step 2: run Swig to produce cxx and py files
+swig_output/core.py src/core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/gyoto.i
+
+swig_output/std.py src/std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/gyoto_std.i
+
+swig_output/lorene.py src/lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) swig_output
+	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
+
+## Step 3: tweak the generated py files
+src/gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
+
+src/gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
+
+src/gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
+	$(MKDIR_P) `dirname $@`
+	cat $^ > $@
+
+### The clean targets
+
 clean:
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
@@ -213,13 +248,10 @@ clean:
 	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so testbed
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
 
-# Clean up the output of configure
 distclean: clean 
 	-rm -v $(builddir)/setup*.py
 	-rm -v $(builddir)/Makefile
 
-# Use unittest
-check: testbed/stamp
-	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=testbed:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
+### .PHONY targets are run even if they appear up to date
 
 .PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src wheel testbed

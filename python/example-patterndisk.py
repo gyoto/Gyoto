@@ -5,10 +5,28 @@
 # identical to the saved one.
 # This is the same example as yorick/check-patterndisk.i
 
-import gyoto.core, gyoto.std
-import numpy
 import os
+import sys
+import numpy
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import gyoto.core, gyoto.std
+
+# Parse command line and optionally switch to PDF output
+pdfname=None
+for param in sys.argv:
+    sparam=param.split("=")
+    if os.path.basename(sparam[0])==os.path.basename(__file__):
+        pass
+    elif sparam[0]=="--pdf":
+        if len(sparam)==2:
+            pdfname=sparam[1]
+        else:
+            raise ValueError('--pdf argument excpects a filename, e.g. --pdf=output.pdf')
+    else:
+        raise ValueError(f'unknown argument: {sparam[0]}')
+
+pdf=None if pdfname is None else PdfPages(pdfname)
 
 ### Create a metric
 metric = gyoto.std.KerrBL()
@@ -98,4 +116,11 @@ pframe=gyoto.core.array_double.fromnumpy2(frame)
 aop.intensity=pframe
 sc.rayTrace(grid, aop)
 plt.imshow(frame, origin='lower')
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
+if pdf:
+    pdf.close()
