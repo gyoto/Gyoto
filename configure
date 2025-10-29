@@ -1667,10 +1667,9 @@ Optional Packages:
                           force (or disable) python support, possibly
                           specifying interpreter
   --with-python-install-scheme=scheme
-                          select install scheme for Python modules, e.g.
-                          posix_prefix, posix_local, or posix_user. By
-                          default, posix_prefix if \${prefix} matches the
-                          Python prefix, else posix_local.
+                          select install scheme for Python modules, one of:
+                          $scheme_names none ($default_scheme). Use "none" to
+                          disable automatic Python module installation.
   --with-pythondir=path   specify directory to install Python modules to. If
                           not specified, find out based on
                           --with-python-install-scheme.
@@ -18590,35 +18589,47 @@ then :
   as_fn_error $? "Python requested but no supported version found (>=3.0, <4.0)" "$LINENO" 5
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python default install scheme" >&5
+printf %s "checking for Python default install scheme... " >&6; }
+if test x$PYTHON != x
+then :
+  default_scheme=`$PYTHON -c "import sysconfig; print(sysconfig.get_default_scheme())"`
+else case e in #(
+  e) default_scheme=none
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $default_scheme" >&5
+printf "%s\n" "$default_scheme" >&6; }
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for available Python install schemes" >&5
+printf %s "checking for available Python install schemes... " >&6; }
+if test x$PYTHON != x
+then :
+  scheme_names=`$PYTHON -c "import sysconfig; print(*sysconfig.get_scheme_names())"`
+else case e in #(
+  e) scheme_names=none
+ ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $scheme_names" >&5
+printf "%s\n" "$scheme_names" >&6; }
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking which install scheme to use for Python modules" >&5
 printf %s "checking which install scheme to use for Python modules... " >&6; }
 
 # Check whether --with-python-install-scheme was given.
 if test ${with_python_install_scheme+y}
 then :
-  withval=$with_python_install_scheme;
+  withval=$with_python_install_scheme; install_scheme=$with_python_install_scheme
 else case e in #(
-  e) if test x$PYTHON != x
-then :
-  if test $prefix == $pc_cv_python_prefix
-then :
-  with_python_install_scheme=posix_prefix
-else case e in #(
-  e) with_python_install_scheme=posix_local ;;
-esac
-fi
-
-else case e in #(
-  e) with_python_install_scheme=none ;;
-esac
-fi
-
+  e) install_scheme=$default_scheme
  ;;
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_python_install_scheme" >&5
-printf "%s\n" "$with_python_install_scheme" >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $install_scheme" >&5
+printf "%s\n" "$install_scheme" >&6; }
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking where to install Python modules" >&5
 printf %s "checking where to install Python modules... " >&6; }
@@ -18626,14 +18637,13 @@ printf %s "checking where to install Python modules... " >&6; }
 # Check whether --with-pythondir was given.
 if test ${with_pythondir+y}
 then :
-  withval=$with_pythondir;
+  withval=$with_pythondir; pythondir=$with_pythondir
 else case e in #(
   e) if test x$PYTHON != x
 then :
-  with_pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$with_python_install_scheme\"))"`
-
+  pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$install_scheme\"))"`
 else case e in #(
-  e) with_pythondir=nowhere ;;
+  e) pythondir=nowhere ;;
 esac
 fi
 
@@ -18641,9 +18651,8 @@ fi
 esac
 fi
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $with_pythondir" >&5
-printf "%s\n" "$with_pythondir" >&6; }
-pythondir=${with_pythondir}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $pythondir" >&5
+printf "%s\n" "$pythondir" >&6; }
 
 
 

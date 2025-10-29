@@ -178,8 +178,12 @@ install-data: all
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
 install-python: all
+ifeq ($(pythondir),nowhere)
+	echo \$pythondir is set to \'nowhere\', skip installing Python module
+else
 	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --no-deps --upgrade \
 		 $(DESTDIRFLAG) --target=$(pythondir) $(WHEEL)
+endif
 
 install: install-data install-python
 
@@ -191,7 +195,8 @@ uninstall-data:
 	-rmdir $(DESTDIR)$(pkgincludedir)
 
 uninstall-python:
-	-$(PYTHON) -m pip uninstall --no-cache-dir --root-user-action=ignore gyoto
+	@echo "*** It is not possible to uninstall the Python module safely automatically ***"
+	@echo "===========> please run \'$(PYTHON) -m pip uninstall gyoto\' yourself "
 
 uninstall: uninstall-data uninstall-python
 

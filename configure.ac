@@ -158,32 +158,44 @@ AS_IF([test "x$with_python" = xno], [PYTHON=""])
 AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
   [AC_MSG_ERROR([Python requested but no supported version found (>=3.0, <4.0)])])
 
+AC_MSG_CHECKING(for Python default install scheme)
+AS_IF([test x$PYTHON != x],
+  [default_scheme=`$PYTHON -c "import sysconfig; print(sysconfig.get_default_scheme())"`],
+  [default_scheme=none]
+)
+AC_MSG_RESULT($default_scheme)
+
+AC_MSG_CHECKING(for available Python install schemes)
+AS_IF([test x$PYTHON != x],
+  [scheme_names=`$PYTHON -c "import sysconfig; print(*sysconfig.get_scheme_names())"`],
+  [scheme_names=none]
+)
+AC_MSG_RESULT($scheme_names)
+
 AC_MSG_CHECKING(which install scheme to use for Python modules)
 AC_ARG_WITH([python-install-scheme],
-  [AS_HELP_STRING([--with-python-install-scheme=scheme],[select install scheme for Python modules, e.g. posix_prefix, posix_local, or posix_user. By default, posix_prefix if \${prefix} matches the Python prefix, else posix_local.])],
-  [],
-  [AS_IF([test x$PYTHON != x],
-    [AS_IF([test $prefix == $pc_cv_python_prefix],
-      [with_python_install_scheme=posix_prefix],
-      [with_python_install_scheme=posix_local])
-    ],
-    [with_python_install_scheme=none])
-   ]
+  [AS_HELP_STRING([--with-python-install-scheme=scheme],
+     [select install scheme for Python modules, one of: $scheme_names none \
+      ($default_scheme). Use "none" to disable automatic Python module \
+      installation.])],
+  [install_scheme=$with_python_install_scheme],
+  [install_scheme=$default_scheme]
 )
-AC_MSG_RESULT($with_python_install_scheme)
+AC_MSG_RESULT($install_scheme)
 
 AC_MSG_CHECKING(where to install Python modules)
 AC_ARG_WITH([pythondir],
-  [AS_HELP_STRING([--with-pythondir=path],[specify directory to install Python modules to. If not specified, find out based on --with-python-install-scheme.])],
-  [],
+  [AS_HELP_STRING([--with-pythondir=path],
+     [specify directory to install Python modules to. If not specified, find \
+      out based on --with-python-install-scheme.])],
+  [pythondir=$with_pythondir],
   [AS_IF([test x$PYTHON != x],
-    [with_pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$with_python_install_scheme\"))"`
-    ],
-    [with_pythondir=nowhere])
+    [pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$install_scheme\"))"`],
+    [pythondir=nowhere])
    ]
 )
-AC_MSG_RESULT($with_pythondir)
-AC_SUBST([pythondir], [${with_pythondir}])
+AC_MSG_RESULT($pythondir)
+AC_SUBST([pythondir])
 
 AC_ARG_WITH([virtualenv],
 	[AS_HELP_STRING([--with-virtualenv], [install to a Python virtualenv])],
