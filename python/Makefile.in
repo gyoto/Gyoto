@@ -101,7 +101,7 @@ SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir swig
 WHEEL := dist/gyoto-$(PACKAGE_VERSION)-$(shell $(PYTHON) -c \
 'from packaging import tags; import sysconfig; tag = next(tags.sys_tags()); \
 tag_interpreter=tag.interpreter; tag_abi=tag.abi; \
-tag_platform=sysconfig.get_platform().replace("-", "_"); \
+tag_platform=sysconfig.get_platform().replace("-", "_").replace(".", "_"); \
 print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 
 export LDFLAGS
@@ -122,14 +122,14 @@ all wheel: $(WHEEL)
 
 src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 
-$(WHEEL): src
+$(WHEEL): $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	$(PYTHON) -m build --wheel
 
 testbed: testbed/stamp
 
 testbed/stamp: $(WHEEL)
 	$(MAKE) install-python pythondir=testbed
-	touch tesbed/stamp
+	touch testbed/stamp
 
 ../doc/xml/index.xml:
 	cd ../doc; $(MAKE) doxygen.stamp
@@ -195,8 +195,12 @@ uninstall-data:
 	-rmdir $(DESTDIR)$(pkgincludedir)
 
 uninstall-python:
-	@echo "*** It is not possible to uninstall the Python module safely automatically ***"
-	@echo "===========> please run \'$(PYTHON) -m pip uninstall gyoto\' yourself "
+	@echo ""
+	@echo "******************************************************************************"
+	@echo "    It is not possible to uninstall the Python module safely automatically    "
+	@echo "==> please run '$(PYTHON) -m pip uninstall gyoto' yourself "
+	@echo "******************************************************************************"
+	@echo ""
 
 uninstall: uninstall-data uninstall-python
 
@@ -216,6 +220,6 @@ distclean: clean
 
 # Use unittest
 check: testbed/stamp
-	PYTHONPATH=testbed:$$PYTHONPATH LD_LIBRARY_PATH=../lib/.libs:$$LD_LIBRARY_PATH PYTHONPATH=.:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
+	@DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=testbed:$$PYTHONPATH $(PYTHON) -m unittest discover -s tests -p "*.py"
 
 .PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src wheel testbed
