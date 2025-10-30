@@ -44,6 +44,7 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
                          imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 secondary_(1), 
 			 parallel_transport_(false),
+			 check_basis_(true),
 			 delta_(GYOTO_DEFAULT_DELTA),
 			 tmin_(-DBL_MAX), cst_(NULL), cst_n_(0),
 			 wait_pos_(0), init_vel_(NULL),
@@ -69,6 +70,7 @@ Worldline::Worldline(const Worldline& orig) :
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig.adaptive_), secondary_(orig.secondary_),
   parallel_transport_(orig.parallel_transport_),
+  check_basis_(orig.check_basis_),
   delta_(orig.delta_), tmin_(orig.tmin_), cst_(NULL), cst_n_(orig.cst_n_),
   wait_pos_(orig.wait_pos_), init_vel_(NULL),
   maxiter_(orig.maxiter_),
@@ -140,6 +142,7 @@ Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig->adaptive_), secondary_(orig->secondary_),
   parallel_transport_(orig->parallel_transport_),
+  check_basis_(orig->check_basis_),
   delta_(orig->delta_), tmin_(orig->tmin_), cst_(NULL), cst_n_(orig->cst_n_),
   wait_pos_(orig->wait_pos_), init_vel_(NULL),
   maxiter_(orig->maxiter_),
@@ -1442,6 +1445,12 @@ void Worldline::parallelTransport(bool pt) {
   }
 }
 bool Worldline::parallelTransport() const { return parallel_transport_; }
+
+void Worldline::checkBasis(bool cb) {
+  check_basis_=cb;
+  state_->init();
+}
+bool Worldline::checkBasis() const{ return check_basis_; }
 
 void Worldline::maxiter(size_t miter) { maxiter_ = miter; }
 size_t Worldline::maxiter() const { return maxiter_; }

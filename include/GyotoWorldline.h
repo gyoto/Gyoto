@@ -63,6 +63,8 @@ namespace Gyoto {
 			"Whether to stop Photon integration at 180° deflection.") \
     GYOTO_PROPERTY_BOOL(c, ParallelTransport, NoParallelTransport, _parallelTransport, \
 			"Whether to perform parallel transport of a local triad (used for polarization).") \
+    GYOTO_PROPERTY_BOOL(c, CheckBasis, NoCheckBasis, _checkBasis, \
+			"Whether to check basis orthogonality during parallel transport.") \
     GYOTO_PROPERTY_DOUBLE(c, MaxCrossEqplane, _maxCrossEqplane,		\
 			  "Maximum number of crossings of the equatorial plane allowed for this worldline") \
     GYOTO_PROPERTY_DOUBLE(c, RelTol, _relTol,				\
@@ -112,6 +114,8 @@ namespace Gyoto {
   bool c::_secondary() const {return secondary();}			\
   void c::_parallelTransport(bool s) {parallelTransport(s);}		\
   bool c::_parallelTransport() const {return parallelTransport();}	\
+  void c::_checkBasis(bool s) {checkBasis(s);}				\
+  bool c::_checkBasis() const {return checkBasis();}			\
   void c::_adaptive(bool s) {adaptive(s);}				\
   bool c::_adaptive() const {return adaptive();}			\
   void c::_maxCrossEqplane(double max){maxCrossEqplane(max);}	      	\
@@ -182,6 +186,8 @@ namespace Gyoto {
   bool _integ31 () const ;				\
   void _parallelTransport (bool sec) ;			\
   bool _parallelTransport () const ;			\
+  void _checkBasis (bool sec) ;				\
+  bool _checkBasis () const ;				\
   void _maxiter (size_t miter) ;			\
   size_t _maxiter () const ;				\
   void _integrator(std::string const & type);		\
@@ -289,6 +295,12 @@ class Gyoto::Worldline
    * are expressed in the context of polarization.
    */
   bool parallel_transport_;
+
+  /**
+   * \brief Whether to check for orthogonaliry during parallel transport
+   *
+   */
+  bool check_basis_;
 
   /**
    * \brief Initial integrating step
@@ -627,6 +639,8 @@ class Gyoto::Worldline
   bool secondary () const ; ///< Get #secondary_
   void parallelTransport (bool pt) ; ///< Set #parallel_transport_
   bool parallelTransport () const ; ///< Get #parallel_transport_
+  void checkBasis (bool cb) ; ///< Set #check_basis_
+  bool checkBasis () const ; ///< Get #check_basis_
   void maxiter (size_t miter) ; ///< Set #maxiter_
   size_t maxiter () const ; ///< Get #maxiter_
 
@@ -900,6 +914,7 @@ class Gyoto::Worldline::IntegState::Generic : public SmartPointee {
   double delta_; ///< Integration step (current in case of #adaptive_).
   bool adaptive_; ///< Whether to use an adaptive step
   bool parallel_transport_; ///< Whether to parallel-transport base vectors
+  bool check_basis_; ///< Whether to check for orthogonality
   double norm_; ///< Current norm of the 4-velocity.
   double normref_; ///< Initial norm of the 4-velocity.
   /// The Metric in this end of the Universe.

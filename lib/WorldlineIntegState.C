@@ -88,6 +88,7 @@ Worldline::IntegState::Generic::init(){
   if (!line_) return;
   adaptive_=line_->adaptive();
   parallel_transport_=line_->parallelTransport();
+  check_basis_=parallel_transport_ && line_->checkBasis();
   gg_=line_->metric();
 }
 void
@@ -332,7 +333,7 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
       do_step_(xx, dt);
     }
 
-    if (parallel_transport_){
+    if (check_basis_){
       bool ortho = false;
       double h2 = dt;
       do {

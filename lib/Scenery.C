@@ -1054,6 +1054,9 @@ bool Scenery::integ31() const { return ph_.integ31(); }
 void Scenery::parallelTransport(bool pt) { ph_.parallelTransport(pt); }
 bool Scenery::parallelTransport() const { return ph_.parallelTransport(); }
 
+void Scenery::checkBasis(bool cb) { ph_.checkBasis(cb); }
+bool Scenery::checkBasis() const { return ph_.checkBasis(); }
+
 void Scenery::maxiter(size_t miter) { ph_.maxiter(miter); }
 size_t Scenery::maxiter() const { return ph_.maxiter(); }
 
