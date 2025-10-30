@@ -333,51 +333,42 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     }
 
     if (parallel_transport_){
-      if (integ_31_==true){
-        double tnew = told+dt, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
-          Vr=xx[4], Vth=xx[5], Vph=xx[6];
-        double NN, beta[3];
-        double newpos[4]={tnew,rr,th,ph};
-        gg_->computeNBeta(newpos,NN,beta);
-        double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
-        
-        double rprime=NN*Vr-beta_r,
-          thprime=NN*Vth-beta_t,
-          phprime=NN*Vph-beta_p,
-          tdotnew = EE/NN,
-          rdot = rprime*tdotnew,
-          thdot = thprime*tdotnew,
-          phdot = phprime*tdotnew;
-        
-        state_t new_coord = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
+      bool ortho = false;
+      double h2 = dt;
+      do {
+	xx = xx_old; // Going back to the initial position to perform half the previous (failed) step integration
+	do_step_(xx, h2);
+	if (integ_31_==true){
+	  double tnew = told+h2, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
+	    Vr=xx[4], Vth=xx[5], Vph=xx[6];
+	  double NN, beta[3];
+	  double newpos[4]={tnew,rr,th,ph};
+	  gg_->computeNBeta(newpos,NN,beta);
+	  double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
 
-        bool ortho = checkBasis(new_coord);
-        double h2 = dt;
-        while (!ortho && abs(h2)>=delta_min){
-          new_coord = coord; // Going back to the initial position to perform half the previous (failed) step integration
-          h2/=2.;
-          do_step_(new_coord, h2);
-          ortho = checkBasis(new_coord);
-        }
-        if (abs(h2)<delta_min){
-            cout << "h2= " << h2 << endl;
-            GYOTO_ERROR("h2 < delta_min");
-        }
+	  double rprime=NN*Vr-beta_r,
+	    thprime=NN*Vth-beta_t,
+	    phprime=NN*Vph-beta_p,
+	    tdotnew = EE/NN,
+	    rdot = rprime*tdotnew,
+	    thdot = thprime*tdotnew,
+	    phdot = phprime*tdotnew;
 
-      }else {
-        bool ortho = checkBasis(xx);
-        double h2 = dt;
-        while (!ortho && abs(h2)>=delta_min){
-          xx = xx_old; // Going back to the initial position to perform half the previous (failed) step integration
-          h2/=2.;
-          do_step_(xx, h2);
-          ortho = checkBasis(xx);
-        }
-        if (abs(h2)<delta_min){
-            cout << "h2= " << h2 << endl;
-            GYOTO_ERROR("h2 < delta_min");
-        }
-      } 
+	  state_t new_coord = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
+	  ortho = checkBasis(new_coord);
+	} else ortho = checkBasis(xx);
+	h2 *= 0.5;
+      } while (!ortho && abs(h2)>=delta_min) ;
+      h2 *= 2.;
+      if (abs(h2)<delta_min){
+	cerr << "h2 = " << h2 << endl;
+	GYOTO_ERROR("h2 < delta_min");
+      }
+      static bool not_warned_yet=true;
+      if (!ortho && not_warned_yet) {
+	not_warned_yet=false;
+	GYOTO_SEVERE << "orthogonality is not preserved\n";
+      }
     }
     // update adaptive step
     delta_=h1;
