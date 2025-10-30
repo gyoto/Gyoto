@@ -108,6 +108,9 @@ CHECK_ENV = @DYLIB_VAR@=../lib/.libs:$$@DYLIB_VAR@ PYTHONPATH=testbed:$$PYTHONPA
 
 MPIRUN = mpirun
 
+INSTALLED_VERSION := $(shell $(PYTHON) -m pip show gyoto 2> /dev/null | grep Version: | awk '{print $$2}')
+INSTALLED_LOCATION := $(shell $(PYTHON) -m pip show gyoto 2> /dev/null | grep Location: | awk '{print $$2}')
+
 export LDFLAGS
 export CFLAGS
 export CPPFLAGS
@@ -177,7 +180,7 @@ install-data: all
 # Install the built wheel using python -m pip
 install-python: all
 ifeq ($(pythondir),nowhere)
-	echo \$pythondir is set to \'nowhere\', skip installing Python module
+	@echo \$pythondir is set to \'nowhere\', skip installing Python module
 else
 	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --no-deps --upgrade \
 		 $(DESTDIRFLAG) --target=$(pythondir) $(WHEEL)
@@ -198,12 +201,11 @@ uninstall-data:
 
 # Let the user know that we won't remove the Python module for them
 uninstall-python:
-	@echo ""
-	@echo "******************************************************************************"
-	@echo "    It is not possible to uninstall the Python module safely automatically    "
-	@echo "==> please run '$(PYTHON) -m pip uninstall gyoto' yourself "
-	@echo "******************************************************************************"
-	@echo ""
+ifeq ($(INSTALLED_LOCATION)$(INSTALLED_VERSION),$(pythondir)$(PACKAGE_VERSION))
+	$(PYTHON) -m pip uninstall --root-user-action=ignore --break-system-packages gyoto
+else
+	@echo No gyoto with version $(PACKAGE_VERSION) found in $(pythondir)
+endif
 
 # Call both targets above
 uninstall: uninstall-data uninstall-python
