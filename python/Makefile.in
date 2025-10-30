@@ -123,42 +123,58 @@ GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
 
 ### High level entry points
+# default target is wheel, see below
+all: wheel
 
-## Generate source files for python -m build
-# See low level targets below for details
+## 1) Generate source files for python -m build
+# See low level targets below for details. This is the last step that
+# is best done by make, the rest can be done with Python standard
+# tools such as PIP if the user prefers.
 src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 
-## Default target: build wheel file using python -m build
-all wheel: $(WHEEL)
-
+## 2) Build wheel file using python -m build
+wheel: $(WHEEL)
 $(WHEEL): $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	$(PYTHON) -m build --wheel
 
-## make check: prepare testbed, call unittest, run example files
+## 3) Optional: check the built wheel
+# install the wheel in a testbed folder
 testbed: testbed/stamp
-
 testbed/stamp: $(WHEEL)
 	$(MAKE) install-python pythondir=testbed
 	touch testbed/stamp
 
+# run test suite based on unittest
 unittest: testbed/stamp
 	$(CHECK_ENV) $(PYTHON) -m unittest discover -s tests -p "*.py"
 
+# check calls the above and runs the example files
 check: testbed/stamp unittest
 	$(CHECK_ENV) $(PYTHON) example.py --pdf=example.pdf
 	$(CHECK_ENV) $(PYTHON) example-patterndisk.py --pdf=example-patterndisk.pdf
 
+# check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
 	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) example-mpi.py
 
+# check-mpi requires bin to have been built
 ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@:
 	$(MAKE) -C ../bin
 
-## install: use pip for the Python module, copy include files in the right place
+# clean up:
+check-clean:
+	-rm -f example.pdf example-patterndisk.pdf
+
+# those targets are yet empty:
+check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-mpi-clean: ;
+
+## 3) Install the built wheel and include files
+# Install the Swig include files under $prefix
 install-data: all
 	$(MKDIR_P) $(DESTDIR)$(pkgincludedir)
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
+# Install the built wheel using python -m pip
 install-python: all
 ifeq ($(pythondir),nowhere)
 	echo \$pythondir is set to \'nowhere\', skip installing Python module
@@ -167,9 +183,12 @@ else
 		 $(DESTDIRFLAG) --target=$(pythondir) $(WHEEL)
 endif
 
+# Run both targets above
 install: install-data install-python
 
-## uninstall: remove the include files, but leave the Python module alone
+## 5) Uninstallation
+# We know how to remove safely the include files, but not the Python
+# module
 uninstall-data:
 	-cd $(DESTDIR)$(pkgincludedir) ; \
 	   for file in $(GYOTO_SWIGFILES) numpy.i gyoto_swig.h ; do \
@@ -177,6 +196,7 @@ uninstall-data:
 	   done
 	-rmdir $(DESTDIR)$(pkgincludedir)
 
+# Let the user know that we won't remove the Python module for them
 uninstall-python:
 	@echo ""
 	@echo "******************************************************************************"
@@ -185,6 +205,7 @@ uninstall-python:
 	@echo "******************************************************************************"
 	@echo ""
 
+# Call both targets above
 uninstall: uninstall-data uninstall-python
 
 ### Low level targets to generate each source file
@@ -240,7 +261,7 @@ src/gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
 
 ### The clean targets
 
-clean:
+clean: check-clean check-mpi-clean
 	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
@@ -250,6 +271,7 @@ clean:
 
 distclean: clean 
 	-rm -v $(builddir)/setup*.py
+	-rm -v $(builddir)/pyproject.toml
 	-rm -v $(builddir)/Makefile
 
 ### .PHONY targets are run even if they appear up to date

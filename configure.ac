@@ -209,6 +209,8 @@ AS_IF([test "x$with_virtualenv" != xno],
 	[AC_SUBST([VIRTUALENV], [no])])
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
 
+AM_CONDITIONAL(HAVE_PYTHON, [test "x$PYTHON" != "x"])
+
 # DONE WITH PYTHON STUFF
 
 # Checks for programs.
