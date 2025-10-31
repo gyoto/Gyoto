@@ -71,6 +71,33 @@
 #
 ###
 
+# 0- Parse command-line arguments
+import sys, os
+
+pdfname=None
+examples_dir="../doc/examples/"
+for param in sys.argv:
+    sparam=param.split("=")
+    if os.path.basename(sparam[0])==os.path.basename(__file__):
+        pass
+    elif sparam[0]=="--pdf":
+        if len(sparam)==2:
+            pdfname=sparam[1]
+        else:
+            raise ValueError('--pdf argument expects a filename, e.g. --pdf=output.pdf')
+    elif sparam[0]=="--examples-dir":
+        if len(sparam)==2:
+            examples_dir=sparam[1]
+        else:
+            raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
+    else:
+        raise ValueError(f'unknown argument: {sparam[0]}')
+
+pdf=None if pdfname is None else PdfPages(pdfname)
+if len(examples_dir) > 0 and examples_dir[-1] != "/":
+    examples_dir += "/"
+
+
 # 1- Let mpi4py initialize the MPI environment:
 import mpi4py.MPI
 
@@ -81,7 +108,7 @@ import matplotlib.pyplot as plt
 import gyoto.core
 import gyoto.std
 
-sc=gyoto.core.Factory("../doc/examples/example-moving-star.xml").scenery()
+sc=gyoto.core.Factory(examples_dir+"example-moving-star.xml").scenery()
 sc.nThreads(1)
 sc.astrobj().opticallyThin(False)
 

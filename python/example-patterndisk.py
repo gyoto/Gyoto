@@ -14,6 +14,7 @@ import gyoto.core, gyoto.std
 
 # Parse command line and optionally switch to PDF output
 pdfname=None
+examples_dir="../doc/examples/"
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -22,11 +23,18 @@ for param in sys.argv:
         if len(sparam)==2:
             pdfname=sparam[1]
         else:
-            raise ValueError('--pdf argument excpects a filename, e.g. --pdf=output.pdf')
+            raise ValueError('--pdf argument expects a filename, e.g. --pdf=output.pdf')
+    elif sparam[0]=="--examples-dir":
+        if len(sparam)==2:
+            examples_dir=sparam[1]
+        else:
+            raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
     else:
         raise ValueError(f'unknown argument: {sparam[0]}')
 
 pdf=None if pdfname is None else PdfPages(pdfname)
+if len(examples_dir) > 0 and examples_dir[-1] != "/":
+    examples_dir += "/"
 
 ### Create a metric
 metric = gyoto.std.KerrBL()

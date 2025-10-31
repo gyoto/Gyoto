@@ -31,6 +31,7 @@ import gyoto.std
 # Parse command line and optionally switch to PDF output
 
 pdfname=None
+examples_dir="../doc/examples/"
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -39,12 +40,18 @@ for param in sys.argv:
         if len(sparam)==2:
             pdfname=sparam[1]
         else:
-            raise ValueError('--pdf argument excpects a filename, e.g. --pdf=output.pdf')
+            raise ValueError('--pdf argument expects a filename, e.g. --pdf=output.pdf')
+    elif sparam[0]=="--examples-dir":
+        if len(sparam)==2:
+            examples_dir=sparam[1]
+        else:
+            raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
     else:
         raise ValueError(f'unknown argument: {sparam[0]}')
 
 pdf=None if pdfname is None else PdfPages(pdfname)
-
+if len(examples_dir) > 0 and examples_dir[-1] != "/":
+    examples_dir += "/"
 
 # Simple stuff
 
@@ -55,7 +62,7 @@ pos=scr.getObserverPos()
 
 # Load Scenery
 
-a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
+a=gyoto.core.Factory(examples_dir+"example-moving-star.xml")
 sc=a.scenery()
 sc.nThreads(8)
 sc.astrobj().opticallyThin(False)
@@ -202,7 +209,7 @@ else:
 
 # Another Scenery, with spectrum
 
-sc=gyoto.core.Factory("../doc/examples/example-polish-doughnut.xml").scenery()
+sc=gyoto.core.Factory(examples_dir+"example-polish-doughnut.xml").scenery()
 sc.screen().resolution(32)
 res=sc.screen().resolution()
 ns=sc.screen().spectrometer().nSamples()

@@ -34,7 +34,7 @@ else:
     except:
         pass
 
-gyoto_lib_dirs=['@abs_srcdir@/../lib/.libs']
+gyoto_lib_dirs=['@abs_builddir@/../lib/.libs']
 gyoto_libs=['gyoto@FEATURES@']
 gyoto_ldflags=[]
 for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
@@ -47,7 +47,7 @@ for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
         elif comp != '':
             gyoto_ldflags.append(comp)
 
-gyoto_inc_dirs=[numpy_include, 'include', '@abs_srcdir@', '@abs_srcdir@/include', '@abs_srcdir@/../include']
+gyoto_inc_dirs=[numpy_include, '@abs_builddir@/include', '@abs_builddir@/../include', '@abs_srcdir@/include', '@abs_srcdir@/../include']
 gyoto_cflags=[]
 for flags in ('@CXXFLAGS@', '@CFITSIO_CFLAGS@', '@XERCES_CFLAGS@', '@UDUNITS_CFLAGS@', '@EIGEN_CFLAGS@', '@BOOST_CPPFLAGS@'):
     flags=re.split('[ \t]', flags)

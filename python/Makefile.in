@@ -22,6 +22,10 @@
 
 # This Makefile contains targets that fail if run in parallel
 .NOTPARALLEL:
+
+# Some targets require a second expansion
+.SECONDEXPANSION:
+
 # List whatever files you want to include in your source distribution here.
 # You can include whole directories but note that *everything* under that 
 # directory will be included
@@ -124,6 +128,7 @@ GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i includ
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
+GYOTO_STATIC_SRC := $(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py)))
 
 ### High level entry points
 # default target is wheel, see below
@@ -133,11 +138,11 @@ all: wheel
 # See low level targets below for details. This is the last step that
 # is best done by make, the rest can be done with Python standard
 # tools such as PIP if the user prefers.
-src: $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+src: $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 
 ## 2) Build wheel file using python -m build
 wheel: $(WHEEL)
-$(WHEEL): $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+$(WHEEL): $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	$(PYTHON) -m build --wheel
 
 ## 3) Optional: check the built wheel
@@ -149,16 +154,19 @@ testbed/stamp: $(WHEEL)
 
 # run test suite based on unittest
 unittest: testbed/stamp
-	$(CHECK_ENV) $(PYTHON) -m unittest discover -s tests -p "*.py"
+	$(CHECK_ENV) $(PYTHON) -m unittest discover -s $(srcdir)/tests -p "*.py"
 
 # check calls the above and runs the example files
 check: testbed/stamp unittest
-	$(CHECK_ENV) $(PYTHON) example.py --pdf=example.pdf
-	$(CHECK_ENV) $(PYTHON) example-patterndisk.py --pdf=example-patterndisk.pdf
+	$(CHECK_ENV) $(PYTHON) $(srcdir)/example.py \
+		--pdf=example.pdf --examples-dir=$(top_srcdir)/doc/examples
+	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-patterndisk.py \
+		--pdf=example-patterndisk.pdf
 
 # check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
-	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) example-mpi.py
+	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) $(srcdir)/example-mpi.py \
+		--examples-dir=$(top_srcdir)/doc/examples
 
 # check-mpi requires bin to have been built
 ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@:
@@ -220,12 +228,12 @@ uninstall: uninstall-data uninstall-python
 
 # Run doxy2swig to turn this XML doc to a Swig include file
 .tmp/gyoto_doc.i: ../doc/xml/index.xml
-	$(MKDIR_P) .tmp
+	$(MKDIR_P) $(dir $@)
 	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
 
 # Rework a little bit this Swig file
 include/gyoto_doc.i: .tmp/gyoto_doc.i
-	$(MKDIR_P) include
+	$(MKDIR_P) $(dir $@)
 	$(SED) -e 's/Gyoto::Screen::Angles/Angles/' \
 	       -e 's/Gyoto::Screen::Bucket/Bucket/' \
 	       -e 's/Gyoto::Screen::Coord1dSet/Coord1dSet/' \
@@ -239,33 +247,42 @@ include/gyoto_doc.i: .tmp/gyoto_doc.i
 
 ## Step 2: run Swig to produce cxx and py files
 .tmp/core.py src/core_wrap.cxx: $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp
+	$(MKDIR_P) .tmp src
 	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/include/gyoto.i
 
 .tmp/std.py src/std_wrap.cxx: $(srcdir)/include/gyoto_std.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp
+	$(MKDIR_P) .tmp src
 	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/include/gyoto_std.i
 
 .tmp/lorene.py src/lorene_wrap.cxx: $(srcdir)/include/gyoto_lorene.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp
+	$(MKDIR_P) .tmp src
 	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/include/gyoto_lorene.i
 
 ## Step 3: tweak the generated py files
 src/gyoto/core.py: $(srcdir)/headers/core .tmp/core.py
-	$(MKDIR_P) `dirname $@`
+	$(MKDIR_P) $(dir $@)
 	cat $^ > $@
 
 src/gyoto/std.py: $(srcdir)/headers/std .tmp/std.py
-	$(MKDIR_P) `dirname $@`
+	$(MKDIR_P) $(dir $@)
 	cat $^ > $@
 
 src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
-	$(MKDIR_P) `dirname $@`
+	$(MKDIR_P) $(dir $@)
 	cat $^ > $@
+
+# in case of out-of-tree build, we also need go copy the static sources:
+$(GYOTO_STATIC_SRC): $(srcdir)/$$@
+	$(MKDIR_P) $(dir $@)
+	cp $(srcdir)/$@ $@
 
 ### The clean targets
 
 clean: check-clean check-mpi-clean
+ifeq ("$(wildcard Makefile.in)","")
+#	in case of out-of-tree build, remove src
+	-rm -Rf src
+endif
 	-rm -Rf build dist .tmp $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 	-rm *.pyc include/gyoto_doc.i .tmp/gyoto_doc.i
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
