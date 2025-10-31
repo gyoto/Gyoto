@@ -92,11 +92,11 @@ PYTHON_LDFLAGS = @PYTHON_LDFLAGS@
 PYTHON_LIBS = @PYTHON_LIBS@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 
-CPPFLAGS=-I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(EIGEN_CFLAGS)
+CPPFLAGS=-Iinclude -I$(srcdir)/include -I../include -I$(top_srcdir)/include $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS) $(EIGEN_CFLAGS)
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CFLAGS=$(CXXFLAGS)
 
-SWIG_CMD = $(SWIG) -I../include -I$(srcdir)/../include -c++ -python -outdir swig_output
+SWIG_CMD = $(SWIG) -Iinclude -I$(srcdir)/include -I../include -I$(srcdir)/../include -c++ -python -outdir .tmp
 
 WHEEL := dist/gyoto-$(PACKAGE_VERSION)-$(shell $(PYTHON) -c \
 'from packaging import tags; import sysconfig; tag = next(tags.sys_tags()); \
@@ -120,10 +120,10 @@ export CC
 
 GYOTO_PYFILES = src/gyoto/core.py src/gyoto/std.py
 GYOTO_CXXFILES = src/core_wrap.cxx src/std_wrap.cxx
-GYOTO_SWIGFILES = $(srcdir)/gyoto.i $(srcdir)/gyoto_std.i gyoto_doc.i $(srcdir)/numpy.i $(srcdir)/gyoto_swig.h $(srcdir)/gyoto_std_swig.h
+GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i include/gyoto_doc.i $(srcdir)/include/numpy.i $(srcdir)/include/gyoto_swig.h $(srcdir)/include/gyoto_std_swig.h
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
-@HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/gyoto_lorene.i
+@HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
 
 ### High level entry points
 # default target is wheel, see below
@@ -219,11 +219,13 @@ uninstall: uninstall-data uninstall-python
 	cd ../doc; $(MAKE) doxygen.stamp
 
 # Run doxy2swig to turn this XML doc to a Swig include file
-gyoto_doc.i.orig: ../doc/xml/index.xml
+.tmp/gyoto_doc.i: ../doc/xml/index.xml
+	$(MKDIR_P) .tmp
 	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
 
 # Rework a little bit this Swig file
-gyoto_doc.i: gyoto_doc.i.orig
+include/gyoto_doc.i: .tmp/gyoto_doc.i
+	$(MKDIR_P) include
 	$(SED) -e 's/Gyoto::Screen::Angles/Angles/' \
 	       -e 's/Gyoto::Screen::Bucket/Bucket/' \
 	       -e 's/Gyoto::Screen::Coord1dSet/Coord1dSet/' \
@@ -236,40 +238,41 @@ gyoto_doc.i: gyoto_doc.i.orig
 	          $< > $@
 
 ## Step 2: run Swig to produce cxx and py files
-swig_output/core.py src/core_wrap.cxx: gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/gyoto.i
+.tmp/core.py src/core_wrap.cxx: $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) .tmp
+	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/include/gyoto.i
 
-swig_output/std.py src/std_wrap.cxx: gyoto_std.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/gyoto_std.i
+.tmp/std.py src/std_wrap.cxx: $(srcdir)/include/gyoto_std.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) .tmp
+	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/include/gyoto_std.i
 
-swig_output/lorene.py src/lorene_wrap.cxx: gyoto_lorene.i gyoto.i gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) swig_output
-	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/gyoto_lorene.i
+.tmp/lorene.py src/lorene_wrap.cxx: $(srcdir)/include/gyoto_lorene.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) .tmp
+	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/include/gyoto_lorene.i
 
 ## Step 3: tweak the generated py files
-src/gyoto/core.py: $(srcdir)/headers/core swig_output/core.py
+src/gyoto/core.py: $(srcdir)/headers/core .tmp/core.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
-src/gyoto/std.py: $(srcdir)/headers/std swig_output/std.py
+src/gyoto/std.py: $(srcdir)/headers/std .tmp/std.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
-src/gyoto/lorene.py: $(srcdir)/headers/lorene swig_output/lorene.py
+src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
 	$(MKDIR_P) `dirname $@`
 	cat $^ > $@
 
 ### The clean targets
 
 clean: check-clean check-mpi-clean
-	-rm -Rf build dist swig_output $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
-	-rm *.pyc gyoto_doc.i gyoto_doc.i.orig
+	-rm -Rf build dist .tmp $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+	-rm *.pyc include/gyoto_doc.i .tmp/gyoto_doc.i
 	-rm -f doxygen_sqlite3.db gyoto_*installed.txt
 	-rm -f tests/*.pyc *_wrap.cxx
 	-rm -Rf _gyoto*.so src/Gyoto*.egg-info _*.so testbed
 	-rm -Rf dist gyoto/__pycache__/ tests/__pycache__/ .eggs/ __pycache__/
+	-rmdir include
 
 distclean: clean 
 	-rm -v $(builddir)/setup*.py

@@ -5,9 +5,21 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "@PACKAGE_NAME@"
 version = "@PACKAGE_VERSION@"
+dependencies = ["numpy"]
 authors = [
-    {name = "Thibaut Paumard", email = "thibaut.paumard@obspm.fr"}
+    {name = "The Gyoto Team", email = "gyoto@sympa.obspm.fr"}
 ]
-      
+description = "The General relativitY Orbit Tracer of paris Observatory"
+license = "GPL-3.0-or-later"
+keywords = ["raytracing", "General Relativity", "science", "astronomy"]
+classifiers = [
+  "Topic :: Scientific/Engineering :: Astronomy",
+]
+
+[project.urls]
+Homepage = "http://gyoto.obspm.fr"
+Repository = "https://github.com/gyoto/Gyoto.git"
+Issues = "https://github.com/gyoto/Gyoto/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
