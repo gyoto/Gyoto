@@ -160,7 +160,7 @@ AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
 
 AC_MSG_CHECKING(for Python default install scheme)
 AS_IF([test x$PYTHON != x],
-  [default_scheme=`$PYTHON -c "import sysconfig; print(sysconfig.get_default_scheme())"`],
+  [default_scheme=`$PYTHON -c "import sysconfig; print(sysconfig.get_default_scheme() if hasattr(sysconfig, 'get_default_scheme') else 'posix_prefix')"`],
   [default_scheme=none]
 )
 AC_MSG_RESULT($default_scheme)
