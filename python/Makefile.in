@@ -33,7 +33,7 @@ DISTFILES = PKG-INFO Makefile.in configure setup.py install-sh
 
 DESTDIR =
 ifdef DESTDIR
-DESTDIRFLAG = --ignore-installed --root=$(DESTDIR)
+DESTDIRFLAG = --ignore-installed
 else
 DESTDIRFLAG = --force-reinstall
 endif
@@ -191,7 +191,7 @@ ifeq ($(pythondir),nowhere)
 	@echo \$pythondir is set to \'nowhere\', skip installing Python module
 else
 	$(PYTHON) -m pip install --no-cache-dir --root-user-action=ignore --no-deps --upgrade \
-		 $(DESTDIRFLAG) --target=$(pythondir) $(WHEEL)
+		 $(DESTDIRFLAG) --target=$(DESTDIR)$(pythondir) $(WHEEL)
 endif
 
 # Run both targets above
