@@ -53,6 +53,7 @@
 #include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskProfile.h"
+#include "GyotoStochasticThinDisk.h"
 #include "GyotoThinDiskGridIntensity.h"
 
 #include "GyotoPatternDisk.h"
@@ -135,6 +136,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::SphericalAccretion>));
   Astrobj::Register("ThinDiskProfile",
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskProfile>));
+  Astrobj::Register("StochasticThinDisk",
+		    &(Astrobj::Subcontractor<Astrobj::StochasticThinDisk>));
   Astrobj::Register("Blob",
 		    &(Astrobj::Subcontractor<Astrobj::Blob>));
   Astrobj::Register("Plasmoid",
