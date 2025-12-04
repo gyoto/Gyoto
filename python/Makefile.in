@@ -143,7 +143,7 @@ src: $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 ## 2) Build wheel file using python -m build
 wheel: $(WHEEL)
 $(WHEEL): $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
-	$(PYTHON) -m build --wheel
+	$(PYTHON) -m build --wheel --no-isolation
 
 ## 3) Optional: check the built wheel
 # install the wheel in a testbed folder
