@@ -51,31 +51,6 @@ using namespace boost::numeric::odeint;
 # define REENABLE_SIGFPE
 #endif
 
-#define GYOTO_TRY_BOOST_CONTROLLED_STEPPER(a)				\
-  if (kind_==Kind::a) {							\
-    typedef boost::numeric::odeint::a<state_t> error_stepper_type;	\
-    DISABLE_SIGFPE;							\
-    auto controlled=							\
-      make_controlled< error_stepper_type >				\
-           ( line->absTol() , line->relTol() );				\
-    REENABLE_SIGFPE;							\
-    try_step_ =								\
-      [controlled, system]						\
-      (state_t &inout, double &t, double &h)				\
-      mutable								\
-      -> controlled_step_result						\
-    {									\
-      return controlled.try_step(system, inout, t, h);			\
-    };									\
-    do_step_ =								\
-      [controlled, system]						\
-      (state_t &inout, double h)					\
-      mutable								\
-    {									\
-      controlled.stepper().do_step(system, inout, 0., h);		\
-    };									\
-  }
-
 #endif // GYOTO_HAVE_BOOST_INTEGRATORS
 
 
@@ -99,7 +74,7 @@ Worldline::IntegState::Generic::init(Worldline * line,
   line_=line;
   init();
   delta_=delta;
-  if (line_->getImin() <= line_->getImax() && gg_) norm_=normref_= gg_->ScalarProd(&coord[0],&coord[4],&coord[4]);
+  if (line_->getImin() <= line_->getImax() && gg_) norm_=normref_= gg_->norm(&coord[0],&coord[4]);
 }
 
 void Worldline::IntegState::Generic::checkNorm(double coord[8])
@@ -221,25 +196,24 @@ void Worldline::IntegState::Boost::init()
   Generic::init();
   Worldline* line=line_;
   Metric::Generic* met=line->metric();
-  system_t system;
   double mass=line->getMass();
 
   if (!met)
-    system=[](const state_t &/*x*/,
+    this->system_=[](const state_t &/*x*/,
 	      state_t & /*dxdt*/,
 	      const double /* t*/ ){
       GYOTO_ERROR("Metric not set");
     };
   else{
     if (integ_31_==false){
-      system=[this, line, met, mass](const state_t &x,
+      this->system_=[this, line, met, mass](const state_t &x,
 				     state_t &dxdt,
 				     const double t)
 	{
 	  line->stopcond=met->diff(x, dxdt, mass);
 	};
     }else{
-      system=[this, line, met, mass](const state_t &x,
+      this->system_=[this, line, met, mass](const state_t &x,
 				     state_t &dxdt,
 				     const double t)
 	{
@@ -250,12 +224,7 @@ void Worldline::IntegState::Boost::init()
 
   if (line->getImin() > line->getImax() || !met) return;
 
-  GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54)
-  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_fehlberg78)
-  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_dopri5)
-  else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(runge_kutta_cash_karp54_classic)
-	 //else GYOTO_TRY_BOOST_CONTROLLED_STEPPER(rosenbrock4)
-  else GYOTO_ERROR("unknown stepper type");
+  setup_stepper(system_);
 };
 
 Worldline::IntegState::Boost *
@@ -307,11 +276,22 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     controlled_step_result cres;
     GYOTO_DEBUG_EXPR(h1);
 
-    state_t xx_old = xx;
-    do {
-      // try_step_ is a lambda function encapsulating
-      // the actual adaptive-step integrator from boost
-      cres=try_step_(xx, dt, h1);
+    do { 
+      // try_step_ is a lambda function encapsulating 
+      // the actual adaptive-step integrator from boost 
+      cres=try_step_(xx, dt, h1); 
+      GYOTO_DEBUG_EXPR(h1); 
+      // If cres is a success and parallel_transport is true, check orthogonality 
+      // If cres is a fail, does not matter, a smaller step will be performed 
+      if (parallel_transport_){
+        double violation = checkBasis(xx);
+        if (violation > line_->normTol() ){ 
+          // non-orthogonality of the polar basis is over the user defined tolerence 
+          // re orthonormalize polar basis using Gram-Schmidt scheme
+          // However here the photon 4-velocity is untouched as we are integrating
+          reorthonormalizeBasis(xx);
+        }
+      }
     } while (abs(h1)>=delta_min &&
 	     cres==controlled_step_result::fail &&
 	     abs(h1)<h1max);
@@ -333,44 +313,6 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
       do_step_(xx, dt);
     }
 
-    if (check_basis_){
-      bool ortho = false;
-      double h2 = dt;
-      do {
-	xx = xx_old; // Going back to the initial position to perform half the previous (failed) step integration
-	do_step_(xx, h2);
-	if (integ_31_==true){
-	  double tnew = told+h2, EE = xx[0], rr=xx[1], th=xx[2], ph=xx[3],
-	    Vr=xx[4], Vth=xx[5], Vph=xx[6];
-	  double NN, beta[3];
-	  double newpos[4]={tnew,rr,th,ph};
-	  gg_->computeNBeta(newpos,NN,beta);
-	  double beta_r=beta[0], beta_t=beta[1], beta_p=beta[2];
-
-	  double rprime=NN*Vr-beta_r,
-	    thprime=NN*Vth-beta_t,
-	    phprime=NN*Vph-beta_p,
-	    tdotnew = EE/NN,
-	    rdot = rprime*tdotnew,
-	    thdot = thprime*tdotnew,
-	    phdot = phprime*tdotnew;
-
-	  state_t new_coord = {tnew,rr,th,ph,tdotnew,rdot,thdot,phdot};
-	  ortho = checkBasis(new_coord);
-	} else ortho = checkBasis(xx);
-	h2 *= 0.5;
-      } while (!ortho && abs(h2)>=delta_min) ;
-      h2 *= 2.;
-      if (abs(h2)<delta_min){
-	cerr << "h2 = " << h2 << endl;
-	GYOTO_ERROR("h2 < delta_min");
-      }
-      static bool not_warned_yet=true;
-      if (!ortho && not_warned_yet) {
-	not_warned_yet=false;
-	GYOTO_SEVERE << "orthogonality is not preserved\n";
-      }
-    }
     // update adaptive step
     delta_=h1;
 
@@ -479,7 +421,7 @@ std::string Worldline::IntegState::Boost::kind() {
   return "error";
 } 
 
-bool Worldline::IntegState::Boost::checkBasis(state_t const &coord) const {
+double Worldline::IntegState::Boost::checkBasis(state_t const &coord) const {
   double Ephi[4];
   double Etheta[4];
   double photon_tgvec[4];
@@ -490,15 +432,200 @@ bool Worldline::IntegState::Boost::checkBasis(state_t const &coord) const {
     Etheta[ii]=coord[ii+12]; // polarization basis vector 2
   }
 
-  // Check that wave vector, Ephi and Etheta are orthogonal:
-  double test_tol=GYOTO_DEFAULT_ABSTOL;
-  if (fabs(gg_->ScalarProd(&coord[0],Ephi,Etheta))>test_tol
-      or fabs(gg_->ScalarProd(&coord[0],Ephi,photon_tgvec))>test_tol
-      or fabs(gg_->ScalarProd(&coord[0],Etheta,photon_tgvec))>test_tol
-      or fabs(gg_->norm(&coord[0],Ephi)-1.)>test_tol
-      or fabs(gg_->norm(&coord[0],Etheta)-1.)>test_tol){
-    return false;
-  }
-  return true;
+  return std::max({fabs(gg_->ScalarProd(&coord[0],Ephi,Etheta)),
+      fabs(gg_->ScalarProd(&coord[0],Ephi,photon_tgvec)),
+      fabs(gg_->ScalarProd(&coord[0],Etheta,photon_tgvec)),
+      fabs(gg_->norm(&coord[0],Ephi)-1.),
+      fabs(gg_->norm(&coord[0],Etheta)-1.)});
 }
+
+void Worldline::IntegState::Boost::reorthonormalizeBasis(state_t &coord) const {
+
+  GYOTO_DEBUG << "reorthonormalize polarization basis using Gram-Schmidt scheme" << endl;
+
+  if (coord.size()!=16)
+    GYOTO_ERROR("Polarization basis vector Ephi and Etheta are missing!");
+  
+  double Ephi[4];
+  double Etheta[4];
+  double photon_tgvec[4];
+  
+  for (int ii=0;ii<4;ii++){
+    photon_tgvec[ii]=coord[ii+4]; // photon wave vector
+    Ephi[ii]=coord[ii+8]; // polarization basis vector 1
+    Etheta[ii]=coord[ii+12]; // polarization basis vector 2
+  }
+
+  // project Etheta orthogonal to photon_tgvec
+  gg_->projectFourVect(&coord[0], Etheta, photon_tgvec);
+  double norm = gg_->norm(&coord[0], Etheta);
+  gg_->multiplyFourVect(Etheta, 1.0/norm);
+
+  // project Ephi orthogonal to photon_tgvec
+  gg_->projectFourVect(&coord[0], Ephi, photon_tgvec);
+
+  // project Ephi orthogonal to Etheta
+  gg_->projectFourVect(&coord[0], Ephi, Etheta);
+
+  // normalise Ephi
+  norm = gg_->norm(&coord[0], Ephi);
+  gg_->multiplyFourVect(Ephi, 1.0/norm);
+
+  // Write output in coord
+  for (int ii=0; ii<4; ii++) {
+    coord[ii+8]  = Etheta[ii];
+    coord[ii+12] = Ephi[ii];
+  }
+}
+
+void Gyoto::Worldline::IntegState::Boost::setup_stepper(system_t system){
+
+  switch (kind_) {
+    case runge_kutta_cash_karp54: {
+      using error_stepper_type = boost::numeric::odeint::runge_kutta_cash_karp54<state_t>;
+      DISABLE_SIGFPE;
+      Gyoto::Worldline::IntegState::Boost::my_error_checker<double> checker(
+      line_->absTol(),
+      line_->relTol(),
+      gg_,
+      normref_,
+      line_->normTol(),
+      do_step_);
+
+      auto controlled = boost::numeric::odeint::controlled_runge_kutta<
+                    error_stepper_type,
+                    my_error_checker<double>
+                    >(checker);
+      REENABLE_SIGFPE;
+
+      try_step_ =
+        [controlled, this]
+        (state_t &inout, double &t, double &h)
+        mutable
+        -> controlled_step_result
+      {
+        return controlled.try_step(this->system_, inout, t, h);
+      };
+      do_step_ =
+        [controlled, this]
+        (state_t &inout, double h)
+        mutable
+      {
+        controlled.stepper().do_step(this->system_, inout, 0., h);
+      };
+      break;
+    }
+
+    case runge_kutta_fehlberg78: {
+      using error_stepper_type = boost::numeric::odeint::runge_kutta_fehlberg78<state_t>;
+      DISABLE_SIGFPE;
+      Gyoto::Worldline::IntegState::Boost::my_error_checker<double> checker(
+      line_->absTol(),
+      line_->relTol(),
+      gg_,
+      normref_,
+      line_->normTol(),
+      do_step_);
+
+      auto controlled = boost::numeric::odeint::controlled_runge_kutta<
+                    error_stepper_type,
+                    my_error_checker<double>
+                    >(checker);
+      REENABLE_SIGFPE;
+
+      try_step_ =
+        [controlled, this]
+        (state_t &inout, double &t, double &h)
+        mutable
+        -> controlled_step_result
+      {
+        return controlled.try_step(this->system_, inout, t, h);
+      };
+      do_step_ =
+        [controlled, this]
+        (state_t &inout, double h)
+        mutable
+      {
+        controlled.stepper().do_step(this->system_, inout, 0., h);
+      };
+      break;
+    }
+  
+    case runge_kutta_dopri5: {
+      using error_stepper_type = boost::numeric::odeint::runge_kutta_dopri5<state_t>;
+      DISABLE_SIGFPE;
+      Gyoto::Worldline::IntegState::Boost::my_error_checker<double> checker(
+      line_->absTol(),
+      line_->relTol(),
+      gg_,
+      normref_,
+      line_->normTol(),
+      do_step_);
+
+      auto controlled = boost::numeric::odeint::controlled_runge_kutta<
+                    error_stepper_type,
+                    my_error_checker<double>
+                    >(checker);
+      REENABLE_SIGFPE;
+
+      try_step_ =
+        [controlled, this]
+        (state_t &inout, double &t, double &h)
+        mutable
+        -> controlled_step_result
+      {
+        return controlled.try_step(this->system_, inout, t, h);
+      };
+      do_step_ =
+        [controlled, this]
+        (state_t &inout, double h)
+        mutable
+      {
+        controlled.stepper().do_step(this->system_, inout, 0., h);
+      };
+      break;
+    }
+
+    case runge_kutta_cash_karp54_classic: {
+      using error_stepper_type = boost::numeric::odeint::runge_kutta_cash_karp54_classic<state_t>;
+      DISABLE_SIGFPE;
+      Gyoto::Worldline::IntegState::Boost::my_error_checker<double> checker(
+      line_->absTol(),
+      line_->relTol(),
+      gg_,
+      normref_,
+      line_->normTol(),
+      do_step_);
+
+      auto controlled = boost::numeric::odeint::controlled_runge_kutta<
+                    error_stepper_type,
+                    my_error_checker<double>
+                    >(checker);
+      REENABLE_SIGFPE;
+
+      try_step_ =
+        [controlled, this]
+        (state_t &inout, double &t, double &h)
+        mutable
+        -> controlled_step_result
+      {
+        return controlled.try_step(this->system_, inout, t, h);
+      };
+      do_step_ =
+        [controlled, this]
+        (state_t &inout, double h)
+        mutable
+      {
+        controlled.stepper().do_step(this->system_, inout, 0., h);
+      };
+      break;
+    }
+
+    default:
+      GYOTO_ERROR("unknown stepper type");
+  }
+}
+
+
+
 #endif // GYOTO_HAVE_BOOST_INTEGRATORS

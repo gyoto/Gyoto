@@ -36,6 +36,14 @@
 # include <functional>
 # include <array>
 # include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
+//# if BOOST_VERSION >= 107500 
+# include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
+# include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
+//# endif // BOOST_VERSION >= 107500
+//# include <algorithm>
+//# include <cmath>
+
+
 #endif
 
 namespace Gyoto {
@@ -877,6 +885,7 @@ class Gyoto::Worldline
 
  protected:
   virtual void tell(Gyoto::Hook::Teller*);
+  void checkBasis(state_t &coord) const;
 
   class IntegState {
   public:
@@ -1062,6 +1071,7 @@ class Gyoto::Worldline::IntegState::Legacy : public Generic {
  */
 class Gyoto::Worldline::IntegState::Boost : public Generic {
   friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState::Boost>;
+  friend class Gyoto::SmartPointer<Gyoto::Worldline::IntegState>;
  public:
   /**
    * \brief Enum to represent the integrator flavour
@@ -1087,7 +1097,66 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   /// Stepper used by the non-adaptive-step integrator
   do_step_t do_step_;
 
+  void setup_stepper(system_t system);
  public:
+  system_t system_;
+  /// Custom error checker that takes into account the norm of the impulsion
+  template<class Value, class Algebra = boost::numeric::odeint::range_algebra, class Operations = boost::numeric::odeint::default_operations>
+  struct my_error_checker {
+    using value_type = Value;
+    using default_checker = boost::numeric::odeint::default_error_checker<Value, Algebra, Operations>;
+
+    default_checker checker;
+    const Metric::Generic* met; // Metric gg_
+    Value normTol;              // tolerance on the norm
+    const double& ref_norm;     // pointer for getting normref_
+
+    my_error_checker(Value abs_tol,
+                     Value rel_tol,
+                     const Metric::Generic* met,
+                     const double& ref_norm,
+                     Value normTol_,
+                     const do_step_t& do_step)
+      : checker(abs_tol, rel_tol), met(met), normTol(normTol_), ref_norm(ref_norm), do_step_(do_step) {}
+
+    const do_step_t& do_step_;
+    // Signature for Boost.Odeint
+    template<class State, class Deriv, class Err, class Time>
+    Value error(Algebra &algebra,
+                const State &x_old,
+                const Deriv &dxdt_old,
+                Err &x_err,
+                const Time &dt) const
+    {
+      // Standard Boost numerical error
+      Value err_default = checker.error(algebra, x_old, dxdt_old, x_err, dt);
+      
+      // Compute new vector (4-position, 4-velocity, polar basis if parallel_transport)
+      state_t x_new=x_old;
+      do_step_(x_new, dt);
+
+      // Compute norm of 4-velocity
+      GYOTO_DEBUG << "Computing norm" << std::endl;
+      Value u_norm = met->ScalarProd(&x_new[0], &x_new[4], &x_new[4]);
+      GYOTO_DEBUG_EXPR(u_norm);
+
+      // Compute drifting of norm
+      Value norm_drift = fabs(u_norm - ref_norm) / normTol;
+      GYOTO_DEBUG_EXPR(ref_norm);
+
+      GYOTO_DEBUG << "err_default = " << err_default
+          << " norm_drift = " << norm_drift
+          << " max = " << std::max(err_default, norm_drift)
+          << std::endl;
+      
+      // Return max between numerical error and drift of the norm if drift > 1
+      // This avoid to the norm_drift to affects too much the length's computation of the next step
+      return std::max(err_default, (norm_drift > 1.0 ? norm_drift : 0.0));
+
+
+    }
+  };
+
   /// Constructor
   /**
    * Since this IntegState::Generic implementation can actually be
@@ -1114,7 +1183,8 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   virtual std::string kind();
 
   private:
-    bool checkBasis(state_t const &coord) const;
+    double checkBasis(state_t const &coord) const;
+    void reorthonormalizeBasis(state_t &coord) const;
   
 };
 #endif /// GYOTO_HAVE_BOOST_INTEGRATORS

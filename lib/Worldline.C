@@ -850,6 +850,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
+  int status;
   stringstream ss;
   GYOTO_IF_DEBUG
   GYOTO_DEBUG_EXPR(dates[0]);
@@ -872,14 +873,14 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] =   pos2[6];
       if (x3dot) x3dot[di] = x3dot_[imax_];
       if (parallel_transport_) {
-	if (ep0)     ep0[di] =   ep0_[imax_];
-	if (ep1)     ep1[di] =   ep1_[imax_];
-	if (ep2)     ep2[di] =   ep2_[imax_];
-	if (ep3)     ep3[di] =   ep3_[imax_];
-	if (et0)     et0[di] =   et0_[imax_];
-	if (et1)     et1[di] =   et1_[imax_];
-	if (et2)     et2[di] =   et2_[imax_];
-	if (et3)     et3[di] =   et3_[imax_];
+        if (ep0)     ep0[di] =   ep0_[imax_];
+        if (ep1)     ep1[di] =   ep1_[imax_];
+        if (ep2)     ep2[di] =   ep2_[imax_];
+        if (ep3)     ep3[di] =   ep3_[imax_];
+        if (et0)     et0[di] =   et0_[imax_];
+        if (et1)     et1[di] =   et1_[imax_];
+        if (et2)     et2[di] =   et2_[imax_];
+        if (et3)     et3[di] =   et3_[imax_];
       }
       continue;
     } else if (date > time_[imax_]) {
@@ -951,14 +952,14 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] =   pos2[6];
       if (x3dot) x3dot[di] = x3dot_[curl];
       if (parallel_transport_) {
-	if (ep0)     ep0[di] =   ep0_[curl];
-	if (ep1)     ep1[di] =   ep1_[curl];
-	if (ep2)     ep2[di] =   ep2_[curl];
-	if (ep3)     ep3[di] =   ep3_[curl];
-	if (et0)     et0[di] =   et0_[curl];
-	if (et1)     et1[di] =   et1_[curl];
-	if (et2)     et2[di] =   et2_[curl];
-	if (et3)     et3[di] =   et3_[curl];
+        if (ep0)     ep0[di] =   ep0_[curl];
+        if (ep1)     ep1[di] =   ep1_[curl];
+        if (ep2)     ep2[di] =   ep2_[curl];
+        if (ep3)     ep3[di] =   ep3_[curl];
+        if (et0)     et0[di] =   et0_[curl];
+        if (et1)     et1[di] =   et1_[curl];
+        if (et2)     et2[di] =   et2_[curl];
+        if (et3)     et3[di] =   et3_[curl];
       }
       continue;
     }
@@ -1007,6 +1008,11 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestaul=tau_[curl];
     restaul=bestaul+dtaul;
     state_ -> doStep(bestl, dtaul, resl);
+    if (parallel_transport_){
+      GYOTO_DEBUG << "Checking basis for resl" << endl;
+      GYOTO_DEBUG_EXPR(dtaul);
+      checkBasis(resl);
+    }
 
     // from above...
     besth[0] =    x0_[curh];
@@ -1031,6 +1037,11 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestauh=tau_[curh];
     restauh=bestauh+dtauh;
     state_ -> doStep(besth, dtauh, resh);
+    if (parallel_transport_){
+      GYOTO_DEBUG << "Checking basis for resh" << endl;
+      GYOTO_DEBUG_EXPR(dtauh);
+      checkBasis(resh);
+    }
 
     if (proper) {
       facth=dtaul/(bestauh-bestaul);
@@ -1044,14 +1055,14 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = factl*resl[6]+facth*resh[6];
       if (x3dot) x3dot[di] = factl*resl[7]+facth*resh[7];
       if (parallel_transport_) {
-	if (ep0)     ep0[di] =   factl*resl[ 8]+facth*resh[ 8];
-	if (ep1)     ep1[di] =   factl*resl[ 9]+facth*resh[ 9];
-	if (ep2)     ep2[di] =   factl*resl[10]+facth*resh[10];
-	if (ep3)     ep3[di] =   factl*resl[11]+facth*resh[11];
-	if (et0)     et0[di] =   factl*resl[12]+facth*resh[12];
-	if (et1)     et1[di] =   factl*resl[13]+facth*resh[13];
-	if (et2)     et2[di] =   factl*resl[14]+facth*resh[14];
-	if (et3)     et3[di] =   factl*resl[15]+facth*resh[15];
+        if (ep0)     ep0[di] =   factl*resl[ 8]+facth*resh[ 8];
+        if (ep1)     ep1[di] =   factl*resl[ 9]+facth*resh[ 9];
+        if (ep2)     ep2[di] =   factl*resl[10]+facth*resh[10];
+        if (ep3)     ep3[di] =   factl*resl[11]+facth*resh[11];
+        if (et0)     et0[di] =   factl*resl[12]+facth*resh[12];
+        if (et1)     et1[di] =   factl*resl[13]+facth*resh[13];
+        if (et2)     et2[di] =   factl*resl[14]+facth*resh[14];
+        if (et3)     et3[di] =   factl*resl[15]+facth*resh[15];
       }
       continue;
     }
@@ -1120,14 +1131,14 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = bestl[6];
       if (x3dot) x3dot[di] = bestl[7];
       if (parallel_transport_) {
-	if (ep0)     ep0[di] =   bestl[ 8];
-	if (ep1)     ep1[di] =   bestl[ 9];
-	if (ep2)     ep2[di] =   bestl[10];
-	if (ep3)     ep3[di] =   bestl[11];
-	if (et0)     et0[di] =   bestl[12];
-	if (et1)     et1[di] =   bestl[13];
-	if (et2)     et2[di] =   bestl[14];
-	if (et3)     et3[di] =   bestl[15];
+        if (ep0)     ep0[di] =   bestl[ 8];
+        if (ep1)     ep1[di] =   bestl[ 9];
+        if (ep2)     ep2[di] =   bestl[10];
+        if (ep3)     ep3[di] =   bestl[11];
+        if (et0)     et0[di] =   bestl[12];
+        if (et1)     et1[di] =   bestl[13];
+        if (et2)     et2[di] =   bestl[14];
+        if (et3)     et3[di] =   bestl[15];
       }
     }
     if (besth[0]==date) {
@@ -1140,14 +1151,14 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = besth[6];
       if (x3dot) x3dot[di] = besth[7];
       if (parallel_transport_) {
-	if (ep0)     ep0[di] =   besth[ 8];
-	if (ep1)     ep1[di] =   besth[ 9];
-	if (ep2)     ep2[di] =   besth[10];
-	if (ep3)     ep3[di] =   besth[11];
-	if (et0)     et0[di] =   besth[12];
-	if (et1)     et1[di] =   besth[13];
-	if (et2)     et2[di] =   besth[14];
-	if (et3)     et3[di] =   besth[15];
+        if (ep0)     ep0[di] =   besth[ 8];
+        if (ep1)     ep1[di] =   besth[ 9];
+        if (ep2)     ep2[di] =   besth[10];
+        if (ep3)     ep3[di] =   besth[11];
+        if (et0)     et0[di] =   besth[12];
+        if (et1)     et1[di] =   besth[13];
+        if (et2)     et2[di] =   besth[14];
+        if (et3)     et3[di] =   besth[15];
       }
     }
 
@@ -1192,14 +1203,32 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
       if (x2dot) x2dot[di] = bestl[ 6]*factl + besth[ 6]*facth;
       if (x3dot) x3dot[di] = bestl[ 7]*factl + besth[ 7]*facth;
       if (parallel_transport_) {
-	if (ep0)   ep0[di] = bestl[ 8]*factl + besth[ 8]*facth;
-	if (ep1)   ep1[di] = bestl[ 9]*factl + besth[ 9]*facth;
-	if (ep2)   ep2[di] = bestl[10]*factl + besth[10]*facth;
-	if (ep3)   ep3[di] = bestl[11]*factl + besth[11]*facth;
-	if (et0)   et0[di] = bestl[12]*factl + besth[12]*facth;
-	if (et1)   et1[di] = bestl[13]*factl + besth[13]*facth;
-	if (et2)   et2[di] = bestl[14]*factl + besth[14]*facth;
-	if (et3)   et3[di] = bestl[15]*factl + besth[15]*facth;
+        if (ep0)   ep0[di] = bestl[ 8]*factl + besth[ 8]*facth;
+        if (ep1)   ep1[di] = bestl[ 9]*factl + besth[ 9]*facth;
+        if (ep2)   ep2[di] = bestl[10]*factl + besth[10]*facth;
+        if (ep3)   ep3[di] = bestl[11]*factl + besth[11]*facth;
+        if (et0)   et0[di] = bestl[12]*factl + besth[12]*facth;
+        if (et1)   et1[di] = bestl[13]*factl + besth[13]*facth;
+        if (et2)   et2[di] = bestl[14]*factl + besth[14]*facth;
+        if (et3)   et3[di] = bestl[15]*factl + besth[15]*facth;
+        // Check the interpolated basis and apply corrections if needed
+        if (ep0 && ep1 && ep2 && ep3 && et0 && et1 && et2 && et3) {
+          state_t xx;
+          xx = {date, x1[di], x2[di], x3[di], x0dot[di], x1dot[di], x2dot[di], x3dot[di], ep0[di], ep1[di], ep2[di], ep3[di], et0[di], et1[di], et2[di], et3[di]};
+          checkBasis(xx);
+          x0dot[di] = xx[4];
+          x1dot[di] = xx[5];
+          x2dot[di] = xx[6];
+          x3dot[di] = xx[7];
+          ep0[di] = xx[8];
+          ep1[di] = xx[9];
+          ep2[di] = xx[10];
+          ep3[di] = xx[11];
+          et0[di] = xx[12];
+          et1[di] = xx[13];
+          et2[di] = xx[14];
+          et3[di] = xx[15];
+        }
       }
     }
 
@@ -1602,4 +1631,85 @@ void Worldline::getCartesianPos(size_t index, double dest[4]) const {
     break;
   default: GYOTO_ERROR("Worldline::getCartesianPos: Incompatible coordinate kind");
   }
+}
+
+void Worldline::checkBasis(state_t &coord) const {
+  GYOTO_DEBUG << endl;
+  if (coord.size()!=16)
+    GYOTO_ERROR("Impossible to check the tetrad without Ephi and Etheta !");
+  
+  double Ephi[4];
+  double Etheta[4];
+  double photon_tgvec[4];
+  double pos[4];
+  
+  for (int ii=0;ii<4;ii++){
+    pos[ii]=coord[ii];
+    photon_tgvec[ii]=coord[ii+4]; // photon wave vector
+    Ephi[ii]=coord[ii+8]; // polarization basis vector 1
+    Etheta[ii]=coord[ii+12]; // polarization basis vector 2
+  }
+
+  // Check norm of photon_tgvec
+  double norm = metric_->norm(&coord[0], photon_tgvec);
+  if (norm>normtol_){
+    // Norm of photon_tgvec do not fulfil requirement anymore because of interpolation errors.
+    GYOTO_DEBUG << "Correcting norm of photon tangent vector" << endl;
+    double norm_old = norm;
+    double tdot2;
+    double coord_old[16];
+    memcpy(&coord_old[0], &coord[0], 16*sizeof(double));
+    metric_->nullifyCoord(&coord[0], tdot2);
+    if (fabs(coord_old[4]-tdot2) < fabs(coord_old[4]-coord[4])){// checking if the second solution from nullifyCoord is closer than the one returned
+      GYOTO_DEBUG_THIS << "use tdot2" << endl;
+      coord[4] = tdot2;
+    }
+    photon_tgvec[0] = coord[4];
+    norm = metric_->norm(&coord[0], &coord[4]);
+    GYOTO_DEBUG_EXPR(norm_old);
+    GYOTO_DEBUG_EXPR(norm);
+  }
+
+  double violation = std::max({fabs(metric_->ScalarProd(&coord[0],Ephi,Etheta)),
+      fabs(metric_->ScalarProd(&coord[0],Ephi,photon_tgvec)),
+      fabs(metric_->ScalarProd(&coord[0],Etheta,photon_tgvec)),
+      fabs(metric_->norm(&coord[0],Ephi)-1.),
+      fabs(metric_->norm(&coord[0],Etheta)-1.)});
+
+  if (violation > normtol_){
+    // non-orthogonality of the polar basis is over the user defined tolerence 
+    // re orthonormalize polar basis using SVD scheme for vectors in ZAMO frame
+    GYOTO_DEBUG << "Correcting polar basis using Gram-Schmidt" << endl;
+
+    // Gram-Schmidt
+    // project Etheta orthogonal to photon_tgvec
+    metric_->projectFourVect(&coord[0], Etheta, photon_tgvec);
+    double norm = metric_->norm(&coord[0], Etheta);
+    metric_->multiplyFourVect(Etheta, 1.0/norm);
+
+    // project Ephi orthogonal to photon_tgvec
+    metric_->projectFourVect(&coord[0], Ephi, photon_tgvec);
+
+    // project Ephi orthogonal to Etheta
+    metric_->projectFourVect(&coord[0], Ephi, Etheta);
+
+    // normalise Ephi
+    norm = metric_->norm(&coord[0], Ephi);
+    metric_->multiplyFourVect(Ephi, 1.0/norm);
+  }
+
+  violation = std::max({fabs(metric_->ScalarProd(&coord[0],Ephi,Etheta)),
+      fabs(metric_->ScalarProd(&coord[0],Ephi,photon_tgvec)),
+      fabs(metric_->ScalarProd(&coord[0],Etheta,photon_tgvec)),
+      fabs(metric_->norm(&coord[0],Ephi)-1.),
+      fabs(metric_->norm(&coord[0],Etheta)-1.)});
+  
+  if (violation > normtol_){
+    cerr << "Ephi.Etheta, Ephi.photon_tgvec, Etheta.photon_tgvec = " << fabs(metric_->ScalarProd(&coord[0],Ephi,Etheta)) << ", " << fabs(metric_->ScalarProd(&coord[0],Ephi,photon_tgvec)) << ", " << fabs(metric_->ScalarProd(&coord[0],Etheta,photon_tgvec)) << endl;
+    cerr << "norm Ephi, Etheta = " << fabs(metric_->norm(&coord[0],Ephi)-1.) << ", " << fabs(metric_->norm(&coord[0],Etheta)-1.) << endl;
+    GYOTO_ERROR("Correction of polar basis with Gram-Schmidt failed. Try to devrease the tolerance values or deltaMaxoverR.");
+    // Find a way to reconstruct the polar basis to solve this issue.
+  }
+
+  GYOTO_DEBUG << "done" << endl;
 }

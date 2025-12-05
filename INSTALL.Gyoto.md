@@ -93,7 +93,7 @@ Gyoto requires:
        http://heasarc.gsfc.nasa.gov/fitsio/
    - libudunits2 (recommended, support for unit conversions):
        http://www.unidata.ucar.edu/software/udunits/
-   - boost >= 1.53 (required, contains the integrators). See [BUGS.md](BUGS.md).
+   - boost >= 1.83 (required, contains the integrators). See [BUGS.md](BUGS.md).
        http://www.boost.org/
    - an implementation of the Gauss hypergeometric function 2F1
      (optional, required for all Astrobj using
