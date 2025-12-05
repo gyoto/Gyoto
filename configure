@@ -18569,7 +18569,7 @@ then :
   have_boost=yes
    echo "$as_me: this is boost.m4 serial 22" >&5
 boost_save_IFS=$IFS
-boost_version_req=1.53.1
+boost_version_req=1.83.0
 IFS=.
 set x $boost_version_req 0 0 0
 IFS=$boost_save_IFS
