@@ -1008,7 +1008,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestaul=tau_[curl];
     restaul=bestaul+dtaul;
     state_ -> doStep(bestl, dtaul, resl);
-    if (parallel_transport_){
+    if (parallel_transport_ && check_basis_){
       GYOTO_DEBUG << "Checking basis for resl" << endl;
       GYOTO_DEBUG_EXPR(dtaul);
       checkBasis(resl);
@@ -1037,7 +1037,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
     bestauh=tau_[curh];
     restauh=bestauh+dtauh;
     state_ -> doStep(besth, dtauh, resh);
-    if (parallel_transport_){
+    if (parallel_transport_ && check_basis_){
       GYOTO_DEBUG << "Checking basis for resh" << endl;
       GYOTO_DEBUG_EXPR(dtauh);
       checkBasis(resh);
@@ -1212,7 +1212,7 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
         if (et2)   et2[di] = bestl[14]*factl + besth[14]*facth;
         if (et3)   et3[di] = bestl[15]*factl + besth[15]*facth;
         // Check the interpolated basis and apply corrections if needed
-        if (ep0 && ep1 && ep2 && ep3 && et0 && et1 && et2 && et3) {
+        if (ep0 && ep1 && ep2 && ep3 && et0 && et1 && et2 && et3 && check_basis_) {
           state_t xx;
           xx = {date, x1[di], x2[di], x3[di], x0dot[di], x1dot[di], x2dot[di], x3dot[di], ep0[di], ep1[di], ep2[di], ep3[di], et0[di], et1[di], et2[di], et3[di]};
           checkBasis(xx);
@@ -1684,7 +1684,7 @@ void Worldline::checkBasis(state_t &coord) const {
     // Gram-Schmidt
     // project Etheta orthogonal to photon_tgvec
     metric_->projectFourVect(&coord[0], Etheta, photon_tgvec);
-    double norm = metric_->norm(&coord[0], Etheta);
+    norm = abs(metric_->norm(&coord[0], Etheta));
     metric_->multiplyFourVect(Etheta, 1.0/norm);
 
     // project Ephi orthogonal to photon_tgvec
@@ -1694,10 +1694,11 @@ void Worldline::checkBasis(state_t &coord) const {
     metric_->projectFourVect(&coord[0], Ephi, Etheta);
 
     // normalise Ephi
-    norm = metric_->norm(&coord[0], Ephi);
+    norm = abs(metric_->norm(&coord[0], Ephi));
     metric_->multiplyFourVect(Ephi, 1.0/norm);
   }
 
+  // Check that the basis have been successfuly corrected
   violation = std::max({fabs(metric_->ScalarProd(&coord[0],Ephi,Etheta)),
       fabs(metric_->ScalarProd(&coord[0],Ephi,photon_tgvec)),
       fabs(metric_->ScalarProd(&coord[0],Etheta,photon_tgvec)),

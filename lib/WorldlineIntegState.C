@@ -263,6 +263,8 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
     // Photon's energy as measured by Eulerian observer:
     double EE = tdot*NN;
     xx = {EE,rr,th,ph,Vr,Vth,Vph};
+    if (parallel_transport_)
+      GYOTO_ERROR("Parallel transport of polarization not implemented in 3+1 formalism.");
   }
 
   if (adaptive_) {
@@ -283,10 +285,10 @@ int Worldline::IntegState::Boost::nextStep(state_t &coord, double& tau, double h
       GYOTO_DEBUG_EXPR(h1); 
       // If cres is a success and parallel_transport is true, check orthogonality 
       // If cres is a fail, does not matter, a smaller step will be performed 
-      if (parallel_transport_){
+      if (parallel_transport_ && check_basis_){
         double violation = checkBasis(xx);
         if (violation > line_->normTol() ){ 
-          // non-orthogonality of the polar basis is over the user defined tolerence 
+          // non-orthogonality of the polar basis is over the user defined tolerance 
           // re orthonormalize polar basis using Gram-Schmidt scheme
           // However here the photon 4-velocity is untouched as we are integrating
           reorthonormalizeBasis(xx);

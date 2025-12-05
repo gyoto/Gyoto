@@ -36,12 +36,8 @@
 # include <functional>
 # include <array>
 # include <boost/numeric/odeint/stepper/controlled_step_result.hpp>
-//# if BOOST_VERSION >= 107500 
 # include <boost/numeric/odeint/algebra/vector_space_algebra.hpp>
 # include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
-//# endif // BOOST_VERSION >= 107500
-//# include <algorithm>
-//# include <cmath>
 
 
 #endif
