@@ -11,3 +11,15 @@ from gyoto.core import Astrobj as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexAstrobj
+
+def __getattr__(name):
+    '''Allows instanciating any astrobj kind
+
+    Calling
+      gyoto.astrobj.Kind([pluglist])
+    is equivalent to
+      gyoto.astrobj.Generic("Kind" [, pluglist])
+    
+    '''
+    return lambda *pluglist : Generic(name, *pluglist)
+

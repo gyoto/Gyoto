@@ -15,6 +15,17 @@ Complex=ComplexMetric
 import gyoto.core
 import numpy
 
+def __getattr__(name):
+    '''Allows instanciating any metric kind
+
+    Calling
+      gyoto.metric.Kind([pluglist])
+    is equivalent to
+      gyoto.metric.Generic("Kind" [, pluglist])
+    
+    '''
+    return lambda *pluglist : Generic(name, *pluglist)
+
 def jacobian_numerical(metric, pos, epsilon=1e-6):
     '''Estimate the Jacobian matrix of a metric numerically
 

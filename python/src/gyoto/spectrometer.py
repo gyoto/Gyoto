@@ -12,3 +12,14 @@ __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexSpectrometer
 Uniform=UniformSpectrometer
+
+def __getattr__(name):
+    '''Allows instanciating any spectrometer kind
+
+    Calling
+      gyoto.spectrometer.Kind([pluglist])
+    is equivalent to
+      gyoto.spectrometer.Generic("Kind" [, pluglist])
+    
+    '''
+    return lambda *pluglist : Generic(name, *pluglist)
