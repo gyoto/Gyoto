@@ -652,6 +652,77 @@ ExtendArrayNumPy(array_size_t, size_t);
 %rename(toSpectrometer) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
 %rename(toScreen) Gyoto::Value::operator Gyoto::SmartPointer<Gyoto::Screen>;
 %include "GyotoValue.h"
+
+%extend Gyoto::Object {
+  %pythoncode %{
+    def __setattr__(self, name, value):
+        r"""
+        self.name = content
+        self.name = content, unit
+
+        This function implements setting a property in a Pythonic manner.
+
+        If "name" is the name of a property, calling
+          self.name = content
+        is strictly equivalent to
+          self.set("name", content)
+        and
+          self.name = content, unit
+        is strictly equivalent to
+          self.set("name", content, unit).
+
+        Parameters:
+        -----------
+
+        name:  XML name of the parameter (XML entity)
+
+        value:  the value to assign, or a tuple containing the value and a
+                string representation of the unit
+        """
+        if name in ('this', 'thisown', '__swig_destroy__',
+                    '__swig_getmethods__', '__swig_setmethods__'):
+            super().__setattr__(name, value)
+            return
+
+        p = self.property(name)
+        if p is None:
+            raise AttributeError(
+                    f"'{type(self).__name__}' object has no attribute '{name}'")
+
+        if (isinstance(value, tuple)
+            and len(value) == 2
+            and isinstance(value[1], str)):
+            self.set(name, value[0], value[1])
+        else:
+            self.set(name, value)
+
+    def __getattr__(self, name):
+        r"""
+        self.name
+
+        This function implements getting a property in a Pythonic manner.
+
+        If "name" is the name of a property, calling
+          self.name
+        is strictly equivalent to
+          self.get("name").
+
+        Parameters:
+        -----------
+
+        name:  XML name of the parameter (XML entity)
+        """
+        if name in ('this', 'thisown', '__swig_destroy__',
+                    '__swig_getmethods__', '__swig_setmethods__'):
+            return super().__getattr__(name)
+
+        p = self.property(name)
+        if p is None:
+            raise AttributeError(
+                    f"'{type(self).__name__}' object has no attribute '{name}'")
+        return self.get(p)
+  %}
+}
 %include "GyotoObject.h"
 
 %rename(Worldline__IntegState__Generic) Gyoto::Worldline::IntegState::Generic;
