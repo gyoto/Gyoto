@@ -6,29 +6,17 @@
 # Import gyoto, require the Python plug-in. Note that the Python
 # plug-in name depends on the running interpreter. Default to basename
 # of Python executable, then python3, then python.
-import gyoto.core, gyoto.std
-import sys, os.path, importlib, gyoto_sample_metrics
-
-try:
-    gyoto.core.requirePlugin(os.path.basename(sys.executable))
-except gyoto.core.Error:
-    try:
-        gyoto.core.requirePlugin("python3")
-    except gyoto.core.Error:
-        try:
-            gyoto.core.requirePlugin("python")
-        except gyoto.core.Error:
-            raise gyoto.core.Error("Could not load Python plugin, tried: "+os.path.basename(sys.executable)+", python3 and python")
+import gyoto, gyoto.python, gyoto_sample_metrics, numpy
 
 # Instanciate an instance of the C++ KerrBL and an instance of the Python equivalent
-kerrc=gyoto.std.KerrBL()
-kerrp=gyoto.core.Metric("Python")
-kerrp.set("Module", "gyoto_sample_metrics")
-kerrp.set("Class", "KerrBL")
+kerrc=gyoto.metric.KerrBL()
+kerrp=gyoto.metric.PythonMetric()
+kerrp.Module = "gyoto_sample_metrics"
+kerrp.Class  = "KerrBL"
 
 # Set spin
-kerrc.spin(0.5)
-kerrp.set("Parameters", (0.5,))
+kerrc.Spin       =  0.5
+kerrp.Parameters = (0.5,)
 
 # Test getRms
 Rmsp=kerrp.getRms()
