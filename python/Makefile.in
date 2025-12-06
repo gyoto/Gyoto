@@ -128,7 +128,10 @@ GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i includ
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
-GYOTO_STATIC_SRC := $(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py)))
+GYOTO_STATIC_SRC = $(filter-out $(GYOTO_PYFILES),$(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py))))
+
+echostuff:
+	echo $(GYOTO_STATIC_SRC)
 
 ### High level entry points
 # default target is wheel, see below
@@ -274,7 +277,7 @@ src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
 # in case of out-of-tree build, we also need go copy the static sources:
 $(GYOTO_STATIC_SRC): $(srcdir)/$$@
 	$(MKDIR_P) $(dir $@)
-	-cp $(srcdir)/$@ $@
+	cp $(srcdir)/$@ $@
 
 ### The clean targets
 
