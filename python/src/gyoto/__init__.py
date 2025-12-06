@@ -15,9 +15,23 @@ from pathlib import Path
 # For backwards compatibility, expose gyoto.core as gyoto
 from .core import *
 
+# import all gyoto submodules
+from gyoto import core, util, animate, std, metric, astrobj, spectrum, spectrometer
+
+# try importing the python submodule.
+try:
+    from gyoto import python
+except:
+    pass
+
+# try importing the lorene submodule
+try:
+    from gyoto import lorene
+except:
+    pass
+
 # Provide a Pythonic wrapper around Scenery.rayTrace.
 # The underlying C++-like interface remains accessible.
-from gyoto import core, util, std, metric, astrobj, spectrum, spectrometer
 core.Scenery.rayTrace = util.rayTrace
 core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
 core.Scenery.__getitem__ = util.Scenery_getitem
