@@ -15,8 +15,12 @@ from pathlib import Path
 # For backwards compatibility, expose gyoto.core as gyoto
 from .core import *
 
-# import all gyoto submodules
-from gyoto import core, util, animate, std, metric, astrobj, spectrum, spectrometer
+# import gyoto.core
+from gyoto import core
+
+# avoid outputting n times the same warning about lorene while loading the rest
+core.verbose(0)
+from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer
 
 # try importing the python submodule.
 try:
@@ -29,6 +33,8 @@ try:
     from gyoto import lorene
 except:
     pass
+
+core.verbose(core.GYOTO_DEFAULT_VERBOSITY)
 
 # Provide a Pythonic wrapper around Scenery.rayTrace.
 # The underlying C++-like interface remains accessible.
