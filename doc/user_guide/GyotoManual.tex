@@ -1,4 +1,4 @@
-% Copyright 2014-2016, 2018-2019 Frédéric Vincent, Thibaut Paumard
+% Copyright 2014-2025 Frédéric Vincent, Thibaut Paumard
 %
 % This file is part of Gyoto.
 %
@@ -64,7 +64,7 @@
 
 % Let's enter the date manually.  Need to update it at least for each
 % release. Use git log to find out the last change to the user manual.
-\Large{Updated January 02, 2024}
+\Large{Updated December 06, 2025}
 %\today
 
 \vspace{4cm}
@@ -380,19 +380,25 @@ help(object) is your friend.
 
 The Python module is split into several submodules:
 \begin{description}
-\item[gyoto.core] expose the generic framework compiled in
+\item[gyoto.core] exposes the generic framework compiled in
   \texttt{libgyoto};
-\item[gyoto.std] expose the derived classes compiled in the
+\item[gyoto.std] exposes the derived classes compiled in the
   standard plug-in, \texttt{libgyoto-stdplug};
-\item[gyoto.lorene] expose the derived classes compiled in
-  the Lorene plug-in, \texttt{libgyoto-lorene};
+\item[gyoto.python] exposes the derived classes compiled in the Python
+  plug-in, \texttt{libgyoto-python3}, that allow implementing new
+  Gyoto classes direclty in Python;
+\item[gyoto.lorene] exposes the derived classes compiled in the Lorene
+  plug-in, \texttt{libgyoto-lorene}, that allow implementing numerical
+  Metrics based on LORENE;
 \item[gyoto.metric, gyoto.astrobj, gyoto.spectrometer, gyoto.spectrum]
   regroup the various Metrics, Astrobjs, etc. from the various
   extensions;
 \item[gyoto.util] contains a few high-level wrappers and helper
   functions;
 \item[gyoto.animate] contains a frame-work for producing videos based
-  on Gyoto.
+  on Gyoto;
+\item[gyoto.<some plug-in>] can be generated on the fly to expose the
+  classes implemented in any new custom plug-in.
 \end{description}
 
 \subsubsection{Building and installing}
@@ -429,20 +435,18 @@ installed to your PYTHONPATH variable.
 
 \subsubsection{Using}
 
-Some sample code can be found in \texttt{python/example.py}. The
+Sample code can be found in \texttt{python/example*.py},
+\texttt{python/tests/*.py} and \\
+\texttt{plugins/python/doc/examples}. The
 Python extension matches the C++ API very closely, so the C++
 reference in \texttt{doc/html/} is quite relevant. Most of it can also
 be accessed through the Python function '\texttt{help}'.
 
-The \texttt{gyoto.core} module should be enough to perform ray-tracing
-on anykind of objects, even located in plug-ins:
-
-Importing \texttt{gyoto}, \texttt{gyoto.core} or \texttt{gyoto.std}
-would normally load the standard plug-in for you, but this is how you
-would do it manually:
+Importing \texttt{gyoto} should be sufficient as it loads most of the
+rest automatically. Helper functions and syntactic sugar are provided
+for the most common tasks.
 \begin{code}
-  import gyoto.core
-  gyoto.core.requirePlugin("stdplug")
+  import gyoto
 \end{code}
 Get help on Gyoto:
 \begin{code}
@@ -450,44 +454,80 @@ Get help on Gyoto:
 \end{code}
 Read scenery from XML:
 \begin{code}
-  a=gyoto.core.Factory("../doc/examples/example-moving-star.xml")
-  sc=a.scenery()
-\end{code}
-or:
-\begin{code}
-  import gyoto.util
   sc=gyoto.util.readScenery("../doc/examples/example-moving-star.xml")
 \end{code}
 
-Create Astrobj by name, access property by name:
+Print an XML representation of an object:
 \begin{code}
-  tr=gyoto.core.Astrobj('Torus')
-  tr.set('SmallRadius', 0.5)
+  print(sc)
+\end{code}
+Ray-trace a scenery:
+\begin{code}
+  data = sc[:,:] # data is a dict containing the various requested quantities.
 \end{code}
 
-To access methods of specific derived classes (for instance the Star
-API, which allows computing time-like geodesics), the python extension
-for a specific Gyoto plug-in must be imported:
+Create Astrobj by name:
 \begin{code}
-  from gyoto import std
-  st=std.Star()
+  tr=gyoto.astrobj.Torus()
 \end{code}
-The various submodules and extensions are fully compatible with each
-other:
+Most Gyoto objects inherit from \texttt{Gyoto::Object} and have
+properties that can be accessed as Python attributes:
 \begin{code}
-  sc=gyoto.core.Scenery()
-  st=std.Star()
-  sc.astrobj(st)
+  tr.SmallRadius = 0.5
+\end{code}
+to get a list of the properties that can be set in an object:
+\begin{code}
+  tr.help()
+\end{code}
+
+A lot of properties accept units. Note that a Metric must be set for
+physical distances to work in a lot of cases as the mass of the Metric
+sets the scale between meters and geometrical units.
+\begin{code}
+  sc.Metric.Mass = 4e6, "sunmass"
+  sc.Astrobj.Radius = 2e7, "km"
+\end{code}
+To retrieve a property in a given unit, it is necessary to used the
+\texttt{get()} method.
+\begin{code}
+  sc.Astrobj.get("Radius", "km")
+\end{code}
+
+Methods of derived classes in the standard and lorene plug-ins (for
+instance the Star API, which allows computing time-like geodesics) are
+exposed respectively in the \texttt{gyoto.std} and
+\texttt{gyoto.lorene} submodules:
+\begin{code}
+  st=gyoto.std.Star()
 \end{code}
 Pointers to the base classes can be up-cast to derived classes:
 \begin{code}
-  ao = sc.astrobj() # ao contains a Gyoto::Astrobj::Generic * pointer
-  st = std.Star(ao) # if conversion fails, error is thrown
+  ao = sc.Astrobj # ao contains a Gyoto::Astrobj::Generic * pointer
+  st = gyoto.std.Star(ao) # if conversion fails, error is thrown
 \end{code}
 
-The source directory contains several examples and test cases. The
-Python source for gyoto.util and gyoto.animate also provide rich
-examples, always more up-to-date than the present documentation.
+It is very easy to implement new Metric and Astrobj kinds in Python
+using the \texttt{gyoto.python} module, which wraps the python
+plug-in (Sect.~\ref{sect:python-plug-in}).
+
+It is also possible to extend Gyoto with a custom C++ plug-in
+(Sect.~\ref{sect:plug-in}). Such plug-ins can easily be accessed from
+Python. In the following, we will use the \texttt{stdplug} plug-in as
+an example, but it would work the same wih any plug-in as long as the
+name of the plug-in and of the classes that it registers are valid
+Python identifiers:
+\begin{code}
+  import gyoto.stdplug
+  st = gyoto.stdplug.Star() # st containt a Gyoto::Astrobj::Generic* pointer
+  st.Metric = gyoto.metric.KerrBL()
+  st.Metric.Mass = 4e6, "sunmass"
+  st.Radius = 2e7, "km"
+\end{code}
+
+The source directories \texttt{python} and \texttt{plugins/python}
+contain several examples and test cases. The Python source for
+gyoto.util and gyoto.animate also provide rich examples, always more
+up-to-date than the present documentation.
 
 \subsection{Using the Yorick plug-in}
 \label{sect:yorick}
@@ -1009,71 +1049,70 @@ trivial manner. Let \texttt{MetricKind} be a Metric kind
 be a kind of Astrobj, and $x0, x1, x2, x3$ be coordinates in this
 Metric.
 \begin{code}
-  from gyoto import core
+  import gyoto
   import numpy
   from matplotlib import pyplot as plt
 
-  metric=core.Metric('KerrBL')        # make and initialize a metric
+  metric = gyoto.metric.KerrBL()        # make and initialize a metric
 
-  scr=core.Screen()                   # make a Screen
-  scr.metric(metric)
-  scr.resolution(32)
-  scr.fieldOfView(60, 'degree')
-  scr.anglekind('Rectilinear')
+  scr = gyoto.core.Screen()             # make a Screen
+  scr.Metric       = metric
+  scr.Resolution   = 32
+  scr.FieldOfView  = 60., 'degree'
+  scr.AngleKind    = 'Rectilinear'
 
-  ao=core.Astrobj('ThinDisk')         # make an astrobj,
-  ao.metric(metric)                   # initialize it
-  ao.set('InnerRadius', 6.)
-  ao.rMax(200)
+  ao = gyoto.astrobj.ThinDisk()         # make an astrobj,
+  ao.Metric        = metric             # initialize it
+  ao.InnerRadius   = 6.
+  ao.RMax          = 200.
 
-  sc=core.Scenery()                   # make Scenery
-  sc.metric(metric)                   # assign metric
-  sc.astrobj(ao)                      # assign astrobj
-  sc.screen(scr)                      # assign screen
+  sc = gyoto.core.Scenery()             # make Scenery
+  sc.Metric        = metric             # assign metric
+  sc.Astrobj       = ao                 # assign astrobj
+  sc.Screen        = scr                # assign screen
   
-  x0, x1, x2, x3=0., 15., numpy.pi/4, numpy.pi/4
-  pos=numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
-  scr.setObserverPos(pos)             # set observer position
-  fourvel=numpy.zeros(4)              # NumPy array for 4-velocity
+  x0, x1, x2, x3 = 0., 15., numpy.pi/4, numpy.pi/4
+  pos = numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
+  scr.setObserverPos(pos)               # set observer position
 \end{code}
 
 Now we can set the observer kind and ray-trace. The default would be:
 \begin{code}
-  scr.observerKind('ObserverAtInfinity')
-  results=sc.rayTrace()
+  scr.ObserverKind = 'ObserverAtInfinity'
+  results=sc[:,:]                       # ray-trace
 \end{code}
 which will not work that close to the central object (15 geometrical
 units in this example).
 
 \begin{code}
-  scr.observerKind('ZAMO')
-  results=sc.rayTrace()
+  scr.ObserverKind = 'ZAMO'
+  results = sc[:,:]
 \end{code}
 would always work, though. ZAMO stands for `zero angular momentum
 observer'. One can display the intensity image:
 
 \begin{code}
-  plt.imshow(results['Intensity'], origin='bottom')
+  plt.imshow(results['Intensity'], origin='lower')
   plt.show()
 \end{code}
 
-To try \texttt{ObserverKind==VelocitySpecified}, we need to get a
+To try \texttt{ObserverKind = 'VelocitySpecified'}, we need to get a
 4-velocity. Several methods can help with that (see for instance
-\texttt{help(core.Metric.circularVelocity)}), but to continue with the
+\texttt{help(gyoto.metric.Generic.circularVelocity)}), but to continue with the
 same example we shall retrieve the velocity of a ZAMO with:
 
 \begin{code}
-  metric.zamoVelocity(pos, fourvel)
+  fourvel = metric.zamoVelocity(pos)
 \end{code}
 
 Once the velocity vector has been set, one just needs to assign it to
 the Screen:
 
 \begin{code}
-  scr.observerKind('VelocitySpecified')
-  scr.fourVel(fourvel)
-  results=sc.rayTrace()
-  plt.imshow(results['Intensity'], origin='bottom')
+  scr.ObserverKind = 'VelocitySpecified'
+  scr.FourVelocity = fourvel
+  results=sc[:,:]
+  plt.imshow(results['Intensity'], origin='lower')
   plt.show()
 \end{code}
 
@@ -1086,7 +1125,7 @@ be implemented in Python like this:
   ephi    = numpy.asarray([0., 0., 0., 1.])
   fourvel = numpy.asarray([1., 0., 0., 0.])
 
-  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+  if metric.coordKind() == gyoto.core.GYOTO_COORDKIND_SPHERICAL:
       ephi    = numpy.asarray([0., 0., 0., 1.])
   else:
       phi=numpy.arctan2(pos[2], pos[1]);
@@ -1143,17 +1182,17 @@ tetrad for a camera looking towards the origin. The same can be done
 with \texttt{FullySpecified} like this:
 
 \begin{code}
-  scr.observerKind('FullySpecified')
+  scr.ObserverKind = 'FullySpecified'
   el=numpy.zeros(4)
   eu=numpy.zeros(4)
   ef=numpy.zeros(4)
   metric.observerTetrad(pos, fourvel, el, eu, ef)
-  scr.fourVel(fourvel)
-  scr.screenVector1(el)
-  scr.screenVector2(eu)
-  scr.screenVector3(ef)
-  results=sc.rayTrace()
-  plt.imshow(results['Intensity'], origin='bottom')
+  scr.FourVelocity  = fourvel
+  scr.ScreenVector1 = el
+  scr.ScreenVector2 = eu
+  scr.ScreenVector3 = ef
+  results=sc[:,:]
+  plt.imshow(results['Intensity'], origin='lower')
   plt.show()
 \end{code}
 
@@ -1183,8 +1222,7 @@ external product easily.
 
 \begin{code}
   pos=numpy.asarray([x0, x1, x2, x3]) # this is a 4 position
-  fourvel=numpy.zeros(4)
-  metric.circularVelocity(pos, fourvel)
+  fourvel = metric.circularVelocity(pos)
 
   # pos and fourvel have been initialized previously
   coord=numpy.concatenate((pos, fourvel))
@@ -1196,7 +1234,7 @@ external product easily.
 
   # get Cartesian expression of position in posc
   # as well as spherical radius in r:
-  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+  if metric.coordKind()==gyoto.core.GYOTO_COORDKIND_SPHERICAL:
       t=pos[0]
       r=pos[1]
       theta=pos[2]
@@ -1224,7 +1262,7 @@ external product easily.
   el[3]=eu[1]*ef[2]-eu[2]*ef[1]
 
   # If the coordinate system is spherical, we need to convert back:
-  if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
+  if metric.coordKind()==gyoto.core.GYOTO_COORDKIND_SPHERICAL:
       er=posc/r
       ephi=numpy.asarray([0., -sp, cp, 0.])
       etheta=numpy.asarray([0., ct*cp, ct*sp, -st])
@@ -1253,16 +1291,16 @@ external product easily.
   metric.GramSchmidt(pos, fourvel, eu, ef, el);
 
   # Then we just need to attach the tetrad to the Screen:
-  scr.observerKind('FullySpecified')
+  scr.ObserverKind = 'FullySpecified'
   scr.setObserverPos(pos)
-  scr.fourVel(fourvel)
-  scr.screenVector1(el)
-  scr.screenVector2(eu)
-  scr.screenVector3(ef)
+  scr.FourVelocity = fourvel
+  scr.ScreenVector1 = el
+  scr.ScreenVector2 = eu
+  scr.ScreenVector3 = ef
 
   # Perform ray-tracing as usual:
-  results=sc.rayTrace()
-  plt.imshow(results['Intensity'], origin='bottom')
+  results=sc[:,:]
+  plt.imshow(results['Intensity'], origin='lower')
   plt.show()
  
 \end{code}
@@ -1385,13 +1423,13 @@ argument will be used three times:
   \texttt{\_\_GyotoPluginInit};
 \item each subcontractor registered by the init function (see below)
   will be tagged with the plug-in name, so it is later possible to
-  search for a registered subcontractor by kind name and plugin name.
+  search for a registered subcontractor by kind name and plug-in name.
 \end{itemize}
 
 The role of the init function is to register subcontractors for your
 object classes so that they can be found by name. For instance,
 assuming you want to bundle the Minkowski metric (actually provided in
-the standard plug-in) in a plugin called \texttt{myplugin}, you would
+the standard plug-in) in a plug-in called \texttt{myplugin}, you would
 write a C++ file (whose name is not relevant, but assume
 \texttt{MyPlugin.C}) with this content:
 
@@ -1595,6 +1633,12 @@ A plug-in can also be specified in the input XML file for each
 section:
 \begin{code}
    <Metric kind = "KerrBL" plugin="stdplug">
+\end{code}
+We have seen already that a custom plug-in is very easy to access from
+Python:
+\begin{code}
+  import gyoto.stdplug
+  metric = gyoto.stdplug.KerrBL()
 \end{code}
 Finally, the Yorick interface (Sect.~\ref{sect:yorick}) has a function
 to explicitly load a \GYOTO\ plug-in at run-time:
