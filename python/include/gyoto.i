@@ -156,7 +156,7 @@ Gyoto::SmartPointer<gtype>, gtype * {
     Gyoto::klass::Generic * res = NULL;
     {
       Gyoto::SmartPointer<Gyoto::klass::Generic> pres=
-        Gyoto::klass::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+        Gyoto::klass::getSubcontractor(nm.c_str(), plugin, FALSE)(NULL, plugin);
       res = (Gyoto::klass::Generic *)(pres);
       // We need to increment refcount, else the object is destroyed
       // when the original smartpoiter is:

@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2019, 2024 Thibaut Paumard
+    Copyright 2011-2016, 2019, 2024, 2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -212,7 +212,9 @@ public:
   else if (!errmode) throwError ("Kind not found in any plug-in: "+name); \
   return sctr;								\
   }									\
-  for (size_t i=plugin.size()-1; i>=0 && sctr == NULL; --i) {		\
+  for (size_t i=0; i<plugin.size() && sctr == NULL; ++i) {		\
+    GYOTO_DEBUG_EXPR(i);						\
+    GYOTO_DEBUG_EXPR(plugin[i]);					\
     sctr=								\
       (Subcontractor_t*)Gyoto::space::Register_				\
       -> getSubcontractor(name, plugin[i], 1);				\
