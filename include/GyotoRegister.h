@@ -165,6 +165,20 @@ public:
   Gyoto::SmartPointee::Subcontractor_t*
     getSubcontractor(std::string name, std::string &plugin, int errmode=0);
 
+  /**
+   * \brief Get name
+   */
+  std::string name();
+
+  /**
+   * \brief Get plugin
+   */
+  std::string plugin();
+
+  /**
+   * \brief Get next
+   */
+  Register::Entry* next();
 };
 
 /**

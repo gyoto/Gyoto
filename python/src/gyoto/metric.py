@@ -1,10 +1,12 @@
 '''Gyoto::Metric namespace
 
-In order to emulate the C++ Gyoto::Metric namespace, this module will
-load gyoto.std and gyoto.lorene (if available) and expose all Metrics
-in here.
+In order to emulate the C++ Gyoto::Metric namespace, this will expose
+all Metrics from std, lorene, and any other loaded plugin.
 
 '''
+
+import numpy
+import sys
 
 import gyoto._namespaces as _namespaces
 from gyoto.core import Metric as Generic
@@ -12,19 +14,39 @@ __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexMetric
 
-import gyoto.core
-import numpy
+import gyoto.core, gyoto.util
 
 def __getattr__(name):
     '''Allows instanciating any metric kind
 
     Calling
-      gyoto.metric.Kind([pluglist])
+      gyoto.metric.Kind()
     is equivalent to
-      gyoto.metric.Generic("Kind" [, pluglist])
+      gyoto.metric.Generic("Kind")
     
     '''
-    return lambda *pluglist : Generic(name, *pluglist)
+    # __getattr__ shouldn't be called in that case, but still the
+    # right answer:
+    if name in sys.modules[__name__].__dict__:
+        return sys.modules[__name__].__dict__[name]
+
+    # Take care of standard attributes
+    if name.startswith('__') and name.endsswith('__'):
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+    # Check that a class by that name is registered
+    try:
+        obj = Generic(name)
+    except gyoto.core.Error:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+    # Make a constructor and cache it in the namespace
+    constructor = gyoto.util.make_constructor(sys.modules[__name__], name)
+    setattr(sys.modules[__name__], name, constructor)
+    sys.modules[__name__].__all__.append(name)
+
+    # Also return it
+    return constructor
 
 def jacobian_numerical(metric, pos, epsilon=1e-6):
     '''Estimate the Jacobian matrix of a metric numerically

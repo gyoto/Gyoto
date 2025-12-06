@@ -17,7 +17,7 @@ from gyoto.core import *
 
 # Provide a Pythonic wrapper around Scenery.rayTrace.
 # The underlying C++-like interface remains accessible.
-from gyoto import core, util
+from gyoto import core, util, metric, astrobj, spectrum, spectrometer
 core.Scenery.rayTrace = util.rayTrace
 core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
 core.Scenery.__getitem__ = util.Scenery_getitem
@@ -56,24 +56,20 @@ class GyotoPluginLoader(importlib.abc.Loader):
         name = fullname.split('.', 1)[1]
 
         # Provide generic constructors for accessing classes
-        # specifically in this plugin. This is useful:
-        #
-        # 1- to access classes whose names are not suitable as Python
-        #    identifiers, e.g. "Python::Standard";
-        #
-        # 2- when a plugin implements two classes with the same name
-        #    in two distinct registed: for instance the python plug-in
-        #    implements a Metric and a Spectrum class that are both
-        #    called "Python".
+        # specifically in this plugin. This is useful when a plugin
+        # implements two classes with the same name in two distinct
+        # registed: for instance the python plug-in implements a
+        # Metric and a Spectrum class that are both called "Python".
 
         def Metric(clsname):
             '''obj = gyoto.<plugin>.Metric("clsname")
 
             Instanciate Metric of kind clsname from plugin <plugin>.
 
-            If clsname is a valid Python identifier and if <plugin>
-            only registers one class with that name, equivalent to:
-             obj=gyoto.<plugin>.clsname
+            If <plugin> only registers one class with that name,
+            equivalent to: obj=gyoto.<plugin>.identifier where
+            identifier is a valid Python identifier based on clsname
+            (see gyoto.util.valid_identifier()).
             '''
             return core.Metric(clsname, (name,))
 
@@ -82,9 +78,10 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
             Instanciate Astrobj of kind clsname from plugin <plugin>.
 
-            If clsname is a valid Python identifier and if <plugin>
-            only registers one class with that name, equivalent to:
-             obj=gyoto.<plugin>.clsname
+            If <plugin> only registers one class with that name,
+            equivalent to: obj=gyoto.<plugin>.identifier where
+            identifier is a valid Python identifier based on clsname
+            (see gyoto.util.valid_identifier()).
             '''
             return core.Astrobj(clsname, (name,))
 
@@ -93,9 +90,10 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
             Instanciate Spectrum of given kind from plugin <plugin>.
 
-            If clsname is a valid Python identifier and if <plugin>
-            only registers one class with that name, equivalent to:
-             obj=gyoto.<plugin>.clsname
+            If <plugin> only registers one class with that name,
+            equivalent to: obj=gyoto.<plugin>.identifier where
+            identifier is a valid Python identifier based on clsname
+            (see gyoto.util.valid_identifier()).
             '''
             return core.Spectrum(clsname, (name,))
 
@@ -104,9 +102,10 @@ class GyotoPluginLoader(importlib.abc.Loader):
 
             Instanciate Spectrometer of given kind from plugin <plugin>.
 
-            If clsname is a valid Python identifier and if <plugin>
-            only registers one class with that name, equivalent to:
-             obj=gyoto.<plugin>.clsname
+            If <plugin> only registers one class with that name,
+            equivalent to: obj=gyoto.<plugin>.identifier where
+            identifier is a valid Python identifier based on clsname
+            (see gyoto.util.valid_identifier()).
             '''
             return core.Spectrometer(clsname, (name,))
 
@@ -115,49 +114,28 @@ class GyotoPluginLoader(importlib.abc.Loader):
         module.Spectrum = Spectrum
         module.Spectrometer = Spectrometer
 
-        # Provide __getattr__ so that classes whose names are valid
-        # Python identifiers and that are uniwque in the plugin can be
-        # accessed directly as: gyoto.<plugin>.<clsname>
-        def __getattr__(clsname):
-            '''obj = gyoto.<plugin>.clsname()
+        module.__file__ = __file__
+        module.__qualname__ = fullname
+        module.__all__ = ['Metric', 'Astrobj', 'Spectrum', 'Spectrometer',
+                          '__getattr__']
+        module.__doc__='''Dynamically generated module around Gyoto plugin '''+name
 
-            Look for a class matching clsname in plugin <plugin> in
-            the four gyoto registers (Metric, Astrobj, Spectrum and
-            Spectrometer, in that order). If it exists, return a
-            constructor for this class.
-
-            Equivalent to
-             obj = gyoto.<plugin>.Namespace("clsname")
-            where Namespace is one of Metric, Astrobj, Spectrum,
-            Spectrometer.
-
-            '''
-            for generic in (core.Metric, core.Astrobj,
-                            core.Spectrum, core.Spectrometer):
-                try:
-                    # is clsname registered as a subclass of generic?
-                    obj = generic(clsname, (name,))
-                    # if no error, wrap a constructor as klambda function
-                    #constructor = lambda : core.Metric(clsname, (name,))
-                    def constructor():
-                        '''obj = constructor()
-
-                        This is a dynamically-generated constructor for a class in a Gyoto plugin.'''
-                        return core.Metric(clsname, (name,))
-                    # create the attribute in the module
-                    setattr(sys.modules[fullname], clsname, constructor)
-                    # return it
-                    return constructor
-                except core.Error:
-                    # clsname not registered as a sublass of generic, try next
-                    pass
-
-            # clsname not present in any register
-            raise AttributeError(f"module '{fullname}' has no attribute '{clsname}'")
-
-        module.__getattr__=__getattr__
-        module.__file__=__file__
-        module.__doc__='''Dynamically generated module around a Gyoto plugin'''
+        for entry, namespace in ((core.getMetricRegister(), metric),
+                               (core.getAstrobjRegister(), astrobj),
+                               (core.getSpectrumRegister(), spectrum),
+                               (core.getSpectrometerRegister(), spectrometer)):
+            while entry:
+                if entry.plugin() == name:
+                    classname = entry.name()
+                    identifier = util.valid_identifier(classname)
+                    constructor = util.make_constructor(namespace, classname,
+                                                        name, identifier)
+                    if identifier not in module.__dict__:
+                        setattr(module, identifier, constructor)
+                        module.__all__.append(identifier)
+                    if identifier not in namespace.__dict__:
+                        setattr(namespace, identifier, constructor)
+                entry = entry.next()
 
 class GyotoPluginFinder(importlib.abc.MetaPathFinder):
     """Finder for wrapping dynamic modules around Gyoto plugins.

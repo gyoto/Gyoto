@@ -280,6 +280,10 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
   return NULL; // will never get there, avoid compilation warning
 }
 
+std::string Register::Entry::name() {return name_;}
+std::string Register::Entry::plugin() {return plugin_;}
+Register::Entry* Register::Entry::next() {return next_;}
+
 void Gyoto::Register::list() {
   Register::Entry* entry = NULL;
 

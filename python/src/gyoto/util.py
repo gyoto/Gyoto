@@ -10,6 +10,8 @@ readScenery -- short hand for reading a Scenery XML file
 from gyoto import core
 import numpy
 import numbers
+import keyword
+import re
 
 def Coord1dSet(k, res, sz):
     '''Easily initialize a gyoto.core.Coord1dset
@@ -418,3 +420,51 @@ def _Worldline_getCoord(self, t, *arrays):
             t.size,
             *[core.array_double.fromnumpy1(v) for v in arrays]
             )
+
+def valid_identifier(s):
+    '''to_valid_identifier(str) -> identifier
+
+    Bulds a valid identifier from any string.
+    '''
+    # If s is empty, replace with '_'
+    if not s:
+        s = '_'
+    # Replace invalid characters with underscores.
+    s = re.sub(r'[^a-zA-Z0-9_]', '_', s)
+    # Add leading underscore if s starts with a digit.
+    if s and s[0].isdigit():
+        s = '_' + s
+    # Check that s is not a reserved keyword:
+    while keyword.iskeyword(s):
+        return s + '_'
+    return s
+
+def make_constructor(namespace, classname, plugin=None, identifier=None):
+    '''Make a dynamic constructor for a class in a plugin.
+
+constructor = make_constructor(namespace, classname, plugin[, identifier])
+obj = constructor()
+
+Parameters:
+namespace  -- one of gyoto.metric, gyoto.astrobj, gyoto.spectrum,
+              gyoto.spectrometer.
+classname  -- actual name of the class (e.g."KerrBL"), str.
+plugin     -- name of the plugin to look in, e.g. "stdplug".
+identifier -- optional identifier (for the docstring). Defaults to
+              valid_identifier(classname).
+
+Output:
+constructor-- a function to instanciate teh class.
+'''
+    if identifier is None:
+        identifier=valid_identifier(classname)
+    if plugin is None:
+        plugins=()
+    else:
+        plugins=(plugin,)
+    def constructor():
+        return namespace.Generic(classname, plugins)
+    plgname = plugin if plugin is not None else '(unknown)'
+    constructor.__doc__='''obj = '''+identifier+'''()
+    Instanciate '''+classname+''' from Gyoto plugin '''+plgname+''' in namespace '''+namespace.__name__+'''.'''
+    return constructor
