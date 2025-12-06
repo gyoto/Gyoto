@@ -274,7 +274,7 @@ src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
 # in case of out-of-tree build, we also need go copy the static sources:
 $(GYOTO_STATIC_SRC): $(srcdir)/$$@
 	$(MKDIR_P) $(dir $@)
-	cp $(srcdir)/$@ $@
+	-cp $(srcdir)/$@ $@
 
 ### The clean targets
 
