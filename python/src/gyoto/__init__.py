@@ -81,54 +81,57 @@ class GyotoPluginLoader(importlib.abc.Loader):
         # registed: for instance the python plug-in implements a
         # Metric and a Spectrum class that are both called "Python".
 
-        def Metric(clsname):
-            '''obj = gyoto.<plugin>.Metric("clsname")
+        class Metric(core.Metric):
+            _plugin = name
+            def __init__(self, clsname):
+                super().__init__(clsname, (self._plugin,))
+        Metric.__module__ = fullname
+        Metric.__doc__ = '''Instanciate Metric of kind clsname from plugin '''+name+'''.
 
-            Instanciate Metric of kind clsname from plugin <plugin>.
-
-            If <plugin> only registers one class with that name,
-            equivalent to: obj=gyoto.<plugin>.identifier where
+            If '''+name+''' only registers one class with that name,
+            equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
             (see gyoto.util.valid_identifier()).
             '''
-            return core.Metric(clsname, (name,))
 
-        def Astrobj(clsname):
-            '''obj = gyoto.<plugin>.Astrobj("clsname")
+        class Astrobj(core.Astrobj):
+            _plugin = name
+            def __init__(self, clsname):
+                super().__init__(clsname, (self._plugin,))
+        Astrobj.__module__ = fullname
+        Astrobj.__doc__ = '''Instanciate Astrobj of kind clsname from plugin '''+name+'''.
 
-            Instanciate Astrobj of kind clsname from plugin <plugin>.
-
-            If <plugin> only registers one class with that name,
-            equivalent to: obj=gyoto.<plugin>.identifier where
+            If '''+name+''' only registers one class with that name,
+            equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
             (see gyoto.util.valid_identifier()).
             '''
-            return core.Astrobj(clsname, (name,))
 
-        def Spectrum(clsname):
-            '''obj = gyoto.<plugin>.Spectrum("clsname")
+        class Spectrum(core.Spectrum):
+            _plugin = name
+            def __init__(self, clsname):
+                super().__init__(clsname, (self._plugin,))
+        Spectrum.__module__ = fullname
+        Spectrum.__doc__ = '''Instanciate Spectrum of kind clsname from plugin '''+name+'''.
 
-            Instanciate Spectrum of given kind from plugin <plugin>.
-
-            If <plugin> only registers one class with that name,
-            equivalent to: obj=gyoto.<plugin>.identifier where
+            If '''+name+''' only registers one class with that name,
+            equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
             (see gyoto.util.valid_identifier()).
             '''
-            return core.Spectrum(clsname, (name,))
 
-        def Spectrometer(clsname):
-            '''obj = gyoto.<plugin>.Spectrometer("clsname")
+        class Spectrometer(core.Spectrometer):
+            _plugin = name
+            def __init__(self, clsname):
+                super().__init__(clsname, (self._plugin,))
+        Spectrometer.__module__ = fullname
+        Spectrometer.__doc__ = '''Instanciate Spectrometer of kind clsname from plugin '''+name+'''.
 
-            Instanciate Spectrometer of given kind from plugin <plugin>.
-
-            If <plugin> only registers one class with that name,
-            equivalent to: obj=gyoto.<plugin>.identifier where
+            If '''+name+''' only registers one class with that name,
+            equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
             (see gyoto.util.valid_identifier()).
             '''
-            return core.Spectrometer(clsname, (name,))
-
         module.Metric = Metric
         module.Astrobj = Astrobj
         module.Spectrum = Spectrum
