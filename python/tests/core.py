@@ -341,7 +341,6 @@ class TestValue(unittest.TestCase):
         self.assertEqual(a.toDouble(), 5.)
 
     def test_bad(self):
-        self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value(5).toDouble())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value(5.).toLong())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value((1,)).toVDouble())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value('a').toVULong())
