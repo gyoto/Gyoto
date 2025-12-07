@@ -38,10 +38,10 @@ def __getattr__(name):
     except gyoto.core.Error:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-    # Make a constructor and cache it in the namespace
-    constructor = gyoto.util.make_constructor(sys.modules[__name__], name)
-    setattr(sys.modules[__name__], name, constructor)
+    # Make a class and cache it in the namespace
+    klass = gyoto.util.make_class(sys.modules[__name__], name, None, None, __name__)
+    setattr(sys.modules[__name__], name, klass)
     sys.modules[__name__].__all__.append(name)
 
     # Also return it
-    return constructor
+    return klass

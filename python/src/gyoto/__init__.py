@@ -148,13 +148,13 @@ class GyotoPluginLoader(importlib.abc.Loader):
                 if entry.plugin() == name:
                     classname = entry.name()
                     identifier = util.valid_identifier(classname)
-                    constructor = util.make_constructor(namespace, classname,
-                                                        name, identifier)
+                    klass = util.make_class(namespace, classname,
+                                            name, identifier)
                     if identifier not in module.__dict__:
-                        setattr(module, identifier, constructor)
+                        setattr(module, identifier, klass)
                         module.__all__.append(identifier)
                     if identifier not in namespace.__dict__:
-                        setattr(namespace, identifier, constructor)
+                        setattr(namespace, identifier, klass)
                 entry = entry.next()
 
 class GyotoPluginFinder(importlib.abc.MetaPathFinder):

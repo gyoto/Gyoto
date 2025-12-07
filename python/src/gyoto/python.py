@@ -84,16 +84,16 @@ except core.Error:
 
 __all__=[]
 
-# Provide constructors for the classes implemented in the plugin. Also
-# add them to gyoto.metric, gyoto.astrobj and gyoto.spectrum.
+# Wrap the classes implemented in the plugin. Also add them to
+# gyoto.metric, gyoto.astrobj and gyoto.spectrum.
 for namespace, clsname, identifier in ((metric, "Python", "PythonMetric"),
                                        (astrobj, "Python::Standard",
                                         "PythonStandard"),
                                        (astrobj, "Python::ThinDisk",
                                         "PythonThinDisk"),
                                        (spectrum, "Python", "PythonSpectrum")):
-    constructor = util.make_constructor(namespace, clsname, plugin, identifier)
-    setattr(sys.modules[__name__], identifier, constructor)
+    klass = util.make_class(namespace, clsname, plugin, identifier, __name__)
+    setattr(sys.modules[__name__], identifier, klass)
     __all__.append(identifier)
-    setattr(namespace, identifier, constructor)
+    setattr(namespace, identifier, klass)
     namespace.__all__.append(identifier)

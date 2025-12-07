@@ -439,32 +439,50 @@ def valid_identifier(s):
         return s + '_'
     return s
 
-def make_constructor(namespace, classname, plugin=None, identifier=None):
-    '''Make a dynamic constructor for a class in a plugin.
+def make_class(namespace, classname, plugin=None, identifier=None, module=None):
+    '''Dynamically wrap a Python class around a C++ class from a Gyoto plugin.
 
-constructor = make_constructor(namespace, classname, plugin[, identifier])
+klass = make_class(namespace, classname, plugin=None, identifier=None, module=None])
 obj = constructor()
 
 Parameters:
 namespace  -- one of gyoto.metric, gyoto.astrobj, gyoto.spectrum,
               gyoto.spectrometer.
 classname  -- actual name of the class (e.g."KerrBL"), str.
-plugin     -- name of the plugin to look in, e.g. "stdplug".
+plugin     -- optional name of the plugin to look in, e.g. "stdplug".
 identifier -- optional identifier (for the docstring). Defaults to
               valid_identifier(classname).
+module     -- optional module name (for the docstring).
 
 Output:
-constructor-- a function to instanciate teh class.
+klass      -- a Python class to instanciate the C++ class. 
 '''
     if identifier is None:
         identifier=valid_identifier(classname)
-    if plugin is None:
-        plugins=()
-    else:
-        plugins=(plugin,)
-    def constructor():
-        return namespace.Generic(classname, plugins)
+
+    if module is None:
+        if plugin is not None and plugin == valid_identifier(plugin):
+            module = f'gyoto.{plugin}'
+        else:
+            module = 'gyoto.util'
+
     plgname = plugin if plugin is not None else '(unknown)'
-    constructor.__doc__='''obj = '''+identifier+'''()
-    Instanciate '''+classname+''' from Gyoto plugin '''+plgname+''' in namespace '''+namespace.__name__+'''.'''
-    return constructor
+
+    doc = __doc__='''obj = '''+identifier+'''()
+    Expose class \''''+classname+'''\' from Gyoto plugin \''''+plgname+'''\'.'''
+
+    class klass(namespace.Generic):
+        _classname  = classname
+        _plugin     = plugin
+        def __init__(self):
+            if self._plugin is None:
+                plugins=()
+            else:
+                plugins=(self._plugin,)
+            super().__init__(self._classname, plugins)
+
+    klass.__name__   = identifier
+    klass.__doc__    = doc
+    klass.__module__ = module
+
+    return klass
