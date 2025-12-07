@@ -45,6 +45,15 @@ class TestSmartPointer(unittest.TestCase):
                 # The XML name of UniformSpectrometer is 'wave'
                 if classname in ('UniformSpectrometer', 'Uniform'):
                     classname='wave'
+                # The XML name of PythonMetric and PythonSpectrum is 'Python'
+                if classname in ('PythonMetric', 'PythonSpectrum'):
+                    classname='Python'
+                # The XML name of PythonStandard is Python::Standard
+                if classname in ('PythonStandard',):
+                    classname='Python::Standard'
+                # The XML name of PythonThinDisk is Python::ThinDisk
+                if classname in ('PythonThinDisk',):
+                    classname='Python::ThinDisk'
                 # Construct instance from default constructor
                 obj=cls()
                 self.assertEqual(obj.getRefCount(), 1)

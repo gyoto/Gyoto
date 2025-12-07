@@ -474,12 +474,15 @@ klass      -- a Python class to instanciate the C++ class.
     class klass(namespace.Generic):
         _classname  = classname
         _plugin     = plugin
-        def __init__(self):
+        def __init__(self, *args):
             if self._plugin is None:
                 plugins=()
             else:
                 plugins=(self._plugin,)
-            super().__init__(self._classname, plugins)
+            if args:
+                super().__init__(*args)
+            else:
+                super().__init__(self._classname, plugins)
 
     klass.__name__   = identifier
     klass.__doc__    = doc
