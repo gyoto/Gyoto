@@ -36,10 +36,10 @@ Gyoto. Several possibilities exist to load it explicitly:
 
 * set the GYOTO_PLUGINS environment variable, not forgetting to also
   list the other desired default plugins, e.g.:
-  ```export GYOTO_PLUGINS=stdplug,python3,nofail:lorene```
+  ```export GYOTO_PLUGINS=stdplug,python3,nowarn:lorene```
 
 * use the `--plugins' option of the gyoto command-line tool, e.g.:
-  ```gyoto --plugins=stdplug,python3,nofail:lorene ...```
+  ```gyoto --plugins=stdplug,python3,nowarn:lorene ...```
 
 * in Python, use ```gyoto.core.requirePlugin('python3')```
 

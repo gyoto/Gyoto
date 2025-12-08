@@ -444,7 +444,7 @@ namespace Gyoto {
 /* Plugins Stuff */
 /// \brief Default list of default plug-ins to load...
 #ifndef GYOTO_DEFAULT_PLUGINS
-#define GYOTO_DEFAULT_PLUGINS "stdplug,nofail:lorene"
+#define GYOTO_DEFAULT_PLUGINS "stdplug,nowarn:lorene"
 #endif
 
 #ifndef GYOTO_PLUGIN_SFX

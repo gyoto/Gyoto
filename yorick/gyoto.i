@@ -28,9 +28,9 @@ local GYOTO_PLUGINS;
     #including gyoto.i. If this Yorick variable is not set, then the
     environment variable of the same name is used. If it is not set
     either, then the built-in default (usually
-    "stdplug,nofail:lorene") is used. Each plug-in may be prefixed
-    with "nofail:" to tell gyoto that it is not an error if this
-    plug-oin cannot be loaded.
+    "stdplug,nowarn:lorene") is used. Each plug-in may be prefixed
+    with "nofail:" or "nowarn:" to tell gyoto that it is not an error
+    if this plug-in cannot be loaded.
 
    EXAMPLES:
     To load gyoto with no plug-in at all, and load "myplugin" afterwards:

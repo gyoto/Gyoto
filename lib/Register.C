@@ -194,6 +194,9 @@ void Gyoto::Register::init(char const *  cpluglist) {
       if (!curplug.compare(0, 7, "nofail:")) {
 	curplug = curplug.substr(7);
 	nofail=1;
+      } else if (!curplug.compare(0, 7, "nowarn:")) {
+	curplug = curplug.substr(7);
+	nofail=2;
       }
 
       Gyoto::loadPlugin(curplug.c_str(), nofail);

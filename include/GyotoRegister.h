@@ -56,7 +56,9 @@ namespace Gyoto {
      * \param pluglist Coma-separated list of plug-ins to load. If
      * NULL, default to the environment variable GYOTO_PLUGINS, if it
      * exists. Else use GYOTO_DEFAULT_PLUGINS. Failing to load a
-     * plug-in prepended with "nofail:" is not fatal.
+     * plug-in prepended with "nofail:" is not fatal but issues a
+     * warning. Failing to load a plug-in prepended with "nowarn:" is
+     * silently ignored.
      */
     void init( char const * pluglist = NULL );
 
