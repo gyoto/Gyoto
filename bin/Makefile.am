@@ -37,11 +37,15 @@ gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 
 export PATH := .:$(PATH)
 
+pluginname := $(word 3, $(shell grep pluginname ../plugins/python/Makefile))
+PYTHON_PLUGIN := ../plugins/python/lib/.libs/libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX)
+
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
+CHECK_PYTHON_RESULTS := $(filter example-python-%, $(CHECK_RESULTS_ALL))
 CHECK_WIP_RESULTS := $(filter %-wip.fits, $(CHECK_RESULTS_ALL))
-CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS)
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS) $(CHECK_PYTHON_RESULTS)
 if !HAVE_2F1
 CHECK_RESULTS_SKIP += example-jet.fits example-torusjet.fits
 endif
@@ -49,8 +53,10 @@ CHECK_RESULTS=$(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
+CHECK_PYTHON_MPI_RESULTS = $(CHECK_PYTHON_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 CLEANFILES += $(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS)
+CLEANFILES += $(CHECK_PYTHON_RESULTS) $(CHECK_PYTHON_MPI_RESULTS)
 
 MPIRUN = mpirun
 
@@ -69,6 +75,12 @@ check-wip-nompi-clean:
 
 check-wip-mpi-clean:
 	rm -f $(CHECK_WIP_MPI_RESULTS)
+
+check-python-nompi-clean:
+	rm -f $(CHECK_PYTHON_RESULTS)
+
+check-python-mpi-clean:
+	rm -f $(CHECK_PYTHON_MPI_RESULTS)
 
 if BUILD_GYOTO
 $(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
@@ -97,6 +109,27 @@ check-wip-mpi: check-wip-mpi-clean check-wip-mpi-compute
 
 check: check-nompi
 check-wip: check-wip-nompi
+
+if HAVE_PYTHON
+
+$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN)
+	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN)
+	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+$(PYTHON_PLUGIN):
+	cd ../plugins/python; $(MAKE)
+
+check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
+check-python-nompi: check-python-nompi-clean check-python-nompi-compute
+
+check-python-mpi-compute: $(CHECK_PYTHON_MPI_RESULTS)
+check-python-mpi: check-python-mpi-clean check-python-mpi-compute
+
+check-python: check-python-nompi
+
+endif
 
 if HAVE_LORENE
 # make check-lorene check-lorene-mpi
