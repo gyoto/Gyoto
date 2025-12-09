@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
+  This file shows how to implement a metric using the Python
+  language. the metric is coded in the file gyoto_sample_metrics.py,
+  which must be in Python's path or in the same directory as this XML
+  file.
+
   <Metric kind = "Python">
     <Module>gyoto_sample_metrics</Module>
     <Class>KerrBL</Class>

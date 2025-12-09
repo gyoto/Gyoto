@@ -425,7 +425,37 @@ public:
   void setParameters(Gyoto::FactoryMessenger *fmp)  {
     std::string name="", content="", unit="";
     FactoryMessenger * child = NULL;
-    if (fmp)
+    if (fmp) {
+      // add xml file directory to sys.path
+      std::string xmldir = fmp->fullPath("");
+      if (xmldir.size()) {
+	GYOTO_DEBUG_THIS << "adding '"+xmldir+"' to sys.path";
+	// retrieve sys.path
+	PyObject* sysPath = PySys_GetObject("path");
+	if (!sysPath) {
+	  PyErr_Print();
+	  return;
+	}
+	// create Python variable around xmldir variable
+	PyObject* pyPath = PyUnicode_FromString(xmldir.c_str());
+	// check whether xmldir is already in sys.path
+	Py_ssize_t pathSize = PyList_Size(sysPath);
+	bool found = false;
+	for (Py_ssize_t i = 0; i < pathSize; ++i) {
+	  PyObject* item = PyList_GetItem(sysPath, i);
+	  if (PyUnicode_Compare(item, pyPath) == 0) {
+            found = true;
+            break;
+	  }
+	  // if not, prepend it
+	  if (!found) {
+	    PyList_Insert(sysPath, 0, pyPath);
+	  }
+	  // clean memory
+	  Py_DECREF(pyPath);
+	}
+      }
+      // loop on parameters
       while (fmp->getNextParameter(&name, &content, &unit)) {
 	GYOTO_DEBUG << "Setting '" << name << "' to '" << content
 		    << "' (unit='"<<unit<<"')" << std::endl;
@@ -481,6 +511,7 @@ public:
 	}
 	if (need_delete) delete prop;
       }
+    }
     GYOTO_DEBUG << "Done processing parameters" << std::endl;
   }
 };

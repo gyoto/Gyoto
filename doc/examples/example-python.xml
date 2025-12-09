@@ -6,6 +6,11 @@
   example-fixed-star-minkowski-cartesian.xml in the main Gyoto example
   directory.
 
+  The metric is implemented in gyoto_sample_metrics.py. The spectrum
+  and opacity of the fixed star are implemented in
+  gyoto_sample_spectra.py. Both files must be in the Python path or in
+  the same directory as this XML file.
+
   An optically thin blob centered on the origin of the coordinate
   system, in flat space-time. Computation uses the Cartesian
   coordinates.
@@ -32,7 +37,6 @@
   <Astrobj kind = "FixedStar">
     <Radius> 12 </Radius>
     <Position> 0 0 0 </Position>
-    <UseGenericImpact/>
     <Spectrum kind="Python">
       <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>

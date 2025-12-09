@@ -67,19 +67,21 @@ import os.path
 # session should be the same as the name of the Python
 # executable. Let's try it, as well as python3 and python as
 # fallbacks.
-try:
-    plugin = os.path.basename(sys.executable)
-    core.requirePlugin(plugin)
-except core.Error:
+pluglist=(os.path.basename(os.path.realpath(sys.executable)),
+          os.path.basename(sys.executable),
+          "python3", "python")
+for plugin in pluglist:
     try:
-        plugin = "python3"
+        plugin = os.path.basename(sys.executable)
         core.requirePlugin(plugin)
+        break
     except core.Error:
-        try:
-            plugin = "python"
-            core.requirePlugin(plugin)
-        except core.Error:
-            raise core.Error("Could not load Python plugin, tried: "+os.path.basename(sys.executable)+", python3 and python")
+        plugin = None
+
+if plugin is None:
+    raise core.Error("Could not load Python plugin, tried: "+repr(pluglist)+", python3 and python")
+
+del pluglist
 
 
 __all__=[]

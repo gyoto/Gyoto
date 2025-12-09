@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
+  This XML file examplifies how to implement a standard astrobj
+  (i.e. derived from Astrobj::Standard) using the Python
+  language. This object is implemented in the file
+  gyoto_sample_standard.py, which must be in Python's path or in the
+  same directory as this XML file.
+
   An optically thin blob centered on the origin of the coordinate
   system, in flat space-time. Computation uses the spherical
   coordinates.

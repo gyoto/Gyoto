@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
-  This example shows how to code a spectrum in Python directly in the
-  XML file.
+  This example shows how to code a spectrumthin disk in Python
+  directly in the XML file.
 
   <Metric kind = "KerrBL">
     <Spin> 0. </Spin>
@@ -22,14 +22,14 @@
     <InnerRadius> 3. </InnerRadius>
     <OpticallyThin/>
 
-
     We could write a python module in a separate file, say
-    "gyoto_sample_spectra.py", and use the "Module" entity to load it:
-    <!--Module>gyoto_sample_spectra</Module-->
+    "gyoto_sample_thindisks.py", and use the "Module" entity to load
+    it:
+    <!--Module>gyoto_sample_thindisk</Module-->
 
     Alternatively, we can put the Python code inline using the
     "InlineModule" entity. Common indentation will be removed so we
-    don't have to flush everything left .
+    don't have to flush everything left.
     <InlineModule>
         class ThinDisk:
             def emission(self, nuem, dsem, cph, co):

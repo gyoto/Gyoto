@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Scenery>
 
+  The goal of this example is to show how to implement a custom
+  astrobj using the Python language directly in an XML file.
+
   <Metric kind = "KerrBL">
     <Mass unit="sunmass"> 4e6 </Mass>
     <Spin> 0.52 </Spin>

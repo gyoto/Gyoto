@@ -43,7 +43,7 @@ PYTHON_PLUGIN := ../plugins/python/lib/.libs/libgyoto-$(pluginname).$(GYOTO_PLUG
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
-CHECK_PYTHON_RESULTS := $(filter example-python-%, $(CHECK_RESULTS_ALL))
+CHECK_PYTHON_RESULTS := $(filter example-python%, $(CHECK_RESULTS_ALL))
 CHECK_WIP_RESULTS := $(filter %-wip.fits, $(CHECK_RESULTS_ALL))
 CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS) $(CHECK_PYTHON_RESULTS)
 if !HAVE_2F1
@@ -113,10 +113,10 @@ check-wip: check-wip-nompi
 if HAVE_PYTHON
 
 $(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN)
-	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+	$(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN)
-	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 $(PYTHON_PLUGIN):
 	cd ../plugins/python; $(MAKE)
