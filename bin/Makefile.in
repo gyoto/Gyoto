@@ -455,7 +455,9 @@ AM_LDFLAGS = $(XERCES_LIBS) $(PTHREAD_LIBS) $(LDFLAGS_EXEC) \
 	$(am__append_3)
 AM_CXXFLAGS = $(PTHREAD_CFLAGS) $(CXXFLAGS_EXEC)
 CLEANFILES = $(am__append_6) $(CHECK_RESULTS) $(CHECK_MPI_RESULTS) \
-	$(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS) $(am__append_8)
+	$(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS) \
+	$(CHECK_PYTHON_RESULTS) $(CHECK_PYTHON_MPI_RESULTS) \
+	$(am__append_8)
 dist_man_MANS = $(am__append_2) $(am__append_5)
 gyoto_SOURCES = gyoto.C
 gyoto_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
@@ -935,15 +937,6 @@ check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@$(CHECK_WIP_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
 @BUILD_GYOTO_TRUE@	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
-@BUILD_GYOTO_TRUE@$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN)
-@BUILD_GYOTO_TRUE@	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
-
-@BUILD_GYOTO_TRUE@$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN)
-@BUILD_GYOTO_TRUE@	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
-
-@BUILD_GYOTO_TRUE@$(PYTHON_PLUGIN):
-@BUILD_GYOTO_TRUE@	cd ../plugins/python; $(MAKE)
-
 @BUILD_GYOTO_TRUE@check-nompi-compute: $(CHECK_RESULTS)
 @BUILD_GYOTO_TRUE@check-nompi: check-nompi-clean check-nompi-compute
 
@@ -956,15 +949,25 @@ check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@check-wip-mpi-compute: $(CHECK_WIP_MPI_RESULTS)
 @BUILD_GYOTO_TRUE@check-wip-mpi: check-wip-mpi-clean check-wip-mpi-compute
 
-@BUILD_GYOTO_TRUE@check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
-@BUILD_GYOTO_TRUE@check-python-nompi: check-python-nompi-clean check-python-nompi-compute
-
-@BUILD_GYOTO_TRUE@check-python-mpi-compute: $(CHECK_PYTHON_MPI_RESULTS)
-@BUILD_GYOTO_TRUE@check-python-mpi: check-python-mpi-clean check-python-mpi-compute
-
 @BUILD_GYOTO_TRUE@check: check-nompi
 @BUILD_GYOTO_TRUE@check-wip: check-wip-nompi
-@BUILD_GYOTO_TRUE@check-python: check-python-nompi
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN)
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN)
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=$(top_srcdir)/doc/examples/:$(PYTHONPATH) $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(PYTHON_PLUGIN):
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	cd ../plugins/python; $(MAKE)
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-nompi: check-python-nompi-clean check-python-nompi-compute
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-mpi-compute: $(CHECK_PYTHON_MPI_RESULTS)
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python-mpi: check-python-mpi-clean check-python-mpi-compute
+
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@check-python: check-python-nompi
 
 # make check-lorene check-lorene-mpi
 # Will

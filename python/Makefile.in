@@ -63,6 +63,10 @@ prefix = @prefix@
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 builddir = @builddir@
+abs_builddir = @abs_builddir@
+abs_srcdir = @abs_srcdir@
+abs_top_builddir = @abs_top_builddir@
+abs_top_srcdir = @abs_top_srcdir@
 datadir = @datadir@
 datarootdir = @datarootdir@
 pythondir = @pythondir@
@@ -128,10 +132,7 @@ GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i includ
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
-GYOTO_STATIC_SRC = $(filter-out $(GYOTO_PYFILES),$(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py))))
-
-echostuff:
-	echo $(GYOTO_STATIC_SRC)
+GYOTO_STATIC_SRC = $(addprefix $(abs_builddir)/, $(filter-out $(GYOTO_PYFILES),$(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py)))))
 
 ### High level entry points
 # default target is wheel, see below
@@ -180,7 +181,7 @@ check-clean:
 	-rm -f example.pdf example-patterndisk.pdf
 
 # those targets are yet empty:
-check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-mpi-clean: ;
+check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-mpi-clean check-python check-python-clean check-python-mpi check-python-mpi-clean: ;
 
 ## 3) Install the built wheel and include files
 # Install the Swig include files under $prefix
@@ -274,10 +275,9 @@ src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
 	$(MKDIR_P) $(dir $@)
 	cat $^ > $@
 
-# in case of out-of-tree build, we also need go copy the static sources:
-$(GYOTO_STATIC_SRC): $(srcdir)/$$@
-	$(MKDIR_P) $(dir $@)
-	cp $(srcdir)/$@ $@
+# in case of out-of-tree build, we also need go copy the static
+# sources.  The rule is at for $(GYOTO_STATIS_SRC) is at the end of
+# the Makefile as it requires secondary expansion.
 
 ### The clean targets
 
@@ -302,3 +302,10 @@ distclean: clean
 ### .PHONY targets are run even if they appear up to date
 
 .PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src wheel testbed
+
+### Rules requiring secondary expansion
+.SECONDEXPANSION:
+# in case of out-of-tree build, we also need go copy the static sources:
+$(GYOTO_STATIC_SRC): $$(subst $(abs_builddir),$(abs_srcdir),$$@)
+	$(MKDIR_P) $(dir $@)
+	cp $< $@
