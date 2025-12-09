@@ -106,7 +106,7 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
   if (!pModule_) return;
 
   gstate = PyGILState_Ensure();
-  GYOTO_DEBUG << "Checking Python class methods" << f << endl;
+  GYOTO_DEBUG << "Checking methodes for Python class " << f << endl;
 
   pEmission_          =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "emission");
@@ -143,13 +143,14 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
   pIntegrateEmission_overloaded_ = pIntegrateEmission_ &&
     Gyoto::Python::PyCallable_HasVarArg(pIntegrateEmission_);
 
+  GYOTO_DEBUG << "setting 'this' in the instance" << endl;
   Gyoto::Python::PyInstance_SetThis(pInstance_,
 				    Gyoto::Python::pGyotoStandardAstrobj(),
 				    this);
 
   PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
-  GYOTO_DEBUG << "Done checking Python class methods" << f << endl;
+  GYOTO_DEBUG << "Done checking methods for Python class " << f << endl;
 }
 
 double Gyoto::Astrobj::Python::Standard::operator()(double const coord[4]) {

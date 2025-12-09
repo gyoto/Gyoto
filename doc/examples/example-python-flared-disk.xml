@@ -19,7 +19,16 @@
     <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
   </Screen>
 
-  <Astrobj kind = "Python::Standard">
+  <Astrobj kind = "Python::Standard" plugin="fallback:python3">
+
+    We specify python3 as a "fallback" plug-in as the python plug-in
+    can be compiled for several versions of Python. If loading this
+    file from Python, the right python plug-in should have been loaded
+    already. When loading this file from the gyoto command-line tool,
+    if the python3 plg-in cannot be loaded, try with a name that
+    matches your Python interpreter, for instance :
+      gyoto -pstdplug,python3.14 input.xml output.xml
+
     <RMax> 50 </RMax>
 
     <CriticalValue>0.</CriticalValue>

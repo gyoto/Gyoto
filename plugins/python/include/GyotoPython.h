@@ -429,7 +429,7 @@ public:
       // add xml file directory to sys.path
       std::string xmldir = fmp->fullPath("");
       if (xmldir.size()) {
-	GYOTO_DEBUG_THIS << "adding '"+xmldir+"' to sys.path";
+	GYOTO_DEBUG << "adding '"+xmldir+"' to sys.path" << std::endl;
 	// retrieve sys.path
 	PyObject* sysPath = PySys_GetObject("path");
 	if (!sysPath) {

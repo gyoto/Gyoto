@@ -386,7 +386,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   size_t np=plgs.size();
   if (np) {
     std::string plg(plgs[0]);
-    for (size_t i=1; i<np; ++np) {
+    for (size_t i=1; i<np; ++i) {
       plg += std::string(",") +plgs[i] ;
     }
     fmp -> setSelfAttribute("plugin", plg);

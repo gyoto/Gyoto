@@ -112,11 +112,14 @@ check-wip: check-wip-nompi
 
 if HAVE_PYTHON
 
-$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN)
-	$(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
-$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN)
-	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+../python/testbed/stamp:
+	cd ../python; $(MAKE) testbed
 
 $(PYTHON_PLUGIN):
 	cd ../plugins/python; $(MAKE)

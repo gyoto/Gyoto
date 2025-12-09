@@ -213,29 +213,82 @@ public:
 #define GYOTO_GETSUBCONTRACTOR(space)		\
   Gyoto::space::Subcontractor_t*					\
   Gyoto::space::getSubcontractor(std::string name, std::vector<std::string> &plugin, int errmode) { \
+  bool any_fallback = false;						\
+  GYOTO_DEBUG << "loading non-fallback plug-ins..." << std::endl;	\
   for (size_t i=0; i<plugin.size(); ++i) {				\
     GYOTO_DEBUG_EXPR(plugin[i]);					\
-    Gyoto::requirePlugin(plugin[i]);					\
+    if (plugin[i].rfind("fallback:", 0) != 0)				\
+      Gyoto::requirePlugin(plugin[i]);					\
+    else any_fallback = true;						\
   }									\
-  if (!Gyoto::space::Register_) throwError("No " GYOTO_STRINGIFY(space) " kind registered!"); \
+  if (!Gyoto::space::Register_ && any_fallback) {			\
+    GYOTO_DEBUG <<							\
+      "loading fallback plug-ins until the Register is not empty"	\
+		     << std::endl;					\
+    for (size_t i=0; i<plugin.size(); ++i) {				\
+      GYOTO_DEBUG_EXPR(plugin[i]);					\
+      if (plugin[i].rfind("fallback:", 0) == 0)				\
+        Gyoto::requirePlugin(plugin[i].substr(9));			\
+      if (Gyoto::space::Register_) break;				\
+    }									\
+  }									\
+  if (!Gyoto::space::Register_)						\
+    throwError("No " GYOTO_STRINGIFY(space) " kind registered!");	\
   Subcontractor_t* sctr= NULL;						\
-  std::string plg("");							\
-  if (!plugin.size()) {							\
-  sctr =								\
-    (Subcontractor_t*)Gyoto::space::Register_				\
-    -> getSubcontractor(name, plg, errmode);				\
-  if (sctr) plugin.push_back(plg);					\
-  else if (!errmode) throwError ("Kind not found in any plug-in: "+name); \
-  return sctr;								\
-  }									\
+  GYOTO_DEBUG << "looking for " << name					\
+	      << " in non-fallback plug-ins..."  << std::endl;		\
   for (size_t i=0; i<plugin.size() && sctr == NULL; ++i) {		\
     GYOTO_DEBUG_EXPR(i);						\
     GYOTO_DEBUG_EXPR(plugin[i]);					\
-    sctr=								\
-      (Subcontractor_t*)Gyoto::space::Register_				\
-      -> getSubcontractor(name, plugin[i], 1);				\
+    if (plugin[i].rfind("fallback:", 0) != 0)				\
+      sctr=								\
+	(Subcontractor_t*)Gyoto::space::Register_			\
+	-> getSubcontractor(name, plugin[i], 1);			\
+    if (sctr) {								\
+      GYOTO_DEBUG << "found " << name << " in plug-in "                 \
+	          << plugin[i] << std::endl;				\
+      return sctr;							\
+    }									\
   }									\
-  if (!errmode && !sctr) throwError ("Kind not found in the specified plug-ins: "+name); \
+  std::string plg("");							\
+  if (any_fallback || !plugin.size()) {					\
+    GYOTO_DEBUG << "looking for " << name				\
+		     << " in registered plug-ins..."  << std::endl;	\
+    sctr =								\
+      (Subcontractor_t*)Gyoto::space::Register_				\
+      -> getSubcontractor(name, plg, 1);				\
+    if (sctr){								\
+      GYOTO_DEBUG << "found " << name << " in plug-in "                 \
+	          << plg << std::endl;					\
+      plugin.push_back(plg);						\
+      return sctr;							\
+    } else if (!any_fallback && !errmode)				\
+      throwError ("Kind not found in any plug-in: "+name);		\
+  }									\
+  if (any_fallback) {							\
+    for (size_t i=0; i<plugin.size(); ++i) {				\
+      GYOTO_DEBUG << "looking for " << name				\
+		  << " in fallback plug-ins..."  << std::endl;		\
+    GYOTO_DEBUG_EXPR(plugin[i]);					\
+    if (plugin[i].rfind("fallback:", 0) == 0) {				\
+      plg = plugin[i].substr(9);					\
+      Gyoto::requirePlugin(plg);					\
+      sctr =								\
+	(Subcontractor_t*)Gyoto::space::Register_			\
+	-> getSubcontractor(name, plg, 1);				\
+      if (sctr) {							\
+	GYOTO_DEBUG << "found " << name << " in plug-in "		\
+		    << plg << std::endl;				\
+	return sctr;							\
+      }									\
+    }									\
+   }									\
+  }									\
+									\
+  GYOTO_DEBUG << name << " not found anywhere, error?"			\
+	      << std::endl;						\
+  if (!errmode) throwError ("Kind not found in the specified plug-ins: "\
+			    +name);					\
   return sctr;								\
 }
 

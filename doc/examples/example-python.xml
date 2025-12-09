@@ -15,7 +15,16 @@
   system, in flat space-time. Computation uses the Cartesian
   coordinates.
 
-  <Metric kind = "Python">
+  <Metric kind = "Python" plugin="fallback:python3">
+
+    We specify python3 as a "fallback" plug-in as the python plug-in
+    can be compiled for several versions of Python. If loading this
+    file from Python, the right python plug-in should have been loaded
+    already. When loading this file from the gyoto command-line tool,
+    if the python3 plg-in cannot be loaded, try with a name that
+    matches your Python interpreter, for instance :
+      gyoto -pstdplug,python3.14 input.xml output.xml
+
     <Mass unit="sunmass"> 4e6 </Mass>
     <Cartesian/>
     <Module>gyoto_sample_metrics</Module>
@@ -37,13 +46,13 @@
   <Astrobj kind = "FixedStar">
     <Radius> 12 </Radius>
     <Position> 0 0 0 </Position>
-    <Spectrum kind="Python">
+    <Spectrum kind="Python" plugin="fallback:python3">
       <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
       <Constant>0.001</Constant>
       <Exponent>0.</Exponent>
     </Spectrum>
-    <Opacity kind="Python">
+    <Opacity kind="Python" plugin="fallback:python3">
       <Module>gyoto_sample_spectra</Module>
       <Class>PowerLaw</Class>
       <Constant>0.001</Constant>

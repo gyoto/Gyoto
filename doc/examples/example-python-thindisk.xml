@@ -15,7 +15,15 @@
     <Resolution> 32 </Resolution>
   </Screen>
 
-  <Astrobj kind = "Python::ThinDisk">
+  <Astrobj kind = "Python::ThinDisk" plugin="fallback:python3">
+
+    We specify python3 as a "fallback" plug-in as the python plug-in
+    can be compiled for several versions of Python. If loading this
+    file from Python, the right python plug-in should have been loaded
+    already. When loading this file from the gyoto command-line tool,
+    if the python3 plg-in cannot be loaded, try with a name that
+    matches your Python interpreter, for instance :
+      gyoto -pstdplug,python3.14 input.xml output.xml
 
     Python::ThinDisk inherits from ThinDisk, we can set the usual
     parameters:

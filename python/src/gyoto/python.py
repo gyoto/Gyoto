@@ -63,26 +63,39 @@ from . import core, util, metric, astrobj, spectrum, spectrometer
 import sys
 import os.path
 
-# The name of the Gyoto plug-in that can be loaded in a given Python
-# session should be the same as the name of the Python
-# executable. Let's try it, as well as python3 and python as
-# fallbacks.
-pluglist=(os.path.basename(os.path.realpath(sys.executable)),
-          os.path.basename(sys.executable),
-          "python3", "python")
-for plugin in pluglist:
-    try:
-        plugin = os.path.basename(sys.executable)
-        core.requirePlugin(plugin)
-        break
-    except core.Error:
-        plugin = None
+
+# First check whether the plug-in is already loaded, which is the case
+# if the user has added a python plug-in to GYOTO_PLUGINS, or if this
+# instance of Python is actually running inside gyoto.
+
+pluglist = core.vector_string(())
+sctr = core.getMetricSubcontractor("Python", vector, 1)
+if sctr:
+    plugin=vector[1]
+else:
+    plugin=None
+del pluglist
+del sctr
+
+# If not already loaded, the name of the Gyoto plug-in that can be
+# loaded be the same as the name of the Python executable. Let's try
+# it, as well as python3 and python as fallbacks.
+if (plugin is None):
+    pluglist=(os.path.basename(os.path.realpath(sys.executable)),
+              os.path.basename(sys.executable),
+              "python3", "python")
+    print("***************", repr(pluglist))
+    for plugin in pluglist:
+        try:
+            core.requirePlugin(plugin)
+            break
+        except core.Error:
+            plugin = None
+    del pluglist
 
 if plugin is None:
-    raise core.Error("Could not load Python plugin, tried: "+repr(pluglist)+", python3 and python")
-
-del pluglist
-
+    raise core.Error("Could not load Python plugin, tried: "
+                     +repr(pluglist)+", python3 and python")
 
 __all__=[]
 
