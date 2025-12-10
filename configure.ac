@@ -846,6 +846,11 @@ AC_SUBST([FEATURES])
 AC_SUBST([sovers])
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
+AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
+  [mySUBDIRS="$mySUBDIRS" doc
+  ]
+)
+
 AS_IF([test "x$PYTHON" != "x"],
  [AC_CONFIG_SUBDIRS([plugins/python])
   mySUBDIRS="$mySUBDIRS python"
@@ -895,10 +900,6 @@ AS_IF([test "x$SWIG" = x],
 AS_IF([test "x$missing_for_python" = "x"],
   [
    AC_CONFIG_FILES([python/Makefile python/setup.py python/pyproject.toml])
-  ]
-)
-AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
-  [mySUBDIRS="$mySUBDIRS doc"
   ]
 )
 AC_SUBST([mySUBDIRS])

@@ -24575,6 +24575,13 @@ sovers+=$FEATURES
 printf "%s\n" "#define GYOTO_SOVERS \"${sovers}\"" >>confdefs.h
 
 
+if test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"
+then :
+  mySUBDIRS="$mySUBDIRS" doc
+
+
+fi
+
 
 
 if test "x$PYTHON" != "x"
@@ -24623,12 +24630,6 @@ then :
 
    ac_config_files="$ac_config_files python/Makefile python/setup.py python/pyproject.toml"
 
-
-
-fi
-if test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"
-then :
-  mySUBDIRS="$mySUBDIRS doc"
 
 
 fi
