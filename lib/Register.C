@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2017, 2019, 2024 Thibaut Paumard
+    Copyright 2011-2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -37,6 +37,8 @@ using namespace std;
 static std::string GyotoRegisterCurrentPlugin ("built-in");
 
 static std::vector<std::string> GyotoRegisteredPlugins;
+
+static std::vector<std::string> GyotoPluginPath;
 
 typedef void GyotoInitFcn();
 
@@ -92,15 +94,8 @@ void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   }
 
   // Then try the various hard-coded locations
-  std::vector<std::string> plug_path;
-  plug_path.push_back(GYOTO_PKGLIBDIR "/");
-  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
-# if defined GYOTO_LOCALPKGLIBDIR
-  plug_path.insert(plug_path.begin(), GYOTO_LOCALPKGLIBDIR "/");
-  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
-# endif
-  std::vector<std::string>::iterator cur = plug_path.begin();
-  std::vector<std::string>::iterator end = plug_path.end();
+  std::vector<std::string>::iterator cur = GyotoPluginPath.begin();
+  std::vector<std::string>::iterator end = GyotoPluginPath.end();
   std::string dlfull= dlfile;
   while (!handle && cur != end) {
     dlfull = *cur + dlfile;
@@ -148,7 +143,21 @@ void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   return handle;
 }
 
+std::vector<std::string> Gyoto::pluginPath() {
+  return GyotoPluginPath;
+}
+
 void Gyoto::Register::init(char const *  cpluglist) {
+
+  // Initialize plug-in path if not already set
+  if (!GyotoPluginPath.size()) {
+    GyotoPluginPath.emplace_back(GYOTO_PKGLIBDIR "/");
+    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GyotoPluginPath[0] + GYOTO_SOVERS "/");
+#   if defined GYOTO_LOCALPKGLIBDIR
+    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GYOTO_LOCALPKGLIBDIR "/");
+    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GyotoPluginPath[0] + GYOTO_SOVERS "/");
+#   endif
+  }
 
   // Clean registers
   Metric::initRegister();

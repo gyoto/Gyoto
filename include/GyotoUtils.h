@@ -143,6 +143,33 @@ namespace Gyoto {
    */
   // Keep argument names for swig!
   void matrix4CircularInvert(double ARGOUT_ARRAY2[4][4], double const IN_ARRAY2[4][4]);
+
+  /// Generate pathnames matching a pattern
+  /**
+   * Looks for files that match a pattern in the POSIX glob() sense.
+   *
+   * List of useful flags:
+   * GLOB_ERR:         Return on read errors (e.g., unreadable directories)
+   * GLOB_MARK:        Append a slash (/) to directory matches
+   * GLOB_NOCHECK:     Return the pattern itself if no matches are found
+   * GLOB_NOSORT:      Do not sort the returned filenames
+   * GLOB_TILDE:       Expand tilde (~) to the user's home directory
+   * GLOB_BRACE:       Enable shell-like brace expansion (e.g., {a,b})
+   * GLOB_NOMAGIC:     Return the pattern if it contains no wildcards
+   * GLOB_PERIOD:      Allow patterns to match filenames starting with a dot (.)
+   * GLOB_ONLYDIR:     Match only directories (not files)
+   * GLOB_TILDE_CHECK: Verify that the tilde expansion refers to an existing
+   *                   directory
+   *
+   * \param[in]     pattern  the pathname pattern to be expanded
+   * \param[in,opt] flags GLOB_* flags from glob.h (default: 0). To
+   *                get access to the GLOB_* macros in C++, include
+   *                glob.h. The gyoto module exposes them in Python as
+   *                gyoto.code.GLOB_NOCHECK etc. They can be combined
+   *                with the bitwise or operator ('|').
+   * \return        the pathnames that match \p pattern.
+   */
+  std::vector<std::string> glob(const std::string pattern, int flags = 0);
 }
 
 #endif

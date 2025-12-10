@@ -877,6 +877,25 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 // Not a class
 %include "GyotoUtils.h"
 
+// We want to export some macros from glob.h for Gyoto::glob():
+%{
+#include <glob.h>
+%}
+%constant int GLOB_NOCHECK;
+%constant int GLOB_NOMATCH;
+%constant int GLOB_TILDE;
+%constant int GLOB_ERR;
+%constant int GLOB_MARK;
+%constant int GLOB_NOSORT;
+%constant int GLOB_APPEND;
+%constant int GLOB_DOOFFS;
+%constant int GLOB_ALTDIRFUNC;
+%constant int GLOB_BRACE;
+%constant int GLOB_NOMAGIC;
+%constant int GLOB_PERIOD;
+%constant int GLOB_ONLYDIR;
+%constant int GLOB_TILDE_CHECK;
+
 // Not a SmartPointee
 %include "GyotoFactory.h"
 

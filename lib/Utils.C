@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <clocale>
+#include <glob.h>
 
 #include "GyotoScenery.h"
 #include "GyotoSpectrum.h"
@@ -416,4 +417,39 @@ void Gyoto::matrix4CircularInvert(double Am1[4][4], double const A[4][4]) {
   Am1[1][2]=Am1[2][1]=0.;
   Am1[1][3]=Am1[3][1]=0.;
   Am1[2][3]=Am1[3][2]=0.;
+}
+
+// Pathname matching
+std::vector<std::string> Gyoto::glob(const std::string pattern, int flags) {
+  // Allocate return structures
+  glob_t glob_struct;
+  std::vector<std::string> retval;
+
+  // Call glob()
+  int errcode = glob(pattern.c_str(), flags, nullptr, &glob_struct);
+
+  // Interpret errcode
+  switch (errcode) {
+  case 0:
+    break;
+  case GLOB_ABORTED:
+    GYOTO_ERROR("glob() error: The scan was stopped because GLOB_ERR was set.");
+  case GLOB_NOMATCH:
+    GYOTO_ERROR("glob() error: The pattern '"+pattern+"' does not match any"
+		"existing pathname, and GLOB_NOCHECK was not set in flags.");
+  case GLOB_NOSPACE:
+    GYOTO_ERROR("glob() error: An attempt to allocate memory failed.");
+  default:
+    GYOTO_ERROR("glob() error: glob() returned unknown error code "
+		+to_string(errcode)+".");
+  }
+
+  // Convert output to vector<string>
+  retval.reserve(glob_struct.gl_pathc);
+  for (size_t i=0; i < glob_struct.gl_pathc; ++i)
+    retval.emplace_back(glob_struct.gl_pathv[i]);
+
+  // Cleanup and return
+  globfree(&glob_struct);
+  return retval;
 }

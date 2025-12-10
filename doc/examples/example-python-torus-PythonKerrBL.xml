@@ -6,15 +6,14 @@
   which must be in Python's path or in the same directory as this XML
   file.
 
-  <Metric kind = "Python" plugin="fallback:python3">
+  <Metric kind = "Python" plugin="fallback:python*">
 
     We specify python3 as a "fallback" plug-in as the python plug-in
     can be compiled for several versions of Python. If loading this
     file from Python, the right python plug-in should have been loaded
     already. When loading this file from the gyoto command-line tool,
-    if the python3 plg-in cannot be loaded, try with a name that
-    matches your Python interpreter, for instance :
-      gyoto -pstdplug,python3.14 input.xml output.xml
+    gyoto will try to load all plug-ins starting with 'python' until
+    it finds one that contains the metric class 'Python'.
 
     <Module>gyoto_sample_metrics</Module>
     <Class>KerrBL</Class>
