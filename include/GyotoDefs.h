@@ -310,10 +310,36 @@ namespace Gyoto {
    * \param n Number of elements to show (array must be at least this
    * size).
    */
-#define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {            \
-    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "         \
-	      << #a << "=[" << a[0] ;				  \
-    for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n; ++_gyoto_debug_array_i) \
+#define GYOTO_DEBUG_ARRAY(a,n) if (GYOTO_DEBUG_MODE) {			\
+    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "		\
+	      << #a << "=[" << a[0] ;					\
+    for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n;	\
+	 ++_gyoto_debug_array_i)					\
+      std::cerr << "," << a[_gyoto_debug_array_i] ;			\
+    std::cerr << "]" << std::endl ;}
+
+  /// Output array content unconditionally
+  /**
+   * Output name and content of array.
+   * For instance:
+   * \code
+   * int a[]= {1, 2, 3};
+   * GYOTO_DEBUG_ARRAY(a,3);
+   * \endcode
+   * will essentially output:
+   * \code
+   * DEBUG: <function signature>: a=[1,2,3]
+   * \endcode
+   *
+   * \param a Array
+   * \param n Number of elements to show (array must be at least this
+   * size).
+   */
+#define GYOTO_DEBUG_THIS_ARRAY(a,n) {					\
+    std::cerr << "DEBUG: " << __PRETTY_FUNCTION__ << ": "		\
+	      << #a << "=[" << a[0] ;					\
+    for (size_t _gyoto_debug_array_i=1; _gyoto_debug_array_i < n;	\
+	 ++_gyoto_debug_array_i)					\
       std::cerr << "," << a[_gyoto_debug_array_i] ;			\
     std::cerr << "]" << std::endl ;}
 
