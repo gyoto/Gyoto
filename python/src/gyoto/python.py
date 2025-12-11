@@ -69,12 +69,11 @@ import os.path
 # instance of Python is actually running inside gyoto.
 
 pluglist = core.vector_string(())
-sctr = core.getMetricSubcontractor("Python", vector, 1)
+sctr = core.getMetricSubcontractor("Python", pluglist, 1)
 if sctr:
-    plugin=vector[1]
+    plugin=pluglist[1]
 else:
     plugin=None
-del pluglist
 del sctr
 
 # If not already loaded, the name of the Gyoto plug-in that can be
@@ -84,18 +83,18 @@ if (plugin is None):
     pluglist=(os.path.basename(os.path.realpath(sys.executable)),
               os.path.basename(sys.executable),
               "python3", "python")
-    print("***************", repr(pluglist))
     for plugin in pluglist:
         try:
             core.requirePlugin(plugin)
             break
         except core.Error:
             plugin = None
-    del pluglist
 
 if plugin is None:
     raise core.Error("Could not load Python plugin, tried: "
                      +repr(pluglist)+", python3 and python")
+
+del pluglist
 
 __all__=[]
 

@@ -265,11 +265,12 @@ public:
       "loading fallback plug-ins until the Register is not empty"	\
 		<< std::endl;						\
     for (const auto plg : fallback) {					\
-      GYOTO_DEBUG_EXPR(plg);						\
-      Gyoto::requirePlugin(plg, 1);					\
       if (Gyoto::space::Register_) break;				\
+      GYOTO_DEBUG_EXPR(plg);						\
+      Gyoto::requirePlugin(plg, 2);					\
     }									\
     for (const auto &plg : fallback) {					\
+      if (Gyoto::space::Register_) break;				\
       GYOTO_DEBUG_EXPR(plg);						\
       for (const auto &path : plug_path) {				\
 	std::string pattern = (path + "libgyoto-" + plg)		\
@@ -278,10 +279,9 @@ public:
 	  Gyoto::glob(pattern);				\
 	for (const auto &file : files) {				\
 	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
-	  Gyoto::requirePlugin(file, 1);				\
+	  Gyoto::requirePlugin(file, 2);				\
 	}								\
       }									\
-      if (Gyoto::space::Register_) break;				\
     }									\
     if (!Gyoto::space::Register_)					\
       throwError("No " GYOTO_STRINGIFY(space) " kind registered!");	\
@@ -307,7 +307,7 @@ public:
       if (sctr){							\
 	GYOTO_DEBUG << "found " << name << " in plug-in "		\
 		    << plg << std::endl;				\
-	plugin.emplace_back(plg);					\
+	plugin.emplace(plugin.begin(), plg);				\
 	return sctr;							\
       } else if (!fallback.size() && !errmode)				\
 	throwError ("Kind not found in any plug-in: "+name);		\
@@ -317,7 +317,7 @@ public:
     /* try to load fallbacks directly */				\
     for (auto &plg : fallback) {					\
       GYOTO_DEBUG_EXPR(plg);						\
-      Gyoto::requirePlugin(plg, 1);					\
+      Gyoto::requirePlugin(plg, 2);					\
       sctr = (Subcontractor_t*)Gyoto::space::Register_			\
 	-> getSubcontractor(name, plg, 2);				\
       if (sctr) {							\
@@ -337,7 +337,7 @@ public:
       for (auto &file : files) {					\
 	GYOTO_DEBUG << "Trying " << file << std::endl;			\
 	if (!std::filesystem::exists(file)) continue;			\
-	Gyoto::requirePlugin(file, 1);					\
+	Gyoto::requirePlugin(file, 2);					\
 	sctr = (Subcontractor_t*)Gyoto::space::Register_		\
 	  -> getSubcontractor(name, file, 2);				\
 	if (sctr) {							\
@@ -355,7 +355,7 @@ public:
 	for (auto &file : files) {				\
 	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
 	  if (!std::filesystem::exists(file)) continue;			\
-	  Gyoto::requirePlugin(file, 1);				\
+	  Gyoto::requirePlugin(file, 2);				\
 	  sctr = (Subcontractor_t*)Gyoto::space::Register_		\
 	    -> getSubcontractor(name, file, 2);				\
 	  if (sctr) {							\
