@@ -37,9 +37,6 @@ gyoto-mpi-worker.@sovers@.1: gyoto-mpi-worker.1
 
 export PATH := .:$(PATH)
 
-pluginname := $(word 3, $(shell grep pluginname ../plugins/python/Makefile))
-PYTHON_PLUGIN := ../plugins/python/lib/.libs/libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX)
-
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
@@ -60,7 +57,14 @@ CLEANFILES += $(CHECK_PYTHON_RESULTS) $(CHECK_PYTHON_MPI_RESULTS)
 
 MPIRUN = mpirun
 
-CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
+if HAVE_PYTHON
+GYOTO_PYTHON_PLGPTH = :@top_builddir@/plugins/python/lib/.libs/
+endif
+
+GYOTO_PLUGIN_PATH = @top_builddir@/lib/.libs/$(GYOTO_PYTHON_PLGPTH)
+
+CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)\
+	GYOTO_PLUGIN_PATH=$(GYOTO_PLUGIN_PATH)
 CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
 CHECK_CMD = $(CHECK_ENV) $(CHECK_RAW_CMD)
 
@@ -113,10 +117,10 @@ check-wip: check-wip-nompi
 if HAVE_PYTHON
 
 $(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
-	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 ../python/testbed/stamp:
 	cd ../python; $(MAKE) testbed

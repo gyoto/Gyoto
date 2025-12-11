@@ -40,6 +40,17 @@ static std::vector<std::string> GyotoRegisteredPlugins;
 
 static std::vector<std::string> GyotoPluginPath;
 
+static const std::vector<std::string> GyotoDefaultPluginPath =
+  {
+#   if defined GYOTO_LOCALPKGLIBDIR
+    GYOTO_LOCALPKGLIBDIR GYOTO_SOVERS "/",
+    GYOTO_LOCALPKGLIBDIR,
+#   endif
+    GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/",
+    GYOTO_PKGLIBDIR "/"
+  };
+
+
 typedef void GyotoInitFcn();
 
 bool Gyoto::havePlugin(std::string name) {
@@ -155,12 +166,17 @@ void Gyoto::Register::init(char const *  cpluglist) {
 
   // Initialize plug-in path if not already set
   if (!GyotoPluginPath.size()) {
-    GyotoPluginPath.emplace_back(GYOTO_PKGLIBDIR "/");
-    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GyotoPluginPath[0] + GYOTO_SOVERS "/");
-#   if defined GYOTO_LOCALPKGLIBDIR
-    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GYOTO_LOCALPKGLIBDIR "/");
-    GyotoPluginPath.emplace(GyotoPluginPath.begin(), GyotoPluginPath[0] + GYOTO_SOVERS "/");
-#   endif
+    const char* GYOTO_PLUGIN_PATH = std::getenv("GYOTO_PLUGIN_PATH");
+    if (GYOTO_PLUGIN_PATH) {
+      std::istringstream iss(GYOTO_PLUGIN_PATH);
+      std::string path;
+      while (std::getline(iss, path, ':')) {
+        if (!path.empty()) {
+	  if (path.back() != '/') path += '/';
+	  GyotoPluginPath.push_back(path);
+	}
+      }
+    } else GyotoPluginPath = GyotoDefaultPluginPath;
   }
 
   // Clean registers
@@ -308,12 +324,9 @@ void Gyoto::Register::list() {
 "(typically includes directories listed in e.g. $LD_LIBRARY_PATH), then in the\n"
 "following locations:" << endl;
 
-# if defined GYOTO_LOCALPKGLIBDIR
-  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
-  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" << endl;
-# endif
-  cout << "    " << GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
-  cout << "    " << GYOTO_PKGLIBDIR "/" << endl << endl;
+  for (const auto &path : GyotoPluginPath)
+    cout << path << endl;
+  cout << endl;
 
   cout << "List of loaded plug-ins:" << endl;
   for (size_t i=0; i < GyotoRegisteredPlugins.size(); ++i)

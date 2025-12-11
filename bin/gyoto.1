@@ -383,6 +383,9 @@ first). If that fails, it looks in PREFIX/lib/gyoto/ and finally in
 PREFIX/lib/gyoto/SOVERS/ where PREFIX and SOVERS are two compile-time
 options. PREFIX usually is /usr/local or /usr. At the time of writing,
 SOVERS is 0.0.0.
+.IP GYOTO_PLUGIN_PATH
+Colon-separated list of directories to search for plug-ins. The
+currently searched directories are liste with \fBgyoto \-\-list\fR.
 .IP GYOTO_PYTHON
 The name of the Python plug-in to use for mk\-video (typically either
 "python3" or a more specific version such as "python3.12"). By default

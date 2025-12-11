@@ -467,8 +467,6 @@ gyoto_mpi_worker_@sovers@_SOURCES = gyoto-mpi-worker.C
 gyoto_mpi_worker_@sovers@_LDADD = @top_builddir@/lib/libgyoto@FEATURES@.la
 gyoto_mpi_worker_@sovers@_CPPFLAGS = $(AM_CPPFLAGS) $(CFITSIO_CFLAGS)
 gyoto_mpi_worker_@sovers@_LDFLAGS = $(AM_LDFLAGS) $(CFITSIO_LIBS) -export-dynamic
-pluginname := $(word 3, $(shell grep pluginname ../plugins/python/Makefile))
-PYTHON_PLUGIN := ../plugins/python/lib/.libs/libgyoto-$(pluginname).$(GYOTO_PLUGIN_SFX)
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
@@ -481,7 +479,11 @@ CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
 CHECK_PYTHON_MPI_RESULTS = $(CHECK_PYTHON_RESULTS:.fits=-mpi.fits)
 MPIRUN = mpirun
-CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
+@HAVE_PYTHON_TRUE@GYOTO_PYTHON_PLGPTH = :@top_builddir@/plugins/python/lib/.libs/
+GYOTO_PLUGIN_PATH = @top_builddir@/lib/.libs/$(GYOTO_PYTHON_PLGPTH)
+CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)\
+	GYOTO_PLUGIN_PATH=$(GYOTO_PLUGIN_PATH)
+
 CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
 CHECK_CMD = $(CHECK_ENV) $(CHECK_RAW_CMD)
 @BUILD_GYOTO_TRUE@@HAVE_LORENE_TRUE@CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
@@ -953,10 +955,10 @@ check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@check-wip: check-wip-nompi
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
-@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -pstdplug,$(PYTHON_PLUGIN) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@$(CHECK_PYTHON_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp
-@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 -pstdplug,$(PYTHON_PLUGIN) $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@../python/testbed/stamp:
 @BUILD_GYOTO_TRUE@@HAVE_PYTHON_TRUE@	cd ../python; $(MAKE) testbed
