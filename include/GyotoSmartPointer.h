@@ -334,7 +334,7 @@ class Gyoto::SmartPointer
   bool operator! () const { return obj == NULL; }
 #endif
 
-  ~SmartPointer< T > () { decRef(); }
+  ~SmartPointer () { decRef(); }
 
  public:
   /**
