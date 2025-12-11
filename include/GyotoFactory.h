@@ -419,7 +419,7 @@ class Gyoto::Factory
    * \param relpath Path specification.
    * \return Absolute path to same file.
    */
-  std::string fullPath(std::string relpath);
+  std::string fullPath(const std::string &relpath) const ;
 };
 
 #endif

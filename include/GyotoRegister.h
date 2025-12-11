@@ -22,6 +22,7 @@
 
 #include <string>
 #include <glob.h>
+#include <filesystem>
 #include "GyotoSmartPointer.h"
 
 /**
@@ -114,6 +115,12 @@ namespace Gyoto {
    * \brief Get a copy of the plug-in path
    */
   std::vector<std::string> pluginPath();
+
+  /**
+   * \brief Set the plug-in path
+   */
+  void pluginPath(const std::vector<std::string> &v);
+
 }
 
 /**
@@ -197,21 +204,42 @@ public:
  *
  * This macro is called for instance to define
  * Gyoto::Metric::getSubcontractor(). A function defined this way will:
- * - load any plug-in listed in \p plugin using requirePlugin();
- * - if \p plugin is empty, look for a subcontractor matching \p name
- *   in the relevant register,
- *   - if a match is found, insert the name of the corresponding plug-in
- *     in \p plugin and return a pointer to the matching
- *     subcontractor;
- *   - else,
- *     - if \p errmode is 1, return NULL;
- *     - if \p errmode is 0, throw a Gyoto::Error;
- * - else, look for a subcontractor matching \p name and one element of
- *   \p plugin in the relevant register,
- *   - if a match is found, return the subcontractor;
- *   - else,
- *     - if \p errmode is 1, return NULL;
- *     - if \p errmode is 0, throw a Gyoto::Error.
+ *
+ * - load any mandatory (i.e. not prepended with "fallback:") plug-in
+ *   listed in \p plugin using requirePlugin();
+ *
+ * - if the Gyoto::space::Register_ register is still empty at this
+ *   point, load fallback (i.e. prepended with "fallback:") plug-ins
+ *   listed in \p plugin until it is not anymore;
+ *
+ * - if \p plugin is empty of contains only fallback plug-ins, look
+ *   for a subcontractor matching \p name in the register; if a match
+ *   is found, insert the name of the corresponding plug-in in \p
+ *   plugin and return a pointer to the matching subcontractor;
+ *
+ * - look for a subcontractor matching \p name and one mandatory
+ *   plug-in from \p plugin in the relevant register; if a match is
+ *   found, return the subcontractor;
+ *
+ * - for each fallback plugin \p plg:
+ *   - try to load \plg and look for a subcontractor matching \p name
+ *     and \p plg;
+ *   - try to find a file that matches \p plg as a glob pattern, if
+ *     one exists, try to load it as a plug-in and look for a
+ *     subcontractor matching pname is it;
+ *   - try to find a file that matches \p plg as a glob pattern, if
+ *     one exists, try to load it as a plug-in and look for a
+ *     subcontractor matching pname is it;
+ *   - try to find a file that matches \p
+ *     <directory>/libgyoto-<plg>.so for every directory in the
+ *     plug-in path. If such a file exists, try to load it as a
+ *     plug-in and look for a subcontractor matching pname is it;
+ *   At any point, if a matching subcontracting subcontractor is
+ *   found, return it.
+ *
+ * Else,
+ * - if \p errmode is 1, return NULL;
+ * - if \p errmode is 0, throw a Gyoto::Error.
  *
  * \param[in] space a Gyoto namespace such as Metric, Astrobj,
  * Spectrum or Spectrometer.
@@ -225,59 +253,48 @@ public:
     std::vector<std::string> fallback;					\
     std::vector<std::string> plug_path(Gyoto::pluginPath());		\
     GYOTO_DEBUG << "loading non-fallback plug-ins..." << std::endl;	\
-    for (std::vector<std::string>::iterator plg = plugin.begin();	\
-	 plg != plugin.end();						\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
-      if (plg -> rfind("fallback:", 0) != 0) {				\
-	Gyoto::requirePlugin(*plg);					\
-	mandatory.emplace_back(*plg);					\
+    for (const auto &plg : plugin) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      if (plg.rfind("fallback:", 0) != 0) {				\
+	Gyoto::requirePlugin(plg);					\
+	mandatory.emplace_back(plg);					\
       }									\
-      else fallback.emplace_back(plg->substr(9));			\
+      else fallback.emplace_back(plg.substr(9));			\
     }									\
     GYOTO_DEBUG <<							\
       "loading fallback plug-ins until the Register is not empty"	\
 		<< std::endl;						\
-    for (std::vector<std::string>::iterator plg = fallback.begin();	\
-	 plg != fallback.end() && !Gyoto::space::Register_;		\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
-      Gyoto::requirePlugin(*plg, 1);					\
+    for (const auto plg : fallback) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      Gyoto::requirePlugin(plg, 1);					\
+      if (Gyoto::space::Register_) break;				\
     }									\
-    for (std::vector<std::string>::iterator plg = fallback.begin();	\
-	 plg != fallback.end() && !Gyoto::space::Register_;		\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
-      for (std::vector<std::string>::iterator path = plug_path.begin();	\
-	   path != plug_path.end();					\
-	   ++path) {							\
-	std::string pattern = (*path + "libgyoto-" + *plg)		\
+    for (const auto &plg : fallback) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      for (const auto &path : plug_path) {				\
+	std::string pattern = (path + "libgyoto-" + plg)		\
 		     + "." GYOTO_PLUGIN_SFX;				\
 	std::vector<std::string> files =				\
-	  Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |		\
-		      GLOB_TILDE | GLOB_BRACE);				\
-	for (std::vector<std::string>::iterator file = files.begin();	\
-	     file != files.end();					\
-	     ++file) {							\
-	  GYOTO_DEBUG << "Trying " << *file << std::endl;		\
-	  Gyoto::requirePlugin(*file, 1);				\
+	  Gyoto::glob(pattern);				\
+	for (const auto &file : files) {				\
+	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
+	  Gyoto::requirePlugin(file, 1);				\
 	}								\
       }									\
+      if (Gyoto::space::Register_) break;				\
     }									\
     if (!Gyoto::space::Register_)					\
       throwError("No " GYOTO_STRINGIFY(space) " kind registered!");	\
     Subcontractor_t* sctr= NULL;					\
     GYOTO_DEBUG << "looking for " << name				\
                 << " in non-fallback plug-ins..."  << std::endl;	\
-    for (std::vector<std::string>::iterator plg = mandatory.begin();	\
-	 plg != mandatory.end();					\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
+    for (auto & plg : mandatory) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
       sctr=(Subcontractor_t*)Gyoto::space::Register_			\
-	-> getSubcontractor(name, *plg, 1);				\
+	-> getSubcontractor(name, plg, 2);				\
       if (sctr) {							\
 	GYOTO_DEBUG << "found " << name << " in plug-in "		\
-		    << *plg << std::endl;				\
+		    << plg << std::endl;				\
 	return sctr;							\
       }									\
     }									\
@@ -286,7 +303,7 @@ public:
 		  << " in registered plug-ins..."  << std::endl;	\
       std::string plg("");						\
       sctr = (Subcontractor_t*)Gyoto::space::Register_			\
-	-> getSubcontractor(name, plg, 1);				\
+	-> getSubcontractor(name, plg, 2);				\
       if (sctr){							\
 	GYOTO_DEBUG << "found " << name << " in plug-in "		\
 		    << plg << std::endl;				\
@@ -297,46 +314,53 @@ public:
     }									\
     GYOTO_DEBUG << "looking for " << name				\
 		<< " in fallback plug-ins..."  << std::endl;		\
-    for (std::vector<std::string>::iterator plg = fallback.begin();	\
-	 plg != fallback.end();						\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
-      Gyoto::requirePlugin(*plg, 1);					\
-      sctr =								\
-	(Subcontractor_t*)Gyoto::space::Register_			\
-	-> getSubcontractor(name, *plg, 1);				\
+    /* try to load fallbacks directly */				\
+    for (auto &plg : fallback) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      Gyoto::requirePlugin(plg, 1);					\
+      sctr = (Subcontractor_t*)Gyoto::space::Register_			\
+	-> getSubcontractor(name, plg, 2);				\
       if (sctr) {							\
 	GYOTO_DEBUG << "found " << name << " in plug-in "		\
-		    << *plg << std::endl;				\
+		    << plg << std::endl;				\
 	return sctr;							\
       }									\
     }									\
     GYOTO_DEBUG << "looking for " << name				\
 		<< " in fallback plug-ins, "				\
 		<< "allowing for glob expansion..."  << std::endl;	\
-    for (std::vector<std::string>::iterator plg = fallback.begin();	\
-	 plg != fallback.end();						\
-	 ++plg) {							\
-      GYOTO_DEBUG_EXPR(*plg);						\
-      for (std::vector<std::string>::iterator path = plug_path.begin();	\
-	   path != plug_path.end();					\
-	   ++path) {							\
-	std::string pattern = (*path + "libgyoto-" + *plg)		\
+    for (const auto &plg : fallback) {					\
+      /* try glob expansion on plg itself, may it is already a path	\
+	 with wildcards */						\
+      GYOTO_DEBUG_EXPR(plg);						\
+      std::vector<std::string> files = Gyoto::glob(plg);		\
+      for (auto &file : files) {					\
+	GYOTO_DEBUG << "Trying " << file << std::endl;			\
+	if (!std::filesystem::exists(file)) continue;			\
+	Gyoto::requirePlugin(file, 1);					\
+	sctr = (Subcontractor_t*)Gyoto::space::Register_		\
+	  -> getSubcontractor(name, file, 2);				\
+	if (sctr) {							\
+	  GYOTO_DEBUG << "found " << name << " in plug-in "	\
+		      << file << std::endl;				\
+	  return sctr;							\
+	}								\
+      }									\
+      /* try glob expansion on <directory>/libgyoto-<plg>.so for every	\
+	 directory in the plug-in path */				\
+      for (const auto &path : plug_path) {				\
+	std::string pattern = (path + "libgyoto-" + plg)		\
 		     + "." GYOTO_PLUGIN_SFX;				\
-	std::vector<std::string> files =				\
-	  Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |		\
-		      GLOB_TILDE | GLOB_BRACE);				\
-	for (std::vector<std::string>::iterator file = files.begin();	\
-	     file != files.end();					\
-	     ++file) {							\
-	  GYOTO_DEBUG << "Trying " << *file << std::endl;		\
-	  Gyoto::requirePlugin(*file, 1);				\
-	  sctr =							\
-	    (Subcontractor_t*)Gyoto::space::Register_			\
-	    -> getSubcontractor(name, *file, 1);			\
+	files = Gyoto::glob(pattern);					\
+	for (auto &file : files) {				\
+	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
+	  if (!std::filesystem::exists(file)) continue;			\
+	  Gyoto::requirePlugin(file, 1);				\
+	  sctr = (Subcontractor_t*)Gyoto::space::Register_		\
+	    -> getSubcontractor(name, file, 2);				\
 	  if (sctr) {							\
 	    GYOTO_DEBUG << "found " << name << " in plug-in "		\
-			<< *file << std::endl;				\
+			<< file << std::endl;				\
 	    return sctr;						\
 	  }								\
 	}								\

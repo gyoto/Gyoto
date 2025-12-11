@@ -147,6 +147,10 @@ std::vector<std::string> Gyoto::pluginPath() {
   return GyotoPluginPath;
 }
 
+void Gyoto::pluginPath(const std::vector<std::string> &v) {
+  GyotoPluginPath = v;
+}
+
 void Gyoto::Register::init(char const *  cpluglist) {
 
   // Initialize plug-in path if not already set

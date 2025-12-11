@@ -23,7 +23,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <clocale>
-#include <glob.h>
 
 #include "GyotoScenery.h"
 #include "GyotoSpectrum.h"

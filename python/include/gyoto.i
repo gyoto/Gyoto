@@ -878,9 +878,6 @@ GyotoSmPtrClassDerivedPtrHdr(Spectrometer, Uniform, UniformSpectrometer, GyotoUn
 %include "GyotoUtils.h"
 
 // We want to export some macros from glob.h for Gyoto::glob():
-%{
-#include <glob.h>
-%}
 %constant int GLOB_NOCHECK;
 %constant int GLOB_NOMATCH;
 %constant int GLOB_TILDE;

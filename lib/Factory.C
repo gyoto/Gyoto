@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2018-2020 Thibaut Paumard
+    Copyright 2011-2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <locale>
+#include <filesystem>
 
 // Let's imbue 'C' locale to every stream to make sure decimal_point
 // is always actually a '.'
@@ -263,7 +264,59 @@ void Factory::setReporter(ErrorHandler* eh) {
 DOMElement * Factory::getRoot() { return root_; }
 DOMDocument * Factory::getDoc() { return doc_; }
 
+/* This helper function looks for files that match items in Plugin in
+   the directory that contains the xml file. If an item is matched, it
+   is replaced by the corresponding absolute path. If wildcards are
+   present, they are preserved so that for instance "fallback:python*"
+   would be replaced by fallback:diname(xmlfile)/libgyoto-python*.so,
+   if any matching file is present. */
+void __look_for_plugins_in_xml_directory(const Factory * _this,
+					 vector<string> &Plugin) {
+  GYOTO_DEBUG_EXPR(Plugin.size());
+  if (Plugin.size()) {
+    // if plug-ins are provided, check whether matching files exist in
+    // the XML file directory
+    vector<string> modifiers = {"nofail:", "nowarn:", "fallback:"};
+    for (auto & plg : Plugin) {
+      // loop on elements of the Plugin vector
+      string mods = "";
+      GYOTO_DEBUG_EXPR(plg);
+      // build sting mods containing possible modifiers
+      for (const auto& mod : modifiers)
+	if (plg.rfind(mod, 0) == 0)
+	  mods += mod;
+      GYOTO_DEBUG_EXPR(mods);
+      // first check for "xmldir/plgname"
+      string plgname = plg.substr(mods.size());
+      string pattern = _this->fullPath(plgname);
+      GYOTO_DEBUG_EXPR(pattern);
+      vector<string> matches =
+	Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |
+		    GLOB_TILDE | GLOB_BRACE);
+      GYOTO_DEBUG_EXPR(matches[0]);
+      // if no matching files are found, retry with
+      // "xmldir/libgyoto-plgname.so"
+      if (!filesystem::exists(matches[0])) {
+	pattern = _this->fullPath("libgyoto-"+plgname+"." GYOTO_PLUGIN_SFX);
+	GYOTO_DEBUG_EXPR(pattern);
+	matches =
+	  Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |
+		      GLOB_TILDE | GLOB_BRACE);
+	GYOTO_DEBUG_EXPR(matches[0]);
+      }
+      // if a match was found, replace plgname with the pattern
+      // that matched.
+      if(filesystem::exists(matches[0])) {
+	GYOTO_DEBUG << "replacing " << plg << " with " << mods+pattern
+			 << endl;
+	plg = mods + pattern;
+      }
+    }
+  }
+}
+
 SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
+  GYOTO_DEBUG << endl;
   if (!gg_) {
     DOMElement *MetricDOM;
 
@@ -287,6 +340,8 @@ SmartPointer<Gyoto::Metric::Generic> Factory::metric() {
     string Kind =
       C(MetricDOM->getAttribute(X("kind")));
     FactoryMessenger fm(this, MetricDOM);
+
+    __look_for_plugins_in_xml_directory(this, Plugin);
 
     gg_= (*Metric::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
@@ -324,6 +379,8 @@ SmartPointer<Gyoto::Astrobj::Generic> Factory::astrobj(){
     GYOTO_DEBUG_EXPR(AstrobjKind);
 
     FactoryMessenger fm(this, tmpEl);
+
+    __look_for_plugins_in_xml_directory(this, Plugin);
 
     obj_ = (*Astrobj::getSubcontractor(AstrobjKind, Plugin))(&fm, Plugin);
 
@@ -388,6 +445,9 @@ SmartPointer<Gyoto::Spectrum::Generic> Factory::spectrum(){
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
+
+    __look_for_plugins_in_xml_directory(this, Plugin);
+
     return (*Spectrum::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
@@ -419,6 +479,9 @@ SmartPointer<Gyoto::Spectrometer::Generic> Factory::spectrometer(){
     GYOTO_DEBUG_EXPR(Kind);
 
     FactoryMessenger fm(this, tmpEl);
+
+    __look_for_plugins_in_xml_directory(this, Plugin);
+
     return (*Spectrometer::getSubcontractor(Kind, Plugin))(&fm, Plugin);
 
 }
@@ -1074,11 +1137,11 @@ std::vector<unsigned long> FactoryMessenger::parseArrayULong(std::string content
   return result;
 }
 
-std::string FactoryMessenger::fullPath(std::string fname) {
+std::string FactoryMessenger::fullPath(const std::string &fname) const {
   return employer_ -> fullPath(fname);
 }
 
-std::string Factory::fullPath(std::string fname) {
+std::string Factory::fullPath(const std::string &fname) const {
   GYOTO_DEBUG << endl;
   if (!fname.compare(0, 1, "/")) return fname; // fname is already absolute 
   string fpath = "";

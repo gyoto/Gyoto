@@ -31,6 +31,7 @@
 
 #include <string>
 #include <vector>
+#include <glob.h>
 
 namespace Gyoto {
   /// Set debug mode
@@ -162,14 +163,16 @@ namespace Gyoto {
    *                   directory
    *
    * \param[in]     pattern  the pathname pattern to be expanded
-   * \param[in,opt] flags GLOB_* flags from glob.h (default: 0). To
-   *                get access to the GLOB_* macros in C++, include
-   *                glob.h. The gyoto module exposes them in Python as
-   *                gyoto.code.GLOB_NOCHECK etc. They can be combined
-   *                with the bitwise or operator ('|').
+   * \param[in,opt] flags GLOB_* flags from glob.h. The gyoto module
+   *                exposes them in Python as gyoto.code.GLOB_NOCHECK
+   *                etc. They can be combined with the bitwise or
+   *                operator ('|'). Default: GLOB_NOCHECK |
+   *                GLOB_NOSORT | GLOB_TILDE | GLOB_BRACE.
    * \return        the pathnames that match \p pattern.
    */
-  std::vector<std::string> glob(const std::string pattern, int flags = 0);
+  std::vector<std::string> glob(const std::string pattern,
+				int flags = GLOB_NOCHECK | GLOB_NOSORT |
+				GLOB_TILDE | GLOB_BRACE);
 }
 
 #endif
