@@ -166,6 +166,9 @@ check: testbed/stamp unittest
 		--pdf=example.pdf --examples-dir=$(top_srcdir)/doc/examples
 	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-patterndisk.py \
 		--pdf=example-patterndisk.pdf
+@HAVE_PYTHON_TRUE@	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-python.py \
+@HAVE_PYTHON_TRUE@		--pdf=example-python.pdf \
+@HAVE_PYTHON_TRUE@	--examples-dir=$(top_srcdir)/doc/examples
 
 # check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@

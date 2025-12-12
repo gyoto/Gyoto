@@ -129,8 +129,10 @@ class FixedStar:
             self.coord_st=self.to_cartesian(pos)
         elif key == "radius":
             # Update two properties from the Gyoto::Standard interface
-            self.this.set("CriticalValue", val**2)
-            self.this.set("SafetyValue", val**2*1.1+0.1)
+            self.this.CriticalValue = val**2
+            self.this.SafetyValue = val**2*1.1+0.1
+        elif key in self.properties:
+            self.set(key, val)
 
     def to_cartesian(self, coord):
         '''Helper function, not in the API
