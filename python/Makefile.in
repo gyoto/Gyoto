@@ -158,7 +158,7 @@ testbed/stamp: $(WHEEL)
 
 # run test suite based on unittest
 unittest: testbed/stamp
-	$(CHECK_ENV) $(PYTHON) -m unittest discover -s $(srcdir)/tests -p "*.py"
+	$(CHECK_ENV) PYTHONPATH=$(top_srcdir)/doc/examples:$$PYTHONPATH $(PYTHON) -m unittest discover -s $(srcdir)/tests -p "*.py"
 
 # check calls the above and runs the example files
 check: testbed/stamp unittest
