@@ -3,7 +3,7 @@
 /* Enable debugging information gathering code for putative speed gain */
 #undef GYOTO_DEBUG_ENABLED
 
-/* Define to 1 if C++11 and Boost.odeint are both available */
+/* Define to 1 if Boost.odeintis available */
 #undef GYOTO_HAVE_BOOST_INTEGRATORS
 
 /* Suffix for Gyoto plug-ins */
@@ -58,8 +58,8 @@
 /* Define to 1 if you have <boost/serialization/base_object.hpp> */
 #undef HAVE_BOOST_SERIALIZATION_BASE_OBJECT_HPP
 
-/* define if the compiler supports basic C++11 syntax */
-#undef HAVE_CXX11
+/* define if the compiler supports basic C++17 syntax */
+#undef HAVE_CXX17
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H

@@ -32,6 +32,11 @@ VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
 
+## Require C++17
+#
+AX_CXX_COMPILE_STDCXX([17], , [mandatory])
+CXXFLAGS="$CXXFLAGS -std=c++17 -Wall -Wextra"
+
 ## Needed for gcc-5, should be harmless for other compilers:
 #
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
@@ -215,17 +220,8 @@ AM_CONDITIONAL(HAVE_PYTHON, [test "x$PYTHON" != "x"])
 
 # Checks for programs.
 
+
 ############### CHECK FOR OPTIONAL FEATURES #########################
-## ADVANCED INTEGRATORS
-# Check for C++11
-AC_ARG_ENABLE([c++11],
-  [AS_HELP_STRING([--disable-c++11],
-     [disable C++11 features (including advanced integrators)])])
-AS_IF([test "x$enable_c__11" != "xno"],
-  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
-)
-AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
-  [AC_MSG_ERROR([C++11 requested but not found])])
 
 AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],
     [compile with MPI (parallelization) support. If none is found,
@@ -260,8 +256,8 @@ AS_IF([test "x$with_boost" != "xno"],
    [have_boost=no]
 )
 
-AS_IF([test "x$HAVE_CXX11" == "x1" &&  test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
-  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if C++11 and Boost.odeint are both available]
+AS_IF([test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
+  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if Boost.odeintis available]
   )]
 )
 
@@ -956,7 +952,6 @@ AS_IF([test "x$have_boost" == "xno"],
                    *** Advanced integrators disabled ***
 
         The advanced integrators require the Boost library (>=1.53)
-            and a C++ compiler that supports the c++11 standard.
 
      ])
   ])

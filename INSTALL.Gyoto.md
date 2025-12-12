@@ -82,8 +82,8 @@ dependencies.
 
 Gyoto requires:
 
-   - a C++ compiler. GCC 4.9 and above work very well. Several
-     features require the C++11 standard. Clang/LLVM is discouraged,
+   - a C++ compiler. GCC 8 and above work very well. Several
+     features require the C++17 standard. Clang/LLVM is discouraged,
      see [BUGS.md](BUGS.md).
    - Eigen (required):
        https://eigen.tuxfamily.org/
