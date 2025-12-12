@@ -326,6 +326,10 @@ public:
 
   using O::set;
 
+  virtual bool knowsProperty(const std::string &name) const {
+    return (O::property(name) || hasPythonProperty(name));
+  }
+
   virtual void set(std::string const &key, Value val) {
     GYOTO_DEBUG_EXPR(key);
     GYOTO_DEBUG_EXPR(val.type);

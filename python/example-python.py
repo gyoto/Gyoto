@@ -106,10 +106,9 @@ ao.Class = "FixedStar"
 # working in Cartesian coordinates.
 ao.Metric = gg
 
-# Since this class implements set() and get(), we can use them:
-ao.set("Position", (1., 2., 3.)) # set the star's position
-ao.set("Radius", 0.5)            # set the star's position
-# Unfortunately we cannot yet simply do ao.Position = (1.,2.,3.)
+# Since this class declares propoerties, we can set them:
+ao.Position = (1., 2., 3.) # set the star's position
+ao.Radius   =  0.5         # set the star's radius
 
 # It is a "Standard" object, defined by some function fcn such that
 # the interior of the object is less than a critical value inside the

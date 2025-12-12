@@ -614,3 +614,7 @@ void Object::help() const {
     } else prop=prop->parent;
   }
 }
+
+bool Object::knowsProperty(const std::string &name) const {
+  return property(name) != nullptr;
+}

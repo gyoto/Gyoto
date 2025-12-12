@@ -684,8 +684,7 @@ ExtendArrayNumPy(array_size_t, size_t);
             super().__setattr__(name, value)
             return
 
-        p = self.property(name)
-        if p is None:
+        if not self.knowsProperty(name):
             raise AttributeError(
                     f"'{type(self).__name__}' object has no attribute '{name}'")
 
@@ -716,11 +715,10 @@ ExtendArrayNumPy(array_size_t, size_t);
                     '__swig_getmethods__', '__swig_setmethods__'):
             return super().__getattr__(name)
 
-        p = self.property(name)
-        if p is None:
+        if not self.knowsProperty(name):
             raise AttributeError(
                     f"'{type(self).__name__}' object has no attribute '{name}'")
-        return self.get(p)
+        return self.get(name)
   %}
 }
 %include "GyotoObject.h"
