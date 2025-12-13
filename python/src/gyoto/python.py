@@ -67,18 +67,19 @@ import os.path
 # First check whether the plug-in is already loaded, which is the case
 # if the user has added a python plug-in to GYOTO_PLUGINS, or if this
 # instance of Python is actually running inside gyoto.
-
 pluglist = core.vector_string(())
 sctr = core.getMetricSubcontractor("Python", pluglist, 1)
 if sctr:
-    plugin=pluglist[1]
+    print (sctr)
+    plugin=pluglist[0]
 else:
     plugin=None
 del sctr
 
 # If not already loaded, the name of the Gyoto plug-in that can be
-# loaded be the same as the name of the Python executable. Let's try
-# it, as well as python3 and python as fallbacks.
+# loaded should be the same as the name of the Python
+# executable. Let's try it, as well as 'python3' and 'python' as
+# fallbacks.
 if (plugin is None):
     pluglist=(os.path.basename(os.path.realpath(sys.executable)),
               os.path.basename(sys.executable),
@@ -100,13 +101,13 @@ __all__=[]
 
 # Wrap the classes implemented in the plugin. Also add them to
 # gyoto.metric, gyoto.astrobj and gyoto.spectrum.
-for namespace, clsname, identifier in ((metric, "Python", "PythonMetric"),
-                                       (astrobj, "Python::Standard",
-                                        "PythonStandard"),
-                                       (astrobj, "Python::ThinDisk",
-                                        "PythonThinDisk"),
-                                       (spectrum, "Python", "PythonSpectrum")):
-    klass = util.make_class(namespace, clsname, plugin, identifier, __name__)
+for namespace, clsname, identifier, base in (
+      (metric, "Python", "PythonMetric", None),
+      (astrobj, "Python::Standard", "PythonStandard", astrobj.StandardAstrobj),
+      (astrobj, "Python::ThinDisk", "PythonThinDisk", astrobj.ThinDisk),
+      (spectrum, "Python", "PythonSpectrum", None)):
+    klass = util.make_class(namespace, clsname, plugin, identifier, __name__,
+                            base)
     setattr(sys.modules[__name__], identifier, klass)
     __all__.append(identifier)
     setattr(namespace, identifier, klass)

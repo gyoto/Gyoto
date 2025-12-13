@@ -439,7 +439,8 @@ def valid_identifier(s):
         return s + '_'
     return s
 
-def make_class(namespace, classname, plugin=None, identifier=None, module=None):
+def make_class(namespace, classname, plugin=None, identifier=None, module=None,
+               base=None):
     '''Dynamically wrap a Python class around a C++ class from a Gyoto plugin.
 
 klass = make_class(namespace, classname, plugin=None, identifier=None, module=None])
@@ -466,12 +467,15 @@ klass      -- a Python class to instanciate the C++ class.
         else:
             module = 'gyoto.util'
 
+    if base is None:
+        base=namespace.Generic
+
     plgname = plugin if plugin is not None else '(unknown)'
 
     doc = __doc__='''obj = '''+identifier+'''()
     Expose class \''''+classname+'''\' from Gyoto plugin \''''+plgname+'''\'.'''
 
-    class klass(namespace.Generic):
+    class klass(base):
         _classname  = classname
         _plugin     = plugin
         def __init__(self, *args):

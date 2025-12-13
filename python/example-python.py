@@ -114,9 +114,7 @@ ao.Radius   =  0.5         # set the star's radius
 # the interior of the object is less than a critical value inside the
 # object. This function is implemented in __call__ and the critical
 # value lives in the C++ member variable accessible as
-# ao.CriticalValue. To get access to the __call__ function, we first
-# need to cast ao to a StandardAstrobj.
-ao=gyoto.core.StandardAstrobj(ao)
+# ao.CriticalValue.
 assert (ao((0, 1.2, 2.1, 3.)) < ao.CriticalValue)
 assert (ao((0, 1.5, 3, 2.)) > ao.CriticalValue)
 

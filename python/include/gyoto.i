@@ -327,7 +327,93 @@ GyotoSmPtrTypeMapClassGeneric(Metric);
 GyotoSmPtrTypeMapClassGeneric(Astrobj);
 GyotoSmPtrTypeMapClassGeneric(Spectrum);
 GyotoSmPtrTypeMapClassGeneric(Spectrometer);
-GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk);
+
+%extend Gyoto::Astrobj::ThinDisk {
+  ThinDisk(std::string nm) {
+    std::vector<std::string> plugin;
+    Gyoto::Astrobj::ThinDisk * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pgen=
+        Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin, FALSE)(NULL, plugin);
+      Gyoto::Astrobj::Generic * gen = (Gyoto::Astrobj::Generic *)(pgen);
+      res = dynamic_cast<Gyoto::Astrobj::ThinDisk *>(gen);
+      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
+
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
+    return res;
+  }
+  ThinDisk(std::string nm, std::vector<std::string> plugin) {
+    GYOTO_DEBUG_EXPR(plugin.size());
+    Gyoto::Astrobj::ThinDisk * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pgen=
+        Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+      Gyoto::Astrobj::Generic *gen  = (Gyoto::Astrobj::Generic *)(pgen);
+      res = dynamic_cast<Gyoto::Astrobj::ThinDisk *>(gen);
+      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::ThinDisk");
+
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
+    return res;
+  }
+};
+GyotoSmPtrTypeMapClassDerived(Astrobj, ThinDisk)
+
+%extend Gyoto::Astrobj::Standard {
+  Standard(std::string nm) {
+    std::vector<std::string> plugin;
+    Gyoto::Astrobj::Standard * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pgen=
+        Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin, FALSE)(NULL, plugin);
+      Gyoto::Astrobj::Generic * gen = (Gyoto::Astrobj::Generic *)(pgen);
+      res = dynamic_cast<Gyoto::Astrobj::Standard *>(gen);
+      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
+
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
+    return res;
+  }
+  Standard(std::string nm, std::vector<std::string> plugin) {
+    GYOTO_DEBUG_EXPR(plugin.size());
+    Gyoto::Astrobj::Standard * res = NULL;
+    {
+      Gyoto::SmartPointer<Gyoto::Astrobj::Generic> pgen=
+        Gyoto::Astrobj::getSubcontractor(nm.c_str(), plugin)(NULL, plugin);
+      Gyoto::Astrobj::Generic *gen  = (Gyoto::Astrobj::Generic *)(pgen);
+      res = dynamic_cast<Gyoto::Astrobj::Standard *>(gen);
+      if (gen && !res) throwError("Class '"+nm+"' does not derive from Gyoto::Metric::Standard");
+
+      // We need to increment refcount, else the object is destroyed
+      // when the original smartpoiter is:
+      if (res) res -> incRefCount();
+    }
+    // Now that the original smartpointer has been detroyed, refcount is 1.
+    // ref feature will increment it again, so we need to decrement is now:
+    res->decRefCount();
+    GYOTO_DEBUG_EXPR(res->getRefCount());
+    return res;
+  }
+};
 GyotoSmPtrTypeMapClassDerived(Astrobj, Standard)
 
 GyotoSmPtrTypeMapClass(Screen);
