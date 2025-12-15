@@ -105,6 +105,7 @@ namespace Gyoto {
    */
 
   namespace Python {
+    class GILGuard;
     class Base;
     template <class O> class Object;
     /// Convert Gyoto Value to Python Object
@@ -113,7 +114,7 @@ namespace Gyoto {
     /// Return new reference to method, or NULL if method not found.
     PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
 
-    /// Return refernce to the gyoto module, or NULL.
+    /// Return reference to the gyoto module, or NULL.
     PyObject * PyImport_Gyoto();
 
     /// Set "this" attribute in instance
@@ -153,6 +154,65 @@ namespace Gyoto {
     }
   }
 }
+
+/**
+ * \class Gyoto::Python::GILGuard
+ *
+ * \brief Manage the GIL and free pointers on error
+ *
+ * Any function that makes calls to the Python C API must acquire the
+ * Python Global interpreter lock (GIL) before the first call and
+ * release it before returning. It can be difficult and error-prone to
+ * answer that the GIL is always released, enspecially in C++ code
+ * that can throw error. Additionally, there is often a need to
+ * dereference pointers to temporary PyObject variables.
+ *
+ * This class provides a convenience to simplify this task. GIL
+ * management can be implemented with is a single line before the
+ * first Python C API call:
+ * \code
+ * [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+ * \endcode
+ *
+ * The GIL is acquired in the constructor of the \p guardian object
+ * and released in its destructor which is automatically called when
+ * the function returns or when an Error is thrown, even from a nested
+ * function.
+ *
+ * Additionally, an arbitrary number of PyObject* pointers can be
+ * tracked with:
+ * \code
+ * guardian.track(some_pointer);
+ * \endcode
+ *
+ * Upon destruction of \p guardian, \p somepointer's reference counter
+ * will be decremented using Py_XDECREF, and \p somepointer will be
+ * set to zero.
+ */
+class Gyoto::Python::GILGuard {
+public:
+  /// Constructor: Acquires the GIL
+  GILGuard();
+
+  /// Destructor
+  /**
+   * Releases the GIL and decrements all tracked PyObject* pointers.
+   */
+  ~GILGuard();
+
+  /// Add a PyObject* to the list of tracked objects
+  void track(PyObject*& obj);
+
+  // Delete copy constructor and assignment operator to prevent misuse
+  GILGuard(const GILGuard&) = delete;
+  GILGuard& operator=(const GILGuard&) = delete;
+
+private:
+  /// The GIL state guarded by this GILGuard
+  PyGILState_STATE gstate_;
+  /// Stores pointers to PyObject* variables
+  std::vector<PyObject**> tracked_objects_;
+};
 
 /**
  * \class Gyoto::Python::Base
@@ -306,6 +366,32 @@ class Gyoto::Python::Base {
   virtual void setPythonProperty(std::string const &key, Value val);
   virtual Value getPythonProperty(std::string const &key) const;
   virtual int pythonPropertyType(std::string const &key) const;
+
+  /// Detach #pInstance_ and cached method pointers
+  /**
+   * Detaches (=calls Py_XDECREF and sets to NULL) #pProperties, #pSet_
+   * and #pGet_.
+   *
+   * Derived classes should detach the other pointers and call
+   * Base::detachInstance().
+   */
+  virtual void detachInstance();
+
+  /// Attach #pInstance_ and cached method pointers
+  /**
+   * Attaches #pInstance_, #pProperties, #pSet_
+   * and #pGet_. Increments their reference counters.
+   *
+   * Derived classes should call Base::attachInstance and attach the
+   * other pointers.
+   */
+  virtual void attachInstance(PyObject *instance);
+
+  /// Creates an instance of class \p klass in module #module_
+  /**
+   * Returns a new reference.
+   */
+  PyObject * instantiateClass(std::string &klass) const;
 
 };
 

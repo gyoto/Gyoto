@@ -365,25 +365,116 @@ void Base::inlineModule(const std::string &m) {
   GYOTO_DEBUG << "Done loading Python module " << m << endl;
 }
 
-std::string Base::klass() const { return class_; }
-void Base::klass(const std::string &f) {
-  class_=f;
-  if (!pModule_) return;
-
-  GYOTO_DEBUG << "Instantiating Python class " << f << endl;
-  
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  
+void Base::detachInstance() {
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   Py_XDECREF(pProperties_); pProperties_=NULL;
   Py_XDECREF(pGet_); pGet_=NULL;
   Py_XDECREF(pSet_); pSet_=NULL;
   Py_XDECREF(pInstance_); pInstance_=NULL;
+}
 
+PyObject * Base::instantiateClass(std::string &klass) const {
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  PyObject * pClass = nullptr;
+  guardian.track(pClass);
+
+  if (klass == "") GYOTO_ERROR ("klass is the empty string");
+
+  pClass = PyObject_GetAttrString(pModule_, class_.c_str());
+  if (PyErr_Occurred() || !pClass) {
+    PyErr_Print();
+    GYOTO_ERROR("Could not find class in module");
+  }
+  if (!PyCallable_Check(pClass)) {
+    GYOTO_ERROR("Class is not callable");
+  }
+
+  PyObject * retval = PyObject_CallObject(pClass, NULL);
+  // will be done automaticallu upon destruction of guardian
+  //Py_DECREF(pClass); pClass=NULL;
+  if (PyErr_Occurred() || !retval) {
+    PyErr_Print();
+    Py_XDECREF(retval);
+    GYOTO_ERROR("Could not instantiate class");
+  }
+
+  return retval;
+}
+
+
+void Base::attachInstance (PyObject * instance) {
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+
+  Py_XDECREF(pInstance_);
+  pInstance_ = instance;
+  if (!pInstance_) return;
+  Py_INCREF(pInstance_);
+
+  pSet_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "set");
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    GYOTO_ERROR("Error getting set method");
+  }
+
+  pGet_=
+    Gyoto::Python::PyInstance_GetMethod(pInstance_, "get");
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pGet_); pGet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    GYOTO_ERROR("Error getting set method");
+  }
+
+  pProperties_ = NULL;
+  if (PyObject_HasAttrString(pInstance_, "properties"))
+    pProperties_ = PyObject_GetAttrString(pInstance_, "properties");
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    Py_XDECREF(pProperties_); pInstance_=NULL;
+    Py_XDECREF(pGet_); pGet_=NULL;
+    Py_XDECREF(pSet_); pSet_=NULL;
+    Py_XDECREF(pInstance_); pInstance_=NULL;
+    GYOTO_ERROR("Error getting properties member");
+  }
+  if (pProperties_) {
+    if (!PyDict_Check(pProperties_)) {
+      Py_XDECREF(pProperties_); pInstance_=NULL;
+      Py_XDECREF(pGet_); pGet_=NULL;
+      Py_XDECREF(pSet_); pSet_=NULL;
+      Py_XDECREF(pInstance_); pInstance_=NULL;
+      GYOTO_ERROR("'properties' is not a dict'");
+    }
+  }
+}
+
+std::string Base::klass() const { return class_; }
+void Base::klass(const std::string &f) {
+  Gyoto::Python::GILGuard guardian;
+  PyObject * tmp = nullptr, * tmpinstance = nullptr;
+  guardian.track(tmp);
+  guardian.track(tmpinstance);
+
+  class_=f;
+  if (!pModule_) return;
+
+  GYOTO_DEBUG << "Instantiating Python class " << f << endl;
+
+  // detach previously attached instance and methods
+  detachInstance();
+
+  // if class_ is the empty string, check whether there is a single
+  // class in module_. In this case set class_ to its name and continue.
   if (class_ == ""){
     GYOTO_DEBUG << "class_ is empty: check whether there is a single class in module...\n";
 
     PyObject * dict = PyModule_GetDict(pModule_);
-    PyObject *key, *value, *tmp;
+    PyObject *key, *value;
     Py_ssize_t pos = 0, nclass=0;
 
     while (PyDict_Next(dict, &pos, &key, &value)) {
@@ -400,98 +491,36 @@ void Base::klass(const std::string &f) {
 	  Py_INCREF(tmp);
 	}
 
-	if (!PyBytes_Check(tmp)) {
-	  Py_DECREF(tmp);
-	  PyGILState_Release(gstate);
+	if (!PyBytes_Check(tmp))
 	  GYOTO_ERROR("not a PyBytes string");
-	}
 
 	class_= PyBytes_AsString(tmp);
 
-	Py_DECREF(tmp);
+	Py_DECREF(tmp); tmp=nullptr;
       }
     }
     if (nclass>1) {
       GYOTO_DEBUG << "several classes in module" << endl;
       class_ = "";
+      return;
     } else if (nclass == 1) {
       GYOTO_DEBUG << "single class in module: " << class_ << endl;
     } else if (nclass == 0) {
-      PyGILState_Release(gstate);
       GYOTO_ERROR("no class in Python module\n");
     }
-
   }
 
-  PyObject * pClass = PyObject_GetAttrString(pModule_, class_.c_str());
-  if (PyErr_Occurred() || !pClass) {
-    PyErr_Print();
-    Py_XDECREF(pClass);
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Could not find class in module");
-  }
-  if (!PyCallable_Check(pClass)) {
-    Py_DECREF(pClass);
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Class is not callable");
-  }
-
-  pInstance_ = PyObject_CallObject(pClass, NULL);
-  Py_DECREF(pClass); pClass=NULL;
-  if (PyErr_Occurred() || !pInstance_) {
-    PyErr_Print();
-    Py_XDECREF(pInstance_); pInstance_=NULL;
-    PyGILState_Release(gstate);
+  // actually instantiate the class.
+  tmpinstance = instantiateClass(class_);
+  if (!tmpinstance)
     GYOTO_ERROR("Failed instantiating Python class");
-  }
 
-  pSet_=
-    Gyoto::Python::PyInstance_GetMethod(pInstance_, "set");
+  // attach the instance
+  attachInstance(tmpinstance);
 
-  if (PyErr_Occurred()) {
-    PyErr_Print();
-    Py_XDECREF(pSet_); pSet_=NULL;
-    Py_XDECREF(pInstance_); pInstance_=NULL;
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Error getting set method");
-  }
+  // will be done when guardian is destroyed
+  // Py_XDECREF(tmpinstance); tmpinstance=NULL;
 
-  pGet_=
-    Gyoto::Python::PyInstance_GetMethod(pInstance_, "get");
-
-  if (PyErr_Occurred()) {
-    PyErr_Print();
-    Py_XDECREF(pSet_); pSet_=NULL;
-    Py_XDECREF(pGet_); pGet_=NULL;
-    Py_XDECREF(pInstance_); pInstance_=NULL;
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Error getting set method");
-  }
-
-  pProperties_ = NULL;
-  if (PyObject_HasAttrString(pInstance_, "properties"))
-    pProperties_ = PyObject_GetAttrString(pInstance_, "properties");
-  if (PyErr_Occurred()) {
-    PyErr_Print();
-    Py_XDECREF(pProperties_); pInstance_=NULL;
-    Py_XDECREF(pGet_); pGet_=NULL;
-    Py_XDECREF(pSet_); pSet_=NULL;
-    Py_XDECREF(pInstance_); pInstance_=NULL;
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Error getting properties member");
-  }
-  if (pProperties_) {
-    if (!PyDict_Check(pProperties_)) {
-      Py_XDECREF(pProperties_); pInstance_=NULL;
-      Py_XDECREF(pGet_); pGet_=NULL;
-      Py_XDECREF(pSet_); pSet_=NULL;
-      Py_XDECREF(pInstance_); pInstance_=NULL;
-      PyGILState_Release(gstate);
-      GYOTO_ERROR("'properties' is not a dict'");
-    }
-  }
-
-  PyGILState_Release(gstate);
   GYOTO_DEBUG << "Done instantiating Python class " << f << endl;
 }
 
@@ -695,4 +724,24 @@ Value Base::getPythonProperty(std::string const &key) const {
 
   return val;
 
+}
+
+// GILGuard class
+Gyoto::Python::GILGuard::GILGuard() : gstate_(PyGILState_Ensure()) {}
+
+Gyoto::Python::GILGuard::~GILGuard() {
+  // Release the GIL
+  PyGILState_Release(gstate_);
+
+  // Decrement references for all tracked PyObject* pointers
+  for (PyObject** obj_ptr : tracked_objects_) {
+    if (obj_ptr && *obj_ptr) {
+      Py_XDECREF(*obj_ptr);
+      *obj_ptr = nullptr;  // Set to nullptr to avoid dangling pointers
+    }
+  }
+}
+
+void Gyoto::Python::GILGuard::track(PyObject*& obj) {
+  tracked_objects_.push_back(&obj);
 }
