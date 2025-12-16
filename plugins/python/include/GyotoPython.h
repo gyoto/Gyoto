@@ -849,7 +849,9 @@ class Gyoto::Astrobj::Python::Standard
   virtual std::string inlineModule() const ;
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
-  virtual void klass(const std::string&);
+  virtual void klass(const std::string& c);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
   virtual double criticalValue() const ;

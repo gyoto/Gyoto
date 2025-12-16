@@ -87,26 +87,25 @@ void Astrobj::Python::Standard::module(const std::string& m)
 {Gyoto::Python::Base::module(m);}
 std::string Astrobj::Python::Standard::klass() const
 {return Gyoto::Python::Base::klass();}
+void Astrobj::Python::Standard::klass(const std::string& c)
+{Gyoto::Python::Base::klass(c);}
 
-void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
-
-  PyGILState_STATE gstate = PyGILState_Ensure();
+void Gyoto::Astrobj::Python::Standard::detachInstance() {
+  pEmission_overloaded_ = false;
+  pIntegrateEmission_overloaded_ = false;
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   Py_XDECREF(pEmission_);
   Py_XDECREF(pIntegrateEmission_);
   Py_XDECREF(pTransmission_);
   Py_XDECREF(pCall_);
   Py_XDECREF(pGetVelocity_);
   Py_XDECREF(pGiveDelta_);
-  PyGILState_Release(gstate);
+  Gyoto::Python::Base::detachInstance();
+}
 
-  pEmission_overloaded_ = false;
-  pIntegrateEmission_overloaded_ = false;
-  
-  Gyoto::Python::Base::klass(f);
-  if (!pModule_) return;
-
-  gstate = PyGILState_Ensure();
-  GYOTO_DEBUG << "Checking methodes for Python class " << f << endl;
+void Gyoto::Astrobj::Python::Standard::attachInstance (PyObject * instance) {
+  Gyoto::Python::Base::attachInstance(instance);
+  GYOTO_DEBUG << "Checking methodes for Python class " << class_ << endl;
 
   pEmission_          =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "emission");
@@ -123,17 +122,14 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
   
   if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Error while retrieving methods");
   }
 
   if (!pCall_) {
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Object does not implement required method \"__call__\"");
   }
 
   if (!pGetVelocity_) {
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Object does not implement required method \"getVelocity\"");
   }
 
@@ -148,9 +144,8 @@ void Gyoto::Astrobj::Python::Standard::klass(const std::string &f) {
 				    Gyoto::Python::pGyotoStandardAstrobj(),
 				    this);
 
-  PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
-  GYOTO_DEBUG << "Done checking methods for Python class " << f << endl;
+  GYOTO_DEBUG << "Done checking methods for Python class " << class_ << endl;
 }
 
 double Gyoto::Astrobj::Python::Standard::operator()(double const coord[4]) {
