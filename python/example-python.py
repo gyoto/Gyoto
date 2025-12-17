@@ -37,7 +37,7 @@ import gyoto.python
 # Parse command line and optionally switch to PDF output
 
 pdfname=None
-examples_dir="../doc/examples/"
+examples_dir="/../doc/examples/"
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -83,9 +83,11 @@ gg.Class = "Minkowski"
 # gyoto_sample_metrics.Minkowski. This instance is not directly
 # accessible.
 
-# This metric supports both spherical and Cartesian coordinates. Let's
-# use Cartesian coordinates.
+# This metric supports both spherical and Cartesian coordinates. We
+# can use either Cartesian coordinates:
 gg.Spherical = False
+# or Spherical coordinates:
+gg.Spherical = True
 
 # Let's instanciate a FixedStar from gyoto_sample_standard.py:
 # first create the C++ wrapper:
@@ -102,21 +104,64 @@ ao.Class = "FixedStar"
 # instance of gyoto_sample_standard.FixedStar. This instance is not
 # directly accessible.
 
-# Attach the metric to the star. This will telle teh star that we are
+# Instead of relying on an external module, we can provide an inline
+# module as text:
+ao.Class = ""
+ao.InlineModule = '''
+import math
+class FlaredDisk:
+    opening=0.2
+    rin=4
+    rout=15
+    def __call__(self, coord):
+        r=math.sin(coord[2])*coord[1]
+        h_r=abs(math.cos(coord[2]))
+        return max(h_r-self.opening, self.rin-r, r-self.rout)
+    def getVelocity(self, coord, vel):
+        self.this.metric().circularVelocity(coord, vel)
+'''
+ao.Class = "FlaredDisk"
+
+# And instead of providing a module (external or inline) and a class
+# name, we can provide a class instance:
+import math
+class FlaredDisk:
+    properties = {"Opening": "double",
+                  "Rin": "double",
+                  "Rout": "double"}
+    opening=0.2
+    rin=4
+    rout=15
+    def set (self, key, val):
+        if key in self.properties:
+            setattr(self, key.lower(), val)
+    def get (self, key):
+        if key in self.properties:
+            return getattr(self, key.lower())
+    def __call__(self, coord):
+        r=math.sin(coord[2])*coord[1]
+        h_r=abs(math.cos(coord[2]))
+        return max(h_r-self.opening, self.rin-r, r-self.rout)
+    def getVelocity(self, coord, vel):
+        self.this.metric().circularVelocity(coord, vel)
+instance = FlaredDisk()
+ao.Instance = id(instance)
+
+# Attach the metric to the star. This will telle the star that we are
 # working in Cartesian coordinates.
 ao.Metric = gg
 
-# Since this class declares propoerties, we can set them:
-ao.Position = (1., 2., 3.) # set the star's position
-ao.Radius   =  0.5         # set the star's radius
+# Since this class declares properties, we can set them:
+ao.Opening = 0.15 # set disk opening angle
+ao.Rin     = 3.   # set disk inner radius
 
 # It is a "Standard" object, defined by some function fcn such that
 # the interior of the object is less than a critical value inside the
 # object. This function is implemented in __call__ and the critical
 # value lives in the C++ member variable accessible as
 # ao.CriticalValue.
-assert (ao((0, 1.2, 2.1, 3.)) < ao.CriticalValue)
-assert (ao((0, 1.5, 3, 2.)) > ao.CriticalValue)
+assert (ao((0, 4, 1.57, 0)) < ao.CriticalValue)
+assert (ao((0, 4, 0   , 0)) > ao.CriticalValue)
 
 
 ## A complete example, identical to example-python-flared-disk.xml:
@@ -143,23 +188,14 @@ sc.Astrobj.RMax = 50
 sc.Astrobj.CriticalValue = 0.
 sc.Astrobj.SafetyValue = 0.3
 sc.Astrobj.OpticallyThin = True
-# This time the module is inline, not in an external file:
-sc.Astrobj.InlineModule = '''
-        import math
-        class FlaredDisk:
-            opening=0.2
-            rin=4
-            rout=15
-            def __call__(self, coord):
-                r=math.sin(coord[2])*coord[1]
-                h_r=abs(math.cos(coord[2]))
-                return max(h_r-self.opening, self.rin-r, r-self.rout)
-            def getVelocity(self, coord, vel):
-                self.this.metric().circularVelocity(coord, vel)
-'''
-sc.Astrobj.Class = "FlaredDisk"
+inst=FlaredDisk()
+sc.Astrobj.Instance = id(inst)
 
 sc.Quantities = "Intensity"
+
+# print class and module name:
+print(ao.Module)
+print(ao.Class)
 
 # Ray-trace for the entire screen:
 data=sc[:,:]

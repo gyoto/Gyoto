@@ -320,49 +320,121 @@ Base::~Base() {
 std::string Base::module() const { return module_; }
 void Base::module(const std::string &m) {
   GYOTO_DEBUG << "Loading Python module " << m << endl;
-  PyGILState_STATE gstate;
   module_=m;
-  if (m=="") return;
   inline_module_="";
+  detachInstance();
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  Py_XDECREF(pModule_); pModule_=nullptr;
+  if (m=="") {
+    class_ = "";
+    return;
+  }
 
-  gstate = PyGILState_Ensure();
   PyObject *pName=PyUnicode_FromString(m.c_str());
+  PyObject *tmp = nullptr;
+  guardian.track(tmp);
+
   if (!pName) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Failed translating string to Python");
   }
-  Py_XDECREF(pModule_);
   pModule_ = PyImport_Import(pName);
   Py_DECREF(pName);
   if (PyErr_Occurred() || !pModule_) {
     PyErr_Print();
-    PyGILState_Release(gstate);
+    Py_XDECREF(pModule_); pModule_=nullptr;
     GYOTO_ERROR("Failed loading Python module");
   }
-  PyGILState_Release(gstate);
-  if (class_ != "") klass(class_);
+
+  // if class_ is the empty string, check whether there is a single
+  // class in module_. In this case set class_ to its name.
+  checkModuleForSingleClass();
+
+  if (class_ != "") {
+    GYOTO_DEBUG << "class_ is set already (to '" << class_ << "')."
+      "Instantiating it now." << std::endl;
+    klass(class_);
+  }
   GYOTO_DEBUG << "Done loading Python module " << m << endl;
 }
 
 std::string Base::inlineModule() const { return inline_module_; }
 void Base::inlineModule(const std::string &m) {
   inline_module_=m;
-  if (m=="") return;
   module_="";
+  detachInstance();
+
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  Py_XDECREF(pModule_);
+
+  if (m=="") {
+    class_="";
+    return;
+  }
 
   GYOTO_DEBUG << "Loading inline Python module :" << m << endl;
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  Py_XDECREF(pModule_);
   pModule_ = Gyoto::Python::PyModule_NewFromPythonCode(m.c_str());
   if (PyErr_Occurred() || !pModule_) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Failed loading inline Python module");
   }
-  PyGILState_Release(gstate);
+
+  // if class_ is the empty string, check whether there is a single
+  // class in module_. In this case set class_ to its name.
+  checkModuleForSingleClass();
+
   if (class_ != "") klass(class_);
   GYOTO_DEBUG << "Done loading Python module " << m << endl;
+}
+
+void Base::checkModuleForSingleClass() {
+  if (!pModule_ || class_ != "") return;
+  GYOTO_DEBUG << "class_ is empty: check whether there is a single class in module...\n";
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+
+  PyObject * dict = PyModule_GetDict(pModule_);
+  PyObject *key, *value, *tmp=nullptr;
+  Py_ssize_t pos = 0, nclass=0;
+  guardian.track(tmp);
+
+  // Loop on all objects in module_. Store in class_ the name of the
+  // first class found. As soon as 2 classes have been found, reset
+  // class_ to "" and break out. Therefore, the net effect is that
+  // class_ is set to the name of the (first) class in the module if
+  // and only if there is a single class in the module.
+  while (PyDict_Next(dict, &pos, &key, &value)) {
+    if (
+#if PY_VERSION_HEX < 0x03000000
+	PyClass_Check(value) ||
+#endif
+	PyObject_TypeCheck(value, &PyType_Type)) {
+      ++nclass;
+      if (nclass >= 2) {
+	class_ = "";
+	GYOTO_DEBUG << "several classes in module" << endl;
+	return;
+      }
+
+      if (PyUnicode_Check(key)) {
+	tmp = PyUnicode_AsUTF8String(key);
+      } else {
+	tmp = key;
+	Py_INCREF(tmp);
+      }
+
+      if (!PyBytes_Check(tmp))
+	GYOTO_ERROR("not a PyBytes string");
+
+      class_= PyBytes_AsString(tmp);
+
+      Py_DECREF(tmp); tmp=nullptr;
+    }
+  }
+  if (nclass == 1) {
+    GYOTO_DEBUG << "single class in module: " << class_ << endl;
+  } else if (nclass == 0) {
+    GYOTO_ERROR("no class in module\n");
+  }
 }
 
 void Base::detachInstance() {
@@ -404,11 +476,66 @@ PyObject * Base::instantiateClass(std::string &klass) const {
 
 void Base::attachInstance (PyObject * instance) {
   [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  PyTypeObject * type = nullptr;
 
-  Py_XDECREF(pInstance_);
+  // in any case, free the previous instance
+  Py_XDECREF(pInstance_); pInstance_=nullptr;
+
+  // if instance is null, return
+  if (instance == nullptr)
+    return;
+
+  // else check that instance is (likely) a class instance
+  if (PyType_Check(instance) || PyModule_Check(instance) ||
+      PyFunction_Check(instance) || PyCFunction_Check(instance) ||
+      !PyObject_TypeCheck(instance, &PyBaseObject_Type))
+    GYOTO_ERROR("address doesn't seem to point to a class instance");
+
   pInstance_ = instance;
-  if (!pInstance_) return;
   Py_INCREF(pInstance_);
+
+  // is class_ is empty, set it to the instance's class
+  if (class_=="") {
+    // Get the type object of the instance
+    type = Py_TYPE(instance);
+    // Get the tp_name field (const char*)
+    class_ = (type && type->tp_name) ? type->tp_name : "UNKNOWN";
+
+    // if pModule_ is null, get the module that contains the class
+    if ( module_ == "" && inline_module_ == "" && (type = Py_TYPE(instance))) {
+      PyObject* module_name_obj = PyObject_GetAttrString((PyObject*)type, "__module__");
+      if (!module_name_obj) {
+	PyErr_Print();
+	GYOTO_ERROR("Error getting module name");
+      }
+
+      // Ensure it's a string
+      if (!PyUnicode_Check(module_name_obj)) {
+	Py_DECREF(module_name_obj);
+	PyErr_Print();
+	GYOTO_ERROR("Module name is not a string");
+      }
+
+      // Convert to UTF-8
+      const char* module_name = PyUnicode_AsUTF8(module_name_obj);
+      if (!module_name) {
+        Py_DECREF(module_name_obj);
+	PyErr_Print();
+	GYOTO_ERROR("Could not convert module name to UTF8");
+      }
+
+      // set module_
+      module_  = module_name;
+
+      // set pModule_
+      if (module_ == "__main__") {
+	PyObject* sys_modules = PyImport_GetModuleDict();
+	pModule_ = PyDict_GetItemString(sys_modules, "__main__");
+	Py_INCREF(pModule_);
+      } else pModule_ = PyImport_ImportModule(module_name);
+      Py_DECREF(module_name_obj);
+    }
+  }
 
   pSet_=
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "set");
@@ -453,62 +580,35 @@ void Base::attachInstance (PyObject * instance) {
   }
 }
 
+void Base::instance(PyObject * instance) {
+  detachInstance();
+  Base::module("");
+  class_="";
+  if (!instance) return;
+  attachInstance(instance);
+}
+
 std::string Base::klass() const { return class_; }
 void Base::klass(const std::string &f) {
   Gyoto::Python::GILGuard guardian;
-  PyObject * tmp = nullptr, * tmpinstance = nullptr;
-  guardian.track(tmp);
+  PyObject * tmpinstance = nullptr;
   guardian.track(tmpinstance);
 
+  // always start by storing the value
   class_=f;
+
+  // always detach the previously attached instance and methods
+  detachInstance();
+
+  // if the string is empty, that's a signal to also free the module
+  if (class_ == "") {
+    module_ = "";
+    inline_module_ = "";
+    Py_XDECREF(pModule_); pModule_ = nullptr;
+  }
   if (!pModule_) return;
 
   GYOTO_DEBUG << "Instantiating Python class " << f << endl;
-
-  // detach previously attached instance and methods
-  detachInstance();
-
-  // if class_ is the empty string, check whether there is a single
-  // class in module_. In this case set class_ to its name and continue.
-  if (class_ == ""){
-    GYOTO_DEBUG << "class_ is empty: check whether there is a single class in module...\n";
-
-    PyObject * dict = PyModule_GetDict(pModule_);
-    PyObject *key, *value;
-    Py_ssize_t pos = 0, nclass=0;
-
-    while (PyDict_Next(dict, &pos, &key, &value)) {
-      if (
-#if PY_VERSION_HEX < 0x03000000
-	  PyClass_Check(value) ||
-#endif
-	  PyObject_TypeCheck(value, &PyType_Type)) {
-	++nclass;
-	if (PyUnicode_Check(key)) {
-	  tmp = PyUnicode_AsUTF8String(key);
-	} else {
-	  tmp = key;
-	  Py_INCREF(tmp);
-	}
-
-	if (!PyBytes_Check(tmp))
-	  GYOTO_ERROR("not a PyBytes string");
-
-	class_= PyBytes_AsString(tmp);
-
-	Py_DECREF(tmp); tmp=nullptr;
-      }
-    }
-    if (nclass>1) {
-      GYOTO_DEBUG << "several classes in module" << endl;
-      class_ = "";
-      return;
-    } else if (nclass == 1) {
-      GYOTO_DEBUG << "single class in module: " << class_ << endl;
-    } else if (nclass == 0) {
-      GYOTO_ERROR("no class in Python module\n");
-    }
-  }
 
   // actually instantiate the class.
   tmpinstance = instantiateClass(class_);

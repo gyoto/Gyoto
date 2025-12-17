@@ -20,6 +20,8 @@ GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, InlineModule, inlineModu
       "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
+GYOTO_PROPERTY_SIZE_T(Gyoto::Astrobj::Python::Standard, Instance, instance,
+      "Memory address of Python instance implementing the Astrobj as returned by id().")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::Standard,
 			     Parameters, parameters,
       "Parameters for the class instance.")
@@ -89,6 +91,11 @@ std::string Astrobj::Python::Standard::klass() const
 {return Gyoto::Python::Base::klass();}
 void Astrobj::Python::Standard::klass(const std::string& c)
 {Gyoto::Python::Base::klass(c);}
+
+void Astrobj::Python::Standard::instance(size_t i)
+{Gyoto::Python::Base::instance(reinterpret_cast<PyObject*>(i));}
+size_t Astrobj::Python::Standard::instance() const
+{return reinterpret_cast<size_t>(pInstance_);}
 
 void Gyoto::Astrobj::Python::Standard::detachInstance() {
   pEmission_overloaded_ = false;

@@ -334,6 +334,15 @@ class Gyoto::Python::Base {
    */
   virtual void inlineModule(const std::string&);
 
+  /**
+   * \brief Set #pInstance_.
+   *
+   * Detach the previously set instance, sets #pModule_ to \p nullptr
+   * and #class_ to "", then calls attachInstance() if \p instance is
+   * not null.
+   */
+  virtual void instance(PyObject * pinstance);
+
   /// Retrieve #class_.
   virtual std::string klass() const ;
 
@@ -367,6 +376,16 @@ class Gyoto::Python::Base {
   virtual Value getPythonProperty(std::string const &key) const;
   virtual int pythonPropertyType(std::string const &key) const;
 
+
+  /* Helper methods */
+  /// Look for single class in pModule_
+  /**
+   * If #class_ is empty and #pModule_ is not null, check whether
+   * there is a single class in #pModule_. In this case set #class_ to
+   * its name and return. If #pModule_ contains no class, error out.
+   */
+
+  void checkModuleForSingleClass();
   /// Detach #pInstance_ and cached method pointers
   /**
    * Detaches (=calls Py_XDECREF and sets to NULL) #pProperties, #pSet_
@@ -593,7 +612,7 @@ public:
 	    break;
 	  case Property::filename_t:
 	    content = fmp->fullPath(content);
-	    // no 'break;' here, we need to proceed
+	    [[fallthrough]]; // no 'break;' here, we need to proceed
 	  default:
 	    setParameter(*prop, name, content, unit);
 	    break;
@@ -850,6 +869,14 @@ class Gyoto::Astrobj::Python::Standard
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string& c);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
   virtual void detachInstance();
   virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
