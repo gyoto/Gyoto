@@ -515,6 +515,17 @@ public:
     return O::setParameter(name, content, unit);
   }
 
+
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp,
+			    Property const &p) const {
+    if ((p.name == "Instance") ||
+	(p.name == "Module" && module_=="") ||
+	(p.name == "InlineModule" && inline_module_=="")) {
+      GYOTO_DEBUG << "skipping " << p.name << std::endl;
+      return;
+    } else O::fillProperty(fmp, p);
+  }
+
   virtual void fillElement(Gyoto::FactoryMessenger *fmp) const {
     O::fillElement(fmp);
     if (pProperties_) {

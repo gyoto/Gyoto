@@ -70,7 +70,6 @@ import os.path
 pluglist = core.vector_string(())
 sctr = core.getMetricSubcontractor("Python", pluglist, 1)
 if sctr:
-    print (sctr)
     plugin=pluglist[0]
 else:
     plugin=None
@@ -178,15 +177,16 @@ class StandardBase(PythonStandard):
         '''Set a Gyoto property
 
         If key is listed in the self.properties dictionary, set the
-        Python attribute named key.lower() in self. Else, forward the
-        call to the underlying C++ instance.
+        Python attribute named key.lower() in self (direclty in
+        self.__dict__, bypassing __setattr__). Else, forward the call
+        to the underlying C++ instance.
 
         Derived classes may reimplement this method but should not
         depart too far from this logic.
 
         '''
         if key in self.properties:
-            setattr(self, key.lower(), args[0])
+            self.__dict__[key.lower()] = args[0]
         else:
             super(PythonStandard, self).set(key, *args)
 

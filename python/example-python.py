@@ -168,7 +168,8 @@ from gyoto_sample_standard import FlaredDisk
 
 ao=FlaredDisk()
 
-## A complete example, identical to example-python-flared-disk.xml:
+## A complete example, identical to
+# example-python-flared-disk-derived-kerrbl.xml:
 
 sc=gyoto.Scenery()
 
@@ -189,8 +190,6 @@ sc.Screen.Spectrometer.Band = 2.0e-6, 2.4e-6
 
 sc.Astrobj = FlaredDisk()
 sc.Astrobj.RMax = 50
-sc.Astrobj.CriticalValue = 0.
-sc.Astrobj.SafetyValue = 0.3
 sc.Astrobj.OpticallyThin = True
 
 sc.Quantities = "Intensity"

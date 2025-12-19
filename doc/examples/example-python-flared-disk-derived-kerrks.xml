@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  The goal of this example is to show how to implement a custom
+  astrobj using the Python language directly in an XML file.
+
+  <Metric kind = "KerrKS">
+    <Mass unit="sunmass"> 4e6 </Mass>
+    <Spin> 0.52 </Spin>
+  </Metric>
+
+  <Screen>
+    <Distance unit="kpc"> 8 </Distance>
+    <Inclination unit="degree"> 90 </Inclination>
+    <PALN unit="degree"> 180 </PALN> 
+    <Time unit="kpc"> 8 </Time>
+    <FieldOfView unit="microas"> 200 </FieldOfView>
+    <Resolution> 32 </Resolution>
+    <Spectrometer kind="wave" nsamples="1"> 2.0e-6 2.4e-6 </Spectrometer>
+  </Screen>
+
+  <Astrobj kind = "Python::Standard" plugin="fallback:python*">
+
+    We specify python3 as a "fallback" plug-in as the python plug-in
+    can be compiled for several versions of Python. If loading this
+    file from Python, the right python plug-in should have been loaded
+    already. When loading this file from the gyoto command-line tool,
+    gyoto will try to load all plug-ins starting with 'python' until
+    it finds one that contains the metric class 'Python'.
+
+    <Module>gyoto_sample_standard</Module>
+    <Class>FlaredDisk</Class>
+
+    <RMax> 50 </RMax>
+
+    <OpticallyThin/>
+
+  </Astrobj>
+
+  <Quantities>Intensity</Quantities>
+
+</Scenery>

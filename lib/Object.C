@@ -395,6 +395,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
+      GYOTO_DEBUG_EXPR(prop->name);
       if (prop->type != Property::empty_t)
 	fillProperty(fmp, *prop);
       ++prop;
