@@ -163,6 +163,10 @@ ao.Rin     = 3.   # set disk inner radius
 assert (ao((0, 4, 1.57, 0)) < ao.CriticalValue)
 assert (ao((0, 4, 0   , 0)) > ao.CriticalValue)
 
+## Lets try with base class
+from gyoto_sample_standard import FlaredDisk
+
+ao=FlaredDisk()
 
 ## A complete example, identical to example-python-flared-disk.xml:
 
@@ -183,13 +187,11 @@ sc.Screen.Spectrometer = gyoto.spectrometer.wave()
 sc.Screen.Spectrometer.NSamples = 1
 sc.Screen.Spectrometer.Band = 2.0e-6, 2.4e-6
 
-sc.Astrobj = gyoto.python.PythonStandard()
+sc.Astrobj = FlaredDisk()
 sc.Astrobj.RMax = 50
 sc.Astrobj.CriticalValue = 0.
 sc.Astrobj.SafetyValue = 0.3
 sc.Astrobj.OpticallyThin = True
-inst=FlaredDisk()
-sc.Astrobj.Instance = id(inst)
 
 sc.Quantities = "Intensity"
 

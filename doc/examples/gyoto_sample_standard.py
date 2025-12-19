@@ -40,10 +40,16 @@
 
 import math
 import numpy
-import gyoto.core
+import gyoto.python
 
 class FixedStar:
-    ''' Sample class for Astrobj::Python::Standard
+    '''Reimplementation on gyoto.std.FixedStar in Python
+
+    This implementation is pretty complete but does not derived from
+    gyoto.Python.StandardBase.
+
+    Example class for Astrobj::Python::Standard.
+
     '''
 
     properties={"Position": "vector_double",
@@ -190,3 +196,76 @@ class FixedStar:
         if opac == 0.:
             return 1.
         return math.exp(-opac*dsem)
+
+class FlaredDisk(gyoto.python.StandardBase):
+    '''A flared disk for Gyoto implemented in Python
+
+    Example class for Astrobj::Python::Standard, deriving from
+    gyoto.python.StandardBase.
+
+    Gyoto properties:
+        Opening: opening angle in radians (double)
+        Rin:     inner radius in geometrical units
+        Rout:    outer radius in geometrical units
+    '''
+
+    # Here we declare the properties and their type:
+    properties = {"Opening": "double",
+                  "Rin": "double",
+                  "Rout": "double"}
+
+    # Every Gyoto property corresponds to a Python attribute with the
+    # same name in lower case:
+    opening=0.2
+    rin=4
+    rout=15
+
+    def __init__(self, *args):
+        '''Initialize FlaredDisk instance
+
+        1- call __init__ on parent class;
+
+        2- set CriticalValue to the only meaningful value (0.) and
+           SafetyValue to something slightly larger (0.3).
+
+        Note that CriticalValue and SafetyValue are Gyoto properties
+        of a base class.
+
+        '''
+        super().__init__(*args)
+        self.CriticalValue = 0.
+        self.SafetyValue   = 0.3
+
+    # The only mandatory method to reimplement is __call__, which
+    # should support both spherical and Cartesian coordinates:
+    def __call__(self, coord):
+        '''retval = instance(coord)
+
+        A function that is below 0 inside the flared disk.
+
+        '''
+        if self.coordKindIsSpherical():
+            r=math.sin(coord[2])*coord[1]
+            h_r=abs(math.cos(coord[2]))
+        else:
+            r=math.sqrt(coord[1]**2+coord[2]**2)
+            h_r=abs(coord[3])/r
+        return max(h_r-self.opening, self.rin-r, r-self.rout)
+
+class FlaredDiskSimple:
+    '''A flared disk for Gyoto implemented in Python
+
+    This minimalitic implementation does not support setting opening,
+    rin etc. using the Gyoto API and supports only spherical
+    coordinates.
+
+    '''
+    opening=0.2
+    rin=4
+    rout=15
+    def __call__(self, coord):
+        r=math.sin(coord[2])*coord[1]
+        h_r=abs(math.cos(coord[2]))
+        return max(h_r-self.opening, self.rin-r, r-self.rout)
+    def getVelocity(self, coord, vel):
+        self.this.Metric.circularVelocity(coord, vel)
