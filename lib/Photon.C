@@ -61,16 +61,19 @@ Photon::Photon() :
   Object("Photon"),
   object_(NULL),
   freq_obs_(1.), transmission_freqobs_(1.),
-  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
+  transmissionMatrix_freqobs_(),
+  spectro_(NULL), transmission_(NULL),
+  nb_cross_eqplane_(0), transmissionMatrix_(NULL)
  {}
 
 Photon::Photon(const Photon& o) :
-  Worldline(o), SmartPointee(o),
+  Worldline(o), SmartPointee(o), Object(o),
   object_(NULL),
   freq_obs_(o.freq_obs_), transmission_freqobs_(o.transmission_freqobs_),
-  spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(o.nb_cross_eqplane_),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_(o.transmissionMatrix_freqobs_)
+  transmissionMatrix_freqobs_(o.transmissionMatrix_freqobs_),
+  spectro_(NULL), transmission_(NULL),
+  nb_cross_eqplane_(o.nb_cross_eqplane_),
+  transmissionMatrix_(o.transmissionMatrix_)
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
@@ -82,7 +85,6 @@ Photon::Photon(const Photon& o) :
     _allocateTransmissionMatrix();
     if (size_t nsamples = spectro_->nSamples()){
       memcpy(transmission_, o.getTransmission(), nsamples*sizeof(double));
-      memcpy(transmissionMatrix_,o.getTransmissionMatrix(), nsamples*sizeof(Matrix4d));
     }
   }
 }
@@ -102,10 +104,10 @@ Photon::Photon(Photon* orig, size_t i0, int dir, double step_max) :
   object_(orig->object_),
   freq_obs_(orig->freq_obs_),
   transmission_freqobs_(orig->transmission_freqobs_),
+  transmissionMatrix_freqobs_(orig->transmissionMatrix_freqobs_),
   spectro_(orig->spectro_), transmission_(orig->transmission_),
   nb_cross_eqplane_(orig->nb_cross_eqplane_),
-  transmissionMatrix_(orig->transmissionMatrix_),
-  transmissionMatrix_freqobs_(orig->transmissionMatrix_freqobs_)
+  transmissionMatrix_(orig->transmissionMatrix_)
 {
 }
 
@@ -119,8 +121,12 @@ Photon::Refined::Refined(Photon* orig, size_t i0, int dir, double step_max) :
 Photon::Photon(SmartPointer<Metric::Generic> met,
 	       SmartPointer<Astrobj::Generic> obj,
 	       double* coord):
-  Worldline(), freq_obs_(1.), transmission_freqobs_(1.), spectro_(NULL), transmission_(NULL), nb_cross_eqplane_(0),
-  transmissionMatrix_(NULL), transmissionMatrix_freqobs_()
+  Worldline(), freq_obs_(1.), transmission_freqobs_(1.),
+  transmissionMatrix_freqobs_(),
+  spectro_(NULL),
+  transmission_(NULL),
+  nb_cross_eqplane_(0),
+  transmissionMatrix_(NULL)
 {
   setInitialCondition(met, obj, coord);
 }
@@ -131,10 +137,10 @@ Photon::Photon(SmartPointer<Metric::Generic> met,
 	       double d_alpha, double d_delta):
   Worldline(), object_(obj), freq_obs_(screen->freqObs()),
   transmission_freqobs_(1.),
+  transmissionMatrix_freqobs_(),
   spectro_(NULL), transmission_(NULL),
   nb_cross_eqplane_(0),
-  transmissionMatrix_(NULL),
-  transmissionMatrix_freqobs_()
+  transmissionMatrix_(NULL)
 {
   double coord[8], Ephi[4], Etheta[4];
   bool compute_polar_basis=false;
@@ -187,7 +193,7 @@ void Photon::resetTransmission() {
 }
 
 void Photon::resetTransmissionMatrix() {
-  if (spectro_() && transmissionMatrix_ && &transmissionMatrix_freqobs_) {
+  if (spectro_() && transmissionMatrix_) {
     size_t nsamples = spectro_->nSamples();
     Matrix4d identity;
     identity << 1, 0, 0, 0,
@@ -457,8 +463,10 @@ int Photon::hit(Astrobj::Properties *data) {
   // of the Mino time
   double G_theta=0.; // angular integral along geodesic = elapsed Mino time
   double I_radial=0.; // radial integral along geodesic = elapsed Mino time also
-  double G_theta_1libration=0., nn_Mino_1st_turning=0., KK=0., Fo=0., sign_o=0.,
-    uplus=0., uminus=0., uratio=0., eta=0., lambda=0., spin2=0., nn_Mino=0., Einit=0., Linit=0., spin=0.;
+  double G_theta_1libration=0., nn_Mino_1st_turning=0., KK=0., /*Fo=0.,*/ sign_o=0.,
+    uplus=0., uminus=0., uratio=0., eta=0., lambda=0., spin2=0., nn_Mino=0.,
+    //Einit=0., Linit=0.,
+    spin=0.;
   double mytol=1e-6; // it must be possible to decrease this tolerance
   // by using a finer AbsTol and RelTol in xml (checked for one case).
   if ((maxCrossEqplane_<DBL_MAX || (data && data->nbcrosseqplane)) && compute_Mino==1){ // The first two conditions ensure that we are interesting in computing image orders; then we compute here everything that is constant along the null geodesic
@@ -484,7 +492,7 @@ int Photon::hit(Astrobj::Properties *data) {
     //cout << "pth= " << p_th << endl;
     double Carter = p_th*p_th - cos(theta)*cos(theta)*(spin2*p_t*p_t
 						       - p_ph*p_ph/(sin(theta)*sin(theta)));
-    Einit = -p_t; Linit = p_ph;
+    //Einit = -p_t; Linit = p_ph;
     //cout << setprecision(16) << "E,L init= " << Einit <<  " " << Linit << endl;
     if (Carter<0.) {
       //GYOTO_WARNING << "Carter<0" << endl;
@@ -567,13 +575,13 @@ int Photon::hit(Astrobj::Properties *data) {
     h1max=object_ -> deltaMax(&coord[0]);
     stopcond  = state_ -> nextStep(coord, tau, h1max);
     //cout << "IN ph r, z= " << coord[1] << " " << coord[1]*cos(coord[2]) << endl;
-    double pos[4]={coord[0],coord[1],coord[2],coord[3]};
-    double g_tt=metric_->gmunu(pos,0,0), g_thth=metric_->gmunu(pos,2,2),
-      g_pp=metric_->gmunu(pos,3,3), g_tp=metric_->gmunu(pos,0,3); 
-    double p_t = g_tt*coord[4] + g_tp*coord[7],
-      p_ph = g_tp*coord[4] + g_pp*coord[7],
-      p_th = g_thth*coord[6];
-    double Ecur=-p_t, Lcur=p_ph;
+    //double pos[4]={coord[0],coord[1],coord[2],coord[3]};
+    //double g_tt=metric_->gmunu(pos,0,0),// g_thth=metric_->gmunu(pos,2,2),
+    //  g_pp=metric_->gmunu(pos,3,3), g_tp=metric_->gmunu(pos,0,3); 
+    //double p_t = g_tt*coord[4] + g_tp*coord[7],
+    //  p_ph = g_tp*coord[4] + g_pp*coord[7]/*,
+    //					    p_th = g_thth*coord[6]*/;
+    // double Ecur=-p_t, Lcur=p_ph;
     //cout << setprecision(16) << "E,L cur= " << -p_t <<  " " << fabs(Einit+p_t) << " " << p_ph << " " << fabs(Linit-p_ph) << endl;
     
     if (!secondary_){ // to compute only primary image (outdated, use MaxCrossEqplane above instead)
@@ -749,24 +757,24 @@ int Photon::hit(Astrobj::Properties *data) {
 	  (specific to Kerr)
 	 */
 	
-	double theta_step = -coord[2] + x2_[ind-dir]; // it is indeed like that because we are integrating backwards, the order matters a lot; Gth is the integral from source to observer.
+	// double theta_step = -coord[2] + x2_[ind-dir]; // it is indeed like that because we are integrating backwards, the order matters a lot; Gth is the integral from source to observer.
 	double costh_cur, sinth_cur; sincos(coord[2], &sinth_cur, &costh_cur);
 	double costh_prev, sinth_prev; sincos(x2_[ind-dir], &sinth_prev,
 					      &costh_prev);
-	double c2_cur=costh_cur*costh_cur, s2_cur=sinth_cur*sinth_cur,	
-	  c2_prev=costh_prev*costh_prev, s2_prev=sinth_prev*sinth_prev;
-	double Theta_cur = eta + spin2*c2_cur - lambda*lambda*c2_cur/s2_cur;
-	double Theta_prev = eta + spin2*c2_prev - lambda*lambda*c2_prev/s2_prev;
-	double pth_cur = coord[6], rr_cur= coord[1], mytheta_cur = coord[2];
-	double Sigma = rr_cur*rr_cur + spin2*cos(mytheta_cur)*cos(mytheta_cur);
-	double Delta = rr_cur*rr_cur + spin2 - 2.*rr_cur;
-	double RR_cur = (rr_cur*rr_cur + spin2 - spin*lambda)*(rr_cur*rr_cur + spin2 - spin*lambda) - Delta*(eta + (lambda-spin)*(lambda-spin));
-	double pphi_rhs = spin/Delta*(rr_cur*rr_cur + spin2 - spin*lambda) + lambda/(sin(mytheta_cur)*sin(mytheta_cur)) - spin;
-	double pt_rhs = (rr_cur*rr_cur + spin2)/Delta*(rr_cur*rr_cur + spin2 - spin*lambda) + spin*(lambda-spin*sin(mytheta_cur)*sin(mytheta_cur));
-	double pth_prev = Ecur/Sigma*sqrt(Theta_cur),
-	  pr_prev = Ecur/Sigma*sqrt(RR_cur),
-	  pt_prev = Ecur/Sigma*pt_rhs,
-	  pphi_prev = Ecur/Sigma*pphi_rhs;
+	// double c2_cur=costh_cur*costh_cur, s2_cur=sinth_cur*sinth_cur,	
+	//  c2_prev=costh_prev*costh_prev, s2_prev=sinth_prev*sinth_prev;
+	// double Theta_cur = eta + spin2*c2_cur - lambda*lambda*c2_cur/s2_cur;
+	// double Theta_prev = eta + spin2*c2_prev - lambda*lambda*c2_prev/s2_prev;
+	double /* pth_cur = coord[6],*/ rr_cur= coord[1]/*, mytheta_cur = coord[2]*/;
+	//double Sigma = rr_cur*rr_cur + spin2*cos(mytheta_cur)*cos(mytheta_cur);
+	//double Delta = rr_cur*rr_cur + spin2 - 2.*rr_cur;
+	//double RR_cur = (rr_cur*rr_cur + spin2 - spin*lambda)*(rr_cur*rr_cur + spin2 - spin*lambda) - Delta*(eta + (lambda-spin)*(lambda-spin));
+	//double pphi_rhs = spin/Delta*(rr_cur*rr_cur + spin2 - spin*lambda) + lambda/(sin(mytheta_cur)*sin(mytheta_cur)) - spin;
+	//double pt_rhs = (rr_cur*rr_cur + spin2)/Delta*(rr_cur*rr_cur + spin2 - spin*lambda) + spin*(lambda-spin*sin(mytheta_cur)*sin(mytheta_cur));
+	// double pth_prev = Ecur/Sigma*sqrt(Theta_cur),
+	//   pr_prev = Ecur/Sigma*sqrt(RR_cur),
+	//   pt_prev = Ecur/Sigma*pt_rhs,
+	//   pphi_prev = Ecur/Sigma*pphi_rhs;
 
 	//cout << "Potentials= " << RR_cur <<" " << Theta_cur << endl;
 
@@ -848,6 +856,7 @@ int Photon::hit(Astrobj::Properties *data) {
 	  I_radial += dI_radial;
 
 	  // Equatorial plane crossing
+	  GYOTO_IF_DEBUG  // big computations only for a GYOTO_DEBUG output
 	  double argasin=cos(x2_[i0_])/sqrt(uplus);
 	  if (argasin-1>0. && argasin-1<mytol)
 	    argasin=1.;
@@ -899,7 +908,8 @@ int Photon::hit(Astrobj::Properties *data) {
 	    (r4quartic*r31 - r3quartic*r41*jacobi_elliptic_sine_squared)
 	    /(r31 - r41*jacobi_elliptic_sine_squared);
 	  
-	  //cout << "equat turnings= " << req_0turnings << " " << req_1turnings << " " << req_2turnings << endl;
+	  GYOTO_DEBUG << "equat turnings= " << req_0turnings << " " << req_1turnings << " " << req_2turnings << endl;
+	  GYOTO_ENDIF_DEBUG
 	} // end of Irad if loop
 	
 	// Back to main loop, computing G_theta:

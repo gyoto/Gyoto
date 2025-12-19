@@ -38,10 +38,10 @@ using namespace Gyoto;
 #endif
 
 
-Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
+Worldline::Worldline() : stopcond(0), metric_(NULL),
+                         ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 			 et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
-                         stopcond(0), metric_(NULL),
-                         imin_(1), i0_(0), imax_(0), adaptive_(1),
+			 imin_(1), i0_(0), imax_(0), adaptive_(1),
 			 secondary_(1), 
 			 parallel_transport_(false),
 			 check_basis_(true),
@@ -63,10 +63,9 @@ Worldline::Worldline() : ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
 }
 
 Worldline::Worldline(const Worldline& orig) :
-  stopcond(orig.stopcond),
+  stopcond(orig.stopcond), metric_(NULL),
   ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
   et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
-  metric_(NULL),
   x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig.adaptive_), secondary_(orig.secondary_),
   parallel_transport_(orig.parallel_transport_),
@@ -136,9 +135,9 @@ Worldline::Worldline(const Worldline& orig) :
 }
 
 Worldline::Worldline(Worldline *orig, size_t i0, int dir, double step_max) :
+  metric_(orig->metric_),
   ep0_(NULL), ep1_(NULL), ep2_(NULL), ep3_(NULL),
   et0_(NULL), et1_(NULL), et2_(NULL), et3_(NULL),
-  metric_(orig->metric_),
 //  x_size_(orig.x_size_), imin_(orig.imin_), i0_(orig.i0_), imax_(orig.imax_),
   adaptive_(orig->adaptive_), secondary_(orig->secondary_),
   parallel_transport_(orig->parallel_transport_),
@@ -847,10 +846,9 @@ void Worldline::getCoord(double const * const dates, size_t const n_dates,
   int sz = parallel_transport_?16:8;
   state_t bestl(sz), besth(sz), resl(sz), resh(sz); // i/o for myrk4
   double factl, facth, bestaul, bestauh, restaul, restauh;
-  double tausecond, dtaul, dtauh, dtl, dth, Dt, Dtm1, tauprimel, tauprimeh;
+  double tausecond, dtaul, dtauh, dtl, dth, Dt=1., Dtm1=1., tauprimel, tauprimeh;
   double second, primel, primeh, pos[4], vel[3], tdot;
   int i;
-  int status;
   stringstream ss;
   GYOTO_IF_DEBUG
   GYOTO_DEBUG_EXPR(dates[0]);
@@ -1284,6 +1282,7 @@ void Worldline::checkPhiTheta(double coord[8]) const{
   case GYOTO_COORDKIND_CARTESIAN:
     GYOTO_ERROR("Worldline::checkPhiTheta(): should not be called "
 	       "with cartesian-like coordinates");
+    [[fallthrough]]; // silence warning
   default:
     GYOTO_ERROR("Worldline::checkPhiTheta(): unknown COORDKIND");
   }
@@ -1641,10 +1640,10 @@ void Worldline::checkBasis(state_t &coord) const {
   double Ephi[4];
   double Etheta[4];
   double photon_tgvec[4];
-  double pos[4];
+  // double pos[4];
   
   for (int ii=0;ii<4;ii++){
-    pos[ii]=coord[ii];
+    // pos[ii]=coord[ii];
     photon_tgvec[ii]=coord[ii+4]; // photon wave vector
     Ephi[ii]=coord[ii+8]; // polarization basis vector 1
     Etheta[ii]=coord[ii+12]; // polarization basis vector 2

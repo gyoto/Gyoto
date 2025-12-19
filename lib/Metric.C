@@ -100,7 +100,8 @@ Metric::Generic::Generic(const int coordkind, const std::string &name) :
 }
 
 Metric::Generic::Generic(Generic const &o):
-  SmartPointee(o), Object(o), mass_(o.mass_), coordkind_(o.coordkind_),
+  SmartPointee(o), Object(o), Hook::Teller(o),
+  mass_(o.mass_), coordkind_(o.coordkind_),
   __defaultfeatures(o.__defaultfeatures),
   delta_min_(o.delta_min_), delta_max_(o.delta_max_),
   delta_max_over_r_(o.delta_max_over_r_), keplerian_(o.keplerian_)
@@ -417,8 +418,7 @@ void Metric::Generic::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4
 
  }
 
-void Metric::Generic::computeNBeta(const double coord[4],
-					 double &NN,double beta[3]) const
+void Metric::Generic::computeNBeta(const double *, double &,double *) const
 {
   throwError("In Metric::computeNBeta not implemented");
 }
@@ -495,9 +495,7 @@ int Metric::Generic::diff(const state_t &x,
   return 0;
 }
 
-int Metric::Generic::diff31(const state_t &x,
-			  state_t &dxdt,
-			  double /* mass */) const {
+int Metric::Generic::diff31(const state_t &, state_t &, double ) const {
   throwError("In Metric::diff31 not implemented");
   return 1; // Should never be reached but silence compile-time warning 
 }
@@ -895,13 +893,13 @@ double Metric::Generic::getRms() const{
   return 0.; // silence warning
 }
 
-double Metric::Generic::getSpecificAngularMomentum(double rr) const{
+double Metric::Generic::getSpecificAngularMomentum(double) const{
   GYOTO_ERROR("In Metric::getSpecificAngularMomentum: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning
 }
 
-double Metric::Generic::getPotential(double const pos[4], double l_cst) const{
+double Metric::Generic::getPotential(double const *, double) const{
   GYOTO_ERROR("In Metric::getPotential: should be implemented "
 	     "in the derived metric");
   return 0.; // silence warning

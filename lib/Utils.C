@@ -316,6 +316,7 @@ double Gyoto::hypergeom (double kappaIndex, double thetae) {
   return hyp_2F1(aa,bb,cc,zed).real();
 #else
   GYOTO_ERROR("Utils::_hypergeom() is not functional, please recompile Gyoto with either ARBLIB or AEAE");
+  (void) kappaIndex; (void) thetae; // silence unused variable warnings
   return 0.;
 #endif
 }
@@ -433,11 +434,14 @@ std::vector<std::string> Gyoto::glob(const std::string pattern, int flags) {
     break;
   case GLOB_ABORTED:
     GYOTO_ERROR("glob() error: The scan was stopped because GLOB_ERR was set.");
+    [[fallthrough]]; // silence fall-through warning
   case GLOB_NOMATCH:
     GYOTO_ERROR("glob() error: The pattern '"+pattern+"' does not match any"
 		"existing pathname, and GLOB_NOCHECK was not set in flags.");
+    [[fallthrough]]; // silence fall-through warning
   case GLOB_NOSPACE:
     GYOTO_ERROR("glob() error: An attempt to allocate memory failed.");
+    [[fallthrough]]; // silence fall-through warning
   default:
     GYOTO_ERROR("glob() error: glob() returned unknown error code "
 		+to_string(errcode)+".");

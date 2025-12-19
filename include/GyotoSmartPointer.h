@@ -93,6 +93,7 @@ class Gyoto::SmartPointee
   SmartPointee () ;
   virtual ~SmartPointee() ;
   SmartPointee (const   SmartPointee&) ; ///< Copy constructor
+  SmartPointee& operator=(const SmartPointee&) ; ///< Assignment
   void incRefCount () ; ///< Increment the reference counter. Warning: Don't mess with the counter.
   int decRefCount () ;  ///< Decrement the reference counter and return current value. Warning: Don't mess with the counter.
   int getRefCount () ;  ///< Get the current number of references

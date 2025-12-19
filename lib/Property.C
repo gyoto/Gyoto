@@ -14,11 +14,11 @@ Property::Property(Property const * const ancestors)
   : name(""), type(empty_t), parent(ancestors) {}
 
 Property::Property(std::string classname, std::string doc)
-  : name(classname), type(empty_t), parent(NULL), doc(doc){}
+  : name(classname), type(empty_t), doc(doc), parent(NULL){}
 
 #define GYOTO_LOCAL(T)							\
   Property::Property(string n, set_##T##_t set, get_##T##_t get, string d) \
-    : name(n), type(T##_t), parent(NULL), doc(d) {			\
+    : name(n), type(T##_t), doc(d), parent(NULL) {			\
     setter.set_##T=set;							\
     getter.get_##T=get;							\
   }
@@ -35,13 +35,13 @@ GYOTO_LOCAL(spectrometer)
 
 Property::Property(string n, set_size_t_t set, get_size_t_t get, int,
 		   string d)
-: name(n), type(size_t_t), parent(NULL), doc(d) {
+: name(n), type(size_t_t), doc(d), parent(NULL) {
   setter.set_size_t=set;
   getter.get_size_t=get;
 }
 
 Property::Property(string n, set_double_t set, get_double_t get, string d)
-: name(n), type(double_t), parent(NULL), doc(d) {
+: name(n), type(double_t), doc(d), parent(NULL) {
   setter.set_double=set;
   getter.get_double=get;
   setter_unit.set_double=NULL;
@@ -50,7 +50,7 @@ Property::Property(string n, set_double_t set, get_double_t get, string d)
 
 Property::Property(string n, set_double_t set, get_double_t get,
 		   set_double_unit_t setu, get_double_unit_t getu, string d)
-  : name(n), type(double_t), parent(NULL), doc(d) {
+  : name(n), type(double_t), doc(d), parent(NULL) {
   setter.set_double=set;
   getter.get_double=get;
   setter_unit.set_double=setu;
@@ -59,14 +59,14 @@ Property::Property(string n, set_double_t set, get_double_t get,
 
 Property::Property(string n, string nf, set_bool_t set, get_bool_t get,
 		   string d)
-  : name(n), name_false(nf), type(bool_t), parent(NULL), doc(d) {
+  : name(n), name_false(nf), type(bool_t), doc(d), parent(NULL) {
   setter.set_bool=set;
   getter.get_bool=get;
 }
 
 Property::Property(string n, set_string_t set, get_string_t get,
 		   bool is_filename, string d)
-  : name(n), type(is_filename?filename_t:string_t), parent(NULL), doc(d) {
+  : name(n), type(is_filename?filename_t:string_t), doc(d), parent(NULL) {
   setter.set_string=set;
   getter.get_string=get;
 }
@@ -75,7 +75,7 @@ Property::Property(string n,
 		   set_vector_double_t set,
 		   get_vector_double_t get,
 		   string d)
-  : name(n), type(vector_double_t), parent(NULL), doc(d) {
+  : name(n), type(vector_double_t), doc(d), parent(NULL) {
   setter.set_vdouble=set;
   getter.get_vdouble=get;
   setter_unit.set_vdouble=NULL;
@@ -88,7 +88,7 @@ Property::Property(string n,
 		   set_vector_double_unit_t setu,
 		   get_vector_double_unit_t getu,
 		   string d)
-  : name(n), type(vector_double_t), parent(NULL), doc(d) {
+  : name(n), type(vector_double_t), doc(d), parent(NULL) {
   setter.set_vdouble=set;
   getter.get_vdouble=get;
   setter_unit.set_vdouble=setu;
@@ -99,7 +99,7 @@ Property::Property(string n,
 		   set_vector_unsigned_long_t set,
 		   get_vector_unsigned_long_t get,
 		   string d)
-  : name(n), type(vector_unsigned_long_t), parent(NULL), doc(d) {
+  : name(n), type(vector_unsigned_long_t), doc(d), parent(NULL) {
   setter.set_vulong=set;
   getter.get_vulong=get;
 }

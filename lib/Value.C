@@ -45,13 +45,31 @@ using namespace std ;
     Screen()
 
 Value::Value(): type(Property::empty_t), INIT_MEMBERS {}
+
+Value::Value(const Value& o):
+    type(o.type),
+    Double(o.Double),
+    Bool(o.Bool),
+    Long(o.Long),
+    ULong(o.ULong),
+    SizeT(o.SizeT),
+    String(o.String),
+    VDouble(o.VDouble),
+    VULong(o.VULong),
+    Metric(o.Metric),
+    Astrobj(o.Astrobj),
+    Spectrum(o.Spectrum),
+    Spectrometer(o.Spectrometer),
+    Screen(o.Screen)
+{}
+
 Value::~Value() {}
 
 #define ___local_stuff(t, t_t, T)				   \
   Value::Value(t val) : type(Property::t_t), INIT_MEMBERS {T=val;} \
   Value::operator t() const {		                           \
     if (type!=Property::t_t)		                           \
-    GYOTO_ERROR("This Value does not hold a " #t);                  \
+      GYOTO_ERROR("This Value does not hold a " #t);		   \
     return T;					                   \
   }
 

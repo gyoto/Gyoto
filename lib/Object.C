@@ -249,6 +249,7 @@ Value Object::get(Property const &p) const {
   switch (p.type) {
   case Property::empty_t:
     GYOTO_ERROR("Can't get empty property");
+    [[fallthrough]]; // tells the compiler that "break;" is not needed
     ___local_case(bool);
     ___local_case(double);
     ___local_case(long);
@@ -451,7 +452,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	  break;
 	case Property::filename_t:
 	  content = fmp->fullPath(content);
-	  // no 'break;' here, we need to proceed
+	  [[fallthrough]]; // no 'break;' here, we need to proceed
 	default:
 	  setParameter(*prop, name, content, unit);
 	}
@@ -499,6 +500,7 @@ void Object::setParameter(Property const &p, string const &name,
     break;
   case Property::metric_t:
     GYOTO_ERROR("Metric can't be set using setParameter()");
+    [[fallthrough]]; // 'break;' would never be reached
   default:
     GYOTO_ERROR("Property type unimplemented in Object::setParameter()");
   }

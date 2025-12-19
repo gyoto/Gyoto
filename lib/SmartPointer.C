@@ -35,12 +35,32 @@ Gyoto::SmartPointee::~SmartPointee() {
   GYOTO_DEBUG << typeid(*this).name() << ": refCount=" << refCount << std::endl;
 }
 
-Gyoto::SmartPointee::SmartPointee(const SmartPointee&o) :
+Gyoto::SmartPointee::SmartPointee(const SmartPointee&) :
   refCount (0)
 {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&mutex_, NULL);
 #endif
+}
+
+Gyoto::SmartPointee& Gyoto::SmartPointee::operator=(const SmartPointee& right){
+  // Check for self-assignment
+  if (this == &right) {
+    return *this;
+  }
+
+  // initialize the refcound to 0: the two objects do not use the same
+  // reference counter
+  refCount = 0;
+
+  // Reinitialize the mutex if needed
+#ifdef HAVE_PTHREAD
+  pthread_mutex_destroy(&mutex_); // Destroy the old mutex
+  pthread_mutex_init(&mutex_, NULL); // Initialize a new mutex
+#endif
+
+  // Return a reference to the current object
+  return *this;
 }
 
 void Gyoto::SmartPointee::incRefCount () {

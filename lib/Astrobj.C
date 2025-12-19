@@ -65,7 +65,7 @@ Generic::Generic(string kin) :
   SmartPointee(), Object(kin),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0), magneticConfig_("None")
+  shadow_(0), noredshift_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -76,7 +76,7 @@ Generic::Generic() :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(DBL_MAX), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0), magneticConfig_("None")
+  shadow_(0), noredshift_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -87,7 +87,7 @@ Generic::Generic(double radmax) :
   SmartPointee(), Object("Default"),
   __defaultfeatures(0),
   gg_(NULL), rmax_(radmax), deltamaxinsidermax_(1.), flag_radtransf_(0),
-  noredshift_(0), shadow_(0), magneticConfig_("None")
+  shadow_(0), noredshift_(0), magneticConfig_("None")
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -101,7 +101,7 @@ Generic::Generic(const Generic& orig) :
   rmax_(orig.rmax_),
   deltamaxinsidermax_(orig.deltamaxinsidermax_),
   flag_radtransf_(orig.flag_radtransf_),
-  noredshift_(orig.noredshift_), shadow_(orig.shadow_), magneticConfig_(orig.magneticConfig_)
+  shadow_(orig.shadow_), noredshift_(orig.noredshift_), magneticConfig_(orig.magneticConfig_)
 {
 #if GYOTO_DEBUG_ENABLED
   GYOTO_DEBUG << endl;
@@ -558,7 +558,6 @@ void Generic::emission(double * Inu, double const * nuem , size_t nbnu,
     double * Unu = new double[nbnu];
     double * Vnu = new double[nbnu];
     Matrix4d * Onu = new Matrix4d[nbnu];
-    double Chi=0;
     radiativeQ(Inu, Qnu, Unu, Vnu,
 	       Onu, nuem , nbnu, dsem,
 	       cph, co);
@@ -1221,11 +1220,11 @@ double Generic::getChi(double const fourvect[4], state_t const &cph, double cons
     cout << "polar vector = KxB= in triad "<< polar_vec[0] << " " << polar_vec[1] << " " << polar_vec[2] << endl;
   double polar_dot_North=polar_vec[0]*Etheta_r_tetrad + polar_vec[1]*Etheta_th_tetrad + polar_vec[2]*Etheta_p_tetrad,
     polar_dot_West = polar_vec[0]*Ephi_r_tetrad + polar_vec[1]*Ephi_th_tetrad + polar_vec[2]*Ephi_p_tetrad;
-  //cout << "polar vec = " << polar_dot_North << "*North + " << polar_dot_West << "*West." << endl;
+  GYOTO_DEBUG << "polar vec = " << polar_dot_North << "*North + " << polar_dot_West << "*West." << endl;
 
   double Vectproj_dot_North=Br_tetrad*Etheta_r_tetrad + Bth_tetrad*Etheta_th_tetrad + Bp_tetrad*Etheta_p_tetrad,
     Vectproj_dot_West = Br_tetrad*Ephi_r_tetrad + Bth_tetrad*Ephi_th_tetrad + Bp_tetrad*Ephi_p_tetrad;
-  //cout << "Vectproj vec = " << Vectproj_dot_North << "*North + " << Vectproj_dot_West << "*West." << endl;
+  GYOTO_DEBUG << "Vectproj vec = " << Vectproj_dot_North << "*North + " << Vectproj_dot_West << "*West." << endl;
 
   if (EVPA!=EVPA)
     GYOTO_ERROR("In Astrobj::getChi(): EVPA is nan");
@@ -1255,8 +1254,10 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
   // Define B by requiring: B.B=1 (we care only about B direction),
   // and B.u=0 (B defined in emitter's frame).
   
-  double rr, rcyl, theta, phi, xx, yy, zz=0.;
-  double gtt, grr, gthth, gpp, gtp, gxx, gyy, gzz, gxy, gxz, gyz, gtx, gty, gtz;
+  double rr=0., rcyl=0., theta=0., xx=0., yy=0., zz=0.;
+  // [[maybe_unused]] double phi; let's not compute phi as long as we dlon't need it
+  double gtt=0., grr=0., gthth=0., gpp=0., gtp=0., gxx=0., gyy=0., gzz=0.,
+    gxy=0., gxz=0., gyz=0.,gtx=0., gty=0., gtz=0.;
   double vel[4]; // 4-velocity of emitter
   for (int ii=0;ii<4;ii++){
     vel[ii]=co[ii+4];
@@ -1267,7 +1268,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     rr = cph[1];
     rcyl = cph[1]*sin(cph[2]);
     theta = cph[2];
-    phi = cph[3];
+    // phi = cph[3];
     zz   = cph[1]*cos(cph[2]);
     gtt = gg_->gmunu(&cph[0],0,0);
     grr = gg_->gmunu(&cph[0],1,1);
@@ -1282,7 +1283,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
     rcyl = pow(xx*xx+yy*yy, 0.5);
     rr = sqrt(xx*xx+yy*yy+zz*zz);
     theta   = acos(zz/rr);
-    phi = atan2(cph[2], cph[1]);
+    // phi = atan2(cph[2], cph[1]);
     gtt = gg_->gmunu(&cph[0],0,0);
     gxx = gg_->gmunu(&cph[0],1,1);
     gyy = gg_->gmunu(&cph[0],2,2);
@@ -1365,7 +1366,7 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
       // Spherical coordinates case 
       // Let B=(Bt,0,0,Bp), write B.B=1 and B.u=0, and find:
       if (vel[0]==0.) GYOTO_ERROR("Undefined 4-velocity for toroidal mf");
-      double omega=vel[3]/vel[0], omega2 = omega*omega;
+      double omega=vel[3]/vel[0]; //, omega2 = omega*omega;
       double Afact = (gtp + omega*gpp)/(gtt+omega*gtp);
       double Bp2 = 1./(Afact*Afact*gtt - 2*gtp*Afact + gpp);
       if (Bp2<0.) GYOTO_ERROR("Bad configuration for toroidal mf");
@@ -1469,20 +1470,20 @@ void Generic::computeB4vect(double B4vect[4], std::string const magneticConfig, 
 
 void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticConfig, double const co[8], state_t const &cph, double spin) const{
 
-	double rr, rcyl, theta, zz=0.;
+  double rr=0., /* rcyl, */ theta=0. /*, zz=0. */; // let's not set the variables that we don't use
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = cph[1];
-    rcyl = cph[1]*sin(cph[2]);
+    // rcyl = cph[1]*sin(cph[2]);
     theta = cph[2];
-    zz   = cph[1]*cos(cph[2]);
+    // zz   = cph[1]*cos(cph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
+    // rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
     rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
         +cph[3]*cph[3]);
     theta   = acos(cph[3]/rr);
-    zz   = cph[3];
+    // zz   = cph[3];
     break;
   default:
     GYOTO_ERROR("In Astrobj::Generic::computeB4vect_ipole : Unknown coordinate system kind");
@@ -1499,10 +1500,11 @@ void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticCo
 
   double B_1=0.,B_2=0.,B_3=0;
 
+  /* All of this is unused:
   double gtt = gg_->gmunu(&cph[0],0,0),
     grr = gg_->gmunu(&cph[0],1,1),
     gthth = gg_->gmunu(&cph[0],2,2),
-    gpp = gg_->gmunu(&cph[0],3,3);
+    gpp = gg_->gmunu(&cph[0],3,3); */
   double dx1=0.025,
     dx2=0.025;
 
@@ -1548,7 +1550,7 @@ void Generic::computeB4vect_ipole(double B4vect[4], std::string const magneticCo
 
   // Compute KS' metric
   double gcov_ksm[4][4];
-  double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+  double /* sin2=sin(theta)*sin(theta), */ rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
   double gcov_ks[4][4];
   for(int mu=0;mu<4;mu++)
     for(int nu=0;nu<4;nu++)
@@ -1665,7 +1667,7 @@ double Generic::interpNd(int const N, double* const Xq, double** const X, double
 }
 
 int Generic::getIndice(double &xq, std::string const cond_limit, double const X_params[3], double* const X) const{
-	int ind, n_x;
+	int ind=0, n_x;
 	double x_min, x_max, dx;
 	n_x = floor(X_params[2]);
 	if (n_x==1 && (cond_limit=="Linear" || cond_limit=="Periodic"))
