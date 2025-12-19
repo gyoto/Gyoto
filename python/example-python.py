@@ -147,6 +147,8 @@ class FlaredDisk:
 instance = FlaredDisk()
 ao.Instance = id(instance)
 
+print(ao)
+
 # Attach the metric to the star. This will telle the star that we are
 # working in Cartesian coordinates.
 ao.Metric = gg

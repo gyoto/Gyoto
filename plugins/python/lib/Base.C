@@ -477,6 +477,12 @@ PyObject * Base::instantiateClass(std::string &klass) const {
 void Base::attachInstance (PyObject * instance) {
   [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   PyTypeObject * type = nullptr;
+  PyObject * inspect_module = nullptr;
+  guardian.track(inspect_module);
+  PyObject * getsource_func = nullptr;
+  guardian.track(getsource_func);
+  PyObject * source_str = nullptr;
+  guardian.track(source_str);
 
   // in any case, free the previous instance
   Py_XDECREF(pInstance_); pInstance_=nullptr;
@@ -529,10 +535,57 @@ void Base::attachInstance (PyObject * instance) {
 
       // set pModule_
       if (module_ == "__main__") {
+	// Try to store source code in InlineModule
+	// Import the inspect module
+	inspect_module = PyImport_ImportModule("inspect");
+	if (!inspect_module) {
+	  PyErr_Print();
+	  Py_CLEAR(pInstance_);
+	  GYOTO_ERROR("failed importing inspect module");
+	}
+	// Get inspect.getsource
+	getsource_func = PyObject_GetAttrString(inspect_module, "getsource");
+	if (!getsource_func || PyErr_Occurred()) {
+	  PyErr_Print();
+	  Py_CLEAR(pInstance_);
+	  GYOTO_ERROR("failed getting function inpect.getsource");
+	}
+	// Call inspect.getsource.  If source cannot be retrieved or
+	// converted tu UTF8, module_ remains set to __main__
+	source_str = PyObject_CallFunction(getsource_func, "O", type);
+	if (PyErr_Occurred() || ! source_str) {
+	  // ignore this error
+	  PyErr_Clear();
+	} else {
+	  // successfully got source: store is as inline_module_
+	  const char* source_utf8 = PyUnicode_AsUTF8(source_str);
+	  if (PyErr_Occurred() || ! source_utf8) {
+	    // ignore this error
+	    PyErr_Clear();
+	  } else {
+	    inline_module_ = source_utf8;
+	    module_ = "";
+	  }
+	}
+	// in any case, load the actual module in pModule_
+	// this is a bit special for __main__
 	PyObject* sys_modules = PyImport_GetModuleDict();
 	pModule_ = PyDict_GetItemString(sys_modules, "__main__");
+	if (PyErr_Occurred() || !pModule_) {
+	  PyErr_Print();
+	  Py_CLEAR(pInstance_);
+	  GYOTO_ERROR("Error getting __main__ module");
+	}
 	Py_INCREF(pModule_);
-      } else pModule_ = PyImport_ImportModule(module_name);
+      } else {
+	// set pModule_
+	pModule_ = PyImport_ImportModule(module_name);
+	if (PyErr_Occurred() || !pModule_) {
+	  PyErr_Print();
+	  Py_CLEAR(pInstance_);
+	  GYOTO_ERROR("Error getting instance class module");
+	}
+      }
       Py_DECREF(module_name_obj);
     }
   }
