@@ -111,6 +111,7 @@ tobs_(0.), fov_(M_PI*0.1), azimuthal_fov_(2.*M_PI),
 
 Screen::Screen(const Screen& o) :
   SmartPointee(o),
+  Object(o),
   tobs_(o.tobs_), fov_(o.fov_), azimuthal_fov_(o.azimuthal_fov_),
   npix_(o.npix_), mask_(NULL),
   mask_filename_(o.mask_filename_),

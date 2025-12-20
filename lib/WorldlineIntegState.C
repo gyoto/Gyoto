@@ -57,7 +57,7 @@ using namespace boost::numeric::odeint;
 /// Generic
 Worldline::IntegState::Generic::~Generic() {};
 Worldline::IntegState::Generic::Generic(Worldline *parent) :
-  SmartPointee(), line_(parent), gg_(NULL), integ_31_(false) {};
+  SmartPointee(), line_(parent), integ_31_(false), gg_(NULL) {};
 void
 Worldline::IntegState::Generic::init(){
   if (!line_) return;
@@ -199,23 +199,23 @@ void Worldline::IntegState::Boost::init()
   double mass=line->getMass();
 
   if (!met)
-    this->system_=[](const state_t &/*x*/,
-	      state_t & /*dxdt*/,
-	      const double /* t*/ ){
+    this->system_=[](const state_t &/* x */,
+		     state_t & /* dxdt */,
+		     const double /* t */ ){
       GYOTO_ERROR("Metric not set");
     };
   else{
     if (integ_31_==false){
       this->system_=[this, line, met, mass](const state_t &x,
-				     state_t &dxdt,
-				     const double t)
+					    state_t &dxdt,
+					    const double /* t */)
 	{
 	  line->stopcond=met->diff(x, dxdt, mass);
 	};
     }else{
       this->system_=[this, line, met, mass](const state_t &x,
-				     state_t &dxdt,
-				     const double t)
+					    state_t &dxdt,
+					    const double /* t */)
 	{
 	  line->stopcond=met->diff31(x, dxdt, mass); // time must be passed
 	};
@@ -224,7 +224,7 @@ void Worldline::IntegState::Boost::init()
 
   if (line->getImin() > line->getImax() || !met) return;
 
-  setup_stepper(system_);
+  setup_stepper();
 };
 
 Worldline::IntegState::Boost *
@@ -480,7 +480,7 @@ void Worldline::IntegState::Boost::reorthonormalizeBasis(state_t &coord) const {
   }
 }
 
-void Gyoto::Worldline::IntegState::Boost::setup_stepper(system_t system){
+void Gyoto::Worldline::IntegState::Boost::setup_stepper(){
 
   switch (kind_) {
     case runge_kutta_cash_karp54: {

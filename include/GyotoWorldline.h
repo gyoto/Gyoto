@@ -1093,7 +1093,7 @@ class Gyoto::Worldline::IntegState::Boost : public Generic {
   /// Stepper used by the non-adaptive-step integrator
   do_step_t do_step_;
 
-  void setup_stepper(system_t system);
+  void setup_stepper();
  public:
   system_t system_;
   /// Custom error checker that takes into account the norm of the impulsion

@@ -41,18 +41,20 @@ using namespace std;
 using namespace Gyoto;
 
 GridData2D::GridData2D() :
-  dphi_(0.), nphi_(0), dr_(0.), nr_(0.), dt_(0.), nt_(0),
-  rmin_(0.), rmax_(DBL_MAX),
   phimin_(0.), phimax_(2.*M_PI),
+  dphi_(0.), nphi_(0), dr_(0.), nr_(0.),
+  rmin_(0.), rmax_(DBL_MAX),
+  dt_(0.), nt_(0),
   tmin_(-DBL_MAX), tmax_(DBL_MAX)
 {
   GYOTO_DEBUG << endl;
 }
 
 GridData2D::GridData2D(const GridData2D&o):
-  dphi_(o.dphi_), nphi_(o.nphi_), dr_(o.dr_), nr_(o.nr_), dt_(o.dt_), nt_(o.nt_),
-  rmin_(o.rmin_), rmax_(o.rmax_),
   phimin_(o.phimin_), phimax_(o.phimax_),
+  dphi_(o.dphi_), nphi_(o.nphi_), dr_(o.dr_), nr_(o.nr_),
+  rmin_(o.rmin_), rmax_(o.rmax_),
+  dt_(o.dt_), nt_(o.nt_),
   tmin_(o.tmin_), tmax_(o.tmax_)
 {
   GYOTO_DEBUG << endl;
@@ -133,7 +135,6 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
 
   int       status    = 0;
   int       anynul    = 0;
-  double    tmpd;
   long      ndim = length?4:3;
   long      naxes []  = {1,1,1,1};
   long      fpixel[]  = {1,1,1,1};
@@ -162,8 +163,9 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
     if (nr_>1) dr_ = (rmax_-rmin_) / double(nr_-1);
 
     if (dest) { delete [] dest; dest = NULL; }
-    dest = new double[nt_ * nphi_ * nr_ * (length?length:1)];
-    for (int ii=0;ii<nt_ * nphi_ * nr_ * (length?length:1);ii++)
+    auto ncells = nt_ * nphi_ * nr_ * (length?length:1);
+    dest = new double[ncells];
+    for (decltype(ncells) ii=0; ii<ncells ;ii++)
       dest[ii]=0.;
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxes, inc,
     		       0,dest,&anynul,&status)) {
@@ -193,7 +195,7 @@ vector<size_t> GridData2D::fitsReadHDU(fitsfile* fptr,
 
     if (dest) { delete [] dest; dest = NULL; }
     dest = new double[nt_];
-    for (int ii=0;ii<nt_;ii++)
+    for (decltype(nt_) ii=0; ii<nt_ ;ii++)
       dest[ii]=0.;
     if (fits_read_subset(fptr, TDOUBLE, fpixel, naxe, inc,
                0,dest,&anynul,&status)) {
@@ -328,7 +330,7 @@ void GridData2D::fitsClose(fitsfile* fptr) {
 
   int       status    = 0;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  int res=0;
+
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
 }
