@@ -73,7 +73,7 @@ Photon::Photon(const Photon& o) :
   transmissionMatrix_freqobs_(o.transmissionMatrix_freqobs_),
   spectro_(NULL), transmission_(NULL),
   nb_cross_eqplane_(o.nb_cross_eqplane_),
-  transmissionMatrix_(o.transmissionMatrix_)
+  transmissionMatrix_(NULL)
 {
   if (o.object_()) {
     object_  = o.object_  -> clone();
@@ -85,6 +85,10 @@ Photon::Photon(const Photon& o) :
     _allocateTransmissionMatrix();
     if (size_t nsamples = spectro_->nSamples()){
       memcpy(transmission_, o.getTransmission(), nsamples*sizeof(double));
+      // Eigen::Matrix4d has a non trivial constructor,
+      // let's construct it normally with new, then copy
+      _allocateTransmissionMatrix();
+      *transmissionMatrix_ = *(o.transmissionMatrix_);
     }
   }
 }
