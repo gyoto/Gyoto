@@ -214,12 +214,6 @@ class FlaredDisk(gyoto.python.StandardBase):
                   "Rin": "double",
                   "Rout": "double"}
 
-    # Every Gyoto property corresponds to a Python attribute with the
-    # same name in lower case:
-    opening=0.2
-    rin=4
-    rout=15
-
     def __init__(self, *args):
         '''Initialize FlaredDisk instance
 
@@ -233,6 +227,12 @@ class FlaredDisk(gyoto.python.StandardBase):
 
         '''
         super().__init__(*args)
+        # We should give default values to the properties in the
+        # constructor:
+        self.Opening=0.2
+        self.Rin=4
+        self.Rout=15
+        # We can also give default values to inherited properties:
         self.CriticalValue = 0.
         self.SafetyValue   = 0.3
 
@@ -250,7 +250,7 @@ class FlaredDisk(gyoto.python.StandardBase):
         else:
             r=math.sqrt(coord[1]**2+coord[2]**2)
             h_r=abs(coord[3])/r
-        return max(h_r-self.opening, self.rin-r, r-self.rout)
+        return max(h_r-self.Opening, self.Rin-r, r-self.Rout)
 
 class FlaredDiskSimple:
     '''A flared disk for Gyoto implemented in Python

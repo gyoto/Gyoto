@@ -121,8 +121,15 @@ class StandardBase(PythonStandard):
 
     In a nutshell:
     class MyAstrobj(StandardBase):
-        properties={ 'property1_name': 'type1',
-                     'property2_name': 'type2', ... }
+        properties={ 'Property1': 'type1',
+                     'property2': 'type2', ... }
+
+        def __init__(self, *args):
+            super(StandardBase, self).__init__(*args)
+            self.Property1 = default1
+            self.Property2 = default2
+            ...
+
         def __call__(self, position):
             # position is inside the object if and only if
             # retval < self.CriticalValue
@@ -150,8 +157,10 @@ class StandardBase(PythonStandard):
     this.
 
     StandardBase.set and StandardBase.get simply accept any key in the
-    properties dict and set/get the corresponding attribute in all
-    lowercase.
+    properties dict and set/get the corresponding attribute with name
+    '_'+key.lower() (directly in self.__dict__, by-passing
+    setattr). Note that these attributes are protected and cannot
+    be set directly through setattr.
 
     '''
 
@@ -163,21 +172,36 @@ class StandardBase(PythonStandard):
         1- initialize the underlying PythonStandard instance;
         2- set the Instance Property in the underlying PythonStandard object.
 
-        Derived classes that reimplement __init__ should call this first:
+        Derived classes should reimplement __init__ to, in that order:
+          1- call StandardBase.__init__;
+          2- initialize the various properties:
+
           class MyAstrobj(StandardBase):
               def __init__(self, *args):
                   super(StandardBase, self).__init__(*args)
-                  # whatever else needs to be done
+                  self.Property1 = default1
+                  self.Property2 = default2
+                  ...
 
         '''
         super().__init__(*args)
         super(PythonStandard, self).set("Instance", id(self))
 
+    def _key2attr(self, key):
+        '''Transform an property key to an attibute name
+
+        return '_'+key.lower()
+
+        This is not meant to be reimplemented in derived class.
+
+        '''
+        return '_'+key.lower()
+
     def set (self, key, *args):
         '''Set a Gyoto property
 
         If key is listed in the self.properties dictionary, set the
-        Python attribute named key.lower() in self (direclty in
+        Python attribute named '_'+key.lower() in self (direclty in
         self.__dict__, bypassing __setattr__). Else, forward the call
         to the underlying C++ instance.
 
@@ -186,7 +210,7 @@ class StandardBase(PythonStandard):
 
         '''
         if key in self.properties:
-            self.__dict__[key.lower()] = args[0]
+            self.__dict__[self._key2attr(key)] = args[0]
         else:
             super(PythonStandard, self).set(key, *args)
 
@@ -194,18 +218,15 @@ class StandardBase(PythonStandard):
         '''Get a Gyoto property
 
         If key is listed in the self.properties dictionary, get the
-        Python attribute named key.lower() in self. Else, forward the call
-        to the underlying C++ instance.
+        Python attribute named '_'+key.lower() in self. Else, forward
+        the call to the underlying C++ instance.
 
         Derived classes may reimplement this method but should not
         depart too far from this logic.
 
-        If special action should be taken when a Property is set, it
-        may be better to do it in __getattr__() rather than in get().
-
         '''
         if key in self.properties:
-            return getattr(self, key.lower())
+            return getattr(self, self._key2attr(key))
         else:
             return super(PythonStandard, self).get(key)
 
