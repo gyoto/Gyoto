@@ -211,6 +211,38 @@ else:
     pdf.savefig()
     plt.close()
 
+## Try a thindisk
+
+sc = gyoto.util.readScenery(examples_dir+"example-thin-disk.xml")
+
+from gyoto_sample_thindisks import ThinDisk
+
+sc.Screen.Time = 1000, "geometrical_time"
+sc.Screen.PALN (0.)
+sc.Astrobj = ThinDisk()
+sc.Astrobj.InnerRadius = 10
+sc.Astrobj.RMax = 1000
+sc.Astrobj.Spectrum = gyoto.spectrum.BlackBody()
+sc.Astrobj.Spectrum.Temperature = 6000
+sc.Astrobj.OpticallyThin = True
+
+# print class and module name:
+print(sc.Astrobj.Module)
+print(sc.Astrobj.Class)
+
+print(sc)
+
+#gyoto.core.debug(True)
+data=sc[:,:]
+
+# Plot:
+plt.imshow(numpy.sqrt(data["Intensity"]))
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
 # Cleanup and exit
 print("All done, exiting")
 if pdf is not None:

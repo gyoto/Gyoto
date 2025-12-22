@@ -954,6 +954,16 @@ class Gyoto::Astrobj::Python::ThinDisk
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
 

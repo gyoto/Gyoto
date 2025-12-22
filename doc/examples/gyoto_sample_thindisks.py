@@ -28,7 +28,23 @@
 
 '''
 
-class ThinDisk:
+import gyoto.python
+import numpy
+
+class ThinDisk(gyoto.python.ThinDiskBase):
+    '''A ThinDisk with a spectrum constant over the disk
+    '''
+    properties = {"Spectrum": "spectrum"}
+
+    Spectrum = gyoto.spectrum.PowerLaw()
+
+    def emission(self, nuem, dsem, cph, co):
+        if self.OpticallyThin:
+            return dsem*self.Spectrum(nuem)
+        else:
+            return self.Spectrum(nuem)
+
+class ThinDiskSimple:
     '''A ThinDisk with trivial emission
     '''
     def emission(self, nuem, dsem, cph, co):

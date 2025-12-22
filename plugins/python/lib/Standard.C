@@ -323,8 +323,6 @@ double Gyoto::Astrobj::Python::Standard::emission
   if (!pEmission_)
     return Astrobj::Standard::emission(nu_em, dsem, coord_ph, coord_obj);
 
-  isRecursing = true;
-
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   npy_intp dims_co[] = {8};
@@ -334,8 +332,11 @@ double Gyoto::Astrobj::Python::Standard::emission
   PyObject * pDs = PyFloat_FromDouble(dsem);
   PyObject * pCp = PyArray_SimpleNewFromData(1, dims_ph, NPY_DOUBLE, const_cast<double*>(&coord_ph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
+
+  isRecursing = true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pNu, pDs, pCp, pCo, NULL);
+  isRecursing = false;
 
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
@@ -346,14 +347,12 @@ double Gyoto::Astrobj::Python::Standard::emission
     Py_XDECREF(pR);
     PyErr_Print();
     PyGILState_Release(gstate);
-    isRecursing = false;
     GYOTO_ERROR("Error occurred in Standard::emission()");
   }
  
   double res = PyFloat_AsDouble(pR);  
   Py_XDECREF(pR);
   PyGILState_Release(gstate);
-  isRecursing = false;
 
   return res;
 }

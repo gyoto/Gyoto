@@ -214,27 +214,20 @@ class FlaredDisk(gyoto.python.StandardBase):
                   "Rin": "double",
                   "Rout": "double"}
 
+    # We should give default values to the properties, and can do it
+    # here or in the constructor:
+    Opening =  0.2
+    Rin     =  4
+    Rout    = 15
+
+    # It is not necessary to implement a constructor, but if we do, it
+    # should call super().__init__():
     def __init__(self, *args):
-        '''Initialize FlaredDisk instance
-
-        1- call __init__ on parent class;
-
-        2- set CriticalValue to the only meaningful value (0.) and
-           SafetyValue to something slightly larger (0.3).
-
-        Note that CriticalValue and SafetyValue are Gyoto properties
-        of a base class.
-
-        '''
         super().__init__(*args)
-        # We should give default values to the properties in the
-        # constructor:
-        self.Opening=0.2
-        self.Rin=4
-        self.Rout=15
-        # We can also give default values to inherited properties:
-        self.CriticalValue = 0.
-        self.SafetyValue   = 0.3
+        # We can also give default values to properties here,
+        # including inherited ones:
+        self.this.CriticalValue = 0.
+        self.this.SafetyValue   = 0.3
 
     # The only mandatory method to reimplement is __call__, which
     # should support both spherical and Cartesian coordinates:

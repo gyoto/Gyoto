@@ -20,6 +20,8 @@ GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, InlineModule, inlineModu
       "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
+GYOTO_PROPERTY_SIZE_T(Gyoto::Astrobj::Python::ThinDisk, Instance, instance,
+      "Memory address of Python instance implementing the Astrobj as returned by id().")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::ThinDisk,
 			     Parameters, parameters,
       "Parameters for the class instance.")
@@ -54,11 +56,11 @@ Gyoto::Astrobj::Python::ThinDisk::ThinDisk(const ThinDisk& o)
 }
 
 Gyoto::Astrobj::Python::ThinDisk::~ThinDisk() {
-  Py_XDECREF(pEmission_);
-  Py_XDECREF(pIntegrateEmission_);
-  Py_XDECREF(pTransmission_);
-  Py_XDECREF(pCall_);
-  Py_XDECREF(pGetVelocity_);
+  Py_CLEAR(pEmission_);
+  Py_CLEAR(pIntegrateEmission_);
+  Py_CLEAR(pTransmission_);
+  Py_CLEAR(pCall_);
+  Py_CLEAR(pGetVelocity_);
 }
 
 Astrobj::Python::ThinDisk* Gyoto::Astrobj::Python::ThinDisk::clone() const
@@ -78,25 +80,29 @@ void Astrobj::Python::ThinDisk::inlineModule(const std::string& m)
 {Gyoto::Python::Base::inlineModule(m);}
 std::string Astrobj::Python::ThinDisk::klass() const
 {return Gyoto::Python::Base::klass();}
+void Astrobj::Python::ThinDisk::klass(const std::string& c)
+{Gyoto::Python::Base::klass(c);}
 
-void Gyoto::Astrobj::Python::ThinDisk::klass(const std::string &f) {
+void Astrobj::Python::ThinDisk::instance(size_t i)
+{Gyoto::Python::Base::instance(reinterpret_cast<PyObject*>(i));}
+size_t Astrobj::Python::ThinDisk::instance() const
+{return reinterpret_cast<size_t>(pInstance_);}
 
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  Py_XDECREF(pEmission_);
-  Py_XDECREF(pIntegrateEmission_);
-  Py_XDECREF(pTransmission_);
-  Py_XDECREF(pCall_);
-  Py_XDECREF(pGetVelocity_);
-  PyGILState_Release(gstate);
-
+void Gyoto::Astrobj::Python::ThinDisk::detachInstance() {
   pEmission_overloaded_ = false;
   pIntegrateEmission_overloaded_ = false;
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  Py_CLEAR(pEmission_);
+  Py_CLEAR(pIntegrateEmission_);
+  Py_CLEAR(pTransmission_);
+  Py_CLEAR(pCall_);
+  Py_CLEAR(pGetVelocity_);
+  Gyoto::Python::Base::detachInstance();
+}
 
-  Gyoto::Python::Base::klass(f);
-  if (!pModule_) return;
-
-  gstate = PyGILState_Ensure();
-  GYOTO_DEBUG << "Checking Python class methods" << f << endl;
+void Gyoto::Astrobj::Python::ThinDisk::attachInstance (PyObject * instance) {
+  Gyoto::Python::Base::attachInstance(instance);
+  GYOTO_DEBUG << "Checking methodes for Python class " << class_ << endl;
 
   pEmission_          =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "emission");
@@ -109,9 +115,14 @@ void Gyoto::Astrobj::Python::ThinDisk::klass(const std::string &f) {
   pGetVelocity_       =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "getVelocity");
 
+  GYOTO_DEBUG_EXPR(pEmission_);
+  GYOTO_DEBUG_EXPR(pIntegrateEmission_);
+  GYOTO_DEBUG_EXPR(pTransmission_);
+  GYOTO_DEBUG_EXPR(pCall_);
+  GYOTO_DEBUG_EXPR(pGetVelocity_);
+
   if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Error while retrieving methods");
   }
 
@@ -121,16 +132,32 @@ void Gyoto::Astrobj::Python::ThinDisk::klass(const std::string &f) {
   pIntegrateEmission_overloaded_ = pIntegrateEmission_ &&
     Gyoto::Python::PyCallable_HasVarArg(pIntegrateEmission_);
 
+  GYOTO_DEBUG << "setting 'this' in the instance" << endl;
   Gyoto::Python::PyInstance_SetThis(pInstance_,
 				    Gyoto::Python::pGyotoThinDisk(),
 				    this);
 
-  PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
-  GYOTO_DEBUG << "Done checking Python class methods" << f << endl;
+  GYOTO_DEBUG << "Done checking methods for Python class " << class_ << endl;
 }
 
 double Gyoto::Astrobj::Python::ThinDisk::operator()(double const coord[4]) {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pCall_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pCall_);
+  }
+
+  GYOTO_DEBUG_EXPR(pCall_);
   if (!pCall_) return Gyoto::Astrobj::ThinDisk::operator()(coord);
   PyGILState_STATE gstate = PyGILState_Ensure();
 
@@ -138,7 +165,9 @@ double Gyoto::Astrobj::Python::ThinDisk::operator()(double const coord[4]) {
 
   PyObject * pCoord = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE,
 						const_cast<double*>(coord));
+  isRecursing=true;
   PyObject * pR = PyObject_CallFunctionObjArgs(pCall_, pCoord, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pCoord);
 
@@ -158,6 +187,22 @@ double Gyoto::Astrobj::Python::ThinDisk::operator()(double const coord[4]) {
 
 void Gyoto::Astrobj::Python::ThinDisk::getVelocity
 (double const coord[4], double vel[4]) {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGetVelocity_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pGetVelocity_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGetVelocity_);
   if (!pGetVelocity_) return Gyoto::Astrobj::ThinDisk::getVelocity(coord, vel);
   PyGILState_STATE gstate = PyGILState_Ensure();
 
@@ -166,8 +211,11 @@ void Gyoto::Astrobj::Python::ThinDisk::getVelocity
   PyObject * pCoord = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE,
 						const_cast<double*>(coord));
   PyObject * pVel = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, vel);
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetVelocity_, pCoord, pVel, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pR);
   Py_XDECREF(pCoord);
@@ -185,6 +233,22 @@ void Gyoto::Astrobj::Python::ThinDisk::getVelocity
 double Gyoto::Astrobj::Python::ThinDisk::emission
 (double nu_em, double dsem, state_t const &coord_ph, double const coord_obj[8])
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pEmission_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pEmission_);
+  }
+
+  GYOTO_DEBUG_EXPR(pEmission_);
   if (!pEmission_)
     return Astrobj::ThinDisk::emission(nu_em, dsem, coord_ph, coord_obj);
 
@@ -197,8 +261,11 @@ double Gyoto::Astrobj::Python::ThinDisk::emission
   PyObject * pDs = PyFloat_FromDouble(dsem);
   PyObject * pCp = PyArray_SimpleNewFromData(1, dims_cp, NPY_DOUBLE, const_cast<double*>(&coord_ph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pNu, pDs, pCp, pCo, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
@@ -222,6 +289,25 @@ double Gyoto::Astrobj::Python::ThinDisk::emission
 void Gyoto::Astrobj::Python::ThinDisk::emission
 (double Inu[], double const nu_em[], size_t nbnu, double dsem, state_t const &coord_ph,
  double const coord_obj[8]) const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pEmission_ "
+		     << "and pEmission_overloaded_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pEmission_);
+    const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pEmission_overloaded_ = false;
+  }
+
+  GYOTO_DEBUG_EXPR(pEmission_);
+  GYOTO_DEBUG_EXPR(pEmission_overloaded_);
   if (!pEmission_ || !pEmission_overloaded_) {
     Astrobj::ThinDisk::emission(Inu, nu_em, nbnu, dsem,
 				coord_ph, coord_obj);
@@ -239,8 +325,11 @@ void Gyoto::Astrobj::Python::ThinDisk::emission
   PyObject * pDs = PyFloat_FromDouble(dsem);
   PyObject * pCp = PyArray_SimpleNewFromData(1, dims_cp, NPY_DOUBLE, const_cast<double*>(&coord_ph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(coord_obj));
+
+  isRecursing = true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pEmission_, pIn, pNu, pDs, pCp, pCo, NULL);
+  isRecursing = false;
 
   Py_XDECREF(pR);
   Py_XDECREF(pCo);
@@ -261,6 +350,22 @@ void Gyoto::Astrobj::Python::ThinDisk::emission
 double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 (double nu1, double nu2, double dsem, state_t const &c_ph, double const c_obj[8])
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pIntegrateEmission_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pIntegrateEmission_);
+  }
+
+  GYOTO_DEBUG_EXPR(pIntegrateEmission_);
   if (!pIntegrateEmission_)
     return Astrobj::ThinDisk::integrateEmission(nu1, nu2, dsem, c_ph,c_obj);
 
@@ -274,9 +379,12 @@ double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
   PyObject * pDs = PyFloat_FromDouble(dsem);
   PyObject * pCp = PyArray_SimpleNewFromData(1, dims_cp, NPY_DOUBLE, const_cast<double*>(&c_ph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, dims_co, NPY_DOUBLE, const_cast<double*>(c_obj));
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pN1, pN2, pDs, pCp, pCo, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);
@@ -301,6 +409,25 @@ double Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 void Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 (double * I, double const * boundaries, size_t const * chaninds,
  size_t nbnu, double dsem, state_t const &cph, double const *co) const{
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pIntegrateEmission_ "
+		     << "and pIntegrateEmission_overloaded_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pIntegrateEmission_);
+    const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pIntegrateEmission_overloaded_ = false;
+  }
+
+  GYOTO_DEBUG_EXPR(pIntegrateEmission_);
+  GYOTO_DEBUG_EXPR(pIntegrateEmission_overloaded_);
   if (!pIntegrateEmission_ || !pIntegrateEmission_overloaded_) {
     Gyoto::Astrobj::ThinDisk::integrateEmission(I, boundaries, chaninds,
 						nbnu, dsem, cph, co);
@@ -324,9 +451,12 @@ void Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 					     const_cast<double*>(&cph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, &nCo, NPY_DOUBLE,
 					     const_cast<double*>(co));
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIntegrateEmission_,
 				 pI, pBo, pCh, pDs, pCp, pCo, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pR);
   Py_XDECREF(pCo);
@@ -347,6 +477,22 @@ void Gyoto::Astrobj::Python::ThinDisk::integrateEmission
 
 double Gyoto::Astrobj::Python::ThinDisk::transmission
 (double nuem, double dsem, state_t const &cph, double const * co) const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pTransmission_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Astrobj::Python::ThinDisk*>(this)->pTransmission_);
+  }
+
+  GYOTO_DEBUG_EXPR(pTransmission_);
   if (!pTransmission_)
     return Astrobj::ThinDisk::transmission(nuem, dsem, cph, co);
 
@@ -359,8 +505,11 @@ double Gyoto::Astrobj::Python::ThinDisk::transmission
   PyObject * pDs = PyFloat_FromDouble(dsem);
   PyObject * pCp = PyArray_SimpleNewFromData(1, pdims, NPY_DOUBLE, const_cast<double*>(&cph[0]));
   PyObject * pCo = PyArray_SimpleNewFromData(1, odims, NPY_DOUBLE, const_cast<double*>(co));
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pTransmission_, pNu, pDs, pCp, pCo, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pCo);
   Py_XDECREF(pCp);

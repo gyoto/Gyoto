@@ -1206,3 +1206,12 @@ public:
   }
   int Gyoto::__class__ = 0;
 }
+
+// Some way to get an object's address
+%inline %{
+size_t gyotoid(PyObject* obj) {
+  GYOTO_DEBUG_EXPR(obj);
+  return (size_t)obj;
+}
+%}
+size_t gyotoid(PyObject* obj);

@@ -112,7 +112,76 @@ for namespace, clsname, identifier, base in (
     setattr(namespace, identifier, klass)
     namespace.__all__.append(identifier)
 
-class StandardBase(PythonStandard):
+class PythonBase():
+    '''Base class for Gyoto object implemented in Python
+
+    This class is meant as a base class for implementing Gyoto objects
+    in the Python language using. It handles properties in a
+    consistent manner.
+
+    '''
+
+    properties = dict()
+
+    def __init__(self, base, *args):
+        '''Initialize instance
+
+        Set default values of properties including 'Instance'.
+
+        '''
+        self.__dict__["_PythonPluginClass"] = base
+        self._PythonPluginClass.__init__(self, *args)
+        super(self._PythonPluginClass, self).set("Instance", core.gyotoid(self))
+        for key in self.properties:
+            if hasattr(type(self), key):
+                self.set(key, getattr(type(self), key))
+            else:
+                raise(core.Error(f"Please provide default value for '{key}'"))
+
+    def _key2attr(self, key):
+        '''Transform an property key to an attibute name
+
+        return '_'+key.lower()
+
+        This is not meant to be reimplemented in derived class.
+
+        '''
+        return '_'+key.lower()
+
+    def set (self, key, *args):
+        '''Set a Gyoto property
+
+        If key is listed in the self.properties dictionary, set the
+        Python attribute named '_'+key.lower() in self (direclty in
+        self.__dict__, bypassing __setattr__). Else, forward the call
+        to the underlying C++ instance.
+
+        Derived classes may reimplement this method but should not
+        depart too far from this logic.
+
+        '''
+        if key in self.properties:
+            self.__dict__[self._key2attr(key)] = args[0]
+        else:
+            super(self._PythonPluginClass, self).set(*args)
+
+    def get (self, key):
+        '''Get a Gyoto property
+
+        If key is listed in the self.properties dictionary, get the
+        Python attribute named '_'+key.lower() in self. Else, forward
+        the call to the underlying C++ instance.
+
+        Derived classes may reimplement this method but should not
+        depart too far from this logic.
+
+        '''
+        if key in self.properties:
+            return self.__dict__[self._key2attr(key)]
+        else:
+            return super(self._PythonPluginClass, self).get(key)
+
+class StandardBase(PythonBase, PythonStandard):
     '''Base class for Gyoto Standard Astrobjs implemented in Python
 
     This class is meant as a base class for implementing Gyoto
@@ -124,11 +193,8 @@ class StandardBase(PythonStandard):
         properties={ 'Property1': 'type1',
                      'property2': 'type2', ... }
 
-        def __init__(self, *args):
-            super(StandardBase, self).__init__(*args)
-            self.Property1 = default1
-            self.Property2 = default2
-            ...
+        Property1 = deafult1
+        Property2 = deafult2
 
         def __call__(self, position):
             # position is inside the object if and only if
@@ -172,63 +238,8 @@ class StandardBase(PythonStandard):
         1- initialize the underlying PythonStandard instance;
         2- set the Instance Property in the underlying PythonStandard object.
 
-        Derived classes should reimplement __init__ to, in that order:
-          1- call StandardBase.__init__;
-          2- initialize the various properties:
-
-          class MyAstrobj(StandardBase):
-              def __init__(self, *args):
-                  super(StandardBase, self).__init__(*args)
-                  self.Property1 = default1
-                  self.Property2 = default2
-                  ...
-
         '''
-        super().__init__(*args)
-        super(PythonStandard, self).set("Instance", id(self))
-
-    def _key2attr(self, key):
-        '''Transform an property key to an attibute name
-
-        return '_'+key.lower()
-
-        This is not meant to be reimplemented in derived class.
-
-        '''
-        return '_'+key.lower()
-
-    def set (self, key, *args):
-        '''Set a Gyoto property
-
-        If key is listed in the self.properties dictionary, set the
-        Python attribute named '_'+key.lower() in self (direclty in
-        self.__dict__, bypassing __setattr__). Else, forward the call
-        to the underlying C++ instance.
-
-        Derived classes may reimplement this method but should not
-        depart too far from this logic.
-
-        '''
-        if key in self.properties:
-            self.__dict__[self._key2attr(key)] = args[0]
-        else:
-            super(PythonStandard, self).set(key, *args)
-
-    def get (self, key):
-        '''Get a Gyoto property
-
-        If key is listed in the self.properties dictionary, get the
-        Python attribute named '_'+key.lower() in self. Else, forward
-        the call to the underlying C++ instance.
-
-        Derived classes may reimplement this method but should not
-        depart too far from this logic.
-
-        '''
-        if key in self.properties:
-            return getattr(self, self._key2attr(key))
-        else:
-            return super(PythonStandard, self).get(key)
+        PythonBase.__init__(self, PythonStandard, *args)
 
     def getVelocity(self, coord, vel):
         '''Get astronomical object velocity field at a given position
@@ -258,6 +269,64 @@ class StandardBase(PythonStandard):
 
         '''
         self.this.Metric.circularVelocity(coord, vel)
+
+    def coordKindIsSpherical(self):
+        '''True if Metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL
+        '''
+        return self.this.Metric.coordKind() == core.GYOTO_COORDKIND_SPHERICAL
+
+class ThinDiskBase(PythonBase, PythonThinDisk):
+    '''Base class for Gyoto ThinDisk Astrobjs implemented in Python
+
+    This class is meant as a base class for implementing Gyoto
+    astronomical objects in the Python language using
+    gyoto.python.PythonThinDisk (from which it derives):
+
+    In a nutshell:
+    class MyAstrobj(ThinDiskBase):
+        properties={ 'Property1': 'type1',
+                     'property2': 'type2', ... }
+
+        Property1 = deafult1
+        Property2 = deafult2
+
+        def __call__(self, position):
+            # position is inside the object if and only if
+            # retval < self.CriticalValue
+            return retval
+
+    ao = MyAstrobj()
+
+    sc=gyoto.core.Scenery()
+
+    sc.Astrobj = ao
+    ...
+
+    Such classes can also be used from XML files:
+    <Astrobj kind = "PythonThinDisk" plugin="fallback:python*"
+      <Module>module_where_MyAstrobj_is_defined</Module>
+      <Class>MyAstrobj</Class>
+      any other PythonThinDisk Property, e.g. InnerRadius, RMax etc.
+    </Astrobj>
+
+    Derived classes may implement __call__(), getVelocity(),
+    emission(), transmission() and integrateEmission(). __call__()
+    should work in both spherical and Cartesian coordinates, the
+    helper method coordKindIsSpherical() is provided to help determine
+    this.
+
+    '''
+
+    properties = dict()
+
+    def __init__(self, *args):
+        '''Initialize instance
+
+        1- initialize the underlying PythonStandard instance;
+        2- set the Instance Property in the underlying PythonStandard object.
+
+        '''
+        PythonBase.__init__(self, PythonThinDisk, *args)
 
     def coordKindIsSpherical(self):
         '''True if Metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL

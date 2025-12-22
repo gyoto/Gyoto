@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  This example shows how to code a spectrumthin disk in Python
+  directly in the XML file.
+
+  <Metric kind = "KerrBL">
+    <Spin> 0. </Spin>
+  </Metric>
+
+  <Screen>
+    <Position> 1000. 100. 1.22 0. </Position>
+    <Time unit="geometrical_time"> 1000. </Time>
+    <FieldOfView> 0.314159265358979323846264338327950288419716 </FieldOfView>
+    <Resolution> 32 </Resolution>
+  </Screen>
+
+  <Astrobj kind = "Python::ThinDisk" plugin="fallback:python*">
+
+    We specify python3 as a "fallback" plug-in as the python plug-in
+    can be compiled for several versions of Python. If loading this
+    file from Python, the right python plug-in should have been loaded
+    already. When loading this file from the gyoto command-line tool,
+    gyoto will try to load all plug-ins starting with 'python' until
+    it finds one that contains the metric class 'Python'.
+
+    Python::ThinDisk inherits from ThinDisk, we can set the usual
+    parameters:
+    <InnerRadius> 3. </InnerRadius>
+    <OpticallyThin/>
+
+    We can write a python module in a separate file and use the
+    "Module" entity to load it:
+    <Module>gyoto_sample_thindisks</Module>
+
+    Since there are more than one class in this module, we need to
+    specify which one to use:
+    <Class>ThinDisk</Class>
+
+    This specific class has a property that is a Spectrum, let's set
+    it to an instance of C++ class.
+    <Spectrum kind="BlackBody" plugin="stdplug">
+      <Temperature> 6000 </Temperature>
+    </Spectrum>
+
+  </Astrobj>
+
+  <MinimumTime> 0. </MinimumTime>
+</Scenery>

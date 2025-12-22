@@ -32,20 +32,20 @@
     We could write a python module in a separate file, say
     "gyoto_sample_thindisks.py", and use the "Module" entity to load
     it:
-    <!--Module>gyoto_sample_thindisk</Module-->
+    <!--Module>gyoto_sample_thindisks</Module-->
 
     Alternatively, we can put the Python code inline using the
     "InlineModule" entity. Common indentation will be removed so we
     don't have to flush everything left.
     <InlineModule>
-        class ThinDisk:
+        class ThinDiskSimple:
             def emission(self, nuem, dsem, cph, co):
                 return dsem
     </InlineModule>
 
     Since there is only one class in the module, we do not need to
     specify the class name here:
-    <!--Class>ThinDisk</Class-->
+    <!--Class>ThinDiskSimple</Class-->
 
   </Astrobj>
 
