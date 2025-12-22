@@ -632,15 +632,29 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
 %define ExtendArrayNumPy(name, type)
 %extend name {
   static name* fromnumpy1(type* IN_ARRAY1, size_t DIM1) {
+    (void)IN_ARRAY1;
+    (void)DIM1;
     return static_cast< name * >(IN_ARRAY1);
   }
   static name* fromnumpy2(type* IN_ARRAY2, size_t DIM1, size_t DIM2) {
+    (void)IN_ARRAY2;
+    (void)DIM1;
+    (void)DIM2;
     return static_cast< name * >(IN_ARRAY2);
   }
   static name* fromnumpy3(type* IN_ARRAY3, size_t DIM1, size_t DIM2, size_t DIM3) {
+    (void)IN_ARRAY3;
+    (void)DIM1;
+    (void)DIM2;
+    (void)DIM3;
     return static_cast< name * >(IN_ARRAY3);
   }
   static name* fromnumpy4(type* IN_ARRAY4, size_t DIM1, size_t DIM2, size_t DIM3, size_t DIM4) {
+    (void)IN_ARRAY4;
+    (void)DIM1;
+    (void)DIM2;
+    (void)DIM3;
+    (void)DIM4;
     return static_cast< name * >(IN_ARRAY4);
   }
 };

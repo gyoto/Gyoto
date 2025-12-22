@@ -448,6 +448,7 @@ int main(int argc, char** argv) {
 	int started , stopped , error ;
 	error = MPI_Initialized ( & started ) ;
 	error = MPI_Finalized ( & stopped ) ;
+	(void) error;
 	if (started && !stopped) MPI_Finalize();
 	return 0;
       }
@@ -762,6 +763,7 @@ int main(int argc, char** argv) {
   int started , stopped , error ;
   error = MPI_Initialized ( & started ) ;
   error = MPI_Finalized ( & stopped ) ;
+  (void)error;
   if (started && !stopped) MPI_Finalize();
 #endif
 
