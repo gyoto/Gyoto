@@ -288,7 +288,7 @@ void NeutronStarModelAtmosphere::fitsRead(string filename) {
   GYOTO_DEBUG << " done." << endl;
 
   double minemission=DBL_MAX, maxemission=DBL_MIN;
-  for (int myi=0;myi<nnu_ * ni_ * nsg_-1;myi++){
+  for (size_t myi=0;myi<nnu_ * ni_ * nsg_-1;myi++){
     if (emission_[myi]<minemission) minemission=emission_[myi];
     if (emission_[myi]>maxemission) maxemission=emission_[myi];
   }
@@ -425,8 +425,8 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
   if (rr==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::getIndices r is 0!");
   double rsinth = rr*sin(th);
   if (rsinth==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::getIndices on z axis!");
-  double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
-    sm2 = sm1*sm1;
+  double rm1 = 1./rr, rm2 = rm1*rm1; //, sm1 = 1./sin(th),
+  //sm2 = sm1*sm1;
   double a_r = a_i(1).val_point(rr,th,phi),
     a_t = rr*a_i(2).val_point(rr,th,phi),
     a_p = rr*sin(th)*a_i(3).val_point(rr,th,phi);
@@ -435,7 +435,7 @@ void NeutronStarModelAtmosphere::getIndices(size_t i[3], double const co[4],
   const Sym_tensor& g_up_ij = *(gg_->getGamcon_tab()[0]);
   double grr=g_up_ij(1,1).val_point(rr,th,phi), 
     gtt=rm2*g_up_ij(2,2).val_point(rr,th,phi);
-  double ar = a_r*grr, at = a_t*gtt; //contravariant 3-accel
+  // double ar = a_r*grr, at = a_t*gtt; //contravariant 3-accel
 
   double accelvecNorm2 = grr*a_r*a_r + gtt*a_t*a_t; // squared norm of accel vector
   if (accelvecNorm2<=0.) GYOTO_ERROR("In NeutronStarModelAtmosphere::getIndices"
@@ -548,8 +548,8 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
   if (rr==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::emission r is 0!");
   double rsinth = rr*sin(th);
   if (rsinth==0.) GYOTO_ERROR("In NeutronStarModelAtm.C::emission on z axis!");
-  double rm1 = 1./rr, rm2 = rm1*rm1, sm1 = 1./sin(th),
-    sm2 = sm1*sm1;
+  double rm1 = 1./rr, rm2 = rm1*rm1;
+  // sm1 = 1./sin(th), sm2 = sm1*sm1;
 
   // Finding acceleration 4-vector
   /*
@@ -596,8 +596,8 @@ double NeutronStarModelAtmosphere::emission(double nu, double,
     up = gg_->ScalarProd(&cp[0],co+4,&cp[4]);
   //cout << "accel and velo= " << accelvec[0] << " " << accelvec[1] << " " << accelvec[2] << " " << accelvec[3] << " " << cp[4] << " " << cp[5] << " " << cp[6] << " " << cp[7] << " " << endl;
   //cout << "scalar prods= " << np << " " << up << endl;
-  double p_r=cp[5]/grr, p_t=cp[6]/gtt;
-  double myscalprod = 1./accelvecNorm*(grr*a_r*p_r + gtt*a_t*p_t);
+  //double p_r=cp[5]/grr, p_t=cp[6]/gtt;
+  //double myscalprod = 1./accelvecNorm*(grr*a_r*p_r + gtt*a_t*p_t);
   //cout << "myscalprod= " << myscalprod << endl;
   //cout << "gmunu= " << grr << " " << gtt << endl;
   //cout << "prods of ap= " << a_r*p_r << " " << a_t*p_t << endl;

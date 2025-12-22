@@ -85,14 +85,15 @@ void KonoplyaRezzollaZhidenko::deltashorizon(std::vector<double> const &v) {
                 GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ2 or δ3");
                 break;
               }
+	[[fallthrough]]; // or break; ???
        case 3:
        case 4: if (deltashorizon_[i] < -1.) 
               GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ4 or δ5");
-              break;
+            break;
        case 5: if (deltashorizon_[i] > r02/(4.-spin2_)) 
               GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ6");
               // Irene: Given the disagreement in the literature, I don't know if this restriction range still applies...!!!
-              break;
+            break;
     }
   }
   for (size_t i=n; i<GYOTO_NB_DELTAHOR_MAX; ++i) deltashorizon_[i]=0.;
@@ -454,7 +455,7 @@ double KonoplyaRezzollaZhidenko::dthN2(const double rr, const double th) const{
   double r0 = Definer0(), r02 = r0*r0, r03 = r02*r0, r04 = r03*r0,
          rr2 = rr*rr, rr3 = rr2*rr, rr4 = rr3*rr,
          costh = cos(th), sinth = sin(th);
-  double k00 = DefineAsymptoticParameters(AsymptoticParameter::k00, r0),
+  double // k00 = DefineAsymptoticParameters(AsymptoticParameter::k00, r0),
          a20 = DefineAsymptoticParameters(AsymptoticParameter::a20, r0),
          epsilon2 = DefineAsymptoticParameters(AsymptoticParameter::epsilon2, r0),
          k20 = DefineAsymptoticParameters(AsymptoticParameter::k20, r0);
@@ -484,7 +485,7 @@ double KonoplyaRezzollaZhidenko::dthB(const double rr, const double th) const{
   double r0 = Definer0(), r02 = r0*r0,
          rr2 = rr*rr, 
          costh = cos(th), sinth = sin(th);
-  double b00 = DefineAsymptoticParameters(AsymptoticParameter::b00, r0),
+  double // b00 = DefineAsymptoticParameters(AsymptoticParameter::b00, r0),
          b20 = DefineAsymptoticParameters(AsymptoticParameter::b20, r0);
   double b21 = DefineHorizonParameters(HorizonParameter::b21, r0);
          
@@ -681,8 +682,8 @@ double KonoplyaRezzollaZhidenko::KeplerianSpecificAngularMomentum(const double r
          gtp = -WW*rr*sinth2,
          gpp = KK2*rr2*sinth2;
   // Positive Omega for for a prograde motion
-  double Omega1 = -(gtp+ell1*gtt)/(gpp+ell1*gtp),
-         Omega2 = -(gtp+ell2*gtt)/(gpp+ell2*gtp);
+  double Omega1 = -(gtp+ell1*gtt)/(gpp+ell1*gtp);//,
+    //Omega2 = -(gtp+ell2*gtt)/(gpp+ell2*gtp);
   double ell = (Omega1 > 0) ? ell1 : ell2;       
   return ell;
 } 

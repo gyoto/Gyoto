@@ -185,6 +185,7 @@ ThickDisk::ThickDisk() :
 
 ThickDisk::ThickDisk(const ThickDisk& o) :
   Standard(o), 
+  spectrumThermalSynch_(NULL),
   thickDiskInnerRadius_(o.thickDiskInnerRadius_),
   thickDiskZGaussianSigma_(o.thickDiskZGaussianSigma_),
   use_selfabsorption_(o.use_selfabsorption_),
@@ -194,8 +195,7 @@ ThickDisk::ThickDisk(const ThickDisk& o) :
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
   densitySlope_(o.densitySlope_),
-  magnetizationParameter_(o.magnetizationParameter_),
-  spectrumThermalSynch_(NULL)
+  magnetizationParameter_(o.magnetizationParameter_)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -218,25 +218,24 @@ void ThickDisk::radiativeQ(double Inu[], // output
 		     double const nu_ems[], size_t nbnu, // input
 		     double dsem,
 		     state_t const &coord_ph,
-		     double const coord_obj[8]) const {
+		     double const *) const {
   
-  double rr, rcyl, theta, zz=0.;
+  double rr, rcyl, zz=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
-    theta = coord_ph[2];
     zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
     rr = sqrt(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
 	      +coord_ph[3]*coord_ph[3]);
-    theta   = acos(coord_ph[3]/rr);
     zz   = coord_ph[3];
     break;
   default:
     GYOTO_ERROR("In ThickDisk::radiativeQ(): Unknown coordinate system kind");
+    rr=rcyl=0.; // silence maybe-uninitialized warning
   }
 
   if (rr<thickDiskInnerRadius_) {
@@ -262,19 +261,20 @@ void ThickDisk::radiativeQ(double Inu[], // output
   //cout << "params in disk= " << thickDiskInnerRadius_ << " " << densitySlope_<< " " << temperatureSlope_ << " " << temperatureAtInnerRadius_ << " " <<  thickDiskZGaussianSigma_ << " " << magneticConfig_ << " " << endl;
   //throwError("test disk");
 
-  double r0 = 4., phi0 = 0., phi = coord_ph[3],
-    sigr = 2., sigp = M_PI/4.; // spin0: r0=9; spin08: r0=4
-  double gaussr = 1./(sqrt(2.*M_PI)*sigr)
-    * exp(-0.5*(rcyl-r0)*(rcyl-r0)/(sigr*sigr));
+  double // r0 = 4.,
+    phi0 = 0., phi = coord_ph[3];
+    // sigr = 2.,
+    // sigp = M_PI/4.; // spin0: r0=9; spin08: r0=4
+  //  double gaussr = 1./(sqrt(2.*M_PI)*sigr)
+  //    * exp(-0.5*(rcyl-r0)*(rcyl-r0)/(sigr*sigr));
   double dphi = fabs(phi-phi0), dphibis = fabs(phi-2.*M_PI-phi0);
   if (dphi > dphibis){
     dphi = dphibis;
   }
-  double gaussp = 1./(sqrt(2.*M_PI)*sigp)
-    * exp(-0.5*dphi*dphi/(sigp*sigp));
-  double gauss2d = gaussr*gaussp;
-  double T0 = 1.6e11; // this is to be tuned: 4e11 too small, 6e11 looks good
-  double DeltaTemperature = T0*gauss2d;
+  //  double gaussp = 1./(sqrt(2.*M_PI)*sigp)
+  //    * exp(-0.5*dphi*dphi/(sigp*sigp));
+  //double gauss2d = gaussr*gaussp;
+  //double T0 = 1.6e11; // this is to be tuned: 4e11 too small, 6e11 looks good
 
   //temperature+=DeltaTemperature;
 
@@ -291,8 +291,7 @@ void ThickDisk::radiativeQ(double Inu[], // output
     cout << "beta= " << 8.*M_PI*number_density*GYOTO_BOLTZMANN_CGS*temperature/(BB*BB) << endl;
     }*/
 
-  double B0 = 100.; // for ne_inner=5.5e4, B_inner=10.2G; B0=50 too small, B0=100 looks good 
-  double DeltaB = B0*gauss2d;
+  //  double B0 = 100.; // for ne_inner=5.5e4, B_inner=10.2G; B0=50 too small, B0=100 looks good 
 
   //BB += DeltaB;
   //if (fabs(coord_ph[1]*cos(coord_ph[2]))<0.5)
@@ -384,23 +383,23 @@ void ThickDisk::radiativeQ(double Inu[], // output
   }
 }
 
-double ThickDisk::operator()(double const coord[4]) {
+double ThickDisk::operator()(double const* /*coord[4]*/) {
   // zpos: modulus of altitude above equatorial plane
   // rproj: radius projected in the equatorial plane
-  double zpos=0., rproj=0.;
+  // double zpos=0., rproj=0.;
   
-  switch (gg_ -> coordKind()) {
-  case GYOTO_COORDKIND_SPHERICAL:
-    rproj  = coord[1]*sin(coord[2]);
-    zpos  = fabs(coord[1]*cos(coord[2]));
-    break;
-  case GYOTO_COORDKIND_CARTESIAN:
-    zpos  = fabs(coord[3]);
-    rproj  = sqrt(coord[1]*coord[1]+coord[2]*coord[2]);
-    break;
-  default:
-    GYOTO_ERROR("ThickDisk::operator(): unknown COORDKIND");
-  }
+  // switch (gg_ -> coordKind()) {
+  // case GYOTO_COORDKIND_SPHERICAL:
+  //   rproj  = coord[1]*sin(coord[2]);
+  //   zpos  = fabs(coord[1]*cos(coord[2]));
+  //   break;
+  // case GYOTO_COORDKIND_CARTESIAN:
+  //   zpos  = fabs(coord[3]);
+  //   rproj  = sqrt(coord[1]*coord[1]+coord[2]*coord[2]);
+  //   break;
+  // default:
+  //   GYOTO_ERROR("ThickDisk::operator(): unknown COORDKIND");
+  // }
 
   // // 2019 paper version:
   // double zdisk = 0.;   // zdisk is fixed at zero rproj <= rinner,
@@ -430,7 +429,7 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
     double vel_circ[4], vel_rad[4];
     double rcyl = pos[1]*sin(pos[2]);// cylindrical radius of current location
 
-    double rr = pos[1];
+    //    double rr = pos[1];
     double gtt = gg_->gmunu(pos,0,0),
       grr = gg_->gmunu(pos,1,1),
       gpp = gg_->gmunu(pos,3,3),
@@ -508,10 +507,10 @@ void ThickDisk::getVelocity(double const pos[4], double vel[4])
     if (rr>Risco){
       double sth2=sin(theta)*sin(theta),
       cth2=cos(theta)*cos(theta),
-      rho2=rr*rr+a*a*cth2,
+	//      rho2=rr*rr+a*a*cth2,
       a2=a*a,
       r2=rr*rr,
-      DD=1.-2./rr+a2/r2,
+	//      DD=1.-2./rr+a2/r2,
       mu= 1. +a2*cth2/r2;
 
       double g_tt = -(1.-2./(rr*mu)),
@@ -574,23 +573,24 @@ void ThickDisk::radiativeQ(double *Inu, double *Qnu, double *Unu,
            state_t const &coord_ph,
            double const *co) const {
   // polarized radiativeQ
-  double rr, rcyl, theta, zz=0.;
+  double rr, rcyl, zz=0.;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
-    theta = coord_ph[2];
+    //theta = coord_ph[2];
     zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
     rr = sqrt(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
         +coord_ph[3]*coord_ph[3]);
-    theta   = acos(coord_ph[3]/rr);
+    //theta   = acos(coord_ph[3]/rr);
     zz   = coord_ph[3];
     break;
   default:
     GYOTO_ERROR("In ThickDisk::radiativeQ(): Unknown coordinate system kind");
+    rr=rcyl=0.; // silence maybe-uninitialized warning
   }
 
   double vel[4]; // 4-velocity of emitter

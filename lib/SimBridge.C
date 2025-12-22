@@ -47,33 +47,33 @@ GYOTO_PROPERTY_END(SimBridge, Standard::properties)
 SimBridge::SimBridge() :
   Standard("SimBridge"),
   FitsRW(),
+  spectrumBB_(NULL),
+  spectrumKappaSynch_(NULL),
+  spectrumPLSynch_(NULL),
+  spectrumThermalSynch_(NULL),
   dirname_("None"),
   fname_("data"),
-  magnetizationParameter_(1.),
-  emission_("None"),
-  gammaMin_(1.),
-  gammaMax_(1.),
-  PLindex_(1.),
-  floortemperature_(0.),
   temperature_(true),
-  BinFile_(true),
   circularmotion_(false),
   cunninghamvel_(false),
-  ntime_(1),
-  nx1_(1),
-  nx2_(1),
-  nx3_(1),
-  nnu_(0),
+  BinFile_(true),
+  emission_("None"),
+  PLindex_(1.),
+  gammaMin_(1.),
+  gammaMax_(1.),
+  magnetizationParameter_(1.),
+  floortemperature_(0.),
   time_array_(NULL),
   x1_array_(NULL),
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
-  boundCond_(NULL),
-  spectrumKappaSynch_(NULL),
-  spectrumPLSynch_(NULL),
-  spectrumThermalSynch_(NULL),
-  spectrumBB_(NULL)
+  ntime_(1),
+  nx1_(1),
+  nx2_(1),
+  nx3_(1),
+  nnu_(0),
+  boundCond_(NULL)
 {
   boundCond_ = new string[5];
   boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]="None";
@@ -87,33 +87,33 @@ SimBridge::SimBridge() :
 SimBridge::SimBridge(const SimBridge& orig) :
   Standard(orig),
   FitsRW(orig),
+  spectrumBB_(NULL),
+  spectrumKappaSynch_(NULL),
+  spectrumPLSynch_(NULL),
+  spectrumThermalSynch_(NULL),
   dirname_(orig.dirname_),
   fname_(orig.fname_),
-  magnetizationParameter_(orig.magnetizationParameter_),
-  emission_(orig.emission_),
-  gammaMin_(orig.gammaMin_),
-  gammaMax_(orig.gammaMax_),
-  PLindex_(orig.PLindex_),
-  floortemperature_(orig.floortemperature_),
-  BinFile_(orig.BinFile_),
   temperature_(orig.temperature_),
   circularmotion_(orig.circularmotion_),
   cunninghamvel_(orig.cunninghamvel_),
-  ntime_(orig.ntime_),
-  nx1_(orig.nx1_),
-  nx2_(orig.nx2_),
-  nx3_(orig.nx3_),
-  nnu_(orig.nnu_),
+  BinFile_(orig.BinFile_),
+  emission_(orig.emission_),
+  PLindex_(orig.PLindex_),
+  gammaMin_(orig.gammaMin_),
+  gammaMax_(orig.gammaMax_),
+  magnetizationParameter_(orig.magnetizationParameter_),
+  floortemperature_(orig.floortemperature_),
   time_array_(NULL),
   x1_array_(NULL),
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
-  boundCond_(NULL),
-  spectrumKappaSynch_(NULL),
-  spectrumPLSynch_(NULL),
-  spectrumThermalSynch_(NULL),
-  spectrumBB_(NULL)
+  ntime_(orig.ntime_),
+  nx1_(orig.nx1_),
+  nx2_(orig.nx2_),
+  nx3_(orig.nx3_),
+  nnu_(orig.nnu_),
+  boundCond_(NULL)
 {
   if (orig.boundCond_){
     boundCond_  = new string[5];
@@ -199,7 +199,7 @@ void SimBridge::filename(std::string const &f){
   
   fptr = FitsRW::fitsOpen(filename);
 
-  double* tmp;
+  //  double* tmp;
 
   ntime_        = FitsRW::fitsReadKey(fptr, "NB_X0");
   time_array_   = new double[ntime_];
@@ -229,8 +229,8 @@ void SimBridge::filename(std::string const &f){
   int status = 0;
   string key = "NB_FREQ";
   double tmpd;
-  int* tmpi;
-  fits_movabs_hdu(fptr, 1, tmpi, &status);
+  int tmpi;
+  fits_movabs_hdu(fptr, 1, &tmpi, &status);
   fits_read_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &tmpd, NULL, &status);
   if(status==0){
     nnu_       = FitsRW::fitsReadKey(fptr, "NB_FREQ");
@@ -442,7 +442,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   }
 
   // Opening and reading Files
-  double* tmp;
+  //  double* tmp;
   double time_interpo[nfile];
   for (int ii=0; ii<nfile; ii++){
     ostringstream stream_name ;
@@ -819,7 +819,7 @@ void SimBridge::radiativeQ(double Inu[], double Taunu[], double const nu_em[], s
   Eigen::Matrix4d * Onu  = new Eigen::Matrix4d[nbnu];
 
   const_cast<SimBridge*>(this)->radiativeQ(Inu, Qnu, Unu, Vnu, Onu, nu_em, nbnu, dsem, coord_ph, coord_obj);
-  for (int ii=0; ii<nbnu; ii++){
+  for (size_t ii=0; ii<nbnu; ii++){
     Taunu[ii] = Onu[ii](0,0);
   }
   delete [] Qnu;
@@ -883,7 +883,7 @@ void SimBridge::getVelocity(double const pos[4], double vel[4]){
     }
 
     // Reading FITS File
-    double* tmp;
+    // double* tmp;
     double time_interpo[nfile];
     for (int ii=0; ii<nfile; ii++){
       ostringstream stream_name ;

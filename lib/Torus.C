@@ -174,8 +174,8 @@ void Torus::radiativeQ(double Inu[], // output
 		       double Taunu[], // output
 		       double const nu_ems[], size_t nbnu, // input
 		       double dsem,
-		       state_t const &coord_ph,
-		       double const coord_obj[8]) const {
+		       state_t const &,
+		       double const *) const {
   
   double number_density = 4.8e5;
 

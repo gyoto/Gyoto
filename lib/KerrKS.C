@@ -210,13 +210,13 @@ void KerrKS::gmunu_up(double gup[4][4], const double * pos) const {
 }
 
 void KerrKS::jacobian(double jac[4][4][4], const double * pos) const {
-  size_t a, mu, nu, i;
+  size_t a, mu, nu;
   _COMMON_TERMS;
   _FILL_JACOBIAN;
 }
 
 void KerrKS::gmunu_up_and_jacobian(double gup[4][4], double jac[4][4][4], const double * pos) const {
-  size_t a, mu, nu, i;
+  size_t a, mu, nu;
   _COMMON_TERMS;
   double fr2=f*r2;
   _FILL_GMUNU_UP;
@@ -285,14 +285,15 @@ void KerrKS::circularVelocity(double const coor[4], double vel[4],
 int KerrKS::isStopCondition(double const * const coord) const {
   double
     x=coord[1], y=coord[2], z=coord[3],
-    Tdot=coord[4], xdot=coord[5], ydot=coord[6], zdot=coord[7],
+    // Tdot=coord[4],
+    // xdot=coord[5], ydot=coord[6], zdot=coord[7],
     x2=x*x, y2=y*y, z2=z*z, a2z2=a2_*z2,
     x2_y2_z2=x2+y2+z2,
     tau=x2_y2_z2-a2_,
     rho2=tau*tau+4.*a2z2, rho=sqrt(rho2),
     r2=0.5*(tau+rho),
     r=sqrt(r2);
-  double rdot=(x*xdot+y*ydot+z*zdot+a2_*z*zdot/r2)/(r+a2z2/(r*r2));
+  // double rdot=(x*xdot+y*ydot+z*zdot+a2_*z*zdot/r2)/(r+a2z2/(r*r2));
 
   //  return (r<rsink_ && rdot >0 && Tdot>0);
   return (r<rsink_);

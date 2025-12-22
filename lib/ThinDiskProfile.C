@@ -92,8 +92,8 @@ std::vector<double> ThinDiskProfile::model_param() const {
 
 ThinDiskProfile::ThinDiskProfile() :
   ThinDisk("ThinDiskProfile"),
-  motionkind_(CIRCULAR),
-  model_param_(NULL)
+  model_param_(NULL),
+  motionkind_(CIRCULAR)
 {
   GYOTO_DEBUG << endl;
   model_param_ = new double[NPAR_MAX];
@@ -102,8 +102,8 @@ ThinDiskProfile::ThinDiskProfile() :
 
 ThinDiskProfile::ThinDiskProfile(const ThinDiskProfile& o) :
   ThinDisk(o),
-  motionkind_(o.motionkind_),
-  model_param_(NULL)
+  model_param_(NULL),
+  motionkind_(o.motionkind_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
@@ -148,11 +148,11 @@ double ThinDiskProfile::emission(double nu, double,
     string kin = gg_->kind();      
     if (kin != "KerrBL")
       GYOTO_ERROR("ThinDiskProfile: KerrBL needed!");
-    double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin(),
-      a2 = SPIN*SPIN;
+    // double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin(),
+    //  a2 = SPIN*SPIN;
       
-    double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2),
-      risco=gg_->getRms();
+    // double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2),
+    //   risco=gg_->getRms();
     
     // Choose profile here:
     double gamma=model_param_[0],
@@ -222,8 +222,8 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
            gtp = gg_->gmunu(pos,0,3),
            guptt = gg_->gmunu_up(pos,0,0),
            guptp = gg_->gmunu_up(pos,0,3),
-           guppp = gg_->gmunu_up(pos,3,3),
-           guprr = gg_->gmunu_up(pos,1,1);
+      guppp = gg_->gmunu_up(pos,3,3);
+      // guprr = gg_->gmunu_up(pos,1,1);
   
     double rr = pos[1], th = pos[2];
     double risco = 0.;
@@ -239,7 +239,7 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
      
     // Equatorial motion: u_\mu = (u_t,u_r,0,u_phi)
     // u_t=-E, u_phi=L
-    double vel_rad[4], vel_circ[4], vel_mix[4];
+    double vel_rad[4], vel_circ[4] /*, vel_mix[4]*/ ;
     double Omega_circ, Omega_rad, Omega_mix;
     double xi = 1.; 
     if (motionkind_==MIXED) {
@@ -358,7 +358,10 @@ void ThinDiskProfile::getVelocity(double const pos[4], double vel[4])
       beta_r = 0., beta_phi = 0.;
     } else if (motionkind_==MIXED) {
       beta_r = 0.8, beta_phi = 0.8;
-    } 
+    } else {
+      GYOTO_ERROR("unknown motionkind");
+      beta_r=beta_phi=0.;
+    }
     
     //cout << endl << "Omega_circ, xi, Lms(r-2)/(Ems r^3): " << Omega_circ << ", " << xi << ", " << L*(rr-2.)/E/pow(rr,3) << endl;
     Omega_mix = Omega_circ+(1.-beta_phi)*(Omega_rad-Omega_circ);

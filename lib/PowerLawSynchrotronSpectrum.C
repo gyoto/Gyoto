@@ -87,7 +87,7 @@ void Spectrum::PowerLawSynchrotron::gamma_max(double gmax){
 Spectrum::PowerLawSynchrotron * Spectrum::PowerLawSynchrotron::clone() const
 { return new Spectrum::PowerLawSynchrotron(*this); }
 
-double Spectrum::PowerLawSynchrotron::operator()(double nu) const {
+double Spectrum::PowerLawSynchrotron::operator()(double) const {
   GYOTO_ERROR("In PLSynch: "
        "Synchrotron emission not defined for optically thick case");
   return 0.;
@@ -161,7 +161,7 @@ double Spectrum::PowerLawSynchrotron::jQnuCGS(double nu) const{
   return emis_synch;
 }
 
-double Spectrum::PowerLawSynchrotron::jUnuCGS(double nu) const{
+double Spectrum::PowerLawSynchrotron::jUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -245,7 +245,7 @@ double Spectrum::PowerLawSynchrotron::alphaQnuCGS(double nu) const{
   return abs_synch;
 }
 
-double Spectrum::PowerLawSynchrotron::alphaUnuCGS(double nu) const{
+double Spectrum::PowerLawSynchrotron::alphaUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -293,7 +293,7 @@ double Spectrum::PowerLawSynchrotron::rQnuCGS(double nu) const{
   return rho_Q;
 }
 
-double Spectrum::PowerLawSynchrotron::rUnuCGS(double nu) const{
+double Spectrum::PowerLawSynchrotron::rUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }

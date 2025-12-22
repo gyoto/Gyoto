@@ -68,8 +68,8 @@ void DirectionalDisk::fillProperty(Gyoto::FactoryMessenger *fmp,
 DirectionalDisk::DirectionalDisk() :
   ThinDisk("DirectionalDisk"), filename_(""),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
-  nnu_(0), ni_(0), nr_(0),
   lampaltitude_(10.),
+  nnu_(0), ni_(0), nr_(0),
   minfreq_computed_(DBL_MIN), maxfreq_computed_(DBL_MAX),
   minfreq_lampframe_(1.), maxfreq_lampframe_(1e30),
   average_over_angle_(0)
@@ -80,8 +80,8 @@ DirectionalDisk::DirectionalDisk() :
 DirectionalDisk::DirectionalDisk(const DirectionalDisk& o) :
   ThinDisk(o), filename_(o.filename_),
   emission_(NULL), radius_(NULL), cosi_(NULL), freq_(NULL),
-  nnu_(o.nnu_), ni_(o.ni_), nr_(o.nr_),
   lampaltitude_(o.lampaltitude_),
+  nnu_(o.nnu_), ni_(o.ni_), nr_(o.nr_),
   minfreq_computed_(o.minfreq_computed_), 
   maxfreq_computed_(o.maxfreq_computed_),
   minfreq_lampframe_(o.minfreq_lampframe_), 
@@ -321,7 +321,7 @@ void DirectionalDisk::fitsRead(string filename) {
 
    minfreq_computed_ = DBL_MAX;
    maxfreq_computed_ = DBL_MIN;
-   for (int ii=0;ii<nnu_;ii++){
+   for (decltype(nnu_) ii=0;ii<nnu_;ii++){
      if (freq_[ii]<minfreq_computed_) minfreq_computed_=freq_[ii];
      if (freq_[ii]>maxfreq_computed_) maxfreq_computed_=freq_[ii];
    }
@@ -609,7 +609,7 @@ double DirectionalDisk::emission(double nu, double,
     // Average over cosi values
     // with bilinear interpol in nu,r
     double I00=0., I01=0., I10=0., I11=0.;
-    double I00min=DBL_MAX, I00max=DBL_MIN, I01min=DBL_MAX, I01max=DBL_MIN, I10min=DBL_MAX, I10max=DBL_MIN, I11min=DBL_MAX, I11max=DBL_MIN;
+    // double I00min=DBL_MAX, I00max=DBL_MIN, I01min=DBL_MAX, I01max=DBL_MIN, I10min=DBL_MAX, I10max=DBL_MIN, I11min=DBL_MAX, I11max=DBL_MIN;
     /* Using trapezoidal rule, I_integ = \int I(mu)*dmu, mu=cos(i)
        NB: in Garcia+14, they compute a flux because they don't raytrace,
        so they use F = 1/4pi * \int I(i) cos(i) di = 1/2 * \int I(mu) mu dmu,

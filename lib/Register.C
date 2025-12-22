@@ -65,6 +65,7 @@ void Gyoto::requirePlugin(std::string name, int nofail) {
 
 void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   string name(nam);
+  GYOTO_DEBUG_EXPR(name);
 
   // Determine file name
   string dlfile = "libgyoto-" ;

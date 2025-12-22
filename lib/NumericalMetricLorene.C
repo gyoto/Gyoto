@@ -908,7 +908,7 @@ void NumericalMetricLorene::computeNBeta(const double coord[4],
     NN = Interpol3rdOrder(tt,it,values);
     // Shift:
     const Vector& shift1 = *(shift_tab_[it-1]);
-    const Scalar& betar1=shift1(1), betat1=shift1(2), betap1=shift1(3) ;
+    // const Scalar& betar1=shift1(1), betat1=shift1(2), betap1=shift1(3) ;
     double beta_r1 = shift1(1).val_point(rr,th,ph), 
       beta_t1 = rm1*shift1(2).val_point(rr,th,ph),
       beta_p1 = rsm1*shift1(3).val_point(rr,th,ph);
@@ -1067,7 +1067,7 @@ void NumericalMetricLorene::gmunu_di(const double pos[4],
     betapdth = shift(3).dsdt().val_point(rr,th,ph); // domega/dtheta
 
   const Sym_tensor& g_ij = *(gamcov_tab_[indice_time]);
-  double g_rr = g_ij(1,1).val_point(rr,th,ph), // gamma_rr
+  double // g_rr = g_ij(1,1).val_point(rr,th,ph), // gamma_rr
     g_rrdr = g_ij(1,1).dsdr().val_point(rr,th,ph), // d(gamma_rr)/dr
     g_rrdth = g_ij(1,1).dsdt().val_point(rr,th,ph), // d(gamma_rr)/dtheta
     g_thth = g_ij(2,2).val_point(rr,th,ph), // idem for gamma_thth
@@ -1197,7 +1197,7 @@ void NumericalMetricLorene::gmunu_up(double gup[4][4], const double x[4],
     GYOTO_ERROR("NumericalMetricLorene::gmunu_up: "
 		"incoherent value of indice_time");
 
-  double rr=x[0], r2=rr*rr, th=x[1], costh=cos(th), sinth=sin(th),
+  double rr=x[0], r2=rr*rr, th=x[1], /* costh=cos(th),*/ sinth=sin(th),
     sinth2=sinth*sinth, rsinth=rr*sin(th), ph=x[2];
   Scalar* lapse = (lapse_tab_[indice_time]);
   double lapse_val = lapse->val_point(rr,th,ph); // lapse value
@@ -2066,7 +2066,7 @@ void NumericalMetricLorene::circularVelocity(double const * coord,
 
 void NumericalMetricLorene::circularVelocity(double const * coor, 
 					     double* vel,
-					     double dir, 
+					     double /*dir*/, 
 					     int indice_time) const {
   //cout << "IN CIRCULAR" << endl;
   if (bosonstarcircular_){

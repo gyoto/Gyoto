@@ -29,14 +29,15 @@ using namespace Gyoto;
 using namespace Gyoto::Metric;
 
 Complex::Complex() :
-  WIP("Gyoto::Metric::Complex"),
   Generic(GYOTO_COORDKIND_UNSPECIFIED, "Complex"),
+  WIP("Gyoto::Metric::Complex"),
   cardinal_(0),
   elements_(NULL)
 {}
 
 Complex::Complex(const Complex& o) :
   Metric::Generic(o),
+  WIP("Gyoto::Metric::Complex"),
   cardinal_(o.cardinal_),
   elements_(NULL)
 {

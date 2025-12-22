@@ -23,6 +23,7 @@
 #include "GyotoError.h"
 #include "GyotoProperty.h"
 #include <cmath>
+#include <limits>
 
 using namespace std ; 
 using namespace Gyoto ; 
@@ -252,13 +253,23 @@ int Minkowski::diff(const state_t &xi,
 
   // Now the actual equation of motion: d²x/dt²=-ur/r²
 
-  double t, x, y, z, tdot, xdot, ydot, zdot,
-    r, theta, phi, rdot, thetadot, phidot,
+  // initialize some values to nan so it will be easier to catch
+  // misuses
+  double
+    // t,
+    x, y, z,
+    tdot,
+    xdot, ydot, zdot,
+    r=std::numeric_limits<double>::quiet_NaN(),
+    theta, phi,
+    rdot=std::numeric_limits<double>::quiet_NaN(),
+    thetadot, phidot,
     tdotdot, xdotdot, ydotdot, zdotdot,
     rdotdot, thetadotdot, phidotdot, r3, tdot3;
   double sth, cth, sph, cph;
 
-  t=xi[0]; tdot=xi[4];
+  // t=xi[0];
+  tdot=xi[4];
 
   // Convert to Cartesian
 
@@ -291,6 +302,9 @@ int Minkowski::diff(const state_t &xi,
     break;
   default:
     GYOTO_ERROR("unimplemented COORDKIND");
+    // avoid "variable may be used uninitialized" warnings
+    x=y=z=r=r3=0;
+    xdot=ydot=zdot=rdot=0;
   }
 
   if (r3==0) return 1;

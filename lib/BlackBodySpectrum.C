@@ -38,8 +38,10 @@ GYOTO_PROPERTY_END(Spectrum::BlackBody, Generic::properties)
 ///
 
 Spectrum::BlackBody::BlackBody() :
-Spectrum::Generic("BlackBody"), T_(10000.), colorcor_(1.), colorcorm4_(1.),
-  cst_(2.*GYOTO_PLANCK_OVER_C_SQUARE) {Tm1_=1./T_;}
+Spectrum::Generic("BlackBody"),
+  T_(10000.), cst_(2.*GYOTO_PLANCK_OVER_C_SQUARE),
+  colorcor_(1.), colorcorm4_(1.)
+{Tm1_=1./T_;}
 Spectrum::BlackBody::BlackBody(double T, double c) :
   Spectrum::Generic("BlackBody"), T_(T), cst_(c), colorcor_(1.), colorcorm4_(1.)
 {Tm1_=1./T_;}

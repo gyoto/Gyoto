@@ -54,8 +54,9 @@ GYOTO_PROPERTY_END(ThinDiskGridIntensity, ThinDisk::properties)
 
 ThinDiskGridIntensity::ThinDiskGridIntensity() :
 ThinDisk("ThinDiskGridIntensity"), GridData2D(),
-  filename_(""), time_array_(NULL),
-  intensity_(NULL), 
+  filename_(""),
+  intensity_(NULL),
+  time_array_(NULL),
   deltat_(0.)
 {
   GYOTO_DEBUG << endl;
@@ -63,8 +64,9 @@ ThinDisk("ThinDiskGridIntensity"), GridData2D(),
 
 ThinDiskGridIntensity::ThinDiskGridIntensity(const ThinDiskGridIntensity& o) :
   ThinDisk(o), GridData2D(o),
-  filename_(o.filename_), time_array_(NULL),
+  filename_(o.filename_),
   intensity_(NULL), 
+  time_array_(NULL),
   deltat_(o.deltat_)
 {
   GYOTO_DEBUG << endl;
@@ -132,7 +134,7 @@ void ThinDiskGridIntensity::copyIntensity(double const *const intensity,
     GYOTO_DEBUG << "delete [] intensity_;" << endl;
     delete [] intensity_; intensity_ = NULL;
   }
-  size_t nt=GridData2D::nt(), nphi=GridData2D::nphi(), nr=GridData2D::nr();
+  //  size_t nt=GridData2D::nt(), nphi=GridData2D::nphi(), nr=GridData2D::nr();
   if (intensity) {
     size_t nel;
     GridData2D::nt(naxes[2]);
@@ -285,20 +287,20 @@ vector<size_t> ThinDiskGridIntensity::fitsRead(string filename) {
 }
 #endif
 
-double ThinDiskGridIntensity::emission(double nu, double,
-			    state_t const &coord_ph,
-			    double const coord_obj[8]) const{
+double ThinDiskGridIntensity::emission(double /*nu*/, double,
+				       state_t const &coord_ph,
+				       double const /*coord_obj*/[8]) const{
 
   double rcyl=0.; // cylindrical radius
-  double zz=0.; // height, z coord
+  //  double zz=0.; // height, z coord
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rcyl = coord_ph[1]*sin(coord_ph[2]);
-    zz   = coord_ph[1]*cos(coord_ph[2]);
+    //zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
-    zz   = coord_ph[3];
+    //zz   = coord_ph[3];
     break;
   default:
     GYOTO_ERROR("In ThinDiskGridIntensity::radiativeQ: Unknown coordinate system kind");

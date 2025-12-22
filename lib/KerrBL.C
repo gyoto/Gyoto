@@ -257,11 +257,10 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
   double sth, cth;
   sincos(pos[2], &sth, &cth);
   double
-    sth2 = sth*sth, cth2 = cth*cth, sth4=sth2*sth2,
-    s2th = 2.*sth*cth, c2th=cth2-sth2,
-    s4th = 2.*s2th*c2th,
-    s2th2= s2th*s2th, ctgth=cth/sth;
-  double r2=r*r, r4=r2*r2, r6=r4*r2;
+    sth2 = sth*sth, cth2 = cth*cth,
+    s2th = 2.*sth*cth,
+    ctgth=cth/sth;
+  double r2=r*r;
   double Sigma=r2+a2_*cth2, Sigma2=Sigma*Sigma;
   double Delta=r2-2.*r+a2_;
   double Deltam1=1./Delta,

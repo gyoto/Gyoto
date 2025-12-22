@@ -75,27 +75,31 @@ void XillverReflection::fillProperty(Gyoto::FactoryMessenger *fmp,
 
 XillverReflection::XillverReflection() :
   ThinDisk("XillverReflection"), filenameIllum_(""), filenameRefl_(""),
-  lampradius_(0), timelampphizero_(0.),
-  aa_(0.),
-  illumination_(NULL), reflection_(NULL),
-  radius_(NULL), phi_(NULL),
+  reflection_(NULL),
   logxi_(NULL), incl_(NULL), freq_(NULL),
-  nnu_(0), ni_(0), nxi_(0), nr_(0), nphi_(0),
-  average_over_angle_(0) {
-  
+  nnu_(0), ni_(0), nxi_(0),
+  illumination_(NULL),
+  radius_(NULL), phi_(NULL),
+  nr_(0), nphi_(0),
+  aa_(0.),
+  lampradius_(0), timelampphizero_(0.),
+  average_over_angle_(0)
+{
   GYOTO_DEBUG << endl;
-
 }
 
 XillverReflection::XillverReflection(const XillverReflection& o) :
-  ThinDisk(o), filenameIllum_(o.filenameIllum_), filenameRefl_(o.filenameRefl_),
-  lampradius_(o.lampradius_), timelampphizero_(o.timelampphizero_),
-  aa_(o.aa_),
-  illumination_(NULL), reflection_(NULL),
-  radius_(NULL), phi_(NULL),
+  ThinDisk(o),
+  filenameIllum_(o.filenameIllum_),
+  filenameRefl_(o.filenameRefl_),
+  reflection_(NULL),
   logxi_(NULL), incl_(NULL), freq_(NULL),
   nnu_(o.nnu_), ni_(o.ni_), nxi_(o.nxi_),
+  illumination_(NULL),
+  radius_(NULL), phi_(NULL),
   nr_(o.nr_), nphi_(o.nphi_), 
+  aa_(o.aa_),
+  lampradius_(o.lampradius_), timelampphizero_(o.timelampphizero_),
   average_over_angle_(o.average_over_angle_)
 {
   GYOTO_DEBUG << endl;
@@ -736,7 +740,7 @@ void XillverReflection::fitsWriteRefl(
 }
 #endif
 
-void XillverReflection::getIndicesRefl(size_t i[3], double const co[4], 
+void XillverReflection::getIndicesRefl(size_t i[3], double const /*co*/[4], 
 				       double logxi, double incl, double freq) const {
   if (logxi_) {
     // Here we know that logxi is within the bounds of logxi_

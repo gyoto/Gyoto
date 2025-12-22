@@ -55,24 +55,24 @@ GYOTO_PROPERTY_END(Plasmoid, UniformSphere::properties)
 Plasmoid::Plasmoid() : 
   FitsRW(), 
   UniformSphere("Plasmoid"),
-  flag_("None"),
-  posSet_(false),
   posIni_(NULL),
   fourveldt_(NULL),
+  flag_("None"),
+  posSet_(false),
+  t_inj_(1.),
   radiusMax_(1.),
   varyRadius_("None"),
+  beta_(1.),
   filename_("None"),
   emis_polar_array_(NULL),
   abs_polar_array_(NULL),
   rot_polar_array_(NULL),
-  beta_(1.),
-  t_inj_(1.),
+  freq_array_(NULL),
+  time_array_(NULL),
+  angle_array_(NULL),
   nb_time_(0.),
   nb_freq_(0.),
-  nb_angle_(0.),
-  time_array_(NULL),
-  freq_array_(NULL),
-  angle_array_(NULL)
+  nb_angle_(0.)
 {
   kind_="Plasmoid";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -100,24 +100,24 @@ Plasmoid::Plasmoid() :
 Plasmoid::Plasmoid(const Plasmoid& orig) :
   FitsRW(orig),
   UniformSphere(orig),
-  flag_(orig.flag_),
-  posSet_(orig.posSet_),
   posIni_(NULL),
   fourveldt_(NULL),
+  flag_(orig.flag_),
+  posSet_(orig.posSet_),
+  t_inj_(orig.t_inj_),
   radiusMax_(orig.radiusMax_),
   varyRadius_(orig.varyRadius_),
+  beta_(orig.beta_),
   filename_(orig.filename_),
   emis_polar_array_(NULL),
   abs_polar_array_(NULL),
   rot_polar_array_(NULL),
-  beta_(orig.beta_),
-  t_inj_(orig.t_inj_),
+  freq_array_(NULL),
+  time_array_(NULL),
+  angle_array_(NULL),
   nb_time_(orig.nb_time_),
   nb_freq_(orig.nb_freq_),
-  nb_angle_(orig.nb_angle_),
-  time_array_(NULL),
-  freq_array_(NULL),
-  angle_array_(NULL)
+  nb_angle_(orig.nb_angle_)
 {
 
   if(orig.posIni_){

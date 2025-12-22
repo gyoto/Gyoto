@@ -76,7 +76,7 @@ double ChernSimons::gmunu(const double * pos, int mu, int nu) const {
   double r2=r*r, r3=r2*r;
   double a2=spin_*spin_;
   double sigma=r2+a2*cth2;
-  double delta=r2-2.*r+a2;
+  // double delta=r2-2.*r+a2;
 
   double ff=1.-2./r;
 
@@ -170,8 +170,8 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
 
   double Sigma=r2+a2*costheta2;
   if (Sigma==0) GYOTO_ERROR("In ChernSimons::diff(): Sigma==0");
-  double Sigmam1=1./Sigma;
-  double Sigmam2=Sigmam1*Sigmam1;
+  //double Sigmam1=1./Sigma;
+  //double Sigmam2=Sigmam1*Sigmam1;
 
   double Delta=r2-2*r+a2;
 
@@ -182,7 +182,7 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
 
   double tmp1=(2.*Delta*Sigma);
   if (tmp1==0)  GYOTO_ERROR("In ChernSimons::diff(): 2.*Delta*Sigma==0");
-  double tmp1m1=1./tmp1;
+  //double tmp1m1=1./tmp1;
 
   if (Delta==0) GYOTO_ERROR("In ChernSimons::diff(): Delta==0");
 
@@ -227,10 +227,10 @@ int ChernSimons::diff(const double* coordGen, const double* cst,
 
   double tmp2=r2+a2*costheta2;
   if (tmp2==0) GYOTO_ERROR("r2+a2*costheta2==0");
-  double tmp2m2=1./(tmp2*tmp2);
+  //double tmp2m2=1./(tmp2*tmp2);
 
-  double tmp3=a2+r*(-2.+r);
-  double tmp3_2=tmp3*tmp3;
+  //double tmp3=a2+r*(-2.+r);
+  //double tmp3_2=tmp3*tmp3;
 
   res[5] =
     (-1./r4*(r*(r-a2)-a2*(1.-r)*costheta2)+2.*a2*costheta2/r4)*pr*pr

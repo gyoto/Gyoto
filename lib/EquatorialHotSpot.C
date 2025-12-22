@@ -80,7 +80,6 @@ double EquatorialHotSpot::beamAngle() const {return beamangle_;}
 // Needed for legacy XML files
 int EquatorialHotSpot::setParameter(string name, string content, string unit) {
   double coord[8];
-  char* tc = const_cast<char*>(content.c_str());
   if (name=="InitialCoordinate") {
     name="InitCoord";
     return ThinDisk::setParameter(name, content, unit);
@@ -189,7 +188,7 @@ void EquatorialHotSpot::getVelocity(double const pos[4], double vel[4]) {
   //cout << "equat Omega= " << vel[3]/vel[0] << endl;
 }
 
-double EquatorialHotSpot::emission(double nu_em, double dsem,
+double EquatorialHotSpot::emission(double, double,
 				   state_t const &coord_ph,
 				   double const coord_obj[8]) const{
   double coord_spot[4]={coord_obj[0]};

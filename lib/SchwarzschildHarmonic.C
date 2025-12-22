@@ -62,7 +62,6 @@ double SchwarzschildHarmonic::gmunu(const double * pos, int mu, int nu) const {
   double sth2, cth2;
   sincos(pos[2], &sth2, &cth2);
   sth2*=sth2; cth2*=cth2;
-  double r2=rr*rr;
 
   if ((mu==0) && (nu==0)) return -(rr-1.)/(rr+1.);
   if ((mu==1) && (nu==1)) return (rr+1.)/(rr-1.);

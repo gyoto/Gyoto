@@ -571,6 +571,7 @@ void RotStar3_1::Normalize4v(const double coordin[6], double coordout[6], const 
     //    if (debug()) cout << "tdot use in Normalize= " << tdot_used << endl;
   }else{
     GYOTO_ERROR("RotStar3_1.C: special case metric coef=0 to handle in Normalize4v...");
+    phprime=0.;
   }
   if (fabs(phprime-phprime_init)>dphpr*fabs(phprime_init)){
     if (verbose() >= GYOTO_SEVERE_VERBOSITY)

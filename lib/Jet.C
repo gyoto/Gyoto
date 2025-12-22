@@ -191,9 +191,11 @@ Jet::Jet() :
   parabolic_(1), outflowing_(1), jetShapeInnerParabolaParam_(-1.),
   jetShapeOuterParabolaParam_(-1.),
   jetOuterOpeningAngle_(-1.),
-  jetInnerOpeningAngle_(-1.), jetInnerRadius_(2.),
+  jetInnerOpeningAngle_(-1.),
+  jetVphiOverVr_(0.),
   jetStagnationRadius_(0.),
-  gammaJet_(1.), jetVphiOverVr_(0.),
+  jetInnerRadius_(2.),
+  gammaJet_(1.),
   baseNumberDensity_cgs_(1.), baseTemperature_(1e10),
   temperatureSlope_(1.), magnetizationParameter_(1.), alpha_(0.)
 {
@@ -205,22 +207,23 @@ Jet::Jet() :
 
 Jet::Jet(const Jet& o) :
   Standard(o),
+  spectrumKappaSynch_(NULL),
+  spectrumThermalSynch_(NULL),
   parabolic_(o.parabolic_),
   outflowing_(o.outflowing_),
   jetShapeInnerParabolaParam_(o.jetShapeInnerParabolaParam_),
   jetShapeOuterParabolaParam_(o.jetShapeOuterParabolaParam_),
   jetOuterOpeningAngle_(o.jetOuterOpeningAngle_),
   jetInnerOpeningAngle_(o.jetInnerOpeningAngle_),
-  jetInnerRadius_(o.jetInnerRadius_),
+  jetVphiOverVr_(o.jetVphiOverVr_),
   jetStagnationRadius_(o.jetStagnationRadius_),
-  gammaJet_(o.gammaJet_), jetVphiOverVr_(o.jetVphiOverVr_),
+  jetInnerRadius_(o.jetInnerRadius_),
+  gammaJet_(o.gammaJet_),
   baseNumberDensity_cgs_(o.baseNumberDensity_cgs_),
   baseTemperature_(o.baseTemperature_),
   temperatureSlope_(o.temperatureSlope_),
   magnetizationParameter_(o.magnetizationParameter_),
-  alpha_(o.alpha_),
-  spectrumKappaSynch_(NULL),
-  spectrumThermalSynch_(NULL)
+  alpha_(o.alpha_)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -243,17 +246,14 @@ void Jet::radiativeQ(double Inu[], // output
 		     state_t const &coord_ph,
 		     double const coord_obj[8]) const {
   double rcyl=0.; // cylindrical radius
-  double zz=0.; // height, z coord
   double rr=0.; // spherical radius
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
-    zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
-    zz   = coord_ph[3];
     rr = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
 	     +coord_ph[3]*coord_ph[3], 0.5);
     break;
@@ -612,17 +612,14 @@ void Jet::radiativeQ(double *Inu, double *Qnu, double *Unu,
   
   // polarized radiativeQ
   double rcyl=0.; // cylindrical radius
-  double zz=0.; // height, z coord
   double rr=0.; // spherical radius  
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = coord_ph[1];
     rcyl = coord_ph[1]*sin(coord_ph[2]);
-    zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
-    zz   = coord_ph[3];
     rr = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
 	     +coord_ph[3]*coord_ph[3], 0.5);
     break;

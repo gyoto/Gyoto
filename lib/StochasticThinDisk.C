@@ -126,9 +126,9 @@ std::vector<double> StochasticThinDisk::model_param() const {
 
 StochasticThinDisk::StochasticThinDisk() :
   ThinDisk("StochasticThinDisk"),
+  model_param_(NULL),
   equationkind_(WAVE),
-  motionkind_(STATIC),
-  model_param_(NULL)
+  motionkind_(STATIC)
 {
   GYOTO_DEBUG << endl;
 
@@ -145,14 +145,14 @@ StochasticThinDisk::StochasticThinDisk() :
 
 StochasticThinDisk::StochasticThinDisk(const StochasticThinDisk& o) :
   ThinDisk(o),
-  equationkind_(o.equationkind_),
-  motionkind_(o.motionkind_),
   model_param_(NULL),
   Cmn_(o.Cmn_),
   Nmn_(o.Nmn_),
   Phimn_(o.Phimn_),
   Psimn_(o.Psimn_),
-  Kmn_(o.Kmn_)
+  Kmn_(o.Kmn_),
+  equationkind_(o.equationkind_),
+  motionkind_(o.motionkind_)
 {
   if (o.gg_()) gg_=o.gg_->clone();
   Generic::gg_=gg_;
@@ -250,7 +250,7 @@ double StochasticThinDisk::solution(double const coord_obj[8]) const{
   return u;
 }
 
-double StochasticThinDisk::envelope(double nu, state_t const &coord_ph, double const coord_obj[8]) const{
+double StochasticThinDisk::envelope(double, state_t const &, double const coord_obj[8]) const{
 			    
   string emission_model = "Constant"; // should be in: "Constant", "Gralla_et_al", "Thermal_Synchrotron"  
   double rr = coord_obj[1];
@@ -270,10 +270,10 @@ double StochasticThinDisk::envelope(double nu, state_t const &coord_ph, double c
     string kin = gg_->kind();      
     if (kin != "KerrBL")
       GYOTO_ERROR("StochasticThinDisk: KerrBL needed!");
-    double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin(),
-      a2 = SPIN*SPIN;
+    // double SPIN = static_cast<SmartPointer<Metric::KerrBL> >(gg_) -> spin(),
+    //   a2 = SPIN*SPIN;
       
-    double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2);
+    //    double rhor=1.+sqrt(1.-a2), rminus=1.-sqrt(1.-a2);
     
     // Choose profile here:
     double gamma=model_param_[0],
@@ -319,12 +319,12 @@ void StochasticThinDisk::getVelocity(double const pos[4], double vel[4])
     string kin = gg_->kind();
     double gtt = gg_->gmunu(pos,0,0),
            grr = gg_->gmunu(pos,1,1),
-           gpp = gg_->gmunu(pos,3,3),
-           gtp = gg_->gmunu(pos,0,3),
+           // gpp = gg_->gmunu(pos,3,3),
+           // gtp = gg_->gmunu(pos,0,3),
            guptt = gg_->gmunu_up(pos,0,0),
-           guptp = gg_->gmunu_up(pos,0,3),
-           guppp = gg_->gmunu_up(pos,3,3),
-           guprr = gg_->gmunu_up(pos,1,1);
+           guptp = gg_->gmunu_up(pos,0,3);
+           // guppp = gg_->gmunu_up(pos,3,3),
+           // guprr = gg_->gmunu_up(pos,1,1);
     double rr = pos[1];
     
     if (motionkind_==STATIC) {
@@ -372,7 +372,7 @@ void StochasticThinDisk::getVelocity(double const pos[4], double vel[4])
 void StochasticThinDisk::processHitQuantities(Photon* ph,
       					   state_t const &coord_ph_hit,
  					   double const *coord_obj_hit,
- 					   double dt,
+ 					   double /* dt */,
  					   Properties* data) const {
  #if GYOTO_DEBUG_ENABLED
    GYOTO_DEBUG << endl;
@@ -382,13 +382,13 @@ void StochasticThinDisk::processHitQuantities(Photon* ph,
    //cout << "nbnuobs " << nbnuobs << endl;
    if (nbnuobs!=1) GYOTO_ERROR("nbnuobs should be 1"); //spectro.set("NSamples", 1)
    double const * const nuobs = nbnuobs ? spr -> getMidpoints() : NULL;
-   double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
+   // double dlambda = dt/coord_ph_hit[4]; //dlambda = dt/tdot
    double ggredm1 = -gg_->ScalarProd(&coord_ph_hit[0],coord_obj_hit+4,
  				    &coord_ph_hit[4]);// / 1.; 
                                         //this is nu_em/nu_obs
    if (noredshift_) ggredm1=1.;
    double ggred = 1./ggredm1;           //this is nu_obs/nu_em
-   double dsem = dlambda*ggredm1; // *1.
+   // double dsem = dlambda*ggredm1; // *1.
    double inc =0.;
 
    if (data){ // this check is necessary as process can be called

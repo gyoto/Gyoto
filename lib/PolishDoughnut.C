@@ -600,7 +600,6 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   // and absorption.
   /* COMPUTING PHYS QUANTITIES */
   double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
-  double Msgr = gg_->mass()*1e3; // Gyoto speaks in SI --> here cgs
   double T_electron=0., number_density=0.,
     bnorm = 0., theta_mag=0.;
   if (adaf_){

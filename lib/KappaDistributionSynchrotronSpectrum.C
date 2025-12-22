@@ -35,8 +35,12 @@ GYOTO_PROPERTY_END(Spectrum::KappaDistributionSynchrotron, Generic::properties)
 Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron()
 : Spectrum::Generic("KappaDistributionSynchrotron"),
   numberdensityCGS_(0.),
-  angle_B_pem_(0.), cyclotron_freq_(1.), thetae_(1.),
-  kappaindex_(0.), angle_averaged_(0), hypergeometric_(1)
+  angle_B_pem_(0.),
+  cyclotron_freq_(1.),
+  thetae_(1.),
+  kappaindex_(0.),
+  hypergeometric_(1),
+  angle_averaged_(0)
 {}
 Spectrum::KappaDistributionSynchrotron::KappaDistributionSynchrotron(const KappaDistributionSynchrotron &o)
 : Spectrum::Generic(o),
@@ -84,7 +88,7 @@ void Spectrum::KappaDistributionSynchrotron::angle_averaged(bool ang) {
 Spectrum::KappaDistributionSynchrotron * Spectrum::KappaDistributionSynchrotron::clone() const
 { return new Spectrum::KappaDistributionSynchrotron(*this); }
 
-double Spectrum::KappaDistributionSynchrotron::operator()(double nu) const {
+double Spectrum::KappaDistributionSynchrotron::operator()(double) const {
   GYOTO_ERROR("In PLSynch: "
        "Synchrotron emission not defined for optically thick case");
   return 0.;
@@ -149,8 +153,7 @@ double Spectrum::KappaDistributionSynchrotron::jQnuCGS(double nu) const{
   return emis_synch;
 }
 
-double Spectrum::KappaDistributionSynchrotron::jUnuCGS(double nu) const{  
-
+double Spectrum::KappaDistributionSynchrotron::jUnuCGS(double) const{  
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -243,8 +246,7 @@ double Spectrum::KappaDistributionSynchrotron::alphaQnuCGS(double nu) const{
   return abs_synch;
 }
 
-double Spectrum::KappaDistributionSynchrotron::alphaUnuCGS(double nu) const{
-
+double Spectrum::KappaDistributionSynchrotron::alphaUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -319,7 +321,7 @@ double Spectrum::KappaDistributionSynchrotron::rQnuCGS(double nu) const{
   return rho_Q;
 }
 
-double Spectrum::KappaDistributionSynchrotron::rUnuCGS(double nu) const{
+double Spectrum::KappaDistributionSynchrotron::rUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }

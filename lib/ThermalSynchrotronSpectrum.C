@@ -50,8 +50,8 @@ Spectrum::ThermalSynchrotron::ThermalSynchrotron()
 }
 Spectrum::ThermalSynchrotron::ThermalSynchrotron(const ThermalSynchrotron &o)
 : Spectrum::Generic(o),
-  T_(o.T_),
   spectrumBB_(NULL),
+  T_(o.T_),
   numberdensityCGS_(o.numberdensityCGS_),
   angle_B_pem_(o.angle_B_pem_),
   cyclotron_freq_(o.cyclotron_freq_),
@@ -91,7 +91,7 @@ void Spectrum::ThermalSynchrotron::besselK2(double bessel) {
 Spectrum::ThermalSynchrotron * Spectrum::ThermalSynchrotron::clone() const
 { return new Spectrum::ThermalSynchrotron(*this); }
 
-double Spectrum::ThermalSynchrotron::operator()(double nu) const {
+double Spectrum::ThermalSynchrotron::operator()(double) const {
   GYOTO_ERROR("In ThermalSynch: "
 	     "Synchrotron emission not defined for optically thick case");
   return 0.;
@@ -150,7 +150,7 @@ double Spectrum::ThermalSynchrotron::jnuCGS(double nu) const{
       emis_synch=0;
     else{
       double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
-        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
+        CL=GYOTO_C_CGS;
 
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
@@ -187,7 +187,7 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
       emis_synch=0;
     else{
       double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
-        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
+        CL=GYOTO_C_CGS;
 
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
@@ -209,7 +209,7 @@ double Spectrum::ThermalSynchrotron::jQnuCGS(double nu) const{
   return emis_synch;
 }
 
-double Spectrum::ThermalSynchrotron::jUnuCGS(double nu) const{
+double Spectrum::ThermalSynchrotron::jUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -228,7 +228,7 @@ double Spectrum::ThermalSynchrotron::jVnuCGS(double nu) const{
       emis_synch=0;
     else{
       double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
-        ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS;
+        CL=GYOTO_C_CGS;
       
       double nuc=3.*cyclotron_freq_*sin(angle_B_pem_)/2.*Theta_elec*Theta_elec+1.,
         xx=nu/nuc;
@@ -303,7 +303,7 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
     if (angle_B_pem_<=0 or angle_B_pem_>=M_PI)
       rho_Q=0;
     else{
-      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+      double EE=GYOTO_ELEMENTARY_CHARGE_CGS,
         ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS, S2=1.41421356237310;
 
       double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
@@ -328,7 +328,7 @@ double Spectrum::ThermalSynchrotron::rQnuCGS(double nu) const{
   return rho_Q;
 }
 
-double Spectrum::ThermalSynchrotron::rUnuCGS(double nu) const{
+double Spectrum::ThermalSynchrotron::rUnuCGS(double) const{
   // Marszewski, Prather, Joshi, Pandya, Gammie 2021
   return 0.;
 }
@@ -339,7 +339,7 @@ double Spectrum::ThermalSynchrotron::rVnuCGS(double nu) const{
 
   double rho_V=0;
   if (USE_IPOLE_FORMALISM==1){
-    double EE=GYOTO_ELEMENTARY_CHARGE_CGS,S3=1.73205090765888,
+    double EE=GYOTO_ELEMENTARY_CHARGE_CGS,
         ME=GYOTO_ELECTRON_MASS_CGS, CL=GYOTO_C_CGS, S2=1.41421356237310;
 
     double wp2=4.*M_PI*numberdensityCGS_*EE*EE/ME,
@@ -390,7 +390,7 @@ void Spectrum::ThermalSynchrotron::radiativeQ(double jnu[], // output
   for (size_t ii=0; ii< nbnu; ++ii){
     double nu = nu_ems[ii];
     double BB  = (*spectrumBB_)(nu) ;
-    double jnucur=0., anucur=0.;
+    double jnucur=0.;
     if (!angle_averaged_){
       jnucur = jnuCGS(nu);
     }else{

@@ -165,7 +165,7 @@ double RezzollaZhidenko::N2(const double rr) const{
 double RezzollaZhidenko::B2(const double rr) const{
   double r0 = 2./(1.+epsilon_);
   double xx = 1. - r0/rr, onemx = 1. - xx,
-    onemx2 = onemx*onemx, onemx3 = onemx2*onemx;
+    onemx2 = onemx*onemx;
   double Btilde = bparam_[1]/(1.+bparam_[2]*xx/(1.+bparam_[3]*xx));
   double BB = 1+bparam_[0]*onemx+Btilde*onemx2,
     B2 = BB*BB;
@@ -207,7 +207,7 @@ double RezzollaZhidenko::Bprime(const double rr) const{
   double r0 = 2./(1.+epsilon_);
   double r2 = rr*rr;
   double xx = 1. - r0/rr, onemx = 1. - xx,
-    onemx2 = onemx*onemx, onemx3 = onemx2*onemx;
+    onemx2 = onemx*onemx;
   double Btilde = bparam_[1]/(1.+bparam_[2]*xx/(1.+bparam_[3]*xx));
   double Btilde_der = -bparam_[1]*bparam_[2]/((1.+(bparam_[2]+bparam_[3])*xx)*(1.+(bparam_[2]+bparam_[3])*xx));
   double B_der = -bparam_[0] - 2.*Btilde*onemx + Btilde_der*onemx2;

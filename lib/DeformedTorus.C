@@ -120,10 +120,8 @@ double DeformedTorus::operator()(double const pos[4]) {
     +3.*aa*aa/(c_*c_);
   double x_bar=1./param_beta_
     *sqrt(g_rr)*(pos[1]-c_)/c_;
-  double xb2=x_bar*x_bar;
   double y_bar=1./param_beta_
     *sqrt(g_thth)*(M_PI/2.-pos[2])/c_;
-  double yb2=y_bar*y_bar;
 
   double a1=0., a2=0., a3=0.,
     b1=0., b2=0., b3=0.;
@@ -313,7 +311,7 @@ void DeformedTorus::metric(Gyoto::SmartPointer<Gyoto::Metric::Generic> met)
   return 0;
   }*/
 
-double DeformedTorus::emission(double nu_em, double, state_t const &, 
+double DeformedTorus::emission(double, double, state_t const &, 
 			      double const *) const{
   if (flag_radtransf_)
     GYOTO_ERROR("Radiative transfer not implemented for DeformedTorus.");

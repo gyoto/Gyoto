@@ -47,7 +47,7 @@ GYOTO_PROPERTY_END(Hayward, Generic::properties)
 
 Hayward::Hayward() :
 Generic(GYOTO_COORDKIND_SPHERICAL, "Hayward"),
-  spin_(0.), a2_(0.), a3_(0.), a4_(0.), charge_(0.), b2_(0.)
+  charge_(0.), spin_(0.), a2_(0.), a3_(0.), a4_(0.), b2_(0.)
 {}
 
 // default copy constructor should be fine
@@ -76,7 +76,6 @@ double Hayward::getSpecificAngularMomentum(double rr) const {
   // this is l = -u_phi/u_t for a circular equatorial 4-velocity 
   double r2=rr*rr,r3=r2*rr, r5=r3*r2;
   double aa=spin_, a2=aa*spin_, a3=a2*spin_;
-  double bb=charge_, b2=bb*charge_;
   double md=r3+2.*b2_;
   double m=r3/md;
   double mdot=-3.*r5/md/md+3.*r2/md;
@@ -210,7 +209,7 @@ double Hayward::gmunu(const double * pos, int mu, int nu) const
   
   if (r>=0 && r<1.)
     {
-      double r2=r*r, r3=r2*r, r4=r2*r2;
+      double r2=r*r, r3=r2*r;
       double d=r3+2.*b2_;
       double m=r3/d;
       double sigma=r2+a2_*cth2;
@@ -271,9 +270,7 @@ void Hayward::gmunu_up(double gup[4][4], const double * pos) const
     {
       double r2=r*r, r3=r2*r, r4=r2*r2, r5=r4*r, r6=r5*r, r7=r6*r;
       double d=r3+2.*b2_;
-      double m=r3/d;
       double sigma=r2+a2_*cth2;
-      double delta=r2-2.*m*r+a2_;
       
       gup[0][0] = -(a4_*r3*cth2+a2_*r5*cth2+2.*a4b2*cth2+2.*a2b2*r2*cth2+2.*a2_*r4*sth2+a2_*r5+r7+2.*a2b2*r2+2.*b2_*r4)/sigma/(a2_*r3+r5+2.*a2b2+2.*b2_*r2-2.*r4);
       gup[1][1] = (a2_*r3+r5+2.*a2b2+2.*b2_*r2-2.*r4)/sigma/d;
@@ -285,9 +282,7 @@ void Hayward::gmunu_up(double gup[4][4], const double * pos) const
   if (r<0.)
     {
       double r2=r*r, r3=r2*r, r4=r2*r2, r5=r4*r, r6=r5*r, r7=r6*r;
-      double m=-r3/(-r3+2.*b2_);
       double sigma=r2+a2_*cth2;
-      double delta=r2-2.*m*r+a2_;
       double dm=r3-2.*b2_;
       
       gup[0][0] = -(a4_*r3*cth2+a2_*r5*cth2-2.*a4b2*cth2-2.*a2b2*r2*cth2+2.*a2_*r4*sth2+a2_*r5+r7-2.*a2b2*r2-2.*b2_*r4)/sigma/(a2_*r3+r5-2.*a2b2-2.*b2_*r2-2.*r4);
@@ -330,9 +325,7 @@ double Hayward::gmunu_up(const double * pos, int mu, int nu) const
     {
       double r2=r*r, r3=r2*r, r4=r2*r2, r5=r4*r, r6=r5*r, r7=r6*r;
       double d=r3+2.*b2_;
-      double m=r3/d;
       double sigma=r2+a2_*cth2;
-      double delta=r2-2.*m*r+a2_;
       
       if ((mu==0) && (nu==0)) return -(a4_*r3*cth2+a2_*r5*cth2+2.*a4b2*cth2+2.*a2b2*r2*cth2+2.*a2_*r4*sth2+a2_*r5+r7+2.*a2b2*r2+2.*b2_*r4)/sigma/(a2_*r3+r5+2.*a2b2+2.*b2_*r2-2.*r4);
       if ((mu==1) && (nu==1)) return (a2_*r3+r5+2.*a2b2+2.*b2_*r2-2.*r4)/sigma/d;
@@ -344,9 +337,7 @@ double Hayward::gmunu_up(const double * pos, int mu, int nu) const
   if (r<0.)
     {
       double r2=r*r, r3=r2*r, r4=r2*r2, r5=r4*r, r6=r5*r, r7=r6*r;
-      double m=-r3/(-r3+2.*b2_);
       double sigma=r2+a2_*cth2;
-      double delta=r2-2.*m*r+a2_;
       double dm=r3-2.*b2_;
       
       if ((mu==0) && (nu==0)) return -(a4_*r3*cth2+a2_*r5*cth2-2.*a4b2*cth2-2.*a2b2*r2*cth2+2.*a2_*r4*sth2+a2_*r5+r7-2.*a2b2*r2-2.*b2_*r4)/sigma/(a2_*r3+r5-2.*a2b2-2.*b2_*r2-2.*r4);
@@ -375,7 +366,6 @@ int Hayward::christoffel(double dst[4][4][4], double const pos[4]) const
   double sth2 = sth*sth,
     cth2 = cth*cth,
     cth4=cth2*cth2,
-    sth4=sth2*sth2,
     a2cthsth=a2_*cth*sth,
     a2b2=a2_*b2_,
     a4b2=a4_*b2_,
