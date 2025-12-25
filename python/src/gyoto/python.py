@@ -373,13 +373,13 @@ class MetricBase(PythonBase, PythonMetric):
     ...
 
     Such classes can also be used from XML files:
-    <Astrobj kind = "PythonMetric" plugin="fallback:python*"
+    <Metric kind = "PythonMetric" plugin="fallback:python*"
       <Module>module_where_MyMetric_is_defined</Module>
       <Class>MyMetric</Class>
       <Property1>value1</Property1>
       <Property2>value2</Property2>
       any other PythonMetric Property, e.g. Mass.
-    </Astrobj>
+    </Metric>
 
     Derived classes must implement gmunu(g, x) and christoffel(Gamma,
     x) and may implement getRmb, getRms, getSpecificAngularMomentum,
@@ -389,8 +389,7 @@ class MetricBase(PythonBase, PythonMetric):
     self.spherical. Derived classes that only support one coordinate
     kind (Cartesian or spherical) should ensure that the Spherical
     property is initialized to a suitable value by setting the
-    Spherical (or Cartesian) attribute to True or False at the class
-    level or in __init__.
+    Spherical (or Cartesian) attribute to True or False in __init__.
 
     '''
 
@@ -399,14 +398,10 @@ class MetricBase(PythonBase, PythonMetric):
     def __init__(self, *args):
         '''Initialize instance
 
-        1- initialize the underlying PythonMetric instance;
-        2- set the Instance Property in the underlying PythonMetric object.
+        Initialize the underlying PythonMetric instance;
 
         '''
         PythonBase.__init__(self, PythonMetric, *args)
-        for key in ('Spherical', 'Cartesian'):
-            if hasattr(type(self), key):
-                self.set(key, getattr(type(self), key))
 
     def __setattr__(self, key, value):
         '''Set attribute
@@ -425,3 +420,68 @@ class MetricBase(PythonBase, PythonMetric):
                 self.Mass=value
         else:
             super().__setattr__(key, value)
+
+class SpectrumBase(PythonBase, PythonSpectrum):
+    '''Base class for Gyoto Spectra implemented in Python
+
+    This class is meant as a base class for implementing Gyoto metrics
+    in the Python language using gyoto.python.PythonSpectrum (from
+    which it derives):
+
+    In a nutshell:
+    class MySpectrum(SpectrumBase):
+        properties={ 'Property1': {type': 'type1', 'default': 'default1'},
+                     'property2': {type': 'type2', 'default': 'default2'}}
+
+        def __call__(self, nu):
+        or
+        def __call__(self, *args):
+            """spectrum(frequency_in_Hz) = Constant * nu**Exponent
+
+            This function implements either only
+            Spectrum::Python::operator()(double nu).
+            or both this method and
+            Spectrum::Python::operator()(double nu, double opacity, double ds).
+
+            """
+            ...
+            return value
+
+        def integrate(self, nu1, nu2):
+            """
+            If present, this function implements
+            Gyoto::Spectrum::Python::integrate(double nu1, double nu2)
+
+           If absent, the generic integrator is used.
+           """
+           ...
+           return value
+
+    sp = MySpectrum()
+
+    ao=gyoto.core.Star()
+
+    ao.Spectrum = sp
+    ...
+
+    Such classes can also be used from XML files:
+    <Spectrum kind = "PythonSpectrum" plugin="fallback:python*"
+      <Module>module_where_MySpectrum_is_defined</Module>
+      <Class>MySpectrum</Class>
+      <Property1>value1</Property1>
+      <Property2>value2</Property2>
+    </Spectrum>
+
+    Derived classes must implement __call__ and may implement integrate.
+
+    '''
+
+    properties = dict()
+
+    def __init__(self, *args):
+        '''Initialize instance
+
+        Initialize the underlying PythonSpectrum instance;
+
+        '''
+        PythonBase.__init__(self, PythonSpectrum, *args)

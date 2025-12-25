@@ -107,14 +107,22 @@ Property::Property(string n,
 Property::operator bool() const { return type != empty_t || name != ""; }
 
 Property::type_e Property::typeFromString(std::string stype) {
-  if (stype=="double") {
-    return Property::double_t;
-  } else if (stype=="vector_double") {
-    return Property::vector_double_t;
-  } else if (stype=="spectrum") {
-    return Property::spectrum_t;
-  } else {
-    GYOTO_ERROR("unimplemeted Python property type");
-  }
+  if (stype=="double")               return Property::double_t;
+  if (stype=="long")                 return Property::long_t;
+  if (stype=="unsigned long")        return Property::unsigned_long_t;
+  if (stype=="size_t")               return Property::size_t_t;
+  if (stype=="bool")                 return Property::bool_t;
+  if (stype=="string")               return Property::string_t;
+  if (stype=="filename")             return Property::filename_t;
+  if (stype=="vector_double")        return Property::vector_double_t;
+  if (stype=="vector_unsigned_long") return Property::vector_unsigned_long_t;
+  if (stype=="metric")               return Property::metric_t;
+  if (stype=="screen")               return Property::screen_t;
+  if (stype=="astrobj")              return Property::astrobj_t;
+  if (stype=="spectrum")             return Property::spectrum_t;
+  if (stype=="spectrometer")         return Property::spectrometer_t;
+  if (stype=="empty")                return Property::empty_t;
+
+  GYOTO_ERROR("unimplemeted Python property type: " + stype);
   return Property::empty_t; // avoid warning, will never reach here
 }

@@ -1,5 +1,41 @@
-import unittest, numpy
+import unittest, numpy, sys
 import gyoto.python
+
+class IntrospectingThinDisk(gyoto.python.ThinDiskBase):
+    properties = {"ThisPointer": "long", "SelfPointer": "long"}
+    def set(self, key, *args):
+        if key in self.properties:
+            raise ValueError(f"read-only property: {key}")
+        else: super().set(key, *args)
+    def get(self, key, *args):
+        if key == "ThisPointer":
+            return self.this.getPointer()
+        if key == "SelfPointer":
+            return self.getPointer()
+        return super().get(key, *args)
+
+class TestIntrospectingThinDisk(unittest.TestCase):
+    def test_pointers(self):
+        td = IntrospectingThinDisk()
+        self.assertEqual(td.ThisPointer, td.SelfPointer)
+        self.assertEqual(td.ThisPointer, td.getPointer())
+        self.assertEqual(gyoto.core.gyotoid(td), td.Instance)
+        ao=gyoto.python.PythonThinDisk()
+        ao.Module="python"
+        ao.Class="IntrospectingThinDisk"
+        self.assertEqual(ao.ThisPointer, ao.SelfPointer)
+        self.assertEqual(ao.ThisPointer, ao.getPointer())
+        ao=gyoto.python.PythonThinDisk()
+        ao.Instance=gyoto.core.gyotoid(td)
+        self.assertEqual(ao.ThisPointer, ao.SelfPointer)
+        self.assertEqual(ao.ThisPointer, ao.getPointer())
+        self.assertEqual(ao.InnerRadius, td.InnerRadius)
+        gen=gyoto.astrobj.Generic(ao)
+        default=gen.InnerRadius
+        gen.InnerRadius=default+1
+        self.assertEqual(ao.InnerRadius, td.InnerRadius)
+        self.assertEqual(ao.InnerRadius, gen.InnerRadius)
+        self.assertEqual(ao.InnerRadius, default+1)
 
 class TestPythonSpectrum(unittest.TestCase):
 

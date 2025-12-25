@@ -839,6 +839,40 @@ Value Base::getPythonProperty(std::string const &key) const {
   case Property::double_t:
     val = PyFloat_AsDouble(pVal);
     break;
+  case Property::long_t:
+    val = PyLong_AsLong(pVal);
+    break;
+  case Property::unsigned_long_t:
+    val = PyLong_AsUnsignedLong(pVal);
+    break;
+  case Property::size_t_t:
+    val = PyLong_AsSize_t(pVal);
+    break;
+  case Property::bool_t:
+    {
+      int result = PyObject_IsTrue(pVal);
+      if (result == -1 || PyErr_Occurred()) {
+        PyErr_Print();
+	GYOTO_ERROR("this value can't be converted to boolean");
+      }
+      val =  bool(result);
+    }
+    break;
+  case Property::string_t:
+  case Property::filename_t:
+    {
+      if (!PyUnicode_Check(pVal))
+	GYOTO_ERROR("this doesn't look like a string");
+
+      const char* cstring = PyUnicode_AsUTF8(pVal);
+      if (!cstring || PyErr_Occurred()) {
+	PyErr_Print();
+	GYOTO_ERROR("error converting Python string to C string");
+      }
+      std::string sstring = cstring;
+      val = sstring;
+    }
+    break;
   case Property::vector_double_t:
     {
     PyArray_Descr* pd = PyArray_DescrFromType(NPY_DOUBLE);
@@ -862,6 +896,71 @@ Value Base::getPythonProperty(std::string const &key) const {
     Py_XDECREF(pArr);
     }
     break;
+  case Property::vector_unsigned_long_t:
+    {
+    PyArray_Descr* pd = PyArray_DescrFromType(NPY_ULONG);
+    PyObject * pArr = PyArray_FromAny(pVal, pd, 0, 0, NPY_ARRAY_CARRAY, NULL);
+    //    Py_XDECREF(pd); // PyArray_FromAny steals a reference to *pd
+
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pArr);
+
+      PyErr_Print();
+      GYOTO_ERROR("Error occurred while calling get() in getPythonProperty()");
+    }
+
+    unsigned long *buffer=(unsigned long*)PyArray_DATA((PyArrayObject*)pArr);
+    npy_intp sz = PyArray_Size(pArr);
+
+    std::vector<unsigned long> vec(sz);
+    for (npy_intp k=0; k<sz; ++k) vec[k]=buffer[k];
+    val=vec;
+
+    Py_XDECREF(pArr);
+    }
+    break;
+  case Property::metric_t:
+    {
+    PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pAddr);
+      PyErr_Print();
+      GYOTO_ERROR("Error occurred in getPythonProperty()");
+    }
+    long address = PyLong_AsLong(pAddr);
+    Py_CLEAR(pAddr);
+
+    val = Gyoto::SmartPointer<Gyoto::Metric::Generic>((Gyoto::Metric::Generic*) (address));
+    }
+    break;
+  case Property::screen_t:
+    {
+    PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pAddr);
+      PyErr_Print();
+      GYOTO_ERROR("Error occurred in getPythonProperty()");
+    }
+    long address = PyLong_AsLong(pAddr);
+    Py_CLEAR(pAddr);
+
+    val = Gyoto::SmartPointer<Gyoto::Screen>((Gyoto::Screen*) (address));
+    }
+    break;
+  case Property::astrobj_t:
+    {
+    PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pAddr);
+      PyErr_Print();
+      GYOTO_ERROR("Error occurred in getPythonProperty()");
+    }
+    long address = PyLong_AsLong(pAddr);
+    Py_CLEAR(pAddr);
+
+    val = Gyoto::SmartPointer<Gyoto::Astrobj::Generic>((Gyoto::Astrobj::Generic*) (address));
+    }
+    break;
   case Property::spectrum_t:
     {
     PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
@@ -876,8 +975,26 @@ Value Base::getPythonProperty(std::string const &key) const {
     val = Gyoto::SmartPointer<Gyoto::Spectrum::Generic>((Gyoto::Spectrum::Generic*) (address));
     }
     break;
+  case Property::spectrometer_t:
+    {
+    PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
+    if (PyErr_Occurred()) {
+      Py_XDECREF(pAddr);
+      PyErr_Print();
+      GYOTO_ERROR("Error occurred in getPythonProperty()");
+    }
+    long address = PyLong_AsLong(pAddr);
+    Py_CLEAR(pAddr);
+
+    val = Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>((Gyoto::Spectrometer::Generic*) (address));
+    }
+    break;
+  case Property::empty_t:
+    GYOTO_ERROR("cant' get an empty property");
+    val = false;
+    break;
   default:
-    GYOTO_ERROR("unimplemented data type for Python property");
+    GYOTO_ERROR("unknown property type");
   }
 
   Py_CLEAR(pVal);

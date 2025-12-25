@@ -30,7 +30,7 @@
 
 import math
 import numpy
-import gyoto.core
+import gyoto.python
 
 class BlackBody6000:
     '''Black-body spectrum at 6000K
@@ -57,54 +57,21 @@ class BlackBody6000:
         return nu*nu*nu/(math.exp(PLANCK_OVER_BOLTZMANN*nu/temperature)-1.);
 
 
-class PowerLaw:
+class PowerLaw(gyoto.python.SpectrumBase):
     '''Powerlaw spectrum
 
-    Parameters: (constant, exponent)
+    Properties: (Constant, Exponent)
 
     This example is pretty complete. It implements everything usefull
     and some eye-candy.
 
     '''
 
-    constant=0.
-    exponent=0.
-
-    properties={"Constant": "double", "Exponent": "double"}
-
-    def __setitem__(self, key, value):
-        '''
-        This is how Gyoto sends the <Parameters/> XML entity:
-        spectrum[i]=value
-        i=0: set constant
-        i=1: set exponent
-        '''
-        if (key==0 or key == "Constant"):
-            self.constant = value
-        elif (key==1 or key == "Exponent"):
-            self.exponent = value
-        else:
-            raise IndexError
-    set=__setitem__
-
-    def get(self, key):
-        '''
-        Implementing this is absolutely not necessary (Gyoto does not
-        use it, as of now), but we can: it allows retrieving the
-        parameters like __setitem__ sets them:
-
-        spectrum[0] == spectrum.constant
-        spectrum[1] == spectrum.exponent
-        '''
-        if (key==0 or key=="Constant"):
-            return self.constant
-        elif (key==1 or key=="Exponent"):
-            return self.exponent
-        else:
-            raise IndexError
+    properties={"Constant": {"type": "double", "default": 0.},
+                "Exponent": {"type": "double", "default": 0.}}
 
     def __call__(self, *args):
-        '''spectrum(frequency_in_Hz) = constant * nu**exponent
+        '''spectrum(frequency_in_Hz) = Constant * nu**Exponent
 
         This function implements both
         Spectrum::Python::operator()(double nu).
@@ -121,7 +88,7 @@ class PowerLaw:
         '''
         nu=args[0]
         if (len(args)==1):
-            return self.constant * math.pow(nu, self.exponent)
+            return self.Constant * math.pow(nu, self.Exponent)
         else:
             opacity=args[1]
             ds=args[2]
@@ -137,6 +104,6 @@ class PowerLaw:
 
         If absent, the generic integrator is used.
         '''
-        if (self.exponent == -1.):
-            return self.constant * (math.log(nu2) -math.log(nu1))
-        return self.constant * (math.pow(nu2, self.exponent+1)- math.pow(nu1, self.exponent+1)) / (self.exponent+1)
+        if (self.Exponent == -1.):
+            return self.Constant * (math.log(nu2) -math.log(nu1))
+        return self.Constant * (math.pow(nu2, self.Exponent+1)- math.pow(nu1, self.Exponent+1)) / (self.Exponent+1)
