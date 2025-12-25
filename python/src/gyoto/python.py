@@ -133,10 +133,9 @@ class PythonBase():
         self._PythonPluginClass.__init__(self, *args)
         super(self._PythonPluginClass, self).set("Instance", core.gyotoid(self))
         for key in self.properties:
-            if hasattr(type(self), key):
-                self.set(key, getattr(type(self), key))
-            else:
-                raise(core.Error(f"Please provide default value for '{key}'"))
+            if (isinstance(self.properties[key], dict) and
+                "default" in self.properties[key]):
+                self.set(key, self.properties[key]["default"])
 
     def _key2attr(self, key):
         '''Transform an property key to an attibute name
@@ -163,7 +162,7 @@ class PythonBase():
         if key in self.properties:
             self.__dict__[self._key2attr(key)] = args[0]
         else:
-            super(self._PythonPluginClass, self).set(*args)
+            super(self._PythonPluginClass, self).set(key, *args)
 
     def get (self, key):
         '''Get a Gyoto property
@@ -181,6 +180,19 @@ class PythonBase():
         else:
             return super(self._PythonPluginClass, self).get(key)
 
+    def __setitem__(self, index, value):
+        '''Set parameters
+
+        Another one way to handle parameters
+
+        This is how Gyoto sends the <Parameters/> XML entity:
+          object[index]=value
+        This method sets the property with this item number.
+
+        '''
+        keys=[key for key in self.properties]
+        self.set(keys[index], value)
+
 class StandardBase(PythonBase, PythonStandard):
     '''Base class for Gyoto Standard Astrobjs implemented in Python
 
@@ -190,11 +202,8 @@ class StandardBase(PythonBase, PythonStandard):
 
     In a nutshell:
     class MyAstrobj(StandardBase):
-        properties={ 'Property1': 'type1',
-                     'property2': 'type2', ... }
-
-        Property1 = deafult1
-        Property2 = deafult2
+        properties={ 'Property1': {type': 'type1', 'default': 'default1'},
+                     'property2': {type': 'type2', 'default': 'default2'}}
 
         def __call__(self, position):
             # position is inside the object if and only if
@@ -212,6 +221,8 @@ class StandardBase(PythonBase, PythonStandard):
     <Astrobj kind = "PythonStandard" plugin="fallback:python*"
       <Module>module_where_MyAstrobj_is_defined</Module>
       <Class>MyAstrobj</Class>
+      <Property1>value1</Property1>
+      <Property2>value2</Property2>
       any other PythonStandard Property, e.g. CriticalValue, RMax etc.
     </Astrobj>
 
@@ -284,11 +295,8 @@ class ThinDiskBase(PythonBase, PythonThinDisk):
 
     In a nutshell:
     class MyAstrobj(ThinDiskBase):
-        properties={ 'Property1': 'type1',
-                     'property2': 'type2', ... }
-
-        Property1 = deafult1
-        Property2 = deafult2
+        properties={ 'Property1': {type': 'type1', 'default': 'default1'},
+                     'property2': {type': 'type2', 'default': 'default2'}}
 
         def __call__(self, position):
             # position is inside the object if and only if
@@ -306,6 +314,8 @@ class ThinDiskBase(PythonBase, PythonThinDisk):
     <Astrobj kind = "PythonThinDisk" plugin="fallback:python*"
       <Module>module_where_MyAstrobj_is_defined</Module>
       <Class>MyAstrobj</Class>
+      <Property1>value1</Property1>
+      <Property2>value2</Property2>
       any other PythonThinDisk Property, e.g. InnerRadius, RMax etc.
     </Astrobj>
 
@@ -322,8 +332,8 @@ class ThinDiskBase(PythonBase, PythonThinDisk):
     def __init__(self, *args):
         '''Initialize instance
 
-        1- initialize the underlying PythonStandard instance;
-        2- set the Instance Property in the underlying PythonStandard object.
+        1- initialize the underlying PythonThinDisk instance;
+        2- set the Instance Property in the underlying PythonThinDisk object.
 
         '''
         PythonBase.__init__(self, PythonThinDisk, *args)
@@ -332,3 +342,86 @@ class ThinDiskBase(PythonBase, PythonThinDisk):
         '''True if Metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL
         '''
         return self.this.Metric.coordKind() == core.GYOTO_COORDKIND_SPHERICAL
+
+class MetricBase(PythonBase, PythonMetric):
+    '''Base class for Gyoto Metrics implemented in Python
+
+    This class is meant as a base class for implementing Gyoto metrics
+    in the Python language using gyoto.python.PythonMetric (from
+    which it derives):
+
+    In a nutshell:
+    class MyMetric(MetricBase):
+        properties={ 'Property1': {type': 'type1', 'default': 'default1'},
+                     'property2': {type': 'type2', 'default': 'default2'}}
+
+        def gmunu(self, g, x):
+            # fill g with metric coefficients at x:
+            # for each value of mu and nu:
+            g[mu][nu] = value
+
+        def christoffel(self, Gamma, x):
+            # fill Gamma with metric coefficients at x:
+            # for each value of alpha, mu and nu:
+            Gamma[alpha][mu][nu]
+
+    gg = MyMetric()
+
+    sc=gyoto.core.Scenery()
+
+    sc.Metric = gg
+    ...
+
+    Such classes can also be used from XML files:
+    <Astrobj kind = "PythonMetric" plugin="fallback:python*"
+      <Module>module_where_MyMetric_is_defined</Module>
+      <Class>MyMetric</Class>
+      <Property1>value1</Property1>
+      <Property2>value2</Property2>
+      any other PythonMetric Property, e.g. Mass.
+    </Astrobj>
+
+    Derived classes must implement gmunu(g, x) and christoffel(Gamma,
+    x) and may implement getRmb, getRms, getSpecificAngularMomentum,
+    getPotential, isStopCondition and circularVelocity. The underlying
+    PyhonMetric is accessible through self.this and the Mass and
+    Spherical attributes are cached in self.mass and
+    self.spherical. Derived classes that only support one coordinate
+    kind (Cartesian or spherical) should ensure that the Spherical
+    property is initialized to a suitable value by setting the
+    Spherical (or Cartesian) attribute to True or False at the class
+    level or in __init__.
+
+    '''
+
+    properties = dict()
+
+    def __init__(self, *args):
+        '''Initialize instance
+
+        1- initialize the underlying PythonMetric instance;
+        2- set the Instance Property in the underlying PythonMetric object.
+
+        '''
+        PythonBase.__init__(self, PythonMetric, *args)
+        for key in ('Spherical', 'Cartesian'):
+            if hasattr(type(self), key):
+                self.set(key, getattr(type(self), key))
+
+    def __setattr__(self, key, value):
+        '''Set attribute
+
+        super().__setattr__ only accepts properties as keys as to
+        avoid overwritting attributes that should not be. The
+        underlying PythonMetric will try setting 'this', 'spherical'
+        and 'mass'. Process them and call super() for any other key.
+
+        '''
+        if key in ('this', 'mass', 'spherical'):
+            self.__dict__[key] = value
+            if key=="spherical" and self.Spherical != value:
+                self.Spherical = value
+            elif key=="mass" and self.Mass != value:
+                self.Mass=value
+        else:
+            super().__setattr__(key, value)

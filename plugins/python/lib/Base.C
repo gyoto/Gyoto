@@ -721,28 +721,41 @@ bool Base::hasPythonProperty(std::string const &key) const {
 
 }
 
-int Base::pythonPropertyType(std::string const &key) const {
+Property::type_e Base::pythonPropertyType(std::string const &key) const {
   GYOTO_DEBUG_EXPR(key);
   if (!pProperties_) GYOTO_ERROR("no properties");
   if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
 
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   PyObject * pKey = PyUnicode_FromString(key.c_str());
+  guardian.track(pKey);
 
   GYOTO_DEBUG_EXPR(pKey);
+
+  if (!pKey) {
+    GYOTO_ERROR("Could not convert '"+key+"' to PyUnicode string");
+  }
+
   GYOTO_DEBUG_EXPR(pProperties_);
 
   PyObject * pType = PyDict_GetItem(pProperties_, pKey);
+  if (PyDict_Check(pType)) {
+    GYOTO_DEBUG << "property[" << key <<"] is a dict" << std::endl;
+    pType = PyDict_GetItemString(pType, "type");
+    if (!pType) { GYOTO_ERROR("Please specify type for property: " + key); }
+  }
+
+  if (!PyUnicode_Check(pType)) {
+    GYOTO_ERROR("Type of '"+key+"' is not a UNICODE string");
+  }
+
   std::string stype=PyUnicode_AsUTF8(pType);
-  Py_XDECREF(pType);
   GYOTO_DEBUG_EXPR(stype);
 
   if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
-    GYOTO_ERROR("Error occurred in pythonPropertyType()");
+    GYOTO_ERROR("could not convert type to UTF8");
   }
-  PyGILState_Release(gstate);
 
   return Property::typeFromString(stype);
 }
@@ -792,27 +805,35 @@ Value Base::getPythonProperty(std::string const &key) const {
   if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
   if (!pGet_) GYOTO_ERROR("get(self, key) method not implemented");
 
-  PyGILState_STATE gstate = PyGILState_Ensure();
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   PyObject * pKey = PyUnicode_FromString(key.c_str());
 
   GYOTO_DEBUG_EXPR(pKey);
+  if (!pKey) {
+    GYOTO_ERROR("Could not convert '"+key+"' to PyUnicode string");
+  }
+
   GYOTO_DEBUG_EXPR(pProperties_);
 
   PyObject * pVal =
     PyObject_CallFunctionObjArgs(pGet_, pKey, NULL);
 
-  if (PyErr_Occurred()) {
-    Py_XDECREF(pVal);
+  guardian.track(pVal);
 
+  if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred while calling get() in getPythonProperty()");
   }
 
-  PyObject * pType = PyDict_GetItem(pProperties_, pKey);
-  std::string stype=PyUnicode_AsUTF8(pType);
   Value val;
-  Property::type_e type=Property::typeFromString(stype);
+  Property::type_e type=pythonPropertyType(key);
+
+  GYOTO_DEBUG_EXPR(type);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    GYOTO_ERROR("Error getting property type");
+  }
 
   switch (type) {
   case Property::double_t:
@@ -825,11 +846,9 @@ Value Base::getPythonProperty(std::string const &key) const {
     //    Py_XDECREF(pd); // PyArray_FromAny steals a reference to *pd
 
     if (PyErr_Occurred()) {
-      Py_XDECREF(pVal);
       Py_XDECREF(pArr);
 
       PyErr_Print();
-      PyGILState_Release(gstate);
       GYOTO_ERROR("Error occurred while calling get() in getPythonProperty()");
     }
 
@@ -848,33 +867,27 @@ Value Base::getPythonProperty(std::string const &key) const {
     PyObject * pAddr = PyObject_CallMethod(pVal, "getPointer", NULL);
     if (PyErr_Occurred()) {
       Py_XDECREF(pAddr);
-      Py_XDECREF(pVal);
       PyErr_Print();
-      PyGILState_Release(gstate);
       GYOTO_ERROR("Error occurred in getPythonProperty()");
     }
     long address = PyLong_AsLong(pAddr);
-    Py_XDECREF(pAddr);
+    Py_CLEAR(pAddr);
 
     val = Gyoto::SmartPointer<Gyoto::Spectrum::Generic>((Gyoto::Spectrum::Generic*) (address));
     }
     break;
   default:
-    Py_XDECREF(pVal);
-    PyGILState_Release(gstate);
     GYOTO_ERROR("unimplemented data type for Python property");
   }
 
-  Py_XDECREF(pVal);
+  Py_CLEAR(pVal);
 
   if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Error occurred in getPythonProperty()");
   }
 
-  PyGILState_Release(gstate);
-
+  GYOTO_DEBUG << "exiting" << std::endl;
   return val;
 
 }

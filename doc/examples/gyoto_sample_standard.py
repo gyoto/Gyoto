@@ -210,15 +210,9 @@ class FlaredDisk(gyoto.python.StandardBase):
     '''
 
     # Here we declare the properties and their type:
-    properties = {"Opening": "double",
-                  "Rin": "double",
-                  "Rout": "double"}
-
-    # We should give default values to the properties, and can do it
-    # here or in the constructor:
-    Opening =  0.2
-    Rin     =  4
-    Rout    = 15
+    properties = {"Opening": {"type": "double", "default":  0.2},
+                  "Rin":     {"type": "double", "default":  4.0},
+                  "Rout":    {"type": "double", "default": 15.0}}
 
     # It is not necessary to implement a constructor, but if we do, it
     # should call super().__init__():
@@ -226,8 +220,8 @@ class FlaredDisk(gyoto.python.StandardBase):
         super().__init__(*args)
         # We can also give default values to properties here,
         # including inherited ones:
-        self.this.CriticalValue = 0.
-        self.this.SafetyValue   = 0.3
+        self.CriticalValue = 0.
+        self.SafetyValue   = 0.3
 
     # The only mandatory method to reimplement is __call__, which
     # should support both spherical and Cartesian coordinates:

@@ -145,7 +145,7 @@ class FlaredDisk:
     def getVelocity(self, coord, vel):
         self.this.metric().circularVelocity(coord, vel)
 instance = FlaredDisk()
-ao.Instance = id(instance)
+ao.Instance = gyoto.core.gyotoid(instance)
 
 print(ao)
 
@@ -229,10 +229,9 @@ sc.Astrobj.OpticallyThin = True
 # print class and module name:
 print(sc.Astrobj.Module)
 print(sc.Astrobj.Class)
-
 print(sc)
 
-#gyoto.core.debug(True)
+# ray-trace
 data=sc[:,:]
 
 # Plot:

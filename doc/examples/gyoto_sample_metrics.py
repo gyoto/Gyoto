@@ -52,54 +52,17 @@
 
 import math
 import numpy
-import gyoto.core
+import gyoto.python
 
-class Minkowski:
+class Minkowski(gyoto.python.MetricBase):
     '''Flat space metric
 
     Implemented for both Cartesian and spherical coordinates.
+
     '''
-    def __setattr__(self, key, value):
-        '''Set attributes.
 
-        Optional.
-
-        C++ will set several attributes. By overloading __setattr__,
-        one can react when that occurs, in particular to make sure `this'
-        knows the coordinate kind as in this example.
-
-        Attributes set by the C++ layer:
-
-          this: if the Python extension "gyoto.core" can be imported, it
-                will be set to a gyoto.core.Metric instance pointing to the
-                C++-side instance. If the "gyoto.core" extension cannot be
-                loaded, this will be set to None.
-
-          spherical: when the spherical(bool t) method is called in
-                the C++ layer, it sets the spherical attribute in the
-                Python side.
-
-          mass: when the mass(double m) method is called in the C++
-                side, it sets the spherical attribute in the Python
-                side.
-
-        This example initializes coordKind in the C++ side if it is
-        not already set, since this Minkowski class can work in
-        either.
-
-        '''
-        # First, actually store the attribute. This is what would
-        # happen if we did not overload __setattr__.
-        self.__dict__[key]=value
-        # Then, if key is "this", ensure this knows a valid coordKind.
-        if (key == "this"):
-            cK=value.coordKind()
-            if cK is gyoto.core.GYOTO_COORDKIND_UNSPECIFIED:
-                value.set("Spherical", False)
-            # We could do without this, since this will tell us later
-            # anyway.
-            else:
-                self.spherical = (cK is gyoto.core.GYOTO_COORDKIND_SPHERICAL)
+    # Minkowski has no property:
+    # properties = {}
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double dst[4][4], const double pos[4])
@@ -113,7 +76,7 @@ class Minkowski:
             for nu in range(0, 4):
                 g[mu][nu]=g[nu][mu]=0
         g[0][0]=-1;
-        if not self.spherical:
+        if not self.spherical:   # C++ caches Spherical as self.spherical
             for mu in range(1, 4):
                 g[mu][mu]=1.
             return
@@ -150,7 +113,7 @@ class Minkowski:
         dst[3][2][3]=dst[3][3][2]= math.tan(math.pi*0.5 - x[2])
         return 0
 
-class KerrBL:
+class KerrBL(gyoto.python.MetricBase):
     '''A Python implementation of Gyoto::Metric::KerrBL
 
     Spin and HorizonSecurity may be set either using the Parameters
@@ -170,63 +133,34 @@ class KerrBL:
 
     '''
 
-    # This is needed to support setting Spin and HorizonSecurity by name
-    # in addition to the set and get methods
-    properties={"Spin":"double", "HorizonSecurity":"double"}
+    # The two properties needed by this metris
+    properties={"Spin": {"type": "double",
+                         "default": 0.},
+                "HorizonSecurity":
+                        {"type": "double",
+                         "default": gyoto.core.GYOTO_KERR_HORIZON_SECURITY}}
 
-    spin=0.
-    drhor=gyoto.core.GYOTO_KERR_HORIZON_SECURITY
+    # an additional attribute, which is not a property
     rsink=2.+gyoto.core.GYOTO_KERR_HORIZON_SECURITY
 
-    def __setitem__(self, key, value):
-        '''Set parameters
-
-        Optional, one way to handle parameters
-
-        This is how Gyoto sends the <Parameters/> XML entity:
-        metric[key]=value
-        key=0: set spin (0.)
-        key=1: set drhor, thickness of sink layer around horizon (0.01)
-        '''
-        if (key==0):
-            self.spin = value
-        elif (key==1):
-            self.drhor = value
-        else:
-            raise IndexError
-
-    def set(self, key, value):
+    def set(self, key, *args):
         '''Set parameters by name
 
-        Optional, one way to handle parameters
+        Call PythonBase.set, then set rsink based on Spin and
+        HorizonSecurity
 
-        This is how Gyoto sends custom  XML entities, e.g.
-          <MyEntity>value</MyEntity>
-        metric.set("MyEntity", value)
-
-        Here:
-        key="Spin": set spin (0.)
-        key="HorizonSecurity": set drhor, thickness of sink layer
-             around horizon (0.01)
         '''
-        if (key=="Spin"):
-            self.spin = value
-        elif (key=="HorizonSecurity"):
-            self.drhor = value
-        else:
-            raise IndexError
+        super().set(key, *args)
+        if (key in ("Spin", "HorizonSecurity")
+            and self._key2attr("Spin") in self.__dict__
+            and self._key2attr("HorizonSecurity") in self.__dict__
+            ):
+            if self.Spin > 1:
+                self.__dict__["rsink"]=self.HorizonSecurity
+            else:
+                self.__dict__["rsink"]=(1.+math.sqrt(1.-self.Spin**2)
+                                        +self.HorizonSecurity)
 
-    def get(self, key):
-        '''Get parameters by name
-
-        Optional, mandatory if "properties" and "set" are defined.
-        '''
-        if (key=="Spin"):
-            return self.spin
-        elif (key=="HorizonSecurity"):
-            return self.drhor
-        else:
-            raise IndexError
 
     def __setattr__(self, key, value):
         '''Set attributes.
@@ -237,20 +171,12 @@ class KerrBL:
         one can react when that occurs, in particular to make sure
         `this' knows the coordinate kind as in this example.
 
-        In addition, update self.rsink each time self.spin or
-        self.drhor change.
         '''
-        # First, actually store the attribute. This is what would
-        # happen if we did not overload __setattr__.
-        self.__dict__[key]=value
+        # first, call super
+        super().__setattr__(key, value)
         # Then, if key is "this", ensure `this' knows a valid coordKind.
         if (key == "this"):
-            self.this.set("Spherical", True)
-        elif key in ("spin", "drhor"):
-            if self.spin > 1:
-                self.rsink=drhor
-            else:
-                self.rsink=1.+math.sqrt(1.-self.spin**2)+self.drhor
+            gyoto.python.PythonMetric(self.this).set("Spherical", True)
 
     def gmunu(self, g, x):
         ''' Gyoto::Metric::Generic::gmunu(double g[4], const double pos[4])
@@ -263,7 +189,7 @@ class KerrBL:
         through self.this.gmunu which has a different calling sequence:
           g=self.this.gmunu(x)
         '''
-        spin_=self.spin
+        spin_=self.Spin
         a2_=spin_**2
         r=x[1]
         sth2=math.sin(x[2])**2
@@ -299,7 +225,7 @@ class KerrBL:
                 for nu in range(0, 4):
                     dst[alpha][mu][nu]=0.
 
-        spin_=self.spin
+        spin_=self.Spin
         a2_=spin_**2
         r=x[1]
         sth=math.sin(x[2])
@@ -351,7 +277,7 @@ class KerrBL:
         return 0
 
     def getRms(self):
-        aa=self.spin;
+        aa=self.Spin;
         a2_=aa*aa
         z1 = 1. + pow((1. - a2_),1./3.)*(pow((1. + aa),1./3.) + pow((1. - aa),1./3.))
         z2 = pow(3.*a2_ + z1*z1,1./2.);
@@ -359,11 +285,11 @@ class KerrBL:
         return (3. + z2 - pow((3. - z1)*(3. + z1 + 2.*z2),1./2.));
 
     def getRmb(self):
-        spin_=self.spin
+        spin_=self.Spin
         return 2.-spin_+2.*math.sqrt(1.-spin_);
 
     def getSpecificAngularMomentum(self, rr):
-        aa=self.spin
+        aa=self.Spin
         sqrtr=math.sqrt(rr);
         return (rr*rr-2.*aa*sqrtr+aa*aa)/(rr**1.5-2.*sqrtr+aa);
 
@@ -398,7 +324,7 @@ class KerrBL:
 
         vel[1] = vel[2] = 0.;
         #vel[3] = 1./((d*pow(coord[1], 1.5) + spin_)*sinth);
-        vel[3] = 1./((d*pow(coord[1], 1.5) + self.spin));
+        vel[3] = 1./((d*pow(coord[1], 1.5) + self.Spin));
 
         vel[0] = self.this.SysPrimeToTdot(coor, vel[1:]);
         vel[3] *= vel[0];

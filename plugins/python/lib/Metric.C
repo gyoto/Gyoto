@@ -26,6 +26,8 @@ GYOTO_PROPERTY_STRING(Gyoto::Metric::Python, InlineModule, inlineModule,
       "Inline code of Python module containing the Spectrum implementation.")
 GYOTO_PROPERTY_STRING(Gyoto::Metric::Python, Class, klass,
       "Python class (in Module) implementing the Metric.")
+GYOTO_PROPERTY_SIZE_T(Gyoto::Metric::Python, Instance, instance,
+      "ID of pre-constructed Class instance as per gyoto.core.gyotoid().")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Metric::Python, Parameters, parameters,
       "Parameters for the class instance.")
 GYOTO_PROPERTY_BOOL(Metric::Python, Spherical, Cartesian, spherical,
@@ -141,22 +143,28 @@ void Metric::Python::module(const std::string& m){Python::Base::module(m);}
 std::string Metric::Python::inlineModule() const {return Python::Base::inlineModule();}
 void Metric::Python::inlineModule(const std::string& m){Python::Base::inlineModule(m);}
 std::string Metric::Python::klass() const {return Python::Base::klass();}
-void Gyoto::Metric::Python::klass(const std::string &f) {
+void Gyoto::Metric::Python::klass(const std::string &c)
+{Gyoto::Python::Base::klass(c);}
 
-  PyGILState_STATE gstate = PyGILState_Ensure();
-  Py_XDECREF(pGetPotential_); pGetPotential_=NULL;
-  Py_XDECREF(pGetSpecificAngularMomentum_); pGetSpecificAngularMomentum_=NULL;
-  Py_XDECREF(pGetRms_); pGetRms_=NULL;
-  Py_XDECREF(pGetRmb_); pGetRmb_=NULL;
-  Py_XDECREF(pChristoffel_); pChristoffel_=NULL;
-  Py_XDECREF(pGmunu_); pGmunu_=NULL;
-  PyGILState_Release(gstate);
+void Metric::Python::instance(size_t i)
+{Gyoto::Python::Base::instance(reinterpret_cast<PyObject*>(i));}
+size_t Metric::Python::instance() const
+{return reinterpret_cast<size_t>(pInstance_);}
 
-  Python::Base::klass(f);
-  if (!pModule_) return;
+void Metric::Python::detachInstance() {
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  Py_CLEAR(pGetPotential_);
+  Py_CLEAR(pGetSpecificAngularMomentum_);
+  Py_CLEAR(pGetRms_);
+  Py_CLEAR(pGetRmb_);
+  Py_CLEAR(pChristoffel_);
+  Py_CLEAR(pGmunu_);
+  Gyoto::Python::Base::detachInstance();
+}
 
-  gstate = PyGILState_Ensure();
-  GYOTO_DEBUG << "Checking Python class methods" << f << endl;
+void Gyoto::Metric::Python::attachInstance (PyObject * instance) {
+  Gyoto::Python::Base::attachInstance(instance);
+  GYOTO_DEBUG << "Checking methodes for Python class " << class_ << endl;
 
   pGmunu_ =
     Gyoto::Python::PyInstance_GetMethod(pInstance_, "gmunu");
@@ -177,32 +185,45 @@ void Gyoto::Metric::Python::klass(const std::string &f) {
 
   if (PyErr_Occurred()) {
     PyErr_Print();
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Error while retrieving methods");
   }
 
   if (!pGmunu_) {
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Object does not implement required method \"gmunu\"");
   }
 
   if (!pChristoffel_) {
-    PyGILState_Release(gstate);
     GYOTO_ERROR("Object does not implement required method \"christoffel\"");
   }
 
+  GYOTO_DEBUG << "setting 'this' in the instance" << endl;
   Gyoto::Python::PyInstance_SetThis(pInstance_,
 				    Gyoto::Python::pGyotoMetric(),
 				    this);
 
-  PyGILState_Release(gstate);
   if (parameters_.size()) parameters(parameters_);
   if (coordKind()) spherical(spherical());
   mass(mass());
-  GYOTO_DEBUG << "Done checking Python class methods" << f << endl;
+  GYOTO_DEBUG << "Done checking methods for Python class " << class_ << endl;
 }
 
 void Metric::Python::gmunu(double g[4][4], const double * x) const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGmunu_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pGmunu_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGmunu_);
   if (!pGmunu_) GYOTO_ERROR("gmunu method not loaded yet");
   PyGILState_STATE gstate = PyGILState_Ensure();
 
@@ -210,7 +231,10 @@ void Metric::Python::gmunu(double g[4][4], const double * x) const {
 
   PyObject * pG = PyArray_SimpleNewFromData(2, g_dims, NPY_DOUBLE, g);
   PyObject * pX = PyArray_SimpleNewFromData(1, g_dims, NPY_DOUBLE, const_cast<double*>(x));
+
+  isRecursing = true;
   PyObject * pR = PyObject_CallFunctionObjArgs(pGmunu_, pG, pX, NULL);
+  isRecursing = false;
 
   Py_XDECREF(pR);
   Py_XDECREF(pX);
@@ -226,6 +250,22 @@ void Metric::Python::gmunu(double g[4][4], const double * x) const {
 }
 
 int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pChristoffel_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pChristoffel_);
+  }
+
+  GYOTO_DEBUG_EXPR(pChristoffel_);
   if (!pChristoffel_) GYOTO_ERROR("christoffel method not loaded yet");
   PyGILState_STATE gstate = PyGILState_Ensure();
 
@@ -233,7 +273,10 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
 
   PyObject * pD = PyArray_SimpleNewFromData(3, d_dims, NPY_DOUBLE, dst);
   PyObject * pX = PyArray_SimpleNewFromData(1, d_dims, NPY_DOUBLE, const_cast<double*>(x));
+
+  isRecursing=true;
   PyObject * pR = PyObject_CallFunctionObjArgs(pChristoffel_, pD, pX, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pX);
   Py_XDECREF(pD);
@@ -256,13 +299,31 @@ int Metric::Python::christoffel(double dst[4][4][4], const double * x) const {
 double Metric::Python::getRmb
 ()
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGetRmb_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pGetRmb_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGetRmb_);
   if (!pGetRmb_)
     return Metric::Generic::getRmb();
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetRmb_, NULL);
+  isRecursing=false;
 
   if (PyErr_Occurred()) {
     Py_XDECREF(pR);
@@ -281,13 +342,31 @@ double Metric::Python::getRmb
 double Metric::Python::getRms
 ()
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGetRms_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pGetRms_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGetRms_);
   if (!pGetRms_)
     return Metric::Generic::getRms();
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetRms_, NULL);
+  isRecursing=false;
 
   if (PyErr_Occurred()) {
     Py_XDECREF(pR);
@@ -306,14 +385,33 @@ double Metric::Python::getRms
 double Metric::Python::getSpecificAngularMomentum
 (double rr)
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGetSpecificAngularMomentum_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pGetSpecificAngularMomentum_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGetSpecificAngularMomentum_);
   if (!pGetSpecificAngularMomentum_)
     return Metric::Generic::getSpecificAngularMomentum(rr);
 
   PyGILState_STATE gstate = PyGILState_Ensure();
 
   PyObject * pRr = PyFloat_FromDouble(rr);
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetSpecificAngularMomentum_, pRr, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pRr);
 
@@ -334,6 +432,22 @@ double Metric::Python::getSpecificAngularMomentum
 double Metric::Python::getPotential
 (double const pos[4], double l_cst)
   const {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pGetPotential_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pGetPotential_);
+  }
+
+  GYOTO_DEBUG_EXPR(pGetPotential_);
   if (!pGetPotential_)
     return Metric::Generic::getPotential(pos, l_cst);
 
@@ -343,8 +457,11 @@ double Metric::Python::getPotential
 
   PyObject * pPo = PyArray_SimpleNewFromData(1, dims_pos, NPY_DOUBLE, const_cast<double*>(pos));
   PyObject * pCs = PyFloat_FromDouble(l_cst);
+
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pGetPotential_, pPo, pCs, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pCs);
   Py_XDECREF(pPo);
@@ -370,6 +487,22 @@ int Metric::Python::isStopCondition
      Python method of same same in a Python class.
    */
 
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pIsStopCondition_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pIsStopCondition_);
+  }
+
+  GYOTO_DEBUG_EXPR(pIsStopCondition_);
   // If this method was not found is the Python class, then the
   // pIsStopCondition_ pointer is null.
   if (!pIsStopCondition_)
@@ -384,8 +517,10 @@ int Metric::Python::isStopCondition
 
   // Execute the Python isStopCondition method. This creates a new
   // Python object *pR to hold tge result.
+  isRecursing=true;
   PyObject * pR =
     PyObject_CallFunctionObjArgs(pIsStopCondition_, pPo, NULL);
+  isRecursing=false;
 
   // Release the Python array holding the coord input argument.
   Py_XDECREF(pPo);
@@ -427,6 +562,22 @@ int Metric::Python::isStopCondition
 void Metric::Python::circularVelocity(double const pos[4], double vel[4],
 				      double dir) const
 {
+  /* Recursion check:
+
+     When a class derives from StandardBase, it inherits several
+     methods from PythonStandard. In that case, if the class doesn't
+     reimplement it, these methods will recurse indefinitely. Here we
+     break this loop.
+   */
+  thread_local bool isRecursing = false;
+  if (isRecursing) {
+    GYOTO_DEBUG << "recursion detected, resetting pCircularVelocity_"
+		     << std::endl;
+    // ugly but right: bypass constness
+    Py_CLEAR(const_cast<Gyoto::Metric::Python*>(this)->pCircularVelocity_);
+  }
+
+  GYOTO_DEBUG_EXPR(pCircularVelocity_);
   if (!pCircularVelocity_ || keplerian_) {
     Metric::Generic::circularVelocity(pos, vel, dir);
     return;
@@ -439,7 +590,10 @@ void Metric::Python::circularVelocity(double const pos[4], double vel[4],
   PyObject * pP = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, const_cast<double*>(pos));
   PyObject * pV = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, vel);
   PyObject * pD = PyFloat_FromDouble(dir);
+
+  isRecursing=true;
   PyObject * pR = PyObject_CallFunctionObjArgs(pCircularVelocity_, pP, pV, pD, NULL);
+  isRecursing=false;
 
   Py_XDECREF(pR);
   Py_XDECREF(pD);

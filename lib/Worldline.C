@@ -1660,7 +1660,7 @@ void Worldline::checkBasis(state_t &coord) const {
     memcpy(&coord_old[0], &coord[0], 16*sizeof(double));
     metric_->nullifyCoord(&coord[0], tdot2);
     if (fabs(coord_old[4]-tdot2) < fabs(coord_old[4]-coord[4])){// checking if the second solution from nullifyCoord is closer than the one returned
-      GYOTO_DEBUG_THIS << "use tdot2" << endl;
+      GYOTO_DEBUG << "use tdot2" << endl;
       coord[4] = tdot2;
     }
     photon_tgvec[0] = coord[4];

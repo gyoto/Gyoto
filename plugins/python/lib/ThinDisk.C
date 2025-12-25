@@ -21,7 +21,7 @@ GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, InlineModule, inlineModu
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::ThinDisk, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
 GYOTO_PROPERTY_SIZE_T(Gyoto::Astrobj::Python::ThinDisk, Instance, instance,
-      "Memory address of Python instance implementing the Astrobj as returned by id().")
+      "ID of pre-constructed Class instance as per gyoto.core.gyotoid().")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::ThinDisk,
 			     Parameters, parameters,
       "Parameters for the class instance.")

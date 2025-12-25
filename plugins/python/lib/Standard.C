@@ -21,7 +21,7 @@ GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, InlineModule, inlineModu
 GYOTO_PROPERTY_STRING(Gyoto::Astrobj::Python::Standard, Class, klass,
       "Python class (in Module) implementing the Astrobj.")
 GYOTO_PROPERTY_SIZE_T(Gyoto::Astrobj::Python::Standard, Instance, instance,
-      "Memory address of Python instance implementing the Astrobj as returned by id().")
+      "ID of pre-constructed Class instance as per gyoto.core.gyotoid().")
 GYOTO_PROPERTY_VECTOR_DOUBLE(Gyoto::Astrobj::Python::Standard,
 			     Parameters, parameters,
       "Parameters for the class instance.")

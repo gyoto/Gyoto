@@ -374,7 +374,7 @@ class Gyoto::Python::Base {
   virtual bool hasPythonProperty(std::string const &key) const ;
   virtual void setPythonProperty(std::string const &key, Value val);
   virtual Value getPythonProperty(std::string const &key) const;
-  virtual int pythonPropertyType(std::string const &key) const;
+  virtual Gyoto::Property::type_e pythonPropertyType(std::string const &key) const;
 
 
   /* Helper methods */
@@ -527,13 +527,21 @@ public:
   }
 
   virtual void fillElement(Gyoto::FactoryMessenger *fmp) const {
+    GYOTO_DEBUG << "filling C++ properties" << std::endl;
     O::fillElement(fmp);
+    GYOTO_DEBUG << "filling Python properties" << std::endl;
     if (pProperties_) {
       Py_ssize_t pos=0;
       PyObject *pKey, *pVal;
       while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
+	if (!PyUnicode_Check(pKey)) GYOTO_ERROR("key is not a UNICODE string");
 	std::string key=PyUnicode_AsUTF8(pKey);
+	if (PyDict_Check(pVal)) pVal=PyDict_GetItemString(pVal, "type");
+	if (!pVal) GYOTO_ERROR("could not get type for property "+key);
+	if (!PyUnicode_Check(pVal)) GYOTO_ERROR("type is not a UNICODE string");
 	std::string stype=PyUnicode_AsUTF8(pVal);
+	GYOTO_DEBUG << "creating XML element for Python property "
+		    << key << " of type " << stype << std::endl;
 	Property::type_e type = Property::typeFromString(stype);
 	const Property p (key, type);
 	this->fillProperty(fmp, p);
@@ -802,6 +810,16 @@ class Gyoto::Metric::Python
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
   using Gyoto::Metric::Generic::mass;
