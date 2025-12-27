@@ -381,6 +381,7 @@ class Gyoto::Python::Base {
   virtual void setPythonProperty(std::string const &key, Value val);
   virtual void setPythonProperty(std::string const &key, Value val, std::string const &unit);
   virtual Value getPythonProperty(std::string const &key) const;
+  virtual Value getPythonProperty(std::string const &key, std::string const &unit) const;
   virtual Gyoto::Property::type_e pythonPropertyType(std::string const &key) const;
 
 
@@ -498,6 +499,15 @@ public:
       return O::get(key);
     }
     return getPythonProperty(key);
+  }
+
+  virtual Value get(std::string const &key, std::string const &unit) const {
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(key, unit);
+    }
+    return getPythonProperty(key, unit);
   }
 
   Value get(Property const &p,

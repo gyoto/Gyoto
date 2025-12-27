@@ -183,9 +183,11 @@ class PythonBase():
         except KeyError:
             raise ValueError(f"Property '{key}' does not support units")
 
-        try:
+        if hasattr(self, 'unitLength'):
+            metric = self
+        elif self.knowsProperty('Metric'):
             metric = self.Metric
-        except AttributeError:
+        else:
             metric = None
 
         self.__dict__[self._key2attr(key)] = util.convert(val, unit, storage_unit, metric)
@@ -226,9 +228,11 @@ class PythonBase():
         except KeyError:
             raise ValueError(f"Property '{key}' does not support units")
 
-        try:
+        if hasattr(self, 'unitLength'):
+            metric = self
+        elif self.knowsProperty('Metric'):
             metric = self.Metric
-        except AttributeError:
+        else:
             metric = None
 
         return util.convert(val, storage_unit, unit, metric)

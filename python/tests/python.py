@@ -1,7 +1,7 @@
 import unittest, numpy, sys
 import gyoto.python
 
-class IntrospectingThinDisk(gyoto.python.ThinDiskBase):
+class ThinDiskForTests(gyoto.python.ThinDiskBase):
     properties = {"ThisPointer": "long",
                   "SelfPointer": "long",
                   "MyDouble": {"type": "double", "unit": "m"},
@@ -31,11 +31,41 @@ class IntrospectingThinDisk(gyoto.python.ThinDiskBase):
             return self.getPointer()
         return super().get(key, *args)
 
-class TestIntrospectingThinDisk(unittest.TestCase):
+class MetricForTests(gyoto.python.MetricBase):
+    properties = {"ThisPointer": "long",
+                  "SelfPointer": "long",
+                  "MyDouble": {"type": "double", "unit": "m"},
+                  "MyLong": "long",
+                  "MyUnsignedLong": "unsigned_long",
+                  "MySize_t": "size_t",
+                  "MyBool": "bool",
+                  "MyString": "string",
+                  "MyFilename": "filename",
+                  "MyVectorDouble": {"type": "vector_double", "unit": "m"},
+                  "MyVectorUnsignedLong": "vector_unsigned_long",
+                  "MyMetric": "metric",
+                  "MyScreen": "screen",
+                  "MyAstrobj": "astrobj",
+                  "MySpectrum": "spectrum",
+                  "MySpectrometer": "spectrometer",
+                  "MyEmpty": "empty",
+                  }
+    def set(self, key, *args):
+        if key in ("ThisPointer", "SelfPointer"):
+            raise ValueError(f"read-only property: {key}")
+        else: super().set(key, *args)
+    def get(self, key, *args):
+        if key == "ThisPointer":
+            return self.this.getPointer()
+        if key == "SelfPointer":
+            return self.getPointer()
+        return super().get(key, *args)
+
+class TestThinDiskForTests(unittest.TestCase):
     '''Test a ThinDisk implemented in Python
     '''
     def test_unit(self):
-        td = IntrospectingThinDisk()
+        td = ThinDiskForTests()
         td.MyDouble = 1., "kpc"
         self.assertAlmostEqual(td.get('MyDouble', 'kpc'), 1.)
         self.assertAlmostEqual(td.MyDouble/gyoto.core.GYOTO_KPC, 1., 5)
@@ -45,11 +75,26 @@ class TestIntrospectingThinDisk(unittest.TestCase):
         self.assertTrue((numpy.asarray(val) == numpy.asarray(v2)).all())
         v2 = td.MyVectorDouble
         self.assertTrue((numpy.asarray(val)*gyoto.core.GYOTO_SUN_RADIUS == numpy.asarray(v2)).all())
+        gen = gyoto.astrobj.Generic(td)
+        gen.MyDouble = 1., "kpc"
+        self.assertAlmostEqual(gen.get('MyDouble', 'kpc'), 1.)
+        self.assertAlmostEqual(gen.MyDouble/gyoto.core.GYOTO_KPC, 1., 5)
+        val=(2., 3., 4.)
+        gen.MyVectorDouble = (2., 3., 4.), "sunradius"
+        v2 = gen.get('MyVectorDouble', "sunradius")
+        self.assertTrue((numpy.asarray(val) == numpy.asarray(v2)).all())
+        v2 = gen.MyVectorDouble
+        self.assertTrue((numpy.asarray(val)*gyoto.core.GYOTO_SUN_RADIUS == numpy.asarray(v2)).all())
+        metric=MetricForTests()
+        gen=gyoto.metric.Generic(metric)
+        gen.MyDouble=4, "geometrical"
+        val=gen.get("MyDouble", "geometrical")
+        self.assertEqual(val, 4)
 
     def test_pointers(self):
         '''Test consistency of pointers of classes implemented in Python
         '''
-        td = IntrospectingThinDisk()
+        td = ThinDiskForTests()
         self.assertEqual(td.ThisPointer, td.SelfPointer,
                          "instance.ThisPointer==instance.SelfPointer with self instance")
         self.assertEqual(td.ThisPointer, td.getPointer(),
@@ -58,7 +103,7 @@ class TestIntrospectingThinDisk(unittest.TestCase):
                          "gyotoid(instance)==instance.Instance with self instance")
         ao=gyoto.python.PythonThinDisk()
         ao.Module="python"
-        ao.Class="IntrospectingThinDisk"
+        ao.Class="ThinDiskForTests"
         self.assertEqual(ao.ThisPointer, ao.SelfPointer,
                          "thindisk.ThisPointer==thindisk.SelfPointer with internal instance")
         self.assertEqual(ao.ThisPointer, ao.getPointer(),
@@ -84,7 +129,7 @@ class TestIntrospectingThinDisk(unittest.TestCase):
     def test_properties(self):
         '''Test setting and getting properties of all types in a PythonThinDisk
         '''
-        td=IntrospectingThinDisk()
+        td=ThinDiskForTests()
         gen=gyoto.core.Astrobj(td)
 
         # scalar properties

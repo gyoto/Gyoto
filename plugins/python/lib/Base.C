@@ -899,6 +899,10 @@ void Base::setPythonProperty(std::string const &key, Value val, std::string cons
 }
 
 Value Base::getPythonProperty(std::string const &key) const {
+  return getPythonProperty(key, "");
+}
+
+Value Base::getPythonProperty(std::string const &key, std::string const &unit) const {
   GYOTO_DEBUG_EXPR(key);
   if (!pProperties_) GYOTO_ERROR("no properties");
   if (!hasPythonProperty(key)) GYOTO_ERROR("no such property");
@@ -906,16 +910,26 @@ Value Base::getPythonProperty(std::string const &key) const {
 
   [[maybe_unused]] Gyoto::Python::GILGuard guardian;
   PyObject * pKey = PyUnicode_FromString(key.c_str());
+  guardian.track(pKey);
 
   GYOTO_DEBUG_EXPR(pKey);
   if (!pKey) {
     GYOTO_ERROR("Could not convert '"+key+"' to PyUnicode string");
   }
 
+  PyObject * pUnit = PyUnicode_FromString(unit.c_str());
+  guardian.track(pUnit);
+
+  GYOTO_DEBUG_EXPR(pUnit);
+  if (!pUnit) {
+    GYOTO_ERROR("Could not convert '"+unit+"' to PyUnicode string");
+  }
+
   GYOTO_DEBUG_EXPR(pProperties_);
 
-  PyObject * pVal =
-    PyObject_CallFunctionObjArgs(pGet_, pKey, NULL);
+  PyObject * pVal = nullptr;
+  if (unit=="") pVal = PyObject_CallFunctionObjArgs(pGet_, pKey, NULL);
+  else          pVal = PyObject_CallFunctionObjArgs(pGet_, pKey, pUnit, NULL);
 
   guardian.track(pVal);
 
