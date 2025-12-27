@@ -109,7 +109,7 @@ Property::operator bool() const { return type != empty_t || name != ""; }
 Property::type_e Property::typeFromString(std::string stype) {
   if (stype=="double")               return Property::double_t;
   if (stype=="long")                 return Property::long_t;
-  if (stype=="unsigned long")        return Property::unsigned_long_t;
+  if (stype=="unsigned_long")        return Property::unsigned_long_t;
   if (stype=="size_t")               return Property::size_t_t;
   if (stype=="bool")                 return Property::bool_t;
   if (stype=="string")               return Property::string_t;

@@ -128,10 +128,16 @@ namespace Gyoto {
     /// Create module from Python source code in a C string
     PyObject * PyModule_NewFromPythonCode(const char * code);
 
-    /// Get reference to the Spectrum constructor in the gyoto Python extension
-    PyObject * pGyotoSpectrum() ;
     /// Get reference to the Metric constructor in the gyoto Python extension
     PyObject * pGyotoMetric() ;
+    /// Get reference to the Screen constructor in the gyoto Python extension
+    PyObject * pGyotoScreen() ;
+    /// Get reference to the Astrobj constructor in the gyoto Python extension
+    PyObject * pGyotoAstrobj() ;
+    /// Get reference to the Spectrum constructor in the gyoto Python extension
+    PyObject * pGyotoSpectrum() ;
+    /// Get reference to the Spectrometer constructor in the gyoto Python extension
+    PyObject * pGyotoSpectrometer() ;
     /// Get reference to the StandardAstrobj constructor in the gyoto Python extension
     PyObject * pGyotoStandardAstrobj() ;
     /// Get reference to the ThinDisk constructor in the gyoto Python extension

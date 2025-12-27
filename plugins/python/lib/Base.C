@@ -45,18 +45,20 @@ public:
 PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
   PyObject * pVal = NULL;
   switch (val.type) {
-  case Property::bool_t:
-    pVal = PyBool_FromLong(val);
+  case Property::double_t:
+    pVal = PyFloat_FromDouble(val);
     break;
   case Property::long_t:
     pVal = PyLong_FromLong(val);
     break;
   case Property::unsigned_long_t:
-  case Property::size_t_t:
     pVal = PyLong_FromUnsignedLong(val);
     break;
-  case Property::double_t:
-    pVal = PyFloat_FromDouble(val);
+  case Property::size_t_t:
+    pVal = PyLong_FromSize_t(val);
+    break;
+  case Property::bool_t:
+    pVal = PyBool_FromLong(val);
     break;
   case Property::filename_t:
   case Property::string_t:
@@ -80,16 +82,39 @@ PyObject * Gyoto::Python::PyObject_FromGyotoValue(const Gyoto::Value& val){
       for (npy_intp k=0; k<dims[0]; ++k) *(unsigned long*)PyArray_GetPtr((PyArrayObject*)pVal, &k)=vval[k];
     }
     break;
+  case Property::metric_t:
+    {
+      GYOTO_DEBUG_EXPR(val.type);
+      pVal = PyObject_CallFunction(pGyotoMetric(), "l", (long)(Gyoto::Metric::Generic*)Gyoto::SmartPointer<Gyoto::Metric::Generic>(val));
+    }
+    break;
+  case Property::screen_t:
+    {
+      GYOTO_DEBUG_EXPR(val.type);
+      pVal = PyObject_CallFunction(pGyotoScreen(), "l", (long)(Gyoto::Screen*)Gyoto::SmartPointer<Gyoto::Screen>(val));
+    }
+    break;
+  case Property::astrobj_t:
+    {
+      GYOTO_DEBUG_EXPR(val.type);
+      pVal = PyObject_CallFunction(pGyotoAstrobj(), "l", (long)(Gyoto::Astrobj::Generic*)Gyoto::SmartPointer<Gyoto::Astrobj::Generic>(val));
+    }
+    break;
   case Property::spectrum_t:
     {
       GYOTO_DEBUG_EXPR(val.type);
       pVal = PyObject_CallFunction(pGyotoSpectrum(), "l", (long)(Gyoto::Spectrum::Generic*)Gyoto::SmartPointer<Gyoto::Spectrum::Generic>(val));
     }
     break;
+  case Property::spectrometer_t:
+    {
+      GYOTO_DEBUG_EXPR(val.type);
+      pVal = PyObject_CallFunction(pGyotoSpectrometer(), "l", (long)(Gyoto::Spectrometer::Generic*)Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>(val));
+    }
+    break;
   case Property::empty_t:
     pVal = Py_None;
     break;
-  case Property::metric_t:
   default:
     GYOTO_ERROR("Type not implemented in Python::Metric::PyObject_FromGyotoValue()");
   }
@@ -160,6 +185,42 @@ PyObject * Gyoto::Python::PyImport_Gyoto() {
   return pModule;
 }
 
+PyObject * Gyoto::Python::pGyotoMetric() {
+  static PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Metric");
+  }
+  return res;
+}
+
+PyObject * Gyoto::Python::pGyotoScreen() {
+  static PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Screen");
+  }
+  return res;
+}
+
+PyObject * Gyoto::Python::pGyotoAstrobj() {
+  static PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Astrobj");
+  }
+  return res;
+}
+
 PyObject * Gyoto::Python::pGyotoSpectrum() {
   static PyObject * res = NULL;
   static bool need_load = true;
@@ -172,6 +233,18 @@ PyObject * Gyoto::Python::pGyotoSpectrum() {
   return res;
 }
 
+PyObject * Gyoto::Python::pGyotoSpectrometer() {
+  static PyObject * res = NULL;
+  static bool need_load = true;
+  if (need_load) {
+    need_load=false;
+    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
+    if (pGyoto)
+      res = PyObject_GetAttrString(pGyoto, "Spectrometer");
+  }
+  return res;
+}
+
 PyObject * Gyoto::Python::pGyotoThinDisk() {
   static PyObject * res = NULL;
   static bool need_load = true;
@@ -180,18 +253,6 @@ PyObject * Gyoto::Python::pGyotoThinDisk() {
     PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
     if (pGyoto)
       res = PyObject_GetAttrString(pGyoto, "ThinDisk");
-  }
-  return res;
-}
-
-PyObject * Gyoto::Python::pGyotoMetric() {
-  static PyObject * res = NULL;
-  static bool need_load = true;
-  if (need_load) {
-    need_load=false;
-    PyObject* pGyoto=Gyoto::Python::PyImport_Gyoto();
-    if (pGyoto)
-      res = PyObject_GetAttrString(pGyoto, "Metric");
   }
   return res;
 }

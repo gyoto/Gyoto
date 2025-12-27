@@ -891,6 +891,13 @@ ExtendArrayNumPy(array_size_t, size_t);
   void getFourVel(double ARGOUT_ARRAY1[4]) {
     ($self)->getFourVel(ARGOUT_ARRAY1);
   }
+  // Support copy construction by address
+  Screen(long address) {
+    Gyoto::Screen * res = (Gyoto::Screen *)(address);
+    // Should be done by ref feature:
+    // if (res) res -> incRefCount();
+    return res;
+  }
  };
 GyotoSmPtrClass(Screen)
 GyotoSmPtrClass(Scenery)

@@ -32,6 +32,7 @@ class TestSmartPointer(unittest.TestCase):
             nspace=getattr(gyoto, pnspace)
             generic=getattr(nspace, 'Generic')
             for classname, cls in inspect.getmembers(nspace):
+                default_verbosity=gyoto.core.verbose()
                 # Skip abstract classes
                 if (classname in ('Generic',
                                   gnspace,
@@ -41,6 +42,7 @@ class TestSmartPointer(unittest.TestCase):
                     continue
                 # The XML name of ComplexAstrobj et al. is 'Complex'
                 if 'Complex' in classname:
+                    gyoto.core.verbose(0)
                     classname='Complex'
                 # The XML name of UniformSpectrometer is 'wave'
                 if classname in ('UniformSpectrometer', 'Uniform'):
@@ -68,7 +70,13 @@ class TestSmartPointer(unittest.TestCase):
                 self.assertEqual(obj.getRefCount(), 1)
                 self.assertEqual(clone.getRefCount(), 1)
                 # Print
+                if (classname=="Blob"):
+                    tmp = gyoto.core.verbose()
+                    gyoto.core.verbose(0)
                 rep=obj.__str__()
+                if (classname=="Blob"):
+                    gyoto.core.verbose(tmp)
+                    del tmp
                 self.assertEqual(obj.getRefCount(), 1)
                 # Clean
                 del rep
@@ -90,6 +98,7 @@ class TestSmartPointer(unittest.TestCase):
                 self.assertEqual(gen.getRefCount(), 1)
                 # Clean
                 del gen
+                gyoto.core.verbose(default_verbosity)
 
     def test_complex_classes(self):
         '''Test that adding, retrieving, deleting members updates refCount
