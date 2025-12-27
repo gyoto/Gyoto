@@ -159,12 +159,38 @@ class PythonBase():
         depart too far from this logic.
 
         '''
-        if key in self.properties:
-            self.__dict__[self._key2attr(key)] = args[0]
-        else:
+        # not a python property
+        if key not in self.properties:
             super(self._PythonPluginClass, self).set(key, *args)
 
-    def get (self, key):
+        # python property, no unit
+        if len(args) == 1:
+            self.__dict__[self._key2attr(key)] = args[0]
+            return
+
+        # python property, unit
+        if self.properties[key]['type'] not in ('double', 'vector_double'):
+            raise ValueError(f"Properties of type '{self.properties[key]}' don't support units")
+
+        val=args[0]
+        unit=args[1]
+
+        # get storage unit
+        if type(self.properties[key]) is not dict :
+            raise ValueError(f"Property '{key}' does not support units")
+        try:
+            storage_unit=self.properties[key]['unit']
+        except KeyError:
+            raise ValueError(f"Property '{key}' does not support units")
+
+        try:
+            metric = self.Metric
+        except AttributeError:
+            metric = None
+
+        self.__dict__[self._key2attr(key)] = util.convert(val, unit, storage_unit, metric)
+
+    def get (self, key, *args):
         '''Get a Gyoto property
 
         If key is listed in the self.properties dictionary, get the
@@ -175,10 +201,37 @@ class PythonBase():
         depart too far from this logic.
 
         '''
-        if key in self.properties:
-            return self.__dict__[self._key2attr(key)]
-        else:
-            return super(self._PythonPluginClass, self).get(key)
+        if key not in self.properties:
+            return super(self._PythonPluginClass, self).get(key, *args)
+
+        try:
+            val = self.__dict__[self._key2attr(key)]
+        except KeyError:
+            raise AttributeError(f"Property '{key}' not set yet")
+
+        # no unit
+        if len(args) == 0:
+            return val
+
+        # unit
+        if self.properties[key]['type'] not in ('double', 'vector_double'):
+            raise ValueError(f"Properties of type '{self.properties[key]}' don't support units")
+
+        unit=args[0]
+
+        if type(self.properties[key]) is not dict :
+            raise ValueError(f"Property '{key}' does not support units")
+        try:
+            storage_unit=self.properties[key]['unit']
+        except KeyError:
+            raise ValueError(f"Property '{key}' does not support units")
+
+        try:
+            metric = self.Metric
+        except AttributeError:
+            metric = None
+
+        return util.convert(val, storage_unit, unit, metric)
 
     def __setitem__(self, index, value):
         '''Set parameters

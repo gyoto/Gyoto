@@ -4,14 +4,14 @@ import gyoto.python
 class IntrospectingThinDisk(gyoto.python.ThinDiskBase):
     properties = {"ThisPointer": "long",
                   "SelfPointer": "long",
-                  "MyDouble": "double",
+                  "MyDouble": {"type": "double", "unit": "m"},
                   "MyLong": "long",
                   "MyUnsignedLong": "unsigned_long",
                   "MySize_t": "size_t",
                   "MyBool": "bool",
                   "MyString": "string",
                   "MyFilename": "filename",
-                  "MyVectorDouble": "vector_double",
+                  "MyVectorDouble": {"type": "vector_double", "unit": "m"},
                   "MyVectorUnsignedLong": "vector_unsigned_long",
                   "MyMetric": "metric",
                   "MyScreen": "screen",
@@ -34,6 +34,18 @@ class IntrospectingThinDisk(gyoto.python.ThinDiskBase):
 class TestIntrospectingThinDisk(unittest.TestCase):
     '''Test a ThinDisk implemented in Python
     '''
+    def test_unit(self):
+        td = IntrospectingThinDisk()
+        td.MyDouble = 1., "kpc"
+        self.assertAlmostEqual(td.get('MyDouble', 'kpc'), 1.)
+        self.assertAlmostEqual(td.MyDouble/gyoto.core.GYOTO_KPC, 1., 5)
+        val=(2., 3., 4.)
+        td.MyVectorDouble = (2., 3., 4.), "sunradius"
+        v2 = td.get('MyVectorDouble', "sunradius")
+        self.assertTrue((numpy.asarray(val) == numpy.asarray(v2)).all())
+        v2 = td.MyVectorDouble
+        self.assertTrue((numpy.asarray(val)*gyoto.core.GYOTO_SUN_RADIUS == numpy.asarray(v2)).all())
+
     def test_pointers(self):
         '''Test consistency of pointers of classes implemented in Python
         '''

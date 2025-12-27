@@ -860,6 +860,44 @@ void Base::setPythonProperty(std::string const &key, Value val) {
   PyGILState_Release(gstate);
 }
 
+void Base::setPythonProperty(std::string const &key, Value val, std::string const &unit) {
+
+  if (!pSet_) GYOTO_ERROR("self(self, key, val, unit) method not implemented");
+
+  GYOTO_DEBUG_EXPR(key);
+  GYOTO_DEBUG_EXPR(val.type);
+  GYOTO_DEBUG_EXPR(unit);
+
+  [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+  PyObject * pKey = PyUnicode_FromString(key.c_str());
+  guardian.track(pKey);
+
+  GYOTO_DEBUG_EXPR(pKey);
+  GYOTO_DEBUG_EXPR(pProperties_);
+
+  PyObject * pVal = PyObject_FromGyotoValue(val);
+  guardian.track(pVal);
+
+  PyObject * pUnit = PyUnicode_FromString(unit.c_str());
+  guardian.track(pUnit);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    GYOTO_ERROR("Error occurred while setting property");
+  }
+
+  PyObject * pR =
+    PyObject_CallFunctionObjArgs(pSet_, pKey, pVal, pUnit, NULL);
+
+  Py_XDECREF(pR);
+
+  if (PyErr_Occurred()) {
+    PyErr_Print();
+    GYOTO_ERROR("Error occurred while setting property");
+  }
+
+}
+
 Value Base::getPythonProperty(std::string const &key) const {
   GYOTO_DEBUG_EXPR(key);
   if (!pProperties_) GYOTO_ERROR("no properties");

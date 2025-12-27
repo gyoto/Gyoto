@@ -379,6 +379,7 @@ class Gyoto::Python::Base {
 
   virtual bool hasPythonProperty(std::string const &key) const ;
   virtual void setPythonProperty(std::string const &key, Value val);
+  virtual void setPythonProperty(std::string const &key, Value val, std::string const &unit);
   virtual Value getPythonProperty(std::string const &key) const;
   virtual Gyoto::Property::type_e pythonPropertyType(std::string const &key) const;
 
@@ -450,6 +451,18 @@ public:
     } else {
       GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
       O::set(key, val);
+    }
+  }
+
+  virtual void set(std::string const &key, Value val, std::string const &unit) {
+    GYOTO_DEBUG_EXPR(key);
+    GYOTO_DEBUG_EXPR(val.type);
+    if (hasPythonProperty(key)) {
+      GYOTO_DEBUG << "Python key " << key << " exists" << std::endl;
+      setPythonProperty(key, val, unit);
+    } else {
+      GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
+      O::set(key, val, unit);
     }
   }
 

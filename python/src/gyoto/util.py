@@ -493,3 +493,59 @@ klass      -- a Python class to instanciate the C++ class.
     klass.__module__ = module
 
     return klass
+
+def convert(val, from_unit, to_unit, metric=None):
+    ''' Convert values
+    '''
+    if from_unit==to_unit:
+        return val
+
+    meter=core.Unit('m')
+    second=core.Unit('s')
+    converter = None
+
+    if to_unit=='geometrical' or to_unit=='geometrical_time':
+        if from_unit=='geometrical_time' or from_unit == 'geometrical':
+            return val;
+        if metric is None:
+            raise ValueError('metric is needed to convert to geometrical units')
+        from_u = core.Unit(from_unit);
+        from_factor=1.
+        to_factor = 1./metric.unitLength()
+        if core.areConvertible(from_u, meter):
+            to_u = meter
+        elif core.areConvertible(from_u, second):
+            to_u = second
+            to_factor *= core.GYOTO_C
+        else: raise ValueError(f'cannot convert from {from_unit} to geometrical units')
+        converter = lambda v: core.Converter(from_u, to_u)(v * from_factor) * to_factor;
+    elif from_unit=='geometrical_time' or from_unit == 'geometrical':
+        if metric is None:
+            raise ValueError('metric is needed to convert to geometrical units')
+        to_u = core.Unit(to_unit);
+        to_factor=1.
+        from_factor = metric.unitLength()
+        if core.areConvertible(to_u, meter):
+            from_u = meter
+        elif core.areConvertible(to_u, second):
+            from_u = second
+            from_factor /= core.GYOTO_C
+        else: raise ValueError(f'cannot convert from geometrical units to {to_unit}')
+        converter = lambda v: core.Converter(from_u, to_u)(v * from_factor) * to_factor;
+    else:
+        from_u=core.Unit(from_unit)
+        to_u=core.Unit(to_unit)
+        if core.areConvertible(from_u, to_u):
+            converter = core.Converter(from_u, to_u)
+        else:
+            if core.areConvertible(from_u, meter) and core.areConvertible(to_u, second):
+                converter = lambda v: core.Converter(second, to_u)(core.Converter(from_u, meter)(v) / core.GYOTO_C)
+            elif core.areConvertible(from_u, second) and core.areConvertible(to_u, meter):
+                converter = lambda v: core.Converter(meter, to_u)(core.Converter(from_u, second)(v) * core.GYOTO_C)
+            else:
+                raise ValueError (f'cannot convert from {from_unit} to {to_unit}')
+
+    try:
+        return list([converter(val[i]) for i in range(len(val))])
+    except TypeError:
+        return converter(val)
