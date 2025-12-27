@@ -55,7 +55,7 @@ CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 CLEANFILES += $(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS)
 CLEANFILES += $(CHECK_PYTHON_RESULTS) $(CHECK_PYTHON_MPI_RESULTS)
 
-MPIRUN = mpirun
+MPIRUN = mpirun --mca btl_tcp_if_include lo
 
 if HAVE_PYTHON
 GYOTO_PYTHON_PLGPTH = :@top_builddir@/plugins/python/lib/.libs/
@@ -91,7 +91,7 @@ $(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 $(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
-	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+	$(CHECK_ENV) $(MPIRUN) -np 1 --oversubscribe $(CHECK_RAW_CMD) -P16 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 $(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@

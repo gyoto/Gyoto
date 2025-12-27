@@ -479,7 +479,7 @@ CHECK_RESULTS = $(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
 CHECK_PYTHON_MPI_RESULTS = $(CHECK_PYTHON_RESULTS:.fits=-mpi.fits)
-MPIRUN = mpirun
+MPIRUN = mpirun --mca btl_tcp_if_include lo
 @HAVE_PYTHON_TRUE@GYOTO_PYTHON_PLGPTH = :@top_builddir@/plugins/python/lib/.libs/
 GYOTO_PLUGIN_PATH = @top_builddir@/lib/.libs/$(GYOTO_PYTHON_PLGPTH)
 CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)\
@@ -932,7 +932,7 @@ check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@$(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
-@BUILD_GYOTO_TRUE@	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+@BUILD_GYOTO_TRUE@	$(CHECK_ENV) $(MPIRUN) -np 1 --oversubscribe $(CHECK_RAW_CMD) -P16 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 @BUILD_GYOTO_TRUE@$(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
 @BUILD_GYOTO_TRUE@	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@

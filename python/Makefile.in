@@ -115,7 +115,7 @@ print(f"{tag_interpreter}-{tag_abi}-{tag_platform}")').whl
 CHECK_ENV = @DYLIB_VAR@=../lib/.libs:../plugins/python/lib/.libs:$$@DYLIB_VAR@ \
 	PYTHONPATH=testbed:$$PYTHONPATH
 
-MPIRUN = mpirun
+MPIRUN = mpirun --mca btl_tcp_if_include lo 
 
 INSTALLED_VERSION := $(shell $(PYTHON) -m pip show gyoto 2> /dev/null | grep Version: | awk '{print $$2}')
 INSTALLED_LOCATION := $(shell $(PYTHON) -m pip show gyoto 2> /dev/null | grep Location: | awk '{print $$2}')
@@ -173,8 +173,17 @@ check: testbed/stamp unittest
 
 # check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
+	@echo Checking MPI non-singleton
 	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) $(srcdir)/example-mpi.py \
 		--examples-dir=$(top_srcdir)/doc/examples
+	@echo Checkin MPI singleton
+	$(CHECK_ENV) $(MPIRUN) -np 1 --oversubscribe $(PYTHON) $(srcdir)/example-mpi.py \
+		--examples-dir=$(top_srcdir)/doc/examples
+	$(CHECK_ENV) PYTHONPATH=$(top_srcdir)/doc/examples:$$PYTHONPATH \
+		$(MPIRUN) -np 1 --oversubscribe $(PYTHON) $(srcdir)/example-python.py \
+		--pdf=example-python.pdf \
+		--examples-dir=$(top_srcdir)/doc/examples \
+		--mpi
 
 # check-mpi requires bin to have been built
 ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@:

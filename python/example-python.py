@@ -38,6 +38,7 @@ import gyoto.python
 
 pdfname=None
 examples_dir="/../doc/examples/"
+use_mpi=False
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -52,12 +53,17 @@ for param in sys.argv:
             examples_dir=sparam[1]
         else:
             raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
+    elif sparam[0]=="--mpi":
+        use_mpi=True
     else:
         raise ValueError(f'unknown argument: {sparam[0]}')
 
 pdf=None if pdfname is None else PdfPages(pdfname)
 if len(examples_dir) > 0 and examples_dir[-1] != "/":
     examples_dir += "/"
+
+if use_mpi:
+    import mpi4py.MPI
 
 # Let's see how to load a class from an external module. The module
 # has to be somewhere in sys.path. The examples that we will load are
@@ -196,6 +202,9 @@ sc.Astrobj.OpticallyThin = True
 
 sc.Quantities = "Intensity"
 
+if use_mpi:
+    sc.NProcesses = 16
+
 # print class and module name:
 print(ao.Module)
 print(ao.Class)
@@ -225,6 +234,9 @@ sc.Astrobj.RMax = 1000
 sc.Astrobj.Spectrum = gyoto.spectrum.BlackBody()
 sc.Astrobj.Spectrum.Temperature = 6000
 sc.Astrobj.OpticallyThin = True
+
+if use_mpi:
+    sc.NProcesses = 16
 
 # print class and module name:
 print(sc.Astrobj.Module)
