@@ -45,6 +45,11 @@
 %define GYOTO_NO_DEPRECATED
 %enddef
 
+%pythonbegin %{
+# inspect and re are needed in Object.__getattribute__
+import inspect, re
+%}
+
 //  ********** MACRO DEFINITIONS *********** //
 
 // Exposing SmartPointers does not work well: it breaks automatic
@@ -795,30 +800,69 @@ ExtendArrayNumPy(array_size_t, size_t);
         else:
             self.set(name, value)
 
-    def __getattr__(self, name):
+    def __getattribute__(self, key):
         r"""
-        self.name
+        self.key
 
         This function implements getting a property in a Pythonic manner.
 
-        If "name" is the name of a property, calling
+        If "name" is only the name of a property, calling
           self.name
         is strictly equivalent to
           self.get("name").
+
+        If there are both a Gyoto property and a class method by that name, the
+        function will inspect the stack to check whether the next charater afer
+        key on the line is "(" to decide what to do, so that both of these will
+        work:
+          paln = screen.PALN
+          paln = screen.PALN()
 
         Parameters:
         -----------
 
         name:  XML name of the parameter (XML entity)
-        """
-        if name in ('this', 'thisown', '__swig_destroy__',
-                    '__swig_getmethods__', '__swig_setmethods__'):
-            return super().__getattr__(name)
 
-        if not self.knowsProperty(name):
-            raise AttributeError(
-                    f"'{type(self).__name__}' object has no attribute '{name}'")
-        return self.get(name)
+        """
+        # filter some attributes right away
+        if key in ('this', '__swig_destroy__',
+                   '__swig_getmethods__', '__swig_setmethods__'):
+            return object.__getattribute__(self, key)
+
+        # if key is not a Gyoto property (or if self does not know
+        # what a Gyoto property is), fallback
+        try:
+            if not type(self).knowsProperty(self, key):
+                return object.__getattribute__(self, key)
+        except:
+            return object.__getattribute__(self, key)
+
+        # if key is only a Gyoto property, return its value
+        if not hasattr(self.__class__, key):
+            return self.get(key)
+
+        # this is the interesting case: key is both a Gyoto property
+        # and a class method. Check whether an opening partenthesis
+        # follows key in the calling frame cpontext.
+        frame = None
+        caller_frame = None
+        try:
+            frame = inspect.currentframe()
+            caller_frame = frame.f_back
+            ctxt = inspect.getframeinfo(caller_frame).code_context[0]
+            ind   = ctxt.index(key)
+            substr = ctxt[ind+len(key):].strip()
+            called = True if len(substr) and substr[0]=='(' else False
+        except Exception as e:
+            print(e)
+            print(f"Could not interpret context in {self.__module__}.{self.__class__.__name__}.__getattribute__")
+            return object.__getattribute__(self, key)
+        finally:
+            del frame
+            del caller_frame
+        if called: return object.__getattribute__(self, key)
+        else:      return self.get(key)
+
   %}
 }
 %include "GyotoObject.h"
