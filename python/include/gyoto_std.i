@@ -18,6 +18,13 @@
  */
 %module(docstring="The Gyoto standard plug-in", package="gyoto") std
 %import gyoto.i
+%pythonbegin %{
+# Make sure the stdplug plug-in is loaded before attempting to load
+# the Python bindings
+from gyoto.core import requirePlugin as __gyoto_tmp_requirePlugin
+__gyoto_tmp_requirePlugin("stdplug")
+del __gyoto_tmp_requirePlugin
+%}
 %include "exception.i"
 %{
 

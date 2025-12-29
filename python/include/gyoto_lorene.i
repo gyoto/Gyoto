@@ -19,6 +19,15 @@
 %module(docstring="The Gyoto Lorene plug-in", package="gyoto") lorene
 %import gyoto.i
 
+%pythonbegin %{
+# Make sure the stdplug and lorene plug-ins are loaded before
+# attempting to load the Python bindings
+from gyoto.core import requirePlugin as __gyoto_tmp_requirePlugin
+__gyoto_tmp_requirePlugin("stdplug")
+__gyoto_tmp_requirePlugin("lorene")
+del __gyoto_tmp_requirePlugin
+%}
+
 %{
 
 #define GYOTO_NO_DEPRECATED

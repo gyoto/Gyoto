@@ -104,7 +104,7 @@ CPPFLAGS=-Iinclude -I$(srcdir)/include -I../include -I$(top_srcdir)/include $(CF
 CXXFLAGS=@CXXFLAGS@ $(CFITSIO_CFLAGS) $(XERCES_CFLAGS) $(UDUNITS_CFLAGS)
 CFLAGS=$(CXXFLAGS)
 
-SWIG_CMD = $(SWIG) -Iinclude -I$(srcdir)/include -I../include -I$(srcdir)/../include -c++ -python -outdir .tmp
+SWIG_CMD = $(SWIG) -Iinclude -I$(srcdir)/include -I../include -I$(srcdir)/../include -c++ -python -outdir src/gyoto
 
 WHEEL := dist/gyoto-$(PACKAGE_VERSION)-$(shell $(PYTHON) -c \
 'from packaging import tags; import sysconfig; tag = next(tags.sys_tags()); \
@@ -263,30 +263,17 @@ include/gyoto_doc.i: .tmp/gyoto_doc.i
 	          $< > $@
 
 ## Step 2: run Swig to produce cxx and py files
-.tmp/core.py src/core_wrap.cxx: $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp src
+src/gyoto/core.py src/core_wrap.cxx: $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) src/gyoto
 	$(SWIG_CMD) -o src/core_wrap.cxx $(srcdir)/include/gyoto.i
 
-.tmp/std.py src/std_wrap.cxx: $(srcdir)/include/gyoto_std.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp src
+src/gyoto/std.py src/std_wrap.cxx: $(srcdir)/include/gyoto_std.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) src/gyoto
 	$(SWIG_CMD) -o src/std_wrap.cxx $(srcdir)/include/gyoto_std.i
 
-.tmp/lorene.py src/lorene_wrap.cxx: $(srcdir)/include/gyoto_lorene.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
-	$(MKDIR_P) .tmp src
+src/gyoto/lorene.py src/lorene_wrap.cxx: $(srcdir)/include/gyoto_lorene.i $(srcdir)/include/gyoto.i include/gyoto_doc.i $(top_srcdir)/include/*.h $(builddir)/../include/*.h
+	$(MKDIR_P) src/gyoto
 	$(SWIG_CMD) -o src/lorene_wrap.cxx $(srcdir)/include/gyoto_lorene.i
-
-## Step 3: tweak the generated py files
-src/gyoto/core.py: $(srcdir)/headers/core .tmp/core.py
-	$(MKDIR_P) $(dir $@)
-	cat $^ > $@
-
-src/gyoto/std.py: $(srcdir)/headers/std .tmp/std.py
-	$(MKDIR_P) $(dir $@)
-	cat $^ > $@
-
-src/gyoto/lorene.py: $(srcdir)/headers/lorene .tmp/lorene.py
-	$(MKDIR_P) $(dir $@)
-	cat $^ > $@
 
 # in case of out-of-tree build, we also need go copy the static
 # sources.  The rule is at for $(GYOTO_STATIS_SRC) is at the end of
