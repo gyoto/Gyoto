@@ -26901,7 +26901,7 @@ printf "%s\n" "#define GYOTO_SOVERS \"${sovers}\"" >>confdefs.h
 
 if test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"
 then :
-  mySUBDIRS="$mySUBDIRS" doc
+  mySUBDIRS="$mySUBDIRS doc"
 
 
 fi

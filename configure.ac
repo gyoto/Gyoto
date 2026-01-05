@@ -843,7 +843,7 @@ AC_SUBST([sovers])
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
 AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
-  [mySUBDIRS="$mySUBDIRS" doc
+  [mySUBDIRS="$mySUBDIRS doc"
   ]
 )
 
