@@ -37,8 +37,10 @@ import gyoto.python
 # Parse command line and optionally switch to PDF output
 
 pdfname=None
-examples_dir="/../doc/examples/"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
 use_mpi=False
+
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -124,7 +126,7 @@ class FlaredDisk:
         h_r=abs(math.cos(coord[2]))
         return max(h_r-self.opening, self.rin-r, r-self.rout)
     def getVelocity(self, coord, vel):
-        self.this.metric().circularVelocity(coord, vel)
+        self.this.Metric.circularVelocity(coord, vel)
 '''
 ao.Class = "FlaredDisk"
 
@@ -149,7 +151,7 @@ class FlaredDisk:
         h_r=abs(math.cos(coord[2]))
         return max(h_r-self.opening, self.rin-r, r-self.rout)
     def getVelocity(self, coord, vel):
-        self.this.metric().circularVelocity(coord, vel)
+        self.this.Metric.circularVelocity(coord, vel)
 instance = FlaredDisk()
 ao.Instance = gyoto.core.gyotoid(instance)
 

@@ -25,13 +25,15 @@ import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import gyoto.core
-import gyoto.std
+import gyoto
+
 
 # Parse command line and optionally switch to PDF output
 
 pdfname=None
-examples_dir="../doc/examples/"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
+
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -56,18 +58,16 @@ if len(examples_dir) > 0 and examples_dir[-1] != "/":
 # Simple stuff
 
 scr=gyoto.core.Screen()
-gg=gyoto.std.KerrBL()
-scr.metric(gg)
+scr.Metric = gyoto.metric.KerrBL()
 pos=scr.getObserverPos()
 
 # Load Scenery
 
-a=gyoto.core.Factory(examples_dir+"example-moving-star.xml")
-sc=a.scenery()
-sc.nThreads(8)
-sc.astrobj().opticallyThin(False)
+sc = gyoto.util.readScenery(examples_dir+"example-moving-star.xml")
+sc.NThreads = 8
+sc.Astrobj.OpticallyThin = False
 
-scr=sc.screen()
+scr=sc.Screen
 dest=numpy.zeros(8, float)
 scr.getRayTriad(1,1,dest)
 dest=numpy.ndarray(3, float)
@@ -76,7 +76,7 @@ scr.coordToSky((0., 5., numpy.pi/2, 0), dest)
 # Trace and plot NULL geodesic:
 
 ph=gyoto.core.Photon()
-ph.setInitialCondition(sc.metric(), sc.astrobj(), sc.screen(), 0., 0.)
+ph.setInitialCondition(sc.Metric, sc.Astrobj, sc.Screen, 0., 0.)
 ph.hit()
 n=ph.get_nelements()
 
@@ -102,7 +102,7 @@ else:
 # Trace and plot timelike geodesic
 # We need to cast the object to a gyoto.std.Star:
 
-wl=gyoto.std.Star(sc.astrobj())
+wl=gyoto.astrobj.Star(sc.Astrobj)
 wl.xFill(1000)
 
 n=wl.get_nelements()
@@ -124,8 +124,8 @@ else:
 # Ray-trace scenery
 
 # For that, we can use the short-hand:
-sc.requestedQuantitiesString('Intensity EmissionTime MinDistance')
-results=sc.rayTrace()
+sc.Quantities = 'Intensity EmissionTime MinDistance'
+results=sc[:,:] # or: sc.rayTrace()
 
 plt.imshow(results['Intensity'])
 if pdf is None:
@@ -151,7 +151,7 @@ else:
 
 # Or we can do it manually to understand how the Gyoto API works:
 
-res=sc.screen().resolution()
+res=sc.Screen.Resolution
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)
@@ -209,10 +209,10 @@ else:
 
 # Another Scenery, with spectrum
 
-sc=gyoto.core.Factory(examples_dir+"example-polish-doughnut.xml").scenery()
-sc.screen().resolution(32)
-res=sc.screen().resolution()
-ns=sc.screen().spectrometer().nSamples()
+sc=gyoto.util.readScenery(examples_dir+"example-polish-doughnut.xml")
+sc.Screen.Resolution = 32
+res=sc.Screen.Resolution
+ns=sc.Screen.Spectrometer.NSamples
 spectrum=numpy.zeros((ns, res, res), dtype=float)
 
 ii=gyoto.core.Range(1, res, 1)
@@ -235,29 +235,29 @@ else:
 
 # Another Scenery, with impact coords, created from within Python
 
-met=gyoto.core.Metric("KerrBL")
-met.mass(4e6, "sunmass")
-ao=gyoto.core.Astrobj("PageThorneDisk")
-ao.metric(met)
-ao.opticallyThin(False)
-ao.rMax(100)
+met=gyoto.metric.KerrBL()
+met.Mass = 4e6, "sunmass"
+ao=gyoto.astrobj.PageThorneDisk()
+ao.Metric        = met
+ao.OpticallyThin = False
+ao.RMax          = 100
 screen=gyoto.core.Screen()
-screen.distance(8, "kpc")
-screen.time(8, "kpc")
-screen.resolution(64)
-screen.inclination(numpy.pi/4)
-screen.PALN(numpy.pi)
-screen.time(8, "kpc")
-screen.fieldOfView(100, "µas")
+screen.Distance    = 8, "kpc"
+screen.Time        = 8, "kpc"
+screen.Resolution  = 64
+screen.Inclination = numpy.pi/4
+screen.PALN        = numpy.pi
+screen.Time        = 8, "kpc"
+screen.FieldOfView = 100, "µas"
 sc=gyoto.core.Scenery()
-sc.metric(met)
-sc.astrobj(ao)
-sc.screen(screen)
-sc.delta(1, "kpc")
-sc.adaptive(True)
-sc.nThreads(8)
+sc.Metric   = met
+sc.Astrobj  = ao
+sc.Screen   = screen
+sc.Delta    = 1, "kpc"
+sc.Adaptive = True
+sc.NThreads = 8
 
-res=sc.screen().resolution()
+res=sc.Screen.Resolution
 
 ii=gyoto.core.Range(1, res, 1)
 jj=gyoto.core.Range(1, res, 1)
@@ -345,36 +345,53 @@ gyoto.core.requirePlugin('stdplug')
 tt=gyoto.core.Astrobj('Torus')
 kerr=gyoto.core.Metric('KerrBL')
 
+# If the name of the plug-in is suitable as a Python identifier
+# (i.e. composed only of letters, digits, the underscore character,
+# and does not start with a digit), it can be imported as a Python
+# module and classes there-in can be used as expected, as long as they
+# have unique names that are valid Python identifiers themselves:
+import gyoto.stdplug
+tt=gyoto.stdplug.Torus()
+kerr=gyoto.stdplug.KerrBL()
+
 # Most properties that can be set in an XML file can also be accessed
-# from Python using the Property/Value mechanism:
-# Low-level access:
-p=tt.property("SmallRadius")
-p.type==gyoto.core.Property.double_t
-tt.set(p, gyoto.core.Value(0.2))
-tt.get(p) == 0.2
-# Higher-level:
-kerr.set("Spin", 0.95)
-kerr.get("Spin") == 0.95
+# from Python as object attributes:
+kerr.Spin = 0.95
+assert kerr.Spin == 0.95
+# this include setting with unit:
+kerr.Mass = 4e6, "sunmass"
+# but to specify a unit for getting, we need to use the "get()"
+# method:
+assert kerr.get('Mass', 'sunmass') == 4e6
 
-# However, we also have Python extensions around the standard Gyoto
-# plug-ins.
-import gyoto.std
-# And if the lorene plug-in has been compiled:
-# import gyoto.lorene
-
-# It then becomes possible to access the methods specific to derived
-# classes. They can be instantiated directly from the gyoto_* extension:
+# Note that here we have loaded the stdplug plug-in as a user-provided
+# plug-in, with access only to the generic API of metrics, astrobjs
+# etc. By using the gyoto.std module instead, it becomes possible to
+# access the methods specific to derived classes.
 tr2=gyoto.std.Torus()
 # and we can cast a generic pointer (from the gyoto extension) to a
 # derived class:
 tr=gyoto.std.Torus(tt)
-tt.get("SmallRadius") == tr.smallRadius()
+assert tt.SmallRadius == tr.smallRadius()
 
-# Another example: using a complex (i.e. compound) Astrobj:
+# Another example: using a complex (i.e. compound) Astrobj. Note that
+# Astrobj::Complex is renamed to ComplexAstrobj in the standard
+# plug-in.
 cplx=gyoto.std.ComplexAstrobj()
 cplx.append(tr)
 cplx.append(sc.astrobj())
-sc.astrobj(cplx)
+sc.Astrobj = cplx
+# the append() method is accessible when instantiating cplx from
+# gyoto.std, not from gyoto.stdplug. Also, since stdplug contains both
+# a metric and an astrobj that are called "Complex" and they have not
+# been renamed, we need to be more specific about what we want:
+cplx_generic = gyoto.stdplug.Astrobj('Complex')
+try:
+    cplx_generic.append(tr)
+    worked = True
+except AttributeError:
+    worked=False
+if worked: raise gyoto.core.Error("This should not have worked!")
 
 print("All done, exiting")
 if pdf is not None:

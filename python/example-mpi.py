@@ -73,9 +73,12 @@
 
 # 0- Parse command-line arguments
 import sys, os
+from matplotlib.backends.backend_pdf import PdfPages
 
 pdfname=None
-examples_dir="../doc/examples/"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
+
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -105,12 +108,11 @@ import mpi4py.MPI
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
-import gyoto.core
-import gyoto.std
+import gyoto
 
-sc=gyoto.core.Factory(examples_dir+"example-moving-star.xml").scenery()
-sc.nThreads(1)
-sc.astrobj().opticallyThin(False)
+sc=gyoto.util.readScenery(examples_dir+"example-moving-star.xml")
+sc.NThreads = 1
+sc.Astrobj.OpticallyThin = False
 
 # 3- Autodetect scenario
 # Spawn processes and clone scenery into them:
@@ -137,7 +139,7 @@ else:
 # 4- Prepare storage for ray-traced quantities
 
 # Prepare array for holding results
-res=sc.screen().resolution()
+res=sc.Screen.Resolution
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)

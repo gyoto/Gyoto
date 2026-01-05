@@ -14,7 +14,9 @@ import gyoto.core, gyoto.std
 
 # Parse command line and optionally switch to PDF output
 pdfname=None
-examples_dir="../doc/examples/"
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
+
 for param in sys.argv:
     sparam=param.split("=")
     if os.path.basename(sparam[0])==os.path.basename(__file__):
@@ -38,7 +40,7 @@ if len(examples_dir) > 0 and examples_dir[-1] != "/":
 
 ### Create a metric
 metric = gyoto.std.KerrBL()
-metric.mass(4e6, "sunmass");
+metric.Mass = 4e6, "sunmass"
 
 ### Create PatternDisk
 # Create opacity and intensity grids as numpy arrays.
@@ -59,39 +61,39 @@ pintensity=gyoto.core.array_double.fromnumpy3(intensity)
 pd=gyoto.std.PatternDisk()
 pd.copyIntensity(pintensity, pgridshape)
 pd.copyOpacity  (popacity, pgridshape)
-pd.innerRadius(3)
-pd.outerRadius(28)
 pd.repeatPhi(8)
-pd.metric(metric)
-pd.rMax(50)
+pd.InnerRadius =  3
+pd.OuterRadius = 28
+pd.Metric      = metric
+pd.RMax        = 50
 
 ### Create screen
 screen=gyoto.core.Screen()
-screen.metric(metric)
-screen.resolution(64)
-screen.time(1000., "geometrical_time")
-screen.distance(100., "geometrical")
-screen.fieldOfView(30./100.)
-screen.inclination(110., "degree")
-screen.PALN(180., "degree")
+screen.Metric      = metric
+screen.Resolution  =   64
+screen.Time        = 1000., "geometrical_time"
+screen.Distance    =  100., "geometrical"
+screen.FieldOfView =   30./100.
+screen.Inclination =  110., "degree"
+screen.PALN        =  180., "degree"
 
 ### Create Scenery
 sc=gyoto.core.Scenery()
-sc.metric(metric)
-sc.screen(screen)
-sc.astrobj(pd)
+sc.Metric  = metric
+sc.Screen  = screen
+sc.Astrobj = pd
 
 ### Save Scenery
 pd.fitsWrite("!check-patterndisk.fits.gz")
 gyoto.core.Factory(sc).write("check-patterndisk.xml")
 
 ### Read Scenery
-sc2=gyoto.core.Factory("check-patterndisk.xml").scenery()
+sc2=gyoto.util.readScenery("check-patterndisk.xml")
 
 ### Check
 # Compare Sceneries
-assert sc2.screen().dMax() == sc.screen().dMax(), "dmax was not conserved when writing and reading XML"
-assert sc2.tMin() == sc.tMin(), "tmin was not conserved when writing and reading XML"
+assert sc2.Screen.DMax == sc.Screen.DMax, "dmax was not conserved when writing and reading XML"
+assert sc2.MinimumTime == sc.MinimumTime, "tmin was not conserved when writing and reading XML"
 
 # Delete temporary files
 os.unlink("check-patterndisk.xml")
@@ -99,7 +101,7 @@ os.unlink("check-patterndisk.fits.gz")
 
 # Compare PatternDisks
 # compare shape
-pd2 = gyoto.std.PatternDisk(sc2.astrobj())
+pd2 = gyoto.std.PatternDisk(sc2.Astrobj)
 pgridshape2=gyoto.core.array_size_t(3)
 pd2.getIntensityNaxes(pgridshape2)
 for k in range (3):
