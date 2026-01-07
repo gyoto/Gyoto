@@ -57,6 +57,7 @@ GYOTO_PROPERTY_END(KonoplyaRezzollaZhidenko, Generic::properties)
 GYOTO_PROPERTY_ACCESSORS(KonoplyaRezzollaZhidenko, double, rms_, rms)
 
 void KonoplyaRezzollaZhidenko::deltashorizon(std::vector<double> const &v) {
+  if (spin_ == 0.) GYOTO_ERROR("null spin case not supported");
   size_t n = v.size();
   if (n>GYOTO_NB_DELTAHOR_MAX)
     GYOTO_ERROR("In KonoplyaRezzollaZhidenko: choose at most "
@@ -78,14 +79,13 @@ void KonoplyaRezzollaZhidenko::deltashorizon(std::vector<double> const &v) {
       case 2: if (spin_ > 0.){
                 if (deltashorizon_[i] < -4./spin3_*(1.-sqrt(1.-spin2_))) 
                 GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ2 or δ3");
-                break;
               }
               else if (spin_ < 0.){
                 if (deltashorizon_[i] > -4./spin3_*(1.-sqrt(1.-spin2_))) 
                 GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ2 or δ3");
-                break;
               }
-	[[fallthrough]]; // or break; ???
+              else GYOTO_ERROR("null spin case not supported");
+              break;
        case 3:
        case 4: if (deltashorizon_[i] < -1.) 
               GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ4 or δ5");
@@ -94,6 +94,8 @@ void KonoplyaRezzollaZhidenko::deltashorizon(std::vector<double> const &v) {
               GYOTO_ERROR("In KonoplyaRezzollaZhidenko: Restriction range not respected for δ6");
               // Irene: Given the disagreement in the literature, I don't know if this restriction range still applies...!!!
             break;
+       default: GYOTO_ERROR("case i>=6 not implemented, is it below"
+			    TOSTRING(GYOTO_NB_DELTAHOR_MAX) "?"); 
     }
   }
   for (size_t i=n; i<GYOTO_NB_DELTAHOR_MAX; ++i) deltashorizon_[i]=0.;
