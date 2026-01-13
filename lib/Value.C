@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -94,9 +94,18 @@ Value::operator double() const {
   case Property::size_t_t:
     return double(SizeT);
   case Property::string_t:
-    return stod(String);
+    if (String== "DBL_MAX") return  DBL_MAX;
+    if (String=="-DBL_MAX") return -DBL_MAX;
+    if (String== "DBL_MIN") return  DBL_MIN;
+    if (String=="-DBL_MIN") return -DBL_MIN;
+    try {
+	return stod(String);
+    }
+    catch (const std::invalid_argument& e) {
+      GYOTO_ERROR("This string does not look like a double: '" + String + "'");
+    }
   default:
-    GYOTO_ERROR("This Value does not hold a double");
+    GYOTO_ERROR("This Value cannot be cast to double");
   }
   return 0.;
 }
