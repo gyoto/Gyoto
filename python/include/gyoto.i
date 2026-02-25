@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2022 Thibaut Paumard
+    Copyright 2014-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -669,6 +669,15 @@ GyotoSmPtrTypeMapClassDerived(Astrobj, Properties);
     (void)DIM4;
     return static_cast< name * >(IN_ARRAY4);
   }
+  static name* fromnumpy5(type* IN_ARRAY5, size_t DIM1, size_t DIM2, size_t DIM3, size_t DIM4, size_t DIM5) {
+    (void)IN_ARRAY5;
+    (void)DIM1;
+    (void)DIM2;
+    (void)DIM3;
+    (void)DIM4;
+    (void)DIM5;
+    return static_cast< name * >(IN_ARRAY5);
+  }
 };
 %enddef
 
@@ -691,15 +700,18 @@ ExtendArrayNumPy(array_size_t, size_t);
 %apply (double IN_ARRAY2[ANY][ANY]) {(const double [ANY][ANY])};
 %apply (double IN_ARRAY3[ANY][ANY][ANY]) {(const double [ANY][ANY][ANY])};
 %apply (double IN_ARRAY4[ANY][ANY][ANY][ANY]) {(const double [ANY][ANY][ANY][ANY])};
+%apply (double IN_ARRAY5[ANY][ANY][ANY][ANY][ANY]) {(const double [ANY][ANY][ANY][ANY][ANY])};
 // Handle all non-const arrays of fixed size as INPLACE.
 %apply (double INPLACE_ARRAY1[ANY]) {(double [ANY])};
 %apply (double INPLACE_ARRAY2[ANY][ANY]) {(double [ANY][ANY])};
 %apply (double INPLACE_ARRAY3[ANY][ANY][ANY]) {(double [ANY][ANY][ANY])};
 %apply (double INPLACE_ARRAY4[ANY][ANY][ANY][ANY]) {(double [ANY][ANY][ANY][ANY])};
+%apply (double INPLACE_ARRAY5[ANY][ANY][ANY][ANY][ANY]) {(double [ANY][ANY][ANY][ANY][ANY])};
 %apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_1[ANY])}
 %apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_2[ANY])}
 %apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_3[ANY])}
 %apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_4[ANY])}
+%apply (double ARGOUT_ARRAY1[ANY]) {(double ARGOUT_ARRAY1_5[ANY])}
 
 
 // ******** INTERFACE ******** //
