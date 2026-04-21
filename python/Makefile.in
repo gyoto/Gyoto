@@ -203,7 +203,7 @@ install-data: all
 	$(INSTALL_DATA) $(GYOTO_SWIGFILES) $(DESTDIR)$(pkgincludedir)
 
 # Install the built wheel using python -m pip
-install-python: all
+install-python: $(WHEEL)
 ifeq ($(pythondir),nowhere)
 	@echo \$pythondir is set to \'nowhere\', skip installing Python module
 else

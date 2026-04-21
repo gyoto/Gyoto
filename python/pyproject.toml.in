@@ -1,16 +1,16 @@
 [build-system]
-requires = ["setuptools", "numpy"]
+requires = ["setuptools", "numpy", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "@PACKAGE_NAME@"
+name = "gyoto"
 version = "@PACKAGE_VERSION@"
-dependencies = ["numpy"]
+dependencies = ["numpy", "matplotlib"]
 authors = [
     {name = "The Gyoto Team", email = "gyoto@sympa.obspm.fr"}
 ]
 description = "The General relativitY Orbit Tracer of paris Observatory"
-license = "GPL-3.0-or-later"
+license = {text = "GPL-3.0-or-later" }
 keywords = ["raytracing", "General Relativity", "science", "astronomy"]
 classifiers = [
   "Topic :: Scientific/Engineering :: Astronomy",
