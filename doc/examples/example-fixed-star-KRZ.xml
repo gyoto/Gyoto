@@ -5,7 +5,7 @@
     Axisymmetric parametrised metric of Konoplya, Rezzolla, and Zhidenko 2016 (PRD, 93, 064015)
     <Mass unit="sunmass"> 4.e6 </Mass>
     The black hole mass parameter m (which is not necessarily the same as the asymptotic mass M)
-    <Spin> 0. </Spin>
+    <Spin> 0.01 </Spin>
     The black hole specific angular momentum parameter a (which is not necessarily the same as the asymptotic spin A)
     <DeltasHorizon> [0.,0.,0.,0.,0.,0.] </DeltasHorizon>
     Deformation parameters [δa01,δw01,δw21,δb01,δb21,δrot] to the Kerr metric constrainable at the black hole event horizon
