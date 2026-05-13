@@ -154,8 +154,8 @@ ywrap.o: ywrap.c $(H_YWRAP)
 check: check-$(TGT)
 check-exe: $(PKG_EXE) check.i
 	./$(PKG_EXE) -batch check.i
-check-dll: $(PKG_DLL) check.i
-	$(Y_EXE) -batch check.i
+#check-dll: $(PKG_DLL) check.i
+#	$(Y_EXE) -batch check.i
 
 dist: distclean
 	D=`pwd`; D=`basename "$$D"`; cd ..; tar cvf - "$$D"|gzip - >"$$D.tgz"

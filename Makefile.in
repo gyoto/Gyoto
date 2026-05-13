@@ -90,6 +90,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@HAVE_PYTHON_TRUE@am__append_1 = $(GYOTO_PYTHON_LA)
+@HAVE_LORENE_TRUE@am__append_2 = lib/libgyoto-lorene.la
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
@@ -441,6 +443,18 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 
 SUBDIRS = @mySUBDIRS@
+
+# build necessary things before calling check targets:
+GYOTO_PLUGINS_LA = lib/libgyoto-stdplug.la $(am__append_1) \
+	$(am__append_2)
+@HAVE_PYTHON_TRUE@GYOTO_PYTHON_LA := plugins/python/lib/$(shell sed -n \
+@HAVE_PYTHON_TRUE@	's/^sover_LTLIBRARIES[[:space:]]*=[[:space:]]*//p' \
+@HAVE_PYTHON_TRUE@	plugins/python/lib/Makefile)
+
+SUBDIR_ARTIFACTS = lib/libgyoto@FEATURES@.la \
+	$(GYOTO_PLUGINS_LA) \
+	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -983,6 +997,24 @@ check-mpi check-mpi-clean check-lorene check-lorene-clean check-lorene-mpi check
 @HAVE_YORICK_TRUE@	cd yorick ; $(MAKE) $@
 
 .PHONY: $(SUBDIRS) install ChangeLog
+
+# make sure SUBDIRS are built in the right order:
+
+bin python yorick: lib/libgyoto@FEATURES@.la
+python: doc/xml/index.xml
+lib/libgyoto@FEATURES@.la: lib
+doc/xml/index.xml: doc
+
+check check-recursive check-mpi check-lorene check-lorene-mpi check-python check-python-mpi: \
+	lib/libgyoto@FEATURES@.la $(GYOTO_PLUGINS_LA)
+@HAVE_PYTHON_TRUE@check check-recursive check-mpi check-python check-python-mpi: \
+@HAVE_PYTHON_TRUE@	python/testbed/stamp
+@HAVE_MPI_TRUE@check-mpi check-lorene-mpi check-python-mpi: \
+@HAVE_MPI_TRUE@	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
+python/testbed/stamp:
+	$(MAKE) -c python testbed
+$(SUBDIR_ARTIFACTS):
+	$(MAKE) -C $(dir $@) $(notdir $@)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
