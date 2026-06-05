@@ -57,7 +57,7 @@ check-mpi check-lorene-mpi check-python-mpi: \
 	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
 endif
 python/testbed/stamp:
-	$(MAKE) -c python testbed
+	$(MAKE) -C python testbed
 SUBDIR_ARTIFACTS=lib/libgyoto@FEATURES@.la \
 	$(GYOTO_PLUGINS_LA) \
 	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
