@@ -29,6 +29,7 @@
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
 #include "GyotoBalasinGrumiller.h"
+#include "GyotoReissnerNordstrom.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -91,6 +92,7 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("Hayward", &(Metric::Subcontractor<Metric::Hayward>));
   Metric::Register("SchwarzschildHarmonic", &(Metric::Subcontractor<Metric::SchwarzschildHarmonic>));
   Metric::Register("BalasinGrumiller", &(Metric::Subcontractor<Metric::BalasinGrumiller>));
+  Metric::Register("ReissnerNordstrom", &(Metric::Subcontractor<Metric::ReissnerNordstrom>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
