@@ -264,9 +264,10 @@ class Gyoto::Metric::Generic
    * If called on the base class, returns an error
    */
   virtual double getSpecificAngularMomentum(double rr) const;
-
   /**
-   * Returns potential W=-ln(|u_t|) for a cst specific angular momentum l_cst
+   * Returns potential W=-ln(|u_t|) for a cst specific angular momentum l_cst.
+   * Careful with the minus sign before the log which is different from
+   * the typical definitions in publications.
    * Should be implemented in derived classes if useful
    * If called on the base class, returns an error
    */

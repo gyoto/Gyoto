@@ -145,6 +145,9 @@ double KerrBL::getSpecificAngularMomentum(double rr) const {
 
 double KerrBL::getPotential(double const pos[4], double l_cst) const {
   // this is W = -ln(|u_t|) for a circular equatorial 4-velocity
+  // Careful this is not the same as in publications where W is defined
+  // as Wpubli = +ln(|u_t|). Thus, the center of the doughnut, which is
+  // the minimum of Wpubli, is the maximum of WGyoto.
   double  gtt = gmunu(pos,0,0);
   double  gtp = gmunu(pos,0,3);
   double  gpp = gmunu(pos,3,3);

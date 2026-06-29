@@ -280,9 +280,11 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   double posin[4]={0.,rintorus_,M_PI/2.,0.};
   W_surface_ = gg_->getPotential(posin,l0_);
   double rmin=rintorus_, rmax = 1000.;
+  //double rmin=3.24, rmax = 1000.; // TEST FOR RN!!!!
   //cout << "rmin max= " << rmin << " " << rmax << endl;
   r_centre_ = intersection.ridders(rmin, rmax) ;
   //cout << "rmin center max= " << rmin << " " << r_centre_ << " " << rmax << endl;
+  //GYOTO_ERROR("stop here");
   if (r_centre_ < rmin or r_centre_ > rmax)
     GYOTO_ERROR("In PolishDoughnut::angmomrinner: bad r_centre_");
   double posc[4]={0.,r_centre_,M_PI/2.,0.};
@@ -293,7 +295,9 @@ void PolishDoughnut::angmomrinner(std::vector<double> const &v) {
   outerradius.papa = this;
   rmin=r_centre_;
   r_torusouter_ = outerradius.ridders(rmin,rmax);
-  //cout << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
+  cout << "Torus rinner, rcen, router= " << rintorus_ << " " << r_centre_ << " " << r_torusouter_ << endl;
+  cout << "Pot center surface= " << W_centre_ << " " << W_surface_ << endl;
+  //GYOTO_ERROR("Testing");
   GYOTO_IF_DEBUG;
   GYOTO_DEBUG_EXPR(l0_);
   GYOTO_DEBUG_EXPR(r_centre_);
@@ -509,8 +513,35 @@ double PolishDoughnut::operator()(double const coord[4]) {
   // inside doughnut.
   //
   // so: operator()() < 0. <=> inside PolishDoughnut.
-  double pos[4];
+
+  // First, check if we are at a smaller radius than rintorus_
+  // if so we are outside the relevant torus
+  if (coord[1]<rintorus_){ // then we are outside torus, potential could
+    // be made of two regions with one smaller closer inside that we
+    // dont want to consider for simplicity
+    return 1.; // positive value, outside
+  }
+
+  // Second, check that the constant-angmom motion is well defined
+  // at the required location. For l0=-u_phi/u_t, normalization of
+  // the fluid 4-velocity immediately gives:
+  // - 1/ u_t^2 =  g^{tt} - 2 l0 g^{tphi} + l0^2 g^{phiphi}
+  // so that the rhs should be negative for the motion to be defined.
+  // Here we check this condition.
+  double guptt = gg_->gmunu_up(coord,0,0),
+    guptp = gg_->gmunu_up(coord,0,3),
+    guppp = gg_->gmunu_up(coord,3,3);
+  double term = guptt - 2.*l0_*guptp + l0_*l0_*guppp;
+  //if (coord[1]<rintorus_){
+  if (term>0.){ // then fluid 4-velocity undefined, see above
+   return 1.; // positive value, outside
+  }
+
+  // Third, if r is above rintorus_ and the torus motion is well defined,
+  // check the potential, which will be well defined in this domain
+  double pos[4];  
   for (int ii=0;ii<4;ii++) pos[ii]=coord[ii];
+  //cout << "Here we call getPot in operator!! with r, th=" << pos[1] << " " << pos[2] << endl;
   double tmp =  W_surface_ - gg_->getPotential(pos,l0_);
   double rproj = coord[1] * sin(coord[2]);
   if (rproj<r_cusp_) {
@@ -599,9 +630,11 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   // non-thermal electron populations, with proper emission
   // and absorption.
   /* COMPUTING PHYS QUANTITIES */
+  //cout << "in PD radQ with r= " << coord_obj[1] << endl;
   double rr = coord_ph[1], theta = coord_ph[2];//NB: rr is units of GM/c^2
   double T_electron=0., number_density=0.,
     bnorm = 0., theta_mag=0.;
+
   if (adaf_){
     if (!angle_averaged_){
       GYOTO_ERROR("In PolishDoughnut: ADAF should be called"
@@ -627,6 +660,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
     //cout << "r z ne b= " << rr << " " << zz << " " << nth0*pow(rr/2.,-1.1) << " " << exp(-zz*zz/(2.*rcyl*rcyl)) << " " << number_density << " " << bnorm << endl;
   }else{
     double pos[4]={0.,rr,theta,0.};
+    //cout << "Here we call getPot in radQ!!" << endl;
     double ww = (gg_->getPotential(pos, l0_) - W_surface_)*DeltaWm1_;
     if (ww<=0.){//Will generate nan in computations w must be strictly positive
       if (fabs(ww)<w_tol) {
@@ -670,6 +704,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       (enthalpy_c-kappa*pow(enthalpy_c,1.+CST_POLY_INDEX_M1))
       /(GYOTO_C2_CGS*CST_MU_ELEC*GYOTO_ATOMIC_MASS_UNIT_CGS);
     //cout << "central nb density torus= " << number_density_central << endl;
+
     double magnetic_pressure = 0., fact_b=1.;
     // pm = b^2/fact_b
     if (!angle_averaged_){
@@ -688,6 +723,8 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
       bnorm = sqrt(4.*M_PI*magnetizationParameter_
 		   *GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS
 		   *number_density);
+
+      //cout << "Doughnut central quantities Tc, nc, Bc: " << central_temperature_ << " " << number_density_central << " " << sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS*number_density_central) << endl;
     }
     //cout << "ne_c, ne, Bc, B= " << number_density_central << " " << number_density << " " << magnetizationParameter_ << " " << sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS * GYOTO_C_CGS * GYOTO_C_CGS * number_density_central)  << " " << bnorm << endl;
     //GYOTO_ERROR("test pol");
@@ -774,6 +811,7 @@ void PolishDoughnut::radiativeQ(double Inu[], // output
   
   // THERMAL SYNCHRO
   //cout << "doughnut stuff= " << T_electron << " " <<  number_density << " " << theta_mag << " " << nuc << " " << bnorm << " " << besselK2 << endl;
+  
   spectrumSynch_->temperature(T_electron);
   spectrumSynch_->numberdensityCGS(number_density);
   spectrumSynch_->angle_B_pem(theta_mag);
@@ -852,7 +890,8 @@ PolishDoughnut::intersection_t::intersection_t(PolishDoughnut*parent)
 double PolishDoughnut::intersection_t::operator()(double rr) const
 {
   double y = papa->gg_->getSpecificAngularMomentum(rr) - papa->l0_;
-
+  //cout << "In PD::intersection_t: r, dl = " << rr << " " << papa->gg_->getSpecificAngularMomentum(rr)  << endl;
+  
   return y ; // y = 0 gives 2 intersections,
   //the cusp and the central radius of the torus
 }
@@ -861,6 +900,7 @@ double PolishDoughnut::outerradius_t::operator()(double rr) const
 {
   double theta = M_PI/2.;
   double pos[4]={0.,rr,theta,0.};
+  //cout << "Here we call getPot in operator bis!!" << endl;
   double ww = (papa->gg_->getPotential(pos,papa->l0_) - papa->W_surface_)*papa->DeltaWm1_;
   return ww;
 }
