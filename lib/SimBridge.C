@@ -266,14 +266,14 @@ void SimBridge::filename(std::string const &f){
 
   // Reading pitch angle array if it exist in FITS file
   key = "NB_PITCH_ANGLE";
-  fits_movabs_hdu(fptr, 1, tmpi, &status);
+  fits_movabs_hdu(fptr, 1, &tmpi, &status);
   fits_read_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &tmpd, NULL, &status);
   if(status==0){
     npitch_            = FitsRW::fitsReadKey(fptr, "NB_PITCH_ANGLE");
-    pitchAngle_array_  = new double[npitch_];
-    FitsRW::fitsReadHDUData(fptr, "PITCH_ANGLE", pitchAngle_array_, npitch_);
+    pitch_array_  = new double[npitch_];
+    FitsRW::fitsReadHDUData(fptr, "PITCH_ANGLE", pitch_array_, npitch_);
     GYOTO_DEBUG << "npitch_" << npitch_ << endl;
-    GYOTO_DEBUG << "pitch angle array: " << pitchAngle_array_[0] << " - " << pitchAngle_array_[npitch_-1] << endl;
+    GYOTO_DEBUG << "pitch angle array: " << pitch_array_[0] << " - " << pitch_array_[npitch_-1] << endl;
   }
   
   // Check if FITS file contains magnetic field and set the associated flag
