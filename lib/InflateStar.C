@@ -118,10 +118,10 @@ int InflateStar::Impact(Gyoto::Photon* ph, size_t index,
   state_t p1;
   ph->getCoord(index, p1);
   double time = p1[0];
-  double radinit = radius();
   double radcur=radiusAt(time);
 
   critical_value_=radcur*radcur;
+  safety_value_ = critical_value_*1.1+0.1;
 
   return UniformSphere::Impact(ph,index,data);
 }

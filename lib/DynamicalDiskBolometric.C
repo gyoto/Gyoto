@@ -67,9 +67,9 @@ DynamicalDiskBolometric::~DynamicalDiskBolometric() {
   GYOTO_DEBUG << "DynamicalDiskBolometric Destruction" << endl;
 }
 
-double DynamicalDiskBolometric::emission(double nu_em, double dsem,
+double DynamicalDiskBolometric::emission(double /*nu_em*/, double /*dsem*/,
 					 state_t const &,
-					 double const coord_obj[8]) const{
+					 double const /*coord_obj*/[8]) const{
   GYOTO_ERROR("In DynamicalDiskBolometric::emission: "
 	     "not implemented");
   return 0.;

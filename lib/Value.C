@@ -1,5 +1,5 @@
 /*
-    Copyright 2014-2016 Thibaut Paumard
+    Copyright 2014-2026 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -45,22 +45,71 @@ using namespace std ;
     Screen()
 
 Value::Value(): type(Property::empty_t), INIT_MEMBERS {}
+
+Value::Value(const Value& o):
+    type(o.type),
+    Double(o.Double),
+    Bool(o.Bool),
+    Long(o.Long),
+    ULong(o.ULong),
+    SizeT(o.SizeT),
+    String(o.String),
+    VDouble(o.VDouble),
+    VULong(o.VULong),
+    Metric(o.Metric),
+    Astrobj(o.Astrobj),
+    Spectrum(o.Spectrum),
+    Spectrometer(o.Spectrometer),
+    Screen(o.Screen)
+{}
+
 Value::~Value() {}
 
 #define ___local_stuff(t, t_t, T)				   \
   Value::Value(t val) : type(Property::t_t), INIT_MEMBERS {T=val;} \
   Value::operator t() const {		                           \
     if (type!=Property::t_t)		                           \
-    GYOTO_ERROR("This Value does not hold a " #t);                  \
+      GYOTO_ERROR("This Value does not hold a " #t);		   \
     return T;					                   \
   }
 
+Value::Value(double val) : type(Property::double_t), INIT_MEMBERS {Double=val;}
 Value::Value(long val) : type(Property::long_t), INIT_MEMBERS {Long=val;}
 Value::Value(unsigned long val) : type(Property::unsigned_long_t), INIT_MEMBERS {ULong=val;}
 #if !defined(GYOTO_SIZE__T_IS_UNSIGNED_LONG)
 Value::Value(size_t val) : type(Property::size_t_t), INIT_MEMBERS {SizeT=val;}
 #endif
 Value::Value(bool val) : type(Property::bool_t), INIT_MEMBERS {Bool=val;}
+
+Value::operator double() const {
+  switch (type) {
+  case Property::double_t:
+    return Double;
+  case Property::bool_t:
+    return double(Bool);
+  case Property::long_t:
+    return double(Long);
+  case Property::unsigned_long_t:
+    return double(ULong);
+  case Property::size_t_t:
+    return double(SizeT);
+  case Property::string_t:
+    if (String== "DBL_MAX") return  DBL_MAX;
+    if (String=="-DBL_MAX") return -DBL_MAX;
+    if (String== "DBL_MIN") return  DBL_MIN;
+    if (String=="-DBL_MIN") return -DBL_MIN;
+    try {
+	return stod(String);
+    }
+    catch (const std::invalid_argument& e) {
+      GYOTO_ERROR("This string does not look like a double: '" + String + "'");
+    }
+  default:
+    GYOTO_ERROR("This Value cannot be cast to double");
+  }
+  return 0.;
+}
+
 Value::operator long() const {
   switch (type) {
   case Property::long_t:
@@ -69,6 +118,8 @@ Value::operator long() const {
     return long(ULong);
   case Property::size_t_t:
     return long(SizeT);
+  case Property::string_t:
+    return stol(String);
   default:
     GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
@@ -83,6 +134,8 @@ Value::operator unsigned long() const {
     return ULong;
   case Property::size_t_t:
     return (unsigned long)(SizeT);
+  case Property::string_t:
+    return stoul(String);
   default:
     GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
@@ -98,6 +151,8 @@ Value::operator size_t() const {
     return size_t(ULong);
   case Property::size_t_t:
     return SizeT;
+  case Property::string_t:
+    return size_t(stoul(String));
   default:
     GYOTO_ERROR("This Value does not hold a long (or unsigned long)");
   }
@@ -115,13 +170,14 @@ Value::operator bool() const {
     return bool(ULong);
   case Property::size_t_t:
     return bool(SizeT);
+  case Property::string_t:
+    return bool(stoi(String));
   default:
     GYOTO_ERROR("This Value does not hold an integer");
   }
   return 0;
 }
 
-___local_stuff(double, double_t, Double)
 ___local_stuff(std::string, string_t, String)
 ___local_stuff(std::vector<double>, vector_double_t, VDouble)
 ___local_stuff(std::vector<unsigned long>, vector_unsigned_long_t, VULong)

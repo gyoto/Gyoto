@@ -71,7 +71,7 @@ void Spectrum::ThermalBremsstrahlung::numberdensityCGS(double rho) {
 Spectrum::ThermalBremsstrahlung * Spectrum::ThermalBremsstrahlung::clone() const
 { return new Spectrum::ThermalBremsstrahlung(*this); }
 
-double Spectrum::ThermalBremsstrahlung::operator()(double nu) const {
+double Spectrum::ThermalBremsstrahlung::operator()(double) const {
   GYOTO_ERROR("In ThermalBrems: "
 	     "Bremsstrahlung emission not defined for optically thick case");
   return 0.;

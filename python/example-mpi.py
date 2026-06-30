@@ -71,6 +71,36 @@
 #
 ###
 
+# 0- Parse command-line arguments
+import sys, os
+from matplotlib.backends.backend_pdf import PdfPages
+
+pdfname=None
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
+
+for param in sys.argv:
+    sparam=param.split("=")
+    if os.path.basename(sparam[0])==os.path.basename(__file__):
+        pass
+    elif sparam[0]=="--pdf":
+        if len(sparam)==2:
+            pdfname=sparam[1]
+        else:
+            raise ValueError('--pdf argument expects a filename, e.g. --pdf=output.pdf')
+    elif sparam[0]=="--examples-dir":
+        if len(sparam)==2:
+            examples_dir=sparam[1]
+        else:
+            raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
+    else:
+        raise ValueError(f'unknown argument: {sparam[0]}')
+
+pdf=None if pdfname is None else PdfPages(pdfname)
+if len(examples_dir) > 0 and examples_dir[-1] != "/":
+    examples_dir += "/"
+
+
 # 1- Let mpi4py initialize the MPI environment:
 import mpi4py.MPI
 
@@ -78,23 +108,25 @@ import mpi4py.MPI
 import numpy
 import matplotlib as ml
 import matplotlib.pyplot as plt
-import gyoto.core
-import gyoto.std
+import gyoto
 
-sc=gyoto.core.Factory("../doc/examples/example-moving-star.xml").scenery()
-sc.nThreads(1)
-sc.astrobj().opticallyThin(False)
+sc=gyoto.util.readScenery(examples_dir+"example-moving-star.xml")
+sc.NThreads = 1
+sc.Astrobj.OpticallyThin = False
 
 # 3- Autodetect scenario
 # Spawn processes and clone scenery into them:
 world = mpi4py.MPI.COMM_WORLD
 if (world.size == 1):
     # This is scenario 1
+    print(f"*** {__file__} detected scenario 1 ***")
     # We spawn 4 instances of gyoto-mpi-worker.VERSION
+    print("Spawning 4 workers")
     sc.mpiSpawn(4)
 else:
     if (world.rank == 0):
         # This is scenario 2 or 3, this process is the manager
+        print(f"*** {__file__} detected scenario 2 or 3, this process is the manager ***")
         print("Rank ", world.rank, " becoming manager")
         sc.mpiSpawn(-1)
     else:
@@ -107,7 +139,7 @@ else:
 # 4- Prepare storage for ray-traced quantities
 
 # Prepare array for holding results
-res=sc.screen().resolution()
+res=sc.Screen.Resolution
 intensity=numpy.zeros((res, res), dtype=float)
 time=numpy.zeros((res, res), dtype=float)
 distance=numpy.zeros((res, res), dtype=float)

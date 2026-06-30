@@ -118,12 +118,13 @@ double SphericalAccretion::magnetizationParameter()const{
 
 SphericalAccretion::SphericalAccretion() :
   Standard("SphericalAccretion"),
+  use_selfabsorption_(1),
   sphericalAccretionInnerRadius_(2.),
-  numberDensityAtInnerRadius_cgs_(1.), temperatureAtInnerRadius_(1e10),
-  temperatureSlope_(1.),
+  numberDensityAtInnerRadius_cgs_(1.),
   densitySlope_(2.),
-  magnetizationParameter_(1.),
-  use_selfabsorption_(1)
+  temperatureAtInnerRadius_(1e10),
+  temperatureSlope_(1.),
+  magnetizationParameter_(1.)
 {
   GYOTO_DEBUG << endl;
   spectrumThermalSynch_ = new Spectrum::ThermalSynchrotron();
@@ -131,14 +132,14 @@ SphericalAccretion::SphericalAccretion() :
 
 SphericalAccretion::SphericalAccretion(const SphericalAccretion& o) :
   Standard(o),
+  spectrumThermalSynch_(NULL),
+  use_selfabsorption_(o.use_selfabsorption_),
   sphericalAccretionInnerRadius_(o.sphericalAccretionInnerRadius_),
   numberDensityAtInnerRadius_cgs_(o.numberDensityAtInnerRadius_cgs_),
+  densitySlope_(o.densitySlope_),
   temperatureAtInnerRadius_(o.temperatureAtInnerRadius_),
   temperatureSlope_(o.temperatureSlope_),
-  densitySlope_(o.densitySlope_),
-  magnetizationParameter_(o.magnetizationParameter_),
-  spectrumThermalSynch_(NULL),
-  use_selfabsorption_(o.use_selfabsorption_)
+  magnetizationParameter_(o.magnetizationParameter_)
 {
   GYOTO_DEBUG << endl;
   if (gg_) gg_->hook(this);
@@ -158,25 +159,26 @@ void SphericalAccretion::radiativeQ(double Inu[], // output
 		     double const nu_ems[], size_t nbnu, // input
 		     double dsem,
 		     state_t const &coord_ph,
-		     double const coord_obj[8]) const {
+		     double const *) const {
   
-  double rr, rcyl, theta, zz=0.;
+  double rr/*, rcyl, theta, zz=0.*/;
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rr = coord_ph[1];
-    rcyl = coord_ph[1]*sin(coord_ph[2]);
-    theta = coord_ph[2];
-    zz   = coord_ph[1]*cos(coord_ph[2]);
+    //rcyl = coord_ph[1]*sin(coord_ph[2]);
+    //theta = coord_ph[2];
+    //zz   = coord_ph[1]*cos(coord_ph[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
-    rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
+    //rcyl = pow(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2], 0.5);
     rr = sqrt(coord_ph[1]*coord_ph[1]+coord_ph[2]*coord_ph[2]
 	      +coord_ph[3]*coord_ph[3]);
-    theta   = acos(coord_ph[3]/rr);
-    zz   = coord_ph[3];
+    //theta   = acos(coord_ph[3]/rr);
+    //zz   = coord_ph[3];
     break;
   default:
     GYOTO_ERROR("In SphericalAccretion::radiativeQ(): Unknown coordinate system kind");
+    rr=0.;
   }
 
   double number_density = numberDensityAtInnerRadius_cgs_
@@ -263,6 +265,7 @@ double SphericalAccretion::operator()(double const coord[4]) {
     break;
   default:
     GYOTO_ERROR("SphericalAccretion::operator(): unknown COORDKIND");
+    rr=0.;
   }
   
   return sphericalAccretionInnerRadius_ - rr; // >0 outside, <0 inside 
@@ -271,9 +274,9 @@ double SphericalAccretion::operator()(double const coord[4]) {
 void SphericalAccretion::getVelocity(double const pos[4], double vel[4])
 {
 
-  double rr = pos[1];
-  double gtt = gg_->gmunu(pos,0,0),
-    grr = gg_->gmunu(pos,1,1),
+  //double rr = pos[1];
+  double //gtt = gg_->gmunu(pos,0,0),
+    //grr = gg_->gmunu(pos,1,1),
     guptt = gg_->gmunu_up(pos,0,0),
     guptp = gg_->gmunu_up(pos,0,3),
     guprr = gg_->gmunu_up(pos,1,1);

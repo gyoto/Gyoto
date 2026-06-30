@@ -145,6 +145,9 @@ double KerrBL::getSpecificAngularMomentum(double rr) const {
 
 double KerrBL::getPotential(double const pos[4], double l_cst) const {
   // this is W = -ln(|u_t|) for a circular equatorial 4-velocity
+  // Careful this is not the same as in publications where W is defined
+  // as Wpubli = +ln(|u_t|). Thus, the center of the doughnut, which is
+  // the minimum of Wpubli, is the maximum of WGyoto.
   double  gtt = gmunu(pos,0,0);
   double  gtp = gmunu(pos,0,3);
   double  gpp = gmunu(pos,3,3);
@@ -257,11 +260,10 @@ int KerrBL::christoffel(double dst[4][4][4], double const pos[4]) const
   double sth, cth;
   sincos(pos[2], &sth, &cth);
   double
-    sth2 = sth*sth, cth2 = cth*cth, sth4=sth2*sth2,
-    s2th = 2.*sth*cth, c2th=cth2-sth2,
-    s4th = 2.*s2th*c2th,
-    s2th2= s2th*s2th, ctgth=cth/sth;
-  double r2=r*r, r4=r2*r2, r6=r4*r2;
+    sth2 = sth*sth, cth2 = cth*cth,
+    s2th = 2.*sth*cth,
+    ctgth=cth/sth;
+  double r2=r*r;
   double Sigma=r2+a2_*cth2, Sigma2=Sigma*Sigma;
   double Delta=r2-2.*r+a2_;
   double Deltam1=1./Delta,

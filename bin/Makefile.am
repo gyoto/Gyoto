@@ -40,8 +40,9 @@ export PATH := .:$(PATH)
 EXAMPLE_DIR = $(top_srcdir)/doc/examples/
 CHECK_RESULTS_ALL := $(notdir $(patsubst %.xml,%.fits,$(wildcard $(EXAMPLE_DIR)*.xml)))
 CHECK_ROTSTAR_RESULTS := $(filter %rotstar3_1.fits, $(CHECK_RESULTS_ALL))
+CHECK_PYTHON_RESULTS := $(filter example-python%, $(CHECK_RESULTS_ALL))
 CHECK_WIP_RESULTS := $(filter %-wip.fits, $(CHECK_RESULTS_ALL))
-CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS)
+CHECK_RESULTS_SKIP = $(CHECK_ROTSTAR_RESULTS) $(CHECK_WIP_RESULTS) $(CHECK_PYTHON_RESULTS)
 if !HAVE_2F1
 CHECK_RESULTS_SKIP += example-jet.fits example-torusjet.fits
 endif
@@ -49,12 +50,25 @@ CHECK_RESULTS=$(filter-out $(CHECK_RESULTS_SKIP), $(CHECK_RESULTS_ALL))
 
 CHECK_MPI_RESULTS = $(CHECK_RESULTS:.fits=-mpi.fits)
 CHECK_WIP_MPI_RESULTS = $(CHECK_WIP_RESULTS:.fits=-mpi.fits)
+CHECK_PYTHON_MPI_RESULTS = $(CHECK_PYTHON_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_RESULTS) $(CHECK_MPI_RESULTS)
 CLEANFILES += $(CHECK_WIP_RESULTS) $(CHECK_WIP_MPI_RESULTS)
+CLEANFILES += $(CHECK_PYTHON_RESULTS) $(CHECK_PYTHON_MPI_RESULTS)
 
-MPIRUN = mpirun
+MPIRUN = mpirun --mca btl_tcp_if_include lo
 
-CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)
+if HAVE_PYTHON
+GYOTO_PYTHON_PLGPTH = :@top_builddir@/plugins/python/lib/.libs/
+endif
+
+GYOTO_PYTHON_LA := ../plugins/python/lib/$(shell sed -n \
+	's/^sover_LTLIBRARIES[[:space:]]*=[[:space:]]*//p' \
+	../plugins/python/lib/Makefile)
+
+GYOTO_PLUGIN_PATH = @top_builddir@/lib/.libs/$(GYOTO_PYTHON_PLGPTH)
+
+CHECK_ENV = LD_LIBRARY_PATH=@top_builddir@/lib/.libs/:$(LD_LIBRARY_PATH)\
+	GYOTO_PLUGIN_PATH=$(GYOTO_PLUGIN_PATH)
 CHECK_RAW_CMD = ./gyoto -pstdplug -r32 -T8 -P0
 CHECK_CMD = $(CHECK_ENV) $(CHECK_RAW_CMD)
 
@@ -70,17 +84,23 @@ check-wip-nompi-clean:
 check-wip-mpi-clean:
 	rm -f $(CHECK_WIP_MPI_RESULTS)
 
+check-python-nompi-clean:
+	rm -f $(CHECK_PYTHON_RESULTS)
+
+check-python-mpi-clean:
+	rm -f $(CHECK_PYTHON_MPI_RESULTS)
+
 if BUILD_GYOTO
-$(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
+$(CHECK_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) ../lib/libgyoto-stdplug.la
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
-$(CHECK_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
-	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+$(CHECK_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) ../lib/libgyoto-stdplug.la
+	$(CHECK_ENV) $(MPIRUN) -np 1 --oversubscribe $(CHECK_RAW_CMD) -P16 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
-$(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml)
+$(CHECK_WIP_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) ../lib/libgyoto-stdplug.la
 	$(CHECK_CMD) $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
-$(CHECK_WIP_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml)
+$(CHECK_WIP_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) ../lib/libgyoto-stdplug.la
 	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
 check-nompi-compute: $(CHECK_RESULTS)
@@ -97,6 +117,24 @@ check-wip-mpi: check-wip-mpi-clean check-wip-mpi-compute
 
 check: check-nompi
 check-wip: check-wip-nompi
+
+if HAVE_PYTHON
+
+$(CHECK_PYTHON_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) $(GYOTO_PYTHON_LA) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_CMD) -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
+
+$(CHECK_PYTHON_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) $(PYTHON_PLUGIN) ../python/testbed/stamp ../lib/libgyoto-stdplug.la
+	PYTHONPATH=../python/testbed:$$PYTHONPATH $(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
+
+check-python-nompi-compute: $(CHECK_PYTHON_RESULTS)
+check-python-nompi: check-python-nompi-clean check-python-nompi-compute
+
+check-python-mpi-compute: $(CHECK_PYTHON_MPI_RESULTS)
+check-python-mpi: check-python-mpi-clean check-python-mpi-compute
+
+check-python: check-python-nompi
+
+endif
 
 if HAVE_LORENE
 # make check-lorene check-lorene-mpi
@@ -121,10 +159,10 @@ export HOME_LORENE
 CHECK_ROTSTAR_MPI_RESULTS = $(CHECK_ROTSTAR_RESULTS:.fits=-mpi.fits)
 CLEANFILES += $(CHECK_ROTSTAR_RESULTS) $(CHECK_ROTSTAR_MPI_RESULTS)
 
-$(CHECK_ROTSTAR_MPI_RESULTS): gyoto $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d
+$(CHECK_ROTSTAR_MPI_RESULTS): gyoto gyoto-mpi-worker.@sovers@ $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) .check-lorene/resu.d ../lib/libgyoto-lorene.la
 	$(CHECK_ENV) $(MPIRUN) $(CHECK_RAW_CMD) -pstdplug,lorene -P4 $(EXAMPLE_DIR)$(@:-mpi.fits=.xml) \!$@
 
-$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d
+$(CHECK_ROTSTAR_RESULTS): gyoto $(EXAMPLE_DIR)$(@:.fits=.xml) .check-lorene/resu.d ../lib/libgyoto-lorene.la
 	$(CHECK_CMD) -pstdplug,lorene -T0 $(EXAMPLE_DIR)$(@:.fits=.xml) \!$@
 
 check-lorene-clean:
@@ -149,3 +187,14 @@ echo-stuff:
 	echo $(CHECK_RESULTS)
 
 .PHONY: check-nompi-compute check-nompi-clean check-nompi check-mpi-clean check-mpi-compute check-mpi check check-lorene-clean check-lorene-compute check-lorene check-lorene-mpi-clean check-lorene-mpi-compute check-lorene-mpi check
+
+../python/testbed/stamp:
+	cd ../python; $(MAKE) testbed
+
+# Some targets require artifacts from other directories
+OTHERDIR_ARTIFACTS=../lib/libgyoto@FEATURES@.la \
+	../lib/libgyoto-stdplug.la \
+	../lib/libgyoto-lorene.la \
+	$(GYOTO_PYTHON_LA)
+$(OTHERDIR_ARTIFACTS):
+	$(MAKE) -C $(dir $@) $(notdir $@)

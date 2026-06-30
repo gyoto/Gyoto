@@ -322,14 +322,7 @@ void OscilTorus::computeXbYb(const double * pos, double & xb, double & yb){
   double g_tp=gg_->gmunu(posc,0,3); 
   double g_pp=gg_->gmunu(posc,3,3);
   double Omegac_=1./(pow(c_,1.5)+aa); // Kepler rotation vel
-  double lc_=-(Omegac_*g_pp+g_tp)/(Omegac_*g_tp+g_tt); // Rescaled ang mom
-
-  // Now computations at the torus surface for gmunu_up coef
-  double gtt=kerrbl_->gmunu_up(pos,0,0);
-  double gthth=kerrbl_->gmunu_up(pos,2,2);
-  double grr=kerrbl_->gmunu_up(pos,1,1);
-  double gpp=kerrbl_->gmunu_up(pos,3,3);
-  double gtp=kerrbl_->gmunu_up(pos,0,3);  
+  // double lc_=-(Omegac_*g_pp+g_tp)/(Omegac_*g_tp+g_tt); // Rescaled ang mom
 
   // Beta parameter
   double poly=(polyindex_+1.)/polyindex_;
@@ -468,7 +461,7 @@ void OscilTorus::updateCachedValues() {
   }
 }
 
-double OscilTorus::emission(double nu_em, double, state_t const &cp, 
+double OscilTorus::emission(double, double, state_t const &cp, 
 			      double const *) const{
   //cout << "r,theta,rcosth= " << cp[1] << " " << cp[2] << " " << cp[1]*cos(cp[2]) << endl;
   if (flag_radtransf_)
@@ -495,7 +488,7 @@ double OscilTorus::emission(double nu_em, double, state_t const &cp,
     double tt=cp[0],tmax=tt_[0], area=-1.;
     double myt = tt;
     while (myt>2.*M_PI/AA) myt-=2.*M_PI/AA; // myt is in ]0,2pi/AA]
-    int ii=0;
+    decltype(nbt_) ii=0;
     while (myt>tmax && ii < nbt_-1){
       ii++;
       tmax=tt_[ii];

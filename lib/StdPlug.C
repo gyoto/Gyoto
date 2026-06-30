@@ -25,9 +25,11 @@
 #include "GyotoMinkowski.h"
 #include "GyotoChernSimons.h"
 #include "GyotoRezzollaZhidenko.h"
+#include "GyotoKonoplyaRezzollaZhidenko.h"
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
 #include "GyotoBalasinGrumiller.h"
+#include "GyotoReissnerNordstrom.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"
@@ -52,6 +54,7 @@
 #include "GyotoPlasmoid.h"
 #include "GyotoFlaredDiskSynchrotron.h"
 #include "GyotoThinDiskProfile.h"
+#include "GyotoStochasticThinDisk.h"
 #include "GyotoThinDiskGridIntensity.h"
 
 #include "GyotoPatternDisk.h"
@@ -85,9 +88,11 @@ extern "C" void __GyotostdplugInit() {
   Metric::Register("Minkowski", &(Metric::Subcontractor<Metric::Minkowski>));
   Metric::Register("ChernSimons", &(Metric::Subcontractor<Metric::ChernSimons>));
   Metric::Register("RezzollaZhidenko", &(Metric::Subcontractor<Metric::RezzollaZhidenko>));
+  Metric::Register("KonoplyaRezzollaZhidenko", &(Metric::Subcontractor<Metric::KonoplyaRezzollaZhidenko>));
   Metric::Register("Hayward", &(Metric::Subcontractor<Metric::Hayward>));
   Metric::Register("SchwarzschildHarmonic", &(Metric::Subcontractor<Metric::SchwarzschildHarmonic>));
   Metric::Register("BalasinGrumiller", &(Metric::Subcontractor<Metric::BalasinGrumiller>));
+  Metric::Register("ReissnerNordstrom", &(Metric::Subcontractor<Metric::ReissnerNordstrom>));
   // Register Astrobjs
   Astrobj::Register("Complex",   &(Astrobj::Subcontractor<Astrobj::Complex>));
   Astrobj::Register("Star",      &(Astrobj::Subcontractor<Astrobj::Star>));
@@ -133,6 +138,8 @@ extern "C" void __GyotostdplugInit() {
 		    &(Astrobj::Subcontractor<Astrobj::SphericalAccretion>));
   Astrobj::Register("ThinDiskProfile",
 		    &(Astrobj::Subcontractor<Astrobj::ThinDiskProfile>));
+  Astrobj::Register("StochasticThinDisk",
+		    &(Astrobj::Subcontractor<Astrobj::StochasticThinDisk>));
   Astrobj::Register("Blob",
 		    &(Astrobj::Subcontractor<Astrobj::Blob>));
   Astrobj::Register("Plasmoid",

@@ -144,6 +144,7 @@ Scenery::Scenery(SmartPointer<Metric::Generic> met,
 
 Scenery::Scenery(const Scenery& o) :
   SmartPointee(o),
+  Object(o),
   screen_(NULL), delta_(o.delta_),
   quantities_(o.quantities_), ph_(o.ph_),
   nthreads_(o.nthreads_), nprocesses_(0)
@@ -248,8 +249,8 @@ static void * SceneryThreadWorker (void *arg) {
 #endif
 
   // local variables to store our parameters
-  GYOTO_ARRAY<size_t, 2> ijb;
-  GYOTO_ARRAY<double, 2> ad;
+  GYOTO_ARRAY<size_t, 2> ijb = {0, 0};
+  GYOTO_ARRAY<double, 2> ad = {0., 0.};
 
   Astrobj::Properties data;
   double * impactcoords = NULL;
@@ -326,7 +327,7 @@ SmartPointer<Photon> Scenery::clonePhoton(size_t i, size_t j) {
   double coord[8], Ephi[4], Etheta[4];
   bool compute_polar_basis=false;
   if (ph_ . parallelTransport()) compute_polar_basis=true;
-  screen_ -> getRayTriad(size_t(1),size_t(1),
+  screen_ -> getRayTriad(i, j,
 			 coord,
 			 compute_polar_basis,
 			 Ephi, Etheta);
@@ -1053,6 +1054,9 @@ bool Scenery::integ31() const { return ph_.integ31(); }
 
 void Scenery::parallelTransport(bool pt) { ph_.parallelTransport(pt); }
 bool Scenery::parallelTransport() const { return ph_.parallelTransport(); }
+
+void Scenery::checkBasis(bool cb) { ph_.checkBasis(cb); }
+bool Scenery::checkBasis() const { return ph_.checkBasis(); }
 
 void Scenery::maxiter(size_t miter) { ph_.maxiter(miter); }
 size_t Scenery::maxiter() const { return ph_.maxiter(); }

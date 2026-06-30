@@ -289,7 +289,7 @@ gyotoy
  Finally, you need to instruct Gyoto to load your plug-in at run
  time. This is done by adding the name of your plug-in to the
  GYOTO_PLUGINS environment variable. The default value for
- GYOTO_PLUGINS is "stdplug,nofail:lorene", meaning Gyoto should load
+ GYOTO_PLUGINS is "stdplug,nowarn:lorene", meaning Gyoto should load
  the standard plug-in stdplug and attempt to load the lorene plug-in,
  failing only if stdplug is nowhere to be found. If you want to load
  your plug-in in addition to those, alter this variable in your shell
@@ -297,7 +297,7 @@ gyotoy
  Unix guru or read the fine <A
  HREF="http://www.gnu.org/s/bash/manual/bash.html">manual</A>):
  \code
- export GYOTO_PLUGINS="stdplug,nofail:lorene,MyPlug"
+ export GYOTO_PLUGINS="stdplug,nowarn:lorene,MyPlug"
  \endcode
  but if your lug-in is self-contained and your don't need the objects
  in the standard plug-ins, this will do it for you:

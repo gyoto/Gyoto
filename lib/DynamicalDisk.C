@@ -88,7 +88,7 @@ DynamicalDisk::DynamicalDisk(const DynamicalDisk& o) :
   emission_array_ = new double*[nb_times_] ;
   velocity_array_ = new double*[nb_times_] ;
   radius_array_   = new double*[nb_times_] ;
-  for (int i=1; i<=nb_times_; i++) {
+  for (size_t i=1; i<=nb_times_; i++) {
     size_t nel1=nnu_*nphi_*nr_, nel2=2*nr_*nphi_;
     emission_array_[i-1] = new double[nel1];
     velocity_array_[i-1] = new double[nel2];
@@ -104,7 +104,7 @@ DynamicalDisk* DynamicalDisk::clone() const
 
 DynamicalDisk::~DynamicalDisk() {
   GYOTO_DEBUG << "DynamicalDisk Destruction" << endl;
-  for (int i=1; i<=nb_times_; i++) {
+  for (size_t i=1; i<=nb_times_; i++) {
     if (emission_array_) delete [] emission_array_[i-1];
     if (velocity_array_) delete [] velocity_array_[i-1];
     if (radius_array_)   delete [] radius_array_[i-1];
@@ -121,7 +121,7 @@ DynamicalDisk::~DynamicalDisk() {
 
 double const * DynamicalDisk::getVelocity() const { return PatternDiskBB::getVelocity(); }
 
-void DynamicalDisk::copyQuantities(int iq) {
+void DynamicalDisk::copyQuantities(size_t iq) {
   if (iq<1 || iq>nb_times_)
     GYOTO_ERROR("In DynamicalDisk::copyQuantities: incoherent value of iq");
 
@@ -140,7 +140,7 @@ void DynamicalDisk::nullifyQuantities() {
 
 void DynamicalDisk::getVelocity(double const pos[4], double vel[4]) {
   double time = pos[0], tcomp=tinit_;
-  int ifits=1;
+  size_t ifits=1;
   //cout << "time in dyna velo: " << time << " " << tinit_ << endl;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
@@ -174,7 +174,7 @@ double DynamicalDisk::emission(double nu, double dsem,
   GYOTO_DEBUG << endl;
   double time = co[0], tcomp=tinit_;
   //cout << "time in dyna emission: " << time << " " << tinit_ << endl;
-  int ifits=1;
+  size_t ifits=1;
   while(time>tcomp && ifits<nb_times_){
     tcomp+=dt_;
     ifits++;
@@ -207,7 +207,7 @@ void DynamicalDisk::file(std::string const &fname) {
 #ifdef GYOTO_USE_CFITSIO
     if (nb_times_) {
       // first free current arrays, if any
-      for (int i=1; i<=nb_times_; i++) {
+      for (size_t i=1; i<=nb_times_; i++) {
 	if (emission_array_) delete [] emission_array_[i-1];
 	if (velocity_array_) delete [] velocity_array_[i-1];
 	if (radius_array_)   delete [] radius_array_  [i-1];
@@ -252,7 +252,7 @@ void DynamicalDisk::file(std::string const &fname) {
     velocity_array_ = new double*[nb_times_] ;
     radius_array_ = new double*[nb_times_] ;
     
-    for (int i=1; i<=nb_times_; i++) {
+    for (size_t i=1; i<=nb_times_; i++) {
       ostringstream stream_name ;
       stream_name << dirname_ << "data" 
 		  << setw(4) << setfill('0') 

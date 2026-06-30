@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Scenery>
+
+  In this example, we compute the Stokes parameters for polarization
+  analysis. See "Quantities" below.
+  
+  <Metric kind = "KerrBL">
+    <Mass unit="sunmass">4.3e6</Mass>
+    <Spin> 0. </Spin>
+  </Metric>
+
+  <Screen>
+    <Spectrometer kind="wave" nsamples="1" plugin="built-in">2.2e-06  2.2e-06</Spectrometer>
+    <Distance unit="kpc"> 8.3 </Distance>
+    <Time unit="kpc"> 8.3 </Time> tobs=D so that emission time~0
+    <FieldOfView unit="µas"> 200 </FieldOfView>
+    <Inclination unit="°"> 160. </Inclination> this Inclination = 180 - i
+    <PALN> 3.1415  </PALN>
+    <Resolution> 100 </Resolution>
+  </Screen>
+
+  <Astrobj kind = "EquatorialHotSpot">
+    <OpticallyThin/> <!-- Important: opt. thin! -->
+    <Velocity> 0. 0. 0.0274101</Velocity>
+    <Position> 0 11. 1.5707963267949 1.25</Position> 1.25
+    <SpotRadSize>3.</SpotRadSize>
+    <BeamingKind>IsotropicBeaming</BeamingKind>
+    <InnerRadius>3.</InnerRadius>
+    <MagneticConfiguration>Vertical</MagneticConfiguration>
+    <RMax>30.</RMax>
+  </Astrobj>
+
+  <Quantities>Spectrum SpectrumStokesQ SpectrumStokesU SpectrumStokesV</Quantities>
+
+  <NThreads> 16 </NThreads>
+
+</Scenery>

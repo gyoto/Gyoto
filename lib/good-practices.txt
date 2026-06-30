@@ -1,0 +1,42 @@
+- build with: -Wall -Wextra -Wno-cast-function-type
+  -Wno-unknown-pragmas -Werror and actually fix errors. This will
+  enable many warnings and turn them into compile-time errors.
+
+- in every constructor, class members must be initialized in the order
+  they appear in the class definition (=in the Gyoto*.h file).
+  (-Werror=reorder)
+
+- don't declare and set variables that are not used later
+  (-Werror=unused-variable], except in very rare circumstances where
+  setting the variable has a side effect (only known case in Gyoto:
+  Gyoto::Python::GILGuard, because this class does usefull things in
+  its constructor and destructor.). In such rare cases, use
+  [[maybe_unused]] e.g.:
+     [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+
+- when initializing a variable in a switch of a collection of if's, do
+  treat the default case where no match is found with an error and set
+  the variable also in this case (-Werror=maybe-uninitialized). e.g.
+    switch (variable) {
+      case a: r=...; break;
+      case b: r=...; break;
+      default: GYOTO_ERROR("msg"); r=0.;
+    }
+  or
+    if (a) r=...;
+    else if (b) r=...;
+    else {GYOTO_ERROR("msg")); r=0.;}
+
+- when a function parameter is not used, don't give it a name or
+  comment-out the name, e.g.:
+    void myfunc(double /* unused */, ...) {}
+
+- when conparing two integers, make sure they are of the same
+  type. For 'for' loops, this can be achieved with decltype:
+    for (decltype(imax) i=0; i<imax; ++i) {}
+
+- when a C function expects a pointer to value, allocate a variable
+  and pass its address:
+    int tmp;
+    fits_movabs_hdu(fptr, 1, &tmpi, &status);
+

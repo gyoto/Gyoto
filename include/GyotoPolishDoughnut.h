@@ -1,6 +1,21 @@
 /**
  * \file GyotoPolishDoughnut.h
- * \brief A magnetized toroidal accretion structure
+ * \brief A geometrically thick, radiatively thin accretion structure
+ *  modeling an ion torus as described by Rees et al. 1982, as far as
+ *  the radiation is concerned. The gas dynamics is taken from
+ *  Abramowicz et al. 1978 "Polish Doughnuts" paper, hence the class name.
+ *  Polish doughnuts are optically thick so strictly speaking, the class
+ *  name is misleading. The angular momentum l=L/E is assumed constant
+ *  in the full interior of the doughnut.
+ *
+ *  There are two flavors of polish doughnuts:
+ *  - Roche lobe filling, that is, they are filled up to the cusp radius
+ *    (rinner=rcusp) thus allowing accretion onto the compact object.
+ *    See lambda() function below.
+ *  - Defined from a value of the inner radius specified by the user,
+ *    so can be typically smaller than the Roche-lobe-filling doughnut,
+ *    and thus non-accreting.
+ *    See angmomrinner() function below.
  *
  *  Latest reference: Vincent, F. H.; Yan, W.; Straub, O.;
  *  Zdziarski, A. A.; Abramowicz, M. A. 2015, <STRONG>A magnetized torus

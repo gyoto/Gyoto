@@ -21,6 +21,24 @@ Before each commit:
 * If this commit changes the user manual, update the date on the title
   page.
 
+To add a new class:
+===================
+
+* Create your lib/NewClass.C and include/GyotoNewClass.h
+(eg by copy-pasting some old file that has a similar architecture)
+
+* Update lib/Makefile.am by adding your NewClass where it fits
+(typically in the list libgyoto_stdplug_la_SOURCES)
+
+* Update python/include/gyoto_std.i by adding your class where it fits
+(check how other similar classes are cited to have examples),
+and python/include/gyoto_std_swig.h to include your class
+
+* Run autoreconf
+
+* Push lib/Makefile.am and lib/Makefile.in together with your
+.C and .h class files
+
 To make a new release:
 ======================
 

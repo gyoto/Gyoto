@@ -53,8 +53,8 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   char* dirname_; ///< FITS files directory
   double tinit_; ///< date of the first FITS file
   double dt_; ///< Time increment between two FITS (assumed constant)
-  int nb_times_; ///< Number of dates
-  int nnu_, nphi_, nr_; ///< Grid dimensions (assumed constant)
+  size_t nb_times_; ///< Number of dates
+  size_t nnu_, nphi_, nr_; ///< Grid dimensions (assumed constant)
 
   /// Array of PatternDisk::emission_ arrays
   double ** emission_array_;
@@ -104,7 +104,7 @@ class Gyoto::Astrobj::DynamicalDisk : public Astrobj::PatternDiskBB {
   /**
    * \param iq Index of the date slice.
    */
-  void copyQuantities(int iq) ;
+  void copyQuantities(size_t iq) ;
 
   void nullifyQuantities() ;
 

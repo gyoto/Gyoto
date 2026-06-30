@@ -63,8 +63,8 @@ DynamicalDisk3D::DynamicalDisk3D() :
   novel_(0),
   floortemperature_(0),
   emission_array_(NULL),
-  velocity_array_(NULL),
-  absorption_array_(NULL)
+  absorption_array_(NULL),
+  velocity_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Construction" << endl;
   spectrumBB_ = new Spectrum::BlackBody(); 
@@ -82,8 +82,8 @@ DynamicalDisk3D::DynamicalDisk3D(const DynamicalDisk3D& o) :
   novel_(o.novel_),
   floortemperature_(o.floortemperature_),
   emission_array_(NULL),
-  velocity_array_(NULL),
-  absorption_array_(NULL)
+  absorption_array_(NULL),
+  velocity_array_(NULL)
 {
   GYOTO_DEBUG << "DynamicalDisk3D Copy" << endl;
   if (o.spectrumBB_()) spectrumBB_=o.spectrumBB_->clone();

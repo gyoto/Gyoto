@@ -48,9 +48,9 @@ GYOTO_PROPERTY_END(FreeStar, UniformSphere::properties)
 
 FreeStar::FreeStar() : 
   UniformSphere("FreeStar"),
-  posSet_(false),
   posIni_(NULL),
-  fourveldt_(NULL)
+  fourveldt_(NULL),
+  posSet_(false)
 {
   kind_="FreeStar";
 # ifdef GYOTO_DEBUG_ENABLED
@@ -63,9 +63,9 @@ FreeStar::FreeStar() :
 
 FreeStar::FreeStar(const FreeStar& orig) :
   UniformSphere(orig),
-  posSet_(orig.posSet_),
   posIni_(NULL),
-  fourveldt_(NULL)
+  fourveldt_(NULL),
+  posSet_(orig.posSet_)
 {
 
   if(orig.posIni_){
@@ -198,7 +198,7 @@ void FreeStar::getCartesian(double const * const dates, size_t const n_dates,
   }
 }
 
-void FreeStar::getVelocity(double const pos[4], double vel[4]){
+void FreeStar::getVelocity(double const *, double vel[4]){
   if (!gg_)
     GYOTO_ERROR("In FreeStar::getVelocity Metric not set");
     

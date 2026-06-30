@@ -266,6 +266,18 @@ class Gyoto::Object
    */
   Property const * property(std::string const pname) const;
 
+  /// \brief Check whether this object knows a property by that name
+  /**
+   * If true, set() and get() know how to deal with a property by that
+   * name. The base implementation returns property(\p name) !=
+   * nullptr. Some derived classes may override knowsProperty(), set()
+   * and get() to deal with parameter names that are not implemented
+   * as Gyoto::Property instances.
+   *
+   * \return true if set() or get() would work with this name.
+   */
+  virtual bool knowsProperty(const std::string &name) const;
+
 #ifdef GYOTO_USE_XERCES
   /// Output a single Property to XML
   /**

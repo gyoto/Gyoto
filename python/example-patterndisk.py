@@ -5,14 +5,42 @@
 # identical to the saved one.
 # This is the same example as yorick/check-patterndisk.i
 
-import gyoto.core, gyoto.std
-import numpy
 import os
+import sys
+import numpy
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import gyoto.core, gyoto.std
+
+# Parse command line and optionally switch to PDF output
+pdfname=None
+dir_path = os.path.dirname(os.path.realpath(__file__))
+examples_dir=dir_path+"/../doc/examples/"
+
+for param in sys.argv:
+    sparam=param.split("=")
+    if os.path.basename(sparam[0])==os.path.basename(__file__):
+        pass
+    elif sparam[0]=="--pdf":
+        if len(sparam)==2:
+            pdfname=sparam[1]
+        else:
+            raise ValueError('--pdf argument expects a filename, e.g. --pdf=output.pdf')
+    elif sparam[0]=="--examples-dir":
+        if len(sparam)==2:
+            examples_dir=sparam[1]
+        else:
+            raise ValueError('--examples_dir argument expects a directory, e.g. --examples-dir=../doc/examples')
+    else:
+        raise ValueError(f'unknown argument: {sparam[0]}')
+
+pdf=None if pdfname is None else PdfPages(pdfname)
+if len(examples_dir) > 0 and examples_dir[-1] != "/":
+    examples_dir += "/"
 
 ### Create a metric
 metric = gyoto.std.KerrBL()
-metric.mass(4e6, "sunmass");
+metric.Mass = 4e6, "sunmass"
 
 ### Create PatternDisk
 # Create opacity and intensity grids as numpy arrays.
@@ -33,39 +61,39 @@ pintensity=gyoto.core.array_double.fromnumpy3(intensity)
 pd=gyoto.std.PatternDisk()
 pd.copyIntensity(pintensity, pgridshape)
 pd.copyOpacity  (popacity, pgridshape)
-pd.innerRadius(3)
-pd.outerRadius(28)
 pd.repeatPhi(8)
-pd.metric(metric)
-pd.rMax(50)
+pd.InnerRadius =  3
+pd.OuterRadius = 28
+pd.Metric      = metric
+pd.RMax        = 50
 
 ### Create screen
 screen=gyoto.core.Screen()
-screen.metric(metric)
-screen.resolution(64)
-screen.time(1000., "geometrical_time")
-screen.distance(100., "geometrical")
-screen.fieldOfView(30./100.)
-screen.inclination(110., "degree")
-screen.PALN(180., "degree")
+screen.Metric      = metric
+screen.Resolution  =   64
+screen.Time        = 1000., "geometrical_time"
+screen.Distance    =  100., "geometrical"
+screen.FieldOfView =   30./100.
+screen.Inclination =  110., "degree"
+screen.PALN        =  180., "degree"
 
 ### Create Scenery
 sc=gyoto.core.Scenery()
-sc.metric(metric)
-sc.screen(screen)
-sc.astrobj(pd)
+sc.Metric  = metric
+sc.Screen  = screen
+sc.Astrobj = pd
 
 ### Save Scenery
 pd.fitsWrite("!check-patterndisk.fits.gz")
 gyoto.core.Factory(sc).write("check-patterndisk.xml")
 
 ### Read Scenery
-sc2=gyoto.core.Factory("check-patterndisk.xml").scenery()
+sc2=gyoto.util.readScenery("check-patterndisk.xml")
 
 ### Check
 # Compare Sceneries
-assert sc2.screen().dMax() == sc.screen().dMax(), "dmax was not conserved when writing and reading XML"
-assert sc2.tMin() == sc.tMin(), "tmin was not conserved when writing and reading XML"
+assert sc2.Screen.DMax == sc.Screen.DMax, "dmax was not conserved when writing and reading XML"
+assert sc2.MinimumTime == sc.MinimumTime, "tmin was not conserved when writing and reading XML"
 
 # Delete temporary files
 os.unlink("check-patterndisk.xml")
@@ -73,7 +101,7 @@ os.unlink("check-patterndisk.fits.gz")
 
 # Compare PatternDisks
 # compare shape
-pd2 = gyoto.std.PatternDisk(sc2.astrobj())
+pd2 = gyoto.std.PatternDisk(sc2.Astrobj)
 pgridshape2=gyoto.core.array_size_t(3)
 pd2.getIntensityNaxes(pgridshape2)
 for k in range (3):
@@ -98,4 +126,11 @@ pframe=gyoto.core.array_double.fromnumpy2(frame)
 aop.intensity=pframe
 sc.rayTrace(grid, aop)
 plt.imshow(frame, origin='lower')
-plt.show()
+if pdf is None:
+    plt.show()
+else:
+    pdf.savefig()
+    plt.close()
+
+if pdf:
+    pdf.close()

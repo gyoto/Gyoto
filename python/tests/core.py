@@ -9,10 +9,27 @@ import inspect
 gyoto.core.requirePlugin('stdplug')
 
 class TestSmartPointer(unittest.TestCase):
-    def test_simple_classes(self):
-        for classname in ('Scenery', 'Screen', 'Photon'):
-            cls=getattr(gyoto.core, classname)
-            obj=cls()
+    def test_core_classes(self):
+        '''Test class namespace sanity and ref counting
+        '''
+        for classname, cls in inspect.getmembers(gyoto.core):
+            default_verbosity=gyoto.core.verbose()
+            # Skip abstract classes
+            if (classname in ('Metric',
+                              'Astrobj',
+                              'StandardAstrobj',
+                              'UniformSphere',
+                              'Spectrum',
+                              'Spectrometer',
+                              'Object')
+                or not inspect.isclass(cls)
+                or not issubclass(cls, gyoto.core.Object)):
+                continue
+            obj = cls()
+            for method in dir(cls):
+                if (obj.knowsProperty(method) and f'{classname}.{method}'
+                    not in ('Screen.PALN',)):
+                    self.fail(f'{classname}.{method} is both a method and a Property')
             self.assertEqual(obj.getRefCount(), 1)
             clone=obj.clone()
             self.assertEqual(obj.getRefCount(), 1)
@@ -21,7 +38,7 @@ class TestSmartPointer(unittest.TestCase):
             self.assertEqual(obj.getRefCount(), 1)
 
     def test_base_classes(self):
-        '''Test reference counting
+        '''Test reference counting and class namespace sanity
 
         All constructors, cloners and destructors must implement and
         decrement the reference counter correctly.
@@ -32,6 +49,7 @@ class TestSmartPointer(unittest.TestCase):
             nspace=getattr(gyoto, pnspace)
             generic=getattr(nspace, 'Generic')
             for classname, cls in inspect.getmembers(nspace):
+                default_verbosity=gyoto.core.verbose()
                 # Skip abstract classes
                 if (classname in ('Generic',
                                   gnspace,
@@ -41,12 +59,51 @@ class TestSmartPointer(unittest.TestCase):
                     continue
                 # The XML name of ComplexAstrobj et al. is 'Complex'
                 if 'Complex' in classname:
+                    gyoto.core.verbose(0)
                     classname='Complex'
                 # The XML name of UniformSpectrometer is 'wave'
                 if classname in ('UniformSpectrometer', 'Uniform'):
                     classname='wave'
+                # The XML name of PythonMetric and PythonSpectrum is 'Python'
+                if classname in ('PythonMetric', 'PythonSpectrum'):
+                    classname='Python'
+                # The XML name of PythonStandard is Python::Standard
+                if classname in ('PythonStandard',):
+                    classname='Python::Standard'
+                # The XML name of PythonThinDisk is Python::ThinDisk
+                if classname in ('PythonThinDisk',):
+                    classname='Python::ThinDisk'
                 # Construct instance from default constructor
                 obj=cls()
+                # Check that method names are not also Property names
+                for method in dir(cls):
+                    if (obj.knowsProperty(method) and f'{classname}.{method}'
+                        not in ('Disk3D.omegaPattern',
+                                'Disk3D.tPattern',
+                                'DynamicalDisk.dt',
+                                'DynamicalDisk.tinit',
+                                'DynamicalDisk3D.PLindex',
+                                'DynamicalDisk3D.dt',
+                                'DynamicalDisk3D.omegaPattern',
+                                'DynamicalDisk3D.tPattern',
+                                'DynamicalDisk3D.tinit',
+                                'DynamicalDiskBolometric.dt',
+                                'DynamicalDiskBolometric.tinit',
+                                'Plasmoid.Radius',
+                                'SimBridge.PLindex',
+                                'SimThickDisk.HoverR',
+                                'SimThickDisk.PLindex',
+                                'SimThinDisk.PLindex',
+                                'StarTrace.TMax',
+                                'StarTrace.TMin',
+                                'ThinDiskIronLine.CutRadius',
+                                'ThinDiskIronLine.LineFreq',
+                                'ThinDiskIronLine.PowerLawIndex',
+                                'ThinDiskPL.Slope',
+                                'ThinDiskPL.Tinner'
+                                )):
+                        self.fail(f'{classname}.{method} is both a method and a Property')
+                # Check reference counting
                 self.assertEqual(obj.getRefCount(), 1)
                 # Cast to base class
                 gen=generic(obj)
@@ -59,7 +116,13 @@ class TestSmartPointer(unittest.TestCase):
                 self.assertEqual(obj.getRefCount(), 1)
                 self.assertEqual(clone.getRefCount(), 1)
                 # Print
+                if (classname=="Blob"):
+                    tmp = gyoto.core.verbose()
+                    gyoto.core.verbose(0)
                 rep=obj.__str__()
+                if (classname=="Blob"):
+                    gyoto.core.verbose(tmp)
+                    del tmp
                 self.assertEqual(obj.getRefCount(), 1)
                 # Clean
                 del rep
@@ -81,6 +144,7 @@ class TestSmartPointer(unittest.TestCase):
                 self.assertEqual(gen.getRefCount(), 1)
                 # Clean
                 del gen
+                gyoto.core.verbose(default_verbosity)
 
     def test_complex_classes(self):
         '''Test that adding, retrieving, deleting members updates refCount
@@ -332,7 +396,6 @@ class TestValue(unittest.TestCase):
         self.assertEqual(a.toDouble(), 5.)
 
     def test_bad(self):
-        self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value(5).toDouble())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value(5.).toLong())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value((1,)).toVDouble())
         self.assertRaises(gyoto.core.Error, lambda: gyoto.core.Value('a').toVULong())
@@ -407,3 +470,66 @@ class TestPolar(unittest.TestCase):
         self.assertAlmostEqual(met.ScalarProd(x, Etheta, Ephi), 0., 6)
         self.assertAlmostEqual(met.ScalarProd(x, Etheta, Etheta), 1., 6)
         self.assertAlmostEqual(met.ScalarProd(x, Ephi, Ephi), 1., 6)
+
+class TestScreen(unittest.TestCase):
+    def test_PALN(self):
+        '''Test that all versions of Screen.PALN work as intended
+
+        '''
+        scr = gyoto.core.Screen()
+        scr.set('PALN', 0.)
+
+        valin = 1.
+        try:
+            scr.PALN = valin
+        except:
+            self.fail('Failed syntax: scr.PALN = value')
+        try:
+            valout = scr.PALN
+        except:
+            self.fail('Failed syntax: value = scr.PALN')
+        self.assertEqual(valin, valout)
+
+        valin = 2.
+        try:
+            scr.PALN = valin, "degree"
+        except:
+            self.fail('Failed syntax: scr.PALN = value, unit')
+        try:
+            valout = scr.get('PALN', 'degree')
+        except:
+            self.fail('Failed syntax: value = scr.get("PALN", unit)')
+        self.assertEqual(valin, valout)
+
+        valin = 3.
+        try:
+            scr.set('PALN', valin, "degree")
+        except:
+            self.fail('Failed syntax: scr.set("PALN", value, unit)')
+        try:
+            valout = scr.get('PALN', 'degree')
+        except:
+            self.fail('Failed syntax: value = scr.get("PALN", unit)')
+        self.assertAlmostEqual(valin, valout)
+
+        valin = 4.
+        try:
+            scr.PALN(valin, "degree")
+        except:
+            self.fail('Failed syntax: scr.PALN(value, unit)')
+        try:
+            valout = scr.PALN('degree')
+        except:
+            self.fail('Failed syntax: value = scr.PALN(unit)')
+        self.assertAlmostEqual(valin, valout)
+
+        valin = 5.
+        try:
+            scr.PALN(valin)
+        except:
+            self.fail('Failed syntax: scr.PALN(value)')
+        try:
+            valout = scr.PALN()
+        except:
+            self.fail('Failed syntax: value = scr.PALN()')
+        self.assertEqual(valin, valout)

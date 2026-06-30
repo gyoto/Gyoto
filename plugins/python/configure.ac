@@ -17,6 +17,10 @@ PKG_PROG_PKG_CONFIG([])
 AS_IF([test "x$PKG_CONFIG" == "x"],
   [AC_MSG_ERROR([Please install pkg-config])])
 
+## Require C++17
+#
+AX_CXX_COMPILE_STDCXX([17], , [mandatory])
+CXXFLAGS="$CXXFLAGS -std=c++17 -Wall -Wextra"
 
 # Checks for libraries.
 

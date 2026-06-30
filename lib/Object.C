@@ -249,6 +249,7 @@ Value Object::get(Property const &p) const {
   switch (p.type) {
   case Property::empty_t:
     GYOTO_ERROR("Can't get empty property");
+    [[fallthrough]]; // tells the compiler that "break;" is not needed
     ___local_case(bool);
     ___local_case(double);
     ___local_case(long);
@@ -386,7 +387,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   size_t np=plgs.size();
   if (np) {
     std::string plg(plgs[0]);
-    for (size_t i=1; i<np; ++np) {
+    for (size_t i=1; i<np; ++i) {
       plg += std::string(",") +plgs[i] ;
     }
     fmp -> setSelfAttribute("plugin", plg);
@@ -395,6 +396,7 @@ void Object::fillElement(Gyoto::FactoryMessenger *fmp) const {
   Property const * prop = getProperties(); 
   while (prop) {
     if (*prop) {
+      GYOTO_DEBUG_EXPR(prop->name);
       if (prop->type != Property::empty_t)
 	fillProperty(fmp, *prop);
       ++prop;
@@ -450,7 +452,7 @@ void Object::setParameters(Gyoto::FactoryMessenger *fmp)  {
 	  break;
 	case Property::filename_t:
 	  content = fmp->fullPath(content);
-	  // no 'break;' here, we need to proceed
+	  [[fallthrough]]; // no 'break;' here, we need to proceed
 	default:
 	  setParameter(*prop, name, content, unit);
 	}
@@ -498,6 +500,7 @@ void Object::setParameter(Property const &p, string const &name,
     break;
   case Property::metric_t:
     GYOTO_ERROR("Metric can't be set using setParameter()");
+    [[fallthrough]]; // 'break;' would never be reached
   default:
     GYOTO_ERROR("Property type unimplemented in Object::setParameter()");
   }
@@ -613,4 +616,8 @@ void Object::help() const {
       ++prop;
     } else prop=prop->parent;
   }
+}
+
+bool Object::knowsProperty(const std::string &name) const {
+  return property(name) != nullptr;
 }

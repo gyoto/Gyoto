@@ -59,8 +59,11 @@ namespace Gyoto {
  */
 class Gyoto::Value {
  public:
-  /// Constructor
+  /// Default onstructor
   Value();
+
+  // Copy constructor
+  Value(const Value& orig);
 
   /// Destructor
   ~Value();

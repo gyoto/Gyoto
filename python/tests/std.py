@@ -238,6 +238,15 @@ class TestMinkowski(unittest.TestCase):
         self.assertLess( numpy.abs(norm+1.).max(), 1e-6 )
 
 class TestStdMetric(unittest.TestCase):
+
+    default_verbosity=gyoto.core.verbose()
+
+    def setUp(self):
+        gyoto.core.verbose(0)
+
+    def tearDown(self):
+        gyoto.core.verbose(self.default_verbosity)
+
     def pos(self, metric):
         if metric.coordKind() is gyoto.core.GYOTO_COORDKIND_SPHERICAL:
             pos=(10, 6., numpy.pi/4, numpy.pi/3)

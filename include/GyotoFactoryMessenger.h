@@ -247,7 +247,7 @@ class Gyoto::FactoryMessenger {
    * \return fullpath at full path specification to the same point pon
    * the file-system.
    */
-  std::string fullPath(std::string relpath) ;
+  std::string fullPath(const std::string &relpath) const ;
   ///< Transform path into full path specification
 
 

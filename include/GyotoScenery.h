@@ -434,6 +434,9 @@ class Gyoto::Scenery
   void parallelTransport (bool pt) ; ///< Set ph_.parallel_transport_
   bool parallelTransport () const ; ///< Get ph_.parallel_transport_
 
+  void checkBasis (bool cb) ; ///< Set ph_.check_basis_
+  bool checkBasis () const ; ///< Get ph_.check_basis_
+
   void maxiter (size_t miter) ; ///< Set ph_.maxiter_
   size_t maxiter () const ; ///< Get ph_.maxiter_
 

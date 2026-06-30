@@ -212,26 +212,16 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     // The following part was only for test purpose with ad-hoc choice of magnetic field (ipole formalism)
     // and emission process
 
-    double rr, rcyl, theta, phi, xx, yy, zz=0.;
+    double rr, theta;
     switch (gg_->coordKind()) {
     case GYOTO_COORDKIND_SPHERICAL:
       rr = cph[1];
       theta = cph[2];
-      phi = cph[3];
-      
-      rcyl = rr*sin(theta);
-      xx = rcyl*cos(phi);
-      yy = rcyl*sin(phi);
-      zz   = rr*cos(theta);
       break;
     case GYOTO_COORDKIND_CARTESIAN:
-      rcyl = pow(cph[1]*cph[1]+cph[2]*cph[2], 0.5);
       rr = sqrt(cph[1]*cph[1]+cph[2]*cph[2]
           +cph[3]*cph[3]);
       theta   = acos(cph[3]/rr);
-      xx = cph[1];
-      yy = cph[2];
-      zz   = cph[3];
       break;
     default:
       GYOTO_ERROR("In Star::radiativeQ(): Unknown coordinate system kind");
@@ -245,10 +235,6 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       double B4vect[4]={0.,0.,0.,0.};
       double B_1=0.,B_2=0.,B_3=0;
       double spin = 0.;
-      double gtt = gg_->gmunu(&cph[0],0,0),
-             grr = gg_->gmunu(&cph[0],1,1),
-             gthth = gg_->gmunu(&cph[0],2,2),
-             gpp = gg_->gmunu(&cph[0],3,3);
       double dx1=0.025,
              dx2=0.025;
 
@@ -274,7 +260,7 @@ void Star::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
 
       // Compute KS' metric
       double gcov_ksm[4][4];
-      double sin2=sin(theta)*sin(theta), rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
+      double rho2=rr*rr+spin*spin*cos(theta)*cos(theta);
       double gcov_ks[4][4];
       for(int mu=0;mu<4;mu++)
         for(int nu=0;nu<4;nu++)

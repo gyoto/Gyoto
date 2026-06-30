@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2016, 2019, 2024 Thibaut Paumard
+    Copyright 2011-2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -21,6 +21,8 @@
 #define __GyotoRegister_H_
 
 #include <string>
+#include <glob.h>
+#include <filesystem>
 #include "GyotoSmartPointer.h"
 
 /**
@@ -56,7 +58,9 @@ namespace Gyoto {
      * \param pluglist Coma-separated list of plug-ins to load. If
      * NULL, default to the environment variable GYOTO_PLUGINS, if it
      * exists. Else use GYOTO_DEFAULT_PLUGINS. Failing to load a
-     * plug-in prepended with "nofail:" is not fatal.
+     * plug-in prepended with "nofail:" is not fatal but issues a
+     * warning. Failing to load a plug-in prepended with "nowarn:" is
+     * silently ignored.
      */
     void init( char const * pluglist = NULL );
 
@@ -106,6 +110,17 @@ namespace Gyoto {
    *            nofail is one, those conditions trigger a warning.
    */
   void requirePlugin(std::string plugname, int nofail = 0);
+
+  /**
+   * \brief Get a copy of the plug-in path
+   */
+  std::vector<std::string> pluginPath();
+
+  /**
+   * \brief Set the plug-in path
+   */
+  void pluginPath(const std::vector<std::string> &v);
+
 }
 
 /**
@@ -165,6 +180,20 @@ public:
   Gyoto::SmartPointee::Subcontractor_t*
     getSubcontractor(std::string name, std::string &plugin, int errmode=0);
 
+  /**
+   * \brief Get name
+   */
+  std::string name();
+
+  /**
+   * \brief Get plugin
+   */
+  std::string plugin();
+
+  /**
+   * \brief Get next
+   */
+  Register::Entry* next();
 };
 
 /**
@@ -175,50 +204,178 @@ public:
  *
  * This macro is called for instance to define
  * Gyoto::Metric::getSubcontractor(). A function defined this way will:
- * - load any plug-in listed in \p plugin using requirePlugin();
- * - if \p plugin is empty, look for a subcontractor matching \p name
- *   in the relevant register,
- *   - if a match is found, insert the name of the corresponding plug-in
- *     in \p plugin and return a pointer to the matching
- *     subcontractor;
- *   - else,
- *     - if \p errmode is 1, return NULL;
- *     - if \p errmode is 0, throw a Gyoto::Error;
- * - else, look for a subcontractor matching \p name and one element of
- *   \p plugin in the relevant register,
- *   - if a match is found, return the subcontractor;
- *   - else,
- *     - if \p errmode is 1, return NULL;
- *     - if \p errmode is 0, throw a Gyoto::Error.
+ *
+ * - load any mandatory (i.e. not prepended with "fallback:") plug-in
+ *   listed in \p plugin using requirePlugin();
+ *
+ * - if the Gyoto::space::Register_ register is still empty at this
+ *   point, load fallback (i.e. prepended with "fallback:") plug-ins
+ *   listed in \p plugin until it is not anymore;
+ *
+ * - if \p plugin is empty of contains only fallback plug-ins, look
+ *   for a subcontractor matching \p name in the register; if a match
+ *   is found, insert the name of the corresponding plug-in in \p
+ *   plugin and return a pointer to the matching subcontractor;
+ *
+ * - look for a subcontractor matching \p name and one mandatory
+ *   plug-in from \p plugin in the relevant register; if a match is
+ *   found, return the subcontractor;
+ *
+ * - for each fallback plugin \p plg:
+ *   - try to load \plg and look for a subcontractor matching \p name
+ *     and \p plg;
+ *   - try to find a file that matches \p plg as a glob pattern, if
+ *     one exists, try to load it as a plug-in and look for a
+ *     subcontractor matching pname is it;
+ *   - try to find a file that matches \p plg as a glob pattern, if
+ *     one exists, try to load it as a plug-in and look for a
+ *     subcontractor matching pname is it;
+ *   - try to find a file that matches \p
+ *     <directory>/libgyoto-<plg>.so for every directory in the
+ *     plug-in path. If such a file exists, try to load it as a
+ *     plug-in and look for a subcontractor matching pname is it;
+ *   At any point, if a matching subcontracting subcontractor is
+ *   found, return it.
+ *
+ * Else,
+ * - if \p errmode is 1, return NULL;
+ * - if \p errmode is 0, throw a Gyoto::Error.
  *
  * \param[in] space a Gyoto namespace such as Metric, Astrobj,
  * Spectrum or Spectrometer.
  */
-#define GYOTO_GETSUBCONTRACTOR(space)		\
+#define GYOTO_GETSUBCONTRACTOR(space)					\
   Gyoto::space::Subcontractor_t*					\
-  Gyoto::space::getSubcontractor(std::string name, std::vector<std::string> &plugin, int errmode) { \
-  for (size_t i=0; i<plugin.size(); ++i) {				\
-    GYOTO_DEBUG_EXPR(plugin[i]);					\
-    Gyoto::requirePlugin(plugin[i]);					\
-  }									\
-  if (!Gyoto::space::Register_) throwError("No " GYOTO_STRINGIFY(space) " kind registered!"); \
-  Subcontractor_t* sctr= NULL;						\
-  std::string plg("");							\
-  if (!plugin.size()) {							\
-  sctr =								\
-    (Subcontractor_t*)Gyoto::space::Register_				\
-    -> getSubcontractor(name, plg, errmode);				\
-  if (sctr) plugin.push_back(plg);					\
-  else if (!errmode) throwError ("Kind not found in any plug-in: "+name); \
-  return sctr;								\
-  }									\
-  for (size_t i=plugin.size()-1; i>=0 && sctr == NULL; --i) {		\
-    sctr=								\
-      (Subcontractor_t*)Gyoto::space::Register_				\
-      -> getSubcontractor(name, plugin[i], 1);				\
-  }									\
-  if (!errmode && !sctr) throwError ("Kind not found in the specified plug-ins: "+name); \
-  return sctr;								\
-}
+  Gyoto::space::getSubcontractor(std::string name,			\
+				 std::vector<std::string> &plugin,	\
+				 int errmode) {				\
+    std::vector<std::string> mandatory;					\
+    std::vector<std::string> fallback;					\
+    std::vector<std::string> plug_path(Gyoto::pluginPath());		\
+    GYOTO_DEBUG << "loading non-fallback plug-ins..." << std::endl;	\
+    for (const auto &plg : plugin) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      if (plg.rfind("fallback:", 0) != 0) {				\
+	Gyoto::requirePlugin(plg);					\
+	mandatory.emplace_back(plg);					\
+      }									\
+      else fallback.emplace_back(plg.substr(9));			\
+    }									\
+    GYOTO_DEBUG << "found " << mandatory.size()				\
+		<< " mandatory plg-ins and "<< fallback.size()		\
+		<< " fallback plug-ins" << std::endl;			\
+    GYOTO_DEBUG <<							\
+      "loading fallback plug-ins until the Register is not empty"	\
+		<< std::endl;						\
+    for (const auto plg : fallback) {					\
+      if (Gyoto::space::Register_) break;				\
+      GYOTO_DEBUG_EXPR(plg);						\
+      Gyoto::requirePlugin(plg, 2);					\
+    }									\
+    for (const auto &plg : fallback) {					\
+      if (Gyoto::space::Register_) break;				\
+      GYOTO_DEBUG_EXPR(plg);						\
+      for (const auto &path : plug_path) {				\
+	std::string pattern = (path + "libgyoto-" + plg)		\
+		     + "." GYOTO_PLUGIN_SFX;				\
+	std::vector<std::string> files =				\
+	  Gyoto::glob(pattern);						\
+	for (const auto &file : files) {				\
+	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
+	  Gyoto::requirePlugin(file, 2);				\
+	}								\
+      }									\
+    }									\
+    if (!Gyoto::space::Register_)					\
+      throwError("No " GYOTO_STRINGIFY(space) " kind registered!");	\
+    Gyoto::space::Subcontractor_t* sctr= NULL;				\
+    GYOTO_DEBUG << "looking for " << name				\
+                << " in non-fallback plug-ins..."  << std::endl;	\
+    for (auto & plg : mandatory) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      sctr=(Gyoto::space::Subcontractor_t*)Gyoto::space::Register_	\
+	-> getSubcontractor(name, plg, 2);				\
+      if (sctr) {							\
+	GYOTO_DEBUG << "found " << name << " in plug-in "		\
+		    << plg << std::endl;				\
+	return sctr;							\
+      }									\
+    }									\
+    if (!mandatory.size()) {						\
+      GYOTO_DEBUG << "looking for " << name				\
+		  << " in registered plug-ins..."  << std::endl;	\
+      std::string plg("");						\
+      sctr = (Gyoto::space::Subcontractor_t*)Gyoto::space::Register_	\
+	-> getSubcontractor(name, plg, 2);				\
+      if (sctr){							\
+	GYOTO_DEBUG << "found " << name << " in plug-in "		\
+		    << plg << std::endl;				\
+	plugin.emplace(plugin.begin(), plg);				\
+	GYOTO_DEBUG << "added '" << plugin[0]				\
+		    << "' as item 0 of pluglist" << std::endl;		\
+	return sctr;							\
+      } else if (!fallback.size() && !errmode)				\
+	throwError ("Kind not found in any plug-in: "+name);		\
+    }									\
+    GYOTO_DEBUG << "looking for " << name				\
+		<< " in fallback plug-ins..."  << std::endl;		\
+    /* try to load fallbacks directly */				\
+    for (auto &plg : fallback) {					\
+      GYOTO_DEBUG_EXPR(plg);						\
+      Gyoto::requirePlugin(plg, 2);					\
+      sctr = (Gyoto::space::Subcontractor_t*)Gyoto::space::Register_	\
+	-> getSubcontractor(name, plg, 2);				\
+      if (sctr) {							\
+	GYOTO_DEBUG << "found " << name << " in plug-in "		\
+		    << plg << std::endl;				\
+	return sctr;							\
+      }									\
+    }									\
+    GYOTO_DEBUG << "looking for " << name				\
+		<< " in fallback plug-ins, "				\
+		<< "allowing for glob expansion..."  << std::endl;	\
+    for (const auto &plg : fallback) {					\
+      /* try glob expansion on plg itself, may it is already a path	\
+	 with wildcards */						\
+      GYOTO_DEBUG_EXPR(plg);						\
+      std::vector<std::string> files = Gyoto::glob(plg);		\
+      for (auto &file : files) {					\
+	GYOTO_DEBUG << "Trying " << file << std::endl;			\
+	if (!std::filesystem::exists(file)) continue;			\
+	Gyoto::requirePlugin(file, 2);					\
+	sctr = (Gyoto::space::Subcontractor_t*)Gyoto::space::Register_	\
+	  -> getSubcontractor(name, file, 2);				\
+	if (sctr) {							\
+	  GYOTO_DEBUG << "found " << name << " in plug-in "		\
+		      << file << std::endl;				\
+	  return sctr;							\
+	}								\
+      }									\
+      /* try glob expansion on <directory>/libgyoto-<plg>.so for every	\
+	 directory in the plug-in path */				\
+      for (const auto &path : plug_path) {				\
+	std::string pattern = (path + "libgyoto-" + plg)		\
+		     + "." GYOTO_PLUGIN_SFX;				\
+	files = Gyoto::glob(pattern);					\
+	for (auto &file : files) {					\
+	  GYOTO_DEBUG << "Trying " << file << std::endl;		\
+	  if (!std::filesystem::exists(file)) continue;			\
+	  Gyoto::requirePlugin(file, 2);				\
+	  sctr=(Gyoto::space::Subcontractor_t*)Gyoto::space::Register_	\
+	    -> getSubcontractor(name, file, 2);				\
+	  if (sctr) {							\
+	    GYOTO_DEBUG << "found " << name << " in plug-in "		\
+			<< file << std::endl;				\
+	    return sctr;						\
+	  }								\
+	}								\
+      }									\
+    }									\
+    GYOTO_DEBUG << name << " not found anywhere, error?"		\
+                << std::endl;						\
+    if (!errmode)							\
+      throwError("Kind not found in the specified plug-ins: "+name);	\
+    return sctr;							\
+  }
 
 #endif

@@ -52,6 +52,17 @@ its MPI variant, then Gyoto with the same variant:
     sudo port install Boost +openmpi
     sudo port install Gyoto +openmpi
 
+To get Python support, choose one of the versions available from
+MacPorts (port search python3) and install the corresponding Gyoto
+subport, for instance for Python 3.14:
+    sudo port install py314-gyoto
+
+You will need to install all of the Python packages that you need for
+this specific version of Python, either using MacPorts or PIP:
+    sudo port install py314-<somepackage>
+    sudo port install py314-pip
+    python3.14 -m pip install <somepackage>
+
 ## 1- Building from source: installing the dependencies
 
 If Gyoto is not packaged for your system or if you prefer to build
@@ -71,8 +82,8 @@ dependencies.
 
 Gyoto requires:
 
-   - a C++ compiler. GCC 4.9 and above work very well. Several
-     features require the C++11 standard. Clang/LLVM is discouraged,
+   - a C++ compiler. GCC 8 and above work very well. Several
+     features require the C++17 standard. Clang/LLVM is discouraged,
      see [BUGS.md](BUGS.md).
    - Eigen (required):
        https://eigen.tuxfamily.org/
@@ -82,7 +93,7 @@ Gyoto requires:
        http://heasarc.gsfc.nasa.gov/fitsio/
    - libudunits2 (recommended, support for unit conversions):
        http://www.unidata.ucar.edu/software/udunits/
-   - boost >= 1.53 (required, contains the integrators). See [BUGS.md](BUGS.md).
+   - boost >= 1.83 (required, contains the integrators). See [BUGS.md](BUGS.md).
        http://www.boost.org/
    - an implementation of the Gauss hypergeometric function 2F1
      (optional, required for all Astrobj using
@@ -98,22 +109,16 @@ Gyoto requires:
    - an MPI implementation (tested with openmpi, optional). MPI uses
      boost features from boost.mpi, you must use the same version as
      boost.mpi is linked to.
-   - Yorick    (deprecated, provides an interface to the Yorick
-     interpreted language, allowing to write Gyoto scripts):
-       http://yorick.sourceforge.net/
-     Yorick users will also need the yorick-yutils add-on
-     (https://github.com/frigaut/yorick-yutils) and may need to install
-     the yorick-dev package (in particulat Debian/Ubuntu users).
-     Yorick support is considered depracated and will be removed in
-     the future.
    - Python 3 (optional, provides an interface to the Python
      interpreted language, allowing to write Gyoto scripts). Python
-     3.7 and 3.8 have been tested. For building the Python bindings,
+     3.9 to 3.14 have been tested. For building the Python bindings,
      the Python development files are naturally required (sometimes
-     found in the python-dev or python3-dev package), as well as NumPy
-     and Swig-2.0:
+     found in the python-dev or python3-dev package), as well as the
+     Python packages Numpy, Build and PIP, and Swig:
        https://www.python.org/
        http://www.numpy.org/
+       https://build.pypa.io/
+       https://pip.pypa.io/
        http://www.swig.org/
      Note that although fairly complete, the Python interface is
      likely to change in future releases. Be ready to adapt your
@@ -129,6 +134,15 @@ Gyoto requires:
      On some systems, LORENE must be built with -fPIC (GYOTO as well,
      but this is the default).
    - developers may need the GNU autotools: autoconf, automake, libtool.
+   - Yorick    (deprecated, optional, provides an interface to the Yorick
+     interpreted language, allowing to write Gyoto scripts):
+       http://yorick.sourceforge.net/
+     Yorick users will also need the yorick-yutils add-on
+     (https://github.com/frigaut/yorick-yutils) and may need to install
+     the yorick-dev package (in particulat Debian/Ubuntu users).
+     Yorick support is considered deprecated and will be removed in
+     the future.
+
 
 For Debian and its derivatives (incl. Ubuntu), you can install all
 those dependencies with:
@@ -136,17 +150,37 @@ those dependencies with:
     sudo apt-get install build-essential yorick-dev yorick-yutils \
     libxerces-c-dev libcfitsio-dev libudunits2-dev libboost-dev \
     libboost-mpi-dev libflint-arb-dev libflint-dev mpi-default-dev \
-    python3-dev python3-setuptools swig3.0 python3-numpy python3-matplotlib \
+    python3-dev python3-setuptools swig3.0 python3-numpy python3-build \
+    python3-pip python3-matplotlib \
     doxygen pkg-config liblorene-dev lorene-codes-src gfortran g++ libeigen3-dev
+
+On MacOS, the dependencies can all be installed with [MacPorts]
+(http://www.macports.org/):
+
+    In all cases:
+    sudo port install eigen3 LORENE pkgconfig cfitsio flint udunits2 \
+                      xercesc3 boost
+
+    For MPI support, the 'openmpi' or 'mpich' variant of a boost versioned
+    package must be installed, e.g.:
+    sudo port install boost176 +openmpi
+    or:
+    sudo port install boost176 +mpich
+
+    For Python support, additional dependencies are needed, including
+    a version of Python along with a few modules for this specific
+    version, for instance, for Python 3.14:
+    sudo port install doxygen swig-python python314 py314-setuptools \
+                      py314-build py314-pip py314-numpy
 
 Note for Anaconda user:
 
-Anaconda is a distribution of software packages that is popular
-particularly for its Python packages. The various components used for
-building Gyoto listed above interact with each other. It is therefore
-advised to avoid mixing package sources. Gyoto can be built using a
-version of Python installed through Anaconda. In this case the C
-and C++ compilers and libraries should also, in as much as possible,
+Anaconda is a cross-platform distribution of software packages that is
+popular particularly for its Python packages. The various components
+used for building Gyoto listed above interact with each other. It is
+therefore advised to avoid mixing package sources. Gyoto can be built
+using a version of Python installed through Anaconda. In this case the
+C and C++ compilers and libraries should also, in as much as possible,
 be installed with anaconda: one may install most of them with
 
     conda install -c conda-forge cxx-compiler eigen xerces-c cfitsio \
@@ -160,7 +194,7 @@ pick them automatically. The installation prefix still defaults to
 
 It should be fine to use swig and doxygen from outside Anaconda, and
 LORENE (if needed) should be compiled with the Anaconda-provided
-compilere before compiling Gyoto.
+compiler before compiling Gyoto.
 
 
 ## 2- Downloading the source code
@@ -214,15 +248,49 @@ the available options:
 
     ./configure --help
 
+To select a Python 3 interpreter different than the default on your
+system, set both the PYTHON and PYTHON_CONFIG variables:
+
+    ./configure PYTHON=/path/to/python3 PYTHON_CONFIG=/path/to/python3-config
+
+In particular for MacPorts users this would be (still assuming Python 3.14):
+
+    ./configure PYTHON=/opt/local/bin/python3.14 \
+                PYTHON_CONFIG=/opt/local/bin/python3.14-config
+
+As usual, Gyoto can be installed into a given prefix by using the
+--prefix option (default: /usr/local):
+
+    ./configure --prefix=/path/to/install/prefix
+
+Beware that there is no standard way to install a Python module to a
+custom prefix. Gyoto's configure script provides two options to
+determine where to install the Python module:
+--with-python-install-scheme and --with-pythondir. See './configure
+--help' for details. You can install in the place of your liking with:
+
+    ./configure --prefix=/path/to/install/prefix \
+        --with-pythondir=/path/to/install/prefix/place/of/your/liking
+
+You can make Python aware of this directory by adding it to the
+PYTHONPATH environment variable (see below). If you prefer to install
+the module yourself, set the install scheme to none:
+
+    ./configure --with-python-install-scheme=none ...
+
+This way the Python module will be built but not installed
+automatically. After the rest of Gyoto is installed, you can then move
+to the python/ directory and install the module using PIP wherever you
+want, for instance in the user home directory:
+
+    $PYTHON -m pip install <pip options> dist/*.whl 
+
 ARBLIB is known to be installed under various names depending on the
 Linux distribution. If using ARBLIB (see "Installing the dependencies"
 above), you may need to set the `--with-arblib-ldflags` variable to the
 correct name, e.g.
 
     ./configure --with-arblib-ldflags=-larb
-
-The standard GNU INSTALL file is provided next to this file and documents
-the most standard and obscure features.
 
 The `--enable-release` option is reserved for pre-compiled package
 maintainers. In short, don't use it, it is for us alone. Without this
@@ -244,10 +312,8 @@ step:
 
     CC=gcc-4.8 CXX=g++-4.8 ./configure
 
-To select a Python 3 interpreter different than the default on your
-system, set both the PYTHON and PYTHON_CONFIG variables:
-
-    PYTHON=/path/to/python3 PYTHON_CONFIG=/path/to/python3-config ./configure
+The standard GNU INSTALL file is provided next to this file and documents
+the most standard and obscure features.
 
 Example: assume you want to install in `${HOME}/mysoft`, that LORENE is
 in `${HOME}/mysoft/Lorene` (but `HOME_LORENE` is not set), and Xerces and
@@ -261,8 +327,16 @@ CFITIO are in `/opt/local`:
 On Debian or Ubuntu, with all the dependencies installed as above,
 this should do:
 
-    ./configure --with-arblib \
+    ./configure \
     --with-lorene=/usr/lib/`dpkg-architecture -qDEB_HOST_MULTIARCH`/lorene
+
+On MacOS, with the dependencies installed through macports, this
+should do (to be adapted with a current verion of Python):
+
+    ./configure --with-lorene=/opt/local/lib/lorene \
+                --with-udunits-headers=-I/opt/local/include/udunits2/ \
+                --with-udunits-libs=-L/opt/local/lib/ \
+		PYTHON=/opt/local/bin/python3.14
 
 ## 5- Building Gyoto
 
@@ -297,7 +371,6 @@ Using su:
 
     su - # (type root password)
     make install
-    make -C python install
 
 Using sudo:
 
@@ -326,10 +399,14 @@ comment:
     export MANPATH=${PREFIX}/share/man:${MANPATH}           # gyoto.1
     export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig          # gyoto.pc
 
+If the Python module was installed in a custom directory yt unknown to
+Python, also set PYTHONPATH:
+    export PYTHONPATH=<pythondir>:$PYTHONPATH
+
 Under Mac OS X, `LD_LIBRARY_PATH` is replaced by `DYLD_LIBRARY_PATH`.
 
 It goes beyond the scope of this manual to teach you how to set
-environment variables; if in doubt ask the local guru or google...
+environment variables; if in doubt ask the local guru or Google...
 
 By default, the Yorick plug-in is also installed under `${prefix}`. If
 Yorick itself is in `${prefix}`, then the plug-in will be installed

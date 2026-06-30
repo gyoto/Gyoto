@@ -105,6 +105,7 @@ namespace Gyoto {
    */
 
   namespace Python {
+    class GILGuard;
     class Base;
     template <class O> class Object;
     /// Convert Gyoto Value to Python Object
@@ -113,7 +114,7 @@ namespace Gyoto {
     /// Return new reference to method, or NULL if method not found.
     PyObject * PyInstance_GetMethod(PyObject* pInstance, const char *name);
 
-    /// Return refernce to the gyoto module, or NULL.
+    /// Return reference to the gyoto module, or NULL.
     PyObject * PyImport_Gyoto();
 
     /// Set "this" attribute in instance
@@ -127,10 +128,16 @@ namespace Gyoto {
     /// Create module from Python source code in a C string
     PyObject * PyModule_NewFromPythonCode(const char * code);
 
-    /// Get reference to the Spectrum constructor in the gyoto Python extension
-    PyObject * pGyotoSpectrum() ;
     /// Get reference to the Metric constructor in the gyoto Python extension
     PyObject * pGyotoMetric() ;
+    /// Get reference to the Screen constructor in the gyoto Python extension
+    PyObject * pGyotoScreen() ;
+    /// Get reference to the Astrobj constructor in the gyoto Python extension
+    PyObject * pGyotoAstrobj() ;
+    /// Get reference to the Spectrum constructor in the gyoto Python extension
+    PyObject * pGyotoSpectrum() ;
+    /// Get reference to the Spectrometer constructor in the gyoto Python extension
+    PyObject * pGyotoSpectrometer() ;
     /// Get reference to the StandardAstrobj constructor in the gyoto Python extension
     PyObject * pGyotoStandardAstrobj() ;
     /// Get reference to the ThinDisk constructor in the gyoto Python extension
@@ -153,6 +160,65 @@ namespace Gyoto {
     }
   }
 }
+
+/**
+ * \class Gyoto::Python::GILGuard
+ *
+ * \brief Manage the GIL and free pointers on error
+ *
+ * Any function that makes calls to the Python C API must acquire the
+ * Python Global interpreter lock (GIL) before the first call and
+ * release it before returning. It can be difficult and error-prone to
+ * answer that the GIL is always released, enspecially in C++ code
+ * that can throw error. Additionally, there is often a need to
+ * dereference pointers to temporary PyObject variables.
+ *
+ * This class provides a convenience to simplify this task. GIL
+ * management can be implemented with is a single line before the
+ * first Python C API call:
+ * \code
+ * [[maybe_unused]] Gyoto::Python::GILGuard guardian;
+ * \endcode
+ *
+ * The GIL is acquired in the constructor of the \p guardian object
+ * and released in its destructor which is automatically called when
+ * the function returns or when an Error is thrown, even from a nested
+ * function.
+ *
+ * Additionally, an arbitrary number of PyObject* pointers can be
+ * tracked with:
+ * \code
+ * guardian.track(some_pointer);
+ * \endcode
+ *
+ * Upon destruction of \p guardian, \p somepointer's reference counter
+ * will be decremented using Py_XDECREF, and \p somepointer will be
+ * set to zero.
+ */
+class Gyoto::Python::GILGuard {
+public:
+  /// Constructor: Acquires the GIL
+  GILGuard();
+
+  /// Destructor
+  /**
+   * Releases the GIL and decrements all tracked PyObject* pointers.
+   */
+  ~GILGuard();
+
+  /// Add a PyObject* to the list of tracked objects
+  void track(PyObject*& obj);
+
+  // Delete copy constructor and assignment operator to prevent misuse
+  GILGuard(const GILGuard&) = delete;
+  GILGuard& operator=(const GILGuard&) = delete;
+
+private:
+  /// The GIL state guarded by this GILGuard
+  PyGILState_STATE gstate_;
+  /// Stores pointers to PyObject* variables
+  std::vector<PyObject**> tracked_objects_;
+};
 
 /**
  * \class Gyoto::Python::Base
@@ -274,6 +340,15 @@ class Gyoto::Python::Base {
    */
   virtual void inlineModule(const std::string&);
 
+  /**
+   * \brief Set #pInstance_.
+   *
+   * Detach the previously set instance, sets #pModule_ to \p nullptr
+   * and #class_ to "", then calls attachInstance() if \p instance is
+   * not null.
+   */
+  virtual void instance(PyObject * pinstance);
+
   /// Retrieve #class_.
   virtual std::string klass() const ;
 
@@ -304,8 +379,46 @@ class Gyoto::Python::Base {
 
   virtual bool hasPythonProperty(std::string const &key) const ;
   virtual void setPythonProperty(std::string const &key, Value val);
+  virtual void setPythonProperty(std::string const &key, Value val, std::string const &unit);
   virtual Value getPythonProperty(std::string const &key) const;
-  virtual int pythonPropertyType(std::string const &key) const;
+  virtual Value getPythonProperty(std::string const &key, std::string const &unit) const;
+  virtual Gyoto::Property::type_e pythonPropertyType(std::string const &key) const;
+
+
+  /* Helper methods */
+  /// Look for single class in pModule_
+  /**
+   * If #class_ is empty and #pModule_ is not null, check whether
+   * there is a single class in #pModule_. In this case set #class_ to
+   * its name and return. If #pModule_ contains no class, error out.
+   */
+
+  void checkModuleForSingleClass();
+  /// Detach #pInstance_ and cached method pointers
+  /**
+   * Detaches (=calls Py_XDECREF and sets to NULL) #pProperties, #pSet_
+   * and #pGet_.
+   *
+   * Derived classes should detach the other pointers and call
+   * Base::detachInstance().
+   */
+  virtual void detachInstance();
+
+  /// Attach #pInstance_ and cached method pointers
+  /**
+   * Attaches #pInstance_, #pProperties, #pSet_
+   * and #pGet_. Increments their reference counters.
+   *
+   * Derived classes should call Base::attachInstance and attach the
+   * other pointers.
+   */
+  virtual void attachInstance(PyObject *instance);
+
+  /// Creates an instance of class \p klass in module #module_
+  /**
+   * Returns a new reference.
+   */
+  PyObject * instantiateClass(std::string &klass) const;
 
 };
 
@@ -326,6 +439,10 @@ public:
 
   using O::set;
 
+  virtual bool knowsProperty(const std::string &name) const {
+    return (O::property(name) || hasPythonProperty(name));
+  }
+
   virtual void set(std::string const &key, Value val) {
     GYOTO_DEBUG_EXPR(key);
     GYOTO_DEBUG_EXPR(val.type);
@@ -335,6 +452,18 @@ public:
     } else {
       GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
       O::set(key, val);
+    }
+  }
+
+  virtual void set(std::string const &key, Value val, std::string const &unit) {
+    GYOTO_DEBUG_EXPR(key);
+    GYOTO_DEBUG_EXPR(val.type);
+    if (hasPythonProperty(key)) {
+      GYOTO_DEBUG << "Python key " << key << " exists" << std::endl;
+      setPythonProperty(key, val, unit);
+    } else {
+      GYOTO_DEBUG << "Python key " << key << " does not exist" << std::endl;
+      O::set(key, val, unit);
     }
   }
 
@@ -372,6 +501,15 @@ public:
     return getPythonProperty(key);
   }
 
+  virtual Value get(std::string const &key, std::string const &unit) const {
+    GYOTO_DEBUG_EXPR(key);
+    if (!hasPythonProperty(key)) {
+      GYOTO_DEBUG << "calling Generic::get" << std::endl;
+      return O::get(key, unit);
+    }
+    return getPythonProperty(key, unit);
+  }
+
   Value get(Property const &p,
 	    std::string const &unit) const {
     if (!hasPythonProperty(p.name)) {
@@ -406,14 +544,33 @@ public:
     return O::setParameter(name, content, unit);
   }
 
+
+  virtual void fillProperty(Gyoto::FactoryMessenger *fmp,
+			    Property const &p) const {
+    if ((p.name == "Instance") ||
+	(p.name == "Module" && module_=="") ||
+	(p.name == "InlineModule" && inline_module_=="")) {
+      GYOTO_DEBUG << "skipping " << p.name << std::endl;
+      return;
+    } else O::fillProperty(fmp, p);
+  }
+
   virtual void fillElement(Gyoto::FactoryMessenger *fmp) const {
+    GYOTO_DEBUG << "filling C++ properties" << std::endl;
     O::fillElement(fmp);
+    GYOTO_DEBUG << "filling Python properties" << std::endl;
     if (pProperties_) {
       Py_ssize_t pos=0;
       PyObject *pKey, *pVal;
       while (PyDict_Next(pProperties_, &pos, &pKey, &pVal)) {
+	if (!PyUnicode_Check(pKey)) GYOTO_ERROR("key is not a UNICODE string");
 	std::string key=PyUnicode_AsUTF8(pKey);
+	if (PyDict_Check(pVal)) pVal=PyDict_GetItemString(pVal, "type");
+	if (!pVal) GYOTO_ERROR("could not get type for property "+key);
+	if (!PyUnicode_Check(pVal)) GYOTO_ERROR("type is not a UNICODE string");
 	std::string stype=PyUnicode_AsUTF8(pVal);
+	GYOTO_DEBUG << "creating XML element for Python property "
+		    << key << " of type " << stype << std::endl;
 	Property::type_e type = Property::typeFromString(stype);
 	const Property p (key, type);
 	this->fillProperty(fmp, p);
@@ -421,11 +578,40 @@ public:
     }
   }
 
-
   void setParameters(Gyoto::FactoryMessenger *fmp)  {
     std::string name="", content="", unit="";
     FactoryMessenger * child = NULL;
-    if (fmp)
+    if (fmp) {
+      // add xml file directory to sys.path
+      std::string xmldir = fmp->fullPath("");
+      if (xmldir.size()) {
+	GYOTO_DEBUG << "adding '"+xmldir+"' to sys.path" << std::endl;
+	// retrieve sys.path
+	PyObject* sysPath = PySys_GetObject("path");
+	if (!sysPath) {
+	  PyErr_Print();
+	  return;
+	}
+	// create Python variable around xmldir variable
+	PyObject* pyPath = PyUnicode_FromString(xmldir.c_str());
+	// check whether xmldir is already in sys.path
+	Py_ssize_t pathSize = PyList_Size(sysPath);
+	bool found = false;
+	for (Py_ssize_t i = 0; i < pathSize; ++i) {
+	  PyObject* item = PyList_GetItem(sysPath, i);
+	  if (PyUnicode_Compare(item, pyPath) == 0) {
+            found = true;
+            break;
+	  }
+	  // if not, prepend it
+	  if (!found) {
+	    PyList_Insert(sysPath, 0, pyPath);
+	  }
+	  // clean memory
+	  Py_DECREF(pyPath);
+	}
+      }
+      // loop on parameters
       while (fmp->getNextParameter(&name, &content, &unit)) {
 	GYOTO_DEBUG << "Setting '" << name << "' to '" << content
 		    << "' (unit='"<<unit<<"')" << std::endl;
@@ -473,7 +659,7 @@ public:
 	    break;
 	  case Property::filename_t:
 	    content = fmp->fullPath(content);
-	    // no 'break;' here, we need to proceed
+	    [[fallthrough]]; // no 'break;' here, we need to proceed
 	  default:
 	    setParameter(*prop, name, content, unit);
 	    break;
@@ -481,6 +667,7 @@ public:
 	}
 	if (need_delete) delete prop;
       }
+    }
     GYOTO_DEBUG << "Done processing parameters" << std::endl;
   }
 };
@@ -556,6 +743,16 @@ class Gyoto::Spectrum::Python
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
 
@@ -651,6 +848,16 @@ class Gyoto::Metric::Python
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
   using Gyoto::Metric::Generic::mass;
@@ -728,7 +935,17 @@ class Gyoto::Astrobj::Python::Standard
   virtual std::string inlineModule() const ;
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
-  virtual void klass(const std::string&);
+  virtual void klass(const std::string& c);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
   virtual double criticalValue() const ;
@@ -793,6 +1010,16 @@ class Gyoto::Astrobj::Python::ThinDisk
   virtual void inlineModule(const std::string&);
   virtual std::string klass() const ;
   virtual void klass(const std::string&);
+  using Gyoto::Python::Base::instance;
+
+  /// Retrieve #pInstance_.
+  /**
+   * Returns a borrowed reference to #pInstance_, as an size_t integer.
+   */
+  virtual size_t instance() const ;
+  virtual void instance(size_t address);
+  virtual void detachInstance();
+  virtual void attachInstance(PyObject *instance);
   virtual std::vector<double> parameters() const;
   virtual void parameters(const std::vector<double>&);
 

@@ -118,8 +118,8 @@ Blob::Blob(const Blob& orig) :
   temperature_(orig.temperature_),
   timeRef_M_(orig.timeRef_M_),
   timeSigma_M_(orig.timeSigma_M_),
-  kappaIndex_(orig.kappaIndex_),
   magnetizationParameter_(orig.magnetizationParameter_),
+  kappaIndex_(orig.kappaIndex_),
   spectrumKappaSynch_(NULL),
   spectrumPLSynch_(NULL),
   spectrumThermalSynch_(NULL),
@@ -405,6 +405,7 @@ void Blob::radiativeQ(double Inu[], // output
     break;
   default:
     GYOTO_ERROR("In Blob::radiativeQ(): Unknown coordinate system kind");
+    xx=yy=0; // silence maybe-uninitialized
   }
 
   ////////////// COMPUTE MODULATIONS /////////////////////
@@ -563,6 +564,7 @@ void Blob::radiativeQ(double *Inu, double *Qnu, double *Unu,
     break;
   default:
     GYOTO_ERROR("In Blob::radiativeQ(): Unknown coordinate system kind");
+    xx=yy=0.; // silence maybe-uninitialized
   }
 
   //cout << "Blob rcyl= " << rcyl << endl;
@@ -840,6 +842,8 @@ void Blob::getCartesian(double const * const dates, size_t const n_dates,
     }
   else{
     GYOTO_ERROR("Unrecognized type of motion.");
+    // silence maybe-uninitialized warning
+    r=theta=phi=vel[2]=0.;
   }
 
   // Convertion into cartesian coordinates

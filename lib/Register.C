@@ -1,5 +1,5 @@
 /*
-    Copyright 2011-2017, 2019, 2024 Thibaut Paumard
+    Copyright 2011-2025 Thibaut Paumard
 
     This file is part of Gyoto.
 
@@ -38,6 +38,19 @@ static std::string GyotoRegisterCurrentPlugin ("built-in");
 
 static std::vector<std::string> GyotoRegisteredPlugins;
 
+static std::vector<std::string> GyotoPluginPath;
+
+static const std::vector<std::string> GyotoDefaultPluginPath =
+  {
+#   if defined GYOTO_LOCALPKGLIBDIR
+    GYOTO_LOCALPKGLIBDIR GYOTO_SOVERS "/",
+    GYOTO_LOCALPKGLIBDIR,
+#   endif
+    GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/",
+    GYOTO_PKGLIBDIR "/"
+  };
+
+
 typedef void GyotoInitFcn();
 
 bool Gyoto::havePlugin(std::string name) {
@@ -52,6 +65,7 @@ void Gyoto::requirePlugin(std::string name, int nofail) {
 
 void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   string name(nam);
+  GYOTO_DEBUG_EXPR(name);
 
   // Determine file name
   string dlfile = "libgyoto-" ;
@@ -92,15 +106,8 @@ void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   }
 
   // Then try the various hard-coded locations
-  std::vector<std::string> plug_path;
-  plug_path.push_back(GYOTO_PKGLIBDIR "/");
-  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
-# if defined GYOTO_LOCALPKGLIBDIR
-  plug_path.insert(plug_path.begin(), GYOTO_LOCALPKGLIBDIR "/");
-  plug_path.insert(plug_path.begin(), plug_path[0] + GYOTO_SOVERS "/");
-# endif
-  std::vector<std::string>::iterator cur = plug_path.begin();
-  std::vector<std::string>::iterator end = plug_path.end();
+  std::vector<std::string>::iterator cur = GyotoPluginPath.begin();
+  std::vector<std::string>::iterator end = GyotoPluginPath.end();
   std::string dlfull= dlfile;
   while (!handle && cur != end) {
     dlfull = *cur + dlfile;
@@ -148,7 +155,30 @@ void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   return handle;
 }
 
+std::vector<std::string> Gyoto::pluginPath() {
+  return GyotoPluginPath;
+}
+
+void Gyoto::pluginPath(const std::vector<std::string> &v) {
+  GyotoPluginPath = v;
+}
+
 void Gyoto::Register::init(char const *  cpluglist) {
+
+  // Initialize plug-in path if not already set
+  if (!GyotoPluginPath.size()) {
+    const char* GYOTO_PLUGIN_PATH = std::getenv("GYOTO_PLUGIN_PATH");
+    if (GYOTO_PLUGIN_PATH) {
+      std::istringstream iss(GYOTO_PLUGIN_PATH);
+      std::string path;
+      while (std::getline(iss, path, ':')) {
+        if (!path.empty()) {
+	  if (path.back() != '/') path += '/';
+	  GyotoPluginPath.push_back(path);
+	}
+      }
+    } else GyotoPluginPath = GyotoDefaultPluginPath;
+  }
 
   // Clean registers
   Metric::initRegister();
@@ -194,6 +224,9 @@ void Gyoto::Register::init(char const *  cpluglist) {
       if (!curplug.compare(0, 7, "nofail:")) {
 	curplug = curplug.substr(7);
 	nofail=1;
+      } else if (!curplug.compare(0, 7, "nowarn:")) {
+	curplug = curplug.substr(7);
+	nofail=2;
       }
 
       Gyoto::loadPlugin(curplug.c_str(), nofail);
@@ -280,6 +313,10 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
   return NULL; // will never get there, avoid compilation warning
 }
 
+std::string Register::Entry::name() {return name_;}
+std::string Register::Entry::plugin() {return plugin_;}
+Register::Entry* Register::Entry::next() {return next_;}
+
 void Gyoto::Register::list() {
   Register::Entry* entry = NULL;
 
@@ -288,12 +325,9 @@ void Gyoto::Register::list() {
 "(typically includes directories listed in e.g. $LD_LIBRARY_PATH), then in the\n"
 "following locations:" << endl;
 
-# if defined GYOTO_LOCALPKGLIBDIR
-  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
-  cout << "    " << GYOTO_LOCALPKGLIBDIR "/" << endl;
-# endif
-  cout << "    " << GYOTO_PKGLIBDIR "/" GYOTO_SOVERS "/" << endl;
-  cout << "    " << GYOTO_PKGLIBDIR "/" << endl << endl;
+  for (const auto &path : GyotoPluginPath)
+    cout << path << endl;
+  cout << endl;
 
   cout << "List of loaded plug-ins:" << endl;
   for (size_t i=0; i < GyotoRegisteredPlugins.size(); ++i)

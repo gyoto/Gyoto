@@ -32,6 +32,11 @@ VERSINFO_A=0
 VERSINFO=${VERSINFO_C}:${VERSINFO_R}:${VERSINFO_A}
 AC_SUBST([VERSINFO])
 
+## Require C++17
+#
+AX_CXX_COMPILE_STDCXX([17], , [mandatory])
+CXXFLAGS="$CXXFLAGS -std=c++17 -Wall -Wextra"
+
 ## Needed for gcc-5, should be harmless for other compilers:
 #
 AX_APPEND_COMPILE_FLAGS([-P], [CPPFLAGS])
@@ -136,6 +141,7 @@ AC_ARG_WITH([python],
 	],
 	[])
 
+
 PC_PROG_PYTHON([python3], [3.0], [4.0])
 PC_PYTHON_PROG_PYTHON_CONFIG
 PC_PYTHON_CHECK_HEADERS(
@@ -144,8 +150,11 @@ PC_PYTHON_CHECK_HEADERS(
   PC_PYTHON_CHECK_CFLAGS
   PC_PYTHON_CHECK_LDFLAGS
   PC_PYTHON_CHECK_LIBS
-  PC_PYTHON_CHECK_SITE_DIR
-  PC_PYTHON_SITE_PACKAGE_DIR
+  PC_PYTHON_CHECK_PREFIX
+  dnl The provided macros below don't always yield correct results
+  dnl implement a better approach below with python-install-scheme and pythondir
+  dnl PC_PYTHON_CHECK_SITE_DIR
+  dnl PC_PYTHON_SITE_PACKAGE_DIR
   PC_PYTHON_CHECK_EXEC_DIR
   PC_PYTHON_CHECK_EXTENSION_SUFFIX
   PC_PYTHON_CHECK_EXEC_DIR
@@ -153,6 +162,45 @@ PC_PYTHON_CHECK_HEADERS(
 AS_IF([test "x$with_python" = xno], [PYTHON=""])
 AS_IF([test "x$with_python" = xyes && test "x$PYTHON" = x],
   [AC_MSG_ERROR([Python requested but no supported version found (>=3.0, <4.0)])])
+
+AC_MSG_CHECKING(for Python default install scheme)
+AS_IF([test x$PYTHON != x],
+  [default_scheme=`$PYTHON -c "import sysconfig; print(sysconfig.get_default_scheme() if hasattr(sysconfig, 'get_default_scheme') else 'posix_prefix')"`],
+  [default_scheme=none]
+)
+AC_MSG_RESULT($default_scheme)
+
+AC_MSG_CHECKING(for available Python install schemes)
+AS_IF([test x$PYTHON != x],
+  [scheme_names=`$PYTHON -c "import sysconfig; print(*sysconfig.get_scheme_names())"`],
+  [scheme_names=none]
+)
+AC_MSG_RESULT($scheme_names)
+
+AC_MSG_CHECKING(which install scheme to use for Python modules)
+AC_ARG_WITH([python-install-scheme],
+  [AS_HELP_STRING([--with-python-install-scheme=scheme],
+     [select install scheme for Python modules, one of: $scheme_names none \
+      ($default_scheme). Use "none" to disable automatic Python module \
+      installation.])],
+  [install_scheme=$with_python_install_scheme],
+  [install_scheme=$default_scheme]
+)
+AC_MSG_RESULT($install_scheme)
+
+AC_MSG_CHECKING(where to install Python modules)
+AC_ARG_WITH([pythondir],
+  [AS_HELP_STRING([--with-pythondir=path],
+     [specify directory to install Python modules to. If not specified, find \
+      out based on --with-python-install-scheme.])],
+  [pythondir=$with_pythondir],
+  [AS_IF([test x$PYTHON != x],
+    [pythondir=`$PYTHON -c "import sysconfig; print(sysconfig.get_path(\"platlib\", scheme=\"$install_scheme\"))"`],
+    [pythondir=nowhere])
+   ]
+)
+AC_MSG_RESULT($pythondir)
+AC_SUBST([pythondir])
 
 AC_ARG_WITH([virtualenv],
 	[AS_HELP_STRING([--with-virtualenv], [install to a Python virtualenv])],
@@ -166,21 +214,14 @@ AS_IF([test "x$with_virtualenv" != xno],
 	[AC_SUBST([VIRTUALENV], [no])])
 AC_ARG_VAR([VIRTUALENV_FLAGS], [flags to pass to the virtualenv command])
 
+AM_CONDITIONAL(HAVE_PYTHON, [test "x$PYTHON" != "x"])
+
 # DONE WITH PYTHON STUFF
 
 # Checks for programs.
 
+
 ############### CHECK FOR OPTIONAL FEATURES #########################
-## ADVANCED INTEGRATORS
-# Check for C++11
-AC_ARG_ENABLE([c++11],
-  [AS_HELP_STRING([--disable-c++11],
-     [disable C++11 features (including advanced integrators)])])
-AS_IF([test "x$enable_c__11" != "xno"],
-  [AX_CXX_COMPILE_STDCXX_11(, [optional])]
-)
-AS_IF([test "x$HAVE_CXX11" != "x1" && test "x$enable_c__11" = "xyes"],
-  [AC_MSG_ERROR([C++11 requested but not found])])
 
 AC_ARG_WITH([mpi], [AS_HELP_STRING([--with-mpi],
     [compile with MPI (parallelization) support. If none is found,
@@ -215,8 +256,8 @@ AS_IF([test "x$with_boost" != "xno"],
    [have_boost=no]
 )
 
-AS_IF([test "x$HAVE_CXX11" == "x1" &&  test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
-  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if C++11 and Boost.odeint are both available]
+AS_IF([test "x$ac_cv_header_boost_numeric_odeint_stepper_controlled_step_result_hpp" == xyes],
+  [AC_DEFINE([GYOTO_HAVE_BOOST_INTEGRATORS], [1], [Define to 1 if Boost.odeintis available]
   )]
 )
 
@@ -801,6 +842,11 @@ AC_SUBST([FEATURES])
 AC_SUBST([sovers])
 AC_DEFINE_UNQUOTED([GYOTO_SOVERS], ["${sovers}"], [Gyoto ABI version])
 
+AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
+  [mySUBDIRS="$mySUBDIRS doc"
+  ]
+)
+
 AS_IF([test "x$PYTHON" != "x"],
  [AC_CONFIG_SUBDIRS([plugins/python])
   mySUBDIRS="$mySUBDIRS python"
@@ -849,11 +895,7 @@ AS_IF([test "x$SWIG" = x],
   [missing_for_python="$missing_for_python SWIG"])
 AS_IF([test "x$missing_for_python" = "x"],
   [
-   AC_CONFIG_FILES([python/Makefile python/setup.py])
-  ]
-)
-AS_IF([test "x$DOXYGEN" != "x" && test "x$mkdoc" == "xyes"],
-  [mySUBDIRS="$mySUBDIRS doc"
+   AC_CONFIG_FILES([python/Makefile python/setup.py python/pyproject.toml])
   ]
 )
 AC_SUBST([mySUBDIRS])
@@ -910,7 +952,6 @@ AS_IF([test "x$have_boost" == "xno"],
                    *** Advanced integrators disabled ***
 
         The advanced integrators require the Boost library (>=1.53)
-            and a C++ compiler that supports the c++11 standard.
 
      ])
   ])

@@ -88,6 +88,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@HAVE_PYTHON_TRUE@am__append_1 = $(GYOTO_PYTHON_LA)
+@HAVE_LORENE_TRUE@am__append_2 = lib/libgyoto-lorene.la
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
@@ -95,14 +97,15 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_append_compile_flags.m4 \
 	$(top_srcdir)/m4/ax_append_link_flags.m4 \
 	$(top_srcdir)/m4/ax_check_compile_flag.m4 \
 	$(top_srcdir)/m4/ax_check_link_flag.m4 \
-	$(top_srcdir)/m4/ax_cxx_compile_stdcxx_11.m4 \
 	$(top_srcdir)/m4/ax_pkg_swig.m4 $(top_srcdir)/m4/ax_pthread.m4 \
 	$(top_srcdir)/m4/ax_require_defined.m4 \
 	$(top_srcdir)/m4/boost.m4 $(top_srcdir)/m4/gyoto.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
 	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
-	$(top_srcdir)/m4/python.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/m4_ax_cxx_compile_stdcxx.m4 \
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/python.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -114,7 +117,7 @@ CONFIG_HEADER = config.h $(top_builddir)/include/GyotoConfig.h
 CONFIG_CLEAN_FILES = doc/Makefile doc/doxyfile doc/user_guide/Makefile \
 	yorick/Makefile yorick/stdplug/Makefile yorick/gyoto.info \
 	yorick/yorick1 yorick/setpaths.i gyoto python/Makefile \
-	python/setup.py
+	python/setup.py python/pyproject.toml
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -176,6 +179,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/doc/user_guide/Makefile.in \
 	$(top_srcdir)/include/GyotoConfig.h.in \
 	$(top_srcdir)/python/Makefile.in \
+	$(top_srcdir)/python/pyproject.toml.in \
 	$(top_srcdir)/python/setup.py.in \
 	$(top_srcdir)/yorick/Makefile.in \
 	$(top_srcdir)/yorick/gyoto.info.in \
@@ -286,7 +290,7 @@ FLINT_CFLAGS = @FLINT_CFLAGS@
 FLINT_LIBS = @FLINT_LIBS@
 GREP = @GREP@
 GYOTO_PLUGIN_SFX = @GYOTO_PLUGIN_SFX@
-HAVE_CXX11 = @HAVE_CXX11@
+HAVE_CXX17 = @HAVE_CXX17@
 HOME_LORENE = @HOME_LORENE@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -410,7 +414,6 @@ pdfdir = @pdfdir@
 pkg_cflags = @pkg_cflags@
 pkg_libs = @pkg_libs@
 pkg_requires = @pkg_requires@
-pkgpythondir = @pkgpythondir@
 plugin_sfx = @plugin_sfx@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
@@ -434,6 +437,18 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 
 SUBDIRS = @mySUBDIRS@
+
+# build necessary things before calling check targets:
+GYOTO_PLUGINS_LA = lib/libgyoto-stdplug.la $(am__append_1) \
+	$(am__append_2)
+@HAVE_PYTHON_TRUE@GYOTO_PYTHON_LA := plugins/python/lib/$(shell sed -n \
+@HAVE_PYTHON_TRUE@	's/^sover_LTLIBRARIES[[:space:]]*=[[:space:]]*//p' \
+@HAVE_PYTHON_TRUE@	plugins/python/lib/Makefile)
+
+SUBDIR_ARTIFACTS = lib/libgyoto@FEATURES@.la \
+	$(GYOTO_PLUGINS_LA) \
+	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -515,6 +530,8 @@ gyoto: $(top_builddir)/config.status $(srcdir)/gyoto.in
 python/Makefile: $(top_builddir)/config.status $(top_srcdir)/python/Makefile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 python/setup.py: $(top_builddir)/config.status $(top_srcdir)/python/setup.py.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+python/pyproject.toml: $(top_builddir)/config.status $(top_srcdir)/python/pyproject.toml.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -968,11 +985,30 @@ $(SUBDIRS):
 ChangeLog:
 	git log --no-merges > ChangeLog
 
-check-mpi check-mpi-clean check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean:
+check-mpi check-mpi-clean check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-python check-python-clean check-python-mpi check-python-mpi-clean:
 @BUILD_GYOTO_TRUE@	cd bin ; $(MAKE) $@
+@HAVE_PYTHON_TRUE@	cd python ; $(MAKE) $@
 @HAVE_YORICK_TRUE@	cd yorick ; $(MAKE) $@
 
 .PHONY: $(SUBDIRS) install ChangeLog
+
+# make sure SUBDIRS are built in the right order:
+
+bin python yorick: lib/libgyoto@FEATURES@.la
+python: doc/xml/index.xml
+lib/libgyoto@FEATURES@.la: lib
+doc/xml/index.xml: doc
+
+check check-recursive check-mpi check-lorene check-lorene-mpi check-python check-python-mpi: \
+	lib/libgyoto@FEATURES@.la $(GYOTO_PLUGINS_LA)
+@HAVE_PYTHON_TRUE@check check-recursive check-mpi check-python check-python-mpi: \
+@HAVE_PYTHON_TRUE@	python/testbed/stamp
+@HAVE_MPI_TRUE@check-mpi check-lorene-mpi check-python-mpi: \
+@HAVE_MPI_TRUE@	bin/gyoto-mpi-worker.@sovers@@EXEEXT@
+python/testbed/stamp:
+	$(MAKE) -C python testbed
+$(SUBDIR_ARTIFACTS):
+	$(MAKE) -C $(dir $@) $(notdir $@)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

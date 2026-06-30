@@ -66,11 +66,13 @@ GYOTO_PROPERTY_END(FlaredDiskSynchrotron, Standard::properties)
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron() :
 Standard("FlaredDiskSynchrotron"), GridData2D(),
-  filename_(""), hoverR_(0.), time_array_(NULL),
-  density_(NULL), velocity_(NULL), Bvector_(NULL),
+  filename_(""), hoverR_(0.),
   numberDensityMax_cgs_(0.), temperatureMax_(0.),
-  BMax_cgs_(0.), beta_(1.), magnetizationParameter_(1.), 
-  deltat_(0.), flag_(false), gamm1_(5./3.)
+  BMax_cgs_(0.), beta_(1.),
+  density_(NULL), velocity_(NULL), Bvector_(NULL),
+  time_array_(NULL),
+  magnetizationParameter_(1.), 
+  deltat_(0.), gamm1_(5./3.), flag_(false)
 {
   GYOTO_DEBUG << endl;
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
@@ -78,11 +80,17 @@ Standard("FlaredDiskSynchrotron"), GridData2D(),
 
 FlaredDiskSynchrotron::FlaredDiskSynchrotron(const FlaredDiskSynchrotron& o) :
   Standard(o), GridData2D(o),
-  filename_(o.filename_), hoverR_(o.hoverR_), time_array_(NULL),
+  filename_(o.filename_), hoverR_(o.hoverR_),
+  numberDensityMax_cgs_(o.numberDensityMax_cgs_),
+  temperatureMax_(o.temperatureMax_),
+  BMax_cgs_(o.BMax_cgs_),
+  beta_(o.beta_),
   density_(NULL), velocity_(NULL), Bvector_(NULL),
-  numberDensityMax_cgs_(o.numberDensityMax_cgs_), temperatureMax_(o.temperatureMax_), beta_(o.beta_),
-  magnetizationParameter_(o.magnetizationParameter_), deltat_(o.deltat_), flag_(o.flag_),
-  gamm1_(o.gamm1_), BMax_cgs_(o.BMax_cgs_)
+  time_array_(NULL),
+  magnetizationParameter_(o.magnetizationParameter_),
+  deltat_(o.deltat_),
+  gamm1_(o.gamm1_),
+  flag_(o.flag_)
 {
   GYOTO_DEBUG << endl;
   size_t ncells = 0;
@@ -679,15 +687,15 @@ void FlaredDiskSynchrotron::radiativeQ(double Inu[], // output
 void FlaredDiskSynchrotron::getVelocity(double const pos[4], double vel[4]){
 
   double rcyl=0.; // cylindrical radius
-  double zz=0.; // height, z coord
+  //  double zz=0.; // height, z coord
   switch (gg_->coordKind()) {
   case GYOTO_COORDKIND_SPHERICAL:
     rcyl = pos[1]*sin(pos[2]);
-    zz   = pos[1]*cos(pos[2]);
+    //zz   = pos[1]*cos(pos[2]);
     break;
   case GYOTO_COORDKIND_CARTESIAN:
     rcyl = pow(pos[1]*pos[1]+pos[2]*pos[2], 0.5);
-    zz   = pos[3];
+    //zz   = pos[3];
     break;
   default:
     GYOTO_ERROR("In FlaredDiskSynchrotron::getVelocity: "

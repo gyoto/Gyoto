@@ -34,7 +34,9 @@ soverdir=$(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
 libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
-	ChernSimons.C RezzollaZhidenko.C Hayward.C SchwarzschildHarmonic.C \
+	ChernSimons.C Hayward.C SchwarzschildHarmonic.C \
+	ReissnerNordstrom.C \
+	RezzollaZhidenko.C KonoplyaRezzollaZhidenko.C \
         BalasinGrumiller.C \
 	Star.C StarTrace.C FixedStar.C InflateStar.C \
 	Torus.C OscilTorus.C \
@@ -46,7 +48,7 @@ libgyoto_stdplug_la_SOURCES =  KerrBL.C KerrKS.C Minkowski.C \
 	ComplexMetric.C Shift.C PageThorneDisk.C \
 	ThinDiskPL.C PolishDoughnut.C ThinDiskIronLine.C\
 	DeformedTorus.C EquatorialHotSpot.C Jet.C Blob.C Plasmoid.C FreeStar.C ThickDisk.C\
-	ThinDiskProfile.C SphericalAccretion.C StdPlug.C
+	ThinDiskProfile.C StochasticThinDisk.C SphericalAccretion.C StdPlug.C
 
 
 # those files need cfitsio for some functionality

@@ -42,7 +42,7 @@ using namespace Gyoto;
 
 FitsRW::FitsRW() {}
 
-FitsRW::FitsRW(const FitsRW&o) {}
+FitsRW::FitsRW(const FitsRW&) {}
 
 FitsRW* FitsRW::clone() const{
   return new FitsRW(*this);
@@ -60,7 +60,6 @@ fitsfile* FitsRW::fitsCreate(string const filename) const{
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
   long      fpixel[2]  = {1,1};
   fitsfile* fptr; // pointer to FITS file
-  char *    CNULL     = NULL;
   
   if (remove(fitsname) == 0) {
     cout << "Existing file removed" << endl;
@@ -100,7 +99,7 @@ void FitsRW::fitsClose(fitsfile* fptr) const{
 
   int       status    = 0;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  int res=0;
+
   if (fits_close_file(fptr, &status)) throwCfitsioError(status) ;
   fptr = NULL;
 }
@@ -206,9 +205,9 @@ double FitsRW::fitsReadKey(fitsfile* const fptr, string const key, int const hdu
   int       status    = 0;
   double    tmpd;
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
-  int*      tmp;
+  int       tmp;
 
-  fits_movabs_hdu(fptr, hdu_num, tmp, &status);
+  fits_movabs_hdu(fptr, hdu_num, &tmp, &status);
   if (status) throwCfitsioError(status) ;
 
   GYOTO_DEBUG << "FitsRW::fitsReadKey(): reading key " << key << endl;
