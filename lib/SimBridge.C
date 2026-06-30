@@ -68,15 +68,17 @@ SimBridge::SimBridge() :
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
+  pitch_array_(NULL),
   ntime_(1),
   nx1_(1),
   nx2_(1),
   nx3_(1),
   nnu_(0),
+  npitch_(0),
   boundCond_(NULL)
 {
-  boundCond_ = new string[5];
-  boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]="None";
+  boundCond_ = new string[6];
+  boundCond_[0]=boundCond_[1]=boundCond_[2]=boundCond_[3]=boundCond_[4]=boundCond_[5]="None";
 
   spectrumKappaSynch_ = new Spectrum::KappaDistributionSynchrotron();
   spectrumPLSynch_ = new Spectrum::PowerLawSynchrotron();
@@ -108,16 +110,18 @@ SimBridge::SimBridge(const SimBridge& orig) :
   x2_array_(NULL),
   x3_array_(NULL),
   nu_array_(NULL),
+  pitch_array_(NULL),
   ntime_(orig.ntime_),
   nx1_(orig.nx1_),
   nx2_(orig.nx2_),
   nx3_(orig.nx3_),
   nnu_(orig.nnu_),
+  npitch_(orig.npitch_),
   boundCond_(NULL)
 {
   if (orig.boundCond_){
-    boundCond_  = new string[5];
-    for (int ii=0; ii<5; ii++){
+    boundCond_  = new string[6];
+    for (int ii=0; ii<6; ii++){
       boundCond_[ii] = orig.boundCond_[ii];
     }
   }
@@ -146,6 +150,11 @@ SimBridge::SimBridge(const SimBridge& orig) :
     memcpy(nu_array_, orig.nu_array_, nnu_*sizeof(double));
   }
 
+  if (orig.pitch_array_){
+    pitch_array_ = new double[npitch_];
+    memcpy(pitch_array_, orig.pitch_array_, npitch_*sizeof(double));
+  }
+
   if (orig.spectrumKappaSynch_()) spectrumKappaSynch_=orig.spectrumKappaSynch_->clone();
   if (orig.spectrumPLSynch_()) spectrumPLSynch_=orig.spectrumPLSynch_->clone();
   if (orig.spectrumThermalSynch_()) spectrumThermalSynch_=orig.spectrumThermalSynch_->clone();
@@ -170,6 +179,7 @@ SimBridge::~SimBridge() {
   if (x2_array_) delete[] x2_array_;
   if (x3_array_) delete[] x3_array_;
   if (nu_array_) delete[] nu_array_;
+  if (pitch_array_) delete[] pitch_array_;
 
 } 
 
@@ -225,7 +235,7 @@ void SimBridge::filename(std::string const &f){
   GYOTO_DEBUG << "nx3_" << nx3_ << endl;
   GYOTO_DEBUG << "x3 array: " << x3_array_[0] << " - " << x3_array_[nx3_-1] << endl;
 
-
+  // Read frequency array if exist
   int status = 0;
   string key = "NB_FREQ";
   double tmpd;
@@ -238,6 +248,18 @@ void SimBridge::filename(std::string const &f){
     FitsRW::fitsReadHDUData(fptr, "FREQ", nu_array_, nnu_);
     GYOTO_DEBUG << "nnu_" << nnu_ << endl;
     GYOTO_DEBUG << "nu array: " << nu_array_[0] << " - " << nu_array_[nnu_-1] << endl;
+  }
+
+  // Read Pitch angle array if exist
+  key = "NB_PITCH";
+  fits_movabs_hdu(fptr, 1, &tmpi, &status);
+  fits_read_key(fptr, TDOUBLE, const_cast<char*>(key.c_str()), &tmpd, NULL, &status);
+  if(status==0){
+    npitch_       = FitsRW::fitsReadKey(fptr, "NB_PITCH");
+    pitch_array_  = new double[npitch_];
+    FitsRW::fitsReadHDUData(fptr, "PITCH", pitch_array_, npitch_);
+    GYOTO_DEBUG << "npitch_" << npitch_ << endl;
+    GYOTO_DEBUG << "pitch array: " << pitch_array_[0] << " - " << pitch_array_[npitch_-1] << endl;
   }
   
 
@@ -354,6 +376,7 @@ void SimBridge::boundaryConditions(string const &sbc){
           case 2: boundCond_[2] = token; break;
           case 3: boundCond_[3] = token; break;
           case 4: boundCond_[4] = token; break;
+          case 5: boundCond_[5] = token; break;
         }
         ++wordCount;
       }
@@ -362,7 +385,7 @@ void SimBridge::boundaryConditions(string const &sbc){
 }
 std::string SimBridge::boundaryConditions() const{
   std::string list;
-  for (int ii=0;ii<5;ii++)
+  for (int ii=0;ii<6;ii++)
     list += boundCond_[ii] + " ";
   return list;
 }
@@ -574,6 +597,44 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   }
 
   double Chi=0.;
+
+  int avg=0; // flag for magnetic field average for synchrotron
+  if (!BinFile_ && magneticConfig_=="None")
+    avg = 1;
+  
+  double B4vect[4]={0.,0.,0.,0.};
+  double theta_mag, BB;
+  if (!avg){
+    if (BinFile_){
+      double XqB[4] = {tcur, x1, x2, x3};
+      int X_paramsB[4] = {nfile, nx1_, nx2_, nx3_};
+      double** XB;
+      XB = new double*[4];
+      XB[0] = time_interpo;
+      XB[1] = x1_array_;
+      XB[2] = x2_array_;
+      XB[3] = x3_array_;
+
+      B4vect[0] = interpolate(4, magneticfield_array[0], XqB, XB, X_paramsB, boundCond_);
+      B4vect[1] = interpolate(4, magneticfield_array[1], XqB, XB, X_paramsB, boundCond_);
+      B4vect[2] = interpolate(4, magneticfield_array[2], XqB, XB, X_paramsB, boundCond_);
+      B4vect[3] = interpolate(4, magneticfield_array[3], XqB, XB, X_paramsB, boundCond_);
+      
+      // compute norm of 3D magnetic field
+      double B4vectproj[4];
+      for (int ii=0;ii<4;ii++)
+        B4vectproj[ii] = B4vect[ii];
+      gg_->projectFourVect(&coord_ph[0],B4vectproj,vel);
+      BB = gg_->norm(&coord_ph[0],B4vectproj);
+    }else {
+      computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
+    }
+    theta_mag = get_theta_mag(B4vect, coord_ph, vel);
+    Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
+  }else{
+    theta_mag = M_PI/2.; // Average so we don't care
+  }
+
   if (temperature_){
     // Interpolate number density and temperature
     double Xq[4] = {tcur, x1, x2, x3};
@@ -590,35 +651,8 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
     double temperature    = max(interpolate(4, temperature_array, Xq, X, X_params, boundCond_),floortemperature_);
     //cout << "ne, Te at (t,r,theta, phi) : "  << number_density << ", " << temperature << ", (" << tcur << "," << x1 << "," << x2 << "," << x3  << ")" << endl;
 
-    int avg=0; // flag for magnetic field average for synchrotron
-    if (!BinFile_ && magneticConfig_=="None")
-      avg = 1;
-    
-    double B4vect[4]={0.,0.,0.,0.};
-    double theta_mag, BB;
-    if (!avg){
-      if (BinFile_){
-        B4vect[0] = interpolate(4, magneticfield_array[0], Xq, X, X_params, boundCond_);
-        B4vect[1] = interpolate(4, magneticfield_array[1], Xq, X, X_params, boundCond_);
-        B4vect[2] = interpolate(4, magneticfield_array[2], Xq, X, X_params, boundCond_);
-        B4vect[3] = interpolate(4, magneticfield_array[3], Xq, X, X_params, boundCond_);
-        
-        // compute norm of 3D magnetic field
-        double B4vectproj[4];
-        for (int ii=0;ii<4;ii++)
-          B4vectproj[ii] = B4vect[ii];
-        gg_->projectFourVect(&coord_ph[0],B4vectproj,vel);
-        BB = gg_->norm(&coord_ph[0],B4vectproj);
-      }else {
-        computeB4vect(B4vect, magneticConfig_, coord_obj, coord_ph);
-        BB = sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS*number_density);
-      }
-      theta_mag = get_theta_mag(B4vect, coord_ph, vel);
-      Chi=getChi(B4vect, coord_ph, vel); // this is EVPA
-    }else{
-      theta_mag = 0.; // Average so we don't care
-      BB = sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS*number_density);
-    }
+    if (avg || !BinFile_) BB = sqrt(4.*M_PI*magnetizationParameter_*GYOTO_PROTON_MASS_CGS*GYOTO_C_CGS*GYOTO_C_CGS*number_density);
+
     X[0] = NULL;
     X[1] = NULL;
     X[2] = NULL;
@@ -697,34 +731,35 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
   }else{
     for (size_t ii=0; ii<nbnu; ++ii){
       GYOTO_DEBUG << "Setup arguments for the interpolation of radiative coefficients." << endl;
-      double Xq[5] = {tcur, x1, x2, x3, nuem[ii]};
-      int X_params[5] = {nfile, nx1_, nx2_, nx3_, nnu_};
+      double Xq[6] = {tcur, x1, x2, x3, nuem[ii], theta_mag};
+      int X_params[6] = {nfile, nx1_, nx2_, nx3_, nnu_, npitch_};
       //cout << "coord: " << Xq[0] << " " << Xq[1] << " " << Xq[2] << " " << Xq[3] << " " << Xq[4] << endl;
       double** X;
-      X = new double*[5];
+      X = new double*[6];
       X[0] = time_interpo;
       X[1] = x1_array_;
       X[2] = x2_array_;
       X[3] = x3_array_;
       X[4] = nu_array_;
-      std::string cond_limits[5] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4]};
-      //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << endl;
+      X[5] = pitch_array_;
+      std::string cond_limits[6] = {boundCond_[0], boundCond_[1], boundCond_[2], boundCond_[3], boundCond_[4], boundCond_[5]};
+      //cout << "Boundary conditions: " << cond_limits[0] << ", " << cond_limits[1] << ", " << cond_limits[2] << ", " << cond_limits[3] << ", " << cond_limits[4] << ", " << cond_limits[5] << endl;
       
       GYOTO_DEBUG << "Perform the interpolation of radiative coefficients." << endl;
-      jInu[ii]=interpolate(5, emission_array[0], Xq, X, X_params, cond_limits);
+      jInu[ii]=interpolate(6, emission_array[0], Xq, X, X_params, cond_limits);
       GYOTO_DEBUG << "Interpolating polarized emission coefficients." << endl;
-      jQnu[ii]=emisInFile_[1]?interpolate(5, emission_array[1],   Xq, X, X_params, cond_limits):0.;
-      jUnu[ii]=emisInFile_[2]?interpolate(5, emission_array[2],   Xq, X, X_params, cond_limits):0.;
-      jVnu[ii]=emisInFile_[3]?interpolate(5, emission_array[3],   Xq, X, X_params, cond_limits):0.;
+      jQnu[ii]=emisInFile_[1]?interpolate(6, emission_array[1],   Xq, X, X_params, cond_limits):0.;
+      jUnu[ii]=emisInFile_[2]?interpolate(6, emission_array[2],   Xq, X, X_params, cond_limits):0.;
+      jVnu[ii]=emisInFile_[3]?interpolate(6, emission_array[3],   Xq, X, X_params, cond_limits):0.;
       GYOTO_DEBUG << "Interpolating polarized absorption coefficients." << endl;
-      aInu[ii]=absInFile_[0]?interpolate(5, absorption_array[0], Xq, X, X_params, cond_limits):0.;
-      aQnu[ii]=absInFile_[1]?interpolate(5, absorption_array[1], Xq, X, X_params, cond_limits):0.;
-      aUnu[ii]=absInFile_[2]?interpolate(5, absorption_array[2], Xq, X, X_params, cond_limits):0.;
-      aVnu[ii]=absInFile_[3]?interpolate(5, absorption_array[3], Xq, X, X_params, cond_limits):0.;
+      aInu[ii]=absInFile_[0]?interpolate(6, absorption_array[0], Xq, X, X_params, cond_limits):0.;
+      aQnu[ii]=absInFile_[1]?interpolate(6, absorption_array[1], Xq, X, X_params, cond_limits):0.;
+      aUnu[ii]=absInFile_[2]?interpolate(6, absorption_array[2], Xq, X, X_params, cond_limits):0.;
+      aVnu[ii]=absInFile_[3]?interpolate(6, absorption_array[3], Xq, X, X_params, cond_limits):0.;
       GYOTO_DEBUG << "Interpolating polarized rotation coefficients." << endl;
-      rotQnu[ii]=rotInFile_[0]?interpolate(5, rotation_array[0], Xq, X, X_params, cond_limits):0.;
-      rotUnu[ii]=rotInFile_[1]?interpolate(5, rotation_array[1], Xq, X, X_params, cond_limits):0.;
-      rotVnu[ii]=rotInFile_[2]?interpolate(5, rotation_array[2], Xq, X, X_params, cond_limits):0.;
+      rotQnu[ii]=rotInFile_[0]?interpolate(6, rotation_array[0], Xq, X, X_params, cond_limits):0.;
+      rotUnu[ii]=rotInFile_[1]?interpolate(6, rotation_array[1], Xq, X, X_params, cond_limits):0.;
+      rotVnu[ii]=rotInFile_[2]?interpolate(6, rotation_array[2], Xq, X, X_params, cond_limits):0.;
 
       GYOTO_DEBUG << "Freeing interpolation arrays." << endl;
       X[0] = NULL;
@@ -732,6 +767,7 @@ void SimBridge::radiativeQ(double *Inu, double *Qnu, double *Unu, double *Vnu,
       X[2] = NULL;
       X[3] = NULL;
       X[4] = NULL;
+      X[5] = NULL;
       delete[] X;
     }
   }
