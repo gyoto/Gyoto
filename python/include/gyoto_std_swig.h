@@ -9,6 +9,7 @@
 #include "GyotoKonoplyaRezzollaZhidenko.h"
 #include "GyotoHayward.h"
 #include "GyotoSchwarzschildHarmonic.h"
+#include "GyotoReissnerNordstrom.h"
 
 // include Astrobj headers
 #include "GyotoComplexAstrobj.h"

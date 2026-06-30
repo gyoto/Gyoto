@@ -86,8 +86,13 @@ void Worldline::IntegState::Generic::checkNorm(double coord[8])
      as tdot can diverge close to horizon (it's the case for
      NS integration eg where geodesic can come close to horizon)
      Then just check that norm/tdot does not diverge.
+     Update 2026: remove this division by tdot. This should
+     be taken care of by some horizon security keyword.
+     The previous version could lead to warnings when the
+     norm (not divided by tdot) was actually behaving well.
    */
-  if (fabs(norm_-normref_)/(coord[4]*coord[4])>line_->normTol()) {
+  //if (fabs(norm_-normref_)/(coord[4]*coord[4])>line_->normTol()) {
+  if (fabs(norm_-normref_)>line_->normTol()) {
     GYOTO_SEVERE << 
       __FILE__ ":" GYOTO_STRINGIFY(__LINE__) " in " <<
       __PRETTY_FUNCTION__  << ": "

@@ -130,12 +130,12 @@ gyoto_std.so: stdplug/gyoto_std.so
 stdplug/gyoto_std.so: @srcdir@/stdplug/*.C
 	cd stdplug; $(MAKE)
 
-gyoto.so: gyoto.i $(OBJS)
+gyoto.so: gyoto.i $(OBJS) ../lib/libgyoto@FEATURES@.la
 
 custom.i: @srcdir@/custom1.i
 	cp $< $@
 
-check-dll: $(PKG_DLL) check.i custom.i
+check-dll: $(PKG_DLL) check.i custom.i ../lib/libgyoto-stdplug.la
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
 	./yorick1 -i check.i
@@ -143,7 +143,7 @@ check-dll: $(PKG_DLL) check.i custom.i
 check-mpi:
 	@echo make check-mpi currently broken in yorick/
 
-check-mpi-broken: $(PKG_DLL) check-mpi.i custom.i
+check-mpi-broken: $(PKG_DLL) check-mpi.i custom.i ../lib/libgyoto-stdplug.la ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@
 	unset GYOTO_PLUGINS && \
 	GYOTO_CHECK_NODISPLAY=true \
 	PATH=$(abs_top_builddir)/bin:$$PATH \
@@ -180,5 +180,12 @@ distclean:: $(Y_EXE)
 %: ;
 
 .PHONY: standalone test-cppprog test-standalone test test-plugin check
+
+# Some targets require artifacts from other directories
+OTHERDIR_ARTIFACTS=../lib/libgyoto@FEATURES@.la \
+	../lib/libgyoto-stdplug.la \
+	../bin/gyoto-mpi-worker.@sovers@@EXEEXT@
+$(OTHERDIR_ARTIFACTS):
+	$(MAKE) -C $(dir $@) $(notdir $@)
 
 # -------------------------------------------------------- end of Makefile

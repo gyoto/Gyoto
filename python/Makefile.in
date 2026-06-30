@@ -127,13 +127,25 @@ export CXXFLAGS
 export CXX
 export CC
 
+## Source files for this module
+# Generated .py files
 GYOTO_PYFILES = src/gyoto/core.py src/gyoto/std.py
+# Generated .cxx files
 GYOTO_CXXFILES = src/core_wrap.cxx src/std_wrap.cxx
+# Swig includ files, some of which are generated
 GYOTO_SWIGFILES = $(srcdir)/include/gyoto.i $(srcdir)/include/gyoto_std.i include/gyoto_doc.i $(srcdir)/include/numpy.i $(srcdir)/include/gyoto_swig.h $(srcdir)/include/gyoto_std_swig.h
 @HAVE_LORENE_TRUE@GYOTO_PYFILES += src/gyoto/lorene.py
 @HAVE_LORENE_TRUE@GYOTO_CXXFILES += src/lorene_wrap.cxx
 @HAVE_LORENE_TRUE@GYOTO_SWIGFILES += $(srcdir)/include/gyoto_lorene.i
+# Static (non-generated) .py files
 GYOTO_STATIC_SRC = $(addprefix $(abs_builddir)/, $(filter-out $(GYOTO_PYFILES),$(addprefix src/gyoto/, $(notdir $(wildcard $(srcdir)/src/gyoto/*.py)))))
+
+## The Python plugin .la file in plugins/python
+GYOTO_PYTHON_LA := ../plugins/python/lib/$(shell sed -n \
+	's/^sover_LTLIBRARIES[[:space:]]*=[[:space:]]*//p' \
+	../plugins/python/lib/Makefile)
+GYOTO_PLUGINS_LA = ../lib/libgyoto-stdplug.la $(GYOTO_PYTHON_LA)
+@HAVE_LORENE_TRUE@GYOTO_PLUGINS_LA += ../lib/libgyoto-lorene.la
 
 ### High level entry points
 # default target is wheel, see below
@@ -147,7 +159,7 @@ src: $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
 
 ## 2) Build wheel file using python -m build
 wheel: $(WHEEL)
-$(WHEEL): $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES)
+$(WHEEL): $(GYOTO_STATIC_SRC) $(GYOTO_PYFILES) $(GYOTO_CXXFILES) ../lib/libgyoto@FEATURES@.la
 	$(PYTHON) -m build --wheel --no-isolation
 
 ## 3) Optional: check the built wheel
@@ -158,11 +170,12 @@ testbed/stamp: $(WHEEL)
 	touch testbed/stamp
 
 # run test suite based on unittest
-unittest: testbed/stamp
+unittest: testbed/stamp $(GYOTO_PLUGINS_LA)
 	$(CHECK_ENV) PYTHONPATH=$(top_srcdir)/doc/examples:$$PYTHONPATH $(PYTHON) -m unittest discover -s $(srcdir)/tests -p "*.py"
+@HAVE_LORENE_TRUE@unittest: ../lib/libgyoto-lorene.la
 
 # check calls the above and runs the example files
-check: testbed/stamp unittest
+check: testbed/stamp $(GYOTO_PLUGINS_LA) unittest
 	$(CHECK_ENV) $(PYTHON) $(srcdir)/example.py \
 		--pdf=example.pdf --examples-dir=$(top_srcdir)/doc/examples
 	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-patterndisk.py \
@@ -172,7 +185,7 @@ check: testbed/stamp unittest
 		--examples-dir=$(top_srcdir)/doc/examples
 
 # check-mpi runs the MPI example
-check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
+check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGINS_LA)
 	@echo Checking MPI non-singleton
 	$(CHECK_ENV) $(MPIRUN) -np 5 $(PYTHON) $(srcdir)/example-mpi.py \
 		--examples-dir=$(top_srcdir)/doc/examples
@@ -184,10 +197,6 @@ check-mpi: testbed/stamp ../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@
 		--pdf=example-python.pdf \
 		--examples-dir=$(top_srcdir)/doc/examples \
 		--mpi
-
-# check-mpi requires bin to have been built
-../bin/lib/.libs/gyoto-mpi-worker.@sovers@@EXEEXT@:
-	$(MAKE) -C ../bin
 
 # clean up:
 check-clean:
@@ -239,11 +248,7 @@ uninstall: uninstall-data uninstall-python
 
 ## Step 1: generate a Swig include file containing the documentation
 
-# Doxygen needs to run to produce the documentation in XML format
-../doc/xml/index.xml:
-	cd ../doc; $(MAKE) doxygen.stamp
-
-# Run doxy2swig to turn this XML doc to a Swig include file
+# Run doxy2swig to turn XML doc to a Swig include file
 .tmp/gyoto_doc.i: ../doc/xml/index.xml
 	$(MKDIR_P) $(dir $@)
 	$(PYTHON) $(srcdir)/doxy2swig.py --no-function-definition $< $@ || rm $@
@@ -302,6 +307,17 @@ distclean: clean
 ### .PHONY targets are run even if they appear up to date
 
 .PHONY: all setup-check install install-data install-python uninstall uninstall-data uninstall-python distclean clean dist check src wheel testbed
+
+# Some targets require artifacts from other directories
+../doc/xml/index.xml: ../doc/doxygen.stamp
+OTHERDIR_ARTIFACTS=../lib/libgyoto@FEATURES@.la \
+	../lib/libgyoto-stdplug.la \
+	../lib/libgyoto-lorene.la \
+	../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ \
+	../doc/doxygen.stamp \
+	$(GYOTO_PYTHON_LA)
+$(OTHERDIR_ARTIFACTS):
+	$(MAKE) -C $(dir $@) $(notdir $@)
 
 ### Rules requiring secondary expansion
 .SECONDEXPANSION:
