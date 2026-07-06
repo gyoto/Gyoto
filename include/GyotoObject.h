@@ -278,6 +278,14 @@ class Gyoto::Object
    */
   virtual bool knowsProperty(const std::string &name) const;
 
+  /// \brief Get a list of known property names
+  /**
+   * For boolean properties, if #list_false is true, also list
+   * name_false.
+   */
+  std::vector<std::string> getPropertyNames(bool list_false=false) const;
+
+
 #ifdef GYOTO_USE_XERCES
   /// Output a single Property to XML
   /**
@@ -441,7 +449,7 @@ Gyoto::Metric::MyKind::Subcontractor(FactoryMessenger* fmp) {
 			    std::string const &unit);
 
    /**
-    * \brief Format desrciption for a property
+    * \brief Format description for a property
     *
     * Returns a string containing the name(s) and type of the
     * property, as well as whether it supports unit.

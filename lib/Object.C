@@ -315,6 +315,20 @@ Property const * Object::property(std::string const pname) const {
   return NULL;
 }
 
+std::vector<std::string> Object::getPropertyNames(bool list_false) const {
+  std::vector<std::string> names;
+  Property const * prop = getProperties();
+  while (prop) {
+    if (*prop) {
+      GYOTO_DEBUG_EXPR(prop->name);
+      if (prop->type != Property::empty_t) names.push_back(prop->name);
+      if (list_false && prop->type==Property::bool_t) names.push_back(prop->name_false);
+      ++prop;
+    } else prop=prop->parent;
+  }
+  return names;
+}
+
 #ifdef GYOTO_USE_XERCES
 void Object::fillProperty(Gyoto::FactoryMessenger *fmp, Property const &p) const {
   GYOTO_DEBUG_EXPR(fmp);
