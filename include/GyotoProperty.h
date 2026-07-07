@@ -956,6 +956,9 @@ class Gyoto::Property
   /// Get Property::type_e value from name
   static type_e typeFromString(std::string stype);
 
+  /// Whether this Property supports units
+  bool supportsUnits() const ;
+
 };
 
 /// \cond INTERNAL
