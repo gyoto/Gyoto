@@ -20,7 +20,7 @@ from gyoto import core
 
 # avoid outputting n times the same warning about lorene while loading the rest
 core.verbose(0)
-from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer
+from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer, gtk4
 
 # try importing the python submodule.
 try:
