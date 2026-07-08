@@ -226,7 +226,10 @@ class PropertyEditorBox(Gtk.Box):
         """Generates widgets for object properties"""
         parameters = self.obj.getPropertyNames()
 
+        self.widgets=dict()
+
         for name in parameters:
+            if name in self. widgets: continue
             prop = self.obj.property(name)
             value = self.obj.get(prop)
             param_type = prop.type
@@ -240,10 +243,12 @@ class PropertyEditorBox(Gtk.Box):
 
             if param_type == gyoto.core.Property.double_t:
                 print(name + " is a double_t")
-                spin = ScientificSpin(value=value, with_unit=prop.supportsUnits())
+                spin = ScientificSpin(value=value,
+                                      with_unit=prop.supportsUnits())
                 spin.connect("value-changed", self.on_parameter_changed, name)
                 spin.connect("unit-changed", self.on_unit_changed, name)
                 hbox.append(spin)
+                self.widgets[name] = spin
 
             elif param_type == gyoto.core.Property.bool_t:
                 print(name + " is a bool_t")
@@ -255,13 +260,43 @@ class PropertyEditorBox(Gtk.Box):
                 radio_true.set_active(value)
                 radio_false.set_active(not value)
                 radio_true.connect("toggled", self.on_parameter_changed, name)
+                self.widgets[name] = radio_true
 
             elif param_type == gyoto.core.Property.metric_t:
                 print(name + " is a metric_t")
-                chooser = GyotoObjectChooser(gyoto.metric, obj=getattr(self.obj, name))
+                chooser = GyotoObjectChooser(gyoto.metric,
+                                             obj=getattr(self.obj, name))
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.spectrum_t:
+                print(name + " is a spectrum_t")
+                chooser = GyotoObjectChooser(gyoto.spectrum,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.astrobj_t:
+                print(name + " is a astrobj_t")
+                chooser = GyotoObjectChooser(gyoto.astrobj,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.spectrometer_t:
+                print(name + " is a spectrometer_t")
+                chooser = GyotoObjectChooser(gyoto.spectrometer,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
 
             elif param_type == "long":
                 adjustment = Gtk.Adjustment(
