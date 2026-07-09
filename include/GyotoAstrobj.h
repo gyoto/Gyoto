@@ -139,6 +139,7 @@ namespace Gyoto{
      */
     void Register(std::string name, Gyoto::Astrobj::Subcontractor_t* scp);
     ///< Make an Astrobj kind known to the Factory
+
   }
 }
 
@@ -207,6 +208,9 @@ class Gyoto::Astrobj::Generic
 {
   friend class Gyoto::SmartPointer<Gyoto::Astrobj::Generic>;
 
+public:
+  /// Get list of "plugins/names" of all registered Astrobjs
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
 
   // Data : 
   // -----

@@ -923,3 +923,4 @@ void Gyoto::Metric::Register(std::string name, Metric::Subcontractor_t* scp) {
 }
 
 GYOTO_GETSUBCONTRACTOR(Metric)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Metric)
