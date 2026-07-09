@@ -36,7 +36,7 @@ using namespace std;
 
 static std::string GyotoRegisterCurrentPlugin ("built-in");
 
-static std::vector<std::string> GyotoRegisteredPlugins;
+static std::vector<std::string> GyotoRegisteredPlugins = {"built-in"};
 
 static std::vector<std::string> GyotoPluginPath;
 
@@ -66,6 +66,9 @@ void Gyoto::requirePlugin(std::string name, int nofail) {
 void * Gyoto::loadPlugin(char const*const nam, int nofail) {
   string name(nam);
   GYOTO_DEBUG_EXPR(name);
+
+  // "built-in" cannot be reloaded
+  if (strcmp(nam, "built-in") == 0) return NULL;
 
   // Determine file name
   string dlfile = "libgyoto-" ;
@@ -316,6 +319,11 @@ Register::Entry::getSubcontractor(std::string name, std::string &plugin, int err
 std::string Register::Entry::name() {return name_;}
 std::string Register::Entry::plugin() {return plugin_;}
 Register::Entry* Register::Entry::next() {return next_;}
+
+void Register::Entry::pluginsSlashNames(std::vector<std::string> &retval) const {
+  retval.push_back(plugin_ + "/" + name_);
+  if (next_) next_->pluginsSlashNames(retval);
+}
 
 void Gyoto::Register::list() {
   Register::Entry* entry = NULL;

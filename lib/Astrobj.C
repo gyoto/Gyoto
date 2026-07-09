@@ -1911,6 +1911,7 @@ void Gyoto::Astrobj::Register(std::string name, Subcontractor_t* scp){
 }
 
 GYOTO_GETSUBCONTRACTOR(Astrobj)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Astrobj)
 
 Astrobj::Properties::Properties() :
   intensity(NULL), time(NULL), distance(NULL),

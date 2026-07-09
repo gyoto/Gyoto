@@ -68,6 +68,7 @@ void Gyoto::Spectrometer::Register(std::string name, Subcontractor_t* scp){
 }
 
 GYOTO_GETSUBCONTRACTOR(Spectrometer)
+GYOTO_REGISTEREDPLUGINSSLASHKINDS(Spectrometer)
 
 Generic::Generic() :
   SmartPointee(),

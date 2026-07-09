@@ -1,10 +1,44 @@
-import inspect
-import gyoto
+from functools import wraps
+
 import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 
+import gyoto
+
 class GyotoObjectChooser(Gtk.Box):
+    """Gtk widget for choosing and editing a Gyoto object kind
+
+    The widget is composed of a drop-down menu from which a kind can
+    be choosen, and a PropertyEditorBox for this kind.
+
+    Parameters:
+
+      namespace: the Gyoto namespace to choose from (gyoto.metric,
+          gyoto.astrobj, gyoto.spectrum or gyoto.spectrometer).
+
+      obj (optional): original object.
+
+    Public members:
+
+       obj: initially, a copy of obj. Reinitialized each type a new
+           kind is selected from the drop-down menu.
+
+    Example:
+      box=GyotoObjectChooser(gyoto.metric, obj=myobject.metric())
+
+    Signals:
+      This widget emits the two following signals:
+
+      object-changed: whenever a new kind is selected, obj is
+          reinitialized. The caller can connect to this signal and set
+          a callback to fetch self.obj.
+
+      object-mutated: everytime a property of obj is changed using the
+          controls in the PropertyEditorBox, this signal is emitted.
+
+    """
+
     __gsignals__ = {
         "object-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ()),
         "object-mutated": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ())
@@ -14,34 +48,20 @@ class GyotoObjectChooser(Gtk.Box):
                          spacing=0)
         self.obj=obj
         self.namespace=namespace
-        self.items = ["-"]
-        self.classes = []
-        for name in dir(namespace):
-            attr = getattr(namespace, name)
-            if (inspect.isclass(attr) and
-                issubclass(attr, namespace.Generic) and
-                attr is not namespace.Generic):
-                self.classes.append(attr)
-                self.items.append(name)
+        self.items = ["-"] + [x for x in
+                              namespace.Generic.registeredPluginsSlashKinds()]
         self.dropdown=Gtk.DropDown.new_from_strings(self.items)
         self.append(self.dropdown)
-        print("HARE", type(self.obj))
+
         if self.obj is None:
             self.dropdown.set_selected(0)
-        elif self.obj.kind() in self.items:
-            self.dropdown.set_selected(self.items.index(self.obj.kind()))
         else:
-            for i in range(len(self.items)):
-                x = self.items[i]
-                if not hasattr(namespace, x):
-                    continue
-                klass = getattr(namespace, x)
-                try:
-                    superobj = klass(superobj)
-                    self.dropdown.set_selected(i)
-                    break
-                except:
-                    continue
+            indexes = [i for i, val in enumerate(self.items)
+                       if val.endswith('/'+self.obj.kind())]
+            if len(indexes) == 1:
+                self.dropdown.set_selected(indexes[0])
+            else:
+                show_error_dialog('could not determine plugin/kind for object')
 
         self.dropdown.connect("notify::selected", self.on_dropdown_activated)
 
@@ -53,18 +73,16 @@ class GyotoObjectChooser(Gtk.Box):
             box.connect("value-changed", self.on_child_value_changed)
 
     def on_child_value_changed(self, widget, *args):
-        print("something changed in child")
         self.emit("object-mutated")
     
     def on_dropdown_activated(self, widget, *args):
-        print("child changed")
         x = widget.get_selected_item().get_string()
-        print(x)
         if x == '-':
             self.obj=None
             self.frame.set_child(None)
         else:
-            self.obj=getattr(self.namespace, x)()
+            plg, knd = x.split('/')
+            self.obj=self.namespace.Generic(knd, (plg,))
             box = PropertyEditorBox(self.obj)
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
@@ -72,11 +90,27 @@ class GyotoObjectChooser(Gtk.Box):
     
     
 class ScientificSpin(Gtk.Box):
-    """
-    Scientific-number editor:
-      - accepts values like -1.234e-15
-      - up/down buttons
-      - relative increments
+    """Similar to Gtk.SpinButton in floating point notation with unit
+
+    This widget is composed of:
+        - a Gtk.Entry for the value, which accepts notations like
+          1.3e-12;
+        - an optional Gkt.Entry field to edit a unit;
+        - a pair of buttons to increment of decrement the value.
+
+    Parameters:
+      value: the initial value;
+      rel_step: the (relative) increment step (0.1);
+      with_unit: whether to show the unit field (False).
+
+    Public methods:
+      Callbacks can query or set the two entry boxes using the four methods:
+      get_value, set_value, get_unit and set_unit
+
+    Signals:
+      The widget emits value-changed and unit-changed when the
+      respective field changes.
+
     """
 
     __gsignals__ = {
@@ -84,7 +118,7 @@ class ScientificSpin(Gtk.Box):
         "unit-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ())
     }
 
-    def __init__(self, value=1.0, rel_step=0.1, exponent_step=1, with_unit=False):
+    def __init__(self, value=1.0, rel_step=0.1, with_unit=False):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL,
                          spacing=0)
 
@@ -116,7 +150,6 @@ class ScientificSpin(Gtk.Box):
         )
 
         self.rel_step = rel_step
-        self.exponent_step = exponent_step
 
         self.value_entry = Gtk.Entry()
         self.value_entry.set_hexpand(True)
@@ -161,7 +194,6 @@ class ScientificSpin(Gtk.Box):
 
 
     def set_value(self, value):
-        # Scientific notation is usually preferable for tiny numbers
         self.value_entry.set_text(f"{value:.8e}")
 
     def get_unit(self):
@@ -215,6 +247,29 @@ class PropertyEditorBox(Gtk.Box):
         "value-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ())
     }
 
+    @staticmethod
+    def gtk_callback(method):
+        """Show Gyoto errors in dialog windows
+
+        This is a deforator, use like this:
+
+          @gtk_callback
+          def method(self, widget, name *args):
+              ...
+
+        Now whenever a Gyoto error occurs in method(), it will be
+        displayed in a Gtk dialog instead of the terminal.
+        """
+        @wraps(method)
+        def wrapper(self, widget, name, *args):
+            try:
+                return method(self, widget, name, *args)
+            except gyoto.core.Error as e:
+                show_error_dialog(detail=str(e),
+                                  message=f'Error setting {name}',
+                                  widget=widget)
+        return wrapper
+
     def __init__(self, obj, *args, **kwargs):
         if "orientation" not in kwargs: kwargs['orientation']=Gtk.Orientation.VERTICAL
         if "spacing" not in kwargs: kwargs['spacing']=10
@@ -242,7 +297,6 @@ class PropertyEditorBox(Gtk.Box):
             frame.set_child(hbox)
 
             if param_type == gyoto.core.Property.double_t:
-                print(name + " is a double_t")
                 spin = ScientificSpin(value=value,
                                       with_unit=prop.supportsUnits())
                 spin.connect("value-changed", self.on_parameter_changed, name)
@@ -251,7 +305,6 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = spin
 
             elif param_type == gyoto.core.Property.bool_t:
-                print(name + " is a bool_t")
                 radio_true = Gtk.CheckButton(label=name)
                 radio_false = Gtk.CheckButton(label=prop.name_false)
                 radio_false.set_group(radio_true)
@@ -263,7 +316,6 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = radio_true
 
             elif param_type == gyoto.core.Property.metric_t:
-                print(name + " is a metric_t")
                 chooser = GyotoObjectChooser(gyoto.metric,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
@@ -272,7 +324,6 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = chooser
 
             elif param_type == gyoto.core.Property.spectrum_t:
-                print(name + " is a spectrum_t")
                 chooser = GyotoObjectChooser(gyoto.spectrum,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
@@ -281,7 +332,6 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = chooser
 
             elif param_type == gyoto.core.Property.astrobj_t:
-                print(name + " is a astrobj_t")
                 chooser = GyotoObjectChooser(gyoto.astrobj,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
@@ -290,7 +340,6 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = chooser
 
             elif param_type == gyoto.core.Property.spectrometer_t:
-                print(name + " is a spectrometer_t")
                 chooser = GyotoObjectChooser(gyoto.spectrometer,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
@@ -350,12 +399,13 @@ class PropertyEditorBox(Gtk.Box):
 
             self.append(frame)
 
+    @gtk_callback
     def on_unit_changed(self, widget, name, *args):
         unit = widget.get_unit()
-        print(unit)
         value = self.obj.get(name, unit)
         widget.set_value(value)
-        
+
+    @gtk_callback
     def on_object_changed(self, widget, name, *args):
         """Called when a sub-object is reset
 
@@ -363,11 +413,10 @@ class PropertyEditorBox(Gtk.Box):
         kind.
 
         """
-        print(type(widget.obj))
-        print(widget.obj)
-        setattr(self.obj, name, widget.obj)
+        self.obj.set(name, widget.obj)
         self.emit('value-changed')
 
+    @gtk_callback
     def on_object_mutated(self, widget, name, *args):
         """Called when something changes in a sub-object
 
@@ -375,22 +424,20 @@ class PropertyEditorBox(Gtk.Box):
         """
         self.emit('value-changed')
 
+    @gtk_callback
     def on_parameter_changed(self, widget, name, *args):
-        """Callback unique pour tous les paramètres.
-        Reçoit :
-        - widget : le widget qui a déclenché le callback
-        - name : le nom du paramètre
-        - *args : arguments supplémentaires (ex: unité pour double_with_unit)
+        """Most widgets are connected to this callback.
+
+        Receives:
+          widget: the widget that initiated the signal
+          name: the name of the Property this widget allows editing
         """
-        print("THERE", name)
         new_unit=None
         if isinstance(widget, ScientificSpin):
-            print("ScientificSpin")
             new_value = widget.get_value()
             new_unit = widget.get_unit()
 
         elif isinstance(widget, Gtk.CheckButton):
-            print("CheckButton")
             new_value = widget.get_active()
 
         elif isinstance(widget, Gtk.SpinButton):
@@ -401,8 +448,6 @@ class PropertyEditorBox(Gtk.Box):
             new_value = widget.get_text()
             new_unit = None
 
-        print(f"Paramètre '{name}' modifié : valeur={new_value}, unité={new_unit}")
-
         if new_unit is None:
             self.obj.set(name, new_value)
         else:
@@ -411,9 +456,24 @@ class PropertyEditorBox(Gtk.Box):
         self.emit('value-changed')
        
 class ObjectEditor(Gtk.Window):
+    """A Gyoto object editor
+
+    Displays a window giving an editable view of all the properties of
+    a Gyoto object.
+
+    Parameters:
+      obj: the object to edit
+      blocking: whether this object should manage the GLib loop
+
+    """
 
     @staticmethod
     def run(obj, blocking=True):
+        """Contruct a Gyoto ObjectEditor window and run it
+
+        synopsis:
+         ObjectEditor.run(obj, [blocking=True])
+        """
         win = ObjectEditor(obj, blocking)
         win.present()
         if blocking:
@@ -442,24 +502,15 @@ class ObjectEditor(Gtk.Window):
         self.vbox.set_margin_end(10)
         self.scrolled_window.set_child(self.vbox)
 
-        # Connect to 
-        self.vbox.connect("value-changed", self.on_value_changed)
+        # We could connect to value-changed to react wheneverr obj changes 
+        # self.vbox.connect("value-changed", self.on_value_changed)
+        # but we don't actually need to.
 
     def on_close_request(self, *args):
-        """Callback appelé quand la fenêtre est fermée (via la croix ou Alt+F4)."""
         if self.main_loop is not None:
             GLib.idle_add(self.main_loop.quit)
-        return False  # Autorise la fermeture
+        return False
 
-    def on_value_changed(self, widget, *args):
-        """Callback unique pour tous les paramètres.
-        Reçoit :
-        - widget : le widget qui a déclenché le callback
-        - name : le nom du paramètre
-        - *args : arguments supplémentaires (ex: unité pour double_with_unit)
-        """
-        print("HERE something changed")
-            
     def on_file_chooser_clicked(self, button, entry):
         """Ouvre un dialogue pour choisir un fichier."""
         dialog = Gtk.FileChooserDialog(
@@ -478,37 +529,34 @@ class ObjectEditor(Gtk.Window):
             file = dialog.get_file()
             if file is not None:
                 entry.set_text(file.get_path())
-        dialog.destroy()
+                dialog.destroy()
 
-# eventually these will become method of gyoto.core.Object
-# cleanest is to do it in the swig file gyoto.i
+def show_error_dialog(message="An error occurred", detail=None,
+                      window=None, widget=None):
+    """Show a pop-up error dialog
 
+    Parameters:
+      message: main message
+      detail: more details about the error
+      window (optional): the window this dialog should be transient of
+      widget (optional): shortcut to window=widget.get_root()
+
+    """
+    if window is None and widget is not None:
+        window=widget.get_root()
+
+    dialog = Gtk.AlertDialog(
+        message=message,
+        buttons=["OK"]
+    )
+
+    if detail is not None: dialog.set_detail(detail)
+
+    dialog.show(window)
+
+# The following should be achieved using Swig's extend mechanism
 def edit(self, blocking=True):
+    """Display a GUI to edit this object's Properties"""
     ObjectEditor.run(self, blocking=blocking)
 
 gyoto.core.Object.edit=edit
-
-#gg = gyoto.std.KerrBL()
-#gg.edit()
-
-#st = gyoto.std.FixedStar()
-#st.Metric = gg
-#st.edit()
-
-# Exemple d'utilisation
-# if __name__ == "__main__":
-#     # Mockup d'un objet avec introspection
-#     class MockObject:
-#         def get_parameters(self):
-#             return [
-#                 ("Temperature", "double_with_unit", (25.0, "°C")),
-#                 ("Filename", "filename", "/path/to/file.txt"),
-#                 ("Count", "long", 42),
-#                 ("Name", "string", "Test"),
-#             ]
-
-#     obj = MockObject()
-#     app = Gtk.Application(application_id="org.example.ParameterEditor")
-#     app.connect("activate", lambda app: ObjectEditor(obj).present())
-#     # to be checked whether "blocking" should be True or False
-#     app.run(None)
