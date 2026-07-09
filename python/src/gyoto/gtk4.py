@@ -1,4 +1,5 @@
 from functools import wraps
+import ctypes
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -347,11 +348,25 @@ class PropertyEditorBox(Gtk.Box):
                 chooser.connect("object-mutated", self.on_object_mutated, name)
                 self.widgets[name] = chooser
 
-            elif param_type == "long":
+            elif param_type in (gyoto.core.Property.long_t,
+                                gyoto.core.Property.unsigned_long_t,
+                                gyoto.core.Property.size_t_t):
+                if param_type == gyoto.core.Property.long_t:
+                    lower=-(1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1))
+                    upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1)) - 1
+                elif param_type == gyoto.core.Property.unsigned_long_t:
+                    lower=0
+                    upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8))-1
+                elif param_type == gyoto.core.Property.size_t_t :
+                    lower=0
+                    upper=(1 << (ctypes.sizeof(ctypes.c_size_t) * 8))-1
+                else:
+                    raise("bug")
+
                 adjustment = Gtk.Adjustment(
                     value=value,
-                    lower=-1e10,
-                    upper=1e10,
+                    lower=lower,
+                    upper=upper,
                     step_increment=1,
                     page_increment=10,
                     page_size=0
@@ -359,8 +374,11 @@ class PropertyEditorBox(Gtk.Box):
                 spin = Gtk.SpinButton()
                 spin.set_adjustment(adjustment)
                 spin.set_numeric(True)
-                spin.set_digits(20)
+                spin.set_digits(0)
+                spin.set_hexpand(True)
                 hbox.append(spin)
+                spin.connect("value-changed", self.on_parameter_changed, name)
+                self.widgets[name] = spin
 
             elif param_type == gyoto.core.Property.string_t:
                 entry = Gtk.Entry()
@@ -377,28 +395,6 @@ class PropertyEditorBox(Gtk.Box):
                 button.connect("clicked", self.on_file_chooser_clicked, entry)
                 hbox.append(entry)
                 hbox.append(button)
-
-            elif param_type == "double_with_unit":
-                val, unit = value
-                adjustment = Gtk.Adjustment(
-                    value=val,
-                    lower=-1e10,
-                    upper=1e10,
-                    step_increment=0.1,
-                    page_increment=1.0,
-                    page_size=0
-                )
-                spin = Gtk.SpinButton()
-                spin.set_adjustment(adjustment)
-                spin.set_numeric(True)
-                hbox.append(spin)
-
-                unit_label = Gtk.Label(label=unit)
-                hbox.append(unit_label)
-
-                unit_entry = Gtk.Entry()
-                unit_entry.set_text(unit)
-                hbox.append(unit_entry)
 
             self.append(frame)
 
@@ -444,8 +440,7 @@ class PropertyEditorBox(Gtk.Box):
             new_value = widget.get_active()
 
         elif isinstance(widget, Gtk.SpinButton):
-            new_value = widget.get_value()
-            new_unit = args[0] if args else None
+            new_value = widget.get_value_as_int()
 
         elif isinstance(widget, Gtk.Entry):
             new_value = widget.get_text()
