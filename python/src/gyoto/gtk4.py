@@ -7,6 +7,87 @@ from gi.repository import Gtk, GLib
 
 import gyoto
 
+GLib.set_prgname("Gyoto")
+
+class FilenameEditor(Gtk.Box):
+    """A compound widget to select a file
+
+    Composed on an entry field and a button for browsng.
+
+    Parameters:
+      value: initial value.
+
+    Signals:
+      value-changed emitted when a file is selected in the browser or
+          when the user hits enter in the entry field.
+
+    """
+    __gsignals__ = {
+        "value-changed": (
+            gi.repository.GObject.SignalFlags.RUN_FIRST,
+            None,
+            ()
+        )
+    }
+
+    def __init__(self, value=""):
+        super().__init__(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=4
+        )
+
+        self.entry = Gtk.Entry()
+        self.entry.set_hexpand(True)
+        self.entry.set_text(value)
+
+        self.button = Gtk.Button()
+        self.button.set_icon_name("folder-open-symbolic")
+        self.button.set_tooltip_text("Choose a file")
+        self.button.add_css_class("flat")
+
+        self.append(self.entry)
+        self.append(self.button)
+
+        self.entry.connect(
+            "activate",
+            self.on_activate
+        )
+
+        self.button.connect(
+            "clicked",
+            self.on_browse
+        )
+
+    def get_value(self):
+        return self.entry.get_text()
+
+    def set_value(self, value):
+        self.entry.set_text(value)
+
+    def on_activate(self, entry):
+        self.emit("value-changed")
+
+    def on_browse(self, button):
+
+        dialog = Gtk.FileDialog()
+
+        dialog.open(
+            self.get_root(),
+            None,
+            lambda dialog, result:
+                self.on_file_selected(dialog, result)
+        )
+
+    def on_file_selected(self, dialog, result):
+        try:
+            file = dialog.open_finish(result)
+        except GLib.Error:
+            return
+
+        if file is not None:
+            self.set_value(file.get_path())
+            self.emit("value-changed")
+
 class GyotoObjectChooser(Gtk.Box):
     """Gtk widget for choosing and editing a Gyoto object kind
 
@@ -305,49 +386,6 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(spin)
                 self.widgets[name] = spin
 
-            elif param_type == gyoto.core.Property.bool_t:
-                radio_true = Gtk.CheckButton(label=name)
-                radio_false = Gtk.CheckButton(label=prop.name_false)
-                radio_false.set_group(radio_true)
-                hbox.append(radio_true)
-                hbox.append(radio_false)
-                radio_true.set_active(value)
-                radio_false.set_active(not value)
-                radio_true.connect("toggled", self.on_parameter_changed, name)
-                self.widgets[name] = radio_true
-
-            elif param_type == gyoto.core.Property.metric_t:
-                chooser = GyotoObjectChooser(gyoto.metric,
-                                             obj=getattr(self.obj, name))
-                hbox.append(chooser)
-                chooser.connect("object-changed", self.on_object_changed, name)
-                chooser.connect("object-mutated", self.on_object_mutated, name)
-                self.widgets[name] = chooser
-
-            elif param_type == gyoto.core.Property.spectrum_t:
-                chooser = GyotoObjectChooser(gyoto.spectrum,
-                                             obj=getattr(self.obj, name))
-                hbox.append(chooser)
-                chooser.connect("object-changed", self.on_object_changed, name)
-                chooser.connect("object-mutated", self.on_object_mutated, name)
-                self.widgets[name] = chooser
-
-            elif param_type == gyoto.core.Property.astrobj_t:
-                chooser = GyotoObjectChooser(gyoto.astrobj,
-                                             obj=getattr(self.obj, name))
-                hbox.append(chooser)
-                chooser.connect("object-changed", self.on_object_changed, name)
-                chooser.connect("object-mutated", self.on_object_mutated, name)
-                self.widgets[name] = chooser
-
-            elif param_type == gyoto.core.Property.spectrometer_t:
-                chooser = GyotoObjectChooser(gyoto.spectrometer,
-                                             obj=getattr(self.obj, name))
-                hbox.append(chooser)
-                chooser.connect("object-changed", self.on_object_changed, name)
-                chooser.connect("object-mutated", self.on_object_mutated, name)
-                self.widgets[name] = chooser
-
             elif param_type in (gyoto.core.Property.long_t,
                                 gyoto.core.Property.unsigned_long_t,
                                 gyoto.core.Property.size_t_t):
@@ -380,6 +418,17 @@ class PropertyEditorBox(Gtk.Box):
                 spin.connect("value-changed", self.on_parameter_changed, name)
                 self.widgets[name] = spin
 
+            elif param_type == gyoto.core.Property.bool_t:
+                radio_true = Gtk.CheckButton(label=name)
+                radio_false = Gtk.CheckButton(label=prop.name_false)
+                radio_false.set_group(radio_true)
+                hbox.append(radio_true)
+                hbox.append(radio_false)
+                radio_true.set_active(value)
+                radio_false.set_active(not value)
+                radio_true.connect("toggled", self.on_parameter_changed, name)
+                self.widgets[name] = radio_true
+
             elif param_type == gyoto.core.Property.string_t:
                 entry = Gtk.Entry()
                 entry.set_hexpand(True)
@@ -388,13 +437,47 @@ class PropertyEditorBox(Gtk.Box):
                 entry.connect("activate", self.on_parameter_changed, name)
                 self.widgets[name] = entry
 
-            elif param_type == "filename":
-                entry = Gtk.Entry()
-                entry.set_text(str(value))
-                button = Gtk.Button(label="...")
-                button.connect("clicked", self.on_file_chooser_clicked, entry)
-                hbox.append(entry)
-                hbox.append(button)
+            elif param_type == gyoto.core.Property.filename_t:
+                editor = FilenameEditor(str(value))
+                editor.connect(
+                    "value-changed",
+                    self.on_parameter_changed,
+                    name
+                )
+                hbox.append(editor)
+                self.widgets[name] = editor
+
+            elif param_type == gyoto.core.Property.metric_t:
+                chooser = GyotoObjectChooser(gyoto.metric,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.spectrum_t:
+                chooser = GyotoObjectChooser(gyoto.spectrum,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.astrobj_t:
+                chooser = GyotoObjectChooser(gyoto.astrobj,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.spectrometer_t:
+                chooser = GyotoObjectChooser(gyoto.spectrometer,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
 
             self.append(frame)
 
@@ -444,7 +527,9 @@ class PropertyEditorBox(Gtk.Box):
 
         elif isinstance(widget, Gtk.Entry):
             new_value = widget.get_text()
-            new_unit = None
+
+        elif isinstance(widget, FilenameEditor):
+            new_value = widget.get_value()
 
         if new_unit is None:
             self.obj.set(name, new_value)
@@ -453,6 +538,28 @@ class PropertyEditorBox(Gtk.Box):
 
         self.emit('value-changed')
        
+    @gtk_callback
+    def on_file_chooser_clicked(self, button, entry):
+        """File selection dialog for filename_t."""
+        dialog = Gtk.FileDialog()
+        dialog.open(
+            self.get_root(),
+            None,
+            lambda dialog, result: self.on_file_selected(dialog, result, entry)
+        )
+
+    @gtk_callback
+    def on_file_selected(self, dialog, result, entry):
+        """What to do when the user selected a file using the dialog"""
+        try:
+            file = dialog.open_finish(result)
+        except GLib.Error:
+            # User cancelled
+            return
+
+        if file is not None:
+            entry.set_text(file.get_path())
+
 class ObjectEditor(Gtk.Window):
     """A Gyoto object editor
 
@@ -508,26 +615,6 @@ class ObjectEditor(Gtk.Window):
         if self.main_loop is not None:
             GLib.idle_add(self.main_loop.quit)
         return False
-
-    def on_file_chooser_clicked(self, button, entry):
-        """Ouvre un dialogue pour choisir un fichier."""
-        dialog = Gtk.FileChooserDialog(
-            title="Select a file",
-            parent=self,
-            action=Gtk.FileChooserAction.OPEN
-        )
-        dialog.add_button("Cancel", Gtk.ResponseType.CANCEL)
-        dialog.add_button("Open", Gtk.ResponseType.OK)
-        dialog.connect("response", self.on_file_chooser_response, entry)
-        dialog.show()
-
-    def on_file_chooser_response(self, dialog, response, entry):
-        """Gère la réponse du dialogue de sélection de fichier."""
-        if response == Gtk.ResponseType.OK:
-            file = dialog.get_file()
-            if file is not None:
-                entry.set_text(file.get_path())
-                dialog.destroy()
 
 def show_error_dialog(message="An error occurred", detail=None,
                       window=None, widget=None):
