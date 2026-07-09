@@ -362,10 +362,13 @@ class PropertyEditorBox(Gtk.Box):
                 spin.set_digits(20)
                 hbox.append(spin)
 
-            elif param_type == "string":
+            elif param_type == gyoto.core.Property.string_t:
                 entry = Gtk.Entry()
+                entry.set_hexpand(True)
                 entry.set_text(str(value))
                 hbox.append(entry)
+                entry.connect("activate", self.on_parameter_changed, name)
+                self.widgets[name] = entry
 
             elif param_type == "filename":
                 entry = Gtk.Entry()

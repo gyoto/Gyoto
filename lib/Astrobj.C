@@ -58,7 +58,7 @@ GYOTO_PROPERTY_BOOL(Generic, ShowShadow, NoShowShadow, showshadow,
     "Whether to highlight the shadow region on the image.")
 GYOTO_PROPERTY_BOOL(Generic, OpticallyThin, OpticallyThick, opticallyThin,
     "Whether the object should be considered optically thin or thick.")
-GYOTO_PROPERTY_STRING(Generic, MagneticConfiguration, magneticConfiguration, "Define the magnetic field configuration if needed.")
+GYOTO_PROPERTY_STRING(Generic, MagneticConfiguration, magneticConfiguration, "Define the magnetic field configuration if needed (*None, Vertical, Vertical-n, Radial, Radial-n, Toroidal, Toroidal-n, Poloidal, Poloidal-n, Parabolic or Parabolic-n.")
 GYOTO_PROPERTY_END(Generic, Object::properties)
 
 Generic::Generic(string kin) :
