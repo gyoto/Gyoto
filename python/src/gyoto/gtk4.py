@@ -163,27 +163,33 @@ class GyotoObjectChooser(Gtk.Box):
                          spacing=0)
         self.obj=obj
         self.namespace=namespace
-        self.items = ["-"] + [x for x in
-                              namespace.Generic.registeredPluginsSlashKinds()]
+        if self.namespace == gyoto.core.Screen:
+            self.items = ["-", "built-in/Screen"]
+        else:
+            self.items = ["-"] + [x for x in
+                                  namespace.Generic.registeredPluginsSlashKinds()]
         self.dropdown=Gtk.DropDown.new_from_strings(self.items)
         self.append(self.dropdown)
 
         if self.obj is None:
             self.dropdown.set_selected(0)
         else:
-            indexes = [i for i, val in enumerate(self.items)
-                       if val.endswith('/'+self.obj.kind())]
-            if len(indexes) == 1:
-                self.dropdown.set_selected(indexes[0])
+            if self.namespace == gyoto.core.Screen:
+                self.dropdown.set_selected(1)
             else:
-                show_error_dialog('could not determine plugin/kind for object')
+                indexes = [i for i, val in enumerate(self.items)
+                           if val.endswith('/'+self.obj.kind())]
+                if len(indexes) == 1:
+                    self.dropdown.set_selected(indexes[0])
+                else:
+                    show_error_dialog('could not determine plugin/kind for object')
 
         self.dropdown.connect("notify::selected", self.on_dropdown_activated)
 
         self.frame = Gtk.Frame()
         self.append(self.frame)
         if self.obj is not None:
-            box = PropertyEditorBox(self.obj)
+            box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
 
@@ -196,9 +202,12 @@ class GyotoObjectChooser(Gtk.Box):
             self.obj=None
             self.frame.set_child(None)
         else:
-            plg, knd = x.split('/')
-            self.obj=self.namespace.Generic(knd, (plg,))
-            box = PropertyEditorBox(self.obj)
+            if self.namespace == gyoto.core.Screen:
+                self.obj = gyoto.core.Screen()
+            else:
+                plg, knd = x.split('/')
+                self.obj=self.namespace.Generic(knd, (plg,))
+            box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
         self.emit("object-changed")
@@ -655,11 +664,12 @@ class PropertyEditorBox(Gtk.Box):
                                   widget=widget)
         return wrapper
 
-    def __init__(self, obj, *args, **kwargs):
+    def __init__(self, obj, hide=[], *args, **kwargs):
         if "orientation" not in kwargs: kwargs['orientation']=Gtk.Orientation.VERTICAL
         if "spacing" not in kwargs: kwargs['spacing']=10
         super().__init__(*args, **kwargs)
         self.obj=obj
+        self.hide=hide
         self.populate_properties()
 
     def populate_properties(self):
@@ -669,7 +679,8 @@ class PropertyEditorBox(Gtk.Box):
         self.widgets=dict()
 
         for name in parameters:
-            if name in self. widgets: continue
+            if name in self.hide: continue
+            if name in self.widgets: continue
             prop = self.obj.property(name)
             value = self.obj.get(prop)
             param_type = prop.type
@@ -765,6 +776,14 @@ class PropertyEditorBox(Gtk.Box):
 
             elif param_type == gyoto.core.Property.metric_t:
                 chooser = GyotoObjectChooser(gyoto.metric,
+                                             obj=getattr(self.obj, name))
+                hbox.append(chooser)
+                chooser.connect("object-changed", self.on_object_changed, name)
+                chooser.connect("object-mutated", self.on_object_mutated, name)
+                self.widgets[name] = chooser
+
+            elif param_type == gyoto.core.Property.screen_t:
+                chooser = GyotoObjectChooser(gyoto.core.Screen,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
