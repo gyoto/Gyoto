@@ -418,14 +418,18 @@ class VectorScientificSpin(Gtk.Box):
         )
     }
 
-    def __init__(self, value=None, with_unit=False, rel_step=0.1):
+    def __init__(self, value=None, with_unit=False, rel_step=0.1,
+                 itemclass=ScientificSpin):
         super().__init__(
             orientation=Gtk.Orientation.VERTICAL,
             spacing=6
         )
+        if itemclass not in (ScientificSpin, Gtk.SpinButton):
+            raise ValueError(f'itemclass must be one of ScientificSpin, Gtk.SpinButton')
 
         self.rel_step = rel_step
         self.spins = []
+        self.itemclass=itemclass
 
         #
         # Optional unit field
@@ -499,7 +503,10 @@ class VectorScientificSpin(Gtk.Box):
     #
 
     def get_value(self):
-        return [spin.get_value() for spin in self.spins]
+        if self.itemclass == ScientificSpin:
+            return [spin.get_value() for spin in self.spins]
+        if self.itemclass == Gtk.SpinButton:
+            return [spin.get_value_as_int() for spin in self.spins]
 
     def set_value(self, values):
 
@@ -568,15 +575,33 @@ class VectorScientificSpin(Gtk.Box):
     def _new_spin(self, value=None):
         """Private metod to add a new ScientificSpin
         """
-        spin = ScientificSpin(
-            value=value,
-            rel_step=self.rel_step,
-            with_unit=False
-        )
-        spin.connect(
-            "value-changed",
-            self.on_spin_changed
-        )
+        if self.itemclass == ScientificSpin:
+            spin = ScientificSpin(
+                value=value,
+                rel_step=self.rel_step,
+                with_unit=False
+            )
+        elif self.itemclass == Gtk.SpinButton:
+            lower=0
+            upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8))-1
+
+            adjustment = Gtk.Adjustment(
+                value=value,
+                lower=lower,
+                upper=upper,
+                step_increment=1,
+                page_increment=10,
+                page_size=0
+            )
+            spin = Gtk.SpinButton()
+            spin.set_adjustment(adjustment)
+            spin.set_numeric(True)
+            spin.set_digits(0)
+            spin.set_hexpand(True)
+        else:
+            raise ValueError(f'itemclass must be one of ScientificSpin, Gtk.SpinButton')
+
+        spin.connect("value-changed", self.on_spin_changed)
         return spin
 
 ## A panel to edit the properties of a gyoto.core.Object
@@ -725,9 +750,14 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(editor)
                 self.widgets[name] = editor
 
-            elif param_type == gyoto.core.Property.vector_double_t:
+            elif param_type in (gyoto.core.Property.vector_double_t,
+                                gyoto.core.Property.vector_unsigned_long_t):
+                itemclass = (ScientificSpin
+                             if param_type == gyoto.core.Property.vector_double_t
+                             else Gtk.SpinButton)
                 vector = VectorScientificSpin(value=value,
-                                              with_unit=prop.supportsUnits())
+                                              with_unit=prop.supportsUnits(),
+                                              itemclass=itemclass)
                 vector.connect("value-changed", self.on_parameter_changed, name)
                 vector.connect("unit-changed", self.on_unit_changed, name)
                 hbox.append(vector)
