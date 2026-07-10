@@ -9,6 +9,13 @@ import gyoto
 
 GLib.set_prgname("Gyoto")
 
+### Compond widgets suited for our needs
+
+## A filename editor / file chooser with pop-up dialog:
+# ┌───────────────────────────────┐
+# │ /home/user/file.dat        📂 │
+# └───────────────────────────────┘
+#
 class FilenameEditor(Gtk.Box):
     """A compound widget to select a file
 
@@ -88,11 +95,37 @@ class FilenameEditor(Gtk.Box):
             self.set_value(file.get_path())
             self.emit("value-changed")
 
+## Compound widget to choose/edit subobject
+#
+# A widget to choose a new kind for a subobject and display its own
+# editor panel
+#
+# ┌──────────────────────────────────────────────┐
+# │  ┌────────────────────────────────────────┐  │
+# │  │(Gtk.DropDown:)                         │  │
+# │  │  -                                   ▼ │  │
+# │  │  plugin1/kind1                         │  │
+# │  │  plugin1/kind2                         │  │
+# │  │  ...                                   │  │
+# │  │  plugin2/kind3                         │  │
+# │  │  plugin2/kind4                         │  │
+# │  │  ...                                   │  │
+# │  └────────────────────────────────────────┘  │
+# │  ┌────────────────────────────────────────┐  │
+# │  │(PropertyEditorBox:)                    │  │
+# │  │  widget for property1                  │  │
+# │  │  widget for property2                  │  │
+# │  │  widget for property3...               │  │
+# │  └────────────────────────────────────────┘  │
+# └──────────────────────────────────────────────┘
+#
 class GyotoObjectChooser(Gtk.Box):
     """Gtk widget for choosing and editing a Gyoto object kind
 
     The widget is composed of a drop-down menu from which a kind can
-    be choosen, and a PropertyEditorBox for this kind.
+    be choosen, and a PropertyEditorBox for this kind. Selecting
+    another kind destroys the current PropertyEditorBox and creates a
+    new one.
 
     Parameters:
 
@@ -170,7 +203,16 @@ class GyotoObjectChooser(Gtk.Box):
             box.connect("value-changed", self.on_child_value_changed)
         self.emit("object-changed")
     
-    
+
+## A SpinButton in floating-point notation with option unit field
+#
+# ┌────────────────────────────────────────────────┐
+# │ ┌────────────────────┐ ┌───────────────┐ ┌───┐ │
+# │ │ (Gtk.Entry:)       │ │ (Gtk.Entry:)  │ │ ▲ │ │
+# │ │ 1.23456789e-12     │ │ m^2           │ │ ▼ │ │
+# │ └────────────────────┘ └───────────────┘ └───┘ │
+# └────────────────────────────────────────────────┘
+#
 class ScientificSpin(Gtk.Box):
     """Similar to Gtk.SpinButton in floating point notation with unit
 
@@ -204,6 +246,10 @@ class ScientificSpin(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL,
                          spacing=0)
 
+        # Set this to True whenever changes should *not* emit
+        # value-changed
+        self._updating=False
+
         self.add_css_class("scientific-spin")
 
         css = Gtk.CssProvider()
@@ -236,7 +282,8 @@ class ScientificSpin(Gtk.Box):
         self.value_entry = Gtk.Entry()
         self.value_entry.set_hexpand(True)
         self.value_entry.set_tooltip_text("value")
-        self.set_value(value)
+        if value is not None:
+            self.set_value(value)
 
         self.append(self.value_entry)
 
@@ -275,8 +322,20 @@ class ScientificSpin(Gtk.Box):
         return float(self.value_entry.get_text())
 
 
-    def set_value(self, value):
-        self.value_entry.set_text(f"{value:.8e}")
+    def set_value(self, value, *, emit=False):
+        """Set the value field.
+
+        By default, setting the value does not emit the
+        ``value-changed`` signal. Set ``emit`` to ``True`` to emit the
+        signal after updating the value.
+
+        """
+        was_updating=self._updating
+        self._updating = was_updating or not emit
+        try:
+            self.value_entry.set_text(f"{value:.8e}")
+        finally:
+            self._updating = was_updating
 
     def get_unit(self):
         if self.unit_entry is None:
@@ -306,18 +365,237 @@ class ScientificSpin(Gtk.Box):
         else:
             value = direction * 1.0
 
-        self.set_value(value)
+        self.set_value(value, emit=True)
 
     def on_value_changed(self, entry):
+        """Emit value-changed
+
+        In some conditions, emission will be blocked by setting
+        self._updating to True.
+
+        """
+        if self._updating: return
         try:
             value = float(entry.get_text())
         except ValueError:
             return
+
         self.emit("value-changed")
 
     def on_unit_changed(self, entry):
         self.emit("unit-changed")
 
+## A collection of ScientificSpin widgets for a vector<double>
+#
+# ┌─────────────────────────────────────────────┐
+# │ Unit: [ km ]                                │
+# │                                             │
+# │ 1.00000000e+00                ▲             │
+# │                               ▼             │
+# │                                             │
+# │ 2.00000000e+00                ▲             │
+# │                               ▼             │
+# │                                             │
+# │ 3.00000000e+00                ▲             │
+# │                               ▼             │
+# │                                             │
+# │                         [+]  [-]            │
+# └─────────────────────────────────────────────┘
+#
+class VectorScientificSpin(Gtk.Box):
+    """Editor for std::vector<double> with optional unit."""
+
+    __gsignals__ = {
+        "value-changed": (
+            gi.repository.GObject.SignalFlags.RUN_FIRST,
+            None,
+            ()
+        ),
+        "unit-changed": (
+            gi.repository.GObject.SignalFlags.RUN_FIRST,
+            None,
+            ()
+        )
+    }
+
+    def __init__(self, value=None, with_unit=False, rel_step=0.1):
+        super().__init__(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=6
+        )
+
+        self.rel_step = rel_step
+        self.spins = []
+
+        #
+        # Optional unit field
+        #
+        if with_unit:
+            hbox = Gtk.Box(
+                orientation=Gtk.Orientation.HORIZONTAL,
+                spacing=6
+            )
+
+            label = Gtk.Label(label="Unit:")
+            label.set_xalign(0)
+
+            self.unit_entry = Gtk.Entry()
+            self.unit_entry.set_hexpand(True)
+            self.unit_entry.connect(
+                "activate",
+                lambda *_: self.emit("unit-changed")
+            )
+
+            hbox.append(label)
+            hbox.append(self.unit_entry)
+
+            self.append(hbox)
+
+        else:
+            self.unit_entry = None
+
+        #
+        # Container for the ScientificSpins
+        #
+        self.values_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=2
+        )
+
+        self.append(self.values_box)
+
+        #
+        # + / - buttons
+        #
+        buttons = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=6
+        )
+
+        add = Gtk.Button(icon_name="list-add-symbolic")
+        remove = Gtk.Button(icon_name="list-remove-symbolic")
+
+        add.add_css_class("flat")
+        remove.add_css_class("flat")
+
+        add.connect("clicked", self.on_add)
+        remove.connect("clicked", self.on_remove)
+
+        buttons.append(add)
+        buttons.append(remove)
+
+        self.append(buttons)
+
+        #
+        # Initial values
+        #
+        if value is None:
+            value = [0.0]
+
+        self.set_value(value)
+
+    #
+    # Public API
+    #
+
+    def get_value(self):
+        return [spin.get_value() for spin in self.spins]
+
+    def set_value(self, values):
+
+        #
+        # Remove excess widgets
+        #
+        while len(self.spins) > len(values):
+            spin = self.spins.pop()
+            self.values_box.remove(spin)
+
+        #
+        # Add missing widgets
+        #
+        while len(self.spins) < len(values):
+            spin = self._new_spin()
+
+            self.spins.append(spin)
+            self.values_box.append(spin)
+
+        #
+        # Update values
+        #
+        for spin, value in zip(self.spins, values):
+            spin.set_value(value)
+
+    def get_unit(self):
+        if self.unit_entry is None:
+            return None
+        return self.unit_entry.get_text()
+
+    def set_unit(self, unit):
+        if self.unit_entry is not None:
+            self.unit_entry.set_text(unit)
+
+    #
+    # Internals
+    #
+
+    def on_spin_changed(self, spin):
+        self.emit("value-changed")
+
+    def on_add(self, button):
+
+        if self.spins:
+            value = self.spins[-1].get_value()
+        else:
+            value = 0.0
+
+        spin = self._new_spin(value)
+        self.spins.append(spin)
+        self.values_box.append(spin)
+
+        self.emit("value-changed")
+
+    def on_remove(self, button):
+
+        if len(self.spins) <= 1:
+            return
+
+        spin = self.spins.pop()
+
+        self.values_box.remove(spin)
+
+        self.emit("value-changed")
+
+    def _new_spin(self, value=None):
+        """Private metod to add a new ScientificSpin
+        """
+        spin = ScientificSpin(
+            value=value,
+            rel_step=self.rel_step,
+            with_unit=False
+        )
+        spin.connect(
+            "value-changed",
+            self.on_spin_changed
+        )
+        return spin
+
+## A panel to edit the properties of a gyoto.core.Object
+#
+# ┌───────────────────────────────────────┐
+# │ (PropertyEditorBox:)                  │
+# │                                       │
+# │ ┌─ property1 ───────────────────────┐ │
+# │ │ widget for property1              │ │
+# │ └───────────────────────────────────┘ │
+# │ ┌─ property2 ───────────────────────┐ │
+# │ │ widget for property2              │ │
+# │ └───────────────────────────────────┘ │
+# │ ┌─ property3 ───────────────────────┐ │
+# │ │ widget for property3              │ │
+# │ └───────────────────────────────────┘ │
+# │ ...                                   │
+# └───────────────────────────────────────┘
+#
 class PropertyEditorBox(Gtk.Box):
     """
     A compound widget that presents the properties of a Gyoto object:
@@ -447,6 +725,14 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(editor)
                 self.widgets[name] = editor
 
+            elif param_type == gyoto.core.Property.vector_double_t:
+                vector = VectorScientificSpin(value=value,
+                                              with_unit=prop.supportsUnits())
+                vector.connect("value-changed", self.on_parameter_changed, name)
+                vector.connect("unit-changed", self.on_unit_changed, name)
+                hbox.append(vector)
+                self.widgets[name] = vector
+
             elif param_type == gyoto.core.Property.metric_t:
                 chooser = GyotoObjectChooser(gyoto.metric,
                                              obj=getattr(self.obj, name))
@@ -531,13 +817,17 @@ class PropertyEditorBox(Gtk.Box):
         elif isinstance(widget, FilenameEditor):
             new_value = widget.get_value()
 
+        elif isinstance(widget, VectorScientificSpin):
+            new_value = widget.get_value()
+            new_unit = widget.get_unit()
+
         if new_unit is None:
             self.obj.set(name, new_value)
         else:
             self.obj.set(name, new_value, new_unit)
 
         self.emit('value-changed')
-       
+
     @gtk_callback
     def on_file_chooser_clicked(self, button, entry):
         """File selection dialog for filename_t."""
@@ -560,6 +850,10 @@ class PropertyEditorBox(Gtk.Box):
         if file is not None:
             entry.set_text(file.get_path())
 
+### Main windows for various tools
+
+## A window to actually edit an object's properties
+#
 class ObjectEditor(Gtk.Window):
     """A Gyoto object editor
 
@@ -616,6 +910,9 @@ class ObjectEditor(Gtk.Window):
             GLib.idle_add(self.main_loop.quit)
         return False
 
+
+## This function displaysan error message in a Gtk dialog
+#
 def show_error_dialog(message="An error occurred", detail=None,
                       window=None, widget=None):
     """Show a pop-up error dialog
@@ -639,7 +936,7 @@ def show_error_dialog(message="An error occurred", detail=None,
 
     dialog.show(window)
 
-# The following should be achieved using Swig's extend mechanism
+### The following should be achieved using Swig's extend mechanism
 def edit(self, blocking=True):
     """Display a GUI to edit this object's Properties"""
     ObjectEditor.run(self, blocking=blocking)
