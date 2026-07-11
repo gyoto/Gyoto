@@ -1,0 +1,1 @@
+../../../../src/gyoto/gtk4/widgets/property_editor_box.py
