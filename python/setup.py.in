@@ -12,7 +12,7 @@
 
 HOME_LORENE="@HOME_LORENE@"
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 import platform
 import re
 
@@ -47,9 +47,14 @@ for libspec in ('@CFITSIO_LIBS@', '@XERCES_LIBS@', '@UDUNITS_LIBS@'):
         elif comp != '':
             gyoto_ldflags.append(comp)
 
-gyoto_inc_dirs=[numpy_include, '@abs_builddir@/include', '@abs_builddir@/../include', '@abs_srcdir@/include', '@abs_srcdir@/../include']
+gyoto_inc_dirs=[numpy_include,
+                '@abs_builddir@/include',
+                '@abs_builddir@/../include',
+                '@abs_srcdir@/include',
+                '@abs_srcdir@/../include']
 gyoto_cflags=[]
-for flags in ('@CXXFLAGS@', '@CFITSIO_CFLAGS@', '@XERCES_CFLAGS@', '@UDUNITS_CFLAGS@', '@EIGEN_CFLAGS@', '@BOOST_CPPFLAGS@'):
+for flags in ('@CXXFLAGS@', '@CFITSIO_CFLAGS@', '@XERCES_CFLAGS@',
+              '@UDUNITS_CFLAGS@', '@EIGEN_CFLAGS@', '@BOOST_CPPFLAGS@'):
     flags=re.split('[ \t]', flags)
     for comp in flags:
         if re.match('-I', comp):
@@ -86,13 +91,18 @@ gyoto_lorene_module = Extension('gyoto/_lorene',
 
 pymodules = ["gyoto.__init__", "gyoto.core", "gyoto.std",
              "gyoto._namespaces", "gyoto.astrobj", "gyoto.metric",
-             "gyoto.spectrum", "gyoto.spectrometer", "gyoto.animate", "gyoto.util"]
+             "gyoto.spectrum", "gyoto.spectrometer", "gyoto.animate",
+             "gyoto.util"]
+
 extmodules= [gyoto_module, gyoto_std_module]
+
+packages = find_packages()
 
 if HOME_LORENE != "":
     pymodules.append("gyoto.lorene")
     extmodules.append(gyoto_lorene_module)
 
 setup(py_modules=pymodules,
-      ext_modules=extmodules
+      ext_modules=extmodules,
+      packages=packages
      )
