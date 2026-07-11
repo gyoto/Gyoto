@@ -3,7 +3,7 @@ import ctypes
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, Gdk
 
 import gyoto
 
@@ -258,44 +258,17 @@ class ScientificSpin(Gtk.Box):
         # Set this to True whenever changes should *not* emit
         # value-changed
         self._updating=False
-
-        self.add_css_class("scientific-spin")
-
-        css = Gtk.CssProvider()
-        css.load_from_data(b"""
-        .scientific-spin button {
-            padding: 0;
-            margin: 0;
-            min-height: 0;
-            min-width: 0;
-        }
-
-        .scientific-spin button image {
-            -gtk-icon-size: 10px;
-        }
-
-        .scientific-spin entry {
-            padding-top: 0;
-            padding-bottom: 0;
-        }
-        """)
-
-        Gtk.StyleContext.add_provider_for_display(
-            self.get_display(),
-            css,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
-
         self.rel_step = rel_step
 
+        # Value entry
         self.value_entry = Gtk.Entry()
         self.value_entry.set_hexpand(True)
         self.value_entry.set_tooltip_text("value")
         if value is not None:
             self.set_value(value)
-
         self.append(self.value_entry)
 
+        # Unit entry
         if with_unit:
             self.unit_entry = Gtk.Entry()
             self.unit_entry.set_hexpand(True)
@@ -304,28 +277,88 @@ class ScientificSpin(Gtk.Box):
             self.unit_entry.connect("activate", self.on_unit_changed)
             self.unit_entry.set_tooltip_text("unit")
         else:
-            self.unit_entry=None
+            self.unit_entry = None
 
-        buttons = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        # Buttons container
+        buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
-        self.up = Gtk.Button()
+        # "-" button
         self.down = Gtk.Button()
-
-        self.up.set_icon_name("pan-up-symbolic")
-        self.down.set_icon_name("pan-down-symbolic")
-
-        self.up.add_css_class("flat")
+        self.down.set_icon_name("value-decrease-symbolic")
+        self.down.set_halign(Gtk.Align.FILL)
+        self.down.set_valign(Gtk.Align.FILL)
+        self.down.set_has_frame(True)
         self.down.add_css_class("flat")
-        
+        self.down.set_focusable(False)
+
+        # "+" button
+        self.up = Gtk.Button()
+        self.up.set_icon_name("value-increase-symbolic")
+        self.up.set_halign(Gtk.Align.FILL)
+        self.up.set_valign(Gtk.Align.FILL)
+        self.up.set_has_frame(True)
+        self.up.add_css_class("flat")
+        self.up.set_focusable(False)
+
+        # Connect signals
         self.value_entry.connect("changed", self.on_value_changed)
         self.up.connect("clicked", self.increment, +1)
         self.down.connect("clicked", self.increment, -1)
 
-        buttons.append(self.up)
-        buttons.append(self.down)
+        key_controller = Gtk.EventControllerKey()
+        key_controller.connect("key-pressed", self.on_key_press)
+        self.value_entry.add_controller(key_controller)
 
+        buttons.append(self.down)
+        buttons.append(self.up)
         self.append(buttons)
 
+        # Minimal CSS to ensure buttons match entry height
+        self.add_css_class("scientific-spin")
+
+        css = Gtk.CssProvider()
+        css.load_from_data(b"""
+            /* Make buttons flat and white like entry */
+            .scientific-spin button {
+                /* aspect-ratio: 1; */
+                background: @theme_base_color;
+                /* border: none; */
+                /* box-shadow: none; */
+                /* min-width: 20px; */
+                /* min-height: 20px; */
+                /* padding: 0; */
+                /* margin: 0; */
+            }
+            .scientific-spin button:hover {
+                background: @theme_hover_bg_color;
+            }
+        """)
+        #     /* Thin borders between widgets */
+        #     .scientific-spin > box > button:first-child {
+        #         border-right: 1px solid @borders;
+        #     }
+
+        #     .scientific-spin > entry + box > button:first-child {
+        #         border-left: 1px solid @borders;
+        #     }
+
+        #     .scientific-spin > entry + entry + box > button:first-child {
+        #         border-left: 1px solid @borders;
+        #     }
+        # """)
+        # css.load_from_data(b"""
+        #     .scientific-spin button {
+        #         padding: 0;
+        #         margin: 0;
+        #         min-width: 20px;
+        #         min-height: 20px;
+        #     }
+        # """)
+        Gtk.StyleContext.add_provider_for_display(
+            self.get_display(),
+            css,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
 
     def get_value(self):
         return float(self.value_entry.get_text())
@@ -360,21 +393,46 @@ class ScientificSpin(Gtk.Box):
         except ValueError:
             value = 0.0
 
+
         # normal case: relative increment
         if value != 0:
-            step = self.rel_step
             if direction == +1:
-                value *= 1.+self.rel_step
+                factor = 1.+self.rel_step
             elif direction == -1:
-                value /= 1.+self.rel_step
+                factor = 1./(1.+self.rel_step)
+            elif direction == +10:
+                factor=10.
+            elif direction == -10:
+                factor=0.1
             else:
-                raise ValueError("direction should be +1 or -1")
+                raise ValueError("direction should be +1, -1, +10 or -10")
+            value *= factor
 
         # special case: start from zero
         else:
             value = direction * 1.0
 
         self.set_value(value, emit=True)
+
+
+    def on_key_press(self, controller, keyval, keycode, state):
+        """Handle up/down arrow key presses to increment/decrement the value."""
+
+        # Check for up/down arrow keys
+        if keyval == Gdk.KEY_Up:
+            self.increment(None, +1)  # Increment
+            return True  # Event handled
+        elif keyval == Gdk.KEY_Down:
+            self.increment(None, -1)  # Decrement
+            return True  # Event handled
+        elif keyval == Gdk.KEY_Page_Up:
+            self.increment(None, +10)  # Decrement
+            return True  # Event handled
+        elif keyval == Gdk.KEY_Page_Down:
+            self.increment(None, -10)  # Decrement
+            return True  # Event handled
+
+        return False  # Event not handled, propagate further
 
     def on_value_changed(self, entry):
         """Emit value-changed
@@ -607,6 +665,10 @@ class VectorScientificSpin(Gtk.Box):
             spin.set_numeric(True)
             spin.set_digits(0)
             spin.set_hexpand(True)
+            # Block scroll events
+            scroll_controller = Gtk.EventControllerScroll()
+            scroll_controller.connect("scroll", lambda *args: True)
+            spin.add_controller(scroll_controller)
         else:
             raise ValueError(f'itemclass must be one of ScientificSpin, Gtk.SpinButton')
 
@@ -730,6 +792,10 @@ class PropertyEditorBox(Gtk.Box):
                 spin.set_hexpand(True)
                 hbox.append(spin)
                 spin.connect("value-changed", self.on_parameter_changed, name)
+                # block scroll events
+                scroll_controller = Gtk.EventControllerScroll()
+                scroll_controller.connect("scroll", lambda *args: True)
+                spin.add_controller(scroll_controller)
                 self.widgets[name] = spin
 
             elif param_type == gyoto.core.Property.bool_t:
