@@ -1,0 +1,1 @@
+../../../../src/gyoto/gtk4/widgets/gyoto_object_chooser.py

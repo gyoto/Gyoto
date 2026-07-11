@@ -161,38 +161,21 @@ class GyotoPluginLoader(importlib.abc.Loader):
                 entry = entry.next()
 
 class GyotoPluginFinder(importlib.abc.MetaPathFinder):
-    """Finder for wrapping dynamic modules around Gyoto plugins.
-
-    Check if a static submodule by that name already exists
-    (gyoto/<name>.py or gyoto/<name>/__init__.py. In this case, let
-    Python handle it normally.
-
-    Else, instruct Python to try and build it dynamically using
-    GyotoPluginBuilder.
-    """
+    """Finder for wrapping dynamic modules around Gyoto plugins."""
 
     def find_spec(self, fullname, path, target=None):
-        """Find the module spec for the given module name.
-
-        Args:
-            fullname: The full module name (e.g., "module.submodule").
-            path: The search path (unused here).
-            target: The target module (unused here).
-
-        Returns:
-            A ModuleSpec if the module should be created dynamically,
-            None if the module should be loaded normally.
-        """
-        # Only handle submodules of "module"
-        if not fullname.startswith(__name__+"."):
+        """Find the module spec for the given module name."""
+        if not fullname.startswith(__name__ + "."):
             return None
 
-        # Extract the submodule name (e.g., "submodule")
         submodule_name = fullname.split('.', 1)[1]
-
-        # Expected path for the .py file
         module_dir = Path(__file__).parent
-        submodule_path = module_dir / submodule_name
+
+        # Split the submodule name into parts for nested modules
+        parts = submodule_name.split('.')
+        submodule_path = module_dir
+        for part in parts:
+            submodule_path = submodule_path / part
 
         # Check for .py file
         if submodule_path.with_suffix(".py").exists():
@@ -204,8 +187,7 @@ class GyotoPluginFinder(importlib.abc.MetaPathFinder):
             return None
 
         # Check for compiled module (.so)
-        # Example pattern: _std.cpython-313-x86_64-linux-gnu.so
-        so_pattern = f"{submodule_name}.*.so"
+        so_pattern = f"{parts[-1]}.*.so"
         so_matches = list(module_dir.glob(so_pattern))
         if so_matches:
             return None
@@ -221,27 +203,37 @@ class GyotoPluginFinder(importlib.abc.MetaPathFinder):
 sys.meta_path.insert(0, GyotoPluginFinder())
 
 def __getattr__(name):
-    f'''Autoload submodules
+    """Autoload submodules.
 
-    {__name__}.__getattr__ is called when Python encounters a call to
-    an attribute that does not yet exist.
-
-    It first tries to load an existing submodule. If it fails, it
+    First tries to load an existing submodule. If it fails, it
     tries to load a Gyoto plugin by that name and expose it as a
     minimal submodule.
-
-    '''
-    # __getattr__ shouldn't be called in that case, but still the
-    # right answer:
-    if name in sys.modules[__name__].__dict__:
-        return sys.modules[__name__].__dict__[name]
-
-    # Take care of standard attributes
-    if name.startswith('__') and name.endsswith('__'):
+    """
+    # Avoid infinite recursion for standard attributes
+    if name.startswith('__') and name.endswith('__'):
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
-    # Now try to load a submodule
-    fullname=f"{__name__}.{name}"
-    mod = importlib.import_module(fullname)
-    setattr(sys.modules[__name__], name, mod)
-    return mod
+    fullname = f"{__name__}.{name}"
+
+    # First, try to import the submodule normally
+    try:
+        mod = importlib.import_module(fullname)
+        setattr(sys.modules[__name__], name, mod)
+        return mod
+    except ModuleNotFoundError:
+        pass  # Fall back to dynamic plugin wrapper
+
+    # If normal import fails, try to load as a Gyoto plugin
+    try:
+        core.requirePlugin(name)
+    except core.Error:
+        raise ModuleNotFoundError(f"No module named '{fullname}'")
+
+    # Dynamically create the module
+    module = types.ModuleType(fullname)
+    sys.modules[fullname] = module
+    setattr(sys.modules[__name__], name, module)
+
+    # Initialize the module (same as GyotoPluginLoader.exec_module)
+    GyotoPluginLoader().exec_module(module)
+    return module

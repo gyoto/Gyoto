@@ -1,0 +1,1 @@
+../../../../src/gyoto/gtk4/widgets/filename_editor.py
