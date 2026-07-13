@@ -1,1 +1,0 @@
-../../../../src/gyoto/gtk4/widgets/scientific_spin.py
