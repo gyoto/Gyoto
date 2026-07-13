@@ -43,7 +43,7 @@ from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
 from ...core import Factory, Error as GyotoError, Photon
-from ...std import Star
+from ...std import Star, KerrBL
 
 # Main application
 class GyotoyApplication(Gtk.Application):
@@ -71,16 +71,23 @@ class GyotoyApplication(Gtk.Application):
 class MainWindow(Gtk.ApplicationWindow):
     """Main application window."""
 
+    # Default values
     blocking = True
     main_loop = None
     particle = None
+    star=None
+    photon=None
+    endtime=3000
 
     ####################################################################
     # Construction
     ####################################################################
 
-    def __init__(self, application=None, particle=None):
+    def __init__(self, application=None, particle=None, star=None, photon=None):
         super().__init__(application=application)
+
+        self.star = star if star is not None else self.default_star()
+        self.photon = photon if photon is not None else self.default_photon()
 
         self.set_title("Gyotoy")
         self.set_default_size(1400, 900)
@@ -91,6 +98,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect("close-request", self.on_close_request)
 
         # Populate initial editor
+        if particle is None: particle = self.star
         self.set_particle(particle)
 
     ####################################################################
@@ -162,7 +170,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.paned.set_start_child(
             self.viewer
         )
-        self.paned.set_resize_start_child(True)
 
         ## first row, right: vertical box
         right = Gtk.Box(
@@ -212,6 +219,7 @@ class MainWindow(Gtk.ApplicationWindow):
         scroll.set_vexpand(True)
         right.append(scroll)
         self.editor_scroller = scroll
+        self.editor_scroller.set_min_content_width(365)
 
         # an additional spin button for end time
         frame = Gtk.Frame()
@@ -223,7 +231,8 @@ class MainWindow(Gtk.ApplicationWindow):
         frame.set_child(hbox)
 
         spin = ScientificSpin(value=0.)
-        spin.connect("value-changed", self.on_parameter_changed)
+        spin.set_value(self.endtime)
+        spin.connect("value-changed", self.on_endtime_changed)
         hbox.append(spin)
         right.append(frame)
 
@@ -232,6 +241,12 @@ class MainWindow(Gtk.ApplicationWindow):
         # scroll.set_child(
         #     self.editor
         # )
+
+        self.paned.set_resize_start_child(True)
+        self.paned.set_shrink_start_child(False)
+
+        self.paned.set_resize_end_child(False)
+        self.paned.set_shrink_end_child(False)
 
         # then controls for running the integration
         self.controls = SimulationControls()
@@ -319,12 +334,15 @@ class MainWindow(Gtk.ApplicationWindow):
     # Redraw
     ####################################################################
 
-    def redraw(self):
+    def redraw(self, *args):
+        '''Redraw the plot
+
+        Accepts and ignores any parameters to work as a callback.
+        '''
         print(f'in redraw: type(self.particle):{type(self.particle)}')
         if self.particle is None:
             return
         starttime = self.particle.initCoord()[0]
-        self.endtime=3000
         self.particle.xFill(self.endtime)
         interpolate = False
         if interpolate:
@@ -339,7 +357,10 @@ class MainWindow(Gtk.ApplicationWindow):
         y=numpy.ndarray(npoints)
         z=numpy.ndarray(npoints)
         self.particle.getCartesian(t, x, y, z)
+        self.viewer.axes.clear()
         self.viewer.axes.plot(x, y, z)
+        self.viewer.set_equal()
+        self.viewer.canvas.draw()
 
     ####################################################################
     # Callbacks
@@ -436,6 +457,16 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.set_particle(particle)
         print(f'in on_open_file_selected: type(self.particle):{type(self.particle)}')
 
+    def on_endtime_changed(self, wdgt):
+        '''Called when changing the "End time" ScientificSpin
+
+        Effects:
+        - set self.endtime
+        - redraw
+        '''
+        self.endtime=wdgt.get_value()
+        self.redraw()
+
     ####################################################################
     # Setters / getters
     ####################################################################
@@ -455,11 +486,24 @@ class MainWindow(Gtk.ApplicationWindow):
         print(f'in set_particle: type(self.particle):{type(self.particle)}')
         self.editor = PropertyEditorBox(particle)
         self.editor_scroller.set_child(self.editor)
-        self.editor.connect('value-changed', self.on_particle_changed)
+        self.editor.connect('value-changed', self.redraw)
         self.redraw()
 
     def get_particle(self):
         return self.particle
+
+    ####################################################################
+    # Default values
+    ####################################################################
+
+    def default_star(self):
+        particle=Star()
+        particle.Metric=KerrBL()
+        particle.Metric.Spin=0.995
+        particle.initCoord((0.,10.791,1.570796326794866,0., 1.1264111886458281, 0.,0.,0.018770516047594082))
+        particle.Delta=0.01
+        return particle
+
 
 # Widget construction (__init__)
 # Header bar, menu, Matplotlib embedding, and layout

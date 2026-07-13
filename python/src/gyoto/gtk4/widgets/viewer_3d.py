@@ -102,20 +102,43 @@ class Viewer3D(Gtk.Box):
         )
 
 
+    # def set_equal(self):
+    #     """Force equal scaling on all axes.
+
+    #     This avoids spheres becoming ellipsoids when the ranges differ.
+    #     """
+
+    #     xlim = self.axes.get_xlim3d()
+    #     ylim = self.axes.get_ylim3d()
+    #     zlim = self.axes.get_zlim3d()
+
+    #     xr = abs(xlim[1] - xlim[0])
+    #     yr = abs(ylim[1] - ylim[0])
+    #     zr = abs(zlim[1] - zlim[0])
+
+    #     self.axes.set_box_aspect(
+    #         (xr, yr, zr)
+    #     )
+
     def set_equal(self):
-        """Force equal scaling on all axes.
+        ax = self.axes
 
-        This avoids spheres becoming ellipsoids when the ranges differ.
-        """
+        xlim = ax.get_xlim3d()
+        ylim = ax.get_ylim3d()
+        zlim = ax.get_zlim3d()
 
-        xlim = self.axes.get_xlim3d()
-        ylim = self.axes.get_ylim3d()
-        zlim = self.axes.get_zlim3d()
+        xmid = (xlim[0] + xlim[1]) / 2
+        ymid = (ylim[0] + ylim[1]) / 2
+        zmid = (zlim[0] + zlim[1]) / 2
 
-        xr = abs(xlim[1] - xlim[0])
-        yr = abs(ylim[1] - ylim[0])
-        zr = abs(zlim[1] - zlim[0])
+        radius = max(
+            xlim[1] - xlim[0],
+            ylim[1] - ylim[0],
+            zlim[1] - zlim[0],
+        ) / 2
 
-        self.axes.set_box_aspect(
-            (xr, yr, zr)
-        )
+        ax.set_xlim3d(xmid - radius, xmid + radius)
+        ax.set_ylim3d(ymid - radius, ymid + radius)
+        ax.set_zlim3d(zmid - radius, zmid + radius)
+
+        ax.set_box_aspect((1, 1, 1))
