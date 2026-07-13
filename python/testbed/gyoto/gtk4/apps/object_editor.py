@@ -1,1 +1,0 @@
-../../../../src/gyoto/gtk4/apps/object_editor.py
