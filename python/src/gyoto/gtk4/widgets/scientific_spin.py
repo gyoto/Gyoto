@@ -167,7 +167,7 @@ class ScientificSpin(Gtk.Box):
         was_updating=self._updating
         self._updating = was_updating or not emit
         try:
-            self.value_entry.set_text(f"{value:.8e}")
+            self.value_entry.set_text(repr(value))
         finally:
             self._updating = was_updating
 
