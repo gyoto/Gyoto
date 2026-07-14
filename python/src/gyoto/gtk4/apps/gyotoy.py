@@ -43,6 +43,7 @@ from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
 from ...core import Factory, Error as GyotoError, Photon
+from ...core import GYOTO_COORDKIND_SPHERICAL
 from ...std import Star, KerrBL
 
 # Main application
@@ -72,12 +73,13 @@ class MainWindow(Gtk.ApplicationWindow):
     """Main application window."""
 
     # Default values
-    blocking = True
+    blocking  = True
     main_loop = None
-    particle = None
-    star=None
-    photon=None
-    endtime=3000
+    particle  = None
+    star      = None
+    photon    = None
+    endtime   = 3000
+    hold      = True
 
     ####################################################################
     # Construction
@@ -99,6 +101,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Populate initial editor
         if particle is None: particle = self.star
+        self.hold=False
         self.set_particle(particle)
 
     ####################################################################
@@ -273,10 +276,12 @@ class MainWindow(Gtk.ApplicationWindow):
             self.on_step_changed
         )
 
-        self.controls.connect(
-            "nframes-changed",
-            self.on_nframes_changed
-        )
+        # We don't need to do anything
+        # self.controls.connect(
+        #     "nframes-changed",
+        #     self.on_nframes_changed
+        # )
+        self.controls.nframes.set_value(1)
 
         self.controls.connect(
             "interpolate-changed",
@@ -339,28 +344,36 @@ class MainWindow(Gtk.ApplicationWindow):
 
         Accepts and ignores any parameters to work as a callback.
         '''
-        print(f'in redraw: type(self.particle):{type(self.particle)}')
-        if self.particle is None:
-            return
+        if self.hold: return
+        if self.particle is None: return
+
         starttime = self.particle.initCoord()[0]
-        self.particle.xFill(self.endtime)
-        interpolate = False
-        if interpolate:
-            interp_step=1e-2
-            npoints = int(abs(self.endtime-starttime)/interp_step)
-            t=numpy.linspace(starttime, self.endtime, npoints)
-        else:
-            npoints = self.particle.get_nelements()
-            t = numpy.ndarray(npoints)
-            self.particle.get_t(t)
-        x=numpy.ndarray(npoints)
-        y=numpy.ndarray(npoints)
-        z=numpy.ndarray(npoints)
-        self.particle.getCartesian(t, x, y, z)
-        self.viewer.axes.clear()
-        self.viewer.axes.plot(x, y, z)
-        self.viewer.set_equal()
-        self.viewer.canvas.draw()
+        frametimes = numpy.linspace(starttime, self.endtime,
+                                    self.controls.nframes.get_value_as_int()+1)
+
+        self.controls.set_progress(0.)
+
+        for n in range(len(frametimes)-1):
+            self.particle.xFill(frametimes[n+1])
+            interpolate = False
+            if interpolate:
+                interp_step=1e-2
+                npoints = int(abs(frametimes[n+1]-starttime)/interp_step)
+                t=numpy.linspace(starttime, frametimes[n+1], npoints)
+            else:
+                npoints = self.particle.get_nelements()
+                t = numpy.ndarray(npoints)
+                self.particle.get_t(t)
+            x=numpy.ndarray(npoints)
+            y=numpy.ndarray(npoints)
+            z=numpy.ndarray(npoints)
+            self.particle.getCartesian(t, x, y, z)
+            self.viewer.axes.clear()
+            self.viewer.axes.plot(x, y, z)
+            self.viewer.set_equal()
+            self.viewer.canvas.draw()
+            self.controls.set_progress((frametimes[n+1]-starttime)/
+                                       (self.endtime-starttime))
 
     ####################################################################
     # Callbacks
@@ -457,6 +470,16 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.set_particle(particle)
         print(f'in on_open_file_selected: type(self.particle):{type(self.particle)}')
 
+    def on_star_selected(self, wdgt):
+        if wdgt.get_active() and isinstance(self.star, Star):
+            if self.particle is not None:
+                self.star.Metric = self.particle.Metric
+            self.set_particle(self.star)
+        elif isinstance(self.photon, Photon):
+            if self.particle is not None:
+                self.photon.Metric = self.particle.Metric
+            self.set_particle(self.photon)
+
     def on_endtime_changed(self, wdgt):
         '''Called when changing the "End time" ScientificSpin
 
@@ -464,7 +487,28 @@ class MainWindow(Gtk.ApplicationWindow):
         - set self.endtime
         - redraw
         '''
+        prev=self.endtime
         self.endtime=wdgt.get_value()
+        if self.particle is not None:
+            starttime=self.particle.InitCoord[0]
+            if prev > starttime:
+                if self.endtime < prev:
+                    self.particle.reInit()
+            else:
+                if self.endtime > prev:
+                    self.particle.reInit()
+        self.redraw()
+
+    def on_reset(self, wdgt):
+        self.particle.reInit()
+
+    def on_play_pause(self, wdgt):
+        wdgt.stop_button.set_active(False)
+        #self.hold = wdgt.stop_button.get_active()
+        #self.redraw()
+
+    def on_stop(self, wdgt):
+        self.hold = wdgt.stop_button.get_active()
         self.redraw()
 
     ####################################################################
@@ -496,14 +540,32 @@ class MainWindow(Gtk.ApplicationWindow):
     # Default values
     ####################################################################
 
+    def default_metric(self):
+        metric = KerrBL()
+        metric.Spin = 0.995
+        return metric
+
     def default_star(self):
-        particle=Star()
-        particle.Metric=KerrBL()
-        particle.Metric.Spin=0.995
-        particle.initCoord((0.,10.791,1.570796326794866,0., 1.1264111886458281, 0.,0.,0.018770516047594082))
+        particle = Star()
+        particle.Metric = (self.default_metric() if self.photon is None
+                           else self.photon.Metric)
+        particle.initCoord((0.,10.791,1.570796326794866,0.,
+                            1.1264111886458281, 0.,0.,0.018770516047594082))
         particle.Delta=0.01
         return particle
 
+    def default_photon(self):
+        particle = Photon()
+        particle.Metric = (self.default_metric() if self.star is None
+                           else self.star.Metric)
+        r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
+        spherical = (particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL)
+        coord = (0., r, 0.5*numpy.pi if spherical else 0., 0.,
+                 1., 0., 0. if spherical else 1., 1./r if spherical else 0.)
+        coord = numpy.array(coord)
+        particle.Metric.nullifyCoord(coord)
+        particle.initCoord(coord)
+        return particle
 
 # Widget construction (__init__)
 # Header bar, menu, Matplotlib embedding, and layout
