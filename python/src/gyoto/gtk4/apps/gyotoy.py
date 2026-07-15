@@ -31,6 +31,9 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
 import numpy
+import threading
+import time
+import queue
 
 import warnings
 
@@ -80,6 +83,7 @@ class MainWindow(Gtk.ApplicationWindow):
     photon    = None
     endtime   = 3000
     hold      = True
+    worker    = None
 
     ####################################################################
     # Construction
@@ -98,6 +102,12 @@ class MainWindow(Gtk.ApplicationWindow):
         self.build_headerbar()
         self.build_body()
         self.connect("close-request", self.on_close_request)
+
+        # Prepare compoutation thread
+        self.update_queue = queue.Queue()
+        self.pause_event = threading.Event()
+        self.stop_event = threading.Event()
+        GLib.idle_add(self.process_ui_updates)
 
         # Populate initial editor
         if particle is None: particle = self.star
@@ -336,20 +346,16 @@ class MainWindow(Gtk.ApplicationWindow):
         pass
 
     ####################################################################
-    # Redraw
+    # Compute and redraw
     ####################################################################
 
-    def redraw(self, *args):
-        '''Redraw the plot
+    def compute_and_redraw(self, *args):
+        '''Compute the trajectory and redraw the plot
 
         Accepts and ignores any parameters to work as a callback.
         '''
         if self.hold: return
         if self.particle is None: return
-
-        starttime = self.particle.initCoord()[0]
-        frametimes = numpy.linspace(starttime, self.endtime,
-                                    self.controls.nframes.get_value_as_int()+1)
 
         coord=numpy.array(self.particle.InitCoord)
         print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
@@ -361,9 +367,34 @@ class MainWindow(Gtk.ApplicationWindow):
         # self.particle.InitCoord = coord
         # self.editor.on_3vel_toggled(name='InitCoord')
 
-        self.controls.set_progress(0.)
+        if self.worker and self.worker.is_alive():
+            return
+        self.stop_event.clear()
+        self.pause_event.clear()
+        self.worker = threading.Thread(name='worker',
+                                       target=self.run_simulation,
+                                       args=(self.particle.initCoord()[0],
+                                             self.endtime,
+                                             self.controls.nframes.get_value_as_int()+1),
+                                       daemon=True)
+        self.worker.start()
+
+    def run_simulation(self, starttime, endtime, nframes):
+        # 📤 Send update to UI (non-blocking)
+        self.update_queue.put(('progress', 0.))
+
+        frametimes = numpy.linspace(starttime, endtime, nframes+1)
 
         for n in range(len(frametimes)-1):
+            if self.stop_event.is_set():
+                break
+
+            # ⏸️ Pause check
+            while self.pause_event.is_set() and not self.stop_event.is_set():
+                threading.Event().wait(0.1)  # Avoid busy-waiting
+
+            # 🔢 Do computation
+            frametime = frametimes[n+1]
             self.particle.xFill(frametimes[n+1])
             interpolate = False
             if interpolate:
@@ -378,12 +409,37 @@ class MainWindow(Gtk.ApplicationWindow):
             y=numpy.ndarray(npoints)
             z=numpy.ndarray(npoints)
             self.particle.getCartesian(t, x, y, z)
-            self.viewer.axes.clear()
-            self.viewer.axes.plot(x, y, z)
-            self.viewer.set_equal()
-            self.viewer.canvas.draw()
-            self.controls.set_progress((frametimes[n+1]-starttime)/
-                                       (self.endtime-starttime))
+
+            # 📤 Send update to UI (non-blocking except last update)
+            self.update_queue.put(('progress',
+                                   (frametime-starttime)/
+                                   (endtime-starttime),
+                                   x, y, z),
+                                  block = (frametime==endtime))
+            time.sleep(0.1)  # Yield GIL between frames
+
+        self.update_queue.put(('done',))
+
+    def process_ui_updates(self):
+        try:
+            while True:
+                msg = self.update_queue.get_nowait()
+                if msg[0] == 'progress':
+                    print(msg[1])
+                    if len(msg) >= 5:
+                        x, y, z = msg[2:5]
+                        self.viewer.axes.clear()
+                        self.viewer.axes.plot(x, y, z)
+                        self.viewer.set_equal()
+                        self.viewer.canvas.draw()
+                    self.controls.set_progress(msg[1])
+
+        except queue.Empty:
+            pass
+        return True  # Keep idle source alive
+
+
+
 
     ####################################################################
     # Callbacks
@@ -501,7 +557,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.particle.Metric.nullifyCoord(coord)
             self.particle.InitCoord = coord
             self.editor.on_3vel_toggled(name='InitCoord')
-        self.redraw()
+        self.compute_and_redraw()
 
     def on_child_changed(self, widget, name, *args):
         '''Keep Metric synchronized between the two particles
@@ -531,14 +587,14 @@ class MainWindow(Gtk.ApplicationWindow):
         self.photon.InitCoord = coord
 
         self.editor.on_3vel_toggled(name='InitCoord')
-        self.redraw()
+        self.compute_and_redraw()
 
     def on_endtime_changed(self, wdgt):
         '''Called when changing the "End time" ScientificSpin
 
         Effects:
         - set self.endtime
-        - redraw
+        - compute and redraw
         '''
         prev=self.endtime
         self.endtime=wdgt.get_value()
@@ -550,7 +606,7 @@ class MainWindow(Gtk.ApplicationWindow):
             else:
                 if self.endtime > prev:
                     self.particle.reInit()
-        self.redraw()
+        self.compute_and_redraw()
 
     def on_reset(self, wdgt):
         self.particle.reInit()
@@ -558,11 +614,12 @@ class MainWindow(Gtk.ApplicationWindow):
     def on_play_pause(self, wdgt):
         wdgt.stop_button.set_active(False)
         #self.hold = wdgt.stop_button.get_active()
-        #self.redraw()
+        #self.compute_and_redraw()
 
     def on_stop(self, wdgt):
         self.hold = wdgt.stop_button.get_active()
-        self.redraw()
+        if set.hold : self.stop_event.set()
+        else: self.stop_event.clear()
 
     ####################################################################
     # Setters / getters
@@ -586,7 +643,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.editor.connect('value-changed', self.on_value_changed)
         self.editor.connect('child-changed', self.on_child_changed)
         self.editor.connect('child-mutated', self.on_child_mutated)
-        self.redraw()
+        self.compute_and_redraw()
 
     def get_particle(self):
         return self.particle
