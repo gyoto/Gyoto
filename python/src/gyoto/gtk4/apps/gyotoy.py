@@ -31,7 +31,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
 import numpy
-import threading
+from multiprocessing import Queue, Event, Process
 import time
 import queue
 
@@ -48,6 +48,68 @@ from ..utils import show_error_dialog
 from ...core import Factory, Error as GyotoError, Photon
 from ...core import GYOTO_COORDKIND_SPHERICAL
 from ...std import Star, KerrBL
+
+
+# --- Commands ---
+RUN_SIM = 'run'
+QUIT    = 'quit'
+
+# --- Worker (runs forever) ---
+def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_event):
+    """Persistent worker: waits for commands, never exits until QUIT."""
+    import numpy
+    import time
+    from ...core import Factory
+    from ...std import Star
+
+    control_queue.put(('log', 'here'))
+    next_update_fraction = 0.
+    last_update = time.time()
+
+    while True:
+        cmd = cmd_queue.get()  # Blocks until command arrives
+        control_queue.put(('log', repr(cmd)))
+
+        if cmd[0] == QUIT:
+            break  # Exit loop → process terminates
+
+        elif cmd[0] == RUN_SIM:
+            _, particlexml, starttime, endtime, nframes = cmd
+            stop_event.clear()
+            pause_event.clear()  # Start fresh
+
+            # Rebuild objects from serialized data
+            f = Factory(particlexml)
+            particle = f.photon() if f.kind() == 'Photon' else Star (f.astrobj())
+
+            frametimes = numpy.linspace(starttime, endtime, nframes + 1)
+
+            for n in range(len(frametimes) - 1):
+                print(n)
+                if stop_event.is_set():
+                    progress_queue.put_nowait(('aborted',))
+                    break
+                while pause_event.is_set() and not stop_event.is_set():
+                    time.sleep(0.1)
+
+                frametime = frametimes[n + 1]
+                particle.xFill(frametimes[n + 1])
+                npoints = particle.get_nelements()
+                t = numpy.ndarray(npoints)
+                particle.get_t(t)
+                x, y, z = [numpy.ndarray(npoints) for _ in range(3)]
+                particle.getCartesian(t, x, y, z)
+
+                progress = (frametime - starttime) / (endtime - starttime)
+                if progress >= next_update_fraction and time.time() - last_update > 0.1:
+                    progress_queue.put_nowait(('progress', progress,
+                               x.tolist(), y.tolist(), z.tolist()))
+                    next_update_fraction += 0.01
+                    last_update=time.time()
+
+            progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
+            control_queue.put(('log', 'computation done'))
+            control_queue.put(('done',))
 
 # Main application
 class GyotoyApplication(Gtk.Application):
@@ -84,6 +146,7 @@ class MainWindow(Gtk.ApplicationWindow):
     endtime   = 3000
     hold      = True
     worker    = None
+    simulation_running = False
 
     ####################################################################
     # Construction
@@ -104,10 +167,24 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect("close-request", self.on_close_request)
 
         # Prepare compoutation thread
-        self.update_queue = queue.Queue()
-        self.pause_event = threading.Event()
-        self.stop_event = threading.Event()
-        GLib.idle_add(self.process_ui_updates)
+        self.cmd_queue = Queue()
+        self.progress_queue = Queue()
+        self.control_queue = Queue()
+        self.pause_event = Event()
+        self.stop_event = Event()
+
+        # Start worker ONCE at window creation
+        self.worker = Process(
+            target=worker_func,
+            args=(self.cmd_queue, self.progress_queue, self.control_queue,
+                  self.pause_event, self.stop_event),
+            daemon=True
+        )
+        self.worker.start()
+
+        # Poll results every 50ms
+        GLib.timeout_add(50, self.process_progress)
+        GLib.timeout_add(50, self.process_control)
 
         # Populate initial editor
         if particle is None: particle = self.star
@@ -319,6 +396,11 @@ class MainWindow(Gtk.ApplicationWindow):
         return win
 
     def on_close_request(self, *args):
+        self.cmd_queue.put((QUIT,))  # Signal worker to exit
+        if self.worker:
+            self.worker.join(timeout=2.0)  # Graceful shutdown
+            if self.worker.is_alive():
+                self.worker.terminate()  # Force kill if stuck
         if self.main_loop is not None:
             GLib.idle_add(self.main_loop.quit)
         return False
@@ -354,8 +436,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
         Accepts and ignores any parameters to work as a callback.
         '''
-        if self.hold: return
-        if self.particle is None: return
+        if self.hold or self.particle is None or self.simulation_running:
+            return
+
+        self.simulation_running = True
+        self.controls.set_progress(0.)
 
         coord=numpy.array(self.particle.InitCoord)
         print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
@@ -366,80 +451,42 @@ class MainWindow(Gtk.ApplicationWindow):
         # print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
         # self.particle.InitCoord = coord
         # self.editor.on_3vel_toggled(name='InitCoord')
+        self.cmd_queue.put((
+            RUN_SIM,
+            str(self.particle),
+            self.particle.InitCoord[0],  # starttime
+            self.endtime,
+            self.controls.nframes.get_value_as_int()
+        ))
 
-        if self.worker and self.worker.is_alive():
-            return
-        self.stop_event.clear()
-        self.pause_event.clear()
-        self.worker = threading.Thread(name='worker',
-                                       target=self.run_simulation,
-                                       args=(self.particle.initCoord()[0],
-                                             self.endtime,
-                                             self.controls.nframes.get_value_as_int()+1),
-                                       daemon=True)
-        self.worker.start()
-
-    def run_simulation(self, starttime, endtime, nframes):
-        # 📤 Send update to UI (non-blocking)
-        self.update_queue.put(('progress', 0.))
-
-        frametimes = numpy.linspace(starttime, endtime, nframes+1)
-
-        for n in range(len(frametimes)-1):
-            if self.stop_event.is_set():
+    def process_progress(self):
+        msg = None
+        while True:
+            try:
+                msg = self.progress_queue.get_nowait()
+            except queue.Empty:
                 break
+        if msg:
+            print(msg[1])
+            if len(msg) >= 5:
+                x, y, z = msg[2:5]
+                self.viewer.axes.clear()
+                self.viewer.axes.plot(x, y, z)
+                self.viewer.set_equal()
+                self.viewer.canvas.draw_idle()
+            self.controls.set_progress(msg[1])
+        return True
 
-            # ⏸️ Pause check
-            while self.pause_event.is_set() and not self.stop_event.is_set():
-                threading.Event().wait(0.1)  # Avoid busy-waiting
-
-            # 🔢 Do computation
-            frametime = frametimes[n+1]
-            self.particle.xFill(frametimes[n+1])
-            interpolate = False
-            if interpolate:
-                interp_step=1e-2
-                npoints = int(abs(frametimes[n+1]-starttime)/interp_step)
-                t=numpy.linspace(starttime, frametimes[n+1], npoints)
-            else:
-                npoints = self.particle.get_nelements()
-                t = numpy.ndarray(npoints)
-                self.particle.get_t(t)
-            x=numpy.ndarray(npoints)
-            y=numpy.ndarray(npoints)
-            z=numpy.ndarray(npoints)
-            self.particle.getCartesian(t, x, y, z)
-
-            # 📤 Send update to UI (non-blocking except last update)
-            self.update_queue.put(('progress',
-                                   (frametime-starttime)/
-                                   (endtime-starttime),
-                                   x, y, z),
-                                  block = (frametime==endtime))
-            time.sleep(0.1)  # Yield GIL between frames
-
-        self.update_queue.put(('done',))
-
-    def process_ui_updates(self):
+    def process_control(self):
         try:
-            while True:
-                msg = self.update_queue.get_nowait()
-                if msg[0] == 'progress':
-                    print(msg[1])
-                    if len(msg) >= 5:
-                        x, y, z = msg[2:5]
-                        self.viewer.axes.clear()
-                        self.viewer.axes.plot(x, y, z)
-                        self.viewer.set_equal()
-                        self.viewer.canvas.draw()
-                    self.controls.set_progress(msg[1])
-
+            msg = self.control_queue.get_nowait()
+            if msg[0] == 'log':
+                print(msg[1])
+            elif msg[0] in ('done', 'aborted'):
+                self.simulation_running = False
         except queue.Empty:
             pass
-        return True  # Keep idle source alive
-
-
-
+        return True
 
     ####################################################################
     # Callbacks
@@ -612,13 +659,15 @@ class MainWindow(Gtk.ApplicationWindow):
         self.particle.reInit()
 
     def on_play_pause(self, wdgt):
+        self.pause_event.set() if not self.pause_event.is_set() else self.pause_event.clear()
+        self.stop_event.clear()
         wdgt.stop_button.set_active(False)
         #self.hold = wdgt.stop_button.get_active()
         #self.compute_and_redraw()
 
     def on_stop(self, wdgt):
         self.hold = wdgt.stop_button.get_active()
-        if set.hold : self.stop_event.set()
+        if self.hold : self.stop_event.set()
         else: self.stop_event.clear()
 
     ####################################################################
