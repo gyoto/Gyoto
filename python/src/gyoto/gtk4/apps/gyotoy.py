@@ -92,7 +92,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.photon = photon if photon is not None else self.default_photon()
 
         self.set_title("Gyotoy")
-        self.set_default_size(1400, 900)
+        self.set_default_size(1024, 768)
 
         # Build UI
         self.build_headerbar()
@@ -351,6 +351,16 @@ class MainWindow(Gtk.ApplicationWindow):
         frametimes = numpy.linspace(starttime, self.endtime,
                                     self.controls.nframes.get_value_as_int()+1)
 
+        coord=numpy.array(self.particle.InitCoord)
+        print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
+        # if self.particle == self.star:
+        #     self.particle.Metric.normalizeFourVel(coord)
+        # else:
+        #     self.particle.Metric.nullifyCoord(coord)
+        # print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
+        # self.particle.InitCoord = coord
+        # self.editor.on_3vel_toggled(name='InitCoord')
+
         self.controls.set_progress(0.)
 
         for n in range(len(frametimes)-1):
@@ -480,6 +490,49 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.photon.Metric = self.particle.Metric
             self.set_particle(self.photon)
 
+    def on_value_changed(self, widget, name, *args):
+        '''Keep 4-velocity normalized
+        '''
+        if name == 'InitCoord':
+            coord =  numpy.array(self.particle.InitCoord)
+            if self.particle == self.star:
+                self.particle.Metric.normalizeFourVel(coord)
+            else:
+                self.particle.Metric.nullifyCoord(coord)
+            self.particle.InitCoord = coord
+            self.editor.on_3vel_toggled(name='InitCoord')
+        self.redraw()
+
+    def on_child_changed(self, widget, name, *args):
+        '''Keep Metric synchronized between the two particles
+        '''
+        if name == 'Metric':
+            if self.particle == self.star:
+                self.photon.Metric = self.star.Metric
+            else:
+                self.star.Metric = self.photon.Metric
+        self.on_child_mutated(widget, name, *args)
+
+    def on_child_mutated(self, widget, name, *args):
+        '''Renormalize InitCoord when Metric changes
+        '''
+
+        print(f'on_child_mutated: name={name}')
+        if name != 'Metric': return
+
+        # normalize star init coord
+        coord = numpy.array(self.star.InitCoord)
+        self.star.Metric.normalizeFourVel(coord)
+        self.star.InitCoord = coord
+
+        # nullify photon init coord
+        coord = numpy.array(self.photon.InitCoord)
+        self.photon.Metric.nullifyCoord(coord)
+        self.photon.InitCoord = coord
+
+        self.editor.on_3vel_toggled(name='InitCoord')
+        self.redraw()
+
     def on_endtime_changed(self, wdgt):
         '''Called when changing the "End time" ScientificSpin
 
@@ -530,7 +583,9 @@ class MainWindow(Gtk.ApplicationWindow):
         print(f'in set_particle: type(self.particle):{type(self.particle)}')
         self.editor = PropertyEditorBox(particle, first=['InitCoord', 'Metric'])
         self.editor_scroller.set_child(self.editor)
-        self.editor.connect('value-changed', self.redraw)
+        self.editor.connect('value-changed', self.on_value_changed)
+        self.editor.connect('child-changed', self.on_child_changed)
+        self.editor.connect('child-mutated', self.on_child_mutated)
         self.redraw()
 
     def get_particle(self):

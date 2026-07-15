@@ -127,6 +127,10 @@ class GyotoObjectChooser(Gtk.Box):
             else:
                 plg, knd = x.split('/')
                 self.obj=self.namespace.Generic(knd, (plg,))
+
+            # lazy import to break dependency cycle
+            from .property_editor_box import PropertyEditorBox
+
             box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
