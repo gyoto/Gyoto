@@ -57,59 +57,69 @@ QUIT    = 'quit'
 # --- Worker (runs forever) ---
 def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_event):
     """Persistent worker: waits for commands, never exits until QUIT."""
-    import numpy
-    import time
-    from ...core import Factory
-    from ...std import Star
+    try:
+        import numpy
+        import time
+        from ...core import Factory
+        from ...std import Star
 
-    control_queue.put(('log', 'here'))
-    next_update_fraction = 0.
-    last_update = time.time()
+        control_queue.put(('log', 'here'))
+        next_update_fraction = 0.
+        last_update = time.time()
 
-    while True:
-        cmd = cmd_queue.get()  # Blocks until command arrives
-        control_queue.put(('log', repr(cmd)))
+        while True:
+            try:
+                cmd = cmd_queue.get(timeout=1.0)  # Blocks until command arrives
+            except queue.Empty:
+                continue # no command, continue
 
-        if cmd[0] == QUIT:
-            break  # Exit loop → process terminates
+            control_queue.put(('log', repr(cmd)))
 
-        elif cmd[0] == RUN_SIM:
-            _, particlexml, starttime, endtime, nframes = cmd
-            stop_event.clear()
-            pause_event.clear()  # Start fresh
+            if cmd[0] == QUIT:
+                break  # Exit loop → process terminates
 
-            # Rebuild objects from serialized data
-            f = Factory(particlexml)
-            particle = f.photon() if f.kind() == 'Photon' else Star (f.astrobj())
+            elif cmd[0] == RUN_SIM:
+                try:
+                        _, particlexml, starttime, endtime, nframes = cmd
+                        stop_event.clear()
+                        pause_event.clear()  # Start fresh
 
-            frametimes = numpy.linspace(starttime, endtime, nframes + 1)
+                        # Rebuild objects from serialized data
+                        f = Factory(particlexml)
+                        particle = f.photon() if f.kind() == 'Photon' else Star (f.astrobj())
 
-            for n in range(len(frametimes) - 1):
-                print(n)
-                if stop_event.is_set():
-                    progress_queue.put_nowait(('aborted',))
-                    break
-                while pause_event.is_set() and not stop_event.is_set():
-                    time.sleep(0.1)
+                        frametimes = numpy.linspace(starttime, endtime, nframes + 1)
 
-                frametime = frametimes[n + 1]
-                particle.xFill(frametimes[n + 1])
-                npoints = particle.get_nelements()
-                t = numpy.ndarray(npoints)
-                particle.get_t(t)
-                x, y, z = [numpy.ndarray(npoints) for _ in range(3)]
-                particle.getCartesian(t, x, y, z)
+                        for n in range(len(frametimes) - 1):
+                            print(n)
+                            if stop_event.is_set():
+                                progress_queue.put_nowait(('aborted',))
+                                break
+                            while pause_event.is_set() and not stop_event.is_set():
+                                time.sleep(0.1)
 
-                progress = (frametime - starttime) / (endtime - starttime)
-                if progress >= next_update_fraction and time.time() - last_update > 0.1:
-                    progress_queue.put_nowait(('progress', progress,
-                               x.tolist(), y.tolist(), z.tolist()))
-                    next_update_fraction += 0.01
-                    last_update=time.time()
+                            frametime = frametimes[n + 1]
+                            particle.xFill(frametimes[n + 1])
+                            npoints = particle.get_nelements()
+                            t = numpy.ndarray(npoints)
+                            particle.get_t(t)
+                            x, y, z = [numpy.ndarray(npoints) for _ in range(3)]
+                            particle.getCartesian(t, x, y, z)
 
-            progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
-            control_queue.put(('log', 'computation done'))
-            control_queue.put(('done',))
+                            progress = (frametime - starttime) / (endtime - starttime)
+                            if progress >= next_update_fraction and time.time() - last_update > 0.1:
+                                progress_queue.put_nowait(('progress', progress,
+                                           x.tolist(), y.tolist(), z.tolist()))
+                                next_update_fraction += 0.01
+                                last_update=time.time()
+
+                        progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
+                        control_queue.put(('log', 'computation done'))
+                        control_queue.put(('done',))
+                except Exception as e:
+                    control_queue.put(('error', str(e)))
+    except Exception as e:
+        control_queue.put(('fatal_error', str(e)))
 
 # Main application
 class GyotoyApplication(Gtk.Application):
@@ -166,7 +176,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.build_body()
         self.connect("close-request", self.on_close_request)
 
-        # Prepare compoutation thread
+        # Prepare computation thread
         self.cmd_queue = Queue()
         self.progress_queue = Queue()
         self.control_queue = Queue()
@@ -368,7 +378,7 @@ class MainWindow(Gtk.ApplicationWindow):
         #     "nframes-changed",
         #     self.on_nframes_changed
         # )
-        self.controls.nframes.set_value(1)
+        self.controls.nframes.set_value(100)
 
         self.controls.connect(
             "interpolate-changed",
@@ -484,9 +494,32 @@ class MainWindow(Gtk.ApplicationWindow):
                 print(msg[1])
             elif msg[0] in ('done', 'aborted'):
                 self.simulation_running = False
+            elif msg[0] == 'error':
+                print(msg[1])
+                self.simulation_running = False
+            elif msg[0] == 'fatal_error':
+                print(msg[1])
+                self.restart_worker()
         except queue.Empty:
             pass
         return True
+
+    def restart_worker(self):
+        """Terminate old worker (if any) and start a new one."""
+        if self.worker and self.worker.is_alive():
+            self.cmd_queue.put((QUIT,))
+            self.worker.join(timeout=1.0)
+            if self.worker.is_alive():
+                self.worker.terminate()
+        self.worker = Process(
+            target=worker_func,
+            args=(self.cmd_queue, self.progress_queue, self.control_queue,
+                  self.pause_event, self.stop_event),
+            daemon=True
+        )
+        self.worker.start()
+        self.last_heartbeat = time.time()
+        self.simulation_running = False
 
     ####################################################################
     # Callbacks
@@ -692,6 +725,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.editor.connect('value-changed', self.on_value_changed)
         self.editor.connect('child-changed', self.on_child_changed)
         self.editor.connect('child-mutated', self.on_child_mutated)
+        self.editor.widgets['InitCoord:veltype'].set_active(True)
         self.compute_and_redraw()
 
     def get_particle(self):
