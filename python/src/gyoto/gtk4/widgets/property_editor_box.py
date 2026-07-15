@@ -67,21 +67,24 @@ class PropertyEditorBox(Gtk.Box):
                                   widget=widget)
         return wrapper
 
-    def __init__(self, obj, hide=[], *args, **kwargs):
+    def __init__(self, obj, hide=[], first=[], *args, **kwargs):
         if "orientation" not in kwargs: kwargs['orientation']=Gtk.Orientation.VERTICAL
         if "spacing" not in kwargs: kwargs['spacing']=10
         super().__init__(*args, **kwargs)
         self.obj=obj
         self.hide=hide
+        self.first=first
         self.populate_properties()
 
     def populate_properties(self):
         """Generates widgets for object properties"""
         parameters = self.obj.getPropertyNames()
+        first_and_parameters = self.first + list(parameters)
 
         self.widgets=dict()
 
-        for name in parameters:
+        for name in first_and_parameters:
+            if name not in parameters: continue
             if name in self.hide: continue
             if name in self.widgets: continue
             prop = self.obj.property(name)
@@ -223,6 +226,26 @@ class PropertyEditorBox(Gtk.Box):
 
             self.append(frame)
 
+            # Special cases
+            if name == 'InitCoord':
+                try:
+                    st = astrobj.Star(self.obj)
+                    isstar = True
+                except core.Error:
+                    isstar = False
+                if isstar:
+                    hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+                    radio_3vel = Gtk.CheckButton(label='3-velocity')
+                    radio_4vel = Gtk.CheckButton(label='4-velocity')
+                    radio_4vel.set_group(radio_3vel)
+                    hbox2.append(radio_3vel)
+                    hbox2.append(radio_4vel)
+                    radio_3vel.set_active(False)
+                    radio_4vel.set_active(True)
+                    radio_3vel.connect("toggled", self.on_3vel_toggled, name)
+                    self.widgets[f'{name}:veltype'] = radio_3vel
+                    self.widgets['InitCoord'].prepend(hbox2)
+
     @gtk_callback
     def on_unit_changed(self, widget, name, *args):
         unit = widget.get_unit()
@@ -276,6 +299,13 @@ class PropertyEditorBox(Gtk.Box):
         elif isinstance(widget, VectorScientificSpin):
             new_value = widget.get_value()
             new_unit = widget.get_unit()
+            # special case: InitCoord
+            if len(new_value) == 7 and f'{name}:veltype' in self.widgets:
+                if self.obj.Metric is not None:
+                    pos = new_value[0:4]
+                    vel = new_value[4:7]
+                    tdot = self.obj.Metric.SysPrimeToTdot(pos, vel)
+                    new_value = pos + [tdot] + [x*tdot for x in vel]
 
         if new_unit is None:
             self.obj.set(name, new_value)
@@ -306,3 +336,21 @@ class PropertyEditorBox(Gtk.Box):
         if file is not None:
             entry.set_text(file.get_path())
 
+    @gtk_callback
+    def on_3vel_toggled(self, widget, name, *args):
+        '''Callback handling 3-velocity/4-velocity radio buttons
+
+        Compute the right velocity and sets the VectorScientificSpin
+        for InitCoord accordingly.
+
+        '''
+        coord = self.obj.get(name)
+        if widget.get_active():
+            # switch to representing as 3-velocity
+            tdot = coord[4]
+            if tdot == 0.: tdot=1.
+            pos3vel = coord[0:4] + tuple((x/tdot for x in coord[5:8]))
+            self.widgets[name].set_value(pos3vel)
+        else:
+            # switch back to showing 4-velocity
+            self.widgets[name].set_value(coord)

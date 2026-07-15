@@ -528,7 +528,7 @@ class MainWindow(Gtk.ApplicationWindow):
             return
         self.particle = particle
         print(f'in set_particle: type(self.particle):{type(self.particle)}')
-        self.editor = PropertyEditorBox(particle)
+        self.editor = PropertyEditorBox(particle, first=['InitCoord', 'Metric'])
         self.editor_scroller.set_child(self.editor)
         self.editor.connect('value-changed', self.redraw)
         self.redraw()
