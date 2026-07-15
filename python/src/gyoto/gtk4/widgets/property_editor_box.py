@@ -20,10 +20,11 @@ __all__ = ['PropertEditorBox']
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, GObject
 
 from functools import wraps
 import ctypes
+import numpy
 
 from .filename_editor import FilenameEditor
 from .scientific_spin import ScientificSpin
@@ -37,11 +38,16 @@ class PropertyEditorBox(Gtk.Box):
     """
     A compound widget that presents the properties of a Gyoto object:
       - obj: the Gyoto object
-      - signals: value-changed
+      - signals:
+            - value-changed: a property has changed
+            - child-changed: a child object was replaced
+            - child-mutated: a property of a child object has changed
     """
 
     __gsignals__ = {
-        "value-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ())
+        "value-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
+        "child-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
+        "child-mutated": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
     }
 
     @staticmethod
@@ -58,7 +64,7 @@ class PropertyEditorBox(Gtk.Box):
         displayed in a Gtk dialog instead of the terminal.
         """
         @wraps(method)
-        def wrapper(self, widget, name, *args):
+        def wrapper(self, widget=None, name='parameter', *args):
             try:
                 return method(self, widget, name, *args)
             except core.Error as e:
@@ -231,9 +237,14 @@ class PropertyEditorBox(Gtk.Box):
                 try:
                     st = astrobj.Star(self.obj)
                     isstar = True
-                except core.Error:
+                except:
                     isstar = False
-                if isstar:
+                try:
+                    ph = core.Photon(self.obj)
+                    isphoton = True
+                except:
+                    isphoton = False
+                if isstar or isphoton:
                     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
                     radio_3vel = Gtk.CheckButton(label='3-velocity')
                     radio_4vel = Gtk.CheckButton(label='4-velocity')
@@ -261,7 +272,7 @@ class PropertyEditorBox(Gtk.Box):
 
         """
         self.obj.set(name, widget.obj)
-        self.emit('value-changed')
+        self.emit('child-changed', name)
 
     @gtk_callback
     def on_object_mutated(self, widget, name, *args):
@@ -269,7 +280,7 @@ class PropertyEditorBox(Gtk.Box):
 
         We have nothing to do, except forward the signal.
         """
-        self.emit('value-changed')
+        self.emit('child-mutated', name)
 
     @gtk_callback
     def on_parameter_changed(self, widget, name, *args):
@@ -304,15 +315,19 @@ class PropertyEditorBox(Gtk.Box):
                 if self.obj.Metric is not None:
                     pos = new_value[0:4]
                     vel = new_value[4:7]
-                    tdot = self.obj.Metric.SysPrimeToTdot(pos, vel)
-                    new_value = pos + [tdot] + [x*tdot for x in vel]
+                    if self.obj.kind() == 'Photon':
+                        new_value = numpy.array(pos + [1.] + vel)
+                        self.obj.Metric.nullifyCoord(new_value)
+                    else:
+                        tdot = self.obj.Metric.SysPrimeToTdot(pos, vel)
+                        new_value = pos + [tdot] + [x*tdot for x in vel]
 
         if new_unit is None:
             self.obj.set(name, new_value)
         else:
             self.obj.set(name, new_value, new_unit)
 
-        self.emit('value-changed')
+        self.emit('value-changed', name)
 
     @gtk_callback
     def on_file_chooser_clicked(self, button, entry):
@@ -337,13 +352,14 @@ class PropertyEditorBox(Gtk.Box):
             entry.set_text(file.get_path())
 
     @gtk_callback
-    def on_3vel_toggled(self, widget, name, *args):
+    def on_3vel_toggled(self, widget=None, name='InitCoord', *args):
         '''Callback handling 3-velocity/4-velocity radio buttons
 
         Compute the right velocity and sets the VectorScientificSpin
         for InitCoord accordingly.
 
         '''
+        if widget is None: widget = self.widgets[f'{name}:veltype']
         coord = self.obj.get(name)
         if widget.get_active():
             # switch to representing as 3-velocity
@@ -354,3 +370,4 @@ class PropertyEditorBox(Gtk.Box):
         else:
             # switch back to showing 4-velocity
             self.widgets[name].set_value(coord)
+
