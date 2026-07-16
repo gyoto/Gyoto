@@ -91,7 +91,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                         frametimes = numpy.linspace(starttime, endtime, nframes + 1)
 
                         for n in range(len(frametimes) - 1):
-                            print(n)
+                            print(f'{n+1}/{len(frametimes)-1}')
                             if stop_event.is_set():
                                 progress_queue.put_nowait(('aborted',))
                                 break
@@ -110,7 +110,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                             if progress >= next_update_fraction and time.time() - last_update > 0.1:
                                 progress_queue.put_nowait(('progress', progress,
                                            x.tolist(), y.tolist(), z.tolist()))
-                                next_update_fraction += 0.01
+                                next_update_fraction = progress + 0.05
                                 last_update=time.time()
 
                         progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
@@ -157,6 +157,7 @@ class MainWindow(Gtk.ApplicationWindow):
     hold      = True
     worker    = None
     simulation_running = False
+    last_focused_widget = None
 
     ####################################################################
     # Construction
@@ -272,17 +273,17 @@ class MainWindow(Gtk.ApplicationWindow):
         )
 
         ## first row, right: vertical box
-        right = Gtk.Box(
+        self.right = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
             spacing=6
         )
-        self.paned.set_end_child(right)
+        self.paned.set_end_child(self.right)
 
         # top of controil column: Star/Photon radio buttons
         frame = Gtk.Frame(
             label="Particle type"
         )
-        right.append(frame)
+        self.right.append(frame)
 
         buttons = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
@@ -317,7 +318,7 @@ class MainWindow(Gtk.ApplicationWindow):
         scroll = Gtk.ScrolledWindow()
         scroll.set_hexpand(True)
         scroll.set_vexpand(True)
-        right.append(scroll)
+        self.right.append(scroll)
         self.editor_scroller = scroll
         self.editor_scroller.set_min_content_width(365)
 
@@ -334,7 +335,7 @@ class MainWindow(Gtk.ApplicationWindow):
         spin.set_value(self.endtime)
         spin.connect("value-changed", self.on_endtime_changed)
         hbox.append(spin)
-        right.append(frame)
+        self.right.append(frame)
 
         # not sure we should initialize this early
         # self.editor = PropertyEditorBox(...)
@@ -452,6 +453,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self.simulation_running = True
         self.controls.set_progress(0.)
 
+        self.controls.set_running(True)
+        self.last_focused_widget = self.get_focus()
+        self.right.set_sensitive(False)
+
         coord=numpy.array(self.particle.InitCoord)
         print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
         # if self.particle == self.star:
@@ -492,17 +497,28 @@ class MainWindow(Gtk.ApplicationWindow):
             msg = self.control_queue.get_nowait()
             if msg[0] == 'log':
                 print(msg[1])
-            elif msg[0] in ('done', 'aborted'):
-                self.simulation_running = False
+            elif msg[0] in ('done', 'aborted',):
+                self.computation_epilogue()
             elif msg[0] == 'error':
                 print(msg[1])
-                self.simulation_running = False
+                self.computation_epilogue()
             elif msg[0] == 'fatal_error':
                 print(msg[1])
                 self.restart_worker()
         except queue.Empty:
             pass
         return True
+
+    def computation_epilogue(self):
+        self.controls.set_running(False)
+        self.right.set_sensitive(True)
+        if self.last_focused_widget:
+            try:
+                self.last_focused_widget.grab_focus()  # Restore focus
+            except:
+                pass  # Widget may have been destroyed
+        self.last_focused_widget = None
+        self.simulation_running = False
 
     def restart_worker(self):
         """Terminate old worker (if any) and start a new one."""
@@ -690,13 +706,19 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def on_reset(self, wdgt):
         self.particle.reInit()
+        self.viewer.axes.clear()
+        self.viewer.set_equal()
+        self.viewer.canvas.draw_idle()
 
     def on_play_pause(self, wdgt):
-        self.pause_event.set() if not self.pause_event.is_set() else self.pause_event.clear()
-        self.stop_event.clear()
-        wdgt.stop_button.set_active(False)
-        #self.hold = wdgt.stop_button.get_active()
-        #self.compute_and_redraw()
+        if self.controls.running:
+            self.pause_event.clear()
+            self.stop_event.clear()
+            wdgt.stop_button.set_active(False)
+            if not self.simulation_running:
+                self.compute_and_redraw()
+        else:
+            self.pause_event.set()
 
     def on_stop(self, wdgt):
         self.hold = wdgt.stop_button.get_active()

@@ -25,6 +25,7 @@ from gi.repository import Gtk, GLib, GObject
 from functools import wraps
 import ctypes
 import numpy
+from math import isnan
 
 from .filename_editor import FilenameEditor
 from .scientific_spin import ScientificSpin
@@ -320,7 +321,8 @@ class PropertyEditorBox(Gtk.Box):
                         self.obj.Metric.nullifyCoord(new_value)
                     else:
                         tdot = self.obj.Metric.SysPrimeToTdot(pos, vel)
-                        new_value = pos + [tdot] + [x*tdot for x in vel]
+                        if not isnan(tdot):
+                            new_value = pos + [tdot] + [x*tdot for x in vel]
 
         if new_unit is None:
             self.obj.set(name, new_value)

@@ -181,7 +181,7 @@ class SimulationControls(Gtk.Box):
         )
 
         self.play_button.set_tooltip_text(
-            "Integrate / pause integration"
+            "Integrate / pause computation"
         )
 
         self.play_button.connect(
