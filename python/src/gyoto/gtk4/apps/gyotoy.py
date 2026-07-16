@@ -641,6 +641,22 @@ class MainWindow(Gtk.ApplicationWindow):
 
         dialog = Gtk.FileDialog()
 
+        xml_filter = Gtk.FileFilter()
+        xml_filter.set_name("XML files")
+        xml_filter.add_suffix('xml')
+        xml_filter.add_pattern('*.xml')
+
+        all_filter = Gtk.FileFilter()
+        all_filter.set_name("All files")
+        all_filter.add_pattern('*')
+
+        filter_list = Gio.ListStore.new(Gtk.FileFilter)
+        filter_list.append(xml_filter)
+        filter_list.append(all_filter)
+
+        dialog.set_filters(filter_list)
+        dialog.set_property('default-filter', xml_filter)
+
         dialog.open(
             self,
             None,
@@ -704,6 +720,51 @@ class MainWindow(Gtk.ApplicationWindow):
             if particle is not None:
                 self.set_particle(particle)
         print(f'in on_open_file_selected: type(self.particle):{type(self.particle)}')
+
+    def on_save_as(self, *args):
+
+        dialog = Gtk.FileDialog()
+
+        xml_filter = Gtk.FileFilter()
+        xml_filter.set_name("XML files")
+        xml_filter.add_suffix('xml')
+        xml_filter.add_pattern('*.xml')
+
+        all_filter = Gtk.FileFilter()
+        all_filter.set_name("All files")
+        all_filter.add_pattern('*')
+
+        filter_list = Gio.ListStore.new(Gtk.FileFilter)
+        filter_list.append(xml_filter)
+        filter_list.append(all_filter)
+
+        dialog.set_filters(filter_list)
+        dialog.set_property('default-filter', xml_filter)
+
+        dialog.save(
+            self,
+            None,
+            lambda dialog, result:
+                self.on_save_file_selected(dialog, result)
+        )
+
+    def on_save_file_selected(self, dialog, result):
+        try:
+            file = dialog.save_finish(result)
+        except GLib.Error:
+            return
+
+        if file is None:
+            return
+
+        try:
+            factory = Factory(self.particle).write(file.get_path())
+        except GyotoError as e:
+            show_error_dialog(
+                message=f"Error writing XML file {file.get_path()}:",
+                detail=e.get_message(),
+                window=self
+            )
 
     def on_star_selected(self, wdgt):
         if wdgt.get_active() and isinstance(self.star, Star):
