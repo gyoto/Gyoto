@@ -22,6 +22,7 @@ from gi.repository import Gtk
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_gtk4agg import FigureCanvasGTK4Agg
+from matplotlib.backends.backend_gtk4 import NavigationToolbar2GTK4
 
 class Viewer3D(Gtk.Box):
     """GTK widget embedding a matplotlib 3D view."""
@@ -64,6 +65,13 @@ class Viewer3D(Gtk.Box):
         self.canvas.set_vexpand(True)
 
         self.append(self.canvas)
+
+        #
+        # Navigation toolbar
+        #
+
+        self.toolbar = NavigationToolbar2GTK4(self.canvas)
+        self.append(self.toolbar)
 
         #
         # Default view
