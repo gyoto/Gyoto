@@ -86,6 +86,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                 break  # Exit loop → process terminates
 
             elif cmd[0] == RUN_SIM:
+                end_msg = ('done',)
                 try:
                         _, particlexml, starttime, endtime, nframes, interp_step = cmd
                         stop_event.clear()
@@ -112,7 +113,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                         for n in range(len(frametimes) - 1):
                             print(f'{n+1}/{len(frametimes)-1}')
                             if stop_event.is_set():
-                                progress_queue.put_nowait(('aborted',))
+                                end_msg = ('aborted',)
                                 break
                             while pause_event.is_set() and not stop_event.is_set():
                                 time.sleep(0.1)
@@ -171,7 +172,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                         progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
                         control_queue.put(('log', 'computation done'))
                         print(t)
-                        control_queue.put(('done',))
+                        control_queue.put(end_msg)
                 except Exception as e:
                     control_queue.put(('error', traceback.format_exc()))
     except Exception as e:
@@ -512,8 +513,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.simulation_running = True
         self.controls.set_progress(0.)
-
         self.controls.set_running(True)
+        self.controls.set_status("Integrating...")
         self.last_focused_widget = self.get_focus()
         self.right.set_sensitive(False)
 
@@ -564,20 +565,25 @@ class MainWindow(Gtk.ApplicationWindow):
             msg = self.control_queue.get_nowait()
             if msg[0] == 'log':
                 print(msg[1])
-            elif msg[0] in ('done', 'aborted',):
-                self.computation_epilogue()
+            elif msg[0] == 'done':
+                self.computation_epilogue(msg = "Computation finished.")
+            elif msg[0] == 'aborted':
+                self.computation_epilogue(msg = "Computation aborted.")
             elif msg[0] == 'error':
                 print(msg[1])
-                self.computation_epilogue()
+                self.computation_epilogue(msg = "Computation ended in error.",
+                                          error = msg[1])
             elif msg[0] == 'fatal_error':
-                print(msg[1])
+                self.computation_epilogue(msg = "Fatal error. Restarting worker.",
+                                          error = msg[1])
                 self.restart_worker()
         except queue.Empty:
             pass
         return True
 
-    def computation_epilogue(self):
+    def computation_epilogue(self, msg="Integration toto finished", error=None):
         self.controls.set_running(False)
+        self.controls.set_status(msg, error)
         self.right.set_sensitive(True)
         if self.last_focused_widget:
             try:
@@ -786,15 +792,22 @@ class MainWindow(Gtk.ApplicationWindow):
             self.pause_event.clear()
             self.stop_event.clear()
             wdgt.stop_button.set_active(False)
+            self.controls.set_status("Integration resumed...")
             if not self.simulation_running:
                 self.compute_and_redraw()
         else:
             self.pause_event.set()
+            self.controls.set_status("Integration paused...")
 
     def on_stop(self, wdgt):
         self.hold = wdgt.stop_button.get_active()
-        if self.hold : self.stop_event.set()
-        else: self.stop_event.clear()
+        if self.hold :
+            self.stop_event.set()
+            self.controls.set_status("Holding integration (press play or stop).")
+        else:
+            self.stop_event.clear()
+            self.controls.set_status("Ready for integration.")
+
 
     ####################################################################
     # Setters / getters
