@@ -33,17 +33,7 @@ class SimulationControls(Gtk.Box):
             None,
             ()
         ),
-        "step-changed": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            ()
-        ),
         "nframes-changed": (
-            GObject.SignalFlags.RUN_FIRST,
-            None,
-            ()
-        ),
-        "interpolate-changed": (
             GObject.SignalFlags.RUN_FIRST,
             None,
             ()
@@ -70,53 +60,6 @@ class SimulationControls(Gtk.Box):
         self.progress.set_hexpand(True)
 
         self.append(self.progress)
-
-
-        #
-        # Interpolation
-        #
-
-        self.interpolate = Gtk.CheckButton(
-            label="Interpolate"
-        )
-
-        self.interpolate.connect(
-            "toggled",
-            lambda *_: self.emit(
-                "interpolate-changed"
-            )
-        )
-
-        self.append(self.interpolate)
-
-
-        #
-        # Step
-        #
-
-        step_box = Gtk.Box(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=5
-        )
-
-        step_box.append(
-            Gtk.Label(label="Step:")
-        )
-
-        self.step = ScientificSpin(
-            value=1e-3
-        )
-
-        self.step.connect(
-            "value-changed",
-            lambda *_: self.emit(
-                "step-changed"
-            )
-        )
-
-        step_box.append(self.step)
-
-        self.append(step_box)
 
 
         #
@@ -167,7 +110,7 @@ class SimulationControls(Gtk.Box):
         )
 
         self.reset_button.set_tooltip_text(
-            "Pause and reset integration"
+            "Pause and reset computation"
         )
 
         self.reset_button.connect(
@@ -181,7 +124,7 @@ class SimulationControls(Gtk.Box):
         )
 
         self.play_button.set_tooltip_text(
-            "Integrate / pause computation"
+            "Compute / pause computation"
         )
 
         self.play_button.connect(

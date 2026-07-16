@@ -34,7 +34,7 @@ import numpy
 from multiprocessing import Queue, Event, Process
 import time
 import queue
-
+import traceback
 import warnings
 
 from gettext import gettext as _
@@ -56,7 +56,16 @@ QUIT    = 'quit'
 
 # --- Worker (runs forever) ---
 def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_event):
-    """Persistent worker: waits for commands, never exits until QUIT."""
+    """Persistent worker: waits for commands, never exits until QUIT.
+
+    Runs in a separate process.
+
+    Receives commands through cmd_queue and can be paused or stopped
+    with pause_event and stop_event.
+
+    Sends progress to progress_queue and control commands to control_queue.
+
+    """
     try:
         import numpy
         import time
@@ -73,14 +82,12 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
             except queue.Empty:
                 continue # no command, continue
 
-            control_queue.put(('log', repr(cmd)))
-
             if cmd[0] == QUIT:
                 break  # Exit loop → process terminates
 
             elif cmd[0] == RUN_SIM:
                 try:
-                        _, particlexml, starttime, endtime, nframes = cmd
+                        _, particlexml, starttime, endtime, nframes, interp_step = cmd
                         stop_event.clear()
                         pause_event.clear()  # Start fresh
 
@@ -88,7 +95,19 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                         f = Factory(particlexml)
                         particle = f.photon() if f.kind() == 'Photon' else Star (f.astrobj())
 
-                        frametimes = numpy.linspace(starttime, endtime, nframes + 1)
+                        # ensure interp_step as same sign as endtime.starttime
+                        interp_step = numpy.sign(endtime-starttime)*abs(interp_step)
+
+                        # Compute frame and interpolation dates
+                        frametimes = numpy.linspace(starttime, endtime+interp_step, nframes + 1)
+
+                        # If interp_step is not 0, will interpolate
+                        if interp_step:
+                            t = numpy.arange(starttime,
+                                             endtime+interp_step,
+                                             interp_step)
+                            x, y, z = [numpy.full(len(t), numpy.nan, like=t)
+                                       for _ in range(3)]
 
                         for n in range(len(frametimes) - 1):
                             print(f'{n+1}/{len(frametimes)-1}')
@@ -99,12 +118,48 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                                 time.sleep(0.1)
 
                             frametime = frametimes[n + 1]
-                            particle.xFill(frametimes[n + 1])
-                            npoints = particle.get_nelements()
-                            t = numpy.ndarray(npoints)
-                            particle.get_t(t)
-                            x, y, z = [numpy.ndarray(npoints) for _ in range(3)]
-                            particle.getCartesian(t, x, y, z)
+
+                            # Actually integrate using Gyoto with
+                            # built-in adaptive step
+                            particle.xFill(frametime)
+
+                            if interp_step:
+                                # Extract positions at interpolated dates
+
+                                # First whether we could reach
+                                # frametimes[n+1]: impossible e.g. if
+                                # geodesic joined the event horizon
+                                npoints = particle.get_nelements()
+                                tinteg = numpy.empty(npoints)
+                                particle.get_t(tinteg)
+
+                                if interp_step > 0 :
+                                    frameend = numpy.min((tinteg[-1], frametime))
+                                    mask = (t >= frametimes[n]) * (t < frameend)
+                                else:
+                                    frameend = numpy.max((tinteg[-1], frametime))
+                                    mask = (t <= frametimes[n]) * (t > frameend)
+                                ttmp = t[mask]
+                                if len(ttmp) == 0:
+                                    break
+                                xtmp, ytmp, ztmp = [numpy.empty(len(ttmp), like=ttmp)
+                                                    for _ in range(3)]
+                                print(tinteg)
+                                print(ttmp)
+                                print(frameend)
+                                particle.getCartesian(ttmp, xtmp, ytmp, ztmp)
+                                x[mask], y[mask], z[mask] = xtmp, ytmp, ztmp
+                                if (numpy.any(numpy.isnan(x[mask])) or
+                                    numpy.any(numpy.isnan(x[mask])) or
+                                    numpy.any(numpy.isnan(x[mask]))):
+                                    raise Exception('should not be NaN')
+                            else:
+                                # Extract positions at adaptive-step dates
+                                npoints = particle.get_nelements()
+                                t = numpy.empty(npoints)
+                                particle.get_t(t)
+                                x, y, z = [numpy.empty(npoints, like=t) for _ in range(3)]
+                                particle.getCartesian(t, x, y, z)
 
                             progress = (frametime - starttime) / (endtime - starttime)
                             if progress >= next_update_fraction and time.time() - last_update > 0.1:
@@ -115,11 +170,12 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
 
                         progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
                         control_queue.put(('log', 'computation done'))
+                        print(t)
                         control_queue.put(('done',))
                 except Exception as e:
-                    control_queue.put(('error', str(e)))
+                    control_queue.put(('error', traceback.format_exc()))
     except Exception as e:
-        control_queue.put(('fatal_error', str(e)))
+        control_queue.put(('fatal_error', traceback.format_exc()))
 
 # Main application
 class GyotoyApplication(Gtk.Application):
@@ -141,7 +197,6 @@ class GyotoyApplication(Gtk.Application):
 
         window.present()
 
-
 # Main window
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -158,6 +213,7 @@ class MainWindow(Gtk.ApplicationWindow):
     worker    = None
     simulation_running = False
     last_focused_widget = None
+    interpolation_step = 1.
 
     ####################################################################
     # Construction
@@ -337,6 +393,20 @@ class MainWindow(Gtk.ApplicationWindow):
         hbox.append(spin)
         self.right.append(frame)
 
+        # an additional spin button for interpolation step
+        frame = Gtk.Frame()
+        frame.set_label("Interpolation step")
+        frame.set_label_align(0.0)
+        frame.set_tooltip_text("Interpolation step (0 for no interpolation)")
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        frame.set_child(hbox)
+
+        spin = ScientificSpin(value=self.interpolation_step)
+        spin.connect("value-changed", self.on_interpolation_step_changed)
+        hbox.append(spin)
+        self.right.append(frame)
+
         # not sure we should initialize this early
         # self.editor = PropertyEditorBox(...)
         # scroll.set_child(
@@ -369,11 +439,6 @@ class MainWindow(Gtk.ApplicationWindow):
             self.on_stop
         )
 
-        self.controls.connect(
-            "step-changed",
-            self.on_step_changed
-        )
-
         # We don't need to do anything
         # self.controls.connect(
         #     "nframes-changed",
@@ -381,11 +446,6 @@ class MainWindow(Gtk.ApplicationWindow):
         # )
         self.controls.nframes.set_value(100)
 
-        self.controls.connect(
-            "interpolate-changed",
-            self.on_interpolate_changed
-        )
-        
     ####################################################################
     # Entry points
     ####################################################################
@@ -471,7 +531,8 @@ class MainWindow(Gtk.ApplicationWindow):
             str(self.particle),
             self.particle.InitCoord[0],  # starttime
             self.endtime,
-            self.controls.nframes.get_value_as_int()
+            self.controls.nframes.get_value_as_int(),
+            self.interpolation_step
         ))
 
     def process_progress(self):
@@ -484,9 +545,15 @@ class MainWindow(Gtk.ApplicationWindow):
         if msg:
             print(msg[1])
             if len(msg) >= 5:
-                x, y, z = msg[2:5]
+                x, y, z = numpy.array(msg[2:5])
+                mask = numpy.logical_and(
+                    numpy.logical_not(numpy.isnan(x)),
+                    numpy.logical_not(numpy.isnan(y)),
+                    numpy.logical_not(numpy.isnan(z))
+                    )
+                print(mask)
                 self.viewer.axes.clear()
-                self.viewer.axes.plot(x, y, z)
+                self.viewer.axes.plot(x[mask], y[mask], z[mask])
                 self.viewer.set_equal()
                 self.viewer.canvas.draw_idle()
             self.controls.set_progress(msg[1])
@@ -702,6 +769,10 @@ class MainWindow(Gtk.ApplicationWindow):
             else:
                 if self.endtime > prev:
                     self.particle.reInit()
+        self.compute_and_redraw()
+
+    def on_interpolation_step_changed(self, wdgt):
+        self.interpolation_step = wdgt.get_value()
         self.compute_and_redraw()
 
     def on_reset(self, wdgt):
