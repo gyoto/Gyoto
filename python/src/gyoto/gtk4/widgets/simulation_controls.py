@@ -9,7 +9,7 @@ __all__ = ['SimulationControls']
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, Pango
 
 from .scientific_spin import ScientificSpin
 
@@ -44,8 +44,8 @@ class SimulationControls(Gtk.Box):
     def __init__(self):
 
         super().__init__(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=10
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=0
         )
 
         self.running = False
@@ -61,6 +61,28 @@ class SimulationControls(Gtk.Box):
 
         self.append(self.progress)
 
+        #
+        # Second row
+        #
+
+        hbox = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=10
+        )
+
+        self.append(hbox)
+
+
+        #
+        # Status
+        #
+
+        self.status = Gtk.Label()
+        self.status.set_ellipsize(Pango.EllipsizeMode.END)  # Truncate with "..."
+        self.status.set_hexpand(True)  # Fixed width (300px), natural height
+        self.status.set_halign(Gtk.Align.START)  # Left-align text
+        self.status.set_tooltip_text("")  # Initialize empty tooltip
+        hbox.append(self.status)
 
         #
         # Number of frames
@@ -98,7 +120,7 @@ class SimulationControls(Gtk.Box):
 
         frame_box.append(self.nframes)
 
-        self.append(frame_box)
+        hbox.append(frame_box)
 
 
         #
@@ -149,9 +171,9 @@ class SimulationControls(Gtk.Box):
         )
 
 
-        self.append(self.reset_button)
-        self.append(self.play_button)
-        self.append(self.stop_button)
+        hbox.append(self.reset_button)
+        hbox.append(self.play_button)
+        hbox.append(self.stop_button)
 
 
     ####################################################################
@@ -178,9 +200,16 @@ class SimulationControls(Gtk.Box):
             fraction
         )
 
+    def set_status(self, text, error=None):
+        """Set status text (truncated) and tooltip (full text + error)."""
+        self.status.set_text(text)
+        if error:
+            tooltip = f"{text}\n\nError: {error}"
+        else:
+            tooltip = text
+        self.status.set_tooltip_text(tooltip)
 
     def is_stop_active(self):
-
         return self.stop_button.get_active()
 
 
