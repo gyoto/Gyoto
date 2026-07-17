@@ -1,6 +1,6 @@
 ## A window to edit a gyoto object's properties
 
-__all__ = ['ObjectEditor']
+__all__ = ['GyotoObjectEditor']
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -8,7 +8,7 @@ from gi.repository import Gtk, GLib
 
 from ..widgets.property_editor_box import PropertyEditorBox
 
-class ObjectEditor(Gtk.Window):
+class GyotoObjectEditor(Gtk.Window):
     """A Gyoto object editor
 
     Displays a window giving an editable view of all the properties of
@@ -22,12 +22,12 @@ class ObjectEditor(Gtk.Window):
 
     @staticmethod
     def run(obj, blocking=True):
-        """Contruct a Gyoto ObjectEditor window and run it
+        """Contruct a Gyoto GyotoObjectEditor window and run it
 
         synopsis:
-         ObjectEditor.run(obj, [blocking=True])
+         GyotoObjectEditor.run(obj, [blocking=True])
         """
-        win = ObjectEditor(obj, blocking)
+        win = GyotoObjectEditor(obj, blocking)
         win.present()
         if blocking:
             win.main_loop.run()
