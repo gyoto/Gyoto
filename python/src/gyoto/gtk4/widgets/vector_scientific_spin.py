@@ -1,20 +1,39 @@
-## A collection of ScientificSpin widgets for a vector<double>
-#
-# ┌─────────────────────────────────────────────┐
-# │ Unit: [ km ]                                │
-# │                                             │
-# │ 1.00000000e+00                ▲             │
-# │                               ▼             │
-# │                                             │
-# │ 2.00000000e+00                ▲             │
-# │                               ▼             │
-# │                                             │
-# │ 3.00000000e+00                ▲             │
-# │                               ▼             │
-# │                                             │
-# │                         [+]  [-]            │
-# └─────────────────────────────────────────────┘
-#
+"""VectorScientificSpin: GTK4 Widget for Vector<double> Editing
+
+This module provides a custom GTK4 widget for editing vectors of
+floating-point values (std::vector<double> in C++), with optional unit
+display and dynamic resizing.
+
+Widget Layout
+------------
+    ┌─────────────────────────────────────────────┐
+    │ Unit: [ km ]                                │
+    │                                             │
+    │ 1.00000000e+00                ▲             │
+    │                               ▼             │
+    │                                             │
+    │ 2.00000000e+00                ▲             │
+    │                               ▼             │
+    │                                             │
+    │ 3.00000000e+00                ▲             │
+    │                               ▼             │
+    │                                             │
+    │                         [+]  [-]            │
+    └─────────────────────────────────────────────┘
+
+Description
+-----------
+- **Unit Field**: Optional text entry for displaying measurement units
+- **Value Fields**: Vertical list of ScientificSpin widgets (one per
+    vector element)
+- **Add/Remove Buttons**: Dynamically add or remove vector elements
+
+Features:
+- Supports both ScientificSpin and Gtk.SpinButton as item classes
+- Automatic value validation
+- Signal emission on changes
+
+"""
 
 __all__ = ['VectorScientificSpin']
 
@@ -25,7 +44,38 @@ from gi.repository import Gtk
 from .scientific_spin import ScientificSpin
 
 class VectorScientificSpin(Gtk.Box):
-    """Editor for std::vector<double> with optional unit."""
+    """A GTK4 widget for editing vectors of real or integer values.
+
+    This widget provides a vertical list of ScientificSpin or
+    Gtk.SpinButton widgets for editing individual vector components,
+    with optional unit display and buttons to add/remove elements
+    dynamically.
+
+    The widget is composed of:
+        - An optional unit field at the top (if with_unit=True)
+        - A vertical box containing ScientificSpin or Gtk.SpinButton
+          widgets for each vector element
+        - Add/Remove buttons at the bottom to modify the vector size
+
+    Attributes:
+        rel_step (float): Relative step size for ScientificSpin widgets
+        spins (list): List of spin widgets for each vector element
+        itemclass (type): Class to use for spin widgets
+            (ScientificSpin or Gtk.SpinButton)
+        unit_entry (Gtk.Entry or None): Unit field entry widget
+        values_box (Gtk.Box): Container for the ScientificSpin widgets
+
+    Signals:
+        value-changed: Emitted when any vector component value changes
+        unit-changed: Emitted when the unit changes (if unit field is
+            enabled)
+
+    Example:
+        vector_spin = VectorScientificSpin(value=[1.0, 2.0, 3.0],
+            with_unit=True)
+        vector_spin.connect("value-changed", lambda w: print(w.get_value()))
+
+    """
 
     __gsignals__ = {
         "value-changed": (
@@ -42,6 +92,23 @@ class VectorScientificSpin(Gtk.Box):
 
     def __init__(self, value=None, with_unit=False, rel_step=0.1,
                  itemclass=ScientificSpin):
+        """Initialize the VectorScientificSpin widget.
+
+        Args:
+            value (list of float or None): Initial vector values. If
+                None, defaults to [0.0].
+            with_unit (bool): Whether to show a unit field (default: False).
+            rel_step (float): Relative step size for ScientificSpin
+                widgets (default: 0.1).
+            itemclass (type): Class to use for spin widgets. Must be
+                either ScientificSpin or Gtk.SpinButton (default:
+                ScientificSpin).
+
+        Raises:
+            ValueError: If itemclass is not ScientificSpin or
+                Gtk.SpinButton.
+
+        """
         super().__init__(
             orientation=Gtk.Orientation.VERTICAL,
             spacing=6
@@ -51,7 +118,7 @@ class VectorScientificSpin(Gtk.Box):
 
         self.rel_step = rel_step
         self.spins = []
-        self.itemclass=itemclass
+        self.itemclass = itemclass
 
         #
         # Optional unit field
@@ -91,7 +158,7 @@ class VectorScientificSpin(Gtk.Box):
         self.append(self.values_box)
 
         #
-        # + / - buttons
+        # + / - buttons for adding/removing vector elements
         #
         buttons = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
@@ -113,7 +180,7 @@ class VectorScientificSpin(Gtk.Box):
         self.append(buttons)
 
         #
-        # Initial values
+        # Initialize with provided values
         #
         if value is None:
             value = [0.0]
@@ -125,13 +192,29 @@ class VectorScientificSpin(Gtk.Box):
     #
 
     def get_value(self):
+        """Get the current vector values.
+
+        Returns:
+            list: A list of numeric values from each spin widget.
+                 If itemclass is ScientificSpin, returns floats.
+                 If itemclass is Gtk.SpinButton, returns integers.
+        """
         if self.itemclass == ScientificSpin:
             return [spin.get_value() for spin in self.spins]
         if self.itemclass == Gtk.SpinButton:
             return [spin.get_value_as_int() for spin in self.spins]
 
     def set_value(self, values):
+        """Set the vector values.
 
+        Dynamically adjusts the number of spin widgets to match the
+        length of the input list, then updates each widget with the
+        corresponding value.
+
+        Args:
+            values (list): List of numeric values to set.
+
+        """
         #
         # Remove excess widgets
         #
@@ -155,11 +238,23 @@ class VectorScientificSpin(Gtk.Box):
             spin.set_value(value)
 
     def get_unit(self):
+        """Get the current unit text.
+
+        Returns:
+            str or None: The current unit text, or None if unit field
+                is disabled.
+
+        """
         if self.unit_entry is None:
             return None
         return self.unit_entry.get_text()
 
     def set_unit(self, unit):
+        """Set the unit field text.
+
+        Args:
+            unit (str): The unit text to display.
+        """
         if self.unit_entry is not None:
             self.unit_entry.set_text(unit)
 
@@ -168,10 +263,26 @@ class VectorScientificSpin(Gtk.Box):
     #
 
     def on_spin_changed(self, spin):
+        """Handle value changes from individual spin widgets.
+
+        Emits the 'value-changed' signal when any spin widget value changes.
+        Args:
+        
+            spin (ScientificSpin or Gtk.SpinButton): The spin widget
+                that changed.
+
+        """
         self.emit("value-changed")
 
     def on_add(self, button):
+        """Handle click on the add button.
 
+        Adds a new spin widget to the vector with a value equal to the last
+        widget's value (or 0.0 if no widgets exist).
+
+        Args:
+            button (Gtk.Button): The add button that was clicked.
+        """
         if self.spins:
             value = self.spins[-1].get_value()
         else:
@@ -184,7 +295,14 @@ class VectorScientificSpin(Gtk.Box):
         self.emit("value-changed")
 
     def on_remove(self, button):
+        """Handle click on the remove button.
 
+        Removes the last spin widget from the vector, but ensures at least
+        one widget remains.
+
+        Args:
+            button (Gtk.Button): The remove button that was clicked.
+        """
         if len(self.spins) <= 1:
             return
 
@@ -195,7 +313,22 @@ class VectorScientificSpin(Gtk.Box):
         self.emit("value-changed")
 
     def _new_spin(self, value=None):
-        """Private metod to add a new ScientificSpin
+        """Create a new spin widget.
+
+        Creates either a ScientificSpin or Gtk.SpinButton depending on
+        itemclass, connects the 'value-changed' signal, and returns
+        the widget.
+
+        Args:
+            value (float or int or None): Initial value for the spin widget.
+
+        Returns:
+            ScientificSpin or Gtk.SpinButton: The new spin widget.
+
+        Raises:
+            ValueError: If itemclass is not ScientificSpin or
+                Gtk.SpinButton.
+
         """
         if self.itemclass == ScientificSpin:
             spin = ScientificSpin(
@@ -204,8 +337,10 @@ class VectorScientificSpin(Gtk.Box):
                 with_unit=False
             )
         elif self.itemclass == Gtk.SpinButton:
-            lower=0
-            upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8))-1
+            # Import ctypes for spin button range
+            import ctypes
+            lower = 0
+            upper = (1 << (ctypes.sizeof(ctypes.c_long) * 8)) - 1
 
             adjustment = Gtk.Adjustment(
                 value=value,
@@ -220,7 +355,7 @@ class VectorScientificSpin(Gtk.Box):
             spin.set_numeric(True)
             spin.set_digits(0)
             spin.set_hexpand(True)
-            # Block scroll events
+            # Block scroll events to avoid accidental changes
             scroll_controller = Gtk.EventControllerScroll()
             scroll_controller.connect("scroll", lambda *args: True)
             spin.add_controller(scroll_controller)
@@ -229,4 +364,3 @@ class VectorScientificSpin(Gtk.Box):
 
         spin.connect("value-changed", self.on_spin_changed)
         return spin
-

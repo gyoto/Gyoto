@@ -1,22 +1,53 @@
-## A panel to edit the properties of a gyoto.core.Object
-#
-# ┌───────────────────────────────────────┐
-# │ (PropertyEditorBox:)                  │
-# │                                       │
-# │ ┌─ property1 ───────────────────────┐ │
-# │ │ widget for property1              │ │
-# │ └───────────────────────────────────┘ │
-# │ ┌─ property2 ───────────────────────┐ │
-# │ │ widget for property2              │ │
-# │ └───────────────────────────────────┘ │
-# │ ┌─ property3 ───────────────────────┐ │
-# │ │ widget for property3              │ │
-# │ └───────────────────────────────────┘ │
-# │ ...                                   │
-# └───────────────────────────────────────┘
-#
+"""PropertyEditorBox: Widget for Editing Gyoto Object Properties
 
-__all__ = ['PropertEditorBox']
+This module provides a GTK4 widget for editing the properties of Gyoto
+objects.
+
+It dynamically creates appropriate editor widgets based on each
+property's type.
+
+Widget Layout
+------------
+    ┌───────────────────────────────────────┐
+    │ (PropertyEditorBox:)                  │
+    │                                       │
+    │ ┌─ property1 ───────────────────────┐ │
+    │ │ widget for property1              │ │
+    │ └───────────────────────────────────┘ │
+    │ ┌─ property2 ───────────────────────┐ │
+    │ │ widget for property2              │ │
+    │ └───────────────────────────────────┘ │
+    │ ┌─ property3 ───────────────────────┐ │
+    │ │ widget for property3              │ │
+    │ └───────────────────────────────────┘ │
+    │ ...                                   │
+    └───────────────────────────────────────┘
+
+Description
+-----------
+This widget:
+- Inspects a Gyoto object's properties
+- Creates appropriate GTK widgets for each property type
+- Handles value changes and forwards them to the object
+- Supports nested objects with recursive editing
+
+Supported Property Types:
+- double_t: ScientificSpin
+- long_t/unsigned_long_t/size_t_t: Gtk.SpinButton
+- bool_t: Gtk.CheckButton
+- string_t: Gtk.Entry
+- filename_t: FilenameEditor
+- vector_double_t/vector_unsigned_long_t: VectorScientificSpin
+- metric_t/screen_t/spectrum_t/astrobj_t/spectrometer_t: GyotoObjectChooser
+
+Example:
+    editor = PropertyEditorBox(obj=my_gyoto_object)
+    editor.connect("value-changed",
+                   lambda w, name: print(f"{name} changed"))
+
+"""
+
+__all__ = ['PropertyEditorBox']
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -36,13 +67,33 @@ from ...core import Property
 from ... import core, metric, astrobj, spectrum, spectrometer
 
 class PropertyEditorBox(Gtk.Box):
-    """
-    A compound widget that presents the properties of a Gyoto object:
-      - obj: the Gyoto object
-      - signals:
-            - value-changed: a property has changed
-            - child-changed: a child object was replaced
-            - child-mutated: a property of a child object has changed
+    """A compound widget for editing Gyoto object properties.
+
+    This widget dynamically creates and manages editor widgets for
+    each property of a Gyoto object, based on the property's type. It
+    provides a complete UI for inspecting and modifying object
+    properties.
+
+    The widget handles:
+    - Automatic widget creation based on property types
+    - Value synchronization between widgets and the object
+    - Error handling with user-friendly dialogs
+    - Special handling for vector properties and nested objects
+
+    Attributes:
+        obj: The Gyoto object being edited
+        hide: List of property names to hide from the editor
+        first: List of property names to show first (before others)
+        widgets: Dictionary mapping property names to their editor widgets
+
+    Signals:
+        value-changed: Emitted when a property value changes (includes
+            property name)
+        child-changed: Emitted when a child object is replaced
+            (includes child name)
+        child-mutated: Emitted when a child object's property changes
+            (includes child name)
+
     """
 
     __gsignals__ = {
@@ -53,16 +104,24 @@ class PropertyEditorBox(Gtk.Box):
 
     @staticmethod
     def gtk_callback(method):
-        """Show Gyoto errors in dialog windows
+        """Decorator to catch Gyoto errors and show them in dialog windows.
 
-        This is a deforator, use like this:
+        This decorator wraps methods that interact with Gyoto objects,
+        catching any Gyoto errors and displaying them in a
+        user-friendly dialog instead of printing to the terminal.
 
-          @gtk_callback
-          def method(self, widget, name *args):
-              ...
+        Usage:
+            @gtk_callback
+            def my_method(self, widget, name, *args):
+                # Method implementation that may raise Gyoto errors
+                ...
 
-        Now whenever a Gyoto error occurs in method(), it will be
-        displayed in a Gtk dialog instead of the terminal.
+        Args:
+            method: The method to wrap
+
+        Returns:
+            The wrapped method with error handling
+
         """
         @wraps(method)
         def wrapper(self, widget=None, name='parameter', *args):
@@ -75,36 +134,67 @@ class PropertyEditorBox(Gtk.Box):
         return wrapper
 
     def __init__(self, obj, hide=[], first=[], *args, **kwargs):
-        if "orientation" not in kwargs: kwargs['orientation']=Gtk.Orientation.VERTICAL
-        if "spacing" not in kwargs: kwargs['spacing']=10
+        """Initialize the PropertyEditorBox widget.
+
+        Args:
+            obj: The Gyoto object to edit
+            hide: List of property names to exclude from the editor
+                (default: [])
+            first: List of property names to show first, before others
+                (default: [])
+            *args: Additional positional arguments for Gtk.Box
+            **kwargs: Additional keyword arguments for Gtk.Box
+
+        """
+        if "orientation" not in kwargs:
+            kwargs['orientation'] = Gtk.Orientation.VERTICAL
+        if "spacing" not in kwargs:
+            kwargs['spacing'] = 10
         super().__init__(*args, **kwargs)
-        self.obj=obj
-        self.hide=hide
-        self.first=first
+        self.obj = obj
+        self.hide = hide
+        self.first = first
         self.populate_properties()
 
     def populate_properties(self):
-        """Generates widgets for object properties"""
+        """Generate editor widgets for all object properties.
+
+        This method:
+        1. Gets all property names from the object
+        2. Creates a frame for each property with an appropriate
+           editor widget
+        3. Handles special cases (like InitCoord with
+           3-velocity/4-velocity)
+        4. Connects signals for value changes
+
+        """
         parameters = self.obj.getPropertyNames()
         first_and_parameters = self.first + list(parameters)
 
-        self.widgets=dict()
+        self.widgets = dict()
 
         for name in first_and_parameters:
-            if name not in parameters: continue
-            if name in self.hide: continue
-            if name in self.widgets: continue
+            if name not in parameters:
+                continue
+            if name in self.hide:
+                continue
+            if name in self.widgets:
+                continue
+
             prop = self.obj.property(name)
             value = self.obj.get(prop)
             param_type = prop.type
+
+            # Create frame for this property
             frame = Gtk.Frame()
             frame.set_label(name)
-            frame.set_label_align(0.0)  # Aligner le label à gauche
+            frame.set_label_align(0.0)  # Left-align label
             frame.set_tooltip_text(prop.doc)
 
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
             frame.set_child(hbox)
 
+            # Create appropriate widget based on property type
             if param_type == core.Property.double_t:
                 spin = ScientificSpin(value=value,
                                       with_unit=prop.supportsUnits())
@@ -116,17 +206,18 @@ class PropertyEditorBox(Gtk.Box):
             elif param_type in (core.Property.long_t,
                                 core.Property.unsigned_long_t,
                                 core.Property.size_t_t):
+                # Set up appropriate ranges for each integer type
                 if param_type == core.Property.long_t:
-                    lower=-(1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1))
-                    upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1)) - 1
+                    lower = -(1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1))
+                    upper = (1 << (ctypes.sizeof(ctypes.c_long) * 8 - 1)) - 1
                 elif param_type == core.Property.unsigned_long_t:
-                    lower=0
-                    upper=(1 << (ctypes.sizeof(ctypes.c_long) * 8))-1
-                elif param_type == core.Property.size_t_t :
-                    lower=0
-                    upper=(1 << (ctypes.sizeof(ctypes.c_size_t) * 8))-1
+                    lower = 0
+                    upper = (1 << (ctypes.sizeof(ctypes.c_long) * 8)) - 1
+                elif param_type == core.Property.size_t_t:
+                    lower = 0
+                    upper = (1 << (ctypes.sizeof(ctypes.c_size_t) * 8)) - 1
                 else:
-                    raise("bug")
+                    raise RuntimeError("Bug: unhandled integer property type")
 
                 adjustment = Gtk.Adjustment(
                     value=value,
@@ -143,14 +234,15 @@ class PropertyEditorBox(Gtk.Box):
                 spin.set_hexpand(True)
                 hbox.append(spin)
                 spin.connect("value-changed", self.on_parameter_changed, name)
-                # block scroll events
+                # Block scroll events to avoid accidental changes
                 scroll_controller = Gtk.EventControllerScroll()
                 scroll_controller.connect("scroll", lambda *args: True)
                 spin.add_controller(scroll_controller)
                 self.widgets[name] = spin
 
             elif param_type == core.Property.bool_t:
-                radio_true = Gtk.CheckButton(label=name)
+                # Create radio buttons for boolean properties
+                radio_true = Gtk.CheckButton(label=prop.name)
                 radio_false = Gtk.CheckButton(label=prop.name_false)
                 radio_false.set_group(radio_true)
                 hbox.append(radio_true)
@@ -180,6 +272,7 @@ class PropertyEditorBox(Gtk.Box):
 
             elif param_type in (core.Property.vector_double_t,
                                 core.Property.vector_unsigned_long_t):
+                # Use VectorScientificSpin for vector properties
                 itemclass = (ScientificSpin
                              if param_type == core.Property.vector_double_t
                              else Gtk.SpinButton)
@@ -192,6 +285,7 @@ class PropertyEditorBox(Gtk.Box):
                 self.widgets[name] = vector
 
             elif param_type == core.Property.metric_t:
+                # Use GyotoObjectChooser for metric properties
                 chooser = GyotoObjectChooser(metric,
                                              obj=getattr(self.obj, name))
                 hbox.append(chooser)
@@ -233,19 +327,21 @@ class PropertyEditorBox(Gtk.Box):
 
             self.append(frame)
 
-            # Special cases
+            # Special case: InitCoord property
             if name == 'InitCoord':
                 try:
                     st = astrobj.Star(self.obj)
                     isstar = True
-                except:
+                except Exception:
                     isstar = False
                 try:
                     ph = core.Photon(self.obj)
                     isphoton = True
-                except:
+                except Exception:
                     isphoton = False
+
                 if isstar or isphoton:
+                    # Add 3-velocity/4-velocity radio buttons for InitCoord
                     hbox2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
                     radio_3vel = Gtk.CheckButton(label='3-velocity')
                     radio_4vel = Gtk.CheckButton(label='4-velocity')
@@ -260,38 +356,64 @@ class PropertyEditorBox(Gtk.Box):
 
     @gtk_callback
     def on_unit_changed(self, widget, name, *args):
+        """Handle unit changes from ScientificSpin or VectorScientificSpin.
+
+        Updates the object property with the new unit.
+
+        Args:
+            widget: The spin widget that emitted the signal
+            name: The name of the property being edited
+            *args: Additional arguments
+        """
         unit = widget.get_unit()
         value = self.obj.get(name, unit)
         widget.set_value(value)
 
     @gtk_callback
     def on_object_changed(self, widget, name, *args):
-        """Called when a sub-object is reset
+        """Handle object replacement from GyotoObjectChooser.
 
-        For instance if the Metric of a Star is changed to another
-        kind.
+        Called when a sub-object (e.g., Metric, Spectrum) is replaced with
+        a different kind.
 
+        Args:
+            widget: The GyotoObjectChooser that emitted the signal
+            name: The name of the property containing the sub-object
+            *args: Additional arguments
         """
         self.obj.set(name, widget.obj)
         self.emit('child-changed', name)
 
     @gtk_callback
     def on_object_mutated(self, widget, name, *args):
-        """Called when something changes in a sub-object
+        """Handle property changes in sub-objects from GyotoObjectChooser.
 
-        We have nothing to do, except forward the signal.
+        Called when a property of a sub-object (e.g., a Metric
+        property) changes.
+
+        Forwards the signal to the parent.
+
+        Args:
+            widget: The GyotoObjectChooser that emitted the signal
+            name: The name of the property containing the sub-object
+            *args: Additional arguments
+
         """
         self.emit('child-mutated', name)
 
     @gtk_callback
     def on_parameter_changed(self, widget, name, *args):
-        """Most widgets are connected to this callback.
+        """Handle value changes from most editor widgets.
 
-        Receives:
-          widget: the widget that initiated the signal
-          name: the name of the Property this widget allows editing
+        This is the primary callback for most property changes. It extracts
+        the new value from the widget and updates the object property.
+
+        Args:
+            widget: The editor widget that changed
+            name: The name of the property being edited
+            *args: Additional arguments
         """
-        new_unit=None
+        new_unit = None
         if isinstance(widget, ScientificSpin):
             new_value = widget.get_value()
             new_unit = widget.get_unit()
@@ -311,19 +433,22 @@ class PropertyEditorBox(Gtk.Box):
         elif isinstance(widget, VectorScientificSpin):
             new_value = widget.get_value()
             new_unit = widget.get_unit()
-            # special case: InitCoord
+            # Special case: InitCoord with 7 elements (4 pos + 3 vel)
             if len(new_value) == 7 and f'{name}:veltype' in self.widgets:
                 if self.obj.Metric is not None:
                     pos = new_value[0:4]
                     vel = new_value[4:7]
                     if self.obj.kind() == 'Photon':
+                        # For photons, ensure null geodesic
                         new_value = numpy.array(pos + [1.] + vel)
                         self.obj.Metric.nullifyCoord(new_value)
                     else:
+                        # For stars, compute tdot and normalize
                         tdot = self.obj.Metric.SysPrimeToTdot(pos, vel)
                         if not isnan(tdot):
                             new_value = pos + [tdot] + [x*tdot for x in vel]
 
+        # Apply the new value to the object
         if new_unit is None:
             self.obj.set(name, new_value)
         else:
@@ -333,7 +458,14 @@ class PropertyEditorBox(Gtk.Box):
 
     @gtk_callback
     def on_file_chooser_clicked(self, button, entry):
-        """File selection dialog for filename_t."""
+        """Handle file chooser button click for filename properties.
+
+        Opens a file dialog for selecting a file.
+
+        Args:
+            button: The button that was clicked
+            entry: The entry widget to update with the selected path
+        """
         dialog = Gtk.FileDialog()
         dialog.open(
             self.get_root(),
@@ -343,11 +475,19 @@ class PropertyEditorBox(Gtk.Box):
 
     @gtk_callback
     def on_file_selected(self, dialog, result, entry):
-        """What to do when the user selected a file using the dialog"""
+        """Handle file selection from the dialog.
+
+        Updates the entry widget with the selected file path.
+
+        Args:
+            dialog: The Gtk.FileDialog that completed
+            result: The result of the dialog operation
+            entry: The entry widget to update
+        """
         try:
             file = dialog.open_finish(result)
         except GLib.Error:
-            # User cancelled
+            # User cancelled the dialog
             return
 
         if file is not None:
@@ -355,21 +495,30 @@ class PropertyEditorBox(Gtk.Box):
 
     @gtk_callback
     def on_3vel_toggled(self, widget=None, name='InitCoord', *args):
-        '''Callback handling 3-velocity/4-velocity radio buttons
+        """Handle 3-velocity/4-velocity radio button toggles.
 
-        Compute the right velocity and sets the VectorScientificSpin
-        for InitCoord accordingly.
+        This callback handles the special case of InitCoord, which can
+        be represented as either 3-velocity or 4-velocity. When the
+        user toggles between these representations, the values are
+        converted appropriately.
 
-        '''
-        if widget is None: widget = self.widgets[f'{name}:veltype']
+        Args:
+            widget: The radio button that was toggled (default: None)
+            name: The property name (default: 'InitCoord')
+            *args: Additional arguments
+
+        """
+        if widget is None:
+            widget = self.widgets[f'{name}:veltype']
         coord = self.obj.get(name)
         if widget.get_active():
-            # switch to representing as 3-velocity
+            # Switch to representing as 3-velocity
             tdot = coord[4]
-            if tdot == 0.: tdot=1.
+            if tdot == 0.:
+                tdot = 1.
+            # Convert 4-velocity to 3-velocity: vel_3 = vel_4 / tdot
             pos3vel = coord[0:4] + tuple((x/tdot for x in coord[5:8]))
             self.widgets[name].set_value(pos3vel)
         else:
-            # switch back to showing 4-velocity
+            # Switch back to showing 4-velocity
             self.widgets[name].set_value(coord)
-

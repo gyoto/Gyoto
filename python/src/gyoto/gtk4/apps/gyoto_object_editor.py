@@ -1,4 +1,17 @@
-## A window to edit a gyoto object's properties
+"""Gyoto Object Editor: GTK4 Window for Property Editing
+
+This module provides a GTK4 window for editing the properties of Gyoto
+objects.  It is designed for use in interactive Python sessions rather
+than as a standalone application.
+
+Note:
+
+    The GyotoObjectEditor.run() method is typically as a method on
+    gyoto.core.Object as edit(), allowing:
+        my_object.edit()
+        my_object.edit(blocking=False)  # For use with %gui gtk4 in IPython
+
+"""
 
 __all__ = ['GyotoObjectEditor']
 
@@ -9,23 +22,49 @@ from gi.repository import Gtk, GLib
 from ..widgets.property_editor_box import PropertyEditorBox
 
 class GyotoObjectEditor(Gtk.Window):
-    """A Gyoto object editor
+    """A GTK4 window for editing Gyoto object properties.
 
-    Displays a window giving an editable view of all the properties of
-    a Gyoto object.
+    This window provides a scrollable view of all editable properties of a
+    Gyoto object, using a PropertyEditorBox as its main content.
+
+    The window can run in blocking mode (manages its own GLib main loop) or
+    non-blocking mode (for integration with external event loops like
+    IPython).
 
     Parameters:
-      obj: the object to edit
-      blocking: whether this object should manage the GLib loop
+        obj: The Gyoto object to edit
+        blocking (bool): If True, the window manages the GLib main
+            loop.  If False, the caller must manage the event loop
+            (e.g., using %gui gtk4 in IPython).
+
+    Attributes:
+        obj: The Gyoto object being edited
+        main_loop: GLib.MainLoop instance (if blocking=True)
+        scrolled_window: Gtk.ScrolledWindow containing the editor
+        vbox: PropertyEditorBox for editing object properties
 
     """
 
     @staticmethod
     def run(obj, blocking=True):
-        """Contruct a Gyoto GyotoObjectEditor window and run it
+        """Construct a GyotoObjectEditor window and run it.
 
-        synopsis:
-         GyotoObjectEditor.run(obj, [blocking=True])
+        This is the recommended way to use the editor. It creates a new
+        window, presents it, and optionally runs the GTK main loop.
+
+        Args:
+            obj: The Gyoto object to edit
+            blocking (bool): If True, run the GLib main loop.  If
+                False, return immediately after presenting.
+
+        Returns:
+            GyotoObjectEditor: The created window instance
+
+        Example:
+            GyotoObjectEditor.run(my_metric, blocking=True)
+            # or
+            my_metric.edit()
+
         """
         win = GyotoObjectEditor(obj, blocking)
         win.present()
@@ -33,17 +72,23 @@ class GyotoObjectEditor(Gtk.Window):
             win.main_loop.run()
 
     def __init__(self, obj, blocking=True):
+        """Initialize the GyotoObjectEditor window.
+
+        Args:
+            obj: The Gyoto object to edit
+            blocking (bool): Whether to manage the GLib main loop
+        """
         Gtk.Window.__init__(self, title="Gyoto Object Editor")
         self.set_default_size(400, 600)
         self.obj = obj
         if blocking:
-            self.main_loop=GLib.MainLoop()
+            self.main_loop = GLib.MainLoop()
         else:
-            self.main_loop=None
+            self.main_loop = None
 
         self.connect("close-request", self.on_close_request)
 
-        # Main container
+        # Main container: scrollable window
         self.scrolled_window = Gtk.ScrolledWindow()
         self.set_child(self.scrolled_window)
 
@@ -55,11 +100,21 @@ class GyotoObjectEditor(Gtk.Window):
         self.vbox.set_margin_end(10)
         self.scrolled_window.set_child(self.vbox)
 
-        # We could connect to value-changed to react wheneverr obj changes 
-        # self.vbox.connect("value-changed", self.on_value_changed)
-        # but we don't actually need to.
+        # Note: We could connect to value-changed to react whenever
+        # obj changes self.vbox.connect("value-changed",
+        # self.on_value_changed) but we don't actually need to.
 
     def on_close_request(self, *args):
+        """Handle window close request.
+
+        Quits the main loop if the window is in blocking mode.
+
+        Args:
+            *args: GTK callback arguments
+
+        Returns:
+            bool: False to allow the window to close
+        """
         if self.main_loop is not None:
             GLib.idle_add(self.main_loop.quit)
         return False
