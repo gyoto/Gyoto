@@ -1,10 +1,10 @@
 # Imports + MyApplication + GyotoyApplicationWindow skeleton
 
-"""
-Gyotoy: GTK4 Application for Gyoto Geodesic Integration
+"""Gyotoy: GTK4 Application for Gyoto Geodesic Integration
 
-This application provides a graphical interface for simulating and visualizing
-geodesics (time-like or null) in spacetimes supported by the Gyoto library.
+This application provides a graphical interface for simulating and
+visualizing geodesics (time-like or null) in spacetimes supported by
+the Gyoto library.
 
 Layout
 ------
@@ -28,10 +28,14 @@ Layout
 
 Description
 -----------
-- **Left Panel**: 3D Matplotlib viewer displaying the particle trajectory.
-- **Right Panel**: Property editor for adjusting metric and particle parameters.
-- **Bottom Controls**: Play/pause/stop buttons, interpolation settings, and status display.
-- **Worker Process**: Heavy computations run in a background process to keep the UI responsive.
+- **Left Panel**: 3D Matplotlib viewer displaying the particle
+    trajectory.
+- **Right Panel**: Property editor for adjusting metric and particle
+    parameters.
+- **Bottom Controls**: Play/pause/stop buttons, interpolation
+    settings, and status display.
+- **Worker Process**: Heavy computations run in a background process
+    to keep the UI responsive.
 
 Usage
 -----
@@ -47,6 +51,7 @@ From ipython3, the application can be involed non-blocking:
     window = gyotoy([particle, ] blocking=False)
 An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
 provided.
+
 """
 
 from __future__ import annotations
@@ -72,7 +77,7 @@ from ..widgets.scientific_spin import ScientificSpin
 from ..widgets.viewer_3d import Viewer3D
 from ..widgets.simulation_controls import SimulationControls
 from ..utils import show_error_dialog
-from ...core import Factory, Error as GyotoError, Photon
+from ...core import Factory, Astrobj, Error as GyotoError, Photon
 from ...core import GYOTO_COORDKIND_SPHERICAL
 from ...std import Star, KerrBL
 
@@ -83,9 +88,10 @@ QUIT = 'quit'
 def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_event):
     """Persistent worker process for running simulations.
 
-    This function runs in a separate process to avoid blocking the GTK main thread.
-    It waits for commands from cmd_queue, executes simulations, and sends progress
-    updates to progress_queue and control messages to control_queue.
+    This function runs in a separate process to avoid blocking the GTK
+    main thread.  It waits for commands from cmd_queue, executes
+    simulations, and sends progress updates to progress_queue and
+    control messages to control_queue.
 
     The worker can be paused via pause_event and stopped via stop_event.
 
@@ -95,6 +101,7 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
         control_queue: Queue for sending control messages (log, done, error)
         pause_event: Event to pause/resume the simulation
         stop_event: Event to stop the simulation
+
     """
     try:
         import numpy
@@ -102,7 +109,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
         from ...core import Factory
         from ...std import Star
 
-        control_queue.put(('log', 'here'))
         next_update_fraction = 0.
         last_update = time.time()
 
@@ -141,7 +147,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                                    for _ in range(3)]
 
                     for n in range(len(frametimes) - 1):
-                        print(f'{n+1}/{len(frametimes)-1}')
                         if stop_event.is_set():
                             end_msg = ('aborted',)
                             break
@@ -173,9 +178,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                                 break
                             xtmp, ytmp, ztmp = [numpy.empty(len(ttmp), like=ttmp)
                                                 for _ in range(3)]
-                            print(tinteg)
-                            print(ttmp)
-                            print(frameend)
                             particle.getCartesian(ttmp, xtmp, ytmp, ztmp)
                             x[mask], y[mask], z[mask] = xtmp, ytmp, ztmp
                             if (numpy.any(numpy.isnan(x[mask])) or
@@ -198,8 +200,6 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
                             last_update=time.time()
 
                     progress_queue.put_nowait(('progress', progress, x.tolist(), y.tolist(), z.tolist()))
-                    control_queue.put(('log', 'computation done'))
-                    print(t)
                     control_queue.put(end_msg)
                 except Exception as e:
                     control_queue.put(('error', traceback.format_exc()))
@@ -209,8 +209,10 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
 class GyotoyApplication(Gtk.Application):
     """Standalone GTK application for Gyotoy.
 
-    This class handles the application lifecycle and window management.
-    It extends Gtk.Application to provide a proper GTK application structure.
+    This class handles the application lifecycle and window
+    management.  It extends Gtk.Application to provide a proper GTK
+    application structure.
+
     """
 
     def __init__(self):
@@ -236,13 +238,16 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
     This window contains:
-    - A 3D Matplotlib viewer (left panel) for visualizing particle trajectories
-    - A property editor (right panel) for adjusting particle and metric parameters
-    - Control widgets (bottom) for running/stopping simulations and setting parameters
+    - A 3D Matplotlib viewer (left panel) for visualizing particle
+      trajectories
+    - A property editor (right panel) for adjusting particle and
+      metric parameters
+    - Control widgets (bottom) for running/stopping simulations and
+      setting parameters
 
-    The window uses a multiprocessing worker for heavy computations to keep
-    the UI responsive. Communication with the worker happens via multiprocessing
-    Queues for progress updates and control messages.
+    The window uses a multiprocessing worker for heavy computations to
+    keep the UI responsive. Communication with the worker happens via
+    multiprocessing Queues for progress updates and control messages.
 
     Attributes:
         star: Default Star particle
@@ -253,8 +258,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         controls: SimulationControls for play/pause/stop
         worker: Process for background computations
         simulation_running: Flag indicating if a simulation is in progress
-        last_focused_widget: Last widget that had focus (for focus restoration)
+        last_focused_widget: Last widget that had focus (for focus
+            restoration)
         interpolation_step: Step size for interpolation
+
     """
 
     # Default values
@@ -285,8 +292,34 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """
         super().__init__(application=application)
 
-        self.star = star if star is not None else self.default_star()
-        self.photon = photon if photon is not None else self.default_photon()
+        # process particle, star and photon
+        if isinstance(particle, Astrobj):
+            particle = Star(particle)
+
+        if isinstance(star, Astrobj):
+            star = Star(star)
+
+        if star is None:
+            if isinstance(particle, Star):
+                self.star = particle
+            else:
+                self.star = self.default_star()
+
+        if photon is None:
+            if isinstance(particle, Photon):
+                self.photon = particle
+            else:
+                self.photon = self.default_photon()
+
+        if particle is None:
+            if star is not None:
+                particle = star
+                self.photon.Metric = particle.Metric
+            elif photon is not None:
+                particle = photon
+                self.star.Metric = particle.Metric
+            else:
+                particle = self.star
 
         self.set_title("Gyotoy")
         self.set_default_size(1024, 768)
@@ -317,7 +350,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         GLib.timeout_add(50, self.process_control)
 
         # Populate initial editor
-        if particle is None: particle = self.star
         self.hold = False
         self.set_particle(particle)
 
@@ -523,7 +555,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         Returns:
             GyotoyApplicationWindow: The created window instance
         """
-        win = GyotoyApplicationWindow(particle)
+        win = GyotoyApplicationWindow(particle=particle)
         win.blocking = blocking
         win.present()
         if blocking:
@@ -577,12 +609,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def compute_and_redraw(self, *args):
         """Compute the trajectory and redraw the plot.
 
-        This method starts a new simulation in the worker process and updates
-        the UI to reflect the running state. The actual computation happens in
-        the background worker process.
+        This method starts a new simulation in the worker process and
+        updates the UI to reflect the running state. The actual
+        computation happens in the background worker process.
 
         Args:
             *args: Ignored (for callback compatibility)
+
         """
         if self.hold or self.particle is None or self.simulation_running:
             return
@@ -596,7 +629,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.right.set_sensitive(False)
 
         coord = numpy.array(self.particle.InitCoord)
-        print(f'norm at start: {self.particle.Metric.norm(coord[0:4], coord[4:8])}, {coord}')
 
         # Send simulation command to worker
         self.cmd_queue.put((
@@ -611,12 +643,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def process_progress(self):
         """Process progress updates from the worker.
 
-        This method is called periodically (every 50ms) to check for progress
-        updates from the worker process. It processes all pending progress
-        messages but only displays the latest one to avoid visual clutter.
+        This method is called periodically (every 50ms) to check for
+        progress updates from the worker process. It processes all
+        pending progress messages but only displays the latest one to
+        avoid visual clutter.
 
         Returns:
             bool: True to keep the timeout source alive
+
         """
         msg = None
         while True:
@@ -625,7 +659,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             except queue.Empty:
                 break
         if msg:
-            print(msg[1])
             if len(msg) >= 5:
                 # Convert lists back to numpy arrays and filter out NaN values
                 x, y, z = numpy.array(msg[2:5])
@@ -634,7 +667,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     numpy.logical_not(numpy.isnan(y)),
                     numpy.logical_not(numpy.isnan(z))
                     )
-                print(mask)
                 self.viewer.axes.clear()
                 self.viewer.axes.plot(x[mask], y[mask], z[mask])
                 self.viewer.set_equal()
@@ -645,12 +677,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def process_control(self):
         """Process control messages from the worker.
 
-        This method is called periodically (every 50ms) to check for control
-        messages from the worker process (log messages, completion, errors).
-        It handles different message types and updates the UI accordingly.
+        This method is called periodically (every 50ms) to check for
+        control messages from the worker process (log messages,
+        completion, errors).  It handles different message types and
+        updates the UI accordingly.
 
         Returns:
             bool: True to keep the timeout source alive
+
         """
         try:
             msg = self.control_queue.get_nowait()
@@ -661,7 +695,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             elif msg[0] == 'aborted':
                 self.computation_epilogue(msg="Computation aborted.")
             elif msg[0] == 'error':
-                print(msg[1])
                 self.computation_epilogue(msg="Computation ended in error.",
                                           error=msg[1])
             elif msg[0] == 'fatal_error':
@@ -675,12 +708,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def computation_epilogue(self, msg="Integration finished", error=None):
         """Handle the end of a computation.
 
-        This method is called when a simulation completes (successfully or not).
-        It re-enables the UI, restores focus, and updates the status message.
+        This method is called when a simulation completes
+        (successfully or not).  It re-enables the UI, restores focus,
+        and updates the status message.
 
         Args:
             msg: Status message to display
             error: Optional error message to include in tooltip
+
         """
         self.controls.set_running(False)
         self.controls.set_status(msg, error)
@@ -721,11 +756,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def on_open(self, *args):
         """Open a file dialog to load an XML particle configuration.
 
-        Creates a file dialog with XML and All Files filters, defaulting to XML.
-        When a file is selected, it's loaded and the particle is updated.
+        Creates a file dialog with XML and All Files filters,
+        defaulting to XML.  When a file is selected, it's loaded and
+        the particle is updated.
 
         Args:
             *args: GTK callback arguments
+
         """
         dialog = Gtk.FileDialog()
 
@@ -817,16 +854,17 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
             if particle is not None:
                 self.set_particle(particle)
-        print(f'in on_open_file_selected: type(self.particle):{type(self.particle)}')
 
     def on_save_as(self, *args):
         """Open a file dialog to save the current particle as XML.
 
-        Creates a file dialog with XML and All Files filters, defaulting to XML.
-        When a file is selected, the current particle is saved to that file.
+        Creates a file dialog with XML and All Files filters,
+        defaulting to XML.  When a file is selected, the current
+        particle is saved to that file.
 
         Args:
             *args: GTK callback arguments
+
         """
         dialog = Gtk.FileDialog()
 
@@ -884,12 +922,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def on_star_selected(self, wdgt):
         """Handle Star/Photon radio button toggle.
 
-        When Star is selected, sets the current particle to the Star instance.
-        When Photon is selected, sets the current particle to the Photon instance.
-        Synchronizes the metric between particles.
+        When Star is selected, sets the current particle to the Star
+        instance.  When Photon is selected, sets the current particle
+        to the Photon instance.  Synchronizes the metric between
+        particles.
 
         Args:
             wdgt: The Gtk.CheckButton that was toggled
+
         """
         if wdgt.get_active() and isinstance(self.star, Star):
             if self.particle is not None:
@@ -941,14 +981,15 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     def on_child_mutated(self, widget, name, *args):
         """Handle metric mutations from the editor.
 
-        Renormalizes InitCoord for both Star and Photon when the metric changes.
+        Renormalizes InitCoord for both Star and Photon when the
+        metric changes.
 
         Args:
             widget: The widget that emitted the signal
             name: The name of the property that changed
             *args: Additional arguments
+
         """
-        print(f'on_child_mutated: name={name}')
         if name != 'Metric': return
 
         # Normalize star init coord
@@ -1065,7 +1106,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                               )
             return
         self.particle = particle
-        print(f'in set_particle: type(self.particle):{type(self.particle)}')
         self.editor = PropertyEditorBox(particle, first=['InitCoord', 'Metric'])
         self.editor_scroller.set_child(self.editor)
         self.editor.connect('value-changed', self.on_value_changed)
@@ -1131,7 +1171,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
 # Interactive-session entry point:
 def gyotoy(particle=None, blocking=True):
-    return GyotoyApplicationWindow.run(particle, blocking)
+    return GyotoyApplicationWindow.run(particle=particle, blocking=blocking)
 gyotoy.__doc__ = __doc__
 
 # Stand-alone entry point:
