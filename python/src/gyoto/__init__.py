@@ -1,8 +1,5 @@
 """The General relativitY Orbit Tracer of paris Observatory
 
-Note that importing "gyoto" is deprecated and may cease to work in a
-future release. Please update your code to import gyoto.core instead.
-
 """
 import sys
 import os
@@ -11,8 +8,9 @@ import importlib
 import importlib.abc
 import importlib.util
 from pathlib import Path
+import warnings
 
-# For backwards compatibility, expose gyoto.core as gyoto
+# Expose gyoto.core as gyoto
 from .core import *
 
 # import gyoto.core
@@ -20,19 +18,25 @@ from gyoto import core
 
 # avoid outputting n times the same warning about lorene while loading the rest
 core.verbose(0)
-from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer, gtk4
+from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer
 
 # try importing the python submodule.
 try:
     from gyoto import python
 except:
-    pass
+    warnings.warn("gyoto.python is not available")
 
 # try importing the lorene submodule
 try:
     from gyoto import lorene
 except:
     pass
+
+# try importing the gtk4 submodule
+try:
+    from gyoto import gtk4
+except:
+    warnings.warn("gyoto.gtk4 is not available")
 
 core.verbose(core.GYOTO_DEFAULT_VERBOSITY)
 
@@ -48,7 +52,7 @@ core.Worldline.getCartesian.__doc__ = core._core.Worldline_getCartesian.__doc__
 core.Worldline.getCoord =  util._Worldline_getCoord
 core.Worldline.getCoord.__doc__ = core._core.Worldline_getCoord.__doc__
 
-# import plugins as modules
+# Generate submodules on the fly for Gyoto plugins
 
 class GyotoPluginLoader(importlib.abc.Loader):
     """Loader for wrapping dynamic moduls around Gyoto plugins."""
