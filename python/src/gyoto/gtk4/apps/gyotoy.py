@@ -1,4 +1,4 @@
-# Imports + MyApplication + MainWindow skeleton
+# Imports + MyApplication + GyotoyApplicationWindow skeleton
 
 """
 Gyotoy: GTK4 Application for Gyoto Geodesic Integration
@@ -36,22 +36,22 @@ Description
 Usage
 -----
 Run as a standalone application:
-    python -m gyotoy
+    python3 -m gyoto.gtk4.apps.gyotoy
 
 Or import and use programmatically:
-    from gyoto.gtk4.apps.gyotoy import MainWindow
-    window = MainWindow.run([particle])
+    from gyoto.gtk4.apps.gyotoy import gyotoy
+    window = gyotoy([particle])
 From ipython3, the application can be involed non-blocking:
     %gui gtk4
-    from gyoto.gtk4.apps.gyotoy import MainWindow
-    window = MainWindow.run([particle, ] blocking=False)
+    from gyoto.gtk4.apps.gyotoy import gyotoy
+    window = gyotoy([particle, ] blocking=False)
 An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
 provided.
 """
 
 from __future__ import annotations
 
-__all__ = ['GyotoyApplication', 'MainWindow']
+__all__ = ['GyotoyApplication', 'GyotoyApplicationWindow', 'gyotoy']
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -228,11 +228,11 @@ class GyotoyApplication(Gtk.Application):
         window = self.props.active_window
 
         if window is None:
-            window = MainWindow(application=self)
+            window = GyotoyApplicationWindow(application=self)
 
         window.present()
 
-class MainWindow(Gtk.ApplicationWindow):
+class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
     This window contains:
@@ -521,9 +521,9 @@ class MainWindow(Gtk.ApplicationWindow):
             blocking: If True, run the GTK main loop (for standalone use)
 
         Returns:
-            MainWindow: The created window instance
+            GyotoyApplicationWindow: The created window instance
         """
-        win = MainWindow(particle)
+        win = GyotoyApplicationWindow(particle)
         win.blocking = blocking
         win.present()
         if blocking:
@@ -1129,6 +1129,11 @@ class MainWindow(Gtk.ApplicationWindow):
         particle.initCoord(coord)
         return particle
 
+# Interactive-session entry point:
+def gyotoy(particle=None, blocking=True):
+    return GyotoyApplicationWindow.run(particle, blocking)
+gyotoy.__doc__ = __doc__
+
 # Stand-alone entry point:
 if __name__ == "__main__":
-    raise SystemExit(MainWindow.run_app())
+    raise SystemExit(GyotoyApplicationWindow.run_app())

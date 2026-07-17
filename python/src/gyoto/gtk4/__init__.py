@@ -4,7 +4,16 @@ from gi.repository import GLib
 
 GLib.set_prgname("Gyoto")
 
-from .apps.object_editor import ObjectEditor
+from .widgets import *
+from .utils import *
+from .apps.gyotoy import gyotoy
+
+from .widgets import __all__ as widgets__all__
+from .utils import __all__ as utils__all__
+
+__all__ = widgets__all__ + utils__all__ + ['gyotoy']
+
+from .apps.gyoto_object_editor import GyotoObjectEditor
 
 ### The following should be achieved using Swig's extend mechanism
 def edit(self, blocking=True):
