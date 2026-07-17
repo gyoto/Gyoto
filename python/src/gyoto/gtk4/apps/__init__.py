@@ -16,5 +16,25 @@ This module provides high-level GTK4 application windows for Gyoto:
 
 """
 
-from . import gyotoy
-from . import gyoto_object_editor
+import importlib
+
+__all__ = ['gyotoy', 'gyoto_object_editor']
+
+
+def __getattr__(name):
+    """Autoload submodules.
+
+    To avoid issues when running submodules as scripts, they should
+    not be loaded by default. This will load them on demand.
+
+    """
+
+    # Avoid infinite recursion for standard attributes
+    if name not in __all__:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+    fullname = f"{__name__}.{name}"
+
+    mod = importlib.import_module(fullname)
+    setattr(sys.modules[__name__], name, mod)
+    return mod

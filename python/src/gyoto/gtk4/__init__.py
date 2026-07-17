@@ -26,6 +26,9 @@ Note:
 
 """
 
+# Public API
+__all__ = ['widgets', 'apps', 'utils', 'gyotoy']
+
 import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib
@@ -37,10 +40,65 @@ GLib.set_prgname("Gyoto")
 from . import widgets, utils
 
 # Re-export main entry point for convenience
-from .apps.gyotoy import gyotoy
 
-# Public API
-__all__ = ['widgets', 'apps', 'utils', 'gyotoy']
+# Interactive-session entry point:
+def gyotoy(particle=None, blocking=True):
+    """Gyotoy: GTK4 Application for Gyoto Geodesic Integration
+
+    This application provides a graphical interface for simulating and
+    visualizing geodesics (time-like or null) in spacetimes supported
+    by the Gyoto library.
+
+    Layout
+    ------
+    ┌────────────────────────────────────────────────────────────────────┐
+    │ MyApp                                                     ☰        │
+    ├────────────────────────────────────────────────────────────────────┤
+    │ ┌──────────────────────────────┬────────────────────────────────┐  │
+    │ │                              │  ○ Star                        │  │
+    │ │                              │  ○ Photon                      │  │
+    │ │                              │                                │  │
+    │ │      Matplotlib canvas       │  ┌──────────────────────────┐  │  │
+    │ │                              │  │ PropertyEditorBox        │  │  │
+    │ │                              │  └──────────────────────────┘  │  │
+    │ └──────────────────────────────┴────────────────────────────────┘  │
+    ├────────────────────────────────────────────────────────────────────┤
+    │ ████████████████████████████████████────────────────────────────── │
+    │                                                                    │
+    │ Status...                    N: [100  ]      ⏮        ▶        ⏹   │
+    │                                                                    │
+    └────────────────────────────────────────────────────────────────────┘
+
+    Description
+    -----------
+    - **Left Panel**: 3D Matplotlib viewer displaying the particle
+        trajectory.
+    - **Right Panel**: Property editor for adjusting metric and
+        particle parameters.
+    - **Bottom Controls**: Play/pause/stop buttons, interpolation
+        settings, and status display.
+    - **Worker Process**: Heavy computations run in a background
+        process to keep the UI responsive.
+
+    Usage
+    -----
+    Run as a standalone application:
+        python3 -m gyoto.gtk4.apps.gyotoy
+
+    Or import and use programmatically:
+        from gyoto.gtk4 import gyotoy
+        window = gyotoy([particle])
+    From ipython3, the application can be involed non-blocking:
+        %gui gtk4
+        from gyoto.gtk4 import gyotoy
+        window = gyotoy([particle, ] blocking=False)
+    An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
+    provided.
+
+    """
+    # lazy import to not get in the way of stand-alone execution
+    from .apps.gyotoy import GyotoyApplicationWindow
+    return GyotoyApplicationWindow.run(particle, blocking)
 
 # Import for monkey-patching
 from .apps.gyoto_object_editor import GyotoObjectEditor
@@ -52,5 +110,5 @@ def edit(self, blocking=True):
 edit.__doc__ = GyotoObjectEditor.run.__doc__
 
 # Monkey-patch the edit method onto gyoto.core.Object
-import gyoto
-gyoto.core.Object.edit = edit
+from ..core import Object
+Object.edit = edit
