@@ -1,12 +1,32 @@
-## A SpinButton in floating-point notation with option unit field
-#
-# ┌────────────────────────────────────────────────┐
-# │ ┌────────────────────┐ ┌───────────────┐ ┌───┐ │
-# │ │ (Gtk.Entry:)       │ │ (Gtk.Entry:)  │ │ ▲ │ │
-# │ │ 1.23456789e-12     │ │ m^2           │ │ ▼ │ │
-# │ └────────────────────┘ └───────────────┘ └───┘ │
-# └────────────────────────────────────────────────┘
-#
+"""ScientificSpin: A GTK4 SpinButton with Scientific Notation Support
+
+This module provides a custom GTK4 widget that combines the
+functionality of a SpinButton with scientific notation support and
+optional unit display.
+
+Widget Layout
+------------
+    ┌────────────────────────────────────────────────┐
+    │ ┌────────────────────┐ ┌───────────────┐ ┌───┐ │
+    │ │ (Gtk.Entry:)       │ │ (Gtk.Entry:)  │ │ ▲ │ │
+    │ │ 1.23456789e-12     │ │ m^2           │ │ ▼ │ │
+    │ └────────────────────┘ └───────────────┘ └───┘ │
+    └────────────────────────────────────────────────┘
+
+Description
+-----------
+- **Value Entry**: Accepts scientific notation (e.g., 1.3e-12)
+- **Unit Entry**: Optional field for displaying units (e.g., m^2)
+- **Buttons**: Increment/decrement buttons with relative stepping
+- **Keyboard Support**: Up/Down arrows and PageUp/PageDown for value
+    adjustment
+
+Public API
+---------
+- **Signals**: `value-changed`, `unit-changed`
+- **Methods**: `get_value()`, `set_value()`, `get_unit()`, `set_unit()`
+
+"""
 
 __all__ = ['ScientificSpin']
 
@@ -15,26 +35,37 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gdk
 
 class ScientificSpin(Gtk.Box):
-    """Similar to Gtk.SpinButton in floating point notation with unit
+    """A custom GTK4 widget for numeric input with scientific notation.
 
-    This widget is composed of:
-        - a Gtk.Entry for the value, which accepts notations like
-          1.3e-12;
-        - an optional Gkt.Entry field to edit a unit;
-        - a pair of buttons to increment of decrement the value.
+    This widget provides a spin-button-like interface with the
+    following features:
+    - Scientific notation support (e.g., 1.23e-10)
+    - Optional unit field for displaying measurement units
+    - Increment/decrement buttons with relative stepping
+    - Keyboard navigation (arrow keys, PageUp/PageDown)
 
-    Parameters:
-      value: the initial value;
-      rel_step: the (relative) increment step (0.1);
-      with_unit: whether to show the unit field (False).
+    The widget is composed of:
+        - A primary Gtk.Entry for the numeric value
+        - An optional Gtk.Entry for the unit string
+        - Up/Down buttons for value adjustment
 
-    Public methods:
-      Callbacks can query or set the two entry boxes using the four methods:
-      get_value, set_value, get_unit and set_unit
+    Attributes:
+        value_entry (Gtk.Entry): The entry widget for numeric values
+        unit_entry (Gtk.Entry or None): The entry widget for units (if
+            enabled)
+        rel_step (float): Relative step size for increment/decrement
+            (default: 0.1)
+        _updating (bool): Internal flag to prevent signal emission
+            during updates
 
     Signals:
-      The widget emits value-changed and unit-changed when the
-      respective field changes.
+        value-changed: Emitted when the numeric value changes
+        unit-changed: Emitted when the unit changes (if unit field is
+            enabled)
+
+    Example:
+        spin = ScientificSpin(value=1.0, rel_step=0.1, with_unit=True)
+        spin.connect("value-changed", lambda w: print(w.get_value()))
 
     """
 
@@ -44,37 +75,46 @@ class ScientificSpin(Gtk.Box):
     }
 
     def __init__(self, value=1.0, rel_step=0.1, with_unit=False):
+        """Initialize the ScientificSpin widget.
+
+        Args:
+            value (float): Initial numeric value (default: 1.0)
+            rel_step (float): Relative step size for
+              increment/decrement (default: 0.1).  E.g., 0.1 means
+              each click multiplies/divides by 1.1/0.909...
+            with_unit (bool): Whether to show a unit field (default: False)
+
+        """
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL,
                          spacing=0)
 
-        # Set this to True whenever changes should *not* emit
-        # value-changed
-        self._updating=False
+        # Flag to prevent signal emission during programmatic updates
+        self._updating = False
         self.rel_step = rel_step
 
-        # Value entry
+        # --- Value Entry ---
         self.value_entry = Gtk.Entry()
         self.value_entry.set_hexpand(True)
-        self.value_entry.set_tooltip_text("value")
+        self.value_entry.set_tooltip_text("Scientific notation value (e.g., 1.23e-10)")
         if value is not None:
             self.set_value(value)
         self.append(self.value_entry)
 
-        # Unit entry
+        # --- Unit Entry (optional) ---
         if with_unit:
             self.unit_entry = Gtk.Entry()
             self.unit_entry.set_hexpand(True)
             self.set_unit("")
             self.append(self.unit_entry)
             self.unit_entry.connect("activate", self.on_unit_changed)
-            self.unit_entry.set_tooltip_text("unit")
+            self.unit_entry.set_tooltip_text("Unit of measurement (e.g., m, s, kg)")
         else:
             self.unit_entry = None
 
-        # Buttons container
+        # --- Buttons Container ---
         buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
-        # "-" button
+        # "-" Button
         self.down = Gtk.Button()
         self.down.set_icon_name("value-decrease-symbolic")
         self.down.set_halign(Gtk.Align.FILL)
@@ -83,7 +123,7 @@ class ScientificSpin(Gtk.Box):
         self.down.add_css_class("flat")
         self.down.set_focusable(False)
 
-        # "+" button
+        # "+" Button
         self.up = Gtk.Button()
         self.up.set_icon_name("value-increase-symbolic")
         self.up.set_halign(Gtk.Align.FILL)
@@ -97,6 +137,7 @@ class ScientificSpin(Gtk.Box):
         self.up.connect("clicked", self.increment, +1)
         self.down.connect("clicked", self.increment, -1)
 
+        # Keyboard support
         key_controller = Gtk.EventControllerKey()
         key_controller.connect("key-pressed", self.on_key_press)
         self.value_entry.add_controller(key_controller)
@@ -105,47 +146,20 @@ class ScientificSpin(Gtk.Box):
         buttons.append(self.up)
         self.append(buttons)
 
-        # Minimal CSS to ensure buttons match entry height
+        # --- Styling ---
         self.add_css_class("scientific-spin")
 
+        # Apply CSS to match entry appearance
         css = Gtk.CssProvider()
         css.load_from_data(b"""
-            /* Make buttons flat and white like entry */
+            /* Make buttons match entry appearance */
             .scientific-spin button {
-                /* aspect-ratio: 1; */
                 background: @theme_base_color;
-                /* border: none; */
-                /* box-shadow: none; */
-                /* min-width: 20px; */
-                /* min-height: 20px; */
-                /* padding: 0; */
-                /* margin: 0; */
             }
             .scientific-spin button:hover {
                 background: @theme_hover_bg_color;
             }
         """)
-        #     /* Thin borders between widgets */
-        #     .scientific-spin > box > button:first-child {
-        #         border-right: 1px solid @borders;
-        #     }
-
-        #     .scientific-spin > entry + box > button:first-child {
-        #         border-left: 1px solid @borders;
-        #     }
-
-        #     .scientific-spin > entry + entry + box > button:first-child {
-        #         border-left: 1px solid @borders;
-        #     }
-        # """)
-        # css.load_from_data(b"""
-        #     .scientific-spin button {
-        #         padding: 0;
-        #         margin: 0;
-        #         min-width: 20px;
-        #         min-height: 20px;
-        #     }
-        # """)
         Gtk.StyleContext.add_provider_for_display(
             self.get_display(),
             css,
@@ -153,18 +167,31 @@ class ScientificSpin(Gtk.Box):
         )
 
     def get_value(self):
+        """Get the current numeric value from the entry.
+
+        Returns:
+            float: The current value as a floating-point number
+
+        Raises:
+            ValueError: If the entry text cannot be converted to float
+        """
         return float(self.value_entry.get_text())
 
-
     def set_value(self, value, *, emit=False):
-        """Set the value field.
+        """Set the value field to a new numeric value.
 
-        By default, setting the value does not emit the
-        ``value-changed`` signal. Set ``emit`` to ``True`` to emit the
-        signal after updating the value.
+        Args:
+            value (float): The new value to display
+            emit (bool): If True, emit the 'value-changed' signal
+                after update. If False (default), suppress signal
+                emission.
+
+        Note:
+            This method uses repr() to format the value, which preserves
+            scientific notation for very large/small numbers.
 
         """
-        was_updating=self._updating
+        was_updating = self._updating
         self._updating = was_updating or not emit
         try:
             self.value_entry.set_text(repr(value))
@@ -172,75 +199,122 @@ class ScientificSpin(Gtk.Box):
             self._updating = was_updating
 
     def get_unit(self):
+        """Get the current unit text.
+
+        Returns:
+            str or None: The current unit text, or None if unit field
+                is disabled
+
+        """
         if self.unit_entry is None:
             return None
         return self.unit_entry.get_text()
 
     def set_unit(self, unit):
-        self.unit_entry.set_text(unit)
+        """Set the unit field to a new string.
+
+        Args:
+            unit (str): The unit text to display (e.g., "m", "s", "kg")
+        """
+        if self.unit_entry is not None:
+            self.unit_entry.set_text(unit)
 
     def increment(self, button, direction):
+        """Increment or decrement the value by a relative step.
+
+        Args:
+            button (Gtk.Button): The button that triggered the
+                increment (unused)
+            direction (int): Direction of change:
+                +1: Increment by relative step
+                -1: Decrement by relative step
+                +10: Multiply by 10 (large increment)
+                -10: Divide by 10 (large decrement)
+
+        Raises:
+            ValueError: If direction is not +1, -1, +10, or -10
+
+        """
         try:
             value = self.get_value()
         except ValueError:
             value = 0.0
 
-
-        # normal case: relative increment
+        # Normal case: relative increment (multiplicative)
         if value != 0:
             if direction == +1:
-                factor = 1.+self.rel_step
+                factor = 1. + self.rel_step
             elif direction == -1:
-                factor = 1./(1.+self.rel_step)
+                factor = 1. / (1. + self.rel_step)
             elif direction == +10:
-                factor=10.
+                factor = 10.
             elif direction == -10:
-                factor=0.1
+                factor = 0.1
             else:
                 raise ValueError("direction should be +1, -1, +10 or -10")
             value *= factor
 
-        # special case: start from zero
+        # Special case: starting from zero
         else:
             value = direction * 1.0
 
         self.set_value(value, emit=True)
 
-
     def on_key_press(self, controller, keyval, keycode, state):
-        """Handle up/down arrow key presses to increment/decrement the value."""
+        """Handle keyboard events for value adjustment.
 
+        Args:
+            controller (Gtk.EventControllerKey): The key controller
+            keyval (Gdk.key): The key that was pressed
+            keycode (int): Hardware keycode (unused)
+            state (Gdk.ModifierType): Modifier state (unused)
+
+        Returns:
+            bool: True if the event was handled, False otherwise
+        """
         # Check for up/down arrow keys
         if keyval == Gdk.KEY_Up:
             self.increment(None, +1)  # Increment
-            return True  # Event handled
+            return True
         elif keyval == Gdk.KEY_Down:
             self.increment(None, -1)  # Decrement
-            return True  # Event handled
+            return True
         elif keyval == Gdk.KEY_Page_Up:
-            self.increment(None, +10)  # Decrement
-            return True  # Event handled
+            self.increment(None, +10)  # Large increment
+            return True
         elif keyval == Gdk.KEY_Page_Down:
-            self.increment(None, -10)  # Decrement
-            return True  # Event handled
+            self.increment(None, -10)  # Large decrement
+            return True
 
         return False  # Event not handled, propagate further
 
     def on_value_changed(self, entry):
-        """Emit value-changed
+        """Handle value entry changes and emit value-changed signal.
 
-        In some conditions, emission will be blocked by setting
-        self._updating to True.
+        This method is connected to the 'changed' signal of
+        value_entry.  It validates the input and emits the
+        'value-changed' signal if valid.
+
+        Args:
+            entry (Gtk.Entry): The entry widget that changed
 
         """
-        if self._updating: return
+        if self._updating:
+            return
         try:
             value = float(entry.get_text())
         except ValueError:
-            return
+            return  # Invalid input, don't emit
 
         self.emit("value-changed")
 
     def on_unit_changed(self, entry):
-        self.emit("unit-changed")
+        """Handle unit entry changes and emit unit-changed signal.
 
+        This method is connected to the 'activate' signal of unit_entry.
+        It emits the 'unit-changed' signal when the unit is changed.
+
+        Args:
+            entry (Gtk.Entry): The unit entry widget that changed
+        """
+        self.emit("unit-changed")
