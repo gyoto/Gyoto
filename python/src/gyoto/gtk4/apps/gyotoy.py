@@ -62,6 +62,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
+import argparse
 import numpy
 from multiprocessing import Queue, Event, Process
 import time
@@ -315,6 +316,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.connector = connector
         if connector is not None:
             GLib.timeout_add(50, self.check_connector)
+
+        # Handle case where particle is a string
+        if isinstance(particle, str):
+            if particle.lower().endswith('.xml'):
+                self.filename = particle
+            factory = Factory(particle)
+            particle = getattr(factory, factory.kind().lower())()
 
         # process particle, star and photon
         if isinstance(particle, Astrobj):
@@ -634,6 +642,22 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """
         app = GyotoyApplication(*args, **kwargs)
         return app.run(None)
+
+    @staticmethod
+    def run_app_cli(*args, **kwargs):
+        """Run Gyotoy as a standalone GTK application.
+
+        Returns:
+            int: Application exit code
+        """
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('xmlfile', nargs='?')
+        cliargs, remaining = parser.parse_known_args()  # Split args here
+
+        print(cliargs)
+
+        app = GyotoyApplication(particle=cliargs.xmlfile, *args, **kwargs)
+        return app.run(remaining)
 
     def check_connector(self):
         """Check for QUIT commands from the parent process.
@@ -1255,4 +1279,4 @@ gyotoy.__doc__ = __doc__
 
 # Stand-alone entry point:
 if __name__ == "__main__":
-    raise SystemExit(GyotoyApplicationWindow.run_app())
+    raise SystemExit(GyotoyApplicationWindow.run_app_cli())
