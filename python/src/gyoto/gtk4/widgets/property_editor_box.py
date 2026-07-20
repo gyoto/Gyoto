@@ -63,7 +63,9 @@ from .scientific_spin import ScientificSpin
 from .vector_scientific_spin import VectorScientificSpin
 from .gyoto_object_chooser import GyotoObjectChooser
 
-from ...core import Property
+from ..utils import show_error_dialog
+
+from ...core import Property, Object
 from ... import core, metric, astrobj, spectrum, spectrometer
 
 class PropertyEditorBox(Gtk.Box):
@@ -93,6 +95,8 @@ class PropertyEditorBox(Gtk.Box):
             (includes child name)
         child-mutated: Emitted when a child object's property changes
             (includes child name)
+        recursive-value-changed: Emitted when a nested property changes
+            (includes the full property path).
 
     """
 
@@ -100,6 +104,7 @@ class PropertyEditorBox(Gtk.Box):
         "value-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
         "child-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
         "child-mutated": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
+        "recursive-value-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
     }
 
     @staticmethod
@@ -133,7 +138,8 @@ class PropertyEditorBox(Gtk.Box):
                                   widget=widget)
         return wrapper
 
-    def __init__(self, obj, hide=[], first=[], *args, **kwargs):
+    def __init__(self, obj, hide=[], first=[], connector=None,
+                 *args, **kwargs):
         """Initialize the PropertyEditorBox widget.
 
         Args:
@@ -142,6 +148,9 @@ class PropertyEditorBox(Gtk.Box):
                 (default: [])
             first: List of property names to show first, before others
                 (default: [])
+            connector (multiprocessing.Connection or None): If the
+                editor runs in a separate process, this is used to
+                send updates back to the caller.
             *args: Additional positional arguments for Gtk.Box
             **kwargs: Additional keyword arguments for Gtk.Box
 
@@ -155,6 +164,10 @@ class PropertyEditorBox(Gtk.Box):
         self.hide = hide
         self.first = first
         self.populate_properties()
+        if connector is not None:
+            self.connect('recursive-value-changed',
+                         self.on_recursive_value_changed_pipe_sender,
+                         connector)
 
     def populate_properties(self):
         """Generate editor widgets for all object properties.
@@ -291,6 +304,7 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                chooser.connect("recursive-value-changed", self.on_recursive_value_changed, name)
                 self.widgets[name] = chooser
 
             elif param_type == core.Property.screen_t:
@@ -299,6 +313,7 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                chooser.connect("recursive-value-changed", self.on_recursive_value_changed, name)
                 self.widgets[name] = chooser
 
             elif param_type == core.Property.spectrum_t:
@@ -307,6 +322,7 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                chooser.connect("recursive-value-changed", self.on_recursive_value_changed, name)
                 self.widgets[name] = chooser
 
             elif param_type == core.Property.astrobj_t:
@@ -315,6 +331,7 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                chooser.connect("recursive-value-changed", self.on_recursive_value_changed, name)
                 self.widgets[name] = chooser
 
             elif param_type == core.Property.spectrometer_t:
@@ -323,6 +340,7 @@ class PropertyEditorBox(Gtk.Box):
                 hbox.append(chooser)
                 chooser.connect("object-changed", self.on_object_changed, name)
                 chooser.connect("object-mutated", self.on_object_mutated, name)
+                chooser.connect("recursive-value-changed", self.on_recursive_value_changed, name)
                 self.widgets[name] = chooser
 
             self.append(frame)
@@ -383,6 +401,7 @@ class PropertyEditorBox(Gtk.Box):
         """
         self.obj.set(name, widget.obj)
         self.emit('child-changed', name)
+        self.emit('recursive-value-changed', name)
 
     @gtk_callback
     def on_object_mutated(self, widget, name, *args):
@@ -400,6 +419,49 @@ class PropertyEditorBox(Gtk.Box):
 
         """
         self.emit('child-mutated', name)
+
+    @gtk_callback
+    def on_recursive_value_changed(self, widget, pname, name, *args):
+        """Handle property changes in sub-objects from GyotoObjectChooser.
+
+        Called when a property of a sub-object (e.g., a Metric
+        property) changes. Forwards the signal to the parent with the
+        full property path.
+
+        Args:
+            widget: The GyotoObjectChooser that emitted the signal.
+            pname: The name of the property that changed in the sub-object.
+            name: The name of the property containing the sub-object.
+            *args: Additional arguments.
+
+        """
+        self.emit('recursive-value-changed', f'{name}.{pname}')
+
+    @gtk_callback
+    def on_recursive_value_changed_pipe_sender(self, wdgt, ppath,
+                                               connector):
+        """Send recursive value changes to another process.
+
+        When the UI runs in a separate process, this callback sends
+        property updates back to the caller via the connector.
+
+        Args:
+            wdgt: The widget that emitted the signal.
+            ppath: The full path to the property that changed (e.g.,
+                'Metric.Spin').
+            connector: The multiprocessing.Connection to send updates to
+                the caller.
+
+        """
+        descendents = ppath.split('.')
+        value = self.obj
+        for i in range(len(descendents)):
+            obj = value
+            value = obj.get(descendents[i])
+        if isinstance(value, Object):
+            value = str(value)
+        connector.send(['update', ppath, value])
+        print(f'event sent: {ppath} == {value}')
 
     @gtk_callback
     def on_parameter_changed(self, widget, name, *args):
@@ -455,6 +517,7 @@ class PropertyEditorBox(Gtk.Box):
             self.obj.set(name, new_value, new_unit)
 
         self.emit('value-changed', name)
+        self.emit('recursive-value-changed', name)
 
     @gtk_callback
     def on_file_chooser_clicked(self, button, entry):

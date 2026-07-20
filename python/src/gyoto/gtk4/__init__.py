@@ -33,13 +33,15 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import GLib
 
+from .utils import gui_launcher
+
 # Set application name for GTK
 GLib.set_prgname("Gyoto")
 
 # Re-export main entry point for convenience
 
 # Interactive-session entry point:
-def gyotoy(particle=None, blocking=True):
+def gyotoy(particle=None):
     """Gyotoy: GTK4 Application for Gyoto Geodesic Integration
 
     This application provides a graphical interface for simulating and
@@ -85,45 +87,53 @@ def gyotoy(particle=None, blocking=True):
     Or import and use programmatically:
         from gyoto.gtk4 import gyotoy
         window = gyotoy([particle])
-    From ipython3, the application can be involed non-blocking:
-        %gui gtk4
-        from gyoto.gtk4 import gyotoy
-        window = gyotoy([particle, ] blocking=False)
+    The application runs in a separate process in a non-blocking fashion.
     An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
-    provided.
+    provided. Changes made in the GUI affect the variable being passed.
 
     """
     # lazy import to not get in the way of stand-alone execution
-    from .apps.gyotoy import GyotoyApplicationWindow
-    return GyotoyApplicationWindow.run(particle, blocking)
+    from .utils import recursive_value_changed_pipe_receiver
+
+    def gtk_process(connector, obj):
+        from .apps.gyotoy import GyotoyApplicationWindow
+        GyotoyApplicationWindow.run(particle,
+                                    blocking=True,
+                                    connector=connector)
+
+    gui_launcher(gtk_process,
+                 None if particle is None else recursive_value_changed_pipe_receiver,
+                 particle)
 
 # Add edit() method to gyoto.core.Object for convenient property editing
 # Note: This should ideally be achieved using SWIG's extend mechanism
-def edit(self, blocking=True):
+def edit(self):
     """A GTK4 window for editing Gyoto object properties.
 
     This window provides a scrollable view of all editable properties of a
     Gyoto object, using a PropertyEditorBox as its main content.
 
-    The window can run in blocking mode (manages its own GLib main loop) or
-    non-blocking mode (for integration with external event loops like
-    IPython).
+    The application runs in a separate process in a non-blocking fashion.
 
     Parameters:
         obj: The Gyoto object to edit
-        blocking (bool): If True, the window manages the GLib main
-            loop.  If False, the caller must manage the event loop
-            (e.g., using %gui gtk4 in IPython).
 
-    Attributes:
-        obj: The Gyoto object being edited
-        main_loop: GLib.MainLoop instance (if blocking=True)
-        scrolled_window: Gtk.ScrolledWindow containing the editor
-        vbox: PropertyEditorBox for editing object properties
+    Note:
+        The GUI runs in a separate process.
 
     """
-    from .apps.gyoto_object_editor import GyotoObjectEditor
-    GyotoObjectEditor.run(self, blocking=blocking)
+
+    from .utils import recursive_value_changed_pipe_receiver
+
+    def gtk_process(connector, obj):
+        from .apps.gyoto_object_editor import GyotoObjectEditor
+        win = GyotoObjectEditor(str(obj), blocking=True, connector=connector)
+        win.present()
+        win.main_loop.run()
+
+    gui_launcher(gtk_process,
+                 recursive_value_changed_pipe_receiver,
+                 self)
 
 # Monkey-patch the edit method onto gyoto.core.Object
 from ..core import Object

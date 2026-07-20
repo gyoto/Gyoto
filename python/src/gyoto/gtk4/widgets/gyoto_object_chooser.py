@@ -82,6 +82,8 @@ class GyotoObjectChooser(Gtk.Box):
             is loaded
         object-mutated: Emitted when a property of the current object
             changes
+        recursive-value-changed: Emitted when a nested property changes
+            (includes the full property path).
 
     Note:
         Uses lazy imports to break circular dependency with PropertyEditorBox.
@@ -92,7 +94,8 @@ class GyotoObjectChooser(Gtk.Box):
 
     __gsignals__ = {
         "object-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ()),
-        "object-mutated": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, ())
+        "object-mutated": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        "recursive-value-changed": (gi.repository.GObject.SignalFlags.RUN_FIRST, None, (str,))
     }
 
     def __init__(self, namespace, obj=None):
@@ -159,8 +162,9 @@ class GyotoObjectChooser(Gtk.Box):
             box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
+            box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
 
-    def on_child_value_changed(self, widget, *args):
+    def on_child_value_changed(self, widget, name, *args):
         """Handle value changes from the PropertyEditorBox.
 
         Emits 'object-mutated' signal when a property changes.
@@ -169,7 +173,21 @@ class GyotoObjectChooser(Gtk.Box):
             widget: The PropertyEditorBox that emitted the signal
             *args: Additional arguments
         """
-        self.emit("object-mutated")
+        self.emit("object-mutated", name)
+
+    def on_child_recursive_value_changed(self, widget, ppath, *args):
+        """Handle recursive value changes from the PropertyEditorBox.
+
+        Forwards the signal to indicate that a nested property path has
+        changed.
+
+        Args:
+            widget: The PropertyEditorBox that emitted the signal.
+            name: The full path of the property that changed.
+            *args: Additional arguments.
+
+        """
+        self.emit("recursive-value-changed", ppath)
 
     def on_dropdown_activated(self, widget, *args):
         """Handle dropdown selection changes.
@@ -233,6 +251,7 @@ class GyotoObjectChooser(Gtk.Box):
             box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
+            box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
             self.emit("object-changed")
 
     def on_open_file_selected(self, dialog, result):
@@ -285,9 +304,6 @@ class GyotoObjectChooser(Gtk.Box):
                 )
                 return
 
-            print(self.namespace)
-            print(self.obj)
-
             # Update dropdown to match the loaded object's kind
             self._updating = True
             if self.namespace == core.Screen:
@@ -307,4 +323,5 @@ class GyotoObjectChooser(Gtk.Box):
             box = PropertyEditorBox(self.obj, hide=['Metric'])
             self.frame.set_child(box)
             box.connect("value-changed", self.on_child_value_changed)
+            box.connect("recursive-value-changed", self.on_child_recursive_value_changed)
             self.emit("object-changed")
