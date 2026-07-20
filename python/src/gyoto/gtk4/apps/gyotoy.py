@@ -1011,6 +1011,8 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             name: The name of the property that changed
             *args: Additional arguments
         """
+        if self.hold:
+            return
         if name == 'InitCoord':
             coord = numpy.array(self.particle.InitCoord)
             if self.particle == self.star:

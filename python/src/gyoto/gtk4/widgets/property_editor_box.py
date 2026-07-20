@@ -579,7 +579,7 @@ class PropertyEditorBox(Gtk.Box):
         if widget.get_active():
             # Switch to representing as 3-velocity
             tdot = coord[4]
-            if tdot == 0.:
+            if tdot == 0. or numpy.isnan(tdot):
                 tdot = 1.
             # Convert 4-velocity to 3-velocity: vel_3 = vel_4 / tdot
             pos3vel = coord[0:4] + tuple((x/tdot for x in coord[5:8]))
