@@ -91,6 +91,11 @@ class GyotoObjectEditor(Gtk.Window):
         Gtk.Window.__init__(self, title="Gyoto Object Editor")
         self.set_default_size(400, 600)
 
+        # handle QUIT from parent process
+        self.connector = connector
+        if connector is not None:
+            GLib.timeout_add(50, self.check_connector)
+
         # obj may be the XML description of the object
         if isinstance(obj, str):
             factory = Factory(obj)
@@ -134,3 +139,31 @@ class GyotoObjectEditor(Gtk.Window):
         if self.main_loop is not None:
             GLib.idle_add(self.main_loop.quit)
         return False
+
+    def check_connector(self):
+        """Check for QUIT commands from the parent process.
+
+        This method is called periodically (every 50ms) via
+        GLib.timeout_add to poll the inter-process communication pipe
+        for a QUIT message.  When received, it quits the GTK main
+        loop, allowing the process to exit gracefully.
+
+        Returns:
+            bool: False to stop the timeout (after QUIT), True to
+                continue.
+
+        """
+        if self.connector is None:
+            return False
+        try:
+            if self.connector.poll(0):
+                msg = self.connector.recv()
+                if msg == ('QUIT',):
+                    self.close()
+                    # if self.main_loop is not None:
+                    #     self.main_loop.quit()
+                    return False
+        except:
+            pass
+        return True
+
