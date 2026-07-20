@@ -58,6 +58,7 @@ class VectorScientificSpin(Gtk.Box):
         - Add/Remove buttons at the bottom to modify the vector size
 
     Attributes:
+        hold (bool): If True, don't emit signals.
         rel_step (float): Relative step size for ScientificSpin widgets
         spins (list): List of spin widgets for each vector element
         itemclass (type): Class to use for spin widgets
@@ -89,6 +90,8 @@ class VectorScientificSpin(Gtk.Box):
             ()
         )
     }
+
+    hold = False
 
     def __init__(self, value=None, with_unit=False, rel_step=0.1,
                  itemclass=ScientificSpin):
@@ -159,6 +162,7 @@ class VectorScientificSpin(Gtk.Box):
 
         #
         # + / - buttons for adding/removing vector elements
+        # ■ for hold functionality
         #
         buttons = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL,
@@ -167,15 +171,29 @@ class VectorScientificSpin(Gtk.Box):
 
         add = Gtk.Button(icon_name="list-add-symbolic")
         remove = Gtk.Button(icon_name="list-remove-symbolic")
+        stop = Gtk.ToggleButton(icon_name="media-playback-stop-symbolic")
 
         add.add_css_class("flat")
         remove.add_css_class("flat")
+        stop.add_css_class("flat")
+
+        add.set_tooltip_text(
+            "Add item to vector"
+        )
+        remove.set_tooltip_text(
+            "Remove last element from vector"
+        )
+        stop.set_tooltip_text(
+            "Toggle stop mode: when active, prevents signaling upon parameter changes"
+        )
 
         add.connect("clicked", self.on_add)
         remove.connect("clicked", self.on_remove)
+        stop.connect("toggled", self.on_stop)
 
         buttons.append(add)
         buttons.append(remove)
+        buttons.append(stop)
 
         self.append(buttons)
 
@@ -272,7 +290,8 @@ class VectorScientificSpin(Gtk.Box):
                 that changed.
 
         """
-        self.emit("value-changed")
+        if not self.hold:
+            self.emit("value-changed")
 
     def on_add(self, button):
         """Handle click on the add button.
@@ -292,7 +311,8 @@ class VectorScientificSpin(Gtk.Box):
         self.spins.append(spin)
         self.values_box.append(spin)
 
-        self.emit("value-changed")
+        if not self.hold:
+            self.emit("value-changed")
 
     def on_remove(self, button):
         """Handle click on the remove button.
@@ -310,7 +330,21 @@ class VectorScientificSpin(Gtk.Box):
 
         self.values_box.remove(spin)
 
-        self.emit("value-changed")
+        if not self.hold:
+            self.emit("value-changed")
+
+    def on_stop(self, button):
+        """Handle click on the stop button.
+
+        Toggles hold mode.
+
+        Args:
+            button (Gtk.ToggleButton): The stop button that was clicked.
+        """
+        self.hold = button.get_active()
+
+        if not self.hold:
+            self.emit("value-changed")
 
     def _new_spin(self, value=None):
         """Create a new spin widget.
