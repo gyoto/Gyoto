@@ -5,6 +5,7 @@ This module provides utility functions for GTK4 applications in Gyoto,
 including error dialog display and other common UI tasks.
 """
 
+import time
 import warnings
 import traceback
 from ..core import Property, Factory, Error as GyotoError, debug
@@ -70,7 +71,8 @@ def gui_launcher(gui_function, handler_function, *args):
             connection object for sending events back and any *args.
         handler_function: Function to handle events in the caller
             process. Receives a connection object for receiving events,
-            a cleanup function, and any *args. If None, no IPC is set up.
+            a cleanup function, and any *args. If None, default to
+            gui_launcher_default_handler.
         *args: Additional arguments passed to both gui_function and
             handler_function.
 
@@ -80,31 +82,58 @@ def gui_launcher(gui_function, handler_function, *args):
     import atexit
     from ..core import Object
 
-    # IPC pipe (parent = IPython, child = GTK process)
+    # Default handler if needed
     if handler_function is None:
-        snd_conn=None
-    else:
-        rcv_conn, snd_conn = Pipe()
+        handler_function = gui_launcher_default_handler
+
+    # IPC pipe (parent = IPython, child = GTK process)
+    rcv_conn, snd_conn = Pipe()
 
     # construct p here, we need it for cleanup()
     p = Process(target=gui_function, args=(snd_conn, *args))
 
     def cleanup():
+        """Clean up the GTK subprocess on interpreter exit.
+
+        This function is registered with atexit to ensure the GTK process
+        is terminated when the Python interpreter exits. It first attempts
+        a graceful shutdown by sending a QUIT command through the IPC pipe,
+        then falls back to SIGTERM and SIGKILL if the process does not
+        respond.
+
+        Note:
+            GTK's main loop blocks SIGTERM/SIGKILL, so the QUIT message is
+            required for graceful termination.
+
+        """
         try:
+            # 1. Send QUIT through pipe (graceful)
+            if rcv_conn is not None:
+                try:
+                    rcv_conn.send(('QUIT',))
+                    rcv_conn.close()
+                except:
+                    pass
+                time.sleep(0.5)  # Give GTK time to exit
+
+            # 2. Force kill if it didn't respond
             if p.is_alive():
+                print('process is not dead')
                 p.terminate()
                 p.join(timeout=1)
                 if p.is_alive():
+                    print('how many time will I have to kill you?')
                     p.kill()
+                    p.join(timeout=1)
         except ValueError:
             pass  # Already dead
 
     atexit.register(cleanup)  # Clean up on main process exit
 
-    if handler_function is not None:
-        Thread(target=handler_function,
-               args=(rcv_conn, cleanup, *args),
-               daemon=True).start()
+    # start handler function in its own thread
+    Thread(target=handler_function,
+           args=(rcv_conn, cleanup, *args),
+           daemon=True).start()
 
     # start p after the handler
     p.start()
@@ -151,6 +180,38 @@ def recursive_value_changed_pipe_receiver(connector, cleanup, obj):
                             value = getattr(factory, factory.kind().lower())()
                         print(f'setting {pname} to {value}')
                         subobj.set(pname, value)
+                except GyotoError as e:
+                    warnings.warn(f"Gyoto object editor triggered a Gyoto error:\n{e.get_message()}")
+                except EOFError:
+                    # GUI process terminated, exit gracefully
+                    break
+    finally:
+        if debug():
+            warnings.warn('exiting')
+        if cleanup is not None:
+            cleanup()
+        connector.close()
+
+def gui_launcher_default_handler(connector, cleanup, *args):
+    """Receive events from a GUI process.
+
+    This is a default implementation. It ignores all updates but runs
+    `cleanup` before exiting.
+
+    Args:
+        connector: A multiprocessing.Connection for receiving events
+            from the GUI process.
+        cleanup: A function to call when the GUI process terminates or
+            this receiver exits.
+        *args: Any additional arguments (ignored).
+
+    """
+    try:
+        while True:
+            if connector.poll(0.01):  # non-blocking check
+                try:
+                    event = connector.recv()
+                    print(f"event received: {event}")  # or call a callback
                 except GyotoError as e:
                     warnings.warn(f"Gyoto object editor triggered a Gyoto error:\n{e.get_message()}")
                 except EOFError:
