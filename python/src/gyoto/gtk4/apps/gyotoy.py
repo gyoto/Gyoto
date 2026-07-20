@@ -215,12 +215,24 @@ class GyotoyApplication(Gtk.Application):
 
     """
 
-    def __init__(self):
-        """Initialize the Gyotoy GTK application."""
-        super().__init__(
-            application_id="fr.obspm.gyoto.Gyotoy",
-            flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
-        )
+    def __init__(self, particle=None, connector=None, *args, **kwargs):
+        """Initialize the Gyotoy GTK application.
+
+        Args:
+            particle: Initial particle to display (Star or Photon)
+            connector (multiprocessing.Connection or None): If the GUI
+                runs in a separate process, this is used to send updates
+                back to the caller.
+
+        """
+        if 'application_id' not in kwargs:
+            kwargs['application_id'] = "fr.obspm.gyoto.Gyotoy"
+        if 'flags' not in kwargs:
+            kwargs['flags'] = (Gio.ApplicationFlags.DEFAULT_FLAGS |
+                               Gio.ApplicationFlags.NON_UNIQUE)
+        super().__init__(*args, **kwargs)
+        self.particle = particle
+        self.connector = connector
 
     def do_activate(self):
         """Called by GTK when the application starts.
@@ -230,7 +242,9 @@ class GyotoyApplication(Gtk.Application):
         window = self.props.active_window
 
         if window is None:
-            window = GyotoyApplicationWindow(application=self)
+            window = GyotoyApplicationWindow(application=self,
+                                             particle=self.particle,
+                                             connector=self.connector)
 
         window.present()
 
@@ -297,6 +311,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """
         super().__init__(application=application)
 
+        # handle QUIT from parent process
+        self.connector = connector
+        if connector is not None:
+            GLib.timeout_add(50, self.check_connector)
+
         # process particle, star and photon
         if isinstance(particle, Astrobj):
             particle = Star(particle)
@@ -356,11 +375,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         # Populate initial editor
         self.hold = False
+
         # one of star or photon is particle.  In the end,
         # connector_dict has two items, one of which may not be None.
         self.connector_dict = {self.star: None, self.photon: None}
         self.connector_dict[particle] = connector
-        print(self.connector_dict)
 
         self.set_particle(particle)
 
@@ -552,7 +571,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.controls.nframes.set_value(100)
 
     ####################################################################
-    # Entry points
+    # Entry points and lifecycle control
     ####################################################################
 
     @staticmethod
@@ -607,14 +626,41 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.close()
 
     @staticmethod
-    def run_app():
+    def run_app(*args, **kwargs):
         """Run Gyotoy as a standalone GTK application.
 
         Returns:
             int: Application exit code
         """
-        app = GyotoyApplication()
+        app = GyotoyApplication(*args, **kwargs)
         return app.run(None)
+
+    def check_connector(self):
+        """Check for QUIT commands from the parent process.
+
+        This method is called periodically (every 50ms) via
+        GLib.timeout_add to poll the inter-process communication pipe
+        for a QUIT message.  When received, it quits the GTK main
+        loop, allowing the process to exit gracefully.
+
+        Returns:
+            bool: False to stop the timeout (after QUIT), True to
+                continue.
+
+        """
+        if self.connector is None:
+            return False
+        try:
+            if self.connector.poll(0):
+                msg = self.connector.recv()
+                if msg == ('QUIT',):
+                    self.close()
+                    # if self.main_loop is not None:
+                    #     self.main_loop.quit()
+                    return False
+        except:
+            pass
+        return True
 
     ####################################################################
     # Compute and redraw
@@ -992,7 +1038,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                 self.star.Metric = self.photon.Metric
         self.on_child_mutated(widget, name, *args)
 
-    def on_child_mutated(self, widget, name, *args):
+    def on_child_mutated(self, widget, pname, name, *args):
         """Handle metric mutations from the editor.
 
         Renormalizes InitCoord for both Star and Photon when the
@@ -1000,11 +1046,22 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         Args:
             widget: The widget that emitted the signal
-            name: The name of the property that changed
+            name: The name of the changed property in the child
+            name: The name of the child
             *args: Additional arguments
 
         """
-        if name != 'Metric': return
+        # React only to events in the metric
+        if name != 'Metric':
+            return
+
+        # Don't touch anything if self.hold is set
+        if self.hold:
+            return
+
+        # Don't touch anything if metric is not set
+        if self.particle.Metric is None:
+            return
 
         # Normalize star init coord
         coord = numpy.array(self.star.InitCoord)
@@ -1016,7 +1073,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.photon.Metric.nullifyCoord(coord)
         self.photon.InitCoord = coord
 
+        # Let the editor update InitCoord display
         self.editor.on_3vel_toggled(name='InitCoord')
+
+        # Compute and redraw
         self.compute_and_redraw()
 
     def on_endtime_changed(self, wdgt):

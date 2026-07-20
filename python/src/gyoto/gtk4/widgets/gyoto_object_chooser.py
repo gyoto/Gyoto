@@ -81,7 +81,7 @@ class GyotoObjectChooser(Gtk.Box):
         object-changed: Emitted when a new kind is selected or object
             is loaded
         object-mutated: Emitted when a property of the current object
-            changes
+            changes (includes the name of the property)
         recursive-value-changed: Emitted when a nested property changes
             (includes the full property path).
 

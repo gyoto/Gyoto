@@ -103,7 +103,7 @@ class PropertyEditorBox(Gtk.Box):
     __gsignals__ = {
         "value-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
         "child-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
-        "child-mutated": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
+        "child-mutated": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,GObject.TYPE_STRING,)),
         "recursive-value-changed": (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_STRING,)),
     }
 
@@ -404,7 +404,7 @@ class PropertyEditorBox(Gtk.Box):
         self.emit('recursive-value-changed', name)
 
     @gtk_callback
-    def on_object_mutated(self, widget, name, *args):
+    def on_object_mutated(self, widget, pname, name, *args):
         """Handle property changes in sub-objects from GyotoObjectChooser.
 
         Called when a property of a sub-object (e.g., a Metric
@@ -414,11 +414,13 @@ class PropertyEditorBox(Gtk.Box):
 
         Args:
             widget: The GyotoObjectChooser that emitted the signal
+            pname: The name of the changed property in the sub-object
             name: The name of the property containing the sub-object
             *args: Additional arguments
 
         """
-        self.emit('child-mutated', name)
+        print(f'PropertyEditorBox emitting child-mutated {name}')
+        self.emit('child-mutated', pname, name)
 
     @gtk_callback
     def on_recursive_value_changed(self, widget, pname, name, *args):

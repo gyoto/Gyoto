@@ -9,7 +9,7 @@ Module Structure
 - **widgets**: Custom GTK4 widgets for Gyoto-specific data types
   (ScientificSpin, VectorScientificSpin, Viewer3D, etc.)
 - **apps**: High-level application windows
-  (GyotoyApplicationWindow, GyotoObjectEditor)
+  (GyotoyApplication, GyotoObjectEditor)
 - **utils**: Utility functions for GTK4 applications
   (show_error_dialog)
 
@@ -22,21 +22,23 @@ Main Entry Points
   installed as a gyoto.core.Object method
 
 Note:
-    Requires GTK4 and Matplotlib with GTK4 backend.
+    Requires GTK4 and Matplotlib with GTK4Agg backend.
+
+    Importing the `widgets` or `apps` submodules must be done before
+    any matplotlib plot is made and forces all subsequent matplotlib
+    plots to use the GTK4Agg backend, or they may fail.
+
+    The provided entry points (gyotoy(), Object.edit()) avoid this by
+    running GUIs in separate processes, so neither `widgets` nor
+    `apps` are imported in the calling process. Use utils.gui_launcher
+    for the same behavior with custom GUIs.
 
 """
 
 # Public API
-__all__ = ['widgets', 'apps', 'utils', 'gyotoy']
-
-import gi
-gi.require_version("Gtk", "4.0")
-from gi.repository import GLib
+__all__ = ['gyotoy']
 
 from .utils import gui_launcher
-
-# Set application name for GTK
-GLib.set_prgname("Gyoto")
 
 # Re-export main entry point for convenience
 
@@ -97,9 +99,8 @@ def gyotoy(particle=None):
 
     def gtk_process(connector, obj):
         from .apps.gyotoy import GyotoyApplicationWindow
-        GyotoyApplicationWindow.run(particle,
-                                    blocking=True,
-                                    connector=connector)
+        GyotoyApplicationWindow.run_app(particle=particle,
+                                        connector=connector)
 
     gui_launcher(gtk_process,
                  None if particle is None else recursive_value_changed_pipe_receiver,
