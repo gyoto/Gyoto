@@ -281,7 +281,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     # Construction
     ####################################################################
 
-    def __init__(self, application=None, particle=None, star=None, photon=None):
+    def __init__(self, application=None,
+                 particle=None, star=None, photon=None,
+                 connector=None):
         """Initialize the main window.
 
         Args:
@@ -289,6 +291,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             particle: Initial particle to display (Star or Photon)
             star: Default Star particle (created if None)
             photon: Default Photon particle (created if None)
+            connector (multiprocessing.Connection or None): If the GUI
+                runs in a separate process, this is used to send updates
+                back to the caller.
         """
         super().__init__(application=application)
 
@@ -351,6 +356,12 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         # Populate initial editor
         self.hold = False
+        # one of star or photon is particle.  In the end,
+        # connector_dict has two items, one of which may not be None.
+        self.connector_dict = {self.star: None, self.photon: None}
+        self.connector_dict[particle] = connector
+        print(self.connector_dict)
+
         self.set_particle(particle)
 
     ####################################################################
@@ -545,17 +556,20 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     ####################################################################
 
     @staticmethod
-    def run(particle=None, blocking=True):
+    def run(particle=None, blocking=True, connector=None):
         """Run Gyotoy as a standalone application or embedded window.
 
         Args:
             particle: Initial particle to display (Star or Photon)
             blocking: If True, run the GTK main loop (for standalone use)
+            connector (multiprocessing.Connection or None): If provided,
+                passed to the window for inter-process communication.
 
         Returns:
             GyotoyApplicationWindow: The created window instance
         """
-        win = GyotoyApplicationWindow(particle=particle)
+        win = GyotoyApplicationWindow(particle=particle,
+                                      connector=connector)
         win.blocking = blocking
         win.present()
         if blocking:
@@ -1106,7 +1120,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                               )
             return
         self.particle = particle
-        self.editor = PropertyEditorBox(particle, first=['InitCoord', 'Metric'])
+        self.editor = PropertyEditorBox(particle,
+                                        first=['InitCoord', 'Metric'],
+                                        connector = self.connector_dict[particle])
         self.editor_scroller.set_child(self.editor)
         self.editor.connect('value-changed', self.on_value_changed)
         self.editor.connect('child-changed', self.on_child_changed)
@@ -1160,13 +1176,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         particle = Photon()
         particle.Metric = (self.default_metric() if self.star is None
                            else self.star.Metric)
-        r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
-        spherical = (particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL)
-        coord = (0., r, 0.5*numpy.pi if spherical else 0., 0.,
-                 1., 0., 0. if spherical else 1., 1./r if spherical else 0.)
-        coord = numpy.array(coord)
-        particle.Metric.nullifyCoord(coord)
-        particle.initCoord(coord)
+        if hasattr(particle.Metric, 'Spin'):
+            r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
+            spherical = (particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL)
+            coord = (0., r, 0.5*numpy.pi if spherical else 0., 0.,
+                     1., 0., 0. if spherical else 1., 1./r if spherical else 0.)
+            coord = numpy.array(coord)
+            particle.Metric.nullifyCoord(coord)
+            particle.initCoord(coord)
         return particle
 
 # Interactive-session entry point:

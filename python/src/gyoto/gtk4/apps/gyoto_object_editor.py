@@ -6,10 +6,9 @@ than as a standalone application.
 
 Note:
 
-    The GyotoObjectEditor.run() method is typically as a method on
-    gyoto.core.Object as edit(), allowing:
+    The GyotoObjectEditor.run() method is wrapped in the edit() method
+    of gyoto.core.Object, allowing:
         my_object.edit()
-        my_object.edit(blocking=False)  # For use with %gui gtk4 in IPython
 
 """
 
@@ -20,6 +19,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 
 from ..widgets.property_editor_box import PropertyEditorBox
+from ...core import Factory
 
 class GyotoObjectEditor(Gtk.Window):
     """A GTK4 window for editing Gyoto object properties.
@@ -36,6 +36,9 @@ class GyotoObjectEditor(Gtk.Window):
         blocking (bool): If True, the window manages the GLib main
             loop.  If False, the caller must manage the event loop
             (e.g., using %gui gtk4 in IPython).
+        connector (multiprocessing.Connection or None): If the GUI
+            runs in a separate process, this is used to send updates
+            back to the caller.
 
     Attributes:
         obj: The Gyoto object being edited
@@ -46,7 +49,7 @@ class GyotoObjectEditor(Gtk.Window):
     """
 
     @staticmethod
-    def run(obj, blocking=True):
+    def run(obj, blocking=True, connector=None):
         """Construct a GyotoObjectEditor window and run it.
 
         This is the recommended way to use the editor. It creates a new
@@ -56,6 +59,9 @@ class GyotoObjectEditor(Gtk.Window):
             obj: The Gyoto object to edit
             blocking (bool): If True, run the GLib main loop.  If
                 False, return immediately after presenting.
+            connector (multiprocessing.Connection or None): If the GUI
+                runs in a separate process, this is used to send updates
+                back to the caller.
 
         Returns:
             GyotoObjectEditor: The created window instance
@@ -66,20 +72,30 @@ class GyotoObjectEditor(Gtk.Window):
             my_metric.edit()
 
         """
-        win = GyotoObjectEditor(obj, blocking)
+        win = GyotoObjectEditor(obj, blocking, connector)
         win.present()
         if blocking:
             win.main_loop.run()
 
-    def __init__(self, obj, blocking=True):
+    def __init__(self, obj, blocking=True, connector=None):
         """Initialize the GyotoObjectEditor window.
 
         Args:
             obj: The Gyoto object to edit
             blocking (bool): Whether to manage the GLib main loop
+            connector (multiprocessing.Connection or None): If the GUI
+                runs in a separate process, this is used to send updates
+                back to the caller.
+
         """
         Gtk.Window.__init__(self, title="Gyoto Object Editor")
         self.set_default_size(400, 600)
+
+        # obj may be the XML description of the object
+        if isinstance(obj, str):
+            factory = Factory(obj)
+            obj = getattr(factory, factory.kind().lower())()
+
         self.obj = obj
         if blocking:
             self.main_loop = GLib.MainLoop()
@@ -93,15 +109,15 @@ class GyotoObjectEditor(Gtk.Window):
         self.set_child(self.scrolled_window)
 
         # Vertical box for property widgets
-        self.vbox = PropertyEditorBox(obj)
-        self.vbox.set_margin_top(10)
-        self.vbox.set_margin_bottom(10)
-        self.vbox.set_margin_start(10)
-        self.vbox.set_margin_end(10)
-        self.scrolled_window.set_child(self.vbox)
+        self.editor = PropertyEditorBox(obj, connector=connector)
+        self.editor.set_margin_top(10)
+        self.editor.set_margin_bottom(10)
+        self.editor.set_margin_start(10)
+        self.editor.set_margin_end(10)
+        self.scrolled_window.set_child(self.editor)
 
         # Note: We could connect to value-changed to react whenever
-        # obj changes self.vbox.connect("value-changed",
+        # obj changes self.editor.connect("value-changed",
         # self.on_value_changed) but we don't actually need to.
 
     def on_close_request(self, *args):
