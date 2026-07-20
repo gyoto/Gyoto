@@ -62,6 +62,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
+import sys
 import argparse
 import numpy
 from multiprocessing import Queue, Event, Process
@@ -650,11 +651,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         Returns:
             int: Application exit code
         """
-        parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument('xmlfile', nargs='?')
+        parser = argparse.ArgumentParser(prog=f'{sys.argv[0]} ',
+                                         description=__doc__,
+                                         formatter_class=argparse.RawTextHelpFormatter)
+        parser.add_argument('xmlfile', nargs='?',
+                            help='XML file containing the description of a '
+                            +'Gyoto Star or Photon (optional)')
         cliargs, remaining = parser.parse_known_args()  # Split args here
-
-        print(cliargs)
 
         app = GyotoyApplication(particle=cliargs.xmlfile, *args, **kwargs)
         return app.run(remaining)
