@@ -247,6 +247,38 @@ class GyotoyApplication(Gtk.Application):
 
         window.present()
 
+    @staticmethod
+    def run_app(particle=None, parsecliargs=False, *args, **kwargs):
+        """Run Gyotoy as a standalone GTK application.
+
+        Parameters:
+            particle: the particle to start with (Star or Photon), or
+                None, or the XML description of such a particle, or
+                the name of an XML file containing this description.
+            parsecliargs (bool): whether to parse the command line
+                arguments
+            *args, **kwargs: other parameters are passed untouched to
+                the GyotoApplication constructor.
+
+        Returns:
+            int: Application exit code
+
+        """
+        remaining = None
+        if parsecliargs:
+            parser = argparse.ArgumentParser(prog=f'{sys.argv[0]} ',
+                                             description=__doc__,
+                                             formatter_class=argparse.RawTextHelpFormatter)
+            parser.add_argument('xmlfile', nargs='?',
+                                help='XML file containing the description'
+                                + 'of a Gyoto Star or Photon (optional)')
+            cliargs, remaining = parser.parse_known_args()
+            if 'xmlfile' in cliargs:
+                particle=cliargs.xmlfile
+
+        app = GyotoyApplication(particle=particle, *args, **kwargs)
+        return app.run(remaining)
+
 class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
@@ -740,34 +772,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             *args: GTK callback arguments
         """
         self.close()
-
-    @staticmethod
-    def run_app(*args, **kwargs):
-        """Run Gyotoy as a standalone GTK application.
-
-        Returns:
-            int: Application exit code
-        """
-        app = GyotoyApplication(*args, **kwargs)
-        return app.run(None)
-
-    @staticmethod
-    def run_app_cli(*args, **kwargs):
-        """Run Gyotoy as a standalone GTK application.
-
-        Returns:
-            int: Application exit code
-        """
-        parser = argparse.ArgumentParser(prog=f'{sys.argv[0]} ',
-                                         description=__doc__,
-                                         formatter_class=argparse.RawTextHelpFormatter)
-        parser.add_argument('xmlfile', nargs='?',
-                            help='XML file containing the description of a '
-                            +'Gyoto Star or Photon (optional)')
-        cliargs, remaining = parser.parse_known_args()  # Split args here
-
-        app = GyotoyApplication(particle=cliargs.xmlfile, *args, **kwargs)
-        return app.run(remaining)
 
     def check_connector(self):
         """Check for QUIT commands from the parent process.
@@ -1507,11 +1511,6 @@ WORKFLOW:
             particle.initCoord(coord)
         return particle
 
-# Interactive-session entry point:
-def gyotoy(particle=None, blocking=True):
-    return GyotoyApplicationWindow.run(particle=particle, blocking=blocking)
-gyotoy.__doc__ = __doc__
-
 # Stand-alone entry point:
 if __name__ == "__main__":
-    raise SystemExit(GyotoyApplicationWindow.run_app_cli())
+    raise SystemExit(GyotoyApplication.run_app(parsecliargs=True))

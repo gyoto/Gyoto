@@ -89,18 +89,21 @@ def gyotoy(particle=None):
     Or import and use programmatically:
         from gyoto.gtk4 import gyotoy
         window = gyotoy([particle])
-    The application runs in a separate process in a non-blocking fashion.
-    An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
-    provided. Changes made in the GUI affect the variable being passed.
+
+    The application runs in a separate process in a non-blocking
+    fashion.  An optional particle (gyoto.std.Star or
+    gyoto.core.Photon) can be provided. Changes made in the GUI affect
+    the variable being passed except if another particle of the same
+    type (Star or Photon) is read from an XML file.
 
     """
     # lazy import to not get in the way of stand-alone execution
     from .utils import recursive_value_changed_pipe_receiver
 
     def gtk_process(connector, obj):
-        from .apps.gyotoy import GyotoyApplicationWindow
-        GyotoyApplicationWindow.run_app(particle=particle,
-                                        connector=connector)
+        from .apps.gyotoy import GyotoyApplication
+        GyotoyApplication.run_app(particle=particle,
+                                  connector=connector)
 
     gui_launcher(gtk_process,
                  None if particle is None else recursive_value_changed_pipe_receiver,
@@ -127,10 +130,9 @@ def edit(self):
     from .utils import recursive_value_changed_pipe_receiver
 
     def gtk_process(connector, obj):
-        from .apps.gyoto_object_editor import GyotoObjectEditor
-        win = GyotoObjectEditor(str(obj), blocking=True, connector=connector)
-        win.present()
-        win.main_loop.run()
+        from .apps.gyoto_object_editor import GyotoObjectEditorApplication
+        GyotoObjectEditorApplication.run_app(obj=obj,
+                                             connector=connector)
 
     gui_launcher(gtk_process,
                  recursive_value_changed_pipe_receiver,

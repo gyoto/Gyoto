@@ -16,10 +16,87 @@ __all__ = ['GyotoObjectEditor']
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk, GLib, Gio, Gdk
+
+import argparse
+import sys
 
 from ..widgets.property_editor_box import PropertyEditorBox
 from ...core import Factory
+
+class GyotoObjectEditorApplication(Gtk.Application):
+    """Standalone GTK application for the Gyoto Object Editor.
+
+    This class handles the application lifecycle and window
+    management.  It extends Gtk.Application to provide a proper GTK
+    application structure.
+
+    """
+
+    def __init__(self, obj=None, connector=None, *args, **kwargs):
+        """Initialize the Gyoto Object Editor GTK application.
+
+        Args:
+            obj: Initial Gyoto object to edit
+            connector (multiprocessing.Connection or None): If the GUI
+                runs in a separate process, this is used to send updates
+                back to the caller.
+
+        """
+        if 'application_id' not in kwargs:
+            kwargs['application_id'] = "fr.obspm.gyoto.GyotoObjectEditor"
+        if 'flags' not in kwargs:
+            kwargs['flags'] = (Gio.ApplicationFlags.DEFAULT_FLAGS |
+                               Gio.ApplicationFlags.NON_UNIQUE)
+        super().__init__(*args, **kwargs)
+        self.obj = obj
+        self.connector = connector
+
+    def do_activate(self):
+        """Called by GTK when the application starts.
+
+        Creates the main window if it doesn't exist and presents it.
+        """
+        window = self.props.active_window
+
+        if window is None:
+            window = GyotoObjectEditor(application=self,
+                                       obj=self.obj,
+                                       connector=self.connector)
+
+        window.present()
+
+    @staticmethod
+    def run_app(obj=None, parsecliargs=False, *args, **kwargs):
+        """Run the Gyoto Object Edirot as a standalone GTK application.
+
+        Parameters:
+            obj: the Gyoto object to start with, or None, or the XML
+                description of such an object, or the name of an XML
+                file containing this description.
+            parsecliargs (bool): whether to parse the command line
+                arguments
+            *args, **kwargs: other parameters are passed untouched to
+                the GyotoApplication constructor.
+        
+        Returns:
+            int: Application exit code
+
+        """
+        remaining = None
+        if parsecliargs:
+            parser = argparse.ArgumentParser(prog=f'{sys.argv[0]} ',
+                                             description=__doc__,
+                                             formatter_class=argparse.RawTextHelpFormatter)
+            parser.add_argument('xmlfile', nargs='?',
+                                help='XML file containing the description'
+                                + 'of a Gyoto object (optional)')
+            cliargs, remaining = parser.parse_known_args()
+            if 'xmlfile' in cliargs:
+                obj=cliargs.xmlfile
+
+        app = GyotoObjectEditorApplication(obj=obj, *args, **kwargs)
+        return app.run(remaining)
 
 class GyotoObjectEditor(Gtk.Window):
     """A GTK4 window for editing Gyoto object properties.
@@ -45,8 +122,11 @@ class GyotoObjectEditor(Gtk.Window):
         main_loop: GLib.MainLoop instance (if blocking=True)
         scrolled_window: Gtk.ScrolledWindow containing the editor
         vbox: PropertyEditorBox for editing object properties
+        filename: name of last file used or None
 
     """
+
+    filename = None
 
     @staticmethod
     def run(obj, blocking=True, connector=None):
@@ -77,10 +157,12 @@ class GyotoObjectEditor(Gtk.Window):
         if blocking:
             win.main_loop.run()
 
-    def __init__(self, obj, blocking=True, connector=None):
+    def __init__(self, application=None,
+                 obj=None, blocking=True, connector=None):
         """Initialize the GyotoObjectEditor window.
 
         Args:
+            application: Parent Gtk.Application instance
             obj: The Gyoto object to edit
             blocking (bool): Whether to manage the GLib main loop
             connector (multiprocessing.Connection or None): If the GUI
@@ -88,7 +170,8 @@ class GyotoObjectEditor(Gtk.Window):
                 back to the caller.
 
         """
-        Gtk.Window.__init__(self, title="Gyoto Object Editor")
+        super().__init__(application=application,
+                         title="Gyoto Object Editor")
         self.set_default_size(400, 600)
 
         # handle QUIT from parent process
@@ -98,6 +181,8 @@ class GyotoObjectEditor(Gtk.Window):
 
         # obj may be the XML description of the object
         if isinstance(obj, str):
+            if obj.lower().endswith('.xml'):
+                self.filename = obj
             factory = Factory(obj)
             obj = getattr(factory, factory.kind().lower())()
 
@@ -167,3 +252,6 @@ class GyotoObjectEditor(Gtk.Window):
             pass
         return True
 
+# Stand-alone entry point:
+if __name__ == "__main__":
+    raise SystemExit(GyotoObjectEditorApplication.run_app(parsecliargs=True))
