@@ -198,6 +198,10 @@ class SimulationControls(Gtk.Box):
             lambda *_: self.emit("stop")
         )
 
+        self.reset_button.add_css_class("flat")
+        self.play_button.add_css_class("flat")
+        self.stop_button.add_css_class("flat")
+
         hbox.append(self.reset_button)
         hbox.append(self.play_button)
         hbox.append(self.stop_button)
