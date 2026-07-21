@@ -464,88 +464,54 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Create title bar with hamburger button
         header = Gtk.HeaderBar()
         self.set_titlebar(header)
+
+        # Create menu model
+        menu = Gio.Menu()
+
+        # New submenu
+        new_menu = Gio.Menu()
+        new_menu.append(_("Star"), "win.new-star")
+        new_menu.append(_("Photon"), "win.new-photon")
+
+        menu_section1 = Gio.Menu()
+        menu_section1.append_submenu(_("New"), new_menu)
+        menu_section2 = Gio.Menu()
+        menu_section2.append(_("Open…"), "win.open")
+        menu_section2.append(_("Save"), "win.save")
+        menu_section2.append(_("Save As…"), "win.save-as")
+        menu_section3 = Gio.Menu()
+        menu_section3.append(_("Help"), "win.help")
+        menu_section3.append(_("Close"), "win.close")
+        menu_section3.append(_("Quit"), "win.quit")
+
+        # Main menu items
+        menu.append_section(None, menu_section1)
+        menu.append_section(None, menu_section2)
+        menu.append_section(None, menu_section3)
+
+        # Create menu button
         menu_button = Gtk.MenuButton(
-            icon_name="open-menu-symbolic"
+            icon_name="open-menu-symbolic",
+            menu_model=menu,
+            use_underline=True
         )
         menu_button.add_css_class("flat")
         header.pack_end(menu_button)
 
-        # Attach menu to hamburger button
-        box = Gtk.Box(
-            orientation=Gtk.Orientation.VERTICAL
-        )
-        popover = Gtk.Popover()
-        popover.set_child(box)
-        menu_button.set_popover(popover)
+        # Connect actions
+        action_group = Gio.SimpleActionGroup()
+        self.insert_action_group("win", action_group)
 
-        # Populate menu with Open, Save As, and Quit buttons
-        # New submenu
-        new_button = Gtk.MenuButton(label=_("New…"))
-        new_button.add_css_class("flat")
-
-        new_popover = Gtk.Popover()
-        new_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        new_popover.set_child(new_box)
-        new_button.set_popover(new_popover)
-
-        star_button = Gtk.Button(label=_("Star"))
-        star_button.add_css_class("flat")
-        photon_button = Gtk.Button(label=_("Photon"))
-        photon_button.add_css_class("flat")
-
-        new_box.append(star_button)
-        new_box.append(photon_button)
-
-        # Other menu items
-        open_button = Gtk.Button(
-            label=_("Open…")
-        )
-        open_button.add_css_class("flat")
-
-        save_button = Gtk.Button(
-            label=_("Save")
-        )
-        save_button.add_css_class("flat")
-
-        save_as_button = Gtk.Button(
-            label=_("Save As…")
-        )
-        save_as_button.add_css_class("flat")
-
-
-        help_button = Gtk.Button(
-            label=_("Help")
-        )
-        help_button.add_css_class("flat")
-
-        close_button = Gtk.Button(
-            label=_("Close")
-        )
-        close_button.add_css_class("flat")
-
-        quit_button = Gtk.Button(
-            label=_("Quit")
-        )
-        quit_button.add_css_class("flat")
-
-        box.append(new_button)
-        box.append(open_button)
-        box.append(save_button)
-        box.append(save_as_button)
-        box.append(help_button)
-        box.append(Gtk.Separator())
-        box.append(close_button)
-        box.append(quit_button)
-
-        star_button.connect("clicked", self.on_new_star)
-        photon_button.connect("clicked", self.on_new_photon)
-        open_button.connect("clicked", self.on_open)
-        save_button.connect("clicked", self.on_save)
-        save_as_button.connect("clicked", self.on_save_as)
-        help_button.connect("clicked", self.on_help)
-        close_button.connect("clicked", self.on_close)
-        quit_button.connect("clicked", self.on_quit)
-
+        action_group.add_action_entries([
+            ("new-star", self.on_new_star, None),
+            ("new-photon", self.on_new_photon, None),
+            ("open", self.on_open, None),
+            ("save", self.on_save, None),
+            ("save-as", self.on_save_as, None),
+            ("help", self.on_help, None),
+            ("close", self.on_close, None),
+            ("quit", self.on_quit, None),
+        ])
 
     def build_shortcuts(self):
         '''Create keyboard shortcuts
