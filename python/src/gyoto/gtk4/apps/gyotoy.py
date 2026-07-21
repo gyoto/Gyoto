@@ -40,15 +40,11 @@ Description
 Usage
 -----
 Run as a standalone application:
-    python3 -m gyoto.gtk4.apps.gyotoy
+    python3 -m gyoto.gtk4.apps.gyotoy [-h] [filename.xml]
 
 Or import and use programmatically:
     from gyoto.gtk4.apps.gyotoy import gyotoy
-    window = gyotoy([particle])
-From ipython3, the application can be involed non-blocking:
-    %gui gtk4
-    from gyoto.gtk4.apps.gyotoy import gyotoy
-    window = gyotoy([particle, ] blocking=False)
+    gyotoy([particle])
 An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
 provided.
 
@@ -60,7 +56,7 @@ __all__ = ['GyotoyApplication', 'GyotoyApplicationWindow', 'gyotoy']
 
 import gi
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Gio, GLib
+from gi.repository import Gtk, Gio, GLib, Gdk
 
 import sys
 import argparse
@@ -277,6 +273,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         last_focused_widget: Last widget that had focus (for focus
             restoration)
         interpolation_step: Step size for interpolation
+        connector: the connector that was passed to the constructor
+        connectors: dict containing either None or self.connector for
+            each particle
+        filenames: dict with the name of the file each particle was
+            last read from or written to
 
     """
 
@@ -292,6 +293,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     simulation_running = False
     last_focused_widget = None
     interpolation_step = 1.
+    connector = None
+    connectors = None
+    filenames = None
 
     ####################################################################
     # Construction
@@ -313,21 +317,30 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """
         super().__init__(application=application)
 
+        self.connectors = {}
+        self.filenames = {}
+        filename = None
+
         # handle QUIT from parent process
         self.connector = connector
         if connector is not None:
             GLib.timeout_add(50, self.check_connector)
 
-        # Handle case where particle is a string
+        # Handle case where particle is a string.
+        # It is either a filename or a full XML description string
         if isinstance(particle, str):
             if particle.lower().endswith('.xml'):
-                self.filename = particle
+                filename = particle
             factory = Factory(particle)
             particle = getattr(factory, factory.kind().lower())()
 
         # process particle, star and photon
         if isinstance(particle, Astrobj):
             particle = Star(particle)
+
+        # now that particle is one of None, a Star, a Photon
+        # set its name (may be None)
+        self.filenames[particle] = filename
 
         if isinstance(star, Astrobj):
             star = Star(star)
@@ -360,6 +373,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Build UI
         self.build_headerbar()
         self.build_body()
+        self.build_shortcuts()
         self.connect("close-request", self.on_close_request)
 
         # Prepare computation process
@@ -386,10 +400,19 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.hold = False
 
         # one of star or photon is particle.  In the end,
-        # connector_dict has two items, one of which may not be None.
-        self.connector_dict = {self.star: None, self.photon: None}
-        self.connector_dict[particle] = connector
+        # connectors has two items, one of which may not be None.
+        self.connectors[particle] = connector
+        for p in self.star, self.photon:
+            if p not in self.connectors:
+                self.connectors[p] = None
 
+        # also create or fill the filenames dict. One of the two may
+        # have been provided.
+        for p in self.star, self.photon:
+            if p not in self.filenames:
+                self.filenames[p] = None
+
+        # actually set self.particle and build editor
         self.set_particle(particle)
 
     ####################################################################
@@ -401,8 +424,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         Creates a header bar with a hamburger menu containing:
         - Open...
+        - Save
         - Save As...
         - Quit
+
         """
 
         # Create title bar with hamburger button
@@ -429,9 +454,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         open_button.add_css_class("flat")
 
         save_button = Gtk.Button(
-            label=_("Save As…")
+            label=_("Save")
         )
         save_button.add_css_class("flat")
+
+        save_as_button = Gtk.Button(
+            label=_("Save As…")
+        )
+        save_as_button.add_css_class("flat")
 
         quit_button = Gtk.Button(
             label=_("Quit")
@@ -440,12 +470,67 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         box.append(open_button)
         box.append(save_button)
+        box.append(save_as_button)
         box.append(Gtk.Separator())
         box.append(quit_button)
 
         open_button.connect("clicked", self.on_open)
-        save_button.connect("clicked", self.on_save_as)
+        save_button.connect("clicked", self.on_save)
+        save_as_button.connect("clicked", self.on_save_as)
         quit_button.connect("clicked", self.on_quit)
+
+
+    def build_shortcuts(self):
+        '''Create keyboard shortcuts
+
+        Creates keyboard shortcuts for these actions:
+        - Open file: Ctrl-O,
+        - Save file: Ctrl-S,
+        - Save file as: Ctrl-Shift-S,
+        - Quit: Ctrl-Q,
+        - Compute and redraw: Ctrl-R.
+
+        '''
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_o,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.on_open)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_s,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.on_save)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_s,
+                                          modifiers=(Gdk.ModifierType.CONTROL_MASK |
+                                                     Gdk.ModifierType.SHIFT_MASK)),
+                action=Gtk.CallbackAction.new(self.on_save_as)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_q,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.on_quit)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_r,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.compute_and_redraw)
+            )
+        )
 
     def build_body(self):
         """Build the main window body layout.
@@ -475,6 +560,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         self.paned.set_start_child(
             self.viewer
         )
+        # forbid focus to the plot, else shortcuts don't work reliably
+        self.viewer.canvas.set_focusable(False)
+
 
         ## First row, right: vertical box for property editor
         self.right = Gtk.Box(
@@ -940,7 +1028,30 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                 )
 
             if particle is not None:
+                self.filenames[particle] = file.get_path()
                 self.set_particle(particle)
+
+    def on_save(self, *args):
+        """Save the current particle in the last XML file used.
+
+        If the particle was not read from file and not yet saved to
+        file, opens a dialog.
+
+        Args:
+            *args: GTK callback arguments
+
+        """
+        if self.filenames[self.particle]:
+            try:
+                Factory(self.particle).write(self.filenames[self.particle])
+            except GyotoError as e:
+                show_error_dialog(
+                    message=f"Error writing XML file {file.get_path()}:",
+                    detail=e.get_message(),
+                    window=self
+                )
+        else:
+            self.on_save_as(*args)
 
     def on_save_as(self, *args):
         """Open a file dialog to save the current particle as XML.
@@ -999,6 +1110,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         try:
             Factory(self.particle).write(file.get_path())
+            self.filenames[self.particle] = file.get_path()
         except GyotoError as e:
             show_error_dialog(
                 message=f"Error writing XML file {file.get_path()}:",
@@ -1200,8 +1312,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """
         if isinstance(particle, Star):
             self.particle_star.set_active(True)
+            self.star = particle
         elif isinstance(particle, Photon):
             self.particle_photon.set_active(True)
+            self.photon = particle
         else:
             show_error_dialog(message="Wrong type for particle:",
                               detail=repr(type(particle)),
@@ -1209,9 +1323,17 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                               )
             return
         self.particle = particle
+        # Make sure we have exactly two items in self.connectors and
+        # self.filenames
+        if particle not in self.connectors:
+            self.connectors[particle] = None
+            self.connectors = {self.star: self.connectors[self.star],
+                               self.photon: self.connectors[self.photon]}
+            self.filenames =  {self.star: self.filenames[self.star],
+                               self.photon: self.filenames[self.photon]}
         self.editor = PropertyEditorBox(particle,
                                         first=['InitCoord', 'Metric'],
-                                        connector = self.connector_dict[particle])
+                                        connector = self.connectors[particle])
         self.editor_scroller.set_child(self.editor)
         self.editor.connect('value-changed', self.on_value_changed)
         self.editor.connect('child-changed', self.on_child_changed)
