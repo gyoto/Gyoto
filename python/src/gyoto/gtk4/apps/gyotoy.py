@@ -1010,56 +1010,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         except GLib.Error:
             return
 
-        factory = None
         if file is not None:
-            try:
-                factory = Factory(file.get_path())
-            except GyotoError as e:
-                show_error_dialog(
-                    message=f"Error loading XML file {file.get_path()}:",
-                    detail=e.get_message(),
-                    window=self
-                )
-
-        if factory is not None:
-            kind = factory.kind()
-            particle = None
-            if kind in ('Astrobj', 'Scenery'):
-                try:
-                    ao = factory.astrobj()
-                except GyotoError as e:
-                    show_error_dialog(
-                        message=f"Could not construct Astrobj from XML file:",
-                        detail=e.get_message(),
-                        window=self
-                    )
-                try:
-                    particle = Star(ao)
-                except GyotoError as e:
-                    show_error_dialog(
-                        message=f"Could not cast Astrobj to Star:",
-                        detail=e.get_message(),
-                        window=self
-                    )
-            elif kind == 'Photon':
-                try:
-                    particle = factory.getPhoton()
-                except GyotoError as e:
-                    show_error_dialog(
-                        message=f"Could not construct Photon from XML file:",
-                        detail=e.get_message(),
-                        window=self
-                    )
-            else:
-                show_error_dialog(
-                    message=f"Could not load particle from XML file",
-                    detail="XML should describe an Astrobj, Scenery or Photon",
-                    window=self
-                )
-
-            if particle is not None:
-                self.filename = file.get_path()
-                self.set_particle(particle)
+            window = GyotoyApplicationWindow(
+                application=self.props.application,
+                particle=file.get_path(),
+                connector=None
+            )
+            window.present()
 
     def on_save(self, *args):
         """Save the current particle in the last XML file used.
