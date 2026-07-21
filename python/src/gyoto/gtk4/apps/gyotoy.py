@@ -9,14 +9,11 @@ the Gyoto library.
 Layout
 ------
     ┌────────────────────────────────────────────────────────────────────┐
-    │ MyApp                                                     ☰        │
+    │ Gyotoy                                                    ☰        │
     ├────────────────────────────────────────────────────────────────────┤
     │ ┌──────────────────────────────┬────────────────────────────────┐  │
-    │ │                              │  ○ Star                        │  │
-    │ │                              │  ○ Photon                      │  │
-    │ │                              │                                │  │
-    │ │      Matplotlib canvas       │  ┌──────────────────────────┐  │  │
-    │ │                              │  │ PropertyEditorBox        │  │  │
+    │ │                              │  ┌──────────────────────────┐  │  │
+    │ │      Matplotlib canvas       │  │ PropertyEditorBox        │  │  │
     │ │                              │  └──────────────────────────┘  │  │
     │ └──────────────────────────────┴────────────────────────────────┘  │
     ├────────────────────────────────────────────────────────────────────┤
@@ -208,9 +205,12 @@ def worker_func(cmd_queue, progress_queue, control_queue, pause_event, stop_even
 class GyotoyApplication(Gtk.Application):
     """Standalone GTK application for Gyotoy.
 
-    This class handles the application lifecycle and window
-    management.  It extends Gtk.Application to provide a proper GTK
-    application structure.
+    This class handles the application lifecycle and window management.
+    It extends Gtk.Application to provide a proper GTK application
+    structure and maintains a list of all open windows.
+
+    Attributes:
+        windows: List of all open GyotoyApplicationWindow instances.
 
     """
 
@@ -231,21 +231,41 @@ class GyotoyApplication(Gtk.Application):
                                Gio.ApplicationFlags.NON_UNIQUE)
         super().__init__(*args, **kwargs)
         self.particle = particle
+        self.windows = []
+
+        # handle QUIT from parent process
         self.connector = connector
+        if connector is not None:
+            GLib.timeout_add(50, self.check_connector)
 
     def do_activate(self):
         """Called by GTK when the application starts.
 
         Creates the main window if it doesn't exist and presents it.
         """
-        window = self.props.active_window
+        if not self.windows:
+            window = GyotoyApplicationWindow(
+                application=self,
+                particle=self.particle,
+                connector=self.connector
+            )
+            self.windows.append(window)
+        for window in self.windows:
+            window.present()
 
-        if window is None:
-            window = GyotoyApplicationWindow(application=self,
-                                             particle=self.particle,
-                                             connector=self.connector)
+    def remove_window(self, window):
+        """Remove a window from the application's window list.
 
-        window.present()
+        Args:
+            window: The GyotoyApplicationWindow to remove.
+        """
+        if window in self.windows:
+            self.windows.remove(window)
+
+    def close_all_windows(self):
+        """Close all open windows and quit the application."""
+        for window in self.windows[:]:
+            window.close()
 
     @staticmethod
     def run_app(particle=None, parsecliargs=False, *args, **kwargs):
@@ -279,6 +299,31 @@ class GyotoyApplication(Gtk.Application):
         app = GyotoyApplication(particle=particle, *args, **kwargs)
         return app.run(remaining)
 
+    def check_connector(self):
+        """Check for QUIT commands from the parent process.
+
+        This method is called periodically (every 50ms) via
+        GLib.timeout_add to poll the inter-process communication pipe
+        for a QUIT message.  When received, it quits the GTK main
+        loop, allowing the process to exit gracefully.
+
+        Returns:
+            bool: False to stop the timeout (after QUIT), True to
+                continue.
+
+        """
+        if self.connector is None:
+            return False
+        try:
+            if self.connector.poll(0):
+                msg = self.connector.recv()
+                if msg == ('QUIT',):
+                    self.close_all_windows()
+                    return False
+        except:
+            pass
+        return True
+
 class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     """Main application window for Gyotoy.
 
@@ -294,9 +339,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     keep the UI responsive. Communication with the worker happens via
     multiprocessing Queues for progress updates and control messages.
 
+    Each window instance handles exactly one particle (either a Star or
+    a Photon) throughout its lifetime. New windows can be created for
+    additional particles.
+
     Attributes:
-        star: Default Star particle
-        photon: Default Photon particle
         particle: Current particle being edited/simulated
         viewer: Viewer3D widget for 3D visualization
         editor: PropertyEditorBox for editing particle properties
@@ -306,20 +353,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         last_focused_widget: Last widget that had focus (for focus
             restoration)
         interpolation_step: Step size for interpolation
-        connector: the connector that was passed to the constructor
-        connectors: dict containing either None or self.connector for
-            each particle
-        filenames: dict with the name of the file each particle was
-            last read from or written to
+        connector: Connection for inter-process communication
+        filename: Path to the last file used for this particle
 
     """
 
     # Default values
-    blocking = True
-    main_loop = None
     particle = None
-    star = None
-    photon = None
     endtime = 3000
     hold = True
     worker = None
@@ -327,78 +367,41 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
     last_focused_widget = None
     interpolation_step = 1.
     connector = None
-    connectors = None
-    filenames = None
+    filename = None
 
     ####################################################################
     # Construction
     ####################################################################
 
-    def __init__(self, application=None,
-                 particle=None, star=None, photon=None,
-                 connector=None):
+    def __init__(self, application=None, particle=None, connector=None):
         """Initialize the main window.
 
         Args:
             application: Parent Gtk.Application instance
             particle: Initial particle to display (Star or Photon)
-            star: Default Star particle (created if None)
-            photon: Default Photon particle (created if None)
             connector (multiprocessing.Connection or None): If the GUI
                 runs in a separate process, this is used to send updates
                 back to the caller.
         """
         super().__init__(application=application)
 
-        self.connectors = {}
-        self.filenames = {}
-        filename = None
-
-        # handle QUIT from parent process
+        # Store connector for set_particle
         self.connector = connector
-        if connector is not None:
-            GLib.timeout_add(50, self.check_connector)
 
         # Handle case where particle is a string.
         # It is either a filename or a full XML description string
         if isinstance(particle, str):
             if particle.lower().endswith('.xml'):
-                filename = particle
+                self.filename = particle
             factory = Factory(particle)
             particle = getattr(factory, factory.kind().lower())()
 
-        # process particle, star and photon
+        # Cast Astrobj to Star
         if isinstance(particle, Astrobj):
             particle = Star(particle)
 
-        # now that particle is one of None, a Star, a Photon
-        # set its name (may be None)
-        self.filenames[particle] = filename
-
-        if isinstance(star, Astrobj):
-            star = Star(star)
-
-        if star is None:
-            if isinstance(particle, Star):
-                self.star = particle
-            else:
-                self.star = self.default_star()
-
-        if photon is None:
-            if isinstance(particle, Photon):
-                self.photon = particle
-            else:
-                self.photon = self.default_photon()
-
         if particle is None:
-            if star is not None:
-                particle = star
-                self.photon.Metric = particle.Metric
-            elif photon is not None:
-                particle = photon
-                self.star.Metric = particle.Metric
-            else:
-                particle = self.star
+            particle = self.default_star()
 
         self.set_title("Gyotoy")
         self.set_default_size(1024, 768)
@@ -432,21 +435,12 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Populate initial editor
         self.hold = False
 
-        # one of star or photon is particle.  In the end,
-        # connectors has two items, one of which may not be None.
-        self.connectors[particle] = connector
-        for p in self.star, self.photon:
-            if p not in self.connectors:
-                self.connectors[p] = None
-
-        # also create or fill the filenames dict. One of the two may
-        # have been provided.
-        for p in self.star, self.photon:
-            if p not in self.filenames:
-                self.filenames[p] = None
-
         # actually set self.particle and build editor
         self.set_particle(particle)
+
+        # Register window with application
+        if application is not None:
+            application.windows.append(self)
 
     ####################################################################
     # UI
@@ -456,6 +450,9 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         """Build the window's header bar with menu button.
 
         Creates a header bar with a hamburger menu containing:
+        - New...
+          - Star
+          - Photon
         - Open...
         - Save
         - Save As...
@@ -482,6 +479,24 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         menu_button.set_popover(popover)
 
         # Populate menu with Open, Save As, and Quit buttons
+        # New submenu
+        new_button = Gtk.MenuButton(label=_("New…"))
+        new_button.add_css_class("flat")
+
+        new_popover = Gtk.Popover()
+        new_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        new_popover.set_child(new_box)
+        new_button.set_popover(new_popover)
+
+        star_button = Gtk.Button(label=_("Star"))
+        star_button.add_css_class("flat")
+        photon_button = Gtk.Button(label=_("Photon"))
+        photon_button.add_css_class("flat")
+
+        new_box.append(star_button)
+        new_box.append(photon_button)
+
+        # Other menu items
         open_button = Gtk.Button(
             label=_("Open…")
         )
@@ -503,22 +518,32 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         )
         help_button.add_css_class("flat")
 
+        close_button = Gtk.Button(
+            label=_("Close")
+        )
+        close_button.add_css_class("flat")
+
         quit_button = Gtk.Button(
             label=_("Quit")
         )
         quit_button.add_css_class("flat")
 
+        box.append(new_button)
         box.append(open_button)
         box.append(save_button)
         box.append(save_as_button)
         box.append(help_button)
         box.append(Gtk.Separator())
+        box.append(close_button)
         box.append(quit_button)
 
+        star_button.connect("clicked", self.on_new_star)
+        photon_button.connect("clicked", self.on_new_photon)
         open_button.connect("clicked", self.on_open)
         save_button.connect("clicked", self.on_save)
         save_as_button.connect("clicked", self.on_save_as)
         help_button.connect("clicked", self.on_help)
+        close_button.connect("clicked", self.on_close)
         quit_button.connect("clicked", self.on_quit)
 
 
@@ -526,14 +551,42 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         '''Create keyboard shortcuts
 
         Creates keyboard shortcuts for these actions:
+        - New Star window: Ctrl-N,
+        - New Photon window: Ctrl-Shift-N,
+        - Close window: Ctrl-W,
+        - Close all windows and quit: Ctrl-Q,
         - Open file: Ctrl-O,
         - Save file: Ctrl-S,
         - Save file as: Ctrl-Shift-S,
         - Help: F1,
-        - Quit: Ctrl-Q,
         - Compute and redraw: Ctrl-R.
 
         '''
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_n,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.on_new_star)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_n,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK |
+                                          Gdk.ModifierType.SHIFT_MASK),
+                action=Gtk.CallbackAction.new(self.on_new_photon)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_w,
+                                          modifiers=Gdk.ModifierType.CONTROL_MASK),
+                action=Gtk.CallbackAction.new(self.on_close)
+            )
+        )
+
         self.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_o,
@@ -622,36 +675,6 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         )
         self.paned.set_end_child(self.right)
 
-        # Top of control column: Star/Photon radio buttons
-        frame = Gtk.Frame(
-            label="Particle type"
-        )
-        self.right.append(frame)
-
-        buttons = Gtk.Box(
-            orientation=Gtk.Orientation.HORIZONTAL,
-            spacing=12
-        )
-        frame.set_child(buttons)
-
-        self.particle_star = Gtk.CheckButton(
-            label="Star"
-        )
-        self.particle_photon = Gtk.CheckButton(
-            label="Photon"
-        )
-        # Group radio buttons so only one can be selected
-        self.particle_photon.set_group(
-            self.particle_star
-        )
-        buttons.append(self.particle_star)
-        buttons.append(self.particle_photon)
-
-        self.particle_star.connect(
-            "toggled",
-            self.on_star_selected
-        )
-
         # Scrollable property editor view
         scroll = Gtk.ScrolledWindow()
         scroll.set_hexpand(True)
@@ -718,37 +741,11 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         # Set default number of frames
         self.controls.nframes.set_value(100)
 
-    ####################################################################
-    # Entry points and lifecycle control
-    ####################################################################
-
-    @staticmethod
-    def run(particle=None, blocking=True, connector=None):
-        """Run Gyotoy as a standalone application or embedded window.
-
-        Args:
-            particle: Initial particle to display (Star or Photon)
-            blocking: If True, run the GTK main loop (for standalone use)
-            connector (multiprocessing.Connection or None): If provided,
-                passed to the window for inter-process communication.
-
-        Returns:
-            GyotoyApplicationWindow: The created window instance
-        """
-        win = GyotoyApplicationWindow(particle=particle,
-                                      connector=connector)
-        win.blocking = blocking
-        win.present()
-        if blocking:
-            win.main_loop = GLib.MainLoop()
-            win.main_loop.run()
-
-        return win
-
     def on_close_request(self, *args):
         """Handle window close request.
 
-        Cleanly shuts down the worker process and quits the main loop.
+        Cleanly shuts down the worker process, removes the window from
+        the application's window list, and allows the window to close.
 
         Args:
             *args: GTK callback arguments
@@ -761,44 +758,54 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             self.worker.join(timeout=2.0)  # Graceful shutdown
             if self.worker.is_alive():
                 self.worker.terminate()  # Force kill if stuck
-        if self.main_loop is not None:
-            GLib.idle_add(self.main_loop.quit)
+        if self.props.application is not None:
+            self.props.application.remove_window(self)
         return False
 
-    def on_quit(self, *args):
-        """Handle quit action from menu.
+    def on_close(self, *args):
+        """Handle close action from menu.
 
         Args:
             *args: GTK callback arguments
         """
         self.close()
 
-    def check_connector(self):
-        """Check for QUIT commands from the parent process.
+    def on_quit(self, *args):
+        """Handle quit all action.
 
-        This method is called periodically (every 50ms) via
-        GLib.timeout_add to poll the inter-process communication pipe
-        for a QUIT message.  When received, it quits the GTK main
-        loop, allowing the process to exit gracefully.
+        Closes all windows and quits the application.
 
-        Returns:
-            bool: False to stop the timeout (after QUIT), True to
-                continue.
-
+        Args:
+            *args: GTK callback arguments
         """
-        if self.connector is None:
-            return False
-        try:
-            if self.connector.poll(0):
-                msg = self.connector.recv()
-                if msg == ('QUIT',):
-                    self.close()
-                    # if self.main_loop is not None:
-                    #     self.main_loop.quit()
-                    return False
-        except:
-            pass
-        return True
+        if self.props.application is not None:
+            self.props.application.close_all_windows()
+        else:
+            self.close()
+
+    def on_new_star(self, *args):
+        """Create a new window with a default Star particle.
+
+        Args:
+            *args: GTK callback arguments
+        """
+        new_window = GyotoyApplicationWindow(
+            application=self.props.application,
+            particle=self.default_star()
+        )
+        new_window.present()
+
+    def on_new_photon(self, *args):
+        """Create a new window with a default Photon particle.
+
+        Args:
+            *args: GTK callback arguments
+        """
+        new_window = GyotoyApplicationWindow(
+            application=self.props.application,
+            particle=self.default_photon()
+        )
+        new_window.present()
 
     ####################################################################
     # Compute and redraw
@@ -1051,7 +1058,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                 )
 
             if particle is not None:
-                self.filenames[particle] = file.get_path()
+                self.filename = file.get_path()
                 self.set_particle(particle)
 
     def on_save(self, *args):
@@ -1064,12 +1071,12 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             *args: GTK callback arguments
 
         """
-        if self.filenames[self.particle]:
+        if self.filename:
             try:
-                Factory(self.particle).write(self.filenames[self.particle])
+                Factory(self.particle).write(self.filename)
             except GyotoError as e:
                 show_error_dialog(
-                    message=f"Error writing XML file {file.get_path()}:",
+                    message=f"Error writing XML file {self.filename}:",
                     detail=e.get_message(),
                     window=self
                 )
@@ -1133,34 +1140,13 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
 
         try:
             Factory(self.particle).write(file.get_path())
-            self.filenames[self.particle] = file.get_path()
+            self.filename = file.get_path()
         except GyotoError as e:
             show_error_dialog(
                 message=f"Error writing XML file {file.get_path()}:",
                 detail=e.get_message(),
                 window=self
             )
-
-    def on_star_selected(self, wdgt):
-        """Handle Star/Photon radio button toggle.
-
-        When Star is selected, sets the current particle to the Star
-        instance.  When Photon is selected, sets the current particle
-        to the Photon instance.  Synchronizes the metric between
-        particles.
-
-        Args:
-            wdgt: The Gtk.CheckButton that was toggled
-
-        """
-        if wdgt.get_active() and isinstance(self.star, Star):
-            if self.particle is not None:
-                self.star.Metric = self.particle.Metric
-            self.set_particle(self.star)
-        elif isinstance(self.photon, Photon):
-            if self.particle is not None:
-                self.photon.Metric = self.particle.Metric
-            self.set_particle(self.photon)
 
     def on_help(self, *args):
         """Display the help dialog.
@@ -1185,6 +1171,7 @@ OVERVIEW:
 Gyotoy is a GTK4 application for simulating and visualizing geodesics
 (time-like or null) in spacetimes supported by the Gyoto library.
 It provides an interactive 3D view of particle trajectories.
+Each window handles exactly one particle (Star or Photon).
 
 UI LAYOUT:
 - Left Panel: 3D Matplotlib viewer displaying particle trajectory.
@@ -1196,18 +1183,20 @@ UI LAYOUT:
   settings, and status display.
 
 MENU BUTTONS:
+- New -> Star: Open new window with default Star (Ctrl+N)
+- New -> Photon: Open new window with default Photon (Ctrl+Shift+N)
 - Open (Ctrl+O): Load an XML particle configuration file.
 - Save (Ctrl+S): Save current particle to last used file.
 - Save As (Ctrl+Shift+S): Save current particle to a new file.
 - Help (F1): Show this help dialog.
-- Quit (Ctrl+Q): Exit the application.
+- Close (Ctrl+W): Close current window.
+- Quit (Ctrl+Q): Close all windows and quit the application.
 
-OHER KEYBOARD SHORTCUTS:
+OTHER KEYBOARD SHORTCUTS:
 - Ctrl+R: Compute and redraw trajectory.
-- Escape: close active dialog window (error, help...).
+- Escape: Close active dialog window (error, help...).
 
 PROPERTY EDITOR:
-- Star/Photon radio buttons: Switch between particle types.
 - Edit particle parameters: position, velocity, metric properties...
 - All parameter changes immediately trigger a computation and redraw
   unless the stop (■) at the bottom right of the window is activated.
@@ -1231,7 +1220,7 @@ SIMULATION CONTROLS:
   interpolation, adaptive step used instead).
 
 WORKFLOW:
-1. Select particle type (Star or Photon).
+1. If needed, open file or create new particle (Star or Photon).
 2. Adjust properties in the editor.
 3. Click Play or press Ctrl+R to compute trajectory.
 4. Use 3D viewer to inspect the result.
@@ -1268,7 +1257,7 @@ WORKFLOW:
             return
         if name == 'InitCoord':
             coord = numpy.array(self.particle.InitCoord)
-            if self.particle == self.star:
+            if isinstance(self.particle, Star):
                 self.particle.Metric.normalizeFourVel(coord)
             else:
                 self.particle.Metric.nullifyCoord(coord)
@@ -1279,25 +1268,17 @@ WORKFLOW:
     def on_child_changed(self, widget, name, *args):
         """Handle metric changes from the editor.
 
-        Synchronizes the metric between Star and Photon particles.
-
         Args:
             widget: The widget that emitted the signal
             name: The name of the property that changed
             *args: Additional arguments
         """
-        if name == 'Metric':
-            if self.particle == self.star:
-                self.photon.Metric = self.star.Metric
-            else:
-                self.star.Metric = self.photon.Metric
-        self.on_child_mutated(widget, name, *args)
+        self.on_child_mutated(widget, None, name, *args)
 
     def on_child_mutated(self, widget, pname, name, *args):
         """Handle metric mutations from the editor.
 
-        Renormalizes InitCoord for both Star and Photon when the
-        metric changes.
+        Renormalizes InitCoord when the metric changes.
 
         Args:
             widget: The widget that emitted the signal
@@ -1318,15 +1299,15 @@ WORKFLOW:
         if self.particle.Metric is None:
             return
 
-        # Normalize star init coord
-        coord = numpy.array(self.star.InitCoord)
-        self.star.Metric.normalizeFourVel(coord)
-        self.star.InitCoord = coord
-
-        # Nullify photon init coord
-        coord = numpy.array(self.photon.InitCoord)
-        self.photon.Metric.nullifyCoord(coord)
-        self.photon.InitCoord = coord
+        # Normalize InitCoord
+        if isinstance(self.particle, Star):
+            coord = numpy.array(self.particle.InitCoord)
+            self.particle.Metric.normalizeFourVel(coord)
+            self.particle.InitCoord = coord
+        else:
+            coord = numpy.array(self.particle.InitCoord)
+            self.particle.Metric.nullifyCoord(coord)
+            self.particle.InitCoord = coord
 
         # Let the editor update InitCoord display
         self.editor.on_3vel_toggled(name='InitCoord')
@@ -1424,34 +1405,25 @@ WORKFLOW:
         Args:
             particle: The particle to set (Star or Photon)
         """
-        if isinstance(particle, Star):
-            self.particle_star.set_active(True)
-            self.star = particle
-        elif isinstance(particle, Photon):
-            self.particle_photon.set_active(True)
-            self.photon = particle
-        else:
+        if (not isinstance(particle, Star) and
+            not isinstance(particle, Photon)):
             show_error_dialog(message="Wrong type for particle:",
                               detail=repr(type(particle)),
                               window=self
                               )
             return
+
         self.particle = particle
-        # Make sure we have exactly two items in self.connectors and
-        # self.filenames
-        if particle not in self.connectors:
-            self.connectors[particle] = None
-            self.connectors = {self.star: self.connectors[self.star],
-                               self.photon: self.connectors[self.photon]}
-            self.filenames =  {self.star: self.filenames[self.star],
-                               self.photon: self.filenames[self.photon]}
+
         self.editor = PropertyEditorBox(particle,
                                         first=['InitCoord', 'Metric'],
-                                        connector = self.connectors[particle])
+                                        connector = self.connector)
+
         self.editor_scroller.set_child(self.editor)
         self.editor.connect('value-changed', self.on_value_changed)
         self.editor.connect('child-changed', self.on_child_changed)
         self.editor.connect('child-mutated', self.on_child_mutated)
+
         # Force 3-velocity display mode for InitCoord
         self.editor.widgets['InitCoord:veltype'].set_active(True)
         self.compute_and_redraw()
@@ -1485,8 +1457,7 @@ WORKFLOW:
             Star: A Star particle with default coordinates and metric
         """
         particle = Star()
-        particle.Metric = (self.default_metric() if self.photon is None
-                           else self.photon.Metric)
+        particle.Metric = self.default_metric()
         particle.initCoord((0., 10.791, 1.570796326794866, 0.,
                             1.1264111886458281, 0., 0., 0.018770516047594082))
         particle.Delta = 0.01
@@ -1499,16 +1470,14 @@ WORKFLOW:
             Photon: A Photon particle with default coordinates and metric
         """
         particle = Photon()
-        particle.Metric = (self.default_metric() if self.star is None
-                           else self.star.Metric)
-        if hasattr(particle.Metric, 'Spin'):
-            r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
-            spherical = (particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL)
-            coord = (0., r, 0.5*numpy.pi if spherical else 0., 0.,
-                     1., 0., 0. if spherical else 1., 1./r if spherical else 0.)
-            coord = numpy.array(coord)
-            particle.Metric.nullifyCoord(coord)
-            particle.initCoord(coord)
+        particle.Metric = self.default_metric()
+        r = 2. * (1 + numpy.cos(2./3. * numpy.acos(-particle.Metric.Spin)))
+        spherical = (particle.Metric.coordKind() == GYOTO_COORDKIND_SPHERICAL)
+        coord = (0., r, 0.5*numpy.pi if spherical else 0., 0.,
+                 1., 0., 0. if spherical else 1., 1./r if spherical else 0.)
+        coord = numpy.array(coord)
+        particle.Metric.nullifyCoord(coord)
+        particle.initCoord(coord)
         return particle
 
 # Stand-alone entry point:
