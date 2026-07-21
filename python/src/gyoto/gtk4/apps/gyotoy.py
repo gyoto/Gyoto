@@ -562,7 +562,10 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         - Compute and redraw: Ctrl-R.
 
         '''
-        self.add_shortcut(
+        controller = Gtk.ShortcutController()
+        self.add_controller(controller)
+
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_n,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
@@ -570,7 +573,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_n,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK |
@@ -579,7 +582,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_w,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
@@ -587,7 +590,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_o,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
@@ -595,7 +598,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_s,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
@@ -603,7 +606,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_s,
                                           modifiers=(Gdk.ModifierType.CONTROL_MASK |
@@ -612,7 +615,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_q,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
@@ -620,7 +623,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_F1,
                                           modifiers=0),
@@ -628,7 +631,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             )
         )
 
-        self.add_shortcut(
+        controller.add_shortcut(
             Gtk.Shortcut(
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_r,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
