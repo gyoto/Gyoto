@@ -44,9 +44,10 @@ Run as a standalone application:
 
 Or import and use programmatically:
     from gyoto.gtk4.apps.gyotoy import gyotoy
-    gyotoy([particle])
-An optional particle (gyoto.std.Star or gyoto.core.Photon) can be
-provided.
+    gyotoy([particle|'filename.xml'])
+
+An optional particle (gyoto.std.Star or gyoto.core.Photon), or the
+name of an XML file describing such a particle, can be provided.
 
 """
 
@@ -426,6 +427,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         - Open...
         - Save
         - Save As...
+        - Help
         - Quit
 
         """
@@ -463,6 +465,12 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         )
         save_as_button.add_css_class("flat")
 
+
+        help_button = Gtk.Button(
+            label=_("Help")
+        )
+        help_button.add_css_class("flat")
+
         quit_button = Gtk.Button(
             label=_("Quit")
         )
@@ -471,12 +479,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         box.append(open_button)
         box.append(save_button)
         box.append(save_as_button)
+        box.append(help_button)
         box.append(Gtk.Separator())
         box.append(quit_button)
 
         open_button.connect("clicked", self.on_open)
         save_button.connect("clicked", self.on_save)
         save_as_button.connect("clicked", self.on_save_as)
+        help_button.connect("clicked", self.on_help)
         quit_button.connect("clicked", self.on_quit)
 
 
@@ -487,6 +497,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
         - Open file: Ctrl-O,
         - Save file: Ctrl-S,
         - Save file as: Ctrl-Shift-S,
+        - Help: F1,
         - Quit: Ctrl-Q,
         - Compute and redraw: Ctrl-R.
 
@@ -521,6 +532,14 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                 trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_q,
                                           modifiers=Gdk.ModifierType.CONTROL_MASK),
                 action=Gtk.CallbackAction.new(self.on_quit)
+            )
+        )
+
+        self.add_shortcut(
+            Gtk.Shortcut(
+                trigger=Gtk.KeyvalTrigger(keyval=Gdk.KEY_F1,
+                                          modifiers=0),
+                action=Gtk.CallbackAction.new(self.on_help)
             )
         )
 
@@ -1138,6 +1157,97 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             if self.particle is not None:
                 self.photon.Metric = self.particle.Metric
             self.set_particle(self.photon)
+
+    def on_help(self, *args):
+        """Display the help dialog.
+
+        Shows a dialog with comprehensive usage information including
+        keyboard shortcuts and menu button descriptions.
+
+        Args:
+            *args: GTK callback arguments
+        """
+        dialog = Gtk.Dialog(
+            title="Help",
+            transient_for=self,
+            modal=False
+        )
+        dialog.set_default_size(600, 400)
+
+        help_text = """\
+Gyotoy - Gyoto Geodesic Integration Visualizer
+
+OVERVIEW:
+Gyotoy is a GTK4 application for simulating and visualizing geodesics
+(time-like or null) in spacetimes supported by the Gyoto library.
+It provides an interactive 3D view of particle trajectories.
+
+UI LAYOUT:
+- Left Panel: 3D Matplotlib viewer displaying particle trajectory.
+  Use mouse to rotate (left-click+drag), and pan (middle-click+drag).
+  Use plot toolbar for other actions including saving the plot.
+- Right Panel: Property editor for adjusting metric and particle
+  parameters. Changes trigger automatic recomputation.
+- Bottom: Simulation controls (play/pause/stop/reset), interpolation
+  settings, and status display.
+
+MENU BUTTONS:
+- Open (Ctrl+O): Load an XML particle configuration file.
+- Save (Ctrl+S): Save current particle to last used file.
+- Save As (Ctrl+Shift+S): Save current particle to a new file.
+- Help (F1): Show this help dialog.
+- Quit (Ctrl+Q): Exit the application.
+
+OHER KEYBOARD SHORTCUTS:
+- Ctrl+R: Compute and redraw trajectory.
+- Escape: close active dialog window (error, help...).
+
+PROPERTY EDITOR:
+- Star/Photon radio buttons: Switch between particle types.
+- Edit particle parameters: position, velocity, metric properties...
+- All parameter changes immediately trigger a computation and redraw
+  unless the stop (■) at the bottom right of the window is activated.
+- The InitCoord vector is by default displayed with 7 cells
+  corresponding to 4-position and 3-velocity (derivatives of the space
+  coordinates with respect to time coordinate). Use the '3-velocity'
+  and '4-velocity' radio buttons to switch between this view and the
+  8-coordinate view corresponding to 4-position and 4-velocity. By
+  default, the 4-velocity is renormalized (according to mass of the
+  particle) at each keystroke. Click on the stop (■) button
+  immediately below the coordinates to temporarily inhibit this
+  behavior. Click this button again to finalize input.
+
+SIMULATION CONTROLS:
+- Reset: Reinitialize integration and clear viewer.
+- Play/Pause: Start or pause the simulation.
+- Stop: Stop the integration and inhibit/enable recomputation.
+- N. frames: Number of intermediate frames to display (default: 100).
+- End time: Final time for integration.
+- Interpolation step: Step size for interpolation (0 for no
+  interpolation, adaptive step used instead).
+
+WORKFLOW:
+1. Select particle type (Star or Photon).
+2. Adjust properties in the editor.
+3. Click Play or press Ctrl+R to compute trajectory.
+4. Use 3D viewer to inspect the result.
+5. Save particle description with Save/Save As.
+"""
+        label = Gtk.Label(
+            label=help_text,
+            halign=Gtk.Align.START,
+            wrap=True,
+            xalign=0.0
+        )
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_child(label)
+        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC,
+                            Gtk.PolicyType.AUTOMATIC)
+
+        dialog.set_child(scrolled)
+
+        dialog.present()
 
     def on_value_changed(self, widget, name, *args):
         """Handle property value changes from the editor.
