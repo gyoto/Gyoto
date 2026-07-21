@@ -186,6 +186,7 @@ am__objects_1 = libgyoto_stdplug_la-PatternDisk.lo \
 	libgyoto_stdplug_la-SimThinDisk.lo
 am_libgyoto_stdplug_la_OBJECTS = libgyoto_stdplug_la-KerrBL.lo \
 	libgyoto_stdplug_la-KerrKS.lo libgyoto_stdplug_la-Minkowski.lo \
+	libgyoto_stdplug_la-Kerr2PN.lo \
 	libgyoto_stdplug_la-ChernSimons.lo \
 	libgyoto_stdplug_la-Hayward.lo \
 	libgyoto_stdplug_la-SchwarzschildHarmonic.lo \
@@ -294,6 +295,7 @@ am__depfiles_remade = ./$(DEPDIR)/Astrobj.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-KappaDistributionSynchrotronSpectrum.Plo \
+	./$(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo \
 	./$(DEPDIR)/libgyoto_stdplug_la-KonoplyaRezzollaZhidenko.Plo \
@@ -615,7 +617,7 @@ libgyoto@FEATURES@_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(VERSINFO)
 soverdir = $(pkglibdir)/@sovers@
 sover_LTLIBRARIES = libgyoto-stdplug.la $(am__append_3)
 libgyoto_stdplug_la_CPPFLAGS = $(AM_CPPFLAGS) -DGYOTO_PLUGIN=stdplug
-libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C \
+libgyoto_stdplug_la_SOURCES = KerrBL.C KerrKS.C Minkowski.C Kerr2PN.C \
 	ChernSimons.C Hayward.C SchwarzschildHarmonic.C \
 	ReissnerNordstrom.C RezzollaZhidenko.C \
 	KonoplyaRezzollaZhidenko.C BalasinGrumiller.C Star.C \
@@ -824,6 +826,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KappaDistributionSynchrotronSpectrum.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgyoto_stdplug_la-KonoplyaRezzollaZhidenko.Plo@am__quote@ # am--include-marker
@@ -948,6 +951,13 @@ libgyoto_stdplug_la-Minkowski.lo: Minkowski.C
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Minkowski.C' object='libgyoto_stdplug_la-Minkowski.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Minkowski.lo `test -f 'Minkowski.C' || echo '$(srcdir)/'`Minkowski.C
+
+libgyoto_stdplug_la-Kerr2PN.lo: Kerr2PN.C
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-Kerr2PN.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Tpo -c -o libgyoto_stdplug_la-Kerr2PN.lo `test -f 'Kerr2PN.C' || echo '$(srcdir)/'`Kerr2PN.C
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Tpo $(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='Kerr2PN.C' object='libgyoto_stdplug_la-Kerr2PN.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libgyoto_stdplug_la-Kerr2PN.lo `test -f 'Kerr2PN.C' || echo '$(srcdir)/'`Kerr2PN.C
 
 libgyoto_stdplug_la-ChernSimons.lo: ChernSimons.C
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgyoto_stdplug_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libgyoto_stdplug_la-ChernSimons.lo -MD -MP -MF $(DEPDIR)/libgyoto_stdplug_la-ChernSimons.Tpo -c -o libgyoto_stdplug_la-ChernSimons.lo `test -f 'ChernSimons.C' || echo '$(srcdir)/'`ChernSimons.C
@@ -1536,6 +1546,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KappaDistributionSynchrotronSpectrum.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KonoplyaRezzollaZhidenko.Plo
@@ -1669,6 +1680,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-InflateStar.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Jet.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KappaDistributionSynchrotronSpectrum.Plo
+	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-Kerr2PN.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KerrBL.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KerrKS.Plo
 	-rm -f ./$(DEPDIR)/libgyoto_stdplug_la-KonoplyaRezzollaZhidenko.Plo
