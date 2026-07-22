@@ -554,21 +554,22 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
             ("help", self.on_help, None),
             ("close", self.on_close, None),
             ("quit", self.on_quit, None),
+            ("compute-and-redraw", self.compute_and_redraw, None),
         ])
 
     def build_shortcuts(self):
         """Create keyboard shortcuts.
 
         Creates keyboard shortcuts for these actions:
-        - New Star window: Ctrl-N,
-        - New Photon window: Ctrl-Shift-N,
-        - Close window: Ctrl-W,
-        - Close all windows and quit: Ctrl-Q,
-        - Open file: Ctrl-O,
-        - Save file: Ctrl-S,
-        - Save file as: Ctrl-Shift-S,
+        - New Star window: Ctrl+N,
+        - New Photon window: Ctrl+Shift+N,
+        - Close window: Ctrl+W,
+        - Close all windows and quit: Ctrl+Q,
+        - Open file: Ctrl+O,
+        - Save file: Ctrl+S,
+        - Save file as: Ctrl+Shift+S,
         - Help: F1,
-        - Compute and redraw: Ctrl-R.
+        - Compute and redraw: Ctrl+R.
 
         """
         controller = Gtk.ShortcutController()
@@ -580,7 +581,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_n,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.on_new_star)
+                action=Gtk.NamedAction.new("win.new-star")
             )
         )
 
@@ -593,7 +594,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                         | Gdk.ModifierType.SHIFT_MASK
                     )
                 ),
-                action=Gtk.CallbackAction.new(self.on_new_photon)
+                action=Gtk.NamedAction.new("win.new-photon")
             )
         )
 
@@ -603,7 +604,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_w,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.on_close)
+                action=Gtk.NamedAction.new("win.close")
             )
         )
 
@@ -613,7 +614,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_o,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.on_open)
+                action=Gtk.NamedAction.new("win.open")
             )
         )
 
@@ -623,7 +624,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_s,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.on_save)
+                action=Gtk.NamedAction.new("win.save")
             )
         )
 
@@ -636,7 +637,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                         | Gdk.ModifierType.SHIFT_MASK
                     )
                 ),
-                action=Gtk.CallbackAction.new(self.on_save_as)
+                action=Gtk.NamedAction.new("win.save-as")
             )
         )
 
@@ -646,7 +647,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_q,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.on_quit)
+                action=Gtk.NamedAction.new("win.quit")
             )
         )
 
@@ -656,7 +657,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_F1,
                     modifiers=0
                 ),
-                action=Gtk.CallbackAction.new(self.on_help)
+                action=Gtk.NamedAction.new("win.help")
             )
         )
 
@@ -666,7 +667,7 @@ class GyotoyApplicationWindow(Gtk.ApplicationWindow):
                     keyval=Gdk.KEY_r,
                     modifiers=Gdk.ModifierType.CONTROL_MASK
                 ),
-                action=Gtk.CallbackAction.new(self.compute_and_redraw)
+                action=Gtk.NamedAction.new("win.compute-and-redraw")
             )
         )
 
