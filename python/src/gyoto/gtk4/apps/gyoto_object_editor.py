@@ -182,7 +182,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
 
     filename = None
 
-    def __init__(self, application=None, obj=None, connector=None):
+    def __init__(self, application=None, obj=None, objtype='', connector=None):
         """Initialize the GyotoObjectEditorApplicationWindow window.
 
         Args:
@@ -198,17 +198,38 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
                          title="Gyoto Object Editor")
         self.set_default_size(400, 600)
 
+        if objtype == '':
+            self.type = None
+        else:
+            self.type = objtype
+
         # obj may be the XML description of the object
         if isinstance(obj, str):
             if obj.lower().endswith('.xml'):
                 self.filename = obj
             factory = Factory(obj)
             obj = getattr(factory, factory.kind().lower())()
-
-        if obj is None:
+            if self.type is None:
+                self.type = f'{factory.kind()}/{obj.kind()}'
+        elif obj is None:
             obj = self.default_obj()
+            if self.type is None:
+                self.type = 'Scenery/'
+        else:
+            if self.type is None:
+                for nspace, generic in {
+                        'Astrobj': core.Astrobj,
+                        'Metric': core.Metric,
+                        'Spectrometer': core.Spectrometer,
+                        'Spectrum': core.Spectrum,
+                }.items():
+                    if isinstance(obj, generic):
+                        self.type = f'{nspace}/{obj.kind()}'
+                        break
 
         self.obj = obj
+
+        self.set_title()
 
         self.connect("close-request", self.on_close_request)
 
@@ -235,6 +256,13 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         # Register with application
         if application:
             application.windows.append(self)
+
+    def set_title(self, title=None):
+        if title is None:
+            title = self.type
+            if self.filename is not None:
+                title += f' ({self.filename})'
+        super().set_title(title)
 
     ####################################################################
     # UI
@@ -492,6 +520,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         window = GyotoObjectEditorApplicationWindow(
             application=self.props.application,
             obj=obj,
+            objtype=label,
             connector=None
         )
         window.present()
@@ -511,39 +540,6 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
     ####################################################################
     # Callbacks
     ####################################################################
-
-    def on_new_item_activated(self, action, parameter):
-        """Create a new object and open an editor window
-
-        Args:
-            action: the Gio Action
-            parameter: its parameter
-
-        """
-        obj = None
-        label = parameter.get_string()  # Extract the label
-
-        static_constructors = {
-            "core/Scenery": Scenery,
-            "core/Photon": Photon,
-            "core/Screen": Screen,
-        }
-
-        if label in static_constructors:
-            obj = static_constructors[label]()
-        else:
-            nspace, plg, kind = label.split('/', 2)
-            obj = getattr(core, nspace)(kind, (plg,))
-
-        if obj is None:
-            raise ValueError(f'no valid constructor for {label}')
-
-        window = GyotoObjectEditorApplicationWindow(
-            application=self.props.application,
-            obj=obj,
-            connector=None
-        )
-        window.present()
 
     def build_shortcuts(self):
         """Create keyboard shortcuts.
@@ -636,39 +632,6 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
     ####################################################################
     # Callbacks
     ####################################################################
-
-    def on_new_item_activated(self, action, parameter):
-        """Create a new object and open an editor window
-
-        Args:
-            action: the Gio Action
-            parameter: its parameter
-
-        """
-        obj = None
-        label = parameter.get_string()  # Extract the label
-
-        static_constructors = {
-            "core/Scenery": Scenery,
-            "core/Photon": Photon,
-            "core/Screen": Screen,
-        }
-
-        if label in static_constructors:
-            obj = static_constructors[label]()
-        else:
-            nspace, plg, kind = label.split('/', 2)
-            obj = getattr(core, nspace)(kind, (plg,))
-
-        if obj is None:
-            raise ValueError(f'no valid constructor for {label}')
-
-        window = GyotoObjectEditorApplicationWindow(
-            application=self.props.application,
-            obj=obj,
-            connector=None
-        )
-        window.present()
 
     def on_open(self, *args):
         """Open a file dialog to load an object from an XML file.
@@ -816,6 +779,8 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
                 detail=e.get_message(),
                 window=self
             )
+
+        self.set_title()
 
     def on_help(self, *args):
         """Display the help dialog.
