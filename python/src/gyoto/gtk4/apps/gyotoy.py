@@ -243,6 +243,9 @@ class GyotoyApplication(Gtk.Application):
 
     Attributes:
         windows: List of all open GyotoyApplicationWindow instances.
+        particle: the initial particle (optional)
+        connector: Connection for inter-process communication
+
 
     """
 
@@ -311,7 +314,7 @@ class GyotoyApplication(Gtk.Application):
                 the name of an XML file containing this description.
             parsecliargs: whether to parse the command line arguments
             *args, **kwargs: other parameters are passed untouched to
-                the GyotoApplication constructor.
+                the GyotoyApplication constructor.
 
         Returns:
             int: Application exit code

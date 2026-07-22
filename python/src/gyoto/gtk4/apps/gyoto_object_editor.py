@@ -6,13 +6,13 @@ than as a standalone application.
 
 Note:
 
-    The GyotoObjectEditor.run() method is wrapped in the edit() method
-    of gyoto.core.Object, allowing:
+    The GyotoObjectEditorApplication.run_app() method is wrapped in
+    the edit() method of gyoto.core.Object, allowing:
         my_object.edit()
 
 """
 
-__all__ = ['GyotoObjectEditor']
+__all__ = ['GyotoObjectEditorApplication', 'GyotoObjectEditorApplicationWindow']
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -20,9 +20,10 @@ from gi.repository import Gtk, GLib, Gio, Gdk
 
 import argparse
 import sys
+import traceback
 
 from ..widgets.property_editor_box import PropertyEditorBox
-from ...core import Factory
+from ...core import Factory, Scenery
 
 class GyotoObjectEditorApplication(Gtk.Application):
     """Standalone GTK application for the Gyoto Object Editor.
@@ -38,9 +39,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
         Args:
             obj: Initial Gyoto object to edit
-            connector (multiprocessing.Connection or None): If the GUI
-                runs in a separate process, this is used to send updates
-                back to the caller.
+            connector: Connection for inter-process communication
 
         """
         if 'application_id' not in kwargs:
@@ -50,21 +49,27 @@ class GyotoObjectEditorApplication(Gtk.Application):
                                Gio.ApplicationFlags.NON_UNIQUE)
         super().__init__(*args, **kwargs)
         self.obj = obj
+        self.windows = []
+
+        # handle QUIT from parent process
         self.connector = connector
+        if connector is not None:
+            GLib.timeout_add(50, self.check_connector)
 
     def do_activate(self):
         """Called by GTK when the application starts.
 
         Creates the main window if it doesn't exist and presents it.
         """
-        window = self.props.active_window
-
-        if window is None:
-            window = GyotoObjectEditor(application=self,
-                                       obj=self.obj,
-                                       connector=self.connector)
-
-        window.present()
+        if not self.windows:
+            window = GyotoObjectEditorApplicationWindow(
+                application=self,
+                obj=self.obj,
+                connector=self.connector
+            )
+            self.windows.append(window)
+        for window in self.windows:
+            window.present()
 
     @staticmethod
     def run_app(obj=None, parsecliargs=False, *args, **kwargs):
@@ -85,9 +90,11 @@ class GyotoObjectEditorApplication(Gtk.Application):
         """
         remaining = None
         if parsecliargs:
-            parser = argparse.ArgumentParser(prog=f'{sys.argv[0]} ',
-                                             description=__doc__,
-                                             formatter_class=argparse.RawTextHelpFormatter)
+            parser = argparse.ArgumentParser(
+                prog=f'{sys.argv[0]} ',
+                description=__doc__,
+                formatter_class=argparse.RawTextHelpFormatter
+            )
             parser.add_argument('xmlfile', nargs='?',
                                 help='XML file containing the description'
                                 + 'of a Gyoto object (optional)')
@@ -98,28 +105,60 @@ class GyotoObjectEditorApplication(Gtk.Application):
         app = GyotoObjectEditorApplication(obj=obj, *args, **kwargs)
         return app.run(remaining)
 
-class GyotoObjectEditor(Gtk.Window):
+    def remove_window(self, window):
+        """Remove a window from the application's window list.
+
+        Args:
+            window: The GyotoyApplicationWindow to remove.
+
+        """
+        if window in self.windows:
+            self.windows.remove(window)
+
+    def close_all_windows(self):
+        """Close all open windows and quit the application."""
+        for window in self.windows[:]:
+            window.close()
+
+    def check_connector(self):
+        """Check for QUIT commands from the parent process.
+
+        This method is called periodically (every 50ms) via
+        GLib.timeout_add to poll the inter-process communication pipe
+        for a QUIT message.  When received, it quits the GTK main
+        loop, allowing the process to exit gracefully.
+
+        Returns:
+            bool: False to stop the timeout (after QUIT), True to
+                continue.
+
+        """
+        if self.connector is None:
+            return False
+        try:
+            if self.connector.poll(0):
+                msg = self.connector.recv()
+                if msg == ('QUIT',):
+                    self.close_all_windows()
+                    return False
+        except:
+            traceback.print_exc()
+        return True
+
+class GyotoObjectEditorApplicationWindow(Gtk.Window):
     """A GTK4 window for editing Gyoto object properties.
 
     This window provides a scrollable view of all editable properties of a
     Gyoto object, using a PropertyEditorBox as its main content.
 
-    The window can run in blocking mode (manages its own GLib main loop) or
-    non-blocking mode (for integration with external event loops like
-    IPython).
-
     Parameters:
         obj: The Gyoto object to edit
-        blocking (bool): If True, the window manages the GLib main
-            loop.  If False, the caller must manage the event loop
-            (e.g., using %gui gtk4 in IPython).
         connector (multiprocessing.Connection or None): If the GUI
             runs in a separate process, this is used to send updates
             back to the caller.
 
     Attributes:
         obj: The Gyoto object being edited
-        main_loop: GLib.MainLoop instance (if blocking=True)
         scrolled_window: Gtk.ScrolledWindow containing the editor
         vbox: PropertyEditorBox for editing object properties
         filename: name of last file used or None
@@ -128,43 +167,12 @@ class GyotoObjectEditor(Gtk.Window):
 
     filename = None
 
-    @staticmethod
-    def run(obj, blocking=True, connector=None):
-        """Construct a GyotoObjectEditor window and run it.
-
-        This is the recommended way to use the editor. It creates a new
-        window, presents it, and optionally runs the GTK main loop.
-
-        Args:
-            obj: The Gyoto object to edit
-            blocking (bool): If True, run the GLib main loop.  If
-                False, return immediately after presenting.
-            connector (multiprocessing.Connection or None): If the GUI
-                runs in a separate process, this is used to send updates
-                back to the caller.
-
-        Returns:
-            GyotoObjectEditor: The created window instance
-
-        Example:
-            GyotoObjectEditor.run(my_metric, blocking=True)
-            # or
-            my_metric.edit()
-
-        """
-        win = GyotoObjectEditor(obj, blocking, connector)
-        win.present()
-        if blocking:
-            win.main_loop.run()
-
-    def __init__(self, application=None,
-                 obj=None, blocking=True, connector=None):
-        """Initialize the GyotoObjectEditor window.
+    def __init__(self, application=None, obj=None, connector=None):
+        """Initialize the GyotoObjectEditorApplicationWindow window.
 
         Args:
             application: Parent Gtk.Application instance
             obj: The Gyoto object to edit
-            blocking (bool): Whether to manage the GLib main loop
             connector (multiprocessing.Connection or None): If the GUI
                 runs in a separate process, this is used to send updates
                 back to the caller.
@@ -174,11 +182,6 @@ class GyotoObjectEditor(Gtk.Window):
                          title="Gyoto Object Editor")
         self.set_default_size(400, 600)
 
-        # handle QUIT from parent process
-        self.connector = connector
-        if connector is not None:
-            GLib.timeout_add(50, self.check_connector)
-
         # obj may be the XML description of the object
         if isinstance(obj, str):
             if obj.lower().endswith('.xml'):
@@ -186,11 +189,10 @@ class GyotoObjectEditor(Gtk.Window):
             factory = Factory(obj)
             obj = getattr(factory, factory.kind().lower())()
 
+        if obj is None:
+            obj = self.default_obj()
+
         self.obj = obj
-        if blocking:
-            self.main_loop = GLib.MainLoop()
-        else:
-            self.main_loop = None
 
         self.connect("close-request", self.on_close_request)
 
@@ -213,44 +215,24 @@ class GyotoObjectEditor(Gtk.Window):
     def on_close_request(self, *args):
         """Handle window close request.
 
-        Quits the main loop if the window is in blocking mode.
+        Removes the window from the application's window list, and
+        allows the window to close.
 
         Args:
             *args: GTK callback arguments
 
         Returns:
             bool: False to allow the window to close
+
         """
-        if self.main_loop is not None:
-            GLib.idle_add(self.main_loop.quit)
+        if self.props.application is not None:
+            self.props.application.remove_window(self)
         return False
 
-    def check_connector(self):
-        """Check for QUIT commands from the parent process.
-
-        This method is called periodically (every 50ms) via
-        GLib.timeout_add to poll the inter-process communication pipe
-        for a QUIT message.  When received, it quits the GTK main
-        loop, allowing the process to exit gracefully.
-
-        Returns:
-            bool: False to stop the timeout (after QUIT), True to
-                continue.
-
+    def default_obj(self):
+        """Return default object
         """
-        if self.connector is None:
-            return False
-        try:
-            if self.connector.poll(0):
-                msg = self.connector.recv()
-                if msg == ('QUIT',):
-                    self.close()
-                    # if self.main_loop is not None:
-                    #     self.main_loop.quit()
-                    return False
-        except:
-            pass
-        return True
+        return Scenery()
 
 # Stand-alone entry point:
 if __name__ == "__main__":
