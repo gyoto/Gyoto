@@ -111,7 +111,7 @@ def gyotoy(particle=None):
 
 # Add edit() method to gyoto.core.Object for convenient property editing
 # Note: This should ideally be achieved using SWIG's extend mechanism
-def edit(self):
+def edit(self=None):
     """A GTK4 window for editing Gyoto object properties.
 
     This window provides a scrollable view of all editable properties of a
