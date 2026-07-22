@@ -1,18 +1,17 @@
 """Gyoto Object Editor: GTK4 Window for Property Editing
 
-This module provides a GTK4 window for editing the properties of Gyoto
-objects.  It is designed for use in interactive Python sessions rather
-than as a standalone application.
+This module provides a GTK4 window for editing the properties of
+Gyoto objects.
 
 Note:
-
     The GyotoObjectEditorApplication.run_app() method is wrapped in
     the edit() method of gyoto.core.Object, allowing:
         my_object.edit()
 
 """
 
-__all__ = ['GyotoObjectEditorApplication', 'GyotoObjectEditorApplicationWindow']
+__all__ = ['GyotoObjectEditorApplication',
+           'GyotoObjectEditorApplicationWindow']
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -43,7 +42,8 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
         """
         if 'application_id' not in kwargs:
-            kwargs['application_id'] = "fr.obspm.gyoto.GyotoObjectEditor"
+            kwargs['application_id'] = ""
+            "fr.obspm.gyoto.GyotoObjectEditor"
         if 'flags' not in kwargs:
             kwargs['flags'] = (Gio.ApplicationFlags.DEFAULT_FLAGS |
                                Gio.ApplicationFlags.NON_UNIQUE)
@@ -73,7 +73,7 @@ class GyotoObjectEditorApplication(Gtk.Application):
 
     @staticmethod
     def run_app(obj=None, parsecliargs=False, *args, **kwargs):
-        """Run the Gyoto Object Edirot as a standalone GTK application.
+        """Run the Gyoto Object Editor
 
         Parameters:
             obj: the Gyoto object to start with, or None, or the XML
@@ -81,8 +81,8 @@ class GyotoObjectEditorApplication(Gtk.Application):
                 file containing this description.
             parsecliargs (bool): whether to parse the command line
                 arguments
-            *args, **kwargs: other parameters are passed untouched to
-                the GyotoApplication constructor.
+            *args, **kwargs: other parameters are passed untouched
+                to the GyotoApplication constructor.
         
         Returns:
             int: Application exit code
@@ -95,9 +95,10 @@ class GyotoObjectEditorApplication(Gtk.Application):
                 description=__doc__,
                 formatter_class=argparse.RawTextHelpFormatter
             )
-            parser.add_argument('xmlfile', nargs='?',
-                                help='XML file containing the description'
-                                + 'of a Gyoto object (optional)')
+            parser.add_argument(
+                'xmlfile', nargs='?',
+                help='XML file containing the description '
+                'of a Gyoto object (optional)')
             cliargs, remaining = parser.parse_known_args()
             if 'xmlfile' in cliargs:
                 obj=cliargs.xmlfile
@@ -124,9 +125,9 @@ class GyotoObjectEditorApplication(Gtk.Application):
         """Check for QUIT commands from the parent process.
 
         This method is called periodically (every 50ms) via
-        GLib.timeout_add to poll the inter-process communication pipe
-        for a QUIT message.  When received, it quits the GTK main
-        loop, allowing the process to exit gracefully.
+        GLib.timeout_add to poll the inter-process communication
+        pipe for a QUIT message.  When received, it closes all
+        windows , allowing the process to exit gracefully.
 
         Returns:
             bool: False to stop the timeout (after QUIT), True to
@@ -148,8 +149,9 @@ class GyotoObjectEditorApplication(Gtk.Application):
 class GyotoObjectEditorApplicationWindow(Gtk.Window):
     """A GTK4 window for editing Gyoto object properties.
 
-    This window provides a scrollable view of all editable properties of a
-    Gyoto object, using a PropertyEditorBox as its main content.
+    This window provides a scrollable view of all editable
+    properties of a Gyoto object, using a PropertyEditorBox as its
+    main content.
 
     Parameters:
         obj: The Gyoto object to edit
@@ -173,9 +175,10 @@ class GyotoObjectEditorApplicationWindow(Gtk.Window):
         Args:
             application: Parent Gtk.Application instance
             obj: The Gyoto object to edit
-            connector (multiprocessing.Connection or None): If the GUI
-                runs in a separate process, this is used to send updates
-                back to the caller.
+        
+            connector (multiprocessing.Connection or None): If the
+                GUI runs in a separate process, this is used to send
+                updates back to the caller.
 
         """
         super().__init__(application=application,
@@ -236,4 +239,6 @@ class GyotoObjectEditorApplicationWindow(Gtk.Window):
 
 # Stand-alone entry point:
 if __name__ == "__main__":
-    raise SystemExit(GyotoObjectEditorApplication.run_app(parsecliargs=True))
+    raise SystemExit(
+        GyotoObjectEditorApplication.run_app(parsecliargs=True)
+    )
