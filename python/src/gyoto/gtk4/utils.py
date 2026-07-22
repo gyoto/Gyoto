@@ -217,6 +217,9 @@ def gui_launcher_default_handler(connector, cleanup, *args):
                 except EOFError:
                     # GUI process terminated, exit gracefully
                     break
+                except OSError:
+                    # GUI process terminated, exit gracefully
+                    break
     finally:
         if debug():
             warnings.warn('exiting')
