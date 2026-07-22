@@ -29,6 +29,12 @@ from ... import core
 
 # Custom GObject class to hold the label of a 'New >' menu item
 class NewItem(GObject.Object):
+    """Custom GObject class to store a label for the 'New' menu items.
+
+    Attributes:
+        label (str): The label for the menu item, typically in the format
+            "section/kind" (e.g., "Astrobj/Star").
+    """
     __gtype_name__ = 'NewItem'
 
     label = GObject.Property(type=str)
@@ -258,6 +264,14 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
             application.windows.append(self)
 
     def set_title(self, title=None):
+        """Set the window title based on the object type and filename.
+
+        Args:
+            title (str, optional): If provided, sets the window title
+                directly. If None, constructs the title from
+                `self.type` and `self.filename`.
+
+        """
         if title is None:
             title = self.type
             if self.filename is not None:
@@ -461,19 +475,44 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         return search_text in item.label.lower()
 
     def on_new_menu_item_activated(self, action, parameter, *args):
-        """Show the New popover when the New menu item is activated."""
+        """Show the New popover when the New menu item is activated.
+
+        Args:
+          action: The Gio.Action associated with the menu item.
+          parameter: The parameter passed to the action (unused here).
+          *args: Additional arguments (unused).
+
+        """
         self.new_popover.popup()
 
     def on_new_button_clicked(self, button, *args):
+        """Show the New popover when triggered by a button or shortcut.
+
+        Args:
+            button: The Gtk.Button that triggered the popover (unused
+                if called via shortcut).
+            *args: Additional arguments (unused).
+
+        """
         """Show the New popover."""
         self.new_popover.popup()
 
     def on_new_search_changed(self, entry):
-        """Update filter when search text changes."""
+        """Update the filter when the search text changes.
+
+        Args:
+            entry: The Gtk.SearchEntry that triggered the event.
+
+        """
         self.custom_filter.changed(Gtk.FilterChange.DIFFERENT)
 
     def on_new_list_item_setup(self, factory, list_item):
-        """Set up list items."""
+        """Set up the UI for a list item in the New popover.
+
+        Args:
+            factory: The Gtk.SignalListItemFactory creating the item.
+            list_item: The Gtk.ListItem to set up.
+        """
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         list_item.set_child(box)
 
@@ -483,17 +522,36 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         box.append(label)
 
     def on_new_list_item_bind(self, factory, list_item):
-        """Bind list items to data."""
+        """Bind the data to a list item in the New popover.
+
+        Args:
+            factory: The Gtk.SignalListItemFactory binding the item.
+            list_item: The Gtk.ListItem to bind.
+        """
         item = list_item.get_item()
         label = list_item.get_child().get_first_child()
         label.set_text(item.label)
 
     def on_new_list_activate(self, list_view, position):
-        """Handle activation (Enter key) in the list."""
+        """Handle activation (e.g., Enter key) in the New popover list.
+
+        Args:
+            list_view: The Gtk.ListView that received the activation.
+            position: The position of the activated item.
+        """
         self.on_new_create_clicked()
 
     def on_new_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in the search entry."""
+        """Handle keyboard navigation in the New popover's search entry.
+
+        Args:
+            controller: The Gtk.EventControllerKey that received the
+                event.
+            keyval: The key value (e.g., Gdk.KEY_Down).
+            keycode: The hardware keycode (unused).
+            state: The modifier state (unused).
+
+        """
         if keyval == Gdk.KEY_Down:
             # Move focus to list view and select first item
             self.new_list_view.grab_focus()
@@ -528,7 +586,16 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         self.new_popover.popdown()
 
     def on_list_key_pressed(self, controller, keyval, keycode, state):
-        """Handle keyboard navigation in the list view."""
+        """Handle keyboard navigation in the New popover's list view.
+
+        Args:
+            controller: The Gtk.EventControllerKey that received the
+                event.
+            keyval: The key value (e.g., Gdk.KEY_Enter).
+            keycode: The hardware keycode (unused).
+            state: The modifier state (unused).
+
+        """
         if (
                 (hasattr(Gdk, 'KEY_Enter') and keyval == Gdk.KEY_Enter)
                 or (hasattr(Gdk, 'KEY_Return') and keyval == Gdk.KEY_Return)
@@ -789,7 +856,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         keyboard shortcuts and menu button descriptions.
 
         Args:
-            *args: GTK callback arguments
+            *args: GTK callback arguments (unused).
 
         """
         dialog = Gtk.Dialog(
@@ -800,7 +867,23 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
         dialog.set_default_size(600, 400)
 
         help_text = (
-            "The Gyoto Object Editor\n"
+            "Gyoto Object Editor\n\n"
+            "Keyboard Shortcuts:\n"
+            "  Ctrl+N: Create a new object\n"
+            "  Ctrl+O: Open an object from file\n"
+            "  Ctrl+S: Save the current object\n"
+            "  Ctrl+Shift+S: Save the current object as...\n"
+            "  Ctrl+W: Close the current window\n"
+            "  Ctrl+Q: Quit the application\n"
+            "  F1: Show this help dialog\n\n"
+            "Menu Options:\n"
+            "  New: Create a new object (search and select from available types)\n"
+            "  Open: Load an object from an XML file\n"
+            "  Save: Save the current object to its last used file\n"
+            "  Save As: Save the current object to a new file\n"
+            "  Help: Show this dialog\n"
+            "  Close: Close the current window\n"
+            "  Quit: Close all windows and exit\n"
         )
 
         label = Gtk.Label(
@@ -809,6 +892,7 @@ class GyotoObjectEditorApplicationWindow(Gtk.ApplicationWindow):
             wrap=True,
             xalign=0.0
         )
+        label.set_width_chars(80)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_child(label)
