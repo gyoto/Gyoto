@@ -19,7 +19,7 @@ import sys
 from typing import Optional, Union, Callable, Tuple
 
 import numpy as np
-from numpy import pi, cos, sin, atan2
+from numpy import pi, cos, sin, arctan2
 
 from gyoto import core
 from gyoto.core import GYOTO_COORDKIND_SPHERICAL
@@ -192,8 +192,8 @@ def matte_paint(
     # Transform to spherical coordinates in painter basis
     vproj2 = V[0, :, :]**2 + V[1, :, :]**2
     vr = np.sqrt(vproj2 + V[2, :, :]**2)
-    vph = atan2(V[1, :, :], V[0, :, :])
-    vth = atan2(np.sqrt(vproj2), V[2, :, :])
+    vph = arctan2(V[1, :, :], V[0, :, :])
+    vth = arctan2(np.sqrt(vproj2), V[2, :, :])
 
     # Convert to painter coordinate system
     theta = pi - vth
