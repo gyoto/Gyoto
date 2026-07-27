@@ -30,6 +30,7 @@
 #include <cstdlib>
 #include <locale>
 #include <filesystem>
+#include <regex>
 
 // Let's imbue 'C' locale to every stream to make sure decimal_point
 // is always actually a '.'
@@ -286,24 +287,19 @@ void __look_for_plugins_in_xml_directory(const Factory * _this,
 	if (plg.rfind(mod, 0) == 0)
 	  mods += mod;
       GYOTO_DEBUG_EXPR(mods);
-      // first check for "xmldir/plgname"
       string plgname = plg.substr(mods.size());
+      // ensure plgname is in the form "(path/)libgyoto-plgname.so"
+      static const std::regex regexpattern
+	(R"(^.*libgyoto-[^/]+\." GYOTO_PLUGIN_SFX "$)");
+      if (!std::regex_match(plgname, regexpattern)) {
+	plgname = "libgyoto-" + plgname + "." GYOTO_PLUGIN_SFX;
+      }
       string pattern = _this->fullPath(plgname);
       GYOTO_DEBUG_EXPR(pattern);
       vector<string> matches =
 	Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |
 		    GLOB_TILDE | GLOB_BRACE);
       GYOTO_DEBUG_EXPR(matches[0]);
-      // if no matching files are found, retry with
-      // "xmldir/libgyoto-plgname.so"
-      if (!filesystem::exists(matches[0])) {
-	pattern = _this->fullPath("libgyoto-"+plgname+"." GYOTO_PLUGIN_SFX);
-	GYOTO_DEBUG_EXPR(pattern);
-	matches =
-	  Gyoto::glob(pattern, GLOB_NOCHECK | GLOB_NOSORT |
-		      GLOB_TILDE | GLOB_BRACE);
-	GYOTO_DEBUG_EXPR(matches[0]);
-      }
       // if a match was found, replace plgname with the pattern
       // that matched.
       if(filesystem::exists(matches[0])) {
