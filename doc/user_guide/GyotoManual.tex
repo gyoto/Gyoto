@@ -88,7 +88,7 @@
 
 This Guide aims at giving a general presentation of the \textit{General relativitY Orbit Tracer of Observatoire de Paris}, \texttt{GYOTO} (pronounced \textipa{[dZIoto]}, as for the Italian trecento painter Giotto di Bondone). This text is not a lecture on ray-tracing techniques and is only devoted to presenting the code so that it can be quickly handled by any user. Readers interested in the physics behind \texttt{GYOTO} are referred to~\citet[][and references therein]{vincent11a,vincent12a,aimar23}. The aim of this Guide is also to present the code in sufficient details so that people interested to develop their own version of \texttt{GYOTO} can do it easily.
 
-\texttt{GYOTO} is an open source C++ code with a Yorick plug-in that computes null and time-like geodesics in the Kerr metric as well as in any metric computed within the framework of the 3+1 formalism of general relativity. This code allows to compute mainly (polarized or non-polarized) images and spectra of astrophysical sources emitting electromagnetic radiation in the vicinity of compact objects (e.g. accretion disks or nearby stars). 
+\texttt{GYOTO} is an open source C++ code with Python bindings that computes null and time-like geodesics in the Kerr metric as well as in any metric computed within the framework of the 3+1 formalism of general relativity. This code allows to compute mainly (polarized or non-polarized) images and spectra of astrophysical sources emitting electromagnetic radiation in the vicinity of compact objects (e.g. accretion disks or nearby stars). 
 
 As \texttt{GYOTO} is continually evolving, this guide will (hopefully) be regularly updated to present the new functionalities added to the code. However, this guide does not constitute a full reference. The reference manual is built from the C++ header files using \texttt{doxygen} into the \texttt{doc/html/} directory of the source tree. It is also available online (rebuilt every night) at \url{http://gyoto.obspm.fr/}.
 
@@ -112,9 +112,7 @@ It is also better (but not required) to install the \texttt{udunits2} library. O
 \begin{code}
 git clone git://github.com/gyoto/Gyoto.git
 \end{code}  
-which will create a \texttt{Gyoto} repository. It contains directories \texttt{bin}, \texttt{lib}, \texttt{include}, \texttt{doc}, \texttt{yorick}
-containing respectively the core code and executable, the \texttt{.C} source files, the \texttt{.h} headers, the documentation
-and \texttt{Yorick} plug-in related code. 
+which will create a \texttt{Gyoto} repository. It contains directories \texttt{bin}, \texttt{lib}, \texttt{include}, \texttt{doc}, \texttt{python} and \texttt{plugins} containing respectively the core code and executable, the \texttt{.C} source files, the \texttt{.h} headers, the documentation, the Python bindings and plug-ins including the Python plug-in.
 
 In the \texttt{Gyoto} repository, use the standard 
 \begin{code}
@@ -317,7 +315,6 @@ To compute only the lower-right quadrant of the image:
 How to recombine the several output files into a single FITS file is
 left as an exercise to the reader. It is easily done using any
 scientific interpreted language such as
-Yorick\footnote{\url{http://dhmunro.github.io/yorick-doc/}} or
 Python\footnote{\url{https://www.python.org/}}.
 
 \subsection{The \texttt{gyotoy} interface}
@@ -329,17 +326,13 @@ interface to visualize a single geodesic. See the \texttt{README} and
 \texttt{INSTALL} files for the prerequisites. Once the installation is
 complete, your launch gyotoy as:
 \begin{code}
- $ gyotoy  
+ $ ipython3 -m gyoto.gtk4.apps.gyotoy
 \end{code}
 %$
-or, from the \texttt{yorick/} sub-directory of the built source tree:
+or, from the Python prompt:
 \begin{code}
- $ ./yorick -i gyotoy.i
-\end{code}
-%$
-followed, on the Yorick prompt, by:
-\begin{code}
- > gyotoy
+>>> import gyoto
+>>> gyoto.gtk4.gyotoy()
 \end{code}
 
 \begin{figure}
@@ -379,27 +372,38 @@ in future releases. It is documented in a Pythonic way, so
 help(object) is your friend.
 
 The Python module is split into several submodules:
-\begin{description}
-\item[gyoto.core] exposes the generic framework compiled in
-  \texttt{libgyoto};
-\item[gyoto.std] exposes the derived classes compiled in the
-  standard plug-in, \texttt{libgyoto-stdplug};
-\item[gyoto.python] exposes the derived classes compiled in the Python
-  plug-in, \texttt{libgyoto-python3}, that allow implementing new
-  Gyoto classes direclty in Python;
-\item[gyoto.lorene] exposes the derived classes compiled in the Lorene
-  plug-in, \texttt{libgyoto-lorene}, that allow implementing numerical
-  Metrics based on LORENE;
-\item[gyoto.metric, gyoto.astrobj, gyoto.spectrometer, gyoto.spectrum]
-  regroup the various Metrics, Astrobjs, etc. from the various
-  extensions;
-\item[gyoto.util] contains a few high-level wrappers and helper
-  functions;
-\item[gyoto.animate] contains a frame-work for producing videos based
-  on Gyoto;
-\item[gyoto.<some plug-in>] can be generated on the fly to expose the
-  classes implemented in any new custom plug-in.
-\end{description}
+\begin{itemize}
+\item Exposing \texttt{libgoyto*}:
+  \begin{description}
+  \item[gyoto.core] exposes the generic framework compiled in
+    \texttt{libgyoto};
+  \item[gyoto.std] exposes the derived classes compiled in the
+    standard plug-in, \texttt{libgyoto-stdplug};
+  \item[gyoto.python] exposes the derived classes compiled in the
+    Python plug-in, \texttt{libgyoto-python3}, that allow implementing
+    new Gyoto classes direclty in Python;
+  \item[gyoto.lorene] exposes the derived classes compiled in the
+    Lorene plug-in, \texttt{libgyoto-lorene}, that allow implementing
+    numerical Metrics based on LORENE;
+  \item[gyoto.<some plug-in>] can be generated on the fly to expose
+    the classes implemented in any new custom plug-in;
+  \item[gyoto.metric, gyoto.astrobj, gyoto.spectrometer,
+    gyoto.spectrum] regroup the various Metrics, Astrobjs, etc. from
+    the various extensions.
+  \end{description}
+\item Pure Python helpers and high-level routines:
+  \begin{description}
+  \item[gyoto.animate] contains a frame-work for producing videos based
+    on Gyoto;
+  \item[gyoto.gtk4] contains GTK4 graphical user interfaces (notably
+    gyotoy() and edit()) and widgets for building such custom
+    applications;
+  \item[gyoto.matte\_painting] provides functionality to visualize
+    gravitational lensing effects on painted backgrounds;
+  \item[gyoto.utils] contains a few high-level wrappers and helper
+    functions.
+  \end{description}
+\end{itemize}
 
 \subsubsection{Building and installing}
 
@@ -454,12 +458,16 @@ Get help on Gyoto:
 \end{code}
 Read scenery from XML:
 \begin{code}
-  sc=gyoto.util.readScenery("../doc/examples/example-moving-star.xml")
+  sc=gyoto.utils.readScenery("../doc/examples/example-moving-star.xml")
 \end{code}
 
 Print an XML representation of an object:
 \begin{code}
   print(sc)
+\end{code}
+Edit the properties of an object:
+\begin{code}
+  sc.edit()
 \end{code}
 Ray-trace a scenery:
 \begin{code}
@@ -525,15 +533,15 @@ Python identifiers:
 \end{code}
 
 The source directories \texttt{python} and \texttt{plugins/python}
-contain several examples and test cases. The Python source for
-gyoto.util and gyoto.animate also provide rich examples, always more
-up-to-date than the present documentation.
+contain several examples and test cases. The Python source for gyoto
+submodules also provide rich examples, always more up-to-date than the
+present documentation.
 
 \subsection{Using the Yorick plug-in}
 \label{sect:yorick}
-Warning: the Yorick plug-in will not be udated with new features
-anymore and we plan on phasing it out has soon as gyotoy has been
-ported to Python. If in doubt, use Python instead.
+Warning: the Yorick plug-in is deprecated and will be rempoved
+soon. Use Python for new projects and port your Gyoto-based Yorick
+projects to Python.
 
 Yorick is a fairly easy to learn interpreted computer language. We
 provide a Yorick plug-in which exposes the \texttt{GYOTO}

@@ -86,7 +86,8 @@ def rayTrace(sc,
              j=None, i=None,
              coord2dset=core.Grid,
              prefix='\r j = ',
-             height=None, width=None):
+             height=None, width=None,
+             quantities=None):
     '''Ray-trace scenery
 
 First form:
@@ -102,24 +103,31 @@ coord2dset -- a Coord2dSet subclass. Default: gyoto.core.Grid. The other
            value that makes sense is gyoto.core.Bucket.
 prefix  -- prefix to be written in front of the row number for
            progress output
-height, width -- vertical and horizontal resolution (overrides what
-           is specified in scenery.screen().resolution()
+height, width -- vertical and horizontal resolution (override
+           scenery.Screen.Resolution)
+quantities -- quantities to compute as a space-separated string or
+           iterable (tuplet, list...) of strings (overrides
+           scenery.Quantities). Possible quantities:
+               Intensity, EmissionTime, MinDistance, FirstDistMin,
+               Redshift, NbCrossEqPlane, ImpactCoords,
+               SpectrumStokesQ, SpectrumStokesU, SpectrumStokesV,
+               Spectrum, SpectrumStokes, BinSpectrum, User1, User2,
+               User3, User4, User5.
 
 Output:
 results -- dict containing the various requested quantities as per
-           scenery.requestedQuantitiesString().
+           scenery.Quantities.
 
 CAVEAT:
 This high level-wrapper is Pythonic and take the arguments as j, i,
 0-based indices whereas most Gyoto functions take them as i, j,
 1-based indices.
 
-TODO:
-Support impactcoords.
-
 Second form:
 
     '''
+    ## Seconform: the C++ wrapper.
+    # redistributes the parameters
     if isinstance(i, core.AstrobjProperties):
         ij=j
         aop=i
@@ -130,20 +138,28 @@ Second form:
         core._core.Scenery_rayTrace(sc, ij, aop, ipct)
         return
 
+    ## First form: Pythonic wrapper.
     # If needed, read sc
     if type(sc) is str:
         sc=core.Factory(sc).scenery()
 
     # Determine resolution, width and height
-    res=sc.screen().resolution()
-    if width is not None:
+    resbefore = sc.Screen.Resolution
+    if width is None and height is None:
+        res = resbefore
+        height = res
+        width = res
+    elif height is None:
+        height = width
+        res = width
+    elif width is None:
+        width = height
+        res = height
+    elif width > height:
         res = width
     else:
-        width=res
-    if height is not None and height > width:
         res = height
-    else:
-        height=res
+
     sc.screen().resolution(res)
 
     # Prepare coord2dset
@@ -177,6 +193,14 @@ Second form:
         dims=(ntot,)
         array_double_fromnumpy1or2=core.array_double.fromnumpy1
         array_double_fromnumpy2or3=core.array_double.fromnumpy2
+
+    # Set requesteds quantities if needed
+    quantbefore = sc.Quantities
+    if quantities is not None:
+        if isinstance(quantities, str):
+            sc.Quantities = quantities
+        else:
+            sc.Quantities = " ".join(quantities)
 
     # Prepare arrays to store results
     res = dict()
@@ -295,6 +319,9 @@ Second form:
         for key in res:
             res[key]=res[key][0]
 
+    # Reset Resolution and Quantities
+    sc.Screen.Resolution = resbefore
+    sc.Quantities = quantbefore
     return res
 
 def Scenery_getitem(self, args):

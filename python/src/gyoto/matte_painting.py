@@ -21,8 +21,8 @@ from typing import Optional, Union, Callable, Tuple
 import numpy as np
 from numpy import pi, cos, sin, arctan2
 
-from gyoto import core
-from gyoto.core import GYOTO_COORDKIND_SPHERICAL
+from . import core
+from .core import GYOTO_COORDKIND_SPHERICAL
 
 # Maximum double precision floating point value
 DBL_MAX = sys.float_info.max
@@ -31,10 +31,12 @@ def matte_paint(
     set: Union[core.Scenery, np.ndarray],
     paint: Callable[[np.ndarray, np.ndarray], np.ndarray],
     coordkind: Optional[int] = None,
-    yaw: Optional[float] = None,
-    pitch: Optional[float] = None,
-    roll: Optional[float] = None,
+    yaw: Optional[float] = 0.,
+    pitch: Optional[float] = 0.,
+    roll: Optional[float] = 0.,
     origin: str = "upper",
+    width: Optional[int] = None,
+    height: Optional[int] = None
 ) -> np.ndarray:
     """Visualize lensing effects on a painted background.
 
@@ -66,6 +68,11 @@ def matte_paint(
         origin: Origin convention for coordinate system, either
             "lower" or "upper". Defaults to "upper".
 
+        width: If set is a Gyoto Scenery, width of the output image
+            (defaults to height or set.Screen.Resolution).
+        height: If set is a Gyoto Scenery, height of the output image
+            (defaults to height or set.Screen.Resolution).
+
     Returns:
         np.ndarray: The rendered image as a numpy array.
 
@@ -84,17 +91,10 @@ def matte_paint(
 
     # Extract coordinate data from Scenery or use provided array
     if isinstance(set, core.Scenery):
-        res = set.Screen.Resolution
-        ii = core.Range(1, res, 1)
-        jj = core.Range(1, res, 1)
-        grid = core.Grid(ii, jj, "\rj = ")
-        ipct = np.zeros((res, res, 16), dtype=float)
-        aop = core.AstrobjProperties()
-        aop.impactcoords = core.array_double.fromnumpy3(ipct)
-        aop.offset = res * res
-        set.rayTrace(grid, aop)
+        data = set.rayTrace(
+            width=width, height=height, quantities="ImpactCoords"
+        )["ImpactCoords"][:, :, 8:]
         coordkind = set.Metric.coordKind()
-        data = ipct[:, :, 8:]
     else:
         if coordkind is None:
             raise ValueError(

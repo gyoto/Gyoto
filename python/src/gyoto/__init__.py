@@ -1,5 +1,41 @@
 """The General relativitY Orbit Tracer of paris Observatory
 
+GYOTO is an open source C++ code that computes null and time-like
+geodesics in the Kerr metric as well as in any metric computed within
+the framework of the 3+1 formalism of general relativity. This code
+allows to compute mainly (polarized or non-polarized) images and
+spectra of astrophysical sources emitting electromagnetic radiation in
+the vicinity of compact objects (e.g. accretion disks or nearby
+stars).
+
+The gyoto Python module is split into several submodules:
+  Exposing libgyoto*:
+    gyoto.core exposes the generic framework compiled in libgyoto;
+    gyoto.std exposes the derived classes compiled in the standard
+      plug-in, libgyoto-stdplug;
+    gyoto.python exposes the derived classes compiled in the Python
+      plug-in, libgyoto-python3, that allow implementing new Gyoto
+      classes direclty in Python;
+    gyoto.lorene exposes the derived classes compiled in the Lorene
+      plug-in, libgyoto-lorene, that allow implementing numerical
+      Metrics based on LORENE;
+    gyoto.<some plug-in> can be generated on the fly to expose the
+      classes implemented in any new custom plug-in;
+    gyoto.metric, gyoto.astrobj, gyoto.spectrometer, gyoto.spectrum
+      regroup the various Metrics, Astrobjs, etc. from the various
+      extensions.
+
+  Pure Python helpers and high-level routine:
+    gyoto.animate contains a frame-work for producing videos based on
+      Gyoto;
+    gyoto.gtk4 contains GTK4 graphical user interfaces (notably
+      gyotoy() and edit()) and widgets for building such custom
+      applications;
+    gyoto.matte_painting provides functionality to visualize
+      gravitational lensing effects on painted backgrounds;
+    gyoto.utils contains a few high-level wrappers and helper
+      functions.
+
 """
 import sys
 import os
@@ -18,7 +54,18 @@ from gyoto import core
 
 # avoid outputting n times the same warning about lorene while loading the rest
 core.verbose(0)
-from gyoto import util, animate, std, metric, astrobj, spectrum, spectrometer
+
+# import basic functionalities
+from gyoto import core, std
+
+# import namespaces
+from gyoto import metric, astrobj, spectrum, spectrometer
+
+# import pure python utilities
+from gyoto import utils, animate, matte_painting
+
+# for backwards compatibility
+util = utils
 
 # try importing the python submodule.
 try:
@@ -42,14 +89,14 @@ core.verbose(core.GYOTO_DEFAULT_VERBOSITY)
 
 # Provide a Pythonic wrapper around Scenery.rayTrace.
 # The underlying C++-like interface remains accessible.
-core.Scenery.rayTrace = util.rayTrace
+core.Scenery.rayTrace = utils.rayTrace
 core.Scenery.rayTrace.__doc__ += core._core.Scenery_rayTrace.__doc__
-core.Scenery.__getitem__ = util.Scenery_getitem
+core.Scenery.__getitem__ = utils.Scenery_getitem
 core.Scenery.__getitem__.__doc__ += core.Scenery.rayTrace.__doc__
 
-core.Worldline.getCartesian =  util._Worldline_getCartesian
+core.Worldline.getCartesian =  utils._Worldline_getCartesian
 core.Worldline.getCartesian.__doc__ = core._core.Worldline_getCartesian.__doc__
-core.Worldline.getCoord =  util._Worldline_getCoord
+core.Worldline.getCoord =  utils._Worldline_getCoord
 core.Worldline.getCoord.__doc__ = core._core.Worldline_getCoord.__doc__
 
 # Generate submodules on the fly for Gyoto plugins
@@ -95,7 +142,7 @@ class GyotoPluginLoader(importlib.abc.Loader):
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Astrobj(core.Astrobj):
@@ -108,7 +155,7 @@ class GyotoPluginLoader(importlib.abc.Loader):
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Spectrum(core.Spectrum):
@@ -121,7 +168,7 @@ class GyotoPluginLoader(importlib.abc.Loader):
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
 
         class Spectrometer(core.Spectrometer):
@@ -134,7 +181,7 @@ class GyotoPluginLoader(importlib.abc.Loader):
             If '''+name+''' only registers one class with that name,
             equivalent to: obj=gyoto.'''+name+'''.identifier() where
             identifier is a valid Python identifier based on clsname
-            (see gyoto.util.valid_identifier()).
+            (see gyoto.utils.valid_identifier()).
             '''
         module.Metric = Metric
         module.Astrobj = Astrobj
@@ -154,8 +201,8 @@ class GyotoPluginLoader(importlib.abc.Loader):
             while entry:
                 if entry.plugin() == name:
                     classname = entry.name()
-                    identifier = util.valid_identifier(classname)
-                    klass = util.make_class(namespace, classname,
+                    identifier = utils.valid_identifier(classname)
+                    klass = utils.make_class(namespace, classname,
                                             name, identifier)
                     if identifier not in module.__dict__:
                         setattr(module, identifier, klass)
