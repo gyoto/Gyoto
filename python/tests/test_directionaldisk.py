@@ -23,6 +23,7 @@ import os
 import unittest
 import gyoto.core
 import numpy as np
+import ctypes
 import gyoto.metric
 import gyoto.astrobj
 import gyoto.spectrum
@@ -52,25 +53,29 @@ class TestMetric(unittest.TestCase):
         GYOTO_PYTHON_DIR = "./"
         # GYOTO_EXAMPLES_DIR = GYOTO_PYTHON_DIR + "../doc/examples/"
         GYOTO_ARTIFACTS_DIR = GYOTO_PYTHON_DIR + "tests/artifacts/"
+        GYOTO_YORICK_DIR = GYOTO_PYTHON_DIR + "../yorick/"
         # gyoto.core.verbose(10)
         nnu = 2
         ni = 2
         nr = 10
-        gridshape = np.asarray((nnu, ni, nr), np.uint64)
+        naxes = (nr, ni, nnu)
+        # ! DirectionalDisk convention of axes ordering is reversed
+        # ! compared to default Python convention
+        gridshape = np.asarray(naxes[::-1], np.uint64)
         pgridshape = gyoto.core.array_size_t.fromnumpy1(gridshape)
-        intensity = np.zeros(gridshape)
+        intensity = np.zeros(naxes)
         pintensity = gyoto.core.array_double.fromnumpy3(intensity)
         # Fill intensity array
-        intensity[:, 0, 0::2] = 10.
-        intensity[:, 0, 1::2] = 7.
-        intensity[:, 0, 2::8] = 4.
-        intensity[:, 0, 8::10] = 1.
+        intensity[0::2, 0, :] = 10.
+        intensity[1::2, 0, :] = 7.
+        intensity[2::8, 0, :] = 4.
+        intensity[8::10, 0, :] = 1.
         intensity[:, 1, :] = 0.1 * intensity[:, 0, :]
         freq = np.zeros(nnu)
         pfreq = gyoto.core.array_double.fromnumpy1(freq)
         cosi = np.zeros(ni)
         pcosi = gyoto.core.array_double.fromnumpy1(cosi)
-        radius = 5. * np.arange(nr)
+        radius = 5. * (np.arange(nr) + 1)
         pradius = gyoto.core.array_double.fromnumpy1(radius)
         # Specials Values
         freqobs = 1e18
@@ -88,7 +93,7 @@ class TestMetric(unittest.TestCase):
         print("Creating DirectionalDisk...")
 
         directional_disk.copyIntensity(pintensity, pgridshape)
-        directional_disk.copyGridFreq(pfreq, ni)
+        directional_disk.copyGridFreq(pfreq, nnu)
         directional_disk.copyGridCosi(pcosi, ni)
         directional_disk.copyGridRadius(pradius, nr)
         directional_disk.metric(metric)
@@ -120,11 +125,12 @@ class TestMetric(unittest.TestCase):
         print("Saving scenery to XML file...")
         gyoto.core.Factory(sc).write(
             GYOTO_ARTIFACTS_DIR + "check-directionaldisk.xml")
+
+        # Reading the scenery we just saved
         print("Reading back scenery...")
-        print("Reading back scenery...")
-        # sc2 = gyoto.core.Scenery("check-directionaldisk.xml")
-        sc2 = gyoto.core.Factory(GYOTO_ARTIFACTS_DIR
-                                 + "check-directionaldisk.xml").scenery()
+        sc2 = gyoto.core.Factory(
+            GYOTO_ARTIFACTS_DIR + "check-directionaldisk.xml"
+        ).scenery()
         # sc2 = gyoto.core.Factory("check-directionaldisk.xml").scenery()
 
         # GYOTO_ARTIFACTS_DIR + "check-directionaldisk.xml").scenery()
@@ -142,31 +148,70 @@ class TestMetric(unittest.TestCase):
 
         file_output = PdfPages(GYOTO_ARTIFACTS_DIR + 'directionalDisk.pdf')
 
-        # Compare PatternDisks
+        # Compare DirectionalDisk
         # compare shape
-        pd2 = gyoto.std.DirectionalDisk(sc2.astrobj())
+        dd2 = gyoto.std.DirectionalDisk(sc2.astrobj())
         pgridshape2 = gyoto.core.array_size_t(3)
-        pd2.getIntensityNaxes(pgridshape2)
+        dd2.getIntensityNaxes(pgridshape2)
         for k in range(3):
             assert pgridshape2[k] == pgridshape[k], "shape of grid changed"
             bufsize = gridshape.prod()
         # compare intensity
-        buf = gyoto.core.array_double.frompointer(pd2.getIntensity())
+        buf = gyoto.core.array_double.frompointer(dd2.getIntensity())
         for k in range(bufsize):
             assert buf[k] == pintensity[k], "Intensity changed"
-        # compare opacity
-        # buf = gyoto.core.array_double.frompointer(pd2.opacity())
-        # for k in range(bufsize):
-        #    assert buf[k] == popacity[k], "Opacity changed"
+
+        # compare freq
+        buf = gyoto.core.array_double.frompointer(dd2.getGridFreq())
+        for k in range(nnu):
+            assert buf[k] == pfreq[k], "gridfreq changed"
+
+        # compare cosi
+        buf = gyoto.core.array_double.frompointer(dd2.getGridCosi())
+        for k in range(ni):
+            assert buf[k] == pcosi[k], "gridcosi changed"
+
+        # compare radius
+        buf = gyoto.core.array_double.frompointer(dd2.getGridRadius())
+        for k in range(nr):
+            assert buf[k] == pradius[k], "gridradius changed"
+
+        # COMPARING WITH YORICK RESULTS
+        # TO BE REMOVED ONCE DEBUGGED
+        print("Reading back YORICK scenery...")
+        sc2 = gyoto.core.Factory(
+            GYOTO_YORICK_DIR + "check-directionaldisk.xml"
+        ).scenery()
+        dd2 = gyoto.std.DirectionalDisk(sc2.astrobj())
+        pgridshape2 = gyoto.core.array_size_t(3)
+        dd2.getIntensityNaxes(pgridshape2)
+        for k in range(3):
+            assert pgridshape2[k] == pgridshape[k], "shape of grid changed"
+            bufsize = gridshape.prod()
+        # compare intensity
+        buf = gyoto.core.array_double.frompointer(dd2.getIntensity())
+        for k in range(bufsize):
+            assert buf[k] == pintensity[k], "Intensity changed"
+
+        # compare freq
+        buf = gyoto.core.array_double.frompointer(dd2.getGridFreq())
+        for k in range(nnu):
+            assert buf[k] == pfreq[k], "gridfreq changed"
+
+        # compare cosi
+        buf = gyoto.core.array_double.frompointer(dd2.getGridCosi())
+        for k in range(ni):
+            assert buf[k] == pcosi[k], "gridcosi changed"
+
+        # compare radius
+        buf = gyoto.core.array_double.frompointer(dd2.getGridRadius())
+        for k in range(nr):
+            assert buf[k] == pradius[k], "gridradius changed"
+
+        # END OF TO BE REMOVED ONCE DEBUGGED
+
         # Ray-trace
-        ii = gyoto.core.Range(1, screen.resolution(), 1)
-        jj = gyoto.core.Range(1, screen.resolution(), 1)
-        grid = gyoto.core.Grid(ii, jj)
-        aop = gyoto.core.AstrobjProperties()
-        frame = np.zeros((screen.resolution(), screen.resolution()))
-        pframe = gyoto.core.array_double.fromnumpy2(frame)
-        aop.intensity = pframe
-        sc.rayTrace(grid, aop)
+        frame = sc[:,:]["Intensity"]
         plt.figure()
         plt.imshow(frame, origin='lower')
         # plt.savefig(frame)
