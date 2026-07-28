@@ -465,8 +465,9 @@ void Disk3D::fitsRead(string filename) {
 
 void Disk3D::fitsWrite(string filename, const std::string & prefix) {
   if (!emissquant_) GYOTO_ERROR("Disk3D::fitsWrite(filename): nothing to save!");
-  filename_ = filename;
-  char*     pixfile   = const_cast<char*>(filename_.c_str());
+
+  std::string fullname;
+  char*     pixfile;
   fitsfile* fptr      = NULL;
   int       status    = 0;
   long      naxes []  = {long(nnu_), long(nphi_), long(nz_), long(nr_)};
@@ -475,23 +476,17 @@ void Disk3D::fitsWrite(string filename, const std::string & prefix) {
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
 
-  if (prefix != ""){
-    cout << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
-    //filename_ = filename
-    if (filename_.compare(0,1,"!")){
-        // pixfile = const_cast<char*>((prefix.append(filename_)).c_str());
-        pixfile = const_cast<char*>((filename_.insert(0,prefix)).c_str());
-        GYOTO_INFO << "pixfile :" << pixfile << endl;
-    }
-    else{
-        cout << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
-        filename_ = filename_.substr(1); 
-        // pixfile = const_cast<char*>((prefix.append(filename_).insert(0,"!")).c_str());
-        pixfile = const_cast<char*>((filename_.insert(0,"!" + prefix)).c_str());
-    }
+  if (!filename.compare(0,1,"!")) {
+    filename_ = filename.substr(1);
+    fullname = "!" + prefix + filename_;
+  } else {
+    filename_ = filename;
+    fullname = prefix + filename_;
   }
-  else
-    cout << "NO PREFIX  " << filename << endl;
+
+  pixfile = const_cast<char *>(fullname.c_str());
+  GYOTO_DEBUG_THIS_EXPR(filename_);
+  GYOTO_DEBUG_THIS_EXPR(pixfile);
 
   ////// CREATE FILE
   GYOTO_DEBUG << "creating file" << endl;

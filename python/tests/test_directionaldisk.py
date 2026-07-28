@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#    Copyright 2026 Thibaut Paumard, Julien Brulé
+#    Copyright 2014 Frederic Vincent, Thibaut Paumard
+#    Copyright 2026 Julien Brulé, Thibaut Paumard
 #
 #    This file is part of Gyoto.
 #
