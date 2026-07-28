@@ -380,7 +380,7 @@ void DirectionalDisk::fitsWrite(string filename, const std::string & prefix) {
 
   char      ermsg[31] = ""; // ermsg is used in throwCfitsioError()
   if (prefix != ""){
-    cout << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
+    GYOTO_DEBUG << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
     //filename_ = filename
     if (filename_.compare(0,1,"!")){
         // pixfile = const_cast<char*>((prefix.append(filename_)).c_str());
@@ -388,17 +388,17 @@ void DirectionalDisk::fitsWrite(string filename, const std::string & prefix) {
         GYOTO_INFO << "pixfile :" << pixfile << endl;
     }
     else{
-        cout << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
-        filename_ = filename_.substr(1); 
-        filename = filename.substr(1); 
-        cout << "filename__ :" << filename_ << endl;
+        GYOTO_DEBUG << "filename :" << filename << " : PREFIX |" << prefix << "|"<< endl;
+        filename_ = filename_.substr(1);
+        filename = filename.substr(1);
+        GYOTO_DEBUG << "filename__ :" << filename_ << endl;
         // pixfile = const_cast<char*>((prefix.append(filename_).insert(0,"!")).c_str());
         pixfile = const_cast<char*>((filename.insert(0,"!" + prefix)).c_str());
-        cout << "pixfile" << pixfile << endl;
+        GYOTO_DEBUG << "pixfile" << pixfile << endl;
     }
   }
   else
-    cout << "NO PREFIX  " << filename << endl;
+    GYOTO_DEBUG << "NO PREFIX  " << filename << endl;
 
   ////// CREATE FILE
  GYOTO_INFO << " writing pixfile :" << pixfile << endl;
@@ -517,10 +517,10 @@ double DirectionalDisk::emission(double nu, double,
   // redshift factor between the disk and the far-away-observer frames.
   double minfreq_diskframe = minfreq_lampframe_*gg_lampdisk,
     maxfreq_diskframe = maxfreq_lampframe_*gg_lampdisk;
-  //cout << "Limits computed= " << minfreq_computed_ << " " << maxfreq_computed_<< endl;
-  //cout << "Limits lamp= " << minfreq_lampframe_ << " " << maxfreq_lampframe_<< endl;
-  //cout << "Limits disk= " << minfreq_diskframe << " " << maxfreq_diskframe << endl;
-  //cout << "Local nu= " << nu << endl;
+  //GYOTO_DEBUG_THIS << "Limits computed= " << minfreq_computed_ << " " << maxfreq_computed_<< endl;
+  //GYOTO_DEBUG_THIS << "Limits lamp= " << minfreq_lampframe_ << " " << maxfreq_lampframe_<< endl;
+  //GYOTO_DEBUG_THIS << "Limits disk= " << minfreq_diskframe << " " << maxfreq_diskframe << endl;
+  //GYOTO_DEBUG_THIS << "Local nu= " << nu << endl;
   if (minfreq_diskframe < minfreq_computed_ || maxfreq_diskframe > maxfreq_computed_){
     GYOTO_ERROR("In DirectionalDisk::emission(): "
 	       "bad freq value ; update LampCutOffsIneV in XML");
@@ -547,7 +547,7 @@ double DirectionalDisk::emission(double nu, double,
     if (fabs(cosi-1)>tolcos) GYOTO_ERROR("In DirectionalDisk: bad cos!");
     cosi=1.;
   }
-  //cout << "cosi= " << cosi << endl;
+  //GYOTO_DEBUG_THIS << "cosi= " << cosi << endl;
   // Don't put a "return cosi" here, see later
 
   // cos between unit normal n and tangent to photon p
@@ -558,7 +558,7 @@ double DirectionalDisk::emission(double nu, double,
   size_t ind[3]; // {i_nu, i_cosi, i_r}
   getIndices(ind, co, cosi, nu);
 
-  //cout << "r, i2, nr= " << co[1] << " " << ind[2] << " " << nr_ <<endl;
+  //GYOTO_DEBUG_THIS << "r, i2, nr= " << co[1] << " " << ind[2] << " " << nr_ <<endl;
 
   //if (ind[2]==nr_) return 0.; // 0 emission outside simulation scope
 
@@ -574,31 +574,31 @@ double DirectionalDisk::emission(double nu, double,
 
   //return acos(cosi)*180./M_PI; // TEST!!! Don't forget to impose redshift to 1
 
-  //cout << "nu(eV), r(rS), cosi= " << nu/GYOTO_eV2Hz << " " << rr/2. << " " << cosi << endl;
+  //GYOTO_DEBUG_THIS << "nu(eV), r(rS), cosi= " << nu/GYOTO_eV2Hz << " " << rr/2. << " " << cosi << endl;
   double Iem=0.;
   size_t i0l=ind[0]+1, i0u=ind[0], 
     i2l=ind[2]-1, i2u=ind[2]; // Correct: i0 is freq, ordered decreasingly,
                               // i2 is radius ordered increasingly
 
-  //  cout << "ind_cosi=, ni= " << ind[1] << " " << ni_ << endl;
-  //cout << "min max r= " << radius_[0] << " " << radius_[nr_-1] << endl;
+  //  GYOTO_DEBUG_THIS << "ind_cosi=, ni= " << ind[1] << " " << ni_ << endl;
+  //GYOTO_DEBUG_THIS << "min max r= " << radius_[0] << " " << radius_[nr_-1] << endl;
 
   if (!average_over_angle_){
     if (cosi <= cosi_[0] || cosi >= cosi_[ni_-1]){
       // If cosi is out of the cosi_ range, bilinear interpol in nu,r
       size_t i1=ind[1];
-      //cout << "cos value unique= " << cosi_[i1] << endl;
+      //GYOTO_DEBUG_THIS << "cos value unique= " << cosi_[i1] << endl;
       double I00 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0l], // I_{nu,r}
 	I01 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0l],
 	I10 = emission_[i2l*(ni_*nnu_)+i1*nnu_+i0u],
 	I11 = emission_[i2u*(ni_*nnu_)+i1*nnu_+i0u];
-      //cout << "bilin dir: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
+      //GYOTO_DEBUG_THIS << "bilin dir: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
       double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
 	ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
       Iem = I00+(I10-I00)*rationu
 	+(I01-I00)*ratior
 	+(I11-I01-I10+I00)*rationu*ratior;
-      //cout << "I interp= " << Iem << endl;
+      //GYOTO_DEBUG_THIS << "I interp= " << Iem << endl;
     }else{
       // Trilinear interpol
       if (ind[1]==0){
@@ -614,7 +614,7 @@ double DirectionalDisk::emission(double nu, double,
 	I101 = emission_[i2u*(ni_*nnu_)+i1l*nnu_+i0u],
 	I111 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0u],
 	I011 = emission_[i2u*(ni_*nnu_)+i1u*nnu_+i0l];
-      //cout << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
+      //GYOTO_DEBUG_THIS << "trilin dir: " << I000 << " " << I100 << " " << I110 << " " << I010 << " " << I001 << " " << I101 << " " << I111 << " " << I011 << endl;
       double rationu = (nu-freq_[i0l])/(freq_[i0u]-freq_[i0l]),
 	ratioi = (cosi-cosi_[i1l])/(cosi_[i1u]-cosi_[i1l]),
 	ratior = (rr-radius_[i2l])/(radius_[i2u]-radius_[i2l]);
@@ -626,7 +626,7 @@ double DirectionalDisk::emission(double nu, double,
 	+ (I011-I010-I001+I000)*ratioi*ratior
 	+ (I101-I001-I100+I000)*rationu*ratior
 	+ (I111-I011-I101-I110+I100+I001+I010-I000)*rationu*ratioi*ratior;
-      //cout << "I interp= " << Iem << endl;
+      //GYOTO_DEBUG_THIS << "I interp= " << Iem << endl;
     }
   }else{
     // Average over cosi values
@@ -679,10 +679,10 @@ double DirectionalDisk::emission(double nu, double,
       */
       
       
-      //cout << "Raw data 1 for I00= " << radius_[i2l]/2. << " " << radius_[i2u]/2. << " " << freq_[i0l]/GYOTO_eV2Hz << " " << freq_[i0u]/GYOTO_eV2Hz << " " << cosi_[ii] << " " << cosi_[ii+1] << endl;
-      //cout << "Raw data 2 for I00= " << emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l] << " " << emission_[i2l*(ni_*nnu_)+ii*nnu_+i0l] << endl;
+      //GYOTO_DEBUG_THIS << "Raw data 1 for I00= " << radius_[i2l]/2. << " " << radius_[i2u]/2. << " " << freq_[i0l]/GYOTO_eV2Hz << " " << freq_[i0u]/GYOTO_eV2Hz << " " << cosi_[ii] << " " << cosi_[ii+1] << endl;
+      //GYOTO_DEBUG_THIS << "Raw data 2 for I00= " << emission_[i2l*(ni_*nnu_)+(ii+1)*nnu_+i0l] << " " << emission_[i2l*(ni_*nnu_)+ii*nnu_+i0l] << endl;
 
-      //cout << "IO in avg i= " << ii << " and I0= " << I00 << endl;
+      //GYOTO_DEBUG_THIS << "IO in avg i= " << ii << " and I0= " << I00 << endl;
 
       
     } 
@@ -693,7 +693,7 @@ double DirectionalDisk::emission(double nu, double,
     I10/=dcostot;
     I11/=dcostot;
 
-    //cout << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
+    //GYOTO_DEBUG_THIS << "bilin avg: " << I00 << " " << I01 << " " << I10 << " " << I11 << endl;
 
     //if (I00<I00min || I01<I01min || I10<I10min || I11<I11min) GYOTO_ERROR("test");
     //if (I00>I00max || I01>I01max || I10>I10max || I11>I11max) GYOTO_ERROR("test");
@@ -702,9 +702,9 @@ double DirectionalDisk::emission(double nu, double,
     Iem = I00+(I10-I00)*rationu
       +(I01-I00)*ratior
       +(I11-I01-I10+I00)*rationu*ratior;
-    //cout << "I interp= " << Iem << endl;
+    //GYOTO_DEBUG_THIS << "I interp= " << Iem << endl;
   }
-  //cout << "return= " << Iem << endl;
+  //GYOTO_DEBUG_THIS << "return= " << Iem << endl;
   return Iem;
 }
 

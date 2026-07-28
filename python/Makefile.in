@@ -204,6 +204,7 @@ check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGIN
 # clean up:
 check-clean:
 	-rm -f example.pdf example-patterndisk.pdf
+	-rm -Rf tests/artifacts/
 
 # those targets are yet empty:
 check-lorene check-lorene-clean check-lorene-mpi check-lorene-mpi-clean check-mpi-clean check-python check-python-clean check-python-mpi check-python-mpi-clean: ;
