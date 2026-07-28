@@ -194,7 +194,29 @@ public:
    * \brief Get next
    */
   Register::Entry* next();
+
+  /**
+   *\brief Get "plugin/name" for this and all subsequent entries
+   */
+  void pluginsSlashNames(std::vector<std::string> &retval) const;
 };
+
+
+/**
+ * \def GYOTO_PLUGINSSLASHNAMES(space)
+ *
+ * \brief Defines the registeredPluginsSlashKinds() function for
+ * namespace \p space.
+ */
+
+#define GYOTO_REGISTEREDPLUGINSSLASHKINDS(space)					\
+  std::vector<std::string>						\
+  Gyoto::space::Generic::registeredPluginsSlashKinds() {		\
+    std::vector<std::string> retval;					\
+    if (Gyoto::space::Register_)					\
+      Gyoto::space::Register_->pluginsSlashNames(retval);		\
+    return retval;							\
+  }
 
 /**
  * \def GYOTO_GETSUBCONTRACTOR(space)

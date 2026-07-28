@@ -8,13 +8,13 @@ all Metrics from std, lorene, and any other loaded plugin.
 import numpy
 import sys
 
-import gyoto._namespaces as _namespaces
-from gyoto.core import Metric as Generic
+from . import _namespaces
+from .core import Metric as Generic
 __all__ = _namespaces.make_namespace(Generic, globals())
 del _namespaces
 Complex=ComplexMetric
 
-import gyoto.core, gyoto.util
+from . import core, utils
 
 def __getattr__(name):
     '''Allows instanciating any metric kind
@@ -37,11 +37,11 @@ def __getattr__(name):
     # Check that a class by that name is registered
     try:
         obj = Generic(name)
-    except gyoto.core.Error:
+    except core.Error:
         raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
     # Make a class and cache it in the namespace
-    klass = gyoto.util.make_class(sys.modules[__name__], name, None, None, __name__)
+    klass = utils.make_class(sys.modules[__name__], name, None, None, __name__)
     setattr(sys.modules[__name__], name, klass)
     sys.modules[__name__].__all__.append(name)
 
@@ -150,17 +150,17 @@ def check_christoffel(metric, poslist=None, epsilon=1e-6, abstol=1e-6, reltol=1e
 
     '''
     if isinstance(metric, str):
-        metric=gyoto.core.Metric(metric)
+        metric=core.Metric(metric)
     elif isinstance(metric, type):
         metric=metric()
 
     if poslist is None:
-        if metric.coordKind()==gyoto.core.GYOTO_COORDKIND_SPHERICAL:
+        if metric.coordKind()==core.GYOTO_COORDKIND_SPHERICAL:
             poslist=[
                 (0., 6., numpy.pi/2, 0.),
                 (100., 50, numpy.pi/4, numpy.pi/6.)
                 ]
-        elif metric.coordKind()==gyoto.core.GYOTO_COORDKIND_CARTESIAN:
+        elif metric.coordKind()==core.GYOTO_COORDKIND_CARTESIAN:
             poslist=[
                 (0., 6., 0., 0.),
                 (100., 50., 30., 50),

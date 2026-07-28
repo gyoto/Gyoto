@@ -1,4 +1,7 @@
-NEXT BUG
+NEXT PKG
+    * New submodule gtk4 with custom widgets and useful GUIs:
+        * gyotoy.gtk4.gyotoy(): visualize a geodesic
+	* <gyoto object>.edit(): edit an object's properties
     * Make it an error when an unknown parameter is found in an XML file
 
 2.0.2 2024/01/19 PKG

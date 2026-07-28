@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import gyoto
-from gyoto.util import convert
+from gyoto.utils import convert
 from gyoto.core import GYOTO_C, GYOTO_G_OVER_C_SQUARE, GYOTO_SUN_MASS, GYOTO_SUN_RADIUS, GYOTO_KPC
 
 gyoto.core.requirePlugin('stdplug')

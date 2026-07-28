@@ -125,14 +125,14 @@ namespace Gyoto {
      * communicate with the Gyoto::Factory to build an instance of
      * the class from its XML description
      */
-     void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
+    void Register(std::string kind, Gyoto::Metric::Subcontractor_t* scp);
 
-     /// Empty the Metric register Metric::Register_
-     /**
-      *  This must be called once. It is called by
-      *  Gyoto::Register::init().
-      */
-     void initRegister();
+    /// Empty the Metric register Metric::Register_
+    /**
+     *  This must be called once. It is called by
+     *  Gyoto::Register::init().
+     */
+    void initRegister();
 
   }
 
@@ -166,6 +166,10 @@ class Gyoto::Metric::Generic
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Metric::Generic>;
+
+ public:
+  /// Get list of "plugins/names" of all registered Metrics
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
 
  private:
   double mass_;     ///< Mass yielding geometrical unit (in kg).

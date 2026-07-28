@@ -192,6 +192,11 @@ class Gyoto::Spectrometer::Generic
   public Gyoto::Hook::Teller
 {
   friend class Gyoto::SmartPointer<Gyoto::Spectrometer::Generic>;
+
+ public:
+  /// Get list of "plugins/names" of all registered Spectrometers
+  static std::vector<std::string> registeredPluginsSlashKinds() ;
+
  protected:
   /**
    * \brief Spectrometer kind ID

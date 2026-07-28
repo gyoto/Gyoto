@@ -218,7 +218,7 @@ void Photon::astrobj(SmartPointer<Astrobj::Generic> ao) {
   if (object_!=ao) {
     if (imin_<=imax_) imin_=imax_=i0_;
     object_=ao;
-    if (metric_) object_->metric(metric_);
+    if (object_) object_->metric(metric_);
   }
 }
 

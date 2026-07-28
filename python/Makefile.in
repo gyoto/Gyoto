@@ -183,6 +183,9 @@ check: testbed/stamp $(GYOTO_PLUGINS_LA) unittest
 	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-python.py \
 		--pdf=example-python.pdf \
 		--examples-dir=$(top_srcdir)/doc/examples
+	$(CHECK_ENV) $(PYTHON) $(srcdir)/example-matte-painting.py \
+		--pdf=example-matte-painting.pdf \
+		--painters=PMode --resolution=64
 
 # check-mpi runs the MPI example
 check-mpi: testbed/stamp ../bin/gyoto-mpi-worker.@sovers@@EXEEXT@ $(GYOTO_PLUGINS_LA)

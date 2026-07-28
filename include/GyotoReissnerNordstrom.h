@@ -52,6 +52,7 @@ public:
 
   using Generic::gmunu;
   double gmunu(double const x[4], int mu, int nu) const ;
+  using Generic::gmunu_up;
   double gmunu_up(double const x[4], int mu, int nu) const ;
   using Generic::christoffel;
   int christoffel(double dst[4][4][4], double const pos[4]) const ;
